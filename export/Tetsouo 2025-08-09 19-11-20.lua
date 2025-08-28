@@ -1,0 +1,17 @@
+sets.exported={
+    main="Mpaca's Staff",
+    sub="Enki Strap",
+    ammo="Staunch Tathlum +1",
+    head="Wicce Petasos +3",
+    body="Wicce Coat +3",
+    hands="Volte Gloves",
+    legs={ name="Nyame Flanchard", augments={'Path: B',}},
+    feet="Wicce Sabots +3",
+    neck="Sibyl Scarf",
+    waist="Plat. Mog. Belt",
+    left_ear="Ethereal Earring",
+    right_ear="Infused Earring",
+    left_ring="Stikini Ring +1",
+    right_ring="Stikini Ring +1",
+    back="Solemnity Cape",
+}

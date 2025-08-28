@@ -1,0 +1,17 @@
+sets.exported={
+    main="Naegling",
+    sub={ name="Demers. Degen +1", augments={'Path: A',}},
+    range="Gjallarhorn",
+    head="Fili Calot +3",
+    body="Fili Hongreline +3",
+    hands="Fili Manchettes +3",
+    legs="Fili Rhingrave +3",
+    feet="Fili Cothurnes +3",
+    neck={ name="Bard's Charm +2", augments={'Path: A',}},
+    waist={ name="Sailfi Belt +1", augments={'Path: A',}},
+    left_ear="Dedition Earring",
+    right_ear="Telos Earring",
+    left_ring="Moonlight Ring",
+    right_ring="Moonlight Ring",
+    back={ name="Intarabus's Cape", augments={'STR+20','Accuracy+20 Attack+20','STR+6','Weapon skill damage +10%','Phys. dmg. taken-10%',}},
+}

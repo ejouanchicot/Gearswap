@@ -1,0 +1,17 @@
+sets.exported={
+    main="Naegling",
+    sub="Genmei Shield",
+    range="Daurdabla",
+    head={ name="Nyame Helm", augments={'Path: B',}},
+    body="Adamantite Armor",
+    hands="Fili Manchettes +3",
+    legs={ name="Nyame Flanchard", augments={'Path: B',}},
+    feet="Nyame Sollerets",
+    neck="Null Loop",
+    waist="Null Belt",
+    left_ear="Infused Earring",
+    right_ear={ name="Odnowa Earring +1", augments={'Path: A',}},
+    left_ring="Moonlight Ring",
+    right_ring="Moonlight Ring",
+    back="Solemnity Cape",
+}

@@ -1,0 +1,17 @@
+sets.exported={
+    main="Naegling",
+    sub={ name="Demers. Degen +1", augments={'Path: A',}},
+    range="Gjallarhorn",
+    head="Fili Calot +3",
+    body="Fili Hongreline +3",
+    hands="Fili Manchettes +3",
+    legs="Fili Rhingrave +3",
+    feet="Fili Cothurnes +3",
+    neck="Lissome Necklace",
+    waist="Null Belt",
+    left_ear="Infused Earring",
+    right_ear="Eabani Earring",
+    left_ring="Moonlight Ring",
+    right_ring="Moonlight Ring",
+    back={ name="Intarabus's Cape", augments={'DEX+20','Accuracy+20 Attack+20','DEX+10','"Store TP"+10','Phys. dmg. taken-10%',}},
+}
