@@ -7,12 +7,16 @@
       "Bash(git init:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(move:*)",
+      "Bash(do cp \"D:/Windower Tetsouo/addons/GearSwap/data/Tetsouo/docs/features/$file\" \"D:/Windower Tetsouo/addons/GearSwap/data/Tetsouo/docs/en/features/\")",
+      "WebSearch"
     ],
     "deny": [],
     "ask": [],
     "additionalDirectories": [
-      "D:\\Windower Tetsouo"
+      "D:\\Windower Tetsouo",
+      "D:\\"
     ]
   }
 }
