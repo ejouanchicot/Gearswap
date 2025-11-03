@@ -1,198 +1,392 @@
-# FFXI GearSwap Advanced Automation System
+# Tetsouo GearSwap Documentation
 
-## Overview / Aperçu
+Professional GearSwap system for Final Fantasy XI with modular architecture and advanced features.
 
-This comprehensive FFXI GearSwap automation system provides advanced dual-boxing coordination, intelligent equipment management, and sophisticated job-specific automation across 15 different jobs.
-
-Ce système d'automation FFXI GearSwap complet fournit une coordination dual-boxing avancée, une gestion d'équipement intelligente, et une automation sophistiquée spécifique aux jobs à travers 15 jobs différents.
-
----
-
-## 🌐 Documentation Languages / Langues de Documentation
-
-### 🇺🇸 English Documentation
-**[English Documentation →](en/README.md)**
-
-Complete English documentation with:
-- **[Quick Start Guide](en/guides/getting-started.md)** - Setup in 15 minutes
-- **[Dual-Boxing Setup](en/guides/dual-boxing-setup.md)** - Multi-character coordination
-- **[Feature Documentation](en/features/)** - Core system details
-- **[API Reference](en/reference/)** - Technical documentation
-
-### 🇫🇷 Documentation Française  
-**[Documentation Française →](fr/README.md)**
-
-Documentation française complète avec:
-- **[Guide Démarrage Rapide](fr/guides/demarrage-rapide.md)** - Configuration en 15 minutes
-- **[Configuration Dual-Boxing](fr/guides/configuration-dual-boxing.md)** - Coordination multi-personnage
-- **[Documentation Features](fr/features/)** - Détails des systèmes principaux
-- **[Référence API](fr/reference/)** - Documentation technique
+**Version**: 3.1 - Production Ready
+**Last Updated**: 2025-11-01
+**Supported Jobs**: WAR, PLD, DNC, DRK, SAM, THF, RDM, WHM, BLM, GEO, COR, BRD, BST (13 jobs)
 
 ---
 
-## 🚀 Quick Access / Accès Rapide
+## Quick Navigation
 
-### New Users / Nouveaux Utilisateurs
-1. **Choose your language / Choisissez votre langue**
-2. **Follow the getting started guide / Suivez le guide de démarrage**
-3. **Configure your settings / Configurez vos paramètres**
-4. **Load your job file / Chargez votre fichier job**
+### 🚀 Getting Started
 
-### Essential First Steps / Étapes Essentielles
-- **Edit `config/settings.lua`** - The ONLY file to modify / Le SEUL fichier à modifier
-- **Set character names** - Replace defaults / Remplacez les noms par défaut
-- **Configure macro books** - Set preferences / Configurez vos préférences
-- **Choose job files** - Copy and rename / Copiez et renommez
+New to Tetsouo GearSwap? Start here:
 
----
+1. **[Installation Guide](user/getting-started/installation.md)** - Install and configure the system
+2. **[Quick Start](user/getting-started/quick-start.md)** - Get up and running in 5 minutes
 
-## 📋 Supported Jobs / Jobs Supportés
+### 📖 User Guides
 
-### Main Character Jobs / Jobs Personnage Principal (15 total)
-| Job | English Name | Nom Français | Key Features / Fonctionnalités |
-|-----|-------------|---------------|--------------------------------|
-| **THF** | Thief | Voleur | TH automation, SA/TA optimization |
-| **WAR** | Warrior | Guerrier | Weapon stance, offensive optimization |
-| **BLM** | Black Mage | Mage Noir | 60+ spells, tier management |
-| **PLD** | Paladin | Paladin | Tank mechanics, enmity management |
-| **BST** | Beast Master | Maître des Bêtes | Pet coordination, ecosystem correlation |
-| **DNC** | Dancer | Danseur | Step management, TP coordination |
-| **DRG** | Dragoon | Chevalier Dragon | Wyvern coordination, polearm specialist |
-| **RUN** | Rune Fencer | Rune Fencer | Magic tank, rune management |
-| **BRD** | Bard | Barde | Song management, party coordination |
-| **RDM** | Red Mage | Mage Rouge | Hybrid caster, enhancing/enfeebling |
+Learn how to use the system:
 
-### Alt Character Jobs / Jobs Personnage Alt (4 total)
-| Job | English Name | Nom Français | Dual-Boxing Features / Fonctionnalités Dual-Boxing |
-|-----|-------------|---------------|------------------------------------------------------|
-| **GEO** | Geomancer | Géomancien | 60 Geo/Indi spells, intelligent targeting |
-| **RDM** | Red Mage | Mage Rouge | Support sequences, buffing automation |
-| **COR** | Corsair | Corsaire | Roll management, ranged coordination |
-| **PLD** | Paladin | Paladin | Defensive coordination, dual-tanking |
+- **[Commands Reference](user/guides/commands.md)** - All available commands
+- **[Keybinds Guide](user/guides/keybinds.md)** - Keyboard shortcuts for all jobs
+- **[Configuration Guide](user/guides/configuration.md)** - Customize your setup
+- **[DualBox Guide](user/guides/dualbox.md)** - Multi-character setup
+- **[FAQ](user/guides/faq.md)** - Frequently asked questions
+
+### ⚡ Features
+
+Explore advanced features:
+
+- **[Watchdog System](user/features/watchdog.md)** - Automatic stuck midcast protection
+- **[UI System](user/features/ui.md)** - Visual keybind overlay
+- **[Equipment Validation](user/guides/commands.md#equipment-validation)** - Verify your gear
+
+### 💼 Job Documentation
+
+Complete documentation for all 13 jobs:
+
+- [Job Documentation Index](user/jobs/README.md) - All jobs overview
+- Each job has 8 files: README, quick-start, keybinds, commands, states, sets, configuration, troubleshooting
 
 ---
 
-## 🎯 Core Features / Fonctionnalités Principales
+## Feature Highlights
 
-### 🔄 Dual-Boxing System / Système Dual-Boxing
-- **Automatic Job Detection** / **Détection Automatique des Jobs**
-- **Intelligent Spell Coordination** / **Coordination Intelligente des Sorts**
-- **Cross-Character Communication** / **Communication Cross-Personnage**
-- **Dynamic Macro Management** / **Gestion Dynamique des Macros**
+### ✅ Universal Features (All Jobs)
 
-### 🎮 Real-Time UI System / Système UI Temps Réel
-- **Job-Specific Layouts** / **Layouts Spécifiques aux Jobs**
-- **Color-Coded States** / **États Codés par Couleur**
-- **Drag-and-Drop Positioning** / **Positionnement Glisser-Déposer**
-- **Live State Updates** / **Mises à Jour d'État en Direct**
+- **Automatic Equipment Swapping** - Precast → Midcast → Aftercast
+- **Hybrid Modes** - PDT/Normal with intelligent gear selection
+- **Equipment Validation** - Identify missing/storage items
+- **Lockstyle Management** - Auto-apply per job/subjob
+- **Macrobook Management** - Auto-set per job/subjob
+- **Keybind System** - Customizable keyboard shortcuts
+- **UI Overlay** - Visual keybind reference (draggable, saveable)
+- **DualBox Support** - Multi-character job synchronization
+- **Watchdog Protection** - Auto-recovery from stuck midcast (3.5s timeout)
+- **Cooldown Tracking** - Prevents ability spam with cooldown messages
+- **Debuff Guard** - Blocks actions when afflicted (Amnesia, Silence, etc.)
 
-### ⚙️ Equipment Management / Gestion d'Équipement
-- **Comprehensive Validation** / **Validation Complète**
-- **Equipment Factory** / **Factory d'Équipement**
-- **Missing Item Detection** / **Détection d'Objets Manquants**
-- **FFXI Abbreviation Support** / **Support Abréviations FFXI**
+### 🎯 Job-Specific Features
+
+**WAR** - Warrior
+
+- 6 weapon options (Ukonvasara, Naegling, Chango, etc.)
+- TP Bonus display on WS
+- Mighty Strikes detection
+
+**PLD** - Paladin
+
+- AOE BLU magic rotation (auto-select best enmity/sec spell)
+- Rune system (Sulpor, Lux - PLD/RUN)
+- Auto-Majesty before Cure
+- Divine Emblem auto-trigger
+
+**DNC** - Dancer
+
+- Intelligent Waltz (HP-based tier selection I-V)
+- Auto-Climactic Flourish toggle
+- Auto-Jump system with chaining (Jump → High Jump if needed)
+- Step rotation (Main/Alt)
+
+**RDM** - Red Mage
+
+- 3 Enfeebling modes (Potency/Skill/Duration)
+- 3 Nuke modes (FreeNuke/LowTierNuke/Accuracy)
+- 5 enhancement spell cycles (Gain/Bar/BarAilment/Spike/Storm)
+- Auto-Saboteur system
+
+**WHM** - White Mage
+
+- Cure auto-tier system (downgrades based on missing HP)
+- Afflatus management (Solace/Misery)
+- Ebers gear auto-equip with Afflatus Solace
+
+**BLM** - Black Mage
+
+- Magic Burst detection
+- Weapon swapping (Laevateinn/Akademos/Lathi)
+
+**GEO** - Geomancer
+
+- Bubble modes (Indi/Geo/Both)
+- Auto-Entrust system
+
+**BRD** - Bard
+
+- Song rotation with auto-instrument management
+- Marsyas Honor March lock system
+
+**COR** - Corsair
+
+- Automatic roll tracking with bust rate calculation
+- Party job detection system
+- Natural 11 mechanics tracking
+- Color-coded warnings (0% safe → 100% danger)
+
+**BST** - Beastmaster
+
+- 7 ecosystem management
+- Species cycling per ecosystem
+- Ready Move system with index execution (1-6)
+- Intelligent pet engagement (auto Fight → Move → Heel sequence)
+- Broth inventory display
+
+**SAM** - Samurai
+
+- Auto-Hasso/Seigan management
+- Meditate cooldown tracking
+- Third Eye auto-refresh
+
+**THF** - Thief
+
+- Smartbuff cycle (THF + subjob)
+- Full buff cycle (FBC)
+
+**DRK** - Dark Knight
+
+- Weapon management
+- Hybrid mode support
 
 ---
 
-## 🛠 System Requirements / Configuration Système
+## System Requirements
 
-### Software / Logiciel
-- **Windower 4.3.0+**
-- **GearSwap addon 0.922+**
-- **Mote-Include v2.0+**
-- **Valid FFXI account** / **Compte FFXI valide**
+### Required
 
-### Hardware / Matériel
-- **Windows 7/10/11** (64-bit recommended / recommandé)
-- **4GB RAM minimum** (8GB for dual-boxing / pour dual-boxing)
-- **Stable internet** / **Internet stable**
+- **FFXI** with **Windower 4**
+- **GearSwap** addon
+- **DressUp** addon (for lockstyle)
+
+### Optional but Recommended
+
+- **ConsoleBG** - Better console readability
+- **InfoBar** - Status information display
 
 ---
 
-## 🎮 Universal Commands / Commandes Universelles
+## Quick Command Reference
 
-```bash
-//gs c help           # Show commands / Afficher commandes
-//gs c test           # Validate equipment / Valider équipement
-//gs c ui             # Toggle UI / Basculer UI
-//gs c status         # System status / Statut système
+### Essential Commands
+
+```
+//gs c reload              # Full system reload
+//gs c checksets           # Validate equipment
+//gs c lockstyle           # Reapply lockstyle
+//gs c ui                  # Toggle UI overlay
+//gs c watchdog            # Show watchdog status
 ```
 
-### Dual-Boxing Commands / Commandes Dual-Boxing
-```bash
-# With GEO Alt / Avec GEO Alt
-//gs c altgeo         # Cast Geo spell / Lancer sort Geo
-//gs c altindi        # Cast Indi spell / Lancer sort Indi
-//gs c altentrust     # Entrust to main / Entrust au principal
+### Mode Cycling
 
-# With RDM Alt / Avec RDM Alt  
-//gs c bufftank       # Tank buffs / Buffs tank
-//gs c buffmelee      # Melee buffs / Buffs melee
-//gs c debuff         # Debuff sequence / Séquence debuff
+```
+//gs c cycle HybridMode    # Normal ↔ PDT
+//gs c cycle MainWeapon    # Cycle weapons
 ```
 
----
+### Watchdog
 
-## 🔧 Quick Configuration / Configuration Rapide
-
-### Master File / Fichier Principal
-**File / Fichier:** `config/settings.lua`
-
-```lua
--- Character Configuration / Configuration Personnages
-settings.players = {
-    main = 'YourMainCharacter',     -- Your name / Votre nom
-    alt_enabled = true,             -- Enable dual-boxing / Activer dual-boxing
-    alt = 'YourAltCharacter',      -- Alt name / Nom alt
-}
+```
+//gs c watchdog debug      # Toggle debug mode
+//gs c watchdog test       # Test stuck detection
+//gs c watchdog timeout 3.5 # Set timeout
 ```
 
----
-
-## 📊 System Statistics / Statistiques Système
-
-### Code Metrics / Métriques Code
-- **287 protected require() calls** / **287 appels require() protégés**
-- **1,092 equipment calls** / **1,092 appels équipement**
-- **60+ spells per magic job** / **60+ sorts par job magique**
-- **15 job implementations** / **15 implémentations de jobs**
-- **4 dual-boxing jobs** / **4 jobs dual-boxing**
-
-### Quality Metrics / Métriques Qualité
-- **9.5/10 architecture score** / **9.5/10 score architecture**
-- **96.8% equipment validation** / **96.8% validation équipement**
-- **Real-time performance** / **Performance temps réel**
+See **[Commands Reference](user/guides/commands.md)** for complete list.
 
 ---
 
-## 🆘 Quick Troubleshooting / Dépannage Rapide
+## Quick Keybind Reference
 
-```bash
-# Job won't load / Job ne charge pas
-//gs reload
+### Universal Keybinds (All Jobs)
 
-# Equipment issues / Problèmes équipement
-//gs c test
+| Key | Function |
+|-----|----------|
+| **Alt+1** | Cycle Main Weapon |
+| **Alt+2** | Cycle Hybrid Mode (PDT/Normal) |
+| **Alt+F1** | Toggle UI |
+| **F9** | Cycle Offense Mode |
+| **F10** | Cycle Defense Mode |
+| **F12** | Update Gear |
 
-# Alt not detected / Alt non détecté
-//gs c status
+### Job-Specific Examples
 
-# UI problems / Problèmes UI
-//gs c ui
+**WAR:**
+
+- No additional keybinds (uses universal Alt+1/Alt+2)
+
+**DNC:**
+
+- Alt+3: Main Step
+- Alt+4: Alt Step
+- Alt+5: Use Alt Step Toggle
+- Alt+6: Climactic Auto Toggle
+- Alt+7: Jump Auto Toggle
+
+**RDM:**
+
+- Alt+5: Cycle Enfeebling Mode
+- Alt+6: Cycle Nuke Mode
+- F1-F5: Cycle Enhancement Spells
+
+See **[Keybinds Guide](user/guides/keybinds.md)** for complete job-specific keybinds.
+
+### Job-Specific Documentation
+
+All 13 jobs fully documented with modular structure:
+
+- [Job Documentation Index](user/jobs/README.md) - Complete job list
+- Each job: 8 files (README, quick-start, keybinds, commands, states, sets, configuration, troubleshooting)
+
+---
+
+## Documentation Structure
+
+```
+docs/
+├── README.md                          (This file - Main navigation)
+│
+├── user/                              (User Documentation)
+│   ├── getting-started/
+│   │   ├── installation.md            ✅ Installation guide
+│   │   └── quick-start.md             ✅ 5-minute quick start
+│   │
+│   ├── guides/
+│   │   ├── commands.md                ✅ Complete command reference
+│   │   ├── keybinds.md                ✅ Keybind customization guide
+│   │   ├── configuration.md           ✅ Configuration guide
+│   │   ├── dualbox.md                 ✅ DualBox multi-character setup
+│   │   └── faq.md                     ✅ Frequently asked questions
+│   │
+│   ├── features/
+│   │   ├── auto-tier-system.md        ✅ Auto-tier (WHM Cure, DNC Waltz)
+│   │   ├── equipment-validation.md    ✅ Equipment validation system
+│   │   ├── job-change-manager.md      ✅ Job change anti-collision
+│   │   ├── watchdog.md                ✅ Watchdog auto-recovery
+│   │   └── ui.md                      ✅ UI system customization
+│   │
+│   └── jobs/                          (13 Jobs - Modular Structure)
+│       ├── README.md                  ✅ Job index
+│       ├── rdm/ (8 files)             ✅ Red Mage
+│       ├── whm/ (8 files)             ✅ White Mage
+│       ├── blm/ (8 files)             ✅ Black Mage
+│       ├── geo/ (8 files)             ✅ Geomancer
+│       ├── brd/ (8 files)             ✅ Bard
+│       ├── cor/ (8 files)             ✅ Corsair
+│       ├── bst/ (8 files)             ✅ Beastmaster
+│       ├── pld/ (8 files)             ✅ Paladin
+│       ├── dnc/ (8 files)             ✅ Dancer
+│       ├── sam/ (8 files)             ✅ Samurai
+│       ├── thf/ (8 files)             ✅ Thief
+│       ├── war/ (8 files + tp-bonus)  ✅ Warrior
+│       └── drk/ (8 files + abilities) ✅ Dark Knight
+│
+└── templates/                         (Documentation Templates)
+    ├── modular/                       (8-file job structure)
+    │   ├── README_TEMPLATE.md
+    │   ├── quick-start_TEMPLATE.md
+    │   ├── keybinds_TEMPLATE.md
+    │   ├── commands_TEMPLATE.md
+    │   ├── states_TEMPLATE.md
+    │   ├── sets_TEMPLATE.md
+    │   ├── configuration_TEMPLATE.md
+    │   └── troubleshooting_TEMPLATE.md
+    ├── JOB_GUIDE_TEMPLATE.md          (Legacy single-file)
+    └── JOB_TECHNICAL_GUIDE_TEMPLATE.md (Legacy technical)
 ```
 
----
-
-## 🔄 Version Information / Information Version
-
-**Current Version / Version Actuelle:** 2.1.0 "Audit Complete Release"
-- **Release Date / Date de Sortie:** 2025-08-19
-- **Complete project audit** / **Audit complet du projet**
-- **Enhanced dual-boxing** / **Dual-boxing amélioré**
-- **Real-time UI system** / **Système UI temps réel**
+**Legend**: ✅ = Complete and verified
 
 ---
 
-**This system transforms FFXI gameplay through intelligent automation and sophisticated multi-character coordination.**
+## Support and Troubleshooting
 
-**Ce système transforme le gameplay FFXI à travers une automation intelligente et une coordination multi-personnage sophistiquée.**
+### Common Issues
+
+**Gear not swapping:**
+
+- Network lag detected - Watchdog will auto-recover after 3.5s
+- Manual force: `//gs c watchdog clear`
+
+**Lockstyle not applying:**
+
+```
+//lua load dressup
+//gs c lockstyle
+```
+
+**Keybinds not working:**
+
+```
+//lua reload gearswap
+```
+
+**Equipment validation:**
+
+```
+//gs c checksets
+```
+
+See **[FAQ](user/guides/faq.md)** for complete troubleshooting guide.
+
+---
+
+## Version History
+
+**Version 3.1** (2025-11-01):
+
+- ✅ Unified ability messages system (100% - all jobs)
+- ✅ Removed "activated!" from all JA messages
+- ✅ UNIVERSAL_SPELL_DATABASE.lua created (14 databases aggregated)
+- ✅ Disabled 15 job-specific message systems (zero duplicates)
+- ✅ Cleaned 19 backup files (.bak, .backup)
+- ✅ Documentation audit complete
+
+**Version 3.0** (2025-10-26):
+
+- ✅ Documentation complete reorganization (user/technical separation)
+- ✅ 13 jobs production-ready (WAR, PLD, DNC, DRK, SAM, THF, RDM, WHM, BLM, GEO, COR, BRD, BST)
+- ✅ Watchdog v2.0 (hook-based, test mode, silent coroutine)
+- ✅ MidcastManager universal (7-level fallback chain)
+- ✅ Equipment validation system
+- ✅ DualBox support
+- ✅ UI system with drag/save
+
+**Version 2.0** (2025-10-05):
+
+- ✅ WAR, PLD, DNC production-ready
+- ✅ Factory patterns (Lockstyle, Macrobook)
+- ✅ Centralized systems (8/8)
+- ✅ Zero code duplication
+
+**Version 1.0** (2025-09-29):
+
+- ✅ Initial WAR implementation
+- ✅ Modular architecture established
+
+---
+
+## Contributing
+
+For developers interested in contributing or customizing:
+
+1. Read **[Standards](../.claude/standards.md)** - Coding standards
+2. See **[Development Guide](technical/development/)** - How to add jobs
+3. Follow **[Architecture](technical/architecture/)** - System design patterns
+
+---
+
+## Credits
+
+**Author**: Tetsouo
+**License**: MIT (or specify your license)
+**Repository**: [GitHub URL if public]
+
+---
+
+## Quick Links
+
+- [Installation](user/getting-started/installation.md)
+- [Quick Start](user/getting-started/quick-start.md)
+- [Commands](user/guides/commands.md)
+- [Keybinds](user/guides/keybinds.md)
+- [Watchdog](user/features/watchdog.md)
+- [FAQ](user/guides/faq.md)
+- [Standards](../.claude/standards.md)
+
+---
+
+**Happy adventuring in Vana'diel!** ✨
