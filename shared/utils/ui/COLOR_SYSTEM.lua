@@ -1,0 +1,380 @@
+---============================================================================
+--- Color System - Centralized Color Management for UI Elements
+---============================================================================
+--- Centralized color management for all UI elements across all jobs.
+--- Provides consistent color coding for elements, stats, spells, and modes.
+---
+--- @file ui/COLOR_SYSTEM.lua
+--- @author Tetsouo
+--- @version 3.0
+--- @date Updated: 2025-10-03
+---============================================================================
+
+local ColorSystem = {}
+
+---============================================================================
+--- STATIC COLOR DEFINITIONS (NO METATABLES)
+---============================================================================
+
+-- Element colors (static)
+local element_colors = {
+    -- Basic elements
+    Fire = "\\cs(255,100,100)",
+    Water = "\\cs(100,150,255)",
+    Lightning = "\\cs(255,150,255)",
+    Ice = "\\cs(150,200,255)",
+    Wind = "\\cs(150,255,150)",
+    Earth = "\\cs(200,150,100)",
+    Light = "\\cs(255,255,255)",
+    Dark = "\\cs(150,100,200)",
+
+    -- Spell name aliases
+    Thunder = "\\cs(255,150,255)",
+    Aero = "\\cs(150,255,150)",
+    Stone = "\\cs(200,150,100)",
+    Blizzard = "\\cs(150,200,255)",
+
+    -- RUN Runes (Latin names)
+    Ignis = "\\cs(255,100,100)",    -- Fire
+    Gelus = "\\cs(150,200,255)",    -- Ice
+    Flabra = "\\cs(150,255,150)",   -- Wind
+    Tellus = "\\cs(200,150,100)",   -- Earth
+    Sulpor = "\\cs(255,150,255)",   -- Lightning
+    Unda = "\\cs(100,150,255)",     -- Water
+    Lux = "\\cs(255,255,255)",      -- Light
+    Tenebrae = "\\cs(150,100,200)", -- Dark
+
+    -- Tier 2 spells (-ra variants)
+    Thundara = "\\cs(255,150,255)",
+    Aera = "\\cs(150,255,150)",       -- GEO AOE Wind
+    Aerora = "\\cs(150,255,150)",
+    Stonera = "\\cs(200,150,100)",
+    Blizzara = "\\cs(150,200,255)",
+    Fira = "\\cs(255,100,100)",
+    Watera = "\\cs(100,150,255)",
+
+    -- Tier 3 spells
+    Thundaga = "\\cs(255,150,255)",
+    Aeroga = "\\cs(150,255,150)",
+    Stonega = "\\cs(200,150,100)",
+    Blizzaga = "\\cs(150,200,255)",
+    Firaga = "\\cs(255,100,100)",
+    Waterga = "\\cs(100,150,255)",
+
+    -- Tier 4 spells (Aja)
+    Thundaja = "\\cs(255,150,255)",
+    Aeroja = "\\cs(150,255,150)",
+    Stoneja = "\\cs(200,150,100)",
+    Blizzaja = "\\cs(150,200,255)",
+    Firaja = "\\cs(255,100,100)",
+    Waterja = "\\cs(100,150,255)",
+
+    -- Storm variants
+    Firestorm = "\\cs(255,100,100)",
+    Sandstorm = "\\cs(200,150,100)",
+    Thunderstorm = "\\cs(255,150,255)",
+    Hailstorm = "\\cs(150,200,255)",
+    Windstorm = "\\cs(150,255,150)",
+    Rainstorm = "\\cs(100,150,255)",
+    Voidstorm = "\\cs(150,100,200)",
+    Aurorastorm = "\\cs(255,255,255)"
+}
+
+-- Stat colors (static)
+local stat_colors = {
+    STR = "\\cs(255,100,100)",
+    DEX = "\\cs(255,150,255)",
+    VIT = "\\cs(200,150,100)",
+    AGI = "\\cs(150,255,150)",
+    INT = "\\cs(150,100,200)",
+    MND = "\\cs(150,200,255)",
+    CHR = "\\cs(255,255,255)"
+}
+
+-- Special colors (static)
+local special_colors = {
+    PDT = "\\cs(255,200,100)",
+    MDT = "\\cs(150,200,255)",
+    Normal = "\\cs(255,255,255)",   -- White (default/neutral state)
+    Refresh = "\\cs(150,255,150)",  -- Green (MP recovery/safe)
+    Potency = "\\cs(150,255,150)",  -- Green (healing power/safe)
+    SIRD = "\\cs(255,200,100)",     -- Orange like PDT (defensive/interrupt resist)
+    Solace = "\\cs(150,255,150)",   -- Green (cure/healing focus)
+    Misery = "\\cs(255,100,100)",   -- Red (damage/offensive focus)
+    ["true"] = "\\cs(150,255,150)",
+    ["false"] = "\\cs(255,100,100)",
+    unknown = "\\cs(128,128,128)",
+    bar_ailment = "\\cs(255,200,150)"
+}
+
+---============================================================================
+--- HELPER FUNCTIONS
+---============================================================================
+
+--- Check if value matches any pattern in list
+local function matches_patterns(value, patterns)
+    for _, pattern in ipairs(patterns) do
+        if value:find(pattern) then
+            return true
+        end
+    end
+    return false
+end
+
+--- Get color for Gain spells based on stat
+local function get_gain_color(value)
+    if value:find("STR") then
+        return element_colors.Fire
+    elseif value:find("DEX") then
+        return element_colors.Lightning
+    elseif value:find("VIT") then
+        return element_colors.Earth
+    elseif value:find("AGI") then
+        return element_colors.Wind
+    elseif value:find("INT") then
+        return element_colors.Dark
+    elseif value:find("MND") then
+        return element_colors.Ice
+    elseif value:find("CHR") then
+        return element_colors.Light
+    end
+    return "\\cs(255,100,100)" -- Fallback red
+end
+
+--- Get color for Storm spells
+local function get_storm_color(value)
+    if value:find("Fire") then
+        return element_colors.Fire
+    elseif value:find("Sand") or value:find("Stone") then
+        return element_colors.Earth
+    elseif value:find("Thunder") then
+        return element_colors.Lightning
+    elseif value:find("Hail") or value:find("Bliz") then
+        return element_colors.Ice
+    elseif value:find("Rain") or value:find("Water") then
+        return element_colors.Water
+    elseif value:find("Wind") then
+        return element_colors.Wind
+    elseif value:find("Void") then
+        return element_colors.Dark
+    elseif value:find("Aurora") then
+        return element_colors.Light
+    end
+    return nil
+end
+
+--- Get color for Bar element spells
+local function get_bar_element_color(value)
+    if value:find("Barfira") then
+        return element_colors.Fire
+    elseif value:find("Barblizzara") then
+        return element_colors.Ice
+    elseif value:find("Baraera") then
+        return element_colors.Wind
+    elseif value:find("Barstonra") then
+        return element_colors.Earth
+    elseif value:find("Barthundra") then
+        return element_colors.Lightning
+    elseif value:find("Barwatera") then
+        return element_colors.Water
+    end
+    return nil
+end
+
+--- Get color for En spells
+local function get_en_spell_color(value)
+    if value:find("Enfire") then
+        return element_colors.Fire
+    elseif value:find("Enblizzard") then
+        return element_colors.Ice
+    elseif value:find("Enaero") then
+        return element_colors.Wind
+    elseif value:find("Enstone") then
+        return element_colors.Earth
+    elseif value:find("Enthunder") then
+        return element_colors.Lightning
+    elseif value:find("Enwater") then
+        return element_colors.Water
+    end
+    return nil
+end
+
+--- Get color for Spike spells
+local function get_spike_color(value)
+    if value == "Blaze Spikes" then
+        return element_colors.Fire
+    elseif value == "Ice Spikes" then
+        return element_colors.Ice
+    elseif value == "Shock Spikes" then
+        return element_colors.Lightning
+    end
+    return nil
+end
+
+--- Get color for Quick Draw spells (COR)
+local function get_quick_draw_color(value)
+    if value == "Fire Shot" or value == "Burning Shot" or value == "Flaming Shot" or value == "Fiery Shot" then
+        return element_colors.Fire
+    elseif value == "Ice Shot" or value == "Freezing Shot" or value == "Icy Shot" then
+        return element_colors.Blizzard
+    elseif value == "Wind Shot" or value == "Blast Shot" then
+        return element_colors.Aero
+    elseif value == "Earth Shot" or value == "Slug Shot" then
+        return element_colors.Stone
+    elseif value == "Thunder Shot" or value == "Lightning Shot" then
+        return element_colors.Thunder
+    elseif value == "Water Shot" or value == "Aqua Shot" then
+        return element_colors.Water
+    elseif value == "Light Shot" or value == "Sniper Shot" then
+        return element_colors.Light
+    elseif value == "Dark Shot" or value == "Chaos Shot" then
+        return element_colors.Dark
+    end
+    return nil
+end
+
+---============================================================================
+--- MAIN COLOR RESOLUTION
+---============================================================================
+
+--- Get color for a value based on context
+function ColorSystem.get_value_color(value, description)
+    local value_color = "\\cs(255,255,255)" -- Default white
+
+    -- Gain spells
+    if description and description:find("Gain") then
+        return get_gain_color(value)
+    end
+
+    -- Element contexts (including "Elemental" for GEO)
+    if description and (description:find("Element") or description:find("Elemental")) and element_colors[value] then
+        return element_colors[value]
+    end
+
+    -- AOE Spell context (for GEO AOE spells like Stonera, Watera, etc.)
+    if description and description:find("AOE") and element_colors[value] then
+        return element_colors[value]
+    end
+
+    -- Stat contexts (Etudes)
+    if description and description:find("Etude") and stat_colors[value] then
+        return stat_colors[value]
+    end
+
+    -- Rune elements
+    if description and description:find("Rune") and element_colors[value] then
+        return element_colors[value]
+    end
+
+    -- BLM spells
+    if description and (description:find("Light") or description:find("Dark") or description:find("Aja") or description:find("Storm")) then
+        if element_colors[value] then
+            return element_colors[value]
+        end
+    end
+
+    -- COR Quick Draw
+    if description and description:find("Quick Draw") then
+        if element_colors[value] then
+            return element_colors[value]
+        end
+    end
+
+    -- Storm spells
+    if description and description:find("Storm") then
+        local storm_color = get_storm_color(value)
+        if storm_color then return storm_color end
+    end
+
+    -- Defense modes
+    if value:find("PDT") then
+        return special_colors.PDT
+    elseif value:find("MDT") then
+        return special_colors.MDT
+    elseif value:find("Normal") then
+        return special_colors.Normal
+    elseif value:find("Refresh") then
+        return special_colors.Refresh
+    end
+
+    -- WHM Cure modes
+    if value:find("Potency") then
+        return special_colors.Potency
+    elseif value:find("SIRD") then
+        return special_colors.SIRD
+    end
+
+    -- WHM Afflatus modes
+    if value:find("Solace") then
+        return special_colors.Solace
+    elseif value:find("Misery") then
+        return special_colors.Misery
+    end
+
+    -- DNC Dance colors (symbolic)
+    if description and description:find("Dance") then
+        if value == "Saber Dance" then
+            return element_colors.Fire  -- Red (offensive/fire)
+        elseif value == "Fan Dance" then
+            return "\\cs(150,255,150)"  -- Green (defensive/heal)
+        end
+    end
+
+    -- Bar element spells
+    local bar_element = get_bar_element_color(value)
+    if bar_element then return bar_element end
+
+    -- Bar ailment spells
+    if value:find("Baramnesia") or value:find("Barvirus") or value:find("Barparalyze") or
+        value:find("Barsilence") or value:find("Barpetrify") or value:find("Barpoison") or
+        value:find("Barblind") or value:find("Barsleep") then
+        return special_colors.bar_ailment
+    end
+
+    -- En spells
+    local en_spell = get_en_spell_color(value)
+    if en_spell then return en_spell end
+
+    -- Spike spells
+    local spike = get_spike_color(value)
+    if spike then return spike end
+
+    -- Quick Draw spells
+    local quick_draw = get_quick_draw_color(value)
+    if quick_draw then return quick_draw end
+
+    -- Boolean values (True/False and On/Off)
+    if value == "true" or value == "True" or value == "On" or value == "on" then
+        return special_colors["true"]
+    elseif value == "false" or value == "False" or value == "Off" or value == "off" then
+        return special_colors["false"]
+    elseif value == "unknown" or value == "Unknown" or value == "N/A" then
+        return special_colors.unknown
+    end
+
+    return value_color
+end
+
+---============================================================================
+--- UTILITY FUNCTIONS
+---============================================================================
+
+function ColorSystem.get_element_colors()
+    return element_colors
+end
+
+function ColorSystem.get_stat_colors()
+    return stat_colors
+end
+
+function ColorSystem.add_custom_color(pattern_type, pattern_name, color_code)
+    if pattern_type == "element" then
+        element_colors[pattern_name] = color_code
+    elseif pattern_type == "stat" then
+        stat_colors[pattern_name] = color_code
+    elseif pattern_type == "special" then
+        special_colors[pattern_name] = color_code
+    end
+end
+
+return ColorSystem
