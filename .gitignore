@@ -1,0 +1,44 @@
+# ============================================================================
+# Tetsouo GearSwap - Git Ignore Configuration
+# ============================================================================
+# Excludes junctions and temporary files from version control
+# ============================================================================
+
+# Junctions (created by migration script - point to shared/)
+Tetsouo/jobs/
+Tetsouo/utils/
+Kaories/jobs/
+Kaories/utils/
+
+# Backup directories (created by migration)
+BACKUP_MIGRATION_*/
+
+# Temporary files
+*.tmp
+*.bak
+temp_*.ps1
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archives (keep source, not zips)
+*.zip
+*.7z
+*.rar
+
+# Export dumps
+export/
+
+# Duplicate directories
+*Backup/
+*backup/
+* - Copie/
