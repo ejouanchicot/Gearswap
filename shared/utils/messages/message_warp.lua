@@ -596,11 +596,7 @@ end
 
 --- Show equipment manager initialized
 function MessageWarp.show_equipment_initialized()
-    local tag_color = MessageCore.create_color_code(COLORS.JOB_TAG)
-    local action_color = MessageCore.create_color_code(COLORS.SEPARATOR)
-    local success_color = MessageCore.create_color_code(COLORS.SUCCESS)
-    add_to_chat(1, string.format('%s[WARP]%s Equipment manager initialized %s[OK]',
-        tag_color, action_color, success_color))
+    -- Silent init - no message displayed
 end
 
 ---============================================================================
@@ -729,10 +725,7 @@ end
 
 --- Show precast system initialized
 function MessageWarp.show_precast_initialized()
-    local tag_color = MessageCore.create_color_code(COLORS.JOB_TAG)
-    local success_color = MessageCore.create_color_code(COLORS.SUCCESS)
-    add_to_chat(1, string.format('%s[Warp Precast]%s Initialized - FC will be forced for warp spells',
-        tag_color, success_color))
+    -- Silent init - no message displayed
 end
 
 ---============================================================================

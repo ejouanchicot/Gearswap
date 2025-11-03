@@ -279,7 +279,7 @@ function MidcastWatchdog.start()
     watchdog_timer = true
     coroutine.schedule(watchdog_check_and_reschedule, 0.5)
 
-    add_to_chat(158, '[Watchdog] Started (timeout: ' .. WATCHDOG_TIMEOUT .. 's, check interval: 0.5s)')
+    -- Silent start - no message displayed
 end
 
 --- Stop the watchdog background check
