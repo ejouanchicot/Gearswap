@@ -28,6 +28,5 @@ _G.MidcastWatchdog = MidcastWatchdog
 -- Start after GearSwap is fully initialized
 coroutine.schedule(function()
     MidcastWatchdog.start()
-    add_to_chat(158, '[Watchdog] Initialized (timeout: 3.5s)')
-    add_to_chat(158, '[Watchdog] Use //gs c watchdog test to test detection')
+    -- Silent init - no message displayed
 end, 2.0)  -- 2 second delay

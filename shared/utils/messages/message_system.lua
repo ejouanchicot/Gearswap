@@ -43,7 +43,7 @@ local function calculate_content_width(keybinds, macro_info, lockstyle_info, job
     return content_width
 end
 
---- Build system intro with all optional components
+--- Build system intro with all optional components (SHORT VERSION)
 --- @param title string System title
 --- @param keybinds table Array of keybind objects
 --- @param macro_info table Optional macro info
@@ -53,36 +53,29 @@ local function build_and_display_intro(title, keybinds, macro_info, lockstyle_in
     -- Auto-detect job tag if not provided (e.g., "WAR/SAM", "PLD/BLU")
     job_name = job_name or MessageCore.get_job_tag()
 
-    -- Calculate total width
-    local content_width = calculate_content_width(keybinds, macro_info, lockstyle_info, job_name)
-    local title_with_spaces = " " .. title .. " "
-    local separator_width = math.max(content_width + 4, string.len(title_with_spaces) + 8)
-    local separator_line = string.rep("=", separator_width)
+    -- Calculate width based on longest info line
+    local max_width = string.len(title) + 4
+    local separator_line = string.rep("=", max_width)
 
-    -- Build centered title line
-    local title_total_width = separator_width - 2
-    local padding_total = title_total_width - string.len(title_with_spaces)
-    local padding_left = math.floor(padding_total / 2)
-    local padding_right = padding_total - padding_left
-    local title_line = string.rep("=", padding_left) .. title_with_spaces .. string.rep("=", padding_right)
+    -- Count keybinds
+    local keybind_count = 0
+    if keybinds then
+        for _ in pairs(keybinds) do
+            keybind_count = keybind_count + 1
+        end
+    end
 
     -- Display header
     add_to_chat(Colors.SYSTEM_LOADED, separator_line)
-    add_to_chat(Colors.SYSTEM_LOADED, title_line)
+    add_to_chat(Colors.SYSTEM_LOADED, "  " .. title)
     add_to_chat(Colors.SYSTEM_LOADED, separator_line)
-
-    -- Display keybinds
-    for _, bind in pairs(keybinds) do
-        local formatted_line = MessageKeybinds.format_keybind_line(bind.key, bind.desc)
-        add_to_chat(001, formatted_line)
-    end
 
     -- Display macro info if provided
     if macro_info and macro_info.book and macro_info.page then
         local macro_color = MessageCore.create_color_code(Colors.KEYBIND_KEY)
         local desc_color = MessageCore.create_color_code(Colors.KEYBIND_DESC)
-        local macro_line = string.format("%s[MacroBook]%s %s Book %d Page %d",
-            macro_color, desc_color, job_name,
+        local macro_line = string.format("%sMacrobook:%s Book %d | Set %d",
+            macro_color, desc_color,
             macro_info.book, macro_info.page)
         add_to_chat(001, macro_line)
     end
@@ -91,10 +84,30 @@ local function build_and_display_intro(title, keybinds, macro_info, lockstyle_in
     if lockstyle_info and lockstyle_info.style then
         local lockstyle_color = MessageCore.create_color_code(Colors.KEYBIND_KEY)
         local desc_color = MessageCore.create_color_code(Colors.KEYBIND_DESC)
-        local status = lockstyle_info.enabled and "Enabled" or "Disabled"
-        local lockstyle_line = string.format("%s[Lockstyle]%s %s Style %d (%s)",
-            lockstyle_color, desc_color, job_name, lockstyle_info.style, status)
+        local lockstyle_delay = _G.LockstyleConfig and _G.LockstyleConfig.initial_load_delay or 8.0
+        local lockstyle_line = string.format("%sLockstyle:%s Set %d (applying in %.1fs...)",
+            lockstyle_color, desc_color, lockstyle_info.style, lockstyle_delay)
         add_to_chat(001, lockstyle_line)
+    end
+
+    -- Display keybind count
+    if keybind_count > 0 then
+        local kb_color = MessageCore.create_color_code(Colors.KEYBIND_KEY)
+        local desc_color = MessageCore.create_color_code(Colors.KEYBIND_DESC)
+        local kb_line = string.format("%sKeybinds:%s %d loaded",
+            kb_color, desc_color, keybind_count)
+        add_to_chat(001, kb_line)
+    end
+
+    -- Display UI status
+    local ui_enabled = _G.ui_display_config and _G.ui_display_config.enabled
+    if ui_enabled ~= nil then
+        local ui_color = MessageCore.create_color_code(Colors.KEYBIND_KEY)
+        local desc_color = MessageCore.create_color_code(Colors.KEYBIND_DESC)
+        local ui_status = ui_enabled and "Visible" or "Hidden"
+        local ui_line = string.format("%sUI:%s %s (toggle with //gs c ui)",
+            ui_color, desc_color, ui_status)
+        add_to_chat(001, ui_line)
     end
 
     -- Display footer

@@ -457,18 +457,12 @@ end
 
 --- Show system initialization success
 function MessageWarp.show_init_success()
-    local tag_color = MessageCore.create_color_code(COLORS.JOB_TAG)
-    local success_color = MessageCore.create_color_code(COLORS.SUCCESS)
-    add_to_chat(1, string.format('%s[Warp System]%s Initialized - Universal warp protection active',
-        tag_color, success_color))
+    -- Silent init - no message displayed
 end
 
 --- Show warp commands registered
 function MessageWarp.show_commands_registered()
-    local tag_color = MessageCore.create_color_code(COLORS.JOB_TAG)
-    local info_color = MessageCore.create_color_code(COLORS.SEPARATOR)
-    add_to_chat(1, string.format('%s[Warp Commands]%s Registered - Use //gs c warp help for command list',
-        tag_color, info_color))
+    -- Silent init - no message displayed
 end
 
 --- Show initialization error
@@ -483,10 +477,7 @@ end
 
 --- Show IPC system unavailable
 function MessageWarp.show_ipc_unavailable()
-    local tag_color = MessageCore.create_color_code(COLORS.JOB_TAG)
-    local warning_color = MessageCore.create_color_code(COLORS.ERROR)
-    add_to_chat(1, string.format('%s[Warp Init] %sIPC system not available (multi-boxing disabled)',
-        tag_color, warning_color))
+    -- Silent - no message displayed
 end
 
 ---============================================================================
@@ -495,10 +486,7 @@ end
 
 --- Show IPC listener registered
 function MessageWarp.show_ipc_registered()
-    local tag_color = MessageCore.create_color_code(COLORS.JOB_TAG)
-    local success_color = MessageCore.create_color_code(COLORS.SUCCESS)
-    add_to_chat(1, string.format('%s[Warp IPC]%s Listener registered at job level',
-        tag_color, success_color))
+    -- Silent init - no message displayed
 end
 
 --- Show IPC test message sent

@@ -31,8 +31,7 @@ if watchdog_success and MidcastWatchdog then
     -- Delay watchdog start to avoid load conflicts
     coroutine.schedule(function()
         MidcastWatchdog.start()
-        add_to_chat(158, '[Watchdog] Initialized (timeout: 3.5s)')
-        add_to_chat(158, '[Watchdog] Use //gs c watchdog test to test detection')
+        -- Silent init - no message displayed
     end, 2.0)  -- 2 second delay
 else
     add_to_chat(167, '[Init] Watchdog not available: ' .. tostring(MidcastWatchdog))
