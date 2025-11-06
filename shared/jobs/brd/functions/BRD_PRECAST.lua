@@ -160,19 +160,48 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- if spell.type == 'JobAbility' and JA_DB[spell.english] then
     --     MessageFormatter.show_ja_activated(spell.english, JA_DB[spell.english].description)
     -- end
+    -- WeaponSkill validation
+    if WSValidator and not WSValidator.validate(spell, eventArgs) then
+        return  -- WS validation failed, exit immediately
+    end
+
+    -- BRD-specific TP Bonus gear optimization for weaponskills
+    -- MUST BE DONE BEFORE MESSAGE to calculate final TP correctly
+    if TPBonusHandler then
+        TPBonusHandler.calculate_tp_gear(spell, BRDTPConfig)
+    end
+
     -- ==========================================================================
-    -- WEAPONSKILL MESSAGES (universal - all weapon types)
+    -- WEAPONSKILL MESSAGES (with description + final TP including Moonshade)
     -- ==========================================================================
-    if spell.type == 'WeaponSkill' and WS_DB[spell.english] then
-        -- Check if enough TP before displaying WS message
+    if spell.type == 'WeaponSkill' then
         local current_tp = player and player.vitals and player.vitals.tp or 0
+
         if current_tp >= 1000 then
-            -- Display WS message with current TP (Job doesn't use TPBonusHandler yet)
-            MessageFormatter.show_ws_activated(spell.english, WS_DB[spell.english].description, current_tp)
-        else
-                -- Not enough TP - display error
-                MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
+            -- Check if WS is in database
+            if WS_DB and WS_DB[spell.english] then
+                -- Calculate final TP (includes Moonshade bonus if equipped)
+                local final_tp = current_tp
+
+                -- Try to get final TP with Moonshade bonus
+                if TPBonusCalculator and TPBonusCalculator.get_final_tp then
+                    local weapon_name = player.equipment and player.equipment.main or nil
+                    local sub_weapon = player.equipment and player.equipment.sub or nil
+                    local tp_gear = _G.temp_tp_bonus_gear
+
+                    local success, result = pcall(TPBonusCalculator.get_final_tp, current_tp, tp_gear, BRDTPConfig, weapon_name, buffactive, sub_weapon)
+                    if success then
+                        final_tp = result
+                    end
+                end
+
+                -- Display WS message with description and FINAL TP (with Moonshade bonus)
+                MessageFormatter.show_ws_activated(spell.english, WS_DB[spell.english].description, final_tp)
             end
+        else
+            -- Not enough TP - display error
+            MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
+        end
     end
 
 
@@ -185,16 +214,6 @@ function job_precast(spell, action, spellMap, eventArgs)
         _G.casting_honor_march = true
         MessageFormatter.show_honor_march_locked()
     end
-
-    -- WeaponSkill validation
-    if WSValidator and not WSValidator.validate(spell, eventArgs) then
-        return  -- WS validation failed, exit immediately
-    end
-
-    -- BRD-specific TP Bonus gear optimization for weaponskills
-    if TPBonusHandler then
-        TPBonusHandler.calculate_tp_gear(spell, BRDTPConfig)
-    end
 end
 
 --- Apply final gear adjustments before equipping
@@ -203,9 +222,13 @@ end
 --- @param spellMap string Spell mapping
 --- @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
-    if TPBonusHandler and spell.type == 'WeaponSkill' then
-        -- Apply TP bonus gear only (no display - already shown in precast message)
-        TPBonusHandler.calculate_tp_gear(spell, BRDTPConfig)
+    -- Apply TP bonus gear (Moonshade) without message (already displayed in precast with final TP)
+    if spell.type == 'WeaponSkill' then
+        local tp_gear = _G.temp_tp_bonus_gear
+        if tp_gear then
+            equip(tp_gear)
+            _G.temp_tp_bonus_gear = nil
+        end
     end
 
     -- Nightingale active - even faster cast time for songs

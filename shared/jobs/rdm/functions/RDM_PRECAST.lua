@@ -101,7 +101,7 @@ function job_precast(spell, action, spellMap, eventArgs)
         -- Check if enough TP before displaying WS message
         local current_tp = player and player.vitals and player.vitals.tp or 0
         if current_tp >= 1000 then
-            -- Display WS message with current TP (Job doesn't use TPBonusHandler yet)
+            -- Display WS message with description and current TP
             MessageFormatter.show_ws_activated(spell.english, WS_DB[spell.english].description, current_tp)
         else
                 -- Not enough TP - display error
@@ -152,9 +152,19 @@ end
 --- @param spellMap string Spell mapping
 --- @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
-    -- Apply TP bonus gear for weaponskills (no display - already shown in precast)
-    if TPBonusHandler and spell.type == 'WeaponSkill' then
-        TPBonusHandler.calculate_tp_gear(spell, RDMTPConfig)
+    -- Apply TP bonus gear (Moonshade Earring) without message (already displayed in precast)
+    if spell.type == 'WeaponSkill' then
+        local tp_gear = _G.temp_tp_bonus_gear
+        if tp_gear then
+            equip(tp_gear)
+            _G.temp_tp_bonus_gear = nil
+        end
+    end
+
+    -- Spell-specific Fast Cast sets (PRIORITY over generic FC)
+    -- Example: sets.precast.FC["Stoneskin"] overrides sets.precast.FC
+    if spell.action_type == 'Magic' and sets.precast.FC and sets.precast.FC[spell.english] then
+        equip(sets.precast.FC[spell.english])
     end
 
     -- Chainspell active - no need for Fast Cast gear

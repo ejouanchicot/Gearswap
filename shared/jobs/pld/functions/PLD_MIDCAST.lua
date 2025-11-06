@@ -7,18 +7,21 @@
 ---   - Cure III/IV: Dynamic CureSelf/CureOther via CureSetBuilder
 ---   - Enmity spells: Flash, Enlight
 ---   - Phalanx: XP mode (SIRD vs Potency)
----   - Divine Magic, Enhancing Magic
----   - Blue Magic support (PLD/BLU subjob)
+---   - Enhancing Magic: Database-driven spell_family routing
+---   - Divine Magic, Blue Magic support (PLD/BLU subjob)
 ---
 --- @file PLD_MIDCAST.lua
 --- @author Tetsouo
---- @version 4.0 - Migrated to MidcastManager
---- @date Created: 2025-10-03 | Updated: 2025-10-25
+--- @version 5.0 - Added spell_family database support
+--- @date Created: 2025-10-03 | Updated: 2025-11-05
 --- @requires shared/jobs/pld/functions/logic/cure_set_builder
 ---============================================================================
 
 local MidcastManager = require('shared/utils/midcast/midcast_manager')
 local CureSetBuilder = require('shared/jobs/pld/functions/logic/cure_set_builder')
+
+-- Load ENHANCING_MAGIC_DATABASE for spell_family routing
+local EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
 
 function job_midcast(spell, action, spellMap, eventArgs)
     -- ==========================================================================
@@ -100,11 +103,12 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
             return
         end
 
-        -- Other Enhancing Magic
+        -- Other Enhancing Magic (database-driven spell_family routing)
         MidcastManager.select_set({
             skill = 'Enhancing Magic',
             spell = spell,
-            target_func = MidcastManager.get_enhancing_target
+            target_func = MidcastManager.get_enhancing_target,
+            database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
         })
         return
     end

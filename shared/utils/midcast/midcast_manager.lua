@@ -202,11 +202,23 @@ function MidcastManager.select_set(config)
         debug_step(3, 'Target from target_func', '[WARN] No target_func provided')
     end
 
-    debug_log('CHECKING PRIORITIES (Nested -> Type -> Mode -> Base):', 8)
+    debug_log('CHECKING PRIORITIES (Spell-Specific -> Nested -> Type -> Mode -> Base):', 8)
+
+    -- PRIORITY 0: Try spell-specific set first (highest priority)
+    -- Example: sets.midcast["Stoneskin"], sets.midcast["Haste"]
+    if config.spell and config.spell.english then
+        debug_log('  [P0] Spell-Specific: ["' .. config.spell.english .. '"]')
+        if sets.midcast[config.spell.english] then
+            selected_set = sets.midcast[config.spell.english]
+            debug_log('  [OK] [P0] FOUND: Spell-specific set selected! (sets.midcast["' .. config.spell.english .. '"])', 158)
+        else
+            debug_set('["' .. config.spell.english .. '"]', false)
+        end
+    end
 
     -- PRIORITY 1: Try triple nested set (type + target + mode)
     -- Example: sets.midcast['Elemental Magic'].Fire.MB.Acc
-    if type_value and target_value and mode_value then
+    if not selected_set and type_value and target_value and mode_value then
         debug_log('  [P1] Triple Nested: [' .. type_value .. '][' .. target_value .. '][' .. mode_value .. ']')
         local triple_nested = base_set[type_value]
         if triple_nested and type(triple_nested) == 'table' then

@@ -196,8 +196,42 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 
     -- COR-specific TP Bonus gear optimization for weaponskills
+    -- MUST BE DONE BEFORE MESSAGE to calculate final TP correctly
     if TPBonusHandler then
         TPBonusHandler.calculate_tp_gear(spell, CORTPConfig)
+    end
+
+    -- ==========================================================================
+    -- WEAPONSKILL MESSAGES (with description + final TP including Moonshade)
+    -- ==========================================================================
+    if spell.type == 'WeaponSkill' then
+        local current_tp = player and player.vitals and player.vitals.tp or 0
+
+        if current_tp >= 1000 then
+            -- Check if WS is in database
+            if WS_DB and WS_DB[spell.english] then
+                -- Calculate final TP (includes Moonshade bonus if equipped)
+                local final_tp = current_tp
+
+                -- Try to get final TP with Moonshade bonus
+                if TPBonusCalculator and TPBonusCalculator.get_final_tp then
+                    local weapon_name = player.equipment and player.equipment.main or nil
+                    local sub_weapon = player.equipment and player.equipment.sub or nil
+                    local tp_gear = _G.temp_tp_bonus_gear
+
+                    local success, result = pcall(TPBonusCalculator.get_final_tp, current_tp, tp_gear, CORTPConfig, weapon_name, buffactive, sub_weapon)
+                    if success then
+                        final_tp = result
+                    end
+                end
+
+                -- Display WS message with description and FINAL TP (with Moonshade bonus)
+                MessageFormatter.show_ws_activated(spell.english, WS_DB[spell.english].description, final_tp)
+            end
+        else
+            -- Not enough TP - display error
+            MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
+        end
     end
 end
 
@@ -221,9 +255,13 @@ function job_post_precast(spell, action, spellMap, eventArgs)
         end
     end
 
-    -- Display final TP for weaponskills
-    if TPBonusHandler then
-        TPBonusHandler.apply_and_display(spell, CORTPConfig)
+    -- Apply TP bonus gear (Moonshade Earring) without message (already displayed in precast)
+    if spell.type == 'WeaponSkill' then
+        local tp_gear = _G.temp_tp_bonus_gear
+        if tp_gear then
+            equip(tp_gear)
+            _G.temp_tp_bonus_gear = nil
+        end
     end
 end
 

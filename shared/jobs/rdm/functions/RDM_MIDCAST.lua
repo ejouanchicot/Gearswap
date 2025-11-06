@@ -2,24 +2,29 @@
 --- RDM Midcast Module - Intelligent Midcast Gear Selection (Powered by MidcastManager)
 ---============================================================================
 --- Handles midcast gear selection for Red Mage spells using centralized MidcastManager.
+--- Only intercepts skills that require job-specific logic. All other magic is handled
+--- by Mote-Include's natural pattern matching.
 ---
---- Features:
----   - Enfeebling: Nested sets support via MidcastManager (e.g., mnd_potency.Valeur)
----   - Enfeebling: Database type detection using ENFEEBLING_MAGIC_DATABASE (NEW!)
----   - Enfeebling: EnfeebleMode state combination
----   - Enfeebling: Auto-equips Lethargy Gants +3 when Saboteur is active
----   - Enfeebling: Spell messages with ENFEEBLING_MESSAGES_CONFIG (on/full/off modes)
----   - Enhancing: Nested sets support via MidcastManager (e.g., self.Duration)
----   - Enhancing: Target-based selection (self vs party members)
----   - Enhancing: Spell messages with ENHANCING_MESSAGES_CONFIG (on/full/off modes)
----   - Healing: Cure/Raise messages via ENHANCING_MESSAGES_CONFIG
----   - Elemental: NukeMode-based selection via MidcastManager
----   - Complete fallback chain for all magic types (nested > type > mode > base)
+--- Intercepted Skills (Job-Specific Logic):
+---   - Enfeebling: Nested sets (mnd_potency.Valeur), Saboteur override, Database type detection
+---   - Enhancing: Spell family routing (Enspell/Gain/BarElement/etc.), Target detection (self vs others)
+---   - Elemental: NukeMode-based selection (FreeNuke vs base)
+---
+--- Enhancing Magic Spell Families (NEW - v6.2):
+---   Sets can now be created for spell families using database-driven routing:
+---   - sets.midcast['Enhancing Magic'].Enspell (Enfire, Enblizzard, etc.)
+---   - sets.midcast['Enhancing Magic'].Gain (Gain-STR, Gain-INT, etc.)
+---   - sets.midcast['Enhancing Magic'].BarElement (Barfire, Barblizzard, etc.)
+---   - sets.midcast['Enhancing Magic'].BarAilment (Barparalyze, Barblind, etc.)
+---   - sets.midcast['Enhancing Magic'].Phalanx, .Stoneskin, .Aquaveil, .Refresh, .Regen, etc.
+---
+--- Mote-Include Handles Naturally:
+---   - Healing Magic: Cure/Curaga/Raise → sets.midcast.Cure / sets.midcast.Raise
 ---
 --- @file RDM_MIDCAST.lua
 --- @author Tetsouo
---- @version 6.0 - Migrated to ENFEEBLING_MAGIC_DATABASE (skill-based architecture)
---- @date Created: 2025-10-12 | Updated: 2025-10-30
+--- @version 6.2 - Added spell_family support for Enhancing Magic
+--- @date Created: 2025-10-12 | Updated: 2025-11-05
 ---============================================================================
 
 ---============================================================================
@@ -31,9 +36,6 @@ local MidcastManager = require('shared/utils/midcast/midcast_manager')
 
 -- ENFEEBLING_MAGIC_DATABASE for enfeebling type detection (PRIORITY 1 - NEW)
 local EnfeeblingSPELLS_success, EnfeeblingSPELLS = pcall(require, 'shared/data/magic/ENFEEBLING_MAGIC_DATABASE')
-
--- HEALING_MAGIC_DATABASE for subjob healing spells (Poisona, etc. from WHM subjob)
-local HealingSPELLS_success, HealingSPELLS = pcall(require, 'shared/data/magic/HEALING_MAGIC_DATABASE')
 
 -- ENHANCING_MAGIC_DATABASE for subjob enhancing spells (Erase, Regen III+, etc. from WHM subjob)
 local EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
@@ -157,7 +159,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         if debug_enabled then
             add_to_chat(success and 158 or 167, '[RDM_MIDCAST] <- MidcastManager returned: ' .. tostring(success))
             if not success then
-                add_to_chat(167, '[RDM_MIDCAST] ⚠️ MidcastManager failed to select set - using Mote-Include default')
+                add_to_chat(167, '[RDM_MIDCAST] WARNING: MidcastManager failed to select set - using Mote-Include default')
             end
         end
 
@@ -186,7 +188,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     end
 
     -- ==========================================================================
-    -- ENHANCING MAGIC - Use MidcastManager with target detection
+    -- ENHANCING MAGIC - Use MidcastManager with spell_family + target detection
     -- ==========================================================================
     if spell.skill == 'Enhancing Magic' then
         if debug_enabled then
@@ -195,17 +197,55 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
             add_to_chat(158, '[RDM_MIDCAST]   * Target: ' .. (spell.target and spell.target.name or 'Unknown'))
         end
 
+        -- DEBUG: Get spell_family BEFORE MidcastManager call
+        local spell_family = nil
+        if EnhancingSPELLS_success and EnhancingSPELLS then
+            spell_family = EnhancingSPELLS.get_spell_family(spell.name)
+            if debug_enabled then
+                add_to_chat(206, '[RDM_MIDCAST] Spell Family Detection:')
+                add_to_chat(206, '[RDM_MIDCAST]   * Spell: ' .. spell.name)
+                add_to_chat(206, '[RDM_MIDCAST]   * spell_family: ' .. tostring(spell_family or 'nil'))
+            end
+        else
+            if debug_enabled then
+                add_to_chat(167, '[RDM_MIDCAST] WARNING: ENHANCING_MAGIC_DATABASE not loaded - cannot detect spell_family')
+            end
+        end
+
+        -- DEBUG: Show expected nested set paths
+        if debug_enabled and spell_family then
+            local mode_value = state.EnhancingMode and state.EnhancingMode.value or nil
+            local target_value = MidcastManager.get_enhancing_target(spell)
+            add_to_chat(206, '[RDM_MIDCAST] Expected Nested Set Priority:')
+            if mode_value and target_value then
+                add_to_chat(206, '[RDM_MIDCAST]   1. sets.midcast[\'Enhancing Magic\'].' .. spell_family .. '.' .. target_value .. '.' .. mode_value)
+                add_to_chat(206, '[RDM_MIDCAST]   2. sets.midcast[\'Enhancing Magic\'].' .. spell_family .. '.' .. target_value)
+                add_to_chat(206, '[RDM_MIDCAST]   3. sets.midcast[\'Enhancing Magic\'].' .. spell_family .. '.' .. mode_value)
+                add_to_chat(206, '[RDM_MIDCAST]   4. sets.midcast[\'Enhancing Magic\'].' .. spell_family)
+            elseif target_value then
+                add_to_chat(206, '[RDM_MIDCAST]   1. sets.midcast[\'Enhancing Magic\'].' .. spell_family .. '.' .. target_value)
+                add_to_chat(206, '[RDM_MIDCAST]   2. sets.midcast[\'Enhancing Magic\'].' .. spell_family)
+            else
+                add_to_chat(206, '[RDM_MIDCAST]   1. sets.midcast[\'Enhancing Magic\'].' .. spell_family)
+            end
+            add_to_chat(206, '[RDM_MIDCAST]   FALLBACK: sets.midcast[\'Enhancing Magic\']')
+        end
+
         -- Select set using MidcastManager
-        -- Priority: .self.Duration > .self > .Duration > base
+        -- Priority with spell_family: .Enspell.self.Duration > .Enspell.self > .Enspell.Duration > .Enspell > .self.Duration > .self > .Duration > base
         local success = MidcastManager.select_set({
             skill = 'Enhancing Magic',
             spell = spell,
             mode_state = state.EnhancingMode,
-            target_func = MidcastManager.get_enhancing_target
+            target_func = MidcastManager.get_enhancing_target,
+            database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
         })
 
         if debug_enabled then
             add_to_chat(success and 158 or 167, '[RDM_MIDCAST] <- MidcastManager returned: ' .. tostring(success))
+            if not success then
+                add_to_chat(167, '[RDM_MIDCAST] WARNING: MidcastManager failed to select set - using Mote-Include default')
+            end
         end
 
         -- Display Enhancing Magic message (if enabled in config)
@@ -232,49 +272,14 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     end
 
     -- ==========================================================================
-    -- HEALING MAGIC - Use MidcastManager (Cure I-IV, Raise I-II for RDM)
+    -- HEALING MAGIC - Let Mote-Include handle naturally
     -- ==========================================================================
-    if spell.skill == 'Healing Magic' then
-        if debug_enabled then
-            add_to_chat(158, '[RDM_MIDCAST] -> Routing to MidcastManager (Healing)')
-            add_to_chat(158, '[RDM_MIDCAST]   * Spell: ' .. (spell.name or 'Unknown'))
-            add_to_chat(158, '[RDM_MIDCAST]   * CureMode: ' .. tostring(state.CureMode and state.CureMode.value or 'nil'))
-        end
-
-        -- Select set using MidcastManager
-        -- Priority: .CureMode > base
-        local success = MidcastManager.select_set({
-            skill = 'Healing Magic',
-            spell = spell,
-            mode_state = state.CureMode
-        })
-
-        if debug_enabled then
-            add_to_chat(success and 158 or 167, '[RDM_MIDCAST] <- MidcastManager returned: ' .. tostring(success))
-        end
-
-        -- Display Healing Magic message (if enabled in config)
-        if ENHANCING_MESSAGES_CONFIG.is_enabled() then
-            local spell_data = nil
-
-            -- Try RDM database first (Cure I-IV, Raise I-II)
-            if RDMSpells_success and RDMSpells then
-                spell_data = RDMSpells.spells[spell.name]
-            end
-
-            -- If not found, try HEALING_MAGIC_DATABASE (for subjob spells like Poisona)
-            if not spell_data and HealingSPELLS_success and HealingSPELLS then
-                spell_data = HealingSPELLS.spells[spell.name]
-            end
-
-            -- DISABLED: Messages handled by universal spell_message_handler
-            -- if spell_data and spell_data.category == 'Healing' then
-            --     MessageFormatter.show_spell_activated(spell.name, description)
-            -- end
-        end
-
-        return
-    end
+    -- Mote automatically handles:
+    --   - Cure/Curaga → sets.midcast.Cure / sets.midcast.Curaga
+    --   - Raise → sets.midcast.Raise
+    --   - Specific spells → sets.midcast[spell.english]
+    --
+    -- No need to intercept - Mote's logic is sufficient for RDM!
 
     -- ==========================================================================
     -- ELEMENTAL MAGIC - Use MidcastManager with NukeMode

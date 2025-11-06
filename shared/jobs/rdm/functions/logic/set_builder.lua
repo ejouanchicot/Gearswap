@@ -51,17 +51,40 @@ end
 --- MODE SELECTION (ENGAGED)
 ---============================================================================
 
---- Select engaged base set based on EngagedMode state
+--- Select engaged base set based on EngagedMode state and shield detection
 --- @param base_set table Base engaged set
---- @return table Selected engaged set based on EngagedMode (DT, Enspell, Refresh, TP)
+--- @return table Selected engaged set based on EngagedMode and shield status
 function SetBuilder.select_engaged_base(base_set)
     -- Use EngagedMode state to select engaged set (DT, Enspell, Refresh, TP)
     if state.EngagedMode and state.EngagedMode.current then
         local mode = state.EngagedMode.current
 
-        -- Select set based on EngagedMode
-        if sets.engaged and sets.engaged[mode] then
-            return sets.engaged[mode]
+        -- Detect shield/single wield vs dual wield
+        -- Priority: SubWeapon state > player.equipment (handles gear changes correctly)
+        local sub_weapon = nil
+        if state.SubWeapon and state.SubWeapon.current and state.SubWeapon.current ~= 'None' then
+            sub_weapon = state.SubWeapon.current
+        else
+            sub_weapon = player.equipment and player.equipment.sub or nil
+        end
+
+        local has_shield = SetBuilder.has_shield_equipped(sub_weapon)
+
+        if has_shield then
+            -- Shield OR single wield → use normal sets
+            if sets.engaged and sets.engaged[mode] then
+                return sets.engaged[mode]
+            end
+        else
+            -- Dual wield (2 weapons) → use .DW sets
+            if sets.engaged and sets.engaged[mode] and sets.engaged[mode].DW then
+                return sets.engaged[mode].DW
+            end
+
+            -- Fallback: .DW set doesn't exist, use normal set
+            if sets.engaged and sets.engaged[mode] then
+                return sets.engaged[mode]
+            end
         end
     end
 
@@ -124,24 +147,38 @@ function SetBuilder.apply_weapon(result)
 end
 
 ---============================================================================
---- DUALWIELD DETECTION
+--- SHIELD DETECTION (WAR Fencer Model)
 ---============================================================================
 
---- Apply Dualwield gear if NIN subjob
---- @param result table Current equipment set
---- @return table Set with Dualwield applied
-function SetBuilder.apply_dualwield(result)
-    -- Check for Dualwield subjob (NIN) - override with DW pieces
-    if player and player.sub_job == 'NIN' then
-        if sets.engaged and sets.engaged.DW then
-            local success, combined = pcall(set_combine, result, sets.engaged.DW)
-            if success then
-                return combined
+--- Detect if sub weapon is a shield OR single wield
+--- Uses sets.shields table to determine if player is using:
+--- - Shield (1 weapon + shield) → use normal sets
+--- - Single wield (1 weapon + empty) → use normal sets
+--- - Dual wield (2 weapons) → use .DW sets
+--- @param sub_weapon string Current sub weapon name from state.SubWeapon or player.equipment.sub
+--- @return boolean True if shield OR single wield (use normal sets)
+function SetBuilder.has_shield_equipped(sub_weapon)
+    -- Safety checks: nil ou string vide = erreur → single wield par défaut
+    if not sub_weapon or sub_weapon == "" then
+        return true  -- Sets normaux (fallback single wield)
+    end
+
+    -- Empty = single wield (1 arme) → sets normaux
+    if sub_weapon == "empty" then
+        return true  -- Sets normaux (pas de dual wield)
+    end
+
+    -- Parcourir la table des shields
+    if sets.shields then
+        for _, shield in ipairs(sets.shields) do
+            if sub_weapon == shield then
+                return true  -- Shield trouvé → sets normaux
             end
         end
     end
 
-    return result
+    -- Dual wield (2 armes)
+    return false  -- Dual wield (2 armes) → sets .DW
 end
 
 ---============================================================================
@@ -172,14 +209,15 @@ function SetBuilder.build_engaged_set(base_set)
         return {}
     end
 
-    -- Step 1: Select base set based on EngagedMode
+    -- Step 1: Select base set based on EngagedMode and shield detection
+    -- This now handles both normal sets (shield/single wield) and .DW sets (dual wield)
     local result = SetBuilder.select_engaged_base(base_set)
 
     -- Step 2: Apply weapon (MainWeapon state)
     result = SetBuilder.apply_weapon(result)
 
-    -- Step 3: Apply Dualwield gear if NIN subjob
-    result = SetBuilder.apply_dualwield(result)
+    -- Note: Dual wield detection is now handled in select_engaged_base()
+    -- Old apply_dualwield() function removed (was NIN subjob only)
 
     return result
 end

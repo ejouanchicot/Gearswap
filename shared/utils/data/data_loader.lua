@@ -290,9 +290,10 @@ end
 --- AUTO-LOAD ON REQUIRE
 ---============================================================================
 
--- Auto-load spells when this module is required
--- (Abilities and weaponskills load on-demand to save memory)
-DataLoader.load_spells()
+-- DISABLED: Auto-load spells (causes 100-300ms lag at startup)
+-- Spells now load on-demand via get_spell() when first requested
+-- (Abilities and weaponskills also load on-demand to save memory)
+-- DataLoader.load_spells()  -- Commented out for performance
 
 ---============================================================================
 --- MODULE EXPORT

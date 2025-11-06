@@ -7,17 +7,20 @@
 ---   - Cure: CureMode (Potency vs SIRD), Afflatus Solace, Divine Caress
 ---   - Curaga: CureMode support
 ---   - Status Removal: Cursna, Paralyna, Erase
----   - Enhancing Magic: Regen, Refresh, BarElement, Stoneskin, Aquaveil, etc.
+---   - Enhancing Magic: Database-driven spell_family routing (Regen, Refresh, BarElement, etc.)
 ---   - Divine Magic: Banish, Holy, Repose
 ---   - Enfeebling Magic: MND-based vs INT-based
 ---
 --- @file WHM_MIDCAST.lua
 --- @author Tetsouo
---- @version 2.0 - Migrated to MidcastManager
---- @date Created: 2025-10-21 | Updated: 2025-10-25
+--- @version 3.0 - Added spell_family database support
+--- @date Created: 2025-10-21 | Updated: 2025-11-05
 ---============================================================================
 
 local MidcastManager = require('shared/utils/midcast/midcast_manager')
+
+-- Load ENHANCING_MAGIC_DATABASE for spell_family routing
+local EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
 
 function job_midcast(spell, action, spellMap, eventArgs)
     -- ==========================================================================
@@ -104,48 +107,23 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     end
 
     -- ==========================================================================
-    -- ENHANCING MAGIC (Spell-Specific Sets)
+    -- ENHANCING MAGIC (Database-driven spell_family routing)
     -- ==========================================================================
     if spell.skill == 'Enhancing Magic' then
-        -- Spell-specific routing for WHM enhancing spells
-        if spell.name == 'Stoneskin' then
-            MidcastManager.select_set({skill = 'Stoneskin', spell = spell})
-        elseif spell.name == 'Aquaveil' then
-            MidcastManager.select_set({skill = 'Aquaveil', spell = spell})
-        elseif spell.name:match('Regen') then
-            MidcastManager.select_set({skill = 'Regen', spell = spell})
-        elseif spell.name:match('Refresh') then
-            MidcastManager.select_set({skill = 'Refresh', spell = spell})
-        elseif spell.name:match('^Bar') then
-            -- Bar-Element spells (Barfire, Barfira, etc.)
-            MidcastManager.select_set({skill = 'BarElement', spell = spell})
+        -- Use database-driven spell_family routing (replaces manual pattern matching)
+        -- Database automatically routes: Regen, Refresh, BarElement, BarAilment, Stoneskin, Aquaveil, Boost, etc.
+        MidcastManager.select_set({
+            skill = 'Enhancing Magic',
+            spell = spell,
+            target_func = MidcastManager.get_enhancing_target,
+            database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
+        })
 
-            -- Apply Afflatus Solace bonus if active
-            if buffactive['Afflatus Solace'] then
-                equip(sets.buff['Afflatus Solace'])
-            end
-        elseif spell.name == 'Auspice' then
-            MidcastManager.select_set({skill = 'Auspice', spell = spell})
-        elseif spell.name:match('Haste') then
-            MidcastManager.select_set({skill = 'Haste', spell = spell})
-        elseif spell.name == 'Sneak' then
-            MidcastManager.select_set({skill = 'Sneak', spell = spell})
-        elseif spell.name == 'Invisible' then
-            MidcastManager.select_set({skill = 'Invisible', spell = spell})
-        elseif spell.name:match('Reraise') then
-            MidcastManager.select_set({skill = 'Reraise', spell = spell})
-        elseif spell.name:match('Raise') and not spell.name:match('Reraise') then
-            MidcastManager.select_set({skill = 'Raise', spell = spell})
-        elseif spell.name == 'Arise' then
-            MidcastManager.select_set({skill = 'Arise', spell = spell})
-        else
-            -- Generic Enhancing Magic (catch-all)
-            MidcastManager.select_set({
-                skill = 'Enhancing Magic',
-                spell = spell,
-                target_func = MidcastManager.get_enhancing_target
-            })
+        -- Apply Afflatus Solace bonus for Bar-element spells
+        if spell.name:match('^Bar') and buffactive['Afflatus Solace'] then
+            equip(sets.buff['Afflatus Solace'])
         end
+
         return
     end
 

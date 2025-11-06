@@ -21,7 +21,9 @@
 --- @date 2025-10-29
 ---============================================================================
 
-local DAGGER_WS = {
+local dagger_ws = {}
+
+dagger_ws.weaponskills = {
     ---========================================================================
     --- BASIC WEAPONSKILLS (Levels 1-60)
     ---========================================================================
@@ -313,19 +315,19 @@ local DAGGER_WS = {
     },
 
     ['Ruthless Stroke'] = {
-        description = "Prime WS, multi-SC props",
-        skill_level = nil,
-        job_levels = {THF = 99, DNC = 99},
+        description = "4-hit, dmg varies",
+        skill_level = 424,
+        job_levels = {RDM = 99, THF = 99, BRD = 99, DNC = 99},
         stat_modifiers = "25% DEX / 25% AGI",
         sc_properties = {'Liquefaction', 'Impaction', 'Fragmentation'},
         requires_quest = false,
         requires_merit = false,
         special_weapons = {
-            {weapon = "Mpu Gandring", level = 99, type = "Prime", aftermath = "Sortie only"}
+            {weapon = "Mpu Gandring", level = 119, type = "Prime", aftermath = true}
         },
         element = nil,
-        notes = "Prime AM in Sortie only, 4 hits, fTP varies"
+        notes = "Prime WS, 4 hits, fTP 5.375/14/23, Mpu Gandring only"
     }
 }
 
-return DAGGER_WS
+return dagger_ws

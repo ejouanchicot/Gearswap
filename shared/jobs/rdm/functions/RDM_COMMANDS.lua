@@ -18,6 +18,10 @@ local WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
 -- Load message formatter for standardized messages
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
+-- Load action databases for auto-detection
+local JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
+local WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+
 ---============================================================================
 --- COMMAND HOOKS
 ---============================================================================
@@ -79,6 +83,17 @@ function job_self_command(cmdParams, eventArgs)
         if CommonCommands.handle_command(command, 'RDM', table.unpack(args)) then
             eventArgs.handled = true
         end
+        return
+    end
+
+    -- ==========================================================================
+    -- MOTE-INCLUDE NATIVE COMMANDS (prevent fallback from trying to cast them)
+    -- ==========================================================================
+
+    if command == 'update' or command == 'cycle' or command == 'cycleback' or command == 'set' or command == 'reset' or command == 'toggle' then
+        -- Mote-Include native commands (update, cycle, set, etc.)
+        -- Don't handle these - let Mote process them after job_self_command returns
+        -- Just exit early to prevent fallback from trying to cast them
         return
     end
 
@@ -233,34 +248,6 @@ function job_self_command(cmdParams, eventArgs)
             MessageFormatter.show_error('Sub Dark spell states not configured')
         end
 
-    elseif command == 'refresh' then
-        -- Cast Refresh on target
-        -- Example: //gs c refresh <stpc> (or default <stpc>)
-        eventArgs.handled = true
-
-        local target = '<stpc>'
-        if #cmdParams >= 2 then
-            target = cmdParams[2]
-        end
-
-        send_command('input /ma "Refresh" ' .. target)
-
-    elseif command == 'phalanx' then
-        -- Cast Phalanx on self
-        eventArgs.handled = true
-        send_command('input /ma "Phalanx" <me>')
-
-    elseif command == 'haste' then
-        -- Cast Haste on target
-        eventArgs.handled = true
-
-        local target = '<stpc>'
-        if #cmdParams >= 2 then
-            target = cmdParams[2]
-        end
-
-        send_command('input /ma "Haste" ' .. target)
-
     elseif command == 'castenspell' then
         -- Cast current selected Enspell
         eventArgs.handled = true
@@ -338,6 +325,46 @@ function job_self_command(cmdParams, eventArgs)
             MessageFormatter.show_storm_requires_sch()
         end
 
+    else
+        -- FALLBACK: Try to cast spell directly from command name
+        -- This allows users to bind spells without creating explicit commands
+        -- Example: { key = "^5", command = "Refresh II", desc = "Refresh II", state = nil }
+        -- Will cast: /ma "Refresh II" <stpc>
+
+        -- Reconstruct full spell name from cmdParams (handles multi-word spells)
+        local spell_name = table.concat(cmdParams, " ")
+
+        if spell_name and spell_name ~= "" then
+            eventArgs.handled = true
+
+            -- Default target: <me> (self - avoids sub-target cursor)
+            -- Can be overridden by adding target after spell name (e.g., <stpc>, <t>)
+            local target = '<me>'
+
+            -- Check if last parameter looks like a target (<me>, <t>, <stpc>, etc.)
+            if #cmdParams >= 2 and cmdParams[#cmdParams]:match('^<.*>$') then
+                target = cmdParams[#cmdParams]
+                -- Rebuild spell name without target
+                local spell_parts = {}
+                for i = 1, #cmdParams - 1 do
+                    table.insert(spell_parts, cmdParams[i])
+                end
+                spell_name = table.concat(spell_parts, " ")
+            end
+
+            -- Auto-detect action type (JA, WS, or Magic)
+            local action_type = '/ma'  -- Default: magic
+
+            -- Check if it's a Job Ability
+            if JA_DB[spell_name] then
+                action_type = '/ja'
+            -- Check if it's a Weaponskill
+            elseif WS_DB[spell_name] then
+                action_type = '/ws'
+            end
+
+            send_command('input ' .. action_type .. ' "' .. spell_name .. '" ' .. target)
+        end
     end
 end
 

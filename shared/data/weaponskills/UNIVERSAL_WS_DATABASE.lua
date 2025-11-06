@@ -11,9 +11,10 @@
 ---
 --- Database Coverage:
 ---   • SWORD (22 WS)
+---   • DAGGER (18 WS) ← NEW!
 ---   • H2H (17 WS)
 ---   • GREATSWORD (15 WS)
----   • GREATAXE (18 WS) ← NEW!
+---   • GREATAXE (18 WS)
 ---   • AXE (15 WS)
 ---   • SCYTHE (15 WS)
 ---   • POLEARM (15 WS)
@@ -22,13 +23,13 @@
 ---   • STAFF (18 WS)
 ---   • CLUB (17 WS)
 ---   • ARCHERY (12 WS)
----   TOTAL: 194 Weapon Skills
+---   TOTAL: 212 Weapon Skills
 ---
 --- @file UNIVERSAL_WS_DATABASE.lua
 --- @author Tetsouo
---- @version 2.1 - Great Axe Integration (194 WS)
+--- @version 2.2 - Dagger Integration (212 WS)
 --- @date Created: 2025-10-29
---- @date Updated: 2025-10-30 - All 12 weapon types integrated
+--- @date Updated: 2025-11-04 - All 13 weapon types integrated
 --- @source All data verified 300% against BG-Wiki
 ---============================================================================
 
@@ -43,6 +44,7 @@ UniversalWS.weapon_types = {}
 -- List of all weapon types with databases (in load order)
 local weapon_type_configs = {
     {file = 'SWORD_WS_DATABASE',       type = 'Sword',        count = 22},
+    {file = 'DAGGER_WS_DATABASE',      type = 'Dagger',       count = 18},
     {file = 'H2H_WS_DATABASE',         type = 'Hand-to-Hand', count = 17},
     {file = 'GREATSWORD_WS_DATABASE',  type = 'Great Sword',  count = 15},
     {file = 'GREATAXE_WS_DATABASE',    type = 'Great Axe',    count = 18},
@@ -106,7 +108,7 @@ end
 -- Store load statistics
 UniversalWS.load_stats = {
     total_loaded = total_loaded,
-    expected_total = 194,
+    expected_total = 212,
     weapon_type_count = #weapon_type_configs,
     failed_loads = failed_loads,
     load_date = os.date("%Y-%m-%d %H:%M:%S")

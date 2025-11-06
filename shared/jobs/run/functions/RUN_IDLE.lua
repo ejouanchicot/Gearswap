@@ -5,14 +5,15 @@
 ---   • Idle set selection based on conditions
 ---   • Movement speed optimization
 ---   • Dynamic weapon application to idle sets
+---   • Dynamic grip application to idle sets
 ---   • Town gear management
 ---
 --- Delegates to SetBuilder (logic module) for shared construction logic.
 ---
 --- @file    jobs/run/functions/RUN_IDLE.lua
 --- @author  Tetsouo
---- @version 4.0.0 - Logic Extracted to logic/set_builder.lua
---- @date    Created: 2025-10-03 | Updated: 2025-10-06
+--- @version 5.0.0 - Updated for RUN weapons (Great Swords + Grips)
+--- @date    Created: 2025-10-03 | Updated: 2025-11-04
 --- @requires jobs/run/functions/logic/set_builder
 ---============================================================================
 ---============================================================================
@@ -29,12 +30,14 @@ local SetBuilder = require('shared/jobs/run/functions/logic/set_builder')
 --- Called by Mote-Include when idle set is selected.
 ---
 --- Processing order:
----   1. Apply current weapon set (state.MainWeapon/SubWeapon)
----   2. Apply movement gear if moving
----   3. Apply hybrid mode gear (PDT/MDT)
+---   1. Town detection (use sets.idle.Town if in town)
+---   2. Apply current weapon set (state.MainWeapon: Epeolatry/Lionheart/Aettir)
+---   3. Apply current grip (state.SubWeapon: Utu/Refined)
+---   4. Apply hybrid mode gear (PDT/MDT) if not in town
+---   5. Apply movement gear if moving
 ---
---- @param idleSet table The base idle set from pld_sets.lua
---- @return table Modified idle set with weapon/movement/hybrid gear applied
+--- @param idleSet table The base idle set from run_sets.lua
+--- @return table Modified idle set with weapon/grip/movement/hybrid gear applied
 function customize_idle_set(idleSet)
     if not idleSet then
         return {}

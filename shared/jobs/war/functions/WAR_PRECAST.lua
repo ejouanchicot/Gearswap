@@ -118,28 +118,46 @@ function job_precast(spell, action, spellMap, eventArgs)
         end
 
         -- ==========================================================================
-        -- WEAPONSKILL MESSAGES (display ONLY if validation passed)
+        -- LAYER 4: TP BONUS GEAR OPTIMIZATION (Universal via TPBonusHandler)
+        -- ==========================================================================
+        -- MUST BE DONE BEFORE MESSAGE to calculate final TP correctly
+        if TPBonusHandler then
+            TPBonusHandler.calculate_tp_gear(spell, WARTPConfig)
+        end
+
+        -- ==========================================================================
+        -- WEAPONSKILL MESSAGES (with description + final TP including Moonshade)
         -- ==========================================================================
         if WS_DB[spell.english] and WS_MESSAGES_CONFIG.is_enabled() then
-            -- Check if enough TP before displaying WS message
             local current_tp = player and player.vitals and player.vitals.tp or 0
+
             if current_tp >= 1000 then
-                -- Display WS description only if mode is 'full'
-                if WS_MESSAGES_CONFIG.show_description() then
-                    MessageFormatter.show_ws_activated(spell.english, WS_DB[spell.english].description, nil)
+                -- Calculate final TP (includes Moonshade bonus if equipped)
+                local final_tp = current_tp
+
+                -- Try to get final TP with Moonshade bonus
+                if TPBonusCalculator and TPBonusCalculator.get_final_tp then
+                    local weapon_name = player.equipment and player.equipment.main or nil
+                    local sub_weapon = player.equipment and player.equipment.sub or nil
+                    local tp_gear = _G.temp_tp_bonus_gear
+
+                    local success, result = pcall(TPBonusCalculator.get_final_tp, current_tp, tp_gear, WARTPConfig, weapon_name, buffactive, sub_weapon)
+                    if success then
+                        final_tp = result
+                    end
                 end
-                -- Note: TP message displayed by TPBonusHandler in job_post_precast
+
+                -- Display WS message with description and FINAL TP (respects WS_MESSAGES_CONFIG)
+                if WS_MESSAGES_CONFIG.show_description() then
+                    MessageFormatter.show_ws_activated(spell.english, WS_DB[spell.english].description, final_tp)
+                else
+                    -- Mode 'on' - show only name + TP
+                    MessageFormatter.show_ws_activated(spell.english, nil, final_tp)
+                end
             else
                 -- Not enough TP - display error (always show errors)
                 MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
             end
-        end
-
-        -- ==========================================================================
-        -- LAYER 4: TP BONUS GEAR OPTIMIZATION (Universal via TPBonusHandler)
-        -- ==========================================================================
-        if TPBonusHandler then
-            TPBonusHandler.calculate_tp_gear(spell, WARTPConfig)
         end
     end
 end
@@ -148,9 +166,8 @@ end
 --- POST-PRECAST HOOK - TP GEAR APPLICATION
 ---============================================================================
 
---- Apply TP bonus gear (Universal via TPBonusHandler)
+--- Apply TP bonus gear without message (already displayed in precast with final TP)
 --- Called by GearSwap AFTER set selection, BEFORE actual equipping
---- NOTE: TP display now integrated in job_precast WS message
 ---
 --- @param spell     table  Spell/ability data
 --- @param action    string Action type (not used)
@@ -158,19 +175,12 @@ end
 --- @param eventArgs table  Event arguments (not used)
 --- @return void
 function job_post_precast(spell, action, spellMap, eventArgs)
-    if TPBonusHandler and spell.type == 'WeaponSkill' then
-        -- Apply TP bonus gear and display final TP (respects WS_MESSAGES_CONFIG)
-        if WS_MESSAGES_CONFIG.is_enabled() then
-            -- Display TP message (modes 'full' and 'on' show TP)
-            TPBonusHandler.apply_and_display(spell, WARTPConfig)
-        else
-            -- Mode 'off' - Apply gear but don't display message
-            -- Manually equip TP gear without message
-            local tp_gear = _G.temp_tp_bonus_gear
-            if tp_gear then
-                equip(tp_gear)
-                _G.temp_tp_bonus_gear = nil
-            end
+    -- Apply TP bonus gear (Moonshade Earring) without message (already displayed in precast)
+    if spell.type == 'WeaponSkill' then
+        local tp_gear = _G.temp_tp_bonus_gear
+        if tp_gear then
+            equip(tp_gear)
+            _G.temp_tp_bonus_gear = nil
         end
     end
 end

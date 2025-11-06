@@ -1,23 +1,25 @@
 ---============================================================================
 --- GEO Midcast Module - Powered by MidcastManager
 ---============================================================================
---- Handles midcast for Geomancer including specialized Geomancy spells.
+--- Handles midcast for Geomancer. Only intercepts Geomancy spells (job-specific).
+--- All other magic (Cure, Elemental, Enfeebling, Enhancing) is handled by
+--- Mote-Include's natural pattern matching.
 ---
 --- Features:
----   - Geomancy: Indi/Geo spells (handbell + duration)
----   - Healing Magic: Cure spells (if GEO/WHM)
----   - Enhancing Magic: Duration gear
----   - Enfeebling Magic: MACC gear
----   - Elemental Magic: Nuking (if needed)
+---   - Geomancy: Indi/Geo spells (handbell + duration) - INTERCEPTED
+---   - All other magic: Handled by Mote-Include naturally
 ---
 --- @file GEO_MIDCAST.lua
 --- @author Tetsouo
---- @version 2.0 - Migrated to MidcastManager
---- @date Created: 2025-10-09 | Updated: 2025-10-25
+--- @version 3.1 - Added spell_family database support
+--- @date Created: 2025-10-09 | Updated: 2025-11-05
 ---============================================================================
 
 local MidcastManager = require('shared/utils/midcast/midcast_manager')
 local MessageFormatter = require('shared/utils/messages/message_formatter')
+
+-- Load ENHANCING_MAGIC_DATABASE for spell_family routing
+local EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
 
 function job_midcast(spell, action, spellMap, eventArgs)
     -- No GEO-specific PRE-midcast logic
@@ -30,9 +32,8 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     end
 
     -- ==========================================================================
-    -- GEOMANCY (Indi/Geo spells)
+    -- GEOMANCY (Indi/Geo spells) - Job-specific, Mote doesn't handle
     -- ==========================================================================
-    -- FIXED: spellMap est nil pour Geomancy, on utilise spell.skill à la place
     if spell.skill == 'Geomancy' then
         -- Display casting message
         if spell.english and spell.english:find("^Indi%-") then
@@ -50,49 +51,16 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     end
 
     -- ==========================================================================
-    -- HEALING MAGIC (Cure/Curaga - if GEO/WHM)
+    -- ALL OTHER MAGIC - Let Mote-Include handle naturally
     -- ==========================================================================
-    if spellMap == 'Cure' or spellMap == 'Curaga' then
-        MidcastManager.select_set({
-            skill = 'Healing Magic',
-            spell = spell
-        })
-        return
-    end
-
-    -- ==========================================================================
-    -- ELEMENTAL MAGIC (Nuking)
-    -- ==========================================================================
-    if spell.skill == 'Elemental Magic' then
-        MidcastManager.select_set({
-            skill = 'Elemental Magic',
-            spell = spell
-        })
-        return
-    end
-
-    -- ==========================================================================
-    -- ENFEEBLING MAGIC
-    -- ==========================================================================
-    if spell.skill == 'Enfeebling Magic' then
-        MidcastManager.select_set({
-            skill = 'Enfeebling Magic',
-            spell = spell
-        })
-        return
-    end
-
-    -- ==========================================================================
-    -- ENHANCING MAGIC
-    -- ==========================================================================
-    if spell.skill == 'Enhancing Magic' then
-        MidcastManager.select_set({
-            skill = 'Enhancing Magic',
-            spell = spell,
-            target_func = MidcastManager.get_enhancing_target
-        })
-        return
-    end
+    -- Mote automatically handles:
+    --   - Cure/Curaga → sets.midcast.Cure / sets.midcast.Curaga
+    --   - Elemental Magic → sets.midcast['Elemental Magic']
+    --   - Enfeebling Magic → sets.midcast['Enfeebling Magic']
+    --   - Enhancing Magic → sets.midcast['Enhancing Magic']
+    --   - Specific spells → sets.midcast[spell.english]
+    --
+    -- No need to intercept - Mote's logic is sufficient for GEO!
 end
 
 ---============================================================================

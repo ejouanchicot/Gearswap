@@ -32,25 +32,35 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 --- AFTERMATH LV.3 DETECTION (ENGAGED)
 ---============================================================================
 
---- Select engaged base set with Aftermath Lv.3 detection
+--- Select engaged base set with Kraken Club and Aftermath Lv.3 detection
+--- Kraken Club detection takes highest priority for specialized multi-attack set.
 --- Aftermath Lv.3 (buff ID: 272) + Ukonvasara = Use specialized PDTAFM3 set
 ---
 --- Priority order:
----   1. Aftermath Lv.3 + Ukonvasara → sets.engaged.PDTAFM3
----   2. HybridMode (PDT/Normal)     → sets.engaged[HybridMode]
----   3. Fallback                     → base_set
+---   1. Kraken Club in sub-weapon    → sets.engaged.PDTKC
+---   2. Aftermath Lv.3 + Ukonvasara  → sets.engaged.PDTAFM3
+---   3. HybridMode (PDT/Normal)      → sets.engaged[HybridMode]
+---   4. Fallback                      → base_set
 ---
 --- @param base_set table Base engaged set from war_sets.lua
---- @return table Selected engaged set (PDTAFM3 if conditions met, otherwise hybrid/base)
+--- @return table Selected engaged set (PDTKC/PDTAFM3 if conditions met, otherwise hybrid/base)
 function SetBuilder.select_engaged_base(base_set)
-    -- Check for Aftermath Lv.3 (buff ID 272) + Ukonvasara
+    -- PRIORITY 1: Check for Kraken Club in sub-weapon slot
+    if player and player.equipment and player.equipment.sub then
+        local sub_weapon = player.equipment.sub
+        if sub_weapon == 'Kraken Club' and sets.engaged.PDTKC then
+            return sets.engaged.PDTKC
+        end
+    end
+
+    -- PRIORITY 2: Check for Aftermath Lv.3 (buff ID 272) + Ukonvasara
     if buffactive[272] and state.MainWeapon and state.MainWeapon.current == 'Ukonvasara' then
         if sets.engaged.PDTAFM3 then
             return sets.engaged.PDTAFM3
         end
     end
 
-    -- Normal HybridMode logic (PDT or Normal)
+    -- PRIORITY 3: Normal HybridMode logic (PDT or Normal)
     if state.HybridMode and state.HybridMode.current then
         local hybrid_set = sets.engaged[state.HybridMode.current]
         if hybrid_set then

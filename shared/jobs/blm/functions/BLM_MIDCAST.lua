@@ -11,8 +11,8 @@
 ---
 --- @file BLM_MIDCAST.lua
 --- @author Tetsouo
---- @version 2.0 - Migrated to MidcastManager
---- @date Created: 2025-10-15 | Updated: 2025-10-25
+--- @version 3.0 - Added spell_family database support
+--- @date Created: 2025-10-15 | Updated: 2025-11-05
 ---============================================================================
 
 ---============================================================================
@@ -27,6 +27,9 @@ local BLMSpells = require('shared/data/magic/BLM_SPELL_DATABASE')
 
 -- Load Message Formatter
 local MessageFormatter = require('shared/utils/messages/message_formatter')
+
+-- Load ENHANCING_MAGIC_DATABASE for spell_family routing
+local EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
 
 -- Load Enfeebling Messages Config
 local _, ENFEEBLING_MESSAGES_CONFIG = pcall(require, 'shared/config/ENFEEBLING_MESSAGES_CONFIG')
@@ -203,7 +206,8 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
 
         MidcastManager.select_set({
             skill = 'Enfeebling Magic',
-            spell = spell
+            spell = spell,
+            database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
         })
 
         if debug_enabled then

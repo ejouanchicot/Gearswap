@@ -118,20 +118,6 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- if spell.type == 'JobAbility' and JA_DB[spell.english] then
     --     MessageFormatter.show_ja_activated(spell.english, JA_DB[spell.english].description)
     -- end
-    -- ==========================================================================
-    -- WEAPONSKILL MESSAGES (universal - all weapon types)
-    -- ==========================================================================
-    if spell.type == 'WeaponSkill' and WS_DB[spell.english] then            -- Check if enough TP before displaying WS message
-            local current_tp = player and player.vitals and player.vitals.tp or 0
-            if current_tp >= 1000 then
-                -- Display WS message with current TP
-                MessageFormatter.show_ws_activated(spell.english, WS_DB[spell.english].description, nil)  -- TP displayed by TPBonusHandler after gear equip
-            else
-                -- Not enough TP - display error
-                MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
-            end
-    end
-
 
     -- Set pending flags when using SA/TA abilities (before buff is in buffactive)
     if spell.type == 'JobAbility' then
@@ -148,8 +134,42 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 
     -- THF-specific TP Bonus gear optimization for weaponskills
+    -- MUST BE DONE BEFORE MESSAGE to calculate final TP correctly
     if TPBonusHandler then
         TPBonusHandler.calculate_tp_gear(spell, THFTPConfig)
+    end
+
+    -- ==========================================================================
+    -- WEAPONSKILL MESSAGES (with description + final TP including Moonshade)
+    -- ==========================================================================
+    if spell.type == 'WeaponSkill' then
+        local current_tp = player and player.vitals and player.vitals.tp or 0
+
+        if current_tp >= 1000 then
+            -- Check if WS is in database
+            if WS_DB and WS_DB[spell.english] then
+                -- Calculate final TP (includes Moonshade bonus if equipped)
+                local final_tp = current_tp
+
+                -- Try to get final TP with Moonshade bonus
+                if TPBonusCalculator and TPBonusCalculator.get_final_tp then
+                    local weapon_name = player.equipment and player.equipment.main or nil
+                    local sub_weapon = player.equipment and player.equipment.sub or nil
+                    local tp_gear = _G.temp_tp_bonus_gear
+
+                    local success, result = pcall(TPBonusCalculator.get_final_tp, current_tp, tp_gear, THFTPConfig, weapon_name, buffactive, sub_weapon)
+                    if success then
+                        final_tp = result
+                    end
+                end
+
+                -- Display WS message with description and FINAL TP (with Moonshade bonus)
+                MessageFormatter.show_ws_activated(spell.english, WS_DB[spell.english].description, final_tp)
+            end
+        else
+            -- Not enough TP - display error
+            MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
+        end
     end
 end
 
@@ -161,9 +181,11 @@ end
 --- This is called by GearSwap after job_precast but before actually equipping
 function job_post_precast(spell, action, spellMap, eventArgs)
     if spell.type == 'WeaponSkill' then
-        -- Handle TP Bonus system
-        if TPBonusHandler then
-            TPBonusHandler.apply_and_display(spell, THFTPConfig)
+        -- Apply TP bonus gear (Moonshade Earring) without message (already displayed in precast)
+        local tp_gear = _G.temp_tp_bonus_gear
+        if tp_gear then
+            equip(tp_gear)
+            _G.temp_tp_bonus_gear = nil
         end
 
         -- Apply WS set variant based on SA/TA buffs

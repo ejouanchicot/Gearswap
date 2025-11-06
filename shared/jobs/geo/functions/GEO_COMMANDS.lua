@@ -21,6 +21,41 @@ local WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
 local GeoSpellRefiner = require('shared/jobs/geo/functions/logic/geo_spell_refiner')
 
 ---============================================================================
+--- GEO SPELL CLASSIFICATION (Buff vs Debuff)
+---============================================================================
+
+--- List of Geo buffs (party support) - target: <stpc>
+--- Based on spell descriptions: "Boosts", "Restores"
+local GEO_BUFFS = {
+    ['Geo-Acumen'] = true,      -- Boosts magic atk.
+    ['Geo-AGI'] = true,          -- Boosts agility.
+    ['Geo-Attunement'] = true,   -- Boosts magic acc.
+    ['Geo-Barrier'] = true,      -- Boosts defense.
+    ['Geo-CHR'] = true,          -- Boosts charisma.
+    ['Geo-DEX'] = true,          -- Boosts dexterity.
+    ['Geo-Fend'] = true,         -- Boosts defense.
+    ['Geo-Focus'] = true,        -- Boosts magic acc.
+    ['Geo-Fury'] = true,         -- Boosts attack.
+    ['Geo-Haste'] = true,        -- Boosts attack speed.
+    ['Geo-INT'] = true,          -- Boosts intelligence.
+    ['Geo-MND'] = true,          -- Boosts mind.
+    ['Geo-Poison'] = true,       -- Boosts poison dmg.
+    ['Geo-Precision'] = true,    -- Boosts accuracy.
+    ['Geo-Refresh'] = true,      -- Restores MP.
+    ['Geo-Regen'] = true,        -- Restores HP.
+    ['Geo-STR'] = true,          -- Boosts strength.
+    ['Geo-VIT'] = true,          -- Boosts vitality.
+    ['Geo-Voidance'] = true,     -- Boosts evasion.
+}
+
+--- Check if Geo spell is a buff (party support)
+--- @param spell_name string Geo spell name (e.g., "Geo-Haste")
+--- @return boolean True if buff (use <stpc>), false if debuff (use <stnpc>)
+local function is_geo_buff(spell_name)
+    return GEO_BUFFS[spell_name] == true
+end
+
+---============================================================================
 --- COMMAND HOOKS
 ---============================================================================
 
@@ -106,10 +141,15 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- Cast primary Geo spell
+    -- Cast primary Geo spell with intelligent targeting
+    -- Buffs (party support) → <stpc> (sub-target party)
+    -- Debuffs (enemy) → <stnpc> (sub-target NPC)
     if command == 'geo' then
         if state.MainGeo and state.MainGeo.current then
-            send_command('input /ma "' .. state.MainGeo.current .. '" <t>')
+            local spell_name = state.MainGeo.current
+            local target = is_geo_buff(spell_name) and '<stpc>' or '<stnpc>'
+
+            send_command('input /ma "' .. spell_name .. '" ' .. target)
             eventArgs.handled = true
         end
         return

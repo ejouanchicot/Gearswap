@@ -111,7 +111,7 @@ function DRGJumpManager.execute_jump()
     -- Execute first jump
     send_command('input /ja "' .. first_jump .. '" <t>')
 
-    -- Schedule TP check after first jump (0.5s delay - quasi-instant in-game)
+    -- Schedule TP check after first jump (1.0s delay - allows first jump animation to complete)
     coroutine.schedule(function()
         -- Re-check TP after first jump
         if player and player.tp < 1000 then
@@ -125,7 +125,7 @@ function DRGJumpManager.execute_jump()
             end
         end
         -- If TP ≥ 1000 after first jump, do nothing (stop chaining)
-    end, 0.5)
+    end, 1.0)
 end
 
 return DRGJumpManager

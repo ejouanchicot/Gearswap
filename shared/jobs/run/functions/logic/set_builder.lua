@@ -3,11 +3,9 @@
 ---============================================================================
 --- Provides centralized set building for both engaged and idle states.
 --- Handles complex RUN-specific gear logic:
----   • Main weapon selection (Burtgang, Naegling, Shining One, Malevo)
----   • Shield selection (Duban, Aegis, Blurred Shield +1)
----   • Shining One exception (Alber Strap grip requirement)
----   • HybridMode application (PDT/MDT with shield awareness)
----   • XP mode support (idleXp/meleeXp sets)
+---   • Main weapon selection (Epeolatry, Lionheart, Aettir - Great Swords)
+---   • Grip selection (Utu Grip, Refined Grip +1)
+---   • HybridMode application (PDT/MDT)
 ---   • Movement speed gear
 ---   • Town detection and town gear
 ---
@@ -18,8 +16,8 @@
 ---
 --- @file    jobs/run/functions/logic/set_builder.lua
 --- @author  Tetsouo
---- @version 1.0.0
---- @date    Created: 2025-10-06
+--- @version 2.0.0 - Updated for RUN weapons
+--- @date    Created: 2025-10-06 | Updated: 2025-11-04
 ---============================================================================
 local SetBuilder = {}
 
@@ -38,7 +36,7 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 ---============================================================================
 
 --- Apply main weapon to set
---- Uses weapon sets defined in pld_sets.lua (sets.Burtgang, sets.Naegling, etc.)
+--- Uses weapon sets defined in run_sets.lua (sets.Epeolatry, sets.Lionheart, sets.Aettir)
 --- @param result table Current equipment set
 --- @return table Set with main weapon applied
 function SetBuilder.apply_weapon(result)
@@ -46,7 +44,7 @@ function SetBuilder.apply_weapon(result)
         return result
     end
 
-    -- Use sets.* directly (defined in pld_sets.lua)
+    -- Use sets.* directly (defined in run_sets.lua)
     local weapon_set = sets[state.MainWeapon.current]
     if weapon_set then
         result = set_combine(result, weapon_set)
@@ -55,38 +53,17 @@ function SetBuilder.apply_weapon(result)
     return result
 end
 
---- Apply sub weapon (shield) to set
---- Uses shield sets defined in pld_sets.lua (sets.Duban, sets.Aegis, etc.)
---- Handles Shining One exception (Alber Strap), town mode, and normal SubWeapon state
+--- Apply sub weapon (grip) to set
+--- Uses grip sets defined in run_sets.lua (sets.Utu, sets.Refined)
+--- Great Swords are 2-handed but can use grips
 --- @param result table Current equipment set
---- @param in_town boolean Whether player is in town
---- @return table Set with shield applied
-function SetBuilder.apply_shield(result, in_town)
-    -- Exception 1: Shining One always uses Alber Strap (1H sword needs grip)
-    if state.MainWeapon and state.MainWeapon.current == 'Shining One' then
-        result = set_combine(result, sets.Alber)
-        return result
-    end
-
-    -- Exception 2: In town, use HybridMode shield
-    if in_town and state.HybridMode and state.HybridMode.value then
-        if state.HybridMode.value == 'PDT' and sets.idle.PDT and sets.idle.PDT.sub then
-            result = set_combine(result, {
-                sub = sets.idle.PDT.sub
-            })
-        elseif state.HybridMode.value == 'MDT' and sets.idle.MDT and sets.idle.MDT.sub then
-            result = set_combine(result, {
-                sub = sets.idle.MDT.sub
-            })
-        end
-        return result
-    end
-
-    -- Normal: Use SubWeapon state (sets.Duban, sets.Aegis, etc.)
+--- @return table Set with grip applied
+function SetBuilder.apply_grip(result)
+    -- Use SubWeapon state (sets.Utu, sets.Refined)
     if state.SubWeapon and state.SubWeapon.current then
-        local shield_set = sets[state.SubWeapon.current]
-        if shield_set then
-            result = set_combine(result, shield_set)
+        local grip_set = sets[state.SubWeapon.current]
+        if grip_set then
+            result = set_combine(result, grip_set)
         end
     end
 
@@ -121,15 +98,14 @@ function SetBuilder.build_engaged_set(base_set)
     end
 
     local result = base_set
-    local is_shining_one = state.MainWeapon and state.MainWeapon.current == 'Shining One'
 
     -- Step 1: Apply main weapon
     result = SetBuilder.apply_weapon(result)
 
-    -- Step 2: Apply shield (no town mode in engaged)
-    result = SetBuilder.apply_shield(result, false)
+    -- Step 2: Apply grip
+    result = SetBuilder.apply_grip(result)
 
-    -- Step 3: Apply HybridMode (PDT/MDT) - SKIP sub if Shining One
+    -- Step 3: Apply HybridMode (PDT/MDT)
     if state.HybridMode and state.HybridMode.value then
         local hybrid_set = nil
         if state.HybridMode.value == 'PDT' and sets.engaged.PDT then
@@ -139,25 +115,8 @@ function SetBuilder.build_engaged_set(base_set)
         end
 
         if hybrid_set then
-            if is_shining_one then
-                -- Shining One: Apply HybridMode WITHOUT sub (keep Alber Strap)
-                local hybrid_no_sub = {}
-                for slot, item in pairs(hybrid_set) do
-                    if slot ~= 'sub' then
-                        hybrid_no_sub[slot] = item
-                    end
-                end
-                result = set_combine(result, hybrid_no_sub)
-            else
-                -- Normal: Apply full HybridMode set (including sub)
-                result = set_combine(result, hybrid_set)
-            end
+            result = set_combine(result, hybrid_set)
         end
-    end
-
-    -- Step 4: Apply XP mode (meleeXp set when Xp = On)
-    if state.Xp and state.Xp.value == 'On' and sets.meleeXp then
-        result = set_combine(result, sets.meleeXp)
     end
 
     return result
@@ -177,20 +136,19 @@ function SetBuilder.build_idle_set(base_set)
 
     -- Step 1: Town detection - use town set as base
     local result, in_town = SetBuilder.select_idle_base(base_set)
-    local is_shining_one = state.MainWeapon and state.MainWeapon.current == 'Shining One'
 
     -- Step 2: Apply main weapon (applies to both town and non-town)
     result = SetBuilder.apply_weapon(result)
 
-    -- Step 3: Apply shield (handles town mode, Shining One, SubWeapon state)
-    result = SetBuilder.apply_shield(result, in_town)
+    -- Step 3: Apply grip
+    result = SetBuilder.apply_grip(result)
 
-    -- Step 4: Early return if in town (weapons/shields already applied)
+    -- Step 4: Early return if in town (weapons/grips already applied)
     if in_town then
         return result
     end
 
-    -- Step 5: Apply HybridMode (PDT/MDT) outside of town - SKIP sub if Shining One
+    -- Step 5: Apply HybridMode (PDT/MDT) outside of town
     if state.HybridMode and state.HybridMode.value then
         local hybrid_set = nil
         if state.HybridMode.value == 'PDT' and sets.idle.PDT then
@@ -200,28 +158,11 @@ function SetBuilder.build_idle_set(base_set)
         end
 
         if hybrid_set then
-            if is_shining_one then
-                -- Shining One: Apply HybridMode WITHOUT sub (keep Alber Strap)
-                local hybrid_no_sub = {}
-                for slot, item in pairs(hybrid_set) do
-                    if slot ~= 'sub' then
-                        hybrid_no_sub[slot] = item
-                    end
-                end
-                result = set_combine(result, hybrid_no_sub)
-            else
-                -- Normal: Apply full HybridMode set (including sub)
-                result = set_combine(result, hybrid_set)
-            end
+            result = set_combine(result, hybrid_set)
         end
     end
 
-    -- Step 6: Apply XP mode (idleXp set when Xp = On) - AFTER HybridMode to override
-    if state.Xp and state.Xp.value == 'On' and sets.idleXp then
-        result = set_combine(result, sets.idleXp)
-    end
-
-    -- Step 7: Apply movement speed
+    -- Step 6: Apply movement speed
     result = SetBuilder.apply_movement(result)
 
     return result

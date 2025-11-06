@@ -10,11 +10,14 @@
 ---
 --- @file DNC_MIDCAST.lua
 --- @author Tetsouo
---- @version 2.0 - Migrated to MidcastManager
---- @date Created: 2025-10-04 | Updated: 2025-10-25
+--- @version 3.0 - Added spell_family database support
+--- @date Created: 2025-10-04 | Updated: 2025-11-05
 ---============================================================================
 
 local MidcastManager = require('shared/utils/midcast/midcast_manager')
+
+-- Load ENHANCING_MAGIC_DATABASE for spell_family routing
+local EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
 
 function job_midcast(spell, action, spellMap, eventArgs)
     -- Utsusemi: Ichi shadow management
@@ -56,7 +59,8 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         MidcastManager.select_set({
             skill = 'Enhancing Magic',
             spell = spell,
-            target_func = MidcastManager.get_enhancing_target
+            target_func = MidcastManager.get_enhancing_target,
+            database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
         })
         return
     end

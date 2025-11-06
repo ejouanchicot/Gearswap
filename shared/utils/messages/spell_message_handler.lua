@@ -10,20 +10,29 @@
 ---   - Respects ENFEEBLING_MESSAGES_CONFIG
 ---   - Respects ENHANCING_MESSAGES_CONFIG
 ---   - Zero job-specific code needed
+---   - LAZY LOADING: Databases load on first spell cast (eliminates startup lag)
 ---
 --- Architecture:
----   - PRIORITY 1: Skill-based databases (ENFEEBLING_MAGIC_DATABASE, etc.)
+---   - PRIORITY 1: Skill-based databases (6 total: ENFEEBLING, ENHANCING, DARK, HEALING, ELEMENTAL, DIVINE)
 ---   - PRIORITY 2: Job-based databases (BLM_SPELL_DATABASE, RDM_SPELL_DATABASE, etc.)
 ---
+--- Performance:
+---   - Databases load on-demand when first spell is cast (not at require time)
+---   - Eliminates 100-300ms startup lag from eager loading
+---   - Once loaded, databases remain cached for instant access
+---
 --- Examples:
----   - WAR/RDM casting Haste → Shows message from RDM database
----   - DNC/WHM casting Cure III → Shows message from WHM database
+---   - WAR/RDM casting Haste → Shows message from ENHANCING_MAGIC_DATABASE
+---   - DNC/WHM casting Cure III → Shows message from HEALING_MAGIC_DATABASE
 ---   - BLM casting Bio → Shows message from ENFEEBLING_MAGIC_DATABASE
+---   - GEO casting Aspir → Shows message from DARK_MAGIC_DATABASE
+---   - BLM casting Fire III → Shows message from ELEMENTAL_MAGIC_DATABASE
+---   - WHM casting Banish → Shows message from DIVINE_MAGIC_DATABASE
 ---
 --- @file spell_message_handler.lua
 --- @author Tetsouo
---- @version 2.0 - Skill-Based Database Migration
---- @date Created: 2025-10-30 | Updated: 2025-10-30
+--- @version 2.3 - Lazy Loading (performance optimization)
+--- @date Created: 2025-10-30 | Updated: 2025-11-04
 ---============================================================================
 
 local SpellMessageHandler = {}
@@ -35,21 +44,52 @@ local SpellMessageHandler = {}
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 ---============================================================================
---- SKILL-BASED DATABASES (Priority 1 - NEW ARCHITECTURE)
+--- SKILL-BASED DATABASES (Priority 1 - LAZY LOADING)
 ---============================================================================
 
 local EnfeeblingSPELLS = nil
 local EnhancingSPELLS = nil
+local DarkSPELLS = nil
+local HealingSPELLS = nil
+local ElementalSPELLS = nil
+local DivineSPELLS = nil
 
--- Try to load skill-based databases (safe loading)
-local enfeebling_success, enfeebling_db = pcall(require, 'shared/data/magic/ENFEEBLING_MAGIC_DATABASE')
-if enfeebling_success then EnfeeblingSPELLS = enfeebling_db end
+-- LAZY LOADING: Databases load on first access, not at require time
+-- This eliminates 100-300ms startup lag from loading ALL spell databases
+local function ensure_skill_databases_loaded()
+    if not EnfeeblingSPELLS then
+        local success, db = pcall(require, 'shared/data/magic/ENFEEBLING_MAGIC_DATABASE')
+        if success then EnfeeblingSPELLS = db end
+    end
 
-local enhancing_success, enhancing_db = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
-if enhancing_success then EnhancingSPELLS = enhancing_db end
+    if not EnhancingSPELLS then
+        local success, db = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
+        if success then EnhancingSPELLS = db end
+    end
+
+    if not DarkSPELLS then
+        local success, db = pcall(require, 'shared/data/magic/DARK_MAGIC_DATABASE')
+        if success then DarkSPELLS = db end
+    end
+
+    if not HealingSPELLS then
+        local success, db = pcall(require, 'shared/data/magic/HEALING_MAGIC_DATABASE')
+        if success then HealingSPELLS = db end
+    end
+
+    if not ElementalSPELLS then
+        local success, db = pcall(require, 'shared/data/magic/ELEMENTAL_MAGIC_DATABASE')
+        if success then ElementalSPELLS = db end
+    end
+
+    if not DivineSPELLS then
+        local success, db = pcall(require, 'shared/data/magic/DIVINE_MAGIC_DATABASE')
+        if success then DivineSPELLS = db end
+    end
+end
 
 ---============================================================================
---- JOB-BASED DATABASES (Priority 2 - Legacy Support)
+--- JOB-BASED DATABASES (Priority 2 - LAZY LOADING)
 ---============================================================================
 
 local BLMSpells = nil
@@ -61,30 +101,48 @@ local SCHSpells = nil
 local BLUSpells = nil
 local SMNSpells = nil
 
--- Try to load each job database (safe loading)
-local blm_success, blm_db = pcall(require, 'shared/data/magic/BLM_SPELL_DATABASE')
-if blm_success then BLMSpells = blm_db end
+-- LAZY LOADING: Job databases load on first access, not at require time
+local function ensure_job_databases_loaded()
+    if not BLMSpells then
+        local success, db = pcall(require, 'shared/data/magic/BLM_SPELL_DATABASE')
+        if success then BLMSpells = db end
+    end
 
-local rdm_success, rdm_db = pcall(require, 'shared/data/magic/RDM_SPELL_DATABASE')
-if rdm_success then RDMSpells = rdm_db end
+    if not RDMSpells then
+        local success, db = pcall(require, 'shared/data/magic/RDM_SPELL_DATABASE')
+        if success then RDMSpells = db end
+    end
 
-local whm_success, whm_db = pcall(require, 'shared/data/magic/WHM_SPELL_DATABASE')
-if whm_success then WHMSpells = whm_db end
+    if not WHMSpells then
+        local success, db = pcall(require, 'shared/data/magic/WHM_SPELL_DATABASE')
+        if success then WHMSpells = db end
+    end
 
-local geo_success, geo_db = pcall(require, 'shared/data/magic/GEO_SPELL_DATABASE')
-if geo_success then GEOSpells = geo_db end
+    if not GEOSpells then
+        local success, db = pcall(require, 'shared/data/magic/GEO_SPELL_DATABASE')
+        if success then GEOSpells = db end
+    end
 
-local brd_success, brd_db = pcall(require, 'shared/data/magic/BRD_SPELL_DATABASE')
-if brd_success then BRDSpells = brd_db end
+    if not BRDSpells then
+        local success, db = pcall(require, 'shared/data/magic/BRD_SPELL_DATABASE')
+        if success then BRDSpells = db end
+    end
 
-local sch_success, sch_db = pcall(require, 'shared/data/magic/SCH_SPELL_DATABASE')
-if sch_success then SCHSpells = sch_db end
+    if not SCHSpells then
+        local success, db = pcall(require, 'shared/data/magic/SCH_SPELL_DATABASE')
+        if success then SCHSpells = db end
+    end
 
-local blu_success, blu_db = pcall(require, 'shared/data/magic/BLU_SPELL_DATABASE')
-if blu_success then BLUSpells = blu_db end
+    if not BLUSpells then
+        local success, db = pcall(require, 'shared/data/magic/BLU_SPELL_DATABASE')
+        if success then BLUSpells = db end
+    end
 
-local smn_success, smn_db = pcall(require, 'shared/data/magic/SMN_SPELL_DATABASE')
-if smn_success then SMNSpells = smn_db end
+    if not SMNSpells then
+        local success, db = pcall(require, 'shared/data/magic/SMN_SPELL_DATABASE')
+        if success then SMNSpells = db end
+    end
+end
 
 -- Load message configs
 local _, ENFEEBLING_MESSAGES_CONFIG = pcall(require, 'shared/config/ENFEEBLING_MESSAGES_CONFIG')
@@ -116,13 +174,18 @@ end
 --- @return table|nil spell_data Spell data if found
 --- @return string|nil database_name Name of database where spell was found
 local function find_spell_in_databases(spell_name)
+    -- LAZY LOAD: Ensure databases are loaded before searching
+    ensure_skill_databases_loaded()
+    ensure_job_databases_loaded()
+
     -- PRIORITY 1: Check skill-based databases FIRST
     local skill_databases = {
         {name = 'Enfeebling Magic', db = EnfeeblingSPELLS},
         {name = 'Enhancing Magic', db = EnhancingSPELLS},
-        -- Add more skill databases here as they are created:
-        -- {name = 'Healing Magic', db = HealingSPELLS},
-        -- etc.
+        {name = 'Dark Magic', db = DarkSPELLS},
+        {name = 'Healing Magic', db = HealingSPELLS},
+        {name = 'Elemental Magic', db = ElementalSPELLS},
+        {name = 'Divine Magic', db = DivineSPELLS},
     }
 
     for _, db_entry in ipairs(skill_databases) do
@@ -196,19 +259,19 @@ function SpellMessageHandler.show_message(spell)
     local config = nil
     local category = spell_data.category
 
+    -- Strategy: Only Enfeebling uses ENFEEBLING_MESSAGES_CONFIG
+    -- All other categories use ENHANCING_MESSAGES_CONFIG by default
+    -- This automatically covers: Enhancing, Healing, Divine, Dark, Elemental, Helix,
+    -- Blue Magic (Buff/Physical/Magical/Breath/Debuff), Summoning (Avatar/Spirit/BP),
+    -- BRD songs (26+ categories), GEO (Geocolure/Indicolure), and any future categories
+
     if category == 'Enfeebling' then
         config = ENFEEBLING_MESSAGES_CONFIG
-    elseif category == 'Enhancing' or category == 'Healing' or category == 'Divine' then
-        config = ENHANCING_MESSAGES_CONFIG
-    elseif category == 'Buff' or category == 'Physical' or category == 'Magical' or category == 'Breath' or category == 'Debuff' then
-        -- Blue Magic categories - use ENHANCING config (shows messages)
-        config = ENHANCING_MESSAGES_CONFIG
-    elseif category == 'Avatar Summon' or category == 'Spirit Summon' or category == 'Blood Pact: Rage' or category == 'Blood Pact: Ward' then
-        -- Summoning categories - use ENHANCING config (shows messages)
-        config = ENHANCING_MESSAGES_CONFIG
     else
-        -- Other categories not handled yet (Elemental, etc.)
-        return
+        -- Default: Use ENHANCING_MESSAGES_CONFIG for all other spell types
+        -- This includes: Enhancing, Healing, Divine, Dark, Elemental, Helix,
+        -- Blue Magic, Summoning, BRD songs, GEO spells, etc.
+        config = ENHANCING_MESSAGES_CONFIG
     end
 
     -- Check if messages are enabled

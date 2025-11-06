@@ -5,11 +5,14 @@
 --- - reload: Force job change manager reload
 --- - checksets: Run equipment validation
 --- - warp: Warp system control + cast commands
+--- - jamsg: Toggle Job Ability messages (full/on/off)
+--- - spellmsg: Toggle Spell messages (full/on/off)
+--- - info: Display detailed JA/Spell/WS information
 ---
 --- @file utils/core/COMMON_COMMANDS.lua
 --- @author Tetsouo
---- @version 1.1 - Added warp commands integration
---- @date Created: 2025-10-04
+--- @version 1.3 - Added info command
+--- @date Created: 2025-10-04 | Updated: 2025-11-04
 ---============================================================================
 
 local CommonCommands = {}
@@ -473,6 +476,99 @@ function CommonCommands.handle_jamsg(mode_arg)
 end
 
 ---============================================================================
+--- INFO COMMAND (Display JA/Spell/WS Details)
+---============================================================================
+
+--- Handle info command to display detailed information
+--- @param args table Array of name parts (can be multi-word like "Last Resort")
+--- @return boolean True if command was handled successfully
+function CommonCommands.handle_info(args)
+    local InfoCommand = require('shared/utils/commands/info_command')
+    return InfoCommand.handle(args)
+end
+
+---============================================================================
+--- SPELL MESSAGES COMMAND (Toggle Spell messages - ALL categories)
+---============================================================================
+
+--- Handle Spell messages display mode command
+--- Controls ALL non-Enfeebling spells (Enhancing, Dark, Elemental, Healing, Divine, BRD, GEO, etc.)
+--- Modes: full (name + description), on (name only), off (silent)
+--- Usage: //gs c spellmsg <full|on|off>
+--- @param mode_arg string Display mode to set (full, on, off)
+--- @return boolean True if command was handled successfully
+function CommonCommands.handle_spellmsg(mode_arg)
+    local spell_config_success, SpellConfig = pcall(require, 'shared/config/ENHANCING_MESSAGES_CONFIG')
+
+    if not spell_config_success then
+        add_to_chat(167, '[SPELL_MSG] ERROR: Config file not found')
+        add_to_chat(167, 'Path: shared/config/ENHANCING_MESSAGES_CONFIG.lua')
+        return false
+    end
+
+    -- Show current mode if no argument
+    if not mode_arg then
+        add_to_chat(159, '========================================')
+        add_to_chat(159, '[SPELL_MSG] Current Display Mode')
+        add_to_chat(159, '========================================')
+        add_to_chat(121, 'Mode: ' .. SpellConfig.display_mode)
+        add_to_chat(121, ' ')
+        add_to_chat(121, 'Available modes:')
+        add_to_chat(121, '  full   - Show name + description')
+        add_to_chat(121, '  on     - Show name only')
+        add_to_chat(121, '  off    - Disable all messages')
+        add_to_chat(121, ' ')
+        add_to_chat(121, 'Note: Controls ALL spell types (Enhancing,')
+        add_to_chat(121, '      Dark, Elemental, Healing, Divine, BRD,')
+        add_to_chat(121, '      GEO, BLU, SMN, etc.) EXCEPT Enfeebling')
+        add_to_chat(121, ' ')
+        add_to_chat(121, 'Usage: //gs c spellmsg <full|on|off>')
+        add_to_chat(159, '========================================')
+        return true
+    end
+
+    -- Parse mode argument
+    local mode = mode_arg:lower()
+    local new_mode
+
+    if mode == 'full' or mode == 'f' then
+        new_mode = 'full'
+    elseif mode == 'on' or mode == 'name' or mode == 'nameonly' or mode == 'name_only' or mode == 'n' then
+        new_mode = 'on'
+    elseif mode == 'off' or mode == 'disabled' or mode == 'disable' or mode == 'd' then
+        new_mode = 'off'
+    else
+        add_to_chat(167, '[SPELL_MSG] Invalid mode: ' .. mode_arg)
+        add_to_chat(121, 'Valid modes: full, on, off')
+        return false
+    end
+
+    -- Set new mode
+    if SpellConfig.set_display_mode(new_mode) then
+        add_to_chat(158, '[SPELL_MSG] Display mode changed to: ' .. new_mode)
+
+        -- Show example
+        add_to_chat(121, ' ')
+        add_to_chat(121, 'Example output:')
+
+        if new_mode == 'full' then
+            add_to_chat(121, '  [GEO] Aspir -> Absorbs MP (no undead).')
+            add_to_chat(121, '  [BLM] Fire III -> Deals fire damage.')
+        elseif new_mode == 'on' then
+            add_to_chat(121, '  [GEO] Aspir')
+            add_to_chat(121, '  [BLM] Fire III')
+        else
+            add_to_chat(121, '  (no message displayed)')
+        end
+
+        return true
+    else
+        add_to_chat(167, '[SPELL_MSG] Failed to set display mode')
+        return false
+    end
+end
+
+---============================================================================
 --- MAIN COMMAND ROUTER
 ---============================================================================
 
@@ -488,6 +584,7 @@ function CommonCommands.handle_command(command, job_name, ...)
     -- Support both string command and table cmdParams (for warp system)
     local cmd
     local cmdParams
+    local varargs = {...}  -- Capture varargs first (after job_name)
 
     if type(command) == "table" then
         -- Table format (used by warp system via job_self_command)
@@ -496,10 +593,18 @@ function CommonCommands.handle_command(command, job_name, ...)
     else
         -- String format (legacy)
         cmd = command:lower()
-        cmdParams = {command, ...}
+        -- Build cmdParams including command + all varargs
+        cmdParams = {command}
+        for i = 1, #varargs do
+            table.insert(cmdParams, varargs[i])
+        end
     end
 
-    local args = {...}
+    -- Extract arguments (everything after command, which is cmdParams[1])
+    local args = {}
+    for i = 2, #cmdParams do
+        table.insert(args, cmdParams[i])
+    end
 
     -- ==========================================================================
     -- WARP COMMANDS (50+ commands: spells + 40+ destinations)
@@ -584,6 +689,10 @@ function CommonCommands.handle_command(command, job_name, ...)
         return true
     elseif cmd == 'jamsg' then
         return CommonCommands.handle_jamsg(args[1])
+    elseif cmd == 'spellmsg' then
+        return CommonCommands.handle_spellmsg(args[1])
+    elseif cmd == 'info' then
+        return CommonCommands.handle_info(args)
     end
 
     return false
@@ -607,7 +716,8 @@ function CommonCommands.is_common_command(command)
     if cmd == 'reload' or cmd == 'checksets' or cmd == 'lockstyle' or cmd == 'ls' or
        cmd == 'testcolors' or cmd == 'colors' or cmd == 'detectregion' or cmd == 'region' or
        cmd == 'setregion' or cmd == 'jump' or cmd == 'waltz' or cmd == 'aoewaltz' or
-       cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'jamsg' then
+       cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'jamsg' or
+       cmd == 'spellmsg' or cmd == 'info' then
         return true
     end
 
