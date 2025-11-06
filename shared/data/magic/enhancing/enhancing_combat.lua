@@ -3,18 +3,26 @@
 ---============================================================================
 --- Combat-focused enhancement spells (23 total)
 ---
---- Contents:
----   - Spike spells (3): Blaze, Ice, Shock (damage reflection)
----   - Enspells (12): Enfire/II, Enblizzard/II, etc. (elemental weapon damage)
----   - Haste family (2): Haste, Haste II (attack speed)
----   - Phalanx family (2): Phalanx, Phalanx II (damage resistance)
----   - Temper family (2): Temper, Temper II (double/triple attack)
----   - Flurry family (2): Flurry, Flurry II (ranged attack speed)
+--- Spike Spells:
+---   - Damage reflection based on INT + MAB
+---   - Equipment: Duelist's Tights (+INT boost for spike damage)
+---
+--- Enspells:
+---   - Elemental weapon damage scales with Enhancing Magic skill (no known cap)
+---   - Equipment: Crocea Mors (+500%), Vitiation Sword (+400%), Ayanmo Manopolas +2 (+17), Ghostfyre Cape (+5)
+---
+--- Phalanx:
+---   - Damage reduction scales with Enhancing Magic skill (cap 500 = -35 damage)
+---   - Equipment: Sakpata's Sword (+5), Futhark Bandeau (+4-7), Souveran pieces (+4-5)
+---
+--- Haste/Flurry/Temper:
+---   - Fixed attack speed/multi-attack rates (no skill scaling)
+---   - No specific gear for potency
 ---
 --- @file enhancing_combat.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-30 | Updated: 2025-10-31
+--- @version 2.0 - Standardized with spell_family
+--- @date Created: 2025-10-30 | Updated: 2025-11-05
 ---============================================================================
 
 local ENHANCING_COMBAT = {}
@@ -22,277 +30,346 @@ local ENHANCING_COMBAT = {}
 ENHANCING_COMBAT.spells = {
 
     --============================================================
-    -- SPIKE SPELLS (Damage Reflection)
+    -- SPIKE SPELLS - INT/MAB based, gear for INT boost
     --============================================================
 
     ["Blaze Spikes"] = {
-        description = "Reflects fire dmg when hit.",
-        category = "Enhancing",
+        description = "Enemies that hit you take fire damage.",
+        skill = "Enhancing Magic",
+        spell_family = "Spikes",
+        target_type = "single",
         element = "Fire",
         magic_type = "Black",
-        type = "self",
-        BLM = 10, RDM = 20, SCH = 30, RUN = 45,
-        notes = "Physical attacks against you deal fire damage to attacker. Potency: INT. BLM/RDM/SCH/RUN.",
+        enhancing_skill_affects = false,
+        effect = "Fire damage on hit: INT/2 + MAB/10",
+        BLM = 10,
+        RDM = 20,
+        SCH = 30,
+        RUN = 45,
     },
 
     ["Ice Spikes"] = {
-        description = "Reflects ice dmg when hit.",
-        category = "Enhancing",
+        description = "Enemies that hit you take ice damage and may be paralyzed.",
+        skill = "Enhancing Magic",
+        spell_family = "Spikes",
+        target_type = "single",
         element = "Ice",
         magic_type = "Black",
-        type = "self",
-        BLM = 20, RDM = 40, SCH = 50, RUN = 65,
-        notes = "Physical attacks against you deal ice damage to attacker. Potency: INT. BLM/RDM/SCH/RUN.",
+        enhancing_skill_affects = false,
+        effect = "Ice damage on hit: INT/2 + MAB/10, chance to Paralyze",
+        BLM = 20,
+        RDM = 40,
+        SCH = 50,
+        RUN = 65,
     },
 
     ["Shock Spikes"] = {
-        description = "Reflects lightning dmg when hit.",
-        category = "Enhancing",
+        description = "Enemies that hit you take lightning damage and may be stunned.",
+        skill = "Enhancing Magic",
+        spell_family = "Spikes",
+        target_type = "single",
         element = "Thunder",
         magic_type = "Black",
-        type = "self",
-        BLM = 30, RDM = 60, SCH = 70, RUN = 85,
-        notes = "Physical attacks against you deal lightning damage to attacker. Potency: INT. BLM/RDM/SCH/RUN.",
+        enhancing_skill_affects = false,
+        effect = "Thunder damage on hit: INT/2 + MAB/10, chance to Stun",
+        BLM = 30,
+        RDM = 60,
+        SCH = 70,
+        RUN = 85,
     },
 
     --============================================================
-    -- ENSPELLS (Elemental Weapon Damage)
+    -- ENSPELLS - Skill-based (no known cap)
     --============================================================
 
     ["Enaero"] = {
-        description = "Adds wind dmg to attacks.",
-        category = "Enhancing",
+        description = "Adds wind damage to melee attacks.",
+        skill = "Enhancing Magic",
+        spell_family = "Enspell",
+        target_type = "single",
+        tier = "I",
         element = "Wind",
         magic_type = "White",
-        type = "self",
+        enhancing_skill_affects = true,
+        effect = "Wind damage: 3 + floor(Enhancing skill / 100)",
         RDM = 20,
-        notes = "Adds wind damage to each melee hit. Duration: Enhancing Magic skill. RDM-only.",
     },
 
     ["Enaero II"] = {
-        description = "Adds wind dmg to attacks.",
-        category = "Enhancing",
+        description = "Adds wind damage to melee attacks and lowers target's ice resistance.",
+        skill = "Enhancing Magic",
+        spell_family = "Enspell",
+        target_type = "single",
+        tier = "II",
         element = "Wind",
         magic_type = "White",
-        type = "self",
-        tier = "II",
+        enhancing_skill_affects = true,
+        effect = "Wind damage: 3 + floor(Enhancing skill / 100), Ice resist -10",
         RDM = 54,
-        notes = "Enhanced wind damage to each melee hit. Lowers target's ice resistance. Duration: Enhancing Magic skill. RDM-only.",
     },
 
     ["Enblizzard"] = {
-        description = "Adds ice dmg to attacks.",
-        category = "Enhancing",
+        description = "Adds ice damage to melee attacks.",
+        skill = "Enhancing Magic",
+        spell_family = "Enspell",
+        target_type = "single",
+        tier = "I",
         element = "Ice",
         magic_type = "White",
-        type = "self",
+        enhancing_skill_affects = true,
+        effect = "Ice damage: 3 + floor(Enhancing skill / 100)",
         RDM = 22,
-        notes = "Adds ice damage to each melee hit. Duration: Enhancing Magic skill. RDM-only.",
     },
 
     ["Enblizzard II"] = {
-        description = "Adds ice dmg to attacks.",
-        category = "Enhancing",
+        description = "Adds ice damage to melee attacks and lowers target's fire resistance.",
+        skill = "Enhancing Magic",
+        spell_family = "Enspell",
+        target_type = "single",
+        tier = "II",
         element = "Ice",
         magic_type = "White",
-        type = "self",
-        tier = "II",
+        enhancing_skill_affects = true,
+        effect = "Ice damage: 3 + floor(Enhancing skill / 100), Fire resist -10",
         RDM = 56,
         main_job_only = true,
-        notes = "Enhanced ice damage to each melee hit. Lowers target's fire resistance. Duration: Enhancing Magic skill. RDM-only.",
     },
 
     ["Enfire"] = {
-        description = "Adds fire dmg to attacks.",
-        category = "Enhancing",
+        description = "Adds fire damage to melee attacks.",
+        skill = "Enhancing Magic",
+        spell_family = "Enspell",
+        target_type = "single",
+        tier = "I",
         element = "Fire",
         magic_type = "White",
-        type = "self",
+        enhancing_skill_affects = true,
+        effect = "Fire damage: 3 + floor(Enhancing skill / 100)",
         RDM = 24,
         main_job_only = true,
-        notes = "Adds fire damage to each melee hit. Duration: Enhancing Magic skill. RDM-only.",
     },
 
     ["Enfire II"] = {
-        description = "Adds fire dmg to attacks.",
-        category = "Enhancing",
+        description = "Adds fire damage to melee attacks and lowers target's water resistance.",
+        skill = "Enhancing Magic",
+        spell_family = "Enspell",
+        target_type = "single",
+        tier = "II",
         element = "Fire",
         magic_type = "White",
-        type = "self",
-        tier = "II",
+        enhancing_skill_affects = true,
+        effect = "Fire damage: 3 + floor(Enhancing skill / 100), Water resist -10",
         RDM = 58,
         main_job_only = true,
-        notes = "Enhanced fire damage to each melee hit. Lowers target's water resistance. Duration: Enhancing Magic skill. RDM-only.",
     },
 
     ["Enstone"] = {
-        description = "Adds earth dmg to attacks.",
-        category = "Enhancing",
+        description = "Adds earth damage to melee attacks.",
+        skill = "Enhancing Magic",
+        spell_family = "Enspell",
+        target_type = "single",
+        tier = "I",
         element = "Earth",
         magic_type = "White",
-        type = "self",
+        enhancing_skill_affects = true,
+        effect = "Earth damage: 3 + floor(Enhancing skill / 100)",
         RDM = 18,
-        notes = "Adds earth damage to each melee hit. Duration: Enhancing Magic skill. RDM-only.",
     },
 
     ["Enstone II"] = {
-        description = "Adds earth dmg to attacks.",
-        category = "Enhancing",
+        description = "Adds earth damage to melee attacks and lowers target's wind resistance.",
+        skill = "Enhancing Magic",
+        spell_family = "Enspell",
+        target_type = "single",
+        tier = "II",
         element = "Earth",
         magic_type = "White",
-        type = "self",
-        tier = "II",
+        enhancing_skill_affects = true,
+        effect = "Earth damage: 3 + floor(Enhancing skill / 100), Wind resist -10",
         RDM = 52,
-        notes = "Enhanced earth damage to each melee hit. Lowers target's wind resistance. Duration: Enhancing Magic skill. RDM-only.",
     },
 
     ["Enthunder"] = {
-        description = "Adds lightning dmg to attacks.",
-        category = "Enhancing",
+        description = "Adds lightning damage to melee attacks.",
+        skill = "Enhancing Magic",
+        spell_family = "Enspell",
+        target_type = "single",
+        tier = "I",
         element = "Thunder",
         magic_type = "White",
-        type = "self",
+        enhancing_skill_affects = true,
+        effect = "Thunder damage: 3 + floor(Enhancing skill / 100)",
         RDM = 16,
         main_job_only = true,
-        notes = "Adds lightning damage to each melee hit. Duration: Enhancing Magic skill. RDM-only.",
     },
 
     ["Enthunder II"] = {
-        description = "Adds lightning dmg to attacks.",
-        category = "Enhancing",
+        description = "Adds lightning damage to melee attacks and lowers target's earth resistance.",
+        skill = "Enhancing Magic",
+        spell_family = "Enspell",
+        target_type = "single",
+        tier = "II",
         element = "Thunder",
         magic_type = "White",
-        type = "self",
-        tier = "II",
+        enhancing_skill_affects = true,
+        effect = "Thunder damage: 3 + floor(Enhancing skill / 100), Earth resist -10",
         RDM = 50,
-        notes = "Enhanced lightning damage to each melee hit. Lowers target's earth resistance. Duration: Enhancing Magic skill. RDM-only.",
     },
 
     ["Enwater"] = {
-        description = "Adds water dmg to attacks.",
-        category = "Enhancing",
+        description = "Adds water damage to melee attacks.",
+        skill = "Enhancing Magic",
+        spell_family = "Enspell",
+        target_type = "single",
+        tier = "I",
         element = "Water",
         magic_type = "White",
-        type = "self",
+        enhancing_skill_affects = true,
+        effect = "Water damage: 3 + floor(Enhancing skill / 100)",
         RDM = 27,
         main_job_only = true,
-        notes = "Adds water damage to each melee hit. Duration: Enhancing Magic skill. RDM-only.",
     },
 
     ["Enwater II"] = {
-        description = "Adds water dmg to attacks.",
-        category = "Enhancing",
+        description = "Adds water damage to melee attacks and lowers target's lightning resistance.",
+        skill = "Enhancing Magic",
+        spell_family = "Enspell",
+        target_type = "single",
+        tier = "II",
         element = "Water",
         magic_type = "White",
-        type = "self",
-        tier = "II",
+        enhancing_skill_affects = true,
+        effect = "Water damage: 3 + floor(Enhancing skill / 100), Thunder resist -10",
         RDM = 60,
         main_job_only = true,
-        notes = "Enhanced water damage to each melee hit. Lowers target's lightning resistance. Duration: Enhancing Magic skill. RDM-only.",
     },
 
     --============================================================
-    -- FLURRY FAMILY (Ranged Attack Speed)
+    -- FLURRY FAMILY - Fixed ranged attack speed
     --============================================================
 
     ["Flurry"] = {
-        description = "Boosts ranged attack speed.",
-        category = "Enhancing",
+        description = "Increases ranged attack speed.",
+        skill = "Enhancing Magic",
+        spell_family = nil,
+        target_type = "single",
+        tier = "I",
         element = "Wind",
         magic_type = "White",
-        type = "single",
+        enhancing_skill_affects = false,
+        effect = "Ranged attack delay -15%",
         RDM = 48,
-        notes = "Reduces ranged attack delay (~15%). Duration: Enhancing Magic skill. RDM-only.",
     },
 
     ["Flurry II"] = {
-        description = "Boosts ranged attack speed.",
-        category = "Enhancing",
+        description = "Increases ranged attack speed.",
+        skill = "Enhancing Magic",
+        spell_family = nil,
+        target_type = "single",
+        tier = "II",
         element = "Wind",
         magic_type = "White",
-        type = "single",
-        tier = "II",
+        enhancing_skill_affects = false,
+        effect = "Ranged attack delay -30%",
         RDM = 96,
         main_job_only = true,
-        notes = "Enhanced ranged attack delay reduction (~30%). Duration: Enhancing Magic skill. RDM-only.",
     },
 
     --============================================================
-    -- HASTE FAMILY (Melee Attack Speed)
+    -- HASTE FAMILY - Fixed attack speed
     --============================================================
 
     ["Haste"] = {
-        description = "Boosts attack speed.",
-        category = "Enhancing",
+        description = "Increases attack speed.",
+        skill = "Enhancing Magic",
+        spell_family = nil,
+        target_type = "single",
+        tier = "I",
         element = "Wind",
         magic_type = "White",
-        type = "single",
-        WHM = 40, RDM = 48,
-        notes = "Reduces melee attack delay (~15%). Duration: Enhancing Magic skill. WHM/RDM.",
+        enhancing_skill_affects = false,
+        effect = "Magic Haste +15% (150/1024)",
+        WHM = 40,
+        RDM = 48,
     },
 
     ["Haste II"] = {
-        description = "Boosts attack speed.",
-        category = "Enhancing",
+        description = "Increases attack speed.",
+        skill = "Enhancing Magic",
+        spell_family = nil,
+        target_type = "single",
+        tier = "II",
         element = "Wind",
         magic_type = "White",
-        type = "single",
-        tier = "II",
+        enhancing_skill_affects = false,
+        effect = "Magic Haste +30% (307/1024)",
         RDM = 96,
         main_job_only = true,
-        notes = "Enhanced melee attack delay reduction (~30%). Duration: Enhancing Magic skill. RDM-only.",
     },
 
     --============================================================
-    -- PHALANX FAMILY (Damage Resistance)
+    -- PHALANX FAMILY - Skill-based (cap 500 = -35 damage)
     --============================================================
 
     ["Phalanx"] = {
-        description = "Reduces damage taken.",
-        category = "Enhancing",
+        description = "Reduces physical and magical damage taken.",
+        skill = "Enhancing Magic",
+        spell_family = "Phalanx",
+        target_type = "single",
+        tier = "I",
         element = "Light",
         magic_type = "White",
-        type = "self",
-        RDM = 33, RUN = 68, PLD = 77,
-        notes = "Reduces damage taken from physical and magical attacks. Potency: Enhancing Magic skill. RDM/RUN/PLD.",
+        enhancing_skill_affects = true,
+        effect = "Damage reduction: Skill-based, cap -35 @ 500 skill",
+        RDM = 33,
+        RUN = 68,
+        PLD = 77,
     },
 
     ["Phalanx II"] = {
-        description = "Reduces damage taken.",
-        category = "Enhancing",
+        description = "Reduces physical and magical damage taken.",
+        skill = "Enhancing Magic",
+        spell_family = "Phalanx",
+        target_type = "single",
+        tier = "II",
         element = "Light",
         magic_type = "White",
-        type = "self",
-        tier = "II",
+        enhancing_skill_affects = true,
+        effect = "Damage reduction: Skill-based, cap -35 @ 500 skill",
         RDM = 75,
         main_job_only = true,
-        notes = "Enhanced damage reduction from all attacks. Potency: Enhancing Magic skill. RDM-only.",
     },
 
     --============================================================
-    -- TEMPER FAMILY (Multi-Attack)
+    -- TEMPER FAMILY - Fixed multi-attack rates
     --============================================================
 
     ["Temper"] = {
-        description = "Boosts multi-attack rate.",
-        category = "Enhancing",
+        description = "Increases Double Attack rate.",
+        skill = "Enhancing Magic",
+        spell_family = nil,
+        target_type = "single",
+        tier = "I",
         element = "Light",
         magic_type = "White",
-        type = "self",
-        RDM = 95, RUN = 99,
-        notes = "Grants Store TP +10. Increases Double/Triple Attack rate. Duration: Enhancing Magic skill. RDM/RUN.",
+        enhancing_skill_affects = true,
+        effect = "Double Attack: Skill-based, 5% @ <360 skill, then floor((skill-300)/10)%",
+        RDM = 95,
+        RUN = 99,
     },
 
     ["Temper II"] = {
-        description = "Boosts multi-attack rate.",
-        category = "Enhancing",
+        description = "Increases Triple Attack rate.",
+        skill = "Enhancing Magic",
+        spell_family = nil,
+        target_type = "single",
+        tier = "II",
         element = "Light",
         magic_type = "White",
-        type = "self",
-        tier = "II",
+        enhancing_skill_affects = true,
+        effect = "Triple Attack: floor((skill-300)/10)%, no cap",
         RDM = 99,
         main_job_only = true,
-        notes = "Enhanced Store TP +15. Greater Double/Triple Attack rate increase. Job Point ability (RDM).",
     },
 
 }

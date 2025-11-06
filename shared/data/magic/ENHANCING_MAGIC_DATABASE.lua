@@ -1,147 +1,95 @@
 ---============================================================================
---- ENHANCING MAGIC DATABASE - Index & Helper Functions
+--- ENHANCING MAGIC DATABASE - Unified Module
 ---============================================================================
---- Central repository for ALL Enhancing Magic spells in FFXI
---- Data source: bg-wiki.com (official FFXI documentation)
+--- Consolidates all enhancing magic spell data from sub-modules and provides
+--- a unified interface for spell_family lookup.
 ---
---- Features:
----   - 138 complete Enhancing spells (loaded from 4 modules)
----   - Multi-job support (RDM, WHM, PLD, RUN, SCH, GEO, BLM)
----   - 100% accurate elements, levels, tiers from bg-wiki
----   - AoE detection (Protectra, Shellra, Bar-ra, Teleports, Boost spells)
----   - Helper functions for spell lookups
----
---- Architecture:
----   - Modular: 4 sub-modules (~500 lines each)
----   - Skill-based (not job-based) for zero duplication
----   - Compatible with spell_message_handler.lua
----   - No enhancing_type needed (simpler than Enfeebling)
----   - Target detection via MidcastManager.get_enhancing_target()
----
---- Module Structure:
----   - enhancing_bars.lua (28 spells): Bar-element + Bar-status
----   - enhancing_buffs.lua (32 spells): Protect/Shell/Regen/Refresh families
----   - enhancing_combat.lua (37 spells): Spike/Enspells/Storm/Haste/Phalanx/Temper
----   - enhancing_utility.lua (41 spells): Gain/Boost/Recall/Teleport/Warp/Scholar/Utility/Inundation/Klimaform
+--- Spell Families (12 total):
+---   - BarElement: Bar-element spells (skill-based, cap 500)
+---   - BarAilment: Bar-status spells (fixed resistance)
+---   - Aquaveil: Spell interruption reduction (breakpoints 301/501)
+---   - Refresh: MP regeneration (fixed + gear bonuses)
+---   - Regen: HP regeneration (fixed + gear bonuses)
+---   - Enspell: Elemental weapon damage (no cap)
+---   - Phalanx: Damage reduction (cap 500)
+---   - Spikes: Damage reflection (INT/MAB based)
+---   - Stoneskin: Damage absorption (MND + skill based, cap 540)
+---   - Gain: Self stat buffs (RDM)
+---   - Boost: Party stat buffs (WHM)
+---   - Storm: Weather effects (SCH)
+---   - nil: Generic enhancing (Protect/Shell/Haste/Teleport/etc.)
 ---
 --- @file ENHANCING_MAGIC_DATABASE.lua
 --- @author Tetsouo
---- @version 4.0 - Modular Architecture (4 files)
---- @date Created: 2025-10-30 | Updated: 2025-10-30
+--- @version 1.0 - Unified database with spell_family support
+--- @date Created: 2025-11-05
+---============================================================================
+
+---============================================================================
+--- MODULE DEPENDENCIES
+---============================================================================
+
+local ENHANCING_BARS = require('shared/data/magic/enhancing/enhancing_bars')
+local ENHANCING_BUFFS = require('shared/data/magic/enhancing/enhancing_buffs')
+local ENHANCING_COMBAT = require('shared/data/magic/enhancing/enhancing_combat')
+local ENHANCING_UTILITY = require('shared/data/magic/enhancing/enhancing_utility')
+local STORM = require('shared/data/magic/enhancing/storm')
+
+---============================================================================
+--- UNIFIED SPELL DATABASE
 ---============================================================================
 
 local ENHANCING_MAGIC_DATABASE = {}
 
----============================================================================
---- LOAD SUB-MODULES
----============================================================================
-
-local BARS = require('shared/data/magic/enhancing/enhancing_bars')
-local BUFFS = require('shared/data/magic/enhancing/enhancing_buffs')
-local COMBAT = require('shared/data/magic/enhancing/enhancing_combat')
-local UTILITY = require('shared/data/magic/enhancing/enhancing_utility')
-
----============================================================================
---- MERGE ALL SPELL DATABASES
----============================================================================
-
+-- Consolidate all spell data into a single table
 ENHANCING_MAGIC_DATABASE.spells = {}
 
--- Merge Bar-spells (28 spells)
-for spell_name, spell_data in pairs(BARS.spells) do
+-- Merge all sub-modules
+for spell_name, spell_data in pairs(ENHANCING_BARS.spells) do
     ENHANCING_MAGIC_DATABASE.spells[spell_name] = spell_data
 end
 
--- Merge Buff spells (32 spells)
-for spell_name, spell_data in pairs(BUFFS.spells) do
+for spell_name, spell_data in pairs(ENHANCING_BUFFS.spells) do
     ENHANCING_MAGIC_DATABASE.spells[spell_name] = spell_data
 end
 
--- Merge Combat spells (37 spells)
-for spell_name, spell_data in pairs(COMBAT.spells) do
+for spell_name, spell_data in pairs(ENHANCING_COMBAT.spells) do
     ENHANCING_MAGIC_DATABASE.spells[spell_name] = spell_data
 end
 
--- Merge Utility spells (40 spells)
-for spell_name, spell_data in pairs(UTILITY.spells) do
+for spell_name, spell_data in pairs(ENHANCING_UTILITY.spells) do
+    ENHANCING_MAGIC_DATABASE.spells[spell_name] = spell_data
+end
+
+for spell_name, spell_data in pairs(STORM.spells) do
     ENHANCING_MAGIC_DATABASE.spells[spell_name] = spell_data
 end
 
 ---============================================================================
---- HELPER FUNCTIONS
+--- SPELL FAMILY LOOKUP FUNCTION
 ---============================================================================
 
---- Check if spell is AoE
---- @param spell_name string Name of spell
---- @return boolean is_aoe
-function ENHANCING_MAGIC_DATABASE.is_aoe(spell_name)
-    local spell_data = ENHANCING_MAGIC_DATABASE.spells[spell_name]
-    if spell_data and spell_data.type == "aoe" then
-        return true
-    end
-    return false
-end
-
---- Get spell description
---- @param spell_name string Name of spell
---- @return string|nil description
-function ENHANCING_MAGIC_DATABASE.get_description(spell_name)
+--- Get the spell_family for a given enhancing spell
+--- Used by MidcastManager to route spells to category-based sets
+--- @param spell_name string The name of the spell (e.g., "Gain-STR", "Enfire II")
+--- @return string|nil The spell_family ("Gain", "Enspell", "BarElement", etc.) or nil
+function ENHANCING_MAGIC_DATABASE.get_spell_family(spell_name)
     local spell_data = ENHANCING_MAGIC_DATABASE.spells[spell_name]
     if spell_data then
-        return spell_data.description
+        return spell_data.spell_family
     end
     return nil
 end
 
---- Get spell tier
---- @param spell_name string Name of spell
---- @return string|nil tier (I, II, III, IV, V or nil)
-function ENHANCING_MAGIC_DATABASE.get_tier(spell_name)
-    local spell_data = ENHANCING_MAGIC_DATABASE.spells[spell_name]
-    if spell_data then
-        return spell_data.tier
-    end
-    return nil
-end
+---============================================================================
+--- SPELL DATA LOOKUP FUNCTION
+---============================================================================
 
---- Get database statistics
---- @return table stats {total_spells, by_tier, by_element, by_job, by_type}
-function ENHANCING_MAGIC_DATABASE.get_stats()
-    local stats = {
-        total_spells = 0,
-        by_tier = {},
-        by_element = {},
-        by_job = {},
-        by_type = {single = 0, aoe = 0}
-    }
-
-    for spell_name, spell_data in pairs(ENHANCING_MAGIC_DATABASE.spells) do
-        stats.total_spells = stats.total_spells + 1
-
-        -- Count by tier
-        local tier = spell_data.tier or "none"
-        stats.by_tier[tier] = (stats.by_tier[tier] or 0) + 1
-
-        -- Count by element
-        local element = spell_data.element
-        stats.by_element[element] = (stats.by_element[element] or 0) + 1
-
-        -- Count by type
-        if spell_data.type == "aoe" then
-            stats.by_type.aoe = stats.by_type.aoe + 1
-        else
-            stats.by_type.single = stats.by_type.single + 1
-        end
-
-        -- Count by job
-        for job, level in pairs(spell_data) do
-            if type(level) == "number" then
-                stats.by_job[job] = (stats.by_job[job] or 0) + 1
-            end
-        end
-    end
-
-    return stats
+--- Get full spell data for a given enhancing spell
+--- @param spell_name string The name of the spell
+--- @return table|nil The complete spell data table or nil
+function ENHANCING_MAGIC_DATABASE.get_spell_data(spell_name)
+    return ENHANCING_MAGIC_DATABASE.spells[spell_name]
 end
 
 ---============================================================================
