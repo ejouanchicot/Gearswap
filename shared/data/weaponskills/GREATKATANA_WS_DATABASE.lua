@@ -15,7 +15,7 @@
 ---
 --- @file GREATKATANA_WS_DATABASE.lua
 --- @author Tetsouo
---- @version 1.0 - Complete 300% Verified against BG-Wiki
+--- @version 1.0 - Improved formatting - Complete 300% Verified against BG-Wiki
 --- @date Created: 2025-10-30
 --- @source https://www.bg-wiki.com/ffxi/Category:Weapon_Skills
 ---============================================================================
@@ -28,79 +28,64 @@ greatkatana_ws.weaponskills = {
     ---========================================================================
 
     ['Tachi: Enpi'] = {
-        description = 'Two hits. Damage varies with TP.',
-        type = 'Physical',
-        mods = {STR = 60},
-        hits = 2,
-        element = nil,
-        skillchain = {'Transfixion', 'Scission'},
-        ftp = {[1000] = 1.0, [2000] = 2.0, [3000] = 4.0},
-        skill_required = 5,
-        jobs = {
-            SAM = 1,
-            NIN = 3
-        }
+        description         = 'Two hits. Damage varies with TP.',
+        type                = 'Physical',
+        mods                = {STR = 60},
+        hits                = 2,
+        element             = nil,
+        skillchain          = {'Transfixion', 'Scission'},
+        ftp                 = {[1000] = 1.0, [2000] = 2.0, [3000] = 4.0},
+        skill_required      = 5,
+        jobs                = {SAM = 1, NIN = 3}
     },
 
     ['Tachi: Hobaku'] = {
-        description = 'Stuns target. Accuracy varies with TP.',
-        type = 'Physical',
-        mods = {STR = 60},
-        hits = 1,
-        element = nil,
-        skillchain = {'Induration'},
-        ftp = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0}, -- 2000/3000 need verification
-        skill_required = 30,
-        jobs = {
-            SAM = 9,
-            NIN = 10
-        },
-        special_notes = 'Stun accuracy varies with TP. fTP values at 2000/3000 TP require verification.'
+        description         = 'Stuns target. Accuracy varies with TP.',
+        type                = 'Physical',
+        mods                = {STR = 60},
+        hits                = 1,
+        element             = nil,
+        skillchain          = {'Induration'},
+        ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0}, -- 2000/3000 need verification
+        skill_required      = 30,
+        jobs                = {SAM = 9, NIN = 10},
+        special_notes       = 'Stun accuracy varies with TP. fTP values at 2000/3000 TP require verification.'
     },
 
     ['Tachi: Goten'] = {
-        description = 'Thunder elemental. Varies with TP.',
-        type = 'Hybrid',
-        mods = {STR = 60},
-        hits = 1,
-        element = 'Thunder',
-        skillchain = {'Transfixion', 'Impaction'},
-        ftp = {[1000] = 0.5, [2000] = 1.5, [3000] = 2.5},
-        skill_required = 70,
-        jobs = {
-            SAM = 23,
-            NIN = 25
-        }
+        description         = 'Thunder elemental. Varies with TP.',
+        type                = 'Hybrid',
+        mods                = {STR = 60},
+        hits                = 1,
+        element             = 'Thunder',
+        skillchain          = {'Transfixion', 'Impaction'},
+        ftp                 = {[1000] = 0.5, [2000] = 1.5, [3000] = 2.5},
+        skill_required      = 70,
+        jobs                = {SAM = 23, NIN = 25}
     },
 
     ['Tachi: Kagero'] = {
-        description = 'Fire elemental. Varies with TP.',
-        type = 'Hybrid',
-        mods = {STR = 75},
-        hits = 1,
-        element = 'Fire',
-        skillchain = {'Liquefaction'},
-        ftp = {[1000] = 0.5, [2000] = 1.5, [3000] = 2.5},
-        skill_required = 100,
-        jobs = {
-            SAM = 33,
-            NIN = 35
-        }
+        description         = 'Fire elemental. Varies with TP.',
+        type                = 'Hybrid',
+        mods                = {STR = 75},
+        hits                = 1,
+        element             = 'Fire',
+        skillchain          = {'Liquefaction'},
+        ftp                 = {[1000] = 0.5, [2000] = 1.5, [3000] = 2.5},
+        skill_required      = 100,
+        jobs                = {SAM = 33, NIN = 35}
     },
 
     ['Tachi: Jinpu'] = {
-        description = 'Two hits. Wind damage. Varies with TP.',
-        type = 'Hybrid',
-        mods = {STR = 30},
-        hits = 2,
-        element = 'Wind',
-        skillchain = {'Scission', 'Detonation'},
-        ftp = {[1000] = 0.5, [2000] = 1.5, [3000] = 2.5},
-        skill_required = 150,
-        jobs = {
-            SAM = 49,
-            NIN = 52
-        }
+        description         = 'Two hits. Wind damage. Varies with TP.',
+        type                = 'Hybrid',
+        mods                = {STR = 30},
+        hits                = 2,
+        element             = 'Wind',
+        skillchain          = {'Scission', 'Detonation'},
+        ftp                 = {[1000] = 0.5, [2000] = 1.5, [3000] = 2.5},
+        skill_required      = 150,
+        jobs                = {SAM = 49, NIN = 52}
     },
 
     ---========================================================================
@@ -108,81 +93,73 @@ greatkatana_ws.weaponskills = {
     ---========================================================================
 
     ['Tachi: Koki'] = {
-        description = 'Light elemental. Varies with TP.',
-        type = 'Hybrid',
-        mods = {STR = 50, MND = 30},
-        hits = 1,
-        element = 'Light',
-        skillchain = {'Reverberation', 'Impaction'},
-        ftp = {[1000] = 0.5, [2000] = 1.5, [3000] = 2.5},
-        skill_required = 175,
-        jobs = {
-            SAM = 55,
-            NIN = 57
-        }
+        description         = 'Light elemental. Varies with TP.',
+        type                = 'Hybrid',
+        mods                = {STR = 50, MND = 30},
+        hits                = 1,
+        element             = 'Light',
+        skillchain          = {'Reverberation', 'Impaction'},
+        ftp                 = {[1000] = 0.5, [2000] = 1.5, [3000] = 2.5},
+        skill_required      = 175,
+        jobs                = {SAM = 55, NIN = 57}
     },
 
     ['Tachi: Yukikaze'] = {
-        description = 'Blinds target. Damage varies with TP.',
-        type = 'Physical',
-        mods = {STR = 75},
-        hits = 1,
-        element = nil,
-        skillchain = {'Induration', 'Detonation'},
-        ftp = {[1000] = 1.5625, [2000] = 2.6875, [3000] = 4.125},
-        skill_required = 200,
-        jobs = {
-            SAM = 60
-        },
-        special_notes = 'Can only be used with SAM as main job. Blind duration: 60 seconds. Attack modifier: 1.5.'
+        description         = 'Blinds target. Damage varies with TP.',
+        type                = 'Physical',
+        mods                = {STR = 75},
+        hits                = 1,
+        element             = nil,
+        skillchain          = {'Induration', 'Detonation'},
+        ftp                 = {[1000] = 1.5625, [2000] = 2.6875, [3000] = 4.125},
+        skill_required      = 200,
+        jobs                = {SAM = 60},
+        special_notes       = 'Can only be used with SAM as main job. Blind duration: 60 seconds. Attack modifier: 1.5.'
     },
 
     ['Tachi: Gekko'] = {
-        description = 'Silences target. Damage varies with TP.',
-        type = 'Physical',
-        mods = {STR = 75},
-        hits = 1,
-        element = nil,
-        skillchain = {'Distortion', 'Reverberation'},
-        ftp = {[1000] = 1.5625, [2000] = 2.6875, [3000] = 4.125},
-        skill_required = 225,
-        jobs = {
-            SAM = 65,
-            NIN = 99 -- via Beryllium Tachi/+1
+        description         = 'Silences target. Damage varies with TP.',
+        type                = 'Physical',
+        mods                = {STR = 75},
+        hits                = 1,
+        element             = nil,
+        skillchain          = {'Distortion', 'Reverberation'},
+        ftp                 = {[1000] = 1.5625, [2000] = 2.6875, [3000] = 4.125},
+        skill_required      = 225,
+        jobs                = {
+            SAM                 = 65,
+            NIN                 = 99 -- via Beryllium Tachi/+1
         },
-        special_notes = 'SAM level 65 (main job). NIN at level 99 via Beryllium Tachi/+1 only. Silence duration: 45 seconds (unresisted). Attack modifier: 2.0.'
+        special_notes       = 'SAM level 65 (main job). NIN at level 99 via Beryllium Tachi/+1 only. Silence duration: 45 seconds (unresisted). Attack modifier: 2.0.'
     },
 
     ['Tachi: Kasha'] = {
-        description = 'Paralyzes target. Damage varies with TP.',
-        type = 'Physical',
-        mods = {STR = 75},
-        hits = 1,
-        element = nil,
-        skillchain = {'Fusion', 'Compression'},
-        ftp = {[1000] = 1.5625, [2000] = 2.6875, [3000] = 4.125},
-        skill_required = 250,
-        jobs = {
-            SAM = 71,
-            NIN = 99 -- via Kaja Tachi/Hachimonji
+        description         = 'Paralyzes target. Damage varies with TP.',
+        type                = 'Physical',
+        mods                = {STR = 75},
+        hits                = 1,
+        element             = nil,
+        skillchain          = {'Fusion', 'Compression'},
+        ftp                 = {[1000] = 1.5625, [2000] = 2.6875, [3000] = 4.125},
+        skill_required      = 250,
+        jobs                = {
+            SAM                 = 71,
+            NIN                 = 99 -- via Kaja Tachi/Hachimonji
         },
-        special_notes = "Requires 'The Potential Within' quest for SAM main job at level 71. NIN at level 99 via Kaja Tachi/Hachimonji. Paralyze duration: 60 seconds. Attack modifier: 1.65."
+        special_notes       = "Requires 'The Potential Within' quest for SAM main job at level 71. NIN at level 99 via Kaja Tachi/Hachimonji. Paralyze duration: 60 seconds. Attack modifier: 1.65."
     },
 
     ['Tachi: Ageha'] = {
-        description = 'Lowers defense. Effectiveness varies.',
-        type = 'Physical',
-        mods = {STR = 40, CHR = 60},
-        hits = 1,
-        element = nil,
-        skillchain = {'Compression', 'Scission'},
-        ftp = {[1000] = 2.625, [2000] = 2.625, [3000] = 2.625}, -- verification needed
-        skill_required = 300,
-        jobs = {
-            SAM = 80,
-            NIN = 90
-        },
-        special_notes = 'Defense Down: -25% for 3 minutes (if successful). Resist cooldown: 1.5 minutes. Only one Defense Down effect may be active at a time. Significantly buffed in June 2017 to land consistently on average mobs up to level 130.'
+        description         = 'Lowers defense. Effectiveness varies.',
+        type                = 'Physical',
+        mods                = {STR = 40, CHR = 60},
+        hits                = 1,
+        element             = nil,
+        skillchain          = {'Compression', 'Scission'},
+        ftp                 = {[1000] = 2.625, [2000] = 2.625, [3000] = 2.625}, -- verification needed
+        skill_required      = 300,
+        jobs                = {SAM = 80, NIN = 90},
+        special_notes       = 'Defense Down: -25% for 3 minutes (if successful). Resist cooldown: 1.5 minutes. Only one Defense Down effect may be active at a time. Significantly buffed in June 2017 to land consistently on average mobs up to level 130.'
     },
 
     ---========================================================================
@@ -190,65 +167,59 @@ greatkatana_ws.weaponskills = {
     ---========================================================================
 
     ['Tachi: Shoha'] = {
-        description = 'Two hits. Damage varies with TP.',
-        type = 'Physical',
-        mods = {STR = 73}, -- 73-85% with merits
-        hits = 2,
-        element = nil,
-        skillchain = {'Light', 'Fragmentation', 'Compression'},
-        ftp = {[1000] = 1.375, [2000] = 3.25, [3000] = 4.625},
-        skill_required = 357,
-        jobs = {
-            SAM = 90
-        },
-        special_notes = "Requires 'Martial Mastery' quest. Merits: 73% STR@1/5, +3% per merit, 85% STR@5/5. Can only be used with SAM as main job. Light becomes available only while under Aeonic Aftermath."
+        description         = 'Two hits. Damage varies with TP.',
+        type                = 'Physical',
+        mods                = {STR = 73}, -- 73-85% with merits
+        hits                = 2,
+        element             = nil,
+        skillchain          = {'Light', 'Fragmentation', 'Compression'},
+        ftp                 = {[1000] = 1.375, [2000] = 3.25, [3000] = 4.625},
+        skill_required      = 357,
+        jobs                = {SAM = 90},
+        special_notes       = "Requires 'Martial Mastery' quest. Merits: 73% STR@1/5, +3% per merit, 85% STR@5/5. Can only be used with SAM as main job. Light becomes available only while under Aeonic Aftermath."
     },
 
     ['Tachi: Kaiten'] = {
-        description = 'TP Bonus aftermath. Duration varies.',
-        type = 'Physical',
-        mods = {STR = 80},
-        hits = 1,
-        element = nil,
-        skillchain = {'Light', 'Fragmentation'},
-        ftp = {[1000] = 3.0, [2000] = 3.0, [3000] = 3.0},
-        skill_required = 357,
-        jobs = {
-            SAM = 75, -- via Totsukanotsurugi or Amanomurakumo
+        description         = 'TP Bonus aftermath. Duration varies.',
+        type                = 'Physical',
+        mods                = {STR = 80},
+        hits                = 1,
+        element             = nil,
+        skillchain          = {'Light', 'Fragmentation'},
+        ftp                 = {[1000] = 3.0, [2000] = 3.0, [3000] = 3.0},
+        skill_required      = 357,
+        jobs                = {
+            SAM                 = 75, -- via Totsukanotsurugi or Amanomurakumo
             -- Level 85 via Ame-no-ohabari
             -- Level 99 via Fusenaikyo with Sekkanoki
         },
-        special_notes = 'Totsukanotsurugi/Amanomurakumo: SAM level 75. Ame-no-ohabari: SAM level 85. Fusenaikyo (with Sekkanoki): SAM level 99. Aftermath: Store TP +7 (standard) or +10 (Afterglow) for 20s@1000TP / 40s@2000TP / 60s@3000TP. Amanomurakumo level 90+: +25-40% damage bonus. Only Totsukanotsurugi/Amanomurakumo grant Relic Aftermath.'
+        special_notes       = 'Totsukanotsurugi/Amanomurakumo: SAM level 75. Ame-no-ohabari: SAM level 85. Fusenaikyo (with Sekkanoki): SAM level 99. Aftermath: Store TP +7 (standard) or +10 (Afterglow) for 20s@1000TP / 40s@2000TP / 60s@3000TP. Amanomurakumo level 90+: +25-40% damage bonus. Only Totsukanotsurugi/Amanomurakumo grant Relic Aftermath.'
     },
 
     ['Tachi: Fudo'] = {
-        description = 'Double damage. Damage varies with TP.',
-        type = 'Physical',
-        mods = {STR = 80},
-        hits = 1,
-        element = nil,
-        skillchain = {'Light', 'Distortion'},
-        ftp = {[1000] = 3.75, [2000] = 5.75, [3000] = 8.0},
-        skill_required = 357,
-        jobs = {
-            SAM = 85
-        },
-        special_notes = "Masamune/Hiradennotachi/Torigashira: SAM level 85. Requires 'Kupofried's Weapon Skill Moogle Magic' quest. Can only be used with SAM as main job. Double damage mechanic. Receives NO Attack/Defense Ratio bonus (raw Attack stat more important). Only Masamune grants Empyrean Aftermath."
+        description         = 'Double damage. Damage varies with TP.',
+        type                = 'Physical',
+        mods                = {STR = 80},
+        hits                = 1,
+        element             = nil,
+        skillchain          = {'Light', 'Distortion'},
+        ftp                 = {[1000] = 3.75, [2000] = 5.75, [3000] = 8.0},
+        skill_required      = 357,
+        jobs                = {SAM = 85},
+        special_notes       = "Masamune/Hiradennotachi/Torigashira: SAM level 85. Requires 'Kupofried's Weapon Skill Moogle Magic' quest. Can only be used with SAM as main job. Double damage mechanic. Receives NO Attack/Defense Ratio bonus (raw Attack stat more important). Only Masamune grants Empyrean Aftermath."
     },
 
     ['Tachi: Rana'] = {
-        description = 'Three hits. Accuracy varies with TP.',
-        type = 'Physical',
-        mods = {STR = 50},
-        hits = 3,
-        element = nil,
-        skillchain = {'Gravitation', 'Induration'},
-        ftp = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
-        skill_required = 357,
-        jobs = {
-            SAM = 75
-        },
-        special_notes = "Requires 'Unlocking a Myth (Samurai)' quest. Can only be used with SAM as main job. Accuracy varies with TP (exact values unknown). Kogarasumaru: +15% damage@90-95, +30% damage@99-119."
+        description         = 'Three hits. Accuracy varies with TP.',
+        type                = 'Physical',
+        mods                = {STR = 50},
+        hits                = 3,
+        element             = nil,
+        skillchain          = {'Gravitation', 'Induration'},
+        ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
+        skill_required      = 357,
+        jobs                = {SAM = 75},
+        special_notes       = "Requires 'Unlocking a Myth (Samurai)' quest. Can only be used with SAM as main job. Accuracy varies with TP (exact values unknown). Kogarasumaru: +15% damage@90-95, +30% damage@99-119."
     },
 
     ---========================================================================
@@ -256,18 +227,16 @@ greatkatana_ws.weaponskills = {
     ---========================================================================
 
     ['Tachi: Mumei'] = {
-        description = 'Single hit. Damage varies with TP.',
-        type = 'Physical',
-        mods = {STR = 50, DEX = 50},
-        hits = 1,
-        element = nil,
-        skillchain = {'Detonation', 'Compression', 'Distortion'},
-        ftp = {[1000] = 3.66, [2000] = 7.33, [3000] = 11.0},
-        skill_required = 1,
-        jobs = {
-            SAM = 99
-        },
-        special_notes = 'Requires Kusanagi (Level 119/119 II/119 III). Prime weapon skill with Prime Aftermath (Physical Damage Limit+).'
+        description         = 'Single hit. Damage varies with TP.',
+        type                = 'Physical',
+        mods                = {STR = 50, DEX = 50},
+        hits                = 1,
+        element             = nil,
+        skillchain          = {'Detonation', 'Compression', 'Distortion'},
+        ftp                 = {[1000] = 3.66, [2000] = 7.33, [3000] = 11.0},
+        skill_required      = 1,
+        jobs                = {SAM = 99},
+        special_notes       = 'Requires Kusanagi (Level 119/119 II/119 III). Prime weapon skill with Prime Aftermath (Physical Damage Limit+).'
     }
 }
 
@@ -362,9 +331,9 @@ function greatkatana_ws.get_ftp(ws_name, tp)
     -- Round TP to nearest 1000
     local tp_key = 1000
     if tp >= 2500 then
-        tp_key = 3000
+        tp_key              = 3000
     elseif tp >= 1500 then
-        tp_key = 2000
+        tp_key              = 2000
     end
 
     return ws_data.ftp[tp_key]

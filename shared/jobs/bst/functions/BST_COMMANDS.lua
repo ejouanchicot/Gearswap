@@ -46,6 +46,9 @@ if not success_ui then
     UICommands = nil
 end
 
+-- Message commands (for debug messages)
+local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
+
 -- Ecosystem manager
 local success_em, EcosystemManager = pcall(require, 'shared/jobs/bst/functions/logic/ecosystem_manager')
 if not success_em then
@@ -158,7 +161,7 @@ function job_self_command(cmdParams, eventArgs)
         MidcastManager.toggle_debug()
 
         -- Confirmation message
-        add_to_chat(159, '[BST_COMMANDS] Debug toggled! Current state: ' .. tostring(_G.MidcastManagerDebugState))
+        MessageCommands.show_debugmidcast_toggled('BST', _G.MidcastManagerDebugState)
 
         eventArgs.handled = true
         return

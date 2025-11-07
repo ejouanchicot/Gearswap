@@ -7,9 +7,9 @@
 ---
 --- @file config/magic/BLU_SPELL_DATABASE.lua
 --- @author Tetsouo
---- @version 2.0 - Façade Architecture
---- @date Created: 2025-10-12
---- @date Refactored: 2025-10-12
+--- @version 2.1 - Improved formatting - Improved alignment - Façade Architecture
+--- @date Created: 2025-10-12 | Updated: 2025-11-06
+--- @date Refactored: 2025-10-12 | Updated: 2025-11-06
 ---
 --- NOTES:
 --- - BLU learns spells from monsters (not NPCs)
@@ -240,7 +240,7 @@ function BLUSpells.get_spells_by_element(element, job_code, level)
     local available = {}
 
     for spell_name, spell_data in pairs(BLUSpells.spells) do
-        if spell_data.element == element then
+        if spell_data.element             == element then
             if BLUSpells.can_learn(spell_name, job_code, level) then
                 table.insert(available, spell_name)
             end

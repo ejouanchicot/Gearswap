@@ -13,44 +13,44 @@ local spirits = {}
 
 spirits.spirits = {
     ["Light Spirit"] = {
-        element = "Light",
-        type = "Spirit",
-        SMN = 1
+        element                 = "Light",
+        type                    = "Spirit",
+        SMN                     = 1
     },
     ["Fire Spirit"] = {
-        element = "Fire",
-        type = "Spirit",
-        SMN = 1
+        element                 = "Fire",
+        type                    = "Spirit",
+        SMN                     = 1
     },
     ["Ice Spirit"] = {
-        element = "Ice",
-        type = "Spirit",
-        SMN = 1
+        element                 = "Ice",
+        type                    = "Spirit",
+        SMN                     = 1
     },
     ["Air Spirit"] = {
-        element = "Wind",
-        type = "Spirit",
-        SMN = 1
+        element                 = "Wind",
+        type                    = "Spirit",
+        SMN                     = 1
     },
     ["Earth Spirit"] = {
-        element = "Earth",
-        type = "Spirit",
-        SMN = 1
+        element                 = "Earth",
+        type                    = "Spirit",
+        SMN                     = 1
     },
     ["Thunder Spirit"] = {
-        element = "Thunder",
-        type = "Spirit",
-        SMN = 1
+        element                 = "Thunder",
+        type                    = "Spirit",
+        SMN                     = 1
     },
     ["Water Spirit"] = {
-        element = "Water",
-        type = "Spirit",
-        SMN = 1
+        element                 = "Water",
+        type                    = "Spirit",
+        SMN                     = 1
     },
     ["Dark Spirit"] = {
-        element = "Dark",
-        type = "Spirit",
-        SMN = 1
+        element                 = "Dark",
+        type                    = "Spirit",
+        SMN                     = 1
     }
 }
 

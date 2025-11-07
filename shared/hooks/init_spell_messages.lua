@@ -24,7 +24,7 @@
 --- @date Created: 2025-10-30
 ---============================================================================
 
-local SpellMessageHandler = require('shared/utils/messages/spell_message_handler')
+local SpellMessageHandler = require('shared/utils/messages/handlers/spell_message_handler')
 
 ---============================================================================
 --- HOOK INJECTION

@@ -7,7 +7,7 @@
 ---
 --- @file WHM_SPELL_DATABASE.lua
 --- @author Tetsouo
---- @version 3.0 - Skill-Based Architecture Migration
+--- @version 3.0 - Improved formatting - Skill-Based Architecture Migration
 --- @date Created: 2025-10-12 | Updated: 2025-10-31
 ---
 --- ARCHITECTURE:

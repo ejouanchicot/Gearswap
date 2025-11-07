@@ -32,22 +32,22 @@ local cached_pet_mode = {
     pet_id = nil,
     timestamp = 0
 }
-local PET_MODE_CACHE_DURATION = 0.1
+local PET_MODE_CACHE_DURATION = 1.0  -- Increased from 0.1s (pet rarely appears/disappears)
 
--- Cache Layer 2: Pet Status (0.1s duration)
+-- Cache Layer 2: Pet Status (0.5s duration)
 local pet_status_cache = {
     status = nil,
     timestamp = 0,
     pet_id = nil
 }
-local PET_STATUS_CACHE_DURATION = 0.1
+local PET_STATUS_CACHE_DURATION = 0.5  -- Increased from 0.1s (status changes aren't instant)
 
--- Cache Layer 3: Ready Moves (10s duration - Ready Moves only change when pet changes)
+-- Cache Layer 3: Ready Moves (30s duration - Ready Moves only change when pet changes)
 local ready_moves_cache = {
     moves = {},
     timestamp = 0
 }
-local READY_MOVES_CACHE_DURATION = 10.0
+local READY_MOVES_CACHE_DURATION = 30.0  -- Increased from 10.0s (moves rarely change)
 
 ---============================================================================
 --- PET MODE TRACKING
@@ -269,11 +269,22 @@ end
 --- PET STATUS MONITORING (for auto-engage)
 ---============================================================================
 
+-- Debouncing: Prevent spam of gs c update (expensive operation)
+local last_monitor_time = 0
+local MONITOR_DEBOUNCE = 1.0  -- Don't update more than once per 1.0s (matches monitoring interval)
+
 --- Monitor pet status changes and update state.petEngaged
 --- Called periodically (e.g., in time change event)
 --- Uses GLOBAL 'pet' variable from Mote-Include via _G
 --- @return void
 function PetManager.monitor_pet_status()
+    -- DEBOUNCING: Skip if called too recently (prevents lag spikes)
+    local current_time = os.clock()
+    if current_time - last_monitor_time < MONITOR_DEBOUNCE then
+        return  -- Too soon, skip
+    end
+    last_monitor_time = current_time
+
     -- Access GLOBAL 'pet' variable from Mote-Include via _G (require() modules don't have direct access)
     local pet = _G.pet
 
@@ -285,26 +296,17 @@ function PetManager.monitor_pet_status()
         return
     end
 
-    -- Pet exists - check status (1 = engaged, 0 = idle, or "Engaged" string?)
     -- Check if status is number 1 OR string "Engaged"
     if pet.status == 1 or pet.status == "Engaged" then
         -- Pet is Engaged - ensure petEngaged is "true" (STRING!)
         if state and state.petEngaged and state.petEngaged.value ~= "true" then
             state.petEngaged:set('true')
-            -- Use coroutine to delay equipment update (let state update take effect)
-            coroutine.schedule(function()
-                windower.send_command('gs c update')
-            end, 0.1)
             return true -- State changed
         end
     else
         -- Pet is Idle - ensure petEngaged is "false" (STRING!)
         if state and state.petEngaged and state.petEngaged.value ~= "false" then
             state.petEngaged:set('false')
-            -- Use coroutine to delay equipment update (let state update take effect)
-            coroutine.schedule(function()
-                windower.send_command('gs c update')
-            end, 0.1)
             return true -- State changed
         end
     end

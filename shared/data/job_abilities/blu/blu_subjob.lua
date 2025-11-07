@@ -9,8 +9,8 @@
 ---
 --- @file blu_subjob.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-31
+--- @version 1.1 - Improved alignment
+--- @date Created: 2025-10-31 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Blue_Mage
 ---============================================================================
 
@@ -18,20 +18,20 @@ local BLU_SUBJOB = {}
 
 BLU_SUBJOB.abilities = {
     ['Burst Affinity'] = {
-        description = 'Magical blue magic can magic burst',
-        level = 25,
-        recast = 120,  -- 2 minutes
-        main_job_only = false,
-        cumulative_enmity = 1,
-        volatile_enmity = 300
+        description             = 'Magical blue magic can magic burst',
+        level                   = 25,
+        recast                  = 120,  -- 2min
+        main_job_only           = false,
+        cumulative_enmity       = 1,
+        volatile_enmity         = 300
     },
     ['Chain Affinity'] = {
-        description = 'Physical blue magic can skillchain',
-        level = 40,
-        recast = 120,  -- 2 minutes
-        main_job_only = false,
-        cumulative_enmity = 1,
-        volatile_enmity = 300
+        description             = 'Physical blue magic can skillchain',
+        level                   = 40,
+        recast                  = 120,  -- 2min
+        main_job_only           = false,
+        cumulative_enmity       = 1,
+        volatile_enmity         = 300
     }
 }
 

@@ -44,9 +44,7 @@ function SetBuilder.select_engaged_base(base_set)
     local has_fan_dance = buffactive and buffactive['Fan Dance']
 
     -- Debug: uncomment to track buff states
-    -- add_to_chat(122, string.format("[DNC] Saber=%s Fan=%s HybridMode=%s",
-    --     tostring(has_saber_dance), tostring(has_fan_dance),
-    --     (state.HybridMode and state.HybridMode.current or "nil")))
+    -- Debug disabled (use debug logging if needed)
 
     -- Priority 1: Saber Dance active (mutually exclusive with Fan Dance)
     if has_saber_dance and sets.engaged.SaberDance then

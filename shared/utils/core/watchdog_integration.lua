@@ -6,13 +6,25 @@
 ---
 --- @file watchdog_integration.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-25
+--- @version 1.1 - Improved formatting
+--- @date Created: 2025-10-25 | Updated: 2025-11-06
 ---============================================================================
 
 local MidcastWatchdog = require('shared/utils/core/midcast_watchdog')
+local MessageWatchdog = require('shared/utils/messages/formatters/system/message_watchdog')
 
 local WatchdogIntegration = {}
+
+---============================================================================
+--- CONSTANTS
+---============================================================================
+
+local CHAT_DEFAULT = 1
+local CHAT_ERROR   = 167
+
+---============================================================================
+--- STATE
+---============================================================================
 
 -- Track if we've already hooked the functions
 local hooks_installed = false
@@ -86,10 +98,7 @@ function WatchdogIntegration.handle_command(command, args)
         if not args or #args == 0 then
             -- Show status
             local stats = MidcastWatchdog.get_stats()
-            add_to_chat(158, '=== Midcast Watchdog Status ===')
-            add_to_chat(158, '  Enabled: ' .. tostring(stats.enabled))
-            add_to_chat(158, '  Timeout: ' .. stats.timeout .. 's')
-            add_to_chat(158, '  Tracked: ' .. stats.tracked_count .. ' actions')
+            MessageWatchdog.show_status(stats)
         elseif args[1] == 'on' then
             MidcastWatchdog.enable()
         elseif args[1] == 'off' then
@@ -99,24 +108,15 @@ function WatchdogIntegration.handle_command(command, args)
         elseif args[1] == 'timeout' and args[2] then
             local timeout = tonumber(args[2])
             if timeout then
-                MidcastWatchdog.set_timeout(timeout)
+                MidcastWatchdog.set_fallback_timeout(timeout)
             end
         elseif args[1] == 'clear' then
             MidcastWatchdog.clear_all()
         elseif args[1] == 'stats' then
             local stats = MidcastWatchdog.get_stats()
-            add_to_chat(158, '=== Midcast Watchdog Stats ===')
-            add_to_chat(158, '  Enabled: ' .. tostring(stats.enabled))
-            add_to_chat(158, '  Timeout: ' .. stats.timeout .. 's')
-            add_to_chat(158, '  Tracked: ' .. stats.tracked_count .. ' actions')
+            MessageWatchdog.show_stats(stats)
         else
-            add_to_chat(167, '[Watchdog] Usage:')
-            add_to_chat(167, '  //gs c watchdog - Show status')
-            add_to_chat(167, '  //gs c watchdog on/off - Enable/disable')
-            add_to_chat(167, '  //gs c watchdog toggle - Toggle on/off')
-            add_to_chat(167, '  //gs c watchdog timeout <seconds> - Set timeout')
-            add_to_chat(167, '  //gs c watchdog clear - Clear all tracked')
-            add_to_chat(167, '  //gs c watchdog stats - Show stats')
+            MessageWatchdog.show_help()
         end
         return true
     end

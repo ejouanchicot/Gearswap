@@ -26,7 +26,7 @@ local AOEManager = {}
 ---============================================================================
 
 local MessageFormatter = require('shared/utils/messages/message_formatter')
-local MessageCooldowns = require('shared/utils/messages/message_cooldowns')
+local MessageCooldowns = require('shared/utils/messages/formatters/combat/message_cooldowns')
 local RECAST_CONFIG = _G.RECAST_CONFIG or {}  -- Loaded from character main file
 
 -- Safe wrappers for RECAST_CONFIG methods (with fallback if config not loaded)

@@ -13,20 +13,20 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Cocoon"] = {
-        element = "Earth",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = false,
-        BLU = 8
+        element                 = "Earth",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 8
     },
     ["Metallic Body"] = {
-        element = "Earth",
-        trait = "Max MP Boost",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 8
+        element                 = "Earth",
+        trait                   = "Max MP Boost",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 8
     },
 
     ---========================================================================
@@ -34,12 +34,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Refueling"] = {
-        element = "Wind",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = false,
-        BLU = 48
+        element                 = "Wind",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 48
     },
 
     ---========================================================================
@@ -47,12 +47,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Feather Barrier"] = {
-        element = "Wind",
-        trait = "Resist Gravity",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 56
+        element                 = "Wind",
+        trait                   = "Resist Gravity",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 56
     },
 
     ---========================================================================
@@ -60,12 +60,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Memento Mori"] = {
-        element = "Ice",
-        trait = "Magic Attack Bonus",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 62
+        element                 = "Ice",
+        trait                   = "Magic Attack Bonus",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 62
     },
 
     ---========================================================================
@@ -73,12 +73,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Zephyr Mantle"] = {
-        element = "Wind",
-        trait = "Conserve MP",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 65
+        element                 = "Wind",
+        trait                   = "Conserve MP",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 65
     },
 
     ---========================================================================
@@ -86,12 +86,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Diamondhide"] = {
-        element = "Earth",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = false,
-        BLU = 67
+        element                 = "Earth",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 67
     },
 
     ---========================================================================
@@ -99,12 +99,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Warm-Up"] = {
-        element = "Earth",
-        trait = "Clear Mind",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 68
+        element                 = "Earth",
+        trait                   = "Clear Mind",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 68
     },
 
     ---========================================================================
@@ -112,12 +112,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Amplification"] = {
-        element = "Water",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = false,
-        BLU = 70
+        element                 = "Water",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 70
     },
 
     ---========================================================================
@@ -125,12 +125,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Triumphant Roar"] = {
-        element = "Fire",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = false,
-        BLU = 71
+        element                 = "Fire",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 71
     },
 
     ---========================================================================
@@ -138,12 +138,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Saline Coat"] = {
-        element = "Light",
-        trait = "Defense Bonus",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 72
+        element                 = "Light",
+        trait                   = "Defense Bonus",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 72
     },
 
     ---========================================================================
@@ -151,12 +151,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Reactor Cool"] = {
-        element = "Ice",
-        trait = "Magic Attack Bonus",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 74
+        element                 = "Ice",
+        trait                   = "Magic Attack Bonus",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 74
     },
 
     ---========================================================================
@@ -164,12 +164,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Plasma Charge"] = {
-        element = "Thunder",
-        trait = "Auto Refresh",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 75
+        element                 = "Thunder",
+        trait                   = "Auto Refresh",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 75
     },
 
     ---========================================================================
@@ -177,20 +177,20 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Animating Wail"] = {
-        element = "Wind",
-        trait = "Dual Wield",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 79
+        element                 = "Wind",
+        trait                   = "Dual Wield",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 79
     },
     ["Battery Charge"] = {
-        element = "Light",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = false,
-        BLU = 79
+        element                 = "Light",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 79
     },
 
     ---========================================================================
@@ -198,12 +198,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Magic Barrier"] = {
-        element = "Dark",
-        trait = "Max MP Boost",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 82
+        element                 = "Dark",
+        trait                   = "Max MP Boost",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 82
     },
 
     ---========================================================================
@@ -211,12 +211,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Auroral Drape"] = {
-        element = "Wind",
-        trait = "Fast Cast",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 84
+        element                 = "Wind",
+        trait                   = "Fast Cast",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 84
     },
 
     ---========================================================================
@@ -224,12 +224,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Fantod"] = {
-        element = "Fire",
-        trait = "Store TP",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 85
+        element                 = "Fire",
+        trait                   = "Store TP",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 85
     },
 
     ---========================================================================
@@ -237,12 +237,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Occultation"] = {
-        element = "Wind",
-        trait = "Evasion Bonus",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 88
+        element                 = "Wind",
+        trait                   = "Evasion Bonus",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 88
     },
 
     ---========================================================================
@@ -250,12 +250,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Winds of Promy."] = {
-        element = "Light",
-        trait = "Auto Refresh",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 89
+        element                 = "Light",
+        trait                   = "Auto Refresh",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 89
     },
 
     ---========================================================================
@@ -263,12 +263,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Barrier Tusk"] = {
-        element = "Earth",
-        trait = "Max HP Boost",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 91
+        element                 = "Earth",
+        trait                   = "Max HP Boost",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 91
     },
 
     ---========================================================================
@@ -276,12 +276,12 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Harden Shell"] = {
-        element = "Earth",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = true,
-        BLU = 95
+        element                 = "Earth",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = true,
+        BLU                     = 95
     },
 
     ---========================================================================
@@ -289,20 +289,20 @@ buff_spells.spells = {
     ---========================================================================
 
     ["O. Counterstance"] = {
-        element = "Fire",
-        trait = "Counter",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 98
+        element                 = "Fire",
+        trait                   = "Counter",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 98
     },
     ["Pyric Bulwark"] = {
-        element = "Ice",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = true,
-        BLU = 98
+        element                 = "Ice",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = true,
+        BLU                     = 98
     },
 
     ---========================================================================
@@ -310,36 +310,36 @@ buff_spells.spells = {
     ---========================================================================
 
     ["Nature's Meditation"] = {
-        element = "Fire",
-        trait = "Accuracy Bonus",
-        trait_points = 8,
-        property = nil,
-        unbridled = false,
-        BLU = 99
+        element                 = "Fire",
+        trait                   = "Accuracy Bonus",
+        trait_points            = 8,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Carcharian Verve"] = {
-        element = "Water",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = true,
-        BLU = 99
+        element                 = "Water",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = true,
+        BLU                     = 99
     },
     ["Erratic Flutter"] = {
-        element = "Wind",
-        trait = "Fast Cast",
-        trait_points = 8,
-        property = nil,
-        unbridled = false,
-        BLU = 99
+        element                 = "Wind",
+        trait                   = "Fast Cast",
+        trait_points            = 8,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Mighty Guard"] = {
-        element = "Light",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = true,
-        BLU = 99
+        element                 = "Light",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = true,
+        BLU                     = 99
     }
 }
 

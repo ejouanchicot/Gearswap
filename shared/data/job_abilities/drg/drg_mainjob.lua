@@ -14,8 +14,8 @@
 ---
 --- @file drg_mainjob.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-30
+--- @version 1.1 - Improved alignment
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @updated 2025-10-31
 ---============================================================================
 
@@ -23,60 +23,60 @@ local DRG_MAINJOB = {}
 
 DRG_MAINJOB.abilities = {
     ['Call Wyvern'] = {
-        description = "Summons wyvern",
-        level = 1,
-        recast = 1200,  -- 20 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Summons wyvern",
+        level                   = 1,
+        recast                  = 1200,  -- 20min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Spirit Bond'] = {
-        description = "Take damage for wyvern",
-        level = 65,
-        recast = 60,  -- 1 minute
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Take damage for wyvern",
+        level                   = 65,
+        recast                  = 60,  -- 1min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Deep Breathing'] = {
-        description = "Next wyvern breath x2",
-        level = 75,  -- Merit ability
-        recast = 300,  -- 5 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Next wyvern breath x2",
+        level                   = 75,  -- Merit ability
+        recast                  = 300,  -- 5min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Angon'] = {
-        description = "Enemy defense down",
-        level = 75,  -- Merit ability
-        recast = 180,  -- 3 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Enemy defense down",
+        level                   = 75,  -- Merit ability
+        recast                  = 180,  -- 3min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Spirit Jump'] = {
-        description = "Jump, enmity suppression",
-        level = 77,
-        recast = 60,  -- 1 minute
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Jump, enmity suppression",
+        level                   = 77,
+        recast                  = 60,  -- 1min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Soul Jump'] = {
-        description = "High jump, enmity suppression",
-        level = 85,
-        recast = 120,  -- 2 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "High jump, enmity suppression",
+        level                   = 85,
+        recast                  = 120,  -- 2min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Dragon Breaker'] = {
-        description = "Dragon debuff (ACC/EVA/MACC/MEVA/TP down)",
-        level = 87,
-        recast = 300,  -- 5 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Dragon debuff (ACC/EVA/MACC/MEVA/TP down)",
+        level                   = 87,
+        recast                  = 300,  -- 5min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     }
 }
 

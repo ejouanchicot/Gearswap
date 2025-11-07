@@ -8,7 +8,7 @@
 --- @file midcast_watchdog.lua
 --- @author Tetsouo
 --- @version 3.1 - Item support (cast_delay)
---- @date Created: 2025-10-25 | Updated: 2025-11-04
+--- @date Created: 2025-10-25 | Updated: 2025-11-06 | Updated: 2025-11-04
 ---============================================================================
 
 local MidcastWatchdog = {}
@@ -22,6 +22,9 @@ local res_spells = require('resources').spells
 
 -- Load item resource data (contains cast_delay for usable items like Warp Ring)
 local res_items = require('resources').items
+
+-- Message formatter for watchdog messages
+local MessageWatchdog = require('shared/utils/messages/formatters/system/message_watchdog')
 
 ---============================================================================
 --- CONFIGURATION
@@ -42,18 +45,25 @@ local watchdog_enabled = true
 local debug_enabled = false
 
 ---============================================================================
+--- CONSTANTS
+---============================================================================
+
+local CHAT_DEFAULT = 1
+local CHAT_ERROR = 167
+
+---============================================================================
 --- STATE TRACKING
 ---============================================================================
 
 -- Current midcast tracking
 local current_midcast = {
-    active = false,
-    spell_name = nil,
-    spell_id = nil,
-    item_id = nil,     -- Item ID for usable items (Warp Ring, etc.)
-    action_type = nil, -- 'spell' or 'item'
-    start_time = nil,
-    timeout = nil      -- Dynamic timeout for this spell/item
+    active      = false,
+    spell_name  = nil,
+    spell_id    = nil,
+    item_id     = nil,     -- Item ID for usable items (Warp Ring, etc.)
+    action_type = nil,     -- 'spell' or 'item'
+    start_time  = nil,
+    timeout     = nil      -- Dynamic timeout for this spell/item
 }
 
 -- Test mode flag (prevents aftercast from clearing when testing)
@@ -104,40 +114,38 @@ function MidcastWatchdog.on_midcast_start(spell)
         return
     end
 
-    local spell_name = spell and spell.english or 'Unknown'
-    local spell_id = nil
-    local item_id = nil
+    local spell_name  = spell and spell.english or 'Unknown'
+    local spell_id    = nil
+    local item_id     = nil
     local action_type = 'spell'  -- Default to spell
 
     -- Detect action type: spell vs item
     if spell and spell.type == 'Item' then
         -- It's an item (Warp Ring, etc.)
-        item_id = spell.id
+        item_id     = spell.id
         action_type = 'item'
     else
         -- It's a spell or ability
-        spell_id = spell and spell.id or nil
+        spell_id    = spell and spell.id or nil
         action_type = 'spell'
     end
 
     -- Calculate dynamic timeout based on spell cast_time or item cast_delay
     local timeout, base_cast_time = calculate_timeout(spell_id, item_id)
 
-    current_midcast.active = true
-    current_midcast.spell_name = spell_name
-    current_midcast.spell_id = spell_id
-    current_midcast.item_id = item_id
+    current_midcast.active      = true
+    current_midcast.spell_name  = spell_name
+    current_midcast.spell_id    = spell_id
+    current_midcast.item_id     = item_id
     current_midcast.action_type = action_type
-    current_midcast.start_time = os.clock()
-    current_midcast.timeout = timeout
+    current_midcast.start_time  = os.clock()
+    current_midcast.timeout     = timeout
 
     if debug_enabled then
         if action_type == 'item' then
-            add_to_chat(158, string.format('[Watchdog DEBUG] Midcast started: %s [ITEM] (cast_delay: %.1fs, timeout: %.1fs)',
-                spell_name, base_cast_time, timeout))
+            MessageWatchdog.show_debug_midcast_item(spell_name, base_cast_time, timeout)
         else
-            add_to_chat(158, string.format('[Watchdog DEBUG] Midcast started: %s [SPELL] (cast_time: %.1fs, timeout: %.1fs)',
-                spell_name, base_cast_time, timeout))
+            MessageWatchdog.show_debug_midcast_spell(spell_name, base_cast_time, timeout)
         end
     end
 end
@@ -153,38 +161,37 @@ function MidcastWatchdog.on_aftercast()
         return
     end
 
-    current_midcast.active = false
-    current_midcast.spell_name = nil
-    current_midcast.spell_id = nil
-    current_midcast.item_id = nil
+    current_midcast.active      = false
+    current_midcast.spell_name  = nil
+    current_midcast.spell_id    = nil
+    current_midcast.item_id     = nil
     current_midcast.action_type = nil
-    current_midcast.start_time = nil
-    current_midcast.timeout = nil
+    current_midcast.start_time  = nil
+    current_midcast.timeout     = nil
 end
 
 --- Check for stuck midcast (called every 0.5s)
 function MidcastWatchdog.check_stuck()
     if not watchdog_enabled then
         if debug_enabled then
-            add_to_chat(167, '[Watchdog DEBUG] Scanner disabled')
+            MessageWatchdog.show_debug_scanner_disabled()
         end
         return
     end
 
     if not current_midcast.active then
         if debug_enabled then
-            add_to_chat(158, '[Watchdog DEBUG] Scan: No active midcast')
+            MessageWatchdog.show_debug_no_active()
         end
         return
     end
 
     local current_time = os.clock()
-    local age = current_time - current_midcast.start_time
-    local timeout = current_midcast.timeout or WATCHDOG_FALLBACK_TIMEOUT
+    local age          = current_time - current_midcast.start_time
+    local timeout      = current_midcast.timeout or WATCHDOG_FALLBACK_TIMEOUT
 
     if debug_enabled then
-        add_to_chat(207, string.format('[Watchdog DEBUG] Scan: Active midcast "%s" (age: %.2fs, timeout: %.1fs)',
-            current_midcast.spell_name, age, timeout))
+        MessageWatchdog.show_debug_scan(current_midcast.spell_name, age, timeout)
     end
 
     if age > timeout then
@@ -207,22 +214,21 @@ function MidcastWatchdog.check_stuck()
             action_label = 'spell (cast_time)'
         end
 
-        add_to_chat(167, string.format('[Watchdog] Midcast stuck detected - recovering from: %s [%s: %.1fs, stuck for %.1fs]',
-            current_midcast.spell_name, action_label, cast_time, age))
+        MessageWatchdog.show_stuck_detected(current_midcast.spell_name, action_label, cast_time, age)
 
         -- Reset tracking
-        current_midcast.active = false
-        current_midcast.spell_name = nil
-        current_midcast.spell_id = nil
-        current_midcast.item_id = nil
+        current_midcast.active      = false
+        current_midcast.spell_name  = nil
+        current_midcast.spell_id    = nil
+        current_midcast.item_id     = nil
         current_midcast.action_type = nil
-        current_midcast.start_time = nil
-        current_midcast.timeout = nil
+        current_midcast.start_time  = nil
+        current_midcast.timeout     = nil
 
         -- Disable test mode if it was active
         if test_mode_active then
             test_mode_active = false
-            add_to_chat(158, '[Watchdog TEST] Test mode deactivated after cleanup')
+            MessageWatchdog.show_test_deactivated()
         end
 
         -- Force gear refresh
@@ -237,13 +243,13 @@ end
 --- Enable watchdog
 function MidcastWatchdog.enable()
     watchdog_enabled = true
-    add_to_chat(158, '[Watchdog] Enabled')
+    MessageWatchdog.show_enabled()
 end
 
 --- Disable watchdog
 function MidcastWatchdog.disable()
     watchdog_enabled = false
-    add_to_chat(167, '[Watchdog] Disabled')
+    MessageWatchdog.show_disabled()
 end
 
 --- Toggle watchdog on/off
@@ -266,10 +272,9 @@ end
 function MidcastWatchdog.set_buffer(seconds)
     if seconds and seconds >= 0 and seconds <= 10 then
         WATCHDOG_BUFFER = seconds
-        add_to_chat(158, '[Watchdog] Buffer set to: ' .. seconds .. 's')
-        add_to_chat(158, '[Watchdog] Timeout formula: cast_time + ' .. seconds .. 's')
+        MessageWatchdog.show_buffer_set(seconds)
     else
-        add_to_chat(167, '[Watchdog] Invalid buffer (must be 0-10s)')
+        MessageWatchdog.show_invalid_buffer()
     end
 end
 
@@ -284,9 +289,9 @@ end
 function MidcastWatchdog.set_fallback_timeout(seconds)
     if seconds and seconds > 0 and seconds <= 30 then
         WATCHDOG_FALLBACK_TIMEOUT = seconds
-        add_to_chat(158, '[Watchdog] Fallback timeout set to: ' .. seconds .. 's')
+        MessageWatchdog.show_fallback_set(seconds)
     else
-        add_to_chat(167, '[Watchdog] Invalid fallback timeout (must be 0-30s)')
+        MessageWatchdog.show_invalid_fallback()
     end
 end
 
@@ -299,13 +304,13 @@ end
 --- Enable debug mode
 function MidcastWatchdog.enable_debug()
     debug_enabled = true
-    add_to_chat(158, '[Watchdog] Debug mode ENABLED - will show scan details every 0.5s')
+    MessageWatchdog.show_debug_enabled()
 end
 
 --- Disable debug mode
 function MidcastWatchdog.disable_debug()
     debug_enabled = false
-    add_to_chat(167, '[Watchdog] Debug mode DISABLED')
+    MessageWatchdog.show_debug_disabled()
 end
 
 --- Toggle debug mode on/off
@@ -344,37 +349,37 @@ function MidcastWatchdog.get_stats()
     end
 
     return {
-        active = current_midcast.active,
-        spell_name = current_midcast.spell_name or 'None',
-        spell_id = current_midcast.spell_id or 0,
-        item_id = current_midcast.item_id or 0,
-        action_type = current_midcast.action_type or 'spell',
-        cast_time = cast_time,
-        age = age,
-        enabled = watchdog_enabled,
-        timeout = current_midcast.timeout or WATCHDOG_FALLBACK_TIMEOUT,
-        buffer = WATCHDOG_BUFFER,
+        active           = current_midcast.active,
+        spell_name       = current_midcast.spell_name or 'None',
+        spell_id         = current_midcast.spell_id or 0,
+        item_id          = current_midcast.item_id or 0,
+        action_type      = current_midcast.action_type or 'spell',
+        cast_time        = cast_time,
+        age              = age,
+        enabled          = watchdog_enabled,
+        timeout          = current_midcast.timeout or WATCHDOG_FALLBACK_TIMEOUT,
+        buffer           = WATCHDOG_BUFFER,
         fallback_timeout = WATCHDOG_FALLBACK_TIMEOUT,
-        debug = debug_enabled
+        debug            = debug_enabled
     }
 end
 
 --- Clear current midcast tracking (emergency cleanup)
 function MidcastWatchdog.clear_all()
     if current_midcast.active then
-        add_to_chat(167, '[Watchdog] Force clearing: ' .. current_midcast.spell_name)
+        MessageWatchdog.show_force_clearing(current_midcast.spell_name)
     end
 
-    current_midcast.active = false
-    current_midcast.spell_name = nil
-    current_midcast.spell_id = nil
-    current_midcast.item_id = nil
+    current_midcast.active      = false
+    current_midcast.spell_name  = nil
+    current_midcast.spell_id    = nil
+    current_midcast.item_id     = nil
     current_midcast.action_type = nil
-    current_midcast.start_time = nil
-    current_midcast.timeout = nil
+    current_midcast.start_time  = nil
+    current_midcast.timeout     = nil
 
     send_command('gs c update')
-    add_to_chat(158, '[Watchdog] All midcast tracking cleared')
+    MessageWatchdog.show_all_cleared()
 end
 
 --- TEST MODE: Simulate stuck midcast (for debugging)
@@ -382,34 +387,33 @@ end
 --- @param spell_id number Spell ID from res/spells.lua (optional)
 function MidcastWatchdog.simulate_stuck(spell_name, spell_id)
     spell_name = spell_name or 'Test Spell'
-    spell_id = spell_id or nil
+    spell_id   = spell_id or nil
 
     -- Calculate timeout for this test spell
     local timeout, base_cast_time = calculate_timeout(spell_id, nil)
 
-    add_to_chat(167, '[Watchdog TEST] Simulating stuck midcast: ' .. spell_name)
+    MessageWatchdog.show_test_simulating(spell_name)
     if spell_id then
-        add_to_chat(167, string.format('[Watchdog TEST] Cast time: %.1fs, timeout: %.1fs (cast_time + %.1fs buffer)',
-            base_cast_time, timeout, WATCHDOG_BUFFER))
+        MessageWatchdog.show_test_cast_time(base_cast_time, timeout, WATCHDOG_BUFFER)
     else
-        add_to_chat(167, '[Watchdog TEST] Using fallback timeout: ' .. timeout .. 's')
+        MessageWatchdog.show_test_fallback(timeout)
     end
-    add_to_chat(167, '[Watchdog TEST] Aftercast will be BLOCKED - watchdog should cleanup after timeout')
+    MessageWatchdog.show_test_aftercast_blocked()
 
     -- Enable test mode (blocks aftercast)
     test_mode_active = true
 
     -- Simulate midcast start
-    current_midcast.active = true
-    current_midcast.spell_name = spell_name
-    current_midcast.spell_id = spell_id
-    current_midcast.item_id = nil
+    current_midcast.active      = true
+    current_midcast.spell_name  = spell_name
+    current_midcast.spell_id    = spell_id
+    current_midcast.item_id     = nil
     current_midcast.action_type = 'spell'
-    current_midcast.start_time = os.clock()
-    current_midcast.timeout = timeout
+    current_midcast.start_time  = os.clock()
+    current_midcast.timeout     = timeout
 
     if not debug_enabled then
-        add_to_chat(158, '[Watchdog TEST] Stuck simulation started - use "//gs c watchdog debug" to see scans')
+        MessageWatchdog.show_test_started()
     end
 end
 
@@ -423,7 +427,7 @@ local watchdog_timer = nil
 local function background_check()
     local success, err = pcall(MidcastWatchdog.check_stuck)
     if not success then
-        add_to_chat(167, '[Watchdog] Error in check: ' .. tostring(err))
+        MessageWatchdog.show_error_in_check(err)
     end
 end
 
@@ -457,7 +461,7 @@ function MidcastWatchdog.stop()
     if watchdog_timer then
         watchdog_timer = nil -- This will break the while loop
     end
-    add_to_chat(167, '[Watchdog] Stopped')
+    MessageWatchdog.show_stopped()
 end
 
 ---============================================================================

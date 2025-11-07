@@ -11,6 +11,44 @@
 ---============================================================================
 
 ---============================================================================
+--- DEPENDENCIES
+---============================================================================
+
+-- Pet manager (for pet status monitoring)
+local success_pm, PetManager = pcall(require, 'shared/jobs/bst/functions/logic/pet_manager')
+if not success_pm then
+    PetManager = nil
+end
+
+---============================================================================
+--- TEMPORARY PET MONITORING (after pet commands)
+---============================================================================
+
+--- Monitor pet status multiple times after pet command (Fight, Heel, etc.)
+--- Checks 10 times over 5 seconds, then stops (event-driven, not constant polling)
+---
+--- @param checks_remaining number Number of checks remaining
+--- @return void
+local function monitor_pet_after_command(checks_remaining)
+    if not PetManager or checks_remaining <= 0 then
+        return
+    end
+
+    -- Check current pet status
+    local status_changed = PetManager.monitor_pet_status()
+
+    -- If status changed, stop monitoring (mission accomplished)
+    if status_changed then
+        return
+    end
+
+    -- Schedule next check (0.5s later)
+    coroutine.schedule(function()
+        monitor_pet_after_command(checks_remaining - 1)
+    end, 0.5)
+end
+
+---============================================================================
 --- AFTERCAST HOOK
 ---============================================================================
 
@@ -28,15 +66,35 @@ function job_aftercast(spell, action, spellMap, eventArgs)
         _G.MidcastWatchdog.on_aftercast()
     end
 
-    -- No BST-specific aftercast logic required
+    -- ==========================================================================
+    -- PET SUMMON DETECTION (Start background monitoring)
+    -- ==========================================================================
+    if spell.type == 'Monster' or spell.english == 'Call Beast' or spell.english == 'Bestial Loyalty' then
+        -- Pet summon detected - start smart background monitoring
+        if _G.start_pet_monitoring then
+            coroutine.schedule(function()
+                _G.start_pet_monitoring()
+            end, 2.0)  -- Wait 2s for pet to fully spawn
+        end
+    end
+
+    -- ==========================================================================
+    -- PET COMMAND MONITORING (Fight, Heel, etc.)
+    -- ==========================================================================
+    -- DISABLED: Background monitoring in Tetsouo_BST.lua handles this now
+    -- (checks every 1 second continuously - no need for temporary monitoring)
+    --
+    -- if PetManager and spell.type == 'PetCommand' then
+    --     coroutine.schedule(function()
+    --         monitor_pet_after_command(10)
+    --     end, 0.5)
+    -- end
+
+    -- No other BST-specific aftercast logic required
     -- Mote-Include handles return to idle/engaged automatically
 
-    -- Force gear refresh after actions complete (handles Odyssey lag)
-    if not spell.interrupted then
-        coroutine.schedule(function()
-            send_command('gs c update')
-        end, 0.1)
-    end
+    -- REMOVED: gs c update (causait des lags après chaque action)
+    -- GearSwap gère déjà le refresh automatiquement via status_change
 end
 
 ---============================================================================

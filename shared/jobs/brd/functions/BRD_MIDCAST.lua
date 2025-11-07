@@ -24,6 +24,9 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
 local EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
 
+-- Load BRD_SPELL_DATABASE for song descriptions
+local BRDSpells_success, BRDSpells = pcall(require, 'shared/data/magic/BRD_SPELL_DATABASE')
+
 ---============================================================================
 --- SONG INSTRUMENT DETECTION
 ---============================================================================
@@ -114,6 +117,15 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     --- SINGING (BRD-SPECIFIC - NOT HANDLED BY MIDCASTMANAGER)
     ---========================================================================
     if spell.skill == 'Singing' then
+        -- Display song message with description (like GEO does for Geomancy)
+        if spell.english then
+            local description = nil
+            if BRDSpells_success and BRDSpells and BRDSpells.spells[spell.english] then
+                description = BRDSpells.spells[spell.english].description
+            end
+            MessageFormatter.show_spell_activated(spell.english, description, nil)
+        end
+
         -- CRITICAL: Honor March Protection - ensure Marsyas stays equipped
         if _G.casting_honor_march and spell.type == 'BardSong' and spell.english == 'Honor March' then
             equip({range = 'Marsyas'})

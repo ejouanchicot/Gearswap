@@ -15,7 +15,7 @@
 local EquipmentChecker = {}
 
 -- Load dependencies
-local MessageEquipment = require('shared/utils/messages/message_equipment')
+local MessageEquipment = require('shared/utils/messages/formatters/system/message_equipment')
 local res = require('resources')
 
 -- Try to load slips library (optional, for Storage Slip support)
@@ -239,7 +239,7 @@ local function scan_sets_recursive(sets_table, path, results, item_cache, depth)
 
     -- Safety: Prevent stack overflow from circular references
     if depth > MAX_RECURSION_DEPTH then
-        add_to_chat(167, string.format("[ERROR] Max recursion depth (%d) reached at: %s", MAX_RECURSION_DEPTH, path or "unknown"))
+        MessageEquipment.show_max_recursion_error(MAX_RECURSION_DEPTH, path)
         return
     end
 
@@ -251,14 +251,14 @@ local function scan_sets_recursive(sets_table, path, results, item_cache, depth)
     -- NOTE: Aliases (sets.X = sets.Y) will trigger this, which is normal and harmless
     if visited_tables[sets_table] then
         if DEBUG then
-            add_to_chat(160, string.format("[SKIP] Alias detected at: %s (already visited)", path or "unknown"))
+            MessageEquipment.show_alias_detected(path)
         end
         return
     end
     visited_tables[sets_table] = true
 
     if DEBUG then
-        add_to_chat(123, string.format("[DEBUG] Scanning: %s (depth: %d)", path or "root", depth))
+        MessageEquipment.show_scanning(path, depth)
     end
 
     -- Skip known empty/default sets
@@ -355,12 +355,12 @@ function EquipmentChecker.check_job_equipment(job_name)
 
     -- Build item cache ONCE (scan all bags for fast lookups)
     if DEBUG then
-        add_to_chat(123, "[DEBUG] Building item cache...")
+        MessageEquipment.show_building_cache()
     end
 
     local success, item_cache = pcall(build_item_cache)
     if not success then
-        add_to_chat(167, "[ERROR] Failed to build item cache: " .. tostring(item_cache))
+        MessageEquipment.show_cache_build_failed(item_cache)
         return false
     end
 
@@ -369,7 +369,7 @@ function EquipmentChecker.check_job_equipment(job_name)
         for _ in pairs(item_cache) do
             cache_size = cache_size + 1
         end
-        add_to_chat(123, string.format("[DEBUG] Item cache built: %d entries", cache_size))
+        MessageEquipment.show_cache_built(cache_size)
     end
 
     -- Initialize results
@@ -384,18 +384,18 @@ function EquipmentChecker.check_job_equipment(job_name)
     visited_tables = {}
 
     if DEBUG then
-        add_to_chat(123, "[DEBUG] Starting set scan...")
+        MessageEquipment.show_starting_scan()
     end
 
     -- Scan all sets using pre-built cache (with error protection)
     local scan_success, scan_error = pcall(scan_sets_recursive, sets, 'sets', results, item_cache, 0)
     if not scan_success then
-        add_to_chat(167, "[ERROR] Set scan failed: " .. tostring(scan_error))
+        MessageEquipment.show_scan_failed(scan_error)
         return false
     end
 
     if DEBUG then
-        add_to_chat(123, string.format("[DEBUG] Scan complete. Found %d sets", #results.sets))
+        MessageEquipment.show_scan_complete(#results.sets)
     end
 
     -- Check if any sets were found

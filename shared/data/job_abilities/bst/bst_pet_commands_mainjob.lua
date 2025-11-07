@@ -11,8 +11,8 @@
 ---
 --- @file bst_pet_commands_mainjob.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-31
+--- @version 1.1 - Improved alignment
+--- @date Created: 2025-10-31 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Beastmaster
 ---============================================================================
 
@@ -20,36 +20,36 @@ local BST_PET_COMMANDS_MAINJOB = {}
 
 BST_PET_COMMANDS_MAINJOB.abilities = {
     ['Ready'] = {
-        description = 'Pet uses selected TP move (charge system)',
-        level = 25,
-        recast = 30,  -- 30 seconds per charge (base)
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Pet uses selected TP move (charge system)',
+        level                   = 25,
+        recast                  = 30,  -- 30s per charge (base)
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Snarl'] = {
-        description = 'Transfer 99% enmity to pet',
-        level = 45,
-        recast = 30,  -- 30 seconds
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Transfer 99% enmity to pet',
+        level                   = 45,
+        recast                  = 30,  -- 30s
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Spur'] = {
-        description = 'Pet Store TP +20 (90s)',
-        level = 83,
-        recast = 180,  -- 3 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Pet Store TP +20 (90s)',
+        level                   = 83,
+        recast                  = 180,  -- 3min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Run Wild'] = {
-        description = 'Pet stats +25%, pet vanishes after (5min)',
-        level = 93,
-        recast = 900,  -- 15 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Pet stats +25%, pet vanishes after (5min)',
+        level                   = 93,
+        recast                  = 900,  -- 15min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     }
 }
 

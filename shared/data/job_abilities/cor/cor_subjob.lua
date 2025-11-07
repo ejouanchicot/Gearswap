@@ -11,8 +11,8 @@
 ---
 --- @file cor_subjob.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-30
+--- @version 1.1 - Improved alignment
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Corsair
 --- @source https://www.bg-wiki.com/ffxi/Double-Up
 --- @source https://www.bg-wiki.com/ffxi/Quick_Draw
@@ -23,28 +23,28 @@ local COR_SUBJOB = {}
 
 COR_SUBJOB.abilities = {
     ['Double-Up'] = {
-        description = "Reroll last roll (max 11)",
-        level = 5,
-        recast = 5,  -- 5 seconds
-        main_job_only = false,  -- Accessible as subjob
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Reroll last roll (max 11)",
+        level                   = 5,
+        recast                  = 5,  -- 5s
+        main_job_only           = false,  -- Accessible as subjob
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Quick Draw'] = {
-        description = "Ranged elemental damage",
-        level = 40,
-        recast = 60,  -- 1 minute (reducible with merits)
-        main_job_only = false,  -- Accessible as subjob
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Ranged elemental damage",
+        level                   = 40,
+        recast                  = 60,  -- 1min (reducible with merits)
+        main_job_only           = false,  -- Accessible as subjob
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Random Deal'] = {
-        description = "Random party ability reset",
-        level = 50,
-        recast = 1200,  -- 20 minutes (reducible with merits)
-        main_job_only = false,  -- Accessible as subjob
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Random party ability reset",
+        level                   = 50,
+        recast                  = 1200,  -- 20min (reducible with merits)
+        main_job_only           = false,  -- Accessible as subjob
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     }
 }
 

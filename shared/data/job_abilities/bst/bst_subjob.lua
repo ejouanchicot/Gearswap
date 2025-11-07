@@ -13,8 +13,8 @@
 ---
 --- @file bst_subjob.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-31
+--- @version 1.1 - Improved alignment
+--- @date Created: 2025-10-31 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Beastmaster
 ---============================================================================
 
@@ -22,52 +22,52 @@ local BST_SUBJOB = {}
 
 BST_SUBJOB.abilities = {
     ['Charm'] = {
-        description = 'Tame monster as pet',
-        level = 1,
-        recast = 15,  -- 15 seconds
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Tame monster as pet',
+        level                   = 1,
+        recast                  = 15,  -- 15s
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Gauge'] = {
-        description = 'Check charm success rate',
-        level = 10,
-        recast = 30,  -- 30 seconds
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Check charm success rate',
+        level                   = 10,
+        recast                  = 30,  -- 30s
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Reward'] = {
-        description = 'Restore pet HP (food required)',
-        level = 12,
-        recast = 90,  -- 1.5 minutes
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Restore pet HP (food required)',
+        level                   = 12,
+        recast                  = 90,  -- 1.5 minutes
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Call Beast'] = {
-        description = 'Summon jug pet (consumes jug)',
-        level = 23,
-        recast = 300,  -- 5 minutes (base)
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Summon jug pet (consumes jug)',
+        level                   = 23,
+        recast                  = 300,  -- 5min (base)
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Bestial Loyalty'] = {
-        description = 'Summon jug pet (no consume)',
-        level = 23,
-        recast = 1200,  -- 20 minutes
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Summon jug pet (no consume)',
+        level                   = 23,
+        recast                  = 1200,  -- 20min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Tame'] = {
-        description = 'Lower enemy resistance to charm',
-        level = 30,
-        recast = 600,  -- 10 minutes
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Lower enemy resistance to charm',
+        level                   = 30,
+        recast                  = 600,  -- 10min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     }
 }
 

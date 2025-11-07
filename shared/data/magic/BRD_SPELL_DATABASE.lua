@@ -6,7 +6,7 @@
 ---
 --- @file BRD_SPELL_DATABASE.lua
 --- @author Tetsouo
---- @version 3.0 - Modular Architecture Migration
+--- @version 3.0 - Improved formatting - Modular Architecture Migration
 --- @date Created: 2025-10-12 | Updated: 2025-10-31
 --- @verified bg-wiki.com (2025-10-31)
 ---

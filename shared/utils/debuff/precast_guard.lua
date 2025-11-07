@@ -10,11 +10,13 @@
 --- @date Created: 2025-10-02
 ---============================================================================
 
+local MessageCore = require('shared/utils/messages/message_core')
+
 local PrecastGuard = {}
 
 -- Load dependencies
 local DebuffChecker = require('shared/utils/debuff/debuff_checker')
-local MessageDebuffs = require('shared/utils/messages/message_debuffs')
+local MessageDebuffs = require('shared/utils/messages/formatters/magic/message_debuffs')
 
 -- Load configuration
 local config_success, AutoCureConfig = pcall(require, 'shared/config/DEBUFF_AUTOCURE_CONFIG')
@@ -144,7 +146,7 @@ function PrecastGuard.check_and_block(spell, eventArgs)
             should_auto_cure = true
             cure_type = "silence"
             if AutoCureConfig.debug then
-                add_to_chat(8, '[TEST MODE] Using Berserk to simulate Silence')
+                MessageCore.show_test_mode('Using Berserk to simulate Silence')
             end
         end
 
@@ -153,7 +155,7 @@ function PrecastGuard.check_and_block(spell, eventArgs)
             should_auto_cure = true
             cure_type = "paralysis"
             if AutoCureConfig.debug then
-                add_to_chat(8, '[TEST MODE] Using Defender to simulate Paralysis')
+                MessageCore.show_test_mode('Using Defender to simulate Paralysis')
             end
         end
 
@@ -221,7 +223,7 @@ function PrecastGuard.check_magic(spell, eventArgs)
         if AutoCureConfig.test_mode and debuff_name == AutoCureConfig.test_debuff then
             should_auto_cure = true
             if AutoCureConfig.debug then
-                add_to_chat(8, '[TEST MODE] Using ' .. AutoCureConfig.test_debuff .. ' to simulate Silence')
+                MessageCore.show_test_mode('Using ' .. AutoCureConfig.test_debuff .. ' to simulate Silence')
             end
         end
 
@@ -274,7 +276,7 @@ function PrecastGuard.check_ja(spell, eventArgs)
         if AutoCureConfig.test_mode and debuff_name == "Defender" then
             should_auto_cure = true
             if AutoCureConfig.debug then
-                add_to_chat(8, '[TEST MODE] Using Defender to simulate Paralysis')
+                MessageCore.show_test_mode('Using Defender to simulate Paralysis')
             end
         end
 

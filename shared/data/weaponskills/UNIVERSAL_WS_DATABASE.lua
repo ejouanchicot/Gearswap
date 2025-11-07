@@ -27,7 +27,7 @@
 ---
 --- @file UNIVERSAL_WS_DATABASE.lua
 --- @author Tetsouo
---- @version 2.2 - Dagger Integration (212 WS)
+--- @version 2.2 - Improved formatting - Dagger Integration (212 WS)
 --- @date Created: 2025-10-29
 --- @date Updated: 2025-11-04 - All 13 weapon types integrated
 --- @source All data verified 300% against BG-Wiki
@@ -36,6 +36,9 @@
 local UniversalWS = {}
 UniversalWS.weaponskills = {}
 UniversalWS.weapon_types = {}
+
+-- Message formatter for database load messages
+local MessageDatabase = require('shared/utils/messages/formatters/system/message_database')
 
 ---============================================================================
 --- WEAPON TYPE CONFIGURATION
@@ -83,35 +86,35 @@ for _, config in ipairs(weapon_type_configs) do
 
             -- Also add to .weaponskills table (for helper functions)
             UniversalWS.weaponskills[ws_name] = ws_data
-            ws_count = ws_count + 1
+            ws_count            = ws_count + 1
         end
 
         -- Track weapon type
         UniversalWS.weapon_types[config.type] = {
-            file = config.file,
-            count = ws_count,
-            expected = config.count
+            file                = config.file,
+            count               = ws_count,
+            expected            = config.count
         }
 
-        total_loaded = total_loaded + ws_count
+        total_loaded        = total_loaded + ws_count
 
     else
         -- Track failed loads
         table.insert(failed_loads, {
-            file = config.file,
-            type = config.type,
-            error = weapon_db or "Unknown error"
+            file                = config.file,
+            type                = config.type,
+            error               = weapon_db or "Unknown error"
         })
     end
 end
 
 -- Store load statistics
 UniversalWS.load_stats = {
-    total_loaded = total_loaded,
-    expected_total = 212,
-    weapon_type_count = #weapon_type_configs,
-    failed_loads = failed_loads,
-    load_date = os.date("%Y-%m-%d %H:%M:%S")
+    total_loaded        = total_loaded,
+    expected_total      = 212,
+    weapon_type_count   = #weapon_type_configs,
+    failed_loads        = failed_loads,
+    load_date           = os.date("%Y-%m-%d %H:%M:%S")
 }
 
 ---============================================================================
@@ -205,9 +208,9 @@ function UniversalWS.get_ftp(ws_name, tp)
     -- Round TP to nearest 1000
     local tp_key = 1000
     if tp >= 2500 then
-        tp_key = 3000
+        tp_key              = 3000
     elseif tp >= 1500 then
-        tp_key = 2000
+        tp_key              = 2000
     end
 
     return ws_data.ftp[tp_key]
@@ -252,9 +255,9 @@ function UniversalWS.get_ws_by_job(job_code, level)
             local required_level = ws_data.jobs[job_code]
             if level >= required_level then
                 table.insert(result, {
-                    name = ws_name,
-                    data = ws_data,
-                    required_level = required_level
+                    name                = ws_name,
+                    data                = ws_data,
+                    required_level      = required_level
                 })
             end
         end
@@ -289,29 +292,26 @@ end
 function UniversalWS.print_load_summary()
     local stats = UniversalWS.load_stats
 
-    add_to_chat(001, '========================================')
-    add_to_chat(001, 'Universal WS Database - Load Summary')
-    add_to_chat(001, '========================================')
-    add_to_chat(001, string.format('Loaded: %d / %d weapon skills', stats.total_loaded, stats.expected_total))
-    add_to_chat(001, string.format('Weapon Types: %d databases', stats.weapon_type_count))
-    add_to_chat(001, string.format('Load Date: %s', stats.load_date))
+    MessageDatabase.show_load_header('Universal WS Database')
+    MessageDatabase.show_total_loaded_with_expected(stats.total_loaded, stats.expected_total, 'weapon skills')
+    MessageDatabase.show_weapon_type_count(stats.weapon_type_count)
+    MessageDatabase.show_load_date(stats.load_date)
 
     if #stats.failed_loads > 0 then
-        add_to_chat(167, string.format('Failed Loads: %d', #stats.failed_loads))
+        MessageDatabase.show_failed_count(#stats.failed_loads)
         for _, failure in ipairs(stats.failed_loads) do
-            add_to_chat(167, string.format('  - %s (%s)', failure.file, failure.type))
+            MessageDatabase.show_failed_item(failure.file, failure.type)
         end
     end
 
-    add_to_chat(001, '========================================')
+    MessageDatabase.show_separator()
 
     -- Print weapon type breakdown
-    add_to_chat(001, 'Weapon Type Breakdown:')
+    MessageDatabase.show_category_header('Weapon Type Breakdown')
     for weapon_type, info in pairs(UniversalWS.weapon_types) do
-        local status = (info.count == info.expected) and '✓' or '✗'
-        add_to_chat(001, string.format('  %s %s: %d WS', status, weapon_type, info.count))
+        MessageDatabase.show_weapon_type_entry(weapon_type, info.count, info.expected)
     end
-    add_to_chat(001, '========================================')
+    MessageDatabase.show_separator()
 end
 
 ---============================================================================

@@ -104,25 +104,23 @@ end
 --- @return number, number hp_missing, hpp
 local function get_hp_missing(target)
     if not target then
-        if WHMCureConfig.debug_messages then
-            add_to_chat(123, '[DEBUG] No target provided')
+        if WHMCureConfig.debug_messages and WHMMessageFormatter then
+            WHMMessageFormatter.show_debug_no_target()
         end
         return 0, 0
     end
 
     -- Debug: show target info
-    if WHMCureConfig.debug_messages then
-        add_to_chat(123, string.format('[DEBUG] Target: name=%s, id=%s',
-            tostring(target.name), tostring(target.id)))
+    if WHMCureConfig.debug_messages and WHMMessageFormatter then
+        WHMMessageFormatter.show_debug_target(tostring(target.name), tostring(target.id))
     end
 
     -- Self: exact HP
     if target.name == player.name or target.id == player.id then
         local missing = player.max_hp - player.hp
         local hpp = math.floor((player.hp / player.max_hp) * 100)
-        if WHMCureConfig.debug_messages then
-            add_to_chat(123, string.format('[DEBUG] Self: HP %d/%d | Missing: %d',
-                player.hp, player.max_hp, missing))
+        if WHMCureConfig.debug_messages and WHMMessageFormatter then
+            WHMMessageFormatter.show_debug_self_hp(player.hp, player.max_hp, missing)
         end
         return missing, hpp
     end
@@ -131,14 +129,14 @@ local function get_hp_missing(target)
     local party = windower.ffxi.get_party()
     if party then
         -- Debug: show party composition
-        if WHMCureConfig.debug_messages then
+        if WHMCureConfig.debug_messages and WHMMessageFormatter then
             local party_names = {}
             for i = 0, 5 do
                 if party['p' .. i] and party['p' .. i].name then
                     table.insert(party_names, party['p' .. i].name)
                 end
             end
-            add_to_chat(123, '[DEBUG] Party members: ' .. table.concat(party_names, ', '))
+            WHMMessageFormatter.show_debug_party_members(table.concat(party_names, ', '))
         end
 
         -- Check main party (p0-p5)
@@ -155,9 +153,8 @@ local function get_hp_missing(target)
                 local missing = math.max(0, max_hp - current_hp)
 
                 -- Debug output
-                if WHMCureConfig.debug_messages then
-                    add_to_chat(123, string.format('[DEBUG] Party member: %s | HPP: %d%% | Max: %d | Current: %d | Missing: %d',
-                        member.name or 'Unknown', hpp, max_hp, current_hp, missing))
+                if WHMCureConfig.debug_messages and WHMMessageFormatter then
+                    WHMMessageFormatter.show_debug_party_member_hp(member.name or 'Unknown', hpp, max_hp, current_hp, missing)
                 end
 
                 return missing, hpp
@@ -176,9 +173,8 @@ local function get_hp_missing(target)
                     local current_hp = math.floor(max_hp * hpp / 100)
                     local missing = math.max(0, max_hp - current_hp)
 
-                    if WHMCureConfig.debug_messages then
-                        add_to_chat(123, string.format('[DEBUG] Alliance member: %s | HPP: %d%% | Max: %d | Current: %d | Missing: %d',
-                            member.name or 'Unknown', hpp, max_hp, current_hp, missing))
+                    if WHMCureConfig.debug_messages and WHMMessageFormatter then
+                        WHMMessageFormatter.show_debug_alliance_member_hp(member.name or 'Unknown', hpp, max_hp, current_hp, missing)
                     end
 
                     return missing, hpp
@@ -350,9 +346,7 @@ function CureManager.select_cure_tier(spell, target)
     -- If all Cures in recast, cancel cast
     if not available_spell then
         if WHMMessageFormatter then
-            WHMMessageFormatter.error(recast_reason or "All Cure spells on recast")
-        else
-            add_to_chat(123, string.format('[WHM] ERROR: %s', recast_reason or "All Cure spells on recast"))
+            WHMMessageFormatter.show_cure_recast_error(recast_reason or "All Cure spells on recast")
         end
         return nil
     end
@@ -388,11 +382,9 @@ function CureManager.select_cure_tier(spell, target)
             local hp_missing = target and get_hp_missing(target) or 0
             WHMMessageFormatter.show_cure_tier_change(spell_name, available_spell, hp_missing, display_reason)
         end
-    elseif WHMCureConfig.debug_messages then
-        local reason_str = recast_reason and (" (" .. recast_reason .. ")") or ""
-        add_to_chat(WHMCureConfig.message_color,
-            string.format('[CureManager] %s → %s%s',
-                spell_name, available_spell, reason_str))
+    elseif WHMCureConfig.debug_messages and WHMMessageFormatter then
+        local hp_missing = target and get_hp_missing(target) or 0
+        WHMMessageFormatter.show_cure_tier_change(spell_name, available_spell, hp_missing, recast_reason)
     end
 
     return available_spell

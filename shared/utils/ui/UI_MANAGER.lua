@@ -11,6 +11,8 @@
 --- @date 2025-09-28
 ---============================================================================
 
+local MessageCore = require('shared/utils/messages/message_core')
+
 local KeybindUI = {}
 local texts = require('texts')
 
@@ -36,7 +38,7 @@ if UIConfig.show_column_headers == nil then UIConfig.show_column_headers = true 
 if UIConfig.show_footer == nil then UIConfig.show_footer = true end
 if UIConfig.enabled == nil then UIConfig.enabled = true end
 
-local MessageUI = require('shared/utils/messages/message_ui')
+local MessageUI = require('shared/utils/messages/formatters/ui/message_ui')
 local KeybindSettings = require('shared/utils/ui/UI_SETTINGS')
 
 -- Global UI objects to persist across module reloads
@@ -700,7 +702,7 @@ function KeybindUI.set_font(font_name)
         _G.keybind_ui_display:font(validated_font)
     end
 
-    add_to_chat(122, "[UI] Font changed to: " .. validated_font)
+    MessageCore.show_ui_info("Font changed to: " .. validated_font)
     return true
 end
 

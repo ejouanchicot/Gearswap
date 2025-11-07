@@ -7,10 +7,27 @@
 --- @file WATCHDOG_COMMANDS.lua
 --- @author Tetsouo
 --- @version 3.1 - Item support (cast_delay)
---- @date Created: 2025-10-25 | Updated: 2025-11-04
+--- @date Created: 2025-10-25 | Updated: 2025-11-06 | Updated: 2025-11-04
 ---============================================================================
 
 local WatchdogCommands = {}
+
+---============================================================================
+--- DEPENDENCIES
+---============================================================================
+
+local MessageWatchdog = require('shared/utils/messages/formatters/system/message_watchdog')
+
+---============================================================================
+--- CONSTANTS
+---============================================================================
+
+local CHAT_DEFAULT = 1
+local CHAT_ERROR   = 167
+
+---============================================================================
+--- COMMAND CHECKS
+---============================================================================
 
 --- Check if command is a watchdog command
 --- @param command string Command name
@@ -37,7 +54,7 @@ function WatchdogCommands.handle_command(cmdParams, eventArgs)
     -- Get MidcastWatchdog from global
     local MidcastWatchdog = _G.MidcastWatchdog
     if not MidcastWatchdog then
-        add_to_chat(167, '[Watchdog] Error: Watchdog not loaded')
+        MessageWatchdog.show_not_loaded()
         return true
     end
 
@@ -51,20 +68,7 @@ function WatchdogCommands.handle_command(cmdParams, eventArgs)
     if #cmd_args == 0 then
         -- Show status
         local stats = MidcastWatchdog.get_stats()
-        add_to_chat(158, '=== Midcast Watchdog Status ===')
-        add_to_chat(158, '  Enabled: ' .. tostring(stats.enabled))
-        add_to_chat(158, '  Debug: ' .. tostring(stats.debug))
-        add_to_chat(158, '  Buffer: ' .. string.format("%.1f", stats.buffer) .. 's (added to cast time)')
-        add_to_chat(158, '  Fallback Timeout: ' .. string.format("%.1f", stats.fallback_timeout) .. 's (unknown spells)')
-        add_to_chat(158, '  Active: ' .. tostring(stats.active))
-        if stats.active then
-            local action_type_label = stats.action_type == 'item' and 'Item' or 'Spell'
-            local id_label = stats.action_type == 'item' and stats.item_id or stats.spell_id
-            add_to_chat(158, '  ' .. action_type_label .. ': ' .. stats.spell_name .. ' (ID: ' .. id_label .. ')')
-            add_to_chat(158, '  Cast Time: ' .. string.format("%.1f", stats.cast_time) .. 's')
-            add_to_chat(158, '  Timeout: ' .. string.format("%.1f", stats.timeout) .. 's')
-            add_to_chat(158, '  Age: ' .. string.format("%.2f", stats.age) .. 's')
-        end
+        MessageWatchdog.show_status(stats)
     elseif cmd_args[1] == 'on' then
         MidcastWatchdog.enable()
     elseif cmd_args[1] == 'off' then
@@ -92,36 +96,9 @@ function WatchdogCommands.handle_command(cmdParams, eventArgs)
         MidcastWatchdog.simulate_stuck(spell_name, spell_id)
     elseif cmd_args[1] == 'stats' then
         local stats = MidcastWatchdog.get_stats()
-        add_to_chat(158, '=== Midcast Watchdog Stats ===')
-        add_to_chat(158, '  Enabled: ' .. tostring(stats.enabled))
-        add_to_chat(158, '  Debug: ' .. tostring(stats.debug))
-        add_to_chat(158, '  Buffer: ' .. string.format("%.1f", stats.buffer) .. 's')
-        add_to_chat(158, '  Fallback Timeout: ' .. string.format("%.1f", stats.fallback_timeout) .. 's')
-        add_to_chat(158, '  Active Midcast: ' .. tostring(stats.active))
-        if stats.active then
-            local action_type_label = stats.action_type == 'item' and 'Current Item' or 'Current Spell'
-            local id_label = stats.action_type == 'item' and stats.item_id or stats.spell_id
-            add_to_chat(158, '  ' .. action_type_label .. ': ' .. stats.spell_name .. ' (ID: ' .. id_label .. ')')
-            add_to_chat(158, '  Cast Time: ' .. string.format("%.1f", stats.cast_time) .. 's')
-            add_to_chat(158, '  Timeout: ' .. string.format("%.1f", stats.timeout) .. 's')
-            add_to_chat(158, '  Age: ' .. string.format("%.2f", stats.age) .. 's')
-        end
+        MessageWatchdog.show_stats(stats)
     else
-        add_to_chat(167, '[Watchdog] Commands:')
-        add_to_chat(167, '  //gs c watchdog - Show status')
-        add_to_chat(167, '  //gs c watchdog on/off - Enable/disable')
-        add_to_chat(167, '  //gs c watchdog toggle - Toggle on/off')
-        add_to_chat(167, '  //gs c watchdog debug - Toggle debug mode (shows scans)')
-        add_to_chat(167, '  //gs c watchdog buffer <sec> - Set buffer (0-10s, added to cast time)')
-        add_to_chat(167, '  //gs c watchdog fallback <sec> - Set fallback timeout (0-30s, unknown spells)')
-        add_to_chat(167, '  //gs c watchdog clear - Clear all tracked')
-        add_to_chat(167, '  //gs c watchdog test [spell] [id] - Simulate stuck midcast (TEST)')
-        add_to_chat(167, '  //gs c watchdog stats - Show detailed stats')
-        add_to_chat(167, ' ')
-        add_to_chat(167, 'Examples:')
-        add_to_chat(167, '  //gs c watchdog buffer 2.5 - Use 2.5s safety buffer')
-        add_to_chat(167, '  //gs c watchdog test "Teleport-Holla" 262 - Test with Teleport (20s cast)')
-        add_to_chat(167, '  //gs c watchdog stats - Show detailed stats')
+        MessageWatchdog.show_help()
     end
 
     if eventArgs then
@@ -129,5 +106,9 @@ function WatchdogCommands.handle_command(cmdParams, eventArgs)
     end
     return true
 end
+
+---============================================================================
+--- MODULE EXPORT
+---============================================================================
 
 return WatchdogCommands

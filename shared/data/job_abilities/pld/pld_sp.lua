@@ -9,8 +9,8 @@
 ---
 --- @file pld_sp.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-30
+--- @version 1.1 - Improved alignment
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @updated 2025-10-31
 --- @source https://www.bg-wiki.com/ffxi/Paladin
 --- @source https://www.bg-wiki.com/ffxi/Invincible
@@ -21,20 +21,20 @@ local PLD_SP = {}
 
 PLD_SP.abilities = {
     ['Invincible'] = {
-        description = "Physical damage immunity (30s)",
-        level = 1,
-        recast = 3600,  -- 1 hour (SP1)
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Physical damage immunity (30s)",
+        level                   = 1,
+        recast                  = 3600,  -- 1hr (SP1)
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Intervene'] = {
-        description = "Shield strike, ATK/ACC → 1 (30s)",
-        level = 96,
-        recast = 3600,  -- 1 hour (SP2)
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Shield strike, ATK/ACC → 1 (30s)",
+        level                   = 96,
+        recast                  = 3600,  -- 1hr (SP2)
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     }
 }
 

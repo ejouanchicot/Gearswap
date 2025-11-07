@@ -15,6 +15,8 @@
 --- @date Created: 2025-10-22
 ---============================================================================
 
+local MessageDualbox = require('shared/utils/messages/formatters/ui/message_dualbox')
+
 local DualBoxManager = {}
 
 ---============================================================================
@@ -73,19 +75,17 @@ function DualBoxManager.initialize(config)
         if success and loaded_config then
             _G.DualBoxConfig = loaded_config
             if _G.DualBoxConfig.debug then
-                add_to_chat(122, string.format('[DUALBOX] Loaded config from: %s', config_path))
-                add_to_chat(122, string.format('[DUALBOX] Role: %s', _G.DualBoxConfig.role))
+                MessageDualbox.show_config_loaded(config_path)
+                MessageDualbox.show_role(_G.DualBoxConfig.role)
 
                 -- Display names clearly based on role
                 local this_char = get_this_character()
                 local target_char = get_target_character()
 
                 if _G.DualBoxConfig.role == "alt" then
-                    add_to_chat(122, string.format('[DUALBOX] This character (ALT): %s', this_char))
-                    add_to_chat(122, string.format('[DUALBOX] Sending updates to (MAIN): %s', target_char))
+                    MessageDualbox.show_alt_info(this_char, target_char)
                 else
-                    add_to_chat(122, string.format('[DUALBOX] This character (MAIN): %s', this_char))
-                    add_to_chat(122, string.format('[DUALBOX] Receiving updates from (ALT): %s', target_char))
+                    MessageDualbox.show_main_info(this_char, target_char)
                 end
             end
         else
@@ -98,7 +98,7 @@ function DualBoxManager.initialize(config)
                 timeout = 30,
                 debug = false
             }
-            add_to_chat(167, string.format('[DUALBOX] WARNING: Config not found at %s, using defaults', config_path))
+            MessageDualbox.show_config_not_found(config_path)
         end
     end
 
@@ -150,7 +150,7 @@ function DualBoxManager.send_job_update()
 
     if not target_name then
         if _G.DualBoxConfig.debug then
-            add_to_chat(167, '[DUALBOX] ERROR: Could not determine target character')
+            MessageDualbox.show_target_error()
         end
         return
     end
@@ -161,7 +161,7 @@ function DualBoxManager.send_job_update()
 
     -- Debug message
     if _G.DualBoxConfig.debug then
-        add_to_chat(122, string.format('[DUALBOX] Sent job update to %s: %s/%s', target_name, main_job, sub_job))
+        MessageDualbox.show_job_update_sent(target_name, main_job, sub_job)
     end
 end
 
@@ -179,7 +179,7 @@ function DualBoxManager.handle_job_request()
 
     if _G.DualBoxConfig.debug then
         local target_name = get_target_character() or "Unknown"
-        add_to_chat(122, string.format('[DUALBOX] Received job request from %s, sending update', target_name))
+        MessageDualbox.show_job_request_received(target_name)
     end
 
     -- Send current job info
@@ -212,7 +212,7 @@ function DualBoxManager.request_alt_job()
     send_command(command)
 
     if _G.DualBoxConfig.debug then
-        add_to_chat(122, string.format('[DUALBOX] Requesting job info from %s', target_name))
+        MessageDualbox.show_requesting_job(target_name)
     end
 end
 
@@ -246,12 +246,11 @@ function DualBoxManager.receive_alt_job(main_job, sub_job)
 
     -- Always show alt job confirmation (info message)
     local alt_name = get_target_character() or "Alt"
-    add_to_chat(122, string.format('[DUALBOX] %s job: %s/%s',
-        alt_name, main_job, sub_job or "NON"))
+    MessageDualbox.show_job_update_received(alt_name, main_job, sub_job or "NON")
 
     -- Additional debug details (only if debug enabled)
     if _G.DualBoxConfig.debug then
-        add_to_chat(122, string.format('[DUALBOX] Job update received, reloading macrobook...'))
+        MessageDualbox.show_reloading_macrobook()
     end
 
     -- Trigger macrobook reload
@@ -332,38 +331,35 @@ end
 --- Debug command to show current state
 function DualBoxManager.show_status()
     if not _G.DualBoxConfig then
-        add_to_chat(167, '[DUALBOX] Not initialized')
+        MessageDualbox.show_not_initialized()
         return
     end
 
     local config = _G.DualBoxConfig
-    add_to_chat(122, '========================================')
-    add_to_chat(122, '[DUALBOX] Status:')
-    add_to_chat(122, string.format('  Role: %s', config.role))
+    MessageDualbox.show_status_header()
+    MessageDualbox.show_status_role(config.role)
 
     local this_char = get_this_character() or "Unknown"
     local target_char = get_target_character() or "Unknown"
 
     if config.role == "alt" then
-        add_to_chat(122, string.format('  This character (ALT): %s', this_char))
-        add_to_chat(122, string.format('  Sending to (MAIN): %s', target_char))
+        MessageDualbox.show_status_alt_info(this_char, target_char)
     else
-        add_to_chat(122, string.format('  This character (MAIN): %s', this_char))
-        add_to_chat(122, string.format('  Receiving from (ALT): %s', target_char))
+        MessageDualbox.show_status_main_info(this_char, target_char)
     end
 
-    add_to_chat(122, string.format('  Enabled: %s', tostring(config.enabled)))
+    MessageDualbox.show_status_enabled(config.enabled)
 
     if config.role == "main" and _G.AltJobState then
         local online = DualBoxManager.is_alt_online()
-        add_to_chat(122, string.format('  Alt Online: %s', tostring(online)))
+        MessageDualbox.show_status_alt_online(online)
         if online then
-            add_to_chat(122, string.format('  Alt Job: %s/%s', _G.AltJobState.job, _G.AltJobState.subjob))
-            add_to_chat(122, string.format('  Last Update: %ds ago', DualBoxManager.get_time_since_update()))
+            MessageDualbox.show_status_alt_job(_G.AltJobState.job, _G.AltJobState.subjob)
+            MessageDualbox.show_status_last_update(DualBoxManager.get_time_since_update())
         end
     end
 
-    add_to_chat(122, '========================================')
+    MessageDualbox.show_status_footer()
 end
 
 ---============================================================================
@@ -383,14 +379,14 @@ if not _G.DualBoxManagerInitialized then
             -- If this is ALT role, send initial job update
             if _G.DualBoxConfig and _G.DualBoxConfig.role == "alt" then
                 if _G.DualBoxConfig.debug then
-                    add_to_chat(122, '[DUALBOX] ALT role detected, sending initial job update')
+                    MessageDualbox.show_alt_role_detected()
                 end
                 DualBoxManager.send_job_update()
 
             -- If this is MAIN role, request job from ALT
             elseif _G.DualBoxConfig and _G.DualBoxConfig.role == "main" then
                 if _G.DualBoxConfig.debug then
-                    add_to_chat(122, '[DUALBOX] MAIN role detected, requesting job from ALT')
+                    MessageDualbox.show_main_role_detected()
                 end
                 DualBoxManager.request_alt_job()
             end

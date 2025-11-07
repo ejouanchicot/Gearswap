@@ -136,9 +136,7 @@ function job_precast(spell, action, spellMap, eventArgs)
                     end
                 end
 
-                -- Display WS message with description and FINAL TP (with Moonshade bonus)
-                MessageFormatter.show_ws_activated(spell.english, WS_DB[spell.english].description, final_tp)
-            end
+                    end
         else
             -- Not enough TP - display error
             MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))

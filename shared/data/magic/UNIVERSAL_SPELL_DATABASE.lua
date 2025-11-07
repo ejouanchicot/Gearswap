@@ -38,13 +38,16 @@
 ---
 --- @file    UNIVERSAL_SPELL_DATABASE.lua
 --- @author  Tetsouo
---- @version 1.0 - Initial Release
---- @date    Created: 2025-11-01
+--- @version 2.0 - Improved formatting - Improved alignment - Initial Release
+--- @date    Created: 2025-11-01 | Updated: 2025-11-06
 ---============================================================================
 
 local UniversalSpells = {}
 UniversalSpells.spells = {}
 UniversalSpells.databases = {}
+
+-- Message formatter for database load messages
+local MessageDatabase = require('shared/utils/messages/formatters/system/message_database')
 
 ---============================================================================
 --- DATABASE CONFIGURATION
@@ -118,7 +121,7 @@ for _, config in ipairs(spell_database_configs) do
         -- Track database info
         UniversalSpells.databases[config.name] = {
             file = config.file,
-            type = config.type,
+            type                    = config.type,
             count = spell_count,
             format = spells_table and 'valid' or 'invalid'
         }
@@ -129,7 +132,7 @@ for _, config in ipairs(spell_database_configs) do
         -- Track failed loads
         table.insert(failed_loads, {
             file = config.file,
-            type = config.type,
+            type                    = config.type,
             name = config.name,
             error = spell_db or "Unknown error"
         })
@@ -236,7 +239,7 @@ function UniversalSpells.get_spells_by_skill(skill_type)
     local result = {}
 
     for spell_name, spell_data in pairs(UniversalSpells.spells) do
-        if spell_data.skill == skill_type or spell_data.type == skill_type then
+        if spell_data.skill               == skill_type or spell_data.type == skill_type then
             table.insert(result, {name = spell_name, data = spell_data})
         end
     end
@@ -254,42 +257,40 @@ end
 function UniversalSpells.print_load_summary()
     local stats = UniversalSpells.load_stats
 
-    add_to_chat(001, '========================================')
-    add_to_chat(001, 'Universal Spell Database - Load Summary')
-    add_to_chat(001, '========================================')
-    add_to_chat(001, string.format('Loaded: %d spells', stats.total_loaded))
-    add_to_chat(001, string.format('Databases: %d total', stats.database_count))
-    add_to_chat(001, string.format('Load Date: %s', stats.load_date))
+    MessageDatabase.show_load_header('Universal Spell Database')
+    MessageDatabase.show_total_loaded(stats.total_loaded, 'spells')
+    MessageDatabase.show_database_count(stats.database_count)
+    MessageDatabase.show_load_date(stats.load_date)
 
     if #stats.failed_loads > 0 then
-        add_to_chat(167, string.format('Failed Loads: %d', #stats.failed_loads))
+        MessageDatabase.show_failed_count(#stats.failed_loads)
         for _, failure in ipairs(stats.failed_loads) do
-            add_to_chat(167, string.format('  - %s (%s)', failure.file, failure.name))
+            MessageDatabase.show_failed_item(failure.file, failure.name)
         end
     end
 
-    add_to_chat(001, '========================================')
+    MessageDatabase.show_separator()
 
     -- Print database breakdown
-    add_to_chat(001, 'Database Breakdown:')
+    MessageDatabase.show_breakdown_header()
 
     -- Job-specific databases
-    add_to_chat(001, 'Job-Specific:')
+    MessageDatabase.show_category_header('Job-Specific')
     for db_name, info in pairs(UniversalSpells.databases) do
         if info.type == 'job' then
-            add_to_chat(001, string.format('  %s: %d spells', db_name, info.count))
+            MessageDatabase.show_database_entry(db_name, info.count, 'spells')
         end
     end
 
     -- Skill-based databases
-    add_to_chat(001, 'Skill-Based:')
+    MessageDatabase.show_category_header('Skill-Based')
     for db_name, info in pairs(UniversalSpells.databases) do
         if info.type == 'skill' then
-            add_to_chat(001, string.format('  %s: %d spells', db_name, info.count))
+            MessageDatabase.show_database_entry(db_name, info.count, 'spells')
         end
     end
 
-    add_to_chat(001, '========================================')
+    MessageDatabase.show_separator()
 end
 
 ---============================================================================

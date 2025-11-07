@@ -13,8 +13,8 @@
 ---
 --- @file sam_mainjob.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-30
+--- @version 1.1 - Improved alignment
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @updated 2025-10-31
 --- @source https://www.bg-wiki.com/ffxi/Samurai
 ---============================================================================
@@ -23,52 +23,52 @@ local SAM_MAINJOB = {}
 
 SAM_MAINJOB.abilities = {
     ['Konzen-ittai'] = {
-        description = 'WS TP bonus',
-        level = 65,
-        recast = 300,  -- 5 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'WS TP bonus',
+        level                   = 65,
+        recast                  = 300,  -- 5min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Shikikoyo'] = {
-        description = 'Share TP >1000 with party member',
-        level = 75,
-        recast = 300,  -- 5 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Share TP >1000 with party member',
+        level                   = 75,
+        recast                  = 300,  -- 5min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Blade Bash'] = {
-        description = 'Stun attack',
-        level = 75,
-        recast = 180,  -- 3 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Stun attack',
+        level                   = 75,
+        recast                  = 180,  -- 3min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Sengikori'] = {
-        description = 'Store TP boost',
-        level = 77,
-        recast = 180,  -- 3 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Store TP boost',
+        level                   = 77,
+        recast                  = 180,  -- 3min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Hamanoha'] = {
-        description = 'Zanshin +100%',
-        level = 87,
-        recast = 180,  -- 3 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Zanshin +100%',
+        level                   = 87,
+        recast                  = 180,  -- 3min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Hagakure'] = {
-        description = 'Convert Kenki → HP/MP/TP',
-        level = 95,
-        recast = 180,  -- 3 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Convert Kenki → HP/MP/TP',
+        level                   = 95,
+        recast                  = 180,  -- 3min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     }
 }
 

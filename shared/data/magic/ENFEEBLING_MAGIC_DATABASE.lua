@@ -29,8 +29,8 @@
 ---
 --- @file ENFEEBLING_MAGIC_DATABASE.lua
 --- @author Tetsouo
---- @version 2.0 - Modular Architecture (3 files)
---- @date Created: 2025-10-30 | Updated: 2025-10-30
+--- @version 2.1 - Improved formatting - Improved alignment - Modular Architecture (3 files)
+--- @date Created: 2025-10-30 | Updated: 2025-11-06 | Updated: 2025-10-30
 ---============================================================================
 
 local ENFEEBLING_MAGIC_DATABASE = {}

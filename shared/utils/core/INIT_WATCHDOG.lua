@@ -10,14 +10,24 @@
 --- @file INIT_WATCHDOG.lua
 --- @author Tetsouo
 --- @version 3.0 - Simplified (no global hooks)
---- @date Created: 2025-10-25
+--- @date Created: 2025-10-25 | Updated: 2025-11-06
+---============================================================================
+
+---============================================================================
+--- DEPENDENCIES
+---============================================================================
+
+local MessageInit = require('shared/utils/messages/formatters/system/message_init')
+
+---============================================================================
+--- WATCHDOG INITIALIZATION
 ---============================================================================
 
 -- Load the watchdog system
 local success, MidcastWatchdog = pcall(require, 'shared/utils/core/midcast_watchdog')
 
 if not success then
-    add_to_chat(167, '[Watchdog] Failed to load: ' .. tostring(MidcastWatchdog))
+    MessageInit.show_watchdog_load_failed(MidcastWatchdog)
     return
 end
 

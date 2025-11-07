@@ -7,7 +7,7 @@
 ---
 --- @file NIN_JA_DATABASE.lua
 --- @author Tetsouo (auto-generated)
---- @version 1.0
+--- @version 1.0 - Improved formatting
 --- @date Created: 2025-10-31
 ---============================================================================
 

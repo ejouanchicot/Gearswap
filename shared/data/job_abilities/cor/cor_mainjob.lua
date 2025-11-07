@@ -11,8 +11,8 @@
 ---
 --- @file cor_mainjob.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-30
+--- @version 1.1 - Improved alignment
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Corsair
 --- @source https://www.bg-wiki.com/ffxi/Snake_Eye
 --- @source https://www.bg-wiki.com/ffxi/Fold
@@ -24,36 +24,36 @@ local COR_MAINJOB = {}
 
 COR_MAINJOB.abilities = {
     ['Snake Eye'] = {
-        description = "Force roll = 1, auto-11 chance",
-        level = 75,  -- Merit ability
-        recast = 300,  -- 5 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Force roll = 1, auto-11 chance",
+        level                   = 75,  -- Merit ability
+        recast                  = 300,  -- 5min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Fold'] = {
-        description = "Remove longest roll/bust",
-        level = 75,  -- Merit ability
-        recast = 300,  -- 5 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Remove longest roll/bust",
+        level                   = 75,  -- Merit ability
+        recast                  = 300,  -- 5min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Triple Shot'] = {
-        description = "40% triple shot (90s)",
-        level = 87,
-        recast = 300,  -- 5 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "40% triple shot (90s)",
+        level                   = 87,
+        recast                  = 300,  -- 5min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Crooked Cards'] = {
-        description = "Next roll +20% (bust penalty +20%)",
-        level = 95,
-        recast = 600,  -- 10 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Next roll +20% (bust penalty +20%)",
+        level                   = 95,
+        recast                  = 600,  -- 10min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     }
 }
 

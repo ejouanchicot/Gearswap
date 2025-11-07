@@ -13,12 +13,12 @@ healing_spells.spells = {
     ---========================================================================
 
     ["Pollen"] = {
-        element = "Light",
-        trait = "Resist Sleep",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 1
+        element                 = "Light",
+        trait                   = "Resist Sleep",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 1
     },
 
     ---========================================================================
@@ -26,12 +26,12 @@ healing_spells.spells = {
     ---========================================================================
 
     ["Healing Breeze"] = {
-        element = "Wind",
-        trait = "Auto Regen",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 16
+        element                 = "Wind",
+        trait                   = "Auto Regen",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 16
     },
 
     ---========================================================================
@@ -39,12 +39,12 @@ healing_spells.spells = {
     ---========================================================================
 
     ["Wild Carrot"] = {
-        element = "Light",
-        trait = "Resist Sleep",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 30
+        element                 = "Light",
+        trait                   = "Resist Sleep",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 30
     },
 
     ---========================================================================
@@ -52,12 +52,12 @@ healing_spells.spells = {
     ---========================================================================
 
     ["Magic Fruit"] = {
-        element = "Light",
-        trait = "Resist Sleep",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 58
+        element                 = "Light",
+        trait                   = "Resist Sleep",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 58
     },
 
     ---========================================================================
@@ -65,12 +65,12 @@ healing_spells.spells = {
     ---========================================================================
 
     ["Exuviation"] = {
-        element = "Fire",
-        trait = "Resist Sleep",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 75
+        element                 = "Fire",
+        trait                   = "Resist Sleep",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 75
     },
 
     ---========================================================================
@@ -78,12 +78,12 @@ healing_spells.spells = {
     ---========================================================================
 
     ["Plenilune Embrace"] = {
-        element = "Light",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = false,
-        BLU = 76
+        element                 = "Light",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 76
     },
 
     ---========================================================================
@@ -91,12 +91,12 @@ healing_spells.spells = {
     ---========================================================================
 
     ["Regeneration"] = {
-        element = "Light",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = false,
-        BLU = 78
+        element                 = "Light",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 78
     },
 
     ---========================================================================
@@ -104,12 +104,12 @@ healing_spells.spells = {
     ---========================================================================
 
     ["White Wind"] = {
-        element = "Wind",
-        trait = "Auto Regen",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 94
+        element                 = "Wind",
+        trait                   = "Auto Regen",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 94
     },
 
     ---========================================================================
@@ -117,12 +117,12 @@ healing_spells.spells = {
     ---========================================================================
 
     ["Restoral"] = {
-        element = "Light",
-        trait = "Max HP Boost",
-        trait_points = 8,
-        property = nil,
-        unbridled = false,
-        BLU = 99
+        element                 = "Light",
+        trait                   = "Max HP Boost",
+        trait_points            = 8,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 99
     }
 }
 

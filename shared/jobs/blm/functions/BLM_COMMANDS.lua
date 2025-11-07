@@ -27,9 +27,10 @@
 local UICommands = require('shared/utils/ui/UI_COMMANDS')
 local CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
 local WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
+local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
 
 -- BLM message formatter (handles all colored messages)
-local BLMMessages = require('shared/utils/messages/message_blm')
+local BLMMessages = require('shared/utils/messages/formatters/jobs/message_blm')
 
 -- NOTE: BLM logic functions are loaded globally via blm_functions.lua:
 --   • BuffSelf() - Automated self-buffing
@@ -264,7 +265,7 @@ function job_self_command(cmdParams, eventArgs)
         MidcastManager.toggle_debug()
 
         -- Confirmation message
-        add_to_chat(159, '[BLM_COMMANDS] Debug toggled! Current state: ' .. tostring(_G.MidcastManagerDebugState))
+        MessageCommands.show_debugmidcast_toggled('BLM', _G.MidcastManagerDebugState)
 
         eventArgs.handled = true
         return

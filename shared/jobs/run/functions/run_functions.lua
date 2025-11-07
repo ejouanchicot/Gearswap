@@ -19,7 +19,7 @@
 --- SECTION 1: MESSAGE SYSTEM
 ---============================================================================
 -- Message system (must load first for buff status display)
-include('../shared/utils/messages/message_buffs.lua')
+include('../shared/utils/messages/formatters/magic/message_buffs.lua')
 
 ---============================================================================
 --- SECTION 2: COMBAT ACTION HOOKS

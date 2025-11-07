@@ -13,12 +13,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Sheep Song"] = {
-        element = "Light",
-        trait = "Auto Regen",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 16
+        element                 = "Light",
+        trait                   = "Auto Regen",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 16
     },
 
     ---========================================================================
@@ -26,12 +26,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Soporific"] = {
-        element = "Dark",
-        trait = "Clear Mind",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 24
+        element                 = "Dark",
+        trait                   = "Clear Mind",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 24
     },
 
     ---========================================================================
@@ -39,20 +39,20 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Chaotic Eye"] = {
-        element = "Wind",
-        trait = "Conserve MP",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 32
+        element                 = "Wind",
+        trait                   = "Conserve MP",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 32
     },
     ["Sound Blast"] = {
-        element = "Fire",
-        trait = "Magic Attack Bonus",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 32
+        element                 = "Fire",
+        trait                   = "Magic Attack Bonus",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 32
     },
 
     ---========================================================================
@@ -60,12 +60,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Blank Gaze"] = {
-        element = "Light",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = false,
-        BLU = 38
+        element                 = "Light",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 38
     },
 
     ---========================================================================
@@ -73,12 +73,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Venom Shell"] = {
-        element = "Water",
-        trait = "Clear Mind",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 42
+        element                 = "Water",
+        trait                   = "Clear Mind",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 42
     },
 
     ---========================================================================
@@ -86,12 +86,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Stinking Gas"] = {
-        element = "Wind",
-        trait = "Auto Refresh",
-        trait_points = 1,
-        property = nil,
-        unbridled = false,
-        BLU = 44
+        element                 = "Wind",
+        trait                   = "Auto Refresh",
+        trait_points            = 1,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 44
     },
 
     ---========================================================================
@@ -99,20 +99,20 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Awful Eye"] = {
-        element = "Water",
-        trait = "Clear Mind",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 46
+        element                 = "Water",
+        trait                   = "Clear Mind",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 46
     },
     ["Geist Wall"] = {
-        element = "Dark",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = false,
-        BLU = 46
+        element                 = "Dark",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 46
     },
 
     ---========================================================================
@@ -120,12 +120,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Jettatura"] = {
-        element = "Dark",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = false,
-        BLU = 48
+        element                 = "Dark",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 48
     },
 
     ---========================================================================
@@ -133,12 +133,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Frightful Roar"] = {
-        element = "Wind",
-        trait = "Auto Refresh",
-        trait_points = 2,
-        property = nil,
-        unbridled = false,
-        BLU = 50
+        element                 = "Wind",
+        trait                   = "Auto Refresh",
+        trait_points            = 2,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 50
     },
 
     ---========================================================================
@@ -146,20 +146,20 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Cold Wave"] = {
-        element = "Ice",
-        trait = "Auto Refresh",
-        trait_points = 1,
-        property = nil,
-        unbridled = false,
-        BLU = 52
+        element                 = "Ice",
+        trait                   = "Auto Refresh",
+        trait_points            = 1,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 52
     },
     ["Filamented Hold"] = {
-        element = "Earth",
-        trait = "Clear Mind",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 52
+        element                 = "Earth",
+        trait                   = "Clear Mind",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 52
     },
 
     ---========================================================================
@@ -167,12 +167,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Light of Penance"] = {
-        element = "Light",
-        trait = "Auto Refresh",
-        trait_points = 2,
-        property = nil,
-        unbridled = false,
-        BLU = 58
+        element                 = "Light",
+        trait                   = "Auto Refresh",
+        trait_points            = 2,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 58
     },
 
     ---========================================================================
@@ -180,20 +180,20 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Feather Tickle"] = {
-        element = "Wind",
-        trait = "Clear Mind",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 64
+        element                 = "Wind",
+        trait                   = "Clear Mind",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 64
     },
     ["Yawn"] = {
-        element = "Light",
-        trait = "Resist Sleep",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 64
+        element                 = "Light",
+        trait                   = "Resist Sleep",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 64
     },
 
     ---========================================================================
@@ -201,12 +201,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Infrasonics"] = {
-        element = "Ice",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = false,
-        BLU = 65
+        element                 = "Ice",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 65
     },
 
     ---========================================================================
@@ -214,12 +214,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Sandspray"] = {
-        element = "Dark",
-        trait = "Clear Mind",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 66
+        element                 = "Dark",
+        trait                   = "Clear Mind",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 66
     },
 
     ---========================================================================
@@ -227,12 +227,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Enervation"] = {
-        element = "Dark",
-        trait = "Counter",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 67
+        element                 = "Dark",
+        trait                   = "Counter",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 67
     },
 
     ---========================================================================
@@ -240,12 +240,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Lowing"] = {
-        element = "Fire",
-        trait = "Clear Mind",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 71
+        element                 = "Fire",
+        trait                   = "Clear Mind",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 71
     },
 
     ---========================================================================
@@ -253,12 +253,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Temporal Shift"] = {
-        element = "Thunder",
-        trait = "Attack Bonus",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 73
+        element                 = "Thunder",
+        trait                   = "Attack Bonus",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 73
     },
 
     ---========================================================================
@@ -266,12 +266,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Actinic Burst"] = {
-        element = "Light",
-        trait = "Auto Refresh",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 74
+        element                 = "Light",
+        trait                   = "Auto Refresh",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 74
     },
 
     ---========================================================================
@@ -279,12 +279,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Cimicine Discharge"] = {
-        element = "Earth",
-        trait = "Magic Burst Bonus",
-        trait_points = 6,
-        property = nil,
-        unbridled = false,
-        BLU = 78
+        element                 = "Earth",
+        trait                   = "Magic Burst Bonus",
+        trait_points            = 6,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 78
     },
 
     ---========================================================================
@@ -292,12 +292,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Demoralizing Roar"] = {
-        element = "Water",
-        trait = "Double / Triple Attack",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 80
+        element                 = "Water",
+        trait                   = "Double / Triple Attack",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 80
     },
 
     ---========================================================================
@@ -305,12 +305,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Dream Flower"] = {
-        element = "Light",
-        trait = "Magic Attack Bonus",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 87
+        element                 = "Light",
+        trait                   = "Magic Attack Bonus",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 87
     },
 
     ---========================================================================
@@ -318,12 +318,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Reaving Wind"] = {
-        element = "Wind",
-        trait = "Magic Burst Bonus",
-        trait_points = 6,
-        property = nil,
-        unbridled = false,
-        BLU = 90
+        element                 = "Wind",
+        trait                   = "Magic Burst Bonus",
+        trait_points            = 6,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 90
     },
 
     ---========================================================================
@@ -331,12 +331,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Mortal Ray"] = {
-        element = "Dark",
-        trait = "Dual Wield",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 91
+        element                 = "Dark",
+        trait                   = "Dual Wield",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 91
     },
 
     ---========================================================================
@@ -344,12 +344,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Absolute Terror"] = {
-        element = "Dark",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = true,
-        BLU = 96
+        element                 = "Dark",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = true,
+        BLU                     = 96
     },
 
     ---========================================================================
@@ -357,12 +357,12 @@ debuff_spells.spells = {
     ---========================================================================
 
     ["Blistering Roar"] = {
-        element = "Dark",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = true,
-        BLU = 99
+        element                 = "Dark",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = true,
+        BLU                     = 99
     }
 }
 

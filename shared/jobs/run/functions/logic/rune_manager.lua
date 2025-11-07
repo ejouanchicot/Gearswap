@@ -73,9 +73,9 @@ function RuneManager.execute_rune()
         return
     end
 
-    -- Ability ready - show using message and execute
-    local job_tag = MessageFormatter.get_job_tag()
-    MessageFormatter.show_ability_use(selected_rune, job_tag)
+    -- Ability ready - execute rune (message handled by ability_message_handler)
+    -- NOTE: Message display is handled by universal ability_message_handler system
+    --       which loads RUN_JA_DATABASE and shows description (e.g., "Ignis Fire rune, resist ice")
     send_command('@input /ja "' .. selected_rune .. '" <me>')
 end
 

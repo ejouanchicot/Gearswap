@@ -16,6 +16,7 @@
 local UICommands = require('shared/utils/ui/UI_COMMANDS')
 local CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
 local WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
+local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
 
 -- Load GEO spell refiner for intelligent tier fallback
 local GeoSpellRefiner = require('shared/jobs/geo/functions/logic/geo_spell_refiner')
@@ -103,7 +104,7 @@ function job_self_command(cmdParams, eventArgs)
         MidcastManager.toggle_debug()
 
         -- Confirmation message
-        add_to_chat(159, '[GEO_COMMANDS] Debug toggled! Current state: ' .. tostring(_G.MidcastManagerDebugState))
+        MessageCommands.show_debugmidcast_toggled('GEO', _G.MidcastManagerDebugState)
 
         eventArgs.handled = true
         return

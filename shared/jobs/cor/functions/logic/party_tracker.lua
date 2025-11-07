@@ -29,6 +29,9 @@
 
 local PartyTracker = {}
 
+-- Message formatter
+local MessageCOR = require('shared/utils/messages/formatters/jobs/message_cor')
+
 ---============================================================================
 --- INITIALIZATION
 ---============================================================================
@@ -39,7 +42,7 @@ function PartyTracker.init()
     -- Load RollTracker (required for roll detection)
     local roll_tracker_loaded, RollTracker = pcall(require, 'shared/jobs/cor/functions/logic/roll_tracker')
     if not roll_tracker_loaded or not RollTracker then
-        add_to_chat(167, '[COR PartyTracker] WARNING: Failed to load RollTracker - roll detection disabled!')
+        MessageCOR.show_rolltracker_load_failed()
         RollTracker = nil
     end
 
@@ -165,14 +168,14 @@ function PartyTracker.init()
     -- Load packets library for parsing
     local packets_loaded, packets = pcall(require, 'packets')
     if not packets_loaded or not packets then
-        add_to_chat(167, '[COR PartyTracker] ERROR: Failed to load packets library - party job detection disabled!')
+        MessageCOR.show_packets_load_failed()
         return  -- Exit early if packets library not available
     end
 
     -- Load resources library for job conversion
     local res_loaded, res = pcall(require, 'resources')
     if not res_loaded or not res then
-        add_to_chat(167, '[COR PartyTracker] ERROR: Failed to load resources library - party job detection disabled!')
+        MessageCOR.show_resources_load_failed()
         return  -- Exit early if resources library not available
     end
 

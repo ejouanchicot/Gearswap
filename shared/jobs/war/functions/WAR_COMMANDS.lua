@@ -22,6 +22,7 @@
 local UICommands = require('shared/utils/ui/UI_COMMANDS')
 local CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
 local WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
+local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
 
 ---============================================================================
 --- COMMAND HANDLER HOOK
@@ -117,7 +118,7 @@ function job_self_command(cmdParams, eventArgs)
         MidcastManager.toggle_debug()
 
         -- Confirmation message
-        add_to_chat(159, '[WAR_COMMANDS] Debug toggled! Current state: ' .. tostring(_G.MidcastManagerDebugState))
+        MessageCommands.show_debugmidcast_toggled('WAR', _G.MidcastManagerDebugState)
 
         eventArgs.handled = true
         return

@@ -22,6 +22,7 @@
 local UICommands = require('shared/utils/ui/UI_COMMANDS')
 local CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
 local WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
+local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
 
 -- PLD logic modules
 local AOEManager = require('shared/jobs/pld/functions/logic/aoe_manager')
@@ -120,7 +121,7 @@ function job_self_command(cmdParams, eventArgs)
         MidcastManager.toggle_debug()
 
         -- Confirmation message
-        add_to_chat(159, '[PLD_COMMANDS] Debug toggled! Current state: ' .. tostring(_G.MidcastManagerDebugState))
+        MessageCommands.show_debugmidcast_toggled('PLD', _G.MidcastManagerDebugState)
 
         eventArgs.handled = true
         return

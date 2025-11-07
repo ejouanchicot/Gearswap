@@ -10,8 +10,8 @@
 ---
 --- @file sch_black_grimoire_mainjob.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-31
+--- @version 1.1 - Improved alignment
+--- @date Created: 2025-10-31 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Scholar
 --- @source https://www.bg-wiki.com/ffxi/Stratagems
 ---============================================================================
@@ -20,28 +20,28 @@ local SCH_BLACK_GRIMOIRE_MAINJOB = {}
 
 SCH_BLACK_GRIMOIRE_MAINJOB.abilities = {
     ['Focalization'] = {
-        description = 'Next black magic +accuracy',
-        level = 75,
-        recast = 0,  -- Charge system
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Next black magic +accuracy',
+        level                   = 75,
+        recast                  = 0,  -- Charge system
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Equanimity'] = {
-        description = 'Next black magic -enmity',
-        level = 75,
-        recast = 0,  -- Charge system
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Next black magic -enmity',
+        level                   = 75,
+        recast                  = 0,  -- Charge system
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Immanence'] = {
-        description = 'Next elemental can skillchain (not MB)',
-        level = 87,
-        recast = 0,  -- Charge system
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Next elemental can skillchain (not MB)',
+        level                   = 87,
+        recast                  = 0,  -- Charge system
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     }
 }
 

@@ -17,6 +17,7 @@ local WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
 
 -- Load message formatter for standardized messages
 local MessageFormatter = require('shared/utils/messages/message_formatter')
+local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
 
 -- Load action databases for auto-detection
 local JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
@@ -107,7 +108,7 @@ function job_self_command(cmdParams, eventArgs)
         MidcastManager.toggle_debug()
 
         -- Confirmation message
-        add_to_chat(159, '[RDM_COMMANDS] Debug toggled! Current state: ' .. tostring(_G.MidcastManagerDebugState))
+        MessageCommands.show_debugmidcast_toggled('RDM', _G.MidcastManagerDebugState)
 
         eventArgs.handled = true
         return

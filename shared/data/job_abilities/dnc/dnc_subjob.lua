@@ -8,8 +8,8 @@
 ---
 --- @file dnc_subjob.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-30
+--- @version 1.1 - Improved alignment
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Dancer
 ---============================================================================
 
@@ -17,12 +17,12 @@ local DNC_SUBJOB = {}
 
 DNC_SUBJOB.abilities = {
     ['Contradance'] = {
-        description = "Doubles next Waltz potency",
-        level = 50,
-        recast = 300,  -- 5 minutes
-        main_job_only = false,  -- Accessible as subjob (Lv50)
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Doubles next Waltz potency",
+        level                   = 50,
+        recast                  = 300,  -- 5min
+        main_job_only           = false,  -- Accessible as subjob (Lv50)
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     }
 }
 

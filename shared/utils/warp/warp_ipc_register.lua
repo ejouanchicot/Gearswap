@@ -19,7 +19,7 @@ if _G.WARP_IPC_REGISTERED then
 end
 
 -- Load MessageWarp for formatted messages
-local MessageWarp = require('shared/utils/messages/message_warp')
+local MessageWarp = require('shared/utils/messages/formatters/system/message_warp')
 
 -- IPC message prefix
 local IPC_PREFIX = 'tetsouo_warp_'
@@ -67,7 +67,7 @@ local IPC_DEBOUNCE = 1.0
 windower.register_event('ipc message', function(msg)
     -- Debug: Show ALL IPC messages
     if _G.WARP_DEBUG then
-        add_to_chat(8, '[DEBUG] IPC RAW received: ' .. tostring(msg))
+        MessageWarp.show_ipc_raw_received(msg)
     end
 
     -- Only process our messages
@@ -86,7 +86,7 @@ windower.register_event('ipc message', function(msg)
     local current_time = os.clock()
     if msg == last_ipc_message and (current_time - last_ipc_time) < IPC_DEBOUNCE then
         if _G.WARP_DEBUG then
-            add_to_chat(8, '[DEBUG] IPC message debounced')
+            MessageWarp.show_ipc_message_debounced()
         end
         return
     end

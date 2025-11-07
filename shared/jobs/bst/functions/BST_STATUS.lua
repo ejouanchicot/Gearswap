@@ -41,21 +41,22 @@ function job_status_change(newStatus, oldStatus, eventArgs)
     --- PET AUTO-ENGAGE (when player engages)
     ---========================================================================
 
+    -- SINGLE COROUTINE: Merge auto-engage + pet monitoring (reduces lag)
     if newStatus == 'Engaged' and oldStatus ~= 'Engaged' then
-        -- Player just engaged - check if pet should auto-engage
+        -- Player just engaged
         if PetManager then
             coroutine.schedule(function()
+                -- Check if pet should auto-engage
                 PetManager.check_and_engage_pet(_G.pet)
-            end, 1.0) -- 1.0s delay to ensure pet data is loaded
+
+                -- Monitor pet status (delayed to avoid double-update)
+                coroutine.schedule(function()
+                    PetManager.monitor_pet_status()
+                end, 0.5)
+            end, 1.0)
         end
-    end
-
-    ---========================================================================
-    --- PET STATUS MONITORING
-    ---========================================================================
-
-    -- Monitor pet status (update petEngaged state if needed)
-    if newStatus == 'Engaged' or newStatus == 'Idle' then
+    elseif newStatus == 'Idle' and oldStatus == 'Engaged' then
+        -- Player disengaged - only monitor pet status
         if PetManager then
             coroutine.schedule(function()
                 PetManager.monitor_pet_status()

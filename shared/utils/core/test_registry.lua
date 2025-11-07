@@ -6,14 +6,14 @@ add_to_chat(158, '=== Testing command_registry locations ===')
 if _G.command_registry then
     add_to_chat(158, 'FOUND: _G.command_registry')
 else
-    add_to_chat(167, 'NOT FOUND: _G.command_registry')
+    add_to_chat(CHAT_ERROR, 'NOT FOUND: _G.command_registry')
 end
 
 -- Test 2: command_registry (direct)
 if command_registry then
     add_to_chat(158, 'FOUND: command_registry (direct)')
 else
-    add_to_chat(167, 'NOT FOUND: command_registry (direct)')
+    add_to_chat(CHAT_ERROR, 'NOT FOUND: command_registry (direct)')
 end
 
 -- Test 3: Look for it in package.loaded

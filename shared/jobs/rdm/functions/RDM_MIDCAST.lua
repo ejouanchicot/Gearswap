@@ -46,6 +46,9 @@ local RDMSpells_success, RDMSpells = pcall(require, 'shared/data/magic/RDM_SPELL
 -- Message Formatter for spell messages
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
+-- RDM Midcast Debug Messages
+local MessageRDMMidcast = require('shared/utils/messages/formatters/jobs/message_rdm_midcast')
+
 -- Load Enfeebling Messages Config
 local _, ENFEEBLING_MESSAGES_CONFIG = pcall(require, 'shared/config/ENFEEBLING_MESSAGES_CONFIG')
 if not ENFEEBLING_MESSAGES_CONFIG then
@@ -100,11 +103,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
 
     -- DEBUG: Log entry (only when debug mode is ON)
     if debug_enabled then
-        add_to_chat(8, '===================================================')
-        add_to_chat(8, '[RDM_MIDCAST] job_post_midcast() called')
-        add_to_chat(8, '  Spell: ' .. (spell.english or 'Unknown'))
-        add_to_chat(8, '  Skill: ' .. (spell.skill or 'Unknown'))
-        add_to_chat(8, '===================================================')
+        MessageRDMMidcast.show_function_entry(spell.english or 'Unknown', spell.skill or 'Unknown')
     end
 
     -- ==========================================================================
@@ -112,10 +111,11 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- ==========================================================================
     if spell.skill == 'Enfeebling Magic' then
         if debug_enabled then
-            add_to_chat(158, '[RDM_MIDCAST] -> Routing to MidcastManager (Enfeebling)')
-            add_to_chat(158, '[RDM_MIDCAST]   * Spell: ' .. (spell.name or 'Unknown'))
-            add_to_chat(158, '[RDM_MIDCAST]   * EnfeebleMode: ' .. tostring(state.EnfeebleMode and state.EnfeebleMode.value or 'nil'))
-            add_to_chat(158, '[RDM_MIDCAST]   * Database: ' .. (EnfeeblingSPELLS_success and 'ENFEEBLING_MAGIC_DATABASE Loaded' or 'Not Loaded'))
+            MessageRDMMidcast.show_enfeebling_routing(
+                spell.name or 'Unknown',
+                tostring(state.EnfeebleMode and state.EnfeebleMode.value or 'nil'),
+                EnfeeblingSPELLS_success
+            )
         end
 
         -- DEBUG: Get enfeebling_type BEFORE MidcastManager call
@@ -123,28 +123,22 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         if EnfeeblingSPELLS_success and EnfeeblingSPELLS then
             enfeebling_type = EnfeeblingSPELLS.get_enfeebling_type(spell.name)
             if debug_enabled then
-                add_to_chat(206, '[RDM_MIDCAST] 🔍 Enfeebling Type Detection:')
-                add_to_chat(206, '[RDM_MIDCAST]   * Spell: ' .. spell.name)
-                add_to_chat(206, '[RDM_MIDCAST]   * enfeebling_type: ' .. tostring(enfeebling_type or 'nil'))
+                MessageRDMMidcast.show_enfeebling_type_detection(spell.name, enfeebling_type)
             end
         else
             if debug_enabled then
-                add_to_chat(167, '[RDM_MIDCAST] ⚠️ Database not loaded - cannot detect enfeebling_type')
+                MessageRDMMidcast.show_enfeebling_database_not_loaded()
             end
         end
 
         -- DEBUG: Show expected nested set paths
         if debug_enabled and enfeebling_type then
             local mode_value = state.EnfeebleMode and state.EnfeebleMode.value or nil
-            add_to_chat(206, '[RDM_MIDCAST] 📊 Expected Nested Set Priority:')
             if mode_value then
-                add_to_chat(206, '[RDM_MIDCAST]   1. sets.midcast[\'Enfeebling Magic\'].' .. enfeebling_type .. '.' .. mode_value)
-                add_to_chat(206, '[RDM_MIDCAST]   2. sets.midcast[\'Enfeebling Magic\'].' .. enfeebling_type)
-                add_to_chat(206, '[RDM_MIDCAST]   3. sets.midcast[\'Enfeebling Magic\'].' .. mode_value)
+                MessageRDMMidcast.show_enfeebling_priority_with_mode(enfeebling_type, mode_value)
             else
-                add_to_chat(206, '[RDM_MIDCAST]   1. sets.midcast[\'Enfeebling Magic\'].' .. enfeebling_type)
+                MessageRDMMidcast.show_enfeebling_priority_no_mode(enfeebling_type)
             end
-            add_to_chat(206, '[RDM_MIDCAST]   FALLBACK: sets.midcast[\'Enfeebling Magic\']')
         end
 
         -- Select set using MidcastManager
@@ -157,17 +151,14 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         })
 
         if debug_enabled then
-            add_to_chat(success and 158 or 167, '[RDM_MIDCAST] <- MidcastManager returned: ' .. tostring(success))
-            if not success then
-                add_to_chat(167, '[RDM_MIDCAST] WARNING: MidcastManager failed to select set - using Mote-Include default')
-            end
+            MessageRDMMidcast.show_enfeebling_result(success)
         end
 
         -- SABOTEUR BONUS: Override hands with Lethargy Gants +3 when Saboteur active
         -- (+5 enfeebling potency, extends duration)
         if buffactive['Saboteur'] then
             if debug_enabled then
-                add_to_chat(206, '[RDM_MIDCAST] ** SABOTEUR ACTIVE -> Overriding hands with Lethargy Gants +3')
+                MessageRDMMidcast.show_saboteur_override()
             end
             equip({hands = 'Lethargy Gants +3'})
         end
@@ -192,9 +183,10 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- ==========================================================================
     if spell.skill == 'Enhancing Magic' then
         if debug_enabled then
-            add_to_chat(158, '[RDM_MIDCAST] -> Routing to MidcastManager (Enhancing)')
-            add_to_chat(158, '[RDM_MIDCAST]   * EnhancingMode: ' .. tostring(state.EnhancingMode and state.EnhancingMode.value or 'nil'))
-            add_to_chat(158, '[RDM_MIDCAST]   * Target: ' .. (spell.target and spell.target.name or 'Unknown'))
+            MessageRDMMidcast.show_enhancing_routing(
+                tostring(state.EnhancingMode and state.EnhancingMode.value or 'nil'),
+                spell.target and spell.target.name or 'Unknown'
+            )
         end
 
         -- DEBUG: Get spell_family BEFORE MidcastManager call
@@ -202,13 +194,11 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         if EnhancingSPELLS_success and EnhancingSPELLS then
             spell_family = EnhancingSPELLS.get_spell_family(spell.name)
             if debug_enabled then
-                add_to_chat(206, '[RDM_MIDCAST] Spell Family Detection:')
-                add_to_chat(206, '[RDM_MIDCAST]   * Spell: ' .. spell.name)
-                add_to_chat(206, '[RDM_MIDCAST]   * spell_family: ' .. tostring(spell_family or 'nil'))
+                MessageRDMMidcast.show_spell_family_detection(spell.name, spell_family)
             end
         else
             if debug_enabled then
-                add_to_chat(167, '[RDM_MIDCAST] WARNING: ENHANCING_MAGIC_DATABASE not loaded - cannot detect spell_family')
+                MessageRDMMidcast.show_enhancing_database_not_loaded()
             end
         end
 
@@ -216,19 +206,13 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         if debug_enabled and spell_family then
             local mode_value = state.EnhancingMode and state.EnhancingMode.value or nil
             local target_value = MidcastManager.get_enhancing_target(spell)
-            add_to_chat(206, '[RDM_MIDCAST] Expected Nested Set Priority:')
             if mode_value and target_value then
-                add_to_chat(206, '[RDM_MIDCAST]   1. sets.midcast[\'Enhancing Magic\'].' .. spell_family .. '.' .. target_value .. '.' .. mode_value)
-                add_to_chat(206, '[RDM_MIDCAST]   2. sets.midcast[\'Enhancing Magic\'].' .. spell_family .. '.' .. target_value)
-                add_to_chat(206, '[RDM_MIDCAST]   3. sets.midcast[\'Enhancing Magic\'].' .. spell_family .. '.' .. mode_value)
-                add_to_chat(206, '[RDM_MIDCAST]   4. sets.midcast[\'Enhancing Magic\'].' .. spell_family)
+                MessageRDMMidcast.show_enhancing_priority_full(spell_family, target_value, mode_value)
             elseif target_value then
-                add_to_chat(206, '[RDM_MIDCAST]   1. sets.midcast[\'Enhancing Magic\'].' .. spell_family .. '.' .. target_value)
-                add_to_chat(206, '[RDM_MIDCAST]   2. sets.midcast[\'Enhancing Magic\'].' .. spell_family)
+                MessageRDMMidcast.show_enhancing_priority_target_only(spell_family, target_value)
             else
-                add_to_chat(206, '[RDM_MIDCAST]   1. sets.midcast[\'Enhancing Magic\'].' .. spell_family)
+                MessageRDMMidcast.show_enhancing_priority_family_only(spell_family)
             end
-            add_to_chat(206, '[RDM_MIDCAST]   FALLBACK: sets.midcast[\'Enhancing Magic\']')
         end
 
         -- Select set using MidcastManager
@@ -242,10 +226,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         })
 
         if debug_enabled then
-            add_to_chat(success and 158 or 167, '[RDM_MIDCAST] <- MidcastManager returned: ' .. tostring(success))
-            if not success then
-                add_to_chat(167, '[RDM_MIDCAST] WARNING: MidcastManager failed to select set - using Mote-Include default')
-            end
+            MessageRDMMidcast.show_enhancing_result(success)
         end
 
         -- Display Enhancing Magic message (if enabled in config)
@@ -286,8 +267,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- ==========================================================================
     if spell.skill == 'Elemental Magic' then
         if debug_enabled then
-            add_to_chat(158, '[RDM_MIDCAST] -> Routing to MidcastManager (Elemental)')
-            add_to_chat(158, '[RDM_MIDCAST]   * NukeMode: ' .. tostring(state.NukeMode and state.NukeMode.value or 'nil'))
+            MessageRDMMidcast.show_elemental_routing(tostring(state.NukeMode and state.NukeMode.value or 'nil'))
         end
 
         -- Select set using MidcastManager
@@ -299,14 +279,14 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         })
 
         if debug_enabled then
-            add_to_chat(success and 158 or 167, '[RDM_MIDCAST] <- MidcastManager returned: ' .. tostring(success))
+            MessageRDMMidcast.show_elemental_result(success)
         end
 
         return
     end
 
     if debug_enabled then
-        add_to_chat(206, '[RDM_MIDCAST] !! Spell skill not handled by MidcastManager: ' .. (spell.skill or 'Unknown'))
+        MessageRDMMidcast.show_skill_not_handled(spell.skill or 'Unknown')
     end
 end
 

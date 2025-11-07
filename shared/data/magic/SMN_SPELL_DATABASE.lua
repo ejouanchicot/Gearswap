@@ -6,9 +6,9 @@
 ---
 --- @file config/magic/SMN_SPELL_DATABASE.lua
 --- @author Tetsouo
---- @version 2.0 - Façade Architecture
---- @date Created: 2025-10-12
---- @date Refactored: 2025-10-12
+--- @version 2.1 - Improved formatting - Improved alignment - Façade Architecture
+--- @date Created: 2025-10-12 | Updated: 2025-11-06
+--- @date Refactored: 2025-10-12 | Updated: 2025-11-06
 ---
 --- NOTES:
 --- - SMN uses Avatar system (summon avatars to fight)
@@ -156,13 +156,13 @@ SMNSpells.blood_pacts_ward = {}
 
 -- Populate legacy tables by category
 for spell_name, spell_data in pairs(SMNSpells.spells) do
-    if spell_data.category == "Spirit Summon" then
+    if spell_data.category            == "Spirit Summon" then
         SMNSpells.spirits[spell_name] = spell_data
-    elseif spell_data.category == "Avatar Summon" then
+    elseif spell_data.category            == "Avatar Summon" then
         SMNSpells.avatars[spell_name] = spell_data
-    elseif spell_data.category == "Blood Pact: Rage" then
+    elseif spell_data.category            == "Blood Pact: Rage" then
         SMNSpells.blood_pacts_rage[spell_name] = spell_data
-    elseif spell_data.category == "Blood Pact: Ward" then
+    elseif spell_data.category            == "Blood Pact: Ward" then
         SMNSpells.blood_pacts_ward[spell_name] = spell_data
     end
 end
@@ -268,7 +268,7 @@ function SMNSpells.get_pacts_by_element(element, pact_type)
 
     if not pact_type or pact_type == "rage" then
         for pact_name, pact_data in pairs(SMNSpells.blood_pacts_rage) do
-            if pact_data.element == element then
+            if pact_data.element             == element then
                 table.insert(pacts, pact_name)
             end
         end
@@ -276,7 +276,7 @@ function SMNSpells.get_pacts_by_element(element, pact_type)
 
     if not pact_type or pact_type == "ward" then
         for pact_name, pact_data in pairs(SMNSpells.blood_pacts_ward) do
-            if pact_data.element == element then
+            if pact_data.element             == element then
                 table.insert(pacts, pact_name)
             end
         end
@@ -319,7 +319,7 @@ function SMNSpells.get_avatar_element(avatar_name)
     local avatar = SMNSpells.avatars[avatar_name]
     if not avatar then
         -- Try spirits
-        avatar = SMNSpells.spirits[avatar_name]
+        avatar                  = SMNSpells.spirits[avatar_name]
     end
 
     if not avatar then

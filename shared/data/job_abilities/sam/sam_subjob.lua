@@ -13,8 +13,8 @@
 ---
 --- @file sam_subjob.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-30
+--- @version 1.1 - Improved alignment
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @updated 2025-10-31
 --- @source https://www.bg-wiki.com/ffxi/Samurai
 ---============================================================================
@@ -23,52 +23,52 @@ local SAM_SUBJOB = {}
 
 SAM_SUBJOB.abilities = {
     ['Warding Circle'] = {
-        description = 'ATK/DEF+ vs Demons (party AoE)',
-        level = 5,
-        recast = 300,  -- 5 minutes
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'ATK/DEF+ vs Demons (party AoE)',
+        level                   = 5,
+        recast                  = 300,  -- 5min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Third Eye'] = {
-        description = 'Anticipate/Counter next attack',
-        level = 15,
-        recast = 60,  -- 1 minute
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Anticipate/Counter next attack',
+        level                   = 15,
+        recast                  = 60,  -- 1min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Hasso'] = {
-        description = 'STR/Haste/ACC+ (5min)',
-        level = 25,
-        recast = 60,  -- 1 minute
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'STR/Haste/ACC+ (5min)',
+        level                   = 25,
+        recast                  = 60,  -- 1min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Meditate'] = {
-        description = 'Restore TP',
-        level = 30,
-        recast = 180,  -- 3 minutes
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Restore TP',
+        level                   = 30,
+        recast                  = 180,  -- 3min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Seigan'] = {
-        description = 'Third Eye enhanced (5min)',
-        level = 35,
-        recast = 60,  -- 1 minute
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Third Eye enhanced (5min)',
+        level                   = 35,
+        recast                  = 60,  -- 1min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Sekkanoki'] = {
-        description = 'Next WS TP cost → 1000',
-        level = 40,
-        recast = 300,  -- 5 minutes
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Next WS TP cost → 1000',
+        level                   = 40,
+        recast                  = 300,  -- 5min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     }
 }
 

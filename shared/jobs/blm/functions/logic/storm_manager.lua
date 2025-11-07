@@ -23,8 +23,8 @@
 local StormManager = {}
 
 -- Load dependencies
-local MessageCooldowns = require('shared/utils/messages/message_cooldowns')
-local BLMMessages = require('shared/utils/messages/message_blm')
+local MessageCooldowns = require('shared/utils/messages/formatters/combat/message_cooldowns')
+local BLMMessages = require('shared/utils/messages/formatters/jobs/message_blm')
 
 ---============================================================================
 --- CONFIGURATION

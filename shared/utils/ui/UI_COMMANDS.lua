@@ -10,10 +10,12 @@
 --- @date Created: 2025-10-04
 ---============================================================================
 
+local MessageCore = require('shared/utils/messages/message_core')
+
 local UICommands = {}
 
 -- Load dependencies
-local MessageUI = require('shared/utils/messages/message_ui')
+local MessageUI = require('shared/utils/messages/formatters/ui/message_ui')
 
 ---============================================================================
 --- MAIN UI COMMAND HANDLER
@@ -25,7 +27,7 @@ local MessageUI = require('shared/utils/messages/message_ui')
 function UICommands.handle_ui_command(cmdParams)
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if not ui_success or not KeybindUI then
-        add_to_chat(167, '[ERROR] Failed to load UI Manager')
+        MessageCore.show_ui_error('ERROR: Failed to load UI Manager')
         return false
     end
 

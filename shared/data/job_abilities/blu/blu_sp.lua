@@ -9,8 +9,8 @@
 ---
 --- @file blu_sp.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-31
+--- @version 1.1 - Improved alignment
+--- @date Created: 2025-10-31 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Blue_Mage
 --- @source https://www.bg-wiki.com/ffxi/Azure_Lore
 --- @source https://www.bg-wiki.com/ffxi/Unbridled_Wisdom
@@ -20,20 +20,20 @@ local BLU_SP = {}
 
 BLU_SP.abilities = {
     ['Azure Lore'] = {
-        description = "Blue magic enhanced (30s)",
-        level = 1,
-        recast = 3600,  -- 1 hour (SP1)
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Blue magic enhanced (30s)",
+        level                   = 1,
+        recast                  = 3600,  -- 1hr (SP1)
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Unbridled Wisdom'] = {
-        description = "Cast Unbridled Learning spells (1min)",
-        level = 96,
-        recast = 3600,  -- 1 hour (SP2)
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Cast Unbridled Learning spells (1min)",
+        level                   = 96,
+        recast                  = 3600,  -- 1hr (SP2)
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     }
 }
 

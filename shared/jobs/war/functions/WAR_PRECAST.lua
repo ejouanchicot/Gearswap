@@ -146,14 +146,6 @@ function job_precast(spell, action, spellMap, eventArgs)
                         final_tp = result
                     end
                 end
-
-                -- Display WS message with description and FINAL TP (respects WS_MESSAGES_CONFIG)
-                if WS_MESSAGES_CONFIG.show_description() then
-                    MessageFormatter.show_ws_activated(spell.english, WS_DB[spell.english].description, final_tp)
-                else
-                    -- Mode 'on' - show only name + TP
-                    MessageFormatter.show_ws_activated(spell.english, nil, final_tp)
-                end
             else
                 -- Not enough TP - display error (always show errors)
                 MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))

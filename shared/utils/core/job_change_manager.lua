@@ -13,8 +13,8 @@
 ---
 --- @file utils/core/job_change_manager.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-02
+--- @version 1.1 - Improved formatting
+--- @date Created: 2025-10-02 | Updated: 2025-11-06
 ---============================================================================
 
 local JobChangeManager = {}
@@ -24,9 +24,9 @@ local LockstyleConfig = _G.LockstyleConfig or {}  -- Loaded from character main 
 if not lockstyle_config_success or not LockstyleConfig then
     -- Fallback defaults if config not found
     LockstyleConfig = {
-        initial_load_delay = 8.0,
-        job_change_delay = 8.0,
-        cooldown = 15.0
+        initial_load_delay   = 8.0,
+        job_change_delay     = 8.0,
+        cooldown             = 15.0
     }
 end
 
@@ -39,31 +39,31 @@ end
 if not _G.JobChangeManagerSTATE then
     _G.JobChangeManagerSTATE = {
         -- Current job state
-        current_main_job = nil,
-        current_sub_job = nil,
+        current_main_job          = nil,
+        current_sub_job           = nil,
 
         -- Target job state (what we're changing TO after debounce)
-        target_main_job = nil,
-        target_sub_job = nil,
+        target_main_job           = nil,
+        target_sub_job            = nil,
 
         -- Processing state
-        is_changing = false,
-        debounce_timer = nil,
-        debounce_counter = 0,  -- Increments on each change to invalidate old timers
-        pending_coroutines = {},
+        is_changing               = false,
+        debounce_timer            = nil,
+        debounce_counter          = 0,  -- Increments on each change to invalidate old timers
+        pending_coroutines        = {},
 
         -- Configuration
-        debounce_delay = 3.0,  -- Wait 3.0s before applying changes
+        debounce_delay            = 3.0,  -- Wait 3.0s before applying changes
 
         -- Lockstyle cooldown tracking (from LOCKSTYLE_CONFIG.lua)
-        last_lockstyle_time = 0,  -- os.time() of last lockstyle application
-        lockstyle_cooldown = LockstyleConfig.cooldown,  -- Configured cooldown (default: 15s)
+        last_lockstyle_time       = 0,  -- os.time() of last lockstyle application
+        lockstyle_cooldown        = LockstyleConfig.cooldown,  -- Configured cooldown (default: 15s)
 
         -- Module references (set during initialization)
-        keybind_module = nil,
-        ui_module = nil,
-        lockstyle_func = nil,
-        macrobook_func = nil,
+        keybind_module            = nil,
+        ui_module                 = nil,
+        lockstyle_func            = nil,
+        macrobook_func            = nil,
 
         -- Global registry of all job lockstyle cancel functions
         lockstyle_cancel_registry = {}
@@ -179,12 +179,12 @@ local function apply_job_setup(main_job, sub_job, expected_counter)
     -- Path 2: Lockstyle runs in parallel (independent, doesn't block anything)
     -- Calculate delay before applying lockstyle (respect FFXI cooldown)
     local time_since_last_lockstyle = os.time() - STATE.last_lockstyle_time
-    local lockstyle_delay = LockstyleConfig.job_change_delay  -- From LOCKSTYLE_CONFIG (default: 8s)
+    local lockstyle_delay           = LockstyleConfig.job_change_delay  -- From LOCKSTYLE_CONFIG (default: 8s)
 
     -- If lockstyle was applied recently, wait for cooldown to expire
     if time_since_last_lockstyle < STATE.lockstyle_cooldown then
         local additional_delay = STATE.lockstyle_cooldown - time_since_last_lockstyle
-        lockstyle_delay = lockstyle_delay + additional_delay
+        lockstyle_delay        = lockstyle_delay + additional_delay
 
         -- Show warning to user
         local success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
@@ -239,11 +239,11 @@ local function execute_job_change(main_job, sub_job, expected_counter)
 
     -- Update current job state
     STATE.current_main_job = main_job
-    STATE.current_sub_job = sub_job
+    STATE.current_sub_job  = sub_job
 
     -- Clear target state (we're executing it now)
-    STATE.target_main_job = nil
-    STATE.target_sub_job = nil
+    STATE.target_main_job  = nil
+    STATE.target_sub_job   = nil
 
     -- Cleanup phase (immediate)
     cleanup_current_setup()
@@ -258,14 +258,14 @@ end
 local function debounced_job_change(main_job, sub_job)
     -- Update target job
     STATE.target_main_job = main_job
-    STATE.target_sub_job = sub_job
+    STATE.target_sub_job  = sub_job
 
     -- Increment counter to invalidate previous timers
     STATE.debounce_counter = STATE.debounce_counter + 1
-    local my_counter = STATE.debounce_counter
+    local my_counter       = STATE.debounce_counter
 
     -- Determine debounce delay based on change type
-    local delay = STATE.debounce_delay
+    local delay            = STATE.debounce_delay
 
     -- If only subjob changed (main job stayed same), use shorter debounce
     if STATE.current_main_job == main_job and STATE.current_sub_job ~= sub_job then
@@ -293,14 +293,14 @@ function JobChangeManager.initialize(config)
     end
 
     STATE.keybind_module = config.keybinds
-    STATE.ui_module = config.ui
+    STATE.ui_module      = config.ui
     STATE.lockstyle_func = config.lockstyle
     STATE.macrobook_func = config.macrobook
 
     -- Set initial job state
     if player then
         STATE.current_main_job = player.main_job
-        STATE.current_sub_job = player.sub_job
+        STATE.current_sub_job  = player.sub_job
     end
 end
 
@@ -323,7 +323,7 @@ end
 --- @param sub_job string Sub job
 function JobChangeManager.force_reload(main_job, sub_job)
     main_job = main_job or (player and player.main_job)
-    sub_job = sub_job or (player and player.sub_job)
+    sub_job  = sub_job or (player and player.sub_job)
 
     if not main_job or not sub_job then
         local success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
@@ -372,5 +372,9 @@ function JobChangeManager.set_debounce_delay(delay)
         STATE.debounce_delay = delay
     end
 end
+
+---============================================================================
+--- MODULE EXPORT
+---============================================================================
 
 return JobChangeManager

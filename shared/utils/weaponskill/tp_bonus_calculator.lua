@@ -21,6 +21,8 @@
 --- @date Created: 2025-01-02 | Updated: 2025-10-22 (SAM, BST support)
 ---============================================================================
 
+local MessageWeaponskill = require('shared/utils/messages/formatters/combat/message_weaponskill')
+
 local TPBonusCalculator = {}
 
 ---============================================================================
@@ -49,7 +51,7 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
     -- Validation
     if not current_tp or not tp_config then
         if TPBonusCalculator.config.debug_mode then
-            add_to_chat(167, '[TP_DEBUG] Validation failed: current_tp=' .. tostring(current_tp) .. ', tp_config=' .. tostring(tp_config))
+            MessageWeaponskill.show_tp_validation_failed(current_tp, tp_config)
         end
         return nil
     end
@@ -83,7 +85,7 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
     local real_tp = current_tp + weapon_bonus + buff_bonus + fencer_bonus
 
     if TPBonusCalculator.config.debug_mode then
-        add_to_chat(200, '[TP_DEBUG] current_tp=' .. current_tp .. ', weapon=' .. tostring(weapon_name) .. ', weapon_bonus=' .. weapon_bonus .. ', real_tp=' .. real_tp)
+        MessageWeaponskill.show_tp_calculation(current_tp, weapon_name, weapon_bonus, real_tp)
     end
 
     -- Determine next threshold to aim for
@@ -98,7 +100,7 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
     -- Already at or above max threshold (3000+), no gear needed
     if not target_threshold then
         if TPBonusCalculator.config.debug_mode then
-            add_to_chat(167, '[TP_DEBUG] Already at/above max threshold (3000+)')
+            MessageWeaponskill.show_already_at_max()
         end
         return nil
     end
@@ -107,7 +109,7 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
     local gap = target_threshold - real_tp
 
     if TPBonusCalculator.config.debug_mode then
-        add_to_chat(200, '[TP_DEBUG] target_threshold=' .. target_threshold .. ', gap=' .. gap)
+        MessageWeaponskill.show_target_threshold(target_threshold, gap)
     end
 
     -- Determine which pieces to equip based on gap
@@ -130,20 +132,20 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
     -- Gap too large, can't reach threshold even with all pieces
     if gap > total_available then
         if TPBonusCalculator.config.debug_mode then
-            add_to_chat(167, '[TP_DEBUG] Gap too large: gap=' .. gap .. ' > total_available=' .. total_available)
+            MessageWeaponskill.show_gap_too_large(gap, total_available)
         end
         return nil
     end
 
     if TPBonusCalculator.config.debug_mode then
-        add_to_chat(200, '[TP_DEBUG] total_available=' .. total_available .. ', checking pieces...')
+        MessageWeaponskill.show_total_available(total_available)
     end
 
     -- Find minimum combination of pieces to reach threshold
     -- Try single pieces first (most efficient)
     for _, piece in ipairs(sorted_pieces) do
         if TPBonusCalculator.config.debug_mode then
-            add_to_chat(200, '[TP_DEBUG] Checking piece: ' .. piece.name .. ' (slot=' .. piece.slot .. ', bonus=' .. piece.bonus .. ') vs gap=' .. gap)
+            MessageWeaponskill.show_checking_piece(piece.name, piece.slot, piece.bonus, gap)
         end
 
         if piece.bonus >= gap then
@@ -151,7 +153,7 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
             gear_to_equip[piece.slot] = piece.name
 
             if TPBonusCalculator.config.debug_mode then
-                add_to_chat(158, '[TP_DEBUG] ✓ EQUIPPING: ' .. piece.slot .. '=' .. piece.name .. ' (bonus=' .. piece.bonus .. ' >= gap=' .. gap .. ')')
+                MessageWeaponskill.show_equipping_piece(piece.slot, piece.name, piece.bonus, gap)
             end
 
             return gear_to_equip

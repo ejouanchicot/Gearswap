@@ -18,18 +18,18 @@ ward.blood_pacts_ward = {
     ---========================================================================
 
     ["Altana's Favor"] = {
-        avatar = "Cait Sith",
-        element = "Light",
-        effect = "Party Support",
+        avatar                  = "Cait Sith",
+        element                 = "Light",
+        effect                  = "Party Support",
         restriction = "two_hour",
-        SMN = 1
+        SMN                     = 1
     },
     ["Perfect Defense"] = {
-        avatar = "Alexander",
-        element = "Light",
-        effect = "Party Invincibility",
+        avatar                  = "Alexander",
+        element                 = "Light",
+        effect                  = "Party Invincibility",
         restriction = "two_hour",
-        SMN = 75
+        SMN                     = 75
     },
 
     ---========================================================================
@@ -37,193 +37,193 @@ ward.blood_pacts_ward = {
     ---========================================================================
 
     ["Healing Ruby"] = {
-        avatar = "Carbuncle",
-        element = "Light",
-        effect = "Single Target Heal",
+        avatar                  = "Carbuncle",
+        element                 = "Light",
+        effect                  = "Single Target Heal",
         restriction = "subjob",
-        SMN = 1
+        SMN                     = 1
     },
     ["Lunatic Voice"] = {
-        avatar = "Siren",
-        element = "Wind",
-        effect = "AOE Slow",
+        avatar                  = "Siren",
+        element                 = "Wind",
+        effect                  = "AOE Slow",
         restriction = "subjob",
-        SMN = 15
+        SMN                     = 15
     },
     ["Raise II"] = {
-        avatar = "Cait Sith",
-        element = "Light",
-        effect = "Raise II",
+        avatar                  = "Cait Sith",
+        element                 = "Light",
+        effect                  = "Raise II",
         restriction = "subjob",
-        SMN = 15
+        SMN                     = 15
     },
     ["Somnolence"] = {
-        avatar = "Diabolos",
-        element = "Dark",
-        effect = "AOE Sleep",
+        avatar                  = "Diabolos",
+        element                 = "Dark",
+        effect                  = "AOE Sleep",
         restriction = "subjob",
-        SMN = 20
+        SMN                     = 20
     },
     ["Lunar Cry"] = {
-        avatar = "Fenrir",
-        element = "Dark",
-        effect = "AOE Accuracy Down",
+        avatar                  = "Fenrir",
+        element                 = "Dark",
+        effect                  = "AOE Accuracy Down",
         restriction = "subjob",
-        SMN = 21
+        SMN                     = 21
     },
     ["Shining Ruby"] = {
-        avatar = "Carbuncle",
-        element = "Light",
-        effect = "Party Regen",
+        avatar                  = "Carbuncle",
+        element                 = "Light",
+        effect                  = "Party Regen",
         restriction = "subjob",
-        SMN = 24
+        SMN                     = 24
     },
     ["Mewing Lullaby"] = {
-        avatar = "Cait Sith",
-        element = "Light",
-        effect = "AOE Sleep",
+        avatar                  = "Cait Sith",
+        element                 = "Light",
+        effect                  = "AOE Sleep",
         restriction = "subjob",
-        SMN = 25
+        SMN                     = 25
     },
     ["Aerial Armor"] = {
-        avatar = "Garuda",
-        element = "Wind",
-        effect = "Party Blink",
+        avatar                  = "Garuda",
+        element                 = "Wind",
+        effect                  = "Party Blink",
         restriction = "subjob",
-        SMN = 25
+        SMN                     = 25
     },
     ["Frost Armor"] = {
-        avatar = "Shiva",
-        element = "Ice",
-        effect = "Party Ice Spikes",
+        avatar                  = "Shiva",
+        element                 = "Ice",
+        effect                  = "Party Ice Spikes",
         restriction = "subjob",
-        SMN = 28
+        SMN                     = 28
     },
     ["Nightmare"] = {
-        avatar = "Diabolos",
-        element = "Dark",
-        effect = "AOE Sleep + Erase Buffs",
+        avatar                  = "Diabolos",
+        element                 = "Dark",
+        effect                  = "AOE Sleep + Erase Buffs",
         restriction = "subjob",
-        SMN = 29
+        SMN                     = 29
     },
     ["Reraise II"] = {
-        avatar = "Cait Sith",
-        element = "Light",
-        effect = "Party Reraise II",
+        avatar                  = "Cait Sith",
+        element                 = "Light",
+        effect                  = "Party Reraise II",
         restriction = "subjob",
-        SMN = 30
+        SMN                     = 30
     },
     ["Rolling Thunder"] = {
-        avatar = "Ramuh",
-        element = "Thunder",
-        effect = "AOE Stun",
+        avatar                  = "Ramuh",
+        element                 = "Thunder",
+        effect                  = "AOE Stun",
         restriction = "subjob",
-        SMN = 31
+        SMN                     = 31
     },
     ["Katabatic Blades"] = {
-        avatar = "Siren",
-        element = "Wind",
-        effect = "AOE Accuracy/Evasion Down",
+        avatar                  = "Siren",
+        element                 = "Wind",
+        effect                  = "AOE Accuracy/Evasion Down",
         restriction = "subjob",
-        SMN = 31
+        SMN                     = 31
     },
     ["Lunar Roar"] = {
-        avatar = "Fenrir",
-        element = "Dark",
-        effect = "AOE Defense Down",
+        avatar                  = "Fenrir",
+        element                 = "Dark",
+        effect                  = "AOE Defense Down",
         restriction = "subjob",
-        SMN = 32
+        SMN                     = 32
     },
     ["Slowga"] = {
-        avatar = "Leviathan",
-        element = "Water",
-        effect = "AOE Slow",
+        avatar                  = "Leviathan",
+        element                 = "Water",
+        effect                  = "AOE Slow",
         restriction = "subjob",
-        SMN = 33
+        SMN                     = 33
     },
     ["Whispering Wind"] = {
-        avatar = "Garuda",
-        element = "Wind",
-        effect = "Party Heal",
+        avatar                  = "Garuda",
+        element                 = "Wind",
+        effect                  = "Party Heal",
         restriction = "subjob",
-        SMN = 36
+        SMN                     = 36
     },
     ["Ultimate Terror"] = {
-        avatar = "Diabolos",
-        element = "Dark",
-        effect = "AOE Terror",
+        avatar                  = "Diabolos",
+        element                 = "Dark",
+        effect                  = "AOE Terror",
         restriction = "subjob",
-        SMN = 37
+        SMN                     = 37
     },
     ["Crimson Howl"] = {
-        avatar = "Ifrit",
-        element = "Fire",
-        effect = "Party Attack Boost",
+        avatar                  = "Ifrit",
+        element                 = "Fire",
+        effect                  = "Party Attack Boost",
         restriction = "subjob",
-        SMN = 38
+        SMN                     = 38
     },
     ["Sleepga"] = {
-        avatar = "Shiva",
-        element = "Ice",
-        effect = "AOE Sleep",
+        avatar                  = "Shiva",
+        element                 = "Ice",
+        effect                  = "AOE Sleep",
         restriction = "subjob",
-        SMN = 39
+        SMN                     = 39
     },
     ["Lightning Armor"] = {
-        avatar = "Ramuh",
-        element = "Thunder",
-        effect = "Party Shock Spikes",
+        avatar                  = "Ramuh",
+        element                 = "Thunder",
+        effect                  = "Party Shock Spikes",
         restriction = "subjob",
-        SMN = 42
+        SMN                     = 42
     },
     ["Chinook"] = {
-        avatar = "Siren",
-        element = "Wind",
-        effect = "Party Evasion Boost",
+        avatar                  = "Siren",
+        element                 = "Wind",
+        effect                  = "Party Evasion Boost",
         restriction = "subjob",
-        SMN = 42
+        SMN                     = 42
     },
     ["Ecliptic Growl"] = {
-        avatar = "Fenrir",
-        element = "Dark",
-        effect = "Party Accuracy Boost",
+        avatar                  = "Fenrir",
+        element                 = "Dark",
+        effect                  = "Party Accuracy Boost",
         restriction = "subjob",
-        SMN = 43
+        SMN                     = 43
     },
     ["Glittering Ruby"] = {
-        avatar = "Carbuncle",
-        element = "Light",
-        effect = "Party Status Ailment Resist",
+        avatar                  = "Carbuncle",
+        element                 = "Light",
+        effect                  = "Party Status Ailment Resist",
         restriction = "subjob",
-        SMN = 44
+        SMN                     = 44
     },
     ["Earthen Ward"] = {
-        avatar = "Titan",
-        element = "Earth",
-        effect = "Party Damage Reduction",
+        avatar                  = "Titan",
+        element                 = "Earth",
+        effect                  = "Party Damage Reduction",
         restriction = "subjob",
-        SMN = 46
+        SMN                     = 46
     },
     ["Spring Water"] = {
-        avatar = "Leviathan",
-        element = "Water",
-        effect = "Party Status Ailment Removal",
+        avatar                  = "Leviathan",
+        element                 = "Water",
+        effect                  = "Party Status Ailment Removal",
         restriction = "subjob",
-        SMN = 47
+        SMN                     = 47
     },
     ["Hastega"] = {
-        avatar = "Garuda",
-        element = "Wind",
-        effect = "Party Haste",
+        avatar                  = "Garuda",
+        element                 = "Wind",
+        effect                  = "Party Haste",
         restriction = "subjob",
-        SMN = 48
+        SMN                     = 48
     },
     ["Noctoshield"] = {
-        avatar = "Diabolos",
-        element = "Dark",
-        effect = "Party Magic Defense Boost",
+        avatar                  = "Diabolos",
+        element                 = "Dark",
+        effect                  = "Party Magic Defense Boost",
         restriction = "subjob",
-        SMN = 49
+        SMN                     = 49
     },
 
     ---========================================================================
@@ -231,32 +231,32 @@ ward.blood_pacts_ward = {
     ---========================================================================
 
     ["Bitter Elegy"] = {
-        avatar = "Siren",
-        element = "Wind",
-        effect = "AOE Paralysis + Blind",
+        avatar                  = "Siren",
+        element                 = "Wind",
+        effect                  = "AOE Paralysis + Blind",
         restriction = "subjob_master_only",
-        SMN = 50
+        SMN                     = 50
     },
     ["Ecliptic Howl"] = {
-        avatar = "Fenrir",
-        element = "Dark",
-        effect = "Party Evasion Boost",
+        avatar                  = "Fenrir",
+        element                 = "Dark",
+        effect                  = "Party Evasion Boost",
         restriction = "subjob_master_only",
-        SMN = 54
+        SMN                     = 54
     },
     ["Eerie Eye"] = {
-        avatar = "Cait Sith",
-        element = "Light",
-        effect = "AOE Accuracy Down + Evasion Down",
+        avatar                  = "Cait Sith",
+        element                 = "Light",
+        effect                  = "AOE Accuracy Down + Evasion Down",
         restriction = "subjob_master_only",
-        SMN = 55
+        SMN                     = 55
     },
     ["Dream Shroud"] = {
-        avatar = "Diabolos",
-        element = "Dark",
-        effect = "Party Magic Attack Boost",
+        avatar                  = "Diabolos",
+        element                 = "Dark",
+        effect                  = "Party Magic Attack Boost",
         restriction = "subjob_master_only",
-        SMN = 56
+        SMN                     = 56
     },
 
     ---========================================================================
@@ -264,95 +264,95 @@ ward.blood_pacts_ward = {
     ---========================================================================
 
     ["Healing Ruby II"] = {
-        avatar = "Carbuncle",
-        element = "Light",
-        effect = "Single Target Heal (Enhanced)",
+        avatar                  = "Carbuncle",
+        element                 = "Light",
+        effect                  = "Single Target Heal (Enhanced)",
         restriction = nil,
-        SMN = 65
+        SMN                     = 65
     },
     ["Deconstruction"] = {
-        avatar = "Atomos",
-        element = "Dark",
-        effect = "AOE Defense Down",
+        avatar                  = "Atomos",
+        element                 = "Dark",
+        effect                  = "AOE Defense Down",
         restriction = nil,
-        SMN = 75
+        SMN                     = 75
     },
     ["Chronoshift"] = {
-        avatar = "Atomos",
-        element = "Dark",
-        effect = "Party Haste + Slow",
+        avatar                  = "Atomos",
+        element                 = "Dark",
+        effect                  = "Party Haste + Slow",
         restriction = nil,
-        SMN = 75
+        SMN                     = 75
     },
     ["Earthen Armor"] = {
-        avatar = "Titan",
-        element = "Earth",
-        effect = "Party Stoneskin",
+        avatar                  = "Titan",
+        element                 = "Earth",
+        effect                  = "Party Stoneskin",
         restriction = nil,
-        SMN = 82
+        SMN                     = 82
     },
     ["Tidal Roar"] = {
-        avatar = "Leviathan",
-        element = "Water",
-        effect = "Party Magic Defense Boost",
+        avatar                  = "Leviathan",
+        element                 = "Water",
+        effect                  = "Party Magic Defense Boost",
         restriction = nil,
-        SMN = 84
+        SMN                     = 84
     },
     ["Fleet Wind"] = {
-        avatar = "Garuda",
-        element = "Wind",
-        effect = "Party Movement Speed",
+        avatar                  = "Garuda",
+        element                 = "Wind",
+        effect                  = "Party Movement Speed",
         restriction = nil,
-        SMN = 86
+        SMN                     = 86
     },
     ["Inferno Howl"] = {
-        avatar = "Ifrit",
-        element = "Fire",
-        effect = "Party Magic Attack Boost",
+        avatar                  = "Ifrit",
+        element                 = "Fire",
+        effect                  = "Party Magic Attack Boost",
         restriction = nil,
-        SMN = 88
+        SMN                     = 88
     },
     ["Wind's Blessing"] = {
-        avatar = "Siren",
-        element = "Wind",
-        effect = "Party Status Ailment Removal",
+        avatar                  = "Siren",
+        element                 = "Wind",
+        effect                  = "Party Status Ailment Removal",
         restriction = nil,
-        SMN = 88
+        SMN                     = 88
     },
     ["Diamond Storm"] = {
-        avatar = "Shiva",
-        element = "Ice",
-        effect = "Party Magic Evasion Boost",
+        avatar                  = "Shiva",
+        element                 = "Ice",
+        effect                  = "Party Magic Evasion Boost",
         restriction = nil,
-        SMN = 90
+        SMN                     = 90
     },
     ["Shock Squall"] = {
-        avatar = "Ramuh",
-        element = "Thunder",
-        effect = "Party Magic Attack Boost",
+        avatar                  = "Ramuh",
+        element                 = "Thunder",
+        effect                  = "Party Magic Attack Boost",
         restriction = nil,
-        SMN = 92
+        SMN                     = 92
     },
     ["Soothing Ruby"] = {
-        avatar = "Carbuncle",
-        element = "Light",
-        effect = "Party HP Recovery",
+        avatar                  = "Carbuncle",
+        element                 = "Light",
+        effect                  = "Party HP Recovery",
         restriction = nil,
-        SMN = 94
+        SMN                     = 94
     },
     ["Heavenward Howl"] = {
-        avatar = "Fenrir",
-        element = "Dark",
-        effect = "Party Critical Hit Rate Boost",
+        avatar                  = "Fenrir",
+        element                 = "Dark",
+        effect                  = "Party Critical Hit Rate Boost",
         restriction = nil,
-        SMN = 96
+        SMN                     = 96
     },
     ["Pavor Nocturnus"] = {
-        avatar = "Diabolos",
-        element = "Dark",
-        effect = "AOE Magic Burst Damage Boost",
+        avatar                  = "Diabolos",
+        element                 = "Dark",
+        effect                  = "AOE Magic Burst Damage Boost",
         restriction = nil,
-        SMN = 98
+        SMN                     = 98
     },
 
     ---========================================================================
@@ -360,32 +360,32 @@ ward.blood_pacts_ward = {
     ---========================================================================
 
     ["Pacifying Ruby"] = {
-        avatar = "Carbuncle",
-        element = "Light",
-        effect = "Party Status Ailment Resistance",
+        avatar                  = "Carbuncle",
+        element                 = "Light",
+        effect                  = "Party Status Ailment Resistance",
         restriction = nil,
-        SMN = 99
+        SMN                     = 99
     },
     ["Hastega II"] = {
-        avatar = "Garuda",
-        element = "Wind",
-        effect = "Party Haste (Enhanced)",
+        avatar                  = "Garuda",
+        element                 = "Wind",
+        effect                  = "Party Haste (Enhanced)",
         restriction = nil,
-        SMN = 99
+        SMN                     = 99
     },
     ["Soothing Current"] = {
-        avatar = "Leviathan",
-        element = "Water",
-        effect = "Party HP Recovery",
+        avatar                  = "Leviathan",
+        element                 = "Water",
+        effect                  = "Party HP Recovery",
         restriction = nil,
-        SMN = 99
+        SMN                     = 99
     },
     ["Crystal Blessing"] = {
-        avatar = "Shiva",
-        element = "Ice",
-        effect = "Party Attack/Accuracy Boost",
+        avatar                  = "Shiva",
+        element                 = "Ice",
+        effect                  = "Party Attack/Accuracy Boost",
         restriction = nil,
-        SMN = 99
+        SMN                     = 99
     }
 }
 

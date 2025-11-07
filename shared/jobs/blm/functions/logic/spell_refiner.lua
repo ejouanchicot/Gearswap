@@ -27,8 +27,8 @@ local SpellRefiner = {}
 -- Load dependencies (centralized systems)
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 local CooldownChecker = require('shared/utils/precast/cooldown_checker')
-local BLMMessages = require('shared/utils/messages/message_blm')
-local MessageCooldowns = require('shared/utils/messages/message_cooldowns')
+local BLMMessages = require('shared/utils/messages/formatters/jobs/message_blm')
+local MessageCooldowns = require('shared/utils/messages/formatters/combat/message_cooldowns')
 
 ---============================================================================
 --- SPELL CORRESPONDENCE TABLES

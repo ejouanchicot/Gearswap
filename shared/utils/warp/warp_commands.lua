@@ -17,7 +17,7 @@
 local SpellCaster = require('shared/utils/warp/casting/spell_caster')
 local ItemUser = require('shared/utils/warp/casting/item_user')
 local WarpDatabase = require('shared/utils/warp/warp_item_database')
-local MessageWarp = require('shared/utils/messages/message_warp')
+local MessageWarp = require('shared/utils/messages/formatters/system/message_warp')
 local MessageCore = require('shared/utils/messages/message_core')
 
 local WarpCommands = {}
@@ -128,26 +128,26 @@ end
 --- @return boolean True if cast or used
 local function cast_with_fallback(spell_name, ring_names)
     if _G.WARP_DEBUG then
-        add_to_chat(8, '[DEBUG] cast_with_fallback() called: ' .. spell_name)
+        MessageWarp.show_cast_with_fallback_called(spell_name)
     end
 
     -- Try spell first
     if SpellCaster.cast_spell(spell_name) then
         if _G.WARP_DEBUG then
-            add_to_chat(8, '[DEBUG] Spell cast successful, returning true')
+            MessageWarp.show_spell_cast_successful()
         end
         return true
     end
 
     if _G.WARP_DEBUG then
-        add_to_chat(8, '[DEBUG] Spell failed, trying ring fallback')
+        MessageWarp.show_spell_failed_ring_fallback()
     end
 
     -- Fallback to ring
     if ring_names then
         local result = ItemUser.use_ring(ring_names, spell_name)
         if _G.WARP_DEBUG then
-            add_to_chat(8, '[DEBUG] Ring fallback result: ' .. tostring(result))
+            MessageWarp.show_ring_fallback_result(result)
         end
         return result
     end
@@ -197,7 +197,7 @@ function WarpCommands.handle_command(cmdParams)
 
     if command_text == last_command_text and (current_time - last_command_time) < DEBOUNCE_THRESHOLD then
         if _G.WARP_DEBUG then
-            add_to_chat(8, '[DEBUG] Command debounced (duplicate within 500ms): ' .. command)
+            MessageWarp.show_command_debounced(command)
         end
         return true  -- Return true to prevent further processing
     end
@@ -206,7 +206,7 @@ function WarpCommands.handle_command(cmdParams)
     last_command_text = command_text
 
     if _G.WARP_DEBUG then
-        add_to_chat(8, '[DEBUG] WarpCommands.handle_command() executing: ' .. command)
+        MessageWarp.show_handle_command_executing(command)
     end
 
     -- SYSTEM COMMANDS (warp status, warp unlock, etc.)

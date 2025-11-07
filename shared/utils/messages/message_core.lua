@@ -92,4 +92,49 @@ function MessageCore.warning(message)
     add_to_chat(205, string.format("[%s] %s", job_tag, message))
 end
 
+---============================================================================
+--- UTILITY MESSAGES
+---============================================================================
+
+--- Show lockstyle status message
+--- @param status_msg string Status message
+function MessageCore.show_lockstyle_status(status_msg)
+    add_to_chat(207, status_msg)
+end
+
+--- Show AutoMove callback error
+--- @param error_msg string Error message
+function MessageCore.show_automove_error(error_msg)
+    add_to_chat(167, string.format("[AutoMove] Callback error: %s", error_msg))
+end
+
+--- Show config loader error
+--- @param module_name string Module name (e.g., 'ConfigLoader', 'WHM')
+--- @param error_msg string Error message
+function MessageCore.show_config_error(module_name, error_msg)
+    add_to_chat(167, string.format('[%s] %s', module_name, error_msg))
+end
+
+--- Show UI module error
+--- @param error_msg string Error message
+function MessageCore.show_ui_error(error_msg)
+    add_to_chat(167, string.format('[UI] %s', error_msg))
+end
+
+--- Show UI module info
+--- @param info_msg string Info message
+function MessageCore.show_ui_info(info_msg)
+    add_to_chat(122, string.format('[UI] %s', info_msg))
+end
+
+--- Show test mode message
+--- @param test_msg string Test mode message
+function MessageCore.show_test_mode(test_msg)
+    add_to_chat(8, string.format('[TEST MODE] %s', test_msg))
+end
+
+---============================================================================
+--- MODULE EXPORT
+---============================================================================
+
 return MessageCore

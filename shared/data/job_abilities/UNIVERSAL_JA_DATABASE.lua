@@ -16,7 +16,7 @@
 ---
 --- @file    UNIVERSAL_JA_DATABASE.lua
 --- @author  Tetsouo
---- @version 1.0
+--- @version 1.0 - Improved formatting
 --- @date    Created: 2025-10-29
 --- @see     shared/data/job_abilities/README.md
 ---============================================================================
@@ -58,8 +58,7 @@ for _, job in ipairs(jobs) do
             UNIVERSAL_JA_DB[ability_name] = description
         end
     else
-        -- Optional: Log error if database fails to load
-        -- add_to_chat(167, '[JA DB] Warning: Could not load ' .. job .. '_JA_DATABASE')
+        -- Failed to load database (suppressed warning)
     end
 end
 

@@ -8,8 +8,8 @@
 ---
 --- @file rdm_subjob.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-31
+--- @version 1.1 - Improved alignment
+--- @date Created: 2025-10-31 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Red_Mage
 ---============================================================================
 
@@ -17,12 +17,12 @@ local RDM_SUBJOB = {}
 
 RDM_SUBJOB.abilities = {
     ['Convert'] = {
-        description = 'Swap HP with MP',
-        level = 40,
-        recast = 600,  -- 10 minutes
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Swap HP with MP',
+        level                   = 40,
+        recast                  = 600,  -- 10min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     }
 }
 

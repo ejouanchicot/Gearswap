@@ -9,8 +9,8 @@
 ---
 --- @file brd_sp.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-30
+--- @version 1.1 - Improved alignment
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Bard
 --- @source https://www.bg-wiki.com/ffxi/Soul_Voice
 --- @source https://www.bg-wiki.com/ffxi/Clarion_Call
@@ -20,20 +20,20 @@ local BRD_SP = {}
 
 BRD_SP.abilities = {
     ['Soul Voice'] = {
-        description = "Song effects x2 (3min)",
-        level = 1,
-        recast = 3600,  -- 1 hour (SP1)
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Song effects x2 (3min)",
+        level                   = 1,
+        recast                  = 3600,  -- 1hr (SP1)
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Clarion Call'] = {
-        description = "+1 song slot for party (3min)",
-        level = 96,
-        recast = 3600,  -- 1 hour (SP2)
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "+1 song slot for party (3min)",
+        level                   = 96,
+        recast                  = 3600,  -- 1hr (SP2)
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     }
 }
 

@@ -10,7 +10,7 @@
 --- @date 2025-10-28
 ---============================================================================
 
-local MessageWarp = require('shared/utils/messages/message_warp')
+local MessageWarp = require('shared/utils/messages/formatters/system/message_warp')
 local MessageCore = require('shared/utils/messages/message_core')
 
 local SpellCaster = {}

@@ -11,8 +11,8 @@
 ---
 --- @file drg_pet_commands.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-31
+--- @version 1.1 - Improved alignment
+--- @date Created: 2025-10-31 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Dragoon
 ---============================================================================
 
@@ -20,36 +20,36 @@ local DRG_PET_COMMANDS = {}
 
 DRG_PET_COMMANDS.abilities = {
     ['Dismiss'] = {
-        description = "Sends wyvern away",
-        level = 1,
-        recast = 0,
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Sends wyvern away",
+        level                   = 1,
+        recast                  = 0,
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Smiting Breath'] = {
-        description = "Orders wyvern to attack with breath",
-        level = 90,
-        recast = 60,  -- 1 minute
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Orders wyvern to attack with breath",
+        level                   = 90,
+        recast                  = 60,  -- 1min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Restoring Breath'] = {
-        description = "Orders wyvern to heal with breath",
-        level = 90,
-        recast = 60,  -- 1 minute
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Orders wyvern to heal with breath",
+        level                   = 90,
+        recast                  = 60,  -- 1min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Steady Wing'] = {
-        description = "Create barrier that absorbs damage to wyvern",
-        level = 95,
-        recast = 180,  -- 3 minutes
-        main_job_only = true,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = "Create barrier that absorbs damage to wyvern",
+        level                   = 95,
+        recast                  = 180,  -- 3min
+        main_job_only           = true,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     }
 }
 

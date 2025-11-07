@@ -2,6 +2,8 @@
 --- Keybind UI Settings - Position persistence in UI_CONFIG.lua
 ---============================================================================
 
+local MessageCore = require('shared/utils/messages/message_core')
+
 local KeybindSettings = {}
 
 -- Settings file path (UI_CONFIG.lua)
@@ -58,7 +60,7 @@ function KeybindSettings.save(settings)
     -- Read the entire config file
     local file = io.open(config_file, 'r')
     if not file then
-        add_to_chat(167, "[UI] Error: Could not open UI_CONFIG.lua for reading")
+        MessageCore.show_ui_error("Error: Could not open UI_CONFIG.lua for reading")
         return false
     end
 
@@ -123,7 +125,7 @@ function KeybindSettings.save(settings)
     -- Write back to file
     file = io.open(config_file, 'w')
     if not file then
-        add_to_chat(167, "[UI] Error: Could not open UI_CONFIG.lua for writing")
+        MessageCore.show_ui_error("Error: Could not open UI_CONFIG.lua for writing")
         return false
     end
 

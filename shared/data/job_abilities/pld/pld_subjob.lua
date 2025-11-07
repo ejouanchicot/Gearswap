@@ -11,8 +11,8 @@
 ---
 --- @file pld_subjob.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-30
+--- @version 1.1 - Improved alignment
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @updated 2025-10-31
 --- @source https://www.bg-wiki.com/ffxi/Paladin
 ---============================================================================
@@ -21,36 +21,36 @@ local PLD_SUBJOB = {}
 
 PLD_SUBJOB.abilities = {
     ['Holy Circle'] = {
-        description = 'ATK/DEF+ vs Undead (party AoE)',
-        level = 5,
-        recast = 300,  -- 5 minutes
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'ATK/DEF+ vs Undead (party AoE)',
+        level                   = 5,
+        recast                  = 300,  -- 5min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Shield Bash'] = {
-        description = 'Stun attack',
-        level = 15,
-        recast = 300,  -- 5 minutes
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Stun attack',
+        level                   = 15,
+        recast                  = 300,  -- 5min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Sentinel'] = {
-        description = 'Physical damage -90->-50%, +enmity',
-        level = 30,
-        recast = 300,  -- 5 minutes
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 900
+        description             = 'Physical damage -90->-50%, +enmity',
+        level                   = 30,
+        recast                  = 300,  -- 5min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 900
     },
     ['Cover'] = {
-        description = 'Redirect ally damage to self',
-        level = 35,
-        recast = 15,
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Redirect ally damage to self',
+        level                   = 35,
+        recast                  = 15,
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     }
 }
 

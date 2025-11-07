@@ -25,6 +25,9 @@ local UICommands = require('shared/utils/ui/UI_COMMANDS')
 local CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
 local WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
 
+-- Message commands (for debug messages)
+local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
+
 -- WHM message formatter
 local formatter_success, WHMMessageFormatter = pcall(require, 'shared/utils/whm/whm_message_formatter')
 if not formatter_success then
@@ -106,7 +109,7 @@ function job_self_command(cmdParams, eventArgs)
         MidcastManager.toggle_debug()
 
         -- Confirmation message
-        add_to_chat(159, '[WHM_COMMANDS] Debug toggled! Current state: ' .. tostring(_G.MidcastManagerDebugState))
+        MessageCommands.show_debugmidcast_toggled('WHM', _G.MidcastManagerDebugState)
 
         eventArgs.handled = true
         return
@@ -125,15 +128,11 @@ function job_self_command(cmdParams, eventArgs)
             send_command('input /ja "Afflatus Solace" <me>')
             if WHMMessageFormatter then
                 WHMMessageFormatter.show_afflatus_change('Solace')
-            else
-                add_to_chat(8, '[WHM] Casting Afflatus Solace')
             end
         elseif stance == 'Misery' then
             send_command('input /ja "Afflatus Misery" <me>')
             if WHMMessageFormatter then
                 WHMMessageFormatter.show_afflatus_change('Misery')
-            else
-                add_to_chat(8, '[WHM] Casting Afflatus Misery')
             end
         end
         eventArgs.handled = true

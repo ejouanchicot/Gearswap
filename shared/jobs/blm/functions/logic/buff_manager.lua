@@ -26,9 +26,9 @@ local BuffManager = {}
 
 -- Load dependencies (centralized systems - no SafeLoader needed)
 local MessageFormatter = require('shared/utils/messages/message_formatter')
-local MessageBuffs = require('shared/utils/messages/message_buffs')
+local MessageBuffs = require('shared/utils/messages/formatters/magic/message_buffs')
 local CooldownChecker = require('shared/utils/precast/cooldown_checker')
-local BLMMessages = require('shared/utils/messages/message_blm')
+local BLMMessages = require('shared/utils/messages/formatters/jobs/message_blm')
 
 ---============================================================================
 --- BUFF CONFIGURATION
@@ -122,10 +122,8 @@ function BuffManager.BuffSelf()
 
     -- Pre-allocate arrays for better performance
     local readySpells = {}
-    local spellsOnCooldown = {}
     local totalDelay = 0
     local readyCount = 0
-    local cooldownCount = 0
 
     -- Single loop to process all spells (optimized iteration)
     for i = 1, #spells do
@@ -146,16 +144,10 @@ function BuffManager.BuffSelf()
                 -- Add to ready spells using pre-incremented count
                 readyCount = readyCount + 1
                 readySpells[readyCount] = { spell = spell, delay = totalDelay }
-            elseif recastTime > 0 then
-                -- Add to cooldown list using pre-incremented count
-                cooldownCount = cooldownCount + 1
-                spellsOnCooldown[cooldownCount] = { spell = spell, recast = recastTime }
             end
-        elseif recastTime > 0 then
-            -- Track cooldowns even for active buffs (for display purposes)
-            cooldownCount = cooldownCount + 1
-            spellsOnCooldown[cooldownCount] = { spell = spell, recast = recastTime }
+            -- NOTE: Cooldown tracking completely removed - no spam
         end
+        -- NOTE: No cooldown tracking for active buffs either
     end
 
     -- Process ready spells if any (optimized command building)
@@ -172,15 +164,15 @@ function BuffManager.BuffSelf()
             send_command(command)
             updateLastCastTime(spellName, currentTime)
 
-            -- Log cast attempt with proper formatting
-            BLMMessages.show_buff_casting(spellName, readySpell.delay)
+            -- NOTE: Casting messages disabled - real buff gain messages will show automatically
+            -- BLMMessages.show_buff_casting(spellName, readySpell.delay)
         end
 
         return true
-    else
-        -- Show complete status (combine recasts + actives)
-        return BuffManager._displayBuffStatus(spells, buffActive, spellRecasts)
     end
+
+    -- Show ACTIVE buffs only (no cooldowns)
+    return BuffManager._displayBuffStatus(spells, buffActive, spellRecasts)
 end
 
 ---============================================================================
@@ -191,7 +183,7 @@ end
 --- Uses same format as WAR (MessageBuffs.show_buff_status)
 --- @param spells table Array of spell definitions
 --- @param buffActive table Current active buffs
---- @param spellRecasts table Current spell recast times
+--- @param spellRecasts table Current spell recast times (UNUSED - no cooldowns displayed)
 --- @return boolean true if status was displayed
 function BuffManager._displayBuffStatus(spells, buffActive, spellRecasts)
     if not MessageBuffs then
@@ -200,7 +192,7 @@ function BuffManager._displayBuffStatus(spells, buffActive, spellRecasts)
 
     local status_data = {}
 
-    -- For each spell, show either ACTIVE or COOLDOWN status
+    -- For each spell, show ONLY ACTIVE status (no cooldowns ever)
     for _, spell in ipairs(spells) do
         if buffActive[spell.buffName] then
             -- Buff is active
@@ -208,29 +200,18 @@ function BuffManager._displayBuffStatus(spells, buffActive, spellRecasts)
                 name = spell.name,
                 status = 'active'
             })
-        else
-            -- Buff not active - check if it's on recast
-            local recastTime_raw = spellRecasts[spell.recastId]
-            local recastTime = recastTime_raw or 0
-            if recastTime > 0 then
-                -- Show recast (convert centiseconds to seconds)
-                local recastSeconds = math.ceil(recastTime / 100)
-                table.insert(status_data, {
-                    name = spell.name,
-                    status = 'cooldown',
-                    time = recastSeconds
-                })
-            end
-            -- If recastTime == 0 and not active, spell will be cast (no message)
         end
+        -- NO cooldown tracking - cooldowns are never displayed
     end
 
-    -- Display using MessageBuffs format (same as WAR, but with "Magic" type)
+    -- Display using MessageBuffs format ONLY if we have active buffs
+    -- If no buffs are active, return false silently (no messages)
     if #status_data > 0 then
         MessageBuffs.show_buff_status(status_data, "Magic")
         return true
     end
 
+    -- No active buffs - return false without displaying anything
     return false
 end
 

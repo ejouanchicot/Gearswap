@@ -14,30 +14,38 @@ local MessageFormatter = {}
 
 -- Load all message modules
 local MessageCore = require('shared/utils/messages/message_core')
-local MessageKeybinds = require('shared/utils/messages/message_keybinds')
-local MessageSystem = require('shared/utils/messages/message_system')
-local MessageStatus = require('shared/utils/messages/message_status')
-local MessageCooldowns = require('shared/utils/messages/message_cooldowns')
-local MessageCombat = require('shared/utils/messages/message_combat')
-local MessageBuffs = require('shared/utils/messages/message_buffs')
-local MessageEquipment = require('shared/utils/messages/message_equipment')
-local MessageDebuffs = require('shared/utils/messages/message_debuffs')
 
--- NEW MODULAR ARCHITECTURE - Global Modules by TYPE (not by JOB)
-local JABuffs = require('shared/utils/messages/abilities/message_ja_buffs')         -- Global JA activation messages
-local SongMessages = require('shared/utils/messages/magic/message_songs')           -- BRD song messages
--- DanceMessages removed - migrated to JABuffs (DNC now uses global JA system)
-local RollMessages = require('shared/utils/messages/utility/roll_messages')         -- COR roll messages
-local PartyMessages = require('shared/utils/messages/utility/party_messages')       -- Party tracking (universal)
+-- UI modules
+local MessageKeybinds = require('shared/utils/messages/formatters/ui/message_keybinds')
+local MessageSystem = require('shared/utils/messages/formatters/system/message_system')
+local MessageStatus = require('shared/utils/messages/formatters/ui/message_status')
 
--- OLD JOB-SPECIFIC MODULES (Backward Compatibility - Will be migrated progressively)
--- CORMessages removed - migrated to PartyMessages (utility/party_messages.lua)
--- MessageDNC removed - migrated to JABuffs (DNC now uses global JA system)
-local BRDMessages = require('shared/utils/messages/message_brd')
-local RDMMessages = require('shared/utils/messages/message_rdm')
-local GEOMessages = require('shared/utils/messages/message_geo')
-local BLMMessages = require('shared/utils/messages/message_blm')
-local MessageBST = require('shared/utils/messages/message_bst')
+-- Combat modules
+local MessageCooldowns = require('shared/utils/messages/formatters/combat/message_cooldowns')
+local MessageCombat = require('shared/utils/messages/formatters/combat/message_combat')
+local JABuffs = require('shared/utils/messages/formatters/combat/message_ja_buffs')
+
+-- Magic modules
+local MessageBuffs = require('shared/utils/messages/formatters/magic/message_buffs')
+local MessageDebuffs = require('shared/utils/messages/formatters/magic/message_debuffs')
+local SongMessages = require('shared/utils/messages/formatters/magic/message_songs')
+
+-- System modules
+local MessageEquipment = require('shared/utils/messages/formatters/system/message_equipment')
+
+-- Utility modules
+local RollMessages = require('shared/utils/messages/utilities/roll_messages')
+local PartyMessages = require('shared/utils/messages/utilities/party_messages')
+
+-- Job-specific modules
+local BRDMessages = require('shared/utils/messages/formatters/jobs/message_brd')
+local RDMMessages = require('shared/utils/messages/formatters/jobs/message_rdm')
+local BLMMessages = require('shared/utils/messages/formatters/jobs/message_blm')
+local MessageBST = require('shared/utils/messages/formatters/jobs/message_bst')
+local GEOMessages = require('shared/utils/messages/formatters/jobs/message_geo')
+local MessageCOR = require('shared/utils/messages/formatters/jobs/message_cor')
+local MessageDRG = require('shared/utils/messages/formatters/jobs/message_drg')
+local MessageWHM = require('shared/utils/messages/formatters/jobs/message_whm')
 
 ---============================================================================
 --- PUBLIC API - Maintains backward compatibility
@@ -258,8 +266,35 @@ MessageFormatter.show_no_tier_available = GEOMessages.show_no_tier_available
 
 -- BLM functions (Black Mage)
 MessageFormatter.show_dark_arts_activated = BLMMessages.show_dark_arts_activated
+MessageFormatter.show_element_cycle = BLMMessages.show_element_cycle
+MessageFormatter.show_aja_cycle = BLMMessages.show_aja_cycle
+MessageFormatter.show_storm_cycle = BLMMessages.show_storm_cycle
+MessageFormatter.show_tier_cycle = BLMMessages.show_tier_cycle
+MessageFormatter.show_buff_activated = BLMMessages.show_buff_activated
+MessageFormatter.show_buff_cast = BLMMessages.show_buff_cast
+MessageFormatter.show_magic_burst_on = BLMMessages.show_magic_burst_on
+MessageFormatter.show_magic_burst_off = BLMMessages.show_magic_burst_off
+MessageFormatter.show_free_nuke_on = BLMMessages.show_free_nuke_on
+MessageFormatter.show_spell_refinement = BLMMessages.show_spell_refinement
+MessageFormatter.show_spell_refinement_failed = BLMMessages.show_spell_refinement_failed
+MessageFormatter.show_mp_conservation = BLMMessages.show_mp_conservation
+MessageFormatter.show_arts_already_active = BLMMessages.show_arts_already_active
+MessageFormatter.show_stratagem_no_charges = BLMMessages.show_stratagem_no_charges
+MessageFormatter.show_buffself_error = BLMMessages.show_buffself_error
+MessageFormatter.show_spell_replacement_error = BLMMessages.show_spell_replacement_error
+MessageFormatter.show_spell_refinement_error = BLMMessages.show_spell_refinement_error
+MessageFormatter.show_spell_recasts_error = BLMMessages.show_spell_recasts_error
+MessageFormatter.show_insufficient_mp_error = BLMMessages.show_insufficient_mp_error
+MessageFormatter.show_breakga_blocked = BLMMessages.show_breakga_blocked
+MessageFormatter.show_buffself_recasts_error = BLMMessages.show_buffself_recasts_error
+MessageFormatter.show_buffself_resources_error = BLMMessages.show_buffself_resources_error
+MessageFormatter.show_buff_casting = BLMMessages.show_buff_casting
+MessageFormatter.show_unknown_buff_error = BLMMessages.show_unknown_buff_error
+MessageFormatter.show_buff_already_active = BLMMessages.show_buff_already_active
+MessageFormatter.show_manual_buff_cast = BLMMessages.show_manual_buff_cast
 
 -- BST functions (Beastmaster)
+-- Legacy names with show_bst_ prefix
 MessageFormatter.show_bst_ecosystem_change = MessageBST.show_ecosystem_change
 MessageFormatter.show_bst_species_change = MessageBST.show_species_change
 MessageFormatter.show_bst_broth_equip = MessageBST.show_broth_equip
@@ -276,11 +311,45 @@ MessageFormatter.show_bst_ready_moves_usage = MessageBST.show_ready_moves_usage
 MessageFormatter.show_bst_ready_move_use = MessageBST.show_ready_move_use
 MessageFormatter.show_bst_ready_move_auto_engage = MessageBST.show_ready_move_auto_engage
 MessageFormatter.show_bst_ready_move_auto_sequence = MessageBST.show_ready_move_auto_sequence
-MessageFormatter.error_bst_no_pet = MessageBST.error_no_pet
-MessageFormatter.error_bst_no_ready_moves = MessageBST.error_no_ready_moves
-MessageFormatter.error_bst_invalid_index = MessageBST.error_invalid_index
-MessageFormatter.error_bst_index_out_of_range = MessageBST.error_index_out_of_range
-MessageFormatter.error_bst_module_not_loaded = MessageBST.error_module_not_loaded
+MessageFormatter.show_bst_broth_count_footer = MessageBST.show_broth_count_footer
+
+-- Standard names (for validator)
+MessageFormatter.show_ecosystem_change = MessageBST.show_ecosystem_change
+MessageFormatter.show_species_change = MessageBST.show_species_change
+MessageFormatter.show_broth_equip = MessageBST.show_broth_equip
+MessageFormatter.show_broth_count_header = MessageBST.show_broth_count_header
+MessageFormatter.show_broth_count_line = MessageBST.show_broth_count_line
+MessageFormatter.show_no_broths = MessageBST.show_no_broths
+MessageFormatter.show_pet_engage = MessageBST.show_pet_engage
+MessageFormatter.show_pet_disengage = MessageBST.show_pet_disengage
+MessageFormatter.show_auto_engage_status = MessageBST.show_auto_engage_status
+MessageFormatter.show_ready_move_precast = MessageBST.show_ready_move_precast
+MessageFormatter.show_ready_moves_header = MessageBST.show_ready_moves_header
+MessageFormatter.show_ready_move_item = MessageBST.show_ready_move_item
+MessageFormatter.show_ready_moves_usage = MessageBST.show_ready_moves_usage
+MessageFormatter.show_ready_move_use = MessageBST.show_ready_move_use
+MessageFormatter.show_ready_move_auto_engage = MessageBST.show_ready_move_auto_engage
+MessageFormatter.show_ready_move_auto_sequence = MessageBST.show_ready_move_auto_sequence
+MessageFormatter.show_broth_count_footer = MessageBST.show_broth_count_footer
+MessageFormatter.show_error_no_pet = MessageBST.show_error_no_pet
+MessageFormatter.show_error_no_ready_moves = MessageBST.show_error_no_ready_moves
+MessageFormatter.show_error_invalid_index = MessageBST.show_error_invalid_index
+MessageFormatter.show_error_index_out_of_range = MessageBST.show_error_index_out_of_range
+MessageFormatter.show_error_module_not_loaded = MessageBST.show_error_module_not_loaded
+
+-- COR functions (Corsair)
+MessageFormatter.show_rolltracker_load_failed = MessageCOR.show_rolltracker_load_failed
+MessageFormatter.show_packets_load_failed = MessageCOR.show_packets_load_failed
+MessageFormatter.show_resources_load_failed = MessageCOR.show_resources_load_failed
+
+-- DRG functions (Dragoon)
+MessageFormatter.show_drg_subjob_required = MessageDRG.show_drg_subjob_required
+MessageFormatter.show_subjob_disabled = MessageDRG.show_subjob_disabled
+MessageFormatter.show_jump_on_cooldown = MessageDRG.show_jump_on_cooldown
+MessageFormatter.show_high_jump_on_cooldown = MessageDRG.show_high_jump_on_cooldown
+
+-- WHM functions (White Mage)
+MessageFormatter.show_curemanager_not_loaded = MessageWHM.show_curemanager_not_loaded
 
 -- DNC functions removed - migrated to JABuffs (use show_ja_activated instead)
 

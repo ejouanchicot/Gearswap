@@ -18,8 +18,8 @@
 ---
 --- @file commands/info_command.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-11-04
+--- @version 1.1 - Refactored for cleaner code
+--- @date Created: 2025-11-04 | Updated: 2025-11-06
 ---============================================================================
 
 local InfoCommand = {}
@@ -30,6 +30,7 @@ local InfoCommand = {}
 
 local MessageCore = require('shared/utils/messages/message_core')
 local MessageColors = require('shared/utils/messages/message_colors')
+local MessageInfo = require('shared/utils/messages/formatters/ui/message_info')
 
 -- Data sources (lazy loaded)
 local DataLoader = require('shared/utils/data/data_loader')
@@ -212,118 +213,93 @@ end
 --- DATA DISPLAY FUNCTIONS
 ---============================================================================
 
+--- Generic entity display function (refactored to reduce duplication)
+--- @param name string Entity name
+--- @param data table Entity data
+--- @param header_text string Header title
+--- @param name_color number Color code for name
+--- @param fields table Array of field definitions
+--- @param use_centiseconds boolean True if time fields are in centiseconds
+local function display_entity(name, data, header_text, name_color, fields, use_centiseconds)
+    -- Header
+    MessageInfo.show_entity_header(header_text)
+    MessageInfo.show_entity_name(sanitize_ascii(name), name_color)
+
+    -- Fields
+    for _, field in ipairs(fields) do
+        local line = format_field(field[1], field[2], field[3], field[4], use_centiseconds)
+        if line then
+            MessageInfo.show_entity_field(line)
+        end
+    end
+
+    MessageInfo.show_entity_footer()
+end
+
 --- Display Job Ability information
 --- @param ability_name string Ability name
 --- @param ability_data table Ability data from database
 local function display_job_ability(ability_name, ability_data)
-    local c_header = color(MessageColors.JOB_TAG)
-    local c_name = color(MessageColors.JA)
-    local c_reset = color(1)
-
-    -- Header
-    add_to_chat(1, c_header .. "=== Job Ability Information ===" .. c_reset)
-    add_to_chat(1, c_name .. "Name: " .. c_reset .. sanitize_ascii(ability_name))
-
-    -- Fields
     local fields = {
-        {"Type", ability_data.type, MessageColors.GRAY, MessageColors.INFO},
+        {"Type",        ability_data.type,        MessageColors.GRAY, MessageColors.INFO},
         {"Description", ability_data.description, MessageColors.GRAY, MessageColors.SPELL},
-        {"Recast", ability_data.recast, MessageColors.GRAY, MessageColors.COOLDOWN},
-        {"Duration", ability_data.duration, MessageColors.GRAY, MessageColors.SUCCESS},
-        {"Effect", ability_data.effect, MessageColors.GRAY, MessageColors.INFO},
-        {"Range", ability_data.range, MessageColors.GRAY, MessageColors.INFO},
-        {"Radius", ability_data.radius, MessageColors.GRAY, MessageColors.INFO},
-        {"Cost", ability_data.cost, MessageColors.GRAY, MessageColors.WARNING},
-        {"Job", ability_data.job, MessageColors.GRAY, MessageColors.JOB_TAG},
-        {"Level", ability_data.level, MessageColors.GRAY, MessageColors.INFO},
-        {"Category", ability_data.category, MessageColors.GRAY, MessageColors.GRAY},
+        {"Recast",      ability_data.recast,      MessageColors.GRAY, MessageColors.COOLDOWN},
+        {"Duration",    ability_data.duration,    MessageColors.GRAY, MessageColors.SUCCESS},
+        {"Effect",      ability_data.effect,      MessageColors.GRAY, MessageColors.INFO},
+        {"Range",       ability_data.range,       MessageColors.GRAY, MessageColors.INFO},
+        {"Radius",      ability_data.radius,      MessageColors.GRAY, MessageColors.INFO},
+        {"Cost",        ability_data.cost,        MessageColors.GRAY, MessageColors.WARNING},
+        {"Job",         ability_data.job,         MessageColors.GRAY, MessageColors.JOB_TAG},
+        {"Level",       ability_data.level,       MessageColors.GRAY, MessageColors.INFO},
+        {"Category",    ability_data.category,    MessageColors.GRAY, MessageColors.GRAY},
     }
 
-    for _, field in ipairs(fields) do
-        local line = format_field(field[1], field[2], field[3], field[4], false)  -- JA uses seconds
-        if line then
-            add_to_chat(1, line)
-        end
-    end
-
-    add_to_chat(1, color(MessageColors.SEPARATOR) .. string.rep("=", 40))
+    display_entity(ability_name, ability_data, "Job Ability Information", MessageColors.JA, fields, false)
 end
 
 --- Display Spell information
 --- @param spell_name string Spell name
 --- @param spell_data table Spell data from database
 local function display_spell(spell_name, spell_data)
-    local c_header = color(MessageColors.JOB_TAG)
-    local c_name = color(MessageColors.SPELL)
-    local c_reset = color(1)
-
-    -- Header
-    add_to_chat(1, c_header .. "=== Spell Information ===" .. c_reset)
-    add_to_chat(1, c_name .. "Name: " .. c_reset .. sanitize_ascii(spell_name))
-
-    -- Fields
     local fields = {
-        {"Type", spell_data.type, MessageColors.GRAY, MessageColors.INFO},
-        {"Category", spell_data.category, MessageColors.GRAY, MessageColors.GRAY},
+        {"Type",        spell_data.type,        MessageColors.GRAY, MessageColors.INFO},
+        {"Category",    spell_data.category,    MessageColors.GRAY, MessageColors.GRAY},
         {"Description", spell_data.description, MessageColors.GRAY, MessageColors.SPELL},
-        {"Effect", spell_data.effect, MessageColors.GRAY, MessageColors.INFO},
-        {"Duration", spell_data.duration, MessageColors.GRAY, MessageColors.SUCCESS},
-        {"Cast Time", spell_data.cast_time, MessageColors.GRAY, MessageColors.INFO},
-        {"Recast", spell_data.recast, MessageColors.GRAY, MessageColors.COOLDOWN},
-        {"MP Cost", spell_data.mp_cost, MessageColors.GRAY, MessageColors.WARNING},
-        {"Range", spell_data.range, MessageColors.GRAY, MessageColors.INFO},
-        {"Target", spell_data.target, MessageColors.GRAY, MessageColors.INFO},
-        {"Element", spell_data.element, MessageColors.GRAY, MessageColors.SPELL},
-        {"Skill", spell_data.skill, MessageColors.GRAY, MessageColors.GRAY},
-        {"Job", spell_data.job, MessageColors.GRAY, MessageColors.JOB_TAG},
-        {"Level", spell_data.level, MessageColors.GRAY, MessageColors.INFO},
+        {"Effect",      spell_data.effect,      MessageColors.GRAY, MessageColors.INFO},
+        {"Duration",    spell_data.duration,    MessageColors.GRAY, MessageColors.SUCCESS},
+        {"Cast Time",   spell_data.cast_time,   MessageColors.GRAY, MessageColors.INFO},
+        {"Recast",      spell_data.recast,      MessageColors.GRAY, MessageColors.COOLDOWN},
+        {"MP Cost",     spell_data.mp_cost,     MessageColors.GRAY, MessageColors.WARNING},
+        {"Range",       spell_data.range,       MessageColors.GRAY, MessageColors.INFO},
+        {"Target",      spell_data.target,      MessageColors.GRAY, MessageColors.INFO},
+        {"Element",     spell_data.element,     MessageColors.GRAY, MessageColors.SPELL},
+        {"Skill",       spell_data.skill,       MessageColors.GRAY, MessageColors.GRAY},
+        {"Job",         spell_data.job,         MessageColors.GRAY, MessageColors.JOB_TAG},
+        {"Level",       spell_data.level,       MessageColors.GRAY, MessageColors.INFO},
     }
 
-    for _, field in ipairs(fields) do
-        local line = format_field(field[1], field[2], field[3], field[4], true)  -- Spells use centiseconds
-        if line then
-            add_to_chat(1, line)
-        end
-    end
-
-    add_to_chat(1, color(MessageColors.SEPARATOR) .. string.rep("=", 40))
+    display_entity(spell_name, spell_data, "Spell Information", MessageColors.SPELL, fields, true)
 end
 
 --- Display Weaponskill information
 --- @param ws_name string Weaponskill name
 --- @param ws_data table Weaponskill data from database
 local function display_weaponskill(ws_name, ws_data)
-    local c_header = color(MessageColors.JOB_TAG)
-    local c_name = color(MessageColors.WS)
-    local c_reset = color(1)
-
-    -- Header
-    add_to_chat(1, c_header .. "=== Weaponskill Information ===" .. c_reset)
-    add_to_chat(1, c_name .. "Name: " .. c_reset .. sanitize_ascii(ws_name))
-
-    -- Fields (using actual database field names)
     local fields = {
-        {"Type", ws_data.type, MessageColors.GRAY, MessageColors.INFO},
-        {"Description", ws_data.description, MessageColors.GRAY, MessageColors.WS},
-        {"Skillchain", ws_data.skillchain, MessageColors.GRAY, MessageColors.SPELL},
-        {"Element", ws_data.element, MessageColors.GRAY, MessageColors.SPELL},
-        {"Mods", ws_data.mods, MessageColors.GRAY, MessageColors.INFO},
-        {"Hits", ws_data.hits, MessageColors.GRAY, MessageColors.INFO},
-        {"FTP", ws_data.ftp, MessageColors.GRAY, MessageColors.SUCCESS},
+        {"Type",           ws_data.type,           MessageColors.GRAY, MessageColors.INFO},
+        {"Description",    ws_data.description,    MessageColors.GRAY, MessageColors.WS},
+        {"Skillchain",     ws_data.skillchain,     MessageColors.GRAY, MessageColors.SPELL},
+        {"Element",        ws_data.element,        MessageColors.GRAY, MessageColors.SPELL},
+        {"Mods",           ws_data.mods,           MessageColors.GRAY, MessageColors.INFO},
+        {"Hits",           ws_data.hits,           MessageColors.GRAY, MessageColors.INFO},
+        {"FTP",            ws_data.ftp,            MessageColors.GRAY, MessageColors.SUCCESS},
         {"Skill Required", ws_data.skill_required, MessageColors.GRAY, MessageColors.INFO},
-        {"Jobs", ws_data.jobs, MessageColors.GRAY, MessageColors.JOB_TAG},
-        {"Weapon Type", ws_data.weapon_type, MessageColors.GRAY, MessageColors.GRAY},
-        {"Special Notes", ws_data.special_notes, MessageColors.GRAY, MessageColors.WARNING},
+        {"Jobs",           ws_data.jobs,           MessageColors.GRAY, MessageColors.JOB_TAG},
+        {"Weapon Type",    ws_data.weapon_type,    MessageColors.GRAY, MessageColors.GRAY},
+        {"Special Notes",  ws_data.special_notes,  MessageColors.GRAY, MessageColors.WARNING},
     }
 
-    for _, field in ipairs(fields) do
-        local line = format_field(field[1], field[2], field[3], field[4], false)  -- WS has no time fields
-        if line then
-            add_to_chat(1, line)
-        end
-    end
-
-    add_to_chat(1, color(MessageColors.SEPARATOR) .. string.rep("=", 40))
+    display_entity(ws_name, ws_data, "Weaponskill Information", MessageColors.WS, fields, false)
 end
 
 ---============================================================================
@@ -400,11 +376,7 @@ end
 --- @return boolean True if command was handled
 function InfoCommand.handle(args)
     if not args or #args == 0 then
-        local c_error = color(MessageColors.ERROR)
-        add_to_chat(167, c_error .. "[INFO] Usage: //gs c info <name>")
-        add_to_chat(167, c_error .. "[INFO] Example: //gs c info Last Resort")
-        add_to_chat(167, c_error .. "[INFO] Example: //gs c info Haste")
-        add_to_chat(167, c_error .. "[INFO] Example: //gs c info Torcleaver")
+        MessageInfo.show_usage()
         return true
     end
 
@@ -415,9 +387,7 @@ function InfoCommand.handle(args)
     local data, entity_type, actual_name = search_all_databases(name)
 
     if not data then
-        local c_error = color(MessageColors.ERROR)
-        add_to_chat(167, c_error .. "[INFO] Not found: " .. sanitize_ascii(name))
-        add_to_chat(167, c_error .. "[INFO] Searched: Job Abilities, Spells, Weaponskills")
+        MessageInfo.show_not_found(sanitize_ascii(name))
         return true
     end
 

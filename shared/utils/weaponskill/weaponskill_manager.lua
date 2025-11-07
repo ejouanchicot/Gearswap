@@ -10,6 +10,8 @@
 --- @date Created: 2025-01-02
 ---============================================================================
 
+local MessageWeaponskill = require('shared/utils/messages/formatters/combat/message_weaponskill')
+
 local WeaponSkillManager = {
     -- MessageFormatter will be set by the caller if available
     MessageFormatter = nil
@@ -35,7 +37,7 @@ WeaponSkillManager.config = {
 function WeaponSkillManager.initialize()
     -- Initialization logic here
     if WeaponSkillManager.config.debug_mode then
-        add_to_chat(123, "[WS Manager] Initialized")
+        MessageWeaponskill.show_ws_manager_initialized()
     end
 end
 
@@ -51,7 +53,7 @@ function WeaponSkillManager.check_weaponskill_range(spell)
     -- Validation
     if not spell or type(spell) ~= 'table' then
         if WeaponSkillManager.config.debug_mode then
-            add_to_chat(123, "[WS Manager] Invalid spell parameter for range check")
+            MessageWeaponskill.show_invalid_spell_parameter()
         end
         return false
     end
@@ -64,7 +66,7 @@ function WeaponSkillManager.check_weaponskill_range(spell)
 
     if not spell.target or type(spell.target) ~= 'table' then
         if WeaponSkillManager.config.debug_mode then
-            add_to_chat(123, "[WS Manager] Spell target information missing")
+            MessageWeaponskill.show_target_info_missing()
         end
         return false
     end
@@ -72,7 +74,7 @@ function WeaponSkillManager.check_weaponskill_range(spell)
     -- Check required numeric values
     if type(spell.range) ~= 'number' or type(spell.target.distance) ~= 'number' or type(spell.target.model_size) ~= 'number' then
         if WeaponSkillManager.config.debug_mode then
-            add_to_chat(123, "[WS Manager] Missing numeric values for range calculation")
+            MessageWeaponskill.show_missing_numeric_values()
         end
         return false
     end
@@ -94,7 +96,7 @@ function WeaponSkillManager.check_weaponskill_range(spell)
             WeaponSkillManager.MessageFormatter.show_range_error(spell.name, distance_info)
         else
             -- Fallback to basic message (no MessageFormatter loaded)
-            add_to_chat(167, string.format("[%s] Too Far ! (%s)", spell.name, distance_info))
+            MessageWeaponskill.show_too_far(spell.name, distance_info)
         end
 
         return false
@@ -112,7 +114,7 @@ function WeaponSkillManager.validate_weaponskill(ws_name)
 
     if not player then
         if WeaponSkillManager.config.debug_mode then
-            add_to_chat(123, "[WS Manager] Player info not available")
+            MessageWeaponskill.show_player_info_missing()
         end
         return false
     end
@@ -130,7 +132,7 @@ function WeaponSkillManager.validate_weaponskill(ws_name)
                 "Amnesia"  -- status ailment (will be colored purple)
             )
         else
-            add_to_chat(167, string.format("[%s] Cannot use - Amnesia", ws_name or "WS"))
+            MessageWeaponskill.show_amnesia_error(ws_name)
         end
         return false
     end

@@ -32,8 +32,8 @@
 ---
 --- @file HEALING_MAGIC_DATABASE.lua
 --- @author Tetsouo
---- @version 1.0 - Modular Architecture (4 files)
---- @date Created: 2025-10-30
+--- @version 2.0 - Improved formatting - Improved alignment - Modular Architecture (4 files)
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 ---============================================================================
 
 local HEALING_MAGIC_DATABASE = {}
@@ -115,7 +115,7 @@ end
 --- @return boolean is_raise
 function HEALING_MAGIC_DATABASE.is_raise(spell_name)
     local spell_data = HEALING_MAGIC_DATABASE.spells[spell_name]
-    if spell_data and spell_data.category == "Healing" then
+    if spell_data and spell_data.category            == "Healing" then
         if spell_name:find("Raise") or spell_name:find("Reraise") or spell_name == "Arise" then
             return true
         end

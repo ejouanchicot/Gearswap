@@ -29,6 +29,12 @@
 local MidcastManager = {}
 
 ---============================================================================
+--- DEPENDENCIES
+---============================================================================
+
+local MessageMidcast = require('shared/utils/messages/formatters/magic/message_midcast')
+
+---============================================================================
 --- DEBUGGING / LOGGING (Must be defined before use)
 ---============================================================================
 
@@ -46,14 +52,12 @@ end
 --- Enable debug logging
 function MidcastManager.enable_debug()
     _G.MidcastManagerDebugState = true
-    add_to_chat(160, '===================================================')
-    add_to_chat(160, '[MidcastManager] DEBUG MODE ENABLED')
-    add_to_chat(160, '===================================================')
+    MessageMidcast.show_debug_enabled()
 end
 
 --- Disable debug logging
 function MidcastManager.disable_debug()
-    add_to_chat(160, '[MidcastManager] DEBUG MODE DISABLED')
+    MessageMidcast.show_debug_disabled()
     _G.MidcastManagerDebugState = false
 end
 
@@ -78,7 +82,7 @@ MidcastManager.debug = setmetatable({}, {
 --- @param color number|nil Chat color (default 160 = light blue)
 local function debug_log(message, color)
     if is_debug_enabled() then
-        add_to_chat(color or 160, '[MidcastManager] ' .. message)
+        MessageMidcast.show_debug_log(message, color)
     end
 end
 
@@ -86,9 +90,7 @@ end
 --- @param message string Header message
 local function debug_header(message)
     if is_debug_enabled() then
-        add_to_chat(8, '-------------------------------------------------')
-        add_to_chat(8, '[MidcastManager] ' .. message)
-        add_to_chat(8, '-------------------------------------------------')
+        MessageMidcast.show_debug_header(message)
     end
 end
 
@@ -98,9 +100,7 @@ end
 --- @param result string|nil Result (OK/FAIL/WARN)
 local function debug_step(step, message, result)
     if is_debug_enabled() then
-        local prefix = string.format('  STEP %d: ', step)
-        local suffix = result and (' -> ' .. result) or ''
-        add_to_chat(160, '[MidcastManager] ' .. prefix .. message .. suffix)
+        MessageMidcast.show_debug_step(step, message, result)
     end
 end
 
@@ -109,9 +109,7 @@ end
 --- @param exists boolean Whether set exists
 local function debug_set(set_name, exists)
     if is_debug_enabled() then
-        local status = exists and '[OK] EXISTS' or '[FAIL] NOT FOUND'
-        local color = exists and 158 or 167
-        add_to_chat(color, '[MidcastManager]     +- ' .. set_name .. ' -> ' .. status)
+        MessageMidcast.show_debug_set(set_name, exists)
     end
 end
 

@@ -25,6 +25,8 @@
 ---   AutoMove.register_callback(function(is_moving, distance) ... end)
 ---============================================================================
 
+local MessageCore = require('shared/utils/messages/message_core')
+
 -- Global AutoMove API
 AutoMove = AutoMove or {}
 
@@ -34,7 +36,7 @@ AutoMove = AutoMove or {}
 
 local config = {
     movement_threshold = 0.3,      -- Distance threshold to detect movement
-    check_interval = 5             -- Frames between position checks (~0.5s at 60fps)
+    check_interval = 0.08          -- Time in seconds between position checks (FPS-independent)
 }
 
 ---============================================================================
@@ -54,7 +56,7 @@ local function trigger_callbacks(is_moving, distance, player_status)
     for _, callback in ipairs(callbacks) do
         local success, err = pcall(callback, is_moving, distance, player_status)
         if not success then
-            add_to_chat(167, string.format("[AutoMove] Callback error: %s", err))
+            MessageCore.show_automove_error(err)
         end
     end
 end
@@ -74,7 +76,7 @@ end
 
 -- Movement tracking variables
 local mov = {
-    counter = 0,
+    last_check_time = os.clock(),  -- Track time instead of frames
     x = 0,
     y = 0,
     z = 0
@@ -126,11 +128,11 @@ end
 ---============================================================================
 
 windower.raw_register_event('prerender', function()
-    mov.counter = mov.counter + 1
+    local current_time = os.clock()
 
-    -- Check at configured interval
-    if mov.counter >= config.check_interval then
-        mov.counter = 0
+    -- Check at configured time interval (FPS-independent)
+    if (current_time - mov.last_check_time) >= config.check_interval then
+        mov.last_check_time = current_time
 
         -- Validate player exists
         if not player or not player.index then

@@ -6,8 +6,8 @@
 ---
 --- @file DIVINE_MAGIC_DATABASE.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-30
+--- @version 2.0 - Improved formatting - Improved alignment
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @verified bg-wiki.com (2025-10-30) - 11/12 spells verified (Banish IV level unknown)
 ---
 --- ARCHITECTURE:
@@ -129,7 +129,7 @@ function DivineSpells.get_spells_by_tier(tier, job_code, level)
     local available = {}
 
     for spell_name, spell_data in pairs(DivineSpells.spells) do
-        if spell_data.tier == tier then
+        if spell_data.tier                == tier then
             if DivineSpells.can_learn(spell_name, job_code, level) then
                 table.insert(available, spell_name)
             end

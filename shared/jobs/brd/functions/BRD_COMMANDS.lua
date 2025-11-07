@@ -51,6 +51,7 @@
 local CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
 local UICommands = require('shared/utils/ui/UI_COMMANDS')
 local WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
+local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 local SongRotationManager = require('shared/jobs/brd/functions/logic/song_rotation_manager')
 local BRDSongConfig = _G.BRDSongConfig or {}  -- Loaded from character main file
@@ -305,7 +306,7 @@ function job_self_command(cmdParams, eventArgs)
         MidcastManager.toggle_debug()
 
         -- Confirmation message
-        add_to_chat(159, '[BRD_COMMANDS] Debug toggled! Current state: ' .. tostring(_G.MidcastManagerDebugState))
+        MessageCommands.show_debugmidcast_toggled('BRD', _G.MidcastManagerDebugState)
 
         eventArgs.handled = true
         return
@@ -364,7 +365,7 @@ function job_self_command(cmdParams, eventArgs)
             end,
             ability_delay
         )
-        MessageFormatter.show_ja_using_double('Nightingale', 'Troubadour')  -- FIXED: + en gris
+        -- Message handled by ability_message_handler (shows individual JA descriptions)
         eventArgs.handled = true
         return
     end

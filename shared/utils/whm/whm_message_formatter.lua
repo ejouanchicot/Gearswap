@@ -353,6 +353,64 @@ function WHMMessageFormatter.error(message)
 end
 
 ---============================================================================
+--- DEBUG MESSAGES (Cure Manager)
+---============================================================================
+
+--- Show no target provided debug message
+function WHMMessageFormatter.show_debug_no_target()
+    add_to_chat(123, '[DEBUG] No target provided')
+end
+
+--- Show target debug info
+--- @param target_name string Target name
+--- @param target_id string Target ID
+function WHMMessageFormatter.show_debug_target(target_name, target_id)
+    add_to_chat(123, string.format('[DEBUG] Target: name=%s, id=%s', target_name, target_id))
+end
+
+--- Show self HP debug info
+--- @param current_hp number Current HP
+--- @param max_hp number Max HP
+--- @param missing_hp number Missing HP
+function WHMMessageFormatter.show_debug_self_hp(current_hp, max_hp, missing_hp)
+    add_to_chat(123, string.format('[DEBUG] Self: HP %d/%d | Missing: %d', current_hp, max_hp, missing_hp))
+end
+
+--- Show party members debug list
+--- @param party_names string Comma-separated party member names
+function WHMMessageFormatter.show_debug_party_members(party_names)
+    add_to_chat(123, '[DEBUG] Party members: ' .. party_names)
+end
+
+--- Show party member HP debug info
+--- @param name string Member name
+--- @param hpp number HP percentage
+--- @param max_hp number Max HP
+--- @param current_hp number Current HP
+--- @param missing_hp number Missing HP
+function WHMMessageFormatter.show_debug_party_member_hp(name, hpp, max_hp, current_hp, missing_hp)
+    add_to_chat(123, string.format('[DEBUG] Party member: %s | HPP: %d%% | Max: %d | Current: %d | Missing: %d',
+        name, hpp, max_hp, current_hp, missing_hp))
+end
+
+--- Show alliance member HP debug info
+--- @param name string Member name
+--- @param hpp number HP percentage
+--- @param max_hp number Max HP
+--- @param current_hp number Current HP
+--- @param missing_hp number Missing HP
+function WHMMessageFormatter.show_debug_alliance_member_hp(name, hpp, max_hp, current_hp, missing_hp)
+    add_to_chat(123, string.format('[DEBUG] Alliance member: %s | HPP: %d%% | Max: %d | Current: %d | Missing: %d',
+        name, hpp, max_hp, current_hp, missing_hp))
+end
+
+--- Show cure recast error
+--- @param recast_reason string Recast error reason
+function WHMMessageFormatter.show_cure_recast_error(recast_reason)
+    add_to_chat(123, string.format('[WHM] ERROR: %s', recast_reason or "All Cure spells on recast"))
+end
+
+---============================================================================
 --- MODULE EXPORT
 ---============================================================================
 

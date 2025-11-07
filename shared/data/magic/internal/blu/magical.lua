@@ -13,11 +13,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Sandspin"] = {
-        element = "Earth",
-        trait = nil,
-        trait_points = 0,
-        unbridled = false,
-        BLU = 1
+        element                 = "Earth",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = false,
+        BLU                     = 1
     },
 
     ---========================================================================
@@ -25,18 +25,18 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Cursed Sphere"] = {
-        element = "Water",
-        trait = "Magic Attack Bonus",
-        trait_points = 4,
-        unbridled = false,
-        BLU = 18
+        element                 = "Water",
+        trait                   = "Magic Attack Bonus",
+        trait_points            = 4,
+        unbridled               = false,
+        BLU                     = 18
     },
     ["Blastbomb"] = {
-        element = "Fire",
-        trait = nil,
-        trait_points = 0,
-        unbridled = false,
-        BLU = 18
+        element                 = "Fire",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = false,
+        BLU                     = 18
     },
 
     ---========================================================================
@@ -44,11 +44,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Blood Drain"] = {
-        element = "Dark",
-        trait = nil,
-        trait_points = 0,
-        unbridled = false,
-        BLU = 20
+        element                 = "Dark",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = false,
+        BLU                     = 20
     },
 
     ---========================================================================
@@ -56,11 +56,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Bomb Toss"] = {
-        element = "Fire",
-        trait = nil,
-        trait_points = 0,
-        unbridled = false,
-        BLU = 28
+        element                 = "Fire",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = false,
+        BLU                     = 28
     },
 
     ---========================================================================
@@ -68,11 +68,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Death Ray"] = {
-        element = "Dark",
-        trait = nil,
-        trait_points = 0,
-        unbridled = false,
-        BLU = 34
+        element                 = "Dark",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = false,
+        BLU                     = 34
     },
 
     ---========================================================================
@@ -80,11 +80,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Digest"] = {
-        element = "Dark",
-        trait = nil,
-        trait_points = 0,
-        unbridled = false,
-        BLU = 36
+        element                 = "Dark",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = false,
+        BLU                     = 36
     },
 
     ---========================================================================
@@ -92,11 +92,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Mysterious Light"] = {
-        element = "Wind",
-        trait = "Max MP Boost",
-        trait_points = 4,
-        unbridled = false,
-        BLU = 40
+        element                 = "Wind",
+        trait                   = "Max MP Boost",
+        trait_points            = 4,
+        unbridled               = false,
+        BLU                     = 40
     },
 
     ---========================================================================
@@ -104,11 +104,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["MP Drainkiss"] = {
-        element = "Dark",
-        trait = nil,
-        trait_points = 0,
-        unbridled = false,
-        BLU = 42
+        element                 = "Dark",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = false,
+        BLU                     = 42
     },
 
     ---========================================================================
@@ -116,11 +116,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Blitzstrahl"] = {
-        element = "Thunder",
-        trait = nil,
-        trait_points = 0,
-        unbridled = false,
-        BLU = 44
+        element                 = "Thunder",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = false,
+        BLU                     = 44
     },
 
     ---========================================================================
@@ -128,11 +128,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Blood Saber"] = {
-        element = "Dark",
-        trait = nil,
-        trait_points = 0,
-        unbridled = false,
-        BLU = 48
+        element                 = "Dark",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = false,
+        BLU                     = 48
     },
 
     ---========================================================================
@@ -140,18 +140,18 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Ice Break"] = {
-        element = "Ice",
-        trait = "Magic Defense Bonus",
-        trait_points = 4,
-        unbridled = false,
-        BLU = 50
+        element                 = "Ice",
+        trait                   = "Magic Defense Bonus",
+        trait_points            = 4,
+        unbridled               = false,
+        BLU                     = 50
     },
     ["Self-Destruct"] = {
-        element = "Fire",
-        trait = "Auto Refresh",
-        trait_points = 2,
-        unbridled = false,
-        BLU = 50
+        element                 = "Fire",
+        trait                   = "Auto Refresh",
+        trait_points            = 2,
+        unbridled               = false,
+        BLU                     = 50
     },
 
     ---========================================================================
@@ -159,18 +159,18 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Eyes On Me"] = {
-        element = "Dark",
-        trait = "Magic Attack Bonus",
-        trait_points = 4,
-        unbridled = false,
-        BLU = 61
+        element                 = "Dark",
+        trait                   = "Magic Attack Bonus",
+        trait_points            = 4,
+        unbridled               = false,
+        BLU                     = 61
     },
     ["Maelstrom"] = {
-        element = "Water",
-        trait = "Clear Mind",
-        trait_points = 4,
-        unbridled = false,
-        BLU = 61
+        element                 = "Water",
+        trait                   = "Clear Mind",
+        trait_points            = 4,
+        unbridled               = false,
+        BLU                     = 61
     },
 
     ---========================================================================
@@ -178,11 +178,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["1000 Needles"] = {
-        element = "Light",
-        trait = "Beast Killer",
-        trait_points = 4,
-        unbridled = false,
-        BLU = 62
+        element                 = "Light",
+        trait                   = "Beast Killer",
+        trait_points            = 4,
+        unbridled               = false,
+        BLU                     = 62
     },
 
     ---========================================================================
@@ -190,11 +190,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Voracious Trunk"] = {
-        element = "Wind",
-        trait = "Auto Refresh",
-        trait_points = 3,
-        unbridled = false,
-        BLU = 64
+        element                 = "Wind",
+        trait                   = "Auto Refresh",
+        trait_points            = 3,
+        unbridled               = false,
+        BLU                     = 64
     },
 
     ---========================================================================
@@ -202,11 +202,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Corrosive Ooze"] = {
-        element = "Water",
-        trait = "Clear Mind",
-        trait_points = 4,
-        unbridled = false,
-        BLU = 66
+        element                 = "Water",
+        trait                   = "Clear Mind",
+        trait_points            = 4,
+        unbridled               = false,
+        BLU                     = 66
     },
 
     ---========================================================================
@@ -214,11 +214,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Firespit"] = {
-        element = "Fire",
-        trait = "Magic Attack Bonus",
-        trait_points = 4,
-        unbridled = false,
-        BLU = 68
+        element                 = "Fire",
+        trait                   = "Magic Attack Bonus",
+        trait_points            = 4,
+        unbridled               = false,
+        BLU                     = 68
     },
 
     ---========================================================================
@@ -226,11 +226,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Regurgitation"] = {
-        element = "Water",
-        trait = "Resist Gravity",
-        trait_points = 4,
-        unbridled = false,
-        BLU = 69
+        element                 = "Water",
+        trait                   = "Resist Gravity",
+        trait_points            = 4,
+        unbridled               = false,
+        BLU                     = 69
     },
 
     ---========================================================================
@@ -238,11 +238,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Mind Blast"] = {
-        element = "Thunder",
-        trait = "Clear Mind",
-        trait_points = 4,
-        unbridled = false,
-        BLU = 73
+        element                 = "Thunder",
+        trait                   = "Clear Mind",
+        trait_points            = 4,
+        unbridled               = false,
+        BLU                     = 73
     },
 
     ---========================================================================
@@ -250,11 +250,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Magic Hammer"] = {
-        element = "Light",
-        trait = "Magic Attack Bonus",
-        trait_points = 4,
-        unbridled = false,
-        BLU = 74
+        element                 = "Light",
+        trait                   = "Magic Attack Bonus",
+        trait_points            = 4,
+        unbridled               = false,
+        BLU                     = 74
     },
 
     ---========================================================================
@@ -262,18 +262,18 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Acrid Stream"] = {
-        element = "Water",
-        trait = "Double / Triple Attack",
-        trait_points = 4,
-        unbridled = false,
-        BLU = 77
+        element                 = "Water",
+        trait                   = "Double / Triple Attack",
+        trait_points            = 4,
+        unbridled               = false,
+        BLU                     = 77
     },
     ["Leafstorm"] = {
-        element = "Wind",
-        trait = "Magic Burst Bonus",
-        trait_points = 6,
-        unbridled = false,
-        BLU = 77
+        element                 = "Wind",
+        trait                   = "Magic Burst Bonus",
+        trait_points            = 6,
+        unbridled               = false,
+        BLU                     = 77
     },
 
     ---========================================================================
@@ -281,11 +281,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Blazing Bound"] = {
-        element = "Fire",
-        trait = "Dual Wield",
-        trait_points = 4,
-        unbridled = false,
-        BLU = 80
+        element                 = "Fire",
+        trait                   = "Dual Wield",
+        trait_points            = 4,
+        unbridled               = false,
+        BLU                     = 80
     },
 
     ---========================================================================
@@ -293,11 +293,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Osmosis"] = {
-        element = "Dark",
-        trait = "Magic Defense Bonus",
-        trait_points = 4,
-        unbridled = false,
-        BLU = 84
+        element                 = "Dark",
+        trait                   = "Magic Defense Bonus",
+        trait_points            = 4,
+        unbridled               = false,
+        BLU                     = 84
     },
 
     ---========================================================================
@@ -305,11 +305,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Thermal Pulse"] = {
-        element = "Fire",
-        trait = "Attack Bonus",
-        trait_points = 4,
-        unbridled = false,
-        BLU = 86
+        element                 = "Fire",
+        trait                   = "Attack Bonus",
+        trait_points            = 4,
+        unbridled               = false,
+        BLU                     = 86
     },
 
     ---========================================================================
@@ -317,11 +317,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Charged Whisker"] = {
-        element = "Thunder",
-        trait = "Gilfinder / Treasure Hunter",
-        trait_points = 6,
-        unbridled = false,
-        BLU = 88
+        element                 = "Thunder",
+        trait                   = "Gilfinder / Treasure Hunter",
+        trait_points            = 6,
+        unbridled               = false,
+        BLU                     = 88
     },
 
     ---========================================================================
@@ -329,11 +329,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Evryone. Grudge"] = {
-        element = "Dark",
-        trait = "Gilfinder / Treasure Hunter",
-        trait_points = 6,
-        unbridled = false,
-        BLU = 90
+        element                 = "Dark",
+        trait                   = "Gilfinder / Treasure Hunter",
+        trait_points            = 6,
+        unbridled               = false,
+        BLU                     = 90
     },
 
     ---========================================================================
@@ -341,11 +341,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Water Bomb"] = {
-        element = "Water",
-        trait = "Conserve MP",
-        trait_points = 4,
-        unbridled = false,
-        BLU = 92
+        element                 = "Water",
+        trait                   = "Conserve MP",
+        trait_points            = 4,
+        unbridled               = false,
+        BLU                     = 92
     },
 
     ---========================================================================
@@ -353,11 +353,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Dark Orb"] = {
-        element = "Dark",
-        trait = "Counter",
-        trait_points = 4,
-        unbridled = false,
-        BLU = 93
+        element                 = "Dark",
+        trait                   = "Counter",
+        trait_points            = 4,
+        unbridled               = false,
+        BLU                     = 93
     },
 
     ---========================================================================
@@ -365,11 +365,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Thunderbolt"] = {
-        element = "Thunder",
-        trait = nil,
-        trait_points = 0,
-        unbridled = true,
-        BLU = 95
+        element                 = "Thunder",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = true,
+        BLU                     = 95
     },
 
     ---========================================================================
@@ -377,11 +377,11 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Gates of Hades"] = {
-        element = "Fire",
-        trait = nil,
-        trait_points = 0,
-        unbridled = true,
-        BLU = 97
+        element                 = "Fire",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = true,
+        BLU                     = 97
     },
 
     ---========================================================================
@@ -389,193 +389,193 @@ magical_spells.spells = {
     ---========================================================================
 
     ["Tem. Upheaval"] = {
-        element = "Wind",
-        trait = "Evasion Bonus",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Wind",
+        trait                   = "Evasion Bonus",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Embalming Earth"] = {
-        element = "Earth",
-        trait = "Attack Bonus",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Earth",
+        trait                   = "Attack Bonus",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Rending Deluge"] = {
-        element = "Water",
-        trait = "Magic Defense Bonus",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Water",
+        trait                   = "Magic Defense Bonus",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Foul Waters"] = {
-        element = "Water",
-        trait = "Resist Silence",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Water",
+        trait                   = "Resist Silence",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Retinal Glare"] = {
-        element = "Light",
-        trait = "Conserve MP",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Light",
+        trait                   = "Conserve MP",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Droning Whirlwind"] = {
-        element = "Wind",
-        trait = nil,
-        trait_points = 0,
-        unbridled = true,
-        BLU = 99
+        element                 = "Wind",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = true,
+        BLU                     = 99
     },
     ["Subduction"] = {
-        element = "Wind",
-        trait = "Magic Attack Bonus",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Wind",
+        trait                   = "Magic Attack Bonus",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Diffusion Ray"] = {
-        element = "Light",
-        trait = "Store TP",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Light",
+        trait                   = "Store TP",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Rail Cannon"] = {
-        element = "Light",
-        trait = "Magic Burst Bonus",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Light",
+        trait                   = "Magic Burst Bonus",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Uproot"] = {
-        element = "Light",
-        trait = nil,
-        trait_points = 0,
-        unbridled = true,
-        BLU = 99
+        element                 = "Light",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = true,
+        BLU                     = 99
     },
     ["Crashing Thunder"] = {
-        element = "Thunder",
-        trait = nil,
-        trait_points = 0,
-        unbridled = true,
-        BLU = 99
+        element                 = "Thunder",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = true,
+        BLU                     = 99
     },
     ["Polar Roar"] = {
-        element = "Ice",
-        trait = nil,
-        trait_points = 0,
-        unbridled = true,
-        BLU = 99
+        element                 = "Ice",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = true,
+        BLU                     = 99
     },
     ["Molting Plumage"] = {
-        element = "Wind",
-        trait = "Dual Wield",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Wind",
+        trait                   = "Dual Wield",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Nectarous Deluge"] = {
-        element = "Water",
-        trait = "Beast Killer",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Water",
+        trait                   = "Beast Killer",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Atra. Libations"] = {
-        element = "Dark",
-        trait = "Defense Bonus",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Dark",
+        trait                   = "Defense Bonus",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Searing Tempest"] = {
-        element = "Fire",
-        trait = "Attack Bonus",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Fire",
+        trait                   = "Attack Bonus",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Blinding Fulgor"] = {
-        element = "Light",
-        trait = "Magic Evasion Bonus",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Light",
+        trait                   = "Magic Evasion Bonus",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Spectral Floe"] = {
-        element = "Ice",
-        trait = "Magic Attack Bonus",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Ice",
+        trait                   = "Magic Attack Bonus",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Scouring Spate"] = {
-        element = "Water",
-        trait = "Magic Defense Bonus",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Water",
+        trait                   = "Magic Defense Bonus",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Anvil Lightning"] = {
-        element = "Thunder",
-        trait = "Accuracy Bonus",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Thunder",
+        trait                   = "Accuracy Bonus",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Silent Storm"] = {
-        element = "Wind",
-        trait = "Evasion Bonus",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Wind",
+        trait                   = "Evasion Bonus",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Entomb"] = {
-        element = "Earth",
-        trait = "Defense Bonus",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Earth",
+        trait                   = "Defense Bonus",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Tenebral Crush"] = {
-        element = "Dark",
-        trait = "Magic Accuracy Bonus",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Dark",
+        trait                   = "Magic Accuracy Bonus",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Palling Salvo"] = {
-        element = "Dark",
-        trait = "Tenacity",
-        trait_points = 8,
-        unbridled = false,
-        BLU = 99
+        element                 = "Dark",
+        trait                   = "Tenacity",
+        trait_points            = 8,
+        unbridled               = false,
+        BLU                     = 99
     },
     ["Cruel Joke"] = {
-        element = "Dark",
-        trait = nil,
-        trait_points = 0,
-        unbridled = true,
-        BLU = 99
+        element                 = "Dark",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = true,
+        BLU                     = 99
     },
     ["Cesspool"] = {
-        element = "Water",
-        trait = nil,
-        trait_points = 0,
-        unbridled = true,
-        BLU = 99
+        element                 = "Water",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = true,
+        BLU                     = 99
     },
     ["Tearing Gust"] = {
-        element = "Wind",
-        trait = nil,
-        trait_points = 0,
-        unbridled = true,
-        BLU = 99
+        element                 = "Wind",
+        trait                   = nil,
+        trait_points            = 0,
+        unbridled               = true,
+        BLU                     = 99
     }
 }
 

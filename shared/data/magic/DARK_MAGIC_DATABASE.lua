@@ -30,8 +30,8 @@
 ---
 --- @file DARK_MAGIC_DATABASE.lua
 --- @author Tetsouo
---- @version 1.0 - Modular Architecture (4 files)
---- @date Created: 2025-10-31 | Updated: 2025-10-31
+--- @version 2.0 - Improved formatting - Improved alignment - Modular Architecture (4 files)
+--- @date Created: 2025-10-31 | Updated: 2025-11-06 | Updated: 2025-10-31
 --- @source https://www.bg-wiki.com/ffxi/Category:Dark_Magic
 ---============================================================================
 
@@ -145,7 +145,7 @@ function DARK_MAGIC_DATABASE.get_spells_by_category(category, job_code, level, i
     local available = {}
 
     for spell_name, spell_data in pairs(DARK_MAGIC_DATABASE.spells) do
-        if spell_data.category == category then
+        if spell_data.category            == category then
             local required_level = spell_data[job_code]
 
             -- Check if job has access
@@ -216,9 +216,9 @@ end
 --- @return string|nil spell_name
 function DARK_MAGIC_DATABASE.get_bio_spell(tier, job_code, level)
     local spell_name = "Bio"
-    if tier == "II" then
+    if tier                == "II" then
         spell_name = "Bio II"
-    elseif tier == "III" then
+    elseif tier                == "III" then
         spell_name = "Bio III"
     end
 

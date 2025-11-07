@@ -22,7 +22,7 @@
 ---============================================================================
 
 local MessageCore = require('shared/utils/messages/message_core')
-local MessageWarp = require('shared/utils/messages/message_warp')
+local MessageWarp = require('shared/utils/messages/formatters/system/message_warp')
 
 local WarpIPC = {}
 
@@ -119,7 +119,7 @@ end
 local function handle_ipc_message(msg)
     -- Debug: Show ALL IPC messages received (even non-warp ones)
     if _G.WARP_DEBUG then
-        add_to_chat(8, '[DEBUG] IPC RAW received: ' .. tostring(msg))
+        MessageWarp.show_ipc_raw_received(msg)
     end
 
     -- Only process messages with our prefix
@@ -140,7 +140,7 @@ local function handle_ipc_message(msg)
     local current_time = os.clock()
     if msg == last_ipc_message and (current_time - last_ipc_time) < IPC_DEBOUNCE then
         if _G.WARP_DEBUG then
-            add_to_chat(8, '[DEBUG] IPC message debounced: ' .. msg)
+            MessageWarp.show_ipc_message_debounced(msg)
         end
         return
     end
@@ -181,7 +181,7 @@ function WarpIPC.init()
     MessageWarp.show_ipc_registered()
 
     if _G.WARP_DEBUG then
-        add_to_chat(8, '[DEBUG] IPC listener registered')
+        MessageWarp.show_ipc_listener_registered()
     end
 end
 
@@ -206,7 +206,7 @@ function WarpIPC.send_to_all(command)
     windower.chat.input('//gs c ' .. cmd)
 
     if _G.WARP_DEBUG then
-        add_to_chat(8, '[DEBUG] Executing local command: //gs c ' .. cmd)
+        MessageWarp.show_executing_local_command(cmd)
     end
 
     -- Broadcast to other characters via IPC
@@ -214,13 +214,13 @@ function WarpIPC.send_to_all(command)
         local ipc_msg = IPC_PREFIX .. cmd
 
         if _G.WARP_DEBUG then
-            add_to_chat(8, '[DEBUG] Sending IPC message: ' .. ipc_msg)
+            MessageWarp.show_sending_ipc_message(ipc_msg)
         end
 
         windower.send_ipc_message(ipc_msg)
 
         if _G.WARP_DEBUG then
-            add_to_chat(8, '[DEBUG] IPC message sent successfully')
+            MessageWarp.show_ipc_message_sent()
         end
 
         -- Reset broadcast flag after delay

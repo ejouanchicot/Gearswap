@@ -39,7 +39,7 @@
 --- SECTION 1: MESSAGE SYSTEM
 ---============================================================================
 
-include('../shared/utils/messages/message_buffs.lua')  -- Buff gain/loss messages
+include('../shared/utils/messages/formatters/magic/message_buffs.lua')  -- Buff gain/loss messages
 
 ---============================================================================
 --- SECTION 2: COMBAT ACTION HOOKS

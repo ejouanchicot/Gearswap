@@ -10,7 +10,7 @@
 --- @date 2025-10-28
 ---============================================================================
 
-local MessageWarp = require('shared/utils/messages/message_warp')
+local MessageWarp = require('shared/utils/messages/formatters/system/message_warp')
 local MessageCore = require('shared/utils/messages/message_core')
 local CastHelpers = require('shared/utils/warp/casting/cast_helpers')
 
@@ -27,7 +27,7 @@ _G.WARP_DEBUG = _G.WARP_DEBUG or false
 --- @param message string Debug message
 local function debug_log(message)
     if _G.WARP_DEBUG then
-        add_to_chat(8, '[DEBUG] ' .. message)
+        MessageWarp.show_item_casting_debug(message)
     end
 end
 
@@ -367,7 +367,7 @@ function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, i
         -- Load extdata
         local has_extdata, extdata = pcall(require, 'extdata')
         if not has_extdata then
-            add_to_chat(167, '[' .. tag .. '] ERROR: extdata not available')
+            MessageWarp.show_extdata_error(tag)
             send_command('gs enable ring1')
             return
         end
@@ -390,7 +390,7 @@ function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, i
         end
 
         if not found_item then
-            add_to_chat(167, '[' .. tag .. '] Item disappeared from inventory!')
+            MessageWarp.show_item_disappeared(tag)
             send_command('gs enable ring1')
             return
         end
@@ -398,7 +398,7 @@ function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, i
         -- Decode extdata to check usability
         local ext = extdata.decode(found_item)
         if not ext then
-            add_to_chat(167, '[' .. tag .. '] Failed to read item data')
+            MessageWarp.show_item_read_failed(tag)
             send_command('gs enable ring1')
             return
         end
@@ -415,7 +415,7 @@ function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, i
                 cooldown_delay = math.max((ext.next_use_time + EXTDATA_TIME_OFFSET) - os.time(), 0)
             end
 
-            add_to_chat(167, '[' .. tag .. '] Item is on cooldown (' .. math.floor(cooldown_delay) .. 's remaining)')
+            MessageWarp.show_item_on_cooldown(tag, cooldown_delay)
             send_command('gs enable ring1')
             return
         end
@@ -458,7 +458,7 @@ function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, i
             if elapsed < SAFETY_DELAY then
                 -- Still waiting for safety delay - check timeout
                 if wait_count >= max_wait then
-                    add_to_chat(167, string.format('[%s] Timeout during safety delay after %ds', tag, max_wait * check_interval))
+                    MessageWarp.show_safety_timeout(tag, max_wait, check_interval)
                     send_command('gs enable ring1')
                     return
                 end
@@ -502,9 +502,8 @@ function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, i
             if wait_count == 1 and activation_delay > 1 then
                 local COLORS = MessageCore.COLORS
                 local tag_color = MessageCore.create_color_code(COLORS.JOB_TAG)
-                local separator_color = MessageCore.create_color_code(COLORS.SEPARATOR)
-                add_to_chat(8, string.format('%s[%s]%s Waiting... %ds',
-                    tag_color, tag, separator_color, math.floor(activation_delay)))
+                local action_color = MessageCore.create_color_code(COLORS.SEPARATOR)
+                MessageWarp.show_waiting_safety(tag_color, tag, action_color, math.floor(activation_delay))
             end
 
             -- Schedule next check
@@ -518,15 +517,15 @@ function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, i
             local charges = ext.charges_remaining or 0
             local timeout_msg = string.format('[%s] Timeout after %ds - charges:%d recast:%ds activation:%ds',
                 tag, max_wait * check_interval, charges, recast_delay, activation_delay)
-            add_to_chat(167, timeout_msg)
+            MessageWarp.show_casting_timeout(timeout_msg)
 
             -- Suggest solution based on state
             if charges == 0 then
-                add_to_chat(122, '[' .. tag .. '] Item needs recharge (' .. recast_delay .. 's remaining)')
+                MessageWarp.show_item_needs_recharge(tag, recast_delay)
             elseif recast_delay > 0 then
-                add_to_chat(122, '[' .. tag .. '] Item recast not finished (' .. recast_delay .. 's remaining)')
+                MessageWarp.show_item_recast_pending(tag, recast_delay)
             elseif activation_delay > 0 then
-                add_to_chat(122, '[' .. tag .. '] Item equip delay (' .. activation_delay .. 's remaining)')
+                MessageWarp.show_item_equip_delay(tag, activation_delay)
             end
 
             send_command('gs enable ring1')
@@ -603,8 +602,7 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
 
                 -- SUCCESS: Ring1 is no longer the warp ring (and not empty)
                 if current_ring1 ~= 'empty' and current_ring1 ~= warp_item_name then
-                    add_to_chat(122, string.format('%s[%s]%s Ring1 restored: %s',
-                        tag_color, tag, action_color, tostring(current_ring1)))
+                    MessageWarp.show_ring_restored(tag_color, tag, action_color, slot_color, tostring(current_ring1))
                     return
                 end
 
@@ -616,8 +614,7 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
                 else
                     -- After max attempts, just notify but don't warn (set is correct)
                     if _G.WARP_DEBUG then
-                        add_to_chat(8, string.format('[DEBUG] Ring1 final state: %s (warp item was: %s)',
-                            tostring(current_ring1), warp_item_name))
+                        MessageWarp.show_ring_final_state(tostring(current_ring1), warp_item_name)
                     end
                     -- No warning - restore_equipment() was called, trust Mote logic
                 end
@@ -659,8 +656,8 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
         elseif reason == 'interrupted' then
             -- Cast interrupted - restore equipment immediately
             debug_log(action_name .. ' interrupted - initiating equipment restoration')
-            add_to_chat(1, string.format('%s[%s]%s Equipment unlocked %s(ring1)', tag_color, tag, action_color, slot_color))
-            add_to_chat(122, string.format('%s[%s]%s %s interrupted - restoring equipment...', tag_color, tag, action_color, action_name))
+            MessageWarp.show_equipment_unlocked_ring1(tag_color, tag, action_color, slot_color)
+            MessageWarp.show_action_interrupted(tag_color, tag, action_color, action_name)
             coroutine.schedule(function()
                 if player then
                     restore_equipment()
@@ -670,16 +667,16 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
         elseif reason == 'timeout' then
             -- Timeout - action didn't complete
             debug_log('Timeout reached - ' .. action_name .. ' did not complete')
-            add_to_chat(1, string.format('%s[%s]%s Equipment unlocked %s(ring1)', tag_color, tag, action_color, slot_color))
+            MessageWarp.show_equipment_unlocked_ring1(tag_color, tag, action_color, slot_color)
             if player then
-                add_to_chat(122, string.format('%s[%s]%s %s did not complete - restoring equipment...', tag_color, tag, action_color, action_name))
+                MessageWarp.show_action_incomplete(tag_color, tag, action_color, action_name)
                 coroutine.schedule(function()
                     restore_equipment()
                     verify_ring_restored()
                 end, 1.0)  -- Increased delay to allow GearSwap slot unlock
             end
         else
-            add_to_chat(167, '[DEBUG] Unknown cleanup reason: ' .. tostring(reason))
+            MessageWarp.show_unknown_cleanup_reason(reason)
         end
     end
 

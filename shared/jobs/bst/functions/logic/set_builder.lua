@@ -32,7 +32,8 @@ local PetManager = require('shared/jobs/bst/functions/logic/pet_manager')
 --- @param base_idle_set table Base idle set from sets.me.idle
 --- @return table final_set Final idle set after all customizations
 function SetBuilder.build_idle_set(base_idle_set)
-    local pet = windower.ffxi.get_mob_by_target('pet')
+    -- Use GLOBAL pet from Mote-Include (cached, no API call)
+    local pet = _G.pet
 
     -- Update pet mode cache
     PetManager.update_pet_mode(pet)
@@ -140,7 +141,8 @@ end
 --- @param base_engaged_set table Base engaged set from sets.me.engaged
 --- @return table final_set Final engaged set after all customizations
 function SetBuilder.build_engaged_set(base_engaged_set)
-    local pet = windower.ffxi.get_mob_by_target('pet')
+    -- Use GLOBAL pet from Mote-Include (cached, no API call)
+    local pet = _G.pet
 
     -- Update pet mode cache
     PetManager.update_pet_mode(pet)

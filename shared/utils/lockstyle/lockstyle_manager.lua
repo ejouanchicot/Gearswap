@@ -22,6 +22,7 @@ function LockstyleManager.create(job_code, config_path, default_lockstyle, defau
 
     -- Load message formatter
     local MessageFormatter = require('shared/utils/messages/message_formatter')
+    local MessageCore = require('shared/utils/messages/message_core')
 
     -- Load lockstyle configuration from user config file
     local lockstyle_config_success, LockstyleConfig = pcall(require, config_path)
@@ -170,7 +171,7 @@ function LockstyleManager.create(job_code, config_path, default_lockstyle, defau
         if MessageFormatter then
             MessageFormatter.show_info(status_msg)
         else
-            add_to_chat(207, status_msg)
+            MessageCore.show_lockstyle_status(status_msg)
         end
     end
 

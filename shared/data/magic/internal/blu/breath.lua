@@ -13,12 +13,12 @@ breath_spells.spells = {
     ---========================================================================
 
     ["Poison Breath"] = {
-        element = "Water",
-        trait = "Clear Mind",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 22
+        element                 = "Water",
+        trait                   = "Clear Mind",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 22
     },
 
     ---========================================================================
@@ -26,12 +26,12 @@ breath_spells.spells = {
     ---========================================================================
 
     ["Magnetite Cloud"] = {
-        element = "Earth",
-        trait = "Magic Defense Bonus",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 46
+        element                 = "Earth",
+        trait                   = "Magic Defense Bonus",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 46
     },
 
     ---========================================================================
@@ -39,20 +39,20 @@ breath_spells.spells = {
     ---========================================================================
 
     ["Hecatomb Wave"] = {
-        element = "Wind",
-        trait = "Max MP Boost",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 54
+        element                 = "Wind",
+        trait                   = "Max MP Boost",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 54
     },
     ["Radiant Breath"] = {
-        element = "Light",
-        trait = nil,
-        trait_points = 0,
-        property = nil,
-        unbridled = false,
-        BLU = 54
+        element                 = "Light",
+        trait                   = nil,
+        trait_points            = 0,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 54
     },
 
     ---========================================================================
@@ -60,12 +60,12 @@ breath_spells.spells = {
     ---========================================================================
 
     ["Flying Hip Press"] = {
-        element = "Wind",
-        trait = "Max HP Boost",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 58
+        element                 = "Wind",
+        trait                   = "Max HP Boost",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 58
     },
 
     ---========================================================================
@@ -73,12 +73,12 @@ breath_spells.spells = {
     ---========================================================================
 
     ["Bad Breath"] = {
-        element = "Earth",
-        trait = "Fast Cast",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 61
+        element                 = "Earth",
+        trait                   = "Fast Cast",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 61
     },
 
     ---========================================================================
@@ -86,12 +86,12 @@ breath_spells.spells = {
     ---========================================================================
 
     ["Frost Breath"] = {
-        element = "Ice",
-        trait = "Conserve MP",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 66
+        element                 = "Ice",
+        trait                   = "Conserve MP",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 66
     },
 
     ---========================================================================
@@ -99,12 +99,12 @@ breath_spells.spells = {
     ---========================================================================
 
     ["Heat Breath"] = {
-        element = "Fire",
-        trait = "Magic Attack Bonus",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 71
+        element                 = "Fire",
+        trait                   = "Magic Attack Bonus",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 71
     },
 
     ---========================================================================
@@ -112,12 +112,12 @@ breath_spells.spells = {
     ---========================================================================
 
     ["Vapor Spray"] = {
-        element = "Water",
-        trait = "Max MP Boost",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 96
+        element                 = "Water",
+        trait                   = "Max MP Boost",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 96
     },
 
     ---========================================================================
@@ -125,12 +125,12 @@ breath_spells.spells = {
     ---========================================================================
 
     ["Thunder Breath"] = {
-        element = "Thunder",
-        trait = "Max HP Boost",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 97
+        element                 = "Thunder",
+        trait                   = "Max HP Boost",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 97
     },
 
     ---========================================================================
@@ -138,12 +138,12 @@ breath_spells.spells = {
     ---========================================================================
 
     ["Wind Breath"] = {
-        element = "Wind",
-        trait = "Fast Cast",
-        trait_points = 4,
-        property = nil,
-        unbridled = false,
-        BLU = 99
+        element                 = "Wind",
+        trait                   = "Fast Cast",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 99
     }
 }
 

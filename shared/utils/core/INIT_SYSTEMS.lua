@@ -14,9 +14,15 @@
 ---
 --- @file INIT_SYSTEMS.lua
 --- @author Tetsouo
---- @version 1.0 - Universal Systems Façade
---- @date Created: 2025-10-28
+--- @version 1.1 - Improved formatting - Universal Systems Façade
+--- @date Created: 2025-10-28 | Updated: 2025-11-06
 ---============================================================================
+
+---============================================================================
+--- DEPENDENCIES
+---============================================================================
+
+local MessageInit = require('shared/utils/messages/formatters/system/message_init')
 
 ---============================================================================
 --- SYSTEM 1: MIDCAST WATCHDOG
@@ -34,7 +40,7 @@ if watchdog_success and MidcastWatchdog then
         -- Silent init - no message displayed
     end, 2.0)  -- 2 second delay
 else
-    add_to_chat(167, '[Init] Watchdog not available: ' .. tostring(MidcastWatchdog))
+    MessageInit.show_module_load_failed('Watchdog', MidcastWatchdog)
 end
 
 ---============================================================================
@@ -46,19 +52,25 @@ local warp_success, WarpInit = pcall(require, 'shared/utils/warp/warp_init')
 if warp_success and WarpInit then
     WarpInit.init()
 else
-    add_to_chat(167, '[Init] Warp System not available: ' .. tostring(WarpInit))
+    MessageInit.show_module_load_failed('Warp System', WarpInit)
 end
 
 ---============================================================================
 --- SYSTEM 3: AUTOMOVE (Movement Detection)
 ---============================================================================
 
--- AutoMove initializes automatically via include()
--- Jobs must define: sets.MoveSpeed = { legs="..." }
-local automove_success = pcall(include, '../shared/utils/movement/automove.lua')
+-- Check if job wants to disable AutoMove (e.g., BST for performance)
+if not _G.DISABLE_AUTOMOVE then
+    -- AutoMove initializes automatically via include()
+    -- Jobs must define: sets.MoveSpeed = { legs="..." }
+    local automove_success = pcall(include, '../shared/utils/movement/automove.lua')
 
-if not automove_success then
-    add_to_chat(167, '[Init] AutoMove not available')
+    if not automove_success then
+        MessageInit.show_module_load_failed('AutoMove', 'include failed')
+    end
+else
+    -- AutoMove disabled by job (custom movement system used)
+    add_to_chat(8, '[INIT_SYSTEMS] AutoMove disabled by job request')
 end
 
 ---============================================================================
@@ -71,7 +83,7 @@ end
 -- if system_success and SystemModule then
 --     SystemModule.init()
 -- else
---     add_to_chat(167, '[Init] System not available: ' .. tostring(SystemModule))
+--     MessageInit.show_module_load_failed('System', SystemModule)
 -- end
 
 ---============================================================================

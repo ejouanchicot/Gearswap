@@ -33,7 +33,7 @@
 --- SECTION 1: MESSAGE SYSTEM
 ---============================================================================
 
-include('../shared/utils/messages/message_buffs.lua')
+include('../shared/utils/messages/formatters/magic/message_buffs.lua')
 
 ---============================================================================
 --- SECTION 2: COMBAT ACTION HOOKS

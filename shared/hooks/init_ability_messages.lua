@@ -29,7 +29,7 @@
 --- @date Created: 2025-11-01
 ---============================================================================
 
-local AbilityMessageHandler = require('shared/utils/messages/ability_message_handler')
+local AbilityMessageHandler = require('shared/utils/messages/handlers/ability_message_handler')
 
 ---============================================================================
 --- HOOK INJECTION

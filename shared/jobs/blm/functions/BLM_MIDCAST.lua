@@ -28,6 +28,9 @@ local BLMSpells = require('shared/data/magic/BLM_SPELL_DATABASE')
 -- Load Message Formatter
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
+-- BLM Midcast Debug Messages
+local MessageBLMMidcast = require('shared/utils/messages/formatters/jobs/message_blm_midcast')
+
 -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
 local EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
 
@@ -89,8 +92,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- ==========================================================================
     if spell.skill == 'Elemental Magic' then
         if debug_enabled then
-            add_to_chat(158, '[BLM_MIDCAST] -> Routing to MidcastManager (Elemental)')
-            add_to_chat(158, '[BLM_MIDCAST]   * MagicBurstMode: ' .. tostring(state.MagicBurstMode and state.MagicBurstMode.current or 'nil'))
+            MessageBLMMidcast.show_elemental_routing(tostring(state.MagicBurstMode and state.MagicBurstMode.current or 'nil'))
         end
 
         -- Special handling for Death spell
@@ -109,7 +111,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
             end
 
             if debug_enabled then
-                add_to_chat(158, '[BLM_MIDCAST]   * mode_value: ' .. tostring(mb_mode or 'nil (base set)'))
+                MessageBLMMidcast.show_mode_value(tostring(mb_mode or 'nil (base set)'))
             end
 
             -- Get base set from static sets
@@ -130,7 +132,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
             if current_mp < mp_threshold then
                 -- Low MP: Override with MP conservation gear
                 if debug_enabled then
-                    add_to_chat(158, '[BLM_MIDCAST]   * MP Conservation: ' .. current_mp .. ' < ' .. mp_threshold .. ' (applying MPConservation set)')
+                    MessageBLMMidcast.show_mp_conservation(current_mp, mp_threshold)
                 end
 
                 -- Override specific pieces for MP conservation using sets.midcast.MPConservation
@@ -142,7 +144,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
                 end
             else
                 if debug_enabled then
-                    add_to_chat(158, '[BLM_MIDCAST]   * Normal MP: ' .. current_mp .. ' >= ' .. mp_threshold .. ' (no MP conservation)')
+                    MessageBLMMidcast.show_normal_mp(current_mp, mp_threshold)
                 end
             end
 
@@ -158,7 +160,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
                         final_set = set_combine(final_set, sets.midcast.ElementalMatch)
 
                         if debug_enabled then
-                            add_to_chat(159, '[BLM_MIDCAST]   * Elemental Match: ' .. reason)
+                            MessageBLMMidcast.show_elemental_match(reason)
                         end
                     end
                 end
@@ -172,7 +174,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         end
 
         if debug_enabled then
-            add_to_chat(158, '[BLM_MIDCAST] <- MidcastManager returned')
+            MessageBLMMidcast.show_elemental_return()
         end
         return
     end
@@ -182,7 +184,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- ==========================================================================
     if spell.skill == 'Dark Magic' then
         if debug_enabled then
-            add_to_chat(158, '[BLM_MIDCAST] -> Routing to MidcastManager (Dark Magic)')
+            MessageBLMMidcast.show_dark_routing()
         end
 
         MidcastManager.select_set({
@@ -191,7 +193,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         })
 
         if debug_enabled then
-            add_to_chat(158, '[BLM_MIDCAST] <- MidcastManager returned')
+            MessageBLMMidcast.show_dark_return()
         end
         return
     end
@@ -201,7 +203,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- ==========================================================================
     if spell.skill == 'Enfeebling Magic' then
         if debug_enabled then
-            add_to_chat(158, '[BLM_MIDCAST] -> Routing to MidcastManager (Enfeebling)')
+            MessageBLMMidcast.show_enfeebling_routing()
         end
 
         MidcastManager.select_set({
@@ -211,7 +213,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         })
 
         if debug_enabled then
-            add_to_chat(158, '[BLM_MIDCAST] <- MidcastManager returned')
+            MessageBLMMidcast.show_enfeebling_return()
         end
 
         -- Note: Spell messages handled by universal spell message system
@@ -219,7 +221,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     end
 
     if debug_enabled then
-        add_to_chat(206, '[BLM_MIDCAST] !! Spell skill not handled by MidcastManager: ' .. (spell.skill or 'Unknown'))
+        MessageBLMMidcast.show_skill_not_handled(spell.skill or 'Unknown')
     end
 end
 

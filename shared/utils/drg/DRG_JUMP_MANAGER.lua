@@ -13,6 +13,8 @@
 --- @date Updated: 2025-10-10 (Optimized lag: 1.5s→0.8s)
 ---============================================================================
 
+local MessageDRG = require('shared/utils/messages/formatters/jobs/message_drg')
+
 local DRGJumpManager = {}
 
 -- Load recast tolerance configuration
@@ -29,7 +31,7 @@ local function is_recast_ready(recast)
 end
 
 -- Load message system for formatted output
-include('../shared/utils/messages/message_buffs.lua')
+include('../shared/utils/messages/formatters/magic/message_buffs.lua')
 
 --- Handle smart jump command with TP checking
 --- Uses Jump first, High Jump as fallback
@@ -41,7 +43,7 @@ function DRGJumpManager.execute_jump()
         if MessageFormatter then
             MessageFormatter.show_error("Requires DRG subjob")
         else
-            add_to_chat(167, '[Jump] Requires DRG subjob')
+            MessageDRG.show_drg_subjob_required()
         end
         return
     end
@@ -53,7 +55,7 @@ function DRGJumpManager.execute_jump()
         if MessageFormatter then
             MessageFormatter.show_error("Subjob disabled (Odyssey Sheol Gaol)")
         else
-            add_to_chat(167, '[Jump] Subjob disabled (level 0 - Odyssey)')
+            MessageDRG.show_subjob_disabled()
         end
         return
     end
@@ -102,8 +104,8 @@ function DRGJumpManager.execute_jump()
             show_pld_buff_status(status_data)
         else
             -- Fallback to basic display
-            add_to_chat(167, string.format('[Jump] Jump on cooldown (%.1fs)', jump_recast))
-            add_to_chat(167, string.format('[Jump] High Jump on cooldown (%.1fs)', high_jump_recast))
+            MessageDRG.show_jump_on_cooldown(jump_recast)
+            MessageDRG.show_high_jump_on_cooldown(high_jump_recast)
         end
         return
     end

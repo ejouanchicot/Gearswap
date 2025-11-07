@@ -22,7 +22,7 @@ local WarpInit = {}
 local initialized = false
 
 -- Load MessageWarp for formatted messages
-local MessageWarp = require('shared/utils/messages/message_warp')
+local MessageWarp = require('shared/utils/messages/formatters/system/message_warp')
 
 ---============================================================================
 --- GLOBAL PRECAST HOOK (Intercept without modifying Mote-Include)

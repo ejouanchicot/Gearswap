@@ -13,8 +13,8 @@
 ---
 --- @file mnk_subjob.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-31
+--- @version 1.1 - Improved alignment
+--- @date Created: 2025-10-31 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Monk
 ---============================================================================
 
@@ -22,52 +22,52 @@ local MNK_SUBJOB = {}
 
 MNK_SUBJOB.abilities = {
     ['Boost'] = {
-        description = 'Enhance next attack',
-        level = 5,
-        recast = 60,  -- 1 minute
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Enhance next attack',
+        level                   = 5,
+        recast                  = 60,  -- 1min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Dodge'] = {
-        description = 'Evasion boost',
-        level = 15,
-        recast = 300,  -- 5 minutes
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Evasion boost',
+        level                   = 15,
+        recast                  = 300,  -- 5min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Focus'] = {
-        description = 'Accuracy boost',
-        level = 25,
-        recast = 300,  -- 5 minutes
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Accuracy boost',
+        level                   = 25,
+        recast                  = 300,  -- 5min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Chakra'] = {
-        description = 'Restore HP, remove Blind/Poison',
-        level = 35,
-        recast = 180,  -- 3 minutes
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Restore HP, remove Blind/Poison',
+        level                   = 35,
+        recast                  = 180,  -- 3min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Chi Blast'] = {
-        description = 'Ranged attack (TP based)',
-        level = 41,
-        recast = 180,  -- 3 minutes
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Ranged attack (TP based)',
+        level                   = 41,
+        recast                  = 180,  -- 3min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     },
     ['Counterstance'] = {
-        description = 'Counter boost, DEF penalty',
-        level = 45,
-        recast = 300,  -- 5 minutes
-        main_job_only = false,
-        cumulative_enmity = 0,
-        volatile_enmity = 80
+        description             = 'Counter boost, DEF penalty',
+        level                   = 45,
+        recast                  = 300,  -- 5min
+        main_job_only           = false,
+        cumulative_enmity       = 0,
+        volatile_enmity         = 80
     }
 }
 

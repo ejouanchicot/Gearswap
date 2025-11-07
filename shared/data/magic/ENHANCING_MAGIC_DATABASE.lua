@@ -21,8 +21,8 @@
 ---
 --- @file ENHANCING_MAGIC_DATABASE.lua
 --- @author Tetsouo
---- @version 1.0 - Unified database with spell_family support
---- @date Created: 2025-11-05
+--- @version 2.0 - Improved formatting - Improved alignment - Unified database with spell_family support
+--- @date Created: 2025-11-05 | Updated: 2025-11-06
 ---============================================================================
 
 ---============================================================================

@@ -101,9 +101,7 @@ function job_precast(spell, action, spellMap, eventArgs)
         -- Check if enough TP before displaying WS message
         local current_tp = player and player.vitals and player.vitals.tp or 0
         if current_tp >= 1000 then
-            -- Display WS message with description and current TP
-            MessageFormatter.show_ws_activated(spell.english, WS_DB[spell.english].description, current_tp)
-        else
+            -- Display WS message with description and current TP        else
                 -- Not enough TP - display error
                 MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
             end

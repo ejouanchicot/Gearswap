@@ -37,7 +37,7 @@ local StormManager = require('shared/jobs/blm/functions/logic/storm_manager')
 --- SECTION 2: MESSAGE SYSTEM
 ---============================================================================
 -- Message system (must load first for buff status display)
-include('../shared/utils/messages/message_buffs.lua')
+include('../shared/utils/messages/formatters/magic/message_buffs.lua')
 
 -- Load MessageFormatter for standardized messages
 local MessageFormatter = require('shared/utils/messages/message_formatter')
@@ -209,7 +209,8 @@ function checkArts(spell, eventArgs)
             -- Update timestamp
             _G.BLM_ARTS_LAST_CAST = currentTime
 
-            MessageFormatter.show_dark_arts_activated(spell.name)
+            -- NOTE: Message disabled - Job Ability message will show automatically
+            -- MessageFormatter.show_dark_arts_activated(spell.name)
         end
     end
 end
