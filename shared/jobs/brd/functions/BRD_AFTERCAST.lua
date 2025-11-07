@@ -24,12 +24,20 @@ function job_aftercast(spell, action, spellMap, eventArgs)
         _G.MidcastWatchdog.on_aftercast()
     end
 
-    -- Clear Honor March protection flag after ANY action completes
-    -- (Prevents flag from staying stuck if spell interrupted or error occurred)
-    if _G.casting_honor_march then
-        _G.casting_honor_march = nil
-        if spell.type == 'BardSong' and spell.english == 'Honor March' then
-            MessageFormatter.show_honor_march_released()
+    -- Clear instrument lock flags after ANY action completes
+    -- (Prevents flags from staying stuck if spell interrupted or error occurred)
+    if _G.casting_locked_song then
+        local song_name = _G.locked_song_name
+        local instrument = _G.locked_instrument
+
+        -- Clear all lock flags
+        _G.casting_locked_song = nil
+        _G.locked_song_name = nil
+        _G.locked_instrument = nil
+
+        -- Display release message if song completed successfully
+        if spell.type == 'BardSong' and spell.english == song_name and not spell.interrupted then
+            MessageFormatter.show_instrument_released(song_name, instrument)
         end
     end
 

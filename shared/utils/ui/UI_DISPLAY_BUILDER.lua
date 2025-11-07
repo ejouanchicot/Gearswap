@@ -41,6 +41,7 @@ local categorization_rules = {
 
     mode_patterns = {
         "Mode", "Combat", "Engaged", "Idle", "Enfeeble", "Nuke", "petIdleMode", "AutoPetEngage",
+        "QuickReady",  -- BST Quick Ready mode (Charmer's Merlin for fastest recast)
         "Rotation",  -- Removed BRDRotation and VictoryMarch - moved to spell_patterns
         "Xp",  -- XP mode for PLD/RDM
         "UseAltStep",  -- DNC step configuration mode (must be before ja_patterns check)

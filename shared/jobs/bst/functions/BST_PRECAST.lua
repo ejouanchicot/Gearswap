@@ -225,6 +225,26 @@ function job_precast(spell, action, spellMap, eventArgs)
         -- Store category for midcast
         spell.ready_move_category = ready_move_category
     end
+
+    -- ==========================================================================
+    -- QUICK READY MODE - SET SELECTION
+    -- ==========================================================================
+    -- Modify the set name BEFORE Mote equips gear
+    -- QuickReady ON: Use SicQuick/ReadyQuick sets (with Charmer's Merlin)
+    -- QuickReady OFF: Use default Sic/Ready sets (no Charmer's)
+    -- ONLY for generic "Ready" and "Sic" commands (NOT specific Ready moves)
+    if spell.english == 'Ready' or spell.english == 'Sic' then
+        if state.QuickReady and state.QuickReady.value == 'On' then
+            -- Override to Quick sets
+            if spell.english == 'Sic' then
+                classes.CustomClass = 'SicQuick'
+                add_to_chat(158, "[BST] QuickReady ON: Using Sic Quick set (Charmer's Merlin)")
+            elseif spell.english == 'Ready' then
+                classes.CustomClass = 'ReadyQuick'
+                add_to_chat(158, "[BST] QuickReady ON: Using Ready Quick set (Charmer's Merlin)")
+            end
+        end
+    end
 end
 
 ---============================================================================

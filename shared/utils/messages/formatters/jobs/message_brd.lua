@@ -116,21 +116,38 @@ function BRDMessages.show_ability_command(ability_name)
 end
 
 ---============================================================================
---- HONOR MARCH PROTECTION MESSAGES (NEW SYSTEM)
+--- INSTRUMENT LOCK PROTECTION MESSAGES (NEW SYSTEM)
 ---============================================================================
 
+--- Show instrument lock message (generic for any song+instrument)
+--- @param song_name string Song name (e.g., "Honor March", "Aria of Passion")
+--- @param instrument string Instrument name (e.g., "Marsyas", "Loughnashade")
+function BRDMessages.show_instrument_locked(song_name, instrument)
+    M.job('BRD', 'instrument_locked', {
+        job = get_job_tag(),
+        song = song_name,
+        instrument = instrument
+    })
+end
+
+--- Show instrument release message (generic for any song+instrument)
+--- @param song_name string Song name
+--- @param instrument string Instrument name
+function BRDMessages.show_instrument_released(song_name, instrument)
+    M.job('BRD', 'instrument_released', {
+        job = get_job_tag(),
+        song = song_name,
+        instrument = instrument
+    })
+end
+
+--- Legacy function names (for backward compatibility)
 function BRDMessages.show_honor_march_locked()
-    -- DISABLED: Too verbose
-    -- M.job('BRD', 'honor_march_locked', {
-    --     job = get_job_tag()
-    -- })
+    BRDMessages.show_instrument_locked('Honor March', 'Marsyas')
 end
 
 function BRDMessages.show_honor_march_released()
-    -- DISABLED: Too verbose
-    -- M.job('BRD', 'honor_march_released', {
-    --     job = get_job_tag()
-    -- })
+    BRDMessages.show_instrument_released('Honor March', 'Marsyas')
 end
 
 ---============================================================================

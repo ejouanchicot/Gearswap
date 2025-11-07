@@ -80,7 +80,21 @@ return {
     },
 
     ---========================================================================
-    --- HONOR MARCH PROTECTION MESSAGES
+    --- INSTRUMENT LOCK PROTECTION MESSAGES (GENERIC)
+    ---========================================================================
+
+    instrument_locked = {
+        template = "{lightblue}[{job}] {cyan}{song}{gray} >> {green}{instrument} locked",
+        color = 1
+    },
+
+    instrument_released = {
+        template = "{lightblue}[{job}] {cyan}{song}{gray} >> {green}{instrument} released",
+        color = 1
+    },
+
+    ---========================================================================
+    --- LEGACY HONOR MARCH MESSAGES (BACKWARD COMPATIBILITY)
     ---========================================================================
 
     honor_march_locked = {

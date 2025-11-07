@@ -37,10 +37,10 @@ end
 --- @param playerStatus string Current player status
 --- @param eventArgs table Event arguments
 function job_handle_equipping_gear(playerStatus, eventArgs)
-    -- CRITICAL: Protect Honor March casting - maintain Marsyas throughout cast
-    if _G.casting_honor_march then
-        -- Force Marsyas to stay equipped during Honor March cast
-        equip({range = 'Marsyas'})
+    -- CRITICAL: Protect instrument lock - maintain locked instrument throughout cast
+    if _G.casting_locked_song and _G.locked_instrument then
+        -- Force locked instrument to stay equipped during song cast
+        equip({range = _G.locked_instrument})
         return
     end
 

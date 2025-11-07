@@ -126,10 +126,12 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
             MessageFormatter.show_spell_activated(spell.english, description, nil)
         end
 
-        -- CRITICAL: Honor March Protection - ensure Marsyas stays equipped
-        if _G.casting_honor_march and spell.type == 'BardSong' and spell.english == 'Honor March' then
-            equip({range = 'Marsyas'})
-            return
+        -- CRITICAL: Instrument Lock Protection - ensure locked instrument stays equipped
+        if _G.casting_locked_song and spell.type == 'BardSong' then
+            if _G.locked_song_name == spell.english and _G.locked_instrument then
+                equip({range = _G.locked_instrument})
+                return
+            end
         end
 
         local instrument = get_song_instrument(spell)

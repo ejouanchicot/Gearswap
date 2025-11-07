@@ -56,6 +56,9 @@ end
 -- Song refinement system (auto-downgrade debuff songs if on cooldown)
 local SongRefinement = require('shared/jobs/brd/functions/logic/song_refinement')
 
+-- Instrument lock configuration (Honor March, Aria of Passion)
+local InstrumentLockConfig = require('shared/jobs/brd/functions/logic/instrument_lock_config')
+
 -- BRD configuration
 local BRDTPConfig = _G.BRDTPConfig or {}  -- Loaded from character main file
 
@@ -203,14 +206,22 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 
 
-    -- CRITICAL: Honor March Protection System
-    -- Honor March REQUIRES Marsyas throughout entire cast or it will fail
-    if spell.type == 'BardSong' and spell.english == 'Honor March' then
-        -- Equip Marsyas immediately
-        equip({range = 'Marsyas'})
-        -- Set global flag to protect Marsyas during cast
-        _G.casting_honor_march = true
-        MessageFormatter.show_honor_march_locked()
+    -- CRITICAL: Instrument Lock Protection System
+    -- Some songs (Honor March, Aria of Passion) require specific instruments
+    -- that MUST stay equipped throughout the entire cast or the song fails
+    if spell.type == 'BardSong' and InstrumentLockConfig.requires_lock(spell.english) then
+        local instrument = InstrumentLockConfig.get_instrument(spell.english)
+
+        -- Equip instrument immediately
+        equip({range = instrument})
+
+        -- Set global flags to protect instrument during cast
+        _G.casting_locked_song = true
+        _G.locked_song_name = spell.english
+        _G.locked_instrument = instrument
+
+        -- Display lock message
+        MessageFormatter.show_instrument_locked(spell.english, instrument)
     end
 end
 
