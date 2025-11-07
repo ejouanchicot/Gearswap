@@ -24,7 +24,7 @@ local PLD_MAINJOB = {}
 
 PLD_MAINJOB.abilities = {
     ['Rampart'] = {
-        description             = 'Party damage -25% (30s)',
+        description             = 'Party damage -25%',
         level                   = 62,
         recast                  = 180,  -- 3min
         main_job_only           = true,

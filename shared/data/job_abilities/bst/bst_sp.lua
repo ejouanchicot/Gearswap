@@ -4,8 +4,8 @@
 --- Beastmaster special abilities (2 SP total)
 ---
 --- Contents:
----   - Familiar (SP1, Lv1) - Pet powers enhanced (30min)
----   - Unleash (SP2, Lv96) - Charm 95% success, no recast Sic/Ready (1min)
+---   - Familiar (SP1, Lv1) - Pet powers enhanced
+---   - Unleash (SP2, Lv96) - Charm 95% success, no recast Sic/Ready
 ---
 --- @file bst_sp.lua
 --- @author Tetsouo
@@ -20,7 +20,7 @@ local BST_SP = {}
 
 BST_SP.abilities = {
     ['Familiar'] = {
-        description             = "Pet powers enhanced (30min)",
+        description             = "Pet powers enhanced",
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,
@@ -28,7 +28,7 @@ BST_SP.abilities = {
         volatile_enmity         = 80
     },
     ['Unleash'] = {
-        description             = "Charm 95% success, Sic/Ready no recast (1min)",
+        description             = "Charm 95% success, Sic/Ready no recast",
         level                   = 96,
         recast                  = 3600,  -- 1hr (SP2)
         main_job_only           = true,

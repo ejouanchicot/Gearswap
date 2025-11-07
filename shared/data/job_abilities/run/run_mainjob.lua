@@ -9,7 +9,7 @@
 ---   - Gambit (Lv70) - Reduce enemy elemental defense (all runes)
 ---   - Battuta (Lv75 Merit) - Parry rate +40%, counter damage
 ---   - Rayke (Lv75 Merit) - Reduce enemy elemental resistance
----   - Liement (Lv85) - Absorb elemental damage (10s)
+---   - Liement (Lv85) - Absorb elemental damage
 ---   - One for All (Lv95) - Party Magic Shield (HP × 0.2)
 ---
 --- @file run_mainjob.lua
@@ -63,7 +63,7 @@ RUN_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Liement'] = {
-        description             = 'Absorb elemental damage (10s)',
+        description             = 'Absorb elemental damage',
         level                   = 85,
         recast                  = 180,  -- 3min
         main_job_only           = true,

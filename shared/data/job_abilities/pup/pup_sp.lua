@@ -4,7 +4,7 @@
 --- Puppetmaster special abilities (2 SP total)
 ---
 --- Contents:
----   - Overdrive (SP1, Lv1) - Automaton max power, no overload (3min)
+---   - Overdrive (SP1, Lv1) - Automaton max power, no overload
 ---   - Heady Artifice (SP2, Lv96) - Head-specific special ability
 ---
 --- @file pup_sp.lua
@@ -20,7 +20,7 @@ local PUP_SP = {}
 
 PUP_SP.abilities = {
     ['Overdrive'] = {
-        description             = "Automaton max power, no overload (3min)",
+        description             = "Automaton max power, no overload",
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,

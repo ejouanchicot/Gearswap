@@ -4,8 +4,8 @@
 --- Samurai special abilities (2 SP total)
 ---
 --- Contents:
----   - Meikyo Shisui (SP1, Lv1) - WS TP cost reduced (30s)
----   - Yaegasumi (SP2, Lv96) - Evade special attacks (45s)
+---   - Meikyo Shisui (SP1, Lv1) - WS TP cost reduced
+---   - Yaegasumi (SP2, Lv96) - Evade special attacks
 ---
 --- @file sam_sp.lua
 --- @author Tetsouo
@@ -21,7 +21,7 @@ local SAM_SP = {}
 
 SAM_SP.abilities = {
     ['Meikyo Shisui'] = {
-        description             = "WS TP cost → 1000 (30s)",
+        description             = "WS TP cost → 1000",
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,
@@ -29,7 +29,7 @@ SAM_SP.abilities = {
         volatile_enmity         = 80
     },
     ['Yaegasumi'] = {
-        description             = "Evade special attacks, WS damage+ (45s)",
+        description             = "Evade special attacks, WS damage+",
         level                   = 96,
         recast                  = 3600,  -- 1hr (SP2)
         main_job_only           = true,

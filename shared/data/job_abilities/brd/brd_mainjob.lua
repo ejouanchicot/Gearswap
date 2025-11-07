@@ -4,10 +4,10 @@
 --- Bard abilities restricted to main job (4 standard abilities)
 ---
 --- Contents:
----   - Nightingale (Merit, Lv75) - Song cast/recast -50% (1min)
----   - Troubadour (Merit, Lv75) - Song duration x2, cast time +50% (1min)
----   - Tenuto (Lv83) - Next self song no overwrite (1min)
----   - Marcato (Lv95) - Next song effect x1.5 (1min)
+---   - Nightingale (Merit, Lv75) - Song cast/recast -50%
+---   - Troubadour (Merit, Lv75) - Song duration x2, cast time +50%
+---   - Tenuto (Lv83) - Next self song no overwrite
+---   - Marcato (Lv95) - Next song effect x1.5
 ---
 --- @file brd_mainjob.lua
 --- @author Tetsouo

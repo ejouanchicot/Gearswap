@@ -4,7 +4,7 @@
 --- Ranger abilities accessible as subjob (6 total)
 ---
 --- Contents:
----   - Sharpshot (Lv1) - Ranged ACC +40 (1min)
+---   - Sharpshot (Lv1) - Ranged ACC +40
 ---   - Scavenge (Lv10) - Recover spent ammunition
 ---   - Camouflage (Lv20) - Invisible, reduced ranged enmity
 ---   - Barrage (Lv30) - Fire multiple shots
@@ -22,7 +22,7 @@ local RNG_SUBJOB = {}
 
 RNG_SUBJOB.abilities = {
     ['Sharpshot'] = {
-        description             = 'Ranged ACC +40 (1min)',
+        description             = 'Ranged ACC +40',
         level                   = 1,
         recast                  = 300,  -- 5min
         main_job_only           = false,

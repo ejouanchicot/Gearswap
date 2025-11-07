@@ -4,8 +4,8 @@
 --- Red Mage special abilities (2 SP total)
 ---
 --- Contents:
----   - Chainspell (SP1, Lv1) - Rapid spellcasting (1min)
----   - Stymie (SP2, Lv96) - Next enfeebling 100% MACC (1min)
+---   - Chainspell (SP1, Lv1) - Rapid spellcasting
+---   - Stymie (SP2, Lv96) - Next enfeebling 100% MACC
 ---
 --- @file rdm_sp.lua
 --- @author Tetsouo
@@ -20,7 +20,7 @@ local RDM_SP = {}
 
 RDM_SP.abilities = {
     ['Chainspell'] = {
-        description             = "Rapid spellcasting (1min)",
+        description             = "Rapid spellcasting",
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,
@@ -28,7 +28,7 @@ RDM_SP.abilities = {
         volatile_enmity         = 80
     },
     ['Stymie'] = {
-        description             = "Next enfeebling 100% MACC (1min)",
+        description             = "Next enfeebling 100% MACC",
         level                   = 96,
         recast                  = 3600,  -- 1hr (SP2)
         main_job_only           = true,

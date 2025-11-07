@@ -4,8 +4,8 @@
 --- Dragoon special abilities (2 SP total)
 ---
 --- Contents:
----   - Spirit Surge (SP1, Lv1) - Adds wyvern's strength to your own (60s)
----   - Fly High (SP2, Lv96) - Reset Jump timers, 10s recast (30s)
+---   - Spirit Surge (SP1, Lv1) - Adds wyvern's strength to your own
+---   - Fly High (SP2, Lv96) - Reset Jump timers, 10s recast
 ---
 --- @file drg_sp.lua
 --- @author Tetsouo
@@ -20,7 +20,7 @@ local DRG_SP = {}
 
 DRG_SP.abilities = {
     ['Spirit Surge'] = {
-        description             = "Adds wyvern's strength to your own (60s)",
+        description             = "Adds wyvern's strength to your own",
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,
@@ -28,7 +28,7 @@ DRG_SP.abilities = {
         volatile_enmity         = 80
     },
     ['Fly High'] = {
-        description             = "Reset Jump timers, 10s recast (30s)",
+        description             = "Reset Jump timers, 10s recast",
         level                   = 96,
         recast                  = 3600,  -- 1hr (SP2)
         main_job_only           = true,

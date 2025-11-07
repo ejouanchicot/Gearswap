@@ -22,7 +22,7 @@ local DRK_MAINJOB = {}
 
 DRK_MAINJOB.abilities = {
     ['Dark Seal'] = {
-        description             = 'Next dark magic MACC+ (1min)',
+        description             = 'Next dark magic MACC+',
         level                   = 75,
         recast                  = 300,  -- 5min
         main_job_only           = true,
@@ -30,7 +30,7 @@ DRK_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Diabolic Eye'] = {
-        description             = 'ACC+20, max HP-15% (3min)',
+        description             = 'ACC+20, max HP-15%',
         level                   = 75,
         recast                  = 180,  -- 3min
         main_job_only           = true,
@@ -38,7 +38,7 @@ DRK_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Nether Void'] = {
-        description             = 'Next Absorb/Drain +50% (1min)',
+        description             = 'Next Absorb/Drain +50%',
         level                   = 78,
         recast                  = 300,  -- 5min
         main_job_only           = true,
@@ -54,7 +54,7 @@ DRK_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Scarlet Delirium'] = {
-        description             = 'Damage taken → ATK/MATT boost (90s)',
+        description             = 'Damage taken → ATK/MATT boost',
         level                   = 95,
         recast                  = 180,  -- 3min
         main_job_only           = true,

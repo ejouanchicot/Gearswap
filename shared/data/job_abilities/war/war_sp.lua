@@ -4,8 +4,8 @@
 --- Warrior special abilities (2 SP total)
 ---
 --- Contents:
----   - Mighty Strikes (SP1, Lv1) - All attacks critical (45s)
----   - Brazen Rush (SP2, Lv96) - Double attack 100% (30s)
+---   - Mighty Strikes (SP1, Lv1) - All attacks critical
+---   - Brazen Rush (SP2, Lv96) - Double attack 100%
 ---
 --- @file war_sp.lua
 --- @author Tetsouo
@@ -20,7 +20,7 @@ local WAR_SP = {}
 
 WAR_SP.abilities = {
     ['Mighty Strikes'] = {
-        description             = "All attacks critical (45s)",
+        description             = "All attacks critical",
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,
@@ -28,7 +28,7 @@ WAR_SP.abilities = {
         volatile_enmity         = 80
     },
     ['Brazen Rush'] = {
-        description             = "Double attack 100% (30s)",
+        description             = "Double attack 100%",
         level                   = 96,
         recast                  = 3600,  -- 1hr (SP2)
         main_job_only           = true,

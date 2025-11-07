@@ -27,7 +27,7 @@ RDM_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Saboteur'] = {
-        description             = 'Enfeebling potency/duration x2 (1min)',
+        description             = 'Enfeebling potency/duration x2',
         level                   = 83,
         recast                  = 180,  -- 3min
         main_job_only           = true,

@@ -4,8 +4,8 @@
 --- Black Mage special abilities (2 SP total)
 ---
 --- Contents:
----   - Manafont (SP1, Lv1) - Zero MP cost spells, interruption immunity (60s)
----   - Subtle Sorcery (SP2, Lv96) - Lower enmity, +MACC, bypass resists (60s)
+---   - Manafont (SP1, Lv1) - Zero MP cost spells, interruption immunity
+---   - Subtle Sorcery (SP2, Lv96) - Lower enmity, +MACC, bypass resists
 ---
 --- @file blm_sp.lua
 --- @author Tetsouo

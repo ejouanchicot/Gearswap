@@ -6,8 +6,8 @@
 --- Contents:
 ---   - Ready (Lv25) - Pet uses selected TP move (charge system)
 ---   - Snarl (Lv45) - Transfer 99% enmity to pet
----   - Spur (Lv83) - Pet Store TP +20 (90s)
----   - Run Wild (Lv93) - Pet stats +25%, pet vanishes after (5min)
+---   - Spur (Lv83) - Pet Store TP +20
+---   - Run Wild (Lv93) - Pet stats +25%, pet vanishes after
 ---
 --- @file bst_pet_commands_mainjob.lua
 --- @author Tetsouo
@@ -36,7 +36,7 @@ BST_PET_COMMANDS_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Spur'] = {
-        description             = 'Pet Store TP +20 (90s)',
+        description             = 'Pet Store TP +20',
         level                   = 83,
         recast                  = 180,  -- 3min
         main_job_only           = true,
@@ -44,7 +44,7 @@ BST_PET_COMMANDS_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Run Wild'] = {
-        description             = 'Pet stats +25%, pet vanishes after (5min)',
+        description             = 'Pet stats +25%, pet vanishes after',
         level                   = 93,
         recast                  = 900,  -- 15min
         main_job_only           = true,

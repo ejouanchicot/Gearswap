@@ -7,7 +7,7 @@
 ---   - Convergence (Lv75 Merit) - Next magical spell +25% damage, single target
 ---   - Diffusion (Lv75 Merit) - Next support spell → party AoE
 ---   - Efflux (Lv83) - Next physical spell +1000 TP bonus
----   - Unbridled Learning (Lv95) - Cast NM-exclusive blue magic (1min)
+---   - Unbridled Learning (Lv95) - Cast NM-exclusive blue magic
 ---
 --- @file blu_mainjob.lua
 --- @author Tetsouo
@@ -44,7 +44,7 @@ BLU_MAINJOB.abilities = {
         volatile_enmity         = 300
     },
     ['Unbridled Learning'] = {
-        description             = 'Cast NM-exclusive blue magic (1min)',
+        description             = 'Cast NM-exclusive blue magic',
         level                   = 95,
         recast                  = 300,  -- 5min
         main_job_only           = true,

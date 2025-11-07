@@ -4,8 +4,8 @@
 --- Dark Knight special abilities (2 SP total)
 ---
 --- Contents:
----   - Blood Weapon (SP1, Lv1) - Drain HP with melee attacks (30s)
----   - Soul Enslavement (SP2, Lv96) - Absorb TP with melee attacks (30s)
+---   - Blood Weapon (SP1, Lv1) - Drain HP with melee attacks
+---   - Soul Enslavement (SP2, Lv96) - Absorb TP with melee attacks
 ---
 --- @file drk_sp.lua
 --- @author Tetsouo
@@ -20,7 +20,7 @@ local DRK_SP = {}
 
 DRK_SP.abilities = {
     ['Blood Weapon'] = {
-        description             = "Drain HP with melee attacks (30s)",
+        description             = "Drain HP with melee attacks",
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,
@@ -28,7 +28,7 @@ DRK_SP.abilities = {
         volatile_enmity         = 80
     },
     ['Soul Enslavement'] = {
-        description             = "Absorb TP with melee attacks (30s)",
+        description             = "Absorb TP with melee attacks",
         level                   = 96,
         recast                  = 3600,  -- 1hr (SP2)
         main_job_only           = true,

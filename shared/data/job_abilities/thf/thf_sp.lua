@@ -4,7 +4,7 @@
 --- Thief special abilities (2 SP total)
 ---
 --- Contents:
----   - Perfect Dodge (SP1, Lv1) - Dodge all melee attacks (30s)
+---   - Perfect Dodge (SP1, Lv1) - Dodge all melee attacks
 ---   - Larceny (SP2, Lv96) - Steal buff from enemy (1hr)
 ---
 --- @file thf_sp.lua
@@ -20,7 +20,7 @@ local THF_SP = {}
 
 THF_SP.abilities = {
     ['Perfect Dodge'] = {
-        description             = "Dodge all melee attacks (30s)",
+        description             = "Dodge all melee attacks",
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,

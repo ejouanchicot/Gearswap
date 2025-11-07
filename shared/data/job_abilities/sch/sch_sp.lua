@@ -4,7 +4,7 @@
 --- Scholar special abilities (2 SP total)
 ---
 --- Contents:
----   - Tabula Rasa (SP1, Lv1) - All Arts/Stratagems no recast (3min)
+---   - Tabula Rasa (SP1, Lv1) - All Arts/Stratagems no recast
 ---   - Caper Emissarius (SP2, Lv96) - Transfer all enmity to party member
 ---
 --- @file sch_sp.lua
@@ -20,7 +20,7 @@ local SCH_SP = {}
 
 SCH_SP.abilities = {
     ['Tabula Rasa'] = {
-        description             = "All Arts/Stratagems no recast (3min)",
+        description             = "All Arts/Stratagems no recast",
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,

@@ -36,12 +36,13 @@ function MessageCore.convert_key_display(key)
     return converted:upper()
 end
 
---- Display a colored separator line
---- @param length number Optional separator length (default: 50)
+--- Display a colored separator line (FIXED LENGTH)
+--- @param length number Ignored - separator is always 74 characters
 function MessageCore.show_separator(length)
-    length = length or 50
+    -- Fixed length: always 74 characters
+    local fixed_length = 74
     local colorGray = MessageCore.create_color_code(MessageCore.COLORS.SEPARATOR)
-    local separator = string.rep("=", length)
+    local separator = string.rep("=", fixed_length)
     add_to_chat(1, colorGray .. separator)
 end
 

@@ -5,7 +5,7 @@
 ---
 --- Contents:
 ---   - Modus Veritas (Lv65) - Helix DoT x2, duration -50%
----   - Enlightenment (Lv75 Merit) - Both Arts active, both Addenda (1min)
+---   - Enlightenment (Lv75 Merit) - Both Arts active, both Addenda
 ---   - Libra (Lv76) - Examine target enmity levels
 ---
 --- @file sch_mainjob.lua
@@ -27,7 +27,7 @@ SCH_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Enlightenment'] = {
-        description             = 'Both Arts active, both Addenda (1min)',
+        description             = 'Both Arts active, both Addenda',
         level                   = 75,
         recast                  = 300,  -- 5min
         main_job_only           = true,

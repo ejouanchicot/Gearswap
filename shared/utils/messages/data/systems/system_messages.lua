@@ -15,8 +15,8 @@ return {
     ---========================================================================
 
     intro_header_separator = {
-        template = "{green}{separator}",
-        color = 158
+        template = "{gray}{separator}",
+        color = 160
     },
 
     intro_header_title = {
@@ -50,8 +50,8 @@ return {
     },
 
     intro_footer_separator = {
-        template = "{green}{separator}",
-        color = 158
+        template = "{gray}{separator}",
+        color = 160
     },
 
     ---========================================================================

@@ -55,7 +55,7 @@ WHM_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Divine Caress'] = {
-        description             = 'Next status removal → immunity (3min)',
+        description             = 'Next status removal → immunity',
         level                   = 83,
         recast                  = 60,  -- 1min
         main_job_only           = true,

@@ -7,7 +7,7 @@
 ---   - Velocity Shot (Lv45) - Ranged ATK/speed +15%, melee -15%
 ---   - Flashy Shot (Lv75 Merit) - Next attack +enmity/ACC/damage
 ---   - Stealth Shot (Lv75 Merit) - Next attack -enmity
----   - Double Shot (Lv79) - 40% chance double damage (90s)
+---   - Double Shot (Lv79) - 40% chance double damage
 ---   - Bounty Shot (Lv87) - Apply TH+2 to target
 ---   - Decoy Shot (Lv95) - Transfer 80% ranged enmity to party
 ---   - Hover Shot (Lv95) - Damage/ACC+ per shot from different position
@@ -47,7 +47,7 @@ RNG_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Double Shot'] = {
-        description             = '40% chance double damage (90s)',
+        description             = '40% chance double damage',
         level                   = 79,
         recast                  = 180,  -- 3min
         main_job_only           = true,

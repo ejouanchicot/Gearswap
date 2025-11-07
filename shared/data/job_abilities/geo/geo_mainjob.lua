@@ -59,7 +59,7 @@ GEO_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Dematerialize'] = {
-        description             = 'Luopan damage immunity (1min)',
+        description             = 'Luopan damage immunity',
         level                   = 70,
         recast                  = 600,  -- 10min
         main_job_only           = true,

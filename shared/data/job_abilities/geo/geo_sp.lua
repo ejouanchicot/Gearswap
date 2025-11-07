@@ -4,8 +4,8 @@
 --- Geomancer special abilities (2 SP total)
 ---
 --- Contents:
----   - Bolster (SP1, Lv1) - Double geomancy potency (3min)
----   - Widened Compass (SP2, Lv96) - Double geomancy range (1min)
+---   - Bolster (SP1, Lv1) - Double geomancy potency
+---   - Widened Compass (SP2, Lv96) - Double geomancy range
 ---
 --- @file geo_sp.lua
 --- @author Tetsouo
@@ -20,7 +20,7 @@ local GEO_SP = {}
 
 GEO_SP.abilities = {
     ['Bolster'] = {
-        description             = "Geomancy effects x2 (3min)",
+        description             = "Geomancy effects x2",
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,
@@ -28,7 +28,7 @@ GEO_SP.abilities = {
         volatile_enmity         = 80
     },
     ['Widened Compass'] = {
-        description             = "Geomancy range x2 (1min)",
+        description             = "Geomancy range x2",
         level                   = 96,
         recast                  = 3600,  -- 1hr (SP2)
         main_job_only           = true,

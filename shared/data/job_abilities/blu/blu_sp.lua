@@ -4,8 +4,8 @@
 --- Blue Mage special abilities (2 SP total)
 ---
 --- Contents:
----   - Azure Lore (SP1, Lv1) - Blue magic enhanced (30s)
----   - Unbridled Wisdom (SP2, Lv96) - Cast Unbridled Learning spells (1min)
+---   - Azure Lore (SP1, Lv1) - Blue magic enhanced
+---   - Unbridled Wisdom (SP2, Lv96) - Cast Unbridled Learning spells
 ---
 --- @file blu_sp.lua
 --- @author Tetsouo
@@ -20,7 +20,7 @@ local BLU_SP = {}
 
 BLU_SP.abilities = {
     ['Azure Lore'] = {
-        description             = "Blue magic enhanced (30s)",
+        description             = "Blue magic enhanced",
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,
@@ -28,7 +28,7 @@ BLU_SP.abilities = {
         volatile_enmity         = 80
     },
     ['Unbridled Wisdom'] = {
-        description             = "Cast Unbridled Learning spells (1min)",
+        description             = "Cast Unbridled Learning spells",
         level                   = 96,
         recast                  = 3600,  -- 1hr (SP2)
         main_job_only           = true,

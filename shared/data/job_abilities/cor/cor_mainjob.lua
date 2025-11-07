@@ -6,7 +6,7 @@
 --- Contents:
 ---   - Snake Eye (Merit, Lv75) - Force roll = 1, auto-11 chance
 ---   - Fold (Merit, Lv75) - Remove longest roll/bust
----   - Triple Shot (Lv87) - 40% triple shot for ranged attacks (90s)
+---   - Triple Shot (Lv87) - 40% triple shot for ranged attacks
 ---   - Crooked Cards (Lv95) - Next roll +20% effect
 ---
 --- @file cor_mainjob.lua
@@ -40,7 +40,7 @@ COR_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Triple Shot'] = {
-        description             = "40% triple shot (90s)",
+        description             = "40% triple shot",
         level                   = 87,
         recast                  = 300,  -- 5min
         main_job_only           = true,

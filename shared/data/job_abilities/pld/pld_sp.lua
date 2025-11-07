@@ -4,8 +4,8 @@
 --- Paladin special abilities (2 SP total)
 ---
 --- Contents:
----   - Invincible (SP1, Lv1) - Physical damage immunity (30s)
----   - Intervene (SP2, Lv96) - Shield strike, ATK/ACC reduction (30s)
+---   - Invincible (SP1, Lv1) - Physical damage immunity
+---   - Intervene (SP2, Lv96) - Shield strike, ATK/ACC reduction
 ---
 --- @file pld_sp.lua
 --- @author Tetsouo
@@ -21,7 +21,7 @@ local PLD_SP = {}
 
 PLD_SP.abilities = {
     ['Invincible'] = {
-        description             = "Physical damage immunity (30s)",
+        description             = "Physical damage immunity",
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,
@@ -29,7 +29,7 @@ PLD_SP.abilities = {
         volatile_enmity         = 80
     },
     ['Intervene'] = {
-        description             = "Shield strike, ATK/ACC → 1 (30s)",
+        description             = "Shield strike, ATK/ACC → 1",
         level                   = 96,
         recast                  = 3600,  -- 1hr (SP2)
         main_job_only           = true,

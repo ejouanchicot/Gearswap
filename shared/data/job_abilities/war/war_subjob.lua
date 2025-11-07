@@ -30,7 +30,7 @@ WAR_SUBJOB.abilities = {
         volatile_enmity         = 1800
     },
     ['Berserk'] = {
-        description             = 'ATK+25% DEF-25% (3min)',
+        description             = 'ATK+25% DEF-25%',
         level                   = 15,
         recast                  = 300,  -- 5min
         main_job_only           = false,
@@ -38,7 +38,7 @@ WAR_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Defender'] = {
-        description             = 'DEF+25% ATK-25% (3min)',
+        description             = 'DEF+25% ATK-25%',
         level                   = 25,
         recast                  = 300,  -- 5min
         main_job_only           = false,
@@ -46,7 +46,7 @@ WAR_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Warcry'] = {
-        description             = 'Party ATK boost (30s)',
+        description             = 'Party ATK boost',
         level                   = 35,
         recast                  = 300,  -- 5min
         main_job_only           = false,
@@ -54,7 +54,7 @@ WAR_SUBJOB.abilities = {
         volatile_enmity         = 320
     },
     ['Aggressor'] = {
-        description             = 'ACC+25 EVA-25 (3min)',
+        description             = 'ACC+25 EVA-25',
         level                   = 45,
         recast                  = 300,  -- 5min
         main_job_only           = false,

@@ -4,8 +4,8 @@
 --- Monk special abilities (2 SP total)
 ---
 --- Contents:
----   - Hundred Fists (SP1, Lv1) - Attack speed +75% (45s)
----   - Inner Strength (SP2, Lv96) - Max HP x2, Counter/Guard 100% (30s)
+---   - Hundred Fists (SP1, Lv1) - Attack speed +75%
+---   - Inner Strength (SP2, Lv96) - Max HP x2, Counter/Guard 100%
 ---
 --- @file mnk_sp.lua
 --- @author Tetsouo
@@ -20,7 +20,7 @@ local MNK_SP = {}
 
 MNK_SP.abilities = {
     ['Hundred Fists'] = {
-        description             = "Attack speed +75% (45s)",
+        description             = "Attack speed +75%",
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,
@@ -28,7 +28,7 @@ MNK_SP.abilities = {
         volatile_enmity         = 80
     },
     ['Inner Strength'] = {
-        description             = "Max HP x2, Counter/Guard 100% (30s)",
+        description             = "Max HP x2, Counter/Guard 100%",
         level                   = 96,
         recast                  = 3600,  -- 1hr (SP2)
         main_job_only           = true,

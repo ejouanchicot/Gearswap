@@ -30,7 +30,7 @@ DRK_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Last Resort'] = {
-        description             = 'ATK+25% DEF-25% (3min)',
+        description             = 'ATK+25% DEF-25%',
         level                   = 15,
         recast                  = 300,  -- 5min
         main_job_only           = false,
@@ -46,7 +46,7 @@ DRK_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Souleater'] = {
-        description             = 'HP → damage, ACC+25 (1min)',
+        description             = 'HP → damage, ACC+25',
         level                   = 30,
         recast                  = 360,  -- 6min
         main_job_only           = false,

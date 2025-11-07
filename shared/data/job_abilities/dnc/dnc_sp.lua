@@ -18,7 +18,7 @@ local DNC_SP = {}
 
 DNC_SP.abilities = {
     ['Trance'] = {
-        description             = "Dances and steps TP cost 0 (60s)",
+        description             = "Dances and steps TP cost 0",
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,

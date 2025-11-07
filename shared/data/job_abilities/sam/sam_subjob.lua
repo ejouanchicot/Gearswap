@@ -39,7 +39,7 @@ SAM_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Hasso'] = {
-        description             = 'STR/Haste/ACC+ (5min)',
+        description             = 'STR/Haste/ACC+',
         level                   = 25,
         recast                  = 60,  -- 1min
         main_job_only           = false,
@@ -55,7 +55,7 @@ SAM_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Seigan'] = {
-        description             = 'Third Eye enhanced (5min)',
+        description             = 'Third Eye enhanced',
         level                   = 35,
         recast                  = 60,  -- 1min
         main_job_only           = false,

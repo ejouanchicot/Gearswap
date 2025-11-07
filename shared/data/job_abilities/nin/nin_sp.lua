@@ -5,7 +5,7 @@
 ---
 --- Contents:
 ---   - Mijin Gakure (SP1, Lv1) - Sacrifice self, damage enemy
----   - Mikage (SP2, Lv96) - Multi-attack based on Utsusemi shadows (45s)
+---   - Mikage (SP2, Lv96) - Multi-attack based on Utsusemi shadows
 ---
 --- @file nin_sp.lua
 --- @author Tetsouo
@@ -28,7 +28,7 @@ NIN_SP.abilities = {
         volatile_enmity         = 80
     },
     ['Mikage'] = {
-        description             = "Multi-attack based on Utsusemi shadows (45s)",
+        description             = "Multi-attack based on Utsusemi shadows",
         level                   = 96,
         recast                  = 3600,  -- 1hr (SP2)
         main_job_only           = true,

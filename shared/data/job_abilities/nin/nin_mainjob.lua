@@ -4,8 +4,8 @@
 --- Ninja abilities restricted to main job (5 total)
 ---
 --- Contents:
----   - Yonin (Lv40) - +Enmity/EVA, -ACC (5min)
----   - Innin (Lv40) - -Enmity/EVA, +Ninjutsu/Crit from behind (5min)
+---   - Yonin (Lv40) - +Enmity/EVA, -ACC
+---   - Innin (Lv40) - -Enmity/EVA, +Ninjutsu/Crit from behind
 ---   - Sange (Lv75 Merit) - Daken 100%, consume shuriken
 ---   - Futae (Lv77) - Next elemental ninjutsu +50% (2 tools)
 ---   - Issekigan (Lv95) - Parry rate+, enmity on parry
@@ -21,7 +21,7 @@ local NIN_MAINJOB = {}
 
 NIN_MAINJOB.abilities = {
     ['Yonin'] = {
-        description             = '+Enmity/EVA, -ACC (5min)',
+        description             = '+Enmity/EVA, -ACC',
         level                   = 40,
         recast                  = 180,  -- 3min
         main_job_only           = true,
@@ -29,7 +29,7 @@ NIN_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Innin'] = {
-        description             = '-Enmity/EVA, +Ninjutsu/Crit from behind (5min)',
+        description             = '-Enmity/EVA, +Ninjutsu/Crit from behind',
         level                   = 40,
         recast                  = 180,  -- 3min
         main_job_only           = true,

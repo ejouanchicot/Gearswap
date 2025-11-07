@@ -47,7 +47,35 @@ local function calculate_content_width(keybinds, macro_info, lockstyle_info, job
     return content_width
 end
 
---- Build system intro with all optional components (SHORT VERSION)
+--- Helper function to calculate visible length (strip color codes)
+--- @param text string Text with color codes
+--- @return number Visible length without color codes
+local function calculate_visible_length(text)
+    -- Strip FFXI color codes (\x1F + 1 byte = 2 bytes total)
+    local visible_text = text:gsub(string.char(0x1F) .. ".", "")
+    return #visible_text
+end
+
+--- Build a formatted message string without displaying it (for length calculation)
+--- @param namespace string Message namespace
+--- @param key string Message key
+--- @param params table Message parameters
+--- @return string Formatted message with color codes
+local function build_message_string(namespace, key, params)
+    local MessageEngine = require('shared/utils/messages/core/message_engine')
+    local ok, message, color = pcall(function()
+        return MessageEngine.format(namespace, key, params)
+    end)
+
+    if ok then
+        return message
+    else
+        return ""
+    end
+end
+
+--- Build system intro with all optional components (DYNAMIC SEPARATOR VERSION)
+--- Calculates separator length from longest visible line + 3 characters
 --- @param title string System title
 --- @param keybinds table Array of keybind objects
 --- @param macro_info table Optional macro info
@@ -57,9 +85,9 @@ local function build_and_display_intro(title, keybinds, macro_info, lockstyle_in
     -- Auto-detect job tag if not provided (e.g., "WAR/SAM", "PLD/BLU")
     job_name = job_name or MessageCore.get_job_tag()
 
-    -- Calculate width based on longest info line
-    local max_width = string.len(title) + 4
-    local separator_line = string.rep("=", max_width)
+    -- Color codes for info lines
+    local key_color = MessageCore.create_color_code(Colors.KEYBIND_KEY)
+    local desc_color = MessageCore.create_color_code(Colors.KEYBIND_DESC)
 
     -- Count keybinds
     local keybind_count = 0
@@ -69,16 +97,68 @@ local function build_and_display_intro(title, keybinds, macro_info, lockstyle_in
         end
     end
 
-    -- Display header
+    -- Build all message strings to calculate their visible lengths
+    local messages = {}
+
+    -- Title line (includes padding: "  {title}")
+    local title_msg = build_message_string('SYSTEM', 'intro_header_title', {title = title})
+    table.insert(messages, title_msg)
+
+    -- Macro info line
+    if macro_info and macro_info.book and macro_info.page then
+        local macro_msg = build_message_string('SYSTEM', 'intro_macrobook', {
+            key_color = key_color,
+            desc_color = desc_color,
+            book = tostring(macro_info.book),
+            page = tostring(macro_info.page)
+        })
+        table.insert(messages, macro_msg)
+    end
+
+    -- Lockstyle info line
+    if lockstyle_info and lockstyle_info.style then
+        local lockstyle_delay = _G.LockstyleConfig and _G.LockstyleConfig.initial_load_delay or 8.0
+        local lockstyle_msg = build_message_string('SYSTEM', 'intro_lockstyle', {
+            key_color = key_color,
+            desc_color = desc_color,
+            style = tostring(lockstyle_info.style),
+            delay = string.format("%.1f", lockstyle_delay)
+        })
+        table.insert(messages, lockstyle_msg)
+    end
+
+    -- Keybind count line
+    if keybind_count > 0 then
+        local keybind_msg = build_message_string('SYSTEM', 'intro_keybinds', {
+            key_color = key_color,
+            desc_color = desc_color,
+            count = tostring(keybind_count)
+        })
+        table.insert(messages, keybind_msg)
+    end
+
+    -- UI status line
+    local ui_enabled = _G.ui_display_config and _G.ui_display_config.enabled
+    if ui_enabled ~= nil then
+        local template_key = ui_enabled and 'intro_ui_visible' or 'intro_ui_hidden'
+        local ui_msg = build_message_string('SYSTEM', template_key, {
+            key_color = key_color,
+            desc_color = desc_color
+        })
+        table.insert(messages, ui_msg)
+    end
+
+    -- Fixed separator length (always 74 characters)
+    local separator_length = 74
+    local separator_line = string.rep("=", separator_length)
+
+    -- Display intro with dynamic separator
     M.send('SYSTEM', 'intro_header_separator', {separator = separator_line})
     M.send('SYSTEM', 'intro_header_title', {title = title})
     M.send('SYSTEM', 'intro_header_separator', {separator = separator_line})
 
     -- Display macro info if provided
     if macro_info and macro_info.book and macro_info.page then
-        local key_color = MessageCore.create_color_code(Colors.KEYBIND_KEY)
-        local desc_color = MessageCore.create_color_code(Colors.KEYBIND_DESC)
-
         M.send('SYSTEM', 'intro_macrobook', {
             key_color = key_color,
             desc_color = desc_color,
@@ -89,10 +169,7 @@ local function build_and_display_intro(title, keybinds, macro_info, lockstyle_in
 
     -- Display lockstyle info if provided
     if lockstyle_info and lockstyle_info.style then
-        local key_color = MessageCore.create_color_code(Colors.KEYBIND_KEY)
-        local desc_color = MessageCore.create_color_code(Colors.KEYBIND_DESC)
         local lockstyle_delay = _G.LockstyleConfig and _G.LockstyleConfig.initial_load_delay or 8.0
-
         M.send('SYSTEM', 'intro_lockstyle', {
             key_color = key_color,
             desc_color = desc_color,
@@ -103,9 +180,6 @@ local function build_and_display_intro(title, keybinds, macro_info, lockstyle_in
 
     -- Display keybind count
     if keybind_count > 0 then
-        local key_color = MessageCore.create_color_code(Colors.KEYBIND_KEY)
-        local desc_color = MessageCore.create_color_code(Colors.KEYBIND_DESC)
-
         M.send('SYSTEM', 'intro_keybinds', {
             key_color = key_color,
             desc_color = desc_color,
@@ -114,11 +188,7 @@ local function build_and_display_intro(title, keybinds, macro_info, lockstyle_in
     end
 
     -- Display UI status
-    local ui_enabled = _G.ui_display_config and _G.ui_display_config.enabled
     if ui_enabled ~= nil then
-        local key_color = MessageCore.create_color_code(Colors.KEYBIND_KEY)
-        local desc_color = MessageCore.create_color_code(Colors.KEYBIND_DESC)
-
         local template_key = ui_enabled and 'intro_ui_visible' or 'intro_ui_hidden'
         M.send('SYSTEM', template_key, {
             key_color = key_color,
@@ -126,7 +196,7 @@ local function build_and_display_intro(title, keybinds, macro_info, lockstyle_in
         })
     end
 
-    -- Display footer
+    -- Display footer separator
     M.send('SYSTEM', 'intro_footer_separator', {separator = separator_line})
 end
 

@@ -4,8 +4,8 @@
 --- Bard special abilities (2 SP total)
 ---
 --- Contents:
----   - Soul Voice (SP1, Lv1) - Enhances song effects (3min)
----   - Clarion Call (SP2, Lv96) - +1 song slot for party (3min)
+---   - Soul Voice (SP1, Lv1) - Enhances song effects
+---   - Clarion Call (SP2, Lv96) - +1 song slot for party
 ---
 --- @file brd_sp.lua
 --- @author Tetsouo
@@ -20,7 +20,7 @@ local BRD_SP = {}
 
 BRD_SP.abilities = {
     ['Soul Voice'] = {
-        description             = "Song effects x2 (3min)",
+        description             = "Song effects x2",
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,
@@ -28,7 +28,7 @@ BRD_SP.abilities = {
         volatile_enmity         = 80
     },
     ['Clarion Call'] = {
-        description             = "+1 song slot for party (3min)",
+        description             = "+1 song slot for party",
         level                   = 96,
         recast                  = 3600,  -- 1hr (SP2)
         main_job_only           = true,
