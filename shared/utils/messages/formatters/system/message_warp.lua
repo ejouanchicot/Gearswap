@@ -386,9 +386,12 @@ end
 
 --- Show status header
 function MessageWarp.show_status_header()
-    local header_color = MessageCore.create_color_code(COLORS.JOB_TAG)
-    local separator_color = MessageCore.create_color_code(COLORS.SEPARATOR)
-    MessageRenderer.send(1, string.format('%s=== Warp System Status ===%s', header_color, separator_color))
+    local gray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 50)
+    local separator = string.rep("=", 74)
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, yellow .. "Warp System Status")
+    add_to_chat(121, gray .. separator)
 end
 
 --- Show status line
@@ -430,9 +433,12 @@ end
 
 --- Show test detection header
 function MessageWarp.show_test_header()
-    local header_color = MessageCore.create_color_code(COLORS.JOB_TAG)
-    local separator_color = MessageCore.create_color_code(COLORS.SEPARATOR)
-    MessageRenderer.send(1, string.format('%s=== Warp Detection Test ===%s', header_color, separator_color))
+    local gray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 50)
+    local separator = string.rep("=", 74)
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, yellow .. "Warp Detection Test")
+    add_to_chat(121, gray .. separator)
 end
 
 --- Show test detection line

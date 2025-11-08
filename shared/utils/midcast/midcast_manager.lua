@@ -77,41 +77,7 @@ MidcastManager.debug = setmetatable({}, {
     end
 })
 
---- Log debug message
---- @param message string Debug message
---- @param color number|nil Chat color (default 160 = light blue)
-local function debug_log(message, color)
-    if is_debug_enabled() then
-        MessageMidcast.show_debug_log(message, color)
-    end
-end
-
---- Log debug header
---- @param message string Header message
-local function debug_header(message)
-    if is_debug_enabled() then
-        MessageMidcast.show_debug_header(message)
-    end
-end
-
---- Log debug step
---- @param step number Step number
---- @param message string Step message
---- @param result string|nil Result (OK/FAIL/WARN)
-local function debug_step(step, message, result)
-    if is_debug_enabled() then
-        MessageMidcast.show_debug_step(step, message, result)
-    end
-end
-
---- Log set info
---- @param set_name string Set name/path
---- @param exists boolean Whether set exists
-local function debug_set(set_name, exists)
-    if is_debug_enabled() then
-        MessageMidcast.show_debug_set(set_name, exists)
-    end
-end
+-- Old debug functions removed - now using MessageMidcast.show_* directly
 
 ---============================================================================
 --- CORE SELECTION LOGIC
@@ -128,50 +94,51 @@ end
 ---   - extra_key: string|nil - Extra key for set selection (e.g., 'Saboteur')
 --- @return boolean True if set was equipped, false otherwise
 function MidcastManager.select_set(config)
-    -- DEBUG: Start logging
-    if is_debug_enabled() and config and config.spell then
-        debug_header('SELECT_SET CALLED: ' .. (config.spell.english or 'Unknown Spell'))
-    end
-
     -- Validate required parameters
     if not config or not config.skill then
-        debug_log('[FAIL] VALIDATION FAILED: config or config.skill missing', 167)
         return false
     end
 
-    debug_log('Skill: ' .. config.skill, 158)
-
     -- Validate sets.midcast exists
     if not sets or not sets.midcast then
-        debug_log('[FAIL] VALIDATION FAILED: sets.midcast not found', 167)
         return false
     end
 
     -- Get base set path (e.g., sets.midcast['Enfeebling Magic'])
     local base_set = sets.midcast[config.skill]
     if not base_set then
-        debug_log('[FAIL] VALIDATION FAILED: sets.midcast[\'' .. config.skill .. '\'] not found', 167)
         return false
     end
 
-    debug_log('[OK] Base set found: sets.midcast[\'' .. config.skill .. '\']', 158)
+    -- DEBUG: Show header with spell info
+    if is_debug_enabled() and config and config.spell then
+        local spell_name = config.spell.english or 'Unknown'
+        local target_name = (config.spell.target and config.spell.target.name) or
+                           (player and player.name) or 'Unknown'
+        MessageMidcast.show_debug_header(spell_name, config.skill, target_name)
+    end
 
     local selected_set = nil
+    local selected_set_path = nil  -- Track the full set path for debug display
     local mode_value = nil
     local type_value = nil
     local target_value = nil
 
     -- STEP 1: Get mode value from state OR direct value (if provided)
     if config.mode_value then
-        -- Direct mode value provided (e.g., "Magic Burst", "MB", etc.)
         mode_value = config.mode_value
-        debug_step(1, 'Mode (direct value)', '[OK] mode = "' .. tostring(mode_value) .. '"')
+        if is_debug_enabled() then
+            MessageMidcast.show_debug_step(1, 'Mode', 'ok', '"' .. tostring(mode_value) .. '"')
+        end
     elseif config.mode_state and config.mode_state.value then
-        -- Mode state object provided (e.g., state.MagicBurstMode)
         mode_value = config.mode_state.value
-        debug_step(1, 'Mode from state', '[OK] mode = "' .. tostring(mode_value) .. '"')
+        if is_debug_enabled() then
+            MessageMidcast.show_debug_step(1, 'Mode', 'ok', '"' .. tostring(mode_value) .. '"')
+        end
     else
-        debug_step(1, 'Mode', '[WARN] No mode_value or mode_state provided')
+        if is_debug_enabled() then
+            MessageMidcast.show_debug_step(1, 'Mode', 'warn', 'No mode provided')
+        end
     end
 
     -- STEP 2: Get type value from database (if provided)
@@ -179,12 +146,18 @@ function MidcastManager.select_set(config)
         local success, result = pcall(config.database_func, config.spell.english)
         if success then
             type_value = result
-            debug_step(2, 'Type from database', '[OK] type = "' .. tostring(type_value) .. '"')
+            if is_debug_enabled() then
+                MessageMidcast.show_debug_step(2, 'Type (DB)', 'ok', '"' .. tostring(type_value) .. '"')
+            end
         else
-            debug_step(2, 'Type from database', '[FAIL] ERROR: ' .. tostring(result))
+            if is_debug_enabled() then
+                MessageMidcast.show_debug_step(2, 'Type (DB)', 'fail', 'Error: ' .. tostring(result))
+            end
         end
     else
-        debug_step(2, 'Type from database', '[WARN] No database_func provided')
+        if is_debug_enabled() then
+            MessageMidcast.show_debug_step(2, 'Type (DB)', 'info', 'No database')
+        end
     end
 
     -- STEP 3: Get target value from target_func (if provided)
@@ -192,138 +165,252 @@ function MidcastManager.select_set(config)
         local success, result = pcall(config.target_func, config.spell)
         if success then
             target_value = result
-            debug_step(3, 'Target from target_func', '[OK] target = "' .. tostring(target_value) .. '"')
+            if is_debug_enabled() then
+                MessageMidcast.show_debug_step(3, 'Target', 'ok', '"' .. tostring(target_value) .. '"')
+            end
         else
-            debug_step(3, 'Target from target_func', '[FAIL] ERROR: ' .. tostring(result))
+            if is_debug_enabled() then
+                MessageMidcast.show_debug_step(3, 'Target', 'fail', 'Error: ' .. tostring(result))
+            end
         end
     else
-        debug_step(3, 'Target from target_func', '[WARN] No target_func provided')
-    end
-
-    debug_log('CHECKING PRIORITIES (Spell-Specific -> Nested -> Type -> Mode -> Base):', 8)
-
-    -- PRIORITY 0: Try spell-specific set first (highest priority)
-    -- Example: sets.midcast["Stoneskin"], sets.midcast["Haste"]
-    if config.spell and config.spell.english then
-        debug_log('  [P0] Spell-Specific: ["' .. config.spell.english .. '"]')
-        if sets.midcast[config.spell.english] then
-            selected_set = sets.midcast[config.spell.english]
-            debug_log('  [OK] [P0] FOUND: Spell-specific set selected! (sets.midcast["' .. config.spell.english .. '"])', 158)
-        else
-            debug_set('["' .. config.spell.english .. '"]', false)
+        if is_debug_enabled() then
+            MessageMidcast.show_debug_step(3, 'Target', 'info', 'No target func')
         end
     end
 
-    -- PRIORITY 1: Try triple nested set (type + target + mode)
-    -- Example: sets.midcast['Elemental Magic'].Fire.MB.Acc
+    -- Show priorities header
+    if is_debug_enabled() then
+        MessageMidcast.show_priorities_header()
+    end
+
+    -- Helper function: Try to find a set at a given path
+    -- Returns: set, path_string, success
+    -- IMPORTANT: Only the FINAL destination needs to be a valid equipment set
+    -- Intermediate paths can be missing (no need to create empty tables)
+    local function try_path(...)
+        local path_parts = {...}
+        local current = sets.midcast
+        local path_str = 'sets.midcast'
+
+        for i, part in ipairs(path_parts) do
+            if not current or type(current) ~= 'table' then
+                return nil, nil, false
+            end
+
+            current = current[part]
+
+            -- Build path string for debug
+            if type(part) == 'string' and part:match('[^%w_]') then
+                path_str = path_str .. '["' .. part .. '"]'
+            else
+                path_str = path_str .. '.' .. tostring(part)
+            end
+
+            -- If current is nil at ANY level, path doesn't exist
+            if current == nil then
+                return nil, nil, false
+            end
+        end
+
+        -- Final destination must be a table (equipment set)
+        if current and type(current) == 'table' then
+            -- Additional validation: check if it looks like an equipment set
+            -- (has at least one valid slot or is empty table waiting for merging)
+            return current, path_str, true
+        end
+
+        return nil, nil, false
+    end
+
+    -- PRIORITY 0: Try exact spell name at root level (sets.midcast[spell_exact])
+    -- Example: sets.midcast["Refresh III"], sets.midcast["Haste II"]
+    if config.spell and config.spell.english then
+        local found_set, found_path, success = try_path(config.spell.english)
+        if success then
+            selected_set = found_set
+            selected_set_path = found_path
+            if is_debug_enabled() then
+                MessageMidcast.show_priority_check(0, '"' .. config.spell.english .. '"', true)
+            end
+        elseif is_debug_enabled() then
+            MessageMidcast.show_priority_check(0, '"' .. config.spell.english .. '"', false)
+        end
+    end
+
+    -- PRIORITY 1: EXHAUSTIVE SEARCH for spell base name with all combinations
+    -- Tries ALL possible paths: [spell].[target], [target].[spell], [skill].[spell].[target], etc.
+    if not selected_set and config.spell and config.spell.english then
+        local base_name = config.spell.english:gsub("%s+[IVX]+$", "")
+        local paths_to_try = {}
+
+        -- Build all possible paths based on what values we have
+        if target_value then
+            -- Root level combinations
+            table.insert(paths_to_try, {base_name, target_value})  -- sets.midcast.Refresh.others
+            table.insert(paths_to_try, {target_value, base_name})  -- sets.midcast.others.Refresh
+
+            -- Skill level combinations
+            if config.skill then
+                table.insert(paths_to_try, {config.skill, base_name, target_value})  -- sets.midcast['Enhancing Magic'].Refresh.others
+                table.insert(paths_to_try, {config.skill, target_value, base_name})  -- sets.midcast['Enhancing Magic'].others.Refresh
+            end
+        end
+
+        -- Try without target (for self-casts or as fallback)
+        if target_value ~= 'others' then
+            table.insert(paths_to_try, {base_name})  -- sets.midcast.Refresh
+            if config.skill then
+                table.insert(paths_to_try, {config.skill, base_name})  -- sets.midcast['Enhancing Magic'].Refresh
+            end
+        end
+
+        -- Try each path in order
+        for i, path_parts in ipairs(paths_to_try) do
+            local found_set, found_path, success = try_path(unpack(path_parts))
+            if success then
+                selected_set = found_set
+                selected_set_path = found_path
+                if is_debug_enabled() then
+                    MessageMidcast.show_priority_check(1, table.concat(path_parts, '.'), true)
+                end
+                break
+            elseif is_debug_enabled() and i == 1 then
+                MessageMidcast.show_priority_check(1, table.concat(path_parts, '.'), false)
+            end
+        end
+    end
+
+    -- PRIORITY 2: Try triple nested set (type + target + mode)
     if not selected_set and type_value and target_value and mode_value then
-        debug_log('  [P1] Triple Nested: [' .. type_value .. '][' .. target_value .. '][' .. mode_value .. ']')
         local triple_nested = base_set[type_value]
         if triple_nested and type(triple_nested) == 'table' then
             triple_nested = triple_nested[target_value]
             if triple_nested and type(triple_nested) == 'table' and triple_nested[mode_value] then
                 selected_set = triple_nested[mode_value]
-                debug_log('  [OK] [P1] FOUND: Triple nested set selected!', 158)
-            else
-                debug_set('[' .. type_value .. '][' .. target_value .. '][' .. mode_value .. ']', false)
+                selected_set_path = 'sets.midcast["' .. config.skill .. '"].' .. type_value .. '.' .. target_value .. '.' .. mode_value
+                if is_debug_enabled() then
+                    MessageMidcast.show_priority_check(2, type_value .. '.' .. target_value .. '.' .. mode_value, true)
+                end
             end
-        else
-            debug_set('[' .. type_value .. '][' .. target_value .. ']', false)
         end
     end
 
-    -- PRIORITY 2: Try double nested set (type + mode)
-    -- Example: sets.midcast['Enfeebling Magic'].mnd_potency.Valeur
+    -- PRIORITY 3: Try double nested set (type + mode)
     if not selected_set and type_value and mode_value then
-        debug_log('  [P2] Double Nested (type+mode): [' .. type_value .. '][' .. mode_value .. ']')
         local double_nested = base_set[type_value]
         if double_nested and type(double_nested) == 'table' and double_nested[mode_value] then
             selected_set = double_nested[mode_value]
-            debug_log('  [OK] [P2] FOUND: Type+Mode nested set selected!', 158)
-        else
-            debug_set('[' .. type_value .. '][' .. mode_value .. ']', false)
+            selected_set_path = 'sets.midcast["' .. config.skill .. '"].' .. type_value .. '.' .. mode_value
+            if is_debug_enabled() then
+                MessageMidcast.show_priority_check(3, type_value .. '.' .. mode_value, true)
+            end
         end
     end
 
-    -- PRIORITY 3: Try double nested set (target + mode)
-    -- Example: sets.midcast['Enhancing Magic'].self.Duration
+    -- PRIORITY 4: Try double nested set (target + mode)
     if not selected_set and target_value and mode_value then
-        debug_log('  [P3] Double Nested (target+mode): [' .. target_value .. '][' .. mode_value .. ']')
         local double_nested = base_set[target_value]
         if double_nested and type(double_nested) == 'table' and double_nested[mode_value] then
             selected_set = double_nested[mode_value]
-            debug_log('  [OK] [P3] FOUND: Target+Mode nested set selected!', 158)
-        else
-            debug_set('[' .. target_value .. '][' .. mode_value .. ']', false)
+            selected_set_path = 'sets.midcast["' .. config.skill .. '"].' .. target_value .. '.' .. mode_value
+            if is_debug_enabled() then
+                MessageMidcast.show_priority_check(4, target_value .. '.' .. mode_value, true)
+            end
         end
     end
 
-    -- PRIORITY 4: Try type-specific set
-    -- Example: sets.midcast['Enfeebling Magic'].mnd_potency
-    if not selected_set and type_value then
-        debug_log('  [P4] Type Set: [' .. type_value .. ']')
-        if base_set[type_value] then
-            selected_set = base_set[type_value]
-            debug_log('  [OK] [P4] FOUND: Type-specific set selected!', 158)
-        else
-            debug_set('[' .. type_value .. ']', false)
-        end
-    end
-
-    -- PRIORITY 5: Try target-specific set
-    -- Example: sets.midcast['Enhancing Magic'].self
+    -- PRIORITY 5: Try target-specific set (nested under skill)
+    -- Higher priority than type because target differentiation is more specific
+    -- Example: sets.midcast['Enhancing Magic'].others (for Composure/Empyrean bonus)
+    -- Also tries: sets.midcast.others (root level target)
     if not selected_set and target_value then
-        debug_log('  [P5] Target Set: [' .. target_value .. ']')
+        -- First try skill-based target
         if base_set[target_value] then
             selected_set = base_set[target_value]
-            debug_log('  [OK] [P5] FOUND: Target-specific set selected!', 158)
-        else
-            debug_set('[' .. target_value .. ']', false)
+            selected_set_path = 'sets.midcast["' .. config.skill .. '"].' .. target_value
+            if is_debug_enabled() then
+                MessageMidcast.show_priority_check(5, 'Target (' .. target_value .. ')', true)
+            end
+        -- Fallback to root-level target
+        elseif sets.midcast[target_value] then
+            selected_set = sets.midcast[target_value]
+            selected_set_path = 'sets.midcast.' .. target_value
+            if is_debug_enabled() then
+                MessageMidcast.show_priority_check(5, 'Target root (' .. target_value .. ')', true)
+            end
+        elseif is_debug_enabled() then
+            MessageMidcast.show_priority_check(5, 'Target (' .. target_value .. ')', false)
         end
     end
 
-    -- PRIORITY 6: Try mode-specific set
-    -- Example: sets.midcast['Enfeebling Magic'].Valeur
-    if not selected_set and mode_value then
-        debug_log('  [P6] Mode Set: [' .. mode_value .. ']')
+    -- PRIORITY 6: Try type-specific set (nested under skill)
+    -- Lower priority than target to allow target-specific sets to override
+    -- Example: sets.midcast['Enhancing Magic'].Refresh
+    if not selected_set and type_value then
+        if base_set[type_value] then
+            selected_set = base_set[type_value]
+            selected_set_path = 'sets.midcast["' .. config.skill .. '"].' .. type_value
+            if is_debug_enabled() then
+                MessageMidcast.show_priority_check(6, 'Type (' .. type_value .. ')', true)
+            end
+        end
+    end
 
+    -- PRIORITY 7: Try mode-specific set (nested under skill)
+    if not selected_set and mode_value then
         if base_set[mode_value] then
             selected_set = base_set[mode_value]
-            debug_log('  [OK] [P6] FOUND: Mode-specific set selected!', 158)
-        else
-            debug_set('[' .. mode_value .. ']', false)
+            selected_set_path = 'sets.midcast["' .. config.skill .. '"].' .. mode_value
+            if is_debug_enabled() then
+                MessageMidcast.show_priority_check(7, 'Mode (' .. mode_value .. ')', true)
+            end
         end
     end
 
-    -- PRIORITY 7: Final fallback - base set
-    -- Example: sets.midcast['Enfeebling Magic']
+    -- PRIORITY 8: Final fallback - base set (skill only)
     if not selected_set then
-        debug_log('  [P7] Base Set: (fallback)', 206)
         selected_set = base_set
-        debug_log('  [OK] [P7] FALLBACK: Base set selected!', 206)
+        selected_set_path = 'sets.midcast["' .. config.skill .. '"]'
     end
 
     -- Equip final set
     if selected_set then
-        debug_log('[SUCCESS] EQUIPPING SET (success)', 158)
         equip(selected_set)
 
-        -- Show equipped items if debug
+        -- Show result and equipment list if debug
         if is_debug_enabled() then
-            debug_log('Equipped items:', 8)
-            for slot, item in pairs(selected_set) do
-                if type(item) == 'table' and item.name then
-                    debug_log('    * ' .. slot .. ': ' .. item.name, 160)
-                elseif type(item) == 'string' then
-                    debug_log('    * ' .. slot .. ': ' .. item, 160)
+            -- Determine set type for result message
+            local is_fallback = (selected_set == base_set)
+
+            MessageMidcast.show_result_header()
+            MessageMidcast.show_result(selected_set_path, is_fallback)
+
+            -- Define slot order (FFXI standard order)
+            local slot_order = {
+                'main', 'sub', 'range', 'ammo',
+                'head', 'neck', 'ear1', 'ear2',
+                'body', 'hands', 'ring1', 'ring2',
+                'back', 'waist', 'legs', 'feet'
+            }
+
+            -- Display items in slot order (1 per line)
+            for _, slot in ipairs(slot_order) do
+                if selected_set[slot] then
+                    local item = selected_set[slot]
+                    local item_name = (type(item) == 'table' and item.name) or (type(item) == 'string' and item) or nil
+                    if item_name then
+                        MessageMidcast.show_equipment_line(slot, item_name)
+                    end
                 end
             end
+
+            MessageMidcast.show_result_header()
         end
 
         return true
     end
 
-    debug_log('[FAIL] FAILED: No set to equip (should never happen!)', 167)
     return false
 end
 

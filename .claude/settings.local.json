@@ -158,7 +158,8 @@
       "Bash(nul)",
       "Bash(bc)",
       "Bash(then mv \"$file\" old/)",
-      "Bash(//lua reload gearswap)"
+      "Bash(//lua reload gearswap)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": [],

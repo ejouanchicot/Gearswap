@@ -221,7 +221,9 @@ end
 
 --- Show message statistics
 function MessageRenderer.show_stats()
-    add_to_chat(158, "=== Message System Statistics ===")
+    add_to_chat(160, "-----------------------------------------------------")
+    add_to_chat(158, "[Messages] System Statistics")
+    add_to_chat(160, "-----------------------------------------------------")
     add_to_chat(122, string.format("Total messages: %d", _stats.total_sent))
     add_to_chat(122, string.format("Errors: %d", _stats.errors))
 
@@ -237,6 +239,7 @@ function MessageRenderer.show_stats()
         local item = sorted_ns[i]
         add_to_chat(1, string.format("  %s: %d", item.ns, item.count))
     end
+    add_to_chat(160, "-----------------------------------------------------")
 end
 
 --- Reset statistics

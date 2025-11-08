@@ -20,11 +20,13 @@ local M = require('shared/utils/messages/api/messages')
 --- Display equipment check header
 --- @param job_name string Job name (WAR, RDM, etc.)
 function MessageEquipment.show_check_header(job_name)
-    local separator = string.rep("=", 50)
+    local gray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 50)
+    local separator = string.rep("=", 74)
 
-    M.send('EQUIPMENT', 'check_header_separator', {separator = separator})
-    M.send('EQUIPMENT', 'check_header_title', {job_name = job_name:upper()})
-    M.send('EQUIPMENT', 'check_header_separator', {separator = separator})
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, yellow .. "[EQUIPMENT CHECK] " .. job_name:upper())
+    add_to_chat(121, gray .. separator)
 end
 
 --- Display a valid set (all items available)
@@ -65,27 +67,28 @@ end
 --- @param storage_count number Items found in storage
 --- @param missing_count number Items not found
 function MessageEquipment.show_check_summary(total_sets, valid_sets, storage_count, missing_count)
-    local separator = string.rep("=", 50)
+    local gray = string.char(0x1F, 160)
+    local green = string.char(0x1F, 158)
+    local yellow = string.char(0x1F, 50)
+    local red = string.char(0x1F, 167)
+    local separator = string.rep("=", 74)
 
-    M.send('EQUIPMENT', 'summary_separator', {separator = separator})
+    add_to_chat(121, gray .. separator)
 
     -- Valid sets
-    M.send('EQUIPMENT', 'summary_valid_sets', {
-        valid_sets = tostring(valid_sets),
-        total_sets = tostring(total_sets)
-    })
+    add_to_chat(121, green .. "Valid Sets: " .. yellow .. valid_sets .. gray .. "/" .. yellow .. total_sets)
 
     -- Storage items
     if storage_count > 0 then
-        M.send('EQUIPMENT', 'summary_storage', {storage_count = tostring(storage_count)})
+        add_to_chat(121, yellow .. "Items in Storage: " .. red .. storage_count)
     end
 
     -- Missing items
     if missing_count > 0 then
-        M.send('EQUIPMENT', 'summary_missing', {missing_count = tostring(missing_count)})
+        add_to_chat(121, red .. "Missing Items: " .. red .. missing_count)
     end
 
-    M.send('EQUIPMENT', 'summary_separator', {separator = separator})
+    add_to_chat(121, gray .. separator)
 end
 
 --- Display error message when sets cannot be loaded

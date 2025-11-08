@@ -43,18 +43,21 @@ end
 --- Show entity header (JA/Spell/WS)
 --- @param header_text string Header title (e.g., "Job Ability Information")
 function MessageInfo.show_entity_header(header_text)
-    local c_header = color(MessageColors.JOB_TAG)
-    local c_reset = color(1)
-    add_to_chat(CHAT_DEFAULT, c_header .. "=== " .. header_text .. " ===" .. c_reset)
+    local gray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 50)
+    local separator = string.rep("=", 74)
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, yellow .. header_text)
+    add_to_chat(121, gray .. separator)
 end
 
 --- Show entity name
 --- @param name string Entity name
---- @param name_color number Color code for name
+--- @param name_color number Color code for name (JA=yellow, Spell=cyan, WS=yellow)
 function MessageInfo.show_entity_name(name, name_color)
-    local c_name = color(name_color)
-    local c_reset = color(1)
-    add_to_chat(CHAT_DEFAULT, c_name .. "Name: " .. c_reset .. name)
+    local gray = string.char(0x1F, 160)
+    local entity_color = string.char(0x1F, name_color)
+    add_to_chat(121, gray .. "Name: " .. entity_color .. name)
 end
 
 --- Show entity field (key-value pair)
@@ -65,7 +68,9 @@ end
 
 --- Show entity footer separator
 function MessageInfo.show_entity_footer()
-    add_to_chat(CHAT_DEFAULT, color(MessageColors.SEPARATOR) .. string.rep("=", 40))
+    local gray = string.char(0x1F, 160)
+    local separator = string.rep("=", 74)
+    add_to_chat(121, gray .. separator)
 end
 
 ---============================================================================

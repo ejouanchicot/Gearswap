@@ -15,17 +15,22 @@ return {
     ---========================================================================
 
     testcolors_header = {
-        template = "{purple}========================================\n{purple}FFXI Color Code Test (001-255)\n{purple}========================================",
+        template = "{header}",  -- Pre-built with inline color codes
         color = 1
     },
 
     testcolors_sample = {
-        template = "{blue}{sample}",
+        template = "{sample}",  -- No color tag - sample already contains inline color code
+        color = 1
+    },
+
+    testcolors_separator = {
+        template = "{separator}",  -- Pre-built with inline color codes
         color = 1
     },
 
     testcolors_footer = {
-        template = "{purple}========================================\n{purple}Color test complete!\n{purple}========================================",
+        template = "{footer}",  -- Pre-built with inline color codes
         color = 1
     },
 
@@ -209,7 +214,7 @@ return {
     },
 
     jamsg_current_mode = {
-        template = "{blue}Mode: {mode}\n \n{blue}Available modes:\n{blue}  full   - Show name + description\n{blue}  on     - Show name only\n{blue}  off    - Disable all messages\n \n{blue}Usage: //gs c jamsg <full|on|off>\n{purple}========================================",
+        template = "{green}Mode: {mode}\n \n{cyan}Available modes:\n{yellow}  full   {gray}- Show name + description\n{yellow}  on     {gray}- Show name only\n{yellow}  off    {gray}- Disable all messages\n \n{cyan}Usage: {white}//gs c jamsg <full|on|off>\n{purple}========================================",
         color = 1
     },
 
@@ -219,17 +224,17 @@ return {
     },
 
     jamsg_mode_changed_full = {
-        template = "{green}[JA_MSG] Display mode changed to: full\n \n{blue}Example output:\n{blue}  [DNC/SAM] Haste Samba activated! Attack speed +10%",
+        template = "{green}[JA_MSG] Display mode changed to: {yellow}full\n \n{cyan}Example output:\n{lightblue}  [DNC/SAM] {yellow}Haste Samba {green}activated! {gray}Attack speed +10%",
         color = 1
     },
 
     jamsg_mode_changed_on = {
-        template = "{green}[JA_MSG] Display mode changed to: on\n \n{blue}Example output:\n{blue}  [DNC/SAM] Haste Samba activated!",
+        template = "{green}[JA_MSG] Display mode changed to: {yellow}on\n \n{cyan}Example output:\n{lightblue}  [DNC/SAM] {yellow}Haste Samba {green}activated!",
         color = 1
     },
 
     jamsg_mode_changed_off = {
-        template = "{green}[JA_MSG] Display mode changed to: off\n \n{blue}Example output:\n{blue}  (no message displayed)",
+        template = "{green}[JA_MSG] Display mode changed to: {yellow}off\n \n{cyan}Example output:\n{gray}  (no message displayed)",
         color = 1
     },
 
@@ -253,7 +258,7 @@ return {
     },
 
     spellmsg_current_mode = {
-        template = "{blue}Mode: {mode}\n \n{blue}Available modes:\n{blue}  full   - Show name + description\n{blue}  on     - Show name only\n{blue}  off    - Disable all messages\n \n{blue}Note: Controls ALL spell types (Enhancing,\n{blue}      Dark, Elemental, Healing, Divine, BRD,\n{blue}      GEO, BLU, SMN, etc.) EXCEPT Enfeebling\n \n{blue}Usage: //gs c spellmsg <full|on|off>\n{purple}========================================",
+        template = "{green}Mode: {mode}\n \n{cyan}Available modes:\n{yellow}  full   {gray}- Show name + description\n{yellow}  on     {gray}- Show name only\n{yellow}  off    {gray}- Disable all messages\n \n{orange}Note: Controls ALL spell types (Enhancing,\n{orange}      Dark, Elemental, Healing, Divine, BRD,\n{orange}      GEO, BLU, SMN, etc.) EXCEPT Enfeebling\n \n{cyan}Usage: {white}//gs c spellmsg <full|on|off>\n{purple}========================================",
         color = 1
     },
 
@@ -263,17 +268,17 @@ return {
     },
 
     spellmsg_mode_changed_full = {
-        template = "{green}[SPELL_MSG] Display mode changed to: full\n \n{blue}Example output:\n{blue}  [GEO] Aspir -> Absorbs MP (no undead).\n{blue}  [BLM] Fire III -> Deals fire damage.",
+        template = "{green}[SPELL_MSG] Display mode changed to: {yellow}full\n \n{cyan}Example output:\n{lightblue}  [GEO] {cyan}Aspir {gray}-> Absorbs MP (no undead).\n{lightblue}  [BLM] {cyan}Fire III {gray}-> Deals fire damage.",
         color = 1
     },
 
     spellmsg_mode_changed_on = {
-        template = "{green}[SPELL_MSG] Display mode changed to: on\n \n{blue}Example output:\n{blue}  [GEO] Aspir\n{blue}  [BLM] Fire III",
+        template = "{green}[SPELL_MSG] Display mode changed to: {yellow}on\n \n{cyan}Example output:\n{lightblue}  [GEO] {cyan}Aspir\n{lightblue}  [BLM] {cyan}Fire III",
         color = 1
     },
 
     spellmsg_mode_changed_off = {
-        template = "{green}[SPELL_MSG] Display mode changed to: off\n \n{blue}Example output:\n{blue}  (no message displayed)",
+        template = "{green}[SPELL_MSG] Display mode changed to: {yellow}off\n \n{cyan}Example output:\n{gray}  (no message displayed)",
         color = 1
     },
 

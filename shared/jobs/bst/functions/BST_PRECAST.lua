@@ -215,11 +215,23 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- Equip precast set for Ready recast reduction (Charmer's Merlin, Gleti's Breeches)
     -- Then store category in spell object for midcast gear selection
     if is_ready_move and ready_move_category then
-        -- ÉQUIPER PRECAST SET SIC/READY
-        if sets.precast.JA['Ready'] then
-            equip(sets.precast.JA['Ready'])
-        elseif sets.precast.JA['Sic'] then
-            equip(sets.precast.JA['Sic'])
+        -- Check QuickReady state FIRST to select correct set
+        if state.QuickReady and state.QuickReady.value == 'On' then
+            -- QuickReady ON: Use Quick sets with Charmer's Merlin
+            if sets.precast.JA.ReadyQuick then
+                equip(sets.precast.JA.ReadyQuick)
+                add_to_chat(158, "[BST] QuickReady ON: Using Ready Quick set (Charmer's Merlin)")
+            elseif sets.precast.JA.SicQuick then
+                equip(sets.precast.JA.SicQuick)
+                add_to_chat(158, "[BST] QuickReady ON: Using Sic Quick set (Charmer's Merlin)")
+            end
+        else
+            -- QuickReady OFF: Use default sets (no Charmer's Merlin)
+            if sets.precast.JA['Ready'] then
+                equip(sets.precast.JA['Ready'])
+            elseif sets.precast.JA['Sic'] then
+                equip(sets.precast.JA['Sic'])
+            end
         end
 
         -- Store category for midcast
@@ -227,7 +239,7 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 
     -- ==========================================================================
-    -- QUICK READY MODE - SET SELECTION
+    -- QUICK READY MODE - SET SELECTION (for generic Ready/Sic commands only)
     -- ==========================================================================
     -- Modify the set name BEFORE Mote equips gear
     -- QuickReady ON: Use SicQuick/ReadyQuick sets (with Charmer's Merlin)

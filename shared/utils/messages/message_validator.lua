@@ -253,10 +253,10 @@ function MessageValidator.run_all_tests()
     print("==============================================")
 
     if test_results.failed == 0 then
-        print(string.format("✅ ALL TESTS PASSED! (%d/%d)",
+        print(string.format("[OK] ALL TESTS PASSED! (%d/%d)",
             test_results.passed, test_results.total))
         print("")
-        print("Message system is valid and production-ready! 🎉")
+        print("Message system is valid and production-ready!")
 
         -- Auto-export results
         MessageValidator.export_json()
@@ -264,7 +264,7 @@ function MessageValidator.run_all_tests()
 
         return true
     else
-        print(string.format("❌ TESTS FAILED: %d/%d",
+        print(string.format("[FAIL] TESTS FAILED: %d/%d",
             test_results.failed, test_results.total))
         print("")
         print("Errors found:")
@@ -346,7 +346,7 @@ function MessageValidator.export_json(filepath)
     file:close()
 
     print("")
-    print("✅ Results exported to: " .. output_path)
+    print("[OK] Results exported to: " .. output_path)
     return true
 end
 
@@ -378,11 +378,11 @@ function MessageValidator.export_txt(filepath)
     table.insert(lines, "")
 
     if test_results.failed == 0 then
-        table.insert(lines, "STATUS: ✅ ALL TESTS PASSED")
+        table.insert(lines, "STATUS: [OK] ALL TESTS PASSED")
         table.insert(lines, "")
         table.insert(lines, "Message system is valid and production-ready!")
     else
-        table.insert(lines, "STATUS: ❌ TESTS FAILED")
+        table.insert(lines, "STATUS: [FAIL] TESTS FAILED")
         table.insert(lines, "")
         table.insert(lines, "ERRORS:")
         table.insert(lines, "-------")
@@ -411,7 +411,7 @@ function MessageValidator.export_txt(filepath)
     file:close()
 
     print("")
-    print("✅ Results exported to: " .. output_path)
+    print("[OK] Results exported to: " .. output_path)
     return true
 end
 

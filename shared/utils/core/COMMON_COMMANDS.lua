@@ -146,9 +146,17 @@ end
 function CommonCommands.handle_testcolors()
     MessageCommands.show_color_test_header()
 
-    -- Test all codes from 1 to 255
-    for i = 1, 255 do
-        MessageCommands.show_color_sample(i)
+    -- Test all codes from 1 to 255 (14 per line for compact display)
+    -- FFXI chat limit: 74 chars per line
+    -- Format: "001 | 002 | ... | 014" = ~68 chars total (under 74 char limit)
+    -- Each entry has its own inline color code to display its actual color
+    local row_count = 0
+    for i = 1, 255, 14 do
+        if row_count > 0 then
+            MessageCommands.show_color_test_separator()
+        end
+        MessageCommands.show_color_sample_row(i, i+1, i+2, i+3, i+4, i+5, i+6, i+7, i+8, i+9, i+10, i+11, i+12, i+13)
+        row_count = row_count + 1
     end
 
     MessageCommands.show_color_test_footer()
@@ -172,17 +180,8 @@ function CommonCommands.handle_detectregion()
     if windower and windower.ffxi and windower.ffxi.get_info then
         local info = windower.ffxi.get_info()
         if info then
-            MessageCommands.show_windower_info_header()
-
-            -- Dump all fields to find differences
+            -- Check for region indicators (no verbose output)
             for key, value in pairs(info) do
-                local value_str = tostring(value)
-                if type(value) == "table" then
-                    value_str = "table"
-                end
-                MessageCommands.show_windower_info_field(key, value_str)
-
-                -- Check for region indicators
                 local key_lower = tostring(key):lower()
                 local val_lower = tostring(value):lower()
 
@@ -201,9 +200,7 @@ function CommonCommands.handle_detectregion()
         end
     end
 
-    -- Display results
-    MessageCommands.show_detection_results_header()
-
+    -- Display results directly (no intermediate info section)
     if detected_region ~= "UNKNOWN" then
         MessageCommands.show_region_detected(detected_region, detection_method, orange_code)
     else

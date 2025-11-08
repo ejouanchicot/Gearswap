@@ -30,49 +30,98 @@ function MessageMidcast.show_debug_disabled()
 end
 
 ---============================================================================
---- DEBUG LOGGING MESSAGES
+--- DEBUG HEADER (spell + skill + target)
 ---============================================================================
 
---- Show debug log message
---- @param message string Debug message
---- @param color number|nil Chat color (ignored in new system, kept for compatibility)
-function MessageMidcast.show_debug_log(message, color)
-    M.send('MIDCAST', 'debug_log', {message = message})
+--- Show debug header with spell info
+--- @param spell string Spell name
+--- @param skill string Skill name
+--- @param target string Target name
+function MessageMidcast.show_debug_header(spell, skill, target)
+    M.send('MIDCAST', 'debug_header_separator')
+    M.send('MIDCAST', 'debug_header_spell', {
+        spell = spell,
+        skill = skill,
+        target = target or "Unknown"
+    })
+    M.send('MIDCAST', 'debug_header_separator')
 end
 
---- Show debug header
---- @param message string Header message
-function MessageMidcast.show_debug_header(message)
-    M.send('MIDCAST', 'debug_header_separator')
-    M.send('MIDCAST', 'debug_header_title', {message = message})
-    M.send('MIDCAST', 'debug_header_separator')
-end
+---============================================================================
+--- DEBUG STEPS (compact format with colors)
+---============================================================================
 
---- Show debug step
+--- Show debug step with status (OK/WARN/FAIL/INFO)
 --- @param step number Step number
---- @param message string Step message
---- @param result string|nil Result (OK/FAIL/WARN)
-function MessageMidcast.show_debug_step(step, message, result)
-    if result then
-        M.send('MIDCAST', 'debug_step_result', {
-            step = tostring(step),
-            message = message,
-            result = result
+--- @param label string Step label (e.g., "Mode", "Type (DB)")
+--- @param status string Status type: "ok", "warn", "fail", "info"
+--- @param value string Value to display
+function MessageMidcast.show_debug_step(step, label, status, value)
+    local template_key = 'debug_step_' .. status:lower()
+    M.send('MIDCAST', template_key, {
+        step = tostring(step),
+        label = label,
+        value = value
+    })
+end
+
+---============================================================================
+--- DEBUG PRIORITIES (P0-P5 checks)
+---============================================================================
+
+--- Show priorities header
+function MessageMidcast.show_priorities_header()
+    M.send('MIDCAST', 'debug_priorities_header')
+end
+
+--- Show priority check result
+--- @param priority number Priority level (0-5)
+--- @param label string Priority label (e.g., "Haste II", "Target (self)")
+--- @param found boolean Whether the set was found
+function MessageMidcast.show_priority_check(priority, label, found)
+    local template_key = found and 'debug_priority_found' or 'debug_priority_missing'
+    M.send('MIDCAST', template_key, {
+        priority = tostring(priority),
+        label = label
+    })
+end
+
+---============================================================================
+--- DEBUG RESULT (final equipment)
+---============================================================================
+
+--- Show result header
+function MessageMidcast.show_result_header()
+    M.send('MIDCAST', 'debug_result_header')
+end
+
+--- Show result success
+--- @param set_type string Set type (e.g., "self", "Enhancing Magic")
+--- @param is_fallback boolean Whether this is a fallback set
+function MessageMidcast.show_result(set_type, is_fallback)
+    local template_key = is_fallback and 'debug_result_fallback' or 'debug_result_success'
+    M.send('MIDCAST', template_key, {set_type = set_type})
+end
+
+--- Show equipment line (2 items per line)
+--- @param slot1 string First slot name
+--- @param item1 string First item name
+--- @param slot2 string|nil Second slot name
+--- @param item2 string|nil Second item name
+function MessageMidcast.show_equipment_line(slot1, item1, slot2, item2)
+    if slot2 and item2 then
+        M.send('MIDCAST', 'debug_equipment_line', {
+            slot1 = slot1,
+            item1 = item1,
+            slot2 = slot2,
+            item2 = item2
         })
     else
-        M.send('MIDCAST', 'debug_step', {
-            step = tostring(step),
-            message = message
+        M.send('MIDCAST', 'debug_equipment_single', {
+            slot = slot1,
+            item = item1
         })
     end
-end
-
---- Show set validation result
---- @param set_name string Set name/path
---- @param exists boolean Whether set exists
-function MessageMidcast.show_debug_set(set_name, exists)
-    local template_key = exists and 'debug_set_exists' or 'debug_set_missing'
-    M.send('MIDCAST', template_key, {set_name = set_name})
 end
 
 ---============================================================================

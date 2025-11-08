@@ -36,6 +36,7 @@ local COLOR_CODES = {
     lightblue = string.char(0x1F, 207), -- Light Blue (job tags)
     white = string.char(0x1F, 1),     -- White (spells/abilities)
     gray = string.char(0x1F, 160),    -- Gray (descriptions/arrows)
+    darkgray = string.char(0x1F, 8),  -- Dark Gray (debug headers)
 
     -- Status colors
     green = string.char(0x1F, 158),   -- Green (success/buffs)
@@ -50,7 +51,7 @@ local COLOR_CODES = {
     jobtag = string.char(0x1F, 207),  -- Same as lightblue (job tags)
     separatorcolor = string.char(0x1F, 160), -- Same as gray (separators) - renamed to avoid conflict
     spellcolor = string.char(0x1F, 13),    -- Same as cyan (spells) - renamed to avoid conflict
-    itemcolor = string.char(0x1F, 158),    -- Same as green (items) - renamed to avoid conflict
+    itemcolor = string.char(0x1F, 63),     -- Pale yellow (items) - code 063
     warningcolor = string.char(0x1F, 57),  -- Same as orange (warnings) - renamed to avoid conflict
 }
 

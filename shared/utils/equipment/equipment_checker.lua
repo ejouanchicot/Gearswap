@@ -209,6 +209,15 @@ local function check_item_status(item_name, item_cache)
         }
     end
 
+    -- Skip "empty" - this is a placeholder for intentionally empty slots
+    if item_name:lower() == 'empty' then
+        return {
+            available = true,
+            in_storage = false,
+            bag_name = 'empty'
+        }
+    end
+
     local search_name = item_name:lower()
     local status = item_cache[search_name]
 

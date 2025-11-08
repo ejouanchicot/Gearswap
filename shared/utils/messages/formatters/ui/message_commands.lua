@@ -18,7 +18,12 @@ local M = require('shared/utils/messages/api/messages')
 ---============================================================================
 
 function MessageCommands.show_color_test_header()
-    M.send('COMMANDS', 'testcolors_header')
+    local gray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 50)
+    local separator = string.rep("=", 74)
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, yellow .. "FFXI Color Code Test (001-255)")
+    add_to_chat(121, gray .. separator)
 end
 
 function MessageCommands.show_color_sample(code)
@@ -27,8 +32,38 @@ function MessageCommands.show_color_sample(code)
     M.send('COMMANDS', 'testcolors_sample', {sample = sample_text})
 end
 
+function MessageCommands.show_color_sample_row(code1, code2, code3, code4, code5, code6, code7, code8, code9, code10, code11, code12, code13, code14)
+    -- Build 14 samples per line (compact format for FFXI chat)
+    -- Each sample: "001" = 3 chars, 14 samples + separators = ~68 chars total (under 74 char limit)
+    local samples = {}
+    local gray_separator = string.char(0x1F, 8) .. " | "  -- Gray color code + pipe separator
+
+    for _, code in ipairs({code1, code2, code3, code4, code5, code6, code7, code8, code9, code10, code11, code12, code13, code14}) do
+        if code and code <= 255 and code ~= 253 then  -- Skip 253 (known FFXI unsupported code)
+            -- IMPORTANT: Each entry needs its own color code inline
+            local color_code = string.char(0x1F, code)
+            local sample = color_code .. string.format("%03d", code)
+            table.insert(samples, sample)
+        end
+    end
+
+    -- Join with gray pipe separator between entries
+    local row_text = table.concat(samples, gray_separator)
+    M.send('COMMANDS', 'testcolors_sample', {sample = row_text})
+end
+
+function MessageCommands.show_color_test_separator()
+    local gray = string.char(0x1F, 160)
+    add_to_chat(121, gray .. string.rep("=", 74))
+end
+
 function MessageCommands.show_color_test_footer()
-    M.send('COMMANDS', 'testcolors_footer')
+    local gray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 50)
+    local separator = string.rep("=", 74)
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, yellow .. "Color test complete!")
+    add_to_chat(121, gray .. separator)
 end
 
 ---============================================================================
@@ -36,7 +71,12 @@ end
 ---============================================================================
 
 function MessageCommands.show_detect_region_header()
-    M.send('COMMANDS', 'detectregion_header')
+    local gray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 50)
+    local separator = string.rep("=", 74)
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, yellow .. "FFXI Region Auto-Detection")
+    add_to_chat(121, gray .. separator)
 end
 
 function MessageCommands.show_windower_info_header()
@@ -48,7 +88,13 @@ function MessageCommands.show_windower_info_field(key, value)
 end
 
 function MessageCommands.show_detection_results_header()
-    M.send('COMMANDS', 'detection_results_header')
+    local gray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 50)
+    local separator = string.rep("=", 74)
+    add_to_chat(121, " ")  -- Blank line
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, yellow .. "DETECTION RESULTS:")
+    add_to_chat(121, gray .. separator)
 end
 
 function MessageCommands.show_region_detected(region, method, orange_code)
@@ -60,11 +106,32 @@ function MessageCommands.show_region_detected(region, method, orange_code)
 end
 
 function MessageCommands.show_region_detection_failed()
-    M.send('COMMANDS', 'region_detection_failed')
+    local red = string.char(0x1F, 167)
+    local blue = string.char(0x1F, 122)
+    local orange = string.char(0x1F, 57)
+    local yellow = string.char(0x1F, 50)
+    local rose = string.char(0x1F, 2)
+    local white = string.char(0x1F, 1)
+
+    -- Use channel 121 with inline color codes
+    add_to_chat(121, red .. "Region: AUTO-DETECTION FAILED")
+    add_to_chat(121, " ")
+    add_to_chat(121, yellow .. "MANUAL TEST:")
+    add_to_chat(121, blue .. "Look at the line below:")
+    add_to_chat(121, orange .. "Code 057" .. white .. " SAMPLE - Is this " .. orange .. "ORANGE" .. white .. " or " .. white .. "WHITE" .. white .. "?")
+    add_to_chat(121, " ")
+    add_to_chat(121, blue .. "If " .. orange .. "ORANGE" .. blue .. " = US (use code " .. orange .. "057" .. blue .. ")")
+    add_to_chat(121, blue .. "If WHITE/NO COLOR = EU (use code " .. rose .. "002 - Rose" .. blue .. ")")
+    add_to_chat(121, " ")
+    add_to_chat(121, blue .. "To set manually:")
+    add_to_chat(121, blue .. "  //gs c setregion us")
+    add_to_chat(121, blue .. "  //gs c setregion eu")
 end
 
 function MessageCommands.show_detect_region_footer()
-    M.send('COMMANDS', 'detectregion_footer')
+    local gray = string.char(0x1F, 160)
+    local separator = string.rep("=", 74)
+    add_to_chat(121, gray .. separator)
 end
 
 function MessageCommands.show_region_saved()
@@ -184,11 +251,31 @@ function MessageCommands.show_jamsg_config_error()
 end
 
 function MessageCommands.show_jamsg_status_header()
-    M.send('COMMANDS', 'jamsg_status_header')
+    local gray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 50)
+    local separator = string.rep("=", 74)
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, yellow .. "[JA_MSG] Current Display Mode")
+    add_to_chat(121, gray .. separator)
 end
 
 function MessageCommands.show_jamsg_current_mode(mode)
-    M.send('COMMANDS', 'jamsg_current_mode', {mode = mode})
+    local gray = string.char(0x1F, 160)
+    local green = string.char(0x1F, 158)
+    local cyan = string.char(0x1F, 122)
+    local yellow = string.char(0x1F, 50)
+    local white = string.char(0x1F, 1)
+    local separator = string.rep("=", 74)
+
+    add_to_chat(121, green .. "Mode: " .. yellow .. mode)
+    add_to_chat(121, " ")
+    add_to_chat(121, cyan .. "Available modes:")
+    add_to_chat(121, yellow .. "  full" .. gray .. "(Show name + description)")
+    add_to_chat(121, yellow .. "  on" .. gray .. "(Show name only)")
+    add_to_chat(121, yellow .. "  off" .. gray .. "(Disable all messages)")
+    add_to_chat(121, " ")
+    add_to_chat(121, cyan .. "Usage: " .. white .. "//gs c jamsg <full | on | off>")
+    add_to_chat(121, gray .. separator)
 end
 
 function MessageCommands.show_jamsg_invalid_mode(mode)
@@ -214,11 +301,31 @@ function MessageCommands.show_spellmsg_config_error()
 end
 
 function MessageCommands.show_spellmsg_status_header()
-    M.send('COMMANDS', 'spellmsg_status_header')
+    local gray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 50)
+    local separator = string.rep("=", 74)
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, yellow .. "[SPELL_MSG] Current Display Mode")
+    add_to_chat(121, gray .. separator)
 end
 
 function MessageCommands.show_spellmsg_current_mode(mode)
-    M.send('COMMANDS', 'spellmsg_current_mode', {mode = mode})
+    local gray = string.char(0x1F, 160)
+    local green = string.char(0x1F, 158)
+    local cyan = string.char(0x1F, 122)
+    local yellow = string.char(0x1F, 50)
+    local white = string.char(0x1F, 1)
+    local separator = string.rep("=", 74)
+
+    add_to_chat(121, green .. "Mode: " .. yellow .. mode)
+    add_to_chat(121, " ")
+    add_to_chat(121, cyan .. "Available modes:")
+    add_to_chat(121, yellow .. "  full" .. gray .. "(Show name + description)")
+    add_to_chat(121, yellow .. "  on" .. gray .. "(Show name only)")
+    add_to_chat(121, yellow .. "  off" .. gray .. "(Disable all messages)")
+    add_to_chat(121, " ")
+    add_to_chat(121, cyan .. "Usage: " .. white .. "//gs c spellmsg <full | on | off>")
+    add_to_chat(121, gray .. separator)
 end
 
 function MessageCommands.show_spellmsg_invalid_mode(mode)

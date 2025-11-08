@@ -36,7 +36,14 @@ end
 --- Show watchdog status
 --- @param stats table Statistics from MidcastWatchdog.get_stats()
 function MessageWatchdog.show_status(stats)
-    M.send('WATCHDOG', 'status_header')
+    -- Header with separators (like testcolors/detectregion/info)
+    local gray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 50)
+    local separator = string.rep("=", 74)
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, yellow .. "Midcast Watchdog Status")
+    add_to_chat(121, gray .. separator)
+
     M.send('WATCHDOG', 'status_enabled', {enabled = tostring(stats.enabled)})
     M.send('WATCHDOG', 'status_debug', {debug = tostring(stats.debug)})
     M.send('WATCHDOG', 'status_buffer', {buffer = string.format("%.1f", stats.buffer)})
@@ -61,7 +68,14 @@ end
 --- Show detailed watchdog statistics
 --- @param stats table Statistics from MidcastWatchdog.get_stats()
 function MessageWatchdog.show_stats(stats)
-    M.send('WATCHDOG', 'stats_header')
+    -- Header with separators (like testcolors/detectregion/info)
+    local gray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 50)
+    local separator = string.rep("=", 74)
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, yellow .. "Midcast Watchdog Statistics")
+    add_to_chat(121, gray .. separator)
+
     M.send('WATCHDOG', 'status_enabled', {enabled = tostring(stats.enabled)})
     M.send('WATCHDOG', 'status_debug', {debug = tostring(stats.debug)})
     M.send('WATCHDOG', 'status_buffer', {buffer = string.format("%.1f", stats.buffer)})
