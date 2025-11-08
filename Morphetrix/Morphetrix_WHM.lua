@@ -14,7 +14,7 @@
 ---   • UI + Keybind system
 ---
 --- Architecture:
----   Main File → whm_functions.lua (façade) → 12 Hooks + Optional Logic Modules
+---   Main File >> whm_functions.lua (façade) >> 12 Hooks + Optional Logic Modules
 ---
 --- Modules:
 ---   • 12 Hooks: PRECAST, MIDCAST, AFTERCAST, IDLE, ENGAGED, STATUS, BUFFS,

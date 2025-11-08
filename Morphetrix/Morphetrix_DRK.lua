@@ -15,7 +15,7 @@
 ---   • UI + Keybind system
 ---
 --- Architecture:
----   Main File → drk_functions.lua (façade) → 11 Hooks + Logic Modules
+---   Main File >> drk_functions.lua (façade) >> 11 Hooks + Logic Modules
 ---
 --- Modules:
 ---   • 11 Hooks: PRECAST, MIDCAST, AFTERCAST, IDLE, ENGAGED, STATUS, BUFFS,

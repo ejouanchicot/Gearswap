@@ -21,7 +21,7 @@
 ---   - Comprehensive equipment set organization
 ---
 --- Architecture Overview:
----   Main File (this) → cor_functions.lua → Specialized Modules
+---   Main File (this) >> cor_functions.lua >> Specialized Modules
 ---
 --- Module Organization:
 ---   ├── functions/cor_functions.lua    [Facade Loader]

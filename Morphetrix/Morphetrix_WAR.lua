@@ -18,7 +18,7 @@
 ---   • Clean separation of concerns
 ---
 --- Architecture Overview:
----   Main File (this) → war_functions.lua → Specialized Modules
+---   Main File (this) >> war_functions.lua >> Specialized Modules
 ---
 --- Module Organization:
 ---   ├── functions/war_functions.lua    [Facade Loader]

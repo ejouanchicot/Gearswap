@@ -20,7 +20,7 @@
 ---   - Full Radial/Ecliptic Attrition tracking
 ---
 --- Architecture Overview:
----   Main File (this) → geo_functions.lua → Specialized Modules
+---   Main File (this) >> geo_functions.lua >> Specialized Modules
 ---
 --- Module Organization:
 ---   ├── functions/geo_functions.lua    [Facade Loader]
@@ -72,14 +72,6 @@ local region_success, RegionConfig = pcall(require, 'Morphetrix/config/REGION_CO
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig
 end
-
-_G.ui_display_config = {
-    show_header = (UIConfig.show_header == nil) and true or UIConfig.show_header,
-    show_legend = (UIConfig.show_legend == nil) and true or UIConfig.show_legend,
-    show_column_headers = (UIConfig.show_column_headers == nil) and true or UIConfig.show_column_headers,
-    show_footer = (UIConfig.show_footer == nil) and true or UIConfig.show_footer,
-    enabled = (UIConfig.enabled == nil) and true or UIConfig.enabled
-}
 
 function get_sets()
     mote_include_version = 2
@@ -257,11 +249,7 @@ function job_update(cmdParams, eventArgs)
         end
     end
 
-    -- Update UI when states change
-    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-    if ui_success and KeybindUI then
-        KeybindUI.update()
-    end
+
 end
 
 ---============================================================================

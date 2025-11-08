@@ -15,7 +15,7 @@
 ---   • UI + Keybind system
 ---
 --- Architecture:
----   Main File → run_functions.lua (façade) → 11 Hooks + 4 Logic Modules
+---   Main File >> run_functions.lua (façade) >> 11 Hooks + 4 Logic Modules
 ---
 --- Modules:
 ---   • 11 Hooks: PRECAST, MIDCAST, AFTERCAST, IDLE, ENGAGED, STATUS, BUFFS,

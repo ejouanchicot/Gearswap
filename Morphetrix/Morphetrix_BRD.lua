@@ -22,7 +22,7 @@
 ---   - Madrigal, Minuet, Prelude support
 ---
 --- Architecture Overview:
----   Main File (this) → brd_functions.lua → Specialized Modules
+---   Main File (this) >> brd_functions.lua >> Specialized Modules
 ---
 --- Module Organization:
 ---   ├── functions/brd_functions.lua    [Facade Loader]

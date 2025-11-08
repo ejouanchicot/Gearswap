@@ -25,13 +25,10 @@ local Colors = MessageCore.COLORS
 --- @param component string Component name (e.g., "Header", "Legend", "Column Headers", "Footer")
 --- @param enabled boolean Whether component is enabled
 function MessageUI.show_toggle(component, enabled)
-    local status_color = enabled and "{green}" or "{gray}"
-    local status_text = enabled and "ON" or "OFF"
+    local message_key = enabled and 'toggle_on' or 'toggle_off'
 
-    M.send('UI', 'toggle', {
-        component = component,
-        status_color = status_color,
-        status = status_text
+    M.send('UI', message_key, {
+        component = component
     })
 end
 
@@ -114,84 +111,81 @@ end
 
 --- Display available UI theme presets
 function MessageUI.show_theme_list()
-    local cyan = MessageCore.create_color_code(205)
-    local yellow = MessageCore.create_color_code(220)  -- Gold/Yellow
-    local gray = MessageCore.create_color_code(Colors.SEPARATOR)
-    local white = MessageCore.create_color_code(001)
+    -- Color codes (same as msgtest)
+    local gray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 50)
+    local green = string.char(0x1F, 158)
+    local separator = string.rep("=", 70)
 
-    MessageRenderer.send(1, cyan .. "============================")
-    MessageRenderer.send(1, cyan .. "Available UI Themes")
-    MessageRenderer.send(1, cyan .. "============================")
+    -- Header
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, yellow .. "Available UI Themes")
+    add_to_chat(121, gray .. separator)
 
     -- Dark themes
-    MessageRenderer.send(1, yellow .. "DARK THEMES:")
-    MessageRenderer.send(1, gray .. "  dark_blue, dark_red, dark_green")
-    MessageRenderer.send(1, gray .. "  dark_purple, dark_cyan")
-    MessageRenderer.send(1, gray .. "  dark_orange, dark_pink, black")
+    add_to_chat(121, yellow .. "DARK THEMES:")
+    add_to_chat(121, gray .. "  dark_blue, dark_red, dark_green")
+    add_to_chat(121, gray .. "  dark_purple, dark_cyan")
+    add_to_chat(121, gray .. "  dark_orange, dark_pink, black")
 
     -- Light themes
-    MessageRenderer.send(1, yellow .. "LIGHT THEMES:")
-    MessageRenderer.send(1, gray .. "  light_blue, light_red, light_green")
-    MessageRenderer.send(1, gray .. "  light_purple, light_cyan")
-    MessageRenderer.send(1, gray .. "  light_orange, light_pink, light_gray")
+    add_to_chat(121, yellow .. "LIGHT THEMES:")
+    add_to_chat(121, gray .. "  light_blue, light_red, light_green")
+    add_to_chat(121, gray .. "  light_purple, light_cyan")
+    add_to_chat(121, gray .. "  light_orange, light_pink, light_gray")
 
     -- Medium themes
-    MessageRenderer.send(1, yellow .. "MEDIUM THEMES:")
-    MessageRenderer.send(1, gray .. "  blue, red, green, purple")
-    MessageRenderer.send(1, gray .. "  cyan, orange, pink, yellow")
+    add_to_chat(121, yellow .. "MEDIUM THEMES:")
+    add_to_chat(121, gray .. "  blue, red, green, purple")
+    add_to_chat(121, gray .. "  cyan, orange, pink, yellow")
 
     -- Transparent themes
-    MessageRenderer.send(1, yellow .. "TRANSPARENT THEMES:")
-    MessageRenderer.send(1, gray .. "  transparent_dark, transparent_blue")
-    MessageRenderer.send(1, gray .. "  transparent_red, transparent_green")
-    MessageRenderer.send(1, gray .. "  transparent_purple")
+    add_to_chat(121, yellow .. "TRANSPARENT THEMES:")
+    add_to_chat(121, gray .. "  transparent_dark, transparent_blue")
+    add_to_chat(121, gray .. "  transparent_red, transparent_green")
+    add_to_chat(121, gray .. "  transparent_purple")
 
     -- Neon themes
-    MessageRenderer.send(1, yellow .. "NEON THEMES:")
-    MessageRenderer.send(1, gray .. "  neon_blue, neon_red, neon_green")
-    MessageRenderer.send(1, gray .. "  neon_purple, neon_pink")
-    MessageRenderer.send(1, gray .. "  neon_cyan, neon_yellow")
+    add_to_chat(121, yellow .. "NEON THEMES:")
+    add_to_chat(121, gray .. "  neon_blue, neon_red, neon_green")
+    add_to_chat(121, gray .. "  neon_purple, neon_pink")
+    add_to_chat(121, gray .. "  neon_cyan, neon_yellow")
 
-    MessageRenderer.send(1, cyan .. "============================")
-    MessageRenderer.send(1, white .. "Usage: //gs c ui theme <name>")
-    MessageRenderer.send(1, cyan .. "============================")
+    -- Footer
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, green .. "Usage: //gs c ui theme <name>")
+    add_to_chat(121, gray .. separator)
 end
 
 --- Display UI help menu
 function MessageUI.show_help()
-    local cyan = MessageCore.create_color_code(205)
-    local green = MessageCore.create_color_code(Colors.SUCCESS)
-    local gray = MessageCore.create_color_code(Colors.SEPARATOR)
+    -- Color codes (same as msgtest)
+    local gray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 50)
+    local green = string.char(0x1F, 158)
+    local separator = string.rep("=", 70)
 
-    -- Define commands with descriptions
-    local commands = {
-        { cmd = "//gs c ui", desc = "[Toggle UI]" },
-        { cmd = "//gs c ui h", desc = "[Toggle Header - or 'header']" },
-        { cmd = "//gs c ui l", desc = "[Toggle Legend - or 'legend']" },
-        { cmd = "//gs c ui c", desc = "[Toggle Columns - or 'columns']" },
-        { cmd = "//gs c ui f", desc = "[Toggle Footer - or 'footer']" },
-        { cmd = "//gs c ui s", desc = "[Save All Settings - or 'save']" },
-        { cmd = "//gs c ui on", desc = "[Enable UI - or 'enable']" },
-        { cmd = "//gs c ui off", desc = "[Disable UI - or 'disable']" },
-        { cmd = "//gs c ui bg <preset>", desc = "[Set BG: dark/light/blue/black/transparent]" },
-        { cmd = "//gs c ui bg <r> <g> <b> <a>", desc = "[Set custom background RGBA]" },
-        { cmd = "//gs c ui bg toggle", desc = "[Toggle background visibility]" }
-    }
+    -- Header
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, yellow .. "[UI] Available Commands")
+    add_to_chat(121, gray .. separator)
 
-    -- Calculate max width
-    local max_width = 0
-    for _, line in ipairs(commands) do
-        local total_length = string.len(line.cmd) + 1 + string.len(line.desc)
-        max_width = math.max(max_width, total_length)
-    end
+    -- Commands
+    add_to_chat(121, green .. "//gs c ui" .. gray .. " [Toggle UI]")
+    add_to_chat(121, green .. "//gs c ui h" .. gray .. " [Toggle Header - or 'header']")
+    add_to_chat(121, green .. "//gs c ui l" .. gray .. " [Toggle Legend - or 'legend']")
+    add_to_chat(121, green .. "//gs c ui c" .. gray .. " [Toggle Columns - or 'columns']")
+    add_to_chat(121, green .. "//gs c ui f" .. gray .. " [Toggle Footer - or 'footer']")
+    add_to_chat(121, green .. "//gs c ui s" .. gray .. " [Save All Settings - or 'save']")
+    add_to_chat(121, green .. "//gs c ui on" .. gray .. " [Enable UI - or 'enable']")
+    add_to_chat(121, green .. "//gs c ui off" .. gray .. " [Disable UI - or 'disable']")
+    add_to_chat(121, green .. "//gs c ui bg <preset>" .. gray .. " [Set BG: dark/light/blue/etc]")
+    add_to_chat(121, green .. "//gs c ui bg <r> <g> <b> <a>" .. gray .. " [Set custom RGBA]")
+    add_to_chat(121, green .. "//gs c ui bg toggle" .. gray .. " [Toggle background visibility]")
+    add_to_chat(121, green .. "//gs c ui bg list" .. gray .. " [List all available presets]")
 
-    local separator = string.rep("=", max_width)
-
-    MessageRenderer.send(1, cyan .. separator)
-    for _, line in ipairs(commands) do
-        MessageRenderer.send(1, green .. line.cmd .. gray .. " " .. line.desc)
-    end
-    MessageRenderer.send(1, cyan .. separator)
+    -- Footer
+    add_to_chat(121, gray .. separator)
 end
 
 ---============================================================================

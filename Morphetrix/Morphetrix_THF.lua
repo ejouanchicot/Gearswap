@@ -18,7 +18,7 @@
 ---   - Scalable for team development
 ---
 --- Architecture Overview:
----   Main File (this) → thf_functions.lua → Hooks → Logic Modules
+---   Main File (this) >> thf_functions.lua >> Hooks >> Logic Modules
 ---
 --- Module Organization:
 ---   ├── functions/thf_functions.lua    [Facade Loader]
@@ -76,14 +76,6 @@ local region_success, RegionConfig = pcall(require, 'Morphetrix/config/REGION_CO
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig
 end
-
-_G.ui_display_config = {
-    show_header = (UIConfig.show_header == nil) and true or UIConfig.show_header,
-    show_legend = (UIConfig.show_legend == nil) and true or UIConfig.show_legend,
-    show_column_headers = (UIConfig.show_column_headers == nil) and true or UIConfig.show_column_headers,
-    show_footer = (UIConfig.show_footer == nil) and true or UIConfig.show_footer,
-    enabled = (UIConfig.enabled == nil) and true or UIConfig.enabled
-}
 
 function get_sets()
     mote_include_version = 2

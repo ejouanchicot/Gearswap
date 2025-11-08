@@ -17,8 +17,13 @@ return {
     --- UI TOGGLE MESSAGES
     ---========================================================================
 
-    toggle = {
-        template = "{cyan}[UI]{gray} {component}: {status_color}{status}",
+    toggle_on = {
+        template = "{cyan}[UI]{gray} {component}: {green}ON",
+        color = 1
+    },
+
+    toggle_off = {
+        template = "{cyan}[UI]{gray} {component}: {red}OFF",
         color = 1
     },
 
