@@ -100,9 +100,9 @@ WARLockstyleConfig.default = 1
 
 -- Lockstyle by subjob (optional)
 WARLockstyleConfig.by_subjob = {
-    ['SAM'] = 1,   -- WAR/SAM → lockstyle 1
-    ['NIN'] = 2,   -- WAR/NIN → lockstyle 2
-    ['DNC'] = 3,   -- WAR/DNC → lockstyle 3
+    ['SAM'] = 1,   -- WAR/SAM >> lockstyle 1
+    ['NIN'] = 2,   -- WAR/NIN >> lockstyle 2
+    ['DNC'] = 3,   -- WAR/DNC >> lockstyle 3
 }
 
 return WARLockstyleConfig
@@ -131,10 +131,10 @@ Customize per subjob:
 WARLockstyleConfig.default = 1  -- Fallback
 
 WARLockstyleConfig.by_subjob = {
-    ['SAM'] = 6,   -- WAR/SAM → lockstyle 6
-    ['DRG'] = 5,   -- WAR/DRG → lockstyle 5
-    ['DNC'] = 7,   -- WAR/DNC → lockstyle 7
-    ['NIN'] = 4,   -- WAR/NIN → lockstyle 4
+    ['SAM'] = 6,   -- WAR/SAM >> lockstyle 6
+    ['DRG'] = 5,   -- WAR/DRG >> lockstyle 5
+    ['DNC'] = 7,   -- WAR/DNC >> lockstyle 7
+    ['NIN'] = 4,   -- WAR/NIN >> lockstyle 4
 }
 ```
 
@@ -206,10 +206,10 @@ WARMacroConfig.default = {book = 22, page = 1}
 
 -- Macrobook by subjob
 WARMacroConfig.macrobooks = {
-    ['SAM'] = {book = 22, page = 1},   -- WAR/SAM → Book 22, Page 1
-    ['DRG'] = {book = 25, page = 1},   -- WAR/DRG → Book 25, Page 1
-    ['DNC'] = {book = 28, page = 1},   -- WAR/DNC → Book 28, Page 1
-    ['NIN'] = {book = 22, page = 2},   -- WAR/NIN → Book 22, Page 2
+    ['SAM'] = {book = 22, page = 1},   -- WAR/SAM >> Book 22, Page 1
+    ['DRG'] = {book = 25, page = 1},   -- WAR/DRG >> Book 25, Page 1
+    ['DNC'] = {book = 28, page = 1},   -- WAR/DNC >> Book 28, Page 1
+    ['NIN'] = {book = 22, page = 2},   -- WAR/NIN >> Book 22, Page 2
 }
 
 return WARMacroConfig
@@ -586,9 +586,9 @@ sets.engaged.PDT = {}
 ### Organization
 
 1. **One config per concern**
-   - Keybinds → `[JOB]_KEYBINDS.lua`
-   - Lockstyle → `[JOB]_LOCKSTYLE.lua`
-   - Macrobook → `[JOB]_MACROBOOK.lua`
+   - Keybinds >> `[JOB]_KEYBINDS.lua`
+   - Lockstyle >> `[JOB]_LOCKSTYLE.lua`
+   - Macrobook >> `[JOB]_MACROBOOK.lua`
 
 2. **Consistent naming**
    - Use job code in UPPERCASE: `WAR`, `PLD`, `DNC`

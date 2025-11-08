@@ -423,9 +423,9 @@ end
 
 --- Calculate bust rate for NEXT Double-Up given current roll number
 --- Formula: Number of bust faces / 6 * 100
---- Roll 6: 6+6=12 → 1/6 faces bust = 16.7%
---- Roll 7: 7+5=12, 7+6=13 → 2/6 faces bust = 33.3%
---- Roll 11: 11+1=12, ..., 11+6=17 → 6/6 faces bust = 100%
+--- Roll 6: 6+6=12 >> 1/6 faces bust = 16.7%
+--- Roll 7: 7+5=12, 7+6=13 >> 2/6 faces bust = 33.3%
+--- Roll 11: 11+1=12, ..., 11+6=17 >> 6/6 faces bust = 100%
 --- @param roll_number number Current roll number (1-11)
 --- @return number Bust rate percentage (0-100)
 function RollData.calculate_bust_rate(roll_number)

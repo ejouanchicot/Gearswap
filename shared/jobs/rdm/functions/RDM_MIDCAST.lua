@@ -19,7 +19,7 @@
 ---   - sets.midcast['Enhancing Magic'].Phalanx, .Stoneskin, .Aquaveil, .Refresh, .Regen, etc.
 ---
 --- Mote-Include Handles Naturally:
----   - Healing Magic: Cure/Curaga/Raise → sets.midcast.Cure / sets.midcast.Raise
+---   - Healing Magic: Cure/Curaga/Raise >> sets.midcast.Cure / sets.midcast.Raise
 ---
 --- @file RDM_MIDCAST.lua
 --- @author Tetsouo
@@ -256,9 +256,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- HEALING MAGIC - Let Mote-Include handle naturally
     -- ==========================================================================
     -- Mote automatically handles:
-    --   - Cure/Curaga → sets.midcast.Cure / sets.midcast.Curaga
-    --   - Raise → sets.midcast.Raise
-    --   - Specific spells → sets.midcast[spell.english]
+    --   - Cure/Curaga >> sets.midcast.Cure / sets.midcast.Curaga
+    --   - Raise >> sets.midcast.Raise
+    --   - Specific spells >> sets.midcast[spell.english]
     --
     -- No need to intercept - Mote's logic is sufficient for RDM!
 

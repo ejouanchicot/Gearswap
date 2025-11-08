@@ -6,7 +6,7 @@
 --- Features:
 ---   • Combat set selection based on HybridMode (PDT/Normal)
 ---   • Dynamic weapon application to engaged sets (Mpu Gandring/Demersal)
----   • Combat state transitions (idle → engaged)
+---   • Combat state transitions (idle >> engaged)
 ---   • Dual Wield tier optimization (automatic DW cap calculation)
 ---   • SetBuilder integration for modular set construction
 ---   • Fan Dance buff integration (20% DT)

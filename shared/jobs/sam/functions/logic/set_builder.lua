@@ -25,9 +25,9 @@ local SetBuilder = {}
 
 --- Build idle set with HP-based variations and HybridMode
 --- Priority:
----   1. Weak (HP < 50%) → sets.idle.Weak
----   2. Regen (HP < 80%) → sets.idle.Regen
----   3. HybridMode (PDT) → sets.idle.PDT
+---   1. Weak (HP < 50%) >> sets.idle.Weak
+---   2. Regen (HP < 80%) >> sets.idle.Regen
+---   3. HybridMode (PDT) >> sets.idle.PDT
 ---   4. Apply weapon
 ---
 --- @param base_set table Base idle set from sam_sets.lua
@@ -70,9 +70,9 @@ end
 
 --- Build engaged set with Seigan/Third Eye buff handling
 --- Priority:
----   1. Seigan buff → thirdeye set (PDT) or seigan set (Normal)
+---   1. Seigan buff >> thirdeye set (PDT) or seigan set (Normal)
 ---   2. Apply weapon
----   3. Bow equipped (Yoichinoyumi) → bow set
+---   3. Bow equipped (Yoichinoyumi) >> bow set
 ---
 --- @param base_set table Base engaged set from sam_sets.lua
 --- @return table Complete engaged set with all modifications
@@ -86,12 +86,12 @@ function SetBuilder.build_engaged_set(base_set)
     -- Priority 1: Seigan buff handling
     if buffactive and buffactive['Seigan'] then
         if state and state.HybridMode and state.HybridMode.value == 'PDT' then
-            -- PDT mode + Seigan → Third Eye set (defensive)
+            -- PDT mode + Seigan >> Third Eye set (defensive)
             if sets.thirdeye then
                 result = set_combine(result, sets.thirdeye)
             end
         else
-            -- Normal mode + Seigan → Seigan set (balanced)
+            -- Normal mode + Seigan >> Seigan set (balanced)
             if sets.seigan then
                 result = set_combine(result, sets.seigan)
             end
@@ -121,9 +121,9 @@ end
 --- Aftermath Lv.3 (buff ID: 272) + Weapon with AM3 = Use specialized AM3 set
 ---
 --- Priority order:
----   1. Aftermath Lv.3 + Masamune/Kogarasumaru → sets.engaged.AM3
----   2. HybridMode (PDT/Normal) → sets.engaged[HybridMode]
----   3. Fallback → base_set
+---   1. Aftermath Lv.3 + Masamune/Kogarasumaru >> sets.engaged.AM3
+---   2. HybridMode (PDT/Normal) >> sets.engaged[HybridMode]
+---   3. Fallback >> base_set
 ---
 --- @param base_set table Base engaged set from sam_sets.lua
 --- @return table Selected engaged set (AM3 if conditions met, otherwise hybrid/base)

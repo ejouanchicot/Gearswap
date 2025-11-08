@@ -64,10 +64,10 @@ end
 
 --- Called before any action (WS, JA, spell, etc.)
 --- Implements 4-layer security validation:
----   1. PrecastGuard    → Block if Amnesia/Silence/Stun/etc.
----   2. CooldownChecker → Block if ability/spell on cooldown
----   3. WeaponSkillManager → Validate range & weaponskill validity
----   4. TP Bonus Calculation → Optimize WS TP gear
+---   1. PrecastGuard    >> Block if Amnesia/Silence/Stun/etc.
+---   2. CooldownChecker >> Block if ability/spell on cooldown
+---   3. WeaponSkillManager >> Validate range & weaponskill validity
+---   4. TP Bonus Calculation >> Optimize WS TP gear
 ---
 --- @param spell     table  Spell/ability data from GearSwap
 --- @param action    string Action type (not used)

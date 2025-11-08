@@ -13,7 +13,7 @@
 ---   • Recast validation (uses RECAST_CONFIG tolerance)
 ---   • Level detection (main job vs subjob effective level)
 ---   • Target HP estimation (exact for self, estimated for party members)
----   • Priority fallback (preferred tier → lower tiers if unavailable)
+---   • Priority fallback (preferred tier >> lower tiers if unavailable)
 ---   • Professional status messages (cooldown/TP with job tag)
 ---   • Centralized for all jobs with DNC main/sub
 ---

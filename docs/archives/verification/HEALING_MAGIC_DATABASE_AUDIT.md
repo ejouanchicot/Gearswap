@@ -259,12 +259,12 @@ notes = "⚠️ REQUIRES: 100 Job Points (Gift: Reraise IV) - NOT learned at lev
 ```text
 1. Reload GearSwap: //lua reload gearswap
 2. Tester RDM/WHM:
-   - /ma "Cure" <me>          → Message devrait s'afficher
-   - /ma "Poisona" <me>       → Message devrait s'afficher
-   - /ma "Erase" <stpc>       → Message devrait s'afficher
+   - /ma "Cure" <me>          >> Message devrait s'afficher
+   - /ma "Poisona" <me>       >> Message devrait s'afficher
+   - /ma "Erase" <stpc>       >> Message devrait s'afficher
 3. Tester WHM/???:
-   - /ma "Full Cure" <me>     → Vérifier si accessible avec 1200 JP
-   - /ma "Reraise IV" <me>    → Vérifier si accessible avec 100 JP
+   - /ma "Full Cure" <me>     >> Vérifier si accessible avec 1200 JP
+   - /ma "Reraise IV" <me>    >> Vérifier si accessible avec 100 JP
 ```
 
 ### **2. Audit ENHANCING_MAGIC_DATABASE** 📋 SUGGÉRÉ

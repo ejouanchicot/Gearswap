@@ -15,12 +15,12 @@ return {
     ---========================================================================
 
     indi_cast = {
-        template = "{lightblue}[{job}] {cyan}[{spell}] {gray}-> {description}",
+        template = "{gray}[{lightblue}{job}{gray}] [{cyan}{spell}{gray}] {gray}>> {description}",
         color = 1  -- Base color (white)
     },
 
     geo_cast = {
-        template = "{lightblue}[{job}] {cyan}[{spell}] {gray}-> {description}",
+        template = "{gray}[{lightblue}{job}{gray}] [{cyan}{spell}{gray}] {gray}>> {description}",
         color = 1  -- Base color (white)
     },
 
@@ -29,12 +29,12 @@ return {
     ---========================================================================
 
     spell_refined = {
-        template = "{cyan}[GEO] {blue}Refined: {white}{desired} {gray}-> {white}{final}",
+        template = "{gray}[{cyan}GEO{gray}] {blue}Refined: {white}{desired} {gray}>> {white}{final}",
         color = 1  -- Base color
     },
 
     no_tier_available = {
-        template = "{cyan}[GEO] {red}No available tier for: {white}{spell}",
+        template = "{gray}[{cyan}GEO{gray}] {red}No available tier for: {white}{spell}",
         color = 1  -- Base color
     }
 }

@@ -53,12 +53,13 @@ end
 -- Global UI display toggles (persistent across reloads)
 -- NOTE: This should NEVER execute because main job files create _G.ui_display_config BEFORE loading UI_MANAGER
 if not _G.ui_display_config then
+    local UISettingsManager = require('shared/config/ui_settings')
     _G.ui_display_config = {
-        show_header = (UIConfig.show_header == nil) and true or UIConfig.show_header,
-        show_legend = (UIConfig.show_legend == nil) and true or UIConfig.show_legend,
-        show_column_headers = (UIConfig.show_column_headers == nil) and true or UIConfig.show_column_headers,
-        show_footer = (UIConfig.show_footer == nil) and true or UIConfig.show_footer,
-        enabled = (UIConfig.enabled == nil) and true or UIConfig.enabled
+        show_header = UISettingsManager.get_show_header(),
+        show_legend = UISettingsManager.get_show_legend(),
+        show_column_headers = UISettingsManager.get_show_column_headers(),
+        show_footer = UISettingsManager.get_show_footer(),
+        enabled = UISettingsManager.get_enabled()
     }
 end
 
@@ -97,21 +98,24 @@ local UISections = require('shared/utils/ui/UI_SECTIONS')
 --- Calculate Y offset based on hidden UI elements
 --- @return number Y offset to apply
 local function calculate_y_offset()
-    local UIConfig = _G.UIConfig or {}  -- Always get latest from _G
     local offset = 0
-    local text_size = (UIConfig.text and UIConfig.text.size) or 10
+
+    -- Get current font size from saved settings
+    local UISettingsManager = require('shared/config/ui_settings')
+    local font = UISettingsManager.get_font()
+    local text_size = font.size or 10
     local line_height = text_size + 4  -- Font size + spacing
 
     -- Add offset for hidden header (title + separator + legend if visible)
-    if not UIConfig.show_header then
+    if not _G.ui_display_config.show_header then
         offset = offset + (line_height * 2)  -- Title + separator
-        if UIConfig.show_legend then
+        if _G.ui_display_config.show_legend then
             offset = offset + (line_height * 2)  -- Legend takes ~2 lines
         end
     end
 
     -- Add offset for hidden column headers
-    if not UIConfig.show_column_headers then
+    if not _G.ui_display_config.show_column_headers then
         offset = offset + (line_height * 1)
     end
 
@@ -120,8 +124,10 @@ end
 
 --- Convert simplified RGBA format to texts library format
 local function get_background_settings()
-    local UIConfig = _G.UIConfig or {}  -- Always get latest from _G
-    local bg = UIConfig.background or { r = 0, g = 0, b = 0, a = 150, visible = true }
+    -- Load from persistent settings (NOT from UIConfig)
+    local UISettingsManager = require('shared/config/ui_settings')
+    local bg = UISettingsManager.get_background()
+
     return {
         red = bg.r,
         green = bg.g,
@@ -152,8 +158,8 @@ local function create_ui_settings()
             y = base_y + (calculate_y_offset() or 0)  -- Recalculate offset dynamically
         },
         text = {
-            size = (UIConfig.text and UIConfig.text.size) or 10,
-            font = (UIConfig.text and UIConfig.text.font) or 'Consolas',
+            size = saved_settings.font_size or 10,
+            font = saved_settings.font_name or 'Consolas',
             stroke = (UIConfig.text and UIConfig.text.stroke) or { width = 2, alpha = 200, red = 0, green = 0, blue = 0 },
             padding = 0  -- Remove text padding
         },
@@ -203,12 +209,7 @@ local function save_position(x, y)
     _G.keybind_saved_settings.show_column_headers = _G.ui_display_config.show_column_headers
     _G.keybind_saved_settings.show_footer = _G.ui_display_config.show_footer
 
-    -- Include background settings
-    _G.keybind_saved_settings.bg_r = UIConfig.background.r
-    _G.keybind_saved_settings.bg_g = UIConfig.background.g
-    _G.keybind_saved_settings.bg_b = UIConfig.background.b
-    _G.keybind_saved_settings.bg_a = UIConfig.background.a
-    _G.keybind_saved_settings.bg_visible = UIConfig.background.visible
+    -- NOTE: Background and font settings are already in saved_settings, don't overwrite them
 
     local success = KeybindSettings.save(_G.keybind_saved_settings)
 
@@ -372,6 +373,12 @@ end
 
 --- Initialize UI
 function KeybindUI.init()
+    -- ALWAYS load saved settings first (required for toggle/save to work even when disabled)
+    if not _G.keybind_saved_settings then
+        local saved_settings = KeybindSettings.load()
+        _G.keybind_saved_settings = saved_settings
+    end
+
     -- Check if UI is enabled in config
     if not _G.ui_display_config.enabled then
         return
@@ -485,8 +492,22 @@ function KeybindUI.toggle()
         else
             _G.keybind_ui_display:hide()
         end
+
+        -- Update ui_display_config (required for reload persistence)
+        _G.ui_display_config.enabled = _G.keybind_ui_visible
+
+        -- Save enabled state
+        if _G.keybind_saved_settings then
+            _G.keybind_saved_settings.enabled = _G.keybind_ui_visible
+            KeybindSettings.save(_G.keybind_saved_settings)
+        end
     else
-        KeybindUI.init()
+        -- UI not initialized, toggle enabled state
+        if _G.ui_display_config.enabled then
+            KeybindUI.disable()
+        else
+            KeybindUI.enable()
+        end
     end
 end
 
@@ -527,6 +548,12 @@ function KeybindUI.toggle_header()
 
     update_display()
     MessageUI.show_toggle("Header", _G.ui_display_config.show_header)
+
+    -- Save header state
+    if _G.keybind_saved_settings then
+        _G.keybind_saved_settings.show_header = _G.ui_display_config.show_header
+        KeybindSettings.save(_G.keybind_saved_settings)
+    end
 end
 
 --- Toggle legend visibility
@@ -549,6 +576,12 @@ function KeybindUI.toggle_legend()
 
     update_display()
     MessageUI.show_toggle("Legend", _G.ui_display_config.show_legend)
+
+    -- Save legend state
+    if _G.keybind_saved_settings then
+        _G.keybind_saved_settings.show_legend = _G.ui_display_config.show_legend
+        KeybindSettings.save(_G.keybind_saved_settings)
+    end
 end
 
 --- Toggle column headers visibility
@@ -571,6 +604,12 @@ function KeybindUI.toggle_column_headers()
 
     update_display()
     MessageUI.show_toggle("Column Headers", _G.ui_display_config.show_column_headers)
+
+    -- Save column headers state
+    if _G.keybind_saved_settings then
+        _G.keybind_saved_settings.show_column_headers = _G.ui_display_config.show_column_headers
+        KeybindSettings.save(_G.keybind_saved_settings)
+    end
 end
 
 --- Toggle footer visibility
@@ -582,6 +621,12 @@ function KeybindUI.toggle_footer()
 
     update_display()
     MessageUI.show_toggle("Footer", _G.ui_display_config.show_footer)
+
+    -- Save footer state
+    if _G.keybind_saved_settings then
+        _G.keybind_saved_settings.show_footer = _G.ui_display_config.show_footer
+        KeybindSettings.save(_G.keybind_saved_settings)
+    end
 end
 
 --- Enable UI
@@ -593,6 +638,12 @@ function KeybindUI.enable()
         KeybindUI.show()
     end
     MessageUI.show_enabled()
+
+    -- Save enabled state
+    if _G.keybind_saved_settings then
+        _G.keybind_saved_settings.enabled = true
+        KeybindSettings.save(_G.keybind_saved_settings)
+    end
 end
 
 --- Disable UI
@@ -600,6 +651,12 @@ function KeybindUI.disable()
     _G.ui_display_config.enabled = false
     KeybindUI.hide()
     MessageUI.show_disabled()
+
+    -- Save enabled state
+    if _G.keybind_saved_settings then
+        _G.keybind_saved_settings.enabled = false
+        KeybindSettings.save(_G.keybind_saved_settings)
+    end
 end
 
 --- Set background from preset
@@ -628,6 +685,16 @@ function KeybindUI.set_background_preset(preset_name)
     end
 
     MessageUI.show_background_preset(preset_name, preset.r, preset.g, preset.b, preset.a)
+
+    -- Save background state
+    if _G.keybind_saved_settings then
+        _G.keybind_saved_settings.bg_r = preset.r
+        _G.keybind_saved_settings.bg_g = preset.g
+        _G.keybind_saved_settings.bg_b = preset.b
+        _G.keybind_saved_settings.bg_a = preset.a
+        KeybindSettings.save(_G.keybind_saved_settings)
+    end
+
     return true
 end
 
@@ -662,6 +729,16 @@ function KeybindUI.set_background_rgba(r, g, b, a)
     end
 
     MessageUI.show_background_rgba(r, g, b, a)
+
+    -- Save background state
+    if _G.keybind_saved_settings then
+        _G.keybind_saved_settings.bg_r = r
+        _G.keybind_saved_settings.bg_g = g
+        _G.keybind_saved_settings.bg_b = b
+        _G.keybind_saved_settings.bg_a = a
+        KeybindSettings.save(_G.keybind_saved_settings)
+    end
+
     return true
 end
 
@@ -674,6 +751,12 @@ function KeybindUI.toggle_background()
     end
 
     MessageUI.show_toggle("Background", UIConfig.background.visible)
+
+    -- Save background visibility state
+    if _G.keybind_saved_settings then
+        _G.keybind_saved_settings.bg_visible = UIConfig.background.visible
+        KeybindSettings.save(_G.keybind_saved_settings)
+    end
 end
 
 --- Set font
@@ -703,6 +786,13 @@ function KeybindUI.set_font(font_name)
     end
 
     MessageCore.show_ui_info("Font changed to: " .. validated_font)
+
+    -- Save font state
+    if _G.keybind_saved_settings then
+        _G.keybind_saved_settings.font_name = validated_font
+        KeybindSettings.save(_G.keybind_saved_settings)
+    end
+
     return true
 end
 

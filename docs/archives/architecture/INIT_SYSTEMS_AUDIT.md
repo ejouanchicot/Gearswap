@@ -523,9 +523,9 @@ end
 
 **Tous les autres systèmes sont correctement gérés:**
 
-- Job-specific → Chargés par job
-- Factories → Utilisés par job
-- On-demand → Require dans hooks
-- Optionnels → Auto-init ou pas dans INIT
+- Job-specific >> Chargés par job
+- Factories >> Utilisés par job
+- On-demand >> Require dans hooks
+- Optionnels >> Auto-init ou pas dans INIT
 
 **Score Architecture:** 10/10 - Séparation des responsabilités parfaite

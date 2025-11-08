@@ -59,8 +59,8 @@ Verify they loaded successfully - you should see confirmation messages.
 **Option A: Rename Files** (Recommended)
 
 ```
-TETSOUO_WAR.lua → YOURNAME_WAR.lua
-TETSOUO_PLD.lua → YOURNAME_PLD.lua
+TETSOUO_WAR.lua >> YOURNAME_WAR.lua
+TETSOUO_PLD.lua >> YOURNAME_PLD.lua
 etc.
 ```
 

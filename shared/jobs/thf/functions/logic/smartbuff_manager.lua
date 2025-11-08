@@ -7,7 +7,7 @@
 --- Features:
 ---   • DNC subjob buffs (Haste Samba - requires 350 TP)
 ---   • WAR subjob buffs (Berserk, Aggressor, Warcry - priority order)
----   • NIN subjob buffs (Utsusemi: Ni → Ichi fallback)
+---   • NIN subjob buffs (Utsusemi: Ni >> Ichi fallback)
 ---   • THF Fighter's Buff Combo (Feint, Bully, Conspirator)
 ---   • Intelligent recast checking (RECAST_CONFIG integration)
 ---   • Sequential ability casting (1-2s spacing to avoid conflicts)

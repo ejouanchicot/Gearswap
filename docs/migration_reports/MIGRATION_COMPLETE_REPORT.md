@@ -22,7 +22,7 @@
 |------|---------|---------------|--------|
 | `RDM_SPELL_DATABASE.lua` | Now uses ENFEEBLING + ENHANCING databases | ~30 lines | ✅ Migrated |
 | `WHM_SPELL_DATABASE.lua` | Now uses ENHANCING database | ~20 lines | ✅ Migrated |
-| `ENHANCING_MAGIC_DATABASE.lua` | Added Inundation (136→137 spells) | +12 lines | ✅ Updated |
+| `ENHANCING_MAGIC_DATABASE.lua` | Added Inundation (136>>137 spells) | +12 lines | ✅ Updated |
 
 ### **Files Removed (4) - Backupé dans `internal/OBSOLETE_BACKUP_2025-10-30/`**
 
@@ -177,7 +177,7 @@ end
 
 **Location:** `enhancing/enhancing_utility.lua` line 204-214
 
-**Total:** 136 → 137 spells
+**Total:** 136 >> 137 spells
 
 ---
 
@@ -237,37 +237,37 @@ Maintenance: Update once in skill database
 
 - [ ] Load RDM job in-game (`//lua load gearswap`)
 - [ ] Verify no console errors on load
-- [ ] Cast Enfeebling spell: `Paralyze` → Verify equipment swaps
-- [ ] Cast Enfeebling spell: `Slow II` → Verify equipment swaps
-- [ ] Cast Enhancing spell: `Refresh` → Verify equipment swaps
-- [ ] Cast Enhancing spell: `Phalanx` → Verify equipment swaps
-- [ ] Cast Bar spell: `Barfire` → Verify equipment swaps
-- [ ] Cast Spike spell: `Ice Spikes` → Verify equipment swaps
-- [ ] Cast Cure spell: `Cure III` → Verify equipment swaps
-- [ ] Cast Gain spell: `Gain-STR` → Verify equipment swaps
-- [ ] Cast Inundation: `Inundation` → Verify equipment swaps (NEW!)
+- [ ] Cast Enfeebling spell: `Paralyze` >> Verify equipment swaps
+- [ ] Cast Enfeebling spell: `Slow II` >> Verify equipment swaps
+- [ ] Cast Enhancing spell: `Refresh` >> Verify equipment swaps
+- [ ] Cast Enhancing spell: `Phalanx` >> Verify equipment swaps
+- [ ] Cast Bar spell: `Barfire` >> Verify equipment swaps
+- [ ] Cast Spike spell: `Ice Spikes` >> Verify equipment swaps
+- [ ] Cast Cure spell: `Cure III` >> Verify equipment swaps
+- [ ] Cast Gain spell: `Gain-STR` >> Verify equipment swaps
+- [ ] Cast Inundation: `Inundation` >> Verify equipment swaps (NEW!)
 - [ ] Verify spell list completeness (should have ~107 spells)
 
 ### **WHM Testing Checklist**
 
 - [ ] Load WHM job in-game (`//lua load gearswap`)
 - [ ] Verify no console errors on load
-- [ ] Cast Bar spell: `Barfire` → Verify equipment swaps
-- [ ] Cast Boost spell: `Boost-STR` → Verify equipment swaps
-- [ ] Cast Teleport spell: `Teleport-Holla` → Verify equipment swaps
-- [ ] Cast Protect spell: `Protectra V` → Verify equipment swaps
-- [ ] Cast Regen spell: `Regen IV` → Verify equipment swaps
-- [ ] Cast Cure spell: `Curaga IV` → Verify equipment swaps
-- [ ] Cast Divine spell: `Banish II` → Verify equipment swaps
-- [ ] Cast Recall spell: `Recall-Jugner` → Verify equipment swaps
+- [ ] Cast Bar spell: `Barfire` >> Verify equipment swaps
+- [ ] Cast Boost spell: `Boost-STR` >> Verify equipment swaps
+- [ ] Cast Teleport spell: `Teleport-Holla` >> Verify equipment swaps
+- [ ] Cast Protect spell: `Protectra V` >> Verify equipment swaps
+- [ ] Cast Regen spell: `Regen IV` >> Verify equipment swaps
+- [ ] Cast Cure spell: `Curaga IV` >> Verify equipment swaps
+- [ ] Cast Divine spell: `Banish II` >> Verify equipment swaps
+- [ ] Cast Recall spell: `Recall-Jugner` >> Verify equipment swaps
 - [ ] Verify spell list completeness (should have ~100+ spells)
 
 ### **Other Jobs Testing (Sanity Check)**
 
-- [ ] Load BLM → Verify no errors (should not be affected)
-- [ ] Load PLD → Cast Phalanx → Verify works (uses ENHANCING_MAGIC_DATABASE)
-- [ ] Load SCH → Cast Regen → Verify works (uses ENHANCING_MAGIC_DATABASE)
-- [ ] Load RUN → Cast Barfire → Verify works (uses ENHANCING_MAGIC_DATABASE)
+- [ ] Load BLM >> Verify no errors (should not be affected)
+- [ ] Load PLD >> Cast Phalanx >> Verify works (uses ENHANCING_MAGIC_DATABASE)
+- [ ] Load SCH >> Cast Regen >> Verify works (uses ENHANCING_MAGIC_DATABASE)
+- [ ] Load RUN >> Cast Barfire >> Verify works (uses ENHANCING_MAGIC_DATABASE)
 
 ---
 
@@ -290,7 +290,7 @@ cp internal/OBSOLETE_BACKUP_2025-10-30/enfeebling.lua internal/rdm/
 
 # Undo Inundation addition
 # (Manual: remove lines 204-214 from enhancing_utility.lua)
-# (Manual: revert ENHANCING_MAGIC_DATABASE.lua spell count 137→136)
+# (Manual: revert ENHANCING_MAGIC_DATABASE.lua spell count 137>>136)
 
 # Reload in-game
 //lua unload gearswap

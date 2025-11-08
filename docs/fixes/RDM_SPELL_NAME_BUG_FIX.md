@@ -7,13 +7,15 @@
 ## Problem
 
 Spell names were showing as empty brackets `[]` in RDM spell messages:
+
 ```
-[RDM/WHM] [] TEST -> Increases attack speed.
+[RDM/WHM] [] TEST >> Increases attack speed.
 ```
 
 Instead of:
+
 ```
-[RDM/WHM] [Haste II] TEST -> Increases attack speed.
+[RDM/WHM] [Haste II] TEST >> Increases attack speed.
 ```
 
 ## Root Cause
@@ -21,6 +23,7 @@ Instead of:
 **Color tag naming conflict in message_engine.lua**
 
 When we added semantic color aliases for the warp system fix, we accidentally created three color tags that conflicted with common parameter names:
+
 - `{spell}` - color tag (cyan) vs `{spell}` parameter
 - `{item}` - color tag (green) vs `{item}` parameter
 - `{warning}` - color tag (orange) vs `{warning}` parameter
@@ -37,9 +40,10 @@ The template parser checks `if COLOR_CODES[content]` before checking if it's a p
 ## Solution
 
 Renamed the three conflicting color aliases to avoid parameter name collisions:
-- `{spell}` → `{spellcolor}`
-- `{item}` → `{itemcolor}`
-- `{warning}` → `{warningcolor}`
+
+- `{spell}` >> `{spellcolor}`
+- `{item}` >> `{itemcolor}`
+- `{warning}` >> `{warningcolor}`
 
 ## Files Changed
 
@@ -49,20 +53,22 @@ Renamed the three conflicting color aliases to avoid parameter name collisions:
 
 2. **shared/utils/messages/data/systems/warp_messages.lua**
    - Updated all warp message templates to use new color tag names
-   - Changed `{spell}` → `{spellcolor}` (7 templates)
-   - Changed `{item}` → `{itemcolor}` (18 templates)
-   - Changed `{warning}` → `{warningcolor}` (5 templates)
+   - Changed `{spell}` >> `{spellcolor}` (7 templates)
+   - Changed `{item}` >> `{itemcolor}` (18 templates)
+   - Changed `{warning}` >> `{warningcolor}` (5 templates)
 
 ## Prevention
 
 **Rule**: Color tag names must NOT conflict with commonly used parameter names.
 
 Safe color tags:
+
 - Semantic suffixes: `{spellcolor}`, `{itemcolor}`, `{warningcolor}`
 - Compound names: `{jobtag}`, `{separator}`
 - Basic colors: `{cyan}`, `{green}`, `{red}`, `{yellow}`, etc.
 
 Unsafe color tags (reserved for parameters):
+
 - `{spell}` - used for spell names
 - `{item}` - used for item names
 - `{ability}` - used for ability names
@@ -73,10 +79,12 @@ Unsafe color tags (reserved for parameters):
 ## Testing
 
 Test spell messages with `//ma "Haste II" <me>`:
-- ✅ Should show: `[RDM/WHM] [Haste II] -> Increases attack speed.`
-- ❌ Should NOT show: `[RDM/WHM] [] -> Increases attack speed.`
+
+- ✅ Should show: `[RDM/WHM] [Haste II] >> Increases attack speed.`
+- ❌ Should NOT show: `[RDM/WHM] [] >> Increases attack speed.`
 
 Test warp commands with `//gs c warp`:
+
 - ✅ Warp messages should display with correct colors
 - ✅ No "Missing parameter" errors
 

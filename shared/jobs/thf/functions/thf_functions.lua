@@ -7,7 +7,7 @@
 ---
 --- Features:
 ---   • Modular architecture (11 hooks + 3 logic modules)
----   • Dependency-ordered loading (messages → combat → status → utility)
+---   • Dependency-ordered loading (messages >> combat >> status >> utility)
 ---   • Separation of concerns (hooks = orchestration, logic = implementation)
 ---   • Clean integration with GearSwap event system
 ---
@@ -20,9 +20,9 @@
 ---
 --- Loading Order:
 ---   1. Message system (buff display foundation)
----   2. Combat action hooks (precast → midcast → aftercast)
----   3. Status & state hooks (status → buffs → idle → engaged)
----   4. Utility & command hooks (macrobook → lockstyle → commands → movement)
+---   2. Combat action hooks (precast >> midcast >> aftercast)
+---   3. Status & state hooks (status >> buffs >> idle >> engaged)
+---   4. Utility & command hooks (macrobook >> lockstyle >> commands >> movement)
 ---
 --- Dependencies:
 ---   • Mote-Include (provides base hook structure)

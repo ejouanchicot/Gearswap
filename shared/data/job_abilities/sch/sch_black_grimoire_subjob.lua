@@ -7,7 +7,7 @@
 ---   - Parsimony (Lv10) - Next black magic -50% MP
 ---   - Alacrity (Lv25) - Next black magic -50% cast time
 ---   - Addendum: Black (Lv30) - Access additional black magic
----   - Manifestation (Lv40) - Next enfeebling → AoE
+---   - Manifestation (Lv40) - Next enfeebling >> AoE
 ---   - Ebullience (Lv55 - Master Job Only) - Next black magic +potency
 ---
 --- @file sch_black_grimoire_subjob.lua
@@ -46,7 +46,7 @@ SCH_BLACK_GRIMOIRE_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Manifestation'] = {
-        description             = 'Next enfeebling → AoE',
+        description             = 'Next enfeebling >> AoE',
         level                   = 40,
         recast                  = 0,  -- Charge system
         main_job_only           = false,

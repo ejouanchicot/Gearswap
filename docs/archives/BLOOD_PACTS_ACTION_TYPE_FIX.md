@@ -118,23 +118,23 @@ function SpellMessageHandler.show_message(spell)
 **Blood Pact: Rage (Offensive) - action_type = 'BloodPactRage':**
 
 ```
-Flaming Crush → [Flaming Crush] Fire damage + knockback. ✅
-Barracuda Dive → [Barracuda Dive] Water physical attack. ✅
-Eclipse Bite → [Eclipse Bite] Dark physical damage. ✅
-Grand Fall → [Grand Fall] Water magic damage (AoE). ✅
-Meteor Strike → [Meteor Strike] Fire magic damage (AoE). ✅
+Flaming Crush >> [Flaming Crush] Fire damage + knockback. ✅
+Barracuda Dive >> [Barracuda Dive] Water physical attack. ✅
+Eclipse Bite >> [Eclipse Bite] Dark physical damage. ✅
+Grand Fall >> [Grand Fall] Water magic damage (AoE). ✅
+Meteor Strike >> [Meteor Strike] Fire magic damage (AoE). ✅
 ```
 
 **Blood Pact: Ward (Support) - action_type = 'BloodPactWard':**
 
 ```
-Earthen Ward → [Earthen Ward] Party damage reduction. ✅
-Crimson Howl → [Crimson Howl] Party attack boost. ✅
-Shining Ruby → [Shining Ruby] Party Regen. ✅
-Spring Water → [Spring Water] Party HP regen. ✅
-Aerial Armor → [Aerial Armor] Party Blink. ✅
-Rolling Thunder → [Rolling Thunder] Party magic attack boost. ✅
-Frost Armor → [Frost Armor] Party ice spikes. ✅
+Earthen Ward >> [Earthen Ward] Party damage reduction. ✅
+Crimson Howl >> [Crimson Howl] Party attack boost. ✅
+Shining Ruby >> [Shining Ruby] Party Regen. ✅
+Spring Water >> [Spring Water] Party HP regen. ✅
+Aerial Armor >> [Aerial Armor] Party Blink. ✅
+Rolling Thunder >> [Rolling Thunder] Party magic attack boost. ✅
+Frost Armor >> [Frost Armor] Party ice spikes. ✅
 ```
 
 ---
@@ -200,15 +200,15 @@ Frost Armor → [Frost Armor] Party ice spikes. ✅
 1. //lua u gearswap
 2. Change to WAR/SMN
 3. //lua l gearswap
-4. Summon Titan → [Titan] Summons Titan. ✅
-5. Use Earthen Ward → [Earthen Ward] Party damage reduction. ✅
+4. Summon Titan >> [Titan] Summons Titan. ✅
+5. Use Earthen Ward >> [Earthen Ward] Party damage reduction. ✅
 ```
 
 ### Test 2: Blood Pact: Rage (Flaming Crush)
 
 ```
-1. Summon Ifrit → [Ifrit] Summons Ifrit. ✅
-2. Use Flaming Crush → [Flaming Crush] Fire damage + knockback. ✅
+1. Summon Ifrit >> [Ifrit] Summons Ifrit. ✅
+2. Use Flaming Crush >> [Flaming Crush] Fire damage + knockback. ✅
 ```
 
 ### Test 3: Multiple Blood Pacts

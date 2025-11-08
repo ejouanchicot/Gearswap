@@ -12,7 +12,7 @@ States = Configuration options you cycle through with keybinds.
 
 ```lua
 state.HybridMode = M{'PDT', 'Normal'}  -- 2 options
--- Press Alt+2 to cycle: PDT → Normal → PDT
+-- Press Alt+2 to cycle: PDT >> Normal >> PDT
 ```
 
 ---
@@ -38,5 +38,5 @@ state.HybridMode = M{'PDT', 'Normal'}  -- 2 options
 
 ```
 //gs c state [StateName]
-→ Shows current value
+>> Shows current value
 ```

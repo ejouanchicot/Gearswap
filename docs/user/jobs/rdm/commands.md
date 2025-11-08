@@ -44,7 +44,7 @@ These work on **all jobs**:
 ```
 // If MainLightSpell = Fire, NukeTier = V
 //gs c castlight
-→ Casts "Fire V" on target
+>> Casts "Fire V" on target
 ```
 
 ### Enhancement Spells
@@ -99,8 +99,8 @@ These work on **all jobs**:
 ```
 //gs c convert
 
-→ Casts Convert job ability
-→ Swaps HP/MP
+>> Casts Convert job ability
+>> Swaps HP/MP
 ```
 
 ### Example 2: Cast Light Nuke
@@ -113,7 +113,7 @@ Ctrl+= (cycle NukeTier to VI)
 // Cast:
 Ctrl+8 (castlight)
 
-→ Casts "Fire VI" on target
+>> Casts "Fire VI" on target
 ```
 
 ### Example 3: Auto-Saboteur Enfeeble
@@ -125,9 +125,9 @@ Alt+P (cycle SaboteurMode to On)
 // Cast:
 /ma "Gravity" <t>
 
-→ System auto-casts Saboteur (if ready)
-→ Waits 2 seconds
-→ Casts Gravity with Saboteur active
+>> System auto-casts Saboteur (if ready)
+>> Waits 2 seconds
+>> Casts Gravity with Saboteur active
 ```
 
 ### Example 4: Cast Specific Enspell
@@ -135,7 +135,7 @@ Alt+P (cycle SaboteurMode to On)
 ```
 //gs c enspell thunder
 
-→ Casts "Enthunder" on self
+>> Casts "Enthunder" on self
 ```
 
 ### Example 5: Refresh Party Member
@@ -143,7 +143,7 @@ Alt+P (cycle SaboteurMode to On)
 ```
 //gs c refresh <stpc>
 
-→ Casts Refresh on party member
+>> Casts Refresh on party member
 ```
 
 ---
@@ -161,17 +161,17 @@ Alt+P (cycle SaboteurMode to On)
 
 ```
 //gs c debugmidcast
-→ Toggles debug ON
+>> Toggles debug ON
 
 /ma "Gravity" <t>
-→ Shows in console:
+>> Shows in console:
 [MIDCAST] Skill: Enfeebling Magic
 [MIDCAST] Type: mnd_potency
 [MIDCAST] Mode: Potency
 [MIDCAST] Selected: sets.midcast['Enfeebling Magic'].mnd_potency.Potency
 
 //gs c debugmidcast
-→ Toggles debug OFF
+>> Toggles debug OFF
 ```
 
 ---

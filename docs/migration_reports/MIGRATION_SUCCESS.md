@@ -107,7 +107,7 @@
 
 ### **Future Enhancements (Not Required)**
 
-If you want to eliminate **ALL** remaining duplication (currently 80% done → 100%):
+If you want to eliminate **ALL** remaining duplication (currently 80% done >> 100%):
 
 **Phase 3 Tasks:**
 
@@ -157,22 +157,22 @@ If you want to eliminate **ALL** remaining duplication (currently 80% done → 1
 
 **✅ Skill-Based (Universal) - DONE:**
 
-- Enfeebling Magic (36 spells) → ENFEEBLING_MAGIC_DATABASE
-- Enhancing Magic (137 spells) → ENHANCING_MAGIC_DATABASE
+- Enfeebling Magic (36 spells) >> ENFEEBLING_MAGIC_DATABASE
+- Enhancing Magic (137 spells) >> ENHANCING_MAGIC_DATABASE
 
 **⏸️ Job-Based (Temporary) - Phase 3:**
 
-- Elemental Magic (Fire/Ice/etc. I-VI) → BLM/RDM/SCH/GEO internal files
-- Healing Magic (Cure/Raise/-na) → WHM/RDM internal files
-- Divine Magic (Banish/Holy) → WHM/PLD internal files
+- Elemental Magic (Fire/Ice/etc. I-VI) >> BLM/RDM/SCH/GEO internal files
+- Healing Magic (Cure/Raise/-na) >> WHM/RDM internal files
+- Divine Magic (Banish/Holy) >> WHM/PLD internal files
 
 **✅ Job-Specific (Permanent):**
 
-- Blue Magic → BLU (unique job mechanics)
-- Songs → BRD (unique job mechanics)
-- Geomancy → GEO (Indi/Geo bubbles)
-- Summoning → SMN (Avatar pacts)
-- Scholar Unique → SCH (Helix/Storm)
+- Blue Magic >> BLU (unique job mechanics)
+- Songs >> BRD (unique job mechanics)
+- Geomancy >> GEO (Indi/Geo bubbles)
+- Summoning >> SMN (Avatar pacts)
+- Scholar Unique >> SCH (Helix/Storm)
 
 ---
 
@@ -200,7 +200,7 @@ If you want to eliminate **ALL** remaining duplication (currently 80% done → 1
 **Before (Old Way - Duplication):**
 
 ```
-1. Add to ENFEEBLING_MAGIC_DATABASE → enfeebling/enfeebling_X.lua
+1. Add to ENFEEBLING_MAGIC_DATABASE >> enfeebling/enfeebling_X.lua
 2. Add to internal/rdm/enfeebling.lua (DUPLICATION!)
 3. Update RDM sets
 4. Test RDM
@@ -209,7 +209,7 @@ If you want to eliminate **ALL** remaining duplication (currently 80% done → 1
 **After (New Way - Single Source):**
 
 ```
-1. Add to ENFEEBLING_MAGIC_DATABASE → enfeebling/enfeebling_X.lua
+1. Add to ENFEEBLING_MAGIC_DATABASE >> enfeebling/enfeebling_X.lua
 2. Done! RDM/WHM/BLM/etc. automatically get it (if they have job field)
 ```
 
@@ -254,7 +254,7 @@ Edit `shared/data/magic/enhancing/enhancing_combat.lua`:
 },
 ```
 
-Update spell count in `ENHANCING_MAGIC_DATABASE.lua` header (137 → 138).
+Update spell count in `ENHANCING_MAGIC_DATABASE.lua` header (137 >> 138).
 
 **Result:** RDM/RUN automatically get access (no job file changes needed!)
 
@@ -363,7 +363,7 @@ Maintainability: EXCELLENT (was POOR)
 **Next Time You Want to Add a Spell:**
 
 - Old way: Update 2-3 files
-- New way: Update 1 file → Done!
+- New way: Update 1 file >> Done!
 
 **You can now safely:**
 

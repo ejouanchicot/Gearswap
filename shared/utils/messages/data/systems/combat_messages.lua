@@ -54,37 +54,37 @@ return {
     ---========================================================================
 
     ws_tp_ultimate = {
-        template = "{yellow}[{ws_name}]{gray} ({green}{tp} TP{gray})",
+        template = "{gray}[{pink}{ws_name}{gray}]{gray} ({green}{tp} TP{gray})",
         color = 1
     },
 
     ws_tp_enhanced = {
-        template = "{yellow}[{ws_name}]{gray} ({cyan}{tp} TP{gray})",
+        template = "{gray}[{pink}{ws_name}{gray}]{gray} ({cyan}{tp} TP{gray})",
         color = 1
     },
 
     ws_tp_normal = {
-        template = "{yellow}[{ws_name}]{gray} ({white}{tp} TP{gray})",
+        template = "{gray}[{pink}{ws_name}{gray}]{gray} ({white}{tp} TP{gray})",
         color = 1
     },
 
     ws_activated_ultimate = {
-        template = "{lightblue}[{job}] {yellow}[{ws_name}] {gray}-> {gray}{description} {gray}({green}{tp} TP{gray})",
+        template = "{gray}[{lightblue}{job}{gray}] {gray}[{pink}{ws_name}{gray}]{gray} >> {description} {gray}({green}{tp} TP{gray})",
         color = 1
     },
 
     ws_activated_enhanced = {
-        template = "{lightblue}[{job}] {yellow}[{ws_name}] {gray}-> {gray}{description} {gray}({cyan}{tp} TP{gray})",
+        template = "{gray}[{lightblue}{job}{gray}] {gray}[{pink}{ws_name}{gray}]{gray} >> {description} {gray}({cyan}{tp} TP{gray})",
         color = 1
     },
 
     ws_activated_normal = {
-        template = "{lightblue}[{job}] {yellow}[{ws_name}] {gray}-> {gray}{description} {gray}({white}{tp} TP{gray})",
+        template = "{gray}[{lightblue}{job}{gray}] {gray}[{pink}{ws_name}{gray}]{gray} >> {description} {gray}({white}{tp} TP{gray})",
         color = 1
     },
 
     ws_activated_no_tp = {
-        template = "{lightblue}[{job}] {yellow}[{ws_name}] {gray}-> {gray}{description}",
+        template = "{gray}[{lightblue}{job}{gray}] {gray}[{pink}{ws_name}{gray}]{gray} >> {description}",
         color = 1
     },
 
@@ -131,12 +131,12 @@ return {
     ---========================================================================
 
     jump_activated = {
-        template = "{lightblue}[{job}] {yellow}[{jump_ability}] {gray}-> {gray}{description}",
+        template = "{lightblue}[{job}] {yellow}[{jump_ability}] {gray}>> {gray}{description}",
         color = 1
     },
 
     jump_chaining_desc = {
-        template = "{lightblue}[{job}]{gray} Chaining {yellow}[{second_jump}] {gray}-> {gray}{description}",
+        template = "{lightblue}[{job}]{gray} Chaining {yellow}[{second_jump}] {gray}>> {gray}{description}",
         color = 1
     },
 

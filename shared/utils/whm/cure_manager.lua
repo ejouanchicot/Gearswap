@@ -258,7 +258,7 @@ local function find_available_cure_with_fallback(optimal_spell, tier_config)
     local original_spell = optimal_spell
     local recast_time = string.format("%.1fs", recast)  -- Format with 1 decimal (e.g., "3.5s")
 
-    -- Try lower tiers (Cure IV → Cure III → Cure II → Cure I)
+    -- Try lower tiers (Cure IV >> Cure III >> Cure II >> Cure I)
     for i = optimal_index - 1, 1, -1 do
         local lower_tier = tier_config[i].spell
         local lower_available, _ = is_spell_available(lower_tier)
@@ -270,7 +270,7 @@ local function find_available_cure_with_fallback(optimal_spell, tier_config)
         end
     end
 
-    -- All lower tiers in recast - try higher tiers (Cure I → Cure II → Cure III...)
+    -- All lower tiers in recast - try higher tiers (Cure I >> Cure II >> Cure III...)
     for i = optimal_index + 1, #tier_config do
         local higher_tier = tier_config[i].spell
         local higher_available, _ = is_spell_available(higher_tier)

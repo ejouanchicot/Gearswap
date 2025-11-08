@@ -239,7 +239,7 @@ YOURNAME_WAR.lua:47: Cannot find the include file ...
 **Solutions:**
 
 1. **Normal behavior**
-   - Precast (Fast Cast) → Midcast (Potency) → Aftercast (Idle/Engaged)
+   - Precast (Fast Cast) >> Midcast (Potency) >> Aftercast (Idle/Engaged)
    - This is working as intended
 
 2. **Too many gear swaps?**
@@ -303,8 +303,8 @@ config/[job]/[JOB]_LOCKSTYLE.lua
 
 ```lua
 WARLockstyleConfig.by_subjob = {
-    ['SAM'] = 1,   -- WAR/SAM → lockstyle 1
-    ['NIN'] = 2,   -- WAR/NIN → lockstyle 2
+    ['SAM'] = 1,   -- WAR/SAM >> lockstyle 1
+    ['NIN'] = 2,   -- WAR/NIN >> lockstyle 2
 }
 ```
 
@@ -527,7 +527,7 @@ Automatic protection against "stuck midcast" caused by network packet loss.
 **How it works:**
 
 - Monitors midcast every 0.5 seconds
-- If midcast stuck > 3.5 seconds → auto-cleanup
+- If midcast stuck > 3.5 seconds >> auto-cleanup
 - Forces return to idle/engaged gear
 - No manual intervention needed
 
@@ -672,8 +672,8 @@ System impact is negligible:
 **Auto-sequence:**
 
 - Pet engaged: Uses move immediately
-- Pet idle + player engaged: Fight → Move (stays engaged)
-- Pet idle + player idle: Fight → Move → Heel
+- Pet idle + player engaged: Fight >> Move (stays engaged)
+- Pet idle + player idle: Fight >> Move >> Heel
 
 ---
 

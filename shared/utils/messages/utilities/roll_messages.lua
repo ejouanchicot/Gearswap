@@ -62,7 +62,7 @@ function RollMessages.show_roll_result(roll_name, value_display, bonus_display, 
     local bonus_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS)   -- Green
     local separator_color = MessageCore.create_color_code(MessageCore.COLORS.SEPARATOR) -- Gray
 
-    -- Extract just the number from value_display (e.g., "11 LUCKY!" -> 11)
+    -- Extract just the number from value_display (e.g., "11 LUCKY!" >> 11)
     local roll_value = tonumber(value_display:match("%d+"))
 
     -- Get circled number character (①②③④⑤⑥⑦⑧⑨⑩⑪)

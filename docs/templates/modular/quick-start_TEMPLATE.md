@@ -22,21 +22,21 @@
 **Check keybinds loaded**:
 
 ```
-→ Console shows: "[JOB] Keybinds loaded successfully"
+>> Console shows: "[JOB] Keybinds loaded successfully"
 ```
 
 **Check UI (if enabled)**:
 
 ```
 //gs c ui
-→ Shows all keybinds overlay
+>> Shows all keybinds overlay
 ```
 
 **Validate equipment**:
 
 ```
 //gs c checksets
-→ Shows item validation (VALID/STORAGE/MISSING)
+>> Shows item validation (VALID/STORAGE/MISSING)
 ```
 
 ---
@@ -65,7 +65,7 @@ On load, system automatically:
 
 ## 📚 Next Steps
 
-- **Learn keybinds** → [Keybinds Reference](keybinds.md)
-- **Try commands** → [Commands Reference](commands.md)
-- **Understand states** → [States & Modes](states.md)
-- **Customize** → [Configuration](configuration.md)
+- **Learn keybinds** >> [Keybinds Reference](keybinds.md)
+- **Try commands** >> [Commands Reference](commands.md)
+- **Understand states** >> [States & Modes](states.md)
+- **Customize** >> [Configuration](configuration.md)

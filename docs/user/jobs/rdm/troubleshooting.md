@@ -52,21 +52,21 @@
 
    ```
    //gs c watchdog
-   → Should show: "Watchdog: ENABLED"
+   >> Should show: "Watchdog: ENABLED"
    ```
 
 2. **Check item availability**:
 
    ```
    //gs c checksets
-   → Look for STORAGE or MISSING items
+   >> Look for STORAGE or MISSING items
    ```
 
 3. **Enable debug mode**:
 
    ```
    //gs c debugmidcast
-   → Cast a spell and check console output
+   >> Cast a spell and check console output
    ```
 
 4. **Check CombatMode**:
@@ -74,7 +74,7 @@
    ```
    If weapons not swapping, check:
    Alt+0 (cycle CombatMode to Off)
-   → CombatMode: On locks weapon slots
+   >> CombatMode: On locks weapon slots
    ```
 
 5. **Full reload**:
@@ -96,14 +96,14 @@
    ```
    //gs c debugmidcast
    /ma "Gravity" <t>
-   → Shows which set was selected and why
+   >> Shows which set was selected and why
    ```
 
 2. **Check EnfeebleMode state**:
 
    ```
    //gs c state EnfeebleMode
-   → Shows: "EnfeebleMode: Potency" (or Skill/Duration)
+   >> Shows: "EnfeebleMode: Potency" (or Skill/Duration)
    ```
 
 3. **Check spell database**:
@@ -120,9 +120,9 @@
    ```
 
 5. **Understand fallback chain**:
-   - If `mnd_accuracy.Potency` missing → tries `mnd_accuracy`
-   - If `mnd_accuracy` missing → tries `Potency`
-   - If `Potency` missing → uses base `sets.midcast['Enfeebling Magic']`
+   - If `mnd_accuracy.Potency` missing >> tries `mnd_accuracy`
+   - If `mnd_accuracy` missing >> tries `Potency`
+   - If `Potency` missing >> uses base `sets.midcast['Enfeebling Magic']`
 
 ---
 
@@ -136,7 +136,7 @@
 
    ```
    Press Alt+P
-   → Should show: "SaboteurMode: On"
+   >> Should show: "SaboteurMode: On"
    ```
 
 2. **Check spell in config**:
@@ -181,20 +181,20 @@
 
    ```
    //gs c state MainLightSpell
-   → Should show: "MainLightSpell: Fire" (or Aero/Thunder)
+   >> Should show: "MainLightSpell: Fire" (or Aero/Thunder)
 
    //gs c state NukeTier
-   → Should show: "NukeTier: V" (or VI/IV/etc.)
+   >> Should show: "NukeTier: V" (or VI/IV/etc.)
    ```
 
 2. **Check spell name construction**:
 
    ```
    MainLightSpell: Fire + NukeTier: V
-   → Should cast "Fire V"
+   >> Should cast "Fire V"
 
    MainLightSpell: Thunder + NukeTier: VI
-   → Should cast "Thunder VI"
+   >> Should cast "Thunder VI"
    ```
 
 3. **Manual cast test**:
@@ -248,7 +248,7 @@
 
    ```
    //gs c state MainJob
-   → If subjob not in config, uses default
+   >> If subjob not in config, uses default
    ```
 
 ---
@@ -263,15 +263,15 @@
 
    ```
    Storm spells require SCH subjob
-   → Change to RDM/SCH
+   >> Change to RDM/SCH
    ```
 
 2. **Verify state created**:
 
    ```
    //gs c state Storm
-   → If no SCH subjob: "State not found"
-   → With SCH subjob: "Storm: Firestorm"
+   >> If no SCH subjob: "State not found"
+   >> With SCH subjob: "Storm: Firestorm"
    ```
 
 3. **Check job_sub_job_change**:
@@ -293,22 +293,22 @@
 
    ```
    Press Alt+0
-   → CombatMode: Off (weapons can swap)
-   → CombatMode: On (weapons LOCKED)
+   >> CombatMode: Off (weapons can swap)
+   >> CombatMode: On (weapons LOCKED)
    ```
 
 2. **Check state cycling**:
 
    ```
    //gs c cycle MainWeapon
-   → Should show: "MainWeapon: Naegling/Colada/Daybreak"
+   >> Should show: "MainWeapon: Naegling/Colada/Daybreak"
    ```
 
 3. **Check weapon in inventory**:
 
    ```
    //gs c checksets
-   → Verify weapon items not MISSING
+   >> Verify weapon items not MISSING
    ```
 
 4. **Check RDM_ENGAGED module**:
@@ -371,7 +371,7 @@
 
    ```
    //gs c ui
-   → Toggles UI visibility
+   >> Toggles UI visibility
    ```
 
 3. **Check UI_MANAGER loaded**:

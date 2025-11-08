@@ -85,7 +85,7 @@ include('../shared/jobs/blm/functions/BLM_MOVEMENT.lua')
 ---     • Shared engaged set construction
 ---     • Shared idle set construction
 ---   logic/spell_refiner.lua
----     • Spell tier downgrading (Fire VI → V → IV → III → II → I)
+---     • Spell tier downgrading (Fire VI >> V >> IV >> III >> II >> I)
 ---============================================================================
 
 ---============================================================================
@@ -128,8 +128,8 @@ end
 --- refine_various_spells - Spell Tier Downgrading
 ---============================================================================
 --- Automatically downgrades spell tiers based on recast and MP availability
---- Example: Fire VI → Fire V → Fire IV → Fire III → Fire II → Fire I
---- Also handles -ja spells (Firaja → Firaga III) and Breakga → Break
+--- Example: Fire VI >> Fire V >> Fire IV >> Fire III >> Fire II >> Fire I
+--- Also handles -ja spells (Firaja >> Firaga III) and Breakga >> Break
 --- @param spell table The spell being cast
 --- @param eventArgs table Event arguments (can set eventArgs.cancel = true)
 --- @usage refine_various_spells(spell, eventArgs)
@@ -248,7 +248,7 @@ _G.CastStorm = CastStorm
 --- SECTION 6: DUAL-BOXING SYSTEM
 ---============================================================================
 
--- Load dual-boxing manager (auto-initializes and handles ALT<->MAIN communication)
+-- Load dual-boxing manager (auto-initializes and handles ALT<>>MAIN communication)
 local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
 
 ---============================================================================

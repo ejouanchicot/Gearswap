@@ -12,6 +12,7 @@
 
 local MessageCommands = {}
 local M = require('shared/utils/messages/api/messages')
+local MessageColors = require('shared/utils/messages/message_colors')
 
 ---============================================================================
 --- TESTCOLORS COMMAND
@@ -108,7 +109,7 @@ end
 function MessageCommands.show_region_detection_failed()
     local red = string.char(0x1F, 167)
     local blue = string.char(0x1F, 122)
-    local orange = string.char(0x1F, 57)
+    local orange = string.char(0x1F, MessageColors.get_warning_color())
     local yellow = string.char(0x1F, 50)
     local rose = string.char(0x1F, 2)
     local white = string.char(0x1F, 1)
@@ -207,7 +208,12 @@ end
 ---============================================================================
 
 function MessageCommands.show_debugsubjob_header()
-    M.send('COMMANDS', 'debugsubjob_header')
+    local gray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 50)
+    local separator = string.rep("=", 74)
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, yellow .. "[DEBUG] Subjob Detection")
+    add_to_chat(121, gray .. separator)
 end
 
 function MessageCommands.show_debugsubjob_no_player()
@@ -239,7 +245,9 @@ function MessageCommands.show_zone_info_unavailable()
 end
 
 function MessageCommands.show_debugsubjob_instructions()
-    M.send('COMMANDS', 'debugsubjob_instructions')
+    local gray = string.char(0x1F, 160)
+    local separator = string.rep("=", 74)
+    add_to_chat(121, gray .. separator)
 end
 
 ---============================================================================

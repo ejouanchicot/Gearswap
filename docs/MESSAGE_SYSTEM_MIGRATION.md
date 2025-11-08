@@ -87,7 +87,7 @@ function GEOMessages.show_indi_cast(spell_name)
     local arrow_color = MessageCore.create_color_code(Colors.SEPARATOR)
 
     local message = string.format(
-        "%s[%s] %s[%s] %s-> %s",
+        "%s[%s] %s[%s] %s>> %s",
         job_color, job_tag,
         spell_color, spell_name,
         arrow_color, spell_data.description
@@ -100,14 +100,16 @@ end
 ### After (New System)
 
 **Data file** (`data/jobs/geo_messages.lua`):
+
 ```lua
 indi_cast = {
-    template = "{lightblue}[{job}] {cyan}[{spell}] {gray}-> {description}",
+    template = "{lightblue}[{job}] {cyan}[{spell}] {gray}>> {description}",
     color = 1
 }
 ```
 
 **Code file** (`message_geo.lua`):
+
 ```lua
 function GEOMessages.show_indi_cast(spell_name)
     local spell_data = indi_db[spell_name]
@@ -122,17 +124,20 @@ end
 ## Benefits
 
 ### Developer Experience
+
 - ✅ **Easier to maintain**: Templates in one place
 - ✅ **Easier to test**: Isolated message data
 - ✅ **Easier to modify**: Change colors globally
 - ✅ **Better readability**: Separation of concerns
 
 ### Performance
+
 - ✅ **Template caching**: Parse once, use forever
 - ✅ **O(1) lookups**: Hash table access
 - ✅ **No runtime string building**: Pre-compiled templates
 
 ### Consistency
+
 - ✅ **Unified API**: `M.job()`, `M.error()`, `M.success()`
 - ✅ **Consistent colors**: Same colors across all jobs
 - ✅ **Consistent format**: All messages follow same pattern

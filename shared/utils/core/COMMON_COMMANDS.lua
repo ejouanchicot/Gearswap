@@ -586,10 +586,24 @@ function CommonCommands.handle_command(command, job_name, ...)
         return CommonCommands.handle_spellmsg(args[1])
     elseif cmd == 'info' then
         return CommonCommands.handle_info(args)
+    elseif cmd == 'debugmsg' then
+        -- Debug message settings
+        if _G.MESSAGE_SETTINGS then
+            add_to_chat(159, '[DEBUG] MESSAGE_SETTINGS:')
+            add_to_chat(159, '  spell_mode: ' .. tostring(_G.MESSAGE_SETTINGS.spell_mode or 'nil'))
+            add_to_chat(159, '  ja_mode: ' .. tostring(_G.MESSAGE_SETTINGS.ja_mode or 'nil'))
+            add_to_chat(159, '  ws_mode: ' .. tostring(_G.MESSAGE_SETTINGS.ws_mode or 'nil'))
+        else
+            add_to_chat(167, '[DEBUG] MESSAGE_SETTINGS is nil!')
+        end
+        return true
     elseif cmd == 'testmsg' or cmd == 'msgtest' then
         -- Test new message system
+        -- Usage: //gs c testmsg [job]
+        -- Examples: //gs c testmsg, //gs c testmsg brd, //gs c testmsg system
         local M = require('shared/utils/messages/api/messages')
-        M.test()
+        local job_filter = args[1]  -- Optional job filter (e.g., "brd", "geo", "system")
+        M.test(job_filter)
         return true
     elseif cmd == 'msgtests' then
         -- Validate entire message system

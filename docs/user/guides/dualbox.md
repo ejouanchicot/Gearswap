@@ -27,7 +27,7 @@ The DualBox system allows automatic communication between two characters:
 
 - **MAIN character** receives alt's job information
 - **ALT character** sends job updates automatically
-- **Communication**: Unidirectional (ALT → MAIN only)
+- **Communication**: Unidirectional (ALT >> MAIN only)
 
 ### Benefits
 
@@ -181,7 +181,7 @@ Enter new character name: Kaories
 **What Gets Cloned:**
 
 - ✅ Copies entire character folder
-- ✅ Renames all job files (`Tetsouo_*.lua` → `Kaories_*.lua`)
+- ✅ Renames all job files (`Tetsouo_*.lua` >> `Kaories_*.lua`)
 - ✅ Updates all config paths in code
 - ✅ Creates 13 complete job files (WAR, PLD, DNC, DRK, SAM, THF, RDM, WHM, BLM, GEO, COR, BRD, BST)
 

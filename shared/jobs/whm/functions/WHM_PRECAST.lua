@@ -8,7 +8,7 @@
 ---   • Enhancing magic precast (fast cast + duration gear preparation)
 ---   • Divine/Enfeebling magic precast
 ---   • Weaponskill validation and range checking
----   • Security layers (debuff guard → cooldown check → job logic)
+---   • Security layers (debuff guard >> cooldown check >> job logic)
 ---
 --- Follows 4-layer PRECAST security architecture:
 ---   1. PrecastGuard - Block casting under debuffs (Amnesia, Silence, Stun, etc.)
@@ -78,7 +78,7 @@ end
 ---============================================================================
 
 --- Main precast hook for all spells/abilities
---- Implements 4-layer security: PrecastGuard → CooldownChecker → WSValidator → WHM Logic
+--- Implements 4-layer security: PrecastGuard >> CooldownChecker >> WSValidator >> WHM Logic
 ---
 --- @param spell table Spell/ability data from Mote-Include
 --- @param action string Action type (not used)

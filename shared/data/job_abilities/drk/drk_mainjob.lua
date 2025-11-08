@@ -54,7 +54,7 @@ DRK_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Scarlet Delirium'] = {
-        description             = 'Damage taken → ATK/MATT boost',
+        description             = 'Damage taken >> ATK/MATT boost',
         level                   = 95,
         recast                  = 180,  -- 3min
         main_job_only           = true,

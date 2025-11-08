@@ -5,11 +5,11 @@
 --- tier management, and casting optimization for Black Mage spell automation.
 ---
 --- Features:
----   • Intelligent Tier Downgrading (automatic VI→V→IV→III→II→I fallback)
+---   • Intelligent Tier Downgrading (automatic VI>>V>>IV>>III>>II>>I fallback)
 ---   • MP and Recast Awareness (smart replacement based on availability)
 ---   • Magic Burst Integration (proper spell announcement for burst timing)
 ---   • Ja-spell Handling (special logic for -ja to -ga spell transitions)
----   • Breakga Replacement (secure Breakga→Break fallback with lag protection)
+---   • Breakga Replacement (secure Breakga>>Break fallback with lag protection)
 ---   • Recast Display (comprehensive tier recast information display)
 ---
 --- Dependencies:
@@ -38,7 +38,7 @@ local MessageCooldowns = require('shared/utils/messages/formatters/combat/messag
 --- Maps each tier to its lower replacement tier
 --- @type table<string, table<string, table>> Spell tier correspondence
 local SPELL_CORRESPONDENCE = {
-    -- Fire spells (VI → V → IV → III → II → I)
+    -- Fire spells (VI >> V >> IV >> III >> II >> I)
     Fire = {
         ['VI'] = { replace = 'V' },
         ['V'] = { replace = 'IV' },
@@ -92,7 +92,7 @@ local SPELL_CORRESPONDENCE = {
         ['II'] = { replace = 'I' },
         ['I'] = { replace = '' }
     },
-    -- AOE -ga spells (III → II → I)
+    -- AOE -ga spells (III >> II >> I)
     Firaga = {
         ['III'] = { replace = 'II' },
         ['II'] = { replace = 'I' },
@@ -123,27 +123,27 @@ local SPELL_CORRESPONDENCE = {
         ['II'] = { replace = 'I' },
         ['I'] = { replace = '' }
     },
-    -- Sleep spells (III → II → I)
+    -- Sleep spells (III >> II >> I)
     Sleep = {
         ['III'] = { replace = 'II' },
         ['II'] = { replace = 'I' },
         ['I'] = { replace = '' }
     },
-    -- Sleepga spells (II → I)
+    -- Sleepga spells (II >> I)
     Sleepga = {
         ['II'] = { replace = 'I' },
         ['I'] = { replace = '' }
     },
-    -- Break spells (Breakga → Break handled specially, but add for consistency)
+    -- Break spells (Breakga >> Break handled specially, but add for consistency)
     Break = {
         ['I'] = { replace = '' }
     },
-    -- Bind spells (II → I)
+    -- Bind spells (II >> I)
     Bind = {
         ['II'] = { replace = 'I' },
         ['I'] = { replace = '' }
     },
-    -- Bio spells (V → IV → III → II → I)
+    -- Bio spells (V >> IV >> III >> II >> I)
     Bio = {
         ['V'] = { replace = 'IV' },
         ['IV'] = { replace = 'III' },
@@ -151,7 +151,7 @@ local SPELL_CORRESPONDENCE = {
         ['II'] = { replace = 'I' },
         ['I'] = { replace = '' }
     },
-    -- Poison spells (V → IV → III → II → I)
+    -- Poison spells (V >> IV >> III >> II >> I)
     Poison = {
         ['V'] = { replace = 'IV' },
         ['IV'] = { replace = 'III' },
@@ -159,13 +159,13 @@ local SPELL_CORRESPONDENCE = {
         ['II'] = { replace = 'I' },
         ['I'] = { replace = '' }
     },
-    -- Drain spells (III → II → I)
+    -- Drain spells (III >> II >> I)
     Drain = {
         ['III'] = { replace = 'II' },
         ['II'] = { replace = 'I' },
         ['I'] = { replace = '' }
     },
-    -- Aspir spells (III → II → I)
+    -- Aspir spells (III >> II >> I)
     Aspir = {
         ['III'] = { replace = 'II' },
         ['II'] = { replace = 'I' },
@@ -282,7 +282,7 @@ function SpellRefiner.handle_spell_replacement(spell, spell_recasts, player_mp, 
     end
 
     -- Optimized tier checking with early exit and cached lookups
-    local maxIterations = 6 -- Prevent infinite loops (VI → V → IV → III → II → I)
+    local maxIterations = 6 -- Prevent infinite loops (VI >> V >> IV >> III >> II >> I)
     local resSpells = res.spells
     local playerMp = player_mp
 
@@ -790,7 +790,7 @@ end
 --- @param currentTime number Current timestamp
 function SpellRefiner._handle_breakga_replacement(spell, spell_recasts, eventArgs, currentTime)
     if spell.english == 'Breakga' and spell_recasts[spell.recast_id] > 0 then
-        -- LAG COMPENSATION: Secure Breakga -> Break replacement
+        -- LAG COMPENSATION: Secure Breakga >> Break replacement
         local breakKey = "Breakga_to_Break"
         if isSpellSafeToCast(breakKey, currentTime) then
             cancel_spell()

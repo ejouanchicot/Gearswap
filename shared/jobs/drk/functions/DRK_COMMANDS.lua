@@ -30,7 +30,7 @@ local MessageCommands = require('shared/utils/messages/formatters/ui/message_com
 ---============================================================================
 
 --- Handle job-specific self commands
---- Processes commands in order: Common → UI → DRK-specific
+--- Processes commands in order: Common >> UI >> DRK-specific
 ---
 --- Common commands:
 ---   • reload         - Reload GearSwap

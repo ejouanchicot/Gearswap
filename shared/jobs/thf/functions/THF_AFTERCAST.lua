@@ -6,7 +6,7 @@
 --- Features:
 ---   • Return to idle/engaged gear after actions complete
 ---   • SA/TA pending flag tracking (before buff appears in buffactive)
----   • Clean transition from precast → midcast → aftercast
+---   • Clean transition from precast >> midcast >> aftercast
 ---   • Global state management (_G.thf_sa_pending, _G.thf_ta_pending)
 ---
 --- Dependencies:

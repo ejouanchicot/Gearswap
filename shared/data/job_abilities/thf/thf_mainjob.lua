@@ -46,7 +46,7 @@ THF_MAINJOB.abilities = {
         main_job_only           = true
     },
     ['Feint'] = {
-        description             = 'Enemy evasion -150→-50',
+        description             = 'Enemy evasion -150>>-50',
         level                   = 75,
         recast                  = 120,  -- 2min
         main_job_only           = true,

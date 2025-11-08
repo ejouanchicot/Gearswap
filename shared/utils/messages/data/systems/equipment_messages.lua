@@ -25,12 +25,12 @@ return {
     },
 
     set_valid = {
-        template = "{green}[OK] {set_path}",
+        template = "{gray}[{green}OK{gray}] {set_path}",
         color = 158
     },
 
     missing_item = {
-        template = "{red}[MISSING] [{slot}] {item_name}",
+        template = "{gray}[{red}MISSING{gray}] [{slot}{gray}] {item_name}",
         color = 167
     },
 
@@ -40,7 +40,7 @@ return {
     },
 
     storage_item = {
-        template = "{yellow}[STORAGE] [{slot}] {item_name} - Found in {bag_name}",
+        template = "{gray}[{yellow}STORAGE{gray}] [{slot}{gray}] {item_name} - Found in {bag_name}",
         color = 200
     },
 
@@ -55,27 +55,27 @@ return {
     },
 
     summary_valid_sets = {
-        template = "{green}[OK] {valid_sets}/{total_sets} sets complete",
+        template = "{gray}[{green}OK{gray}] {valid_sets}/{total_sets} sets complete",
         color = 158
     },
 
     summary_storage = {
-        template = "{yellow}[STORAGE] {storage_count} items need to be retrieved",
+        template = "{gray}[{yellow}STORAGE{gray}] {storage_count} items need to be retrieved",
         color = 200
     },
 
     summary_missing = {
-        template = "{red}[MISSING] {missing_count} items not found",
+        template = "{gray}[{red}MISSING{gray}] {missing_count} items not found",
         color = 167
     },
 
     check_error = {
-        template = "{red}[ERROR] Failed to check {job_name} equipment: {error_msg}",
+        template = "{gray}[{red}ERROR{gray}] Failed to check {job_name} equipment: {error_msg}",
         color = 167
     },
 
     no_sets_found = {
-        template = "{yellow}[WARNING] No equipment sets found for {job_name}",
+        template = "{gray}[{yellow}WARNING{gray}] No equipment sets found for {job_name}",
         color = 200
     },
 
@@ -84,47 +84,47 @@ return {
     ---========================================================================
 
     max_recursion_error = {
-        template = "{red}[ERROR] Max recursion depth ({max_depth}) reached at: {path}",
+        template = "{gray}[{red}ERROR{gray}] Max recursion depth {gray}({max_depth}{gray}) reached at: {path}",
         color = 167
     },
 
     alias_detected = {
-        template = "{gray}[SKIP] Alias detected at: {path} (already visited)",
+        template = "{gray}[SKIP] Alias detected at: {path} {gray}(already visited{gray})",
         color = 160
     },
 
     scanning = {
-        template = "{cyan}[DEBUG] Scanning: {path} (depth: {depth})",
+        template = "{gray}[{cyan}DEBUG{gray}] Scanning: {path} {gray}(depth: {depth}{gray})",
         color = 123
     },
 
     building_cache = {
-        template = "{cyan}[DEBUG] Building item cache...",
+        template = "{gray}[{cyan}DEBUG{gray}] Building item cache...",
         color = 123
     },
 
     cache_built = {
-        template = "{cyan}[DEBUG] Item cache built: {cache_size} entries",
+        template = "{gray}[{cyan}DEBUG{gray}] Item cache built: {cache_size} entries",
         color = 123
     },
 
     starting_scan = {
-        template = "{cyan}[DEBUG] Starting set scan...",
+        template = "{gray}[{cyan}DEBUG{gray}] Starting set scan...",
         color = 123
     },
 
     scan_complete = {
-        template = "{cyan}[DEBUG] Scan complete. Found {set_count} sets",
+        template = "{gray}[{cyan}DEBUG{gray}] Scan complete. Found {set_count} sets",
         color = 123
     },
 
     cache_build_failed = {
-        template = "{red}[ERROR] Failed to build item cache: {error_msg}",
+        template = "{gray}[{red}ERROR{gray}] Failed to build item cache: {error_msg}",
         color = 167
     },
 
     scan_failed = {
-        template = "{red}[ERROR] Set scan failed: {error_msg}",
+        template = "{gray}[{red}ERROR{gray}] Set scan failed: {error_msg}",
         color = 167
     },
 }

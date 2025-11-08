@@ -6,7 +6,7 @@
 ---
 --- Features:
 ---   • Modular architecture (11 hooks + 1 logic module)
----   • Dependency-ordered loading (lockstyle → macros → combat → utility)
+---   • Dependency-ordered loading (lockstyle >> macros >> combat >> utility)
 ---   • Separation of concerns (hooks = orchestration, logic = implementation)
 ---
 --- Logic Modules:
@@ -58,7 +58,7 @@ include('../shared/jobs/rdm/functions/RDM_MOVEMENT.lua')
 --- SECTION 6: DUAL-BOXING SYSTEM
 ---============================================================================
 
--- Load dual-boxing manager (auto-initializes and handles ALT<->MAIN communication)
+-- Load dual-boxing manager (auto-initializes and handles ALT<>>MAIN communication)
 local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
 
 ---============================================================================

@@ -18,7 +18,7 @@ local M = require('shared/utils/messages/api/messages')
 -- Message core (for legacy functions: section_header, info, error)
 local MessageCore = require('shared/utils/messages/message_core')
 
--- Get job tag (for subjob support: BST/WHM → "BST/WHM")
+-- Get job tag (for subjob support: BST/WHM >> "BST/WHM")
 local function get_job_tag()
     local main_job = player and player.main_job or 'BST'
     local sub_job = player and player.sub_job or ''

@@ -112,7 +112,7 @@ return UNIVERSAL_JA_DB
 
 1. **Length**: Keep descriptions under 50 characters to avoid line wrapping in FFXI chat
 2. **Clarity**: Be concise but precise
-3. **Format**: Use symbols (`+`, `-`, `%`, `→`) for brevity
+3. **Format**: Use symbols (`+`, `-`, `%`, `>>`) for brevity
 4. **Decay**: Use `decay to` for abilities with progressive effects (e.g., "Physical damage -90% decay to -50%")
 5. **Consistency**: Match existing database style
 
@@ -168,7 +168,7 @@ return UNIVERSAL_JA_DB
 - ✅ **Reusability**: Other modules can query ability descriptions
 - ✅ **Consistency**: Matches existing `SPELL_DATABASE` architecture (individual + universal pattern)
 - ✅ **Scalability**: Easy to add new jobs/abilities (edit individual database only)
-- ✅ **Code Reduction**: ~200 lines of hardcoded if/elseif → ~30 lines across 12 jobs (85% reduction)
+- ✅ **Code Reduction**: ~200 lines of hardcoded if/elseif >> ~30 lines across 12 jobs (85% reduction)
 - ✅ **Safe Loading**: pcall() ensures missing databases don't break system
 
 ## Related Systems

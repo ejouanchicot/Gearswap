@@ -136,30 +136,30 @@ end
 **Exemples Ifrit:**
 
 ```
-Punch → [Punch] Deals physical dmg.
-Fire II → [Fire II] Deals fire damage.
-Burning Strike → [Burning Strike] Deals fire physical dmg.
-Flaming Crush → [Flaming Crush] Fire damage + knockback.
-Meteor Strike → [Meteor Strike] Fire magic damage (AoE).
-Conflag Strike → [Conflag Strike] Fire damage + burn.
+Punch >> [Punch] Deals physical dmg.
+Fire II >> [Fire II] Deals fire damage.
+Burning Strike >> [Burning Strike] Deals fire physical dmg.
+Flaming Crush >> [Flaming Crush] Fire damage + knockback.
+Meteor Strike >> [Meteor Strike] Fire magic damage (AoE).
+Conflag Strike >> [Conflag Strike] Fire damage + burn.
 ```
 
 **Exemples Leviathan:**
 
 ```
-Barracuda Dive → [Barracuda Dive] Water physical attack.
-Spinning Dive → [Spinning Dive] Physical attack + knockback.
-Grand Fall → [Grand Fall] Water magic damage (AoE).
-Tidal Wave → [Tidal Wave] Water magic damage (AoE).
+Barracuda Dive >> [Barracuda Dive] Water physical attack.
+Spinning Dive >> [Spinning Dive] Physical attack + knockback.
+Grand Fall >> [Grand Fall] Water magic damage (AoE).
+Tidal Wave >> [Tidal Wave] Water magic damage (AoE).
 ```
 
 **Exemples Fenrir:**
 
 ```
-Eclipse Bite → [Eclipse Bite] Dark physical damage.
-Lunar Bay → [Lunar Bay] Dark magic damage (AoE).
-Moonlit Charge → [Moonlit Charge] Physical damage.
-Howling Moon → [Howling Moon] Dark damage + accuracy down.
+Eclipse Bite >> [Eclipse Bite] Dark physical damage.
+Lunar Bay >> [Lunar Bay] Dark magic damage (AoE).
+Moonlit Charge >> [Moonlit Charge] Physical damage.
+Howling Moon >> [Howling Moon] Dark damage + accuracy down.
 ```
 
 ### Blood Pact: Ward (Support/Buff)
@@ -181,13 +181,13 @@ Howling Moon → [Howling Moon] Dark damage + accuracy down.
 **Exemples:**
 
 ```
-Shining Ruby → [Shining Ruby] Party Regen.
-Aerial Armor → [Aerial Armor] Party Blink.
-Earthen Ward → [Earthen Ward] Party damage reduction.
-Rolling Thunder → [Rolling Thunder] Party magic attack boost.
-Crimson Howl → [Crimson Howl] Party attack boost.
-Frost Armor → [Frost Armor] Party ice spikes.
-Spring Water → [Spring Water] Party HP regen.
+Shining Ruby >> [Shining Ruby] Party Regen.
+Aerial Armor >> [Aerial Armor] Party Blink.
+Earthen Ward >> [Earthen Ward] Party damage reduction.
+Rolling Thunder >> [Rolling Thunder] Party magic attack boost.
+Crimson Howl >> [Crimson Howl] Party attack boost.
+Frost Armor >> [Frost Armor] Party ice spikes.
+Spring Water >> [Spring Water] Party HP regen.
 ```
 
 ---

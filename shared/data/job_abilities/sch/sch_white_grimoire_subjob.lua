@@ -7,7 +7,7 @@
 ---   - Penury (Lv10) - Next white magic -50% MP
 ---   - Addendum: White (Lv10) - Access additional white magic
 ---   - Celerity (Lv25) - Next white magic -50% cast time
----   - Accession (Lv40) - Next heal/enhancing → party AoE
+---   - Accession (Lv40) - Next heal/enhancing >> party AoE
 ---   - Rapture (Lv55 - Master Job Only) - Next white magic +potency
 ---
 --- @file sch_white_grimoire_subjob.lua
@@ -46,7 +46,7 @@ SCH_WHITE_GRIMOIRE_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Accession'] = {
-        description             = 'Next heal/enhancing → party AoE',
+        description             = 'Next heal/enhancing >> party AoE',
         level                   = 40,
         recast                  = 0,  -- Charge system
         main_job_only           = false,

@@ -44,9 +44,9 @@
 **Without Job Change Manager**:
 
 ```
-1. Start changing DNC → WAR
+1. Start changing DNC >> WAR
 2. DNC unloads, starts cleanup (keybinds, UI, lockstyle)
-3. User changes subjob WAR/SAM → WAR/NIN (before cleanup finished)
+3. User changes subjob WAR/SAM >> WAR/NIN (before cleanup finished)
 4. WAR loads, starts setup (keybinds, UI, lockstyle)
 5. DNC cleanup STILL RUNNING - unbinds WAR's keybinds! ❌
 6. UI tries to load twice - creates duplicate windows ❌
@@ -60,10 +60,10 @@
 **Same scenario with Job Change Manager**:
 
 ```
-1. Start changing DNC → WAR
+1. Start changing DNC >> WAR
 2. JobChangeManager: Cancel ALL pending DNC operations ✅
 3. JobChangeManager: Debounce 3.0s - ignore rapid changes ✅
-4. User changes subjob WAR/SAM → WAR/NIN
+4. User changes subjob WAR/SAM >> WAR/NIN
 5. JobChangeManager: Too soon, ignore this change ✅
 6. After 3.0s: Execute final change (WAR/NIN)
 7. One clean transition, no conflicts ✅
@@ -82,15 +82,15 @@
 **Example**:
 
 ```
-Time 0.0s: DNC/WHM → WAR/SAM (change started)
-Time 1.0s: WAR/SAM → WAR/NIN (user changes subjob)
-Time 2.0s: WAR/NIN → WAR/DNC (user changes subjob again)
+Time 0.0s: DNC/WHM >> WAR/SAM (change started)
+Time 1.0s: WAR/SAM >> WAR/NIN (user changes subjob)
+Time 2.0s: WAR/NIN >> WAR/DNC (user changes subjob again)
 
 JobChangeManager:
 - Ignores change at 1.0s (too soon)
 - Ignores change at 2.0s (too soon)
 - Waits until 5.0s (3.0s after last change)
-- Executes: DNC/WHM → WAR/DNC (final state)
+- Executes: DNC/WHM >> WAR/DNC (final state)
 ```
 
 **Why 3.0 seconds?**:
@@ -154,7 +154,7 @@ JobChangeManager:
 **Changing jobs**:
 
 ```
-1. You change DNC → WAR in-game
+1. You change DNC >> WAR in-game
 2. [DNC] Unloading...
 3. [WAR] Loading...
 4. [WAR] Keybinds loaded
@@ -169,7 +169,7 @@ JobChangeManager:
 **Behind the scenes**:
 
 ```
-1. JobChangeManager: Detected job change DNC → WAR
+1. JobChangeManager: Detected job change DNC >> WAR
 2. JobChangeManager: Cancel all pending DNC operations
 3. JobChangeManager: Check debounce (last change > 3.0s ago? Yes)
 4. JobChangeManager: Allow change to proceed

@@ -268,7 +268,7 @@ return {
     },
 
     spellmsg_mode_changed_full = {
-        template = "{green}[SPELL_MSG] Display mode changed to: {yellow}full\n \n{cyan}Example output:\n{lightblue}  [GEO] {cyan}Aspir {gray}-> Absorbs MP (no undead).\n{lightblue}  [BLM] {cyan}Fire III {gray}-> Deals fire damage.",
+        template = "{green}[SPELL_MSG] Display mode changed to: {yellow}full\n \n{cyan}Example output:\n{lightblue}  [GEO] {cyan}Aspir {gray}>> Absorbs MP (no undead).\n{lightblue}  [BLM] {cyan}Fire III {gray}>> Deals fire damage.",
         color = 1
     },
 

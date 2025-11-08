@@ -201,9 +201,9 @@ Chaque spell BLU contient maintenant:
 
 ```
 Cast any BLU spell:
-- Foot Kick → [Foot Kick] Deals slashing dmg.
-- Magic Hammer → [Magic Hammer] Deals dmg + MP drain.
-- Bad Breath → [Bad Breath] Deals earth dmg + 7 ailments.
+- Foot Kick >> [Foot Kick] Deals slashing dmg.
+- Magic Hammer >> [Magic Hammer] Deals dmg + MP drain.
+- Bad Breath >> [Bad Breath] Deals earth dmg + 7 ailments.
 ```
 
 ### Test 3: DataLoader Integration

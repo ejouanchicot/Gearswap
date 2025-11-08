@@ -48,10 +48,10 @@ These commands work for **ALL jobs**.
 
 ```
 //gs c checksets
-→ [WAR/SAM] Validating equipment sets...
-→ [WAR/SAM] ✓ 42/44 items validated (95.5%)
-→ [STORAGE] sets.precast.WS['Upheaval'].neck: "Fotia Gorget"
-→ [MISSING] sets.idle.PDT.body: "Sakpata's Plate"
+>> [WAR/SAM] Validating equipment sets...
+>> [WAR/SAM] ✓ 42/44 items validated (95.5%)
+>> [STORAGE] sets.precast.WS['Upheaval'].neck: "Fotia Gorget"
+>> [MISSING] sets.idle.PDT.body: "Sakpata's Plate"
 ```
 
 **Output Legend:**
@@ -82,7 +82,7 @@ These commands work for **ALL jobs**.
 | Command | Description |
 |---------|-------------|
 | `//gs c cycle HybridMode` | Cycle: Normal ↔ PDT |
-| `//gs c cycle OffenseMode` | Cycle: Normal → Acc → ... |
+| `//gs c cycle OffenseMode` | Cycle: Normal >> Acc >> ... |
 | `//gs c cycle DefenseMode` | Cycle defense modes |
 
 ### DualBox Commands
@@ -132,11 +132,11 @@ Protects against stuck midcast in laggy zones (Odyssey, Dynamis).
 
 ```
 //gs c watchdog test
-→ [Watchdog TEST] Simulating stuck midcast: Test Spell
-→ [Watchdog TEST] Aftercast will be BLOCKED - watchdog should cleanup after 3.5s
+>> [Watchdog TEST] Simulating stuck midcast: Test Spell
+>> [Watchdog TEST] Aftercast will be BLOCKED - watchdog should cleanup after 3.5s
 ... (after 3.5s) ...
-→ [Watchdog] Midcast stuck detected - recovering from: Test Spell (stuck for 3.5s)
-→ [Watchdog TEST] Test mode deactivated after cleanup
+>> [Watchdog] Midcast stuck detected - recovering from: Test Spell (stuck for 3.5s)
+>> [Watchdog TEST] Test mode deactivated after cleanup
 ```
 
 **Timeout Recommendations:**
@@ -264,8 +264,8 @@ See `../features/watchdog.md` for complete documentation.
 **Ready Move System:**
 
 - If pet engaged: Uses move immediately
-- If pet idle + player engaged: Fight → Move (stays engaged)
-- If pet idle + player idle: Fight → Move → Heel
+- If pet idle + player engaged: Fight >> Move (stays engaged)
+- If pet idle + player idle: Fight >> Move >> Heel
 
 ### SAM - Samurai
 

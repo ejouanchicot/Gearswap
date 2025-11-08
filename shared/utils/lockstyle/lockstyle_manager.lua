@@ -2,7 +2,7 @@
 --- Lockstyle Manager - Centralized Lockstyle Management Factory
 ---============================================================================
 --- Factory pattern that creates job-specific lockstyle modules.
---- Eliminates 293-line duplication across WAR/PLD/DNC (879 lines → 293 lines).
+--- Eliminates 293-line duplication across WAR/PLD/DNC (879 lines >> 293 lines).
 ---
 --- @file utils/lockstyle/lockstyle_manager.lua
 --- @author Tetsouo

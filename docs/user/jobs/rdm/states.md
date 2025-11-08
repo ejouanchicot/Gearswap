@@ -12,7 +12,7 @@ States = Configuration options you cycle through with keybinds.
 
 ```lua
 state.EnfeebleMode = M{'Potency', 'Skill', 'Duration'}  -- 3 options
--- Press Alt+5 to cycle: Potency → Skill → Duration → Potency
+-- Press Alt+5 to cycle: Potency >> Skill >> Duration >> Potency
 ```
 
 ---
@@ -50,85 +50,85 @@ state.EnfeebleMode = M{'Potency', 'Skill', 'Duration'}  -- 3 options
 
 ```
 HybridMode: PDT
-→ Uses: sets.engaged.PDT (50% physical damage reduction)
+>> Uses: sets.engaged.PDT (50% physical damage reduction)
 
 HybridMode: Normal
-→ Uses: sets.engaged.Normal (maximum DPS)
+>> Uses: sets.engaged.Normal (maximum DPS)
 ```
 
 ### EngagedMode
 
 ```
 EngagedMode: DT
-→ Uses: sets.engaged.DT (damage taken reduction)
+>> Uses: sets.engaged.DT (damage taken reduction)
 
 EngagedMode: Acc
-→ Uses: sets.engaged.Acc (accuracy focus)
+>> Uses: sets.engaged.Acc (accuracy focus)
 
 EngagedMode: TP
-→ Uses: sets.engaged.TP (TP gain focus - Store TP, Dual Wield)
+>> Uses: sets.engaged.TP (TP gain focus - Store TP, Dual Wield)
 
 EngagedMode: Enspell
-→ Uses: sets.engaged.Enspell (enspell damage focus)
+>> Uses: sets.engaged.Enspell (enspell damage focus)
 ```
 
 ### IdleMode
 
 ```
 IdleMode: Refresh
-→ Uses: sets.idle.Refresh (MP refresh gear - Refresh+, Regen)
+>> Uses: sets.idle.Refresh (MP refresh gear - Refresh+, Regen)
 
 IdleMode: DT
-→ Uses: sets.idle.DT (damage taken reduction when idle)
+>> Uses: sets.idle.DT (damage taken reduction when idle)
 ```
 
 ### EnfeebleMode
 
 ```
 EnfeebleMode: Potency
-→ Uses: sets.midcast['Enfeebling Magic'].mnd_potency.Potency (MND/INT focus)
+>> Uses: sets.midcast['Enfeebling Magic'].mnd_potency.Potency (MND/INT focus)
 
 EnfeebleMode: Skill
-→ Uses: sets.midcast['Enfeebling Magic'].mnd_potency.Skill (Enfeebling Skill+)
+>> Uses: sets.midcast['Enfeebling Magic'].mnd_potency.Skill (Enfeebling Skill+)
 
 EnfeebleMode: Duration
-→ Uses: sets.midcast['Enfeebling Magic'].mnd_potency.Duration (Duration+ gear)
+>> Uses: sets.midcast['Enfeebling Magic'].mnd_potency.Duration (Duration+ gear)
 ```
 
 ### NukeMode
 
 ```
 NukeMode: FreeNuke
-→ Uses: sets.midcast['Elemental Magic'].FreeNuke (high-tier nukes)
+>> Uses: sets.midcast['Elemental Magic'].FreeNuke (high-tier nukes)
 
 NukeMode: Magic Burst
-→ Uses: sets.midcast['Elemental Magic']['Magic Burst'] (magic burst damage)
+>> Uses: sets.midcast['Elemental Magic']['Magic Burst'] (magic burst damage)
 ```
 
 ### MainWeapon / SubWeapon
 
 ```
 MainWeapon: Naegling
-→ Equips: Naegling (Savage Blade weapon)
+>> Equips: Naegling (Savage Blade weapon)
 
 MainWeapon: Colada
-→ Equips: Colada (Enspell shield)
+>> Equips: Colada (Enspell shield)
 
 MainWeapon: Daybreak
-→ Equips: Daybreak (Magic nuke weapon)
+>> Equips: Daybreak (Magic nuke weapon)
 
 SubWeapon: Ammurapi / Genmei
-→ Equips: Ammurapi or Genmei (Enfeebling swords)
+>> Equips: Ammurapi or Genmei (Enfeebling swords)
 ```
 
 ### CombatMode
 
 ```
 CombatMode: Off
-→ Weapons can swap freely during combat
+>> Weapons can swap freely during combat
 
 CombatMode: On
-→ Weapons locked (main, sub, range slots disabled from swapping)
+>> Weapons locked (main, sub, range slots disabled from swapping)
 ```
 
 **Use case**: Turn ON when you don't want weapons swapping during nukes/enfeebles.
@@ -145,7 +145,7 @@ RDM uses **nested set logic** for maximum flexibility:
 EnfeebleMode: Potency
 Spell: Gravity (MND-based potency)
 
-→ Selects: sets.midcast['Enfeebling Magic'].mnd_potency.Potency
+>> Selects: sets.midcast['Enfeebling Magic'].mnd_potency.Potency
 ```
 
 **Example 2: Elemental Magic**
@@ -154,7 +154,7 @@ Spell: Gravity (MND-based potency)
 NukeMode: FreeNuke
 Spell: Fire VI
 
-→ Selects: sets.midcast['Elemental Magic'].FreeNuke
+>> Selects: sets.midcast['Elemental Magic'].FreeNuke
 ```
 
 ---
@@ -165,14 +165,14 @@ Spell: Fire VI
 
 ```
 //gs c ui
-→ Shows all states with current values
+>> Shows all states with current values
 ```
 
 **Method 2**: Console command:
 
 ```
 //gs c state EnfeebleMode
-→ Shows: "EnfeebleMode: Potency"
+>> Shows: "EnfeebleMode: Potency"
 ```
 
 **Method 3**: Watch gear swap
@@ -184,7 +184,7 @@ Enable debugmidcast:
 Cast spell:
 /ma "Gravity" <t>
 
-→ Console shows which set was selected
+>> Console shows which set was selected
 ```
 
 ---
@@ -196,15 +196,15 @@ Cast spell:
 ```
 Alt+5 (cycle EnfeebleMode to Duration)
 /ma "Slow II" <t>
-→ Casts with Duration+ gear
+>> Casts with Duration+ gear
 ```
 
 **Tip 2**: Use CombatMode to lock weapons
 
 ```
 Alt+0 (turn CombatMode ON)
-→ Weapons won't swap during spells
-→ Prevents accidental weapon swaps
+>> Weapons won't swap during spells
+>> Prevents accidental weapon swaps
 ```
 
 **Tip 3**: Pre-select elements for quick nuking
@@ -212,7 +212,7 @@ Alt+0 (turn CombatMode ON)
 ```
 Alt+8 (set MainLightSpell to Thunder)
 Ctrl+= (set NukeTier to VI)
-→ Now Ctrl+8 always casts Thunder VI
+>> Now Ctrl+8 always casts Thunder VI
 ```
 
 **Tip 4**: SCH subjob Storm management
@@ -221,7 +221,7 @@ Ctrl+= (set NukeTier to VI)
 // With SCH subjob:
 F5 (cycle Storm to Firestorm)
 //gs c caststorm
-→ Casts Firestorm
+>> Casts Firestorm
 
 // Without SCH subjob:
 F5 (does nothing - state doesn't exist)

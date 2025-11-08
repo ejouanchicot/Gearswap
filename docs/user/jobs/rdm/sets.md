@@ -57,7 +57,7 @@ sets.precast.WS['Aeolian Edge'] = { ... }  -- AOE magic WS
 
 ### Enfeebling Magic (Nested Structure)
 
-**Triple Nested: Type → Mode → Target**
+**Triple Nested: Type >> Mode >> Target**
 
 ```lua
 sets.midcast['Enfeebling Magic'] = {}
@@ -108,12 +108,12 @@ sets.midcast['Elemental Magic']['Magic Burst'] = { ... } -- Magic Burst damage
 
 **Usage**:
 
-- NukeMode: FreeNuke → uses FreeNuke set
-- NukeMode: Magic Burst → uses Magic Burst set
+- NukeMode: FreeNuke >> uses FreeNuke set
+- NukeMode: Magic Burst >> uses Magic Burst set
 
 ### Enhancing Magic
 
-**Triple Nested: Target → Duration**
+**Triple Nested: Target >> Duration**
 
 ```lua
 sets.midcast['Enhancing Magic'] = {}
@@ -238,7 +238,7 @@ end
 ```
 //gs c checksets
 
-→ Output:
+>> Output:
 [RDM] ✅ 156/160 items validated (97.5%)
 
 --- VALID ITEMS (156) ---
@@ -331,5 +331,5 @@ sets.midcast['Enfeebling Magic'].int_potency.Macc = {
 ```
 Alt+5 (cycle to Macc)
 /ma "Slow II" <t>
-→ Should use sets.midcast['Enfeebling Magic'].mnd_potency.Macc
+>> Should use sets.midcast['Enfeebling Magic'].mnd_potency.Macc
 ```

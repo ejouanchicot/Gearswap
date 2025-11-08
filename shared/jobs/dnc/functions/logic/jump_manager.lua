@@ -6,7 +6,7 @@
 ---
 --- Features:
 ---   • Auto-trigger Jump if TP < 1000 before WS (controllable via JumpAuto state)
----   • Intelligent chaining: Jump → High Jump if TP still < 1000 after first Jump
+---   • Intelligent chaining: Jump >> High Jump if TP still < 1000 after first Jump
 ---   • Auto-recast WS after Jump sequence completes (no manual re-launch needed)
 ---   • Ultra-fast timing: 0.5s animation delay (quasi-instant like in-game)
 ---   • Silent execution: No messages (job_precast displays normal JA messages)

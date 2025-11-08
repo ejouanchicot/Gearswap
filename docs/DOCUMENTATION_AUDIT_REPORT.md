@@ -52,11 +52,11 @@
 
 **Problèmes Trouvés:**
 
-1. **Broken Link**: Line 376 `[Keybinds](KEYBINDS.md)` → Should be `user/guides/keybinds.md`
-2. **Broken Link**: Line 378 `[FAQ](FAQ.md)` → Should be `user/guides/faq.md`
+1. **Broken Link**: Line 376 `[Keybinds](KEYBINDS.md)` >> Should be `user/guides/keybinds.md`
+2. **Broken Link**: Line 378 `[FAQ](FAQ.md)` >> Should be `user/guides/faq.md`
 3. **Missing Info**: Unified messages system (2025-11-01) not mentioned in Version History
 4. **Missing Info**: UNIVERSAL_SPELL_DATABASE.lua not documented
-5. **Outdated Date**: "Last Updated: 2025-10-26" → Should be 2025-11-01
+5. **Outdated Date**: "Last Updated: 2025-10-26" >> Should be 2025-11-01
 
 **Recommandation:** UPDATE
 

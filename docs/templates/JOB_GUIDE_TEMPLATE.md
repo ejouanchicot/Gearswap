@@ -40,7 +40,7 @@
    //gs c checksets
    ```
 
-   → Should show your equipment validation results
+   >> Should show your equipment validation results
 
 3. **Test keybinds**:
    - Press **Alt+F1** to toggle UI (see all keybinds)

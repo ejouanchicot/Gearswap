@@ -143,8 +143,8 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     -- Cast primary Geo spell with intelligent targeting
-    -- Buffs (party support) → <stpc> (sub-target party)
-    -- Debuffs (enemy) → <stnpc> (sub-target NPC)
+    -- Buffs (party support) >> <stpc> (sub-target party)
+    -- Debuffs (enemy) >> <stnpc> (sub-target NPC)
     if command == 'geo' then
         if state.MainGeo and state.MainGeo.current then
             local spell_name = state.MainGeo.current

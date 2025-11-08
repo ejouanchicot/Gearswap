@@ -46,21 +46,21 @@
 
    ```
    //gs c watchdog
-   → Should show: "Watchdog: ENABLED"
+   >> Should show: "Watchdog: ENABLED"
    ```
 
 2. **Check item availability**:
 
    ```
    //gs c checksets
-   → Look for STORAGE or MISSING items
+   >> Look for STORAGE or MISSING items
    ```
 
 3. **Enable debug mode**:
 
    ```
    //gs c debugmidcast
-   → Cast a spell and check console output
+   >> Cast a spell and check console output
    ```
 
 4. **Full reload**:
@@ -81,7 +81,7 @@
 
    ```
    //gs c debugmidcast
-   → Shows which set was selected and why
+   >> Shows which set was selected and why
    ```
 
 2. **Check state values**:

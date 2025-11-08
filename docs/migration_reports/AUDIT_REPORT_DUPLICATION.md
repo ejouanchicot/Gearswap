@@ -284,8 +284,8 @@ Utility (misc):
 
 | File | Duplication % | Spells | Lines | Action |
 |------|---------------|--------|-------|--------|
-| `internal/rdm/enfeebling.lua` | 92% (35/38) | 38 | 446 | Migrate Spike spells → Delete |
-| `internal/rdm/enhancing.lua` | 91% (72/79) | 79 | 776 | Keep Healing → Delete rest |
+| `internal/rdm/enfeebling.lua` | 92% (35/38) | 38 | 446 | Migrate Spike spells >> Delete |
+| `internal/rdm/enhancing.lua` | 91% (72/79) | 79 | 776 | Keep Healing >> Delete rest |
 | `internal/whm/bar.lua` | 100% (20/20) | 20 | 129 | **DELETE ENTIRE FILE** |
 | `internal/whm/boost.lua` | 100% (7/7) | 7 | ~100 | **DELETE ENTIRE FILE** |
 | `internal/whm/teleport.lua` | 100% (9/9) | 9 | ~150 | **DELETE ENTIRE FILE** |
@@ -356,7 +356,7 @@ Utility (misc):
 },
 ```
 
-**Update:** `ENHANCING_MAGIC_DATABASE.lua` spell count (136 → 139)
+**Update:** `ENHANCING_MAGIC_DATABASE.lua` spell count (136 >> 139)
 
 ---
 
@@ -480,26 +480,26 @@ end
 
 - [ ] Load RDM job in-game
 - [ ] Verify spell list shows all spells (107 total expected)
-- [ ] Test Enfeebling spell: Cast Paralyze → Equipment swaps correctly
-- [ ] Test Enfeebling spell: Cast Slow II → Equipment swaps correctly
-- [ ] Test Enhancing spell: Cast Refresh → Equipment swaps correctly
-- [ ] Test Enhancing spell: Cast Phalanx → Equipment swaps correctly
-- [ ] Test Bar spell: Cast Barfire → Equipment swaps correctly
-- [ ] Test Spike spell: Cast Ice Spikes → Equipment swaps correctly
-- [ ] Test Cure spell: Cast Cure III → Equipment swaps correctly
-- [ ] Test Gain spell: Cast Gain-STR → Equipment swaps correctly
+- [ ] Test Enfeebling spell: Cast Paralyze >> Equipment swaps correctly
+- [ ] Test Enfeebling spell: Cast Slow II >> Equipment swaps correctly
+- [ ] Test Enhancing spell: Cast Refresh >> Equipment swaps correctly
+- [ ] Test Enhancing spell: Cast Phalanx >> Equipment swaps correctly
+- [ ] Test Bar spell: Cast Barfire >> Equipment swaps correctly
+- [ ] Test Spike spell: Cast Ice Spikes >> Equipment swaps correctly
+- [ ] Test Cure spell: Cast Cure III >> Equipment swaps correctly
+- [ ] Test Gain spell: Cast Gain-STR >> Equipment swaps correctly
 
 #### **WHM Testing:**
 
 - [ ] Load WHM job in-game
 - [ ] Verify spell list shows all spells (~100 total expected)
-- [ ] Test Bar spell: Cast Barfire → Equipment swaps correctly
-- [ ] Test Boost spell: Cast Boost-STR → Equipment swaps correctly
-- [ ] Test Teleport spell: Cast Teleport-Holla → Equipment swaps correctly
-- [ ] Test Protect spell: Cast Protectra V → Equipment swaps correctly
-- [ ] Test Regen spell: Cast Regen IV → Equipment swaps correctly
-- [ ] Test Cure spell: Cast Curaga IV → Equipment swaps correctly
-- [ ] Test Divine spell: Cast Banish II → Equipment swaps correctly
+- [ ] Test Bar spell: Cast Barfire >> Equipment swaps correctly
+- [ ] Test Boost spell: Cast Boost-STR >> Equipment swaps correctly
+- [ ] Test Teleport spell: Cast Teleport-Holla >> Equipment swaps correctly
+- [ ] Test Protect spell: Cast Protectra V >> Equipment swaps correctly
+- [ ] Test Regen spell: Cast Regen IV >> Equipment swaps correctly
+- [ ] Test Cure spell: Cast Curaga IV >> Equipment swaps correctly
+- [ ] Test Divine spell: Cast Banish II >> Equipment swaps correctly
 
 ---
 

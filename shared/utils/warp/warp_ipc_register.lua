@@ -94,7 +94,7 @@ windower.register_event('ipc message', function(msg)
     last_ipc_message = msg
     last_ipc_time = current_time
 
-    -- Extract command: 'tetsouo_warp_warp' → 'warp'
+    -- Extract command: 'tetsouo_warp_warp' >> 'warp'
     local command = msg:gsub('^' .. IPC_PREFIX, '')
 
     MessageWarp.show_ipc_command_received(command)

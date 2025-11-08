@@ -4,7 +4,7 @@
 --- Handles player status transitions for Thief job.
 ---
 --- Features:
----   • Status change detection (Idle → Engaged, Engaged → Idle, etc.)
+---   • Status change detection (Idle >> Engaged, Engaged >> Idle, etc.)
 ---   • Dead/Resting state handling
 ---   • Automatic gear swapping based on new status
 ---   • Future: THF-specific status logic

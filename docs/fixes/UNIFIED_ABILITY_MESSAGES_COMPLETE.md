@@ -196,12 +196,12 @@ end
 **Architecture:**
 
 ```
-WAR_PRECAST.lua → show_ja_activated("Berserk", ...)  ← Doublon
-DNC_PRECAST.lua → show_ja_activated("Haste Samba", ...) ← Doublon
-PLD_PRECAST.lua → show_ja_activated("Sentinel", ...) ← Doublon
+WAR_PRECAST.lua >> show_ja_activated("Berserk", ...)  ← Doublon
+DNC_PRECAST.lua >> show_ja_activated("Haste Samba", ...) ← Doublon
+PLD_PRECAST.lua >> show_ja_activated("Sentinel", ...) ← Doublon
 ... (15 jobs)
 
-ability_message_handler → AUSSI show_ja_activated() ← Doublon!
+ability_message_handler >> AUSSI show_ja_activated() ← Doublon!
 ```
 
 ---
@@ -219,7 +219,7 @@ ability_message_handler → AUSSI show_ja_activated() ← Doublon!
 **Architecture:**
 
 ```
-ability_message_handler → show_ja_activated() ← SEULE SOURCE
+ability_message_handler >> show_ja_activated() ← SEULE SOURCE
   ↓
   Recherche dans 21 databases
   ↓
@@ -283,7 +283,7 @@ Tester 1 ability par job (15 jobs):
 | PLD | Sentinel | `[PLD/WAR] Sentinel Defense boost!` |
 | DNC | Haste Samba | `[DNC/WAR] Haste Samba Party gains Haste from target` |
 | BST | Familiar | `[BST/WAR] Familiar Enhance pet stats +10% HP, extend charm` |
-| RDM | Convert | `[RDM/WHM] Convert Swap HP <-> MP` |
+| RDM | Convert | `[RDM/WHM] Convert Swap HP <>> MP` |
 | BRD | Soul Voice | `[BRD/WHM] Soul Voice Song power boost!` |
 | GEO | Indi-Fury | `[GEO/RDM] Indi-Fury Attack boost` |
 | BLM | Manafont | `[BLM/RDM] Manafont Zero MP cost spells` |
@@ -482,7 +482,7 @@ end
 **Criticité:** HAUTE (user experience + code quality)
 **User Requests:**
 
-1. "uniformiser tout les message dans un même system" → ✅ FAIT
-2. "enlever activated! des messages" → ✅ FAIT
+1. "uniformiser tout les message dans un même system" >> ✅ FAIT
+2. "enlever activated! des messages" >> ✅ FAIT
 
 **SYSTÈME 100% UNIFIÉ - FORMAT SIMPLIFIÉ - ZERO DOUBLONS** ✅

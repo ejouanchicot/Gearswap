@@ -77,9 +77,9 @@ return RDMLockstyleConfig
 
 **How it works**:
 
-- When you load RDM/NIN → applies lockstyle #1
-- When you change to RDM/WHM → applies lockstyle #2
-- If subjob not in list → applies default (#1)
+- When you load RDM/NIN >> applies lockstyle #1
+- When you change to RDM/WHM >> applies lockstyle #2
+- If subjob not in list >> applies default (#1)
 
 **Customization**:
 

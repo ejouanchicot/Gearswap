@@ -29,9 +29,9 @@ AGGREGATORS (14 databases)
 └── etc...
          ↓
 DATA_LOADER.lua (loads ALL aggregators)
-├── Merges ALL spell databases → _G.FFXI_DATA.spells
-├── Merges ALL job abilities → _G.FFXI_DATA.abilities
-└── Merges ALL weaponskills → _G.FFXI_DATA.weaponskills
+├── Merges ALL spell databases >> _G.FFXI_DATA.spells
+├── Merges ALL job abilities >> _G.FFXI_DATA.abilities
+└── Merges ALL weaponskills >> _G.FFXI_DATA.weaponskills
          ↓
 GLOBAL ACCESS (anywhere in code)
 _G.FFXI_DATA.spells['Cure III']

@@ -36,7 +36,7 @@
 ### Test Titan Summon
 
 ```
-4. Menu Magic → Summoning Magic → Titan
+4. Menu Magic >> Summoning Magic >> Titan
    Ou: /ma "Titan" <me>
 ```
 
@@ -54,7 +54,7 @@
 ### Test Earthen Ward (LE TEST PRINCIPAL!)
 
 ```
-5. Menu Pet Commands → Blood Pact: Ward → Earthen Ward
+5. Menu Pet Commands >> Blood Pact: Ward >> Earthen Ward
    Ou: /pet "Earthen Ward" <me>
 ```
 
@@ -95,7 +95,7 @@
 ### Test Flaming Crush
 
 ```
-3. Menu Pet Commands → Blood Pact: Rage → Flaming Crush
+3. Menu Pet Commands >> Blood Pact: Rage >> Flaming Crush
    Ou: /pet "Flaming Crush" <t>
 ```
 
@@ -115,15 +115,15 @@ Test 3-5 ward abilities différents:
 
 ```
 Titan:
-- Earthen Ward → [Earthen Ward] Grants stoneskin (AoE). ✅
-- Earthen Armor → [Earthen Armor] Stoneskin effect (AoE). ✅
+- Earthen Ward >> [Earthen Ward] Grants stoneskin (AoE). ✅
+- Earthen Armor >> [Earthen Armor] Stoneskin effect (AoE). ✅
 
 Carbuncle:
-- Shining Ruby → [Shining Ruby] Party Regen. ✅
-- Glittering Ruby → [Glittering Ruby] AoE enmity + blinding. ✅
+- Shining Ruby >> [Shining Ruby] Party Regen. ✅
+- Glittering Ruby >> [Glittering Ruby] AoE enmity + blinding. ✅
 
 Garuda:
-- Aerial Armor → [Aerial Armor] Party Blink. ✅
+- Aerial Armor >> [Aerial Armor] Party Blink. ✅
 ```
 
 ### Blood Pact: Rage (Offensive)
@@ -132,16 +132,16 @@ Test 3-5 rage abilities différents:
 
 ```
 Ifrit:
-- Punch → [Punch] Deals physical dmg. ✅
-- Fire II → [Fire II] Deals fire damage. ✅
-- Flaming Crush → [Flaming Crush] Fire damage + knockback. ✅
+- Punch >> [Punch] Deals physical dmg. ✅
+- Fire II >> [Fire II] Deals fire damage. ✅
+- Flaming Crush >> [Flaming Crush] Fire damage + knockback. ✅
 
 Leviathan:
-- Barracuda Dive → [Barracuda Dive] Water physical attack. ✅
-- Spinning Dive → [Spinning Dive] Physical attack + knockback. ✅
+- Barracuda Dive >> [Barracuda Dive] Water physical attack. ✅
+- Spinning Dive >> [Spinning Dive] Physical attack + knockback. ✅
 
 Fenrir:
-- Eclipse Bite → [Eclipse Bite] Dark physical damage. ✅
+- Eclipse Bite >> [Eclipse Bite] Dark physical damage. ✅
 ```
 
 ---
@@ -151,11 +151,11 @@ Fenrir:
 Test quelques avatar summons pour confirmer Fix #1-5 fonctionne aussi:
 
 ```
-/ma "Carbuncle" <me> → [Carbuncle] Summons Carbuncle. ✅
-/ma "Shiva" <me> → [Shiva] Summons Shiva. ✅
-/ma "Garuda" <me> → [Garuda] Summons Garuda. ✅
-/ma "Ramuh" <me> → [Ramuh] Summons Ramuh. ✅
-/ma "Leviathan" <me> → [Leviathan] Summons Leviathan. ✅
+/ma "Carbuncle" <me> >> [Carbuncle] Summons Carbuncle. ✅
+/ma "Shiva" <me> >> [Shiva] Summons Shiva. ✅
+/ma "Garuda" <me> >> [Garuda] Summons Garuda. ✅
+/ma "Ramuh" <me> >> [Ramuh] Summons Ramuh. ✅
+/ma "Leviathan" <me> >> [Leviathan] Summons Leviathan. ✅
 ```
 
 ---
@@ -165,9 +165,9 @@ Test quelques avatar summons pour confirmer Fix #1-5 fonctionne aussi:
 Si niveau bas, tester spirits:
 
 ```
-/ma "Fire Spirit" <me> → [Fire Spirit] Summons Fire Spirit. ✅
-/ma "Ice Spirit" <me> → [Ice Spirit] Summons Ice Spirit. ✅
-/ma "Light Spirit" <me> → [Light Spirit] Summons Light Spirit. ✅
+/ma "Fire Spirit" <me> >> [Fire Spirit] Summons Fire Spirit. ✅
+/ma "Ice Spirit" <me> >> [Ice Spirit] Summons Ice Spirit. ✅
+/ma "Light Spirit" <me> >> [Light Spirit] Summons Light Spirit. ✅
 ```
 
 ---

@@ -5,9 +5,9 @@
 --- Based on MyHome addon's IPC system.
 ---
 --- Usage:
----   //gs c warpall       → All characters warp
----   //gs c tphall        → All characters teleport to Holla
----   //gs c sdall         → All characters go to San d'Oria
+---   //gs c warpall       >> All characters warp
+---   //gs c tphall        >> All characters teleport to Holla
+---   //gs c sdall         >> All characters go to San d'Oria
 ---
 --- How it works:
 ---   1. Character 1 types //gs c warpall
@@ -148,7 +148,7 @@ local function handle_ipc_message(msg)
     last_ipc_message = msg
     last_ipc_time = current_time
 
-    -- Extract command from message: 'tetsouo_warp_warp' → 'warp'
+    -- Extract command from message: 'tetsouo_warp_warp' >> 'warp'
     local command = msg:gsub('^' .. IPC_PREFIX, '')
 
     MessageWarp.show_ipc_command_received(command)

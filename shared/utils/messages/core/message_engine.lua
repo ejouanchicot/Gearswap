@@ -13,6 +13,9 @@
 
 local MessageEngine = {}
 
+-- Import MessageColors for region-specific color detection
+local MessageColors = require('shared/utils/messages/message_colors')
+
 -- Cache des templates compilés (performance)
 -- IMPORTANT: This cache persists across GearSwap reloads unless module is fully unloaded
 local _template_cache = {}
@@ -41,8 +44,15 @@ local COLOR_CODES = {
     -- Status colors
     green = string.char(0x1F, 158),   -- Green (success/buffs)
     red = string.char(0x1F, 167),     -- Red (errors/debuffs)
-    yellow = string.char(0x1F, 50),   -- Yellow (JA/WS)
-    orange = string.char(0x1F, 57),   -- Orange (warnings)
+    yellow = string.char(0x1F, 50),   -- Yellow (JA)
+    pink = string.char(0x1F, 11),     -- Pink/Rose (WS/Damage - code 011)
+    healgreen = string.char(0x1F, 6), -- Heal Green (Healing spells - code 006)
+    enhancing = string.char(0x1F, 206), -- Enhancing Magic (buffs - code 206)
+    enfeebling = string.char(0x1F, 4), -- Enfeebling Magic (debuffs - code 004)
+    divine = string.char(0x1F, 22),   -- Divine Magic (holy dmg - code 022)
+    dark = string.char(0x1F, 15),     -- Dark Magic (drains/aspirs - code 015)
+    bluemagic = string.char(0x1F, 219), -- Blue Magic (BLU spells - code 219)
+    orange = string.char(0x1F, MessageColors.get_warning_color()),   -- Orange (warnings) - region-specific
     blue = string.char(0x1F, 122),    -- Blue (info)
     purple = string.char(0x1F, 208),  -- Purple (debuffs)
 
@@ -52,7 +62,7 @@ local COLOR_CODES = {
     separatorcolor = string.char(0x1F, 160), -- Same as gray (separators) - renamed to avoid conflict
     spellcolor = string.char(0x1F, 13),    -- Same as cyan (spells) - renamed to avoid conflict
     itemcolor = string.char(0x1F, 63),     -- Pale yellow (items) - code 063
-    warningcolor = string.char(0x1F, 57),  -- Same as orange (warnings) - renamed to avoid conflict
+    warningcolor = string.char(0x1F, MessageColors.get_warning_color()),  -- Same as orange (warnings) - region-specific
 }
 
 ---============================================================================
@@ -173,11 +183,11 @@ function MessageEngine.load(namespace)
 
     -- Determine path based on namespace
     local path
-    if namespace:upper() == namespace and #namespace <= 3 then
+    if namespace:upper() == namespace and #namespace == 3 then
         -- Job (3-letter uppercase: BLM, BRD, etc.)
         path = 'shared/utils/messages/data/jobs/' .. namespace:lower() .. '_messages'
     else
-        -- System (COMBAT, MAGIC, etc.)
+        -- System (COMBAT, MAGIC, UI, etc.)
         path = 'shared/utils/messages/data/systems/' .. namespace:lower() .. '_messages'
     end
 

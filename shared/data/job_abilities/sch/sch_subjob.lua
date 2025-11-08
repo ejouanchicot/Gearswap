@@ -6,7 +6,7 @@
 --- Contents:
 ---   - Light Arts (Lv10) - White magic optimized, -10% cost/time
 ---   - Dark Arts (Lv10) - Black magic optimized, -10% cost/time
----   - Sublimation (Lv35) - Convert HP → MP over time
+---   - Sublimation (Lv35) - Convert HP >> MP over time
 ---
 --- @file sch_subjob.lua
 --- @author Tetsouo
@@ -35,7 +35,7 @@ SCH_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Sublimation'] = {
-        description             = 'Convert HP → MP over time',
+        description             = 'Convert HP >> MP over time',
         level                   = 35,
         recast                  = 30,  -- 30s
         main_job_only           = false,

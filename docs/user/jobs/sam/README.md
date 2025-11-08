@@ -22,13 +22,13 @@
 
 ## 🚀 Quick Links
 
-**First time using SAM?** → Start with [Quick Start](quick-start.md)
+**First time using SAM?** >> Start with [Quick Start](quick-start.md)
 
-**Need to find a keybind?** → Check [Keybinds](keybinds.md)
+**Need to find a keybind?** >> Check [Keybinds](keybinds.md)
 
-**Looking for a command?** → See [Commands](commands.md)
+**Looking for a command?** >> See [Commands](commands.md)
 
-**Gear not swapping?** → Try [Troubleshooting](troubleshooting.md)
+**Gear not swapping?** >> Try [Troubleshooting](troubleshooting.md)
 
 ---
 

@@ -15,7 +15,7 @@ local BRDMessages = {}
 -- NEW message system
 local M = require('shared/utils/messages/api/messages')
 
--- Get job tag (for subjob support: BRD/WHM → "BRD/WHM")
+-- Get job tag (for subjob support: BRD/WHM >> "BRD/WHM")
 local function get_job_tag()
     local main_job = player and player.main_job or 'BRD'
     local sub_job = player and player.sub_job or ''
@@ -23,6 +23,31 @@ local function get_job_tag()
         return main_job .. '/' .. sub_job
     end
     return main_job
+end
+
+---============================================================================
+--- ELEMENT COLOR MAPPING
+---============================================================================
+
+--- Element-specific color codes for Threnody/Carol songs (inline FFXI color codes)
+--- @type table<string, string>
+local ELEMENT_COLORS = {
+    ['Fire']      = string.char(0x1F, 2),    -- Fire (code 002)
+    ['Ice']       = string.char(0x1F, 30),   -- Ice (code 030)
+    ['Wind']      = string.char(0x1F, 14),   -- Wind (code 014)
+    ['Earth']     = string.char(0x1F, 37),   -- Earth (code 037)
+    ['Lightning'] = string.char(0x1F, 16),   -- Lightning/Thunder (code 016)
+    ['Thunder']   = string.char(0x1F, 16),   -- Thunder (alias for Lightning)
+    ['Water']     = string.char(0x1F, 219),  -- Water (code 219)
+    ['Light']     = string.char(0x1F, 187),  -- Light (code 187)
+    ['Dark']      = string.char(0x1F, 200),  -- Dark (code 200)
+}
+
+--- Get element color code from element name
+--- @param element string Element name (e.g., "Fire", "Ice")
+--- @return string element_color Inline color code
+local function get_element_color(element)
+    return ELEMENT_COLORS[element] or string.char(0x1F, 13)  -- Cyan fallback
 end
 
 ---============================================================================
@@ -299,11 +324,63 @@ function BRDMessages.show_requiem_cast()
     })
 end
 
---- @param element string Element name (Fire, Ice, etc.)
+--- @param element string Element name (Fire, Ice, Lightning, etc.)
 function BRDMessages.show_threnody_cast(element)
+    local element_color = get_element_color(element)
+    local gray_code = string.char(0x1F, 160)
+
+    -- Color the entire spell name (element + "Threnody II")
+    local colored_spell = element_color .. element .. ' Threnody II' .. gray_code
+
     M.job('BRD', 'threnody_cast', {
         job = get_job_tag(),
-        element = element
+        spell = colored_spell
+    })
+end
+
+---============================================================================
+--- HELPER: Get element color from database
+---============================================================================
+
+--- Helper to get element color from spell database
+--- @param spell_data table Spell data from database
+--- @return string|nil element_color Inline color code or nil
+local function get_element_color_from_data(spell_data)
+    if not spell_data or not spell_data.element then
+        return nil
+    end
+    return ELEMENT_COLORS[spell_data.element]
+end
+
+---============================================================================
+--- GENERIC SONG CAST (with element color support)
+---============================================================================
+
+--- Display generic song cast with element color from database
+--- Format: [BRD] [ELEMENT_COLOR][Song Name] >> Description
+--- @param spell_name string Full spell name (e.g., "Valor Minuet IV")
+--- @param spell_data table Spell data from database (must have 'element' and 'description')
+function BRDMessages.show_song_cast_generic(spell_name, spell_data)
+    if not spell_data then
+        M.error(string.format("Spell '%s' has no database entry", spell_name))
+        return
+    end
+
+    -- Get element color from database
+    local element_color = get_element_color_from_data(spell_data)
+    local gray_code = string.char(0x1F, 160)
+
+    -- Add element color to spell name if spell has an element
+    local colored_spell = spell_name
+    if element_color then
+        colored_spell = element_color .. spell_name .. gray_code
+    end
+
+    -- Use generic spell template with element color
+    M.send('MAGIC', 'spell_activated_full', {
+        job = get_job_tag(),
+        spell = colored_spell,
+        description = spell_data.description or "Unknown effect"
     })
 end
 
@@ -311,11 +388,17 @@ end
 --- BUFF SONG MESSAGES (NEW SYSTEM)
 ---============================================================================
 
---- @param element string Element name (Fire, Ice, etc.)
+--- @param element string Element name (Fire, Ice, Lightning, etc.)
 function BRDMessages.show_carol_cast(element)
+    local element_color = get_element_color(element)
+    local gray_code = string.char(0x1F, 160)
+
+    -- Color the entire spell name (element + "Carol II")
+    local colored_spell = element_color .. element .. ' Carol II' .. gray_code
+
     M.job('BRD', 'carol_cast', {
         job = get_job_tag(),
-        element = element
+        spell = colored_spell
     })
 end
 

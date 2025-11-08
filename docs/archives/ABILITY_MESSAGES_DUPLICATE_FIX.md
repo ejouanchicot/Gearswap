@@ -14,7 +14,7 @@
 
 ```
 [WAR/RUN] Berserk activated! ATK+25% DEF-25% (3min)
-[WAR/RUN] [Berserk] → ATK+25% DEF-25% (3min)
+[WAR/RUN] [Berserk] >> ATK+25% DEF-25% (3min)
 ```
 
 **User:** "Parfait par contre pour WAR qui a buffself les message appraisse en doublons. Il doievent être apellé par le fonction Buffself et dans la macanique génral je suppose que c'est le problème."
@@ -42,7 +42,7 @@
 
 - Fichier: `shared/utils/messages/ability_message_handler.lua`
 - Fonction: `AbilityMessageHandler.show_message(spell)`
-- Format: `[Ability] → Description`
+- Format: `[Ability] >> Description`
 - Usage: TOUS abilities (21 jobs)
 - **Features:**
   - ✅ Universal (auto-detect database)
@@ -56,16 +56,16 @@
 ```
 1. User uses Berserk
 2. precast triggered
-   → spell.type = 'JobAbility'
-   → spell.action_type = 'Ability'
+   >> spell.type = 'JobAbility'
+   >> spell.action_type = 'Ability'
 
 3. JABuffs système:
-   → Détecte buff gain (via job_buff_change)
-   → Affiche: [WAR/RUN] Berserk activated! ATK+25% DEF-25%
+   >> Détecte buff gain (via job_buff_change)
+   >> Affiche: [WAR/RUN] Berserk activated! ATK+25% DEF-25%
 
 4. ability_message_handler (via init_ability_messages.lua):
-   → Hooked dans user_post_precast
-   → Affiche: [Berserk] → ATK+25% DEF-25%
+   >> Hooked dans user_post_precast
+   >> Affiche: [Berserk] >> ATK+25% DEF-25%
 
 5. Résultat: 2 messages! ❌
 ```
@@ -141,12 +141,12 @@ function AbilityMessageHandler.show_message(spell)
 
 **Logique:**
 
-1. Si `spell.type == 'JobAbility'` → Check si Blood Pact
-2. Si pas Blood Pact → `return` (skip, laisse JABuffs gérer)
-3. Si Blood Pact → Continue (affiche message)
+1. Si `spell.type == 'JobAbility'` >> Check si Blood Pact
+2. Si pas Blood Pact >> `return` (skip, laisse JABuffs gérer)
+3. Si Blood Pact >> Continue (affiche message)
 4. Résultat:
-   - ✅ Berserk, Provoke, Aggressor, etc. → JABuffs only (pas de doublons)
-   - ✅ Earthen Ward, Flaming Crush, etc. → ability_message_handler only
+   - ✅ Berserk, Provoke, Aggressor, etc. >> JABuffs only (pas de doublons)
+   - ✅ Earthen Ward, Flaming Crush, etc. >> ability_message_handler only
    - ✅ Messages "active" preservés (JABuffs continue de les afficher)
 
 ---
@@ -159,7 +159,7 @@ function AbilityMessageHandler.show_message(spell)
 
 ```
 [WAR/RUN] Berserk activated! ATK+25% DEF-25% (3min)
-[Berserk] → ATK+25% DEF-25% (3min)  ← DOUBLON!
+[Berserk] >> ATK+25% DEF-25% (3min)  ← DOUBLON!
 ```
 
 **APRÈS:**
@@ -224,7 +224,7 @@ function AbilityMessageHandler.show_message(spell)
 1. //lua u gearswap
 2. Change to WAR/SAM
 3. //lua l gearswap
-4. Use Berserk (menu Job Abilities → Berserk)
+4. Use Berserk (menu Job Abilities >> Berserk)
 ```
 
 **Résultat Attendu:**
@@ -237,7 +237,7 @@ function AbilityMessageHandler.show_message(spell)
 
 ```
 [WAR/SAM] Berserk activated! ATK+25% DEF-25% (3min)
-[Berserk] → ATK+25% DEF-25% (3min)  ← Doublon supprimé ✅
+[Berserk] >> ATK+25% DEF-25% (3min)  ← Doublon supprimé ✅
 ```
 
 ### Test 2: WAR Berserk Active (Preserve Message)
@@ -278,9 +278,9 @@ function AbilityMessageHandler.show_message(spell)
 
 ```
 Test autres jobs:
-- PLD Sentinel → [PLD/WAR] Sentinel activated! Damage reduction 50% ✅
-- DNC Haste Samba → [DNC/WAR] Haste Samba activated! Party haste (30s) ✅
-- RUN Ignis → [RUN/WAR] Ignis activated! Fire rune. Enhances fire resistance. ✅
+- PLD Sentinel >> [PLD/WAR] Sentinel activated! Damage reduction 50% ✅
+- DNC Haste Samba >> [DNC/WAR] Haste Samba activated! Party haste (30s) ✅
+- RUN Ignis >> [RUN/WAR] Ignis activated! Fire rune. Enhances fire resistance. ✅
 ```
 
 Tous doivent afficher **1 seul message** (pas de doublons).
@@ -323,7 +323,7 @@ System optimal:
 ```lua
 // Test avec Berserk
 // Devrait voir 1 seul message (JABuffs)
-// Si 2 messages → Fix pas appliqué correctement
+// Si 2 messages >> Fix pas appliqué correctement
 ```
 
 3. **Vérifier spell.type:**
@@ -359,8 +359,8 @@ end
 
 **Résultat:**
 
-- Regular Job Abilities → skipped (JABuffs only)
-- Blood Pacts → handled (exception)
+- Regular Job Abilities >> skipped (JABuffs only)
+- Blood Pacts >> handled (exception)
 
 ---
 
@@ -369,13 +369,13 @@ end
 ### 1. Systèmes Parallèles = Doublons
 
 **Problème:**
-2 systèmes font la même chose → messages dupliqués
+2 systèmes font la même chose >> messages dupliqués
 
 **Solution:**
 Définir responsabilités claires:
 
-- JABuffs → Job Abilities (avec features spéciales: active/ended)
-- ability_message_handler → Blood Pacts (hybrid nature)
+- JABuffs >> Job Abilities (avec features spéciales: active/ended)
+- ability_message_handler >> Blood Pacts (hybrid nature)
 
 ### 2. User Feedback Critical
 
@@ -426,8 +426,8 @@ Définir responsabilités claires:
 
 **Architecture:**
 
-- ✅ JABuffs → Job Abilities (activated/active/ended)
-- ✅ ability_message_handler → Blood Pacts only (exception)
+- ✅ JABuffs >> Job Abilities (activated/active/ended)
+- ✅ ability_message_handler >> Blood Pacts only (exception)
 - ✅ Clean separation of concerns
 - ✅ Backward compatible
 
@@ -457,6 +457,6 @@ Définir responsabilités claires:
 **Auteur:** Claude (Anthropic)
 **Version:** 1.0
 **Criticité:** MOYENNE (cosmetic - doublons messages)
-**User Request:** "on veut gardé actve etc" → ✅ Preserved
+**User Request:** "on veut gardé actve etc" >> ✅ Preserved
 
 **DOUBLONS FIXÉS - FEATURES PRESERVÉES** ✅

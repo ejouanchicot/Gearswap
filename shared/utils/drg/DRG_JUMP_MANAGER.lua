@@ -10,7 +10,7 @@
 --- @author Tetsouo
 --- @version 1.1 - Optimized Timing
 --- @date Created: 2025-10-04
---- @date Updated: 2025-10-10 (Optimized lag: 1.5s→0.8s)
+--- @date Updated: 2025-10-10 (Optimized lag: 1.5s>>0.8s)
 ---============================================================================
 
 local MessageDRG = require('shared/utils/messages/formatters/jobs/message_drg')

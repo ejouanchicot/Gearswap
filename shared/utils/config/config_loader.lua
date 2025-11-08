@@ -84,14 +84,30 @@ function ConfigLoader.load_ui_config(char_name, job_name)
     -- Set global UIConfig (required by UI system)
     _G.UIConfig = UIConfig
 
-    -- Create ui_display_config with nil-safe defaults
-    _G.ui_display_config = {
-        show_header         = default_bool(UIConfig.show_header, true),
-        show_legend         = default_bool(UIConfig.show_legend, true),
-        show_column_headers = default_bool(UIConfig.show_column_headers, true),
-        show_footer         = default_bool(UIConfig.show_footer, true),
-        enabled             = default_bool(UIConfig.enabled, true)
-    }
+    -- FORCE reload of UI settings from file (ensures fresh read on GearSwap reload)
+    -- Load settings file DIRECTLY with dofile() to bypass module cache
+    local ui_settings_path = windower.windower_path .. 'addons/GearSwap/data/' .. char_name .. '/config/ui_settings.lua'
+    local ui_settings_success, ui_settings_data = pcall(dofile, ui_settings_path)
+
+    if ui_settings_success and ui_settings_data then
+        -- File exists and loaded successfully
+        _G.ui_display_config = {
+            show_header         = default_bool(ui_settings_data.show_header, true),
+            show_legend         = default_bool(ui_settings_data.show_legend, true),
+            show_column_headers = default_bool(ui_settings_data.show_column_headers, true),
+            show_footer         = default_bool(ui_settings_data.show_footer, true),
+            enabled             = default_bool(ui_settings_data.enabled, true)
+        }
+    else
+        -- File doesn't exist, use defaults from UIConfig
+        _G.ui_display_config = {
+            show_header         = default_bool(UIConfig.show_header, true),
+            show_legend         = default_bool(UIConfig.show_legend, true),
+            show_column_headers = default_bool(UIConfig.show_column_headers, true),
+            show_footer         = default_bool(UIConfig.show_footer, true),
+            enabled             = default_bool(UIConfig.enabled, true)
+        }
+    end
 
     return UIConfig
 end

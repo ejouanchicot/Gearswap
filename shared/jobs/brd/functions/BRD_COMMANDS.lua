@@ -105,7 +105,7 @@ local function cast_song(song_name, auto_pianissimo)
                 local marcato_recast = windower.ffxi.get_ability_recasts()[48] or 0
 
                 if marcato_recast == 0 then
-                    -- Marcato ready → use before target song
+                    -- Marcato ready >> use before target song
                     send_command('input /ja "Marcato" <me>')
                     send_command('wait 2; input /ma "' .. song_name .. '" <me>')
                     MessageFormatter.show_marcato_honor_march(target_song)

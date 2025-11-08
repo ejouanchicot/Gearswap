@@ -13,7 +13,7 @@
 ---
 --- Why This System Exists:
 ---   FFXI has network lag between using a JA and the buff appearing in buffactive[].
----   If you use Dark Seal → cast Dark Magic immediately, buffactive['Dark Seal']
+---   If you use Dark Seal >> cast Dark Magic immediately, buffactive['Dark Seal']
 ---   may still be nil for 0.1-0.3 seconds. Pending flags detect the buff INSTANTLY.
 ---
 --- Processing Order:

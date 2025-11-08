@@ -6,9 +6,9 @@
 ---
 --- TEST MODE: Set TEST_MODE = false on line 24 for production use
 --- Test buff mappings (WAR buffs simulate debuffs):
----   - Berserk   → Silence (blocks magic)
----   - Aggressor → Amnesia (blocks JA/WS)
----   - Warcry    → Stun (blocks EVERYTHING)
+---   - Berserk   >> Silence (blocks magic)
+---   - Aggressor >> Amnesia (blocks JA/WS)
+---   - Warcry    >> Stun (blocks EVERYTHING)
 ---
 --- @file utils/debuff/debuff_checker.lua
 --- @author Tetsouo

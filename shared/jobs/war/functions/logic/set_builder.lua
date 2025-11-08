@@ -37,10 +37,10 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 --- Aftermath Lv.3 (buff ID: 272) + Ukonvasara = Use specialized PDTAFM3 set
 ---
 --- Priority order:
----   1. Kraken Club in sub-weapon    → sets.engaged.PDTKC
----   2. Aftermath Lv.3 + Ukonvasara  → sets.engaged.PDTAFM3
----   3. HybridMode (PDT/Normal)      → sets.engaged[HybridMode]
----   4. Fallback                      → base_set
+---   1. Kraken Club in sub-weapon    >> sets.engaged.PDTKC
+---   2. Aftermath Lv.3 + Ukonvasara  >> sets.engaged.PDTAFM3
+---   3. HybridMode (PDT/Normal)      >> sets.engaged[HybridMode]
+---   4. Fallback                      >> base_set
 ---
 --- @param base_set table Base engaged set from war_sets.lua
 --- @return table Selected engaged set (PDTKC/PDTAFM3 if conditions met, otherwise hybrid/base)
@@ -114,9 +114,9 @@ SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 
 --- Select idle base set with Town detection AND HybridMode support
 --- Priority order:
----   1. In town                     → sets.idle.Town
----   2. HybridMode (PDT/Normal)     → sets.idle[HybridMode]
----   3. Fallback                    → base_set
+---   1. In town                     >> sets.idle.Town
+---   2. HybridMode (PDT/Normal)     >> sets.idle[HybridMode]
+---   3. Fallback                    >> base_set
 ---
 --- @param base_set table Base idle set from war_sets.lua
 --- @return table Selected idle set

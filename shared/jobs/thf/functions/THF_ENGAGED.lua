@@ -48,7 +48,7 @@ function customize_melee_set(meleeSet)
 
     -- Apply SA/TA buff sets if active or pending (persist until buff consumed)
     if sa_active and ta_active then
-        -- Both buffs active (SATA) → combine both sets
+        -- Both buffs active (SATA) >> combine both sets
         if sets.buff['Sneak Attack'] and sets.buff['Trick Attack'] then
             result = set_combine(result, sets.buff['Sneak Attack'], sets.buff['Trick Attack'])
         end

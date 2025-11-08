@@ -366,7 +366,7 @@ function job_self_command(cmdParams, eventArgs)
         else
             -- Pet is idle - check if player is engaged
             if player_engaged then
-                -- Player engaged + Pet idle → Fight + Ready Move (NO Heel)
+                -- Player engaged + Pet idle >> Fight + Ready Move (NO Heel)
                 MessageFormatter.show_bst_ready_move_auto_engage(index, move_name)
 
                 -- Step 1: Engage pet (0s delay)
@@ -379,7 +379,7 @@ function job_self_command(cmdParams, eventArgs)
 
                 -- NO Step 3: Pet stays engaged (player is fighting)
             else
-                -- Player idle + Pet idle → Fight + Ready Move + Heel
+                -- Player idle + Pet idle >> Fight + Ready Move + Heel
                 MessageFormatter.show_bst_ready_move_auto_sequence(index, move_name)
 
                 -- Step 1: Engage pet (0s delay)

@@ -2,8 +2,8 @@
 --- Warp Equipment Manager - Equipment Lock During Warp/Teleport
 ---============================================================================
 --- Prevents equipment swaps during warp to avoid:
----   - Ring being swapped off during warp → warp cancels
----   - Main weapon being swapped off during warp → warp cancels
+---   - Ring being swapped off during warp >> warp cancels
+---   - Main weapon being swapped off during warp >> warp cancels
 ---
 --- @file warp_equipment.lua
 --- @author Tetsouo

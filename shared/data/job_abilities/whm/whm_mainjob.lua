@@ -23,7 +23,7 @@ local WHM_MAINJOB = {}
 
 WHM_MAINJOB.abilities = {
     ['Afflatus Solace'] = {
-        description             = 'Cure → Stoneskin (25% of heal)',
+        description             = 'Cure >> Stoneskin (25% of heal)',
         level                   = 40,
         recast                  = 10,
         main_job_only           = true,
@@ -31,7 +31,7 @@ WHM_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Afflatus Misery'] = {
-        description             = 'Damage taken → Banish/Cura/Esuna boost',
+        description             = 'Damage taken dans la  Banish/Cura/Esuna boost',
         level                   = 40,
         recast                  = 10,
         main_job_only           = true,
@@ -39,7 +39,7 @@ WHM_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Martyr'] = {
-        description             = 'Sacrifice 25% HP → heal ally 50%',
+        description             = 'Sacrifice 25% HP >> heal ally 50%',
         level                   = 75,
         recast                  = 600,  -- 10min
         main_job_only           = true,
@@ -47,7 +47,7 @@ WHM_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Devotion'] = {
-        description             = 'Sacrifice 25% HP → ally MP',
+        description             = 'Sacrifice 25% HP >> ally MP',
         level                   = 75,
         recast                  = 600,  -- 10min
         main_job_only           = true,
@@ -55,7 +55,7 @@ WHM_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Divine Caress'] = {
-        description             = 'Next status removal → immunity',
+        description             = 'Next status removal >> immunity',
         level                   = 83,
         recast                  = 60,  -- 1min
         main_job_only           = true,

@@ -93,7 +93,7 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- AUTO-PIANISSIMO: If targeting a party member, auto-activate Pianissimo
     if spell.type == 'BardSong' and spell.target and spell.target.type == 'PLAYER' then
         if spell.target.id and spell.target.id ~= player.id then
-            -- Targeting another player → use Pianissimo
+            -- Targeting another player >> use Pianissimo
             if not buffactive['Pianissimo'] then
                 cancel_spell()
                 send_command('input /ja "Pianissimo" <me>')
@@ -118,7 +118,7 @@ function job_precast(spell, action, spellMap, eventArgs)
 
         if marcato_enabled and target_song and spell.english == target_song then
             if spell.target.type ~= 'PLAYER' or spell.target.id == player.id then
-                -- Not targeting another player → check for Marcato
+                -- Not targeting another player >> check for Marcato
                 local has_ni = buffactive['Nightingale'] or false
                 local has_tr = buffactive['Troubadour'] or false
                 local has_sv = buffactive['Soul Voice'] or false
@@ -128,7 +128,7 @@ function job_precast(spell, action, spellMap, eventArgs)
                     local marcato_recast = windower.ffxi.get_ability_recasts()[48] or 0
 
                     if marcato_recast == 0 then
-                        -- Marcato ready → use before target song
+                        -- Marcato ready >> use before target song
                         cancel_spell()
                         send_command('input /ja "Marcato" <me>')
                         send_command('wait 2; input /ma "' .. target_song .. '" <me>')

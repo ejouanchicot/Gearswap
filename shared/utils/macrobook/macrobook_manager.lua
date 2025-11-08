@@ -2,7 +2,7 @@
 --- Macrobook Manager - Centralized Macrobook Management Factory
 ---============================================================================
 --- Factory pattern that creates job-specific macrobook modules.
---- Eliminates 124-line duplication across WAR/PLD/DNC (372 lines → 124 lines).
+--- Eliminates 124-line duplication across WAR/PLD/DNC (372 lines >> 124 lines).
 ---
 --- @file utils/macrobook/macrobook_manager.lua
 --- @author Tetsouo

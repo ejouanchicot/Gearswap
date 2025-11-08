@@ -25,8 +25,8 @@ local PetManager = require('shared/jobs/bst/functions/logic/pet_manager')
 
 --- Build idle set with Pet vs Master bifurcation
 --- CRITICAL LOGIC:
----   • If pet valid → Use pet sets (pet.idle or pet.engaged based on petEngaged state)
----   • If no pet → Use master sets (me.idle with town detection)
+---   • If pet valid >> Use pet sets (pet.idle or pet.engaged based on petEngaged state)
+---   • If no pet >> Use master sets (me.idle with town detection)
 ---   • ALWAYS apply: WeaponSet, SubSet, HybridMode, Movement
 ---
 --- @param base_idle_set table Base idle set from sets.me.idle
@@ -134,8 +134,8 @@ end
 
 --- Build engaged set with Pet vs Master bifurcation
 --- CRITICAL LOGIC:
----   • If pet valid AND pet engaged → Use pet engaged sets
----   • Otherwise → Use master engaged sets
+---   • If pet valid AND pet engaged >> Use pet engaged sets
+---   • Otherwise >> Use master engaged sets
 ---   • ALWAYS apply: WeaponSet, SubSet, HybridMode
 ---
 --- @param base_engaged_set table Base engaged set from sets.me.engaged

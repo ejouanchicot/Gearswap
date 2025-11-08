@@ -48,7 +48,7 @@ PLD_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Chivalry'] = {
-        description             = 'TP → MP',
+        description             = 'TP >> MP',
         level                   = 75,
         recast                  = 600,  -- 10min
         main_job_only           = true,

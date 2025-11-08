@@ -63,7 +63,7 @@ SAM_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Hagakure'] = {
-        description             = 'Convert Kenki → HP/MP/TP',
+        description             = 'Convert Kenki >> HP/MP/TP',
         level                   = 95,
         recast                  = 180,  -- 3min
         main_job_only           = true,

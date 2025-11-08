@@ -6,7 +6,7 @@
 ---
 --- Features:
 ---   • WAR subjob buffs (Berserk, Aggressor, Warcry - priority order)
----   • NIN subjob buffs (Utsusemi: Ni → Ichi fallback)
+---   • NIN subjob buffs (Utsusemi: Ni >> Ichi fallback)
 ---   • SAM subjob buffs (Hasso)
 ---   • THF subjob buffs (Sneak Attack + Trick Attack combo @ 1000 TP)
 ---   • Intelligent recast checking (RECAST_CONFIG integration)

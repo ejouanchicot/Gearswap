@@ -15,7 +15,7 @@ local RDMMessages = {}
 -- NEW message system
 local M = require('shared/utils/messages/api/messages')
 
--- Get job tag (for subjob support: RDM/WHM → "RDM/WHM")
+-- Get job tag (for subjob support: RDM/WHM >> "RDM/WHM")
 local function get_job_tag()
     local main_job = player and player.main_job or 'RDM'
     local sub_job = player and player.sub_job or ''

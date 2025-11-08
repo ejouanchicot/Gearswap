@@ -318,74 +318,135 @@ function Messages.help()
     add_to_chat(1, "  M.set_color_mode('colorblind')")
     add_to_chat(1, "  M.show_stats() - Show statistics")
     add_to_chat(1, "  M.list('BLM') - List all BLM messages")
-    add_to_chat(1, "  M.test() - Run test suite")
+    add_to_chat(1, "  M.test() - Run all test suites")
+    add_to_chat(1, "  M.test('BRD') - Run BRD tests only")
+    add_to_chat(1, "  M.test('SYSTEM') - Run system tests only")
 end
 
 ---============================================================================
 --- INTEGRATED TEST SUITE
 ---============================================================================
 
---- Run integrated test suite (silent mode)
-function Messages.test()
+--- Silent test runner helper
+local function create_test_runner()
     local passed = 0
     local total = 0
 
-    -- Silent test runner (suppress error messages)
     local function test(fn)
         total = total + 1
         local old_renderer = MessageRenderer.show_error
-
-        -- Temporarily disable error rendering for tests
         MessageRenderer.show_error = function() end
-
         local ok = pcall(fn)
-
-        -- Restore error renderer
         MessageRenderer.show_error = old_renderer
-
         if ok then passed = passed + 1 end
         return ok
     end
 
-    -- Header
-    add_to_chat(160, "-----------------------------------------------------")
-    add_to_chat(158, "[Messages] Running Test Suite")
-    add_to_chat(160, "-----------------------------------------------------")
+    return test, function() return passed, total end
+end
 
-    -- Run all tests silently (use existing BLM messages)
-    test(function() Messages.job('BLM', 'element_cycle', {job = 'BLM', state_type = 'Element', element = 'Fire', element_color = 'red'}) end)
-    test(function() Messages.job('BLM', 'buff_cast', {job = 'BLM', buff = 'Stoneskin'}) end)
-    test(function() Messages.job('BLM', 'magic_burst_on', {job = 'BLM'}) end)
-    test(function() Messages.custom("Test", 1):with('x', 1):send() end)
-    test(function() Messages.custom("Test", 1):with('x', 1):preview() end)
-    test(function() Messages.success("Test") end)
-    test(function() Messages.warning("Test") end)
-    test(function() Messages.error("Test") end)
-    test(function() Messages.info("Test") end)
-    test(function() Messages.toggle(); Messages.toggle() end)
-    test(function() Messages.set_color_mode('normal') end)
+--- Run integrated test suite (all jobs or specific job)
+--- Usage: M.test() or M.test('BRD') or M.test('system')
+--- @param job_filter string|nil Optional job filter (e.g., "BRD", "GEO", "WAR", "system")
+function Messages.test(job_filter)
+    local test, get_stats = create_test_runner()
 
-    -- Error handling tests (should fail gracefully without showing errors)
-    test(function()
-        local ok = Messages.send('BLM', 'element_cycle', {job = 'BLM', state_type = 'Element', element = 'Fire', element_color = 'red'})
-        return ok
-    end)
-    test(function()
-        local ok = Messages.send('NONEXISTENT', 'fake_message', {})
-        return not ok  -- Should fail, so we expect false
-    end)
-
-    -- Separator
-    add_to_chat(160, "-----------------------------------------------------")
-
-    -- Show result
-    if passed == total then
-        add_to_chat(158, string.format("[OK] Message System: %d/%d tests PASSED", passed, total))
-    else
-        add_to_chat(167, string.format("[FAIL] Message System: %d/%d FAILED", total - passed, total))
+    -- Normalize job filter to uppercase
+    if job_filter then
+        job_filter = job_filter:upper()
     end
 
-    add_to_chat(160, "-----------------------------------------------------")
+    -- Color codes
+    local gray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 50)
+    local green = string.char(0x1F, 158)
+    local red = string.char(0x1F, 167)
+    local separator = string.rep("=", 74)
+
+    -- Header
+    add_to_chat(121, gray .. separator)
+    if job_filter then
+        add_to_chat(121, yellow .. "[Messages] Running " .. job_filter .. " Test Suite")
+    else
+        add_to_chat(121, yellow .. "[Messages] Running ALL Test Suites")
+    end
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, " ")
+
+    local total_tests = 0
+
+    -- Load job-specific test file if filter provided
+    if job_filter then
+        local test_file = 'shared/utils/messages/api/tests/test_' .. job_filter:lower()
+        local ok, test_module = pcall(require, test_file)
+
+        if ok and test_module and test_module.run then
+            -- Run job-specific tests
+            total_tests = test_module.run(test)
+        else
+            add_to_chat(167, red .. "Test file not found: " .. test_file .. ".lua")
+            add_to_chat(167, red .. "Available tests (22 total):")
+            add_to_chat(167, red .. "  SYSTEM (general)")
+            add_to_chat(167, red .. "  Mages: WHM, BLM, RDM, SCH, GEO, BLU")
+            add_to_chat(167, red .. "  Support: BRD, COR")
+            add_to_chat(167, red .. "  Melee: WAR, MNK, THF, PLD, DRK, BST")
+            add_to_chat(167, red .. "  Melee: RNG, SAM, NIN, DRG, PUP, DNC, RUN")
+            add_to_chat(121, gray .. separator)
+            return false
+        end
+    else
+        -- Run all available tests (21 jobs + system = 22 total)
+        local test_jobs = {
+            'system',  -- General system tests (magic, JA, WS)
+            -- Mages
+            'whm',     -- White Mage
+            'blm',     -- Black Mage
+            'rdm',     -- Red Mage
+            'sch',     -- Scholar
+            'geo',     -- Geomancer
+            'blu',     -- Blue Mage
+            -- Support
+            'brd',     -- Bard
+            'cor',     -- Corsair
+            -- Melee
+            'war',     -- Warrior
+            'mnk',     -- Monk
+            'thf',     -- Thief
+            'pld',     -- Paladin
+            'drk',     -- Dark Knight
+            'bst',     -- Beastmaster
+            'rng',     -- Ranger
+            'sam',     -- Samurai
+            'nin',     -- Ninja
+            'drg',     -- Dragoon
+            'pup',     -- Puppetmaster
+            'dnc',     -- Dancer
+            'run'      -- Runemaster
+        }
+
+        for _, job in ipairs(test_jobs) do
+            local test_file = 'shared/utils/messages/api/tests/test_' .. job
+            local ok, test_module = pcall(require, test_file)
+
+            if ok and test_module and test_module.run then
+                total_tests = total_tests + test_module.run(test)
+            end
+        end
+    end
+
+    -- Results
+    local passed, total = get_stats()
+
+    add_to_chat(121, " ")
+    add_to_chat(121, gray .. separator)
+
+    if passed == total then
+        add_to_chat(121, green .. string.format("[OK] Message System: %d/%d tests PASSED", passed, total))
+    else
+        add_to_chat(121, red .. string.format("[FAIL] Message System: %d/%d tests FAILED (%d passed)", total - passed, total, passed))
+    end
+
+    add_to_chat(121, gray .. separator)
 
     return passed == total
 end

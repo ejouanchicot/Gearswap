@@ -183,9 +183,9 @@ end
 
 **Examples:**
 
-- WAR/RUN using Ignis → Shows message from RUN database ✅
-- DNC/WAR using Provoke → Shows message from WAR database ✅
-- PLD using Sentinel → Shows message from PLD database ✅
+- WAR/RUN using Ignis >> Shows message from RUN database ✅
+- DNC/WAR using Provoke >> Shows message from WAR database ✅
+- PLD using Sentinel >> Shows message from PLD database ✅
 
 #### 2.2 Auto-Injection Hook
 
@@ -332,8 +332,8 @@ end
 
 **Problème:** Fichiers summoning ont 2 tables:
 
-- `.spells` → Avatar summon (1 spell) ← mergé
-- `.blood_pacts` → Blood pacts (10-17 spells) ← **PAS mergé!**
+- `.spells` >> Avatar summon (1 spell) ← mergé
+- `.blood_pacts` >> Blood pacts (10-17 spells) ← **PAS mergé!**
 
 **116 Blood Pacts manquants!**
 
@@ -395,7 +395,7 @@ end
 
 ```
 1. User uses Earthen Ward
-2. precast triggered → action_type = 'Ability'
+2. precast triggered >> action_type = 'Ability'
 3. Calls ability_message_handler (NOT spell_message_handler!)
 4. ability_message_handler searches JOB_DATABASES
 5. Not found (Blood Pacts in spell database!) ❌
@@ -571,12 +571,12 @@ end
 
 **Solution Applied:**
 
-1. Fix categories → revealed database missing
-2. Fix database → revealed .spells missing
-3. Fix .spells → revealed blood pacts not merged
-4. Fix merge → revealed action type blocked
-5. Fix action type → revealed wrong handler!
-6. Fix handler → **COMPLETE!**
+1. Fix categories >> revealed database missing
+2. Fix database >> revealed .spells missing
+3. Fix .spells >> revealed blood pacts not merged
+4. Fix merge >> revealed action type blocked
+5. Fix action type >> revealed wrong handler!
+6. Fix handler >> **COMPLETE!**
 
 **Lesson:** Rigorous testing at EACH step before declaring "fixed"
 
@@ -602,8 +602,8 @@ end
 
 **BLU Implementation:**
 
-- 196 spells in 1 file → unmaintainable
-- 196 spells in 19 files → perfect
+- 196 spells in 1 file >> unmaintainable
+- 196 spells in 19 files >> perfect
 - < 100 spells/file average
 - Easy to add new spells
 
@@ -725,7 +725,7 @@ Project Status: 9.8/10
 ### After This Session
 
 ```
-Project Status: 9.9/10 → Nearly Perfect!
+Project Status: 9.9/10 >> Nearly Perfect!
 - 3 jobs production-ready (WAR, PLD, DNC)
 - Architecture 10/10
 - Spell messages: 858/858 (100%) ✅
@@ -746,36 +746,37 @@ Project Status: 9.9/10 → Nearly Perfect!
 Session conversation key moments:
 
 1. "ok on va attaqué la partie la plus massive Blu"
-   → Started BLU implementation
+   >> Started BLU implementation
 
 2. "Non la en War Sub BLU Je fas cocoon j'ai pas de message du tout"
-   → **Discovered BLU messages broken**
+   >> **Discovered BLU messages broken**
 
 3. "NOn WAR/RUN je vois pas les message pour les runes"
-   → **Discovered NO ability messages system existed!**
+   >> **Discovered NO ability messages system existed!**
 
 4. "les summoning ne fonctionne pas"
-   → **Discovered SMN database completely broken**
+   >> **Discovered SMN database completely broken**
 
 5. "Non toujours pAs WAR/SMN je summon leviathant aucun message"
-   → **Confirmed database fixes needed**
+   >> **Confirmed database fixes needed**
 
 6. "blood pack war etc n'affiche pas de message non plus"
-   → **Discovered Blood Pacts not merged**
+   >> **Discovered Blood Pacts not merged**
 
 7. "Toutjours rien quand je fait bloodpac Ward Earthen Ward"
-   → **Discovered action type blocked**
+   >> **Discovered action type blocked**
 
 8. "Non les blood pack Ward ne donne toujours aucun message c'est une JA je pense ?"
-   → **USER CORRECTLY IDENTIFIED ROOT CAUSE!**
-   → Led to Fix #6 (ability handler SMN fallback)
+   >> **USER CORRECTLY IDENTIFIED ROOT CAUSE!**
+   >> Led to Fix #6 (ability handler SMN fallback)
 
 9. "Parfait par contre pour WAR qui a buffself les message appraisse en doublons"
-   → **Discovered duplicate messages** (JABuffs + ability_message_handler)
+   >> **Discovered duplicate messages** (JABuffs + ability_message_handler)
 
 10. "par contre on veut gardé actve etc quand les buffs sont déjà on"
-   → **User wants to preserve "active" messages** (when buff already active)
-   → Led to selective skip logic (Blood Pacts only)
+
+   >> **User wants to preserve "active" messages** (when buff already active)
+   >> Led to selective skip logic (Blood Pacts only)
 
 ---
 
@@ -836,7 +837,7 @@ FILES MODIFIED (16):
 FIXES:
 - BLU: Categories + database migration
 - RUN: Ability messages system creation
-- SMN: 6 successive fixes (categories → files → .spells → blood pacts → action types → ability handler)
+- SMN: 6 successive fixes (categories >> files >> .spells >> blood pacts >> action types >> ability handler)
 
 RESULT:
 ✅ 1,166/1,166 messages functional (100%)

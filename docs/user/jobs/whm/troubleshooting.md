@@ -9,16 +9,19 @@
 **Solutions**:
 
 1. **Check keybinds loaded**:
+
    ```
    Look for: "[WHM] Keybinds loaded successfully"
    ```
 
 2. **Manual test**:
+
    ```
    //gs c cycle [StateName]
    ```
 
 3. **Reload GearSwap**:
+
    ```
    //gs reload
    ```
@@ -32,18 +35,21 @@
 **Solutions**:
 
 1. **Check Watchdog**:
+
    ```
    //gs c watchdog
-   → Should show: "Watchdog: ENABLED"
+   >> Should show: "Watchdog: ENABLED"
    ```
 
 2. **Check items**:
+
    ```
    //gs c checksets
-   → Look for STORAGE or MISSING items
+   >> Look for STORAGE or MISSING items
    ```
 
 3. **Enable debug**:
+
    ```
    //gs c debugmidcast
    ```
@@ -57,11 +63,13 @@
 **Solutions**:
 
 1. **Check DressUp addon**:
+
    ```
    //lua l dressup
    ```
 
 2. **Manual trigger**:
+
    ```
    //gs c lockstyle
    ```

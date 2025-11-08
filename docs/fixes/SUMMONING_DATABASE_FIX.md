@@ -163,46 +163,46 @@ end
 **Tous les Avatars Fonctionnels:**
 
 ```
-Carbuncle → [Carbuncle] Summons Carbuncle.
-Fenrir → [Fenrir] Summons Fenrir.
-Ifrit → [Ifrit] Summons Ifrit.
-Shiva → [Shiva] Summons Shiva.
-Garuda → [Garuda] Summons Garuda.
-Titan → [Titan] Summons Titan.
-Ramuh → [Ramuh] Summons Ramuh.
-Leviathan → [Leviathan] Summons Leviathan.
-Diabolos → [Diabolos] Summons Diabolos.
-Cait Sith → [Cait Sith] Summons Cait Sith.
-Siren → [Siren] Summons Siren.
+Carbuncle >> [Carbuncle] Summons Carbuncle.
+Fenrir >> [Fenrir] Summons Fenrir.
+Ifrit >> [Ifrit] Summons Ifrit.
+Shiva >> [Shiva] Summons Shiva.
+Garuda >> [Garuda] Summons Garuda.
+Titan >> [Titan] Summons Titan.
+Ramuh >> [Ramuh] Summons Ramuh.
+Leviathan >> [Leviathan] Summons Leviathan.
+Diabolos >> [Diabolos] Summons Diabolos.
+Cait Sith >> [Cait Sith] Summons Cait Sith.
+Siren >> [Siren] Summons Siren.
 ```
 
 ### Spirit Summon (8 spirits)
 
 ```
-Light Spirit → [Light Spirit] Summons Light Spirit.
-Fire Spirit → [Fire Spirit] Summons Fire Spirit.
-Ice Spirit → [Ice Spirit] Summons Ice Spirit.
-Air Spirit → [Air Spirit] Summons Air Spirit.
-Earth Spirit → [Earth Spirit] Summons Earth Spirit.
-Thunder Spirit → [Thunder Spirit] Summons Thunder Spirit.
-Water Spirit → [Water Spirit] Summons Water Spirit.
-Dark Spirit → [Dark Spirit] Summons Dark Spirit.
+Light Spirit >> [Light Spirit] Summons Light Spirit.
+Fire Spirit >> [Fire Spirit] Summons Fire Spirit.
+Ice Spirit >> [Ice Spirit] Summons Ice Spirit.
+Air Spirit >> [Air Spirit] Summons Air Spirit.
+Earth Spirit >> [Earth Spirit] Summons Earth Spirit.
+Thunder Spirit >> [Thunder Spirit] Summons Thunder Spirit.
+Water Spirit >> [Water Spirit] Summons Water Spirit.
+Dark Spirit >> [Dark Spirit] Summons Dark Spirit.
 ```
 
 ### Blood Pact: Rage (Leviathan examples)
 
 ```
-Barracuda Dive → [Barracuda Dive] Water physical attack.
-Spinning Dive → [Spinning Dive] Physical attack + knockback.
-Grand Fall → [Grand Fall] Water magic damage (AoE).
-Tidal Wave → [Tidal Wave] Water magic damage (AoE).
+Barracuda Dive >> [Barracuda Dive] Water physical attack.
+Spinning Dive >> [Spinning Dive] Physical attack + knockback.
+Grand Fall >> [Grand Fall] Water magic damage (AoE).
+Tidal Wave >> [Tidal Wave] Water magic damage (AoE).
 ```
 
 ### Blood Pact: Ward (Leviathan examples)
 
 ```
-Spring Water → [Spring Water] Party HP regen.
-Slowga → [Slowga] AoE slow.
+Spring Water >> [Spring Water] Party HP regen.
+Slowga >> [Slowga] AoE slow.
 ```
 
 ---

@@ -38,9 +38,9 @@ Cette section contient la documentation de tous les fixes majeurs appliqués au 
 
 **Résultat:**
 
-- ✅ UNIVERSAL_JA_DATABASE → 21 jobs
-- ✅ UNIVERSAL_SPELL_DATABASE → 14 databases (CRÉÉ)
-- ✅ UNIVERSAL_WS_DATABASE → 13 weapon types
+- ✅ UNIVERSAL_JA_DATABASE >> 21 jobs
+- ✅ UNIVERSAL_SPELL_DATABASE >> 14 databases (CRÉÉ)
+- ✅ UNIVERSAL_WS_DATABASE >> 13 weapon types
 
 ---
 
@@ -179,6 +179,6 @@ Cette section contient la documentation de tous les fixes majeurs appliqués au 
 
 ---
 
-**Documentation créée:** 2025-10-30 → 2025-11-01
+**Documentation créée:** 2025-10-30 >> 2025-11-01
 **Auteur:** Claude (Anthropic)
 **Version:** 1.0 - Index Complet

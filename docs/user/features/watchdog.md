@@ -32,19 +32,19 @@ The Watchdog automatically:
 
 ```
 1. Cast Cure IV
-2. PRECAST → Fast Cast gear
-3. MIDCAST → Cure Potency gear
+2. PRECAST >> Fast Cast gear
+3. MIDCAST >> Cure Potency gear
 4. Spell completes
 5. Server sends confirmation packet ✅
-6. AFTERCAST → Return to Idle/Engaged gear
+6. AFTERCAST >> Return to Idle/Engaged gear
 ```
 
 ### Packet Loss Scenario (With Watchdog)
 
 ```
 1. Cast Cure IV
-2. PRECAST → Fast Cast gear
-3. MIDCAST → Cure Potency gear
+2. PRECAST >> Fast Cast gear
+3. MIDCAST >> Cure Potency gear
 4. Spell completes
 5. Server packet LOST ❌
 6. GearSwap stuck in Cure gear
@@ -64,7 +64,7 @@ The watchdog monitors every 0.5 seconds:
 2. Tracks aftercast via `job_aftercast()` hook
 3. Checks if midcast is active
 4. Calculates age of current midcast
-5. If age > 3.5s → Forces cleanup + gear refresh
+5. If age > 3.5s >> Forces cleanup + gear refresh
 6. Normal aftercast automatically clears tracking
 
 ---

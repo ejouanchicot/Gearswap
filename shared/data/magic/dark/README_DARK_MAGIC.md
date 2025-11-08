@@ -195,9 +195,9 @@ The Dark Magic database is compatible with the spell message handler system:
 
 ```lua
 -- Spell messages will automatically show descriptions
-[BLM/RDM] Aspir → Drains MP from target.
-[DRK/SAM] Absorb-STR → Absorbs target's strength.
-[SCH/WHM] Bio III → Inflicts Disease (ATK -18.75%) and maximum Darkness DoT.
+[BLM/RDM] Aspir >> Drains MP from target.
+[DRK/SAM] Absorb-STR >> Absorbs target's strength.
+[SCH/WHM] Bio III >> Inflicts Disease (ATK -18.75%) and maximum Darkness DoT.
 ```
 
 Controlled by `DARK_MESSAGES_CONFIG.lua` (if created):

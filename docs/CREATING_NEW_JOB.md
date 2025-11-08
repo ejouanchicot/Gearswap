@@ -85,14 +85,14 @@ jobs/[job]/
 ### Étape 1.1: Créer Main File
 
 ```bash
-# Copier template (ex: PLD → RUN)
+# Copier template (ex: PLD >> RUN)
 cp Tetsouo_PLD.lua Tetsouo_RUN.lua
 ```
 
 Chercher/remplacer dans `Tetsouo_RUN.lua`:
 
-- `PLD` → `RUN` (uppercase)
-- `pld` → `run` (lowercase)
+- `PLD` >> `RUN` (uppercase)
+- `pld` >> `run` (lowercase)
 - Garder TOUTE la structure (JobChangeManager, WarpInit, etc.)
 
 **CRITIQUE:** NE PAS modifier:
@@ -112,12 +112,12 @@ mkdir -p Tetsouo/config/run
 
 ### Étape 1.3: Créer Façade
 
-Copier `shared/jobs/pld/functions/pld_functions.lua` → `shared/jobs/run/functions/run_functions.lua`
+Copier `shared/jobs/pld/functions/pld_functions.lua` >> `shared/jobs/run/functions/run_functions.lua`
 
 Chercher/remplacer:
 
-- `pld` → `run`
-- `PLD` → `RUN`
+- `pld` >> `run`
+- `PLD` >> `RUN`
 
 **Structure finale:**
 
@@ -651,7 +651,7 @@ local RUN_MainJob = {
 
     -- Other (Lv20-83)
     ['Elemental Sforzo'] = 'Next elemental damage nullified (30s)',
-    ['One for All'] = 'Party damage → self (30s)',
+    ['One for All'] = 'Party damage >> self (30s)',
     ['Battuta'] = 'Parry rate+ (45s)',
     ['Liement'] = 'Next spell: no element (60s)',
     ['Swordplay'] = 'Accuracy/evasion+ (60s)',
@@ -669,7 +669,7 @@ return RUN_MainJob
 ```lua
 local RUN_SP = {
     ['Elemental Sforzo'] = 'SP1: Next elemental damage nullified',
-    ['Odyllic Subterfuge'] = 'SP2: Dispel all buffs → cure (1h)',
+    ['Odyllic Subterfuge'] = 'SP2: Dispel all buffs >> cure (1h)',
     ['Odyllic Subterfuge II'] = 'SP3: Enhanced dispel cure (1h)',
 }
 
@@ -755,17 +755,17 @@ end
 
 ```bash
 //gs c checksets
-→ Should show validation results
-→ Note missing items (OK for new job)
+>> Should show validation results
+>> Note missing items (OK for new job)
 ```
 
 ### Test 3: Keybinds
 
 ```bash
-Alt+1 → Cycle MainWeapon
-Alt+2 → Cycle HybridMode
-Alt+3 → Cycle SubWeapon
-→ Verify state changes
+Alt+1 >> Cycle MainWeapon
+Alt+2 >> Cycle HybridMode
+Alt+3 >> Cycle SubWeapon
+>> Verify state changes
 ```
 
 ### Test 4: Job Change
@@ -800,8 +800,8 @@ Alt+3 → Cycle SubWeapon
 
 ```bash
 //gs c debugmidcast
-→ Cast spell (ex: Phalanx)
-→ Verify: Fallback chain displayed in chat
+>> Cast spell (ex: Phalanx)
+>> Verify: Fallback chain displayed in chat
 ```
 
 ---
@@ -995,7 +995,7 @@ end
 ### 12 Modules
 
 - [ ] run_functions.lua (façade)
-- [ ] RUN_PRECAST.lua (ordre: Guard→Cooldown→JA→WS→job)
+- [ ] RUN_PRECAST.lua (ordre: Guard>>Cooldown>>JA>>WS>>job)
 - [ ] RUN_MIDCAST.lua (MidcastManager.select_set)
 - [ ] RUN_AFTERCAST/IDLE/ENGAGED/STATUS/BUFFS.lua
 - [ ] RUN_COMMANDS.lua (CommonCommands integration)
@@ -1043,8 +1043,8 @@ end
 - [ ] Load test (//lua reload gearswap)
 - [ ] //gs c checksets
 - [ ] Keybinds fonctionnent (Alt+1/2/3/4/5)
-- [ ] Job change clean (RUN→WAR→RUN)
-- [ ] Subjob change clean (RUN/SAM→RUN/NIN)
+- [ ] Job change clean (RUN>>WAR>>RUN)
+- [ ] Subjob change clean (RUN/SAM>>RUN/NIN)
 - [ ] Cooldown messages affichés
 - [ ] MidcastManager debug (//gs c debugmidcast)
 
@@ -1092,7 +1092,7 @@ end
 { state = "SubWeapon" }
 
 // Mais JOB_STATES.lua ne les définit PAS
-→ UI essaie de les lire → STACK OVERFLOW
+>> UI essaie de les lire >> STACK OVERFLOW
 ```
 
 **Solution:**
@@ -1161,8 +1161,8 @@ end
 ```lua
 // JOB_KEYBINDS.show_intro() fait:
 require('shared/jobs/job/functions/JOB_LOCKSTYLE')
-→ Déjà chargé par job_functions.lua
-  → Récursion circulaire → STACK OVERFLOW
+>> Déjà chargé par job_functions.lua
+  >> Récursion circulaire >> STACK OVERFLOW
 ```
 
 **Solution:**
@@ -1199,7 +1199,7 @@ Avant `//lua reload gearswap`:
    end
    ```
 
-   - Si load → Problème dans user_setup()
+   - Si load >> Problème dans user_setup()
 
 2. **Ajouter juste states:**
 
@@ -1210,7 +1210,7 @@ Avant `//lua reload gearswap`:
    end
    ```
 
-   - Si stack overflow → States manquants ou mal définis
+   - Si stack overflow >> States manquants ou mal définis
 
 3. **Ajouter keybinds (sans UI):**
 
@@ -1224,7 +1224,7 @@ Avant `//lua reload gearswap`:
    end, 0.5)
    ```
 
-   - Si stack overflow → Keybinds référencent states inexistants
+   - Si stack overflow >> Keybinds référencent states inexistants
 
 4. **Ajouter UI:**
 
@@ -1237,7 +1237,7 @@ Avant `//lua reload gearswap`:
    end, 2.0)
    ```
 
-   - Si stack overflow → States manquants
+   - Si stack overflow >> States manquants
 
 ### Documentation Complète
 

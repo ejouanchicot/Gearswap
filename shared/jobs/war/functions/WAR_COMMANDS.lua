@@ -29,7 +29,7 @@ local MessageCommands = require('shared/utils/messages/formatters/ui/message_com
 ---============================================================================
 
 --- Handle job-specific self commands
---- Processes commands in order: Common → UI → WAR-specific buffs
+--- Processes commands in order: Common >> UI >> WAR-specific buffs
 ---
 --- Common commands:
 ---   • reload         - Reload GearSwap

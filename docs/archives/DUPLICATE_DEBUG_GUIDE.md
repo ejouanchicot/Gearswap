@@ -50,8 +50,8 @@
 (Aucun message affiché)
 ```
 
-→ **Conclusion:** ability_message_handler était la SEULE source
-→ **Problème:** ability_message_handler appelé 2 fois (bug interne)
+>> **Conclusion:** ability_message_handler était la SEULE source
+>> **Problème:** ability_message_handler appelé 2 fois (bug interne)
 
 **Résultat B (1 message):**
 
@@ -59,8 +59,8 @@
 [WAR/SAM] Berserk activated! ATK+25% DEF-25%
 ```
 
-→ **Conclusion:** Il y a un AUTRE système qui affiche (JABuffs ou autre)
-→ **Problème:** Conflit entre 2 systèmes
+>> **Conclusion:** Il y a un AUTRE système qui affiche (JABuffs ou autre)
+>> **Problème:** Conflit entre 2 systèmes
 
 **Résultat C (2 messages):**
 
@@ -69,8 +69,8 @@
 [WAR/SAM] Berserk activated! ATK+25% DEF-25%
 ```
 
-→ **Conclusion:** L'AUTRE système appelle 2 fois
-→ **Problème:** Bug dans l'autre système
+>> **Conclusion:** L'AUTRE système appelle 2 fois
+>> **Problème:** Bug dans l'autre système
 
 ---
 
@@ -99,7 +99,7 @@
 **Format B (ability_message_handler):**
 
 ```
-[Berserk] → ATK+25% DEF-25%
+[Berserk] >> ATK+25% DEF-25%
 ```
 
 **Format C (Autre):**
@@ -127,7 +127,7 @@ HAS ABILITIES
 ```
 
 **Si NO ABILITIES:**
-→ Database DNC pas chargée ou corrompue
+>> Database DNC pas chargée ou corrompue
 
 **Puis tester ability spécifique:**
 
@@ -142,7 +142,7 @@ Grants TP bonus based on # of Finishing Moves consumed.
 ```
 
 **Si NOT FOUND:**
-→ Ability pas dans database (nom incorrect ou manquant)
+>> Ability pas dans database (nom incorrect ou manquant)
 
 ---
 
@@ -171,14 +171,14 @@ Grants TP bonus based on # of Finishing Moves consumed.
 
 ```
 DEBUG ability_message_handler: Reverse Flourish type=JobAbility
-[Reverse Flourish] → Grants TP bonus based on # of Finishing Moves consumed.
+[Reverse Flourish] >> Grants TP bonus based on # of Finishing Moves consumed.
 ```
 
 **Si pas de DEBUG print:**
-→ Handler pas appelé du tout (init_ability_messages.lua pas chargé)
+>> Handler pas appelé du tout (init_ability_messages.lua pas chargé)
 
 **Si DEBUG print mais pas de message:**
-→ Handler return early (ability_data not found ou autre check)
+>> Handler return early (ability_data not found ou autre check)
 
 ---
 
@@ -206,8 +206,8 @@ DEBUG ability_message_handler: Reverse Flourish type=JobAbility
 ```
 
 **Si voir "Duplicate prevented":**
-→ Duplicate prevention fonctionne
-→ Mais pourquoi 2 appels en premier lieu?
+>> Duplicate prevention fonctionne
+>> Mais pourquoi 2 appels en premier lieu?
 
 ---
 
@@ -216,29 +216,29 @@ DEBUG ability_message_handler: Reverse Flourish type=JobAbility
 ```
 1. Run TEST 1 (Disable ability_message_handler)
    ↓
-2a. Si aucun message → ability_message_handler seule source
-    → Run TEST 5 (Check duplicates timestamps)
-    → Fix: Duplicate prevention
+2a. Si aucun message >> ability_message_handler seule source
+    >> Run TEST 5 (Check duplicates timestamps)
+    >> Fix: Duplicate prevention
 
-2b. Si 1 message → Autre système existe
-    → Run TEST 2 (Identify format)
-    → Check où autre système est appelé
-    → Fix: Désactiver un des 2 systèmes
+2b. Si 1 message >> Autre système existe
+    >> Run TEST 2 (Identify format)
+    >> Check où autre système est appelé
+    >> Fix: Désactiver un des 2 systèmes
 
-2c. Si 2 messages → Autre système a bug
-    → Identifier autre système
-    → Fix: Bug dans autre système
+2c. Si 2 messages >> Autre système a bug
+    >> Identifier autre système
+    >> Fix: Bug dans autre système
 
 3. Run TEST 3+4 (DNC abilities)
    ↓
-3a. Si database OK mais pas de message → Handler pas appelé
-    → Fix: Vérifier init_ability_messages.lua chargé
+3a. Si database OK mais pas de message >> Handler pas appelé
+    >> Fix: Vérifier init_ability_messages.lua chargé
 
-3b. Si database manquante → Database corrompue
-    → Fix: Recréer database
+3b. Si database manquante >> Database corrompue
+    >> Fix: Recréer database
 
-3c. Si handler appelé mais return early → Check logic
-    → Fix: Debug find_ability_in_databases()
+3c. Si handler appelé mais return early >> Check logic
+    >> Fix: Debug find_ability_in_databases()
 ```
 
 ---

@@ -27,9 +27,11 @@
 
 1. **Change to [JOB] in-game**
 2. **Load GearSwap**:
+
    ```
    //lua load gearswap
    ```
+
 3. **Verify loading**:
    - Look for: `[[JOB]] Functions loaded successfully`
    - Keybinds auto-loaded
@@ -47,6 +49,7 @@
 ### Default Setup
 
 **On load, system automatically**:
+
 - ✅ Loads all [JOB] keybinds
 - ✅ Sets macrobook (Book X for [JOB])
 - ✅ Applies lockstyle #X (after 8s delay)
@@ -66,11 +69,13 @@
 | **Alt+1** | Cycle MainWeapon | `state.MainWeapon` | [Description] |
 | **Alt+2** | Cycle HybridMode | `state.HybridMode` | Toggle PDT/Normal |
 | **Alt+F1** | Toggle UI | - | Show/hide keybind overlay |
-| **[Add all keybinds from config file]** |
+
+**[Add all keybinds from config file]**
 
 ### How Keybinds Work
 
 **Example**: Pressing `Alt+1` cycles through weapon options:
+
 ```lua
 -- In KEYBINDS.lua
 {key = "!1", command = "cycle MainWeapon", desc = "Main Weapon", state = "MainWeapon"}
@@ -79,10 +84,11 @@
 //gs c cycle MainWeapon
 
 -- Result:
-MainWeapon: Weapon1 → Weapon2 → Weapon3 → Weapon1 (loops)
+MainWeapon: Weapon1 >> Weapon2 >> Weapon3 >> Weapon1 (loops)
 ```
 
 **Modifier Keys**:
+
 - `!` = Alt
 - `^` = Ctrl
 - `@` = Windows key
@@ -119,23 +125,26 @@ MainWeapon: Weapon1 → Weapon2 → Weapon3 → Weapon1 (loops)
 |---------|-------------|-------|
 | `//gs c [command1]` | [Description] | [Example] |
 | `//gs c [command2]` | [Description] | [Example] |
-| **[Add all job-specific commands]** |
+
+**[Add all job-specific commands]**
 
 ### Command Examples
 
 **Example 1**: [Command name]
+
 ```
 //gs c [command] [params]
 
-→ [What happens]
-→ [Result shown in console]
+>> [What happens]
+>> [Result shown in console]
 ```
 
 **Example 2**: [Command name]
+
 ```
 //gs c [command]
 
-→ [What happens]
+>> [What happens]
 ```
 
 ---
@@ -147,9 +156,10 @@ MainWeapon: Weapon1 → Weapon2 → Weapon3 → Weapon1 (loops)
 **States** = Configuration options you cycle through with keybinds.
 
 **Example**:
+
 ```lua
 state.HybridMode = M{'PDT', 'Normal'}  -- 2 options
--- Press Alt+2 to cycle: PDT → Normal → PDT → ...
+-- Press Alt+2 to cycle: PDT >> Normal >> PDT >> ...
 ```
 
 ### All [JOB] States
@@ -160,17 +170,19 @@ state.HybridMode = M{'PDT', 'Normal'}  -- 2 options
 |-------|---------|---------|---------|-------------|
 | **MainWeapon** | [List] | [Default] | Alt+1 | [What it does] |
 | **HybridMode** | PDT, Normal | PDT | Alt+2 | Defense mode |
-| **[Add all states]** |
+
+**[Add all states]**
 
 ### How States Affect Gear
 
 **Example**: HybridMode state
+
 ```
 HybridMode: PDT
-→ Uses: sets.engaged.PDT (defensive melee gear)
+>> Uses: sets.engaged.PDT (defensive melee gear)
 
 HybridMode: Normal
-→ Uses: sets.engaged.Normal (DPS melee gear)
+>> Uses: sets.engaged.Normal (DPS melee gear)
 ```
 
 **Where sets are defined**: `shared/jobs/[job]/sets/[job]_sets.lua`
@@ -179,9 +191,10 @@ HybridMode: Normal
 
 **Method 1**: Look at UI overlay (if enabled)
 **Method 2**: Console command:
+
 ```
 //gs c state [StateName]
-→ Shows current value
+>> Shows current value
 ```
 
 ---
@@ -242,6 +255,7 @@ sets.midcast['Skill Name'].ModeName = {
 ```
 
 **How MidcastManager selects sets**:
+
 ```
 Priority 1: sets.midcast['Skill'].Type.Mode  (most specific)
 Priority 2: sets.midcast['Skill'].Type
@@ -284,10 +298,11 @@ sets.engaged.PDT = {
 ### Validating Your Sets
 
 **Check what items you're missing**:
+
 ```
 //gs c checksets
 
-→ Output:
+>> Output:
 [JOB] ✅ 156/160 items validated (97.5%)
 
 --- STORAGE ITEMS (3) ---
@@ -298,6 +313,7 @@ sets.engaged.PDT = {
 ```
 
 **Status meanings**:
+
 - ✅ **VALID**: Item in inventory (ready to swap)
 - 🗄️ **STORAGE**: Item in mog house/sack (move to inventory if needed)
 - ❌ **MISSING**: Item not found (acquire or update sets)
@@ -316,7 +332,8 @@ sets.engaged.PDT = {
 | **[JOB]_LOCKSTYLE.lua** | Lockstyle settings | Lockstyle # per subjob |
 | **[JOB]_MACROBOOK.lua** | Macrobook settings | Book/page per subjob |
 | **[JOB]_STATES.lua** | State definitions | (If exists) Custom states |
-| **[Add job-specific configs]** |
+
+**[Add job-specific configs]**
 
 ### Example: Keybinds Config
 
@@ -353,9 +370,10 @@ return [JOB]LockstyleConfig
 ```
 
 **How it works**:
-- Job changes to [JOB]/SAM → Applies lockstyle #1
-- Job changes to [JOB]/NIN → Applies lockstyle #2
-- Job changes to [JOB]/DNC → Applies lockstyle #3
+
+- Job changes to [JOB]/SAM >> Applies lockstyle #1
+- Job changes to [JOB]/NIN >> Applies lockstyle #2
+- Job changes to [JOB]/DNC >> Applies lockstyle #3
 
 ### Example: Macrobook Config
 
@@ -376,8 +394,9 @@ return [JOB]MacroConfig
 ```
 
 **How it works**:
-- Job changes to [JOB]/SAM → Sets macrobook 1, page 1
-- Job changes to [JOB]/NIN → Sets macrobook 1, page 2
+
+- Job changes to [JOB]/SAM >> Sets macrobook 1, page 1
+- Job changes to [JOB]/NIN >> Sets macrobook 1, page 2
 
 ---
 
@@ -437,7 +456,7 @@ sets.idle.Normal = {
 
 -- Reload and validate:
 //lua reload gearswap
-//gs c checksets  → Should show new item validated
+//gs c checksets  >> Should show new item validated
 ```
 
 ### Adding a New Mode to Existing State
@@ -460,7 +479,7 @@ sets.engaged.MDT = {
 -- 3. Reload:
 //lua reload gearswap
 
--- 4. Press Alt+2 to cycle: PDT → Normal → MDT → PDT
+-- 4. Press Alt+2 to cycle: PDT >> Normal >> MDT >> PDT
 ```
 
 ### Changing Lockstyle
@@ -476,7 +495,7 @@ sets.engaged.MDT = {
 
 -- Reload and reapply:
 //lua reload gearswap
-//gs c lockstyle  → Applies new lockstyle
+//gs c lockstyle  >> Applies new lockstyle
 ```
 
 ---
@@ -490,9 +509,10 @@ sets.engaged.MDT = {
 **Solutions**:
 
 1. **Check if keybinds loaded**:
+
    ```
    //lua reload gearswap
-   → Look for: "[JOB] Keybinds loaded successfully"
+   >> Look for: "[JOB] Keybinds loaded successfully"
    ```
 
 2. **Check for conflicts**:
@@ -500,6 +520,7 @@ sets.engaged.MDT = {
    - Try different key (change "!1" to "!0")
 
 3. **Manual test**:
+
    ```
    //gs c cycle MainWeapon  (should work if system loaded)
    ```
@@ -516,26 +537,30 @@ sets.engaged.MDT = {
 **Solutions**:
 
 1. **Check Watchdog status**:
+
    ```
    //gs c watchdog
-   → If stuck: //gs c watchdog clear
+   >> If stuck: //gs c watchdog clear
    ```
 
 2. **Check item availability**:
+
    ```
    //gs c checksets
-   → Look for MISSING or STORAGE items
-   → Move STORAGE items to inventory
+   >> Look for MISSING or STORAGE items
+   >> Move STORAGE items to inventory
    ```
 
 3. **Enable debug mode**:
+
    ```
    //gs c debugmidcast
-   → Cast spell
-   → Check console for set selection logic
+   >> Cast spell
+   >> Check console for set selection logic
    ```
 
 4. **Full reload**:
+
    ```
    //lua reload gearswap
    ```
@@ -549,16 +574,18 @@ sets.engaged.MDT = {
 **Solutions**:
 
 1. **Enable midcast debug**:
+
    ```
    //gs c debugmidcast
-   → Cast spell
-   → Console shows which set was selected and why
+   >> Cast spell
+   >> Console shows which set was selected and why
    ```
 
 2. **Check state values**:
+
    ```
    //gs c state [StateName]
-   → Verify current state is what you expect
+   >> Verify current state is what you expect
    ```
 
 3. **Check set exists**:
@@ -567,11 +594,12 @@ sets.engaged.MDT = {
    - If missing, MidcastManager falls back to parent set
 
 4. **Understand fallback chain**:
+
    ```
    Requested: sets.midcast['Skill'].Type.Mode
-   → Not found, tries: sets.midcast['Skill'].Type
-   → Not found, tries: sets.midcast['Skill'].Mode
-   → Not found, uses: sets.midcast['Skill'] (guaranteed)
+   >> Not found, tries: sets.midcast['Skill'].Type
+   >> Not found, tries: sets.midcast['Skill'].Mode
+   >> Not found, uses: sets.midcast['Skill'] (guaranteed)
    ```
 
 ---
@@ -583,11 +611,13 @@ sets.engaged.MDT = {
 **Solutions**:
 
 1. **Check DressUp loaded**:
+
    ```
    //lua l dressup
    ```
 
 2. **Manual reapply**:
+
    ```
    //gs c lockstyle
    ```
@@ -613,6 +643,7 @@ sets.engaged.MDT = {
    - Don't spam job changes
 
 2. **Full reload**:
+
    ```
    //lua unload gearswap
    //lua load gearswap
@@ -635,6 +666,7 @@ sets.engaged.MDT = {
    - Or universal: `shared/utils/core/COMMON_COMMANDS.lua`
 
 2. **Check syntax**:
+
    ```
    //gs c command  (correct)
    //gs command    (wrong - missing 'c')

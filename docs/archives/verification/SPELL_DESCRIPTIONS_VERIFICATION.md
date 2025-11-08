@@ -150,8 +150,8 @@
 
 ### Corrections par Type
 
-- **Descriptions inventées → Officielles bg-wiki:** 304 corrections
-- **Formulations techniques → Texte in-game:** 100%
+- **Descriptions inventées >> Officielles bg-wiki:** 304 corrections
+- **Formulations techniques >> Texte in-game:** 100%
 - **Uniformisation terminologie:** 100%
 - **Correction typos (conservation typos bg-wiki):** 2 cas (Distract)
 

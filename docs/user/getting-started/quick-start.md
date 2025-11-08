@@ -66,7 +66,7 @@ See `../guides/keybinds.md` for complete job-specific keybind lists.
 
 Equipment changes automatically based on:
 
-- **Action type**: Precast (Fast Cast) → Midcast (Potency) → Aftercast (Idle/Engaged)
+- **Action type**: Precast (Fast Cast) >> Midcast (Potency) >> Aftercast (Idle/Engaged)
 - **Player status**: Idle, Engaged, Resting
 - **Active modes**: PDT, MDT, Normal, Accuracy
 - **Buffs**: Auto-adjusts for active buffs
@@ -85,7 +85,7 @@ Equipment changes automatically based on:
 Hybrid modes let you balance offense and defense:
 
 ```bash
-Alt+2                 # Cycle: Normal → PDT → Normal
+Alt+2                 # Cycle: Normal >> PDT >> Normal
 ```
 
 - **Normal**: Maximum offense

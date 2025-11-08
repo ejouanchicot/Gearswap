@@ -137,14 +137,14 @@ end
 ### Message Format
 
 ```
-[WAR/SAM] [Upheaval] -> 4-hit, VIT-based power
+[WAR/SAM] [Upheaval] >> 4-hit, VIT-based power
 ```
 
 **Colors:**
 
 - `[WAR/SAM]` - Cyan (JOB_TAG)
 - `[Upheaval]` - Yellow (WS)
-- `->` - Gray (SEPARATOR)
+- `>>` - Gray (SEPARATOR)
 - `4-hit, VIT-based power` - Gray (SEPARATOR)
 
 Same format as JA messages for consistency.
@@ -242,7 +242,7 @@ Already automatic - PRECAST modules use UNIVERSAL_WS_DATABASE which auto-merges 
 ```
 1. Load job that uses weapon type
 2. Use weaponskill
-3. Verify message displays: [JOB/SUBJOB] [WS_NAME] -> Description
+3. Verify message displays: [JOB/SUBJOB] [WS_NAME] >> Description
 4. Verify TP displays: [WS_NAME] (1250 TP)
 ```
 
@@ -298,13 +298,13 @@ FFXI chat doesn't support Unicode/emojis.
 **Use:**
 
 - Brackets: `[WS_NAME]`
-- ASCII arrow: `->`
+- ASCII arrow: `>>`
 - Standard punctuation: `,` `.` `-` `/`
 
 **Don't Use:**
 
 - Emojis: ⚔ ✨ 💥
-- Unicode arrows: → ⇒
+- Unicode arrows: >> ⇒
 - Special characters: • ★ ◆
 
 ### Special Weapons Documentation

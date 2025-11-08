@@ -19,9 +19,9 @@
 ---   - Displays messages for: Runes, Job Abilities, SP abilities, etc.
 ---
 --- Examples:
----   - WAR/RUN using Ignis → "[Ignis] Fire rune, resist ice"
----   - DNC/WAR using Provoke → "[Provoke] Provokes enemy."
----   - PLD using Sentinel → "[Sentinel] Reduces damage taken."
+---   - WAR/RUN using Ignis >> "[Ignis] Fire rune, resist ice"
+---   - DNC/WAR using Provoke >> "[Provoke] Provokes enemy."
+---   - PLD using Sentinel >> "[Sentinel] Reduces damage taken."
 ---
 --- @file init_ability_messages.lua
 --- @author Tetsouo

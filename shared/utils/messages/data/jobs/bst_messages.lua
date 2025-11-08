@@ -15,12 +15,12 @@ return {
     ---========================================================================
 
     ecosystem_change = {
-        template = "{gray}[{lightblue}{job}{gray}] {gray}Ecosystem{gray} -> {green}{ecosystem}{gray} ({green}{count} {species_text}{gray})",
+        template = "{gray}[{lightblue}{job}{gray}] {gray}Ecosystem{gray} >> {green}{ecosystem}{gray} ({green}{count} {species_text}{gray})",
         color = 1
     },
 
     species_change = {
-        template = "{gray}[{lightblue}{job}{gray}] {gray}Species{gray} -> {yellow}{species}{gray} ({green}{count} {jug_text}{gray})",
+        template = "{gray}[{lightblue}{job}{gray}] {gray}Species{gray} >> {yellow}{species}{gray} ({green}{count} {jug_text}{gray})",
         color = 1
     },
 
@@ -63,7 +63,7 @@ return {
     },
 
     auto_engage_status = {
-        template = "{gray}[{lightblue}{job}{gray}] {gray}Auto Pet Engage{gray} -> {status_color}{status}{gray}",
+        template = "{gray}[{lightblue}{job}{gray}] {gray}Auto Pet Engage{gray} >> {status_color}{status}{gray}",
         color = 1
     },
 
@@ -72,7 +72,7 @@ return {
     ---========================================================================
 
     ready_move_precast = {
-        template = "{gray}[{lightblue}{job}{gray}] {gray}Ready Move{gray} -> {yellow}{move}{gray} ({green}{category}{gray})",
+        template = "{gray}[{lightblue}{job}{gray}] {gray}Ready Move{gray} >> {yellow}{move}{gray} ({green}{category}{gray})",
         color = 1
     },
 

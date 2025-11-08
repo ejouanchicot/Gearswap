@@ -10,6 +10,7 @@
 This section contains modular documentation for all 13 supported jobs in the Tetsouo GearSwap system.
 
 Each job has **8 dedicated documentation files**:
+
 - **README.md** - Job overview and navigation
 - **quick-start.md** - Loading and first steps
 - **keybinds.md** - All keybinds reference
@@ -72,16 +73,19 @@ Each job has **8 dedicated documentation files**:
 ## 🔗 Quick Links
 
 **New to Tetsouo GearSwap?**
+
 - Start with [RDM](rdm/quick-start.md) for a complete example
 - All jobs follow the same structure
 
 **Looking for specific info?**
-- Keybinds → `[job]/keybinds.md`
-- Commands → `[job]/commands.md`
-- States → `[job]/states.md`
-- Troubleshooting → `[job]/troubleshooting.md`
+
+- Keybinds >> `[job]/keybinds.md`
+- Commands >> `[job]/commands.md`
+- States >> `[job]/states.md`
+- Troubleshooting >> `[job]/troubleshooting.md`
 
 **System Documentation**:
+
 - [Equipment Validation](../features/equipment-validation.md)
 - [Job Change Manager](../features/job-change-manager.md)
 - [MidcastManager System](../../technical/systems/midcast-manager.md)
@@ -103,6 +107,7 @@ Each job has **8 dedicated documentation files**:
 ## 🆕 Recent Changes
 
 **2025-10-26**:
+
 - ✅ Migrated from monolithic `guide.md` to modular 8-file structure
 - ✅ Automated documentation generation via Python script
 - ✅ Extracted keybinds, states, commands from actual code
@@ -114,12 +119,14 @@ Each job has **8 dedicated documentation files**:
 ## 📝 Maintenance Notes
 
 **Adding a New Job**:
+
 1. Create config files in `Tetsouo/config/[job]/`
 2. Create job modules in `shared/jobs/[job]/`
 3. Run `python generate_job_docs.py` to auto-generate documentation
 4. Review and enhance generated documentation as needed
 
 **Updating Documentation**:
+
 1. Modify source config/code files
 2. Re-run `python generate_job_docs.py`
 3. Review changes in `docs/user/jobs/[job]/`

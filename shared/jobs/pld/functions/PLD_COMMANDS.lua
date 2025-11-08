@@ -33,7 +33,7 @@ local RuneManager = require('shared/jobs/pld/functions/logic/rune_manager')
 ---============================================================================
 
 --- Handle job-specific self commands
---- Processes commands in order: Common → UI → PLD-specific
+--- Processes commands in order: Common >> UI >> PLD-specific
 ---
 --- Common commands:
 ---   • reload         - Reload GearSwap

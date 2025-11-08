@@ -96,31 +96,31 @@ Fire-based avatar. MP cost: 10. Perpetuation: 4 MP/3s. SMN level 1.
 
 **Tous les Avatars:**
 
-- Carbuncle → "[Carbuncle] Summons Carbuncle."
-- Fenrir → "[Fenrir] Summons Fenrir."
-- Ifrit → "[Ifrit] Summons Ifrit."
-- Shiva → "[Shiva] Summons Shiva."
-- Garuda → "[Garuda] Summons Garuda."
-- Titan → "[Titan] Summons Titan."
-- Ramuh → "[Ramuh] Summons Ramuh."
-- Leviathan → "[Leviathan] Summons Leviathan."
-- Diabolos → "[Diabolos] Summons Diabolos."
-- Cait Sith → "[Cait Sith] Summons Cait Sith."
-- Siren → "[Siren] Summons Siren."
+- Carbuncle >> "[Carbuncle] Summons Carbuncle."
+- Fenrir >> "[Fenrir] Summons Fenrir."
+- Ifrit >> "[Ifrit] Summons Ifrit."
+- Shiva >> "[Shiva] Summons Shiva."
+- Garuda >> "[Garuda] Summons Garuda."
+- Titan >> "[Titan] Summons Titan."
+- Ramuh >> "[Ramuh] Summons Ramuh."
+- Leviathan >> "[Leviathan] Summons Leviathan."
+- Diabolos >> "[Diabolos] Summons Diabolos."
+- Cait Sith >> "[Cait Sith] Summons Cait Sith."
+- Siren >> "[Siren] Summons Siren."
 
 ### Spirit Summon (6 spirits)
 
 **Examples:**
 
 ```
-Light Spirit → [Light Spirit] Summons Light Spirit.
-Dark Spirit → [Dark Spirit] Summons Dark Spirit.
-Fire Spirit → [Fire Spirit] Summons Fire Spirit.
-Ice Spirit → [Ice Spirit] Summons Ice Spirit.
-Air Spirit → [Air Spirit] Summons Air Spirit.
-Earth Spirit → [Earth Spirit] Summons Earth Spirit.
-Thunder Spirit → [Thunder Spirit] Summons Thunder Spirit.
-Water Spirit → [Water Spirit] Summons Water Spirit.
+Light Spirit >> [Light Spirit] Summons Light Spirit.
+Dark Spirit >> [Dark Spirit] Summons Dark Spirit.
+Fire Spirit >> [Fire Spirit] Summons Fire Spirit.
+Ice Spirit >> [Ice Spirit] Summons Ice Spirit.
+Air Spirit >> [Air Spirit] Summons Air Spirit.
+Earth Spirit >> [Earth Spirit] Summons Earth Spirit.
+Thunder Spirit >> [Thunder Spirit] Summons Thunder Spirit.
+Water Spirit >> [Water Spirit] Summons Water Spirit.
 ```
 
 ### Blood Pact: Rage (~60 pacts)
@@ -128,27 +128,27 @@ Water Spirit → [Water Spirit] Summons Water Spirit.
 **Examples - Ifrit:**
 
 ```
-Punch → [Punch] Physical melee attack.
-Fire II → [Fire II] Fire elemental magic.
-Burning Strike → [Burning Strike] Fire physical attack.
-Flaming Crush → [Flaming Crush] Fire damage + knockback.
+Punch >> [Punch] Physical melee attack.
+Fire II >> [Fire II] Fire elemental magic.
+Burning Strike >> [Burning Strike] Fire physical attack.
+Flaming Crush >> [Flaming Crush] Fire damage + knockback.
 ```
 
 **Examples - Shiva:**
 
 ```
-Axe Kick → [Axe Kick] Physical melee attack.
-Blizzard II → [Blizzard II] Ice elemental magic.
-Double Slap → [Double Slap] 2-hit physical attack.
-Rush → [Rush] Physical attack + knockback.
+Axe Kick >> [Axe Kick] Physical melee attack.
+Blizzard II >> [Blizzard II] Ice elemental magic.
+Double Slap >> [Double Slap] 2-hit physical attack.
+Rush >> [Rush] Physical attack + knockback.
 ```
 
 **Examples - Fenrir:**
 
 ```
-Eclipse Bite → [Eclipse Bite] Dark physical damage.
-Lunar Bay → [Lunar Bay] Dark magic damage (AoE).
-Moonlit Charge → [Moonlit Charge] Physical damage.
+Eclipse Bite >> [Eclipse Bite] Dark physical damage.
+Lunar Bay >> [Lunar Bay] Dark magic damage (AoE).
+Moonlit Charge >> [Moonlit Charge] Physical damage.
 ```
 
 ### Blood Pact: Ward (~58 pacts)
@@ -156,18 +156,18 @@ Moonlit Charge → [Moonlit Charge] Physical damage.
 **Examples - Buffs:**
 
 ```
-Shining Ruby → [Shining Ruby] Party Regen.
-Aerial Armor → [Aerial Armor] Party Blink.
-Earthen Ward → [Earthen Ward] Party damage reduction.
-Rolling Thunder → [Rolling Thunder] Party magic attack boost.
+Shining Ruby >> [Shining Ruby] Party Regen.
+Aerial Armor >> [Aerial Armor] Party Blink.
+Earthen Ward >> [Earthen Ward] Party damage reduction.
+Rolling Thunder >> [Rolling Thunder] Party magic attack boost.
 ```
 
 **Examples - Debuffs/Utility:**
 
 ```
-Sleepga → [Sleepga] AoE sleep.
-Shock Squall → [Shock Squall] AoE magic damage.
-Predator Claws → [Predator Claws] Crit rate boost.
+Sleepga >> [Sleepga] AoE sleep.
+Shock Squall >> [Shock Squall] AoE magic damage.
+Predator Claws >> [Predator Claws] Crit rate boost.
 ```
 
 ---

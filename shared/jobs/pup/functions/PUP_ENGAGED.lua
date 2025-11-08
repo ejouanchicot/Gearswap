@@ -40,10 +40,10 @@ function customize_melee_set(meleeSet)
         local playerEngaged = (player and player.status == 'Engaged')
 
         -- Priority order (using short-circuit evaluation):
-        -- 1. Both engaged → sets.pet.engagedBoth
-        -- 2. Pet engaged only → sets.pet.engaged
-        -- 3. Player engaged only → sets.me.engaged
-        -- 4. Neither engaged → sets.pet.idle
+        -- 1. Both engaged >> sets.pet.engagedBoth
+        -- 2. Pet engaged only >> sets.pet.engaged
+        -- 3. Player engaged only >> sets.me.engaged
+        -- 4. Neither engaged >> sets.pet.idle
         meleeSet = (petEngaged and playerEngaged) and sets.pet.engagedBoth
             or petEngaged and sets.pet.engaged
             or playerEngaged and sets.me.engaged

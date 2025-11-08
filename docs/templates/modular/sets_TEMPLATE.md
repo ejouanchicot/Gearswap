@@ -71,7 +71,7 @@ sets.idle.PDT = { ... }     -- Physical Damage Taken -
 ```
 //gs c checksets
 
-→ Output:
+>> Output:
 [JOB] ✅ 156/160 items validated (97.5%)
 
 --- STORAGE ITEMS (3) ---

@@ -32,6 +32,7 @@ Message Systems & Validation
 ```
 
 **Benefits:**
+
 - Individual databases remain separate (easy to maintain)
 - Universal database merges at runtime
 - Message systems use one database for all lookups
@@ -153,6 +154,7 @@ local UniversalSpells = require('shared/data/magic/UNIVERSAL_SPELL_DATABASE')
 ```
 
 **Structure:**
+
 ```lua
 UniversalSpells = {
     spells = {...},      -- All spells merged
@@ -168,6 +170,7 @@ UniversalSpells = {
 **Purpose:** Get data for a specific spell
 
 **Usage:**
+
 ```lua
 local spell_data = UniversalSpells.get_spell_data("Cure III")
 if spell_data then
@@ -177,6 +180,7 @@ end
 ```
 
 **Returns:**
+
 - Spell data table if found
 - `nil` if spell doesn't exist
 
@@ -187,6 +191,7 @@ end
 **Purpose:** Search for spells containing a term (case-insensitive)
 
 **Usage:**
+
 ```lua
 local cure_spells = UniversalSpells.search_spells("cure")
 -- Returns: Cure, Cure II, Cure III, etc.
@@ -205,6 +210,7 @@ end
 **Purpose:** Get all spells from a specific database
 
 **Usage:**
+
 ```lua
 local healing_spells = UniversalSpells.get_spells_by_source("HEALING_MAGIC_DATABASE")
 -- Returns all Cure, Curaga, Raise spells, etc.
@@ -219,6 +225,7 @@ local healing_spells = UniversalSpells.get_spells_by_source("HEALING_MAGIC_DATAB
 **Purpose:** Get statistics about loaded databases
 
 **Usage:**
+
 ```lua
 local info = UniversalSpells.get_database_info()
 print(string.format("Loaded %d databases", info.total_databases))
@@ -230,6 +237,7 @@ end
 ```
 
 **Returns:**
+
 ```lua
 {
     total_databases = 14,
@@ -246,6 +254,7 @@ end
 **Purpose:** Quick check if spell exists in any database
 
 **Usage:**
+
 ```lua
 if UniversalSpells.spell_exists("Cure III") then
     -- Spell exists
@@ -261,6 +270,7 @@ end
 **Purpose:** Get all spells from job-specific or skill-based databases
 
 **Usage:**
+
 ```lua
 -- Get all job-specific spells
 local job_spells = UniversalSpells.get_spells_by_type("job")
@@ -479,11 +489,13 @@ end
 **Symptom:** Some databases in `failed_loads` list
 
 **Causes:**
+
 - Database file doesn't exist
 - Syntax error in database file
 - Incorrect file path
 
 **Solution:**
+
 ```lua
 local info = UniversalSpells.get_database_info()
 for _, failed_db in ipairs(info.failed_loads) do
@@ -497,11 +509,13 @@ end
 **Symptom:** `get_spell_data()` returns `nil` for known spell
 
 **Causes:**
+
 - Spell name typo (case-sensitive)
 - Spell not in any database yet
 - Database not loaded
 
 **Solution:**
+
 ```lua
 -- Use search to find similar spells
 local similar = UniversalSpells.search_spells("partial_name")
@@ -523,12 +537,14 @@ end
 ### DO ✅
 
 1. **Use UNIVERSAL_SPELL_DATABASE for lookups**
+
    ```lua
    local UniversalSpells = require('shared/data/magic/UNIVERSAL_SPELL_DATABASE')
    local spell = UniversalSpells.get_spell_data("Cure III")
    ```
 
 2. **Check existence before accessing**
+
    ```lua
    if UniversalSpells.spell_exists(spell_name) then
        -- Safe to use
@@ -566,7 +582,7 @@ end
    - Level requirements
 
 3. **Spell Dependencies**
-   - Track spell upgrades (Cure → Cure II → Cure III)
+   - Track spell upgrades (Cure >> Cure II >> Cure III)
    - Spell unlocks (quests, gifts)
 
 4. **Performance Optimization**
@@ -607,6 +623,7 @@ end
 ### System Status: PRODUCTION READY ✅
 
 **Strengths:**
+
 - ✅ All 14 databases loading correctly
 - ✅ ~900+ spells aggregated
 - ✅ Clean API with 6 helper functions
@@ -615,6 +632,7 @@ end
 - ✅ 85%+ database coverage audited and verified
 
 **Known Limitations:**
+
 - BRD and GEO databases need full audit (partial coverage)
 - Performance could be optimized with caching
 - No job access validation yet

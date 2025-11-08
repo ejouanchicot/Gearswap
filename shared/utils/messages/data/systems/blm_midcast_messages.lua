@@ -15,7 +15,7 @@ return {
     ---========================================================================
 
     elemental_routing = {
-        template = "{green}[BLM_MIDCAST] -> Routing to MidcastManager (Elemental)",
+        template = "{green}[BLM_MIDCAST] >> Routing to MidcastManager (Elemental)",
         color = 158
     },
 
@@ -54,7 +54,7 @@ return {
     ---========================================================================
 
     dark_routing = {
-        template = "{green}[BLM_MIDCAST] -> Routing to MidcastManager (Dark Magic)",
+        template = "{green}[BLM_MIDCAST] >> Routing to MidcastManager (Dark Magic)",
         color = 158
     },
 
@@ -68,7 +68,7 @@ return {
     ---========================================================================
 
     enfeebling_routing = {
-        template = "{green}[BLM_MIDCAST] -> Routing to MidcastManager (Enfeebling)",
+        template = "{green}[BLM_MIDCAST] >> Routing to MidcastManager (Enfeebling)",
         color = 158
     },
 

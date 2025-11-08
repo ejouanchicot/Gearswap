@@ -2,7 +2,7 @@
 --- GEO Spell Refiner - Intelligent Tier Fallback System
 ---============================================================================
 --- Automatically downgrades spell tier if higher tier is unavailable.
---- Example: If Fire V is not available, tries Fire IV → Fire III → Fire II → Fire
+--- Example: If Fire V is not available, tries Fire IV >> Fire III >> Fire II >> Fire
 ---
 --- @file jobs/geo/functions/logic/geo_spell_refiner.lua
 --- @author Tetsouo
@@ -82,10 +82,10 @@ end
 --- TIER REFINEMENT
 ---============================================================================
 
---- Tier order for regular spells (V -> IV -> III -> II -> I)
+--- Tier order for regular spells (V >> IV >> III >> II >> I)
 local SPELL_TIER_ORDER = {"V", "IV", "III", "II", "I"}
 
---- Tier order for AOE spells (III -> II -> I)
+--- Tier order for AOE spells (III >> II >> I)
 local AOE_TIER_ORDER = {"III", "II", "I"}
 
 --- Refine spell to highest available tier

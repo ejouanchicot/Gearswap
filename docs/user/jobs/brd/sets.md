@@ -75,7 +75,7 @@ sets.engaged.PDT = { ... }
 ```
 //gs c checksets
 
-→ Output:
+>> Output:
 [BRD] ✅ 156/160 items validated (97.5%)
 ```
 

@@ -63,7 +63,7 @@ SAM_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Sekkanoki'] = {
-        description             = 'Next WS TP cost → 1000',
+        description             = 'Next WS TP cost >> 1000',
         level                   = 40,
         recast                  = 300,  -- 5min
         main_job_only           = false,

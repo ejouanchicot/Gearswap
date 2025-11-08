@@ -53,6 +53,7 @@ DebuffAutoCureConfig.test_debuff = "Berserk"
 **Use case:** Test auto-cure system without needing to get silenced by mobs.
 
 **How it works:**
+
 - When `test_mode = true` and you have the test debuff (e.g., Berserk)
 - Trying to cast any spell triggers auto-cure system
 - Uses Echo Drops/Remedy just like real Silence
@@ -87,10 +88,11 @@ DebuffAutoCureConfig.paralysis_cure_items = {
 ```
 
 **Priority system:**
+
 - System tries items in order
-- If first item found → use it
-- If not found → try next item
-- If none found → display error message
+- If first item found >> use it
+- If not found >> try next item
+- If none found >> display error message
 
 ---
 
@@ -102,6 +104,7 @@ DebuffAutoCureConfig.debug = false
 ```
 
 When `true`, displays detailed messages:
+
 - `[TEST MODE] Using Berserk to simulate Silence`
 - Item checks, cure attempts, etc.
 
@@ -112,6 +115,7 @@ When `true`, displays detailed messages:
 ### Normal Mode (test_mode = false)
 
 #### Silence Example
+
 ```
 1. You get Silenced by mob
 2. You try to cast spell: /ma "Stone" <t>
@@ -122,6 +126,7 @@ When `true`, displays detailed messages:
 ```
 
 #### Paralysis Example
+
 ```
 1. You get Paralyzed by mob
 2. You try to use weapon skill: /ws "Rudra's Storm" <t>
@@ -157,7 +162,7 @@ DebuffAutoCureConfig.silence_cure_items = {
 }
 ```
 
-System will try in order: Echo Drops → Remedy → Catholicon
+System will try in order: Echo Drops >> Remedy >> Catholicon
 
 ---
 
@@ -166,6 +171,7 @@ System will try in order: Echo Drops → Remedy → Catholicon
 ### "System doesn't trigger with Berserk"
 
 **Check:**
+
 1. `test_mode = true` in config
 2. `auto_cure_silence = true` in config
 3. Reload GearSwap: `//gs c reload`
@@ -195,6 +201,7 @@ DebuffAutoCureConfig.auto_cure_blind = false      -- Not yet implemented
 These will be added in future versions.
 
 **Currently Implemented:**
+
 - ✅ Silence (blocks magic casting)
 - ✅ Paralysis (blocks job abilities/weapon skills)
 
@@ -203,11 +210,13 @@ These will be added in future versions.
 ## File Location
 
 **Config file:**
+
 ```
 shared/config/DEBUFF_AUTOCURE_CONFIG.lua
 ```
 
 **Implementation:**
+
 ```
 shared/utils/debuff/precast_guard.lua
 ```

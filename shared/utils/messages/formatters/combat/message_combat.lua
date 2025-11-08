@@ -15,6 +15,89 @@ local M = require('shared/utils/messages/api/messages')
 local MessageCombat = {}
 
 ---============================================================================
+--- ELEMENT COLOR MAPPING
+---============================================================================
+
+--- Get color code for a spell element
+--- @param element string Element name (Fire, Ice, Wind, etc.)
+--- @return number|nil color_code FFXI color code for the element
+local function get_element_color(element)
+    if not element then return nil end
+
+    local element_colors = {
+        Fire = 2,
+        Ice = 210,      -- Cyan - more visible than 30
+        Wind = 14,
+        Earth = 37,
+        Thunder = 16,
+        Lightning = 16,
+        Water = 219,
+        Light = 187,
+        Dark = 200,
+    }
+
+    return element_colors[element]
+end
+
+--- Apply element color to spell name
+--- @param spell_name string Spell name
+--- @param element string|nil Element name
+--- @return string colored_spell_name Spell name with color codes if element exists
+local function apply_element_color(spell_name, element)
+    if not element then
+        return spell_name
+    end
+
+    local color_code = get_element_color(element)
+    if not color_code then
+        return spell_name
+    end
+
+    local gray_code = string.char(0x1F, 160)
+    return string.char(0x1F, color_code) .. spell_name .. gray_code
+end
+
+--- Get color code for a target based on type
+--- @param target_type string|nil Target type ("SELF", "PLAYER", "PC", "NPC", "MONSTER", etc.)
+--- @return number color_code Color code for the target
+local function get_target_color(target_type)
+    if not target_type then
+        -- Default: assume enemy if no type provided
+        return 011  -- Pink/Rose - Enemy
+    end
+
+    local type_upper = target_type:upper()
+
+    -- Player types (PC, PLAYER, SELF)
+    if type_upper == "PLAYER" or type_upper == "PC" or type_upper == "SELF" then
+        return 158  -- Green - Player
+    end
+
+    -- NPC types
+    if type_upper == "NPC" then
+        return 063  -- Pale yellow - NPC
+    end
+
+    -- Enemy/Monster types (MONSTER, ENEMY, MOB)
+    -- Default to enemy for anything else
+    return 011  -- Pink/Rose - Enemy
+end
+
+--- Apply target color to target name
+--- @param target_name string Target name
+--- @param target_type string|nil Target type
+--- @return string colored_target Colored target name
+local function apply_target_color(target_name, target_type)
+    if not target_name then
+        return target_name
+    end
+
+    local color_code = get_target_color(target_type)
+    local gray_code = string.char(0x1F, 160)
+    return string.char(0x1F, color_code) .. target_name .. gray_code
+end
+
+---============================================================================
 --- RANGE & VALIDATION ERRORS
 ---============================================================================
 
@@ -241,18 +324,92 @@ end
 --- SPELL ACTIVATION (ALREADY MIGRATED)
 ---============================================================================
 
-function MessageCombat.show_spell_activated(spell_name, description, target_name)
+function MessageCombat.show_spell_activated(spell_name, description, target_name, spell_skill, spell_element, target_type)
     local job_tag = MessageCore.get_job_tag()
+
+    -- Apply element color to spell name if element provided
+    if spell_element then
+        spell_name = apply_element_color(spell_name, spell_element)
+    end
+
+    -- Apply target color to target name if target provided
+    if target_name and target_name ~= player.name then
+        target_name = apply_target_color(target_name, target_type)
+    end
+
+    -- Detect spell type by skill
+    local is_healing = spell_skill == 'Healing Magic'
+    local is_enhancing = spell_skill == 'Enhancing Magic'
+    local is_enfeebling = spell_skill == 'Enfeebling Magic'
+    local is_divine = spell_skill == 'Divine Magic'
+    local is_dark = spell_skill == 'Dark Magic'
+    local is_blue = spell_skill == 'Blue Magic'
 
     local key
     if description and target_name and target_name ~= player.name then
-        key = 'spell_activated_full_target'
+        if is_healing then
+            key = 'healing_spell_activated_full_target'
+        elseif is_enhancing then
+            key = 'enhancing_spell_activated_full_target'
+        elseif is_enfeebling then
+            key = 'enfeebling_spell_activated_full_target'
+        elseif is_divine then
+            key = 'divine_spell_activated_full_target'
+        elseif is_dark then
+            key = 'dark_spell_activated_full_target'
+        elseif is_blue then
+            key = 'blue_spell_activated_full_target'
+        else
+            key = 'spell_activated_full_target'
+        end
     elseif description then
-        key = 'spell_activated_full'
+        if is_healing then
+            key = 'healing_spell_activated_full'
+        elseif is_enhancing then
+            key = 'enhancing_spell_activated_full'
+        elseif is_enfeebling then
+            key = 'enfeebling_spell_activated_full'
+        elseif is_divine then
+            key = 'divine_spell_activated_full'
+        elseif is_dark then
+            key = 'dark_spell_activated_full'
+        elseif is_blue then
+            key = 'blue_spell_activated_full'
+        else
+            key = 'spell_activated_full'
+        end
     elseif target_name and target_name ~= player.name then
-        key = 'spell_activated_target'
+        if is_healing then
+            key = 'healing_spell_activated_target'
+        elseif is_enhancing then
+            key = 'enhancing_spell_activated_target'
+        elseif is_enfeebling then
+            key = 'enfeebling_spell_activated_target'
+        elseif is_divine then
+            key = 'divine_spell_activated_target'
+        elseif is_dark then
+            key = 'dark_spell_activated_target'
+        elseif is_blue then
+            key = 'blue_spell_activated_target'
+        else
+            key = 'spell_activated_target'
+        end
     else
-        key = 'spell_activated'
+        if is_healing then
+            key = 'healing_spell_activated'
+        elseif is_enhancing then
+            key = 'enhancing_spell_activated'
+        elseif is_enfeebling then
+            key = 'enfeebling_spell_activated'
+        elseif is_divine then
+            key = 'divine_spell_activated'
+        elseif is_dark then
+            key = 'dark_spell_activated'
+        elseif is_blue then
+            key = 'blue_spell_activated'
+        else
+            key = 'spell_activated'
+        end
     end
 
     local params = {

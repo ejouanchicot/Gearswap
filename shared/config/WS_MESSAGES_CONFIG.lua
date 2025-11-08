@@ -5,26 +5,33 @@
 ---
 --- Display Modes:
 ---   • 'full' - Show WS name + description + TP
----              Example: [WAR/SAM] [Upheaval] -> Four hits. Damage varies with TP.
+---              Example: [WAR/SAM] [Upheaval] >> Four hits. Damage varies with TP.
 ---                       [Upheaval] (2290 TP)
 ---   • 'on'   - Show WS name + TP only (no description)
 ---              Example: [Upheaval] (2290 TP)
 ---   • 'off'  - No messages at all (silent mode)
 ---
+--- Settings File:
+---   shared/config/message_modes.lua
+---   Persists across //lua reload and game restarts
+---
 --- @file WS_MESSAGES_CONFIG.lua
 --- @author Tetsouo
---- @version 1.1 - Refactored layout
---- @date Created: 2025-10-30 | Updated: 2025-11-06
+--- @version 1.2 - Persistent settings with message_settings
+--- @date Created: 2025-10-30 | Updated: 2025-11-08
 ---============================================================================
 
 local WS_MESSAGES_CONFIG = {}
 
 ---============================================================================
---- CONFIGURATION
+--- PERSISTENT SETTINGS
 ---============================================================================
 
---- Display mode: 'full' | 'on' | 'off'
-WS_MESSAGES_CONFIG.display_mode = 'full'
+-- Load persistent settings manager
+local MessageSettings = require('shared/config/message_settings')
+
+--- Display mode loaded from persistent settings (survives reload/restart)
+WS_MESSAGES_CONFIG.display_mode = MessageSettings.get_ws_mode()
 
 --- Valid mode lookup (internal)
 WS_MESSAGES_CONFIG.VALID_MODES = {
@@ -45,18 +52,21 @@ WS_MESSAGES_CONFIG.VALID_MODES = {
 
 --- Check if messages are enabled (not 'off')
 function WS_MESSAGES_CONFIG.is_enabled()
-    local mode = WS_MESSAGES_CONFIG.display_mode
+    -- Always read current mode from persistent settings
+    local mode = MessageSettings.get_ws_mode()
     return mode ~= 'off' and mode ~= 'disabled' and mode ~= 'disable'
 end
 
 --- Check if descriptions should be shown (mode = 'full')
 function WS_MESSAGES_CONFIG.show_description()
-    return WS_MESSAGES_CONFIG.display_mode == 'full'
+    -- Always read current mode from persistent settings
+    return MessageSettings.get_ws_mode() == 'full'
 end
 
 --- Check if only TP should be shown (mode = 'on')
 function WS_MESSAGES_CONFIG.is_tp_only()
-    local mode = WS_MESSAGES_CONFIG.display_mode
+    -- Always read current mode from persistent settings
+    local mode = MessageSettings.get_ws_mode()
     return mode == 'on' or mode == 'tp_only' or mode == 'tp'
 end
 
@@ -69,6 +79,8 @@ end
 --- @return boolean true if mode is valid
 function WS_MESSAGES_CONFIG.set_display_mode(mode)
     if WS_MESSAGES_CONFIG.VALID_MODES[mode] then
+        -- Save to persistent settings file (shared/config/message_modes.lua)
+        MessageSettings.set_ws_mode(mode)
         WS_MESSAGES_CONFIG.display_mode = mode
         return true
     else

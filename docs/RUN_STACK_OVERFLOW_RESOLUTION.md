@@ -40,7 +40,7 @@ end      ← Ferme function
 - `Xp` ❌ (manquant)
 - `RuneMode` ❌ (manquant)
 
-**Quand UI_MANAGER essayait de lire ces states → Stack Overflow**
+**Quand UI_MANAGER essayait de lire ces states >> Stack Overflow**
 
 **Solution:**
 
@@ -154,7 +154,7 @@ function RUNKeybinds.show_intro()
 end
 ```
 
-**IMPORTANT:** Ne PAS faire `require('RUN_LOCKSTYLE')` ou `require('RUN_MACROBOOK')` dans show_intro() → Récursion circulaire!
+**IMPORTANT:** Ne PAS faire `require('RUN_LOCKSTYLE')` ou `require('RUN_MACROBOOK')` dans show_intro() >> Récursion circulaire!
 
 ---
 
@@ -272,8 +272,8 @@ include('Tetsouo/sets/job_sets.lua')
    end
    ```
 
-   - Si ça load → Problème dans user_setup()
-   - Si stack overflow → Problème ailleurs
+   - Si ça load >> Problème dans user_setup()
+   - Si stack overflow >> Problème ailleurs
 
 2. **Réactiver états seulement:**
 
@@ -284,7 +284,7 @@ include('Tetsouo/sets/job_sets.lua')
    end
    ```
 
-   - Si stack overflow → Problème dans states
+   - Si stack overflow >> Problème dans states
 
 3. **Ajouter keybinds:**
 
@@ -299,7 +299,7 @@ include('Tetsouo/sets/job_sets.lua')
    end, 0.5)
    ```
 
-   - Si stack overflow → Problème dans keybinds ou states manquants
+   - Si stack overflow >> Problème dans keybinds ou states manquants
 
 4. **Ajouter UI:**
 
@@ -312,7 +312,7 @@ include('Tetsouo/sets/job_sets.lua')
    end, 2.0)
    ```
 
-   - Si stack overflow → Problème UI avec states
+   - Si stack overflow >> Problème UI avec states
 
 ### Méthode 2: Vérifier States vs Keybinds
 
@@ -342,7 +342,7 @@ end
 ```
 Keybinds référence state.MainWeapon
 Mais MainWeapon pas défini dans JOB_STATES.lua
-→ UI essaie de lire → Stack Overflow
+>> UI essaie de lire >> Stack Overflow
 ```
 
 **Solution:** Définir TOUS les states référencés
@@ -351,7 +351,7 @@ Mais MainWeapon pas défini dans JOB_STATES.lua
 
 ```
 KeybindUI.smart_init() fait des validations complexes
-→ Récursion au chargement initial
+>> Récursion au chargement initial
 ```
 
 **Solution:** Utiliser `init()` à la place
@@ -360,9 +360,9 @@ KeybindUI.smart_init() fait des validations complexes
 
 ```
 JOB_KEYBINDS.show_intro()
-  → require('JOB_LOCKSTYLE')
-    → Déjà chargé par job_functions.lua
-      → Récursion
+  >> require('JOB_LOCKSTYLE')
+    >> Déjà chargé par job_functions.lua
+      >> Récursion
 ```
 
 **Solution:** Ne PAS require() modules déjà chargés
@@ -372,7 +372,7 @@ JOB_KEYBINDS.show_intro()
 ```
 user_setup(): state.HybridMode:options('PDT', 'Normal')
 JOB_STATES.configure(): state.HybridMode:options('PDT', 'MDT')
-→ Conflit/récursion possible
+>> Conflit/récursion possible
 ```
 
 **Solution:** Définir states UNE SEULE FOIS dans JOB_STATES

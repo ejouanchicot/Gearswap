@@ -10,9 +10,9 @@
 
 ### Databases Totaux
 
-- **Job Abilities:** 21 jobs → 308 abilities
-- **Spells:** 14 databases → ~900+ spells
-- **Weaponskills:** 13 weapon types → 194 weaponskills
+- **Job Abilities:** 21 jobs >> 308 abilities
+- **Spells:** 14 databases >> ~900+ spells
+- **Weaponskills:** 13 weapon types >> 194 weaponskills
 
 ### Facades (Aggregators)
 
@@ -91,13 +91,13 @@ local jobs = {
 UNIVERSAL_JA_DATABASE.lua (Facade)
   ↓ Loop through jobs list (lines 53-64)
   ↓
-  ├── require('BLM_JA_DATABASE') → Merge
-  ├── require('BLU_JA_DATABASE') → Merge
-  ├── require('BRD_JA_DATABASE') → Merge
+  ├── require('BLM_JA_DATABASE') >> Merge
+  ├── require('BLU_JA_DATABASE') >> Merge
+  ├── require('BRD_JA_DATABASE') >> Merge
   ... (21 total)
-  └── require('WHM_JA_DATABASE') → Merge
+  └── require('WHM_JA_DATABASE') >> Merge
   ↓
-  Return merged UNIVERSAL_JA_DB → ~308 abilities
+  Return merged UNIVERSAL_JA_DB >> ~308 abilities
 ```
 
 **Utilisé Par:**
@@ -164,24 +164,24 @@ UNIVERSAL_SPELL_DATABASE.lua (Facade - NEW)
   ↓ Loop through configs (lines 75-130)
   ↓
   JOB-SPECIFIC:
-  ├── require('BLM_SPELL_DATABASE') → Merge
-  ├── require('BLU_SPELL_DATABASE') → Merge
-  ├── require('BRD_SPELL_DATABASE') → Merge
-  ├── require('GEO_SPELL_DATABASE') → Merge
-  ├── require('RDM_SPELL_DATABASE') → Merge
-  ├── require('SCH_SPELL_DATABASE') → Merge
-  ├── require('SMN_SPELL_DATABASE') → Merge
-  └── require('WHM_SPELL_DATABASE') → Merge
+  ├── require('BLM_SPELL_DATABASE') >> Merge
+  ├── require('BLU_SPELL_DATABASE') >> Merge
+  ├── require('BRD_SPELL_DATABASE') >> Merge
+  ├── require('GEO_SPELL_DATABASE') >> Merge
+  ├── require('RDM_SPELL_DATABASE') >> Merge
+  ├── require('SCH_SPELL_DATABASE') >> Merge
+  ├── require('SMN_SPELL_DATABASE') >> Merge
+  └── require('WHM_SPELL_DATABASE') >> Merge
   ↓
   SKILL-BASED:
-  ├── require('ELEMENTAL_MAGIC_DATABASE') → Merge
-  ├── require('DARK_MAGIC_DATABASE') → Merge
-  ├── require('DIVINE_MAGIC_DATABASE') → Merge
-  ├── require('ENFEEBLING_MAGIC_DATABASE') → Merge
-  ├── require('ENHANCING_MAGIC_DATABASE') → Merge
-  └── require('HEALING_MAGIC_DATABASE') → Merge
+  ├── require('ELEMENTAL_MAGIC_DATABASE') >> Merge
+  ├── require('DARK_MAGIC_DATABASE') >> Merge
+  ├── require('DIVINE_MAGIC_DATABASE') >> Merge
+  ├── require('ENFEEBLING_MAGIC_DATABASE') >> Merge
+  ├── require('ENHANCING_MAGIC_DATABASE') >> Merge
+  └── require('HEALING_MAGIC_DATABASE') >> Merge
   ↓
-  Return merged UniversalSpells → ~900+ spells
+  Return merged UniversalSpells >> ~900+ spells
 ```
 
 **Utilisé Par (POTENTIEL):**
@@ -245,13 +245,13 @@ local weapon_type_configs = {
 UNIVERSAL_WS_DATABASE.lua (Facade)
   ↓ Loop through weapon_type_configs (lines 66-104)
   ↓
-  ├── require('SWORD_WS_DATABASE') → Merge (22 WS)
-  ├── require('H2H_WS_DATABASE') → Merge (17 WS)
-  ├── require('GREATSWORD_WS_DATABASE') → Merge (15 WS)
+  ├── require('SWORD_WS_DATABASE') >> Merge (22 WS)
+  ├── require('H2H_WS_DATABASE') >> Merge (17 WS)
+  ├── require('GREATSWORD_WS_DATABASE') >> Merge (15 WS)
   ... (13 total)
-  └── require('DAGGER_WS_DATABASE') → Merge (15 WS)
+  └── require('DAGGER_WS_DATABASE') >> Merge (15 WS)
   ↓
-  Return merged UniversalWS → 194 weaponskills
+  Return merged UniversalWS >> 194 weaponskills
 ```
 
 **Utilisé Par:**

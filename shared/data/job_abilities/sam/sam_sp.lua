@@ -21,7 +21,7 @@ local SAM_SP = {}
 
 SAM_SP.abilities = {
     ['Meikyo Shisui'] = {
-        description             = "WS TP cost → 1000",
+        description             = "WS TP cost >> 1000",
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,

@@ -18,6 +18,7 @@ sets.engaged = {}        -- Engaged (fighting)
 ## ⚡ Precast Sets
 
 ### Fast Cast
+
 ```lua
 sets.precast.FC = {
     -- Fast Cast gear (target: 80% cap)
@@ -25,11 +26,13 @@ sets.precast.FC = {
 ```
 
 ### Job Abilities
+
 ```lua
 -- Job-specific abilities
 ```
 
 ### Weaponskills
+
 ```lua
 -- Weaponskill sets
 ```
@@ -39,6 +42,7 @@ sets.precast.FC = {
 ## 🎭 Midcast Sets
 
 **MidcastManager Fallback Chain**:
+
 ```
 Priority 1: sets.midcast['Skill'].Type.Mode  (most specific)
 Priority 2: sets.midcast['Skill'].Type
@@ -71,11 +75,12 @@ sets.engaged.PDT = { ... }
 ```
 //gs c checksets
 
-→ Output:
+>> Output:
 [WHM] ✅ 156/160 items validated (97.5%)
 ```
 
 **Status meanings**:
+
 - ✅ VALID: In inventory
 - 🗄️ STORAGE: In mog house/sack
 - ❌ MISSING: Not found

@@ -46,7 +46,7 @@ DRK_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Souleater'] = {
-        description             = 'HP → damage, ACC+25',
+        description             = 'HP >> damage, ACC+25',
         level                   = 30,
         recast                  = 360,  -- 6min
         main_job_only           = false,
@@ -54,7 +54,7 @@ DRK_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Consume Mana'] = {
-        description             = 'All MP → damage (1 per 10 MP)',
+        description             = 'All MP >> damage (1 per 10 MP)',
         level                   = 55,
         recast                  = 180,  -- 3min
         main_job_only           = false,  -- Requires Master Levels for subjob

@@ -9,6 +9,9 @@
 --- @date Created: 2025-11-06
 ---============================================================================
 
+-- Import MessageColors for region-specific color detection
+local MessageColors = require('shared/utils/messages/message_colors')
+
 return {
     ---========================================================================
     --- DEBUG MODE TOGGLE MESSAGES
@@ -48,22 +51,22 @@ return {
     ---========================================================================
 
     debug_step_ok = {
-        template = "{gray}STEP {step}: {label} -> {green}OK: {value}",
+        template = "{gray}STEP {step}: {label} >> {green}OK: {value}",
         color = 160
     },
 
     debug_step_warn = {
-        template = "{gray}STEP {step}: {label} -> {orange}WARN: {value}",
+        template = "{gray}STEP {step}: {label} >> {orange}WARN: {value}",
         color = 160
     },
 
     debug_step_fail = {
-        template = "{gray}STEP {step}: {label} -> {red}FAIL: {value}",
+        template = "{gray}STEP {step}: {label} >> {red}FAIL: {value}",
         color = 160
     },
 
     debug_step_info = {
-        template = "{gray}STEP {step}: {label} -> {cyan}{value}",
+        template = "{gray}STEP {step}: {label} >> {cyan}{value}",
         color = 160
     },
 
@@ -72,17 +75,17 @@ return {
     ---========================================================================
 
     debug_priorities_header = {
-        template = "{gray}STEP 3: Priorities     -> Spell > Nested > Type > Mode > Base",
+        template = "{gray}STEP 3: Priorities     >> Spell > Nested > Type > Mode > Base",
         color = 160
     },
 
     debug_priority_found = {
-        template = "{gray}  [P{priority}] {label} -> {green}FOUND",
+        template = "{gray}  [P{priority}] {label} >> {green}FOUND",
         color = 160
     },
 
     debug_priority_missing = {
-        template = "{gray}  [P{priority}] {label} -> {red}NOT FOUND",
+        template = "{gray}  [P{priority}] {label} >> {red}NOT FOUND",
         color = 160
     },
 
@@ -102,7 +105,7 @@ return {
 
     debug_result_fallback = {
         template = "{orange}RESULT: Fallback to {cyan}{set_type}",
-        color = 57
+        color = MessageColors.get_warning_color()
     },
 
     debug_equipment_line = {

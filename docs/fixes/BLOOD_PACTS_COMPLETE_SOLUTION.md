@@ -112,8 +112,8 @@ end
 **Problème:**
 Fichiers summoning ont 2 tables:
 
-- `.spells` → Avatar summons (1 spell)
-- `.blood_pacts` → Blood pacts (10-17 spells)
+- `.spells` >> Avatar summons (1 spell)
+- `.blood_pacts` >> Blood pacts (10-17 spells)
 
 Seulement `.spells` était mergé (20 spells total).
 **116 Blood Pacts ignorés!**
@@ -196,10 +196,10 @@ Blood Pacts ont `action_type = 'Ability'` en **precast**!
 ```
 1. User uses Earthen Ward
 2. precast triggered
-   → spell.action_type = 'Ability'
-   → Calls ability_message_handler (NOT spell_message_handler!)
+   >> spell.action_type = 'Ability'
+   >> Calls ability_message_handler (NOT spell_message_handler!)
 3. ability_message_handler searches JOB_DATABASES
-   → Not found (Blood Pacts are in spell database!)
+   >> Not found (Blood Pacts are in spell database!)
 4. Returns nil
 5. No message displayed ❌
 ```
@@ -249,12 +249,12 @@ end
 ```
 1. User uses Earthen Ward
 2. precast triggered
-   → spell.action_type = 'Ability'
-   → Calls ability_message_handler
+   >> spell.action_type = 'Ability'
+   >> Calls ability_message_handler
 3. ability_message_handler searches JOB_DATABASES
-   → Not found
+   >> Not found
 4. Fallback to SMN_SPELL_DATABASE.spells
-   → Found: {description = "Grants stoneskin (AoE).", category = "Blood Pact: Ward"}
+   >> Found: {description = "Grants stoneskin (AoE).", category = "Blood Pact: Ward"}
 5. Display message: [Earthen Ward] Grants stoneskin (AoE). ✅
 ```
 
@@ -289,18 +289,18 @@ end
 2. Change to WAR/SMN in-game
 3. //lua l gearswap
 4. Summon Titan
-   → Expected: [Titan] Summons Titan. ✅
+   >> Expected: [Titan] Summons Titan. ✅
 5. Use Earthen Ward
-   → Expected: [Earthen Ward] Grants stoneskin (AoE). ✅
+   >> Expected: [Earthen Ward] Grants stoneskin (AoE). ✅
 ```
 
 ### Test 2: Blood Pact: Rage (Flaming Crush)
 
 ```
 1. Summon Ifrit
-   → Expected: [Ifrit] Summons Ifrit. ✅
+   >> Expected: [Ifrit] Summons Ifrit. ✅
 2. Use Flaming Crush
-   → Expected: [Flaming Crush] Fire damage + knockback. ✅
+   >> Expected: [Flaming Crush] Fire damage + knockback. ✅
 ```
 
 ### Test 3: Multiple Blood Pacts
@@ -394,8 +394,8 @@ Blood Pacts sont uniques:
 
 **Ne PAS confondre:**
 
-- `spell.action_type` → GearSwap classification (Magic, Ability, WeaponSkill, etc.)
-- `spell_data.category` → Database classification (Enfeebling, Blood Pact: Ward, etc.)
+- `spell.action_type` >> GearSwap classification (Magic, Ability, WeaponSkill, etc.)
+- `spell_data.category` >> Database classification (Enfeebling, Blood Pact: Ward, etc.)
 
 **Blood Pacts:**
 

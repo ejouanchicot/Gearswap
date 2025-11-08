@@ -48,7 +48,7 @@ Complete documentation for all 13 jobs:
 
 ### ✅ Universal Features (All Jobs)
 
-- **Automatic Equipment Swapping** - Precast → Midcast → Aftercast
+- **Automatic Equipment Swapping** - Precast >> Midcast >> Aftercast
 - **Hybrid Modes** - PDT/Normal with intelligent gear selection
 - **Equipment Validation** - Identify missing/storage items
 - **Lockstyle Management** - Auto-apply per job/subjob
@@ -79,7 +79,7 @@ Complete documentation for all 13 jobs:
 
 - Intelligent Waltz (HP-based tier selection I-V)
 - Auto-Climactic Flourish toggle
-- Auto-Jump system with chaining (Jump → High Jump if needed)
+- Auto-Jump system with chaining (Jump >> High Jump if needed)
 - Step rotation (Main/Alt)
 
 **RDM** - Red Mage
@@ -115,14 +115,14 @@ Complete documentation for all 13 jobs:
 - Automatic roll tracking with bust rate calculation
 - Party job detection system
 - Natural 11 mechanics tracking
-- Color-coded warnings (0% safe → 100% danger)
+- Color-coded warnings (0% safe >> 100% danger)
 
 **BST** - Beastmaster
 
 - 7 ecosystem management
 - Species cycling per ecosystem
 - Ready Move system with index execution (1-6)
-- Intelligent pet engagement (auto Fight → Move → Heel sequence)
+- Intelligent pet engagement (auto Fight >> Move >> Heel sequence)
 - Broth inventory display
 
 **SAM** - Samurai

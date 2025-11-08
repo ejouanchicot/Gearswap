@@ -12,7 +12,7 @@
 **Issue Reported:**
 
 - User: "WAR/RUN je vois pas les message pour les runes"
-- WAR/RUN using Ignis (rune) → No message displayed
+- WAR/RUN using Ignis (rune) >> No message displayed
 
 **Solution:**
 
@@ -132,26 +132,26 @@ end
 
 **All 8 Runes Work:**
 
-- Ignis (Fire) → "Fire rune, resist ice"
-- Gelus (Ice) → "Ice rune, resist fire"
-- Flabra (Wind) → "Wind rune, resist earth"
-- Tellus (Earth) → "Earth rune, resist wind"
-- Sulpor (Thunder) → "Thunder rune, resist water"
-- Unda (Water) → "Water rune, resist thunder"
-- Lux (Light) → "Light rune, resist dark"
-- Tenebrae (Dark) → "Dark rune, resist light"
+- Ignis (Fire) >> "Fire rune, resist ice"
+- Gelus (Ice) >> "Ice rune, resist fire"
+- Flabra (Wind) >> "Wind rune, resist earth"
+- Tellus (Earth) >> "Earth rune, resist wind"
+- Sulpor (Thunder) >> "Thunder rune, resist water"
+- Unda (Water) >> "Water rune, resist thunder"
+- Lux (Light) >> "Light rune, resist dark"
+- Tenebrae (Dark) >> "Dark rune, resist light"
 
 ### Test 2: WAR/RUN - Other RUN Abilities
 
 **Abilities Now Show Messages:**
 
 ```
-Vallation → [Vallation] Reduce elemental damage by runes
-Swordplay → [Swordplay] ACC/EVA boost (stacking)
-Swipe → [Swipe] Single-target damage (1 rune)
-Lunge → [Lunge] Single-target damage (all runes)
-Pflug → [Pflug] Enhance elemental status resistance
-Valiance → [Valiance] Party elemental damage reduction
+Vallation >> [Vallation] Reduce elemental damage by runes
+Swordplay >> [Swordplay] ACC/EVA boost (stacking)
+Swipe >> [Swipe] Single-target damage (1 rune)
+Lunge >> [Lunge] Single-target damage (all runes)
+Pflug >> [Pflug] Enhance elemental status resistance
+Valiance >> [Valiance] Party elemental damage reduction
 ```
 
 ### Test 3: DNC/WAR - WAR Abilities
@@ -159,11 +159,11 @@ Valiance → [Valiance] Party elemental damage reduction
 **Subjob Abilities Work:**
 
 ```
-Provoke → [Provoke] Provokes enemy.
-Defender → [Defender] Increases defense, lowers attack.
-Berserk → [Berserk] Attack up, defense down.
-Warcry → [Warcry] Party attack boost.
-Aggressor → [Aggressor] Accuracy up, evasion down.
+Provoke >> [Provoke] Provokes enemy.
+Defender >> [Defender] Increases defense, lowers attack.
+Berserk >> [Berserk] Attack up, defense down.
+Warcry >> [Warcry] Party attack boost.
+Aggressor >> [Aggressor] Accuracy up, evasion down.
 ```
 
 ### Test 4: PLD/WAR - PLD Abilities
@@ -171,10 +171,10 @@ Aggressor → [Aggressor] Accuracy up, evasion down.
 **Main Job Abilities Work:**
 
 ```
-Sentinel → [Sentinel] Reduces damage taken.
-Cover → [Cover] Protects party member.
-Shield Bash → [Shield Bash] Stuns enemy.
-Holy Circle → [Holy Circle] Resist undead attacks.
+Sentinel >> [Sentinel] Reduces damage taken.
+Cover >> [Cover] Protects party member.
+Shield Bash >> [Shield Bash] Stuns enemy.
+Holy Circle >> [Holy Circle] Resist undead attacks.
 ```
 
 ### Test 5: Any Job - SP Abilities
@@ -183,13 +183,13 @@ Holy Circle → [Holy Circle] Resist undead attacks.
 
 ```
 // WAR
-Mighty Strikes → [Mighty Strikes] All attacks critical.
+Mighty Strikes >> [Mighty Strikes] All attacks critical.
 
 // PLD
-Invincible → [Invincible] Invulnerable to physical damage.
+Invincible >> [Invincible] Invulnerable to physical damage.
 
 // RUN
-Elemental Sforzo → [Elemental Sforzo] Nullify elemental damage.
+Elemental Sforzo >> [Elemental Sforzo] Nullify elemental damage.
 ```
 
 ---
@@ -286,8 +286,8 @@ end
 
 **Why This Works:**
 
-- WAR/RUN using Ignis → Handler searches all jobs → Finds in RUN database → Shows message
-- DNC/WAR using Provoke → Handler searches all jobs → Finds in WAR database → Shows message
+- WAR/RUN using Ignis >> Handler searches all jobs >> Finds in RUN database >> Shows message
+- DNC/WAR using Provoke >> Handler searches all jobs >> Finds in WAR database >> Shows message
 - Works for ANY job/subjob combination
 
 ---

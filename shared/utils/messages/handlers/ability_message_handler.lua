@@ -8,7 +8,12 @@
 ---   - Works for main job AND subjob abilities
 ---   - Auto-detects ability database (job-based)
 ---   - Zero job-specific code needed
----   - Respects ABILITY_MESSAGES_CONFIG
+---   - Respects JA_MESSAGES_CONFIG
+---
+--- Display Modes:
+---   - 'full': Shows ability name + description (NO recast/level info)
+---   - 'on': Shows ability name only
+---   - 'off': Silent mode
 ---
 --- Architecture:
 ---   - Loads all 21 job ability databases
@@ -16,14 +21,14 @@
 ---   - Falls back gracefully if not found
 ---
 --- Examples:
----   - WAR/RUN using Ignis → Shows message from RUN database
----   - DNC/WAR using Provoke → Shows message from WAR database
----   - PLD using Sentinel → Shows message from PLD database
+---   - WAR/RUN using Ignis >> Shows message from RUN database
+---   - DNC/WAR using Provoke >> Shows message from WAR database
+---   - PLD using Sentinel >> Shows message from PLD database
 ---
 --- @file ability_message_handler.lua
 --- @author Tetsouo
---- @version 1.0 - Initial Release
---- @date Created: 2025-11-01
+--- @version 1.1 - Simplified: description only (no recast/level)
+--- @date Created: 2025-11-01 | Updated: 2025-11-08
 ---============================================================================
 
 local AbilityMessageHandler = {}
@@ -65,16 +70,23 @@ for _, job_code in ipairs(JOBS) do
     end
 end
 
--- Load message config
-local ABILITY_MESSAGES_CONFIG = {
-    display_mode = 'on',  -- 'on', 'full', 'off'
-    enabled = true
-}
+-- Load message config ONCE and cache the reference
+-- The table is modified by set_display_mode() so we always see current mode
+local JA_MESSAGES_CONFIG = nil
 
--- Try to load config if exists
-local config_success, config = pcall(require, 'shared/config/ABILITY_MESSAGES_CONFIG')
-if config_success and config then
-    ABILITY_MESSAGES_CONFIG = config
+local function ensure_config_loaded()
+    if not JA_MESSAGES_CONFIG then
+        local success, config = pcall(require, 'shared/config/JA_MESSAGES_CONFIG')
+        if success then
+            JA_MESSAGES_CONFIG = config
+        else
+            JA_MESSAGES_CONFIG = {
+                display_mode = 'on',
+                is_enabled = function() return true end,
+                show_description = function() return false end
+            }
+        end
+    end
 end
 
 ---============================================================================
@@ -124,16 +136,21 @@ end
 --- Check if messages are enabled
 --- @return boolean True if messages should be shown
 local function is_enabled()
-    if type(ABILITY_MESSAGES_CONFIG.enabled) == 'function' then
-        return ABILITY_MESSAGES_CONFIG.enabled()
+    ensure_config_loaded()
+    if JA_MESSAGES_CONFIG.is_enabled then
+        return JA_MESSAGES_CONFIG.is_enabled()
     end
-    return ABILITY_MESSAGES_CONFIG.enabled
+    return true
 end
 
 --- Check if full description should be shown
 --- @return boolean True if full description mode
 local function show_full_description()
-    return ABILITY_MESSAGES_CONFIG.display_mode == 'full'
+    ensure_config_loaded()
+    if JA_MESSAGES_CONFIG.show_description then
+        return JA_MESSAGES_CONFIG.show_description()
+    end
+    return JA_MESSAGES_CONFIG.display_mode == 'full'
 end
 
 --- Show ability message if config enabled
@@ -158,32 +175,10 @@ function AbilityMessageHandler.show_message(spell, show_separator)
         return
     end
 
-    -- Prepare description
-    local description = ability_data.description
-
-    -- Prepare notes (only if mode is 'full')
-    local notes = nil
-    if show_full_description() and ability_data.notes then
-        notes = ability_data.notes
-    elseif show_full_description() then
-        -- Auto-generate notes from data
-        local note_parts = {}
-
-        if ability_data.recast then
-            table.insert(note_parts, string.format("Recast: %ds", ability_data.recast))
-        end
-
-        if ability_data.level then
-            table.insert(note_parts, string.format("Level: %d", ability_data.level))
-        end
-
-        if ability_data.main_job_only then
-            table.insert(note_parts, "Main job only")
-        end
-
-        if #note_parts > 0 then
-            notes = table.concat(note_parts, ". ") .. "."
-        end
+    -- Prepare description (only if mode is 'full')
+    local description = nil
+    if show_full_description() then
+        description = ability_data.description
     end
 
     -- Duplicate prevention: Check if this message was shown recently
@@ -198,16 +193,10 @@ function AbilityMessageHandler.show_message(spell, show_separator)
     -- Update last shown timestamp
     recent_messages[spell.name] = current_time
 
-    -- Display message using JA format (not spell format!) and get message length
-    local message_length
-    if notes then
-        -- Full mode: description + notes
-        message_length = MessageFormatter.show_ja_activated(spell.name, description)
-        add_to_chat(002, notes)
-    else
-        -- Normal mode: description only
-        message_length = MessageFormatter.show_ja_activated(spell.name, description)
-    end
+    -- Display message using JA format (not spell format!)
+    -- Mode 'full': shows description
+    -- Mode 'on': shows name only (description = nil)
+    local message_length = MessageFormatter.show_ja_activated(spell.name, description)
 
     -- Display separator after ability message (default: true unless explicitly disabled)
     -- Length = message length + 2 additional "=" characters

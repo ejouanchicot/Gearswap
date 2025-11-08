@@ -68,7 +68,7 @@ local function restore_equipment()
                 local mode_value = mode_state.value or mode_state.current
                 if mode_value and mode_value ~= 'Normal' and mode_value ~= 'None' then
                     base_set = base_set .. '.' .. mode_value
-                    debug_log('Detected ' .. mode_name .. ': ' .. mode_value .. ' → ' .. base_set)
+                    debug_log('Detected ' .. mode_name .. ': ' .. mode_value .. ' >> ' .. base_set)
                     break  -- Use first non-default mode found
                 end
             end
@@ -715,7 +715,7 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
 
         -- Check if interrupted by status change (movement during cast)
         if player and player.status ~= initial_status and elapsed < cast_duration then
-            debug_log(string.format('Status change detected: %s → %s (interruption!)',
+            debug_log(string.format('Status change detected: %s >> %s (interruption!)',
                 tostring(initial_status), tostring(player.status)))
             cleanup_and_restore('interrupted')
             return

@@ -8,11 +8,11 @@
 ---   • Saber Dance variant selection (engaged only - optimized for -50% DW requirement)
 ---   • Fan Dance variant selection (engaged only - 30% gear + 20% buff = 50% cap)
 ---   • Town detection (idle only - Adoulin vs regular cities)
----   • Weapon set application (MainWeapon state → equipment combo)
+---   • Weapon set application (MainWeapon state >> equipment combo)
 ---   • Movement gear application (idle only, never in combat)
 ---   • HybridMode integration (PDT/Normal/FanDance/SaberDance sets)
 ---   • Error handling with MessageFormatter
----   • Modular set augmentation (weapon → movement → final)
+---   • Modular set augmentation (weapon >> movement >> final)
 ---
 --- @file    jobs/dnc/functions/logic/set_builder.lua
 --- @author  Tetsouo

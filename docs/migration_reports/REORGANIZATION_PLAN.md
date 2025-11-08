@@ -351,26 +351,26 @@ rmdir internal  # Si vide
 //lua unload gearswap
 Change to RDM
 //lua load gearswap
-→ Verify: RDM spells loaded successfully
+>> Verify: RDM spells loaded successfully
 ```
 
 **5.2: Test Spell Access**
 
 ```
-Cast Paralyze → Verify: Equipment swaps correctly
-Cast Slow II → Verify: Equipment swaps correctly
-Cast Refresh → Verify: Equipment swaps correctly
-Cast Protect IV → Verify: Equipment swaps correctly
+Cast Paralyze >> Verify: Equipment swaps correctly
+Cast Slow II >> Verify: Equipment swaps correctly
+Cast Refresh >> Verify: Equipment swaps correctly
+Cast Protect IV >> Verify: Equipment swaps correctly
 ```
 
 **5.3: Test WHM**
 
 ```
 Change to WHM
-Cast Barfire → Verify works
-Cast Boost-STR → Verify works
-Cast Teleport-Holla → Verify works
-Cast Protectra V → Verify works
+Cast Barfire >> Verify works
+Cast Boost-STR >> Verify works
+Cast Teleport-Holla >> Verify works
+Cast Protectra V >> Verify works
 ```
 
 **5.4: Test Other Jobs**
@@ -430,9 +430,9 @@ Verify no breakage
 ### ✅ **Phase 4: Réorganiser Structure (1-2h)**
 
 - [ ] Créer nouvelle structure dossiers
-- [ ] Déplacer job_abilities → abilities/{combat,magic,support}
-- [ ] Déplacer enfeebling/enhancing → magic/skills/
-- [ ] Déplacer internal/* → magic/jobs/
+- [ ] Déplacer job_abilities >> abilities/{combat,magic,support}
+- [ ] Déplacer enfeebling/enhancing >> magic/skills/
+- [ ] Déplacer internal/* >> magic/jobs/
 - [ ] Renommer modules (blu_breath.lua, brd_buff_songs.lua, etc.)
 - [ ] Mettre à jour tous les require() paths
 - [ ] Supprimer dossiers vides

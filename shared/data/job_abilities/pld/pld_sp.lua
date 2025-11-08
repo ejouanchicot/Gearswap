@@ -29,7 +29,7 @@ PLD_SP.abilities = {
         volatile_enmity         = 80
     },
     ['Intervene'] = {
-        description             = "Shield strike, ATK/ACC → 1",
+        description             = "Shield strike, ATK/ACC >> 1",
         level                   = 96,
         recast                  = 3600,  -- 1hr (SP2)
         main_job_only           = true,

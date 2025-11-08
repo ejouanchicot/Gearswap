@@ -92,7 +92,7 @@ return JA_DB
 
 - `ability_message_handler` cherche "Reverse Flourish" dans DNC_JA_DATABASE
 - Pas trouvé (fichier pas chargé)
-- `return` → Aucun message affiché ❌
+- `return` >> Aucun message affiché ❌
 
 ---
 
@@ -162,15 +162,15 @@ return JA_DB
 
 ```
 // Use Haste Samba
-[Haste Samba] → Party haste (30s) ✅
+[Haste Samba] >> Party haste (30s) ✅
 ```
 
 **Examples:**
 
 ```
-[Haste Samba] → Party haste (30s)
-[Drain Samba] → Party drains HP from enemies
-[Aspir Samba] → Party drains MP from enemies
+[Haste Samba] >> Party haste (30s)
+[Drain Samba] >> Party drains HP from enemies
+[Aspir Samba] >> Party drains MP from enemies
 ```
 
 ---
@@ -188,17 +188,17 @@ return JA_DB
 
 ```
 // Use Reverse Flourish
-[Reverse Flourish] → Grants TP bonus based on # of Finishing Moves consumed. ✅
+[Reverse Flourish] >> Grants TP bonus based on # of Finishing Moves consumed. ✅
 ```
 
 **Examples:**
 
 ```
-[Reverse Flourish] → Grants TP bonus based on # of Finishing Moves consumed.
-[Building Flourish] → Increases Finishing Moves by 1.
-[Wild Flourish] → Physical attack + slow.
-[Climactic Flourish] → Next weapon skill critical hit rate +100%.
-[Ternary Flourish] → Increases Finishing Moves by 3.
+[Reverse Flourish] >> Grants TP bonus based on # of Finishing Moves consumed.
+[Building Flourish] >> Increases Finishing Moves by 1.
+[Wild Flourish] >> Physical attack + slow.
+[Climactic Flourish] >> Next weapon skill critical hit rate +100%.
+[Ternary Flourish] >> Increases Finishing Moves by 3.
 ```
 
 ---
@@ -216,16 +216,16 @@ return JA_DB
 
 ```
 // Use Box Step
-[Box Step] → Defense down. ✅
+[Box Step] >> Defense down. ✅
 ```
 
 **Examples:**
 
 ```
-[Box Step] → Defense down.
-[Quickstep] → Evasion down.
-[Stutter Step] → Magic evasion down.
-[Feather Step] → Critical hit rate down.
+[Box Step] >> Defense down.
+[Quickstep] >> Evasion down.
+[Stutter Step] >> Magic evasion down.
+[Feather Step] >> Critical hit rate down.
 ```
 
 ---
@@ -243,17 +243,17 @@ return JA_DB
 
 ```
 // Use Curing Waltz
-[Curing Waltz] → Restores HP to target. ✅
+[Curing Waltz] >> Restores HP to target. ✅
 ```
 
 **Examples:**
 
 ```
-[Curing Waltz] → Restores HP to target.
-[Curing Waltz II] → Restores more HP.
-[Curing Waltz III] → Restores significantly more HP.
-[Divine Waltz] → Party AoE heal.
-[Healing Waltz] → Removes status ailments.
+[Curing Waltz] >> Restores HP to target.
+[Curing Waltz II] >> Restores more HP.
+[Curing Waltz III] >> Restores significantly more HP.
+[Divine Waltz] >> Party AoE heal.
+[Healing Waltz] >> Removes status ailments.
 ```
 
 ---
@@ -271,14 +271,14 @@ return JA_DB
 
 ```
 // Use Chocobo Jig
-[Chocobo Jig] → Movement speed +25%. ✅
+[Chocobo Jig] >> Movement speed +25%. ✅
 ```
 
 **Examples:**
 
 ```
-[Chocobo Jig] → Movement speed +25%.
-[Spectral Jig] → Grants Sneak and Invisible.
+[Chocobo Jig] >> Movement speed +25%.
+[Spectral Jig] >> Grants Sneak and Invisible.
 ```
 
 ---
@@ -321,13 +321,13 @@ return JA_DB
 1. //lua u gearswap
 2. Change to DNC/WAR
 3. //lua l gearswap
-4. Use Reverse Flourish (menu Job Abilities → Flourish II → Reverse Flourish)
+4. Use Reverse Flourish (menu Job Abilities >> Flourish II >> Reverse Flourish)
 ```
 
 **Résultat Attendu:**
 
 ```
-[Reverse Flourish] → Grants TP bonus based on # of Finishing Moves consumed.
+[Reverse Flourish] >> Grants TP bonus based on # of Finishing Moves consumed.
 ```
 
 ---
@@ -335,13 +335,13 @@ return JA_DB
 ### Test 2: Haste Samba (Samba)
 
 ```
-1. Use Haste Samba (menu Job Abilities → Samba → Haste Samba)
+1. Use Haste Samba (menu Job Abilities >> Samba >> Haste Samba)
 ```
 
 **Résultat Attendu:**
 
 ```
-[Haste Samba] → Party haste (30s)
+[Haste Samba] >> Party haste (30s)
 ```
 
 ---
@@ -349,13 +349,13 @@ return JA_DB
 ### Test 3: Box Step (Step)
 
 ```
-1. Use Box Step (menu Job Abilities → Step → Box Step)
+1. Use Box Step (menu Job Abilities >> Step >> Box Step)
 ```
 
 **Résultat Attendu:**
 
 ```
-[Box Step] → Defense down.
+[Box Step] >> Defense down.
 ```
 
 ---
@@ -363,13 +363,13 @@ return JA_DB
 ### Test 4: Curing Waltz (Waltz)
 
 ```
-1. Use Curing Waltz (menu Job Abilities → Waltz → Curing Waltz)
+1. Use Curing Waltz (menu Job Abilities >> Waltz >> Curing Waltz)
 ```
 
 **Résultat Attendu:**
 
 ```
-[Curing Waltz] → Restores HP to target.
+[Curing Waltz] >> Restores HP to target.
 ```
 
 ---
@@ -406,7 +406,7 @@ return JA_DB
 **Detection:**
 
 - User reports "pas de messages"
-- Check database: `require('DNC_JA_DATABASE').abilities['Reverse Flourish']` → nil
+- Check database: `require('DNC_JA_DATABASE').abilities['Reverse Flourish']` >> nil
 - Check files: `dnc_flourishes2_subjob.lua` existe mais pas chargé
 
 **Solution:**

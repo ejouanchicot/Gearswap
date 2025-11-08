@@ -38,14 +38,14 @@
 
    ```
    //gs c watchdog
-   → Should show: "Watchdog: ENABLED"
+   >> Should show: "Watchdog: ENABLED"
    ```
 
 2. **Check items**:
 
    ```
    //gs c checksets
-   → Look for STORAGE or MISSING items
+   >> Look for STORAGE or MISSING items
    ```
 
 3. **Enable debug**:

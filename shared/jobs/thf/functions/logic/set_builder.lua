@@ -12,7 +12,7 @@
 ---   • Movement gear application (idle only, never in combat)
 ---   • HybridMode integration (PDT/Normal sets)
 ---   • Error handling with MessageFormatter
----   • Modular set augmentation (base → weapon → movement → final)
+---   • Modular set augmentation (base >> weapon >> movement >> final)
 ---
 --- Dependencies:
 ---   • MessageFormatter (error display for set_combine failures)

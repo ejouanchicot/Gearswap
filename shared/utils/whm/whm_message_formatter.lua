@@ -103,7 +103,7 @@ function WHMMessageFormatter.show_cure_tier_change(original_spell, new_spell, hp
     end
 
     local msg = string.format(
-        "%s %s%s %s-> %s%s %s(%s%s)",
+        "%s %s%s %s>> %s%s %s(%s%s)",
         get_job_tag(),
         potency_color,
         original_spell,
@@ -126,7 +126,7 @@ function WHMMessageFormatter.show_cure_heal(spell_name, hp_healed, target_name)
     local tier_color = MessageCore.create_color_code(COLORS.cure_tier)
     local potency_color = MessageCore.create_color_code(COLORS.cure_potency)
 
-    local target_str = target_name and (" → " .. tier_color .. target_name) or ""
+    local target_str = target_name and (" >> " .. tier_color .. target_name) or ""
 
     local msg = string.format(
         "%s %s%s: %s HP healed%s",
@@ -150,7 +150,7 @@ function WHMMessageFormatter.show_cure_stoneskin(spell_name, hp_healed, stoneski
     local potency_color = MessageCore.create_color_code(COLORS.cure_potency)
     local solace_color = MessageCore.create_color_code(COLORS.afflatus_solace)
 
-    local target_str = target_name and (" → " .. target_name) or ""
+    local target_str = target_name and (" >> " .. target_name) or ""
 
     local msg = string.format(
         "%s %s%s: %s HP + %s Stoneskin%s",
@@ -215,7 +215,7 @@ function WHMMessageFormatter.show_devotion(mp_transferred, target_name)
     local target_color = MessageCore.create_color_code(COLORS.cure_tier)
 
     local msg = string.format(
-        "%s %sDevotion: %s MP → %s%s",
+        "%s %sDevotion: %s MP >> %s%s",
         get_job_tag(),
         devotion_color,
         mp_color .. tostring(mp_transferred),
@@ -235,7 +235,7 @@ function WHMMessageFormatter.show_martyr(hp_sacrificed, hp_restored)
     local potency_color = MessageCore.create_color_code(COLORS.cure_potency)
 
     local msg = string.format(
-        "%s %sMartyr: %s HP → %s HP to party",
+        "%s %sMartyr: %s HP >> %s HP to party",
         get_job_tag(),
         martyr_color,
         error_color .. "-" .. tostring(hp_sacrificed),
@@ -259,7 +259,7 @@ function WHMMessageFormatter.show_cursna(target_name, cursna_skill)
     local skill_str = cursna_skill and string.format(" (Skill: %d)", cursna_skill) or ""
 
     local msg = string.format(
-        "%s %sCursna → %s%s%s",
+        "%s %sCursna >> %s%s%s",
         get_job_tag(),
         cursna_color,
         target_color,
@@ -281,7 +281,7 @@ function WHMMessageFormatter.show_status_removal(spell_name, target_name, status
     local status_str = status_removed and string.format(" [%s removed]", status_removed) or ""
 
     local msg = string.format(
-        "%s %s%s → %s%s%s",
+        "%s %s%s >> %s%s%s",
         get_job_tag(),
         removal_color,
         spell_name,

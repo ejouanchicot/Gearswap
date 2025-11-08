@@ -505,8 +505,8 @@ end
    - Appeler dans `job_post_precast()` pour afficher TP final
 
 3. **DO NOT MODIFY utils/**
-   - `tp_bonus_calculator.lua` → Already 100% generic
-   - `weaponskill_manager.lua` → No TP Bonus logic
+   - `tp_bonus_calculator.lua` >> Already 100% generic
+   - `weaponskill_manager.lua` >> No TP Bonus logic
 
 ---
 
@@ -523,7 +523,7 @@ Some equipment gives TP Bonus to pets (Automaton, Avatar):
 - Kara. Cappello +2/+3 (PUP): Automaton TP +575/+600
 - Beck. Spats +2/+3 (SMN): Avatar TP +650/+700
 
-→ Concerns PETS, not the player. Skip until advanced pet system implementation.
+>> Concerns PETS, not the player. Skip until advanced pet system implementation.
 
 ### **Ranged Weapons (RNG/SAM/COR):**
 
@@ -533,7 +533,7 @@ Some jobs use range slot for TP Bonus:
 - COR: Fomalhaut
 - SAM: Hangaku-no-Yumi (ranged subjob)
 
-→ Adapt logic `get_weapon_bonus()` to check `player.equipment.range` in addition to `main`
+>> Adapt logic `get_weapon_bonus()` to check `player.equipment.range` in addition to `main`
 
 ---
 

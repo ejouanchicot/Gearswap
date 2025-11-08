@@ -247,9 +247,9 @@ return UniversalSpells
    - Verify correct formatting
 
 3. **Special Cases:**
-   - DNC: Climactic Flourish → Check timestamp works
-   - COR: Crooked Cards → Check timestamp works
-   - BST: Pet commands → Check messages display
+   - DNC: Climactic Flourish >> Check timestamp works
+   - COR: Crooked Cards >> Check timestamp works
+   - BST: Pet commands >> Check messages display
 
 4. **Database Test (Optional):**
    - Load UNIVERSAL_SPELL_DATABASE

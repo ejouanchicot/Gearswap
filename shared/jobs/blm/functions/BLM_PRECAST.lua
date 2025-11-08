@@ -5,10 +5,10 @@
 ---   • Fast Cast for all spells (cap 80%)
 ---   • Job Abilities (Manafont, Manawall, Elemental Seal)
 ---   • Intelligent Spell Refinement (automatic tier downgrading)
----     - Elemental Magic: Fire VI → V → IV → III → II → I
----     - AOE Spells: Firaja → Firaga III → II → I
----     - Enfeebling: Sleep III → II → I, Sleepga II → I, etc.
----     - Dark Magic: Bio V → IV → III → II → I, Drain III → II → I, etc.
+---     - Elemental Magic: Fire VI >> V >> IV >> III >> II >> I
+---     - AOE Spells: Firaja >> Firaga III >> II >> I
+---     - Enfeebling: Sleep III >> II >> I, Sleepga II >> I, etc.
+---     - Dark Magic: Bio V >> IV >> III >> II >> I, Drain III >> II >> I, etc.
 ---   • Death spell handling (HP-based damage)
 ---   • Security layers (debuff guard, cooldown check for non-tiered spells)
 ---

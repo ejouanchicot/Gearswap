@@ -22,22 +22,22 @@
 **Check keybinds loaded**:
 
 ```
-→ Console shows: "RDM SYSTEM LOADED"
-→ Shows keybind count and macrobook info
+>> Console shows: "RDM SYSTEM LOADED"
+>> Shows keybind count and macrobook info
 ```
 
 **Check UI (if enabled)**:
 
 ```
 //gs c ui
-→ Shows all keybinds overlay
+>> Shows all keybinds overlay
 ```
 
 **Validate equipment**:
 
 ```
 //gs c checksets
-→ Shows item validation (VALID/STORAGE/MISSING)
+>> Shows item validation (VALID/STORAGE/MISSING)
 ```
 
 ---
@@ -79,35 +79,35 @@ On load, system automatically:
 
 ```
 Press Alt+1
-→ Cycles: Naegling → Colada → Daybreak
+>> Cycles: Naegling >> Colada >> Daybreak
 ```
 
 **Cycle enfeeble mode**:
 
 ```
 Press Alt+5
-→ Cycles: Potency → Skill → Duration
+>> Cycles: Potency >> Skill >> Duration
 ```
 
 **Cast main light spell**:
 
 ```
 Press Ctrl+8
-→ Casts current MainLightSpell with NukeTier (e.g., Fire V)
+>> Casts current MainLightSpell with NukeTier (e.g., Fire V)
 ```
 
 **Quick convert**:
 
 ```
 Press Ctrl+1
-→ Casts Convert job ability
+>> Casts Convert job ability
 ```
 
 ---
 
 ## 📚 Next Steps
 
-- **Learn keybinds** → [Keybinds Reference](keybinds.md)
-- **Try commands** → [Commands Reference](commands.md)
-- **Understand states** → [States & Modes](states.md)
-- **Customize** → [Configuration](configuration.md)
+- **Learn keybinds** >> [Keybinds Reference](keybinds.md)
+- **Try commands** >> [Commands Reference](commands.md)
+- **Understand states** >> [States & Modes](states.md)
+- **Customize** >> [Configuration](configuration.md)

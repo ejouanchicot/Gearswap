@@ -257,10 +257,10 @@ Actual HP Healed = Base Potency × (1 + Waltz Potency%)
 
 5. Select optimal tier:
    Cure III heals 500 base (700 with gear)
-   This will heal 600 missing → Use Cure III
+   This will heal 600 missing >> Use Cure III
 
 6. Cast downgraded spell: Cure III
-7. Display message: "Cure VI → Cure III (600 HP needed)"
+7. Display message: "Cure VI >> Cure III (600 HP needed)"
 ```
 
 ### Decision Flow (DNC Waltz)
@@ -356,7 +356,7 @@ local waltz_tiers = {
 
 ```
 [WHM] Target missing: 300 HP
-[WHM] Cure VI → Cure II (300 HP needed, saves 186 MP)
+[WHM] Cure VI >> Cure II (300 HP needed, saves 186 MP)
 ```
 
 **Result**: Cure II cast, MP conserved
@@ -365,7 +365,7 @@ local waltz_tiers = {
 
 ```
 [WHM] Target missing: 1400 HP
-[WHM] Cure VI → Cure VI (1400 HP needed)
+[WHM] Cure VI >> Cure VI (1400 HP needed)
 ```
 
 **Result**: Cure VI cast as intended (no downgrade)

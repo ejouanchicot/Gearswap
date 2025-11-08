@@ -144,7 +144,7 @@ D:\Windower Tetsouo\addons\GearSwap\data/
 │   ├── jobs/ (15 jobs × ~13 modules = 195 fichiers)
 │   │   │
 │   │   ├── [job]/functions/
-│   │   │   ├── [JOB]_PRECAST.lua (Guard→Cooldown→JA_DB→WS→job logic)
+│   │   │   ├── [JOB]_PRECAST.lua (Guard>>Cooldown>>JA_DB>>WS>>job logic)
 │   │   │   ├── [JOB]_MIDCAST.lua (MidcastManager.select_set OBLIGATOIRE)
 │   │   │   ├── [JOB]_AFTERCAST.lua
 │   │   │   ├── [JOB]_IDLE.lua
@@ -543,7 +543,7 @@ end
 - ✅ Robustesse: Détecte debuffs via buffactive
 - ✅ Auto-cure intelligent: Cure > Echo Drops > Remedy selon debuff
 - ✅ Cancel action si debuff bloquant (Stun, Sleep)
-- ✅ Messages clairs: "[GUARD] Silence détecté → Echo Drops"
+- ✅ Messages clairs: "[GUARD] Silence détecté >> Echo Drops"
 
 **Usage:** PREMIER check dans tous *_PRECAST.lua (15 jobs)
 
@@ -670,7 +670,7 @@ return merged_ja_db
 **Qualité:**
 
 - ✅ Centralisation parfaite (1 DB pour 21 jobs)
-- ✅ Support subjob automatique (WAR/NIN → abilities NIN disponibles)
+- ✅ Support subjob automatique (WAR/NIN >> abilities NIN disponibles)
 - ✅ Maintenance: Ajouter job = créer 1 fichier, auto-merge
 - ✅ Performance: Merge au load (1×), pas runtime
 
@@ -1038,7 +1038,7 @@ function user_setup()
 end
 ```
 
-**Résultat:** 622 lignes → ~250 lignes (refactoring +60% lisibilité)
+**Résultat:** 622 lignes >> ~250 lignes (refactoring +60% lisibilité)
 
 **Effort:** 2 heures
 **ROI:** Élevé
@@ -1198,7 +1198,7 @@ function user_setup()
 end
 ```
 
-**Résultat:** 450 lignes → ~80 lignes (5.6× réduction)
+**Résultat:** 450 lignes >> ~80 lignes (5.6× réduction)
 
 **Effort:** 1 heure
 **ROI:** Très élevé
@@ -1575,7 +1575,7 @@ Mineur  │
 |---|----------|--------|--------|--------|-----|----------|
 | **1** | 🟡 P0 | Refactorer Tetsouo_COR.lua (extraire packet parsing) | 2h | ⭐⭐⭐⭐ | **Élevé** | 2 fichiers |
 | **2** | 🟡 P1 | Créer config_loader.lua pour UI_CONFIG | 1h | ⭐⭐⭐⭐ | **Très élevé** | 15 fichiers |
-| **3** | 🟡 P1 | Découper UI_MANAGER.lua (891 → 3×300) | 4h | ⭐⭐⭐ | **Moyen** | 1 fichier |
+| **3** | 🟡 P1 | Découper UI_MANAGER.lua (891 >> 3×300) | 4h | ⭐⭐⭐ | **Moyen** | 1 fichier |
 | **4** | 🟡 P1 | Ajouter MessageFormatter.show_debug() | 3h | ⭐⭐⭐ | **Moyen** | 125 fichiers |
 | 5 | 🟢 P2 | Supprimer code commenté DISABLED | 30 min | ⭐⭐ | Faible | 15 fichiers |
 | 6 | 🟢 P2 | Réduire usage _G (préférer module returns) | 4h | ⭐⭐ | Faible | 45 fichiers |
@@ -1595,7 +1595,7 @@ Mineur  │
    - ROI immédiat
 
 2. **Refactorer Tetsouo_COR.lua** (2h)
-   - 622 → 250 lignes
+   - 622 >> 250 lignes
    - Améliore maintenabilité COR
 
 3. **Supprimer code commenté** (30 min)
@@ -1631,10 +1631,10 @@ Mineur  │
 
 **Gains attendus:**
 
-- Duplication: 1.3% → 0.5% (-0.8 points)
+- Duplication: 1.3% >> 0.5% (-0.8 points)
 - Maintenabilité: +40%
 - Complexité moyenne: -25%
-- Score qualité: 9.3/10 → **9.6/10** ⭐
+- Score qualité: 9.3/10 >> **9.6/10** ⭐
 
 **Note:** shared/sets/ base retiré du plan (multi-perso intentionnel)
 
@@ -1791,13 +1791,13 @@ Les problèmes identifiés sont:
 
 **Implémenter les 4 actions P0/P1** (total 10.5h):
 
-1. ✅ Refactorer COR (2h) → -372 lignes
-2. ✅ Créer config_loader (1h) → -450 lignes
-3. ✅ Découper UI_MANAGER (4h) → -300 lignes complexité
-4. ✅ Ajouter show_debug() (3h) → Cohérence formatage
-5. ✅ Nettoyer code commenté (30 min) → -120 lignes
+1. ✅ Refactorer COR (2h) >> -372 lignes
+2. ✅ Créer config_loader (1h) >> -450 lignes
+3. ✅ Découper UI_MANAGER (4h) >> -300 lignes complexité
+4. ✅ Ajouter show_debug() (3h) >> Cohérence formatage
+5. ✅ Nettoyer code commenté (30 min) >> -120 lignes
 
-**Résultat:** Score **9.6/10** ⭐, duplication 1.3% → 0.5%, maintenabilité +40%
+**Résultat:** Score **9.6/10** ⭐, duplication 1.3% >> 0.5%, maintenabilité +40%
 
 ### Comparaison Industrie
 
@@ -1811,7 +1811,7 @@ Les problèmes identifiés sont:
 | Complexité | 9/10 ⭐ | 7/10 | 6 fichiers > 600 lignes |
 | **TOTAL** | **9.3/10** ⭐⭐ | **6.3/10** | **Exceptionnel** |
 
-**Ce projet surpasse largement les standards industrie.** Score amélioré de 8.9 → 9.3 après clarification multi-perso.
+**Ce projet surpasse largement les standards industrie.** Score amélioré de 8.9 >> 9.3 après clarification multi-perso.
 
 ---
 

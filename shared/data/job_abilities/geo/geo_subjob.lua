@@ -27,7 +27,7 @@ GEO_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Life Cycle'] = {
-        description             = '25% your HP → luopan',
+        description             = '25% your HP >> luopan',
         level                   = 50,
         recast                  = 10,
         main_job_only           = false,  -- Requires Master Levels for subjob (useless without luopan)

@@ -56,7 +56,7 @@ end
 --- @param enfeeble_mode string EnfeebleMode value
 --- @param database_loaded boolean Whether ENFEEBLING_MAGIC_DATABASE is loaded
 function MessageRDMMidcast.show_enfeebling_routing(spell_name, enfeeble_mode, database_loaded)
-    MessageRenderer.send(CHAT_SUCCESS, '[RDM_MIDCAST] -> Routing to MidcastManager (Enfeebling)')
+    MessageRenderer.send(CHAT_SUCCESS, '[RDM_MIDCAST] >> Routing to MidcastManager (Enfeebling)')
     MessageRenderer.send(CHAT_SUCCESS, '[RDM_MIDCAST]   * Spell: ' .. spell_name)
     MessageRenderer.send(CHAT_SUCCESS, '[RDM_MIDCAST]   * EnfeebleMode: ' .. enfeeble_mode)
     MessageRenderer.send(CHAT_SUCCESS, '[RDM_MIDCAST]   * Database: ' .. (database_loaded and 'ENFEEBLING_MAGIC_DATABASE Loaded' or 'Not Loaded'))
@@ -107,7 +107,7 @@ end
 
 --- Show Saboteur override message
 function MessageRDMMidcast.show_saboteur_override()
-    MessageRenderer.send(CHAT_INFO, '[RDM_MIDCAST] ** SABOTEUR ACTIVE -> Overriding hands with Lethargy Gants +3')
+    MessageRenderer.send(CHAT_INFO, '[RDM_MIDCAST] ** SABOTEUR ACTIVE >> Overriding hands with Lethargy Gants +3')
 end
 
 ---============================================================================
@@ -118,7 +118,7 @@ end
 --- @param enhancing_mode string EnhancingMode value
 --- @param target_name string Target name
 function MessageRDMMidcast.show_enhancing_routing(enhancing_mode, target_name)
-    MessageRenderer.send(CHAT_SUCCESS, '[RDM_MIDCAST] -> Routing to MidcastManager (Enhancing)')
+    MessageRenderer.send(CHAT_SUCCESS, '[RDM_MIDCAST] >> Routing to MidcastManager (Enhancing)')
     MessageRenderer.send(CHAT_SUCCESS, '[RDM_MIDCAST]   * EnhancingMode: ' .. enhancing_mode)
     MessageRenderer.send(CHAT_SUCCESS, '[RDM_MIDCAST]   * Target: ' .. target_name)
 end
@@ -185,7 +185,7 @@ end
 --- Show elemental routing header
 --- @param nuke_mode string NukeMode value
 function MessageRDMMidcast.show_elemental_routing(nuke_mode)
-    MessageRenderer.send(CHAT_SUCCESS, '[RDM_MIDCAST] -> Routing to MidcastManager (Elemental)')
+    MessageRenderer.send(CHAT_SUCCESS, '[RDM_MIDCAST] >> Routing to MidcastManager (Elemental)')
     MessageRenderer.send(CHAT_SUCCESS, '[RDM_MIDCAST]   * NukeMode: ' .. nuke_mode)
 end
 

@@ -5,7 +5,7 @@
 ---
 --- Contents:
 ---   - Convergence (Lv75 Merit) - Next magical spell +25% damage, single target
----   - Diffusion (Lv75 Merit) - Next support spell → party AoE
+---   - Diffusion (Lv75 Merit) - Next support spell >> party AoE
 ---   - Efflux (Lv83) - Next physical spell +1000 TP bonus
 ---   - Unbridled Learning (Lv95) - Cast NM-exclusive blue magic
 ---
@@ -28,7 +28,7 @@ BLU_MAINJOB.abilities = {
         volatile_enmity         = 300
     },
     ['Diffusion'] = {
-        description             = 'Next support spell → party AoE',
+        description             = 'Next support spell >> party AoE',
         level                   = 75,
         recast                  = 600,  -- 10min
         main_job_only           = true,

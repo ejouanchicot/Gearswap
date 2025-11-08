@@ -13,13 +13,13 @@
 ---   • DNCWSConfig integration for WS whitelist
 ---
 --- Performance:
----   • Climactic → WS total time: ~1.3s (1s ability delay + 0.3s stability)
+---   • Climactic >> WS total time: ~1.3s (1s ability delay + 0.3s stability)
 ---
 --- @file    jobs/dnc/functions/logic/climactic_manager.lua
 --- @author  Tetsouo
 --- @version 1.1 - Optimized Timing
 --- @date    Created: 2025-10-06
---- @date    Updated: 2025-10-10 (Optimized delay: 2s→1s)
+--- @date    Updated: 2025-10-10 (Optimized delay: 2s>>1s)
 ---============================================================================
 
 local ClimaticManager = {}

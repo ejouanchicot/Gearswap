@@ -164,7 +164,7 @@ end
 ---============================================================================
 
 --- Handle job-specific self commands
---- Processes commands in order: Common → UI → BLM cycles → BLM-specific
+--- Processes commands in order: Common >> UI >> BLM cycles >> BLM-specific
 ---
 --- Common commands:
 ---   • reload         - Reload GearSwap
@@ -304,7 +304,7 @@ function job_self_command(cmdParams, eventArgs)
     -- LightArts: Intelligent Light Arts / Addendum: White toggling (SCH subjob)
     if command == 'lightarts' then
         if buffactive and buffactive['Light Arts'] then
-            -- Light Arts active -> Use Addendum: White (if not already active)
+            -- Light Arts active >> Use Addendum: White (if not already active)
             if not buffactive['Addendum: White'] then
                 -- Don't check charges - FFXI will block if unavailable (Stratagems have multiple charges)
                 send_command('input /ja "Addendum: White" <me>')
@@ -312,7 +312,7 @@ function job_self_command(cmdParams, eventArgs)
                 BLMMessages.show_arts_already_active('Light Arts + Addendum: White')
             end
         else
-            -- Light Arts not active -> Activate it
+            -- Light Arts not active >> Activate it
             send_command('input /ja "Light Arts" <me>')
         end
         eventArgs.handled = true
@@ -322,7 +322,7 @@ function job_self_command(cmdParams, eventArgs)
     -- DarkArts: Intelligent Dark Arts / Addendum: Black toggling (SCH subjob)
     if command == 'darkarts' then
         if buffactive and buffactive['Dark Arts'] then
-            -- Dark Arts active -> Use Addendum: Black (if not already active)
+            -- Dark Arts active >> Use Addendum: Black (if not already active)
             if not buffactive['Addendum: Black'] then
                 -- Don't check charges - FFXI will block if unavailable (Stratagems have multiple charges)
                 send_command('input /ja "Addendum: Black" <me>')
@@ -330,7 +330,7 @@ function job_self_command(cmdParams, eventArgs)
                 BLMMessages.show_arts_already_active('Dark Arts + Addendum: Black')
             end
         else
-            -- Dark Arts not active -> Activate it
+            -- Dark Arts not active >> Activate it
             send_command('input /ja "Dark Arts" <me>')
         end
         eventArgs.handled = true
@@ -340,10 +340,10 @@ function job_self_command(cmdParams, eventArgs)
     -- Sneak: Intelligent Light Arts + Accession + Sneak (party-wide)
     if command == 'sneak' then
         if buffactive and buffactive['Light Arts'] then
-            -- Light Arts active -> Just use Accession + Sneak
+            -- Light Arts active >> Just use Accession + Sneak
             send_command('input /ja "Accession" <me>; wait 2; input /ma "Sneak" <me>')
         else
-            -- Light Arts not active -> Activate it first, then Accession + Sneak
+            -- Light Arts not active >> Activate it first, then Accession + Sneak
             send_command('input /ja "Light Arts" <me>; wait 2; input /ja "Accession" <me>; wait 2; input /ma "Sneak" <me>')
         end
         eventArgs.handled = true
@@ -353,10 +353,10 @@ function job_self_command(cmdParams, eventArgs)
     -- Invi: Intelligent Light Arts + Accession + Invisible (party-wide)
     if command == 'invi' then
         if buffactive and buffactive['Light Arts'] then
-            -- Light Arts active -> Just use Accession + Invisible
+            -- Light Arts active >> Just use Accession + Invisible
             send_command('input /ja "Accession" <me>; wait 2; input /ma "Invisible" <me>')
         else
-            -- Light Arts not active -> Activate it first, then Accession + Invisible
+            -- Light Arts not active >> Activate it first, then Accession + Invisible
             send_command('input /ja "Light Arts" <me>; wait 2; input /ja "Accession" <me>; wait 2; input /ma "Invisible" <me>')
         end
         eventArgs.handled = true
@@ -395,7 +395,7 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     -- AOE Light: Cast light element AOE (uses MainLightAOE + AOETier)
-    -- AOETier: Aja (Firaja) → III (Firaga III) → II (Firaga II) → I (Firaga I)
+    -- AOETier: Aja (Firaja) >> III (Firaga III) >> II (Firaga II) >> I (Firaga I)
     if command == 'aoelight' then
         if state and state.MainLightAOE and state.AOETier then
             local element = state.MainLightAOE.current  -- "Firaga", "Aeroga", "Thundaga"
@@ -403,7 +403,7 @@ function job_self_command(cmdParams, eventArgs)
             local spell_name
 
             if tier == "Aja" then
-                -- Tier Aja: Convert "Firaga" → "Firaja"
+                -- Tier Aja: Convert "Firaga" >> "Firaja"
                 local base_element = element:match("(%a+)ga")  -- Extract "Fir" from "Firaga"
                 spell_name = base_element .. "ja"  -- "Firaja"
             else
@@ -418,7 +418,7 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     -- AOE Dark: Cast dark element AOE (uses MainDarkAOE + AOETier)
-    -- AOETier: Aja (Blizzaja) → III (Blizzaga III) → II (Blizzaga II) → I (Blizzaga I)
+    -- AOETier: Aja (Blizzaja) >> III (Blizzaga III) >> II (Blizzaga II) >> I (Blizzaga I)
     if command == 'aoedark' then
         if state and state.MainDarkAOE and state.AOETier then
             local element = state.MainDarkAOE.current  -- "Blizzaga", "Stonega", "Waterga"
@@ -426,7 +426,7 @@ function job_self_command(cmdParams, eventArgs)
             local spell_name
 
             if tier == "Aja" then
-                -- Tier Aja: Convert "Blizzaga" → "Blizzaja"
+                -- Tier Aja: Convert "Blizzaga" >> "Blizzaja"
                 local base_element = element:match("(%a+)ga")  -- Extract "Blizz" from "Blizzaga"
                 spell_name = base_element .. "ja"  -- "Blizzaja"
             else

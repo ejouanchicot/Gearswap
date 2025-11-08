@@ -16,13 +16,13 @@
 **Screenshot User:**
 
 ```
-[DNC/DRG] [No Foot Rise] → Instantly grants FM (1 per merit)
-[DNC/DRG] [Reverse Flourish] → converts FM to TP. Requires 1 FM
+[DNC/DRG] [No Foot Rise] >> Instantly grants FM (1 per merit)
+[DNC/DRG] [Reverse Flourish] >> converts FM to TP. Requires 1 FM
 ```
 
 **Problème:**
 
-- Format utilisé: `[Ability] → Description` (format SPELL)
+- Format utilisé: `[Ability] >> Description` (format SPELL)
 - Format attendu: `[DNC/DRG] Ability activated! Description` (format JA)
 
 **Cause:**
@@ -47,8 +47,8 @@
 **Cause:**
 2 sources affichent messages:
 
-1. **DNC_PRECAST.lua** (job-specific) → Affiche message via `MessageFormatter.show_ja_activated()`
-2. **ability_message_handler** (universal) → Affiche AUSSI message via hook
+1. **DNC_PRECAST.lua** (job-specific) >> Affiche message via `MessageFormatter.show_ja_activated()`
+2. **ability_message_handler** (universal) >> Affiche AUSSI message via hook
 
 **Résultat:** 2 messages pour chaque ability ❌
 
@@ -77,7 +77,7 @@ MessageFormatter.show_ja_activated(spell.name, description)
 
 **Résultat:**
 
-- AVANT: `[Reverse Flourish] → converts FM to TP`
+- AVANT: `[Reverse Flourish] >> converts FM to TP`
 - APRÈS: `[DNC/WAR] Reverse Flourish activated! converts FM to TP` ✅
 
 ---
@@ -137,9 +137,9 @@ end
 **AVANT (Format spell):**
 
 ```
-[No Foot Rise] → Instantly grants FM (1 per merit)
-[Reverse Flourish] → converts FM to TP. Requires 1 FM
-[Haste Samba] → Party gains Haste from target
+[No Foot Rise] >> Instantly grants FM (1 per merit)
+[Reverse Flourish] >> converts FM to TP. Requires 1 FM
+[Haste Samba] >> Party gains Haste from target
 ```
 
 **APRÈS (Format JA):**
@@ -237,7 +237,7 @@ end
 ### Fix #2: Format Incorrect ✅
 
 **Problème:** Format spell au lieu de JA
-**Fix:** `show_spell_activated()` → `show_ja_activated()`
+**Fix:** `show_spell_activated()` >> `show_ja_activated()`
 **Fichier:** `ability_message_handler.lua` ligne 202, 206
 **Résultat:** Format correct `[JOB] Ability activated!`
 
@@ -277,7 +277,7 @@ end
 **PAS:**
 
 ```
-[Reverse Flourish] → Grants TP bonus...  ← Format spell (incorrect)
+[Reverse Flourish] >> Grants TP bonus...  ← Format spell (incorrect)
 ```
 
 ---
@@ -350,14 +350,14 @@ Test différents types:
 **Problème:**
 
 - Abilities ≠ Spells
-- Format spell: `[Name] → Description`
+- Format spell: `[Name] >> Description`
 - Format JA: `[JOB] Name activated! Description`
 
 **Solution:**
 
 - Toujours utiliser le formatter approprié
-- Spells → `show_spell_activated()`
-- Abilities → `show_ja_activated()`
+- Spells >> `show_spell_activated()`
+- Abilities >> `show_ja_activated()`
 
 ### 2. Job-Specific vs Universal
 
@@ -388,10 +388,10 @@ Test différents types:
 
 **Testing workflow:**
 
-1. Test format → Découvrir wrong formatter
-2. Fix format → Découvrir doublons
-3. Fix doublons → Découvrir job-specific code
-4. Disable job-specific → **SUCCESS**
+1. Test format >> Découvrir wrong formatter
+2. Fix format >> Découvrir doublons
+3. Fix doublons >> Découvrir job-specific code
+4. Disable job-specific >> **SUCCESS**
 
 **Leçon:** Chaque fix révèle prochain problème. Testing rigoureux essentiel.
 
@@ -444,6 +444,6 @@ Test différents types:
 **Auteur:** Claude (Anthropic)
 **Version:** 1.0 - Solution Finale
 **Criticité:** HAUTE (format + doublons = UX cassée)
-**User Request:** "uniformiser tout les message dans un même system" → ✅ FAIT
+**User Request:** "uniformiser tout les message dans un même system" >> ✅ FAIT
 
 **SYSTÈME 100% UNIFIÉ - FORMAT CORRECT - ZERO DOUBLONS** ✅

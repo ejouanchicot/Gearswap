@@ -72,7 +72,7 @@ include('../shared/jobs/war/functions/WAR_MOVEMENT.lua')
 --- SECTION 6: DUAL-BOXING SYSTEM
 ---============================================================================
 
--- Load dual-boxing manager (auto-initializes and handles ALT<->MAIN communication)
+-- Load dual-boxing manager (auto-initializes and handles ALT<>>MAIN communication)
 local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
 
 ---============================================================================

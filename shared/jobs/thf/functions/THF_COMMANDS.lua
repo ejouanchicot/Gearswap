@@ -7,7 +7,7 @@
 ---   • Common commands (reload, checksets, setregion via COMMON_COMMANDS)
 ---   • UI commands (ui toggle, visibility via UI_COMMANDS)
 ---   • THF-specific commands (smartbuff, fbc, range)
----   • Ranged weapon lock with auto-attack (one-way: equip → lock → /ra)
+---   • Ranged weapon lock with auto-attack (one-way: equip >> lock >> /ra)
 ---   • State change UI updates (automatic refresh)
 ---   • Future: TH tracking commands, SA/TA management commands
 ---
@@ -130,7 +130,7 @@ function job_self_command(cmdParams, eventArgs)
 
     -- Range weapon lock with auto-attack (one-way, no toggle)
     if command == 'range' then
-        -- CRITICAL ORDER: Equip → Lock → State → UI Update → Attack
+        -- CRITICAL ORDER: Equip >> Lock >> State >> UI Update >> Attack
         -- 1. Equip ranged setup FIRST (before locking slots)
         equip({ range = "Exalted Crossbow", ammo = "Acid Bolt" })
 
@@ -153,7 +153,7 @@ function job_self_command(cmdParams, eventArgs)
 
         local MessageFormatter_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
         if MessageFormatter_success and MessageFormatter then
-            MessageFormatter.show_success("Ranged attack: Exalted Crossbow + Acid Bolt → <stnpc>")
+            MessageFormatter.show_success("Ranged attack: Exalted Crossbow + Acid Bolt >> <stnpc>")
         end
 
         eventArgs.handled = true

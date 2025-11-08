@@ -19,6 +19,7 @@ Universal command to display detailed information for Job Abilities, Spells, and
 ```
 
 **Examples:**
+
 ```bash
 //gs c info Last Resort       # Job Ability (DRK)
 //gs c info Haste             # Spell (RDM/WHM)
@@ -32,22 +33,26 @@ Universal command to display detailed information for Job Abilities, Spells, and
 ## Features
 
 ### ✅ **Universal Search**
+
 - Searches across ALL databases automatically
 - Works for any job/subjob combination
 - No job-specific configuration needed
 
 ### ✅ **Data Sources**
+
 1. **Job Abilities:** `shared/data/job_abilities/` (300+ abilities from 21 jobs)
 2. **Spells:** `shared/data/magic/` (1,100+ spells from 6 skill + 8 job databases)
 3. **Weaponskills:** `shared/data/weaponskills/` (212 weaponskills from 13 weapon types)
 
 ### ✅ **Formatted Output**
+
 - Color-coded display using message system colors
 - ASCII-safe text (FFXI chat compatible)
 - Fields displayed only if data exists (no empty fields)
 - Proper sanitization of special characters
 
 ### ✅ **Lazy Loading**
+
 - Databases load on-demand (first use)
 - No startup lag
 - Data cached for subsequent queries
@@ -70,6 +75,7 @@ Name: Last Resort
 ```
 
 **Fields Shown:**
+
 - **Type:** Ability type (Job Ability, Pet Command, etc.)
 - **Description:** What the ability does
 - **Recast:** Recast time in seconds
@@ -104,6 +110,7 @@ Name: Haste
 ```
 
 **Fields Shown:**
+
 - **Type:** Spell type (Enfeebling, Enhancing, Healing, etc.)
 - **Category:** Spell category
 - **Description:** What the spell does
@@ -138,6 +145,7 @@ Name: Torcleaver
 ```
 
 **Fields Shown:**
+
 - **Type:** WS type (Physical, Magical, Hybrid)
 - **Description:** What the WS does
 - **Skill Chain:** Skillchain properties
@@ -154,12 +162,14 @@ Name: Torcleaver
 ## Color Codes
 
 **Headers:**
+
 - Cyan (207): Section headers
 - Yellow (50): Job Abilities
 - Cyan (205): Spells
 - Yellow (50): Weaponskills
 
 **Fields:**
+
 - Gray (160): Field labels
 - Various colors for values based on data type:
   - Info (158): General information
@@ -180,6 +190,7 @@ Name: Torcleaver
 ```
 
 **Possible Reasons:**
+
 - Typo in name
 - Ability/Spell/WS doesn't exist in databases
 - Database not loaded (check for errors)
@@ -225,15 +236,16 @@ All output is sanitized for FFXI chat (ASCII only):
 text = text:gsub("[^\32-\126]", "")
 
 -- Converts common Unicode to ASCII equivalents
-"'" → "'" (smart quote to regular)
-""" → '"' (smart double quotes)
-"—" → "-" (em/en dash to hyphen)
-"…" → "..." (ellipsis to three dots)
+"'" >> "'" (smart quote to regular)
+""" >> '"' (smart double quotes)
+"—" >> "-" (em/en dash to hyphen)
+"…" >> "..." (ellipsis to three dots)
 ```
 
 ### Data Structure
 
 **Job Abilities:**
+
 ```lua
 {
     description = "ATK/ACC+25%, DEF/EVA-25% (3min)",
@@ -246,6 +258,7 @@ text = text:gsub("[^\32-\126]", "")
 ```
 
 **Spells:**
+
 ```lua
 {
     description = "Haste +15% (3min)",
@@ -265,6 +278,7 @@ text = text:gsub("[^\32-\126]", "")
 ```
 
 **Weaponskills:**
+
 ```lua
 {
     description = "4-hit Great Axe WS, Light+Fusion",
@@ -288,11 +302,13 @@ text = text:gsub("[^\32-\126]", "")
 ### Files Created
 
 **New Module:**
+
 - `shared/utils/commands/info_command.lua` (360 lines)
 
 ### Files Modified
 
 **Command Handler:**
+
 - `shared/utils/core/COMMON_COMMANDS.lua`
   - Added `handle_info()` function
   - Added routing in `handle_command()`
@@ -301,11 +317,13 @@ text = text:gsub("[^\32-\126]", "")
 ### Dependencies
 
 **Required Modules:**
+
 - `shared/utils/data/data_loader.lua` - Data access layer
 - `shared/utils/messages/message_core.lua` - Color utilities
 - `shared/utils/messages/message_colors.lua` - Color definitions
 
 **Data Sources:**
+
 - `shared/data/job_abilities/` - JA databases
 - `shared/data/magic/` - Spell databases
 - `shared/data/weaponskills/` - WS databases
@@ -315,19 +333,23 @@ text = text:gsub("[^\32-\126]", "")
 ## Performance
 
 ### Startup Impact
+
 ✅ **Zero startup lag** - Command loads on first use only
 
 ### First Query
+
 - Loads `info_command.lua` module (~10ms)
 - Loads required databases via DataLoader (50-300ms depending on type)
 - Displays formatted output
 
 ### Subsequent Queries
+
 - Module already loaded (instant)
 - Databases cached in `_G.FFXI_DATA` (instant)
 - Only formatting cost (~1-2ms)
 
 ### Memory Usage
+
 - Module: ~15KB
 - Cached databases loaded as needed:
   - Job Abilities: ~50KB (300+ abilities)
@@ -408,19 +430,23 @@ text = text:gsub("[^\32-\126]", "")
 ## Limitations
 
 ### Case Sensitivity
+
 - Names are case-sensitive
 - Use exact spelling: "Last Resort" not "last resort"
 
 ### Multi-word Names
+
 - Spaces must be included: "Last Resort" not "LastResort"
 - System automatically joins arguments: `info Last Resort` = "Last Resort"
 
 ### Partial Matches
+
 - No partial matching (yet)
 - Must type full name
 - Future: Could add fuzzy search
 
 ### Missing Data
+
 - Only displays fields that exist in database
 - Some older abilities may have limited data
 - WS fTP values may be approximate
@@ -430,6 +456,7 @@ text = text:gsub("[^\32-\126]", "")
 ## Future Enhancements
 
 ### Potential Features
+
 1. **Fuzzy Search:** Match partial names
 2. **Aliases:** Support common abbreviations
 3. **Related Items:** Show similar abilities/spells
@@ -438,6 +465,7 @@ text = text:gsub("[^\32-\126]", "")
 6. **Export:** Save query results to file
 
 ### Database Improvements
+
 1. Add missing fields to older entries
 2. Verify all numerical values
 3. Add more descriptive text
@@ -450,6 +478,7 @@ text = text:gsub("[^\32-\126]", "")
 ✅ **COMPLETE** - Info command fully functional and integrated
 
 **Tested:**
+
 - Job Abilities from multiple jobs
 - Spells from all categories
 - Weaponskills from various weapon types

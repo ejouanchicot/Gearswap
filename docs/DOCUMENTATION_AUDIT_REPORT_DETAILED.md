@@ -410,8 +410,8 @@
 ### 🔴 P0: CRITICAL (Do Now - 30 min)
 
 1. **Fix README.md broken links** (5 min)
-   - Line 376: KEYBINDS.md → user/guides/keybinds.md
-   - Line 378: FAQ.md → user/guides/faq.md
+   - Line 376: KEYBINDS.md >> user/guides/keybinds.md
+   - Line 378: FAQ.md >> user/guides/faq.md
 
 2. **Update README.md Version History** (5 min)
    - Add Version 3.1 (2025-11-01)
@@ -420,7 +420,7 @@
    - 19 backup files cleaned
 
 3. **Update README.md date** (1 min)
-   - "Last Updated: 2025-10-26" → "2025-11-01"
+   - "Last Updated: 2025-10-26" >> "2025-11-01"
 
 4. **Delete WEAPONSKILLS_DATABASE.md** (1 min)
    - Replaced by WS_DATABASE_SYSTEM.md v2.0

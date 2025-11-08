@@ -2,7 +2,7 @@
 --- BRD Song Refinement Logic Module
 ---============================================================================
 --- Handles intelligent song tier downgrading for debuff songs.
---- Automatically downgrades songs (Lullaby II → I, etc.) if higher tier is on cooldown.
+--- Automatically downgrades songs (Lullaby II >> I, etc.) if higher tier is on cooldown.
 ---
 --- @file jobs/brd/functions/logic/song_refinement.lua
 --- @author Tetsouo

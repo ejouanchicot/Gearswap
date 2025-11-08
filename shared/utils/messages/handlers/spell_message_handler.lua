@@ -22,12 +22,12 @@
 ---   - Once loaded, databases remain cached for instant access
 ---
 --- Examples:
----   - WAR/RDM casting Haste → Shows message from ENHANCING_MAGIC_DATABASE
----   - DNC/WHM casting Cure III → Shows message from HEALING_MAGIC_DATABASE
----   - BLM casting Bio → Shows message from ENFEEBLING_MAGIC_DATABASE
----   - GEO casting Aspir → Shows message from DARK_MAGIC_DATABASE
----   - BLM casting Fire III → Shows message from ELEMENTAL_MAGIC_DATABASE
----   - WHM casting Banish → Shows message from DIVINE_MAGIC_DATABASE
+---   - WAR/RDM casting Haste >> Shows message from ENHANCING_MAGIC_DATABASE
+---   - DNC/WHM casting Cure III >> Shows message from HEALING_MAGIC_DATABASE
+---   - BLM casting Bio >> Shows message from ENFEEBLING_MAGIC_DATABASE
+---   - GEO casting Aspir >> Shows message from DARK_MAGIC_DATABASE
+---   - BLM casting Fire III >> Shows message from ELEMENTAL_MAGIC_DATABASE
+---   - WHM casting Banish >> Shows message from DIVINE_MAGIC_DATABASE
 ---
 --- @file spell_message_handler.lua
 --- @author Tetsouo
@@ -145,23 +145,37 @@ local function ensure_job_databases_loaded()
     end
 end
 
--- Load message configs
-local _, ENFEEBLING_MESSAGES_CONFIG = pcall(require, 'shared/config/ENFEEBLING_MESSAGES_CONFIG')
-if not ENFEEBLING_MESSAGES_CONFIG then
-    ENFEEBLING_MESSAGES_CONFIG = {
-        display_mode = 'on',
-        is_enabled = function() return true end,
-        show_description = function() return false end
-    }
-end
+-- Load message configs ONCE and cache the reference
+-- The table is modified by set_display_mode() so we always see current mode
+local ENFEEBLING_MESSAGES_CONFIG = nil
+local ENHANCING_MESSAGES_CONFIG = nil
 
-local _, ENHANCING_MESSAGES_CONFIG = pcall(require, 'shared/config/ENHANCING_MESSAGES_CONFIG')
-if not ENHANCING_MESSAGES_CONFIG then
-    ENHANCING_MESSAGES_CONFIG = {
-        display_mode = 'on',
-        is_enabled = function() return true end,
-        show_description = function() return false end
-    }
+local function ensure_configs_loaded()
+    if not ENFEEBLING_MESSAGES_CONFIG then
+        local success, config = pcall(require, 'shared/config/ENFEEBLING_MESSAGES_CONFIG')
+        if success then
+            ENFEEBLING_MESSAGES_CONFIG = config
+        else
+            ENFEEBLING_MESSAGES_CONFIG = {
+                display_mode = 'on',
+                is_enabled = function() return true end,
+                show_description = function() return false end
+            }
+        end
+    end
+
+    if not ENHANCING_MESSAGES_CONFIG then
+        local success, config = pcall(require, 'shared/config/ENHANCING_MESSAGES_CONFIG')
+        if success then
+            ENHANCING_MESSAGES_CONFIG = config
+        else
+            ENHANCING_MESSAGES_CONFIG = {
+                display_mode = 'on',
+                is_enabled = function() return true end,
+                show_description = function() return false end
+            }
+        end
+    end
 end
 
 ---============================================================================
@@ -266,6 +280,9 @@ function SpellMessageHandler.show_message(spell, show_separator)
         return
     end
 
+    -- Ensure configs are loaded (only loads once, then cached)
+    ensure_configs_loaded()
+
     -- Determine config based on spell CATEGORY (not spell.skill!)
     -- This allows Dark Magic spells with Enfeebling effects to show correctly
     local config = nil
@@ -297,17 +314,49 @@ function SpellMessageHandler.show_message(spell, show_separator)
         description = spell_data.description
     end
 
-    -- Get target name (for buffs)
+    -- Get target name and type (for buffs)
     local target_name = nil
+    local target_type = nil
     if spell.target and spell.target.name then
         target_name = spell.target.name
+
+        -- Detect target type with priority logic:
+        -- IMPORTANT: Check spawn_type == 16 (monster) BEFORE is_npc!
+        -- Both monsters and NPCs have is_npc = true, so spawn_type differentiates them
+        -- 1. Player (in party/alliance or charmed)
+        -- 2. Monster (spawn_type 16 - CHECK FIRST!)
+        -- 3. NPC (spawn_type 2 or is_npc - portals, ???, vendors)
+
+        if spell.target.in_party or spell.target.in_alliance then
+            -- Party/alliance member = Player
+            target_type = "PLAYER"
+        elseif spell.target.charmed then
+            -- Charmed mob = treat as player (it's helping us)
+            target_type = "PLAYER"
+        elseif spell.target.spawn_type == 16 then
+            -- spawn_type 16 = Monster/Enemy (CHECK BEFORE is_npc!)
+            target_type = "MONSTER"
+        elseif spell.target.spawn_type == 2 or spell.target.is_npc then
+            -- spawn_type 2 = NPC (includes portals, ??? NPCs, vendors, etc.)
+            target_type = "NPC"
+        elseif spell.target.type then
+            -- Fallback to Windower's type if available
+            target_type = spell.target.type
+        else
+            -- Default to MONSTER for unknown types (combat target assumption)
+            target_type = "MONSTER"
+        end
     end
 
     -- Use spell.english instead of spell.name (GearSwap convention)
     local spell_name = spell.english or spell.name or "Unknown"
 
+    -- Get spell element from database (for color coding)
+    local spell_element = spell_data.element
+
     -- Display message with target and get message length
-    local message_length = MessageFormatter.show_spell_activated(spell_name, description, target_name)
+    -- Pass spell.skill to detect Healing Magic spells, spell_element for color, and target_type for target color
+    local message_length = MessageFormatter.show_spell_activated(spell_name, description, target_name, spell.skill, spell_element, target_type)
 
     -- Display separator after spell message (default: true unless explicitly disabled)
     -- Length = message length + 2 additional "=" characters

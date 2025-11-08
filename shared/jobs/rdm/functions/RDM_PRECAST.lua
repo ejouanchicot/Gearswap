@@ -119,7 +119,7 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- LEGACY CODE (commented out to prevent duplicates):
     -- if spell.type == 'JobAbility' then
     --     if spell.english == 'Convert' then
-    --         MessageFormatter.show_ja_activated("Convert", "Swap HP <-> MP")
+    --         MessageFormatter.show_ja_activated("Convert", "Swap HP <>> MP")
     --     elseif spell.english == 'Chainspell' then
     --         MessageFormatter.show_ja_activated("Chainspell", "Rapid casting, zero recast")
     --     ... (4 more abilities)

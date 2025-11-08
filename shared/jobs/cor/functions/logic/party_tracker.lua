@@ -19,7 +19,7 @@
 --- Dependencies:
 ---   • RollTracker module (shared/jobs/cor/functions/logic/roll_tracker.lua)
 ---   • Windower packets library
----   • Windower resources library (job ID → job code conversion)
+---   • Windower resources library (job ID >> job code conversion)
 ---
 --- Usage:
 ---   local PartyTracker = require('shared/jobs/cor/functions/logic/party_tracker')

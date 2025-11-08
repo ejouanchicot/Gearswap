@@ -30,9 +30,9 @@
 ---   - Addendum White: Unlocks status removal (Poisona, Paralyna, etc.) + Raise II-III
 ---   - Helix Spells: SCH-unique elemental DoT spells (16 total - I/II for 8 elements)
 ---     • Deal elemental damage over time affected by weather
----     • Additional effect: Lower enemy stats (Fire→INT, Ice→STR, etc.)
+---     • Additional effect: Lower enemy stats (Fire>>INT, Ice>>STR, etc.)
 ---   - Storm Spells: SCH-unique weather effect spells (16 total - I/II for 8 elements)
----     • Change weather around party member (Firestorm→'hot', Hailstorm→'snowy', etc.)
+---     • Change weather around party member (Firestorm>>'hot', Hailstorm>>'snowy', etc.)
 ---     • Enhance elemental damage and add resistance
 ---   - Level 99 spells may require merits/gifts
 ---============================================================================

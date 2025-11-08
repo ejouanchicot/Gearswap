@@ -54,11 +54,11 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- ALL OTHER MAGIC - Let Mote-Include handle naturally
     -- ==========================================================================
     -- Mote automatically handles:
-    --   - Cure/Curaga → sets.midcast.Cure / sets.midcast.Curaga
-    --   - Elemental Magic → sets.midcast['Elemental Magic']
-    --   - Enfeebling Magic → sets.midcast['Enfeebling Magic']
-    --   - Enhancing Magic → sets.midcast['Enhancing Magic']
-    --   - Specific spells → sets.midcast[spell.english]
+    --   - Cure/Curaga >> sets.midcast.Cure / sets.midcast.Curaga
+    --   - Elemental Magic >> sets.midcast['Elemental Magic']
+    --   - Enfeebling Magic >> sets.midcast['Enfeebling Magic']
+    --   - Enhancing Magic >> sets.midcast['Enhancing Magic']
+    --   - Specific spells >> sets.midcast[spell.english]
     --
     -- No need to intercept - Mote's logic is sufficient for GEO!
 end

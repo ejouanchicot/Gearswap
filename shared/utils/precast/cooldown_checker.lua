@@ -69,7 +69,7 @@ local MULTI_CHARGE_ABILITIES = {
 ---============================================================================
 
 -- Some abilities don't provide correct recast_id in GearSwap spell data
--- Manual mapping: ability_name → recast_id
+-- Manual mapping: ability_name >> recast_id
 -- NOTE: This mapping is actually NOT needed since GearSwap provides spell.recast_id correctly
 -- Keeping for reference and potential future edge cases
 local MANUAL_RECAST_IDS = {

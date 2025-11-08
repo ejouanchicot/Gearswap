@@ -6,12 +6,12 @@
 ---
 --- Features:
 ---   • Modular architecture (11 hooks + 3 logic modules)
----   • Dependency-ordered loading (lockstyle → macros → combat → utility)
+---   • Dependency-ordered loading (lockstyle >> macros >> combat >> utility)
 ---   • Separation of concerns (hooks = orchestration, logic = implementation)
 ---
 --- Logic Modules:
 ---   • song_rotation_manager.lua - Song casting, dummy phases, dynamic timing
----   • song_refinement.lua - Song tier downgrade system (Lullaby II → I, etc.)
+---   • song_refinement.lua - Song tier downgrade system (Lullaby II >> I, etc.)
 ---   • set_builder.lua - Shared set construction (engaged/idle)
 ---
 --- @file brd_functions.lua

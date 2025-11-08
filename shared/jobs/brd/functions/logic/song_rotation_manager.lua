@@ -192,7 +192,7 @@ local function cast_song_phase(songs, start_index, count, target, base_delay, so
     return delay
 end
 
---- Cast songs using 3-phase rotation (Party → Dummy → Party)
+--- Cast songs using 3-phase rotation (Party >> Dummy >> Party)
 --- @param use_marcato boolean Whether to use Marcato for first song (Honor March)
 --- @param target string Target for songs ("<me>" for party, "<stpc>" for pianissimo)
 --- @return boolean Success status

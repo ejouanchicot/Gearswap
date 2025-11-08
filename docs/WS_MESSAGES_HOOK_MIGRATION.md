@@ -14,6 +14,7 @@ The WS (Weapon Skill) message system has been centralized using a universal hook
 ## What Changed
 
 ### Before (Old System)
+
 Each job's PRECAST file manually called WS message functions:
 
 ```lua
@@ -28,12 +29,14 @@ end
 ```
 
 **Problems:**
+
 - ❌ Code duplicated in 15+ job files
 - ❌ Hard to maintain consistency
 - ❌ Must update each job individually for changes
 - ❌ Easy to introduce bugs
 
 ### After (New System)
+
 Universal hook handles WS messages automatically:
 
 ```lua
@@ -46,6 +49,7 @@ end
 ```
 
 **Benefits:**
+
 - ✅ Zero code duplication
 - ✅ Centralized configuration (WS_MESSAGES_CONFIG)
 - ✅ Works for ALL jobs automatically
@@ -56,10 +60,13 @@ end
 ## Files Changed
 
 ### New File Created
+
 - `shared/hooks/init_ws_messages.lua` - Universal WS messages hook
 
 ### Files Cleaned (15 jobs)
+
 Removed duplicate WS message code from:
+
 - `shared/jobs/blm/functions/BLM_PRECAST.lua`
 - `shared/jobs/brd/functions/BRD_PRECAST.lua`
 - `shared/jobs/bst/functions/BST_PRECAST.lua`
@@ -77,6 +84,7 @@ Removed duplicate WS message code from:
 - `shared/jobs/whm/functions/WHM_PRECAST.lua`
 
 **What was removed:**
+
 - ❌ `MessageFormatter.show_ws_activated()` calls
 - ❌ WS description display logic
 - ✅ **Kept:** `MessageFormatter.show_ws_validation_error()` (TP checks)
@@ -86,6 +94,7 @@ Removed duplicate WS message code from:
 ## How the Hook Works
 
 ### Hook Injection
+
 The hook wraps `user_post_precast` globally:
 
 ```lua
@@ -110,6 +119,7 @@ end
 ```
 
 ### Configuration Support
+
 Respects `WS_MESSAGES_CONFIG` settings:
 
 - **`full`** - Show WS name + description + TP
@@ -137,6 +147,7 @@ Now all three message systems use the hook pattern:
 ## Usage Example
 
 ### TETSOUO_WAR.lua
+
 ```lua
 function get_sets()
     include('Mote-Include.lua')
@@ -153,9 +164,10 @@ end
 ```
 
 ### Example Messages
+
 ```
 [WAR/SAM] Berserk activated! Attack +25%, Defense -25%
-[WAR/SAM] Haste -> Increases attack speed.
+[WAR/SAM] Haste >> Increases attack speed.
 [Upheaval] Four hits. Damage varies with TP. (2290 TP)
 ```
 
@@ -164,16 +176,20 @@ end
 ## Migration Impact
 
 ### Code Reduction
+
 - **Before:** ~450 lines of duplicate WS message code across 15 jobs
 - **After:** ~90 lines in single universal hook
 - **Reduction:** ~75% code reduction
 
 ### Maintenance
+
 - **Before:** Update 15 files for any WS message change
 - **After:** Update 1 file (`init_ws_messages.lua`)
 
 ### Testing
+
 All jobs tested with WS messages:
+
 - ✅ Messages display correctly
 - ✅ Configuration (full/on/off) works
 - ✅ TP validation errors still work

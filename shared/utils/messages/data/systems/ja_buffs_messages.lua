@@ -16,43 +16,43 @@ return {
 
     -- Pattern 1: JA activated with description
     activated_full = {
-        template = "{lightblue}[{job_tag}] {yellow}{ability_name} {gray}{description}",
+        template = "{gray}[{lightblue}{job_tag}{gray}] {gray}[{yellow}{ability_name}{gray}] {gray}{description}",
         color = 1
     },
 
     -- Pattern 1b: JA activated name only
     activated_name_only = {
-        template = "{lightblue}[{job_tag}] {yellow}{ability_name}",
+        template = "{gray}[{lightblue}{job_tag}{gray}] {gray}[{yellow}{ability_name}{gray}]",
         color = 1
     },
 
     -- Pattern 2: JA active status
     active = {
-        template = "{lightblue}[{job_tag}] {yellow}{ability_name}{green} active",
+        template = "{gray}[{lightblue}{job_tag}{gray}] {gray}[{yellow}{ability_name}{gray}]{green} active",
         color = 1
     },
 
     -- Pattern 3: JA ended
     ended = {
-        template = "{lightblue}[{job_tag}] {yellow}{ability_name}{gray} ended",
+        template = "{gray}[{lightblue}{job_tag}{gray}] {gray}[{yellow}{ability_name}{gray}]{gray} ended",
         color = 1
     },
 
     -- Pattern 4: JA with description (colon format)
     with_description = {
-        template = "{lightblue}[{job_tag}] {yellow}{ability_name}{gray}: {gray}{description}",
+        template = "{gray}[{lightblue}{job_tag}{gray}] {gray}[{yellow}{ability_name}{gray}]{gray}: {gray}{description}",
         color = 1
     },
 
     -- Pattern 5: JA using (pre-action)
     using = {
-        template = "{lightblue}[{job_tag}]{gray} Using {yellow}{ability_name}",
+        template = "{gray}[{lightblue}{job_tag}{gray}]{gray} Using {gray}[{yellow}{ability_name}{gray}]",
         color = 1
     },
 
     -- Pattern 6: JA using double (two abilities)
     using_double = {
-        template = "{lightblue}[{job_tag}]{gray} Using {yellow}{ability1}{gray} + {yellow}{ability2}",
+        template = "{gray}[{lightblue}{job_tag}{gray}]{gray} Using {gray}[{yellow}{ability1}{gray}]{gray} + {gray}[{yellow}{ability2}{gray}]",
         color = 1
     },
 }

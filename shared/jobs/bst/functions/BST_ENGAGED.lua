@@ -41,10 +41,10 @@ function customize_melee_set(meleeSet)
         local playerEngaged = (player and player.status == 'Engaged')
 
         -- Priority order (using short-circuit evaluation):
-        -- 1. Both engaged → sets.pet.engagedBoth (no PDT variant available)
-        -- 2. Pet engaged only → Check petIdleMode (PetPDT or offensive)
-        -- 3. Player engaged only → sets.me.engaged.PDT
-        -- 4. Neither engaged → sets.pet.idle.PDT
+        -- 1. Both engaged >> sets.pet.engagedBoth (no PDT variant available)
+        -- 2. Pet engaged only >> Check petIdleMode (PetPDT or offensive)
+        -- 3. Player engaged only >> sets.me.engaged.PDT
+        -- 4. Neither engaged >> sets.pet.idle.PDT
         if petEngaged and playerEngaged then
             -- Both engaged
             meleeSet = sets.pet.engagedBoth

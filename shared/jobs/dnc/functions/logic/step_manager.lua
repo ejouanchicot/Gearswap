@@ -59,8 +59,8 @@ function StepManager.execute_step()
     local step_name
     if use_alternation then
         -- Alternation enabled - use CurrentStep to track position
-        -- CurrentStep = 'Main' (default) → use MainStep first
-        -- CurrentStep = 'Alt' → use AltStep second
+        -- CurrentStep = 'Main' (default) >> use MainStep first
+        -- CurrentStep = 'Alt' >> use AltStep second
         if state.CurrentStep and state.CurrentStep.value == 'Alt' then
             step_name = state.AltStep.value
         else

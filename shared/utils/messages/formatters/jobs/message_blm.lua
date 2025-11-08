@@ -15,7 +15,7 @@ local BLMMessages = {}
 -- NEW message system
 local M = require('shared/utils/messages/api/messages')
 
--- Get job tag (for subjob support: BLM/WHM → "BLM/WHM")
+-- Get job tag (for subjob support: BLM/WHM >> "BLM/WHM")
 local function get_job_tag()
     local main_job = player and player.main_job or 'BLM'
     local sub_job = player and player.sub_job or ''
@@ -29,36 +29,34 @@ end
 --- ELEMENT COLOR MAPPING
 ---============================================================================
 
---- Element-specific color codes for visual feedback
+--- Element-specific color codes for visual feedback (inline FFXI color codes)
 --- @type table<string, string>
 local ELEMENT_COLORS = {
-    -- Main Elements (Light)
-    ['Fire'] = '{red}',
-    ['Thunder'] = '{yellow}',
-    ['Aero'] = '{green}',
-
-    -- Main Elements (Dark)
-    ['Stone'] = '{tan}',
-    ['Blizzard'] = '{blue}',
-    ['Water'] = '{cyan}',
+    -- Main Elements (spell names)
+    ['Fire'] = string.char(0x1F, 2),        -- Fire (code 002)
+    ['Blizzard'] = string.char(0x1F, 30),   -- Ice (code 030)
+    ['Aero'] = string.char(0x1F, 14),       -- Wind (code 014)
+    ['Stone'] = string.char(0x1F, 37),      -- Earth (code 037)
+    ['Thunder'] = string.char(0x1F, 16),    -- Thunder (code 016)
+    ['Water'] = string.char(0x1F, 219),     -- Water (code 219)
 
     -- Aja Spells
-    ['Firaja'] = '{red}',
-    ['Stoneja'] = '{tan}',
-    ['Blizzaja'] = '{blue}',
-    ['Aeroja'] = '{green}',
-    ['Thundaja'] = '{yellow}',
-    ['Waterja'] = '{lightblue}',
+    ['Firaja'] = string.char(0x1F, 2),      -- Fire
+    ['Blizzaja'] = string.char(0x1F, 30),   -- Ice
+    ['Aeroja'] = string.char(0x1F, 14),     -- Wind
+    ['Stoneja'] = string.char(0x1F, 37),    -- Earth
+    ['Thundaja'] = string.char(0x1F, 16),   -- Thunder
+    ['Waterja'] = string.char(0x1F, 219),   -- Water
 
     -- Storm Spells
-    ['FireStorm'] = '{red}',
-    ['Sandstorm'] = '{tan}',
-    ['Thunderstorm'] = '{yellow}',
-    ['HailStorm'] = '{blue}',
-    ['Rainstorm'] = '{cyan}',
-    ['Windstorm'] = '{green}',
-    ['Voidstorm'] = '{purple}',
-    ['Aurorastorm'] = '{lightblue}',
+    ['Firestorm'] = string.char(0x1F, 2),       -- Fire
+    ['Hailstorm'] = string.char(0x1F, 30),      -- Ice
+    ['Windstorm'] = string.char(0x1F, 14),      -- Wind
+    ['Sandstorm'] = string.char(0x1F, 37),      -- Earth
+    ['Thunderstorm'] = string.char(0x1F, 16),   -- Thunder
+    ['Rainstorm'] = string.char(0x1F, 219),     -- Water
+    ['Voidstorm'] = string.char(0x1F, 200),     -- Void (code 200)
+    ['Aurorastorm'] = string.char(0x1F, 187),   -- Light (code 187)
 }
 
 ---============================================================================
@@ -69,7 +67,7 @@ local ELEMENT_COLORS = {
 --- @param state_type string Type of state (e.g., 'MainLight', 'SubDark')
 --- @param element_name string Name of the element
 function BLMMessages.show_element_cycle(state_type, element_name)
-    local element_color = ELEMENT_COLORS[element_name] or '{cyan}'
+    local element_color = ELEMENT_COLORS[element_name] or string.char(0x1F, 13)  -- Cyan fallback
     M.job('BLM', 'element_cycle', {
         job = get_job_tag(),
         state_type = state_type,
@@ -85,7 +83,7 @@ end
 --- Display Aja spell cycle message
 --- @param aja_name string Name of the Aja spell
 function BLMMessages.show_aja_cycle(aja_name)
-    local element_color = ELEMENT_COLORS[aja_name] or '{cyan}'
+    local element_color = ELEMENT_COLORS[aja_name] or string.char(0x1F, 13)  -- Cyan fallback
     M.job('BLM', 'aja_cycle', {
         job = get_job_tag(),
         element_color = element_color,
@@ -96,7 +94,7 @@ end
 --- Display Storm spell cycle message
 --- @param storm_name string Name of the Storm spell
 function BLMMessages.show_storm_cycle(storm_name)
-    local element_color = ELEMENT_COLORS[storm_name] or '{cyan}'
+    local element_color = ELEMENT_COLORS[storm_name] or string.char(0x1F, 13)  -- Cyan fallback
     M.job('BLM', 'storm_cycle', {
         job = get_job_tag(),
         element_color = element_color,

@@ -52,7 +52,7 @@ Cette section contient les documents obsolètes ou remplacés par des versions p
 
 ### Architecture Audits (Historique)
 
-9. **INIT_SYSTEMS_AUDIT.md** → `architecture/`
+9. **INIT_SYSTEMS_AUDIT.md** >> `architecture/`
    - **Date:** 2025-10-28
    - **Contenu:** Analyse systèmes nécessaires dans INIT_SYSTEMS.lua
    - **Raison:** Conclusions valides mais audit historique (archivé pour référence)
@@ -61,34 +61,38 @@ Cette section contient les documents obsolètes ou remplacés par des versions p
 
 ### Session Summaries (Historique)
 
-10. **SESSION_COMPLETE_SUMMARY.md** → `sessions/SESSION_2025_11_01_BLU_SMN_ABILITIES.md`
-   - **Date:** 2025-11-01
-   - **Contenu:** Résumé session BLU/SMN/Abilities (1,166 messages)
-   - **Remplacé par:** `../SESSION_2025_11_01_UNIFIED_MESSAGES.md`
-   - **Raison:** Session summary superseded by unified messages doc
+10. **SESSION_COMPLETE_SUMMARY.md** >> `sessions/SESSION_2025_11_01_BLU_SMN_ABILITIES.md`
+
+- **Date:** 2025-11-01
+- **Contenu:** Résumé session BLU/SMN/Abilities (1,166 messages)
+- **Remplacé par:** `../SESSION_2025_11_01_UNIFIED_MESSAGES.md`
+- **Raison:** Session summary superseded by unified messages doc
 
 ---
 
 ### Verification Reports (Historique)
 
-11. **SPELL_DESCRIPTIONS_VERIFICATION.md** → `verification/`
-   - **Date:** 2025-10-31
-   - **Contenu:** Vérification 339 spell descriptions (304 corrections - 89.7%)
-   - **Raison:** Verification completed, archivé pour référence historique
+11. **SPELL_DESCRIPTIONS_VERIFICATION.md** >> `verification/`
 
-12. **HEALING_MAGIC_DATABASE_AUDIT.md** → `verification/`
-   - **Date:** 2025-10-30
-   - **Contenu:** Audit complet 32 sorts Healing Magic (100% accuracy, 2 clarifications)
-   - **Raison:** Audit historique terminé, archivé pour référence
+- **Date:** 2025-10-31
+- **Contenu:** Vérification 339 spell descriptions (304 corrections - 89.7%)
+- **Raison:** Verification completed, archivé pour référence historique
+
+12. **HEALING_MAGIC_DATABASE_AUDIT.md** >> `verification/`
+
+- **Date:** 2025-10-30
+- **Contenu:** Audit complet 32 sorts Healing Magic (100% accuracy, 2 clarifications)
+- **Raison:** Audit historique terminé, archivé pour référence
 
 ---
 
 ### Maintenance Reports (Historique)
 
-13. **BACKUP_FILES_AUDIT.md** → `maintenance/`
-   - **Date:** 2025-11-01
-   - **Contenu:** Nettoyage 19 fichiers backup (.bak, .backup) hors Backup/ directory
-   - **Raison:** Session terminée (19 files deleted), archivé pour référence
+13. **BACKUP_FILES_AUDIT.md** >> `maintenance/`
+
+- **Date:** 2025-11-01
+- **Contenu:** Nettoyage 19 fichiers backup (.bak, .backup) hors Backup/ directory
+- **Raison:** Session terminée (19 files deleted), archivé pour référence
 
 ---
 
@@ -101,7 +105,7 @@ Cette section contient les documents obsolètes ou remplacés par des versions p
 - ✅ Documentation processus (apprendre des erreurs)
 - ✅ Pas de perte d'information
 
-**Règle:** Si document remplacé par version plus complète → Archive au lieu de delete
+**Règle:** Si document remplacé par version plus complète >> Archive au lieu de delete
 
 ---
 

@@ -37,7 +37,7 @@ PLD_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Sentinel'] = {
-        description             = 'Physical damage -90->-50%, +enmity',
+        description             = 'Physical damage -90>>-50%, +enmity',
         level                   = 30,
         recast                  = 300,  -- 5min
         main_job_only           = false,

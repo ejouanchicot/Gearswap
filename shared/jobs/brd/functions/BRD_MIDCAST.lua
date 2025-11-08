@@ -120,10 +120,39 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         -- Display song message with description (like GEO does for Geomancy)
         if spell.english then
             local description = nil
+            local element = nil
+            local target_name = nil
+            local target_type = nil
+
             if BRDSpells_success and BRDSpells and BRDSpells.spells[spell.english] then
                 description = BRDSpells.spells[spell.english].description
+                element = BRDSpells.spells[spell.english].element
             end
-            MessageFormatter.show_spell_activated(spell.english, description, nil)
+
+            -- Get target info if targeting someone other than self
+            if spell.target and spell.target.name and spell.target.name ~= player.name then
+                target_name = spell.target.name
+
+                -- Detect target type with priority logic (same as spell_message_handler)
+                -- IMPORTANT: Check spawn_type == 16 BEFORE is_npc (both monsters and NPCs have is_npc = true)
+                if spell.target.in_party or spell.target.in_alliance then
+                    target_type = "PLAYER"
+                elseif spell.target.charmed then
+                    target_type = "PLAYER"
+                elseif spell.target.spawn_type == 16 then
+                    -- spawn_type 16 = Monster/Enemy (CHECK BEFORE is_npc!)
+                    target_type = "MONSTER"
+                elseif spell.target.spawn_type == 2 or spell.target.is_npc then
+                    -- spawn_type 2 = NPC (includes portals, ??? NPCs, etc.)
+                    target_type = "NPC"
+                elseif spell.target.type then
+                    target_type = spell.target.type
+                else
+                    target_type = "MONSTER"
+                end
+            end
+
+            MessageFormatter.show_spell_activated(spell.english, description, target_name, spell.skill, element, target_type)
         end
 
         -- CRITICAL: Instrument Lock Protection - ensure locked instrument stays equipped

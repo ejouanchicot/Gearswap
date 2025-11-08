@@ -28,7 +28,7 @@ end
 --- STATUS CHANGE HOOK
 ---============================================================================
 
---- Called when player status changes (Idle → Engaged, Engaged → Idle, etc.)
+--- Called when player status changes (Idle >> Engaged, Engaged >> Idle, etc.)
 --- Triggers pet auto-engage when player engages
 ---
 --- @param newStatus string New status ("Idle", "Engaged", "Dead", etc.)

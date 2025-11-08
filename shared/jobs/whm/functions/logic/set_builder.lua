@@ -30,9 +30,9 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 
 --- Build idle set with town detection, MP recovery, and movement
 --- Priority:
----   1. Town detection → sets.idle.Town
----   2. MP recovery (< 51%) → sets.latent_refresh
----   3. Movement speed → movement gear
+---   1. Town detection >> sets.idle.Town
+---   2. MP recovery (< 51%) >> sets.latent_refresh
+---   3. Movement speed >> movement gear
 ---
 --- @param base_set table Base idle set from whm_sets.lua
 --- @return table Complete idle set with all modifications

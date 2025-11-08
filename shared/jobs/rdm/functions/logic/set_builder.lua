@@ -71,12 +71,12 @@ function SetBuilder.select_engaged_base(base_set)
         local has_shield = SetBuilder.has_shield_equipped(sub_weapon)
 
         if has_shield then
-            -- Shield OR single wield → use normal sets
+            -- Shield OR single wield >> use normal sets
             if sets.engaged and sets.engaged[mode] then
                 return sets.engaged[mode]
             end
         else
-            -- Dual wield (2 weapons) → use .DW sets
+            -- Dual wield (2 weapons) >> use .DW sets
             if sets.engaged and sets.engaged[mode] and sets.engaged[mode].DW then
                 return sets.engaged[mode].DW
             end
@@ -152,18 +152,18 @@ end
 
 --- Detect if sub weapon is a shield OR single wield
 --- Uses sets.shields table to determine if player is using:
---- - Shield (1 weapon + shield) → use normal sets
---- - Single wield (1 weapon + empty) → use normal sets
---- - Dual wield (2 weapons) → use .DW sets
+--- - Shield (1 weapon + shield) >> use normal sets
+--- - Single wield (1 weapon + empty) >> use normal sets
+--- - Dual wield (2 weapons) >> use .DW sets
 --- @param sub_weapon string Current sub weapon name from state.SubWeapon or player.equipment.sub
 --- @return boolean True if shield OR single wield (use normal sets)
 function SetBuilder.has_shield_equipped(sub_weapon)
-    -- Safety checks: nil ou string vide = erreur → single wield par défaut
+    -- Safety checks: nil ou string vide = erreur >> single wield par défaut
     if not sub_weapon or sub_weapon == "" then
         return true  -- Sets normaux (fallback single wield)
     end
 
-    -- Empty = single wield (1 arme) → sets normaux
+    -- Empty = single wield (1 arme) >> sets normaux
     if sub_weapon == "empty" then
         return true  -- Sets normaux (pas de dual wield)
     end
@@ -172,13 +172,13 @@ function SetBuilder.has_shield_equipped(sub_weapon)
     if sets.shields then
         for _, shield in ipairs(sets.shields) do
             if sub_weapon == shield then
-                return true  -- Shield trouvé → sets normaux
+                return true  -- Shield trouvé >> sets normaux
             end
         end
     end
 
     -- Dual wield (2 armes)
-    return false  -- Dual wield (2 armes) → sets .DW
+    return false  -- Dual wield (2 armes) >> sets .DW
 end
 
 ---============================================================================

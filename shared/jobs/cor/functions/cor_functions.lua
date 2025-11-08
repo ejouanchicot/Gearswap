@@ -5,7 +5,7 @@
 ---
 --- Features:
 ---   • Modular architecture (11 hooks + 3 logic modules)
----   • Dependency-ordered loading (messages → combat → status → utility)
+---   • Dependency-ordered loading (messages >> combat >> status >> utility)
 ---   • Separation of concerns (hooks = orchestration, logic = implementation)
 ---   • Clean integration with GearSwap event system
 ---
@@ -88,7 +88,7 @@ include('../shared/jobs/cor/functions/COR_MOVEMENT.lua')
 --- SECTION 6: DUAL-BOXING SYSTEM
 ---============================================================================
 
--- Load dual-boxing manager (auto-initializes and handles ALT<->MAIN communication)
+-- Load dual-boxing manager (auto-initializes and handles ALT<>>MAIN communication)
 local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
 
 ---============================================================================

@@ -8,7 +8,7 @@
 --- REGION-SPECIFIC COLORS:
 --- Orange/Warning color codes differ by FFXI region (POL account):
 ---   US Region (NBCP): Code 057 = Orange
----   EU Region (BQJS): Code 206 = Light Pink/Salmon (no orange available!)
+---   EU Region (BQJS): Code 003 = Orange equivalent for EU
 ---   JP Region: Code 057 = Orange
 ---
 --- Region is configured in config/REGION_CONFIG.lua
@@ -44,7 +44,7 @@ local function get_region_orange()
     -- Priority 2: Manual region set via //gs c setregion
     if _G.DETECTED_FFXI_REGION then
         if _G.DETECTED_FFXI_REGION == "EU" then
-            return 206  -- Light Pink/Salmon (no orange on EU)
+            return 003  -- Orange equivalent for EU
         else
             return 057  -- Orange (US/JP)
         end

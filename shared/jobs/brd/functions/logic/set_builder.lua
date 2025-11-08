@@ -24,9 +24,9 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 --- Select idle base set with Town detection AND IdleMode support
 --- Priority order:
----   1. In town                     → sets.idle.Town
----   2. IdleMode (Refresh/DT/Regen) → sets.idle[IdleMode]
----   3. Fallback                    → base_set
+---   1. In town                     >> sets.idle.Town
+---   2. IdleMode (Refresh/DT/Regen) >> sets.idle[IdleMode]
+---   3. Fallback                    >> base_set
 ---
 --- @param base_set table Base idle set
 --- @return table Selected idle set
@@ -58,9 +58,9 @@ end
 --- Kraken Club detection takes highest priority for specialized multi-attack set.
 ---
 --- Priority order:
----   1. Kraken Club in sub-weapon    → sets.engaged.PDTKC
----   2. HybridMode (PDT/Normal)      → sets.engaged[HybridMode]
----   3. Fallback                      → base_set
+---   1. Kraken Club in sub-weapon    >> sets.engaged.PDTKC
+---   2. HybridMode (PDT/Normal)      >> sets.engaged[HybridMode]
+---   3. Fallback                      >> base_set
 ---
 --- @param base_set table Base engaged set
 --- @return table Selected engaged set (PDTKC if Kraken Club equipped, otherwise HybridMode/base)

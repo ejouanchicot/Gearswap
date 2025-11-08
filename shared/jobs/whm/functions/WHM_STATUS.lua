@@ -2,9 +2,9 @@
 --- WHM Status Module - Status Change Handling
 ---============================================================================
 --- Handles player status changes for White Mage:
----   • Idle → Engaged transitions
----   • Engaged → Idle transitions
----   • Dead → Alive transitions (reraise detection)
+---   • Idle >> Engaged transitions
+---   • Engaged >> Idle transitions
+---   • Dead >> Alive transitions (reraise detection)
 ---   • Resting state management
 ---
 --- @file WHM_STATUS.lua

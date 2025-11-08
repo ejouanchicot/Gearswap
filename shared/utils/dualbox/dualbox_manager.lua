@@ -5,8 +5,8 @@
 --- Handles job change notifications and online status tracking.
 ---
 --- Communication Flow:
----   ALT changes job → send_job_update() → send tetsouo gs c altjobupdate JOB SUBJOB
----   MAIN receives → job_self_command() → receive_alt_job() → stores in _G.AltJobState
+---   ALT changes job >> send_job_update() >> send tetsouo gs c altjobupdate JOB SUBJOB
+---   MAIN receives >> job_self_command() >> receive_alt_job() >> stores in _G.AltJobState
 ---   MAIN reloads macrobook based on alt job
 ---
 --- @file dualbox_manager.lua
@@ -121,7 +121,7 @@ function DualBoxManager.initialize(config)
 end
 
 ---============================================================================
---- ALT ROLE FUNCTIONS (Kaories → Tetsouo)
+--- ALT ROLE FUNCTIONS (Kaories >> Tetsouo)
 ---============================================================================
 
 --- Send job update from ALT to MAIN

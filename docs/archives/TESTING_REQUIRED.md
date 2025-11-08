@@ -34,7 +34,7 @@ Cette session a complété le système de messages universel avec:
 1. //lua u gearswap
 2. Change to WAR/BLU
 3. //lua l gearswap
-4. Cast Cocoon (menu Magic → Blue Magic → Cocoon)
+4. Cast Cocoon (menu Magic >> Blue Magic >> Cocoon)
 ```
 
 **Résultat Attendu:**
@@ -64,7 +64,7 @@ Cette session a complété le système de messages universel avec:
 1. //lua u gearswap
 2. Change to WAR/RUN
 3. //lua l gearswap
-4. Use Ignis (menu Job Abilities → Ignis)
+4. Use Ignis (menu Job Abilities >> Ignis)
 ```
 
 **Résultat Attendu:**
@@ -128,10 +128,10 @@ Cette session a complété le système de messages universel avec:
 2. Change to WAR/SMN
 3. //lua l gearswap
 4. Summon Titan: /ma "Titan" <me>
-   → Devrait voir: [Titan] Summons Titan. ✅
+   >> Devrait voir: [Titan] Summons Titan. ✅
 5. Wait for Titan to appear
 6. Use Earthen Ward: /pet "Earthen Ward" <me>
-   (Menu Pet Commands → Blood Pact: Ward → Earthen Ward)
+   (Menu Pet Commands >> Blood Pact: Ward >> Earthen Ward)
 ```
 
 **Résultat Attendu:**
@@ -148,15 +148,15 @@ Cette session a complété le système de messages universel avec:
 ```lua
 // Test 1: Check ability handler loaded
 //lua e print(package.loaded['shared/utils/messages/ability_message_handler'] and 'LOADED' or 'NOT LOADED')
-→ Attendu: LOADED
+>> Attendu: LOADED
 
 // Test 2: Check SMN database accessible
 //lua e local s = require('shared/data/magic/SMN_SPELL_DATABASE'); print(s.spells['Earthen Ward'] and 'FOUND' or 'NOT FOUND')
-→ Attendu: FOUND
+>> Attendu: FOUND
 
 // Test 3: Check hook installed
 //lua e print(_G.user_post_precast and 'HOOKED' or 'NOT HOOKED')
-→ Attendu: HOOKED
+>> Attendu: HOOKED
 ```
 
 **Si message affiché:**
@@ -173,10 +173,10 @@ Cette session a complété le système de messages universel avec:
 ```
 1. Release Titan: /pet "Release" <me>
 2. Summon Ifrit: /ma "Ifrit" <me>
-   → Devrait voir: [Ifrit] Summons Ifrit. ✅
+   >> Devrait voir: [Ifrit] Summons Ifrit. ✅
 3. Wait for Ifrit to appear
 4. Use Flaming Crush: /pet "Flaming Crush" <t>
-   (Menu Pet Commands → Blood Pact: Rage → Flaming Crush)
+   (Menu Pet Commands >> Blood Pact: Rage >> Flaming Crush)
 ```
 
 **Résultat Attendu:**
@@ -200,11 +200,11 @@ Cette session a complété le système de messages universel avec:
 Pour valider que le système fonctionne:
 
 ```
-□ BLU spell (Cocoon) → Message affiché ✅
-□ RUN rune (Ignis) → Message affiché ✅
-□ SMN avatar (Titan) → Message affiché ✅
-□ Blood Pact: Ward (Earthen Ward) → Message affiché ✅
-□ Blood Pact: Rage (Flaming Crush) → Message affiché ✅
+□ BLU spell (Cocoon) >> Message affiché ✅
+□ RUN rune (Ignis) >> Message affiché ✅
+□ SMN avatar (Titan) >> Message affiché ✅
+□ Blood Pact: Ward (Earthen Ward) >> Message affiché ✅
+□ Blood Pact: Rage (Flaming Crush) >> Message affiché ✅
 ```
 
 **Si 5/5 passent:**
@@ -275,11 +275,11 @@ Vérifier que `init_spell_messages.lua` et `init_ability_messages.lua` sont bien
 ```lua
 // Check blood pact in database
 //lua e local s = require('shared/data/magic/SMN_SPELL_DATABASE'); print(s.spells['Earthen Ward'] and 'IN DB' or 'NOT IN DB')
-→ Attendu: IN DB
+>> Attendu: IN DB
 
 // Check category
 //lua e local s = require('shared/data/magic/SMN_SPELL_DATABASE'); local bp = s.spells['Earthen Ward']; print(bp and bp.category or 'NOT FOUND')
-→ Attendu: Blood Pact: Ward
+>> Attendu: Blood Pact: Ward
 ```
 
 **Fix:**
