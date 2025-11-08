@@ -40,7 +40,7 @@ class JobDocGenerator:
         self.job_name = job_name
         self.data = {}
 
-    def extract_keybinds(self) -> List[Dict]:
+    def extract_keybinds(self) >> List[Dict]:
         """Extract keybinds from RDM_KEYBINDS.lua"""
         keybinds_file = TETSOUO_DIR / "config" / self.job_code / f"{self.job_upper}_KEYBINDS.lua"
 
@@ -66,7 +66,7 @@ class JobDocGenerator:
 
         return keybinds
 
-    def extract_states(self) -> List[Dict]:
+    def extract_states(self) >> List[Dict]:
         """Extract states from RDM_STATES.lua"""
         states_file = TETSOUO_DIR / "config" / self.job_code / f"{self.job_upper}_STATES.lua"
 
@@ -116,7 +116,7 @@ class JobDocGenerator:
 
         return states
 
-    def extract_lockstyle_config(self) -> Dict:
+    def extract_lockstyle_config(self) >> Dict:
         """Extract lockstyle configuration"""
         lockstyle_file = TETSOUO_DIR / "config" / self.job_code / f"{self.job_upper}_LOCKSTYLE.lua"
 
@@ -140,7 +140,7 @@ class JobDocGenerator:
 
         return {'default': default, 'by_subjob': by_subjob}
 
-    def extract_macrobook_config(self) -> Dict:
+    def extract_macrobook_config(self) >> Dict:
         """Extract macrobook configuration"""
         macrobook_file = TETSOUO_DIR / "config" / self.job_code / f"{self.job_upper}_MACROBOOK.lua"
 
@@ -164,7 +164,7 @@ class JobDocGenerator:
 
         return {'default': default, 'solo': solo}
 
-    def extract_commands(self) -> List[Dict]:
+    def extract_commands(self) >> List[Dict]:
         """Extract job-specific commands from RDM_COMMANDS.lua"""
         commands_file = SHARED_DIR / "jobs" / self.job_code / "functions" / f"{self.job_upper}_COMMANDS.lua"
 
@@ -190,7 +190,7 @@ class JobDocGenerator:
 
         return commands
 
-    def generate_readme(self) -> str:
+    def generate_readme(self) >> str:
         """Generate README.md content"""
         keybinds = self.data.get('keybinds', [])
         states = self.data.get('states', [])
@@ -238,13 +238,13 @@ class JobDocGenerator:
 
 ## 🚀 Quick Links
 
-**First time using {self.job_upper}?** → Start with [Quick Start](quick-start.md)
+**First time using {self.job_upper}?** >> Start with [Quick Start](quick-start.md)
 
-**Need to find a keybind?** → Check [Keybinds](keybinds.md)
+**Need to find a keybind?** >> Check [Keybinds](keybinds.md)
 
-**Looking for a command?** → See [Commands](commands.md)
+**Looking for a command?** >> See [Commands](commands.md)
 
-**Gear not swapping?** → Try [Troubleshooting](troubleshooting.md)
+**Gear not swapping?** >> Try [Troubleshooting](troubleshooting.md)
 
 ---
 
@@ -350,19 +350,19 @@ class JobDocGenerator:
 
 **Check keybinds loaded**:
 ```
-→ Console shows: "{self.job_upper} SYSTEM LOADED"
+>> Console shows: "{self.job_upper} SYSTEM LOADED"
 ```
 
 **Check UI (if enabled)**:
 ```
 //gs c ui
-→ Shows all keybinds overlay
+>> Shows all keybinds overlay
 ```
 
 **Validate equipment**:
 ```
 //gs c checksets
-→ Shows item validation (VALID/STORAGE/MISSING)
+>> Shows item validation (VALID/STORAGE/MISSING)
 ```
 
 ---
@@ -391,10 +391,10 @@ On load, system automatically:
 
 ## 📚 Next Steps
 
-- **Learn keybinds** → [Keybinds Reference](keybinds.md)
-- **Try commands** → [Commands Reference](commands.md)
-- **Understand states** → [States & Modes](states.md)
-- **Customize** → [Configuration](configuration.md)
+- **Learn keybinds** >> [Keybinds Reference](keybinds.md)
+- **Try commands** >> [Commands Reference](commands.md)
+- **Understand states** >> [States & Modes](states.md)
+- **Customize** >> [Configuration](configuration.md)
 """
 
         (job_dir / "quick-start.md").write_text(content, encoding='utf-8')
@@ -556,7 +556,7 @@ States = Configuration options you cycle through with keybinds.
 **Example**:
 ```lua
 state.HybridMode = M{{'PDT', 'Normal'}}  -- 2 options
--- Press Alt+2 to cycle: PDT → Normal → PDT
+-- Press Alt+2 to cycle: PDT >> Normal >> PDT
 ```
 
 ---
@@ -575,7 +575,7 @@ state.HybridMode = M{{'PDT', 'Normal'}}  -- 2 options
 **Method 2**: Console command:
 ```
 //gs c state [StateName]
-→ Shows current value
+>> Shows current value
 ```
 """
 
@@ -657,7 +657,7 @@ sets.engaged.PDT = {{ ... }}
 ```
 //gs c checksets
 
-→ Output:
+>> Output:
 [{self.job_upper}] ✅ 156/160 items validated (97.5%)
 ```
 
@@ -798,13 +798,13 @@ return {self.job_upper}MacroConfig
 1. **Check Watchdog**:
    ```
    //gs c watchdog
-   → Should show: "Watchdog: ENABLED"
+   >> Should show: "Watchdog: ENABLED"
    ```
 
 2. **Check items**:
    ```
    //gs c checksets
-   → Look for STORAGE or MISSING items
+   >> Look for STORAGE or MISSING items
    ```
 
 3. **Enable debug**:

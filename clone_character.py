@@ -49,7 +49,7 @@ TRANSLATIONS = {
         'delete_failed': "ERREUR: Échec de suppression du répertoire existant: {}",
 
         # Dual-boxing prompts
-        'dualbox_intro': "\nLe dual-boxing permet à 2 personnages de communiquer (ALT -> MAIN).",
+        'dualbox_intro': "\nLe dual-boxing permet à 2 personnages de communiquer (ALT >> MAIN).",
         'dualbox_desc': "L'ALT envoie les changements de job au MAIN pour la sélection dynamique du macrobook.\n",
         'role_question': "Est-ce que '{}' est un personnage MAIN ou ALT? (main/alt): ",
         'role_error': "ERREUR: Veuillez entrer 'main' ou 'alt'",
@@ -148,7 +148,7 @@ TRANSLATIONS = {
         'delete_failed': "ERROR: Failed to delete existing directory: {}",
 
         # Dual-boxing prompts
-        'dualbox_intro': "\nDual-boxing allows 2 characters to communicate (ALT -> MAIN).",
+        'dualbox_intro': "\nDual-boxing allows 2 characters to communicate (ALT >> MAIN).",
         'dualbox_desc': "The ALT sends job updates to the MAIN for dynamic macrobook selection.\n",
         'role_question': "Is '{}' a MAIN or ALT character? (main/alt): ",
         'role_error': "ERROR: Please enter 'main' or 'alt'",
@@ -518,7 +518,7 @@ return DualBoxConfig
 local RegionConfig = {{}}
 
 ---============================================================================
---- CHARACTER -> REGION MAPPING
+--- CHARACTER >> REGION MAPPING
 ---============================================================================
 --- Add your character(s) below!
 --- Format: ["CharacterName"] = "US" or "EU" or "JP"
@@ -656,7 +656,7 @@ return RegionConfig
 
             try:
                 old_file.rename(new_file)
-                print(f"   [OK] {old_file.name} -> {new_name}")
+                print(f"   [OK] {old_file.name} >> {new_name}")
                 renamed_count += 1
             except Exception as e:
                 print(f"   [ERROR] Failed to rename {old_file.name}: {e}")

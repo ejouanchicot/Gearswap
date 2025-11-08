@@ -147,6 +147,7 @@ return [JOB]_MIDCAST
 ### **JOB TYPE 1: Mages (RDM, BLM, WHM, GEO, BRD, COR)**
 
 **Skills communs:**
+
 - Enfeebling Magic
 - Enhancing Magic
 - Elemental Magic
@@ -158,6 +159,7 @@ return [JOB]_MIDCAST
 - Blue Magic (if /BLU)
 
 **Template:**
+
 ```lua
 if spell.skill == 'Enfeebling Magic' then
     MidcastManager.select_set({
@@ -203,12 +205,14 @@ end
 ### **JOB TYPE 2: Tanks/Paladins (PLD, RUN)**
 
 **Skills communs:**
+
 - Healing Magic
 - Enhancing Magic
 - Divine Magic
 - Blue Magic (PLD can use /BLU)
 
 **Template:**
+
 ```lua
 if spell.skill == 'Healing Magic' then
     MidcastManager.select_set({
@@ -234,11 +238,13 @@ end
 ### **JOB TYPE 3: Melee avec Magic Subjob (WAR/RDM, SAM/WHM, etc.)**
 
 **Skills communs (via subjob):**
+
 - Healing Magic
 - Enhancing Magic
 - Elemental Magic (si /BLM, /RDM)
 
 **Template:**
+
 ```lua
 if spell.skill == 'Healing Magic' then
     MidcastManager.select_set({
@@ -264,6 +270,7 @@ end
 ### **JOB TYPE 4: Pure Melee (MNK, DRG, etc.)**
 
 **Si AUCUN spell:**
+
 ```lua
 function job_midcast(spell, action, spellMap, eventArgs)
     -- No magic skills - empty (but file must exist)
@@ -281,6 +288,7 @@ end
 ## 📊 EXEMPLES RÉELS PAR JOB
 
 ### **RDM (Complete)**
+
 ```lua
 -- Enfeebling Magic
 if spell.skill == 'Enfeebling Magic' then
@@ -323,6 +331,7 @@ end
 ---
 
 ### **BLM (Simplifié)**
+
 ```lua
 -- Elemental Magic
 if spell.skill == 'Elemental Magic' then
@@ -348,6 +357,7 @@ end
 ---
 
 ### **WHM (Simplifié)**
+
 ```lua
 -- Healing Magic
 if spell.skill == 'Healing Magic' then
@@ -382,6 +392,7 @@ end
 ---
 
 ### **PLD (Avec Blue Magic)**
+
 ```lua
 -- Healing Magic
 if spell.skill == 'Healing Magic' then
@@ -406,6 +417,7 @@ end
 ---
 
 ### **WAR (Minimal - Subjob Magic Only)**
+
 ```lua
 -- Healing Magic (from /WHM, /RDM subjob)
 if spell.skill == 'Healing Magic' then
@@ -422,6 +434,7 @@ end
 ## ❌ ANTI-PATTERNS - NE JAMAIS FAIRE
 
 ### **MAUVAIS: Logique manuelle de fallback**
+
 ```lua
 -- ❌ INCORRECT - Ne PAS coder fallback manuellement
 function job_post_midcast(spell, action, spellMap, eventArgs)
@@ -442,6 +455,7 @@ end
 ```
 
 ### **BON: MidcastManager**
+
 ```lua
 -- ✅ CORRECT - Utiliser MidcastManager
 function job_post_midcast(spell, action, spellMap, eventArgs)
@@ -461,11 +475,13 @@ end
 ## 🔍 DEBUG MODE
 
 **Activer debug pour TOUS les jobs:**
+
 ```lua
 //gs c debugmidcast
 ```
 
 **Désactiver debug:**
+
 ```lua
 //gs c debugmidcast  (toggle)
 ```
@@ -479,12 +495,15 @@ end
 Pour migrer un job existant vers MidcastManager:
 
 ### **Étape 1: Backup**
+
 ```bash
 copy "[JOB]_MIDCAST.lua" "[JOB]_MIDCAST_OLD.lua"
 ```
 
 ### **Étape 2: Identifier Skills**
+
 Lister tous les `spell.skill` utilisés dans le job:
+
 - Enfeebling Magic
 - Enhancing Magic
 - Elemental Magic
@@ -497,7 +516,9 @@ Lister tous les `spell.skill` utilisés dans le job:
 - etc.
 
 ### **Étape 3: Remplacer Code**
+
 Pour chaque skill, remplacer la logique manuelle par:
+
 ```lua
 if spell.skill == 'Skill Name' then
     MidcastManager.select_set({
@@ -512,6 +533,7 @@ end
 ```
 
 ### **Étape 4: Tester In-Game**
+
 ```lua
 //lua unload gearswap
 //lua load gearswap
@@ -522,11 +544,13 @@ Vérifier console output
 ```
 
 ### **Étape 5: Valider Equipment**
+
 ```lua
 //gs c checksets
 ```
 
 ### **Étape 6: Delete OLD File**
+
 ```bash
 del "[JOB]_MIDCAST_OLD.lua"
 ```
@@ -551,7 +575,7 @@ del "[JOB]_MIDCAST_OLD.lua"
 | **DNC** | ⏳ TODO | ~60 | ~30 | -50% |
 | **THF** | ⏳ TODO | ~60 | ~30 | -50% |
 
-**Total Projection:** ~2,000 lignes → ~1,000 lignes (**-50% code duplication**)
+**Total Projection:** ~2,000 lignes >> ~1,000 lignes (**-50% code duplication**)
 
 ---
 

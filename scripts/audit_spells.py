@@ -51,7 +51,7 @@ SKIP_DIRS = ["internal"]
 # LUA PARSER
 # ============================================================================
 
-def parse_lua_spell_file(filepath: Path) -> Dict[str, Dict]:
+def parse_lua_spell_file(filepath: Path) >> Dict[str, Dict]:
     """Parse a Lua spell file and extract all spells."""
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
@@ -112,7 +112,7 @@ def parse_lua_spell_file(filepath: Path) -> Dict[str, Dict]:
 # BG-WIKI SCRAPER
 # ============================================================================
 
-def fetch_bgwiki_spell(spell_name: str) -> Optional[Dict]:
+def fetch_bgwiki_spell(spell_name: str) >> Optional[Dict]:
     """Fetch spell data from bg-wiki."""
     # Convert spell name to URL format
     url_name = spell_name.replace(' ', '_').replace("'", "%27")
@@ -186,7 +186,7 @@ def fetch_bgwiki_spell(spell_name: str) -> Optional[Dict]:
 # DESCRIPTION SIMPLIFIER
 # ============================================================================
 
-def simplify_description(description: str, spell_data: Dict) -> str:
+def simplify_description(description: str, spell_data: Dict) >> str:
     """Simplify description by removing redundant info."""
     if not description:
         return description
@@ -240,7 +240,7 @@ class SpellAuditor:
             'not_found': 0
         }
 
-    def audit_spell(self, spell_name: str, local_data: Dict) -> List[str]:
+    def audit_spell(self, spell_name: str, local_data: Dict) >> List[str]:
         """Audit a single spell against bg-wiki."""
         self.stats['total_spells'] += 1
         issues = []
@@ -292,7 +292,7 @@ class SpellAuditor:
 
         return issues
 
-    def audit_directory(self, directory: Path) -> Dict:
+    def audit_directory(self, directory: Path) >> Dict:
         """Audit all Lua files in a directory."""
         results = {}
 
@@ -316,7 +316,7 @@ class SpellAuditor:
 
         return results
 
-    def generate_report(self, all_results: Dict) -> str:
+    def generate_report(self, all_results: Dict) >> str:
         """Generate markdown report."""
         report = []
         report.append("# FFXI Spell Database Audit Report")

@@ -195,12 +195,12 @@ def generate_report(magic_results, ja_results, ws_results):
             for subcat, subcat_data in sorted(data['subcategories'].items()):
                 report.append(f"**{subcat}/** ({subcat_data['spell_count']} spells)")
                 for file_info in sorted(subcat_data['files'], key=lambda x: x['name']):
-                    report.append(f"  - `{file_info['name']}` → {file_info['spell_count']} spells")
+                    report.append(f"  - `{file_info['name']}` >> {file_info['spell_count']} spells")
                 report.append("")
         else:
             # Category with direct files
             for file_info in sorted(data['files'], key=lambda x: x['name']):
-                report.append(f"  - `{file_info['name']}` → {file_info['spell_count']} spells")
+                report.append(f"  - `{file_info['name']}` >> {file_info['spell_count']} spells")
             report.append("")
 
     # Job Abilities Details
@@ -210,7 +210,7 @@ def generate_report(magic_results, ja_results, ws_results):
     for job, data in sorted(ja_results['jobs'].items()):
         report.append(f"### {job} ({data['ability_count']} abilities)")
         for file_info in sorted(data['files'], key=lambda x: x['name']):
-            report.append(f"  - `{file_info['name']}` → {file_info['ability_count']} abilities")
+            report.append(f"  - `{file_info['name']}` >> {file_info['ability_count']} abilities")
         report.append("")
 
     # Weaponskills Details
@@ -219,7 +219,7 @@ def generate_report(magic_results, ja_results, ws_results):
     report.append(f"**Total:** {ws_results['total_weaponskills']} weaponskills dans {ws_results['total_files']} fichiers")
     report.append("")
     for file_info in sorted(ws_results['files'], key=lambda x: x['name']):
-        report.append(f"  - `{file_info['name']}` → {file_info['ws_count']} weaponskills")
+        report.append(f"  - `{file_info['name']}` >> {file_info['ws_count']} weaponskills")
     report.append("")
 
     # Errors/Warnings

@@ -54,19 +54,19 @@ to_delete = [
 for file in to_fixes:
     if os.path.exists(file):
         shutil.move(file, f"docs/fixes/{file}")
-        print(f"[OK] Moved {file} -> docs/fixes/")
+        print(f"[OK] Moved {file} >> docs/fixes/")
 
 # Move to archives
 for file in to_archives:
     if os.path.exists(file):
         shutil.move(file, f"docs/archives/{file}")
-        print(f"[ARCHIVE] Moved {file} -> docs/archives/")
+        print(f"[ARCHIVE] Moved {file} >> docs/archives/")
 
 # Move to docs
 for file in to_docs:
     if os.path.exists(file):
         shutil.move(file, f"docs/{file}")
-        print(f"[DOC] Moved {file} -> docs/")
+        print(f"[DOC] Moved {file} >> docs/")
 
 # Delete redundant
 for file in to_delete:
@@ -75,7 +75,7 @@ for file in to_delete:
         print(f"[DELETE] Deleted {file}")
 
 print("\n[OK] Organization complete!")
-print(f"\ndocs/fixes/    -> {len([f for f in to_fixes if os.path.exists(f'docs/fixes/{f}')])} files")
-print(f"docs/archives/ -> {len([f for f in to_archives if os.path.exists(f'docs/archives/{f}')])} files")
-print(f"docs/          -> {len([f for f in to_docs if os.path.exists(f'docs/{f}')])} files")
-print(f"Deleted        -> {len([f for f in to_delete if not os.path.exists(f)])} files")
+print(f"\ndocs/fixes/    >> {len([f for f in to_fixes if os.path.exists(f'docs/fixes/{f}')])} files")
+print(f"docs/archives/ >> {len([f for f in to_archives if os.path.exists(f'docs/archives/{f}')])} files")
+print(f"docs/          >> {len([f for f in to_docs if os.path.exists(f'docs/{f}')])} files")
+print(f"Deleted        >> {len([f for f in to_delete if not os.path.exists(f)])} files")

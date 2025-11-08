@@ -159,7 +159,16 @@
       "Bash(bc)",
       "Bash(then mv \"$file\" old/)",
       "Bash(//lua reload gearswap)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(if [ -d \"D:/Windower Tetsouo/addons/GearSwap/data/settings\" ])",
+      "Bash(then rm -rf \"D:/Windower Tetsouo/addons/GearSwap/data/settings\")",
+      "Bash(else echo \"Settings directory does not exist\")",
+      "Bash(if [ -f \"D:/Windower Tetsouo/addons/GearSwap/data/settings.xml\" ])",
+      "Bash(then rm \"D:/Windower Tetsouo/addons/GearSwap/data/settings.xml\")",
+      "Bash(else echo \"settings.xml does not exist\")",
+      "Bash(then if ! awk '/^function job_update/,/^end$/ {if (/^end$/) found=1} END {exit !found}' $file)",
+      "Bash(then echo $file fi fi done)",
+      "Bash(while read file)"
     ],
     "deny": [],
     "ask": [],

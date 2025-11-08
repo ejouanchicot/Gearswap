@@ -12,6 +12,7 @@
 **World-class FFXI GearSwap system** with modular architecture, centralized utilities, and professional code quality for global distribution.
 
 **Current State:**
+
 - ✅ **Architecture 10/10** - Factory patterns, centralized systems
 - ✅ **Code Quality 10/10** - Zero code mort, zero duplication
 - ✅ **Documentation 100%** - All functions documented
@@ -26,6 +27,7 @@
 Used to eliminate code duplication across jobs. Single source of truth with job-specific configuration.
 
 **Example: LockstyleManager Factory**
+
 ```lua
 -- utils/lockstyle/lockstyle_manager.lua (190 lines)
 -- Replaces 879 lines across 3 job files (293 lines each)
@@ -52,6 +54,7 @@ end
 ```
 
 **Usage in Job File:**
+
 ```lua
 -- jobs/war/functions/WAR_LOCKSTYLE.lua (23 lines vs 293 lines)
 local LockstyleManager = require('utils/lockstyle/lockstyle_manager')
@@ -65,8 +68,9 @@ return LockstyleManager.create(
 ```
 
 **Factory Pattern Savings:**
-- **LockstyleManager:** -586 lines (879 original → 293 shared factory)
-- **MacrobookManager:** -248 lines (372 original → 124 shared factory)
+
+- **LockstyleManager:** -586 lines (879 original >> 293 shared factory)
+- **MacrobookManager:** -248 lines (372 original >> 124 shared factory)
 - **Total Savings:** -834 lines eliminated
 
 ---
@@ -91,26 +95,29 @@ return {
 ```
 
 **Why This Matters:**
-- `include()` → Executes Lua file, doesn't capture return value
-- `require()` → Captures return value, caches module
+
+- `include()` >> Executes Lua file, doesn't capture return value
+- `require()` >> Captures return value, caches module
 - Factory-generated functions MUST use `_G.*` to be accessible via `include()`
 
 ---
 
 ### 3. Centralized Message System
 
-All user messages go through MessageFormatter facade → specialized modules.
+All user messages go through MessageFormatter facade >> specialized modules.
 
 **Architecture:**
+
 ```
 MessageFormatter (facade)
-├── MessageCore     → Colors, formatting, job tags
-├── MessageCombat   → WS, TP, damage, healing
-├── MessageCooldowns→ Ability/spell cooldowns
-└── MessageStatus   → State changes, errors, warnings
+├── MessageCore     >> Colors, formatting, job tags
+├── MessageCombat   >> WS, TP, damage, healing
+├── MessageCooldowns>> Ability/spell cooldowns
+└── MessageStatus   >> State changes, errors, warnings
 ```
 
 **NEVER use `add_to_chat()` directly** - always use MessageFormatter:
+
 ```lua
 -- ❌ WRONG:
 add_to_chat(001, "Curing 500 HP using Curing Waltz III")
@@ -121,6 +128,7 @@ MessageFormatter.show_waltz_heal("Curing Waltz III", 500, nil, "DNC")
 ```
 
 **Key Functions:**
+
 - `show_ws_tp(ws_name, tp_amount)` - Weaponskill TP display
 - `show_ability_cooldown(name, seconds, job_tag)` - Ability recast
 - `show_spell_cooldown(name, centiseconds, job_tag)` - Spell recast
@@ -134,6 +142,7 @@ MessageFormatter.show_waltz_heal("Curing Waltz III", 500, nil, "DNC")
 Universal cooldown checking for ALL abilities and spells using `spell.recast_id`.
 
 **Implementation:**
+
 ```lua
 -- utils/precast/cooldown_checker.lua (66 lines)
 -- Replaces 140 lines across WAR/PLD/DNC
@@ -153,6 +162,7 @@ end
 ```
 
 **Usage in Job Precast:**
+
 ```lua
 -- jobs/dnc/functions/DNC_PRECAST.lua:104-108
 if spell.action_type == 'Ability' then
@@ -163,6 +173,7 @@ end
 ```
 
 **Works For:**
+
 - Job Abilities (Climactic Flourish, Fan Dance, No Foot Rise, etc.)
 - Spells (Utsusemi excluded - smartbuff handles it)
 - ALL jobs automatically via centralized module
@@ -174,6 +185,7 @@ end
 Mote-Include provides default behaviors that sometimes need customization. Override specific functions to modify behavior.
 
 **Example: Allow Waltzes When Full HP**
+
 ```lua
 -- jobs/dnc/functions/DNC_PRECAST.lua:77-80
 
@@ -186,6 +198,7 @@ end
 ```
 
 **Key Learnings:**
+
 - Mote's default messages ("Abort: Ability waiting on recast") cannot be suppressed
 - Attempting to suppress breaks other functionality (Sneak auto-removal, etc.)
 - **ACCEPT BOTH** messages (custom + Mote's) to avoid breaking functionality
@@ -210,6 +223,7 @@ local CooldownChecker = require('utils/precast/cooldown_checker')
 ```
 
 **When to Use:**
+
 - **include():** Mote-Include, legacy GearSwap code, files that export globals
 - **require():** Modern modules, centralized utilities, factories
 - **pcall(require):** Optional modules with fallback configurations
@@ -249,6 +263,7 @@ end
 ### Documentation (MANDATORY 100%)
 
 Every function MUST have:
+
 1. **Description** - What it does
 2. **Parameters** - Type and purpose (`@param`)
 3. **Return value** - Type and meaning (`@return`)
@@ -282,8 +297,9 @@ end
 - **If exceeding:** Break into specialized modules
 
 **Example:**
+
 - **Before:** DNC_COMMANDS.lua (377 lines with dead code)
-- **After:** DNC_COMMANDS.lua (180 lines, waltz logic → WaltzManager)
+- **After:** DNC_COMMANDS.lua (180 lines, waltz logic >> WaltzManager)
 
 ### Function Complexity
 
@@ -298,6 +314,7 @@ end
 - **Utility modules** for shared operations
 
 **Audit Results:**
+
 - ✅ **Zero duplication** across WAR/PLD/DNC
 - ✅ **-1,182 lines eliminated** via centralization
 - ✅ **Zero code mort** (dead code removed)
@@ -324,8 +341,9 @@ send_command('//lua i dressup')
 ```
 
 **JobChangeManager Debouncing:**
+
 ```lua
--- Debounce rapid job/subjob changes (DNC→WAR→PLD rapid switching)
+-- Debounce rapid job/subjob changes (DNC>>WAR>>PLD rapid switching)
 local STATE = {
     debounce_counter = 0,  -- Increments to invalidate old timers
     debounce_delay = 3.0,  -- Wait 3s before executing
@@ -415,6 +433,7 @@ end
 **Problem:** Trying to suppress Mote's "Abort: Ability waiting on recast" message breaks other functionality.
 
 **Attempted Solutions (ALL FAILED):**
+
 - `eventArgs.handled = true` - Didn't work
 - `cancel_spell()` - Broke Sneak auto-removal
 - `user_precast()` override - Still showed Mote message
@@ -438,14 +457,16 @@ return { select_default_lockstyle = select_default_lockstyle }
 ### 4. Code Dead Detection
 
 **Process:**
+
 1. Search for function definitions: `grep -r "function handle_" .`
 2. Search for function calls: `grep -r "handle_curing_waltz_command" .`
-3. If ZERO calls found → Dead code, remove it
+3. If ZERO calls found >> Dead code, remove it
 
 **Example:**
+
 - `handle_curing_waltz_command()` in DNC_COMMANDS.lua (108 lines)
 - `handle_divine_waltz_command()` in DNC_COMMANDS.lua (90 lines)
-- **Both replaced by WaltzManager** → 198 lines removed
+- **Both replaced by WaltzManager** >> 198 lines removed
 
 ---
 
@@ -514,6 +535,7 @@ D:\Windower Tetsouo\addons\GearSwap\data\Tetsouo\
 ### Adding a New Job
 
 1. **Create job structure:**
+
    ```
    jobs/[job]/
    ├── sets/[JOB]_SET.lua
@@ -522,6 +544,7 @@ D:\Windower Tetsouo\addons\GearSwap\data\Tetsouo\
    ```
 
 2. **Create config files:**
+
    ```
    config/[job]/
    ├── [JOB]_LOCKSTYLE.lua
@@ -529,6 +552,7 @@ D:\Windower Tetsouo\addons\GearSwap\data\Tetsouo\
    ```
 
 3. **Use factories in functions:**
+
    ```lua
    -- jobs/[job]/functions/[JOB]_LOCKSTYLE.lua
    local LockstyleManager = require('utils/lockstyle/lockstyle_manager')
@@ -536,6 +560,7 @@ D:\Windower Tetsouo\addons\GearSwap\data\Tetsouo\
    ```
 
 4. **Implement precast with centralized systems:**
+
    ```lua
    -- jobs/[job]/functions/[JOB]_PRECAST.lua
    local CooldownChecker = require('utils/precast/cooldown_checker')
@@ -552,6 +577,7 @@ D:\Windower Tetsouo\addons\GearSwap\data\Tetsouo\
 ### Adding a New Centralized System
 
 1. **Create module in utils/[category]/:**
+
    ```lua
    -- utils/[category]/[system_name].lua
    local SystemName = {}
@@ -564,6 +590,7 @@ D:\Windower Tetsouo\addons\GearSwap\data\Tetsouo\
    ```
 
 2. **Update MessageFormatter if user-facing:**
+
    ```lua
    -- utils/messages/message_formatter.lua
    local MessageNewSystem = require('utils/messages/message_newsystem')
@@ -571,6 +598,7 @@ D:\Windower Tetsouo\addons\GearSwap\data\Tetsouo\
    ```
 
 3. **Use in job files:**
+
    ```lua
    local SystemName = require('utils/[category]/[system_name]')
    SystemName.do_something(param)
@@ -583,23 +611,27 @@ D:\Windower Tetsouo\addons\GearSwap\data\Tetsouo\
 **Overall Score:** 9.8/10
 
 ### Code Elimination
+
 - **Total Lines Removed:** -1,182 lines
   - Factory patterns: -834 lines
   - Dead code: -198 lines
   - Centralization: -150 lines
 
 ### Code Quality
+
 - **Documentation:** 100% (all functions documented)
 - **Code Duplication:** 0% (zero duplication)
 - **Code Mort:** 0% (zero dead code)
 - **File Size:** 100% compliant (all files < 800 lines)
 
 ### Architecture
+
 - **Factory Patterns:** 2 (Lockstyle, Macrobook)
 - **Centralized Systems:** 7 (Messages, Cooldowns, Abilities, Equipment, Movement, JobChange, Debuffs)
 - **Jobs Implemented:** 3 (WAR, PLD, DNC)
 
 ### Performance
+
 - **Throttling:** ✅ Implemented (lockstyle, job changes)
 - **Debouncing:** ✅ Implemented (JobChangeManager)
 - **Caching:** ✅ Implemented (equipment validation)
@@ -610,16 +642,19 @@ D:\Windower Tetsouo\addons\GearSwap\data\Tetsouo\
 ## 🎯 Future Priorities
 
 ### P1 (Critical for Distribution)
+
 - ✅ **Keybind Liberation** - Config files created (RDM pattern)
 - ✅ **Centralization Complete** - All duplication eliminated
 - ✅ **Documentation 100%** - All functions documented
 
 ### P2 (Optimization Opportunities)
+
 - **Template Method for PRECAST** - Further reduce precast duplication
 - **State Management** - Centralized state validation
 - **Performance Monitoring** - Runtime performance tracking
 
 ### P3 (Nice to Have)
+
 - **Additional Jobs** - BRD, GEO, WHM, etc.
 - **Advanced UI** - Enhanced keybind display
 - **Multi-language Support** - EN/FR documentation
@@ -629,6 +664,7 @@ D:\Windower Tetsouo\addons\GearSwap\data\Tetsouo\
 ## 📝 Changelog
 
 **v1.0.0 (2025-10-05):**
+
 - Initial standards document created
 - Factory patterns documented (Lockstyle, Macrobook)
 - Centralized systems documented (Messages, Cooldowns, Abilities)

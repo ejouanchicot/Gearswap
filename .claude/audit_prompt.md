@@ -149,7 +149,7 @@ done
 
 **✅ Validation:**
 
-- [ ] WAR: Ordre correct (PrecastGuard → CooldownChecker → WeaponSkillManager → Job logic)
+- [ ] WAR: Ordre correct (PrecastGuard >> CooldownChecker >> WeaponSkillManager >> Job logic)
 - [ ] PLD: Ordre correct
 - [ ] DNC: Ordre correct
 - [ ] THF: Ordre correct
@@ -527,7 +527,7 @@ done
 #### WAR (Warrior)
 - ✅ Structure: 12 modules présents
 - ✅ Logic: 2 modules (smartbuff_manager, set_builder)
-- ✅ Precast ordre: Correct (PrecastGuard → CooldownChecker → WS → Job)
+- ✅ Precast ordre: Correct (PrecastGuard >> CooldownChecker >> WS >> Job)
 - ✅ Centralisés: 7/7 systèmes utilisés
 - ✅ Code: Propre, pas de duplication
 - ✅ Sets: Format PLD standard (509 lines)
@@ -550,12 +550,12 @@ done
 
 ## 🚀 ORDRE D'EXÉCUTION AUDIT
 
-1. **Phase 1: Structure** (Catégorie 1 + 2) → Vérifier tous les fichiers présents
-2. **Phase 2: Logique** (Catégorie 3 + 4) → Vérifier ordre et intégrations
-3. **Phase 3: Propreté** (Catégorie 5) → Chercher code mort et duplication
-4. **Phase 4: Format** (Catégorie 6) → Vérifier standardisation sets
-5. **Phase 5: Config** (Catégorie 7) → Vérifier externalisation
-6. **Phase 6: Métriques** → Calculer tailles et documentation
-7. **Phase 7: Rapport** → Générer rapport final
+1. **Phase 1: Structure** (Catégorie 1 + 2) >> Vérifier tous les fichiers présents
+2. **Phase 2: Logique** (Catégorie 3 + 4) >> Vérifier ordre et intégrations
+3. **Phase 3: Propreté** (Catégorie 5) >> Chercher code mort et duplication
+4. **Phase 4: Format** (Catégorie 6) >> Vérifier standardisation sets
+5. **Phase 5: Config** (Catégorie 7) >> Vérifier externalisation
+6. **Phase 6: Métriques** >> Calculer tailles et documentation
+7. **Phase 7: Rapport** >> Générer rapport final
 
 **Temps estimé:** 30-45 minutes pour audit complet

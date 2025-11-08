@@ -8,7 +8,7 @@ Rules:
 - Remove element name (already in element field)
 - Remove target type (already in type field)
 - Remove "for party members within area of effect"
-- Shorten generic patterns: "Deals fire damage" -> "Deals damage"
+- Shorten generic patterns: "Deals fire damage" >> "Deals damage"
 
 Usage:
     python simplify_descriptions.py [--dry-run]
@@ -35,7 +35,7 @@ SIMPLIFICATION_RULES = [
     (r"\btarget'?s?\s+", ''),
     (r'\b(?:its|their|his|her)\s+', ''),
 
-    # Shorten verbs: Decreases/Reduces → Lowers, Increases → Raises
+    # Shorten verbs: Decreases/Reduces >> Lowers, Increases >> Raises
     (r'\b(Decreases?|Reduces?)\b', 'Lowers'),
     (r'\b(Increases?)\b', 'Raises'),
     (r'\b(Enhances?)\b', 'Enhances'),
@@ -47,9 +47,9 @@ SIMPLIFICATION_RULES = [
 
     # Ultra-aggressive simplifications
     (r'^Deals damage that ', ''),  # Remove "Deals damage that" prefix entirely
-    (r'^Deals \w+ damage\.?$', 'Deals damage.'),  # "Deals fire damage" → "Deals damage"
-    (r'\bgradually Lowers HP', 'drains HP'),  # "gradually Lowers HP" → "drains HP"
-    (r'\bgradually Lowers MP', 'drains MP'),  # "gradually Lowers MP" → "drains MP"
+    (r'^Deals \w+ damage\.?$', 'Deals damage.'),  # "Deals fire damage" >> "Deals damage"
+    (r'\bgradually Lowers HP', 'drains HP'),  # "gradually Lowers HP" >> "drains HP"
+    (r'\bgradually Lowers MP', 'drains MP'),  # "gradually Lowers MP" >> "drains MP"
     (r'^Restores HP', 'Restores HP'),
     (r'^Restores MP', 'Restores MP'),
     (r'^Gradually restores HP', 'Restores HP'),  # Remove "gradually"
@@ -67,7 +67,7 @@ SIMPLIFICATION_RULES = [
     (r'\.+', '.'),
 ]
 
-def simplify_description(description: str, element: str = None, target_type: str = None) -> str:
+def simplify_description(description: str, element: str = None, target_type: str = None) >> str:
     """Simplify a spell description."""
     if not description:
         return description
@@ -95,7 +95,7 @@ def simplify_description(description: str, element: str = None, target_type: str
 
     return desc
 
-def process_lua_file(filepath: Path, dry_run: bool = False) -> Tuple[int, int]:
+def process_lua_file(filepath: Path, dry_run: bool = False) >> Tuple[int, int]:
     """Process a single Lua file and simplify descriptions."""
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()

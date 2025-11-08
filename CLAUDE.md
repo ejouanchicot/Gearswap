@@ -13,7 +13,7 @@ jobs/[job]/
 ├── [JOB]_functions.lua (façade)
 ├── sets/[job]_sets.lua
 └── functions/
-    ├── [JOB]_PRECAST.lua (PrecastGuard→CooldownChecker→JA_DB→WS→job logic)
+    ├── [JOB]_PRECAST.lua (PrecastGuard>>CooldownChecker>>JA_DB>>WS>>job logic)
     ├── [JOB]_MIDCAST.lua (MidcastManager.select_set OBLIGATOIRE)
     ├── [JOB]_AFTERCAST/IDLE/ENGAGED/STATUS/BUFFS.lua
     ├── [JOB]_COMMANDS.lua (CommonCommands)
@@ -86,11 +86,11 @@ Commands: `//gs c warp status|lock|unlock|test|help`
 
 ## WORKFLOW NOUVEAU JOB (8-12h)
 
-PHASE 1 (30min): Copier TETSOUO_WAR.lua → TETSOUO_[JOB].lua, créer directories
+PHASE 1 (30min): Copier TETSOUO_WAR.lua >> TETSOUO_[JOB].lua, créer directories
 
 PHASE 2 (2-3h): 12 modules
 
-- PRECAST: Guard→Cooldown→JA_DB→WS→job logic (copier jobs/dnc/functions/DNC_PRECAST.lua)
+- PRECAST: Guard>>Cooldown>>JA_DB>>WS>>job logic (copier jobs/dnc/functions/DNC_PRECAST.lua)
 - MIDCAST: MidcastManager.select_set() (copier jobs/pld/functions/PLD_MIDCAST.lua)
 - Autres: templates minimaux
 
@@ -108,13 +108,13 @@ Testing: Load test, `//gs c checksets`, job/subjob changes, keybinds, lockstyle/
 
 ## ERREURS COURANTES
 
-1. Coder lockstyle/macrobook manuellement → Factories
-2. add_to_chat() direct → MessageFormatter
-3. Ordre precast incorrect → Guard→Cooldown→JA→WS→job
-4. Oublier _G exports →_G.job_precast + return
-5. Fichiers > 800 lines → 12 modules × 100-200 lines
-6. Nested midcast logic → MidcastManager.select_set()
-7. If/elseif JA messages → UNIVERSAL_JA_DATABASE
+1. Coder lockstyle/macrobook manuellement >> Factories
+2. add_to_chat() direct >> MessageFormatter
+3. Ordre precast incorrect >> Guard>>Cooldown>>JA>>WS>>job
+4. Oublier _G exports >>_G.job_precast + return
+5. Fichiers > 800 lines >> 12 modules × 100-200 lines
+6. Nested midcast logic >> MidcastManager.select_set()
+7. If/elseif JA messages >> UNIVERSAL_JA_DATABASE
 
 ## MÉTRIQUES
 
