@@ -1,12 +1,12 @@
 ---============================================================================
---- MIDCAST Message Data - MidcastManager Debug Messages
+--- PRECAST Message Data - Precast Debug Messages
 ---============================================================================
---- Pure data file for MidcastManager debug output
+--- Pure data file for Precast debug output
 --- Used by new message system (api/messages.lua)
 ---
---- @file data/systems/midcast_messages.lua
+--- @file data/systems/precast_messages.lua
 --- @author Tetsouo
---- @date Created: 2025-11-06
+--- @date Created: 2025-11-09
 ---============================================================================
 
 -- Import MessageColors for region-specific color detection
@@ -18,32 +18,32 @@ return {
     ---========================================================================
 
     debug_enabled_separator = {
-        template = "{gray}---------------------------------------------------------",
+        template = "{gray}==========================================================",
         color = 160
     },
 
     debug_enabled_title = {
-        template = "{green}[Midcast] DEBUG MODE ENABLED",
+        template = "{green}[Precast] DEBUG MODE ENABLED",
         color = 158
     },
 
     debug_disabled = {
-        template = "{gray}[Midcast] DEBUG MODE DISABLED",
+        template = "{gray}[Precast] DEBUG MODE DISABLED",
         color = 160
     },
 
     ---========================================================================
-    --- DEBUG HEADER (spell + skill + target)
+    --- DEBUG HEADER (action + type)
     ---========================================================================
 
     debug_header_separator = {
-        template = "{gray}---------------------------------------------------------",
+        template = "{gray}==========================================================",
         color = 160
     },
 
-    debug_header_spell = {
-        template = "{gray}[Midcast] {cyan}{spell} {gray}({skill}) | Target: {cyan}{target}",
-        color = 160
+    debug_header_action = {
+        template = "{cyan}[PRECAST] {action} {gray}({type})",
+        color = 158
     },
 
     ---========================================================================
@@ -71,64 +71,30 @@ return {
     },
 
     ---========================================================================
-    --- DEBUG TARGET DETAILS (spell.target inspection)
+    --- COMPLETION MESSAGE
     ---========================================================================
 
-    debug_target_header = {
-        template = "{gray}TARGET DETAILS:",
+    debug_completion_separator = {
+        template = "{gray}----------------------------------------------------------",
         color = 160
     },
 
-    debug_target_property = {
-        template = "{gray}  {property}: {cyan}{value}",
-        color = 160
-    },
-
-    ---========================================================================
-    --- DEBUG PRIORITIES (P0-P5 checks)
-    ---========================================================================
-
-    debug_priorities_header = {
-        template = "{gray}STEP 3: Priorities     >> Spell > Nested > Type > Mode > Base",
-        color = 160
-    },
-
-    debug_priority_found = {
-        template = "{gray}  [P{priority}] {label} >> {green}FOUND",
-        color = 160
-    },
-
-    debug_priority_missing = {
-        template = "{gray}  [P{priority}] {label} >> {red}NOT FOUND",
-        color = 160
-    },
-
-    ---========================================================================
-    --- DEBUG RESULT (final equipment)
-    ---========================================================================
-
-    debug_result_header = {
-        template = "{gray}---------------------------------------------------------",
-        color = 160
-    },
-
-    debug_result_success = {
-        template = "{green}RESULT: Equipped {cyan}{set_type}",
+    debug_completion = {
+        template = "{green}[PRECAST] >> Complete - equipping gear",
         color = 158
     },
 
-    debug_result_fallback = {
-        template = "{orange}RESULT: Fallback to {cyan}{set_type}",
-        color = MessageColors.get_warning_color()
-    },
+    ---========================================================================
+    --- EQUIPMENT DISPLAY
+    ---========================================================================
 
-    debug_equipment_line = {
-        template = "{gray}  {slot1}: {item1} | {slot2}: {item2}",
-        color = 160
+    debug_set_equipped = {
+        template = "{green}SET EQUIPPED: {cyan}{set}",
+        color = 158
     },
 
     debug_equipment_single = {
-        template = "{gray}  {slot}: {item}",
+        template = "{gray}  {slot}: {cyan}{item}",
         color = 160
     },
 }

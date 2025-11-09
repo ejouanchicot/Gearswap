@@ -418,18 +418,21 @@ end
 --- HELPER FUNCTIONS FOR COMMON PATTERNS
 ---============================================================================
 
---- Determine target type (self vs others) for Enhancing Magic
+--- Determine target type for Enhancing Magic (Composure logic)
 --- @param spell table Spell object from GearSwap
---- @return string|nil 'self', 'others', or nil
+--- @return string|nil 'Composure' if buffactive and targeting others, nil otherwise
 function MidcastManager.get_enhancing_target(spell)
     if not spell or not spell.target then
-        return 'self'
+        return nil
     end
 
-    if spell.target.type == 'PLAYER' and spell.target.name ~= player.name then
-        return 'others'
+    -- If Composure is active AND casting on someone else (not self)
+    -- Return 'Composure' to use sets.midcast['Enhancing Magic'].Composure
+    -- (regardless of target type: PLAYER, NPC, TRUST, MOB, etc.)
+    if buffactive and buffactive['Composure'] and spell.target.name and spell.target.name ~= player.name then
+        return 'Composure'
     else
-        return 'self'
+        return nil  -- Use base set (no target differentiation)
     end
 end
 

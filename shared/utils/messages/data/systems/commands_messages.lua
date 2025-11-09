@@ -288,6 +288,50 @@ return {
     },
 
     ---========================================================================
+    --- WSMSG COMMAND
+    ---========================================================================
+
+    wsmsg_config_error = {
+        template = "{red}[WS_MSG] ERROR: Config file not found\n{red}Path: shared/config/WS_MESSAGES_CONFIG.lua",
+        color = 167
+    },
+
+    wsmsg_status_header = {
+        template = "{purple}========================================\n{purple}[WS_MSG] Current Display Mode\n{purple}========================================",
+        color = 1
+    },
+
+    wsmsg_current_mode = {
+        template = "{green}Mode: {mode}\n \n{cyan}Available modes:\n{yellow}  full   {gray}- Show name + description + TP\n{yellow}  on     {gray}- Show name + TP only\n{yellow}  off    {gray}- Disable all messages\n \n{cyan}Usage: {white}//gs c wsmsg <full|on|off>\n{purple}========================================",
+        color = 1
+    },
+
+    wsmsg_invalid_mode = {
+        template = "{red}[WS_MSG] Invalid mode: {mode}\n{blue}Valid modes: full, on, off",
+        color = 1
+    },
+
+    wsmsg_mode_changed_full = {
+        template = "{green}[WS_MSG] Display mode changed to: {yellow}full\n \n{cyan}Example output:\n{lightblue}  [WAR/SAM] {pink}Upheaval {gray}>> Four hits. Damage varies with TP. {gray}({green}2500 TP{gray})",
+        color = 1
+    },
+
+    wsmsg_mode_changed_on = {
+        template = "{green}[WS_MSG] Display mode changed to: {yellow}on\n \n{cyan}Example output:\n{gray}  {pink}Upheaval {gray}({white}2500 TP{gray})",
+        color = 1
+    },
+
+    wsmsg_mode_changed_off = {
+        template = "{green}[WS_MSG] Display mode changed to: {yellow}off\n \n{cyan}Example output:\n{gray}  (no message displayed)",
+        color = 1
+    },
+
+    wsmsg_set_failed = {
+        template = "{red}[WS_MSG] Failed to set display mode",
+        color = 167
+    },
+
+    ---========================================================================
     --- DEBUGWARP COMMAND
     ---========================================================================
 

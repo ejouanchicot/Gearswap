@@ -6,6 +6,6 @@
 -- ws_mode: Weaponskills
 return {
     spell_mode = 'on',
-    ja_mode = 'on',
+    ja_mode = 'full',
     ws_mode = 'on'
 }

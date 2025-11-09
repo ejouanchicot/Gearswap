@@ -25,7 +25,7 @@ return {
     },
 
     ws_validation_error_detail = {
-        template = "{lightblue}[{job}] {yellow}[{ws_name}]{red} {reason} {gray}({detail})",
+        template = "{gray}[{pink}{ws_name}{gray}]{red} {reason} {gray}({detail} TP)",
         color = 1
     },
 

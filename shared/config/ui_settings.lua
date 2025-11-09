@@ -24,8 +24,8 @@ local function get_settings_path()
     -- Detect character name from player data
     local char_name = player and player.name or 'Tetsouo'
 
-    -- Save in character's own config directory
-    local base_path = 'D:/Windower Tetsouo/addons/GearSwap/data/'
+    -- Save in character's own config directory (using dynamic path)
+    local base_path = windower.addon_path .. 'data/'
     return base_path .. char_name .. '/config/ui_settings.lua'
 end
 

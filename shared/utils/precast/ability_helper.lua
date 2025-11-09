@@ -4,10 +4,16 @@
 --- Provides helper functions for auto-triggering abilities before spells/WS.
 --- Used by PLD (Divine Emblem, Majesty) and DNC (Climactic Flourish) jobs.
 ---
+--- VALIDATION SYSTEM:
+---   • Checks player main job + level before triggering ability
+---   • Prevents cross-job ability usage (e.g., RUN trying Divine Emblem)
+---   • Validates level requirements (Divine Emblem = PLD 78)
+---   • Fails silently if player doesn't have access to ability
+---
 --- @file utils/precast/ability_helper.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-05
+--- @version 1.1
+--- @date Created: 2025-10-05 | Updated: 2025-11-09
 ---============================================================================
 
 local AbilityHelper = {}
@@ -15,6 +21,33 @@ local AbilityHelper = {}
 ---============================================================================
 --- ABILITY STATE CHECKING
 ---============================================================================
+
+--- Check if player can use ability (job + level validation)
+--- @param ability_name string The ability name
+--- @return boolean True if player has access to this ability
+function AbilityHelper.can_use_ability(ability_name)
+    local player = windower.ffxi.get_player()
+    if not player then return false end
+
+    local res = require('resources')
+    local ability_data = res.job_abilities:with('en', ability_name)
+    if not ability_data then return false end
+
+    -- Check main job matches
+    local main_job_id = player.main_job_id
+    if ability_data.job_points_category ~= main_job_id then
+        return false
+    end
+
+    -- Check level requirement
+    local main_job_level = player.main_job_level
+    local required_level = ability_data.levels[main_job_id] or 99
+    if main_job_level < required_level then
+        return false
+    end
+
+    return true
+end
 
 --- Check if ability is ready (not on cooldown)
 --- @param ability_name string The ability name
@@ -49,6 +82,11 @@ end
 function AbilityHelper.try_ability(spell, eventArgs, ability_name, wait_time)
     wait_time = wait_time or 2
 
+    -- VALIDATION: Check if player can use this ability (job + level)
+    if not AbilityHelper.can_use_ability(ability_name) then
+        return -- Player doesn't have this ability, skip silently
+    end
+
     -- Check if ability ready and buff not active
     if AbilityHelper.is_ability_ready(ability_name) and not AbilityHelper.is_buff_active(ability_name) then
         eventArgs.handled = true
@@ -65,6 +103,11 @@ end
 --- @param wait_time number Wait time between ability and spell (default: 2)
 function AbilityHelper.try_ability_smart(spell, eventArgs, ability_name, wait_time)
     wait_time = wait_time or 2
+
+    -- VALIDATION: Check if player can use this ability (job + level)
+    if not AbilityHelper.can_use_ability(ability_name) then
+        return -- Player doesn't have this ability, skip silently
+    end
 
     -- If buff already active, don't bother checking recast
     if AbilityHelper.is_buff_active(ability_name) then
@@ -87,6 +130,11 @@ end
 --- @param wait_time number Wait time between ability and WS (default: 2)
 function AbilityHelper.try_ability_ws(spell, eventArgs, ability_name, wait_time)
     wait_time = wait_time or 2
+
+    -- VALIDATION: Check if player can use this ability (job + level)
+    if not AbilityHelper.can_use_ability(ability_name) then
+        return -- Player doesn't have this ability, skip silently
+    end
 
     -- Check if ability ready and buff not active
     if AbilityHelper.is_ability_ready(ability_name) and not AbilityHelper.is_buff_active(ability_name) then

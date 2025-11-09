@@ -8,7 +8,10 @@
 --- Intercepted Skills (Job-Specific Logic):
 ---   - Enfeebling: Nested sets (mnd_potency.Valeur), Saboteur override, Database type detection
 ---   - Enhancing: Spell family routing (Enspell/Gain/BarElement/etc.), Target detection (self vs others)
+---   - Healing: Spell-specific sets (Cure/Curaga/Raise) with fallback to base Healing Magic set
 ---   - Elemental: NukeMode-based selection (FreeNuke vs base)
+---   - Dark: Spell-specific sets (Drain/Aspir/Stun) with fallback to base Dark Magic set
+---   - Universal: ALL other magic types (Blue Magic, Summoning, Geomancy, Ninjutsu, Songs, Divine, etc.)
 ---
 --- Enhancing Magic Spell Families (NEW - v6.2):
 ---   Sets can now be created for spell families using database-driven routing:
@@ -18,13 +21,10 @@
 ---   - sets.midcast['Enhancing Magic'].BarAilment (Barparalyze, Barblind, etc.)
 ---   - sets.midcast['Enhancing Magic'].Phalanx, .Stoneskin, .Aquaveil, .Refresh, .Regen, etc.
 ---
---- Mote-Include Handles Naturally:
----   - Healing Magic: Cure/Curaga/Raise >> sets.midcast.Cure / sets.midcast.Raise
----
 --- @file RDM_MIDCAST.lua
 --- @author Tetsouo
---- @version 6.2 - Added spell_family support for Enhancing Magic
---- @date Created: 2025-10-12 | Updated: 2025-11-05
+--- @version 6.4 - Universal magic support (all subjob magic + debugmidcast for ALL spells)
+--- @date Created: 2025-10-12 | Updated: 2025-11-09
 ---============================================================================
 
 ---============================================================================
@@ -154,13 +154,13 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
             MessageRDMMidcast.show_enfeebling_result(success)
         end
 
-        -- SABOTEUR BONUS: Override hands with Lethargy Gants +3 when Saboteur active
-        -- (+5 enfeebling potency, extends duration)
-        if buffactive['Saboteur'] then
+        -- SABOTEUR BONUS: Equip Saboteur set when active
+        -- (+5 enfeebling potency from Lethargy Gants +3, extends duration)
+        if buffactive['Saboteur'] and sets.midcast['Enfeebling Magic'].Saboteur then
             if debug_enabled then
                 MessageRDMMidcast.show_saboteur_override()
             end
-            equip({hands = 'Lethargy Gants +3'})
+            equip(sets.midcast['Enfeebling Magic'].Saboteur)
         end
 
         -- DISABLED: RDM Enfeebling Messages
@@ -187,6 +187,17 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
                 tostring(state.EnhancingMode and state.EnhancingMode.value or 'nil'),
                 spell.target and spell.target.name or 'Unknown'
             )
+        end
+
+        -- EXCEPTION: Phalanx + Accession (SCH subjob)
+        -- When Accession is active, Phalanx becomes AoE party buff
+        -- Use base Enhancing Magic set (ignore Composure/spell_family logic)
+        if buffactive and buffactive['Accession'] and spell.english and spell.english:match("^Phalanx") then
+            equip(sets.midcast['Enhancing Magic'])
+            if debug_enabled then
+                add_to_chat(158, '[RDM Midcast] Phalanx + Accession detected → Base Enhancing set')
+            end
+            return
         end
 
         -- DEBUG: Get spell_family BEFORE MidcastManager call
@@ -253,14 +264,26 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     end
 
     -- ==========================================================================
-    -- HEALING MAGIC - Let Mote-Include handle naturally
+    -- HEALING MAGIC - Use MidcastManager
     -- ==========================================================================
-    -- Mote automatically handles:
-    --   - Cure/Curaga >> sets.midcast.Cure / sets.midcast.Curaga
-    --   - Raise >> sets.midcast.Raise
-    --   - Specific spells >> sets.midcast[spell.english]
-    --
-    -- No need to intercept - Mote's logic is sufficient for RDM!
+    if spell.skill == 'Healing Magic' then
+        if debug_enabled then
+            add_to_chat(158, '[RDM Midcast] Healing Magic detected: ' .. (spell.name or 'Unknown'))
+        end
+
+        -- Select set using MidcastManager
+        -- Priority: sets.midcast[spell.name] (Cure/Curaga/Raise) > sets.midcast['Healing Magic'] (base)
+        local success = MidcastManager.select_set({
+            skill = 'Healing Magic',
+            spell = spell
+        })
+
+        if debug_enabled then
+            add_to_chat(158, '[RDM Midcast] Healing Magic result: ' .. tostring(success))
+        end
+
+        return
+    end
 
     -- ==========================================================================
     -- ELEMENTAL MAGIC - Use MidcastManager with NukeMode
@@ -280,6 +303,58 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
 
         if debug_enabled then
             MessageRDMMidcast.show_elemental_result(success)
+        end
+
+        return
+    end
+
+    -- ==========================================================================
+    -- DARK MAGIC - Use MidcastManager
+    -- ==========================================================================
+    if spell.skill == 'Dark Magic' then
+        if debug_enabled then
+            add_to_chat(158, '[RDM Midcast] Dark Magic detected: ' .. (spell.name or 'Unknown'))
+        end
+
+        -- Select set using MidcastManager
+        -- Priority: sets.midcast[spell.name] (Drain/Aspir/Stun) > sets.midcast['Dark Magic'] (base)
+        local success = MidcastManager.select_set({
+            skill = 'Dark Magic',
+            spell = spell
+        })
+
+        if debug_enabled then
+            add_to_chat(158, '[RDM Midcast] Dark Magic result: ' .. tostring(success))
+        end
+
+        return
+    end
+
+    -- ==========================================================================
+    -- UNIVERSAL MAGIC FALLBACK - All other magic types (subjob magic)
+    -- ==========================================================================
+    -- Handles magic from subjobs that RDM doesn't have as main:
+    --   - Blue Magic (sub BLU)
+    --   - Summoning Magic (sub SMN)
+    --   - Geomancy (sub GEO)
+    --   - Ninjutsu (sub NIN)
+    --   - Songs (sub BRD)
+    --   - Divine Magic (sub WHM extended)
+    --   - Any other magic type
+    if spell.type == 'Magic' and spell.skill then
+        if debug_enabled then
+            add_to_chat(158, '[RDM Midcast] Universal Magic detected: ' .. (spell.skill or 'Unknown') .. ' - ' .. (spell.name or 'Unknown'))
+        end
+
+        -- Select set using MidcastManager
+        -- Priority: sets.midcast[spell.name] > sets.midcast[spell.skill] (base)
+        local success = MidcastManager.select_set({
+            skill = spell.skill,
+            spell = spell
+        })
+
+        if debug_enabled then
+            add_to_chat(158, '[RDM Midcast] Universal Magic result: ' .. tostring(success))
         end
 
         return

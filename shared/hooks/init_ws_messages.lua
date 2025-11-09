@@ -60,22 +60,32 @@ function user_post_precast(spell, action, spellMap, eventArgs)
         original_user_post_precast(spell, action, spellMap, eventArgs)
     end
 
-    -- Show universal WS message (only for weaponskills)
+    -- Show universal WS message (only for weaponskills that weren't canceled)
     if spell and spell.type == 'WeaponSkill' and WS_MESSAGES_CONFIG.is_enabled() then
-        -- Get WS data from database
-        local ws_data = WS_DB and WS_DB.weaponskills and WS_DB.weaponskills[spell.english]
+        -- Don't show message if WS was canceled (not enough TP, out of range, etc.)
+        if eventArgs and eventArgs.cancel then
+            return
+        end
 
         -- Get current TP
         local player = windower.ffxi.get_player()
         local current_tp = player and player.vitals and player.vitals.tp or 0
+
+        -- Don't show message if not enough TP (minimum 1000 TP for all WS)
+        if current_tp < 1000 then
+            return
+        end
+
+        -- Get WS data from database
+        local ws_data = WS_DB and WS_DB.weaponskills and WS_DB.weaponskills[spell.english]
 
         -- Show WS message
         if ws_data and WS_MESSAGES_CONFIG.show_description() then
             -- Full mode: show description + TP
             MessageFormatter.show_ws_activated(spell.english, ws_data.description, current_tp)
         elseif WS_MESSAGES_CONFIG.is_tp_only() then
-            -- TP only mode: show name + TP
-            MessageFormatter.show_ws_activated(spell.english, nil, current_tp)
+            -- TP only mode: show name + TP (use show_ws_tp for templates without description)
+            MessageFormatter.show_ws_tp(spell.english, current_tp)
         end
     end
 end

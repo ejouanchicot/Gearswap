@@ -1,15 +1,15 @@
 ---============================================================================
---- Message Settings - Persistent Configuration Storage
+--- Message Settings - Persistent Configuration Storage (Per Character)
 ---============================================================================
 --- Global variables + file persistence for settings.
 --- Settings persist within session AND across //lua reload gearswap.
 ---
 --- Settings File:
----   shared/config/message_modes.lua
+---   [CharName]/config/message_modes.lua (one file per character)
 ---
 --- @file message_settings.lua
 --- @author Tetsouo
---- @version 1.2 - Added file persistence
+--- @version 2.0 - Changed to per-character files (2025-11-08)
 --- @date Created: 2025-11-08
 ---============================================================================
 
@@ -19,11 +19,14 @@ local MessageSettings = {}
 --- FILE PERSISTENCE
 ---============================================================================
 
--- Get absolute path to settings file
+-- Get absolute path to settings file (per character)
 local function get_settings_path()
-    -- Save in shared/config directory alongside other config files
-    local base_path = 'D:/Windower Tetsouo/addons/GearSwap/data/'
-    return base_path .. 'shared/config/message_modes.lua'
+    -- Detect character name from player data
+    local char_name = player and player.name or 'Tetsouo'
+
+    -- Save in character's own config directory (using dynamic path)
+    local base_path = windower.addon_path .. 'data/'
+    return base_path .. char_name .. '/config/message_modes.lua'
 end
 
 --- Load settings from file
@@ -50,7 +53,8 @@ local function save_to_file(settings)
     local file = io.open(file_path, 'w')
     if file then
         file:write('-- Message Display Modes (auto-generated)\n')
-        file:write('-- File: shared/config/message_modes.lua\n')
+        file:write('-- Character: ' .. (player and player.name or 'Unknown') .. '\n')
+        file:write('-- File: ' .. file_path .. '\n')
         file:write('-- \n')
         file:write('-- spell_mode: ALL spell types (Enhancing, Enfeebling, Healing, Elemental, etc.)\n')
         file:write('-- ja_mode: Job Abilities\n')

@@ -351,6 +351,56 @@ function MessageCommands.show_spellmsg_set_failed()
 end
 
 ---============================================================================
+--- WSMSG COMMAND
+---============================================================================
+
+function MessageCommands.show_wsmsg_config_error()
+    M.send('COMMANDS', 'wsmsg_config_error')
+end
+
+function MessageCommands.show_wsmsg_status_header()
+    local gray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 50)
+    local separator = string.rep("=", 74)
+    add_to_chat(121, gray .. separator)
+    add_to_chat(121, yellow .. "[WS_MSG] Current Display Mode")
+    add_to_chat(121, gray .. separator)
+end
+
+function MessageCommands.show_wsmsg_current_mode(mode)
+    local gray = string.char(0x1F, 160)
+    local green = string.char(0x1F, 158)
+    local cyan = string.char(0x1F, 122)
+    local yellow = string.char(0x1F, 50)
+    local white = string.char(0x1F, 1)
+    local separator = string.rep("=", 74)
+
+    add_to_chat(121, green .. "Mode: " .. yellow .. mode)
+    add_to_chat(121, " ")
+    add_to_chat(121, cyan .. "Available modes:")
+    add_to_chat(121, yellow .. "  full" .. gray .. " (Show name + description + TP)")
+    add_to_chat(121, yellow .. "  on" .. gray .. " (Show name + TP only)")
+    add_to_chat(121, yellow .. "  off" .. gray .. " (Disable all messages)")
+    add_to_chat(121, " ")
+    add_to_chat(121, cyan .. "Usage: " .. white .. "//gs c wsmsg <full | on | off>")
+    add_to_chat(121, gray .. separator)
+end
+
+function MessageCommands.show_wsmsg_invalid_mode(mode)
+    M.send('COMMANDS', 'wsmsg_invalid_mode', {mode = mode})
+end
+
+function MessageCommands.show_wsmsg_mode_changed(mode)
+    -- Select template based on mode
+    local key = 'wsmsg_mode_changed_' .. mode
+    M.send('COMMANDS', key)
+end
+
+function MessageCommands.show_wsmsg_set_failed()
+    M.send('COMMANDS', 'wsmsg_set_failed')
+end
+
+---============================================================================
 --- DEBUGWARP COMMAND
 ---============================================================================
 
@@ -368,6 +418,132 @@ function MessageCommands.show_debugmidcast_toggled(job_name, debug_state)
         job = job_name,
         debug_state = tostring(debug_state)
     })
+end
+
+---============================================================================
+--- HELP DISPLAY
+---============================================================================
+
+function MessageCommands.show_help()
+    local gray = string.char(0x1F, 8)
+    local yellow = string.char(0x1F, 36)
+    local gold = string.char(0x1F, 220)
+    local cyan = string.char(0x1F, 159)
+    local white = string.char(0x1F, 1)
+    local green = string.char(0x1F, 158)
+
+    local top_sep = string.rep("=", 74)
+
+    add_to_chat(121, " ")
+    add_to_chat(121, yellow .. top_sep)
+    add_to_chat(121, gold .. " GEARSWAP HELP" .. gray .. " - Quick Reference")
+    add_to_chat(121, yellow .. top_sep)
+    add_to_chat(121, " ")
+    add_to_chat(121, cyan .. "   //gs c commands" .. gray .. " (or " .. cyan .. "cmds" .. gray .. ") ... " .. white .. "List all universal commands")
+    add_to_chat(121, cyan .. "   //gs c ui help" .. gray .. " ............. " .. white .. "Show UI keybind system help")
+    add_to_chat(121, cyan .. "   //gs c warp help" .. gray .. " ........... " .. white .. "List all warp destinations")
+    add_to_chat(121, " ")
+    add_to_chat(121, green .. " TIP: " .. white .. "Most commands have short aliases for faster typing")
+    add_to_chat(121, yellow .. top_sep)
+    add_to_chat(121, " ")
+end
+
+---============================================================================
+--- COMMANDS LIST
+---============================================================================
+
+function MessageCommands.show_commands_list()
+    local gray = string.char(0x1F, 8)
+    local dgray = string.char(0x1F, 160)
+    local yellow = string.char(0x1F, 36)
+    local gold = string.char(0x1F, 220)
+    local cyan = string.char(0x1F, 159)
+    local blue = string.char(0x1F, 204)
+    local green = string.char(0x1F, 158)
+    local lime = string.char(0x1F, 205)
+    local white = string.char(0x1F, 1)
+    local orange = string.char(0x1F, 68)
+    local red = string.char(0x1F, 167)
+    local pink = string.char(0x1F, 13)
+    local purple = string.char(0x1F, 200)
+
+    local top_sep = string.rep("=", 74)
+    local mid_sep = string.rep("-", 74)
+
+    -- Header
+    add_to_chat(121, " ")
+    add_to_chat(121, yellow .. top_sep)
+    add_to_chat(121, gold .. " COMMON COMMANDS" .. dgray .. " - Universal commands available on all jobs")
+    add_to_chat(121, yellow .. top_sep)
+
+    -- System Commands
+    add_to_chat(121, " ")
+    add_to_chat(121, orange .. ">> SYSTEM")
+    add_to_chat(121, cyan .. "   //gs c reload" .. gray .. " ........... " .. white .. "Force job reload")
+    add_to_chat(121, cyan .. "   //gs c checksets" .. gray .. " ........ " .. white .. "Validate equipment sets")
+    add_to_chat(121, cyan .. "   //gs c lockstyle" .. gray .. " (or " .. cyan .. "ls" .. gray .. ") " .. white .. "Reapply lockstyle")
+
+    -- UI Commands
+    add_to_chat(121, " ")
+    add_to_chat(121, pink .. ">> UI / INTERFACE")
+    add_to_chat(121, cyan .. "   //gs c ui" .. gray .. " ............... " .. white .. "Toggle keybind display")
+    add_to_chat(121, cyan .. "   //gs c ui save" .. gray .. " .......... " .. white .. "Save UI position")
+    add_to_chat(121, cyan .. "   //gs c ui " .. yellow .. "h" .. gray .. " (or " .. cyan .. "header" .. gray .. ") " .. white .. "Toggle header")
+    add_to_chat(121, cyan .. "   //gs c ui " .. yellow .. "l" .. gray .. " (or " .. cyan .. "legend" .. gray .. ") " .. white .. "Toggle legend")
+    add_to_chat(121, cyan .. "   //gs c ui " .. yellow .. "c" .. gray .. " (or " .. cyan .. "columns" .. gray .. ")" .. white .. " Toggle column headers")
+    add_to_chat(121, cyan .. "   //gs c ui " .. yellow .. "f" .. gray .. " (or " .. cyan .. "footer" .. gray .. ") " .. white .. "Toggle footer")
+    add_to_chat(121, cyan .. "   //gs c ui " .. yellow .. "on" .. gray .. "/" .. cyan .. "off" .. gray .. " ........ " .. white .. "Enable/Disable UI")
+    add_to_chat(121, cyan .. "   //gs c ui theme " .. yellow .. "<name|list>" .. white .. " Change theme preset")
+    add_to_chat(121, cyan .. "   //gs c ui font " .. yellow .. "<name>" .. gray .. " .. " .. white .. "Change font")
+    add_to_chat(121, cyan .. "   //gs c ui help" .. gray .. " ......... " .. white .. "Show UI help")
+
+    -- Display
+    add_to_chat(121, " ")
+    add_to_chat(121, orange .. ">> DISPLAY")
+    add_to_chat(121, cyan .. "   //gs c testcolors" .. gray .. " (or " .. cyan .. "colors" .. gray .. ") " .. white .. "Test FFXI color codes")
+
+    -- Message Controls
+    add_to_chat(121, " ")
+    add_to_chat(121, blue .. ">> MESSAGE CONTROLS")
+    add_to_chat(121, cyan .. "   //gs c jamsg " .. yellow .. "<full|on|off>" .. gray .. " " .. white .. "Job Ability messages")
+    add_to_chat(121, cyan .. "   //gs c spellmsg " .. yellow .. "<full|on|off>" .. white .. " Spell messages")
+    add_to_chat(121, cyan .. "   //gs c wsmsg " .. yellow .. "<full|on|off>" .. gray .. " .. " .. white .. "Weaponskill messages")
+
+    -- Info & Debug
+    add_to_chat(121, " ")
+    add_to_chat(121, purple .. ">> INFO & DEBUG")
+    add_to_chat(121, cyan .. "   //gs c info " .. yellow .. "<name>" .. gray .. " ...... " .. white .. "Show detailed spell/JA/WS info")
+    add_to_chat(121, cyan .. "   //gs c debugsubjob" .. gray .. " (or " .. cyan .. "dsj" .. gray .. ") " .. white .. "Show subjob detection")
+    add_to_chat(121, cyan .. "   //gs c debugprecast" .. gray .. " ..... " .. white .. "Toggle precast debug mode")
+    add_to_chat(121, cyan .. "   //gs c debugmidcast" .. gray .. " ..... " .. white .. "Toggle midcast debug mode")
+    add_to_chat(121, cyan .. "   //gs c debugwarp" .. gray .. " ........ " .. white .. "Toggle warp debug mode")
+    add_to_chat(121, cyan .. "   //gs c debugmsg" .. gray .. " ......... " .. white .. "Debug message settings")
+
+    -- Subjob Abilities
+    add_to_chat(121, " ")
+    add_to_chat(121, lime .. ">> SUBJOB ABILITIES")
+    add_to_chat(121, cyan .. "   //gs c jump" .. gray .. " ............. " .. white .. "High Jump " .. dgray .. "(DRG sub)")
+    add_to_chat(121, cyan .. "   //gs c waltz" .. gray .. " ............ " .. white .. "Curing Waltz III <stpc> " .. dgray .. "(DNC sub)")
+    add_to_chat(121, cyan .. "   //gs c aoewaltz" .. gray .. " ......... " .. white .. "Divine Waltz <me> " .. dgray .. "(DNC sub)")
+
+    -- Warp System
+    add_to_chat(121, " ")
+    add_to_chat(121, red .. ">> WARP SYSTEM " .. dgray .. "(50+ commands)")
+    add_to_chat(121, cyan .. "   //gs c warp status" .. gray .. " ...... " .. white .. "Show warp lock status")
+    add_to_chat(121, cyan .. "   //gs c warp help" .. gray .. " ........ " .. white .. "List all destinations")
+    add_to_chat(121, gray .. "   Quick: " .. cyan .. "//gs c w" .. gray .. " (Warp) | " .. cyan .. "w2" .. gray .. " (Warp II) | " .. cyan .. "ret" .. gray .. " (Retrace)")
+    add_to_chat(121, gray .. "   Towns: " .. cyan .. "//gs c sd" .. gray .. ", " .. cyan .. "bt" .. gray .. ", " .. cyan .. "wd" .. gray .. ", " .. cyan .. "jn" .. gray .. ", " .. cyan .. "sb" .. gray .. ", " .. cyan .. "mh" .. gray .. " etc.")
+
+    -- Testing
+    add_to_chat(121, " ")
+    add_to_chat(121, green .. ">> TESTING")
+    add_to_chat(121, cyan .. "   //gs c testmsg " .. yellow .. "[job]" .. gray .. " .... " .. white .. "Test message system")
+    add_to_chat(121, cyan .. "   //gs c msgtests" .. gray .. " ........ " .. white .. "Validate message system")
+
+    -- Footer
+    add_to_chat(121, " ")
+    add_to_chat(121, yellow .. top_sep)
+    add_to_chat(121, " ")
 end
 
 ---============================================================================

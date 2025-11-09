@@ -66,6 +66,32 @@ function MessageMidcast.show_debug_step(step, label, status, value)
 end
 
 ---============================================================================
+--- DEBUG TARGET DETAILS (spell.target inspection)
+---============================================================================
+
+--- Show target details header
+function MessageMidcast.show_target_details_header()
+    M.send('MIDCAST', 'debug_target_header')
+end
+
+--- Show target property
+--- @param property string Property name (e.g., "type", "name", "raw_type")
+--- @param value any Property value
+function MessageMidcast.show_target_property(property, value)
+    local value_str = tostring(value)
+    if value == nil then
+        value_str = "nil"
+    elseif type(value) == "boolean" then
+        value_str = value and "true" or "false"
+    end
+
+    M.send('MIDCAST', 'debug_target_property', {
+        property = property,
+        value = value_str
+    })
+end
+
+---============================================================================
 --- DEBUG PRIORITIES (P0-P5 checks)
 ---============================================================================
 

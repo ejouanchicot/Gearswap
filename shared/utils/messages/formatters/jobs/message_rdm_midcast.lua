@@ -107,7 +107,7 @@ end
 
 --- Show Saboteur override message
 function MessageRDMMidcast.show_saboteur_override()
-    MessageRenderer.send(CHAT_INFO, '[RDM_MIDCAST] ** SABOTEUR ACTIVE >> Overriding hands with Lethargy Gants +3')
+    MessageRenderer.send(CHAT_INFO, '[RDM_MIDCAST] ** SABOTEUR ACTIVE >> Equipping sets.midcast[\'Enfeebling Magic\'].Saboteur')
 end
 
 ---============================================================================

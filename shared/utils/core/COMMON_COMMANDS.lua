@@ -463,6 +463,56 @@ function CommonCommands.handle_spellmsg(mode_arg)
 end
 
 ---============================================================================
+--- WEAPONSKILL MESSAGES COMMAND (Toggle WS messages)
+---============================================================================
+
+--- Handle Weaponskill messages display mode command
+--- Controls WS activation messages
+--- Modes: full (name + description + TP), on (name + TP only), off (silent)
+--- Usage: //gs c wsmsg <full|on|off>
+--- @param mode_arg string Display mode to set (full, on, off)
+--- @return boolean True if command was handled successfully
+function CommonCommands.handle_wsmsg(mode_arg)
+    local ws_config_success, WSConfig = pcall(require, 'shared/config/WS_MESSAGES_CONFIG')
+
+    if not ws_config_success then
+        MessageCommands.show_wsmsg_config_error()
+        return false
+    end
+
+    -- Show current mode if no argument
+    if not mode_arg then
+        MessageCommands.show_wsmsg_status_header()
+        MessageCommands.show_wsmsg_current_mode(WSConfig.display_mode)
+        return true
+    end
+
+    -- Parse mode argument
+    local mode = mode_arg:lower()
+    local new_mode
+
+    if mode == 'full' or mode == 'f' then
+        new_mode = 'full'
+    elseif mode == 'on' or mode == 'tp' or mode == 'tponly' or mode == 'tp_only' or mode == 't' then
+        new_mode = 'on'
+    elseif mode == 'off' or mode == 'disabled' or mode == 'disable' or mode == 'd' then
+        new_mode = 'off'
+    else
+        MessageCommands.show_wsmsg_invalid_mode(mode_arg)
+        return false
+    end
+
+    -- Set new mode
+    if WSConfig.set_display_mode(new_mode) then
+        MessageCommands.show_wsmsg_mode_changed(new_mode)
+        return true
+    else
+        MessageCommands.show_wsmsg_set_failed()
+        return false
+    end
+end
+
+---============================================================================
 --- MAIN COMMAND ROUTER
 ---============================================================================
 
@@ -563,10 +613,6 @@ function CommonCommands.handle_command(command, job_name, ...)
         return CommonCommands.handle_lockstyle()
     elseif cmd == 'testcolors' or cmd == 'colors' then
         return CommonCommands.handle_testcolors()
-    elseif cmd == 'detectregion' or cmd == 'region' then
-        return CommonCommands.handle_detectregion()
-    elseif cmd == 'setregion' then
-        return CommonCommands.handle_setregion(args[1])
     elseif cmd == 'jump' then
         return CommonCommands.handle_jump()
     elseif cmd == 'waltz' then
@@ -580,10 +626,22 @@ function CommonCommands.handle_command(command, job_name, ...)
         _G.WARP_DEBUG = not _G.WARP_DEBUG
         MessageCommands.show_warp_debug_toggled(_G.WARP_DEBUG)
         return true
+    elseif cmd == 'debugprecast' then
+        -- Toggle precast debug mode
+        _G.PrecastDebugState = not _G.PrecastDebugState
+        local MessagePrecast = require('shared/utils/messages/formatters/magic/message_precast')
+        if _G.PrecastDebugState then
+            MessagePrecast.show_debug_enabled()
+        else
+            MessagePrecast.show_debug_disabled()
+        end
+        return true
     elseif cmd == 'jamsg' then
         return CommonCommands.handle_jamsg(args[1])
     elseif cmd == 'spellmsg' then
         return CommonCommands.handle_spellmsg(args[1])
+    elseif cmd == 'wsmsg' then
+        return CommonCommands.handle_wsmsg(args[1])
     elseif cmd == 'info' then
         return CommonCommands.handle_info(args)
     elseif cmd == 'debugmsg' then
@@ -610,6 +668,14 @@ function CommonCommands.handle_command(command, job_name, ...)
         local MessageValidator = require('shared/utils/messages/message_validator')
         MessageValidator.run_all_tests()
         return true
+    elseif cmd == 'commands' or cmd == 'cmds' then
+        -- Show list of all common commands
+        MessageCommands.show_commands_list()
+        return true
+    elseif cmd == 'help' or cmd == '?' then
+        -- Show quick help (redirects to main commands)
+        MessageCommands.show_help()
+        return true
     end
 
     return false
@@ -631,11 +697,11 @@ function CommonCommands.is_common_command(command)
 
     -- Check existing common commands
     if cmd == 'reload' or cmd == 'checksets' or cmd == 'lockstyle' or cmd == 'ls' or
-       cmd == 'testcolors' or cmd == 'colors' or cmd == 'detectregion' or cmd == 'region' or
-       cmd == 'setregion' or cmd == 'jump' or cmd == 'waltz' or cmd == 'aoewaltz' or
-       cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'jamsg' or
-       cmd == 'spellmsg' or cmd == 'info' or cmd == 'testmsg' or cmd == 'msgtest' or
-       cmd == 'msgtests' then
+       cmd == 'testcolors' or cmd == 'colors' or cmd == 'jump' or cmd == 'waltz' or
+       cmd == 'aoewaltz' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or
+       cmd == 'debugprecast' or cmd == 'jamsg' or cmd == 'spellmsg' or cmd == 'wsmsg' or cmd == 'info' or
+       cmd == 'testmsg' or cmd == 'msgtest' or cmd == 'msgtests' or cmd == 'commands' or cmd == 'cmds' or
+       cmd == 'help' or cmd == '?' then
         return true
     end
 
@@ -686,6 +752,20 @@ function CommonCommands.is_common_command(command)
     end
 
     return false
+end
+
+---============================================================================
+--- STATE CHANGE HOOK (UI UPDATE)
+---============================================================================
+
+--- Handle state changes and update UI
+--- Call this from job_update() in all job files to keep UI synchronized
+--- @return void
+function CommonCommands.handle_state_change()
+    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
+    if ui_success and KeybindUI and KeybindUI.update then
+        KeybindUI.update()
+    end
 end
 
 ---============================================================================

@@ -82,7 +82,10 @@ if not _G.ui_manager_state then
 
         -- Performance tracking
         update_count = 0,
-        total_update_time = 0
+        total_update_time = 0,
+
+        -- State change tracking (prevent unnecessary redraws)
+        cached_states = {}
     }
 end
 
@@ -238,6 +241,66 @@ local function get_current_job_keybinds()
     end
 
     return keybinds or {}
+end
+
+--- Capture all current state values
+--- @return table Dictionary of state_name -> current_value
+local function capture_current_states()
+    if not _G.state then return {} end
+
+    local states = {}
+    for state_name, state_obj in pairs(_G.state) do
+        -- Skip internal Mote-Include fields
+        if state_name:sub(1, 1) ~= '_' and type(state_obj) ~= 'function' then
+            local value = nil
+
+            if type(state_obj) == 'table' then
+                if state_obj.current then
+                    value = tostring(state_obj.current)
+                elseif state_obj.value ~= nil then
+                    value = tostring(state_obj.value)
+                end
+            elseif type(state_obj) == 'boolean' then
+                value = tostring(state_obj)
+            else
+                value = tostring(state_obj)
+            end
+
+            if value then
+                states[state_name] = value
+            end
+        end
+    end
+
+    return states
+end
+
+--- Check if states have changed since last update
+--- @param current_states table Current state values
+--- @return boolean True if any state changed
+local function have_states_changed(current_states)
+    local cached = ui_state.cached_states
+
+    -- First update, always show
+    if not cached or not next(cached) then
+        return true
+    end
+
+    -- Check for changed states
+    for state_name, current_value in pairs(current_states) do
+        if cached[state_name] ~= current_value then
+            return true
+        end
+    end
+
+    -- Check for new states (e.g., BRD song slots added dynamically)
+    for state_name, cached_value in pairs(cached) do
+        if current_states[state_name] == nil then
+            return true
+        end
+    end
+
+    return false
 end
 
 --- Get ALL possible values of a state (for calculating max width)
@@ -398,6 +461,8 @@ function KeybindUI.init()
     if _G.ui_display_config.enabled then
         _G.keybind_ui_display:show()
         update_display()
+        -- Capture initial state after first display
+        ui_state.cached_states = capture_current_states()
     end
 end
 
@@ -797,12 +862,21 @@ function KeybindUI.set_font(font_name)
 end
 
 --- Update UI when states change with error handling
+--- Only redraws if states have actually changed (prevents unnecessary spam)
 function KeybindUI.update()
     if not _G.keybind_ui_display then
         KeybindUI.safe_init()
         return
     end
 
+    -- STATE CHANGE DETECTION: Only update if states actually changed
+    local current_states = capture_current_states()
+    if not have_states_changed(current_states) then
+        -- States unchanged, skip redraw
+        return
+    end
+
+    -- States changed, update display
     local success, error_msg = pcall(update_display)
     if not success then
         ui_state.consecutive_failures = ui_state.consecutive_failures + 1
@@ -818,6 +892,9 @@ function KeybindUI.update()
         end
     else
         ui_state.consecutive_failures = 0
+        ui_state.last_update = os.clock()
+        -- Cache states for next comparison
+        ui_state.cached_states = current_states
     end
 end
 
@@ -864,6 +941,9 @@ function KeybindUI.force_reinit(job_name, max_wait_time)
 
         local update_time = os.clock() - start_time
         ui_state.total_update_time = ui_state.total_update_time + update_time
+
+        -- Clear state cache on reinit (force full redraw on next update)
+        ui_state.cached_states = {}
 
         -- Reinitialized successfully
     else
@@ -974,6 +1054,10 @@ function KeybindUI.destroy()
         _G.keybind_ui_display:destroy()
         _G.keybind_ui_display = nil
         _G.keybind_ui_visible = false
+    end
+    -- Clear state cache on destroy
+    if ui_state then
+        ui_state.cached_states = {}
     end
 end
 

@@ -4,7 +4,6 @@
 --- Handles all precast actions for Rune Fencer job:
 ---   • Debuff blocking (Amnesia, Silence, Stun)
 ---   • Universal cooldown checking (abilities/spells)
----   • Auto-ability triggering (Majesty, Divine Emblem)
 ---   • Weaponskill validation and range checking
 ---   • TP bonus optimization for weaponskills
 ---   • Fast Cast gear for spells
@@ -13,8 +12,8 @@
 ---
 --- @file    RUN_PRECAST.lua
 --- @author  Tetsouo
---- @version 1.0.0
---- @date    Created: 2025-10-03
+--- @version 1.0.1
+--- @date    Created: 2025-10-03 | Updated: 2025-11-09
 --- @requires Tetsouo architecture, MessageFormatter, CooldownChecker
 ---============================================================================
 
@@ -109,30 +108,12 @@ local cooldown_exclusions = {
 --- Automatically triggers beneficial abilities before specific spells.
 --- Uses AbilityHelper for smart cooldown checking and timing.
 ---
---- Triggered abilities:
----   • Divine Emblem - Before Flash (enmity boost)
----   • Majesty - Before Protect III/IV/V, Cure III/IV (potency boost)
+--- RUN does not have PLD-specific abilities (Divine Emblem, Majesty).
+--- Auto-abilities disabled for RUN job.
 ---============================================================================
 
 local auto_abilities = {
-    ['Flash'] = function(spell, eventArgs)
-        AbilityHelper.try_ability(spell, eventArgs, 'Divine Emblem', 2)
-    end,
-    ['Protect III'] = function(spell, eventArgs)
-        AbilityHelper.try_ability_smart(spell, eventArgs, 'Majesty', 2)
-    end,
-    ['Protect IV'] = function(spell, eventArgs)
-        AbilityHelper.try_ability_smart(spell, eventArgs, 'Majesty', 2)
-    end,
-    ['Protect V'] = function(spell, eventArgs)
-        AbilityHelper.try_ability_smart(spell, eventArgs, 'Majesty', 2)
-    end,
-    ['Cure III'] = function(spell, eventArgs)
-        AbilityHelper.try_ability_smart(spell, eventArgs, 'Majesty', 2)
-    end,
-    ['Cure IV'] = function(spell, eventArgs)
-        AbilityHelper.try_ability_smart(spell, eventArgs, 'Majesty', 2)
-    end
+    -- No auto-abilities for RUN
 }
 
 ---============================================================================
@@ -143,7 +124,7 @@ local auto_abilities = {
 --- Processing order (CRITICAL - do not reorder):
 ---   1. Debuff guard (PrecastGuard) - blocks if silenced/amnesia/stunned
 ---   2. Cooldown check (CooldownChecker) - validates ability/spell ready
----   3. Auto-abilities (AbilityHelper) - triggers Majesty/Divine Emblem
+---   3. Auto-abilities (AbilityHelper) - none for RUN
 ---   4. WS validation (WeaponSkillManager) - range check + validation
 ---   5. TP bonus calculation (TPBonusCalculator) - optimize WS gear
 ---   6. RUN-specific gear (Fast Cast for cures/Flash)
@@ -195,9 +176,9 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- end
 
     -- ==========================================================================
-    -- STEP 3: AUTO-ABILITIES (MAJESTY, DIVINE EMBLEM)
+    -- STEP 3: AUTO-ABILITIES
     -- ==========================================================================
-    -- Trigger beneficial abilities before specific spells
+    -- No auto-abilities for RUN (table is empty)
     if spell.action_type == 'Magic' and auto_abilities[spell.name] then
         auto_abilities[spell.name](spell, eventArgs)
     end

@@ -168,7 +168,10 @@
       "Bash(else echo \"settings.xml does not exist\")",
       "Bash(then if ! awk '/^function job_update/,/^end$/ {if (/^end$/) found=1} END {exit !found}' $file)",
       "Bash(then echo $file fi fi done)",
-      "Bash(while read file)"
+      "Bash(while read file)",
+      "Bash(if [ -f \"$char/config/message_modes.lua\" ])",
+      "Bash(else)",
+      "Bash(if grep -q \"CommonCommands.handle_state_change\" \"Tetsouo_$job.lua\")"
     ],
     "deny": [],
     "ask": [],
