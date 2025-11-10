@@ -3,17 +3,23 @@
 ---============================================================================
 --- Provides centralized set building for engaged states with Aftermath support.
 --- Handles:
----   • Aftermath Lv.3 detection and specialized gear application (Liberator)
----   • Weapon selection and set application
----   • HybridMode support (PDT/Accu)
+---   • Aftermath Lv.3 detection for Liberator (sets.engaged.AM3)
+---   • PDT mode support (sets.engaged.PDT for all weapons)
+---   • Weapon application via weapon sets (sets.Liberator, etc.)
 ---   • Buff variant integration (Dark Seal, Nether Void)
+---
+--- Simplified Architecture (3 sets total):
+---   • sets.engaged        - Base DPS set (all weapons)
+---   • sets.engaged.PDT    - Physical defense mode (all weapons)
+---   • sets.engaged.AM3    - Aftermath Lv.3 (Liberator mythic)
+---   • Weapons applied separately via sets[weapon_name]
 ---
 --- Used by: DRK_ENGAGED.lua
 ---
 --- @file    jobs/drk/functions/logic/drk_set_builder.lua
 --- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-11-10
+--- @version 2.2
+--- @date    Created: 2025-11-10 | Updated: 2025-11-10
 ---============================================================================
 local DRKSetBuilder = {}
 
@@ -35,11 +41,9 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 --- Aftermath Lv.3 (buff ID: 272) + Liberator = Use specialized AM3 set
 ---
 --- Priority order:
----   1. Aftermath Lv.3 + Liberator      >> sets.engaged.Liberator.AM3
----   2. Weapon-specific + HybridMode    >> sets.engaged[Weapon][HybridMode]
----   3. Weapon-specific fallback        >> sets.engaged[Weapon]
----   4. HybridMode only                 >> sets.engaged[HybridMode]
----   5. Base fallback                   >> sets.engaged
+---   1. Aftermath Lv.3 + Liberator      >> sets.engaged.AM3
+---   2. HybridMode = 'PDT'              >> sets.engaged.PDT
+---   3. Base fallback (Accu/default)    >> sets.engaged
 ---
 --- @param weapon_name string Current main weapon name
 --- @param hybrid_mode string Current HybridMode ('PDT' or 'Accu')
@@ -47,33 +51,17 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 function DRKSetBuilder.select_engaged_base(weapon_name, hybrid_mode)
     -- PRIORITY 1: Check for Aftermath Lv.3 (buff ID 272) + Liberator
     if buffactive[272] and weapon_name == 'Liberator' then
-        if sets.engaged.Liberator and sets.engaged.Liberator.AM3 then
-            return sets.engaged.Liberator.AM3
+        if sets.engaged.AM3 then
+            return sets.engaged.AM3
         end
     end
 
-    -- PRIORITY 2: Weapon-specific set with HybridMode
-    if weapon_name and sets.engaged[weapon_name] then
-        local weapon_table = sets.engaged[weapon_name]
-
-        -- Try weapon + hybrid combo (e.g., sets.engaged.Liberator.PDT)
-        if hybrid_mode and weapon_table[hybrid_mode] then
-            return weapon_table[hybrid_mode]
-        end
-
-        -- Fallback to base weapon set
-        if weapon_table.index then
-            -- This is a weapon-specific set (has .index field from set definition)
-            return weapon_table
-        end
+    -- PRIORITY 2: PDT mode (only HybridMode with dedicated set)
+    if hybrid_mode == 'PDT' and sets.engaged.PDT then
+        return sets.engaged.PDT
     end
 
-    -- PRIORITY 3: HybridMode only (no weapon-specific set)
-    if hybrid_mode and sets.engaged[hybrid_mode] then
-        return sets.engaged[hybrid_mode]
-    end
-
-    -- PRIORITY 4: Base engaged set
+    -- PRIORITY 3: Base engaged set (used for Accu mode and default)
     return sets.engaged
 end
 
@@ -81,13 +69,13 @@ end
 --- WEAPON APPLICATION
 ---============================================================================
 
---- Apply main weapon to set
+--- Apply weapon to set (like WAR)
 --- Uses weapon sets defined in drk_sets.lua (e.g., sets.Liberator).
 --- Falls back gracefully if weapon set not found.
 ---
 --- @param result table Current equipment set
 --- @param weapon_name string Weapon to apply
---- @return table Set with main weapon applied (or unchanged if no weapon set)
+--- @return table Set with weapon applied (or unchanged if no weapon set)
 function DRKSetBuilder.apply_weapon(result, weapon_name)
     if not weapon_name then
         return result
@@ -129,9 +117,9 @@ end
 --- ENGAGED SET BUILDER (PUBLIC API)
 ---============================================================================
 
---- Build complete engaged set with all DRK logic
+--- Build complete engaged set with all DRK logic (like WAR)
 --- Processing order:
----   1. Select base (Aftermath Lv.3 detection + weapon-specific + HybridMode)
+---   1. Select base (Aftermath Lv.3 detection + HybridMode)
 ---   2. Apply weapon (main/sub slots)
 ---   3. Apply buff variants (Dark Seal, Nether Void)
 ---
@@ -139,10 +127,10 @@ end
 --- @param hybrid_mode string Current HybridMode ('PDT' or 'Accu')
 --- @return table Complete engaged set with all modifications applied
 function DRKSetBuilder.build_engaged_set(weapon_name, hybrid_mode)
-    -- Step 1: Select base set (AM3 detection + weapon-specific + HybridMode)
+    -- Step 1: Select base set (AM3 detection + HybridMode)
     local result = DRKSetBuilder.select_engaged_base(weapon_name, hybrid_mode)
 
-    -- Step 2: Apply weapon (main/sub slots)
+    -- Step 2: Apply weapon (overwrites main/sub like WAR)
     result = DRKSetBuilder.apply_weapon(result, weapon_name)
 
     -- Step 3: Apply buff variants (Dark Seal, Nether Void)

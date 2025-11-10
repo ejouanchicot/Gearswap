@@ -55,15 +55,8 @@ include('../shared/jobs/rdm/functions/RDM_COMMANDS.lua')
 include('../shared/jobs/rdm/functions/RDM_MOVEMENT.lua')
 
 ---============================================================================
---- SECTION 6: DUAL-BOXING SYSTEM
+--- SECTION 6: DUAL-BOXING SYSTEM (non-critical, loaded last)
 ---============================================================================
 
 -- Load dual-boxing manager (auto-initializes and handles ALT<>>MAIN communication)
-local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
-
----============================================================================
---- INITIALIZATION COMPLETE
----============================================================================
-
--- All module functions are now available in global scope
-print('[RDM] All functions loaded (11 hooks + 1 logic module)')
+local dualbox_success, DualBoxManager = pcall(require, 'shared/utils/dualbox/dualbox_manager')

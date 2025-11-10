@@ -132,6 +132,35 @@ function RDMMessages.show_storm_requires_sch()
 end
 
 ---============================================================================
+--- SPELL OPTIMIZATION MESSAGES (NEW SYSTEM)
+---============================================================================
+
+--- Display Phalanx spell detected (debug)
+--- @param spell_name string Name of Phalanx spell detected
+--- @param target_name string Name of the target
+function RDMMessages.show_phalanx_detected(spell_name, target_name)
+    M.job('RDM', 'phalanx_detected', {
+        job = get_job_tag(),
+        spell = spell_name,
+        target = target_name
+    })
+end
+
+--- Display Phalanx II downgrade to Phalanx message
+function RDMMessages.show_phalanx_downgrade()
+    M.job('RDM', 'phalanx_downgrade', {
+        job = get_job_tag()
+    })
+end
+
+--- Display Phalanx upgrade to Phalanx II message
+function RDMMessages.show_phalanx_upgrade()
+    M.job('RDM', 'phalanx_upgrade', {
+        job = get_job_tag()
+    })
+end
+
+---============================================================================
 --- MODULE EXPORT
 ---============================================================================
 

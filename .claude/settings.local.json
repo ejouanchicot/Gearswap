@@ -171,7 +171,8 @@
       "Bash(while read file)",
       "Bash(if [ -f \"$char/config/message_modes.lua\" ])",
       "Bash(else)",
-      "Bash(if grep -q \"CommonCommands.handle_state_change\" \"Tetsouo_$job.lua\")"
+      "Bash(if grep -q \"CommonCommands.handle_state_change\" \"Tetsouo_$job.lua\")",
+      "Bash(then echo \"Missing comment: $job\")"
     ],
     "deny": [],
     "ask": [],

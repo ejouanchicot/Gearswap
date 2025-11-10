@@ -84,5 +84,24 @@ return {
     storm_requires_sch = {
         template = "{lightblue}[{job}] {orange}Storm spells require SCH subjob",
         color = 1
+    },
+
+    ---========================================================================
+    --- SPELL OPTIMIZATION MESSAGES
+    ---========================================================================
+
+    phalanx_detected = {
+        template = "{lightblue}[{job} Phalanx] {gray}Detected: {cyan}{spell} {gray}>> Target: {yellow}{target}",
+        color = 122
+    },
+
+    phalanx_downgrade = {
+        template = "{lightblue}[{job} Phalanx] {yellow}Downgrading {cyan}Phalanx II {gray}>> {green}Phalanx {gray}(self-cast)",
+        color = 158
+    },
+
+    phalanx_upgrade = {
+        template = "{lightblue}[{job} Phalanx] {yellow}Upgrading {cyan}Phalanx {gray}>> {green}Phalanx II {gray}(party-cast)",
+        color = 158
     }
 }

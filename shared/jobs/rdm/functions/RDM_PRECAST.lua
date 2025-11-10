@@ -142,6 +142,39 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 
     -- ==========================================================================
+    -- PHALANX OPTIMIZATION (Auto-swap between Phalanx/Phalanx II)
+    -- ==========================================================================
+    -- Logic:
+    --   - Phalanx II on self → Downgrade to Phalanx (better for self)
+    --   - Phalanx on others → Upgrade to Phalanx II (better for others)
+    if spell.action_type == 'Magic' and spell.skill == 'Enhancing Magic' then
+        local spell_name = spell.english or spell.name
+
+        if spell_name == 'Phalanx' or spell_name == 'Phalanx II' then
+            local target = spell.target
+            local is_self = (target and target.name == player.name)
+            local new_spell = nil
+
+            if spell_name == 'Phalanx II' and is_self then
+                -- Phalanx II on self → Cast Phalanx instead
+                new_spell = 'Phalanx'
+                MessageFormatter.show_phalanx_downgrade()
+            elseif spell_name == 'Phalanx' and not is_self then
+                -- Phalanx on others → Cast Phalanx II instead
+                new_spell = 'Phalanx II'
+                MessageFormatter.show_phalanx_upgrade()
+            end
+
+            if new_spell then
+                -- Cancel current spell and cast optimal tier
+                eventArgs.cancel = true
+                send_command('input /ma "' .. new_spell .. '" ' .. spell.target.raw)
+                return
+            end
+        end
+    end
+
+    -- ==========================================================================
     -- WEAPONSKILL MESSAGES (universal - all weapon types)
     -- ==========================================================================
     if spell.type == 'WeaponSkill' then

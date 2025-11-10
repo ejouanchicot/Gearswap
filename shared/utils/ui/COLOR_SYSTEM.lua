@@ -3,20 +3,36 @@
 ---============================================================================
 --- Centralized color management for all UI elements across all jobs.
 --- Provides consistent color coding for elements, stats, spells, and modes.
+--- Supports per-character customization via config/UI_COLOR_CONFIG.lua
 ---
 --- @file ui/COLOR_SYSTEM.lua
 --- @author Tetsouo
---- @version 3.0
---- @date Updated: 2025-10-03
+--- @version 4.0
+--- @date Updated: 2025-11-10
 ---============================================================================
 
 local ColorSystem = {}
 
 ---============================================================================
---- STATIC COLOR DEFINITIONS (NO METATABLES)
+--- CHARACTER-SPECIFIC COLOR LOADING
 ---============================================================================
 
--- Element colors (static)
+-- Try to load character-specific color config (Tetsouo/Kaories)
+local char_name = player and player.name or nil
+local custom_colors = nil
+
+if char_name then
+    local success, UIColorConfig = pcall(require, char_name .. '/config/UI_COLOR_CONFIG')
+    if success and UIColorConfig then
+        custom_colors = UIColorConfig
+    end
+end
+
+---============================================================================
+--- STATIC COLOR DEFINITIONS (WITH CUSTOM OVERRIDE SUPPORT)
+---============================================================================
+
+-- Element colors (can be overridden by custom config)
 local element_colors = {
     -- Basic elements
     Fire = "\\cs(255,100,100)",
@@ -107,6 +123,112 @@ local special_colors = {
     bar_ailment = "\\cs(255,200,150)"
 }
 
+-- Spell colors (can be overridden by custom config)
+local en_spell_colors = {}
+local spike_colors = {}
+local storm_colors = {}
+local quick_draw_colors = {}
+
+---============================================================================
+--- CUSTOM COLOR OVERRIDE (Apply character-specific colors)
+---============================================================================
+
+if custom_colors then
+    -- Helper to convert RGB {r,g,b} to "\\cs(r,g,b)"
+    local function rgb_to_code(rgb)
+        if not rgb or #rgb < 3 then return nil end
+        return string.format("\\cs(%d,%d,%d)", rgb[1], rgb[2], rgb[3])
+    end
+
+    -- Override element colors
+    if custom_colors.elements then
+        for name, rgb in pairs(custom_colors.elements) do
+            local code = rgb_to_code(rgb)
+            if code then
+                element_colors[name] = code
+            end
+        end
+    end
+
+    -- Override stat colors
+    if custom_colors.stats then
+        for name, rgb in pairs(custom_colors.stats) do
+            local code = rgb_to_code(rgb)
+            if code then
+                stat_colors[name] = code
+            end
+        end
+    end
+
+    -- Override mode colors
+    if custom_colors.modes then
+        for name, rgb in pairs(custom_colors.modes) do
+            local code = rgb_to_code(rgb)
+            if code then
+                special_colors[name] = code
+            end
+        end
+    end
+
+    -- Override bar ailment color
+    if custom_colors.bar_spells and custom_colors.bar_spells.ailment then
+        local code = rgb_to_code(custom_colors.bar_spells.ailment)
+        if code then
+            special_colors.bar_ailment = code
+        end
+    end
+
+    -- Override special colors (true/false/unknown)
+    if custom_colors.special then
+        for name, rgb in pairs(custom_colors.special) do
+            local code = rgb_to_code(rgb)
+            if code then
+                special_colors[name] = code
+            end
+        end
+    end
+
+    -- Override En spell colors
+    if custom_colors.spells and custom_colors.spells.en then
+        for spell_name, rgb in pairs(custom_colors.spells.en) do
+            local code = rgb_to_code(rgb)
+            if code then
+                en_spell_colors[spell_name] = code
+            end
+        end
+    end
+
+    -- Override Spike spell colors
+    if custom_colors.spells and custom_colors.spells.spikes then
+        for spell_name, rgb in pairs(custom_colors.spells.spikes) do
+            local code = rgb_to_code(rgb)
+            if code then
+                spike_colors[spell_name] = code
+            end
+        end
+    end
+
+    -- Override Storm spell colors
+    if custom_colors.spells and custom_colors.spells.storms then
+        for spell_name, rgb in pairs(custom_colors.spells.storms) do
+            local code = rgb_to_code(rgb)
+            if code then
+                storm_colors[spell_name] = code
+            end
+        end
+    end
+
+    -- Override Quick Draw colors (COR)
+    if custom_colors.jobs and custom_colors.jobs.quick_draw then
+        for shot_name, rgb in pairs(custom_colors.jobs.quick_draw) do
+            local code = rgb_to_code(rgb)
+            if code then
+                quick_draw_colors[shot_name] = code
+            end
+        end
+    end
+end
+
 ---============================================================================
 --- HELPER FUNCTIONS
 ---============================================================================
@@ -143,6 +265,12 @@ end
 
 --- Get color for Storm spells
 local function get_storm_color(value)
+    -- Check custom colors first
+    if storm_colors[value] then
+        return storm_colors[value]
+    end
+
+    -- Fallback to element colors
     if value:find("Fire") then
         return element_colors.Fire
     elseif value:find("Sand") or value:find("Stone") then
@@ -165,17 +293,18 @@ end
 
 --- Get color for Bar element spells
 local function get_bar_element_color(value)
-    if value:find("Barfira") then
+    -- Support both old forms (Barfira) and new forms (Barfire)
+    if value:find("Barfir") then  -- Matches both Barfira and Barfire
         return element_colors.Fire
-    elseif value:find("Barblizzara") then
+    elseif value:find("Barbliz") then  -- Matches both Barblizzara and Barblizzard
         return element_colors.Ice
-    elseif value:find("Baraera") then
+    elseif value:find("Baraer") then  -- Matches both Baraera and Baraero
         return element_colors.Wind
-    elseif value:find("Barstonra") then
+    elseif value:find("Barston") then  -- Matches both Barstonra and Barstone
         return element_colors.Earth
-    elseif value:find("Barthundra") then
+    elseif value:find("Barthund") then  -- Matches both Barthundra and Barthunder
         return element_colors.Lightning
-    elseif value:find("Barwatera") then
+    elseif value:find("Barwater") or value:find("Barwatera") then
         return element_colors.Water
     end
     return nil
@@ -183,6 +312,12 @@ end
 
 --- Get color for En spells
 local function get_en_spell_color(value)
+    -- Check custom colors first
+    if en_spell_colors[value] then
+        return en_spell_colors[value]
+    end
+
+    -- Fallback to element colors
     if value:find("Enfire") then
         return element_colors.Fire
     elseif value:find("Enblizzard") then
@@ -201,6 +336,12 @@ end
 
 --- Get color for Spike spells
 local function get_spike_color(value)
+    -- Check custom colors first
+    if spike_colors[value] then
+        return spike_colors[value]
+    end
+
+    -- Fallback to element colors
     if value == "Blaze Spikes" then
         return element_colors.Fire
     elseif value == "Ice Spikes" then
@@ -213,21 +354,27 @@ end
 
 --- Get color for Quick Draw spells (COR)
 local function get_quick_draw_color(value)
-    if value == "Fire Shot" or value == "Burning Shot" or value == "Flaming Shot" or value == "Fiery Shot" then
+    -- Check custom colors first
+    if quick_draw_colors[value] then
+        return quick_draw_colors[value]
+    end
+
+    -- Fallback to element colors
+    if value == "Fire Shot" then
         return element_colors.Fire
-    elseif value == "Ice Shot" or value == "Freezing Shot" or value == "Icy Shot" then
+    elseif value == "Ice Shot" then
         return element_colors.Blizzard
-    elseif value == "Wind Shot" or value == "Blast Shot" then
+    elseif value == "Wind Shot" then
         return element_colors.Aero
-    elseif value == "Earth Shot" or value == "Slug Shot" then
+    elseif value == "Earth Shot"  then
         return element_colors.Stone
-    elseif value == "Thunder Shot" or value == "Lightning Shot" then
+    elseif value == "Thunder Shot"  then
         return element_colors.Thunder
-    elseif value == "Water Shot" or value == "Aqua Shot" then
+    elseif value == "Water Shot"  then
         return element_colors.Water
-    elseif value == "Light Shot" or value == "Sniper Shot" then
+    elseif value == "Light Shot"  then
         return element_colors.Light
-    elseif value == "Dark Shot" or value == "Chaos Shot" then
+    elseif value == "Dark Shot"  then
         return element_colors.Dark
     end
     return nil

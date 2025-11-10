@@ -3,9 +3,10 @@
 ---============================================================================
 --- Centralized midcast gear selection system for ALL jobs with support for:
 ---   - Nested sets (e.g., mnd_potency.Valeur, self.Duration, FreeNuke.Fire)
----   - Complete fallback chain (nested > type > mode > base)
+---   - Complete fallback chain (root type > nested type > mode > base)
 ---   - Universal API for all magic skill types
 ---   - Database integration (optional)
+---   - Root-level spell_family sets (sets.midcast.BarAilment, .Enspell, .Gain)
 ---   - Guaranteed equipment (always fallback to base set)
 ---
 --- USAGE:
@@ -13,17 +14,16 @@
 ---
 ---   -- In job_post_midcast:
 ---   MidcastManager.select_set({
----       skill = 'Enfeebling Magic',
+---       skill = 'Enhancing Magic',
 ---       spell = spell,
----       mode_state = state.EnfeebleMode,
----       database_func = RDMSpells.get_enfeebling_type,
----       extra_conditions = { ... }
+---       mode_state = state.EnhancingMode,
+---       database_func = EnhancingSPELLS.get_spell_family  -- Returns 'BarAilment', 'Enspell', etc.
 ---   })
 ---
 --- @file midcast_manager.lua
 --- @author Tetsouo
---- @version 1.0 - Universal Midcast Manager
---- @date Created: 2025-10-24
+--- @version 2.0 - Added root-level spell_family support (PRIORITY 6)
+--- @date Created: 2025-10-24 | Updated: 2025-11-10
 ---============================================================================
 
 local MidcastManager = {}
@@ -114,7 +114,7 @@ function MidcastManager.select_set(config)
     if is_debug_enabled() and config and config.spell then
         local spell_name = config.spell.english or 'Unknown'
         local target_name = (config.spell.target and config.spell.target.name) or
-                           (player and player.name) or 'Unknown'
+            (player and player.name) or 'Unknown'
         MessageMidcast.show_debug_header(spell_name, config.skill, target_name)
     end
 
@@ -344,31 +344,46 @@ function MidcastManager.select_set(config)
         end
     end
 
-    -- PRIORITY 6: Try type-specific set (nested under skill)
-    -- Lower priority than target to allow target-specific sets to override
+    -- PRIORITY 6: Try type-specific set at ROOT level (spell_family)
+    -- Example: sets.midcast.BarAilment, sets.midcast.Enspell, sets.midcast.Gain
+    -- Allows universal spell_family sets without nesting under skill
+    if not selected_set and type_value then
+        if sets.midcast[type_value] then
+            selected_set = sets.midcast[type_value]
+            selected_set_path = 'sets.midcast.' .. type_value
+            if is_debug_enabled() then
+                MessageMidcast.show_priority_check(6, 'Type root (' .. type_value .. ')', true)
+            end
+        elseif is_debug_enabled() then
+            MessageMidcast.show_priority_check(6, 'Type root (' .. type_value .. ')', false)
+        end
+    end
+
+    -- PRIORITY 7: Try type-specific set (nested under skill)
+    -- Lower priority than target and root type to allow more specific sets to override
     -- Example: sets.midcast['Enhancing Magic'].Refresh
     if not selected_set and type_value then
         if base_set[type_value] then
             selected_set = base_set[type_value]
             selected_set_path = 'sets.midcast["' .. config.skill .. '"].' .. type_value
             if is_debug_enabled() then
-                MessageMidcast.show_priority_check(6, 'Type (' .. type_value .. ')', true)
+                MessageMidcast.show_priority_check(7, 'Type (' .. type_value .. ')', true)
             end
         end
     end
 
-    -- PRIORITY 7: Try mode-specific set (nested under skill)
+    -- PRIORITY 8: Try mode-specific set (nested under skill)
     if not selected_set and mode_value then
         if base_set[mode_value] then
             selected_set = base_set[mode_value]
             selected_set_path = 'sets.midcast["' .. config.skill .. '"].' .. mode_value
             if is_debug_enabled() then
-                MessageMidcast.show_priority_check(7, 'Mode (' .. mode_value .. ')', true)
+                MessageMidcast.show_priority_check(8, 'Mode (' .. mode_value .. ')', true)
             end
         end
     end
 
-    -- PRIORITY 8: Final fallback - base set (skill only)
+    -- PRIORITY 9: Final fallback - base set (skill only)
     if not selected_set then
         selected_set = base_set
         selected_set_path = 'sets.midcast["' .. config.skill .. '"]'

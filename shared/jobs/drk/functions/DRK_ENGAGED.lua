@@ -3,20 +3,19 @@
 ---============================================================================
 --- Handles all engaged (combat) state logic for Dark Knight job:
 ---   • Aftermath Lv.3 detection and optimization (Liberator Mythic)
----   • Weapon-specific engaged set selection (Caladbolg, Liberator, etc.)
----   • Combat set selection based on HybridMode (PDT/Accu)
+---   • HybridMode support (PDT mode for all weapons)
 ---   • Dynamic weapon application to engaged sets
 ---   • Combat state transitions
 ---   • Buff anticipation (Dark Seal, Nether Void)
 ---
---- Weapon-Specific Engaged Sets:
----   • Liberator   - Mythic AM3 crit build (sets.engaged.Liberator.AM3)
----   • Caladbolg   - High STP scythe build
----   • Apocalypse  - Relic Catastrophe spam build
----   • Foenaria    - Great Axe balanced build
----   • Naegling    - 1H sword fast TP build
----   • Loxotic     - 1H club balanced build
----   • Others      - Use base engaged set
+--- Simplified Engaged Structure (3 sets total):
+---   • sets.engaged        - Base DPS set (all weapons, used for Accu mode)
+---   • sets.engaged.PDT    - Physical defense mode (all weapons)
+---   • sets.engaged.AM3    - Aftermath Lv.3 (Liberator mythic)
+---
+--- Weapon Application:
+---   • Weapons applied separately via sets[weapon_name]
+---   • Examples: sets.Liberator, sets.Caladbolg, sets.Naegling, etc.
 ---
 --- Buff Variants (optional):
 ---   • .DarkSeal           - Dark Seal active (Dark Magic duration +10%/merit)
@@ -25,7 +24,7 @@
 ---
 --- @file    DRK_ENGAGED.lua
 --- @author  Tetsouo
---- @version 4.0.0 - Aftermath Lv.3 Support + SetBuilder Integration
+--- @version 5.2.0 - Simplified to 3 sets (engaged, engaged.PDT, engaged.AM3)
 --- @date    Created: 2025-10-23 | Updated: 2025-11-10
 --- @requires Tetsouo architecture, drk_set_builder
 ---============================================================================

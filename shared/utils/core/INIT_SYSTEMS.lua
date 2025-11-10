@@ -74,7 +74,20 @@ else
 end
 
 ---============================================================================
---- SYSTEM 4: FUTURE SYSTEMS
+--- SYSTEM 4: STATE DISPLAY OVERRIDE (Conditional State Messages)
+---============================================================================
+
+local state_display_success, StateDisplayOverride = pcall(require, 'shared/utils/core/state_display_override')
+
+if state_display_success and StateDisplayOverride then
+    StateDisplayOverride.init()
+    -- Silent init - overrides Mote-Include's display_current_state globally
+else
+    MessageInit.show_module_load_failed('State Display Override', StateDisplayOverride)
+end
+
+---============================================================================
+--- SYSTEM 5: FUTURE SYSTEMS
 ---============================================================================
 
 -- Example template for adding new universal systems:

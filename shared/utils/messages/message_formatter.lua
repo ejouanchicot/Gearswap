@@ -259,6 +259,9 @@ MessageFormatter.show_bar_element_not_configured = RDMMessages.show_bar_element_
 MessageFormatter.show_bar_ailment_not_configured = RDMMessages.show_bar_ailment_not_configured
 MessageFormatter.show_spike_not_configured = RDMMessages.show_spike_not_configured
 MessageFormatter.show_storm_requires_sch = RDMMessages.show_storm_requires_sch
+MessageFormatter.show_phalanx_detected = RDMMessages.show_phalanx_detected
+MessageFormatter.show_phalanx_downgrade = RDMMessages.show_phalanx_downgrade
+MessageFormatter.show_phalanx_upgrade = RDMMessages.show_phalanx_upgrade
 
 -- GEO functions (Geomancer)
 MessageFormatter.show_indi_cast = GEOMessages.show_indi_cast

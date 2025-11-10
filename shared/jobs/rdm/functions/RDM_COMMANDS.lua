@@ -146,10 +146,13 @@ function job_self_command(cmdParams, eventArgs)
                 MessageFormatter.show_element_list()
             end
         else
-            -- Cycle through enspell state
-            if state.Enspell then
-                state.Enspell:cycle()
-                MessageFormatter.show_enspell_current(state.Enspell.value)
+            -- Cycle through enspell state (silent - no message needed)
+            if state.EnSpell then
+                state.EnSpell:cycle()
+                -- Update UI manually (Mote doesn't trigger job_update for custom commands)
+                if job_update then
+                    job_update()
+                end
             end
         end
 
@@ -253,9 +256,9 @@ function job_self_command(cmdParams, eventArgs)
         -- Cast current selected Enspell
         eventArgs.handled = true
 
-        if state.Enspell and state.Enspell.value ~= 'Off' then
-            send_command('input /ma "' .. state.Enspell.value .. '" <me>')
-            MessageFormatter.show_spell_casting(state.Enspell.value)
+        if state.EnSpell and state.EnSpell.value ~= 'Off' then
+            send_command('input /ma "' .. state.EnSpell.value .. '" <me>')
+            MessageFormatter.show_spell_casting(state.EnSpell.value)
         else
             MessageFormatter.show_no_enspell_selected()
         end

@@ -33,11 +33,16 @@ function customize_idle_set(idleSet)
         return {}
     end
 
-    -- Start with BASE idle set (ignore HybridMode set passed by Mote)
-    -- This ensures weapon sets are applied correctly
-    local custom_set = sets.idle
+    -- Step 1: Select base set (HybridMode like WAR)
+    local custom_set = idleSet
+    if state.HybridMode and state.HybridMode.current then
+        local hybrid_set = sets.idle[state.HybridMode.current]
+        if hybrid_set then
+            custom_set = hybrid_set
+        end
+    end
 
-    -- Step 1: Apply weapon FIRST
+    -- Step 2: Apply weapon (overwrites main/sub like WAR)
     if state.MainWeapon and state.MainWeapon.current then
         local weapon_set = sets[state.MainWeapon.current]
         if weapon_set then
@@ -45,24 +50,8 @@ function customize_idle_set(idleSet)
         end
     end
 
-    -- Step 2: Apply HybridMode (PDT/Normal) AFTER weapons
-    -- Filter out main/sub to preserve weapons
-    if state.HybridMode and state.HybridMode.current then
-        local hybrid_set = sets.idle[state.HybridMode.current]
-        if hybrid_set then
-            local hybrid_no_weapons = {}
-            for slot, item in pairs(hybrid_set) do
-                if slot ~= 'main' and slot ~= 'sub' then
-                    hybrid_no_weapons[slot] = item
-                end
-            end
-            custom_set = set_combine(custom_set, hybrid_no_weapons)
-        end
-    end
-
     -- Step 3: Apply movement gear
     if state.Moving and state.Moving.value == 'true' then
-        -- Use sets.MoveSpeed (AutoMove standard)
         if sets.MoveSpeed then
             custom_set = set_combine(custom_set, sets.MoveSpeed)
         end
