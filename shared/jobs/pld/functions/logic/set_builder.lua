@@ -133,6 +133,16 @@ function SetBuilder.select_engaged_base(base_set)
     if state.HybridMode and state.HybridMode.current then
         local hybrid_set = sets.engaged[state.HybridMode.current]
         if hybrid_set then
+            -- If Shining weapon, return HybridMode set WITHOUT sub (Alber will be applied after)
+            if state.MainWeapon and state.MainWeapon.current == 'Shining' then
+                local hybrid_no_sub = {}
+                for slot, item in pairs(hybrid_set) do
+                    if slot ~= 'sub' then
+                        hybrid_no_sub[slot] = item
+                    end
+                end
+                return hybrid_no_sub
+            end
             return hybrid_set
         end
     end
