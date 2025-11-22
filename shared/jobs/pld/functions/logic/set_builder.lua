@@ -5,7 +5,7 @@
 --- Handles complex PLD-specific gear logic:
 ---   • Main weapon selection (Burtgang, Naegling, Shining, Malevo)
 ---   • Shield selection (Duban, Aegis, Blurred Shield +1)
----   • Shining exception (Alber Strap grip requirement)
+---   • Shining exception (Alber Strap grip requirement requirement)
 ---   • HybridMode application (PDT/MDT with shield awareness)
 ---   • XP mode support (idleXp/meleeXp sets)
 ---   • Movement speed gear
@@ -62,7 +62,7 @@ end
 --- @param in_town boolean Whether player is in town
 --- @return table Set with shield applied
 function SetBuilder.apply_shield(result, in_town)
-    -- Exception 1: Shining always uses Alber Strap (1H sword needs grip)
+    -- Exception 1: Shining always uses Alber Strap (Polearm needs grip)
     if state.MainWeapon and state.MainWeapon.current == 'Shining' then
         result = set_combine(result, sets.Alber)
         return result
