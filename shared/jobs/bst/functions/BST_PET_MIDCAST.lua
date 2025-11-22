@@ -25,18 +25,7 @@ end
 ---============================================================================
 
 -- Debug helper
-local function show_equipment_pet_mid(label)
-    if not _G.BST_DEBUG_PRECAST then return end
-
-    local eq = player.equipment
-    add_to_chat(8, '========================================================')
-    add_to_chat(121, '[BST DEBUG] ' .. label)
-    add_to_chat(8, '--------------------------------------------------------')
-    add_to_chat(8, '  main: ' .. (eq.main or 'empty'))
-    add_to_chat(8, '  hands: ' .. (eq.hands or 'empty'))
-    add_to_chat(8, '  legs: ' .. (eq.legs or 'empty'))
-    add_to_chat(8, '========================================================')
-end
+-- Debug helperlocal function show_equipment_pet_mid(label)    if not _G.BST_DEBUG_PRECAST then return end    -- Lazy load MessageFormatter if needed    local MessageFormatter = require('shared/utils/messages/message_formatter')    local eq = player.equipment    MessageFormatter.show_debug('PET_MIDCAST', '========================================================')    MessageFormatter.show_debug('PET_MIDCAST', label)    MessageFormatter.show_debug('PET_MIDCAST', '--------------------------------------------------------')    MessageFormatter.show_debug('PET_MIDCAST', '  main: ' .. (eq.main or 'empty'))    MessageFormatter.show_debug('PET_MIDCAST', '  hands: ' .. (eq.hands or 'empty'))    MessageFormatter.show_debug('PET_MIDCAST', '  legs: ' .. (eq.legs or 'empty'))    MessageFormatter.show_debug('PET_MIDCAST', '========================================================')end
 
 --- Called during pet ability midcast (specifically for Ready Moves)
 --- @param spell table Spell/ability data

@@ -430,4 +430,36 @@ MessageFormatter.show_curemanager_not_loaded = MessageWHM.show_curemanager_not_l
 
 -- DNC functions removed - migrated to JABuffs (use show_ja_activated instead)
 
+
+---============================================================================
+--- DEBUG MESSAGES
+---============================================================================
+
+--- Show debug message (gray color, for conditional debug output)
+--- @param prefix string Debug prefix (e.g., "BST", "PET_PRECAST", "RDM Midcast")
+--- @param message string Debug message text
+--- Show info message (cyan color, for user-facing command output)
+--- @param prefix string Info prefix (e.g., "WAR", "Command")
+--- @param message string Info message text
+function MessageFormatter.show_info(prefix, message)
+    local MessageRenderer = require('shared/utils/messages/core/message_renderer')
+    local formatted = string.format('[%s] %s', prefix, message)
+    MessageRenderer.send(formatted, 121)  -- Color 121 = cyan info
+end
+
+--- Show error message (red color, for error output)
+--- @param prefix string Error prefix (e.g., "WAR", "ERROR")
+--- @param message string Error message text
+function MessageFormatter.show_error(prefix, message)
+    local MessageRenderer = require('shared/utils/messages/core/message_renderer')
+    local formatted = string.format('[%s] %s', prefix, message)
+    MessageRenderer.send(formatted, 167)  -- Color 167 = red error
+end
+
+function MessageFormatter.show_debug(prefix, message)
+    local MessageRenderer = require('shared/utils/messages/core/message_renderer')
+    local formatted = string.format('[%s] %s', prefix, message)
+    MessageRenderer.send(formatted, 8)  -- Color 8 = gray debug
+end
+
 return MessageFormatter

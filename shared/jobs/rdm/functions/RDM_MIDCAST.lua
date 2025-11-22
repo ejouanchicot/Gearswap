@@ -31,6 +31,7 @@
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+local MessageFormatter = nil
 local MidcastManager = nil
 local EnfeeblingSPELLS = nil
 local EnhancingSPELLS = nil
@@ -41,6 +42,7 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
+MessageFormatter = require('shared/utils/messages/message_formatter')
     MidcastManager = require('shared/utils/midcast/midcast_manager')
     MessageRDMMidcast = require('shared/utils/messages/formatters/jobs/message_rdm_midcast')
 
@@ -168,7 +170,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         if buffactive and buffactive['Accession'] and spell.english and spell.english:match("^Phalanx") then
             equip(sets.midcast['Enhancing Magic'])
             if debug_enabled then
-                add_to_chat(158, '[RDM Midcast] Phalanx + Accession detected → Base Enhancing set')
+                MessageFormatter.show_debug('RDM Midcast', 'Phalanx + Accession detected → Base Enhancing set")
             end
             return
         end
@@ -221,7 +223,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     ---  ─────────────────────────────────────────────────────────────────────────
     if spell.skill == 'Healing Magic' then
         if debug_enabled then
-            add_to_chat(158, '[RDM Midcast] Healing Magic detected: ' .. (spell.name or 'Unknown'))
+            MessageFormatter.show_debug('RDM Midcast', 'Healing Magic detected: ' .. (spell.name or 'Unknown'))
         end
 
         -- Select set using MidcastManager
@@ -232,7 +234,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         })
 
         if debug_enabled then
-            add_to_chat(158, '[RDM Midcast] Healing Magic result: ' .. tostring(success))
+            MessageFormatter.show_debug('RDM Midcast', 'Healing Magic result: ' .. tostring(success))
         end
 
         return
@@ -266,7 +268,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     ---  ─────────────────────────────────────────────────────────────────────────
     if spell.skill == 'Dark Magic' then
         if debug_enabled then
-            add_to_chat(158, '[RDM Midcast] Dark Magic detected: ' .. (spell.name or 'Unknown'))
+            MessageFormatter.show_debug('RDM Midcast', 'Dark Magic detected: ' .. (spell.name or 'Unknown'))
         end
 
         -- Select set using MidcastManager
@@ -277,7 +279,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         })
 
         if debug_enabled then
-            add_to_chat(158, '[RDM Midcast] Dark Magic result: ' .. tostring(success))
+            MessageFormatter.show_debug('RDM Midcast', 'Dark Magic result: ' .. tostring(success))
         end
 
         return
@@ -296,7 +298,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     --   - Any other magic type
     if spell.type == 'Magic' and spell.skill then
         if debug_enabled then
-            add_to_chat(158, '[RDM Midcast] Universal Magic detected: ' .. (spell.skill or 'Unknown') .. ' - ' .. (spell.name or 'Unknown'))
+            MessageFormatter.show_debug('RDM Midcast', 'Universal Magic detected: ' .. (spell.skill or 'Unknown') .. ' - ' .. (spell.name or 'Unknown'))
         end
 
         -- Select set using MidcastManager
@@ -307,7 +309,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         })
 
         if debug_enabled then
-            add_to_chat(158, '[RDM Midcast] Universal Magic result: ' .. tostring(success))
+            MessageFormatter.show_debug('RDM Midcast', 'Universal Magic result: ' .. tostring(success))
         end
 
         return

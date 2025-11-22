@@ -25,19 +25,7 @@ if _G.BST_DEBUG_PRECAST == nil then
     _G.BST_DEBUG_PRECAST = false  -- Toggle: //gs c debugbst
 end
 
--- Debug helper to show current equipment
-local function show_current_equipment(label)
-    if not _G.BST_DEBUG_PRECAST then return end
-
-    local eq = player.equipment
-    add_to_chat(8, '========================================================')
-    add_to_chat(121, '[BST DEBUG] ' .. label)
-    add_to_chat(8, '--------------------------------------------------------')
-    add_to_chat(8, '  main: ' .. (eq.main or 'empty'))
-    add_to_chat(8, '  hands: ' .. (eq.hands or 'empty'))
-    add_to_chat(8, '  legs: ' .. (eq.legs or 'empty'))
-    add_to_chat(8, '========================================================')
-end
+-- Debug helper to show current equipmentlocal function show_current_equipment(label)    if not _G.BST_DEBUG_PRECAST then return end    -- Lazy load MessageFormatter if needed    if not MessageFormatter then        MessageFormatter = require('shared/utils/messages/message_formatter')    end    local eq = player.equipment    MessageFormatter.show_debug('BST', '========================================================')    MessageFormatter.show_debug('BST', label)    MessageFormatter.show_debug('BST', '--------------------------------------------------------')    MessageFormatter.show_debug('BST', '  main: ' .. (eq.main or 'empty'))    MessageFormatter.show_debug('BST', '  hands: ' .. (eq.hands or 'empty'))    MessageFormatter.show_debug('BST', '  legs: ' .. (eq.legs or 'empty'))    MessageFormatter.show_debug('BST', '========================================================')end
 
 local MessageFormatter = nil
 local MessagePrecast = nil  -- Debug formatter

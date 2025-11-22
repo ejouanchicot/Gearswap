@@ -221,7 +221,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
             if _G.locked_song_name == spell.english and _G.locked_instrument then
                 equip({range = _G.locked_instrument})
                 if _G.MidcastManagerDebugState then
-                    add_to_chat(8, '[BRD] Instrument locked: ' .. _G.locked_instrument)
+                    MessageFormatter.show_debug('BRD', 'Instrument locked: ' .. _G.locked_instrument)
                 end
             end
         end

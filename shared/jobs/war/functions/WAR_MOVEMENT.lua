@@ -13,6 +13,7 @@
 --- @date    Created: 2025-09-29
 --- @requires utils/movement/automove.lua
 ---============================================================================
+-- Lazy-loaded dependencieslocal MessageFormatter = nil
 ---============================================================================
 --- RETALIATION AUTO-CANCEL SYSTEM
 ---============================================================================
@@ -26,10 +27,7 @@ local retaliation_config = {
 
 -- Debug helper
 local function debug_print(msg)
-    if retaliation_config.debug_mode then
-        add_to_chat(8, '[WAR_MOVEMENT] ' .. msg)
-    end
-end
+-- Debug helperlocal function debug_print(msg)    if retaliation_config.debug_mode then        if not MessageFormatter then            MessageFormatter = require('shared/utils/messages/message_formatter')        end        MessageFormatter.show_debug('WAR_MOVEMENT', msg)    endend
 
 -- DEFERRED REGISTRATION: Wait for AutoMove to load (it loads with 0.5s delay in INIT_SYSTEMS)
 -- We wait 0.6s (AutoMove at 0.5s + 100ms margin) for faster callback registration
@@ -150,7 +148,10 @@ end
 function toggle_retaliation_debug()
     retaliation_config.debug_mode = not retaliation_config.debug_mode
     local status = retaliation_config.debug_mode and 'ENABLED' or 'DISABLED'
-    add_to_chat(121, '[WAR] Retaliation debug mode: ' .. status)
+    if not MessageFormatter then
+        MessageFormatter = require('shared/utils/messages/message_formatter')
+    end
+    MessageFormatter.show_info('WAR', 'Retaliation debug mode: ' .. status)
     return retaliation_config.debug_mode
 end
 

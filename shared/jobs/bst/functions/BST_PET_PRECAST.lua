@@ -14,14 +14,21 @@
 --- PET PRECAST HOOK
 ---============================================================================
 
+local MessageFormatter = nil
+
 --- Called before pet abilities (Ready Moves, Reward, Spur, etc.)
 --- This is the LAST precast hook (executes after Mote-Include)
 --- @param spell table Spell/ability data
 --- @return void
 function job_pet_precast(spell)
-    add_to_chat(159, '========================================')
-    add_to_chat(159, '[PET_PRECAST] Called for: ' .. (spell.name or 'unknown'))
-    add_to_chat(159, '========================================')
+    if _G.BST_DEBUG_PRECAST then
+        if not MessageFormatter then
+            MessageFormatter = require('shared/utils/messages/message_formatter')
+        end
+        MessageFormatter.show_debug('PET_PRECAST', '========================================')
+        MessageFormatter.show_debug('PET_PRECAST', 'Called for: ' .. (spell.name or 'unknown'))
+        MessageFormatter.show_debug('PET_PRECAST', '========================================')
+    end
 
     local set = nil
     local set_name = nil
@@ -33,7 +40,9 @@ function job_pet_precast(spell)
         -- Flag set by job_precast = this is a Ready Move
         set = sets.precast.JA['Sic']
         set_name = "Sic"
-        add_to_chat(121, '[PET_PRECAST] Ready Move detected - equipping Sic set')
+        if _G.BST_DEBUG_PRECAST then
+            MessageFormatter.show_debug('PET_PRECAST', 'Ready Move detected - equipping Sic set')
+        end
 
     -- ==========================================================================
     -- OTHER PET ABILITIES (non-Ready Moves)
@@ -52,23 +61,25 @@ function job_pet_precast(spell)
     end
 
     -- BEFORE equip
-    if set_name then
+    if set_name and _G.BST_DEBUG_PRECAST then
         local eq_before = player.equipment
-        add_to_chat(8, '[PET_PRECAST] BEFORE equip - legs: ' .. (eq_before.legs or 'empty'))
+        MessageFormatter.show_debug('PET_PRECAST', 'BEFORE equip - legs: ' .. (eq_before.legs or 'empty'))
     end
 
     -- Equip set if found
     if set then
         equip(set)
-        add_to_chat(121, '[PET_PRECAST] Equipped set: ' .. set_name)
+        if _G.BST_DEBUG_PRECAST then
+            MessageFormatter.show_debug('PET_PRECAST', 'Equipped set: ' .. set_name)
 
-        -- Check AFTER equip (may be buffered)
-        coroutine.schedule(function()
-            local eq_after = player.equipment
-            add_to_chat(205, '[PET_PRECAST] AFTER 0.1s - legs: ' .. (eq_after.legs or 'empty'))
-        end, 0.1)
-    else
-        add_to_chat(167, '[PET_PRECAST] No set found for: ' .. (spell.name or 'unknown'))
+            -- Check AFTER equip (may be buffered)
+            coroutine.schedule(function()
+                local eq_after = player.equipment
+                MessageFormatter.show_debug('PET_PRECAST', 'AFTER 0.1s - legs: ' .. (eq_after.legs or 'empty'))
+            end, 0.1)
+        end
+    elseif _G.BST_DEBUG_PRECAST then
+        MessageFormatter.show_debug('PET_PRECAST', 'No set found for: ' .. (spell.name or 'unknown'))
     end
 end
 

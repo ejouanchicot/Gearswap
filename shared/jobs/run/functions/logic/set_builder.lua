@@ -64,7 +64,7 @@ function SetBuilder.apply_grip(result)
     if state.MainWeapon and state.MainWeapon.current == 'Lycurgos' then
         -- DEBUG: Confirm Lycurgos is detected and grip is skipped
         if _G.DEBUG_RUN_WEAPONS then
-            add_to_chat(8, '[RUN SetBuilder] Lycurgos detected - skipping grip application')
+            MessageFormatter.show_debug('RUN SetBuilder', 'Lycurgos detected - skipping grip application")
         end
         return result
     end
@@ -74,7 +74,7 @@ function SetBuilder.apply_grip(result)
         local grip_set = sets[state.SubWeapon.current]
         if grip_set then
             if _G.DEBUG_RUN_WEAPONS then
-                add_to_chat(8, '[RUN SetBuilder] Applying grip: ' .. state.SubWeapon.current)
+                MessageFormatter.show_debug('RUN SetBuilder', 'Applying grip: ' .. state.SubWeapon.current)
             end
             result = set_combine(result, grip_set)
         end
