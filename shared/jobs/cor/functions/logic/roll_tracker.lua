@@ -52,6 +52,15 @@ if not _G.cor_natural_eleven_active then
     _G.cor_natural_eleven_active = false
 end
 
+-- Duplicate prevention for roll messages (Windower action event fires multiple times)
+if not _G.cor_last_roll_display then
+    _G.cor_last_roll_display = {
+        name = nil,
+        value = nil,
+        timestamp = nil
+    }
+end
+
 ---============================================================================
 --- ROLL DETECTION (Packet Parsing)
 ---============================================================================
@@ -111,6 +120,24 @@ end
 --- @param roll_name string Name of the roll
 --- @param roll_value number Value rolled (1-12)
 function RollTracker.on_roll_cast(roll_name, roll_value)
+    -- ==========================================================================
+    -- DUPLICATE PREVENTION (Windower action event fires multiple times)
+    -- ==========================================================================
+    -- Check if this exact roll+value was just displayed (within 500ms)
+    local current_time = os.clock()
+    if _G.cor_last_roll_display.name == roll_name and
+       _G.cor_last_roll_display.value == roll_value and
+       _G.cor_last_roll_display.timestamp and
+       (current_time - _G.cor_last_roll_display.timestamp) < 0.5 then
+        -- Duplicate detected - skip processing
+        return
+    end
+
+    -- Update last display timestamp
+    _G.cor_last_roll_display.name = roll_name
+    _G.cor_last_roll_display.value = roll_value
+    _G.cor_last_roll_display.timestamp = current_time
+
     -- Check if bust (12)
     if roll_value == 12 then
         RollTracker.handle_bust(roll_name)

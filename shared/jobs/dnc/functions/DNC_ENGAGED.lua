@@ -1,55 +1,43 @@
----============================================================================
---- DNC Engaged Module - Combat State Management
----============================================================================
---- Handles all engaged state logic for Dancer job with dynamic gear selection.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DNC Engaged Module - Combat State Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all engaged state logic for Red Mage job:
+---   - Combat set selection based on EngagedMode (DT, Enspell, Refresh, TP)
+---   - Dual wield detection and optimization (NIN subjob)
+---   - Dynamic weapon application to engaged sets
+---   - Combat state transitions
 ---
---- Features:
----   • Combat set selection based on HybridMode (PDT/Normal)
----   • Dynamic weapon application to engaged sets (Mpu Gandring/Demersal)
----   • Combat state transitions (idle >> engaged)
----   • Dual Wield tier optimization (automatic DW cap calculation)
----   • SetBuilder integration for modular set construction
----   • Fan Dance buff integration (20% DT)
----
---- Dependencies:
----   • SetBuilder (logic) - shared engaged set construction
----
---- @file    DNC_ENGAGED.lua
---- @author  Tetsouo
---- @version 2.0 - Logic Extracted to logic/
---- @date    Created: 2025-10-04
---- @date    Updated: 2025-10-06
----============================================================================
+---   @file    shared/jobs/dnc/functions/DNC_ENGAGED.lua
+---   @author  Tetsouo
+---   @version 2.1 - Removed dead code + refactored header
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load DNC logic modules
-local SetBuilder = require('shared/jobs/dnc/functions/logic/set_builder')
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- ENGAGED HOOKS
----============================================================================
+local SetBuilder = nil
 
---- Apply weapon sets and movement gear to all engaged configurations
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ENGAGED HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
+
+--- Apply weapon sets, mode selection, and movement gear to all engaged configurations
 --- @param meleeSet table The engaged set to customize
---- @return table Modified engaged set with current weapon and movement gear
+--- @return table Modified engaged set with current weapon, mode, and movement gear
 function customize_melee_set(meleeSet)
-    -- Validate input
+    -- Lazy load SetBuilder on first engage
+    if not SetBuilder then
+        SetBuilder = require('shared/jobs/dnc/functions/logic/set_builder')
+    end
+
     if not meleeSet then
         return {}
     end
 
-    -- Build complete engaged set using SetBuilder logic
     return SetBuilder.build_engaged_set(meleeSet)
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
-
--- Make customize_melee_set available globally for GearSwap
+-- Export to global scope (used by Mote-Include via include())
 _G.customize_melee_set = customize_melee_set
-
--- Also export as module for potential future use
-local DNC_ENGAGED = {}
-DNC_ENGAGED.customize_melee_set = customize_melee_set
-
-return DNC_ENGAGED

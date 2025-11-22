@@ -19,38 +19,57 @@
 --- SECTION 1: MESSAGE SYSTEM
 ---============================================================================
 -- Message system (must load first for buff status display)
+-- ═══════════════════════════════════════════════════════════════════
+-- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+-- ═══════════════════════════════════════════════════════════════════
+local Profiler = require('shared/utils/debug/performance_profiler')
+local TIMER = Profiler.create_timer('PLD')
+-- ═══════════════════════════════════════════════════════════════════
+
 include('../shared/utils/messages/formatters/magic/message_buffs.lua')
+TIMER('message_buffs')
 
 ---============================================================================
 --- SECTION 2: COMBAT ACTION HOOKS
 ---============================================================================
 
 include('../shared/jobs/pld/functions/PLD_PRECAST.lua')
+TIMER('PLD_PRECAST')
 include('../shared/jobs/pld/functions/PLD_MIDCAST.lua')
+TIMER('PLD_MIDCAST')
 include('../shared/jobs/pld/functions/PLD_AFTERCAST.lua')
+TIMER('PLD_AFTERCAST')
 
 ---============================================================================
 --- SECTION 3: GEAR SELECTION HOOKS
 ---============================================================================
 
 include('../shared/jobs/pld/functions/PLD_IDLE.lua')
+TIMER('PLD_IDLE')
 include('../shared/jobs/pld/functions/PLD_ENGAGED.lua')
+TIMER('PLD_ENGAGED')
 
 ---============================================================================
 --- SECTION 4: EVENT MONITORING HOOKS
 ---============================================================================
 
 include('../shared/jobs/pld/functions/PLD_STATUS.lua')
+TIMER('PLD_STATUS')
 include('../shared/jobs/pld/functions/PLD_BUFFS.lua')
+TIMER('PLD_BUFFS')
 
 ---============================================================================
 --- SECTION 5: UTILITY HOOKS
 ---============================================================================
 
 include('../shared/jobs/pld/functions/PLD_LOCKSTYLE.lua')
+TIMER('PLD_LOCKSTYLE')
 include('../shared/jobs/pld/functions/PLD_MACROBOOK.lua')
+TIMER('PLD_MACROBOOK')
 include('../shared/jobs/pld/functions/PLD_COMMANDS.lua')
+TIMER('PLD_COMMANDS')
 include('../shared/jobs/pld/functions/PLD_MOVEMENT.lua')
+TIMER('PLD_MOVEMENT')
 
 ---============================================================================
 --- LOGIC MODULES REFERENCE
@@ -91,3 +110,7 @@ local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
 
 -- All module functions are now available in global scope
 print('[PLD] All functions loaded (11 hooks + 4 logic modules)')
+
+-- ═══════════════════════════════════════════════════════════════════
+TIMER('TOTAL PLD_functions', true)
+-- ═══════════════════════════════════════════════════════════════════

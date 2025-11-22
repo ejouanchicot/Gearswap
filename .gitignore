@@ -18,6 +18,9 @@ BACKUP_MIGRATION_*/
 *.bak
 temp_*.ps1
 
+# Profiler state (local debug setting)
+.profiler_enabled
+
 # OS files
 .DS_Store
 Thumbs.db

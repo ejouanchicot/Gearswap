@@ -19,38 +19,56 @@
 --- SECTION 1: MESSAGE SYSTEM
 ---============================================================================
 -- Message system (must load first for buff status display)
+-- ═══════════════════════════════════════════════════════════════════
+-- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+-- ═══════════════════════════════════════════════════════════════════
+local Profiler = require('shared/utils/debug/performance_profiler')
+local TIMER = Profiler.create_timer('RUN')
+-- ═══════════════════════════════════════════════════════════════════
+
 include('../shared/utils/messages/formatters/magic/message_buffs.lua')
+TIMER('message_buffs')
 
 ---============================================================================
 --- SECTION 2: COMBAT ACTION HOOKS
 ---============================================================================
 
 include('../shared/jobs/run/functions/RUN_PRECAST.lua')
+TIMER('RUN_PRECAST')
 include('../shared/jobs/run/functions/RUN_MIDCAST.lua')
+TIMER('RUN_MIDCAST')
 include('../shared/jobs/run/functions/RUN_AFTERCAST.lua')
+TIMER('RUN_AFTERCAST')
 
 ---============================================================================
 --- SECTION 3: GEAR SELECTION HOOKS
 ---============================================================================
 
 include('../shared/jobs/run/functions/RUN_IDLE.lua')
+TIMER('RUN_IDLE')
 include('../shared/jobs/run/functions/RUN_ENGAGED.lua')
+TIMER('RUN_ENGAGED')
 
 ---============================================================================
 --- SECTION 4: EVENT MONITORING HOOKS
 ---============================================================================
 
 include('../shared/jobs/run/functions/RUN_STATUS.lua')
+TIMER('RUN_STATUS')
 include('../shared/jobs/run/functions/RUN_BUFFS.lua')
+TIMER('RUN_BUFFS')
 
 ---============================================================================
 --- SECTION 5: UTILITY HOOKS
 ---============================================================================
 
+-- LOCKSTYLE and MACROBOOK use lazy loading - loaded on first call, not during startup
 include('../shared/jobs/run/functions/RUN_LOCKSTYLE.lua')
 include('../shared/jobs/run/functions/RUN_MACROBOOK.lua')
 include('../shared/jobs/run/functions/RUN_COMMANDS.lua')
+TIMER('RUN_COMMANDS')
 include('../shared/jobs/run/functions/RUN_MOVEMENT.lua')
+TIMER('RUN_MOVEMENT')
 
 ---============================================================================
 --- LOGIC MODULES REFERENCE
@@ -91,3 +109,7 @@ local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
 
 -- All module functions are now available in global scope
 print('[RUN] Functions loaded successfully')
+
+-- ═══════════════════════════════════════════════════════════════════
+TIMER('TOTAL RUN_functions', true)
+-- ═══════════════════════════════════════════════════════════════════

@@ -16,13 +16,24 @@
 --- @requires utils/ui/UI_COMMANDS, utils/core/COMMON_COMMANDS
 ---============================================================================
 ---============================================================================
---- DEPENDENCIES
+--- DEPENDENCIES (LAZY LOADING for performance)
 ---============================================================================
--- Centralized command handlers
-local UICommands = require('shared/utils/ui/UI_COMMANDS')
-local CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
-local WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
-local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
+-- Command handlers loaded on first command (saves ~50ms at startup)
+local UICommands = nil
+local CommonCommands = nil
+local WatchdogCommands = nil
+local CycleHandler = nil
+local MessageCommands = nil
+
+local function ensure_commands_loaded()
+    if not UICommands then
+        UICommands = require('shared/utils/ui/UI_COMMANDS')
+        CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
+        WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
+        CycleHandler = require('shared/utils/core/CYCLE_HANDLER')
+        MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
+    end
+end
 
 ---============================================================================
 --- COMMAND HANDLER HOOK
@@ -52,6 +63,9 @@ function job_self_command(cmdParams, eventArgs)
     if not cmdParams[1] then
         return
     end
+
+    -- Lazy load command handlers on first command
+    ensure_commands_loaded()
 
     local command = cmdParams[1]:lower()
 
@@ -124,6 +138,69 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    if command == 'debugretaliation' or command == 'debugretal' then
+        -- Toggle Retaliation auto-cancel debug mode
+        if toggle_retaliation_debug then
+            toggle_retaliation_debug()
+        else
+            add_to_chat(167, '[WAR] ERROR: Retaliation debug function not available')
+        end
+
+        eventArgs.handled = true
+        return
+    end
+
+    if command == 'retalstatus' then
+        -- Show Retaliation tracking status
+        if get_retaliation_status then
+            local status = get_retaliation_status()
+            add_to_chat(121, '[WAR] Retaliation Status:')
+            add_to_chat(121, '  Debug Mode: ' .. tostring(status.debug_mode))
+            add_to_chat(121, '  Tracking: ' .. tostring(status.tracking))
+            add_to_chat(121, '  Elapsed Time: ' .. string.format('%.2f', status.elapsed_time) .. 's / ' .. status.move_duration_needed .. 's')
+        else
+            add_to_chat(167, '[WAR] ERROR: Retaliation status function not available')
+        end
+
+        eventArgs.handled = true
+        return
+    end
+
+    -- ==========================================================================
+    -- CUSTOM CYCLE STATE (UI-aware cycle)
+    -- ==========================================================================
+    -- Intercepts cycle commands to check UI visibility
+    -- If UI visible: custom cycle + UI update (no message)
+    -- If UI invisible: delegate to Mote-Include (shows message)
+
+    if command == 'cyclestate' then
+        eventArgs.handled = CycleHandler.handle_cyclestate(cmdParams, eventArgs)
+        return
+    end
+
+    -- ==========================================================================
+    -- PERFORMANCE PROFILING COMMANDS
+    -- ==========================================================================
+    if command == 'perf' then
+        local Profiler = require('shared/utils/debug/performance_profiler')
+        local M = require('shared/utils/messages/api/messages')
+        local subcommand = cmdParams[2] and cmdParams[2]:lower() or 'status'
+
+        if subcommand == 'start' or subcommand == 'on' or subcommand == 'enable' then
+            Profiler.enable()
+        elseif subcommand == 'stop' or subcommand == 'off' or subcommand == 'disable' then
+            Profiler.disable()
+        elseif subcommand == 'toggle' then
+            Profiler.toggle()
+        elseif subcommand == 'status' then
+            Profiler.status()
+        else
+            M.send('PROFILER', 'usage')
+        end
+
+        eventArgs.handled = true
+        return
+    end
 
     -- ==========================================================================
     -- WAR-SPECIFIC BUFF COMMANDS

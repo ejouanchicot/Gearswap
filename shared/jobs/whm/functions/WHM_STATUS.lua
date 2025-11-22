@@ -1,45 +1,35 @@
----============================================================================
---- WHM Status Module - Status Change Handling
----============================================================================
---- Handles player status changes for White Mage:
----   • Idle >> Engaged transitions
----   • Engaged >> Idle transitions
----   • Dead >> Alive transitions (reraise detection)
----   • Resting state management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   WHM Status Module - Player Status Change Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles status changes (Idle, Engaged, Resting, Dead, etc.)
 ---
---- @file WHM_STATUS.lua
---- @author Tetsouo
---- @version 1.0.0
---- @date Created: 2025-10-21
----============================================================================
+---   @file    shared/jobs/whm/functions/WHM_STATUS.lua
+---   @author  Tetsouo
+---   @version 1.2 - Added DoomManager safety unlock
+---   @date    Updated: 2025-11-14
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- STATUS CHANGE HOOK
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Called when player status changes (Idle, Engaged, Dead, Resting, etc.)
----
---- @param newStatus string New status ('Idle', 'Engaged', 'Dead', 'Resting', etc.)
+local DoomManager = nil
+
+--- Handle status change events
+--- @param newStatus string New status (Idle, Engaged, Resting, Dead, etc.)
 --- @param oldStatus string Previous status
 --- @param eventArgs table Event arguments
---- @return void
 function job_status_change(newStatus, oldStatus, eventArgs)
-    -- WHM-specific status change handling
+    -- Lazy load DoomManager on first status change
+    if not DoomManager then
+        DoomManager = require('shared/utils/debuff/doom_manager')
+    end
 
-    -- Examples:
-    --   • Re-equip idle gear when coming out of combat
-    --   • Apply special gear when entering rest mode
-    --   • Handle weapon locks for offense mode transitions
+    -- Safety: Unlock Doom slots after death (prevents stuck locks after raise)
+    DoomManager.handle_status_change(newStatus, oldStatus)
+
+    -- WHM-specific status change logic can be added here
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
-
--- Export globally for GearSwap
+-- Export to global scope
 _G.job_status_change = job_status_change
-
--- Export as module
-return {
-    job_status_change = job_status_change
-}

@@ -15,21 +15,41 @@
 --- @version 3.0 - Added spell_family database support
 --- @date Created: 2025-10-17 | Updated: 2025-11-05
 ---============================================================================
+--- DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---============================================================================
 
-local MidcastManager = require('shared/utils/midcast/midcast_manager')
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+local MidcastManager = nil
+local MessageFormatter = nil
+local EnhancingSPELLS = nil
+local EnhancingSPELLS_success = false
+local ReadyMoveCategorizer = nil
 
--- Load ENHANCING_MAGIC_DATABASE for spell_family routing
-local EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
+local modules_loaded = false
 
--- Ready move categorizer
-local success_rmc, ReadyMoveCategorizer = pcall(require, 'shared/jobs/bst/functions/logic/ready_move_categorizer')
-if not success_rmc then
-    MessageFormatter.error_bst_module_not_loaded('ReadyMoveCategorizer')
-    ReadyMoveCategorizer = nil
+local function ensure_modules_loaded()
+    if modules_loaded then return end
+
+    MidcastManager = require('shared/utils/midcast/midcast_manager')
+    MessageFormatter = require('shared/utils/messages/message_formatter')
+
+    -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
+    EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
+
+    -- Ready move categorizer
+    local success_rmc
+    success_rmc, ReadyMoveCategorizer = pcall(require, 'shared/jobs/bst/functions/logic/ready_move_categorizer')
+    if not success_rmc then
+        MessageFormatter.error_bst_module_not_loaded('ReadyMoveCategorizer')
+        ReadyMoveCategorizer = nil
+    end
+
+    modules_loaded = true
 end
 
 function job_midcast(spell, action, spellMap, eventArgs)
+    -- Lazy load modules on first cast
+    ensure_modules_loaded()
+
     ---========================================================================
     --- SKIP NON-READY MOVES (Call Beast, Fight, Heel, etc.)
     ---========================================================================
@@ -46,44 +66,11 @@ function job_midcast(spell, action, spellMap, eventArgs)
     end
 
     ---========================================================================
-    --- READY MOVES (Pet Abilities) - 4 CATEGORIES
+    --- READY MOVES - Already equipped Gleti's in PRECAST, skip midcast
     ---========================================================================
-    -- BST-SPECIFIC LOGIC: Not handled by MidcastManager (pet-specific)
-
-    -- Detect Ready Moves: check if category was set in precast OR use categorizer
-    local category = spell.ready_move_category
-    if not category and ReadyMoveCategorizer and spell.action_type == 'Ability' then
-        category = ReadyMoveCategorizer.get_category(spell.name)
-    end
-
-    -- If we have a VALID category (not "Default" = Fight/Heel/etc), this is a Ready Move
-    if category and category ~= 'Default' then
-        -- Check if player is engaged (for _ww variants)
-        local player_engaged = (player and player.status == 'Engaged')
-
-        -- Equip appropriate set based on category
-        if category == 'Physical' and sets.midcast.pet_physical_moves then
-            equip(sets.midcast.pet_physical_moves)
-        elseif category == 'PhysicalMulti' and sets.midcast.pet_physicalMulti_moves then
-            equip(sets.midcast.pet_physicalMulti_moves)
-        elseif category == 'MagicAtk' then
-            -- Choose between normal and _ww (with weapon) variant
-            local set = player_engaged and sets.midcast.pet_magicAtk_moves_ww or sets.midcast.pet_magicAtk_moves
-            if set then
-                equip(set)
-            end
-        elseif category == 'MagicAcc' then
-            -- Choose between normal and _ww (with weapon) variant
-            local set = player_engaged and sets.midcast.pet_magicAcc_moves_ww or sets.midcast.pet_magicAcc_moves
-            if set then
-                equip(set)
-            end
-        elseif sets.midcast.pet_physical_moves then
-            -- Fallback to physical set
-            equip(sets.midcast.pet_physical_moves)
-        end
-
-        eventArgs.handled = true
+    if spell.bst_is_ready_move or (spell.ready_move_category and spell.ready_move_category ~= 'Default') then
+        -- Gleti's Breeches already equipped in job_precast
+        -- Don't set eventArgs.handled - let job_aftercast run to swap to pet damage gear
         return
     end
 end
@@ -94,7 +81,15 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         _G.MidcastWatchdog.on_midcast_start(spell)
     end
 
-    -- Skip if already handled (Ready Moves)
+    ---========================================================================
+    --- READY MOVES - Keep Gleti's equipped, let job_aftercast swap to pet damage gear
+    ---========================================================================
+    if spell.ready_move_category and spell.ready_move_category ~= 'Default' then
+        -- Do nothing - keep Gleti's Breeches equipped until aftercast
+        return
+    end
+
+    -- Skip if already handled (other abilities)
     if eventArgs.handled then
         return
     end

@@ -1,15 +1,15 @@
----============================================================================
---- Set Builder - Shared Set Construction Logic (RDM)
----============================================================================
---- Provides centralized set building for both engaged and idle states.
---- Handles weapon selection (MainWeapon/SubWeapon), mode detection (IdleMode,
---- EngagedMode), town detection, and movement speed.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Set Builder - Shared Set Construction Logic (RDM)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Provides centralized set building for both engaged and idle states.
+---   Handles weapon selection (MainWeapon/SubWeapon), mode detection (IdleMode,
+---   EngagedMode), town detection, and movement speed.
 ---
---- @file jobs/rdm/functions/logic/set_builder.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-13
----============================================================================
+---   @file    shared/jobs/rdm/functions/logic/set_builder.lua
+---   @author  Tetsouo
+---   @version 1.1 - Refactored with new header style
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local SetBuilder = {}
 
@@ -19,9 +19,9 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 -- Load dependencies
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
----============================================================================
---- MODE SELECTION (IDLE)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODE SELECTION (IDLE)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Select idle base set based on IdleMode state
 --- @param base_set table Base idle set
@@ -47,9 +47,9 @@ function SetBuilder.select_idle_base(base_set)
     return base_set
 end
 
----============================================================================
---- MODE SELECTION (ENGAGED)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODE SELECTION (ENGAGED)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Select engaged base set based on EngagedMode state and shield detection
 --- @param base_set table Base engaged set
@@ -98,9 +98,9 @@ function SetBuilder.select_engaged_base(base_set)
     return base_set
 end
 
----============================================================================
---- WEAPON APPLICATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   WEAPON APPLICATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Apply main weapon and sub weapon to set (separately)
 --- Uses weapon sets defined in rdm_sets.lua (sets['Crocea Mors'], sets['Genmei Shield'], etc.)
@@ -146,9 +146,9 @@ function SetBuilder.apply_weapon(result)
     return result
 end
 
----============================================================================
---- SHIELD DETECTION (WAR Fencer Model)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SHIELD DETECTION (WAR Fencer Model)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Detect if sub weapon is a shield OR single wield
 --- Uses sets.shields table to determine if player is using:
@@ -158,48 +158,48 @@ end
 --- @param sub_weapon string Current sub weapon name from state.SubWeapon or player.equipment.sub
 --- @return boolean True if shield OR single wield (use normal sets)
 function SetBuilder.has_shield_equipped(sub_weapon)
-    -- Safety checks: nil ou string vide = erreur >> single wield par défaut
+    -- Safety checks: nil or empty string = error >> default to single wield
     if not sub_weapon or sub_weapon == "" then
-        return true  -- Sets normaux (fallback single wield)
+        return true  -- Normal sets (fallback single wield)
     end
 
-    -- Empty = single wield (1 arme) >> sets normaux
+    -- Empty = single wield (1 weapon) >> normal sets
     if sub_weapon == "empty" then
-        return true  -- Sets normaux (pas de dual wield)
+        return true  -- Normal sets (not dual wield)
     end
 
-    -- Parcourir la table des shields
+    -- Iterate through shields table
     if sets.shields then
         for _, shield in ipairs(sets.shields) do
             if sub_weapon == shield then
-                return true  -- Shield trouvé >> sets normaux
+                return true  -- Shield found >> normal sets
             end
         end
     end
 
-    -- Dual wield (2 armes)
-    return false  -- Dual wield (2 armes) >> sets .DW
+    -- Dual wield (2 weapons)
+    return false  -- Dual wield (2 weapons) >> .DW sets
 end
 
----============================================================================
---- MOVEMENT SPEED (INHERITED FROM BASE)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MOVEMENT SPEED (INHERITED FROM BASE)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Inherit universal movement function from BaseSetBuilder
 SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 
 
----============================================================================
---- TOWN DETECTION (INHERITED FROM BASE)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   TOWN DETECTION (INHERITED FROM BASE)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Inherit universal town detection function from BaseSetBuilder
 -- RDM doesn't use sets.Adoulin, so BaseSetBuilder will fallback to sets.idle.Town for all cities
 SetBuilder.check_town = BaseSetBuilder.select_idle_base_town
 
----============================================================================
---- ENGAGED SET BUILDER
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ENGAGED SET BUILDER
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Build complete engaged set with all RDM logic
 --- @param base_set table Base engaged set
@@ -222,9 +222,9 @@ function SetBuilder.build_engaged_set(base_set)
     return result
 end
 
----============================================================================
---- IDLE SET BUILDER
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   IDLE SET BUILDER
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Build complete idle set with all RDM logic
 --- @param base_set table Base idle set
@@ -252,8 +252,8 @@ function SetBuilder.build_idle_set(base_set)
     return result
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return SetBuilder

@@ -1,31 +1,114 @@
----============================================================================
---- RDM Commands Module - Custom Command Handler
----============================================================================
---- Handles custom commands for Red Mage job via //gs c [command].
---- Provides job-specific commands and integrates with common commands.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   RDM Commands Module - Custom Command Handler
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles custom commands for Red Mage job via //gs c [command].
+---   Provides job-specific commands and integrates with common commands.
 ---
---- @file RDM_COMMANDS.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-12
----============================================================================
+---   @file    shared/jobs/rdm/functions/RDM_COMMANDS.lua
+---   @author  Tetsouo
+---   @version 1.1 - Refactored: removed code duplication + dead code
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load centralized command handlers
-local CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
-local UICommands = require('shared/utils/ui/UI_COMMANDS')
-local WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load message formatter for standardized messages
-local MessageFormatter = require('shared/utils/messages/message_formatter')
-local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
+local CommonCommands = nil
+local UICommands = nil
+local WatchdogCommands = nil
+local CycleHandler = nil
+local MessageFormatter = nil
+local MessageCommands = nil
+local JA_DB = nil
+local WS_DB = nil
+local MA_DB = nil
 
--- Load action databases for auto-detection
-local JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
-local WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+local function ensure_commands_loaded()
+    if not UICommands then
+        CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
+        UICommands = require('shared/utils/ui/UI_COMMANDS')
+        WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
+        CycleHandler = require('shared/utils/core/CYCLE_HANDLER')
+        MessageFormatter = require('shared/utils/messages/message_formatter')
+        MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
+        JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
+        WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+        local MA_DB_MODULE = require('shared/data/magic/UNIVERSAL_SPELL_DATABASE')
+        MA_DB = MA_DB_MODULE.spells or {}
+    end
+end
 
----============================================================================
---- COMMAND HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HELPER TABLES (Reduce code duplication)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+-- Quick JA commands (simple one-to-one mapping)
+local quick_ja_commands = {
+    convert = 'Convert',
+    chainspell = 'Chainspell',
+    saboteur = 'Saboteur',
+    composure = 'Composure'
+}
+
+-- Cast spell from state (spell states with error handling)
+local spell_state_commands = {
+    castenspell = {
+        state_name = 'EnSpell',
+        target = '<me>',
+        check_off = true,
+        error_func = function() MessageFormatter.show_no_enspell_selected() end
+    },
+    castgain = {
+        state_name = 'GainSpell',
+        target = '<me>',
+        error_func = function() MessageFormatter.show_gain_spell_not_configured() end
+    },
+    castbar = {
+        state_name = 'Barspell',
+        target = '<me>',
+        error_func = function() MessageFormatter.show_bar_element_not_configured() end
+    },
+    castbarailment = {
+        state_name = 'BarAilment',
+        target = '<me>',
+        error_func = function() MessageFormatter.show_bar_ailment_not_configured() end
+    },
+    castspike = {
+        state_name = 'Spike',
+        target = '<me>',
+        error_func = function() MessageFormatter.show_spike_not_configured() end
+    },
+    caststorm = {
+        state_name = 'Storm',
+        target = '<me>',
+        error_func = function() MessageFormatter.show_storm_requires_sch() end
+    }
+}
+
+-- Nuke commands with tier (element + tier state combinations)
+local nuke_commands = {
+    castlight = {
+        state_name = 'MainLightSpell',
+        error_msg = 'Light spell states not configured'
+    },
+    castsublight = {
+        state_name = 'SubLightSpell',
+        error_msg = 'Sub Light spell states not configured'
+    },
+    castdark = {
+        state_name = 'MainDarkSpell',
+        error_msg = 'Dark spell states not configured'
+    },
+    castsubdark = {
+        state_name = 'SubDarkSpell',
+        error_msg = 'Sub Dark spell states not configured'
+    }
+}
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COMMAND HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Handle custom job commands
 --- @param cmdParams table Command parameters
@@ -36,12 +119,17 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- Lazy load command handlers on first command
+    ensure_commands_loaded()
+
     local command = cmdParams[1]:lower()
 
-    -- ==========================================================================
-    -- DUAL-BOXING: Receive alt job update
-    -- ==========================================================================
+    ---  ─────────────────────────────────────────────────────────────────────────
+    ---   DUAL-BOXING COMMANDS
+    ---  ─────────────────────────────────────────────────────────────────────────
+
     if command == 'altjobupdate' then
+        -- Receive alt job update
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         if cmdParams[2] and cmdParams[3] then
             DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3])
@@ -50,14 +138,17 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- DUAL-BOXING: Handle job request from MAIN
-    -- ==========================================================================
     if command == 'requestjob' then
+        -- Handle job request from MAIN
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         DualBoxManager.handle_job_request()
         eventArgs.handled = true
         return
     end
+
+    ---  ─────────────────────────────────────────────────────────────────────────
+    ---   SYSTEM COMMANDS (UI, Watchdog, Common)
+    ---  ─────────────────────────────────────────────────────────────────────────
 
     -- UI commands (ui save, ui hide, etc.)
     if UICommands.is_ui_command(command) then
@@ -87,9 +178,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
-    -- MOTE-INCLUDE NATIVE COMMANDS (prevent fallback from trying to cast them)
-    -- ==========================================================================
+    ---  ─────────────────────────────────────────────────────────────────────────
+    ---   MOTE-INCLUDE NATIVE COMMANDS (prevent fallback)
+    ---  ─────────────────────────────────────────────────────────────────────────
 
     if command == 'update' or command == 'cycle' or command == 'cycleback' or command == 'set' or command == 'reset' or command == 'toggle' then
         -- Mote-Include native commands (update, cycle, set, etc.)
@@ -98,9 +189,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
-    -- DEBUG COMMANDS
-    -- ==========================================================================
+    ---  ─────────────────────────────────────────────────────────────────────────
+    ---   DEBUG COMMANDS
+    ---  ─────────────────────────────────────────────────────────────────────────
 
     if command == 'debugmidcast' then
         -- Toggle MidcastManager debug mode
@@ -114,9 +205,21 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
-    -- RDM-SPECIFIC COMMANDS
-    -- ==========================================================================
+    ---  ─────────────────────────────────────────────────────────────────────────
+    ---   CUSTOM CYCLE STATE (UI-aware cycle)
+    ---  ─────────────────────────────────────────────────────────────────────────
+    -- Intercepts cycle commands to check UI visibility
+    -- If UI visible: custom cycle + UI update (no message)
+    -- If UI invisible: delegate to Mote-Include (shows message)
+
+    if command == 'cyclestate' then
+        eventArgs.handled = CycleHandler.handle_cyclestate(cmdParams, eventArgs)
+        return
+    end
+
+    ---  ─────────────────────────────────────────────────────────────────────────
+    ---   RDM-SPECIFIC COMMANDS
+    ---  ─────────────────────────────────────────────────────────────────────────
 
     if command == 'enspell' then
         -- Cycle through enspells or cast specific enspell
@@ -140,7 +243,7 @@ function job_self_command(cmdParams, eventArgs)
             local spell = enspell_map[element]
             if spell then
                 send_command('input /ma "' .. spell .. '" <me>')
-                MessageFormatter.show_spell_casting(spell)
+                -- MessageFormatter.show_spell_casting(spell)  -- Removed: duplicate message (universal spell system shows activation)
             else
                 MessageFormatter.show_error('Unknown element: ' .. cmdParams[2])
                 MessageFormatter.show_element_list()
@@ -156,32 +259,20 @@ function job_self_command(cmdParams, eventArgs)
             end
         end
 
-    elseif command == 'convert' then
-        -- Quick convert command
+    elseif quick_ja_commands[command] then
+        -- Quick JA commands (Convert, Chainspell, Saboteur, Composure)
         eventArgs.handled = true
-        send_command('input /ja "Convert" <me>')
+        send_command('input /ja "' .. quick_ja_commands[command] .. '" <me>')
 
-    elseif command == 'chainspell' then
-        -- Quick chainspell command
-        eventArgs.handled = true
-        send_command('input /ja "Chainspell" <me>')
-
-    elseif command == 'saboteur' then
-        -- Quick saboteur command
-        eventArgs.handled = true
-        send_command('input /ja "Saboteur" <me>')
-
-    elseif command == 'composure' then
-        -- Quick composure command
-        eventArgs.handled = true
-        send_command('input /ja "Composure" <me>')
-
-    elseif command == 'castlight' then
-        -- Cast Main Light elemental spell with tier
+    elseif nuke_commands[command] then
+        -- Cast elemental nuke with tier (castlight, castsublight, castdark, castsubdark)
         eventArgs.handled = true
 
-        if state.MainLightSpell and state.NukeTier then
-            local element = state.MainLightSpell.value
+        local config = nuke_commands[command]
+        local element_state = state[config.state_name]
+
+        if element_state and state.NukeTier then
+            local element = element_state.value
             local tier = state.NukeTier.value
 
             local spell_name = element
@@ -190,121 +281,28 @@ function job_self_command(cmdParams, eventArgs)
             end
 
             send_command('input /ma "' .. spell_name .. '" <t>')
-            MessageFormatter.show_spell_casting(spell_name)
+            -- MessageFormatter.show_spell_casting(spell_name)  -- Removed: duplicate message (universal spell system shows activation)
         else
-            MessageFormatter.show_error('Light spell states not configured')
+            MessageFormatter.show_error(config.error_msg)
         end
 
-    elseif command == 'castsublight' then
-        -- Cast Sub Light elemental spell with tier
+    elseif spell_state_commands[command] then
+        -- Cast spell from state (castenspell, castgain, castbar, castbarailment, castspike, caststorm)
         eventArgs.handled = true
 
-        if state.SubLightSpell and state.NukeTier then
-            local element = state.SubLightSpell.value
-            local tier = state.NukeTier.value
+        local config = spell_state_commands[command]
+        local spell_state = state[config.state_name]
 
-            local spell_name = element
-            if tier ~= 'I' then
-                spell_name = element .. ' ' .. tier
+        if spell_state then
+            -- Check if EnSpell is 'Off' (special case)
+            if config.check_off and spell_state.value == 'Off' then
+                config.error_func()
+            else
+                send_command('input /ma "' .. spell_state.value .. '" ' .. config.target)
+                -- MessageFormatter.show_spell_casting(spell_state.value)  -- Removed: duplicate message (universal spell system shows activation)
             end
-
-            send_command('input /ma "' .. spell_name .. '" <t>')
-            MessageFormatter.show_spell_casting(spell_name)
         else
-            MessageFormatter.show_error('Sub Light spell states not configured')
-        end
-
-    elseif command == 'castdark' then
-        -- Cast Main Dark elemental spell with tier
-        eventArgs.handled = true
-
-        if state.MainDarkSpell and state.NukeTier then
-            local element = state.MainDarkSpell.value
-            local tier = state.NukeTier.value
-
-            local spell_name = element
-            if tier ~= 'I' then
-                spell_name = element .. ' ' .. tier
-            end
-
-            send_command('input /ma "' .. spell_name .. '" <t>')
-            MessageFormatter.show_spell_casting(spell_name)
-        else
-            MessageFormatter.show_error('Dark spell states not configured')
-        end
-
-    elseif command == 'castsubdark' then
-        -- Cast Sub Dark elemental spell with tier
-        eventArgs.handled = true
-
-        if state.SubDarkSpell and state.NukeTier then
-            local element = state.SubDarkSpell.value
-            local tier = state.NukeTier.value
-
-            local spell_name = element
-            if tier ~= 'I' then
-                spell_name = element .. ' ' .. tier
-            end
-
-            send_command('input /ma "' .. spell_name .. '" <t>')
-            MessageFormatter.show_spell_casting(spell_name)
-        else
-            MessageFormatter.show_error('Sub Dark spell states not configured')
-        end
-
-    elseif command == 'castenspell' then
-        -- Cast current selected Enspell
-        eventArgs.handled = true
-
-        if state.EnSpell and state.EnSpell.value ~= 'Off' then
-            send_command('input /ma "' .. state.EnSpell.value .. '" <me>')
-            MessageFormatter.show_spell_casting(state.EnSpell.value)
-        else
-            MessageFormatter.show_no_enspell_selected()
-        end
-
-    elseif command == 'castgain' then
-        -- Cast current selected Gain spell
-        eventArgs.handled = true
-
-        if state.GainSpell then
-            send_command('input /ma "' .. state.GainSpell.value .. '" <me>')
-            MessageFormatter.show_spell_casting(state.GainSpell.value)
-        else
-            MessageFormatter.show_gain_spell_not_configured()
-        end
-
-    elseif command == 'castbar' then
-        -- Cast current selected Bar Element spell
-        eventArgs.handled = true
-
-        if state.Barspell then
-            send_command('input /ma "' .. state.Barspell.value .. '" <me>')
-            MessageFormatter.show_spell_casting(state.Barspell.value)
-        else
-            MessageFormatter.show_bar_element_not_configured()
-        end
-
-    elseif command == 'castbarailment' then
-        -- Cast current selected Bar Ailment spell
-        eventArgs.handled = true
-
-        if state.BarAilment then
-            send_command('input /ma "' .. state.BarAilment.value .. '" <me>')
-            MessageFormatter.show_spell_casting(state.BarAilment.value)
-        else
-            MessageFormatter.show_bar_ailment_not_configured()
-        end
-
-    elseif command == 'castspike' then
-        -- Cast current selected Spike spell
-        eventArgs.handled = true
-
-        if state.Spike then
-            send_command('input /ma "' .. state.Spike.value .. '" <me>')
-            MessageFormatter.show_spell_casting(state.Spike.value)
-        else
-            MessageFormatter.show_spike_not_configured()
+            config.error_func()
         end
 
     elseif command == 'cyclestorm' then
@@ -318,19 +316,10 @@ function job_self_command(cmdParams, eventArgs)
             MessageFormatter.show_storm_requires_sch()
         end
 
-    elseif command == 'caststorm' then
-        -- Cast current selected Storm spell (SCH subjob required)
-        eventArgs.handled = true
-
-        if state.Storm then
-            send_command('input /ma "' .. state.Storm.value .. '" <me>')
-            MessageFormatter.show_spell_casting(state.Storm.value)
-        else
-            MessageFormatter.show_storm_requires_sch()
-        end
-
     else
-        -- FALLBACK: Try to cast spell directly from command name
+        ---  ─────────────────────────────────────────────────────────────────────────
+        ---   FALLBACK: Auto-cast from command name
+        ---  ─────────────────────────────────────────────────────────────────────────
         -- This allows users to bind spells without creating explicit commands
         -- Example: { key = "^5", command = "Refresh II", desc = "Refresh II", state = nil }
         -- Will cast: /ma "Refresh II" <stpc>
@@ -357,20 +346,39 @@ function job_self_command(cmdParams, eventArgs)
             end
 
             -- Auto-detect action type (JA, WS, or Magic)
-            local action_type = '/ma'  -- Default: magic
+            local action_type = nil
+            local action_found = false
 
             -- Check if it's a Job Ability
             if JA_DB[spell_name] then
                 action_type = '/ja'
+                action_found = true
             -- Check if it's a Weaponskill
             elseif WS_DB[spell_name] then
                 action_type = '/ws'
+                action_found = true
+            -- Check if it's a Magic spell
+            elseif MA_DB[spell_name] then
+                action_type = '/ma'
+                action_found = true
+            else
+                -- Command not recognized - show error message
+                MessageFormatter.show_error(string.format("Command not recognized: '%s'", spell_name))
+                MessageFormatter.show_info("Valid types: Job Abilities, Weaponskills, Magic Spells")
+                action_found = false
             end
 
-            send_command('input ' .. action_type .. ' "' .. spell_name .. '" ' .. target)
+            -- Execute command if valid
+            if action_found and action_type then
+                send_command('input ' .. action_type .. ' "' .. spell_name .. '" ' .. target)
+            end
         end
     end
 end
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   STATE CHANGE HANDLER
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Update UI when state changes
 --- Called after state changes to update UI display
@@ -393,17 +401,6 @@ function job_state_change(stateField, newValue, oldValue)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
-
--- Export global for GearSwap (Mote-Include)
+-- Export to global scope (used by Mote-Include via include())
 _G.job_self_command = job_self_command
 _G.job_state_change = job_state_change
-
--- Export module
-local RDM_COMMANDS = {}
-RDM_COMMANDS.job_self_command = job_self_command
-RDM_COMMANDS.job_state_change = job_state_change
-
-return RDM_COMMANDS

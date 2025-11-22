@@ -19,50 +19,50 @@
 ---============================================================================
 
 ---============================================================================
---- DEPENDENCIES - CENTRALIZED SYSTEMS
+--- DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---============================================================================
 
--- Message formatter (cooldown messages, WS TP display)
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+local MessageFormatter = nil
+local CooldownChecker = nil
+local AbilityHelper = nil
+local PrecastGuard = nil
+local TPBonusHandler = nil
+local WSValidator = nil
+local DRKTPConfig = nil
+local JA_DB = nil
+local WS_DB = nil
 
--- Cooldown checker (universal ability/spell recast validation)
-local CooldownChecker = require('shared/utils/precast/cooldown_checker')
+local modules_loaded = false
 
--- Ability helper (auto-trigger abilities before spells/WS)
-local AbilityHelper = require('shared/utils/precast/ability_helper')
+local function ensure_modules_loaded()
+    if modules_loaded then return end
 
--- Precast guard (debuff blocking: Amnesia, Silence, Stun, etc.)
-local precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-if not precast_guard_success then
-    PrecastGuard = nil
+    MessageFormatter = require('shared/utils/messages/message_formatter')
+    CooldownChecker = require('shared/utils/precast/cooldown_checker')
+    AbilityHelper = require('shared/utils/precast/ability_helper')
+
+    local precast_guard_success
+    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
+    if not precast_guard_success then
+        PrecastGuard = nil
+    end
+
+    local _
+    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
+
+    include('../shared/utils/weaponskill/weaponskill_manager.lua')
+
+    if WeaponSkillManager and MessageFormatter then
+        WeaponSkillManager.MessageFormatter = MessageFormatter
+    end
+
+    DRKTPConfig = _G.DRKTPConfig or {}
+    JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
+    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+
+    modules_loaded = true
 end
-
--- TP Bonus Handler (universal WS TP gear optimization)
-local _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
-
--- WS Validator (universal WS range + validity validation)
-local _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
-
--- Weaponskill manager (WS validation + range checking)
-include('../shared/utils/weaponskill/weaponskill_manager.lua')
-
--- Set MessageFormatter in WeaponSkillManager
-if WeaponSkillManager and MessageFormatter then
-    WeaponSkillManager.MessageFormatter = MessageFormatter
-end
-
----============================================================================
---- DEPENDENCIES - DRK SPECIFIC
----============================================================================
-
--- DRK configuration
-local DRKTPConfig = _G.DRKTPConfig or {}  -- Loaded from character main file
-
--- Universal Job Ability Database (supports main job + subjob abilities)
-local JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
-
--- Universal Weapon Skills Database (weaponskill descriptions)
-local WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
 
 ---============================================================================
 --- COOLDOWN EXCLUSIONS
@@ -93,6 +93,8 @@ local cooldown_exclusions = {
 --- @param eventArgs table  Event arguments (cancel flag, etc.)
 --- @return void
 function job_precast(spell, action, spellMap, eventArgs)
+    -- Lazy load all dependencies on first precast
+    ensure_modules_loaded()
 
     -- ==========================================================================
     -- STEP 1: DEBUFF BLOCKING

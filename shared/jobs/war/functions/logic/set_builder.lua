@@ -37,7 +37,7 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 --- Aftermath Lv.3 (buff ID: 272) + Ukonvasara = Use specialized PDTAFM3 set
 ---
 --- Priority order:
----   1. Kraken Club in sub-weapon    >> sets.engaged.PDTKC
+---   1. Kraken Club weapon set       >> sets.engaged.PDTKC
 ---   2. Aftermath Lv.3 + Ukonvasara  >> sets.engaged.PDTAFM3
 ---   3. HybridMode (PDT/Normal)      >> sets.engaged[HybridMode]
 ---   4. Fallback                      >> base_set
@@ -45,7 +45,12 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 --- @param base_set table Base engaged set from war_sets.lua
 --- @return table Selected engaged set (PDTKC/PDTAFM3 if conditions met, otherwise hybrid/base)
 function SetBuilder.select_engaged_base(base_set)
-    -- PRIORITY 1: Check for Kraken Club in sub-weapon slot
+    -- PRIORITY 1: Check for NaeglingKC weapon set (Kraken Club in sub)
+    if state.MainWeapon and state.MainWeapon.current == 'NaeglingKC' and sets.engaged.PDTKC then
+        return sets.engaged.PDTKC
+    end
+
+    -- Also check if Kraken Club is already equipped (manual equip or other weapon set)
     if player and player.equipment and player.equipment.sub then
         local sub_weapon = player.equipment.sub
         if sub_weapon == 'Kraken Club' and sets.engaged.PDTKC then

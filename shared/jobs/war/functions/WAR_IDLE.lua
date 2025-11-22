@@ -7,19 +7,22 @@
 ---   • Dynamic weapon application to idle sets
 ---   • Town gear management
 ---
+--- **PERFORMANCE OPTIMIZATION:**
+---   • Lazy-loaded: SetBuilder loaded on first idle event (saves ~50ms at startup)
+---
 --- Delegates to SetBuilder (logic module) for shared construction logic.
 ---
 --- @file    WAR_IDLE.lua
 --- @author  Tetsouo
---- @version 2.0 - Logic Extracted to logic/set_builder.lua
---- @date    Created: 2025-09-29 | Updated: 2025-10-06
+--- @version 2.1 - Lazy Loading for performance
+--- @date    Created: 2025-09-29 | Updated: 2025-11-15
 --- @requires jobs/war/functions/logic/set_builder
 ---============================================================================
 ---============================================================================
---- DEPENDENCIES
+--- DEPENDENCIES (LAZY LOADING for performance)
 ---============================================================================
--- Load shared set construction logic
-local SetBuilder = require('shared/jobs/war/functions/logic/set_builder')
+-- SetBuilder loaded on first idle event (saves ~50ms at startup)
+local SetBuilder = nil
 
 ---============================================================================
 --- IDLE CUSTOMIZATION HOOK
@@ -36,6 +39,11 @@ local SetBuilder = require('shared/jobs/war/functions/logic/set_builder')
 --- @param idleSet table The base idle set from war_sets.lua
 --- @return table Modified idle set with weapon/movement/AM3 gear applied
 function customize_idle_set(idleSet)
+    -- Lazy load SetBuilder on first call
+    if not SetBuilder then
+        SetBuilder = require('shared/jobs/war/functions/logic/set_builder')
+    end
+
     if not idleSet then
         return {}
     end

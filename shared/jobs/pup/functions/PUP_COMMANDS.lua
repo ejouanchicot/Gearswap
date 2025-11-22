@@ -20,47 +20,71 @@
 ---============================================================================
 
 ---============================================================================
---- DEPENDENCIES
+--- DEPENDENCIES (LAZY LOADING for performance)
 ---============================================================================
+-- Command handlers loaded on first command (saves ~100ms at startup)
+local MessageFormatter = nil
+local CommonCommands = nil
+local WatchdogCommands = nil
+local UICommands = nil
+local CycleHandler = nil
+local MessageCommands = nil
+local EcosystemManager = nil
+local PetManager = nil
 
--- Message formatter
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+local function ensure_commands_loaded()
+    if not MessageFormatter then
+        MessageFormatter = require('shared/utils/messages/message_formatter')
 
--- Common commands (reload, checksets, etc.)
-local success_cc, CommonCommands = pcall(require, 'shared/utils/core/COMMON_COMMANDS')
-if not success_cc then
-    MessageFormatter.error_pup_module_not_loaded('CommonCommands')
-    CommonCommands = nil
-end
+        -- Common commands (reload, checksets, etc.)
+        local success_cc
+        success_cc, CommonCommands = pcall(require, 'shared/utils/core/COMMON_COMMANDS')
+        if not success_cc then
+            MessageFormatter.error_pup_module_not_loaded('CommonCommands')
+            CommonCommands = nil
+        end
 
--- Watchdog commands
-local success_wd, WatchdogCommands = pcall(require, 'shared/utils/core/WATCHDOG_COMMANDS')
-if not success_wd then
-    WatchdogCommands = nil
-end
+        -- Watchdog commands
+        local success_wd
+        success_wd, WatchdogCommands = pcall(require, 'shared/utils/core/WATCHDOG_COMMANDS')
+        if not success_wd then
+            WatchdogCommands = nil
+        end
 
--- UI commands (ui save, ui hide, etc.)
-local success_ui, UICommands = pcall(require, 'shared/utils/ui/UI_COMMANDS')
-if not success_ui then
-    MessageFormatter.error_pup_module_not_loaded('UICommands')
-    UICommands = nil
-end
+        -- UI commands (ui save, ui hide, etc.)
+        local success_ui
+        success_ui, UICommands = pcall(require, 'shared/utils/ui/UI_COMMANDS')
+        if not success_ui then
+            MessageFormatter.error_pup_module_not_loaded('UICommands')
+            UICommands = nil
+        end
 
--- Message commands (for debug messages)
-local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
+        -- Cycle handler
+        local success_ch
+        success_ch, CycleHandler = pcall(require, 'shared/utils/core/CYCLE_HANDLER')
+        if not success_ch then
+            CycleHandler = nil
+        end
 
--- Ecosystem manager
-local success_em, EcosystemManager = pcall(require, 'shared/jobs/pup/functions/logic/ecosystem_manager')
-if not success_em then
-    MessageFormatter.error_pup_module_not_loaded('EcosystemManager')
-    EcosystemManager = nil
-end
+        -- Message commands (for debug messages)
+        MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
 
--- Pet manager
-local success_pm, PetManager = pcall(require, 'shared/jobs/pup/functions/logic/pet_manager')
-if not success_pm then
-    MessageFormatter.error_pup_module_not_loaded('PetManager')
-    PetManager = nil
+        -- Ecosystem manager
+        local success_em
+        success_em, EcosystemManager = pcall(require, 'shared/jobs/pup/functions/logic/ecosystem_manager')
+        if not success_em then
+            MessageFormatter.error_pup_module_not_loaded('EcosystemManager')
+            EcosystemManager = nil
+        end
+
+        -- Pet manager
+        local success_pm
+        success_pm, PetManager = pcall(require, 'shared/jobs/pup/functions/logic/pet_manager')
+        if not success_pm then
+            MessageFormatter.error_pup_module_not_loaded('PetManager')
+            PetManager = nil
+        end
+    end
 end
 
 ---============================================================================
@@ -118,6 +142,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- Lazy load command handlers on first command
+    ensure_commands_loaded()
+
     local command = cmdParams[1]:lower()
 
     ---========================================================================
@@ -167,6 +194,19 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- ==========================================================================
+    -- CUSTOM CYCLE STATE (UI-aware cycle)
+    -- ==========================================================================
+    -- Intercepts cycle commands to check UI visibility
+    -- If UI visible: custom cycle + UI update (no message)
+    -- If UI invisible: delegate to Mote-Include (shows message)
+
+    if command == 'cyclestate' then
+        if CycleHandler then
+            eventArgs.handled = CycleHandler.handle_cyclestate(cmdParams, eventArgs)
+        end
+        return
+    end
 
     ---========================================================================
     --- WATCHDOG COMMANDS

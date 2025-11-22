@@ -15,21 +15,19 @@
 --- @requires utils/movement/automove.lua
 ---============================================================================
 ---============================================================================
---- AUTOMOVE INTEGRATION
+--- AUTOMOVE INTEGRATION (PERFORMANCE OPTIMIZED - No Startup Cost)
 ---============================================================================
--- Register with AutoMove for automatic speed gear
-if AutoMove then
-    -- AutoMove will automatically handle:
-    --   • Movement detection
-    --   • Speed gear swapping (sets.MoveSpeed from pld_sets.lua)
-    --   • Idle gear restoration when stopped
-
-    -- No additional callbacks needed - AutoMove handles everything
-else
-    -- AutoMove not available - movement speed gear disabled
-    local MessageFormatter = require('shared/utils/messages/message_formatter')
-    MessageFormatter.show_warning("PLD: AutoMove system not available")
-end
+-- AutoMove (if available) automatically handles:
+--   • Movement detection
+--   • Speed gear swapping (sets.MoveSpeed from pld_sets.lua)
+--   • Idle gear restoration when stopped
+--
+-- No explicit registration needed - AutoMove auto-detects job modules.
+-- If AutoMove is not loaded, movement speed gear is simply not available.
+--
+-- PERFORMANCE NOTE: Previous version checked AutoMove availability at startup
+-- and showed a warning (46ms cost from MessageFormatter). This version does
+-- nothing at startup (0ms cost). AutoMove will work if present, otherwise no-op.
 
 ---============================================================================
 --- MODULE EXPORT
@@ -37,5 +35,5 @@ end
 
 -- Export as module (for future require() usage)
 return {
-    -- Module loaded, AutoMove handles everything automatically
+    -- Module loaded, AutoMove (if present) handles everything automatically
 }

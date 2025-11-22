@@ -16,17 +16,32 @@
 --- @requires utils/ui/UI_COMMANDS, utils/core/COMMON_COMMANDS
 ---============================================================================
 ---============================================================================
---- DEPENDENCIES
+--- DEPENDENCIES (LAZY LOADING for performance)
 ---============================================================================
--- Centralized command handlers
-local UICommands = require('shared/utils/ui/UI_COMMANDS')
-local CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
-local WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
-local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
+-- Command handlers loaded on first command (saves ~150ms at startup)
+local UICommands = nil
+local CommonCommands = nil
+local WatchdogCommands = nil
+local CycleHandler = nil
+local MessageCommands = nil
 
 -- PLD logic modules
-local AOEManager = require('shared/jobs/pld/functions/logic/aoe_manager')
-local RuneManager = require('shared/jobs/pld/functions/logic/rune_manager')
+local AOEManager = nil
+local RuneManager = nil
+
+local function ensure_commands_loaded()
+    if not UICommands then
+        UICommands = require('shared/utils/ui/UI_COMMANDS')
+        CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
+        WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
+        CycleHandler = require('shared/utils/core/CYCLE_HANDLER')
+        MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
+
+        -- PLD logic modules
+        AOEManager = require('shared/jobs/pld/functions/logic/aoe_manager')
+        RuneManager = require('shared/jobs/pld/functions/logic/rune_manager')
+    end
+end
 
 ---============================================================================
 --- COMMAND HANDLER HOOK
@@ -55,6 +70,9 @@ function job_self_command(cmdParams, eventArgs)
     if not cmdParams[1] then
         return
     end
+
+    -- Lazy load command handlers on first command
+    ensure_commands_loaded()
 
     local command = cmdParams[1]:lower()
 
@@ -127,6 +145,17 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- ==========================================================================
+    -- CUSTOM CYCLE STATE (UI-aware cycle)
+    -- ==========================================================================
+    -- Intercepts cycle commands to check UI visibility
+    -- If UI visible: custom cycle + UI update (no message)
+    -- If UI invisible: delegate to Mote-Include (shows message)
+
+    if command == 'cyclestate' then
+        eventArgs.handled = CycleHandler.handle_cyclestate(cmdParams, eventArgs)
+        return
+    end
 
     -- ==========================================================================
     -- PLD-SPECIFIC COMMANDS

@@ -48,6 +48,44 @@ local function apply_element_color(spell_name, element)
         return spell_name
     end
 
+    -- Special handling for Bar spells: use spell name instead of element
+    -- Barfire should be red (Fire), not blue (Water element in database)
+    if spell_name and spell_name:find("Bar") then
+        local bar_element_color
+        -- Bar-element spells
+        if spell_name:find("Barfir") then  -- Barfire/Barfira
+            bar_element_color = 2  -- Fire (red/orange)
+        elseif spell_name:find("Barbliz") then  -- Barblizzard/Barblizzara
+            bar_element_color = 210  -- Ice (cyan)
+        elseif spell_name:find("Baraer") then  -- Baraero/Baraera
+            bar_element_color = 14  -- Wind (green)
+        elseif spell_name:find("Barston") then  -- Barstone/Barstonra
+            bar_element_color = 37  -- Earth (yellow/brown)
+        elseif spell_name:find("Barthund") then  -- Barthunder/Barthundra
+            bar_element_color = 16  -- Thunder (purple)
+        elseif spell_name:find("Barwater") then  -- Barwater/Barwatera
+            bar_element_color = 219  -- Water (blue)
+        -- Bar-ailment spells (use element association)
+        elseif spell_name:find("Barparalyz") then  -- Fire element
+            bar_element_color = 2  -- Fire (red)
+        elseif spell_name:find("Barsilence") then  -- Ice element
+            bar_element_color = 210  -- Ice (cyan)
+        elseif spell_name:find("Barpetr") then  -- Wind element
+            bar_element_color = 14  -- Wind (green)
+        elseif spell_name:find("Barpoison") then  -- Thunder element
+            bar_element_color = 16  -- Thunder (purple)
+        elseif spell_name:find("Baramnesi") or spell_name:find("Barvir") then  -- Water element
+            bar_element_color = 219  -- Water (blue)
+        elseif spell_name:find("Barsleep") or spell_name:find("Barblind") then  -- Light element
+            bar_element_color = 187  -- Light (white/yellow)
+        end
+
+        if bar_element_color then
+            local gray_code = string.char(0x1F, 160)
+            return string.char(0x1F, bar_element_color) .. spell_name .. gray_code
+        end
+    end
+
     local color_code = get_element_color(element)
     if not color_code then
         return spell_name

@@ -1,57 +1,43 @@
----============================================================================
---- PLD Idle Module - Idle State Management
----============================================================================
---- Handles all idle state logic for Paladin job:
----   • Idle set selection based on conditions
----   • Movement speed optimization
----   • Dynamic weapon application to idle sets
----   • Town gear management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PLD Idle Module - Idle State Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all idle state logic for Red Mage job:
+---   - Idle set selection based on IdleMode (DT, Refresh, Regain, Evasion)
+---   - Movement speed optimization
+---   - Town gear management
+---   - Dynamic weapon application to idle sets
 ---
---- Delegates to SetBuilder (logic module) for shared construction logic.
----
---- @file    jobs/pld/functions/PLD_IDLE.lua
---- @author  Tetsouo
---- @version 4.0.0 - Logic Extracted to logic/set_builder.lua
---- @date    Created: 2025-10-03 | Updated: 2025-10-06
---- @requires jobs/pld/functions/logic/set_builder
----============================================================================
----============================================================================
---- DEPENDENCIES
----============================================================================
--- Load shared set construction logic
-local SetBuilder = require('shared/jobs/pld/functions/logic/set_builder')
+---   @file    shared/jobs/pld/functions/PLD_IDLE.lua
+---   @author  Tetsouo
+---   @version 2.1 - Removed dead code + refactored header
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- IDLE CUSTOMIZATION HOOK
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply weapon sets and movement gear to idle configuration
---- Called by Mote-Include when idle set is selected.
----
---- Processing order:
----   1. Apply current weapon set (state.MainWeapon/SubWeapon)
----   2. Apply movement gear if moving
----   3. Apply hybrid mode gear (PDT/MDT)
----
---- @param idleSet table The base idle set from pld_sets.lua
---- @return table Modified idle set with weapon/movement/hybrid gear applied
+local SetBuilder = nil
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   IDLE HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
+
+--- Apply weapon sets, mode selection, and movement gear to all idle configurations
+--- @param idleSet table The idle set to customize
+--- @return table Modified idle set with current weapon, mode, and movement gear
 function customize_idle_set(idleSet)
+    -- Lazy load SetBuilder on first idle
+    if not SetBuilder then
+        SetBuilder = require('shared/jobs/pld/functions/logic/set_builder')
+    end
+
     if not idleSet then
         return {}
     end
 
-    -- Delegate to SetBuilder for shared logic
     return SetBuilder.build_idle_set(idleSet)
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
-
--- Export globally for GearSwap
+-- Export to global scope (used by Mote-Include via include())
 _G.customize_idle_set = customize_idle_set
-
--- Export as module (for future require() usage)
-return {
-    customize_idle_set = customize_idle_set
-}

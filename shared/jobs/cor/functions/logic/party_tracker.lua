@@ -244,11 +244,16 @@ function PartyTracker.init()
 
                 -- Check if this is an update (job changed)
                 local is_update = false
-                if _G.cor_party_jobs[player_id] then
+                if _G.cor_party_jobs and _G.cor_party_jobs[player_id] then
                     local old_data = _G.cor_party_jobs[player_id]
                     if old_data.main_job ~= main_job or old_data.sub_job ~= sub_job then
                         is_update = true
                     end
+                end
+
+                -- Re-initialize if needed (safety check)
+                if not _G.cor_party_jobs then
+                    _G.cor_party_jobs = {}
                 end
 
                 -- Store by player ID (not name, since 0xDF doesn't have it)

@@ -1,23 +1,43 @@
----============================================================================
---- UI Settings - Persistent Configuration Storage (Per Character)
----============================================================================
---- Global variables + file persistence for UI settings.
---- Settings persist within session AND across //lua reload gearswap.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   UI Settings - Persistent Configuration Storage (Per Character)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Global variables + file persistence for UI display settings.
+---   Settings persist within session AND across //lua reload gearswap.
 ---
---- Settings File:
----   shared/config/ui_settings_<CharName>.lua (one file per character)
+---   Features:
+---     • Per-character settings ([CharName]/config/ui_settings.lua)
+---     • Global variable storage (_G.UI_SETTINGS)
+---     • Auto-load from file on startup
+---     • Auto-save on every setting change
+---     • 14 configurable parameters (position, visibility, background, font, sections)
 ---
---- @file ui_settings.lua
---- @author Tetsouo
---- @version 1.0 - Initial release with per-character files
---- @date Created: 2025-11-08
----============================================================================
+---   Architecture:
+---     • File persistence via dofile() and io.open()
+---     • Default settings if file doesn't exist
+---     • Getter/Setter functions for all settings
+---     • Automatic file generation with formatted output
+---
+---   Configuration Categories:
+---     • Position (pos_x, pos_y)
+---     • Visibility (enabled, show_header, show_legend, show_column_headers, show_footer)
+---     • Background (bg_r, bg_g, bg_b, bg_a, bg_visible)
+---     • Font (font_name, font_size)
+---     • Sections (section_spells, section_enhancing, section_job_abilities, section_weapons, section_modes)
+---
+---   Settings File:
+---     • [CharName]/config/ui_settings.lua (one file per character)
+---
+---   @file    shared/config/ui_settings.lua
+---   @author  Tetsouo
+---   @version 1.1 - Refactored with new header style
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local UISettings = {}
 
----============================================================================
---- FILE PERSISTENCE
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   FILE PERSISTENCE
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Get absolute path to settings file (per character)
 local function get_settings_path()
@@ -93,9 +113,9 @@ local function save_to_file(settings)
     end
 end
 
----============================================================================
---- GLOBAL SETTINGS STORAGE
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   GLOBAL SETTINGS STORAGE
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- ALWAYS try to load from file first (even if _G.UI_SETTINGS exists)
 -- This ensures settings persist across //lua reload gearswap
@@ -141,9 +161,9 @@ elseif _G.UI_SETTINGS == nil then
 end
 -- If file doesn't exist but _G.UI_SETTINGS exists, keep the global (in-session changes)
 
----============================================================================
---- SETTINGS ACCESS - Position
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SETTINGS ACCESS - Position
+---  ═══════════════════════════════════════════════════════════════════════════
 
 function UISettings.get_position()
     return {
@@ -158,9 +178,9 @@ function UISettings.set_position(x, y)
     save_to_file(_G.UI_SETTINGS)
 end
 
----============================================================================
---- SETTINGS ACCESS - Visibility
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SETTINGS ACCESS - Visibility
+---  ═══════════════════════════════════════════════════════════════════════════
 
 function UISettings.get_enabled()
     return _G.UI_SETTINGS.enabled ~= false
@@ -207,9 +227,9 @@ function UISettings.set_show_footer(value)
     save_to_file(_G.UI_SETTINGS)
 end
 
----============================================================================
---- SETTINGS ACCESS - Background
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SETTINGS ACCESS - Background
+---  ═══════════════════════════════════════════════════════════════════════════
 
 function UISettings.get_background()
     return {
@@ -234,9 +254,9 @@ function UISettings.set_background_visible(value)
     save_to_file(_G.UI_SETTINGS)
 end
 
----============================================================================
---- SETTINGS ACCESS - Font
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SETTINGS ACCESS - Font
+---  ═══════════════════════════════════════════════════════════════════════════
 
 function UISettings.get_font()
     return {
@@ -255,9 +275,9 @@ function UISettings.set_font(name, size)
     save_to_file(_G.UI_SETTINGS)
 end
 
----============================================================================
---- SETTINGS ACCESS - Sections
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SETTINGS ACCESS - Sections
+---  ═══════════════════════════════════════════════════════════════════════════
 
 function UISettings.get_sections()
     return {
@@ -275,8 +295,8 @@ function UISettings.set_section(section_name, value)
     save_to_file(_G.UI_SETTINGS)
 end
 
----============================================================================
---- EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return UISettings

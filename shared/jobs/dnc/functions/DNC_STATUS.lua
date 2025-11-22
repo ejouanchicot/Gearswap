@@ -1,32 +1,35 @@
----============================================================================
---- DNC Status Module - Status Change Handling
----============================================================================
---- Handles player status changes for Dancer job.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DNC Status Module - Player Status Change Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles status changes (Idle, Engaged, Resting, Dead, etc.)
 ---
---- Features:
----   • Player status changes (Idle/Engaged/Resting/Dead)
----   • Combat state transitions (seamless idle ↔ engaged switching)
----   • Status-based equipment swaps (auto-PDT when idle, DPS when engaged)
----   • Resting gear optimization (Refresh/Regen priority)
----
---- @file    DNC_STATUS.lua
---- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-10-04
----============================================================================
+---   @file    shared/jobs/dnc/functions/DNC_STATUS.lua
+---   @author  Tetsouo
+---   @version 1.2 - Added DoomManager safety unlock
+---   @date    Updated: 2025-11-14
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- STATUS CHANGE HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Called when player status changes (idle/engaged/resting)
---- @param newStatus string New status
+local DoomManager = nil
+
+--- Handle status change events
+--- @param newStatus string New status (Idle, Engaged, Resting, Dead, etc.)
 --- @param oldStatus string Previous status
---- @param eventArgs table Event arguments with handled flag
---- @return void
+--- @param eventArgs table Event arguments
 function job_status_change(newStatus, oldStatus, eventArgs)
-    -- DNC-specific status changes
-    -- Example: switch between idle and engaged gear sets
+    -- Lazy load DoomManager on first status change
+    if not DoomManager then
+        DoomManager = require('shared/utils/debuff/doom_manager')
+    end
 
-    -- Placeholder for DNC status change implementation
+    -- Safety: Unlock Doom slots after death (prevents stuck locks after raise)
+    DoomManager.handle_status_change(newStatus, oldStatus)
+
+    -- DNC-specific status change logic can be added here
 end
+
+-- Export to global scope
+_G.job_status_change = job_status_change

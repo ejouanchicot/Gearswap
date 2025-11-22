@@ -1,14 +1,14 @@
----============================================================================
---- Precast Guard - Action Blocking Prevention System
----============================================================================
---- Prevents actions from executing when blocked by debuffs, avoiding
---- unnecessary equipment swaps and providing clear feedback to the player.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Precast Guard - Action Blocking Prevention System
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Prevents actions from executing when blocked by debuffs, avoiding
+---   unnecessary equipment swaps and providing clear feedback to the player.
 ---
---- @file utils/debuff/precast_guard.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-02
----============================================================================
+---   @file    shared/utils/debuff/precast_guard.lua
+---   @author  Tetsouo
+---   @version 1.2 - DRY refactor: Merge try_cure + normalize helper (-18 lines)
+---   @date    Created: 2025-10-02 | Updated: 2025-11-13
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MessageCore = require('shared/utils/messages/message_core')
 
@@ -26,23 +26,28 @@ if not config_success then
         test_mode = false,
         test_debuff = "Berserk",
         auto_cure_silence = true,
+        auto_cure_paralysis = true,
         silence_cure_items = {
             { name = "Echo Drops", id = 4151 },
             { name = "Remedy", id = 4155 }
+        },
+        paralysis_cure_items = {
+            { name = "Remedy", id = 4155 },
+            { name = "Panacea", id = 4145 }
         },
         debug = false
     }
 end
 
--- Silence cure items (from config)
-local SILENCE_CURE_ITEMS = AutoCureConfig.silence_cure_items
+-- Silence cure items (from config with validation)
+local SILENCE_CURE_ITEMS = AutoCureConfig.silence_cure_items or {}
 
--- Paralysis cure items (from config)
-local PARALYSIS_CURE_ITEMS = AutoCureConfig.paralysis_cure_items
+-- Paralysis cure items (from config with validation)
+local PARALYSIS_CURE_ITEMS = AutoCureConfig.paralysis_cure_items or {}
 
----============================================================================
---- AUTO-CURE FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   AUTO-CURE FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Check if an item exists in inventory
 --- @param item_id number Item ID to check
@@ -63,25 +68,42 @@ local function has_item_in_inventory(item_id)
     return false
 end
 
---- Try to use silence cure item (Echo Drops or Remedy)
---- @param spell_name string The spell that was blocked
---- @param debuff_message string The debuff message to display (e.g., "Silenced")
+--- Normalize debuff name to lowercase for consistent comparison
+--- @param debuff_name string|nil Debuff name to normalize
+--- @return string Lowercase debuff name or empty string if nil
+local function normalize_debuff_name(debuff_name)
+    return debuff_name and debuff_name:lower() or ""
+end
+
+--- Try to use debuff cure item (Echo Drops, Remedy, Panacea, etc.)
+--- @param cure_items table List of cure items to try (in priority order)
+--- @param action_name string The action that was blocked
+--- @param debuff_message string The debuff message to display
+--- @param success_msg_func function Message function to call on success
 --- @return boolean used True if item was used successfully
-local function try_cure_silence(spell_name, debuff_message)
+local function try_cure_debuff(cure_items, action_name, debuff_message, success_msg_func)
     -- Try each cure item in priority order
-    for _, cure_item in ipairs(SILENCE_CURE_ITEMS) do
+    for _, cure_item in ipairs(cure_items) do
         if has_item_in_inventory(cure_item.id) then
             -- Use the item
             windower.send_command('input /item "' .. cure_item.name .. '" <me>')
 
             -- Display success message using MessageDebuffs module
-            MessageDebuffs.show_silence_cure_success(cure_item.name, spell_name, debuff_message)
+            success_msg_func(cure_item.name, action_name, debuff_message)
 
             return true
         end
     end
 
     return false
+end
+
+--- Try to use silence cure item (Echo Drops or Remedy)
+--- @param spell_name string The spell that was blocked
+--- @param debuff_message string The debuff message to display (e.g., "Silenced")
+--- @return boolean used True if item was used successfully
+local function try_cure_silence(spell_name, debuff_message)
+    return try_cure_debuff(SILENCE_CURE_ITEMS, spell_name, debuff_message, MessageDebuffs.show_silence_cure_success)
 end
 
 --- Try to use paralysis cure item (Remedy or Panacea)
@@ -89,25 +111,12 @@ end
 --- @param debuff_message string The debuff message to display (e.g., "Paralyzed")
 --- @return boolean used True if item was used successfully
 local function try_cure_paralysis(action_name, debuff_message)
-    -- Try each cure item in priority order
-    for _, cure_item in ipairs(PARALYSIS_CURE_ITEMS) do
-        if has_item_in_inventory(cure_item.id) then
-            -- Use the item
-            windower.send_command('input /item "' .. cure_item.name .. '" <me>')
-
-            -- Display success message using MessageDebuffs module
-            MessageDebuffs.show_paralysis_cure_success(cure_item.name, action_name, debuff_message)
-
-            return true
-        end
-    end
-
-    return false
+    return try_cure_debuff(PARALYSIS_CURE_ITEMS, action_name, debuff_message, MessageDebuffs.show_paralysis_cure_success)
 end
 
----============================================================================
---- ACTION BLOCKING FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ACTION BLOCKING FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Check if action should be blocked and cancel if necessary
 --- @param spell table Spell/action object from GearSwap
@@ -125,24 +134,27 @@ function PrecastGuard.check_and_block(spell, eventArgs)
     local blocked, debuff_name, debuff_message = DebuffChecker.check_action_blocked(action_type)
 
     if blocked then
+        -- Normalize debuff name to lowercase for consistent comparison
+        local debuff_lower = normalize_debuff_name(debuff_name)
+
         -- Check if this debuff should trigger auto-cure
         local should_auto_cure = false
         local cure_type = nil  -- "silence" or "paralysis"
 
         -- Real Silence always triggers auto-cure (if enabled)
-        if debuff_name == "silence" and AutoCureConfig.auto_cure_silence then
+        if debuff_lower == "silence" and AutoCureConfig.auto_cure_silence then
             should_auto_cure = true
             cure_type = "silence"
         end
 
         -- Real Paralysis always triggers auto-cure (if enabled)
-        if debuff_name == "paralysis" and AutoCureConfig.auto_cure_paralysis then
+        if debuff_lower == "paralysis" and AutoCureConfig.auto_cure_paralysis then
             should_auto_cure = true
             cure_type = "paralysis"
         end
 
         -- Test mode: Berserk simulates Silence
-        if AutoCureConfig.test_mode and debuff_name == "Berserk" then
+        if AutoCureConfig.test_mode and debuff_lower == "berserk" then
             should_auto_cure = true
             cure_type = "silence"
             if AutoCureConfig.debug then
@@ -151,7 +163,7 @@ function PrecastGuard.check_and_block(spell, eventArgs)
         end
 
         -- Test mode: Defender simulates Paralysis
-        if AutoCureConfig.test_mode and debuff_name == "Defender" then
+        if AutoCureConfig.test_mode and debuff_lower == "defender" then
             should_auto_cure = true
             cure_type = "paralysis"
             if AutoCureConfig.debug then
@@ -211,16 +223,20 @@ function PrecastGuard.check_magic(spell, eventArgs)
     local blocked, debuff_name, debuff_message = DebuffChecker.check_magic_blocked()
 
     if blocked then
+        -- Normalize debuff name to lowercase for consistent comparison
+        local debuff_lower = normalize_debuff_name(debuff_name)
+
         -- Check if this debuff should trigger auto-cure
         local should_auto_cure = false
 
         -- Real Silence always triggers auto-cure (if enabled)
-        if debuff_name == "Silence" and AutoCureConfig.auto_cure_silence then
+        if debuff_lower == "silence" and AutoCureConfig.auto_cure_silence then
             should_auto_cure = true
         end
 
         -- Test mode: use configured test debuff to simulate Silence
-        if AutoCureConfig.test_mode and debuff_name == AutoCureConfig.test_debuff then
+        local test_debuff_lower = AutoCureConfig.test_debuff and AutoCureConfig.test_debuff:lower() or ""
+        if AutoCureConfig.test_mode and debuff_lower == test_debuff_lower then
             should_auto_cure = true
             if AutoCureConfig.debug then
                 MessageCore.show_test_mode('Using ' .. AutoCureConfig.test_debuff .. ' to simulate Silence')
@@ -264,16 +280,19 @@ function PrecastGuard.check_ja(spell, eventArgs)
     local blocked, debuff_name, debuff_message = DebuffChecker.check_ja_blocked()
 
     if blocked then
+        -- Normalize debuff name to lowercase for consistent comparison
+        local debuff_lower = normalize_debuff_name(debuff_name)
+
         -- Check if this is Paralysis/Paralyzed and should trigger auto-cure
         local should_auto_cure = false
 
         -- Real Paralysis always triggers auto-cure (if enabled)
-        if (debuff_name == "paralysis") and AutoCureConfig.auto_cure_paralysis then
+        if debuff_lower == "paralysis" and AutoCureConfig.auto_cure_paralysis then
             should_auto_cure = true
         end
 
         -- Test mode: use configured test debuff (e.g., Defender) to simulate Paralysis
-        if AutoCureConfig.test_mode and debuff_name == "Defender" then
+        if AutoCureConfig.test_mode and debuff_lower == "defender" then
             should_auto_cure = true
             if AutoCureConfig.debug then
                 MessageCore.show_test_mode('Using Defender to simulate Paralysis')
@@ -319,8 +338,11 @@ function PrecastGuard.check_ws(spell, eventArgs)
     local blocked, debuff_name, debuff_message = DebuffChecker.check_ws_blocked()
 
     if blocked then
+        -- Normalize debuff name to lowercase for consistent comparison
+        local debuff_lower = normalize_debuff_name(debuff_name)
+
         -- Skip blocking if it's just paralysis (FFXI will handle WS proc/fail)
-        if debuff_name == "paralysis" or debuff_name == "Paralysis" or debuff_name == "Paralyzed" then
+        if debuff_lower == "paralysis" then
             return false  -- Don't block, let FFXI handle
         end
 
@@ -353,9 +375,9 @@ function PrecastGuard.check_item(spell, eventArgs)
     return false
 end
 
----============================================================================
---- INTEGRATION HELPERS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   INTEGRATION HELPERS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Main guard function to be called at start of precast
 --- Checks all action types and blocks if necessary
@@ -381,9 +403,9 @@ function PrecastGuard.guard_precast(spell, eventArgs)
     end
 end
 
----============================================================================
---- UTILITY FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   UTILITY FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Check if action would be blocked without actually blocking it
 --- Useful for UI indicators or pre-validation

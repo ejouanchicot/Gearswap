@@ -19,38 +19,56 @@
 --- SECTION 1: MESSAGE SYSTEM
 ---============================================================================
 -- Message system (must load first for buff status display)
+-- ═══════════════════════════════════════════════════════════════════
+-- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+-- ═══════════════════════════════════════════════════════════════════
+local Profiler = require('shared/utils/debug/performance_profiler')
+local TIMER = Profiler.create_timer('DRK')
+-- ═══════════════════════════════════════════════════════════════════
+
 include('../shared/utils/messages/formatters/magic/message_buffs.lua')
+TIMER('message_buffs')
 
 ---============================================================================
 --- SECTION 2: COMBAT ACTION HOOKS
 ---============================================================================
 
 include('../shared/jobs/drk/functions/DRK_PRECAST.lua')
+TIMER('DRK_PRECAST')
 include('../shared/jobs/drk/functions/DRK_MIDCAST.lua')
+TIMER('DRK_MIDCAST')
 include('../shared/jobs/drk/functions/DRK_AFTERCAST.lua')
+TIMER('DRK_AFTERCAST')
 
 ---============================================================================
 --- SECTION 3: GEAR SELECTION HOOKS
 ---============================================================================
 
 include('../shared/jobs/drk/functions/DRK_IDLE.lua')
+TIMER('DRK_IDLE')
 include('../shared/jobs/drk/functions/DRK_ENGAGED.lua')
+TIMER('DRK_ENGAGED')
 
 ---============================================================================
 --- SECTION 4: EVENT MONITORING HOOKS
 ---============================================================================
 
 include('../shared/jobs/drk/functions/DRK_STATUS.lua')
+TIMER('DRK_STATUS')
 include('../shared/jobs/drk/functions/DRK_BUFFS.lua')
+TIMER('DRK_BUFFS')
 
 ---============================================================================
 --- SECTION 5: UTILITY HOOKS
 ---============================================================================
 
+-- LOCKSTYLE and MACROBOOK use lazy loading - loaded on first call, not during startup
 include('../shared/jobs/drk/functions/DRK_LOCKSTYLE.lua')
 include('../shared/jobs/drk/functions/DRK_MACROBOOK.lua')
 include('../shared/jobs/drk/functions/DRK_COMMANDS.lua')
+TIMER('DRK_COMMANDS')
 include('../shared/jobs/drk/functions/DRK_MOVEMENT.lua')
+TIMER('DRK_MOVEMENT')
 
 ---============================================================================
 --- LOGIC MODULES REFERENCE
@@ -73,3 +91,7 @@ local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
 
 -- All module functions are now available in global scope
 print('[DRK] All functions loaded (11 hooks)')
+
+-- ═══════════════════════════════════════════════════════════════════
+TIMER('TOTAL DRK_functions', true)
+-- ═══════════════════════════════════════════════════════════════════

@@ -1,13 +1,13 @@
----============================================================================
---- RDM Aftercast Module - Post-Action Cleanup
----============================================================================
---- Handles gear return after actions complete (return to idle/engaged).
+---  ═══════════════════════════════════════════════════════════════════════════
+---   RDM Aftercast Module - Post-Action Cleanup
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles gear return after actions complete (return to idle/engaged).
 ---
---- @file RDM_AFTERCAST.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-12
----============================================================================
+---   @file    shared/jobs/rdm/functions/RDM_AFTERCAST.lua
+---   @author  Tetsouo
+---   @version 1.1 - Refactored with new header style
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Handle aftercast events (return to idle/engaged gear)
 --- @param spell table Spell data
@@ -31,11 +31,5 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     end
 end
 
--- Export to global scope
+-- Export to global scope (used by Mote-Include via include())
 _G.job_aftercast = job_aftercast
-
--- Export module
-local RDM_AFTERCAST = {}
-RDM_AFTERCAST.job_aftercast = job_aftercast
-
-return RDM_AFTERCAST

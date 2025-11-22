@@ -16,10 +16,10 @@
 --- @requires jobs/war/functions/logic/set_builder
 ---============================================================================
 ---============================================================================
---- DEPENDENCIES
+--- DEPENDENCIES (LAZY LOADING for performance)
 ---============================================================================
--- Load shared set construction logic
-local SetBuilder = require('shared/jobs/war/functions/logic/set_builder')
+-- SetBuilder loaded on first function call (saves ~100ms at startup)
+local SetBuilder = nil
 
 ---============================================================================
 --- ENGAGED CUSTOMIZATION HOOK
@@ -37,6 +37,11 @@ local SetBuilder = require('shared/jobs/war/functions/logic/set_builder')
 --- @param meleeSet table The base engaged set from war_sets.lua
 --- @return table Modified engaged set with weapon/hybrid/movement/AM3 gear applied
 function customize_melee_set(meleeSet)
+    -- Lazy load SetBuilder on first call
+    if not SetBuilder then
+        SetBuilder = require('shared/jobs/war/functions/logic/set_builder')
+    end
+
     if not meleeSet then
         return {}
     end

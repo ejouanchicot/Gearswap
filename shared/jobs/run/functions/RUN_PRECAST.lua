@@ -6,62 +6,69 @@
 ---   • Universal cooldown checking (abilities/spells)
 ---   • Weaponskill validation and range checking
 ---   • TP bonus optimization for weaponskills
----   • Fast Cast gear for spells
+---   • Fast Cast gear with fallback system (spell-specific > skill-specific > base)
+---
+--- Fast Cast Fallback (Spells only):
+---   1. sets.precast.FC['Blink'] (spell-specific)
+---   2. sets.precast.FC['Enhancing Magic'] (skill-specific)
+---   3. sets.precast.FC (base)
 ---
 --- Uses centralized systems for validation and messaging consistency.
 ---
 --- @file    RUN_PRECAST.lua
 --- @author  Tetsouo
---- @version 1.0.1
---- @date    Created: 2025-10-03 | Updated: 2025-11-09
+--- @version 1.2.0 - Added Fast Cast fallback system
+--- @date    Created: 2025-10-03 | Updated: 2025-11-11
 --- @requires Tetsouo architecture, MessageFormatter, CooldownChecker
 ---============================================================================
 
 ---============================================================================
---- DEPENDENCIES - CENTRALIZED SYSTEMS
+--- DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---============================================================================
 
--- Message formatter (cooldown messages, WS TP display)
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+local MessageFormatter = nil
+local MessagePrecast = nil
+local CooldownChecker = nil
+local AbilityHelper = nil
+local PrecastGuard = nil
+local TPBonusHandler = nil
+local WSValidator = nil
+local RUNTPConfig = nil
+local JA_DB = nil
+local WS_DB = nil
 
--- Cooldown checker (universal ability/spell recast validation)
-local CooldownChecker = require('shared/utils/precast/cooldown_checker')
+local modules_loaded = false
 
--- Ability helper (auto-trigger abilities before spells/WS)
-local AbilityHelper = require('shared/utils/precast/ability_helper')
+local function ensure_modules_loaded()
+    if modules_loaded then return end
 
--- Precast guard (debuff blocking: Amnesia, Silence, Stun, etc.)
-local precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-if not precast_guard_success then
-    PrecastGuard = nil
+    MessageFormatter = require('shared/utils/messages/message_formatter')
+    MessagePrecast = require('shared/utils/messages/formatters/magic/message_precast')
+    CooldownChecker = require('shared/utils/precast/cooldown_checker')
+    AbilityHelper = require('shared/utils/precast/ability_helper')
+
+    local precast_guard_success
+    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
+    if not precast_guard_success then
+        PrecastGuard = nil
+    end
+
+    local _
+    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
+
+    include('../shared/utils/weaponskill/weaponskill_manager.lua')
+
+    if WeaponSkillManager and MessageFormatter then
+        WeaponSkillManager.MessageFormatter = MessageFormatter
+    end
+
+    RUNTPConfig = _G.RUNTPConfig or {}
+    JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
+    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+
+    modules_loaded = true
 end
-
--- TP Bonus Handler (universal WS TP gear optimization)
-local _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
-
--- WS Validator (universal WS range + validity validation)
-local _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
-
--- Weaponskill manager (WS validation + range checking)
-include('../shared/utils/weaponskill/weaponskill_manager.lua')
-
--- Set MessageFormatter in WeaponSkillManager
-if WeaponSkillManager and MessageFormatter then
-    WeaponSkillManager.MessageFormatter = MessageFormatter
-end
-
----============================================================================
---- DEPENDENCIES - RUN SPECIFIC
----============================================================================
-
--- RUN TP configuration
-local RUNTPConfig = _G.RUNTPConfig or {}  -- Loaded from character main file
-
--- Universal Job Ability Database (supports main job + subjob abilities)
-local JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
-
--- Universal Weapon Skills Database (weaponskill descriptions)
-local WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
 
 ---============================================================================
 --- COOLDOWN EXCLUSIONS
@@ -232,16 +239,8 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- ==========================================================================
     -- STEP 6: RUN-SPECIFIC PRECAST GEAR
     -- ==========================================================================
-
-    -- Fast Cast for Healing Magic
-    if spell.skill == 'Healing Magic' then
-        equip(sets.precast['Cure'])
-    end
-
-    -- Fast Cast + Enmity for Flash
-    if spell.name == 'Flash' then
-        equip(sets.precast['Flash'])
-    end
+    -- Fast Cast is handled automatically by Mote-Include (sets.precast.FC)
+    -- No job-specific logic needed here
 end
 
 ---============================================================================
@@ -264,6 +263,38 @@ function job_post_precast(spell, action, spellMap, eventArgs)
             equip(tp_gear)
             _G.temp_tp_bonus_gear = nil
         end
+    end
+
+    -- ==========================================================================
+    -- DEBUG: PRECAST SET DISPLAY (Universal System)
+    -- ==========================================================================
+    -- Mote-Include already handles FC fallback: spell.name > spell.skill > base
+    -- We just add debug display to show which set was selected
+    if _G.PrecastDebugState and spell.action_type == 'Magic' then
+        local selected_set = nil
+        local set_name = 'sets.precast.FC'
+
+        -- Detect which set Mote-Include selected
+        if sets.precast.FC[spell.name] then
+            selected_set = sets.precast.FC[spell.name]
+            set_name = 'sets.precast.FC.' .. spell.name
+        elseif spell.skill and sets.precast.FC[spell.skill] then
+            selected_set = sets.precast.FC[spell.skill]
+            set_name = 'sets.precast.FC[\'' .. spell.skill .. '\']'
+        else
+            selected_set = sets.precast.FC
+            set_name = 'sets.precast.FC'
+        end
+
+        -- Show debug info
+        MessagePrecast.show_debug_header(spell.name, spell.skill or 'Unknown')
+        MessagePrecast.show_equipped_set(set_name)
+
+        if selected_set then
+            MessagePrecast.show_equipment(selected_set)
+        end
+
+        MessagePrecast.show_completion()
     end
 end
 

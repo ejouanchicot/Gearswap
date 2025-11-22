@@ -1,6 +1,6 @@
----============================================================================
---- Universal Ability Messages Hook - Auto-Inject for All Jobs
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Universal Ability Messages Hook - Auto-Inject for All Jobs
+---  ═══════════════════════════════════════════════════════════════════════════
 --- Automatically wraps user_post_precast to show ability messages for ALL jobs.
 --- Simply include this file in get_sets() and it works automatically.
 ---
@@ -18,22 +18,39 @@
 ---   - Automatically detects ability database
 ---   - Displays messages for: Runes, Job Abilities, SP abilities, etc.
 ---
+--- **PERFORMANCE OPTIMIZATION:**
+---   • Lazy-loaded: Handler loaded on first ability usage (saves ~250ms at startup)
+---
 --- Examples:
 ---   - WAR/RUN using Ignis >> "[Ignis] Fire rune, resist ice"
 ---   - DNC/WAR using Provoke >> "[Provoke] Provokes enemy."
 ---   - PLD using Sentinel >> "[Sentinel] Reduces damage taken."
 ---
---- @file init_ability_messages.lua
---- @author Tetsouo
---- @version 1.0 - Universal Ability Messages Hook
---- @date Created: 2025-11-01
----============================================================================
+---   @file    shared/hooks/init_ability_messages.lua
+---   @author  Tetsouo
+---   @version 1.2 - Lazy Loading for performance
+---   @date    Updated: 2025-11-15
+---  ═══════════════════════════════════════════════════════════════════════════
 
-local AbilityMessageHandler = require('shared/utils/messages/handlers/ability_message_handler')
+---  ═══════════════════════════════════════════════════════════════════════════
+---   LAZY LOADING - Handler loaded on first ability usage
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- HOOK INJECTION
----============================================================================
+local AbilityMessageHandler = nil
+local handler_loaded = false
+
+local function ensure_handler_loaded()
+    if handler_loaded then
+        return
+    end
+
+    AbilityMessageHandler = require('shared/utils/messages/handlers/ability_message_handler')
+    handler_loaded = true
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HOOK INJECTION
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Save original user_post_precast (if exists)
 local original_user_post_precast = _G.user_post_precast
@@ -49,18 +66,16 @@ function user_post_precast(spell, action, spellMap, eventArgs)
         original_user_post_precast(spell, action, spellMap, eventArgs)
     end
 
-    -- Show universal ability message (only for abilities, not spells/weaponskills)
+    -- Lazy load handler on first ability usage
     if spell and spell.action_type == 'Ability' then
-        AbilityMessageHandler.show_message(spell)
+        ensure_handler_loaded()
+
+        -- Show universal ability message
+        if AbilityMessageHandler then
+            AbilityMessageHandler.show_message(spell)
+        end
     end
 end
 
--- Export to global scope
+-- Export to global scope (allows chaining with other hooks)
 _G.user_post_precast = user_post_precast
-
----============================================================================
---- INITIALIZATION MESSAGE
----============================================================================
-
--- Silent initialization (no spam in chat)
--- Message will appear when player uses an ability with message system active

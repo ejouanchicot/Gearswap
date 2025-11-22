@@ -279,7 +279,7 @@ local WATCHDOG_TIMEOUT = 3.0  -- More aggressive
 
 **Solution:**
 
-1. Verify `INIT_WATCHDOG.lua` is included in your job file
+1. Verify `INIT_SYSTEMS.lua` is included in your job file (watchdog is part of universal systems)
 2. Check for Lua errors: `//gs debugmode`
 3. Reload GearSwap: `//gs c reload`
 

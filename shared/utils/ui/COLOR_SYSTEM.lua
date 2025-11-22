@@ -246,19 +246,19 @@ end
 --- Get color for Gain spells based on stat
 local function get_gain_color(value)
     if value:find("STR") then
-        return element_colors.Fire
+        return element_colors.Fire       -- Fire element
     elseif value:find("DEX") then
-        return element_colors.Lightning
+        return element_colors.Wind       -- Wind element (fixed: was Lightning)
     elseif value:find("VIT") then
-        return element_colors.Earth
+        return element_colors.Earth      -- Earth element
     elseif value:find("AGI") then
-        return element_colors.Wind
+        return element_colors.Lightning  -- Thunder/Lightning element (fixed: was Wind)
     elseif value:find("INT") then
-        return element_colors.Dark
+        return element_colors.Ice        -- Ice element (fixed: was Dark)
     elseif value:find("MND") then
-        return element_colors.Ice
+        return element_colors.Water      -- Water element (fixed: was Ice)
     elseif value:find("CHR") then
-        return element_colors.Light
+        return element_colors.Light      -- Light element
     end
     return "\\cs(255,100,100)" -- Fallback red
 end
@@ -306,6 +306,30 @@ local function get_bar_element_color(value)
         return element_colors.Lightning
     elseif value:find("Barwater") or value:find("Barwatera") then
         return element_colors.Water
+    end
+    return nil
+end
+
+--- Get color for Bar ailment spells (based on element association)
+local function get_bar_ailment_color(value)
+    -- Fire element ailments
+    if value:find("Barparalyz") then  -- Barparalyze/Barparalyzra
+        return element_colors.Fire
+    -- Ice element ailments
+    elseif value:find("Barsilence") then  -- Barsilence/Barsilencera
+        return element_colors.Ice
+    -- Wind element ailments
+    elseif value:find("Barpetr") then  -- Barpetrify/Barpetra
+        return element_colors.Wind
+    -- Thunder element ailments
+    elseif value:find("Barpoison") then  -- Barpoison/Barpoisonra
+        return element_colors.Lightning
+    -- Water element ailments
+    elseif value:find("Baramnesi") or value:find("Barvir") then  -- Baramnesia/Baramnesra, Barvirus/Barvira
+        return element_colors.Water
+    -- Light element ailments
+    elseif value:find("Barsleep") or value:find("Barblind") then  -- Barsleep/Barsleepra, Barblind/Barblindra
+        return element_colors.Light
     end
     return nil
 end
@@ -471,12 +495,9 @@ function ColorSystem.get_value_color(value, description)
     local bar_element = get_bar_element_color(value)
     if bar_element then return bar_element end
 
-    -- Bar ailment spells
-    if value:find("Baramnesia") or value:find("Barvirus") or value:find("Barparalyze") or
-        value:find("Barsilence") or value:find("Barpetrify") or value:find("Barpoison") or
-        value:find("Barblind") or value:find("Barsleep") then
-        return special_colors.bar_ailment
-    end
+    -- Bar ailment spells (use element-based colors)
+    local bar_ailment = get_bar_ailment_color(value)
+    if bar_ailment then return bar_ailment end
 
     -- En spells
     local en_spell = get_en_spell_color(value)

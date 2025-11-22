@@ -1,77 +1,59 @@
----============================================================================
---- RDM Midcast Module - Intelligent Midcast Gear Selection (Powered by MidcastManager)
----============================================================================
---- Handles midcast gear selection for Red Mage spells using centralized MidcastManager.
---- Only intercepts skills that require job-specific logic. All other magic is handled
---- by Mote-Include's natural pattern matching.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   RDM Midcast Module - Intelligent Midcast Gear Selection (Powered by MidcastManager)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles midcast gear selection for Red Mage spells using centralized MidcastManager.
+---   Only intercepts skills that require job-specific logic. All other magic is handled
+---   by Mote-Include's natural pattern matching.
 ---
---- Intercepted Skills (Job-Specific Logic):
----   - Enfeebling: Nested sets (mnd_potency.Valeur), Saboteur override, Database type detection
----   - Enhancing: Spell family routing (Enspell/Gain/BarElement/etc.), Target detection (self vs others)
----   - Healing: Spell-specific sets (Cure/Curaga/Raise) with fallback to base Healing Magic set
----   - Elemental: NukeMode-based selection (FreeNuke vs base)
----   - Dark: Spell-specific sets (Drain/Aspir/Stun) with fallback to base Dark Magic set
----   - Universal: ALL other magic types (Blue Magic, Summoning, Geomancy, Ninjutsu, Songs, Divine, etc.)
+---   Intercepted Skills (Job-Specific Logic):
+---     - Enfeebling: Nested sets (mnd_potency.Valeur), Saboteur override, Database type detection
+---     - Enhancing: Spell family routing (Enspell/Gain/BarElement/etc.), Target detection (self vs others)
+---     - Healing: Spell-specific sets (Cure/Curaga/Raise) with fallback to base Healing Magic set
+---     - Elemental: NukeMode-based selection (FreeNuke vs base)
+---     - Dark: Spell-specific sets (Drain/Aspir/Stun) with fallback to base Dark Magic set
+---     - Universal: ALL other magic types (Blue Magic, Summoning, Geomancy, Ninjutsu, Songs, Divine, etc.)
 ---
---- Enhancing Magic Spell Families (NEW - v6.2):
----   Sets can now be created for spell families using database-driven routing:
----   - sets.midcast['Enhancing Magic'].Enspell (Enfire, Enblizzard, etc.)
----   - sets.midcast['Enhancing Magic'].Gain (Gain-STR, Gain-INT, etc.)
----   - sets.midcast['Enhancing Magic'].BarElement (Barfire, Barblizzard, etc.)
----   - sets.midcast['Enhancing Magic'].BarAilment (Barparalyze, Barblind, etc.)
----   - sets.midcast['Enhancing Magic'].Phalanx, .Stoneskin, .Aquaveil, .Refresh, .Regen, etc.
+---   Enhancing Magic Spell Families (NEW - v6.2):
+---     Sets can now be created for spell families using database-driven routing:
+---     - sets.midcast['Enhancing Magic'].Enspell (Enfire, Enblizzard, etc.)
+---     - sets.midcast['Enhancing Magic'].Gain (Gain-STR, Gain-INT, etc.)
+---     - sets.midcast['Enhancing Magic'].BarElement (Barfire, Barblizzard, etc.)
+---     - sets.midcast['Enhancing Magic'].BarAilment (Barparalyze, Barblind, etc.)
+---     - sets.midcast['Enhancing Magic'].Phalanx, .Stoneskin, .Aquaveil, .Refresh, .Regen, etc.
 ---
---- @file RDM_MIDCAST.lua
---- @author Tetsouo
---- @version 6.4 - Universal magic support (all subjob magic + debugmidcast for ALL spells)
---- @date Created: 2025-10-12 | Updated: 2025-11-09
----============================================================================
+---   @file    shared/jobs/rdm/functions/RDM_MIDCAST.lua
+---   @author  Tetsouo
+---   @version 6.5 - Refactored header style
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Centralized Midcast Manager (universal nested set selection)
-local MidcastManager = require('shared/utils/midcast/midcast_manager')
+local MidcastManager = nil
+local EnfeeblingSPELLS = nil
+local EnhancingSPELLS = nil
+local MessageRDMMidcast = nil
 
--- ENFEEBLING_MAGIC_DATABASE for enfeebling type detection (PRIORITY 1 - NEW)
-local EnfeeblingSPELLS_success, EnfeeblingSPELLS = pcall(require, 'shared/data/magic/ENFEEBLING_MAGIC_DATABASE')
+local modules_loaded = false
 
--- ENHANCING_MAGIC_DATABASE for subjob enhancing spells (Erase, Regen III+, etc. from WHM subjob)
-local EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
+local function ensure_modules_loaded()
+    if modules_loaded then return end
 
--- RDM Spell Database for spell messages (LEGACY - for Enhancing/Healing spells not yet migrated)
-local RDMSpells_success, RDMSpells = pcall(require, 'shared/data/magic/RDM_SPELL_DATABASE')
+    MidcastManager = require('shared/utils/midcast/midcast_manager')
+    MessageRDMMidcast = require('shared/utils/messages/formatters/jobs/message_rdm_midcast')
 
--- Message Formatter for spell messages
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+    local EnfeeblingSPELLS_success, EnhancingSPELLS_success
+    EnfeeblingSPELLS_success, EnfeeblingSPELLS = pcall(require, 'shared/data/magic/ENFEEBLING_MAGIC_DATABASE')
+    EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
 
--- RDM Midcast Debug Messages
-local MessageRDMMidcast = require('shared/utils/messages/formatters/jobs/message_rdm_midcast')
-
--- Load Enfeebling Messages Config
-local _, ENFEEBLING_MESSAGES_CONFIG = pcall(require, 'shared/config/ENFEEBLING_MESSAGES_CONFIG')
-if not ENFEEBLING_MESSAGES_CONFIG then
-    ENFEEBLING_MESSAGES_CONFIG = {
-        display_mode = 'on',
-        is_enabled = function() return true end,
-        show_description = function() return false end
-    }
+    modules_loaded = true
 end
 
--- Load Enhancing Messages Config
-local _, ENHANCING_MESSAGES_CONFIG = pcall(require, 'shared/config/ENHANCING_MESSAGES_CONFIG')
-if not ENHANCING_MESSAGES_CONFIG then
-    ENHANCING_MESSAGES_CONFIG = {
-        display_mode = 'on',
-        is_enabled = function() return true end,
-        show_description = function() return false end
-    }
-end
-
----============================================================================
---- MIDCAST HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MIDCAST HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Handle midcast gear selection
 --- Defers to Mote-Include default behavior, customization in job_post_midcast
@@ -93,6 +75,9 @@ end
 --- @param eventArgs table Event arguments for cancellation/customization
 --- @return nil (dispatches to MidcastManager)
 function job_post_midcast(spell, action, spellMap, eventArgs)
+    -- Lazy load modules on first midcast
+    ensure_modules_loaded()
+
     -- Watchdog: Track midcast start
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_midcast_start(spell)
@@ -106,9 +91,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         MessageRDMMidcast.show_function_entry(spell.english or 'Unknown', spell.skill or 'Unknown')
     end
 
-    -- ==========================================================================
-    -- ENFEEBLING MAGIC - Use MidcastManager with ENFEEBLING_MAGIC_DATABASE
-    -- ==========================================================================
+    ---  ─────────────────────────────────────────────────────────────────────────
+    ---   ENFEEBLING MAGIC - Use MidcastManager with ENFEEBLING_MAGIC_DATABASE
+    ---  ─────────────────────────────────────────────────────────────────────────
     if spell.skill == 'Enfeebling Magic' then
         if debug_enabled then
             MessageRDMMidcast.show_enfeebling_routing(
@@ -163,24 +148,12 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
             equip(sets.midcast['Enfeebling Magic'].Saboteur)
         end
 
-        -- DISABLED: RDM Enfeebling Messages
-        -- Messages now handled by universal spell_message_handler (init_spell_messages.lua)
-        -- This prevents duplicate messages from job-specific + universal system
-        --
-        -- LEGACY CODE (commented out to prevent duplicates):
-        -- if ENFEEBLING_MESSAGES_CONFIG.is_enabled() and RDMSpells_success and RDMSpells then
-        --     local spell_data = RDMSpells.spells[spell.name]
-        --     if spell_data and spell_data.category == 'Enfeebling' then
-        --         MessageFormatter.show_spell_activated(spell.name, description)
-        --     end
-        -- end
-
         return
     end
 
-    -- ==========================================================================
-    -- ENHANCING MAGIC - Use MidcastManager with spell_family + target detection
-    -- ==========================================================================
+    ---  ─────────────────────────────────────────────────────────────────────────
+    ---   ENHANCING MAGIC - Use MidcastManager with spell_family + target detection
+    ---  ─────────────────────────────────────────────────────────────────────────
     if spell.skill == 'Enhancing Magic' then
         if debug_enabled then
             MessageRDMMidcast.show_enhancing_routing(
@@ -240,32 +213,12 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
             MessageRDMMidcast.show_enhancing_result(success)
         end
 
-        -- Display Enhancing Magic message (if enabled in config)
-        if ENHANCING_MESSAGES_CONFIG.is_enabled() then
-            local spell_data = nil
-
-            -- Try RDM database first (RDM native enhancing spells)
-            if RDMSpells_success and RDMSpells then
-                spell_data = RDMSpells.spells[spell.name]
-            end
-
-            -- If not found, try ENHANCING_MAGIC_DATABASE (for subjob spells like Erase, Regen III-V)
-            if not spell_data and EnhancingSPELLS_success and EnhancingSPELLS then
-                spell_data = EnhancingSPELLS.spells[spell.name]
-            end
-
-            -- DISABLED: Messages handled by universal spell_message_handler
-            -- if spell_data and (spell_data.category == 'Enhancing' or spell_data.category == 'Healing') then
-            --     MessageFormatter.show_spell_activated(spell.name, description)
-            -- end
-        end
-
         return
     end
 
-    -- ==========================================================================
-    -- HEALING MAGIC - Use MidcastManager
-    -- ==========================================================================
+    ---  ─────────────────────────────────────────────────────────────────────────
+    ---   HEALING MAGIC - Use MidcastManager
+    ---  ─────────────────────────────────────────────────────────────────────────
     if spell.skill == 'Healing Magic' then
         if debug_enabled then
             add_to_chat(158, '[RDM Midcast] Healing Magic detected: ' .. (spell.name or 'Unknown'))
@@ -285,9 +238,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- ==========================================================================
-    -- ELEMENTAL MAGIC - Use MidcastManager with NukeMode
-    -- ==========================================================================
+    ---  ─────────────────────────────────────────────────────────────────────────
+    ---   ELEMENTAL MAGIC - Use MidcastManager with NukeMode
+    ---  ─────────────────────────────────────────────────────────────────────────
     if spell.skill == 'Elemental Magic' then
         if debug_enabled then
             MessageRDMMidcast.show_elemental_routing(tostring(state.NukeMode and state.NukeMode.value or 'nil'))
@@ -308,9 +261,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- ==========================================================================
-    -- DARK MAGIC - Use MidcastManager
-    -- ==========================================================================
+    ---  ─────────────────────────────────────────────────────────────────────────
+    ---   DARK MAGIC - Use MidcastManager
+    ---  ─────────────────────────────────────────────────────────────────────────
     if spell.skill == 'Dark Magic' then
         if debug_enabled then
             add_to_chat(158, '[RDM Midcast] Dark Magic detected: ' .. (spell.name or 'Unknown'))
@@ -330,9 +283,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- ==========================================================================
-    -- UNIVERSAL MAGIC FALLBACK - All other magic types (subjob magic)
-    -- ==========================================================================
+    ---  ─────────────────────────────────────────────────────────────────────────
+    ---   UNIVERSAL MAGIC FALLBACK - All other magic types (subjob magic)
+    ---  ─────────────────────────────────────────────────────────────────────────
     -- Handles magic from subjobs that RDM doesn't have as main:
     --   - Blue Magic (sub BLU)
     --   - Summoning Magic (sub SMN)
@@ -365,17 +318,6 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
-
--- Export to global scope
+-- Export to global scope (used by Mote-Include via include())
 _G.job_midcast = job_midcast
 _G.job_post_midcast = job_post_midcast
-
--- Export module
-local RDM_MIDCAST = {}
-RDM_MIDCAST.job_midcast = job_midcast
-RDM_MIDCAST.job_post_midcast = job_post_midcast
-
-return RDM_MIDCAST

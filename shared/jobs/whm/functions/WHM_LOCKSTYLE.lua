@@ -1,24 +1,47 @@
 ---============================================================================
---- WHM Lockstyle Module - Factory Pattern Implementation
+--- WHM Lockstyle Module - Lockstyle Management (Factory Pattern)
 ---============================================================================
---- Uses LockstyleManager factory to provide centralized lockstyle management.
---- Eliminates code duplication and ensures consistency across all jobs.
+--- Handles lockstyle selection and management for WHM job.
+--- Uses centralized LockstyleManager factory for consistent behavior.
 ---
---- Configuration loaded from: config/whm/WHM_LOCKSTYLE.lua
+--- **PERFORMANCE OPTIMIZATION:**
+---   • Lazy-loaded: Module created on first function call (saves ~30ms at startup)
 ---
---- @file WHM_LOCKSTYLE.lua
---- @author Tetsouo
---- @version 1.0.0
---- @date Created: 2025-10-21
---- @requires shared/utils/lockstyle/lockstyle_manager
+--- @file    jobs/whm/functions/WHM_LOCKSTYLE.lua
+--- @author  Tetsouo
+--- @version 2.1 - Lazy Loading for performance
+--- @date    Created: 2025-10-13 | Updated: 2025-11-15
+--- @requires utils/lockstyle/lockstyle_manager
 ---============================================================================
 
-local LockstyleManager = require('shared/utils/lockstyle/lockstyle_manager')
+-- Lazy loading: Module created on first use
+local LockstyleManager = nil
+local lockstyle_module = nil
 
--- Create lockstyle functions using factory pattern
-return LockstyleManager.create(
-    'WHM',                             -- job_code
-    'config/whm/WHM_LOCKSTYLE',        -- config_path
-    3,                                  -- default_lockstyle (from Timara: set 3)
-    'RDM'                               -- default_subjob
-)
+local function get_lockstyle_module()
+    if not lockstyle_module then
+        if not LockstyleManager then
+            LockstyleManager = require('shared/utils/lockstyle/lockstyle_manager')
+        end
+        lockstyle_module = LockstyleManager.create(
+            'WHM',                           -- job_code
+            'config/whm/WHM_LOCKSTYLE', -- config_path
+            1,                                -- default_lockstyle
+            'SAM'                             -- default_subjob
+        )
+    end
+    return lockstyle_module
+end
+
+-- Export select_default_lockstyle() to global scope
+function select_default_lockstyle()
+    return get_lockstyle_module().select_default_lockstyle()
+end
+
+-- Export cancel_whm_lockstyle_operations() to global scope
+function cancel_whm_lockstyle_operations()
+    return get_lockstyle_module().cancel_whm_lockstyle_operations()
+end
+
+_G.select_default_lockstyle = select_default_lockstyle
+_G.cancel_whm_lockstyle_operations = cancel_whm_lockstyle_operations

@@ -103,14 +103,31 @@ function MessageRenderer.send(message, color, options)
         color = MessageRenderer.transform_color(color)
     end
 
+    -- Ensure message is a string
+    message = tostring(message)
+
     -- Add timestamp if enabled
     if _config.timestamp then
         local time = os.date("%H:%M:%S")
         message = string.format("[%s] %s", time, message)
     end
 
-    -- Send to chat
-    add_to_chat(color, message)
+    -- Check if message contains newlines (\n)
+    -- If yes: split into multiple add_to_chat() calls (fixes FFXI alignment issues)
+    if message:find("\n") then
+        local lines = {}
+        for line in message:gmatch("[^\n]+") do
+            table.insert(lines, line)
+        end
+
+        -- Send each line separately
+        for _, line in ipairs(lines) do
+            add_to_chat(color, line)
+        end
+    else
+        -- Single line: normal send
+        add_to_chat(color, message)
+    end
 
     -- Update statistics
     _stats.total_sent = _stats.total_sent + 1

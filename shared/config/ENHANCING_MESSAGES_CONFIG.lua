@@ -1,30 +1,35 @@
----============================================================================
---- Enhancing Magic Messages Configuration
----============================================================================
---- Controls how Enhancing Magic spell messages are displayed.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Enhancing Magic Messages Configuration - Buff Spell Display Control
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Controls how Enhancing Magic spell messages are displayed.
 ---
---- Display Modes:
----   • 'full' - Show spell name + description
----              Example: [WHM/DNC] Haste >> Increases attack speed.
----   • 'on'   - Show spell name only (no description)
----              Example: [WHM/DNC] Haste
----   • 'off'  - No messages at all (silent mode)
+---   Display Modes:
+---     • 'full' - Show spell name + description
+---                Example: [WHM/DNC] Haste >> Increases attack speed.
+---     • 'on'   - Show spell name only (no description)
+---                Example: [WHM/DNC] Haste
+---     • 'off'  - No messages at all (silent mode)
 ---
---- Settings File:
----   shared/config/message_modes.lua
----   Persists across //lua reload and game restarts
+---   Architecture:
+---     • Persistent settings via message_settings.lua
+---     • Survives //lua reload and game restarts
+---     • Mode validation with backward compatibility
+---     • Helper functions for mode checks
 ---
---- @file ENHANCING_MESSAGES_CONFIG.lua
---- @author Tetsouo
---- @version 1.2 - Persistent settings with Windower config
---- @date Created: 2025-10-30 | Updated: 2025-11-08
----============================================================================
+---   Settings File:
+---     • shared/config/message_modes.lua (per-character)
+---
+---   @file    shared/config/ENHANCING_MESSAGES_CONFIG.lua
+---   @author  Tetsouo
+---   @version 1.3 - Refactored with new header style
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local ENHANCING_MESSAGES_CONFIG = {}
 
----============================================================================
---- PERSISTENT SETTINGS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PERSISTENT SETTINGS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Load persistent settings manager
 local MessageSettings = require('shared/config/message_settings')
@@ -45,9 +50,9 @@ ENHANCING_MESSAGES_CONFIG.VALID_MODES = {
     disable     = true
 }
 
----============================================================================
---- HELPER FUNCTIONS - Display Mode Checks
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HELPER FUNCTIONS - Display Mode Checks
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Check if messages are enabled (not 'off')
 function ENHANCING_MESSAGES_CONFIG.is_enabled()
@@ -69,16 +74,16 @@ function ENHANCING_MESSAGES_CONFIG.is_name_only()
     return mode == 'on' or mode == 'name_only' or mode == 'name'
 end
 
----============================================================================
---- HELPER FUNCTIONS - Mode Validation
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HELPER FUNCTIONS - Mode Validation
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Validate and set display mode
 --- @param mode string 'full' | 'on' | 'off'
 --- @return boolean true if mode is valid
 function ENHANCING_MESSAGES_CONFIG.set_display_mode(mode)
     if ENHANCING_MESSAGES_CONFIG.VALID_MODES[mode] then
-        -- Save to persistent settings file (Windower4/settings/GearSwap_Messages.xml)
+        -- Save to persistent settings file ([CharName]/config/message_modes.lua)
         MessageSettings.set_enhancing_mode(mode)
         ENHANCING_MESSAGES_CONFIG.display_mode = mode
         return true
@@ -89,8 +94,8 @@ function ENHANCING_MESSAGES_CONFIG.set_display_mode(mode)
     end
 end
 
----============================================================================
---- EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return ENHANCING_MESSAGES_CONFIG

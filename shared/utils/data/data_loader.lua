@@ -1,38 +1,38 @@
----============================================================================
---- FFXI Data Loader - Universal Data Access System
----============================================================================
---- Loads ALL game data (spells, abilities, weaponskills) into global table
---- accessible by ANY job, ANY subjob combination.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   FFXI Data Loader - Universal Data Access System
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Loads ALL game data (spells, abilities, weaponskills) into global table
+---   accessible by ANY job, ANY subjob combination.
 ---
---- Features:
----   - Universal access: _G.FFXI_DATA.spells[name]
----   - All spells from all jobs (WHM, BLM, RDM, BRD, GEO, SCH, BLU, SMN, NIN)
----   - All job abilities from all jobs
----   - All weaponskills from all weapon types
----   - Lazy loading: Only loads when requested
----   - Safe pcall: Never crashes if file missing
+---   Features:
+---     - Universal access: _G.FFXI_DATA.spells[name]
+---     - All spells from all jobs (WHM, BLM, RDM, BRD, GEO, SCH, BLU, SMN, NIN)
+---     - All job abilities from all jobs
+---     - All weaponskills from all weapon types
+---     - Lazy loading: Only loads when requested
+---     - Safe pcall: Never crashes if file missing
 ---
---- Usage:
----   require('shared/utils/data/data_loader')
----   local spell = _G.FFXI_DATA.spells['Cure III']
----   print(spell.description)  -- "Restores HP (tier 3)."
+---   Usage:
+---     require('shared/utils/data/data_loader')
+---     local spell = _G.FFXI_DATA.spells['Cure III']
+---     print(spell.description)  -- "Restores HP (tier 3)."
 ---
---- Examples:
----   - WAR/BLU can access BLU spells for descriptions
----   - Any job can query weaponskill properties
----   - UI can display all available data without job restrictions
+---   Examples:
+---     - WAR/BLU can access BLU spells for descriptions
+---     - Any job can query weaponskill properties
+---     - UI can display all available data without job restrictions
 ---
---- @file data_loader.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-11-01
----============================================================================
+---   @file    shared/utils/data/data_loader.lua
+---   @author  Tetsouo
+---   @version 1.1 - Style standardization (BRD headers)
+---   @date    Created: 2025-11-01 | Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local DataLoader = {}
 
----============================================================================
---- GLOBAL DATA TABLE (Accessible everywhere via _G)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   GLOBAL DATA TABLE (Accessible everywhere via _G)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 if not _G.FFXI_DATA then
     _G.FFXI_DATA = {
@@ -47,9 +47,9 @@ if not _G.FFXI_DATA then
     }
 end
 
----============================================================================
---- SPELL DATABASES (Aggregators - Already combine modular files)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SPELL DATABASES (Aggregators - Already combine modular files)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local SPELL_DATABASES = {
     -- Skill-based databases
@@ -74,9 +74,9 @@ local SPELL_DATABASES = {
     'shared/data/magic/ninjutsu/NINJUTSU_DATABASE',
 }
 
----============================================================================
---- JOB ABILITIES DATABASES (All jobs)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   JOB ABILITIES DATABASES (All jobs)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local ABILITY_JOBS = {
     'blm', 'blu', 'brd', 'bst', 'cor', 'dnc', 'drg', 'drk', 'geo',
@@ -90,9 +90,9 @@ local ABILITY_TYPES = {
     'sp',
 }
 
----============================================================================
---- WEAPONSKILL DATABASES (All weapon types)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   WEAPONSKILL DATABASES (All weapon types)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local WEAPONSKILL_DATABASES = {
     'shared/data/weaponskills/SWORD_WS_DATABASE',
@@ -111,9 +111,9 @@ local WEAPONSKILL_DATABASES = {
     'shared/data/weaponskills/UNIVERSAL_WS_DATABASE',
 }
 
----============================================================================
---- LOAD SPELLS (From all databases)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   LOAD SPELLS (From all databases)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 function DataLoader.load_spells()
     if _G.FFXI_DATA.loaded.spells then
@@ -143,9 +143,9 @@ function DataLoader.load_spells()
     return true
 end
 
----============================================================================
---- LOAD JOB ABILITIES (From all jobs)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   LOAD JOB ABILITIES (From all jobs)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 function DataLoader.load_abilities()
     if _G.FFXI_DATA.loaded.abilities then
@@ -212,9 +212,9 @@ function DataLoader.load_abilities()
     return true
 end
 
----============================================================================
---- LOAD WEAPONSKILLS (From all weapon types)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   LOAD WEAPONSKILLS (From all weapon types)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 function DataLoader.load_weaponskills()
     if _G.FFXI_DATA.loaded.weaponskills then
@@ -241,9 +241,9 @@ function DataLoader.load_weaponskills()
     return true
 end
 
----============================================================================
---- LOAD ALL DATA (Convenience function)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   LOAD ALL DATA (Convenience function)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 function DataLoader.load_all()
     DataLoader.load_spells()
@@ -252,9 +252,9 @@ function DataLoader.load_all()
     return true
 end
 
----============================================================================
---- QUERY FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   QUERY FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Get spell data by name
 --- @param spell_name string
@@ -286,17 +286,17 @@ function DataLoader.get_weaponskill(ws_name)
     return _G.FFXI_DATA.weaponskills[ws_name]
 end
 
----============================================================================
---- AUTO-LOAD ON REQUIRE
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   AUTO-LOAD ON REQUIRE
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- DISABLED: Auto-load spells (causes 100-300ms lag at startup)
 -- Spells now load on-demand via get_spell() when first requested
 -- (Abilities and weaponskills also load on-demand to save memory)
 -- DataLoader.load_spells()  -- Commented out for performance
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return DataLoader

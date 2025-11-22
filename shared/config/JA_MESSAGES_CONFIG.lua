@@ -1,32 +1,37 @@
----============================================================================
---- Job Ability Messages Configuration
----============================================================================
---- Controls how Job Ability activation messages are displayed.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Job Ability Messages Configuration - JA Activation Display Control
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Controls how Job Ability activation messages are displayed.
 ---
---- Display Modes:
----   • 'full' - Show ability name + description
----              Example: [DNC/SAM] Haste Samba activated! >> Attack speed +10%
----   • 'on'   - Show ability name only (no description)
----              Example: [DNC/SAM] Haste Samba activated!
----   • 'off'  - No messages at all (silent mode)
+---   Display Modes:
+---     • 'full' - Show ability name + description
+---                Example: [DNC/SAM] Haste Samba activated! >> Attack speed +10%
+---     • 'on'   - Show ability name only (no description)
+---                Example: [DNC/SAM] Haste Samba activated!
+---     • 'off'  - No messages at all (silent mode)
 ---
---- Note: 'full' mode shows ONLY the description, not recast/level info
+---   Note: 'full' mode shows ONLY the description, not recast/level info
 ---
---- Settings File:
----   shared/config/message_modes.lua
----   Persists across //lua reload and game restarts
+---   Architecture:
+---     • Persistent settings via message_settings.lua
+---     • Survives //lua reload and game restarts
+---     • Mode validation with backward compatibility
+---     • Helper functions for mode checks
 ---
---- @file JA_MESSAGES_CONFIG.lua
---- @author Tetsouo
---- @version 1.2 - Persistent settings with Windower config
---- @date Created: 2025-10-30 | Updated: 2025-11-08
----============================================================================
+---   Settings File:
+---     • shared/config/message_modes.lua (per-character)
+---
+---   @file    shared/config/JA_MESSAGES_CONFIG.lua
+---   @author  Tetsouo
+---   @version 1.3 - Refactored with new header style
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local JA_MESSAGES_CONFIG = {}
 
----============================================================================
---- PERSISTENT SETTINGS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PERSISTENT SETTINGS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Load persistent settings manager
 local MessageSettings = require('shared/config/message_settings')
@@ -47,9 +52,9 @@ JA_MESSAGES_CONFIG.VALID_MODES = {
     disable     = true
 }
 
----============================================================================
---- HELPER FUNCTIONS - Display Mode Checks
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HELPER FUNCTIONS - Display Mode Checks
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Check if messages are enabled (not 'off')
 function JA_MESSAGES_CONFIG.is_enabled()
@@ -71,16 +76,16 @@ function JA_MESSAGES_CONFIG.is_name_only()
     return mode == 'on' or mode == 'name_only' or mode == 'name'
 end
 
----============================================================================
---- HELPER FUNCTIONS - Mode Validation
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HELPER FUNCTIONS - Mode Validation
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Validate and set display mode
 --- @param mode string 'full' | 'on' | 'off'
 --- @return boolean true if mode is valid
 function JA_MESSAGES_CONFIG.set_display_mode(mode)
     if JA_MESSAGES_CONFIG.VALID_MODES[mode] then
-        -- Save to persistent settings file (Windower4/settings/GearSwap_Messages.xml)
+        -- Save to persistent settings file ([CharName]/config/message_modes.lua)
         MessageSettings.set_ja_mode(mode)
         JA_MESSAGES_CONFIG.display_mode = mode
         return true
@@ -91,8 +96,8 @@ function JA_MESSAGES_CONFIG.set_display_mode(mode)
     end
 end
 
----============================================================================
---- EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return JA_MESSAGES_CONFIG

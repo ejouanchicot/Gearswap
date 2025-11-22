@@ -54,16 +54,16 @@ end
 --- MODE SELECTION (ENGAGED)
 ---============================================================================
 
---- Select engaged base set with Kraken Club detection and HybridMode
+--- Select engaged base set with Kraken Club detection and EngagedMode
 --- Kraken Club detection takes highest priority for specialized multi-attack set.
 ---
 --- Priority order:
 ---   1. Kraken Club in sub-weapon    >> sets.engaged.PDTKC
----   2. HybridMode (PDT/Normal)      >> sets.engaged[HybridMode]
+---   2. EngagedMode (STP/Acc/DT/SB)  >> sets.engaged[EngagedMode]
 ---   3. Fallback                      >> base_set
 ---
 --- @param base_set table Base engaged set
---- @return table Selected engaged set (PDTKC if Kraken Club equipped, otherwise HybridMode/base)
+--- @return table Selected engaged set (PDTKC if Kraken Club equipped, otherwise EngagedMode/base)
 function SetBuilder.select_engaged_base(base_set)
     -- PRIORITY 1: Check for Kraken Club in sub-weapon slot
     if player and player.equipment and player.equipment.sub then
@@ -73,11 +73,11 @@ function SetBuilder.select_engaged_base(base_set)
         end
     end
 
-    -- PRIORITY 2: Use HybridMode state to select engaged set (PDT, Normal)
-    if state.HybridMode and state.HybridMode.current then
-        local mode = state.HybridMode.current
+    -- PRIORITY 2: Use EngagedMode state to select engaged set (STP, Acc, DT, SB)
+    if state.EngagedMode and state.EngagedMode.current then
+        local mode = state.EngagedMode.current
 
-        -- Select set based on HybridMode
+        -- Select set based on EngagedMode
         if sets.engaged and sets.engaged[mode] then
             return sets.engaged[mode]
         end
@@ -164,7 +164,7 @@ function SetBuilder.build_engaged_set(base_set)
         return {}
     end
 
-    -- Step 1: Select base set based on HybridMode
+    -- Step 1: Select base set based on EngagedMode
     local result = SetBuilder.select_engaged_base(base_set)
 
     -- Step 2: Apply weapons (MainWeapon + SubWeapon)

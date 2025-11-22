@@ -1,39 +1,43 @@
----============================================================================
---- SAM Idle Module - Idle Gear Customization
----============================================================================
---- Handles idle state logic for Samurai with dynamic gear selection.
---- Uses SetBuilder for centralized set construction.
---- @file SAM_IDLE.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-21
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SAM Idle Module - Idle State Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all idle state logic for Red Mage job:
+---   - Idle set selection based on IdleMode (DT, Refresh, Regain, Evasion)
+---   - Movement speed optimization
+---   - Town gear management
+---   - Dynamic weapon application to idle sets
+---
+---   @file    shared/jobs/sam/functions/SAM_IDLE.lua
+---   @author  Tetsouo
+---   @version 2.1 - Removed dead code + refactored header
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load set builder (centralized logic)
-local SetBuilder = require('shared/jobs/sam/functions/logic/set_builder')
+local SetBuilder = nil
 
----============================================================================
---- IDLE HOOK
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   IDLE HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply weapon sets and status-based variations to idle configuration
+--- Apply weapon sets, mode selection, and movement gear to all idle configurations
 --- @param idleSet table The idle set to customize
---- @return table Modified idle set with current weapon and status gear
+--- @return table Modified idle set with current weapon, mode, and movement gear
 function customize_idle_set(idleSet)
+    -- Lazy load SetBuilder on first idle
+    if not SetBuilder then
+        SetBuilder = require('shared/jobs/sam/functions/logic/set_builder')
+    end
+
+    if not idleSet then
+        return {}
+    end
+
     return SetBuilder.build_idle_set(idleSet)
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
-
+-- Export to global scope (used by Mote-Include via include())
 _G.customize_idle_set = customize_idle_set
-
-local SAM_IDLE = {}
-SAM_IDLE.customize_idle_set = customize_idle_set
-
-return SAM_IDLE

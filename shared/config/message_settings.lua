@@ -1,23 +1,36 @@
----============================================================================
---- Message Settings - Persistent Configuration Storage (Per Character)
----============================================================================
---- Global variables + file persistence for settings.
---- Settings persist within session AND across //lua reload gearswap.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Message Settings - Persistent Configuration Storage (Per Character)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Global variables + file persistence for message display settings.
+---   Settings persist within session AND across //lua reload gearswap.
 ---
---- Settings File:
----   [CharName]/config/message_modes.lua (one file per character)
+---   Features:
+---     • Per-character settings ([CharName]/config/message_modes.lua)
+---     • Global variable storage (_G.MESSAGE_SETTINGS)
+---     • Auto-load from file on startup
+---     • Auto-save on every setting change
+---     • Legacy compatibility functions
 ---
---- @file message_settings.lua
---- @author Tetsouo
---- @version 2.0 - Changed to per-character files (2025-11-08)
---- @date Created: 2025-11-08
----============================================================================
+---   Architecture:
+---     • File persistence via dofile() and io.open()
+---     • Default settings if file doesn't exist
+---     • Getter/Setter functions for all modes
+---     • Automatic file generation with formatted output
+---
+---   Settings File:
+---     • [CharName]/config/message_modes.lua (one file per character)
+---
+---   @file    shared/config/message_settings.lua
+---   @author  Tetsouo
+---   @version 2.1 - Refactored with new header style
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MessageSettings = {}
 
----============================================================================
---- FILE PERSISTENCE
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   FILE PERSISTENCE
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Get absolute path to settings file (per character)
 local function get_settings_path()
@@ -58,7 +71,7 @@ local function save_to_file(settings)
         file:write('-- \n')
         file:write('-- spell_mode: ALL spell types (Enhancing, Enfeebling, Healing, Elemental, etc.)\n')
         file:write('-- ja_mode: Job Abilities\n')
-        file:write('-- ws_mode: Weaponskills\n')
+        file:write('-- ws_mode: Weapon Skills\n')
         file:write('return {\n')
         file:write(string.format("    spell_mode = '%s',\n", settings.spell_mode or 'on'))
         file:write(string.format("    ja_mode = '%s',\n", settings.ja_mode or 'on'))
@@ -72,9 +85,9 @@ local function save_to_file(settings)
     end
 end
 
----============================================================================
---- GLOBAL SETTINGS STORAGE
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   GLOBAL SETTINGS STORAGE
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- ALWAYS try to load from file first (even if _G.MESSAGE_SETTINGS exists)
 -- This ensures settings persist across //lua reload gearswap
@@ -88,16 +101,16 @@ elseif _G.MESSAGE_SETTINGS == nil then
     _G.MESSAGE_SETTINGS = {
         spell_mode = 'on',         -- ALL spells (enhancing, enfeebling, healing, elemental, etc.)
         ja_mode = 'on',            -- Job Abilities
-        ws_mode = 'on'             -- Weaponskills
+        ws_mode = 'on'             -- Weapon Skills
     }
     -- Save defaults to file
     save_to_file(_G.MESSAGE_SETTINGS)
 end
 -- If file doesn't exist but _G.MESSAGE_SETTINGS exists, keep the global (in-session changes)
 
----============================================================================
---- SETTINGS ACCESS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SETTINGS ACCESS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Get Spell message mode (ALL spell types)
 --- @return string Current mode ('full', 'on', 'off')
@@ -111,7 +124,7 @@ function MessageSettings.get_ja_mode()
     return _G.MESSAGE_SETTINGS.ja_mode or 'on'
 end
 
---- Get Weaponskill message mode
+--- Get Weapon Skill message mode
 --- @return string Current mode ('full', 'on', 'off')
 function MessageSettings.get_ws_mode()
     return _G.MESSAGE_SETTINGS.ws_mode or 'on'
@@ -127,9 +140,9 @@ function MessageSettings.get_enfeebling_mode()
     return MessageSettings.get_spell_mode()
 end
 
----============================================================================
---- SETTINGS MODIFICATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SETTINGS MODIFICATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Set Spell message mode (ALL spell types)
 --- @param mode string New mode ('full', 'on', 'off')
@@ -145,7 +158,7 @@ function MessageSettings.set_ja_mode(mode)
     save_to_file(_G.MESSAGE_SETTINGS)
 end
 
---- Set Weaponskill message mode
+--- Set Weapon Skill message mode
 --- @param mode string New mode ('full', 'on', 'off')
 function MessageSettings.set_ws_mode(mode)
     _G.MESSAGE_SETTINGS.ws_mode = mode
@@ -162,8 +175,8 @@ function MessageSettings.set_enfeebling_mode(mode)
     MessageSettings.set_spell_mode(mode)
 end
 
----============================================================================
---- EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return MessageSettings

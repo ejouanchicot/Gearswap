@@ -1,77 +1,35 @@
----============================================================================
---- PUP Status Module - Status Change Handling
----============================================================================
---- Handles status changes (Idle, Engaged, Dead, etc.) for Beastmaster.
---- Monitors pet engagement and triggers auto-engage if conditions met.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PUP Status Module - Player Status Change Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles status changes (Idle, Engaged, Resting, Dead, etc.)
 ---
---- @file jobs/pup/functions/PUP_STATUS.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-17
----============================================================================
+---   @file    shared/jobs/pup/functions/PUP_STATUS.lua
+---   @author  Tetsouo
+---   @version 1.2 - Added DoomManager safety unlock
+---   @date    Updated: 2025-11-14
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Message formatter
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+local DoomManager = nil
 
--- Pet manager (for auto-engage)
-local success_pm, PetManager = pcall(require, 'shared/jobs/pup/functions/logic/pet_manager')
-if not success_pm then
-    MessageFormatter.error_pup_module_not_loaded('PetManager')
-    PetManager = nil
-end
-
----============================================================================
---- STATUS CHANGE HOOK
----============================================================================
-
---- Called when player status changes (Idle >> Engaged, Engaged >> Idle, etc.)
---- Triggers pet auto-engage when player engages
----
---- @param newStatus string New status ("Idle", "Engaged", "Dead", etc.)
---- @param oldStatus string Old status
---- @param eventArgs table Event arguments (not used)
---- @return void
+--- Handle status change events
+--- @param newStatus string New status (Idle, Engaged, Resting, Dead, etc.)
+--- @param oldStatus string Previous status
+--- @param eventArgs table Event arguments
 function job_status_change(newStatus, oldStatus, eventArgs)
-
-    ---========================================================================
-    --- PET AUTO-ENGAGE (when player engages)
-    ---========================================================================
-
-    if newStatus == 'Engaged' and oldStatus ~= 'Engaged' then
-        -- Player just engaged - check if pet should auto-engage
-        if PetManager then
-            coroutine.schedule(function()
-                PetManager.check_and_engage_pet(_G.pet)
-            end, 1.0) -- 1.0s delay to ensure pet data is loaded
-        end
+    -- Lazy load DoomManager on first status change
+    if not DoomManager then
+        DoomManager = require('shared/utils/debuff/doom_manager')
     end
 
-    ---========================================================================
-    --- PET STATUS MONITORING
-    ---========================================================================
+    -- Safety: Unlock Doom slots after death (prevents stuck locks after raise)
+    DoomManager.handle_status_change(newStatus, oldStatus)
 
-    -- Monitor pet status (update petEngaged state if needed)
-    if newStatus == 'Engaged' or newStatus == 'Idle' then
-        if PetManager then
-            coroutine.schedule(function()
-                PetManager.monitor_pet_status()
-            end, 0.1)
-        end
-    end
+    -- PUP-specific status change logic can be added here
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
-
--- Export globally for GearSwap
+-- Export to global scope
 _G.job_status_change = job_status_change
-
--- Export as module
-return {
-    job_status_change = job_status_change
-}

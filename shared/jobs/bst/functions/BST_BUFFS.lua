@@ -1,55 +1,40 @@
----============================================================================
---- BST Buffs Module - Buff Change Handling
----============================================================================
---- Handles buff gain/loss events for Beastmaster.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BST Buffs Module - Buff Gain/Loss Handler
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles job-specific buff gain/loss events (Doom, Chainspell, etc.).
 ---
---- @file jobs/bst/functions/BST_BUFFS.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-17
----============================================================================
+---   @file    shared/jobs/bst/functions/BST_BUFFS.lua
+---   @author  Tetsouo
+---   @version 1.1 - Removed dead code + refactored header
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- BUFF CHANGE HOOK
----============================================================================
+local DoomManager = nil
 
---- Called when buff is gained or lost
----
+local function ensure_managers_loaded()
+    if not DoomManager then
+        DoomManager = require('shared/utils/debuff/doom_manager')
+    end
+end
+
+--- Handle buff change events
 --- @param buff string Buff name
 --- @param gain boolean True if buff gained, false if lost
---- @return void
 function job_buff_change(buff, gain, eventArgs)
-    -- Doom: HIGHEST PRIORITY - Must override everything
-    if buff == 'doom' then
-        local is_doomed = buffactive['doom']
+    -- Lazy load managers on first buff change
+    ensure_managers_loaded()
 
-        if is_doomed then
-            equip(sets.buff.Doom)
-            -- Disable slots to prevent other gear swaps from overwriting Doom gear
-            disable('neck', 'ring1', 'ring2', 'waist')
-            MessageFormatter.show_warning("DOOM detected! Equipping Doom gear.")
-        else
-            -- Enable slots before restoring gear
-            enable('neck', 'ring1', 'ring2', 'waist')
-            handle_equipping_gear(player.status)
-            MessageFormatter.show_success("Doom removed.")
-        end
-        return  -- Stop processing - Doom takes absolute priority
+    -- Doom handling (centralized)
+    if DoomManager.handle_buff_change(buff, gain) then
+        return -- Doom handled, stop processing
     end
 
-    -- No BST-specific buff logic required currently
-    -- Mote-Include handles standard buff changes (Haste, Slow, etc.)
+    -- BST-specific buff change logic can be added here
 end
----============================================================================
---- MODULE EXPORT
----============================================================================
 
--- Export globally for GearSwap
+-- Export to global scope (used by Mote-Include via include())
 _G.job_buff_change = job_buff_change
-
--- Export as module
-return {
-    job_buff_change = job_buff_change
-}

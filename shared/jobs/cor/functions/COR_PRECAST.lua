@@ -26,54 +26,52 @@
 ---============================================================================
 
 ---============================================================================
---- DEPENDENCIES - CENTRALIZED SYSTEMS
+--- DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---============================================================================
 
--- Message formatter (cooldown messages, WS TP display)
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+local MessageFormatter = nil
+local CooldownChecker = nil
+local PrecastGuard = nil
+local TPBonusHandler = nil
+local WSValidator = nil
+local CORTPConfig = nil
+local JA_DB = nil
+local WS_DB = nil
 
--- Cooldown checker (universal ability/spell recast validation)
-local CooldownChecker = require('shared/utils/precast/cooldown_checker')
+local modules_loaded = false
 
--- Precast guard (debuff blocking: Amnesia, Silence, Stun, etc.)
-local precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-if not precast_guard_success then
-    PrecastGuard = nil
-end
+local function ensure_modules_loaded()
+    if modules_loaded then return end
 
--- Weaponskill manager (WS validation + range checking)
-include('../shared/utils/weaponskill/weaponskill_manager.lua')
+    MessageFormatter = require('shared/utils/messages/message_formatter')
+    CooldownChecker = require('shared/utils/precast/cooldown_checker')
 
--- TP bonus calculator (Moonshade Earring automation)
-include('../shared/utils/weaponskill/tp_bonus_calculator.lua')
+    local precast_guard_success
+    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
+    if not precast_guard_success then
+        PrecastGuard = nil
+    end
 
--- TP Bonus Handler (universal WS TP gear optimization)
-local _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+    local _
+    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
 
--- WS Validator (universal WS range + validity validation)
-local _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
+    include('../shared/utils/weaponskill/weaponskill_manager.lua')
+    include('../shared/utils/weaponskill/tp_bonus_calculator.lua')
 
--- Set MessageFormatter in WeaponSkillManager
-if WeaponSkillManager and MessageFormatter then
-    WeaponSkillManager.MessageFormatter = MessageFormatter
-end
+    if WeaponSkillManager and MessageFormatter then
+        WeaponSkillManager.MessageFormatter = MessageFormatter
+    end
 
----============================================================================
---- DEPENDENCIES - COR SPECIFIC
----============================================================================
+    if TPBonusCalculator and MessageFormatter then
+        TPBonusCalculator.MessageFormatter = MessageFormatter
+    end
 
--- TP Bonus system (ranged weapon-based TP bonus for COR)
-local CORTPConfig = _G.CORTPConfig or {}  -- Loaded from character main file
+    CORTPConfig = _G.CORTPConfig or {}
+    JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
+    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
 
--- Universal Job Ability Database (supports main job + subjob abilities)
-local JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
-
--- Universal Weapon Skills Database (weaponskill descriptions)
-local WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
-
--- Set MessageFormatter in TPBonusCalculator
-if TPBonusCalculator and MessageFormatter then
-    TPBonusCalculator.MessageFormatter = MessageFormatter
+    modules_loaded = true
 end
 
 -- Note: _G.cor_last_roll is initialized in roll_tracker.lua
@@ -90,6 +88,8 @@ end
 --- @param eventArgs table Event arguments
 --- @return void
 function job_precast(spell, action, spellMap, eventArgs)
+    -- Lazy load all dependencies on first precast
+    ensure_modules_loaded()
 
     -- FIRST: Check for blocking debuffs (Amnesia, Silence, etc.)
     -- This prevents unnecessary equipment swaps when actions are blocked

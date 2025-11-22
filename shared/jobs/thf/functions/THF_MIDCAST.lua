@@ -8,17 +8,48 @@
 --- @version 3.0 - Added spell_family database support
 --- @date Created: 2025-10-06 | Updated: 2025-11-05
 ---============================================================================
+--- DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---============================================================================
 
-local MidcastManager = require('shared/utils/midcast/midcast_manager')
+local MidcastManager = nil
+local EnhancingSPELLS = nil
+local EnhancingSPELLS_success = false
 
--- Load ENHANCING_MAGIC_DATABASE for spell_family routing
-local EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
+local modules_loaded = false
+
+local function ensure_modules_loaded()
+    if modules_loaded then return end
+
+    MidcastManager = require('shared/utils/midcast/midcast_manager')
+
+    -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
+    EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
+
+    modules_loaded = true
+end
 
 function job_midcast(spell, action, spellMap, eventArgs)
-    -- No THF-specific PRE-midcast logic
+    -- ==========================================================================
+    -- RANGED ATTACK AUTO-LOCK (during midcast)
+    -- ==========================================================================
+    -- ALWAYS lock on Ranged Attack, regardless of previous state
+    -- This creates an infinite cycle: /ra → lock+ON, bind → unlock+OFF, /ra → lock+ON, etc.
+    if spell.action_type == 'Ranged Attack' and not spell.interrupted then
+        -- Lock range/ammo slots (prevent future swaps)
+        disable('range', 'ammo')
+
+        -- Set RangeLock state to ON (even if it was OFF before)
+        -- Use :set(true) to trigger state change callback
+        if state and state.RangeLock then
+            state.RangeLock:set(true)
+        end
+    end
 end
 
 function job_post_midcast(spell, action, spellMap, eventArgs)
+    -- Lazy load modules on first spell cast
+    ensure_modules_loaded()
+
     -- Watchdog: Track midcast start
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_midcast_start(spell)

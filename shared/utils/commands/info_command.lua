@@ -1,32 +1,32 @@
----============================================================================
---- Info Command - Display Detailed Information for JA/Spells/WS
----============================================================================
---- Universal command to query and display formatted information from databases.
---- Works for ALL jobs and displays data with proper message formatting.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Info Command - Display Detailed Information for JA/Spells/WS
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Universal command to query and display formatted information from databases.
+---   Works for ALL jobs and displays data with proper message formatting.
 ---
---- Usage:
----   //gs c info <name>           Display info for JA/Spell/WS
----   //gs c info Last Resort       Display Job Ability details
----   //gs c info Haste             Display Spell details
----   //gs c info Torcleaver        Display Weaponskill details
+---   Usage:
+---     //gs c info <name>           Display info for JA/Spell/WS
+---     //gs c info Last Resort       Display Job Ability details
+---     //gs c info Haste             Display Spell details
+---     //gs c info Torcleaver        Display Weaponskill details
 ---
---- Features:
----   - Searches JA, Spell, and WS databases
----   - Formatted output with color codes (ASCII-safe)
----   - Shows all available data fields
----   - Works for any job/subjob combination
+---   Features:
+---     - Searches JA, Spell, and WS databases
+---     - Formatted output with color codes (ASCII-safe)
+---     - Shows all available data fields
+---     - Works for any job/subjob combination
 ---
---- @file commands/info_command.lua
---- @author Tetsouo
---- @version 1.1 - Refactored for cleaner code
---- @date Created: 2025-11-04 | Updated: 2025-11-06
----============================================================================
+---   @file    shared/utils/commands/info_command.lua
+---   @author  Tetsouo
+---   @version 1.2 - Use centralized MessageCore.create_color_code()
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local InfoCommand = {}
 
----============================================================================
---- DEPENDENCIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MessageCore = require('shared/utils/messages/message_core')
 local MessageColors = require('shared/utils/messages/message_colors')
@@ -35,16 +35,9 @@ local MessageInfo = require('shared/utils/messages/formatters/ui/message_info')
 -- Data sources (lazy loaded)
 local DataLoader = require('shared/utils/data/data_loader')
 
----============================================================================
---- HELPER FUNCTIONS
----============================================================================
-
---- Create color code for inline use
---- @param color_code number FFXI color code
---- @return string Formatted color code
-local function color(color_code)
-    return string.char(0x1F, color_code)
-end
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HELPER FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Sanitize text for FFXI chat (ASCII only, no special chars)
 --- @param text string Input text
@@ -178,9 +171,9 @@ local function format_field(key, value, key_color, value_color, is_spell)
         return nil  -- Skip empty/zero fields
     end
 
-    local c_key = color(key_color)
-    local c_value = color(value_color)
-    local c_reset = color(1)  -- White
+    local c_key = MessageCore.create_color_code(key_color)
+    local c_value = MessageCore.create_color_code(value_color)
+    local c_reset = MessageCore.create_color_code(1)  -- White
 
     -- Format value (handle tables specially, pass key for context)
     local value_str
@@ -209,9 +202,9 @@ local function format_field(key, value, key_color, value_color, is_spell)
     return string.format("%s  %s:%s %s%s", c_key, key, c_reset, c_value, value_str)
 end
 
----============================================================================
---- DATA DISPLAY FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DATA DISPLAY FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Generic entity display function (refactored to reduce duplication)
 --- @param name string Entity name
@@ -302,9 +295,9 @@ local function display_weaponskill(ws_name, ws_data)
     display_entity(ws_name, ws_data, "Weaponskill Information", MessageColors.WS, fields, false)
 end
 
----============================================================================
---- SEARCH FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SEARCH FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Search for entity in all databases (case-insensitive)
 --- @param name string Entity name to search
@@ -367,9 +360,9 @@ local function search_all_databases(name)
     return nil, nil, nil
 end
 
----============================================================================
---- MAIN COMMAND HANDLER
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MAIN COMMAND HANDLER
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Handle info command
 --- @param args table Command arguments (name parts)
@@ -403,8 +396,8 @@ function InfoCommand.handle(args)
     return true
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return InfoCommand

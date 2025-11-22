@@ -20,17 +20,28 @@
 ---============================================================================
 
 ---============================================================================
---- DEPENDENCIES
+--- DEPENDENCIES (LAZY LOADING for performance)
 ---============================================================================
+-- Command handlers loaded on first command (saves ~80ms at startup)
+local UICommands = nil
+local CommonCommands = nil
+local WatchdogCommands = nil
+local CycleHandler = nil
+local MessageCommands = nil
+local BLMMessages = nil
 
--- Centralized command handlers
-local UICommands = require('shared/utils/ui/UI_COMMANDS')
-local CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
-local WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
-local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
+local function ensure_commands_loaded()
+    if not UICommands then
+        UICommands = require('shared/utils/ui/UI_COMMANDS')
+        CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
+        WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
+        CycleHandler = require('shared/utils/core/CYCLE_HANDLER')
+        MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
 
--- BLM message formatter (handles all colored messages)
-local BLMMessages = require('shared/utils/messages/formatters/jobs/message_blm')
+        -- BLM message formatter (handles all colored messages)
+        BLMMessages = require('shared/utils/messages/formatters/jobs/message_blm')
+    end
+end
 
 -- NOTE: BLM logic functions are loaded globally via blm_functions.lua:
 --   • BuffSelf() - Automated self-buffing
@@ -47,6 +58,8 @@ local BLMMessages = require('shared/utils/messages/formatters/jobs/message_blm')
 --- @param eventArgs table Event arguments with handled flag
 --- @return boolean true if command was handled
 local function handle_blm_cycle_commands(command, eventArgs)
+    -- Lazy load on first cycle command
+    ensure_commands_loaded()
     -- MainLight: Fire/Thunder/Aero
     if command == 'cyclemainlight' then
         if state and state.MainLightSpell then
@@ -198,6 +211,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- Lazy load command handlers on first command
+    ensure_commands_loaded()
+
     local command = cmdParams[1]:lower()
 
     -- ==========================================================================
@@ -268,6 +284,18 @@ function job_self_command(cmdParams, eventArgs)
         MessageCommands.show_debugmidcast_toggled('BLM', _G.MidcastManagerDebugState)
 
         eventArgs.handled = true
+        return
+    end
+
+    -- ==========================================================================
+    -- CUSTOM CYCLE STATE (UI-aware cycle)
+    -- ==========================================================================
+    -- Intercepts cycle commands to check UI visibility
+    -- If UI visible: custom cycle + UI update (no message)
+    -- If UI invisible: delegate to Mote-Include (shows message)
+
+    if command == 'cyclestate' then
+        eventArgs.handled = CycleHandler.handle_cyclestate(cmdParams, eventArgs)
         return
     end
 

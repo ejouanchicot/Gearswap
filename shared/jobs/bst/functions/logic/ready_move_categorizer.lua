@@ -19,135 +19,158 @@ local ReadyMoveCategorizer = {}
 --- READY MOVE CATEGORIES (Using Windower S{} sets for fast lookup)
 ---============================================================================
 
---- Physical Moves (Single-target physical attacks)
+--- Physical Moves (Single-hit physical attacks)
 --- Use: Pet physical attack gear (Pet: Accuracy, Attack, Store TP)
 ReadyMoveCategorizer.petPhysicalMoves =
     S {
     'Foot Kick',
     'Whirl Claws',
-    'Sheep Charge',
-    'Lamb Chop',
-    'Head Butt',
-    'Leaf Dagger',
-    'Claw Cyclone',
-    'Razor Fang',
-    'Blockhead',
     'Big Scissors',
-    'Ripper Fang',
-    'Tegmina Buffet',
     'Tail Blow',
+    'Blockhead',
     'Brain Crush',
-    'Mandibular Bite',
-    'Suction',
-    'Back Heel',
-    'Jettatura',
-    'Choke Breath',
-    'Scythe Tail',
-    'Needleshot',
-    'Acid Spray',
-    'Rhino Attack',
-    'Bone Crunch',
-    'Rhinowrecker',
-    'Rhino Guard',
-    'Spoil',
-    'Hi-Freq Field',
-    'Sandblast',
-    'Sandpit',
-    'Venom Spray',
+    'Sensilla Blades',
+    'Tegmina Buffet',
+    'Lamb Chop',
+    'Sheep Charge',
+    'Swooping Frenzy',
+    'Recoil Dive',
     'Frogkick',
+    'Queasyshroom',
     'Numbshroom',
     'Shakeshroom',
-    'Silence Gas',
-    'Secretion',
-    'Fireball',
-    'Dust Cloud',
-    'Cursed Sphere'
+    'Nimble Snap',
+    'Cyclotail',
+    'Somersault',
+    'Spinning Top',
+    'Suction',
+    'Tortoise Stomp',
+    'Power Attack',
+    'Rhino Attack',
+    'Razor Fang',
+    'Claw Cyclone',
+    'Sickle Slash',
+    'Mandibular Bite',
+    'Scythe Tail',
+    'Ripper Fang',
+    'Beak Lunge',
+    'Spiral Spin',
+    'Sudden Lunge',
+    'Head Butt',
+    'Wild Oats',
+    'Leaf Dagger',
+    'Needle Shot',
+    'Disembowel',
+    'Extirpating Salvo',
+    'Mega Scissors',
+    'Rhinowrecker',
+    'Back Heel',
+    'Fluid Toss',
+    'Fluid Spread'
 }
 
 --- Physical Multi Moves (Multi-hit physical attacks)
 --- Use: Pet multi-attack gear (Pet: Multi-Attack+, Store TP, Attack)
 ReadyMoveCategorizer.petPhysicalMultiMoves =
     S {
-    'Sweeping Gouge',
-    'Tickling Tendrils',
-    'Chomp Rush',
     'Pentapeck',
+    'Tickling Tendrils',
     'Wing Slap',
     'Pecking Flurry',
+    'Chomp Rush',
+    'Hoof Volley',
+    'Sweeping Gouge',
     'Double Claw',
-    'Grapple',
-    'Spinning Top'
+    'Grapple'
 }
 
---- Magic Attack Moves (Magical attack moves)
+--- Magic Attack Moves (Magical attack moves - damage only)
 --- Use: Pet magic attack gear (Pet: MAB, Magic Accuracy)
 ReadyMoveCategorizer.petMagicAtkMoves =
     S {
-    'Cursed Sphere',
+    -- WARRIOR PETS
     'Venom',
-    'Toxic Spit',
-    'Bubble Shower',
-    'Drainkiss',
     'Fireball',
     'Snow Cloud',
-    'Charged Whisker',
+    'Dust Cloud',
+    'Acid Spray',
+    'Molting Plumage',
+    'Cursed Sphere',
+    'Acid Mist',
     'Purulent Ooze',
+    'Stink Bomb',
+    'Nectarous Deluge',
+    'Charged Whisker',
+    'Dark Spore',
+    'Silence Gas',
+    'Nepenthic Plunge',
     'Corrosive Ooze',
-    'Spiral Spin'
+    -- NON-WARRIOR PETS
+    'Bubble Shower',
+    'Venom Shower',
+    'Gloom Spray',
+    'Foul Waters',
+    'Pestilent Plume'
 }
 
---- Magic Accuracy Moves (Magical accuracy/debuff moves)
+--- Magic Accuracy Moves (Magical accuracy/debuff moves - debuffs, steals, drains)
 --- Use: Pet magic accuracy gear (Pet: Magic Accuracy, Magic Attack Bonus)
 ReadyMoveCategorizer.petMagicAccMoves =
     S {
+    -- TP Drain
+    'Drainkiss',
+    'TP Drainkiss',
+    -- Sleep
     'Sheep Song',
+    'Soporific',
+    -- Debuffs / Stat Down
     'Scream',
     'Dream Flower',
     'Roar',
+    'Spoil',
+    'Noisome Powder',
+    'Infrasonics',
+    'Hi-Freq Field',
+    'Sonic Buffet',
+    -- Buffs (Self)
     'Wild Carrot',
-    'Wild Oats',
     'Bubble Curtain',
     'Scissor Guard',
     'Metallic Body',
     'Harden Shell',
     'Secretion',
     'Rage',
-    'Hoof Volley',
     'Sheep Bleat',
+    'Molting',
+    'Zealous Snort',
+    'Rhinocerator',
+    -- Paralyze
     'Palsy Pollen',
-    'Soporific Pollen',
-    'Gloeosuccus',
-    'Numbshroom',
-    'Shakeshroom',
-    'Silence Gas',
-    'Dark Spore',
     'Spore',
-    'Foul Waters',
-    'Pestilent Plume',
-    'Noisome Powder',
-    'Dust Cloud',
+    -- Slow
+    'Gloeosuccus',
+    'Intimidate',
+    'Spider Web',
+    'Filamented Hold',
+    -- Poison
     'Toxic Spit',
+    'Venom Spray',
     'Infected Leech',
     'Pollen',
-    'Nepenthic Plunge',
-    'Filamented Hold',
-    'Infrasonics',
-    'Sonic Buffet',
-    'Molting Plumage',
-    'Swooping Frenzy',
-    'Pentapeck',
-    'Molting',
-    'Tickling Tendrils',
-    'Sweeping Gouge',
-    'Zealous Snort',
-    'Rhinowrecker',
-    'Rhinocerator',
-    'Spoil',
-    'Hi-Freq Field',
+    -- Silence
+    'Choke Breath',
+    'Chaotic Eye',
+    -- Blind
     'Sandblast',
+    -- Bind
     'Sandpit',
-    'Venom Spray',
-    'Bubble Shower'
+    -- Stun
+    'Predatory Glare',
+    'Numbing Noise',
+    -- Terror / Amnesia
+    'Jettatura',
+    -- Other
+    'Blaster'
 }
 
 ---============================================================================

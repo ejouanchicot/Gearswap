@@ -12,14 +12,29 @@
 --- @date Updated: 2025-10-10
 ---============================================================================
 
--- Load centralized command handlers
-local UICommands = require('shared/utils/ui/UI_COMMANDS')
-local CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
-local WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
-local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
+---============================================================================
+--- DEPENDENCIES (LAZY LOADING for performance)
+---============================================================================
+-- Command handlers loaded on first command (saves ~60ms at startup)
+local UICommands = nil
+local CommonCommands = nil
+local WatchdogCommands = nil
+local CycleHandler = nil
+local MessageCommands = nil
+local GeoSpellRefiner = nil
 
--- Load GEO spell refiner for intelligent tier fallback
-local GeoSpellRefiner = require('shared/jobs/geo/functions/logic/geo_spell_refiner')
+local function ensure_commands_loaded()
+    if not UICommands then
+        UICommands = require('shared/utils/ui/UI_COMMANDS')
+        CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
+        WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
+        CycleHandler = require('shared/utils/core/CYCLE_HANDLER')
+        MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
+
+        -- Load GEO spell refiner for intelligent tier fallback
+        GeoSpellRefiner = require('shared/jobs/geo/functions/logic/geo_spell_refiner')
+    end
+end
 
 ---============================================================================
 --- GEO SPELL CLASSIFICATION (Buff vs Debuff)
@@ -65,6 +80,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- Lazy load command handlers on first command
+    ensure_commands_loaded()
+
     local command = cmdParams[1]:lower()
 
     -- ==========================================================================
@@ -107,6 +125,18 @@ function job_self_command(cmdParams, eventArgs)
         MessageCommands.show_debugmidcast_toggled('GEO', _G.MidcastManagerDebugState)
 
         eventArgs.handled = true
+        return
+    end
+
+    -- ==========================================================================
+    -- CUSTOM CYCLE STATE (UI-aware cycle)
+    -- ==========================================================================
+    -- Intercepts cycle commands to check UI visibility
+    -- If UI visible: custom cycle + UI update (no message)
+    -- If UI invisible: delegate to Mote-Include (shows message)
+
+    if command == 'cyclestate' then
+        eventArgs.handled = CycleHandler.handle_cyclestate(cmdParams, eventArgs)
         return
     end
 

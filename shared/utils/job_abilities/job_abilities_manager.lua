@@ -1,42 +1,42 @@
----============================================================================
---- Job Abilities Manager - Centralized JA Database Management
----============================================================================
---- Provides centralized access to job ability data from databases.
---- Loads ability descriptions, enmity values, and other metadata.
---- Integrates with JABuffs for automatic description display.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Job Abilities Manager - Centralized JA Database Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Provides centralized access to job ability data from databases.
+---   Loads ability descriptions, enmity values, and other metadata.
+---   Integrates with JABuffs for automatic description display.
 ---
---- Features:
----   • Auto-loads databases for current job (main + subjob)
----   • Caches loaded databases for performance
----   • Provides ability descriptions for any job
----   • Returns enmity values for abilities
----   • Respects JA_MESSAGES_CONFIG for display control
+---   Features:
+---     • Auto-loads databases for current job (main + subjob)
+---     • Caches loaded databases for performance
+---     • Provides ability descriptions for any job
+---     • Returns enmity values for abilities
+---     • Respects JA_MESSAGES_CONFIG for display control
 ---
---- Usage Examples:
----   local JAManager = require('shared/utils/job_abilities/job_abilities_manager')
+---   Usage Examples:
+---     local JAManager = require('shared/utils/job_abilities/job_abilities_manager')
 ---
----   -- Get ability info
----   local info = JAManager.get_ability_info("Berserk")
----   -- Returns: {description = "ATK+25%, DEF-25%", cumulative_enmity = 0, ...}
+---     -- Get ability info
+---     local info = JAManager.get_ability_info("Berserk")
+---     -- Returns: {description = "ATK+25%, DEF-25%", cumulative_enmity = 0, ...}
 ---
----   -- Show ability activation with auto-description
----   JAManager.show_ability_activation("Berserk")
----   -- Displays: [WAR/SAM] Berserk activated! ATK+25%, DEF-25%
+---     -- Show ability activation with auto-description
+---     JAManager.show_ability_activation("Berserk")
+---     -- Displays: [WAR/SAM] Berserk activated! ATK+25%, DEF-25%
 ---
---- @file utils/job_abilities/job_abilities_manager.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-31
----============================================================================
+---   @file    shared/utils/job_abilities/job_abilities_manager.lua
+---   @author  Tetsouo
+---   @version 1.1 - DRY refactor: Extract module loading helpers (-29 lines)
+---   @date    Created: 2025-10-31 | Updated: 2025-11-13
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local JAManager = {}
 
 -- Load dependencies
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
----============================================================================
---- DATABASE CACHE
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DATABASE CACHE
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Cache for loaded job ability databases
 --- Format: {job_code = {subjob = {...}, mainjob = {...}, sp = {...}}}
@@ -68,9 +68,40 @@ local JOB_MODULES = {
     ['WHM'] = 'shared/data/job_abilities/whm'
 }
 
----============================================================================
---- DATABASE LOADING
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HELPER FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
+
+--- Load a specific module type (subjob, mainjob, sp) and merge abilities
+--- @param base_path string Base module path
+--- @param module_suffix string Module suffix (e.g., '_subjob', '_mainjob')
+--- @param combined table Table to merge abilities into
+local function load_module_type(base_path, module_suffix, combined)
+    local success, module = pcall(require, base_path .. module_suffix)
+    if success and module and module.abilities then
+        for ability_name, ability_data in pairs(module.abilities) do
+            combined[ability_name] = ability_data
+        end
+    end
+end
+
+--- Merge abilities from source to target with optional filter
+--- @param source table Source abilities table
+--- @param target table Target abilities table
+--- @param filter_fn function|nil Optional filter function(name, data) -> boolean
+local function merge_abilities(source, target, filter_fn)
+    if not source then return end
+
+    for ability_name, ability_data in pairs(source) do
+        if not filter_fn or filter_fn(ability_name, ability_data) then
+            target[ability_name] = ability_data
+        end
+    end
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DATABASE LOADING
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Load job ability databases for a specific job
 --- @param job_code string Job code (e.g., "WAR", "DNC", "BRD")
@@ -91,57 +122,27 @@ function JAManager.load_job_database(job_code)
     end
 
     local combined_abilities = {}
+    local job_lower = job_code:lower()
 
-    -- Load subjob abilities
-    local subjob_success, subjob_module = pcall(require, base_path .. '/' .. job_code:lower() .. '_subjob')
-    if subjob_success and subjob_module and subjob_module.abilities then
-        for ability_name, ability_data in pairs(subjob_module.abilities) do
-            combined_abilities[ability_name] = ability_data
-        end
-    end
+    -- Load subjob, mainjob, and SP abilities using helper
+    load_module_type(base_path, '/' .. job_lower .. '_subjob', combined_abilities)
+    load_module_type(base_path, '/' .. job_lower .. '_mainjob', combined_abilities)
+    load_module_type(base_path, '/' .. job_lower .. '_sp', combined_abilities)
 
-    -- Load mainjob abilities
-    local mainjob_success, mainjob_module = pcall(require, base_path .. '/' .. job_code:lower() .. '_mainjob')
-    if mainjob_success and mainjob_module and mainjob_module.abilities then
-        for ability_name, ability_data in pairs(mainjob_module.abilities) do
-            combined_abilities[ability_name] = ability_data
-        end
-    end
-
-    -- Load SP abilities
-    local sp_success, sp_module = pcall(require, base_path .. '/' .. job_code:lower() .. '_sp')
-    if sp_success and sp_module and sp_module.abilities then
-        for ability_name, ability_data in pairs(sp_module.abilities) do
-            combined_abilities[ability_name] = ability_data
-        end
-    end
-
-    -- Special handling for COR rolls
+    -- Special handling for COR rolls (note: uses 'rolls' key, not 'abilities')
     if job_code == 'COR' then
-        local rolls_success, rolls_module = pcall(require, base_path .. '/cor_rolls')
-        if rolls_success and rolls_module and rolls_module.rolls then
-            for roll_name, roll_data in pairs(rolls_module.rolls) do
+        local success, module = pcall(require, base_path .. '/cor_rolls')
+        if success and module and module.rolls then
+            for roll_name, roll_data in pairs(module.rolls) do
                 combined_abilities[roll_name] = roll_data
             end
         end
     end
 
-    -- Special handling for SCH stratagems
+    -- Special handling for SCH stratagems (both grimoires)
     if job_code == 'SCH' then
-        -- Load both grimoire modules
-        local white_success, white_module = pcall(require, base_path .. '/sch_white_grimoire_subjob')
-        if white_success and white_module and white_module.abilities then
-            for ability_name, ability_data in pairs(white_module.abilities) do
-                combined_abilities[ability_name] = ability_data
-            end
-        end
-
-        local black_success, black_module = pcall(require, base_path .. '/sch_black_grimoire_subjob')
-        if black_success and black_module and black_module.abilities then
-            for ability_name, ability_data in pairs(black_module.abilities) do
-                combined_abilities[ability_name] = ability_data
-            end
-        end
+        load_module_type(base_path, '/sch_white_grimoire_subjob', combined_abilities)
+        load_module_type(base_path, '/sch_black_grimoire_subjob', combined_abilities)
     end
 
     -- Cache the combined abilities
@@ -164,31 +165,23 @@ function JAManager.load_current_jobs()
 
     -- Load main job database
     local main_db = JAManager.load_job_database(main_job)
-    if main_db then
-        for ability_name, ability_data in pairs(main_db) do
-            combined[ability_name] = ability_data
-        end
-    end
+    merge_abilities(main_db, combined)
 
     -- Load subjob database (only subjob-accessible abilities)
     if sub_job and sub_job ~= "" and sub_job ~= "NON" then
         local sub_db = JAManager.load_job_database(sub_job)
-        if sub_db then
-            for ability_name, ability_data in pairs(sub_db) do
-                -- Only include if not main_job_only or if already in main job
-                if not ability_data.main_job_only or combined[ability_name] then
-                    combined[ability_name] = ability_data
-                end
-            end
-        end
+        -- Filter: exclude main_job_only abilities unless already in main job
+        merge_abilities(sub_db, combined, function(name, data)
+            return not data.main_job_only or combined[name]
+        end)
     end
 
     return combined
 end
 
----============================================================================
---- ABILITY INFO RETRIEVAL
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ABILITY INFO RETRIEVAL
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Get information for a specific ability
 --- Searches in main job first, then subjob databases
@@ -233,9 +226,9 @@ function JAManager.get_enmity(ability_name)
     return 0, 0
 end
 
----============================================================================
---- MESSAGE DISPLAY INTEGRATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MESSAGE DISPLAY INTEGRATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Show ability activation with automatic description lookup
 --- Respects JA_MESSAGES_CONFIG display mode (full/on/off)
@@ -276,9 +269,9 @@ function JAManager.show_ability_description(ability_name, force_description)
     end
 end
 
----============================================================================
---- CACHE MANAGEMENT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   CACHE MANAGEMENT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Clear database cache (useful for testing or job changes)
 function JAManager.clear_cache()
@@ -291,8 +284,8 @@ function JAManager.reload()
     return JAManager.load_current_jobs()
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return JAManager

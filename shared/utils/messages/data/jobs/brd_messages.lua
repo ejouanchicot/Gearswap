@@ -112,7 +112,7 @@ return {
     ---========================================================================
 
     daurdabla_dummy = {
-        template = "{gray}[{lightblue}{job}{gray}]{gray} Dummy Song using {green}Daurdabla{gray} to expand song slots",
+        template = "{gray}[{lightblue}{job}{gray}]{yellow} Dummy Song: {white}{song_name}{gray} using {green}{instrument}{gray} to expand song slots",
         color = 1
     },
 
@@ -140,10 +140,11 @@ return {
         color = 1
     },
 
-    dummy_cast = {
-        template = "{gray}[{lightblue}{job}{gray}]{gray} Casting {cyan}{dummy}",
-        color = 1
-    },
+    -- DISABLED: Duplicate message - daurdabla_dummy already shows instrument info
+    -- dummy_cast = {
+    --     template = "{gray}[{lightblue}{job}{gray}]{gray} Casting {cyan}{dummy}",
+    --     color = 1
+    -- },
 
     tank_casting = {
         template = "{gray}[{lightblue}{job}{gray}]{gray} Casting {green}Tank{gray} Pack {gray}({cyan}{count} songs{gray})",

@@ -1,27 +1,30 @@
----============================================================================
---- Job Change Manager - Robust Job Change Coordination System
----============================================================================
---- Handles job/subjob changes with debouncing and sequential coordination to
---- prevent conflicts between lockstyle, macros, keybinds, and UI systems.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Job Change Manager - Robust Job Change Coordination System
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles job/subjob changes with debouncing and sequential coordination to
+---   prevent conflicts between lockstyle, macros, keybinds, and UI systems.
 ---
---- Features:
----   - Debouncing for rapid job changes
----   - Cancellation of pending operations
----   - Sequential execution with proper delays
----   - UI destroy/rebuild coordination
----   - Keybind unbind/rebind management
+---   Features:
+---     - Debouncing for rapid job changes
+---     - Cancellation of pending operations
+---     - Sequential execution with proper delays
+---     - UI destroy/rebuild coordination
+---     - Keybind unbind/rebind management
 ---
---- @file utils/core/job_change_manager.lua
---- @author Tetsouo
---- @version 1.1 - Improved formatting
---- @date Created: 2025-10-02 | Updated: 2025-11-06
----============================================================================
+---   @file    shared/utils/core/job_change_manager.lua
+---   @author  Tetsouo
+---   @version 1.3 - Bug fixes + refactoring (fix undefined var, remove coroutine.close, optimize MessageFormatter)
+---   @date    Created: 2025-10-02 | Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local JobChangeManager = {}
 
+-- Load MessageFormatter once (cached for all usages)
+local MessageFormatter_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+
 -- Load lockstyle timing configuration
 local LockstyleConfig = _G.LockstyleConfig or {}  -- Loaded from character main file
-if not lockstyle_config_success or not LockstyleConfig then
+if not LockstyleConfig or type(LockstyleConfig) ~= 'table' or not LockstyleConfig.cooldown then
     -- Fallback defaults if config not found
     LockstyleConfig = {
         initial_load_delay   = 8.0,
@@ -30,9 +33,9 @@ if not lockstyle_config_success or not LockstyleConfig then
     }
 end
 
----============================================================================
---- STATE MANAGEMENT (PERSISTED GLOBALLY TO SURVIVE RELOADS)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   STATE MANAGEMENT (PERSISTED GLOBALLY TO SURVIVE RELOADS)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Use global scope to persist STATE between module reloads
 -- (Mote-Include reloads the Lua file on every subjob change)
@@ -72,34 +75,26 @@ end
 
 local STATE = _G.JobChangeManagerSTATE
 
----============================================================================
---- UTILITY FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   UTILITY FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Cancel all pending operations
 local function cancel_all_pending()
-    -- Cancel debounce timer (coroutine)
-    if STATE.debounce_timer then
-        coroutine.close(STATE.debounce_timer)
-        STATE.debounce_timer = nil
-    end
+    -- Cancel debounce timer (clear reference, GC will clean up)
+    STATE.debounce_timer = nil
 
-    -- Cancel all coroutines
-    for _, coro in ipairs(STATE.pending_coroutines) do
-        if coro then
-            coroutine.close(coro)
-        end
-    end
+    -- Cancel all coroutines (clear references, scheduled coroutines complete naturally)
     STATE.pending_coroutines = {}
 
     STATE.is_changing = false
 end
 
----============================================================================
---- CLEANUP PHASE
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   CLEANUP PHASE
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Cleanup current job setup (unbind keybinds, destroy UI)
+--- Cleanup current job setup (unbind keybinds, destroy UI, stop coroutines, clear callbacks)
 local function cleanup_current_setup()
     -- Unbind keybinds
     if STATE.keybind_module and type(STATE.keybind_module) == 'table' and STATE.keybind_module.unbind_all then
@@ -110,11 +105,83 @@ local function cleanup_current_setup()
     if STATE.ui_module and type(STATE.ui_module) == 'table' and STATE.ui_module.destroy then
         STATE.ui_module.destroy()
     end
+
+    -- Stop infinite coroutines (prevent memory leaks)
+    if _G.MidcastWatchdog and type(_G.MidcastWatchdog.stop) == 'function' then
+        _G.MidcastWatchdog.stop()
+    end
+
+    if _G.AutoMove and type(_G.AutoMove.stop) == 'function' then
+        _G.AutoMove.stop()
+    end
+
+    -- Clear callback registries (prevent accumulation)
+    if _G.AutoMove and type(_G.AutoMove.clear_callbacks) == 'function' then
+        _G.AutoMove.clear_callbacks()
+    end
+
+    -- CRITICAL: Reset movement state to prevent stale state from old job
+    -- This prevents MoveSpeed gear being equipped when idle after job change
+    if _G.state and _G.state.Moving then
+        _G.state.Moving.value = 'false'
+    end
+
+    local warp_detector_success, WarpDetector = pcall(require, 'shared/utils/warp/warp_detector')
+    if warp_detector_success and WarpDetector and type(WarpDetector.clear_callbacks) == 'function' then
+        WarpDetector.clear_callbacks()
+    end
+
+    -- Clear job-specific global state (prevent state corruption between jobs)
+    -- These variables persist across job changes and can cause issues if not cleaned
+    local job_globals_to_clear = {
+        -- COR (Corsair) - Roll tracking and party management
+        'cor_active_rolls',
+        'cor_last_roll',
+        'cor_natural_eleven_active',
+        'cor_last_roll_display',
+        'cor_party_jobs',
+        'cor_party_state',
+        'cor_lockstyle_watchdog_active',
+        'cor_lockstyle_watchdog',
+        'cor_pending_roll_value',
+        'cor_pending_roll_timestamp',
+        'cor_crooked_timestamp',
+        'cor_action_event_id',
+        'cor_party_event_id',
+
+        -- THF (Thief) - Sneak Attack / Trick Attack tracking
+        'thf_sa_pending',
+        'thf_ta_pending',
+
+        -- DRK (Dark Knight) - Buff anticipation
+        'drk_dark_seal_pending',
+        'drk_nether_void_pending',
+
+        -- BST (Beastmaster) - Ready move tracking
+        'bst_rdymove_active',
+
+        -- DNC (Dancer) - Climactic Flourish tracking
+        'dnc_climactic_timestamp',
+
+        -- BLM (Black Mage) - Arts tracking
+        'BLM_ARTS_LAST_CAST',
+
+        -- BRD (Bard) - Song tracking (if any exist)
+        'brd_song_state',
+
+        -- Add more job-specific globals as discovered
+    }
+
+    for _, var_name in ipairs(job_globals_to_clear) do
+        if _G[var_name] ~= nil then
+            _G[var_name] = nil
+        end
+    end
 end
 
----============================================================================
---- APPLY PHASE
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   APPLY PHASE
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Apply new job setup with parallel execution
 --- @param main_job string Main job
@@ -126,10 +193,7 @@ local function apply_job_setup(main_job, sub_job, expected_counter)
     -- Path 1: Fast path for keybinds/UI (doesn't wait for lockstyle)
     -- Step 1: Apply macros (1s delay for FFXI macro bug)
     local macro_coro = coroutine.schedule(function()
-        -- Verify counter hasn't changed
-        if expected_counter ~= STATE.debounce_counter then
-            return  -- Outdated, abort
-        end
+        if expected_counter ~= STATE.debounce_counter then return end  -- Outdated, abort
 
         if STATE.macrobook_func and type(STATE.macrobook_func) == 'function' then
             STATE.macrobook_func()
@@ -137,10 +201,7 @@ local function apply_job_setup(main_job, sub_job, expected_counter)
 
         -- Step 2: Rebind keybinds immediately after macros
         local keybind_coro = coroutine.schedule(function()
-            -- Verify counter hasn't changed
-            if expected_counter ~= STATE.debounce_counter then
-                return  -- Outdated, abort
-            end
+            if expected_counter ~= STATE.debounce_counter then return end  -- Outdated, abort
 
             if STATE.keybind_module and type(STATE.keybind_module) == 'table' and STATE.keybind_module.bind_all then
                 STATE.keybind_module.bind_all()
@@ -148,10 +209,7 @@ local function apply_job_setup(main_job, sub_job, expected_counter)
 
             -- Step 3: Rebuild UI immediately after keybinds
             local ui_coro = coroutine.schedule(function()
-                -- Verify counter hasn't changed
-                if expected_counter ~= STATE.debounce_counter then
-                    return  -- Outdated, abort
-                end
+                if expected_counter ~= STATE.debounce_counter then return end  -- Outdated, abort
 
                 -- Use init() directly instead of smart_init() since states are already ready
                 if STATE.ui_module and type(STATE.ui_module) == 'table' and STATE.ui_module.init then
@@ -162,8 +220,7 @@ local function apply_job_setup(main_job, sub_job, expected_counter)
                 STATE.is_changing = false
 
                 -- Show success message
-                local success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-                if success and MessageFormatter then
+                if MessageFormatter_success and MessageFormatter then
                     MessageFormatter.show_success(string.format("Job change complete: %s/%s", main_job, sub_job))
                 end
             end, 0.1)
@@ -187,18 +244,14 @@ local function apply_job_setup(main_job, sub_job, expected_counter)
         lockstyle_delay        = lockstyle_delay + additional_delay
 
         -- Show warning to user
-        local success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-        if success and MessageFormatter then
+        if MessageFormatter_success and MessageFormatter then
             MessageFormatter.show_warning(string.format("Lockstyle cooldown: waiting %.1fs", additional_delay))
         end
     end
 
     -- Apply lockstyle independently (doesn't block keybinds/UI)
     local lockstyle_coro = coroutine.schedule(function()
-        -- Verify counter hasn't changed
-        if expected_counter ~= STATE.debounce_counter then
-            return  -- Outdated, abort
-        end
+        if expected_counter ~= STATE.debounce_counter then return end  -- Outdated, abort
 
         -- Update timestamp BEFORE applying lockstyle (reserve the slot)
         STATE.last_lockstyle_time = os.time()
@@ -212,9 +265,9 @@ local function apply_job_setup(main_job, sub_job, expected_counter)
     table.insert(STATE.pending_coroutines, lockstyle_coro)
 end
 
----============================================================================
---- DEBOUNCING
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEBOUNCING
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Execute job change after debounce delay
 --- @param main_job string Main job
@@ -280,9 +333,9 @@ local function debounced_job_change(main_job, sub_job)
     end, delay)
 end
 
----============================================================================
---- PUBLIC API
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PUBLIC API
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Initialize job change manager with module references
 --- @param config table Configuration {keybinds, ui, lockstyle, macrobook}
@@ -326,8 +379,7 @@ function JobChangeManager.force_reload(main_job, sub_job)
     sub_job  = sub_job or (player and player.sub_job)
 
     if not main_job or not sub_job then
-        local success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-        if success and MessageFormatter then
+        if MessageFormatter_success and MessageFormatter then
             MessageFormatter.show_error("Cannot reload: Job data not available")
         end
         return
@@ -373,8 +425,8 @@ function JobChangeManager.set_debounce_delay(delay)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return JobChangeManager

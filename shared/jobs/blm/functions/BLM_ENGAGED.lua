@@ -1,47 +1,43 @@
----============================================================================
---- BLM Engaged Module - Engaged Gear Customization
----============================================================================
---- Handles engaged (melee) gear selection for Black Mage job.
---- Applies set_builder logic for dynamic gear construction.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BLM Engaged Module - Combat State Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all engaged state logic for Red Mage job:
+---   - Combat set selection based on EngagedMode (DT, Enspell, Refresh, TP)
+---   - Dual wield detection and optimization (NIN subjob)
+---   - Dynamic weapon application to engaged sets
+---   - Combat state transitions
 ---
---- @file BLM_ENGAGED.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-15
----============================================================================
+---   @file    shared/jobs/blm/functions/BLM_ENGAGED.lua
+---   @author  Tetsouo
+---   @version 2.1 - Removed dead code + refactored header
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load set builder (shared logic module)
-local set_builder_success, SetBuilder = pcall(require, 'shared/jobs/blm/functions/logic/set_builder')
+local SetBuilder = nil
 
----============================================================================
---- ENGAGED HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ENGAGED HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
+--- Apply weapon sets, mode selection, and movement gear to all engaged configurations
+--- @param meleeSet table The engaged set to customize
+--- @return table Modified engaged set with current weapon, mode, and movement gear
 function customize_melee_set(meleeSet)
-    -- BLM-SPECIFIC ENGAGED CUSTOMIZATION
-
-    -- Use set_builder if available
-    if set_builder_success and SetBuilder and SetBuilder.build_engaged_set then
-        return SetBuilder.build_engaged_set(meleeSet)
+    -- Lazy load SetBuilder on first engage
+    if not SetBuilder then
+        SetBuilder = require('shared/jobs/blm/functions/logic/set_builder')
     end
 
-    -- Fallback: return meleeSet as-is
-    return meleeSet
+    if not meleeSet then
+        return {}
+    end
+
+    return SetBuilder.build_engaged_set(meleeSet)
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
-
--- Export global for GearSwap (Mote-Include)
+-- Export to global scope (used by Mote-Include via include())
 _G.customize_melee_set = customize_melee_set
-
--- Export module
-local BLM_ENGAGED = {}
-BLM_ENGAGED.customize_melee_set = customize_melee_set
-
-return BLM_ENGAGED

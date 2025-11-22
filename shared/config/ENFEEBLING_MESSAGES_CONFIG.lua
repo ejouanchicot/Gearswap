@@ -1,30 +1,35 @@
----============================================================================
---- Enfeebling Magic Messages Configuration
----============================================================================
---- Controls how Enfeebling Magic spell messages are displayed.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Enfeebling Magic Messages Configuration - Debuff Spell Display Control
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Controls how Enfeebling Magic spell messages are displayed.
 ---
---- Display Modes:
----   • 'full' - Show spell name + description
----              Example: [RDM/DNC] Slow II >> Reduces target attack speed.
----   • 'on'   - Show spell name only (no description)
----              Example: [RDM/DNC] Slow II
----   • 'off'  - No messages at all (silent mode)
+---   Display Modes:
+---     • 'full' - Show spell name + description
+---                Example: [RDM/DNC] Slow II >> Reduces target attack speed.
+---     • 'on'   - Show spell name only (no description)
+---                Example: [RDM/DNC] Slow II
+---     • 'off'  - No messages at all (silent mode)
 ---
---- Settings File:
----   shared/config/message_modes.lua
----   Persists across //lua reload and game restarts
+---   Architecture:
+---     • Persistent settings via message_settings.lua
+---     • Survives //lua reload and game restarts
+---     • Mode validation with backward compatibility
+---     • Helper functions for mode checks
 ---
---- @file ENFEEBLING_MESSAGES_CONFIG.lua
---- @author Tetsouo
---- @version 1.2 - Persistent settings with Windower config
---- @date Created: 2025-10-30 | Updated: 2025-11-08
----============================================================================
+---   Settings File:
+---     • shared/config/message_modes.lua (per-character)
+---
+---   @file    shared/config/ENFEEBLING_MESSAGES_CONFIG.lua
+---   @author  Tetsouo
+---   @version 1.3 - Refactored with new header style
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local ENFEEBLING_MESSAGES_CONFIG = {}
 
----============================================================================
---- PERSISTENT SETTINGS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PERSISTENT SETTINGS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Load persistent settings manager
 local MessageSettings = require('shared/config/message_settings')
@@ -45,9 +50,9 @@ ENFEEBLING_MESSAGES_CONFIG.VALID_MODES = {
     disable     = true
 }
 
----============================================================================
---- HELPER FUNCTIONS - Display Mode Checks
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HELPER FUNCTIONS - Display Mode Checks
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Check if messages are enabled (not 'off')
 function ENFEEBLING_MESSAGES_CONFIG.is_enabled()
@@ -69,16 +74,16 @@ function ENFEEBLING_MESSAGES_CONFIG.is_name_only()
     return mode == 'on' or mode == 'name_only' or mode == 'name'
 end
 
----============================================================================
---- HELPER FUNCTIONS - Mode Validation
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HELPER FUNCTIONS - Mode Validation
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Validate and set display mode
 --- @param mode string 'full' | 'on' | 'off'
 --- @return boolean true if mode is valid
 function ENFEEBLING_MESSAGES_CONFIG.set_display_mode(mode)
     if ENFEEBLING_MESSAGES_CONFIG.VALID_MODES[mode] then
-        -- Save to persistent settings file (Windower4/settings/GearSwap_Messages.xml)
+        -- Save to persistent settings file ([CharName]/config/message_modes.lua)
         MessageSettings.set_enfeebling_mode(mode)
         ENFEEBLING_MESSAGES_CONFIG.display_mode = mode
         return true
@@ -89,8 +94,8 @@ function ENFEEBLING_MESSAGES_CONFIG.set_display_mode(mode)
     end
 end
 
----============================================================================
---- EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return ENFEEBLING_MESSAGES_CONFIG

@@ -24,72 +24,131 @@
 ---============================================================================
 
 ---============================================================================
---- SECTION 1: LOAD LOGIC MODULES (for facade delegation)
+--- SECTION 1: PERFORMANCE PROFILER (Load first for timing)
 ---============================================================================
-
--- Load logic modules that contain the actual implementation
-local BuffManager = require('shared/jobs/blm/functions/logic/buff_manager')
-local SetBuilder = require('shared/jobs/blm/functions/logic/set_builder')
-local SpellRefiner = require('shared/jobs/blm/functions/logic/spell_refiner')
-local StormManager = require('shared/jobs/blm/functions/logic/storm_manager')
+-- ═══════════════════════════════════════════════════════════════════
+-- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+-- ═══════════════════════════════════════════════════════════════════
+local Profiler = require('shared/utils/debug/performance_profiler')
+local TIMER = Profiler.create_timer('BLM')
+-- ═══════════════════════════════════════════════════════════════════
 
 ---============================================================================
---- SECTION 2: MESSAGE SYSTEM
+--- SECTION 2: MESSAGE SYSTEM (Load first for caching by logic modules)
 ---============================================================================
 -- Message system (must load first for buff status display)
-include('../shared/utils/messages/formatters/magic/message_buffs.lua')
 
--- Load MessageFormatter for standardized messages
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+include('../shared/utils/messages/formatters/magic/message_buffs.lua')
+TIMER('message_buffs')
+
+-- MessageFormatter lazy loaded (only needed for error messages in checkArts)
+local MessageFormatter = nil
+
+--- Ensure MessageFormatter is loaded (for error messages)
+local function ensure_message_formatter()
+    if not MessageFormatter then
+        MessageFormatter = require('shared/utils/messages/message_formatter')
+    end
+end
 
 ---============================================================================
---- SECTION 2: COMBAT ACTION HOOKS
+--- SECTION 3: LOGIC MODULES (Lazy Loading - loaded on first use)
+---============================================================================
+
+-- Logic modules loaded on demand (performance optimization)
+local BuffManager = nil
+local SetBuilder = nil
+local SpellRefiner = nil
+local StormManager = nil
+
+--- Ensure BuffManager is loaded
+local function ensure_buff_manager()
+    if not BuffManager then
+        BuffManager = require('shared/jobs/blm/functions/logic/buff_manager')
+    end
+end
+
+--- Ensure SetBuilder is loaded
+local function ensure_set_builder()
+    if not SetBuilder then
+        SetBuilder = require('shared/jobs/blm/functions/logic/set_builder')
+    end
+end
+
+--- Ensure SpellRefiner is loaded
+local function ensure_spell_refiner()
+    if not SpellRefiner then
+        SpellRefiner = require('shared/jobs/blm/functions/logic/spell_refiner')
+    end
+end
+
+--- Ensure StormManager is loaded
+local function ensure_storm_manager()
+    if not StormManager then
+        StormManager = require('shared/jobs/blm/functions/logic/storm_manager')
+    end
+end
+
+---============================================================================
+--- SECTION 4: COMBAT ACTION HOOKS
 ---============================================================================
 
 include('../shared/jobs/blm/functions/BLM_PRECAST.lua')
+TIMER('BLM_PRECAST')
 include('../shared/jobs/blm/functions/BLM_MIDCAST.lua')
+TIMER('BLM_MIDCAST')
 include('../shared/jobs/blm/functions/BLM_AFTERCAST.lua')
+TIMER('BLM_AFTERCAST')
 
 ---============================================================================
---- SECTION 3: GEAR SELECTION HOOKS
+--- SECTION 5: GEAR SELECTION HOOKS
 ---============================================================================
 
 include('../shared/jobs/blm/functions/BLM_IDLE.lua')
+TIMER('BLM_IDLE')
 include('../shared/jobs/blm/functions/BLM_ENGAGED.lua')
+TIMER('BLM_ENGAGED')
 
 ---============================================================================
---- SECTION 4: EVENT MONITORING HOOKS
+--- SECTION 6: EVENT MONITORING HOOKS
 ---============================================================================
 
 include('../shared/jobs/blm/functions/BLM_STATUS.lua')
+TIMER('BLM_STATUS')
 include('../shared/jobs/blm/functions/BLM_BUFFS.lua')
+TIMER('BLM_BUFFS')
 
 ---============================================================================
---- SECTION 5: UTILITY HOOKS
+--- SECTION 7: UTILITY HOOKS
 ---============================================================================
 
+-- LOCKSTYLE and MACROBOOK use lazy loading - loaded on first call, not during startup
 include('../shared/jobs/blm/functions/BLM_LOCKSTYLE.lua')
 include('../shared/jobs/blm/functions/BLM_MACROBOOK.lua')
 include('../shared/jobs/blm/functions/BLM_COMMANDS.lua')
+TIMER('BLM_COMMANDS')
 include('../shared/jobs/blm/functions/BLM_MOVEMENT.lua')
+TIMER('BLM_MOVEMENT')
 
 ---============================================================================
---- LOGIC MODULES REFERENCE
+--- LOGIC MODULES REFERENCE (Lazy Loaded - loaded on first use)
 ---============================================================================
---- The following business logic modules are loaded via require() in hooks:
+--- The following business logic modules use lazy loading for performance:
 ---
----   logic/buff_manager.lua
+---   logic/buff_manager.lua (loaded on first BuffSelf() call)
 ---     • Automated self-buffing (Stoneskin, Blink, Aquaveil, Ice Spikes)
----   logic/set_builder.lua
+---   logic/set_builder.lua (loaded on first SaveMP() call)
 ---     • MP conservation gear switching
 ---     • Shared engaged set construction
 ---     • Shared idle set construction
----   logic/spell_refiner.lua
+---   logic/spell_refiner.lua (loaded on first spell cast with refinement)
 ---     • Spell tier downgrading (Fire VI >> V >> IV >> III >> II >> I)
+---   logic/storm_manager.lua (loaded on first CastStorm() call)
+---     • Automated storm casting with Klimaform
 ---============================================================================
 
 ---============================================================================
---- SECTION 6: GLOBAL FUNCTION EXPORTS (FACADE PATTERN)
+--- SECTION 8: GLOBAL FUNCTION EXPORTS (FACADE PATTERN)
 ---============================================================================
 --- These functions are exported globally to maintain compatibility with
 --- old system where functions are called directly in hooks (not via require)
@@ -102,11 +161,8 @@ include('../shared/jobs/blm/functions/BLM_MOVEMENT.lua')
 --- Includes anti-spam protection and recast checking
 --- @usage BuffSelf()
 function BuffSelf()
-    if BuffManager then
-        return BuffManager.BuffSelf()
-    else
-        MessageFormatter.show_error('BuffManager not loaded')
-    end
+    ensure_buff_manager()
+    return BuffManager.BuffSelf()
 end
 
 ---============================================================================
@@ -117,11 +173,8 @@ end
 --- High MP (>= 1000): Full potency gear (max MAB)
 --- @usage SaveMP()
 function SaveMP()
-    if SetBuilder then
-        return SetBuilder.SaveMP()
-    else
-        MessageFormatter.show_error('SetBuilder not loaded')
-    end
+    ensure_set_builder()
+    return SetBuilder.SaveMP()
 end
 
 ---============================================================================
@@ -134,11 +187,8 @@ end
 --- @param eventArgs table Event arguments (can set eventArgs.cancel = true)
 --- @usage refine_various_spells(spell, eventArgs)
 function refine_various_spells(spell, eventArgs)
-    if SpellRefiner then
-        return SpellRefiner.refine_various_spells(spell, eventArgs)
-    else
-        MessageFormatter.show_error('SpellRefiner not loaded')
-    end
+    ensure_spell_refiner()
+    return SpellRefiner.refine_various_spells(spell, eventArgs)
 end
 
 ---============================================================================
@@ -153,17 +203,20 @@ end
 function checkArts(spell, eventArgs)
     -- Check if parameters are tables
     if type(spell) ~= 'table' then
+        ensure_message_formatter()
         MessageFormatter.show_error('checkArts - spell must be a table')
         return
     end
 
     if type(eventArgs) ~= 'table' then
+        ensure_message_formatter()
         MessageFormatter.show_error('checkArts - eventArgs must be a table')
         return
     end
 
     -- Check if spell has required keys
     if not spell.name then
+        ensure_message_formatter()
         MessageFormatter.show_error('checkArts - spell.name missing')
         return
     end
@@ -224,11 +277,8 @@ end
 --- @param storm_name string Name of the storm spell (e.g., "Firestorm")
 --- @usage CastStorm("Firestorm")
 function CastStorm(storm_name)
-    if StormManager then
-        return StormManager.cast_storm_with_klimaform(storm_name)
-    else
-        MessageFormatter.show_error('StormManager not loaded')
-    end
+    ensure_storm_manager()
+    return StormManager.cast_storm_with_klimaform(storm_name)
 end
 
 ---============================================================================
@@ -245,7 +295,7 @@ _G.checkArts = checkArts
 _G.CastStorm = CastStorm
 
 ---============================================================================
---- SECTION 6: DUAL-BOXING SYSTEM
+--- SECTION 9: DUAL-BOXING SYSTEM
 ---============================================================================
 
 -- Load dual-boxing manager (auto-initializes and handles ALT<>>MAIN communication)
@@ -255,5 +305,9 @@ local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
 --- INITIALIZATION COMPLETE
 ---============================================================================
 
--- All module functions are now available in global scope
-print('[BLM] All functions loaded (11 hooks + 4 logic modules + 5 global exports)')
+-- All hook functions loaded, logic modules will load on demand
+print('[BLM] Hook functions loaded (11 hooks + 5 global exports with lazy loading)')
+
+-- ═══════════════════════════════════════════════════════════════════
+TIMER('TOTAL BLM_functions', true)
+-- ═══════════════════════════════════════════════════════════════════

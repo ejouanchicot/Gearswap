@@ -249,7 +249,8 @@ function MessageCooldowns.show_multi_status(messages, job_name)
             local time_str = MessageCooldowns.format_recast_duration(msg.value)
             table.insert(message_parts, ' (' .. colorCooldown .. time_str .. colorGray .. ')')
         elseif msg.type == "tp" then
-            table.insert(message_parts, ' (' .. colorError .. msg.value .. '/' .. msg.extra .. ' TP' .. colorGray .. ')')
+            local colorTP = MessageCore.create_color_code(Colors.get_tp_color(msg.value))
+            table.insert(message_parts, ' (' .. colorTP .. msg.value .. colorGray .. '/' .. msg.extra .. ' TP' .. colorGray .. ')')
         end
 
         MessageRenderer.send(1, table.concat(message_parts))

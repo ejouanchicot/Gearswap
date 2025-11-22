@@ -1,19 +1,19 @@
----============================================================================
---- DRG Jump Manager - Intelligent Jump System for Sub-DRG
----============================================================================
---- Centralized jump management for any job with DRG subjob.
---- Handles Jump/High Jump rotation with TP-based decision making.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DRG Jump Manager - Intelligent Jump System for Sub-DRG
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Centralized jump management for any job with DRG subjob.
+---   Handles Jump/High Jump rotation with TP-based decision making.
 ---
---- Performance: Optimized 0.8s animation delay (down from 1.5s)
+---   Performance: Optimized 0.8s animation delay (down from 1.5s)
 ---
---- @file utils/drg/DRG_JUMP_MANAGER.lua
---- @author Tetsouo
---- @version 1.1 - Optimized Timing
---- @date Created: 2025-10-04
---- @date Updated: 2025-10-10 (Optimized lag: 1.5s>>0.8s)
----============================================================================
+---   @file    shared/utils/drg/DRG_JUMP_MANAGER.lua
+---   @author  Tetsouo
+---   @version 1.4 - Use centralized MessageCooldowns system (proper colors)
+---   @date    Created: 2025-10-04 | Updated: 2025-11-13
+---  ═══════════════════════════════════════════════════════════════════════════
 
-local MessageDRG = require('shared/utils/messages/formatters/jobs/message_drg')
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+local MessageCooldowns = require('shared/utils/messages/formatters/combat/message_cooldowns')
 
 local DRGJumpManager = {}
 
@@ -30,83 +30,55 @@ local function is_recast_ready(recast)
     end
 end
 
--- Load message system for formatted output
-include('../shared/utils/messages/formatters/magic/message_buffs.lua')
-
 --- Handle smart jump command with TP checking
 --- Uses Jump first, High Jump as fallback
 --- Chains jumps only if TP < 1000 after first jump
 function DRGJumpManager.execute_jump()
     -- Check if player has DRG subjob
     if not player or player.sub_job ~= 'DRG' then
-        local MessageFormatter = require('shared/utils/messages/message_formatter')
-        if MessageFormatter then
-            MessageFormatter.show_error("Requires DRG subjob")
-        else
-            MessageDRG.show_drg_subjob_required()
-        end
+        MessageFormatter.show_error("Requires DRG subjob")
         return
     end
 
     -- ODYSSEY FIX: Check if subjob is active (level > 0)
     -- In Odyssey Sheol Gaol, player.sub_job_level = 0 (subjob disabled)
     if not player.sub_job_level or player.sub_job_level == 0 then
-        local MessageFormatter = require('shared/utils/messages/message_formatter')
-        if MessageFormatter then
-            MessageFormatter.show_error("Subjob disabled (Odyssey Sheol Gaol)")
-        else
-            MessageDRG.show_subjob_disabled()
-        end
+        MessageFormatter.show_error("Subjob disabled (Odyssey Sheol Gaol)")
         return
     end
 
     -- Check initial TP - if already >=1000, don't jump
     if player.tp >= 1000 then
-        local MessageFormatter = require('shared/utils/messages/message_formatter')
         local job_tag = MessageFormatter.get_job_tag()
         MessageFormatter.show_tp_ready(job_tag, 1000)
         return
     end
 
     local ability_recasts = windower.ffxi.get_ability_recasts()
+    if not ability_recasts then return end
+
     local jump_recast = ability_recasts[158] or 0        -- Jump recast_id
     local high_jump_recast = ability_recasts[159] or 0   -- High Jump recast_id
 
     -- Determine which jump to use first
     local first_jump, second_jump
-    local first_recast, second_recast
 
     if is_recast_ready(jump_recast) then
         -- Jump ready - use it first
         first_jump = "Jump"
         second_jump = "High Jump"
-        first_recast = jump_recast
-        second_recast = high_jump_recast
     elseif is_recast_ready(high_jump_recast) then
         -- Jump on cooldown, use High Jump first
         first_jump = "High Jump"
         second_jump = "Jump"
-        first_recast = high_jump_recast
-        second_recast = jump_recast
     else
-        -- Both on cooldown - show grouped recasts
-        local status_data = {
-            { name = 'Jump', status = 'cooldown', time = math.ceil(jump_recast) },
-            { name = 'High Jump', status = 'cooldown', time = math.ceil(high_jump_recast) }
+        -- Both on cooldown - show grouped recasts using centralized system
+        local job_tag = MessageFormatter.get_job_tag()
+        local messages = {
+            { type = "cooldown", name = "Jump", value = jump_recast, action_type = "Ability" },
+            { type = "cooldown", name = "High Jump", value = high_jump_recast, action_type = "Ability" }
         }
-
-        -- Use job-appropriate buff status display
-        if show_dnc_buff_status then
-            show_dnc_buff_status(status_data)
-        elseif show_war_buff_status then
-            show_war_buff_status(status_data)
-        elseif show_pld_buff_status then
-            show_pld_buff_status(status_data)
-        else
-            -- Fallback to basic display
-            MessageDRG.show_jump_on_cooldown(jump_recast)
-            MessageDRG.show_high_jump_on_cooldown(high_jump_recast)
-        end
+        MessageCooldowns.show_multi_status(messages, job_tag)
         return
     end
 
@@ -119,6 +91,8 @@ function DRGJumpManager.execute_jump()
         if player and player.tp < 1000 then
             -- Still below 1000 TP, check if second jump available
             local recasts = windower.ffxi.get_ability_recasts()
+            if not recasts then return end
+
             local second_jump_recast = (second_jump == "Jump") and (recasts[158] or 0) or (recasts[159] or 0)
 
             if is_recast_ready(second_jump_recast) then

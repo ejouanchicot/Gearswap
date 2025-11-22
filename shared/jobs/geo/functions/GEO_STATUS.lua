@@ -1,33 +1,35 @@
----============================================================================
---- GEO Status Module - Status Change Handling
----============================================================================
---- Handles player status changes for Geomancer job (Idle/Engaged/Resting/Dead).
---- Triggers appropriate gear swaps when status changes.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   GEO Status Module - Player Status Change Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles status changes (Idle, Engaged, Resting, Dead, etc.)
 ---
---- @file GEO_STATUS.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-09
----============================================================================
+---   @file    shared/jobs/geo/functions/GEO_STATUS.lua
+---   @author  Tetsouo
+---   @version 1.2 - Added DoomManager safety unlock
+---   @date    Updated: 2025-11-14
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- STATUS HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
+local DoomManager = nil
+
+--- Handle status change events
+--- @param newStatus string New status (Idle, Engaged, Resting, Dead, etc.)
+--- @param oldStatus string Previous status
+--- @param eventArgs table Event arguments
 function job_status_change(newStatus, oldStatus, eventArgs)
-    -- GEO-SPECIFIC STATUS CHANGE LOGIC
-    -- Currently none - Mote handles status changes automatically
+    -- Lazy load DoomManager on first status change
+    if not DoomManager then
+        DoomManager = require('shared/utils/debuff/doom_manager')
+    end
+
+    -- Safety: Unlock Doom slots after death (prevents stuck locks after raise)
+    DoomManager.handle_status_change(newStatus, oldStatus)
+
+    -- GEO-specific status change logic can be added here
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
-
--- Export global for GearSwap (Mote-Include)
+-- Export to global scope
 _G.job_status_change = job_status_change
-
--- Export module
-local GEO_STATUS = {}
-GEO_STATUS.job_status_change = job_status_change
-
-return GEO_STATUS

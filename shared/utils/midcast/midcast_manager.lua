@@ -105,7 +105,14 @@ function MidcastManager.select_set(config)
     end
 
     -- Get base set path (e.g., sets.midcast['Enfeebling Magic'])
-    local base_set = sets.midcast[config.skill]
+    -- Special case: 'Singing' uses sets.midcast.BardSong as base
+    local base_set = nil
+    if config.skill == 'Singing' then
+        base_set = sets.midcast.BardSong
+    else
+        base_set = sets.midcast[config.skill]
+    end
+
     if not base_set then
         return false
     end
@@ -117,6 +124,171 @@ function MidcastManager.select_set(config)
             (player and player.name) or 'Unknown'
         MessageMidcast.show_debug_header(spell_name, config.skill, target_name)
     end
+
+    ---========================================================================
+    --- SPECIAL HANDLING: BARD SONGS (Singing skill)
+    ---========================================================================
+    -- Songs have unique logic that doesn't fit the standard fallback pattern
+    -- Fallback order: Exact name → Base song → Song type → Instrument → Base
+    if config.skill == 'Singing' and config.spell and config.spell.english then
+        local spell_name = config.spell.english
+        local selected_set = nil
+        local selected_set_path = nil
+        local debug_steps = {}
+
+        -- STEP 1: Try exact spell name (sets.midcast["Honor March"])
+        if sets.midcast[spell_name] then
+            selected_set = sets.midcast[spell_name]
+            selected_set_path = 'sets.midcast["' .. spell_name .. '"]'
+            if is_debug_enabled() then
+                table.insert(debug_steps, {step = 1, label = "Exact Match", status = "ok", value = spell_name})
+            end
+        else
+            -- STEP 1.5: Try PascalCase version (remove spaces: "Honor March" → "HonorMarch")
+            local pascal_name = spell_name:gsub("%s+", "")
+            if pascal_name ~= spell_name and sets.midcast[pascal_name] then
+                selected_set = sets.midcast[pascal_name]
+                selected_set_path = 'sets.midcast.' .. pascal_name
+                if is_debug_enabled() then
+                    table.insert(debug_steps, {step = 1.5, label = "PascalCase", status = "ok", value = pascal_name})
+                end
+            else
+                if is_debug_enabled() then
+                    table.insert(debug_steps, {step = 1, label = "Exact Match", status = "warn", value = "Not found"})
+                end
+            end
+        end
+
+        if not selected_set then
+
+            -- STEP 2: Try base song name (remove tier: "Knight's Minne V" → "Knight's Minne")
+            local base_song = spell_name:match("^(.+)%s+[IVX]+$") or spell_name
+            if base_song ~= spell_name and sets.midcast[base_song] then
+                selected_set = sets.midcast[base_song]
+                selected_set_path = 'sets.midcast["' .. base_song .. '"]'
+                if is_debug_enabled() then
+                    table.insert(debug_steps, {step = 2, label = "Base Song", status = "ok", value = base_song})
+                end
+            else
+                if is_debug_enabled() then
+                    table.insert(debug_steps, {step = 2, label = "Base Song", status = "warn", value = "Not found"})
+                end
+
+                -- STEP 3: Try song type (last word: "Minne", "Madrigal", etc.)
+                local song_type = MidcastManager.get_song_type(spell_name)
+                if song_type and sets.midcast[song_type] then
+                    selected_set = sets.midcast[song_type]
+                    selected_set_path = 'sets.midcast.' .. song_type
+                    if is_debug_enabled() then
+                        table.insert(debug_steps, {step = 3, label = "Song Type", status = "ok", value = song_type})
+                    end
+                else
+                    if is_debug_enabled() then
+                        table.insert(debug_steps, {step = 3, label = "Song Type", status = "warn", value = "Not found"})
+                    end
+                end
+            end
+        end
+
+        -- STEP 3.5: Try first word (for "Honor March" → "Honor", "Blade Madrigal" → "Blade")
+        if not selected_set then
+            local base_song = spell_name:match("^(.+)%s+[IVX]+$") or spell_name
+            local first_word = base_song:match("^(%S+)")
+            if first_word and first_word ~= base_song and sets.midcast[first_word] then
+                selected_set = sets.midcast[first_word]
+                selected_set_path = 'sets.midcast.' .. first_word
+                if is_debug_enabled() then
+                    table.insert(debug_steps, {step = 3.5, label = "First Word", status = "ok", value = first_word})
+                end
+            else
+                if is_debug_enabled() and first_word and first_word ~= base_song then
+                    table.insert(debug_steps, {step = 3.5, label = "First Word", status = "warn", value = "Not found"})
+                end
+            end
+        end
+
+        -- STEP 4: Apply instrument-specific gear (if available)
+        local instrument = MidcastManager.get_song_instrument(spell_name)
+        if instrument and sets.midcast.Songs and sets.midcast.Songs[instrument] then
+            -- Layer instrument set on top of selected set
+            if selected_set then
+                selected_set = set_combine(selected_set, sets.midcast.Songs[instrument])
+            else
+                selected_set = sets.midcast.Songs[instrument]
+            end
+            if is_debug_enabled() then
+                table.insert(debug_steps, {step = 4, label = "Instrument", status = "ok", value = instrument})
+            end
+        else
+            if is_debug_enabled() then
+                table.insert(debug_steps, {step = 4, label = "Instrument", status = "info", value = "Default"})
+            end
+        end
+
+        -- STEP 5: Check for Troubadour buff (duration gear)
+        if buffactive and buffactive['Troubadour'] and sets.midcast.Songs and sets.midcast.Songs.Duration then
+            if selected_set then
+                selected_set = set_combine(selected_set, sets.midcast.Songs.Duration)
+            else
+                selected_set = sets.midcast.Songs.Duration
+            end
+            if is_debug_enabled() then
+                table.insert(debug_steps, {step = 5, label = "Buff", status = "ok", value = "Troubadour (duration)"})
+            end
+        end
+
+        -- STEP 6: Fallback to base song set if nothing found
+        if not selected_set then
+            selected_set = base_set  -- sets.midcast.BardSong
+            selected_set_path = 'sets.midcast.BardSong'
+            if is_debug_enabled() then
+                table.insert(debug_steps, {step = 6, label = "Fallback", status = "info", value = "BardSong (base)"})
+            end
+        end
+
+        -- Equip the selected set
+        if selected_set then
+            equip(selected_set)
+
+            -- Show debug info
+            if is_debug_enabled() then
+                for _, step_data in ipairs(debug_steps) do
+                    MessageMidcast.show_debug_step(step_data.step, step_data.label, step_data.status, step_data.value)
+                end
+
+                MessageMidcast.show_result_header()
+                MessageMidcast.show_result(selected_set_path or "Combined", false)
+
+                -- Show equipment (all slots)
+                local slot_order = {
+                    'main', 'sub', 'range', 'ammo',
+                    'head', 'neck', 'ear1', 'ear2',
+                    'body', 'hands', 'ring1', 'ring2',
+                    'back', 'waist', 'legs', 'feet'
+                }
+
+                for _, slot in ipairs(slot_order) do
+                    if selected_set[slot] then
+                        local item = selected_set[slot]
+                        local item_name = (type(item) == 'table' and item.name) or (type(item) == 'string' and item) or nil
+                        if item_name then
+                            MessageMidcast.show_equipment_line(slot, item_name)
+                        end
+                    end
+                end
+
+                MessageMidcast.show_result_header()
+            end
+
+            return true
+        end
+
+        return false
+    end
+
+    ---========================================================================
+    --- STANDARD MIDCAST LOGIC (All other skills)
+    ---========================================================================
 
     local selected_set = nil
     local selected_set_path = nil  -- Track the full set path for debug display
@@ -460,6 +632,52 @@ function MidcastManager.get_element(spell)
     end
 
     return spell.element
+end
+
+---============================================================================
+--- BARD SONG HELPER FUNCTIONS
+---============================================================================
+
+--- Extract song type from spell name (last word after removing tier)
+--- Examples: "Knight's Minne V" → "Minne", "Blade Madrigal" → "Madrigal"
+--- @param spell_name string Full spell name
+--- @return string|nil Song type (e.g., "Minne", "Madrigal", "March")
+function MidcastManager.get_song_type(spell_name)
+    if not spell_name then
+        return nil
+    end
+
+    -- Remove tier suffix (II, III, IV, V, VI)
+    local base_song = spell_name:match("^(.+)%s+[IVX]+$") or spell_name
+
+    -- Extract last word (song type)
+    local song_type = base_song:match("%s+(%S+)$") or base_song
+
+    return song_type
+end
+
+--- Get required instrument for a song (if any)
+--- Uses SongRotationManager if available
+--- @param spell_name string Song name
+--- @return string|nil Instrument name (e.g., "Gjallarhorn", "Marsyas", "Daurdabla")
+function MidcastManager.get_song_instrument(spell_name)
+    if not spell_name then
+        return nil
+    end
+
+    -- Try to use SongRotationManager if available
+    if _G.SongRotationManager and _G.SongRotationManager.get_required_instrument then
+        return _G.SongRotationManager.get_required_instrument(spell_name)
+    end
+
+    -- Fallback: Basic instrument detection
+    if spell_name == "Honor March" then
+        return "Marsyas"
+    elseif spell_name == "Aria of Passion" then
+        return "Loughnashade"
+    end
+
+    return nil  -- Use default instrument from BardSong set
 end
 
 ---============================================================================

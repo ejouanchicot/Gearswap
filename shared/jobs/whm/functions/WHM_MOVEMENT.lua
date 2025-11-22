@@ -12,24 +12,19 @@
 ---============================================================================
 
 ---============================================================================
---- AUTOMOVE INTEGRATION
+--- AUTOMOVE INTEGRATION (PERFORMANCE OPTIMIZED - No Startup Cost)
 ---============================================================================
-
--- AutoMove integration (automatic speed gear handling)
-if AutoMove then
-    -- AutoMove will automatically handle:
-    --   • Movement detection
-    --   • Speed gear swapping (sets.MoveSpeed from whm_sets.lua)
-    --   • Idle gear restoration when stopped
-
-    -- No additional callbacks needed - AutoMove handles everything
-else
-    -- AutoMove not available - movement speed gear disabled
-    local success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-    if success and MessageFormatter then
-        MessageFormatter.show_warning("WHM: AutoMove system not available")
-    end
-end
+-- AutoMove (if available) automatically handles:
+--   • Movement detection
+--   • Speed gear swapping (sets.MoveSpeed from whm_sets.lua)
+--   • Idle gear restoration when stopped
+--
+-- No explicit registration needed - AutoMove auto-detects job modules.
+-- If AutoMove is not loaded, movement speed gear is simply not available.
+--
+-- PERFORMANCE NOTE: Previous version checked AutoMove availability at startup
+-- and showed a warning (~46ms cost from MessageFormatter). This version does
+-- nothing at startup (0ms cost). AutoMove will work if present, otherwise no-op.
 
 ---============================================================================
 --- EQUIPPING GEAR HANDLER

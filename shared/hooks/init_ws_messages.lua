@@ -1,6 +1,6 @@
----============================================================================
---- Universal Weapon Skill Messages Hook - Auto-Inject for All Jobs
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Universal Weapon Skill Messages Hook - Auto-Inject for All Jobs
+---  ═══════════════════════════════════════════════════════════════════════════
 --- Automatically wraps user_post_precast to show WS messages for ALL jobs.
 --- Simply include this file in get_sets() and it works automatically.
 ---
@@ -19,32 +19,53 @@
 ---   - Displays WS name + description + TP
 ---   - Respects WS_MESSAGES_CONFIG settings
 ---
+--- **PERFORMANCE OPTIMIZATION:**
+---   • Lazy-loaded: All modules loaded on first WS usage (saves ~300ms at startup)
+---
 --- Examples:
 ---   - [Upheaval] Four hits. Damage varies with TP. (2290 TP)
 ---   - [Rudra's Storm] Delivers a fourfold attack. (3000 TP)
 ---   - [Tachi: Fudo] Five-hit attack. (1850 TP)
 ---
---- @file init_ws_messages.lua
---- @author Tetsouo
---- @version 1.0 - Universal WS Messages Hook
---- @date Created: 2025-11-06
----============================================================================
+---   @file    shared/hooks/init_ws_messages.lua
+---   @author  Tetsouo
+---   @version 1.2 - Lazy Loading for performance
+---   @date    Updated: 2025-11-15
+---  ═══════════════════════════════════════════════════════════════════════════
 
-local MessageFormatter = require('shared/utils/messages/message_formatter')
-local WS_MESSAGES_CONFIG = require('shared/config/WS_MESSAGES_CONFIG')
+---  ═══════════════════════════════════════════════════════════════════════════
+---   LAZY LOADING - All modules loaded on first WS usage
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- LOAD WS DATABASE
----============================================================================
+local MessageFormatter = nil
+local WS_MESSAGES_CONFIG = nil
+local UniversalWS = nil
+local modules_loaded = false
 
-local WS_DB_success, WS_DB = pcall(require, 'shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
-if not WS_DB_success then
-    WS_DB = nil
+local function ensure_modules_loaded()
+    if modules_loaded then
+        return
+    end
+
+    -- Load MessageFormatter
+    MessageFormatter = require('shared/utils/messages/message_formatter')
+
+    -- Load WS Messages Config
+    WS_MESSAGES_CONFIG = require('shared/config/WS_MESSAGES_CONFIG')
+
+    -- Load WS database wrapper (not the full database)
+    local UniversalWS_success
+    UniversalWS_success, UniversalWS = pcall(require, 'shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+    if not UniversalWS_success then
+        UniversalWS = nil
+    end
+
+    modules_loaded = true
 end
 
----============================================================================
---- HOOK INJECTION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HOOK INJECTION
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Save original user_post_precast (if exists)
 local original_user_post_precast = _G.user_post_precast
@@ -60,8 +81,13 @@ function user_post_precast(spell, action, spellMap, eventArgs)
         original_user_post_precast(spell, action, spellMap, eventArgs)
     end
 
-    -- Show universal WS message (only for weaponskills that weren't canceled)
-    if spell and spell.type == 'WeaponSkill' and WS_MESSAGES_CONFIG.is_enabled() then
+    -- Lazy load modules on first WS usage
+    if spell and spell.type == 'WeaponSkill' then
+        ensure_modules_loaded()
+    end
+
+    -- Show universal WS message (only for Weapon Skills that weren't canceled)
+    if spell and spell.type == 'WeaponSkill' and WS_MESSAGES_CONFIG and WS_MESSAGES_CONFIG.is_enabled() then
         -- Don't show message if WS was canceled (not enough TP, out of range, etc.)
         if eventArgs and eventArgs.cancel then
             return
@@ -76,26 +102,22 @@ function user_post_precast(spell, action, spellMap, eventArgs)
             return
         end
 
-        -- Get WS data from database
-        local ws_data = WS_DB and WS_DB.weaponskills and WS_DB.weaponskills[spell.english]
+        -- LAZY LOAD: Load WS database on first WS usage (saves 260-650ms at startup)
+        if UniversalWS then
+            local WS_DB = UniversalWS.load()  -- ← Lazy load here
+            local ws_data = WS_DB and WS_DB.weaponskills and WS_DB.weaponskills[spell.english]
 
-        -- Show WS message
-        if ws_data and WS_MESSAGES_CONFIG.show_description() then
-            -- Full mode: show description + TP
-            MessageFormatter.show_ws_activated(spell.english, ws_data.description, current_tp)
-        elseif WS_MESSAGES_CONFIG.is_tp_only() then
-            -- TP only mode: show name + TP (use show_ws_tp for templates without description)
-            MessageFormatter.show_ws_tp(spell.english, current_tp)
+            -- Show WS message
+            if ws_data and WS_MESSAGES_CONFIG.show_description() then
+                -- Full mode: show description + TP
+                MessageFormatter.show_ws_activated(spell.english, ws_data.description, current_tp)
+            elseif WS_MESSAGES_CONFIG.is_tp_only() then
+                -- TP only mode: show name + TP (use show_ws_tp for templates without description)
+                MessageFormatter.show_ws_tp(spell.english, current_tp)
+            end
         end
     end
 end
 
--- Export to global scope
+-- Export to global scope (allows chaining with other hooks)
 _G.user_post_precast = user_post_precast
-
----============================================================================
---- INITIALIZATION MESSAGE
----============================================================================
-
--- Silent initialization (no spam in chat)
--- Message will appear when player uses a WS with message system active

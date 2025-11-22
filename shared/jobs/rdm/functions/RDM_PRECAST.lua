@@ -1,65 +1,69 @@
----============================================================================
---- RDM Precast Module - Precast Action Handling & Fast Cast Optimization
----============================================================================
---- Handles all precast actions for Red Mage job:
----   • Fast Cast optimization (cap 80%)
----   • Weaponskills preparation & TP display
----   • Job ability precast (Convert, Chainspell, Saboteur, Composure)
----   • Enfeebling/Elemental spell precast
----   • Security layers (debuff guard, cooldown check, range validation)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   RDM Precast Module - Precast Action Handling & Fast Cast Optimization
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all precast actions for Red Mage job:
+---     • Fast Cast optimization (cap 80%)
+---     • Weaponskills preparation & TP display
+---     • Job ability precast (Convert, Chainspell, Saboteur, Composure)
+---     • Enfeebling/Elemental spell precast
+---     • Security layers (debuff guard, cooldown check, range validation)
 ---
---- @file    RDM_PRECAST.lua
---- @author  Tetsouo
---- @version 2.0
---- @date    Created: 2025-10-12
---- @requires Tetsouo architecture, MessageFormatter, CooldownChecker
----============================================================================
+---   @file    shared/jobs/rdm/functions/RDM_PRECAST.lua
+---   @author  Tetsouo
+---   @version 2.1 - Refactored header style
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES - CENTRALIZED SYSTEMS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
+-- All modules are loaded on first action (job_precast call)
+-- This reduces startup time from ~150ms to ~5ms
 
--- Message formatter (cooldown messages, WS TP display)
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+local MessageFormatter = nil
+local MessagePrecast = nil
+local WS_DB = nil
+local CooldownChecker = nil
+local AbilityHelper = nil
+local PrecastGuard = nil
+local TPBonusHandler = nil
+local WSValidator = nil
 
--- Precast debug messages (formatted system)
-local MessagePrecast = require('shared/utils/messages/formatters/magic/message_precast')
+local modules_loaded = false
 
--- Universal Weapon Skills Database (weaponskill descriptions)
-local WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+local function ensure_modules_loaded()
+    if modules_loaded then return end
 
--- Cooldown checker (universal ability/spell recast validation)
-local CooldownChecker = require('shared/utils/precast/cooldown_checker')
+    -- Load all modules on first action
+    MessageFormatter = require('shared/utils/messages/message_formatter')
+    MessagePrecast = require('shared/utils/messages/formatters/magic/message_precast')
+    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+    CooldownChecker = require('shared/utils/precast/cooldown_checker')
+    AbilityHelper = require('shared/utils/precast/ability_helper')
 
--- Ability helper (auto-trigger abilities before spells)
-local AbilityHelper = require('shared/utils/precast/ability_helper')
+    local precast_guard_success
+    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
+    if not precast_guard_success then
+        PrecastGuard = nil
+    end
 
--- Precast guard (debuff blocking: Amnesia, Silence, Stun, etc.)
-local precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-if not precast_guard_success then
-    PrecastGuard = nil
+    include('../shared/utils/weaponskill/weaponskill_manager.lua')
+
+    local _
+    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
+
+    -- Set MessageFormatter in WeaponSkillManager
+    if WeaponSkillManager and MessageFormatter then
+        WeaponSkillManager.MessageFormatter = MessageFormatter
+    end
+
+    modules_loaded = true
 end
 
--- Weaponskill manager (WS validation + range checking)
-include('../shared/utils/weaponskill/weaponskill_manager.lua')
-
--- TP bonus calculator (Moonshade Earring automation)
-include('../shared/utils/weaponskill/tp_bonus_calculator.lua')
-
--- TP Bonus Handler (universal WS TP gear optimization)
-local _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
-
--- WS Validator (universal WS range + validity validation)
-local _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
-
--- Set MessageFormatter in WeaponSkillManager
-if WeaponSkillManager and MessageFormatter then
-    WeaponSkillManager.MessageFormatter = MessageFormatter
-end
-
----============================================================================
---- DEPENDENCIES - RDM SPECIFIC
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - RDM SPECIFIC
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- RDM configuration
 local RDMTPConfig = _G.RDMTPConfig or {}  -- Loaded from character main file
@@ -70,9 +74,9 @@ local RDMSaboteurConfig = _G.RDMSaboteurConfig or {
     wait_time = 2
 }
 
----============================================================================
---- DEBUG STATE (Global persist across reloads)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEBUG STATE (Global persist across reloads)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Initialize global debug state if not exists
 if _G.PrecastDebugState == nil then
@@ -83,9 +87,9 @@ local function is_precast_debug_enabled()
     return _G.PrecastDebugState == true
 end
 
----============================================================================
---- PRECAST HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PRECAST HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Called before any action (WS, JA, spell, etc.)
 --- @param spell table Spell/ability data
@@ -93,6 +97,18 @@ end
 --- @param spellMap string Spell mapping
 --- @param eventArgs table Event arguments
 function job_precast(spell, action, spellMap, eventArgs)
+    -- Lazy load modules on first action (saves ~150ms at startup)
+    ensure_modules_loaded()
+
+    -- ==========================================================================
+    -- COMBAT MODE WEAPON LOCKING (SAFETY GUARD)
+    -- ==========================================================================
+    -- Ensure weapon slots are locked BEFORE precast gear is applied
+    -- This prevents midcast from equipping weapons from sets
+    if state.CombatMode and state.CombatMode.current == "On" then
+        disable('main', 'sub', 'range')
+    end
+
     local debug_enabled = is_precast_debug_enabled()
 
     -- DEBUG: Show precast entry
@@ -141,9 +157,9 @@ function job_precast(spell, action, spellMap, eventArgs)
         MessagePrecast.show_debug_step(2, 'Cooldown', 'ok', 'Ready to use')
     end
 
-    -- ==========================================================================
-    -- PHALANX OPTIMIZATION (Auto-swap between Phalanx/Phalanx II)
-    -- ==========================================================================
+    ---  ─────────────────────────────────────────────────────────────────────────
+    ---   PHALANX OPTIMIZATION (Auto-swap between Phalanx/Phalanx II)
+    ---  ─────────────────────────────────────────────────────────────────────────
     -- Logic:
     --   - Phalanx II on self → Downgrade to Phalanx (better for self)
     --   - Phalanx on others → Upgrade to Phalanx II (better for others)
@@ -174,9 +190,9 @@ function job_precast(spell, action, spellMap, eventArgs)
         end
     end
 
-    -- ==========================================================================
-    -- WEAPONSKILL MESSAGES (universal - all weapon types)
-    -- ==========================================================================
+    ---  ─────────────────────────────────────────────────────────────────────────
+    ---   WEAPONSKILL MESSAGES (universal - all weapon types)
+    ---  ─────────────────────────────────────────────────────────────────────────
     if spell.type == 'WeaponSkill' then
         local current_tp = player and player.vitals and player.vitals.tp or 0
 
@@ -217,23 +233,9 @@ function job_precast(spell, action, spellMap, eventArgs)
         end
     end
 
-    -- DISABLED: RDM Job Abilities Messages
-    -- Messages now handled by universal ability_message_handler (init_ability_messages.lua)
-    -- This prevents duplicate messages from job-specific + universal system
-    --
-    -- LEGACY CODE (commented out to prevent duplicates):
-    -- if spell.type == 'JobAbility' then
-    --     if spell.english == 'Convert' then
-    --         MessageFormatter.show_ja_activated("Convert", "Swap HP <>> MP")
-    --     elseif spell.english == 'Chainspell' then
-    --         MessageFormatter.show_ja_activated("Chainspell", "Rapid casting, zero recast")
-    --     ... (4 more abilities)
-    --     end
-    -- end
-
-    -- ==========================================================================
-    -- MAGIC PRECAST (Fast Cast)
-    -- ==========================================================================
+    ---  ─────────────────────────────────────────────────────────────────────────
+    ---   MAGIC PRECAST (Fast Cast)
+    ---  ─────────────────────────────────────────────────────────────────────────
     if spell.action_type == 'Magic' then
         if debug_enabled then
             MessagePrecast.show_debug_step(5, 'Magic (Fast Cast)', 'info', 'Skill: ' .. (spell.skill or 'Unknown'))
@@ -262,9 +264,9 @@ function job_precast(spell, action, spellMap, eventArgs)
         end
     end
 
-    -- ==========================================================================
-    -- TP BONUS HANDLER (Weaponskill TP gear optimization)
-    -- ==========================================================================
+    ---  ─────────────────────────────────────────────────────────────────────────
+    ---   TP BONUS HANDLER (Weaponskill TP gear optimization)
+    ---  ─────────────────────────────────────────────────────────────────────────
     if spell.type == 'WeaponSkill' and TPBonusHandler then
         if debug_enabled then
             MessagePrecast.show_debug_step(6, 'TP Bonus', 'info', 'Calculating optimal TP gear...')
@@ -358,17 +360,10 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export to global scope for GearSwap
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
-
--- Export module
-local RDM_PRECAST = {}
-RDM_PRECAST.job_precast = job_precast
-RDM_PRECAST.job_post_precast = job_post_precast
-
-return RDM_PRECAST

@@ -39,38 +39,56 @@
 --- SECTION 1: MESSAGE SYSTEM
 ---============================================================================
 
+-- ═══════════════════════════════════════════════════════════════════
+-- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+-- ═══════════════════════════════════════════════════════════════════
+local Profiler = require('shared/utils/debug/performance_profiler')
+local TIMER = Profiler.create_timer('THF')
+-- ═══════════════════════════════════════════════════════════════════
+
 include('../shared/utils/messages/formatters/magic/message_buffs.lua')  -- Buff gain/loss messages
+TIMER('message_buffs')
 
 ---============================================================================
 --- SECTION 2: COMBAT ACTION HOOKS
 ---============================================================================
 
 include('../shared/jobs/thf/functions/THF_PRECAST.lua')   -- Precast: Fast Cast, WS, SA/TA, TH
+TIMER('THF_PRECAST')
 include('../shared/jobs/thf/functions/THF_MIDCAST.lua')   -- Midcast: Spell potency, Utsusemi
+TIMER('THF_MIDCAST')
 include('../shared/jobs/thf/functions/THF_AFTERCAST.lua') -- Aftercast: Return to idle/engaged
+TIMER('THF_AFTERCAST')
 
 ---============================================================================
 --- SECTION 3: GEAR SELECTION HOOKS
 ---============================================================================
 
 include('../shared/jobs/thf/functions/THF_IDLE.lua')    -- Idle gear: PDT, movement, town
+TIMER('THF_IDLE')
 include('../shared/jobs/thf/functions/THF_ENGAGED.lua') -- Combat gear: DPS, TP bonus, DW tiers
+TIMER('THF_ENGAGED')
 
 ---============================================================================
 --- SECTION 4: EVENT MONITORING HOOKS
 ---============================================================================
 
 include('../shared/jobs/thf/functions/THF_STATUS.lua')  -- Status change: Idle/Engaged/Dead/Resting
+TIMER('THF_STATUS')
 include('../shared/jobs/thf/functions/THF_BUFFS.lua')   -- Buff change: SA/TA tracking
+TIMER('THF_BUFFS')
 
 ---============================================================================
 --- SECTION 5: UTILITY HOOKS
 ---============================================================================
 
+-- LOCKSTYLE and MACROBOOK use lazy loading - loaded on first call, not during startup
 include('../shared/jobs/thf/functions/THF_LOCKSTYLE.lua') -- Lockstyle management with delays
 include('../shared/jobs/thf/functions/THF_MACROBOOK.lua') -- Macro book selection per subjob
 include('../shared/jobs/thf/functions/THF_COMMANDS.lua')  -- Custom commands (sata, smartbuff, etc.)
+TIMER('THF_COMMANDS')
 include('../shared/jobs/thf/functions/THF_MOVEMENT.lua')  -- Movement tracking, gear swapping
+TIMER('THF_MOVEMENT')
 
 ---============================================================================
 --- LOGIC MODULES (Loaded via require() in hook modules)
@@ -84,3 +102,7 @@ include('../shared/jobs/thf/functions/THF_MOVEMENT.lua')  -- Movement tracking, 
 local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
 
 print('[THF] All functions loaded successfully')
+
+-- ═══════════════════════════════════════════════════════════════════
+TIMER('TOTAL THF_functions', true)
+-- ═══════════════════════════════════════════════════════════════════

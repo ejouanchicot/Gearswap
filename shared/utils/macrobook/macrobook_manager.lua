@@ -1,14 +1,14 @@
----============================================================================
---- Macrobook Manager - Centralized Macrobook Management Factory
----============================================================================
---- Factory pattern that creates job-specific macrobook modules.
---- Eliminates 124-line duplication across WAR/PLD/DNC (372 lines >> 124 lines).
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Macrobook Manager - Centralized Macrobook Management Factory
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Factory pattern that creates job-specific macrobook modules.
+---   Eliminates 124-line duplication across WAR/PLD/DNC (372 lines >> 124 lines).
 ---
---- @file utils/macrobook/macrobook_manager.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-05
----============================================================================
+---   @file    shared/utils/macrobook/macrobook_manager.lua
+---   @author  Tetsouo
+---   @version 1.1 - Style standardization (BRD headers)
+---   @date    Created: 2025-10-05 | Updated: 2025-11-13
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MacrobookManager = {}
 
@@ -61,9 +61,9 @@ function MacrobookManager.create(job_code, config_path, default_subjob, default_
         }
     end
 
-    ---============================================================================
-    --- MACRO BOOK FUNCTIONS WITH DELAY
-    ---============================================================================
+    ---  ═══════════════════════════════════════════════════════════════════════════
+    ---   MACRO BOOK FUNCTIONS WITH DELAY
+    ---  ═══════════════════════════════════════════════════════════════════════════
 
     --- Select macro book with delay to prevent FFXI erasure bug
     --- @param book number Macro book number
@@ -173,9 +173,9 @@ function MacrobookManager.create(job_code, config_path, default_subjob, default_
         end
     end
 
-    ---============================================================================
-    --- MODULE EXPORT
-    ---============================================================================
+    ---  ═══════════════════════════════════════════════════════════════════════════
+    ---   MODULE EXPORT
+    ---  ═══════════════════════════════════════════════════════════════════════════
 
     -- Export functions globally for include() compatibility
     _G.select_default_macro_book = select_default_macro_book

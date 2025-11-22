@@ -16,51 +16,76 @@
 ---============================================================================
 
 ---============================================================================
---- DEPENDENCIES
+--- DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---============================================================================
 
-local MidcastManager = require('shared/utils/midcast/midcast_manager')
-local ElementalMatcher = require('shared/jobs/blm/functions/logic/elemental_matcher')
+local MidcastManager = nil
+local ElementalMatcher = nil
+local BLMSpells = nil
+local MessageFormatter = nil
+local MessageBLMMidcast = nil
+local EnhancingSPELLS = nil
+local EnhancingSPELLS_success = false
+local ENFEEBLING_MESSAGES_CONFIG = nil
+local BLMMPConfig = nil
+local BLMElementalConfig = nil
 
--- Load BLM Spell Database (for spell descriptions)
-local BLMSpells = require('shared/data/magic/BLM_SPELL_DATABASE')
+local modules_loaded = false
 
--- Load Message Formatter
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+local function ensure_modules_loaded()
+    if modules_loaded then return end
 
--- BLM Midcast Debug Messages
-local MessageBLMMidcast = require('shared/utils/messages/formatters/jobs/message_blm_midcast')
+    MidcastManager = require('shared/utils/midcast/midcast_manager')
+    ElementalMatcher = require('shared/jobs/blm/functions/logic/elemental_matcher')
 
--- Load ENHANCING_MAGIC_DATABASE for spell_family routing
-local EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
+    -- Load BLM Spell Database (for spell descriptions)
+    BLMSpells = require('shared/data/magic/BLM_SPELL_DATABASE')
 
--- Load Enfeebling Messages Config
-local _, ENFEEBLING_MESSAGES_CONFIG = pcall(require, 'shared/config/ENFEEBLING_MESSAGES_CONFIG')
-if not ENFEEBLING_MESSAGES_CONFIG then
-    ENFEEBLING_MESSAGES_CONFIG = {
-        display_mode = 'on',
-        is_enabled = function() return true end,
-        show_description = function() return false end
-    }
-end
+    -- Load Message Formatter
+    MessageFormatter = require('shared/utils/messages/message_formatter')
 
--- Load MP conservation configuration
-local mp_config_success, BLMMPConfig = pcall(require, 'Tetsouo/config/blm/BLM_MP_CONFIG')
-if not mp_config_success or not BLMMPConfig then
-    -- Fallback defaults if config not found
-    BLMMPConfig = { mp_threshold = 1000 }
-end
+    -- BLM Midcast Debug Messages
+    MessageBLMMidcast = require('shared/utils/messages/formatters/jobs/message_blm_midcast')
 
--- Load elemental matching configuration
-local elemental_config_success, BLMElementalConfig = pcall(require, 'Tetsouo/config/blm/BLM_ELEMENTAL_CONFIG')
-if not elemental_config_success or not BLMElementalConfig then
-    -- Fallback defaults if config not found
-    BLMElementalConfig = {
-        auto_hachirin = true,
-        check_storm = true,
-        check_day = true,
-        check_weather = true
-    }
+    -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
+    EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
+
+    -- Load Enfeebling Messages Config
+    local _, config = pcall(require, 'shared/config/ENFEEBLING_MESSAGES_CONFIG')
+    if not config then
+        ENFEEBLING_MESSAGES_CONFIG = {
+            display_mode = 'on',
+            is_enabled = function() return true end,
+            show_description = function() return false end
+        }
+    else
+        ENFEEBLING_MESSAGES_CONFIG = config
+    end
+
+    -- Load MP conservation configuration
+    local mp_config_success, mp_config = pcall(require, 'Tetsouo/config/blm/BLM_MP_CONFIG')
+    if not mp_config_success or not mp_config then
+        -- Fallback defaults if config not found
+        BLMMPConfig = { mp_threshold = 1000 }
+    else
+        BLMMPConfig = mp_config
+    end
+
+    -- Load elemental matching configuration
+    local elemental_config_success, elemental_config = pcall(require, 'Tetsouo/config/blm/BLM_ELEMENTAL_CONFIG')
+    if not elemental_config_success or not elemental_config then
+        -- Fallback defaults if config not found
+        BLMElementalConfig = {
+            auto_hachirin = true,
+            check_storm = true,
+            check_day = true,
+            check_weather = true
+        }
+    else
+        BLMElementalConfig = elemental_config
+    end
+
+    modules_loaded = true
 end
 
 ---============================================================================
@@ -79,6 +104,9 @@ function job_midcast(spell, action, spellMap, eventArgs)
 end
 
 function job_post_midcast(spell, action, spellMap, eventArgs)
+    -- Lazy load modules on first spell cast
+    ensure_modules_loaded()
+
     -- Watchdog: Track midcast start
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_midcast_start(spell)

@@ -33,38 +33,56 @@
 --- SECTION 1: MESSAGE SYSTEM
 ---============================================================================
 
+-- ═══════════════════════════════════════════════════════════════════
+-- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+-- ═══════════════════════════════════════════════════════════════════
+local Profiler = require('shared/utils/debug/performance_profiler')
+local TIMER = Profiler.create_timer('COR')
+-- ═══════════════════════════════════════════════════════════════════
+
 include('../shared/utils/messages/formatters/magic/message_buffs.lua')
+TIMER('message_buffs')
 
 ---============================================================================
 --- SECTION 2: COMBAT ACTION HOOKS
 ---============================================================================
 
 include('../shared/jobs/cor/functions/COR_PRECAST.lua')
+TIMER('COR_PRECAST')
 include('../shared/jobs/cor/functions/COR_MIDCAST.lua')
+TIMER('COR_MIDCAST')
 include('../shared/jobs/cor/functions/COR_AFTERCAST.lua')
+TIMER('COR_AFTERCAST')
 
 ---============================================================================
 --- SECTION 3: GEAR SELECTION HOOKS
 ---============================================================================
 
 include('../shared/jobs/cor/functions/COR_IDLE.lua')
+TIMER('COR_IDLE')
 include('../shared/jobs/cor/functions/COR_ENGAGED.lua')
+TIMER('COR_ENGAGED')
 
 ---============================================================================
 --- SECTION 4: EVENT MONITORING HOOKS
 ---============================================================================
 
 include('../shared/jobs/cor/functions/COR_STATUS.lua')
+TIMER('COR_STATUS')
 include('../shared/jobs/cor/functions/COR_BUFFS.lua')
+TIMER('COR_BUFFS')
 
 ---============================================================================
 --- SECTION 5: UTILITY HOOKS
 ---============================================================================
 
+-- LOCKSTYLE and MACROBOOK use lazy loading - loaded on first call, not during startup
 include('../shared/jobs/cor/functions/COR_LOCKSTYLE.lua')
 include('../shared/jobs/cor/functions/COR_MACROBOOK.lua')
 include('../shared/jobs/cor/functions/COR_COMMANDS.lua')
+TIMER('COR_COMMANDS')
 include('../shared/jobs/cor/functions/COR_MOVEMENT.lua')
+TIMER('COR_MOVEMENT')
 
 ---============================================================================
 --- LOGIC MODULES REFERENCE
@@ -97,3 +115,7 @@ local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
 
 -- All module functions are now available in global scope
 print('[COR] All functions loaded (11 hooks + 3 logic modules)')
+
+-- ═══════════════════════════════════════════════════════════════════
+TIMER('TOTAL COR_functions', true)
+-- ═══════════════════════════════════════════════════════════════════

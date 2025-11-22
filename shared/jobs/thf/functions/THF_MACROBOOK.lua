@@ -1,33 +1,42 @@
 ---============================================================================
 --- THF Macrobook Module - Macro Book Management (Factory Pattern)
 ---============================================================================
---- Handles macro book and page selection for Thief job using the centralized
---- MacrobookManager factory.
+--- Handles macro book selection and management for THF job.
+--- Uses centralized MacrobookManager factory for consistent behavior.
 ---
---- Features:
----   • Default macro book (23) and page (1)
----   • Subjob-specific book/page overrides (configured in THF_MACROBOOK.lua)
----   • Automatic subjob detection and application
----   • Fallback to default if subjob not configured
----   • Factory pattern (zero duplication across jobs)
----
---- Dependencies:
----   • MacrobookManager (centralized factory)
----   • config/thf/THF_MACROBOOK.lua (macrobook configuration)
+--- **PERFORMANCE OPTIMIZATION:**
+---   • Lazy-loaded: Module created on first function call (saves ~45ms at startup)
 ---
 --- @file    jobs/thf/functions/THF_MACROBOOK.lua
 --- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-10-06
+--- @version 2.1 - Lazy Loading for performance
+--- @date    Created: 2025-10-13 | Updated: 2025-11-15
+--- @requires utils/macrobook/macrobook_manager
 ---============================================================================
 
-local MacrobookManager = require('shared/utils/macrobook/macrobook_manager')
+-- Lazy loading: Module created on first use
+local MacrobookManager = nil
+local macrobook_module = nil
 
--- Create THF macrobook module using factory
-return MacrobookManager.create(
-    'THF',                          -- job_code
-    'config/thf/THF_MACROBOOK',    -- config_path
-    'DNC',                          -- default_subjob
-    23,                             -- default_book
-    1                               -- default_page
-)
+local function get_macrobook_module()
+    if not macrobook_module then
+        if not MacrobookManager then
+            MacrobookManager = require('shared/utils/macrobook/macrobook_manager')
+        end
+        macrobook_module = MacrobookManager.create(
+            'THF',                           -- job_code
+            'config/thf/THF_MACROBOOK', -- config_path
+            'SAM',                            -- default_subjob
+            1,                                -- default_book
+            1                                 -- default_page
+        )
+    end
+    return macrobook_module
+end
+
+-- Export select_default_macro_book() to global scope
+function select_default_macro_book()
+    return get_macrobook_module().select_default_macro_book()
+end
+
+_G.select_default_macro_book = select_default_macro_book

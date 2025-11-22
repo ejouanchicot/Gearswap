@@ -20,47 +20,71 @@
 ---============================================================================
 
 ---============================================================================
---- DEPENDENCIES
+--- DEPENDENCIES (LAZY LOADING for performance)
 ---============================================================================
+-- Command handlers loaded on first command (saves ~100ms at startup)
+local MessageFormatter = nil
+local CommonCommands = nil
+local WatchdogCommands = nil
+local UICommands = nil
+local CycleHandler = nil
+local MessageCommands = nil
+local EcosystemManager = nil
+local PetManager = nil
 
--- Message formatter
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+local function ensure_commands_loaded()
+    if not MessageFormatter then
+        MessageFormatter = require('shared/utils/messages/message_formatter')
 
--- Common commands (reload, checksets, etc.)
-local success_cc, CommonCommands = pcall(require, 'shared/utils/core/COMMON_COMMANDS')
-if not success_cc then
-    MessageFormatter.error_bst_module_not_loaded('CommonCommands')
-    CommonCommands = nil
-end
+        -- Common commands (reload, checksets, etc.)
+        local success_cc
+        success_cc, CommonCommands = pcall(require, 'shared/utils/core/COMMON_COMMANDS')
+        if not success_cc then
+            MessageFormatter.show_error_module_not_loaded('CommonCommands')
+            CommonCommands = nil
+        end
 
--- Watchdog commands
-local success_wd, WatchdogCommands = pcall(require, 'shared/utils/core/WATCHDOG_COMMANDS')
-if not success_wd then
-    WatchdogCommands = nil
-end
+        -- Watchdog commands
+        local success_wd
+        success_wd, WatchdogCommands = pcall(require, 'shared/utils/core/WATCHDOG_COMMANDS')
+        if not success_wd then
+            WatchdogCommands = nil
+        end
 
--- UI commands (ui save, ui hide, etc.)
-local success_ui, UICommands = pcall(require, 'shared/utils/ui/UI_COMMANDS')
-if not success_ui then
-    MessageFormatter.error_bst_module_not_loaded('UICommands')
-    UICommands = nil
-end
+        -- UI commands (ui save, ui hide, etc.)
+        local success_ui
+        success_ui, UICommands = pcall(require, 'shared/utils/ui/UI_COMMANDS')
+        if not success_ui then
+            MessageFormatter.show_error_module_not_loaded('UICommands')
+            UICommands = nil
+        end
 
--- Message commands (for debug messages)
-local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
+        -- Cycle handler
+        local success_ch
+        success_ch, CycleHandler = pcall(require, 'shared/utils/core/CYCLE_HANDLER')
+        if not success_ch then
+            CycleHandler = nil
+        end
 
--- Ecosystem manager
-local success_em, EcosystemManager = pcall(require, 'shared/jobs/bst/functions/logic/ecosystem_manager')
-if not success_em then
-    MessageFormatter.error_bst_module_not_loaded('EcosystemManager')
-    EcosystemManager = nil
-end
+        -- Message commands (for debug messages)
+        MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
 
--- Pet manager
-local success_pm, PetManager = pcall(require, 'shared/jobs/bst/functions/logic/pet_manager')
-if not success_pm then
-    MessageFormatter.error_bst_module_not_loaded('PetManager')
-    PetManager = nil
+        -- Ecosystem manager
+        local success_em
+        success_em, EcosystemManager = pcall(require, 'shared/jobs/bst/functions/logic/ecosystem_manager')
+        if not success_em then
+            MessageFormatter.show_error_module_not_loaded('EcosystemManager')
+            EcosystemManager = nil
+        end
+
+        -- Pet manager
+        local success_pm
+        success_pm, PetManager = pcall(require, 'shared/jobs/bst/functions/logic/pet_manager')
+        if not success_pm then
+            MessageFormatter.show_error_module_not_loaded('PetManager')
+            PetManager = nil
+        end
+    end
 end
 
 ---============================================================================
@@ -118,6 +142,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- Lazy load command handlers on first command
+    ensure_commands_loaded()
+
     local command = cmdParams[1]:lower()
 
     ---========================================================================
@@ -167,6 +194,31 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    if command == 'debugprecast' then
+        -- Toggle BST-specific precast debug (for Job Abilities)
+        -- Universal system only handles Magic, BST needs JA debug
+        _G.BST_DEBUG_PRECAST = not _G.BST_DEBUG_PRECAST
+
+        local status = _G.BST_DEBUG_PRECAST and "ON" or "OFF"
+        MessageFormatter.show_success("BST Precast Debug (JA): " .. status)
+
+        eventArgs.handled = true
+        return
+    end
+
+    -- ==========================================================================
+    -- CUSTOM CYCLE STATE (UI-aware cycle)
+    -- ==========================================================================
+    -- Intercepts cycle commands to check UI visibility
+    -- If UI visible: custom cycle + UI update (no message)
+    -- If UI invisible: delegate to Mote-Include (shows message)
+
+    if command == 'cyclestate' then
+        if CycleHandler then
+            eventArgs.handled = CycleHandler.handle_cyclestate(cmdParams, eventArgs)
+        end
+        return
+    end
 
     ---========================================================================
     --- WATCHDOG COMMANDS
@@ -199,7 +251,7 @@ function job_self_command(cmdParams, eventArgs)
             EcosystemManager.change_ecosystem()
             eventArgs.handled = true
         else
-            MessageFormatter.error_bst_module_not_loaded('EcosystemManager')
+            MessageFormatter.show_error_module_not_loaded('EcosystemManager')
         end
         return
     end
@@ -209,7 +261,7 @@ function job_self_command(cmdParams, eventArgs)
             EcosystemManager.change_species()
             eventArgs.handled = true
         else
-            MessageFormatter.error_bst_module_not_loaded('EcosystemManager')
+            MessageFormatter.show_error_module_not_loaded('EcosystemManager')
         end
         return
     end
@@ -238,7 +290,7 @@ function job_self_command(cmdParams, eventArgs)
                 PetManager.engage_pet()
                 eventArgs.handled = true
             else
-                MessageFormatter.error_bst_module_not_loaded('PetManager')
+                MessageFormatter.show_error_module_not_loaded('PetManager')
             end
             return
         end
@@ -248,7 +300,7 @@ function job_self_command(cmdParams, eventArgs)
                 PetManager.disengage_pet()
                 eventArgs.handled = true
             else
-                MessageFormatter.error_bst_module_not_loaded('PetManager')
+                MessageFormatter.show_error_module_not_loaded('PetManager')
             end
             return
         end
@@ -264,7 +316,7 @@ function job_self_command(cmdParams, eventArgs)
 
     if command == 'rdylist' then
         if not PetManager then
-            MessageFormatter.error_bst_module_not_loaded('PetManager')
+            MessageFormatter.show_error_module_not_loaded('PetManager')
             eventArgs.handled = true
             return
         end
@@ -272,7 +324,7 @@ function job_self_command(cmdParams, eventArgs)
         -- Check if pet exists
         local pet = _G.pet
         if not pet or not pet.id or pet.id == 0 then
-            MessageFormatter.error_bst_no_pet()
+            MessageFormatter.show_error_no_pet()
             eventArgs.handled = true
             return
         end
@@ -281,7 +333,7 @@ function job_self_command(cmdParams, eventArgs)
         local ready_moves = PetManager.get_ready_moves()
 
         if not ready_moves or #ready_moves == 0 then
-            MessageFormatter.error_bst_no_ready_moves()
+            MessageFormatter.show_error_no_ready_moves()
             eventArgs.handled = true
             return
         end
@@ -301,7 +353,7 @@ function job_self_command(cmdParams, eventArgs)
 
     if command == 'rdymove' then
         if not PetManager then
-            MessageFormatter.error_bst_module_not_loaded('PetManager')
+            MessageFormatter.show_error_module_not_loaded('PetManager')
             eventArgs.handled = true
             return
         end
@@ -316,7 +368,7 @@ function job_self_command(cmdParams, eventArgs)
         -- Parse index
         local index = tonumber(cmdParams[2])
         if not index or index < 1 then
-            MessageFormatter.error_bst_invalid_index(cmdParams[2])
+            MessageFormatter.show_error_invalid_index(cmdParams[2])
             eventArgs.handled = true
             return
         end
@@ -324,7 +376,7 @@ function job_self_command(cmdParams, eventArgs)
         -- Check if pet exists
         local pet = _G.pet
         if not pet or not pet.id or pet.id == 0 then
-            MessageFormatter.error_bst_no_pet()
+            MessageFormatter.show_error_no_pet()
             eventArgs.handled = true
             return
         end
@@ -332,14 +384,14 @@ function job_self_command(cmdParams, eventArgs)
         -- Get ready moves list
         local ready_moves = PetManager.get_ready_moves()
         if not ready_moves or #ready_moves == 0 then
-            MessageFormatter.error_bst_no_ready_moves()
+            MessageFormatter.show_error_no_ready_moves()
             eventArgs.handled = true
             return
         end
 
         -- Check if index is valid
         if index > #ready_moves then
-            MessageFormatter.error_bst_index_out_of_range(index, #ready_moves)
+            MessageFormatter.show_error_index_out_of_range(index, #ready_moves)
             eventArgs.handled = true
             return
         end
@@ -369,31 +421,47 @@ function job_self_command(cmdParams, eventArgs)
                 -- Player engaged + Pet idle >> Fight + Ready Move (NO Heel)
                 MessageFormatter.show_bst_ready_move_auto_engage(index, move_name)
 
+                -- BLOCK background auto-engage (prevents Fight spam)
+                _G.bst_rdymove_active = true
+
                 -- Step 1: Engage pet (0s delay)
                 send_command('input /pet "Fight" <stnpc>')
 
-                -- Step 2: Execute Ready Move (3.0s delay for pet to engage - increased for reliability)
+                -- Step 2: Execute Ready Move (3.5s delay for pet to engage)
                 coroutine.schedule(function()
                     send_command('input /pet "' .. move_name .. '" <me>')
-                end, 3.0)
+                end, 3.5)
 
-                -- NO Step 3: Pet stays engaged (player is fighting)
+                -- Step 3: Re-enable background auto-engage (4.5s delay)
+                coroutine.schedule(function()
+                    _G.bst_rdymove_active = false
+                end, 4.5)
+
+                -- NO Step 4: Pet stays engaged (player is fighting)
             else
                 -- Player idle + Pet idle >> Fight + Ready Move + Heel
                 MessageFormatter.show_bst_ready_move_auto_sequence(index, move_name)
 
+                -- BLOCK background auto-engage (prevents Fight spam)
+                _G.bst_rdymove_active = true
+
                 -- Step 1: Engage pet (0s delay)
                 send_command('input /pet "Fight" <stnpc>')
 
-                -- Step 2: Execute Ready Move (3.0s delay for pet to engage - increased for reliability)
+                -- Step 2: Execute Ready Move (3.5s delay for pet to engage)
                 coroutine.schedule(function()
                     send_command('input /pet "' .. move_name .. '" <me>')
-                end, 3.0)
+                end, 3.5)
 
-                -- Step 3: Disengage pet (5.5s delay - 2.5s after Ready Move)
+                -- Step 3: Disengage pet (6s delay - 2.5s after Ready Move)
                 coroutine.schedule(function()
                     send_command('input /pet "Heel" <me>')
-                end, 5.5)
+                end, 6)
+
+                -- Step 4: Re-enable background auto-engage (6.5s delay)
+                coroutine.schedule(function()
+                    _G.bst_rdymove_active = false
+                end, 6.5)
             end
         end
 

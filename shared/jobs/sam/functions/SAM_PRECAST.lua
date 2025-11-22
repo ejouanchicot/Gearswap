@@ -7,36 +7,50 @@
 --- @date Created: 2025-10-21
 ---============================================================================
 
-local MessageFormatter = require('shared/utils/messages/message_formatter')
-local CooldownChecker = require('shared/utils/precast/cooldown_checker')
-local AbilityHelper = require('shared/utils/precast/ability_helper')
+---============================================================================
+--- DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---============================================================================
 
--- Load precast guard for debuff blocking
-local precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-if not precast_guard_success then
-    PrecastGuard = nil
-end
+local MessageFormatter = nil
+local CooldownChecker = nil
+local AbilityHelper = nil
+local PrecastGuard = nil
+local TPBonusHandler = nil
+local WSValidator = nil
+local SAMTPConfig = nil
+local JA_DB = nil
+local WS_DB = nil
 
--- TP Bonus Handler (universal WS TP gear optimization)
-local _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+local modules_loaded = false
 
--- WS Validator (universal WS range + validity validation)
-local _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
+local function ensure_modules_loaded()
+    if modules_loaded then return end
 
--- SAM TP configuration (TP bonus gear thresholds)
-local SAMTPConfig = _G.SAMTPConfig or {}  -- Loaded from character main file
+    MessageFormatter = require('shared/utils/messages/message_formatter')
+    CooldownChecker = require('shared/utils/precast/cooldown_checker')
+    AbilityHelper = require('shared/utils/precast/ability_helper')
 
--- Universal Job Ability Database (supports main job + subjob abilities)
-local JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
+    local precast_guard_success
+    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
+    if not precast_guard_success then
+        PrecastGuard = nil
+    end
 
--- Universal Weapon Skills Database (weaponskill descriptions)
-local WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+    local _
+    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
 
--- Load weaponskill manager
-include('shared/utils/weaponskill/weaponskill_manager.lua')
+    SAMTPConfig = _G.SAMTPConfig or {}
+    JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
+    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
 
-if WeaponSkillManager and MessageFormatter then
-    WeaponSkillManager.MessageFormatter = MessageFormatter
+    include('shared/utils/weaponskill/weaponskill_manager.lua')
+
+    if WeaponSkillManager and MessageFormatter then
+        WeaponSkillManager.MessageFormatter = MessageFormatter
+    end
+
+    modules_loaded = true
 end
 
 ---============================================================================

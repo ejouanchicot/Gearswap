@@ -1,33 +1,33 @@
----============================================================================
---- TP Bonus Calculator
----============================================================================
---- Generic TP bonus calculation system for weaponskills
---- Intelligently determines which TP bonus gear to equip based on:
---- - Current TP amount
---- - Weapon TP bonus (e.g., Chango +500, Dojikiri Yasutsuna +500)
---- - Buff TP bonus:
----   • WAR: Warcry (+500-700 with Savagery merits + Agoge Mask)
----   • SAM: Hagakure (+1000-1200 with JP Gifts)
---- - Job trait TP bonus:
----   • WAR/BST: Fencer (+200-630 when single-wielding, based on level + JP Gifts)
---- - Available TP bonus pieces (e.g., Moonshade +250, Boii +100, Mpaca's Cap +200)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   TP Bonus Calculator
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Generic TP bonus calculation system for weaponskills
+---   Intelligently determines which TP bonus gear to equip based on:
+---   - Current TP amount
+---   - Weapon TP bonus (e.g., Chango +500, Dojikiri Yasutsuna +500)
+---   - Buff TP bonus:
+---     • WAR: Warcry (+500-700 with Savagery merits + Agoge Mask)
+---     • SAM: Hagakure (+1000-1200 with JP Gifts)
+---   - Job trait TP bonus:
+---     • WAR/BST: Fencer (+200-630 when single-wielding, based on level + JP Gifts)
+---   - Available TP bonus pieces (e.g., Moonshade +250, Boii +100, Mpaca's Cap +200)
 ---
---- Logic: Only equip TP bonus gear if it allows reaching the next TP threshold (2000 or 3000)
---- Equipment strategy: Equip the MINIMUM necessary pieces to reach threshold
+---   Logic: Only equip TP bonus gear if it allows reaching the next TP threshold (2000 or 3000)
+---   Equipment strategy: Equip the MINIMUM necessary pieces to reach threshold
 ---
---- @module TP_BONUS_CALCULATOR
---- @author Tetsouo
---- @version 1.2.0
---- @date Created: 2025-01-02 | Updated: 2025-10-22 (SAM, BST support)
----============================================================================
+---   @module  TP_BONUS_CALCULATOR
+---   @author  Tetsouo
+---   @version 1.2.1 - Bug fix: Validate tp_config.pieces exists before ipairs
+---   @date    Created: 2025-01-02 | Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MessageWeaponskill = require('shared/utils/messages/formatters/combat/message_weaponskill')
 
 local TPBonusCalculator = {}
 
----============================================================================
---- Configuration
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Configuration
+---  ═══════════════════════════════════════════════════════════════════════════
 TPBonusCalculator.config = {
     -- TP thresholds for weaponskills
     thresholds = { 2000, 3000 },
@@ -36,9 +36,9 @@ TPBonusCalculator.config = {
     debug_mode = false
 }
 
----============================================================================
---- Core Functions
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Core Functions
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Calculate which TP bonus gear to equip based on current TP and available bonuses
 --- @param current_tp number Current TP amount (1000-2999)
@@ -115,6 +115,12 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
     -- Determine which pieces to equip based on gap
     -- Strategy: Equip MINIMUM necessary pieces
     local gear_to_equip = {}
+
+    -- Validate tp_config.pieces exists
+    if not tp_config.pieces or type(tp_config.pieces) ~= 'table' then
+        -- No TP bonus pieces configured for this job
+        return nil
+    end
 
     -- Get available pieces sorted by bonus (descending)
     local sorted_pieces = {}

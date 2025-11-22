@@ -30,56 +30,58 @@
 ---============================================================================
 
 ---============================================================================
---- DEPENDENCIES - CENTRALIZED SYSTEMS
+--- DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---============================================================================
 
--- Message formatter (cooldown messages, WS TP display)
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+local MessageFormatter = nil
+local WS_DB = nil
+local JA_DB = nil
+local CooldownChecker = nil
+local PrecastGuard = nil
+local TPBonusHandler = nil
+local WSValidator = nil
+local ClimaticManager = nil
+local WSVariantSelector = nil
+local JumpManager = nil
+local DNCTPConfig = nil
 
--- Universal Weapon Skills Database (weaponskill descriptions)
-local WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+local modules_loaded = false
 
--- Universal Job Abilities Database (job ability descriptions)
-local JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
+local function ensure_modules_loaded()
+    if modules_loaded then return end
 
--- Cooldown checker (universal ability/spell recast validation)
-local CooldownChecker = require('shared/utils/precast/cooldown_checker')
+    MessageFormatter = require('shared/utils/messages/message_formatter')
+    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+    JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
+    CooldownChecker = require('shared/utils/precast/cooldown_checker')
 
--- Precast guard (debuff blocking: Amnesia, Silence, Stun, etc.)
-local precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-if not precast_guard_success then
-    PrecastGuard = nil
+    local precast_guard_success
+    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
+    if not precast_guard_success then
+        PrecastGuard = nil
+    end
+
+    include('../shared/utils/weaponskill/weaponskill_manager.lua')
+    include('../shared/utils/weaponskill/tp_bonus_calculator.lua')
+
+    local _
+    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
+
+    if WeaponSkillManager and MessageFormatter then
+        WeaponSkillManager.MessageFormatter = MessageFormatter
+    end
+
+    -- DNC logic modules
+    ClimaticManager = require('shared/jobs/dnc/functions/logic/climactic_manager')
+    WSVariantSelector = require('shared/jobs/dnc/functions/logic/ws_variant_selector')
+    JumpManager = require('shared/jobs/dnc/functions/logic/jump_manager')
+
+    -- DNC configuration
+    DNCTPConfig = _G.DNCTPConfig or {}
+
+    modules_loaded = true
 end
-
--- Weaponskill manager (WS validation + range checking)
-include('../shared/utils/weaponskill/weaponskill_manager.lua')
-
--- TP bonus calculator (Moonshade Earring automation)
-include('../shared/utils/weaponskill/tp_bonus_calculator.lua')
-
--- TP Bonus Handler (universal WS TP gear optimization)
-local _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
-
--- WS Validator (universal WS range + validity validation)
-local _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
-
--- Set MessageFormatter in WeaponSkillManager
-if WeaponSkillManager and MessageFormatter then
-    WeaponSkillManager.MessageFormatter = MessageFormatter
-end
-
----============================================================================
---- DEPENDENCIES - DNC SPECIFIC
----============================================================================
-
--- DNC logic modules (business logic)
-local ClimaticManager = require('shared/jobs/dnc/functions/logic/climactic_manager')
-local WSVariantSelector = require('shared/jobs/dnc/functions/logic/ws_variant_selector')
-local JumpManager = require('shared/jobs/dnc/functions/logic/jump_manager')
-
--- DNC configuration (character-specific, not in shared/)
--- Note: This will be loaded from Tetsouo/config or Kaories/config via main file
-local DNCTPConfig = _G.DNCTPConfig or {}
 
 ---============================================================================
 --- MOTE OVERRIDES
@@ -103,6 +105,9 @@ end
 --- @param spellMap string Spell mapping
 --- @param eventArgs table Event arguments
 function job_precast(spell, action, spellMap, eventArgs)
+    -- Lazy load all dependencies on first precast
+    ensure_modules_loaded()
+
     -- FIRST: Check for blocking debuffs (Amnesia, Silence, etc.)
     if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
         return -- Action blocked, exit immediately

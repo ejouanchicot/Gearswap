@@ -109,6 +109,45 @@ SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town
 
 ---============================================================================
+--- ENGAGED BASE SELECTION
+---============================================================================
+
+--- Select engaged base set with BurtgangKC detection
+--- BurtgangKC (Kraken Club) detection takes priority for specialized multi-attack set.
+---
+--- Priority order:
+---   1. BurtgangKC weapon set      >> sets.engaged.BurtgangKC
+---   2. HybridMode (PDT/MDT)       >> sets.engaged[HybridMode]
+---   3. Fallback                    >> base_set
+---
+--- @param base_set table Base engaged set from pld_sets.lua
+--- @return table Selected engaged set (BurtgangKC if condition met, otherwise hybrid/base)
+function SetBuilder.select_engaged_base(base_set)
+    -- PRIORITY 1: Check for BurtgangKC weapon set (Kraken Club in sub)
+    if state.MainWeapon and state.MainWeapon.current == 'BurtgangKC' and sets.engaged.BurtgangKC then
+        return sets.engaged.BurtgangKC
+    end
+
+    -- PRIORITY 2: Check if Kraken Club is already equipped (manual equip or other weapon set)
+    if player and player.equipment and player.equipment.sub then
+        local sub_weapon = player.equipment.sub
+        if sub_weapon == 'Kraken Club' and sets.engaged.BurtgangKC then
+            return sets.engaged.BurtgangKC
+        end
+    end
+
+    -- PRIORITY 3: Normal HybridMode logic (PDT or MDT)
+    if state.HybridMode and state.HybridMode.current then
+        local hybrid_set = sets.engaged[state.HybridMode.current]
+        if hybrid_set then
+            return hybrid_set
+        end
+    end
+
+    return base_set
+end
+
+---============================================================================
 --- ENGAGED SET BUILDER
 ---============================================================================
 
@@ -120,39 +159,18 @@ function SetBuilder.build_engaged_set(base_set)
         return {}
     end
 
-    local result = base_set
+    -- Step 1: Select base set (BurtgangKC detection + HybridMode)
+    local result = SetBuilder.select_engaged_base(base_set)
     local is_shining_one = state.MainWeapon and state.MainWeapon.current == 'Shining One'
 
-    -- Step 1: Apply main weapon
+    -- Step 2: Apply main weapon
     result = SetBuilder.apply_weapon(result)
 
-    -- Step 2: Apply shield (no town mode in engaged)
-    result = SetBuilder.apply_shield(result, false)
-
-    -- Step 3: Apply HybridMode (PDT/MDT) - SKIP sub if Shining One
-    if state.HybridMode and state.HybridMode.value then
-        local hybrid_set = nil
-        if state.HybridMode.value == 'PDT' and sets.engaged.PDT then
-            hybrid_set = sets.engaged.PDT
-        elseif state.HybridMode.value == 'MDT' and sets.engaged.MDT then
-            hybrid_set = sets.engaged.MDT
-        end
-
-        if hybrid_set then
-            if is_shining_one then
-                -- Shining One: Apply HybridMode WITHOUT sub (keep Alber Strap)
-                local hybrid_no_sub = {}
-                for slot, item in pairs(hybrid_set) do
-                    if slot ~= 'sub' then
-                        hybrid_no_sub[slot] = item
-                    end
-                end
-                result = set_combine(result, hybrid_no_sub)
-            else
-                -- Normal: Apply full HybridMode set (including sub)
-                result = set_combine(result, hybrid_set)
-            end
-        end
+    -- Step 3: Apply shield (no town mode in engaged)
+    -- SKIP if BurtgangKC (already has Kraken Club in sub)
+    local is_burtgang_kc = state.MainWeapon and state.MainWeapon.current == 'BurtgangKC'
+    if not is_burtgang_kc then
+        result = SetBuilder.apply_shield(result, false)
     end
 
     -- Step 4: Apply XP mode (meleeXp set when Xp = On)
@@ -178,19 +196,23 @@ function SetBuilder.build_idle_set(base_set)
     -- Step 1: Town detection - use town set as base
     local result, in_town = SetBuilder.select_idle_base(base_set)
     local is_shining_one = state.MainWeapon and state.MainWeapon.current == 'Shining One'
+    local is_burtgang_kc = state.MainWeapon and state.MainWeapon.current == 'BurtgangKC'
 
     -- Step 2: Apply main weapon (applies to both town and non-town)
     result = SetBuilder.apply_weapon(result)
 
     -- Step 3: Apply shield (handles town mode, Shining One, SubWeapon state)
-    result = SetBuilder.apply_shield(result, in_town)
+    -- SKIP if BurtgangKC (already has Kraken Club in sub)
+    if not is_burtgang_kc then
+        result = SetBuilder.apply_shield(result, in_town)
+    end
 
     -- Step 4: Early return if in town (weapons/shields already applied)
     if in_town then
         return result
     end
 
-    -- Step 5: Apply HybridMode (PDT/MDT) outside of town - SKIP sub if Shining One
+    -- Step 5: Apply HybridMode (PDT/MDT) outside of town - SKIP sub if Shining One or BurtgangKC
     if state.HybridMode and state.HybridMode.value then
         local hybrid_set = nil
         if state.HybridMode.value == 'PDT' and sets.idle.PDT then
@@ -200,8 +222,8 @@ function SetBuilder.build_idle_set(base_set)
         end
 
         if hybrid_set then
-            if is_shining_one then
-                -- Shining One: Apply HybridMode WITHOUT sub (keep Alber Strap)
+            if is_shining_one or is_burtgang_kc then
+                -- Shining One/BurtgangKC: Apply HybridMode WITHOUT sub (keep Alber Strap/Kraken Club)
                 local hybrid_no_sub = {}
                 for slot, item in pairs(hybrid_set) do
                     if slot ~= 'sub' then

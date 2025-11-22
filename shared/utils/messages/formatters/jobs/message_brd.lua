@@ -179,9 +179,14 @@ end
 --- INSTRUMENT SELECTION MESSAGES (NEW SYSTEM)
 ---============================================================================
 
-function BRDMessages.show_daurdabla_dummy()
+--- Display dummy song instrument usage
+--- @param song_name string Song name (e.g., 'Gold Capriccio', 'Foe Lullaby')
+--- @param instrument string Instrument name (e.g., 'Daurdabla', 'Loughnashade', 'Blurred Harp +1')
+function BRDMessages.show_daurdabla_dummy(song_name, instrument)
     M.job('BRD', 'daurdabla_dummy', {
-        job = get_job_tag()
+        job = get_job_tag(),
+        song_name = song_name or 'Unknown',
+        instrument = instrument or 'Daurdabla'  -- Fallback if not provided
     })
 end
 

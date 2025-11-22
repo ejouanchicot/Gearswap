@@ -24,6 +24,14 @@
 --- SECTION 1: INITIALIZATION MODULES
 ---============================================================================
 
+-- ═══════════════════════════════════════════════════════════════════
+-- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+-- ═══════════════════════════════════════════════════════════════════
+local Profiler = require('shared/utils/debug/performance_profiler')
+local TIMER = Profiler.create_timer('BRD')
+-- ═══════════════════════════════════════════════════════════════════
+
+-- LOCKSTYLE and MACROBOOK use lazy loading - loaded on first call, not during startup
 include('../shared/jobs/brd/functions/BRD_LOCKSTYLE.lua')
 include('../shared/jobs/brd/functions/BRD_MACROBOOK.lua')
 
@@ -32,29 +40,38 @@ include('../shared/jobs/brd/functions/BRD_MACROBOOK.lua')
 ---============================================================================
 
 include('../shared/jobs/brd/functions/BRD_PRECAST.lua')
+TIMER('BRD_PRECAST')
 include('../shared/jobs/brd/functions/BRD_MIDCAST.lua')
+TIMER('BRD_MIDCAST')
 include('../shared/jobs/brd/functions/BRD_AFTERCAST.lua')
+TIMER('BRD_AFTERCAST')
 
 ---============================================================================
 --- SECTION 3: GEAR SELECTION HOOKS
 ---============================================================================
 
 include('../shared/jobs/brd/functions/BRD_IDLE.lua')
+TIMER('BRD_IDLE')
 include('../shared/jobs/brd/functions/BRD_ENGAGED.lua')
+TIMER('BRD_ENGAGED')
 
 ---============================================================================
 --- SECTION 4: EVENT MONITORING HOOKS
 ---============================================================================
 
 include('../shared/jobs/brd/functions/BRD_STATUS.lua')
+TIMER('BRD_STATUS')
 include('../shared/jobs/brd/functions/BRD_BUFFS.lua')
+TIMER('BRD_BUFFS')
 
 ---============================================================================
 --- SECTION 5: UTILITY HOOKS
 ---============================================================================
 
 include('../shared/jobs/brd/functions/BRD_COMMANDS.lua')
+TIMER('BRD_COMMANDS')
 include('../shared/jobs/brd/functions/BRD_MOVEMENT.lua')
+TIMER('BRD_MOVEMENT')
 
 ---============================================================================
 --- FAÇADE LOAD COMPLETE
@@ -64,3 +81,7 @@ include('../shared/jobs/brd/functions/BRD_MOVEMENT.lua')
 local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
 
 print('[BRD] Functions loaded successfully')
+
+-- ═══════════════════════════════════════════════════════════════════
+TIMER('TOTAL BRD_functions', true)
+-- ═══════════════════════════════════════════════════════════════════

@@ -5,13 +5,21 @@
 ---   • Player status transitions (Idle/Engaged/Resting/Dead)
 ---   • Combat state detection
 ---   • Status-based equipment swaps
+---   • Doom slot safety unlock (death/raise)
+---
+--- **PERFORMANCE OPTIMIZATION:**
+---   • Lazy-loaded: DoomManager loaded on first status change (saves ~30ms at startup)
 ---
 --- @file    WAR_STATUS.lua
 --- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-09-29
+--- @version 1.2 - Lazy Loading for performance
+--- @date    Updated: 2025-11-15
 --- @requires Tetsouo architecture
 ---============================================================================
+
+-- Lazy loading: DoomManager loaded on first status change
+local DoomManager = nil
+
 ---============================================================================
 --- STATUS CHANGE HOOK
 ---============================================================================
@@ -24,6 +32,14 @@
 --- @param eventArgs table Event arguments with handled flag
 --- @return void
 function job_status_change(newStatus, oldStatus, eventArgs)
+    -- Lazy load DoomManager on first call
+    if not DoomManager then
+        DoomManager = require('shared/utils/debuff/doom_manager')
+    end
+
+    -- Safety: Unlock Doom slots after death (prevents stuck locks after raise)
+    DoomManager.handle_status_change(newStatus, oldStatus)
+
     -- WAR-specific status change logic here
     -- Examples:
     --   • Cancel buffs on death

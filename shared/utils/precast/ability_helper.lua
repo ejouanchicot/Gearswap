@@ -3,6 +3,7 @@
 ---============================================================================
 --- Provides helper functions for auto-triggering abilities before spells/WS.
 --- Used by PLD (Divine Emblem, Majesty) and DNC (Climactic Flourish) jobs.
+--- Integrates with RECAST_CONFIG for centralized tolerance management.
 ---
 --- VALIDATION SYSTEM:
 ---   • Checks player main job + level before triggering ability
@@ -12,11 +13,29 @@
 ---
 --- @file utils/precast/ability_helper.lua
 --- @author Tetsouo
---- @version 1.1
---- @date Created: 2025-10-05 | Updated: 2025-11-09
+--- @version 1.2
+--- @date Created: 2025-10-05 | Updated: 2025-11-11 - Integrated RECAST_CONFIG
 ---============================================================================
 
 local AbilityHelper = {}
+
+-- Load recast configuration for cooldown tolerance
+local RECAST_CONFIG = _G.RECAST_CONFIG or {}
+
+---============================================================================
+--- RECAST TOLERANCE HELPER
+---============================================================================
+
+--- Check if ability is ready (not on cooldown) using RECAST_CONFIG tolerance
+--- @param recast number The recast time in seconds
+--- @return boolean True if ready
+local function is_recast_ready(recast)
+    if RECAST_CONFIG and RECAST_CONFIG.is_ready then
+        return RECAST_CONFIG.is_ready(recast)
+    else
+        return (recast < 1)  -- Fallback: 1 second tolerance
+    end
+end
 
 ---============================================================================
 --- ABILITY STATE CHECKING
@@ -33,25 +52,34 @@ function AbilityHelper.can_use_ability(ability_name)
     local ability_data = res.job_abilities:with('en', ability_name)
     if not ability_data then return false end
 
-    -- Check main job matches
+    -- For abilities without levels table (merit/quest abilities like Climactic Flourish),
+    -- we can't validate directly - assume player has it if they try to use it
+    if not ability_data.levels then
+        return true
+    end
+
+    -- Check if ability has levels defined for current job
     local main_job_id = player.main_job_id
-    if ability_data.job_points_category ~= main_job_id then
-        return false
+    local main_job_level = player.main_job_level
+
+    -- Check if this ability is available for player's main job
+    local required_level = ability_data.levels[main_job_id]
+    if not required_level then
+        return false -- Job doesn't have this ability
     end
 
     -- Check level requirement
-    local main_job_level = player.main_job_level
-    local required_level = ability_data.levels[main_job_id] or 99
     if main_job_level < required_level then
-        return false
+        return false -- Level too low
     end
 
     return true
 end
 
 --- Check if ability is ready (not on cooldown)
+--- Uses RECAST_CONFIG tolerance if available (default: 1.5s)
 --- @param ability_name string The ability name
---- @return boolean True if ready (cooldown < 1 second)
+--- @return boolean True if ready
 function AbilityHelper.is_ability_ready(ability_name)
     local ability_recasts = windower.ffxi.get_ability_recasts()
     local res = require('resources')
@@ -60,7 +88,7 @@ function AbilityHelper.is_ability_ready(ability_name)
 
     local recast_id = ability_data.recast_id or ability_data.id
     local cooldown = ability_recasts[recast_id] or 0
-    return cooldown < 1
+    return is_recast_ready(cooldown)
 end
 
 --- Check if buff is active

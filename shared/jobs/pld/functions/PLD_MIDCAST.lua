@@ -17,13 +17,33 @@
 --- @requires shared/jobs/pld/functions/logic/cure_set_builder
 ---============================================================================
 
-local MidcastManager = require('shared/utils/midcast/midcast_manager')
-local CureSetBuilder = require('shared/jobs/pld/functions/logic/cure_set_builder')
+---============================================================================
+--- DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---============================================================================
 
--- Load ENHANCING_MAGIC_DATABASE for spell_family routing
-local EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
+local MidcastManager = nil
+local CureSetBuilder = nil
+local EnhancingSPELLS = nil
+local EnhancingSPELLS_success = false
+
+local modules_loaded = false
+
+local function ensure_modules_loaded()
+    if modules_loaded then return end
+
+    MidcastManager = require('shared/utils/midcast/midcast_manager')
+    CureSetBuilder = require('shared/jobs/pld/functions/logic/cure_set_builder')
+
+    -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
+    EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
+
+    modules_loaded = true
+end
 
 function job_midcast(spell, action, spellMap, eventArgs)
+    -- Lazy load modules on first midcast
+    ensure_modules_loaded()
+
     -- ==========================================================================
     -- CURE III/IV: DYNAMIC TARGET-BASED SETS (CureSetBuilder)
     -- ==========================================================================

@@ -47,7 +47,6 @@ function ClimaticManager.auto_trigger(spell, eventArgs)
     end
 
     -- Check conditions: TP >= min_tp, target HP > min_hpp, 3+ Finishing Moves
-    -- Note: Lag causes GearSwap to see 800-950 TP when user launches at 1000 TP
     if player.tp >= DNCWSConfig.min_tp and
         player.target and player.target.hpp and player.target.hpp > DNCWSConfig.min_target_hpp and
         (buffactive['Finishing Move (3+)'] or buffactive['Finishing Move (6+)']) then

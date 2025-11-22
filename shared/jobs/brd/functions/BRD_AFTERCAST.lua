@@ -10,8 +10,11 @@
 --- @date Created: 2025-10-13
 ---============================================================================
 
--- Load message formatter for BRD messages
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+---============================================================================
+--- DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---============================================================================
+
+local MessageFormatter = nil
 
 --- Handle post-action cleanup
 --- @param spell table Spell/ability data
@@ -22,6 +25,12 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     -- Watchdog: Track aftercast
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_aftercast()
+    end
+
+    -- Clear Pianissimo flag after ANY song completes (success or interrupted)
+    -- This allows next Pianissimo to trigger immediately
+    if spell.type == 'BardSong' then
+        _G.pianissimo_in_progress = false
     end
 
     -- Clear instrument lock flags after ANY action completes
@@ -37,6 +46,10 @@ function job_aftercast(spell, action, spellMap, eventArgs)
 
         -- Display release message if song completed successfully
         if spell.type == 'BardSong' and spell.english == song_name and not spell.interrupted then
+            -- Lazy load MessageFormatter only when needed
+            if not MessageFormatter then
+                MessageFormatter = require('shared/utils/messages/message_formatter')
+            end
             MessageFormatter.show_instrument_released(song_name, instrument)
         end
     end

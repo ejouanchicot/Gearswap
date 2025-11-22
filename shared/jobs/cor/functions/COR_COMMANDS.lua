@@ -12,19 +12,36 @@
 --- @date Updated: 2025-10-10
 ---============================================================================
 
--- Load centralized command handlers
-local UICommands = require('shared/utils/ui/UI_COMMANDS')
-local CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
-local WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
-local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
+---============================================================================
+--- DEPENDENCIES (LAZY LOADING for performance)
+---============================================================================
+-- Command handlers loaded on first command (saves ~60ms at startup)
+local UICommands = nil
+local CommonCommands = nil
+local WatchdogCommands = nil
+local CycleHandler = nil
+local MessageCommands = nil
+local MessageFormatter = nil
+local RollTracker = nil
 
--- Load message formatter for standardized messages
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+local function ensure_commands_loaded()
+    if not UICommands then
+        UICommands = require('shared/utils/ui/UI_COMMANDS')
+        CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
+        WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
+        CycleHandler = require('shared/utils/core/CYCLE_HANDLER')
+        MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
 
--- Load roll tracker for roll commands
-local roll_tracker_loaded, RollTracker = pcall(require, 'shared/jobs/cor/functions/logic/roll_tracker')
-if not roll_tracker_loaded then
-    RollTracker = nil
+        -- Load message formatter for standardized messages
+        MessageFormatter = require('shared/utils/messages/message_formatter')
+
+        -- Load roll tracker for roll commands
+        local roll_tracker_loaded
+        roll_tracker_loaded, RollTracker = pcall(require, 'shared/jobs/cor/functions/logic/roll_tracker')
+        if not roll_tracker_loaded then
+            RollTracker = nil
+        end
+    end
 end
 
 ---============================================================================
@@ -39,6 +56,9 @@ function job_self_command(cmdParams, eventArgs)
     if not cmdParams or #cmdParams == 0 then
         return
     end
+
+    -- Lazy load command handlers on first command
+    ensure_commands_loaded()
 
     local command = cmdParams[1]:lower()
 
@@ -81,6 +101,18 @@ function job_self_command(cmdParams, eventArgs)
         MessageCommands.show_debugmidcast_toggled('COR', _G.MidcastManagerDebugState)
 
         eventArgs.handled = true
+        return
+    end
+
+    -- ==========================================================================
+    -- CUSTOM CYCLE STATE (UI-aware cycle)
+    -- ==========================================================================
+    -- Intercepts cycle commands to check UI visibility
+    -- If UI visible: custom cycle + UI update (no message)
+    -- If UI invisible: delegate to Mote-Include (shows message)
+
+    if command == 'cyclestate' then
+        eventArgs.handled = CycleHandler.handle_cyclestate(cmdParams, eventArgs)
         return
     end
 

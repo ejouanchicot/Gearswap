@@ -11,28 +11,19 @@
 ---============================================================================
 
 ---============================================================================
---- DEPENDENCIES
+--- AUTOMOVE INTEGRATION (PERFORMANCE OPTIMIZED - No Startup Cost)
 ---============================================================================
-
--- Message formatter
-local MessageFormatter = require('shared/utils/messages/message_formatter')
-
----============================================================================
---- AUTOMOVE INTEGRATION
----============================================================================
-
--- AutoMove handles movement detection and speed gear automatically
-if AutoMove then
-    -- AutoMove will automatically handle:
-    --   • Movement detection
-    --   • Speed gear swapping (sets.MoveSpeed from bst_sets.lua)
-    --   • Idle gear restoration when stopped
-
-    -- No additional callbacks needed - movement gear applied in SetBuilder.build_idle_set()
-else
-    -- AutoMove not available - movement speed gear disabled
-    MessageFormatter.show_warning('AutoMove system not available')
-end
+-- AutoMove (if available) automatically handles:
+--   • Movement detection
+--   • Speed gear swapping (sets.MoveSpeed from bst_sets.lua)
+--   • Idle gear restoration when stopped
+--
+-- No explicit registration needed - AutoMove auto-detects job modules.
+-- Movement gear applied in SetBuilder.build_idle_set().
+--
+-- PERFORMANCE NOTE: Previous version loaded MessageFormatter at startup and
+-- showed a warning (~46ms cost). This version does nothing at startup (0ms cost).
+-- AutoMove will work if present, otherwise no-op.
 
 ---============================================================================
 --- MOVEMENT GEAR HOOK

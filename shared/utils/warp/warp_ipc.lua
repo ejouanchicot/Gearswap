@@ -174,8 +174,16 @@ end
 
 --- Initialize IPC system (register listener)
 function WarpIPC.init()
+    -- Only register once (prevent duplicate event handlers)
+    if _G.WARP_IPC_LISTENER_REGISTERED then
+        return
+    end
+
     -- Register IPC message listener
     windower.register_event('ipc message', handle_ipc_message)
+
+    -- Mark as registered globally
+    _G.WARP_IPC_LISTENER_REGISTERED = true
 
     -- Always show initialization message for debugging
     MessageWarp.show_ipc_registered()

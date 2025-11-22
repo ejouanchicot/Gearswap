@@ -1,27 +1,27 @@
----============================================================================
---- Waltz Manager - Centralized Waltz Management for DNC main/sub
----============================================================================
---- Provides intelligent waltz casting for both Curing (single target) and
---- Divine (AoE) waltzes with HP-based tier selection, TP management, and
---- professional message formatting.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Waltz Manager - Centralized Waltz Management for DNC main/sub
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Provides intelligent waltz casting for both Curing (single target) and
+---   Divine (AoE) waltzes with HP-based tier selection, TP management, and
+---   professional message formatting.
 ---
---- Features:
----   • Curing Waltz (single target) - HP-based tier selection (V > IV > III > II > I)
----   • Divine Waltz (AoE) - Highest tier available (II > I)
----   • Intelligent tier selection based on target missing HP
----   • TP threshold checking (200-800 TP depending on tier)
----   • Recast validation (uses RECAST_CONFIG tolerance)
----   • Level detection (main job vs subjob effective level)
----   • Target HP estimation (exact for self, estimated for party members)
----   • Priority fallback (preferred tier >> lower tiers if unavailable)
----   • Professional status messages (cooldown/TP with job tag)
----   • Centralized for all jobs with DNC main/sub
+---   Features:
+---     • Curing Waltz (single target) - HP-based tier selection (V > IV > III > II > I)
+---     • Divine Waltz (AoE) - Highest tier available (II > I)
+---     • Intelligent tier selection based on target missing HP
+---     • TP threshold checking (200-800 TP depending on tier)
+---     • Recast validation (uses RECAST_CONFIG tolerance)
+---     • Level detection (main job vs subjob effective level)
+---     • Target HP estimation (exact for self, estimated for party members)
+---     • Priority fallback (preferred tier >> lower tiers if unavailable)
+---     • Professional status messages (cooldown/TP with job tag)
+---     • Centralized for all jobs with DNC main/sub
 ---
---- @file    utils/dnc/waltz_manager.lua
---- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-10-05
----============================================================================
+---   @file    shared/utils/dnc/waltz_manager.lua
+---   @author  Tetsouo
+---   @version 1.2 - Critical fixes: division/0 + sub_job nil + Divine Waltz hardcode
+---   @date    Created: 2025-10-05 | Updated: 2025-11-13
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local WaltzManager = {}
 
@@ -75,10 +75,27 @@ local function get_missing_hp(target)
 
     -- Party/alliance member: estimate from HPP
     if target.isallymember then
-        local ally = find_player_in_alliance(target.name)
-        if ally and ally.hpp then
-            local est_max_hp = ally.hp / (ally.hpp / 100)
-            return math.floor(est_max_hp - ally.hp)
+        local party = windower.ffxi.get_party()
+        if party then
+            -- Search in party members (0-5)
+            for i = 0, 5 do
+                local member = party['p' .. i]
+                if member and member.name == target.name and member.hpp and member.hpp > 0 then
+                    local est_max_hp = member.hp / (member.hpp / 100)
+                    return math.floor(est_max_hp - member.hp)
+                end
+            end
+
+            -- Search in alliance members (a10-a15, a20-a25)
+            for alliance_idx = 1, 2 do
+                for member_idx = 0, 5 do
+                    local member = party['a' .. alliance_idx .. member_idx]
+                    if member and member.name == target.name and member.hpp and member.hpp > 0 then
+                        local est_max_hp = member.hp / (member.hpp / 100)
+                        return math.floor(est_max_hp - member.hp)
+                    end
+                end
+            end
         end
     end
 
@@ -91,13 +108,12 @@ function WaltzManager.cast_curing_waltz(target_type)
     target_type = target_type or '<stpc>'
 
     local MessageFormatter = require('shared/utils/messages/message_formatter')
-    local MessageCore = require('shared/utils/messages/message_core')
     local ability_recasts = windower.ffxi.get_ability_recasts()
     local current_tp = player.tp
     local job_tag = MessageFormatter.get_job_tag()
 
     -- Determine effective level (main job or subjob)
-    local effective_level = player.main_job == 'DNC' and player.main_job_level or player.sub_job_level
+    local effective_level = player.main_job == 'DNC' and player.main_job_level or (player.sub_job_level or 0)
 
     -- Get target info
     local target = windower.ffxi.get_mob_by_target('st') or windower.ffxi.get_mob_by_target('me')
@@ -167,13 +183,12 @@ end
 --- Cast Divine Waltz (AoE)
 function WaltzManager.cast_divine_waltz()
     local MessageFormatter = require('shared/utils/messages/message_formatter')
-    local MessageCore = require('shared/utils/messages/message_core')
     local ability_recasts = windower.ffxi.get_ability_recasts()
     local current_tp = player.tp
     local job_tag = MessageFormatter.get_job_tag()
 
     -- Determine effective level
-    local effective_level = player.main_job == 'DNC' and player.main_job_level or player.sub_job_level
+    local effective_level = player.main_job == 'DNC' and player.main_job_level or (player.sub_job_level or 0)
 
     -- Try each Divine Waltz from highest to lowest
     for _, waltz in ipairs(WALTZ_CONFIG.divine) do
@@ -181,12 +196,8 @@ function WaltzManager.cast_divine_waltz()
             local recast = ability_recasts[waltz.recast_id] or 0
 
             if is_recast_ready(recast) and current_tp >= waltz.tp then
-                -- Execute Divine Waltz directly
-                if waltz.name == "Divine Waltz II" then
-                    send_command('input /ja "Divine Waltz II" <me>')
-                else
-                    send_command('input /ja "Divine Waltz" <me>')
-                end
+                -- Execute Divine Waltz
+                send_command('input /ja "' .. waltz.name .. '" <me>')
 
                 -- Display success message
                 MessageFormatter.show_waltz_heal(waltz.name, nil, nil, job_tag)

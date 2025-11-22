@@ -24,53 +24,57 @@
 ---============================================================================
 
 ---============================================================================
---- DEPENDENCIES - CENTRALIZED SYSTEMS
+--- DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---============================================================================
 
--- Message formatter (cooldown messages, ability feedback)
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+local MessageFormatter = nil
+local CooldownChecker = nil
+local PrecastGuard = nil
+local TPBonusHandler = nil
+local WSValidator = nil
+local WHMTPConfig = nil
+local JA_DB = nil
+local WS_DB = nil
+local MessageWHM = nil
+local CureManager = nil
 
--- Cooldown checker (universal ability/spell recast validation)
-local CooldownChecker = require('shared/utils/precast/cooldown_checker')
+local modules_loaded = false
 
--- Precast guard (debuff blocking: Amnesia, Silence, Stun, Petrify, Sleep, etc.)
-local precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-if not precast_guard_success then
-    MessageFormatter.error_whm_module_not_loaded('PrecastGuard')
-    PrecastGuard = nil
-end
+local function ensure_modules_loaded()
+    if modules_loaded then return end
 
--- TP Bonus Handler (universal WS TP gear optimization)
-local _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+    MessageFormatter = require('shared/utils/messages/message_formatter')
+    CooldownChecker = require('shared/utils/precast/cooldown_checker')
 
--- WS Validator (universal WS range + validity validation)
-local _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
+    local precast_guard_success
+    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
+    if not precast_guard_success then
+        PrecastGuard = nil
+    end
 
--- WHM TP configuration (TP bonus gear thresholds)
-local WHMTPConfig = _G.WHMTPConfig or {}  -- Loaded from character main file
+    local _
+    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
 
--- Universal Job Ability Database (supports main job + subjob abilities)
-local JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
+    WHMTPConfig = _G.WHMTPConfig or {}
+    JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
+    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
 
--- Universal Weapon Skills Database (weaponskill descriptions)
-local WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+    include('shared/utils/weaponskill/weaponskill_manager.lua')
 
--- Weaponskill manager (WS validation + range checking)
-include('shared/utils/weaponskill/weaponskill_manager.lua')
+    if WeaponSkillManager and MessageFormatter then
+        WeaponSkillManager.MessageFormatter = MessageFormatter
+    end
 
--- Set MessageFormatter in WeaponSkillManager
-if WeaponSkillManager and MessageFormatter then
-    WeaponSkillManager.MessageFormatter = MessageFormatter
-end
+    MessageWHM = require('shared/utils/messages/formatters/jobs/message_whm')
 
--- WHM message formatter
-local MessageWHM = require('shared/utils/messages/formatters/jobs/message_whm')
+    local cure_manager_success
+    cure_manager_success, CureManager = pcall(require, 'shared/utils/whm/cure_manager')
+    if not cure_manager_success then
+        CureManager = nil
+    end
 
--- Cure manager (auto-tier selection based on target HP)
-local cure_manager_success, CureManager = pcall(require, 'shared/utils/whm/cure_manager')
-if not cure_manager_success then
-    MessageWHM.show_curemanager_not_loaded()
-    CureManager = nil
+    modules_loaded = true
 end
 
 ---============================================================================

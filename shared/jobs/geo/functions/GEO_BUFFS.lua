@@ -1,57 +1,40 @@
----============================================================================
---- GEO Buffs Module - Buff Change Handling
----============================================================================
---- Handles buff gain/loss events for Geomancer job.
---- Manages buff-specific gear swaps (Doom, etc.).
+---  ═══════════════════════════════════════════════════════════════════════════
+---   GEO Buffs Module - Buff Gain/Loss Handler
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles job-specific buff gain/loss events (Doom, Chainspell, etc.).
 ---
---- @file GEO_BUFFS.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-09
----============================================================================
+---   @file    shared/jobs/geo/functions/GEO_BUFFS.lua
+---   @author  Tetsouo
+---   @version 1.1 - Removed dead code + refactored header
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- BUFF HOOKS
----============================================================================
+local DoomManager = nil
 
-function job_buff_change(buff, gain, eventArgs)
-    -- Doom: HIGHEST PRIORITY - Must override everything
-    if buff == 'doom' then
-        local is_doomed = buffactive['doom']
-
-        if is_doomed then
-            equip(sets.buff.Doom)
-            -- Disable slots to prevent other gear swaps from overwriting Doom gear
-            disable('neck', 'ring1', 'ring2', 'waist')
-            MessageFormatter.show_warning("DOOM detected! Equipping Doom gear.")
-        else
-            -- Enable slots before restoring gear
-            enable('neck', 'ring1', 'ring2', 'waist')
-            handle_equipping_gear(player.status)
-            MessageFormatter.show_success("Doom removed.")
-        end
-        return  -- Stop processing - Doom takes absolute priority
-    end
-
-    -- GEO-SPECIFIC BUFF CHANGE LOGIC
-
-    -- Entrust buff
-    if buff == "Entrust" and gain then
-        -- Entrust active - next Indi spell can be cast on party member
-        -- Visual indicator could be added here
+local function ensure_managers_loaded()
+    if not DoomManager then
+        DoomManager = require('shared/utils/debuff/doom_manager')
     end
 end
----============================================================================
---- MODULE EXPORT
----============================================================================
 
--- Export global for GearSwap (Mote-Include)
+--- Handle buff change events
+--- @param buff string Buff name
+--- @param gain boolean True if buff gained, false if lost
+function job_buff_change(buff, gain, eventArgs)
+    -- Lazy load managers on first buff change
+    ensure_managers_loaded()
+
+    -- Doom handling (centralized)
+    if DoomManager.handle_buff_change(buff, gain) then
+        return -- Doom handled, stop processing
+    end
+
+    -- GEO-specific buff change logic can be added here
+end
+
+-- Export to global scope (used by Mote-Include via include())
 _G.job_buff_change = job_buff_change
-
--- Export module
-local GEO_BUFFS = {}
-GEO_BUFFS.job_buff_change = job_buff_change
-
-return GEO_BUFFS

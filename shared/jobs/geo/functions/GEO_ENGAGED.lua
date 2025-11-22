@@ -1,50 +1,43 @@
----============================================================================
---- GEO Engaged Module - Combat Gear Management
----============================================================================
---- Handles combat gear customization for Geomancer job based on conditions.
---- Customizes melee gear based on buffs, weapon type, etc.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   GEO Engaged Module - Combat State Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all engaged state logic for Red Mage job:
+---   - Combat set selection based on EngagedMode (DT, Enspell, Refresh, TP)
+---   - Dual wield detection and optimization (NIN subjob)
+---   - Dynamic weapon application to engaged sets
+---   - Combat state transitions
 ---
---- @file GEO_ENGAGED.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-09
----============================================================================
+---   @file    shared/jobs/geo/functions/GEO_ENGAGED.lua
+---   @author  Tetsouo
+---   @version 2.1 - Removed dead code + refactored header
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load GEO logic modules
-local set_builder_success, SetBuilder = pcall(require, 'shared/jobs/geo/functions/logic/set_builder')
-if not set_builder_success then
-    SetBuilder = nil
-end
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- ENGAGED HOOKS
----============================================================================
+local SetBuilder = nil
 
---- Customize melee set before it's equipped
---- @param meleeSet table The combat equipment set
---- @return table Modified combat set
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ENGAGED HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
+
+--- Apply weapon sets, mode selection, and movement gear to all engaged configurations
+--- @param meleeSet table The engaged set to customize
+--- @return table Modified engaged set with current weapon, mode, and movement gear
 function customize_melee_set(meleeSet)
+    -- Lazy load SetBuilder on first engage
+    if not SetBuilder then
+        SetBuilder = require('shared/jobs/geo/functions/logic/set_builder')
+    end
+
     if not meleeSet then
         return {}
     end
 
-    -- Apply weapon sets, hybrid mode, and DW gear via SetBuilder
-    if SetBuilder then
-        return SetBuilder.build_engaged_set(meleeSet)
-    end
-
-    return meleeSet
+    return SetBuilder.build_engaged_set(meleeSet)
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
-
--- Export global for GearSwap (Mote-Include)
+-- Export to global scope (used by Mote-Include via include())
 _G.customize_melee_set = customize_melee_set
-
--- Export module
-local GEO_ENGAGED = {}
-GEO_ENGAGED.customize_melee_set = customize_melee_set
-
-return GEO_ENGAGED

@@ -1,33 +1,26 @@
----============================================================================
---- Watchdog Commands - Command Handler Module
----============================================================================
---- Provides command handling for Midcast Watchdog.
---- Import this module in job *_COMMANDS.lua files.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Watchdog Commands - Command Handler Module
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Provides command handling for Midcast Watchdog.
+---   Import this module in job *_COMMANDS.lua files.
 ---
---- @file WATCHDOG_COMMANDS.lua
---- @author Tetsouo
---- @version 3.1 - Item support (cast_delay)
---- @date Created: 2025-10-25 | Updated: 2025-11-06 | Updated: 2025-11-04
----============================================================================
+---   @file    shared/utils/core/WATCHDOG_COMMANDS.lua
+---   @author  Tetsouo
+---   @version 3.2 - Style standardization (BRD headers) + remove dead code
+---   @date    Created: 2025-10-25 | Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local WatchdogCommands = {}
 
----============================================================================
---- DEPENDENCIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MessageWatchdog = require('shared/utils/messages/formatters/system/message_watchdog')
 
----============================================================================
---- CONSTANTS
----============================================================================
-
-local CHAT_DEFAULT = 1
-local CHAT_ERROR   = 167
-
----============================================================================
---- COMMAND CHECKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COMMAND CHECKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Check if command is a watchdog command
 --- @param command string Command name
@@ -107,8 +100,8 @@ function WatchdogCommands.handle_command(cmdParams, eventArgs)
     return true
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return WatchdogCommands

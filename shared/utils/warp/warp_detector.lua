@@ -160,8 +160,18 @@ function WarpDetector.register_callback(callback)
     table.insert(warp_callbacks, callback)
 end
 
+--- Clear all registered callbacks (called during job change cleanup)
+function WarpDetector.clear_callbacks()
+    warp_callbacks = {}
+end
+
 --- Initialize action event listener for item usage detection
 function WarpDetector.init_action_listener()
+    -- Only register once (prevent duplicate event handlers on job change)
+    if _G.WARP_DETECTOR_LISTENER_REGISTERED then
+        return
+    end
+
     windower.register_event('action', function(act)
         -- Safety: Check if act exists (Windower sometimes sends nil)
         if not act then return end
@@ -183,6 +193,9 @@ function WarpDetector.init_action_listener()
             end
         end
     end)
+
+    -- Mark as registered globally
+    _G.WARP_DETECTOR_LISTENER_REGISTERED = true
 end
 
 ---============================================================================

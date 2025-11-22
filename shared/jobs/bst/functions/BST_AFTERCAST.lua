@@ -20,6 +20,14 @@ if not success_pm then
     PetManager = nil
 end
 
+-- Ready move categorizer (for pet damage gear selection)
+local ReadyMoveCategorizer = nil
+local success_rmc
+success_rmc, ReadyMoveCategorizer = pcall(require, 'shared/jobs/bst/functions/logic/ready_move_categorizer')
+if not success_rmc then
+    ReadyMoveCategorizer = nil
+end
+
 ---============================================================================
 --- TEMPORARY PET MONITORING (after pet commands)
 ---============================================================================
@@ -65,6 +73,41 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_aftercast()
     end
+
+    -- ==========================================================================
+    -- READY MOVES - Swap to pet damage gear (recast already captured in PRECAST)
+    -- ==========================================================================
+    -- Use spell.type == 'Monster' like reference BST.lua (custom properties don't persist)
+    if spell.type == 'Monster' and ReadyMoveCategorizer then
+        -- Recalculate category (spell properties from precast don't persist to aftercast)
+        local category = ReadyMoveCategorizer.get_category(spell.name)
+
+        if category and category ~= 'Default' then
+            local player_engaged = (player and player.status == 'Engaged')
+            local use_ww = player_engaged
+
+            local set = nil
+
+            if category == 'Physical' then
+                set = use_ww and sets.midcast.pet_physical_moves_ww or sets.midcast.pet_physical_moves
+            elseif category == 'PhysicalMulti' then
+                set = use_ww and sets.midcast.pet_physicalMulti_moves_ww or sets.midcast.pet_physicalMulti_moves
+            elseif category == 'MagicAtk' then
+                set = use_ww and sets.midcast.pet_magicAtk_moves_ww or sets.midcast.pet_magicAtk_moves
+            elseif category == 'MagicAcc' then
+                set = use_ww and sets.midcast.pet_magicAcc_moves_ww or sets.midcast.pet_magicAcc_moves
+            end
+
+            if set then
+                equip(set)
+            end
+
+            eventArgs.handled = true
+            return
+        end
+    end
+
+    -- No unlock needed - main weapon was already unlocked at start of midcast
 
     -- ==========================================================================
     -- PET SUMMON DETECTION (Start background monitoring)

@@ -17,50 +17,53 @@
 ---============================================================================
 
 ---============================================================================
---- DEPENDENCIES - CENTRALIZED SYSTEMS
+--- DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---============================================================================
 
--- Message formatter (cooldown messages, WS TP display)
-local success_mf, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-if not success_mf then MessageFormatter = nil end
+local MessageFormatter = nil
+local CooldownChecker = nil
+local PrecastGuard = nil
+local WSValidator = nil
+local TPBonusHandler = nil
+local WS_DB = nil
+local PUPTPConfig = nil
+local ReadyMoveCategorizer = nil
 
--- Cooldown checker (universal ability/spell recast validation)
-local success_cc, CooldownChecker = pcall(require, 'shared/utils/precast/cooldown_checker')
-if not success_cc then CooldownChecker = nil end
+local modules_loaded = false
 
--- Precast guard (debuff blocking: Amnesia, Silence, Stun, etc.)
-local success_pg, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-if not success_pg then PrecastGuard = nil end
+local function ensure_modules_loaded()
+    if modules_loaded then return end
 
--- WS Validator (universal WS range + validity validation)
-local success_wsv, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
-if not success_wsv then WSValidator = nil end
+    MessageFormatter = require('shared/utils/messages/message_formatter')
+    CooldownChecker = require('shared/utils/precast/cooldown_checker')
 
--- TP Bonus Handler (universal WS TP gear optimization)
-local _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+    local precast_guard_success
+    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
+    if not precast_guard_success then
+        PrecastGuard = nil
+    end
 
--- Universal Weapon Skills Database (weaponskill descriptions)
-local WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+    local _
+    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
+    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
 
--- PUP TP configuration (TP bonus gear thresholds)
-local PUPTPConfig = _G.PUPTPConfig or {}  -- Loaded from character main file
+    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+    PUPTPConfig = _G.PUPTPConfig or {}
 
--- Weaponskill manager (WS validation + range checking)
-include('../shared/utils/weaponskill/weaponskill_manager.lua')
+    include('../shared/utils/weaponskill/weaponskill_manager.lua')
 
--- Set MessageFormatter in WeaponSkillManager
-if WeaponSkillManager and MessageFormatter then
-    WeaponSkillManager.MessageFormatter = MessageFormatter
-end
+    if WeaponSkillManager and MessageFormatter then
+        WeaponSkillManager.MessageFormatter = MessageFormatter
+    end
 
----============================================================================
---- DEPENDENCIES - PUP SPECIFIC
----============================================================================
+    -- PUP specific
+    local success_rmc
+    success_rmc, ReadyMoveCategorizer = pcall(require, 'shared/jobs/pup/functions/logic/ready_move_categorizer')
+    if not success_rmc then
+        ReadyMoveCategorizer = nil
+    end
 
--- Ready move categorizer (for midcast gear selection + precast detection)
-local success_rmc, ReadyMoveCategorizer = pcall(require, 'shared/jobs/pup/functions/logic/ready_move_categorizer')
-if not success_rmc then
-    ReadyMoveCategorizer = nil
+    modules_loaded = true
 end
 
 ---============================================================================
@@ -80,6 +83,8 @@ end
 --- @param eventArgs table Event arguments (cancel flag, etc.)
 --- @return void
 function job_precast(spell, action, spellMap, eventArgs)
+    -- Lazy load all dependencies on first precast
+    ensure_modules_loaded()
 
     -- ==========================================================================
     -- STEP 1: DEBUFF BLOCKING

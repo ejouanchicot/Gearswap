@@ -1,37 +1,37 @@
----============================================================================
---- THF Idle Module - Idle State Management
----============================================================================
---- Handles idle gear selection and customization for Thief job.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   THF Idle Module - Idle State Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all idle state logic for Red Mage job:
+---   - Idle set selection based on IdleMode (DT, Refresh, Regain, Evasion)
+---   - Movement speed optimization
+---   - Town gear management
+---   - Dynamic weapon application to idle sets
 ---
---- Features:
----   • Dynamic idle set selection (Normal/PDT/Town)
----   • Weapon set application (MainWeapon + SubWeapon states)
----   • Movement speed gear (MoveSpeed set)
----   • Town detection (Adoulin vs regular cities)
----   • SetBuilder integration for modular construction
----
---- Dependencies:
----   • Mote-Include (provides base idle handling)
----   • SetBuilder logic (constructs final idle sets)
----   • sets.idle (base equipment sets)
----
---- @file    jobs/thf/functions/THF_IDLE.lua
---- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-10-06
----============================================================================
+---   @file    shared/jobs/thf/functions/THF_IDLE.lua
+---   @author  Tetsouo
+---   @version 2.1 - Removed dead code + refactored header
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load THF logic modules
-local SetBuilder = require('shared/jobs/thf/functions/logic/set_builder')
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- IDLE HOOKS
----============================================================================
+local SetBuilder = nil
 
---- Apply weapon sets and movement gear to all idle configurations
+---  ═══════════════════════════════════════════════════════════════════════════
+---   IDLE HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
+
+--- Apply weapon sets, mode selection, and movement gear to all idle configurations
 --- @param idleSet table The idle set to customize
---- @return table Modified idle set with current weapon and movement gear
+--- @return table Modified idle set with current weapon, mode, and movement gear
 function customize_idle_set(idleSet)
+    -- Lazy load SetBuilder on first idle
+    if not SetBuilder then
+        SetBuilder = require('shared/jobs/thf/functions/logic/set_builder')
+    end
+
     if not idleSet then
         return {}
     end
@@ -39,15 +39,5 @@ function customize_idle_set(idleSet)
     return SetBuilder.build_idle_set(idleSet)
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
-
--- Make functions available globally for GearSwap
+-- Export to global scope (used by Mote-Include via include())
 _G.customize_idle_set = customize_idle_set
-
--- Also export as module
-local THF_IDLE = {}
-THF_IDLE.customize_idle_set = customize_idle_set
-
-return THF_IDLE

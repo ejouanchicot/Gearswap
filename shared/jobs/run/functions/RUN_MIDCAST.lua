@@ -16,14 +16,32 @@
 --- @date Created: 2025-10-03 | Updated: 2025-11-05
 --- @requires shared/jobs/run/functions/logic/cure_set_builder
 ---============================================================================
+--- DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---============================================================================
 
-local MidcastManager = require('shared/utils/midcast/midcast_manager')
-local CureSetBuilder = require('shared/jobs/run/functions/logic/cure_set_builder')
+local MidcastManager = nil
+local CureSetBuilder = nil
+local EnhancingSPELLS = nil
+local EnhancingSPELLS_success = false
 
--- Load ENHANCING_MAGIC_DATABASE for spell_family routing
-local EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
+local modules_loaded = false
+
+local function ensure_modules_loaded()
+    if modules_loaded then return end
+
+    MidcastManager = require('shared/utils/midcast/midcast_manager')
+    CureSetBuilder = require('shared/jobs/run/functions/logic/cure_set_builder')
+
+    -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
+    EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
+
+    modules_loaded = true
+end
 
 function job_midcast(spell, action, spellMap, eventArgs)
+    -- Lazy load modules on first midcast
+    ensure_modules_loaded()
+
     -- ==========================================================================
     -- CURE III/IV: DYNAMIC TARGET-BASED SETS (CureSetBuilder)
     -- ==========================================================================
@@ -88,18 +106,12 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- ENHANCING MAGIC
     -- ==========================================================================
     if spell.skill == 'Enhancing Magic' then
-        -- Phalanx: XP mode switching (SIRD for XP, Potency for normal)
+        -- Phalanx: RUN always uses SIRD (tank priority: prevent interruption)
         if spell.name == 'Phalanx' then
-            if state.Xp and state.Xp.value == 'On' and sets.midcast.SIRDPhalanx then
-                -- XP mode: Use SIRD Phalanx set directly (overrides MidcastManager)
-                equip(sets.midcast.SIRDPhalanx)
-            else
-                -- Normal mode: Use PhalanxPotency or fallback
-                MidcastManager.select_set({
-                    skill = 'Phalanx',
-                    spell = spell
-                })
-            end
+            MidcastManager.select_set({
+                skill = 'Enhancing Magic',
+                spell = spell
+            })
             return
         end
 
@@ -128,19 +140,11 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- BLUE MAGIC (RUN/BLU SUBJOB)
     -- ==========================================================================
     if spell.skill == 'Blue Magic' then
-        -- Cocoon: Self-buff (defense+)
-        if spell.name == 'Cocoon' then
-            MidcastManager.select_set({
-                skill = 'Cocoon',
-                spell = spell
-            })
-        else
-            -- Default Blue Magic: Offensive spells
-            MidcastManager.select_set({
-                skill = 'Blue Magic',
-                spell = spell
-            })
-        end
+        -- All Blue Magic spells use the same set (no distinction)
+        MidcastManager.select_set({
+            skill = 'Blue Magic',
+            spell = spell
+        })
         return
     end
 end

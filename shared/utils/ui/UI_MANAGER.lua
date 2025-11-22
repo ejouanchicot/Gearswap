@@ -593,6 +593,12 @@ function KeybindUI.hide()
     end
 end
 
+--- Check if UI is currently visible
+--- @return boolean True if UI is visible, false otherwise
+function KeybindUI.is_visible()
+    return _G.keybind_ui_visible == true
+end
+
 --- Toggle header visibility
 function KeybindUI.toggle_header()
     if not _G.keybind_ui_display then return end

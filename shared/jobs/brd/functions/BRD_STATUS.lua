@@ -1,28 +1,35 @@
----============================================================================
---- BRD Status Module - Player Status Change Management
----============================================================================
---- Handles player status changes (Idle, Engaged, Resting, Dead).
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BRD Status Module - Player Status Change Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles status changes (Idle, Engaged, Resting, Dead, etc.)
 ---
---- @file BRD_STATUS.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-13
----============================================================================
+---   @file    shared/jobs/brd/functions/BRD_STATUS.lua
+---   @author  Tetsouo
+---   @version 1.2 - Added DoomManager safety unlock
+---   @date    Updated: 2025-11-14
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Handle player status changes
---- @param newStatus string New status
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+local DoomManager = nil
+
+--- Handle status change events
+--- @param newStatus string New status (Idle, Engaged, Resting, Dead, etc.)
 --- @param oldStatus string Previous status
 --- @param eventArgs table Event arguments
 function job_status_change(newStatus, oldStatus, eventArgs)
-    -- No special BRD status change logic needed
-    -- Mote-Include handles idle/engaged transitions automatically
+    -- Lazy load DoomManager on first status change
+    if not DoomManager then
+        DoomManager = require('shared/utils/debuff/doom_manager')
+    end
+
+    -- Safety: Unlock Doom slots after death (prevents stuck locks after raise)
+    DoomManager.handle_status_change(newStatus, oldStatus)
+
+    -- BRD-specific status change logic can be added here
 end
 
 -- Export to global scope
 _G.job_status_change = job_status_change
-
--- Export module
-local BRD_STATUS = {}
-BRD_STATUS.job_status_change = job_status_change
-
-return BRD_STATUS

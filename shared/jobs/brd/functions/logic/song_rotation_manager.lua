@@ -1,14 +1,14 @@
----============================================================================
---- BRD Song Rotation Manager Logic Module
----============================================================================
---- Handles song rotation logic, pack selection, and Victory March replacement.
---- Business logic for BRD song casting sequences.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BRD Song Rotation Manager Logic Module
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles song rotation logic, pack selection, and Victory March replacement.
+---   Business logic for BRD song casting sequences.
 ---
---- @file jobs/brd/functions/logic/song_rotation_manager.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-13
----============================================================================
+---   @file    shared/jobs/brd/functions/logic/song_rotation_manager.lua
+---   @author  Tetsouo
+---   @version 1.1 - Fix: Remove hardcoded instruments (only Marsyas/Loughnashade locked)
+---   @date    Created: 2025-10-13 | Updated: 2025-11-13
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local SongRotationManager = {}
 
@@ -19,9 +19,9 @@ local BRDTimingConfig = _G.BRDTimingConfig or {}  -- Loaded from character main 
 -- Load message formatter for BRD messages
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
----============================================================================
---- SONG PACK RETRIEVAL
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SONG PACK RETRIEVAL
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Get current song pack based on state
 --- @return table Song pack data with songs array
@@ -74,9 +74,9 @@ function SongRotationManager.get_songs_with_replacement()
     return songs
 end
 
----============================================================================
---- SONG DISPLAY
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SONG DISPLAY
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Get short name for song display
 --- @param song_name string Full song name
@@ -104,9 +104,9 @@ function SongRotationManager.update_song_slots()
     end
 end
 
----============================================================================
---- DUMMY SONG MANAGEMENT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DUMMY SONG MANAGEMENT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Get dummy songs array
 --- @return table Array of dummy song names
@@ -114,9 +114,9 @@ function SongRotationManager.get_dummy_songs()
     return BRDSongConfig.DUMMY_SONGS.standard
 end
 
----============================================================================
---- INSTRUMENT SELECTION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   INSTRUMENT SELECTION
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Check if song is a dummy song
 --- @param song_name string Song name
@@ -132,33 +132,37 @@ local function is_dummy_song(song_name)
 end
 
 --- Get required instrument for specific song
+--- Only returns instruments for songs that are LOCKED (cannot be cast without them)
+--- For dummy songs: instrument selected by sets.midcast.DummySong
+--- For other songs: instrument selected by state.MainInstrument or sets.midcast.BardSong
 --- @param song_name string Song name
---- @return string|nil Instrument name or nil if no specific requirement
+--- @return string|nil Instrument name or nil (uses sets/state)
 function SongRotationManager.get_required_instrument(song_name)
-    -- CRITICAL: All dummy songs MUST use Daurdabla to expand song slots (+1 or +2)
-    if is_dummy_song(song_name) then
-        return 'Daurdabla'
-    end
+    -- LOCKED SONGS (cannot be cast without specific instrument):
 
+    -- Honor March: Locked to Marsyas (song unavailable without Marsyas)
     if song_name == 'Honor March' then
         return 'Marsyas'
-    elseif song_name:match('Ballad') then
-        return 'Daurdabla'
-    elseif
-        song_name:match('March') or song_name:match('Madrigal') or song_name:match('Minuet') or
-            song_name:match('Prelude')
-     then
-        return 'Gjallarhorn'
-    elseif song_name:match('Carol') or song_name:match('Paeon') then
-        return 'Daurdabla'
     end
 
-    return state.MainInstrument and state.MainInstrument.current or 'Gjallarhorn'
+    -- Aria of Passion: Locked to Loughnashade (song unavailable without Loughnashade)
+    if song_name == 'Aria of Passion' then
+        return 'Loughnashade'
+    end
+
+    -- Dummy songs: Let sets.midcast.DummySong decide instrument
+    -- Valid choices: Daurdabla (+2), Loughnashade (+2), Blurred Harp (+1), Blurred Harp +1 (+1)
+    if is_dummy_song(song_name) then
+        return nil  -- Use sets.midcast.DummySong (player's choice)
+    end
+
+    -- For all other songs: Use player's current instrument preference
+    return nil  -- Use state.MainInstrument or sets.midcast.BardSong
 end
 
----============================================================================
---- 3-PHASE DUMMY SONG CASTING WITH DYNAMIC TIMING
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   3-PHASE DUMMY SONG CASTING WITH DYNAMIC TIMING
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Get appropriate song delay based on active buffs and Marcato state
 --- @param marcato_used boolean Whether Marcato was used for this rotation
@@ -274,9 +278,9 @@ function SongRotationManager.cast_dummy_songs()
     return true
 end
 
----============================================================================
---- GLOBAL EXPORT FOR UI
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   GLOBAL EXPORT FOR UI
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export update function for UI display
 _G.update_brd_song_slots = SongRotationManager.update_song_slots

@@ -1,39 +1,43 @@
----============================================================================
---- SAM Engaged Module - Melee Gear Customization
----============================================================================
---- Handles engaged state logic for Samurai with dynamic gear selection.
---- Uses SetBuilder for centralized set construction.
---- @file SAM_ENGAGED.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-21
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SAM Engaged Module - Combat State Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all engaged state logic for Red Mage job:
+---   - Combat set selection based on EngagedMode (DT, Enspell, Refresh, TP)
+---   - Dual wield detection and optimization (NIN subjob)
+---   - Dynamic weapon application to engaged sets
+---   - Combat state transitions
+---
+---   @file    shared/jobs/sam/functions/SAM_ENGAGED.lua
+---   @author  Tetsouo
+---   @version 2.1 - Removed dead code + refactored header
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load set builder (centralized logic)
-local SetBuilder = require('shared/jobs/sam/functions/logic/set_builder')
+local SetBuilder = nil
 
----============================================================================
---- ENGAGED HOOK
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ENGAGED HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply weapon sets, HybridMode, and buff-based variations to engaged configuration
+--- Apply weapon sets, mode selection, and movement gear to all engaged configurations
 --- @param meleeSet table The engaged set to customize
---- @return table Modified engaged set with current weapon, hybrid mode, and buffs
+--- @return table Modified engaged set with current weapon, mode, and movement gear
 function customize_melee_set(meleeSet)
+    -- Lazy load SetBuilder on first engage
+    if not SetBuilder then
+        SetBuilder = require('shared/jobs/sam/functions/logic/set_builder')
+    end
+
+    if not meleeSet then
+        return {}
+    end
+
     return SetBuilder.build_engaged_set(meleeSet)
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
-
+-- Export to global scope (used by Mote-Include via include())
 _G.customize_melee_set = customize_melee_set
-
-local SAM_ENGAGED = {}
-SAM_ENGAGED.customize_melee_set = customize_melee_set
-
-return SAM_ENGAGED

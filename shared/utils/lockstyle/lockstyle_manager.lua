@@ -1,14 +1,14 @@
----============================================================================
---- Lockstyle Manager - Centralized Lockstyle Management Factory
----============================================================================
---- Factory pattern that creates job-specific lockstyle modules.
---- Eliminates 293-line duplication across WAR/PLD/DNC (879 lines >> 293 lines).
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Lockstyle Manager - Centralized Lockstyle Management Factory
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Factory pattern that creates job-specific lockstyle modules.
+---   Eliminates 293-line duplication across WAR/PLD/DNC (879 lines >> 293 lines).
 ---
---- @file utils/lockstyle/lockstyle_manager.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-05
----============================================================================
+---   @file    shared/utils/lockstyle/lockstyle_manager.lua
+---   @author  Tetsouo
+---   @version 1.1 - BRD style + fix Lua 5.1 compatibility (remove coroutine.close)
+---   @date    Created: 2025-10-05 | Updated: 2025-11-13
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local LockstyleManager = {}
 
@@ -45,19 +45,14 @@ function LockstyleManager.create(job_code, config_path, default_lockstyle, defau
         operation_id = 0
     }
 
-    ---============================================================================
-    --- LOCKSTYLE FUNCTIONS WITH DELAY
-    ---============================================================================
+    ---  ═══════════════════════════════════════════════════════════════════════════
+    ---   LOCKSTYLE FUNCTIONS WITH DELAY
+    ---  ═══════════════════════════════════════════════════════════════════════════
 
     --- Cancel all pending lockstyle operations
+    --- Increments operation_id to invalidate all pending coroutines
     local function cancel_pending_operations()
         STATE.operation_id = STATE.operation_id + 1
-
-        for _, coro in ipairs(STATE.current_coroutines) do
-            if coroutine.status(coro) ~= 'dead' then
-                coroutine.close(coro)
-            end
-        end
         STATE.current_coroutines = {}
         STATE.is_processing = false
     end
@@ -189,9 +184,9 @@ function LockstyleManager.create(job_code, config_path, default_lockstyle, defau
         show_lockstyle_config()
     end
 
-    ---============================================================================
-    --- MODULE EXPORT
-    ---============================================================================
+    ---  ═══════════════════════════════════════════════════════════════════════════
+    ---   MODULE EXPORT
+    ---  ═══════════════════════════════════════════════════════════════════════════
 
     -- Export functions globally for include() compatibility
     _G.select_default_lockstyle = select_default_lockstyle

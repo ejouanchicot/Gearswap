@@ -51,12 +51,12 @@ function SetBuilder.build_idle_set(base_idle_set)
         -- ====================================================================
 
         -- Check if pet is engaged (STRING comparison!)
-        if state.petEngaged and state.petEngaged.current == "true" then
+        if state.petEngaged and state.petEngaged.value == "true" then
             -- Pet is engaged - use pet engaged set
             final_set = sets.pet.engaged or sets.pet.idle or base_idle_set
 
             -- Apply pet engaged PDT if HybridMode is PDT
-            if state.HybridMode and state.HybridMode.current == "PDT" then
+            if state.HybridMode and state.HybridMode.value == "PDT" then
                 if sets.pet.engaged and sets.pet.engaged.PDT then
                     final_set = set_combine(final_set, sets.pet.engaged.PDT)
                 elseif sets.pet.PDT then
@@ -65,20 +65,29 @@ function SetBuilder.build_idle_set(base_idle_set)
             end
         else
             -- Pet is idle - check petIdleMode
-            if state.petIdleMode and state.petIdleMode.current == "PetPDT" then
+            if state.petIdleMode and state.petIdleMode.value == "PetPDT" then
                 -- Focus on pet PDT
                 final_set = sets.pet.idle.PDT or sets.pet.idle or base_idle_set
+
+                -- Apply pet idle PDT overlay if HybridMode is PDT (only in PetPDT mode)
+                if state.HybridMode and state.HybridMode.value == "PDT" then
+                    if sets.pet.idle and sets.pet.idle.PDT then
+                        final_set = set_combine(final_set, sets.pet.idle.PDT)
+                    elseif sets.pet.PDT then
+                        final_set = set_combine(final_set, sets.pet.PDT)
+                    end
+                end
             else
                 -- Focus on master PDT (MasterPDT mode)
                 final_set = sets.me.idle.PDT or sets.me.idle or base_idle_set
-            end
 
-            -- Apply pet idle PDT overlay if HybridMode is PDT
-            if state.HybridMode and state.HybridMode.current == "PDT" then
-                if sets.pet.idle and sets.pet.idle.PDT then
-                    final_set = set_combine(final_set, sets.pet.idle.PDT)
-                elseif sets.pet.PDT then
-                    final_set = set_combine(final_set, sets.pet.PDT)
+                -- Apply master PDT overlay if HybridMode is PDT (only in MasterPDT mode)
+                if state.HybridMode and state.HybridMode.value == "PDT" then
+                    if sets.me.idle and sets.me.idle.PDT then
+                        final_set = set_combine(final_set, sets.me.idle.PDT)
+                    elseif sets.me.PDT then
+                        final_set = set_combine(final_set, sets.me.PDT)
+                    end
                 end
             end
         end
@@ -89,14 +98,14 @@ function SetBuilder.build_idle_set(base_idle_set)
         -- ====================================================================
 
         -- Check if in town
-        if state.IdleMode and state.IdleMode.current == "Town" then
+        if state.IdleMode and state.IdleMode.value == "Town" then
             final_set = sets.me.idle.Town or sets.me.idle or base_idle_set
         else
             final_set = sets.me.idle or base_idle_set
         end
 
         -- Apply master PDT if HybridMode is PDT
-        if state.HybridMode and state.HybridMode.current == "PDT" then
+        if state.HybridMode and state.HybridMode.value == "PDT" then
             if sets.me.idle and sets.me.idle.PDT then
                 final_set = set_combine(final_set, sets.me.idle.PDT)
             elseif sets.me.PDT then
@@ -109,12 +118,12 @@ function SetBuilder.build_idle_set(base_idle_set)
     --- ALWAYS APPLY: Dual Weapon System (Pet or No Pet)
     ---========================================================================
 
-    if state.WeaponSet and state.WeaponSet.current and sets[state.WeaponSet.current] then
-        final_set = set_combine(final_set, sets[state.WeaponSet.current])
+    if state.WeaponSet and state.WeaponSet.value and sets[state.WeaponSet.value] then
+        final_set = set_combine(final_set, sets[state.WeaponSet.value])
     end
 
-    if state.SubSet and state.SubSet.current and sets[state.SubSet.current] then
-        final_set = set_combine(final_set, sets[state.SubSet.current])
+    if state.SubSet and state.SubSet.value and sets[state.SubSet.value] then
+        final_set = set_combine(final_set, sets[state.SubSet.value])
     end
 
     ---========================================================================
@@ -133,16 +142,18 @@ end
 ---============================================================================
 
 --- Build engaged set with Pet vs Master bifurcation
---- CRITICAL LOGIC:
----   • If pet valid AND pet engaged >> Use pet engaged sets
----   • Otherwise >> Use master engaged sets
+--- CRITICAL LOGIC (3 CASES):
+---   • Case 1: BOTH master AND pet engaged >> Use engagedBoth sets
+---   • Case 2: Pet engaged ONLY (master idle) >> Use pet engaged sets
+---   • Case 3: Master engaged ONLY (no pet OR pet idle) >> Use master engaged sets
 ---   • ALWAYS apply: WeaponSet, SubSet, HybridMode
 ---
 --- @param base_engaged_set table Base engaged set from sets.me.engaged
 --- @return table final_set Final engaged set after all customizations
 function SetBuilder.build_engaged_set(base_engaged_set)
-    -- Use GLOBAL pet from Mote-Include (cached, no API call)
+    -- Use GLOBAL pet and player from Mote-Include (cached, no API call)
     local pet = _G.pet
+    local player = _G.player
 
     -- Update pet mode cache
     PetManager.update_pet_mode(pet)
@@ -150,19 +161,41 @@ function SetBuilder.build_engaged_set(base_engaged_set)
 
     local final_set = base_engaged_set
 
+    -- Check if pet is engaged (STRING comparison!)
+    local pet_is_engaged = state.petEngaged and state.petEngaged.value == "true"
+
+    -- Check if master is engaged
+    local master_is_engaged = player and player.status == 'Engaged'
+
     ---========================================================================
-    --- BIFURCATION 1: Pet Valid AND Engaged
+    --- BIFURCATION: 3-Way Split (Both / Pet Only / Master Only)
     ---========================================================================
 
-    if pet_mode.pet_valid and state.petEngaged and state.petEngaged.current == "true" then
+    if master_is_engaged and pet_mode.pet_valid and pet_is_engaged then
         -- ====================================================================
-        -- PET ENGAGED - Use pet engaged sets
+        -- CASE 1: BOTH MASTER AND PET ENGAGED - Use engagedBoth sets
+        -- ====================================================================
+
+        final_set = sets.pet.engagedBoth or sets.me.engaged or base_engaged_set
+
+        -- Apply engagedBoth PDT if HybridMode is PDT
+        if state.HybridMode and state.HybridMode.value == "PDT" then
+            if sets.pet.engagedBoth and sets.pet.engagedBoth.PDT then
+                final_set = set_combine(final_set, sets.pet.engagedBoth.PDT)
+            elseif sets.pet.PDT then
+                final_set = set_combine(final_set, sets.pet.PDT)
+            end
+        end
+
+    elseif pet_mode.pet_valid and pet_is_engaged then
+        -- ====================================================================
+        -- CASE 2: PET ENGAGED ONLY (master idle) - Use pet engaged sets
         -- ====================================================================
 
         final_set = sets.pet.engaged or base_engaged_set
 
         -- Apply pet engaged PDT if HybridMode is PDT
-        if state.HybridMode and state.HybridMode.current == "PDT" then
+        if state.HybridMode and state.HybridMode.value == "PDT" then
             if sets.pet.engaged and sets.pet.engaged.PDT then
                 final_set = set_combine(final_set, sets.pet.engaged.PDT)
             elseif sets.pet.PDT then
@@ -172,13 +205,13 @@ function SetBuilder.build_engaged_set(base_engaged_set)
 
     else
         -- ====================================================================
-        -- MASTER ENGAGED - Use master engaged sets
+        -- CASE 3: MASTER ENGAGED ONLY (no pet OR pet idle) - Use master sets
         -- ====================================================================
 
         final_set = sets.me.engaged or base_engaged_set
 
         -- Apply master engaged PDT if HybridMode is PDT
-        if state.HybridMode and state.HybridMode.current == "PDT" then
+        if state.HybridMode and state.HybridMode.value == "PDT" then
             if sets.me.engaged and sets.me.engaged.PDT then
                 final_set = set_combine(final_set, sets.me.engaged.PDT)
             elseif sets.me.PDT then
@@ -191,12 +224,12 @@ function SetBuilder.build_engaged_set(base_engaged_set)
     --- ALWAYS APPLY: Dual Weapon System
     ---========================================================================
 
-    if state.WeaponSet and state.WeaponSet.current and sets[state.WeaponSet.current] then
-        final_set = set_combine(final_set, sets[state.WeaponSet.current])
+    if state.WeaponSet and state.WeaponSet.value and sets[state.WeaponSet.value] then
+        final_set = set_combine(final_set, sets[state.WeaponSet.value])
     end
 
-    if state.SubSet and state.SubSet.current and sets[state.SubSet.current] then
-        final_set = set_combine(final_set, sets[state.SubSet.current])
+    if state.SubSet and state.SubSet.value and sets[state.SubSet.value] then
+        final_set = set_combine(final_set, sets[state.SubSet.value])
     end
 
     return final_set

@@ -29,53 +29,51 @@
 ---============================================================================
 
 ---============================================================================
---- DEPENDENCIES - CENTRALIZED SYSTEMS
+--- DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---============================================================================
 
--- Message formatter (cooldown messages, WS TP display)
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+local MessageFormatter = nil
+local CooldownChecker = nil
+local PrecastGuard = nil
+local TPBonusHandler = nil
+local WSValidator = nil
+local SATAManager = nil
+local THFTPConfig = nil
+local JA_DB = nil
+local WS_DB = nil
 
--- Cooldown checker (universal ability/spell recast validation)
-local CooldownChecker = require('shared/utils/precast/cooldown_checker')
+local modules_loaded = false
 
--- Precast guard (debuff blocking: Amnesia, Silence, Stun, etc.)
-local precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-if not precast_guard_success then
-    PrecastGuard = nil
+local function ensure_modules_loaded()
+    if modules_loaded then return end
+
+    MessageFormatter = require('shared/utils/messages/message_formatter')
+    CooldownChecker = require('shared/utils/precast/cooldown_checker')
+
+    local precast_guard_success
+    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
+    if not precast_guard_success then
+        PrecastGuard = nil
+    end
+
+    include('../shared/utils/weaponskill/weaponskill_manager.lua')
+    include('../shared/utils/weaponskill/tp_bonus_calculator.lua')
+
+    local _
+    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
+
+    if WeaponSkillManager and MessageFormatter then
+        WeaponSkillManager.MessageFormatter = MessageFormatter
+    end
+
+    SATAManager = require('shared/jobs/thf/functions/logic/sa_ta_manager')
+    THFTPConfig = _G.THFTPConfig or {}
+    JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
+    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+
+    modules_loaded = true
 end
-
--- Weaponskill manager (WS validation + range checking)
-include('../shared/utils/weaponskill/weaponskill_manager.lua')
-
--- TP bonus calculator (Moonshade Earring automation)
-include('../shared/utils/weaponskill/tp_bonus_calculator.lua')
-
--- TP Bonus Handler (universal WS TP gear optimization)
-local _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
-
--- WS Validator (universal WS range + validity validation)
-local _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
-
--- Set MessageFormatter in WeaponSkillManager
-if WeaponSkillManager and MessageFormatter then
-    WeaponSkillManager.MessageFormatter = MessageFormatter
-end
-
----============================================================================
---- DEPENDENCIES - THF SPECIFIC
----============================================================================
-
--- THF logic modules (business logic)
-local SATAManager = require('shared/jobs/thf/functions/logic/sa_ta_manager')
-
--- THF configuration
-local THFTPConfig = _G.THFTPConfig or {}  -- Loaded from character main file
-
--- Universal Job Ability Database (supports main job + subjob abilities)
-local JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
-
--- Universal Weapon Skills Database (weaponskill descriptions)
-local WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
 
 ---============================================================================
 --- PRECAST HOOKS
@@ -88,6 +86,8 @@ local WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
 --- @param eventArgs table Event arguments
 --- @return void
 function job_precast(spell, action, spellMap, eventArgs)
+    -- Lazy load modules on first action
+    ensure_modules_loaded()
 
     -- FIRST: Check for blocking debuffs (Amnesia, Silence, etc.)
     -- This prevents unnecessary equipment swaps when actions are blocked

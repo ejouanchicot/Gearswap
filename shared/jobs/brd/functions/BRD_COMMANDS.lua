@@ -48,14 +48,33 @@
 --- @date Created: 2025-10-13
 ---============================================================================
 
-local CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
-local UICommands = require('shared/utils/ui/UI_COMMANDS')
-local WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
-local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
-local MessageFormatter = require('shared/utils/messages/message_formatter')
-local SongRotationManager = require('shared/jobs/brd/functions/logic/song_rotation_manager')
-local BRDSongConfig = _G.BRDSongConfig or {}  -- Loaded from character main file
-local BRDTimingConfig = _G.BRDTimingConfig or {}  -- Loaded from character main file
+---============================================================================
+--- DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---============================================================================
+
+local CommonCommands = nil
+local UICommands = nil
+local WatchdogCommands = nil
+local CycleHandler = nil
+local MessageCommands = nil
+local MessageFormatter = nil
+local SongRotationManager = nil
+local BRDSongConfig = nil
+local BRDTimingConfig = nil
+
+local function ensure_commands_loaded()
+    if not UICommands then
+        CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
+        UICommands = require('shared/utils/ui/UI_COMMANDS')
+        WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
+        CycleHandler = require('shared/utils/core/CYCLE_HANDLER')
+        MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
+        MessageFormatter = require('shared/utils/messages/message_formatter')
+        SongRotationManager = require('shared/jobs/brd/functions/logic/song_rotation_manager')
+        BRDSongConfig = _G.BRDSongConfig or {}  -- Loaded from character main file
+        BRDTimingConfig = _G.BRDTimingConfig or {}  -- Loaded from character main file
+    end
+end
 
 ---============================================================================
 --- HELPER FUNCTIONS
@@ -71,21 +90,20 @@ local function cast_song(song_name, auto_pianissimo)
         return
     end
 
-    -- Check if targeting party member for Pianissimo
-    local use_pianissimo = false
-    local target_name = nil
+    -- NOTE: Pianissimo auto-activation is now handled ONLY by BRD_PRECAST.lua
+    -- This prevents double-casting when using song commands
+    -- Simply cast the song normally, BRD_PRECAST will auto-add Pianissimo if needed
 
-    if auto_pianissimo and player and player.target then
+    -- Auto-Marcato for configured song (state.MarcatoSong) when NOT targeting another player
+    local targeting_other_player = false
+    if player and player.target then
         local target = player.target
-        -- Check if targeting another player (not self, not monster)
         if target.id and target.id ~= player.id and target.spawn_type == 13 then
-            use_pianissimo = true
-            target_name = target.name or 'Unknown'
+            targeting_other_player = true
         end
     end
 
-    -- Auto-Marcato for configured song (state.MarcatoSong) with Nitro and NOT using Pianissimo
-    if not use_pianissimo and state and state.MarcatoSong then
+    if not targeting_other_player and state and state.MarcatoSong then
         local marcato_enabled = state.MarcatoSong.value ~= 'Off'
         local target_song = nil
 
@@ -116,16 +134,25 @@ local function cast_song(song_name, auto_pianissimo)
         end
     end
 
-    -- Pianissimo single-target cast
-    if use_pianissimo then
-        send_command('input /ja "Pianissimo" <me>')
-        send_command('wait 1; input /ma "' .. song_name .. '" <t>')
-        MessageFormatter.show_pianissimo_target(target_name)
-        return
+    -- Determine cast target
+    if player and player.target then
+        local target = player.target
+
+        -- PRIORITY 1: Targeting self explicitly
+        if target.id == player.id then
+            send_command('input /ma "' .. song_name .. '" <me>')
+            return
+        end
+
+        -- PRIORITY 2: Targeting another PC (not self)
+        if target.spawn_type == 13 then
+            send_command('input /ma "' .. song_name .. '" "' .. target.name .. '"')
+            return
+        end
     end
 
-    -- Normal cast (self or party-wide)
-    send_command('input /ma "' .. song_name .. '" <me>')
+    -- PRIORITY 3: Default (monstre, no target) - use <stpc> (subtarget or self)
+    send_command('input /ma "' .. song_name .. '" <stpc>')
 end
 
 --- Use a job ability by name
@@ -210,6 +237,9 @@ end
 --- @param cmdParams table Command parameters
 --- @param eventArgs table Event arguments
 function job_self_command(cmdParams, eventArgs)
+    -- Lazy load command handlers on first command
+    ensure_commands_loaded()
+
     if not cmdParams or #cmdParams == 0 then
         return
     end
@@ -309,6 +339,18 @@ function job_self_command(cmdParams, eventArgs)
         MessageCommands.show_debugmidcast_toggled('BRD', _G.MidcastManagerDebugState)
 
         eventArgs.handled = true
+        return
+    end
+
+    -- ==========================================================================
+    -- CUSTOM CYCLE STATE (UI-aware cycle)
+    -- ==========================================================================
+    -- Intercepts cycle commands to check UI visibility
+    -- If UI visible: custom cycle + UI update (no message)
+    -- If UI invisible: delegate to Mote-Include (shows message)
+
+    if command == 'cyclestate' then
+        eventArgs.handled = CycleHandler.handle_cyclestate(cmdParams, eventArgs)
         return
     end
 
@@ -438,7 +480,8 @@ function job_self_command(cmdParams, eventArgs)
         local dummy_songs = SongRotationManager.get_dummy_songs()
         if dummy_songs and dummy_songs[1] then
             cast_song(dummy_songs[1])
-            MessageFormatter.show_dummy_cast(dummy_songs[1])
+            -- DISABLED: Message already shown by BRD_MIDCAST.lua (daurdabla_dummy)
+            -- MessageFormatter.show_dummy_cast(dummy_songs[1])
         end
         eventArgs.handled = true
         return
@@ -448,7 +491,8 @@ function job_self_command(cmdParams, eventArgs)
         local dummy_songs = SongRotationManager.get_dummy_songs()
         if dummy_songs and dummy_songs[2] then
             cast_song(dummy_songs[2])
-            MessageFormatter.show_dummy_cast(dummy_songs[2])
+            -- DISABLED: Message already shown by BRD_MIDCAST.lua (daurdabla_dummy)
+            -- MessageFormatter.show_dummy_cast(dummy_songs[2])
         end
         eventArgs.handled = true
         return

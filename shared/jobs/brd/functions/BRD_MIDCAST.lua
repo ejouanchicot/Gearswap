@@ -1,35 +1,58 @@
----============================================================================
---- BRD Midcast Module - Powered by MidcastManager (Subjob Spells Only)
----============================================================================
---- Handles midcast for Bard with specialized Song instrument selection.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BRD Midcast Module - Powered by MidcastManager (Subjob Spells Only)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles midcast for Bard with specialized Song instrument selection.
 ---
---- Features:
----   - Songs: Instrument selection (Gjallarhorn, Marsyas, Daurdabla)
----   - Dummy Songs: Duration gear (Troubadour)
----   - Lullaby: Special handling (no weapon swap)
----   - Subjob Spells: Cure, Enhancing Magic (via MidcastManager)
+---   Features:
+---     - Songs: Instrument selection (Gjallarhorn, Marsyas, Loughnashade)
+---     - Dummy Songs: Player-chosen instrument (sets.midcast.DummySong)
+---     - Lullaby: Special handling (no weapon swap)
+---     - Subjob Spells: Cure, Enhancing Magic (via MidcastManager)
 ---
---- Note: Song logic is BRD-specific and NOT handled by MidcastManager.
+---   Note: Song logic is BRD-specific and NOT handled by MidcastManager.
 ---
---- @file BRD_MIDCAST.lua
---- @author Tetsouo
---- @version 3.0 - Added spell_family database support
---- @date Created: 2025-10-13 | Updated: 2025-11-05
----============================================================================
+---   @file    shared/jobs/brd/functions/BRD_MIDCAST.lua
+---   @author  Tetsouo
+---   @version 3.1 - Fix: Dummy songs use sets.midcast.DummySong (flexible instrument)
+---   @date    Created: 2025-10-13 | Updated: 2025-11-13
+---  ═══════════════════════════════════════════════════════════════════════════
 
-local MidcastManager = require('shared/utils/midcast/midcast_manager')
-local SongRotationManager = require('shared/jobs/brd/functions/logic/song_rotation_manager')
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load ENHANCING_MAGIC_DATABASE for spell_family routing
-local EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
+local MidcastManager = nil
+local SongRotationManager = nil
+local MessageFormatter = nil
+local EnhancingSPELLS = nil
+local EnhancingSPELLS_success = false
+local BRDSpells = nil
+local BRDSpells_success = false
 
--- Load BRD_SPELL_DATABASE for song descriptions
-local BRDSpells_success, BRDSpells = pcall(require, 'shared/data/magic/BRD_SPELL_DATABASE')
+local modules_loaded = false
 
----============================================================================
---- SONG INSTRUMENT DETECTION
----============================================================================
+local function ensure_modules_loaded()
+    if modules_loaded then return end
+
+    MidcastManager = require('shared/utils/midcast/midcast_manager')
+    SongRotationManager = require('shared/jobs/brd/functions/logic/song_rotation_manager')
+    MessageFormatter = require('shared/utils/messages/message_formatter')
+
+    -- Expose SongRotationManager globally for MidcastManager
+    _G.SongRotationManager = SongRotationManager
+
+    -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
+    EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
+
+    -- Load BRD_SPELL_DATABASE for song descriptions
+    BRDSpells_success, BRDSpells = pcall(require, 'shared/data/magic/BRD_SPELL_DATABASE')
+
+    modules_loaded = true
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SONG INSTRUMENT DETECTION
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Determine which instrument to use for a song
 --- @param spell table Spell information
@@ -95,9 +118,9 @@ local function is_no_weapon_song(spell_name)
     return false
 end
 
----============================================================================
---- MIDCAST HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MIDCAST HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 function job_midcast(spell, action, spellMap, eventArgs)
     -- No BRD-specific PRE-midcast logic
@@ -108,17 +131,23 @@ function job_customize_midcast_set(midcastSet, spell)
 end
 
 function job_post_midcast(spell, action, spellMap, eventArgs)
+    -- Lazy load modules on first midcast
+    ensure_modules_loaded()
+
     -- Watchdog: Track midcast start
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_midcast_start(spell)
     end
 
     ---========================================================================
-    --- SINGING (BRD-SPECIFIC - NOT HANDLED BY MIDCASTMANAGER)
+    --- SINGING (NOW HANDLED BY MIDCASTMANAGER)
     ---========================================================================
     if spell.skill == 'Singing' then
-        -- Display song message with description (like GEO does for Geomancy)
-        if spell.english then
+        -- Check if dummy song FIRST
+        local is_dummy = is_dummy_song(spell.english)
+
+        -- Normal songs (non-dummy): Display message with description
+        if not is_dummy and spell.english then
             local description = nil
             local element = nil
             local target_name = nil
@@ -133,17 +162,14 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
             if spell.target and spell.target.name and spell.target.name ~= player.name then
                 target_name = spell.target.name
 
-                -- Detect target type with priority logic (same as spell_message_handler)
-                -- IMPORTANT: Check spawn_type == 16 BEFORE is_npc (both monsters and NPCs have is_npc = true)
+                -- Detect target type with priority logic
                 if spell.target.in_party or spell.target.in_alliance then
                     target_type = "PLAYER"
                 elseif spell.target.charmed then
                     target_type = "PLAYER"
                 elseif spell.target.spawn_type == 16 then
-                    -- spawn_type 16 = Monster/Enemy (CHECK BEFORE is_npc!)
                     target_type = "MONSTER"
-                elseif spell.target.spawn_type == 2 or spell.target.is_npc then
-                    -- spawn_type 2 = NPC (includes portals, ??? NPCs, etc.)
+                elseif spell.target.is_npc then
                     target_type = "NPC"
                 elseif spell.target.type then
                     target_type = spell.target.type
@@ -155,38 +181,49 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
             MessageFormatter.show_spell_activated(spell.english, description, target_name, spell.skill, element, target_type)
         end
 
-        -- CRITICAL: Instrument Lock Protection - ensure locked instrument stays equipped
+        -- Dummy songs: Display instrument message ONLY (no generic spell message)
+        if is_dummy then
+            -- Equip the full DummySong set (includes player's chosen instrument)
+            if sets.midcast and sets.midcast.DummySong then
+                equip(sets.midcast.DummySong)
+
+                -- Extract instrument name from the set for display
+                local instrument = sets.midcast.DummySong.range or 'Unknown'
+                MessageFormatter.show_daurdabla_dummy(spell.english, instrument)
+            end
+            return
+        end
+
+        -- Debuff songs (Lullaby, Threnody, etc.): NO weapon swap
+        -- Let Mote-Include equip the appropriate set, we just skip instrument logic
+        local no_weapon_swap = is_no_weapon_song(spell.english)
+        if no_weapon_swap then
+            -- Let Mote's midcast handle it (will use sets.midcast.Lullaby, sets.midcast.DebuffSong, etc.)
+            return
+        end
+
+        -- Normal songs: Delegate to MidcastManager with skill='Singing'
+        -- MidcastManager will handle:
+        --   - Exact spell name fallback (Honor March, Aria of Passion)
+        --   - Base song fallback
+        --   - Song type fallback (Minne, Madrigal, etc.)
+        --   - Instrument selection
+        --   - Troubadour buff handling
+        --   - Debug display
+        MidcastManager.select_set({
+            skill = 'Singing',
+            spell = spell
+        })
+
+        -- CRITICAL: Instrument Lock Protection - force locked instrument AFTER MidcastManager
+        -- This ensures Honor March/Aria of Passion keep their required instrument throughout cast
         if _G.casting_locked_song and spell.type == 'BardSong' then
             if _G.locked_song_name == spell.english and _G.locked_instrument then
                 equip({range = _G.locked_instrument})
-                return
+                if _G.MidcastManagerDebugState then
+                    add_to_chat(8, '[BRD] Instrument locked: ' .. _G.locked_instrument)
+                end
             end
-        end
-
-        local instrument = get_song_instrument(spell)
-        local is_dummy = is_dummy_song(spell.english)
-        local no_weapon_swap = is_no_weapon_song(spell.english)
-
-        -- Dummy songs: Force Daurdabla only (for song slots expansion)
-        if is_dummy then
-            equip({range = 'Daurdabla'})
-            MessageFormatter.show_daurdabla_dummy()
-            return
-        end
-
-        -- Debuff songs: Skip instrument-specific logic (Mote equipped DebuffSong set)
-        if no_weapon_swap then
-            return
-        end
-
-        -- Normal songs: Use instrument-specific gear
-        if instrument and sets.midcast.Songs and sets.midcast.Songs[instrument] then
-            equip(sets.midcast.Songs[instrument])
-        end
-
-        -- Troubadour: Use duration gear
-        if buffactive['Troubadour'] and sets.midcast.Songs.Duration then
-            equip(sets.midcast.Songs.Duration)
         end
 
         return
@@ -235,9 +272,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 _G.job_midcast = job_midcast
 _G.job_customize_midcast_set = job_customize_midcast_set

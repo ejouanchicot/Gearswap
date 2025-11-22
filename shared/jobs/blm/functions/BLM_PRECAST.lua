@@ -20,50 +20,54 @@
 ---============================================================================
 
 ---============================================================================
---- DEPENDENCIES - CENTRALIZED SYSTEMS
+--- DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---============================================================================
 
--- Message formatter (cooldown messages, WS TP display)
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+local MessageFormatter = nil
+local CooldownChecker = nil
+local PrecastGuard = nil
+local TPBonusHandler = nil
+local WSValidator = nil
+local BLMTPConfig = nil
+local JA_DB = nil
+local WS_DB = nil
+local BLM_SPELL_FILTERS = nil
 
--- Cooldown checker (universal ability/spell recast validation)
-local CooldownChecker = require('shared/utils/precast/cooldown_checker')
+local modules_loaded = false
 
--- Precast guard (debuff blocking: Amnesia, Silence, Stun, etc.)
-local precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-if not precast_guard_success then
-    PrecastGuard = nil
+local function ensure_modules_loaded()
+    if modules_loaded then return end
+
+    MessageFormatter = require('shared/utils/messages/message_formatter')
+    CooldownChecker = require('shared/utils/precast/cooldown_checker')
+
+    local precast_guard_success
+    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
+    if not precast_guard_success then
+        PrecastGuard = nil
+    end
+
+    -- Get WeaponSkill managers from global scope (already loaded by Mote-Include)
+    WeaponSkillManager = _G.WeaponSkillManager
+    TPBonusCalculator = _G.TPBonusCalculator
+
+    local _
+    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
+
+    if WeaponSkillManager and MessageFormatter then
+        WeaponSkillManager.MessageFormatter = MessageFormatter
+    end
+
+    BLMTPConfig = _G.BLMTPConfig or {}
+    JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
+    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+
+    -- Load BLM spell filters (cached by Lua after first require)
+    BLM_SPELL_FILTERS = require('shared/data/spells/BLM_SPELL_FILTERS')
+
+    modules_loaded = true
 end
-
--- Weaponskill manager (WS validation + range checking)
-include('../shared/utils/weaponskill/weaponskill_manager.lua')
-
--- TP bonus calculator (Moonshade Earring automation)
-include('../shared/utils/weaponskill/tp_bonus_calculator.lua')
-
--- TP Bonus Handler (universal WS TP gear optimization)
-local _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
-
--- WS Validator (universal WS range + validity validation)
-local _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
-
--- Set MessageFormatter in WeaponSkillManager
-if WeaponSkillManager and MessageFormatter then
-    WeaponSkillManager.MessageFormatter = MessageFormatter
-end
-
----============================================================================
---- DEPENDENCIES - BLM SPECIFIC
----============================================================================
-
--- BLM configuration
-local BLMTPConfig = _G.BLMTPConfig or {}  -- Loaded from character main file
-
--- Universal Job Ability Database (supports main job + subjob abilities)
-local JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
-
--- Universal Weapon Skills Database (weaponskill descriptions)
-local WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
 
 -- NOTE: BLM logic functions are loaded globally via blm_functions.lua:
 --   • refine_various_spells() - Spell tier downgrading
@@ -71,98 +75,32 @@ local WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
 -- These functions are available in _G scope and called directly
 
 ---============================================================================
---- BLM SPELL LISTS
+--- HELPER FUNCTIONS (Lazy Loaded - Safe to Call After ensure_modules_loaded)
 ---============================================================================
-
--- Spells that use refinement system (bypass CooldownChecker)
--- These spells have tier systems and should use automatic downgrading
-local REFINEMENT_SPELLS = {
-    -- Elemental Magic (all handled by refinement)
-    ['Elemental Magic'] = true,
-
-    -- Enfeebling Magic with tiers
-    ['Sleep'] = true,
-    ['Sleep II'] = true,
-    ['Sleep III'] = true,
-    ['Sleepga'] = true,
-    ['Sleepga II'] = true,
-    ['Break'] = true,
-    ['Breakga'] = true,
-    ['Bind'] = true,
-    ['Bind II'] = true,
-
-    -- Dark Magic with tiers
-    ['Bio'] = true,
-    ['Bio II'] = true,
-    ['Bio III'] = true,
-    ['Bio IV'] = true,
-    ['Bio V'] = true,
-    ['Poison'] = true,
-    ['Poison II'] = true,
-    ['Poison III'] = true,
-    ['Poison IV'] = true,
-    ['Poison V'] = true,
-    ['Drain'] = true,
-    ['Drain II'] = true,
-    ['Drain III'] = true,
-    ['Aspir'] = true,
-    ['Aspir II'] = true,
-    ['Aspir III'] = true,
-    ['Burn'] = true,
-    ['Frost'] = true,
-    ['Choke'] = true,
-    ['Rasp'] = true,
-    ['Shock'] = true,
-    ['Drown'] = true
-}
-
---- Elemental Magic spells that do NOT have tiers (excluded from refinement)
---- Note: Spell names must match FFXI resources exactly (all lowercase after first letter)
-local ELEMENTAL_NO_TIERS = {
-    ['Klimaform'] = true,
-    ['Firestorm'] = true,
-    ['Sandstorm'] = true,
-    ['Rainstorm'] = true,
-    ['Windstorm'] = true,
-    ['Hailstorm'] = true,
-    ['Thunderstorm'] = true,
-    ['Voidstorm'] = true,
-    ['Aurorastorm'] = true
-}
-
---- Abilities with multiple charges that should bypass cooldown check
---- These abilities use charge system - FFXI blocks when no charges available
-local CHARGE_ABILITIES = {
-    ['Addendum: White'] = true,
-    ['Addendum: Black'] = true,
-    ['Accession'] = true,
-    ['Manifestation'] = true,
-    ['Stratagem'] = true,  -- Generic stratagem abilities
-    -- Other multi-charge abilities can be added here if needed
-}
 
 --- Check if an ability has multiple charges (bypass cooldown check)
 --- @param spell table Spell object
 --- @return boolean true if ability has charges
 local function has_charges(spell)
-    return CHARGE_ABILITIES[spell.english] or false
+    return BLM_SPELL_FILTERS and BLM_SPELL_FILTERS.CHARGE_ABILITIES[spell.english] or false
 end
 
 --- Check if a spell should use refinement instead of cooldown check
 --- @param spell table Spell object
 --- @return boolean true if spell uses refinement
 local function uses_refinement(spell)
+    if not BLM_SPELL_FILTERS then return false end
+
     -- Check by skill first (Elemental Magic), but exclude Storm/Klimaform (no tiers)
     if spell.skill == 'Elemental Magic' then
-        -- Exclude spells without tiers
-        if ELEMENTAL_NO_TIERS[spell.english] then
+        if BLM_SPELL_FILTERS.ELEMENTAL_NO_TIERS[spell.english] then
             return false
         end
         return true
     end
 
     -- Check by spell name for other tiered spells
-    return REFINEMENT_SPELLS[spell.english] or false
+    return BLM_SPELL_FILTERS.REFINEMENT_SPELLS[spell.english] or false
 end
 
 ---============================================================================
@@ -170,6 +108,9 @@ end
 ---============================================================================
 
 function job_precast(spell, action, spellMap, eventArgs)
+    -- Lazy load modules on first action
+    ensure_modules_loaded()
+
     -- FIRST: Check for blocking debuffs (Amnesia, Silence, etc.)
     if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
         return

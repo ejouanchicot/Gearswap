@@ -1,23 +1,35 @@
----============================================================================
---- SAM Status Module - Status Change Handling
----============================================================================
---- @file SAM_STATUS.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-21
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SAM Status Module - Player Status Change Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles status changes (Idle, Engaged, Resting, Dead, etc.)
+---
+---   @file    shared/jobs/sam/functions/SAM_STATUS.lua
+---   @author  Tetsouo
+---   @version 1.2 - Added DoomManager safety unlock
+---   @date    Updated: 2025-11-14
+---  ═══════════════════════════════════════════════════════════════════════════
 
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+local DoomManager = nil
+
+--- Handle status change events
+--- @param newStatus string New status (Idle, Engaged, Resting, Dead, etc.)
+--- @param oldStatus string Previous status
+--- @param eventArgs table Event arguments
 function job_status_change(newStatus, oldStatus, eventArgs)
-    -- Handle status changes (Idle, Engaged, Dead, etc.)
+    -- Lazy load DoomManager on first status change
+    if not DoomManager then
+        DoomManager = require('shared/utils/debuff/doom_manager')
+    end
+
+    -- Safety: Unlock Doom slots after death (prevents stuck locks after raise)
+    DoomManager.handle_status_change(newStatus, oldStatus)
+
+    -- SAM-specific status change logic can be added here
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
-
+-- Export to global scope
 _G.job_status_change = job_status_change
-
-local SAM_STATUS = {}
-SAM_STATUS.job_status_change = job_status_change
-
-return SAM_STATUS

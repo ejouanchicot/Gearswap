@@ -14,42 +14,62 @@
 --- SECTION 1: MESSAGE SYSTEM
 ---============================================================================
 -- Message system (must load first for buff status display)
+-- ═══════════════════════════════════════════════════════════════════
+-- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+-- ═══════════════════════════════════════════════════════════════════
+local Profiler = require('shared/utils/debug/performance_profiler')
+local TIMER = Profiler.create_timer('PUP')
+-- ═══════════════════════════════════════════════════════════════════
+
 include('../shared/utils/messages/formatters/magic/message_buffs.lua')
+TIMER('message_buffs')
 
 ---============================================================================
 --- SECTION 2: COMBAT ACTION HOOKS
 ---============================================================================
 
 include('../shared/jobs/pup/functions/PUP_PRECAST.lua')
+TIMER('PUP_PRECAST')
 include('../shared/jobs/pup/functions/PUP_MIDCAST.lua')
+TIMER('PUP_MIDCAST')
 include('../shared/jobs/pup/functions/PUP_AFTERCAST.lua')
+TIMER('PUP_AFTERCAST')
 
 -- Pet-specific hooks (for Ready Moves and pet abilities)
 include('../shared/jobs/pup/functions/PUP_PET_PRECAST.lua')
+TIMER('PUP_PET_PRECAST')
 include('../shared/jobs/pup/functions/PUP_PET_MIDCAST.lua')
+TIMER('PUP_PET_MIDCAST')
 
 ---============================================================================
 --- SECTION 3: GEAR SELECTION HOOKS
 ---============================================================================
 
 include('../shared/jobs/pup/functions/PUP_IDLE.lua')
+TIMER('PUP_IDLE')
 include('../shared/jobs/pup/functions/PUP_ENGAGED.lua')
+TIMER('PUP_ENGAGED')
 
 ---============================================================================
 --- SECTION 4: EVENT MONITORING HOOKS
 ---============================================================================
 
 include('../shared/jobs/pup/functions/PUP_STATUS.lua')
+TIMER('PUP_STATUS')
 include('../shared/jobs/pup/functions/PUP_BUFFS.lua')
+TIMER('PUP_BUFFS')
 
 ---============================================================================
 --- SECTION 5: UTILITY HOOKS
 ---============================================================================
 
+-- LOCKSTYLE and MACROBOOK use lazy loading - loaded on first call, not during startup
 include('../shared/jobs/pup/functions/PUP_LOCKSTYLE.lua')
 include('../shared/jobs/pup/functions/PUP_MACROBOOK.lua')
 include('../shared/jobs/pup/functions/PUP_COMMANDS.lua')
+TIMER('PUP_COMMANDS')
 include('../shared/jobs/pup/functions/PUP_MOVEMENT.lua')
+TIMER('PUP_MOVEMENT')
 
 ---============================================================================
 --- LOGIC MODULES REFERENCE
@@ -90,3 +110,7 @@ local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
 
 -- All module functions are now available in global scope
 print('[PUP] All functions loaded (13 hooks + 4 logic modules)')
+
+-- ═══════════════════════════════════════════════════════════════════
+TIMER('TOTAL PUP_functions', true)
+-- ═══════════════════════════════════════════════════════════════════

@@ -18,12 +18,29 @@ local MessageColors = require('shared/utils/messages/message_colors')
 --- TESTCOLORS COMMAND
 ---============================================================================
 
+--- Generate FFXI color code using dual-prefix system
+--- Codes 1-255:   string.char(0x1F, code)
+--- Codes 256-509: string.char(0x1E, code - 254)
+--- @param code number Color code (1-509)
+--- @return string Color escape sequence
+local function generate_color_code(code)
+    if code <= 255 then
+        return string.char(0x1F, code)
+    else
+        -- Codes 256-509 use 0x1E prefix with offset
+        local offset_code = code - 254
+        -- Code 258 (offset 4) can bug chatlog, use 3 instead
+        if offset_code == 4 then offset_code = 3 end
+        return string.char(0x1E, offset_code)
+    end
+end
+
 function MessageCommands.show_color_test_header()
     local gray = string.char(0x1F, 160)
     local yellow = string.char(0x1F, 50)
     local separator = string.rep("=", 74)
     add_to_chat(121, gray .. separator)
-    add_to_chat(121, yellow .. "FFXI Color Code Test (001-255)")
+    add_to_chat(121, yellow .. "FFXI Color Code Test (001-509) - Dual Prefix System")
     add_to_chat(121, gray .. separator)
 end
 
@@ -34,15 +51,16 @@ function MessageCommands.show_color_sample(code)
 end
 
 function MessageCommands.show_color_sample_row(code1, code2, code3, code4, code5, code6, code7, code8, code9, code10, code11, code12, code13, code14)
-    -- Build 14 samples per line (compact format for FFXI chat)
+    -- Build up to 14 samples per line (compact format for FFXI chat)
     -- Each sample: "001" = 3 chars, 14 samples + separators = ~68 chars total (under 74 char limit)
+    -- NOTE: Problematic codes are filtered out before calling this function
     local samples = {}
     local gray_separator = string.char(0x1F, 8) .. " | "  -- Gray color code + pipe separator
 
     for _, code in ipairs({code1, code2, code3, code4, code5, code6, code7, code8, code9, code10, code11, code12, code13, code14}) do
-        if code and code <= 255 and code ~= 253 then  -- Skip 253 (known FFXI unsupported code)
-            -- IMPORTANT: Each entry needs its own color code inline
-            local color_code = string.char(0x1F, code)
+        if code and code >= 1 and code <= 509 then
+            -- Display code with its actual color using dual-prefix system
+            local color_code = generate_color_code(code)
             local sample = color_code .. string.format("%03d", code)
             table.insert(samples, sample)
         end

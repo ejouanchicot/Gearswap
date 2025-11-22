@@ -17,50 +17,74 @@
 ---============================================================================
 
 ---============================================================================
---- DEPENDENCIES - CENTRALIZED SYSTEMS
+--- DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---============================================================================
 
--- Message formatter (cooldown messages, WS TP display)
-local success_mf, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-if not success_mf then MessageFormatter = nil end
-
--- Cooldown checker (universal ability/spell recast validation)
-local success_cc, CooldownChecker = pcall(require, 'shared/utils/precast/cooldown_checker')
-if not success_cc then CooldownChecker = nil end
-
--- Precast guard (debuff blocking: Amnesia, Silence, Stun, etc.)
-local success_pg, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-if not success_pg then PrecastGuard = nil end
-
--- WS Validator (universal WS range + validity validation)
-local success_wsv, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
-if not success_wsv then WSValidator = nil end
-
--- TP Bonus Handler (universal WS TP gear optimization)
-local _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
-
--- Universal Weapon Skills Database (weaponskill descriptions)
-local WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
-
--- BST TP configuration (TP bonus gear thresholds)
-local BSTTPConfig = _G.BSTTPConfig or {}  -- Loaded from character main file
-
--- Weaponskill manager (WS validation + range checking)
-include('../shared/utils/weaponskill/weaponskill_manager.lua')
-
--- Set MessageFormatter in WeaponSkillManager
-if WeaponSkillManager and MessageFormatter then
-    WeaponSkillManager.MessageFormatter = MessageFormatter
+-- Initialize BST debug flag if not exists
+if _G.BST_DEBUG_PRECAST == nil then
+    _G.BST_DEBUG_PRECAST = false  -- Toggle: //gs c debugbst
 end
 
----============================================================================
---- DEPENDENCIES - BST SPECIFIC
----============================================================================
+-- Debug helper to show current equipment
+local function show_current_equipment(label)
+    if not _G.BST_DEBUG_PRECAST then return end
 
--- Ready move categorizer (for midcast gear selection + precast detection)
-local success_rmc, ReadyMoveCategorizer = pcall(require, 'shared/jobs/bst/functions/logic/ready_move_categorizer')
-if not success_rmc then
-    ReadyMoveCategorizer = nil
+    local eq = player.equipment
+    add_to_chat(8, '========================================================')
+    add_to_chat(121, '[BST DEBUG] ' .. label)
+    add_to_chat(8, '--------------------------------------------------------')
+    add_to_chat(8, '  main: ' .. (eq.main or 'empty'))
+    add_to_chat(8, '  hands: ' .. (eq.hands or 'empty'))
+    add_to_chat(8, '  legs: ' .. (eq.legs or 'empty'))
+    add_to_chat(8, '========================================================')
+end
+
+local MessageFormatter = nil
+local MessagePrecast = nil  -- Debug formatter
+local CooldownChecker = nil
+local PrecastGuard = nil
+local WSValidator = nil
+local TPBonusHandler = nil
+local WS_DB = nil
+local BSTTPConfig = nil
+local ReadyMoveCategorizer = nil
+
+local modules_loaded = false
+
+local function ensure_modules_loaded()
+    if modules_loaded then return end
+
+    MessageFormatter = require('shared/utils/messages/message_formatter')
+    MessagePrecast = require('shared/utils/messages/formatters/magic/message_precast')
+    CooldownChecker = require('shared/utils/precast/cooldown_checker')
+
+    local precast_guard_success
+    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
+    if not precast_guard_success then
+        PrecastGuard = nil
+    end
+
+    local _
+    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
+    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+
+    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+    BSTTPConfig = _G.BSTTPConfig or {}
+
+    include('../shared/utils/weaponskill/weaponskill_manager.lua')
+
+    if WeaponSkillManager and MessageFormatter then
+        WeaponSkillManager.MessageFormatter = MessageFormatter
+    end
+
+    -- BST specific
+    local success_rmc
+    success_rmc, ReadyMoveCategorizer = pcall(require, 'shared/jobs/bst/functions/logic/ready_move_categorizer')
+    if not success_rmc then
+        ReadyMoveCategorizer = nil
+    end
+
+    modules_loaded = true
 end
 
 ---============================================================================
@@ -80,6 +104,8 @@ end
 --- @param eventArgs table Event arguments (cancel flag, etc.)
 --- @return void
 function job_precast(spell, action, spellMap, eventArgs)
+    -- Lazy load all dependencies on first precast
+    ensure_modules_loaded()
 
     -- ==========================================================================
     -- STEP 1: DEBUFF BLOCKING
@@ -192,9 +218,18 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- STEP 4: CALL BEAST / BESTIAL LOYALTY (equip summonSet + broth)
     -- ==========================================================================
     if spell.name == 'Call Beast' or spell.name == 'Bestial Loyalty' then
+        -- Debug header (BST-specific flag for JA debug)
+        if _G.BST_DEBUG_PRECAST then
+            MessagePrecast.show_debug_header(spell.name, 'Pet Summon')
+        end
+
         -- Equip base summon set
         if sets.precast.JA['Call Beast'] then
             equip(sets.precast.JA['Call Beast'])
+            if _G.BST_DEBUG_PRECAST then
+                MessagePrecast.show_equipped_set('precast.JA["Call Beast"]')
+                MessagePrecast.show_equipment(sets.precast.JA['Call Beast'])
+            end
         end
 
         -- Equip broth from state (forced separate to override any ammo in summonSet)
@@ -202,59 +237,31 @@ function job_precast(spell, action, spellMap, eventArgs)
             local broth_set = sets[state.ammoSet.value]
             if broth_set and broth_set.ammo then
                 equip({ammo = broth_set.ammo})
+                if _G.BST_DEBUG_PRECAST then
+                    MessagePrecast.show_debug_step(1, 'Broth Override', 'ok', broth_set.ammo)
+                end
             end
+        end
+
+        if _G.BST_DEBUG_PRECAST then
+            MessagePrecast.show_completion()
         end
 
         return -- Exit early (handled)
     end
 
     -- ==========================================================================
-    -- STEP 5: READY MOVE PRECAST (equip Sic/Ready set)
+    -- STEP 5: READY MOVE DETECTION (use ReadyMoveCategorizer for ALL moves)
     -- ==========================================================================
-    -- Ready Moves detected via ReadyMoveCategorizer
-    -- Equip precast set for Ready recast reduction (Charmer's Merlin, Gleti's Breeches)
-    -- Then store category in spell object for midcast gear selection
-    if is_ready_move and ready_move_category then
-        -- Check QuickReady state FIRST to select correct set
-        if state.QuickReady and state.QuickReady.value == 'On' then
-            -- QuickReady ON: Use Quick sets with Charmer's Merlin
-            if sets.precast.JA.ReadyQuick then
-                equip(sets.precast.JA.ReadyQuick)
-                add_to_chat(158, "[BST] QuickReady ON: Using Ready Quick set (Charmer's Merlin)")
-            elseif sets.precast.JA.SicQuick then
-                equip(sets.precast.JA.SicQuick)
-                add_to_chat(158, "[BST] QuickReady ON: Using Sic Quick set (Charmer's Merlin)")
-            end
-        else
-            -- QuickReady OFF: Use default sets (no Charmer's Merlin)
-            if sets.precast.JA['Ready'] then
-                equip(sets.precast.JA['Ready'])
-            elseif sets.precast.JA['Sic'] then
-                equip(sets.precast.JA['Sic'])
-            end
-        end
-
-        -- Store category for midcast
+    -- Use ReadyMoveCategorizer to detect ALL Ready Moves (not just patterns)
+    if is_ready_move and ready_move_category and ready_move_category ~= 'Default' then
+        -- Store category for aftercast
         spell.ready_move_category = ready_move_category
-    end
+        spell.bst_is_ready_move = true
 
-    -- ==========================================================================
-    -- QUICK READY MODE - SET SELECTION (for generic Ready/Sic commands only)
-    -- ==========================================================================
-    -- Modify the set name BEFORE Mote equips gear
-    -- QuickReady ON: Use SicQuick/ReadyQuick sets (with Charmer's Merlin)
-    -- QuickReady OFF: Use default Sic/Ready sets (no Charmer's)
-    -- ONLY for generic "Ready" and "Sic" commands (NOT specific Ready moves)
-    if spell.english == 'Ready' or spell.english == 'Sic' then
-        if state.QuickReady and state.QuickReady.value == 'On' then
-            -- Override to Quick sets
-            if spell.english == 'Sic' then
-                classes.CustomClass = 'SicQuick'
-                add_to_chat(158, "[BST] QuickReady ON: Using Sic Quick set (Charmer's Merlin)")
-            elseif spell.english == 'Ready' then
-                classes.CustomClass = 'ReadyQuick'
-                add_to_chat(158, "[BST] QuickReady ON: Using Ready Quick set (Charmer's Merlin)")
-            end
+        -- EQUIP GLETI'S BREECHES NOW (Ready Recast -5s snapshots at PRECAST like Fast Cast)
+        if sets.precast.JA['Sic'] then
+            equip(sets.precast.JA['Sic'])
         end
     end
 end

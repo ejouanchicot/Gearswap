@@ -1,27 +1,27 @@
----============================================================================
---- Dual-Boxing Manager - Inter-Character Communication System
----============================================================================
---- Manages communication between main and alt characters for dual-boxing.
---- Handles job change notifications and online status tracking.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Dual-Boxing Manager - Inter-Character Communication System
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Manages communication between main and alt characters for dual-boxing.
+---   Handles job change notifications and online status tracking.
 ---
---- Communication Flow:
----   ALT changes job >> send_job_update() >> send tetsouo gs c altjobupdate JOB SUBJOB
----   MAIN receives >> job_self_command() >> receive_alt_job() >> stores in _G.AltJobState
----   MAIN reloads macrobook based on alt job
+---   Communication Flow:
+---     ALT changes job >> send_job_update() >> send tetsouo gs c altjobupdate JOB SUBJOB
+---     MAIN receives >> job_self_command() >> receive_alt_job() >> stores in _G.AltJobState
+---     MAIN reloads macrobook based on alt job
 ---
---- @file dualbox_manager.lua
---- @author Tetsouo
---- @version 1.0.0
---- @date Created: 2025-10-22
----============================================================================
+---   @file    shared/utils/dualbox/dualbox_manager.lua
+---   @author  Tetsouo
+---   @version 1.1 - Style standardization (BRD headers)
+---   @date    Created: 2025-10-22 | Updated: 2025-11-13
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MessageDualbox = require('shared/utils/messages/formatters/ui/message_dualbox')
 
 local DualBoxManager = {}
 
----============================================================================
---- HELPER FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HELPER FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Get the target character name based on role
 --- For ALT: returns the MAIN character to send updates to
@@ -53,9 +53,9 @@ local function get_this_character()
     return _G.DualBoxConfig.character_name or _G.DualBoxConfig.main_name
 end
 
----============================================================================
---- INITIALIZATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   INITIALIZATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Initialize dual-boxing system
 --- Loads configuration and sets up global state
@@ -120,9 +120,9 @@ function DualBoxManager.initialize(config)
     end
 end
 
----============================================================================
---- ALT ROLE FUNCTIONS (Kaories >> Tetsouo)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ALT ROLE FUNCTIONS (Kaories >> Tetsouo)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Send job update from ALT to MAIN
 --- Called when alt character changes job
@@ -186,9 +186,9 @@ function DualBoxManager.handle_job_request()
     DualBoxManager.send_job_update()
 end
 
----============================================================================
---- MAIN ROLE FUNCTIONS (Tetsouo ← Kaories)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MAIN ROLE FUNCTIONS (Tetsouo ← Kaories)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Request job info from ALT
 --- Called by MAIN on startup to get ALT's current job
@@ -261,9 +261,9 @@ function DualBoxManager.receive_alt_job(main_job, sub_job)
     end
 end
 
----============================================================================
---- STATUS CHECKING
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   STATUS CHECKING
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Check if alt character is online
 --- Uses timeout to determine if alt is still active
@@ -305,9 +305,9 @@ function DualBoxManager.get_alt_subjob()
     return _G.AltJobState and _G.AltJobState.subjob or nil
 end
 
----============================================================================
---- UTILITY FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   UTILITY FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Mark alt as offline
 --- Called when alt logs out or timeout occurs
@@ -362,9 +362,9 @@ function DualBoxManager.show_status()
     MessageDualbox.show_status_footer()
 end
 
----============================================================================
---- AUTO-INITIALIZATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   AUTO-INITIALIZATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Auto-initialize when module is loaded
 -- This ensures the system is ready without manual initialization calls
@@ -394,8 +394,8 @@ if not _G.DualBoxManagerInitialized then
     end, 2)  -- 2 second delay to ensure player data is loaded
 end
 
----============================================================================
---- EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return DualBoxManager

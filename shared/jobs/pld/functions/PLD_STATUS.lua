@@ -1,46 +1,35 @@
----============================================================================
---- PLD Status Module - Status Change Handling
----============================================================================
---- Handles player status changes for Paladin job:
----   • Player status transitions (Idle/Engaged/Resting/Dead)
----   • Combat state detection
----   • Status-based equipment swaps
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PLD Status Module - Player Status Change Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles status changes (Idle, Engaged, Resting, Dead, etc.)
 ---
---- @file    jobs/pld/functions/PLD_STATUS.lua
---- @author  Tetsouo
---- @version 1.0.0
---- @date    Created: 2025-10-03
---- @requires Tetsouo architecture
----============================================================================
----============================================================================
---- STATUS CHANGE HOOK
----============================================================================
---- Called when player status changes
---- Mote-Include automatically handles idle/engaged/resting gear swaps.
---- PLD currently doesn't need custom status change logic.
----
---- @param newStatus string New status ("Idle", "Engaged", "Resting", "Dead")
---- @param oldStatus string Previous status
---- @param eventArgs table Event arguments with handled flag
---- @return void
-function job_status_change(newStatus, oldStatus, eventArgs)
-    -- PLD-specific status change logic here
-    -- Examples:
-    --   • Cancel buffs on death
-    --   • Auto-rebuff on resurrection
-    --   • Status-specific gear adjustments
+---   @file    shared/jobs/pld/functions/PLD_STATUS.lua
+---   @author  Tetsouo
+---   @version 1.2 - Added DoomManager safety unlock
+---   @date    Updated: 2025-11-14
+---  ═══════════════════════════════════════════════════════════════════════════
 
-    -- Currently: Mote handles all status transitions
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+local DoomManager = nil
+
+--- Handle status change events
+--- @param newStatus string New status (Idle, Engaged, Resting, Dead, etc.)
+--- @param oldStatus string Previous status
+--- @param eventArgs table Event arguments
+function job_status_change(newStatus, oldStatus, eventArgs)
+    -- Lazy load DoomManager on first status change
+    if not DoomManager then
+        DoomManager = require('shared/utils/debuff/doom_manager')
+    end
+
+    -- Safety: Unlock Doom slots after death (prevents stuck locks after raise)
+    DoomManager.handle_status_change(newStatus, oldStatus)
+
+    -- PLD-specific status change logic can be added here
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
-
--- Export globally for GearSwap
+-- Export to global scope
 _G.job_status_change = job_status_change
-
--- Export as module (for future require() usage)
-return {
-    job_status_change = job_status_change
-}

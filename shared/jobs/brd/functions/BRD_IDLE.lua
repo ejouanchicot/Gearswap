@@ -1,35 +1,43 @@
----============================================================================
---- BRD Idle Module - Idle Gear Customization
----============================================================================
---- Handles idle set customization for Bard job.
---- Uses SetBuilder for mode selection and town detection.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BRD Idle Module - Idle State Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all idle state logic for Red Mage job:
+---   - Idle set selection based on IdleMode (DT, Refresh, Regain, Evasion)
+---   - Movement speed optimization
+---   - Town gear management
+---   - Dynamic weapon application to idle sets
 ---
---- @file BRD_IDLE.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-13
----============================================================================
+---   @file    shared/jobs/brd/functions/BRD_IDLE.lua
+---   @author  Tetsouo
+---   @version 2.1 - Removed dead code + refactored header
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load SetBuilder logic module
-local SetBuilder = require('shared/jobs/brd/functions/logic/set_builder')
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Customize idle set based on conditions
---- @param idleSet table Base idle set from Mote
---- @return table Customized idle set
+local SetBuilder = nil
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   IDLE HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
+
+--- Apply weapon sets, mode selection, and movement gear to all idle configurations
+--- @param idleSet table The idle set to customize
+--- @return table Modified idle set with current weapon, mode, and movement gear
 function customize_idle_set(idleSet)
+    -- Lazy load SetBuilder on first idle
+    if not SetBuilder then
+        SetBuilder = require('shared/jobs/brd/functions/logic/set_builder')
+    end
+
     if not idleSet then
         return {}
     end
 
-    -- Use SetBuilder to apply modes and conditions
     return SetBuilder.build_idle_set(idleSet)
 end
 
--- Export to global scope
+-- Export to global scope (used by Mote-Include via include())
 _G.customize_idle_set = customize_idle_set
-
--- Export module
-local BRD_IDLE = {}
-BRD_IDLE.customize_idle_set = customize_idle_set
-
-return BRD_IDLE

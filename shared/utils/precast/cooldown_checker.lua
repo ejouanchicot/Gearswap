@@ -5,18 +5,38 @@
 --- Automatically cancels actions on cooldown and displays professional messages.
 --- Excludes multi-charge abilities (Quick Draw, Stratagems) from cooldown blocking.
 --- Manual recast_id mapping for abilities with missing/incorrect GearSwap data.
+--- Integrates with RECAST_CONFIG for centralized tolerance management.
 ---
 --- @file utils/precast/cooldown_checker.lua
 --- @author Tetsouo
---- @version 1.3
+--- @version 1.4
 --- @date Created: 2025-10-05
---- @date Updated: 2025-11-02 - Added SCH Stratagems (25 abilities with 5 charges)
+--- @date Updated: 2025-11-11 - Integrated RECAST_CONFIG tolerance
 ---============================================================================
 
 local CooldownChecker = {}
 
 -- Load message formatter for cooldown display
 local MessageFormatter = require('shared/utils/messages/message_formatter')
+
+-- Load recast configuration for cooldown tolerance
+local RECAST_CONFIG = _G.RECAST_CONFIG or {}
+
+---============================================================================
+--- RECAST TOLERANCE HELPERS
+---============================================================================
+
+--- Check if recast time indicates ability/spell is on cooldown
+--- Uses RECAST_CONFIG tolerance if available, otherwise falls back to strict check
+--- @param recast number Recast time in seconds
+--- @return boolean True if on cooldown
+local function is_on_cooldown(recast)
+    if RECAST_CONFIG and RECAST_CONFIG.on_cooldown then
+        return RECAST_CONFIG.on_cooldown(recast)
+    else
+        return (recast > 0)  -- Fallback: strict check
+    end
+end
 
 ---============================================================================
 --- MULTI-CHARGE ABILITIES (EXCLUDED FROM COOLDOWN CHECK)
@@ -107,7 +127,7 @@ function CooldownChecker.check_ability_cooldown(spell, eventArgs)
 
     local remaining_seconds = MessageFormatter.get_ability_recast_seconds(recast_id)
 
-    if remaining_seconds and remaining_seconds > 0 then
+    if remaining_seconds and is_on_cooldown(remaining_seconds) then
         -- Get dynamic job tag (e.g., "DNC/NIN", "DNC")
         local job_tag = MessageFormatter.get_job_tag()
 
@@ -128,16 +148,19 @@ function CooldownChecker.check_spell_cooldown(spell, eventArgs)
     if not MessageFormatter then return end
     if not spell.recast_id then return end
 
-    -- Get spell recast (in centiseconds, function handles conversion)
+    -- Get spell recast (in centiseconds, convert to seconds for RECAST_CONFIG)
     local remaining_centiseconds = windower.ffxi.get_spell_recasts()[spell.recast_id]
 
-    if remaining_centiseconds and remaining_centiseconds > 0 then
-        -- Get dynamic job tag (e.g., "DNC/NIN", "DNC")
-        local job_tag = MessageFormatter.get_job_tag()
+    if remaining_centiseconds then
+        local remaining_seconds = remaining_centiseconds / 100
+        if is_on_cooldown(remaining_seconds) then
+            -- Get dynamic job tag (e.g., "DNC/NIN", "DNC")
+            local job_tag = MessageFormatter.get_job_tag()
 
-        -- Show cooldown message and cancel the action
-        MessageFormatter.show_spell_cooldown(spell.name, remaining_centiseconds, job_tag)
-        eventArgs.cancel = true
+            -- Show cooldown message and cancel the action
+            MessageFormatter.show_spell_cooldown(spell.name, remaining_centiseconds, job_tag)
+            eventArgs.cancel = true
+        end
     end
 end
 

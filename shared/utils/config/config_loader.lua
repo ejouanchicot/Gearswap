@@ -1,41 +1,23 @@
----============================================================================
---- UI Configuration Loader
----============================================================================
---- Centralized loader for UI_CONFIG.lua to eliminate duplication across all job files.
---- This module loads the UI configuration, applies fallback defaults if needed,
---- and sets up global variables required by the UI system.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   UI Configuration Loader
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Centralized loader for UI_CONFIG.lua to eliminate duplication across all job files.
+---   This module loads the UI configuration, applies fallback defaults if needed,
+---   and sets up global variables required by the UI system.
 ---
---- @module ConfigLoader
---- @author Tetsouo GearSwap System
---- @version 1.1 - Improved formatting
---- @date Created: 2025-11-03 | Updated: 2025-11-06
----============================================================================
+---   @file    shared/utils/config/config_loader.lua
+---   @author  Tetsouo GearSwap System
+---   @version 2.0 - Eliminated duplication (use UISettingsManager)
+---   @date    Created: 2025-11-03 | Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MessageCore = require('shared/utils/messages/message_core')
 
 local ConfigLoader = {}
 
----============================================================================
---- CONSTANTS
----============================================================================
-
-local CHAT_ERROR = 167
-
----============================================================================
---- HELPER FUNCTIONS
----============================================================================
-
---- Return value or default if nil
---- @param value any Value to check
---- @param default any Default value if nil
---- @return any Value or default
-local function default_bool(value, default)
-    return (value == nil) and default or value
-end
-
----============================================================================
---- MAIN FUNCTION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MAIN FUNCTION
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Load UI configuration for a character and job
 ---
@@ -84,36 +66,21 @@ function ConfigLoader.load_ui_config(char_name, job_name)
     -- Set global UIConfig (required by UI system)
     _G.UIConfig = UIConfig
 
-    -- FORCE reload of UI settings from file (ensures fresh read on GearSwap reload)
-    -- Load settings file DIRECTLY with dofile() to bypass module cache
-    local ui_settings_path = windower.windower_path .. 'addons/GearSwap/data/' .. char_name .. '/config/ui_settings.lua'
-    local ui_settings_success, ui_settings_data = pcall(dofile, ui_settings_path)
-
-    if ui_settings_success and ui_settings_data then
-        -- File exists and loaded successfully
-        _G.ui_display_config = {
-            show_header         = default_bool(ui_settings_data.show_header, true),
-            show_legend         = default_bool(ui_settings_data.show_legend, true),
-            show_column_headers = default_bool(ui_settings_data.show_column_headers, true),
-            show_footer         = default_bool(ui_settings_data.show_footer, true),
-            enabled             = default_bool(ui_settings_data.enabled, true)
-        }
-    else
-        -- File doesn't exist, use defaults from UIConfig
-        _G.ui_display_config = {
-            show_header         = default_bool(UIConfig.show_header, true),
-            show_legend         = default_bool(UIConfig.show_legend, true),
-            show_column_headers = default_bool(UIConfig.show_column_headers, true),
-            show_footer         = default_bool(UIConfig.show_footer, true),
-            enabled             = default_bool(UIConfig.enabled, true)
-        }
-    end
+    -- Load UI display config from UISettingsManager (centralized)
+    local UISettingsManager = require('shared/config/ui_settings')
+    _G.ui_display_config = {
+        enabled             = UISettingsManager.get_enabled(),
+        show_header         = UISettingsManager.get_show_header(),
+        show_legend         = UISettingsManager.get_show_legend(),
+        show_column_headers = UISettingsManager.get_show_column_headers(),
+        show_footer         = UISettingsManager.get_show_footer()
+    }
 
     return UIConfig
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return ConfigLoader

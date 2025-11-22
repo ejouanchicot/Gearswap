@@ -1,52 +1,43 @@
----============================================================================
---- WHM Idle Module - Idle Gear Customization
----============================================================================
---- Handles idle gear selection for White Mage:
----   • Base idle gear (Refresh/Regen priority)
----   • PDT mode support (defense priority)
----   • Town detection (town-specific idle gear)
----   • Movement speed gear integration
----   • MP recovery optimization
+---  ═══════════════════════════════════════════════════════════════════════════
+---   WHM Idle Module - Idle State Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all idle state logic for Red Mage job:
+---   - Idle set selection based on IdleMode (DT, Refresh, Regain, Evasion)
+---   - Movement speed optimization
+---   - Town gear management
+---   - Dynamic weapon application to idle sets
 ---
---- @file WHM_IDLE.lua
---- @author Tetsouo
---- @version 1.0.0
---- @date Created: 2025-10-21
----============================================================================
+---   @file    shared/jobs/whm/functions/WHM_IDLE.lua
+---   @author  Tetsouo
+---   @version 2.1 - Removed dead code + refactored header
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load set builder (centralized logic)
-local SetBuilder = require('shared/jobs/whm/functions/logic/set_builder')
+local SetBuilder = nil
 
----============================================================================
---- IDLE CUSTOMIZATION HOOK
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   IDLE HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Customize idle gear based on conditions
---- Called by Mote-Include when idle set is selected.
----
---- Processing order:
----   1. Detect town mode (use town set if in town)
----   2. Apply MP recovery gear if MP < 51%
----   3. Apply movement speed gear if moving
----
---- @param idleSet table The base idle set from whm_sets.lua
---- @return table Modified idle set with customizations applied
+--- Apply weapon sets, mode selection, and movement gear to all idle configurations
+--- @param idleSet table The idle set to customize
+--- @return table Modified idle set with current weapon, mode, and movement gear
 function customize_idle_set(idleSet)
+    -- Lazy load SetBuilder on first idle
+    if not SetBuilder then
+        SetBuilder = require('shared/jobs/whm/functions/logic/set_builder')
+    end
+
+    if not idleSet then
+        return {}
+    end
+
     return SetBuilder.build_idle_set(idleSet)
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
-
--- Export globally for GearSwap
+-- Export to global scope (used by Mote-Include via include())
 _G.customize_idle_set = customize_idle_set
-
--- Export as module
-return {
-    customize_idle_set = customize_idle_set
-}

@@ -1,43 +1,43 @@
----============================================================================
---- COR Engaged Module - Combat Gear Management
----============================================================================
---- Handles combat gear customization for Corsair job based on conditions.
---- Customizes melee gear based on buffs, weapon type, dual wield, etc.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COR Engaged Module - Combat State Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all engaged state logic for Red Mage job:
+---   - Combat set selection based on EngagedMode (DT, Enspell, Refresh, TP)
+---   - Dual wield detection and optimization (NIN subjob)
+---   - Dynamic weapon application to engaged sets
+---   - Combat state transitions
 ---
---- @file COR_ENGAGED.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-07
----============================================================================
+---   @file    shared/jobs/cor/functions/COR_ENGAGED.lua
+---   @author  Tetsouo
+---   @version 2.1 - Removed dead code + refactored header
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load COR logic modules
-local SetBuilder = require('shared/jobs/cor/functions/logic/set_builder')
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- ENGAGED HOOKS
----============================================================================
+local SetBuilder = nil
 
---- Customize melee set before it's equipped
---- @param meleeSet table The combat equipment set
---- @return table Modified combat set
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ENGAGED HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
+
+--- Apply weapon sets, mode selection, and movement gear to all engaged configurations
+--- @param meleeSet table The engaged set to customize
+--- @return table Modified engaged set with current weapon, mode, and movement gear
 function customize_melee_set(meleeSet)
+    -- Lazy load SetBuilder on first engage
+    if not SetBuilder then
+        SetBuilder = require('shared/jobs/cor/functions/logic/set_builder')
+    end
+
     if not meleeSet then
         return {}
     end
 
-    -- Apply weapon sets, hybrid mode, and DW gear via SetBuilder
     return SetBuilder.build_engaged_set(meleeSet)
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
-
--- Export global for GearSwap (Mote-Include)
+-- Export to global scope (used by Mote-Include via include())
 _G.customize_melee_set = customize_melee_set
-
--- Export module
-local COR_ENGAGED = {}
-COR_ENGAGED.customize_melee_set = customize_melee_set
-
-return COR_ENGAGED

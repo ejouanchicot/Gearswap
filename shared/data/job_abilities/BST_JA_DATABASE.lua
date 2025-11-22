@@ -29,6 +29,22 @@ if mainjob_success and mainjob_module and mainjob_module.abilities then
     end
 end
 
+-- Load pet commands (main job only)
+local pet_cmd_mainjob_success, pet_cmd_mainjob_module = pcall(require, 'shared/data/job_abilities/bst/bst_pet_commands_mainjob')
+if pet_cmd_mainjob_success and pet_cmd_mainjob_module and pet_cmd_mainjob_module.abilities then
+    for ability_name, ability_data in pairs(pet_cmd_mainjob_module.abilities) do
+        JA_DB[ability_name] = ability_data
+    end
+end
+
+-- Load pet commands (subjob)
+local pet_cmd_subjob_success, pet_cmd_subjob_module = pcall(require, 'shared/data/job_abilities/bst/bst_pet_commands_subjob')
+if pet_cmd_subjob_success and pet_cmd_subjob_module and pet_cmd_subjob_module.abilities then
+    for ability_name, ability_data in pairs(pet_cmd_subjob_module.abilities) do
+        JA_DB[ability_name] = ability_data
+    end
+end
+
 -- Load SP abilities
 local sp_success, sp_module = pcall(require, 'shared/data/job_abilities/bst/bst_sp')
 if sp_success and sp_module and sp_module.abilities then

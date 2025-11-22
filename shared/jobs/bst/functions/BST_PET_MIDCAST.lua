@@ -24,64 +24,35 @@ end
 --- PET MIDCAST HOOK
 ---============================================================================
 
+-- Debug helper
+local function show_equipment_pet_mid(label)
+    if not _G.BST_DEBUG_PRECAST then return end
+
+    local eq = player.equipment
+    add_to_chat(8, '========================================================')
+    add_to_chat(121, '[BST DEBUG] ' .. label)
+    add_to_chat(8, '--------------------------------------------------------')
+    add_to_chat(8, '  main: ' .. (eq.main or 'empty'))
+    add_to_chat(8, '  hands: ' .. (eq.hands or 'empty'))
+    add_to_chat(8, '  legs: ' .. (eq.legs or 'empty'))
+    add_to_chat(8, '========================================================')
+end
+
 --- Called during pet ability midcast (specifically for Ready Moves)
 --- @param spell table Spell/ability data
 --- @return void
 function job_pet_midcast(spell)
-    local name = spell.name
-
     -- ==========================================================================
-    -- SKIP NON-READY MOVES (Call Beast, Bestial Loyalty, Reward, etc.)
+    -- READY MOVES - KEEP PRECAST SET (Ready Recast gear)
     -- ==========================================================================
-    if name == 'Call Beast' or name == 'Bestial Loyalty' or
-       name == 'Reward' or name == 'Killer Instinct' or name == 'Spur' then
-        return  -- Don't override precast set for these abilities
-    end
+    -- Ready Recast bonus (like Fast Cast) requires the gear to stay equipped
+    -- during the ENTIRE cast (precast + midcast). Do NOT swap to pet damage
+    -- gear until aftercast (after the recast timer is set).
 
-    -- ==========================================================================
-    -- READY MOVES - 4 CATEGORIES
-    -- ==========================================================================
+    -- For ALL pet abilities: Keep precast set (Gleti's Breeches)
+    -- The pet damage gear will be equipped in job_aftercast
 
-    -- Get category from categorizer
-    local category = nil
-    if ReadyMoveCategorizer then
-        category = ReadyMoveCategorizer.get_category(name)
-    end
-
-    -- Check if player is engaged (for _ww variants with weapon)
-    local player_engaged = (player and player.status == "Engaged")
-
-    -- Equip appropriate set based on category
-    if category == "Physical" and sets.midcast.pet_physical_moves then
-        equip(sets.midcast.pet_physical_moves)
-
-    elseif category == "PhysicalMulti" and sets.midcast.pet_physicalMulti_moves then
-        equip(sets.midcast.pet_physicalMulti_moves)
-
-    elseif category == "MagicAtk" then
-        -- Choose between normal and _ww (with weapon) variant
-        local set = player_engaged
-            and sets.midcast.pet_magicAtk_moves_ww
-            or sets.midcast.pet_magicAtk_moves
-        if set then
-            equip(set)
-        end
-
-    elseif category == "MagicAcc" then
-        -- Choose between normal and _ww (with weapon) variant
-        local set = player_engaged
-            and sets.midcast.pet_magicAcc_moves_ww
-            or sets.midcast.pet_magicAcc_moves
-        if set then
-            equip(set)
-        end
-
-    else
-        -- Fallback to physical set if category unknown
-        if sets.midcast.pet_physical_moves then
-            equip(sets.midcast.pet_physical_moves)
-        end
-    end
+    return  -- Exit without changing gear
 end
 
 ---============================================================================

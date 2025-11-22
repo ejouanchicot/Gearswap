@@ -1,74 +1,40 @@
----============================================================================
---- RDM Buffs Module - Buff Change Management
----============================================================================
---- Handles buff gain/loss for Red Mage job.
---- Tracks important buffs: Chainspell, Saboteur, Enspells, Composure, etc.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   RDM Buffs Module - Buff Gain/Loss Handler
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles job-specific buff gain/loss events (Doom, Chainspell, etc.).
 ---
---- @file RDM_BUFFS.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-12
----============================================================================
+---   @file    shared/jobs/rdm/functions/RDM_BUFFS.lua
+---   @author  Tetsouo
+---   @version 1.1 - Removed dead code + refactored header
+---   @date    Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load message formatter
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+local DoomManager = nil
+
+local function ensure_managers_loaded()
+    if not DoomManager then
+        DoomManager = require('shared/utils/debuff/doom_manager')
+    end
+end
 
 --- Handle buff change events
 --- @param buff string Buff name
 --- @param gain boolean True if buff gained, false if lost
 function job_buff_change(buff, gain, eventArgs)
-    -- Doom: HIGHEST PRIORITY - Must override everything
-    if buff == 'doom' then
-        local is_doomed = buffactive['doom']
+    -- Lazy load managers on first buff change
+    ensure_managers_loaded()
 
-        if is_doomed then
-            equip(sets.buff.Doom)
-            -- Disable slots to prevent other gear swaps from overwriting Doom gear
-            disable('neck', 'ring1', 'ring2', 'waist')
-            MessageFormatter.show_warning("DOOM detected! Equipping Doom gear.")
-        else
-            -- Enable slots before restoring gear
-            enable('neck', 'ring1', 'ring2', 'waist')
-            handle_equipping_gear(player.status)
-            MessageFormatter.show_success("Doom removed.")
-        end
-        return  -- Stop processing - Doom takes absolute priority
+    -- Doom handling (centralized)
+    if DoomManager.handle_buff_change(buff, gain) then
+        return -- Doom handled, stop processing
     end
 
-    -- Track Chainspell buff (fast cast burst mode)
-    if buff == "Chainspell" then
-        if gain then
-            -- Message already shown in PRECAST (more descriptive)
-            -- MessageFormatter.show_ja_activated("Chainspell", "Rapid casting, zero recast")
-        else
-            MessageFormatter.show_ja_ended("Chainspell")
-        end
-    end
-
-    -- Track Composure buff - DISABLED (message already shown in PRECAST)
-    --[[
-    if buff == "Composure" then
-        if gain then
-            -- Message already shown in PRECAST (more descriptive)
-        end
-    end
-    ]]
-
-    -- Track Convert buff - DISABLED (message already shown in PRECAST)
-    --[[
-    if buff == "Convert" then
-        if gain then
-            -- Message already shown in PRECAST (more descriptive)
-        end
-    end
-    ]]
+    -- RDM-specific buff change logic can be added here
 end
 
--- Export to global scope
+-- Export to global scope (used by Mote-Include via include())
 _G.job_buff_change = job_buff_change
-
--- Export module
-local RDM_BUFFS = {}
-RDM_BUFFS.job_buff_change = job_buff_change
-
-return RDM_BUFFS

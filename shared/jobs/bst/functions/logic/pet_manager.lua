@@ -235,9 +235,10 @@ function PetManager.update_ready_moves(force_refresh)
             if res and res.job_abilities[ability_id] then
                 local ability_data = res.job_abilities[ability_id]
 
-                -- Ready Moves start at ID 640+, or check if type is Monster/Pet
-                -- Filter: Ready Moves are typically ID 640-800 range
-                if ability_id >= 640 and ability_id < 900 then
+                -- Filter ONLY Ready Moves (type == 'Monster' for BST)
+                -- This excludes Blood Pacts (SMN), Ninjutsu, etc.
+                -- Ready Moves also typically have ID >= 640
+                if ability_data.type == 'Monster' and ability_id >= 640 and ability_id < 900 then
                     table.insert(ready_moves, {
                         id = ability_id,
                         name = ability_data.en,

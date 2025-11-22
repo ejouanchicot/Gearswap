@@ -298,49 +298,121 @@ MessageFormatter.show_unknown_buff_error = BLMMessages.show_unknown_buff_error
 MessageFormatter.show_buff_already_active = BLMMessages.show_buff_already_active
 MessageFormatter.show_manual_buff_cast = BLMMessages.show_manual_buff_cast
 
--- BST functions (Beastmaster)
--- Legacy names with show_bst_ prefix
+-- BST functions (Beastmaster) - COMPLETE REBUILD v3.0
+-- Legacy names with show_bst_ prefix (backward compatibility)
+
+-- Job Ability Messages
+MessageFormatter.show_bst_call_beast_used = MessageBST.show_call_beast_used
+MessageFormatter.show_bst_bestial_loyalty_used = MessageBST.show_bestial_loyalty_used
+MessageFormatter.show_bst_familiar_activated = MessageBST.show_familiar_activated
+MessageFormatter.show_bst_familiar_active = MessageBST.show_familiar_active
+MessageFormatter.show_bst_spur_used = MessageBST.show_spur_used
+MessageFormatter.show_bst_run_wild_used = MessageBST.show_run_wild_used
+MessageFormatter.show_bst_tame_used = MessageBST.show_tame_used
+MessageFormatter.show_bst_reward_used = MessageBST.show_reward_used
+MessageFormatter.show_bst_reward_no_food = MessageBST.show_reward_no_food
+MessageFormatter.show_bst_feral_howl_used = MessageBST.show_feral_howl_used
+MessageFormatter.show_bst_killer_instinct_activated = MessageBST.show_killer_instinct_activated
+
+-- Ecosystem Messages
 MessageFormatter.show_bst_ecosystem_change = MessageBST.show_ecosystem_change
 MessageFormatter.show_bst_species_change = MessageBST.show_species_change
+
+-- Broth/Jug Messages
 MessageFormatter.show_bst_broth_equip = MessageBST.show_broth_equip
+MessageFormatter.show_bst_jug_equipped = MessageBST.show_jug_equipped
 MessageFormatter.show_bst_broth_count_header = MessageBST.show_broth_count_header
 MessageFormatter.show_bst_broth_count_line = MessageBST.show_broth_count_line
+MessageFormatter.show_bst_broth_count_footer = MessageBST.show_broth_count_footer
 MessageFormatter.show_bst_no_broths = MessageBST.show_no_broths
+
+-- Pet Management Messages
+MessageFormatter.show_bst_pet_summoned = MessageBST.show_pet_summoned
 MessageFormatter.show_bst_pet_engage = MessageBST.show_pet_engage
 MessageFormatter.show_bst_pet_disengage = MessageBST.show_pet_disengage
+MessageFormatter.show_bst_pet_dismissed = MessageBST.show_pet_dismissed
+MessageFormatter.show_bst_auto_engage_enabled = MessageBST.show_auto_engage_enabled
+MessageFormatter.show_bst_auto_engage_disabled = MessageBST.show_auto_engage_disabled
 MessageFormatter.show_bst_auto_engage_status = MessageBST.show_auto_engage_status
+MessageFormatter.show_bst_pet_tp_status = MessageBST.show_pet_tp_status
+MessageFormatter.show_bst_pet_hp_status = MessageBST.show_pet_hp_status
+
+-- Ready Move Messages
 MessageFormatter.show_bst_ready_move_precast = MessageBST.show_ready_move_precast
+MessageFormatter.show_bst_ready_move_physical = MessageBST.show_ready_move_physical
+MessageFormatter.show_bst_ready_move_magical = MessageBST.show_ready_move_magical
+MessageFormatter.show_bst_ready_move_breath = MessageBST.show_ready_move_breath
+MessageFormatter.show_bst_ready_move_tp_check = MessageBST.show_ready_move_tp_check
 MessageFormatter.show_bst_ready_moves_header = MessageBST.show_ready_moves_header
 MessageFormatter.show_bst_ready_move_item = MessageBST.show_ready_move_item
 MessageFormatter.show_bst_ready_moves_usage = MessageBST.show_ready_moves_usage
 MessageFormatter.show_bst_ready_move_use = MessageBST.show_ready_move_use
 MessageFormatter.show_bst_ready_move_auto_engage = MessageBST.show_ready_move_auto_engage
 MessageFormatter.show_bst_ready_move_auto_sequence = MessageBST.show_ready_move_auto_sequence
-MessageFormatter.show_bst_broth_count_footer = MessageBST.show_broth_count_footer
+MessageFormatter.show_bst_ready_move_recast = MessageBST.show_ready_move_recast
 
--- Standard names (for validator)
+-- Pet Status Messages
+MessageFormatter.show_bst_pet_charmed = MessageBST.show_pet_charmed
+MessageFormatter.show_bst_pet_charm_failed = MessageBST.show_pet_charm_failed
+MessageFormatter.show_bst_pet_died = MessageBST.show_pet_died
+MessageFormatter.show_bst_pet_despawned = MessageBST.show_pet_despawned
+
+-- Error Messages
+MessageFormatter.show_error_no_pet = MessageBST.show_error_no_pet
+MessageFormatter.show_error_no_ready_moves = MessageBST.show_error_no_ready_moves
+MessageFormatter.show_error_invalid_index = MessageBST.show_error_invalid_index
+MessageFormatter.show_error_index_out_of_range = MessageBST.show_error_index_out_of_range
+MessageFormatter.show_error_module_not_loaded = MessageBST.show_error_module_not_loaded
+MessageFormatter.show_error_no_target = MessageBST.show_error_no_target
+MessageFormatter.show_error_pet_too_far = MessageBST.show_error_pet_too_far
+MessageFormatter.show_error_no_jug_equipped = MessageBST.show_error_no_jug_equipped
+MessageFormatter.show_error_insufficient_hp = MessageBST.show_error_insufficient_hp
+
+-- Standard names (for validator and consistency)
+MessageFormatter.show_call_beast_used = MessageBST.show_call_beast_used
+MessageFormatter.show_bestial_loyalty_used = MessageBST.show_bestial_loyalty_used
+MessageFormatter.show_familiar_activated = MessageBST.show_familiar_activated
+MessageFormatter.show_familiar_active = MessageBST.show_familiar_active
+MessageFormatter.show_spur_used = MessageBST.show_spur_used
+MessageFormatter.show_run_wild_used = MessageBST.show_run_wild_used
+MessageFormatter.show_tame_used = MessageBST.show_tame_used
+MessageFormatter.show_reward_used = MessageBST.show_reward_used
+MessageFormatter.show_reward_no_food = MessageBST.show_reward_no_food
+MessageFormatter.show_feral_howl_used = MessageBST.show_feral_howl_used
+MessageFormatter.show_killer_instinct_activated = MessageBST.show_killer_instinct_activated
 MessageFormatter.show_ecosystem_change = MessageBST.show_ecosystem_change
 MessageFormatter.show_species_change = MessageBST.show_species_change
 MessageFormatter.show_broth_equip = MessageBST.show_broth_equip
+MessageFormatter.show_jug_equipped = MessageBST.show_jug_equipped
 MessageFormatter.show_broth_count_header = MessageBST.show_broth_count_header
 MessageFormatter.show_broth_count_line = MessageBST.show_broth_count_line
+MessageFormatter.show_broth_count_footer = MessageBST.show_broth_count_footer
 MessageFormatter.show_no_broths = MessageBST.show_no_broths
+MessageFormatter.show_pet_summoned = MessageBST.show_pet_summoned
 MessageFormatter.show_pet_engage = MessageBST.show_pet_engage
 MessageFormatter.show_pet_disengage = MessageBST.show_pet_disengage
+MessageFormatter.show_pet_dismissed = MessageBST.show_pet_dismissed
+MessageFormatter.show_auto_engage_enabled = MessageBST.show_auto_engage_enabled
+MessageFormatter.show_auto_engage_disabled = MessageBST.show_auto_engage_disabled
 MessageFormatter.show_auto_engage_status = MessageBST.show_auto_engage_status
+MessageFormatter.show_pet_tp_status = MessageBST.show_pet_tp_status
+MessageFormatter.show_pet_hp_status = MessageBST.show_pet_hp_status
 MessageFormatter.show_ready_move_precast = MessageBST.show_ready_move_precast
+MessageFormatter.show_ready_move_physical = MessageBST.show_ready_move_physical
+MessageFormatter.show_ready_move_magical = MessageBST.show_ready_move_magical
+MessageFormatter.show_ready_move_breath = MessageBST.show_ready_move_breath
+MessageFormatter.show_ready_move_tp_check = MessageBST.show_ready_move_tp_check
 MessageFormatter.show_ready_moves_header = MessageBST.show_ready_moves_header
 MessageFormatter.show_ready_move_item = MessageBST.show_ready_move_item
 MessageFormatter.show_ready_moves_usage = MessageBST.show_ready_moves_usage
 MessageFormatter.show_ready_move_use = MessageBST.show_ready_move_use
 MessageFormatter.show_ready_move_auto_engage = MessageBST.show_ready_move_auto_engage
 MessageFormatter.show_ready_move_auto_sequence = MessageBST.show_ready_move_auto_sequence
-MessageFormatter.show_broth_count_footer = MessageBST.show_broth_count_footer
-MessageFormatter.show_error_no_pet = MessageBST.show_error_no_pet
-MessageFormatter.show_error_no_ready_moves = MessageBST.show_error_no_ready_moves
-MessageFormatter.show_error_invalid_index = MessageBST.show_error_invalid_index
-MessageFormatter.show_error_index_out_of_range = MessageBST.show_error_index_out_of_range
-MessageFormatter.show_error_module_not_loaded = MessageBST.show_error_module_not_loaded
+MessageFormatter.show_ready_move_recast = MessageBST.show_ready_move_recast
+MessageFormatter.show_pet_charmed = MessageBST.show_pet_charmed
+MessageFormatter.show_pet_charm_failed = MessageBST.show_pet_charm_failed
+MessageFormatter.show_pet_died = MessageBST.show_pet_died
+MessageFormatter.show_pet_despawned = MessageBST.show_pet_despawned
 
 -- COR functions (Corsair)
 MessageFormatter.show_rolltracker_load_failed = MessageCOR.show_rolltracker_load_failed

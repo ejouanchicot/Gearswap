@@ -1,21 +1,21 @@
----============================================================================
---- Midcast Watchdog - Stuck Midcast Detection and Recovery
----============================================================================
---- Detects and recovers from stuck midcast states caused by packet loss.
---- Uses dynamic timeout based on spell cast time from res/spells.lua
---- and item cast_delay from res/items.lua.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Midcast Watchdog - Stuck Midcast Detection and Recovery
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Detects and recovers from stuck midcast states caused by packet loss.
+---   Uses dynamic timeout based on spell cast time from res/spells.lua
+---   and item cast_delay from res/items.lua.
 ---
---- @file midcast_watchdog.lua
---- @author Tetsouo
---- @version 3.1 - Item support (cast_delay)
---- @date Created: 2025-10-25 | Updated: 2025-11-06 | Updated: 2025-11-04
----============================================================================
+---   @file    shared/utils/core/midcast_watchdog.lua
+---   @author  Tetsouo
+---   @version 3.4 - Refactoring (DRY helpers: clear_midcast_state + get_current_cast_time)
+---   @date    Created: 2025-10-25 | Updated: 2025-11-12
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MidcastWatchdog = {}
 
----============================================================================
---- DEPENDENCIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Load spell resource data (contains cast_time for all spells)
 local res_spells = require('resources').spells
@@ -26,9 +26,9 @@ local res_items = require('resources').items
 -- Message formatter for watchdog messages
 local MessageWatchdog = require('shared/utils/messages/formatters/system/message_watchdog')
 
----============================================================================
---- CONFIGURATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   CONFIGURATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Safety buffer added to cast time (in seconds)
 -- Timeout = spell_cast_time + WATCHDOG_BUFFER
@@ -44,16 +44,9 @@ local watchdog_enabled = true
 -- Debug mode (shows detailed info)
 local debug_enabled = false
 
----============================================================================
---- CONSTANTS
----============================================================================
-
-local CHAT_DEFAULT = 1
-local CHAT_ERROR = 167
-
----============================================================================
---- STATE TRACKING
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   STATE TRACKING
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Current midcast tracking
 local current_midcast = {
@@ -69,9 +62,9 @@ local current_midcast = {
 -- Test mode flag (prevents aftercast from clearing when testing)
 local test_mode_active = false
 
----============================================================================
---- HELPER FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HELPER FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Calculate timeout for a spell or item based on its cast time/delay
 --- @param spell_id number Spell ID from res/spells.lua (optional)
@@ -103,9 +96,45 @@ local function calculate_timeout(spell_id, item_id)
     return timeout, base_cast_time
 end
 
----============================================================================
---- CORE FUNCTIONS
----============================================================================
+--- Clear midcast state tracking
+local function clear_midcast_state()
+    current_midcast.active      = false
+    current_midcast.spell_name  = nil
+    current_midcast.spell_id    = nil
+    current_midcast.item_id     = nil
+    current_midcast.action_type = nil
+    current_midcast.start_time  = nil
+    current_midcast.timeout     = nil
+end
+
+--- Get cast time for current midcast action
+--- @return number cast_time Cast time in seconds
+--- @return string action_label Label describing the action type
+local function get_current_cast_time()
+    local cast_time = 0
+    local action_label = 'spell'
+
+    if current_midcast.action_type == 'item' and current_midcast.item_id then
+        -- Item: use cast_delay
+        if res_items[current_midcast.item_id] then
+            cast_time = res_items[current_midcast.item_id].cast_delay or
+                        res_items[current_midcast.item_id].cast_time or 0
+        end
+        action_label = 'item (cast_delay)'
+    elseif current_midcast.spell_id then
+        -- Spell: use cast_time
+        if res_spells[current_midcast.spell_id] then
+            cast_time = res_spells[current_midcast.spell_id].cast_time or 0
+        end
+        action_label = 'spell (cast_time)'
+    end
+
+    return cast_time, action_label
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   CORE FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Called when midcast starts
 --- @param spell table Spell/item data
@@ -161,13 +190,7 @@ function MidcastWatchdog.on_aftercast()
         return
     end
 
-    current_midcast.active      = false
-    current_midcast.spell_name  = nil
-    current_midcast.spell_id    = nil
-    current_midcast.item_id     = nil
-    current_midcast.action_type = nil
-    current_midcast.start_time  = nil
-    current_midcast.timeout     = nil
+    clear_midcast_state()
 end
 
 --- Check for stuck midcast (called every 0.5s)
@@ -196,34 +219,11 @@ function MidcastWatchdog.check_stuck()
 
     if age > timeout then
         -- STUCK! Force cleanup
-        local cast_time = 0
-        local action_label = 'spell'
-
-        if current_midcast.action_type == 'item' and current_midcast.item_id then
-            -- Item: use cast_delay
-            if res_items[current_midcast.item_id] then
-                cast_time = res_items[current_midcast.item_id].cast_delay or
-                            res_items[current_midcast.item_id].cast_time or 0
-            end
-            action_label = 'item (cast_delay)'
-        elseif current_midcast.spell_id then
-            -- Spell: use cast_time
-            if res_spells[current_midcast.spell_id] then
-                cast_time = res_spells[current_midcast.spell_id].cast_time or 0
-            end
-            action_label = 'spell (cast_time)'
-        end
-
+        local cast_time, action_label = get_current_cast_time()
         MessageWatchdog.show_stuck_detected(current_midcast.spell_name, action_label, cast_time, age)
 
         -- Reset tracking
-        current_midcast.active      = false
-        current_midcast.spell_name  = nil
-        current_midcast.spell_id    = nil
-        current_midcast.item_id     = nil
-        current_midcast.action_type = nil
-        current_midcast.start_time  = nil
-        current_midcast.timeout     = nil
+        clear_midcast_state()
 
         -- Disable test mode if it was active
         if test_mode_active then
@@ -236,9 +236,9 @@ function MidcastWatchdog.check_stuck()
     end
 end
 
----============================================================================
---- CONTROL FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   CONTROL FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Enable watchdog
 function MidcastWatchdog.enable()
@@ -336,17 +336,7 @@ function MidcastWatchdog.get_stats()
         age = os.clock() - current_midcast.start_time
     end
 
-    local cast_time = 0
-    if current_midcast.action_type == 'item' and current_midcast.item_id then
-        -- Item: use cast_delay
-        if res_items[current_midcast.item_id] then
-            cast_time = res_items[current_midcast.item_id].cast_delay or
-                        res_items[current_midcast.item_id].cast_time or 0
-        end
-    elseif current_midcast.spell_id and res_spells[current_midcast.spell_id] then
-        -- Spell: use cast_time
-        cast_time = res_spells[current_midcast.spell_id].cast_time or 0
-    end
+    local cast_time = get_current_cast_time()
 
     return {
         active           = current_midcast.active,
@@ -370,13 +360,7 @@ function MidcastWatchdog.clear_all()
         MessageWatchdog.show_force_clearing(current_midcast.spell_name)
     end
 
-    current_midcast.active      = false
-    current_midcast.spell_name  = nil
-    current_midcast.spell_id    = nil
-    current_midcast.item_id     = nil
-    current_midcast.action_type = nil
-    current_midcast.start_time  = nil
-    current_midcast.timeout     = nil
+    clear_midcast_state()
 
     send_command('gs c update')
     MessageWatchdog.show_all_cleared()
@@ -417,11 +401,14 @@ function MidcastWatchdog.simulate_stuck(spell_name, spell_id)
     end
 end
 
----============================================================================
---- STARTUP
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   STARTUP
+---  ═══════════════════════════════════════════════════════════════════════════
 
-local watchdog_timer = nil
+-- Use global flag to prevent multiple watchdog instances across job changes
+if not _G.MIDCAST_WATCHDOG_TIMER then
+    _G.MIDCAST_WATCHDOG_TIMER = nil
+end
 
 --- Background check function (called by timer)
 local function background_check()
@@ -433,13 +420,13 @@ end
 
 --- Start the watchdog background check
 function MidcastWatchdog.start()
-    if watchdog_timer then
+    if _G.MIDCAST_WATCHDOG_TIMER then
         return -- Already running
     end
 
     -- Use self-rescheduling coroutine (avoids prerender spam in debugmode)
     local function watchdog_check_and_reschedule()
-        if not watchdog_timer then
+        if not _G.MIDCAST_WATCHDOG_TIMER then
             return -- Watchdog was stopped
         end
 
@@ -450,22 +437,23 @@ function MidcastWatchdog.start()
     end
 
     -- Start the loop
-    watchdog_timer = true
+    _G.MIDCAST_WATCHDOG_TIMER = true
     coroutine.schedule(watchdog_check_and_reschedule, 0.5)
 
     -- Silent start - no message displayed
 end
 
---- Stop the watchdog background check
+--- Stop the watchdog background check (called during job change cleanup)
 function MidcastWatchdog.stop()
-    if watchdog_timer then
-        watchdog_timer = nil -- This will break the while loop
+    if _G.MIDCAST_WATCHDOG_TIMER then
+        _G.MIDCAST_WATCHDOG_TIMER = nil -- This will stop the recursive coroutine
+        clear_midcast_state() -- Clear any tracked midcast
     end
-    MessageWatchdog.show_stopped()
+    -- Silent stop - no message during job change
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return MidcastWatchdog

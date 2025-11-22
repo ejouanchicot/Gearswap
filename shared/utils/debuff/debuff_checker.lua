@@ -1,21 +1,20 @@
----============================================================================
---- Debuff Checker - Action Blocking Detection System
----============================================================================
---- Detects status ailments that block actions (spells, abilities, items, etc.)
---- and provides detailed information about what is blocked and why.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Debuff Checker - Action Blocking Detection System
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Detects status ailments that block actions (spells, abilities, items, etc.)
+---   and provides detailed information about what is blocked and why.
 ---
---- TEST MODE: Set TEST_MODE = false on line 24 for production use
---- Test buff mappings (WAR buffs simulate debuffs):
----   - Berserk   >> Silence (blocks magic)
----   - Aggressor >> Amnesia (blocks JA/WS)
----   - Warcry    >> Stun (blocks EVERYTHING)
+---   TEST MODE: Controlled by shared/config/DEBUFF_AUTOCURE_CONFIG.lua
+---   Test buff mappings (WAR buffs simulate debuffs):
+---     - Berserk   >> Silence (blocks magic)
+---     - Aggressor >> Amnesia (blocks JA/WS)
+---     - Warcry    >> Stun (blocks EVERYTHING)
 ---
---- @file utils/debuff/debuff_checker.lua
---- @author Tetsouo
---- @version 1.1
---- @date Created: 2025-10-02
---- @date Updated: 2025-10-02 - Multi-buff test system
----============================================================================
+---   @file    shared/utils/debuff/debuff_checker.lua
+---   @author  Tetsouo
+---   @version 1.3 - DRY refactor: Helper function for check_X_blocked() (-30 lines)
+---   @date    Created: 2025-10-02 | Updated: 2025-11-13
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local DebuffChecker = {}
 
@@ -23,13 +22,12 @@ local DebuffChecker = {}
 local config_success, AutoCureConfig = pcall(require, 'shared/config/DEBUFF_AUTOCURE_CONFIG')
 local TEST_MODE = config_success and AutoCureConfig.test_mode or false
 
----============================================================================
---- DEBUFF DEFINITIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEBUFF DEFINITIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- TEST MODE: Use WAR buffs to simulate blocking debuffs for easy testing
 -- Controlled by shared/config/DEBUFF_AUTOCURE_CONFIG.lua
--- local TEST_MODE = false  -- Now loaded from config
 
 -- Test buff mappings (WAR buffs simulate debuffs)
 local TEST_DEBUFF_MAPPINGS = {
@@ -126,9 +124,9 @@ else
     }
 end
 
----============================================================================
---- DETECTION FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DETECTION FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Get the highest priority debuff from a list
 --- @param debuff_list table List of debuffs to check
@@ -156,24 +154,33 @@ local function get_active_blocking_debuff(debuff_list)
     return blocking_debuff, blocking_message
 end
 
---- Check if magic casting is blocked
---- @return boolean blocked True if magic is blocked
---- @return string|nil debuff_name The debuff blocking magic
+--- Helper: Check if action is blocked by universal or specific debuffs
+--- @param specific_debuffs table Specific debuff list to check
+--- @return boolean blocked True if action is blocked
+--- @return string|nil debuff_name The debuff blocking the action
 --- @return string|nil message User-friendly message
-function DebuffChecker.check_magic_blocked()
+local function check_blocking_debuffs(specific_debuffs)
     -- Check universal blocks first
     local universal_debuff, universal_msg = get_active_blocking_debuff(UNIVERSAL_BLOCKING_DEBUFFS)
     if universal_debuff then
         return true, universal_debuff, universal_msg
     end
 
-    -- Check magic-specific blocks
-    local magic_debuff, magic_msg = get_active_blocking_debuff(MAGIC_BLOCKING_DEBUFFS)
-    if magic_debuff then
-        return true, magic_debuff, magic_msg
+    -- Check specific blocks
+    local specific_debuff, specific_msg = get_active_blocking_debuff(specific_debuffs)
+    if specific_debuff then
+        return true, specific_debuff, specific_msg
     end
 
     return false, nil, nil
+end
+
+--- Check if magic casting is blocked
+--- @return boolean blocked True if magic is blocked
+--- @return string|nil debuff_name The debuff blocking magic
+--- @return string|nil message User-friendly message
+function DebuffChecker.check_magic_blocked()
+    return check_blocking_debuffs(MAGIC_BLOCKING_DEBUFFS)
 end
 
 --- Check if job abilities are blocked
@@ -181,19 +188,7 @@ end
 --- @return string|nil debuff_name The debuff blocking JA
 --- @return string|nil message User-friendly message
 function DebuffChecker.check_ja_blocked()
-    -- Check universal blocks first
-    local universal_debuff, universal_msg = get_active_blocking_debuff(UNIVERSAL_BLOCKING_DEBUFFS)
-    if universal_debuff then
-        return true, universal_debuff, universal_msg
-    end
-
-    -- Check JA-specific blocks
-    local ja_debuff, ja_msg = get_active_blocking_debuff(JA_BLOCKING_DEBUFFS)
-    if ja_debuff then
-        return true, ja_debuff, ja_msg
-    end
-
-    return false, nil, nil
+    return check_blocking_debuffs(JA_BLOCKING_DEBUFFS)
 end
 
 --- Check if weapon skills are blocked
@@ -201,19 +196,7 @@ end
 --- @return string|nil debuff_name The debuff blocking WS
 --- @return string|nil message User-friendly message
 function DebuffChecker.check_ws_blocked()
-    -- Check universal blocks first
-    local universal_debuff, universal_msg = get_active_blocking_debuff(UNIVERSAL_BLOCKING_DEBUFFS)
-    if universal_debuff then
-        return true, universal_debuff, universal_msg
-    end
-
-    -- Check WS-specific blocks
-    local ws_debuff, ws_msg = get_active_blocking_debuff(WS_BLOCKING_DEBUFFS)
-    if ws_debuff then
-        return true, ws_debuff, ws_msg
-    end
-
-    return false, nil, nil
+    return check_blocking_debuffs(WS_BLOCKING_DEBUFFS)
 end
 
 --- Check if item usage is blocked
@@ -221,19 +204,7 @@ end
 --- @return string|nil debuff_name The debuff blocking items
 --- @return string|nil message User-friendly message
 function DebuffChecker.check_item_blocked()
-    -- Check universal blocks first
-    local universal_debuff, universal_msg = get_active_blocking_debuff(UNIVERSAL_BLOCKING_DEBUFFS)
-    if universal_debuff then
-        return true, universal_debuff, universal_msg
-    end
-
-    -- Check item-specific blocks
-    local item_debuff, item_msg = get_active_blocking_debuff(ITEM_BLOCKING_DEBUFFS)
-    if item_debuff then
-        return true, item_debuff, item_msg
-    end
-
-    return false, nil, nil
+    return check_blocking_debuffs(ITEM_BLOCKING_DEBUFFS)
 end
 
 --- Check if ANY action is blocked (catch-all)
@@ -264,9 +235,9 @@ function DebuffChecker.check_action_blocked(action_type)
     return false, nil, nil
 end
 
----============================================================================
---- UTILITY FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   UTILITY FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Get all currently active blocking debuffs
 --- @return table List of active blocking debuffs {name, message, blocks}

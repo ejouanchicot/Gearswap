@@ -1,16 +1,15 @@
----============================================================================
---- Equipment Checker - Universal equipment validation system
----============================================================================
---- Scans job equipment sets and verifies item availability across all bags.
---- Uses optimized caching system for instant lookups (O(1) complexity).
---- Distinguishes between equippable bags (inventory, wardrobes) and storage.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Equipment Checker - Universal equipment validation system
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Scans job equipment sets and verifies item availability across all bags.
+---   Uses optimized caching system for instant lookups (O(1) complexity).
+---   Distinguishes between equippable bags (inventory, wardrobes) and storage.
 ---
---- @file utils/equipment/equipment_checker.lua
---- @author Tetsouo
---- @version 2.0
---- @date Created: 2025-01-02
---- @date Updated: 2025-10-02 - Performance optimization with item cache
----============================================================================
+---   @file    shared/utils/equipment/equipment_checker.lua
+---   @author  Tetsouo
+---   @version 2.2 - Critical bug fixes: slip_number nil check + item_name type checks
+---   @date    Created: 2025-01-02 | Updated: 2025-11-13
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local EquipmentChecker = {}
 
@@ -33,9 +32,9 @@ local MAX_RECURSION_DEPTH = 15
 -- SAFETY: Track visited tables to detect circular references
 local visited_tables = {}
 
----============================================================================
---- BAG CONFIGURATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BAG CONFIGURATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Equippable bags (inventory + wardrobes 1-8)
 local EQUIPPABLE_BAGS = {
@@ -74,9 +73,9 @@ local VALID_SLOTS = {
     feet = true
 }
 
----============================================================================
---- ITEM SEARCH FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ITEM SEARCH FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Extract item name from equipment entry
 --- @param item_entry any Equipment entry (string or table)
@@ -128,7 +127,7 @@ local function build_item_cache()
         -- Add all name variants as cache keys for fast lookup
         for _, field in ipairs(name_fields) do
             local item_name = item_data[field]
-            if item_name then
+            if item_name and type(item_name) == 'string' then
                 local key = item_name:lower()
                 -- Priority: equipped > inventory > storage (first found wins)
                 if not cache[key] or (available and not cache[key].available) then
@@ -181,12 +180,14 @@ local function build_item_cache()
         if slip_storages then
             for _, slip_id in ipairs(slips.storages) do
                 local slip_number = slips.get_slip_number_by_id(slip_id)
-                local slip_name = string.format('Slip %02d', slip_number)
-                local items_in_slip = slip_storages[slip_id]
+                if slip_number then
+                    local slip_name = string.format('Slip %02d', slip_number)
+                    local items_in_slip = slip_storages[slip_id]
 
-                if items_in_slip then
-                    for _, item_id in ipairs(items_in_slip) do
-                        add_to_cache(item_id, false, true, slip_name)
+                    if items_in_slip then
+                        for _, item_id in ipairs(items_in_slip) do
+                            add_to_cache(item_id, false, true, slip_name)
+                        end
                     end
                 end
             end
@@ -201,7 +202,7 @@ end
 --- @param item_cache table Pre-built item cache
 --- @return table Status {available=bool, in_storage=bool, bag_name=string|nil}
 local function check_item_status(item_name, item_cache)
-    if not item_name or item_name == '' then
+    if not item_name or type(item_name) ~= 'string' or item_name == '' then
         return {
             available = false,
             in_storage = false,
@@ -233,9 +234,9 @@ local function check_item_status(item_name, item_cache)
     }
 end
 
----============================================================================
---- SET SCANNING FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SET SCANNING FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Recursively scan sets and validate equipment
 --- @param sets_table table Sets table to scan
@@ -340,9 +341,9 @@ local function scan_sets_recursive(sets_table, path, results, item_cache, depth)
     end
 end
 
----============================================================================
---- PUBLIC API
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PUBLIC API
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Check equipment for a specific job
 --- @param job_name string Job name (WAR, RDM, etc.)

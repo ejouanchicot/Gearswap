@@ -15,23 +15,31 @@
 ---============================================================================
 
 ---============================================================================
---- DEPENDENCIES
+--- DEPENDENCIES (LAZY LOADING for performance)
 ---============================================================================
+-- Command handlers loaded on first command (saves ~60ms at startup)
+local UICommands = nil
+local CommonCommands = nil
+local WatchdogCommands = nil
+local CycleHandler = nil
+local MessageCommands = nil
+local WHMMessageFormatter = nil
 
--- UI commands handler (ui, ui h, ui show, ui hide, etc.)
-local UICommands = require('shared/utils/ui/UI_COMMANDS')
+local function ensure_commands_loaded()
+    if not UICommands then
+        UICommands = require('shared/utils/ui/UI_COMMANDS')
+        CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
+        WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
+        CycleHandler = require('shared/utils/core/CYCLE_HANDLER')
+        MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
 
--- Common commands handler (reload, checksets, etc.)
-local CommonCommands = require('shared/utils/core/COMMON_COMMANDS')
-local WatchdogCommands = require('shared/utils/core/WATCHDOG_COMMANDS')
-
--- Message commands (for debug messages)
-local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
-
--- WHM message formatter
-local formatter_success, WHMMessageFormatter = pcall(require, 'shared/utils/whm/whm_message_formatter')
-if not formatter_success then
-    WHMMessageFormatter = nil
+        -- WHM message formatter
+        local formatter_success
+        formatter_success, WHMMessageFormatter = pcall(require, 'shared/utils/whm/whm_message_formatter')
+        if not formatter_success then
+            WHMMessageFormatter = nil
+        end
+    end
 end
 
 ---============================================================================
@@ -47,6 +55,9 @@ function job_self_command(cmdParams, eventArgs)
     if not cmdParams or #cmdParams == 0 then
         return
     end
+
+    -- Lazy load command handlers on first command
+    ensure_commands_loaded()
 
     local command = cmdParams[1]:lower()
 
@@ -115,6 +126,17 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- ==========================================================================
+    -- CUSTOM CYCLE STATE (UI-aware cycle)
+    -- ==========================================================================
+    -- Intercepts cycle commands to check UI visibility
+    -- If UI visible: custom cycle + UI update (no message)
+    -- If UI invisible: delegate to Mote-Include (shows message)
+
+    if command == 'cyclestate' then
+        eventArgs.handled = CycleHandler.handle_cyclestate(cmdParams, eventArgs)
+        return
+    end
 
     -- ==========================================================================
     -- WHM-SPECIFIC COMMANDS

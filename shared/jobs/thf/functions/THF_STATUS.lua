@@ -1,44 +1,35 @@
----============================================================================
---- THF Status Module - Player Status Change Handling
----============================================================================
---- Handles player status transitions for Thief job.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   THF Status Module - Player Status Change Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles status changes (Idle, Engaged, Resting, Dead, etc.)
 ---
---- Features:
----   • Status change detection (Idle >> Engaged, Engaged >> Idle, etc.)
----   • Dead/Resting state handling
----   • Automatic gear swapping based on new status
----   • Future: THF-specific status logic
----
---- Dependencies:
----   • Mote-Include (provides base status change handling)
----
---- @file    jobs/thf/functions/THF_STATUS.lua
---- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-10-06
----============================================================================
+---   @file    shared/jobs/thf/functions/THF_STATUS.lua
+---   @author  Tetsouo
+---   @version 1.2 - Added DoomManager safety unlock
+---   @date    Updated: 2025-11-14
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- STATUS HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Called when player status changes (Idle/Engaged/Dead/etc.)
---- @param newStatus string New status
---- @param oldStatus string Old status
---- @param eventArgs table Event arguments with handled flag
+local DoomManager = nil
+
+--- Handle status change events
+--- @param newStatus string New status (Idle, Engaged, Resting, Dead, etc.)
+--- @param oldStatus string Previous status
+--- @param eventArgs table Event arguments
 function job_status_change(newStatus, oldStatus, eventArgs)
-    -- THF-specific status change logic here
+    -- Lazy load DoomManager on first status change
+    if not DoomManager then
+        DoomManager = require('shared/utils/debuff/doom_manager')
+    end
+
+    -- Safety: Unlock Doom slots after death (prevents stuck locks after raise)
+    DoomManager.handle_status_change(newStatus, oldStatus)
+
+    -- THF-specific status change logic can be added here
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
-
--- Make job_status_change available globally for GearSwap
+-- Export to global scope
 _G.job_status_change = job_status_change
-
--- Also export as module
-local THF_STATUS = {}
-THF_STATUS.job_status_change = job_status_change
-
-return THF_STATUS
