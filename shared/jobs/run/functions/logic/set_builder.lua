@@ -64,7 +64,7 @@ function SetBuilder.apply_grip(result)
     if state.MainWeapon and state.MainWeapon.current == 'Lycurgos' then
         -- DEBUG: Confirm Lycurgos is detected and grip is skipped
         if _G.DEBUG_RUN_WEAPONS then
-            MessageFormatter.show_debug('RUN SetBuilder', 'Lycurgos detected - skipping grip application")
+            MessageFormatter.show_debug('RUN SetBuilder', 'Lycurgos detected - skipping grip application')
         end
         return result
     end

@@ -25,7 +25,21 @@ end
 ---============================================================================
 
 -- Debug helper
--- Debug helperlocal function show_equipment_pet_mid(label)    if not _G.BST_DEBUG_PRECAST then return end    -- Lazy load MessageFormatter if needed    local MessageFormatter = require('shared/utils/messages/message_formatter')    local eq = player.equipment    MessageFormatter.show_debug('PET_MIDCAST', '========================================================')    MessageFormatter.show_debug('PET_MIDCAST', label)    MessageFormatter.show_debug('PET_MIDCAST', '--------------------------------------------------------')    MessageFormatter.show_debug('PET_MIDCAST', '  main: ' .. (eq.main or 'empty'))    MessageFormatter.show_debug('PET_MIDCAST', '  hands: ' .. (eq.hands or 'empty'))    MessageFormatter.show_debug('PET_MIDCAST', '  legs: ' .. (eq.legs or 'empty'))    MessageFormatter.show_debug('PET_MIDCAST', '========================================================')end
+local function show_equipment_pet_mid(label)
+    if not _G.BST_DEBUG_PRECAST then return end
+
+    -- Lazy load MessageFormatter if needed
+    local MessageFormatter = require('shared/utils/messages/message_formatter')
+
+    local eq = player.equipment
+    MessageFormatter.show_debug('PET_MIDCAST', '========================================================')
+    MessageFormatter.show_debug('PET_MIDCAST', label)
+    MessageFormatter.show_debug('PET_MIDCAST', '--------------------------------------------------------')
+    MessageFormatter.show_debug('PET_MIDCAST', '  main: ' .. (eq.main or 'empty'))
+    MessageFormatter.show_debug('PET_MIDCAST', '  hands: ' .. (eq.hands or 'empty'))
+    MessageFormatter.show_debug('PET_MIDCAST', '  legs: ' .. (eq.legs or 'empty'))
+    MessageFormatter.show_debug('PET_MIDCAST', '========================================================')
+end
 
 --- Called during pet ability midcast (specifically for Ready Moves)
 --- @param spell table Spell/ability data

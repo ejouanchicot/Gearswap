@@ -170,7 +170,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         if buffactive and buffactive['Accession'] and spell.english and spell.english:match("^Phalanx") then
             equip(sets.midcast['Enhancing Magic'])
             if debug_enabled then
-                MessageFormatter.show_debug('RDM Midcast', 'Phalanx + Accession detected → Base Enhancing set")
+                MessageFormatter.show_debug('RDM Midcast', 'Phalanx + Accession detected → Base Enhancing set')
             end
             return
         end

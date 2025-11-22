@@ -145,7 +145,7 @@ function job_self_command(cmdParams, eventArgs)
         if toggle_retaliation_debug then
             toggle_retaliation_debug()
         else
-            MessageFormatter.show_error('WAR', 'ERROR: Retaliation debug function not available")
+            MessageFormatter.show_error('WAR', 'ERROR: Retaliation debug function not available')
         end
 
         eventArgs.handled = true
@@ -156,12 +156,12 @@ function job_self_command(cmdParams, eventArgs)
         -- Show Retaliation tracking status
         if get_retaliation_status then
             local status = get_retaliation_status()
-            MessageFormatter.show_info('WAR', 'Retaliation Status:")
+            MessageFormatter.show_info('WAR', 'Retaliation Status:')
             MessageFormatter.show_info('WAR', '  Debug Mode: ' .. tostring(status.debug_mode))
             MessageFormatter.show_info('WAR', '  Tracking: ' .. tostring(status.tracking))
-            MessageFormatter.show_info('WAR', '  Elapsed Time: ' .. string.format('%.2f', status.elapsed_time) .. 's / ' .. status.move_duration_needed .. 's")
+            MessageFormatter.show_info('WAR', '  Elapsed Time: ' .. string.format('%.2f', status.elapsed_time) .. 's / ' .. status.move_duration_needed .. 's')
         else
-            MessageFormatter.show_error('WAR', 'ERROR: Retaliation status function not available")
+            MessageFormatter.show_error('WAR', 'ERROR: Retaliation status function not available')
         end
 
         eventArgs.handled = true
