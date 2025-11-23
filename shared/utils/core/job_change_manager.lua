@@ -225,6 +225,14 @@ local function apply_job_setup(main_job, sub_job, expected_counter)
                 -- All done
                 STATE.is_changing = false
 
+                -- Restart AutoMove after job change (if not disabled for this job)
+                -- Wait 0.2s to let everything stabilize before restarting movement detection
+                coroutine.schedule(function()
+                    if _G.DISABLE_AUTOMOVE ~= true and _G.AutoMove and type(_G.AutoMove.start) == 'function' then
+                        _G.AutoMove.start()
+                    end
+                end, 0.2)
+
                 -- Show success message
                 if MessageFormatter_success and MessageFormatter then
                     MessageFormatter.show_success(string.format("Job change complete: %s/%s", main_job, sub_job))
