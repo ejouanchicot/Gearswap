@@ -64,17 +64,6 @@ function AutoMove.stop()
     _G._automove_sequence = (_G._automove_sequence or 0) + 1
 end
 
---- Start the movement detection loop (called after job change)
---- Safe to call multiple times - will only start if not already running
-function AutoMove.start()
-    if not _G.AUTOMOVE_RUNNING then
-        -- Increment sequence to start new generation (invalidates any old coroutines)
-        _G._automove_sequence = (_G._automove_sequence or 0) + 1
-        _G.AUTOMOVE_RUNNING = true
-        coroutine.schedule(check_movement, config.check_interval)
-    end
-end
-
 --- Call all registered callbacks
 local function trigger_callbacks(is_moving, distance, player_status)
     for _, callback in ipairs(callbacks) do
@@ -242,6 +231,26 @@ local function check_movement()
         coroutine.schedule(check_movement, config.check_interval)
     end
 end
+
+---============================================================================
+--- START/STOP API
+---============================================================================
+
+--- Start the movement detection loop (called after job change)
+--- Safe to call multiple times - will only start if not already running
+--- MUST be defined AFTER check_movement function
+function AutoMove.start()
+    if not _G.AUTOMOVE_RUNNING then
+        -- Increment sequence to start new generation (invalidates any old coroutines)
+        _G._automove_sequence = (_G._automove_sequence or 0) + 1
+        _G.AUTOMOVE_RUNNING = true
+        coroutine.schedule(check_movement, config.check_interval)
+    end
+end
+
+---============================================================================
+--- INITIALIZATION
+---============================================================================
 
 -- Initialize sequence counter (global to survive reloads)
 if not _G._automove_sequence then
