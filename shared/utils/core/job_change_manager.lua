@@ -120,6 +120,12 @@ local function cleanup_current_setup()
         _G.AutoMove.clear_callbacks()
     end
 
+    -- Reinitialize AutoMove position to prevent false movement detection
+    -- Without this, old position data from previous job causes movement gear to equip incorrectly
+    if _G.AutoMove and type(_G.AutoMove.reinit_position) == 'function' then
+        _G.AutoMove.reinit_position()
+    end
+
     -- CRITICAL: Reset movement state to prevent stale state from old job
     -- This prevents MoveSpeed gear being equipped when idle after job change
     if _G.state and _G.state.Moving then
