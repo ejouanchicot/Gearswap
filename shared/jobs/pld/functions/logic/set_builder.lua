@@ -116,13 +116,8 @@ SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town
 --- @param base_set table Base engaged set from pld_sets.lua
 --- @return table Selected engaged set (BurtgangKC if condition met, otherwise hybrid/base)
 function SetBuilder.select_engaged_base(base_set)
-    MessageFormatter.show_debug('PLD SetBuilder', '========== select_engaged_base START ==========')
-    MessageFormatter.show_debug('PLD SetBuilder', 'MainWeapon: ' .. tostring(state.MainWeapon and state.MainWeapon.current or 'nil'))
-    MessageFormatter.show_debug('PLD SetBuilder', 'HybridMode: ' .. tostring(state.HybridMode and state.HybridMode.current or 'nil'))
-
     -- PRIORITY 1: Check for BurtgangKC weapon set (Kraken Club in sub)
     if state.MainWeapon and state.MainWeapon.current == 'BurtgangKC' and sets.engaged.BurtgangKC then
-        MessageFormatter.show_debug('PLD SetBuilder', 'PRIORITY 1: BurtgangKC weapon set detected')
         return sets.engaged.BurtgangKC
     end
 
@@ -130,7 +125,6 @@ function SetBuilder.select_engaged_base(base_set)
     if player and player.equipment and player.equipment.sub then
         local sub_weapon = player.equipment.sub
         if sub_weapon == 'Kraken Club' and sets.engaged.BurtgangKC then
-            MessageFormatter.show_debug('PLD SetBuilder', 'PRIORITY 2: Kraken Club manually equipped')
             return sets.engaged.BurtgangKC
         end
     end
@@ -141,24 +135,18 @@ function SetBuilder.select_engaged_base(base_set)
         if hybrid_set then
             -- If Shining weapon, return HybridMode set WITHOUT sub (Alber will be applied after)
             if state.MainWeapon and state.MainWeapon.current == 'Shining' then
-                MessageFormatter.show_debug('PLD SetBuilder', 'PRIORITY 3: SHINING DETECTED - Stripping sub from HybridMode')
-                MessageFormatter.show_debug('PLD SetBuilder', 'Original HybridMode sub: ' .. tostring(hybrid_set.sub))
                 local hybrid_no_sub = {}
                 for slot, item in pairs(hybrid_set) do
                     if slot ~= 'sub' then
                         hybrid_no_sub[slot] = item
                     end
                 end
-                MessageFormatter.show_debug('PLD SetBuilder', 'Returning: HybridMode WITHOUT sub')
                 return hybrid_no_sub
             end
-            MessageFormatter.show_debug('PLD SetBuilder', 'PRIORITY 3: Normal HybridMode (' .. state.HybridMode.current .. ')')
-            MessageFormatter.show_debug('PLD SetBuilder', 'HybridMode sub: ' .. tostring(hybrid_set.sub))
             return hybrid_set
         end
     end
 
-    MessageFormatter.show_debug('PLD SetBuilder', 'Returning: base_set (no overrides)')
     return base_set
 end
 
@@ -174,43 +162,24 @@ function SetBuilder.build_engaged_set(base_set)
         return {}
     end
 
-    MessageFormatter.show_debug('PLD SetBuilder', '========== build_engaged_set START ==========')
-
     -- Step 1: Select base set (BurtgangKC detection + HybridMode)
     local result = SetBuilder.select_engaged_base(base_set)
     local is_shining = state.MainWeapon and state.MainWeapon.current == 'Shining'
     local is_burtgang_kc = state.MainWeapon and state.MainWeapon.current == 'BurtgangKC'
 
-    MessageFormatter.show_debug('PLD SetBuilder', 'After select_engaged_base:')
-    MessageFormatter.show_debug('PLD SetBuilder', '  is_shining=' .. tostring(is_shining))
-    MessageFormatter.show_debug('PLD SetBuilder', '  is_burtgang_kc=' .. tostring(is_burtgang_kc))
-    MessageFormatter.show_debug('PLD SetBuilder', '  result.sub=' .. tostring(result.sub))
-
     -- Step 2: Apply main weapon
     result = SetBuilder.apply_weapon(result)
-
-    MessageFormatter.show_debug('PLD SetBuilder', 'After apply_weapon:')
-    MessageFormatter.show_debug('PLD SetBuilder', '  result.main=' .. tostring(result.main))
-    MessageFormatter.show_debug('PLD SetBuilder', '  result.sub=' .. tostring(result.sub))
 
     -- Step 3: Apply Alber Strap if Shining (overrides HybridMode shield)
     -- SKIP if BurtgangKC (already has Kraken Club in sub)
     if is_shining and not is_burtgang_kc then
-        MessageFormatter.show_debug('PLD SetBuilder', 'APPLYING ALBER STRAP (Shining weapon)')
-        MessageFormatter.show_debug('PLD SetBuilder', '  Before: result.sub=' .. tostring(result.sub))
         result = set_combine(result, sets.Alber)
-        MessageFormatter.show_debug('PLD SetBuilder', '  After: result.sub=' .. tostring(result.sub))
     end
 
     -- Step 4: Apply XP mode (meleeXp set when Xp = On)
     if state.Xp and state.Xp.value == 'On' and sets.meleeXp then
         result = set_combine(result, sets.meleeXp)
-        MessageFormatter.show_debug('PLD SetBuilder', 'Applied meleeXp set')
     end
-
-    MessageFormatter.show_debug('PLD SetBuilder', '========== FINAL ENGAGED SET ==========')
-    MessageFormatter.show_debug('PLD SetBuilder', '  main=' .. tostring(result.main))
-    MessageFormatter.show_debug('PLD SetBuilder', '  sub=' .. tostring(result.sub))
 
     return result
 end
@@ -227,36 +196,22 @@ function SetBuilder.build_idle_set(base_set)
         return {}
     end
 
-    MessageFormatter.show_debug('PLD SetBuilder', '========== build_idle_set START ==========')
-
     -- Step 1: Town detection - use town set as base
     local result, in_town = SetBuilder.select_idle_base(base_set)
     local is_shining = state.MainWeapon and state.MainWeapon.current == 'Shining'
     local is_burtgang_kc = state.MainWeapon and state.MainWeapon.current == 'BurtgangKC'
 
-    MessageFormatter.show_debug('PLD SetBuilder', 'After select_idle_base:')
-    MessageFormatter.show_debug('PLD SetBuilder', '  in_town=' .. tostring(in_town))
-    MessageFormatter.show_debug('PLD SetBuilder', '  is_shining=' .. tostring(is_shining))
-    MessageFormatter.show_debug('PLD SetBuilder', '  is_burtgang_kc=' .. tostring(is_burtgang_kc))
-
     -- Step 2: Apply main weapon (applies to both town and non-town)
     result = SetBuilder.apply_weapon(result)
-
-    MessageFormatter.show_debug('PLD SetBuilder', 'After apply_weapon:')
-    MessageFormatter.show_debug('PLD SetBuilder', '  result.main=' .. tostring(result.main))
-    MessageFormatter.show_debug('PLD SetBuilder', '  result.sub=' .. tostring(result.sub))
 
     -- Step 3: Apply shield (handles town mode and Shining)
     -- SKIP if BurtgangKC (already has Kraken Club in sub)
     if not is_burtgang_kc then
         result = SetBuilder.apply_shield(result, in_town)
-        MessageFormatter.show_debug('PLD SetBuilder', 'After apply_shield:')
-        MessageFormatter.show_debug('PLD SetBuilder', '  result.sub=' .. tostring(result.sub))
     end
 
     -- Step 4: Early return if in town (weapons/shields already applied)
     if in_town then
-        MessageFormatter.show_debug('PLD SetBuilder', 'IN TOWN - early return')
         return result
     end
 
@@ -271,7 +226,6 @@ function SetBuilder.build_idle_set(base_set)
 
         if hybrid_set then
             if is_shining or is_burtgang_kc then
-                MessageFormatter.show_debug('PLD SetBuilder', 'Applying HybridMode WITHOUT sub (Shining/BurtgangKC)')
                 -- Shining/BurtgangKC: Apply HybridMode WITHOUT sub (keep Alber Strap/Kraken Club)
                 local hybrid_no_sub = {}
                 for slot, item in pairs(hybrid_set) do
@@ -281,7 +235,6 @@ function SetBuilder.build_idle_set(base_set)
                 end
                 result = set_combine(result, hybrid_no_sub)
             else
-                MessageFormatter.show_debug('PLD SetBuilder', 'Applying full HybridMode (with sub)')
                 -- Normal: Apply full HybridMode set (including sub)
                 result = set_combine(result, hybrid_set)
             end
@@ -291,15 +244,10 @@ function SetBuilder.build_idle_set(base_set)
     -- Step 6: Apply XP mode (idleXp set when Xp = On) - AFTER HybridMode to override
     if state.Xp and state.Xp.value == 'On' and sets.idleXp then
         result = set_combine(result, sets.idleXp)
-        MessageFormatter.show_debug('PLD SetBuilder', 'Applied idleXp set')
     end
 
     -- Step 7: Apply movement speed
     result = SetBuilder.apply_movement(result)
-
-    MessageFormatter.show_debug('PLD SetBuilder', '========== FINAL IDLE SET ==========')
-    MessageFormatter.show_debug('PLD SetBuilder', '  main=' .. tostring(result.main))
-    MessageFormatter.show_debug('PLD SetBuilder', '  sub=' .. tostring(result.sub))
 
     return result
 end
