@@ -47,7 +47,8 @@
       "Bash(while read:*)",
       "Bash(do wc -l \"$f\")",
       "Bash(findstr:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(del \".dressup_enabled\")"
     ],
     "deny": [],
     "ask": [],
