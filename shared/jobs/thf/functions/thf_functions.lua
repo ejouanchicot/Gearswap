@@ -98,8 +98,8 @@ TIMER('THF_MOVEMENT')
 --- • logic/smartbuff_manager.lua - Subjob-specific buff management
 ---============================================================================
 
--- Load dual-boxing manager
-local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
+-- Load dual-boxing manager (uses deferred init + lazy message loading)
+local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 
 print('[THF] All functions loaded successfully')
 

@@ -194,6 +194,19 @@ function MessageCommands.show_lockstyle_reapplying()
 end
 
 ---============================================================================
+--- DRESSUP TOGGLE COMMAND
+---============================================================================
+
+function MessageCommands.show_dressup_toggled(enabled)
+    local status = enabled and "ON" or "OFF"
+    local color = enabled and MessageColors.SUCCESS or MessageColors.WARNING
+    local desc = enabled and "(will cycle DressUp on lockstyle)" or "(lockstyle only, no DressUp)"
+    local color_code = string.char(0x1F, color)
+    local gray = string.char(0x1F, 160)
+    add_to_chat(121, color_code .. "[DressUp] " .. gray .. "Management: " .. color_code .. status .. " " .. gray .. desc)
+end
+
+---============================================================================
 --- WARP ERROR MESSAGES
 ---============================================================================
 

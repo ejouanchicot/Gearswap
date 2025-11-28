@@ -60,7 +60,24 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
             MessageFormatter.show_geo_cast(spell.english)
         end
 
-        -- Equip Geomancy gear
+        -- Check for Entrust + Indi on someone else (special gear)
+        if spell.english and spell.english:find("^Indi%-") then
+            -- Check active buff OR pending flag (instant detection before buffactive updates)
+            local has_entrust = (buffactive and buffactive['Entrust']) or _G.geo_entrust_pending
+            -- Check if target is NOT self (casting on party member)
+            local target_is_other = spell.target and spell.target.type ~= 'SELF'
+
+            if has_entrust and target_is_other then
+                -- Entrust + Indi on party member = special set for duration/potency
+                -- Direct equip: sets.midcast.Indi.Entrust (logical naming)
+                if sets.midcast.Indi and sets.midcast.Indi.Entrust then
+                    equip(sets.midcast.Indi.Entrust)
+                    return
+                end
+            end
+        end
+
+        -- Standard Geomancy gear (self Indi or Geo spells)
         MidcastManager.select_set({
             skill = 'Geomancy',
             spell = spell

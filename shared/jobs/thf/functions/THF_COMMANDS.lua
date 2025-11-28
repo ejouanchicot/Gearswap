@@ -198,6 +198,11 @@ end
 --- Update UI when state changes
 --- Called after state changes to update UI display
 function job_state_change(stateField, newValue, oldValue)
+    -- Skip UI update for Moving state (handled by AutoMove with flag)
+    if stateField == 'Moving' then
+        return
+    end
+
     -- Handle RangeLock state changes
     if stateField == 'Range Lock' then
         if newValue == false or newValue == 'false' then

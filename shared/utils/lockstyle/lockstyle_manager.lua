@@ -6,11 +6,66 @@
 ---
 ---   @file    shared/utils/lockstyle/lockstyle_manager.lua
 ---   @author  Tetsouo
----   @version 1.1 - BRD style + fix Lua 5.1 compatibility (remove coroutine.close)
----   @date    Created: 2025-10-05 | Updated: 2025-11-13
+---   @version 1.2 - Add persistent DressUp toggle (//gs c dressup)
+---   @date    Created: 2025-10-05 | Updated: 2025-11-26
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local LockstyleManager = {}
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   GLOBAL DRESSUP STATE (Persistent across reloads)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+-- File exists = DISABLED, no file = ENABLED (default ON)
+local DRESSUP_STATE_FILE = windower.addon_path .. 'data/.dressup_disabled'
+
+--- Read DressUp state from persistent file
+--- @return boolean True if DressUp management is enabled (default: true)
+local function read_dressup_state()
+    local f = io.open(DRESSUP_STATE_FILE, 'r')
+    if f then
+        f:close()
+        return false  -- File exists = disabled
+    end
+    return true  -- No file = enabled (default)
+end
+
+--- Save DressUp enabled state (delete the disable file)
+local function save_dressup_enabled()
+    os.remove(DRESSUP_STATE_FILE)
+end
+
+--- Save DressUp disabled state (create the disable file)
+local function save_dressup_disabled()
+    local f = io.open(DRESSUP_STATE_FILE, 'w')
+    if f then
+        f:write('disabled')
+        f:close()
+    end
+end
+
+-- Initialize global state once (shared across all job instances)
+if _G.DRESSUP_MANAGEMENT_ENABLED == nil then
+    _G.DRESSUP_MANAGEMENT_ENABLED = read_dressup_state()
+end
+
+--- Toggle DressUp management globally (persistent)
+--- @return boolean New state (true = enabled, false = disabled)
+function LockstyleManager.toggle_dressup()
+    _G.DRESSUP_MANAGEMENT_ENABLED = not _G.DRESSUP_MANAGEMENT_ENABLED
+    if _G.DRESSUP_MANAGEMENT_ENABLED then
+        save_dressup_enabled()
+    else
+        save_dressup_disabled()
+    end
+    return _G.DRESSUP_MANAGEMENT_ENABLED
+end
+
+--- Get current DressUp management state
+--- @return boolean Current state
+function LockstyleManager.is_dressup_enabled()
+    return _G.DRESSUP_MANAGEMENT_ENABLED == true
+end
 
 --- Create a lockstyle module configured for a specific job
 --- @param job_code string Job code (e.g., 'WAR', 'PLD', 'DNC')
@@ -35,15 +90,20 @@ function LockstyleManager.create(job_code, config_path, default_lockstyle, defau
     end
 
     -- System state and configuration
+    -- NOTE: manage_dressup reads from global _G.DRESSUP_MANAGEMENT_ENABLED (persistent)
     local STATE = {
         enabled = true,
-        manage_dressup = true,
         is_processing = false,
         current_coroutines = {},
         dressup_state = 'unknown',
         last_dressup_command_time = 0,
         operation_id = 0
     }
+
+    -- Helper to get current dressup management state (reads from global)
+    local function get_manage_dressup()
+        return _G.DRESSUP_MANAGEMENT_ENABLED == true
+    end
 
     ---  ═══════════════════════════════════════════════════════════════════════════
     ---   LOCKSTYLE FUNCTIONS WITH DELAY
@@ -66,7 +126,7 @@ function LockstyleManager.create(job_code, config_path, default_lockstyle, defau
 
         local current_time = os.clock()
 
-        if STATE.manage_dressup then
+        if get_manage_dressup() then
             if STATE.dressup_state ~= 'unloaded' then
                 if current_time - STATE.last_dressup_command_time > 0.5 then
                     send_command('lua unload dressup')
@@ -148,7 +208,7 @@ function LockstyleManager.create(job_code, config_path, default_lockstyle, defau
             subjob = subjob,
             style = style,
             enabled = STATE.enabled,
-            manage_dressup = STATE.manage_dressup
+            manage_dressup = get_manage_dressup()
         }
     end
 
@@ -177,10 +237,16 @@ function LockstyleManager.create(job_code, config_path, default_lockstyle, defau
         show_lockstyle_config()
     end
 
-    --- Set DressUp management on/off
+    --- Set DressUp management on/off (uses global persistent state)
     --- @param manage_dressup boolean Manage DressUp or not
     local function set_dressup_management(manage_dressup)
-        STATE.manage_dressup = manage_dressup
+        -- Update global state (persistent)
+        _G.DRESSUP_MANAGEMENT_ENABLED = manage_dressup
+        if manage_dressup then
+            save_dressup_enabled()
+        else
+            save_dressup_disabled()
+        end
         show_lockstyle_config()
     end
 

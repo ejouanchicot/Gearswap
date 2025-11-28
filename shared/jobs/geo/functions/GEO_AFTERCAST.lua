@@ -11,6 +11,14 @@
 ---============================================================================
 
 ---============================================================================
+--- ENTRUST PENDING FLAG (Initialize global tracker)
+---============================================================================
+-- Track Entrust usage (persist until Indi spell is cast or buff expires)
+if _G.geo_entrust_pending == nil then
+    _G.geo_entrust_pending = false
+end
+
+---============================================================================
 --- AFTERCAST HOOKS
 ---============================================================================
 
@@ -21,6 +29,16 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     end
 
     -- GEO-SPECIFIC AFTERCAST LOGIC
+
+    -- Track Entrust usage for immediate gear application (before buff appears in buffactive)
+    if spell.type == 'JobAbility' and spell.english == 'Entrust' and not spell.interrupted then
+        _G.geo_entrust_pending = true
+    end
+
+    -- Clear Entrust pending flag after Indi spell completes (buff consumed)
+    if spell.skill == 'Geomancy' and spell.english and spell.english:find("^Indi%-") and not spell.interrupted then
+        _G.geo_entrust_pending = false
+    end
 
     -- Force gear refresh after actions complete (handles Odyssey lag)
     if not spell.interrupted then

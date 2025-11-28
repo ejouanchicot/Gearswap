@@ -16,8 +16,23 @@
 --- @date Created: 2025-11-06
 ---============================================================================
 
-local MessageEngine = require('shared/utils/messages/core/message_engine')
-local MessageRenderer = require('shared/utils/messages/core/message_renderer')
+-- Lazy-load core modules (only when first message is sent)
+local MessageEngine = nil
+local MessageRenderer = nil
+
+local function get_MessageEngine()
+    if not MessageEngine then
+        MessageEngine = require('shared/utils/messages/core/message_engine')
+    end
+    return MessageEngine
+end
+
+local function get_MessageRenderer()
+    if not MessageRenderer then
+        MessageRenderer = require('shared/utils/messages/core/message_renderer')
+    end
+    return MessageRenderer
+end
 
 local Messages = {}
 
@@ -37,12 +52,12 @@ function Messages.send(namespace, key, params, options)
 
     -- Try to format the message
     local ok, message, color = pcall(function()
-        return MessageEngine.format(namespace, key, params)
+        return get_MessageEngine().format(namespace, key, params)
     end)
 
     if not ok then
         -- Error formatting message
-        MessageRenderer.show_error(string.format(
+        get_MessageRenderer().show_error(string.format(
             "Failed to format message %s.%s: %s",
             namespace, key, tostring(message)
         ))
@@ -58,7 +73,7 @@ function Messages.send(namespace, key, params, options)
     options.namespace = namespace
 
     -- Render the message
-    MessageRenderer.send(message, color, options)
+    get_MessageRenderer().send(message, color, options)
 
     return true, message_length
 end
@@ -111,7 +126,7 @@ function Messages.system(level, message)
     local color = colors[level] or colors.info
     local formatted = string.format("[SYSTEM] %s", message)
 
-    MessageRenderer.send(formatted, color, {
+    get_MessageRenderer().send(formatted, color, {
         level = (level == "error" and 2) or (level == "warning" and 1) or 0
     })
 end
@@ -200,7 +215,7 @@ function Messages.custom(template, color)
             message = message:gsub(placeholder, tostring(value), 1)
         end
 
-        MessageRenderer.send(message, self.color, self.options)
+        get_MessageRenderer().send(message, self.color, self.options)
     end
 
     --- Preview without sending (for testing)
@@ -228,37 +243,37 @@ end
 ---   - color_mode: string ("normal", "colorblind", "monochrome")
 ---   - timestamp: boolean (add timestamps)
 function Messages.config(config)
-    MessageRenderer.configure(config)
+    get_MessageRenderer().configure(config)
 end
 
 --- Get current configuration
 --- @return table Current config
 function Messages.get_config()
-    return MessageRenderer.get_config()
+    return get_MessageRenderer().get_config()
 end
 
 --- Toggle all messages on/off
 --- @return boolean New state
 function Messages.toggle()
-    return MessageRenderer.toggle()
+    return get_MessageRenderer().toggle()
 end
 
 --- Set filter level
 --- @param level number 0=all, 1=important, 2=critical
 function Messages.set_filter_level(level)
-    MessageRenderer.set_filter_level(level)
+    get_MessageRenderer().set_filter_level(level)
 end
 
 --- Set color mode for accessibility
 --- @param mode string "normal", "colorblind", "monochrome"
 function Messages.set_color_mode(mode)
-    MessageRenderer.set_color_mode(mode)
+    get_MessageRenderer().set_color_mode(mode)
 end
 
 --- Toggle timestamps
 --- @return boolean New state
 function Messages.toggle_timestamp()
-    return MessageRenderer.toggle_timestamp()
+    return get_MessageRenderer().toggle_timestamp()
 end
 
 ---============================================================================
@@ -267,18 +282,18 @@ end
 
 --- Show system statistics
 function Messages.show_stats()
-    MessageRenderer.show_stats()
+    get_MessageRenderer().show_stats()
 end
 
 --- Reset statistics
 function Messages.reset_stats()
-    MessageRenderer.reset_stats()
+    get_MessageRenderer().reset_stats()
 end
 
 --- List all available messages in a namespace (for debugging)
 --- @param namespace string
 function Messages.list(namespace)
-    local keys = MessageEngine.list_keys(namespace)
+    local keys = get_MessageEngine().list_keys(namespace)
 
     add_to_chat(160, "-----------------------------------------------------")
     add_to_chat(158, string.format("[Messages] Namespace: %s", namespace))
@@ -293,12 +308,12 @@ end
 
 --- Get cache statistics from engine
 function Messages.get_engine_stats()
-    return MessageEngine.get_stats()
+    return get_MessageEngine().get_stats()
 end
 
 --- Clear engine cache (for development/testing)
 function Messages.clear_cache()
-    MessageEngine.clear_cache()
+    get_MessageEngine().clear_cache()
     Messages.info("Message cache cleared")
 end
 
@@ -334,10 +349,11 @@ local function create_test_runner()
 
     local function test(fn)
         total = total + 1
-        local old_renderer = MessageRenderer.show_error
-        MessageRenderer.show_error = function() end
+        local renderer = get_MessageRenderer()
+        local old_show_error = renderer.show_error
+        renderer.show_error = function() end
         local ok = pcall(fn)
-        MessageRenderer.show_error = old_renderer
+        renderer.show_error = old_show_error
         if ok then passed = passed + 1 end
         return ok
     end

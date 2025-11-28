@@ -39,8 +39,18 @@ local function ensure_handler_loaded()
         return
     end
 
+    -- PROFILING: Measure lazy-load time on first spell
+    local start_time = os.clock()
+    local profiling_enabled = _G.PERFORMANCE_PROFILING and _G.PERFORMANCE_PROFILING.enabled
+
     SpellMessageHandler = require('shared/utils/messages/handlers/spell_message_handler')
     handler_loaded = true
+
+    -- PROFILING: Show lazy-load time
+    if profiling_enabled then
+        local elapsed = (os.clock() - start_time) * 1000
+        add_to_chat(158, string.format('[PERF:LAZY] spell_message_handler loaded: %.0fms', elapsed))
+    end
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

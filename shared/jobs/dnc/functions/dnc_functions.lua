@@ -98,8 +98,8 @@ TIMER('DNC_MOVEMENT')
 --- SECTION 6: DUAL-BOXING SYSTEM
 ---============================================================================
 
--- Load dual-boxing manager (auto-initializes and handles ALT<>>MAIN communication)
-local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
+-- Load dual-boxing manager (uses deferred init + lazy message loading)
+local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 
 ---============================================================================
 --- INITIALIZATION

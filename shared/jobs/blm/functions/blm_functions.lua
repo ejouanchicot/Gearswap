@@ -299,7 +299,8 @@ _G.CastStorm = CastStorm
 ---============================================================================
 
 -- Load dual-boxing manager (auto-initializes and handles ALT<>>MAIN communication)
-local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
+-- Uses deferred initialization (2s delay) and lazy message loading
+local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 
 ---============================================================================
 --- INITIALIZATION COMPLETE

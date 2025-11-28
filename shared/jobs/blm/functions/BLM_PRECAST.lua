@@ -38,14 +38,32 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
+    -- PROFILING: Measure lazy-load time on first action
+    local start_time = os.clock()
+    local last_time = start_time
+    local profiling_enabled = _G.PERFORMANCE_PROFILING and _G.PERFORMANCE_PROFILING.enabled
+
+    local function mark(name)
+        if profiling_enabled then
+            local now = os.clock()
+            local elapsed = (now - last_time) * 1000
+            add_to_chat(160, string.format('    [PRECAST] %s: %.0fms', name, elapsed))
+            last_time = now
+        end
+    end
+
     MessageFormatter = require('shared/utils/messages/message_formatter')
+    mark('MessageFormatter')
+
     CooldownChecker = require('shared/utils/precast/cooldown_checker')
+    mark('CooldownChecker')
 
     local precast_guard_success
     precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
     if not precast_guard_success then
         PrecastGuard = nil
     end
+    mark('PrecastGuard')
 
     -- Get WeaponSkill managers from global scope (already loaded by Mote-Include)
     WeaponSkillManager = _G.WeaponSkillManager
@@ -53,7 +71,10 @@ local function ensure_modules_loaded()
 
     local _
     _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+    mark('TPBonusHandler')
+
     _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
+    mark('WSValidator')
 
     if WeaponSkillManager and MessageFormatter then
         WeaponSkillManager.MessageFormatter = MessageFormatter
@@ -61,12 +82,22 @@ local function ensure_modules_loaded()
 
     BLMTPConfig = _G.BLMTPConfig or {}
     JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
+    mark('JA_DATABASE')
+
     WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+    mark('WS_DATABASE')
 
     -- Load BLM spell filters (cached by Lua after first require)
     BLM_SPELL_FILTERS = require('shared/data/spells/BLM_SPELL_FILTERS')
+    mark('BLM_SPELL_FILTERS')
 
     modules_loaded = true
+
+    -- PROFILING: Show total lazy-load time
+    if profiling_enabled then
+        local elapsed = (os.clock() - start_time) * 1000
+        add_to_chat(158, string.format('[PERF:LAZY] BLM_PRECAST TOTAL: %.0fms', elapsed))
+    end
 end
 
 -- NOTE: BLM logic functions are loaded globally via blm_functions.lua:

@@ -524,6 +524,20 @@ end
 --- @param oldValue   string Previous value
 --- @return void
 function job_state_change(stateField, newValue, oldValue)
+    -- DEBUG: Track which state triggered this
+    if _G.AUTOMOVE_DEBUG then
+        add_to_chat(207, string.format('[job_state_change] state=%s, old=%s, new=%s',
+            tostring(stateField), tostring(oldValue), tostring(newValue)))
+    end
+
+    -- Skip UI update for Moving state (handled by AutoMove with flag)
+    if stateField == 'Moving' then
+        if _G.AUTOMOVE_DEBUG then
+            add_to_chat(207, '[job_state_change] SKIPPED (Moving state)')
+        end
+        return
+    end
+
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI then
         KeybindUI.update()

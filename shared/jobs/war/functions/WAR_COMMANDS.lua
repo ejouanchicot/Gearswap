@@ -248,6 +248,11 @@ end
 --- @param oldValue   string Previous value
 --- @return void
 function job_state_change(stateField, newValue, oldValue)
+    -- Skip UI update for Moving state (handled by AutoMove with flag)
+    if stateField == 'Moving' then
+        return
+    end
+
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI then
         KeybindUI.update()

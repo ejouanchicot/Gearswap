@@ -21,7 +21,6 @@
 
 local MidcastManager = nil
 local ElementalMatcher = nil
-local BLMSpells = nil
 local MessageFormatter = nil
 local MessageBLMMidcast = nil
 local EnhancingSPELLS = nil
@@ -35,20 +34,40 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
+    -- PROFILING: Measure lazy-load time on first spell
+    local start_time = os.clock()
+    local last_time = start_time
+    local profiling_enabled = _G.PERFORMANCE_PROFILING and _G.PERFORMANCE_PROFILING.enabled
+
+    local function mark(name)
+        if profiling_enabled then
+            local now = os.clock()
+            local elapsed = (now - last_time) * 1000
+            add_to_chat(160, string.format('    [MIDCAST] %s: %.0fms', name, elapsed))
+            last_time = now
+        end
+    end
+
     MidcastManager = require('shared/utils/midcast/midcast_manager')
+    mark('MidcastManager')
+
     ElementalMatcher = require('shared/jobs/blm/functions/logic/elemental_matcher')
+    mark('ElementalMatcher')
 
-    -- Load BLM Spell Database (for spell descriptions)
-    BLMSpells = require('shared/data/magic/BLM_SPELL_DATABASE')
+    -- NOTE: BLM_SPELL_DATABASE removed (was dead code - never used)
+    -- Saves ~137ms on first spell cast
 
-    -- Load Message Formatter
+    -- Load Message Formatter (may be cached from PRECAST)
     MessageFormatter = require('shared/utils/messages/message_formatter')
+    mark('MessageFormatter')
 
     -- BLM Midcast Debug Messages
     MessageBLMMidcast = require('shared/utils/messages/formatters/jobs/message_blm_midcast')
+    mark('MessageBLMMidcast')
 
     -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
     EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
+    mark('ENHANCING_DB')
 
     -- Load Enfeebling Messages Config
     local _, config = pcall(require, 'shared/config/ENFEEBLING_MESSAGES_CONFIG')
@@ -61,6 +80,7 @@ local function ensure_modules_loaded()
     else
         ENFEEBLING_MESSAGES_CONFIG = config
     end
+    mark('ENFEEBLING_CONFIG')
 
     -- Load MP conservation configuration
     local mp_config_success, mp_config = pcall(require, 'Tetsouo/config/blm/BLM_MP_CONFIG')
@@ -70,6 +90,7 @@ local function ensure_modules_loaded()
     else
         BLMMPConfig = mp_config
     end
+    mark('BLM_MP_CONFIG')
 
     -- Load elemental matching configuration
     local elemental_config_success, elemental_config = pcall(require, 'Tetsouo/config/blm/BLM_ELEMENTAL_CONFIG')
@@ -84,8 +105,15 @@ local function ensure_modules_loaded()
     else
         BLMElementalConfig = elemental_config
     end
+    mark('BLM_ELEMENTAL_CONFIG')
 
     modules_loaded = true
+
+    -- PROFILING: Show total lazy-load time
+    if profiling_enabled then
+        local elapsed = (os.clock() - start_time) * 1000
+        add_to_chat(158, string.format('[PERF:LAZY] BLM_MIDCAST TOTAL: %.0fms', elapsed))
+    end
 end
 
 ---============================================================================

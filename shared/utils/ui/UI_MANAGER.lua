@@ -74,7 +74,11 @@ if not _G.ui_manager_state then
         -- Update tracking
         pending_update_id = 0,
         update_in_progress = false,
+        update_cancel_id = 0,  -- Cancel ID for force_reinit (similar to JCM counter)
         last_successful_update = 0,
+
+        -- Smart init tracking (prevent coroutine accumulation)
+        smart_init_id = 0,
 
         -- Error handling
         consecutive_failures = 0,
@@ -243,15 +247,26 @@ local function get_current_job_keybinds()
     return keybinds or {}
 end
 
---- Capture all current state values
+--- Capture all current state values (excluding high-frequency non-visual states)
 --- @return table Dictionary of state_name -> current_value
 local function capture_current_states()
     if not _G.state then return {} end
 
     local states = {}
+
+    -- High-frequency states that don't affect UI display (exclude from change detection)
+    -- These states change frequently but are not displayed in the UI, so redrawing on
+    -- every change causes unnecessary performance overhead (e.g., AutoMove lag)
+    local excluded_states = {
+        Moving = true,  -- AutoMove: changes on every start/stop movement (~1-2 Hz)
+    }
+
     for state_name, state_obj in pairs(_G.state) do
-        -- Skip internal Mote-Include fields
-        if state_name:sub(1, 1) ~= '_' and type(state_obj) ~= 'function' then
+        -- Skip internal Mote-Include fields AND excluded high-frequency states
+        if state_name:sub(1, 1) ~= '_'
+           and type(state_obj) ~= 'function'
+           and not excluded_states[state_name] then  -- NEW: Skip excluded states
+
             local value = nil
 
             if type(state_obj) == 'table' then
@@ -502,23 +517,54 @@ local function are_states_ready()
 end
 
 --- Smart initialization that waits for states to be ready
+--- Uses coroutine.schedule() for delayed initialization if states aren't ready
+--- @param job_name string Job name (for logging)
+--- @param max_wait_time number Maximum time to wait in seconds (default 3)
 function KeybindUI.smart_init(job_name, max_wait_time)
-    max_wait_time = max_wait_time or 5
-    local start_time = os.clock()
+    max_wait_time = max_wait_time or 3
 
-    while not are_states_ready() do
-        coroutine.sleep(0.1)
-        if not success then
-            break
+    -- Increment init ID to invalidate any previous smart_init coroutines
+    ui_state.smart_init_id = ui_state.smart_init_id + 1
+    local my_init_id = ui_state.smart_init_id
+
+    -- If states are ready, initialize immediately
+    if are_states_ready() then
+        KeybindUI.init()
+        return
+    end
+
+    -- States not ready, schedule delayed initialization
+    -- This ensures UI shows even if states take time to initialize
+    local start_time = os.clock()
+    local check_interval = 0.2  -- Check every 200ms
+
+    local function try_init()
+        -- Check if this coroutine is still valid (not superseded by newer init)
+        if my_init_id ~= ui_state.smart_init_id then
+            return  -- Newer smart_init called, abort this one
         end
 
+        -- Check if states are now ready
+        if are_states_ready() then
+            KeybindUI.init()
+            return
+        end
+
+        -- Check timeout
         if (os.clock() - start_time) > max_wait_time then
-            break
+            -- Timeout reached, initialize anyway
+            KeybindUI.init()
+            return
+        end
+
+        -- States still not ready, reschedule (only if still valid)
+        if my_init_id == ui_state.smart_init_id then
+            coroutine.schedule(try_init, check_interval)
         end
     end
 
-    -- Initialize UI after states are ready or timeout
-    KeybindUI.init()
+    -- Start the check loop
+    coroutine.schedule(try_init, check_interval)
 end
 
 --- Safe initialization - can be called multiple times without side effects
@@ -870,6 +916,7 @@ end
 --- Update UI when states change with error handling
 --- Only redraws if states have actually changed (prevents unnecessary spam)
 function KeybindUI.update()
+
     if not _G.keybind_ui_display then
         KeybindUI.safe_init()
         return
@@ -904,61 +951,77 @@ function KeybindUI.update()
     end
 end
 
---- Force complete UI reinitialization with intelligent state checking
+--- Force complete UI reinitialization with cancel support
+--- Uses cancel ID system (similar to JCM counter) to handle rapid job changes
+--- Uses coroutine.schedule() for non-blocking state checking
 function KeybindUI.force_reinit(job_name, max_wait_time)
-    -- Check if we're already updating
-    if ui_state.update_in_progress then
-        -- Update already in progress, skipping reinit
-        return false
-    end
+    -- Cancel any previous force_reinit by incrementing cancel ID
+    ui_state.update_cancel_id = ui_state.update_cancel_id + 1
+    local my_cancel_id = ui_state.update_cancel_id
 
-    ui_state.update_in_progress = true
-    local start_time = os.clock()
-
+    -- Always destroy UI first (even if update_in_progress from previous call)
     KeybindUI.destroy()
 
+    -- Mark as updating
+    ui_state.update_in_progress = true
     max_wait_time = max_wait_time or 3
 
-    -- Wait for states to be ready with smarter checking
-    local attempts = 0
-    while not are_states_ready() do
-        coroutine.sleep(0.1)
-        attempts = attempts + 1
+    -- If states are ready, initialize immediately
+    if are_states_ready() then
+        local success = pcall(KeybindUI.init)
+        if success then
+            ui_state.last_successful_update = os.clock()
+            ui_state.consecutive_failures = 0
+            ui_state.update_count = ui_state.update_count + 1
+            ui_state.cached_states = {}
+        else
+            ui_state.consecutive_failures = ui_state.consecutive_failures + 1
+        end
+        ui_state.update_in_progress = false
+        return success
+    end
+
+    -- States not ready, use scheduled polling
+    local start_time = os.clock()
+    local check_interval = 0.2
+
+    local function try_reinit()
+        -- Check if cancelled
+        if ui_state.update_cancel_id ~= my_cancel_id then
+            ui_state.update_in_progress = false
+            return false
+        end
+
+        -- Check if states are ready
+        if are_states_ready() then
+            local success = pcall(KeybindUI.init)
+            if success then
+                ui_state.last_successful_update = os.clock()
+                ui_state.consecutive_failures = 0
+                ui_state.update_count = ui_state.update_count + 1
+                ui_state.cached_states = {}
+            else
+                ui_state.consecutive_failures = ui_state.consecutive_failures + 1
+            end
+            ui_state.update_in_progress = false
+            return success
+        end
 
         -- Check timeout
         if (os.clock() - start_time) > max_wait_time then
-            -- Timeout waiting for states, initializing anyway
-            break
+            -- Timeout, init anyway
+            local success = pcall(KeybindUI.init)
+            ui_state.update_in_progress = false
+            return success
         end
 
-        -- Periodic status update
-        if attempts % 10 == 0 then
-            -- Waiting for states to be ready
-        end
+        -- Reschedule
+        coroutine.schedule(try_reinit, check_interval)
     end
 
-    -- Initialize and track success
-    local success = pcall(KeybindUI.init)
-
-    if success then
-        ui_state.last_successful_update = os.clock()
-        ui_state.consecutive_failures = 0
-        ui_state.update_count = ui_state.update_count + 1
-
-        local update_time = os.clock() - start_time
-        ui_state.total_update_time = ui_state.total_update_time + update_time
-
-        -- Clear state cache on reinit (force full redraw on next update)
-        ui_state.cached_states = {}
-
-        -- Reinitialized successfully
-    else
-        ui_state.consecutive_failures = ui_state.consecutive_failures + 1
-        -- Failed to reinitialize
-    end
-
-    ui_state.update_in_progress = false
-    return success
+    -- Start polling
+    coroutine.schedule(try_reinit, check_interval)
+    return true  -- Return immediately, actual result comes async
 end
 
 --- Schedule UI update with intelligent debouncing
@@ -1054,13 +1117,27 @@ function KeybindUI.handle_job_configuration_change(change_data)
     end
 end
 
---- Cleanup
+--- Cleanup with safety protection
+--- Destroys UI with pcall to prevent crashes if texts library fails
 function KeybindUI.destroy()
-    if _G.keybind_ui_display then
-        _G.keybind_ui_display:destroy()
-        _G.keybind_ui_display = nil
-        _G.keybind_ui_visible = false
+    if not _G.keybind_ui_display then
+        return  -- Already destroyed, nothing to do
     end
+
+    -- Destroy texts element with error protection
+    local success, error_msg = pcall(function()
+        _G.keybind_ui_display:destroy()
+    end)
+
+    if not success then
+        -- Failed to destroy, but continue cleanup anyway
+        -- Error: error_msg
+    end
+
+    -- Always clear reference even if destroy failed
+    _G.keybind_ui_display = nil
+    _G.keybind_ui_visible = false
+
     -- Clear state cache on destroy
     if ui_state then
         ui_state.cached_states = {}

@@ -1,10 +1,10 @@
 # CLAUDE.md - GearSwap FFXI Tetsouo
 
-Version: 3.1 | Score: 9.9/10
+Version: 3.1.1 | Score: 9.9/10
 
 ## OBJECTIF
 
-Architecture modulaire world-class. 10 jobs: DRK, GEO, PLD, SAM, THF, WAR, WHM, BRD, COR, BLM. 10 systèmes centralisés, zero duplication.
+Architecture modulaire world-class. 10 jobs: DRK, GEO, PLD, SAM, THF, WAR, WHM, BRD, COR, BLM. 9 systèmes centralisés, zero duplication.
 
 ## ARCHITECTURE - 12 MODULES OBLIGATOIRES
 
@@ -21,7 +21,7 @@ jobs/[job]/
     └── [JOB]_LOCKSTYLE/MACROBOOK.lua (Factories)
 ```
 
-## SYSTÈMES CENTRALISÉS (10/10 OBLIGATOIRES)
+## SYSTÈMES CENTRALISÉS (9/9 OBLIGATOIRES)
 
 1. CooldownChecker - `CooldownChecker.check_ability_cooldown(spell, eventArgs)`
 
@@ -73,16 +73,9 @@ if spell.type == 'JobAbility' and JA_DB[spell.english] then
 end
 ```
 
-9. Warp System - Auto-lock equipment (81 actions)
+9. JobChangeManager - Debouncing 3.0s + Reload complet (déjà intégré)
 
-```lua
-local warp_success, WarpInit = pcall(require, 'shared/utils/warp/warp_init')
-if warp_success and WarpInit then WarpInit.init() end
-```
-
-Commands: `//gs c warp status|lock|unlock|test|help`
-
-10. JobChangeManager - Debouncing 3.0s (déjà intégré)
+**Note**: WarpInit retiré (v3.1.1) - Redondant avec reload complet GearSwap du JobChangeManager
 
 ## WORKFLOW NOUVEAU JOB (8-12h)
 
@@ -102,7 +95,7 @@ PHASE 4 (2-4h): Equipment sets - copier jobs/war/sets/war_sets.lua
 
 Structure: TETSOUO_[JOB].lua, 12 modules, 3 configs, equipment sets
 
-10 Systèmes: CooldownChecker, MessageFormatter, MidcastManager, PrecastGuard, WeaponSkillManager, LockstyleManager.create(), MacrobookManager.create(), AbilityHelper, UNIVERSAL_JA_DATABASE, WarpInit.init()
+9 Systèmes: CooldownChecker, MessageFormatter, MidcastManager, PrecastGuard, WeaponSkillManager, LockstyleManager.create(), MacrobookManager.create(), AbilityHelper, UNIVERSAL_JA_DATABASE, JobChangeManager
 
 Testing: Load test, `//gs c checksets`, job/subjob changes, keybinds, lockstyle/macros
 
@@ -118,7 +111,7 @@ Testing: Load test, `//gs c checksets`, job/subjob changes, keybinds, lockstyle/
 
 ## MÉTRIQUES
 
-Doc 100% | Files < 600 lines | Functions < 30 lines | Duplication 0% | 10/10 systèmes
+Doc 100% | Files < 600 lines | Functions < 30 lines | Duplication 0% | 9/9 systèmes
 
 ## NAMING
 

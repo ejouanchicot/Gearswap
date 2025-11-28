@@ -17,11 +17,22 @@
 ---
 ---   @module  TP_BONUS_CALCULATOR
 ---   @author  Tetsouo
----   @version 1.2.1 - Bug fix: Validate tp_config.pieces exists before ipairs
----   @date    Created: 2025-01-02 | Updated: 2025-11-12
+---   @version 1.3 - Lazy loading for MessageWeaponskill
+---   @date    Created: 2025-01-02 | Updated: 2025-11-27
 ---  ═══════════════════════════════════════════════════════════════════════════
 
-local MessageWeaponskill = require('shared/utils/messages/formatters/combat/message_weaponskill')
+---  ═══════════════════════════════════════════════════════════════════════════
+---   LAZY LOADING - MessageWeaponskill loaded only in debug mode
+---  ═══════════════════════════════════════════════════════════════════════════
+
+local MessageWeaponskill = nil
+
+local function get_message_ws()
+    if not MessageWeaponskill then
+        MessageWeaponskill = require('shared/utils/messages/formatters/combat/message_weaponskill')
+    end
+    return MessageWeaponskill
+end
 
 local TPBonusCalculator = {}
 
@@ -51,7 +62,7 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
     -- Validation
     if not current_tp or not tp_config then
         if TPBonusCalculator.config.debug_mode then
-            MessageWeaponskill.show_tp_validation_failed(current_tp, tp_config)
+            get_message_ws().show_tp_validation_failed(current_tp, tp_config)
         end
         return nil
     end
@@ -85,7 +96,7 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
     local real_tp = current_tp + weapon_bonus + buff_bonus + fencer_bonus
 
     if TPBonusCalculator.config.debug_mode then
-        MessageWeaponskill.show_tp_calculation(current_tp, weapon_name, weapon_bonus, real_tp)
+        get_message_ws().show_tp_calculation(current_tp, weapon_name, weapon_bonus, real_tp)
     end
 
     -- Determine next threshold to aim for
@@ -100,7 +111,7 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
     -- Already at or above max threshold (3000+), no gear needed
     if not target_threshold then
         if TPBonusCalculator.config.debug_mode then
-            MessageWeaponskill.show_already_at_max()
+            get_message_ws().show_already_at_max()
         end
         return nil
     end
@@ -109,7 +120,7 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
     local gap = target_threshold - real_tp
 
     if TPBonusCalculator.config.debug_mode then
-        MessageWeaponskill.show_target_threshold(target_threshold, gap)
+        get_message_ws().show_target_threshold(target_threshold, gap)
     end
 
     -- Determine which pieces to equip based on gap
@@ -138,20 +149,20 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
     -- Gap too large, can't reach threshold even with all pieces
     if gap > total_available then
         if TPBonusCalculator.config.debug_mode then
-            MessageWeaponskill.show_gap_too_large(gap, total_available)
+            get_message_ws().show_gap_too_large(gap, total_available)
         end
         return nil
     end
 
     if TPBonusCalculator.config.debug_mode then
-        MessageWeaponskill.show_total_available(total_available)
+        get_message_ws().show_total_available(total_available)
     end
 
     -- Find minimum combination of pieces to reach threshold
     -- Try single pieces first (most efficient)
     for _, piece in ipairs(sorted_pieces) do
         if TPBonusCalculator.config.debug_mode then
-            MessageWeaponskill.show_checking_piece(piece.name, piece.slot, piece.bonus, gap)
+            get_message_ws().show_checking_piece(piece.name, piece.slot, piece.bonus, gap)
         end
 
         if piece.bonus >= gap then
@@ -159,7 +170,7 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
             gear_to_equip[piece.slot] = piece.name
 
             if TPBonusCalculator.config.debug_mode then
-                MessageWeaponskill.show_equipping_piece(piece.slot, piece.name, piece.bonus, gap)
+                get_message_ws().show_equipping_piece(piece.slot, piece.name, piece.bonus, gap)
             end
 
             return gear_to_equip

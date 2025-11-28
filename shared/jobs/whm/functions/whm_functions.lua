@@ -40,8 +40,8 @@ TIMER('WHM_COMMANDS')
 include('../shared/jobs/whm/functions/WHM_MOVEMENT.lua')
 TIMER('WHM_MOVEMENT')
 
--- Load dual-boxing manager
-local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
+-- Load dual-boxing manager (uses deferred init + lazy message loading)
+local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 
 print('[WHM] Functions loaded successfully')
 

@@ -26,14 +26,30 @@
 local TPBonusHandler = {}
 
 ---============================================================================
---- DEPENDENCIES
+--- LAZY LOADING - Dependencies loaded on first use
 ---============================================================================
 
--- Load message formatter for TP display
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+local MessageFormatter = nil
+local TPBonusCalculatorLoaded = false
 
--- Load TP bonus calculator (legacy include-based module)
-include('../shared/utils/weaponskill/tp_bonus_calculator.lua')
+local function get_formatter()
+    if not MessageFormatter then
+        MessageFormatter = require('shared/utils/messages/message_formatter')
+    end
+    return MessageFormatter
+end
+
+local function ensure_calculator_loaded()
+    if not TPBonusCalculatorLoaded then
+        -- Use require instead of include for caching
+        local success, calc = pcall(require, 'shared/utils/weaponskill/tp_bonus_calculator')
+        if success then
+            _G.TPBonusCalculator = calc
+        end
+        TPBonusCalculatorLoaded = true
+    end
+    return _G.TPBonusCalculator
+end
 
 ---============================================================================
 --- PRECAST PHASE - TP GEAR CALCULATION
@@ -52,14 +68,17 @@ function TPBonusHandler.calculate_tp_gear(spell, tp_config)
         return
     end
 
-    -- Validate dependencies
-    if not TPBonusCalculator then
-        return
-    end
+    -- Validate config
     if not tp_config then
         return
     end
     if not player or not player.vitals then
+        return
+    end
+
+    -- Lazy-load calculator only when needed
+    local calculator = ensure_calculator_loaded()
+    if not calculator then
         return
     end
 
@@ -69,7 +88,7 @@ function TPBonusHandler.calculate_tp_gear(spell, tp_config)
     local sub_weapon = player.equipment and player.equipment.sub or nil
 
     -- Calculate optimal TP bonus gear
-    local tp_gear = TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, buffactive, sub_weapon)
+    local tp_gear = calculator.calculate(current_tp, tp_config, weapon_name, buffactive, sub_weapon)
 
     -- Store for application in post_precast
     _G.temp_tp_bonus_gear = tp_gear
@@ -92,14 +111,17 @@ function TPBonusHandler.apply_and_display(spell, tp_config)
         return
     end
 
-    -- Validate dependencies
-    if not TPBonusCalculator then
-        return
-    end
+    -- Validate config
     if not tp_config then
         return
     end
     if not player or not player.vitals then
+        return
+    end
+
+    -- Lazy-load calculator (should already be loaded from calculate_tp_gear)
+    local calculator = ensure_calculator_loaded()
+    if not calculator then
         return
     end
 
@@ -117,12 +139,13 @@ function TPBonusHandler.apply_and_display(spell, tp_config)
     end
 
     -- Calculate final TP (includes TP bonus gear + Fencer/Store TP if applicable)
-    local total_tp = TPBonusCalculator.get_final_tp(current_tp, tp_gear, tp_config, weapon_name, buffactive,
+    local total_tp = calculator.get_final_tp(current_tp, tp_gear, tp_config, weapon_name, buffactive,
         sub_weapon)
 
-    -- Display formatted TP message
-    if MessageFormatter then
-        MessageFormatter.show_ws_tp(spell.name, total_tp)
+    -- Lazy-load formatter for display
+    local formatter = get_formatter()
+    if formatter then
+        formatter.show_ws_tp(spell.name, total_tp)
     end
 
     -- Cleanup temporary global

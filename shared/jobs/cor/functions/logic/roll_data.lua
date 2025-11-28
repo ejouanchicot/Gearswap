@@ -36,9 +36,9 @@ local RollData = {}
 
 RollData.rolls = {
     ["Fighter's Roll"] = {
-        values = {2, 2, 3, 4, 12, 5, 6, 7, 1, 9, 18},
-        bust_effect = '-4',
-        effect_type = '% Double-Attack',
+        values = {1, 2, 3, 4, 10, 5, 6, 6, 1, 7, 15},
+        bust_effect = '0',
+        effect_type = '% Double Attack',
         lucky = 5,
         unlucky = 9,
         phantom_roll_bonus = 1,
@@ -46,12 +46,12 @@ RollData.rolls = {
     },
 
     ["Monk's Roll"] = {
-        values = {8, 10, 32, 12, 14, 15, 4, 20, 22, 24, 40},
+        values = {8, 10, 32, 12, 14, 16, 4, 20, 22, 24, 40},
         bust_effect = '-10',
         effect_type = ' Subtle Blow',
         lucky = 3,
         unlucky = 7,
-        phantom_roll_bonus = 2,
+        phantom_roll_bonus = 4,
         job_bonus = {'MNK', 10}
     },
 
@@ -68,26 +68,26 @@ RollData.rolls = {
     ["Wizard's Roll"] = {
         values = {4, 6, 8, 10, 25, 12, 14, 17, 2, 20, 30},
         bust_effect = '-10',
-        effect_type = ' MAB',
+        effect_type = ' Magic Attack',
         lucky = 5,
         unlucky = 9,
         phantom_roll_bonus = 2,
-        job_bonus = {'BLM', 5}
+        job_bonus = {'BLM', 10}
     },
 
     ["Warlock's Roll"] = {
-        values = {2, 3, 4, 12, 5, 6, 7, 8, 1, 10, 14},
-        bust_effect = '-5',
-        effect_type = ' MACC',
+        values = {10, 13, 15, 40, 18, 20, 25, 5, 28, 30, 50},
+        bust_effect = '-15',
+        effect_type = ' Magic Accuracy',
         lucky = 4,
-        unlucky = 9,
-        phantom_roll_bonus = 1,
-        job_bonus = {'RDM', 5}
+        unlucky = 8,
+        phantom_roll_bonus = 5,
+        job_bonus = {'RDM', 15}
     },
 
     ["Rogue's Roll"] = {
-        values = {1, 1, 2, 3, 4, 5, 2, 6, 7, 8, 10},
-        bust_effect = '-4',
+        values = {1, 2, 3, 4, 10, 5, 6, 7, 1, 8, 14},
+        bust_effect = '-5',
         effect_type = '% Critical Hit Rate',
         lucky = 5,
         unlucky = 9,
@@ -96,83 +96,83 @@ RollData.rolls = {
     },
 
     ["Gallant's Roll"] = {
-        values = {-2, -3, -4, 12, -5, -6, -7, -1, -10, -11, -15},
-        bust_effect = '+8',
-        effect_type = '% PDT',
-        lucky = 4,
-        unlucky = 8,
-        phantom_roll_bonus = 1,
-        job_bonus = {'PLD', 5}
+        values = {4.69, 5.86, 19.53, 7.03, 8.59, 10.16, 3.13, 11.72, 13.67, 15.63, 23.44},
+        bust_effect = '-11.72',
+        effect_type = '% Defense',
+        lucky = 3,
+        unlucky = 7,
+        phantom_roll_bonus = 2.34,
+        job_bonus = {'PLD', 11.72}
     },
 
     ["Chaos Roll"] = {
-        values = {4, 8, 12, 25, 16, 20, 24, 28, 6, 32, 40},
-        bust_effect = '-20',
+        values = {6.25, 7.81, 9.37, 25, 10.93, 12.5, 15.62, 3.12, 17.18, 18.75, 31.25},
+        bust_effect = '-9.76',
         effect_type = '% Attack',
         lucky = 4,
-        unlucky = 9,
-        phantom_roll_bonus = 4,
-        job_bonus = {'DRK', 5}
+        unlucky = 8,
+        phantom_roll_bonus = 3.12,
+        job_bonus = {'DRK', 9.76}
     },
 
     ["Beast Roll"] = {
-        values = {6, 8, 10, 25, 13, 16, 19, 22, 4, 26, 32},
-        bust_effect = '-10',
+        values = {6.25, 7.81, 9.37, 25, 10.93, 12.5, 15.62, 3.12, 17.18, 18.75, 31.25},
+        bust_effect = '0',
         effect_type = '% Pet Attack',
         lucky = 4,
-        unlucky = 9,
-        phantom_roll_bonus = 3,
-        job_bonus = {'BST', 5}
+        unlucky = 8,
+        phantom_roll_bonus = 3.12,
+        job_bonus = {'BST', 9.76}
     },
 
     ["Choral Roll"] = {
-        values = {8, 42, 11, 15, 19, 4, 23, 27, 31, 35, 50},
-        bust_effect = '-25',
-        effect_type = ' Spell Interruption Rate Down',
+        values = {-8, -42, -11, -15, -19, -4, -23, -27, -31, -35, -50},
+        bust_effect = '+25',
+        effect_type = ' Spell Interruption Rate',
         lucky = 2,
         unlucky = 6,
-        phantom_roll_bonus = 8,
-        job_bonus = {'BRD', 5}
+        phantom_roll_bonus = -4,
+        job_bonus = {'BRD', -25}
     },
 
     ["Hunter's Roll"] = {
         values = {10, 13, 15, 40, 18, 20, 25, 5, 28, 30, 50},
         bust_effect = '-15',
-        effect_type = '% Accuracy',
+        effect_type = ' Accuracy',
         lucky = 4,
-        unlucky = 9,
+        unlucky = 8,
         phantom_roll_bonus = 5,
         job_bonus = {'RNG', 15}
     },
 
     ["Samurai Roll"] = {
-        values = {3, 5, 7, 9, 11, 2, 13, 15, 17, 19, 24},
+        values = {8, 32, 10, 12, 14, 4, 16, 20, 22, 24, 40},
         bust_effect = '-10',
         effect_type = ' Store TP',
         lucky = 2,
         unlucky = 6,
-        phantom_roll_bonus = 2,
-        job_bonus = {'SAM', 5}
+        phantom_roll_bonus = 4,
+        job_bonus = {'SAM', 10}
     },
 
     ["Ninja Roll"] = {
-        values = {4, 5, 5, 14, 6, 7, 8, 9, 2, 10, 13},
-        bust_effect = '-6',
-        effect_type = '% Evasion',
+        values = {10, 13, 15, 40, 18, 20, 25, 5, 28, 30, 50},
+        bust_effect = '-15',
+        effect_type = ' Evasion',
         lucky = 4,
         unlucky = 8,
-        phantom_roll_bonus = 1,
-        job_bonus = {'NIN', 5}
+        phantom_roll_bonus = 5,
+        job_bonus = {'NIN', 15}
     },
 
     ["Drachen Roll"] = {
-        values = {10, 13, 15, 40, 18, 20, 25, 27, 5, 28, 50},
-        bust_effect = '-15',
-        effect_type = '% Pet Accuracy',
+        values = {10, 13, 15, 40, 18, 20, 25, 5, 28, 30, 50},
+        bust_effect = '0',
+        effect_type = ' Pet Accuracy',
         lucky = 4,
-        unlucky = 9,
-        phantom_roll_bonus = 4,
-        job_bonus = {'DRG', 5}
+        unlucky = 8,
+        phantom_roll_bonus = 5,
+        job_bonus = {'DRG', 15}
     },
 
     ["Evoker's Roll"] = {
@@ -206,13 +206,13 @@ RollData.rolls = {
     },
 
     ["Puppet Roll"] = {
-        values = {5, 8, 11, 14, 3, 17, 20, 23, 26, 29, 35},
-        bust_effect = '-8',
-        effect_type = '% Pet MAB/MDB',
+        values = {5, 8, 35, 11, 14, 18, 2, 22, 26, 30, 40},
+        bust_effect = '-12',
+        effect_type = ' Pet Magic Acc./Atk.',
         lucky = 3,
         unlucky = 7,
         phantom_roll_bonus = 3,
-        job_bonus = {'PUP', 5}
+        job_bonus = {'PUP', 12}
     },
 
     ["Dancer's Roll"] = {
@@ -221,27 +221,27 @@ RollData.rolls = {
         effect_type = ' Regen',
         lucky = 3,
         unlucky = 7,
-        phantom_roll_bonus = 1,
+        phantom_roll_bonus = 2,
         job_bonus = {'DNC', 4}
     },
 
     ["Scholar's Roll"] = {
-        values = {2, 3, 4, 5, 10, 6, 7, 1, 8, 9, 12},
-        bust_effect = '-5',
-        effect_type = ' Conserve MP',
+        values = {2, 10, 3, 4, 4, 1, 5, 6, 7, 7, 12},
+        bust_effect = '-3',
+        effect_type = '% Conserve MP',
         lucky = 2,
         unlucky = 6,
         phantom_roll_bonus = 1,
-        job_bonus = {'SCH', 2}
+        job_bonus = {'SCH', 3}
     },
 
     ["Bolter's Roll"] = {
-        values = {0.5, 1.9, 1.0, 1.5, 2.0, 2.5, 3.0, 0.4, 3.5, 4.0, 5.0},
-        bust_effect = '-0.8',
+        values = {6, 6, 16, 8, 8, 10, 10, 12, 4, 14, 20},
+        bust_effect = '0',
         effect_type = '% Movement Speed',
         lucky = 3,
         unlucky = 9,
-        phantom_roll_bonus = 0.5,
+        phantom_roll_bonus = 4,
         job_bonus = nil -- No job bonus
     },
 
@@ -251,14 +251,14 @@ RollData.rolls = {
         effect_type = '% Fast Cast',
         lucky = 2,
         unlucky = 7,
-        phantom_roll_bonus = 1,
+        phantom_roll_bonus = 3,
         job_bonus = nil -- No job bonus
     },
 
     ["Courser's Roll"] = {
-        values = {3, 4, 12, 5, 6, 7, 1, 8, 9, 10, 16},
-        bust_effect = '-4',
-        effect_type = ' Snapshot',
+        values = {2, 3, 11, 4, 5, 6, 7, 8, 1, 10, 12},
+        bust_effect = '-3',
+        effect_type = '% Snapshot',
         lucky = 3,
         unlucky = 9,
         phantom_roll_bonus = 1,
@@ -266,8 +266,8 @@ RollData.rolls = {
     },
 
     ["Blitzer's Roll"] = {
-        values = {2, 3.5, 4, 5, 11, 6, 7, 1, 8.5, 10, 12},
-        bust_effect = '-10',
+        values = {2, 3, 4, 11, 5, 6, 7, 8, 1, 10, 12},
+        bust_effect = '-3',
         effect_type = '% Delay Reduction',
         lucky = 4,
         unlucky = 9,
@@ -276,73 +276,73 @@ RollData.rolls = {
     },
 
     ["Tactician's Roll"] = {
-        values = {5, 6, 7, 8, 9, 10, 3, 11, 12, 13, 20},
+        values = {10, 10, 10, 10, 30, 10, 10, 0, 20, 20, 40},
         bust_effect = '-10',
         effect_type = ' Regain',
         lucky = 5,
         unlucky = 8,
-        phantom_roll_bonus = 1,
+        phantom_roll_bonus = 2,
         job_bonus = nil -- No job bonus
     },
 
     ["Allies' Roll"] = {
-        values = {5, 7, 9, 11, 23, 13, 15, 17, 3, 19, 29},
-        bust_effect = '-12',
-        effect_type = ' Skillchain Damage',
+        values = {2, 3, 20, 5, 7, 9, 11, 13, 15, 1, 25},
+        bust_effect = '-5',
+        effect_type = '% Skillchain Damage',
         lucky = 3,
         unlucky = 10,
-        phantom_roll_bonus = 3,
+        phantom_roll_bonus = 1,
         job_bonus = nil -- No job bonus
     },
 
     ["Miser's Roll"] = {
-        values = {20, 30, 40, 50, 120, 60, 10, 70, 80, 90, 150},
-        bust_effect = '-60',
+        values = {30, 50, 70, 90, 200, 110, 20, 130, 150, 170, 250},
+        bust_effect = '0',
         effect_type = ' Save TP',
         lucky = 5,
         unlucky = 7,
-        phantom_roll_bonus = 20,
+        phantom_roll_bonus = 15,
         job_bonus = nil -- No job bonus
     },
 
     ["Companion's Roll"] = {
-        values = {2, 2, 3, 4, 8, 5, 6, 7, 1, 9, 10},
-        bust_effect = '-4',
+        values = {20, 50, 20, 20, 30, 30, 30, 40, 40, 10, 60},
+        bust_effect = '0',
         effect_type = ' Pet Regain/Regen',
         lucky = 2,
         unlucky = 10,
-        phantom_roll_bonus = 1,
+        phantom_roll_bonus = 5,
         job_bonus = nil -- No job bonus
     },
 
     ["Avenger's Roll"] = {
-        values = {4, 5, 6, 7, 15, 8, 2, 9, 10, 11, 20},
-        bust_effect = '-8',
-        effect_type = ' Counter Rate',
+        values = {3, 4, 5, 14, 6, 7, 8, 1, 9, 10, 16},
+        bust_effect = '-4',
+        effect_type = '% Counter Rate',
         lucky = 4,
         unlucky = 8,
-        phantom_roll_bonus = 2,
-        job_bonus = nil -- No job bonus
-    },
-
-    ["Naturalist's Roll"] = {
-        values = {6, 7, 8, 9, 10, 11, 4, 12, 13, 14, 20},
-        bust_effect = '-5',
-        effect_type = ' Enh. Magic Duration',
-        lucky = 3,
-        unlucky = 7,
         phantom_roll_bonus = 1,
         job_bonus = nil -- No job bonus
     },
 
+    ["Naturalist's Roll"] = {
+        values = {6, 7, 15, 8, 9, 10, 5, 11, 12, 13, 20},
+        bust_effect = '-5',
+        effect_type = '% Enh. Magic Duration',
+        lucky = 3,
+        unlucky = 7,
+        phantom_roll_bonus = 1,
+        job_bonus = {'GEO', 5}
+    },
+
     ["Runeist's Roll"] = {
-        values = {4, 6, 8, 10, 25, 12, 14, 17, 2, 20, 30},
-        bust_effect = '-10',
+        values = {10, 13, 15, 40, 18, 20, 25, 5, 28, 30, 50},
+        bust_effect = '-15',
         effect_type = ' Magic Evasion',
         lucky = 4,
         unlucky = 8,
-        phantom_roll_bonus = 2,
-        job_bonus = {'RUN', 5}
+        phantom_roll_bonus = 5,
+        job_bonus = {'RUN', 15}
     },
 }
 

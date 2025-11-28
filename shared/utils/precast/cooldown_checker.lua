@@ -16,8 +16,18 @@
 
 local CooldownChecker = {}
 
--- Load message formatter for cooldown display
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+---============================================================================
+--- LAZY LOADING - MessageFormatter loaded on first use
+---============================================================================
+
+local MessageFormatter = nil
+
+local function get_formatter()
+    if not MessageFormatter then
+        MessageFormatter = require('shared/utils/messages/message_formatter')
+    end
+    return MessageFormatter
+end
 
 -- Load recast configuration for cooldown tolerance
 local RECAST_CONFIG = _G.RECAST_CONFIG or {}
@@ -104,8 +114,6 @@ local MANUAL_RECAST_IDS = {
 --- @param spell table Spell/ability data
 --- @param eventArgs table Event arguments for potential cancellation
 function CooldownChecker.check_ability_cooldown(spell, eventArgs)
-    if not MessageFormatter then return end
-
     -- Get recast_id from spell data OR manual mapping
     -- Try multiple name variants: spell.name, spell.english, spell.en
     local recast_id = spell.recast_id
@@ -125,14 +133,18 @@ function CooldownChecker.check_ability_cooldown(spell, eventArgs)
         return  -- Don't check cooldown or display message
     end
 
-    local remaining_seconds = MessageFormatter.get_ability_recast_seconds(recast_id)
+    -- Lazy-load MessageFormatter only when actually needed
+    local formatter = get_formatter()
+    if not formatter then return end
+
+    local remaining_seconds = formatter.get_ability_recast_seconds(recast_id)
 
     if remaining_seconds and is_on_cooldown(remaining_seconds) then
         -- Get dynamic job tag (e.g., "DNC/NIN", "DNC")
-        local job_tag = MessageFormatter.get_job_tag()
+        local job_tag = formatter.get_job_tag()
 
         -- Show cooldown message and cancel the action
-        MessageFormatter.show_ability_cooldown(spell.name, remaining_seconds, job_tag)
+        formatter.show_ability_cooldown(spell.name, remaining_seconds, job_tag)
         eventArgs.cancel = true
     end
 end
@@ -145,7 +157,6 @@ end
 --- @param spell table Spell data
 --- @param eventArgs table Event arguments
 function CooldownChecker.check_spell_cooldown(spell, eventArgs)
-    if not MessageFormatter then return end
     if not spell.recast_id then return end
 
     -- Get spell recast (in centiseconds, convert to seconds for RECAST_CONFIG)
@@ -154,11 +165,15 @@ function CooldownChecker.check_spell_cooldown(spell, eventArgs)
     if remaining_centiseconds then
         local remaining_seconds = remaining_centiseconds / 100
         if is_on_cooldown(remaining_seconds) then
+            -- Lazy-load MessageFormatter only when actually needed
+            local formatter = get_formatter()
+            if not formatter then return end
+
             -- Get dynamic job tag (e.g., "DNC/NIN", "DNC")
-            local job_tag = MessageFormatter.get_job_tag()
+            local job_tag = formatter.get_job_tag()
 
             -- Show cooldown message and cancel the action
-            MessageFormatter.show_spell_cooldown(spell.name, remaining_centiseconds, job_tag)
+            formatter.show_spell_cooldown(spell.name, remaining_centiseconds, job_tag)
             eventArgs.cancel = true
         end
     end

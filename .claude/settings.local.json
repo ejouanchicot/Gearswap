@@ -43,7 +43,11 @@
       "Bash(shared/jobs/war/functions/WAR_COMMANDS.lua)",
       "Bash(echo:*)",
       "Bash({)",
-      "Bash(})"
+      "Bash(})",
+      "Bash(while read:*)",
+      "Bash(do wc -l \"$f\")",
+      "Bash(findstr:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": [],

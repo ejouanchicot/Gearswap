@@ -38,8 +38,8 @@ TIMER('SAM_COMMANDS')
 include('../shared/jobs/sam/functions/SAM_MOVEMENT.lua')
 TIMER('SAM_MOVEMENT')
 
--- Load dual-boxing manager
-local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
+-- Load dual-boxing manager (uses deferred init + lazy message loading)
+local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 
 print('[SAM] Functions loaded successfully')
 

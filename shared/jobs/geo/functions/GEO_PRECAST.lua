@@ -86,6 +86,12 @@ function job_precast(spell, action, spellMap, eventArgs)
 
     -- GEO-SPECIFIC PRECAST LOGIC
 
+    -- Set pending flag when using Entrust ability (before buff appears in buffactive)
+    -- This allows immediate detection in midcast for Indi spell gear selection
+    if spell.type == 'JobAbility' and spell.name == 'Entrust' then
+        _G.geo_entrust_pending = true
+    end
+
     -- ==========================================================================
     -- JOB ABILITIES MESSAGES (universal - supports main + subjob)
     -- DISABLED: GEO Job Abilities Messages

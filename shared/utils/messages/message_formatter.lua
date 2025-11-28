@@ -12,421 +12,501 @@
 
 local MessageFormatter = {}
 
--- Load all message modules
-local MessageCore = require('shared/utils/messages/message_core')
+---============================================================================
+--- LAZY-LOADED MODULES (Performance Optimization)
+--- Modules only loaded when their functions are first called
+---============================================================================
+
+-- Core module (loaded on first use)
+local _MessageCore = nil
+local function get_MessageCore()
+    if not _MessageCore then _MessageCore = require('shared/utils/messages/message_core') end
+    return _MessageCore
+end
 
 -- UI modules
-local MessageKeybinds = require('shared/utils/messages/formatters/ui/message_keybinds')
-local MessageSystem = require('shared/utils/messages/formatters/system/message_system')
-local MessageStatus = require('shared/utils/messages/formatters/ui/message_status')
+local _MessageKeybinds, _MessageSystem, _MessageStatus = nil, nil, nil
+local function get_MessageKeybinds()
+    if not _MessageKeybinds then _MessageKeybinds = require('shared/utils/messages/formatters/ui/message_keybinds') end
+    return _MessageKeybinds
+end
+local function get_MessageSystem()
+    if not _MessageSystem then _MessageSystem = require('shared/utils/messages/formatters/system/message_system') end
+    return _MessageSystem
+end
+local function get_MessageStatus()
+    if not _MessageStatus then _MessageStatus = require('shared/utils/messages/formatters/ui/message_status') end
+    return _MessageStatus
+end
 
 -- Combat modules
-local MessageCooldowns = require('shared/utils/messages/formatters/combat/message_cooldowns')
-local MessageCombat = require('shared/utils/messages/formatters/combat/message_combat')
-local JABuffs = require('shared/utils/messages/formatters/combat/message_ja_buffs')
+local _MessageCooldowns, _MessageCombat, _JABuffs = nil, nil, nil
+local function get_MessageCooldowns()
+    if not _MessageCooldowns then _MessageCooldowns = require('shared/utils/messages/formatters/combat/message_cooldowns') end
+    return _MessageCooldowns
+end
+local function get_MessageCombat()
+    if not _MessageCombat then _MessageCombat = require('shared/utils/messages/formatters/combat/message_combat') end
+    return _MessageCombat
+end
+local function get_JABuffs()
+    if not _JABuffs then _JABuffs = require('shared/utils/messages/formatters/combat/message_ja_buffs') end
+    return _JABuffs
+end
 
 -- Magic modules
-local MessageBuffs = require('shared/utils/messages/formatters/magic/message_buffs')
-local MessageDebuffs = require('shared/utils/messages/formatters/magic/message_debuffs')
-local SongMessages = require('shared/utils/messages/formatters/magic/message_songs')
+local _MessageBuffs, _MessageDebuffs, _SongMessages = nil, nil, nil
+local function get_MessageBuffs()
+    if not _MessageBuffs then _MessageBuffs = require('shared/utils/messages/formatters/magic/message_buffs') end
+    return _MessageBuffs
+end
+local function get_MessageDebuffs()
+    if not _MessageDebuffs then _MessageDebuffs = require('shared/utils/messages/formatters/magic/message_debuffs') end
+    return _MessageDebuffs
+end
+local function get_SongMessages()
+    if not _SongMessages then _SongMessages = require('shared/utils/messages/formatters/magic/message_songs') end
+    return _SongMessages
+end
 
 -- System modules
-local MessageEquipment = require('shared/utils/messages/formatters/system/message_equipment')
+local _MessageEquipment = nil
+local function get_MessageEquipment()
+    if not _MessageEquipment then _MessageEquipment = require('shared/utils/messages/formatters/system/message_equipment') end
+    return _MessageEquipment
+end
 
 -- Utility modules
-local RollMessages = require('shared/utils/messages/utilities/roll_messages')
-local PartyMessages = require('shared/utils/messages/utilities/party_messages')
+local _RollMessages, _PartyMessages = nil, nil
+local function get_RollMessages()
+    if not _RollMessages then _RollMessages = require('shared/utils/messages/utilities/roll_messages') end
+    return _RollMessages
+end
+local function get_PartyMessages()
+    if not _PartyMessages then _PartyMessages = require('shared/utils/messages/utilities/party_messages') end
+    return _PartyMessages
+end
 
--- Job-specific modules
-local BRDMessages = require('shared/utils/messages/formatters/jobs/message_brd')
-local RDMMessages = require('shared/utils/messages/formatters/jobs/message_rdm')
-local BLMMessages = require('shared/utils/messages/formatters/jobs/message_blm')
-local MessageBST = require('shared/utils/messages/formatters/jobs/message_bst')
-local GEOMessages = require('shared/utils/messages/formatters/jobs/message_geo')
-local MessageCOR = require('shared/utils/messages/formatters/jobs/message_cor')
-local MessageDRG = require('shared/utils/messages/formatters/jobs/message_drg')
-local MessageWHM = require('shared/utils/messages/formatters/jobs/message_whm')
+-- Job-specific modules (LAZY LOADED for performance)
+-- These modules are only loaded when their functions are first called
+local _BRDMessages, _RDMMessages, _BLMMessages, _MessageBST = nil, nil, nil, nil
+local _GEOMessages, _MessageCOR, _MessageDRG, _MessageWHM = nil, nil, nil, nil
+
+local function get_BRDMessages()
+    if not _BRDMessages then _BRDMessages = require('shared/utils/messages/formatters/jobs/message_brd') end
+    return _BRDMessages
+end
+local function get_RDMMessages()
+    if not _RDMMessages then _RDMMessages = require('shared/utils/messages/formatters/jobs/message_rdm') end
+    return _RDMMessages
+end
+local function get_BLMMessages()
+    if not _BLMMessages then _BLMMessages = require('shared/utils/messages/formatters/jobs/message_blm') end
+    return _BLMMessages
+end
+local function get_MessageBST()
+    if not _MessageBST then _MessageBST = require('shared/utils/messages/formatters/jobs/message_bst') end
+    return _MessageBST
+end
+local function get_GEOMessages()
+    if not _GEOMessages then _GEOMessages = require('shared/utils/messages/formatters/jobs/message_geo') end
+    return _GEOMessages
+end
+local function get_MessageCOR()
+    if not _MessageCOR then _MessageCOR = require('shared/utils/messages/formatters/jobs/message_cor') end
+    return _MessageCOR
+end
+local function get_MessageDRG()
+    if not _MessageDRG then _MessageDRG = require('shared/utils/messages/formatters/jobs/message_drg') end
+    return _MessageDRG
+end
+local function get_MessageWHM()
+    if not _MessageWHM then _MessageWHM = require('shared/utils/messages/formatters/jobs/message_whm') end
+    return _MessageWHM
+end
 
 ---============================================================================
---- PUBLIC API - Maintains backward compatibility
+--- PUBLIC API - Maintains backward compatibility (LAZY-LOADED)
 ---============================================================================
 
--- Expose colors for external use
-MessageFormatter.COLORS = MessageCore.COLORS
+-- Expose colors for external use (lazy)
+MessageFormatter.COLORS = setmetatable({}, {
+    __index = function(_, key) return get_MessageCore().COLORS[key] end
+})
 
--- Core utilities
-MessageFormatter.convert_key_display = MessageCore.convert_key_display
-MessageFormatter.show_separator = MessageCore.show_separator
-MessageFormatter.get_job_tag = MessageCore.get_job_tag
+-- Core utilities (lazy wrappers)
+MessageFormatter.convert_key_display = function(...) return get_MessageCore().convert_key_display(...) end
+MessageFormatter.show_separator = function(...) return get_MessageCore().show_separator(...) end
+MessageFormatter.get_job_tag = function(...) return get_MessageCore().get_job_tag(...) end
 
 ---============================================================================
---- NEW GLOBAL FUNCTIONS - Universal Job Ability Messages
+--- NEW GLOBAL FUNCTIONS - Universal Job Ability Messages (LAZY-LOADED)
 ---============================================================================
 -- These functions work for ALL jobs (replaces job-specific implementations)
 
 -- Job Ability Buffs (Global - Works for ALL jobs)
-MessageFormatter.show_ja_activated = JABuffs.show_activated                 -- [JOB] Ability activated! Description
-MessageFormatter.show_ja_active = JABuffs.show_active                       -- [JOB] Ability active
-MessageFormatter.show_ja_ended = JABuffs.show_ended                         -- [JOB] Ability ended
-MessageFormatter.show_ja_with_description = JABuffs.show_with_description   -- [JOB] Ability: Description
-MessageFormatter.show_ja_using = JABuffs.show_using                         -- [JOB] Using Ability
-MessageFormatter.show_ja_using_double = JABuffs.show_using_double           -- [JOB] Using Ability1 + Ability2 (+ in gray)
+MessageFormatter.show_ja_activated = function(...) return get_JABuffs().show_activated(...) end
+MessageFormatter.show_ja_active = function(...) return get_JABuffs().show_active(...) end
+MessageFormatter.show_ja_ended = function(...) return get_JABuffs().show_ended(...) end
+MessageFormatter.show_ja_with_description = function(...) return get_JABuffs().show_with_description(...) end
+MessageFormatter.show_ja_using = function(...) return get_JABuffs().show_using(...) end
+MessageFormatter.show_ja_using_double = function(...) return get_JABuffs().show_using_double(...) end
 
 -- Song Messages (BRD-specific but organized by TYPE not JOB)
-MessageFormatter.show_song_rotation = SongMessages.show_songs_casting
-MessageFormatter.show_song_pack_select = SongMessages.show_song_pack
-MessageFormatter.show_song_honor_march_locked = SongMessages.show_honor_march_locked
-MessageFormatter.show_song_honor_march_released = SongMessages.show_honor_march_released
-MessageFormatter.show_song_daurdabla_dummy = SongMessages.show_daurdabla_dummy
-MessageFormatter.show_song_pianissimo_used = SongMessages.show_pianissimo_used
-MessageFormatter.show_song_pianissimo_target = SongMessages.show_pianissimo_target
-MessageFormatter.show_song_marcato_honor_march = SongMessages.show_marcato_honor_march
-MessageFormatter.show_song_marcato_skip_buffs = SongMessages.show_marcato_skip_buffs
-MessageFormatter.show_song_marcato_skip_soul_voice = SongMessages.show_marcato_skip_soul_voice
+MessageFormatter.show_song_rotation = function(...) return get_SongMessages().show_songs_casting(...) end
+MessageFormatter.show_song_pack_select = function(...) return get_SongMessages().show_song_pack(...) end
+MessageFormatter.show_song_honor_march_locked = function(...) return get_SongMessages().show_honor_march_locked(...) end
+MessageFormatter.show_song_honor_march_released = function(...) return get_SongMessages().show_honor_march_released(...) end
+MessageFormatter.show_song_daurdabla_dummy = function(...) return get_SongMessages().show_daurdabla_dummy(...) end
+MessageFormatter.show_song_pianissimo_used = function(...) return get_SongMessages().show_pianissimo_used(...) end
+MessageFormatter.show_song_pianissimo_target = function(...) return get_SongMessages().show_pianissimo_target(...) end
+MessageFormatter.show_song_marcato_honor_march = function(...) return get_SongMessages().show_marcato_honor_march(...) end
+MessageFormatter.show_song_marcato_skip_buffs = function(...) return get_SongMessages().show_marcato_skip_buffs(...) end
+MessageFormatter.show_song_marcato_skip_soul_voice = function(...) return get_SongMessages().show_marcato_skip_soul_voice(...) end
 
 -- Dance Messages removed - DNC now uses global JABuffs system (show_ja_activated)
 
 ---============================================================================
---- BACKWARD COMPATIBILITY WRAPPERS
+--- BACKWARD COMPATIBILITY WRAPPERS (LAZY-LOADED)
 ---============================================================================
 -- Maintain old BRD function names but use new global system
-MessageFormatter.show_soul_voice_activated_new = JABuffs.show_soul_voice_activated
-MessageFormatter.show_nightingale_activated_new = JABuffs.show_nightingale_activated
-MessageFormatter.show_troubadour_activated_new = JABuffs.show_troubadour_activated
-MessageFormatter.show_marcato_used_new = JABuffs.show_marcato_used
+MessageFormatter.show_soul_voice_activated_new = function(...) return get_JABuffs().show_soul_voice_activated(...) end
+MessageFormatter.show_nightingale_activated_new = function(...) return get_JABuffs().show_nightingale_activated(...) end
+MessageFormatter.show_troubadour_activated_new = function(...) return get_JABuffs().show_troubadour_activated(...) end
+MessageFormatter.show_marcato_used_new = function(...) return get_JABuffs().show_marcato_used(...) end
 
 -- Keybind functions
-MessageFormatter.show_keybind_list = MessageKeybinds.show_keybind_list
-MessageFormatter.format_keybind_line = MessageKeybinds.format_keybind_line
-MessageFormatter.show_no_binds_error = MessageKeybinds.show_no_binds_error
-MessageFormatter.show_invalid_bind_error = MessageKeybinds.show_invalid_bind_error
-MessageFormatter.show_bind_failed_error = MessageKeybinds.show_bind_failed_error
+MessageFormatter.show_keybind_list = function(...) return get_MessageKeybinds().show_keybind_list(...) end
+MessageFormatter.format_keybind_line = function(...) return get_MessageKeybinds().format_keybind_line(...) end
+MessageFormatter.show_no_binds_error = function(...) return get_MessageKeybinds().show_no_binds_error(...) end
+MessageFormatter.show_invalid_bind_error = function(...) return get_MessageKeybinds().show_invalid_bind_error(...) end
+MessageFormatter.show_bind_failed_error = function(...) return get_MessageKeybinds().show_bind_failed_error(...) end
 
 -- System functions
-MessageFormatter.show_system_intro = MessageSystem.show_system_intro
-MessageFormatter.show_system_intro_with_macros = MessageSystem.show_system_intro_with_macros
-MessageFormatter.show_system_intro_complete = MessageSystem.show_system_intro_complete
-MessageFormatter.show_color_test_header = MessageSystem.show_color_test_header
-MessageFormatter.show_color_test_sample = MessageSystem.show_color_test_sample
-MessageFormatter.show_color_test_footer = MessageSystem.show_color_test_footer
+MessageFormatter.show_system_intro = function(...) return get_MessageSystem().show_system_intro(...) end
+MessageFormatter.show_system_intro_with_macros = function(...) return get_MessageSystem().show_system_intro_with_macros(...) end
+MessageFormatter.show_system_intro_complete = function(...) return get_MessageSystem().show_system_intro_complete(...) end
+MessageFormatter.show_color_test_header = function(...) return get_MessageSystem().show_color_test_header(...) end
+MessageFormatter.show_color_test_sample = function(...) return get_MessageSystem().show_color_test_sample(...) end
+MessageFormatter.show_color_test_footer = function(...) return get_MessageSystem().show_color_test_footer(...) end
 
 -- Status functions
-MessageFormatter.show_error = MessageStatus.show_error
-MessageFormatter.show_warning = MessageStatus.show_warning
-MessageFormatter.show_success = MessageStatus.show_success
-MessageFormatter.show_info = MessageStatus.show_info
-MessageFormatter.show_tp_ready = MessageStatus.show_tp_ready
-MessageFormatter.show_tp_required = MessageStatus.show_tp_required
+MessageFormatter.show_error = function(...) return get_MessageStatus().show_error(...) end
+MessageFormatter.show_warning = function(...) return get_MessageStatus().show_warning(...) end
+MessageFormatter.show_success = function(...) return get_MessageStatus().show_success(...) end
+MessageFormatter.show_info = function(...) return get_MessageStatus().show_info(...) end
+MessageFormatter.show_tp_ready = function(...) return get_MessageStatus().show_tp_ready(...) end
+MessageFormatter.show_tp_required = function(...) return get_MessageStatus().show_tp_required(...) end
 
 -- Cooldown functions (professional system ready)
-MessageFormatter.show_spell_cooldown = MessageCooldowns.show_spell_cooldown
-MessageFormatter.show_ability_cooldown = MessageCooldowns.show_ability_cooldown
-MessageFormatter.show_ws_cooldown = MessageCooldowns.show_ws_cooldown
-MessageFormatter.show_item_recast = MessageCooldowns.show_item_recast
-MessageFormatter.show_stratagem_cooldown = MessageCooldowns.show_stratagem_cooldown
-MessageFormatter.show_song_duration = MessageCooldowns.show_song_duration
-MessageFormatter.show_compact_status = MessageCooldowns.show_compact_status
-MessageFormatter.show_cooldown_message = MessageCooldowns.show_cooldown_message
-MessageFormatter.show_multi_status = MessageCooldowns.show_multi_status
+MessageFormatter.show_spell_cooldown = function(...) return get_MessageCooldowns().show_spell_cooldown(...) end
+MessageFormatter.show_ability_cooldown = function(...) return get_MessageCooldowns().show_ability_cooldown(...) end
+MessageFormatter.show_ws_cooldown = function(...) return get_MessageCooldowns().show_ws_cooldown(...) end
+MessageFormatter.show_item_recast = function(...) return get_MessageCooldowns().show_item_recast(...) end
+MessageFormatter.show_stratagem_cooldown = function(...) return get_MessageCooldowns().show_stratagem_cooldown(...) end
+MessageFormatter.show_song_duration = function(...) return get_MessageCooldowns().show_song_duration(...) end
+MessageFormatter.show_compact_status = function(...) return get_MessageCooldowns().show_compact_status(...) end
+MessageFormatter.show_cooldown_message = function(...) return get_MessageCooldowns().show_cooldown_message(...) end
+MessageFormatter.show_multi_status = function(...) return get_MessageCooldowns().show_multi_status(...) end
 
 -- Convenience functions with automatic windower API handling
-MessageFormatter.show_spell_cooldown_by_id = MessageCooldowns.show_spell_cooldown_by_id
-MessageFormatter.show_ability_cooldown_by_id = MessageCooldowns.show_ability_cooldown_by_id
-MessageFormatter.get_spell_recast_seconds = MessageCooldowns.get_spell_recast_seconds
-MessageFormatter.get_ability_recast_seconds = MessageCooldowns.get_ability_recast_seconds
+MessageFormatter.show_spell_cooldown_by_id = function(...) return get_MessageCooldowns().show_spell_cooldown_by_id(...) end
+MessageFormatter.show_ability_cooldown_by_id = function(...) return get_MessageCooldowns().show_ability_cooldown_by_id(...) end
+MessageFormatter.get_spell_recast_seconds = function(...) return get_MessageCooldowns().get_spell_recast_seconds(...) end
+MessageFormatter.get_ability_recast_seconds = function(...) return get_MessageCooldowns().get_ability_recast_seconds(...) end
 
 -- Combat functions
-MessageFormatter.show_range_error = MessageCombat.show_range_error
-MessageFormatter.show_ws_validation_error = MessageCombat.show_ws_validation_error
-MessageFormatter.show_ability_tp_error = MessageCombat.show_ability_tp_error
-MessageFormatter.show_target_error = MessageCombat.show_target_error
-MessageFormatter.show_state_change = MessageCombat.show_state_change
-MessageFormatter.show_ws_tp = MessageCombat.show_ws_tp
-MessageFormatter.show_ws_activated = MessageCombat.show_ws_activated  -- WS description display
-MessageFormatter.show_spell_activated = MessageCombat.show_spell_activated  -- Spell description display (Enhancing/Enfeebling/Healing)
-MessageFormatter.show_spell_cast = MessageCombat.show_spell_cast
-MessageFormatter.show_ability_use = MessageCombat.show_ability_use
-MessageFormatter.show_waltz_heal = MessageCombat.show_waltz_heal
-MessageFormatter.show_jump_activated = MessageCombat.show_jump_activated
-MessageFormatter.show_jump_chaining = MessageCombat.show_jump_chaining
-MessageFormatter.show_jump_complete = MessageCombat.show_jump_complete
-MessageFormatter.show_jump_relaunch = MessageCombat.show_jump_relaunch
+MessageFormatter.show_range_error = function(...) return get_MessageCombat().show_range_error(...) end
+MessageFormatter.show_ws_validation_error = function(...) return get_MessageCombat().show_ws_validation_error(...) end
+MessageFormatter.show_ability_tp_error = function(...) return get_MessageCombat().show_ability_tp_error(...) end
+MessageFormatter.show_target_error = function(...) return get_MessageCombat().show_target_error(...) end
+MessageFormatter.show_state_change = function(...) return get_MessageCombat().show_state_change(...) end
+MessageFormatter.show_ws_tp = function(...) return get_MessageCombat().show_ws_tp(...) end
+MessageFormatter.show_ws_activated = function(...) return get_MessageCombat().show_ws_activated(...) end
+MessageFormatter.show_spell_activated = function(...) return get_MessageCombat().show_spell_activated(...) end
+MessageFormatter.show_spell_cast = function(...) return get_MessageCombat().show_spell_cast(...) end
+MessageFormatter.show_ability_use = function(...) return get_MessageCombat().show_ability_use(...) end
+MessageFormatter.show_waltz_heal = function(...) return get_MessageCombat().show_waltz_heal(...) end
+MessageFormatter.show_jump_activated = function(...) return get_MessageCombat().show_jump_activated(...) end
+MessageFormatter.show_jump_chaining = function(...) return get_MessageCombat().show_jump_chaining(...) end
+MessageFormatter.show_jump_complete = function(...) return get_MessageCombat().show_jump_complete(...) end
+MessageFormatter.show_jump_relaunch = function(...) return get_MessageCombat().show_jump_relaunch(...) end
 
 -- Buff functions
-MessageFormatter.show_buff_status = MessageBuffs.show_buff_status
+MessageFormatter.show_buff_status = function(...) return get_MessageBuffs().show_buff_status(...) end
 
 -- Equipment check functions
-MessageFormatter.show_check_header = MessageEquipment.show_check_header
-MessageFormatter.show_set_valid = MessageEquipment.show_set_valid
-MessageFormatter.show_missing_item = MessageEquipment.show_missing_item
-MessageFormatter.show_storage_item = MessageEquipment.show_storage_item
-MessageFormatter.show_check_summary = MessageEquipment.show_check_summary
-MessageFormatter.show_check_error = MessageEquipment.show_check_error
-MessageFormatter.show_no_sets_found = MessageEquipment.show_no_sets_found
+MessageFormatter.show_check_header = function(...) return get_MessageEquipment().show_check_header(...) end
+MessageFormatter.show_set_valid = function(...) return get_MessageEquipment().show_set_valid(...) end
+MessageFormatter.show_missing_item = function(...) return get_MessageEquipment().show_missing_item(...) end
+MessageFormatter.show_storage_item = function(...) return get_MessageEquipment().show_storage_item(...) end
+MessageFormatter.show_check_summary = function(...) return get_MessageEquipment().show_check_summary(...) end
+MessageFormatter.show_check_error = function(...) return get_MessageEquipment().show_check_error(...) end
+MessageFormatter.show_no_sets_found = function(...) return get_MessageEquipment().show_no_sets_found(...) end
 
 -- Debuff blocking functions
-MessageFormatter.show_spell_blocked = MessageDebuffs.show_spell_blocked
-MessageFormatter.show_ja_blocked = MessageDebuffs.show_ja_blocked
-MessageFormatter.show_ws_blocked = MessageDebuffs.show_ws_blocked
-MessageFormatter.show_item_blocked = MessageDebuffs.show_item_blocked
-MessageFormatter.show_action_blocked = MessageDebuffs.show_action_blocked
-MessageFormatter.show_incapacitated = MessageDebuffs.show_incapacitated
-MessageFormatter.show_silence_cure_success = MessageDebuffs.show_silence_cure_success
-MessageFormatter.show_no_silence_cure = MessageDebuffs.show_no_silence_cure
+MessageFormatter.show_spell_blocked = function(...) return get_MessageDebuffs().show_spell_blocked(...) end
+MessageFormatter.show_ja_blocked = function(...) return get_MessageDebuffs().show_ja_blocked(...) end
+MessageFormatter.show_ws_blocked = function(...) return get_MessageDebuffs().show_ws_blocked(...) end
+MessageFormatter.show_item_blocked = function(...) return get_MessageDebuffs().show_item_blocked(...) end
+MessageFormatter.show_action_blocked = function(...) return get_MessageDebuffs().show_action_blocked(...) end
+MessageFormatter.show_incapacitated = function(...) return get_MessageDebuffs().show_incapacitated(...) end
+MessageFormatter.show_silence_cure_success = function(...) return get_MessageDebuffs().show_silence_cure_success(...) end
+MessageFormatter.show_no_silence_cure = function(...) return get_MessageDebuffs().show_no_silence_cure(...) end
 
 -- Roll functions (COR)
-MessageFormatter.show_roll_result = RollMessages.show_roll_result
-MessageFormatter.show_roll_natural_eleven = RollMessages.show_roll_natural_eleven
-MessageFormatter.show_roll_bust_rate = RollMessages.show_roll_bust_rate
-MessageFormatter.show_roll_bust = RollMessages.show_roll_bust
-MessageFormatter.show_roll_double_up_window = RollMessages.show_roll_double_up_window
-MessageFormatter.show_roll_double_up_expired = RollMessages.show_roll_double_up_expired
-MessageFormatter.show_no_active_roll = RollMessages.show_no_active_roll
-MessageFormatter.show_active_rolls = RollMessages.show_active_rolls
-MessageFormatter.show_rolls_cleared = RollMessages.show_rolls_cleared
-MessageFormatter.show_roll_not_found = RollMessages.show_roll_not_found
-MessageFormatter.show_invalid_roll_value = RollMessages.show_invalid_roll_value
+MessageFormatter.show_roll_result = function(...) return get_RollMessages().show_roll_result(...) end
+MessageFormatter.show_roll_natural_eleven = function(...) return get_RollMessages().show_roll_natural_eleven(...) end
+MessageFormatter.show_roll_bust_rate = function(...) return get_RollMessages().show_roll_bust_rate(...) end
+MessageFormatter.show_roll_bust = function(...) return get_RollMessages().show_roll_bust(...) end
+MessageFormatter.show_roll_double_up_window = function(...) return get_RollMessages().show_roll_double_up_window(...) end
+MessageFormatter.show_roll_double_up_expired = function(...) return get_RollMessages().show_roll_double_up_expired(...) end
+MessageFormatter.show_no_active_roll = function(...) return get_RollMessages().show_no_active_roll(...) end
+MessageFormatter.show_active_rolls = function(...) return get_RollMessages().show_active_rolls(...) end
+MessageFormatter.show_rolls_cleared = function(...) return get_RollMessages().show_rolls_cleared(...) end
+MessageFormatter.show_roll_not_found = function(...) return get_RollMessages().show_roll_not_found(...) end
+MessageFormatter.show_invalid_roll_value = function(...) return get_RollMessages().show_invalid_roll_value(...) end
 
 -- Party Tracking (Universal - usable by any job)
-MessageFormatter.show_party_members = PartyMessages.show_party_members
+MessageFormatter.show_party_members = function(...) return get_PartyMessages().show_party_members(...) end
 
--- BRD functions (Bard)
-MessageFormatter.show_soul_voice_activated = BRDMessages.show_soul_voice_activated
-MessageFormatter.show_soul_voice_ended = BRDMessages.show_soul_voice_ended
-MessageFormatter.show_nightingale_activated = BRDMessages.show_nightingale_activated
-MessageFormatter.show_nightingale_active = BRDMessages.show_nightingale_active
-MessageFormatter.show_troubadour_activated = BRDMessages.show_troubadour_activated
-MessageFormatter.show_troubadour_active = BRDMessages.show_troubadour_active
-MessageFormatter.show_marcato_used = BRDMessages.show_marcato_used
-MessageFormatter.show_marcato_honor_march = BRDMessages.show_marcato_honor_march
-MessageFormatter.show_marcato_skip_buffs = BRDMessages.show_marcato_skip_buffs
-MessageFormatter.show_marcato_skip_soul_voice = BRDMessages.show_marcato_skip_soul_voice
-MessageFormatter.show_pianissimo_used = BRDMessages.show_pianissimo_used
-MessageFormatter.show_pianissimo_target = BRDMessages.show_pianissimo_target
-MessageFormatter.show_ability_command = BRDMessages.show_ability_command
-MessageFormatter.show_instrument_locked = BRDMessages.show_instrument_locked
-MessageFormatter.show_instrument_released = BRDMessages.show_instrument_released
-MessageFormatter.show_honor_march_locked = BRDMessages.show_honor_march_locked
-MessageFormatter.show_honor_march_released = BRDMessages.show_honor_march_released
-MessageFormatter.show_daurdabla_dummy = BRDMessages.show_daurdabla_dummy
-MessageFormatter.show_songs_casting = BRDMessages.show_songs_casting
-MessageFormatter.show_song_pack = BRDMessages.show_song_pack
-MessageFormatter.show_songs_refresh = BRDMessages.show_songs_refresh
-MessageFormatter.show_dummy_casting = BRDMessages.show_dummy_casting
-MessageFormatter.show_dummy_cast = BRDMessages.show_dummy_cast
-MessageFormatter.show_tank_casting = BRDMessages.show_tank_casting
-MessageFormatter.show_tank_refresh = BRDMessages.show_tank_refresh
-MessageFormatter.show_healer_casting = BRDMessages.show_healer_casting
-MessageFormatter.show_healer_refresh = BRDMessages.show_healer_refresh
-MessageFormatter.show_song_cast = BRDMessages.show_song_cast
-MessageFormatter.show_song_guidance = BRDMessages.show_song_guidance
-MessageFormatter.show_clarion_required = BRDMessages.show_clarion_required
-MessageFormatter.show_lullaby_cast = BRDMessages.show_lullaby_cast
-MessageFormatter.show_elegy_cast = BRDMessages.show_elegy_cast
-MessageFormatter.show_requiem_cast = BRDMessages.show_requiem_cast
-MessageFormatter.show_threnody_cast = BRDMessages.show_threnody_cast
-MessageFormatter.show_carol_cast = BRDMessages.show_carol_cast
-MessageFormatter.show_etude_cast = BRDMessages.show_etude_cast
-MessageFormatter.show_song_refinement = BRDMessages.show_song_refinement
-MessageFormatter.show_song_refinement_failed = BRDMessages.show_song_refinement_failed
-MessageFormatter.show_doom_gained = BRDMessages.show_doom_gained
-MessageFormatter.show_doom_removed = BRDMessages.show_doom_removed
-MessageFormatter.show_no_pack_configured = BRDMessages.show_no_pack_configured
-MessageFormatter.show_tank_not_configured = BRDMessages.show_tank_not_configured
-MessageFormatter.show_healer_not_configured = BRDMessages.show_healer_not_configured
-MessageFormatter.show_no_element_selected = BRDMessages.show_no_element_selected
-MessageFormatter.show_no_carol_element = BRDMessages.show_no_carol_element
-MessageFormatter.show_no_etude_type = BRDMessages.show_no_etude_type
-MessageFormatter.show_no_song_in_slot = BRDMessages.show_no_song_in_slot
-MessageFormatter.show_pack_not_found = BRDMessages.show_pack_not_found
+-- BRD functions (Bard) - LAZY LOADED
+MessageFormatter.show_soul_voice_activated = function(...) return get_BRDMessages().show_soul_voice_activated(...) end
+MessageFormatter.show_soul_voice_ended = function(...) return get_BRDMessages().show_soul_voice_ended(...) end
+MessageFormatter.show_nightingale_activated = function(...) return get_BRDMessages().show_nightingale_activated(...) end
+MessageFormatter.show_nightingale_active = function(...) return get_BRDMessages().show_nightingale_active(...) end
+MessageFormatter.show_troubadour_activated = function(...) return get_BRDMessages().show_troubadour_activated(...) end
+MessageFormatter.show_troubadour_active = function(...) return get_BRDMessages().show_troubadour_active(...) end
+MessageFormatter.show_marcato_used = function(...) return get_BRDMessages().show_marcato_used(...) end
+MessageFormatter.show_marcato_honor_march = function(...) return get_BRDMessages().show_marcato_honor_march(...) end
+MessageFormatter.show_marcato_skip_buffs = function(...) return get_BRDMessages().show_marcato_skip_buffs(...) end
+MessageFormatter.show_marcato_skip_soul_voice = function(...) return get_BRDMessages().show_marcato_skip_soul_voice(...) end
+MessageFormatter.show_pianissimo_used = function(...) return get_BRDMessages().show_pianissimo_used(...) end
+MessageFormatter.show_pianissimo_target = function(...) return get_BRDMessages().show_pianissimo_target(...) end
+MessageFormatter.show_ability_command = function(...) return get_BRDMessages().show_ability_command(...) end
+MessageFormatter.show_instrument_locked = function(...) return get_BRDMessages().show_instrument_locked(...) end
+MessageFormatter.show_instrument_released = function(...) return get_BRDMessages().show_instrument_released(...) end
+MessageFormatter.show_honor_march_locked = function(...) return get_BRDMessages().show_honor_march_locked(...) end
+MessageFormatter.show_honor_march_released = function(...) return get_BRDMessages().show_honor_march_released(...) end
+MessageFormatter.show_daurdabla_dummy = function(...) return get_BRDMessages().show_daurdabla_dummy(...) end
+MessageFormatter.show_songs_casting = function(...) return get_BRDMessages().show_songs_casting(...) end
+MessageFormatter.show_song_pack = function(...) return get_BRDMessages().show_song_pack(...) end
+MessageFormatter.show_songs_refresh = function(...) return get_BRDMessages().show_songs_refresh(...) end
+MessageFormatter.show_dummy_casting = function(...) return get_BRDMessages().show_dummy_casting(...) end
+MessageFormatter.show_dummy_cast = function(...) return get_BRDMessages().show_dummy_cast(...) end
+MessageFormatter.show_tank_casting = function(...) return get_BRDMessages().show_tank_casting(...) end
+MessageFormatter.show_tank_refresh = function(...) return get_BRDMessages().show_tank_refresh(...) end
+MessageFormatter.show_healer_casting = function(...) return get_BRDMessages().show_healer_casting(...) end
+MessageFormatter.show_healer_refresh = function(...) return get_BRDMessages().show_healer_refresh(...) end
+MessageFormatter.show_song_cast = function(...) return get_BRDMessages().show_song_cast(...) end
+MessageFormatter.show_song_guidance = function(...) return get_BRDMessages().show_song_guidance(...) end
+MessageFormatter.show_clarion_required = function(...) return get_BRDMessages().show_clarion_required(...) end
+MessageFormatter.show_lullaby_cast = function(...) return get_BRDMessages().show_lullaby_cast(...) end
+MessageFormatter.show_elegy_cast = function(...) return get_BRDMessages().show_elegy_cast(...) end
+MessageFormatter.show_requiem_cast = function(...) return get_BRDMessages().show_requiem_cast(...) end
+MessageFormatter.show_threnody_cast = function(...) return get_BRDMessages().show_threnody_cast(...) end
+MessageFormatter.show_carol_cast = function(...) return get_BRDMessages().show_carol_cast(...) end
+MessageFormatter.show_etude_cast = function(...) return get_BRDMessages().show_etude_cast(...) end
+MessageFormatter.show_song_refinement = function(...) return get_BRDMessages().show_song_refinement(...) end
+MessageFormatter.show_song_refinement_failed = function(...) return get_BRDMessages().show_song_refinement_failed(...) end
+MessageFormatter.show_doom_gained = function(...) return get_BRDMessages().show_doom_gained(...) end
+MessageFormatter.show_doom_removed = function(...) return get_BRDMessages().show_doom_removed(...) end
+MessageFormatter.show_no_pack_configured = function(...) return get_BRDMessages().show_no_pack_configured(...) end
+MessageFormatter.show_tank_not_configured = function(...) return get_BRDMessages().show_tank_not_configured(...) end
+MessageFormatter.show_healer_not_configured = function(...) return get_BRDMessages().show_healer_not_configured(...) end
+MessageFormatter.show_no_element_selected = function(...) return get_BRDMessages().show_no_element_selected(...) end
+MessageFormatter.show_no_carol_element = function(...) return get_BRDMessages().show_no_carol_element(...) end
+MessageFormatter.show_no_etude_type = function(...) return get_BRDMessages().show_no_etude_type(...) end
+MessageFormatter.show_no_song_in_slot = function(...) return get_BRDMessages().show_no_song_in_slot(...) end
+MessageFormatter.show_pack_not_found = function(...) return get_BRDMessages().show_pack_not_found(...) end
 
--- RDM functions (Red Mage)
-MessageFormatter.show_convert_activated = RDMMessages.show_convert_activated
-MessageFormatter.show_convert_used = RDMMessages.show_convert_used
-MessageFormatter.show_chainspell_activated = RDMMessages.show_chainspell_activated
-MessageFormatter.show_chainspell_ended = RDMMessages.show_chainspell_ended
-MessageFormatter.show_composure_activated = RDMMessages.show_composure_activated
-MessageFormatter.show_composure_active = RDMMessages.show_composure_active
-MessageFormatter.show_doom_warning = RDMMessages.show_doom_warning
-MessageFormatter.show_rdm_doom_removed = RDMMessages.show_doom_removed
-MessageFormatter.show_spell_casting = RDMMessages.show_spell_casting
-MessageFormatter.show_element_list = RDMMessages.show_element_list
-MessageFormatter.show_enspell_current = RDMMessages.show_enspell_current
-MessageFormatter.show_storm_current = RDMMessages.show_storm_current
-MessageFormatter.show_no_enspell_selected = RDMMessages.show_no_enspell_selected
-MessageFormatter.show_gain_spell_not_configured = RDMMessages.show_gain_spell_not_configured
-MessageFormatter.show_bar_element_not_configured = RDMMessages.show_bar_element_not_configured
-MessageFormatter.show_bar_ailment_not_configured = RDMMessages.show_bar_ailment_not_configured
-MessageFormatter.show_spike_not_configured = RDMMessages.show_spike_not_configured
-MessageFormatter.show_storm_requires_sch = RDMMessages.show_storm_requires_sch
-MessageFormatter.show_phalanx_detected = RDMMessages.show_phalanx_detected
-MessageFormatter.show_phalanx_downgrade = RDMMessages.show_phalanx_downgrade
-MessageFormatter.show_phalanx_upgrade = RDMMessages.show_phalanx_upgrade
+-- RDM functions (Red Mage) - LAZY LOADED
+MessageFormatter.show_convert_activated = function(...) return get_RDMMessages().show_convert_activated(...) end
+MessageFormatter.show_convert_used = function(...) return get_RDMMessages().show_convert_used(...) end
+MessageFormatter.show_chainspell_activated = function(...) return get_RDMMessages().show_chainspell_activated(...) end
+MessageFormatter.show_chainspell_ended = function(...) return get_RDMMessages().show_chainspell_ended(...) end
+MessageFormatter.show_composure_activated = function(...) return get_RDMMessages().show_composure_activated(...) end
+MessageFormatter.show_composure_active = function(...) return get_RDMMessages().show_composure_active(...) end
+MessageFormatter.show_doom_warning = function(...) return get_RDMMessages().show_doom_warning(...) end
+MessageFormatter.show_rdm_doom_removed = function(...) return get_RDMMessages().show_doom_removed(...) end
+MessageFormatter.show_spell_casting = function(...) return get_RDMMessages().show_spell_casting(...) end
+MessageFormatter.show_element_list = function(...) return get_RDMMessages().show_element_list(...) end
+MessageFormatter.show_enspell_current = function(...) return get_RDMMessages().show_enspell_current(...) end
+MessageFormatter.show_storm_current = function(...) return get_RDMMessages().show_storm_current(...) end
+MessageFormatter.show_no_enspell_selected = function(...) return get_RDMMessages().show_no_enspell_selected(...) end
+MessageFormatter.show_gain_spell_not_configured = function(...) return get_RDMMessages().show_gain_spell_not_configured(...) end
+MessageFormatter.show_bar_element_not_configured = function(...) return get_RDMMessages().show_bar_element_not_configured(...) end
+MessageFormatter.show_bar_ailment_not_configured = function(...) return get_RDMMessages().show_bar_ailment_not_configured(...) end
+MessageFormatter.show_spike_not_configured = function(...) return get_RDMMessages().show_spike_not_configured(...) end
+MessageFormatter.show_storm_requires_sch = function(...) return get_RDMMessages().show_storm_requires_sch(...) end
+MessageFormatter.show_phalanx_detected = function(...) return get_RDMMessages().show_phalanx_detected(...) end
+MessageFormatter.show_phalanx_downgrade = function(...) return get_RDMMessages().show_phalanx_downgrade(...) end
+MessageFormatter.show_phalanx_upgrade = function(...) return get_RDMMessages().show_phalanx_upgrade(...) end
 
--- GEO functions (Geomancer)
-MessageFormatter.show_indi_cast = GEOMessages.show_indi_cast
-MessageFormatter.show_geo_cast = GEOMessages.show_geo_cast
-MessageFormatter.show_spell_refined = GEOMessages.show_spell_refined
-MessageFormatter.show_no_tier_available = GEOMessages.show_no_tier_available
+-- GEO functions (Geomancer) - LAZY LOADED
+MessageFormatter.show_indi_cast = function(...) return get_GEOMessages().show_indi_cast(...) end
+MessageFormatter.show_geo_cast = function(...) return get_GEOMessages().show_geo_cast(...) end
+MessageFormatter.show_spell_refined = function(...) return get_GEOMessages().show_spell_refined(...) end
+MessageFormatter.show_no_tier_available = function(...) return get_GEOMessages().show_no_tier_available(...) end
 
--- BLM functions (Black Mage)
-MessageFormatter.show_dark_arts_activated = BLMMessages.show_dark_arts_activated
-MessageFormatter.show_element_cycle = BLMMessages.show_element_cycle
-MessageFormatter.show_aja_cycle = BLMMessages.show_aja_cycle
-MessageFormatter.show_storm_cycle = BLMMessages.show_storm_cycle
-MessageFormatter.show_tier_cycle = BLMMessages.show_tier_cycle
-MessageFormatter.show_buff_activated = BLMMessages.show_buff_activated
-MessageFormatter.show_buff_cast = BLMMessages.show_buff_cast
-MessageFormatter.show_magic_burst_on = BLMMessages.show_magic_burst_on
-MessageFormatter.show_magic_burst_off = BLMMessages.show_magic_burst_off
-MessageFormatter.show_free_nuke_on = BLMMessages.show_free_nuke_on
-MessageFormatter.show_spell_refinement = BLMMessages.show_spell_refinement
-MessageFormatter.show_spell_refinement_failed = BLMMessages.show_spell_refinement_failed
-MessageFormatter.show_mp_conservation = BLMMessages.show_mp_conservation
-MessageFormatter.show_arts_already_active = BLMMessages.show_arts_already_active
-MessageFormatter.show_stratagem_no_charges = BLMMessages.show_stratagem_no_charges
-MessageFormatter.show_buffself_error = BLMMessages.show_buffself_error
-MessageFormatter.show_spell_replacement_error = BLMMessages.show_spell_replacement_error
-MessageFormatter.show_spell_refinement_error = BLMMessages.show_spell_refinement_error
-MessageFormatter.show_spell_recasts_error = BLMMessages.show_spell_recasts_error
-MessageFormatter.show_insufficient_mp_error = BLMMessages.show_insufficient_mp_error
-MessageFormatter.show_breakga_blocked = BLMMessages.show_breakga_blocked
-MessageFormatter.show_buffself_recasts_error = BLMMessages.show_buffself_recasts_error
-MessageFormatter.show_buffself_resources_error = BLMMessages.show_buffself_resources_error
-MessageFormatter.show_buff_casting = BLMMessages.show_buff_casting
-MessageFormatter.show_unknown_buff_error = BLMMessages.show_unknown_buff_error
-MessageFormatter.show_buff_already_active = BLMMessages.show_buff_already_active
-MessageFormatter.show_manual_buff_cast = BLMMessages.show_manual_buff_cast
+-- BLM functions (Black Mage) - LAZY LOADED
+MessageFormatter.show_dark_arts_activated = function(...) return get_BLMMessages().show_dark_arts_activated(...) end
+MessageFormatter.show_element_cycle = function(...) return get_BLMMessages().show_element_cycle(...) end
+MessageFormatter.show_aja_cycle = function(...) return get_BLMMessages().show_aja_cycle(...) end
+MessageFormatter.show_storm_cycle = function(...) return get_BLMMessages().show_storm_cycle(...) end
+MessageFormatter.show_tier_cycle = function(...) return get_BLMMessages().show_tier_cycle(...) end
+MessageFormatter.show_buff_activated = function(...) return get_BLMMessages().show_buff_activated(...) end
+MessageFormatter.show_buff_cast = function(...) return get_BLMMessages().show_buff_cast(...) end
+MessageFormatter.show_magic_burst_on = function(...) return get_BLMMessages().show_magic_burst_on(...) end
+MessageFormatter.show_magic_burst_off = function(...) return get_BLMMessages().show_magic_burst_off(...) end
+MessageFormatter.show_free_nuke_on = function(...) return get_BLMMessages().show_free_nuke_on(...) end
+MessageFormatter.show_spell_refinement = function(...) return get_BLMMessages().show_spell_refinement(...) end
+MessageFormatter.show_spell_refinement_failed = function(...) return get_BLMMessages().show_spell_refinement_failed(...) end
+MessageFormatter.show_mp_conservation = function(...) return get_BLMMessages().show_mp_conservation(...) end
+MessageFormatter.show_arts_already_active = function(...) return get_BLMMessages().show_arts_already_active(...) end
+MessageFormatter.show_stratagem_no_charges = function(...) return get_BLMMessages().show_stratagem_no_charges(...) end
+MessageFormatter.show_buffself_error = function(...) return get_BLMMessages().show_buffself_error(...) end
+MessageFormatter.show_spell_replacement_error = function(...) return get_BLMMessages().show_spell_replacement_error(...) end
+MessageFormatter.show_spell_refinement_error = function(...) return get_BLMMessages().show_spell_refinement_error(...) end
+MessageFormatter.show_spell_recasts_error = function(...) return get_BLMMessages().show_spell_recasts_error(...) end
+MessageFormatter.show_insufficient_mp_error = function(...) return get_BLMMessages().show_insufficient_mp_error(...) end
+MessageFormatter.show_breakga_blocked = function(...) return get_BLMMessages().show_breakga_blocked(...) end
+MessageFormatter.show_buffself_recasts_error = function(...) return get_BLMMessages().show_buffself_recasts_error(...) end
+MessageFormatter.show_buffself_resources_error = function(...) return get_BLMMessages().show_buffself_resources_error(...) end
+MessageFormatter.show_buff_casting = function(...) return get_BLMMessages().show_buff_casting(...) end
+MessageFormatter.show_unknown_buff_error = function(...) return get_BLMMessages().show_unknown_buff_error(...) end
+MessageFormatter.show_buff_already_active = function(...) return get_BLMMessages().show_buff_already_active(...) end
+MessageFormatter.show_manual_buff_cast = function(...) return get_BLMMessages().show_manual_buff_cast(...) end
 
--- BST functions (Beastmaster) - COMPLETE REBUILD v3.0
+-- BST functions (Beastmaster) - LAZY LOADED
 -- Legacy names with show_bst_ prefix (backward compatibility)
 
 -- Job Ability Messages
-MessageFormatter.show_bst_call_beast_used = MessageBST.show_call_beast_used
-MessageFormatter.show_bst_bestial_loyalty_used = MessageBST.show_bestial_loyalty_used
-MessageFormatter.show_bst_familiar_activated = MessageBST.show_familiar_activated
-MessageFormatter.show_bst_familiar_active = MessageBST.show_familiar_active
-MessageFormatter.show_bst_spur_used = MessageBST.show_spur_used
-MessageFormatter.show_bst_run_wild_used = MessageBST.show_run_wild_used
-MessageFormatter.show_bst_tame_used = MessageBST.show_tame_used
-MessageFormatter.show_bst_reward_used = MessageBST.show_reward_used
-MessageFormatter.show_bst_reward_no_food = MessageBST.show_reward_no_food
-MessageFormatter.show_bst_feral_howl_used = MessageBST.show_feral_howl_used
-MessageFormatter.show_bst_killer_instinct_activated = MessageBST.show_killer_instinct_activated
+MessageFormatter.show_bst_call_beast_used = function(...) return get_MessageBST().show_call_beast_used(...) end
+MessageFormatter.show_bst_bestial_loyalty_used = function(...) return get_MessageBST().show_bestial_loyalty_used(...) end
+MessageFormatter.show_bst_familiar_activated = function(...) return get_MessageBST().show_familiar_activated(...) end
+MessageFormatter.show_bst_familiar_active = function(...) return get_MessageBST().show_familiar_active(...) end
+MessageFormatter.show_bst_spur_used = function(...) return get_MessageBST().show_spur_used(...) end
+MessageFormatter.show_bst_run_wild_used = function(...) return get_MessageBST().show_run_wild_used(...) end
+MessageFormatter.show_bst_tame_used = function(...) return get_MessageBST().show_tame_used(...) end
+MessageFormatter.show_bst_reward_used = function(...) return get_MessageBST().show_reward_used(...) end
+MessageFormatter.show_bst_reward_no_food = function(...) return get_MessageBST().show_reward_no_food(...) end
+MessageFormatter.show_bst_feral_howl_used = function(...) return get_MessageBST().show_feral_howl_used(...) end
+MessageFormatter.show_bst_killer_instinct_activated = function(...) return get_MessageBST().show_killer_instinct_activated(...) end
 
 -- Ecosystem Messages
-MessageFormatter.show_bst_ecosystem_change = MessageBST.show_ecosystem_change
-MessageFormatter.show_bst_species_change = MessageBST.show_species_change
+MessageFormatter.show_bst_ecosystem_change = function(...) return get_MessageBST().show_ecosystem_change(...) end
+MessageFormatter.show_bst_species_change = function(...) return get_MessageBST().show_species_change(...) end
 
 -- Broth/Jug Messages
-MessageFormatter.show_bst_broth_equip = MessageBST.show_broth_equip
-MessageFormatter.show_bst_jug_equipped = MessageBST.show_jug_equipped
-MessageFormatter.show_bst_broth_count_header = MessageBST.show_broth_count_header
-MessageFormatter.show_bst_broth_count_line = MessageBST.show_broth_count_line
-MessageFormatter.show_bst_broth_count_footer = MessageBST.show_broth_count_footer
-MessageFormatter.show_bst_no_broths = MessageBST.show_no_broths
+MessageFormatter.show_bst_broth_equip = function(...) return get_MessageBST().show_broth_equip(...) end
+MessageFormatter.show_bst_jug_equipped = function(...) return get_MessageBST().show_jug_equipped(...) end
+MessageFormatter.show_bst_broth_count_header = function(...) return get_MessageBST().show_broth_count_header(...) end
+MessageFormatter.show_bst_broth_count_line = function(...) return get_MessageBST().show_broth_count_line(...) end
+MessageFormatter.show_bst_broth_count_footer = function(...) return get_MessageBST().show_broth_count_footer(...) end
+MessageFormatter.show_bst_no_broths = function(...) return get_MessageBST().show_no_broths(...) end
 
 -- Pet Management Messages
-MessageFormatter.show_bst_pet_summoned = MessageBST.show_pet_summoned
-MessageFormatter.show_bst_pet_engage = MessageBST.show_pet_engage
-MessageFormatter.show_bst_pet_disengage = MessageBST.show_pet_disengage
-MessageFormatter.show_bst_pet_dismissed = MessageBST.show_pet_dismissed
-MessageFormatter.show_bst_auto_engage_enabled = MessageBST.show_auto_engage_enabled
-MessageFormatter.show_bst_auto_engage_disabled = MessageBST.show_auto_engage_disabled
-MessageFormatter.show_bst_auto_engage_status = MessageBST.show_auto_engage_status
-MessageFormatter.show_bst_pet_tp_status = MessageBST.show_pet_tp_status
-MessageFormatter.show_bst_pet_hp_status = MessageBST.show_pet_hp_status
+MessageFormatter.show_bst_pet_summoned = function(...) return get_MessageBST().show_pet_summoned(...) end
+MessageFormatter.show_bst_pet_engage = function(...) return get_MessageBST().show_pet_engage(...) end
+MessageFormatter.show_bst_pet_disengage = function(...) return get_MessageBST().show_pet_disengage(...) end
+MessageFormatter.show_bst_pet_dismissed = function(...) return get_MessageBST().show_pet_dismissed(...) end
+MessageFormatter.show_bst_auto_engage_enabled = function(...) return get_MessageBST().show_auto_engage_enabled(...) end
+MessageFormatter.show_bst_auto_engage_disabled = function(...) return get_MessageBST().show_auto_engage_disabled(...) end
+MessageFormatter.show_bst_auto_engage_status = function(...) return get_MessageBST().show_auto_engage_status(...) end
+MessageFormatter.show_bst_pet_tp_status = function(...) return get_MessageBST().show_pet_tp_status(...) end
+MessageFormatter.show_bst_pet_hp_status = function(...) return get_MessageBST().show_pet_hp_status(...) end
 
 -- Ready Move Messages
-MessageFormatter.show_bst_ready_move_precast = MessageBST.show_ready_move_precast
-MessageFormatter.show_bst_ready_move_physical = MessageBST.show_ready_move_physical
-MessageFormatter.show_bst_ready_move_magical = MessageBST.show_ready_move_magical
-MessageFormatter.show_bst_ready_move_breath = MessageBST.show_ready_move_breath
-MessageFormatter.show_bst_ready_move_tp_check = MessageBST.show_ready_move_tp_check
-MessageFormatter.show_bst_ready_moves_header = MessageBST.show_ready_moves_header
-MessageFormatter.show_bst_ready_move_item = MessageBST.show_ready_move_item
-MessageFormatter.show_bst_ready_moves_usage = MessageBST.show_ready_moves_usage
-MessageFormatter.show_bst_ready_move_use = MessageBST.show_ready_move_use
-MessageFormatter.show_bst_ready_move_auto_engage = MessageBST.show_ready_move_auto_engage
-MessageFormatter.show_bst_ready_move_auto_sequence = MessageBST.show_ready_move_auto_sequence
-MessageFormatter.show_bst_ready_move_recast = MessageBST.show_ready_move_recast
+MessageFormatter.show_bst_ready_move_precast = function(...) return get_MessageBST().show_ready_move_precast(...) end
+MessageFormatter.show_bst_ready_move_physical = function(...) return get_MessageBST().show_ready_move_physical(...) end
+MessageFormatter.show_bst_ready_move_magical = function(...) return get_MessageBST().show_ready_move_magical(...) end
+MessageFormatter.show_bst_ready_move_breath = function(...) return get_MessageBST().show_ready_move_breath(...) end
+MessageFormatter.show_bst_ready_move_tp_check = function(...) return get_MessageBST().show_ready_move_tp_check(...) end
+MessageFormatter.show_bst_ready_moves_header = function(...) return get_MessageBST().show_ready_moves_header(...) end
+MessageFormatter.show_bst_ready_move_item = function(...) return get_MessageBST().show_ready_move_item(...) end
+MessageFormatter.show_bst_ready_moves_usage = function(...) return get_MessageBST().show_ready_moves_usage(...) end
+MessageFormatter.show_bst_ready_move_use = function(...) return get_MessageBST().show_ready_move_use(...) end
+MessageFormatter.show_bst_ready_move_auto_engage = function(...) return get_MessageBST().show_ready_move_auto_engage(...) end
+MessageFormatter.show_bst_ready_move_auto_sequence = function(...) return get_MessageBST().show_ready_move_auto_sequence(...) end
+MessageFormatter.show_bst_ready_move_recast = function(...) return get_MessageBST().show_ready_move_recast(...) end
 
 -- Pet Status Messages
-MessageFormatter.show_bst_pet_charmed = MessageBST.show_pet_charmed
-MessageFormatter.show_bst_pet_charm_failed = MessageBST.show_pet_charm_failed
-MessageFormatter.show_bst_pet_died = MessageBST.show_pet_died
-MessageFormatter.show_bst_pet_despawned = MessageBST.show_pet_despawned
+MessageFormatter.show_bst_pet_charmed = function(...) return get_MessageBST().show_pet_charmed(...) end
+MessageFormatter.show_bst_pet_charm_failed = function(...) return get_MessageBST().show_pet_charm_failed(...) end
+MessageFormatter.show_bst_pet_died = function(...) return get_MessageBST().show_pet_died(...) end
+MessageFormatter.show_bst_pet_despawned = function(...) return get_MessageBST().show_pet_despawned(...) end
 
 -- Error Messages
-MessageFormatter.show_error_no_pet = MessageBST.show_error_no_pet
-MessageFormatter.show_error_no_ready_moves = MessageBST.show_error_no_ready_moves
-MessageFormatter.show_error_invalid_index = MessageBST.show_error_invalid_index
-MessageFormatter.show_error_index_out_of_range = MessageBST.show_error_index_out_of_range
-MessageFormatter.show_error_module_not_loaded = MessageBST.show_error_module_not_loaded
-MessageFormatter.show_error_no_target = MessageBST.show_error_no_target
-MessageFormatter.show_error_pet_too_far = MessageBST.show_error_pet_too_far
-MessageFormatter.show_error_no_jug_equipped = MessageBST.show_error_no_jug_equipped
-MessageFormatter.show_error_insufficient_hp = MessageBST.show_error_insufficient_hp
+MessageFormatter.show_error_no_pet = function(...) return get_MessageBST().show_error_no_pet(...) end
+MessageFormatter.show_error_no_ready_moves = function(...) return get_MessageBST().show_error_no_ready_moves(...) end
+MessageFormatter.show_error_invalid_index = function(...) return get_MessageBST().show_error_invalid_index(...) end
+MessageFormatter.show_error_index_out_of_range = function(...) return get_MessageBST().show_error_index_out_of_range(...) end
+MessageFormatter.show_error_module_not_loaded = function(...) return get_MessageBST().show_error_module_not_loaded(...) end
+MessageFormatter.show_error_no_target = function(...) return get_MessageBST().show_error_no_target(...) end
+MessageFormatter.show_error_pet_too_far = function(...) return get_MessageBST().show_error_pet_too_far(...) end
+MessageFormatter.show_error_no_jug_equipped = function(...) return get_MessageBST().show_error_no_jug_equipped(...) end
+MessageFormatter.show_error_insufficient_hp = function(...) return get_MessageBST().show_error_insufficient_hp(...) end
 
 -- Standard names (for validator and consistency)
-MessageFormatter.show_call_beast_used = MessageBST.show_call_beast_used
-MessageFormatter.show_bestial_loyalty_used = MessageBST.show_bestial_loyalty_used
-MessageFormatter.show_familiar_activated = MessageBST.show_familiar_activated
-MessageFormatter.show_familiar_active = MessageBST.show_familiar_active
-MessageFormatter.show_spur_used = MessageBST.show_spur_used
-MessageFormatter.show_run_wild_used = MessageBST.show_run_wild_used
-MessageFormatter.show_tame_used = MessageBST.show_tame_used
-MessageFormatter.show_reward_used = MessageBST.show_reward_used
-MessageFormatter.show_reward_no_food = MessageBST.show_reward_no_food
-MessageFormatter.show_feral_howl_used = MessageBST.show_feral_howl_used
-MessageFormatter.show_killer_instinct_activated = MessageBST.show_killer_instinct_activated
-MessageFormatter.show_ecosystem_change = MessageBST.show_ecosystem_change
-MessageFormatter.show_species_change = MessageBST.show_species_change
-MessageFormatter.show_broth_equip = MessageBST.show_broth_equip
-MessageFormatter.show_jug_equipped = MessageBST.show_jug_equipped
-MessageFormatter.show_broth_count_header = MessageBST.show_broth_count_header
-MessageFormatter.show_broth_count_line = MessageBST.show_broth_count_line
-MessageFormatter.show_broth_count_footer = MessageBST.show_broth_count_footer
-MessageFormatter.show_no_broths = MessageBST.show_no_broths
-MessageFormatter.show_pet_summoned = MessageBST.show_pet_summoned
-MessageFormatter.show_pet_engage = MessageBST.show_pet_engage
-MessageFormatter.show_pet_disengage = MessageBST.show_pet_disengage
-MessageFormatter.show_pet_dismissed = MessageBST.show_pet_dismissed
-MessageFormatter.show_auto_engage_enabled = MessageBST.show_auto_engage_enabled
-MessageFormatter.show_auto_engage_disabled = MessageBST.show_auto_engage_disabled
-MessageFormatter.show_auto_engage_status = MessageBST.show_auto_engage_status
-MessageFormatter.show_pet_tp_status = MessageBST.show_pet_tp_status
-MessageFormatter.show_pet_hp_status = MessageBST.show_pet_hp_status
-MessageFormatter.show_ready_move_precast = MessageBST.show_ready_move_precast
-MessageFormatter.show_ready_move_physical = MessageBST.show_ready_move_physical
-MessageFormatter.show_ready_move_magical = MessageBST.show_ready_move_magical
-MessageFormatter.show_ready_move_breath = MessageBST.show_ready_move_breath
-MessageFormatter.show_ready_move_tp_check = MessageBST.show_ready_move_tp_check
-MessageFormatter.show_ready_moves_header = MessageBST.show_ready_moves_header
-MessageFormatter.show_ready_move_item = MessageBST.show_ready_move_item
-MessageFormatter.show_ready_moves_usage = MessageBST.show_ready_moves_usage
-MessageFormatter.show_ready_move_use = MessageBST.show_ready_move_use
-MessageFormatter.show_ready_move_auto_engage = MessageBST.show_ready_move_auto_engage
-MessageFormatter.show_ready_move_auto_sequence = MessageBST.show_ready_move_auto_sequence
-MessageFormatter.show_ready_move_recast = MessageBST.show_ready_move_recast
-MessageFormatter.show_pet_charmed = MessageBST.show_pet_charmed
-MessageFormatter.show_pet_charm_failed = MessageBST.show_pet_charm_failed
-MessageFormatter.show_pet_died = MessageBST.show_pet_died
-MessageFormatter.show_pet_despawned = MessageBST.show_pet_despawned
+MessageFormatter.show_call_beast_used = function(...) return get_MessageBST().show_call_beast_used(...) end
+MessageFormatter.show_bestial_loyalty_used = function(...) return get_MessageBST().show_bestial_loyalty_used(...) end
+MessageFormatter.show_familiar_activated = function(...) return get_MessageBST().show_familiar_activated(...) end
+MessageFormatter.show_familiar_active = function(...) return get_MessageBST().show_familiar_active(...) end
+MessageFormatter.show_spur_used = function(...) return get_MessageBST().show_spur_used(...) end
+MessageFormatter.show_run_wild_used = function(...) return get_MessageBST().show_run_wild_used(...) end
+MessageFormatter.show_tame_used = function(...) return get_MessageBST().show_tame_used(...) end
+MessageFormatter.show_reward_used = function(...) return get_MessageBST().show_reward_used(...) end
+MessageFormatter.show_reward_no_food = function(...) return get_MessageBST().show_reward_no_food(...) end
+MessageFormatter.show_feral_howl_used = function(...) return get_MessageBST().show_feral_howl_used(...) end
+MessageFormatter.show_killer_instinct_activated = function(...) return get_MessageBST().show_killer_instinct_activated(...) end
+MessageFormatter.show_ecosystem_change = function(...) return get_MessageBST().show_ecosystem_change(...) end
+MessageFormatter.show_species_change = function(...) return get_MessageBST().show_species_change(...) end
+MessageFormatter.show_broth_equip = function(...) return get_MessageBST().show_broth_equip(...) end
+MessageFormatter.show_jug_equipped = function(...) return get_MessageBST().show_jug_equipped(...) end
+MessageFormatter.show_broth_count_header = function(...) return get_MessageBST().show_broth_count_header(...) end
+MessageFormatter.show_broth_count_line = function(...) return get_MessageBST().show_broth_count_line(...) end
+MessageFormatter.show_broth_count_footer = function(...) return get_MessageBST().show_broth_count_footer(...) end
+MessageFormatter.show_no_broths = function(...) return get_MessageBST().show_no_broths(...) end
+MessageFormatter.show_pet_summoned = function(...) return get_MessageBST().show_pet_summoned(...) end
+MessageFormatter.show_pet_engage = function(...) return get_MessageBST().show_pet_engage(...) end
+MessageFormatter.show_pet_disengage = function(...) return get_MessageBST().show_pet_disengage(...) end
+MessageFormatter.show_pet_dismissed = function(...) return get_MessageBST().show_pet_dismissed(...) end
+MessageFormatter.show_auto_engage_enabled = function(...) return get_MessageBST().show_auto_engage_enabled(...) end
+MessageFormatter.show_auto_engage_disabled = function(...) return get_MessageBST().show_auto_engage_disabled(...) end
+MessageFormatter.show_auto_engage_status = function(...) return get_MessageBST().show_auto_engage_status(...) end
+MessageFormatter.show_pet_tp_status = function(...) return get_MessageBST().show_pet_tp_status(...) end
+MessageFormatter.show_pet_hp_status = function(...) return get_MessageBST().show_pet_hp_status(...) end
+MessageFormatter.show_ready_move_precast = function(...) return get_MessageBST().show_ready_move_precast(...) end
+MessageFormatter.show_ready_move_physical = function(...) return get_MessageBST().show_ready_move_physical(...) end
+MessageFormatter.show_ready_move_magical = function(...) return get_MessageBST().show_ready_move_magical(...) end
+MessageFormatter.show_ready_move_breath = function(...) return get_MessageBST().show_ready_move_breath(...) end
+MessageFormatter.show_ready_move_tp_check = function(...) return get_MessageBST().show_ready_move_tp_check(...) end
+MessageFormatter.show_ready_moves_header = function(...) return get_MessageBST().show_ready_moves_header(...) end
+MessageFormatter.show_ready_move_item = function(...) return get_MessageBST().show_ready_move_item(...) end
+MessageFormatter.show_ready_moves_usage = function(...) return get_MessageBST().show_ready_moves_usage(...) end
+MessageFormatter.show_ready_move_use = function(...) return get_MessageBST().show_ready_move_use(...) end
+MessageFormatter.show_ready_move_auto_engage = function(...) return get_MessageBST().show_ready_move_auto_engage(...) end
+MessageFormatter.show_ready_move_auto_sequence = function(...) return get_MessageBST().show_ready_move_auto_sequence(...) end
+MessageFormatter.show_ready_move_recast = function(...) return get_MessageBST().show_ready_move_recast(...) end
+MessageFormatter.show_pet_charmed = function(...) return get_MessageBST().show_pet_charmed(...) end
+MessageFormatter.show_pet_charm_failed = function(...) return get_MessageBST().show_pet_charm_failed(...) end
+MessageFormatter.show_pet_died = function(...) return get_MessageBST().show_pet_died(...) end
+MessageFormatter.show_pet_despawned = function(...) return get_MessageBST().show_pet_despawned(...) end
 
--- COR functions (Corsair)
-MessageFormatter.show_rolltracker_load_failed = MessageCOR.show_rolltracker_load_failed
-MessageFormatter.show_packets_load_failed = MessageCOR.show_packets_load_failed
-MessageFormatter.show_resources_load_failed = MessageCOR.show_resources_load_failed
+-- COR functions (Corsair) - LAZY LOADED
+MessageFormatter.show_rolltracker_load_failed = function(...) return get_MessageCOR().show_rolltracker_load_failed(...) end
+MessageFormatter.show_packets_load_failed = function(...) return get_MessageCOR().show_packets_load_failed(...) end
+MessageFormatter.show_resources_load_failed = function(...) return get_MessageCOR().show_resources_load_failed(...) end
 
--- DRG functions (Dragoon)
-MessageFormatter.show_drg_subjob_required = MessageDRG.show_drg_subjob_required
-MessageFormatter.show_subjob_disabled = MessageDRG.show_subjob_disabled
-MessageFormatter.show_jump_on_cooldown = MessageDRG.show_jump_on_cooldown
-MessageFormatter.show_high_jump_on_cooldown = MessageDRG.show_high_jump_on_cooldown
+-- DRG functions (Dragoon) - LAZY LOADED
+MessageFormatter.show_drg_subjob_required = function(...) return get_MessageDRG().show_drg_subjob_required(...) end
+MessageFormatter.show_subjob_disabled = function(...) return get_MessageDRG().show_subjob_disabled(...) end
+MessageFormatter.show_jump_on_cooldown = function(...) return get_MessageDRG().show_jump_on_cooldown(...) end
+MessageFormatter.show_high_jump_on_cooldown = function(...) return get_MessageDRG().show_high_jump_on_cooldown(...) end
 
--- WHM functions (White Mage)
-MessageFormatter.show_curemanager_not_loaded = MessageWHM.show_curemanager_not_loaded
+-- WHM functions (White Mage) - LAZY LOADED
+MessageFormatter.show_curemanager_not_loaded = function(...) return get_MessageWHM().show_curemanager_not_loaded(...) end
 
 -- DNC functions removed - migrated to JABuffs (use show_ja_activated instead)
 

@@ -77,8 +77,8 @@ TIMER('BRD_MOVEMENT')
 --- FAÇADE LOAD COMPLETE
 ---============================================================================
 
--- Load dual-boxing manager
-local DualBoxManager = require('../shared/utils/dualbox/dualbox_manager')
+-- Load dual-boxing manager (uses deferred init + lazy message loading)
+local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 
 print('[BRD] Functions loaded successfully')
 

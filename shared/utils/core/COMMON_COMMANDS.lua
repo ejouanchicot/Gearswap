@@ -212,6 +212,62 @@ function CommonCommands.handle_lockstyle()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
+---   DRESSUP TOGGLE COMMAND (Persistent)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+--- Toggle DressUp management on/off (persistent across reloads)
+--- When OFF: lockstyle commands won't try to unload/reload DressUp addon
+--- Useful for players who don't have DressUp installed
+--- Usage: //gs c dressup
+--- @return boolean True if command was handled successfully
+function CommonCommands.handle_dressup()
+    local lockstyle_success, LockstyleManager = pcall(require, 'shared/utils/lockstyle/lockstyle_manager')
+    if lockstyle_success and LockstyleManager and LockstyleManager.toggle_dressup then
+        local enabled = LockstyleManager.toggle_dressup()
+        MessageCommands.show_dressup_toggled(enabled)
+        return true
+    else
+        local MessageFormatter = require('shared/utils/messages/message_formatter')
+        MessageFormatter.show_error("Failed to load lockstyle manager")
+        return false
+    end
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PERFORMANCE PROFILER COMMAND
+---  ═══════════════════════════════════════════════════════════════════════════
+
+--- Handle performance profiler commands
+--- Usage: //gs c perf [start|stop|status]
+--- @param action string Action to perform (start, stop, status)
+--- @return boolean True if command was handled successfully
+function CommonCommands.handle_perf(action)
+    local profiler_success, Profiler = pcall(require, 'shared/utils/debug/performance_profiler')
+    if not profiler_success or not Profiler then
+        local MessageFormatter = require('shared/utils/messages/message_formatter')
+        MessageFormatter.show_error("Failed to load performance profiler")
+        return false
+    end
+
+    action = action and action:lower() or 'status'
+
+    if action == 'start' or action == 'on' or action == 'enable' then
+        Profiler.enable()
+        return true
+    elseif action == 'stop' or action == 'off' or action == 'disable' then
+        Profiler.disable()
+        return true
+    elseif action == 'toggle' then
+        Profiler.toggle()
+        return true
+    else
+        -- Default: show status
+        Profiler.status()
+        return true
+    end
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
 ---   WARP COMMANDS (Universal Warp/Teleport System)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
@@ -473,6 +529,10 @@ function CommonCommands.handle_command(command, job_name, ...)
         return CommonCommands.handle_checksets(job_name)
     elseif cmd == 'lockstyle' or cmd == 'ls' then
         return CommonCommands.handle_lockstyle()
+    elseif cmd == 'dressup' then
+        return CommonCommands.handle_dressup()
+    elseif cmd == 'perf' then
+        return CommonCommands.handle_perf(args[1])
     elseif cmd == 'testcolors' or cmd == 'colors' then
         return CommonCommands.handle_testcolors()
     elseif cmd == 'jump' then
@@ -497,6 +557,47 @@ function CommonCommands.handle_command(command, job_name, ...)
         else
             MessagePrecast.show_debug_disabled()
         end
+        return true
+    elseif cmd == 'automovedebug' or cmd == 'amd' then
+        -- Toggle AutoMove timing debug mode
+        _G.AUTOMOVE_DEBUG = not _G.AUTOMOVE_DEBUG
+        add_to_chat(207, '[AutoMove] Debug mode: ' .. (_G.AUTOMOVE_DEBUG and 'ON' or 'OFF'))
+        return true
+    elseif cmd == 'debugjobchange' or cmd == 'djc' then
+        -- Toggle job change debug mode
+        _G.JOBCHANGE_DEBUG = not _G.JOBCHANGE_DEBUG
+        add_to_chat(207, '[JobChange] Debug mode: ' .. (_G.JOBCHANGE_DEBUG and 'ON' or 'OFF'))
+        -- Show current state
+        if _G.JOBCHANGE_DEBUG and _G.JobChangeManagerSTATE then
+            local S = _G.JobChangeManagerSTATE
+            add_to_chat(207, string.format('  counter=%d, current=%s/%s, target=%s/%s',
+                S.debounce_counter or 0,
+                tostring(S.current_main_job), tostring(S.current_sub_job),
+                tostring(S.target_main_job), tostring(S.target_sub_job)))
+        end
+        return true
+    elseif cmd == 'debugstate' or cmd == 'ds' then
+        -- Show global state for debugging accumulated issues
+        add_to_chat(207, '=== DEBUG STATE ===')
+        add_to_chat(207, string.format('AUTOMOVE_RUNNING: %s', tostring(_G.AUTOMOVE_RUNNING)))
+        add_to_chat(207, string.format('_automove_sequence: %s', tostring(_G._automove_sequence)))
+        if _G.JobChangeManagerSTATE then
+            local S = _G.JobChangeManagerSTATE
+            add_to_chat(207, string.format('JCM counter: %d', S.debounce_counter or 0))
+            local reg_count = 0
+            if S.lockstyle_cancel_registry then
+                for _ in pairs(S.lockstyle_cancel_registry) do reg_count = reg_count + 1 end
+            end
+            add_to_chat(207, string.format('JCM lockstyle_registry: %d entries', reg_count))
+        end
+        if _G.ui_manager_state then
+            local U = _G.ui_manager_state
+            add_to_chat(207, string.format('UI smart_init_id: %d', U.smart_init_id or 0))
+            add_to_chat(207, string.format('UI pending_update_id: %d', U.pending_update_id or 0))
+            add_to_chat(207, string.format('UI update_cancel_id: %d', U.update_cancel_id or 0))
+            add_to_chat(207, string.format('UI consecutive_failures: %d', U.consecutive_failures or 0))
+        end
+        add_to_chat(207, '===================')
         return true
     elseif cmd == 'jamsg' then
         return CommonCommands.handle_jamsg(args[1])
@@ -558,11 +659,13 @@ function CommonCommands.is_common_command(command)
     local cmd = command:lower()
 
     -- Check existing common commands
-    if cmd == 'reload' or cmd == 'checksets' or cmd == 'lockstyle' or cmd == 'ls' or cmd == 'testcolors' or cmd ==
-        'colors' or cmd == 'jump' or cmd == 'waltz' or cmd == 'aoewaltz' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd ==
-        'debugwarp' or cmd == 'debugprecast' or cmd == 'jamsg' or cmd == 'spellmsg' or cmd == 'wsmsg' or cmd == 'info' or
-        cmd == 'testmsg' or cmd == 'msgtest' or cmd == 'msgtests' or cmd == 'commands' or cmd == 'cmds' or cmd == 'help' or
-        cmd == '?' then
+    if cmd == 'reload' or cmd == 'checksets' or cmd == 'lockstyle' or cmd == 'ls' or cmd == 'dressup' or
+        cmd == 'perf' or cmd == 'testcolors' or cmd == 'colors' or cmd == 'jump' or cmd == 'waltz' or
+        cmd == 'aoewaltz' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'debugprecast' or
+        cmd == 'automovedebug' or cmd == 'amd' or cmd == 'debugjobchange' or cmd == 'djc' or
+        cmd == 'debugstate' or cmd == 'ds' or
+        cmd == 'jamsg' or cmd == 'spellmsg' or cmd == 'wsmsg' or cmd == 'info' or cmd == 'testmsg' or
+        cmd == 'msgtest' or cmd == 'msgtests' or cmd == 'commands' or cmd == 'cmds' or cmd == 'help' or cmd == '?' then
         return true
     end
 

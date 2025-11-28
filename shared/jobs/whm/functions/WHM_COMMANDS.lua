@@ -174,6 +174,11 @@ end
 --- @param oldValue string Old value of the state
 --- @return void
 function job_state_change(stateField, newValue, oldValue)
+    -- Skip UI update for Moving state (handled by AutoMove with flag)
+    if stateField == 'Moving' then
+        return
+    end
+
     -- ==========================================================================
     -- COMBAT MODE - WEAPON LOCK (RDM-style)
     -- ==========================================================================

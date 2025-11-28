@@ -126,9 +126,9 @@ function RollTracker.on_roll_cast(roll_name, roll_value)
     -- Check if this exact roll+value was just displayed (within 500ms)
     local current_time = os.clock()
     if _G.cor_last_roll_display.name == roll_name and
-       _G.cor_last_roll_display.value == roll_value and
-       _G.cor_last_roll_display.timestamp and
-       (current_time - _G.cor_last_roll_display.timestamp) < 0.5 then
+        _G.cor_last_roll_display.value == roll_value and
+        _G.cor_last_roll_display.timestamp and
+        (current_time - _G.cor_last_roll_display.timestamp) < 0.5 then
         -- Duplicate detected - skip processing
         return
     end
@@ -519,13 +519,13 @@ function RollTracker.get_phantom_roll_bonus()
         -- Rings
         -- Barataria Ring (ring) = +5
         if (gear.left_ring and gear.left_ring:match('Barataria Ring')) or
-           (gear.right_ring and gear.right_ring:match('Barataria Ring')) then
+            (gear.right_ring and gear.right_ring:match('Barataria Ring')) then
             max_bonus = math.max(max_bonus, 5)
         end
 
         -- Merirosvo Ring (ring) = +3
         if (gear.left_ring and gear.left_ring:match('Merirosvo Ring')) or
-           (gear.right_ring and gear.right_ring:match('Merirosvo Ring')) then
+            (gear.right_ring and gear.right_ring:match('Merirosvo Ring')) then
             max_bonus = math.max(max_bonus, 3)
         end
 
@@ -689,6 +689,40 @@ function RollTracker.clear_all()
     _G.cor_active_rolls = {}
     RollTracker.clear_last_roll()
     RollTracker.clear_natural_eleven()
+end
+
+--- Complete cleanup of ALL RollTracker state (for job changes)
+--- Called from file_unload() when changing from COR to another job
+function RollTracker.cleanup()
+    -- Clear active rolls
+    _G.cor_active_rolls = {}
+
+    -- Clear last roll state
+    _G.cor_last_roll = {
+        name = nil,
+        value = nil,
+        timestamp = nil,
+        affected_count = nil,
+        total_count = nil,
+        missed_names = nil
+    }
+
+    -- Clear display duplicate prevention
+    _G.cor_last_roll_display = {
+        name = nil,
+        value = nil,
+        timestamp = nil
+    }
+
+    -- Clear Natural 11 tracking
+    _G.cor_natural_eleven_active = false
+
+    -- Clear Crooked Cards timestamp
+    _G.cor_crooked_timestamp = nil
+
+    -- Clear party state (managed by party_tracker but cleanup here too)
+    _G.cor_party_state = nil
+    _G.cor_party_jobs = nil
 end
 
 ---============================================================================

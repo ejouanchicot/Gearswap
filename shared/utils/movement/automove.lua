@@ -36,8 +36,16 @@ AutoMove = AutoMove or {}
 
 local config = {
     movement_threshold = 0.3,      -- Distance threshold to detect movement
-    check_interval = 0.08          -- Time in seconds between position checks (FPS-independent)
+    check_interval = 0.08,         -- Time in seconds between position checks (FPS-independent)
+    update_debounce = 0.3,         -- Minimum time between gs c update calls (prevents lag from rapid changes)
+    job_change_cooldown = 2.0      -- Cooldown after job change before sending commands (prevents queue issues)
 }
+
+-- Track last update time for debouncing
+local last_update_time = 0
+
+-- Track when AutoMove was started (for job change cooldown)
+local start_time = 0
 
 ---============================================================================
 --- CALLBACK SYSTEM
@@ -62,6 +70,9 @@ function AutoMove.stop()
     _G.AUTOMOVE_RUNNING = false
     -- Increment sequence to invalidate old coroutines (prevents ghost coroutines)
     _G._automove_sequence = (_G._automove_sequence or 0) + 1
+    if _G.AUTOMOVE_DEBUG then
+        add_to_chat(207, string.format('[AutoMove] STOP called | seq=%d', _G._automove_sequence))
+    end
 end
 
 --- Call all registered callbacks
@@ -206,7 +217,24 @@ local function check_movement()
         if should_move and not moving then
             state.Moving.value = 'true'
             moving = true
-            send_command('gs c update')
+
+            -- COOLDOWN: Skip commands shortly after job change (prevents queue corruption)
+            local now = os.clock()
+            if (now - start_time) < config.job_change_cooldown then
+                if _G.AUTOMOVE_DEBUG then
+                    add_to_chat(207, string.format('[AutoMove] COOLDOWN moving (%.1fs left)', config.job_change_cooldown - (now - start_time)))
+                end
+            -- DEBOUNCE: Only update gear if enough time has passed
+            elseif (now - last_update_time) >= config.update_debounce then
+                last_update_time = now
+                if _G.AUTOMOVE_DEBUG then
+                    add_to_chat(207, '[AutoMove] moving')
+                end
+                -- Schedule command with tiny delay to avoid queue issues after job changes
+                coroutine.schedule(function()
+                    windower.send_command('gs c update')
+                end, 0.05)
+            end
         end
 
         -- Always trigger callbacks while moving (for continuous tracking)
@@ -219,7 +247,24 @@ local function check_movement()
         if moving then
             state.Moving.value = 'false'
             moving = false
-            send_command('gs c update')
+
+            -- COOLDOWN: Skip commands shortly after job change (prevents queue corruption)
+            local now = os.clock()
+            if (now - start_time) < config.job_change_cooldown then
+                if _G.AUTOMOVE_DEBUG then
+                    add_to_chat(207, string.format('[AutoMove] COOLDOWN stopping (%.1fs left)', config.job_change_cooldown - (now - start_time)))
+                end
+            -- DEBOUNCE: Only update gear if enough time has passed
+            elseif (now - last_update_time) >= config.update_debounce then
+                last_update_time = now
+                if _G.AUTOMOVE_DEBUG then
+                    add_to_chat(207, '[AutoMove] stopping')
+                end
+                -- Schedule command with tiny delay to avoid queue issues after job changes
+                coroutine.schedule(function()
+                    windower.send_command('gs c update')
+                end, 0.05)
+            end
 
             -- Trigger callbacks once when stopping
             trigger_callbacks(false, dist, player.status)
@@ -237,15 +282,20 @@ end
 ---============================================================================
 
 --- Start the movement detection loop (called after job change)
---- Safe to call multiple times - will only start if not already running
+--- ALWAYS restarts - previous coroutines are invalidated by sequence counter
 --- MUST be defined AFTER check_movement function
 function AutoMove.start()
-    if not _G.AUTOMOVE_RUNNING then
-        -- Increment sequence to start new generation (invalidates any old coroutines)
-        _G._automove_sequence = (_G._automove_sequence or 0) + 1
-        _G.AUTOMOVE_RUNNING = true
-        coroutine.schedule(check_movement, config.check_interval)
+    -- Always restart (increment sequence to invalidate any old coroutines)
+    _G._automove_sequence = (_G._automove_sequence or 0) + 1
+    _G.AUTOMOVE_RUNNING = true
+    -- Record start time for job change cooldown
+    start_time = os.clock()
+    -- Reinitialize position to prevent false movement detection after reload
+    init_position()
+    if _G.AUTOMOVE_DEBUG then
+        add_to_chat(207, string.format('[AutoMove] START | seq=%d', _G._automove_sequence))
     end
+    coroutine.schedule(check_movement, config.check_interval)
 end
 
 ---============================================================================

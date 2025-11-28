@@ -26,8 +26,15 @@
 
 local Profiler = {}
 
--- Import message system
-local M = require('shared/utils/messages/api/messages')
+-- Import message system (LAZY LOADED for performance)
+-- Only loaded when actually showing profiling messages
+local M = nil
+local function get_M()
+    if not M then
+        M = require('shared/utils/messages/api/messages')
+    end
+    return M
+end
 
 -- State file path (persistent across reloads)
 local STATE_FILE = windower.addon_path .. 'data/.profiler_enabled'
@@ -78,15 +85,15 @@ end
 function Profiler.enable()
     _G.PERFORMANCE_PROFILING.enabled = true
     save_state_enabled()  -- Persist to file
-    M.send('PROFILER', 'enabled')
-    M.send('PROFILER', 'reload_hint')
+    get_M().send('PROFILER', 'enabled')
+    get_M().send('PROFILER', 'reload_hint')
 end
 
 --- Disable profiling
 function Profiler.disable()
     _G.PERFORMANCE_PROFILING.enabled = false
     save_state_disabled()  -- Remove file
-    M.send('PROFILER', 'disabled')
+    get_M().send('PROFILER', 'disabled')
 end
 
 --- Toggle profiling on/off
@@ -108,10 +115,10 @@ end
 --- Show profiling status
 function Profiler.status()
     if _G.PERFORMANCE_PROFILING.enabled then
-        M.send('PROFILER', 'status_enabled')
-        M.send('PROFILER', 'status_hint')
+        get_M().send('PROFILER', 'status_enabled')
+        get_M().send('PROFILER', 'status_hint')
     else
-        M.send('PROFILER', 'status_disabled')
+        get_M().send('PROFILER', 'status_disabled')
     end
 end
 
@@ -205,7 +212,7 @@ function Profiler.mark(label, color)
     }
     local perf_color_code = color_codes[perf_color_name] or color_codes['cyan']
 
-    M.send('PROFILER', 'checkpoint_main', {
+    get_M().send('PROFILER', 'checkpoint_main', {
         context = context,
         label = padded_label,
         time = string.format('%3.0f', elapsed_incremental),  -- Show INCREMENTAL time
@@ -232,12 +239,12 @@ function Profiler.finish(color)
     }
     local perf_color_code = color_codes[perf_color_name] or color_codes['green']
 
-    M.send('PROFILER', 'total', {
+    get_M().send('PROFILER', 'total', {
         context = context,
         time = string.format('%3.0f', elapsed),
         perf_color = perf_color_code
     })
-    M.send('PROFILER', 'separator')
+    get_M().send('PROFILER', 'separator')
 
     -- Reset
     _G.PERFORMANCE_PROFILING.start_time = nil
@@ -281,7 +288,7 @@ function Profiler.create_timer(context)
         }
         local perf_color_code = color_codes[perf_color_name] or color_codes['green']
 
-        M.send('PROFILER', 'checkpoint_job', {
+        get_M().send('PROFILER', 'checkpoint_job', {
             job = context,
             label = padded_label,
             time = string.format('%3.0f', time_to_show),
@@ -308,7 +315,7 @@ function Profiler.profile_call(label, func, ...)
     local results = {func(...)}
     local elapsed = (os.clock() - start) * 1000
 
-    M.send('PROFILER', 'call', {
+    get_M().send('PROFILER', 'call', {
         label = label,
         time = string.format('%.0f', elapsed)
     })
@@ -334,7 +341,7 @@ function Profiler.measure(label, code_block)
     code_block()
     local elapsed = (os.clock() - start) * 1000
 
-    M.send('PROFILER', 'measure', {
+    get_M().send('PROFILER', 'measure', {
         label = label,
         time = string.format('%.0f', elapsed)
     })

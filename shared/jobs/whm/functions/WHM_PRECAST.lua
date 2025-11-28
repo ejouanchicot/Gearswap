@@ -90,6 +90,9 @@ end
 --- @param eventArgs table Event arguments (contains .handled, .cancel flags)
 --- @return void
 function job_precast(spell, action, spellMap, eventArgs)
+    -- Lazy load modules on first action
+    ensure_modules_loaded()
+
     -- ==========================================================================
     -- LAYER 1: DEBUFF GUARD (Highest Priority)
     -- ==========================================================================

@@ -15,7 +15,14 @@
 ---   @date    Created: 2025-10-22 | Updated: 2025-11-13
 ---  ═══════════════════════════════════════════════════════════════════════════
 
-local MessageDualbox = require('shared/utils/messages/formatters/ui/message_dualbox')
+-- MessageDualbox lazy-loaded (only when showing messages, saves ~50-100ms at startup)
+local MessageDualbox = nil
+local function get_MessageDualbox()
+    if not MessageDualbox then
+        MessageDualbox = require('shared/utils/messages/formatters/ui/message_dualbox')
+    end
+    return MessageDualbox
+end
 
 local DualBoxManager = {}
 
@@ -75,17 +82,17 @@ function DualBoxManager.initialize(config)
         if success and loaded_config then
             _G.DualBoxConfig = loaded_config
             if _G.DualBoxConfig.debug then
-                MessageDualbox.show_config_loaded(config_path)
-                MessageDualbox.show_role(_G.DualBoxConfig.role)
+                get_MessageDualbox().show_config_loaded(config_path)
+                get_MessageDualbox().show_role(_G.DualBoxConfig.role)
 
                 -- Display names clearly based on role
                 local this_char = get_this_character()
                 local target_char = get_target_character()
 
                 if _G.DualBoxConfig.role == "alt" then
-                    MessageDualbox.show_alt_info(this_char, target_char)
+                    get_MessageDualbox().show_alt_info(this_char, target_char)
                 else
-                    MessageDualbox.show_main_info(this_char, target_char)
+                    get_MessageDualbox().show_main_info(this_char, target_char)
                 end
             end
         else
@@ -98,7 +105,7 @@ function DualBoxManager.initialize(config)
                 timeout = 30,
                 debug = false
             }
-            MessageDualbox.show_config_not_found(config_path)
+            get_MessageDualbox().show_config_not_found(config_path)
         end
     end
 
@@ -150,7 +157,7 @@ function DualBoxManager.send_job_update()
 
     if not target_name then
         if _G.DualBoxConfig.debug then
-            MessageDualbox.show_target_error()
+            get_MessageDualbox().show_target_error()
         end
         return
     end
@@ -161,7 +168,7 @@ function DualBoxManager.send_job_update()
 
     -- Debug message
     if _G.DualBoxConfig.debug then
-        MessageDualbox.show_job_update_sent(target_name, main_job, sub_job)
+        get_MessageDualbox().show_job_update_sent(target_name, main_job, sub_job)
     end
 end
 
@@ -179,7 +186,7 @@ function DualBoxManager.handle_job_request()
 
     if _G.DualBoxConfig.debug then
         local target_name = get_target_character() or "Unknown"
-        MessageDualbox.show_job_request_received(target_name)
+        get_MessageDualbox().show_job_request_received(target_name)
     end
 
     -- Send current job info
@@ -212,7 +219,7 @@ function DualBoxManager.request_alt_job()
     send_command(command)
 
     if _G.DualBoxConfig.debug then
-        MessageDualbox.show_requesting_job(target_name)
+        get_MessageDualbox().show_requesting_job(target_name)
     end
 end
 
@@ -246,11 +253,11 @@ function DualBoxManager.receive_alt_job(main_job, sub_job)
 
     -- Always show alt job confirmation (info message)
     local alt_name = get_target_character() or "Alt"
-    MessageDualbox.show_job_update_received(alt_name, main_job, sub_job or "NON")
+    get_MessageDualbox().show_job_update_received(alt_name, main_job, sub_job or "NON")
 
     -- Additional debug details (only if debug enabled)
     if _G.DualBoxConfig.debug then
-        MessageDualbox.show_reloading_macrobook()
+        get_MessageDualbox().show_reloading_macrobook()
     end
 
     -- Trigger macrobook reload
@@ -331,35 +338,35 @@ end
 --- Debug command to show current state
 function DualBoxManager.show_status()
     if not _G.DualBoxConfig then
-        MessageDualbox.show_not_initialized()
+        get_MessageDualbox().show_not_initialized()
         return
     end
 
     local config = _G.DualBoxConfig
-    MessageDualbox.show_status_header()
-    MessageDualbox.show_status_role(config.role)
+    get_MessageDualbox().show_status_header()
+    get_MessageDualbox().show_status_role(config.role)
 
     local this_char = get_this_character() or "Unknown"
     local target_char = get_target_character() or "Unknown"
 
     if config.role == "alt" then
-        MessageDualbox.show_status_alt_info(this_char, target_char)
+        get_MessageDualbox().show_status_alt_info(this_char, target_char)
     else
-        MessageDualbox.show_status_main_info(this_char, target_char)
+        get_MessageDualbox().show_status_main_info(this_char, target_char)
     end
 
-    MessageDualbox.show_status_enabled(config.enabled)
+    get_MessageDualbox().show_status_enabled(config.enabled)
 
     if config.role == "main" and _G.AltJobState then
         local online = DualBoxManager.is_alt_online()
-        MessageDualbox.show_status_alt_online(online)
+        get_MessageDualbox().show_status_alt_online(online)
         if online then
-            MessageDualbox.show_status_alt_job(_G.AltJobState.job, _G.AltJobState.subjob)
-            MessageDualbox.show_status_last_update(DualBoxManager.get_time_since_update())
+            get_MessageDualbox().show_status_alt_job(_G.AltJobState.job, _G.AltJobState.subjob)
+            get_MessageDualbox().show_status_last_update(DualBoxManager.get_time_since_update())
         end
     end
 
-    MessageDualbox.show_status_footer()
+    get_MessageDualbox().show_status_footer()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -379,14 +386,14 @@ if not _G.DualBoxManagerInitialized then
             -- If this is ALT role, send initial job update
             if _G.DualBoxConfig and _G.DualBoxConfig.role == "alt" then
                 if _G.DualBoxConfig.debug then
-                    MessageDualbox.show_alt_role_detected()
+                    get_MessageDualbox().show_alt_role_detected()
                 end
                 DualBoxManager.send_job_update()
 
             -- If this is MAIN role, request job from ALT
             elseif _G.DualBoxConfig and _G.DualBoxConfig.role == "main" then
                 if _G.DualBoxConfig.debug then
-                    MessageDualbox.show_main_role_detected()
+                    get_MessageDualbox().show_main_role_detected()
                 end
                 DualBoxManager.request_alt_job()
             end
