@@ -25,6 +25,16 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
+---   RESTORE PERSISTENT DEBUG FLAGS (survives job changes)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+-- Restore debug flags from windower table (persists across GearSwap reloads)
+if windower._gs_debug then
+    _G.UPDATE_DEBUG = windower._gs_debug.UPDATE
+    _G.AUTOMOVE_DEBUG = windower._gs_debug.UPDATE
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES (LAZY LOADING for performance)
 ---  ═══════════════════════════════════════════════════════════════════════════
 

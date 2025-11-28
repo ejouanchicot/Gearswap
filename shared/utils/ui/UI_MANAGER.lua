@@ -916,8 +916,17 @@ end
 --- Update UI when states change with error handling
 --- Only redraws if states have actually changed (prevents unnecessary spam)
 function KeybindUI.update()
+    -- DEBUG: Trace UI update call
+    local debug_start
+    if _G.UPDATE_DEBUG then
+        debug_start = os.clock()
+        add_to_chat(207, string.format('[UPDATE_DEBUG] UI.update START | t=%.3f', debug_start))
+    end
 
     if not _G.keybind_ui_display then
+        if _G.UPDATE_DEBUG then
+            add_to_chat(207, '[UPDATE_DEBUG] UI.update -> safe_init (no display)')
+        end
         KeybindUI.safe_init()
         return
     end
@@ -926,10 +935,16 @@ function KeybindUI.update()
     local current_states = capture_current_states()
     if not have_states_changed(current_states) then
         -- States unchanged, skip redraw
+        if _G.UPDATE_DEBUG then
+            add_to_chat(207, '[UPDATE_DEBUG] UI.update SKIPPED (states unchanged)')
+        end
         return
     end
 
     -- States changed, update display
+    if _G.UPDATE_DEBUG then
+        add_to_chat(207, '[UPDATE_DEBUG] UI.update -> update_display (states changed)')
+    end
     local success, error_msg = pcall(update_display)
     if not success then
         ui_state.consecutive_failures = ui_state.consecutive_failures + 1
@@ -948,6 +963,12 @@ function KeybindUI.update()
         ui_state.last_update = os.clock()
         -- Cache states for next comparison
         ui_state.cached_states = current_states
+    end
+
+    -- DEBUG: Trace UI update end
+    if _G.UPDATE_DEBUG and debug_start then
+        local debug_end = os.clock()
+        add_to_chat(207, string.format('[UPDATE_DEBUG] UI.update DONE | took=%.3fms', (debug_end - debug_start) * 1000))
     end
 end
 

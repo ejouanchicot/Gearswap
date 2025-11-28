@@ -232,6 +232,10 @@ local function check_movement()
                 end
                 -- Schedule command with tiny delay to avoid queue issues after job changes
                 coroutine.schedule(function()
+                    if _G.UPDATE_DEBUG then
+                        _G._update_sent_time = os.clock()
+                        add_to_chat(207, string.format('[UPDATE_DEBUG] 1. AutoMove SEND gs c update | t=%.3f', _G._update_sent_time))
+                    end
                     windower.send_command('gs c update')
                 end, 0.05)
             end
@@ -262,6 +266,10 @@ local function check_movement()
                 end
                 -- Schedule command with tiny delay to avoid queue issues after job changes
                 coroutine.schedule(function()
+                    if _G.UPDATE_DEBUG then
+                        _G._update_sent_time = os.clock()
+                        add_to_chat(207, string.format('[UPDATE_DEBUG] 1. AutoMove SEND gs c update | t=%.3f', _G._update_sent_time))
+                    end
                     windower.send_command('gs c update')
                 end, 0.05)
             end

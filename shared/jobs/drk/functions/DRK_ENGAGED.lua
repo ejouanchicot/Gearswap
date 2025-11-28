@@ -36,7 +36,11 @@ function customize_melee_set(meleeSet)
         return {}
     end
 
-    return SetBuilder.build_engaged_set(meleeSet)
+    -- Get current weapon and hybrid mode
+    local weapon_name = state.MainWeapon and state.MainWeapon.current
+    local hybrid_mode = state.HybridMode and state.HybridMode.value
+
+    return SetBuilder.build_engaged_set(weapon_name, hybrid_mode)
 end
 
 -- Export to global scope (used by Mote-Include via include())

@@ -27,6 +27,13 @@ local SetBuilder = nil
 --- @param meleeSet table The engaged set to customize
 --- @return table Modified engaged set with current weapon, mode, and movement gear
 function customize_melee_set(meleeSet)
+    -- DEBUG: Trace customize_melee_set call
+    local debug_start
+    if _G.UPDATE_DEBUG then
+        debug_start = os.clock()
+        add_to_chat(207, string.format('[UPDATE_DEBUG] 4. customize_melee_set CALLED | t=%.3f', debug_start))
+    end
+
     -- Lazy load SetBuilder on first engage
     if not SetBuilder then
         SetBuilder = require('shared/jobs/pld/functions/logic/set_builder')
@@ -36,7 +43,15 @@ function customize_melee_set(meleeSet)
         return {}
     end
 
-    return SetBuilder.build_engaged_set(meleeSet)
+    local result = SetBuilder.build_engaged_set(meleeSet)
+
+    -- DEBUG: Trace customize_melee_set end
+    if _G.UPDATE_DEBUG and debug_start then
+        local debug_end = os.clock()
+        add_to_chat(207, string.format('[UPDATE_DEBUG] 5. customize_melee_set DONE | took=%.3fms', (debug_end - debug_start) * 1000))
+    end
+
+    return result
 end
 
 -- Export to global scope (used by Mote-Include via include())

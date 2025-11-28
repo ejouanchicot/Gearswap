@@ -599,6 +599,16 @@ function CommonCommands.handle_command(command, job_name, ...)
         end
         add_to_chat(207, '===================')
         return true
+    elseif cmd == 'debugupdate' or cmd == 'du' then
+        -- Toggle UPDATE debug mode (traces full gs c update flow)
+        -- Use windower table for persistence across job changes
+        windower._gs_debug = windower._gs_debug or {}
+        windower._gs_debug.UPDATE = not windower._gs_debug.UPDATE
+        _G.UPDATE_DEBUG = windower._gs_debug.UPDATE
+        _G.AUTOMOVE_DEBUG = windower._gs_debug.UPDATE  -- Also enable AutoMove debug
+        add_to_chat(207, string.format('[UPDATE_DEBUG] %s (traces: AutoMove > job_update > UI.update > customize_set)',
+            _G.UPDATE_DEBUG and 'ON' or 'OFF'))
+        return true
     elseif cmd == 'jamsg' then
         return CommonCommands.handle_jamsg(args[1])
     elseif cmd == 'spellmsg' then
@@ -663,7 +673,7 @@ function CommonCommands.is_common_command(command)
         cmd == 'perf' or cmd == 'testcolors' or cmd == 'colors' or cmd == 'jump' or cmd == 'waltz' or
         cmd == 'aoewaltz' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'debugprecast' or
         cmd == 'automovedebug' or cmd == 'amd' or cmd == 'debugjobchange' or cmd == 'djc' or
-        cmd == 'debugstate' or cmd == 'ds' or
+        cmd == 'debugstate' or cmd == 'ds' or cmd == 'debugupdate' or cmd == 'du' or
         cmd == 'jamsg' or cmd == 'spellmsg' or cmd == 'wsmsg' or cmd == 'info' or cmd == 'testmsg' or
         cmd == 'msgtest' or cmd == 'msgtests' or cmd == 'commands' or cmd == 'cmds' or cmd == 'help' or cmd == '?' then
         return true
