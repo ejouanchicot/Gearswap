@@ -48,7 +48,11 @@
       "Bash(do wc -l \"$f\")",
       "Bash(findstr:*)",
       "WebSearch",
-      "Bash(del \".dressup_enabled\")"
+      "Bash(del \".dressup_enabled\")",
+      "Bash(ren \"D:\\Windower Tetsouo\\addons\\GearSwap\\data\\shared\\jobs\\drk\\functions\\logic\\drk_set_builder.lua\" \"set_builder.lua\")",
+      "Bash(move \"D:\\Windower Tetsouo\\addons\\GearSwap\\data\\shared\\jobs\\drk\\functions\\logic\\drk_set_builder.lua\" \"D:\\Windower Tetsouo\\addons\\GearSwap\\data\\shared\\jobs\\drk\\functions\\logic\\set_builder.lua\")",
+      "Bash(cmd /c ren \"D:\\Windower Tetsouo\\addons\\GearSwap\\data\\shared\\jobs\\drk\\functions\\logic\\drk_set_builder.lua\" \"set_builder.lua\")",
+      "Bash(git reset:*)"
     ],
     "deny": [],
     "ask": [],
