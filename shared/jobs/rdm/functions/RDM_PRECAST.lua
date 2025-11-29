@@ -22,12 +22,10 @@
 
 local MessageFormatter = nil
 local MessagePrecast = nil
-local WS_DB = nil
 local CooldownChecker = nil
 local AbilityHelper = nil
 local PrecastGuard = nil
-local TPBonusHandler = nil
-local WSValidator = nil
+local WSPrecastHandler = nil
 
 local modules_loaded = false
 
@@ -35,28 +33,23 @@ local function ensure_modules_loaded()
     if modules_loaded then return end
 
     -- Load all modules on first action
-    MessageFormatter = require('shared/utils/messages/message_formatter')
-    MessagePrecast = require('shared/utils/messages/formatters/magic/message_precast')
-    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
-    CooldownChecker = require('shared/utils/precast/cooldown_checker')
-    AbilityHelper = require('shared/utils/precast/ability_helper')
+    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    MessageFormatter = mf
 
-    local precast_guard_success
-    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-    if not precast_guard_success then
-        PrecastGuard = nil
-    end
+    local _, mp = pcall(require, 'shared/utils/messages/formatters/magic/message_precast')
+    MessagePrecast = mp
 
-    include('../shared/utils/weaponskill/weaponskill_manager.lua')
+    local _, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    CooldownChecker = cc
 
-    local _
-    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
-    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
+    local _, ah = pcall(require, 'shared/utils/precast/ability_helper')
+    AbilityHelper = ah
 
-    -- Set MessageFormatter in WeaponSkillManager
-    if WeaponSkillManager and MessageFormatter then
-        WeaponSkillManager.MessageFormatter = MessageFormatter
-    end
+    local _, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    PrecastGuard = pg
+
+    local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    WSPrecastHandler = wph
 
     modules_loaded = true
 end
@@ -191,49 +184,6 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 
     ---  ─────────────────────────────────────────────────────────────────────────
-    ---   WEAPONSKILL MESSAGES (universal - all weapon types)
-    ---  ─────────────────────────────────────────────────────────────────────────
-    if spell.type == 'WeaponSkill' then
-        local current_tp = player and player.vitals and player.vitals.tp or 0
-
-        if debug_enabled then
-            MessagePrecast.show_debug_step(3, 'WeaponSkill TP', 'info', 'Current TP: ' .. tostring(current_tp))
-        end
-
-        if WS_DB[spell.english] then
-            -- Check if enough TP before displaying WS message
-            if current_tp >= 1000 then
-                -- Display WS message with description and current TP
-                if debug_enabled then
-                    MessagePrecast.show_debug_step(3, 'TP Check', 'ok', tostring(current_tp) .. ' >= 1000')
-                end
-            else
-                -- Not enough TP - display error
-                MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
-                if debug_enabled then
-                    MessagePrecast.show_debug_step(3, 'TP Check', 'fail', tostring(current_tp) .. ' < 1000')
-                end
-            end
-        end
-
-        -- WeaponSkill validation
-        if debug_enabled then
-            MessagePrecast.show_debug_step(4, 'WS Validator', 'info', 'Checking range/validity...')
-        end
-
-        if WSValidator and not WSValidator.validate(spell, eventArgs) then
-            if debug_enabled then
-                MessagePrecast.show_debug_step(4, 'WS Validator', 'fail', 'Out of range or invalid target')
-            end
-            return  -- WS validation failed, exit immediately
-        end
-
-        if debug_enabled then
-            MessagePrecast.show_debug_step(4, 'WS Validator', 'ok', 'In range, valid target')
-        end
-    end
-
-    ---  ─────────────────────────────────────────────────────────────────────────
     ---   MAGIC PRECAST (Fast Cast)
     ---  ─────────────────────────────────────────────────────────────────────────
     if spell.action_type == 'Magic' then
@@ -265,16 +215,10 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 
     ---  ─────────────────────────────────────────────────────────────────────────
-    ---   TP BONUS HANDLER (Weaponskill TP gear optimization)
+    ---   WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
     ---  ─────────────────────────────────────────────────────────────────────────
-    if spell.type == 'WeaponSkill' and TPBonusHandler then
-        if debug_enabled then
-            MessagePrecast.show_debug_step(6, 'TP Bonus', 'info', 'Calculating optimal TP gear...')
-        end
-        TPBonusHandler.calculate_tp_gear(spell, RDMTPConfig)
-        if debug_enabled then
-            MessagePrecast.show_debug_step(6, 'TP Bonus', 'ok', 'Gear optimization complete')
-        end
+    if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, RDMTPConfig) then
+        return
     end
 
     -- DEBUG: Show completion
@@ -292,13 +236,9 @@ end
 function job_post_precast(spell, action, spellMap, eventArgs)
     local debug_enabled = is_precast_debug_enabled()
 
-    -- Apply TP bonus gear (Moonshade Earring) without message (already displayed in precast)
-    if spell.type == 'WeaponSkill' then
-        local tp_gear = _G.temp_tp_bonus_gear
-        if tp_gear then
-            equip(tp_gear)
-            _G.temp_tp_bonus_gear = nil
-        end
+    ensure_modules_loaded()
+    if WSPrecastHandler then
+        WSPrecastHandler.apply_tp_gear(spell)
     end
 
     -- Spell-specific Fast Cast sets (PRIORITY over generic FC)

@@ -34,12 +34,9 @@
 ---============================================================================
 
 local MessageFormatter = nil
-local WS_DB = nil
-local JA_DB = nil
 local CooldownChecker = nil
 local PrecastGuard = nil
-local TPBonusHandler = nil
-local WSValidator = nil
+local WSPrecastHandler = nil
 local ClimaticManager = nil
 local WSVariantSelector = nil
 local JumpManager = nil
@@ -50,34 +47,23 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    MessageFormatter = require('shared/utils/messages/message_formatter')
-    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
-    JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
-    CooldownChecker = require('shared/utils/precast/cooldown_checker')
+    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    MessageFormatter = mf
 
-    local precast_guard_success
-    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-    if not precast_guard_success then
-        PrecastGuard = nil
-    end
+    local _, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    CooldownChecker = cc
 
-    include('../shared/utils/weaponskill/weaponskill_manager.lua')
-    include('../shared/utils/weaponskill/tp_bonus_calculator.lua')
+    local _, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    PrecastGuard = pg
 
-    local _
-    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
-    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
-
-    if WeaponSkillManager and MessageFormatter then
-        WeaponSkillManager.MessageFormatter = MessageFormatter
-    end
+    local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    WSPrecastHandler = wph
 
     -- DNC logic modules
     ClimaticManager = require('shared/jobs/dnc/functions/logic/climactic_manager')
     WSVariantSelector = require('shared/jobs/dnc/functions/logic/ws_variant_selector')
     JumpManager = require('shared/jobs/dnc/functions/logic/jump_manager')
 
-    -- DNC configuration
     DNCTPConfig = _G.DNCTPConfig or {}
 
     modules_loaded = true
@@ -100,132 +86,67 @@ end
 ---============================================================================
 
 --- Called before any action (WS, JA, spell, etc.)
---- @param spell table Spell/ability data
---- @param action string Action type
---- @param spellMap string Spell mapping
---- @param eventArgs table Event arguments
 function job_precast(spell, action, spellMap, eventArgs)
-    -- Lazy load all dependencies on first precast
     ensure_modules_loaded()
 
-    -- FIRST: Check for blocking debuffs (Amnesia, Silence, etc.)
+    -- FIRST: Debuff guard
     if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
-        return -- Action blocked, exit immediately
+        return
     end
 
-    -- SECOND: Universal cooldown check
-    if spell.action_type == 'Ability' then
-        CooldownChecker.check_ability_cooldown(spell, eventArgs)
-    elseif spell.action_type == 'Magic' and not (spell.english == 'Utsusemi: Ni' or spell.english == 'Utsusemi: Ichi') then
-        CooldownChecker.check_spell_cooldown(spell, eventArgs)
+    -- SECOND: Cooldown check (exclude Utsusemi)
+    if CooldownChecker then
+        if spell.action_type == 'Ability' then
+            CooldownChecker.check_ability_cooldown(spell, eventArgs)
+        elseif spell.action_type == 'Magic' and not (spell.english == 'Utsusemi: Ni' or spell.english == 'Utsusemi: Ichi') then
+            CooldownChecker.check_spell_cooldown(spell, eventArgs)
+        end
     end
 
-    -- Exit if action was cancelled
     if eventArgs.cancel then
         return
     end
 
-    -- THIRD: Samba TP requirement check (350 TP needed)
-    if spell.type == 'Samba' then
+    -- DNC-SPECIFIC: Samba TP requirement (350 TP)
+    if spell.type == 'Samba' and MessageFormatter then
         local current_tp = player and player.tp or 0
-        local required_tp = 350
-
-        if current_tp < required_tp then
-            -- Not enough TP - show error message and cancel
-            MessageFormatter.show_ability_tp_error(spell.name, current_tp, required_tp)
+        if current_tp < 350 then
+            MessageFormatter.show_ability_tp_error(spell.name, current_tp, 350)
             eventArgs.cancel = true
             return
         end
     end
 
-    -- DISABLED: DNC Job Abilities Messages
-    -- Messages now handled by universal ability_message_handler (init_ability_messages.lua)
-    -- This prevents duplicate messages from job-specific + universal system
-    --
-    -- LEGACY CODE (commented out to prevent duplicates):
-    -- if spell.type == 'JobAbility' and spell.english ~= 'Jump' and spell.english ~= 'High Jump' then
-    --     if JA_DB[spell.english] then
-    --         MessageFormatter.show_ja_activated(spell.english, JA_DB[spell.english].description)
-    --     end
-    -- end
-    -- ... (Steps, Sambas, Waltzes, Jigs, Flourishes I/II/III all disabled)
-
-    -- SPECIAL HANDLING: Climactic Flourish timestamp (keep this)
+    -- DNC-SPECIFIC: Climactic Flourish timestamp
     if spell.type == 'Flourish3' and spell.english == 'Climactic Flourish' then
         _G.dnc_climactic_timestamp = os.time()
     end
 
-    -- Jump/High Jump (DRG subjob)
-    -- DISABLED: Messages now handled by universal ability_message_handler
-    -- (prevents duplicates)
-    --
-    -- LEGACY CODE (commented out):
-    -- if spell.type == 'JobAbility' and (spell.english == 'Jump' or spell.english == 'High Jump') then
-    --     if JA_DB[spell.english] then
-    --         MessageFormatter.show_ja_activated(spell.english, JA_DB[spell.english].description)
-    --     end
-    -- end
-
-    -- WeaponSkill validation
-    if spell.type == 'WeaponSkill' and WeaponSkillManager then
-        -- ==========================================================================
-        -- CRITICAL: Check auto-triggers FIRST (before any messages)
-        -- ==========================================================================
-
-        -- Auto-trigger Jump before WS if DNC/DRG and TP < 1000 (via JumpManager)
-        JumpManager.auto_trigger_jump(spell, eventArgs)
-        if eventArgs.cancel then
-            return  -- Jump combo triggered, exit (no WS message)
-        end
-
-        -- Auto-trigger Climactic Flourish before configured WS
-        ClimaticManager.auto_trigger(spell, eventArgs)
-        if eventArgs.cancel then
-            return  -- Climactic triggered, exit (no WS message)
-        end
-
-        -- WS validation (range + validity)
-        if WSValidator and not WSValidator.validate(spell, eventArgs) then
-            return  -- WS validation failed, exit (no WS message)
-        end
-
-        -- DNC-specific TP Bonus gear optimization for weaponskills
-        -- MUST BE DONE BEFORE MESSAGE to calculate final TP correctly
-        if TPBonusHandler then
-            TPBonusHandler.calculate_tp_gear(spell, DNCTPConfig)
-        end
-
-        -- ==========================================================================
-        -- WEAPONSKILL MESSAGES (with description + final TP including Moonshade)
-        -- Display ONLY when WS will ACTUALLY execute (all checks passed)
-        -- ==========================================================================
-        local current_tp = player and player.vitals and player.vitals.tp or 0
-
-        if current_tp >= 1000 then
-            -- Check if WS is in database
-            if WS_DB and WS_DB[spell.english] then
-                -- Reset auto-recast flag (cleanup)
-                _G.DNC_AUTO_WS_RECAST = false
-
-                -- Calculate final TP (includes Moonshade bonus if equipped)
-                local final_tp = current_tp
-
-                -- Try to get final TP with Moonshade bonus
-                if TPBonusCalculator and TPBonusCalculator.get_final_tp then
-                    local weapon_name = player.equipment and player.equipment.main or nil
-                    local sub_weapon = player.equipment and player.equipment.sub or nil
-                    local tp_gear = _G.temp_tp_bonus_gear
-
-                    local success, result = pcall(TPBonusCalculator.get_final_tp, current_tp, tp_gear, DNCTPConfig, weapon_name, buffactive, sub_weapon)
-                    if success then
-                        final_tp = result
-                    end
-                end
+    -- DNC-SPECIFIC: Auto-triggers for WS
+    if spell.type == 'WeaponSkill' then
+        -- Auto-trigger Jump before WS (DRG subjob)
+        if JumpManager then
+            JumpManager.auto_trigger_jump(spell, eventArgs)
+            if eventArgs.cancel then
+                return
             end
-        else
-            -- Not enough TP - display error
-            MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
         end
+
+        -- Auto-trigger Climactic Flourish
+        if ClimaticManager then
+            ClimaticManager.auto_trigger(spell, eventArgs)
+            if eventArgs.cancel then
+                return
+            end
+        end
+
+        -- Reset auto-recast flag
+        _G.DNC_AUTO_WS_RECAST = false
+    end
+
+    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
+    if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, DNCTPConfig) then
+        return
     end
 end
 
@@ -234,22 +155,20 @@ end
 ---============================================================================
 
 --- Apply any final gear adjustments before equipping
---- @param spell table Spell/ability data
---- @param action string Action type
---- @param spellMap string Spell mapping
---- @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
-    if spell.type == 'WeaponSkill' then
-        -- FIRST: Apply WS set variant based on buffs (Fan Dance/Climactic)
-        -- This must happen BEFORE TP bonus gear to avoid overwriting Moonshade
-        WSVariantSelector.apply_variant(spell)
+    ensure_modules_loaded()
 
-        -- SECOND: Apply TP bonus gear (Moonshade Earring) without message (already displayed in precast)
-        local tp_gear = _G.temp_tp_bonus_gear
-        if tp_gear then
-            equip(tp_gear)
-            _G.temp_tp_bonus_gear = nil
+    if spell.type == 'WeaponSkill' then
+        -- DNC-SPECIFIC: Apply WS set variant based on buffs (Fan Dance/Climactic)
+        -- MUST happen BEFORE TP bonus gear to avoid overwriting Moonshade
+        if WSVariantSelector then
+            WSVariantSelector.apply_variant(spell)
         end
+    end
+
+    -- Apply TP gear via unified handler
+    if WSPrecastHandler then
+        WSPrecastHandler.apply_tp_gear(spell)
     end
 end
 

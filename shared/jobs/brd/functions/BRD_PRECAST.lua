@@ -26,12 +26,9 @@ local MessageFormatter = nil
 local MessagePrecast = nil
 local CooldownChecker = nil
 local PrecastGuard = nil
-local TPBonusHandler = nil
-local WSValidator = nil
+local WSPrecastHandler = nil
 local SongRefinement = nil
 local InstrumentLockConfig = nil
-local JA_DB = nil
-local WS_DB = nil
 
 local BRDTPConfig = _G.BRDTPConfig or {}
 
@@ -41,32 +38,27 @@ local function ensure_modules_loaded()
     if modules_loaded then return end
 
     -- Load universal systems
-    MessageFormatter = require('shared/utils/messages/message_formatter')
-    MessagePrecast = require('shared/utils/messages/formatters/magic/message_precast')
-    CooldownChecker = require('shared/utils/precast/cooldown_checker')
+    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    MessageFormatter = mf
 
-    local precast_guard_success
-    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-    if not precast_guard_success then
-        PrecastGuard = nil
-    end
+    local _, mp = pcall(require, 'shared/utils/messages/formatters/magic/message_precast')
+    MessagePrecast = mp
 
-    include('../shared/utils/weaponskill/weaponskill_manager.lua')
-    include('../shared/utils/weaponskill/tp_bonus_calculator.lua')
+    local _, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    CooldownChecker = cc
 
-    local _
-    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
-    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
+    local _, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    PrecastGuard = pg
 
-    if WeaponSkillManager and MessageFormatter then
-        WeaponSkillManager.MessageFormatter = MessageFormatter
-    end
+    local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    WSPrecastHandler = wph
 
     -- Load BRD-specific systems
-    SongRefinement = require('shared/jobs/brd/functions/logic/song_refinement')
-    InstrumentLockConfig = require('shared/jobs/brd/functions/logic/instrument_lock_config')
-    JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
-    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+    local _, sr = pcall(require, 'shared/jobs/brd/functions/logic/song_refinement')
+    SongRefinement = sr
+
+    local _, ilc = pcall(require, 'shared/jobs/brd/functions/logic/instrument_lock_config')
+    InstrumentLockConfig = ilc
 
     modules_loaded = true
 end
@@ -188,48 +180,13 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- if spell.type == 'JobAbility' and JA_DB[spell.english] then
     --     MessageFormatter.show_ja_activated(spell.english, JA_DB[spell.english].description)
     -- end
-    -- WeaponSkill validation
-    if WSValidator and not WSValidator.validate(spell, eventArgs) then
-        return  -- WS validation failed, exit immediately
-    end
-
-    -- BRD-specific TP Bonus gear optimization for weaponskills
-    -- MUST BE DONE BEFORE MESSAGE to calculate final TP correctly
-    if TPBonusHandler then
-        TPBonusHandler.calculate_tp_gear(spell, BRDTPConfig)
-    end
 
     -- ==========================================================================
-    -- WEAPONSKILL MESSAGES (with description + final TP including Moonshade)
+    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
     -- ==========================================================================
-    if spell.type == 'WeaponSkill' then
-        local current_tp = player and player.vitals and player.vitals.tp or 0
-
-        if current_tp >= 1000 then
-            -- Check if WS is in database
-            if WS_DB and WS_DB[spell.english] then
-                -- Calculate final TP (includes Moonshade bonus if equipped)
-                local final_tp = current_tp
-
-                -- Try to get final TP with Moonshade bonus
-                if TPBonusCalculator and TPBonusCalculator.get_final_tp then
-                    local weapon_name = player.equipment and player.equipment.main or nil
-                    local sub_weapon = player.equipment and player.equipment.sub or nil
-                    local tp_gear = _G.temp_tp_bonus_gear
-
-                    local success, result = pcall(TPBonusCalculator.get_final_tp, current_tp, tp_gear, BRDTPConfig, weapon_name, buffactive, sub_weapon)
-                    if success then
-                        final_tp = result
-                    end
-                end
-
-                    end
-        else
-            -- Not enough TP - display error
-            MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
-        end
+    if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, BRDTPConfig) then
+        return
     end
-
 
     -- CRITICAL: Instrument Lock Protection System
     -- Some songs (Honor March, Aria of Passion) require specific instruments
@@ -256,13 +213,9 @@ end
 --- @param spellMap string Spell mapping
 --- @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
-    -- Apply TP bonus gear (Moonshade) without message (already displayed in precast with final TP)
-    if spell.type == 'WeaponSkill' then
-        local tp_gear = _G.temp_tp_bonus_gear
-        if tp_gear then
-            equip(tp_gear)
-            _G.temp_tp_bonus_gear = nil
-        end
+    ensure_modules_loaded()
+    if WSPrecastHandler then
+        WSPrecastHandler.apply_tp_gear(spell)
     end
 
     -- Nightingale active - even faster cast time for songs

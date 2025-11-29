@@ -32,44 +32,27 @@
 local MessageFormatter = nil
 local CooldownChecker = nil
 local PrecastGuard = nil
-local TPBonusHandler = nil
-local WSValidator = nil
+local WSPrecastHandler = nil
 local CORTPConfig = nil
-local JA_DB = nil
-local WS_DB = nil
 
 local modules_loaded = false
 
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    MessageFormatter = require('shared/utils/messages/message_formatter')
-    CooldownChecker = require('shared/utils/precast/cooldown_checker')
+    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    MessageFormatter = mf
 
-    local precast_guard_success
-    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-    if not precast_guard_success then
-        PrecastGuard = nil
-    end
+    local _, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    CooldownChecker = cc
 
-    local _
-    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
-    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
+    local _, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    PrecastGuard = pg
 
-    include('../shared/utils/weaponskill/weaponskill_manager.lua')
-    include('../shared/utils/weaponskill/tp_bonus_calculator.lua')
-
-    if WeaponSkillManager and MessageFormatter then
-        WeaponSkillManager.MessageFormatter = MessageFormatter
-    end
-
-    if TPBonusCalculator and MessageFormatter then
-        TPBonusCalculator.MessageFormatter = MessageFormatter
-    end
+    local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    WSPrecastHandler = wph
 
     CORTPConfig = _G.CORTPConfig or {}
-    JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
-    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
 
     modules_loaded = true
 end
@@ -110,11 +93,6 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- WeaponSkill validation
-    if WSValidator and not WSValidator.validate(spell, eventArgs) then
-        return  -- WS validation failed, exit immediately
-    end
-
     -- COR-specific precast gear logic
 
     -- ==========================================================================
@@ -134,31 +112,6 @@ function job_precast(spell, action, spellMap, eventArgs)
     if spell.type == 'JobAbility' and spell.english == 'Crooked Cards' then
         _G.cor_crooked_timestamp = os.time()
     end
-    -- ==========================================================================
-    -- WEAPONSKILL MESSAGES (universal - all weapon types)
-    -- ==========================================================================
-    if spell.type == 'WeaponSkill' and WS_DB[spell.english] then            -- Check if enough TP before displaying WS message
-            local current_tp = player and player.vitals and player.vitals.tp or 0
-            if current_tp >= 1000 then
-                -- Display WS message with current TP
-                MessageFormatter.show_ws_activated(spell.english, WS_DB[spell.english].description, nil)  -- TP displayed by TPBonusHandler after gear equip
-            else
-                -- Not enough TP - display error
-                MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
-            end
-    end
-
-
-    -- DISABLED: Quick Draw (CorsairShot) Messages
-    -- Messages now handled by universal ability_message_handler (init_ability_messages.lua)
-    --
-    -- LEGACY CODE (commented out to prevent duplicates):
-    -- if spell.type == 'CorsairShot' then
-    --     local shot_element = spell.english:match("(%w+) Shot")
-    --     if shot_element then
-    --         MessageFormatter.show_ja_activated(spell.english, shot_element .. " elemental damage")
-    --     end
-    -- end
 
     -- Phantom Roll precast (tell Mote to use CorsairRoll sets)
     if spell.type == 'CorsairRoll' then
@@ -195,41 +148,11 @@ function job_precast(spell, action, spellMap, eventArgs)
         classes.CustomClass = 'RA'
     end
 
-    -- COR-specific TP Bonus gear optimization for weaponskills
-    -- MUST BE DONE BEFORE MESSAGE to calculate final TP correctly
-    if TPBonusHandler then
-        TPBonusHandler.calculate_tp_gear(spell, CORTPConfig)
-    end
-
     -- ==========================================================================
-    -- WEAPONSKILL MESSAGES (with description + final TP including Moonshade)
+    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
     -- ==========================================================================
-    if spell.type == 'WeaponSkill' then
-        local current_tp = player and player.vitals and player.vitals.tp or 0
-
-        if current_tp >= 1000 then
-            -- Check if WS is in database
-            if WS_DB and WS_DB[spell.english] then
-                -- Calculate final TP (includes Moonshade bonus if equipped)
-                local final_tp = current_tp
-
-                -- Try to get final TP with Moonshade bonus
-                if TPBonusCalculator and TPBonusCalculator.get_final_tp then
-                    local weapon_name = player.equipment and player.equipment.main or nil
-                    local sub_weapon = player.equipment and player.equipment.sub or nil
-                    local tp_gear = _G.temp_tp_bonus_gear
-
-                    local success, result = pcall(TPBonusCalculator.get_final_tp, current_tp, tp_gear, CORTPConfig, weapon_name, buffactive, sub_weapon)
-                    if success then
-                        final_tp = result
-                    end
-                end
-
-                    end
-        else
-            -- Not enough TP - display error
-            MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
-        end
+    if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, CORTPConfig) then
+        return
     end
 end
 
@@ -240,6 +163,11 @@ end
 --- @param eventArgs table Event arguments
 --- @return void
 function job_post_precast(spell, action, spellMap, eventArgs)
+    ensure_modules_loaded()
+    if WSPrecastHandler then
+        WSPrecastHandler.apply_tp_gear(spell)
+    end
+
     -- Phantom Roll: Adjust ring based on Luzaf Ring state
     if spell.type == 'CorsairRoll' then
         if state and state.LuzafRing then
@@ -250,15 +178,6 @@ function job_post_precast(spell, action, spellMap, eventArgs)
                 -- Use Gurebu's Ring instead (8y range)
                 equip({left_ring = "Gurebu's Ring"})
             end
-        end
-    end
-
-    -- Apply TP bonus gear (Moonshade Earring) without message (already displayed in precast)
-    if spell.type == 'WeaponSkill' then
-        local tp_gear = _G.temp_tp_bonus_gear
-        if tp_gear then
-            equip(tp_gear)
-            _G.temp_tp_bonus_gear = nil
         end
     end
 end

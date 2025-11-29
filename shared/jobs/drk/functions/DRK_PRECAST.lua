@@ -13,62 +13,41 @@
 ---
 --- @file    DRK_PRECAST.lua
 --- @author  Tetsouo
---- @version 1.0.0
---- @date    Created: 2025-10-23
---- @requires Tetsouo architecture, MessageFormatter, CooldownChecker
+--- @version 2.0 - Refactored to use WSPrecastHandler
+--- @date    Created: 2025-10-23 | Updated: 2025-11-29
+--- @requires Tetsouo architecture, WSPrecastHandler
 ---============================================================================
 
 ---============================================================================
 --- DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---============================================================================
 
-local MessageFormatter = nil
 local CooldownChecker = nil
-local AbilityHelper = nil
 local PrecastGuard = nil
-local TPBonusHandler = nil
-local WSValidator = nil
+local WSPrecastHandler = nil
 local DRKTPConfig = nil
-local JA_DB = nil
-local WS_DB = nil
 
 local modules_loaded = false
 
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    MessageFormatter = require('shared/utils/messages/message_formatter')
-    CooldownChecker = require('shared/utils/precast/cooldown_checker')
-    AbilityHelper = require('shared/utils/precast/ability_helper')
+    local _, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    CooldownChecker = cc
 
-    local precast_guard_success
-    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-    if not precast_guard_success then
-        PrecastGuard = nil
-    end
+    local _, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    PrecastGuard = pg
 
-    local _
-    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
-    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
-
-    include('../shared/utils/weaponskill/weaponskill_manager.lua')
-
-    if WeaponSkillManager and MessageFormatter then
-        WeaponSkillManager.MessageFormatter = MessageFormatter
-    end
+    local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    WSPrecastHandler = wph
 
     DRKTPConfig = _G.DRKTPConfig or {}
-    JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
-    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
 
     modules_loaded = true
 end
 
 ---============================================================================
 --- COOLDOWN EXCLUSIONS
----============================================================================
---- Abilities that should NEVER be checked for cooldown
---- Player manages these charges/cooldowns manually
 ---============================================================================
 
 local cooldown_exclusions = {
@@ -79,114 +58,28 @@ local cooldown_exclusions = {
 --- PRECAST HOOK
 ---============================================================================
 
---- Called before any action (WS, JA, spell, etc.)
---- Processing order (CRITICAL - do not reorder):
----   1. Debuff guard (PrecastGuard) - blocks if silenced/amnesia/stunned
----   2. Cooldown check (CooldownChecker) - validates ability/spell ready
----   3. WS validation (WeaponSkillManager) - range check + validation
----   4. TP bonus calculation (TPBonusCalculator) - optimize WS gear
----   5. DRK-specific gear (Fast Cast, JA gear)
----
---- @param spell     table  Spell/ability data
---- @param action    string Action type (not used)
---- @param spellMap  string Spell mapping (not used)
---- @param eventArgs table  Event arguments (cancel flag, etc.)
---- @return void
 function job_precast(spell, action, spellMap, eventArgs)
-    -- Lazy load all dependencies on first precast
     ensure_modules_loaded()
 
-    -- ==========================================================================
-    -- STEP 1: DEBUFF BLOCKING
-    -- ==========================================================================
-    -- Check for blocking debuffs (Amnesia, Silence, Stun, etc.)
-    -- Prevents unnecessary equipment swaps when actions are blocked
+    -- STEP 1: Debuff guard
     if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
-        return -- Action blocked by debuff, exit immediately
+        return
     end
 
-    -- ==========================================================================
-    -- STEP 2: COOLDOWN VALIDATION
-    -- ==========================================================================
-    -- Universal cooldown check - works for ALL abilities and spells
-    -- EXCLUDES abilities in cooldown_exclusions table
+    -- STEP 2: Cooldown check (with exclusions)
     local is_excluded = cooldown_exclusions[spell.name]
-
-    if not is_excluded then
+    if not is_excluded and CooldownChecker then
         if spell.action_type == 'Ability' then
             CooldownChecker.check_ability_cooldown(spell, eventArgs)
         elseif spell.action_type == 'Magic' then
             CooldownChecker.check_spell_cooldown(spell, eventArgs)
         end
-
-        -- Exit if action cancelled due to cooldown
         if eventArgs.cancel then
             return
         end
     end
 
-    -- ==========================================================================
-    -- JOB ABILITIES MESSAGES (universal - supports main + subjob)
-    -- DISABLED: DRK Job Abilities Messages
-    -- Messages now handled by universal ability_message_handler (init_ability_messages.lua)
-    -- This prevents duplicate messages from job-specific + universal system
-    --
-    -- LEGACY CODE (commented out to prevent duplicates):
-    -- if spell.type == 'JobAbility' and JA_DB[spell.english] then
-    --     MessageFormatter.show_ja_activated(spell.english, JA_DB[spell.english].description)
-    -- end
-
-    -- ==========================================================================
-    -- STEP 3: WEAPONSKILL VALIDATION
-    -- ==========================================================================
-    if WSValidator and not WSValidator.validate(spell, eventArgs) then
-        return  -- WS validation failed, exit immediately
-    end
-
-    -- ==========================================================================
-    -- STEP 4: TP BONUS OPTIMIZATION (Universal via TPBonusHandler)
-    -- ==========================================================================
-    -- MUST BE DONE BEFORE MESSAGE to calculate final TP correctly
-    if TPBonusHandler then
-        TPBonusHandler.calculate_tp_gear(spell, DRKTPConfig)
-    end
-
-    -- ==========================================================================
-    -- WEAPONSKILL MESSAGES (with description + final TP including Moonshade)
-    -- ==========================================================================
-    if spell.type == 'WeaponSkill' then
-        local current_tp = player and player.vitals and player.vitals.tp or 0
-
-        if current_tp >= 1000 then
-            -- Check if WS is in database
-            if WS_DB and WS_DB[spell.english] then
-                -- Calculate final TP (includes Moonshade bonus if equipped)
-                local final_tp = current_tp
-
-                -- Try to get final TP with Moonshade bonus
-                if TPBonusCalculator and TPBonusCalculator.get_final_tp then
-                    local weapon_name = player.equipment and player.equipment.main or nil
-                    local sub_weapon = player.equipment and player.equipment.sub or nil
-                    local tp_gear = _G.temp_tp_bonus_gear
-
-                    local success, result = pcall(TPBonusCalculator.get_final_tp, current_tp, tp_gear, DRKTPConfig, weapon_name, buffactive, sub_weapon)
-                    if success then
-                        final_tp = result
-                    end
-                end
-
-                    end
-        else
-            -- Not enough TP - display error
-            MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
-        end
-    end
-
-    -- ==========================================================================
-    -- STEP 5: BUFF PENDING FLAGS (Instant Detection) - Dark Seal & Nether Void
-    -- ==========================================================================
-    -- Set pending flags when using Dark Seal/Nether Void (before buff appears in buffactive)
-    -- This allows instant detection for engaged gear swaps even with network lag
+    -- DRK-SPECIFIC: Buff pending flags (Dark Seal, Nether Void)
     if spell.type == 'JobAbility' then
         if spell.name == 'Dark Seal' then
             _G.drk_dark_seal_pending = true
@@ -195,25 +88,26 @@ function job_precast(spell, action, spellMap, eventArgs)
         end
     end
 
-    -- ==========================================================================
-    -- STEP 6: DRK-SPECIFIC PRECAST GEAR
-    -- ==========================================================================
+    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
+    if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, DRKTPConfig) then
+        return
+    end
 
-    -- Job Abilities
+    -- DRK-SPECIFIC PRECAST GEAR
     if spell.type == 'JobAbility' then
-        if spell.name == 'Last Resort' then
+        if spell.name == 'Last Resort' and sets.precast and sets.precast.JA and sets.precast.JA['Last Resort'] then
             equip(sets.precast.JA['Last Resort'])
-        elseif spell.name == 'Weapon Bash' then
+        elseif spell.name == 'Weapon Bash' and sets.precast and sets.precast.JA and sets.precast.JA['Weapon Bash'] then
             equip(sets.precast.JA['Weapon Bash'])
-        elseif spell.name == 'Souleater' then
+        elseif spell.name == 'Souleater' and sets.precast and sets.precast.JA and sets.precast.JA['Souleater'] then
             equip(sets.precast.JA['Souleater'])
-        elseif spell.name == 'Arcane Circle' then
+        elseif spell.name == 'Arcane Circle' and sets.precast and sets.precast.JA and sets.precast.JA['Arcane Circle'] then
             equip(sets.precast.JA['Arcane Circle'])
         end
     end
 
     -- Fast Cast for Magic
-    if spell.action_type == 'Magic' then
+    if spell.action_type == 'Magic' and sets.precast and sets.precast.FC then
         equip(sets.precast.FC)
     end
 end
@@ -222,22 +116,10 @@ end
 --- POST-PRECAST HOOK
 ---============================================================================
 
---- Apply TP bonus gear and display final TP (Universal via TPBonusHandler)
---- Called after precast set selection, before gear is equipped
----
---- @param spell     table  Spell/ability data
---- @param action    string Action type (not used)
---- @param spellMap  string Spell mapping (not used)
---- @param eventArgs table  Event arguments (not used)
---- @return void
 function job_post_precast(spell, action, spellMap, eventArgs)
-    -- Apply TP bonus gear (Moonshade Earring) without message (already displayed in precast)
-    if spell.type == 'WeaponSkill' then
-        local tp_gear = _G.temp_tp_bonus_gear
-        if tp_gear then
-            equip(tp_gear)
-            _G.temp_tp_bonus_gear = nil
-        end
+    ensure_modules_loaded()
+    if WSPrecastHandler then
+        WSPrecastHandler.apply_tp_gear(spell)
     end
 end
 
@@ -245,11 +127,9 @@ end
 --- MODULE EXPORT
 ---============================================================================
 
--- Export globally for GearSwap
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
 
--- Export as module (for future require() usage)
 return {
     job_precast = job_precast,
     job_post_precast = job_post_precast

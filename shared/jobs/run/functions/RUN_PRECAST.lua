@@ -26,46 +26,34 @@
 --- DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---============================================================================
 
-local MessageFormatter = nil
 local MessagePrecast = nil
 local CooldownChecker = nil
 local AbilityHelper = nil
 local PrecastGuard = nil
-local TPBonusHandler = nil
-local WSValidator = nil
+local WSPrecastHandler = nil
 local RUNTPConfig = nil
-local JA_DB = nil
-local WS_DB = nil
 
 local modules_loaded = false
 
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    MessageFormatter = require('shared/utils/messages/message_formatter')
-    MessagePrecast = require('shared/utils/messages/formatters/magic/message_precast')
-    CooldownChecker = require('shared/utils/precast/cooldown_checker')
-    AbilityHelper = require('shared/utils/precast/ability_helper')
+    local _, mp = pcall(require, 'shared/utils/messages/formatters/magic/message_precast')
+    MessagePrecast = mp
 
-    local precast_guard_success
-    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-    if not precast_guard_success then
-        PrecastGuard = nil
-    end
+    local _, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    CooldownChecker = cc
 
-    local _
-    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
-    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
+    local _, ah = pcall(require, 'shared/utils/precast/ability_helper')
+    AbilityHelper = ah
 
-    include('../shared/utils/weaponskill/weaponskill_manager.lua')
+    local _, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    PrecastGuard = pg
 
-    if WeaponSkillManager and MessageFormatter then
-        WeaponSkillManager.MessageFormatter = MessageFormatter
-    end
+    local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    WSPrecastHandler = wph
 
     RUNTPConfig = _G.RUNTPConfig or {}
-    JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
-    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
 
     modules_loaded = true
 end
@@ -132,9 +120,8 @@ local auto_abilities = {
 ---   1. Debuff guard (PrecastGuard) - blocks if silenced/amnesia/stunned
 ---   2. Cooldown check (CooldownChecker) - validates ability/spell ready
 ---   3. Auto-abilities (AbilityHelper) - none for RUN
----   4. WS validation (WeaponSkillManager) - range check + validation
----   5. TP bonus calculation (TPBonusCalculator) - optimize WS gear
----   6. RUN-specific gear (Fast Cast for cures/Flash)
+---   4. WS validation + TP bonus (WSPrecastHandler) - unified handling
+---   5. RUN-specific gear (Fast Cast for cures/Flash)
 ---
 --- @param spell     table  Spell/ability data
 --- @param action    string Action type (not used)
@@ -142,6 +129,7 @@ local auto_abilities = {
 --- @param eventArgs table  Event arguments (cancel flag, etc.)
 --- @return void
 function job_precast(spell, action, spellMap, eventArgs)
+    ensure_modules_loaded()
 
     -- ==========================================================================
     -- STEP 1: DEBUFF BLOCKING
@@ -191,53 +179,14 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 
     -- ==========================================================================
-    -- STEP 4: WEAPONSKILL VALIDATION
+    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
     -- ==========================================================================
-    if WSValidator and not WSValidator.validate(spell, eventArgs) then
-        return  -- WS validation failed, exit immediately
+    if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, RUNTPConfig) then
+        return
     end
 
     -- ==========================================================================
-    -- STEP 5: TP BONUS OPTIMIZATION (Universal via TPBonusHandler)
-    -- ==========================================================================
-    -- MUST BE DONE BEFORE MESSAGE to calculate final TP correctly
-    if TPBonusHandler then
-        TPBonusHandler.calculate_tp_gear(spell, RUNTPConfig)
-    end
-
-    -- ==========================================================================
-    -- WEAPONSKILL MESSAGES (with description + final TP including Moonshade)
-    -- ==========================================================================
-    if spell.type == 'WeaponSkill' then
-        local current_tp = player and player.vitals and player.vitals.tp or 0
-
-        if current_tp >= 1000 then
-            -- Check if WS is in database
-            if WS_DB and WS_DB[spell.english] then
-                -- Calculate final TP (includes Moonshade bonus if equipped)
-                local final_tp = current_tp
-
-                -- Try to get final TP with Moonshade bonus
-                if TPBonusCalculator and TPBonusCalculator.get_final_tp then
-                    local weapon_name = player.equipment and player.equipment.main or nil
-                    local sub_weapon = player.equipment and player.equipment.sub or nil
-                    local tp_gear = _G.temp_tp_bonus_gear
-
-                    local success, result = pcall(TPBonusCalculator.get_final_tp, current_tp, tp_gear, RUNTPConfig, weapon_name, buffactive, sub_weapon)
-                    if success then
-                        final_tp = result
-                    end
-                end
-
-                    end
-        else
-            -- Not enough TP - display error
-            MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
-        end
-    end
-
-    -- ==========================================================================
-    -- STEP 6: RUN-SPECIFIC PRECAST GEAR
+    -- RUN-SPECIFIC PRECAST GEAR
     -- ==========================================================================
     -- Fast Cast is handled automatically by Mote-Include (sets.precast.FC)
     -- No job-specific logic needed here
@@ -256,13 +205,9 @@ end
 --- @param eventArgs table  Event arguments (not used)
 --- @return void
 function job_post_precast(spell, action, spellMap, eventArgs)
-    -- Apply TP bonus gear (Moonshade Earring) without message (already displayed in precast)
-    if spell.type == 'WeaponSkill' then
-        local tp_gear = _G.temp_tp_bonus_gear
-        if tp_gear then
-            equip(tp_gear)
-            _G.temp_tp_bonus_gear = nil
-        end
+    ensure_modules_loaded()
+    if WSPrecastHandler then
+        WSPrecastHandler.apply_tp_gear(spell)
     end
 
     -- ==========================================================================

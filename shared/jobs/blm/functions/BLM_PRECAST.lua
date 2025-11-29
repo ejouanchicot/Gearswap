@@ -23,14 +23,10 @@
 --- DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---============================================================================
 
-local MessageFormatter = nil
 local CooldownChecker = nil
 local PrecastGuard = nil
-local TPBonusHandler = nil
-local WSValidator = nil
+local WSPrecastHandler = nil
 local BLMTPConfig = nil
-local JA_DB = nil
-local WS_DB = nil
 local BLM_SPELL_FILTERS = nil
 
 local modules_loaded = false
@@ -38,66 +34,22 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    -- PROFILING: Measure lazy-load time on first action
-    local start_time = os.clock()
-    local last_time = start_time
-    local profiling_enabled = _G.PERFORMANCE_PROFILING and _G.PERFORMANCE_PROFILING.enabled
+    local _, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    CooldownChecker = cc
 
-    local function mark(name)
-        if profiling_enabled then
-            local now = os.clock()
-            local elapsed = (now - last_time) * 1000
-            add_to_chat(160, string.format('    [PRECAST] %s: %.0fms', name, elapsed))
-            last_time = now
-        end
-    end
+    local _, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    PrecastGuard = pg
 
-    MessageFormatter = require('shared/utils/messages/message_formatter')
-    mark('MessageFormatter')
-
-    CooldownChecker = require('shared/utils/precast/cooldown_checker')
-    mark('CooldownChecker')
-
-    local precast_guard_success
-    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-    if not precast_guard_success then
-        PrecastGuard = nil
-    end
-    mark('PrecastGuard')
-
-    -- Get WeaponSkill managers from global scope (already loaded by Mote-Include)
-    WeaponSkillManager = _G.WeaponSkillManager
-    TPBonusCalculator = _G.TPBonusCalculator
-
-    local _
-    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
-    mark('TPBonusHandler')
-
-    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
-    mark('WSValidator')
-
-    if WeaponSkillManager and MessageFormatter then
-        WeaponSkillManager.MessageFormatter = MessageFormatter
-    end
+    local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    WSPrecastHandler = wph
 
     BLMTPConfig = _G.BLMTPConfig or {}
-    JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
-    mark('JA_DATABASE')
-
-    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
-    mark('WS_DATABASE')
 
     -- Load BLM spell filters (cached by Lua after first require)
-    BLM_SPELL_FILTERS = require('shared/data/spells/BLM_SPELL_FILTERS')
-    mark('BLM_SPELL_FILTERS')
+    local _, filters = pcall(require, 'shared/data/spells/BLM_SPELL_FILTERS')
+    BLM_SPELL_FILTERS = filters
 
     modules_loaded = true
-
-    -- PROFILING: Show total lazy-load time
-    if profiling_enabled then
-        local elapsed = (os.clock() - start_time) * 1000
-        add_to_chat(158, string.format('[PERF:LAZY] BLM_PRECAST TOTAL: %.0fms', elapsed))
-    end
 end
 
 -- NOTE: BLM logic functions are loaded globally via blm_functions.lua:
@@ -199,56 +151,18 @@ function job_precast(spell, action, spellMap, eventArgs)
         -- Special precast gear with high HP
     end
 
-    -- WeaponSkill validation
-    if WSValidator and not WSValidator.validate(spell, eventArgs) then
-        return  -- WS validation failed, exit immediately
-    end
-
-    -- BLM-specific TP Bonus gear optimization for weaponskills
-    -- MUST BE DONE BEFORE MESSAGE to calculate final TP correctly
-    if TPBonusHandler then
-        TPBonusHandler.calculate_tp_gear(spell, BLMTPConfig)
-    end
-
     -- ==========================================================================
-    -- WEAPONSKILL MESSAGES (with description + final TP including Moonshade)
+    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
     -- ==========================================================================
-    if spell.type == 'WeaponSkill' then
-        local current_tp = player and player.vitals and player.vitals.tp or 0
-
-        if current_tp >= 1000 then
-            -- Check if WS is in database
-            if WS_DB and WS_DB[spell.english] then
-                -- Calculate final TP (includes Moonshade bonus if equipped)
-                local final_tp = current_tp
-
-                -- Try to get final TP with Moonshade bonus
-                if TPBonusCalculator and TPBonusCalculator.get_final_tp then
-                    local weapon_name = player.equipment and player.equipment.main or nil
-                    local sub_weapon = player.equipment and player.equipment.sub or nil
-                    local tp_gear = _G.temp_tp_bonus_gear
-
-                    local success, result = pcall(TPBonusCalculator.get_final_tp, current_tp, tp_gear, BLMTPConfig, weapon_name, buffactive, sub_weapon)
-                    if success then
-                        final_tp = result
-                    end
-                end
-            end
-        else
-            -- Not enough TP - display error
-            MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
-        end
+    if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, BLMTPConfig) then
+        return
     end
 end
 
 function job_post_precast(spell, action, spellMap, eventArgs)
-    -- Apply TP bonus gear (Moonshade Earring) without message (already displayed in precast)
-    if spell.type == 'WeaponSkill' then
-        local tp_gear = _G.temp_tp_bonus_gear
-        if tp_gear then
-            equip(tp_gear)
-            _G.temp_tp_bonus_gear = nil
-        end
+    ensure_modules_loaded()
+    if WSPrecastHandler then
+        WSPrecastHandler.apply_tp_gear(spell)
     end
 end
 

@@ -48,9 +48,7 @@ local MessageFormatter = nil
 local MessagePrecast = nil  -- Debug formatter
 local CooldownChecker = nil
 local PrecastGuard = nil
-local WSValidator = nil
-local TPBonusHandler = nil
-local WS_DB = nil
+local WSPrecastHandler = nil
 local BSTTPConfig = nil
 local ReadyMoveCategorizer = nil
 
@@ -59,35 +57,26 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    MessageFormatter = require('shared/utils/messages/message_formatter')
-    MessagePrecast = require('shared/utils/messages/formatters/magic/message_precast')
-    CooldownChecker = require('shared/utils/precast/cooldown_checker')
+    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    MessageFormatter = mf
 
-    local precast_guard_success
-    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-    if not precast_guard_success then
-        PrecastGuard = nil
-    end
+    local _, mp = pcall(require, 'shared/utils/messages/formatters/magic/message_precast')
+    MessagePrecast = mp
 
-    local _
-    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
-    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+    local _, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    CooldownChecker = cc
 
-    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+    local _, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    PrecastGuard = pg
+
+    local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    WSPrecastHandler = wph
+
     BSTTPConfig = _G.BSTTPConfig or {}
 
-    include('../shared/utils/weaponskill/weaponskill_manager.lua')
-
-    if WeaponSkillManager and MessageFormatter then
-        WeaponSkillManager.MessageFormatter = MessageFormatter
-    end
-
     -- BST specific
-    local success_rmc
-    success_rmc, ReadyMoveCategorizer = pcall(require, 'shared/jobs/bst/functions/logic/ready_move_categorizer')
-    if not success_rmc then
-        ReadyMoveCategorizer = nil
-    end
+    local _, rmc = pcall(require, 'shared/jobs/bst/functions/logic/ready_move_categorizer')
+    ReadyMoveCategorizer = rmc
 
     modules_loaded = true
 end
@@ -174,49 +163,10 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- end
 
     -- ==========================================================================
-    -- STEP 3: WEAPONSKILL VALIDATION
+    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
     -- ==========================================================================
-    if WSValidator and not WSValidator.validate(spell, eventArgs) then
-        return -- WS validation failed, exit immediately
-    end
-
-    -- ==========================================================================
-    -- STEP 3.5: TP BONUS GEAR OPTIMIZATION (Universal via TPBonusHandler)
-    -- ==========================================================================
-    -- MUST BE DONE BEFORE MESSAGE to calculate final TP correctly
-    if TPBonusHandler then
-        TPBonusHandler.calculate_tp_gear(spell, BSTTPConfig)
-    end
-
-    -- ==========================================================================
-    -- WEAPONSKILL MESSAGES (with description + final TP including Moonshade)
-    -- ==========================================================================
-    if spell.type == 'WeaponSkill' then
-        local current_tp = player and player.vitals and player.vitals.tp or 0
-
-        if current_tp >= 1000 then
-            -- Check if WS is in database
-            if WS_DB and WS_DB[spell.english] then
-                -- Calculate final TP (includes Moonshade bonus if equipped)
-                local final_tp = current_tp
-
-                -- Try to get final TP with Moonshade bonus
-                if TPBonusCalculator and TPBonusCalculator.get_final_tp then
-                    local weapon_name = player.equipment and player.equipment.main or nil
-                    local sub_weapon = player.equipment and player.equipment.sub or nil
-                    local tp_gear = _G.temp_tp_bonus_gear
-
-                    local success, result = pcall(TPBonusCalculator.get_final_tp, current_tp, tp_gear, BSTTPConfig, weapon_name, buffactive, sub_weapon)
-                    if success then
-                        final_tp = result
-                    end
-                end
-
-                    end
-        else
-            -- Not enough TP - display error
-            MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
-        end
+    if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, BSTTPConfig) then
+        return
     end
 
     -- ==========================================================================
@@ -286,15 +236,9 @@ end
 --- @param eventArgs table Event arguments (not used)
 --- @return void
 function job_post_precast(spell, action, spellMap, eventArgs)
-    -- ==========================================================================
-    -- TP BONUS GEAR APPLICATION (without message, already displayed in precast)
-    -- ==========================================================================
-    if spell.type == 'WeaponSkill' then
-        local tp_gear = _G.temp_tp_bonus_gear
-        if tp_gear then
-            equip(tp_gear)
-            _G.temp_tp_bonus_gear = nil
-        end
+    ensure_modules_loaded()
+    if WSPrecastHandler then
+        WSPrecastHandler.apply_tp_gear(spell)
     end
 end
 

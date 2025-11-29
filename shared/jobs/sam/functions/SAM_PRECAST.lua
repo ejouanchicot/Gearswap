@@ -13,42 +13,28 @@
 
 local MessageFormatter = nil
 local CooldownChecker = nil
-local AbilityHelper = nil
 local PrecastGuard = nil
-local TPBonusHandler = nil
-local WSValidator = nil
+local WSPrecastHandler = nil
 local SAMTPConfig = nil
-local JA_DB = nil
-local WS_DB = nil
 
 local modules_loaded = false
 
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    MessageFormatter = require('shared/utils/messages/message_formatter')
-    CooldownChecker = require('shared/utils/precast/cooldown_checker')
-    AbilityHelper = require('shared/utils/precast/ability_helper')
+    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    MessageFormatter = mf
 
-    local precast_guard_success
-    precast_guard_success, PrecastGuard = pcall(require, 'shared/utils/debuff/precast_guard')
-    if not precast_guard_success then
-        PrecastGuard = nil
-    end
+    local _, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    CooldownChecker = cc
 
-    local _
-    _, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
-    _, WSValidator = pcall(require, 'shared/utils/precast/ws_validator')
+    local _, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    PrecastGuard = pg
+
+    local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    WSPrecastHandler = wph
 
     SAMTPConfig = _G.SAMTPConfig or {}
-    JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
-    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
-
-    include('shared/utils/weaponskill/weaponskill_manager.lua')
-
-    if WeaponSkillManager and MessageFormatter then
-        WeaponSkillManager.MessageFormatter = MessageFormatter
-    end
 
     modules_loaded = true
 end
@@ -123,95 +109,52 @@ end
 ---============================================================================
 
 function job_precast(spell, action, spellMap, eventArgs)
-    -- FIRST: Check for blocking debuffs (Amnesia, Silence, etc.)
+    ensure_modules_loaded()
+
+    -- FIRST: Debuff guard
     if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
         return
     end
 
-    -- SECOND: Universal cooldown check
-    if spell.action_type == 'Ability' then
-        CooldownChecker.check_ability_cooldown(spell, eventArgs)
-    elseif spell.action_type == 'Magic' then
-        CooldownChecker.check_spell_cooldown(spell, eventArgs)
+    -- SECOND: Cooldown check
+    if CooldownChecker then
+        if spell.action_type == 'Ability' then
+            CooldownChecker.check_ability_cooldown(spell, eventArgs)
+        elseif spell.action_type == 'Magic' then
+            CooldownChecker.check_spell_cooldown(spell, eventArgs)
+        end
     end
 
     if eventArgs.cancel then
         return
     end
 
-    -- ==========================================================================
-    -- JOB ABILITIES MESSAGES (universal - supports main + subjob)
-    -- DISABLED: SAM Job Abilities Messages
-    -- Messages now handled by universal ability_message_handler (init_ability_messages.lua)
-    -- This prevents duplicate messages from job-specific + universal system
-    --
-    -- LEGACY CODE (commented out to prevent duplicates):
-    -- if spell.type == 'JobAbility' and JA_DB[spell.english] then
-    --     MessageFormatter.show_ja_activated(spell.english, JA_DB[spell.english].description)
-    -- end
-
-    -- THIRD: Auto-cast Seigan before Third Eye
+    -- SAM-SPECIFIC: Auto-cast Seigan before Third Eye
     if try_seigan_before_third_eye(spell, eventArgs) then
         return
     end
 
-    -- FOURTH: Third Eye auto-cast before WS
+    -- SAM-SPECIFIC: Third Eye auto-cast before WS
     if try_third_eye_ws(spell, eventArgs) then
         return
     end
 
-    -- FIFTH: WeaponSkill validation (Universal via WSValidator)
-    if WSValidator and not WSValidator.validate(spell, eventArgs) then
-        return  -- WS validation failed, exit immediately
-    end
-
-    -- SIXTH: TP Bonus Gear Optimization (Universal via TPBonusHandler)
-    -- MUST BE DONE BEFORE MESSAGE to calculate final TP correctly
-    if TPBonusHandler then
-        TPBonusHandler.calculate_tp_gear(spell, SAMTPConfig)
-    end
-
-    -- ==========================================================================
-    -- WEAPONSKILL MESSAGES (with description + final TP including Moonshade)
-    -- ==========================================================================
-    if spell.type == 'WeaponSkill' then
-        local current_tp = player and player.vitals and player.vitals.tp or 0
-
-        if current_tp >= 1000 then
-            -- Check if WS is in database
-            if WS_DB and WS_DB[spell.english] then
-                -- Calculate final TP (includes Moonshade bonus if equipped)
-                local final_tp = current_tp
-
-                -- Try to get final TP with Moonshade bonus
-                if TPBonusCalculator and TPBonusCalculator.get_final_tp then
-                    local weapon_name = player.equipment and player.equipment.main or nil
-                    local sub_weapon = player.equipment and player.equipment.sub or nil
-                    local tp_gear = _G.temp_tp_bonus_gear
-
-                    local success, result = pcall(TPBonusCalculator.get_final_tp, current_tp, tp_gear, SAMTPConfig, weapon_name, buffactive, sub_weapon)
-                    if success then
-                        final_tp = result
-                    end
-                end
-
-                    end
-        else
-            -- Not enough TP - display error
-            MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
-        end
+    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
+    if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, SAMTPConfig) then
+        return
     end
 end
 
 function job_post_precast(spell, action, spellMap, eventArgs)
-    -- Apply TP bonus gear (Moonshade Earring) without message (already displayed in precast)
-    if spell.type == 'WeaponSkill' then
-        local tp_gear = _G.temp_tp_bonus_gear
-        if tp_gear then
-            equip(tp_gear)
-            _G.temp_tp_bonus_gear = nil
-        end
+    ensure_modules_loaded()
 
+    -- Apply TP gear via unified handler
+    if WSPrecastHandler then
+        WSPrecastHandler.apply_tp_gear(spell)
+    end
+
+    -- SAM-SPECIFIC: Apply buff gear for WS
+    if spell.type == 'WeaponSkill' then
         -- Apply Sekkanoki buff gear
         if state and state.Buff and state.Buff.Sekkanoki and sets.buff and sets.buff.Sekkanoki then
             equip(sets.buff.Sekkanoki)

@@ -20,20 +20,12 @@
 --- DEPENDENCIES (LAZY LOADING for performance)
 ---============================================================================
 -- Modules loaded on first action (saves ~150ms at startup)
-local MessageFormatter = nil
 local CooldownChecker = nil
 local PrecastGuard = nil
-local TPBonusHandler = nil
-local WSValidator = nil
-local JA_DB = nil
-local WS_DB = nil
-local WS_MESSAGES_CONFIG = nil
-local res = nil
-local WeaponSkillManager = nil
-local TPBonusCalculator = nil
+local WSPrecastHandler = nil
 
 -- WAR TP configuration (loaded from character main file)
-local WARTPConfig = _G.WARTPConfig or {}
+local WARTPConfig = nil
 
 local modules_loaded = false
 
@@ -41,10 +33,6 @@ local function ensure_modules_loaded()
     if modules_loaded then
         return
     end
-
-    -- Message formatter (cooldown & WS TP display)
-    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
-    MessageFormatter = mf
 
     -- Cooldown checker (universal ability/spell recast validation)
     local _, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
@@ -54,41 +42,12 @@ local function ensure_modules_loaded()
     local _, pg = pcall(require, 'shared/utils/debuff/precast_guard')
     PrecastGuard = pg
 
-    -- TP Bonus Handler (universal WS TP gear optimization)
-    local _, tph = pcall(require, 'shared/utils/precast/tp_bonus_handler')
-    TPBonusHandler = tph
+    -- WS Precast Handler (unified WS validation + TP gear + messages)
+    local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    WSPrecastHandler = wph
 
-    -- WS Validator (universal WS range + validity validation)
-    local _, wsv = pcall(require, 'shared/utils/precast/ws_validator')
-    WSValidator = wsv
-
-    -- Universal Job Ability Database (supports main job + subjob abilities)
-    JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
-
-    -- Universal Weapon Skills Database (weaponskill descriptions)
-    WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
-
-    -- WS Messages Configuration (display mode control)
-    local _, wsmc = pcall(require, 'shared/config/WS_MESSAGES_CONFIG')
-    if not wsmc then
-        wsmc = {display_mode = 'full', is_enabled = function() return true end, show_description = function() return true end}
-    end
-    WS_MESSAGES_CONFIG = wsmc
-
-    -- Resources library (item/spell lookup)
-    res = require('resources')
-
-    -- Weaponskill managers
-    local _, wsm = pcall(require, 'shared/utils/weaponskill/weaponskill_manager')
-    WeaponSkillManager = wsm or _G.WeaponSkillManager
-
-    local _, tpc = pcall(require, 'shared/utils/weaponskill/tp_bonus_calculator')
-    TPBonusCalculator = tpc or _G.TPBonusCalculator
-
-    -- Set MessageFormatter in WeaponSkillManager if both available
-    if WeaponSkillManager and MessageFormatter then
-        WeaponSkillManager.MessageFormatter = MessageFormatter
-    end
+    -- Load job TP config
+    WARTPConfig = _G.WARTPConfig or {}
 
     modules_loaded = true
 end
@@ -133,63 +92,13 @@ function job_precast(spell, action, spellMap, eventArgs)
 
     if eventArgs.cancel then
         return
-    end -- Exit if cancelled by cooldown
-
-    -- DISABLED: WAR Job Abilities Messages
-    -- Messages now handled by universal ability_message_handler (init_ability_messages.lua)
-    -- This prevents duplicate messages from job-specific + universal system
-    --
-    -- LEGACY CODE (commented out to prevent duplicates):
-    -- if spell.type == 'JobAbility' and JA_DB[spell.english] then
-    --     MessageFormatter.show_ja_activated(spell.english, JA_DB[spell.english].description)
-    -- end
+    end
 
     -- ==========================================================================
-    -- WEAPONSKILL HANDLING (validation FIRST, then messages - matches DNC pattern)
+    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
     -- ==========================================================================
-    if spell.type == 'WeaponSkill' then
-        -- ==========================================================================
-        -- LAYER 3: WEAPONSKILL VALIDATION (Universal via WSValidator)
-        -- ==========================================================================
-        if WSValidator and not WSValidator.validate(spell, eventArgs) then
-            return  -- WS validation failed, exit immediately (no message)
-        end
-
-        -- ==========================================================================
-        -- LAYER 4: TP BONUS GEAR OPTIMIZATION (Universal via TPBonusHandler)
-        -- ==========================================================================
-        -- MUST BE DONE BEFORE MESSAGE to calculate final TP correctly
-        if TPBonusHandler then
-            TPBonusHandler.calculate_tp_gear(spell, WARTPConfig)
-        end
-
-        -- ==========================================================================
-        -- WEAPONSKILL MESSAGES (with description + final TP including Moonshade)
-        -- ==========================================================================
-        if WS_DB[spell.english] and WS_MESSAGES_CONFIG.is_enabled() then
-            local current_tp = player and player.vitals and player.vitals.tp or 0
-
-            if current_tp >= 1000 then
-                -- Calculate final TP (includes Moonshade bonus if equipped)
-                local final_tp = current_tp
-
-                -- Try to get final TP with Moonshade bonus
-                if TPBonusCalculator and TPBonusCalculator.get_final_tp then
-                    local weapon_name = player.equipment and player.equipment.main or nil
-                    local sub_weapon = player.equipment and player.equipment.sub or nil
-                    local tp_gear = _G.temp_tp_bonus_gear
-
-                    local success, result = pcall(TPBonusCalculator.get_final_tp, current_tp, tp_gear, WARTPConfig, weapon_name, buffactive, sub_weapon)
-                    if success then
-                        final_tp = result
-                    end
-                end
-            else
-                eventArgs.cancel = true  -- Cancel the WS action
-                -- Not enough TP - display error (always show errors)
-                MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
-            end
-        end
+    if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, WARTPConfig) then
+        return
     end
 end
 
@@ -197,25 +106,15 @@ end
 --- POST-PRECAST HOOK - TP GEAR APPLICATION
 ---============================================================================
 
---- Apply TP bonus gear without message (already displayed in precast with final TP)
---- Called by GearSwap AFTER set selection, BEFORE actual equipping
----
+--- Apply TP bonus gear (unified via WSPrecastHandler)
 --- @param spell     table  Spell/ability data
 --- @param action    string Action type (not used)
 --- @param spellMap  string Spell mapping (not used)
 --- @param eventArgs table  Event arguments (not used)
---- @return void
 function job_post_precast(spell, action, spellMap, eventArgs)
-    -- Lazy load modules if needed (in case post_precast called before precast)
     ensure_modules_loaded()
-
-    -- Apply TP bonus gear (Moonshade Earring) without message (already displayed in precast)
-    if spell.type == 'WeaponSkill' then
-        local tp_gear = _G.temp_tp_bonus_gear
-        if tp_gear then
-            equip(tp_gear)
-            _G.temp_tp_bonus_gear = nil
-        end
+    if WSPrecastHandler then
+        WSPrecastHandler.apply_tp_gear(spell)
     end
 end
 
