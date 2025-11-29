@@ -16,7 +16,7 @@
 ---
 --- Used by: DRK_ENGAGED.lua
 ---
---- @file    jobs/drk/functions/logic/drk_set_builder.lua
+--- @file    jobs/drk/functions/logic/set_builder.lua
 --- @author  Tetsouo
 --- @version 2.2
 --- @date    Created: 2025-11-10 | Updated: 2025-11-10

@@ -1,7 +1,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DRK Engaged Module - Combat State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all engaged state logic for Red Mage job:
+---   Handles all engaged state logic for Dark Knight job:
 ---   - Combat set selection based on EngagedMode (DT, Enspell, Refresh, TP)
 ---   - Dual wield detection and optimization (NIN subjob)
 ---   - Dynamic weapon application to engaged sets

@@ -1,7 +1,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DRK Idle Module - Idle State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all idle state logic for Red Mage job:
+---   Handles all idle state logic for Dark Knight job:
 ---   - Idle set selection based on IdleMode (DT, Refresh, Regain, Evasion)
 ---   - Movement speed optimization
 ---   - Town gear management
