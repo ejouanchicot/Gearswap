@@ -221,8 +221,7 @@ function job_precast(spell, action, spellMap, eventArgs)
                         final_tp = result
                     end
                 end
-
-                    end
+            end
         else
             -- Not enough TP - display error
             MessageFormatter.show_ws_validation_error(spell.english, "Not enough TP", string.format("%d/1000", current_tp))
