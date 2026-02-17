@@ -470,14 +470,32 @@ function job_self_command(cmdParams, eventArgs)
     end
 end
 
+--- Called when a state field changes value
+--- @param stateField string The state field that changed
+--- @param newValue string The new value
+--- @param oldValue string The old value
+function job_state_change(stateField, newValue, oldValue)
+    -- Skip UI update for Moving state (handled by AutoMove with flag)
+    if stateField == 'Moving' then
+        return
+    end
+
+    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
+    if ui_success and KeybindUI then
+        KeybindUI.update()
+    end
+end
+
 ---============================================================================
 --- MODULE EXPORT
 ---============================================================================
 
 -- Export globally for GearSwap
 _G.job_self_command = job_self_command
+_G.job_state_change = job_state_change
 
 -- Export as module
 return {
-    job_self_command = job_self_command
+    job_self_command = job_self_command,
+    job_state_change = job_state_change
 }

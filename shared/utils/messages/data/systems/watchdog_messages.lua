@@ -163,8 +163,18 @@ return {
         color = 207
     },
 
+    debug_midcast_spell_fc = {
+        template = "{lightblue}[Watchdog DEBUG] {spell_name}: Base={base_cast}s, FC={fc_percent}%, Adjusted={adjusted_cast}s, Timeout={timeout}s",
+        color = 207
+    },
+
     debug_scanner_disabled = {
         template = "{lightblue}[Watchdog DEBUG] Scanner disabled - watchdog not enabled",
+        color = 207
+    },
+
+    debug_ignored_action = {
+        template = "{lightblue}[Watchdog DEBUG] Ignored: {action_name} (type: {action_type})",
         color = 207
     },
 

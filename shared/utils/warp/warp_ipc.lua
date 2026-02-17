@@ -127,6 +127,14 @@ local function handle_ipc_message(msg)
         return
     end
 
+    -- Skip our own broadcast echo (we already execute locally in send_to_all)
+    if initiated_broadcast then
+        if _G.WARP_DEBUG then
+            MessageWarp.show_ipc_message_debounced(msg)
+        end
+        return
+    end
+
     -- TEST MESSAGE: Show test IPC messages
     if msg:find('^tetsouo_warp_test_') then
         local sender = msg:gsub('^tetsouo_warp_test_', '')
@@ -209,15 +217,20 @@ function WarpIPC.send_to_all(command)
     -- Show confirmation message
     MessageWarp.show_ipc_broadcasting(cmd)
 
-    -- Execute locally first (immediate feedback)
+    -- Set broadcast flag BEFORE sending (prevents self-IPC processing)
     initiated_broadcast = true
-    windower.chat.input('//gs c ' .. cmd)
 
-    if _G.WARP_DEBUG then
-        MessageWarp.show_executing_local_command(cmd)
-    end
+    -- Execute locally with slight delay (avoids GearSwap self_command reentrancy)
+    -- windower.chat.input during active self_command handler can be dropped
+    coroutine.schedule(function()
+        windower.chat.input('//gs c ' .. cmd)
 
-    -- Broadcast to other characters via IPC
+        if _G.WARP_DEBUG then
+            MessageWarp.show_executing_local_command(cmd)
+        end
+    end, 0.3)
+
+    -- Broadcast to other characters via IPC (after local execution starts)
     coroutine.schedule(function()
         local ipc_msg = IPC_PREFIX .. cmd
 
@@ -231,11 +244,11 @@ function WarpIPC.send_to_all(command)
             MessageWarp.show_ipc_message_sent()
         end
 
-        -- Reset broadcast flag after delay
+        -- Reset broadcast flag after delay (allow future IPC messages)
         coroutine.schedule(function()
             initiated_broadcast = false
         end, 2.0)
-    end, 0.1)  -- Small delay to let local command execute first
+    end, 0.5)  -- After local execution has started
 
     return true
 end

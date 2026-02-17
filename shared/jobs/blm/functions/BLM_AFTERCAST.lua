@@ -20,6 +20,12 @@ function job_aftercast(spell, action, spellMap, eventArgs)
         _G.MidcastWatchdog.on_aftercast()
     end
 
+    -- Clear Impact body lock flag (like BRD clears Marsyas lock)
+    if spell.english == 'Impact' then
+        _G.casting_impact = nil
+        _G.impact_body = nil
+    end
+
     -- BLM-SPECIFIC AFTERCAST LOGIC
     -- Currently none - Mote handles return to idle/engaged automatically
 

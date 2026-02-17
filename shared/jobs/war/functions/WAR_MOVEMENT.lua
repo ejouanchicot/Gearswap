@@ -160,7 +160,7 @@ function toggle_retaliation_debug()
     if not MessageFormatter then
         MessageFormatter = require('shared/utils/messages/message_formatter')
     end
-    MessageFormatter.show_info('WAR', 'Retaliation debug mode: ' .. status)
+    MessageFormatter.show_info('[WAR] Retaliation debug mode: ' .. status)
     return retaliation_config.debug_mode
 end
 

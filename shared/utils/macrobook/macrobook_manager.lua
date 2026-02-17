@@ -72,7 +72,13 @@ function MacrobookManager.create(job_code, config_path, default_subjob, default_
     local function set_macro_with_delay(book, page, delay)
         delay = delay or 1.5
 
+        -- Invalidation counter: prevents stale scheduled macros from firing after gs reload
+        -- Old coroutines survive gs reload but check this counter before executing
+        _G._macrobook_schedule_id = (_G._macrobook_schedule_id or 0) + 1
+        local my_id = _G._macrobook_schedule_id
+
         coroutine.schedule(function()
+            if my_id ~= _G._macrobook_schedule_id then return end
             set_macro_page(page, book)
         end, delay)
     end

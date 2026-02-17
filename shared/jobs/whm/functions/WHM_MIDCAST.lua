@@ -208,7 +208,7 @@ function job_get_spell_map(spell, default_spell_map)
         -- CURE MAPPING (with Afflatus Solace detection)
         -- ==========================================================================
         -- Map Cure/Curaga to CureMelee if engaged (checked FIRST, higher priority)
-        if (default_spell_map == 'Cure' or default_spell_map == 'Curaga') and player.status == 'Engaged' then
+        if (default_spell_map == 'Cure' or default_spell_map == 'Curaga') and player and player.status == 'Engaged' then
             return 'CureMelee'
         end
 

@@ -144,6 +144,36 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     local debug_enabled = _G.MidcastManagerDebugState == true
 
     -- ==========================================================================
+    -- IMPACT - Special handling (Twilight Cloak Required)
+    -- ==========================================================================
+    -- Impact requires Twilight Cloak to cast - handled separately from other
+    -- Elemental Magic to ensure the body slot is NEVER overwritten
+    if spell.english == 'Impact' then
+        -- Use dedicated Impact set (includes Twilight Cloak)
+        local impact_set = sets.midcast['Impact'] or sets.midcast['Elemental Magic']
+
+        -- Apply MagicBurst mode if enabled
+        if state.MagicBurstMode and state.MagicBurstMode.current == 'On' then
+            if sets.midcast['Impact'] and sets.midcast['Impact'].MagicBurst then
+                impact_set = sets.midcast['Impact'].MagicBurst
+            end
+        end
+
+        equip(impact_set)
+
+        -- CRITICAL: Force Twilight Cloak protection (like Marsyas for BRD)
+        -- This ensures body is NEVER overwritten during cast
+        if _G.casting_impact and _G.impact_body then
+            equip({body = _G.impact_body})
+            if debug_enabled then
+                MessageBLMMidcast.show_elemental_routing('Impact (Twilight Cloak locked)')
+            end
+        end
+
+        return
+    end
+
+    -- ==========================================================================
     -- ELEMENTAL MAGIC - Use MidcastManager with MagicBurst mode
     -- ==========================================================================
     if spell.skill == 'Elemental Magic' then

@@ -152,7 +152,7 @@ end
 local EXTDATA_TIME_OFFSET = 18000
 
 -- Safety delay after item appears ready (lag/desync protection)
-local SAFETY_DELAY = 2.5  -- Extra seconds to wait before using item (increased for server lag)
+local SAFETY_DELAY = 3.5  -- Extra seconds to wait before using item (zone-dependent lag buffer)
 
 --- Check if a warp item is usable right now
 --- Handles both 'General' items (scrolls) and 'Enchanted Equipment' (rings/wings)

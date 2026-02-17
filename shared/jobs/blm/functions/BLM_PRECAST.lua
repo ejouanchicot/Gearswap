@@ -104,7 +104,7 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- IMPORTANT: Abilities with charges (Stratagems) bypass cooldown check
     if spell.action_type == 'Ability' then
         -- Skip cooldown check for abilities with multiple charges (FFXI handles blocking)
-        if not has_charges(spell) then
+        if not has_charges(spell) and CooldownChecker then
             CooldownChecker.check_ability_cooldown(spell, eventArgs)
         end
     elseif spell.action_type == 'Magic' then
@@ -114,7 +114,7 @@ function job_precast(spell, action, spellMap, eventArgs)
             if refine_various_spells then
                 refine_various_spells(spell, eventArgs)
             end
-        else
+        elseif CooldownChecker then
             -- Use standard cooldown check for non-tiered spells
             CooldownChecker.check_spell_cooldown(spell, eventArgs)
         end
@@ -149,6 +149,20 @@ function job_precast(spell, action, spellMap, eventArgs)
     if spell.english == 'Death' then
         -- Death uses HP for damage calculation
         -- Special precast gear with high HP
+    end
+
+    -- ==========================================================================
+    -- IMPACT BODY LOCK (Twilight Cloak Required - like Marsyas for BRD)
+    -- ==========================================================================
+    -- Impact requires Twilight Cloak equipped to cast - must stay equipped
+    -- throughout entire cast or the spell fails
+    if spell.english == 'Impact' then
+        -- Equip Twilight Cloak immediately
+        equip({body = 'Twilight Cloak'})
+
+        -- Set global flags to protect body during cast
+        _G.casting_impact = true
+        _G.impact_body = 'Twilight Cloak'
     end
 
     -- ==========================================================================

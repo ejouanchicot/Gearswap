@@ -33,3 +33,8 @@ end
 
 -- Export to global scope (used by Mote-Include via include())
 _G.job_aftercast = job_aftercast
+
+-- Export as module
+return {
+    job_aftercast = job_aftercast
+}

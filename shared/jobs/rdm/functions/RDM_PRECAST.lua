@@ -132,10 +132,12 @@ function job_precast(spell, action, spellMap, eventArgs)
         MessagePrecast.show_debug_step(2, 'Cooldown', 'info', 'Checking cooldown...')
     end
 
-    if spell.action_type == 'Ability' then
-        CooldownChecker.check_ability_cooldown(spell, eventArgs)
-    elseif spell.action_type == 'Magic' then
-        CooldownChecker.check_spell_cooldown(spell, eventArgs)
+    if CooldownChecker then
+        if spell.action_type == 'Ability' then
+            CooldownChecker.check_ability_cooldown(spell, eventArgs)
+        elseif spell.action_type == 'Magic' then
+            CooldownChecker.check_spell_cooldown(spell, eventArgs)
+        end
     end
 
     -- Exit if action was cancelled

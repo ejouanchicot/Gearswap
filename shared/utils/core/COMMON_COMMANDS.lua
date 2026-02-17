@@ -148,6 +148,42 @@ function CommonCommands.handle_checksets(job_name)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
+---   WARDROBE AUDIT COMMAND
+---  ═══════════════════════════════════════════════════════════════════════════
+
+--- Handle wardrobe audit command (scan all jobs, find unused wardrobe items)
+--- @return boolean True if command was handled successfully
+function CommonCommands.handle_wardrobeaudit()
+    local audit_success, WardrobeAuditor = pcall(require, 'shared/utils/equipment/wardrobe_auditor')
+    if audit_success and WardrobeAuditor then
+        WardrobeAuditor.audit()
+        return true
+    else
+        local MessageFormatter = require('shared/utils/messages/message_formatter')
+        MessageFormatter.show_error("Failed to load wardrobe auditor: " .. tostring(WardrobeAuditor))
+        return false
+    end
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   REFILL COMMAND
+---  ═══════════════════════════════════════════════════════════════════════════
+
+--- Handle inventory refill command (pull consumables from Case/Sack)
+--- @return boolean True if command was handled successfully
+function CommonCommands.handle_refill()
+    local refill_success, RefillManager = pcall(require, 'shared/utils/inventory/refill_manager')
+    if refill_success and RefillManager then
+        RefillManager.refill()
+        return true
+    else
+        local MessageFormatter = require('shared/utils/messages/message_formatter')
+        MessageFormatter.show_error("Failed to load refill manager: " .. tostring(RefillManager))
+        return false
+    end
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
 ---   TESTCOLORS COMMAND
 ---  ═══════════════════════════════════════════════════════════════════════════
 
@@ -527,6 +563,10 @@ function CommonCommands.handle_command(command, job_name, ...)
         return CommonCommands.handle_reload(job_name)
     elseif cmd == 'checksets' then
         return CommonCommands.handle_checksets(job_name)
+    elseif cmd == 'wardrobeaudit' or cmd == 'wa' then
+        return CommonCommands.handle_wardrobeaudit()
+    elseif cmd == 'refill' or cmd == 'rf' then
+        return CommonCommands.handle_refill()
     elseif cmd == 'lockstyle' or cmd == 'ls' then
         return CommonCommands.handle_lockstyle()
     elseif cmd == 'dressup' then
@@ -669,7 +709,8 @@ function CommonCommands.is_common_command(command)
     local cmd = command:lower()
 
     -- Check existing common commands
-    if cmd == 'reload' or cmd == 'checksets' or cmd == 'lockstyle' or cmd == 'ls' or cmd == 'dressup' or
+    if cmd == 'reload' or cmd == 'checksets' or cmd == 'wardrobeaudit' or cmd == 'wa' or cmd == 'refill' or cmd == 'rf' or
+        cmd == 'lockstyle' or cmd == 'ls' or cmd == 'dressup' or
         cmd == 'perf' or cmd == 'testcolors' or cmd == 'colors' or cmd == 'jump' or cmd == 'waltz' or
         cmd == 'aoewaltz' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'debugprecast' or
         cmd == 'automovedebug' or cmd == 'amd' or cmd == 'debugjobchange' or cmd == 'djc' or

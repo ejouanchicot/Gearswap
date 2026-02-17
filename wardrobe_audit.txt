@@ -1,0 +1,62 @@
+===========================================================================
+  WARDROBE AUDIT - Unused Items Report
+  Date: 2026-02-16 14:12
+  Jobs scanned: BLM, BRD, BST, COR, DNC, DRK, GEO, PLD, PUP, RDM, RUN, SAM, THF, WAR, WHM
+  Unique items in sets: 728
+===========================================================================
+
+--- Wardrobe ---
+  (all items used)
+
+--- Wardrobe 2 ---
+  (all items used)
+
+--- Wardrobe 3 ---
+  Rev. Breeches +3
+
+--- Wardrobe 4 ---
+  (all items used)
+
+--- Wardrobe 5 ---
+  Angler's Gloves
+  Artificer's Ring
+  Bone. Torque
+  Bonecrafter's Ring
+  Boneworker's Blt.
+  Bonewrk. Smock
+  Confectioner's Ring
+  Craftkeeper's Ring
+  Craftmaster's Ring
+  Dim. Ring (Holla)
+  Duck Ring
+  Ebisu F. Rod +1
+  Fisher's Rope
+  Fisher's Torque
+  Fisherman's Hose
+  Fisherman's Smock
+  Nexus Cape
+  Noddy Ring
+  Orvail Ring +1
+  Os. Escutcheon
+  Patissiere's Ring
+  Penguin Ring
+  Protective Specs.
+  Puffin Ring
+  Tlahtlamah Glasses
+  Waders
+  Warp Ring
+
+--- Wardrobe 6 ---
+  Tot. Trousers +3
+
+--- Wardrobe 7 ---
+  Mecisto. Mantle
+
+--- Wardrobe 8 ---
+  Rapid Broth
+
+===========================================================================
+  Total wardrobe items:     535
+  Used by at least 1 job:   504
+  UNUSED:                   31
+===========================================================================

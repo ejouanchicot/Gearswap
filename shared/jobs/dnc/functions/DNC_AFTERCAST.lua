@@ -25,7 +25,7 @@
 --- @param spellMap string Spell mapping
 --- @param eventArgs table Event arguments
 --- @return void
-function job_aftercast(spell, action, spellMap, eventArgs)
+local function job_aftercast(spell, action, spellMap, eventArgs)
     -- Watchdog: Track aftercast
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_aftercast()
@@ -41,3 +41,15 @@ function job_aftercast(spell, action, spellMap, eventArgs)
         end, 0.1)
     end
 end
+
+---============================================================================
+--- MODULE EXPORT
+---============================================================================
+
+-- Export globally for GearSwap
+_G.job_aftercast = job_aftercast
+
+-- Export as module
+return {
+    job_aftercast = job_aftercast
+}

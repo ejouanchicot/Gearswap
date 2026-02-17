@@ -37,6 +37,13 @@ end
 --- @param playerStatus string Current player status
 --- @param eventArgs table Event arguments
 function job_handle_equipping_gear(playerStatus, eventArgs)
+    -- CRITICAL: Protect Impact body lock - maintain Twilight Cloak throughout cast
+    -- (Same pattern as BRD instrument lock for Marsyas)
+    if _G.casting_impact and _G.impact_body then
+        -- Force Twilight Cloak to stay equipped during Impact cast
+        equip({body = _G.impact_body})
+    end
+
     -- AutoMove handles speed gear automatically
     -- This function can be used for additional BLM-specific gear logic
 end

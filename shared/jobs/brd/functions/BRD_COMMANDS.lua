@@ -615,11 +615,29 @@ function job_self_command(cmdParams, eventArgs)
     end
 end
 
+--- Called when a state field changes value
+--- @param stateField string The state field that changed
+--- @param newValue string The new value
+--- @param oldValue string The old value
+function job_state_change(stateField, newValue, oldValue)
+    -- Skip UI update for Moving state (handled by AutoMove with flag)
+    if stateField == 'Moving' then
+        return
+    end
+
+    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
+    if ui_success and KeybindUI then
+        KeybindUI.update()
+    end
+end
+
 -- Export to global scope
 _G.job_self_command = job_self_command
+_G.job_state_change = job_state_change
 
 -- Export module
 local BRD_COMMANDS = {}
 BRD_COMMANDS.job_self_command = job_self_command
+BRD_COMMANDS.job_state_change = job_state_change
 
 return BRD_COMMANDS

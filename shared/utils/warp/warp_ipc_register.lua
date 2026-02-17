@@ -13,9 +13,11 @@
 --- @date 2025-10-28
 ---============================================================================
 
--- Only register once (avoid duplicate listeners)
-if _G.WARP_IPC_REGISTERED then
-    return
+-- Unregister old listener before re-registering (survives job changes/reloads)
+if _G.WARP_IPC_REGISTERED and _G.WARP_IPC_EVENT_ID then
+    windower.unregister_event(_G.WARP_IPC_EVENT_ID)
+    _G.WARP_IPC_EVENT_ID = nil
+    _G.WARP_IPC_REGISTERED = false
 end
 
 -- Load MessageWarp for formatted messages
@@ -64,7 +66,7 @@ local IPC_DEBOUNCE = 1.0
 --- IPC LISTENER (Registered at Job Level - Like MyHome)
 ---============================================================================
 
-windower.register_event('ipc message', function(msg)
+_G.WARP_IPC_EVENT_ID = windower.register_event('ipc message', function(msg)
     -- Debug: Show ALL IPC messages
     if _G.WARP_DEBUG then
         MessageWarp.show_ipc_raw_received(msg)

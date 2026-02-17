@@ -145,8 +145,34 @@ function MessageWatchdog.show_debug_midcast_spell(spell_name, cast_time, timeout
     })
 end
 
+--- Show debug info for spell midcast with Fast Cast
+--- @param spell_name string Spell name
+--- @param base_cast_time number Original cast time (before FC)
+--- @param fc_percent number Fast Cast percentage applied
+--- @param adjusted_cast_time number Cast time after FC reduction
+--- @param timeout number Calculated timeout
+function MessageWatchdog.show_debug_midcast_spell_fc(spell_name, base_cast_time, fc_percent, adjusted_cast_time, timeout)
+    M.send('WATCHDOG', 'debug_midcast_spell_fc', {
+        spell_name = spell_name,
+        base_cast = string.format("%.2f", base_cast_time),
+        fc_percent = string.format("%d", fc_percent),
+        adjusted_cast = string.format("%.2f", adjusted_cast_time),
+        timeout = string.format("%.2f", timeout)
+    })
+end
+
 function MessageWatchdog.show_debug_scanner_disabled()
     M.send('WATCHDOG', 'debug_scanner_disabled')
+end
+
+--- Show debug info for ignored action (JA, Waltz, etc.)
+--- @param action_name string Action name
+--- @param action_type string Action type (JobAbility, Waltz, etc.)
+function MessageWatchdog.show_debug_ignored_action(action_name, action_type)
+    M.send('WATCHDOG', 'debug_ignored_action', {
+        action_name = action_name,
+        action_type = action_type
+    })
 end
 
 function MessageWatchdog.show_debug_no_active()

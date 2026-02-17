@@ -160,7 +160,9 @@ function CooldownChecker.check_spell_cooldown(spell, eventArgs)
     if not spell.recast_id then return end
 
     -- Get spell recast (in centiseconds, convert to seconds for RECAST_CONFIG)
-    local remaining_centiseconds = windower.ffxi.get_spell_recasts()[spell.recast_id]
+    local spell_recasts = windower.ffxi.get_spell_recasts()
+    if not spell_recasts then return end
+    local remaining_centiseconds = spell_recasts[spell.recast_id]
 
     if remaining_centiseconds then
         local remaining_seconds = remaining_centiseconds / 100

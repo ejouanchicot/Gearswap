@@ -5,8 +5,8 @@
 ---   This file acts as the central coordinator for all RDM modules.
 ---
 ---   Features:
----     • Modular architecture (11 hooks + 1 logic module)
----     • Dependency-ordered loading (lockstyle >> macros >> combat >> utility)
+---     • Modular architecture (12 hooks + 1 logic module)
+---     • Dependency-ordered loading (lockstyle >> macros >> combat >> movement >> utility)
 ---     • Separation of concerns (hooks = orchestration, logic = implementation)
 ---
 ---   Logic Modules:
@@ -64,14 +64,21 @@ include('../shared/jobs/rdm/functions/RDM_BUFFS.lua')
 TIMER('RDM_BUFFS')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   SECTION 5: UTILITY HOOKS
+---   SECTION 5: MOVEMENT HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
+
+include('../shared/jobs/rdm/functions/RDM_MOVEMENT.lua')
+TIMER('RDM_MOVEMENT')
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SECTION 6: UTILITY HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 include('../shared/jobs/rdm/functions/RDM_COMMANDS.lua')
 TIMER('RDM_COMMANDS')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   SECTION 6: DUAL-BOXING SYSTEM (non-critical, loaded last)
+---   SECTION 7: DUAL-BOXING SYSTEM (non-critical, loaded last)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Load dual-boxing manager (auto-initializes and handles ALT<>>MAIN communication)

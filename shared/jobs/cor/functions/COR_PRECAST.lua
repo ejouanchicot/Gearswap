@@ -82,10 +82,12 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 
     -- SECOND: Universal cooldown check - works for ALL abilities and spells
-    if spell.action_type == 'Ability' then
-        CooldownChecker.check_ability_cooldown(spell, eventArgs)
-    elseif spell.action_type == 'Magic' then
-        CooldownChecker.check_spell_cooldown(spell, eventArgs)
+    if CooldownChecker then
+        if spell.action_type == 'Ability' then
+            CooldownChecker.check_ability_cooldown(spell, eventArgs)
+        elseif spell.action_type == 'Magic' then
+            CooldownChecker.check_spell_cooldown(spell, eventArgs)
+        end
     end
 
     -- If action was cancelled due to cooldown, exit early

@@ -47,6 +47,9 @@ local last_update_time = 0
 -- Track when AutoMove was started (for job change cooldown)
 local start_time = 0
 
+-- Track if an update was blocked and needs to be sent later
+local pending_update = false
+
 ---============================================================================
 --- CALLBACK SYSTEM
 ---============================================================================
@@ -217,9 +220,13 @@ local function check_movement()
         if should_move and not moving then
             state.Moving.value = 'true'
             moving = true
+            pending_update = true  -- Mark that we need to send an update
+        end
 
+        -- SEND UPDATE: Check if we have a pending update and cooldown/debounce allows it
+        local now = os.clock()
+        if pending_update and should_move then
             -- COOLDOWN: Skip commands shortly after job change (prevents queue corruption)
-            local now = os.clock()
             if (now - start_time) < config.job_change_cooldown then
                 if _G.AUTOMOVE_DEBUG then
                     add_to_chat(207, string.format('[AutoMove] COOLDOWN moving (%.1fs left)', config.job_change_cooldown - (now - start_time)))
@@ -227,17 +234,16 @@ local function check_movement()
             -- DEBOUNCE: Only update gear if enough time has passed
             elseif (now - last_update_time) >= config.update_debounce then
                 last_update_time = now
+                pending_update = false  -- Clear pending flag
                 if _G.AUTOMOVE_DEBUG then
                     add_to_chat(207, '[AutoMove] moving')
                 end
-                -- Schedule command with tiny delay to avoid queue issues after job changes
-                coroutine.schedule(function()
-                    if _G.UPDATE_DEBUG then
-                        _G._update_sent_time = os.clock()
-                        add_to_chat(207, string.format('[UPDATE_DEBUG] 1. AutoMove SEND gs c update | t=%.3f', _G._update_sent_time))
-                    end
-                    windower.send_command('gs c update')
-                end, 0.05)
+                -- Send update immediately (cleanup on job change prevents queue issues)
+                if _G.UPDATE_DEBUG then
+                    _G._update_sent_time = os.clock()
+                    add_to_chat(207, string.format('[UPDATE_DEBUG] 1. AutoMove SEND gs c update | t=%.3f', _G._update_sent_time))
+                end
+                windower.send_command('gs c update')
             end
         end
 
@@ -251,9 +257,16 @@ local function check_movement()
         if moving then
             state.Moving.value = 'false'
             moving = false
+            pending_update = true  -- Mark that we need to send an update
 
+            -- Trigger callbacks once when stopping
+            trigger_callbacks(false, dist, player.status)
+        end
+
+        -- SEND UPDATE: Check if we have a pending update and cooldown/debounce allows it
+        local now = os.clock()
+        if pending_update and not moving then
             -- COOLDOWN: Skip commands shortly after job change (prevents queue corruption)
-            local now = os.clock()
             if (now - start_time) < config.job_change_cooldown then
                 if _G.AUTOMOVE_DEBUG then
                     add_to_chat(207, string.format('[AutoMove] COOLDOWN stopping (%.1fs left)', config.job_change_cooldown - (now - start_time)))
@@ -261,21 +274,17 @@ local function check_movement()
             -- DEBOUNCE: Only update gear if enough time has passed
             elseif (now - last_update_time) >= config.update_debounce then
                 last_update_time = now
+                pending_update = false  -- Clear pending flag
                 if _G.AUTOMOVE_DEBUG then
                     add_to_chat(207, '[AutoMove] stopping')
                 end
-                -- Schedule command with tiny delay to avoid queue issues after job changes
-                coroutine.schedule(function()
-                    if _G.UPDATE_DEBUG then
-                        _G._update_sent_time = os.clock()
-                        add_to_chat(207, string.format('[UPDATE_DEBUG] 1. AutoMove SEND gs c update | t=%.3f', _G._update_sent_time))
-                    end
-                    windower.send_command('gs c update')
-                end, 0.05)
+                -- Send update immediately (cleanup on job change prevents queue issues)
+                if _G.UPDATE_DEBUG then
+                    _G._update_sent_time = os.clock()
+                    add_to_chat(207, string.format('[UPDATE_DEBUG] 1. AutoMove SEND gs c update | t=%.3f', _G._update_sent_time))
+                end
+                windower.send_command('gs c update')
             end
-
-            -- Trigger callbacks once when stopping
-            trigger_callbacks(false, dist, player.status)
         end
     end
 
@@ -298,6 +307,9 @@ function AutoMove.start()
     _G.AUTOMOVE_RUNNING = true
     -- Record start time for job change cooldown
     start_time = os.clock()
+    -- Reset movement state to ensure clean start
+    moving = false
+    pending_update = false
     -- Reinitialize position to prevent false movement detection after reload
     init_position()
     if _G.AUTOMOVE_DEBUG then
@@ -315,5 +327,6 @@ if not _G._automove_sequence then
     _G._automove_sequence = 0
 end
 
--- Start movement detection timer on first load (only if not already running)
-AutoMove.start()
+-- NOTE: AutoMove.start() is NOT called here anymore
+-- It is called explicitly by INIT_SYSTEMS.lua after include
+-- This prevents double-start issues on job change/reload

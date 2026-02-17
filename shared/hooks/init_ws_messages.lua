@@ -47,6 +47,10 @@ local function ensure_modules_loaded()
         return
     end
 
+    -- PROFILING: Measure lazy-load time on first WS
+    local start_time = os.clock()
+    local profiling_enabled = _G.PERFORMANCE_PROFILING and _G.PERFORMANCE_PROFILING.enabled
+
     -- Load MessageFormatter
     MessageFormatter = require('shared/utils/messages/message_formatter')
 
@@ -61,6 +65,12 @@ local function ensure_modules_loaded()
     end
 
     modules_loaded = true
+
+    -- PROFILING: Show lazy-load time
+    if profiling_enabled then
+        local elapsed = (os.clock() - start_time) * 1000
+        add_to_chat(158, string.format('[PERF:LAZY] ws_message_handler loaded: %.0fms', elapsed))
+    end
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

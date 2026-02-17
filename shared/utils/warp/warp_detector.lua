@@ -18,7 +18,7 @@
 ---
 --- @file warp_detector.lua
 --- @author Tetsouo
---- @version 2.0 - Integrated WarpItemDB (68 items)
+--- @version 2.1 - Fixed callback persistence across reloads (68 items)
 --- @date 2025-10-27
 ---============================================================================
 
@@ -152,21 +152,23 @@ end
 --- ACTION EVENT DETECTION (for item usage)
 ---============================================================================
 
-local warp_callbacks = {}
+_G.warp_detector_callbacks = _G.warp_detector_callbacks or {}
 
 --- Register a callback for warp detection
 --- @param callback function Function to call when warp detected
 function WarpDetector.register_callback(callback)
-    table.insert(warp_callbacks, callback)
+    table.insert(_G.warp_detector_callbacks, callback)
 end
 
 --- Clear all registered callbacks (called during job change cleanup)
 function WarpDetector.clear_callbacks()
-    warp_callbacks = {}
+    _G.warp_detector_callbacks = {}
 end
 
 --- Initialize action event listener for item usage detection
 function WarpDetector.init_action_listener()
+    -- ALWAYS clear callbacks on init (ensures fresh start on reload)
+    WarpDetector.clear_callbacks()
     -- Only register once (prevent duplicate event handlers on job change)
     if _G.WARP_DETECTOR_LISTENER_REGISTERED then
         return
@@ -188,7 +190,7 @@ function WarpDetector.init_action_listener()
 
         if is_warp then
             -- Notify all registered callbacks
-            for _, callback in ipairs(warp_callbacks) do
+            for _, callback in ipairs(_G.warp_detector_callbacks) do
                 pcall(callback, 'item', warp_data)
             end
         end

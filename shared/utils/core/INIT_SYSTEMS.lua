@@ -43,7 +43,10 @@ local MessageInit = nil
 
 local function ensure_message_init()
     if not MessageInit then
-        MessageInit = require('shared/utils/messages/formatters/system/message_init')
+        local success, module = pcall(require, 'shared/utils/messages/formatters/system/message_init')
+        if success then
+            MessageInit = module
+        end
     end
     return MessageInit
 end
@@ -97,13 +100,18 @@ coroutine.schedule(function()
         -- not a Lua module. It registers event handlers in global scope.
         local automove_success, automove_error = pcall(include, '../shared/utils/movement/automove.lua')
 
-        if not automove_success then
+        if automove_success then
+            -- Start AutoMove explicitly (no longer auto-starts on include)
+            if AutoMove and AutoMove.start then
+                AutoMove.start()
+            end
+        else
             ensure_message_init().show_module_load_failed('AutoMove', automove_error)
         end
         -- Silent init when successful
     else
         -- AutoMove disabled by job (custom movement system used)
-        add_to_chat(8, '[INIT_SYSTEMS] AutoMove disabled by job request')
+        -- Silent - no message needed (job explicitly requested this)
     end
 
     ---  ─────────────────────────────────────────────────────────────────────────

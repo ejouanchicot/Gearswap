@@ -38,20 +38,22 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    local _, mp = pcall(require, 'shared/utils/messages/formatters/magic/message_precast')
-    MessagePrecast = mp
+    local success, result
 
-    local _, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
-    CooldownChecker = cc
+    success, result = pcall(require, 'shared/utils/messages/formatters/magic/message_precast')
+    if success then MessagePrecast = result end
 
-    local _, ah = pcall(require, 'shared/utils/precast/ability_helper')
-    AbilityHelper = ah
+    success, result = pcall(require, 'shared/utils/precast/cooldown_checker')
+    if success then CooldownChecker = result end
 
-    local _, pg = pcall(require, 'shared/utils/debuff/precast_guard')
-    PrecastGuard = pg
+    success, result = pcall(require, 'shared/utils/precast/ability_helper')
+    if success then AbilityHelper = result end
 
-    local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
-    WSPrecastHandler = wph
+    success, result = pcall(require, 'shared/utils/debuff/precast_guard')
+    if success then PrecastGuard = result end
+
+    success, result = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    if success then WSPrecastHandler = result end
 
     RUNTPConfig = _G.RUNTPConfig or {}
 
@@ -147,7 +149,7 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- EXCLUDES abilities in cooldown_exclusions table (Scholar Stratagems, etc.)
     local is_excluded = cooldown_exclusions[spell.name]
 
-    if not is_excluded then
+    if not is_excluded and CooldownChecker then
         if spell.action_type == 'Ability' then
             CooldownChecker.check_ability_cooldown(spell, eventArgs)
         elseif spell.action_type == 'Magic' then

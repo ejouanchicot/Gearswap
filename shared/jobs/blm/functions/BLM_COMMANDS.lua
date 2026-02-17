@@ -43,6 +43,14 @@ local function ensure_commands_loaded()
     end
 end
 
+--- Update UI after state change (DRY helper)
+local function update_ui()
+    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
+    if ui_success and KeybindUI then
+        KeybindUI.update()
+    end
+end
+
 -- NOTE: BLM logic functions are loaded globally via blm_functions.lua:
 --   • BuffSelf() - Automated self-buffing
 --   • CastStorm() - Storm + Klimaform automation
@@ -65,13 +73,7 @@ local function handle_blm_cycle_commands(command, eventArgs)
         if state and state.MainLightSpell then
             state.MainLightSpell:cycle()
             BLMMessages.show_element_cycle('MainLight', state.MainLightSpell.value)
-
-            -- Update UI after state change
-            local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-            if ui_success and KeybindUI then
-                KeybindUI.update()
-            end
-
+            update_ui()
             eventArgs.handled = true
             return true
         end
@@ -82,13 +84,7 @@ local function handle_blm_cycle_commands(command, eventArgs)
         if state and state.MainDarkSpell then
             state.MainDarkSpell:cycle()
             BLMMessages.show_element_cycle('MainDark', state.MainDarkSpell.value)
-
-            -- Update UI after state change
-            local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-            if ui_success and KeybindUI then
-                KeybindUI.update()
-            end
-
+            update_ui()
             eventArgs.handled = true
             return true
         end
@@ -99,13 +95,7 @@ local function handle_blm_cycle_commands(command, eventArgs)
         if state and state.SubLightSpell then
             state.SubLightSpell:cycle()
             BLMMessages.show_element_cycle('SubLight', state.SubLightSpell.value)
-
-            -- Update UI after state change
-            local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-            if ui_success and KeybindUI then
-                KeybindUI.update()
-            end
-
+            update_ui()
             eventArgs.handled = true
             return true
         end
@@ -116,13 +106,7 @@ local function handle_blm_cycle_commands(command, eventArgs)
         if state and state.SubDarkSpell then
             state.SubDarkSpell:cycle()
             BLMMessages.show_element_cycle('SubDark', state.SubDarkSpell.value)
-
-            -- Update UI after state change
-            local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-            if ui_success and KeybindUI then
-                KeybindUI.update()
-            end
-
+            update_ui()
             eventArgs.handled = true
             return true
         end
@@ -147,13 +131,7 @@ local function handle_blm_standard_cycles(cmdParams, eventArgs)
         if state and state.Storm then
             state.Storm:cycle()
             BLMMessages.show_storm_cycle(state.Storm.value)
-
-            -- Update UI after state change
-            local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-            if ui_success and KeybindUI then
-                KeybindUI.update()
-            end
-
+            update_ui()
             eventArgs.handled = true
             return true
         end
@@ -538,10 +516,7 @@ function job_state_change(stateField, newValue, oldValue)
         return
     end
 
-    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-    if ui_success and KeybindUI then
-        KeybindUI.update()
-    end
+    update_ui()
 end
 
 ---============================================================================

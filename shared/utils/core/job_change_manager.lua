@@ -65,6 +65,47 @@ local function cancel_all_pending()
     STATE.debounce_timer = nil
 end
 
+--- Cleanup all systems before job change/reload
+--- This prevents memory leaks and zombie coroutines
+local function cleanup_all_systems()
+    -- 1. Stop AutoMove (movement detection coroutine)
+    if AutoMove and AutoMove.stop then
+        pcall(AutoMove.stop)
+    end
+
+    -- 2. Stop MidcastWatchdog (background check coroutine)
+    if _G.MidcastWatchdog and _G.MidcastWatchdog.stop then
+        pcall(_G.MidcastWatchdog.stop)
+    end
+
+    -- 3. Destroy UI (texts element + state cache)
+    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
+    if ui_success and KeybindUI and KeybindUI.destroy then
+        pcall(KeybindUI.destroy)
+    end
+
+    -- 4. Clear UI globals to prevent leaks
+    _G.keybind_ui_display = nil
+    _G.keybind_ui_visible = false
+
+    -- 5. Clear UI state cache
+    if _G.ui_manager_state then
+        _G.ui_manager_state.current_job = nil
+        _G.ui_manager_state.current_subjob = nil
+        _G.ui_manager_state.pending_update_id = 0
+        _G.ui_manager_state.update_in_progress = false
+    end
+
+    -- 6. Stop any pending smart_init coroutines
+    if _G.ui_manager_state then
+        _G.ui_manager_state.smart_init_id = (_G.ui_manager_state.smart_init_id or 0) + 1
+    end
+
+    if _G.JOBCHANGE_DEBUG then
+        add_to_chat(207, '[JCM] cleanup_all_systems() completed')
+    end
+end
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PUBLIC API
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -96,14 +137,11 @@ function JobChangeManager.on_job_change(main_job, sub_job)
             main_job, sub_job, STATE.debounce_counter))
     end
 
-    -- CRITICAL: Stop AutoMove IMMEDIATELY to prevent command spam during reload
-    -- This fixes the bug where moving during subjob change causes GearSwap to freeze
-    if AutoMove and AutoMove.stop then
-        AutoMove.stop()
-        if _G.JOBCHANGE_DEBUG then
-            add_to_chat(207, '[JCM] AutoMove.stop() called')
-        end
-    end
+    -- CRITICAL: Cleanup all systems IMMEDIATELY to prevent:
+    -- - AutoMove command spam during reload
+    -- - UI memory leaks
+    -- - Zombie watchdog coroutines
+    cleanup_all_systems()
 
     -- Update target job
     STATE.target_main_job = main_job
