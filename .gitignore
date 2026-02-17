@@ -69,6 +69,28 @@ wardrobe_audit.txt
 AUDIT_REPORT.md
 COMPETITIVE_ANALYSIS.md
 
+# Internal dev docs (not for public repo)
+docs/archives/
+docs/fixes/
+docs/migration_reports/
+docs/templates/
+docs/AUDIT_REPORT_*.md
+docs/DOCUMENTATION_AUDIT_REPORT*.md
+docs/SESSION_*.md
+docs/PERFORMANCE_*.md
+docs/PROFILER_USAGE.md
+docs/QUICK_PROFILING_GUIDE.md
+docs/LAZY_LOADING_*.md
+docs/MESSAGE_SYSTEM_MIGRATION.md
+docs/WS_MESSAGES_HOOK_MIGRATION.md
+docs/RUN_STACK_OVERFLOW_RESOLUTION.md
+scripts/
+
+# Claude Code internal
+.claude/audit_prompt.md
+.claude/DOCUMENTATION_AUDIT_PROMPT.md
+.claude/agents/
+
 # Old backups
 Backup2/
 
