@@ -2,6 +2,8 @@
 
 States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
 
+**Config**: `Tetsouo/config/whm/WHM_KEYBINDS.lua`
+
 ---
 
 ## States
@@ -127,3 +129,24 @@ Internal numeric state used by the midcast watchdog system. Represents your tota
 | CureAutoTier | On / Off | On | Alt+4 |
 | CombatMode | Off / On | Off | Alt+0 |
 | FastCast | 0 - 80 | 80 | -- |
+
+---
+
+## Configuration
+
+**Config files**: `Tetsouo/config/whm/`
+
+| File | Purpose |
+|------|---------|
+| `WHM_KEYBINDS.lua` | Keybind definitions |
+| `WHM_LOCKSTYLE.lua` | Lockstyle per subjob |
+| `WHM_MACROBOOK.lua` | Macrobook per subjob |
+| `WHM_STATES.lua` | State definitions |
+| `WHM_TP_CONFIG.lua` | TP and weaponskill settings |
+| `WHM_CURE_CONFIG.lua` | Cure tier and potency settings |
+
+**Lockstyle**: #3 (all subjobs)
+
+**Macrobook**: Book 11, Page 1 (default). RDM=Book 11/Page 1, SCH=Book 11/Page 2, BLM=Book 11/Page 3, BLU=Book 11/Page 4, GEO=Book 11/Page 5
+
+See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.

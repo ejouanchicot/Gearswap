@@ -2,6 +2,8 @@
 
 States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
 
+**Config**: `Tetsouo/config/dnc/DNC_KEYBINDS.lua`
+
 ---
 
 ## States
@@ -191,3 +193,24 @@ Internal numeric state used by the midcast watchdog system. Represents your tota
 | CombatWeaponMode | Normal / TPBonus / Clim / ClimTPBonus | Normal | -- |
 | Dance | Saber Dance / Fan Dance | Saber Dance | Alt+8 |
 | FastCast | 0 - 80 | 0 | -- |
+
+---
+
+## Configuration
+
+**Config files**: `Tetsouo/config/dnc/`
+
+| File | Purpose |
+|------|---------|
+| `DNC_KEYBINDS.lua` | Keybind definitions |
+| `DNC_LOCKSTYLE.lua` | Lockstyle per subjob |
+| `DNC_MACROBOOK.lua` | Macrobook per subjob |
+| `DNC_STATES.lua` | State definitions |
+| `DNC_TP_CONFIG.lua` | TP and weaponskill settings |
+| `DNC_WS_CONFIG.lua` | Weaponskill variant configuration |
+
+**Lockstyle**: #2 (all subjobs)
+
+**Macrobook**: Book 4, Page 1 (default). WAR=Book 5/Page 1
+
+See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.

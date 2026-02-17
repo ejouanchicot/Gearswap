@@ -2,6 +2,8 @@
 
 States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
 
+**Config**: `Tetsouo/config/rdm/RDM_KEYBINDS.lua`
+
 ---
 
 ## States
@@ -362,3 +364,24 @@ Internal numeric state used by the watchdog system to calculate cast time timeou
 | MainDarkSpell | Blizzard / Stone / Water | Blizzard | -- |
 | SubDarkSpell | Blizzard / Stone / Water | Stone | -- |
 | FastCast | 0-80 (by 10) | 80 | -- |
+
+---
+
+## Configuration
+
+**Config files**: `Tetsouo/config/rdm/`
+
+| File | Purpose |
+|------|---------|
+| `RDM_KEYBINDS.lua` | Keybind definitions |
+| `RDM_LOCKSTYLE.lua` | Lockstyle per subjob |
+| `RDM_MACROBOOK.lua` | Macrobook per subjob |
+| `RDM_STATES.lua` | State definitions |
+| `RDM_TP_CONFIG.lua` | TP and weaponskill settings |
+| `RDM_SABOTEUR_CONFIG.lua` | Saboteur auto-trigger settings |
+
+**Lockstyle**: NIN=#1, WHM=#2, BLM=#3, SCH=#4, DNC=#5
+
+**Macrobook**: Book 2, Page 1 (all subjobs)
+
+See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.

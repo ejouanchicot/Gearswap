@@ -2,6 +2,8 @@
 
 States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
 
+**Config**: `Tetsouo/config/bst/BST_KEYBINDS.lua`
+
 ---
 
 ## States
@@ -155,3 +157,25 @@ Internal numeric state used by the watchdog system to calculate cast time timeou
 | petEngaged | false / true | false | -- |
 | Moving | false / true | false | -- |
 | FastCast | 0-80 (by 10) | 0 | -- |
+
+---
+
+## Configuration
+
+**Config files**: `Tetsouo/config/bst/`
+
+| File | Purpose |
+|------|---------|
+| `BST_KEYBINDS.lua` | Keybind definitions |
+| `BST_LOCKSTYLE.lua` | Lockstyle per subjob |
+| `BST_MACROBOOK.lua` | Macrobook per subjob |
+| `BST_STATES.lua` | State definitions |
+| `BST_TP_CONFIG.lua` | TP and weaponskill settings |
+| `BST_ECOSYSTEM_DATA.lua` | Ecosystem family data |
+| `BST_PET_DATA.lua` | Pet species and ability data |
+
+**Lockstyle**: #6 (all subjobs)
+
+**Macrobook**: Book 12, Page 1 (all subjobs)
+
+See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.

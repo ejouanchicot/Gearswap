@@ -2,6 +2,8 @@
 
 States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
 
+**Config**: `Tetsouo/config/drk/DRK_KEYBINDS.lua`
+
 ---
 
 ## States
@@ -56,3 +58,23 @@ Internal numeric state used by the midcast watchdog system. Represents your tota
 | HybridMode | PDT / Accu | PDT | Alt+1 |
 | MainWeapon | Caladbolg / Liberator / Redemption / Lycurgos / Loxotic | Caladbolg | Alt+2 |
 | FastCast | 0 - 80 | 0 | -- |
+
+---
+
+## Configuration
+
+**Config files**: `Tetsouo/config/drk/`
+
+| File | Purpose |
+|------|---------|
+| `DRK_KEYBINDS.lua` | Keybind definitions |
+| `DRK_LOCKSTYLE.lua` | Lockstyle per subjob |
+| `DRK_MACROBOOK.lua` | Macrobook per subjob |
+| `DRK_STATES.lua` | State definitions |
+| `DRK_TP_CONFIG.lua` | TP and weaponskill settings |
+
+**Lockstyle**: SAM=#1, WAR=#1, NIN=#2, DNC=#3
+
+**Macrobook**: Book 1, Page 1 (default). SAM=Book 1/Page 1, WAR=Book 1/Page 2, NIN=Book 1/Page 3, DNC=Book 1/Page 4
+
+See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.

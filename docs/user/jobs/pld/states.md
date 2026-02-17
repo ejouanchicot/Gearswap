@@ -2,6 +2,8 @@
 
 States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
 
+**Config**: `Tetsouo/config/pld/PLD_KEYBINDS.lua`
+
 ---
 
 ## States
@@ -92,3 +94,24 @@ Internal numeric state used by the midcast watchdog system. Represents your tota
 | Xp | Off / On | Off | Alt+4 |
 | RuneMode | Ignis / Gelus / Flabra / Tellus / Sulpor / Unda / Lux / Tenebrae | Ignis | Alt+5 |
 | FastCast | 0 - 80 | 80 | -- |
+
+---
+
+## Configuration
+
+**Config files**: `Tetsouo/config/pld/`
+
+| File | Purpose |
+|------|---------|
+| `PLD_KEYBINDS.lua` | Keybind definitions |
+| `PLD_LOCKSTYLE.lua` | Lockstyle per subjob |
+| `PLD_MACROBOOK.lua` | Macrobook per subjob |
+| `PLD_STATES.lua` | State definitions |
+| `PLD_TP_CONFIG.lua` | TP and weaponskill settings |
+| `PLD_BLU_MAGIC.lua` | BLU subjob spell configuration |
+
+**Lockstyle**: #3 (all subjobs)
+
+**Macrobook**: Book 15, Page 1 (default). RUN=Book 15/Page 1, BLU=Book 18/Page 1, RDM=Book 20/Page 1
+
+See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.

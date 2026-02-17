@@ -2,6 +2,8 @@
 
 States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
 
+**Config**: `Tetsouo/config/geo/GEO_KEYBINDS.lua`
+
 ---
 
 ## States
@@ -313,3 +315,23 @@ Internal numeric state used by the watchdog system to calculate cast time timeou
 | MainWeapon | Idris | Idris | -- |
 | SubWeapon | Genmei Shield | Genmei Shield | -- |
 | FastCast | 0-80 (by 10) | 80 | -- |
+
+---
+
+## Configuration
+
+**Config files**: `Tetsouo/config/geo/`
+
+| File | Purpose |
+|------|---------|
+| `GEO_KEYBINDS.lua` | Keybind definitions |
+| `GEO_LOCKSTYLE.lua` | Lockstyle per subjob |
+| `GEO_MACROBOOK.lua` | Macrobook per subjob |
+| `GEO_STATES.lua` | State definitions |
+| `GEO_TP_CONFIG.lua` | TP and weaponskill settings |
+
+**Lockstyle**: #5 (all subjobs)
+
+**Macrobook**: Book 5, Page 1 (all subjobs)
+
+See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.

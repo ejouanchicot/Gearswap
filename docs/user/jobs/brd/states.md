@@ -2,6 +2,8 @@
 
 States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
 
+**Config**: `Tetsouo/config/brd/BRD_KEYBINDS.lua`
+
 ---
 
 ## States
@@ -232,3 +234,25 @@ Internal numeric state used by the watchdog system to calculate cast time timeou
 | ThrenodyElement | Fire / Ice / Wind / Earth / Lightning / Water / Light / Dark | Fire | Alt+- |
 | MarcatoSong | HonorMarch / AriaPassion / Off | HonorMarch | Alt+= |
 | FastCast | 0-80 (by 10) | 80 | -- |
+
+---
+
+## Configuration
+
+**Config files**: `Tetsouo/config/brd/`
+
+| File | Purpose |
+|------|---------|
+| `BRD_KEYBINDS.lua` | Keybind definitions |
+| `BRD_LOCKSTYLE.lua` | Lockstyle per subjob |
+| `BRD_MACROBOOK.lua` | Macrobook per subjob |
+| `BRD_STATES.lua` | State definitions |
+| `BRD_TP_CONFIG.lua` | TP and weaponskill settings |
+| `BRD_SONG_CONFIG.lua` | Song rotation configuration |
+| `BRD_TIMING_CONFIG.lua` | Song timing settings |
+
+**Lockstyle**: #7 (all subjobs)
+
+**Macrobook**: Book 40, Page 1 (default). WHM=Book 40/Page 1, RDM=Book 36/Page 1, NIN=Book 36/Page 1, DNC=Book 36/Page 1
+
+See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.

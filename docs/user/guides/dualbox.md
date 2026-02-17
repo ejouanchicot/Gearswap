@@ -1,87 +1,37 @@
-# DualBox Guide - Multi-Character Setup
+# DualBox Guide
 
-Complete guide for setting up dual-box communication between two characters.
-
-
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Quick Start](#quick-start-5-minutes)
-- [Detailed Setup](#detailed-setup)
-- [Usage](#usage)
-- [Troubleshooting](#troubleshooting)
-- [Advanced Configuration](#advanced-configuration)
+Setup guide for dual-box communication between two characters.
 
 ---
 
 ## Overview
 
-### What is DualBox?
+The DualBox system provides automatic one-way communication from an ALT character to a MAIN character:
 
-The DualBox system allows automatic communication between two characters:
+- MAIN receives the ALT's current job and subjob.
+- ALT sends job updates automatically on every job/subjob change.
+- MAIN can display the ALT's job in the UI overlay.
 
-- **MAIN character** receives alt's job information
-- **ALT character** sends job updates automatically
-- **Communication**: Unidirectional (ALT >> MAIN only)
-
-### Benefits
-
-- **Auto-detect alt's job** - MAIN knows what job ALT is playing
-- **Auto-load optimal macros** - MAIN switches macros based on ALT's job
-- **UI display** - See alt's job in MAIN's UI (optional)
-- **Zero manual updates** - Everything happens automatically
-
-### System Requirements
-
-- Both characters logged in simultaneously
-- Windower 4.2+ on both clients
-- GearSwap addon loaded on both characters
-
-### How It Works
-
-```
-1. ALT character loads job (e.g., WHM/SCH)
-   ↓
-2. ALT sends job update via sendCommand
-   ↓
-3. MAIN receives update via command handler
-   ↓
-4. MAIN displays alt job in UI (optional)
-   ↓
-5. Updates automatically on job/subjob change
-```
+**Requirements**: Both characters logged in with Windower 4.2+ and GearSwap loaded.
 
 ---
 
-## Quick Start (5 Minutes)
+## Setup
 
-### 1. Clone Alt Character (30 seconds)
+### 1. Create the Alt Character Folder
 
-**Option A: Using Clone Script**
+**Using the clone script** (recommended):
 
 ```cmd
 cd "D:\Windower Tetsouo\addons\GearSwap\data"
 python clone_character.py
 ```
 
-Enter alt character name when prompted: `Kaories` (or your alt name)
+Enter the source name (e.g., `Tetsouo`) and the new name (e.g., `Kaories`). The script copies all job files, renames them, and updates config paths.
 
-**Option B: Manual Copy**
+Manual alternative: copy the character folder, rename all `Source_*.lua` files to `Alt_*.lua`, and find-replace config path references.
 
-```cmd
-# Copy entire character folder
-cp -r Tetsouo/ Kaories/
-
-# Rename all job files
-cd Kaories/
-ren Tetsouo_*.lua Kaories_*.lua
-```
-
-### 2. Configure DualBox (2 minutes)
-
-**On MAIN character** (Tetsouo):
+### 2. Configure MAIN Character
 
 Edit `Tetsouo/config/DUALBOX_CONFIG.lua`:
 
@@ -99,7 +49,7 @@ DualBoxConfig.debug = false
 return DualBoxConfig
 ```
 
-**On ALT character** (Kaories):
+### 3. Configure ALT Character
 
 Edit `Kaories/config/DUALBOX_CONFIG.lua`:
 
@@ -117,502 +67,109 @@ DualBoxConfig.debug = false
 return DualBoxConfig
 ```
 
-### 3. Reload Both Characters (30 seconds)
+**Key difference**: MAIN sets `role = "main"` and `alt_character`. ALT sets `role = "alt"` and `main_character`.
 
-**In-game (on both characters):**
+### 4. Reload and Test
+
+Reload GearSwap on both characters:
 
 ```
-# Main character (Tetsouo)
-//gs c reload
-
-# Alt character (Kaories)
 //gs c reload
 ```
 
-### 4. Test Communication (1 minute)
-
-**On MAIN character:**
+On the MAIN character, request the ALT's job:
 
 ```
 //gs c altjob
 ```
 
-**Expected result:**
-
-```
-[DualBox] Requesting alt job info...
-... (2-3 seconds) ...
-[DualBox] Alt job received: WHM/SCH
-```
-
-**UI should display:**
-
-```
-Alt Job: WHM/SCH
-```
-
-**Done!** Your dual-box system is ready.
-
----
-
-## Detailed Setup
-
-### Step 1: Clone Alt Character
-
-#### Why Clone?
-
-Cloning creates a complete copy of your main character's setup with all job files, configs, and keybinds already configured.
-
-#### Cloning Process
-
-**A. Using Clone Script** (Recommended)
-
-```cmd
-cd "D:\Windower Tetsouo\addons\GearSwap\data"
-python clone_character.py
-```
-
-**Input:**
-
-```
-Enter source character name: Tetsouo
-Enter new character name: Kaories
-```
-
-**What Gets Cloned:**
-
-- Copies entire character folder
-- Renames all job files (`Tetsouo_*.lua` >> `Kaories_*.lua`)
-- Updates all config paths in code
-- Creates 13 complete job files (WAR, PLD, DNC, DRK, SAM, THF, RDM, WHM, BLM, GEO, COR, BRD, BST)
-
-**B. Manual Cloning** (Alternative)
-
-1. Copy folder:
-
-   ```cmd
-   xcopy /E /I Tetsouo\ Kaories\
-   ```
-
-2. Rename job files:
-
-   ```cmd
-   cd Kaories\
-   ren Tetsouo_WAR.lua Kaories_WAR.lua
-   ren Tetsouo_PLD.lua Kaories_PLD.lua
-   ren Tetsouo_DNC.lua Kaories_DNC.lua
-   # ... (repeat for all 15 jobs)
-   ```
-
-3. Update config paths in each file:
- - Find: `'Tetsouo/config/'`
- - Replace: `'Kaories/config/'`
-
-#### Verify Clone Success
-
-Check that folder exists:
-
-```
-addons/GearSwap/data/Kaories/
-├── Kaories_WAR.lua
-├── Kaories_PLD.lua
-├── Kaories_DNC.lua
-├── ... (other jobs)
-└── config/
-```
-
----
-
-### Step 2: Configure DualBox
-
-#### A. Main Character Config
-
-**File:** `Tetsouo/config/DUALBOX_CONFIG.lua`
-
-```lua
-local DualBoxConfig = {}
-
--- Character role: "main" or "alt"
--- MAIN: Receives job updates from alt
--- ALT: Sends job updates to main when job changes
-DualBoxConfig.role = "main"
-
--- This character's name
-DualBoxConfig.character_name = "Tetsouo"
-
--- The ALT character to receive job updates from
-DualBoxConfig.alt_character = "Kaories"
-
--- Enable/disable DualBox system
-DualBoxConfig.enabled = true
-
--- Timeout in seconds - if no update received within this time, assume alt offline
-DualBoxConfig.timeout = 30
-
--- Debug mode - show detailed messages in chat
-DualBoxConfig.debug = false
-
-return DualBoxConfig
-```
-
-#### B. Alt Character Config
-
-**File:** `Kaories/config/DUALBOX_CONFIG.lua`
-
-```lua
-local DualBoxConfig = {}
-
--- Character role: "alt" sends job updates to main
-DualBoxConfig.role = "alt"
-
--- This character's name
-DualBoxConfig.character_name = "Kaories"
-
--- The MAIN character to send job updates to
-DualBoxConfig.main_character = "Tetsouo"
-
--- Enable/disable DualBox system
-DualBoxConfig.enabled = true
-
--- Timeout in seconds
-DualBoxConfig.timeout = 30
-
--- Debug mode
-DualBoxConfig.debug = false
-
-return DualBoxConfig
-```
-
-**Key differences:**
-
-- **MAIN**: `role = "main"`, `character_name` is self, `alt_character` points to alt
-- **ALT**: `role = "alt"`, `character_name` is self, `main_character` points to main
-
----
-
-### Step 3: Test Communication
-
-#### Test 1: Manual Request
-
-**On MAIN:**
-
-```
-//gs c altjob
-```
-
-**Expected output (MAIN):**
+Expected output:
 
 ```
 [DualBox] Requesting alt job info...
 [DualBox] Alt job received: WHM/SCH
 ```
 
-**Expected output (ALT):**
+---
 
-```
-[DualBox] Sending job info to MAIN: WHM/SCH
-```
+## Daily Usage
 
-#### Test 2: Automatic Updates
-
-**On ALT:**
-
-```
-# Change job
-/ja "Black Mage" <me>
-```
-
-**Expected (MAIN):**
-
-```
-[DualBox] Alt job updated: BLM/SCH
-```
-
-**UI updates automatically** to show new job.
-
-#### Test 3: UI Display
-
-**On MAIN:**
-
-Check UI displays:
-
-```
-╔════════════════════════╗
-║  Alt Job: WHM/SCH      ║
-╚════════════════════════╝
-```
+1. Log in both characters and load GearSwap.
+2. The system auto-connects. No manual commands needed.
+3. When the ALT changes jobs, MAIN is updated automatically.
 
 ---
 
-## Usage
+## Commands
 
-### Daily Workflow
+| Command | Run On | Description |
+|---------|--------|-------------|
+| `//gs c altjob` | MAIN | Request ALT's current job |
+| `//gs c requestjob` | ALT | Respond to MAIN's request (auto-triggered) |
+| `//gs c altjobupdate [job] [subjob]` | MAIN | Receive job update (auto-triggered) |
 
-1. **Log in both characters**
-2. **Load GearSwap on both**
+In normal use, no manual commands are needed. Use `//gs c altjob` only if the connection seems stale.
 
-   ```
-   //lua load gearswap
-   ```
+---
 
-3. **System auto-connects** (if `auto_request = true`)
+## Configuration Reference
 
-**That's it!** No manual commands needed.
+| Setting | MAIN | ALT |
+|---------|------|-----|
+| `role` | `"main"` | `"alt"` |
+| `character_name` | Your main name | Your alt name |
+| `alt_character` | Alt name | (not used) |
+| `main_character` | (not used) | Main name |
+| `enabled` | `true` | `true` |
+| `timeout` | `30` | `30` |
+| `debug` | `false` | `false` |
 
-### Manual Commands
+### Disabling DualBox
 
-| Command | Where | Description |
-|---------|-------|-------------|
-| `//gs c altjob` | MAIN | Request alt's current job |
-| `//gs c requestjob` | ALT | Respond to MAIN's request |
-| `//gs c altjobupdate [job] [subjob]` | MAIN | Receive alt job update (auto-triggered) |
+Set `DualBoxConfig.enabled = false` in the config file and reload (`//gs c reload`).
 
-**Typical usage:**
+### Multiple Alts
 
-- No manual commands needed - system works automatically
-- Use `//gs c altjob` only if connection fails
+The system supports 1 MAIN + 1 ALT. Multiple alts require custom modification.
+
+### UI Position
+
+The ALT job display is part of the main UI. Drag to position, then save with `//gs c ui save`.
 
 ---
 
 ## Troubleshooting
 
-### Issue: "Alt job not updating"
+### ALT job not updating
 
-**Solutions:**
+1. Verify `DualBoxConfig.enabled = true` on both characters.
+2. Check that character names match exactly (case-sensitive).
+3. Reload both characters: `//gs c reload`.
+4. Test manually: `//gs c altjob` on MAIN.
 
-1. **Verify both characters have DualBox enabled**
+### UI not showing ALT job
 
-   ```lua
-   -- In DUALBOX_CONFIG.lua (both characters)
-   DualBoxConfig.enabled = true
-   ```
+1. Confirm MAIN config has `role = "main"` and `enabled = true`.
+2. Toggle the UI: `//gs c ui` twice.
+3. Reload: `//gs c reload`.
 
-2. **Check character names match exactly**
+### Commands not working
 
-   ```lua
-   -- Must match FFXI character names (case-sensitive)
-   DualBoxConfig.character_name = "Tetsouo"  -- Exact match (MAIN)
-   DualBoxConfig.alt_character = "Kaories"   -- Exact match (MAIN points to ALT)
-   ```
+1. Verify GearSwap is loaded on both characters (`//lua list`).
+2. You should see `[DualBox] System initialized` on load.
+3. Enable debug mode (`//gs debugmode`) and retry `//gs c altjob` to see error details.
 
-3. **Reload both characters**
+### Updates delayed (more than 5 seconds)
 
-   ```
-   //gs c reload   # On both MAIN and ALT
-   ```
-
-4. **Manual test**
-
-   ```
-   # On MAIN
-   //gs c altjob
-
-   # On ALT
-   //gs c requestjob
-   ```
+Network delay of 1-3 seconds is normal. If consistently slow, force a manual update with `//gs c altjob`.
 
 ---
 
-### Issue: "UI not showing alt job"
+## Further Reading
 
-**Solutions:**
-
-1. **Verify DualBox is enabled (MAIN)**
-
-   ```lua
-   DualBoxConfig.enabled = true
-   DualBoxConfig.role = "main"
-   ```
-
-2. **Refresh UI**
-
-   ```
-   //gs c ui       # Toggle off
-   //gs c ui       # Toggle on
-   ```
-
-3. **Reload**
-
-   ```
-   //gs c reload
-   ```
+- [Configuration Guide](configuration.md) - Advanced config options
+- [Commands Reference](commands.md) - All available commands
+- [UI Guide](../features/ui.md) - Customize UI appearance
+- [FAQ](faq.md) - Common issues
 
 ---
-
-### Issue: "Commands not working"
-
-**Solutions:**
-
-1. **Check GearSwap loaded on both**
-
-   ```
-   //lua list     # Verify gearswap in list
-   ```
-
-2. **Check DualBox system loaded**
-
-   ```
-   # Should see message on load:
-   [DualBox] System initialized
-   ```
-
-3. **Enable debug (MAIN)**
-
-   ```
-   //gs debugmode
-   ```
-
- Look for errors when using `//gs c altjob`
-
----
-
-### Issue: "Updates delayed"
-
-**Normal behavior:**
-
-- Network delay: 1-3 seconds typical
-- System polls every 0.5s
-
-**If delay > 5 seconds:**
-
-1. **Check network latency**
-2. **Reduce polling if needed** (advanced - edit DualBoxManager)
-3. **Manual force update**
-
-   ```
-   //gs c altjob
-   ```
-
----
-
-## Advanced Configuration
-
-### Disable DualBox System
-
-**Temporarily:**
-
-```
-# In DUALBOX_CONFIG.lua
-DualBoxConfig.enabled = false
-```
-
-**Then reload:**
-
-```
-//gs c reload
-```
-
-### Multiple Alt Characters
-
-Currently supports **1 MAIN + 1 ALT**.
-
-**For 3+ characters:**
-
-- Requires custom modification (not supported out-of-box)
-- Each ALT needs separate config
-- MAIN can only track 1 ALT at a time
-
-### Custom UI Position for Alt Job Display
-
-**On MAIN:**
-
-1. Load UI
-2. Drag to desired position
-3. Save:
-
-   ```
-   //gs c ui save
-   ```
-
-Alt job display position saves with UI.
-
----
-
-## How It Works (Technical)
-
-### Communication Flow
-
-```lua
--- 1. MAIN requests (via send_command)
-send_command('@input //send Kaories //gs c requestjob')
-
--- 2. ALT receives command (job_self_command hook)
-if command == 'requestjob' then
-    DualBoxManager.handle_job_request()
-end
-
--- 3. ALT sends response
-send_command('@input //send Tetsouo //gs c altjobupdate WHM SCH')
-
--- 4. MAIN receives update
-if command == 'altjobupdate' then
-    DualBoxManager.receive_alt_job(job, subjob)
-end
-
--- 5. MAIN updates UI
-UI_MANAGER.refresh_alt_job_display()
-```
-
-### Auto-Update on Job Change
-
-```lua
--- In job_sub_job_change (ALT)
-function job_sub_job_change(newSubjob, oldSubjob)
-    -- Auto-send update to MAIN
-    DualBoxManager.send_job_update()
-end
-```
-
----
-
-## Best Practices
-
-### Character Organization
-
-**Recommended setup:**
-
-- **MAIN**: Full gear, all jobs configured
-- **ALT**: Support jobs (WHM, BRD, GEO, COR, RDM)
-
-### Testing After Changes
-
-After editing DualBox config:
-
-1. Reload both: `//gs c reload`
-2. Test manual: `//gs c altjob`
-3. Test auto: Change ALT job
-
-### Backup Configs
-
-```cmd
-# Backup both character configs
-xcopy /E /I Tetsouo\config Tetsouo\config_backup
-xcopy /E /I Kaories\config Kaories\config_backup
-```
-
----
-
-## Quick Reference
-
-| Setting | MAIN | ALT |
-|---------|------|-----|
-| `role` | `"main"` | `"alt"` |
-| `character_name` | `"Tetsouo"` | `"Kaories"` |
-| `alt_character` | `"Kaories"` | (not used) |
-| `main_character` | (not used) | `"Tetsouo"` |
-| `enabled` | `true` | `true` |
-| `timeout` | `30` | `30` |
-| `debug` | `false` | `false` |
-
----
-
-## Next Steps
-
-- **[Configuration Guide](configuration.md)** - Advanced config options
-- **[Commands Reference](commands.md)** - All available commands
-- **[UI Guide](../features/ui.md)** - Customize UI appearance
-- **[FAQ](faq.md)** - Common issues
-
----
-
-**Supported**: 1 MAIN + 1 ALT character setup

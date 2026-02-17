@@ -2,6 +2,8 @@
 
 States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
 
+**Config**: `Tetsouo/config/sam/SAM_KEYBINDS.lua`
+
 ---
 
 ## States
@@ -57,3 +59,23 @@ Internal numeric state used by the midcast watchdog system. Represents your tota
 | HybridMode | PDT / Normal | PDT | Alt+2 |
 | MainWeapon | Masamune / Kusanagi / Shining / Dojikiri / Soboro / Norifusa | Masamune | Alt+1 |
 | FastCast | 0 - 80 | 0 | -- |
+
+---
+
+## Configuration
+
+**Config files**: `Tetsouo/config/sam/`
+
+| File | Purpose |
+|------|---------|
+| `SAM_KEYBINDS.lua` | Keybind definitions |
+| `SAM_LOCKSTYLE.lua` | Lockstyle per subjob |
+| `SAM_MACROBOOK.lua` | Macrobook per subjob |
+| `SAM_STATES.lua` | State definitions |
+| `SAM_TP_CONFIG.lua` | TP and weaponskill settings |
+
+**Lockstyle**: #2 (all subjobs)
+
+**Macrobook**: Book 2, Page 1 (all subjobs)
+
+See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.

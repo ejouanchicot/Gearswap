@@ -2,6 +2,8 @@
 
 States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
 
+**Config**: `Tetsouo/config/blm/BLM_KEYBINDS.lua`
+
 ---
 
 ## States
@@ -265,3 +267,25 @@ Internal numeric state used by the watchdog system to calculate cast time timeou
 | AOETier | Aja / III / II / I | Aja | Alt+= |
 | Storm | 8 storm spells | Firestorm | Alt+0 |
 | FastCast | 0-80 (by 10) | 80 | -- |
+
+---
+
+## Configuration
+
+**Config files**: `Tetsouo/config/blm/`
+
+| File | Purpose |
+|------|---------|
+| `BLM_KEYBINDS.lua` | Keybind definitions |
+| `BLM_LOCKSTYLE.lua` | Lockstyle per subjob |
+| `BLM_MACROBOOK.lua` | Macrobook per subjob |
+| `BLM_STATES.lua` | State definitions |
+| `BLM_TP_CONFIG.lua` | TP and weaponskill settings |
+| `BLM_ELEMENTAL_CONFIG.lua` | Elemental spell configuration |
+| `BLM_MP_CONFIG.lua` | MP management settings |
+
+**Lockstyle**: #5 (all subjobs)
+
+**Macrobook**: Book 8, Page 1 (all subjobs)
+
+See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.

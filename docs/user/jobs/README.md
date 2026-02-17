@@ -1,57 +1,26 @@
 # Job documentation
 
-15 jobs supported. Each job has 8 documentation files: README, quick-start, keybinds, commands, states, sets, configuration, troubleshooting.
+15 jobs supported. Each job folder contains a `states.md` file documenting its
+modes and state cycling options. Some jobs include additional reference files.
 
-## Mage jobs
+PUP and RUN currently have a README only (states documentation pending).
 
-| Job | Description |
-|-----|-------------|
-| [BLM](blm/) | Magic burst detection, weapon cycling (Laevateinn/Akademos/Lathi) |
-| [RDM](rdm/) | 3 enfeebling modes, 3 nuke modes, enhancement cycles, auto-Saboteur |
-| [WHM](whm/) | Cure auto-tier, Afflatus Solace/Misery management |
-| [GEO](geo/) | Indi/Geo/Both bubble modes, auto-Entrust |
+## Job index
 
-## Support jobs
-
-| Job | Description |
-|-----|-------------|
-| [BRD](brd/) | Song rotation, instrument management, Marsyas Honor March lock |
-| [COR](cor/) | Roll tracking with bust rates, party job detection |
-
-## Tank jobs
-
-| Job | Description |
-|-----|-------------|
-| [PLD](pld/) | AoE BLU enmity rotation, rune system, auto-Majesty, Divine Emblem |
-| [RUN](run/) | Rune management, ward system, BLU magic support |
-
-## Melee jobs
-
-| Job | Description |
-|-----|-------------|
-| [WAR](war/) | 6 weapon options, TP bonus display, Mighty Strikes detection |
-| [SAM](sam/) | Hasso/Seigan management, Meditate tracking, Third Eye |
-| [DNC](dnc/) | Auto-Climactic Flourish, jump chaining, step rotation |
-| [THF](thf/) | Smartbuff cycle (THF + subjob), SA/TA management |
-| [DRK](drk/) | Weapon management, hybrid modes |
-
-## Pet jobs
-
-| Job | Description |
-|-----|-------------|
-| [BST](bst/) | 7 ecosystems, species cycling, Ready Move system (1-6) |
-| [PUP](pup/) | Automaton management, pet precast/midcast |
-
-## File structure per job
-
-```
-docs/user/jobs/[job]/
-  README.md            Overview and navigation
-  quick-start.md       Loading and first steps
-  keybinds.md          Keyboard shortcuts reference
-  commands.md          Available commands
-  states.md            Modes and state cycling
-  sets.md              Equipment sets breakdown
-  configuration.md     Config files reference
-  troubleshooting.md   Common issues and fixes
-```
+| Job | Role | Primary doc | Additional files |
+|-----|------|-------------|------------------|
+| [BLM](blm/) | Mage | [states.md](blm/states.md) | -- |
+| [BRD](brd/) | Support | [states.md](brd/states.md) | -- |
+| [BST](bst/) | Pet | [states.md](bst/states.md) | -- |
+| [COR](cor/) | Support | [states.md](cor/states.md) | -- |
+| [DNC](dnc/) | Melee | [states.md](dnc/states.md) | -- |
+| [DRK](drk/) | Melee | [states.md](drk/states.md) | [abilities.md](drk/abilities.md) |
+| [GEO](geo/) | Mage | [states.md](geo/states.md) | -- |
+| [PLD](pld/) | Tank | [states.md](pld/states.md) | -- |
+| [PUP](pup/) | Pet | [README.md](pup/README.md) | -- |
+| [RDM](rdm/) | Mage | [states.md](rdm/states.md) | -- |
+| [RUN](run/) | Tank | [README.md](run/README.md) | -- |
+| [SAM](sam/) | Melee | [states.md](sam/states.md) | -- |
+| [THF](thf/) | Melee | [states.md](thf/states.md) | -- |
+| [WAR](war/) | Melee | [states.md](war/states.md) | [tp-bonus.md](war/tp-bonus.md) |
+| [WHM](whm/) | Healer | [states.md](whm/states.md) | -- |

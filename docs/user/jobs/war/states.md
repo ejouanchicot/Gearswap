@@ -2,6 +2,8 @@
 
 States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
 
+**Config**: `Tetsouo/config/war/WAR_KEYBINDS.lua`
+
 ---
 
 ## States
@@ -58,3 +60,23 @@ Internal numeric state used by the midcast watchdog system. Represents your tota
 | HybridMode | PDT / Normal | PDT | Alt+2 |
 | MainWeapon | Ukonvasara / Naegling / NaeglingKC / Shining / Chango / Ikenga / Loxotic | Ukonvasara | Alt+1 |
 | FastCast | 0 - 80 | 0 | -- |
+
+---
+
+## Configuration
+
+**Config files**: `Tetsouo/config/war/`
+
+| File | Purpose |
+|------|---------|
+| `WAR_KEYBINDS.lua` | Keybind definitions |
+| `WAR_LOCKSTYLE.lua` | Lockstyle per subjob |
+| `WAR_MACROBOOK.lua` | Macrobook per subjob |
+| `WAR_STATES.lua` | State definitions |
+| `WAR_TP_CONFIG.lua` | TP and weaponskill settings |
+
+**Lockstyle**: #4 (all subjobs)
+
+**Macrobook**: Book 22, Page 1 (default). SAM=Book 22/Page 1, DRG=Book 25/Page 1, DNC=Book 28/Page 1
+
+See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.

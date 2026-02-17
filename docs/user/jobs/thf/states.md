@@ -2,6 +2,8 @@
 
 States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
 
+**Config**: `Tetsouo/config/thf/THF_KEYBINDS.lua`
+
 ---
 
 ## States
@@ -140,3 +142,23 @@ Internal numeric state used by the midcast watchdog system. Represents your tota
 | AbyWeapon | Dagger2 / Sword / Club / Great Sword / Polearm / Staff / Scythe | Sword | Alt+6 |
 | RangeLock | false / true | false | Alt+7 |
 | FastCast | 0 - 80 | 0 | -- |
+
+---
+
+## Configuration
+
+**Config files**: `Tetsouo/config/thf/`
+
+| File | Purpose |
+|------|---------|
+| `THF_KEYBINDS.lua` | Keybind definitions |
+| `THF_LOCKSTYLE.lua` | Lockstyle per subjob |
+| `THF_MACROBOOK.lua` | Macrobook per subjob |
+| `THF_STATES.lua` | State definitions |
+| `THF_TP_CONFIG.lua` | TP and weaponskill settings |
+
+**Lockstyle**: #1 (all subjobs)
+
+**Macrobook**: Book 1, Page 1 (all subjobs)
+
+See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.

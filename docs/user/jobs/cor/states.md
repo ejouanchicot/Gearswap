@@ -2,6 +2,8 @@
 
 States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
 
+**Config**: `Tetsouo/config/cor/COR_KEYBINDS.lua`
+
 ---
 
 ## States
@@ -170,3 +172,23 @@ Internal numeric state used by the watchdog system to calculate cast time timeou
 | SubRoll | 20 rolls (see above) | Samurai Roll | Alt+6 |
 | LuzafRing | ON / OFF | ON | Alt+7 |
 | FastCast | 0-80 (by 10) | 0 | -- |
+
+---
+
+## Configuration
+
+**Config files**: `Tetsouo/config/cor/`
+
+| File | Purpose |
+|------|---------|
+| `COR_KEYBINDS.lua` | Keybind definitions |
+| `COR_LOCKSTYLE.lua` | Lockstyle per subjob |
+| `COR_MACROBOOK.lua` | Macrobook per subjob |
+| `COR_STATES.lua` | State definitions |
+| `COR_TP_CONFIG.lua` | TP and weaponskill settings |
+
+**Lockstyle**: #3 (all subjobs)
+
+**Macrobook**: Book 3, Page 1 (all subjobs)
+
+See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.
