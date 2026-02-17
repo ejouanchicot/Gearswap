@@ -45,33 +45,36 @@ Verify they loaded successfully - you should see confirmation messages.
 
 ```
 [Windower]/addons/GearSwap/data/
-├── TETSOUO_WAR.lua          (or your character name)
-├── shared/                   (Core systems)
-│   ├── config/
+├── [YourName]/              (Character-specific: entry files, config, sets)
+├── _master/                 (Templates for new characters)
+├── shared/                  (Core systems -- do not modify)
 │   ├── jobs/
-│   └── utils/
-├── docs/                     (Documentation)
+│   ├── utils/
+│   ├── data/
+│   └── hooks/
+├── docs/                    (Documentation)
 └── README.md
 ```
 
 ### Step 4: Configure Character Name
 
-**Option A: Rename Files** (Recommended)
+**Option A: Clone Script** (Recommended)
 
-```
-TETSOUO_WAR.lua >> YOURNAME_WAR.lua
-TETSOUO_PLD.lua >> YOURNAME_PLD.lua
-etc.
-```
-
-**Option B: Clone Character** (Advanced)
-Use the included clone script:
+Use the included clone tool to generate your character files from the `_master/` templates:
 
 ```
 python clone_character.py
 ```
 
-See `CLONE_CHARACTER.md` for details.
+Or double-click `CLONE_CHARACTER.bat`. The script uses `character_db.lua` to auto-detect which jobs a known character needs, or lets you pick manually.
+
+**Option B: Manual Copy**
+
+1. Copy `_master/entry/Tetsouo_WAR.lua` to `[YourName]/[YourName]_WAR.lua`
+2. Copy `_master/config/war/` to `[YourName]/config/war/`
+3. Copy `_master/sets/war_sets.lua` to `[YourName]/sets/war_sets.lua`
+4. Edit the entry file to replace `Tetsouo` with your character name
+5. Repeat for each job you want
 
 ### Step 5: Load GearSwap
 
@@ -170,6 +173,5 @@ If you encounter issues:
 
 ---
 
-**Version**: 1.0
-**Last Updated**: 2025-10-26
-**Supported Jobs**: WAR, PLD, DNC, DRK, SAM, THF, RDM, WHM, BLM, GEO, COR, BRD, BST
+**Version**: 3.2.0
+**Supported Jobs**: BLM, BRD, BST, COR, DNC, DRK, GEO, PLD, PUP, RDM, RUN, SAM, THF, WAR, WHM (15 jobs)

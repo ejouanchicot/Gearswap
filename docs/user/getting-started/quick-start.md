@@ -42,23 +42,15 @@ All jobs share these core keybinds:
 
 ### Job-Specific Keybinds
 
-Each job has unique keybinds for job-specific features.
+Each job adds extra keybinds starting from Alt+3 onward. Examples:
 
-**WAR Example**:
+**DNC**: Alt+3 Waltz, Alt+4 AoE Waltz, Alt+5 Step, Alt+6 Climactic Auto, Alt+7 Jump Auto
 
-- Alt+3: Cycle TP Mode (Attack/AccuracyMax/etc.)
+**PLD**: Alt+4 AoE BLU rotation, Alt+5 Rune, Alt+6 Cycle Rune Mode
 
-**PLD Example**:
+**RDM**: Alt+5 Enfeebling Mode, Alt+6 Nuke Mode, F1-F5 Enhancement cycles
 
-- Alt+3: Cycle Cure Mode
-- Alt+4: Cycle Enmity Mode
-
-**DNC Example**:
-
-- Alt+W: Waltz macro
-- Alt+S: Steps macro
-
-See `../guides/keybinds.md` for complete job-specific keybind lists.
+See [keybinds guide](../guides/keybinds.md) for complete per-job reference.
 
 ## Common Workflows
 
@@ -118,49 +110,32 @@ Output example:
 
 ### Warrior (WAR)
 
-**Core Commands**:
-
-```bash
-//gs c cycle MainWeapon    # Cycle weapons
-//gs c cycle TPMode        # Attack/AccuracyMax/etc.
+```
+//gs c cycle MainWeapon    Cycle weapons (Ukonvasara, Naegling, etc.)
+//gs c cycle HybridMode    Toggle Normal / PDT
 ```
 
-**Key Features**:
-
-- Automatic TP Bonus display on WS
-- Mighty Strikes detection
-- Weapon-specific WS sets
+TP Bonus display on WS, Mighty Strikes detection, weapon-specific WS sets.
 
 ### Paladin (PLD)
 
-**Core Commands**:
-
-```bash
-//gs c cycle CureMode      # Cure gear modes
-//gs c cycle EnmityMode    # Enmity on/off
-//gs c bluaoe               # Cast AOE Blue Magic rotation
+```
+//gs c aoe                 AoE BLU enmity rotation (requires /BLU)
+//gs c rune                Use selected rune (requires /RUN)
+//gs c cycle RuneMode      Cycle Sulpor / Lux
 ```
 
-**Key Features**:
-
-- Auto-Majesty before Cure spells
-- Divine Emblem auto-trigger
-- Enmity mode toggle
+Auto-Majesty before Cure, Divine Emblem auto-trigger.
 
 ### Dancer (DNC)
 
-**Core Commands**:
-
-```bash
-//gs c waltz               # Smart tier Waltz (HP-based)
-//gs c aoewaltz            # AOE Waltz
+```
+//gs c waltz               Curing Waltz (auto-selects tier I-V)
+//gs c aoewaltz            Divine Waltz (AoE heal)
+//gs c step                Step rotation (Main/Alt)
 ```
 
-**Key Features**:
-
-- Automatic Waltz tier selection (HP-based)
-- Climactic Flourish auto-trigger on WS
-- Step/Flourish management
+Auto Climactic Flourish toggle, auto Jump before WS.
 
 ## Advanced Features
 
@@ -238,6 +213,5 @@ Alt+F1                    # Quick toggle
 
 ---
 
-**Version**: 1.0
-**Last Updated**: 2025-10-26
-**Supported Jobs**: WAR, PLD, DNC, DRK, SAM, THF, RDM, WHM, BLM, GEO, COR, BRD, BST
+**Version**: 3.2.0
+**Supported Jobs**: BLM, BRD, BST, COR, DNC, DRK, GEO, PLD, PUP, RDM, RUN, SAM, THF, WAR, WHM (15 jobs)
