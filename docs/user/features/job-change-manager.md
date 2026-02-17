@@ -22,11 +22,11 @@
 
 **What it does**:
 
-- **Debounces** job/subjob changes (3.0 second cooldown)
-- **Cleans up** old job state before loading new job
-- **Manages** keybinds, UI, lockstyle, and macrobook transitions
-- **Persists** state across reloads
-- **Prevents** race conditions and duplicate operations
+- **Debounces** job changes (3.0s for main job changes, 0.5s for subjob-only changes)
+- **Cleans up** old job state before loading new job (AutoMove, Watchdog, UI)
+- **Reloads GearSwap** via `gs reload` for a clean state
+- **Persists** state across reloads using global scope
+- **Prevents** race conditions via counter-based invalidation
 
 **Automatic**: You never interact with it directly - it runs automatically.
 
@@ -57,13 +57,13 @@
 **Same scenario with Job Change Manager**:
 
 ```
-1. Start changing DNC >> WAR
-2. JobChangeManager: Cancel ALL pending DNC operations 
-3. JobChangeManager: Debounce 3.0s - ignore rapid changes 
-4. User changes subjob WAR/SAM >> WAR/NIN
-5. JobChangeManager: Too soon, ignore this change 
-6. After 3.0s: Execute final change (WAR/NIN)
-7. One clean transition, no conflicts 
+1. Start changing DNC >> WAR (main job change)
+2. JobChangeManager: Cleanup all systems immediately
+3. JobChangeManager: Schedule reload with 3.0s debounce, increment counter
+4. User changes subjob WAR/SAM >> WAR/NIN (subjob-only change)
+5. JobChangeManager: New counter invalidates previous timer
+6. JobChangeManager: Schedule reload with 0.5s debounce (subjob-only)
+7. After 0.5s: Execute gs reload with final state (WAR/NIN)
 ```
 
 **Result**: Clean job change, everything works perfectly
@@ -72,39 +72,47 @@
 
 ## How It Works
 
-### Debouncing (3.0 Second Cooldown)
+### Debouncing (Variable Delay)
 
-**Concept**: Only process the **last** job/subjob change within a 3-second window.
+**Concept**: Only process the **last** job/subjob change within a debounce window. Each new change increments a counter that invalidates all previous pending timers.
 
-**Example**:
+**Delay values**:
+- **Main job change**: 3.0s (accounts for full GearSwap reload time)
+- **Subjob-only change**: 0.5s (faster, since less initialization needed)
+
+**Example (rapid subjob changes)**:
 
 ```
-Time 0.0s: DNC/WHM >> WAR/SAM (change started)
-Time 1.0s: WAR/SAM >> WAR/NIN (user changes subjob)
-Time 2.0s: WAR/NIN >> WAR/DNC (user changes subjob again)
-
-JobChangeManager:
-- Ignores change at 1.0s (too soon)
-- Ignores change at 2.0s (too soon)
-- Waits until 5.0s (3.0s after last change)
-- Executes: DNC/WHM >> WAR/DNC (final state)
+Time 0.0s: WAR/SAM >> WAR/NIN (subjob change, schedule reload at 0.5s)
+Time 0.3s: WAR/NIN >> WAR/DNC (subjob change, previous timer invalidated)
+Time 0.8s: Reload executes with WAR/DNC (0.5s after last change)
 ```
 
-**Why 3.0 seconds?**:
+**Example (main job change then subjob change)**:
 
-- Accounts for GearSwap reload time
-- Prevents accidental rapid toggles
-- Ensures all systems have time to initialize
+```
+Time 0.0s: DNC/WHM >> WAR/SAM (main job change, schedule reload at 3.0s)
+Time 1.0s: WAR/SAM >> WAR/NIN (subjob-only change, previous timer invalidated)
+Time 1.5s: Reload executes with WAR/NIN (0.5s after last change)
+```
+
+**Why different delays?**:
+- **3.0s for main job**: Full job transition requires more initialization
+- **0.5s for subjob**: Lighter reload, only subjob config changes
 
 ### State Persistence
 
-**Global state** (`_G.JobChangeManagerState`):
+**Global state** (`_G.JobChangeManagerSTATE`):
 
 ```lua
 {
-    last_job_change = timestamp,     -- Last change time
-    pending_operations = {...},      -- Operations to cancel
-    initialized = true               -- Manager ready
+    current_main_job          = nil,    -- Current main job
+    current_sub_job           = nil,    -- Current sub job
+    target_main_job           = nil,    -- Target job after debounce
+    target_sub_job            = nil,    -- Target subjob after debounce
+    debounce_timer            = nil,    -- Pending coroutine reference
+    debounce_counter          = 0,      -- Invalidation counter
+    lockstyle_cancel_registry = {}      -- Per-job cancel functions
 }
 ```
 
@@ -119,28 +127,18 @@ JobChangeManager:
 - `//lua unload gearswap` (full unload)
 - Game client restart
 
-### Managed Systems
+### Cleanup Before Reload
 
-**What Job Change Manager controls**:
+**What Job Change Manager cleans up before scheduling `gs reload`**:
 
-1. **Keybinds**:
- - Unbinds old job keybinds
- - Binds new job keybinds
- - Prevents double-binding
+1. **AutoMove**: Stops movement detection coroutine
+2. **MidcastWatchdog**: Stops background check coroutine
+3. **UI (Keybind Overlay)**: Destroys UI element and clears state cache
+4. **UI Globals**: Clears `keybind_ui_display`, `keybind_ui_visible`
+5. **Smart Init**: Invalidates pending smart_init coroutines
+6. **Lockstyle**: Registered cancel functions called via `cancel_all()`
 
-2. **UI (Keybind Overlay)**:
- - Destroys old UI
- - Creates new UI for new job
- - Prevents duplicate windows
-
-3. **Lockstyle**:
- - Cancels pending lockstyle operations
- - Applies new lockstyle after delay
- - Prevents spam
-
-4. **Macrobook**:
- - Sets new macrobook/page
- - Ensures correct macro setup
+After cleanup, `gs reload` handles fresh initialization of keybinds, UI, lockstyle, and macrobook.
 
 ---
 
@@ -166,13 +164,12 @@ JobChangeManager:
 **Behind the scenes**:
 
 ```
-1. JobChangeManager: Detected job change DNC >> WAR
-2. JobChangeManager: Cancel all pending DNC operations
-3. JobChangeManager: Check debounce (last change > 3.0s ago? Yes)
-4. JobChangeManager: Allow change to proceed
-5. JobChangeManager: Register WAR keybinds with UI
-6. JobChangeManager: Schedule lockstyle (8s delay)
-7. JobChangeManager: Update state (last_job_change = now)
+1. JobChangeManager: Detected job change DNC >> WAR (main job change)
+2. JobChangeManager: Cleanup all systems (AutoMove, Watchdog, UI)
+3. JobChangeManager: Increment debounce counter (invalidates old timers)
+4. JobChangeManager: Schedule gs reload with 3.0s delay
+5. After 3.0s: Counter still valid, execute gs reload
+6. GearSwap reloads: WAR file loads with fresh state
 ```
 
 **You see none of this - just smooth transitions!**
@@ -193,13 +190,13 @@ Time 3s:   Press /ja "Samurai" <me> (change to WAR/SAM)
 **With Job Change Manager**:
 
 ```
-[JobChangeManager] Subjob change detected: WAR/NIN (debouncing...)
-[JobChangeManager] Subjob change detected: WAR/DNC (debouncing...)
-[JobChangeManager] Subjob change detected: WAR/SAM (debouncing...)
-[JobChangeManager] Executing final change: WAR/SAM (after 3.0s cooldown)
+[JCM] Subjob change detected: WAR/NIN (counter=1, delay=0.5s)
+[JCM] Subjob change detected: WAR/DNC (counter=2, invalidates counter=1)
+[JCM] Subjob change detected: WAR/SAM (counter=3, invalidates counter=2)
+[JCM] Executing reload: WAR/SAM (0.5s after last change)
 ```
 
-**Result**: Only final state (WAR/SAM) executes - clean!
+**Result**: Only final state (WAR/SAM) executes after 0.5s - clean!
 
 ---
 
@@ -211,40 +208,32 @@ Time 3s:   Press /ja "Samurai" <me> (change to WAR/SAM)
 
 ```lua
 -- In user_setup() of TETSOUO_[JOB].lua
-local jcm_success, JobChangeManager = pcall(require, 'utils/core/job_change_manager')
+local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
 if jcm_success and JobChangeManager then
-    JobChangeManager.initialize({
-        keybinds = [JOB]Keybinds,
-        ui = KeybindUI,
-        lockstyle = select_default_lockstyle,
-        macrobook = select_default_macro_book
-    })
+    JobChangeManager.initialize()
 end
 ```
 
-**Parameters**:
-
-- `keybinds`: Job's keybind table
-- `ui`: UI manager instance
-- `lockstyle`: Function to apply lockstyle
-- `macrobook`: Function to set macrobook
+The `initialize()` function sets `current_main_job` and `current_sub_job` from `player` data. No configuration parameters are needed (the config argument is kept for backward compatibility but unused).
 
 ### Job Change Detection
 
 **Hook**: `job_sub_job_change(newSubjob, oldSubjob)`
 
-**Called by**: GearSwap when subjob changes
+**Called by**: GearSwap when job or subjob changes
 
 **Example**:
 
 ```lua
 function job_sub_job_change(newSubjob, oldSubjob)
-    local success, JobChangeManager = pcall(require, 'utils/core/job_change_manager')
+    local success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if success and JobChangeManager then
         JobChangeManager.on_job_change(player.main_job, newSubjob)
     end
 end
 ```
+
+**Key behavior**: `on_job_change` determines the delay based on whether only the subjob changed (0.5s) or the main job changed too (3.0s).
 
 ### Cancellation System
 
@@ -264,21 +253,27 @@ JobChangeManager.cancel_all()  -- Cancels pending operations
 
 ### Debounce Implementation
 
-**Cooldown check**:
+**Counter-based invalidation with variable delay**:
 
 ```lua
-local current_time = os.clock()
-local last_change_time = JobChangeManagerState.last_job_change or 0
-local time_since_last = current_time - last_change_time
+-- Increment counter to invalidate previous timers
+STATE.debounce_counter = STATE.debounce_counter + 1
+local my_counter = STATE.debounce_counter
 
-if time_since_last < 3.0 then
-    -- Too soon, ignore this change
-    return false
+-- Choose delay based on change type
+local delay = 3.0  -- Default: main job change
+if STATE.current_main_job == main_job and STATE.current_sub_job ~= sub_job then
+    delay = 0.5  -- Faster for subjob-only changes
 end
 
--- Enough time passed, allow change
-JobChangeManagerState.last_job_change = current_time
-return true
+-- Schedule reload with debounce
+STATE.debounce_timer = coroutine.schedule(function()
+    -- Verify counter (prevent outdated execution)
+    if my_counter ~= STATE.debounce_counter then
+        return  -- Newer change queued, abort this reload
+    end
+    windower.send_command('gs reload')
+end, delay)
 ```
 
 ---
@@ -293,7 +288,7 @@ return true
 
 **Solutions**:
 
-1. **Wait 3 seconds** after last job/subjob change, then:
+1. **Wait for debounce to complete** (3.0s for main job, 0.5s for subjob), then:
 
    ```
    //lua reload gearswap
@@ -308,8 +303,8 @@ return true
 
 3. **Check if debouncing** (normal behavior):
  - If you changed jobs/subjobs rapidly, system is waiting
- - Wait for debounce period to end
- - Keybinds will load automatically
+ - Wait for debounce period to end (0.5s-3.0s depending on change type)
+ - GearSwap will reload automatically
 
 ### Issue: Duplicate UI Windows
 
@@ -348,7 +343,7 @@ return true
 **Solutions**:
 
 1. **Normal behavior** if changing jobs quickly:
- - System will stabilize after 3.0s
+ - System will stabilize after debounce (3.0s main job, 0.5s subjob)
  - Extra lockstyle applications are harmless
 
 2. **If excessive** (10+ applications):
@@ -369,8 +364,9 @@ return true
 
 **Solutions**:
 
-1. **Stop changing jobs** for 3 seconds:
- - Let the debounce period complete
+1. **Stop changing jobs** and wait for debounce:
+ - Main job changes: wait 3.0s
+ - Subjob-only changes: wait 0.5s
  - Final change will execute automatically
 
 2. **If unintentional** (macro spam):
@@ -398,9 +394,8 @@ return true
 
 **Avoid**:
 
-- Changing jobs multiple times within 5 seconds
-- Spamming subjob change macros
-- Running `//lua reload gearswap` during job change
+- Changing main job multiple times within 3 seconds
+- Running `//lua reload gearswap` during job change (debounce handles this)
 
 ### Subjob Changes
 
@@ -408,13 +403,13 @@ return true
 
 ```
 1. Change subjob: /ja "Subjob Name" <me>
-2. Wait 3-5 seconds
+2. Wait 1-2 seconds (subjob debounce is only 0.5s + reload time)
 3. Verify lockstyle/macrobook updated
 ```
 
 **If you need rapid changes**:
 
-- Accept debouncing (system will process final change)
+- Accept debouncing (system will process final change after 0.5s)
 - Don't reload GearSwap during transitions
 - Trust the system!
 
@@ -423,7 +418,7 @@ return true
 **If something seems wrong**:
 
 ```
-Step 1: Wait 5 seconds (let debounce complete)
+Step 1: Wait 3-5 seconds (let debounce + reload complete)
 Step 2: Check if issue persists
 Step 3: If yes, //lua reload gearswap
 Step 4: If still broken, //lua unload gearswap && //lua load gearswap
@@ -471,17 +466,17 @@ Step 4: If still broken, //lua unload gearswap && //lua load gearswap
 ```
 WHAT IT DOES:
 - Prevents conflicts during job/subjob changes
-- Debounces rapid changes (3.0s cooldown)
-- Manages keybinds, UI, lockstyle, macrobook
-- Persists state across reloads
+- Debounces rapid changes (3.0s main job, 0.5s subjob-only)
+- Cleans up systems (AutoMove, Watchdog, UI) before reload
+- Persists state across reloads via global scope
 
 HOW IT WORKS:
 1. Detects job/subjob change
-2. Checks if 3.0s passed since last change
-3. If YES: Execute change
-4. If NO: Ignore (debounce)
-5. Cancel old job operations
-6. Initialize new job systems
+2. Cleans up all systems immediately
+3. Increments counter (invalidates previous pending timers)
+4. Determines delay: 3.0s (main job) or 0.5s (subjob-only)
+5. Schedules gs reload with debounce delay
+6. On timer expiry: verifies counter, executes gs reload
 
 USER IMPACT:
 - Invisible (works automatically)
@@ -491,7 +486,7 @@ USER IMPACT:
 
 TROUBLESHOOTING:
 - Issue: Keybinds not working
-  Solution: Wait 3s, //lua reload gearswap
+  Solution: Wait for debounce, //lua reload gearswap
 
 - Issue: Duplicate UI
   Solution: //gs c ui (toggle off/on)
@@ -499,8 +494,8 @@ TROUBLESHOOTING:
 - Issue: Lockstyle spam
   Solution: Normal if changing jobs quickly
 
-DEBOUNCE PERIOD: 3.0 seconds
-STATE PERSISTENCE: Survives //lua reload
+DEBOUNCE PERIODS: 3.0s (main job change), 0.5s (subjob-only change)
+STATE PERSISTENCE: Survives //lua reload (global scope)
 AUTOMATIC: No user configuration needed
 ```
 

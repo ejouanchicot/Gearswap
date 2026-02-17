@@ -35,12 +35,22 @@ All commands use the format `//gs c [command] [parameters]`.
 
 ## UI
 
-| Command | Description |
-|---------|-------------|
-| `ui` | Toggle UI visibility |
-| `ui show` | Show UI |
-| `ui hide` | Hide UI |
-| `ui save` | Save current UI position |
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `ui` | | Toggle UI visibility |
+| `ui on` | `ui enable` | Enable UI (create and show) |
+| `ui off` | `ui disable` | Disable UI (hide and persist across reloads) |
+| `ui header` | `ui h` | Toggle header section |
+| `ui legend` | `ui l` | Toggle legend section |
+| `ui columns` | `ui c` | Toggle column headers |
+| `ui footer` | `ui f` | Toggle footer section |
+| `ui font <name>` | | Change font (`Consolas` or `Courier New`) |
+| `ui bg <preset>` | `ui background`, `ui theme` | Apply a background preset (e.g., `dark_blue`, `neon_green`) |
+| `ui bg toggle` | `ui theme toggle` | Toggle background visibility |
+| `ui bg list` | `ui theme list` | List available background presets |
+| `ui bg <r> <g> <b> <a>` | | Set custom background RGBA (0-255 each) |
+| `ui save` | `ui s` | Save current UI position and settings |
+| `ui help` | `ui ?` | Show UI command help |
 
 ## Warp system
 

@@ -32,10 +32,31 @@ The UI system provides a visual overlay displaying:
 ### Quick Commands
 
 ```bash
-//gs c ui        # Toggle UI on/off
-Alt+F1          # Quick toggle (default keybind)
-//gs c ui save   # Save current position
+//gs c ui          # Toggle UI on/off
+//gs c ui on       # Enable UI
+//gs c ui off      # Disable UI
+//gs c ui save     # Save current position and settings
+//gs c ui help     # Show all UI commands
 ```
+
+### All UI Commands
+
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `ui` | | Toggle UI visibility |
+| `ui on` | `ui enable` | Enable UI (create and show) |
+| `ui off` | `ui disable` | Disable UI (hide and persist across reloads) |
+| `ui header` | `ui h` | Toggle header section |
+| `ui legend` | `ui l` | Toggle legend section |
+| `ui columns` | `ui c` | Toggle column headers |
+| `ui footer` | `ui f` | Toggle footer section |
+| `ui font <name>` | | Change font (`Consolas` or `Courier New`) |
+| `ui bg <preset>` | `ui background`, `ui theme` | Apply a background preset |
+| `ui bg toggle` | `ui theme toggle` | Toggle background visibility |
+| `ui bg list` | `ui theme list` | List available background presets |
+| `ui bg <r> <g> <b> <a>` | | Set custom background RGBA (0-255 each) |
+| `ui save` | `ui s` | Save current UI position and settings |
+| `ui help` | `ui ?` | Show UI command help |
 
 ---
 
@@ -212,13 +233,26 @@ UIConfig.text = {
 
 ```lua
 UIConfig.background = {
-    alpha = 100, -- Opacity (0-255): 0=transparent, 255=opaque
-    red = 10,    -- Background color RGB
-    green = 10,
-    blue = 25,
+    r = 15,        -- Red (0-255)
+    g = 15,        -- Green (0-255)
+    b = 35,        -- Blue (0-255)
+    a = 180,       -- Alpha/Opacity (0-255): 0=transparent, 255=opaque
     visible = true -- Show background
 }
 ```
+
+#### Background Presets
+
+The config file includes a `background_presets` table with named themes you can switch to at runtime:
+
+```bash
+//gs c ui theme dark_blue      # Apply dark_blue preset
+//gs c ui theme neon_green     # Apply neon_green preset
+//gs c ui theme list           # List all available presets
+//gs c ui theme toggle         # Toggle background on/off
+```
+
+Available preset categories: dark, light, medium, transparent, neon.
 
 #### Background Examples
 
@@ -226,10 +260,10 @@ UIConfig.background = {
 
 ```lua
 UIConfig.background = {
-    alpha = 150,
-    red = 0,
-    green = 0,
-    blue = 0,
+    r = 0,
+    g = 0,
+    b = 0,
+    a = 150,
     visible = true
 }
 ```
@@ -238,10 +272,10 @@ UIConfig.background = {
 
 ```lua
 UIConfig.background = {
-    alpha = 120,
-    red = 10,
-    green = 20,
-    blue = 50,
+    r = 15,
+    g = 15,
+    b = 35,
+    a = 180,
     visible = true
 }
 ```
@@ -588,11 +622,14 @@ UI reloads with your new settings.
 | `enabled` | Enable/disable UI | `true` |
 | `init_delay` | Delay before UI loads (seconds) | `5.0` |
 | `show_header` | Show title and legend | `true` |
+| `show_legend` | Show modifier key legend | `true` |
+| `show_column_headers` | Show column headers row | `true` |
 | `show_footer` | Show command reference | `true` |
-| `draggable` | Allow moving with mouse | `true` |
-| `text.size` | Font size | `12` |
+| `flags.draggable` | Allow moving with mouse | `true` |
+| `text.size` | Font size | `10` |
 | `text.font` | Font family | `'Consolas'` |
-| `background.alpha` | Background opacity (0-255) | `100` |
+| `background.a` | Background opacity (0-255) | `180` |
+| `background.r/g/b` | Background color RGB (0-255) | `15/15/35` |
 | `auto_save_position` | Auto-save position on drag | `false` |
 
 ---

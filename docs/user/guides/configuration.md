@@ -421,20 +421,23 @@ After modifying any configuration file:
 ```lua
 local DualBoxConfig = {}
 
+-- Character role: "main" or "alt"
+DualBoxConfig.role = "main"
+
+-- This character's name
+DualBoxConfig.character_name = "Tetsouo"
+
+-- The ALT character to receive job updates from
+DualBoxConfig.alt_character = "Kaories"
+
 -- Enable/disable DualBox system
 DualBoxConfig.enabled = true
 
--- Main character name
-DualBoxConfig.main_character = "Tetsouo"
+-- Timeout in seconds - assume alt offline if no update received
+DualBoxConfig.timeout = 30
 
--- Alt character name
-DualBoxConfig.alt_character = "Kaories"
-
--- Auto-request alt job on load
-DualBoxConfig.auto_request = true
-
--- Display alt job in UI
-DualBoxConfig.show_in_ui = true
+-- Debug mode - show detailed messages in chat
+DualBoxConfig.debug = false
 
 return DualBoxConfig
 ```

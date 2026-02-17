@@ -88,11 +88,13 @@ Edit `Tetsouo/config/DUALBOX_CONFIG.lua`:
 ```lua
 local DualBoxConfig = {}
 
-DualBoxConfig.enabled = true
-DualBoxConfig.main_character = "Tetsouo"
+DualBoxConfig.role = "main"
+DualBoxConfig.character_name = "Tetsouo"
 DualBoxConfig.alt_character = "Kaories"
-DualBoxConfig.auto_request = true
-DualBoxConfig.show_in_ui = true
+
+DualBoxConfig.enabled = true
+DualBoxConfig.timeout = 30
+DualBoxConfig.debug = false
 
 return DualBoxConfig
 ```
@@ -104,11 +106,13 @@ Edit `Kaories/config/DUALBOX_CONFIG.lua`:
 ```lua
 local DualBoxConfig = {}
 
-DualBoxConfig.enabled = true
+DualBoxConfig.role = "alt"
+DualBoxConfig.character_name = "Kaories"
 DualBoxConfig.main_character = "Tetsouo"
-DualBoxConfig.alt_character = "Kaories"
-DualBoxConfig.auto_request = false  -- ALT doesn't request
-DualBoxConfig.show_in_ui = false     -- ALT doesn't display
+
+DualBoxConfig.enabled = true
+DualBoxConfig.timeout = 30
+DualBoxConfig.debug = false
 
 return DualBoxConfig
 ```
@@ -228,20 +232,25 @@ addons/GearSwap/data/Kaories/
 ```lua
 local DualBoxConfig = {}
 
+-- Character role: "main" or "alt"
+-- MAIN: Receives job updates from alt
+-- ALT: Sends job updates to main when job changes
+DualBoxConfig.role = "main"
+
+-- This character's name
+DualBoxConfig.character_name = "Tetsouo"
+
+-- The ALT character to receive job updates from
+DualBoxConfig.alt_character = "Kaories"
+
 -- Enable/disable DualBox system
 DualBoxConfig.enabled = true
 
--- Main character name (the one who requests info)
-DualBoxConfig.main_character = "Tetsouo"
+-- Timeout in seconds - if no update received within this time, assume alt offline
+DualBoxConfig.timeout = 30
 
--- Alt character name (the one who sends info)
-DualBoxConfig.alt_character = "Kaories"
-
--- Auto-request alt job on load
-DualBoxConfig.auto_request = true
-
--- Display alt job in UI
-DualBoxConfig.show_in_ui = true
+-- Debug mode - show detailed messages in chat
+DualBoxConfig.debug = false
 
 return DualBoxConfig
 ```
@@ -253,28 +262,31 @@ return DualBoxConfig
 ```lua
 local DualBoxConfig = {}
 
+-- Character role: "alt" sends job updates to main
+DualBoxConfig.role = "alt"
+
+-- This character's name
+DualBoxConfig.character_name = "Kaories"
+
+-- The MAIN character to send job updates to
+DualBoxConfig.main_character = "Tetsouo"
+
 -- Enable/disable DualBox system
 DualBoxConfig.enabled = true
 
--- Main character name
-DualBoxConfig.main_character = "Tetsouo"
+-- Timeout in seconds
+DualBoxConfig.timeout = 30
 
--- Alt character name (this character)
-DualBoxConfig.alt_character = "Kaories"
-
--- ALT doesn't request info (only responds)
-DualBoxConfig.auto_request = false
-
--- ALT doesn't need UI display
-DualBoxConfig.show_in_ui = false
+-- Debug mode
+DualBoxConfig.debug = false
 
 return DualBoxConfig
 ```
 
 **Key differences:**
 
-- **MAIN**: `auto_request = true`, `show_in_ui = true`
-- **ALT**: `auto_request = false`, `show_in_ui = false`
+- **MAIN**: `role = "main"`, `character_name` is self, `alt_character` points to alt
+- **ALT**: `role = "alt"`, `character_name` is self, `main_character` points to main
 
 ---
 
@@ -379,8 +391,8 @@ Check UI displays:
 
    ```lua
    -- Must match FFXI character names (case-sensitive)
-   DualBoxConfig.main_character = "Tetsouo"  -- Exact match
-   DualBoxConfig.alt_character = "Kaories"   -- Exact match
+   DualBoxConfig.character_name = "Tetsouo"  -- Exact match (MAIN)
+   DualBoxConfig.alt_character = "Kaories"   -- Exact match (MAIN points to ALT)
    ```
 
 3. **Reload both characters**
@@ -405,10 +417,11 @@ Check UI displays:
 
 **Solutions:**
 
-1. **Verify UI display enabled (MAIN only)**
+1. **Verify DualBox is enabled (MAIN)**
 
    ```lua
-   DualBoxConfig.show_in_ui = true
+   DualBoxConfig.enabled = true
+   DualBoxConfig.role = "main"
    ```
 
 2. **Refresh UI**
@@ -583,11 +596,13 @@ xcopy /E /I Kaories\config Kaories\config_backup
 
 | Setting | MAIN | ALT |
 |---------|------|-----|
+| `role` | `"main"` | `"alt"` |
+| `character_name` | `"Tetsouo"` | `"Kaories"` |
+| `alt_character` | `"Kaories"` | (not used) |
+| `main_character` | (not used) | `"Tetsouo"` |
 | `enabled` | `true` | `true` |
-| `main_character` | `"Tetsouo"` | `"Tetsouo"` |
-| `alt_character` | `"Kaories"` | `"Kaories"` |
-| `auto_request` | `true` | `false` |
-| `show_in_ui` | `true` | `false` |
+| `timeout` | `30` | `30` |
+| `debug` | `false` | `false` |
 
 ---
 

@@ -1,228 +1,364 @@
 # RDM - States & Modes
 
-**Total States**: 20 configurable modes
+States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
 
 ---
 
-## What are States?
-
-States = Configuration options you cycle through with keybinds.
-
-**Example**:
-
-```lua
-state.EnfeebleMode = M{'Potency', 'Skill', 'Duration'}  -- 3 options
--- Press Alt+5 to cycle: Potency >> Skill >> Duration >> Potency
-```
-
----
-
-## All RDM States
-
-| State | Options | Default | Keybind | Description |
-|-------|---------|---------|---------|-------------|
-| **HybridMode** | PDT, Normal | Normal | (Mote default) | Combat defense mode |
-| **EngagedMode** | DT, Acc, TP, Enspell | DT | Alt+3 | Melee combat focus |
-| **IdleMode** | Refresh, DT | Refresh | Alt+4 | Idle gear focus |
-| **MainWeapon** | Naegling, Colada, Daybreak | Naegling | Alt+1 | Main weapon |
-| **SubWeapon** | Ammurapi, Genmei | Genmei | Alt+2 | Sub weapon |
-| **CombatMode** | Off, On | Off | Alt+0 | Weapon slot locking |
-| **EnfeebleMode** | Potency, Skill, Duration | Potency | Alt+5 | Enfeebling magic focus |
-| **NukeMode** | FreeNuke, Magic Burst | FreeNuke | Alt+6 | Elemental magic focus |
-| **MainLightSpell** | Fire, Aero, Thunder | Fire | Alt+8 | Primary light element |
-| **SubLightSpell** | Fire, Aero, Thunder | Thunder | Alt+9 | Secondary light element |
-| **MainDarkSpell** | Blizzard, Stone, Water | Blizzard | Alt+- | Primary dark element |
-| **SubDarkSpell** | Blizzard, Stone, Water | Stone | Alt+= | Secondary dark element |
-| **NukeTier** | V, VI, IV, III, II, I | V | Ctrl+= | Nuke tier selection |
-| **Enspell** | Enfire, Enblizzard, Enaero, Enstone, Enthunder, Enwater | Enfire | Alt+7 | Weapon enchantment |
-| **GainSpell** | Gain-STR, Gain-DEX, Gain-VIT, Gain-AGI, Gain-INT, Gain-MND, Gain-CHR | Gain-STR | F1 | Stat buff |
-| **Barspell** | Barfira, Barblizzara, Baraera, Barstonra, Barthundra, Barwatera | Barfira | F2 | Elemental resist |
-| **BarAilment** | Baramnesia, Barparalysis, Barsilence, Barpetrify, Barpoison, Barblind, Barsleep, Barvirus | Baramnesia | F3 | Ailment resist |
-| **Spike** | Blaze Spikes, Ice Spikes, Shock Spikes | Blaze Spikes | F4 | Damage reflection |
-| **SaboteurMode** | Off, On | Off | Alt+P | Auto-Saboteur before enfeebles |
-| **Storm** | Firestorm, Hailstorm, Windstorm, Sandstorm, Thunderstorm, Rainstorm, Aurorastorm, Voidstorm | Firestorm | F5 | SCH subjob only (conditional) |
-
----
-
-## How States Affect Gear
+## States
 
 ### HybridMode
 
-```
-HybridMode: PDT
->> Uses: sets.engaged.PDT (50% physical damage reduction)
+Controls the balance between damage and survivability when engaged.
 
-HybridMode: Normal
->> Uses: sets.engaged.Normal (maximum DPS)
-```
+| Option | Description |
+|--------|-------------|
+| `PDT` | Physical Damage Taken -50% for survivability |
+| `Normal` | Maximum DPS output |
+
+**Default**: `Normal`
+**Keybind**: None (Mote-Include default: F9)
+
+---
 
 ### EngagedMode
 
-```
-EngagedMode: DT
->> Uses: sets.engaged.DT (damage taken reduction)
+Controls melee combat gear focus when engaged.
 
-EngagedMode: Acc
->> Uses: sets.engaged.Acc (accuracy focus)
+| Option | Description |
+|--------|-------------|
+| `DT` | Damage Taken reduction |
+| `Acc` | Accuracy focus for high evasion targets |
+| `TP` | TP gain focus (Store TP, Dual Wield) |
+| `Enspell` | Enspell damage focus |
 
-EngagedMode: TP
->> Uses: sets.engaged.TP (TP gain focus - Store TP, Dual Wield)
+**Default**: `DT`
+**Keybind**: Numpad 3
 
-EngagedMode: Enspell
->> Uses: sets.engaged.Enspell (enspell damage focus)
-```
+---
 
 ### IdleMode
 
-```
-IdleMode: Refresh
->> Uses: sets.idle.Refresh (MP refresh gear - Refresh+, Regen)
+Controls idle gear focus when not engaged.
 
-IdleMode: DT
->> Uses: sets.idle.DT (damage taken reduction when idle)
-```
+| Option | Description |
+|--------|-------------|
+| `Refresh` | MP Refresh gear |
+| `DT` | Damage Taken reduction |
 
-### EnfeebleMode
+**Default**: `Refresh`
+**Keybind**: Numpad 4
 
-```
-EnfeebleMode: Potency
->> Uses: sets.midcast['Enfeebling Magic'].mnd_potency.Potency (MND/INT focus)
+---
 
-EnfeebleMode: Skill
->> Uses: sets.midcast['Enfeebling Magic'].mnd_potency.Skill (Enfeebling Skill+)
+### MainWeapon
 
-EnfeebleMode: Duration
->> Uses: sets.midcast['Enfeebling Magic'].mnd_potency.Duration (Duration+ gear)
-```
+Selects the primary weapon.
 
-### NukeMode
+| Option | Description |
+|--------|-------------|
+| `Naegling` | Savage Blade sword |
+| `Colada` | Enspell sword |
+| `Daybreak` | Magic nuke weapon |
 
-```
-NukeMode: FreeNuke
->> Uses: sets.midcast['Elemental Magic'].FreeNuke (high-tier nukes)
+**Default**: `Naegling`
+**Keybind**: Numpad 1
 
-NukeMode: Magic Burst
->> Uses: sets.midcast['Elemental Magic']['Magic Burst'] (magic burst damage)
-```
+---
 
-### MainWeapon / SubWeapon
+### SubWeapon
 
-```
-MainWeapon: Naegling
->> Equips: Naegling (Savage Blade weapon)
+Selects the offhand weapon or shield.
 
-MainWeapon: Colada
->> Equips: Colada (Enspell shield)
+| Option | Description |
+|--------|-------------|
+| `Ammurapi` | Ammurapi Shield |
+| `Genmei` | Genmei Shield |
+| `Malevolence` | Malevolence sword |
 
-MainWeapon: Daybreak
->> Equips: Daybreak (Magic nuke weapon)
+**Default**: `Genmei`
+**Keybind**: Numpad 2
 
-SubWeapon: Ammurapi / Genmei
->> Equips: Ammurapi or Genmei (Enfeebling swords)
-```
+---
 
 ### CombatMode
 
-```
-CombatMode: Off
->> Weapons can swap freely during combat
+Controls whether weapon slots are locked to prevent gear swaps.
 
-CombatMode: On
->> Weapons locked (main, sub, range slots disabled from swapping)
-```
+| Option | Description |
+|--------|-------------|
+| `Off` | Weapons can swap freely |
+| `On` | Main, sub, and range slots locked |
 
-**Use case**: Turn ON when you don't want weapons swapping during nukes/enfeebles.
-
----
-
-## State Combinations
-
-RDM uses **nested set logic** for maximum flexibility:
-
-**Example 1: Enfeebling Magic**
-
-```
-EnfeebleMode: Potency
-Spell: Gravity (MND-based potency)
-
->> Selects: sets.midcast['Enfeebling Magic'].mnd_potency.Potency
-```
-
-**Example 2: Elemental Magic**
-
-```
-NukeMode: FreeNuke
-Spell: Fire VI
-
->> Selects: sets.midcast['Elemental Magic'].FreeNuke
-```
+**Default**: `Off`
+**Keybind**: Numpad 5
 
 ---
 
-## Checking Current State
+### EnfeebleMode
 
-**Method 1**: UI overlay (if enabled)
+Controls enfeebling magic gear priority.
 
-```
-//gs c ui
->> Shows all states with current values
-```
+| Option | Description |
+|--------|-------------|
+| `Potency` | Max potency (MND/INT focus) |
+| `Skill` | Enfeebling Skill+ gear |
+| `Duration` | Duration+ gear |
 
-**Method 2**: Console command:
-
-```
-//gs c state EnfeebleMode
->> Shows: "EnfeebleMode: Potency"
-```
-
-**Method 3**: Watch gear swap
-
-```
-Enable debugmidcast:
-//gs c debugmidcast
-
-Cast spell:
-/ma "Gravity" <t>
-
->> Console shows which set was selected
-```
+**Default**: `Potency`
+**Keybind**: Numpad 6
 
 ---
 
-## State Management Tips
+### NukeMode
 
-**Tip 1**: Set states BEFORE casting
+Controls elemental magic gear strategy.
 
-```
-Alt+5 (cycle EnfeebleMode to Duration)
-/ma "Slow II" <t>
->> Casts with Duration+ gear
-```
+| Option | Description |
+|--------|-------------|
+| `FreeNuke` | High-tier nuke gear (default) |
+| `Magic Burst` | Magic Burst potency focus |
 
-**Tip 2**: Use CombatMode to lock weapons
+**Default**: `FreeNuke`
+**Keybind**: Numpad 7
 
-```
-Alt+0 (turn CombatMode ON)
->> Weapons won't swap during spells
->> Prevents accidental weapon swaps
-```
+---
 
-**Tip 3**: Pre-select elements for quick nuking
+### SaboteurMode
 
-```
-Alt+8 (set MainLightSpell to Thunder)
-Ctrl+= (set NukeTier to VI)
->> Now Ctrl+8 always casts Thunder VI
-```
+Controls automatic Saboteur usage before enfeebling spells.
 
-**Tip 4**: SCH subjob Storm management
+| Option | Description |
+|--------|-------------|
+| `Off` | Manual Saboteur usage |
+| `On` | Auto-Saboteur before enfeebles |
 
-```
-// With SCH subjob:
-F5 (cycle Storm to Firestorm)
-//gs c caststorm
->> Casts Firestorm
+**Default**: `Off`
+**Keybind**: Numpad 8
 
-// Without SCH subjob:
-F5 (does nothing - state doesn't exist)
-```
+---
+
+### NukeTier
+
+Selects the nuke tier. Tier "I" casts the base spell (e.g., "Fire" not "Fire I").
+
+| Option | Description |
+|--------|-------------|
+| `V` | Highest tier |
+| `IV` | Tier IV |
+| `III` | Tier III |
+| `II` | Tier II |
+| `I` | Base tier |
+
+**Default**: `V`
+**Keybind**: Numpad 9
+
+---
+
+### MainLightSpell
+
+Selects the primary light-element nuke family.
+
+| Option | Description |
+|--------|-------------|
+| `Fire` | Fire-based nukes |
+| `Aero` | Wind-based nukes |
+| `Thunder` | Lightning-based nukes |
+
+**Default**: `Fire`
+**Keybind**: None
+
+---
+
+### SubLightSpell
+
+Selects the secondary light-element nuke family.
+
+| Option | Description |
+|--------|-------------|
+| `Fire` | Fire-based nukes |
+| `Aero` | Wind-based nukes |
+| `Thunder` | Lightning-based nukes |
+
+**Default**: `Thunder`
+**Keybind**: None
+
+---
+
+### MainDarkSpell
+
+Selects the primary dark-element nuke family.
+
+| Option | Description |
+|--------|-------------|
+| `Blizzard` | Ice-based nukes |
+| `Stone` | Earth-based nukes |
+| `Water` | Water-based nukes |
+
+**Default**: `Blizzard`
+**Keybind**: None
+
+---
+
+### SubDarkSpell
+
+Selects the secondary dark-element nuke family.
+
+| Option | Description |
+|--------|-------------|
+| `Blizzard` | Ice-based nukes |
+| `Stone` | Earth-based nukes |
+| `Water` | Water-based nukes |
+
+**Default**: `Stone`
+**Keybind**: None
+
+---
+
+### EnSpell
+
+Selects the weapon enchantment spell.
+
+| Option | Description |
+|--------|-------------|
+| `Enfire` | Fire damage on melee |
+| `Enblizzard` | Ice damage on melee |
+| `Enaero` | Wind damage on melee |
+| `Enstone` | Earth damage on melee |
+| `Enthunder` | Lightning damage on melee |
+| `Enwater` | Water damage on melee |
+
+**Default**: `Enfire`
+**Keybind**: Alt+Numpad 1
+
+---
+
+### GainSpell
+
+Selects the stat buff spell.
+
+| Option | Description |
+|--------|-------------|
+| `Gain-STR` | Strength boost |
+| `Gain-DEX` | Dexterity boost |
+| `Gain-VIT` | Vitality boost |
+| `Gain-AGI` | Agility boost |
+| `Gain-INT` | Intelligence boost |
+| `Gain-MND` | Mind boost |
+| `Gain-CHR` | Charisma boost |
+
+**Default**: `Gain-STR`
+**Keybind**: Alt+Numpad 2
+
+---
+
+### Barspell
+
+Selects the elemental resistance buff spell.
+
+| Option | Description |
+|--------|-------------|
+| `Barfire` | Fire resistance |
+| `Barblizzard` | Ice resistance |
+| `Baraero` | Wind resistance |
+| `Barstone` | Earth resistance |
+| `Barthunder` | Lightning resistance |
+| `Barwater` | Water resistance |
+
+**Default**: `Barfire`
+**Keybind**: Alt+Numpad 3
+
+---
+
+### BarAilment
+
+Selects the ailment resistance buff spell.
+
+| Option | Description |
+|--------|-------------|
+| `Baramnesia` | Amnesia resistance |
+| `Barparalyze` | Paralysis resistance |
+| `Barsilence` | Silence resistance |
+| `Barpetrify` | Petrification resistance |
+| `Barpoison` | Poison resistance |
+| `Barblind` | Blindness resistance |
+| `Barsleep` | Sleep resistance |
+| `Barvirus` | Virus resistance |
+
+**Default**: `Baramnesia`
+**Keybind**: Alt+Numpad 4
+
+---
+
+### Spike
+
+Selects the damage reflection spell.
+
+| Option | Description |
+|--------|-------------|
+| `Blaze Spikes` | Fire damage reflection |
+| `Ice Spikes` | Ice damage reflection (with paralyze proc) |
+| `Shock Spikes` | Lightning damage reflection (with stun proc) |
+
+**Default**: `Blaze Spikes`
+**Keybind**: Alt+Numpad 5
+
+---
+
+### Storm (Conditional - SCH subjob only)
+
+Selects which Storm spell to cast. This state only exists when your subjob is SCH. It is automatically created when changing to SCH and destroyed when changing away.
+
+| Option | Description |
+|--------|-------------|
+| `Firestorm` | Fire affinity |
+| `Hailstorm` | Ice affinity |
+| `Windstorm` | Wind affinity |
+| `Sandstorm` | Earth affinity |
+| `Thunderstorm` | Lightning affinity |
+| `Rainstorm` | Water affinity |
+| `Aurorastorm` | Light affinity |
+| `Voidstorm` | Dark affinity |
+
+**Default**: `Firestorm`
+**Keybind**: Numpad 0
+
+---
+
+### FastCast
+
+Internal numeric state used by the watchdog system to calculate cast time timeouts. Set to your total Fast Cast percentage from gear and traits. Cap is 80%.
+
+| Option | Description |
+|--------|-------------|
+| `0` through `80` | Fast Cast percentage (increments of 10) |
+
+**Default**: `80`
+**Keybind**: None
+
+---
+
+## Quick Reference
+
+| State | Options | Default | Keybind |
+|-------|---------|---------|---------|
+| MainWeapon | Naegling / Colada / Daybreak | Naegling | Numpad 1 |
+| SubWeapon | Ammurapi / Genmei / Malevolence | Genmei | Numpad 2 |
+| EngagedMode | DT / Acc / TP / Enspell | DT | Numpad 3 |
+| IdleMode | Refresh / DT | Refresh | Numpad 4 |
+| CombatMode | Off / On | Off | Numpad 5 |
+| EnfeebleMode | Potency / Skill / Duration | Potency | Numpad 6 |
+| NukeMode | FreeNuke / Magic Burst | FreeNuke | Numpad 7 |
+| SaboteurMode | Off / On | Off | Numpad 8 |
+| NukeTier | V / IV / III / II / I | V | Numpad 9 |
+| Storm | 8 storm spells (SCH only) | Firestorm | Numpad 0 |
+| EnSpell | Enfire / Enblizzard / Enaero / Enstone / Enthunder / Enwater | Enfire | Alt+Numpad 1 |
+| GainSpell | 7 Gain spells | Gain-STR | Alt+Numpad 2 |
+| Barspell | 6 Bar-element spells | Barfire | Alt+Numpad 3 |
+| BarAilment | 8 Bar-ailment spells | Baramnesia | Alt+Numpad 4 |
+| Spike | Blaze / Ice / Shock Spikes | Blaze Spikes | Alt+Numpad 5 |
+| HybridMode | PDT / Normal | Normal | F9 |
+| MainLightSpell | Fire / Aero / Thunder | Fire | -- |
+| SubLightSpell | Fire / Aero / Thunder | Thunder | -- |
+| MainDarkSpell | Blizzard / Stone / Water | Blizzard | -- |
+| SubDarkSpell | Blizzard / Stone / Water | Stone | -- |
+| FastCast | 0-80 (by 10) | 80 | -- |

@@ -76,16 +76,18 @@ Alt+[X]  (check WHM keybinds)
 
 ### Cure Tier Thresholds
 
-| Cure Tier | Base Potency | Cast on Missing HP | MP Cost |
-|-----------|--------------|-------------------|---------|
-| **Cure I** | ~150 HP | 0-200 HP | 8 MP |
-| **Cure II** | ~300 HP | 201-400 HP | 24 MP |
-| **Cure III** | ~500 HP | 401-650 HP | 46 MP |
-| **Cure IV** | ~700 HP | 651-950 HP | 88 MP |
-| **Cure V** | ~900 HP | 951-1250 HP | 135 MP |
-| **Cure VI** | ~1100 HP | 1251+ HP | 210 MP |
+Thresholds are defined in `WHM_CURE_CONFIG.lua`. A safety margin of 50 HP is added to the target's missing HP before tier selection.
 
-**Note**: Actual potency varies with Cure Potency gear and MND stat
+| Cure Tier | HP Missing Range | MP Cost |
+|-----------|-----------------|---------|
+| **Cure I** | 0-200 HP | 8 MP |
+| **Cure II** | 200-400 HP | 24 MP |
+| **Cure III** | 400-700 HP | 46 MP |
+| **Cure IV** | 700-1100 HP | 88 MP |
+| **Cure V** | 1100-1600 HP | 135 MP |
+| **Cure VI** | 1600+ HP | 210 MP |
+
+**Note**: Thresholds are fixed values from the config file. They do not dynamically adjust based on Cure Potency gear.
 
 ### MP Savings Example
 
@@ -99,34 +101,13 @@ Alt+[X]  (check WHM keybinds)
 
 **Over 10 cures**: 1,640 MP saved = ~12 extra Cure VIs worth of MP!
 
-### Advanced: Cure Potency Scaling
-
-The system accounts for your **Cure Potency** gear:
-
-**Formula**:
-
-```
-Actual HP Healed = Base Potency × (1 + Cure Potency%)
-```
-
-**Example with +50% Cure Potency**:
-
-- Cure III base: 500 HP
-- With gear: 500 × 1.5 = **750 HP**
-- System adjusts thresholds accordingly
-
-**Result**: More aggressive downgrading when you have high Cure Potency gear (efficient!)
-
 ### When Auto-Tier is Disabled
 
-**Scenarios where system auto-disables**:
+**Auto-tier only runs when `CureAutoTier` state is `On`.**
 
-1. **Target is self** (`<me>`) - Always cast macro'd tier
-2. **Afflatus Solace active** - WHM mechanics override
-3. **Light Arts active** (SCH subjob) - Bonus effects matter
-4. **Esuna/Cursna** - Status removal, not healing
+When disabled (`Off`), the system still checks spell recast timers and will fall back to an available tier if the original spell is on recast.
 
-**Manual override**: Set `CureAutoTier` to `Off`
+**Manual override**: Set `CureAutoTier` to `Off` via `//gs c cycle CureAutoTier`
 
 ---
 
@@ -172,15 +153,17 @@ System executes: Curing Waltz III (optimal for 600 HP)
 
 ### Waltz Tier Selection
 
-| Waltz Tier | HP Healed | TP Cost | Cast on Missing HP |
-|------------|-----------|---------|-------------------|
-| **Curing Waltz I** | ~300 HP | 200 TP | 0-400 HP |
-| **Curing Waltz II** | ~600 HP | 350 TP | 401-750 HP |
-| **Curing Waltz III** | ~900 HP | 500 TP | 751-1100 HP |
-| **Curing Waltz IV** | ~1200 HP | 650 TP | 1101-1450 HP |
-| **Curing Waltz V** | ~1500 HP | 800 TP | 1451+ HP |
+Thresholds are defined in `waltz_manager.lua`. The system selects a tier based on target missing HP, then falls back to lower or higher tiers if the preferred tier is on recast or TP is insufficient.
 
-**Automatic selection**: System picks the **minimum tier** that will heal target to near-full HP
+| Waltz Tier | TP Cost | Level Required | Cast on Missing HP |
+|------------|---------|----------------|-------------------|
+| **Curing Waltz** | 200 TP | 15 | 0-199 HP |
+| **Curing Waltz II** | 350 TP | 35 | 200-599 HP |
+| **Curing Waltz III** | 500 TP | 45 | 600-1099 HP |
+| **Curing Waltz IV** | 650 TP | 70 | 1100-1499 HP |
+| **Curing Waltz V** | 800 TP | 87 | 1500+ HP |
+
+**Automatic selection**: System picks the optimal tier based on missing HP, then tries the priority list if that tier is unavailable (recast or insufficient TP)
 
 ### TP Efficiency
 
@@ -190,7 +173,6 @@ System executes: Curing Waltz III (optimal for 600 HP)
 |------------------|-----------|---------|
 | Use: Curing Waltz V | Use: Curing Waltz III | **300 TP saved** |
 | TP Cost: 800 | TP Cost: 500 | (37.5% reduction) |
-| Overheal: 800 HP | Overheal: 200 HP | Efficient! |
 
 **Result**: Use saved TP for Steps, Flourishes, or more Waltzes
 
@@ -204,32 +186,18 @@ System executes: Curing Waltz III (optimal for 600 HP)
 
 **Behavior**:
 
-- Automatically selects Divine Waltz I, II, or III based on party HP
+- Tries Divine Waltz II first (highest tier), falls back to Divine Waltz I
 - Heals all party members in range
-- Higher TP cost but essential for AOE damage
+- Checks both recast availability and TP before casting
 
 **Divine Waltz Tiers**:
 
-- Divine Waltz I: ~300 HP per member (400 TP)
-- Divine Waltz II: ~500 HP per member (800 TP)
-- Divine Waltz III: ~700 HP per member (1200 TP)
+| Tier | TP Cost | Level Required |
+|------|---------|----------------|
+| Divine Waltz | 400 TP | 40 |
+| Divine Waltz II | 800 TP | 78 |
 
-### Waltz Potency Gear
-
-The system accounts for **Waltz Potency** gear:
-
-**Formula**:
-
-```
-Actual HP Healed = Base Potency × (1 + Waltz Potency%)
-```
-
-**Example with +30% Waltz Potency**:
-
-- Curing Waltz III base: 900 HP
-- With gear: 900 × 1.3 = **1170 HP**
-
-**Result**: System may downgrade more aggressively with high Waltz Potency gear
+**Note**: There is no Divine Waltz III. The system always tries the highest available tier for AOE healing.
 
 ---
 
@@ -239,43 +207,51 @@ Actual HP Healed = Base Potency × (1 + Waltz Potency%)
 
 ```
 1. Player casts: /ma "Cure VI" <stpc>
-2. System checks: Is CureAutoTier enabled?
-   └─ If NO: Cast Cure VI (as macro'd)
-   └─ If YES: Continue to step 3
+2. System checks: Is CureAutoTier state On?
+   If NO: Skip to step 5 (recast check only)
+   If YES: Continue to step 3
 
 3. Calculate target's missing HP:
    Target Max HP: 1500
    Target Current HP: 900
    Missing HP: 600
+   Adjusted missing (+ 50 safety margin): 650
 
-4. Check cure potency gear:
-   Cure Potency: +40%
-   Adjusted threshold: 600 / 1.4 = 428 base HP needed
+4. Select optimal tier from config thresholds:
+   650 HP falls in Cure III range (400-700)
+   Optimal tier: Cure III
 
-5. Select optimal tier:
-   Cure III heals 500 base (700 with gear)
-   This will heal 600 missing >> Use Cure III
+5. Check recast availability (always runs, even with auto-tier Off):
+   Cure III available? Yes >> Cast Cure III
+   If on recast: Try lower tiers, then higher tiers
 
-6. Cast downgraded spell: Cure III
-7. Display message: "Cure VI >> Cure III (600 HP needed)"
+6. Cast selected spell: Cure III
+7. Display message: "Cure VI >> Cure III (600 HP missing)"
 ```
 
 ### Decision Flow (DNC Waltz)
 
 ```
 1. Player executes: //gs c waltz <stpc>
-2. Calculate target's missing HP:
+2. Determine effective level (main DNC or sub DNC)
+
+3. Calculate target's missing HP:
    Target missing: 850 HP
 
-3. Check waltz potency gear:
-   Waltz Potency: +25%
+4. Match HP to tier thresholds:
+   - Curing Waltz: < 200 HP (not matched)
+   - Curing Waltz II: 200-599 HP (not matched)
+   - Curing Waltz III: 600-1099 HP (matched! 850 is in range)
+   Preferred tier: Curing Waltz III
 
-4. Select minimum tier that heals target:
-   - Waltz II: 600 × 1.25 = 750 HP (not enough)
-   - Waltz III: 900 × 1.25 = 1125 HP (sufficient!)
+5. Check availability:
+   - Recast ready? Yes
+   - TP >= 500? Yes
+   Execute: Curing Waltz III
 
-5. Execute: Curing Waltz III
-6. Display message: "Healing 850 HP with Curing Waltz III"
+6. If preferred tier unavailable:
+   Try remaining tiers in priority order (level-filtered)
+   Check recast + TP for each
 ```
 
 ---
@@ -317,25 +293,28 @@ state.CureAutoTier:set('On')  -- Default to enabled
 
 ### Customizing Thresholds (Advanced)
 
-**File**: `shared/utils/waltz/waltz_manager.lua` (DNC)
-**File**: `Mote-Include.lua` (WHM - refine_waltz function)
+**WHM Cure**: `Tetsouo/config/whm/WHM_CURE_CONFIG.lua`
+**DNC Waltz**: `shared/utils/dnc/waltz_manager.lua` (hardcoded in `cast_curing_waltz`)
 
-**Example** (DNC Waltz thresholds):
+**WHM Cure thresholds** are configurable per-character in the config file:
 
 ```lua
--- Default thresholds
-local waltz_tiers = {
-    {tier = "I", hp_needed = 400, tp_cost = 200},
-    {tier = "II", hp_needed = 750, tp_cost = 350},
-    {tier = "III", hp_needed = 1100, tp_cost = 500},
-    {tier = "IV", hp_needed = 1450, tp_cost = 650},
-    {tier = "V", hp_needed = 9999, tp_cost = 800}
+WHMCureConfig.cure_tiers = {
+    {min = 0, max = 200, spell = 'Cure'},
+    {min = 200, max = 400, spell = 'Cure II'},
+    {min = 400, max = 700, spell = 'Cure III'},
+    {min = 700, max = 1100, spell = 'Cure IV'},
+    {min = 1100, max = 1600, spell = 'Cure V'},
+    {min = 1600, max = 99999, spell = 'Cure VI'}
 }
 
--- Modify hp_needed to adjust when each tier is selected
+-- safety_margin adds 50 HP to missing HP before threshold lookup
+WHMCureConfig.safety_margin = 50
 ```
 
-**Warning**: Modifying core files affects all characters. Test thoroughly!
+**DNC Waltz thresholds** are hardcoded in the waltz manager and not configurable per-character.
+
+**Warning**: Modifying shared files affects all characters. Test thoroughly!
 
 ---
 
@@ -367,14 +346,14 @@ local waltz_tiers = {
 
 **Result**: Cure VI cast as intended (no downgrade)
 
-**Scenario 3**: Self-cure after damage
+**Scenario 3**: Self-cure after damage (200 HP missing)
 
 ```
 [WHM] Target: <me>
-[WHM] Cure VI cast (no auto-tier on self)
+[WHM] Cure VI >> Cure II (200 HP missing)
 ```
 
-**Result**: Always cast macro'd tier on self
+**Result**: Auto-tier works on self with exact HP values (uses player.hp and player.max_hp)
 
 ### Example 2: DNC Waltz Efficiency
 
@@ -439,7 +418,7 @@ Command: //gs c aoewaltz
  Toggle until it shows `On`
 
 3. **Check target**:
- - Auto-tier disables on `<me>` (self-cures)
+ - Auto-tier works on all targets including self
  - Try casting on party member: `/ma "Cure VI" <stpc>`
 
 4. **Reload GearSwap**:
@@ -479,12 +458,13 @@ Command: //gs c aoewaltz
 
 **Possible causes**:
 
-1. **Cure Potency not detected**:
- - System uses base potency values
- - Ensure Cure Potency gear equipped before casting
+1. **Safety margin adds 50 HP**:
+ - The system adds 50 HP to missing HP before selecting tier
+ - This means tier boundaries may appear shifted slightly
 
 2. **Target HP fluctuating**:
- - Target HP changed between command and cast
+ - Target HP changed between precast check and cast
+ - Party member HP is estimated from HPP percentage
  - Recast to get fresh calculation
 
 3. **Thresholds need adjustment**:
@@ -514,7 +494,7 @@ Command: //gs c aoewaltz
 - **Keep enabled** for general content (saves tons of MP)
 - **Disable for burst healing** (predictable output needed)
 - **Macro highest tier** (Cure VI) - let system downgrade
-- **Trust the system** - it accounts for your gear
+- **Recast fallback is always active** even with auto-tier Off
 
 **When to disable**:
 
@@ -558,10 +538,10 @@ Macro 2: /console gs c aoewaltz         (AOE)
 
 ## Related Features
 
-- **Cure Potency Gear**: Auto-tier accounts for your equipped gear
-- **Waltz Potency Gear**: System adjusts thresholds dynamically
-- **HP Monitoring**: Uses real-time HP data from party list
+- **Recast Fallback**: If selected tier is on recast, system tries lower then higher tiers automatically
+- **HP Monitoring**: Uses real-time HP data from party list (exact for self, estimated for party)
 - **TP Tracking**: Ensures sufficient TP before Waltz execution
+- **Level Detection**: Waltz system checks effective DNC level (main job vs subjob)
 
 ---
 
@@ -578,13 +558,14 @@ Command: //gs c waltz <target>
 AOE: //gs c aoewaltz
 Always active (no toggle needed)
 
-THRESHOLDS (approximate):
-Cure I:   0-200 HP    | Waltz I:   0-400 HP
-Cure II:  201-400 HP  | Waltz II:  401-750 HP
-Cure III: 401-650 HP  | Waltz III: 751-1100 HP
-Cure IV:  651-950 HP  | Waltz IV:  1101-1450 HP
-Cure V:   951-1250 HP | Waltz V:   1451+ HP
-Cure VI:  1251+ HP    |
+THRESHOLDS (from code):
+Cure I:   0-200 HP     | Waltz I:   0-199 HP
+Cure II:  200-400 HP   | Waltz II:  200-599 HP
+Cure III: 400-700 HP   | Waltz III: 600-1099 HP
+Cure IV:  700-1100 HP  | Waltz IV:  1100-1499 HP
+Cure V:   1100-1600 HP | Waltz V:   1500+ HP
+Cure VI:  1600+ HP     |
+(Cure thresholds have +50 HP safety margin applied before lookup)
 
 BENEFITS:
 - Save MP/TP (30-50% savings)
