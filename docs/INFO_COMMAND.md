@@ -32,26 +32,26 @@ Universal command to display detailed information for Job Abilities, Spells, and
 
 ## Features
 
-### ✅ **Universal Search**
+### **Universal Search**
 
 - Searches across ALL databases automatically
 - Works for any job/subjob combination
 - No job-specific configuration needed
 
-### ✅ **Data Sources**
+### **Data Sources**
 
 1. **Job Abilities:** `shared/data/job_abilities/` (300+ abilities from 21 jobs)
 2. **Spells:** `shared/data/magic/` (1,100+ spells from 6 skill + 8 job databases)
 3. **Weaponskills:** `shared/data/weaponskills/` (212 weaponskills from 13 weapon types)
 
-### ✅ **Formatted Output**
+### **Formatted Output**
 
 - Color-coded display using message system colors
 - ASCII-safe text (FFXI chat compatible)
 - Fields displayed only if data exists (no empty fields)
 - Proper sanitization of special characters
 
-### ✅ **Lazy Loading**
+### **Lazy Loading**
 
 - Databases load on-demand (first use)
 - No startup lag
@@ -172,11 +172,11 @@ Name: Torcleaver
 
 - Gray (160): Field labels
 - Various colors for values based on data type:
-  - Info (158): General information
-  - Success (158): Positive effects
-  - Warning (57/206): Costs/penalties
-  - Cooldown (125): Recast timers
-  - Spell (205): Spell-specific data
+ - Info (158): General information
+ - Success (158): Positive effects
+ - Warning (57/206): Costs/penalties
+ - Cooldown (125): Recast timers
+ - Spell (205): Spell-specific data
 
 ---
 
@@ -213,19 +213,19 @@ Name: Torcleaver
 ### Search Order
 
 1. **Job Abilities Database**
-   - Checks `DataLoader.get_ability(name)`
-   - Sources from all 21 job databases
-   - Returns immediately if found
+ - Checks `DataLoader.get_ability(name)`
+ - Sources from all 21 job databases
+ - Returns immediately if found
 
 2. **Spell Database**
-   - Checks `DataLoader.get_spell(name)`
-   - Sources from 6 skill + 8 job databases
-   - Returns immediately if found
+ - Checks `DataLoader.get_spell(name)`
+ - Sources from 6 skill + 8 job databases
+ - Returns immediately if found
 
 3. **Weaponskill Database**
-   - Checks `DataLoader.get_weaponskill(name)`
-   - Sources from 13 weapon type databases
-   - Returns immediately if found
+ - Checks `DataLoader.get_weaponskill(name)`
+ - Sources from 13 weapon type databases
+ - Returns immediately if found
 
 ### Text Sanitization
 
@@ -310,9 +310,9 @@ text = text:gsub("[^\32-\126]", "")
 **Command Handler:**
 
 - `shared/utils/core/COMMON_COMMANDS.lua`
-  - Added `handle_info()` function
-  - Added routing in `handle_command()`
-  - Added to `is_common_command()` check
+ - Added `handle_info()` function
+ - Added routing in `handle_command()`
+ - Added to `is_common_command()` check
 
 ### Dependencies
 
@@ -334,7 +334,7 @@ text = text:gsub("[^\32-\126]", "")
 
 ### Startup Impact
 
-✅ **Zero startup lag** - Command loads on first use only
+ **Zero startup lag** - Command loads on first use only
 
 ### First Query
 
@@ -352,9 +352,9 @@ text = text:gsub("[^\32-\126]", "")
 
 - Module: ~15KB
 - Cached databases loaded as needed:
-  - Job Abilities: ~50KB (300+ abilities)
-  - Spells: ~200KB (1,100+ spells)
-  - Weaponskills: ~80KB (212 weaponskills)
+ - Job Abilities: ~50KB (300+ abilities)
+ - Spells: ~200KB (1,100+ spells)
+ - Weaponskills: ~80KB (212 weaponskills)
 
 ---
 
@@ -475,7 +475,7 @@ text = text:gsub("[^\32-\126]", "")
 
 ## Status
 
-✅ **COMPLETE** - Info command fully functional and integrated
+ **COMPLETE** - Info command fully functional and integrated
 
 **Tested:**
 

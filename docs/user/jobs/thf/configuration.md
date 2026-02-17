@@ -4,7 +4,7 @@
 
 ---
 
-## 📁 Configuration Files
+## Configuration Files
 
 | File | Purpose |
 |------|---------|
@@ -15,7 +15,7 @@
 
 ---
 
-## 🎨 Lockstyle Config
+## Lockstyle Config
 
 **File**: `Tetsouo/config/thf/THF_LOCKSTYLE.lua`
 
@@ -37,7 +37,7 @@ return THFLockstyleConfig
 
 ---
 
-## 📖 Macrobook Config
+## Macrobook Config
 
 **File**: `Tetsouo/config/thf/THF_MACROBOOK.lua`
 
@@ -59,7 +59,7 @@ return THFMacroConfig
 
 ---
 
-## 🔧 Customization Examples
+## Customization Examples
 
 ### Change lockstyle
 

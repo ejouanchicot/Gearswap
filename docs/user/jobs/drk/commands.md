@@ -2,7 +2,7 @@
 
 ---
 
-## 🌐 Universal Commands
+## Universal Commands
 
 These work on **all jobs**:
 
@@ -16,7 +16,7 @@ These work on **all jobs**:
 
 ---
 
-## 🎯 DRK-Specific Commands
+## DRK-Specific Commands
 
 **File**: `shared/jobs/drk/functions/DRK_COMMANDS.lua`
 
@@ -26,7 +26,7 @@ These work on **all jobs**:
 
 ---
 
-## 🔍 Debug Commands
+## Debug Commands
 
 | Command | Purpose |
 |---------|---------|

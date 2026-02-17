@@ -107,23 +107,23 @@ ratio = 6672 / 1704 = 3.91 → TRÈS CAPPÉ
 
 | Situation | Attack | Ratio (vs 1704) | Cappé? |
 |-----------|--------|-----------------|--------|
-| Base | 941 | 0.55 | ❌ |
-| + BRD Soul Voice | 2357 | 1.38 | ❌ |
-| + BRD Marcato + COR | 2760 | 1.62 | ❌ |
-| + BRD Marcato + GEO | 3323 | 1.95 | ❌ |
-| + BRD Soul Voice + COR | 3912 | 2.30 | ❌ |
-| + **BRD + COR + GEO** | **~5181** | **3.04** | ✅ |
+| Base | 941 | 0.55 | |
+| + BRD Soul Voice | 2357 | 1.38 | |
+| + BRD Marcato + COR | 2760 | 1.62 | |
+| + BRD Marcato + GEO | 3323 | 1.95 | |
+| + BRD Soul Voice + COR | 3912 | 2.30 | |
+| + **BRD + COR + GEO** | **~5181** | **3.04** | |
 
 ### WAR (base: 2563 Attack)
 
 | Situation | Attack | Ratio (vs 1704) | Cappé? |
 |-----------|--------|-----------------|--------|
-| Base | 2563 | 1.50 | ❌ |
-| + BRD Marcato | 3389 | 1.99 | ❌ |
-| + BRD Soul Voice | 3979 | 2.33 | ❌ |
-| + BRD Marcato + COR | 5287 | 3.10 | ✅ |
-| + BRD Marcato + GEO | 5490 | 3.22 | ✅ |
-| + **BRD + COR + GEO** | **~8565** | **5.03** | ✅ OVERKILL |
+| Base | 2563 | 1.50 | |
+| + BRD Marcato | 3389 | 1.99 | |
+| + BRD Soul Voice | 3979 | 2.33 | |
+| + BRD Marcato + COR | 5287 | 3.10 | |
+| + BRD Marcato + GEO | 5490 | 3.22 | |
+| + **BRD + COR + GEO** | **~8565** | **5.03** | OVERKILL |
 
 ---
 

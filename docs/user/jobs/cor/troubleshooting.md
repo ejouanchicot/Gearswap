@@ -75,11 +75,11 @@
    ```
 
 3. **Verify config**:
-   Check `Tetsouo/config/cor/COR_LOCKSTYLE.lua`
+ Check `Tetsouo/config/cor/COR_LOCKSTYLE.lua`
 
 ---
 
-## 🔍 Debug Commands
+## Debug Commands
 
 | Command | Purpose |
 |---------|---------|
@@ -92,7 +92,7 @@
 
 ---
 
-## 🆘 Still Having Issues?
+## Still Having Issues?
 
 1. **Check error messages** in console carefully
 2. **Verify file structure** matches [Configuration](configuration.md)

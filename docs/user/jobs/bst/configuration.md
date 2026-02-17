@@ -4,7 +4,7 @@
 
 ---
 
-## 📁 Configuration Files
+## Configuration Files
 
 | File | Purpose |
 |------|---------|
@@ -15,7 +15,7 @@
 
 ---
 
-## 🎨 Lockstyle Config
+## Lockstyle Config
 
 **File**: `Tetsouo/config/bst/BST_LOCKSTYLE.lua`
 
@@ -53,7 +53,7 @@ return BSTLockstyleConfig
 
 ---
 
-## 📖 Macrobook Config
+## Macrobook Config
 
 **File**: `Tetsouo/config/bst/BST_MACROBOOK.lua`
 
@@ -78,7 +78,7 @@ return BSTMacroConfig
 
 ---
 
-## 🔧 Customization Examples
+## Customization Examples
 
 ### Change lockstyle
 

@@ -20,7 +20,7 @@
    //bind  # Shows all current binds
    ```
 
-   Look for conflicts with your Alt+1, Alt+2, etc.
+ Look for conflicts with your Alt+1, Alt+2, etc.
 
 3. **Manual test**:
 
@@ -107,10 +107,10 @@
    ```
 
 3. **Check spell database**:
-   - RDM uses `RDM_SPELL_DATABASE` to classify enfeebles
-   - Gravity = mnd_accuracy type
-   - Slow = mnd_potency type
-   - Debug will show which type was detected
+ - RDM uses `RDM_SPELL_DATABASE` to classify enfeebles
+ - Gravity = mnd_accuracy type
+ - Slow = mnd_potency type
+ - Debug will show which type was detected
 
 4. **Check set exists**:
 
@@ -120,9 +120,9 @@
    ```
 
 5. **Understand fallback chain**:
-   - If `mnd_accuracy.Potency` missing >> tries `mnd_accuracy`
-   - If `mnd_accuracy` missing >> tries `Potency`
-   - If `Potency` missing >> uses base `sets.midcast['Enfeebling Magic']`
+ - If `mnd_accuracy.Potency` missing >> tries `mnd_accuracy`
+ - If `mnd_accuracy` missing >> tries `Potency`
+ - If `Potency` missing >> uses base `sets.midcast['Enfeebling Magic']`
 
 ---
 
@@ -232,7 +232,7 @@
    ```
 
 3. **Check cooldown**:
-   Wait 15 seconds between lockstyle changes (cooldown protection).
+ Wait 15 seconds between lockstyle changes (cooldown protection).
 
 4. **Verify config**:
 
@@ -334,7 +334,7 @@
 **Solutions**:
 
 1. **Wait for debounce**:
-   JobChangeManager has 3.0s debounce. Wait 3 seconds after job change before reloading.
+ JobChangeManager has 3.0s debounce. Wait 3 seconds after job change before reloading.
 
 2. **Manual cleanup**:
 
@@ -344,7 +344,7 @@
    ```
 
 3. **Check console**:
-   Look for error messages and file paths that failed to load.
+ Look for error messages and file paths that failed to load.
 
 4. **Verify all modules loaded**:
 
@@ -396,7 +396,7 @@
 
 ---
 
-## 🔍 Debug Commands
+## Debug Commands
 
 | Command | Purpose |
 |---------|---------|
@@ -409,7 +409,7 @@
 
 ---
 
-## 🆘 Still Having Issues?
+## Still Having Issues?
 
 1. **Check error messages** in console carefully
 2. **Compare with working job** (e.g., WHM, BLM)

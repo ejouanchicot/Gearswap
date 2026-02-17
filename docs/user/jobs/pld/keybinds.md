@@ -5,7 +5,7 @@
 
 ---
 
-## 📋 All Keybinds
+## All Keybinds
 
 | Key | Function | State | Description |
 |-----|----------|-------|-------------|
@@ -15,7 +15,7 @@
 
 ---
 
-## 🔑 Modifier Keys Reference
+## Modifier Keys Reference
 
 - `!` = Alt
 - `^` = Ctrl
@@ -26,7 +26,7 @@
 
 ---
 
-## 🧪 Testing Keybinds
+## Testing Keybinds
 
 1. Press a keybind (e.g., `Alt+1`)
 2. Check console for state change message
@@ -41,7 +41,7 @@
 
 ---
 
-## 🔧 Customization
+## Customization
 
 See [Configuration](configuration.md) for how to:
 

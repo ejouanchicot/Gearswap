@@ -11,8 +11,8 @@
 Watchdog was triggering when using items like Warp Ring because:
 
 1. **Items use different resource file:**
-   - Spells: `res/spells.lua` with `cast_time` field
-   - Items: `res/items.lua` with `cast_delay` field (priority) or `cast_time` (fallback)
+ - Spells: `res/spells.lua` with `cast_time` field
+ - Items: `res/items.lua` with `cast_delay` field (priority) or `cast_time` (fallback)
 
 2. **Previous implementation only checked spells:**
 
@@ -249,7 +249,7 @@ timeout = 2 + 2.0 = 4.0s
 
 ## Backwards Compatibility
 
-✅ **Fully backwards compatible**
+ **Fully backwards compatible**
 
 - All existing spell functionality preserved
 - New item support adds capability without breaking changes
@@ -279,4 +279,4 @@ res_items[item_id].cast_time  -- Fallback
 
 ## Status
 
-✅ **COMPLETE** - Watchdog now supports both spells and items with correct timeout calculation
+ **COMPLETE** - Watchdog now supports both spells and items with correct timeout calculation

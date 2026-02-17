@@ -2,7 +2,7 @@
 
 ---
 
-## 🌐 Universal Commands
+## Universal Commands
 
 These work on **all jobs**:
 
@@ -16,7 +16,7 @@ These work on **all jobs**:
 
 ---
 
-## 🎯 GEO-Specific Commands
+## GEO-Specific Commands
 
 **File**: `shared/jobs/geo/functions/GEO_COMMANDS.lua`
 
@@ -32,7 +32,7 @@ These work on **all jobs**:
 
 ---
 
-## 🔍 Debug Commands
+## Debug Commands
 
 | Command | Purpose |
 |---------|---------|

@@ -2,7 +2,7 @@
 
 ---
 
-## 🌐 Universal Commands
+## Universal Commands
 
 These work on **all jobs**:
 
@@ -16,7 +16,7 @@ These work on **all jobs**:
 
 ---
 
-## 🎯 BST-Specific Commands
+## BST-Specific Commands
 
 **File**: `shared/jobs/bst/functions/BST_COMMANDS.lua`
 
@@ -30,7 +30,7 @@ These work on **all jobs**:
 
 ---
 
-## 🔍 Debug Commands
+## Debug Commands
 
 | Command | Purpose |
 |---------|---------|

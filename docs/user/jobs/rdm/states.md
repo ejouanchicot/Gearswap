@@ -4,7 +4,7 @@
 
 ---
 
-## 📊 What are States?
+## What are States?
 
 States = Configuration options you cycle through with keybinds.
 
@@ -17,7 +17,7 @@ state.EnfeebleMode = M{'Potency', 'Skill', 'Duration'}  -- 3 options
 
 ---
 
-## 📋 All RDM States
+## All RDM States
 
 | State | Options | Default | Keybind | Description |
 |-------|---------|---------|---------|-------------|
@@ -44,7 +44,7 @@ state.EnfeebleMode = M{'Potency', 'Skill', 'Duration'}  -- 3 options
 
 ---
 
-## ⚙️ How States Affect Gear
+## How States Affect Gear
 
 ### HybridMode
 
@@ -135,7 +135,7 @@ CombatMode: On
 
 ---
 
-## 🎯 State Combinations
+## State Combinations
 
 RDM uses **nested set logic** for maximum flexibility:
 
@@ -159,7 +159,7 @@ Spell: Fire VI
 
 ---
 
-## 🔍 Checking Current State
+## Checking Current State
 
 **Method 1**: UI overlay (if enabled)
 
@@ -189,7 +189,7 @@ Cast spell:
 
 ---
 
-## 🔧 State Management Tips
+## State Management Tips
 
 **Tip 1**: Set states BEFORE casting
 

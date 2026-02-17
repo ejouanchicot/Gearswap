@@ -4,7 +4,7 @@
 
 ---
 
-## 📊 What are States?
+## What are States?
 
 States = Configuration options you cycle through with keybinds.
 
@@ -17,7 +17,7 @@ state.HybridMode = M{'PDT', 'Normal'}  -- 2 options
 
 ---
 
-## 📋 All COR States
+## All COR States
 
 | State | Options | Default | Keybind | Description |
 |-------|---------|---------|---------|-------------|
@@ -25,7 +25,7 @@ state.HybridMode = M{'PDT', 'Normal'}  -- 2 options
 
 ---
 
-## 🔍 Checking Current State
+## Checking Current State
 
 **Method 1**: UI overlay (if enabled)
 **Method 2**: Console command:

@@ -4,7 +4,7 @@
 
 ---
 
-## 📁 Configuration Files
+## Configuration Files
 
 | File | Purpose |
 |------|---------|
@@ -15,7 +15,7 @@
 
 ---
 
-## 🎨 Lockstyle Config
+## Lockstyle Config
 
 **File**: `Tetsouo/config/pld/PLD_LOCKSTYLE.lua`
 
@@ -39,7 +39,7 @@ return PLDLockstyleConfig
 
 ---
 
-## 📖 Macrobook Config
+## Macrobook Config
 
 **File**: `Tetsouo/config/pld/PLD_MACROBOOK.lua`
 
@@ -62,7 +62,7 @@ return PLDMacroConfig
 
 ---
 
-## 🔧 Customization Examples
+## Customization Examples
 
 ### Change lockstyle
 

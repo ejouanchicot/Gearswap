@@ -4,7 +4,7 @@
 
 ---
 
-## 📁 Configuration Files
+## Configuration Files
 
 | File | Purpose |
 |------|---------|
@@ -15,7 +15,7 @@
 
 ---
 
-## 🎨 Lockstyle Config
+## Lockstyle Config
 
 **File**: `Tetsouo/config/sam/SAM_LOCKSTYLE.lua`
 
@@ -38,7 +38,7 @@ return SAMLockstyleConfig
 
 ---
 
-## 📖 Macrobook Config
+## Macrobook Config
 
 **File**: `Tetsouo/config/sam/SAM_MACROBOOK.lua`
 
@@ -61,7 +61,7 @@ return SAMMacroConfig
 
 ---
 
-## 🔧 Customization Examples
+## Customization Examples
 
 ### Change lockstyle
 

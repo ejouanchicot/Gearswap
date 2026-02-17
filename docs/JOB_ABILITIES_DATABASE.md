@@ -104,9 +104,9 @@ return UNIVERSAL_JA_DB
 
 **Benefits**:
 
-- ✅ **Subjob Support**: WAR/SAM sees both WAR and SAM abilities
-- ✅ **Easy Maintenance**: Edit individual databases, universal auto-updates
-- ✅ **Safe Loading**: Uses pcall() to gracefully handle missing databases
+- **Subjob Support**: WAR/SAM sees both WAR and SAM abilities
+- **Easy Maintenance**: Edit individual databases, universal auto-updates
+- **Safe Loading**: Uses pcall() to gracefully handle missing databases
 
 ## Description Guidelines
 
@@ -162,14 +162,14 @@ return UNIVERSAL_JA_DB
 
 ## Benefits
 
-- ✅ **Separation of Concerns**: Data separated from logic
-- ✅ **Easy Maintenance**: Update descriptions in individual databases, universal auto-updates
-- ✅ **Subjob Support**: WAR/SAM displays both WAR and SAM abilities automatically
-- ✅ **Reusability**: Other modules can query ability descriptions
-- ✅ **Consistency**: Matches existing `SPELL_DATABASE` architecture (individual + universal pattern)
-- ✅ **Scalability**: Easy to add new jobs/abilities (edit individual database only)
-- ✅ **Code Reduction**: ~200 lines of hardcoded if/elseif >> ~30 lines across 12 jobs (85% reduction)
-- ✅ **Safe Loading**: pcall() ensures missing databases don't break system
+- **Separation of Concerns**: Data separated from logic
+- **Easy Maintenance**: Update descriptions in individual databases, universal auto-updates
+- **Subjob Support**: WAR/SAM displays both WAR and SAM abilities automatically
+- **Reusability**: Other modules can query ability descriptions
+- **Consistency**: Matches existing `SPELL_DATABASE` architecture (individual + universal pattern)
+- **Scalability**: Easy to add new jobs/abilities (edit individual database only)
+- **Code Reduction**: ~200 lines of hardcoded if/elseif >> ~30 lines across 12 jobs (85% reduction)
+- **Safe Loading**: pcall() ensures missing databases don't break system
 
 ## Related Systems
 

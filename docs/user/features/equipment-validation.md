@@ -5,7 +5,7 @@
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 1. [What is Equipment Validation?](#what-is-equipment-validation)
 2. [How to Use](#how-to-use)
@@ -16,12 +16,12 @@
 
 ---
 
-## 🎯 What is Equipment Validation?
+## What is Equipment Validation?
 
 The Equipment Validation system checks **all your configured gear sets** and verifies which items you:
 
 - **Own** (in inventory)
-- 🗄️ **Have in storage** (mog house, sacks, wardrobes, etc.)
+- **Have in storage** (mog house, sacks, wardrobes, etc.)
 - **Don't own yet** (missing items)
 
 **Purpose**:
@@ -33,7 +33,7 @@ The Equipment Validation system checks **all your configured gear sets** and ver
 
 ---
 
-## 🚀 How to Use
+## How to Use
 
 ### Basic Usage
 
@@ -59,7 +59,7 @@ The Equipment Validation system checks **all your configured gear sets** and ver
 
 ---
 
-## 📊 Understanding the Output
+## Understanding the Output
 
 ### Output Format
 
@@ -85,7 +85,7 @@ The Equipment Validation system checks **all your configured gear sets** and ver
 | Status | Symbol | Meaning | Action Needed |
 |--------|--------|---------|---------------|
 | **VALID** | | Item in inventory | None - ready to use |
-| **STORAGE** | 🗄️ | Item in storage | Move to inventory if needed |
+| **STORAGE** | | Item in storage | Move to inventory if needed |
 | **MISSING** | | Item not found anywhere | Acquire the item or update sets |
 
 ---
@@ -106,7 +106,7 @@ The Equipment Validation system checks **all your configured gear sets** and ver
 
 ---
 
-## 🔍 Common Scenarios
+## Common Scenarios
 
 ### Scenario 1: All Items Valid 
 
@@ -121,7 +121,7 @@ The Equipment Validation system checks **all your configured gear sets** and ver
 
 ---
 
-### Scenario 2: Items in Storage 🗄️
+### Scenario 2: Items in Storage 
 
 ```
 [RDM] 145/150 items validated (96.7%)
@@ -205,7 +205,7 @@ sets.midcast.Cure = {
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Issue: Item Shows MISSING but I Have It
 
@@ -222,12 +222,12 @@ sets.midcast.Cure = {
    ```
 
 2. **Item in temporary storage** (Porter Moogle, Delivery Box):
-   - Validation only checks mog house, sacks, wardrobes
-   - Move item to one of these locations
+ - Validation only checks mog house, sacks, wardrobes
+ - Move item to one of these locations
 
 3. **Item name changed** (after game update):
-   - Check current item name in-game
-   - Update your sets file
+ - Check current item name in-game
+ - Update your sets file
 
 **Solution**: Compare item name in sets vs. in-game inventory (case-sensitive, exact match required)
 
@@ -314,7 +314,7 @@ sets.midcast.Cure.SIRD = set_combine(sets.midcast.Cure, {
 
 ---
 
-## 📚 Examples by Job
+## Examples by Job
 
 ### WAR (Warrior) Example
 
@@ -336,7 +336,7 @@ sets.midcast.Cure.SIRD = set_combine(sets.midcast.Cure, {
 **Interpretation**:
 
 - 98 items ready (normal mode gear all in inventory)
-- 🗄️ 2 PDT items in storage (move to inventory if tanking)
+- 2 PDT items in storage (move to inventory if tanking)
 - 2 WS items missing (upgrade path - acquire these for min-max)
 
 ---
@@ -364,7 +364,7 @@ sets.midcast.Cure.SIRD = set_combine(sets.midcast.Cure, {
 **Interpretation**:
 
 - Most cure gear ready
-- 🗄️ SIRD + Duration gear in storage (retrieve if needed for specific content)
+- SIRD + Duration gear in storage (retrieve if needed for specific content)
 - 3 upgrade items missing (min-max gear)
 
 ---
@@ -392,7 +392,7 @@ sets.midcast.Cure.SIRD = set_combine(sets.midcast.Cure, {
 
 ---
 
-## 💡 Best Practices
+## Best Practices
 
 ### 1. Validate After Every Set Change
 
@@ -463,7 +463,7 @@ Ensure no critical gear is in storage
 
 ---
 
-## 🔗 Related Features
+## Related Features
 
 - **Auto-Equip**: System only swaps items marked as VALID (in inventory)
 - **Watchdog**: Detects when swaps fail (often due to STORAGE/MISSING items)
@@ -471,7 +471,7 @@ Ensure no critical gear is in storage
 
 ---
 
-## 📝 Quick Reference
+## Quick Reference
 
 ```
 COMMAND:

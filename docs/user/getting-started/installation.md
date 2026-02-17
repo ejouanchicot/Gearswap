@@ -5,17 +5,17 @@
 Before installing the Tetsouo GearSwap system, ensure you have:
 
 1. **FFXI with Windower 4**
-   - Working FFXI installation
-   - Windower 4 installed and configured
-   - Admin permissions for file modifications
+ - Working FFXI installation
+ - Windower 4 installed and configured
+ - Admin permissions for file modifications
 
 2. **Required Windower Addons**
-   - **GearSwap** (Core dependency)
-   - **DressUp** (For lockstyle functionality)
+ - **GearSwap** (Core dependency)
+ - **DressUp** (For lockstyle functionality)
 
 3. **Optional but Recommended Addons**
-   - **ConsoleBG** (Better console readability)
-   - **InfoBar** (Status information)
+ - **ConsoleBG** (Better console readability)
+ - **InfoBar** (Status information)
 
 ## Installation Steps
 

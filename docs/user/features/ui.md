@@ -464,9 +464,9 @@ UI reloads with your new settings.
    ```
 
 3. **Check position**:
-   - UI may be off-screen
-   - Delete `ui_position.lua` to reset
-   - Reload: `//gs c reload`
+ - UI may be off-screen
+ - Delete `ui_position.lua` to reset
+ - Reload: `//gs c reload`
 
 ---
 
@@ -481,8 +481,8 @@ UI reloads with your new settings.
    ```
 
 2. **Verify file exists**:
-   - Path: `[YourName]/ui_position.lua`
-   - If missing, save command failed
+ - Path: `[YourName]/ui_position.lua`
+ - If missing, save command failed
 
 3. **Enable auto-save** (optional):
 
@@ -533,11 +533,11 @@ UI reloads with your new settings.
    ```
 
 2. **Check keybind config loaded**:
-   - Look for "[JOB] Keybinds loaded successfully" message on job load
+ - Look for "[JOB] Keybinds loaded successfully" message on job load
 
 3. **Verify states exist**:
-   - UI shows states from job file
-   - If no states defined, UI appears empty
+ - UI shows states from job file
+ - If no states defined, UI appears empty
 
 ---
 
@@ -546,14 +546,14 @@ UI reloads with your new settings.
 ### Organization
 
 1. **Edit config file, not core code**:
-   - Modify: `config/UI_CONFIG.lua`
-   - Don't modify: `shared/utils/ui/UI_MANAGER.lua`
+ - Modify: `config/UI_CONFIG.lua`
+ - Don't modify: `shared/utils/ui/UI_MANAGER.lua`
 
 2. **Test changes immediately**:
-   - Save config >> `//gs c reload` >> check UI
+ - Save config >> `//gs c reload` >> check UI
 
 3. **Save position after positioning**:
-   - Drag to desired location >> `//gs c ui save`
+ - Drag to desired location >> `//gs c ui save`
 
 ---
 

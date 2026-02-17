@@ -2,7 +2,7 @@
 
 ---
 
-## 🌐 Universal Commands
+## Universal Commands
 
 These work on **all jobs**:
 
@@ -16,7 +16,7 @@ These work on **all jobs**:
 
 ---
 
-## 🎯 PLD-Specific Commands
+## PLD-Specific Commands
 
 **File**: `shared/jobs/pld/functions/PLD_COMMANDS.lua`
 
@@ -27,7 +27,7 @@ These work on **all jobs**:
 
 ---
 
-## 🔍 Debug Commands
+## Debug Commands
 
 | Command | Purpose |
 |---------|---------|

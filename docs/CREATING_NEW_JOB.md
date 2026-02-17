@@ -13,7 +13,7 @@ Version: 1.1 | Temps estimé: 8-12 heures
 7. [Phase 5: Job Abilities Database](#phase-5-job-abilities-database)
 8. [Testing](#testing)
 9. [Problèmes courants](#problèmes-courants)
-10. [⚠️ STACK OVERFLOW - Prévention CRITIQUE](#stack-overflow---prévention-critique)
+10. [ STACK OVERFLOW - Prévention CRITIQUE](#stack-overflow---prévention-critique)
 
 ---
 
@@ -585,8 +585,8 @@ sets.buff.Doom = {}
 ### Conseils Equipment
 
 1. **Copier structure d'un job similaire**
-   - Tank: Copier PLD sets
-   - DD: Copier WAR sets
+ - Tank: Copier PLD sets
+ - DD: Copier WAR sets
 
 2. **Utiliser Wardrobe slots**
 
@@ -602,8 +602,8 @@ sets.buff.Doom = {}
    ```
 
 4. **Inventer gear si pas dispo**
-   - Utiliser placeholder gear
-   - Commenter items manquants
+ - Utiliser placeholder gear
+ - Commenter items manquants
 
 ---
 
@@ -1074,15 +1074,15 @@ end
 
 ---
 
-## ⚠️ STACK OVERFLOW - Prévention CRITIQUE
+## STACK OVERFLOW - Prévention CRITIQUE
 
 ### Problème Fréquent
 
 **Stack overflow** lors du chargement d'un nouveau job. **Cause principale:** States manquants ou UI mal initialisé.
 
-### 🔥 3 RÈGLES CRITIQUES
+### 3 RÈGLES CRITIQUES
 
-#### 1. ✅ Définir TOUS les States Référencés par Keybinds
+#### 1. Définir TOUS les States Référencés par Keybinds
 
 **Problème:**
 
@@ -1117,7 +1117,7 @@ grep "state =" config/job/JOB_KEYBINDS.lua
 grep "state\." config/job/JOB_STATES*.lua
 ```
 
-#### 2. ✅ Utiliser init() au lieu de smart_init()
+#### 2. Utiliser init() au lieu de smart_init()
 
 **Problème:**
 
@@ -1154,7 +1154,7 @@ function user_setup()
 end
 ```
 
-#### 3. ✅ Ne PAS require() Modules Déjà Chargés
+#### 3. Ne PAS require() Modules Déjà Chargés
 
 **Problème:**
 
@@ -1199,7 +1199,7 @@ Avant `//lua reload gearswap`:
    end
    ```
 
-   - Si load >> Problème dans user_setup()
+ - Si load >> Problème dans user_setup()
 
 2. **Ajouter juste states:**
 
@@ -1210,7 +1210,7 @@ Avant `//lua reload gearswap`:
    end
    ```
 
-   - Si stack overflow >> States manquants ou mal définis
+ - Si stack overflow >> States manquants ou mal définis
 
 3. **Ajouter keybinds (sans UI):**
 
@@ -1224,7 +1224,7 @@ Avant `//lua reload gearswap`:
    end, 0.5)
    ```
 
-   - Si stack overflow >> Keybinds référencent states inexistants
+ - Si stack overflow >> Keybinds référencent states inexistants
 
 4. **Ajouter UI:**
 
@@ -1237,7 +1237,7 @@ Avant `//lua reload gearswap`:
    end, 2.0)
    ```
 
-   - Si stack overflow >> States manquants
+ - Si stack overflow >> States manquants
 
 ### Documentation Complète
 

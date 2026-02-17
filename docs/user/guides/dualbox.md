@@ -201,8 +201,8 @@ Enter new character name: Kaories
    ```
 
 3. Update config paths in each file:
-   - Find: `'Tetsouo/config/'`
-   - Replace: `'Kaories/config/'`
+ - Find: `'Tetsouo/config/'`
+ - Replace: `'Kaories/config/'`
 
 #### Verify Clone Success
 
@@ -449,7 +449,7 @@ Check UI displays:
    //gs debugmode
    ```
 
-   Look for errors when using `//gs c altjob`
+ Look for errors when using `//gs c altjob`
 
 ---
 

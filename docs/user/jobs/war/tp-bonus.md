@@ -82,21 +82,21 @@
 #### Weapons with TP Bonus
 
 - Godhands: +500 TP
-  - DMG:+197 Delay:+138 Hand-to-Hand skill +269
-  - "Store TP"+10 "TP Bonus"+500
-  - "Shijin Spiral" Aftermath
+ - DMG:+197 Delay:+138 Hand-to-Hand skill +269
+ - "Store TP"+10 "TP Bonus"+500
+ - "Shijin Spiral" Aftermath
 - Chastisers: +300 TP
-  - DMG:+148 Delay:+90 STR+20 Attack+33
-  - Hand-to-Hand skill +242 "Triple Attack"+3%
-  - "TP Bonus"+300
+ - DMG:+148 Delay:+90 STR+20 Attack+33
+ - Hand-to-Hand skill +242 "Triple Attack"+3%
+ - "TP Bonus"+300
 
 #### Armor with TP Bonus
 
 - Mpaca's Cap: +200 TP
-  - DEF:143 HP+61 STR+33 DEX+30 VIT+26 AGI+24
-  - Accuracy+40 Attack+40 Haste+6%
-  - "Triple Attack"+3% Critical hit rate +4%
-  - "TP Bonus"+200 Physical damage taken -7%
+ - DEF:143 HP+61 STR+33 DEX+30 VIT+26 AGI+24
+ - Accuracy+40 Attack+40 Haste+6%
+ - "Triple Attack"+3% Critical hit rate +4%
+ - "TP Bonus"+200 Physical damage taken -7%
 - Moonshade Earring: +250 TP
 
 **Config to create:** `config/mnk/MNK_TP_CONFIG.lua`
@@ -116,13 +116,13 @@ end
 #### Weapons with TP Bonus
 
 - Dojikiri Yasutsuna: +500 TP
-  - DMG:315 Delay:450 Great Katana skill +269
-  - "Store TP"+10 "TP Bonus"+500
-  - "Tachi: Shoha" Aftermath
+ - DMG:315 Delay:450 Great Katana skill +269
+ - "Store TP"+10 "TP Bonus"+500
+ - "Tachi: Shoha" Aftermath
 - Hangaku-no-Yumi (Ranged): +1000 TP
-  - DMG:251 Delay:600 Archery skill +242
-  - Ranged Accuracy+15 Ranged Attack+25
-  - "True Shot"+2 "TP Bonus"+1000
+ - DMG:251 Delay:600 Archery skill +242
+ - Ranged Accuracy+15 Ranged Attack+25
+ - "True Shot"+2 "TP Bonus"+1000
 
 #### Armor with TP Bonus
 
@@ -148,9 +148,9 @@ end
 #### Weapons with TP Bonus
 
 - Heishi Shorinken: +500 TP
-  - DMG:159 Delay:227 Katana skill +269
-  - "Store TP"+10 "TP Bonus"+500
-  - "Blade: Shun" Aftermath
+ - DMG:159 Delay:227 Katana skill +269
+ - "Store TP"+10 "TP Bonus"+500
+ - "Blade: Shun" Aftermath
 
 #### Armor with TP Bonus
 
@@ -205,9 +205,9 @@ end
 #### Weapons with TP Bonus
 
 - Anguta: +500 TP
-  - DMG:370 Delay:528 Scythe skill +269
-  - "Store TP"+10 "TP Bonus"+500
-  - "Entropy" Aftermath
+ - DMG:370 Delay:528 Scythe skill +269
+ - "Store TP"+10 "TP Bonus"+500
+ - "Entropy" Aftermath
 
 #### Armor with TP Bonus
 
@@ -230,13 +230,13 @@ end
 #### Weapons with TP Bonus
 
 - Trishula: +500 TP
-  - DMG:345 Delay:492 Polearm skill +269
-  - "Store TP"+10 "TP Bonus"+500
-  - "Stardiver" Aftermath
+ - DMG:345 Delay:492 Polearm skill +269
+ - "Store TP"+10 "TP Bonus"+500
+ - "Stardiver" Aftermath
 - Rhomphaia: +50 TP
-  - DMG:268 Delay:492 Polearm skill +242
-  - Attack+20 "Dragon Killer"+10
-  - Jump: "Double Attack"+7% "TP Bonus"+50
+ - DMG:268 Delay:492 Polearm skill +242
+ - Attack+20 "Dragon Killer"+10
+ - Jump: "Double Attack"+7% "TP Bonus"+50
 
 #### Armor with TP Bonus
 
@@ -259,17 +259,17 @@ end
 #### Weapons with TP Bonus
 
 - Fail-Not: +500 TP
-  - DMG:330 Delay:600 Archery skill +269
-  - "Store TP"+10 "TP Bonus"+500
-  - "Apex Arrow" Aftermath
+ - DMG:330 Delay:600 Archery skill +269
+ - "Store TP"+10 "TP Bonus"+500
+ - "Apex Arrow" Aftermath
 - Fomalhaut: +500 TP
-  - DMG:167 Delay:600 Marksmanship skill +269
-  - "Store TP"+10 "TP Bonus"+500
-  - "Last Stand" Aftermath
+ - DMG:167 Delay:600 Marksmanship skill +269
+ - "Store TP"+10 "TP Bonus"+500
+ - "Last Stand" Aftermath
 - Hangaku-no-Yumi: +1000 TP
-  - DMG:251 Delay:600 Archery skill +242
-  - Ranged Accuracy+15 Ranged Attack+25
-  - "True Shot"+2 "TP Bonus"+1000
+ - DMG:251 Delay:600 Archery skill +242
+ - Ranged Accuracy+15 Ranged Attack+25
+ - "True Shot"+2 "TP Bonus"+1000
 
 #### Reives Weapons (SKIP - situational)
 
@@ -300,17 +300,17 @@ end
 #### Weapons with TP Bonus
 
 - Tri-edge: +500 TP
-  - DMG:202 Delay:288 Axe skill +269
-  - "Store TP"+10 "TP Bonus"+500
-  - "Ruinator" Aftermath
+ - DMG:202 Delay:288 Axe skill +269
+ - "Store TP"+10 "TP Bonus"+500
+ - "Ruinator" Aftermath
 - Arasy Tabar +1: +150 TP
-  - DMG:149 Delay:280 Axe skill +242
-  - STR+11 DEX+11 AGI+11 Accuracy+15
-  - "TP Bonus"+150 Pet: Accuracy+15
+ - DMG:149 Delay:280 Axe skill +242
+ - STR+11 DEX+11 AGI+11 Accuracy+15
+ - "TP Bonus"+150 Pet: Accuracy+15
 - Arasy Tabar: +100 TP
-  - DMG:148 Delay:288 Axe skill +242
-  - STR+6 DEX+6 AGI+6 Accuracy+10
-  - "TP Bonus"+100 Pet: Accuracy+10
+ - DMG:148 Delay:288 Axe skill +242
+ - STR+6 DEX+6 AGI+6 Accuracy+10
+ - "TP Bonus"+100 Pet: Accuracy+10
 
 #### Armor with TP Bonus
 
@@ -333,9 +333,9 @@ end
 #### Weapons with TP Bonus
 
 - Lionheart: +500 TP
-  - DMG:336 Delay:480 Great Sword skill +269
-  - "Store TP"+10 "TP Bonus"+500
-  - "Resolution" Aftermath
+ - DMG:336 Delay:480 Great Sword skill +269
+ - "Store TP"+10 "TP Bonus"+500
+ - "Resolution" Aftermath
 
 #### Armor with TP Bonus
 
@@ -380,9 +380,9 @@ end
 #### Weapons with TP Bonus
 
 - Tishtrya: +500 TP
-  - DMG:185 Delay:264 Club skill +269
-  - "Store TP"+10 "TP Bonus"+500
-  - "Realmrazer" Aftermath
+ - DMG:185 Delay:264 Club skill +269
+ - "Store TP"+10 "TP Bonus"+500
+ - "Realmrazer" Aftermath
 
 #### Armor with TP Bonus
 
@@ -405,9 +405,9 @@ end
 #### Weapons with TP Bonus
 
 - Khatvanga: +500 TP
-  - DMG:268 Delay:402 Staff skill +269
-  - "Occult Acumen"+30 "TP Bonus"+500
-  - "Shattersoul" Aftermath
+ - DMG:268 Delay:402 Staff skill +269
+ - "Occult Acumen"+30 "TP Bonus"+500
+ - "Shattersoul" Aftermath
 
 #### Armor with TP Bonus (Player)
 
@@ -493,20 +493,20 @@ end
 #### For each new job
 
 1. **Create config/[job]/[JOB]_TP_CONFIG.lua**
-   - Table `pieces` (armor avec TP Bonus)
-   - Table `weapons` (armes avec TP Bonus)
-   - Function `get_weapon_bonus(weapon_name)`
-   - Functions buffs si nécessaire (rare - seulement WAR a Warcry/Fencer)
+ - Table `pieces` (armor avec TP Bonus)
+ - Table `weapons` (armes avec TP Bonus)
+ - Function `get_weapon_bonus(weapon_name)`
+ - Functions buffs si nécessaire (rare - seulement WAR a Warcry/Fencer)
 
 2. **Modify jobs/[job]/functions/[JOB]_PRECAST.lua**
-   - Require config: `local JobTPConfig = require('config/[job]/[JOB]_TP_CONFIG')`
-   - Include calculator: `include('utils/weaponskill/tp_bonus_calculator.lua')`
-   - Appeler dans `job_precast()` avant WS
-   - Appeler dans `job_post_precast()` pour afficher TP final
+ - Require config: `local JobTPConfig = require('config/[job]/[JOB]_TP_CONFIG')`
+ - Include calculator: `include('utils/weaponskill/tp_bonus_calculator.lua')`
+ - Appeler dans `job_precast()` avant WS
+ - Appeler dans `job_post_precast()` pour afficher TP final
 
 3. **DO NOT MODIFY utils/**
-   - `tp_bonus_calculator.lua` >> Already 100% generic
-   - `weaponskill_manager.lua` >> No TP Bonus logic
+ - `tp_bonus_calculator.lua` >> Already 100% generic
+ - `weaponskill_manager.lua` >> No TP Bonus logic
 
 ---
 

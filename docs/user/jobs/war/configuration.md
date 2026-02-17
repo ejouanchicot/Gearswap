@@ -4,7 +4,7 @@
 
 ---
 
-## 📁 Configuration Files
+## Configuration Files
 
 | File | Purpose |
 |------|---------|
@@ -15,7 +15,7 @@
 
 ---
 
-## 🎨 Lockstyle Config
+## Lockstyle Config
 
 **File**: `Tetsouo/config/war/WAR_LOCKSTYLE.lua`
 
@@ -38,7 +38,7 @@ return WARLockstyleConfig
 
 ---
 
-## 📖 Macrobook Config
+## Macrobook Config
 
 **File**: `Tetsouo/config/war/WAR_MACROBOOK.lua`
 
@@ -58,7 +58,7 @@ return WARMacroConfig
 
 ---
 
-## 🔧 Customization Examples
+## Customization Examples
 
 ### Change lockstyle
 

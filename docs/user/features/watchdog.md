@@ -149,7 +149,7 @@ Shows detailed scan information every 0.5 seconds:
 //gs c watchdog debug    # Toggle off
 ```
 
-**⚠️ Warning:** Debug mode is very verbose. Use only for testing, then disable.
+** Warning:** Debug mode is very verbose. Use only for testing, then disable.
 
 ---
 

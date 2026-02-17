@@ -36,7 +36,7 @@ Common issues and solutions for the Tetsouo GearSwap system.
    //lua list
    ```
 
-   GearSwap should appear in the list.
+ GearSwap should appear in the list.
 
 2. **Load GearSwap manually**
 
@@ -45,13 +45,13 @@ Common issues and solutions for the Tetsouo GearSwap system.
    ```
 
 3. **Check character file name**
-   - File must be named exactly: `YOURNAME_WAR.lua` (or your character name)
-   - Path: `addons/GearSwap/data/[YourName]/[YourName]_WAR.lua`
-   - Character name is case-sensitive
+ - File must be named exactly: `YOURNAME_WAR.lua` (or your character name)
+ - Path: `addons/GearSwap/data/[YourName]/[YourName]_WAR.lua`
+ - Character name is case-sensitive
 
 4. **Check for Lua errors**
-   - Look for red error messages in chat
-   - Note the file name and line number
+ - Look for red error messages in chat
+ - Note the file name and line number
 
 ---
 
@@ -84,12 +84,12 @@ YOURNAME_WAR.lua:47: Cannot find the include file ...
    ```
 
 3. **Check the error line**
-   - Open the file mentioned in error
-   - Check line number for syntax errors
+ - Open the file mentioned in error
+ - Check line number for syntax errors
 
 4. **Verify shared/ folder exists**
-   - Core system files must be in `data/shared/`
-   - Don't modify shared/ files
+ - Core system files must be in `data/shared/`
+ - Don't modify shared/ files
 
 ---
 
@@ -105,9 +105,9 @@ YOURNAME_WAR.lua:47: Cannot find the include file ...
    ```
 
 2. **Extract new version**
-   - Extract to `addons/GearSwap/data/`
-   - Overwrite `shared/` folder (core system)
-   - **Don't overwrite** your character folder
+ - Extract to `addons/GearSwap/data/`
+ - Overwrite `shared/` folder (core system)
+ - **Don't overwrite** your character folder
 
 3. **Reload**
 
@@ -124,8 +124,8 @@ YOURNAME_WAR.lua:47: Cannot find the include file ...
 **Solutions:**
 
 1. **Case sensitivity**
-   - File: `Tetsouo_WAR.lua`
-   - Character: `Tetsouo` (exact match)
+ - File: `Tetsouo_WAR.lua`
+ - Character: `Tetsouo` (exact match)
 
 2. **Verify file location**
 
@@ -134,8 +134,8 @@ YOURNAME_WAR.lua:47: Cannot find the include file ...
    ```
 
 3. **Check Windower console**
-   - `//console show`
-   - Look for "Cannot find file" errors
+ - `//console show`
+ - Look for "Cannot find file" errors
 
 ---
 
@@ -172,8 +172,8 @@ YOURNAME_WAR.lua:47: Cannot find the include file ...
 **Solutions:**
 
 1. **Network lag detected - Watchdog protection**
-   - Wait 3.5 seconds for automatic recovery
-   - Watchdog will force cleanup automatically
+ - Wait 3.5 seconds for automatic recovery
+ - Watchdog will force cleanup automatically
 
 2. **Manual force update**
 
@@ -188,7 +188,7 @@ YOURNAME_WAR.lua:47: Cannot find the include file ...
    //gs debugmode           # Enable debug
    ```
 
-   Look for errors during spell cast.
+ Look for errors during spell cast.
 
 4. **Verify equipment exists**
 
@@ -196,7 +196,7 @@ YOURNAME_WAR.lua:47: Cannot find the include file ...
    //gs c checksets
    ```
 
-   Check for [MISSING] or [STORAGE] items.
+ Check for [MISSING] or [STORAGE] items.
 
 ---
 
@@ -236,17 +236,17 @@ YOURNAME_WAR.lua:47: Cannot find the include file ...
 **Solutions:**
 
 1. **Normal behavior**
-   - Precast (Fast Cast) >> Midcast (Potency) >> Aftercast (Idle/Engaged)
-   - This is working as intended
+ - Precast (Fast Cast) >> Midcast (Potency) >> Aftercast (Idle/Engaged)
+ - This is working as intended
 
 2. **Too many gear swaps?**
-   - Simplify equipment sets
-   - Remove unnecessary conditional swaps
+ - Simplify equipment sets
+ - Remove unnecessary conditional swaps
 
 3. **Client lag**
-   - Check FPS (should be 30+)
-   - Close other programs
-   - Reduce FFXI graphics settings
+ - Check FPS (should be 30+)
+ - Close other programs
+ - Reduce FFXI graphics settings
 
 ---
 
@@ -264,8 +264,8 @@ YOURNAME_WAR.lua:47: Cannot find the include file ...
    ```
 
 2. **Wait for delay**
-   - Default: 8 seconds after job load
-   - Be patient - system applies automatically
+ - Default: 8 seconds after job load
+ - Be patient - system applies automatically
 
 3. **Manual apply**
 
@@ -274,8 +274,8 @@ YOURNAME_WAR.lua:47: Cannot find the include file ...
    ```
 
 4. **Check lockstyle number**
-   - Valid range: 1-200
-   - Test in-game: `//dressup [number]`
+ - Valid range: 1-200
+ - Test in-game: `//dressup [number]`
 
 5. **Verify config**
 
@@ -325,16 +325,16 @@ WARLockstyleConfig.by_subjob = {
 **Solutions:**
 
 1. **Reduce delay**
-   Edit `config/LOCKSTYLE_CONFIG.lua`:
+ Edit `config/LOCKSTYLE_CONFIG.lua`:
 
    ```lua
    LockstyleConfig.initial_load_delay = 6.0  -- Reduce from 8.0
    ```
 
 2. **Why delays exist:**
-   - FFXI needs time to load character/gear
-   - Too fast = lockstyle fails silently
-   - 8.0s is safe for most systems
+ - FFXI needs time to load character/gear
+ - Too fast = lockstyle fails silently
+ - 8.0s is safe for most systems
 
 **Recommended values:**
 
@@ -369,8 +369,8 @@ WARLockstyleConfig.by_subjob = {
    ```
 
 3. **Check for conflicts**
-   - Key may be used by FFXI/Windower/other addons
-   - Try different key (F9, F10, F11)
+ - Key may be used by FFXI/Windower/other addons
+ - Try different key (F9, F10, F11)
 
 4. **Test command manually**
 
@@ -378,8 +378,8 @@ WARLockstyleConfig.by_subjob = {
    //gs c cycle HybridMode
    ```
 
-   If works: keybind issue
-   If fails: state/command issue
+ If works: keybind issue
+ If fails: state/command issue
 
 ---
 
@@ -418,15 +418,15 @@ Replace `!` with `^` in keybind config:
    ```
 
 2. **Verify state exists**
-   State must be defined in main job file:
+ State must be defined in main job file:
 
    ```lua
    state.MainWeapon = M{'Ukonvasara', 'Naegling', ...}
    ```
 
 3. **Check available commands**
-   - Universal: `reload`, `checksets`, `lockstyle`, `ui`
-   - Job-specific: See `[JOB]_COMMANDS.lua`
+ - Universal: `reload`, `checksets`, `lockstyle`, `ui`
+ - Job-specific: See `[JOB]_COMMANDS.lua`
 
 ---
 
@@ -444,7 +444,7 @@ Replace `!` with `^` in keybind config:
    ```
 
 2. **Verify UI enabled**
-   Check `config/UI_CONFIG.lua`:
+ Check `config/UI_CONFIG.lua`:
 
    ```lua
    UIConfig.enabled = true
@@ -457,9 +457,9 @@ Replace `!` with `^` in keybind config:
    ```
 
 4. **Check position**
-   - UI may be off-screen
-   - Delete `ui_position.lua` to reset
-   - Reload: `//gs c reload`
+ - UI may be off-screen
+ - Delete `ui_position.lua` to reset
+ - Reload: `//gs c reload`
 
 ---
 
@@ -499,13 +499,13 @@ Replace `!` with `^` in keybind config:
    //gs c ui save
    ```
 
-   Creates/updates `ui_position.lua`
+ Creates/updates `ui_position.lua`
 
 2. **Verify file exists**
-   Path: `addons/GearSwap/data/[YourName]/ui_position.lua`
+ Path: `addons/GearSwap/data/[YourName]/ui_position.lua`
 
 3. **Enable auto-save** (optional)
-   Edit `config/UI_CONFIG.lua`:
+ Edit `config/UI_CONFIG.lua`:
 
    ```lua
    UIConfig.auto_save_position = true
@@ -565,9 +565,9 @@ Automatic protection against "stuck midcast" caused by network packet loss.
    ```
 
 2. **Check recommended values:**
-   - 3.5s (default) - Balanced
-   - 3.0s - Aggressive (extreme lag)
-   - 4.0s - Conservative (fewer false positives)
+ - 3.5s (default) - Balanced
+ - 3.0s - Aggressive (extreme lag)
+ - 4.0s - Conservative (fewer false positives)
 
 ---
 
@@ -617,8 +617,8 @@ System impact is negligible:
    ```
 
 2. **Reduce message verbosity**
-   - System messages are minimal by default
-   - Debug mode is very verbose (only enable when testing)
+ - System messages are minimal by default
+ - Debug mode is very verbose (only enable when testing)
 
 ---
 
@@ -645,11 +645,11 @@ System impact is negligible:
 **Solutions:**
 
 1. **Check target HP**
-   - System selects tier based on missing HP
-   - Waltz tiers: I (<200), II (200-600), III (600-1100), IV (1100-1500), V (1500+)
+ - System selects tier based on missing HP
+ - Waltz tiers: I (<200), II (200-600), III (600-1100), IV (1100-1500), V (1500+)
 
 2. **Manual tier**
-   Use macro:
+ Use macro:
 
    ```
    /ja "Curing Waltz III" <stpc>

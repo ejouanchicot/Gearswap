@@ -2,7 +2,7 @@
 
 ---
 
-## 🌐 Universal Commands
+## Universal Commands
 
 These work on **all jobs**:
 
@@ -17,7 +17,7 @@ These work on **all jobs**:
 
 ---
 
-## 🎯 RDM-Specific Commands
+## RDM-Specific Commands
 
 **File**: `shared/jobs/rdm/functions/RDM_COMMANDS.lua`
 
@@ -92,7 +92,7 @@ These work on **all jobs**:
 
 ---
 
-## 📝 Command Examples
+## Command Examples
 
 ### Example 1: Quick Cast Convert
 
@@ -148,7 +148,7 @@ Alt+P (cycle SaboteurMode to On)
 
 ---
 
-## 🔍 Debug Commands
+## Debug Commands
 
 | Command | Purpose |
 |---------|---------|
@@ -176,7 +176,7 @@ Alt+P (cycle SaboteurMode to On)
 
 ---
 
-## 🎮 State Cycling Commands
+## State Cycling Commands
 
 All states can be cycled via `//gs c cycle [StateName]`:
 

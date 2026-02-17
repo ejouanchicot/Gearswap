@@ -10,9 +10,9 @@ Complete configuration guide for customizing the Tetsouo GearSwap system.
 - [Overview](#overview)
 - [Configuration File Locations](#configuration-file-locations)
 - [Universal Configuration](#universal-configuration)
-  - [Lockstyle Configuration](#lockstyle-configuration)
-  - [Macrobook Configuration](#macrobook-configuration)
-  - [UI Configuration](#ui-configuration)
+ - [Lockstyle Configuration](#lockstyle-configuration)
+ - [Macrobook Configuration](#macrobook-configuration)
+ - [UI Configuration](#ui-configuration)
 - [Job-Specific Configuration](#job-specific-configuration)
 - [Applying Changes](#applying-changes)
 - [Advanced Configuration](#advanced-configuration)
@@ -511,24 +511,24 @@ sets.engaged.PDT = {}
    ```
 
 2. **Check file syntax**
-   - Missing `return [Config]` at end
-   - Lua syntax errors (missing commas, brackets)
+ - Missing `return [Config]` at end
+ - Lua syntax errors (missing commas, brackets)
 
 3. **Verify file path**
-   - Must be in `Tetsouo/config/[job]/`
-   - File name must match exactly (case-sensitive)
+ - Must be in `Tetsouo/config/[job]/`
+ - File name must match exactly (case-sensitive)
 
 ### Issue: "Lockstyle not applying after subjob change"
 
 **Solutions:**
 
 1. **Check lockstyle config**
-   - Verify subjob exists in `by_subjob` table
-   - Verify lockstyle number is valid (1-200)
+ - Verify subjob exists in `by_subjob` table
+ - Verify lockstyle number is valid (1-200)
 
 2. **Check timing**
-   - Wait 8 seconds after subjob change
-   - Increase delay if needed: `LOCKSTYLE_CONFIG.lua`
+ - Wait 8 seconds after subjob change
+ - Increase delay if needed: `LOCKSTYLE_CONFIG.lua`
 
 3. **Manual apply**
 
@@ -541,8 +541,8 @@ sets.engaged.PDT = {}
 **Solutions:**
 
 1. **Check macrobook config**
-   - Verify book/page numbers exist in FFXI
-   - Check subjob spelling in config
+ - Verify book/page numbers exist in FFXI
+ - Check subjob spelling in config
 
 2. **Manual set**
 
@@ -582,13 +582,13 @@ sets.engaged.PDT = {}
 ### Organization
 
 1. **One config per concern**
-   - Keybinds >> `[JOB]_KEYBINDS.lua`
-   - Lockstyle >> `[JOB]_LOCKSTYLE.lua`
-   - Macrobook >> `[JOB]_MACROBOOK.lua`
+ - Keybinds >> `[JOB]_KEYBINDS.lua`
+ - Lockstyle >> `[JOB]_LOCKSTYLE.lua`
+ - Macrobook >> `[JOB]_MACROBOOK.lua`
 
 2. **Consistent naming**
-   - Use job code in UPPERCASE: `WAR`, `PLD`, `DNC`
-   - Use descriptive state names: `MainWeapon`, `HybridMode`
+ - Use job code in UPPERCASE: `WAR`, `PLD`, `DNC`
+ - Use descriptive state names: `MainWeapon`, `HybridMode`
 
 3. **Comment complex configs**
 

@@ -4,7 +4,7 @@
 
 ---
 
-## 📁 Configuration Files
+## Configuration Files
 
 | File | Purpose |
 |------|---------|
@@ -17,7 +17,7 @@
 
 ---
 
-## ⌨️ Keybinds Config
+## ⌨ Keybinds Config
 
 **File**: `Tetsouo/config/rdm/RDM_KEYBINDS.lua`
 
@@ -55,7 +55,7 @@ return RDMKeybinds
 
 ---
 
-## 🎨 Lockstyle Config
+## Lockstyle Config
 
 **File**: `Tetsouo/config/rdm/RDM_LOCKSTYLE.lua`
 
@@ -93,7 +93,7 @@ return RDMLockstyleConfig
 
 ---
 
-## 📖 Macrobook Config
+## Macrobook Config
 
 **File**: `Tetsouo/config/rdm/RDM_MACROBOOK.lua`
 
@@ -145,7 +145,7 @@ RDMMacroConfig.dualbox = {
 
 ---
 
-## 🎯 States Config
+## States Config
 
 **File**: `Tetsouo/config/rdm/RDM_STATES.lua`
 
@@ -230,7 +230,7 @@ return RDMTPCONFIG
 
 ---
 
-## 🎭 Saboteur Config
+## Saboteur Config
 
 **File**: `Tetsouo/config/rdm/RDM_SABOTEUR_CONFIG.lua`
 
@@ -270,7 +270,7 @@ RDMSaboteurConfig.wait_time = 3  -- 3 seconds instead of 2
 
 ---
 
-## 🔧 Customization Examples
+## Customization Examples
 
 ### Example 1: Add New Keybind
 
@@ -326,7 +326,7 @@ state.MyNewState:set('Option1')
 
 ---
 
-## 🔄 Applying Changes
+## Applying Changes
 
 After modifying config files:
 

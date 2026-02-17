@@ -1,6 +1,6 @@
 # DNC - Quick Start Guide
 
-## 🚀 Loading the System
+## Loading the System
 
 1. **Change to DNC in-game**
 2. **Load GearSwap**:
@@ -10,10 +10,10 @@
    ```
 
 3. **Verify loading**:
-   - Look for: `[DNC] Functions loaded successfully`
-   - Keybinds auto-loaded
-   - Macrobook set to Book 4, Page 1
-   - Lockstyle #2 applied after 8 seconds
+ - Look for: `[DNC] Functions loaded successfully`
+ - Keybinds auto-loaded
+ - Macrobook set to Book 4, Page 1
+ - Lockstyle #2 applied after 8 seconds
 
 ---
 
@@ -41,7 +41,7 @@
 
 ---
 
-## 🎯 First Commands to Try
+## First Commands to Try
 
 ```
 //gs c checksets          # Validate your equipment
@@ -51,7 +51,7 @@
 
 ---
 
-## ⚙️ Default Setup
+## Default Setup
 
 On load, system automatically:
 
@@ -60,11 +60,11 @@ On load, system automatically:
 - Applies lockstyle #2 (after 8s delay)
 - Displays UI with keybinds (if enabled)
 - Sets default states:
-  - Default states loaded
+ - Default states loaded
 
 ---
 
-## 📚 Next Steps
+## Next Steps
 
 - **Learn keybinds** >> [Keybinds Reference](keybinds.md)
 - **Try commands** >> [Commands Reference](commands.md)

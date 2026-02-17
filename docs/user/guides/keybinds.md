@@ -377,8 +377,8 @@ Alt+F1              # Quick toggle (default)
 **Solutions:**
 
 1. **Check key format**
-   - Correct: `"!1"` (Alt+1)
-   - Wrong: `"alt+1"`, `"Alt+1"`, `"!one"`
+ - Correct: `"!1"` (Alt+1)
+ - Wrong: `"alt+1"`, `"Alt+1"`, `"!one"`
 
 2. **Reload system**
 
@@ -387,8 +387,8 @@ Alt+F1              # Quick toggle (default)
    ```
 
 3. **Check for conflicts**
-   - Key might be used by FFXI, Windower, or another addon
-   - Try different key combination
+ - Key might be used by FFXI, Windower, or another addon
+ - Try different key combination
 
 4. **Verify syntax**
 
@@ -409,8 +409,8 @@ Alt+F1              # Quick toggle (default)
    ```
 
 2. **State must exist in job file**
-   - Check `TETSOUO_[JOB].lua` (or your character name)
-   - State must be defined in `user_setup()`:
+ - Check `TETSOUO_[JOB].lua` (or your character name)
+ - State must be defined in `user_setup()`:
 
    ```lua
    state.MainWeapon = M{...}  -- Must exist
@@ -435,11 +435,11 @@ Alt+F1              # Quick toggle (default)
    ```
 
 2. **Verify command exists**
-   - Universal commands: See `COMMON_COMMANDS.lua`
-   - Job-specific: See `[JOB]_COMMANDS.lua`
+ - Universal commands: See `COMMON_COMMANDS.lua`
+ - Job-specific: See `[JOB]_COMMANDS.lua`
 
 3. **Check state definition**
-   - State must have options defined:
+ - State must have options defined:
 
    ```lua
    state.MainWeapon = M{'Ukonvasara', 'Naegling', 'Chango'}
@@ -504,9 +504,9 @@ end
    ```
 
 2. **Use consistent patterns**
-   - Alt+1, Alt+2 for core states (all jobs)
-   - F1-F5 for enhancement cycles (RDM)
-   - Alt+3+ for job-specific features
+ - Alt+1, Alt+2 for core states (all jobs)
+ - F1-F5 for enhancement cycles (RDM)
+ - Alt+3+ for job-specific features
 
 3. **Document complex keybinds**
 
@@ -517,20 +517,20 @@ end
 
 ### Avoid Common Mistakes
 
-❌ **Don't use reserved keys**
+ **Don't use reserved keys**
 
 - F12 (GearSwap update)
 - F9-F11 (Mote modes)
 - Ctrl+H (Windower hide)
 
-❌ **Don't forget commas**
+ **Don't forget commas**
 
 ```lua
 { key = "!1", command = "cycle MainWeapon", desc = "Main Weapon", state = "MainWeapon" },  -- ← comma required
 { key = "!2", command = "cycle HybridMode", desc = "Hybrid Mode", state = "HybridMode" }    -- ← no comma on last line
 ```
 
-❌ **Don't use uppercase keys**
+ **Don't use uppercase keys**
 
 ```lua
 { key = "!A", ... }  -- Wrong

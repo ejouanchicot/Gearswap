@@ -4,7 +4,7 @@
 
 ---
 
-## 📊 Set Categories
+## Set Categories
 
 ```lua
 sets.precast = {}        -- Fast Cast, JA, WS
@@ -39,7 +39,7 @@ sets.precast.FC = {
 
 ---
 
-## 🎭 Midcast Sets
+## Midcast Sets
 
 **MidcastManager Fallback Chain**:
 
@@ -52,7 +52,7 @@ Priority 4: sets.midcast['Skill']            (guaranteed)
 
 ---
 
-## 🛡️ Idle Sets
+## Idle Sets
 
 ```lua
 sets.idle.Normal = { ... }
@@ -82,5 +82,5 @@ sets.engaged.PDT = { ... }
 **Status meanings**:
 
 - VALID: In inventory
-- 🗄️ STORAGE: In mog house/sack
+- STORAGE: In mog house/sack
 - MISSING: Not found

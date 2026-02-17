@@ -5,7 +5,7 @@
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 1. [What is Auto-Tier?](#what-is-auto-tier)
 2. [WHM Cure Auto-Tier](#whm-cure-auto-tier)
@@ -17,16 +17,16 @@
 
 ---
 
-## 🎯 What is Auto-Tier?
+## What is Auto-Tier?
 
 **Auto-Tier** automatically **downgrades** your healing spells/abilities to the optimal tier based on the target's **missing HP**.
 
 **Purpose**:
 
-- 💰 **Save MP** (don't use Cure VI when Cure III is enough)
+- **Save MP** (don't use Cure VI when Cure III is enough)
 - **Faster casting** (lower tier = shorter cast time)
-- 🎯 **Optimal healing** (match cure potency to actual need)
-- 🧠 **Less mental overhead** (system picks for you)
+- **Optimal healing** (match cure potency to actual need)
+- **Less mental overhead** (system picks for you)
 
 **Jobs**:
 
@@ -35,7 +35,7 @@
 
 ---
 
-## 🏥 WHM Cure Auto-Tier
+## WHM Cure Auto-Tier
 
 ### Overview
 
@@ -130,7 +130,7 @@ Actual HP Healed = Base Potency × (1 + Cure Potency%)
 
 ---
 
-## 💃 DNC Waltz Auto-Tier
+## DNC Waltz Auto-Tier
 
 ### Overview
 
@@ -233,7 +233,7 @@ Actual HP Healed = Base Potency × (1 + Waltz Potency%)
 
 ---
 
-## ⚙️ How It Works
+## How It Works
 
 ### Decision Flow (WHM Cure)
 
@@ -280,7 +280,7 @@ Actual HP Healed = Base Potency × (1 + Waltz Potency%)
 
 ---
 
-## 🔧 Configuration
+## Configuration
 
 ### WHM Cure Auto-Tier Configuration
 
@@ -339,7 +339,7 @@ local waltz_tiers = {
 
 ---
 
-## 📚 Examples
+## Examples
 
 ### Example 1: WHM Healing During Event
 
@@ -414,7 +414,7 @@ Command: //gs c aoewaltz
 
 ---
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
 ### Issue: Auto-Tier Not Working (WHM)
 
@@ -428,7 +428,7 @@ Command: //gs c aoewaltz
    //gs c state CureAutoTier
    ```
 
-   Should show: `CureAutoTier: On`
+ Should show: `CureAutoTier: On`
 
 2. **If showing Off**:
 
@@ -436,11 +436,11 @@ Command: //gs c aoewaltz
    //gs c cycle CureAutoTier
    ```
 
-   Toggle until it shows `On`
+ Toggle until it shows `On`
 
 3. **Check target**:
-   - Auto-tier disables on `<me>` (self-cures)
-   - Try casting on party member: `/ma "Cure VI" <stpc>`
+ - Auto-tier disables on `<me>` (self-cures)
+ - Try casting on party member: `/ma "Cure VI" <stpc>`
 
 4. **Reload GearSwap**:
 
@@ -460,7 +460,7 @@ Command: //gs c aoewaltz
    //gs c reload
    ```
 
-   Look for "[DNC] Functions loaded successfully"
+ Look for "[DNC] Functions loaded successfully"
 
 2. **Check syntax**:
 
@@ -470,8 +470,8 @@ Command: //gs c aoewaltz
    ```
 
 3. **Verify TP**:
-   - Need minimum 200 TP for Waltz I
-   - Message will show if insufficient TP
+ - Need minimum 200 TP for Waltz I
+ - Message will show if insufficient TP
 
 ### Issue: Wrong Tier Selected
 
@@ -480,16 +480,16 @@ Command: //gs c aoewaltz
 **Possible causes**:
 
 1. **Cure Potency not detected**:
-   - System uses base potency values
-   - Ensure Cure Potency gear equipped before casting
+ - System uses base potency values
+ - Ensure Cure Potency gear equipped before casting
 
 2. **Target HP fluctuating**:
-   - Target HP changed between command and cast
-   - Recast to get fresh calculation
+ - Target HP changed between command and cast
+ - Recast to get fresh calculation
 
 3. **Thresholds need adjustment**:
-   - See "Customizing Thresholds" section
-   - Or disable: `//gs c cycle CureAutoTier` to `Off`
+ - See "Customizing Thresholds" section
+ - Or disable: `//gs c cycle CureAutoTier` to `Off`
 
 ### Issue: Message Not Displaying
 
@@ -505,7 +505,7 @@ Command: //gs c aoewaltz
 
 ---
 
-## 💡 Best Practices
+## Best Practices
 
 ### WHM Cure Auto-Tier
 
@@ -529,7 +529,7 @@ Command: //gs c aoewaltz
 - **Always use** `//gs c waltz` (never waste TP)
 - **Macro it** for quick access
 - **Trust tier selection** (system optimizes TP usage)
-- ⚠️ **Monitor party HP** before AOE waltz (ensure worth the TP)
+- **Monitor party HP** before AOE waltz (ensure worth the TP)
 
 **Macro setup**:
 
@@ -540,7 +540,7 @@ Macro 2: /console gs c aoewaltz         (AOE)
 
 ---
 
-## 📊 Performance Impact
+## Performance Impact
 
 **WHM Cure Auto-Tier**:
 
@@ -556,7 +556,7 @@ Macro 2: /console gs c aoewaltz         (AOE)
 
 ---
 
-## 🔗 Related Features
+## Related Features
 
 - **Cure Potency Gear**: Auto-tier accounts for your equipped gear
 - **Waltz Potency Gear**: System adjusts thresholds dynamically
@@ -565,7 +565,7 @@ Macro 2: /console gs c aoewaltz         (AOE)
 
 ---
 
-## 📝 Quick Reference
+## Quick Reference
 
 ```
 WHM CURE AUTO-TIER:

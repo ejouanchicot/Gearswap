@@ -6,7 +6,7 @@
 
 ---
 
-## 📋 Overview
+## Overview
 
 Universal weapon skills database system for displaying WS descriptions in-game (like JA messages). Follows the same auto-merge pattern as UNIVERSAL_JA_DATABASE.
 
@@ -18,7 +18,7 @@ Universal weapon skills database system for displaying WS descriptions in-game (
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 shared/data/weaponskills/
@@ -54,7 +54,7 @@ end
 
 ---
 
-## 📊 Database Structure
+## Database Structure
 
 ### Standard WS Entry
 
@@ -118,7 +118,7 @@ Player can use via Bravura@75 OR Barbarus Bhuj@85.
 
 ---
 
-## 🎮 In-Game Usage
+## In-Game Usage
 
 ### Integration (PRECAST Module)
 
@@ -167,7 +167,7 @@ Called via `TPBonusHandler.apply_and_display()` in `job_post_precast()`.
 
 ---
 
-## 📝 Current Weapons
+## Current Weapons
 
 ### Great Axe (15 WS)
 
@@ -188,7 +188,7 @@ Called via `TPBonusHandler.apply_and_display()` in `job_post_precast()`.
 
 ---
 
-## 🛠️ Adding New Weapons
+## Adding New Weapons
 
 ### Step 1: Create Weapon Database
 
@@ -248,7 +248,7 @@ Already automatic - PRECAST modules use UNIVERSAL_WS_DATABASE which auto-merges 
 
 ---
 
-## 📚 Data Sources
+## Data Sources
 
 **Primary:** bg-wiki.com
 
@@ -258,7 +258,7 @@ Already automatic - PRECAST modules use UNIVERSAL_WS_DATABASE which auto-merges 
 
 ---
 
-## 🔧 Database Purpose
+## Database Purpose
 
 **PRIMARY USE:** Display WS descriptions in-game (like JA messages)
 
@@ -274,7 +274,7 @@ Already automatic - PRECAST modules use UNIVERSAL_WS_DATABASE which auto-merges 
 
 ---
 
-## ✅ Standards
+## Standards
 
 ### Description Field (CRITICAL)
 
@@ -303,9 +303,9 @@ FFXI chat doesn't support Unicode/emojis.
 
 **Don't Use:**
 
-- Emojis: ⚔ ✨ 💥
+- Emojis:
 - Unicode arrows: >> ⇒
-- Special characters: • ★ ◆
+- Special characters: •
 
 ### Special Weapons Documentation
 
@@ -338,7 +338,7 @@ notes = "Light SC with Aeonic AM only"
 
 ---
 
-## 🐛 Debugging
+## Debugging
 
 ### WS Message Not Displaying
 
@@ -364,7 +364,7 @@ Use only ASCII characters. Test in-game chat before committing.
 
 ---
 
-## 📋 Future Weapons
+## Future Weapons
 
 ### Planned
 
@@ -385,7 +385,7 @@ Use only ASCII characters. Test in-game chat before committing.
 
 ---
 
-## 🎯 Related Systems
+## Related Systems
 
 - **UNIVERSAL_JA_DATABASE:** Job abilities database (same pattern)
 - **MessageFormatter:** Message display system

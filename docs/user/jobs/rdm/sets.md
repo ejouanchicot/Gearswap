@@ -4,7 +4,7 @@
 
 ---
 
-## 📊 Set Categories
+## Set Categories
 
 ```lua
 sets.precast = {}        -- Fast Cast, JA, WS
@@ -53,7 +53,7 @@ sets.precast.WS['Aeolian Edge'] = { ... }  -- AOE magic WS
 
 ---
 
-## 🎭 Midcast Sets
+## Midcast Sets
 
 ### Enfeebling Magic (Nested Structure)
 
@@ -153,7 +153,7 @@ sets.midcast.Aspir = { ... }            -- Aspir potency
 
 ---
 
-## 🛡️ Idle Sets
+## Idle Sets
 
 ```lua
 sets.idle = {}
@@ -208,7 +208,7 @@ sets.engaged.Enspell = {
 
 ---
 
-## 🗡️ Weapon Sets
+## Weapon Sets
 
 **Weapons are controlled by states**, not swapped via sets:
 
@@ -256,7 +256,7 @@ All items found in inventory
 **Status meanings**:
 
 - **VALID**: Item in inventory/equipped
-- 🗄️ **STORAGE**: Item in mog house/sack/etc.
+- **STORAGE**: Item in mog house/sack/etc.
 - **MISSING**: Item not found anywhere
 
 **Action**:
@@ -266,7 +266,7 @@ All items found in inventory
 
 ---
 
-## 🔍 Debug Set Selection
+## Debug Set Selection
 
 **Enable midcast debug**:
 
@@ -298,7 +298,7 @@ All items found in inventory
 
 ---
 
-## 📝 Adding New Sets
+## Adding New Sets
 
 **Example: Add a new Enfeeble mode (Macc)**
 

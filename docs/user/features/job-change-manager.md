@@ -5,7 +5,7 @@
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 1. [What is Job Change Manager?](#what-is-job-change-manager)
 2. [Why It Exists](#why-it-exists)
@@ -16,23 +16,23 @@
 
 ---
 
-## 🎯 What is Job Change Manager?
+## What is Job Change Manager?
 
 **Job Change Manager** is an **invisible background system** that prevents conflicts and errors when you change jobs or subjobs.
 
 **What it does**:
 
 - **Debounces** job/subjob changes (3.0 second cooldown)
-- 🧹 **Cleans up** old job state before loading new job
-- 🔄 **Manages** keybinds, UI, lockstyle, and macrobook transitions
-- 💾 **Persists** state across reloads
+- **Cleans up** old job state before loading new job
+- **Manages** keybinds, UI, lockstyle, and macrobook transitions
+- **Persists** state across reloads
 - **Prevents** race conditions and duplicate operations
 
 **Automatic**: You never interact with it directly - it runs automatically.
 
 ---
 
-## 🤔 Why It Exists
+## Why It Exists
 
 ### The Problem (Before Job Change Manager)
 
@@ -70,7 +70,7 @@
 
 ---
 
-## ⚙️ How It Works
+## How It Works
 
 ### Debouncing (3.0 Second Cooldown)
 
@@ -124,27 +124,27 @@ JobChangeManager:
 **What Job Change Manager controls**:
 
 1. **Keybinds**:
-   - Unbinds old job keybinds
-   - Binds new job keybinds
-   - Prevents double-binding
+ - Unbinds old job keybinds
+ - Binds new job keybinds
+ - Prevents double-binding
 
 2. **UI (Keybind Overlay)**:
-   - Destroys old UI
-   - Creates new UI for new job
-   - Prevents duplicate windows
+ - Destroys old UI
+ - Creates new UI for new job
+ - Prevents duplicate windows
 
 3. **Lockstyle**:
-   - Cancels pending lockstyle operations
-   - Applies new lockstyle after delay
-   - Prevents spam
+ - Cancels pending lockstyle operations
+ - Applies new lockstyle after delay
+ - Prevents spam
 
 4. **Macrobook**:
-   - Sets new macrobook/page
-   - Ensures correct macro setup
+ - Sets new macrobook/page
+ - Ensures correct macro setup
 
 ---
 
-## 👤 User Impact
+## User Impact
 
 ### What You See (Normal Behavior)
 
@@ -203,7 +203,7 @@ Time 3s:   Press /ja "Samurai" <me> (change to WAR/SAM)
 
 ---
 
-## 🔧 Technical Details
+## Technical Details
 
 ### Initialization
 
@@ -283,7 +283,7 @@ return true
 
 ---
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
 ### Issue: Keybinds Not Working After Job Change
 
@@ -307,9 +307,9 @@ return true
    ```
 
 3. **Check if debouncing** (normal behavior):
-   - If you changed jobs/subjobs rapidly, system is waiting
-   - Wait for debounce period to end
-   - Keybinds will load automatically
+ - If you changed jobs/subjobs rapidly, system is waiting
+ - Wait for debounce period to end
+ - Keybinds will load automatically
 
 ### Issue: Duplicate UI Windows
 
@@ -348,8 +348,8 @@ return true
 **Solutions**:
 
 1. **Normal behavior** if changing jobs quickly:
-   - System will stabilize after 3.0s
-   - Extra lockstyle applications are harmless
+ - System will stabilize after 3.0s
+ - Extra lockstyle applications are harmless
 
 2. **If excessive** (10+ applications):
 
@@ -358,8 +358,8 @@ return true
    ```
 
 3. **Disable lockstyle temporarily**:
-   - Comment out lockstyle code in job file
-   - Or set lockstyle_delay very high
+ - Comment out lockstyle code in job file
+ - Or set lockstyle_delay very high
 
 ### Issue: "Debouncing..." Message Spam
 
@@ -370,20 +370,20 @@ return true
 **Solutions**:
 
 1. **Stop changing jobs** for 3 seconds:
-   - Let the debounce period complete
-   - Final change will execute automatically
+ - Let the debounce period complete
+ - Final change will execute automatically
 
 2. **If unintentional** (macro spam):
-   - Fix your macros (remove rapid /ja commands)
-   - Add wait times: `/wait 1`
+ - Fix your macros (remove rapid /ja commands)
+ - Add wait times: `/wait 1`
 
 3. **This is working as intended**:
-   - Messages inform you system is protecting against conflicts
-   - Not an error!
+ - Messages inform you system is protecting against conflicts
+ - Not an error!
 
 ---
 
-## 💡 Best Practices
+## Best Practices
 
 ### Changing Jobs
 
@@ -433,7 +433,7 @@ Step 4: If still broken, //lua unload gearswap && //lua load gearswap
 
 ---
 
-## 📊 Performance Metrics
+## Performance Metrics
 
 **Overhead**:
 
@@ -449,7 +449,7 @@ Step 4: If still broken, //lua unload gearswap && //lua load gearswap
 
 ---
 
-## 🔗 Related Systems
+## Related Systems
 
 **Job Change Manager integrates with**:
 
@@ -466,7 +466,7 @@ Step 4: If still broken, //lua unload gearswap && //lua load gearswap
 
 ---
 
-## 📝 Quick Reference
+## Quick Reference
 
 ```
 WHAT IT DOES:
