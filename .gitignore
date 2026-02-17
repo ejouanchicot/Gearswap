@@ -51,8 +51,26 @@ Morphetrix/
 Hysoka/
 Gabvanstronger/
 Typioni/
-data.code-workspace
+Kaories/
+
+# Workspace files
 data.code-workspace
 nul
+
+# Claude Code local settings
 .claude/settings.local.json
-.claude/settings.local.json
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Personal output / internal docs
+wardrobe_audit.txt
+AUDIT_REPORT.md
+COMPETITIVE_ANALYSIS.md
+
+# Old backups
+Backup2/
+
+# Screenshots
+*.png
