@@ -1,427 +1,61 @@
-# UI System - Interface Customization
+# UI Overlay
 
-Complete guide for customizing the Tetsouo GearSwap UI overlay system.
-
-
-**Universal**: Works for all 15 jobs (WAR, PLD, DNC, DRK, SAM, THF, RDM, WHM, BLM, GEO, COR, BRD, BST)
+Visual overlay displaying current states, keybinds, and job settings. Works for all 15 jobs.
 
 ---
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Configuration File](#configuration-file)
-- [Position and Display](#position-and-display)
-- [Visible Sections](#visible-sections)
-- [Visual Appearance](#visual-appearance)
-- [Advanced Settings](#advanced-settings)
-- [Configuration Examples](#configuration-examples)
-- [Applying Changes](#applying-changes)
-
----
-
-## Overview
-
-The UI system provides a visual overlay displaying:
-
-- **Current states** (MainWeapon, HybridMode, etc.)
-- **Keybind reference** (which keys do what)
-- **Job-specific settings** (automatic per job)
-- **Alt character job** (if DualBox enabled)
-
-### Quick Commands
-
-```bash
-//gs c ui          # Toggle UI on/off
-//gs c ui on       # Enable UI
-//gs c ui off      # Disable UI
-//gs c ui save     # Save current position and settings
-//gs c ui help     # Show all UI commands
-```
-
-### All UI Commands
+## Commands
 
 | Command | Alias | Description |
 |---------|-------|-------------|
 | `ui` | | Toggle UI visibility |
-| `ui on` | `ui enable` | Enable UI (create and show) |
-| `ui off` | `ui disable` | Disable UI (hide and persist across reloads) |
+| `ui on` | `ui enable` | Enable UI |
+| `ui off` | `ui disable` | Disable UI (persists across reloads) |
 | `ui header` | `ui h` | Toggle header section |
 | `ui legend` | `ui l` | Toggle legend section |
 | `ui columns` | `ui c` | Toggle column headers |
 | `ui footer` | `ui f` | Toggle footer section |
 | `ui font <name>` | | Change font (`Consolas` or `Courier New`) |
-| `ui bg <preset>` | `ui background`, `ui theme` | Apply a background preset |
+| `ui bg <preset>` | `ui theme` | Apply a background preset |
 | `ui bg toggle` | `ui theme toggle` | Toggle background visibility |
-| `ui bg list` | `ui theme list` | List available background presets |
-| `ui bg <r> <g> <b> <a>` | | Set custom background RGBA (0-255 each) |
-| `ui save` | `ui s` | Save current UI position and settings |
-| `ui help` | `ui ?` | Show UI command help |
+| `ui bg list` | `ui theme list` | List available presets |
+| `ui bg <r> <g> <b> <a>` | | Custom background RGBA (0-255) |
+| `ui save` | `ui s` | Save position and settings |
+| `ui help` | `ui ?` | Show help |
 
 ---
 
-## Configuration File
+## Configuration
 
 **File**: `config/UI_CONFIG.lua`
 
-This file controls all UI appearance and behavior settings.
+### Position
 
----
+Drag the overlay to where you want it, then run `//gs c ui save`. Position persists across reloads. Delete `ui_position.lua` to reset.
 
-## Position and Display
+### Settings reference
 
-### Enable/Disable UI
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `enabled` | `true` | Show UI on startup |
+| `init_delay` | `5.0` | Seconds before UI loads after job change |
+| `show_header` | `true` | Title bar |
+| `show_legend` | `true` | Modifier key legend |
+| `show_column_headers` | `true` | Column header row |
+| `show_footer` | `true` | Command reference line |
+| `flags.draggable` | `true` | Allow mouse drag |
+| `text.size` | `10` | Font size |
+| `text.font` | `'Consolas'` | Font family |
+| `background.r/g/b` | `15/15/35` | Background color (0-255) |
+| `background.a` | `180` | Background opacity (0-255) |
+| `background.visible` | `true` | Show background |
+| `auto_save_position` | `false` | Auto-save on drag |
+| `update_throttle` | `0` | 0 = update on state change only |
+| `debug` | `false` | Debug messages |
 
-```lua
--- Enable/Disable UI on startup
-UIConfig.enabled = true  -- Set to false to disable
-```
-
-#### In-game commands:
-
-```bash
-//gs c ui          # Toggle UI on/off
-Alt+F1            # Quick toggle (if keybind set)
-```
-
----
-
-### Position Configuration
-
-```lua
--- Default position (X, Y coordinates)
-UIConfig.default_position = {
-    x = 1862,  -- Horizontal position
-    y = -11    -- Vertical position
-}
-```
-
-#### Finding Your Position
-
-1. Enable draggable mode (see [Draggable Flag](#draggable-flag))
-2. Move UI to desired position with mouse
-3. Type `//gs c ui save` to save
-4. Position automatically saved to `ui_position.lua`
-
-**Tip**: Negative Y values move UI upward from bottom of screen.
-
----
-
-### Initialization Delay
+### Sections
 
 ```lua
--- Delay before UI loads after job change (seconds)
-UIConfig.init_delay = 5.0
-```
-
-**Why delays?**
-
-- Prevents UI loading before character data is ready
-- Avoids errors during job transitions
-- 5.0s is safe for most systems
-
-**Recommended values**:
-
-- **5.0s** (default) - Safe for most systems
-- **3.0s** - Fast systems/SSDs
-- **7.0s** - Slow systems/HDDs
-
----
-
-## Visible Sections
-
-### Header and Footer
-
-```lua
--- Show/Hide header section (title + legend)
-UIConfig.show_header = true
-
--- Show/Hide legend (Ctrl/Alt/Windows/Shift symbols)
-UIConfig.show_legend = true
-
--- Show/Hide column headers (Key | Function | Current)
-UIConfig.show_column_headers = true
-
--- Show/Hide footer (//gs c ui command)
-UIConfig.show_footer = true
-```
-
-**Example: Minimal UI (keybinds only)**
-
-```lua
-UIConfig.show_header = false         -- No title
-UIConfig.show_legend = false         -- No legend
-UIConfig.show_column_headers = false -- No headers
-UIConfig.show_footer = false         -- No footer
-```
-
----
-
-### Content Sections
-
-```lua
--- Show/Hide specific content sections
-UIConfig.sections = {
-    spells = true,        -- Spell/ability keybinds
-    enhancing = true,     -- Enhancing cycles (RDM)
-    job_abilities = true, -- Job ability keybinds
-    weapons = true,       -- Weapon cycling
-    modes = true          -- Mode toggles (HybridMode, etc.)
-}
-```
-
-**Example: Hide spell section**
-
-```lua
-UIConfig.sections = {
-    spells = false,       -- Hide spells
-    enhancing = true,
-    job_abilities = true,
-    weapons = true,
-    modes = true
-}
-```
-
-**Note**: Empty sections automatically hidden (no manual configuration needed).
-
----
-
-## Visual Appearance
-
-### Text Configuration
-
-```lua
-UIConfig.text = {
-    size = 12,         -- Font size
-    font = 'Consolas', -- Font family (Consolas, Arial, etc.)
-    stroke = {
-        width = 2,     -- Outline thickness
-        alpha = 255,   -- Outline opacity (0-255)
-        red = 0,       -- Outline color RGB
-        green = 0,
-        blue = 0
-    }
-}
-```
-
-#### Popular Fonts
-
-- `Consolas` - Monospace (default, best for alignment)
-- `Arial` - Standard sans-serif
-- `Courier New` - Typewriter style
-- `Verdana` - High readability
-
-**Example: Larger text with blue outline**
-
-```lua
-UIConfig.text = {
-    size = 14,         -- Bigger
-    font = 'Arial',
-    stroke = {
-        width = 3,     -- Thicker outline
-        alpha = 255,
-        red = 0,       -- Blue
-        green = 100,
-        blue = 255
-    }
-}
-```
-
----
-
-### Background Configuration
-
-```lua
-UIConfig.background = {
-    r = 15,        -- Red (0-255)
-    g = 15,        -- Green (0-255)
-    b = 35,        -- Blue (0-255)
-    a = 180,       -- Alpha/Opacity (0-255): 0=transparent, 255=opaque
-    visible = true -- Show background
-}
-```
-
-#### Background Presets
-
-The config file includes a `background_presets` table with named themes you can switch to at runtime:
-
-```bash
-//gs c ui theme dark_blue      # Apply dark_blue preset
-//gs c ui theme neon_green     # Apply neon_green preset
-//gs c ui theme list           # List all available presets
-//gs c ui theme toggle         # Toggle background on/off
-```
-
-Available preset categories: dark, light, medium, transparent, neon.
-
-#### Background Examples
-
-**Semi-transparent black:**
-
-```lua
-UIConfig.background = {
-    r = 0,
-    g = 0,
-    b = 0,
-    a = 150,
-    visible = true
-}
-```
-
-**Dark blue:**
-
-```lua
-UIConfig.background = {
-    r = 15,
-    g = 15,
-    b = 35,
-    a = 180,
-    visible = true
-}
-```
-
-**No background (transparent):**
-
-```lua
-UIConfig.background = {
-    visible = false
-}
-```
-
----
-
-### Formatting Options
-
-```lua
-UIConfig.flags = {
-    draggable = true, -- Allow moving UI with mouse
-    bold = true       -- Bold text
-}
-```
-
-#### Draggable Flag
-
-**`draggable = true`** allows you to:
-
-1. Click and drag UI to new position in-game
-2. Save position with `//gs c ui save`
-3. Position persists across reloads
-
-**Tip**: Set to `false` after positioning to prevent accidental moves.
-
----
-
-## Advanced Settings
-
-### Custom Colors (Advanced)
-
-```lua
--- Override default colors (nil = use system defaults)
-UIConfig.colors = {
-    header_separator = nil, -- "\\cs(100,150,255)" format
-    section_title = nil,
-    key_text = nil,
-    description_text = nil,
-    value_text = nil
-}
-```
-
-**Color format**: `\\cs(R,G,B)` where R, G, B are 0-255
-
-**Example: Custom color scheme**
-
-```lua
-UIConfig.colors = {
-    header_separator = "\\cs(100,150,255)", -- Light blue
-    section_title = "\\cs(255,200,100)",    -- Orange
-    key_text = "\\cs(150,255,150)",         -- Light green
-    description_text = "\\cs(200,200,255)", -- Pale blue
-    value_text = "\\cs(255,255,100)"        -- Yellow
-}
-```
-
-**Recommendation**: Leave as `nil` to use system defaults (recommended for consistency).
-
----
-
-### Auto-Save Position
-
-```lua
--- Auto-save position on drag
-UIConfig.auto_save_position = false  -- true for auto-save
-
--- Auto-save delay in seconds
-UIConfig.auto_save_delay = 1.5
-```
-
-#### Save Modes
-
-- `false` - Manual save with `//gs c ui save` (recommended)
-- `true` - Auto-save after dragging (1.5s delay)
-
----
-
-### Performance and Debug
-
-```lua
--- Show debug messages
-UIConfig.debug = false  -- true to see debug messages
-
--- Update frequency
--- 0 = update only on state change (recommended)
--- 1-10 = update every N frames
-UIConfig.update_throttle = 0
-```
-
-**Recommendation**: Keep `update_throttle = 0` for best performance.
-
----
-
-## Configuration Examples
-
-### Minimal Configuration (Compact)
-
-```lua
-UIConfig.enabled = true
-UIConfig.show_header = false
-UIConfig.show_legend = false
-UIConfig.show_column_headers = false
-UIConfig.show_footer = false
-
-UIConfig.text = {
-    size = 10,
-    font = 'Consolas'
-}
-
-UIConfig.background = {
-    alpha = 80,
-    visible = true
-}
-```
-
-**Result**: Small, compact UI showing only keybinds and current values.
-
----
-
-### Complete Configuration (Full)
-
-```lua
-UIConfig.enabled = true
-UIConfig.show_header = true
-UIConfig.show_legend = true
-UIConfig.show_column_headers = true
-UIConfig.show_footer = true
-
-UIConfig.text = {
-    size = 14,
-    font = 'Arial'
-}
-
-UIConfig.background = {
-    alpha = 150,
-    visible = true
-}
-
 UIConfig.sections = {
     spells = true,
     enhancing = true,
@@ -431,215 +65,30 @@ UIConfig.sections = {
 }
 ```
 
-**Result**: Full UI with all sections, headers, and footer visible.
+Empty sections are hidden automatically.
 
----
-
-### HUD Style (Transparent)
+### Custom colors
 
 ```lua
-UIConfig.enabled = true
-UIConfig.show_header = false
-UIConfig.show_footer = false
-
-UIConfig.text = {
-    size = 12,
-    font = 'Consolas',
-    stroke = {
-        width = 3,      -- Thick outline for visibility
-        alpha = 255
-    }
-}
-
-UIConfig.background = {
-    alpha = 50,         -- Very transparent
-    visible = true
+UIConfig.colors = {
+    header_separator = nil,   -- "\\cs(R,G,B)" format, nil = system default
+    section_title = nil,
+    key_text = nil,
+    description_text = nil,
+    value_text = nil
 }
 ```
 
-**Result**: Minimal HUD-style overlay with thick text outline, semi-transparent background.
+### Background presets
 
----
-
-## Applying Changes
-
-After modifying `config/UI_CONFIG.lua`:
-
-```bash
-//gs c reload
-```
-
-UI reloads with your new settings.
-
-**Note**: Position changes require save:
-
-```bash
-//gs c ui save
-```
+Switch at runtime with `//gs c ui theme <name>`. Use `//gs c ui theme list` to see all presets.
 
 ---
 
 ## Troubleshooting
 
-### Issue: "UI not displaying"
+**UI not visible**: Check `UIConfig.enabled = true`. Try `//gs c ui`. If off-screen, delete `ui_position.lua` and reload.
 
-**Solutions**:
+**Position resets**: Run `//gs c ui save` after positioning.
 
-1. **Check if enabled**:
-
-   ```lua
-   UIConfig.enabled = true
-   ```
-
-2. **Toggle UI**:
-
-   ```bash
-   //gs c ui
-   ```
-
-3. **Check position**:
- - UI may be off-screen
- - Delete `ui_position.lua` to reset
- - Reload: `//gs c reload`
-
----
-
-### Issue: "UI position resets every login"
-
-**Solutions**:
-
-1. **Save position manually**:
-
-   ```bash
-   //gs c ui save
-   ```
-
-2. **Verify file exists**:
- - Path: `[YourName]/ui_position.lua`
- - If missing, save command failed
-
-3. **Enable auto-save** (optional):
-
-   ```lua
-   UIConfig.auto_save_position = true
-   ```
-
----
-
-### Issue: "Keybinds not showing in UI"
-
-**Solutions**:
-
-1. **Verify keybind has valid state**:
-
-   ```lua
-   {key = "!1", command = "cycle MainWeapon", desc = "Main Weapon", state = "MainWeapon"},
-   --                                                                    ↑ must exist
-   ```
-
-2. **State must be defined in job file**:
-
-   ```lua
-   state.MainWeapon = M{'Ukonvasara', 'Naegling', ...}
-   ```
-
-3. **Refresh UI**:
-
-   ```bash
-   //gs c ui     # Toggle off
-   //gs c ui     # Toggle on
-   ```
-
----
-
-### Issue: "UI appears but is blank"
-
-**Solutions**:
-
-1. **Check sections enabled**:
-
-   ```lua
-   UIConfig.sections = {
-       weapons = true,
-       modes = true
-       -- At least one section must be true
-   }
-   ```
-
-2. **Check keybind config loaded**:
- - Look for "[JOB] Keybinds loaded successfully" message on job load
-
-3. **Verify states exist**:
- - UI shows states from job file
- - If no states defined, UI appears empty
-
----
-
-## Best Practices
-
-### Organization
-
-1. **Edit config file, not core code**:
- - Modify: `config/UI_CONFIG.lua`
- - Don't modify: `shared/utils/ui/UI_MANAGER.lua`
-
-2. **Test changes immediately**:
- - Save config >> `//gs c reload` >> check UI
-
-3. **Save position after positioning**:
- - Drag to desired location >> `//gs c ui save`
-
----
-
-### Performance
-
-1. **Keep update throttle at 0**:
-
-   ```lua
-   UIConfig.update_throttle = 0  -- Only update on state change
-   ```
-
-2. **Disable unused sections**:
-
-   ```lua
-   UIConfig.sections = {
-       spells = false,  -- If you don't use spell keybinds
-   }
-   ```
-
-3. **Disable debug in production**:
-
-   ```lua
-   UIConfig.debug = false
-   ```
-
----
-
-## Quick Reference
-
-| Setting | Purpose | Default |
-|---------|---------|---------|
-| `enabled` | Enable/disable UI | `true` |
-| `init_delay` | Delay before UI loads (seconds) | `5.0` |
-| `show_header` | Show title and legend | `true` |
-| `show_legend` | Show modifier key legend | `true` |
-| `show_column_headers` | Show column headers row | `true` |
-| `show_footer` | Show command reference | `true` |
-| `flags.draggable` | Allow moving with mouse | `true` |
-| `text.size` | Font size | `10` |
-| `text.font` | Font family | `'Consolas'` |
-| `background.a` | Background opacity (0-255) | `180` |
-| `background.r/g/b` | Background color RGB (0-255) | `15/15/35` |
-| `auto_save_position` | Auto-save position on drag | `false` |
-
----
-
-## Next Steps
-
-- **[Commands Reference](../guides/commands.md)** - All available commands
-- **[Keybinds Guide](../guides/keybinds.md)** - Customize keyboard shortcuts
-- **[Configuration Guide](../guides/configuration.md)** - Advanced configuration
-- **[FAQ](../guides/faq.md)** - Common issues and solutions
-
----
-
+**Keybinds not showing**: The keybind entry must have a `state` field that matches a defined `state.X` in the job file. Toggle UI off/on to refresh.

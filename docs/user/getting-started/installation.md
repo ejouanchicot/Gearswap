@@ -88,7 +88,7 @@ You should see:
 [WAR] SYSTEM LOADED
 [WAR] Keybinds loaded successfully
 [WAR] Macrobook set: Book 1, Page 1
-[Watchdog] Initialized (timeout: 3.5s)
+[Watchdog] Initialized
 ```
 
 ### Step 6: Apply Lockstyle
@@ -113,7 +113,7 @@ You should see:
 
 ```
 [WAR] Validating equipment sets...
-[WAR] ✓ 42/44 items validated (95.5%)
+[WAR] 42/44 items validated (95.5%)
 ```
 
 Items marked `[MISSING]` or `[STORAGE]` will be listed.

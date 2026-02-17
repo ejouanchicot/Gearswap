@@ -22,8 +22,8 @@ When you change jobs, GearSwap automatically:
 //gs c checksets       # Validate your equipment
 //gs c reload          # Reload GearSwap (after editing files)
 //gs c lockstyle       # Manually apply lockstyle
-//gs c ui hide         # Hide UI overlay
-//gs c ui show         # Show UI overlay
+//gs c ui off          # Hide UI overlay
+//gs c ui on           # Show UI overlay
 ```
 
 ## Essential Keybinds
@@ -97,7 +97,7 @@ Output example:
 
 ```
 [WAR] Validating equipment sets...
-[WAR] ✓ 42/44 items validated (95.5%)
+[WAR] 42/44 items validated (95.5%)
 
 [MISSING] sets.idle.PDT.body: "Sakpata's Plate"
 [STORAGE] sets.precast.WS['Upheaval'].neck: "Fotia Gorget"
@@ -166,8 +166,8 @@ Synchronize jobs between characters:
 Visual keybind reference:
 
 ```bash
-//gs c ui show            # Show overlay
-//gs c ui hide            # Hide overlay
+//gs c ui on              # Show overlay
+//gs c ui off             # Hide overlay
 //gs c ui save            # Save position
 Alt+F1                    # Quick toggle
 ```
@@ -178,7 +178,7 @@ Alt+F1                    # Quick toggle
 
 ### Gear not swapping after spell
 
-**Fix**: Network lag detected - Watchdog will auto-recover after 3.5s.
+**Fix**: Network lag detected - Watchdog will auto-recover (dynamic timeout based on spell cast time + 1.5s buffer).
 
 ### Lockstyle not applying
 
