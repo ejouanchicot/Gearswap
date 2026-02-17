@@ -2,9 +2,6 @@
 
 **Feature**: Automatic Tier Selection for Healing/Support
 **Jobs**: WHM (Cure), DNC (Waltz)
-**Status**: ✅ Production Ready
-**Version**: 2.0
-**Last Updated**: 2025-10-26
 
 ---
 
@@ -27,7 +24,7 @@
 **Purpose**:
 
 - 💰 **Save MP** (don't use Cure VI when Cure III is enough)
-- ⚡ **Faster casting** (lower tier = shorter cast time)
+- **Faster casting** (lower tier = shorter cast time)
 - 🎯 **Optimal healing** (match cure potency to actual need)
 - 🧠 **Less mental overhead** (system picks for you)
 
@@ -514,10 +511,10 @@ Command: //gs c aoewaltz
 
 **Recommendations**:
 
-- ✅ **Keep enabled** for general content (saves tons of MP)
-- ✅ **Disable for burst healing** (predictable output needed)
-- ✅ **Macro highest tier** (Cure VI) - let system downgrade
-- ✅ **Trust the system** - it accounts for your gear
+- **Keep enabled** for general content (saves tons of MP)
+- **Disable for burst healing** (predictable output needed)
+- **Macro highest tier** (Cure VI) - let system downgrade
+- **Trust the system** - it accounts for your gear
 
 **When to disable**:
 
@@ -529,9 +526,9 @@ Command: //gs c aoewaltz
 
 **Recommendations**:
 
-- ✅ **Always use** `//gs c waltz` (never waste TP)
-- ✅ **Macro it** for quick access
-- ✅ **Trust tier selection** (system optimizes TP usage)
+- **Always use** `//gs c waltz` (never waste TP)
+- **Macro it** for quick access
+- **Trust tier selection** (system optimizes TP usage)
 - ⚠️ **Monitor party HP** before AOE waltz (ensure worth the TP)
 
 **Macro setup**:
@@ -597,11 +594,7 @@ BENEFITS:
 
 ---
 
-**Version**: 2.0
-**Author**: Tetsouo GearSwap Project
-**Last Updated**: 2025-10-26
-**Status**: ✅ Production Ready
 
 ---
 
-**Heal smarter, not harder!** ✨
+

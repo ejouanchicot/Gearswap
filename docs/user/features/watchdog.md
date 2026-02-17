@@ -10,19 +10,19 @@ The **Midcast Watchdog** is a background monitoring system that detects and auto
 
 In zones with network lag, FFXI can lose server packets that indicate an action has completed. This causes:
 
-- ❌ GearSwap remains stuck in midcast gear (Cure gear, Nuke gear, WS gear)
-- ❌ You must manually type `//gs c update` to unlock
-- ❌ Loss of time in critical combat situations
-- ❌ Potential death due to wrong defensive gear
+- GearSwap remains stuck in midcast gear (Cure gear, Nuke gear, WS gear)
+- You must manually type `//gs c update` to unlock
+- Loss of time in critical combat situations
+- Potential death due to wrong defensive gear
 
 ### The Solution
 
 The Watchdog automatically:
 
-- ✅ Detects midcast stuck for > 3.5 seconds
-- ✅ Forces automatic return to idle/engaged gear
-- ✅ No manual intervention required
-- ✅ Completely silent operation (no spam in console)
+- Detects midcast stuck for > 3.5 seconds
+- Forces automatic return to idle/engaged gear
+- No manual intervention required
+- Completely silent operation (no spam in console)
 
 ---
 
@@ -35,7 +35,7 @@ The Watchdog automatically:
 2. PRECAST >> Fast Cast gear
 3. MIDCAST >> Cure Potency gear
 4. Spell completes
-5. Server sends confirmation packet ✅
+5. Server sends confirmation packet 
 6. AFTERCAST >> Return to Idle/Engaged gear
 ```
 
@@ -46,14 +46,14 @@ The Watchdog automatically:
 2. PRECAST >> Fast Cast gear
 3. MIDCAST >> Cure Potency gear
 4. Spell completes
-5. Server packet LOST ❌
+5. Server packet LOST 
 6. GearSwap stuck in Cure gear
    ↓
 7. Watchdog detects: stuck > 3.5s
    ↓
-8. Watchdog forces cleanup ✅
+8. Watchdog forces cleanup 
    ↓
-9. Return to Idle/Engaged gear ✅
+9. Return to Idle/Engaged gear 
 ```
 
 ### Detection Mechanism
@@ -322,10 +322,10 @@ local WATCHDOG_TIMEOUT = 3.0  -- More aggressive
 
 ### Compatibility
 
-- ✅ All jobs
-- ✅ All subjobs
-- ✅ All zones
-- ✅ Compatible with all Windower addons
+- All jobs
+- All subjobs
+- All zones
+- Compatible with all Windower addons
 
 ---
 
@@ -384,18 +384,18 @@ local WATCHDOG_TIMEOUT = 3.0  -- More aggressive
 
 **Version 2.0** (2025-10-26):
 
-- ✅ Migrated to hook-based approach (no more command_registry)
-- ✅ Self-rescheduling coroutine (no spam in debugmode)
-- ✅ Test mode: `//gs c watchdog test` for easy verification
-- ✅ Added to all 13 jobs
+- Migrated to hook-based approach (no more command_registry)
+- Self-rescheduling coroutine (no spam in debugmode)
+- Test mode: `//gs c watchdog test` for easy verification
+- Added to all 15 jobs
 
 **Version 1.0** (2025-10-25):
 
-- ✅ Initial release
-- ✅ Timeout 3.5s default
-- ✅ Scan every 0.5s
-- ✅ In-game commands
-- ✅ Auto-start on job load
+- Initial release
+- Timeout 3.5s default
+- Scan every 0.5s
+- In-game commands
+- Auto-start on job load
 
 ---
 
@@ -455,8 +455,6 @@ Cleanup detection automatically disables test mode.
 
 ---
 
-**Version**: 2.0
-**Last Updated**: 2025-10-26
 **Author**: Tetsouo
 
-See also: [Test Guide](../../WATCHDOG_TEST_GUIDE.md) for complete testing procedures.
+See also: [Test Guide](../features/watchdog.md) for complete testing procedures.

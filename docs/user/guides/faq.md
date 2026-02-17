@@ -2,9 +2,6 @@
 
 Common issues and solutions for the Tetsouo GearSwap system.
 
-**Version**: 2.1
-**Last Updated**: 2025-10-26
-**Estimated Reading Time**: 5-10 minutes
 
 ---
 
@@ -146,8 +143,8 @@ YOURNAME_WAR.lua:47: Cannot find the include file ...
 
 **Required:**
 
-- ✅ **GearSwap** (core addon)
-- ✅ **DressUp** (for lockstyle)
+- **GearSwap** (core addon)
+- **DressUp** (for lockstyle)
 
 **Optional but Recommended:**
 
@@ -356,7 +353,7 @@ WARLockstyleConfig.by_subjob = {
 1. **Check key format**
 
    ```lua
-   -- ✅ Correct
+   -- Correct
    { key = "!1", ... }   -- Alt+1
    { key = "f9", ... }   -- F9
 
@@ -416,7 +413,7 @@ Replace `!` with `^` in keybind config:
 1. **Check command spelling**
 
    ```lua
-   command = "cycle MainWeapon"    -- ✅ Correct
+   command = "cycle MainWeapon"    -- Correct
    command = "cycle mainweapon"    -- ❌ Wrong (case-sensitive)
    ```
 
@@ -629,7 +626,7 @@ System impact is negligible:
 
 ### Q: "How to setup DualBox?"
 
-**See:** [DualBox Guide](dualbox.md) (TODO - use existing DUALBOX_GUIDE.md for now)
+**See:** [DualBox Guide](dualbox.md)
 
 **Quick setup:**
 
@@ -753,6 +750,3 @@ System impact is negligible:
 
 ---
 
-**Version**: 2.1
-**Last Updated**: 2025-10-26
-**Supported Jobs**: WAR, PLD, DNC, DRK, SAM, THF, RDM, WHM, BLM, GEO, COR, BRD, BST (13 jobs)

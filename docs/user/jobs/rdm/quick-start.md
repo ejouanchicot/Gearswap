@@ -17,7 +17,7 @@
 
 ---
 
-## ✅ Verify System Loaded
+## Verify System Loaded
 
 **Check keybinds loaded**:
 
@@ -57,11 +57,11 @@
 
 On load, system automatically:
 
-- ✅ Loads all RDM keybinds (32 total)
-- ✅ Sets macrobook (Book 1, Page 1 for NIN subjob)
-- ✅ Applies lockstyle #1 (after 8s delay)
-- ✅ Displays UI with keybinds (if enabled)
-- ✅ Sets default states:
+- Loads all RDM keybinds (32 total)
+- Sets macrobook (Book 1, Page 1 for NIN subjob)
+- Applies lockstyle #1 (after 8s delay)
+- Displays UI with keybinds (if enabled)
+- Sets default states:
   - HybridMode: Normal
   - EngagedMode: DT
   - IdleMode: Refresh

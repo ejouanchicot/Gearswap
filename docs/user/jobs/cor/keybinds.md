@@ -9,7 +9,6 @@
 
 | Key | Function | State | Description |
 |-----|----------|-------|-------------|
-| **key_combination** | gs_command | `state.state_name` | description |
 | **Alt+1** | cycle MainWeapon | `state.MainWeapon` | Main Weapon |
 | **Alt+2** | cycle RangeWeapon | `state.RangeWeapon` | Range Weapon |
 | **Alt+3** | cycle QuickDraw | `state.QuickDraw` | Quick Draw Element |

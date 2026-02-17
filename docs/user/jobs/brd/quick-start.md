@@ -17,7 +17,7 @@
 
 ---
 
-## ✅ Verify System Loaded
+## Verify System Loaded
 
 **Check keybinds loaded**:
 
@@ -55,11 +55,11 @@
 
 On load, system automatically:
 
-- ✅ Loads all BRD keybinds (23 total)
-- ✅ Sets macrobook (Book 36, Page 1 for WHM)
-- ✅ Applies lockstyle #7 (after 8s delay)
-- ✅ Displays UI with keybinds (if enabled)
-- ✅ Sets default states:
+- Loads all BRD keybinds (23 total)
+- Sets macrobook (Book 36, Page 1 for WHM)
+- Applies lockstyle #7 (after 8s delay)
+- Displays UI with keybinds (if enabled)
+- Sets default states:
   - Default states loaded
 
 ---

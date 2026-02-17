@@ -213,5 +213,4 @@ Alt+F1                    # Quick toggle
 
 ---
 
-**Version**: 3.2.0
 **Supported Jobs**: BLM, BRD, BST, COR, DNC, DRK, GEO, PLD, PUP, RDM, RUN, SAM, THF, WAR, WHM (15 jobs)

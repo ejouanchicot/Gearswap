@@ -9,7 +9,6 @@
 
 | Key | Function | State | Description |
 |-----|----------|-------|-------------|
-| **key** | gs_command | `state.state_name` | description |
 | **Alt+1** | cycle MainLightSpell | `state.MainLightSpell` | Main Light |
 | **Alt+2** | cycle MainDarkSpell | `state.MainDarkSpell` | Main Dark |
 | **Ctrl+1** | cycle SubLightSpell | `state.SubLightSpell` | Sub Light |

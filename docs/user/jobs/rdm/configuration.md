@@ -195,7 +195,7 @@ state.EnfeebleMode = M{'Potency', 'Skill', 'Duration', 'Macc'}
 
 ---
 
-## ⚡ TP Config
+## TP Config
 
 **File**: `Tetsouo/config/rdm/RDM_TP_CONFIG.lua`
 

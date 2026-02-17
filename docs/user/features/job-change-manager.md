@@ -2,9 +2,6 @@
 
 **Feature**: Job/Subjob Change Debouncing & State Management
 **System**: JobChangeManager
-**Status**: ✅ Production Ready
-**Version**: 2.0
-**Last Updated**: 2025-10-26
 
 ---
 
@@ -25,13 +22,13 @@
 
 **What it does**:
 
-- ⏱️ **Debounces** job/subjob changes (3.0 second cooldown)
+- **Debounces** job/subjob changes (3.0 second cooldown)
 - 🧹 **Cleans up** old job state before loading new job
 - 🔄 **Manages** keybinds, UI, lockstyle, and macrobook transitions
 - 💾 **Persists** state across reloads
-- ❌ **Prevents** race conditions and duplicate operations
+- **Prevents** race conditions and duplicate operations
 
-**Automatic**: You never interact with it directly - it just works!
+**Automatic**: You never interact with it directly - it runs automatically.
 
 ---
 
@@ -48,9 +45,9 @@
 2. DNC unloads, starts cleanup (keybinds, UI, lockstyle)
 3. User changes subjob WAR/SAM >> WAR/NIN (before cleanup finished)
 4. WAR loads, starts setup (keybinds, UI, lockstyle)
-5. DNC cleanup STILL RUNNING - unbinds WAR's keybinds! ❌
-6. UI tries to load twice - creates duplicate windows ❌
-7. Lockstyle applies 3 times - spams error messages ❌
+5. DNC cleanup STILL RUNNING - unbinds WAR's keybinds! 
+6. UI tries to load twice - creates duplicate windows 
+7. Lockstyle applies 3 times - spams error messages 
 ```
 
 **Result**: Broken state, no keybinds, duplicate UI, errors
@@ -61,12 +58,12 @@
 
 ```
 1. Start changing DNC >> WAR
-2. JobChangeManager: Cancel ALL pending DNC operations ✅
-3. JobChangeManager: Debounce 3.0s - ignore rapid changes ✅
+2. JobChangeManager: Cancel ALL pending DNC operations 
+3. JobChangeManager: Debounce 3.0s - ignore rapid changes 
 4. User changes subjob WAR/SAM >> WAR/NIN
-5. JobChangeManager: Too soon, ignore this change ✅
+5. JobChangeManager: Too soon, ignore this change 
 6. After 3.0s: Execute final change (WAR/NIN)
-7. One clean transition, no conflicts ✅
+7. One clean transition, no conflicts 
 ```
 
 **Result**: Clean job change, everything works perfectly
@@ -113,14 +110,14 @@ JobChangeManager:
 
 **Survives**:
 
-- ✅ `//lua reload gearswap`
-- ✅ Job changes
-- ✅ Subjob changes
+- `//lua reload gearswap`
+- Job changes
+- Subjob changes
 
 **Doesn't survive**:
 
-- ❌ `//lua unload gearswap` (full unload)
-- ❌ Game client restart
+- `//lua unload gearswap` (full unload)
+- Game client restart
 
 ### Managed Systems
 
@@ -401,9 +398,9 @@ return true
 
 **Avoid**:
 
-- ❌ Changing jobs multiple times within 5 seconds
-- ❌ Spamming subjob change macros
-- ❌ Running `//lua reload gearswap` during job change
+- Changing jobs multiple times within 5 seconds
+- Spamming subjob change macros
+- Running `//lua reload gearswap` during job change
 
 ### Subjob Changes
 
@@ -509,11 +506,7 @@ AUTOMATIC: No user configuration needed
 
 ---
 
-**Version**: 2.0
-**Author**: Tetsouo GearSwap Project
-**Last Updated**: 2025-10-26
-**Status**: ✅ Production Ready
 
 ---
 
-**Change jobs with confidence - we've got your back!** ✨
+

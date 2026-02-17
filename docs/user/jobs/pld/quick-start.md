@@ -17,7 +17,7 @@
 
 ---
 
-## ✅ Verify System Loaded
+## Verify System Loaded
 
 **Check keybinds loaded**:
 
@@ -55,11 +55,11 @@
 
 On load, system automatically:
 
-- ✅ Loads all PLD keybinds (3 total)
-- ✅ Sets macrobook (Book 15, Page 1 for RUN)
-- ✅ Applies lockstyle #3 (after 8s delay)
-- ✅ Displays UI with keybinds (if enabled)
-- ✅ Sets default states:
+- Loads all PLD keybinds (3 total)
+- Sets macrobook (Book 15, Page 1 for RUN)
+- Applies lockstyle #3 (after 8s delay)
+- Displays UI with keybinds (if enabled)
+- Sets default states:
   - HybridMode: PDT
 
 ---

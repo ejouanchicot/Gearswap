@@ -2,7 +2,7 @@
 
 ---
 
-## ❌ Keybinds Not Working
+## Keybinds Not Working
 
 **Symptoms**: Pressing Alt+1 does nothing
 
@@ -28,7 +28,7 @@
 
 ---
 
-## ❌ Gear Not Swapping
+## Gear Not Swapping
 
 **Symptoms**: Equipment doesn't change
 
@@ -56,7 +56,7 @@
 
 ---
 
-## ❌ Lockstyle Not Applying
+## Lockstyle Not Applying
 
 **Symptoms**: Character appearance doesn't change
 

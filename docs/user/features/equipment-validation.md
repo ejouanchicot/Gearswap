@@ -2,9 +2,6 @@
 
 **Feature**: Equipment Set Validation
 **Command**: `//gs c checksets`
-**Status**: ✅ Production Ready
-**Version**: 1.0
-**Last Updated**: 2025-10-26
 
 ---
 
@@ -23,9 +20,9 @@
 
 The Equipment Validation system checks **all your configured gear sets** and verifies which items you:
 
-- ✅ **Own** (in inventory)
+- **Own** (in inventory)
 - 🗄️ **Have in storage** (mog house, sacks, wardrobes, etc.)
-- ❌ **Don't own yet** (missing items)
+- **Don't own yet** (missing items)
 
 **Purpose**:
 
@@ -68,7 +65,7 @@ The Equipment Validation system checks **all your configured gear sets** and ver
 
 ```
 [JOB] Validating equipment sets...
-[JOB] ✅ 156/160 items validated (97.5%)
+[JOB] 156/160 items validated (97.5%)
 
 --- STORAGE ITEMS (3) ---
 [STORAGE] sets.precast.WS['Upheaval'].neck: "Fotia Gorget"
@@ -87,16 +84,16 @@ The Equipment Validation system checks **all your configured gear sets** and ver
 
 | Status | Symbol | Meaning | Action Needed |
 |--------|--------|---------|---------------|
-| **VALID** | ✅ | Item in inventory | None - ready to use |
+| **VALID** | | Item in inventory | None - ready to use |
 | **STORAGE** | 🗄️ | Item in storage | Move to inventory if needed |
-| **MISSING** | ❌ | Item not found anywhere | Acquire the item or update sets |
+| **MISSING** | | Item not found anywhere | Acquire the item or update sets |
 
 ---
 
 ### Item Count Summary
 
 ```
-✅ 156/160 items validated (97.5%)
+156/160 items validated (97.5%)
 ```
 
 **Breakdown**:
@@ -111,11 +108,11 @@ The Equipment Validation system checks **all your configured gear sets** and ver
 
 ## 🔍 Common Scenarios
 
-### Scenario 1: All Items Valid ✅
+### Scenario 1: All Items Valid 
 
 ```
 [WAR] Validating equipment sets...
-[WAR] ✅ 120/120 items validated (100%)
+[WAR] 120/120 items validated (100%)
 [WAR] Validation complete!
 ```
 
@@ -127,7 +124,7 @@ The Equipment Validation system checks **all your configured gear sets** and ver
 ### Scenario 2: Items in Storage 🗄️
 
 ```
-[RDM] ✅ 145/150 items validated (96.7%)
+[RDM] 145/150 items validated (96.7%)
 
 --- STORAGE ITEMS (5) ---
 [STORAGE] sets.midcast['Enhancing Magic'].Duration.head: "Telchine Cap"
@@ -149,10 +146,10 @@ The Equipment Validation system checks **all your configured gear sets** and ver
 
 ---
 
-### Scenario 3: Missing Items ❌
+### Scenario 3: Missing Items 
 
 ```
-[BLM] ✅ 128/135 items validated (94.8%)
+[BLM] 128/135 items validated (94.8%)
 
 --- MISSING ITEMS (7) ---
 [MISSING] sets.precast.WS['Myrkr'].head: "Pixie Hairpin +1"
@@ -198,7 +195,7 @@ sets.midcast.Cure = {
 //lua reload gearswap
 //gs c checksets
 
-[WAR] ✅ 119/120 items validated (99.2%)
+[WAR] 119/120 items validated (99.2%)
 
 --- MISSING ITEMS (1) ---
 [MISSING] sets.midcast.Cure.head: "Nyame Helm"
@@ -267,7 +264,7 @@ sets.midcast.Cure = {
 **Situation**:
 
 ```
-[BLM] ✅ 0/135 items validated (0%)
+[BLM] 0/135 items validated (0%)
 ```
 
 **Cause**: Job just changed, sets haven't loaded yet
@@ -323,7 +320,7 @@ sets.midcast.Cure.SIRD = set_combine(sets.midcast.Cure, {
 
 ```
 [WAR] Validating equipment sets...
-[WAR] ✅ 98/102 items validated (96.1%)
+[WAR] 98/102 items validated (96.1%)
 
 --- STORAGE ITEMS (2) ---
 [STORAGE] sets.engaged.PDT.body: "Sakpata's Plate"
@@ -338,9 +335,9 @@ sets.midcast.Cure.SIRD = set_combine(sets.midcast.Cure, {
 
 **Interpretation**:
 
-- ✅ 98 items ready (normal mode gear all in inventory)
+- 98 items ready (normal mode gear all in inventory)
 - 🗄️ 2 PDT items in storage (move to inventory if tanking)
-- ❌ 2 WS items missing (upgrade path - acquire these for min-max)
+- 2 WS items missing (upgrade path - acquire these for min-max)
 
 ---
 
@@ -348,7 +345,7 @@ sets.midcast.Cure.SIRD = set_combine(sets.midcast.Cure, {
 
 ```
 [WHM] Validating equipment sets...
-[WHM] ✅ 143/150 items validated (95.3%)
+[WHM] 143/150 items validated (95.3%)
 
 --- STORAGE ITEMS (4) ---
 [STORAGE] sets.midcast.Cure.SIRD.hands: "Macabre Gauntlets +1"
@@ -366,9 +363,9 @@ sets.midcast.Cure.SIRD = set_combine(sets.midcast.Cure, {
 
 **Interpretation**:
 
-- ✅ Most cure gear ready
+- Most cure gear ready
 - 🗄️ SIRD + Duration gear in storage (retrieve if needed for specific content)
-- ❌ 3 upgrade items missing (min-max gear)
+- 3 upgrade items missing (min-max gear)
 
 ---
 
@@ -376,7 +373,7 @@ sets.midcast.Cure.SIRD = set_combine(sets.midcast.Cure, {
 
 ```
 [BLM] Validating equipment sets...
-[BLM] ✅ 156/160 items validated (97.5%)
+[BLM] 156/160 items validated (97.5%)
 
 --- MISSING ITEMS (4) ---
 [MISSING] sets.midcast['Elemental Magic'].ears: "Malignance Earring"
@@ -389,8 +386,8 @@ sets.midcast.Cure.SIRD = set_combine(sets.midcast.Cure, {
 
 **Interpretation**:
 
-- ✅ All nuke/MB gear ready
-- ❌ 4 items missing (2 melee rings, 1 earring, 1 MP WS piece)
+- All nuke/MB gear ready
+- 4 items missing (2 melee rings, 1 earring, 1 MP WS piece)
 - **Note**: BLM rarely melees, so engaged set MISSING items are low priority
 
 ---
@@ -481,9 +478,9 @@ COMMAND:
 //gs c checksets
 
 OUTPUT SYMBOLS:
-✅ VALID    = Item in inventory (ready to use)
+VALID    = Item in inventory (ready to use)
 🗄️ STORAGE  = Item in storage (retrieve if needed)
-❌ MISSING  = Item not found (acquire or fix sets)
+MISSING  = Item not found (acquire or fix sets)
 
 TYPICAL VALIDATION:
 95%+ = Excellent (minor upgrades missing)
@@ -498,11 +495,7 @@ PRIORITY:
 
 ---
 
-**Version**: 1.0
-**Author**: Tetsouo GearSwap Project
-**Last Updated**: 2025-10-26
-**Status**: ✅ Production Ready
 
 ---
 
-**Validate your gear, adventure with confidence!** ✨
+

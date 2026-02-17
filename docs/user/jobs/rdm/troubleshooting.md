@@ -2,7 +2,7 @@
 
 ---
 
-## ❌ Keybinds Not Working
+## Keybinds Not Working
 
 **Symptoms**: Pressing Alt+1 does nothing
 
@@ -42,7 +42,7 @@
 
 ---
 
-## ❌ Gear Not Swapping
+## Gear Not Swapping
 
 **Symptoms**: Equipment doesn't change when casting/engaging
 
@@ -85,7 +85,7 @@
 
 ---
 
-## ❌ Wrong Set Equipped for Enfeebles
+## Wrong Set Equipped for Enfeebles
 
 **Symptoms**: Wrong gear for Gravity, Slow, etc.
 
@@ -126,7 +126,7 @@
 
 ---
 
-## ❌ Auto-Saboteur Not Working
+## Auto-Saboteur Not Working
 
 **Symptoms**: Saboteur doesn't trigger before enfeebles
 
@@ -171,7 +171,7 @@
 
 ---
 
-## ❌ Elemental Spells Not Casting
+## Elemental Spells Not Casting
 
 **Symptoms**: Ctrl+8 doesn't cast Fire spell
 
@@ -213,7 +213,7 @@
 
 ---
 
-## ❌ Lockstyle Not Applying
+## Lockstyle Not Applying
 
 **Symptoms**: Character appearance doesn't change
 
@@ -253,7 +253,7 @@
 
 ---
 
-## ❌ Storm Spells Not Available
+## Storm Spells Not Available
 
 **Symptoms**: F5 doesn't cycle Storm spells
 
@@ -283,7 +283,7 @@
 
 ---
 
-## ❌ Weapons Not Switching
+## Weapons Not Switching
 
 **Symptoms**: Alt+1/Alt+2 don't change weapons
 
@@ -327,7 +327,7 @@
 
 ---
 
-## ❌ Job Change Errors
+## Job Change Errors
 
 **Symptoms**: Errors when changing jobs
 
@@ -354,7 +354,7 @@
 
 ---
 
-## ❌ UI Not Showing
+## UI Not Showing
 
 **Symptoms**: UI overlay doesn't appear
 

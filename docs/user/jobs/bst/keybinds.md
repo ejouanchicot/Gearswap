@@ -9,7 +9,6 @@
 
 | Key | Function | State | Description |
 |-----|----------|-------|-------------|
-| **key** | gs_command | `state.state_name` | description |
 | **1** | cycle WeaponSet | `state.WeaponSet` | Main Weapon |
 | **4** | cycle SubSet | `state.SubSet` | Sub/Shield |
 | **5** | cycle HybridMode | `state.HybridMode` | Hybrid Mode |

@@ -9,7 +9,6 @@
 
 | Key | Function | State | Description |
 |-----|----------|-------|-------------|
-| **bind_string** | gs_command | `state.state_name` | UI_description |
 | **Alt+1** | cycle CureMode | `state.CureMode` | Cure Mode |
 | **Alt+2** | cycle IdleMode | `state.IdleMode` | Idle Mode |
 | **Alt+3** | cycle AfflatusMode | `state.AfflatusMode` | Afflatus Mode |

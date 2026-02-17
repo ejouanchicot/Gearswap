@@ -9,7 +9,6 @@
 
 | Key | Function | State | Description |
 |-----|----------|-------|-------------|
-| **key** | gs_command | `state.state_name` | description |
 | **Alt+1** | cycle IdleMode | `state.IdleMode` | Idle Mode |
 | **Alt+2** | cycle HybridMode | `state.HybridMode` | Hybrid Mode |
 | **Alt+3** | cycle SongMode | `state.SongMode` | Song Pack |

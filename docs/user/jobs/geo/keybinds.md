@@ -9,7 +9,6 @@
 
 | Key | Function | State | Description |
 |-----|----------|-------|-------------|
-| **key** | gs_command | `state.state_name` | description |
 | **Alt+1** | cycle MainIndi | `state.MainIndi` | Main Indi |
 | **Alt+2** | cycle MainGeo | `state.MainGeo` | Main Geo |
 | **Alt+3** | cycle MainLightSpell | `state.MainLightSpell` | Light Spell |

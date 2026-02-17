@@ -17,7 +17,7 @@
 
 ---
 
-## ✅ Verify System Loaded
+## Verify System Loaded
 
 **Check keybinds loaded**:
 
@@ -55,11 +55,11 @@
 
 On load, system automatically:
 
-- ✅ Loads all BLM keybinds (14 total)
-- ✅ Sets macrobook (Book 8, Page 1 for SCH)
-- ✅ Applies lockstyle #5 (after 8s delay)
-- ✅ Displays UI with keybinds (if enabled)
-- ✅ Sets default states:
+- Loads all BLM keybinds (14 total)
+- Sets macrobook (Book 8, Page 1 for SCH)
+- Applies lockstyle #5 (after 8s delay)
+- Displays UI with keybinds (if enabled)
+- Sets default states:
   - HybridMode: Normal
 
 ---

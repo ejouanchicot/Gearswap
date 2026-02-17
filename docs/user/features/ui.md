@@ -2,11 +2,8 @@
 
 Complete guide for customizing the Tetsouo GearSwap UI overlay system.
 
-**Version**: 1.0
-**Last Updated**: 2025-10-26
-**Estimated Time**: 10-15 minutes
 
-**Universal**: Works for all 13 jobs (WAR, PLD, DNC, DRK, SAM, THF, RDM, WHM, BLM, GEO, COR, BRD, BST)
+**Universal**: Works for all 15 jobs (WAR, PLD, DNC, DRK, SAM, THF, RDM, WHM, BLM, GEO, COR, BRD, BST)
 
 ---
 
@@ -609,6 +606,3 @@ UI reloads with your new settings.
 
 ---
 
-**Version**: 1.0
-**Last Updated**: 2025-10-26
-**Supported Jobs**: WAR, PLD, DNC, DRK, SAM, THF, RDM, WHM, BLM, GEO, COR, BRD, BST (13 jobs)

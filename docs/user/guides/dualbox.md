@@ -2,9 +2,6 @@
 
 Complete guide for setting up dual-box communication between two characters.
 
-**Version**: 1.2
-**Last Updated**: 2025-10-26
-**Estimated Time**: 10-15 minutes
 
 ---
 
@@ -31,10 +28,10 @@ The DualBox system allows automatic communication between two characters:
 
 ### Benefits
 
-- ✅ **Auto-detect alt's job** - MAIN knows what job ALT is playing
-- ✅ **Auto-load optimal macros** - MAIN switches macros based on ALT's job
-- ✅ **UI display** - See alt's job in MAIN's UI (optional)
-- ✅ **Zero manual updates** - Everything happens automatically
+- **Auto-detect alt's job** - MAIN knows what job ALT is playing
+- **Auto-load optimal macros** - MAIN switches macros based on ALT's job
+- **UI display** - See alt's job in MAIN's UI (optional)
+- **Zero manual updates** - Everything happens automatically
 
 ### System Requirements
 
@@ -180,10 +177,10 @@ Enter new character name: Kaories
 
 **What Gets Cloned:**
 
-- ✅ Copies entire character folder
-- ✅ Renames all job files (`Tetsouo_*.lua` >> `Kaories_*.lua`)
-- ✅ Updates all config paths in code
-- ✅ Creates 13 complete job files (WAR, PLD, DNC, DRK, SAM, THF, RDM, WHM, BLM, GEO, COR, BRD, BST)
+- Copies entire character folder
+- Renames all job files (`Tetsouo_*.lua` >> `Kaories_*.lua`)
+- Updates all config paths in code
+- Creates 13 complete job files (WAR, PLD, DNC, DRK, SAM, THF, RDM, WHM, BLM, GEO, COR, BRD, BST)
 
 **B. Manual Cloning** (Alternative)
 
@@ -200,7 +197,7 @@ Enter new character name: Kaories
    ren Tetsouo_WAR.lua Kaories_WAR.lua
    ren Tetsouo_PLD.lua Kaories_PLD.lua
    ren Tetsouo_DNC.lua Kaories_DNC.lua
-   # ... (repeat for all 13 jobs)
+   # ... (repeat for all 15 jobs)
    ```
 
 3. Update config paths in each file:
@@ -603,6 +600,4 @@ xcopy /E /I Kaories\config Kaories\config_backup
 
 ---
 
-**Version**: 1.2
-**Last Updated**: 2025-10-26
 **Supported**: 1 MAIN + 1 ALT character setup

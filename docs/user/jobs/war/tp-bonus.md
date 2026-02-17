@@ -6,11 +6,11 @@
 
 ---
 
-## JOBS ALREADY IMPLEMENTED ✅
+## JOBS ALREADY IMPLEMENTED 
 
 ### **WAR (Warrior)**
 
-- **Config:** `config/war/WAR_TP_CONFIG.lua` ✅
+- **Config:** `config/war/WAR_TP_CONFIG.lua` 
 - **Weapons:** Chango +500 TP
 - **Armor:** Boii Cuisses +3 +100 TP, Moonshade Earring +250 TP
 - **Buffs:** Warcry +700 TP (5/5 merits + Agoge Mask), Fencer +860 TP (20/20 JP)
@@ -19,56 +19,56 @@
 
 ### **PLD (Paladin)**
 
-- **Status:** ✅ IMPLEMENTED (v3.0)
+- **Status:** IMPLEMENTED (v3.0)
 - **Weapons:** Sequence +500 TP
 - **Armor:** Moonshade Earring +250 TP
 - **Config:** Not required (primarily tank/support job)
 
 ### **DNC (Dancer)**
 
-- **Status:** ✅ IMPLEMENTED (v2.0)
+- **Status:** IMPLEMENTED (v2.0)
 - **Weapons:** Aeneas +500 TP
 - **Armor:** Moonshade Earring +250 TP
 - **Config:** Not created (simple weapon bonus)
 
 ### **THF (Thief)**
 
-- **Status:** ✅ IMPLEMENTED (v2.0)
+- **Status:** IMPLEMENTED (v2.0)
 - **Weapons:** Aeneas +500 TP
 - **Armor:** Moonshade Earring +250 TP
 - **Config:** Not created (simple weapon bonus)
 
 ### **COR (Corsair)**
 
-- **Status:** ✅ IMPLEMENTED (v2.0)
+- **Status:** IMPLEMENTED (v2.0)
 - **Weapons:** Fomalhaut +500 TP
 - **Armor:** Moonshade Earring +250 TP
 - **Config:** Not created (simple weapon bonus)
 
 ### **GEO (Geomancer)**
 
-- **Status:** ✅ IMPLEMENTED (v2.0)
+- **Status:** IMPLEMENTED (v2.0)
 - **Weapons:** Tishtrya +500 TP
 - **Armor:** Moonshade Earring +250 TP
 - **Config:** Not required (primarily support job)
 
 ### **BRD (Bard)**
 
-- **Status:** ✅ IMPLEMENTED (v2.0)
+- **Status:** IMPLEMENTED (v2.0)
 - **Weapons:** Aeneas +500 TP
 - **Armor:** Moonshade Earring +250 TP
 - **Config:** Not required (primarily support job)
 
 ### **RDM (Red Mage)**
 
-- **Status:** ✅ IMPLEMENTED (v2.0)
+- **Status:** IMPLEMENTED (v2.0)
 - **Weapons:** Sequence +500 TP
 - **Armor:** Moonshade Earring +250 TP
 - **Config:** Not required (hybrid magic/melee job)
 
 ### **BLM (Black Mage)**
 
-- **Status:** ✅ IMPLEMENTED (v3.0)
+- **Status:** IMPLEMENTED (v3.0)
 - **Weapons:** Khatvanga +500 TP
 - **Armor:** Moonshade Earring +250 TP
 - **Config:** Not required (pure caster job)

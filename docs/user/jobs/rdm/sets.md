@@ -15,7 +15,7 @@ sets.engaged = {}        -- Engaged (fighting)
 
 ---
 
-## ⚡ Precast Sets
+## Precast Sets
 
 ### Fast Cast
 
@@ -173,7 +173,7 @@ sets.idle.DT = {
 
 ---
 
-## ⚔️ Engaged Sets
+## Engaged Sets
 
 ```lua
 sets.engaged = {}
@@ -233,16 +233,16 @@ end
 
 ---
 
-## ✅ Validating Sets
+## Validating Sets
 
 ```
 //gs c checksets
 
 >> Output:
-[RDM] ✅ 156/160 items validated (97.5%)
+[RDM] 156/160 items validated (97.5%)
 
 --- VALID ITEMS (156) ---
-✅ All items found in inventory
+All items found in inventory
 
 --- STORAGE ITEMS (3) ---
 [STORAGE] sets.idle.DT.body: "Malignance Tabard"
@@ -255,9 +255,9 @@ end
 
 **Status meanings**:
 
-- ✅ **VALID**: Item in inventory/equipped
+- **VALID**: Item in inventory/equipped
 - 🗄️ **STORAGE**: Item in mog house/sack/etc.
-- ❌ **MISSING**: Item not found anywhere
+- **MISSING**: Item not found anywhere
 
 **Action**:
 

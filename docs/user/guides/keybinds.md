@@ -1,10 +1,7 @@
 # Keybinds Guide - Customize Your Keyboard Shortcuts
 
-Complete guide to customizing keybinds for all 13 jobs in the Tetsouo GearSwap system.
+Complete guide to customizing keybinds for all 15 jobs in the Tetsouo GearSwap system.
 
-**Version**: 2.1
-**Last Updated**: 2025-10-26
-**Estimated Time**: 5-10 minutes
 
 ---
 
@@ -27,10 +24,10 @@ All jobs use a centralized keybind configuration system located in `Tetsouo/conf
 
 **Benefits:**
 
-- ✅ User-customizable without modifying core job files
-- ✅ State-based organization (Weapon, Combat Modes, Job-Specific)
-- ✅ Automatic bind/unbind with error handling
-- ✅ UI integration (keybinds display automatically)
+- User-customizable without modifying core job files
+- State-based organization (Weapon, Combat Modes, Job-Specific)
+- Automatic bind/unbind with error handling
+- UI integration (keybinds display automatically)
 
 ---
 
@@ -545,12 +542,9 @@ end
 ## Next Steps
 
 - **[Commands Reference](commands.md)** - Complete command list
-- **[UI Customization](../../UI.md)** - Customize UI appearance and position
-- **[Configuration Guide](../../CONFIGURATION.md)** - Advanced configuration options
-- **[FAQ](../../FAQ.md)** - Common issues and solutions
+- **[UI Customization](../features/ui.md)** - Customize UI appearance and position
+- **[Configuration Guide](configuration.md)** - Advanced configuration options
+- **[FAQ](faq.md)** - Common issues and solutions
 
 ---
 
-**Version**: 2.1
-**Last Updated**: 2025-10-26
-**Supported Jobs**: WAR, PLD, DNC, DRK, SAM, THF, RDM, WHM, BLM, GEO, COR, BRD, BST (13 jobs)

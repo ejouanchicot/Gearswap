@@ -17,7 +17,7 @@
 
 ---
 
-## ✅ Verify System Loaded
+## Verify System Loaded
 
 **Check keybinds loaded**:
 
@@ -55,11 +55,11 @@
 
 On load, system automatically:
 
-- ✅ Loads all SAM keybinds (5 total)
-- ✅ Sets macrobook (Book 2, Page 1 for WAR)
-- ✅ Applies lockstyle #2 (after 8s delay)
-- ✅ Displays UI with keybinds (if enabled)
-- ✅ Sets default states:
+- Loads all SAM keybinds (5 total)
+- Sets macrobook (Book 2, Page 1 for WAR)
+- Applies lockstyle #2 (after 8s delay)
+- Displays UI with keybinds (if enabled)
+- Sets default states:
   - HybridMode: PDT
 
 ---

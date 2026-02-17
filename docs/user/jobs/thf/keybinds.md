@@ -9,7 +9,6 @@
 
 | Key | Function | State | Description |
 |-----|----------|-------|-------------|
-| **key_combination** | gs_command | `state.state_name` | description |
 | **Alt+1** | cycle MainWeapon | `state.MainWeapon` | Main Weapon |
 | **Alt+2** | cycle SubWeapon | `state.SubWeapon` | Sub Weapon |
 | **Alt+3** | cycle HybridMode | `state.HybridMode` | Hybrid Mode |

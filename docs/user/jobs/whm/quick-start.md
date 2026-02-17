@@ -17,7 +17,7 @@
 
 ---
 
-## ✅ Verify System Loaded
+## Verify System Loaded
 
 **Check keybinds loaded**:
 
@@ -55,11 +55,11 @@
 
 On load, system automatically:
 
-- ✅ Loads all WHM keybinds (9 total)
-- ✅ Sets macrobook (Book 1, Page 1 for RDM)
-- ✅ Applies lockstyle #3 (after 8s delay)
-- ✅ Displays UI with keybinds (if enabled)
-- ✅ Sets default states:
+- Loads all WHM keybinds (9 total)
+- Sets macrobook (Book 1, Page 1 for RDM)
+- Applies lockstyle #3 (after 8s delay)
+- Displays UI with keybinds (if enabled)
+- Sets default states:
   - OffenseMode: None
   - CastingMode: Normal
   - IdleMode: PDT

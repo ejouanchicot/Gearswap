@@ -17,7 +17,7 @@
 
 ---
 
-## ✅ Verify System Loaded
+## Verify System Loaded
 
 **Check keybinds loaded**:
 
@@ -55,11 +55,11 @@
 
 On load, system automatically:
 
-- ✅ Loads all BST keybinds (11 total)
-- ✅ Sets macrobook (Book 1, Page 1 for SAM)
-- ✅ Applies lockstyle #6 (after 8s delay)
-- ✅ Displays UI with keybinds (if enabled)
-- ✅ Sets default states:
+- Loads all BST keybinds (11 total)
+- Sets macrobook (Book 1, Page 1 for SAM)
+- Applies lockstyle #6 (after 8s delay)
+- Displays UI with keybinds (if enabled)
+- Sets default states:
   - Default states loaded
 
 ---

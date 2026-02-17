@@ -17,7 +17,7 @@
 
 ---
 
-## ✅ Verify System Loaded
+## Verify System Loaded
 
 **Check keybinds loaded**:
 
@@ -55,11 +55,11 @@
 
 On load, system automatically:
 
-- ✅ Loads all DNC keybinds (11 total)
-- ✅ Sets macrobook (Book 4, Page 1 for NIN)
-- ✅ Applies lockstyle #2 (after 8s delay)
-- ✅ Displays UI with keybinds (if enabled)
-- ✅ Sets default states:
+- Loads all DNC keybinds (11 total)
+- Sets macrobook (Book 4, Page 1 for NIN)
+- Applies lockstyle #2 (after 8s delay)
+- Displays UI with keybinds (if enabled)
+- Sets default states:
   - Default states loaded
 
 ---

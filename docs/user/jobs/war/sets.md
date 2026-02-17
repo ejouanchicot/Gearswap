@@ -15,7 +15,7 @@ sets.engaged = {}        -- Engaged (fighting)
 
 ---
 
-## ⚡ Precast Sets
+## Precast Sets
 
 ### Fast Cast
 
@@ -61,7 +61,7 @@ sets.idle.PDT = { ... }
 
 ---
 
-## ⚔️ Engaged Sets
+## Engaged Sets
 
 ```lua
 sets.engaged.Normal = { ... }
@@ -70,17 +70,17 @@ sets.engaged.PDT = { ... }
 
 ---
 
-## ✅ Validating Sets
+## Validating Sets
 
 ```
 //gs c checksets
 
 >> Output:
-[WAR] ✅ 156/160 items validated (97.5%)
+[WAR] 156/160 items validated (97.5%)
 ```
 
 **Status meanings**:
 
-- ✅ VALID: In inventory
+- VALID: In inventory
 - 🗄️ STORAGE: In mog house/sack
-- ❌ MISSING: Not found
+- MISSING: Not found

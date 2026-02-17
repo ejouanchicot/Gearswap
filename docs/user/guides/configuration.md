@@ -2,9 +2,6 @@
 
 Complete configuration guide for customizing the Tetsouo GearSwap system.
 
-**Version**: 3.3
-**Last Updated**: 2025-10-26
-**Estimated Time**: 10-15 minutes
 
 ---
 
@@ -28,10 +25,10 @@ All user-facing configuration files are located in `Tetsouo/config/` (or your ch
 
 **Configuration Principle:**
 
-- ✅ Edit config files - never modify core job files
-- ✅ Changes apply via `//gs c reload`
-- ✅ Factory-managed systems (lockstyle, macrobook)
-- ✅ Per-job and per-subjob customization
+- Edit config files - never modify core job files
+- Changes apply via `//gs c reload`
+- Factory-managed systems (lockstyle, macrobook)
+- Per-job and per-subjob customization
 
 ---
 
@@ -61,10 +58,9 @@ Tetsouo/config/
 ├── dnc/                        (DNC job configs)
 │   └── ...
 │
-└── [other jobs]/               (13 jobs total)
+└── [other jobs]/               (15 jobs total)
 ```
 
-**Supported Jobs**: WAR, PLD, DNC, DRK, SAM, THF, RDM, WHM, BLM, GEO, COR, BRD, BST
 
 ---
 
@@ -266,7 +262,7 @@ return UIConfig
 **UI Customization:**
 
 - Position: Drag and `//gs c ui save`
-- Appearance: See **[UI Guide](../features/ui.md)** (TODO)
+- Appearance: See **[UI Guide](../features/ui.md)**
 - Keybinds display: Auto-updated from keybind config
 
 ---
@@ -633,12 +629,9 @@ cp -r Tetsouo/config/ Tetsouo/config_backup/
 ## Next Steps
 
 - **[Keybinds Guide](keybinds.md)** - Customize keyboard shortcuts
-- **[DualBox Guide](dualbox.md)** - Multi-character setup (TODO)
+- **[DualBox Guide](dualbox.md)** - Multi-character setup
 - **[Commands Reference](commands.md)** - All available commands
 - **[FAQ](../../FAQ.md)** - Common issues and solutions
 
 ---
 
-**Version**: 3.3
-**Last Updated**: 2025-10-26
-**Supported Jobs**: WAR, PLD, DNC, DRK, SAM, THF, RDM, WHM, BLM, GEO, COR, BRD, BST (13 jobs)
