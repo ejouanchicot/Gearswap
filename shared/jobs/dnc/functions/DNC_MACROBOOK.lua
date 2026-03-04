@@ -1,18 +1,18 @@
----============================================================================
---- DNC Macrobook Module - Macro Book Management (Factory Pattern)
----============================================================================
---- Handles macro book selection and management for DNC job.
---- Uses centralized MacrobookManager factory for consistent behavior.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DNC Macrobook Module - Macro Book Management (Factory Pattern)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles macro book selection and management for DNC job.
+---   Uses centralized MacrobookManager factory for consistent behavior.
 ---
---- **PERFORMANCE OPTIMIZATION:**
----   • Lazy-loaded: Module created on first function call (saves ~45ms at startup)
+---   **PERFORMANCE OPTIMIZATION:**
+---   • Lazy-loaded: Module created on first function call
 ---
---- @file    jobs/dnc/functions/DNC_MACROBOOK.lua
---- @author  Tetsouo
---- @version 2.1 - Lazy Loading for performance
---- @date    Created: 2025-10-13 | Updated: 2025-11-15
---- @requires utils/macrobook/macrobook_manager
----============================================================================
+---   @file    jobs/dnc/functions/DNC_MACROBOOK.lua
+---   @author  Tetsouo
+---   @version 2.1 - Lazy Loading for performance
+---   @date    Created: 2025-10-13 | Updated: 2025-11-15
+---   @requires utils/macrobook/macrobook_manager
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Lazy loading: Module created on first use
 local MacrobookManager = nil

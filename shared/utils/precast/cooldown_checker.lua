@@ -1,24 +1,8 @@
----============================================================================
---- Cooldown Checker - Centralized Cooldown Validation
----============================================================================
---- Provides universal cooldown checking for abilities and spells across all jobs.
---- Automatically cancels actions on cooldown and displays professional messages.
---- Excludes multi-charge abilities (Quick Draw, Stratagems) from cooldown blocking.
---- Manual recast_id mapping for abilities with missing/incorrect GearSwap data.
---- Integrates with RECAST_CONFIG for centralized tolerance management.
----
---- @file utils/precast/cooldown_checker.lua
---- @author Tetsouo
---- @version 1.4
---- @date Created: 2025-10-05
---- @date Updated: 2025-11-11 - Integrated RECAST_CONFIG tolerance
----============================================================================
+-- CooldownChecker: universal ability/spell cooldown validation for all jobs.
+-- Skips multi-charge abilities (Quick Draw, Stratagems). Manual recast_id map for bad GS data.
 
 local CooldownChecker = {}
 
----============================================================================
---- LAZY LOADING - MessageFormatter loaded on first use
----============================================================================
 
 local MessageFormatter = nil
 
@@ -32,14 +16,8 @@ end
 -- Load recast configuration for cooldown tolerance
 local RECAST_CONFIG = _G.RECAST_CONFIG or {}
 
----============================================================================
---- RECAST TOLERANCE HELPERS
----============================================================================
-
 --- Check if recast time indicates ability/spell is on cooldown
 --- Uses RECAST_CONFIG tolerance if available, otherwise falls back to strict check
---- @param recast number Recast time in seconds
---- @return boolean True if on cooldown
 local function is_on_cooldown(recast)
     if RECAST_CONFIG and RECAST_CONFIG.on_cooldown then
         return RECAST_CONFIG.on_cooldown(recast)
@@ -48,11 +26,7 @@ local function is_on_cooldown(recast)
     end
 end
 
----============================================================================
---- MULTI-CHARGE ABILITIES (EXCLUDED FROM COOLDOWN CHECK)
----============================================================================
-
--- Abilities with multiple charges that can be used even when on partial cooldown
+-- Multi-charge abilities excluded from cooldown blocking (Quick Draw, Stratagems)
 local MULTI_CHARGE_ABILITIES = {
     -- COR Quick Draw (2 charges) - All elemental variants
     ["Quick Draw"] = true,
@@ -94,25 +68,11 @@ local MULTI_CHARGE_ABILITIES = {
     -- Add other multi-charge abilities here as needed
 }
 
----============================================================================
---- MANUAL RECAST ID MAPPING (for abilities with missing/incorrect recast_id)
----============================================================================
-
--- Some abilities don't provide correct recast_id in GearSwap spell data
--- Manual mapping: ability_name >> recast_id
--- NOTE: This mapping is actually NOT needed since GearSwap provides spell.recast_id correctly
--- Keeping for reference and potential future edge cases
+-- Manual recast_id overrides (GearSwap data sometimes incorrect; currently none needed)
 local MANUAL_RECAST_IDS = {
     -- Add abilities with missing recast_id here if needed
 }
 
----============================================================================
---- ABILITY COOLDOWN CHECK
----============================================================================
-
---- Check and display cooldown for ANY ability using spell recast_id
---- @param spell table Spell/ability data
---- @param eventArgs table Event arguments for potential cancellation
 function CooldownChecker.check_ability_cooldown(spell, eventArgs)
     -- Get recast_id from spell data OR manual mapping
     -- Try multiple name variants: spell.name, spell.english, spell.en
@@ -149,13 +109,6 @@ function CooldownChecker.check_ability_cooldown(spell, eventArgs)
     end
 end
 
----============================================================================
---- SPELL COOLDOWN CHECK
----============================================================================
-
---- Check magic cooldowns for ANY spell using spell recast_id
---- @param spell table Spell data
---- @param eventArgs table Event arguments
 function CooldownChecker.check_spell_cooldown(spell, eventArgs)
     if not spell.recast_id then return end
 

@@ -1,21 +1,7 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Midcast Watchdog - Stuck Midcast Detection and Recovery
----  ═══════════════════════════════════════════════════════════════════════════
----   Detects and recovers from stuck midcast states caused by packet loss.
----   Uses dynamic timeout based on spell cast time from res/spells.lua
----   and item cast_delay from res/items.lua.
----
----   @file    shared/utils/core/midcast_watchdog.lua
----   @author  Tetsouo
----   @version 3.4 - Refactoring (DRY helpers: clear_midcast_state + get_current_cast_time)
----   @date    Created: 2025-10-25 | Updated: 2025-11-12
----  ═══════════════════════════════════════════════════════════════════════════
+-- MidcastWatchdog: detects stuck midcast states (packet loss) and force-recovers.
+-- Timeout based on spell cast time from resources (spells + items).
 
 local MidcastWatchdog = {}
-
----  ═══════════════════════════════════════════════════════════════════════════
----   DEPENDENCIES
----  ═══════════════════════════════════════════════════════════════════════════
 
 -- Load spell resource data (contains cast_time for all spells)
 local res_spells = require('resources').spells
@@ -26,9 +12,7 @@ local res_items = require('resources').items
 -- Message formatter for watchdog messages
 local MessageWatchdog = require('shared/utils/messages/formatters/system/message_watchdog')
 
----  ═══════════════════════════════════════════════════════════════════════════
----   CONFIGURATION
----  ═══════════════════════════════════════════════════════════════════════════
+-- CONFIGURATION
 
 -- Safety buffer added to cast time (in seconds)
 -- Timeout = adjusted_cast_time + WATCHDOG_BUFFER
@@ -47,9 +31,7 @@ local watchdog_enabled = true
 -- Debug mode (shows detailed info)
 local debug_enabled = false
 
----  ═══════════════════════════════════════════════════════════════════════════
----   STATE TRACKING
----  ═══════════════════════════════════════════════════════════════════════════
+-- STATE TRACKING
 
 -- Current midcast tracking
 local current_midcast = {
@@ -68,12 +50,9 @@ local current_midcast = {
 -- Test mode flag (prevents aftercast from clearing when testing)
 local test_mode_active = false
 
----  ═══════════════════════════════════════════════════════════════════════════
----   HELPER FUNCTIONS
----  ═══════════════════════════════════════════════════════════════════════════
+-- HELPER FUNCTIONS
 
 --- Get Fast Cast percentage from state.FastCast
---- @return number fc_percent Fast Cast percentage (0-80, capped)
 local function get_fast_cast_percent()
     -- Check if state.FastCast exists (defined in job config)
     if state and state.FastCast then
@@ -88,11 +67,6 @@ end
 
 --- Calculate timeout for a spell or item based on its cast time/delay
 --- Applies Fast Cast reduction from state.FastCast
---- @param spell_id number Spell ID from res/spells.lua (optional)
---- @param item_id number Item ID from res/items.lua (optional)
---- @return number timeout in seconds (adjusted_cast_time + buffer)
---- @return number base_cast_time Base cast time before FC reduction
---- @return number adjusted_cast_time Cast time after FC reduction
 local function calculate_timeout(spell_id, item_id)
     local base_cast_time = 0
 
@@ -140,8 +114,6 @@ local function clear_midcast_state()
 end
 
 --- Get cast time for current midcast action
---- @return number cast_time Cast time in seconds
---- @return string action_label Label describing the action type
 local function get_current_cast_time()
     local cast_time = 0
     local action_label = 'spell'
@@ -164,9 +136,7 @@ local function get_current_cast_time()
     return cast_time, action_label
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   CORE FUNCTIONS
----  ═══════════════════════════════════════════════════════════════════════════
+-- CORE FUNCTIONS
 
 -- Spell types that should be monitored (actual magic spells)
 local MONITORED_SPELL_TYPES = {
@@ -181,7 +151,6 @@ local MONITORED_SPELL_TYPES = {
 }
 
 --- Called when midcast starts
---- @param spell table Spell/item data
 function MidcastWatchdog.on_midcast_start(spell)
     if not watchdog_enabled then
         return
@@ -294,9 +263,7 @@ function MidcastWatchdog.check_stuck()
     end
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   CONTROL FUNCTIONS
----  ═══════════════════════════════════════════════════════════════════════════
+-- CONTROL FUNCTIONS
 
 --- Enable watchdog
 function MidcastWatchdog.enable()
@@ -320,13 +287,11 @@ function MidcastWatchdog.toggle()
 end
 
 --- Get current watchdog status
---- @return boolean enabled status
 function MidcastWatchdog.is_enabled()
     return watchdog_enabled
 end
 
 --- Set buffer value (added to cast time)
---- @param seconds number New buffer in seconds
 function MidcastWatchdog.set_buffer(seconds)
     if seconds and seconds >= 0 and seconds <= 10 then
         WATCHDOG_BUFFER = seconds
@@ -337,13 +302,11 @@ function MidcastWatchdog.set_buffer(seconds)
 end
 
 --- Get current buffer value
---- @return number buffer in seconds
 function MidcastWatchdog.get_buffer()
     return WATCHDOG_BUFFER
 end
 
 --- Set fallback timeout for unknown spells
---- @param seconds number New fallback timeout in seconds
 function MidcastWatchdog.set_fallback_timeout(seconds)
     if seconds and seconds > 0 and seconds <= 30 then
         WATCHDOG_FALLBACK_TIMEOUT = seconds
@@ -354,7 +317,6 @@ function MidcastWatchdog.set_fallback_timeout(seconds)
 end
 
 --- Get current fallback timeout value
---- @return number fallback timeout in seconds
 function MidcastWatchdog.get_fallback_timeout()
     return WATCHDOG_FALLBACK_TIMEOUT
 end
@@ -381,13 +343,11 @@ function MidcastWatchdog.toggle_debug()
 end
 
 --- Get debug status
---- @return boolean debug enabled status
 function MidcastWatchdog.is_debug_enabled()
     return debug_enabled
 end
 
 --- Get stats
---- @return table Stats {active, spell_name, spell_id, item_id, action_type, age, enabled, timeout, buffer, fallback_timeout, debug, fast_cast, base_cast_time, adjusted_cast_time}
 function MidcastWatchdog.get_stats()
     local age = 0
     if current_midcast.active and current_midcast.start_time then
@@ -428,8 +388,6 @@ function MidcastWatchdog.clear_all()
 end
 
 --- TEST MODE: Simulate stuck midcast (for debugging)
---- @param spell_name string Name of spell to simulate (optional)
---- @param spell_id number Spell ID from res/spells.lua (optional)
 function MidcastWatchdog.simulate_stuck(spell_name, spell_id)
     spell_name = spell_name or 'Test Spell'
     spell_id   = spell_id or nil
@@ -462,9 +420,7 @@ function MidcastWatchdog.simulate_stuck(spell_name, spell_id)
     end
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   STARTUP
----  ═══════════════════════════════════════════════════════════════════════════
+-- STARTUP
 
 -- Use global flag to prevent multiple watchdog instances across job changes
 if not _G.MIDCAST_WATCHDOG_TIMER then
@@ -512,9 +468,5 @@ function MidcastWatchdog.stop()
     end
     -- Silent stop - no message during job change
 end
-
----  ═══════════════════════════════════════════════════════════════════════════
----   MODULE EXPORT
----  ═══════════════════════════════════════════════════════════════════════════
 
 return MidcastWatchdog

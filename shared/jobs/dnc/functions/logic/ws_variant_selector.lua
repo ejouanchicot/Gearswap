@@ -1,10 +1,10 @@
----============================================================================
---- WS Variant Selector - Buff-Based Weaponskill Set Selection (Logic Module)
----============================================================================
---- Selects weaponskill equipment set variants based on active buffs with
---- intelligent priority ordering.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   WS Variant Selector - Buff-Based Weaponskill Set Selection (Logic Module)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Selects weaponskill equipment set variants based on active buffs with
+---   intelligent priority ordering.
 ---
---- Features:
+---   Features:
 ---   • Saber Dance buff detection (-50% DW - allows different WS gear)
 ---   • Fan Dance buff detection (20% DT - allows different WS gear)
 ---   • Climactic Flourish buff detection (crit rate +15%)
@@ -13,7 +13,7 @@
 ---   • Automatic fallback if variants don't exist
 ---   • Buff combination support (Saber/Fan are mutually exclusive, but can combine with Clim)
 ---
---- Priority Order (NOTE: Saber Dance and Fan Dance are mutually exclusive):
+---   Priority Order (NOTE: Saber Dance and Fan Dance are mutually exclusive):
 ---   1. SaberDance.Clim - Saber Dance + Climactic (highest DPS with Haste)
 ---   2. SaberDance - Saber Dance only (Haste/STP optimized)
 ---   3. FanDance.Clim - Fan Dance + Climactic (DPS + survivability)
@@ -21,22 +21,22 @@
 ---   5. Clim - Climactic only (pure DPS)
 ---   6. Base set - No buffs (standard WS gear)
 ---
---- @file    jobs/dnc/functions/logic/ws_variant_selector.lua
---- @author  Tetsouo
---- @version 1.1 - Saber Dance Support
---- @date    Created: 2025-10-06
---- @date    Updated: 2025-10-19
----============================================================================
+---   @file    jobs/dnc/functions/logic/ws_variant_selector.lua
+---   @author  Tetsouo
+---   @version 1.1 - Saber Dance Support
+---   @date    Created: 2025-10-06
+---   @date    Updated: 2025-10-19
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local WSVariantSelector = {}
 
----============================================================================
---- SET VARIANT SELECTION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SET VARIANT SELECTION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply weaponskill set variant based on active buffs
---- NOTE: Saber Dance and Fan Dance are mutually exclusive - prioritize Saber Dance
---- @param spell table Weaponskill spell object
+---   Apply weaponskill set variant based on active buffs
+---   NOTE: Saber Dance and Fan Dance are mutually exclusive - prioritize Saber Dance
+---   @param spell table Weaponskill spell object
 function WSVariantSelector.apply_variant(spell)
     -- Get the base WS sets for this weaponskill
     local ws_sets = sets.precast.WS[spell.name]
@@ -111,8 +111,8 @@ function WSVariantSelector.apply_variant(spell)
     -- No buffs active: base set is already equipped by Mote
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return WSVariantSelector

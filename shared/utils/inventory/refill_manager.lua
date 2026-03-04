@@ -16,6 +16,15 @@ local RefillManager = {}
 
 local res = require('resources')
 
+-- Lazy-loaded MessageFormatter for professional messages
+local _MessageFormatter = nil
+local function get_formatter()
+    if not _MessageFormatter then
+        _MessageFormatter = require('shared/utils/messages/message_formatter')
+    end
+    return _MessageFormatter
+end
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   CONFIGURATION
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -190,20 +199,20 @@ end
 --- @return boolean Success
 function RefillManager.refill()
     if not player then
-        add_to_chat(167, '[REFILL] Erreur: pas connecte')
+        get_formatter().show_error('[REFILL] Player not connected')
         return false
     end
 
     -- Resolve item IDs from resources
     if not ensure_item_ids() then
-        add_to_chat(167, '[REFILL] Erreur: impossible de resoudre les IDs des items')
+        get_formatter().show_error('[REFILL] Could not resolve item IDs')
         return false
     end
 
     -- Read all bag contents
     local items_data = windower.ffxi.get_items()
     if not items_data then
-        add_to_chat(167, '[REFILL] Erreur: impossible de lire l\'inventaire')
+        get_formatter().show_error('[REFILL] Could not read inventory')
         return false
     end
 
@@ -300,9 +309,7 @@ function RefillManager.refill()
             end, MOVE_DELAY)
         end
 
-        add_to_chat(121, cyan .. "[REFILL] "
-            .. yellow .. "Transfert en cours... ("
-            .. #move_queue .. " operations)")
+        get_formatter().show_info('[REFILL] Transfert en cours... (' .. #move_queue .. ' operations)')
         execute_move(1)
     else
         -- Nothing to move, show report immediately

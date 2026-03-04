@@ -1,18 +1,18 @@
----============================================================================
---- PUP Functions Façade - Module Loader
----============================================================================
---- Loads all PUP-specific function modules in correct order.
---- CRITICAL: All 11 hook modules must be loaded via include() for _G availability.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PUP Functions Facade - Module Loader
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Loads all PUP-specific function modules in correct order.
+---   CRITICAL: All 11 hook modules must be loaded via include() for _G availability.
 ---
---- @file jobs/pup/functions/pup_functions.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-17
----============================================================================
+---   @file    jobs/pup/functions/pup_functions.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-17
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- SECTION 1: MESSAGE SYSTEM
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SECTION 1: MESSAGE SYSTEM
+---  ═══════════════════════════════════════════════════════════════════════════
 -- Message system (must load first for buff status display)
 -- ═══════════════════════════════════════════════════════════════════
 -- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
@@ -24,9 +24,9 @@ local TIMER = Profiler.create_timer('PUP')
 include('../shared/utils/messages/formatters/magic/message_buffs.lua')
 TIMER('message_buffs')
 
----============================================================================
---- SECTION 2: COMBAT ACTION HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SECTION 2: COMBAT ACTION HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 include('../shared/jobs/pup/functions/PUP_PRECAST.lua')
 TIMER('PUP_PRECAST')
@@ -41,27 +41,27 @@ TIMER('PUP_PET_PRECAST')
 include('../shared/jobs/pup/functions/PUP_PET_MIDCAST.lua')
 TIMER('PUP_PET_MIDCAST')
 
----============================================================================
---- SECTION 3: GEAR SELECTION HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SECTION 3: GEAR SELECTION HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 include('../shared/jobs/pup/functions/PUP_IDLE.lua')
 TIMER('PUP_IDLE')
 include('../shared/jobs/pup/functions/PUP_ENGAGED.lua')
 TIMER('PUP_ENGAGED')
 
----============================================================================
---- SECTION 4: EVENT MONITORING HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SECTION 4: EVENT MONITORING HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 include('../shared/jobs/pup/functions/PUP_STATUS.lua')
 TIMER('PUP_STATUS')
 include('../shared/jobs/pup/functions/PUP_BUFFS.lua')
 TIMER('PUP_BUFFS')
 
----============================================================================
---- SECTION 5: UTILITY HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SECTION 5: UTILITY HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- LOCKSTYLE and MACROBOOK use lazy loading - loaded on first call, not during startup
 include('../shared/jobs/pup/functions/PUP_LOCKSTYLE.lua')
@@ -71,10 +71,10 @@ TIMER('PUP_COMMANDS')
 include('../shared/jobs/pup/functions/PUP_MOVEMENT.lua')
 TIMER('PUP_MOVEMENT')
 
----============================================================================
---- LOGIC MODULES REFERENCE
----============================================================================
---- The following business logic modules are loaded via require() in hooks:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   LOGIC MODULES REFERENCE
+---  ═══════════════════════════════════════════════════════════════════════════
+---   The following business logic modules are loaded via require() in hooks:
 ---
 ---   logic/ecosystem_manager.lua
 ---     • Dynamic state creation (species/ammoSet per ecosystem)
@@ -95,18 +95,18 @@ TIMER('PUP_MOVEMENT')
 ---     • Shared engaged set construction (master + pet bifurcation)
 ---     • Shared idle set construction (PetPDT vs MasterPDT)
 ---     • Pet mode detection and gear swapping
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- SECTION 6: DUAL-BOXING SYSTEM
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SECTION 6: DUAL-BOXING SYSTEM
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Load dual-boxing manager (uses deferred init + lazy message loading)
 local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 
----============================================================================
---- INITIALIZATION COMPLETE
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   INITIALIZATION COMPLETE
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- All module functions are now available in global scope
 print('[PUP] All functions loaded (13 hooks + 4 logic modules)')

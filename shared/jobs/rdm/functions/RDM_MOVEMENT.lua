@@ -26,13 +26,13 @@
 ---   EQUIPPING GEAR HANDLER
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Called when gear is being equipped (movement speed check)
---- AutoMove handles movement detection automatically, but this hook
---- allows for job-specific overrides if needed.
+---   Called when gear is being equipped (movement speed check)
+---   AutoMove handles movement detection automatically, but this hook
+---   allows for job-specific overrides if needed.
 ---
---- @param playerStatus string Player status ('Idle', 'Engaged', etc.)
---- @param eventArgs table Event arguments
---- @return void
+---   @param playerStatus string Player status ('Idle', 'Engaged', etc.)
+---   @param eventArgs table Event arguments
+---   @return void
 function job_handle_equipping_gear(playerStatus, eventArgs)
     -- AutoMove handles movement speed automatically
     -- This function is here for RDM-specific movement logic if needed
@@ -45,7 +45,3 @@ end
 -- Export globally for GearSwap
 _G.job_handle_equipping_gear = job_handle_equipping_gear
 
--- Export as module
-return {
-    job_handle_equipping_gear = job_handle_equipping_gear
-}

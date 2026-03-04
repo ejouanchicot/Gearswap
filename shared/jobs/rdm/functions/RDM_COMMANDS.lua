@@ -110,10 +110,10 @@ local nuke_commands = {
 ---   COMMAND HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Handle custom job commands
---- @param cmdParams table Command parameters
---- @param eventArgs table Event arguments
---- @return void
+---   Handle custom job commands
+---   @param cmdParams table Command parameters
+---   @param eventArgs table Event arguments
+---   @return void
 function job_self_command(cmdParams, eventArgs)
     if not cmdParams or #cmdParams == 0 then
         return
@@ -380,11 +380,11 @@ end
 ---   STATE CHANGE HANDLER
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Update UI when state changes
---- Called after state changes to update UI display
---- @param stateField string The state field that changed
---- @param newValue any The new value
---- @param oldValue any The old value
+---   Update UI when state changes
+---   Called after state changes to update UI display
+---   @param stateField string The state field that changed
+---   @param newValue any The new value
+---   @param oldValue any The old value
 function job_state_change(stateField, newValue, oldValue)
     -- Skip UI update for Moving state (handled by AutoMove with flag)
     if stateField == 'Moving' then
@@ -405,6 +405,10 @@ function job_state_change(stateField, newValue, oldValue)
         end
     end
 end
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export to global scope (used by Mote-Include via include())
 _G.job_self_command = job_self_command

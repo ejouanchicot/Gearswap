@@ -1,21 +1,8 @@
----============================================================================
---- Message Formatter - Main facade for all message modules
----============================================================================
---- Centralized interface that loads and exposes all message formatting modules.
---- This maintains the same API while providing modular architecture underneath.
----
---- @file utils/message_formatter.lua
---- @author Tetsouo
---- @version 3.0
---- @date Created: 2025-09-29
----============================================================================
+-- MessageFormatter: facade for all message modules (lazy-loaded for performance).
 
 local MessageFormatter = {}
 
----============================================================================
---- LAZY-LOADED MODULES (Performance Optimization)
---- Modules only loaded when their functions are first called
----============================================================================
+-- Modules loaded on first use
 
 -- Core module (loaded on first use)
 local _MessageCore = nil
@@ -125,9 +112,7 @@ local function get_MessageWHM()
     return _MessageWHM
 end
 
----============================================================================
---- PUBLIC API - Maintains backward compatibility (LAZY-LOADED)
----============================================================================
+-- Public API (lazy wrappers - loaded on first call)
 
 -- Expose colors for external use (lazy)
 MessageFormatter.COLORS = setmetatable({}, {
@@ -139,10 +124,7 @@ MessageFormatter.convert_key_display = function(...) return get_MessageCore().co
 MessageFormatter.show_separator = function(...) return get_MessageCore().show_separator(...) end
 MessageFormatter.get_job_tag = function(...) return get_MessageCore().get_job_tag(...) end
 
----============================================================================
---- NEW GLOBAL FUNCTIONS - Universal Job Ability Messages (LAZY-LOADED)
----============================================================================
--- These functions work for ALL jobs (replaces job-specific implementations)
+-- Universal job ability messages (all jobs)
 
 -- Job Ability Buffs (Global - Works for ALL jobs)
 MessageFormatter.show_ja_activated = function(...) return get_JABuffs().show_activated(...) end
@@ -166,10 +148,7 @@ MessageFormatter.show_song_marcato_skip_soul_voice = function(...) return get_So
 
 -- Dance Messages removed - DNC now uses global JABuffs system (show_ja_activated)
 
----============================================================================
---- BACKWARD COMPATIBILITY WRAPPERS (LAZY-LOADED)
----============================================================================
--- Maintain old BRD function names but use new global system
+-- Backward-compat wrappers for old BRD function names
 MessageFormatter.show_soul_voice_activated_new = function(...) return get_JABuffs().show_soul_voice_activated(...) end
 MessageFormatter.show_nightingale_activated_new = function(...) return get_JABuffs().show_nightingale_activated(...) end
 MessageFormatter.show_troubadour_activated_new = function(...) return get_JABuffs().show_troubadour_activated(...) end
@@ -511,15 +490,6 @@ MessageFormatter.show_curemanager_not_loaded = function(...) return get_MessageW
 -- DNC functions removed - migrated to JABuffs (use show_ja_activated instead)
 
 
----============================================================================
---- DEBUG MESSAGES
----============================================================================
-
---- Show debug message (gray color, for conditional debug output)
---- Note: show_info and show_error are defined via wrappers above (lines 194, 197)
----       that delegate to MessageStatus module (1-argument API)
---- @param prefix string Debug prefix (e.g., "BST", "PET_PRECAST", "RDM Midcast")
---- @param message string Debug message text
 function MessageFormatter.show_debug(prefix, message)
     local MessageRenderer = require('shared/utils/messages/core/message_renderer')
     local formatted = string.format('[%s] %s', prefix, message)

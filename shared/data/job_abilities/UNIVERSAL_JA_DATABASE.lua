@@ -2,7 +2,7 @@
 --- Universal Job Ability Database - Smart Loading (Main + Sub Only)
 ---============================================================================
 --- Loads only the JA databases for current main job and subjob.
---- Reduces load time from ~76ms (21 jobs) to ~7ms (2 jobs).
+--- Lazy-loaded on first use for fast startup.
 ---
 --- This eliminates the subjob problem:
 ---   • WAR/SAM can display Third Eye messages (from SAM_JA_DATABASE)

@@ -1,24 +1,18 @@
----============================================================================
---- BST Precast Module - Precast Action Handling & Cooldown Monitoring
----============================================================================
---- Handles all precast actions for Beastmaster job:
----   • Debuff blocking (Amnesia, Silence, Stun)
----   • Universal cooldown checking (abilities/spells)
----   • Weaponskill validation and range checking
----   • Ready move categorization (for midcast)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BST Precast Module - Precast Action Handling & Pet Commands
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Debuff guard, cooldown check, WS handling, Call Beast/Bestial Loyalty,
+---   Ready moves.
 ---
---- Uses centralized systems for validation and messaging consistency.
----
---- @file jobs/bst/functions/BST_PRECAST.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-17
---- @requires Tetsouo architecture, MessageFormatter, CooldownChecker
----============================================================================
+---   @file    BST_PRECAST.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-05
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Initialize BST debug flag if not exists
 if _G.BST_DEBUG_PRECAST == nil then
@@ -31,7 +25,8 @@ local function show_current_equipment(label)
 
     -- Lazy load MessageFormatter if needed
     if not MessageFormatter then
-        MessageFormatter = require('shared/utils/messages/message_formatter')
+        local _, mod = pcall(require, 'shared/utils/messages/message_formatter')
+        MessageFormatter = mod
     end
 
     local eq = player.equipment
@@ -81,45 +76,24 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
----============================================================================
---- PRECAST HOOK
----============================================================================
-
---- Called before any action (WS, JA, spell, etc.)
---- Processing order (CRITICAL - do not reorder):
----   1. Debuff guard (PrecastGuard) - blocks if silenced/amnesia/stunned
----   2. Cooldown check (CooldownChecker) - validates ability/spell ready
----   3. WS validation (WSValidator) - range check + validation
----   4. Ready move categorization (for Pet abilities)
----
---- @param spell table Spell/ability data
---- @param action string Action type (not used)
---- @param spellMap string Spell mapping (not used)
---- @param eventArgs table Event arguments (cancel flag, etc.)
---- @return void
+--- Precast order: debuff guard → cooldown → WS handler → Call Beast → Ready moves
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_precast(spell, action, spellMap, eventArgs)
-    -- Lazy load all dependencies on first precast
     ensure_modules_loaded()
 
-    -- ==========================================================================
-    -- STEP 1: DEBUFF BLOCKING
-    -- ==========================================================================
-    -- Check for blocking debuffs (Amnesia, Silence, Stun, etc.)
-    -- Prevents unnecessary equipment swaps when actions are blocked
+    -- Debuff guard
     if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
-        return -- Action blocked by debuff, exit immediately
+        return
     end
 
-    -- ==========================================================================
-    -- STEP 2: COOLDOWN VALIDATION
-    -- ==========================================================================
-    -- Universal cooldown check - works for ALL abilities and spells
-    -- EXCEPT Ready Moves (they use Charges system, not recast)
+    -- Cooldown check (skip Ready Moves - they use charges, not recast)
     local is_ready_move = false
     local ready_move_category = nil
     if ReadyMoveCategorizer and spell.action_type == 'Ability' then
         ready_move_category = ReadyMoveCategorizer.get_category(spell.name)
-        -- Only TRUE Ready Moves (not "Default" which includes Fight/Heel/etc)
         is_ready_move = (ready_move_category ~= nil and ready_move_category ~= 'Default')
     end
 
@@ -130,55 +104,19 @@ function job_precast(spell, action, spellMap, eventArgs)
             CooldownChecker.check_spell_cooldown(spell, eventArgs)
         end
     end
+    if eventArgs.cancel then return end
 
-    -- Exit if action cancelled due to cooldown
-    if eventArgs.cancel then
-        return
-    end
-
-    -- ==========================================================================
-    -- DISABLED: BST Job Abilities Messages
-    -- Messages now handled by universal ability_message_handler (init_ability_messages.lua)
-    -- This prevents duplicate messages from job-specific + universal system
-    --
-    -- LEGACY CODE (commented out to prevent duplicates):
-    -- if spell.type == 'JobAbility' then
-    --     if spell.english == 'Familiar' then
-    --         MessageFormatter.show_ja_activated("Familiar", "Enhance pet stats +10% HP, extend charm")
-    --     elseif spell.english == 'Reward' then
-    --         MessageFormatter.show_ja_activated("Reward", "Restore pet HP with regen")
-    --     ... (8 more abilities)
-    --     end
-    -- end
-    --
-    -- DISABLED: BST Pet Commands Messages
-    -- Pet commands (Fight, Heel, Stay, Sic, Ready, Leave, Snarl, Spur) also handled by universal system
-    --
-    -- LEGACY CODE (commented out to prevent duplicates):
-    -- if spell.action_type == 'Ability' and spell.type ~= 'JobAbility' then
-    --     if spell.english == 'Fight' then
-    --         MessageFormatter.show_ja_activated("Fight", "Command pet to attack target")
-    --     ... (8 more commands)
-    --     end
-    -- end
-
-    -- ==========================================================================
-    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
-    -- ==========================================================================
+    -- WS handling
     if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, BSTTPConfig) then
         return
     end
 
-    -- ==========================================================================
-    -- STEP 4: CALL BEAST / BESTIAL LOYALTY (equip summonSet + broth)
-    -- ==========================================================================
+    -- Call Beast / Bestial Loyalty: equip summon set + broth
     if spell.name == 'Call Beast' or spell.name == 'Bestial Loyalty' then
-        -- Debug header (BST-specific flag for JA debug)
         if _G.BST_DEBUG_PRECAST then
             MessagePrecast.show_debug_header(spell.name, 'Pet Summon')
         end
 
-        -- Equip base summon set
         if sets.precast.JA['Call Beast'] then
             equip(sets.precast.JA['Call Beast'])
             if _G.BST_DEBUG_PRECAST then
@@ -187,7 +125,6 @@ function job_precast(spell, action, spellMap, eventArgs)
             end
         end
 
-        -- Equip broth from state (forced separate to override any ammo in summonSet)
         if state.ammoSet and state.ammoSet.value and sets[state.ammoSet.value] then
             local broth_set = sets[state.ammoSet.value]
             if broth_set and broth_set.ammo then
@@ -198,43 +135,25 @@ function job_precast(spell, action, spellMap, eventArgs)
             end
         end
 
-        if _G.BST_DEBUG_PRECAST then
-            MessagePrecast.show_completion()
-        end
-
-        return -- Exit early (handled)
+        if _G.BST_DEBUG_PRECAST then MessagePrecast.show_completion() end
+        return
     end
 
-    -- ==========================================================================
-    -- STEP 5: READY MOVE DETECTION (use ReadyMoveCategorizer for ALL moves)
-    -- ==========================================================================
-    -- Use ReadyMoveCategorizer to detect ALL Ready Moves (not just patterns)
+    -- Ready move: equip Gleti's Breeches (recast snaps at precast), store category for midcast
     if is_ready_move and ready_move_category and ready_move_category ~= 'Default' then
-        -- Store category for aftercast
         spell.ready_move_category = ready_move_category
         spell.bst_is_ready_move = true
-
-        -- EQUIP GLETI'S BREECHES NOW (Ready Recast -5s snapshots at PRECAST like Fast Cast)
         if sets.precast.JA['Sic'] then
             equip(sets.precast.JA['Sic'])
         end
     end
 end
 
----============================================================================
---- POST-PRECAST HOOK
----============================================================================
-
---- Called after precast set selection, before gear is equipped
---- Handles:
----   • Call Beast / Bestial Loyalty - equip pet broth
----   • Weaponskill TP display
----
---- @param spell table Spell/ability data
---- @param action string Action type (not used)
---- @param spellMap string Spell mapping (not used)
---- @param eventArgs table Event arguments (not used)
---- @return void
+---   Apply final gear adjustments before equipping
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
     if WSPrecastHandler then
@@ -242,16 +161,10 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Export globally for GearSwap
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
 
--- Export as module (for future require() usage)
-return {
-    job_precast = job_precast,
-    job_post_precast = job_post_precast
-}

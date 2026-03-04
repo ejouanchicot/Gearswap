@@ -1,21 +1,21 @@
----============================================================================
---- GEO Midcast Module - Powered by MidcastManager
----============================================================================
---- Handles midcast for Geomancer. Only intercepts Geomancy spells (job-specific).
---- All other magic (Cure, Elemental, Enfeebling, Enhancing) is handled by
---- Mote-Include's natural pattern matching.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   GEO Midcast Module - Midcast Gear Selection
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles midcast for Geomancer. Only intercepts Geomancy spells (job-specific).
+---   All other magic (Cure, Elemental, Enfeebling, Enhancing) is handled by
+---   Mote-Include's natural pattern matching.
 ---
---- Features:
+---   Features:
 ---   - Geomancy: Indi/Geo spells (handbell + duration) - INTERCEPTED
 ---   - All other magic: Handled by Mote-Include naturally
 ---
---- @file GEO_MIDCAST.lua
---- @author Tetsouo
---- @version 3.1 - Added spell_family database support
---- @date Created: 2025-10-09 | Updated: 2025-11-05
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---   @file    GEO_MIDCAST.lua
+---   @author  Tetsouo
+---   @version 3.1 - Added spell_family database support
+---   @date    Created: 2025-10-09 | Updated: 2025-11-05
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MidcastManager = nil
 local MessageFormatter = nil
@@ -27,8 +27,10 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    MidcastManager = require('shared/utils/midcast/midcast_manager')
-    MessageFormatter = require('shared/utils/messages/message_formatter')
+    local _, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
+    MidcastManager = mm
+    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    MessageFormatter = mf
 
     -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
     EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
@@ -36,10 +38,20 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
+---   Pre-midcast hook (job-specific logic before set selection)
+---   @param spell table Spell information from GearSwap
+---   @param action string Action type
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments for cancellation/customization
 function job_midcast(spell, action, spellMap, eventArgs)
     -- No GEO-specific PRE-midcast logic
 end
 
+---   Post-midcast hook (MidcastManager routing and gear selection)
+---   @param spell table Spell information from GearSwap
+---   @param action string Action type
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments for cancellation/customization
 function job_post_midcast(spell, action, spellMap, eventArgs)
     -- Lazy load modules on first spell cast
     ensure_modules_loaded()
@@ -49,9 +61,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         _G.MidcastWatchdog.on_midcast_start(spell)
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- GEOMANCY (Indi/Geo spells) - Job-specific, Mote doesn't handle
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if spell.skill == 'Geomancy' then
         -- Display casting message
         if spell.english and spell.english:find("^Indi%-") then
@@ -85,9 +97,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- ALL OTHER MAGIC - Let Mote-Include handle naturally
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Mote automatically handles:
     --   - Cure/Curaga >> sets.midcast.Cure / sets.midcast.Curaga
     --   - Elemental Magic >> sets.midcast['Elemental Magic']
@@ -98,15 +110,10 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- No need to intercept - Mote's logic is sufficient for GEO!
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 _G.job_midcast = job_midcast
 _G.job_post_midcast = job_post_midcast
 
-local GEO_MIDCAST = {}
-GEO_MIDCAST.job_midcast = job_midcast
-GEO_MIDCAST.job_post_midcast = job_post_midcast
-
-return GEO_MIDCAST

@@ -1,24 +1,24 @@
----============================================================================
---- BLM Storm Management Module - Automated Storm Casting with Klimaform
----============================================================================
---- Professional storm management providing automated Klimaform + Storm casting,
---- cooldown monitoring, and intelligent buff maintenance for Black Mage.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BLM Storm Management Module - Automated Storm Casting with Klimaform
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Professional storm management providing automated Klimaform + Storm casting,
+---   cooldown monitoring, and intelligent buff maintenance for Black Mage.
 ---
---- Features:
+---   Features:
 ---   • Automated Klimaform + Storm Casting (smart sequence)
 ---   • Buff Status Checking (skip Klimaform if already active)
 ---   • Cooldown Monitoring (grouped display for both spells)
 ---   • Lag Compensation (anti-spam protection)
 ---
---- Dependencies:
+---   Dependencies:
 ---   • MessageCooldowns (for recast display)
 ---   • BLMMessages (for status messages)
 ---
---- @file jobs/blm/functions/logic/storm_manager.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-15
----============================================================================
+---   @file    jobs/blm/functions/logic/storm_manager.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-15
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local StormManager = {}
 
@@ -26,44 +26,44 @@ local StormManager = {}
 local MessageCooldowns = require('shared/utils/messages/formatters/combat/message_cooldowns')
 local BLMMessages = require('shared/utils/messages/formatters/jobs/message_blm')
 
----============================================================================
---- CONFIGURATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   CONFIGURATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Anti-spam protection: Track last cast time
---- @type number
+---   Anti-spam protection: Track last cast time
+---   @type number
 local last_cast_time = 0
 
---- Minimum delay between casts (in seconds)
+---   Minimum delay between casts (in seconds)
 local CAST_COOLDOWN = 2.0
 
---- Delay between Klimaform and Storm (in seconds)
+---   Delay between Klimaform and Storm (in seconds)
 local KLIMAFORM_STORM_DELAY = 4.5
 
----============================================================================
---- ANTI-SPAM PROTECTION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ANTI-SPAM PROTECTION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Check if spell is safe to cast (anti-spam protection)
---- @param currentTime number Current timestamp
---- @return boolean true if safe to cast
+---   Check if spell is safe to cast (anti-spam protection)
+---   @param currentTime number Current timestamp
+---   @return boolean true if safe to cast
 local function isSafeToCast(currentTime)
     return (currentTime - last_cast_time) >= CAST_COOLDOWN
 end
 
---- Update last cast time
---- @param currentTime number Current timestamp
+---   Update last cast time
+---   @param currentTime number Current timestamp
 local function updateLastCastTime(currentTime)
     last_cast_time = currentTime
 end
 
----============================================================================
---- SPELL RECAST CHECKING
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SPELL RECAST CHECKING
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get spell recast time in seconds
---- @param spell_name string Name of the spell
---- @return number|nil Recast time in seconds, or nil if spell not found
+---   Get spell recast time in seconds
+---   @param spell_name string Name of the spell
+---   @return number|nil Recast time in seconds, or nil if spell not found
 local function get_spell_recast(spell_name)
     -- Use global res if available, otherwise require
     local res = _G.res or windower.res
@@ -94,13 +94,13 @@ local function get_spell_recast(spell_name)
     return recast_raw / 100
 end
 
----============================================================================
---- STORM CASTING LOGIC
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   STORM CASTING LOGIC
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Cast Storm with automatic Klimaform if needed
---- @param storm_name string Name of the storm spell (e.g., "Firestorm", "Hailstorm")
---- @return boolean true if casting was initiated, false if on cooldown
+---   Cast Storm with automatic Klimaform if needed
+---   @param storm_name string Name of the storm spell (e.g., "Firestorm", "Hailstorm")
+---   @return boolean true if casting was initiated, false if on cooldown
 function StormManager.cast_storm_with_klimaform(storm_name)
     local currentTime = os.clock()
 
@@ -198,10 +198,10 @@ function StormManager.cast_storm_with_klimaform(storm_name)
     return false
 end
 
---- Cast Storm only (without Klimaform check)
---- Used for manual Storm casting
---- @param storm_name string Name of the storm spell
---- @return boolean true if casting was initiated, false if on cooldown
+---   Cast Storm only (without Klimaform check)
+---   Used for manual Storm casting
+---   @param storm_name string Name of the storm spell
+---   @return boolean true if casting was initiated, false if on cooldown
 function StormManager.cast_storm_only(storm_name)
     local currentTime = os.clock()
 
@@ -230,8 +230,8 @@ function StormManager.cast_storm_only(storm_name)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return StormManager

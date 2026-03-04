@@ -1,21 +1,21 @@
----============================================================================
---- GEO Set Builder - Shared Equipment Set Construction Logic
----============================================================================
---- Provides shared logic for building engaged and idle sets with:
---- - Luopan detection (sets.me.* vs sets.luopan.*)
---- - Town/Adoulin detection (idle only)
---- - Weapon set application (Idris)
---- - Movement gear application
+---  ═══════════════════════════════════════════════════════════════════════════
+---   GEO Set Builder - Shared Equipment Set Construction Logic
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Provides shared logic for building engaged and idle sets with:
+---   - Luopan detection (sets.me.* vs sets.luopan.*)
+---   - Town/Adoulin detection (idle only)
+---   - Weapon set application (Idris)
+---   - Movement gear application
 ---
---- GEO has two distinct set configurations:
+---   GEO has two distinct set configurations:
 ---   sets.me.*     - No Luopan active (focus: refresh, defense)
 ---   sets.luopan.* - Luopan active (focus: Pet DT-, Pet Regen)
 ---
---- @file jobs/geo/functions/logic/set_builder.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-09
----============================================================================
+---   @file    jobs/geo/functions/logic/set_builder.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-09
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local SetBuilder = {}
 
@@ -25,15 +25,15 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 -- Load message formatter for error reporting
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
----============================================================================
---- SET AUGMENTATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SET AUGMENTATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply weapon sets to result
---- GEO uses main weapon + sub weapon (shield)
---- Note: Combat Mode locking is handled via disable() in job_update()
---- @param result table Current equipment set
---- @return table Modified set with weapons applied
+---   Apply weapon sets to result
+---   GEO uses main weapon + sub weapon (shield)
+---   Note: Combat Mode locking is handled via disable() in job_update()
+---   @param result table Current equipment set
+---   @return table Modified set with weapons applied
 function SetBuilder.apply_weapon(result)
     if not result then
         return {}
@@ -68,17 +68,17 @@ function SetBuilder.apply_weapon(result)
     return result
 end
 
---- Apply movement speed gear to result (inherited from BaseSetBuilder)
+---   Apply movement speed gear to result (inherited from BaseSetBuilder)
 SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 
 
----============================================================================
---- COMPLETE SET BUILDERS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COMPLETE SET BUILDERS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build complete engaged set (base selection + LuopanMode + weapons + movement)
---- @param base_set table Base engaged set from Mote (ignored - we use sets.me/luopan)
---- @return table Complete engaged set
+---   Build complete engaged set (base selection + LuopanMode + weapons + movement)
+---   @param base_set table Base engaged set from Mote (ignored - we use sets.me/luopan)
+---   @return table Complete engaged set
 function SetBuilder.build_engaged_set(base_set)
     -- Step 1: Select base set based on Luopan status
     local result
@@ -111,9 +111,9 @@ function SetBuilder.build_engaged_set(base_set)
     return result
 end
 
---- Build complete idle set (Luopan detection + town detection + weapons + movement)
---- @param base_set table Base idle set from Mote (ignored - we use sets.me/luopan)
---- @return table Complete idle set
+---   Build complete idle set (Luopan detection + town detection + weapons + movement)
+---   @param base_set table Base idle set from Mote (ignored - we use sets.me/luopan)
+---   @return table Complete idle set
 function SetBuilder.build_idle_set(base_set)
     -- Step 1: Select base set based on Luopan status (MOST IMPORTANT)
     local result
@@ -141,14 +141,14 @@ function SetBuilder.build_idle_set(base_set)
     return result
 end
 
----============================================================================
---- BUFF-BASED SET MODIFICATIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BUFF-BASED SET MODIFICATIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply buff-specific gear modifications
---- @param current_set table Current equipment set
---- @param buff_name string Buff name
---- @return table Modified set
+---   Apply buff-specific gear modifications
+---   @param current_set table Current equipment set
+---   @param buff_name string Buff name
+---   @return table Modified set
 function SetBuilder.apply_buff_gear(current_set, buff_name)
     if not current_set or not buff_name then
         return current_set
@@ -162,8 +162,8 @@ function SetBuilder.apply_buff_gear(current_set, buff_name)
     return current_set
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return SetBuilder

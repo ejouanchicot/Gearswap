@@ -1,14 +1,14 @@
----============================================================================
---- WHM Functions Façade - Module Loader
----============================================================================
---- Loads all WHM-specific function modules in correct order.
---- Ensures all hooks are registered with GearSwap/Mote-Include system.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   WHM Functions Facade - Module Loader
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Loads all WHM-specific function modules in correct order.
+---   Ensures all hooks are registered with GearSwap/Mote-Include system.
 ---
---- @file whm_functions.lua
---- @author Tetsouo
---- @version 1.0.0
---- @date Created: 2025-10-21
----============================================================================
+---   @file    whm_functions.lua
+---   @author  Tetsouo
+---   @version 1.0.0
+---   @date    Created: 2025-10-21
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Load all modules in dependency order
 -- ═══════════════════════════════════════════════════════════════════

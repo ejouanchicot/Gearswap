@@ -1,7 +1,7 @@
----============================================================================
---- WHM Precast Module - Precast Action Handling & Cooldown Monitoring
----============================================================================
---- Handles all precast actions for White Mage job:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   WHM Precast Module - Precast Action Handling & Cooldown Monitoring
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all precast actions for White Mage job:
 ---   • Fast Cast optimization (all spell types)
 ---   • Job Abilities (Benediction, Devotion, Divine Seal, Asylum, etc.)
 ---   • Cure spell precast (fast cast + special gear)
@@ -10,22 +10,22 @@
 ---   • Weaponskill validation and range checking
 ---   • Security layers (debuff guard >> cooldown check >> job logic)
 ---
---- Follows 4-layer PRECAST security architecture:
+---   Follows 4-layer PRECAST security architecture:
 ---   1. PrecastGuard - Block casting under debuffs (Amnesia, Silence, Stun, etc.)
 ---   2. CooldownChecker - Universal ability/spell recast validation
 ---   3. WSValidator - Weaponskill range and validity checks
 ---   4. WHM-specific logic - Job-specific enhancements
 ---
---- @file    WHM_PRECAST.lua
---- @author  Tetsouo
---- @version 1.0.0
---- @date    Created: 2025-10-21
---- @requires shared/utils/messages/message_formatter, shared/utils/precast/cooldown_checker
----============================================================================
+---   @file    WHM_PRECAST.lua
+---   @author  Tetsouo
+---   @version 1.0.0
+---   @date    Created: 2025-10-21
+---   @requires shared/utils/messages/message_formatter, shared/utils/precast/cooldown_checker
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local CooldownChecker = nil
 local PrecastGuard = nil
@@ -59,38 +59,40 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
----============================================================================
---- PRECAST HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PRECAST HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Main precast hook for all spells/abilities
---- Implements 4-layer security: PrecastGuard >> CooldownChecker >> WSValidator >> WHM Logic
+---   Main precast hook for all spells/abilities
+---   Implements 4-layer security: PrecastGuard >> CooldownChecker >> WSValidator >> WHM Logic
 ---
---- @param spell table Spell/ability data from Mote-Include
---- @param action string Action type (not used)
---- @param spellMap string Spell mapping from Mote-Include
---- @param eventArgs table Event arguments (contains .handled, .cancel flags)
---- @return void
+---   @param spell table Spell/ability data from Mote-Include
+---   @param action string Action type (not used)
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments (contains .handled, .cancel flags)
+---   @return void
 function job_precast(spell, action, spellMap, eventArgs)
     -- Lazy load modules on first action
     ensure_modules_loaded()
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- LAYER 1: DEBUFF GUARD (Highest Priority)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Block casting if player has blocking debuffs (Amnesia, Silence, Stun, etc.)
     if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
         return  -- Action blocked, exit immediately
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- LAYER 2: COOLDOWN CHECK (Universal)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Check ability/spell recast timers (prevent premature casting)
-    if spell.action_type == 'Ability' then
-        CooldownChecker.check_ability_cooldown(spell, eventArgs)
-    elseif spell.action_type == 'Magic' then
-        CooldownChecker.check_spell_cooldown(spell, eventArgs)
+    if CooldownChecker then
+        if spell.action_type == 'Ability' then
+            CooldownChecker.check_ability_cooldown(spell, eventArgs)
+        elseif spell.action_type == 'Magic' then
+            CooldownChecker.check_spell_cooldown(spell, eventArgs)
+        end
     end
 
     -- Exit if cooldown check cancelled the action
@@ -98,20 +100,9 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- ==========================================================================
-    -- JOB ABILITIES MESSAGES (universal - supports main + subjob)
-    -- DISABLED: WHM Job Abilities Messages
-    -- Messages now handled by universal ability_message_handler (init_ability_messages.lua)
-    -- This prevents duplicate messages from job-specific + universal system
-    --
-    -- LEGACY CODE (commented out to prevent duplicates):
-    -- if spell.type == 'JobAbility' and JA_DB[spell.english] then
-    --     MessageFormatter.show_ja_activated(spell.english, JA_DB[spell.english].description)
-    -- end
-
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- LAYER 3: WHM-SPECIFIC LOGIC
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
 
     -- Auto-tier Cure selection (downgrade Cure tier if target doesn't need full heal)
     if CureManager and spell.action_type == 'Magic' then
@@ -135,51 +126,33 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- WHM-specific precast enhancements can go here
-    -- Examples:
-    --   • Auto-trigger Divine Seal before Cure spells (if configured)
-    --   • Auto-trigger Afflatus Solace before party Cures
-    --   • Devotion automation before long fights
-
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, WHMTPConfig) then
         return
     end
 end
 
---- Post-precast hook for additional customizations
---- Called after main precast set selection but before gear is equipped.
+---   Post-precast hook for additional customizations
+---   Called after main precast set selection but before gear is equipped.
 ---
---- @param spell table Spell/ability data
---- @param action string Action type (not used)
---- @param spellMap string Spell mapping
---- @param eventArgs table Event arguments
---- @return void
+---   @param spell table Spell/ability data
+---   @param action string Action type (not used)
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
+---   @return void
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
     if WSPrecastHandler then
         WSPrecastHandler.apply_tp_gear(spell)
     end
 
-    -- WHM-specific post-precast adjustments
-    -- Examples:
-    --   • Adjust Fast Cast gear based on spell type
-    --   • Apply special weapon sets for certain abilities
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Export globally for GearSwap (include() compatibility)
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
-
--- Export as module (require() compatibility)
-local WHM_PRECAST = {}
-WHM_PRECAST.job_precast = job_precast
-WHM_PRECAST.job_post_precast = job_post_precast
-
-return WHM_PRECAST

@@ -17,8 +17,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
--- All modules are loaded on first action (job_precast call)
--- This reduces startup time from ~150ms to ~5ms
+-- All modules are loaded on first action (lazy loading)
 
 local MessageFormatter = nil
 local MessagePrecast = nil
@@ -84,18 +83,18 @@ end
 ---   PRECAST HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Called before any action (WS, JA, spell, etc.)
---- @param spell table Spell/ability data
---- @param action string Action type
---- @param spellMap string Spell mapping
---- @param eventArgs table Event arguments
+---   Called before any action (WS, JA, spell, etc.)
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_precast(spell, action, spellMap, eventArgs)
-    -- Lazy load modules on first action (saves ~150ms at startup)
+    -- Lazy load modules on first action
     ensure_modules_loaded()
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- COMBAT MODE WEAPON LOCKING (SAFETY GUARD)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Ensure weapon slots are locked BEFORE precast gear is applied
     -- This prevents midcast from equipping weapons from sets
     if state.CombatMode and state.CombatMode.current == "On" then
@@ -229,12 +228,12 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 end
 
---- Apply final gear adjustments before equipping
---- NOTE: TP display now integrated in job_precast WS message
---- @param spell table Spell/ability data
---- @param action string Action type
---- @param spellMap string Spell mapping
---- @param eventArgs table Event arguments
+---   Apply final gear adjustments before equipping
+---   NOTE: TP display now integrated in job_precast WS message
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
     local debug_enabled = is_precast_debug_enabled()
 
@@ -247,11 +246,6 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     -- Example: sets.precast.FC["Stoneskin"] overrides sets.precast.FC
     if spell.action_type == 'Magic' and sets.precast.FC and sets.precast.FC[spell.english] then
         equip(sets.precast.FC[spell.english])
-    end
-
-    -- Chainspell active - no need for Fast Cast gear
-    if buffactive['Chainspell'] then
-        -- Keep precast gear as-is (instant cast)
     end
 
     -- DEBUG: Display equipped set and gear

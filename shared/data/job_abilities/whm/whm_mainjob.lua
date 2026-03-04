@@ -31,7 +31,7 @@ WHM_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Afflatus Misery'] = {
-        description             = 'Damage taken dans la  Banish/Cura/Esuna boost',
+        description             = 'Damage taken boosts Banish/Cura/Esuna potency',
         level                   = 40,
         recast                  = 10,
         main_job_only           = true,

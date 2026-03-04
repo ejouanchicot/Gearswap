@@ -1,23 +1,17 @@
----============================================================================
---- BLM Midcast Module - Powered by MidcastManager
----============================================================================
---- Handles midcast gear for Black Mage using centralized MidcastManager.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BLM Midcast Module - MagicBurst, MP Conservation & Elemental Matching
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MagicBurst mode, MP conservation override, elemental matching (Hachirin-no-Obi).
 ---
---- Features:
----   - Elemental Magic with MagicBurst mode support
----   - Dark Magic (Drain/Aspir)
----   - Enfeebling Magic
----   - MP Conservation (SaveMP integration)
----
---- @file BLM_MIDCAST.lua
---- @author Tetsouo
---- @version 3.0 - Added spell_family database support
---- @date Created: 2025-10-15 | Updated: 2025-11-05
----============================================================================
+---   @file    BLM_MIDCAST.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-05
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MidcastManager = nil
 local ElementalMatcher = nil
@@ -39,30 +33,34 @@ local function ensure_modules_loaded()
     local last_time = start_time
     local profiling_enabled = _G.PERFORMANCE_PROFILING and _G.PERFORMANCE_PROFILING.enabled
 
+    -- Load MessageFormatter first so it's available inside mark()
+    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    MessageFormatter = mf
+
     local function mark(name)
         if profiling_enabled then
             local now = os.clock()
             local elapsed = (now - last_time) * 1000
-            add_to_chat(160, string.format('    [MIDCAST] %s: %.0fms', name, elapsed))
+            MessageFormatter.show_debug('MIDCAST', string.format('    [MIDCAST] %s: %.0fms', name, elapsed))
             last_time = now
         end
     end
 
-    MidcastManager = require('shared/utils/midcast/midcast_manager')
+    local _, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
+    MidcastManager = mm
     mark('MidcastManager')
 
-    ElementalMatcher = require('shared/jobs/blm/functions/logic/elemental_matcher')
+    local _, em = pcall(require, 'shared/jobs/blm/functions/logic/elemental_matcher')
+    ElementalMatcher = em
     mark('ElementalMatcher')
 
     -- NOTE: BLM_SPELL_DATABASE removed (was dead code - never used)
-    -- Saves ~137ms on first spell cast
 
-    -- Load Message Formatter (may be cached from PRECAST)
-    MessageFormatter = require('shared/utils/messages/message_formatter')
-    mark('MessageFormatter')
+    mark('MessageFormatter')  -- already loaded above
 
     -- BLM Midcast Debug Messages
-    MessageBLMMidcast = require('shared/utils/messages/formatters/jobs/message_blm_midcast')
+    local _, mbm = pcall(require, 'shared/utils/messages/formatters/jobs/message_blm_midcast')
+    MessageBLMMidcast = mbm
     mark('MessageBLMMidcast')
 
     -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
@@ -112,25 +110,25 @@ local function ensure_modules_loaded()
     -- PROFILING: Show total lazy-load time
     if profiling_enabled then
         local elapsed = (os.clock() - start_time) * 1000
-        add_to_chat(158, string.format('[PERF:LAZY] BLM_MIDCAST TOTAL: %.0fms', elapsed))
+        MessageFormatter.show_debug('MIDCAST', string.format('[PERF:LAZY] BLM_MIDCAST TOTAL: %.0fms', elapsed))
     end
 end
 
----============================================================================
---- MIDCAST HOOKS
----============================================================================
 
+---   Pre-midcast hook (job-specific logic before set selection)
+---   @param spell table Spell information from GearSwap
+---   @param action string Action type
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments for cancellation/customization
 function job_midcast(spell, action, spellMap, eventArgs)
-    -- MP Conservation for Elemental Magic
-    -- ⚠️ DISABLED: SaveMP() overwrites sets.midcast['Elemental Magic'].MagicBurst
-    -- MidcastManager now handles set selection directly (no need to mutate global sets)
-    -- if spell.skill == 'Elemental Magic' then
-    --     if SaveMP and player and player.mp and state.CastingMode then
-    --         SaveMP()
-    --     end
-    -- end
+    -- Handled by MidcastManager in job_post_midcast
 end
 
+---   Post-midcast hook (MidcastManager routing and gear selection)
+---   @param spell table Spell information from GearSwap
+---   @param action string Action type
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments for cancellation/customization
 function job_post_midcast(spell, action, spellMap, eventArgs)
     -- Lazy load modules on first spell cast
     ensure_modules_loaded()
@@ -143,9 +141,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- Check debug state from global
     local debug_enabled = _G.MidcastManagerDebugState == true
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- IMPACT - Special handling (Twilight Cloak Required)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Impact requires Twilight Cloak to cast - handled separately from other
     -- Elemental Magic to ensure the body slot is NEVER overwritten
     if spell.english == 'Impact' then
@@ -173,9 +171,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- ELEMENTAL MAGIC - Use MidcastManager with MagicBurst mode
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if spell.skill == 'Elemental Magic' then
         if debug_enabled then
             MessageBLMMidcast.show_elemental_routing(tostring(state.MagicBurstMode and state.MagicBurstMode.current or 'nil'))
@@ -188,9 +186,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
                 spell = spell
             })
         else
-            -- =====================================================================
-            -- STEP 1: Use MidcastManager to select base set
-            -- =====================================================================
+            -- Select base set (MagicBurst mode or base)
             local mb_mode = nil
             if state.MagicBurstMode and state.MagicBurstMode.current == 'On' then
                 mb_mode = 'MagicBurst'
@@ -200,7 +196,6 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
                 MessageBLMMidcast.show_mode_value(tostring(mb_mode or 'nil (base set)'))
             end
 
-            -- Get base set from static sets
             local base_set = nil
             if mb_mode and sets.midcast['Elemental Magic'].MagicBurst then
                 base_set = sets.midcast['Elemental Magic'].MagicBurst
@@ -208,25 +203,17 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
                 base_set = sets.midcast['Elemental Magic']
             end
 
-            -- =====================================================================
-            -- STEP 2: Apply MP-based overrides (SaveMP logic)
-            -- =====================================================================
+            -- MP conservation override (low MP threshold)
             local current_mp = player and player.mp or 9999
-            local mp_threshold = BLMMPConfig.mp_threshold or 1000  -- Load from config
+            local mp_threshold = BLMMPConfig.mp_threshold or 1000
             local final_set = base_set
 
             if current_mp < mp_threshold then
-                -- Low MP: Override with MP conservation gear
                 if debug_enabled then
                     MessageBLMMidcast.show_mp_conservation(current_mp, mp_threshold)
                 end
-
-                -- Override specific pieces for MP conservation using sets.midcast.MPConservation
                 if sets.midcast.MPConservation then
                     final_set = set_combine(base_set, sets.midcast.MPConservation)
-                else
-                    -- Fallback if MPConservation set not defined
-                    final_set = base_set
                 end
             else
                 if debug_enabled then
@@ -234,27 +221,17 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
                 end
             end
 
-            -- =====================================================================
-            -- STEP 3: Apply elemental matching overrides
-            -- =====================================================================
+            -- Elemental matching (Hachirin-no-Obi day/weather)
             if BLMElementalConfig.auto_hachirin then
                 local has_match, reason = ElementalMatcher.has_elemental_match(spell, BLMElementalConfig)
-
-                if has_match then
-                    -- Override with ElementalMatch set (user-configurable)
-                    if sets.midcast.ElementalMatch then
-                        final_set = set_combine(final_set, sets.midcast.ElementalMatch)
-
-                        if debug_enabled then
-                            MessageBLMMidcast.show_elemental_match(reason)
-                        end
+                if has_match and sets.midcast.ElementalMatch then
+                    final_set = set_combine(final_set, sets.midcast.ElementalMatch)
+                    if debug_enabled then
+                        MessageBLMMidcast.show_elemental_match(reason)
                     end
                 end
             end
 
-            -- =====================================================================
-            -- STEP 4: Equip final combined set
-            -- =====================================================================
             equip(final_set)
 
         end
@@ -265,9 +242,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DARK MAGIC - Use MidcastManager (Drain/Aspir)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if spell.skill == 'Dark Magic' then
         if debug_enabled then
             MessageBLMMidcast.show_dark_routing()
@@ -284,9 +261,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- ENFEEBLING MAGIC - Use MidcastManager
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if spell.skill == 'Enfeebling Magic' then
         if debug_enabled then
             MessageBLMMidcast.show_enfeebling_routing()
@@ -311,17 +288,10 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Export global for GearSwap (Mote-Include)
 _G.job_midcast = job_midcast
 _G.job_post_midcast = job_post_midcast
 
--- Export module
-local BLM_MIDCAST = {}
-BLM_MIDCAST.job_midcast = job_midcast
-BLM_MIDCAST.job_post_midcast = job_post_midcast
-
-return BLM_MIDCAST

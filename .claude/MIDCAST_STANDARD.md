@@ -559,23 +559,7 @@ del "[JOB]_MIDCAST_OLD.lua"
 
 ## 📊 STATUT MIGRATION PAR JOB
 
-| Job | Status | Lines Before | Lines After | Reduction |
-|-----|--------|-------------|-------------|-----------|
-| **RDM** | ✅ COMPLETE | 192 | 123 | -36% |
-| **BLM** | ⏳ TODO | ~180 | ~100 | -44% |
-| **WHM** | ⏳ TODO | ~170 | ~100 | -41% |
-| **GEO** | ⏳ TODO | ~160 | ~90 | -44% |
-| **PLD** | ⏳ TODO | ~150 | ~80 | -47% |
-| **DRK** | ⏳ TODO | ~140 | ~80 | -43% |
-| **BRD** | ⏳ TODO | ~200 | ~120 | -40% |
-| **COR** | ⏳ TODO | ~160 | ~90 | -44% |
-| **BST** | ⏳ TODO | ~120 | ~60 | -50% |
-| **WAR** | ⏳ TODO | ~80 | ~40 | -50% |
-| **SAM** | ⏳ TODO | ~80 | ~40 | -50% |
-| **DNC** | ⏳ TODO | ~60 | ~30 | -50% |
-| **THF** | ⏳ TODO | ~60 | ~30 | -50% |
-
-**Total Projection:** ~2,000 lignes >> ~1,000 lignes (**-50% code duplication**)
+All 15 jobs use MidcastManager. Migration complete.
 
 ---
 

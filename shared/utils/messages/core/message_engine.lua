@@ -16,11 +16,11 @@ local MessageEngine = {}
 -- Import MessageColors for region-specific color detection
 local MessageColors = require('shared/utils/messages/message_colors')
 
--- Cache des templates compilés (performance)
+-- Compiled template cache (performance)
 -- IMPORTANT: This cache persists across GearSwap reloads unless module is fully unloaded
 local _template_cache = {}
 
--- Cache des données de messages chargées
+-- Loaded message data cache
 local _message_data = {}
 
 -- FORCE: Clear caches on module reload (prevents stale cached templates)
@@ -30,9 +30,9 @@ if _G.MESSAGE_ENGINE_LOADED then
 end
 _G.MESSAGE_ENGINE_LOADED = true
 
--- Mapping de noms de couleurs vers codes FFXI (inline color codes)
--- Format: string.char(0x1F, color_code) où 0x1F = caractère de contrôle FFXI
--- Codes basés sur message_colors.lua (tous <= 255)
+-- Color name to FFXI code mapping (inline color codes)
+-- Format: string.char(0x1F, color_code) where 0x1F = FFXI control character
+-- Codes from message_colors.lua (all <= 255)
 local COLOR_CODES = {
     -- Main colors
     cyan = string.char(0x1F, 13),     -- Cyan (spells) - SPELL color
@@ -69,10 +69,10 @@ local COLOR_CODES = {
 --- TEMPLATE COMPILATION (Performance Critical)
 ---============================================================================
 
---- Compile un template en fonction optimisée
---- Parse une seule fois, réutilise N fois
+--- Compile a template into an optimized function
+--- Parse once, reuse N times
 --- Supports: {param} for parameters, {color}...{/} for inline colors
---- @param template string Template avec {placeholders} et {color}...{/}
+--- @param template string Template with {placeholders} and {color}...{/}
 --- @return function Compiled template function
 local function compile_template(template)
     -- Cache check (hot path)
@@ -131,7 +131,7 @@ local function compile_template(template)
         pos = open_end + 1
     end
 
-    -- Générer la fonction compilée (closure)
+    -- Generate the compiled function (closure)
     local compiled_fn = function(params)
         local result_parts = {}
 
@@ -162,7 +162,7 @@ local function compile_template(template)
         return table.concat(result_parts)
     end
 
-    -- Cache pour performance
+    -- Cache for performance
     _template_cache[template] = compiled_fn
 
     return compiled_fn

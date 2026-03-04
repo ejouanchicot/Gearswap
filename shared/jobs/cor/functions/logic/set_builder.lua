@@ -1,17 +1,17 @@
----============================================================================
---- COR Set Builder - Shared Equipment Set Construction Logic
----============================================================================
---- Provides shared logic for building engaged and idle sets with:
---- - Town/Adoulin detection (idle only)
---- - Weapon set application (main/sub/range)
---- - Movement gear application
---- - Hybrid mode support (PDT)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COR Set Builder - Shared Equipment Set Construction Logic
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Provides shared logic for building engaged and idle sets with:
+---   - Town/Adoulin detection (idle only)
+---   - Weapon set application (main/sub/range)
+---   - Movement gear application
+---   - Hybrid mode support (PDT)
 ---
---- @file jobs/cor/functions/logic/set_builder.lua
---- @author Tetsouo
---- @version 2.0
---- @date Updated: 2025-10-08 (Refactored to modular architecture)
----============================================================================
+---   @file    jobs/cor/functions/logic/set_builder.lua
+---   @author  Tetsouo
+---   @version 2.0
+---   @date    Updated: 2025-10-08 (Refactored to modular architecture)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local SetBuilder = {}
 
@@ -21,22 +21,22 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 -- Load message formatter for error reporting
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
----============================================================================
---- TOWN DETECTION (INHERITED FROM BASE)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   TOWN DETECTION (INHERITED FROM BASE)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Inherit universal town detection function from BaseSetBuilder
 SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town
 
----============================================================================
---- SET AUGMENTATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SET AUGMENTATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply weapon sets to result (main+sub conditional on DW subjob, range separate)
---- COR only uses sub weapon if subjob = NIN or DNC (dual wield jobs)
---- For other subjobs (SCH, etc.), only main weapon is applied
---- @param result table Current equipment set
---- @return table Modified set with weapons applied
+---   Apply weapon sets to result (main+sub conditional on DW subjob, range separate)
+---   COR only uses sub weapon if subjob = NIN or DNC (dual wield jobs)
+---   For other subjobs (SCH, etc.), only main weapon is applied
+---   @param result table Current equipment set
+---   @return table Modified set with weapons applied
 function SetBuilder.apply_weapon(result)
     if not result then
         return {}
@@ -89,17 +89,17 @@ function SetBuilder.apply_weapon(result)
     return result
 end
 
---- Apply movement speed gear to result (inherited from BaseSetBuilder)
+---   Apply movement speed gear to result (inherited from BaseSetBuilder)
 SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 
 
----============================================================================
---- COMPLETE SET BUILDERS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COMPLETE SET BUILDERS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build complete engaged set (base selection + PDT + DW + weapons + movement)
---- @param base_set table Base engaged set from Mote
---- @return table Complete engaged set
+---   Build complete engaged set (base selection + PDT + DW + weapons + movement)
+---   @param base_set table Base engaged set from Mote
+---   @return table Complete engaged set
 function SetBuilder.build_engaged_set(base_set)
     if not base_set then
         return {}
@@ -134,9 +134,9 @@ function SetBuilder.build_engaged_set(base_set)
     return result
 end
 
---- Build complete idle set (town detection + weapons + PDT + Refresh + movement)
---- @param base_set table Base idle set from Mote
---- @return table Complete idle set
+---   Build complete idle set (town detection + weapons + PDT + Refresh + movement)
+---   @param base_set table Base idle set from Mote
+---   @return table Complete idle set
 function SetBuilder.build_idle_set(base_set)
     if not base_set then
         return {}
@@ -179,14 +179,14 @@ function SetBuilder.build_idle_set(base_set)
     return result
 end
 
----============================================================================
---- BUFF-BASED SET MODIFICATIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BUFF-BASED SET MODIFICATIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply buff-specific gear modifications
---- @param current_set table Current equipment set
---- @param buff_name string Buff name
---- @return table Modified set
+---   Apply buff-specific gear modifications
+---   @param current_set table Current equipment set
+---   @param buff_name string Buff name
+---   @return table Modified set
 function SetBuilder.apply_buff_gear(current_set, buff_name)
     if not current_set or not buff_name then
         return current_set
@@ -200,8 +200,8 @@ function SetBuilder.apply_buff_gear(current_set, buff_name)
     return current_set
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return SetBuilder

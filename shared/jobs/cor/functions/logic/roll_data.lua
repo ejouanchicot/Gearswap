@@ -1,24 +1,24 @@
----============================================================================
---- COR Roll Data - Phantom Roll Game Data
----============================================================================
---- Complete database of all Corsair Phantom Rolls with game data:
---- - Roll values (1-11)
---- - Lucky/Unlucky numbers
---- - Effect descriptions
---- - Job-specific bonuses
---- - Bust effects
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COR Roll Data - Phantom Roll Game Data
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Complete database of all Corsair Phantom Rolls with game data:
+---   - Roll values (1-11)
+---   - Lucky/Unlucky numbers
+---   - Effect descriptions
+---   - Job-specific bonuses
+---   - Bust effects
 ---
---- NOTE: This is GAME DATA (not user configuration)
---- These are fixed values from FFXI and should not be modified unless
---- game data changes (e.g., version update).
+---   NOTE: This is GAME DATA (not user configuration)
+---   These are fixed values from FFXI and should not be modified unless
+---   game data changes (e.g., version update).
 ---
---- @file jobs/cor/functions/logic/roll_data.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-08
---- @date Updated: 2025-10-09 - Moved from config/ to logic/ (game data)
+---   @file    jobs/cor/functions/logic/roll_data.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-08
+---   @date    Updated: 2025-10-09 - Moved from config/ to logic/ (game data)
 ---
---- Database structure per roll:
+---   Database structure per roll:
 ---   values = {val1-11}      -- Bonus values for rolls 1-11
 ---   bust_effect = string    -- Effect when busting
 ---   effect_type = string    -- What the roll affects
@@ -26,13 +26,13 @@
 ---   unlucky = number        -- Unlucky number
 ---   phantom_roll_bonus = num -- +1 Phantom Roll gear bonus
 ---   job_bonus = {job, val}  -- Job-specific bonus (optional)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local RollData = {}
 
----============================================================================
---- PHANTOM ROLL DATABASE
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PHANTOM ROLL DATABASE
+---  ═══════════════════════════════════════════════════════════════════════════
 
 RollData.rolls = {
     ["Fighter's Roll"] = {
@@ -346,19 +346,19 @@ RollData.rolls = {
     },
 }
 
----============================================================================
---- HELPER FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HELPER FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get roll data by name
---- @param roll_name string Name of the roll
---- @return table|nil Roll data or nil if not found
+---   Get roll data by name
+---   @param roll_name string Name of the roll
+---   @return table|nil Roll data or nil if not found
 function RollData.get_roll(roll_name)
     return RollData.rolls[roll_name]
 end
 
---- Get all roll names (for state options)
---- @return table Array of roll names
+---   Get all roll names (for state options)
+---   @return table Array of roll names
 function RollData.get_roll_names()
     local names = {}
     for roll_name, _ in pairs(RollData.rolls) do
@@ -368,13 +368,13 @@ function RollData.get_roll_names()
     return names
 end
 
---- Calculate final bonus value including job bonus and gear bonus
---- @param roll_name string Name of the roll
---- @param roll_value number Roll value (1-11)
---- @param player_job string Current main job
---- @param phantom_roll_bonus number Total +Phantom Roll from gear
---- @param has_job_bonus boolean|nil Whether job bonus should be applied (auto-detected from party)
---- @return number Final bonus value
+---   Calculate final bonus value including job bonus and gear bonus
+---   @param roll_name string Name of the roll
+---   @param roll_value number Roll value (1-11)
+---   @param player_job string Current main job
+---   @param phantom_roll_bonus number Total +Phantom Roll from gear
+---   @param has_job_bonus boolean|nil Whether job bonus should be applied (auto-detected from party)
+---   @return number Final bonus value
 function RollData.calculate_bonus(roll_name, roll_value, player_job, phantom_roll_bonus, has_job_bonus)
     local roll_data = RollData.get_roll(roll_name)
     if not roll_data then
@@ -397,10 +397,10 @@ function RollData.calculate_bonus(roll_name, roll_value, player_job, phantom_rol
     return base_value
 end
 
---- Check if roll value is lucky
---- @param roll_name string Name of the roll
---- @param roll_value number Roll value (1-11)
---- @return boolean True if lucky
+---   Check if roll value is lucky
+---   @param roll_name string Name of the roll
+---   @param roll_value number Roll value (1-11)
+---   @return boolean True if lucky
 function RollData.is_lucky(roll_name, roll_value)
     local roll_data = RollData.get_roll(roll_name)
     if not roll_data then
@@ -409,10 +409,10 @@ function RollData.is_lucky(roll_name, roll_value)
     return roll_value == roll_data.lucky
 end
 
---- Check if roll value is unlucky
---- @param roll_name string Name of the roll
---- @param roll_value number Roll value (1-11)
---- @return boolean True if unlucky
+---   Check if roll value is unlucky
+---   @param roll_name string Name of the roll
+---   @param roll_value number Roll value (1-11)
+---   @return boolean True if unlucky
 function RollData.is_unlucky(roll_name, roll_value)
     local roll_data = RollData.get_roll(roll_name)
     if not roll_data then
@@ -421,13 +421,13 @@ function RollData.is_unlucky(roll_name, roll_value)
     return roll_value == roll_data.unlucky
 end
 
---- Calculate bust rate for NEXT Double-Up given current roll number
---- Formula: Number of bust faces / 6 * 100
---- Roll 6: 6+6=12 >> 1/6 faces bust = 16.7%
---- Roll 7: 7+5=12, 7+6=13 >> 2/6 faces bust = 33.3%
---- Roll 11: 11+1=12, ..., 11+6=17 >> 6/6 faces bust = 100%
---- @param roll_number number Current roll number (1-11)
---- @return number Bust rate percentage (0-100)
+---   Calculate bust rate for NEXT Double-Up given current roll number
+---   Formula: Number of bust faces / 6 * 100
+---   Roll 6: 6+6=12 >> 1/6 faces bust = 16.7%
+---   Roll 7: 7+5=12, 7+6=13 >> 2/6 faces bust = 33.3%
+---   Roll 11: 11+1=12, ..., 11+6=17 >> 6/6 faces bust = 100%
+---   @param roll_number number Current roll number (1-11)
+---   @return number Bust rate percentage (0-100)
 function RollData.calculate_bust_rate(roll_number)
     if roll_number <= 5 then
         return 0  -- Roll 1-5: impossible to bust (max is 5+6=11)

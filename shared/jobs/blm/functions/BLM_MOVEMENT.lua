@@ -1,22 +1,22 @@
----============================================================================
---- BLM Movement Management Module
----============================================================================
---- Handles movement-based gear management for Black Mage.
---- Uses centralized AutoMove position tracking for performance.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BLM Movement Management Module
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles movement-based gear management for Black Mage.
+---   Uses centralized AutoMove position tracking for performance.
 ---
---- @file jobs/blm/functions/BLM_MOVEMENT.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-15
---- @requires utils/movement/automove.lua
----============================================================================
+---   @file    jobs/blm/functions/BLM_MOVEMENT.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-15
+---   @requires utils/movement/automove.lua
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- MOVEMENT STATUS API
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MOVEMENT STATUS API
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get current movement status (delegates to AutoMove)
---- @return table movement_info
+---   Get current movement status (delegates to AutoMove)
+---   @return table movement_info
 function get_blm_movement_status()
     if not AutoMove then
         return {
@@ -33,9 +33,9 @@ function get_blm_movement_status()
     }
 end
 
---- Handle equipping gear during movement
---- @param playerStatus string Current player status
---- @param eventArgs table Event arguments
+---   Handle equipping gear during movement
+---   @param playerStatus string Current player status
+---   @param eventArgs table Event arguments
 function job_handle_equipping_gear(playerStatus, eventArgs)
     -- CRITICAL: Protect Impact body lock - maintain Twilight Cloak throughout cast
     -- (Same pattern as BRD instrument lock for Marsyas)
@@ -48,16 +48,9 @@ function job_handle_equipping_gear(playerStatus, eventArgs)
     -- This function can be used for additional BLM-specific gear logic
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Export to global scope for GearSwap
 _G.job_handle_equipping_gear = job_handle_equipping_gear
 
--- Export module
-local BLM_MOVEMENT = {}
-BLM_MOVEMENT.job_handle_equipping_gear = job_handle_equipping_gear
-BLM_MOVEMENT.get_blm_movement_status = get_blm_movement_status
-
-return BLM_MOVEMENT

@@ -27,7 +27,7 @@ function TestWHM.run(test)
     add_to_chat(121, " ")
     add_to_chat(121, cyan .. "WHM Job Abilities (9):")
 
-    test(function() M.send('JA_BUFFS', 'activated_full', {job_tag = 'WHM', ability_name = 'Afflatus Misery', description = 'Damage taken dans la  Banish/Cura/Esuna boost'}) end)
+    test(function() M.send('JA_BUFFS', 'activated_full', {job_tag = 'WHM', ability_name = 'Afflatus Misery', description = 'Damage taken boosts Banish/Cura/Esuna potency'}) end)
     test(function() M.send('JA_BUFFS', 'activated_full', {job_tag = 'WHM', ability_name = 'Afflatus Solace', description = 'Cure >> Stoneskin (25% of heal)'}) end)
     test(function() M.send('JA_BUFFS', 'activated_full', {job_tag = 'WHM', ability_name = 'Asylum', description = 'Party debuff/dispel immunity'}) end)
     test(function() M.send('JA_BUFFS', 'activated_full', {job_tag = 'WHM', ability_name = 'Benediction', description = 'Restore party HP, remove status'}) end)

@@ -1,9 +1,9 @@
----============================================================================
---- DNC Precast Module - Precast Action Handling & Cooldown Monitoring
----============================================================================
---- Handles all precast actions for Dancer job with auto-buff systems:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DNC Precast Module - Precast Action Handling & Cooldown Monitoring
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all precast actions for Dancer job with auto-buff systems:
 ---   • Weaponskill precast (Fast Cast, TP bonus optimization)
----   • Auto-Jump integration (DRG subjob - ultra-fast 0.5s timing)
+---   • Auto-Jump integration (DRG subjob - 0.5s timing)
 ---   • Auto-Climactic Flourish (optimized 1s timing before configured WS)
 ---   • Job ability precast (Steps, Sambas, Jigs, Waltzes, Flourishes)
 ---   • Fast cast for subjob spells (NIN/SAM/WAR/etc.)
@@ -13,25 +13,25 @@
 ---   • TP bonus calculation (Moonshade Earring automation)
 ---   • Mote refine_waltz override (allows waltzes on full HP targets)
 ---
---- Processing order (CRITICAL - do not reorder):
+---   Processing order (CRITICAL - do not reorder):
 ---   1. Debuff guard (PrecastGuard) - blocks if silenced/amnesia/stunned
 ---   2. Cooldown check (CooldownChecker) - validates ability/spell ready
 ---   3. Climactic timestamp tracking (instant detection before buff appears)
 ---   4. Auto-Jump trigger (JumpManager) - if DNC/DRG and TP < 1000
 ---   5. Auto-Climactic trigger (ClimaticManager) - if configured WS
----   6. WS validation (WeaponSkillManager) - range check + validation
+---   6. WS validation (WSPrecastHandler) - range check + validation
 ---   7. TP bonus calculation (TPBonusCalculator) - optimize WS gear
 ---
---- @file    DNC_PRECAST.lua
---- @author  Tetsouo
---- @version 3.2 - Ultra-Fast Jump (0.5s) + Optimized Climactic (1s)
---- @date    Created: 2025-10-04 | Updated: 2025-10-10
---- @requires Tetsouo architecture, DNC logic modules, TPBonusCalculator
----============================================================================
+---   @file    DNC_PRECAST.lua
+---   @author  Tetsouo
+---   @version 3.2
+---   @date    Created: 2025-10-04 | Updated: 2025-10-10
+---   @requires Tetsouo architecture, DNC logic modules, TPBonusCalculator
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MessageFormatter = nil
 local CooldownChecker = nil
@@ -60,32 +60,39 @@ local function ensure_modules_loaded()
     WSPrecastHandler = wph
 
     -- DNC logic modules
-    ClimaticManager = require('shared/jobs/dnc/functions/logic/climactic_manager')
-    WSVariantSelector = require('shared/jobs/dnc/functions/logic/ws_variant_selector')
-    JumpManager = require('shared/jobs/dnc/functions/logic/jump_manager')
+    local _, cm = pcall(require, 'shared/jobs/dnc/functions/logic/climactic_manager')
+    ClimaticManager = cm
+    local _, wsv = pcall(require, 'shared/jobs/dnc/functions/logic/ws_variant_selector')
+    WSVariantSelector = wsv
+    local _, jm = pcall(require, 'shared/jobs/dnc/functions/logic/jump_manager')
+    JumpManager = jm
 
     DNCTPConfig = _G.DNCTPConfig or {}
 
     modules_loaded = true
 end
 
----============================================================================
---- MOTE OVERRIDES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MOTE OVERRIDES
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Override Mote's refine_waltz to allow waltzes even when target is full HP
---- This is needed for wake-up utility (removing sleep from party members)
---- Mote calls this function during precast for all waltz abilities
+---   Override Mote's refine_waltz to allow waltzes even when target is full HP
+---   This is needed for wake-up utility (removing sleep from party members)
+---   Mote calls this function during precast for all waltz abilities
 function refine_waltz(spell, action, spellMap, eventArgs)
     -- Do nothing - let our WaltzManager handle everything via //gs c waltz commands
     -- This disables Mote's automatic waltz blocking/refinement when target is full HP
 end
 
----============================================================================
---- PRECAST HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PRECAST HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Called before any action (WS, JA, spell, etc.)
+---   Called before any action (WS, JA, spell, etc.)
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
@@ -150,11 +157,15 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- POST-PRECAST HOOK (Called AFTER set selection, BEFORE equipping)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   POST-PRECAST HOOK (Called AFTER set selection, BEFORE equipping)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply any final gear adjustments before equipping
+---   Apply any final gear adjustments before equipping
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
@@ -172,17 +183,11 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Make job_precast available globally for GearSwap
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
 
--- Also export as module for potential future use
-local DNC_PRECAST = {}
-DNC_PRECAST.job_precast = job_precast
-DNC_PRECAST.job_post_precast = job_post_precast
-
-return DNC_PRECAST

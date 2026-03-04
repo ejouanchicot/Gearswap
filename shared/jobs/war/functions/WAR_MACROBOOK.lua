@@ -1,24 +1,24 @@
----============================================================================
---- WAR Macrobook Module - Macro Book Management (Factory Pattern)
----============================================================================
---- Handles macro book selection and management for Warrior job.
---- Uses centralized MacrobookManager factory for consistent behavior.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   WAR Macrobook Module - Macro Book Management (Factory Pattern)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles macro book selection and management for Warrior job.
+---   Uses centralized MacrobookManager factory for consistent behavior.
 ---
---- **PERFORMANCE OPTIMIZATION:**
----   • Lazy-loaded: Module created on first function call (saves ~45ms at startup)
+---   **PERFORMANCE OPTIMIZATION:**
+---   • Lazy-loaded: Module created on first function call
 ---
---- Configuration:
+---   Configuration:
 ---   • Macro definitions: config/war/WAR_MACROBOOK.lua
 ---   • Default book: 22, page: 1
 ---   • Default subjob: SAM
 ---   • Automatic subjob-based selection
 ---
---- @file    jobs/war/functions/WAR_MACROBOOK.lua
---- @author  Tetsouo
---- @version 2.1 - Lazy Loading for performance
---- @date    Created: 2025-09-29 | Updated: 2025-11-15
---- @requires utils/macrobook/macrobook_manager
----============================================================================
+---   @file    jobs/war/functions/WAR_MACROBOOK.lua
+---   @author  Tetsouo
+---   @version 2.1 - Lazy Loading for performance
+---   @date    Created: 2025-09-29 | Updated: 2025-11-15
+---   @requires utils/macrobook/macrobook_manager
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Lazy loading: Module created on first use
 local MacrobookManager = nil

@@ -1,18 +1,18 @@
----============================================================================
---- BST Functions Façade - Module Loader
----============================================================================
---- Loads all BST-specific function modules in correct order.
---- CRITICAL: All 11 hook modules must be loaded via include() for _G availability.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BST Functions Facade - Module Loader
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Loads all BST-specific function modules in correct order.
+---   CRITICAL: All 11 hook modules must be loaded via include() for _G availability.
 ---
---- @file jobs/bst/functions/bst_functions.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-17
----============================================================================
+---   @file    jobs/bst/functions/bst_functions.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-17
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- SECTION 1: MESSAGE SYSTEM
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SECTION 1: MESSAGE SYSTEM
+---  ═══════════════════════════════════════════════════════════════════════════
 -- Message system (must load first for buff status display)
 -- ═══════════════════════════════════════════════════════════════════
 -- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
@@ -24,9 +24,9 @@ local TIMER = Profiler.create_timer('BST')
 include('../shared/utils/messages/formatters/magic/message_buffs.lua')
 TIMER('message_buffs')
 
----============================================================================
---- SECTION 2: COMBAT ACTION HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SECTION 2: COMBAT ACTION HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 include('../shared/jobs/bst/functions/BST_PRECAST.lua')
 TIMER('BST_PRECAST')
@@ -41,27 +41,27 @@ TIMER('BST_PET_PRECAST')
 include('../shared/jobs/bst/functions/BST_PET_MIDCAST.lua')
 TIMER('BST_PET_MIDCAST')
 
----============================================================================
---- SECTION 3: GEAR SELECTION HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SECTION 3: GEAR SELECTION HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 include('../shared/jobs/bst/functions/BST_IDLE.lua')
 TIMER('BST_IDLE')
 include('../shared/jobs/bst/functions/BST_ENGAGED.lua')
 TIMER('BST_ENGAGED')
 
----============================================================================
---- SECTION 4: EVENT MONITORING HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SECTION 4: EVENT MONITORING HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 include('../shared/jobs/bst/functions/BST_STATUS.lua')
 TIMER('BST_STATUS')
 include('../shared/jobs/bst/functions/BST_BUFFS.lua')
 TIMER('BST_BUFFS')
 
----============================================================================
---- SECTION 5: UTILITY HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SECTION 5: UTILITY HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- LOCKSTYLE and MACROBOOK use lazy loading - loaded on first call, not during startup
 include('../shared/jobs/bst/functions/BST_LOCKSTYLE.lua')
@@ -71,10 +71,10 @@ TIMER('BST_COMMANDS')
 include('../shared/jobs/bst/functions/BST_MOVEMENT.lua')
 TIMER('BST_MOVEMENT')
 
----============================================================================
---- LOGIC MODULES REFERENCE
----============================================================================
---- The following business logic modules are loaded via require() in hooks:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   LOGIC MODULES REFERENCE
+---  ═══════════════════════════════════════════════════════════════════════════
+---   The following business logic modules are loaded via require() in hooks:
 ---
 ---   logic/ecosystem_manager.lua
 ---     • Dynamic state creation (species/ammoSet per ecosystem)
@@ -95,18 +95,18 @@ TIMER('BST_MOVEMENT')
 ---     • Shared engaged set construction (master + pet bifurcation)
 ---     • Shared idle set construction (PetPDT vs MasterPDT)
 ---     • Pet mode detection and gear swapping
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- SECTION 6: DUAL-BOXING SYSTEM
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SECTION 6: DUAL-BOXING SYSTEM
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Load dual-boxing manager (uses deferred init + lazy message loading)
 local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 
----============================================================================
---- INITIALIZATION COMPLETE
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   INITIALIZATION COMPLETE
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- All module functions are now available in global scope
 print('[BST] All functions loaded (13 hooks + 4 logic modules)')

@@ -1,7 +1,7 @@
----============================================================================
---- BST Commands Module - Command Handling
----============================================================================
---- Handles job-specific commands for Beastmaster:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BST Commands Module - Command Handling
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles job-specific commands for Beastmaster:
 ---   • ecosystem - Cycle through 7 ecosystems
 ---   • species - Cycle through species for current ecosystem
 ---   • broth - Display broth counts in inventory
@@ -10,19 +10,19 @@
 ---   • rdylist - List all available Ready Moves with index numbers
 ---   • rdymove [1-6] - Execute Ready Move by index
 ---
---- Uses centralized MessageFormatter for all messages (professional multi-color).
+---   Uses centralized MessageFormatter for all messages (professional multi-color).
 ---
---- @file jobs/bst/functions/BST_COMMANDS.lua
---- @author Tetsouo
---- @version 2.0
---- @date Created: 2025-10-17
---- @date Updated: 2025-10-18 - Standardized all messages with MessageFormatter
----============================================================================
+---   @file    jobs/bst/functions/BST_COMMANDS.lua
+---   @author  Tetsouo
+---   @version 2.0
+---   @date    Created: 2025-10-17
+---   @date    Updated: 2025-10-18 - Standardized all messages with MessageFormatter
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES (LAZY LOADING for performance)
----============================================================================
--- Command handlers loaded on first command (saves ~100ms at startup)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
+-- Command handlers loaded on first command
 local MessageFormatter = nil
 local CommonCommands = nil
 local WatchdogCommands = nil
@@ -87,12 +87,12 @@ local function ensure_commands_loaded()
     end
 end
 
----============================================================================
---- BROTH COUNT DISPLAY
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BROTH COUNT DISPLAY
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Display broth counts in inventory
---- @return void
+---   Display broth counts in inventory
+---   @return void
 local function display_broth_count()
     -- Load resources for item lookup
     local res = require('resources')
@@ -129,14 +129,14 @@ local function display_broth_count()
     end
 end
 
----============================================================================
---- COMMAND HOOK
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COMMAND HOOK
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Handle job-specific commands
---- @param cmdParams table Command parameters (array of strings)
---- @param eventArgs table Event arguments (modified if command handled)
---- @return void
+---   Handle job-specific commands
+---   @param cmdParams table Command parameters (array of strings)
+---   @param eventArgs table Event arguments (modified if command handled)
+---   @return void
 function job_self_command(cmdParams, eventArgs)
     if not cmdParams or #cmdParams == 0 then
         return
@@ -147,9 +147,9 @@ function job_self_command(cmdParams, eventArgs)
 
     local command = cmdParams[1]:lower()
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- DUAL-BOXING: Receive alt job update
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     if command == 'altjobupdate' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
@@ -161,7 +161,7 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     -- DUAL-BOXING: Handle job request from MAIN
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'requestjob' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         DualBoxManager.handle_job_request()
@@ -169,9 +169,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- UI COMMANDS (ui save, ui hide, etc.)
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     if UICommands and UICommands.is_ui_command(command) then
         UICommands.handle_ui_command(cmdParams)
@@ -179,9 +179,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DEBUG COMMANDS
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'debugmidcast' then
         -- Toggle MidcastManager debug mode
         local MidcastManager = require('shared/utils/midcast/midcast_manager')
@@ -206,9 +206,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- CUSTOM CYCLE STATE (UI-aware cycle)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Intercepts cycle commands to check UI visibility
     -- If UI visible: custom cycle + UI update (no message)
     -- If UI invisible: delegate to Mote-Include (shows message)
@@ -220,9 +220,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- WATCHDOG COMMANDS
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     if WatchdogCommands and WatchdogCommands.is_watchdog_command(command) then
         if WatchdogCommands.handle_command(cmdParams, eventArgs) then
@@ -231,9 +231,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- COMMON COMMANDS (reload, checksets, etc.)
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     if CommonCommands and CommonCommands.is_common_command(command) then
         if CommonCommands.handle_command(command, 'BST') then
@@ -242,9 +242,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- ECOSYSTEM COMMANDS
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     if command == 'ecosystem' then
         if EcosystemManager then
@@ -272,9 +272,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- PET COMMANDS
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     if command == 'pet' then
         if #cmdParams < 2 then
@@ -310,9 +310,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- READY MOVE COMMANDS (RdyMove 1-6, RdyList)
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     if command == 'rdylist' then
         if not PetManager then
@@ -470,10 +470,10 @@ function job_self_command(cmdParams, eventArgs)
     end
 end
 
---- Called when a state field changes value
---- @param stateField string The state field that changed
---- @param newValue string The new value
---- @param oldValue string The old value
+---   Called when a state field changes value
+---   @param stateField string The state field that changed
+---   @param newValue string The new value
+---   @param oldValue string The old value
 function job_state_change(stateField, newValue, oldValue)
     -- Skip UI update for Moving state (handled by AutoMove with flag)
     if stateField == 'Moving' then
@@ -486,16 +486,11 @@ function job_state_change(stateField, newValue, oldValue)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export globally for GearSwap
 _G.job_self_command = job_self_command
 _G.job_state_change = job_state_change
 
--- Export as module
-return {
-    job_self_command = job_self_command,
-    job_state_change = job_state_change
-}

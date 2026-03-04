@@ -1,18 +1,18 @@
----============================================================================
---- BLM Aftercast Module - Post-Action Cleanup
----============================================================================
---- Handles aftercast logic for Black Mage job.
---- Returns to idle/engaged gear after spell completes.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BLM Aftercast Module - Post-Action Cleanup
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles aftercast logic for Black Mage job.
+---   Returns to idle/engaged gear after spell completes.
 ---
---- @file BLM_AFTERCAST.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-15
----============================================================================
+---   @file    BLM_AFTERCAST.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-15
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- AFTERCAST HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   AFTERCAST HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 function job_aftercast(spell, action, spellMap, eventArgs)
     -- Watchdog: Track aftercast
@@ -37,15 +37,10 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export global for GearSwap (Mote-Include)
 _G.job_aftercast = job_aftercast
 
--- Export module
-local BLM_AFTERCAST = {}
-BLM_AFTERCAST.job_aftercast = job_aftercast
-
-return BLM_AFTERCAST

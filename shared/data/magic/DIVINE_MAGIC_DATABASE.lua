@@ -1,5 +1,5 @@
 ---============================================================================
---- Divine Magic Database - Façade (Public API)
+--- Divine Magic Database - Facade (Public API)
 ---============================================================================
 --- Provides unified access to all Divine Magic spells.
 --- Merges spells from 3 modules into a single interface.

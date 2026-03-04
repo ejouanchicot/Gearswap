@@ -1,24 +1,24 @@
----============================================================================
---- BRD Lockstyle Module - Lockstyle Management (Factory Pattern)
----============================================================================
---- Handles lockstyle selection and management for Bard job.
---- Uses centralized LockstyleManager factory for consistent behavior.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BRD Lockstyle Module - Lockstyle Management (Factory Pattern)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles lockstyle selection and management for Bard job.
+---   Uses centralized LockstyleManager factory for consistent behavior.
 ---
---- **PERFORMANCE OPTIMIZATION:**
----   • Lazy-loaded: Module created on first function call (saves ~30ms at startup)
+---   **PERFORMANCE OPTIMIZATION:**
+---   • Lazy-loaded: Module created on first function call
 ---
---- Configuration:
+---   Configuration:
 ---   • Lockstyle definitions: config/brd/BRD_LOCKSTYLE.lua
 ---   • Default lockstyle: #1
 ---   • Default subjob: WHM
 ---   • Automatic subjob-based selection
 ---
---- @file    jobs/brd/functions/BRD_LOCKSTYLE.lua
---- @author  Tetsouo
---- @version 2.1 - Lazy Loading for performance
---- @date    Created: 2025-10-13 | Updated: 2025-11-15
---- @requires utils/lockstyle/lockstyle_manager
----============================================================================
+---   @file    jobs/brd/functions/BRD_LOCKSTYLE.lua
+---   @author  Tetsouo
+---   @version 2.1 - Lazy Loading for performance
+---   @date    Created: 2025-10-13 | Updated: 2025-11-15
+---   @requires utils/lockstyle/lockstyle_manager
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Lazy loading: Module created on first use
 local LockstyleManager = nil

@@ -1,29 +1,34 @@
----============================================================================
---- BST Pet Precast Module - Pet Ability Precast Handling
----============================================================================
---- Handles precast gear for pet abilities (Call Beast, Reward, Ready Moves, etc.)
---- This is a SPECIAL hook called ONLY for pet-related abilities.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BST Pet Precast Module - Pet Ability Precast Handling
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles precast gear for pet abilities (Call Beast, Reward, Ready Moves, etc.)
+---   This is a SPECIAL hook called ONLY for pet-related abilities.
 ---
---- @file jobs/bst/functions/BST_PET_PRECAST.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-18
----============================================================================
+---   @file    jobs/bst/functions/BST_PET_PRECAST.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-18
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- PET PRECAST HOOK
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MessageFormatter = nil
 
---- Called before pet abilities (Ready Moves, Reward, Spur, etc.)
---- This is the LAST precast hook (executes after Mote-Include)
---- @param spell table Spell/ability data
---- @return void
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PET PRECAST HOOK
+---  ═══════════════════════════════════════════════════════════════════════════
+
+---   Called before pet abilities (Ready Moves, Reward, Spur, etc.)
+---   This is the LAST precast hook (executes after Mote-Include)
+---   @param spell table Spell/ability data
+---   @return void
 function job_pet_precast(spell)
     if _G.BST_DEBUG_PRECAST then
         if not MessageFormatter then
-            MessageFormatter = require('shared/utils/messages/message_formatter')
+            local _, mod = pcall(require, 'shared/utils/messages/message_formatter')
+            MessageFormatter = mod
         end
         MessageFormatter.show_debug('PET_PRECAST', '========================================')
         MessageFormatter.show_debug('PET_PRECAST', 'Called for: ' .. (spell.name or 'unknown'))
@@ -33,9 +38,9 @@ function job_pet_precast(spell)
     local set = nil
     local set_name = nil
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- READY MOVES - All use same Sic set (Gleti's Breeches)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if spell.bst_is_ready_move then
         -- Flag set by job_precast = this is a Ready Move
         set = sets.precast.JA['Sic']
@@ -44,9 +49,9 @@ function job_pet_precast(spell)
             MessageFormatter.show_debug('PET_PRECAST', 'Ready Move detected - equipping Sic set')
         end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- OTHER PET ABILITIES (non-Ready Moves)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     elseif spell.name == 'Reward' then
         set = sets.precast.JA['Reward']
         set_name = "Reward"
@@ -83,14 +88,10 @@ function job_pet_precast(spell)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export globally for GearSwap
 _G.job_pet_precast = job_pet_precast
 
--- Export as module
-return {
-    job_pet_precast = job_pet_precast
-}

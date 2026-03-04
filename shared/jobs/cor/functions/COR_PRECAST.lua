@@ -1,7 +1,7 @@
----============================================================================
---- COR Precast Module - Precast Action Handling & Cooldown Monitoring
----============================================================================
---- Handles all precast actions for Corsair job:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COR Precast Module - Precast Action Handling & Cooldown Monitoring
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all precast actions for Corsair job:
 ---   • Weaponskill precast (Fast Cast, TP bonus optimization)
 ---   • Phantom Roll precast (gear selection + roll tracking for Double-Up)
 ---   • Quick Draw precast (element-based shots)
@@ -11,25 +11,24 @@
 ---   • Security layers (debuff guard, cooldown check, range validation)
 ---   • Luzaf's Ring management (16y vs 8y roll range)
 ---
---- Processing Order (CRITICAL):
+---   Processing Order (CRITICAL):
 ---   1. Debuff guard (PrecastGuard) - blocks if silenced/amnesia/stunned
 ---   2. Cooldown check (CooldownChecker) - validates ability/spell ready
----   3. WS validation (WeaponSkillManager) - TP check + range check
+---   3. WS validation (WSPrecastHandler) - TP check + range check
 ---   4. COR-specific logic (Rolls, Quick Draw, Crooked Cards)
 ---   5. TP bonus calculation (TPBonusCalculator) - ranged WS optimization
 ---
---- @file    COR_PRECAST.lua
---- @author  Tetsouo
---- @version 2.0
---- @date    Created: 2025-10-07
---- @requires Tetsouo architecture, MessageFormatter, CooldownChecker
----============================================================================
+---   @file    COR_PRECAST.lua
+---   @author  Tetsouo
+---   @version 2.0
+---   @date    Created: 2025-10-07
+---   @requires Tetsouo architecture, MessageFormatter, CooldownChecker
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
-local MessageFormatter = nil
 local CooldownChecker = nil
 local PrecastGuard = nil
 local WSPrecastHandler = nil
@@ -39,9 +38,6 @@ local modules_loaded = false
 
 local function ensure_modules_loaded()
     if modules_loaded then return end
-
-    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
-    MessageFormatter = mf
 
     local _, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
     CooldownChecker = cc
@@ -60,16 +56,16 @@ end
 -- Note: _G.cor_last_roll is initialized in roll_tracker.lua
 -- Used for Double-Up gear matching via .name field
 
----============================================================================
---- PRECAST HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PRECAST HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Called before any action (WS, JA, spell, etc.)
---- @param spell table Spell/ability data
---- @param action string Action type
---- @param spellMap string Spell mapping
---- @param eventArgs table Event arguments
---- @return void
+---   Called before any action (WS, JA, spell, etc.)
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
+---   @return void
 function job_precast(spell, action, spellMap, eventArgs)
     -- Lazy load all dependencies on first precast
     ensure_modules_loaded()
@@ -96,19 +92,6 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 
     -- COR-specific precast gear logic
-
-    -- ==========================================================================
-    -- DISABLED: COR Job Abilities Messages
-    -- Messages now handled by universal ability_message_handler (init_ability_messages.lua)
-    -- This prevents duplicate messages from job-specific + universal system
-    --
-    -- LEGACY CODE (commented out to prevent duplicates):
-    -- if spell.type == 'JobAbility' then
-    --     if JA_DB[spell.english] then
-    --         MessageFormatter.show_ja_activated(spell.english, JA_DB[spell.english].description)
-    --     end
-    -- end
-    -- ==========================================================================
 
     -- SPECIAL HANDLING: Track Crooked Cards timestamp (keep this)
     if spell.type == 'JobAbility' and spell.english == 'Crooked Cards' then
@@ -150,20 +133,20 @@ function job_precast(spell, action, spellMap, eventArgs)
         classes.CustomClass = 'RA'
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, CORTPConfig) then
         return
     end
 end
 
---- Called after precast gear is equipped
---- @param spell table Spell/ability data
---- @param action string Action type
---- @param spellMap string Spell mapping
---- @param eventArgs table Event arguments
---- @return void
+---   Called after precast gear is equipped
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
+---   @return void
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
     if WSPrecastHandler then
@@ -184,17 +167,11 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export global for GearSwap (Mote-Include)
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
 
--- Export module for future use
-local COR_PRECAST = {}
-COR_PRECAST.job_precast = job_precast
-COR_PRECAST.job_post_precast = job_post_precast
-
-return COR_PRECAST

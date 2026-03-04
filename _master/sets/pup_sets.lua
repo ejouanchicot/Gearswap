@@ -1,8 +1,8 @@
 ---============================================================================
 --- PUP Equipment Sets - SKELETON
 ---============================================================================
---- Fichier squelette pour PUP (job non joué actuellement)
---- Permet le chargement sans erreur de Tetsouo_PUP.lua
+--- Skeleton file for PUP (job not currently played)
+--- Allows Tetsouo_PUP.lua to load without errors
 ---============================================================================
 
 function define_pup_sets()

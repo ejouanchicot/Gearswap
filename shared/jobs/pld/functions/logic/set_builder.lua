@@ -1,8 +1,8 @@
----============================================================================
---- Set Builder - Shared Set Construction Logic (PLD)
----============================================================================
---- Provides centralized set building for both engaged and idle states.
---- Handles complex PLD-specific gear logic:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Set Builder - Shared Set Construction Logic (PLD)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Provides centralized set building for both engaged and idle states.
+---   Handles complex PLD-specific gear logic:
 ---   • Main weapon selection (Burtgang, Naegling, Shining, Malevo)
 ---   • Shield selection (Duban, Aegis, Blurred Shield +1)
 ---   • Shining exception (Alber Strap grip requirement requirement)
@@ -11,21 +11,21 @@
 ---   • Movement speed gear
 ---   • Town detection and town gear
 ---
---- Features:
+---   Features:
 ---   • Shared logic for both idle and engaged
 ---   • Safe pcall for set_combine operations
 ---   • Modular functions for easy maintenance
 ---
---- @file    jobs/pld/functions/logic/set_builder.lua
---- @author  Tetsouo
---- @version 1.0.0
---- @date    Created: 2025-10-06
----============================================================================
+---   @file    jobs/pld/functions/logic/set_builder.lua
+---   @author  Tetsouo
+---   @version 1.0.0
+---   @date    Created: 2025-10-06
+---  ═══════════════════════════════════════════════════════════════════════════
 local SetBuilder = {}
 
----============================================================================
---- DEPENDENCIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Load base set builder (universal functions)
 local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
@@ -33,14 +33,14 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 -- Load message formatter for error display
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
----============================================================================
---- WEAPON/SHIELD APPLICATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   WEAPON/SHIELD APPLICATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply main weapon to set
---- Uses weapon sets defined in pld_sets.lua (sets.Burtgang, sets.Naegling, etc.)
---- @param result table Current equipment set
---- @return table Set with main weapon applied
+---   Apply main weapon to set
+---   Uses weapon sets defined in pld_sets.lua (sets.Burtgang, sets.Naegling, etc.)
+---   @param result table Current equipment set
+---   @return table Set with main weapon applied
 function SetBuilder.apply_weapon(result)
     if not state.MainWeapon or not state.MainWeapon.current then
         return result
@@ -55,12 +55,12 @@ function SetBuilder.apply_weapon(result)
     return result
 end
 
---- Apply sub weapon (shield) to set
---- Uses shield sets defined in pld_sets.lua (sets.Duban, sets.Aegis, etc.)
---- Handles Shining exception (Alber Strap).
---- @param result table Current equipment set
---- @param in_town boolean Whether player is in town
---- @return table Set with shield applied
+---   Apply sub weapon (shield) to set
+---   Uses shield sets defined in pld_sets.lua (sets.Duban, sets.Aegis, etc.)
+---   Handles Shining exception (Alber Strap).
+---   @param result table Current equipment set
+---   @param in_town boolean Whether player is in town
+---   @return table Set with shield applied
 function SetBuilder.apply_shield(result, in_town)
     -- Exception 1: Shining always uses Alber Strap (Polearm needs grip)
     if state.MainWeapon and state.MainWeapon.current == 'Shining' then
@@ -86,35 +86,35 @@ function SetBuilder.apply_shield(result, in_town)
     return result
 end
 
----============================================================================
---- MOVEMENT SPEED (INHERITED FROM BASE)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MOVEMENT SPEED (INHERITED FROM BASE)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Inherit universal movement function from BaseSetBuilder
 SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 
 
----============================================================================
---- TOWN DETECTION (INHERITED FROM BASE)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   TOWN DETECTION (INHERITED FROM BASE)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Inherit universal town detection function from BaseSetBuilder
 SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town
 
----============================================================================
---- ENGAGED BASE SELECTION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ENGAGED BASE SELECTION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Select engaged base set with BurtgangKC detection
---- BurtgangKC (Kraken Club) detection takes priority for specialized multi-attack set.
+---   Select engaged base set with BurtgangKC detection
+---   BurtgangKC (Kraken Club) detection takes priority for specialized multi-attack set.
 ---
---- Priority order:
+---   Priority order:
 ---   1. BurtgangKC weapon set      >> sets.engaged.BurtgangKC
 ---   2. HybridMode (PDT/MDT)       >> sets.engaged[HybridMode]
 ---   3. Fallback                    >> base_set
 ---
---- @param base_set table Base engaged set from pld_sets.lua
---- @return table Selected engaged set (BurtgangKC if condition met, otherwise hybrid/base)
+---   @param base_set table Base engaged set from pld_sets.lua
+---   @return table Selected engaged set (BurtgangKC if condition met, otherwise hybrid/base)
 function SetBuilder.select_engaged_base(base_set)
     -- PRIORITY 1: Check for BurtgangKC weapon set (Kraken Club in sub)
     if state.MainWeapon and state.MainWeapon.current == 'BurtgangKC' and sets.engaged.BurtgangKC then
@@ -150,13 +150,13 @@ function SetBuilder.select_engaged_base(base_set)
     return base_set
 end
 
----============================================================================
---- ENGAGED SET BUILDER
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ENGAGED SET BUILDER
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build complete engaged set with all PLD logic
---- @param base_set table Base engaged set
---- @return table Complete engaged set
+---   Build complete engaged set with all PLD logic
+---   @param base_set table Base engaged set
+---   @return table Complete engaged set
 function SetBuilder.build_engaged_set(base_set)
     if not base_set then
         return {}
@@ -184,13 +184,13 @@ function SetBuilder.build_engaged_set(base_set)
     return result
 end
 
----============================================================================
---- IDLE SET BUILDER
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   IDLE SET BUILDER
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build complete idle set with all PLD logic
---- @param base_set table Base idle set
---- @return table Complete idle set
+---   Build complete idle set with all PLD logic
+---   @param base_set table Base idle set
+---   @return table Complete idle set
 function SetBuilder.build_idle_set(base_set)
     if not base_set then
         return {}
@@ -252,8 +252,8 @@ function SetBuilder.build_idle_set(base_set)
     return result
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return SetBuilder

@@ -1,23 +1,23 @@
----============================================================================
---- GEO Precast Module - Precast Action Handling & Cooldown Monitoring
----============================================================================
---- Handles precast gear for Geomancer job:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   GEO Precast Module - Precast Action Handling & Cooldown Monitoring
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles precast gear for Geomancer job:
 ---   • Fast Cast for all spells
 ---   • Job Abilities (Radial Arcana, Ecliptic Attrition, Life Cycle)
 ---   • Geomancy spells precast (Indi/Geo)
 ---   • Entrust ability logic
 ---   • Security layers (debuff guard, cooldown check)
 ---
---- @file    GEO_PRECAST.lua
---- @author  Tetsouo
---- @version 2.0
---- @date    Created: 2025-10-09
---- @requires Tetsouo architecture, MessageFormatter, CooldownChecker
----============================================================================
+---   @file    GEO_PRECAST.lua
+---   @author  Tetsouo
+---   @version 2.0
+---   @date    Created: 2025-10-09
+---   @requires Tetsouo architecture, MessageFormatter, CooldownChecker
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local CooldownChecker = nil
 local PrecastGuard = nil
@@ -43,10 +43,15 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
----============================================================================
---- PRECAST HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PRECAST HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
+---   Handle precast actions
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
@@ -79,6 +84,11 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 end
 
+---   Apply final gear adjustments before equipping
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
     if WSPrecastHandler then
@@ -86,17 +96,11 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export global for GearSwap (Mote-Include)
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
 
--- Export module
-local GEO_PRECAST = {}
-GEO_PRECAST.job_precast = job_precast
-GEO_PRECAST.job_post_precast = job_post_precast
-
-return GEO_PRECAST

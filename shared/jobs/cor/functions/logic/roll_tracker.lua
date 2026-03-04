@@ -1,24 +1,24 @@
----============================================================================
---- COR Roll Tracker - Smart Roll Tracking and Display
----============================================================================
---- Tracks Phantom Rolls cast by the player and provides intelligent feedback:
---- - Detects rolls via action packets (category 6)
---- - Calculates exact bonuses including gear/job bonuses
---- - Automatic party member job detection via packet parsing (0xDD/0xDF)
---- - Displays Lucky/Unlucky status with formatted messages
---- - Tracks Natural 11 benefits (instant recast + 30s recast + bust immunity)
---- - Monitors Double-Up windows (45 seconds)
---- - Calculates bust rates with color-coded warnings
---- - Non-cumulative Phantom Roll +X gear (only highest bonus applies)
---- - Job bonus detection: COR main/sub OR any party member OR Tricorne proc
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COR Roll Tracker - Smart Roll Tracking and Display
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Tracks Phantom Rolls cast by the player and provides intelligent feedback:
+---   - Detects rolls via action packets (category 6)
+---   - Calculates exact bonuses including gear/job bonuses
+---   - Automatic party member job detection via packet parsing (0xDD/0xDF)
+---   - Displays Lucky/Unlucky status with formatted messages
+---   - Tracks Natural 11 benefits (instant recast + 30s recast + bust immunity)
+---   - Monitors Double-Up windows (45 seconds)
+---   - Calculates bust rates with color-coded warnings
+---   - Non-cumulative Phantom Roll +X gear (only highest bonus applies)
+---   - Job bonus detection: COR main/sub OR any party member OR Tricorne proc
 ---
---- @file jobs/cor/functions/logic/roll_tracker.lua
---- @author Tetsouo
---- @version 1.2
---- @date Created: 2025-10-08
---- @date Updated: 2025-10-09 - Production release with automatic party job detection
---- @requires roll_data, MessageFormatter
----============================================================================
+---   @file    jobs/cor/functions/logic/roll_tracker.lua
+---   @author  Tetsouo
+---   @version 1.2
+---   @date    Created: 2025-10-08
+---   @date    Updated: 2025-10-09 - Added automatic party job detection
+---   @requires roll_data, MessageFormatter
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local RollTracker = {}
 
@@ -26,9 +26,9 @@ local RollTracker = {}
 local RollData = require('shared/jobs/cor/functions/logic/roll_data')
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
----============================================================================
---- STATE TRACKING
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   STATE TRACKING
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Active rolls (up to 2 max - FFXI hard limit)
 if not _G.cor_active_rolls then
@@ -61,14 +61,14 @@ if not _G.cor_last_roll_display then
     }
 end
 
----============================================================================
---- ROLL DETECTION (Packet Parsing)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ROLL DETECTION (Packet Parsing)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Detect roll from action packet
---- Action category 6 = Job Ability used
---- @param act table Action packet data
---- @return string|nil roll_name, number|nil roll_value
+---   Detect roll from action packet
+---   Action category 6 = Job Ability used
+---   @param act table Action packet data
+---   @return string|nil roll_name, number|nil roll_value
 function RollTracker.detect_roll(act)
     if not act or act.category ~= 6 then
         return nil, nil
@@ -90,10 +90,10 @@ function RollTracker.detect_roll(act)
     return nil, nil
 end
 
---- Detect roll via buff application (more reliable for GearSwap)
---- Called from job_buff_change when roll buff is gained
---- @param buff_name string Name of the buff (e.g., "Fighter's Roll")
---- @return boolean True if roll was tracked
+---   Detect roll via buff application (more reliable for GearSwap)
+---   Called from job_buff_change when roll buff is gained
+---   @param buff_name string Name of the buff (e.g., "Fighter's Roll")
+---   @return boolean True if roll was tracked
 function RollTracker.on_roll_buff_gained(buff_name)
     -- Check if buff is a Phantom Roll
     if not buff_name:endswith(' Roll') then
@@ -115,14 +115,14 @@ function RollTracker.on_roll_buff_gained(buff_name)
     return true
 end
 
---- Called when a roll is CAST (from precast/midcast/aftercast)
---- This is where we'll actually track the roll value
---- @param roll_name string Name of the roll
---- @param roll_value number Value rolled (1-12)
+---   Called when a roll is CAST (from precast/midcast/aftercast)
+---   This is where we'll actually track the roll value
+---   @param roll_name string Name of the roll
+---   @param roll_value number Value rolled (1-12)
 function RollTracker.on_roll_cast(roll_name, roll_value)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DUPLICATE PREVENTION (Windower action event fires multiple times)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Check if this exact roll+value was just displayed (within 500ms)
     local current_time = os.clock()
     if _G.cor_last_roll_display.name == roll_name and
@@ -267,10 +267,10 @@ function RollTracker.on_roll_cast(roll_name, roll_value)
     RollTracker.display_roll_result(roll_name, roll_value, final_bonus, effect_type, is_lucky, is_unlucky, is_natural_eleven, bust_rate, job_bonus_info, is_crooked, missed_names)
 end
 
---- Track active roll in state
---- @param roll_name string Name of the roll
---- @param roll_value number Value of the roll
---- @param has_crooked boolean If this roll has Crooked Cards attached
+---   Track active roll in state
+---   @param roll_name string Name of the roll
+---   @param roll_value number Value of the roll
+---   @param has_crooked boolean If this roll has Crooked Cards attached
 function RollTracker.track_active_roll(roll_name, roll_value, has_crooked)
     -- Find existing roll or add new
     local found = false
@@ -302,12 +302,12 @@ function RollTracker.track_active_roll(roll_name, roll_value, has_crooked)
     end
 end
 
----============================================================================
---- BUST HANDLING
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BUST HANDLING
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Handle bust (roll value 12)
---- @param roll_name string Name of the roll that busted
+---   Handle bust (roll value 12)
+---   @param roll_name string Name of the roll that busted
 function RollTracker.handle_bust(roll_name)
     -- Get roll data
     local roll_data = RollData.get_roll(roll_name)
@@ -330,13 +330,13 @@ function RollTracker.handle_bust(roll_name)
     MessageFormatter.show_roll_bust(roll_name, roll_data.bust_effect, roll_data.effect_type)
 end
 
----============================================================================
---- BONUS CALCULATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BONUS CALCULATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Validate and clean party job cache (auto-refresh on zone/party changes)
---- Detects zone changes and party composition changes to clear stale data
---- @return void
+---   Validate and clean party job cache (auto-refresh on zone/party changes)
+---   Detects zone changes and party composition changes to clear stale data
+---   @return void
 function RollTracker.validate_party_cache()
     if not player or not _G.cor_party_state then
         return
@@ -400,10 +400,10 @@ function RollTracker.validate_party_cache()
     end
 end
 
---- Check if job is present in party (COR or party members)
---- Uses packet-parsed party job data from _G.cor_party_jobs AND windower party data as fallback
---- @param job_code string Job code (e.g., "WAR", "RNG", "SAM")
---- @return boolean True if job found in party
+---   Check if job is present in party (COR or party members)
+---   Uses packet-parsed party job data from _G.cor_party_jobs AND windower party data as fallback
+---   @param job_code string Job code (e.g., "WAR", "RNG", "SAM")
+---   @return boolean True if job found in party
 function RollTracker.is_job_in_party_zone(job_code)
     -- CRITICAL: Protect ALL player accesses
     if not job_code or not player or not player.main_job then
@@ -458,8 +458,8 @@ function RollTracker.is_job_in_party_zone(job_code)
     return false
 end
 
---- Check if equipped gear can proc job bonus (Comm/Lanun Tricorne)
---- @return boolean True if wearing Comm/Lanun Tricorne
+---   Check if equipped gear can proc job bonus (Comm/Lanun Tricorne)
+---   @return boolean True if wearing Comm/Lanun Tricorne
 function RollTracker.has_job_bonus_proc_gear()
     if not player or not player.equipment then
         return false
@@ -483,10 +483,10 @@ function RollTracker.has_job_bonus_proc_gear()
     return false
 end
 
---- Get highest +Phantom Roll bonus from equipped gear
---- NOTE: Phantom Roll potency is NOT cumulative - only highest value counts
---- (Unlike Phantom Roll Duration which IS cumulative)
---- @return number Highest Phantom Roll bonus
+---   Get highest +Phantom Roll bonus from equipped gear
+---   NOTE: Phantom Roll potency is NOT cumulative - only highest value counts
+---   (Unlike Phantom Roll Duration which IS cumulative)
+---   @return number Highest Phantom Roll bonus
 function RollTracker.get_phantom_roll_bonus()
     local max_bonus = 0
 
@@ -536,15 +536,15 @@ function RollTracker.get_phantom_roll_bonus()
     return max_bonus
 end
 
----============================================================================
---- PARTY TRACKING
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PARTY TRACKING
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Count party members affected by a specific roll buff
---- @param roll_name string Name of the roll buff (e.g., "Fighter's Roll")
---- @return number affected_count Number of members with the buff
---- @return number total_count Total party members
---- @return table missed_names Array of player names who missed the roll
+---   Count party members affected by a specific roll buff
+---   @param roll_name string Name of the roll buff (e.g., "Fighter's Roll")
+---   @return number affected_count Number of members with the buff
+---   @return number total_count Total party members
+---   @return table missed_names Array of player names who missed the roll
 function RollTracker.count_party_members_with_buff(roll_name)
     local party = windower.ffxi.get_party()
     if not party then
@@ -598,22 +598,22 @@ function RollTracker.count_party_members_with_buff(roll_name)
     return affected_count, total_count, missed_names
 end
 
----============================================================================
---- DISPLAY FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DISPLAY FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Display roll result with all details
---- @param roll_name string Name of the roll
---- @param roll_value number Value rolled
---- @param final_bonus number Final bonus value
---- @param effect_type string Type of effect
---- @param is_lucky boolean If lucky number
---- @param is_unlucky boolean If unlucky number
---- @param is_natural_eleven boolean If natural 11
---- @param bust_rate number Bust rate percentage
---- @param job_bonus_info string|nil Job code if job bonus active (e.g., "RNG")
---- @param is_crooked boolean If Crooked Cards buff active
---- @param missed_names table Array of player names who missed the roll
+---   Display roll result with all details
+---   @param roll_name string Name of the roll
+---   @param roll_value number Value rolled
+---   @param final_bonus number Final bonus value
+---   @param effect_type string Type of effect
+---   @param is_lucky boolean If lucky number
+---   @param is_unlucky boolean If unlucky number
+---   @param is_natural_eleven boolean If natural 11
+---   @param bust_rate number Bust rate percentage
+---   @param job_bonus_info string|nil Job code if job bonus active (e.g., "RNG")
+---   @param is_crooked boolean If Crooked Cards buff active
+---   @param missed_names table Array of player names who missed the roll
 function RollTracker.display_roll_result(roll_name, roll_value, final_bonus, effect_type, is_lucky, is_unlucky, is_natural_eleven, bust_rate, job_bonus_info, is_crooked, missed_names)
     -- Format roll value with Lucky/Unlucky status (ASCII only)
     local value_display = tostring(roll_value)
@@ -647,8 +647,8 @@ function RollTracker.display_roll_result(roll_name, roll_value, final_bonus, eff
     MessageFormatter.show_roll_result(roll_name, value_display, bonus_display, is_crooked, affected_count, total_count, lucky_num, unlucky_num, missed_names, bust_rate, job_bonus_info, roll_range)
 end
 
---- Display Double-Up window status
---- Called from commands or periodically
+---   Display Double-Up window status
+---   Called from commands or periodically
 function RollTracker.display_double_up_status()
     if not _G.cor_last_roll.name or not _G.cor_last_roll.timestamp then
         MessageFormatter.show_no_active_roll()
@@ -665,16 +665,16 @@ function RollTracker.display_double_up_status()
     end
 end
 
----============================================================================
---- CLEANUP
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   CLEANUP
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Clear Natural 11 status when buff lost
+---   Clear Natural 11 status when buff lost
 function RollTracker.clear_natural_eleven()
     _G.cor_natural_eleven_active = false
 end
 
---- Clear last roll data
+---   Clear last roll data
 function RollTracker.clear_last_roll()
     _G.cor_last_roll.name = nil
     _G.cor_last_roll.value = nil
@@ -684,15 +684,15 @@ function RollTracker.clear_last_roll()
     _G.cor_last_roll.missed_names = nil
 end
 
---- Clear all roll tracking state
+---   Clear all roll tracking state
 function RollTracker.clear_all()
     _G.cor_active_rolls = {}
     RollTracker.clear_last_roll()
     RollTracker.clear_natural_eleven()
 end
 
---- Complete cleanup of ALL RollTracker state (for job changes)
---- Called from file_unload() when changing from COR to another job
+---   Complete cleanup of ALL RollTracker state (for job changes)
+---   Called from file_unload() when changing from COR to another job
 function RollTracker.cleanup()
     -- Clear active rolls
     _G.cor_active_rolls = {}
@@ -725,8 +725,8 @@ function RollTracker.cleanup()
     _G.cor_party_jobs = nil
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return RollTracker

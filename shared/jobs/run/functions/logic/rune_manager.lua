@@ -1,36 +1,36 @@
----============================================================================
---- Rune Manager - Rune Ability Management (RUN/RUN)
----============================================================================
---- Manages Rune ability usage based on state.RuneMode selection.
---- Provides intelligent automation for:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Rune Manager - Rune Ability Management (RUN/RUN)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Manages Rune ability usage based on state.RuneMode selection.
+---   Provides intelligent automation for:
 ---   • Mode-based rune selection (Sulpor/Lux/etc.)
 ---   • Cooldown tracking and validation
 ---   • Professional message display
 ---
---- Features:
+---   Features:
 ---   • Dynamic rune selection from state.RuneMode
 ---   • Automatic cooldown checking
 ---   • User-friendly error messages
 ---
---- @file    jobs/run/functions/logic/rune_manager.lua
---- @author  Tetsouo
---- @version 1.0.0
---- @date    Created: 2025-10-06
----============================================================================
+---   @file    jobs/run/functions/logic/rune_manager.lua
+---   @author  Tetsouo
+---   @version 1.0.0
+---   @date    Created: 2025-10-06
+---  ═══════════════════════════════════════════════════════════════════════════
 local RuneManager = {}
 
----============================================================================
---- DEPENDENCIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 local RECAST_CONFIG = _G.RECAST_CONFIG or {}  -- Loaded from character main file
 
----============================================================================
---- RUNE EXECUTION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   RUNE EXECUTION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Execute the currently selected rune from state.RuneMode
+---   Execute the currently selected rune from state.RuneMode
 function RuneManager.execute_rune()
     if not state or not state.RuneMode then
         MessageFormatter.show_error("RuneMode state not available")
@@ -79,8 +79,8 @@ function RuneManager.execute_rune()
     send_command('@input /ja "' .. selected_rune .. '" <me>')
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return RuneManager

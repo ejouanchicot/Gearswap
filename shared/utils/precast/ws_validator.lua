@@ -1,46 +1,10 @@
----============================================================================
---- WS Validator - Universal WeaponSkill Validation
----============================================================================
---- Centralizes weaponskill validation logic across all jobs.
---- Eliminates ~270 lines of duplicated code across 9 PRECAST modules.
----
---- Features:
----   • Range validation (check if target within WS range)
----   • Weaponskill validity checking
----   • Automatic eventArgs.cancel on validation failure
----   • Error messages via WeaponSkillManager
----
---- Usage (in job_precast):
----   if not WSValidator.validate(spell, eventArgs) then
----       return  -- Exit if WS validation failed
----   end
----
---- @file    utils/precast/ws_validator.lua
---- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-10-17
----============================================================================
+-- WSValidator: WS range check + validity, cancels eventArgs if failed.
 
 local WSValidator = {}
-
----============================================================================
---- DEPENDENCIES
----============================================================================
 
 -- Load weaponskill manager (legacy include-based module)
 include('../shared/utils/weaponskill/weaponskill_manager.lua')
 
----============================================================================
---- VALIDATION FUNCTION
----============================================================================
-
---- Validate weaponskill (range + validity checks)
---- Called in job_precast() to validate WS before gear swap
---- Sets eventArgs.cancel = true if validation fails
----
---- @param spell table Spell/ability data from GearSwap
---- @param eventArgs table Event arguments (modified if validation fails)
---- @return boolean true if WS valid, false if validation failed
 function WSValidator.validate(spell, eventArgs)
     -- Early exit if not weaponskill
     if spell.type ~= 'WeaponSkill' then
@@ -67,9 +31,5 @@ function WSValidator.validate(spell, eventArgs)
     -- All validations passed
     return true
 end
-
----============================================================================
---- MODULE EXPORT
----============================================================================
 
 return WSValidator

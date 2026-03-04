@@ -1,27 +1,27 @@
----============================================================================
---- PUP Aftercast Module - Post-Action Cleanup
----============================================================================
---- Handles aftercast logic for Beastmaster:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PUP Aftercast Module - Post-Action Cleanup
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles aftercast logic for Puppetmaster:
 ---   • Return to idle or engaged gear after action completes
 ---
---- @file jobs/pup/functions/PUP_AFTERCAST.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-17
----============================================================================
+---   @file    jobs/pup/functions/PUP_AFTERCAST.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-17
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- AFTERCAST HOOK
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   AFTERCAST HOOK
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Called after spell/ability completes
---- Returns to idle or engaged gear based on player status
+---   Called after spell/ability completes
+---   Returns to idle or engaged gear based on player status
 ---
---- @param spell table Spell/ability data
---- @param action string Action type (not used)
---- @param spellMap string Spell mapping (not used)
---- @param eventArgs table Event arguments (not used)
---- @return void
+---   @param spell table Spell/ability data
+---   @param action string Action type (not used)
+---   @param spellMap string Spell mapping (not used)
+---   @param eventArgs table Event arguments (not used)
+---   @return void
 function job_aftercast(spell, action, spellMap, eventArgs)
     -- Watchdog: Track aftercast
     if _G.MidcastWatchdog then
@@ -39,14 +39,9 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export globally for GearSwap
 _G.job_aftercast = job_aftercast
-
--- Export as module
-return {
-    job_aftercast = job_aftercast
-}

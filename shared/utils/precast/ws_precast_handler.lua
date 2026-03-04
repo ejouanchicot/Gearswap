@@ -1,34 +1,9 @@
----============================================================================
---- WS Precast Handler - Unified WeaponSkill Processing
----============================================================================
---- Centralizes ALL weaponskill precast logic into a single handler.
---- Eliminates ~450 lines of duplicated code across 15 PRECAST modules.
----
---- Combines:
----   • WSValidator        - Range + validity checks
----   • TPBonusHandler     - TP gear calculation
----   • TP requirement     - 1000 TP minimum check
----   • Final TP display   - With Moonshade/Fencer bonuses
----
---- Usage (in job_precast):
----   if not WSPrecastHandler.handle(spell, eventArgs, JOBTPConfig) then
----       return
----   end
----
---- Usage (in job_post_precast):
----   WSPrecastHandler.apply_tp_gear(spell)
----
---- @file    utils/precast/ws_precast_handler.lua
---- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-11-29
----============================================================================
+-- WS Precast Handler: range check → TP gear → TP requirement → apply gear.
+-- Centralizes ~450 lines of WS logic duplicated across 15 PRECAST modules.
 
 local WSPrecastHandler = {}
 
----============================================================================
---- LAZY LOADING - Dependencies loaded on first use
----============================================================================
+-- Dependencies (lazy-loaded on first WS)
 
 local MessageFormatter = nil
 local WSValidator = nil
@@ -64,49 +39,25 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
----============================================================================
---- MAIN HANDLER - PRECAST PHASE
----============================================================================
-
---- Handle all weaponskill precast logic in one call
---- Processing order:
----   1. WSValidator.validate() - Range + validity
----   2. TPBonusHandler.calculate_tp_gear() - TP gear optimization
----   3. TP requirement check (>= 1000)
----   4. Final TP calculation (with Moonshade bonus)
----
---- @param spell table Spell/ability data from GearSwap
---- @param eventArgs table Event arguments (modified if WS cancelled)
---- @param tp_config table Job-specific TP configuration (e.g., WARTPConfig)
---- @return boolean true if WS should proceed, false if cancelled
 function WSPrecastHandler.handle(spell, eventArgs, tp_config)
-    -- Early exit if not weaponskill
     if spell.type ~= 'WeaponSkill' then
         return true
     end
 
-    -- Lazy load modules
     ensure_modules_loaded()
 
-    -- ==========================================================================
-    -- STEP 1: VALIDATION (Range + Validity)
-    -- ==========================================================================
+    -- Range + validity check
     if WSValidator and not WSValidator.validate(spell, eventArgs) then
-        return false  -- WS validation failed
+        return false
     end
 
-    -- ==========================================================================
-    -- STEP 2: TP BONUS GEAR CALCULATION
-    -- ==========================================================================
+    -- TP gear calculation
     if TPBonusHandler and tp_config then
         TPBonusHandler.calculate_tp_gear(spell, tp_config)
     end
 
-    -- ==========================================================================
-    -- STEP 3: TP REQUIREMENT CHECK (>= 1000)
-    -- ==========================================================================
+    -- TP requirement check (>= 1000)
     local current_tp = player and player.vitals and player.vitals.tp or 0
-
     if current_tp < 1000 then
         eventArgs.cancel = true
         if MessageFormatter then
@@ -119,11 +70,7 @@ function WSPrecastHandler.handle(spell, eventArgs, tp_config)
         return false
     end
 
-    -- ==========================================================================
-    -- STEP 4: FINAL TP CALCULATION (with Moonshade bonus)
-    -- ==========================================================================
-    -- Final TP is calculated but message display is disabled
-    -- (messages handled by universal ability_message_handler)
+    -- Final TP calculation with Moonshade bonus (stored for other systems, not displayed)
     if TPBonusCalculator and TPBonusCalculator.get_final_tp and tp_config then
         local weapon_name = player.equipment and player.equipment.main or nil
         local sub_weapon = player.equipment and player.equipment.sub or nil
@@ -148,15 +95,6 @@ function WSPrecastHandler.handle(spell, eventArgs, tp_config)
     return true  -- WS should proceed
 end
 
----============================================================================
---- POST-PRECAST PHASE - TP GEAR APPLICATION
----============================================================================
-
---- Apply TP bonus gear calculated in precast phase
---- Called in job_post_precast() after set selection
----
---- @param spell table Spell/ability data from GearSwap
---- @return void
 function WSPrecastHandler.apply_tp_gear(spell)
     -- Early exit if not weaponskill
     if spell.type ~= 'WeaponSkill' then
@@ -173,9 +111,5 @@ function WSPrecastHandler.apply_tp_gear(spell)
     -- Cleanup final TP temp
     _G.temp_final_tp = nil
 end
-
----============================================================================
---- MODULE EXPORT
----============================================================================
 
 return WSPrecastHandler

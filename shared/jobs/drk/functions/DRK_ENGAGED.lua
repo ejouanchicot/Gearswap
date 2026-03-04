@@ -23,13 +23,14 @@ local SetBuilder = nil
 ---   ENGAGED HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply weapon sets, mode selection, and movement gear to all engaged configurations
---- @param meleeSet table The engaged set to customize
---- @return table Modified engaged set with current weapon, mode, and movement gear
+---   Apply weapon sets, mode selection, and movement gear to all engaged configurations
+---   @param meleeSet table The engaged set to customize
+---   @return table Modified engaged set with current weapon, mode, and movement gear
 function customize_melee_set(meleeSet)
     -- Lazy load SetBuilder on first engage
     if not SetBuilder then
-        SetBuilder = require('shared/jobs/drk/functions/logic/set_builder')
+        local ok, mod = pcall(require, 'shared/jobs/drk/functions/logic/set_builder')
+        if ok then SetBuilder = mod end
     end
 
     if not meleeSet then

@@ -29,7 +29,7 @@
 ---   Main File (this) >> dnc_functions.lua >> 11 Hooks + 6 Logic Modules
 ---
 --- Module Organization:
----   ├── functions/dnc_functions.lua        [Façade Loader]
+---   ├── functions/dnc_functions.lua        [Facade Loader]
 ---   ├── sets/dnc_sets.lua                  [Equipment Sets]
 ---   ├── functions/DNC_*.lua                [11 Hook Modules]
 ---   └── functions/logic/*.lua              [6 Logic Modules]

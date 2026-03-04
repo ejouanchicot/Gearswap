@@ -1,42 +1,11 @@
----============================================================================
---- Midcast Manager - Universal Nested Set Selection with Complete Fallback Chain
----============================================================================
---- Centralized midcast gear selection system for ALL jobs with support for:
----   - Nested sets (e.g., mnd_potency.Valeur, self.Duration, FreeNuke.Fire)
----   - Complete fallback chain (root type > nested type > mode > base)
----   - Universal API for all magic skill types
----   - Database integration (optional)
----   - Root-level spell_family sets (sets.midcast.BarAilment, .Enspell, .Gain)
----   - Guaranteed equipment (always fallback to base set)
----
---- USAGE:
----   local MidcastManager = require('shared/utils/midcast/midcast_manager')
----
----   -- In job_post_midcast:
----   MidcastManager.select_set({
----       skill = 'Enhancing Magic',
----       spell = spell,
----       mode_state = state.EnhancingMode,
----       database_func = EnhancingSPELLS.get_spell_family  -- Returns 'BarAilment', 'Enspell', etc.
----   })
----
---- @file midcast_manager.lua
---- @author Tetsouo
---- @version 2.0 - Added root-level spell_family support (PRIORITY 6)
---- @date Created: 2025-10-24 | Updated: 2025-11-10
----============================================================================
+-- MidcastManager: universal nested set selection with 9-level fallback chain.
+-- Supports spell name > skill > type > target > mode > base, plus Bard song matching.
 
 local MidcastManager = {}
 
----============================================================================
---- DEPENDENCIES
----============================================================================
 
 local MessageMidcast = require('shared/utils/messages/formatters/magic/message_midcast')
 
----============================================================================
---- DEBUGGING / LOGGING (Must be defined before use)
----============================================================================
 
 -- Persist debug state in global scope (survives reloads)
 if _G.MidcastManagerDebugState == nil then
@@ -44,7 +13,6 @@ if _G.MidcastManagerDebugState == nil then
 end
 
 --- Get debug state (always read from global)
---- @return boolean
 local function is_debug_enabled()
     return _G.MidcastManagerDebugState == true
 end
@@ -79,20 +47,6 @@ MidcastManager.debug = setmetatable({}, {
 
 -- Old debug functions removed - now using MessageMidcast.show_* directly
 
----============================================================================
---- CORE SELECTION LOGIC
----============================================================================
-
---- Select and equip midcast set with complete fallback chain
---- @param config table Configuration table with following keys:
----   - skill: string - Spell skill (e.g., 'Enfeebling Magic', 'Elemental Magic')
----   - spell: table - Spell object from GearSwap
----   - mode_value: string|nil - Direct mode value (e.g., 'MagicBurst', 'Potency'). Takes precedence over mode_state.
----   - mode_state: table|nil - State object for mode selection (e.g., state.EnfeebleMode). Used if mode_value not provided.
----   - database_func: function|nil - Function to get spell type from database
----   - target_func: function|nil - Function to determine target type (e.g., 'self' vs 'others')
----   - extra_key: string|nil - Extra key for set selection (e.g., 'Saboteur')
---- @return boolean True if set was equipped, false otherwise
 function MidcastManager.select_set(config)
     -- Validate required parameters
     if not config or not config.skill then
@@ -125,10 +79,7 @@ function MidcastManager.select_set(config)
         MessageMidcast.show_debug_header(spell_name, config.skill, target_name)
     end
 
-    ---========================================================================
-    --- SPECIAL HANDLING: BARD SONGS (Singing skill)
-    ---========================================================================
-    -- Songs have unique logic that doesn't fit the standard fallback pattern
+    -- Bard songs: unique logic that doesn't fit the standard fallback pattern
     -- Fallback order: Exact name → Base song → Song type → Instrument → Base
     if config.skill == 'Singing' and config.spell and config.spell.english then
         local spell_name = config.spell.english
@@ -136,7 +87,7 @@ function MidcastManager.select_set(config)
         local selected_set_path = nil
         local debug_steps = {}
 
-        -- STEP 1: Try exact spell name (sets.midcast["Honor March"])
+        -- Try exact spell name (sets.midcast["Honor March"])
         if sets.midcast[spell_name] then
             selected_set = sets.midcast[spell_name]
             selected_set_path = 'sets.midcast["' .. spell_name .. '"]'
@@ -144,7 +95,7 @@ function MidcastManager.select_set(config)
                 table.insert(debug_steps, {step = 1, label = "Exact Match", status = "ok", value = spell_name})
             end
         else
-            -- STEP 1.5: Try PascalCase version (remove spaces: "Honor March" → "HonorMarch")
+            -- Try PascalCase version (remove spaces: "Honor March" → "HonorMarch")
             local pascal_name = spell_name:gsub("%s+", "")
             if pascal_name ~= spell_name and sets.midcast[pascal_name] then
                 selected_set = sets.midcast[pascal_name]
@@ -161,7 +112,7 @@ function MidcastManager.select_set(config)
 
         if not selected_set then
 
-            -- STEP 2: Try base song name (remove tier: "Knight's Minne V" → "Knight's Minne")
+            -- Try base song name (remove tier: "Knight's Minne V" → "Knight's Minne")
             local base_song = spell_name:match("^(.+)%s+[IVX]+$") or spell_name
             if base_song ~= spell_name and sets.midcast[base_song] then
                 selected_set = sets.midcast[base_song]
@@ -174,7 +125,7 @@ function MidcastManager.select_set(config)
                     table.insert(debug_steps, {step = 2, label = "Base Song", status = "warn", value = "Not found"})
                 end
 
-                -- STEP 3: Try song type (last word: "Minne", "Madrigal", etc.)
+                -- Try song type (last word: "Minne", "Madrigal", etc.)
                 local song_type = MidcastManager.get_song_type(spell_name)
                 if song_type and sets.midcast[song_type] then
                     selected_set = sets.midcast[song_type]
@@ -190,7 +141,7 @@ function MidcastManager.select_set(config)
             end
         end
 
-        -- STEP 3.5: Try first word (for "Honor March" → "Honor", "Blade Madrigal" → "Blade")
+        -- Try first word (for "Honor March" → "Honor", "Blade Madrigal" → "Blade")
         if not selected_set then
             local base_song = spell_name:match("^(.+)%s+[IVX]+$") or spell_name
             local first_word = base_song:match("^(%S+)")
@@ -207,7 +158,7 @@ function MidcastManager.select_set(config)
             end
         end
 
-        -- STEP 4: Apply instrument-specific gear (if available)
+        -- Apply instrument-specific gear (if available)
         local instrument = MidcastManager.get_song_instrument(spell_name)
         if instrument and sets.midcast.Songs and sets.midcast.Songs[instrument] then
             -- Layer instrument set on top of selected set
@@ -225,7 +176,7 @@ function MidcastManager.select_set(config)
             end
         end
 
-        -- STEP 5: Check for Troubadour buff (duration gear)
+        -- Troubadour buff: overlay duration gear
         if buffactive and buffactive['Troubadour'] and sets.midcast.Songs and sets.midcast.Songs.Duration then
             if selected_set then
                 selected_set = set_combine(selected_set, sets.midcast.Songs.Duration)
@@ -237,7 +188,7 @@ function MidcastManager.select_set(config)
             end
         end
 
-        -- STEP 6: Fallback to base song set if nothing found
+        -- Fallback to base song set
         if not selected_set then
             selected_set = base_set  -- sets.midcast.BardSong
             selected_set_path = 'sets.midcast.BardSong'
@@ -286,17 +237,13 @@ function MidcastManager.select_set(config)
         return false
     end
 
-    ---========================================================================
-    --- STANDARD MIDCAST LOGIC (All other skills)
-    ---========================================================================
-
     local selected_set = nil
     local selected_set_path = nil  -- Track the full set path for debug display
     local mode_value = nil
     local type_value = nil
     local target_value = nil
 
-    -- STEP 1: Get mode value from state OR direct value (if provided)
+    -- Get mode value
     if config.mode_value then
         mode_value = config.mode_value
         if is_debug_enabled() then
@@ -313,7 +260,7 @@ function MidcastManager.select_set(config)
         end
     end
 
-    -- STEP 2: Get type value from database (if provided)
+    -- Get spell type from database (optional)
     if config.database_func and config.spell and config.spell.english then
         local success, result = pcall(config.database_func, config.spell.english)
         if success then
@@ -332,7 +279,7 @@ function MidcastManager.select_set(config)
         end
     end
 
-    -- STEP 3: Get target value from target_func (if provided)
+    -- Get target value (optional)
     if config.target_func and config.spell then
         local success, result = pcall(config.target_func, config.spell)
         if success then
@@ -601,13 +548,9 @@ function MidcastManager.select_set(config)
     return false
 end
 
----============================================================================
---- HELPER FUNCTIONS FOR COMMON PATTERNS
----============================================================================
+-- Helper functions for common job patterns
 
 --- Determine target type for Enhancing Magic (Composure logic)
---- @param spell table Spell object from GearSwap
---- @return string|nil 'Composure' if buffactive and targeting others, nil otherwise
 function MidcastManager.get_enhancing_target(spell)
     if not spell or not spell.target then
         return nil
@@ -624,8 +567,6 @@ function MidcastManager.get_enhancing_target(spell)
 end
 
 --- Determine element for Elemental Magic (optional filter)
---- @param spell table Spell object from GearSwap
---- @return string|nil Element name (e.g., 'Fire', 'Ice', 'Thunder')
 function MidcastManager.get_element(spell)
     if not spell or not spell.element then
         return nil
@@ -634,14 +575,10 @@ function MidcastManager.get_element(spell)
     return spell.element
 end
 
----============================================================================
---- BARD SONG HELPER FUNCTIONS
----============================================================================
+-- Bard song helpers
 
 --- Extract song type from spell name (last word after removing tier)
 --- Examples: "Knight's Minne V" → "Minne", "Blade Madrigal" → "Madrigal"
---- @param spell_name string Full spell name
---- @return string|nil Song type (e.g., "Minne", "Madrigal", "March")
 function MidcastManager.get_song_type(spell_name)
     if not spell_name then
         return nil
@@ -658,8 +595,6 @@ end
 
 --- Get required instrument for a song (if any)
 --- Uses SongRotationManager if available
---- @param spell_name string Song name
---- @return string|nil Instrument name (e.g., "Gjallarhorn", "Marsyas", "Daurdabla")
 function MidcastManager.get_song_instrument(spell_name)
     if not spell_name then
         return nil
@@ -680,14 +615,9 @@ function MidcastManager.get_song_instrument(spell_name)
     return nil  -- Use default instrument from BardSong set
 end
 
----============================================================================
---- PRESET CONFIGURATIONS FOR COMMON JOB PATTERNS
----============================================================================
+-- Preset configs for common job patterns
 
 --- RDM Enfeebling Magic configuration
---- @param spell table Spell object
---- @param database_func function Function to get enfeebling type (e.g., RDMSpells.get_enfeebling_type)
---- @return table Configuration for select_set()
 function MidcastManager.rdm_enfeebling(spell, database_func)
     return {
         skill = 'Enfeebling Magic',
@@ -698,8 +628,6 @@ function MidcastManager.rdm_enfeebling(spell, database_func)
 end
 
 --- RDM/WHM/GEO Enhancing Magic configuration
---- @param spell table Spell object
---- @return table Configuration for select_set()
 function MidcastManager.enhancing(spell)
     return {
         skill = 'Enhancing Magic',
@@ -710,8 +638,6 @@ function MidcastManager.enhancing(spell)
 end
 
 --- BLM/RDM/GEO Elemental Magic configuration
---- @param spell table Spell object
---- @return table Configuration for select_set()
 function MidcastManager.elemental(spell)
     return {
         skill = 'Elemental Magic',
@@ -721,8 +647,6 @@ function MidcastManager.elemental(spell)
 end
 
 --- WHM/RDM/PLD Cure Magic configuration
---- @param spell table Spell object
---- @return table Configuration for select_set()
 function MidcastManager.cure(spell)
     return {
         skill = 'Healing Magic',
@@ -730,9 +654,5 @@ function MidcastManager.cure(spell)
         mode_state = state.CureMode
     }
 end
-
----============================================================================
---- MODULE EXPORT
----============================================================================
 
 return MidcastManager

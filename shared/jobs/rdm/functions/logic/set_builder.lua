@@ -23,9 +23,9 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 ---   MODE SELECTION (IDLE)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Select idle base set based on IdleMode state
---- @param base_set table Base idle set
---- @return table Selected idle set based on IdleMode (DT, Refresh, Regain, Evasion)
+---   Select idle base set based on IdleMode state
+---   @param base_set table Base idle set
+---   @return table Selected idle set based on IdleMode (DT, Refresh, Regain, Evasion)
 function SetBuilder.select_idle_base(base_set)
     -- Use IdleMode state to select idle set (DT, Refresh, Regain, Evasion)
     if state.IdleMode and state.IdleMode.current then
@@ -51,9 +51,9 @@ end
 ---   MODE SELECTION (ENGAGED)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Select engaged base set based on EngagedMode state and shield detection
---- @param base_set table Base engaged set
---- @return table Selected engaged set based on EngagedMode and shield status
+---   Select engaged base set based on EngagedMode state and shield detection
+---   @param base_set table Base engaged set
+---   @return table Selected engaged set based on EngagedMode and shield status
 function SetBuilder.select_engaged_base(base_set)
     -- Use EngagedMode state to select engaged set (DT, Enspell, Refresh, TP)
     if state.EngagedMode and state.EngagedMode.current then
@@ -102,11 +102,11 @@ end
 ---   WEAPON APPLICATION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply main weapon and sub weapon to set (separately)
---- Uses weapon sets defined in rdm_sets.lua (sets['Crocea Mors'], sets['Genmei Shield'], etc.)
---- Note: CombatMode weapon locking is handled by disable()/enable() in job_update()
---- @param result table Current equipment set
---- @return table Set with weapons applied
+---   Apply main weapon and sub weapon to set (separately)
+---   Uses weapon sets defined in rdm_sets.lua (sets['Crocea Mors'], sets['Genmei Shield'], etc.)
+---   Note: CombatMode weapon locking is handled by disable()/enable() in job_update()
+---   @param result table Current equipment set
+---   @return table Set with weapons applied
 function SetBuilder.apply_weapon(result)
     if not result then
         return {}
@@ -150,13 +150,13 @@ end
 ---   SHIELD DETECTION (WAR Fencer Model)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Detect if sub weapon is a shield OR single wield
---- Uses sets.shields table to determine if player is using:
---- - Shield (1 weapon + shield) >> use normal sets
---- - Single wield (1 weapon + empty) >> use normal sets
---- - Dual wield (2 weapons) >> use .DW sets
---- @param sub_weapon string Current sub weapon name from state.SubWeapon or player.equipment.sub
---- @return boolean True if shield OR single wield (use normal sets)
+---   Detect if sub weapon is a shield OR single wield
+---   Uses sets.shields table to determine if player is using:
+---   - Shield (1 weapon + shield) >> use normal sets
+---   - Single wield (1 weapon + empty) >> use normal sets
+---   - Dual wield (2 weapons) >> use .DW sets
+---   @param sub_weapon string Current sub weapon name from state.SubWeapon or player.equipment.sub
+---   @return boolean True if shield OR single wield (use normal sets)
 function SetBuilder.has_shield_equipped(sub_weapon)
     -- Safety checks: nil or empty string = error >> default to single wield
     if not sub_weapon or sub_weapon == "" then
@@ -201,9 +201,9 @@ SetBuilder.check_town = BaseSetBuilder.select_idle_base_town
 ---   ENGAGED SET BUILDER
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build complete engaged set with all RDM logic
---- @param base_set table Base engaged set
---- @return table Complete engaged set
+---   Build complete engaged set with all RDM logic
+---   @param base_set table Base engaged set
+---   @return table Complete engaged set
 function SetBuilder.build_engaged_set(base_set)
     if not base_set then
         return {}
@@ -226,9 +226,9 @@ end
 ---   IDLE SET BUILDER
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build complete idle set with all RDM logic
---- @param base_set table Base idle set
---- @return table Complete idle set
+---   Build complete idle set with all RDM logic
+---   @param base_set table Base idle set
+---   @return table Complete idle set
 function SetBuilder.build_idle_set(base_set)
     if not base_set then
         return {}

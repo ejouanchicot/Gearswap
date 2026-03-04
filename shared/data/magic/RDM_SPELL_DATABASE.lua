@@ -1,5 +1,5 @@
 ---============================================================================
---- RDM Spell Database - Façade (Public API)
+--- RDM Spell Database - Facade (Public API)
 ---============================================================================
 --- Provides unified access to all RDM spells using skill-based architecture.
 --- Merges spells from HEALING_MAGIC_DATABASE, ENHANCING_MAGIC_DATABASE,

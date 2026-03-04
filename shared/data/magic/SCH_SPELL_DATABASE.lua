@@ -1,5 +1,5 @@
 ---============================================================================
---- SCH Spell Database - Façade (Public API)
+--- SCH Spell Database - Facade (Public API)
 ---============================================================================
 --- Provides unified access to all SCH spells using skill-based architecture.
 --- Merges spells from HEALING_MAGIC_DATABASE, ENHANCING_MAGIC_DATABASE,

@@ -1,14 +1,14 @@
----============================================================================
---- BRD Song Refinement Logic Module
----============================================================================
---- Handles intelligent song tier downgrading for debuff songs.
---- Automatically downgrades songs (Lullaby II >> I, etc.) if higher tier is on cooldown.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BRD Song Refinement Logic Module
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles intelligent song tier downgrading for debuff songs.
+---   Automatically downgrades songs (Lullaby II >> I, etc.) if higher tier is on cooldown.
 ---
---- @file jobs/brd/functions/logic/song_refinement.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-13
----============================================================================
+---   @file    jobs/brd/functions/logic/song_refinement.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-13
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local SongRefinement = {}
 
@@ -18,13 +18,13 @@ local BRDSongConfig = _G.BRDSongConfig or {}  -- Loaded from character main file
 -- Load message formatter for BRD messages
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
----============================================================================
---- SONG REFINEMENT LOGIC
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SONG REFINEMENT LOGIC
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Check if a song needs refinement (debuff songs with tier system)
---- @param spell_name string The spell name
---- @return boolean needs_refinement
+---   Check if a song needs refinement (debuff songs with tier system)
+---   @param spell_name string The spell name
+---   @return boolean needs_refinement
 local function needs_refinement(spell_name)
     if not BRDSongConfig.SONG_REFINE or not BRDSongConfig.SONG_REFINE.enabled then
         return false
@@ -34,10 +34,10 @@ local function needs_refinement(spell_name)
         spell_name:match('Threnody')
 end
 
---- Refine song based on recast availability
---- @param spell table Spell being cast
---- @param eventArgs table Event arguments
---- @return boolean refined True if spell was refined/cancelled
+---   Refine song based on recast availability
+---   @param spell table Spell being cast
+---   @param eventArgs table Event arguments
+---   @return boolean refined True if spell was refined/cancelled
 function SongRefinement.refine_song(spell, eventArgs)
     -- Only process bard songs
     if not spell or spell.type ~= 'BardSong' then
@@ -88,9 +88,9 @@ function SongRefinement.refine_song(spell, eventArgs)
     return false
 end
 
---- Get downgrade for a spell (for command usage)
---- @param spell_name string Spell name
---- @return string|nil downgrade Downgrade spell name or nil
+---   Get downgrade for a spell (for command usage)
+---   @param spell_name string Spell name
+---   @return string|nil downgrade Downgrade spell name or nil
 function SongRefinement.get_downgrade(spell_name)
     if not BRDSongConfig.SONG_REFINE or not BRDSongConfig.SONG_REFINE.tiers then
         return nil
@@ -99,8 +99,8 @@ function SongRefinement.get_downgrade(spell_name)
     return BRDSongConfig.SONG_REFINE.tiers[spell_name]
 end
 
---- Check if refinement system is enabled
---- @return boolean enabled
+---   Check if refinement system is enabled
+---   @return boolean enabled
 function SongRefinement.is_enabled()
     return BRDSongConfig.SONG_REFINE and BRDSongConfig.SONG_REFINE.enabled or false
 end

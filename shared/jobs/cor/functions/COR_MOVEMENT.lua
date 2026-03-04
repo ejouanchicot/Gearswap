@@ -1,22 +1,22 @@
----============================================================================
---- COR Movement Module - Movement Tracking & Speed Gear
----============================================================================
---- Handles movement detection and automatic speed gear equipping for Corsair.
---- Integrates with AutoMove system for consistent movement gear management.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COR Movement Module - Movement Tracking & Speed Gear
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles movement detection and automatic speed gear equipping for Corsair.
+---   Integrates with AutoMove system for consistent movement gear management.
 ---
---- @file COR_MOVEMENT.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-07
---- @requires utils/movement/automove.lua
----============================================================================
+---   @file    COR_MOVEMENT.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-07
+---   @requires utils/movement/automove.lua
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- MOVEMENT STATUS API
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MOVEMENT STATUS API
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get current movement status (delegates to AutoMove)
---- @return table movement_info
+---   Get current movement status (delegates to AutoMove)
+---   @return table movement_info
 function get_cor_movement_status()
     if not AutoMove then
         return {
@@ -33,29 +33,24 @@ function get_cor_movement_status()
     }
 end
 
----============================================================================
---- MOVEMENT HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MOVEMENT HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Handle gear equipping during movement
---- @param playerStatus string Current player status
---- @param eventArgs table Event arguments
---- @return void
+---   Handle gear equipping during movement
+---   @param playerStatus string Current player status
+---   @param eventArgs table Event arguments
+---   @return void
 function job_handle_equipping_gear(playerStatus, eventArgs)
     -- COR-specific movement gear handling
     -- AutoMove system handles most movement gear automatically
     -- This is for job-specific movement gear logic if needed
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export global for GearSwap (Mote-Include)
 _G.job_handle_equipping_gear = job_handle_equipping_gear
 
--- Export module
-local COR_MOVEMENT = {}
-COR_MOVEMENT.job_handle_equipping_gear = job_handle_equipping_gear
-
-return COR_MOVEMENT

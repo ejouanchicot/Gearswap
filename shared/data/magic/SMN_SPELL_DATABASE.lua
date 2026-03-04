@@ -1,12 +1,12 @@
 ---============================================================================
---- SMN Spell Database - Complete Summoner Avatar & Blood Pact Data (Façade)
+--- SMN Spell Database - Complete Summoner Avatar & Blood Pact Data (Facade)
 ---============================================================================
 --- Contains all SMN avatars/spirits and blood pacts (Rage/Ward)
 --- Data extracted from FFXI SMN ability list.
 ---
 --- @file config/magic/SMN_SPELL_DATABASE.lua
 --- @author Tetsouo
---- @version 2.1 - Improved formatting - Improved alignment - Façade Architecture
+--- @version 2.1 - Improved formatting - Improved alignment - Facade Architecture
 --- @date Created: 2025-10-12 | Updated: 2025-11-06
 --- @date Refactored: 2025-10-12 | Updated: 2025-11-06
 ---
@@ -23,7 +23,7 @@
 --- ARCHITECTURE:
 --- - This file is a FAÇADE that loads internal modules
 --- - Internal modules: spirits, avatars, rage, ward
---- - All helper functions remain in this façade file
+--- - All helper functions remain in this facade file
 --- - Public API remains 100% unchanged for backward compatibility
 ---============================================================================
 

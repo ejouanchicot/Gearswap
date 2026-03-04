@@ -1,36 +1,36 @@
----============================================================================
---- BST Set Builder - Pet vs Master Gear Bifurcation
----============================================================================
---- Handles complex gear logic with Pet vs Master bifurcation.
---- CRITICAL MODULE: Determines whether to use pet or master gear based on pet.isvalid.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BST Set Builder - Pet vs Master Gear Bifurcation
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles complex gear logic with Pet vs Master bifurcation.
+---   CRITICAL MODULE: Determines whether to use pet or master gear based on pet.isvalid.
 ---
---- @file jobs/bst/functions/logic/set_builder.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-17
----============================================================================
+---   @file    jobs/bst/functions/logic/set_builder.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-17
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local SetBuilder = {}
 
----============================================================================
---- DEPENDENCIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Load pet manager (for pet_valid cache)
 local PetManager = require('shared/jobs/bst/functions/logic/pet_manager')
 
----============================================================================
---- IDLE SET BUILDER (Pet vs Master Bifurcation)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   IDLE SET BUILDER (Pet vs Master Bifurcation)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build idle set with Pet vs Master bifurcation
---- CRITICAL LOGIC:
+---   Build idle set with Pet vs Master bifurcation
+---   CRITICAL LOGIC:
 ---   • If pet valid >> Use pet sets (pet.idle or pet.engaged based on petEngaged state)
 ---   • If no pet >> Use master sets (me.idle with town detection)
 ---   • ALWAYS apply: WeaponSet, SubSet, HybridMode, Movement
 ---
---- @param base_idle_set table Base idle set from sets.me.idle
---- @return table final_set Final idle set after all customizations
+---   @param base_idle_set table Base idle set from sets.me.idle
+---   @return table final_set Final idle set after all customizations
 function SetBuilder.build_idle_set(base_idle_set)
     -- Use GLOBAL pet from Mote-Include (cached, no API call)
     local pet = _G.pet
@@ -41,14 +41,14 @@ function SetBuilder.build_idle_set(base_idle_set)
 
     local final_set = base_idle_set
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- BIFURCATION 1: Pet Valid or Not
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     if pet_mode.pet_valid then
-        -- ====================================================================
+        -- ══════════════════════════════════════════════════════════════════════════
         -- PET ACTIVE - Use pet sets
-        -- ====================================================================
+        -- ══════════════════════════════════════════════════════════════════════════
 
         -- Check if pet is engaged (STRING comparison!)
         if state.petEngaged and state.petEngaged.value == "true" then
@@ -93,9 +93,9 @@ function SetBuilder.build_idle_set(base_idle_set)
         end
 
     else
-        -- ====================================================================
+        -- ══════════════════════════════════════════════════════════════════════════
         -- NO PET - Use master sets
-        -- ====================================================================
+        -- ══════════════════════════════════════════════════════════════════════════
 
         -- Check if in town
         if state.IdleMode and state.IdleMode.value == "Town" then
@@ -114,9 +114,9 @@ function SetBuilder.build_idle_set(base_idle_set)
         end
     end
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- ALWAYS APPLY: Dual Weapon System (Pet or No Pet)
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     if state.WeaponSet and state.WeaponSet.value and sets[state.WeaponSet.value] then
         final_set = set_combine(final_set, sets[state.WeaponSet.value])
@@ -126,9 +126,9 @@ function SetBuilder.build_idle_set(base_idle_set)
         final_set = set_combine(final_set, sets[state.SubSet.value])
     end
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- ALWAYS APPLY: Movement Speed (Pet or No Pet)
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     if state.Moving and state.Moving.value == "true" and sets.MoveSpeed then
         final_set = set_combine(final_set, sets.MoveSpeed)
@@ -137,19 +137,19 @@ function SetBuilder.build_idle_set(base_idle_set)
     return final_set
 end
 
----============================================================================
---- ENGAGED SET BUILDER (Pet vs Master Bifurcation)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ENGAGED SET BUILDER (Pet vs Master Bifurcation)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build engaged set with Pet vs Master bifurcation
---- CRITICAL LOGIC (3 CASES):
+---   Build engaged set with Pet vs Master bifurcation
+---   CRITICAL LOGIC (3 CASES):
 ---   • Case 1: BOTH master AND pet engaged >> Use engagedBoth sets
 ---   • Case 2: Pet engaged ONLY (master idle) >> Use pet engaged sets
 ---   • Case 3: Master engaged ONLY (no pet OR pet idle) >> Use master engaged sets
 ---   • ALWAYS apply: WeaponSet, SubSet, HybridMode
 ---
---- @param base_engaged_set table Base engaged set from sets.me.engaged
---- @return table final_set Final engaged set after all customizations
+---   @param base_engaged_set table Base engaged set from sets.me.engaged
+---   @return table final_set Final engaged set after all customizations
 function SetBuilder.build_engaged_set(base_engaged_set)
     -- Use GLOBAL pet and player from Mote-Include (cached, no API call)
     local pet = _G.pet
@@ -167,14 +167,14 @@ function SetBuilder.build_engaged_set(base_engaged_set)
     -- Check if master is engaged
     local master_is_engaged = player and player.status == 'Engaged'
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- BIFURCATION: 3-Way Split (Both / Pet Only / Master Only)
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     if master_is_engaged and pet_mode.pet_valid and pet_is_engaged then
-        -- ====================================================================
+        -- ══════════════════════════════════════════════════════════════════════════
         -- CASE 1: BOTH MASTER AND PET ENGAGED - Use engagedBoth sets
-        -- ====================================================================
+        -- ══════════════════════════════════════════════════════════════════════════
 
         final_set = sets.pet.engagedBoth or sets.me.engaged or base_engaged_set
 
@@ -188,9 +188,9 @@ function SetBuilder.build_engaged_set(base_engaged_set)
         end
 
     elseif pet_mode.pet_valid and pet_is_engaged then
-        -- ====================================================================
+        -- ══════════════════════════════════════════════════════════════════════════
         -- CASE 2: PET ENGAGED ONLY (master idle) - Use pet engaged sets
-        -- ====================================================================
+        -- ══════════════════════════════════════════════════════════════════════════
 
         final_set = sets.pet.engaged or base_engaged_set
 
@@ -204,9 +204,9 @@ function SetBuilder.build_engaged_set(base_engaged_set)
         end
 
     else
-        -- ====================================================================
+        -- ══════════════════════════════════════════════════════════════════════════
         -- CASE 3: MASTER ENGAGED ONLY (no pet OR pet idle) - Use master sets
-        -- ====================================================================
+        -- ══════════════════════════════════════════════════════════════════════════
 
         final_set = sets.me.engaged or base_engaged_set
 
@@ -220,9 +220,9 @@ function SetBuilder.build_engaged_set(base_engaged_set)
         end
     end
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- ALWAYS APPLY: Dual Weapon System
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     if state.WeaponSet and state.WeaponSet.value and sets[state.WeaponSet.value] then
         final_set = set_combine(final_set, sets[state.WeaponSet.value])
@@ -235,12 +235,12 @@ function SetBuilder.build_engaged_set(base_engaged_set)
     return final_set
 end
 
----============================================================================
---- UTILITY FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   UTILITY FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Check if should use pet sets (pet valid)
---- @return boolean use_pet_sets True if pet sets should be used
+---   Check if should use pet sets (pet valid)
+---   @return boolean use_pet_sets True if pet sets should be used
 function SetBuilder.should_use_pet_sets()
     local pet = windower.ffxi.get_mob_by_target('pet')
     PetManager.update_pet_mode(pet)
@@ -248,8 +248,8 @@ function SetBuilder.should_use_pet_sets()
     return pet_mode.pet_valid
 end
 
---- Check if pet is engaged (STRING comparison!)
---- @return boolean is_engaged True if pet is engaged
+---   Check if pet is engaged (STRING comparison!)
+---   @return boolean is_engaged True if pet is engaged
 function SetBuilder.is_pet_engaged()
     if not state or not state.petEngaged then
         return false
@@ -259,9 +259,9 @@ function SetBuilder.is_pet_engaged()
     return state.petEngaged.current == "true"
 end
 
---- Get current pet mode focus ("pet" or "master")
---- Used for determining which PDT overlay to apply
---- @return string mode "pet" or "master"
+---   Get current pet mode focus ("pet" or "master")
+---   Used for determining which PDT overlay to apply
+---   @return string mode "pet" or "master"
 function SetBuilder.get_current_mode()
     local pet = windower.ffxi.get_mob_by_target('pet')
     PetManager.update_pet_mode(pet)
@@ -274,8 +274,8 @@ function SetBuilder.get_current_mode()
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return SetBuilder

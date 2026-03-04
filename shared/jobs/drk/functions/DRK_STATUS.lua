@@ -15,14 +15,15 @@
 
 local DoomManager = nil
 
---- Handle status change events
---- @param newStatus string New status (Idle, Engaged, Resting, Dead, etc.)
---- @param oldStatus string Previous status
---- @param eventArgs table Event arguments
+---   Handle status change events
+---   @param newStatus string New status (Idle, Engaged, Resting, Dead, etc.)
+---   @param oldStatus string Previous status
+---   @param eventArgs table Event arguments
 function job_status_change(newStatus, oldStatus, eventArgs)
     -- Lazy load DoomManager on first status change
     if not DoomManager then
-        DoomManager = require('shared/utils/debuff/doom_manager')
+        local ok, mod = pcall(require, 'shared/utils/debuff/doom_manager')
+        if ok then DoomManager = mod end
     end
 
     -- Safety: Unlock Doom slots after death (prevents stuck locks after raise)

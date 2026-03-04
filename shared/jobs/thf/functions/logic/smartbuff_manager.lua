@@ -1,10 +1,10 @@
----============================================================================
---- Smartbuff Manager - Subjob Buff Application (Logic Module)
----============================================================================
---- Automatically applies appropriate buffs based on current subjob with
---- intelligent recast checking and professional status display.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Smartbuff Manager - Subjob Buff Application (Logic Module)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Automatically applies appropriate buffs based on current subjob with
+---   intelligent recast checking and professional status display.
 ---
---- Features:
+---   Features:
 ---   • DNC subjob buffs (Haste Samba - requires 350 TP)
 ---   • WAR subjob buffs (Berserk, Aggressor, Warcry - priority order)
 ---   • NIN subjob buffs (Utsusemi: Ni >> Ichi fallback)
@@ -13,16 +13,16 @@
 ---   • Sequential ability casting (1-2s spacing to avoid conflicts)
 ---   • Status display (active/cooldown with time remaining)
 ---
---- Dependencies:
+---   Dependencies:
 ---   • MessageFormatter (status display, error messages)
 ---   • RECAST_CONFIG (recast tolerance configuration)
 ---   • show_thf_buff_status (global function for status display)
 ---
---- @file    jobs/thf/functions/logic/smartbuff_manager.lua
---- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-10-06
----============================================================================
+---   @file    jobs/thf/functions/logic/smartbuff_manager.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-06
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local SmartbuffManager = {}
 
@@ -47,12 +47,12 @@ local function is_on_cooldown(recast)
     end
 end
 
----============================================================================
---- SUBJOB BUFF FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SUBJOB BUFF FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply DNC subjob buffs (Haste Samba)
---- @return boolean Success status
+---   Apply DNC subjob buffs (Haste Samba)
+---   @return boolean Success status
 function SmartbuffManager.apply_dnc_buffs()
     local ability_recasts = windower.ffxi.get_ability_recasts()
     local status_data = {}
@@ -87,8 +87,8 @@ function SmartbuffManager.apply_dnc_buffs()
     return true
 end
 
---- Apply WAR subjob buffs (Berserk, Aggressor, Warcry in priority order)
---- @return boolean Success status
+---   Apply WAR subjob buffs (Berserk, Aggressor, Warcry in priority order)
+---   @return boolean Success status
 function SmartbuffManager.apply_war_buffs()
     local ability_recasts = windower.ffxi.get_ability_recasts()
     local abilities_to_cast = {}
@@ -144,8 +144,8 @@ function SmartbuffManager.apply_war_buffs()
     return true
 end
 
---- Apply NIN subjob buffs (Utsusemi Ni first, Ichi fallback)
---- @return boolean Success status
+---   Apply NIN subjob buffs (Utsusemi Ni first, Ichi fallback)
+---   @return boolean Success status
 function SmartbuffManager.apply_nin_buffs()
     local spell_recasts = windower.ffxi.get_spell_recasts()
     local ni_recast = (spell_recasts[339] or 0) / 100  -- Convert centiseconds to seconds
@@ -172,12 +172,12 @@ function SmartbuffManager.apply_nin_buffs()
     return true
 end
 
----============================================================================
---- MAIN ENTRY POINT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MAIN ENTRY POINT
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply smartbuff based on current subjob
---- @return boolean Success status
+---   Apply smartbuff based on current subjob
+---   @return boolean Success status
 function SmartbuffManager.apply()
     local subjob = player.sub_job
 
@@ -198,12 +198,12 @@ function SmartbuffManager.apply()
     end
 end
 
----============================================================================
---- THF DEBUFF COMBO
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   THF DEBUFF COMBO
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply THF debuff combo: Feint + Bully + Conspirator
---- @return boolean Success status
+---   Apply THF debuff combo: Feint + Bully + Conspirator
+---   @return boolean Success status
 function SmartbuffManager.apply_fbc()
     local ability_recasts = windower.ffxi.get_ability_recasts()
     local abilities_to_cast = {}
@@ -272,8 +272,8 @@ function SmartbuffManager.apply_fbc()
     return true
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return SmartbuffManager

@@ -1,9 +1,9 @@
----============================================================================
---- WHM Midcast Module - Powered by MidcastManager
----============================================================================
---- Handles midcast for White Mage with comprehensive spell-specific sets.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   WHM Midcast Module - Midcast Gear Selection
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles midcast for White Mage with comprehensive spell-specific sets.
 ---
---- Features:
+---   Features:
 ---   - Cure: CureMode (Potency vs SIRD), Afflatus Solace, Divine Caress
 ---   - Curaga: CureMode support
 ---   - Status Removal: Cursna, Paralyna, Erase
@@ -11,13 +11,13 @@
 ---   - Divine Magic: Banish, Holy, Repose
 ---   - Enfeebling Magic: MND-based vs INT-based
 ---
---- @file WHM_MIDCAST.lua
---- @author Tetsouo
---- @version 3.0 - Added spell_family database support
---- @date Created: 2025-10-21 | Updated: 2025-11-05
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---   @file    WHM_MIDCAST.lua
+---   @author  Tetsouo
+---   @version 3.0 - Added spell_family database support
+---   @date    Created: 2025-10-21 | Updated: 2025-11-05
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MidcastManager = nil
 local EnhancingSPELLS = nil
@@ -28,7 +28,8 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    MidcastManager = require('shared/utils/midcast/midcast_manager')
+    local _, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
+    MidcastManager = mm
 
     -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
     EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
@@ -36,10 +37,15 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
+---   Pre-midcast hook (CureMode SIRD/Potency selection for Cure and Curaga)
+---   @param spell table Spell information from GearSwap
+---   @param action string Action type
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments for cancellation/customization
 function job_midcast(spell, action, spellMap, eventArgs)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- HEALING MAGIC - CURE/CURAGA (CureMode SIRD logic)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Handle CureMode (Potency vs SIRD) BEFORE MidcastManager
     -- This ensures correct set selection based on state
 
@@ -82,6 +88,11 @@ function job_midcast(spell, action, spellMap, eventArgs)
     end
 end
 
+---   Post-midcast hook (MidcastManager routing and gear selection)
+---   @param spell table Spell information from GearSwap
+---   @param action string Action type
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments for cancellation/customization
 function job_post_midcast(spell, action, spellMap, eventArgs)
     -- Lazy load modules on first spell cast
     ensure_modules_loaded()
@@ -107,9 +118,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- STATUS REMOVAL (Cursna, Paralyna, Erase, etc.)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if spellMap == 'StatusRemoval' then
         MidcastManager.select_set({
             skill = 'StatusRemoval',
@@ -123,9 +134,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- ENHANCING MAGIC (Database-driven spell_family routing)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if spell.skill == 'Enhancing Magic' then
         -- Use database-driven spell_family routing (replaces manual pattern matching)
         -- Database automatically routes: Regen, Refresh, BarElement, BarAilment, Stoneskin, Aquaveil, Boost, etc.
@@ -144,9 +155,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DIVINE MAGIC
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if spell.skill == 'Divine Magic' then
         MidcastManager.select_set({
             skill = 'Divine Magic',
@@ -155,9 +166,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- ENFEEBLING MAGIC
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if spell.skill == 'Enfeebling Magic' then
         -- Repose (WHM-specific sleep)
         if spell.name == 'Repose' then
@@ -172,9 +183,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DARK MAGIC / ELEMENTAL MAGIC
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if spell.skill == 'Dark Magic' then
         MidcastManager.select_set({
             skill = 'Dark Magic',
@@ -192,21 +203,21 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- SPELL MAP CUSTOMIZATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SPELL MAP CUSTOMIZATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Custom spell mapping for WHM-specific behavior
---- Called by Mote-Include before spell is cast to determine set selection.
+---   Custom spell mapping for WHM-specific behavior
+---   Called by Mote-Include before spell is cast to determine set selection.
 ---
---- @param spell table Spell data
---- @param default_spell_map string Default mapping from Mote-Include
---- @return string|nil Custom spell map or nil to use default
+---   @param spell table Spell data
+---   @param default_spell_map string Default mapping from Mote-Include
+---   @return string|nil Custom spell map or nil to use default
 function job_get_spell_map(spell, default_spell_map)
     if spell.action_type == 'Magic' then
-        -- ==========================================================================
+        -- ══════════════════════════════════════════════════════════════════════════
         -- CURE MAPPING (with Afflatus Solace detection)
-        -- ==========================================================================
+        -- ══════════════════════════════════════════════════════════════════════════
         -- Map Cure/Curaga to CureMelee if engaged (checked FIRST, higher priority)
         if (default_spell_map == 'Cure' or default_spell_map == 'Curaga') and player and player.status == 'Engaged' then
             return 'CureMelee'
@@ -218,9 +229,9 @@ function job_get_spell_map(spell, default_spell_map)
             return 'CureSolace'
         end
 
-        -- ==========================================================================
+        -- ══════════════════════════════════════════════════════════════════════════
         -- ENFEEBLING MAPPING (MND vs INT)
-        -- ==========================================================================
+        -- ══════════════════════════════════════════════════════════════════════════
         -- Map enfeebling spells based on primary stat
         if spell.skill == 'Enfeebling Magic' then
             if spell.type == 'WhiteMagic' then
@@ -232,17 +243,10 @@ function job_get_spell_map(spell, default_spell_map)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 _G.job_midcast = job_midcast
 _G.job_post_midcast = job_post_midcast
 _G.job_get_spell_map = job_get_spell_map
-
-local WHM_MIDCAST = {}
-WHM_MIDCAST.job_midcast = job_midcast
-WHM_MIDCAST.job_post_midcast = job_post_midcast
-WHM_MIDCAST.job_get_spell_map = job_get_spell_map
-
-return WHM_MIDCAST

@@ -7,9 +7,9 @@
 ---
 --- @file Tetsouo_COR.lua
 --- @author Tetsouo
---- @version 1.2.0 - Production Release
+--- @version 1.2.0
 --- @date Created: 2025-10-07
---- @date Updated: 2025-10-09 - Party job detection via packet parsing (production-ready)
+--- @date Updated: 2025-10-09 - Party job detection via packet parsing
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+, packets library, resources library
 ---
 --- Key Features:

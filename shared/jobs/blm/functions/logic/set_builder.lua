@@ -1,20 +1,20 @@
----============================================================================
---- BLM Set Builder - Complete Equipment Set Construction Logic
----============================================================================
---- Provides comprehensive logic for building engaged and idle sets with:
---- - HybridMode detection (PDT/Normal)
---- - Town/Adoulin detection (idle only)
---- - Weapon set application (MainWeapon/SubWeapon)
---- - Movement gear application
---- - Dynamic MP-Based Sets (High/Low MP gear selection)
---- - Magic Burst Integration (specialized burst mode equipment)
---- - Manawall Support (emergency buff equipment)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BLM Set Builder - Complete Equipment Set Construction Logic
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Provides comprehensive logic for building engaged and idle sets with:
+---   - HybridMode detection (PDT/Normal)
+---   - Town/Adoulin detection (idle only)
+---   - Weapon set application (MainWeapon/SubWeapon)
+---   - Movement gear application
+---   - Dynamic MP-Based Sets (High/Low MP gear selection)
+---   - Magic Burst Integration (specialized burst mode equipment)
+---   - Manawall Support (emergency buff equipment)
 ---
---- @file jobs/blm/functions/logic/set_builder.lua
---- @author Tetsouo
---- @version 2.0 (Merged with SET_CUSTOMIZATION.lua)
---- @date Created: 2025-10-15 | Migrated: 2025-10-15
----============================================================================
+---   @file    jobs/blm/functions/logic/set_builder.lua
+---   @author  Tetsouo
+---   @version 2.0 (Merged with SET_CUSTOMIZATION.lua)
+---   @date    Created: 2025-10-15 | Migrated: 2025-10-15
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local SetBuilder = {}
 
@@ -24,25 +24,25 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 -- Load message formatter for error reporting
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
----============================================================================
---- CONSTANTS AND CONFIGURATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   CONSTANTS AND CONFIGURATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- BLM job constants for MP conservation and set selection
---- @type table<string, number> Constants for BLM functionality
+---   BLM job constants for MP conservation and set selection
+---   @type table<string, number> Constants for BLM functionality
 local BLM_CONSTANTS = {
     LOW_MP_THRESHOLD = 1000, -- MP threshold for switching to conservation gear
 }
 
----============================================================================
---- DYNAMIC MP-BASED SET MANAGEMENT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DYNAMIC MP-BASED SET MANAGEMENT
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get dynamic elemental magic set based on MP and casting mode
---- Returns appropriate equipment set without mutating global sets
---- @param castingMode string Current casting mode ('Normal' or other for MagicBurst)
---- @param currentMP number Player's current MP value
---- @return table Equipment set for current conditions
+---   Get dynamic elemental magic set based on MP and casting mode
+---   Returns appropriate equipment set without mutating global sets
+---   @param castingMode string Current casting mode ('Normal' or other for MagicBurst)
+---   @param currentMP number Player's current MP value
+---   @return table Equipment set for current conditions
 function SetBuilder.get_dynamic_elemental_set(castingMode, currentMP)
     -- Validate that dynamic sets are available
     if not blm_dynamic_sets then
@@ -63,8 +63,8 @@ function SetBuilder.get_dynamic_elemental_set(castingMode, currentMP)
     end
 end
 
---- Apply MP-based gear optimization to current sets
---- Gets appropriate gear set based on current MP and casting mode without mutating global sets
+---   Apply MP-based gear optimization to current sets
+---   Gets appropriate gear set based on current MP and casting mode without mutating global sets
 function SetBuilder.SaveMP()
     -- Validate required state and player data
     if not player or not player.mp then
@@ -99,15 +99,15 @@ function SetBuilder.SaveMP()
     end
 end
 
----============================================================================
---- SET AUGMENTATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SET AUGMENTATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply weapon sets to result
---- BLM uses main weapon + sub weapon
---- Note: Combat Mode locking is handled via disable() in job_update()
---- @param result table Current equipment set
---- @return table Modified set with weapons applied
+---   Apply weapon sets to result
+---   BLM uses main weapon + sub weapon
+---   Note: Combat Mode locking is handled via disable() in job_update()
+---   @param result table Current equipment set
+---   @return table Modified set with weapons applied
 function SetBuilder.apply_weapon(result)
     if not result then
         return {}
@@ -142,17 +142,17 @@ function SetBuilder.apply_weapon(result)
     return result
 end
 
---- Apply movement speed gear to result (inherited from BaseSetBuilder)
+---   Apply movement speed gear to result (inherited from BaseSetBuilder)
 SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 
 
----============================================================================
---- COMPLETE SET BUILDERS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COMPLETE SET BUILDERS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build complete engaged set (base selection + HybridMode + weapons + movement)
---- @param base_set table Base engaged set from Mote
---- @return table Complete engaged set
+---   Build complete engaged set (base selection + HybridMode + weapons + movement)
+---   @param base_set table Base engaged set from Mote
+---   @return table Complete engaged set
 function SetBuilder.build_engaged_set(base_set)
     -- Step 1: Use base set from Mote (already includes HybridMode)
     local result = base_set or sets.engaged.Normal or {}
@@ -163,9 +163,9 @@ function SetBuilder.build_engaged_set(base_set)
     return result
 end
 
---- Build complete idle set (HybridMode + town detection + weapons + movement + buffs)
---- @param base_set table Base idle set from Mote
---- @return table Complete idle set
+---   Build complete idle set (HybridMode + town detection + weapons + movement + buffs)
+---   @param base_set table Base idle set from Mote
+---   @return table Complete idle set
 function SetBuilder.build_idle_set(base_set)
     -- Step 1: Use base set from Mote (already includes HybridMode)
     local result = base_set or sets.idle.Normal or {}
@@ -193,14 +193,14 @@ function SetBuilder.build_idle_set(base_set)
     return result
 end
 
----============================================================================
---- BUFF-BASED SET MODIFICATIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BUFF-BASED SET MODIFICATIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply buff-specific gear modifications
---- @param current_set table Current equipment set
---- @param buff_name string Buff name
---- @return table Modified set
+---   Apply buff-specific gear modifications
+---   @param current_set table Current equipment set
+---   @param buff_name string Buff name
+---   @return table Modified set
 function SetBuilder.apply_buff_gear(current_set, buff_name)
     if not current_set or not buff_name then
         return current_set
@@ -219,9 +219,9 @@ function SetBuilder.apply_buff_gear(current_set, buff_name)
     return current_set
 end
 
---- Get all currently relevant buff modifications for BLM
---- @param baseSet table Base equipment set
---- @return table Set with all relevant buff modifications applied
+---   Get all currently relevant buff modifications for BLM
+---   @param baseSet table Base equipment set
+---   @return table Set with all relevant buff modifications applied
 function SetBuilder.apply_all_buff_sets(baseSet)
     local modifiedSet = baseSet or {}
 
@@ -238,12 +238,12 @@ function SetBuilder.apply_all_buff_sets(baseSet)
     return modifiedSet
 end
 
----============================================================================
---- SET VALIDATION AND UTILITIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SET VALIDATION AND UTILITIES
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Validate that required dynamic sets are configured
---- @return boolean true if dynamic sets are properly configured
+---   Validate that required dynamic sets are configured
+---   @return boolean true if dynamic sets are properly configured
 function SetBuilder.validate_dynamic_sets()
     if not blm_dynamic_sets then
         return false
@@ -265,8 +265,8 @@ function SetBuilder.validate_dynamic_sets()
     return true
 end
 
---- Get current MP threshold status
---- @return string 'low' or 'high' based on current MP
+---   Get current MP threshold status
+---   @return string 'low' or 'high' based on current MP
 function SetBuilder.get_mp_status()
     if not player or not player.mp then
         return 'unknown'
@@ -275,10 +275,10 @@ function SetBuilder.get_mp_status()
     return player.mp < BLM_CONSTANTS.LOW_MP_THRESHOLD and 'low' or 'high'
 end
 
---- Get recommended set name for current conditions
---- @param castingMode string Current casting mode
---- @param currentMP number Current MP value (optional, uses player.mp if not provided)
---- @return string Recommended set name
+---   Get recommended set name for current conditions
+---   @param castingMode string Current casting mode
+---   @param currentMP number Current MP value (optional, uses player.mp if not provided)
+---   @return string Recommended set name
 function SetBuilder.get_recommended_set_name(castingMode, currentMP)
     local mp = currentMP or (player and player.mp) or 0
     local mpStatus = mp < BLM_CONSTANTS.LOW_MP_THRESHOLD and 'Low' or 'High'
@@ -287,8 +287,8 @@ function SetBuilder.get_recommended_set_name(castingMode, currentMP)
     return modeStatus .. 'Set' .. mpStatus .. 'MP'
 end
 
---- Update MP threshold configuration
---- @param newThreshold number New MP threshold value
+---   Update MP threshold configuration
+---   @param newThreshold number New MP threshold value
 function SetBuilder.update_mp_threshold(newThreshold)
     if type(newThreshold) == 'number' and newThreshold > 0 then
         BLM_CONSTANTS.LOW_MP_THRESHOLD = newThreshold
@@ -297,14 +297,14 @@ function SetBuilder.update_mp_threshold(newThreshold)
     return false
 end
 
---- Get current MP threshold value
---- @return number Current MP threshold
+---   Get current MP threshold value
+---   @return number Current MP threshold
 function SetBuilder.get_mp_threshold()
     return BLM_CONSTANTS.LOW_MP_THRESHOLD
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return SetBuilder

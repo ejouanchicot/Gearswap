@@ -1,10 +1,10 @@
----============================================================================
---- BLM Buff Management Module - Automated Self-Buffing System
----============================================================================
---- Professional buff management providing automated self-buffing, buff monitoring,
---- and intelligent buff maintenance for Black Mage characters.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BLM Buff Management Module - Automated Self-Buffing System
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Professional buff management providing automated self-buffing, buff monitoring,
+---   and intelligent buff maintenance for Black Mage characters.
 ---
---- Features:
+---   Features:
 ---   • Automated Self-Buffing (Stoneskin, Blink, Aquaveil, Ice Spikes)
 ---   • Lag Compensation (anti-spam protection with secure casting)
 ---   • Buff Duration Tracking (intelligent refresh timing)
@@ -12,15 +12,15 @@
 ---   • Status Reporting (unified buff status display)
 ---   • Recast Management (smart cooldown handling and queue processing)
 ---
---- Dependencies:
+---   Dependencies:
 ---   • CooldownChecker (for recast validation)
 ---   • MessageFormatter (for status display)
 ---
---- @file jobs/blm/functions/logic/buff_manager.lua
---- @author Tetsouo
---- @version 2.0 (Migrated from old BUFF_MANAGEMENT.lua)
---- @date Migrated: 2025-10-15
----============================================================================
+---   @file    jobs/blm/functions/logic/buff_manager.lua
+---   @author  Tetsouo
+---   @version 2.0 (Migrated from old BUFF_MANAGEMENT.lua)
+---   @date    Migrated: 2025-10-15
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local BuffManager = {}
 
@@ -30,13 +30,13 @@ local MessageBuffs = require('shared/utils/messages/formatters/magic/message_buf
 local CooldownChecker = require('shared/utils/precast/cooldown_checker')
 local BLMMessages = require('shared/utils/messages/formatters/jobs/message_blm')
 
----============================================================================
---- BUFF CONFIGURATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BUFF CONFIGURATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Buff spell configuration data
---- Contains all necessary information for automated buff management
---- @type table<number, table> Array of buff spell definitions
+---   Buff spell configuration data
+---   Contains all necessary information for automated buff management
+---   @type table<number, table> Array of buff spell definitions
 local BUFF_SPELLS = {
     { name = 'Stoneskin',  delay = 0, buffName = 'Stoneskin',  duration = 488 },
     { name = 'Blink',      delay = 6, buffName = 'Blink',      duration = 488 },
@@ -44,21 +44,21 @@ local BUFF_SPELLS = {
     { name = 'Ice Spikes', delay = 6, buffName = 'Ice Spikes', duration = 274 }
 }
 
---- Anti-spam protection: Track last cast time for each spell
---- @type table<string, number> Map of spell name to last cast timestamp
+---   Anti-spam protection: Track last cast time for each spell
+---   @type table<string, number> Map of spell name to last cast timestamp
 local last_cast_times = {}
 
---- Minimum delay between casts (in seconds) to prevent spam
+---   Minimum delay between casts (in seconds) to prevent spam
 local CAST_COOLDOWN = 2.0
 
----============================================================================
---- ANTI-SPAM PROTECTION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ANTI-SPAM PROTECTION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Check if spell is safe to cast (anti-spam protection)
---- @param spellName string Name of the spell to check
---- @param currentTime number Current timestamp
---- @return boolean true if safe to cast
+---   Check if spell is safe to cast (anti-spam protection)
+---   @param spellName string Name of the spell to check
+---   @param currentTime number Current timestamp
+---   @return boolean true if safe to cast
 local function isSpellSafeToCast(spellName, currentTime)
     local lastCast = last_cast_times[spellName]
     if not lastCast then
@@ -68,21 +68,21 @@ local function isSpellSafeToCast(spellName, currentTime)
     return (currentTime - lastCast) >= CAST_COOLDOWN
 end
 
---- Update last cast time for a spell
---- @param spellName string Name of the spell
---- @param currentTime number Current timestamp
+---   Update last cast time for a spell
+---   @param spellName string Name of the spell
+---   @param currentTime number Current timestamp
 local function updateLastCastTime(spellName, currentTime)
     last_cast_times[spellName] = currentTime
 end
 
----============================================================================
---- BUFF MANAGEMENT CORE
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BUFF MANAGEMENT CORE
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Manages self-buff spells in FFXI
---- Checks recast time of each spell and if the buff is active
---- If buff is not active or about to expire, queues the spell to be cast
---- ENHANCED: Includes lag compensation and optimized loop processing
+---   Manages self-buff spells in FFXI
+---   Checks recast time of each spell and if the buff is active
+---   If buff is not active or about to expire, queues the spell to be cast
+---   ENHANCED: Includes lag compensation and optimized loop processing
 function BuffManager.BuffSelf()
     -- Cache frequently accessed values for performance
     local currentTime = os.clock() -- More precise than os.time() for anti-spam
@@ -175,16 +175,16 @@ function BuffManager.BuffSelf()
     return BuffManager._displayBuffStatus(spells, buffActive, spellRecasts)
 end
 
----============================================================================
---- STATUS DISPLAY SYSTEM
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   STATUS DISPLAY SYSTEM
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Display unified buff status using the message system
---- Uses same format as WAR (MessageBuffs.show_buff_status)
---- @param spells table Array of spell definitions
---- @param buffActive table Current active buffs
---- @param spellRecasts table Current spell recast times (UNUSED - no cooldowns displayed)
---- @return boolean true if status was displayed
+---   Display unified buff status using the message system
+---   Uses same format as WAR (MessageBuffs.show_buff_status)
+---   @param spells table Array of spell definitions
+---   @param buffActive table Current active buffs
+---   @param spellRecasts table Current spell recast times (UNUSED - no cooldowns displayed)
+---   @return boolean true if status was displayed
 function BuffManager._displayBuffStatus(spells, buffActive, spellRecasts)
     if not MessageBuffs then
         return false
@@ -215,19 +215,19 @@ function BuffManager._displayBuffStatus(spells, buffActive, spellRecasts)
     return false
 end
 
----============================================================================
---- BUFF QUERY FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BUFF QUERY FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Check if a specific buff is active
---- @param buffName string Name of the buff to check
---- @return boolean true if buff is active
+---   Check if a specific buff is active
+---   @param buffName string Name of the buff to check
+---   @return boolean true if buff is active
 function BuffManager.isBuffActive(buffName)
     return buffactive and buffactive[buffName] or false
 end
 
---- Get all currently active buffs from our managed set
---- @return table<string, boolean> Map of buff names to active status
+---   Get all currently active buffs from our managed set
+---   @return table<string, boolean> Map of buff names to active status
 function BuffManager.getActiveBuffs()
     local activeBuffs = {}
     if not buffactive then
@@ -241,8 +241,8 @@ function BuffManager.getActiveBuffs()
     return activeBuffs
 end
 
---- Get recast times for all managed buffs
---- @return table<string, number> Map of spell names to recast times (in centiseconds)
+---   Get recast times for all managed buffs
+---   @return table<string, number> Map of spell names to recast times (in centiseconds)
 function BuffManager.getBuffRecasts()
     local recasts = {}
     local spellRecasts = windower.ffxi.get_spell_recasts()
@@ -270,13 +270,13 @@ function BuffManager.getBuffRecasts()
     return recasts
 end
 
----============================================================================
---- MANUAL BUFF CONTROL
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MANUAL BUFF CONTROL
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Cast a specific buff spell manually
---- @param spellName string Name of the spell to cast
---- @return boolean true if spell was queued for casting
+---   Cast a specific buff spell manually
+---   @param spellName string Name of the spell to cast
+---   @return boolean true if spell was queued for casting
 function BuffManager.castBuff(spellName)
     -- Find spell definition
     local spellDef = nil
@@ -312,8 +312,8 @@ function BuffManager.castBuff(spellName)
     return false
 end
 
---- Get list of available buff spells
---- @return table<string> Array of spell names that can be managed
+---   Get list of available buff spells
+---   @return table<string> Array of spell names that can be managed
 function BuffManager.getAvailableBuffs()
     local buffs = {}
     for i, spell in ipairs(BUFF_SPELLS) do

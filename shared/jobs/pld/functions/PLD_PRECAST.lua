@@ -1,26 +1,18 @@
----============================================================================
---- PLD Precast Module - Precast Action Handling & Cooldown Monitoring
----============================================================================
---- Handles all precast actions for Paladin job:
----   • Debuff blocking (Amnesia, Silence, Stun)
----   • Universal cooldown checking (abilities/spells)
----   • Auto-ability triggering (Majesty, Divine Emblem)
----   • Weaponskill validation and range checking
----   • TP bonus optimization for weaponskills
----   • Fast Cast gear for spells
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PLD Precast Module - Precast Action Handling & Auto-Abilities
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Debuff guard, cooldown check, auto-abilities (Majesty/Divine Emblem),
+---   WS handling.
 ---
---- Uses centralized systems for validation and messaging consistency.
----
---- @file    PLD_PRECAST.lua
---- @author  Tetsouo
---- @version 1.0.0
---- @date    Created: 2025-10-03
---- @requires Tetsouo architecture, MessageFormatter, CooldownChecker
----============================================================================
+---   @file    PLD_PRECAST.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-05
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local CooldownChecker = nil
 local AbilityHelper = nil
@@ -50,17 +42,7 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
----============================================================================
---- COOLDOWN EXCLUSIONS
----============================================================================
---- Abilities that should NEVER be checked for cooldown
---- Player manages these charges/cooldowns manually
----
---- Scholar Stratagems (PLD/SCH):
----   • Charge-based system (0-5 charges max)
----   • Complex recharge timing (varies by job level)
----   • Player manages strategically - no automation needed
----============================================================================
+-- Scholar Stratagems skipped from cooldown check (charge-based, player manages manually)
 
 local cooldown_exclusions = {
     -- Scholar Stratagems (charge-based abilities)
@@ -89,16 +71,7 @@ local cooldown_exclusions = {
     ['Klimaform'] = true
 }
 
----============================================================================
---- AUTO-ABILITY SYSTEM
----============================================================================
---- Automatically triggers beneficial abilities before specific spells.
---- Uses AbilityHelper for smart cooldown checking and timing.
----
---- Triggered abilities:
----   • Divine Emblem - Before Flash (enmity boost)
----   • Majesty - Before Protect III/IV/V, Cure III/IV (potency boost)
----============================================================================
+-- Auto-abilities: Divine Emblem before Flash, Majesty before Protect/Cure
 
 local auto_abilities = {
     ['Flash'] = function(spell, eventArgs)
@@ -121,33 +94,20 @@ local auto_abilities = {
     end
 }
 
----============================================================================
---- PRECAST HOOK
----============================================================================
-
---- Called before any action (WS, JA, spell, etc.)
---- Processing order (CRITICAL - do not reorder):
----   1. Debuff guard (PrecastGuard) - blocks if silenced/amnesia/stunned
----   2. Cooldown check (CooldownChecker) - validates ability/spell ready
----   3. Auto-abilities (AbilityHelper) - triggers Majesty/Divine Emblem
----   4. WS validation (WeaponSkillManager) - range check + validation
----   5. TP bonus calculation (TPBonusCalculator) - optimize WS gear
----   6. PLD-specific gear (Fast Cast for cures/Flash)
----
---- @param spell     table  Spell/ability data
---- @param action    string Action type (not used)
---- @param spellMap  string Spell mapping (not used)
---- @param eventArgs table  Event arguments (cancel flag, etc.)
---- @return void
+--- Precast order: debuff guard → cooldown → auto-abilities → WS handler → job gear
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
-    -- STEP 1: Debuff guard
+    -- Debuff guard
     if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
         return
     end
 
-    -- STEP 2: Cooldown check (with exclusions for Scholar Stratagems)
+    -- Cooldown check (skip Scholar Stratagems)
     local is_excluded = cooldown_exclusions[spell.name]
     if not is_excluded and CooldownChecker then
         if spell.action_type == 'Ability' then
@@ -180,11 +140,11 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- POST-PRECAST HOOK
----============================================================================
-
---- Apply TP bonus gear (unified via WSPrecastHandler)
+---   Apply final gear adjustments before equipping
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
     if WSPrecastHandler then
@@ -192,16 +152,9 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Export globally for GearSwap
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
-
--- Export as module (for future require() usage)
-return {
-    job_precast = job_precast,
-    job_post_precast = job_post_precast
-}

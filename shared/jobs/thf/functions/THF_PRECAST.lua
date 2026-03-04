@@ -1,8 +1,8 @@
----============================================================================
---- THF Precast Module - Precast Action Handling & Cooldown Monitoring
----============================================================================
---- Handles all precast actions for Thief job with intelligent SA/TA combo
---- detection, treasure hunter tagging, and weaponskill optimization:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   THF Precast Module - Precast Action Handling & Cooldown Monitoring
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all precast actions for Thief job with intelligent SA/TA combo
+---   detection, treasure hunter tagging, and weaponskill optimization:
 ---   • Weaponskill precast (Fast Cast, TP bonus optimization, SA/TA variants)
 ---   • Job ability precast (Sneak Attack, Trick Attack, Flee, Hide, etc.)
 ---   • Fast cast for subjob spells (NIN/DNC/WAR/etc.)
@@ -13,24 +13,24 @@
 ---   • SA/TA pending flag tracking (instant detection before buff appears)
 ---   • Treasure Hunter tagging support (TreasureMode state)
 ---
---- Processing Order (CRITICAL - do not reorder):
+---   Processing Order (CRITICAL - do not reorder):
 ---   1. Debuff guard (PrecastGuard) - blocks if silenced/amnesia/stunned
 ---   2. Cooldown check (CooldownChecker) - validates ability/spell ready
 ---   3. SA/TA pending flags (instant detection before buff appears)
----   4. WS validation (WeaponSkillManager) - TP check + range check
+---   4. WS validation (WSPrecastHandler) - TP check + range check
 ---   5. TP bonus calculation (TPBonusCalculator) - optimize WS gear
 ---   6. SA/TA variant selection (SATAManager) - apply set variants
 ---
---- @file    THF_PRECAST.lua
---- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-10-06
---- @requires Tetsouo architecture, THF logic modules, TPBonusCalculator
----============================================================================
+---   @file    THF_PRECAST.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-06
+---   @requires Tetsouo architecture, THF logic modules, TPBonusCalculator
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local CooldownChecker = nil
 local PrecastGuard = nil
@@ -52,22 +52,23 @@ local function ensure_modules_loaded()
     local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
     WSPrecastHandler = wph
 
-    SATAManager = require('shared/jobs/thf/functions/logic/sa_ta_manager')
+    local _, sm = pcall(require, 'shared/jobs/thf/functions/logic/sa_ta_manager')
+    SATAManager = sm
     THFTPConfig = _G.THFTPConfig or {}
 
     modules_loaded = true
 end
 
----============================================================================
---- PRECAST HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PRECAST HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Called before any action (WS, JA, spell, etc.)
---- @param spell table Spell/ability data
---- @param action string Action type
---- @param spellMap string Spell mapping
---- @param eventArgs table Event arguments
---- @return void
+---   Called before any action (WS, JA, spell, etc.)
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
+---   @return void
 function job_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
@@ -104,11 +105,15 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- POST-PRECAST HOOK (Called AFTER set selection, BEFORE equipping)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   POST-PRECAST HOOK (Called AFTER set selection, BEFORE equipping)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply THF-specific gear adjustments
+---   Apply THF-specific gear adjustments
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
@@ -123,17 +128,9 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Make job_precast available globally for GearSwap
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
-
--- Also export as module for potential future use
-local THF_PRECAST = {}
-THF_PRECAST.job_precast = job_precast
-THF_PRECAST.job_post_precast = job_post_precast
-
-return THF_PRECAST

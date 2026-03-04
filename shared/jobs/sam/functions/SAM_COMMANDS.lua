@@ -1,22 +1,22 @@
----============================================================================
---- SAM Commands Module - Command Handling
----============================================================================
---- Handles job-specific custom commands for Samurai job:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SAM Commands Module - Command Handling
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles job-specific custom commands for Samurai job:
 ---   • Common commands (reload, checksets, waltz, jump, etc.)
 ---   • UI commands (toggle, update, reload UI)
 ---   • SAM buff commands (hasso, seigan, thirdeye)
 ---   • State change UI synchronization
 ---
---- @file SAM_COMMANDS.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-21
----============================================================================
+---   @file    SAM_COMMANDS.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-21
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES (LAZY LOADING for performance)
----============================================================================
--- Command handlers loaded on first command (saves ~50ms at startup)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
+-- Command handlers loaded on first command
 local UICommands = nil
 local CommonCommands = nil
 local WatchdogCommands = nil
@@ -33,13 +33,13 @@ local function ensure_commands_loaded()
     end
 end
 
----============================================================================
---- COMMAND HANDLER HOOK
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COMMAND HANDLER HOOK
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Handle job-specific self commands
---- @param cmdParams table Command parameters array
---- @param eventArgs table Event arguments with handled flag
+---   Handle job-specific self commands
+---   @param cmdParams table Command parameters array
+---   @param eventArgs table Event arguments with handled flag
 function job_self_command(cmdParams, eventArgs)
     if not cmdParams or #cmdParams == 0 then
         return
@@ -50,9 +50,9 @@ function job_self_command(cmdParams, eventArgs)
 
     local command = cmdParams[1]:lower()
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DUAL-BOXING: Receive alt job update
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'altjobupdate' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         if cmdParams[2] and cmdParams[3] then
@@ -63,7 +63,7 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     -- DUAL-BOXING: Handle job request from MAIN
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'requestjob' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         DualBoxManager.handle_job_request()
@@ -71,9 +71,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- WATCHDOG COMMANDS
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if WatchdogCommands.is_watchdog_command(command) then
         if WatchdogCommands.handle_command(cmdParams, eventArgs) then
             eventArgs.handled = true
@@ -81,9 +81,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- COMMON COMMANDS (reload, checksets, waltz, etc.)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if CommonCommands.is_common_command(command) then
         -- Extract arguments after command
         local args = {}
@@ -97,18 +97,18 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- UI COMMANDS (ui toggle, update, reload)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if UICommands.is_ui_command(command) then
         UICommands.handle_ui_command(cmdParams)
         eventArgs.handled = true
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DEBUG COMMANDS
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'debugmidcast' then
         -- Toggle MidcastManager debug mode
         local MidcastManager = require('shared/utils/midcast/midcast_manager')
@@ -121,9 +121,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- CUSTOM CYCLE STATE (UI-aware cycle)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Intercepts cycle commands to check UI visibility
     -- If UI visible: custom cycle + UI update (no message)
     -- If UI invisible: delegate to Mote-Include (shows message)
@@ -133,22 +133,22 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- SAM-SPECIFIC COMMANDS
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Add SAM-specific commands here if needed
 end
 
----============================================================================
---- STATE CHANGE HOOK
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   STATE CHANGE HOOK
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Update UI when state changes (MainWeapon, SubWeapon, HybridMode, etc.)
---- Called by Mote-Include after any state change.
+---   Update UI when state changes (MainWeapon, SubWeapon, HybridMode, etc.)
+---   Called by Mote-Include after any state change.
 ---
---- @param stateField string State that changed (e.g., "MainWeapon")
---- @param newValue   string New value
---- @param oldValue   string Previous value
+---   @param stateField string State that changed (e.g., "MainWeapon")
+---   @param newValue   string New value
+---   @param oldValue   string Previous value
 function job_state_change(stateField, newValue, oldValue)
     -- Skip UI update for Moving state (handled by AutoMove with flag)
     if stateField == 'Moving' then
@@ -161,15 +161,9 @@ function job_state_change(stateField, newValue, oldValue)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 _G.job_self_command = job_self_command
 _G.job_state_change = job_state_change
-
-local SAM_COMMANDS = {}
-SAM_COMMANDS.job_self_command = job_self_command
-SAM_COMMANDS.job_state_change = job_state_change
-
-return SAM_COMMANDS

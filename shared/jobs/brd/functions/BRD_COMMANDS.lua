@@ -1,9 +1,9 @@
----============================================================================
---- BRD Commands Module - Custom Command Handling
----============================================================================
---- Handles BRD-specific commands via //gs c [command]
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BRD Commands Module - Custom Command Handling
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles BRD-specific commands via //gs c [command]
 ---
---- Job Abilities (6 commands):
+---   Job Abilities (6 commands):
 ---   soul_voice (sv)   - Soul Voice 1hr
 ---   nightingale (ni)  - Nightingale
 ---   troubadour (tr)   - Troubadour
@@ -11,13 +11,13 @@
 ---   marcato (ma)      - Marcato
 ---   pianissimo (pi)   - Pianissimo
 ---
---- Debuff Songs (4 commands):
+---   Debuff Songs (4 commands):
 ---   lullaby           - Horde Lullaby (AOE: auto-upgrade to II if I on cooldown)
 ---   lullaby2, foe     - Foe Lullaby II (Single: auto-downgrade to I if II on cooldown)
 ---   elegy             - Carnage Elegy (auto-downgrade to Battlefield if on cooldown)
 ---   requiem           - Foe Requiem VII (auto-downgrade to VI if on cooldown)
 ---
---- Pack Rotations (10 commands):
+---   Pack Rotations (10 commands):
 ---   songs, meleesong, melee, allsongs - Cast current song pack
 ---   refresh, meleerefresh             - Refresh melee songs (no dummies)
 ---   tanksong, tank                    - Cast Tank pack
@@ -25,32 +25,32 @@
 ---   healersong, healer                - Cast Healer pack
 ---   healerrefresh                     - Refresh Healer pack (no dummies)
 ---
---- Dummy Songs (3 commands):
+---   Dummy Songs (3 commands):
 ---   dummy, dummysongs - Cast all dummy songs
 ---   dummy1            - Cast dummy song 1 (Gold Capriccio)
 ---   dummy2            - Cast dummy song 2 (Goblin Gavotte)
 ---
---- Element/Type Songs (3 commands):
+---   Element/Type Songs (3 commands):
 ---   threnody          - Cast threnody (current ThrenodyElement state)
 ---   carol             - Cast carol (current CarolElement state)
 ---   etude             - Cast etude (current EtudeType state)
 ---
---- Individual Song Slots (5 commands):
+---   Individual Song Slots (5 commands):
 ---   song1             - Cast song from slot 1 of current pack
 ---   song2             - Cast song from slot 2 of current pack
 ---   song3             - Cast song from slot 3 of current pack
 ---   song4             - Cast song from slot 4 of current pack
 ---   song5             - Cast song from slot 5 of current pack
 ---
---- @file BRD_COMMANDS.lua
---- @author Tetsouo
---- @version 3.0 - Complete migration from old system
---- @date Created: 2025-10-13
----============================================================================
+---   @file    BRD_COMMANDS.lua
+---   @author  Tetsouo
+---   @version 3.0 - Complete migration from old system
+---   @date    Created: 2025-10-13
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local CommonCommands = nil
 local UICommands = nil
@@ -76,15 +76,15 @@ local function ensure_commands_loaded()
     end
 end
 
----============================================================================
---- HELPER FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HELPER FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Cast a song by name with optional Pianissimo auto-detection
---- Auto-activates Marcato for Honor March if Nitro active (without Soul Voice)
---- Auto-activates Pianissimo if targeting a party member
---- @param song_name string Song name to cast
---- @param auto_pianissimo boolean Enable auto-detection (default false)
+---   Cast a song by name with optional Pianissimo auto-detection
+---   Auto-activates Marcato for Honor March if Nitro active (without Soul Voice)
+---   Auto-activates Pianissimo if targeting a party member
+---   @param song_name string Song name to cast
+---   @param auto_pianissimo boolean Enable auto-detection (default false)
 local function cast_song(song_name, auto_pianissimo)
     if not song_name then
         return
@@ -155,8 +155,8 @@ local function cast_song(song_name, auto_pianissimo)
     send_command('input /ma "' .. song_name .. '" <stpc>')
 end
 
---- Use a job ability by name
---- @param ability_name string Ability name
+---   Use a job ability by name
+---   @param ability_name string Ability name
 local function use_ability(ability_name)
     if not ability_name then
         return
@@ -164,8 +164,8 @@ local function use_ability(ability_name)
     send_command('input /ja "' .. ability_name .. '" <me>')
 end
 
---- Get threnody name for current element
---- @return string Threnody spell name
+---   Get threnody name for current element
+---   @return string Threnody spell name
 local function get_current_threnody()
     if not state or not state.ThrenodyElement then
         return nil
@@ -186,8 +186,8 @@ local function get_current_threnody()
     return threnodies[element]
 end
 
---- Get carol name for current element
---- @return string Carol spell name
+---   Get carol name for current element
+---   @return string Carol spell name
 local function get_current_carol()
     if not state or not state.CarolElement then
         return nil
@@ -208,8 +208,8 @@ local function get_current_carol()
     return carols[element]
 end
 
---- Get etude name for current type
---- @return string Etude spell name
+---   Get etude name for current type
+---   @return string Etude spell name
 local function get_current_etude()
     if not state or not state.EtudeType then
         return nil
@@ -229,13 +229,13 @@ local function get_current_etude()
     return etudes[stat]
 end
 
----============================================================================
---- COMMAND HANDLERS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COMMAND HANDLERS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Handle custom BRD commands
---- @param cmdParams table Command parameters
---- @param eventArgs table Event arguments
+---   Handle custom BRD commands
+---   @param cmdParams table Command parameters
+---   @param eventArgs table Event arguments
 function job_self_command(cmdParams, eventArgs)
     -- Lazy load command handlers on first command
     ensure_commands_loaded()
@@ -246,9 +246,9 @@ function job_self_command(cmdParams, eventArgs)
 
     local command = cmdParams[1]:lower()
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DUAL-BOXING: Receive alt job update
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'altjobupdate' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         if cmdParams[2] and cmdParams[3] then
@@ -259,7 +259,7 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     -- DUAL-BOXING: Handle job request from MAIN
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'requestjob' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         DualBoxManager.handle_job_request()
@@ -274,9 +274,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- WARP RING FIX COMMAND
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'forceidle' then
         -- Force equip idle gear (used by warp system to fix stuck rings after interruption)
         -- Uses multiple retry attempts because FFXI equipment lock takes time to clear
@@ -327,9 +327,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DEBUG COMMANDS
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'debugmidcast' then
         -- Toggle MidcastManager debug mode
         local MidcastManager = require('shared/utils/midcast/midcast_manager')
@@ -342,9 +342,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- CUSTOM CYCLE STATE (UI-aware cycle)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Intercepts cycle commands to check UI visibility
     -- If UI visible: custom cycle + UI update (no message)
     -- If UI invisible: delegate to Mote-Include (shows message)
@@ -372,9 +372,9 @@ function job_self_command(cmdParams, eventArgs)
 
     -- BRD-SPECIFIC COMMANDS
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- JOB ABILITIES
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     if command == 'soul_voice' or command == 'sv' then
         use_ability('Soul Voice')
@@ -426,9 +426,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- DEBUFF SONGS
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     if command == 'lullaby' then
         send_command('input /ma "Horde Lullaby" <stnpc>')
@@ -458,9 +458,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- SONG CASTING (PACK ROTATIONS)
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     if command == 'songs' or command == 'meleesong' or command == 'melee' or command == 'allsongs' then
         -- Cast current song pack using 3-phase rotation
@@ -543,9 +543,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- INDIVIDUAL SONG SLOTS (SIMPLE - JUST CAST FROM PACK)
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     if command == 'song1' then
         local songs = SongRotationManager.get_songs_with_replacement()
@@ -615,10 +615,10 @@ function job_self_command(cmdParams, eventArgs)
     end
 end
 
---- Called when a state field changes value
---- @param stateField string The state field that changed
---- @param newValue string The new value
---- @param oldValue string The old value
+---   Called when a state field changes value
+---   @param stateField string The state field that changed
+---   @param newValue string The new value
+---   @param oldValue string The old value
 function job_state_change(stateField, newValue, oldValue)
     -- Skip UI update for Moving state (handled by AutoMove with flag)
     if stateField == 'Moving' then
@@ -631,13 +631,11 @@ function job_state_change(stateField, newValue, oldValue)
     end
 end
 
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
+
 -- Export to global scope
 _G.job_self_command = job_self_command
 _G.job_state_change = job_state_change
 
--- Export module
-local BRD_COMMANDS = {}
-BRD_COMMANDS.job_self_command = job_self_command
-BRD_COMMANDS.job_state_change = job_state_change
-
-return BRD_COMMANDS

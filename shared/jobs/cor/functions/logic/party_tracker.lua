@@ -1,39 +1,39 @@
----============================================================================
---- COR Party Tracker - Packet Parsing Module
----============================================================================
---- Handles two critical COR tracking systems via Windower packet parsing:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COR Party Tracker - Packet Parsing Module
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles two critical COR tracking systems via Windower packet parsing:
 ---   1. Phantom Roll Value Detection (action packet 0x028, category 6)
 ---   2. Party Member Job Detection (incoming chunk 0xDD/0xDF packets)
 ---
---- @module party_tracker
---- @author Tetsouo
---- @version 2.0.0
---- @date Created: 2025-11-03 (extracted from Tetsouo_COR.lua)
---- @date Updated: 2026-02-17 - Raw action packet parsing (GearSwap sandbox fix)
+---   @module party_tracker
+---   @author  Tetsouo
+---   @version 2.0.0
+---   @date    Created: 2025-11-03 (extracted from Tetsouo_COR.lua)
+---   @date    Updated: 2026-02-17 - Raw action packet parsing (GearSwap sandbox fix)
 ---
---- Features:
+---   Features:
 ---   • Roll value detection (1-12) via raw action packet parsing (0x028)
 ---   • Auto-detection of party member jobs for accurate roll bonuses
 ---   • Event handler lifecycle management (init/cleanup)
 ---   • Prevents duplicate handlers via _G event ID tracking
 ---
---- Technical Notes:
+---   Technical Notes:
 ---   • GearSwap sandbox does NOT support windower.register_event('action')
 ---     reliably - the parsed action table is not passed to user scripts
 ---   • Instead, we intercept raw incoming chunk 0x028 and parse the
 ---     bit-packed action data manually to extract roll values
 ---   • package.loaded is nil in GearSwap sandbox (cannot clear require cache)
 ---
---- Dependencies:
+---   Dependencies:
 ---   • RollTracker module (shared/jobs/cor/functions/logic/roll_tracker.lua)
 ---   • Windower packets library (for party member detection only)
 ---   • Windower resources library (job ID >> job code conversion)
 ---
---- Usage:
+---   Usage:
 ---   local PartyTracker = require('shared/jobs/cor/functions/logic/party_tracker')
 ---   PartyTracker.init()  -- Call in user_setup() or after get_sets()
 ---   PartyTracker.cleanup()  -- Call in file_unload()
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local PartyTracker = {}
 
@@ -47,18 +47,18 @@ local function get_MessageCOR()
     return MessageCOR
 end
 
----============================================================================
---- BIT READER (for action packet 0x028 parsing)
----============================================================================
---- FFXI action packets use LSB-first bit-packed data after an 8-byte header.
---- These helpers extract fields without requiring the `bit` library.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BIT READER (for action packet 0x028 parsing)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   FFXI action packets use LSB-first bit-packed data after an 8-byte header.
+---   These helpers extract fields without requiring the `bit` library.
 
---- Read `count` bits starting at `bit_offset` from binary string `data`
---- Uses LSB-first ordering (standard for FFXI packets)
---- @param data string Binary packet data
---- @param bit_offset number Bit offset from start of data (0-indexed)
---- @param count number Number of bits to read
---- @return number Unsigned integer value
+---   Read `count` bits starting at `bit_offset` from binary string `data`
+---   Uses LSB-first ordering (standard for FFXI packets)
+---   @param data string Binary packet data
+---   @param bit_offset number Bit offset from start of data (0-indexed)
+---   @param count number Number of bits to read
+---   @return number Unsigned integer value
 local function read_bits(data, bit_offset, count)
     local value = 0
     local power = 1
@@ -74,22 +74,22 @@ local function read_bits(data, bit_offset, count)
     return value
 end
 
---- Read uint32 little-endian at byte offset (1-indexed)
---- @param data string Binary data
---- @param offset number Byte offset (1-indexed)
---- @return number uint32 value
+---   Read uint32 little-endian at byte offset (1-indexed)
+---   @param data string Binary data
+---   @param offset number Byte offset (1-indexed)
+---   @return number uint32 value
 local function read_uint32_le(data, offset)
     local b1, b2, b3, b4 = data:byte(offset, offset + 3)
     if not b1 then return 0 end
     return b1 + b2 * 256 + b3 * 65536 + b4 * 16777216
 end
 
----============================================================================
---- INITIALIZATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   INITIALIZATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Initialize party tracking event handlers
---- Must be called after RollTracker is loaded
+---   Initialize party tracking event handlers
+---   Must be called after RollTracker is loaded
 function PartyTracker.init()
     -- CRITICAL: Cleanup existing handlers first to prevent duplicates
     -- This ensures init() is idempotent (safe to call multiple times)
@@ -131,15 +131,15 @@ function PartyTracker.init()
         return  -- Exit early if resources library not available
     end
 
-    ---=========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- SINGLE INCOMING CHUNK HANDLER
     --- Handles BOTH roll detection (0x028) AND party job detection (0xDD/0xDF)
-    ---=========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     _G.cor_party_event_id = windower.raw_register_event('incoming chunk', function(id, original, modified, injected, blocked)
 
-        ---=====================================================================
+        ---══════════════════════════════════════════════════════════════════════════
         --- PHANTOM ROLL DETECTION (Action Packet 0x028)
-        ---=====================================================================
+        ---══════════════════════════════════════════════════════════════════════════
         --- Action packet structure (after 8-byte header):
         ---   Bit-packed: target_count(6) | category(4) | param(16) | unknown(16) | recast(32)
         ---   Per target: target_id(32) | action_count(4)
@@ -147,7 +147,7 @@ function PartyTracker.init()
         ---              knockback(3) | param(17) | message(10) | unknown(31) | has_add(1)
         ---
         --- Roll value = first target's first action's param (17 bits at offset 142)
-        ---=====================================================================
+        ---══════════════════════════════════════════════════════════════════════════
         if id == 0x028 then
             -- Safety: need at least header(8) + some packed data
             if not original or #original < 16 then return end
@@ -236,9 +236,9 @@ function PartyTracker.init()
             return
         end
 
-        ---=====================================================================
+        ---══════════════════════════════════════════════════════════════════════════
         --- PARTY MEMBER JOB DETECTION (Packets 0xDD/0xDF)
-        ---=====================================================================
+        ---══════════════════════════════════════════════════════════════════════════
         if id ~= 0xDD and id ~= 0xDF then
             return
         end
@@ -310,12 +310,12 @@ function PartyTracker.init()
     end)
 end
 
----============================================================================
---- CLEANUP
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   CLEANUP
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Cleanup event handlers and state
---- Must be called in file_unload()
+---   Cleanup event handlers and state
+---   Must be called in file_unload()
 function PartyTracker.cleanup()
     -- Unregister event handlers (CRITICAL for preventing duplicate handlers)
     -- Legacy: cor_action_event_id was used for register_event('action') in v1.x

@@ -1,14 +1,14 @@
----============================================================================
---- Set Builder - Shared Set Construction Logic (BRD)
----============================================================================
---- Provides centralized set building for both engaged and idle states.
---- Handles mode detection (IdleMode), town detection, and movement speed.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Set Builder - Shared Set Construction Logic (BRD)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Provides centralized set building for both engaged and idle states.
+---   Handles mode detection (IdleMode), town detection, and movement speed.
 ---
---- @file jobs/brd/functions/logic/set_builder.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-13
----============================================================================
+---   @file    jobs/brd/functions/logic/set_builder.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-13
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local SetBuilder = {}
 
@@ -18,19 +18,19 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 -- Load dependencies
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
----============================================================================
---- MODE SELECTION (IDLE) - WITH TOWN PRIORITY
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODE SELECTION (IDLE) - WITH TOWN PRIORITY
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Select idle base set with Town detection AND IdleMode support
---- Priority order:
+---   Select idle base set with Town detection AND IdleMode support
+---   Priority order:
 ---   1. In town                     >> sets.idle.Town
 ---   2. IdleMode (Refresh/DT/Regen) >> sets.idle[IdleMode]
 ---   3. Fallback                    >> base_set
 ---
---- @param base_set table Base idle set
---- @return table Selected idle set
---- @return boolean True if in town
+---   @param base_set table Base idle set
+---   @return table Selected idle set
+---   @return boolean True if in town
 function SetBuilder.select_idle_base(base_set)
     -- Check town first (highest priority)
     local town_set, in_town = BaseSetBuilder.select_idle_base_town(base_set)
@@ -50,20 +50,20 @@ function SetBuilder.select_idle_base(base_set)
     return base_set, false
 end
 
----============================================================================
---- MODE SELECTION (ENGAGED)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODE SELECTION (ENGAGED)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Select engaged base set with Kraken Club detection and EngagedMode
---- Kraken Club detection takes highest priority for specialized multi-attack set.
+---   Select engaged base set with Kraken Club detection and EngagedMode
+---   Kraken Club detection takes highest priority for specialized multi-attack set.
 ---
---- Priority order:
+---   Priority order:
 ---   1. Kraken Club in sub-weapon    >> sets.engaged.PDTKC
 ---   2. EngagedMode (STP/Acc/DT/SB)  >> sets.engaged[EngagedMode]
 ---   3. Fallback                      >> base_set
 ---
---- @param base_set table Base engaged set
---- @return table Selected engaged set (PDTKC if Kraken Club equipped, otherwise EngagedMode/base)
+---   @param base_set table Base engaged set
+---   @return table Selected engaged set (PDTKC if Kraken Club equipped, otherwise EngagedMode/base)
 function SetBuilder.select_engaged_base(base_set)
     -- PRIORITY 1: Check for Kraken Club in sub-weapon slot
     if player and player.equipment and player.equipment.sub then
@@ -86,14 +86,14 @@ function SetBuilder.select_engaged_base(base_set)
     return base_set
 end
 
----============================================================================
---- WEAPON APPLICATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   WEAPON APPLICATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply main weapon to set
---- Uses weapon sets defined in brd_sets.lua (sets.Naegling, etc.)
---- @param result table Current equipment set
---- @return table Set with main weapon applied
+---   Apply main weapon to set
+---   Uses weapon sets defined in brd_sets.lua (sets.Naegling, etc.)
+---   @param result table Current equipment set
+---   @return table Set with main weapon applied
 function SetBuilder.apply_main_weapon(result)
     if not state.MainWeapon or not state.MainWeapon.current then
         return result
@@ -113,10 +113,10 @@ function SetBuilder.apply_main_weapon(result)
     return result
 end
 
---- Apply sub weapon to set
---- Uses weapon sets defined in brd_sets.lua (sets.Demersal, sets.Genmei, etc.)
---- @param result table Current equipment set
---- @return table Set with sub weapon applied
+---   Apply sub weapon to set
+---   Uses weapon sets defined in brd_sets.lua (sets.Demersal, sets.Genmei, etc.)
+---   @param result table Current equipment set
+---   @return table Set with sub weapon applied
 function SetBuilder.apply_sub_weapon(result)
     if not state.SubWeapon or not state.SubWeapon.current then
         return result
@@ -136,29 +136,29 @@ function SetBuilder.apply_sub_weapon(result)
     return result
 end
 
---- Apply both main and sub weapons
---- @param result table Current equipment set
---- @return table Set with weapons applied
+---   Apply both main and sub weapons
+---   @param result table Current equipment set
+---   @return table Set with weapons applied
 function SetBuilder.apply_weapons(result)
     result = SetBuilder.apply_main_weapon(result)
     result = SetBuilder.apply_sub_weapon(result)
     return result
 end
 
----============================================================================
---- MOVEMENT SPEED (INHERITED FROM BASE)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MOVEMENT SPEED (INHERITED FROM BASE)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Inherit universal movement function from BaseSetBuilder
 SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 
----============================================================================
---- ENGAGED SET BUILDER
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ENGAGED SET BUILDER
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build complete engaged set with all BRD logic
---- @param base_set table Base engaged set
---- @return table Complete engaged set
+---   Build complete engaged set with all BRD logic
+---   @param base_set table Base engaged set
+---   @return table Complete engaged set
 function SetBuilder.build_engaged_set(base_set)
     if not base_set then
         return {}
@@ -176,18 +176,18 @@ function SetBuilder.build_engaged_set(base_set)
     return result
 end
 
----============================================================================
---- IDLE SET BUILDER
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   IDLE SET BUILDER
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build complete idle set with all BRD logic
---- Processing order:
+---   Build complete idle set with all BRD logic
+---   Processing order:
 ---   1. Town detection (use town set as base if in safe zone)
 ---   2. Apply weapons (applies to both town and non-town)
 ---   3. Apply movement speed (non-town only)
 ---
---- @param base_set table Base idle set
---- @return table Complete idle set
+---   @param base_set table Base idle set
+---   @return table Complete idle set
 function SetBuilder.build_idle_set(base_set)
     if not base_set then
         return {}
@@ -210,8 +210,8 @@ function SetBuilder.build_idle_set(base_set)
     return result
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return SetBuilder

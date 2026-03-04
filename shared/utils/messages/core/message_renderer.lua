@@ -22,8 +22,7 @@ local _config = {
     filter_level = 0,                -- 0=all, 1=important, 2=critical
     color_mode = "normal",           -- "normal", "colorblind", "monochrome"
     timestamp = false,               -- Add timestamps
-    prefix_style = "brackets",       -- "[BLM]" vs "BLM:" vs "BLM »"
-    debug_log = false                -- Log to file
+    prefix_style = "brackets"        -- "[BLM]" vs "BLM:" vs "BLM »"
 }
 
 -- Color scheme definitions (accessibility)
@@ -138,10 +137,6 @@ function MessageRenderer.send(message, color, options)
 
     _stats.by_color[color] = (_stats.by_color[color] or 0) + 1
 
-    -- Debug logging
-    if _config.debug_log and options.namespace then
-        MessageRenderer.log_to_file(message, options.namespace)
-    end
 end
 
 --- Transform color code based on current color scheme
@@ -270,13 +265,6 @@ function MessageRenderer.reset_stats()
     add_to_chat(158, "[Messages] Statistics reset")
 end
 
---- Log message to file (for debugging)
---- @param message string
---- @param namespace string
-function MessageRenderer.log_to_file(message, namespace)
-    -- TODO: Implement file logging if needed
-    -- This would require Windower file I/O APIs
-end
 
 ---============================================================================
 --- ERROR HANDLING

@@ -1,25 +1,25 @@
----============================================================================
---- COR Aftercast Module - Post-Action Gear Management
----============================================================================
---- Handles aftercast gear restoration for Corsair job.
---- Returns to appropriate idle/engaged gear after actions complete.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COR Aftercast Module - Post-Action Gear Management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles aftercast gear restoration for Corsair job.
+---   Returns to appropriate idle/engaged gear after actions complete.
 ---
---- @file COR_AFTERCAST.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-07
----============================================================================
+---   @file    COR_AFTERCAST.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-07
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- AFTERCAST HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   AFTERCAST HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Called after action completes
---- @param spell table Spell/ability data
---- @param action string Action type
---- @param spellMap string Spell mapping
---- @param eventArgs table Event arguments
---- @return void
+---   Called after action completes
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
+---   @return void
 function job_aftercast(spell, action, spellMap, eventArgs)
     -- Watchdog: Track aftercast
     if _G.MidcastWatchdog then
@@ -39,27 +39,21 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     end
 end
 
---- Called after aftercast gear is equipped
---- @param spell table Spell/ability data
---- @param action string Action type
---- @param spellMap string Spell mapping
---- @param eventArgs table Event arguments
---- @return void
+---   Called after aftercast gear is equipped
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
+---   @return void
 function job_post_aftercast(spell, action, spellMap, eventArgs)
     -- COR-specific post-aftercast adjustments
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export global for GearSwap (Mote-Include)
 _G.job_aftercast = job_aftercast
 _G.job_post_aftercast = job_post_aftercast
 
--- Export module
-local COR_AFTERCAST = {}
-COR_AFTERCAST.job_aftercast = job_aftercast
-COR_AFTERCAST.job_post_aftercast = job_post_aftercast
-
-return COR_AFTERCAST

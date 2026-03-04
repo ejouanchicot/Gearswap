@@ -20,7 +20,7 @@
 ---   - Respects WS_MESSAGES_CONFIG settings
 ---
 --- **PERFORMANCE OPTIMIZATION:**
----   • Lazy-loaded: All modules loaded on first WS usage (saves ~300ms at startup)
+---   • Lazy-loaded: All modules loaded on first WS usage
 ---
 --- Examples:
 ---   - [Upheaval] Four hits. Damage varies with TP. (2290 TP)
@@ -52,10 +52,12 @@ local function ensure_modules_loaded()
     local profiling_enabled = _G.PERFORMANCE_PROFILING and _G.PERFORMANCE_PROFILING.enabled
 
     -- Load MessageFormatter
-    MessageFormatter = require('shared/utils/messages/message_formatter')
+    local mf_ok, mf_mod = pcall(require, 'shared/utils/messages/message_formatter')
+    if mf_ok then MessageFormatter = mf_mod end
 
     -- Load WS Messages Config
-    WS_MESSAGES_CONFIG = require('shared/config/WS_MESSAGES_CONFIG')
+    local cfg_ok, cfg_mod = pcall(require, 'shared/config/WS_MESSAGES_CONFIG')
+    if cfg_ok then WS_MESSAGES_CONFIG = cfg_mod end
 
     -- Load WS database wrapper (not the full database)
     local UniversalWS_success
@@ -76,6 +78,10 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   HOOK INJECTION
 ---  ═══════════════════════════════════════════════════════════════════════════
+
+-- Track wrap count (persists in windower table for syscheck diagnostics)
+windower._hook_wraps = windower._hook_wraps or {ability = 0, ws = 0, midcast = 0}
+windower._hook_wraps.ws = windower._hook_wraps.ws + 1
 
 -- Save original user_post_precast (if exists)
 local original_user_post_precast = _G.user_post_precast
@@ -112,7 +118,7 @@ function user_post_precast(spell, action, spellMap, eventArgs)
             return
         end
 
-        -- LAZY LOAD: Load WS database on first WS usage (saves 260-650ms at startup)
+        -- LAZY LOAD: Load WS database on first WS usage
         if UniversalWS then
             local WS_DB = UniversalWS.load()  -- ← Lazy load here
             local ws_data = WS_DB and WS_DB.weaponskills and WS_DB.weaponskills[spell.english]

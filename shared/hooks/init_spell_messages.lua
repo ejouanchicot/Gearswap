@@ -19,7 +19,7 @@
 ---   - Respects ENFEEBLING_MESSAGES_CONFIG and ENHANCING_MESSAGES_CONFIG
 ---
 --- **PERFORMANCE OPTIMIZATION:**
----   • Lazy-loaded: Handler loaded on first spell cast (saves ~200ms at startup)
+---   • Lazy-loaded: Handler loaded on first spell cast
 ---
 ---   @file    shared/hooks/init_spell_messages.lua
 ---   @author  Tetsouo
@@ -43,7 +43,8 @@ local function ensure_handler_loaded()
     local start_time = os.clock()
     local profiling_enabled = _G.PERFORMANCE_PROFILING and _G.PERFORMANCE_PROFILING.enabled
 
-    SpellMessageHandler = require('shared/utils/messages/handlers/spell_message_handler')
+    local ok, mod = pcall(require, 'shared/utils/messages/handlers/spell_message_handler')
+    if ok then SpellMessageHandler = mod end
     handler_loaded = true
 
     -- PROFILING: Show lazy-load time
@@ -56,6 +57,10 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   HOOK INJECTION
 ---  ═══════════════════════════════════════════════════════════════════════════
+
+-- Track wrap count (persists in windower table for syscheck diagnostics)
+windower._hook_wraps = windower._hook_wraps or {ability = 0, ws = 0, midcast = 0}
+windower._hook_wraps.midcast = windower._hook_wraps.midcast + 1
 
 -- Save original user_post_midcast (if exists)
 local original_user_post_midcast = _G.user_post_midcast

@@ -1,25 +1,25 @@
----============================================================================
---- BLM Elemental Matcher - Detects elemental matches
----============================================================================
---- Checks if spell element matches with:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BLM Elemental Matcher - Detects elemental matches
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Checks if spell element matches with:
 ---   - Active storm buff (Firestorm, Hailstorm, etc.)
 ---   - Day of the week (Firesday, Iceday, etc.)
 ---   - Active weather (Heat waves, Blizzards, etc.)
 ---
---- @file elemental_matcher.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-25
----============================================================================
+---   @file    elemental_matcher.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-25
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local ElementalMatcher = {}
 
----============================================================================
---- ELEMENT MAPPINGS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ELEMENT MAPPINGS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Convert element IDs to element names
---- @type table<number, string>
+---   Convert element IDs to element names
+---   @type table<number, string>
 local ELEMENT_NAMES = {
     [0] = 'Fire',
     [1] = 'Ice',
@@ -31,8 +31,8 @@ local ELEMENT_NAMES = {
     [7] = 'Dark'
 }
 
---- Map storm buffs to element IDs
---- @type table<string, number>
+---   Map storm buffs to element IDs
+---   @type table<string, number>
 local STORM_TO_ELEMENT = {
     ['Firestorm'] = 0,    -- Fire
     ['Hailstorm'] = 1,    -- Ice
@@ -42,8 +42,8 @@ local STORM_TO_ELEMENT = {
     ['Rainstorm'] = 5     -- Water
 }
 
---- Reverse mapping: element names to element IDs
---- @type table<string, number>
+---   Reverse mapping: element names to element IDs
+---   @type table<string, number>
 local ELEMENT_NAME_TO_ID = {
     ['Fire'] = 0,
     ['Ice'] = 1,
@@ -56,13 +56,13 @@ local ELEMENT_NAME_TO_ID = {
     ['Dark'] = 7
 }
 
----============================================================================
---- HELPER FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HELPER FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Normalize spell.element to NUMBER (handles both NUMBER and STRING input)
---- @param element_value number|string Element ID (0-7) or element name ('Fire', 'Ice', etc.)
---- @return number|nil Element ID (0-7) or nil if invalid
+---   Normalize spell.element to NUMBER (handles both NUMBER and STRING input)
+---   @param element_value number|string Element ID (0-7) or element name ('Fire', 'Ice', etc.)
+---   @return number|nil Element ID (0-7) or nil if invalid
 local function normalize_element(element_value)
     -- If already a number, return as-is
     if type(element_value) == 'number' then
@@ -78,16 +78,16 @@ local function normalize_element(element_value)
     return nil
 end
 
---- Convert spell element ID to element name
---- @param element_id number Element ID (0-7)
---- @return string|nil Element name or nil
+---   Convert spell element ID to element name
+---   @param element_id number Element ID (0-7)
+---   @return string|nil Element name or nil
 local function get_element_name(element_id)
     return ELEMENT_NAMES[element_id]
 end
 
---- Check if any storm buff is active and matches spell element
---- @param spell_element_id number Spell element ID (0-7)
---- @return boolean True if matching storm is active
+---   Check if any storm buff is active and matches spell element
+---   @param spell_element_id number Spell element ID (0-7)
+---   @return boolean True if matching storm is active
 local function has_matching_storm(spell_element_id)
     for storm_name, storm_element_id in pairs(STORM_TO_ELEMENT) do
         if buffactive[storm_name] and storm_element_id == spell_element_id then
@@ -97,9 +97,9 @@ local function has_matching_storm(spell_element_id)
     return false
 end
 
---- Check if day element matches spell element
---- @param spell_element_id number Spell element ID (0-7)
---- @return boolean True if day matches spell element
+---   Check if day element matches spell element
+---   @param spell_element_id number Spell element ID (0-7)
+---   @return boolean True if day matches spell element
 local function has_matching_day(spell_element_id)
     if not world or not world.day_element then
         return false
@@ -109,10 +109,10 @@ local function has_matching_day(spell_element_id)
     return spell_element_name == world.day_element
 end
 
---- Check if weather element matches spell element (with intensity > 0)
---- Uses world.real_weather_* to ignore SCH storms (which are checked separately)
---- @param spell_element_id number Spell element ID (0-7)
---- @return boolean True if weather matches spell element
+---   Check if weather element matches spell element (with intensity > 0)
+---   Uses world.real_weather_* to ignore SCH storms (which are checked separately)
+---   @param spell_element_id number Spell element ID (0-7)
+---   @return boolean True if weather matches spell element
 local function has_matching_weather(spell_element_id)
     if not world or not world.real_weather_element or not world.real_weather_intensity then
         return false
@@ -127,15 +127,15 @@ local function has_matching_weather(spell_element_id)
     return spell_element_name == world.real_weather_element
 end
 
----============================================================================
---- PUBLIC API
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PUBLIC API
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Check if spell element matches any elemental condition
---- @param spell table Spell object from GearSwap
---- @param config table Configuration options {check_storm, check_day, check_weather}
---- @return boolean True if any condition matches
---- @return string|nil Reason for match (for debug)
+---   Check if spell element matches any elemental condition
+---   @param spell table Spell object from GearSwap
+---   @param config table Configuration options {check_storm, check_day, check_weather}
+---   @return boolean True if any condition matches
+---   @return string|nil Reason for match (for debug)
 function ElementalMatcher.has_elemental_match(spell, config)
     if not spell or not spell.element then
         return false, nil
@@ -177,9 +177,9 @@ function ElementalMatcher.has_elemental_match(spell, config)
     return has_match, reason
 end
 
---- Get element name from spell
---- @param spell table Spell object from GearSwap
---- @return string|nil Element name
+---   Get element name from spell
+---   @param spell table Spell object from GearSwap
+---   @return string|nil Element name
 function ElementalMatcher.get_spell_element_name(spell)
     if not spell or not spell.element then
         return nil
@@ -188,8 +188,8 @@ function ElementalMatcher.get_spell_element_name(spell)
     return get_element_name(element_id)
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return ElementalMatcher

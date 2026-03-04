@@ -21,9 +21,9 @@ local function ensure_managers_loaded()
     end
 end
 
---- Handle buff change events
---- @param buff string Buff name
---- @param gain boolean True if buff gained, false if lost
+---   Handle buff change events
+---   @param buff string Buff name
+---   @param gain boolean True if buff gained, false if lost
 function job_buff_change(buff, gain, eventArgs)
     -- Lazy load managers on first buff change
     ensure_managers_loaded()

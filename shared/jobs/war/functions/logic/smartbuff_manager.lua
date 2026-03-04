@@ -1,27 +1,27 @@
----============================================================================
---- Smartbuff Manager - Subjob Buff Application (WAR)
----============================================================================
---- Manages automatic buff application for WAR main job with various subjobs.
---- Provides intelligent automation for:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Smartbuff Manager - Subjob Buff Application (WAR)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Manages automatic buff application for WAR main job with various subjobs.
+---   Provides intelligent automation for:
 ---   • WAR core abilities (Berserk, Aggressor, Warcry, etc.)
 ---   • SAM subjob automation (Hasso/Seigan + Third Eye)
 ---
---- Features:
+---   Features:
 ---   • Mutual exclusion handling (Berserk vs Defender)
 ---   • Cooldown tracking and status display
 ---   • Sequential casting with delays to avoid conflicts
 ---   • Subjob-specific logic routing
 ---
---- @file    jobs/war/functions/logic/smartbuff_manager.lua
---- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-10-06
----============================================================================
+---   @file    jobs/war/functions/logic/smartbuff_manager.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-06
+---  ═══════════════════════════════════════════════════════════════════════════
 local SmartbuffManager = {}
 
----============================================================================
---- DEPENDENCIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Load recast configuration for cooldown tolerance
 local RECAST_CONFIG = _G.RECAST_CONFIG or {}  -- Loaded from character main file
@@ -43,14 +43,14 @@ local function is_on_cooldown(recast)
     end
 end
 
----============================================================================
---- WARRIOR ABILITY AUTOMATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   WARRIOR ABILITY AUTOMATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Buff the player with key WAR job abilities automatically
---- Handles mutual exclusion between Berserk and Defender.
+---   Buff the player with key WAR job abilities automatically
+---   Handles mutual exclusion between Berserk and Defender.
 ---
---- Abilities managed:
+---   Abilities managed:
 ---   • Berserk     (ID: 1) - Attack+, Defense- | Excludes Defender
 ---   • Defender    (ID: 3) - Defense+, Attack- | Excludes Berserk
 ---   • Aggressor   (ID: 4) - Accuracy+
@@ -59,8 +59,8 @@ end
 ---   • Warcry      (ID: 2) - Attack boost (party)
 ---   • Blood Rage  (ID: 11) - Attack boost fallback (mutually exclusive with Warcry)
 ---
---- @param param string Optional mutual exclusion: 'Berserk' (exclude Defender) or 'Defender' (exclude Berserk)
---- @return void
+---   @param param string Optional mutual exclusion: 'Berserk' (exclude Defender) or 'Defender' (exclude Berserk)
+---   @return void
 function SmartbuffManager.buff_war(param)
     local recasts = windower.ffxi.get_ability_recasts()
     local buffs = buffactive
@@ -184,18 +184,18 @@ function SmartbuffManager.buff_war(param)
     end
 end
 
----============================================================================
---- SAM SUBJOB ABILITIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SAM SUBJOB ABILITIES
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Activate Samurai subjob abilities: Hasso/Seigan + Third Eye
---- Uses Seigan if Defender is active, otherwise uses Hasso.
+---   Activate Samurai subjob abilities: Hasso/Seigan + Third Eye
+---   Uses Seigan if Defender is active, otherwise uses Hasso.
 ---
---- Abilities:
+---   Abilities:
 ---   • Hasso/Seigan (ID: 138/139) - Stance (Hasso: offense, Seigan: defense)
 ---   • Third Eye    (ID: 133)     - Anticipate physical attack
 ---
---- @return void
+---   @return void
 function SmartbuffManager.buff_sam_sub()
     -- Safety checks
     if not player or not player.sub_job then
@@ -277,8 +277,8 @@ function SmartbuffManager.buff_sam_sub()
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return SmartbuffManager

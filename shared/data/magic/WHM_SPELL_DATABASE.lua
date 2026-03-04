@@ -1,5 +1,5 @@
 ---============================================================================
---- WHM Spell Database - Façade (Public API)
+--- WHM Spell Database - Facade (Public API)
 ---============================================================================
 --- Provides unified access to all WHM spells using skill-based architecture.
 --- Merges spells from HEALING_MAGIC_DATABASE, ENHANCING_MAGIC_DATABASE,

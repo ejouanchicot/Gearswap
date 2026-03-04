@@ -6,7 +6,7 @@
 ---
 --- **PERFORMANCE OPTIMIZATION:**
 ---   • LAZY-LOADED: Databases load on first ability usage (not at startup)
----   • Saves 420-630ms during job loading
+---   • Lazy-loaded on first ability usage
 ---   • 21 job databases load only when first ability is used
 ---
 --- Features:
@@ -59,7 +59,7 @@ local DUPLICATE_THRESHOLD = 0.5  -- seconds (500ms)
 ---============================================================================
 
 -- PERFORMANCE FIX: Databases are nil until first ability is used
--- This eliminates 420-630ms startup lag from loading ALL 21 job databases
+-- Databases loaded on demand, not at startup
 local JOB_DATABASES = {}
 
 -- List of all jobs with ability databases

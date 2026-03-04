@@ -1,8 +1,8 @@
 ---============================================================================
---- Warp Database Core - Centralized Façade for Modular Database
+--- Warp Database Core - Centralized Facade for Modular Database
 ---============================================================================
 --- Provides lazy-loading access to all warp item data organized by destination.
---- This façade coordinates between specialized database modules for optimal
+--- This facade coordinates between specialized database modules for optimal
 --- performance and maintainability.
 ---
 --- Architecture:

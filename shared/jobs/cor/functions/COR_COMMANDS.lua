@@ -1,21 +1,21 @@
----============================================================================
---- COR Commands Module - Custom Command Handler
----============================================================================
---- Handles custom commands for Corsair job via //gs c [command].
---- Provides job-specific commands and integrates with common commands.
---- Integrates with UICommands for UI management.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COR Commands Module - Custom Command Handler
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles custom commands for Corsair job via //gs c [command].
+---   Provides job-specific commands and integrates with common commands.
+---   Integrates with UICommands for UI management.
 ---
---- @file COR_COMMANDS.lua
---- @author Tetsouo
---- @version 1.1 - Added UICommands integration
---- @date Created: 2025-10-07
---- @date Updated: 2025-10-10
----============================================================================
+---   @file    COR_COMMANDS.lua
+---   @author  Tetsouo
+---   @version 1.1 - Added UICommands integration
+---   @date    Created: 2025-10-07
+---   @date    Updated: 2025-10-10
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES (LAZY LOADING for performance)
----============================================================================
--- Command handlers loaded on first command (saves ~60ms at startup)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
+-- Command handlers loaded on first command
 local UICommands = nil
 local CommonCommands = nil
 local WatchdogCommands = nil
@@ -44,14 +44,14 @@ local function ensure_commands_loaded()
     end
 end
 
----============================================================================
---- COMMAND HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COMMAND HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Handle custom job commands
---- @param cmdParams table Command parameters
---- @param eventArgs table Event arguments
---- @return void
+---   Handle custom job commands
+---   @param cmdParams table Command parameters
+---   @param eventArgs table Event arguments
+---   @return void
 function job_self_command(cmdParams, eventArgs)
     if not cmdParams or #cmdParams == 0 then
         return
@@ -62,9 +62,9 @@ function job_self_command(cmdParams, eventArgs)
 
     local command = cmdParams[1]:lower()
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DUAL-BOXING: Receive alt job update
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'altjobupdate' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         if cmdParams[2] and cmdParams[3] then
@@ -89,9 +89,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DEBUG COMMANDS
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'debugmidcast' then
         -- Toggle MidcastManager debug mode
         local MidcastManager = require('shared/utils/midcast/midcast_manager')
@@ -104,9 +104,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- CUSTOM CYCLE STATE (UI-aware cycle)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Intercepts cycle commands to check UI visibility
     -- If UI visible: custom cycle + UI update (no message)
     -- If UI invisible: delegate to Mote-Include (shows message)
@@ -298,11 +298,11 @@ function job_self_command(cmdParams, eventArgs)
     end
 end
 
---- Update UI when state changes
---- Called after state changes to update UI display
---- @param stateField string The state field that changed
---- @param newValue any The new value
---- @param oldValue any The old value
+---   Update UI when state changes
+---   Called after state changes to update UI display
+---   @param stateField string The state field that changed
+---   @param newValue any The new value
+---   @param oldValue any The old value
 function job_state_change(stateField, newValue, oldValue)
     -- Skip UI update for Moving state (handled by AutoMove with flag)
     if stateField == 'Moving' then
@@ -324,17 +324,11 @@ function job_state_change(stateField, newValue, oldValue)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export global for GearSwap (Mote-Include)
 _G.job_self_command = job_self_command
 _G.job_state_change = job_state_change
 
--- Export module
-local COR_COMMANDS = {}
-COR_COMMANDS.job_self_command = job_self_command
-COR_COMMANDS.job_state_change = job_state_change
-
-return COR_COMMANDS

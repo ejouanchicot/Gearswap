@@ -1,8 +1,8 @@
----============================================================================
---- Set Builder - Shared Set Construction Logic (SAM)
----============================================================================
---- Provides centralized set building for both engaged and idle states.
---- Handles:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Set Builder - Shared Set Construction Logic (SAM)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Provides centralized set building for both engaged and idle states.
+---   Handles:
 ---   • Aftermath Lv.3 detection and specialized gear application
 ---   • Weapon selection and set application
 ---   • HP-based idle variations (Weak, Regen)
@@ -10,28 +10,28 @@
 ---   • Bow (Yoichinoyumi) handling
 ---   • HybridMode support (PDT/Normal)
 ---
---- Used by: SAM_IDLE.lua and SAM_ENGAGED.lua
+---   Used by: SAM_IDLE.lua and SAM_ENGAGED.lua
 ---
---- @file    jobs/sam/functions/logic/set_builder.lua
---- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-10-21
----============================================================================
+---   @file    jobs/sam/functions/logic/set_builder.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-21
+---  ═══════════════════════════════════════════════════════════════════════════
 local SetBuilder = {}
 
----============================================================================
---- IDLE SET CONSTRUCTION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   IDLE SET CONSTRUCTION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build idle set with HP-based variations and HybridMode
---- Priority:
+---   Build idle set with HP-based variations and HybridMode
+---   Priority:
 ---   1. Weak (HP < 50%) >> sets.idle.Weak
 ---   2. Regen (HP < 80%) >> sets.idle.Regen
 ---   3. HybridMode (PDT) >> sets.idle.PDT
 ---   4. Apply weapon
 ---
---- @param base_set table Base idle set from sam_sets.lua
---- @return table Complete idle set with all modifications
+---   @param base_set table Base idle set from sam_sets.lua
+---   @return table Complete idle set with all modifications
 function SetBuilder.build_idle_set(base_set)
     if not base_set then
         return {}
@@ -64,18 +64,18 @@ function SetBuilder.build_idle_set(base_set)
     return result
 end
 
----============================================================================
---- ENGAGED SET CONSTRUCTION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ENGAGED SET CONSTRUCTION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build engaged set with Seigan/Third Eye buff handling
---- Priority:
+---   Build engaged set with Seigan/Third Eye buff handling
+---   Priority:
 ---   1. Seigan buff >> thirdeye set (PDT) or seigan set (Normal)
 ---   2. Apply weapon
 ---   3. Bow equipped (Yoichinoyumi) >> bow set
 ---
---- @param base_set table Base engaged set from sam_sets.lua
---- @return table Complete engaged set with all modifications
+---   @param base_set table Base engaged set from sam_sets.lua
+---   @return table Complete engaged set with all modifications
 function SetBuilder.build_engaged_set(base_set)
     if not base_set then
         return {}
@@ -113,20 +113,20 @@ function SetBuilder.build_engaged_set(base_set)
     return result
 end
 
----============================================================================
---- AFTERMATH LV.3 DETECTION (FUTURE EXPANSION)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   AFTERMATH LV.3 DETECTION (FUTURE EXPANSION)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Select engaged base set with Aftermath Lv.3 detection
---- Aftermath Lv.3 (buff ID: 272) + Weapon with AM3 = Use specialized AM3 set
+---   Select engaged base set with Aftermath Lv.3 detection
+---   Aftermath Lv.3 (buff ID: 272) + Weapon with AM3 = Use specialized AM3 set
 ---
---- Priority order:
+---   Priority order:
 ---   1. Aftermath Lv.3 + Masamune/Kogarasumaru >> sets.engaged.AM3
 ---   2. HybridMode (PDT/Normal) >> sets.engaged[HybridMode]
 ---   3. Fallback >> base_set
 ---
---- @param base_set table Base engaged set from sam_sets.lua
---- @return table Selected engaged set (AM3 if conditions met, otherwise hybrid/base)
+---   @param base_set table Base engaged set from sam_sets.lua
+---   @return table Selected engaged set (AM3 if conditions met, otherwise hybrid/base)
 function SetBuilder.select_engaged_base(base_set)
     -- Check for Aftermath Lv.3 (buff ID 272) + Mythic/Empyrean weapon
     if buffactive[272] then
@@ -153,8 +153,8 @@ function SetBuilder.select_engaged_base(base_set)
     return base_set
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return SetBuilder

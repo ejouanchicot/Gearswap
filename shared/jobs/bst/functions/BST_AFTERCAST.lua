@@ -1,18 +1,18 @@
----============================================================================
---- BST Aftercast Module - Post-Action Cleanup
----============================================================================
---- Handles aftercast logic for Beastmaster:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BST Aftercast Module - Post-Action Cleanup
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles aftercast logic for Beastmaster:
 ---   • Return to idle or engaged gear after action completes
 ---
---- @file jobs/bst/functions/BST_AFTERCAST.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-17
----============================================================================
+---   @file    jobs/bst/functions/BST_AFTERCAST.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-17
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Pet manager (for pet status monitoring)
 local success_pm, PetManager = pcall(require, 'shared/jobs/bst/functions/logic/pet_manager')
@@ -28,15 +28,15 @@ if not success_rmc then
     ReadyMoveCategorizer = nil
 end
 
----============================================================================
---- TEMPORARY PET MONITORING (after pet commands)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   TEMPORARY PET MONITORING (after pet commands)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Monitor pet status multiple times after pet command (Fight, Heel, etc.)
---- Checks 10 times over 5 seconds, then stops (event-driven, not constant polling)
+---   Monitor pet status multiple times after pet command (Fight, Heel, etc.)
+---   Checks 10 times over 5 seconds, then stops (event-driven, not constant polling)
 ---
---- @param checks_remaining number Number of checks remaining
---- @return void
+---   @param checks_remaining number Number of checks remaining
+---   @return void
 local function monitor_pet_after_command(checks_remaining)
     if not PetManager or checks_remaining <= 0 then
         return
@@ -56,27 +56,27 @@ local function monitor_pet_after_command(checks_remaining)
     end, 0.5)
 end
 
----============================================================================
---- AFTERCAST HOOK
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   AFTERCAST HOOK
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Called after spell/ability completes
---- Returns to idle or engaged gear based on player status
+---   Called after spell/ability completes
+---   Returns to idle or engaged gear based on player status
 ---
---- @param spell table Spell/ability data
---- @param action string Action type (not used)
---- @param spellMap string Spell mapping (not used)
---- @param eventArgs table Event arguments (not used)
---- @return void
+---   @param spell table Spell/ability data
+---   @param action string Action type (not used)
+---   @param spellMap string Spell mapping (not used)
+---   @param eventArgs table Event arguments (not used)
+---   @return void
 function job_aftercast(spell, action, spellMap, eventArgs)
     -- Watchdog: Track aftercast
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_aftercast()
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- READY MOVES - Swap to pet damage gear (recast already captured in PRECAST)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Use spell.type == 'Monster' like reference BST.lua (custom properties don't persist)
     if spell.type == 'Monster' and ReadyMoveCategorizer then
         -- Recalculate category (spell properties from precast don't persist to aftercast)
@@ -109,9 +109,9 @@ function job_aftercast(spell, action, spellMap, eventArgs)
 
     -- No unlock needed - main weapon was already unlocked at start of midcast
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- PET SUMMON DETECTION (Start background monitoring)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if spell.type == 'Monster' or spell.english == 'Call Beast' or spell.english == 'Bestial Loyalty' then
         -- Pet summon detected - start smart background monitoring
         if _G.start_pet_monitoring then
@@ -121,33 +121,17 @@ function job_aftercast(spell, action, spellMap, eventArgs)
         end
     end
 
-    -- ==========================================================================
-    -- PET COMMAND MONITORING (Fight, Heel, etc.)
-    -- ==========================================================================
-    -- DISABLED: Background monitoring in Tetsouo_BST.lua handles this now
-    -- (checks every 1 second continuously - no need for temporary monitoring)
-    --
-    -- if PetManager and spell.type == 'PetCommand' then
-    --     coroutine.schedule(function()
-    --         monitor_pet_after_command(10)
-    --     end, 0.5)
-    -- end
-
     -- No other BST-specific aftercast logic required
     -- Mote-Include handles return to idle/engaged automatically
 
-    -- REMOVED: gs c update (causait des lags après chaque action)
-    -- GearSwap gère déjà le refresh automatiquement via status_change
+    -- REMOVED: gs c update (caused lag spikes after each action)
+    -- GearSwap already handles gear refresh automatically via status_change
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export globally for GearSwap
 _G.job_aftercast = job_aftercast
 
--- Export as module
-return {
-    job_aftercast = job_aftercast
-}

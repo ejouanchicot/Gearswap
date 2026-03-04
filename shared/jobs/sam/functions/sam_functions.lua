@@ -1,12 +1,12 @@
----============================================================================
---- SAM Functions Façade - Module Loader
----============================================================================
---- Loads all SAM-specific function modules in correct order.
---- @file sam_functions.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-21
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SAM Functions Facade - Module Loader
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Loads all SAM-specific function modules in correct order.
+---   @file    sam_functions.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-21
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Load all modules in dependency order (paths relative to TETSOUO_SAM.lua)
 -- ═══════════════════════════════════════════════════════════════════

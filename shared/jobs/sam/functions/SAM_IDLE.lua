@@ -1,7 +1,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SAM Idle Module - Idle State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all idle state logic for Red Mage job:
+---   Handles all idle state logic for Samurai job:
 ---   - Idle set selection based on IdleMode (DT, Refresh, Regain, Evasion)
 ---   - Movement speed optimization
 ---   - Town gear management
@@ -23,9 +23,9 @@ local SetBuilder = nil
 ---   IDLE HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply weapon sets, mode selection, and movement gear to all idle configurations
---- @param idleSet table The idle set to customize
---- @return table Modified idle set with current weapon, mode, and movement gear
+---   Apply weapon sets, mode selection, and movement gear to all idle configurations
+---   @param idleSet table The idle set to customize
+---   @return table Modified idle set with current weapon, mode, and movement gear
 function customize_idle_set(idleSet)
     -- Lazy load SetBuilder on first idle
     if not SetBuilder then

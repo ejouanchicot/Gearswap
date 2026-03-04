@@ -1,14 +1,4 @@
----============================================================================
---- Item User - Ring Usage with Auto-Fix (EXTRACTED from cast_warp_spell)
----============================================================================
---- Handles ring equipping, usage checking, and automatic slot fixing.
---- This is the 280-line monster extracted from cast_warp_spell().
----
---- @file item_user.lua
---- @author Tetsouo
---- @version 4.0 - Modular Architecture
---- @date 2025-10-28
----============================================================================
+-- Item User: ring equip/use with cooldown check and automatic slot restore on interrupt.
 
 local MessageWarp = require('shared/utils/messages/formatters/system/message_warp')
 local MessageCore = require('shared/utils/messages/message_core')
@@ -24,7 +14,6 @@ local ItemUser = {}
 _G.WARP_DEBUG = _G.WARP_DEBUG or false
 
 --- Helper: Debug logging (only if WARP_DEBUG enabled)
---- @param message string Debug message
 local function debug_log(message)
     if _G.WARP_DEBUG then
         MessageWarp.show_item_casting_debug(message)
@@ -79,14 +68,6 @@ local function restore_equipment()
     windower.send_command('gs equip ' .. base_set)
 end
 
----============================================================================
---- RING USAGE WITH AUTO-FIX (Main Function)
----============================================================================
-
---- Use a ring with automatic interrupt detection and slot fixing
---- @param ring_names string|table Ring name(s) to try (priority order)
---- @param context string Context for messages ('warp' or spell name)
---- @return boolean True if ring was used
 function ItemUser.use_ring(ring_names, context)
     if not player then
         MessageCore.error('[WARP] Player data not available')
@@ -143,10 +124,6 @@ function ItemUser.use_ring(ring_names, context)
     return false
 end
 
----============================================================================
---- INTERNAL: Check Ring Usability (COMPLETE - Based on MyHome.lua)
----============================================================================
-
 -- Windower extdata timezone offset (JST server time vs local time)
 -- Based on MyHome addon which uses +18000 seconds (5 hours)
 local EXTDATA_TIME_OFFSET = 18000
@@ -156,8 +133,6 @@ local SAFETY_DELAY = 3.5  -- Extra seconds to wait before using item (zone-depen
 
 --- Check if a warp item is usable right now
 --- Handles both 'General' items (scrolls) and 'Enchanted Equipment' (rings/wings)
---- @param item_id number Item ID to check
---- @return boolean, number, string Usable, delay in seconds, status reason
 function ItemUser._check_ring_usable(item_id)
     local has_extdata, extdata = pcall(require, 'extdata')
     if not has_extdata then
@@ -252,8 +227,6 @@ function ItemUser._check_ring_usable(item_id)
 end
 
 --- Show all ring cooldowns when none are available
---- @param cooldown_info table Array of {name, delay}
---- @param context string Context for messages
 function ItemUser._show_all_cooldowns(cooldown_info, context)
     -- Find soonest available
     local soonest = nil
@@ -310,17 +283,7 @@ function ItemUser._show_all_cooldowns(cooldown_info, context)
     end
 end
 
----============================================================================
---- INTERNAL: Ring Usage Sequence
----============================================================================
-
---- Execute complete ring usage sequence with auto-fix
---- @param ring_name string Ring name
---- @param ring_id number Ring item ID
---- @param is_warp_ring boolean True if Warp Ring
---- @param tag string Message tag ('WARP' or 'TELE')
 function ItemUser._execute_ring_sequence(ring_name, ring_id, is_warp_ring, tag)
-    -- STEP 0: Save initial equipment (BEFORE disabling)
     local initial_ring1 = nil
     if player and player.equipment and player.equipment.ring1 then
         initial_ring1 = player.equipment.ring1
@@ -329,32 +292,18 @@ function ItemUser._execute_ring_sequence(ring_name, ring_id, is_warp_ring, tag)
         debug_log('No initial ring1 detected (empty slot)')
     end
 
-    -- STEP 1: Disable GearSwap for ring1 slot
     send_command('gs disable ring1')
     debug_log('Ring1 slot disabled')
 
-    -- STEP 2: Equip the ring (after delay)
     coroutine.schedule(function()
         send_command('input /equip ring1 "' .. ring_name .. '"')
     end, 0.5)
 
-    -- STEP 3: Wait for ring to be equipped AND usable (longer delay to ensure equip completes)
     coroutine.schedule(function()
         ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, initial_ring1)
     end, 2.5)
 end
 
----============================================================================
---- INTERNAL: Wait for Ring Usable
----============================================================================
-
---- Wait for ring to be usable after equipping, then use it (Based on MyHome.lua)
---- Uses ext.usable flag to detect when item is ready
---- @param ring_name string Ring name
---- @param ring_id number Ring item ID
---- @param is_warp_ring boolean True if Warp Ring
---- @param tag string Message tag
---- @param initial_ring1 string|nil Initial ring1 equipment
 function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, initial_ring1)
     local wait_count = 0
     local max_wait = 15
@@ -536,14 +485,6 @@ function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, i
     check_usable()
 end
 
----============================================================================
---- INTERNAL: Auto-Fix System (SIMPLIFIED - Single Path)
----============================================================================
-
---- Helper: Detect action name from item name for dynamic messages
---- @param item_name string Item name (e.g., 'Warp Ring', 'Teleport Ring: Holla')
---- @param tag string Fallback tag ('WARP' or 'TELE')
---- @return string Action name ('Warp', 'Teleport', 'Recall', 'Escape')
 local function get_action_name(item_name, tag)
     if not item_name then
         return tag == 'WARP' and 'Warp' or 'Teleport'
@@ -559,12 +500,6 @@ local function get_action_name(item_name, tag)
     return tag == 'WARP' and 'Warp' or 'Teleport'
 end
 
---- Setup automatic ring slot fixing on interrupt
---- @param ring_id number Ring item ID
---- @param tag string Message tag
---- @param cast_duration number Total cast time in seconds (cast_time + cast_delay + buffer)
---- @param initial_ring1 string|nil Initial ring1 equipment (to verify restoration)
---- @param item_name string|nil Item name for dynamic messages
 function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, item_name)
     local cleanup_done = false
     local initial_status = player and player.status or 'Idle'

@@ -1,7 +1,7 @@
----============================================================================
---- BRD Precast Module - Precast Action Handling & Fast Cast Optimization
----============================================================================
---- Handles all precast actions for Bard job:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BRD Precast Module - Precast Action Handling & Fast Cast Optimization
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all precast actions for Bard job:
 ---   • Fast Cast optimization (cap 80%)
 ---   • Song precast (Casting Time reduction)
 ---   • Job ability precast (Soul Voice, Nightingale, Troubadour, Pianissimo)
@@ -9,18 +9,17 @@
 ---   • Song refinement (auto-downgrade debuff songs on cooldown)
 ---   • Security layers (debuff guard, cooldown check)
 ---
---- @file    BRD_PRECAST.lua
---- @author  Tetsouo
---- @version 2.0
---- @date    Created: 2025-10-13
---- @requires Tetsouo architecture, MessageFormatter, CooldownChecker
----============================================================================
+---   @file    BRD_PRECAST.lua
+---   @author  Tetsouo
+---   @version 2.0
+---   @date    Created: 2025-10-13
+---   @requires Tetsouo architecture, MessageFormatter, CooldownChecker
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
--- All modules are loaded on first action (job_precast call)
--- This reduces startup time from ~234ms to ~1ms
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
+-- All modules are loaded on first action (lazy loading)
 
 local MessageFormatter = nil
 local MessagePrecast = nil
@@ -30,12 +29,14 @@ local WSPrecastHandler = nil
 local SongRefinement = nil
 local InstrumentLockConfig = nil
 
-local BRDTPConfig = _G.BRDTPConfig or {}
+local BRDTPConfig = nil
 
 local modules_loaded = false
 
 local function ensure_modules_loaded()
     if modules_loaded then return end
+
+    BRDTPConfig = _G.BRDTPConfig or {}
 
     -- Load universal systems
     local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
@@ -63,17 +64,17 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
----============================================================================
---- PRECAST HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PRECAST HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Called before any action (song, JA, spell, etc.)
---- @param spell table Spell/ability data
---- @param action string Action type
---- @param spellMap string Spell mapping
---- @param eventArgs table Event arguments
+---   Called before any action (song, JA, spell, etc.)
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_precast(spell, action, spellMap, eventArgs)
-    -- Lazy load modules on first action (saves ~150ms at startup)
+    -- Lazy load modules on first action
     ensure_modules_loaded()
 
     -- FIRST: Check for blocking debuffs (Amnesia, Silence, etc.)
@@ -173,19 +174,9 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- ==========================================================================
-    -- DISABLED: BRD Job Abilities Messages
-    -- Messages now handled by universal ability_message_handler (init_ability_messages.lua)
-    -- This prevents duplicate messages from job-specific + universal system
-    --
-    -- LEGACY CODE (commented out to prevent duplicates):
-    -- if spell.type == 'JobAbility' and JA_DB[spell.english] then
-    --     MessageFormatter.show_ja_activated(spell.english, JA_DB[spell.english].description)
-    -- end
-
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, BRDTPConfig) then
         return
     end
@@ -209,11 +200,11 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 end
 
---- Apply final gear adjustments before equipping
---- @param spell table Spell/ability data
---- @param action string Action type
---- @param spellMap string Spell mapping
---- @param eventArgs table Event arguments
+---   Apply final gear adjustments before equipping
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
     if WSPrecastHandler then
@@ -225,9 +216,9 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     -- Keep precast gear as-is (instant cast with Nightingale + Fast Cast cap)
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DEBUG: PRECAST SET DISPLAY (Universal System)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Mote-Include already handles FC fallback: spell.name > spell.skill > base
     -- We just add debug display to show which set was selected
     if _G.PrecastDebugState and spell.action_type == 'Magic' then
@@ -261,17 +252,10 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Export to global scope for GearSwap
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
 
--- Export module
-local BRD_PRECAST = {}
-BRD_PRECAST.job_precast = job_precast
-BRD_PRECAST.job_post_precast = job_post_precast
-
-return BRD_PRECAST

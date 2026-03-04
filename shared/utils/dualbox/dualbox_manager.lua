@@ -15,7 +15,7 @@
 ---   @date    Created: 2025-10-22 | Updated: 2025-11-13
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- MessageDualbox lazy-loaded (only when showing messages, saves ~50-100ms at startup)
+-- MessageDualbox lazy-loaded (only when showing messages)
 local MessageDualbox = nil
 local function get_MessageDualbox()
     if not MessageDualbox then

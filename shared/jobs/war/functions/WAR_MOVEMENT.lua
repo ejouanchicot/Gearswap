@@ -1,25 +1,28 @@
----============================================================================
---- WAR Movement Management Module - Movement Tracking & Buff Cancellation
----============================================================================
---- Handles movement-based buff cancellation for Warrior:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   WAR Movement Management Module - Movement Tracking & Buff Cancellation
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles movement-based buff cancellation for Warrior:
 ---   • Retaliation auto-cancel after 5s continuous movement
 ---   • Movement status API for external queries
 ---
---- Uses centralized AutoMove for position tracking (performance optimization).
+---   Uses centralized AutoMove for position tracking (performance optimization).
 ---
---- @file    jobs/war/functions/WAR_MOVEMENT.lua
---- @author  Tetsouo
---- @version 3.0.0
---- @date    Created: 2025-09-29
---- @requires utils/movement/automove.lua
----============================================================================
+---   @file    jobs/war/functions/WAR_MOVEMENT.lua
+---   @author  Tetsouo
+---   @version 3.0.0
+---   @date    Created: 2025-09-29
+---   @requires utils/movement/automove.lua
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Lazy-loaded dependencies
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
+
 local MessageFormatter = nil
 
----============================================================================
---- RETALIATION AUTO-CANCEL SYSTEM
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   RETALIATION AUTO-CANCEL SYSTEM
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Configuration
 local retaliation_config = {
@@ -121,14 +124,14 @@ coroutine.schedule(function()
     end)
 end, 0.6)  -- Wait 0.6s for AutoMove to load (it loads at 0.5s in INIT_SYSTEMS)
 
----============================================================================
---- MOVEMENT STATUS API
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MOVEMENT STATUS API
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get current movement status
---- Delegates to AutoMove for centralized movement tracking.
+---   Get current movement status
+---   Delegates to AutoMove for centralized movement tracking.
 ---
---- @return table Movement info with fields:
+---   @return table Movement info with fields:
 ---   • is_moving (boolean): True if player is moving
 ---   • distance  (number):  Distance traveled in last tick
 ---   • position  (table):   Current position {x, y, z}
@@ -152,8 +155,8 @@ function get_war_movement_status()
     }
 end
 
---- Toggle Retaliation debug mode
---- @return boolean New debug mode state
+---   Toggle Retaliation debug mode
+---   @return boolean New debug mode state
 function toggle_retaliation_debug()
     retaliation_config.debug_mode = not retaliation_config.debug_mode
     local status = retaliation_config.debug_mode and 'ENABLED' or 'DISABLED'
@@ -164,8 +167,8 @@ function toggle_retaliation_debug()
     return retaliation_config.debug_mode
 end
 
---- Get Retaliation tracking status (for debugging)
---- @return table Status info
+---   Get Retaliation tracking status (for debugging)
+---   @return table Status info
 function get_retaliation_status()
     local elapsed = 0
     if retaliation_config.movement_start_time then
@@ -180,18 +183,12 @@ function get_retaliation_status()
     }
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export globally for GearSwap
 _G.get_war_movement_status = get_war_movement_status
 _G.toggle_retaliation_debug = toggle_retaliation_debug
 _G.get_retaliation_status = get_retaliation_status
 
--- Export as module (for future require() usage)
-return {
-    get_war_movement_status = get_war_movement_status,
-    toggle_retaliation_debug = toggle_retaliation_debug,
-    get_retaliation_status = get_retaliation_status
-}

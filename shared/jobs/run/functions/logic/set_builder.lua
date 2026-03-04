@@ -1,29 +1,29 @@
----============================================================================
---- Set Builder - Shared Set Construction Logic (RUN)
----============================================================================
---- Provides centralized set building for both engaged and idle states.
---- Handles complex RUN-specific gear logic:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Set Builder - Shared Set Construction Logic (RUN)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Provides centralized set building for both engaged and idle states.
+---   Handles complex RUN-specific gear logic:
 ---   • Main weapon selection (Epeolatry, Lycurgos - Great Sword/Great Axe)
 ---   • Grip selection (Utu Grip, Refined Grip +1) - Great Swords only
 ---   • HybridMode application (PDT/MDT)
 ---   • Movement speed gear
 ---   • Town detection and town gear
 ---
---- Features:
+---   Features:
 ---   • Shared logic for both idle and engaged
 ---   • Safe pcall for set_combine operations
 ---   • Modular functions for easy maintenance
 ---
---- @file    jobs/run/functions/logic/set_builder.lua
---- @author  Tetsouo
---- @version 2.1.0 - Fixed Lycurgos Great Axe support (sub=empty)
---- @date    Created: 2025-10-06 | Updated: 2025-11-11
----============================================================================
+---   @file    jobs/run/functions/logic/set_builder.lua
+---   @author  Tetsouo
+---   @version 2.1.0 - Fixed Lycurgos Great Axe support (sub=empty)
+---   @date    Created: 2025-10-06 | Updated: 2025-11-11
+---  ═══════════════════════════════════════════════════════════════════════════
 local SetBuilder = {}
 
----============================================================================
---- DEPENDENCIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Load base set builder (universal functions)
 local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
@@ -31,14 +31,14 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 -- Load message formatter for error display
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
----============================================================================
---- WEAPON/SHIELD APPLICATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   WEAPON/SHIELD APPLICATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply main weapon to set
---- Uses weapon sets defined in run_sets.lua (sets.Epeolatry, sets.Lycurgos, etc.)
---- @param result table Current equipment set
---- @return table Set with main weapon applied
+---   Apply main weapon to set
+---   Uses weapon sets defined in run_sets.lua (sets.Epeolatry, sets.Lycurgos, etc.)
+---   @param result table Current equipment set
+---   @return table Set with main weapon applied
 function SetBuilder.apply_weapon(result)
     if not state.MainWeapon or not state.MainWeapon.current then
         return result
@@ -53,12 +53,12 @@ function SetBuilder.apply_weapon(result)
     return result
 end
 
---- Apply sub weapon (grip) to set
---- Uses grip sets defined in run_sets.lua (sets.Utu, sets.Refined)
---- Great Swords are 2-handed but can use grips
---- NOTE: Great Axes (Lycurgos) cannot use grips - skip grip application
---- @param result table Current equipment set
---- @return table Set with grip applied
+---   Apply sub weapon (grip) to set
+---   Uses grip sets defined in run_sets.lua (sets.Utu, sets.Refined)
+---   Great Swords are 2-handed but can use grips
+---   NOTE: Great Axes (Lycurgos) cannot use grips - skip grip application
+---   @param result table Current equipment set
+---   @return table Set with grip applied
 function SetBuilder.apply_grip(result)
     -- Skip grip application for Great Axes (Lycurgos)
     if state.MainWeapon and state.MainWeapon.current == 'Lycurgos' then
@@ -83,28 +83,28 @@ function SetBuilder.apply_grip(result)
     return result
 end
 
----============================================================================
---- MOVEMENT SPEED (INHERITED FROM BASE)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MOVEMENT SPEED (INHERITED FROM BASE)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Inherit universal movement function from BaseSetBuilder
 SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 
 
----============================================================================
---- TOWN DETECTION (INHERITED FROM BASE)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   TOWN DETECTION (INHERITED FROM BASE)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Inherit universal town detection function from BaseSetBuilder
 SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town
 
----============================================================================
---- ENGAGED SET BUILDER
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ENGAGED SET BUILDER
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build complete engaged set with all RUN logic
---- @param base_set table Base engaged set
---- @return table Complete engaged set
+---   Build complete engaged set with all RUN logic
+---   @param base_set table Base engaged set
+---   @return table Complete engaged set
 function SetBuilder.build_engaged_set(base_set)
     if not base_set then
         return {}
@@ -135,13 +135,13 @@ function SetBuilder.build_engaged_set(base_set)
     return result
 end
 
----============================================================================
---- IDLE SET BUILDER
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   IDLE SET BUILDER
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build complete idle set with all RUN logic
---- @param base_set table Base idle set
---- @return table Complete idle set
+---   Build complete idle set with all RUN logic
+---   @param base_set table Base idle set
+---   @return table Complete idle set
 function SetBuilder.build_idle_set(base_set)
     if not base_set then
         return {}
@@ -181,8 +181,8 @@ function SetBuilder.build_idle_set(base_set)
     return result
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return SetBuilder

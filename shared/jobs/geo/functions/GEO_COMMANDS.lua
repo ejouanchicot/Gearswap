@@ -1,21 +1,21 @@
----============================================================================
---- GEO Commands Module - Self Command Handling
----============================================================================
---- Handles custom commands for Geomancer job.
---- Integrates with CommonCommands for shared functionality (reload, checksets).
---- Integrates with UICommands for UI management.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   GEO Commands Module - Self Command Handling
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles custom commands for Geomancer job.
+---   Integrates with CommonCommands for shared functionality (reload, checksets).
+---   Integrates with UICommands for UI management.
 ---
---- @file GEO_COMMANDS.lua
---- @author Tetsouo
---- @version 1.1 - Added UICommands integration
---- @date Created: 2025-10-09
---- @date Updated: 2025-10-10
----============================================================================
+---   @file    GEO_COMMANDS.lua
+---   @author  Tetsouo
+---   @version 1.1 - Added UICommands integration
+---   @date    Created: 2025-10-09
+---   @date    Updated: 2025-10-10
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES (LAZY LOADING for performance)
----============================================================================
--- Command handlers loaded on first command (saves ~60ms at startup)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
+-- Command handlers loaded on first command
 local UICommands = nil
 local CommonCommands = nil
 local WatchdogCommands = nil
@@ -36,12 +36,12 @@ local function ensure_commands_loaded()
     end
 end
 
----============================================================================
---- GEO SPELL CLASSIFICATION (Buff vs Debuff)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   GEO SPELL CLASSIFICATION (Buff vs Debuff)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- List of Geo buffs (party support) - target: <stpc>
---- Based on spell descriptions: "Boosts", "Restores"
+---   List of Geo buffs (party support) - target: <stpc>
+---   Based on spell descriptions: "Boosts", "Restores"
 local GEO_BUFFS = {
     ['Geo-Acumen'] = true,      -- Boosts magic atk.
     ['Geo-AGI'] = true,          -- Boosts agility.
@@ -64,16 +64,16 @@ local GEO_BUFFS = {
     ['Geo-Voidance'] = true,     -- Boosts evasion.
 }
 
---- Check if Geo spell is a buff (party support)
---- @param spell_name string Geo spell name (e.g., "Geo-Haste")
---- @return boolean True if buff (use <stpc>), false if debuff (use <stnpc>)
+---   Check if Geo spell is a buff (party support)
+---   @param spell_name string Geo spell name (e.g., "Geo-Haste")
+---   @return boolean True if buff (use <stpc>), false if debuff (use <stnpc>)
 local function is_geo_buff(spell_name)
     return GEO_BUFFS[spell_name] == true
 end
 
----============================================================================
---- COMMAND HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   COMMAND HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 function job_self_command(cmdParams, eventArgs)
     if not cmdParams or #cmdParams == 0 then
@@ -85,9 +85,9 @@ function job_self_command(cmdParams, eventArgs)
 
     local command = cmdParams[1]:lower()
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DUAL-BOXING: Receive alt job update
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'altjobupdate' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         if cmdParams[2] and cmdParams[3] then
@@ -98,7 +98,7 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     -- DUAL-BOXING: Handle job request from MAIN
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'requestjob' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         DualBoxManager.handle_job_request()
@@ -113,9 +113,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DEBUG COMMANDS
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'debugmidcast' then
         -- Toggle MidcastManager debug mode
         local MidcastManager = require('shared/utils/midcast/midcast_manager')
@@ -128,9 +128,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- CUSTOM CYCLE STATE (UI-aware cycle)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Intercepts cycle commands to check UI visibility
     -- If UI visible: custom cycle + UI update (no message)
     -- If UI invisible: delegate to Mote-Include (shows message)
@@ -252,10 +252,10 @@ function job_self_command(cmdParams, eventArgs)
     end
 end
 
---- Called when a state field changes value
---- @param stateField string The state field that changed
---- @param newValue string The new value
---- @param oldValue string The old value
+---   Called when a state field changes value
+---   @param stateField string The state field that changed
+---   @param newValue string The new value
+---   @param oldValue string The old value
 function job_state_change(stateField, newValue, oldValue)
     -- Skip UI update for Moving state (handled by AutoMove with flag)
     if stateField == 'Moving' then
@@ -268,17 +268,11 @@ function job_state_change(stateField, newValue, oldValue)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export global for GearSwap (Mote-Include)
 _G.job_self_command = job_self_command
 _G.job_state_change = job_state_change
 
--- Export module
-local GEO_COMMANDS = {}
-GEO_COMMANDS.job_self_command = job_self_command
-GEO_COMMANDS.job_state_change = job_state_change
-
-return GEO_COMMANDS

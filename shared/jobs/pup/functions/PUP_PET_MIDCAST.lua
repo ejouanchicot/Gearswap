@@ -1,18 +1,18 @@
----============================================================================
---- PUP Pet Midcast Module - Ready Move Midcast Handling
----============================================================================
---- Handles midcast gear for Ready Moves (pet TP moves).
---- This is a SPECIAL hook called ONLY for pet abilities during midcast.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PUP Pet Midcast Module - Ready Move Midcast Handling
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles midcast gear for Ready Moves (pet TP moves).
+---   This is a SPECIAL hook called ONLY for pet abilities during midcast.
 ---
---- @file jobs/pup/functions/PUP_PET_MIDCAST.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-18
----============================================================================
+---   @file    jobs/pup/functions/PUP_PET_MIDCAST.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-18
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Ready move categorizer
 local success_rmc, ReadyMoveCategorizer = pcall(require, 'shared/jobs/pup/functions/logic/ready_move_categorizer')
@@ -20,27 +20,27 @@ if not success_rmc then
     ReadyMoveCategorizer = nil
 end
 
----============================================================================
---- PET MIDCAST HOOK
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PET MIDCAST HOOK
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Called during pet ability midcast (specifically for Ready Moves)
---- @param spell table Spell/ability data
---- @return void
+---   Called during pet ability midcast (specifically for Ready Moves)
+---   @param spell table Spell/ability data
+---   @return void
 function job_pet_midcast(spell)
     local name = spell.name
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- SKIP NON-READY MOVES (Call Beast, Bestial Loyalty, Reward, etc.)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if name == 'Call Beast' or name == 'Bestial Loyalty' or
        name == 'Reward' or name == 'Killer Instinct' or name == 'Spur' then
         return  -- Don't override precast set for these abilities
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- READY MOVES - 4 CATEGORIES
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
 
     -- Get category from categorizer
     local category = nil
@@ -84,14 +84,9 @@ function job_pet_midcast(spell)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export globally for GearSwap
 _G.job_pet_midcast = job_pet_midcast
-
--- Export as module
-return {
-    job_pet_midcast = job_pet_midcast
-}

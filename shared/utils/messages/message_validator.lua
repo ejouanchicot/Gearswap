@@ -256,7 +256,7 @@ function MessageValidator.run_all_tests()
         print(string.format("[OK] ALL TESTS PASSED! (%d/%d)",
             test_results.passed, test_results.total))
         print("")
-        print("Message system is valid and production-ready!")
+        print("Message system is valid!")
 
         -- Auto-export results
         MessageValidator.export_json()
@@ -380,7 +380,7 @@ function MessageValidator.export_txt(filepath)
     if test_results.failed == 0 then
         table.insert(lines, "STATUS: [OK] ALL TESTS PASSED")
         table.insert(lines, "")
-        table.insert(lines, "Message system is valid and production-ready!")
+        table.insert(lines, "Message system is valid!")
     else
         table.insert(lines, "STATUS: [FAIL] TESTS FAILED")
         table.insert(lines, "")

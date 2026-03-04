@@ -1,10 +1,10 @@
----============================================================================
---- THF Movement Management Module - Movement Detection & Speed Gear
----============================================================================
---- Handles movement-based equipment optimization for Thief using centralized
---- AutoMove position tracking for performance.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   THF Movement Management Module - Movement Detection & Speed Gear
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles movement-based equipment optimization for Thief using centralized
+---   AutoMove position tracking for performance.
 ---
---- Features:
+---   Features:
 ---   • AutoMove integration (centralized movement tracking)
 ---   • Movement speed gear application (via SetBuilder)
 ---   • Position tracking (x/y/z coordinates)
@@ -12,21 +12,21 @@
 ---   • Future: Hide auto-cancel on extended movement
 ---   • Future: TH optimization based on movement patterns
 ---
---- Dependencies:
+---   Dependencies:
 ---   • AutoMove (centralized movement tracking system)
 ---   • SetBuilder (applies MoveSpeed sets)
 ---
---- @file    jobs/thf/functions/THF_MOVEMENT.lua
---- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-10-06
----============================================================================
+---   @file    jobs/thf/functions/THF_MOVEMENT.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-06
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- AUTOMOVE REGISTRATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   AUTOMOVE REGISTRATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Register callback with AutoMove for THF-specific movement logic
+---   Register callback with AutoMove for THF-specific movement logic
 if AutoMove then
     AutoMove.register_callback(function(is_moving, distance, player_status)
         -- Future: THF-specific movement logic
@@ -35,12 +35,12 @@ if AutoMove then
     end)
 end
 
----============================================================================
---- MOVEMENT STATUS API
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MOVEMENT STATUS API
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get current movement status (delegates to AutoMove)
---- @return table movement_info
+---   Get current movement status (delegates to AutoMove)
+---   @return table movement_info
 function get_thf_movement_status()
     if not AutoMove then
         return {
@@ -57,15 +57,10 @@ function get_thf_movement_status()
     }
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Make functions available globally
 _G.get_thf_movement_status = get_thf_movement_status
 
--- Also export as module
-local THF_MOVEMENT = {}
-THF_MOVEMENT.get_thf_movement_status = get_thf_movement_status
-
-return THF_MOVEMENT

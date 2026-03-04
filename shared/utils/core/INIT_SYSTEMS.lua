@@ -1,5 +1,5 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Universal Systems Auto-Initialization Façade (OPTIMIZED)
+---   Universal Systems Auto-Initialization Facade (OPTIMIZED)
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Loads all universal systems that should be active for ALL jobs/characters.
 ---   Include this file in each job's main file to enable all universal features.
@@ -7,7 +7,7 @@
 ---   **PERFORMANCE OPTIMIZATION:**
 ---     • Critical systems load immediately (MidcastWatchdog)
 ---     • Non-critical systems defer to 0.5s (WarpInit, AutoMove, StateDisplay)
----     • Saves ~30-50ms during job loading (non-blocking)
+---     • Non-blocking initialization
 ---
 ---   Usage in character file (e.g., Tetsouo_WAR.lua, KAORIES_BRD.lua):
 ---     include('../shared/utils/core/INIT_SYSTEMS.lua')
@@ -34,6 +34,26 @@ if windower._gs_debug then
     _G.AUTOMOVE_DEBUG = windower._gs_debug.UPDATE
 end
 
+-- Track total gs reload count (persists across reloads via windower table)
+windower._gs_reload_count = (windower._gs_reload_count or 0) + 1
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   LAG DEBUGGER (loaded immediately, lightweight - only active when toggled)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+-- LagDebugger is always loaded so //gs c lagdebug works immediately on any job
+-- It does nothing unless explicitly started with //gs c lagdebug
+if not _G.LagDebugger then
+    pcall(require, 'shared/utils/debug/lag_debugger')
+end
+
+-- Log reload completion (marks when GearSwap finished loading after job change)
+if _G.LagDebugger then
+    local job = player and player.main_job or 'UNK'
+    local sub = player and player.sub_job  or 'UNK'
+    _G.LagDebugger.on_reload_complete(job, sub, windower._automove_seq)
+end
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES (LAZY LOADING for performance)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -55,7 +75,7 @@ end
 ---   CRITICAL SYSTEM: MIDCAST WATCHDOG (Deferred loading)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- PERFORMANCE: Defer MidcastWatchdog loading to save ~3-5ms at startup
+-- PERFORMANCE: Defer MidcastWatchdog loading, deferred for fast startup
 -- It already starts after 2s delay anyway, so load it then
 coroutine.schedule(function()
     local watchdog_success, MidcastWatchdog = pcall(require, 'shared/utils/core/midcast_watchdog')
@@ -76,7 +96,7 @@ end, 2.0)
 
 -- PERFORMANCE OPTIMIZATION: Defer non-critical systems to avoid blocking get_sets()
 -- These systems are not needed immediately and can load asynchronously
--- Saves ~30-50ms during job loading
+-- Non-blocking initialization
 coroutine.schedule(function()
     ---  ─────────────────────────────────────────────────────────────────────────
     ---   SYSTEM 2: WARP SYSTEM (with IPC Multi-Boxing Support)
@@ -85,7 +105,10 @@ coroutine.schedule(function()
     local warp_success, WarpInit = pcall(require, 'shared/utils/warp/warp_init')
 
     if warp_success and WarpInit then
-        WarpInit.init()
+        local ok_init, err_init = pcall(WarpInit.init)
+        if not ok_init then
+            ensure_message_init().show_module_load_failed('Warp System init()', err_init)
+        end
     else
         ensure_message_init().show_module_load_failed('Warp System', WarpInit)
     end

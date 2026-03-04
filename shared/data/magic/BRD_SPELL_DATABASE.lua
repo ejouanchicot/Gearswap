@@ -1,5 +1,5 @@
 ---============================================================================
---- BRD Spell Database - Complete Bard Song Data (Façade)
+--- BRD Spell Database - Complete Bard Song Data (Facade)
 ---============================================================================
 --- Contains all BRD songs with accurate level requirements and official bg-wiki descriptions.
 --- BRD-UNIQUE - Only Bard can cast songs.

@@ -19,6 +19,8 @@
 
 local WarpInit = {}
 
+-- Module-local flag (ephemeral, reset on each gs reload when package.loaded is cleared)
+-- Use windower._warp_init_done for persistence across reloads
 local initialized = false
 
 -- Load MessageWarp for formatted messages
@@ -59,6 +61,11 @@ end
 --- Initialize the universal warp system
 --- Call this from user_setup() or get_sets() in each job file
 function WarpInit.init()
+    -- Sync module-local from windower persistence (survives gs reload)
+    if windower._warp_init_done then
+        initialized = true
+    end
+
     if initialized then
         return  -- Already initialized
     end
@@ -66,7 +73,12 @@ function WarpInit.init()
     -- Load and initialize warp equipment manager
     local eq_success, WarpEquipment = pcall(require, 'shared/utils/warp/warp_equipment')
     if eq_success and WarpEquipment then
-        WarpEquipment.init()
+        -- Wrap init() in pcall: if WarpDetector throws, catch silently and report
+        local ok_eq, err_eq = pcall(WarpEquipment.init)
+        if not ok_eq then
+            MessageWarp.show_init_error('WarpEquipment.init', err_eq)
+            return
+        end
     else
         MessageWarp.show_init_error('WarpEquipment', WarpEquipment)
         return
@@ -75,7 +87,11 @@ function WarpInit.init()
     -- Load warp precast
     local pc_success, WarpPrecast = pcall(require, 'shared/utils/warp/warp_precast')
     if pc_success and WarpPrecast then
-        WarpPrecast.init()
+        local ok_pc, err_pc = pcall(WarpPrecast.init)
+        if not ok_pc then
+            MessageWarp.show_init_error('WarpPrecast.init', err_pc)
+            return
+        end
     else
         MessageWarp.show_init_error('WarpPrecast', WarpPrecast)
         return
@@ -97,7 +113,9 @@ function WarpInit.init()
         MessageWarp.show_ipc_unavailable()
     end
 
+    -- Mark as initialized — persist to windower table (survives gs reload)
     initialized = true
+    windower._warp_init_done = true
     MessageWarp.show_init_success()
 end
 
@@ -106,9 +124,10 @@ end
 ---============================================================================
 
 --- Check if system is initialized
+--- Checks both module-local and windower persistent state
 --- @return boolean True if initialized
 function WarpInit.is_initialized()
-    return initialized
+    return initialized or (windower._warp_init_done == true)
 end
 
 --- Manual warp detection (for custom integrations)

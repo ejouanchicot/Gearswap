@@ -1,9 +1,9 @@
----============================================================================
---- DNC Commands - Custom Command Handling
----============================================================================
---- Handles job-specific custom commands for Dancer job.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DNC Commands - Custom Command Handling
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles job-specific custom commands for Dancer job.
 ---
---- Features:
+---   Features:
 ---   • Common commands integration (reload, checksets, waltz, aoewaltz, jump)
 ---   • UI commands (ui, showbinds)
 ---   • Smartbuff command (subjob buff automation)
@@ -11,22 +11,22 @@
 ---   • Fan Dance toggle command
 ---   • State change UI updates
 ---
---- Dependencies:
+---   Dependencies:
 ---   • UICommands - centralized UI command handling
 ---   • CommonCommands - universal job commands
 ---   • StepManager (logic) - Step + Presto management
 ---
---- @file    jobs/dnc/functions/DNC_COMMANDS.lua
---- @author  Tetsouo
---- @version 2.0 - Logic Extracted to logic/
---- @date    Created: 2025-10-04
---- @date    Updated: 2025-10-06
----============================================================================
+---   @file    jobs/dnc/functions/DNC_COMMANDS.lua
+---   @author  Tetsouo
+---   @version 2.0 - Logic Extracted to logic/
+---   @date    Created: 2025-10-04
+---   @date    Updated: 2025-10-06
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES (LAZY LOADING for performance)
----============================================================================
--- Command handlers loaded on first command (saves ~60ms at startup)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
+-- Command handlers loaded on first command
 local UICommands = nil
 local CommonCommands = nil
 local WatchdogCommands = nil
@@ -47,13 +47,13 @@ local function ensure_commands_loaded()
     end
 end
 
----============================================================================
---- JOB SELF COMMAND HANDLER
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   JOB SELF COMMAND HANDLER
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Handle job-specific self commands
---- @param cmdParams table Command parameters array
---- @param eventArgs table Event arguments with handled flag
+---   Handle job-specific self commands
+---   @param cmdParams table Command parameters array
+---   @param eventArgs table Event arguments with handled flag
 function job_self_command(cmdParams, eventArgs)
     if not cmdParams[1] then return end
 
@@ -62,9 +62,9 @@ function job_self_command(cmdParams, eventArgs)
 
     local command = cmdParams[1]:lower()
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DUAL-BOXING: Receive alt job update
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'altjobupdate' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         if cmdParams[2] and cmdParams[3] then
@@ -75,7 +75,7 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     -- DUAL-BOXING: Handle job request from MAIN
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'requestjob' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         DualBoxManager.handle_job_request()
@@ -111,9 +111,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DEBUG COMMANDS
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'debugmidcast' then
         -- Toggle MidcastManager debug mode
         local MidcastManager = require('shared/utils/midcast/midcast_manager')
@@ -126,9 +126,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- CUSTOM CYCLE STATE (UI-aware cycle)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Intercepts cycle commands to check UI visibility
     -- If UI visible: custom cycle + UI update (no message)
     -- If UI invisible: delegate to Mote-Include (shows message)
@@ -193,12 +193,12 @@ function job_self_command(cmdParams, eventArgs)
     -- Example: samba rotation, etc.
 end
 
----============================================================================
---- STATE CHANGE HANDLER
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   STATE CHANGE HANDLER
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Update UI when state changes
---- Called after state changes to update UI display
+---   Update UI when state changes
+---   Called after state changes to update UI display
 function job_state_change(stateField, newValue, oldValue)
     -- Skip UI update for Moving state (handled by AutoMove with flag)
     if stateField == 'Moving' then
@@ -211,17 +211,11 @@ function job_state_change(stateField, newValue, oldValue)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Make functions available globally for GearSwap
 _G.job_self_command = job_self_command
 _G.job_state_change = job_state_change
 
--- Also export as module for potential future use
-local DNC_COMMANDS = {}
-DNC_COMMANDS.job_self_command = job_self_command
-DNC_COMMANDS.job_state_change = job_state_change
-
-return DNC_COMMANDS

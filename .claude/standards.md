@@ -16,7 +16,7 @@
 - ✅ **Architecture 10/10** - Factory patterns, centralized systems
 - ✅ **Code Quality 10/10** - Zero code mort, zero duplication
 - ✅ **Documentation 100%** - All functions documented
-- ✅ **Jobs Implemented:** WAR, PLD, DNC (3 jobs production-ready)
+- ✅ **Jobs Implemented:** 15 (BLM, BRD, BST, COR, DNC, DRK, GEO, PLD, PUP, RDM, RUN, SAM, THF, WAR, WHM)
 
 ---
 
@@ -627,8 +627,8 @@ D:\Windower Tetsouo\addons\GearSwap\data\Tetsouo\
 ### Architecture
 
 - **Factory Patterns:** 2 (Lockstyle, Macrobook)
-- **Centralized Systems:** 7 (Messages, Cooldowns, Abilities, Equipment, Movement, JobChange, Debuffs)
-- **Jobs Implemented:** 3 (WAR, PLD, DNC)
+- **Centralized Systems:** 9 (PrecastGuard, CooldownChecker, WSPrecastHandler, MidcastManager, MessageFormatter, LockstyleManager, MacrobookManager, AbilityHelper, JobChangeManager)
+- **Jobs Implemented:** 15 (BLM, BRD, BST, COR, DNC, DRK, GEO, PLD, PUP, RDM, RUN, SAM, THF, WAR, WHM)
 
 ### Performance
 

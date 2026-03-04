@@ -1,5 +1,5 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
----   RDM Functions Façade - Module Loader
+---   RDM Functions Facade - Module Loader
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Loads all RDM-specific function modules in correct dependency order.
 ---   This file acts as the central coordinator for all RDM modules.

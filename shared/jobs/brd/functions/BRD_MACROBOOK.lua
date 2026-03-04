@@ -1,24 +1,24 @@
----============================================================================
---- BRD Macrobook Module - Macro Book Management (Factory Pattern)
----============================================================================
---- Handles macro book selection and management for Bard job.
---- Uses centralized MacrobookManager factory for consistent behavior.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BRD Macrobook Module - Macro Book Management (Factory Pattern)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles macro book selection and management for Bard job.
+---   Uses centralized MacrobookManager factory for consistent behavior.
 ---
---- **PERFORMANCE OPTIMIZATION:**
----   • Lazy-loaded: Module created on first function call (saves ~45ms at startup)
+---   **PERFORMANCE OPTIMIZATION:**
+---   • Lazy-loaded: Module created on first function call
 ---
---- Configuration:
+---   Configuration:
 ---   • Macro definitions: config/brd/BRD_MACROBOOK.lua
 ---   • Default book: 1, page: 1
 ---   • Default subjob: WHM
 ---   • Automatic subjob-based selection
 ---
---- @file    jobs/brd/functions/BRD_MACROBOOK.lua
---- @author  Tetsouo
---- @version 2.1 - Lazy Loading for performance
---- @date    Created: 2025-10-13 | Updated: 2025-11-15
---- @requires utils/macrobook/macrobook_manager
----============================================================================
+---   @file    jobs/brd/functions/BRD_MACROBOOK.lua
+---   @author  Tetsouo
+---   @version 2.1 - Lazy Loading for performance
+---   @date    Created: 2025-10-13 | Updated: 2025-11-15
+---   @requires utils/macrobook/macrobook_manager
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Lazy loading: Module created on first use
 local MacrobookManager = nil

@@ -6,7 +6,7 @@
 ---
 --- **PERFORMANCE OPTIMIZATION:**
 ---   • LAZY-LOADED: Database loads on first WS usage (not at startup)
----   • Saves 260-650ms during job loading
+---   • Lazy-loaded on first WS usage
 ---   • Cached in _G.WS_DATABASE for all jobs
 ---
 --- Pattern: Same as UNIVERSAL_JA_DATABASE

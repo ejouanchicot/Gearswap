@@ -1,9 +1,9 @@
----============================================================================
---- THF Commands Module - Custom Command Handling
----============================================================================
---- Handles custom commands for Thief job via //gs c syntax.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   THF Commands Module - Custom Command Handling
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles custom commands for Thief job via //gs c syntax.
 ---
---- Features:
+---   Features:
 ---   • Common commands (reload, checksets, setregion via COMMON_COMMANDS)
 ---   • UI commands (ui toggle, visibility via UI_COMMANDS)
 ---   • THF-specific commands (smartbuff, fbc, range)
@@ -11,7 +11,7 @@
 ---   • State change UI updates (automatic refresh)
 ---   • Future: TH tracking commands, SA/TA management commands
 ---
---- Commands:
+---   Commands:
 ---   • //gs c reload         - Reload THF configuration
 ---   • //gs c checksets      - Validate equipment sets
 ---   • //gs c smartbuff      - Apply subjob-specific buffs
@@ -19,21 +19,21 @@
 ---   • //gs c range          - Equip + lock ranged + attack <stnpc> (one-way)
 ---   • //gs c ui             - Toggle UI visibility
 ---
---- Dependencies:
+---   Dependencies:
 ---   • CommonCommands (universal commands: reload, checksets, etc.)
 ---   • UICommands (UI toggle and management)
 ---   • SmartbuffManager (subjob-specific buff automation)
 ---
---- @file    jobs/thf/functions/THF_COMMANDS.lua
---- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-10-06
----============================================================================
+---   @file    jobs/thf/functions/THF_COMMANDS.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-06
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES (LAZY LOADING for performance)
----============================================================================
--- Command handlers loaded on first command (saves ~60ms at startup)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
+-- Command handlers loaded on first command
 local UICommands = nil
 local CommonCommands = nil
 local WatchdogCommands = nil
@@ -54,13 +54,13 @@ local function ensure_commands_loaded()
     end
 end
 
----============================================================================
---- JOB SELF COMMAND HANDLER
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   JOB SELF COMMAND HANDLER
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Handle job-specific self commands
---- @param cmdParams table Command parameters array
---- @param eventArgs table Event arguments with handled flag
+---   Handle job-specific self commands
+---   @param cmdParams table Command parameters array
+---   @param eventArgs table Event arguments with handled flag
 function job_self_command(cmdParams, eventArgs)
     if not cmdParams[1] then return end
 
@@ -69,9 +69,9 @@ function job_self_command(cmdParams, eventArgs)
 
     local command = cmdParams[1]:lower()
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DUAL-BOXING: Receive alt job update
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'altjobupdate' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         if cmdParams[2] and cmdParams[3] then
@@ -82,7 +82,7 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     -- DUAL-BOXING: Handle job request from MAIN
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'requestjob' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         DualBoxManager.handle_job_request()
@@ -118,9 +118,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DEBUG COMMANDS
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'debugmidcast' then
         -- Toggle MidcastManager debug mode
         local MidcastManager = require('shared/utils/midcast/midcast_manager')
@@ -133,9 +133,9 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- CUSTOM CYCLE STATE (UI-aware cycle)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Intercepts cycle commands to check UI visibility
     -- If UI visible: custom cycle + UI update (no message)
     -- If UI invisible: delegate to Mote-Include (shows message)
@@ -195,8 +195,8 @@ function job_self_command(cmdParams, eventArgs)
     -- - 'sata' for SA/TA management
 end
 
---- Update UI when state changes
---- Called after state changes to update UI display
+---   Update UI when state changes
+---   Called after state changes to update UI display
 function job_state_change(stateField, newValue, oldValue)
     -- Skip UI update for Moving state (handled by AutoMove with flag)
     if stateField == 'Moving' then
@@ -222,17 +222,9 @@ function job_state_change(stateField, newValue, oldValue)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Make functions available globally for GearSwap
 _G.job_self_command = job_self_command
 _G.job_state_change = job_state_change
-
--- Also export as module
-local THF_COMMANDS = {}
-THF_COMMANDS.job_self_command = job_self_command
-THF_COMMANDS.job_state_change = job_state_change
-
-return THF_COMMANDS

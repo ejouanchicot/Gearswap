@@ -1,7 +1,7 @@
----============================================================================
---- BLM Precast Module - Precast Action Handling & Intelligent Spell Refinement
----============================================================================
---- Handles precast gear for Black Mage job:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BLM Precast Module - Precast Action Handling & Intelligent Spell Refinement
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles precast gear for Black Mage job:
 ---   • Fast Cast for all spells (cap 80%)
 ---   • Job Abilities (Manafont, Manawall, Elemental Seal)
 ---   • Intelligent Spell Refinement (automatic tier downgrading)
@@ -12,16 +12,16 @@
 ---   • Death spell handling (HP-based damage)
 ---   • Security layers (debuff guard, cooldown check for non-tiered spells)
 ---
---- @file    BLM_PRECAST.lua
---- @author  Tetsouo
---- @version 2.0 - Universal Refinement Integration
---- @date    Created: 2025-10-15 | Updated: 2025-10-15
---- @requires Tetsouo architecture, MessageFormatter, CooldownChecker, spell_refiner
----============================================================================
+---   @file    BLM_PRECAST.lua
+---   @author  Tetsouo
+---   @version 2.0 - Universal Refinement Integration
+---   @date    Created: 2025-10-15 | Updated: 2025-10-15
+---   @requires Tetsouo architecture, MessageFormatter, CooldownChecker, spell_refiner
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local CooldownChecker = nil
 local PrecastGuard = nil
@@ -57,20 +57,20 @@ end
 --   • checkArts() - Scholar subjob Dark Arts automation
 -- These functions are available in _G scope and called directly
 
----============================================================================
---- HELPER FUNCTIONS (Lazy Loaded - Safe to Call After ensure_modules_loaded)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HELPER FUNCTIONS (Lazy Loaded - Safe to Call After ensure_modules_loaded)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Check if an ability has multiple charges (bypass cooldown check)
---- @param spell table Spell object
---- @return boolean true if ability has charges
+---   Check if an ability has multiple charges (bypass cooldown check)
+---   @param spell table Spell object
+---   @return boolean true if ability has charges
 local function has_charges(spell)
     return BLM_SPELL_FILTERS and BLM_SPELL_FILTERS.CHARGE_ABILITIES[spell.english] or false
 end
 
---- Check if a spell should use refinement instead of cooldown check
---- @param spell table Spell object
---- @return boolean true if spell uses refinement
+---   Check if a spell should use refinement instead of cooldown check
+---   @param spell table Spell object
+---   @return boolean true if spell uses refinement
 local function uses_refinement(spell)
     if not BLM_SPELL_FILTERS then return false end
 
@@ -86,10 +86,15 @@ local function uses_refinement(spell)
     return BLM_SPELL_FILTERS.REFINEMENT_SPELLS[spell.english] or false
 end
 
----============================================================================
---- PRECAST HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PRECAST HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
+---   Handle precast actions
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_precast(spell, action, spellMap, eventArgs)
     -- Lazy load modules on first action
     ensure_modules_loaded()
@@ -124,17 +129,6 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- ==========================================================================
-    -- JOB ABILITIES MESSAGES (universal - supports main + subjob)
-    -- DISABLED: BLM Job Abilities Messages
-    -- Messages now handled by universal ability_message_handler (init_ability_messages.lua)
-    -- This prevents duplicate messages from job-specific + universal system
-    --
-    -- LEGACY CODE (commented out to prevent duplicates):
-    -- if spell.type == 'JobAbility' and JA_DB[spell.english] then
-    --     MessageFormatter.show_ja_activated(spell.english, JA_DB[spell.english].description)
-    -- end
-
     -- BLM-SPECIFIC PRECAST LOGIC
 
     -- Check Arts for Scholar subjob (Dark Arts automation for Elemental Magic)
@@ -151,9 +145,9 @@ function job_precast(spell, action, spellMap, eventArgs)
         -- Special precast gear with high HP
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- IMPACT BODY LOCK (Twilight Cloak Required - like Marsyas for BRD)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Impact requires Twilight Cloak equipped to cast - must stay equipped
     -- throughout entire cast or the spell fails
     if spell.english == 'Impact' then
@@ -165,14 +159,19 @@ function job_precast(spell, action, spellMap, eventArgs)
         _G.impact_body = 'Twilight Cloak'
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, BLMTPConfig) then
         return
     end
 end
 
+---   Apply final gear adjustments before equipping
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
     if WSPrecastHandler then
@@ -180,17 +179,11 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export global for GearSwap (Mote-Include)
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
 
--- Export module
-local BLM_PRECAST = {}
-BLM_PRECAST.job_precast = job_precast
-BLM_PRECAST.job_post_precast = job_post_precast
-
-return BLM_PRECAST

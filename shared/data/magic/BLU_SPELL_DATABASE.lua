@@ -1,5 +1,5 @@
 ---============================================================================
---- BLU Spell Database - Complete Blue Mage Spell Data (Façade)
+--- BLU Spell Database - Complete Blue Mage Spell Data (Facade)
 ---============================================================================
 --- Contains all BLU spells with accurate level requirements, spell points,
 --- and trait data for optimal spell set building.
@@ -7,7 +7,7 @@
 ---
 --- @file config/magic/BLU_SPELL_DATABASE.lua
 --- @author Tetsouo
---- @version 2.1 - Improved formatting - Improved alignment - Façade Architecture
+--- @version 2.1 - Improved formatting - Improved alignment - Facade Architecture
 --- @date Created: 2025-10-12 | Updated: 2025-11-06
 --- @date Refactored: 2025-10-12 | Updated: 2025-11-06
 ---
@@ -23,7 +23,7 @@
 --- ARCHITECTURE:
 --- - This file is a FAÇADE that loads internal modules
 --- - Internal modules: physical, magical, breath, healing, buff, debuff
---- - All helper functions remain in this façade file
+--- - All helper functions remain in this facade file
 --- - Public API remains 100% unchanged for backward compatibility
 ---============================================================================
 

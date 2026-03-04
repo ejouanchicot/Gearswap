@@ -1,5 +1,5 @@
 ---============================================================================
---- Elemental Magic Database - Façade (Public API)
+--- Elemental Magic Database - Facade (Public API)
 ---============================================================================
 --- Provides unified access to all Elemental Magic spells.
 --- Merges spells from 7 modules into a single interface.

@@ -9,11 +9,11 @@
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Handle aftercast events (return to idle/engaged gear)
---- @param spell table Spell data
---- @param action string Action type
---- @param spellMap string Spell mapping
---- @param eventArgs table Event arguments
+---   Handle aftercast events (return to idle/engaged gear)
+---   @param spell table Spell data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_aftercast(spell, action, spellMap, eventArgs)
     -- Watchdog: Track aftercast
     if _G.MidcastWatchdog then
@@ -31,10 +31,9 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     end
 end
 
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
+
 -- Export to global scope (used by Mote-Include via include())
 _G.job_aftercast = job_aftercast
-
--- Export as module
-return {
-    job_aftercast = job_aftercast
-}

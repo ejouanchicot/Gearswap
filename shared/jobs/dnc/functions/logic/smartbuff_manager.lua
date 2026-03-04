@@ -1,10 +1,10 @@
----============================================================================
---- Smartbuff Manager - Subjob Buff Application (Logic Module)
----============================================================================
---- Automatically applies appropriate buffs based on current subjob with
---- intelligent recast checking and professional status display.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Smartbuff Manager - Subjob Buff Application (Logic Module)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Automatically applies appropriate buffs based on current subjob with
+---   intelligent recast checking and professional status display.
 ---
---- Features:
+---   Features:
 ---   • WAR subjob buffs (Berserk, Aggressor, Warcry - priority order)
 ---   • NIN subjob buffs (Utsusemi: Ni >> Ichi fallback)
 ---   • SAM subjob buffs (Hasso)
@@ -14,11 +14,11 @@
 ---   • Status display (active/cooldown with time remaining)
 ---   • Fallback for other subjobs (default to Haste Samba)
 ---
---- @file    jobs/dnc/functions/logic/smartbuff_manager.lua
---- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-10-06
----============================================================================
+---   @file    jobs/dnc/functions/logic/smartbuff_manager.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-06
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local SmartbuffManager = {}
 
@@ -43,12 +43,12 @@ local function is_on_cooldown(recast)
     end
 end
 
----============================================================================
---- SUBJOB BUFF FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SUBJOB BUFF FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply WAR subjob buffs (Berserk, Aggressor, Warcry in priority order)
---- @return boolean Success status
+---   Apply WAR subjob buffs (Berserk, Aggressor, Warcry in priority order)
+---   @return boolean Success status
 function SmartbuffManager.apply_war_buffs()
     local ability_recasts = windower.ffxi.get_ability_recasts()
     local abilities_to_cast = {}
@@ -109,8 +109,8 @@ function SmartbuffManager.apply_war_buffs()
     return true
 end
 
---- Apply NIN subjob buffs (Utsusemi Ni first, Ichi fallback)
---- @return boolean Success status
+---   Apply NIN subjob buffs (Utsusemi Ni first, Ichi fallback)
+---   @return boolean Success status
 function SmartbuffManager.apply_nin_buffs()
     local spell_recasts = windower.ffxi.get_spell_recasts()
     local ni_recast = (spell_recasts[339] or 0) / 100  -- Convert centiseconds to seconds
@@ -133,8 +133,8 @@ function SmartbuffManager.apply_nin_buffs()
     return true
 end
 
---- Apply SAM subjob buffs (Hasso)
---- @return boolean Success status
+---   Apply SAM subjob buffs (Hasso)
+---   @return boolean Success status
 function SmartbuffManager.apply_sam_buffs()
     local ability_recasts = windower.ffxi.get_ability_recasts()
     local status_data = {}
@@ -164,8 +164,8 @@ function SmartbuffManager.apply_sam_buffs()
     return true
 end
 
---- Apply THF subjob buffs (Sneak Attack + Trick Attack if TP allows)
---- @return boolean Success status
+---   Apply THF subjob buffs (Sneak Attack + Trick Attack if TP allows)
+---   @return boolean Success status
 function SmartbuffManager.apply_thf_buffs()
     local ability_recasts = windower.ffxi.get_ability_recasts()
     local status_data = {}
@@ -195,12 +195,12 @@ function SmartbuffManager.apply_thf_buffs()
     return true
 end
 
----============================================================================
---- MAIN ENTRY POINT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MAIN ENTRY POINT
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply smartbuff based on current subjob
---- @return boolean Success status
+---   Apply smartbuff based on current subjob
+---   @return boolean Success status
 function SmartbuffManager.apply()
     local subjob = player.sub_job
 
@@ -224,8 +224,8 @@ function SmartbuffManager.apply()
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return SmartbuffManager

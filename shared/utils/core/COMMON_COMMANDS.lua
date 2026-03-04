@@ -1,30 +1,9 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Common Commands - Centralized Command Handler for All Jobs
----  ═══════════════════════════════════════════════════════════════════════════
----   Handles universal commands that are identical across all jobs:
----   - reload: Force job change manager reload
----   - checksets: Run equipment validation
----   - warp: Warp system control + cast commands
----   - jamsg: Toggle Job Ability messages (full/on/off)
----   - spellmsg: Toggle Spell messages (full/on/off)
----   - info: Display detailed JA/Spell/WS information
----
----   @file    shared/utils/core/COMMON_COMMANDS.lua
----   @author  Tetsouo
----   @version 2.2 - Eliminated all duplication (generics + WARP_COMMANDS)
----   @date    Created: 2025-10-04 | Updated: 2025-11-12
----  ═══════════════════════════════════════════════════════════════════════════
+-- CommonCommands: universal command handler shared across all 15 jobs.
 local CommonCommands = {}
-
----  ═══════════════════════════════════════════════════════════════════════════
----   DEPENDENCIES
----  ═══════════════════════════════════════════════════════════════════════════
 
 local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
 
----  ═══════════════════════════════════════════════════════════════════════════
----   CONSTANTS - WARP COMMANDS LIST (50+ commands)
----  ═══════════════════════════════════════════════════════════════════════════
+-- CONSTANTS - WARP COMMANDS LIST (50+ commands)
 
 local WARP_COMMANDS = { -- System + BLM/WHM spells (original)
 'warp', 'w', 'w2', 'warp2', 'ret', 'retrace', 'esc', 'escape', 'tph', 'tpholla', 'tpd', 'tpdem', 'tpm', 'tpmea', 'tpa',
@@ -41,13 +20,9 @@ local WARP_COMMANDS = { -- System + BLM/WHM spells (original)
 'lf', 'leafallia', 'bh', 'behemoth', 'cc', 'chocircuit', 'pt', 'parting', 'cg', 'chocogirl', -- Unique Mechanics (2)
 'ld', 'leader', 'td', 'tidal'}
 
----  ═══════════════════════════════════════════════════════════════════════════
----   RELOAD COMMAND
----  ═══════════════════════════════════════════════════════════════════════════
+-- RELOAD COMMAND
 
 --- Handle job reload command
---- @param job_name string Current job name (WAR, PLD, etc.)
---- @return boolean True if command was handled successfully
 function CommonCommands.handle_reload(job_name)
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if jcm_success and JobChangeManager then
@@ -62,12 +37,9 @@ function CommonCommands.handle_reload(job_name)
     end
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   JUMP COMMAND (SUB DRG)
----  ═══════════════════════════════════════════════════════════════════════════
+-- JUMP COMMAND (SUB DRG)
 
 --- Handle jump command for DRG subjob
---- @return boolean True if command was handled successfully
 function CommonCommands.handle_jump()
     local drg_success, DRGJumpManager = pcall(require, 'shared/utils/drg/DRG_JUMP_MANAGER')
     if drg_success and DRGJumpManager then
@@ -80,14 +52,9 @@ function CommonCommands.handle_jump()
     end
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   WALTZ COMMANDS (DNC MAIN/SUB)
----  ═══════════════════════════════════════════════════════════════════════════
+-- WALTZ COMMANDS (DNC MAIN/SUB)
 
 --- Generic waltz handler (eliminates duplication between curing/divine)
---- @param waltz_type string Waltz type: 'curing' or 'divine'
---- @param error_msg string Error message if DNC not available
---- @return boolean True if command was handled successfully
 local function handle_waltz_generic(waltz_type, error_msg)
     -- Check if DNC main or sub
     if player.main_job ~= 'DNC' and player.sub_job ~= 'DNC' then
@@ -117,24 +84,18 @@ local function handle_waltz_generic(waltz_type, error_msg)
 end
 
 --- Handle curing waltz command (single target, intelligent tier selection)
---- @return boolean True if command was handled successfully
 function CommonCommands.handle_waltz()
     return handle_waltz_generic('curing', "Waltz requires DNC main or subjob")
 end
 
 --- Handle divine waltz command (AoE healing)
---- @return boolean True if command was handled successfully
 function CommonCommands.handle_aoewaltz()
     return handle_waltz_generic('divine', "Divine Waltz requires DNC main or subjob")
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   CHECKSETS COMMAND
----  ═══════════════════════════════════════════════════════════════════════════
+-- CHECKSETS COMMAND
 
 --- Handle equipment check command
---- @param job_name string Current job name (WAR, PLD, etc.)
---- @return boolean True if command was handled successfully
 function CommonCommands.handle_checksets(job_name)
     local equipment_success, EquipmentChecker = pcall(require, 'shared/utils/equipment/equipment_checker')
     if equipment_success and EquipmentChecker then
@@ -147,12 +108,9 @@ function CommonCommands.handle_checksets(job_name)
     end
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   WARDROBE AUDIT COMMAND
----  ═══════════════════════════════════════════════════════════════════════════
+-- WARDROBE AUDIT COMMAND
 
 --- Handle wardrobe audit command (scan all jobs, find unused wardrobe items)
---- @return boolean True if command was handled successfully
 function CommonCommands.handle_wardrobeaudit()
     local audit_success, WardrobeAuditor = pcall(require, 'shared/utils/equipment/wardrobe_auditor')
     if audit_success and WardrobeAuditor then
@@ -165,12 +123,9 @@ function CommonCommands.handle_wardrobeaudit()
     end
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   REFILL COMMAND
----  ═══════════════════════════════════════════════════════════════════════════
+-- REFILL COMMAND
 
 --- Handle inventory refill command (pull consumables from Case/Sack)
---- @return boolean True if command was handled successfully
 function CommonCommands.handle_refill()
     local refill_success, RefillManager = pcall(require, 'shared/utils/inventory/refill_manager')
     if refill_success and RefillManager then
@@ -183,14 +138,11 @@ function CommonCommands.handle_refill()
     end
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   TESTCOLORS COMMAND
----  ═══════════════════════════════════════════════════════════════════════════
+-- TESTCOLORS COMMAND
 
 --- Display all FFXI color codes (001-509) to find which ones work
 --- Uses dual-prefix system: 0x1F (codes 1-255), 0x1E (codes 256-509)
 --- Filters out problematic codes that corrupt chat output
---- @return boolean True if command was handled successfully
 function CommonCommands.handle_testcolors()
     MessageCommands.show_color_test_header()
 
@@ -228,12 +180,29 @@ function CommonCommands.handle_testcolors()
     return true
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   LOCKSTYLE COMMAND
----  ═══════════════════════════════════════════════════════════════════════════
+-- NAKED COMMAND (Strip all equipment)
+
+--- Strip all equipment slots (//gs c naked or //gs c equip naked)
+function CommonCommands.handle_naked()
+    local all_slots = {
+        'main', 'sub', 'range', 'ammo',
+        'head', 'neck', 'ear1', 'ear2',
+        'body', 'hands', 'ring1', 'ring2',
+        'back', 'waist', 'legs', 'feet'
+    }
+    local naked_set = {}
+    for _, slot in ipairs(all_slots) do
+        naked_set[slot] = empty
+    end
+    equip(naked_set)
+    local MessageFormatter = require('shared/utils/messages/message_formatter')
+    MessageFormatter.show_info('All slots cleared.')
+    return true
+end
+
+-- LOCKSTYLE COMMAND
 
 --- Handle lockstyle reapply command (useful after dressup reload)
---- @return boolean True if command was handled successfully
 function CommonCommands.handle_lockstyle()
     -- Try to call the global lockstyle function (different per job)
     if select_default_lockstyle then
@@ -247,15 +216,12 @@ function CommonCommands.handle_lockstyle()
     end
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   DRESSUP TOGGLE COMMAND (Persistent)
----  ═══════════════════════════════════════════════════════════════════════════
+-- DRESSUP TOGGLE COMMAND (Persistent)
 
 --- Toggle DressUp management on/off (persistent across reloads)
 --- When OFF: lockstyle commands won't try to unload/reload DressUp addon
 --- Useful for players who don't have DressUp installed
 --- Usage: //gs c dressup
---- @return boolean True if command was handled successfully
 function CommonCommands.handle_dressup()
     local lockstyle_success, LockstyleManager = pcall(require, 'shared/utils/lockstyle/lockstyle_manager')
     if lockstyle_success and LockstyleManager and LockstyleManager.toggle_dressup then
@@ -269,14 +235,10 @@ function CommonCommands.handle_dressup()
     end
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   PERFORMANCE PROFILER COMMAND
----  ═══════════════════════════════════════════════════════════════════════════
+-- PERFORMANCE PROFILER COMMAND
 
 --- Handle performance profiler commands
 --- Usage: //gs c perf [start|stop|status]
---- @param action string Action to perform (start, stop, status)
---- @return boolean True if command was handled successfully
 function CommonCommands.handle_perf(action)
     local profiler_success, Profiler = pcall(require, 'shared/utils/debug/performance_profiler')
     if not profiler_success or not Profiler then
@@ -303,13 +265,68 @@ function CommonCommands.handle_perf(action)
     end
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   WARP COMMANDS (Universal Warp/Teleport System)
----  ═══════════════════════════════════════════════════════════════════════════
+-- FULL TEST COMMAND (All sections: Systems + Modules + Hooks + Sets)
+
+--- Run comprehensive in-game test across all verifiable areas
+--- Usage: //gs c fulltest [export]
+function CommonCommands.handle_fulltest(action)
+    local ok_load, FullTest = pcall(require, 'shared/utils/debug/full_test')
+    if not ok_load or not FullTest then
+        add_to_chat(207, '[FullTest] Failed to load: ' .. tostring(FullTest))
+        return false
+    end
+    local report = FullTest.run()
+    FullTest.display(report)
+    if action and action:lower() == 'export' then
+        FullTest.export(report)
+    end
+    return true
+end
+
+-- SYSTEM HEALTH CHECK COMMAND
+
+--- Run a full system health check with % score
+--- Usage: //gs c syscheck [export]
+function CommonCommands.handle_syscheck(action)
+    local ok, SystemChecker = pcall(require, 'shared/utils/debug/system_checker')
+    if not ok or not SystemChecker then
+        add_to_chat(207, '[SysCheck] Failed to load: ' .. tostring(SystemChecker))
+        return false
+    end
+    local report = SystemChecker.run()
+    SystemChecker.display(report)
+    if action and action:lower() == 'export' then
+        SystemChecker.export(report)
+    end
+    return true
+end
+
+-- LAG DEBUGGER COMMAND
+
+--- Handle lag debugger commands
+--- Usage: //gs c lagdebug [export|reset|status]  (no arg = toggle)
+function CommonCommands.handle_lagdebug(action)
+    local ld = _G.LagDebugger
+    if not ld then
+        add_to_chat(207, '[LagDebug] Module not loaded - reload GearSwap')
+        return false
+    end
+    action = action and action:lower() or 'toggle'
+    if action == 'export' or action == 'exp' or action == 'e' then
+        ld.export()
+    elseif action == 'reset' or action == 'clear' or action == 'r' then
+        ld.reset()
+    elseif action == 'status' or action == 'stat' or action == 's' then
+        ld.status()
+    else
+        ld.toggle()
+    end
+    return true
+end
+
+-- WARP COMMANDS (Universal Warp/Teleport System)
 
 --- Handle warp system commands (delegated to WarpCommands module)
---- @param cmdParams table All command parameters (including first param)
---- @return boolean True if command was handled successfully
 function CommonCommands.handle_warp_commands(cmdParams)
     local warp_success, WarpCommands = pcall(require, 'shared/utils/warp/warp_commands')
     if warp_success and WarpCommands then
@@ -338,13 +355,10 @@ function CommonCommands.handle_warp_commands(cmdParams)
     end
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   DEBUG SUBJOB COMMAND (Test for Odyssey subjob level = 0)
----  ═══════════════════════════════════════════════════════════════════════════
+-- DEBUG SUBJOB COMMAND (Test for Odyssey subjob level = 0)
 
 --- Display detailed subjob information for testing
 --- Used to verify player.sub_job_level returns 0 in Odyssey Sheol Gaol
---- @return boolean True if command was handled successfully
 function CommonCommands.handle_debugsubjob()
     if not player then
         MessageCommands.show_debugsubjob_no_player()
@@ -379,15 +393,10 @@ function CommonCommands.handle_debugsubjob()
     return true
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   MESSAGE CONFIG COMMANDS (Generic Handler - Eliminates Duplication)
----  ═══════════════════════════════════════════════════════════════════════════
+-- MESSAGE CONFIG COMMANDS (Generic Handler - Eliminates Duplication)
 
 --- Generic message config handler for JA/Spell/WS messages
 --- Eliminates 114 lines of duplication across 3 identical functions
---- @param msg_type string Message type: 'ja', 'spell', or 'ws'
---- @param mode_arg string Display mode to set (full, on, off) or nil to show status
---- @return boolean True if command was handled successfully
 local function handle_message_config_generic(msg_type, mode_arg)
     -- Map message types to config paths and function prefixes
     local config_map = {
@@ -441,67 +450,46 @@ local function handle_message_config_generic(msg_type, mode_arg)
     end
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   JA MESSAGES COMMAND (Toggle Job Ability messages)
----  ═══════════════════════════════════════════════════════════════════════════
+-- JA MESSAGES COMMAND (Toggle Job Ability messages)
 
 --- Handle JA messages display mode command
 --- Modes: full (name + description), on (name only), off (silent)
 --- Usage: //gs c jamsg <full|on|off>
---- @param mode_arg string Display mode to set (full, on, off)
---- @return boolean True if command was handled successfully
 function CommonCommands.handle_jamsg(mode_arg)
     return handle_message_config_generic('ja', mode_arg)
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   INFO COMMAND (Display JA/Spell/WS Details)
----  ═══════════════════════════════════════════════════════════════════════════
+-- INFO COMMAND (Display JA/Spell/WS Details)
 
 --- Handle info command to display detailed information
---- @param args table Array of name parts (can be multi-word like "Last Resort")
---- @return boolean True if command was handled successfully
 function CommonCommands.handle_info(args)
     local InfoCommand = require('shared/utils/commands/info_command')
     return InfoCommand.handle(args)
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   SPELL MESSAGES COMMAND (Toggle Spell messages - ALL categories)
----  ═══════════════════════════════════════════════════════════════════════════
+-- SPELL MESSAGES COMMAND (Toggle Spell messages - ALL categories)
 
 --- Handle Spell messages display mode command
 --- Controls ALL non-Enfeebling spells (Enhancing, Dark, Elemental, Healing, Divine, BRD, GEO, etc.)
 --- Modes: full (name + description), on (name only), off (silent)
 --- Usage: //gs c spellmsg <full|on|off>
---- @param mode_arg string Display mode to set (full, on, off)
---- @return boolean True if command was handled successfully
 function CommonCommands.handle_spellmsg(mode_arg)
     return handle_message_config_generic('spell', mode_arg)
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   WEAPONSKILL MESSAGES COMMAND (Toggle WS messages)
----  ═══════════════════════════════════════════════════════════════════════════
+-- WEAPONSKILL MESSAGES COMMAND (Toggle WS messages)
 
 --- Handle Weaponskill messages display mode command
 --- Controls WS activation messages
 --- Modes: full (name + description + TP), on (name + TP only), off (silent)
 --- Usage: //gs c wsmsg <full|on|off|tp>
---- @param mode_arg string Display mode to set (full, on, off, tp)
---- @return boolean True if command was handled successfully
 function CommonCommands.handle_wsmsg(mode_arg)
     return handle_message_config_generic('ws', mode_arg)
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   MAIN COMMAND ROUTER
----  ═══════════════════════════════════════════════════════════════════════════
+-- MAIN COMMAND ROUTER
 
 --- Handle common commands (centralized for all jobs)
---- @param command string Command name (or cmdParams table for warp)
---- @param job_name string Current job name
---- @return boolean True if command was handled
 function CommonCommands.handle_command(command, job_name, ...)
     if not command then
         return false
@@ -559,7 +547,11 @@ function CommonCommands.handle_command(command, job_name, ...)
     -- ==========================================================================
     -- OTHER COMMON COMMANDS
     -- ==========================================================================
-    if cmd == 'reload' then
+    if cmd == 'naked' then
+        return CommonCommands.handle_naked()
+    elseif cmd == 'equip' and args[1] and args[1]:lower() == 'naked' then
+        return CommonCommands.handle_naked()
+    elseif cmd == 'reload' then
         return CommonCommands.handle_reload(job_name)
     elseif cmd == 'checksets' then
         return CommonCommands.handle_checksets(job_name)
@@ -620,7 +612,8 @@ function CommonCommands.handle_command(command, job_name, ...)
         -- Show global state for debugging accumulated issues
         add_to_chat(207, '=== DEBUG STATE ===')
         add_to_chat(207, string.format('AUTOMOVE_RUNNING: %s', tostring(_G.AUTOMOVE_RUNNING)))
-        add_to_chat(207, string.format('_automove_sequence: %s', tostring(_G._automove_sequence)))
+        add_to_chat(207, string.format('windower._automove_seq: %s (persistent)', tostring(windower._automove_seq)))
+        add_to_chat(207, string.format('_G._automove_sequence: %s (sync)', tostring(_G._automove_sequence)))
         if _G.JobChangeManagerSTATE then
             local S = _G.JobChangeManagerSTATE
             add_to_chat(207, string.format('JCM counter: %d', S.debounce_counter or 0))
@@ -649,6 +642,12 @@ function CommonCommands.handle_command(command, job_name, ...)
         add_to_chat(207, string.format('[UPDATE_DEBUG] %s (traces: AutoMove > job_update > UI.update > customize_set)',
             _G.UPDATE_DEBUG and 'ON' or 'OFF'))
         return true
+    elseif cmd == 'fulltest' or cmd == 'ft' then
+        return CommonCommands.handle_fulltest(args[1])
+    elseif cmd == 'syscheck' or cmd == 'sc' then
+        return CommonCommands.handle_syscheck(args[1])
+    elseif cmd == 'lagdebug' or cmd == 'ld' then
+        return CommonCommands.handle_lagdebug(args[1])
     elseif cmd == 'jamsg' then
         return CommonCommands.handle_jamsg(args[1])
     elseif cmd == 'spellmsg' then
@@ -694,13 +693,9 @@ function CommonCommands.handle_command(command, job_name, ...)
     return false
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   HELPER FUNCTIONS
----  ═══════════════════════════════════════════════════════════════════════════
+-- HELPER FUNCTIONS
 
 --- Check if command is a common command
---- @param command string The command to check
---- @return boolean True if this is a common command
 function CommonCommands.is_common_command(command)
     if not command then
         return false
@@ -709,12 +704,15 @@ function CommonCommands.is_common_command(command)
     local cmd = command:lower()
 
     -- Check existing common commands
-    if cmd == 'reload' or cmd == 'checksets' or cmd == 'wardrobeaudit' or cmd == 'wa' or cmd == 'refill' or cmd == 'rf' or
+    if cmd == 'naked' or cmd == 'equip' or cmd == 'reload' or cmd == 'checksets' or cmd == 'wardrobeaudit' or cmd == 'wa' or cmd == 'refill' or cmd == 'rf' or
         cmd == 'lockstyle' or cmd == 'ls' or cmd == 'dressup' or
         cmd == 'perf' or cmd == 'testcolors' or cmd == 'colors' or cmd == 'jump' or cmd == 'waltz' or
         cmd == 'aoewaltz' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'debugprecast' or
         cmd == 'automovedebug' or cmd == 'amd' or cmd == 'debugjobchange' or cmd == 'djc' or
         cmd == 'debugstate' or cmd == 'ds' or cmd == 'debugupdate' or cmd == 'du' or
+        cmd == 'fulltest' or cmd == 'ft' or
+        cmd == 'syscheck' or cmd == 'sc' or
+        cmd == 'lagdebug' or cmd == 'ld' or
         cmd == 'jamsg' or cmd == 'spellmsg' or cmd == 'wsmsg' or cmd == 'info' or cmd == 'testmsg' or
         cmd == 'msgtest' or cmd == 'msgtests' or cmd == 'commands' or cmd == 'cmds' or cmd == 'help' or cmd == '?' then
         return true
@@ -739,23 +737,5 @@ function CommonCommands.is_common_command(command)
 
     return false
 end
-
----  ═══════════════════════════════════════════════════════════════════════════
----   STATE CHANGE HOOK (UI UPDATE)
----  ═══════════════════════════════════════════════════════════════════════════
-
---- Handle state changes and update UI
---- Call this from job_update() in all job files to keep UI synchronized
---- @return void
-function CommonCommands.handle_state_change()
-    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-    if ui_success and KeybindUI and KeybindUI.update then
-        KeybindUI.update()
-    end
-end
-
----  ═══════════════════════════════════════════════════════════════════════════
----   MODULE EXPORT
----  ═══════════════════════════════════════════════════════════════════════════
 
 return CommonCommands

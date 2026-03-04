@@ -1,40 +1,40 @@
----============================================================================
---- SA/TA Manager - Sneak Attack & Trick Attack WS Set Selection (Logic Module)
----============================================================================
---- Automatically selects weaponskill equipment set variants based on active
---- Sneak Attack and/or Trick Attack buffs with intelligent pending flag detection.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SA/TA Manager - Sneak Attack & Trick Attack WS Set Selection (Logic Module)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Automatically selects weaponskill equipment set variants based on active
+---   Sneak Attack and/or Trick Attack buffs with intelligent pending flag detection.
 ---
---- Features:
+---   Features:
 ---   • Buff-based WS set variant selection (SATA/SA/TA/Base)
 ---   • Pending flag detection (instant detection before buff appears in buffactive)
 ---   • Priority-based variant selection (SATA > SA > TA > Base)
 ---   • Automatic fallback if variants don't exist
 ---   • Buff combination support (both SA and TA active simultaneously)
 ---
---- Priority Order:
+---   Priority Order:
 ---   1. SATA - Both SA and TA active (highest damage multiplier)
 ---   2. SA - Sneak Attack only (critical hit + damage bonus)
 ---   3. TA - Trick Attack only (enmity transfer + damage bonus)
 ---   4. Base set - No buffs (standard WS gear)
 ---
---- Dependencies:
+---   Dependencies:
 ---   • sets.precast.WS (weaponskill sets with optional .SA/.TA/.SATA variants)
 ---   • _G.thf_sa_pending, _G.thf_ta_pending (pending flag globals)
 ---
---- @file    jobs/thf/functions/logic/sa_ta_manager.lua
---- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-10-06
----============================================================================
+---   @file    jobs/thf/functions/logic/sa_ta_manager.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-06
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local SATAManager = {}
 
----============================================================================
---- SET VARIANT SELECTION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SET VARIANT SELECTION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply weaponskill set variant based on active SA/TA buffs
---- @param spell table Weaponskill spell object
+---   Apply weaponskill set variant based on active SA/TA buffs
+---   @param spell table Weaponskill spell object
 function SATAManager.apply_variant(spell)
     -- Only process weaponskills
     if spell.type ~= 'WeaponSkill' then
@@ -81,8 +81,8 @@ function SATAManager.apply_variant(spell)
     -- No buffs active: base set is already equipped by Mote
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return SATAManager

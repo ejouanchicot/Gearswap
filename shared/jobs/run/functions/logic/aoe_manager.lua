@@ -1,29 +1,29 @@
----============================================================================
---- AOE Manager - Blue Magic AOE Spell Rotation (RUN/BLU)
----============================================================================
---- Manages AOE Blue Magic spell casting for RUN/BLU subjob combination.
---- Provides intelligent automation for:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   AOE Manager - Blue Magic AOE Spell Rotation (RUN/BLU)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Manages AOE Blue Magic spell casting for RUN/BLU subjob combination.
+---   Provides intelligent automation for:
 ---   • Spell rotation management (Geist Wall, Stinking Gas, Sound Blast, etc.)
 ---   • Cooldown tracking and validation
 ---   • Anti-spam protection (prevents duplicate casts)
 ---   • Auto-targeting (<stnpc> fallback)
 ---
---- Features:
+---   Features:
 ---   • First-available spell selection
 ---   • Professional cooldown display
 ---   • Unknown spell detection (wrong subjob)
 ---   • Recent cast tracking (5s threshold)
 ---
---- @file    jobs/run/functions/logic/aoe_manager.lua
---- @author  Tetsouo
---- @version 1.0.0
---- @date    Created: 2025-10-06
----============================================================================
+---   @file    jobs/run/functions/logic/aoe_manager.lua
+---   @author  Tetsouo
+---   @version 1.0.0
+---   @date    Created: 2025-10-06
+---  ═══════════════════════════════════════════════════════════════════════════
 local AOEManager = {}
 
----============================================================================
---- DEPENDENCIES
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 local MessageCooldowns = require('shared/utils/messages/formatters/combat/message_cooldowns')
@@ -52,11 +52,11 @@ local BluMagicConfig = _G.BluMagicConfig or {}  -- Loaded from character main fi
 local SpellTracker = {}
 local RECENT_CAST_THRESHOLD = 5 -- seconds before allowing re-cast
 
----============================================================================
---- SPELL TRACKING (Anti-Spam Protection)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SPELL TRACKING (Anti-Spam Protection)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Cleanup old spell tracking entries
+---   Cleanup old spell tracking entries
 local function cleanup_spell_tracking()
     local now = os.time()
     for spell_name, timestamp in pairs(SpellTracker) do
@@ -66,9 +66,9 @@ local function cleanup_spell_tracking()
     end
 end
 
---- Check if spell was recently cast (prevents spam)
---- @param spell_name string Spell name
---- @return boolean recently_cast, number wait_time
+---   Check if spell was recently cast (prevents spam)
+---   @param spell_name string Spell name
+---   @return boolean recently_cast, number wait_time
 local function was_recently_cast(spell_name)
     local now = os.time()
     if SpellTracker[spell_name] then
@@ -80,19 +80,19 @@ local function was_recently_cast(spell_name)
     return false, 0
 end
 
---- Mark spell as cast
---- @param spell_name string Spell name
+---   Mark spell as cast
+---   @param spell_name string Spell name
 local function mark_spell_cast(spell_name)
     SpellTracker[spell_name] = os.time()
 end
 
----============================================================================
---- SPELL CASTING LOGIC
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SPELL CASTING LOGIC
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Check if a spell can be cast (not on cooldown)
---- @param spell_name string Spell name
---- @return boolean can_cast, string reason, number time_value
+---   Check if a spell can be cast (not on cooldown)
+---   @param spell_name string Spell name
+---   @return boolean can_cast, string reason, number time_value
 local function can_cast_spell(spell_name)
     local res = require('resources')
     local spell_data = res.spells:with('en', spell_name)
@@ -118,11 +118,11 @@ local function can_cast_spell(spell_name)
     return true, nil, 0
 end
 
----============================================================================
---- AOE COMMAND HANDLER
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   AOE COMMAND HANDLER
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Handle AOE command - cast first available BLU AOE spell
+---   Handle AOE command - cast first available BLU AOE spell
 function AOEManager.execute_aoe()
     cleanup_spell_tracking()
     local spells_on_cooldown = {}
@@ -180,8 +180,8 @@ function AOEManager.execute_aoe()
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return AOEManager

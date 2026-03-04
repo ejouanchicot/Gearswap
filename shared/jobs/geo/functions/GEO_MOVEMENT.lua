@@ -1,22 +1,22 @@
----============================================================================
---- GEO Movement Management Module
----============================================================================
---- Handles movement-based gear management for Geomancer.
---- Uses centralized AutoMove position tracking for performance.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   GEO Movement Management Module
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles movement-based gear management for Geomancer.
+---   Uses centralized AutoMove position tracking for performance.
 ---
---- @file jobs/geo/functions/GEO_MOVEMENT.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-09
---- @requires utils/movement/automove.lua
----============================================================================
+---   @file    jobs/geo/functions/GEO_MOVEMENT.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-09
+---   @requires utils/movement/automove.lua
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- MOVEMENT STATUS API
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MOVEMENT STATUS API
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get current movement status (delegates to AutoMove)
---- @return table movement_info
+---   Get current movement status (delegates to AutoMove)
+---   @return table movement_info
 function get_geo_movement_status()
     if not AutoMove then
         return {
@@ -32,3 +32,9 @@ function get_geo_movement_status()
         position = AutoMove.get_position()
     }
 end
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
+
+_G.get_geo_movement_status = get_geo_movement_status

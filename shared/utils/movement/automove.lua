@@ -6,15 +6,23 @@
 ---
 --- @file utils/movement/automove.lua
 --- @author Tetsouo
---- @version 2.0.0
---- @date Created: 2025-09-30
+--- @version 2.1.0 - FIX: Ghost coroutine accumulation across gs reload
+--- @date Created: 2025-09-30 | Updated: 2026-03-03
 ---
 --- Features:
 ---   - Centralized position tracking (shared by all modules)
 ---   - Automatic movement detection via position tracking
 ---   - Combat-aware movement gear (idle only, never in combat)
----   - Performance optimized (single prerender event)
+---   - Performance optimized (single timer chain per start() call)
 ---   - Callback system for job-specific movement logic
+---
+--- FIX v2.1.0: Ghost coroutine accumulation
+---   ROOT CAUSE: _G._automove_sequence resets on each gs reload.
+---   Old coroutines captured my_sequence at run-time AFTER start() reset seq=1,
+---   so the guard (my_sequence ~= _G._automove_sequence) always passed → N chains
+---   for N job changes → N×gs_c_update simultaneously.
+---   SOLUTION: Sequence captured ONCE via closure at AutoMove.start() time.
+---   windower._automove_seq persists across reloads and truly increments.
 ---
 --- Requirements:
 ---   - Define sets.MoveSpeed in your job file
@@ -35,10 +43,10 @@ AutoMove = AutoMove or {}
 ---============================================================================
 
 local config = {
-    movement_threshold = 0.3,      -- Distance threshold to detect movement
-    check_interval = 0.08,         -- Time in seconds between position checks (FPS-independent)
-    update_debounce = 0.3,         -- Minimum time between gs c update calls (prevents lag from rapid changes)
-    job_change_cooldown = 2.0      -- Cooldown after job change before sending commands (prevents queue issues)
+    movement_threshold  = 0.3,   -- Distance threshold to detect movement
+    check_interval      = 0.08,  -- Time in seconds between position checks
+    update_debounce     = 0.3,   -- Minimum time between gs c update calls
+    job_change_cooldown = 2.0    -- Cooldown after job change before sending commands
 }
 
 -- Track last update time for debouncing
@@ -49,6 +57,15 @@ local start_time = 0
 
 -- Track if an update was blocked and needs to be sent later
 local pending_update = false
+
+---============================================================================
+--- PERSISTENT SEQUENCE COUNTER (survives gs reload)
+---============================================================================
+-- windower._automove_seq is a C++ object field - never reset by gs reload.
+-- Each start() and stop() increments it. Closures capture it once at start()
+-- time, so ghost coroutines from previous chains always see a stale my_seq.
+
+windower._automove_seq = windower._automove_seq or 0
 
 ---============================================================================
 --- CALLBACK SYSTEM
@@ -68,13 +85,14 @@ function AutoMove.clear_callbacks()
 end
 
 --- Stop the movement detection loop (called during job change cleanup)
---- Increments sequence counter to invalidate all running coroutines
+--- Increments windower sequence to invalidate ALL running closures
 function AutoMove.stop()
     _G.AUTOMOVE_RUNNING = false
-    -- Increment sequence to invalidate old coroutines (prevents ghost coroutines)
-    _G._automove_sequence = (_G._automove_sequence or 0) + 1
+    windower._automove_seq = windower._automove_seq + 1
+    _G._automove_sequence = windower._automove_seq  -- keep _G in sync for debug tools
+    if _G.LagDebugger then _G.LagDebugger.on_automove_stop(windower._automove_seq) end
     if _G.AUTOMOVE_DEBUG then
-        add_to_chat(207, string.format('[AutoMove] STOP called | seq=%d', _G._automove_sequence))
+        add_to_chat(207, string.format('[AutoMove] STOP called | seq=%d', windower._automove_seq))
     end
 end
 
@@ -157,176 +175,146 @@ function AutoMove.reinit_position()
 end
 
 ---============================================================================
---- MOVEMENT DETECTION (FPS-INDEPENDENT TIMER)
+--- START API (creates isolated closure chain - one per call)
 ---============================================================================
 
---- Check movement status (called on timer, not FPS-dependent)
-local function check_movement()
-    -- Capture current sequence at function start (prevents race conditions)
-    local my_sequence = _G._automove_sequence or 0
-
-    -- Guard: Stop if AutoMove was disabled during job change
-    if not _G.AUTOMOVE_RUNNING then
-        return
-    end
-
-    -- Guard: Stop if this coroutine is from an old sequence (prevents ghost coroutines)
-    if my_sequence ~= (_G._automove_sequence or 0) then
-        return  -- This coroutine is outdated, don't reschedule
-    end
-
-    -- Validate player exists
-    if not player or not player.index then
-        -- Reschedule check only if still valid sequence
-        if my_sequence == (_G._automove_sequence or 0) and _G.AUTOMOVE_RUNNING then
-            coroutine.schedule(check_movement, config.check_interval)
-        end
-        return
-    end
-
-    -- Get current position
-    local pl = windower.ffxi.get_mob_by_index(player.index)
-    if not pl or not pl.x or not pl.y or not pl.z or not mov.x then
-        -- Reschedule check only if still valid sequence
-        if my_sequence == (_G._automove_sequence or 0) and _G.AUTOMOVE_RUNNING then
-            coroutine.schedule(check_movement, config.check_interval)
-        end
-        return
-    end
-
-    -- Calculate distance moved
-    local dx = pl.x - mov.x
-    local dy = pl.y - mov.y
-    local dz = pl.z - mov.z
-    local dist = math.sqrt(dx * dx + dy * dy + dz * dz)
-
-    -- Store last distance for API
-    mov.last_distance = dist
-
-    -- Update position
-    mov.x = pl.x
-    mov.y = pl.y
-    mov.z = pl.z
-
-    -------------------------------------------------------------------
-    -- MOVEMENT DETECTED
-    -------------------------------------------------------------------
-    if dist > config.movement_threshold then
-        -- Check if we should equip movement gear
-        -- NEVER equip movement gear in combat (Engaged status)
-        local should_move = (player.status ~= 'Engaged')
-
-        -- Equip movement gear if conditions met
-        if should_move and not moving then
-            state.Moving.value = 'true'
-            moving = true
-            pending_update = true  -- Mark that we need to send an update
-        end
-
-        -- SEND UPDATE: Check if we have a pending update and cooldown/debounce allows it
-        local now = os.clock()
-        if pending_update and should_move then
-            -- COOLDOWN: Skip commands shortly after job change (prevents queue corruption)
-            if (now - start_time) < config.job_change_cooldown then
-                if _G.AUTOMOVE_DEBUG then
-                    add_to_chat(207, string.format('[AutoMove] COOLDOWN moving (%.1fs left)', config.job_change_cooldown - (now - start_time)))
-                end
-            -- DEBOUNCE: Only update gear if enough time has passed
-            elseif (now - last_update_time) >= config.update_debounce then
-                last_update_time = now
-                pending_update = false  -- Clear pending flag
-                if _G.AUTOMOVE_DEBUG then
-                    add_to_chat(207, '[AutoMove] moving')
-                end
-                -- Send update immediately (cleanup on job change prevents queue issues)
-                if _G.UPDATE_DEBUG then
-                    _G._update_sent_time = os.clock()
-                    add_to_chat(207, string.format('[UPDATE_DEBUG] 1. AutoMove SEND gs c update | t=%.3f', _G._update_sent_time))
-                end
-                windower.send_command('gs c update')
-            end
-        end
-
-        -- Always trigger callbacks while moving (for continuous tracking)
-        trigger_callbacks(true, dist, player.status)
-
-    -------------------------------------------------------------------
-    -- STOPPED
-    -------------------------------------------------------------------
-    elseif dist < config.movement_threshold then
-        if moving then
-            state.Moving.value = 'false'
-            moving = false
-            pending_update = true  -- Mark that we need to send an update
-
-            -- Trigger callbacks once when stopping
-            trigger_callbacks(false, dist, player.status)
-        end
-
-        -- SEND UPDATE: Check if we have a pending update and cooldown/debounce allows it
-        local now = os.clock()
-        if pending_update and not moving then
-            -- COOLDOWN: Skip commands shortly after job change (prevents queue corruption)
-            if (now - start_time) < config.job_change_cooldown then
-                if _G.AUTOMOVE_DEBUG then
-                    add_to_chat(207, string.format('[AutoMove] COOLDOWN stopping (%.1fs left)', config.job_change_cooldown - (now - start_time)))
-                end
-            -- DEBOUNCE: Only update gear if enough time has passed
-            elseif (now - last_update_time) >= config.update_debounce then
-                last_update_time = now
-                pending_update = false  -- Clear pending flag
-                if _G.AUTOMOVE_DEBUG then
-                    add_to_chat(207, '[AutoMove] stopping')
-                end
-                -- Send update immediately (cleanup on job change prevents queue issues)
-                if _G.UPDATE_DEBUG then
-                    _G._update_sent_time = os.clock()
-                    add_to_chat(207, string.format('[UPDATE_DEBUG] 1. AutoMove SEND gs c update | t=%.3f', _G._update_sent_time))
-                end
-                windower.send_command('gs c update')
-            end
-        end
-    end
-
-    -- Reschedule next check ONLY if still valid sequence (prevents ghost coroutines)
-    if my_sequence == (_G._automove_sequence or 0) and _G.AUTOMOVE_RUNNING then
-        coroutine.schedule(check_movement, config.check_interval)
-    end
-end
-
----============================================================================
---- START/STOP API
----============================================================================
-
---- Start the movement detection loop (called after job change)
---- ALWAYS restarts - previous coroutines are invalidated by sequence counter
---- MUST be defined AFTER check_movement function
+--- Start the movement detection loop.
+--- Creates a NEW closure chain with a unique sequence ID captured at call time.
+--- Old chains from previous start() calls are instantly invalidated when
+--- windower._automove_seq increments, regardless of _G state after gs reload.
 function AutoMove.start()
-    -- Always restart (increment sequence to invalidate any old coroutines)
-    _G._automove_sequence = (_G._automove_sequence or 0) + 1
-    _G.AUTOMOVE_RUNNING = true
-    -- Record start time for job change cooldown
-    start_time = os.clock()
-    -- Reset movement state to ensure clean start
-    moving = false
+    -- Increment BEFORE closure creation → old chains see a stale my_seq
+    windower._automove_seq = windower._automove_seq + 1
+    local my_seq = windower._automove_seq  -- captured ONCE in closure
+
+    -- Sync _G for debug tools / LagDebugger
+    _G._automove_sequence = my_seq
+    _G.AUTOMOVE_RUNNING   = true
+
+    -- Reset movement state for clean start
+    start_time    = os.clock()
+    moving        = false
     pending_update = false
-    -- Reinitialize position to prevent false movement detection after reload
+    last_update_time = 0
     init_position()
+
+    if _G.LagDebugger then _G.LagDebugger.on_automove_start(my_seq) end
     if _G.AUTOMOVE_DEBUG then
-        add_to_chat(207, string.format('[AutoMove] START | seq=%d', _G._automove_sequence))
+        add_to_chat(207, string.format('[AutoMove] START | seq=%d', my_seq))
     end
-    coroutine.schedule(check_movement, config.check_interval)
+
+    -------------------------------------------------------------------
+    -- CLOSURE: my_seq is fixed for the lifetime of this chain.
+    -- Two guards kill this closure immediately when outdated:
+    --   1. windower._automove_seq changed  (stop() or new start() called)
+    --   2. _G.AUTOMOVE_RUNNING is false    (stop() called in same reload)
+    -------------------------------------------------------------------
+    local function run()
+        -- Guard 1: windower seq changed → this chain is a ghost, die
+        if my_seq ~= windower._automove_seq then return end
+        -- Guard 2: explicitly stopped
+        if not _G.AUTOMOVE_RUNNING then return end
+
+        -- Player not ready: reschedule and wait
+        if not player or not player.index then
+            coroutine.schedule(run, config.check_interval)
+            return
+        end
+
+        -- Get current position
+        local pl = windower.ffxi.get_mob_by_index(player.index)
+        if not pl or not pl.x or not pl.y or not pl.z or mov.x == nil then
+            coroutine.schedule(run, config.check_interval)
+            return
+        end
+
+        -- Calculate distance moved
+        local dx = pl.x - mov.x
+        local dy = pl.y - mov.y
+        local dz = pl.z - mov.z
+        local dist = math.sqrt(dx * dx + dy * dy + dz * dz)
+
+        mov.last_distance = dist
+        mov.x = pl.x
+        mov.y = pl.y
+        mov.z = pl.z
+
+        -------------------------------------------------------------------
+        -- MOVEMENT DETECTED
+        -------------------------------------------------------------------
+        if dist > config.movement_threshold then
+            local should_move = (player.status ~= 'Engaged')
+
+            if should_move and not moving then
+                state.Moving.value = 'true'
+                moving = true
+                pending_update = true
+            end
+
+            local now = os.clock()
+            if pending_update and should_move then
+                if (now - start_time) < config.job_change_cooldown then
+                    if _G.AUTOMOVE_DEBUG then
+                        add_to_chat(207, string.format('[AutoMove] COOLDOWN moving (%.1fs left)',
+                            config.job_change_cooldown - (now - start_time)))
+                    end
+                elseif (now - last_update_time) >= config.update_debounce then
+                    last_update_time = now
+                    pending_update   = false
+                    if _G.AUTOMOVE_DEBUG then add_to_chat(207, '[AutoMove] moving') end
+                    if _G.UPDATE_DEBUG then
+                        _G._update_sent_time = os.clock()
+                        add_to_chat(207, string.format('[UPDATE_DEBUG] 1. AutoMove SEND gs c update | t=%.3f',
+                            _G._update_sent_time))
+                    end
+                    if _G.LagDebugger then _G.LagDebugger.on_automove_update('moving', dist, moving) end
+                    windower.send_command('gs c update')
+                end
+            end
+
+            trigger_callbacks(true, dist, player.status)
+
+        -------------------------------------------------------------------
+        -- STOPPED
+        -------------------------------------------------------------------
+        elseif dist < config.movement_threshold then
+            if moving then
+                state.Moving.value = 'false'
+                moving = false
+                pending_update = true
+                trigger_callbacks(false, dist, player.status)
+            end
+
+            local now = os.clock()
+            if pending_update and not moving then
+                if (now - start_time) < config.job_change_cooldown then
+                    if _G.AUTOMOVE_DEBUG then
+                        add_to_chat(207, string.format('[AutoMove] COOLDOWN stopping (%.1fs left)',
+                            config.job_change_cooldown - (now - start_time)))
+                    end
+                elseif (now - last_update_time) >= config.update_debounce then
+                    last_update_time = now
+                    pending_update   = false
+                    if _G.AUTOMOVE_DEBUG then add_to_chat(207, '[AutoMove] stopping') end
+                    if _G.UPDATE_DEBUG then
+                        _G._update_sent_time = os.clock()
+                        add_to_chat(207, string.format('[UPDATE_DEBUG] 1. AutoMove SEND gs c update | t=%.3f',
+                            _G._update_sent_time))
+                    end
+                    if _G.LagDebugger then _G.LagDebugger.on_automove_update('stopping', dist, moving) end
+                    windower.send_command('gs c update')
+                end
+            end
+        end
+
+        -- Reschedule via closure (my_seq preserved automatically)
+        coroutine.schedule(run, config.check_interval)
+    end
+
+    coroutine.schedule(run, config.check_interval)
 end
 
 ---============================================================================
---- INITIALIZATION
+--- NOTE: AutoMove.start() is called explicitly by INIT_SYSTEMS.lua
+--- It is NOT auto-started on include to prevent double-start on reload.
 ---============================================================================
-
--- Initialize sequence counter (global to survive reloads)
-if not _G._automove_sequence then
-    _G._automove_sequence = 0
-end
-
--- NOTE: AutoMove.start() is NOT called here anymore
--- It is called explicitly by INIT_SYSTEMS.lua after include
--- This prevents double-start issues on job change/reload

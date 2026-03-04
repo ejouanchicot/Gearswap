@@ -1,26 +1,17 @@
----============================================================================
---- DRK Precast Module - Precast Action Handling & Cooldown Monitoring
----============================================================================
---- Handles all precast actions for Dark Knight job:
----   • Debuff blocking (Amnesia, Silence, Stun)
----   • Universal cooldown checking (abilities/spells)
----   • Weaponskill validation and range checking
----   • TP bonus optimization for weaponskills
----   • Fast Cast gear for spells
----   • Last Resort precast management
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DRK Precast Module - Precast Action Handling & Fast Cast
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Debuff guard, cooldown check, WS handling, Fast Cast, Last Resort.
 ---
---- Uses centralized systems for validation and messaging consistency.
----
---- @file    DRK_PRECAST.lua
---- @author  Tetsouo
---- @version 2.0 - Refactored to use WSPrecastHandler
---- @date    Created: 2025-10-23 | Updated: 2025-11-29
---- @requires Tetsouo architecture, WSPrecastHandler
----============================================================================
+---   @file    DRK_PRECAST.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-05
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local CooldownChecker = nil
 local PrecastGuard = nil
@@ -46,27 +37,24 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
----============================================================================
---- COOLDOWN EXCLUSIONS
----============================================================================
-
 local cooldown_exclusions = {
     -- Add DRK-specific exclusions here if needed
 }
 
----============================================================================
---- PRECAST HOOK
----============================================================================
-
+---   Handle precast actions
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
-    -- STEP 1: Debuff guard
+    -- Debuff guard
     if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
         return
     end
 
-    -- STEP 2: Cooldown check (with exclusions)
+    -- Cooldown check (with exclusions)
     local is_excluded = cooldown_exclusions[spell.name]
     if not is_excluded and CooldownChecker then
         if spell.action_type == 'Ability' then
@@ -112,10 +100,11 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- POST-PRECAST HOOK
----============================================================================
-
+---   Apply final gear adjustments before equipping
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
     if WSPrecastHandler then
@@ -123,14 +112,10 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
 
-return {
-    job_precast = job_precast,
-    job_post_precast = job_post_precast
-}

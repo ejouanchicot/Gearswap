@@ -1,9 +1,9 @@
----============================================================================
---- Step Manager - Step + Presto Management (Logic Module)
----============================================================================
---- Handles step command with Presto integration and intelligent step alternation.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Step Manager - Step + Presto Management (Logic Module)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles step command with Presto integration and intelligent step alternation.
 ---
---- Features:
+---   Features:
 ---   • Presto auto-trigger before Steps (if available and level 77+)
 ---   • Step alternation support (MainStep ↔ AltStep rotation)
 ---   • UseAltStep toggle (On = alternate, Off = MainStep only)
@@ -12,16 +12,16 @@
 ---   • Cooldown message display (formatted with job tag)
 ---   • Automatic state toggling after each step
 ---
---- Usage:
+---   Usage:
 ---   • //gs c step - Execute step with Presto if available
 ---   • Alt+5 toggle UseAltStep - Enable/disable alternation
 ---   • Alt+3/4 cycle MainStep/AltStep - Change step abilities
 ---
---- @file    jobs/dnc/functions/logic/step_manager.lua
---- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2025-10-06
----============================================================================
+---   @file    jobs/dnc/functions/logic/step_manager.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-06
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local StepManager = {}
 
@@ -46,11 +46,11 @@ local function is_on_cooldown(recast)
     end
 end
 
----============================================================================
---- STEP EXECUTION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   STEP EXECUTION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Execute step with Presto integration and alternation support
+---   Execute step with Presto integration and alternation support
 function StepManager.execute_step()
     -- Check if alternating is enabled
     local use_alternation = state.UseAltStep and state.UseAltStep.value == 'On'
@@ -105,8 +105,8 @@ function StepManager.execute_step()
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 return StepManager

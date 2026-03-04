@@ -15,10 +15,10 @@
 
 local DoomManager = nil
 
---- Handle status change events
---- @param newStatus string New status (Idle, Engaged, Resting, Dead, etc.)
---- @param oldStatus string Previous status
---- @param eventArgs table Event arguments
+---   Handle status change events
+---   @param newStatus string New status (Idle, Engaged, Resting, Dead, etc.)
+---   @param oldStatus string Previous status
+---   @param eventArgs table Event arguments
 function job_status_change(newStatus, oldStatus, eventArgs)
     -- Lazy load DoomManager on first status change
     if not DoomManager then

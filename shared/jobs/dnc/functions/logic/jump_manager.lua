@@ -1,29 +1,29 @@
----============================================================================
---- Jump Manager - Auto-Jump Integration for DNC/DRG (Logic Module)
----============================================================================
---- Manages automatic Jump/High Jump trigger before Weapon Skills when TP < 1000.
---- Provides TP gain optimization with intelligent chaining.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Jump Manager - Auto-Jump Integration for DNC/DRG (Logic Module)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Manages automatic Jump/High Jump trigger before Weapon Skills when TP < 1000.
+---   Provides TP gain optimization with intelligent chaining.
 ---
---- Features:
+---   Features:
 ---   • Auto-trigger Jump if TP < 1000 before WS (controllable via JumpAuto state)
 ---   • Intelligent chaining: Jump >> High Jump if TP still < 1000 after first Jump
 ---   • Auto-recast WS after Jump sequence completes (no manual re-launch needed)
----   • Ultra-fast timing: 0.5s animation delay (quasi-instant like in-game)
+---   • 0.5s animation delay
 ---   • Silent execution: No messages (job_precast displays normal JA messages)
 ---   • Odyssey Sheol Gaol fix (detects subjob disabled, level = 0)
 ---   • DRG subjob validation (must be active with level > 0)
 ---   • Diagnostic API for debugging (get_status, is_drg_subjob)
 ---
---- Performance:
+---   Performance:
 ---   • Single Jump: ~1.7s total (0.5s anim + 1.2s gear swap delay)
 ---   • Double Jump: ~2.2s total (2x 0.5s anim + 1.2s gear swap delay)
 ---
---- @file    jobs/dnc/functions/logic/jump_manager.lua
---- @author  Tetsouo
---- @version 3.0 - Silent Execution (Messages in job_precast)
---- @date    Created: 2025-10-08
---- @date    Updated: 2025-10-29 (Silent: removed all messages, job_precast handles display)
----============================================================================
+---   @file    jobs/dnc/functions/logic/jump_manager.lua
+---   @author  Tetsouo
+---   @version 3.0 - Silent Execution (Messages in job_precast)
+---   @date    Created: 2025-10-08
+---   @date    Updated: 2025-10-29 (Silent: removed all messages, job_precast handles display)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local JumpManager = {}
 
@@ -49,28 +49,28 @@ local TP_THRESHOLD = 1000  -- Auto-Jump if TP below this value
 local JUMP_ANIMATION_DELAY = 1.0  -- Seconds to wait after Jump animation (allow TP update)
 local WS_DELAY_AFTER_JUMP = 1.0  -- Delay before WS after Jump (allow gear swap completion)
 
----============================================================================
---- JUMP AVAILABILITY CHECKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   JUMP AVAILABILITY CHECKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Check if Jump ability is available (not on cooldown)
---- @return boolean True if Jump is ready
+---   Check if Jump ability is available (not on cooldown)
+---   @return boolean True if Jump is ready
 local function is_jump_ready()
     local ability_recasts = windower.ffxi.get_ability_recasts()
     local jump_recast = ability_recasts[JUMP_RECAST_ID] or 0
     return is_recast_ready(jump_recast)
 end
 
---- Check if High Jump ability is available (not on cooldown)
---- @return boolean True if High Jump is ready
+---   Check if High Jump ability is available (not on cooldown)
+---   @return boolean True if High Jump is ready
 local function is_high_jump_ready()
     local ability_recasts = windower.ffxi.get_ability_recasts()
     local high_jump_recast = ability_recasts[HIGH_JUMP_RECAST_ID] or 0
     return is_recast_ready(high_jump_recast)
 end
 
---- Determine which Jump ability to use (prioritize Jump over High Jump)
---- @return string|nil Jump ability name or nil if none available
+---   Determine which Jump ability to use (prioritize Jump over High Jump)
+---   @return string|nil Jump ability name or nil if none available
 local function get_available_jump()
     if is_jump_ready() then
         return "Jump"
@@ -80,13 +80,13 @@ local function get_available_jump()
     return nil
 end
 
----============================================================================
---- AUTO-JUMP LOGIC
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   AUTO-JUMP LOGIC
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Check if auto-jump should trigger for this WS
---- @param spell table Spell data (WeaponSkill)
---- @return boolean True if should auto-jump
+---   Check if auto-jump should trigger for this WS
+---   @param spell table Spell data (WeaponSkill)
+---   @return boolean True if should auto-jump
 local function should_auto_jump(spell)
     -- Must be a WeaponSkill
     if not spell or spell.type ~= 'WeaponSkill' then
@@ -122,10 +122,10 @@ local function should_auto_jump(spell)
     return true
 end
 
---- Execute auto-jump with chaining: Triggers Jump, then High Jump if TP still < 1000
---- Automatically recasts the original WS after Jump sequence completes
---- @param spell table Spell data (WeaponSkill)
---- @param eventArgs table Event arguments (will set cancel = true)
+---   Execute auto-jump with chaining: Triggers Jump, then High Jump if TP still < 1000
+---   Automatically recasts the original WS after Jump sequence completes
+---   @param spell table Spell data (WeaponSkill)
+---   @param eventArgs table Event arguments (will set cancel = true)
 function JumpManager.auto_trigger_jump(spell, eventArgs)
     -- Check if auto-trigger is enabled (state.JumpAuto)
     if state and state.JumpAuto and state.JumpAuto.value == 'Off' then
@@ -208,24 +208,24 @@ function JumpManager.auto_trigger_jump(spell, eventArgs)
     end, JUMP_ANIMATION_DELAY)
 end
 
----============================================================================
---- CONFIGURATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   CONFIGURATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get current TP threshold
---- @return number TP threshold value
+---   Get current TP threshold
+---   @return number TP threshold value
 function JumpManager.get_tp_threshold()
     return TP_THRESHOLD
 end
 
---- Get Jump animation delay
---- @return number Delay in seconds
+---   Get Jump animation delay
+---   @return number Delay in seconds
 function JumpManager.get_animation_delay()
     return JUMP_ANIMATION_DELAY
 end
 
---- Check if DNC/DRG subjob is active and available (not disabled in Odyssey)
---- @return boolean True if DNC/DRG with level > 0
+---   Check if DNC/DRG subjob is active and available (not disabled in Odyssey)
+---   @return boolean True if DNC/DRG with level > 0
 function JumpManager.is_drg_subjob()
     if not player or player.sub_job ~= 'DRG' then
         return false
@@ -239,12 +239,12 @@ function JumpManager.is_drg_subjob()
     return true
 end
 
----============================================================================
---- DIAGNOSTICS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DIAGNOSTICS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get Jump system status for debugging
---- @return table Status information
+---   Get Jump system status for debugging
+---   @return table Status information
 function JumpManager.get_status()
     if not player then
         return { active = false, reason = "No player data" }

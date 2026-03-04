@@ -1,22 +1,22 @@
----============================================================================
---- PUP Midcast Module - Powered by MidcastManager (Subjob Spells Only)
----============================================================================
---- Handles midcast for Beastmaster with specialized Ready Move handling.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PUP Midcast Module - Midcast Gear Selection
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles midcast for Puppetmaster with specialized Ready Move handling.
 ---
---- Features:
+---   Features:
 ---   - Ready Moves: 4 categories (Physical, PhysicalMulti, MagicAtk, MagicAcc)
 ---   - Pet Abilities: Call Beast, Reward, Spur, etc.
 ---   - Subjob Spells: Healing/Enhancing/Enfeebling/Elemental/Blue Magic
 ---
---- Note: Ready Move logic is PUP-specific and NOT handled by MidcastManager.
+---   Note: Ready Move logic is PUP-specific and NOT handled by MidcastManager.
 ---
---- @file PUP_MIDCAST.lua
---- @author Tetsouo
---- @version 3.0 - Added spell_family database support
---- @date Created: 2025-10-17 | Updated: 2025-11-05
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---   @file    PUP_MIDCAST.lua
+---   @author  Tetsouo
+---   @version 3.0 - Added spell_family database support
+---   @date    Created: 2025-10-17 | Updated: 2025-11-05
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MidcastManager = nil
 local MessageFormatter = nil
@@ -29,8 +29,10 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    MidcastManager = require('shared/utils/midcast/midcast_manager')
-    MessageFormatter = require('shared/utils/messages/message_formatter')
+    local _, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
+    MidcastManager = mm
+    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    MessageFormatter = mf
 
     -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
     EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
@@ -46,13 +48,18 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
+---   Pre-midcast hook (Ready Move filtering and pet ability handling)
+---   @param spell table Spell information from GearSwap
+---   @param action string Action type
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments for cancellation/customization
 function job_midcast(spell, action, spellMap, eventArgs)
     -- Lazy load modules on first cast
     ensure_modules_loaded()
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- SKIP NON-READY MOVES (Call Beast, Fight, Heel, etc.)
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     -- These are handled in precast ONLY (no midcast override needed)
     if
         spell.name == 'Call Beast' or spell.name == 'Bestial Loyalty' or spell.name == 'Reward' or
@@ -65,9 +72,9 @@ function job_midcast(spell, action, spellMap, eventArgs)
         return -- Don't override precast set
     end
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- READY MOVES (Pet Abilities) - 4 CATEGORIES
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     -- PUP-SPECIFIC LOGIC: Not handled by MidcastManager (pet-specific)
 
     -- Detect Ready Moves: check if category was set in precast OR use categorizer
@@ -108,6 +115,11 @@ function job_midcast(spell, action, spellMap, eventArgs)
     end
 end
 
+---   Post-midcast hook (MidcastManager routing and gear selection)
+---   @param spell table Spell information from GearSwap
+---   @param action string Action type
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments for cancellation/customization
 function job_post_midcast(spell, action, spellMap, eventArgs)
     -- Watchdog: Track midcast start
     if _G.MidcastWatchdog then
@@ -119,9 +131,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         return
     end
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- SUBJOB SPELLS (Handled by MidcastManager)
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     -- Healing Magic (Cure, Cura, etc.)
     if spell.skill == 'Healing Magic' then
@@ -171,15 +183,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 _G.job_midcast = job_midcast
 _G.job_post_midcast = job_post_midcast
-
-local PUP_MIDCAST = {}
-PUP_MIDCAST.job_midcast = job_midcast
-PUP_MIDCAST.job_post_midcast = job_post_midcast
-
-return PUP_MIDCAST

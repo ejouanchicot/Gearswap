@@ -1,5 +1,5 @@
 ---============================================================================
---- GEO Spell Database - Façade (Public API)
+--- GEO Spell Database - Facade (Public API)
 ---============================================================================
 --- Provides unified access to all GEO spells using modular architecture.
 --- Merges spells from geomancy/, ELEMENTAL_MAGIC_DATABASE, and DARK_MAGIC_DATABASE.

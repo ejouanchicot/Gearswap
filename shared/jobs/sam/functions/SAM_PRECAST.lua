@@ -1,15 +1,15 @@
----============================================================================
---- SAM Precast Module - Precast Action Handling & Cooldown Monitoring
----============================================================================
---- @file SAM_PRECAST.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-21
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SAM Precast Module - Precast Action Handling & Cooldown Monitoring
+---  ═══════════════════════════════════════════════════════════════════════════
+---   @file    SAM_PRECAST.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-21
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MessageFormatter = nil
 local CooldownChecker = nil
@@ -39,16 +39,16 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
----============================================================================
---- SAM-SPECIFIC HELPERS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SAM-SPECIFIC HELPERS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Module-level variable to track Seigan cast attempts
+---   Module-level variable to track Seigan cast attempts
 local seigan_cast_attempted = false
 
---- Auto-cast Seigan before Third Eye if Seigan not active
---- @param spell table Spell data
---- @param eventArgs table Event arguments
+---   Auto-cast Seigan before Third Eye if Seigan not active
+---   @param spell table Spell data
+---   @param eventArgs table Event arguments
 local function try_seigan_before_third_eye(spell, eventArgs)
     if spell.english ~= 'Third Eye' then
         return false
@@ -71,9 +71,9 @@ local function try_seigan_before_third_eye(spell, eventArgs)
     return false
 end
 
---- Auto-cast Third Eye before weaponskills if available
---- @param spell table Spell data
---- @param eventArgs table Event arguments
+---   Auto-cast Third Eye before weaponskills if available
+---   @param spell table Spell data
+---   @param eventArgs table Event arguments
 local function try_third_eye_ws(spell, eventArgs)
     if spell.type ~= 'WeaponSkill' then
         return
@@ -104,10 +104,15 @@ local function try_third_eye_ws(spell, eventArgs)
     return false
 end
 
----============================================================================
---- PRECAST HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PRECAST HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
+---   Handle precast actions
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
@@ -145,6 +150,11 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 end
 
+---   Apply final gear adjustments before equipping
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
@@ -167,15 +177,9 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
-
-local SAM_PRECAST = {}
-SAM_PRECAST.job_precast = job_precast
-SAM_PRECAST.job_post_precast = job_post_precast
-
-return SAM_PRECAST

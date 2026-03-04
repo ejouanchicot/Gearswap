@@ -23,8 +23,8 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 ---   SONG PACK RETRIEVAL
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get current song pack based on state
---- @return table Song pack data with songs array
+---   Get current song pack based on state
+---   @return table Song pack data with songs array
 function SongRotationManager.get_current_pack()
     if not state or not state.SongMode then
         return BRDSongConfig.SONG_PACKS.March -- Default fallback
@@ -41,8 +41,8 @@ function SongRotationManager.get_current_pack()
     return pack
 end
 
---- Get songs from current pack with Victory March replacement
---- @return table Array of song names
+---   Get songs from current pack with Victory March replacement
+---   @return table Array of song names
 function SongRotationManager.get_songs_with_replacement()
     local pack = SongRotationManager.get_current_pack()
     if not pack or not pack.songs then
@@ -78,15 +78,15 @@ end
 ---   SONG DISPLAY
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get short name for song display
---- @param song_name string Full song name
---- @return string Short name
+---   Get short name for song display
+---   @param song_name string Full song name
+---   @return string Short name
 function SongRotationManager.get_short_name(song_name)
     return BRDSongConfig.SHORT_NAMES[song_name] or song_name
 end
 
---- Update song slot states for UI display
---- Display songs from current pack configuration
+---   Update song slot states for UI display
+---   Display songs from current pack configuration
 function SongRotationManager.update_song_slots()
     -- Get songs from current pack (with Victory March replacement if applicable)
     local songs = SongRotationManager.get_songs_with_replacement()
@@ -108,8 +108,8 @@ end
 ---   DUMMY SONG MANAGEMENT
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get dummy songs array
---- @return table Array of dummy song names
+---   Get dummy songs array
+---   @return table Array of dummy song names
 function SongRotationManager.get_dummy_songs()
     return BRDSongConfig.DUMMY_SONGS.standard
 end
@@ -118,9 +118,9 @@ end
 ---   INSTRUMENT SELECTION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Check if song is a dummy song
---- @param song_name string Song name
---- @return boolean is_dummy
+---   Check if song is a dummy song
+---   @param song_name string Song name
+---   @return boolean is_dummy
 local function is_dummy_song(song_name)
     local dummy_songs = BRDSongConfig.DUMMY_SONGS.standard
     for _, dummy in ipairs(dummy_songs) do
@@ -131,12 +131,12 @@ local function is_dummy_song(song_name)
     return false
 end
 
---- Get required instrument for specific song
---- Only returns instruments for songs that are LOCKED (cannot be cast without them)
---- For dummy songs: instrument selected by sets.midcast.DummySong
---- For other songs: instrument selected by state.MainInstrument or sets.midcast.BardSong
---- @param song_name string Song name
---- @return string|nil Instrument name or nil (uses sets/state)
+---   Get required instrument for specific song
+---   Only returns instruments for songs that are LOCKED (cannot be cast without them)
+---   For dummy songs: instrument selected by sets.midcast.DummySong
+---   For other songs: instrument selected by state.MainInstrument or sets.midcast.BardSong
+---   @param song_name string Song name
+---   @return string|nil Instrument name or nil (uses sets/state)
 function SongRotationManager.get_required_instrument(song_name)
     -- LOCKED SONGS (cannot be cast without specific instrument):
 
@@ -164,9 +164,9 @@ end
 ---   3-PHASE DUMMY SONG CASTING WITH DYNAMIC TIMING
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get appropriate song delay based on active buffs and Marcato state
---- @param marcato_used boolean Whether Marcato was used for this rotation
---- @return number Delay in seconds
+---   Get appropriate song delay based on active buffs and Marcato state
+---   @param marcato_used boolean Whether Marcato was used for this rotation
+---   @return number Delay in seconds
 local function get_song_delay(marcato_used)
     local has_nightingale = buffactive['Nightingale'] or false
     local has_troubadour = buffactive['Troubadour'] or false
@@ -175,14 +175,14 @@ local function get_song_delay(marcato_used)
     return BRDTimingConfig.get_song_delay(has_nightingale, has_troubadour, marcato_used)
 end
 
---- Cast a phase of songs with proper delays
---- @param songs table Array of songs to cast
---- @param start_index number Starting song index (1-based)
---- @param count number Number of songs to cast
---- @param target string Target for songs ("<me>" or "<stnpc>")
---- @param base_delay number Starting delay
---- @param song_delay number Delay between songs
---- @return number Updated delay for next phase
+---   Cast a phase of songs with proper delays
+---   @param songs table Array of songs to cast
+---   @param start_index number Starting song index (1-based)
+---   @param count number Number of songs to cast
+---   @param target string Target for songs ("<me>" or "<stnpc>")
+---   @param base_delay number Starting delay
+---   @param song_delay number Delay between songs
+---   @return number Updated delay for next phase
 local function cast_song_phase(songs, start_index, count, target, base_delay, song_delay)
     local delay = base_delay
 
@@ -196,10 +196,10 @@ local function cast_song_phase(songs, start_index, count, target, base_delay, so
     return delay
 end
 
---- Cast songs using 3-phase rotation (Party >> Dummy >> Party)
---- @param use_marcato boolean Whether to use Marcato for first song (Honor March)
---- @param target string Target for songs ("<me>" for party, "<stpc>" for pianissimo)
---- @return boolean Success status
+---   Cast songs using 3-phase rotation (Party >> Dummy >> Party)
+---   @param use_marcato boolean Whether to use Marcato for first song (Honor March)
+---   @param target string Target for songs ("<me>" for party, "<stpc>" for pianissimo)
+---   @return boolean Success status
 function SongRotationManager.cast_songs_with_phases(use_marcato, target)
     target = target or '<me>'
     local buff_songs = SongRotationManager.get_songs_with_replacement()
@@ -253,8 +253,8 @@ function SongRotationManager.cast_songs_with_phases(use_marcato, target)
     return true
 end
 
---- Cast dummy songs to fill slots (4 or 5 depending on Clarion Call)
---- @return boolean Success status
+---   Cast dummy songs to fill slots (4 or 5 depending on Clarion Call)
+---   @return boolean Success status
 function SongRotationManager.cast_dummy_songs()
     local dummy_songs = SongRotationManager.get_dummy_songs()
 

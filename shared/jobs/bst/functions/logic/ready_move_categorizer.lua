@@ -1,26 +1,26 @@
----============================================================================
---- BST Ready Move Categorizer
----============================================================================
---- Categorizes pet ready moves into 4 types for midcast gear selection:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BST Ready Move Categorizer
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Categorizes pet ready moves into 4 types for midcast gear selection:
 ---   • Physical (single-target physical attacks)
 ---   • PhysicalMulti (multi-hit physical attacks)
 ---   • MagicAtk (magical attack moves)
 ---   • MagicAcc (magical accuracy/debuff moves)
 ---
---- @file jobs/bst/functions/logic/ready_move_categorizer.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-17
----============================================================================
+---   @file    jobs/bst/functions/logic/ready_move_categorizer.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-17
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local ReadyMoveCategorizer = {}
 
----============================================================================
---- READY MOVE CATEGORIES (Using Windower S{} sets for fast lookup)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   READY MOVE CATEGORIES (Using Windower S{} sets for fast lookup)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Physical Moves (Single-hit physical attacks)
---- Use: Pet physical attack gear (Pet: Accuracy, Attack, Store TP)
+---   Physical Moves (Single-hit physical attacks)
+---   Use: Pet physical attack gear (Pet: Accuracy, Attack, Store TP)
 ReadyMoveCategorizer.petPhysicalMoves =
     S {
     'Foot Kick',
@@ -69,8 +69,8 @@ ReadyMoveCategorizer.petPhysicalMoves =
     'Fluid Spread'
 }
 
---- Physical Multi Moves (Multi-hit physical attacks)
---- Use: Pet multi-attack gear (Pet: Multi-Attack+, Store TP, Attack)
+---   Physical Multi Moves (Multi-hit physical attacks)
+---   Use: Pet multi-attack gear (Pet: Multi-Attack+, Store TP, Attack)
 ReadyMoveCategorizer.petPhysicalMultiMoves =
     S {
     'Pentapeck',
@@ -84,8 +84,8 @@ ReadyMoveCategorizer.petPhysicalMultiMoves =
     'Grapple'
 }
 
---- Magic Attack Moves (Magical attack moves - damage only)
---- Use: Pet magic attack gear (Pet: MAB, Magic Accuracy)
+---   Magic Attack Moves (Magical attack moves - damage only)
+---   Use: Pet magic attack gear (Pet: MAB, Magic Accuracy)
 ReadyMoveCategorizer.petMagicAtkMoves =
     S {
     -- WARRIOR PETS
@@ -113,8 +113,8 @@ ReadyMoveCategorizer.petMagicAtkMoves =
     'Pestilent Plume'
 }
 
---- Magic Accuracy Moves (Magical accuracy/debuff moves - debuffs, steals, drains)
---- Use: Pet magic accuracy gear (Pet: Magic Accuracy, Magic Attack Bonus)
+---   Magic Accuracy Moves (Magical accuracy/debuff moves - debuffs, steals, drains)
+---   Use: Pet magic accuracy gear (Pet: Magic Accuracy, Magic Attack Bonus)
 ReadyMoveCategorizer.petMagicAccMoves =
     S {
     -- TP Drain
@@ -173,13 +173,13 @@ ReadyMoveCategorizer.petMagicAccMoves =
     'Blaster'
 }
 
----============================================================================
---- CATEGORIZATION FUNCTIONS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   CATEGORIZATION FUNCTIONS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get ready move category
---- @param move_name string Ready move name
---- @return string category "Physical", "PhysicalMulti", "MagicAtk", "MagicAcc", or "Default"
+---   Get ready move category
+---   @param move_name string Ready move name
+---   @return string category "Physical", "PhysicalMulti", "MagicAtk", "MagicAcc", or "Default"
 function ReadyMoveCategorizer.get_category(move_name)
     if not move_name then
         return 'Default'
@@ -198,9 +198,9 @@ function ReadyMoveCategorizer.get_category(move_name)
     end
 end
 
---- Check if ready move is physical (single or multi)
---- @param move_name string Ready move name
---- @return boolean is_physical True if move is physical type
+---   Check if ready move is physical (single or multi)
+---   @param move_name string Ready move name
+---   @return boolean is_physical True if move is physical type
 function ReadyMoveCategorizer.is_physical(move_name)
     if not move_name then
         return false
@@ -210,9 +210,9 @@ function ReadyMoveCategorizer.is_physical(move_name)
         ReadyMoveCategorizer.petPhysicalMultiMoves:contains(move_name)
 end
 
---- Check if ready move is magical (attack or accuracy)
---- @param move_name string Ready move name
---- @return boolean is_magical True if move is magical type
+---   Check if ready move is magical (attack or accuracy)
+---   @param move_name string Ready move name
+---   @return boolean is_magical True if move is magical type
 function ReadyMoveCategorizer.is_magical(move_name)
     if not move_name then
         return false
@@ -222,20 +222,20 @@ function ReadyMoveCategorizer.is_magical(move_name)
         ReadyMoveCategorizer.petMagicAccMoves:contains(move_name)
 end
 
---- Get midcast set name for ready move
---- @param move_name string Ready move name
---- @return string set_name Set name for sets.midcast.Pet[set_name]
+---   Get midcast set name for ready move
+---   @param move_name string Ready move name
+---   @return string set_name Set name for sets.midcast.Pet[set_name]
 function ReadyMoveCategorizer.get_midcast_set_name(move_name)
     local category = ReadyMoveCategorizer.get_category(move_name)
     return category -- "Physical", "PhysicalMulti", "MagicAtk", "MagicAcc", or "Default"
 end
 
----============================================================================
---- STATISTICS (Optional - for debugging)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   STATISTICS (Optional - for debugging)
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get count of moves in each category
---- @return table counts {Physical, PhysicalMulti, MagicAtk, MagicAcc}
+---   Get count of moves in each category
+---   @return table counts {Physical, PhysicalMulti, MagicAtk, MagicAcc}
 function ReadyMoveCategorizer.get_category_counts()
     local counts = {
         Physical = 0,
@@ -264,9 +264,9 @@ function ReadyMoveCategorizer.get_category_counts()
     return counts
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export sets globally for compatibility with old code
 _G.petPhysicalMoves = ReadyMoveCategorizer.petPhysicalMoves

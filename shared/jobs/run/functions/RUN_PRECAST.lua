@@ -1,34 +1,21 @@
----============================================================================
---- RUN Precast Module - Precast Action Handling & Cooldown Monitoring
----============================================================================
---- Handles all precast actions for Rune Fencer job:
----   • Debuff blocking (Amnesia, Silence, Stun)
----   • Universal cooldown checking (abilities/spells)
----   • Weaponskill validation and range checking
----   • TP bonus optimization for weaponskills
----   • Fast Cast gear with fallback system (spell-specific > skill-specific > base)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   RUN Precast Module - Precast Action Handling & Fast Cast
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Debuff guard, cooldown check, WS handling.
+---   FC fallback: spell-specific > skill-specific > base set.
 ---
---- Fast Cast Fallback (Spells only):
----   1. sets.precast.FC['Blink'] (spell-specific)
----   2. sets.precast.FC['Enhancing Magic'] (skill-specific)
----   3. sets.precast.FC (base)
----
---- Uses centralized systems for validation and messaging consistency.
----
---- @file    RUN_PRECAST.lua
---- @author  Tetsouo
---- @version 1.2.0 - Added Fast Cast fallback system
---- @date    Created: 2025-10-03 | Updated: 2025-11-11
---- @requires Tetsouo architecture, MessageFormatter, CooldownChecker
----============================================================================
+---   @file    RUN_PRECAST.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-05
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MessagePrecast = nil
 local CooldownChecker = nil
-local AbilityHelper = nil
 local PrecastGuard = nil
 local WSPrecastHandler = nil
 local RUNTPConfig = nil
@@ -46,9 +33,6 @@ local function ensure_modules_loaded()
     success, result = pcall(require, 'shared/utils/precast/cooldown_checker')
     if success then CooldownChecker = result end
 
-    success, result = pcall(require, 'shared/utils/precast/ability_helper')
-    if success then AbilityHelper = result end
-
     success, result = pcall(require, 'shared/utils/debuff/precast_guard')
     if success then PrecastGuard = result end
 
@@ -60,17 +44,7 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
----============================================================================
---- COOLDOWN EXCLUSIONS
----============================================================================
---- Abilities that should NEVER be checked for cooldown
---- Player manages these charges/cooldowns manually
----
---- Scholar Stratagems (RUN/SCH):
----   • Charge-based system (0-5 charges max)
----   • Complex recharge timing (varies by job level)
----   • Player manages strategically - no automation needed
----============================================================================
+-- Scholar Stratagems skipped from cooldown check (charge-based, player manages manually)
 
 local cooldown_exclusions = {
     -- Scholar Stratagems (charge-based abilities)
@@ -99,122 +73,62 @@ local cooldown_exclusions = {
     ['Klimaform'] = true
 }
 
----============================================================================
---- AUTO-ABILITY SYSTEM
----============================================================================
---- Automatically triggers beneficial abilities before specific spells.
---- Uses AbilityHelper for smart cooldown checking and timing.
----
---- RUN does not have PLD-specific abilities (Divine Emblem, Majesty).
---- Auto-abilities disabled for RUN job.
----============================================================================
+-- No auto-abilities for RUN
 
 local auto_abilities = {
     -- No auto-abilities for RUN
 }
 
----============================================================================
---- PRECAST HOOK
----============================================================================
-
---- Called before any action (WS, JA, spell, etc.)
---- Processing order (CRITICAL - do not reorder):
----   1. Debuff guard (PrecastGuard) - blocks if silenced/amnesia/stunned
----   2. Cooldown check (CooldownChecker) - validates ability/spell ready
----   3. Auto-abilities (AbilityHelper) - none for RUN
----   4. WS validation + TP bonus (WSPrecastHandler) - unified handling
----   5. RUN-specific gear (Fast Cast for cures/Flash)
----
---- @param spell     table  Spell/ability data
---- @param action    string Action type (not used)
---- @param spellMap  string Spell mapping (not used)
---- @param eventArgs table  Event arguments (cancel flag, etc.)
---- @return void
+--- Precast order: debuff guard → cooldown → WS handler
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
-    -- ==========================================================================
-    -- STEP 1: DEBUFF BLOCKING
-    -- ==========================================================================
-    -- Check for blocking debuffs (Amnesia, Silence, Stun, etc.)
-    -- Prevents unnecessary equipment swaps when actions are blocked
+    -- Debuff guard
     if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
-        return -- Action blocked by debuff, exit immediately
+        return
     end
 
-    -- ==========================================================================
-    -- STEP 2: COOLDOWN VALIDATION
-    -- ==========================================================================
-    -- Universal cooldown check - works for ALL abilities and spells
-    -- EXCLUDES abilities in cooldown_exclusions table (Scholar Stratagems, etc.)
+    -- Cooldown check (skip Scholar Stratagems)
     local is_excluded = cooldown_exclusions[spell.name]
-
     if not is_excluded and CooldownChecker then
         if spell.action_type == 'Ability' then
             CooldownChecker.check_ability_cooldown(spell, eventArgs)
         elseif spell.action_type == 'Magic' then
             CooldownChecker.check_spell_cooldown(spell, eventArgs)
         end
-
-        -- Exit if action cancelled due to cooldown
-        if eventArgs.cancel then
-            return
-        end
+        if eventArgs.cancel then return end
     end
 
-    -- ==========================================================================
-    -- DISABLED: RUN Job Abilities Messages
-    -- Messages now handled by universal ability_message_handler (init_ability_messages.lua)
-    -- This prevents duplicate messages from job-specific + universal system
-    --
-    -- LEGACY CODE (commented out to prevent duplicates):
-    -- if spell.type == 'JobAbility' and JA_DB[spell.english] then
-    --     MessageFormatter.show_ja_activated(spell.english, JA_DB[spell.english].description)
-    -- end
-
-    -- ==========================================================================
-    -- STEP 3: AUTO-ABILITIES
-    -- ==========================================================================
-    -- No auto-abilities for RUN (table is empty)
+    -- No auto-abilities for RUN
     if spell.action_type == 'Magic' and auto_abilities[spell.name] then
         auto_abilities[spell.name](spell, eventArgs)
     end
 
-    -- ==========================================================================
-    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
-    -- ==========================================================================
+    -- WS handling (range check, TP requirement, gear)
     if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, RUNTPConfig) then
         return
     end
-
-    -- ==========================================================================
-    -- RUN-SPECIFIC PRECAST GEAR
-    -- ==========================================================================
-    -- Fast Cast is handled automatically by Mote-Include (sets.precast.FC)
-    -- No job-specific logic needed here
+    -- Fast Cast handled automatically by Mote-Include (sets.precast.FC)
 end
 
----============================================================================
---- POST-PRECAST HOOK
----============================================================================
-
---- Apply TP bonus gear and display final TP (Universal via TPBonusHandler)
---- Called after precast set selection, before gear is equipped
----
---- @param spell     table  Spell/ability data
---- @param action    string Action type (not used)
---- @param spellMap  string Spell mapping (not used)
---- @param eventArgs table  Event arguments (not used)
---- @return void
+---   Apply final gear adjustments before equipping
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
     if WSPrecastHandler then
         WSPrecastHandler.apply_tp_gear(spell)
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DEBUG: PRECAST SET DISPLAY (Universal System)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- Mote-Include already handles FC fallback: spell.name > spell.skill > base
     -- We just add debug display to show which set was selected
     if _G.PrecastDebugState and spell.action_type == 'Magic' then
@@ -245,16 +159,9 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
--- Export globally for GearSwap
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
-
--- Export as module (for future require() usage)
-return {
-    job_precast = job_precast,
-    job_post_precast = job_post_precast
-}

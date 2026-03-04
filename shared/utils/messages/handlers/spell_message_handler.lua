@@ -18,7 +18,7 @@
 ---
 --- Performance:
 ---   - Databases load on-demand when first spell is cast (not at require time)
----   - Eliminates 100-300ms startup lag from eager loading
+---   - Lazy-loaded on first spell usage
 ---   - Once loaded, databases remain cached for instant access
 ---
 --- Examples:
@@ -56,7 +56,7 @@ local ElementalSPELLS = nil
 local DivineSPELLS = nil
 
 -- LAZY LOADING: Databases load on first access, not at require time
--- This eliminates 100-300ms startup lag from loading ALL spell databases
+-- Databases loaded on demand, not at startup
 local function ensure_skill_databases_loaded()
     if not EnfeeblingSPELLS then
         local success, db = pcall(require, 'shared/data/magic/ENFEEBLING_MAGIC_DATABASE')

@@ -15,7 +15,6 @@
 ---   - Modular architecture with Hooks vs Logic separation
 ---   - Comprehensive equipment set organization
 ---   - Clean separation of concerns
----   - Scalable for team development
 ---
 --- Architecture Overview:
 ---   Main File (this) >> thf_functions.lua >> Hooks >> Logic Modules

@@ -1,45 +1,48 @@
----============================================================================
---- DRK Aftercast Module - Aftercast Action Handling
----============================================================================
---- Handles all aftercast actions for Dark Knight job:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DRK Aftercast Module - Aftercast Action Handling
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all aftercast actions for Dark Knight job:
 ---   • Return to appropriate gear sets after actions
 ---   • Post-weaponskill equipment swaps
 ---   • Post-ability cleanup
 ---   • Buff pending flag confirmation
 ---
---- @file    DRK_AFTERCAST.lua
---- @author  Tetsouo
---- @version 1.0.0
---- @date    Created: 2025-10-23
---- @requires Tetsouo architecture, drk_buff_anticipation
----============================================================================
+---   @file    DRK_AFTERCAST.lua
+---   @author  Tetsouo
+---   @version 1.0.0
+---   @date    Created: 2025-10-23
+---   @requires Tetsouo architecture, drk_buff_anticipation
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES (LAZY LOADING for performance)
----============================================================================
--- DRK buff anticipation loaded on first aftercast (saves ~20ms at startup)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
+-- DRK buff anticipation loaded on first aftercast
 local DRKBuffAnticipation = nil
 local module_initialized = false
 
 local function ensure_module_loaded()
     if not module_initialized then
-        DRKBuffAnticipation = require('shared/jobs/drk/functions/logic/drk_buff_anticipation')
-        DRKBuffAnticipation.initialize_flags()
+        local ok, mod = pcall(require, 'shared/jobs/drk/functions/logic/drk_buff_anticipation')
+        if ok then
+            DRKBuffAnticipation = mod
+            DRKBuffAnticipation.initialize_flags()
+        end
         module_initialized = true
     end
 end
 
----============================================================================
---- AFTERCAST HOOK
----============================================================================
---- Called after action completes
---- Confirms pending flags for JA buffs (if not interrupted)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   AFTERCAST HOOK
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Called after action completes
+---   Confirms pending flags for JA buffs (if not interrupted)
 ---
---- @param spell     table  Spell/ability data
---- @param action    string Action type (not used)
---- @param spellMap  string Spell mapping (not used)
---- @param eventArgs table  Event arguments (not used)
---- @return void
+---   @param spell     table  Spell/ability data
+---   @param action    string Action type (not used)
+---   @param spellMap  string Spell mapping (not used)
+---   @param eventArgs table  Event arguments (not used)
+---   @return void
 function job_aftercast(spell, action, spellMap, eventArgs)
     -- Lazy load DRK buff anticipation on first use
     ensure_module_loaded()
@@ -65,30 +68,25 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- POST-AFTERCAST HOOK
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   POST-AFTERCAST HOOK
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Called after aftercast set selection for additional adjustments
---- @param spell     table  Spell/ability data
---- @param action    string Action type (not used)
---- @param spellMap  string Spell mapping (not used)
---- @param eventArgs table  Event arguments (not used)
---- @return void
+---   Called after aftercast set selection for additional adjustments
+---   @param spell     table  Spell/ability data
+---   @param action    string Action type (not used)
+---   @param spellMap  string Spell mapping (not used)
+---   @param eventArgs table  Event arguments (not used)
+---   @return void
 function job_post_aftercast(spell, action, spellMap, eventArgs)
     -- DRK-specific post-aftercast adjustments
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export globally for GearSwap
 _G.job_aftercast = job_aftercast
 _G.job_post_aftercast = job_post_aftercast
 
--- Export as module (for future require() usage)
-return {
-    job_aftercast = job_aftercast,
-    job_post_aftercast = job_post_aftercast
-}

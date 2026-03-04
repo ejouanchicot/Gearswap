@@ -19,7 +19,7 @@
 ---   - Displays messages for: Runes, Job Abilities, SP abilities, etc.
 ---
 --- **PERFORMANCE OPTIMIZATION:**
----   • Lazy-loaded: Handler loaded on first ability usage (saves ~250ms at startup)
+---   • Lazy-loaded: Handler loaded on first ability usage
 ---
 --- Examples:
 ---   - WAR/RUN using Ignis >> "[Ignis] Fire rune, resist ice"
@@ -48,7 +48,8 @@ local function ensure_handler_loaded()
     local start_time = os.clock()
     local profiling_enabled = _G.PERFORMANCE_PROFILING and _G.PERFORMANCE_PROFILING.enabled
 
-    AbilityMessageHandler = require('shared/utils/messages/handlers/ability_message_handler')
+    local ok, mod = pcall(require, 'shared/utils/messages/handlers/ability_message_handler')
+    if ok then AbilityMessageHandler = mod end
     handler_loaded = true
 
     -- PROFILING: Show lazy-load time
@@ -61,6 +62,10 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   HOOK INJECTION
 ---  ═══════════════════════════════════════════════════════════════════════════
+
+-- Track wrap count (persists in windower table for syscheck diagnostics)
+windower._hook_wraps = windower._hook_wraps or {ability = 0, ws = 0, midcast = 0}
+windower._hook_wraps.ability = windower._hook_wraps.ability + 1
 
 -- Save original user_post_precast (if exists)
 local original_user_post_precast = _G.user_post_precast

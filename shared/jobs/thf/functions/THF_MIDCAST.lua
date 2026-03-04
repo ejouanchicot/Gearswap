@@ -1,15 +1,15 @@
----============================================================================
---- THF Midcast Module - Powered by MidcastManager
----============================================================================
---- Handles midcast for Thief (primarily subjob spells).
+---  ═══════════════════════════════════════════════════════════════════════════
+---   THF Midcast Module - Midcast Gear Selection
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles midcast for Thief (primarily subjob spells).
 ---
---- @file THF_MIDCAST.lua
---- @author Tetsouo
---- @version 3.0 - Added spell_family database support
---- @date Created: 2025-10-06 | Updated: 2025-11-05
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---   @file    THF_MIDCAST.lua
+---   @author  Tetsouo
+---   @version 3.0 - Added spell_family database support
+---   @date    Created: 2025-10-06 | Updated: 2025-11-05
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MidcastManager = nil
 local EnhancingSPELLS = nil
@@ -20,7 +20,8 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    MidcastManager = require('shared/utils/midcast/midcast_manager')
+    local _, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
+    MidcastManager = mm
 
     -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
     EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
@@ -28,10 +29,15 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
+---   Pre-midcast hook (Ranged Attack auto-lock handling)
+---   @param spell table Spell information from GearSwap
+---   @param action string Action type
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments for cancellation/customization
 function job_midcast(spell, action, spellMap, eventArgs)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- RANGED ATTACK AUTO-LOCK (during midcast)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- ALWAYS lock on Ranged Attack, regardless of previous state
     -- This creates an infinite cycle: /ra → lock+ON, bind → unlock+OFF, /ra → lock+ON, etc.
     if spell.action_type == 'Ranged Attack' and not spell.interrupted then
@@ -46,6 +52,11 @@ function job_midcast(spell, action, spellMap, eventArgs)
     end
 end
 
+---   Post-midcast hook (MidcastManager routing and gear selection)
+---   @param spell table Spell information from GearSwap
+---   @param action string Action type
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments for cancellation/customization
 function job_post_midcast(spell, action, spellMap, eventArgs)
     -- Lazy load modules on first spell cast
     ensure_modules_loaded()
@@ -85,15 +96,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 _G.job_midcast = job_midcast
 _G.job_post_midcast = job_post_midcast
-
-local THF_MIDCAST = {}
-THF_MIDCAST.job_midcast = job_midcast
-THF_MIDCAST.job_post_midcast = job_post_midcast
-
-return THF_MIDCAST

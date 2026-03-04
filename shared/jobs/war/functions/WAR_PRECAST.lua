@@ -1,25 +1,25 @@
----============================================================================
---- WAR Precast Module - Precast Action Handling & Cooldown Monitoring
----============================================================================
---- Handles all precast actions for Warrior job:
+---  ═══════════════════════════════════════════════════════════════════════════
+---   WAR Precast Module - Precast Action Handling & Cooldown Monitoring
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles all precast actions for Warrior job:
 ---   • Weaponskills preparation & TP gear optimization
 ---   • Job ability precast logic & cooldown tracking
 ---   • Fast cast for sub-job spells
 ---   • Security layers (debuff guard, range checks, validation)
 ---
---- **PERFORMANCE OPTIMIZATION:**
----   • Lazy-loaded: All modules loaded on first action (saves ~150ms at startup)
+---   **PERFORMANCE OPTIMIZATION:**
+---   • Lazy-loaded: All modules loaded on first action
 ---
---- @file    WAR_PRECAST.lua
---- @author  Tetsouo
---- @version 2.1 - Lazy Loading for performance
---- @date    Created: 2025-09-29 | Updated: 2025-11-15
---- @requires Tetsouo architecture, MessageFormatter, CooldownChecker
----============================================================================
----============================================================================
---- DEPENDENCIES (LAZY LOADING for performance)
----============================================================================
--- Modules loaded on first action (saves ~150ms at startup)
+---   @file    WAR_PRECAST.lua
+---   @author  Tetsouo
+---   @version 2.1 - Lazy Loading for performance
+---   @date    Created: 2025-09-29 | Updated: 2025-11-15
+---   @requires Tetsouo architecture, MessageFormatter, CooldownChecker
+---  ═══════════════════════════════════════════════════════════════════════════
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
+-- Modules loaded on first action
 local CooldownChecker = nil
 local PrecastGuard = nil
 local WSPrecastHandler = nil
@@ -52,36 +52,36 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
----============================================================================
---- PRECAST HOOK - MAIN SECURITY & VALIDATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PRECAST HOOK - MAIN SECURITY & VALIDATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Called before any action (WS, JA, spell, etc.)
---- Implements 4-layer security validation:
+---   Called before any action (WS, JA, spell, etc.)
+---   Implements 4-layer security validation:
 ---   1. PrecastGuard    >> Block if Amnesia/Silence/Stun/etc.
 ---   2. CooldownChecker >> Block if ability/spell on cooldown
----   3. WeaponSkillManager >> Validate range & weaponskill validity
+---   3. WSPrecastHandler >> Validate range & weaponskill validity
 ---   4. TP Bonus Calculation >> Optimize WS TP gear
 ---
---- @param spell     table  Spell/ability data from GearSwap
---- @param action    string Action type (not used)
---- @param spellMap  string Spell mapping (not used)
---- @param eventArgs table  Event arguments (modified if action cancelled)
---- @return void
+---   @param spell     table  Spell/ability data from GearSwap
+---   @param action    string Action type (not used)
+---   @param spellMap  string Spell mapping (not used)
+---   @param eventArgs table  Event arguments (modified if action cancelled)
+---   @return void
 function job_precast(spell, action, spellMap, eventArgs)
     -- Lazy load modules on first action
     ensure_modules_loaded()
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- LAYER 1: DEBUFF GUARD (Highest priority)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
         return -- Action blocked by debuff (Amnesia/Silence/etc.)
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- LAYER 2: COOLDOWN CHECK (Universal for all abilities/spells)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if CooldownChecker then
         if spell.action_type == 'Ability' then
             CooldownChecker.check_ability_cooldown(spell, eventArgs)
@@ -94,23 +94,23 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
-    -- ==========================================================================
+    -- ══════════════════════════════════════════════════════════════════════════
     if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, WARTPConfig) then
         return
     end
 end
 
----============================================================================
---- POST-PRECAST HOOK - TP GEAR APPLICATION
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   POST-PRECAST HOOK - TP GEAR APPLICATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Apply TP bonus gear (unified via WSPrecastHandler)
---- @param spell     table  Spell/ability data
---- @param action    string Action type (not used)
---- @param spellMap  string Spell mapping (not used)
---- @param eventArgs table  Event arguments (not used)
+---   Apply TP bonus gear (unified via WSPrecastHandler)
+---   @param spell     table  Spell/ability data
+---   @param action    string Action type (not used)
+---   @param spellMap  string Spell mapping (not used)
+---   @param eventArgs table  Event arguments (not used)
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
     if WSPrecastHandler then
@@ -118,16 +118,11 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export globally for GearSwap
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
 
--- Export as module (for future require() usage)
-return {
-    job_precast = job_precast,
-    job_post_precast = job_post_precast
-}

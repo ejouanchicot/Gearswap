@@ -1,20 +1,15 @@
----============================================================================
---- BST Ecosystem Manager - Dynamic State Management
----============================================================================
---- Manages ecosystem and species cycling with DYNAMIC state recreation.
---- CRITICAL MODULE: Handles dynamic state.species and state.ammoSet recreation.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BST Ecosystem Manager - Ecosystem/Species Cycling
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Dynamic state.species + state.ammoSet recreation.
 ---
---- @file jobs/bst/functions/logic/ecosystem_manager.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-17
----============================================================================
+---   @file    ecosystem_manager.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-18
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local EcosystemManager = {}
-
----============================================================================
---- DEPENDENCIES
----============================================================================
 
 -- NOTE: BSTBeastPetData loaded from _G (set in character main file during get_sets())
 -- DO NOT cache it at module load time - access _G.BSTBeastPetData directly in functions
@@ -25,52 +20,34 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 -- Load Windower resources for item lookups
 local res = require('resources')
 
----============================================================================
---- ECOSYSTEM MANAGEMENT
----============================================================================
-
---- Change ecosystem (cycle through 7 ecosystems)
---- CRITICAL: Recreates state.species and state.ammoSet dynamically
---- @return string ecosystem Current ecosystem name
---- @return number num_species Number of species available
 function EcosystemManager.change_ecosystem()
     if not state or not state.ecosystem then
         return nil, 0
     end
 
-    -- Cycle to next ecosystem
     state.ecosystem:cycle()
     local eco = state.ecosystem.value
 
-    -- STEP 1: Get species list for this ecosystem
     local species_list = _G.BSTBeastPetData.get_species_for_ecosystem(eco)
-
-    -- STEP 2: RECREATE state.species dynamically
     if #species_list > 0 then
         state.species = M{description = "Species", unpack(species_list)}
     else
         state.species = M{description = "Species", "None"}
     end
 
-    -- STEP 3: Get ALL pets for this ecosystem
     local pets_list = _G.BSTBeastPetData.get_pets_for_ecosystem(eco)
-
-    -- STEP 4: RECREATE state.ammoSet dynamically
     if #pets_list > 0 then
         state.ammoSet = M{description = "ammo", unpack(pets_list)}
     else
         state.ammoSet = M{description = "ammo", "None"}
     end
 
-    -- STEP 5: Schedule broth equipping (0.1s delay for state to stabilize)
     coroutine.schedule(function()
         EcosystemManager.equip_pet_broth()
     end, 0.1)
 
-    -- STEP 6: Display message (show number of SPECIES, not pets)
     MessageFormatter.show_bst_ecosystem_change(eco, #species_list)
 
-    -- STEP 7: Update UI if available
     if _G.KeybindUI and _G.KeybindUI.update then
         _G.KeybindUI.update()
     end
@@ -78,10 +55,8 @@ function EcosystemManager.change_ecosystem()
     return eco, #species_list
 end
 
---- Change species (cycle through species for current ecosystem)
---- CRITICAL: Recreates state.ammoSet dynamically based on species
---- @return string species Current species name
---- @return number num_jugs Number of jugs in inventory for this species
+---   Change species (cycle through species for current ecosystem)
+---   CRITICAL: Recreates state.ammoSet dynamically based on species
 function EcosystemManager.change_species()
     if not state or not state.ecosystem or not state.species then
         return nil, 0
@@ -121,13 +96,9 @@ function EcosystemManager.change_species()
     return species, jug_count
 end
 
----============================================================================
---- BROTH EQUIPPING
----============================================================================
 
---- Equip broth for current ammoSet pet
---- Uses equipment sets (sets["Pet Name (Species)"]) created in bst_sets.lua
---- @return void
+---   Equip broth for current ammoSet pet
+---   Uses equipment sets (sets["Pet Name (Species)"]) created in bst_sets.lua
 function EcosystemManager.equip_pet_broth()
     if not state or not state.ammoSet then
         return
@@ -154,9 +125,8 @@ function EcosystemManager.equip_pet_broth()
     end
 end
 
---- Cycle ammoSet (cycle through pets for current ecosystem/species)
---- Called when user cycles ammoSet state directly
---- @return void
+---   Cycle ammoSet (cycle through pets for current ecosystem/species)
+---   Called when user cycles ammoSet state directly
 function EcosystemManager.cycle_ammo()
     if not state or not state.ammoSet then
         return
@@ -176,14 +146,8 @@ function EcosystemManager.cycle_ammo()
     end
 end
 
----============================================================================
---- INVENTORY COUNTING
----============================================================================
 
---- Count jugs in inventory for a specific species
---- @param ecosystem string Ecosystem name
---- @param species string Species name
---- @return number count Total count of jugs for this species in inventory
+---   Count jugs in inventory for a specific species
 function EcosystemManager.count_species_jugs(ecosystem, species)
     local total_count = 0
 
@@ -242,13 +206,9 @@ function EcosystemManager.count_species_jugs(ecosystem, species)
     return total_count
 end
 
----============================================================================
---- INITIALIZATION
----============================================================================
 
---- Initialize ecosystem system (called in job_setup via coroutine)
---- Creates initial species and ammoSet states based on default ecosystem
---- @return void
+---   Initialize ecosystem system (called in job_setup via coroutine)
+---   Creates initial species and ammoSet states based on default ecosystem
 function EcosystemManager.initialize()
     if not state or not state.ecosystem then
         MessageFormatter.show_error('Cannot initialize ecosystem manager - state.ecosystem not found')
@@ -289,9 +249,5 @@ function EcosystemManager.initialize()
         EcosystemManager.equip_pet_broth()
     end, 0.2)
 end
-
----============================================================================
---- MODULE EXPORT
----============================================================================
 
 return EcosystemManager

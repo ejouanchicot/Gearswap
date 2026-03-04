@@ -1,5 +1,5 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
----   RDM Midcast Module - Intelligent Midcast Gear Selection (Powered by MidcastManager)
+---   RDM Midcast Module - Midcast Gear Selection
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Handles midcast gear selection for Red Mage spells using centralized MidcastManager.
 ---   Only intercepts skills that require job-specific logic. All other magic is handled
@@ -23,7 +23,7 @@
 ---
 ---   @file    shared/jobs/rdm/functions/RDM_MIDCAST.lua
 ---   @author  Tetsouo
----   @version 6.5 - Refactored header style
+---   @version 1.0
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════
 
@@ -42,9 +42,12 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-MessageFormatter = require('shared/utils/messages/message_formatter')
-    MidcastManager = require('shared/utils/midcast/midcast_manager')
-    MessageRDMMidcast = require('shared/utils/messages/formatters/jobs/message_rdm_midcast')
+    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    MessageFormatter = mf
+    local _, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
+    MidcastManager = mm
+    local _, mrm = pcall(require, 'shared/utils/messages/formatters/jobs/message_rdm_midcast')
+    MessageRDMMidcast = mrm
 
     local EnfeeblingSPELLS_success, EnhancingSPELLS_success
     EnfeeblingSPELLS_success, EnfeeblingSPELLS = pcall(require, 'shared/data/magic/ENFEEBLING_MAGIC_DATABASE')
@@ -57,25 +60,25 @@ end
 ---   MIDCAST HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Handle midcast gear selection
---- Defers to Mote-Include default behavior, customization in job_post_midcast
---- @param spell table Spell information from GearSwap
---- @param action table Action information from GearSwap
---- @param spellMap string Spell mapping from Mote-Include
---- @param eventArgs table Event arguments for cancellation/customization
---- @return nil (no action taken, handled in post-midcast)
+---   Handle midcast gear selection
+---   Defers to Mote-Include default behavior, customization in job_post_midcast
+---   @param spell table Spell information from GearSwap
+---   @param action table Action information from GearSwap
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments for cancellation/customization
+---   @return nil (no action taken, handled in post-midcast)
 function job_midcast(spell, action, spellMap, eventArgs)
     -- Handled by Mote-Include default behavior
     -- Customization done in job_post_midcast
 end
 
---- Post-midcast customization using MidcastManager
---- Routes spell.skill to MidcastManager with appropriate configuration
---- @param spell table Spell information from GearSwap
---- @param action table Action information from GearSwap
---- @param spellMap string Spell mapping from Mote-Include
---- @param eventArgs table Event arguments for cancellation/customization
---- @return nil (dispatches to MidcastManager)
+---   Post-midcast customization using MidcastManager
+---   Routes spell.skill to MidcastManager with appropriate configuration
+---   @param spell table Spell information from GearSwap
+---   @param action table Action information from GearSwap
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments for cancellation/customization
+---   @return nil (dispatches to MidcastManager)
 function job_post_midcast(spell, action, spellMap, eventArgs)
     -- Lazy load modules on first midcast
     ensure_modules_loaded()
@@ -319,6 +322,10 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         MessageRDMMidcast.show_skill_not_handled(spell.skill or 'Unknown')
     end
 end
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export to global scope (used by Mote-Include via include())
 _G.job_midcast = job_midcast

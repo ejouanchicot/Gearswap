@@ -1,26 +1,26 @@
----============================================================================
---- GEO Aftercast Module - Post-Action Handling
----============================================================================
---- Handles aftercast cleanup for Geomancer job.
---- Returns to idle/engaged gear after spell completion.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   GEO Aftercast Module - Post-Action Handling
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles aftercast cleanup for Geomancer job.
+---   Returns to idle/engaged gear after spell completion.
 ---
---- @file GEO_AFTERCAST.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-09
----============================================================================
+---   @file    GEO_AFTERCAST.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-09
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- ENTRUST PENDING FLAG (Initialize global tracker)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ENTRUST PENDING FLAG (Initialize global tracker)
+---  ═══════════════════════════════════════════════════════════════════════════
 -- Track Entrust usage (persist until Indi spell is cast or buff expires)
 if _G.geo_entrust_pending == nil then
     _G.geo_entrust_pending = false
 end
 
----============================================================================
---- AFTERCAST HOOKS
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   AFTERCAST HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
 function job_aftercast(spell, action, spellMap, eventArgs)
     -- Watchdog: Track aftercast
@@ -48,15 +48,10 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     end
 end
 
----============================================================================
---- MODULE EXPORT
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export global for GearSwap (Mote-Include)
 _G.job_aftercast = job_aftercast
 
--- Export module
-local GEO_AFTERCAST = {}
-GEO_AFTERCAST.job_aftercast = job_aftercast
-
-return GEO_AFTERCAST

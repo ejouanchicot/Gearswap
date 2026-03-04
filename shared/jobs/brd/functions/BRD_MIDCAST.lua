@@ -1,5 +1,5 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
----   BRD Midcast Module - Powered by MidcastManager (Subjob Spells Only)
+---   BRD Midcast Module - Midcast Gear Selection
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Handles midcast for Bard with specialized Song instrument selection.
 ---
@@ -34,9 +34,12 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    MidcastManager = require('shared/utils/midcast/midcast_manager')
-    SongRotationManager = require('shared/jobs/brd/functions/logic/song_rotation_manager')
-    MessageFormatter = require('shared/utils/messages/message_formatter')
+    local _, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
+    MidcastManager = mm
+    local _, srm = pcall(require, 'shared/jobs/brd/functions/logic/song_rotation_manager')
+    SongRotationManager = srm
+    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    MessageFormatter = mf
 
     -- Expose SongRotationManager globally for MidcastManager
     _G.SongRotationManager = SongRotationManager
@@ -54,9 +57,9 @@ end
 ---   SONG INSTRUMENT DETECTION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Determine which instrument to use for a song
---- @param spell table Spell information
---- @return string|nil Instrument name or nil if no specific instrument
+---   Determine which instrument to use for a song
+---   @param spell table Spell information
+---   @return string|nil Instrument name or nil if no specific instrument
 local function get_song_instrument(spell)
     if not spell or spell.skill ~= 'Singing' then
         return nil
@@ -66,10 +69,10 @@ local function get_song_instrument(spell)
     return SongRotationManager.get_required_instrument(spell.english)
 end
 
---- Check if song is a dummy song (for duration gear)
---- Uses centralized BRDSongConfig.DUMMY_SONGS list instead of pattern matching
---- @param spell_name string Song name
---- @return boolean is_dummy
+---   Check if song is a dummy song (for duration gear)
+---   Uses centralized BRDSongConfig.DUMMY_SONGS list instead of pattern matching
+---   @param spell_name string Song name
+---   @return boolean is_dummy
 local function is_dummy_song(spell_name)
     -- Use centralized config (loaded in character main file)
     if not _G.BRDSongConfig or not _G.BRDSongConfig.DUMMY_SONGS then
@@ -85,9 +88,9 @@ local function is_dummy_song(spell_name)
     return false
 end
 
---- Check if song should NOT equip weapons (debuff songs that use sets without main/sub)
---- @param spell_name string Song name
---- @return boolean should_skip_weapons
+---   Check if song should NOT equip weapons (debuff songs that use sets without main/sub)
+---   @param spell_name string Song name
+---   @return boolean should_skip_weapons
 local function is_no_weapon_song(spell_name)
     -- Lullaby songs (all variants)
     if spell_name:match('Lullaby') then
@@ -122,6 +125,11 @@ end
 ---   MIDCAST HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+---   Pre-midcast hook (job-specific logic before set selection)
+---   @param spell table Spell information from GearSwap
+---   @param action string Action type
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments for cancellation/customization
 function job_midcast(spell, action, spellMap, eventArgs)
     -- No BRD-specific PRE-midcast logic
 end
@@ -130,6 +138,11 @@ function job_customize_midcast_set(midcastSet, spell)
     return midcastSet
 end
 
+---   Post-midcast hook (MidcastManager routing and gear selection)
+---   @param spell table Spell information from GearSwap
+---   @param action string Action type
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments for cancellation/customization
 function job_post_midcast(spell, action, spellMap, eventArgs)
     -- Lazy load modules on first midcast
     ensure_modules_loaded()
@@ -139,9 +152,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         _G.MidcastWatchdog.on_midcast_start(spell)
     end
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- SINGING (NOW HANDLED BY MIDCASTMANAGER)
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     if spell.skill == 'Singing' then
         -- Check if dummy song FIRST
         local is_dummy = is_dummy_song(spell.english)
@@ -229,9 +242,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         return
     end
 
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
     --- SUBJOB SPELLS (Handled by MidcastManager)
-    ---========================================================================
+    ---══════════════════════════════════════════════════════════════════════════
 
     -- Healing Magic (Cure)
     if spell.skill == 'Healing Magic' then
@@ -280,9 +293,3 @@ _G.job_midcast = job_midcast
 _G.job_customize_midcast_set = job_customize_midcast_set
 _G.job_post_midcast = job_post_midcast
 
-local BRD_MIDCAST = {}
-BRD_MIDCAST.job_midcast = job_midcast
-BRD_MIDCAST.job_customize_midcast_set = job_customize_midcast_set
-BRD_MIDCAST.job_post_midcast = job_post_midcast
-
-return BRD_MIDCAST

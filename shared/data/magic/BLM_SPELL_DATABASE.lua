@@ -1,5 +1,5 @@
 ---============================================================================
---- BLM Spell Database - Façade (Public API)
+--- BLM Spell Database - Facade (Public API)
 ---============================================================================
 --- Provides unified access to all BLM spells using skill-based architecture.
 --- Merges spells from ELEMENTAL_MAGIC_DATABASE, DARK_MAGIC_DATABASE,

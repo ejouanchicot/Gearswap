@@ -1,19 +1,5 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Job Change Manager - Robust Job Change Coordination System
----  ═══════════════════════════════════════════════════════════════════════════
----   Handles job/subjob changes with debouncing and full GearSwap reload to
----   guarantee 100% clean state without memory leaks or double UI.
----
----   Features:
----     - Debouncing for rapid job changes (3.0s main job, 0.5s subjob)
----     - Hard reset via full GearSwap reload
----     - Lockstyle cancel registry for cleanup
----
----   @file    shared/utils/core/job_change_manager.lua
----   @author  Tetsouo
----   @version 2.0 - CLEANUP: Removed 230 lines of obsolete code after reload solution
----   @date    Created: 2025-10-02 | Updated: 2025-11-24
----  ═══════════════════════════════════════════════════════════════════════════
+-- JobChangeManager: debounced job/subjob change handling with full GearSwap reload.
+-- 3.0s debounce for main job, 0.5s for subjob. Guarantees clean state on every change.
 
 local JobChangeManager = {}
 
@@ -28,11 +14,7 @@ local function get_MessageFormatter()
     return MessageFormatter
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   STATE MANAGEMENT (PERSISTED GLOBALLY TO SURVIVE RELOADS)
----  ═══════════════════════════════════════════════════════════════════════════
-
--- Use global scope to persist STATE between module reloads
+-- State persisted in _G to survive module reloads (resets on full GearSwap reload)
 -- (Reload GearSwap will reset these, but they persist during debounce delays)
 if not _G.JobChangeManagerSTATE then
     _G.JobChangeManagerSTATE = {
@@ -55,9 +37,6 @@ end
 
 local STATE = _G.JobChangeManagerSTATE
 
----  ═══════════════════════════════════════════════════════════════════════════
----   UTILITY FUNCTIONS
----  ═══════════════════════════════════════════════════════════════════════════
 
 --- Cancel all pending operations
 local function cancel_all_pending()
@@ -101,18 +80,15 @@ local function cleanup_all_systems()
         _G.ui_manager_state.smart_init_id = (_G.ui_manager_state.smart_init_id or 0) + 1
     end
 
+    if _G.LagDebugger then _G.LagDebugger.on_cleanup() end
     if _G.JOBCHANGE_DEBUG then
         add_to_chat(207, '[JCM] cleanup_all_systems() completed')
     end
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   PUBLIC API
----  ═══════════════════════════════════════════════════════════════════════════
 
 --- Initialize job change manager with current job state
 --- NOTE: This now only sets initial job state (module references removed)
---- @param config table Configuration (unused, kept for backward compatibility)
 function JobChangeManager.initialize(config)
     -- Set initial job state
     if player then
@@ -122,9 +98,7 @@ function JobChangeManager.initialize(config)
 end
 
 --- Handle job change event (call from job_sub_job_change)
---- SOLUTION RADICALE: Reload GearSwap complet pour garantir état clean
---- @param main_job string New main job
---- @param sub_job string New sub job
+--- Full GearSwap reload to guarantee a clean state
 function JobChangeManager.on_job_change(main_job, sub_job)
     if not main_job or not sub_job then
         return
@@ -141,6 +115,7 @@ function JobChangeManager.on_job_change(main_job, sub_job)
     -- - AutoMove command spam during reload
     -- - UI memory leaks
     -- - Zombie watchdog coroutines
+    if _G.LagDebugger then _G.LagDebugger.on_job_change(main_job, sub_job) end
     cleanup_all_systems()
 
     -- Update target job
@@ -171,6 +146,7 @@ function JobChangeManager.on_job_change(main_job, sub_job)
             return  -- Newer change queued, abort this reload
         end
 
+        if _G.LagDebugger then _G.LagDebugger.on_gs_reload(delay) end
         if _G.JOBCHANGE_DEBUG then
             add_to_chat(207, string.format('[JCM] EXECUTING reload: counter=%d, %s/%s',
                 my_counter, main_job, sub_job))
@@ -190,9 +166,7 @@ function JobChangeManager.on_job_change(main_job, sub_job)
 end
 
 --- Force immediate job change (skip debounce, for manual triggers)
---- SOLUTION RADICALE: Reload GearSwap immédiatement
---- @param main_job string Main job
---- @param sub_job string Sub job
+--- Force immediate GearSwap reload
 function JobChangeManager.force_reload(main_job, sub_job)
     main_job = main_job or (player and player.main_job)
     sub_job  = sub_job or (player and player.sub_job)
@@ -229,14 +203,8 @@ function JobChangeManager.cancel_all()
 end
 
 --- Register a job's lockstyle cancel function
---- @param job_name string Job name (e.g., "WAR", "PLD")
---- @param cancel_func function Function to cancel lockstyle operations
 function JobChangeManager.register_lockstyle_cancel(job_name, cancel_func)
     STATE.lockstyle_cancel_registry[job_name] = cancel_func
 end
-
----  ═══════════════════════════════════════════════════════════════════════════
----   MODULE EXPORT
----  ═══════════════════════════════════════════════════════════════════════════
 
 return JobChangeManager

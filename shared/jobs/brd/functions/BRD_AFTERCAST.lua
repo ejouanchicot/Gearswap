@@ -1,26 +1,26 @@
----============================================================================
---- BRD Aftercast Module - Post-Action Cleanup
----============================================================================
---- Handles aftercast behavior for Bard job.
---- Returns to idle/engaged sets after songs/spells complete.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BRD Aftercast Module - Post-Action Cleanup
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Handles aftercast behavior for Bard job.
+---   Returns to idle/engaged sets after songs/spells complete.
 ---
---- @file BRD_AFTERCAST.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-13
----============================================================================
+---   @file    BRD_AFTERCAST.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-13
+---  ═══════════════════════════════════════════════════════════════════════════
 
----============================================================================
---- DEPENDENCIES - LAZY LOADING (Performance Optimization)
----============================================================================
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local MessageFormatter = nil
 
---- Handle post-action cleanup
---- @param spell table Spell/ability data
---- @param action string Action type
---- @param spellMap string Spell mapping
---- @param eventArgs table Event arguments
+---   Handle post-action cleanup
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_aftercast(spell, action, spellMap, eventArgs)
     -- Watchdog: Track aftercast
     if _G.MidcastWatchdog then
@@ -48,7 +48,8 @@ function job_aftercast(spell, action, spellMap, eventArgs)
         if spell.type == 'BardSong' and spell.english == song_name and not spell.interrupted then
             -- Lazy load MessageFormatter only when needed
             if not MessageFormatter then
-                MessageFormatter = require('shared/utils/messages/message_formatter')
+                local ok, mf = pcall(require, 'shared/utils/messages/message_formatter')
+                if ok then MessageFormatter = mf end
             end
             MessageFormatter.show_instrument_released(song_name, instrument)
         end
@@ -68,11 +69,10 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     end
 end
 
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
+
 -- Export to global scope
 _G.job_aftercast = job_aftercast
 
--- Export module
-local BRD_AFTERCAST = {}
-BRD_AFTERCAST.job_aftercast = job_aftercast
-
-return BRD_AFTERCAST
