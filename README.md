@@ -8,10 +8,10 @@
 [![Windower](https://img.shields.io/badge/Windower-4-purple)](https://www.windower.net/)
 [![FFXI](https://img.shields.io/badge/FFXI-Retail-red)](https://www.playonline.com/ff11/)
 [![Jobs](https://img.shields.io/badge/Jobs-15-green)](#-supported-jobs)
-[![Files](https://img.shields.io/badge/Lua%20files-300%2B-blueviolet)](https://github.com/Tetsouo/Gearswap)
+[![Files](https://img.shields.io/badge/Lua%20files-600%2B-blueviolet)](https://github.com/Tetsouo/Gearswap)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](https://opensource.org/licenses/MIT)
 
-**Zero duplication. 9 centralized systems. 15 jobs. 50+ warp shortcuts. 39KB of in-game messaging.**
+**Zero duplication. 9 centralized systems. 15 jobs. 100+ warp aliases. 76-file message system (14k+ LoC).**
 **Built like production software, not a 2000-line GearSwap script.**
 
 [🚀 Quick Start](#-quick-start) • [🏆 What it does](#-complete-feature-audit) • [⚡ Commands](#-command-cheatsheet) • [🏗 Architecture](#-architecture)
@@ -95,7 +95,7 @@ The 5-phase combat lifecycle (precast → midcast → aftercast → idle → eng
 #### Precast pipeline
 
 - **PrecastGuard** — first check on every action. Blocks while silenced/paralyzed/amnesia/stunned. Auto-cures with Echo Drops / Remedy / Panacea per `DEBUFF_AUTOCURE_CONFIG`.
-- **CooldownChecker** — validates JA/spell recast via `spell.recast_id`. Cancels with a clear chat message; respects multi-charge abilities (COR Quick Draw, SCH Stratagems).
+- **CooldownChecker** — validates JA/spell recast via `spell.recast_id`. Cancels with a clear chat message before the cast queue is consumed.
 - **WSPrecastHandler** — unified weaponskill handling. Auto-triggers prerequisite abilities (Sneak Attack, Trick Attack, Climactic Flourish, Sange, etc.).
 - **AbilityHelper** — knows which JAs auto-fire before which weaponskills.
 - **TPBonusHandler** — calculates and detects WS TP bonuses (Moonshade Earring, Aftermath, etc.).
@@ -109,7 +109,7 @@ The 5-phase combat lifecycle (precast → midcast → aftercast → idle → eng
 
 #### Aftercast / Idle / Engaged
 
-- Automatic state transitions with town detection (idle gear in safe zones), aftermath tracking (WAR Lycurgos AM3 detection), DT vs offense vs hybrid mode cycling.
+- Automatic state transitions with town detection (idle gear in safe zones), aftermath tracking (WAR Ukonvasara AM3, buff ID 272 → `sets.engaged.PDTAFM3`), DT vs offense vs hybrid mode cycling.
 
 #### Defensive systems
 
@@ -320,7 +320,7 @@ A draggable HUD overlay shown on top of FFXI showing your current keybinds, job 
 </details>
 
 <details>
-<summary><h3>💬 Messaging System (39KB of templates)</h3></summary>
+<summary><h3>💬 Messaging System (76 modules, 14,400+ LoC)</h3></summary>
 
 Every message in this framework goes through the centralized formatter — never `add_to_chat` directly.
 
@@ -333,8 +333,9 @@ Every message in this framework goes through the centralized formatter — never
 
 #### Coverage
 
-- 22 job-specific message namespaces (BLM, BRD, BST, COR, DNC, DRG, DRK, GEO, MNK, NIN, PLD, PUP, RDM, RNG, RUN, SAM, SCH, SMN, THF, WAR, WHM, BLU)
-- 14 system namespaces: buffs, combat, cooldowns, debuffs, dualbox, equipment, keybinds, magic, songs, status, warp, watchdog, dressup, profiler, info
+- 9 job-specific message namespaces with dedicated templates: BLM, BRD, BST, COR, DRG, GEO, RDM, RUN, WHM
+- 25 system namespaces: buffs, combat, cooldowns, debuffs, dualbox, equipment, keybinds, magic, midcast, precast, profiler, songs, status, system, ui, warp, watchdog, weaponskill, info, init, ja_buffs, commands, database, blm_midcast, rdm_midcast
+- Other jobs without dedicated messages use the system-level templates (combat, weaponskill, magic, etc.)
 - Job-tagged colored output: `[BLM]`, `[Wardrobe]`, `[Refill]`, `[Craft]`, etc.
 - Standard 74-char ASCII panels with `===== Title =====` 3-line banners.
 
@@ -419,76 +420,79 @@ Each of the 15 jobs has bespoke logic for its unique mechanics. Not just gear sw
 
 #### COR
 
-- Smart phantom roll tracking with packet-level party-job detection (parses 0xDD/0xDF)
-- Lucky/Unlucky number display, bust rate warnings
-- Natural 11 detection (instant recast + bust immunity)
-- Double-Up window management (45s max)
+- Phantom Roll tracking with **packet-level party-job detection** (parses 0xDD/0xDF packets in `party_tracker.lua`)
+- Roll database with Lucky/Unlucky numbers per roll
+- Natural 11 detection (`_G.cor_natural_eleven_active` — instant recast + bust immunity tracked)
+- Double-Up window management
 
-#### DNC
+#### DNC (6 logic modules — most extensive job logic)
 
-- Waltz manager: Curing Waltz V→IV→III→II→I tier auto-pick based on missing HP
-- AoE Divine Waltz tier auto-pick
-- Step manager with TP-aware sequencing
-- Smartbuff manager (auto Saber Dance + Haste detection)
+- `step_manager.lua` — Step ability sequencing
+- `climactic_manager.lua` — Climactic Flourish handling
+- `smartbuff_manager.lua` — Auto-buff coordination
+- `jump_manager.lua` — DRG/DNC jump coordination
+- `ws_variant_selector.lua` — WS gear variants per state
+- Cure/Divine Waltz handled by shared `shared/utils/dnc/waltz_manager.lua` (works for any job with /DNC)
 
 #### DRG
 
-- Centralized jump manager (shared with /DRG subjob users)
+- Centralized jump manager at `shared/utils/drg/`
 - `//gs c jump` works on any job with /DRG sub
 
-#### DRK
+#### DRK (`drk_buff_anticipation.lua` + `set_builder.lua`)
 
-- Buff anticipation (predict drops, preempt Haste II)
-- Souleater tracking, Last Resort engagement
+- Buff anticipation module — predicts buff drops to preempt with Haste II
+- Last Resort precast set handling
 
 #### GEO
 
-- Geo spell refiner (elemental ge bubble matching)
-- Indi vs Geo set switching
-- Bolster timing
+- `geo_spell_refiner.lua` — elemental Ge/Indi spell refinement
+- `set_builder.lua` — Geo-specific gear selection
 
-#### PLD
+#### PLD (5 logic modules)
 
-- Rune manager (Sulpor, Lux, etc.) for /RUN subjob
-- AOE Manager for group cures
-- Cure set builder (priority-based target selection)
+- `rune_manager.lua` — Rune ability handling for /RUN subjob (Sulpor, Lux, Tellus, etc.)
+- `aoe_manager.lua` — Group cure / AOE healing tactics
+- `cure_set_builder.lua` — Priority-based cure target selection
+- Shares rune/aoe/cure logic with RUN main job
 
 #### PUP
 
-- Automaton command sets (`PUP_PET_PRECAST` / `PUP_PET_MIDCAST`)
+- Dedicated `PUP_PET_PRECAST.lua` and `PUP_PET_MIDCAST.lua` for Automaton command sets
+- 12-module structure same as other jobs (no separate logic/ folder needed)
 
 #### RDM
 
-- Saboteur override (auto-equips Lethargy Gants +3 hands when active)
-- Dual-cast tracking
-- Refresh timing
+- **Saboteur override** in `RDM_MIDCAST.lua` — when Saboteur is active, auto-equips `sets.midcast['Enfeebling Magic'].Saboteur` (your custom Saboteur potency set)
+- Standard MidcastManager pipeline for all other casts
 
-#### RUN
+#### RUN (4 logic modules — shares logic with PLD)
 
-- Shared rune logic with PLD
-- AOE Manager and Cure set builder shared
+- `rune_manager.lua`, `aoe_manager.lua`, `cure_set_builder.lua`, `set_builder.lua`
+- Same rune/cure infrastructure as PLD
 
 #### SAM
 
-- Engagement state with Hagakure/Meditate sets
-- TP trading mode
+- `set_builder.lua` — Engagement and TP-handling logic
+- States configured in `<char>/config/sam/SAM_STATES.lua` (Hagakure, Meditate, etc.)
 
-#### THF
+#### THF (3 logic modules)
 
-- SA/TA manager with auto-trigger before backstab
-- Smartbuff manager (Haste, TP gen)
-- Steal/Mug gear
+- `sa_ta_manager.lua` — Sneak Attack + Trick Attack auto-trigger before WS
+- `smartbuff_manager.lua` — Haste / TP-gen tracking
+- `set_builder.lua` — Engagement / theft gear selection
 
-#### WAR
+#### WAR (`set_builder.lua` + `smartbuff_manager.lua`)
 
-- Smartbuff manager
-- Aftermath detection (Lycurgos AM3, Ukonvasara AM3)
-- Hybrid mode cycle: PDT / Normal / **SubtleBlow** (auto-equips Subtle Blow gear set)
+- **Aftermath Lv.3 detection** (Ukonvasara, buff ID 272 → specialized `sets.engaged.PDTAFM3`)
+- **Kraken Club sub-weapon detection** → `sets.engaged.PDTKC` (multi-attack focus)
+- **Hybrid mode cycle**: `PDT` / `Normal` / `SubtleBlow` (auto-equips `sets.engaged.SubtleBlow` when selected)
+- Smartbuff manager for Berserk/Aggressor coordination
 
 #### WHM
 
-- Cure set builder (priority: self > low-HP party > TP trade)
-- Spell debuff and cure gearing
+- Cure manager at `shared/utils/whm/cure_manager.lua` (target priority: self > low-HP party > TP trade)
+- `set_builder.lua` for spell-skill-specific gearing
 
 </details>
 
@@ -721,13 +725,14 @@ python clone_character.py --source Bob   # rebuild Bob from _master/ + _master/B
 ### Project metrics (current snapshot)
 
 ```
-Files                     : 300+
-Lines of code             : ~25,000
-Jobs                      : 15
-Shared systems            : 9 mandatory + 8 extras
-Warp shortcuts            : 50+
-//gs c commands           : 80+
-Job-specific commands     : 30+
+Lua files in shared/      : 600+
+Lua files (total tracked) : 980+
+Lines of code (shared+_master) : 43,000+
+Jobs (main, fully implemented) : 15
+Shared utility subsystems : 25 directories under shared/utils/
+//gs c commands           : 80+ (universal + per-job)
+Warp aliases              : 100+ (~50 unique destinations)
+Per-job logic modules     : 44 across all 15 jobs
 Code duplication          : 0%
 File-size violations      : 0
 Function-size violations  : 0
