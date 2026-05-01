@@ -1,216 +1,199 @@
-# Quick Start Guide
+# Quick Start
 
-This guide will get you up and running with the Tetsouo GearSwap system in 5 minutes.
-
-## Basic Usage
-
-### Job Loading
-
-When you change jobs, GearSwap automatically:
-
-1. Loads your job-specific configuration
-2. Applies equipment sets
-3. Binds keybinds
-4. Sets macrobook and page
-5. Applies lockstyle (after 8s delay)
-
-**You don't need to do anything - it's fully automatic!**
-
-### Essential Commands
-
-```bash
-//gs c checksets       # Validate your equipment
-//gs c reload          # Reload GearSwap (after editing files)
-//gs c lockstyle       # Manually apply lockstyle
-//gs c ui off          # Hide UI overlay
-//gs c ui on           # Show UI overlay
-```
-
-## Essential Keybinds
-
-All jobs share these core keybinds:
-
-| Keybind | Function | Description |
-|---------|----------|-------------|
-| **Alt+1** | Cycle Main Weapon | Change weapon set |
-| **Alt+2** | Cycle Hybrid Mode | Toggle PDT/Normal |
-| **Alt+F1** | Toggle UI | Show/hide keybind overlay |
-| **F9** | Cycle Offense Mode | Normal/Acc |
-| **F10** | Cycle Defense Mode | Normal/PDT/MDT |
-| **F11** | Cycle Casting Mode | Normal/Resistant |
-| **F12** | Update Gear | Force equipment refresh |
-
-### Job-Specific Keybinds
-
-Each job adds extra keybinds starting from Alt+3 onward. Examples:
-
-**DNC**: Alt+3 Waltz, Alt+4 AoE Waltz, Alt+5 Step, Alt+6 Climactic Auto, Alt+7 Jump Auto
-
-**PLD**: Alt+4 AoE BLU rotation, Alt+5 Rune, Alt+6 Cycle Rune Mode
-
-**RDM**: Alt+5 Enfeebling Mode, Alt+6 Nuke Mode, F1-F5 Enhancement cycles
-
-See [keybinds guide](../guides/keybinds.md) for complete per-job reference.
-
-## Common Workflows
-
-### Changing Equipment Sets
-
-Equipment changes automatically based on:
-
-- **Action type**: Precast (Fast Cast) >> Midcast (Potency) >> Aftercast (Idle/Engaged)
-- **Player status**: Idle, Engaged, Resting
-- **Active modes**: PDT, MDT, Normal, Accuracy
-- **Buffs**: Auto-adjusts for active buffs
-
-**Example Flow (Cure spell)**:
-
-1. Start casting Cure IV
-2. Precast: Fast Cast gear equipped
-3. Midcast: Cure Potency gear equipped
-4. Aftercast: Return to Idle or Engaged gear
-
-**You don't need to manually swap - GearSwap handles it all!**
-
-### Using Hybrid Modes
-
-Hybrid modes let you balance offense and defense:
-
-```bash
-Alt+2                 # Cycle: Normal >> PDT >> Normal
-```
-
-- **Normal**: Maximum offense
-- **PDT**: Physical damage reduction (engaged sets with PDT gear)
-
-When in PDT mode, all engaged sets use defensive gear automatically.
-
-### Validating Your Gear
-
-Check which equipment you're missing:
-
-```bash
-//gs c checksets
-```
-
-Output example:
-
-```
-[WAR] Validating equipment sets...
-[WAR] 42/44 items validated (95.5%)
-
-[MISSING] sets.idle.PDT.body: "Sakpata's Plate"
-[STORAGE] sets.precast.WS['Upheaval'].neck: "Fotia Gorget"
-```
-
-- **[MISSING]**: Item not found anywhere
-- **[STORAGE]**: Item is in storage (Mog House, etc.)
-
-## Job-Specific Quick Start
-
-### Warrior (WAR)
-
-```
-//gs c cycle MainWeapon    Cycle weapons (Ukonvasara, Naegling, etc.)
-//gs c cycle HybridMode    Toggle Normal / PDT
-```
-
-TP Bonus display on WS, Mighty Strikes detection, weapon-specific WS sets.
-
-### Paladin (PLD)
-
-```
-//gs c aoe                 AoE BLU enmity rotation (requires /BLU)
-//gs c rune                Use selected rune (requires /RUN)
-//gs c cycle RuneMode      Cycle Sulpor / Lux
-```
-
-Auto-Majesty before Cure, Divine Emblem auto-trigger.
-
-### Dancer (DNC)
-
-```
-//gs c waltz               Curing Waltz (auto-selects tier I-V)
-//gs c aoewaltz            Divine Waltz (AoE heal)
-//gs c step                Step rotation (Main/Alt)
-```
-
-Auto Climactic Flourish toggle, auto Jump before WS.
-
-## Advanced Features
-
-### Watchdog System
-
-Protects against stuck midcast in laggy zones (Odyssey, Dynamis):
-
-```bash
-//gs c watchdog            # Show status
-//gs c watchdog debug      # Toggle debug mode
-//gs c watchdog test       # Test detection
-```
-
-**Automatic**: No setup needed - works in background.
-
-### Dual-Boxing
-
-Synchronize jobs between characters:
-
-```bash
-//gs c altjob             # Display alt character job
-```
-
-**Automatic**: Characters auto-share job info when loading.
-
-### UI Overlay
-
-Visual keybind reference:
-
-```bash
-//gs c ui on              # Show overlay
-//gs c ui off             # Hide overlay
-//gs c ui save            # Save position
-Alt+F1                    # Quick toggle
-```
-
-**Customizable**: Drag to reposition, saves automatically.
-
-## Common Issues
-
-### Gear not swapping after spell
-
-**Fix**: Network lag detected - Watchdog will auto-recover (dynamic timeout based on spell cast time + 1.5s buffer).
-
-### Lockstyle not applying
-
-**Fix**:
-
-```bash
-//lua load dressup
-//gs c lockstyle
-```
-
-### Keybinds not working
-
-**Fix**:
-
-```bash
-//lua reload gearswap
-```
-
-## Next Steps
-
-- **Commands Reference**: See `../guides/commands.md` for all commands
-- **Keybinds Customization**: See `../guides/keybinds.md`
-- **Configuration**: See `../guides/configuration.md` for advanced settings
-- **Features**: Explore `../features/` for detailed feature documentation
-
-## Tips
-
-1. **Use `//gs c checksets` regularly** to verify equipment
-2. **Keep DressUp addon loaded** for lockstyle functionality
-3. **Press F12 after zoning** if gear looks wrong (forces update)
-4. **Use debug mode sparingly**: `//gs debugmode` (very verbose)
+You installed it (see [installation](installation.md)). Now you'll learn
+the day-to-day commands. Five minutes.
 
 ---
 
-**Supported Jobs**: BLM, BRD, BST, COR, DNC, DRK, GEO, PLD, PUP, RDM, RUN, SAM, THF, WAR, WHM (15 jobs)
+## Loading a job
+
+```
+//console gs load <Yourname>_WAR
+```
+
+GearSwap automatically:
+
+1. Loads the entry-point and the 12-module job package
+2. Registers the per-job keybinds from `<JOB>_KEYBINDS.lua`
+3. Sets the macrobook page from `<JOB>_MACROBOOK.lua`
+4. Schedules the lockstyle (~2s after load) from `<JOB>_LOCKSTYLE.lua`
+5. Wires the watchdog, automove, and shared systems
+
+You don't run anything — once the entry-point loads, everything is hot.
+
+---
+
+## Day-to-day commands
+
+```
+//gs c                  Toggle the keybind UI overlay
+//gs c checksets        Validate every set, list missing/storage items
+//gs c reload           Hot-reload current GearSwap
+//gs c info             Framework version + loaded modules
+//gs c lockstyle / ls   Re-apply your lockstyle (DressUp must be loaded)
+//gs c naked            Strip all equipment
+```
+
+### Inventory & wardrobe
+
+```
+//gs c rf               Refill consumables for the current job/subjob
+//gs c wo               Wardrobe organize for the current job
+//gs c wo preview       Dry-run wardrobe organize
+//gs c wo verify        Read-only wardrobe layout check
+//gs c wa               Wardrobe audit (find unused items per job)
+```
+
+### Craft & fishing
+
+```
+//gs c craft            Bonecraft HQ (default variant)
+//gs c craft nq         Bonecraft NQ guarantee
+//gs c craft success    Bonecraft success rate
+//gs c craft wood       HQ + Carver's Torque (woodworking sub)
+//gs c craft smith      HQ + Smithy's Torque (smithing sub)
+//gs c craft leather    HQ + Tanner's Torque (leathercraft sub)
+//gs c fish             Equip the fishing set
+//gs c uncraft          Unlock slots, normal gear resumes
+```
+
+### Cross-job utility
+
+```
+//gs c jump             DRG-style jump (any job with /DRG sub)
+//gs c waltz            Curing Waltz (any job with /DNC sub)
+//gs c aoewaltz         Divine Waltz (any job with /DNC sub)
+//gs c warp [dest]      ~50 destinations: w, ret, esc, tph, sd, ad, ...
+```
+
+### Debugging
+
+```
+//gs c debugmidcast     Trace MidcastManager set selection
+//gs c debugjobchange   Trace job change events (or `djc`)
+//gs c debugstate       Dump current state machine (or `ds`)
+//gs c debugmsg         Toggle universal message logging
+//gs c automovedebug    Trace movement decisions (or `amd`)
+//gs c testcolors       Show the 509-color FFXI palette
+//gs c syscheck         Validate all jobs and core systems (or `sc`)
+//gs c fulltest         Run the comprehensive system suite (or `ft`)
+```
+
+> Full list: [commands guide](../guides/commands.md).
+
+---
+
+## Keybinds
+
+Universal Mote keybinds (F9-F12, Alt-F9..F12) are **not** wired by this
+framework. The project uses **per-job binds defined in
+`<JOB>_KEYBINDS.lua`**, with one universal:
+
+| Key | Action |
+| --- | --- |
+| Alt+F1 | Toggle the keybind UI overlay |
+
+A few representative jobs (full table in [keybinds guide](../guides/keybinds.md)):
+
+### WAR
+
+| Key | Action |
+| --- | --- |
+| Alt+1 | Cycle MainWeapon (Ukonvasara, Naegling, Apocalypse, etc.) |
+| Alt+2 | Cycle HybridMode (Normal / PDT / SubtleBlow) |
+
+### DNC
+
+| Key | Action |
+| --- | --- |
+| Alt+1 | Cycle MainWeapon |
+| Ctrl+1 | Cycle SubWeaponOverride |
+| Alt+2 | Cycle HybridMode |
+| Alt+3 | Cycle MainStep |
+| Alt+4 | Cycle AltStep |
+| Alt+5 | Toggle UseAltStep |
+| Alt+6 | Toggle ClimacticAuto |
+| Alt+7 | Toggle JumpAuto |
+| Alt+8 | Cycle Dance type |
+| Ctrl+8 | Activate the selected dance |
+
+### PLD
+
+| Key | Action |
+| --- | --- |
+| Alt+1 | Cycle MainWeapon |
+| Alt+2 | Cycle HybridMode |
+| Alt+4 | (per subjob — see PLD_KEYBINDS.lua) |
+| Alt+5 | (per subjob — see PLD_KEYBINDS.lua) |
+
+> Open `<Yourname>/config/<job>/<JOB>_KEYBINDS.lua` to see all binds for
+> the job you're playing — or invoke `//gs c` in-game to render the live
+> overlay.
+
+---
+
+## State cycling cheat-sheet
+
+Most jobs expose Mote-Include states cycled via `//gs c cycle <StateName>`:
+
+```
+//gs c cycle MainWeapon       Weapon cycling (per-job list)
+//gs c cycle HybridMode       Normal / PDT / variants
+//gs c cycle OffenseMode      Normal / Acc (where defined)
+//gs c cycle CastingMode      Normal / Resistant (mages)
+//gs c cycle EnfeebleMode     Potency / Acc (RDM)
+//gs c cycle EnhancingMode    Standard / Composure (RDM)
+//gs c cycle NukeMode         Normal / FreeNuke / MB (BLM/RDM)
+//gs c cycle CureMode         Normal / Reraise (WHM)
+```
+
+Each job exposes only the cycles it defines in `<JOB>_STATES.lua`. Run
+`//gs c debugstate` to dump the current state machine.
+
+---
+
+## What happens during a cast
+
+The 5-phase combat lifecycle:
+
+1. **PrecastGuard** — first thing checked. Blocks while silenced /
+   amnesia / paralyzed / stunned, optionally auto-cures from
+   `DEBUFF_AUTOCURE_CONFIG`.
+2. **CooldownChecker** — validates the JA/spell recast (`spell.recast_id`).
+   Cancels with a clear chat message if it isn't ready.
+3. **WSPrecastHandler** (weaponskills only) — handles SA/TA, Climactic,
+   Sange, Sneak Attack pre-triggers.
+4. **MidcastManager.select_set(...)** — single mandatory entry-point that
+   picks the right `sets.midcast.*` table via 9-level fallback.
+5. **Aftercast** — restore idle/engaged with town detection, hybrid
+   modes, aftermath sets (e.g. WAR Ukonvasara AM3 → `sets.engaged.PDTAFM3`).
+
+If something looks wrong, run `//gs c debugmidcast` to trace the set
+chosen for each cast.
+
+---
+
+## Common troubleshooting
+
+| Symptom | Try |
+| --- | --- |
+| Gear didn't swap after spell | The watchdog auto-recovers stuck midcast (timeout = cast time + 1.5s). Run `//gs c info` to see watchdog status. |
+| `[MISSING]` items in `checksets` | The item is named differently or you don't own it. Use the right `enl` form (e.g. `R. Curry Bun +1` vs `Red Curry Bun +1`). |
+| Keybinds dead after subjob change | The 3.0s job-change debouncer is still settling. Wait, then `//gs c reload` if it still misfires. |
+| Lockstyle didn't apply | DressUp not loaded → `//lua load dressup`, then `//gs c lockstyle`. |
+| Wardrobe organize stalls | `//gs c wo recover` re-enables every slot if anything got stuck disabled. |
+
+---
+
+## Next steps
+
+- [All commands](../guides/commands.md)
+- [Per-job state docs](../jobs/README.md)
+- [DualBox setup](../guides/dualbox.md) — main/alt IPC sync
+- [UI overlay](../features/ui.md)
+- [Watchdog](../features/watchdog.md)
+
+---
+
+**14 jobs implemented** (BLM, BRD, BST, COR, DNC, DRK, GEO, PLD, RDM, RUN,
+SAM, THF, WAR, WHM). PUP is a scaffold-only stub.

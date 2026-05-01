@@ -32,7 +32,7 @@ Normal job change flow:
 1. Change job in-game.
 2. Old job unloads (brief message).
 3. New job loads with keybinds, UI, and macros.
-4. Lockstyle applies after ~8 seconds.
+4. Lockstyle applies ~2 seconds later (configurable, throttled to a 15s minimum).
 
 If you change jobs or subjobs rapidly, you may see a brief pause before loading completes. This is the debounce working as intended.
 

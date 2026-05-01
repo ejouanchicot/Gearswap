@@ -8,7 +8,7 @@ The WSPrecastHandler automatically calculates and equips TP bonus gear before we
 
 | Item | Slot | Bonus | Jobs |
 |------|------|-------|------|
-| Moonshade Earring | ear1 | +250 | All 15 |
+| Moonshade Earring | ear1 | +250 | All 14 played jobs |
 
 ---
 
@@ -56,9 +56,12 @@ Shared weapons: Aeneas (THF/DNC/BRD), Sequence (PLD), Fomalhaut (COR).
 
 ## Implementation status
 
-**14/15 jobs** have TP config files. PUP is the only job without one (uses empty fallback).
+**All 14 played jobs** ship `<JOB>_TP_CONFIG.lua` under
+`_master/config/<job>/`. PUP is the only job without one (it's a
+scaffold-only stub).
 
-All 15 jobs call `WSPrecastHandler.handle()` in precast. The handler uses `TPBonusCalculator` to select optimal gear.
+Every implemented job calls `WSPrecastHandler.handle()` in precast. The
+handler uses `TPBonusCalculator` to select optimal gear.
 
 ### Config files
 

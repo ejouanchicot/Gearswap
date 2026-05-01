@@ -1,344 +1,324 @@
 # Commands reference
 
-All commands use the format `//gs c [command] [parameters]`.
+All commands use the format `//gs c <command> [args...]`.
+
+This is the **complete, verified** command list as of v3.2.0. Every entry
+below is wired in either:
+
+- `shared/utils/core/COMMON_COMMANDS.lua` (universal)
+- `shared/utils/ui/UI_COMMANDS.lua` (`ui` family)
+- `shared/utils/warp/warp_commands.lua` (warp family)
+- `shared/jobs/<job>/functions/<JOB>_COMMANDS.lua` (per-job)
+
+If you add a command to one of those files, document it here.
+
+---
+
+## Quick reference
+
+```
+//gs c                    Toggle the keybind UI overlay
+//gs c reload             Hot-reload current GearSwap
+//gs c checksets          Validate every set, report MISSING / STORAGE
+//gs c naked              Strip all equipment
+//gs c info               Framework version, loaded modules, watchdog state
+//gs c help / ?           Built-in help
+//gs c commands / cmds    Print all commands in-game
+```
 
 ---
 
 ## System
 
 | Command | Alias | Description |
-|---------|-------|-------------|
-| `reload` | | Full system reload (lockstyle, macros, keybinds, UI) |
-| `checksets` | | Validate equipment sets -- reports OK / STORAGE / MISSING per item |
-| `lockstyle` | `ls` | Reapply lockstyle |
-| `dressup` | | Toggle DressUp addon management (persistent across sessions) |
+| --- | --- | --- |
+| `reload` | — | Full system reload |
+| `checksets` | — | Validate equipment sets — reports OK / STORAGE / MISSING per item |
+| `equip naked` / `naked` | — | Strip all equipment |
+| `equip <set>` | — | Equip a defined set by name |
+| `lockstyle` | `ls` | Re-apply lockstyle (DressUp must be loaded) |
+| `dressup` | — | Toggle DressUp addon management |
+| `info` | — | System status, version, loaded modules |
 
-## Equipment and inventory
+## Inventory & wardrobe
 
 | Command | Alias | Description |
-|---------|-------|-------------|
-| `checksets` | | Scan all gear sets, report missing or stored items |
-| `wardrobeaudit` | `wa` | Find items in your wardrobes that no job uses. Exports report to `wardrobe_audit.txt` |
-| `refill` | `rf` | Pull consumables from Mog Case/Sack into inventory (Panacea, Remedy, Holy Water, etc.) |
+| --- | --- | --- |
+| `refill` | `rf` | Pull consumables for the current job/subjob from `<JOB>_REFILL.lua` |
+| `worganize` | `wo` | Wardrobe organize for the current job |
+| `worganize preview` | `wo preview` | Dry-run wardrobe organize |
+| `worganize verify` | `wo verify` | Read-only layout check |
+| `worganize recover` | `wo recover` | Re-enable every slot if anything got stuck disabled |
+| `worganize reset` | `wo reset` | Soft state reset |
+| `worganize alt` | `wo alt` | Alt-character mode (4 wardrobes + Sack/Case) |
+| `wardrobeaudit` | `wa` | Find unused wardrobe items per job — exports report to `wardrobe_audit.txt` |
 
-## Mode cycling
+## Craft & fishing
 
 | Command | Description |
-|---------|-------------|
-| `cycle HybridMode` | Normal / PDT |
-| `cycle MainWeapon` | Cycle through weapon options |
-| `cycle OffenseMode` | Normal / Acc / ... |
-| `cycle DefenseMode` | Cycle defense modes |
-| `set [State] [Value]` | Force a specific state value |
-| `toggle [State]` | Toggle a boolean state |
-| `reset [State]` | Reset state to default |
+| --- | --- |
+| `craft` | Bonecraft HQ (default variant from `<char>/sets/bonecraft_sets.lua`) |
+| `craft nq` | Bonecraft NQ guarantee |
+| `craft success` | Bonecraft success rate |
+| `craft wood` | HQ + Carver's Torque (woodworking sub-craft) |
+| `craft smith` | HQ + Smithy's Torque (smithing sub-craft) |
+| `craft leather` | HQ + Tanner's Torque (leathercraft sub-craft) |
+| `fish` / `fishing` | Equip the fishing set |
+| `uncraft` | Unlock slots, normal gear resumes |
 
-## UI
+## Cross-job utility
+
+| Command | Subjob | Description |
+| --- | --- | --- |
+| `waltz` | /DNC | Curing Waltz on target — auto-selects tier V→I from missing HP and TP |
+| `aoewaltz` | /DNC | Divine Waltz / Divine Waltz II auto-pick |
+| `jump` | /DRG | DRG jump |
+
+## State cycling
+
+Mote-Include states. Each job exposes only the cycles defined in its
+`<JOB>_STATES.lua`.
+
+| Command | Description |
+| --- | --- |
+| `cycle <StateName>` | Cycle a multi-value state forward |
+| `cycleback <StateName>` | Cycle backward |
+| `set <StateName> <Value>` | Force a specific value |
+| `reset <StateName>` | Reset to default |
+| `toggle <StateName>` | Toggle a boolean state |
+| `update` | Force a gear refresh |
+
+Common state names: `MainWeapon`, `SubWeaponOverride`, `HybridMode`,
+`OffenseMode`, `CastingMode`, `IdleMode`, `EnfeebleMode`, `EnhancingMode`,
+`NukeMode`, `CureMode`, `MainStep`, `AltStep`, `RuneMode`, `BubbleMode`.
+
+---
+
+## UI overlay
 
 | Command | Alias | Description |
-|---------|-------|-------------|
-| `ui` | | Toggle UI visibility |
-| `ui on` | `ui enable` | Enable UI (create and show) |
-| `ui off` | `ui disable` | Disable UI (hide and persist across reloads) |
+| --- | --- | --- |
+| `ui` | — | Toggle visibility |
+| `ui on` / `ui off` | `ui enable` / `ui disable` | Show / hide (persists across reload) |
 | `ui header` | `ui h` | Toggle header section |
 | `ui legend` | `ui l` | Toggle legend section |
 | `ui columns` | `ui c` | Toggle column headers |
 | `ui footer` | `ui f` | Toggle footer section |
-| `ui font <name>` | | Change font (`Consolas` or `Courier New`) |
-| `ui bg <preset>` | `ui background`, `ui theme` | Apply a background preset (e.g., `dark_blue`, `neon_green`) |
-| `ui bg toggle` | `ui theme toggle` | Toggle background visibility |
-| `ui bg list` | `ui theme list` | List available background presets |
-| `ui bg <r> <g> <b> <a>` | | Set custom background RGBA (0-255 each) |
-| `ui save` | `ui s` | Save current UI position and settings |
-| `ui help` | `ui ?` | Show UI command help |
+| `ui font <name>` | — | `Consolas` or `Courier New` |
+| `ui bg <preset>` | `ui background`, `ui theme` | Apply a background preset |
+| `ui bg toggle` | — | Toggle background visibility |
+| `ui bg list` | — | List available presets |
+| `ui bg <r> <g> <b> <a>` | — | Custom RGBA (0-255 each) |
+| `ui save` | `ui s` | Save current position + settings |
 
-## Warp system
+---
 
-Handles teleport spells, recall spells, and item-based warps. Equips the right item, uses it, then restores your gear.
+## Warp & teleport
 
-### Spells and system warps
+`//gs c warp [destination]` and 100+ aliases. Equips the right
+spell/item, casts/uses it, restores your gear after.
 
-| Command | Alias | Destination |
-|---------|-------|-------------|
-| `warp` | `w` | Warp (return to home point) |
-| `warp2` | `w2` | Warp II |
-| `retrace` | `ret` | Retrace |
-| `escape` | `esc` | Escape |
+| Family | Examples |
+| --- | --- |
+| Warp / Retrace / Escape | `w`, `warp`, `w2`, `warp2`, `ret`, `retrace`, `esc`, `escape` |
+| WHM Teleports | `tph` (Holla), `tpd` (Dem), `tpm` (Mea), `tpa` (Altep), `tpy` (Yhoat), `tpv` (Vahzl) |
+| WHM Recalls | `rj` (Jugner), `rp` (Pashhow), `rm` (Meriphataud) |
+| Nation cities | `sd` (San d'Oria), `bt` (Bastok), `wd` (Windurst) |
+| Outpost / town | `sb` (Selbina), `mh` (Mhaura), `rb` (Rabao), `kz` (Kazham), `ng` (Norg), `tv` (Tavnazia), `au`/`wg` (Aht Urhgan/Whitegate), `ns` (Nashmau), `ad` (Adoulin) |
+| Chocobo stables | `stsd`, `stbt`, `stwd`, `stjn` |
+| Frontier zones | `op`/`outpost`, `cz` (Ceizak), `ys` (Yahse), `hn` (Hennetiel), `mm` (Morimar), `mj` (Marjami), `yc` (Yorcia), `km` (Kamihr) |
+| Special | `wj` (Wajaom), `ar` (Arrapago), `pg` (Purgonorgo), `rl` (Rulude), `zv` (Zvahl), `riv` (Riverne), `yo` (Yoran), `lf` (Leafallia), `bh` (Behemoth), `cc` (Choco Circuit), `pt` (Parting), `cg` (Choco Girl) |
+| Mechanics | `ld`/`leader`, `td`/`tidal` |
 
-### Teleport (WHM)
-
-| Command | Alias | Destination |
-|---------|-------|-------------|
-| `tpholla` | `tph` | Teleport-Holla |
-| `tpdem` | `tpd` | Teleport-Dem |
-| `tpmea` | `tpm` | Teleport-Mea |
-| `tpaltep` | `tpa` | Teleport-Altep |
-| `tpyhoat` | `tpy` | Teleport-Yhoat |
-| `tpvahzl` | `tpv` | Teleport-Vahzl |
-
-### Recall (WHM)
-
-| Command | Alias | Destination |
-|---------|-------|-------------|
-| `recjugner` | `rj` | Recall-Jugner |
-| `recpashh` | `rp` | Recall-Pashh |
-| `recmeriph` | `rm` | Recall-Meriph |
-
-### Nations and cities
-
-| Command | Alias | Destination |
-|---------|-------|-------------|
-| `sandoria` | `sd` | San d'Oria |
-| `bastok` | `bt` | Bastok |
-| `windurst` | `wd` | Windurst |
-| `jeuno` | `jn` | Jeuno |
-| `selbina` | `sb` | Selbina |
-| `mhaura` | `mh` | Mhaura |
-| `rabao` | `rb` | Rabao |
-| `kazham` | `kz` | Kazham |
-| `norg` | `ng` | Norg |
-| `tavnazia` | `tv` | Tavnazia |
-| `whitegate` | `wg` | Al Zahbi / Whitegate |
-| `nashmau` | `ns` | Nashmau |
-| `adoulin` | `ad` | Adoulin |
-
-### Chocobo stables
-
-| Command | Alias |
-|---------|-------|
-| `stable-sd` | `stsd` |
-| `stable-bt` | `stbt` |
-| `stable-wd` | `stwd` |
-| `stable-jn` | `stjn` |
-
-### Conquest outpost
-
-| Command | Alias |
-|---------|-------|
-| `outpost` | `op` |
-
-### Adoulin frontier stations
-
-| Command | Alias | Zone |
-|---------|-------|------|
-| `ceizak` | `cz` | Ceizak Battlegrounds |
-| `yahse` | `ys` | Yahse Hunting Grounds |
-| `hennetiel` | `hn` | Foret de Hennetiel |
-| `morimar` | `mm` | Morimar Basalt Fields |
-| `marjami` | `mj` | Marjami Ravine |
-| `yorcia` | `yc` | Yorcia Weald |
-| `kamihr` | `km` | Kamihr Supplicarium |
-
-### Special locations
-
-| Command | Alias | Destination |
-|---------|-------|-------------|
-| `wajaom` | `wj` | Wajaom Woodlands |
-| `arrapago` | `ar` | Arrapago Reef |
-| `purgonorgo` | `pg` | Purgonorgo Isle |
-| `rulude` | `rl` | Ru'Lude Gardens |
-| `zvahl` | `zv` | Zvahl |
-| `riverne` | `riv` | Riverne |
-| `yoran` | `yo` | Yoran Oran |
-| `leafallia` | `lf` | Leafallia |
-| `behemoth` | `bh` | Behemoth's Dominion |
-| `chocircuit` | `cc` | Chocobo Circuit |
-| `parting` | `pt` | Parting Glass |
-| `chocogirl` | `cg` | Chocobo Girl |
-| `leader` | `ld` | Unity Leader warp |
-| `tidal` | `td` | Tidal Talisman |
-
-### Warp subcommands
+### Subcommands
 
 | Command | Description |
-|---------|-------------|
+| --- | --- |
 | `warp status` | Show warp system status |
-| `warp lock` | Lock warp item |
-| `warp unlock` | Unlock warp item |
-| `warp fix` | Fix stuck warp state |
+| `warp lock` / `unlock` | Lock / unlock warp item |
+| `warp fix` | Force-clear stuck warp state |
 
-### Multi-character warp (DualBox)
+### Multi-character
 
-Add `all` suffix to warp both characters: `warpall`, `tphall`, etc.
+Append `all` to broadcast over IPC: `warpall`, `tphall`, etc.
 
-## Message toggles
+---
 
-Control chat message verbosity for abilities, spells, and weapon skills.
+## Message verbosity
 
-| Command | Values | Description |
-|---------|--------|-------------|
-| `jamsg` | `full` / `on` / `off` | Job Ability messages. Full = name + description, On = name only, Off = silent |
-| `spellmsg` | `full` / `on` / `off` | Spell messages (non-enfeebling) |
-| `wsmsg` | `full` / `on` / `off` / `tp` | Weapon skill messages. TP = name + TP only |
+| Command | Values | Affects |
+| --- | --- | --- |
+| `jamsg` | `full` / `on` / `off` | Job Ability messages |
+| `spellmsg` | `full` / `on` / `off` | Spell messages |
+| `wsmsg` | `full` / `on` / `off` / `tp` | Weapon skill messages |
+| `debugmsg` | toggle | Universal message logging |
+| `testmsg [job]` / `msgtest` | — | Smoke-test the message API for a job |
+| `msgtests` | — | Run the full message-system test suite |
 
-## Watchdog
+---
 
-Protects against stuck midcast in laggy zones (Odyssey, Dynamis). Auto-recovers gear after timeout.
+## Diagnostics & profiler
 
-| Command | Description |
-|---------|-------------|
-| `watchdog` | Show status |
-| `watchdog on` | Enable |
-| `watchdog off` | Disable |
-| `watchdog toggle` | Toggle |
-| `watchdog debug` | Toggle debug mode (shows scan details) |
-| `watchdog test` | Simulate stuck midcast |
-| `watchdog stats` | Show statistics |
-| `watchdog timeout [seconds]` | Set timeout (default: dynamic based on cast time + 1.5s buffer) |
-| `watchdog clear` | Force cleanup stuck state |
+| Command | Alias | Description |
+| --- | --- | --- |
+| `fulltest` | `ft` | Run the full system validation suite |
+| `syscheck` | `sc` | Verify all jobs and core systems are operational |
+| `lagdebug` | `ldb` | Identify lag patterns (server vs client) |
+| `perf` | — | Performance profiler status |
+| `perf start` / `perf stop` | `perf on` / `perf off` | Enable / disable profiling |
+| `testcolors` | `colors` | Show 509-color FFXI palette |
 
-## Subjob abilities
+## Debug
 
-These work regardless of main job, as long as the subjob matches.
+Most are toggles. Output is verbose; turn off when not needed.
 
-| Command | Subjob | Description |
-|---------|--------|-------------|
-| `waltz` | /DNC | Curing Waltz -- auto-selects tier I-V based on target's missing HP |
-| `aoewaltz` | /DNC | Divine Waltz (AoE healing) |
-| `jump` | /DRG | Jump ability |
+| Command | Alias | Description |
+| --- | --- | --- |
+| `debugmidcast` | — | Trace `MidcastManager.select_set()` decisions |
+| `debugprecast` | — | Trace precast pipeline |
+| `debugsubjob` | `dsj` | Show job/subjob/zone validation |
+| `debugwarp` | — | Trace warp system flow |
+| `debugjobchange` | `djc` | Trace `JobChangeManager` 3.0s debounce |
+| `debugstate` | `ds` | Dump AutoMove / JCM / UI state |
+| `debugupdate` | `du` | Trace `gs c update` flow |
+| `automovedebug` | `amd` | Trace movement-speed gear decisions |
+
+---
+
+## Per-job commands
+
+These are wired in `shared/jobs/<job>/functions/<JOB>_COMMANDS.lua`.
+
+### WAR
+
+| Command | Notes |
+| --- | --- |
+| `cyclestate MainWeapon` | Bound to Alt+1 (Ukonvasara, Naegling, Chango, etc.) |
+| `cyclestate HybridMode` | Bound to Alt+2 (PDT / Normal / SubtleBlow) |
+| `debugretaliation` / `debugretal` | Trace Retaliation set selection |
+| `retalstatus` | Show Retaliation state |
+
+### PLD
+
+| Command | Notes |
+| --- | --- |
+| `aoe` | AoE BLU enmity rotation (requires /BLU) |
+| `rune` | Cast the currently-selected rune (requires /RUN) |
+| `cyclestate MainWeapon`, `cyclestate HybridMode`, `cyclestate RuneMode` | Standard cycles |
+
+### RUN
+
+| Command | Notes |
+| --- | --- |
+| `aoe` | AoE BLU enmity rotation (requires /BLU sub) |
+| `rune` | Cast the currently-selected rune |
+
+### DNC
+
+| Command | Notes |
+| --- | --- |
+| `smartbuff` | Auto-buff cycle (DNC + subjob) |
+| `step` | Execute step in the configured Main/Alt rotation |
+| `fandance` / `dance` | Activate the selected dance |
+| `cyclestate MainStep` / `AltStep` / `UseAltStep` / `ClimacticAuto` / `JumpAuto` / `Dance` | Step + auto-toggle cycles |
+
+### THF
+
+| Command | Notes |
+| --- | --- |
+| `smartbuff` | Auto-buff cycle (THF + subjob) |
+| `fbc` | Full Buff Cycle |
+| `range` | Toggle range / melee mode |
+
+### BLM
+
+| Command | Notes |
+| --- | --- |
+| `cyclemainlight` | Cycle main weapon for light spells |
+| `cyclemaindark` | Cycle main weapon for dark spells |
+| `cyclesublight` / `cyclesubdark` | Cycle sub-weapon per element |
+| `cyclestate MainWeapon` / `SubWeapon` / `HybridMode` | Standard cycles |
+
+### RDM
+
+| Command | Notes |
+| --- | --- |
+| `enspell` | Cycle Enspell selection |
+| `cyclestorm` | Cycle Storm spell |
+| `cyclestate EnfeeblingMode` / `EnhancingMode` / `NukeMode` | Standard cycles |
+
+### WHM
+
+| Command | Notes |
+| --- | --- |
+| `afflatus` | Cast the selected Afflatus stance |
+| `cyclestate AfflatusMode` / `CureMode` / `CureAutoTier` | Standard cycles |
+
+### BRD
+
+| Command | Notes |
+| --- | --- |
+| `soul_voice` / `sv` | Cast Soul Voice |
+| `nightingale` / `ni` | Cast Nightingale |
+| `troubadour` / `tr` | Cast Troubadour |
+| `forceidle` | Force idle gear (overrides engaged) |
+| `cyclestate SongMode` and other state cycles | Defined per `BRD_STATES.lua` |
+
+### COR
+
+| Command | Notes |
+| --- | --- |
+| `rolls` | Display all active rolls + Lucky/Unlucky numbers |
+| `doubleup` / `du` | Double-Up window status |
+| `clearrolls` | Clear roll tracking state |
+| `track_roll` / `trackroll` | Manually mark a roll as tracked |
+
+### BST
+
+| Command | Notes |
+| --- | --- |
+| `ecosystem` | Cycle the 7 ecosystems |
+| `species` | Cycle species inside the active ecosystem |
+| `broth` / `broths` | Show broth inventory counts |
+
+### GEO
+
+| Command | Notes |
+| --- | --- |
+| `indi <element>` | Cast the matching Indi spell |
+| `geo <element>` | Cast the matching Geo spell |
+| `entrust <spell>` | Entrust a spell on the target |
+| `lightspell` | Cycle light spell |
+
+### SAM / DRK
+
+Standard `cyclestate` only — `MainWeapon` and `HybridMode`.
+
+---
 
 ## DualBox
 
 | Command | Description |
-|---------|-------------|
-| `altjob` | Request alt character's job info |
+| --- | --- |
+| `altjob` | Request alt character's current job |
+| `altjobupdate <JOB> <SUBJOB>` | Send job update over IPC (called automatically) |
+| `requestjob` | IPC handshake (called automatically) |
 
-## Utility
-
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `info [name]` | | Show detailed JA / spell / WS data from databases |
-| `testcolors` | `colors` | Display all 509 FFXI chat color codes |
-| `perf` | | Performance profiler status |
-| `perf start` | `perf on` | Enable profiling |
-| `perf stop` | `perf off` | Disable profiling |
-| `commands` | `cmds` | List all available commands in-game |
-| `help` | `?` | Show help |
-
-## Debug
-
-These are for troubleshooting. Most toggle verbose output on/off.
-
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `debugmidcast` | | Debug midcast set selection |
-| `debugprecast` | | Debug precast logic |
-| `debugsubjob` | `dsj` | Show job/zone info |
-| `debugwarp` | | Debug warp system |
-| `debugjobchange` | `djc` | Debug job change manager |
-| `debugstate` | `ds` | Show internal state (AutoMove, JCM, UI) |
-| `debugupdate` | `du` | Debug gear updates |
-| `debugmsg` | | Debug message system |
-| `automovedebug` | `amd` | Debug AutoMove (movement speed gear) |
-| `testmsg [job]` | | Test message API for a specific job |
+Append `all` to most warp commands to broadcast (`warpall`, `tphall`).
 
 ---
 
-## Job-specific commands
+## Where these come from
 
-### WAR
+| File | Wires |
+| --- | --- |
+| `shared/utils/core/COMMON_COMMANDS.lua` | All universal commands above |
+| `shared/utils/ui/UI_COMMANDS.lua` | `ui` family |
+| `shared/utils/warp/warp_commands.lua` | `warp` + 100+ aliases |
+| `shared/utils/inventory/refill_manager.lua` | `refill` / `rf` |
+| `shared/utils/wardrobe/` | `worganize` / `wo` family |
+| `shared/utils/craft/craft_manager.lua` | `craft`, `fish`, `uncraft` |
+| `shared/jobs/<job>/functions/<JOB>_COMMANDS.lua` | Per-job commands |
 
-| Command | Keybind |
-|---------|---------|
-| `cycle MainWeapon` (Ukonvasara, Naegling, Shining One, Chango, Ikenga's Axe, Loxotic Mace) | Alt+1 |
-| `cycle HybridMode` | Alt+2 |
-
-### PLD
-
-| Command | Keybind | Notes |
-|---------|---------|-------|
-| `aoe` -- AoE BLU enmity rotation | Alt+4 | Requires /BLU. Auto-selects best enmity/sec spell |
-| `rune` -- Use selected rune | Alt+5 | Requires /RUN |
-| `cycle RuneMode` (Sulpor / Lux) | Alt+6 | |
-
-### DNC
-
-| Command | Keybind |
-|---------|---------|
-| `waltz` -- Curing Waltz (auto-tier I-V) | Alt+3 |
-| `aoewaltz` -- Divine Waltz | Alt+4 |
-| `step` -- Execute step (Main/Alt rotation) | Alt+5 |
-| `cycle ClimacticAuto` -- Auto Climactic Flourish | Alt+6 |
-| `cycle JumpAuto` -- Auto Jump before WS | Alt+7 |
-
-### BLM
-
-| Command | Keybind |
-|---------|---------|
-| `cycle MainWeapon` (Laevateinn / Akademos / Lathi) | Alt+1 |
-| `cycle SubWeapon` | Alt+2 |
-| `cycle HybridMode` | Alt+3 |
-
-### RDM
-
-| Command | Keybind |
-|---------|---------|
-| `cycle EnfeeblingMode` (Potency / Skill / Duration) | Alt+5 |
-| `cycle NukeMode` (FreeNuke / LowTierNuke / Accuracy) | Alt+6 |
-| `cycle GainSpell` (7 stats) | F1 |
-| `cycle Barspell` (6 elements) | F2 |
-| `cycle BarAilment` (8 ailments) | F3 |
-| `cycle Spike` (3 types) | F4 |
-| `cycle Storm` (8 storms) | F5 |
-
-### WHM
-
-| Command | Keybind |
-|---------|---------|
-| `afflatus` -- Cast current Afflatus stance | Alt+3 |
-| `cycle AfflatusMode` (Solace / Misery) | Alt+4 |
-| `cycle CureAutoTier` -- Auto-downgrade cure tier based on missing HP | Alt+5 |
-
-### BRD
-
-| Command | Keybind |
-|---------|---------|
-| `song` -- Execute next song in rotation (auto-instrument) | Alt+3 |
-| `cycle SongMode` | Alt+4 |
-
-### COR
-
-| Command | Description |
-|---------|-------------|
-| `rolls` | Display all active rolls |
-| `doubleup` / `du` | Double-Up window status |
-| `clearrolls` | Clear roll tracking |
-| `party` | Show detected party jobs |
-
-### BST
-
-| Command | Keybind |
-|---------|---------|
-| `ecosystem` -- Cycle 7 ecosystems | Alt+3 |
-| `species` -- Cycle species in current ecosystem | Alt+4 |
-| `broth` -- Show broth inventory counts | Alt+5 |
-| `rdylist` -- List Ready Moves | |
-| `rdymove [1-6]` -- Execute Ready Move by index | |
-| `pet engage` / `pet disengage` | |
-
-### GEO
-
-| Command | Keybind |
-|---------|---------|
-| `cycle BubbleMode` (Indi / Geo / Both) | Alt+3 |
-
-### SAM
-
-| Command | Keybind |
-|---------|---------|
-| `cycle MainWeapon` (Masamune / Dojikiri / Nagi) | Alt+1 |
-| `cycle HybridMode` | Alt+2 |
-
-### THF
-
-| Command | Keybind |
-|---------|---------|
-| `smartbuff` -- Auto-buff cycle (THF + subjob) | Alt+3 |
-| `fbc` -- Full Buff Cycle | Alt+4 |
-
-### DRK
-
-| Command | Keybind |
-|---------|---------|
-| `cycle MainWeapon` | Alt+1 |
-| `cycle HybridMode` | Alt+2 |
+`grep -E "if cmd ==|if command ==" shared/utils/core/COMMON_COMMANDS.lua`
+will print the canonical universal command list.

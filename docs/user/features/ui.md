@@ -1,6 +1,7 @@
 # UI Overlay
 
-Visual overlay displaying current states, keybinds, and job settings. Works for all 15 jobs.
+Visual overlay displaying current states, keybinds, and job settings.
+Works for all 14 implemented jobs.
 
 ---
 
@@ -31,7 +32,7 @@ Visual overlay displaying current states, keybinds, and job settings. Works for 
 
 ### Position
 
-Drag the overlay to where you want it, then run `//gs c ui save`. Position persists across reloads. Delete `ui_position.lua` to reset.
+Drag the overlay to where you want it, then run `//gs c ui save`. Position persists across reloads. Delete `config/ui_settings.lua` to reset.
 
 ### Settings reference
 
@@ -87,7 +88,7 @@ Switch at runtime with `//gs c ui theme <name>`. Use `//gs c ui theme list` to s
 
 ## Troubleshooting
 
-**UI not visible**: Check `UIConfig.enabled = true`. Try `//gs c ui`. If off-screen, delete `ui_position.lua` and reload.
+**UI not visible**: Check `UIConfig.enabled = true`. Try `//gs c ui`. If off-screen, delete `config/ui_settings.lua` and reload.
 
 **Position resets**: Run `//gs c ui save` after positioning.
 

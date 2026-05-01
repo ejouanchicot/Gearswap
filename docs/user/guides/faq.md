@@ -26,7 +26,10 @@ Back up your character folder, extract the new version to `addons/GearSwap/data/
 
 ### Q: Gear not swapping after a spell or weaponskill
 
-The Watchdog system auto-recovers stuck midcast after 3.5 seconds. If it persists, run `//gs c watchdog clear` or `//gs c update`. Use `//gs c checksets` to verify your items are in inventory.
+The Watchdog auto-recovers stuck midcast on a dynamic timeout (the spell's
+cast time + 1.5s buffer). If it persists, run `//gs c update` to force a
+gear refresh, or `//gs c info` to see the watchdog state. Use
+`//gs c checksets` to verify your items are in inventory.
 
 See [Watchdog Guide](../features/watchdog.md) for details.
 
@@ -44,7 +47,10 @@ This is normal. The system swaps through precast (Fast Cast), midcast (potency),
 
 ### Q: Lockstyle not applying
 
-Verify DressUp is loaded (`//lua list`). The default delay is 8 seconds after job load. To apply manually: `//gs c lockstyle`.
+Verify DressUp is loaded (`//lua list`). The default delay is 2.0s after
+job load (configurable in `config/LOCKSTYLE_CONFIG.lua`); FFXI also
+enforces a 15s minimum between applies. To apply manually:
+`//gs c lockstyle`.
 
 See [Configuration Guide](configuration.md) for delay tuning.
 
@@ -83,7 +89,9 @@ State names are case-sensitive. `cycle MainWeapon` works, `cycle mainweapon` doe
 
 ### Q: UI not displaying
 
-Toggle with `//gs c ui` or Alt+F1. If the UI appears off-screen, delete `ui_position.lua` from your character folder and reload.
+Toggle with `//gs c ui` or Alt+F1. If the UI appears off-screen, delete
+`<Yourname>/config/ui_settings.lua` and reload — it will reset to defaults
+and rewrite when you next save with `//gs c ui save`.
 
 See [UI Guide](../features/ui.md) for customization.
 
@@ -101,13 +109,16 @@ Run `//gs c ui save` after positioning. For automatic saving, set `UIConfig.auto
 
 ### Q: What is the Watchdog?
 
-Automatic recovery for stuck midcast gear caused by network packet loss. It checks every 0.5 seconds and forces cleanup after 3.5 seconds.
+Automatic recovery for stuck midcast gear caused by network packet loss.
+It scans periodically and forces cleanup on a dynamic timeout (the
+spell's cast time + 1.5s buffer).
 
 See [Watchdog Guide](../features/watchdog.md).
 
 ### Q: Watchdog cleaning up too early during long spells
 
-Increase the timeout: `//gs c watchdog timeout 4.5`. Default is 3.5 seconds.
+Override with `//gs c watchdog timeout <seconds>` (e.g. `4.5`). The
+default is dynamic based on the cast time of the actual spell.
 
 ---
 
@@ -131,7 +142,10 @@ Use `//gs c rdylist` to list available moves and `//gs c rdymove [1-6]` to execu
 
 ### Q: RDM - How do enhancement spell cycles work?
 
-Use `//gs c cycle GainSpell` (and similar for Barspell, BarAilment, Spike, Storm) to cycle through options. The UI shows the current selection; cast manually after cycling.
+Use `//gs c cyclestate GainSpell` (and similar for `Barspell`,
+`BarAilment`, `Spike`) to cycle through options. The UI shows the current
+selection; cast manually after cycling. `Storm` cycle is exposed only
+when subjob is /SCH.
 
 ---
 
@@ -145,7 +159,9 @@ Use `//gs c cycle GainSpell` (and similar for Barspell, BarAilment, Spike, Storm
 | Apply lockstyle | `//gs c lockstyle` |
 | Toggle UI | `//gs c ui` |
 | Test Watchdog | `//gs c watchdog test` |
-| Enable debug | `//gs debugmode` |
+| Trace midcast set selection | `//gs c debugmidcast` |
+| Trace job-change debounce | `//gs c debugjobchange` (or `djc`) |
+| System health check | `//gs c syscheck` (or `sc`) |
 | Load GearSwap | `//lua load gearswap` |
 
 ---

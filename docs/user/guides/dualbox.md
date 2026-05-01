@@ -87,7 +87,7 @@ Expected output:
 
 ```
 [DualBox] Requesting alt job info...
-[DualBox] Alt job received: WHM/SCH
+[DualBox] Alt job received: GEO/RDM
 ```
 
 ---
@@ -157,7 +157,7 @@ The ALT job display is part of the main UI. Drag to position, then save with `//
 
 1. Verify GearSwap is loaded on both characters (`//lua list`).
 2. You should see `[DualBox] System initialized` on load.
-3. Enable debug mode (`//gs debugmode`) and retry `//gs c altjob` to see error details.
+3. Enable trace output (`//gs c debugjobchange` or its alias `djc`) and retry `//gs c altjob` to see error details.
 
 ### Updates delayed (more than 5 seconds)
 

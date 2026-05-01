@@ -66,4 +66,6 @@ Fast Cast percentage is read from `state.FastCast` (defined per job in `[JOB]_ST
 
 **Not detecting stuck casts**: Check `//gs c watchdog` shows enabled. Check buffer isn't too high. Use `//gs c watchdog clear` for immediate recovery.
 
-**Not loading**: Watchdog initializes via `INIT_SYSTEMS.lua`. Run `//gs debugmode` to check for Lua errors, then `//gs c reload`.
+**Not loading**: Watchdog initializes via the framework's init sequence.
+Check the Windower console for Lua load errors and run `//gs c reload`.
+Use `//gs c info` to confirm the watchdog reports as initialized.
