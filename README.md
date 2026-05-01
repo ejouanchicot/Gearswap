@@ -28,13 +28,25 @@
 - A working FFXI account
 - 5 minutes
 
-### 1. Clone into your GearSwap data folder
+### 1. Download and extract into your GearSwap folder
 
-```bash
-cd "<Windower>/addons/GearSwap/data/"
-git clone https://github.com/Tetsouo/Gearswap.git temp
-xcopy /E /Y temp\* .\ && rmdir /S /Q temp
-```
+1. Open the project on GitHub: [github.com/Tetsouo/Gearswap](https://github.com/Tetsouo/Gearswap)
+2. Click the green **Code** button → **Download ZIP**
+3. Open the ZIP and copy everything inside `Gearswap-master/` into:
+
+   ```
+   <Windower>/addons/GearSwap/data/
+   ```
+
+   (`<Windower>` = wherever you installed Windower 4, typically
+   `C:\Program Files (x86)\Windower4` or `D:\Windower4`.)
+
+You should end up with `data/_master/`, `data/shared/`, `data/docs/`,
+`data/clone_character.py`, `data/CLONE_CHARACTER.bat`, etc.
+
+> Already comfortable with git? You can `git clone` instead — see
+> [docs/getting-started/installation.md](docs/user/getting-started/installation.md)
+> for the developer flow.
 
 ### 2. Generate your character's config
 
