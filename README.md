@@ -7,11 +7,11 @@
 [![Lua](https://img.shields.io/badge/Lua-5.1-blue?logo=lua&logoColor=white)](https://www.lua.org/)
 [![Windower](https://img.shields.io/badge/Windower-4-purple)](https://www.windower.net/)
 [![FFXI](https://img.shields.io/badge/FFXI-Retail-red)](https://www.playonline.com/ff11/)
-[![Jobs](https://img.shields.io/badge/Jobs-15-green)](#-supported-jobs)
+[![Jobs](https://img.shields.io/badge/Jobs-14-green)](#-supported-jobs)
 [![Files](https://img.shields.io/badge/Lua%20files-600%2B-blueviolet)](https://github.com/Tetsouo/Gearswap)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](https://opensource.org/licenses/MIT)
 
-**Zero duplication. 9 centralized systems. 15 jobs. 100+ warp aliases. 76-file message system (14k+ LoC).**
+**Zero duplication. 9 centralized systems. 14 jobs. 100+ warp aliases. 76-file message system (14k+ LoC).**
 **Built like production software, not a 2000-line GearSwap script.**
 
 [🚀 Quick Start](#-quick-start) • [🏆 What it does](#-complete-feature-audit) • [⚡ Commands](#-command-cheatsheet) • [🏗 Architecture](#-architecture)
@@ -90,7 +90,7 @@ This isn't a hobby script. Here's the full inventory of what this framework does
 <details>
 <summary><h3>⚔️ Combat & Job Rotation (click to expand)</h3></summary>
 
-The 5-phase combat lifecycle (precast → midcast → aftercast → idle → engaged) is centralized into 9 mandatory systems used by all 15 jobs.
+The 5-phase combat lifecycle (precast → midcast → aftercast → idle → engaged) is centralized into 9 mandatory systems used by all 14 played jobs.
 
 #### Precast pipeline
 
@@ -126,7 +126,7 @@ A full restock system that reads your active job's needs from a config file and 
 
 #### Features
 
-- **Per-job, per-subjob configs** at `<char>/config/<job>/<JOB>_REFILL.lua` (15 job configs ship with the project).
+- **Per-job, per-subjob configs** at `<char>/config/<job>/<JOB>_REFILL.lua`. Tetsouo ships 7 played-job configs (BLM/BRD/BST/DNC/PLD/THF/WAR) + a craft config; Kaories ships 3 (COR/GEO/RDM). Add your own for any job by copying the template.
 - **Item alternates** — write `{name = {'Sublime Sushi +1', 'Sublime Sushi'}, target = 12}` and the manager prefers the +1 form, falls back to base.
 - **Surplus push-back** — if you have 18 Panacea and the target is 12, the 6 extras get pushed to your `store_bag` automatically.
 - **Foreign-items detection** — items from OTHER jobs' refill lists found in your inventory get pushed to Case as well. Keeps the inv lean for the active job.
@@ -362,7 +362,7 @@ A whole suite of diagnostic commands.
 | Command | Purpose |
 | --- | --- |
 | `//gs c fulltest` / `ft` | Run the comprehensive system validation suite |
-| `//gs c syscheck` / `sc` | Verify all 15 jobs and core systems are operational |
+| `//gs c syscheck` / `sc` | Verify all 14 played jobs and core systems are operational |
 | `//gs c perf [start\|stop\|status]` | Performance profiler (timing + memory) |
 | `//gs c lagdebug` / `ldb` | Identify lag patterns (server vs client) |
 | `//gs c jamsg` | Trace job ability message flow |
@@ -395,7 +395,7 @@ Real FFXI mechanics knowledge baked in.
 <details>
 <summary><h3>🎯 Job-Specific Specialties</h3></summary>
 
-Each of the 15 jobs has bespoke logic for its unique mechanics. Not just gear swaps — actual job intelligence.
+Each of the 14 played jobs has bespoke logic for its unique mechanics. Not just gear swaps — actual job intelligence.
 
 #### BLM
 
@@ -456,11 +456,6 @@ Each of the 15 jobs has bespoke logic for its unique mechanics. Not just gear sw
 - `cure_set_builder.lua` — Priority-based cure target selection
 - Shares rune/aoe/cure logic with RUN main job
 
-#### PUP
-
-- Dedicated `PUP_PET_PRECAST.lua` and `PUP_PET_MIDCAST.lua` for Automaton command sets
-- 12-module structure same as other jobs (no separate logic/ folder needed)
-
 #### RDM
 
 - **Saboteur override** in `RDM_MIDCAST.lua` — when Saboteur is active, auto-equips `sets.midcast['Enfeebling Magic'].Saboteur` (your custom Saboteur potency set)
@@ -501,7 +496,7 @@ Each of the 15 jobs has bespoke logic for its unique mechanics. Not just gear sw
 
 - **`//gs c waltz`** — Curing Waltz on target. HP-based tier selection (V > IV > III > II > I), TP threshold check (200-800 TP), level detection.
 - **`//gs c aoewaltz`** — Divine Waltz / Divine Waltz II auto-pick.
-- Works on **all 15 jobs** when /DNC is the subjob.
+- Works on any job with /DNC as subjob.
 
 </details>
 
@@ -632,11 +627,12 @@ shared/jobs/<job>/
 | — | SAM | — | — |
 | — | DRK | — | — |
 | — | BST | — | — |
-| — | PUP | — | — |
 
 </div>
 
-**15 fully implemented jobs. 9 mandatory systems on each. Same architecture everywhere.**
+**14 fully implemented jobs. 9 mandatory systems on each. Same architecture everywhere.**
+
+> _PUP has a 12-module scaffold in `shared/jobs/pup/` and a skeleton set file at `_master/sets/pup_sets.lua` (20 lines), but isn't an actively maintained job. The entry-point loads cleanly so anyone wanting to flesh it out can use it as a starter._
 
 ---
 
@@ -728,11 +724,11 @@ python clone_character.py --source Bob   # rebuild Bob from _master/ + _master/B
 Lua files in shared/      : 600+
 Lua files (total tracked) : 980+
 Lines of code (shared+_master) : 43,000+
-Jobs (main, fully implemented) : 15
+Jobs (main, fully implemented) : 14 (+ PUP scaffold/skeleton)
 Shared utility subsystems : 25 directories under shared/utils/
 //gs c commands           : 80+ (universal + per-job)
 Warp aliases              : 100+ (~50 unique destinations)
-Per-job logic modules     : 44 across all 15 jobs
+Per-job logic modules     : 44 across all 14 played jobs (PUP not counted)
 Code duplication          : 0%
 File-size violations      : 0
 Function-size violations  : 0
