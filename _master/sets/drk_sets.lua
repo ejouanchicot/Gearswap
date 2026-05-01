@@ -71,10 +71,10 @@ Ankou = {
 }
 
 -- • Rings (Wardrobe-specific)
-ChirichRing1 = {name = 'Chirich Ring +1', bag = 'wardrobe 7'}
-ChirichRing2 = {name = 'Chirich Ring +1', bag = 'wardrobe 8'}
-Moonlight1 = {name = 'Moonlight Ring', bag = 'wardrobe 2'}
-Moonlight2 = {name = 'Moonlight Ring', bag = 'wardrobe 4'}
+ChirichRing1 = {name = 'Chirich Ring +1', bag = 'wardrobe 1'}
+ChirichRing2 = {name = 'Chirich Ring +1', bag = 'wardrobe 2'}
+Moonlight1 = {name = 'Moonlight Ring', bag = 'wardrobe 1'}
+Moonlight2 = {name = 'Moonlight Ring', bag = 'wardrobe 2'}
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- WEAPON SETS
@@ -88,7 +88,7 @@ sets['Redemption'] = {main = 'Redemption', sub = 'Utu Grip'}
 
 -- • Great Axe weapons (Two-handed with Utu Grip)
 sets['Foenaria'] = {main = 'Foenaria', sub = 'Utu Grip'}
-sets['Tokko'] = {main = 'Tokko chopper', sub = 'Utu Grip'}
+sets['Tokko'] = {main = 'Tokko Chopper', sub = 'Utu Grip'}
 sets['Lycurgos'] = {main = 'Lycurgos', sub = 'Utu Grip'}
 
 -- • Sword/Club weapons (One-handed with Blurred Shield +1)
@@ -113,7 +113,7 @@ sets.idle = {
     left_ear = {name = 'Odnowa Earring +1', augments = {'Path: A'}},
     right_ear = 'Eabani Earring',
     left_ring = 'Stikini Ring +1',
-    right_ring = 'Defending Ring',
+    right_ring = 'Murky Ring',
     back = Ankou.STP
 }
 
@@ -133,7 +133,7 @@ sets.idle.PDT =
         left_ear = {name = 'Odnowa Earring +1', augments = {'Path: A'}},
         right_ear = 'Eabani Earring',
         left_ring = 'Stikini Ring +1',
-        right_ring = 'Defending Ring',
+        right_ring = 'Murky Ring',
         back = Ankou.STP
     }
 )
@@ -525,7 +525,7 @@ sets.precast.WS['Savage Blade'] = {
         }
     },
     left_ring = "Cornelia's Ring",
-    right_ring = 'Defending Ring',
+    right_ring = 'Murky Ring',
     back = Ankou.WS_STR
 }
 

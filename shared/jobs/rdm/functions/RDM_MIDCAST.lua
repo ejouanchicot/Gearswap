@@ -330,3 +330,10 @@ end
 -- Export to global scope (used by Mote-Include via include())
 _G.job_midcast = job_midcast
 _G.job_post_midcast = job_post_midcast
+
+-- Module export (used by require() callers, parity with the other 13 jobs)
+local RDM_MIDCAST = {}
+RDM_MIDCAST.job_midcast       = job_midcast
+RDM_MIDCAST.job_post_midcast  = job_post_midcast
+
+return RDM_MIDCAST

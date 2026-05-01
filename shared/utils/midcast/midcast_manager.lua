@@ -38,10 +38,14 @@ function MidcastManager.toggle_debug()
     end
 end
 
---- Get debug property (for external access)
+--- Get debug property (for external access).
+--- Only the canonical key 'enabled' is recognized; any other key returns nil
+--- so typos surface immediately instead of silently returning the boolean.
+local DEBUG_KEYS = { enabled = true }
 MidcastManager.debug = setmetatable({}, {
     __index = function(t, k)
-        return is_debug_enabled()
+        if DEBUG_KEYS[k] then return is_debug_enabled() end
+        return nil
     end
 })
 

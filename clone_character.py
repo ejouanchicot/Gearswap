@@ -295,17 +295,34 @@ def parse_character_db(db_path):
 # ============================================================================
 
 class SmartCharacterCloner:
-    """Smart character cloner using _master/ source and character_db."""
+    """Smart character cloner using _master/<source>/ and character_db.
 
-    TEMPLATE_NAME = "Tetsouo"  # Name used in template files
+    The _master/ folder now contains per-character template subfolders:
+        _master/Tetsouo/   <- default source (8-wardrobe MAIN setup)
+        _master/Kaories/   <- ALT setup (4 wardrobes, COR/GEO/RDM)
 
-    def __init__(self, base_dir=None, lang='fr'):
+    The cloner picks one as the source via `source_name` (default: Tetsouo).
+    Use `--source Kaories` (CLI) to clone from the Kaories template instead.
+    """
+
+    DEFAULT_SOURCE = "Tetsouo"  # Default template character
+
+    def __init__(self, base_dir=None, lang='fr', source_name=None):
         if base_dir is None:
             self.base_dir = Path(__file__).parent.absolute()
         else:
             self.base_dir = Path(base_dir)
 
+        # Source character (template name used in file headers etc.)
+        self.TEMPLATE_NAME = source_name or self.DEFAULT_SOURCE
+        # Master dir = generic Tetsouo-based template (root of _master/).
         self.master_dir = self.base_dir / '_master'
+        # Override dir = per-character overlay. For non-Tetsouo source, files
+        # found here REPLACE the corresponding files from master_dir during
+        # clone (e.g. _master/Kaories/sets/cor_sets.lua wins over
+        # _master/sets/cor_sets.lua). When source == Tetsouo (default), the
+        # overlay path may not exist - that's fine, we just skip the lookup.
+        self.override_dir = self.master_dir / self.TEMPLATE_NAME
         self.db_path = self.base_dir / 'character_db.lua'
         self.lang = lang
         self.t = TRANSLATIONS.get(lang, TRANSLATIONS['fr'])
@@ -484,6 +501,23 @@ class SmartCharacterCloner:
             print(self.t['region_error'])
 
     # ------------------------------------------------------------------
+    # OVERLAY RESOLUTION
+    # ------------------------------------------------------------------
+
+    def _resolve_src(self, relative_parts):
+        """Return overlay path if the file exists in the per-char overlay,
+        otherwise the generic master path.
+
+        relative_parts: tuple/list of path components relative to master root,
+                        e.g. ('sets', 'cor_sets.lua') or
+                             ('entry', f'{self.TEMPLATE_NAME}_{job}.lua').
+        """
+        overlay = self.override_dir.joinpath(*relative_parts)
+        if overlay.exists():
+            return overlay
+        return self.master_dir.joinpath(*relative_parts)
+
+    # ------------------------------------------------------------------
     # CLONING ENGINE
     # ------------------------------------------------------------------
 
@@ -502,24 +536,44 @@ class SmartCharacterCloner:
         print(self.t['copy_ok'].format(f"{target_name}/sets/"))
         print(self.t['copy_ok'].format(f"{target_name}/config/"))
 
+        # Note: each file is resolved via _resolve_src() so that any file
+        # present under _master/<TEMPLATE_NAME>/ overrides its counterpart in
+        # _master/. For default source (Tetsouo) the overlay folder doesn't
+        # exist, so behaviour matches the legacy single-source clone.
+
+        # Determine entry-file basename. Kaories overlay stores "Kaories_<JOB>"
+        # files; the Tetsouo template uses "Tetsouo_<JOB>". We try the
+        # template-name form first, then fall back to Tetsouo-prefixed form
+        # (since the overlay's file may use the source name as the prefix).
+        def find_entry_src(job_upper):
+            # Try overlay with TEMPLATE_NAME prefix
+            cand = self.override_dir / 'entry' / f'{self.TEMPLATE_NAME}_{job_upper}.lua'
+            if cand.exists():
+                return cand, f'{self.TEMPLATE_NAME}_{job_upper}.lua'
+            # Try master with Tetsouo prefix (the canonical generic template)
+            cand = self.master_dir / 'entry' / f'{self.DEFAULT_SOURCE}_{job_upper}.lua'
+            if cand.exists():
+                return cand, f'{self.DEFAULT_SOURCE}_{job_upper}.lua'
+            return None, None
+
         # ── Step 2: Copy entry files (only selected jobs) ─────────────
         print(self.t['step_entry'].format(len(jobs)))
         self.count_entry = 0
         for job_upper, job_lower in zip(jobs_upper, jobs_lower):
-            src = self.master_dir / 'entry' / f'{self.TEMPLATE_NAME}_{job_upper}.lua'
+            src, src_label = find_entry_src(job_upper)
             dst = target_dir / f'{target_name}_{job_upper}.lua'
-            if src.exists():
+            if src and src.exists():
                 shutil.copy2(src, dst)
                 print(self.t['copy_ok'].format(f"{target_name}_{job_upper}.lua"))
                 self.count_entry += 1
             else:
-                print(self.t['copy_skip'].format(f"entry/{self.TEMPLATE_NAME}_{job_upper}.lua"))
+                print(self.t['copy_skip'].format(f"entry/{src_label or job_upper}"))
 
         # ── Step 3: Copy set files (only selected jobs) ───────────────
         print(self.t['step_sets'].format(len(jobs)))
         self.count_sets = 0
         for job_lower in jobs_lower:
-            src = self.master_dir / 'sets' / f'{job_lower}_sets.lua'
+            src = self._resolve_src(('sets', f'{job_lower}_sets.lua'))
             dst = target_dir / 'sets' / f'{job_lower}_sets.lua'
             if src.exists():
                 shutil.copy2(src, dst)
@@ -532,30 +586,50 @@ class SmartCharacterCloner:
         print(self.t['step_configs'].format(len(jobs)))
         self.count_configs = 0
 
-        # Job-specific configs
+        # Job-specific configs (per-file overlay so REFILL etc. can be Kaories-specific)
         no_config_jobs = []
         for job_lower in jobs_lower:
-            src_dir = self.master_dir / 'config' / job_lower
+            master_jobdir = self.master_dir / 'config' / job_lower
+            override_jobdir = self.override_dir / 'config' / job_lower
             dst_dir = target_dir / 'config' / job_lower
-            if src_dir.exists() and src_dir.is_dir():
-                shutil.copytree(src_dir, dst_dir)
-                file_count = len(list(dst_dir.glob('*.lua')))
-                self.count_configs += file_count
-                print(self.t['copy_ok'].format(f"config/{job_lower}/ ({file_count} files)"))
-            else:
+            if not master_jobdir.exists() and not override_jobdir.exists():
                 no_config_jobs.append(job_lower.upper())
+                continue
+            dst_dir.mkdir(parents=True, exist_ok=True)
+            # Union of filenames in master and overlay
+            seen = set()
+            for d in (master_jobdir, override_jobdir):
+                if d.exists():
+                    for f in d.glob('*.lua'):
+                        seen.add(f.name)
+            file_count = 0
+            for fname in sorted(seen):
+                src = self._resolve_src(('config', job_lower, fname))
+                if src.exists():
+                    shutil.copy2(src, dst_dir / fname)
+                    file_count += 1
+            self.count_configs += file_count
+            print(self.t['copy_ok'].format(f"config/{job_lower}/ ({file_count} files)"))
 
         if no_config_jobs:
             print(self.t['jobs_no_config'].format(', '.join(no_config_jobs)))
 
-        # Global configs (LOCKSTYLE_CONFIG, RECAST_CONFIG, UI_*, etc.)
-        global_src = self.master_dir / 'config_global'
-        if global_src.exists():
-            for f in global_src.glob('*.lua'):
-                dst = target_dir / 'config' / f.name
-                shutil.copy2(f, dst)
+        # Global configs (overlay-aware: Kaories' DUALBOX/WARDROBE/REGION
+        # override generic templates; new files in overlay are also copied).
+        master_globals = self.master_dir / 'config_global'
+        override_globals = self.override_dir / 'config_global'
+        seen_globals = set()
+        for d in (master_globals, override_globals):
+            if d.exists():
+                for f in d.glob('*.lua'):
+                    seen_globals.add(f.name)
+        for fname in sorted(seen_globals):
+            src = self._resolve_src(('config_global', fname))
+            if src.exists():
+                dst = target_dir / 'config' / fname
+                shutil.copy2(src, dst)
                 self.count_configs += 1
-                print(self.t['copy_ok'].format(f"config/{f.name} (global)"))
+                print(self.t['copy_ok'].format(f"config/{fname} (global)"))
 
         # ── Step 5: Rename references (Tetsouo → target) ─────────────
         print(self.t['step_rename'])
@@ -714,7 +788,15 @@ def main():
                 if req in TRANSLATIONS:
                     lang = req
 
-        cloner = SmartCharacterCloner(lang=lang)
+        # Parse source template (default: Tetsouo). Use Kaories to rebuild
+        # her with her own saved sets/configs in _master/Kaories/.
+        source_name = None
+        if '--source' in sys.argv:
+            idx = sys.argv.index('--source')
+            if idx + 1 < len(sys.argv):
+                source_name = sys.argv[idx + 1]
+
+        cloner = SmartCharacterCloner(lang=lang, source_name=source_name)
         t = cloner.t
 
         # Title

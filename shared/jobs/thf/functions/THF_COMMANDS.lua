@@ -4,7 +4,7 @@
 ---   Handles custom commands for Thief job via //gs c syntax.
 ---
 ---   Features:
----   • Common commands (reload, checksets, setregion via COMMON_COMMANDS)
+---   • Common commands (reload, checksets, etc. via COMMON_COMMANDS)
 ---   • UI commands (ui toggle, visibility via UI_COMMANDS)
 ---   • THF-specific commands (smartbuff, fbc, range)
 ---   • Ranged weapon lock with auto-attack (one-way: equip >> lock >> /ra)
@@ -98,7 +98,7 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- Common commands (reload, checksets, setregion, etc.)
+    -- Common commands (reload, checksets, etc.)
     if CommonCommands.is_common_command(command) then
         -- Pass all arguments after command
         local args = {}

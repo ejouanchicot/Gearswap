@@ -180,16 +180,6 @@ return {
         color = 1
     },
 
-    clarion_required = {
-        template = "{gray}[{lightblue}{job}{gray}] {red}Song 5{gray} requires {yellow}Clarion Call{gray} active!",
-        color = 1
-    },
-
-    clarion_help = {
-        template = "{gray}[{lightblue}{job}{gray}]{gray} Use {yellow}Soul Voice{gray} to enable {yellow}Clarion Call",
-        color = 1
-    },
-
     ---========================================================================
     --- DEBUFF SONG MESSAGES
     ---========================================================================

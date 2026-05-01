@@ -30,17 +30,17 @@ return {
     },
 
     status_enabled = {
-        template = "{green}[PROFILER] {white}Status: {green}ENABLED",
+        template = "{green}[PROFILER] {white}Status {green}ENABLED {gray}(timings captured at load + on actions)",
         color = 122
     },
 
     status_disabled = {
-        template = "{gray}[PROFILER] {white}Status: {gray}DISABLED",
+        template = "{gray}[PROFILER] {white}Status {gray}DISABLED {white}- enable with {cyan}//gs c perf start",
         color = 167
     },
 
     status_hint = {
-        template = "{gray}[PROFILER] {white}Reload job to profile: {cyan}//lua reload gearswap",
+        template = "{gray}[PROFILER] {white}Timings appear in chat as {lightblue}[PERF/context]{white} lines on each event",
         color = 122
     },
 

@@ -78,7 +78,7 @@ sets.idle.Normal = {
         name = "Carmine Cuisses +1",
         augments = {'MP+80', 'INT+12', 'MND+12'}
     },
-    feet = "Lanun bottes +4",
+    feet = "Lanun Bottes +4",
     neck = "Regal Necklace",
     waist = "Plat. Mog. Belt",
     left_ear = "Ethereal Earring",
@@ -97,7 +97,7 @@ sets.idle.PDT = set_combine(sets.idle.Normal, {
     body = "Malignance Tabard",
     hands = "Malignance Gloves",
     feet = "Malignance Boots",
-    left_ring = "Defending Ring",
+    left_ring = "Murky Ring",
     right_ring = ChirichRing1
 })
 
@@ -131,7 +131,7 @@ sets.engaged.Normal = {
         name = "Chas. Earring +1",
         augments = {'System: 1 ID: 1676 Val: 0', 'Accuracy+15', 'Mag. Acc.+15', 'Crit.hit rate+5'}
     },
-    left_ring = "Defending Ring",
+    left_ring = "Murky Ring",
     right_ring = "Chirich Ring +1",
     back = "Camulus's Mantle"
 }
@@ -143,7 +143,7 @@ sets.engaged.PDT = set_combine(sets.engaged.Normal, {
     hands = "Malignance Gloves",
     feet = "Malignance Boots",
     left_ear = "Crepuscular Earring",
-    left_ring = "Defending Ring",
+    left_ring = "Murky Ring",
     waist = "Kentarch Belt +1",
     back = "Null Shawl"
 })
@@ -160,7 +160,7 @@ sets.engaged.DW.PDT = set_combine(sets.engaged.DW, {
     body = "Malignance Tabard",
     hands = "Malignance Gloves",
     feet = "Malignance Boots",
-    left_ring = "Defending Ring",
+    left_ring = "Murky Ring",
     back = "Null Shawl"
 })
 
@@ -186,7 +186,7 @@ sets.precast.CorsairRoll = {
         name = "Carmine Cuisses +1",
         augments = {'MP+80', 'INT+12', 'MND+12'}
     },
-    feet = "Lanun bottes +4",
+    feet = "Lanun Bottes +4",
     neck = "Regal Necklace",
     waist = "Plat. Mog. Belt",
     left_ear = "Ethereal Earring",
@@ -280,7 +280,7 @@ sets.precast.RA = {
         name = "Chas. Earring +1",
         augments = {'System: 1 ID: 1676 Val: 0', 'Accuracy+15', 'Mag. Acc.+15', 'Crit.hit rate+5'}
     },
-    left_ring = "Defending Ring",
+    left_ring = "Murky Ring",
     right_ring = "Chirich Ring +1",
     back = "Camulus's Mantle"
 }
@@ -320,7 +320,7 @@ sets.precast.WS = {
         name = "Chas. Earring +1",
         augments = {'System: 1 ID: 1676 Val: 0', 'Accuracy+15', 'Mag. Acc.+15', 'Crit.hit rate+5'}
     },
-    left_ring = "Defending Ring",
+    left_ring = "Murky Ring",
     right_ring = "Chirich Ring +1",
     back = {
         name = "Camulus's Mantle",
@@ -357,7 +357,7 @@ sets.precast.WS['Savage Blade'] = {
         name = "Chas. Earring +1",
         augments = {'System: 1 ID: 1676 Val: 0', 'Accuracy+15', 'Mag. Acc.+15', 'Crit.hit rate+5'}
     },
-    left_ring = "Defending Ring",
+    left_ring = "Murky Ring",
     right_ring = "Chirich Ring +1",
     back = {
         name = "Camulus's Mantle",
@@ -389,7 +389,7 @@ sets.midcast.RA = {
         name = "Chas. Earring +1",
         augments = {'System: 1 ID: 1676 Val: 0', 'Accuracy+15', 'Mag. Acc.+15', 'Crit.hit rate+5'}
     },
-    left_ring = "Defending Ring",
+    left_ring = "Murky Ring",
     right_ring = "Chirich Ring +1",
     back = "Camulus's Mantle"
 }

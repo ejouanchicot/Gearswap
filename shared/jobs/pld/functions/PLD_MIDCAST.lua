@@ -120,10 +120,12 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- ENHANCING MAGIC
     -- ══════════════════════════════════════════════════════════════════════════
     if spell.skill == 'Enhancing Magic' then
-        -- Phalanx: XP mode switching (SIRD for XP, Potency for normal)
+        -- Phalanx: SIRD override (PhalanxSIRD or XP mode forces SIRD set)
         if spell.name == 'Phalanx' then
-            if state.Xp and state.Xp.value == 'On' and sets.midcast.SIRDPhalanx then
-                -- XP mode: Use SIRD Phalanx set directly (overrides MidcastManager)
+            local use_sird = (state.PhalanxSIRD and state.PhalanxSIRD.value == 'On')
+                or (state.Xp and state.Xp.value == 'On')
+            if use_sird and sets.midcast.SIRDPhalanx then
+                -- SIRD mode: Use SIRD Phalanx set directly (overrides MidcastManager)
                 equip(sets.midcast.SIRDPhalanx)
             else
                 -- Normal mode: Use PhalanxPotency or fallback

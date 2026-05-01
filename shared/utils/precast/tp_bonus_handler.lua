@@ -1,4 +1,16 @@
--- TPBonusHandler: TP gear optimization for WS precast phase.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   TPBonusHandler - INTERNAL helper for WSPrecastHandler
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Not a public-facing system. Single caller: ws_precast_handler.lua.
+---   Computes TP-bonus gear delta when a weaponskill is launched, defers the
+---   actual lookup to TPBonusCalculator (which IS the public engine).
+---
+---   If you need TP-bonus computations from a job module, use
+---   `TPBonusCalculator` (shared/utils/weaponskill/tp_bonus_calculator.lua).
+---   Don't require this file directly.
+---
+---   @file shared/utils/precast/tp_bonus_handler.lua
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local TPBonusHandler = {}
 

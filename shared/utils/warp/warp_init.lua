@@ -61,13 +61,20 @@ end
 --- Initialize the universal warp system
 --- Call this from user_setup() or get_sets() in each job file
 function WarpInit.init()
+    -- IPC listener MUST re-register on every GearSwap reload
+    -- (GearSwap clears event handlers on reload, but windower._warp_init_done persists)
+    local ipc_success = pcall(include, 'shared/utils/warp/warp_ipc_register.lua')
+    if not ipc_success then
+        MessageWarp.show_ipc_unavailable()
+    end
+
     -- Sync module-local from windower persistence (survives gs reload)
     if windower._warp_init_done then
         initialized = true
     end
 
     if initialized then
-        return  -- Already initialized
+        return  -- Already initialized (other systems only need one-time setup)
     end
 
     -- Load and initialize warp equipment manager
@@ -105,12 +112,6 @@ function WarpInit.init()
     if cmd_success and WarpCommands then
         WarpCommands.register()
         MessageWarp.show_commands_registered()
-    end
-
-    -- Initialize IPC system for multi-boxing support (GLOBAL SCOPE via include)
-    local ipc_success = pcall(include, 'shared/utils/warp/warp_ipc_register.lua')
-    if not ipc_success then
-        MessageWarp.show_ipc_unavailable()
     end
 
     -- Mark as initialized — persist to windower table (survives gs reload)

@@ -76,6 +76,10 @@ function get_sets()
     _G.BRDSongConfig = require('Tetsouo/config/brd/BRD_SONG_CONFIG')
     _G.BRDTimingConfig = require('Tetsouo/config/brd/BRD_TIMING_CONFIG')
 
+    -- Eager-load song rotation manager so _G.update_brd_song_slots is available
+    -- when user_setup() schedules the initial UI population (avoids empty slots on reload)
+    require('shared/jobs/brd/functions/logic/song_rotation_manager')
+
     -- Load Mote-Include first (calls user_setup and creates 'state')
     include('Mote-Include.lua')
     Profiler.mark('After Mote-Include')

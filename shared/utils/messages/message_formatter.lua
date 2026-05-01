@@ -279,7 +279,6 @@ MessageFormatter.show_healer_casting = function(...) return get_BRDMessages().sh
 MessageFormatter.show_healer_refresh = function(...) return get_BRDMessages().show_healer_refresh(...) end
 MessageFormatter.show_song_cast = function(...) return get_BRDMessages().show_song_cast(...) end
 MessageFormatter.show_song_guidance = function(...) return get_BRDMessages().show_song_guidance(...) end
-MessageFormatter.show_clarion_required = function(...) return get_BRDMessages().show_clarion_required(...) end
 MessageFormatter.show_lullaby_cast = function(...) return get_BRDMessages().show_lullaby_cast(...) end
 MessageFormatter.show_elegy_cast = function(...) return get_BRDMessages().show_elegy_cast(...) end
 MessageFormatter.show_requiem_cast = function(...) return get_BRDMessages().show_requiem_cast(...) end

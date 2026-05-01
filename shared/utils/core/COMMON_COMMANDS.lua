@@ -3,22 +3,8 @@ local CommonCommands = {}
 
 local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
 
--- CONSTANTS - WARP COMMANDS LIST (50+ commands)
-
-local WARP_COMMANDS = { -- System + BLM/WHM spells (original)
-'warp', 'w', 'w2', 'warp2', 'ret', 'retrace', 'esc', 'escape', 'tph', 'tpholla', 'tpd', 'tpdem', 'tpm', 'tpmea', 'tpa',
-'tpaltep', 'tpy', 'tpyhoat', 'tpv', 'tpvahzl', 'rj', 'recjugner', 'rp', 'recpashh', 'rm', 'recmeriph', -- Nations (3)
-'sd', 'sandoria', 'bt', 'bastok', 'wd', 'windurst', -- Jeuno (1)
-'jn', 'jeuno', -- Outpost Cities (5)
-'sb', 'selbina', 'mh', 'mhaura', 'rb', 'rabao', 'kz', 'kazham', 'ng', 'norg', -- Expansion Cities (4)
-'tv', 'tavnazia', 'au', 'wg', 'whitegate', 'ns', 'nashmau', 'ad', 'adoulin', -- Chocobo Stables (4)
-'stsd', 'stable-sd', 'stbt', 'stable-bt', 'stwd', 'stable-wd', 'stjn', 'stable-jn', -- Conquest Outposts (1)
-'op', 'outpost', -- Adoulin Frontier (7)
-'cz', 'ceizak', 'ys', 'yahse', 'hn', 'hennetiel', 'mm', 'morimar', 'mj', 'marjami', 'yc', 'yorcia', 'km', 'kamihr',
--- Special Locations (13)
-'wj', 'wajaom', 'ar', 'arrapago', 'pg', 'purgonorgo', 'rl', 'rulude', 'zv', 'zvahl', 'riv', 'riverne', 'yo', 'yoran',
-'lf', 'leafallia', 'bh', 'behemoth', 'cc', 'chocircuit', 'pt', 'parting', 'cg', 'chocogirl', -- Unique Mechanics (2)
-'ld', 'leader', 'td', 'tidal'}
+-- Warp shortcut list (single source of truth in warp_command_registry).
+local WARP_COMMANDS = require('shared/utils/warp/warp_command_registry').COMMANDS
 
 -- RELOAD COMMAND
 
@@ -123,6 +109,50 @@ function CommonCommands.handle_wardrobeaudit()
     end
 end
 
+-- WARDROBE ORGANIZE COMMAND
+
+--- Reorganize wardrobes. Modes:
+---   `//gs c wo`                  - per-active-job: move job's items to W1/W2
+---   `//gs c wo preview`          - dry-run of per-job mode
+---   `//gs c wo global`           - cross-job freq-based static layout
+---   `//gs c wo global preview`   - dry-run of global mode
+---   `//gs c wo verify`           - check current layout matches the plan
+--- W7 (craft) and W8 (reserve) are always protected.
+function CommonCommands.handle_wardrobeorganize(arg, arg2)
+    local ok, WardrobeOrganizer = pcall(require, 'shared/utils/wardrobe/wardrobe_organizer')
+    if not ok or not WardrobeOrganizer then
+        local MessageFormatter = require('shared/utils/messages/message_formatter')
+        MessageFormatter.show_error("Failed to load wardrobe organizer: " .. tostring(WardrobeOrganizer))
+        return false
+    end
+    if arg == 'verify' or arg == 'check' then
+        WardrobeOrganizer.verify_global()
+    elseif arg == 'reset' then
+        if WardrobeOrganizer.reset then WardrobeOrganizer.reset() end
+    elseif arg == 'recover' or arg == 'unlock' then
+        if WardrobeOrganizer.recover then WardrobeOrganizer.recover() end
+    elseif arg == 'alt' or arg == 'kaories' then
+        -- Alt-character mode: 4 wardrobes + Sack/Case, scans ALL jobs in sets/
+        if WardrobeOrganizer.organize_alt then
+            WardrobeOrganizer.organize_alt()
+        else
+            local MessageFormatter = require('shared/utils/messages/message_formatter')
+            MessageFormatter.show_error("organize_alt not available in this version.")
+        end
+    elseif arg == 'global' then
+        if arg2 == 'preview' or arg2 == 'dry' then
+            WardrobeOrganizer.preview_global()
+        else
+            WardrobeOrganizer.organize_global()
+        end
+    elseif arg == 'preview' or arg == 'dry' then
+        WardrobeOrganizer.preview()
+    else
+        WardrobeOrganizer.organize()
+    end
+    return true
+end
+
 -- REFILL COMMAND
 
 --- Handle inventory refill command (pull consumables from Case/Sack)
@@ -136,6 +166,104 @@ function CommonCommands.handle_refill()
         MessageFormatter.show_error("Failed to load refill manager: " .. tostring(RefillManager))
         return false
     end
+end
+
+-- ============================================================================
+-- CRAFT / FISH COMMANDS
+-- ============================================================================
+-- Pattern matches handle_naked: synchronous equip() call from user-env scope,
+-- followed by an async `gs disable all` once FFXI has acknowledged the swap.
+-- ============================================================================
+
+local function _load_craft_manager()
+    local ok, m = pcall(require, 'shared/utils/craft/craft_manager')
+    if ok and m then return m end
+    local MessageFormatter = require('shared/utils/messages/message_formatter')
+    MessageFormatter.show_error("Failed to load craft manager: " .. tostring(m))
+    return nil
+end
+
+--- Internal: equip a resolved craft set. Pattern mirrors handle_naked which
+--- is known-working: synchronous `equip()` call from this user-env scope.
+--- @param entry table  with .description and .gear
+--- @param label string fallback name for messaging
+local function _equip_craft_gear(entry, label)
+    -- Inline color codes (project standard 0x1F + color id):
+    local gray   = string.char(0x1F, 160)
+    local cyan   = string.char(0x1F, 121)
+    local green  = string.char(0x1F, 158)
+    local yellow = string.char(0x1F, 50)
+
+    -- Defensive: unlock all slots in case a previous //gs c wo or craft
+    -- session left them disabled (equip respects gs disable, would no-op).
+    windower.send_command('gs enable all')
+
+    -- Trace: count gear pieces being equipped so the user can verify the set.
+    local count = 0
+    for _ in pairs(entry.gear) do count = count + 1 end
+    add_to_chat(121, gray .. '[' .. cyan .. 'Craft' .. gray .. '] ' ..
+        yellow .. 'Equipping ' .. green .. (entry.description or label) ..
+        gray .. ' (' .. count .. ' pieces)...')
+
+    -- The equip itself - same call pattern as handle_naked.
+    equip(entry.gear)
+
+    -- Lock slots after FFXI has time to process all packet swaps (~2s).
+    coroutine.schedule(function()
+        windower.send_command('gs disable all')
+        add_to_chat(121, gray .. '[' .. cyan .. 'Craft' .. gray .. '] ' ..
+            green .. (entry.description or label) ..
+            gray .. ' ready - slots locked. Run ' ..
+            yellow .. '//gs c uncraft' .. gray .. ' when done.')
+    end, 2.0)
+end
+
+--- Handle //gs c craft [variant]   (default = bonecraft, hq variant)
+function CommonCommands.handle_craft(variant)
+    local m = _load_craft_manager()
+    if not m then return false end
+
+    -- "off"/"stop" -> unlock
+    if variant and (variant:lower() == 'off' or variant:lower() == 'stop'
+                    or variant:lower() == 'uncraft') then
+        m.unequip()
+        return true
+    end
+
+    local entry, err = m.resolve_set('bonecraft', variant)
+    if not entry then
+        local MF = require('shared/utils/messages/message_formatter')
+        MF.show_error('[Craft] ' .. (err or 'Unknown craft set'))
+        return false
+    end
+
+    _equip_craft_gear(entry, 'bonecraft')
+    m.mark_active(entry.description or 'bonecraft')
+    return true
+end
+
+--- Handle //gs c fish [variant]    (loads fishing_sets.lua)
+function CommonCommands.handle_fish(variant)
+    local m = _load_craft_manager()
+    if not m then return false end
+
+    local entry, err = m.resolve_set('fishing', variant)
+    if not entry then
+        local MF = require('shared/utils/messages/message_formatter')
+        MF.show_error('[Craft] ' .. (err or 'Unknown fishing set'))
+        return false
+    end
+
+    _equip_craft_gear(entry, 'fishing')
+    m.mark_active(entry.description or 'fishing')
+    return true
+end
+
+--- Handle //gs c uncraft (alias for //gs c craft off)
+function CommonCommands.handle_uncraft()
+    local m = _load_craft_manager()
+    if m then m.unequip(); return true end
+    return false
 end
 
 -- TESTCOLORS COMMAND
@@ -239,90 +367,18 @@ end
 
 --- Handle performance profiler commands
 --- Usage: //gs c perf [start|stop|status]
-function CommonCommands.handle_perf(action)
-    local profiler_success, Profiler = pcall(require, 'shared/utils/debug/performance_profiler')
-    if not profiler_success or not Profiler then
-        local MessageFormatter = require('shared/utils/messages/message_formatter')
-        MessageFormatter.show_error("Failed to load performance profiler")
-        return false
-    end
-
-    action = action and action:lower() or 'status'
-
-    if action == 'start' or action == 'on' or action == 'enable' then
-        Profiler.enable()
-        return true
-    elseif action == 'stop' or action == 'off' or action == 'disable' then
-        Profiler.disable()
-        return true
-    elseif action == 'toggle' then
-        Profiler.toggle()
-        return true
-    else
-        -- Default: show status
-        Profiler.status()
-        return true
-    end
-end
-
--- FULL TEST COMMAND (All sections: Systems + Modules + Hooks + Sets)
-
---- Run comprehensive in-game test across all verifiable areas
---- Usage: //gs c fulltest [export]
-function CommonCommands.handle_fulltest(action)
-    local ok_load, FullTest = pcall(require, 'shared/utils/debug/full_test')
-    if not ok_load or not FullTest then
-        add_to_chat(207, '[FullTest] Failed to load: ' .. tostring(FullTest))
-        return false
-    end
-    local report = FullTest.run()
-    FullTest.display(report)
-    if action and action:lower() == 'export' then
-        FullTest.export(report)
-    end
-    return true
-end
-
--- SYSTEM HEALTH CHECK COMMAND
-
---- Run a full system health check with % score
---- Usage: //gs c syscheck [export]
-function CommonCommands.handle_syscheck(action)
-    local ok, SystemChecker = pcall(require, 'shared/utils/debug/system_checker')
-    if not ok or not SystemChecker then
-        add_to_chat(207, '[SysCheck] Failed to load: ' .. tostring(SystemChecker))
-        return false
-    end
-    local report = SystemChecker.run()
-    SystemChecker.display(report)
-    if action and action:lower() == 'export' then
-        SystemChecker.export(report)
-    end
-    return true
-end
-
--- LAG DEBUGGER COMMAND
-
---- Handle lag debugger commands
---- Usage: //gs c lagdebug [export|reset|status]  (no arg = toggle)
-function CommonCommands.handle_lagdebug(action)
-    local ld = _G.LagDebugger
-    if not ld then
-        add_to_chat(207, '[LagDebug] Module not loaded - reload GearSwap')
-        return false
-    end
-    action = action and action:lower() or 'toggle'
-    if action == 'export' or action == 'exp' or action == 'e' then
-        ld.export()
-    elseif action == 'reset' or action == 'clear' or action == 'r' then
-        ld.reset()
-    elseif action == 'status' or action == 'stat' or action == 's' then
-        ld.status()
-    else
-        ld.toggle()
-    end
-    return true
-end
+-- Diagnostic / debug-toggle handlers extracted to DEBUG_COMMANDS.lua.
+-- Aliases preserve the existing CommonCommands.handle_X public surface.
+local DebugCommands = require('shared/utils/core/DEBUG_COMMANDS')
+CommonCommands.handle_perf        = DebugCommands.handle_perf
+CommonCommands.handle_fulltest    = DebugCommands.handle_fulltest
+CommonCommands.handle_syscheck    = DebugCommands.handle_syscheck
+CommonCommands.handle_lagdebug    = DebugCommands.handle_lagdebug
+CommonCommands.handle_debugsubjob = DebugCommands.handle_debugsubjob
+CommonCommands.handle_jamsg       = DebugCommands.handle_jamsg
+CommonCommands.handle_spellmsg    = DebugCommands.handle_spellmsg
+CommonCommands.handle_wsmsg       = DebugCommands.handle_wsmsg
+CommonCommands.handle_info        = DebugCommands.handle_info
 
 -- WARP COMMANDS (Universal Warp/Teleport System)
 
@@ -355,137 +411,8 @@ function CommonCommands.handle_warp_commands(cmdParams)
     end
 end
 
--- DEBUG SUBJOB COMMAND (Test for Odyssey subjob level = 0)
-
---- Display detailed subjob information for testing
---- Used to verify player.sub_job_level returns 0 in Odyssey Sheol Gaol
-function CommonCommands.handle_debugsubjob()
-    if not player then
-        MessageCommands.show_debugsubjob_no_player()
-        return false
-    end
-
-    MessageCommands.show_debugsubjob_header()
-
-    -- Job information
-    MessageCommands.show_main_job_info(player.main_job or "NIL", player.main_job_level or "NIL")
-    MessageCommands.show_sub_job_info(player.sub_job or "NIL", player.sub_job_level or "NIL")
-
-    -- Zone information
-    local info = windower.ffxi.get_info()
-    if info then
-        MessageCommands.show_zone_info_header()
-        MessageCommands.show_zone_id(info.zone or "NIL")
-
-        -- Try to get zone name from resources
-        local res_success, res = pcall(require, 'resources')
-        if res_success and res and res.zones and res.zones[info.zone] then
-            MessageCommands.show_zone_name(res.zones[info.zone].en or "Unknown")
-        else
-            MessageCommands.show_zone_name("Unknown (resources not loaded)")
-        end
-    else
-        MessageCommands.show_zone_info_unavailable()
-    end
-
-    MessageCommands.show_debugsubjob_instructions()
-
-    return true
-end
-
--- MESSAGE CONFIG COMMANDS (Generic Handler - Eliminates Duplication)
-
---- Generic message config handler for JA/Spell/WS messages
---- Eliminates 114 lines of duplication across 3 identical functions
-local function handle_message_config_generic(msg_type, mode_arg)
-    -- Map message types to config paths and function prefixes
-    local config_map = {
-        ja    = {path = 'shared/config/JA_MESSAGES_CONFIG',       prefix = 'jamsg'},
-        spell = {path = 'shared/config/ENHANCING_MESSAGES_CONFIG', prefix = 'spellmsg'},
-        ws    = {path = 'shared/config/WS_MESSAGES_CONFIG',        prefix = 'wsmsg'}
-    }
-
-    local cfg = config_map[msg_type]
-    if not cfg then
-        return false
-    end
-
-    -- Load config module
-    local config_success, Config = pcall(require, cfg.path)
-    if not config_success then
-        MessageCommands['show_' .. cfg.prefix .. '_config_error']()
-        return false
-    end
-
-    -- Show current mode if no argument
-    if not mode_arg then
-        MessageCommands['show_' .. cfg.prefix .. '_status_header']()
-        MessageCommands['show_' .. cfg.prefix .. '_current_mode'](Config.display_mode)
-        return true
-    end
-
-    -- Parse mode argument (with type-specific aliases)
-    local mode = mode_arg:lower()
-    local new_mode
-
-    if mode == 'full' or mode == 'f' then
-        new_mode = 'full'
-    elseif mode == 'on' or mode == 'name' or mode == 'nameonly' or mode == 'name_only' or mode == 'n' or
-           (msg_type == 'ws' and (mode == 'tp' or mode == 'tponly' or mode == 'tp_only' or mode == 't')) then
-        new_mode = 'on'
-    elseif mode == 'off' or mode == 'disabled' or mode == 'disable' or mode == 'd' then
-        new_mode = 'off'
-    else
-        MessageCommands['show_' .. cfg.prefix .. '_invalid_mode'](mode_arg)
-        return false
-    end
-
-    -- Set new mode
-    if Config.set_display_mode(new_mode) then
-        MessageCommands['show_' .. cfg.prefix .. '_mode_changed'](new_mode)
-        return true
-    else
-        MessageCommands['show_' .. cfg.prefix .. '_set_failed']()
-        return false
-    end
-end
-
--- JA MESSAGES COMMAND (Toggle Job Ability messages)
-
---- Handle JA messages display mode command
---- Modes: full (name + description), on (name only), off (silent)
---- Usage: //gs c jamsg <full|on|off>
-function CommonCommands.handle_jamsg(mode_arg)
-    return handle_message_config_generic('ja', mode_arg)
-end
-
--- INFO COMMAND (Display JA/Spell/WS Details)
-
---- Handle info command to display detailed information
-function CommonCommands.handle_info(args)
-    local InfoCommand = require('shared/utils/commands/info_command')
-    return InfoCommand.handle(args)
-end
-
--- SPELL MESSAGES COMMAND (Toggle Spell messages - ALL categories)
-
---- Handle Spell messages display mode command
---- Controls ALL non-Enfeebling spells (Enhancing, Dark, Elemental, Healing, Divine, BRD, GEO, etc.)
---- Modes: full (name + description), on (name only), off (silent)
---- Usage: //gs c spellmsg <full|on|off>
-function CommonCommands.handle_spellmsg(mode_arg)
-    return handle_message_config_generic('spell', mode_arg)
-end
-
--- WEAPONSKILL MESSAGES COMMAND (Toggle WS messages)
-
---- Handle Weaponskill messages display mode command
---- Controls WS activation messages
---- Modes: full (name + description + TP), on (name + TP only), off (silent)
---- Usage: //gs c wsmsg <full|on|off|tp>
-function CommonCommands.handle_wsmsg(mode_arg)
-    return handle_message_config_generic('ws', mode_arg)
-end
+-- (handle_debugsubjob, handle_jamsg, handle_spellmsg, handle_wsmsg, handle_info
+--  moved to DEBUG_COMMANDS.lua and re-exposed via aliases above.)
 
 -- MAIN COMMAND ROUTER
 
@@ -557,8 +484,16 @@ function CommonCommands.handle_command(command, job_name, ...)
         return CommonCommands.handle_checksets(job_name)
     elseif cmd == 'wardrobeaudit' or cmd == 'wa' then
         return CommonCommands.handle_wardrobeaudit()
+    elseif cmd == 'worganize' or cmd == 'wo' then
+        return CommonCommands.handle_wardrobeorganize(args[1], args[2])
     elseif cmd == 'refill' or cmd == 'rf' then
         return CommonCommands.handle_refill()
+    elseif cmd == 'craft' then
+        return CommonCommands.handle_craft(args[1])
+    elseif cmd == 'fish' or cmd == 'fishing' then
+        return CommonCommands.handle_fish(args[1])
+    elseif cmd == 'uncraft' then
+        return CommonCommands.handle_uncraft()
     elseif cmd == 'lockstyle' or cmd == 'ls' then
         return CommonCommands.handle_lockstyle()
     elseif cmd == 'dressup' then
@@ -646,7 +581,7 @@ function CommonCommands.handle_command(command, job_name, ...)
         return CommonCommands.handle_fulltest(args[1])
     elseif cmd == 'syscheck' or cmd == 'sc' then
         return CommonCommands.handle_syscheck(args[1])
-    elseif cmd == 'lagdebug' or cmd == 'ld' then
+    elseif cmd == 'lagdebug' or cmd == 'ldb' then
         return CommonCommands.handle_lagdebug(args[1])
     elseif cmd == 'jamsg' then
         return CommonCommands.handle_jamsg(args[1])
@@ -704,7 +639,7 @@ function CommonCommands.is_common_command(command)
     local cmd = command:lower()
 
     -- Check existing common commands
-    if cmd == 'naked' or cmd == 'equip' or cmd == 'reload' or cmd == 'checksets' or cmd == 'wardrobeaudit' or cmd == 'wa' or cmd == 'refill' or cmd == 'rf' or
+    if cmd == 'naked' or cmd == 'equip' or cmd == 'reload' or cmd == 'checksets' or cmd == 'wardrobeaudit' or cmd == 'wa' or cmd == 'worganize' or cmd == 'wo' or cmd == 'refill' or cmd == 'rf' or cmd == 'craft' or cmd == 'uncraft' or cmd == 'fish' or cmd == 'fishing' or
         cmd == 'lockstyle' or cmd == 'ls' or cmd == 'dressup' or
         cmd == 'perf' or cmd == 'testcolors' or cmd == 'colors' or cmd == 'jump' or cmd == 'waltz' or
         cmd == 'aoewaltz' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'debugprecast' or
@@ -712,9 +647,10 @@ function CommonCommands.is_common_command(command)
         cmd == 'debugstate' or cmd == 'ds' or cmd == 'debugupdate' or cmd == 'du' or
         cmd == 'fulltest' or cmd == 'ft' or
         cmd == 'syscheck' or cmd == 'sc' or
-        cmd == 'lagdebug' or cmd == 'ld' or
-        cmd == 'jamsg' or cmd == 'spellmsg' or cmd == 'wsmsg' or cmd == 'info' or cmd == 'testmsg' or
-        cmd == 'msgtest' or cmd == 'msgtests' or cmd == 'commands' or cmd == 'cmds' or cmd == 'help' or cmd == '?' then
+        cmd == 'lagdebug' or cmd == 'ldb' or
+        cmd == 'jamsg' or cmd == 'spellmsg' or cmd == 'wsmsg' or cmd == 'info' or cmd == 'debugmsg' or
+        cmd == 'testmsg' or cmd == 'msgtest' or cmd == 'msgtests' or
+        cmd == 'commands' or cmd == 'cmds' or cmd == 'help' or cmd == '?' then
         return true
     end
 

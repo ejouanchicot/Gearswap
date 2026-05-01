@@ -296,15 +296,6 @@ function BRDMessages.show_song_guidance(slot, dummy_count)
     })
 end
 
-function BRDMessages.show_clarion_required()
-    M.job('BRD', 'clarion_required', {
-        job = get_job_tag()
-    })
-    M.job('BRD', 'clarion_help', {
-        job = get_job_tag()
-    })
-end
-
 ---============================================================================
 --- DEBUFF SONG MESSAGES (NEW SYSTEM)
 ---============================================================================

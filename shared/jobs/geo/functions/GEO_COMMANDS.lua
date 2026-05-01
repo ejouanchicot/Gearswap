@@ -148,7 +148,7 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- Common commands (reload, checksets, waltz, aoewaltz, jump, setregion, detectregion)
+    -- Common commands (reload, checksets, waltz, aoewaltz, jump, etc.)
     if CommonCommands.is_common_command(command) then
         -- Pass all arguments after command
         local args = {}

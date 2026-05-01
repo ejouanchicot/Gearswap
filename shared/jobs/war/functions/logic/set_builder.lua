@@ -39,7 +39,7 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 ---   Priority order:
 ---   1. Kraken Club weapon set       >> sets.engaged.PDTKC
 ---   2. Aftermath Lv.3 + Ukonvasara  >> sets.engaged.PDTAFM3
----   3. HybridMode (PDT/Normal)      >> sets.engaged[HybridMode]
+---   3. HybridMode (PDT/Normal/SubtleBlow) >> sets.engaged[HybridMode]
 ---   4. Fallback                      >> base_set
 ---
 ---   @param base_set table Base engaged set from war_sets.lua
@@ -59,7 +59,9 @@ function SetBuilder.select_engaged_base(base_set)
     end
 
     -- PRIORITY 2: Check for Aftermath Lv.3 (buff ID 272) + Ukonvasara
-    if buffactive[272] and state.MainWeapon and state.MainWeapon.current == 'Ukonvasara' then
+    -- Skipped if HybridMode is set to SubtleBlow (user override)
+    if buffactive[272] and state.MainWeapon and state.MainWeapon.current == 'Ukonvasara'
+       and not (state.HybridMode and state.HybridMode.current == 'SubtleBlow') then
         if sets.engaged.PDTAFM3 then
             return sets.engaged.PDTAFM3
         end

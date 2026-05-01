@@ -21,14 +21,55 @@ local res = require('resources')
 ---   CONSTANTS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
-local ALL_JOBS = {
-    'blm', 'brd', 'bst', 'cor', 'dnc', 'drk', 'geo',
-    'pld', 'pup', 'rdm', 'run', 'sam', 'thf', 'war', 'whm'
+-- Valid FFXI job codes - used to filter directory listing
+-- (so non-job files like sets_template.lua, util_sets.lua etc. are ignored)
+local VALID_JOBS = {
+    blm=true, blu=true, brd=true, bst=true, cor=true, dnc=true, drg=true,
+    drk=true, geo=true, mnk=true, nin=true, pld=true, pup=true, rdm=true,
+    rng=true, run=true, sam=true, sch=true, smn=true, thf=true, war=true, whm=true,
 }
+
+--- Resolve the active character's sets directory. Each char has its own
+--- sets folder under data/<CharName>/sets/. Falls back to 'Tetsouo/sets/'
+--- if no player info is available (rare race during init).
+--- @return string Absolute path with trailing slash
+local function sets_dir()
+    local p = windower.ffxi.get_player()
+    local char_name = (p and p.name) or 'Tetsouo'
+    return windower.addon_path .. 'data/' .. char_name .. '/sets/'
+end
+
+--- Auto-discover job set files in <CharName>/sets/. Only scans jobs that have
+--- a matching *_sets.lua file - new jobs added later will be picked up
+--- automatically without needing to edit this script.
+--- @return table Array of job_lower strings, sorted alphabetically
+local function discover_jobs()
+    local dir = sets_dir()
+    local files = windower.get_dir(dir)
+    local jobs = {}
+    if files then
+        for _, file in ipairs(files) do
+            local job = file:match('^(%w+)_sets%.lua$')
+            if job and VALID_JOBS[job:lower()] then
+                table.insert(jobs, job:lower())
+            end
+        end
+    end
+    table.sort(jobs)
+    return jobs
+end
 
 local WARDROBE_BAGS = {
     'wardrobe', 'wardrobe2', 'wardrobe3', 'wardrobe4',
     'wardrobe5', 'wardrobe6', 'wardrobe7', 'wardrobe8'
+}
+
+-- Wardrobes whose contents are intentionally NOT in any job's gear sets:
+--   wardrobe7 = craft gear + utility items (Warp Ring, Nexus Cape, etc.)
+-- These bags are still scanned for total counts but their items are NEVER
+-- flagged as "unused" in the report.
+local IGNORED_WARDROBES = {
+    wardrobe7 = true,
 }
 
 local BAG_DISPLAY = {
@@ -127,10 +168,16 @@ end
 --- @param job_lower string Lowercase job abbreviation (e.g. 'war')
 --- @param used_items table Accumulator for item names
 --- @return boolean success
---- @return string|nil error message
+--- @return boolean|string status: true=loaded, 'missing'=file absent (skip), false=error
+--- @return string|nil error message (only when status is false)
 local function parse_job_sets(job_lower, used_items)
-    local path = windower.addon_path .. 'data/Tetsouo/sets/' .. job_lower .. '_sets.lua'
+    local path = sets_dir() .. job_lower .. '_sets.lua'
     local job_upper = job_lower:upper()
+
+    -- Job not configured = no set file. Skip silently, don't report as failed.
+    if not windower.file_exists(path) then
+        return 'missing', nil
+    end
 
     local file, open_err = io.open(path, 'r')
     if not file then
@@ -224,11 +271,12 @@ end
 --- Build and write the audit report
 --- @param unused table {bag_name = {item_name, ...}}
 --- @param total_items number Total wardrobe items
+--- @param total_ignored number Items in IGNORED_WARDROBES (not counted as used/unused)
 --- @param used_items table Master used items set
 --- @param jobs_loaded table {job_upper = true}
 --- @param jobs_failed table {job_upper = error_msg}
 --- @return string|nil File path on success
-local function export_report(unused, total_items, used_items, jobs_loaded, jobs_failed)
+local function export_report(unused, total_items, total_ignored, used_items, jobs_loaded, jobs_failed)
     local output_path = windower.addon_path .. 'data/wardrobe_audit.txt'
     local lines = {}
 
@@ -272,7 +320,9 @@ local function export_report(unused, total_items, used_items, jobs_loaded, jobs_
 
         table.insert(lines, "--- " .. display .. " ---")
 
-        if bag_unused and #bag_unused > 0 then
+        if IGNORED_WARDROBES[bag_name] then
+            table.insert(lines, "  (ignored - reserved for craft/utility)")
+        elseif bag_unused and #bag_unused > 0 then
             for _, item_name in ipairs(bag_unused) do
                 table.insert(lines, "  " .. item_name)
                 total_unused = total_unused + 1
@@ -285,9 +335,12 @@ local function export_report(unused, total_items, used_items, jobs_loaded, jobs_
     end
 
     -- Summary
-    local total_used = total_items - total_unused
+    local total_used = total_items - total_unused - total_ignored
     table.insert(lines, sep)
     table.insert(lines, string.format("  Total wardrobe items:     %d", total_items))
+    if total_ignored > 0 then
+        table.insert(lines, string.format("  Ignored (craft/utility):  %d", total_ignored))
+    end
     table.insert(lines, string.format("  Used by at least 1 job:   %d", total_used))
     table.insert(lines, string.format("  UNUSED:                   %d", total_unused))
     table.insert(lines, sep)
@@ -357,17 +410,22 @@ end
 --- Run the full wardrobe audit across all jobs
 --- @return boolean Success
 function WardrobeAuditor.audit()
-    -- PHASE 1: Parse all job set files and extract item names
+    -- PHASE 1: Discover available job set files and parse them.
+    -- Auto-discovery means: drop a new job_sets.lua file in Tetsouo/sets/ and
+    -- it gets picked up on the next audit run, no script edit needed.
     local used_items = {}  -- {[item_name_lower] = {[JOB]=true}}
     local jobs_loaded = {}
     local jobs_failed = {}
 
-    for _, job_lower in ipairs(ALL_JOBS) do
+    local jobs = discover_jobs()
+    for _, job_lower in ipairs(jobs) do
         local job_upper = job_lower:upper()
-        local ok, err = parse_job_sets(job_lower, used_items)
+        local status, err = parse_job_sets(job_lower, used_items)
 
-        if ok then
+        if status == true then
             jobs_loaded[job_upper] = true
+        elseif status == 'missing' then
+            -- Should not happen since we auto-discovered, but skip silently
         else
             jobs_failed[job_upper] = err or 'unknown error'
         end
@@ -398,38 +456,141 @@ function WardrobeAuditor.audit()
     end
 
     -- PHASE 3: Compare - find unused items per wardrobe
+    -- Skip IGNORED_WARDROBES entirely (their contents are intentionally
+    -- not in any job's sets: craft gear, utility items, etc.)
     local unused = {}
 
     for _, bag_name in ipairs(WARDROBE_BAGS) do
         unused[bag_name] = {}
-        local bag_items = wardrobe_contents[bag_name]
+        if not IGNORED_WARDROBES[bag_name] then
+            local bag_items = wardrobe_contents[bag_name]
 
-        if bag_items then
-            for _, item in ipairs(bag_items) do
-                -- Check ALL name variants (en, enl, english, english_log)
-                -- Set files may use full name ("Spaekona's Coat +4")
-                -- while res.items.en returns abbreviated ("Spae. Coat +4")
-                local is_used = false
-                for _, variant in ipairs(item.all_names) do
-                    if used_items[variant] then
-                        is_used = true
-                        break
+            if bag_items then
+                for _, item in ipairs(bag_items) do
+                    -- Check ALL name variants (en, enl, english, english_log)
+                    -- Set files may use full name ("Spaekona's Coat +4")
+                    -- while res.items.en returns abbreviated ("Spae. Coat +4")
+                    local is_used = false
+                    for _, variant in ipairs(item.all_names) do
+                        if used_items[variant] then
+                            is_used = true
+                            break
+                        end
                     end
-                end
-                if not is_used then
-                    table.insert(unused[bag_name], item.name)
+                    if not is_used then
+                        table.insert(unused[bag_name], item.name)
+                    end
                 end
             end
         end
     end
 
+    -- Count items in ignored wardrobes (excluded from used/unused stats)
+    local total_ignored = 0
+    for bag_name in pairs(IGNORED_WARDROBES) do
+        local bag_items = wardrobe_contents[bag_name]
+        if bag_items then
+            total_ignored = total_ignored + #bag_items
+        end
+    end
+
     -- PHASE 4: Export to txt
-    local export_path = export_report(unused, total_items, used_items, jobs_loaded, jobs_failed)
+    local export_path = export_report(unused, total_items, total_ignored, used_items, jobs_loaded, jobs_failed)
 
     -- PHASE 5: Show in-game summary
     show_ingame_summary(unused, total_items, loaded_count, unique_count, export_path)
 
     return true
+end
+
+--- Public: build the cross-job item usage map without exporting a report.
+--- Used by the wardrobe organizer to compute frequency-based wardrobe layout.
+--- @return table {[item_name_lower] = {[JOB]=true, ...}}
+function WardrobeAuditor.build_frequency_map()
+    local used_items = {}
+    for _, job_lower in ipairs(discover_jobs()) do
+        parse_job_sets(job_lower, used_items)
+    end
+    return used_items
+end
+
+-- Map "wardrobe N" -> bag id used by FFXI internally
+local BAG_NAME_TO_ID = {
+    ['wardrobe']=8, ['wardrobe 1']=8, ['wardrobe1']=8,
+    ['wardrobe 2']=10, ['wardrobe2']=10,
+    ['wardrobe 3']=11, ['wardrobe3']=11,
+    ['wardrobe 4']=12, ['wardrobe4']=12,
+    ['wardrobe 5']=13, ['wardrobe5']=13,
+    ['wardrobe 6']=14, ['wardrobe6']=14,
+    ['wardrobe 7']=15, ['wardrobe7']=15,
+    ['wardrobe 8']=16, ['wardrobe8']=16,
+}
+
+--- Public: extract bag constraints from all set files. Items defined as
+--- `{name='X', bag='wardrobe N', ...}` need to physically live in that bag
+--- for GearSwap to find them (especially important for multi-instance rings
+--- like Chirich Ring +1 x2 that must be in different wardrobes).
+--- @return table {[item_name_lower] = {bag_id_1, bag_id_2, ...}} (set as array)
+function WardrobeAuditor.build_pinned_bags()
+    local pinned = {}  -- item_name_lower -> set of bag ids (deduped)
+
+    local dir = sets_dir()
+    for _, job_lower in ipairs(discover_jobs()) do
+        local path = dir .. job_lower .. '_sets.lua'
+        if windower.file_exists(path) then
+            local file = io.open(path, 'r')
+            if file then
+                local content = file:read('*all')
+                file:close()
+                if content and content ~= '' then
+                    -- Strip comments
+                    local clean = content:gsub('%-%-[^\n]*', '')
+                    -- Find every {...} block; if it has both name= and bag=, pin it
+                    for block in clean:gmatch('%b{}') do
+                        local name = block:match("name%s*=%s*['\"]([^'\"]+)['\"]")
+                        local bag = block:match("bag%s*=%s*['\"]([^'\"]+)['\"]")
+                        if name and bag then
+                            local bag_id = BAG_NAME_TO_ID[bag:lower()]
+                            if bag_id then
+                                local key = name:lower()
+                                pinned[key] = pinned[key] or {}
+                                -- Dedup: only add bag_id once
+                                local already = false
+                                for _, b in ipairs(pinned[key]) do
+                                    if b == bag_id then already = true; break end
+                                end
+                                if not already then
+                                    table.insert(pinned[key], bag_id)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return pinned
+end
+
+--- Public: collect every item name used by ANY job set file in the active
+--- character's sets folder.
+--- Used by the alt-character wardrobe organize mode (//gs c wo alt) which
+--- considers items globally rather than per-active-job.
+---
+--- The value is a sub-table mapping each job that uses the item, but most
+--- callers only need a truthy/falsy presence check (any non-nil sub-table
+--- is truthy in Lua) - that's why `Items.is_used_name` works without
+--- inspecting the inner table.
+---
+--- @return table {[item_name_lower] = {[JOB_UPPER] = true, ...}}
+function WardrobeAuditor.collect_all_used_names()
+    local used = {}
+    for _, job_lower in ipairs(discover_jobs()) do
+        local status, _err = parse_job_sets(job_lower, used)
+        -- status ∈ {true, 'missing', false}; we only care about success
+    end
+    return used
 end
 
 return WardrobeAuditor

@@ -513,6 +513,14 @@ function MessageCommands.show_commands_list()
     add_to_chat(121, cyan .. "   //gs c reload" .. gray .. " ........... " .. white .. "Force job reload")
     add_to_chat(121, cyan .. "   //gs c checksets" .. gray .. " ........ " .. white .. "Validate equipment sets")
     add_to_chat(121, cyan .. "   //gs c lockstyle" .. gray .. " (or " .. cyan .. "ls" .. gray .. ") " .. white .. "Reapply lockstyle")
+    add_to_chat(121, cyan .. "   //gs c dressup" .. gray .. " .......... " .. white .. "Toggle DressUp management")
+    add_to_chat(121, cyan .. "   //gs c naked" .. gray .. " ............ " .. white .. "Strip all equipment")
+
+    -- Equipment & Inventory
+    add_to_chat(121, " ")
+    add_to_chat(121, orange .. ">> EQUIPMENT & INVENTORY")
+    add_to_chat(121, cyan .. "   //gs c wardrobeaudit" .. gray .. " (or " .. cyan .. "wa" .. gray .. ") " .. white .. "Audit wardrobe across all jobs")
+    add_to_chat(121, cyan .. "   //gs c refill" .. gray .. " (or " .. cyan .. "rf" .. gray .. ") ..... " .. white .. "Pull consumables from Case/Sack")
 
     -- UI Commands
     add_to_chat(121, " ")
@@ -549,6 +557,10 @@ function MessageCommands.show_commands_list()
     add_to_chat(121, cyan .. "   //gs c debugmidcast" .. gray .. " ..... " .. white .. "Toggle midcast debug mode")
     add_to_chat(121, cyan .. "   //gs c debugwarp" .. gray .. " ........ " .. white .. "Toggle warp debug mode")
     add_to_chat(121, cyan .. "   //gs c debugmsg" .. gray .. " ......... " .. white .. "Debug message settings")
+    add_to_chat(121, cyan .. "   //gs c debugstate" .. gray .. " (or " .. cyan .. "ds" .. gray .. ") . " .. white .. "Show global debug state")
+    add_to_chat(121, cyan .. "   //gs c debugupdate" .. gray .. " (or " .. cyan .. "du" .. gray .. ") " .. white .. "Toggle update flow trace")
+    add_to_chat(121, cyan .. "   //gs c debugjobchange" .. gray .. " (or " .. cyan .. "djc" .. gray .. ") " .. white .. "Toggle job change debug")
+    add_to_chat(121, cyan .. "   //gs c automovedebug" .. gray .. " (or " .. cyan .. "amd" .. gray .. ") " .. white .. "Toggle AutoMove debug")
 
     -- Subjob Abilities
     add_to_chat(121, " ")
@@ -565,9 +577,13 @@ function MessageCommands.show_commands_list()
     add_to_chat(121, gray .. "   Quick: " .. cyan .. "//gs c w" .. gray .. " (Warp) | " .. cyan .. "w2" .. gray .. " (Warp II) | " .. cyan .. "ret" .. gray .. " (Retrace)")
     add_to_chat(121, gray .. "   Towns: " .. cyan .. "//gs c sd" .. gray .. ", " .. cyan .. "bt" .. gray .. ", " .. cyan .. "wd" .. gray .. ", " .. cyan .. "jn" .. gray .. ", " .. cyan .. "sb" .. gray .. ", " .. cyan .. "mh" .. gray .. " etc.")
 
-    -- Testing
+    -- Performance & Testing
     add_to_chat(121, " ")
-    add_to_chat(121, green .. ">> TESTING")
+    add_to_chat(121, green .. ">> PERFORMANCE & TESTING")
+    add_to_chat(121, cyan .. "   //gs c perf " .. yellow .. "[start|stop]" .. gray .. " .. " .. white .. "Performance profiler")
+    add_to_chat(121, cyan .. "   //gs c fulltest" .. gray .. " (or " .. cyan .. "ft" .. gray .. ") ... " .. white .. "Run full in-game test suite")
+    add_to_chat(121, cyan .. "   //gs c syscheck" .. gray .. " (or " .. cyan .. "sc" .. gray .. ") ... " .. white .. "System health check with score")
+    add_to_chat(121, cyan .. "   //gs c lagdebug" .. gray .. " (or " .. cyan .. "ld" .. gray .. ") ... " .. white .. "Lag debugger (toggle/export/reset)")
     add_to_chat(121, cyan .. "   //gs c testmsg " .. yellow .. "[job]" .. gray .. " .... " .. white .. "Test message system")
     add_to_chat(121, cyan .. "   //gs c msgtests" .. gray .. " ........ " .. white .. "Validate message system")
 

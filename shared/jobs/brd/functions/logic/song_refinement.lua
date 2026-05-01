@@ -67,8 +67,13 @@ function SongRefinement.refine_song(spell, eventArgs)
                 -- Cancel original spell
                 eventArgs.cancel = true
 
-                -- Cast replacement immediately (use <t> since <laststid> doesn't work)
-                send_command('input /ma "' .. downgrade .. '" <t>')
+                -- Recast on the same target the user selected via <stnpc> cursor.
+                -- Why: when engaged, <t> = locked battle target, which ignores the
+                -- sub-target the user just confirmed. spell.target.id preserves it.
+                local target_token = (spell.target and spell.target.id)
+                    and tostring(spell.target.id)
+                    or '<t>'
+                send_command('input /ma "' .. downgrade .. '" ' .. target_token)
 
                 -- Show refinement message
                 local recast_seconds = recast_time / 100

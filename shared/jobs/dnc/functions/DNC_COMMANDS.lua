@@ -91,7 +91,7 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- Common commands (reload, checksets, setregion, etc.)
+    -- Common commands (reload, checksets, etc.)
     if CommonCommands.is_common_command(command) then
         -- Pass all arguments after command
         local args = {}

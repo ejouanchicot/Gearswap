@@ -436,6 +436,15 @@ function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, i
             local cast_delay = (item_data and item_data.cast_delay) or 0
             local cast_duration = cast_time + cast_delay + 5  -- +5s safety buffer (lag protection)
 
+            -- Verify player/target data is available (prevents GearSwap band() error
+            -- when spawn_type is nil due to timing issues)
+            local me = windower.ffxi.get_mob_by_target('me')
+            if not me or not me.spawn_type then
+                debug_log('Player mob data unavailable, retrying in 1s...')
+                coroutine.schedule(check_usable, 1.0)
+                return
+            end
+
             -- Setup auto-fix system BEFORE sending command
             ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, item_name)
 

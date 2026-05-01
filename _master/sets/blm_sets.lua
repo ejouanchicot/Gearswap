@@ -28,22 +28,22 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 -- EQUIPMENT DEFINITIONS
 -- ═══════════════════════════════════════════════════════════════════════════
--- • Dual Rings (Different Wardrobes)
+-- • Dual Rings (Different Wardrobes - all in W1-W6, W7=craft, W8=reserve)
 local StikiRing1 = {
     name = 'Stikini Ring +1',
-    bag = 'wardrobe 6'
+    bag = 'wardrobe 1'
 }
 local StikiRing2 = {
     name = 'Stikini Ring +1',
-    bag = 'wardrobe 7'
+    bag = 'wardrobe 2'
 }
 local ChirichRing1 = {
     name = 'Chirich Ring +1',
-    bag = 'wardrobe 6'
+    bag = 'wardrobe 1'
 }
 local ChirichRing2 = {
     name = 'Chirich Ring +1',
-    bag = 'wardrobe 7'
+    bag = 'wardrobe 2'
 }
 
 -- • Merlinic Fast Cast Set (80% FC Augments)
@@ -295,7 +295,7 @@ sets.midcast.Cure = {
     waist = 'Plat. Mog. Belt',
     left_ear = "Handler's Earring",
     right_ear = WicceEarring,
-    left_ring = 'Defending Ring',
+    left_ring = 'Murky Ring',
     right_ring = StikiRing2,
     back = 'Solemnity Cape'
 }

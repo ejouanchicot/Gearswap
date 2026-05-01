@@ -26,41 +26,19 @@ local MessageWarp = require('shared/utils/messages/formatters/system/message_war
 -- IPC message prefix
 local IPC_PREFIX = 'tetsouo_warp_'
 
--- Whitelist of allowed commands (same as warp_ipc.lua)
-local ALLOWED_COMMANDS = {
-    'w', 'warp', 'w2', 'warp2', 'ret', 'retrace', 'esc', 'escape',
-    'tph', 'tpholla', 'tpd', 'tpdem', 'tpm', 'tpmea',
-    'tpa', 'tpaltep', 'tpy', 'tpyhoat', 'tpv', 'tpvahzl',
-    'rj', 'recjugner', 'rp', 'recpashh', 'rm', 'recmeriph',
-    'sd', 'sandoria', 'bt', 'bastok', 'wd', 'windurst',
-    'jn', 'jeuno',
-    'sb', 'selbina', 'mh', 'mhaura', 'rb', 'rabao', 'kz', 'kazham', 'ng', 'norg',
-    'tv', 'tavnazia', 'au', 'wg', 'whitegate', 'ns', 'nashmau', 'ad', 'adoulin',
-    'stsd', 'stable-sd', 'stbt', 'stable-bt', 'stwd', 'stable-wd', 'stjn', 'stable-jn',
-    'op', 'outpost',
-    'cz', 'ceizak', 'ys', 'yahse', 'hn', 'hennetiel', 'mm', 'morimar',
-    'mj', 'marjami', 'yc', 'yorcia', 'km', 'kamihr',
-    'wj', 'wajaom', 'ar', 'arrapago', 'pg', 'purgonorgo', 'rl', 'rulude',
-    'zv', 'zvahl', 'riv', 'riverne', 'yo', 'yoran', 'lf', 'leafallia',
-    'bh', 'behemoth', 'cc', 'chocircuit', 'pt', 'parting', 'cg', 'chocogirl',
-    'ld', 'leader', 'td', 'tidal'
-}
+-- Whitelist of allowed commands. Single source of truth: warp_command_registry.
+local Registry = require('shared/utils/warp/warp_command_registry')
 
---- Check if command is whitelisted
+--- Check if command is whitelisted (via registry's O(1) lookup set).
 local function is_command_allowed(command)
-    local cmd = command:lower()
-    for _, allowed in ipairs(ALLOWED_COMMANDS) do
-        if cmd == allowed then
-            return true
-        end
-    end
-    return false
+    return Registry.is_warp_command(command:lower())
 end
 
--- Debounce tracking
+-- Debounce tracking. IPC_DEBOUNCE shared via Registry to keep sender
+-- (warp_ipc) and receiver (here) in lockstep.
 local last_ipc_message = ''
 local last_ipc_time = 0
-local IPC_DEBOUNCE = 1.0
+local IPC_DEBOUNCE = Registry.IPC_DEBOUNCE
 
 ---============================================================================
 --- IPC LISTENER (Registered at Job Level - Like MyHome)
@@ -74,6 +52,15 @@ _G.WARP_IPC_EVENT_ID = windower.register_event('ipc message', function(msg)
 
     -- Only process our messages
     if not msg or not msg:find('^' .. IPC_PREFIX) then
+        return
+    end
+
+    -- Skip self-echo: if WE sent this broadcast, don't process it again
+    -- (we already execute locally in send_to_all via coroutine.schedule)
+    if _G.WARP_IPC_BROADCASTING then
+        if _G.WARP_DEBUG then
+            MessageWarp.show_ipc_message_debounced()
+        end
         return
     end
 

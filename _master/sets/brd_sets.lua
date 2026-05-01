@@ -35,11 +35,11 @@ sets = {}
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- • RINGS (Wardrobe Management)
-local StikiRing1 = {name = 'Stikini Ring +1', bag = 'wardrobe 6'}
-local StikiRing2 = {name = 'Stikini Ring +1', bag = 'wardrobe 7'}
-local MoonlightRing1 = {name = 'Moonlight Ring', bag = 'wardrobe 2'}
-local MoonlightRing2 = {name = 'Moonlight Ring', bag = 'wardrobe 4'}
-local ChirichRing1 = {name = 'Chirich Ring +1', bag = 'wardrobe'}
+local StikiRing1 = {name = 'Stikini Ring +1', bag = 'wardrobe 1'}
+local StikiRing2 = {name = 'Stikini Ring +1', bag = 'wardrobe 2'}
+local MoonlightRing1 = {name = 'Moonlight Ring', bag = 'wardrobe 1'}
+local MoonlightRing2 = {name = 'Moonlight Ring', bag = 'wardrobe 2'}
+local ChirichRing1 = {name = 'Chirich Ring +1', bag = 'wardrobe 1'}
 local ChirichRing2 = {name = 'Chirich Ring +1', bag = 'wardrobe 2'}
 
 -- • INSTRUMENTS (Linos for TP/WS)
@@ -189,7 +189,7 @@ sets.precast.FC = {
     left_ear = 'Enchntr. Earring +1',
     right_ear = 'Loquac. Earring',
     ring1 = 'Prolix Ring',
-    ring2 = 'Defending Ring',
+    ring2 = 'Murky Ring',
     back = Intarabus.fc
 }
 
@@ -209,7 +209,7 @@ sets.precast.JA.Nightingale = {feet = 'Bihu Slippers +3'}
 sets.precast.JA.Troubadour = {body = 'Bihu Justaucorps +3'}
 
 -- • Troubadour (Enhance song effects) - Bihu Justaucorps +3
-sets.precast.JA['Soul Voice'] = {legs = 'Bihu cannions +3'}
+sets.precast.JA['Soul Voice'] = {legs = 'Bihu Cannions +3'}
 
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -246,7 +246,7 @@ sets.precast.WS['Evisceration'] = {
     waist = 'Fotia Belt',
     ear1 = 'Odnowa Earring +1',
     ear2 = 'Domin. Earring +1',
-    ring1 = 'Defending Ring',
+    ring1 = 'Murky Ring',
     ring2 = MoonlightRing2,
     back = "Intarabus's Cape"
 }
@@ -280,7 +280,7 @@ sets.precast.WS['Mordant Rime'] = {
     waist = 'Sailfi Belt +1',
     ear1 = 'Ishvara Earring',
     ear2 = 'Regal Earring',
-    ring1 = "Cornelia's ring",
+    ring1 = "Cornelia's Ring",
     ring2 = 'Metamor. Ring +1',
     back = Intarabus.ws_str
 }
@@ -378,7 +378,7 @@ sets.midcast.Minne = set_combine(sets.midcast.BardSong, {legs = 'Mousai Seraweel
 sets.midcast.Etude = set_combine(sets.midcast.BardSong, {head = 'Mousai Turban +1'})
 
 -- • March 
-sets.midcast.March = set_combine(sets.midcast.BardSong, {hands = 'Fili manchettes +3'})
+sets.midcast.March = set_combine(sets.midcast.BardSong, {hands = 'Fili Manchettes +3'})
 
 -- • Paeon 
 sets.midcast["Army's Paeon"] = set_combine(sets.midcast.BardSong, {head = 'Brioso Roundlet +4'})

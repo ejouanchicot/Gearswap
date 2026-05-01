@@ -54,7 +54,7 @@ sets.idle.PDT = {
         name = 'Ebers Earring +2',
         augments = {'System: 1 ID: 1676 Val: 0', 'Accuracy+17', 'Mag. Acc.+17', 'Damage taken-6%', 'STR+9 MND+9'}
     },
-    left_ring = 'Defending Ring',
+    left_ring = 'Murky Ring',
     right_ring = 'Stikini Ring +1',
     back = {name = "Alaunus's Cape", augments = {'MND+18', '"Fast Cast"+10', 'Occ. inc. resist. to stat. ailments+10'}}
 }
@@ -80,7 +80,7 @@ sets.idle.Refresh = {
         name = 'Ebers Earring +2',
         augments = {'System: 1 ID: 1676 Val: 0', 'Accuracy+17', 'Mag. Acc.+17', 'Damage taken-6%', 'STR+9 MND+9'}
     },
-    left_ring = 'Defending Ring',
+    left_ring = 'Murky Ring',
     right_ring = 'Stikini Ring +1',
     back = {name = "Alaunus's Cape", augments = {'MND+18', '"Fast Cast"+10', 'Occ. inc. resist. to stat. ailments+10'}}
 }
@@ -111,7 +111,7 @@ sets.idle.Town = {
         name = 'Ebers Earring +2',
         augments = {'System: 1 ID: 1676 Val: 0', 'Accuracy+17', 'Mag. Acc.+17', 'Damage taken-6%', 'STR+9 MND+9'}
     },
-    left_ring = 'Defending Ring',
+    left_ring = 'Murky Ring',
     right_ring = 'Stikini Ring +1',
     back = {name = "Alaunus's Cape", augments = {'MND+18', '"Fast Cast"+10', 'Occ. inc. resist. to stat. ailments+10'}}
 }
@@ -239,7 +239,7 @@ sets.precast.FC = {
     main = 'C. Palug Hammer',
     sub = "Chanter's Shield",
     ammo = 'Impatiens',
-    head = 'Ebers cap +3',
+    head = 'Ebers Cap +3',
     body = 'Inyanga Jubbah +2',
     hands = {
         name = 'Fanatic Gloves',
@@ -327,7 +327,7 @@ sets.precast.WS['Flash Nova'] = {
     ear2 = "Hecate's Earring",
     body = 'Vanir Cotehardie',
     hands = 'Yaoyotl Gloves',
-    ring1 = "Naji's loop",
+    ring1 = "Naji's Loop",
     ring2 = 'Strendu Ring',
     back = 'Toro Cape',
     waist = 'Thunder Belt',
@@ -539,7 +539,7 @@ sets.midcast['Cursna'] = {
 -- StatusRemoval (Paralyna, Erase, etc.)
 sets.midcast.StatusRemoval = {
     main = 'Yagrush',
-    head = 'Ebers cap +3',
+    head = 'Ebers Cap +3',
     legs = 'Orison Pantaloons +2'
 }
 
@@ -648,7 +648,7 @@ sets.midcast['Regen'] = {
     ammo = 'Homiliary',
     head = {name = 'Telchine Cap', augments = {'"Fast Cast"+3', 'Enh. Mag. eff. dur. +10'}},
     body = {name = 'Piety Bliaut +3', augments = {'Enhances "Benediction" effect'}},
-    hands = 'Ebers mitts +3',
+    hands = 'Ebers Mitts +3',
     legs = 'Th. Pant. +3',
     feet = 'Theo. Duckbills +3',
     neck = 'Melic Torque',
@@ -668,7 +668,7 @@ sets.midcast['Reraise'] = {
     },
     sub = 'Ammurapi Shield',
     ammo = 'Homiliary',
-    head = 'Ebers cap +3',
+    head = 'Ebers Cap +3',
     body = {name = 'Witching Robe', augments = {'MP+45', 'Mag. Acc.+14', '"Mag.Atk.Bns."+14'}},
     hands = {
         name = 'Fanatic Gloves',
@@ -779,7 +779,7 @@ sets.Kiting = {
 
 -- Movement speed gear
 sets.MoveSpeed = {
-    right_ring = 'Shneddick ring'
+    right_ring = 'Shneddick Ring'
 }
 
 --============================================================--

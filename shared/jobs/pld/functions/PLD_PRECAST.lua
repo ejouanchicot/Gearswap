@@ -150,6 +150,14 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     if WSPrecastHandler then
         WSPrecastHandler.apply_tp_gear(spell)
     end
+
+    -- Cure III/IV Self: low-HP FC set (Enif Cosciales) to minimize overcure waste
+    -- Must be in post_precast to override Mote-Include's standard FC equip
+    if (spell.name == 'Cure III' or spell.name == 'Cure IV')
+        and spell.target and spell.target.type == 'SELF'
+        and sets.precast and sets.precast.FC and sets.precast.FC.CureSelf then
+        equip(sets.precast.FC.CureSelf)
+    end
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

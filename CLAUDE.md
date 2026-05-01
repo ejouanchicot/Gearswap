@@ -36,7 +36,7 @@ Tetsouo/config/[job]/              -- Keybinds/States/Lockstyle/Macrobook
 | 8 | AbilityHelper | Auto-trigger avant WS | `shared/utils/precast/ability_helper.lua` |
 | 9 | JobChangeManager | Debouncing 3.0s + reload | `shared/utils/core/job_change_manager.lua` |
 
-> JA messages geres par `ability_message_handler` (v3.2.0). WarpInit retire (v3.1.1).
+> JA messages geres par `ability_message_handler` (v3.2.0).
 
 ## REFERENCES DETAILLEES
 

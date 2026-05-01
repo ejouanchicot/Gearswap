@@ -43,6 +43,7 @@ local categorization_rules = {
         "Mode", "Combat", "Engaged", "Idle", "Enfeeble", "Nuke", "petIdleMode", "AutoPetEngage",
         "Rotation",  -- Removed BRDRotation and VictoryMarch - moved to spell_patterns
         "Xp",  -- XP mode for PLD/RDM
+        "PhalanxSIRD",  -- Phalanx SIRD override for PLD
         "UseAltStep",  -- DNC step configuration mode (must be before ja_patterns check)
         "Auto",  -- Auto-trigger states (ClimacticAuto, etc.)
         "Lock",  -- Lock states (RangeLock for THF, etc.)

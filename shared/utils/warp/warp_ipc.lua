@@ -29,10 +29,12 @@ local WarpIPC = {}
 -- IPC message prefix to avoid conflicts with other addons
 local IPC_PREFIX = 'tetsouo_warp_'
 
--- Debounce: Track last received IPC message to prevent loops
+-- Debounce: Track last received IPC message to prevent loops.
+-- IPC_DEBOUNCE shared via warp_command_registry to avoid divergence between
+-- sender (here) and receiver (warp_ipc_register).
 local last_ipc_message = ''
 local last_ipc_time = 0
-local IPC_DEBOUNCE = 1.0  -- 1 second debounce for IPC messages
+local IPC_DEBOUNCE = require('shared/utils/warp/warp_command_registry').IPC_DEBOUNCE
 
 -- Track if we initiated the broadcast (to avoid duplicate local execution)
 local initiated_broadcast = false
@@ -40,49 +42,9 @@ local initiated_broadcast = false
 ---============================================================================
 --- WHITELIST: Commands allowed for "all" broadcast
 ---============================================================================
-
--- Commands that are safe to broadcast to all characters
-local ALLOWED_COMMANDS = {
-    -- BLM Spells
-    'w', 'warp', 'w2', 'warp2', 'ret', 'retrace', 'esc', 'escape',
-
-    -- WHM Teleports
-    'tph', 'tpholla', 'tpd', 'tpdem', 'tpm', 'tpmea',
-    'tpa', 'tpaltep', 'tpy', 'tpyhoat', 'tpv', 'tpvahzl',
-
-    -- Recalls
-    'rj', 'recjugner', 'rp', 'recpashh', 'rm', 'recmeriph',
-
-    -- Nations
-    'sd', 'sandoria', 'bt', 'bastok', 'wd', 'windurst',
-
-    -- Jeuno
-    'jn', 'jeuno',
-
-    -- Outpost Cities
-    'sb', 'selbina', 'mh', 'mhaura', 'rb', 'rabao', 'kz', 'kazham', 'ng', 'norg',
-
-    -- Expansion Cities
-    'tv', 'tavnazia', 'au', 'wg', 'whitegate', 'ns', 'nashmau', 'ad', 'adoulin',
-
-    -- Chocobo Stables
-    'stsd', 'stable-sd', 'stbt', 'stable-bt', 'stwd', 'stable-wd', 'stjn', 'stable-jn',
-
-    -- Conquest Outposts
-    'op', 'outpost',
-
-    -- Adoulin Frontier
-    'cz', 'ceizak', 'ys', 'yahse', 'hn', 'hennetiel', 'mm', 'morimar',
-    'mj', 'marjami', 'yc', 'yorcia', 'km', 'kamihr',
-
-    -- Special Locations
-    'wj', 'wajaom', 'ar', 'arrapago', 'pg', 'purgonorgo', 'rl', 'rulude',
-    'zv', 'zvahl', 'riv', 'riverne', 'yo', 'yoran', 'lf', 'leafallia',
-    'bh', 'behemoth', 'cc', 'chocircuit', 'pt', 'parting', 'cg', 'chocogirl',
-
-    -- Unique Mechanics
-    'ld', 'leader', 'td', 'tidal'
-}
+-- Single source of truth: warp_command_registry. Both this whitelist and the
+-- main command-dispatch list (COMMON_COMMANDS.lua) read from the same array.
+local ALLOWED_COMMANDS = require('shared/utils/warp/warp_command_registry').COMMANDS
 
 ---============================================================================
 --- HELPER FUNCTIONS
@@ -218,7 +180,9 @@ function WarpIPC.send_to_all(command)
     MessageWarp.show_ipc_broadcasting(cmd)
 
     -- Set broadcast flag BEFORE sending (prevents self-IPC processing)
+    -- Use GLOBAL flag so warp_ipc_register.lua listener can also check it
     initiated_broadcast = true
+    _G.WARP_IPC_BROADCASTING = true
 
     -- Execute locally with slight delay (avoids GearSwap self_command reentrancy)
     -- windower.chat.input during active self_command handler can be dropped
@@ -244,9 +208,10 @@ function WarpIPC.send_to_all(command)
             MessageWarp.show_ipc_message_sent()
         end
 
-        -- Reset broadcast flag after delay (allow future IPC messages)
+        -- Reset broadcast flags after delay (allow future IPC messages)
         coroutine.schedule(function()
             initiated_broadcast = false
+            _G.WARP_IPC_BROADCASTING = false
         end, 2.0)
     end, 0.5)  -- After local execution has started
 

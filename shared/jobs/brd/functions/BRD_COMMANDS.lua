@@ -77,156 +77,112 @@ local function ensure_commands_loaded()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
+---   STATIC LOOKUP TABLES (module-level constants - no recompute per call)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+local THRENODIES = {Fire='Fire Threnody II', Ice='Ice Threnody II', Wind='Wind Threnody II',
+    Earth='Earth Threnody II', Lightning='Lightning Threnody II', Water='Water Threnody II',
+    Light='Light Threnody II', Dark='Dark Threnody II'}
+
+local CAROLS = {Fire='Fire Carol II', Ice='Ice Carol II', Wind='Wind Carol II',
+    Earth='Earth Carol II', Lightning='Lightning Carol II', Water='Water Carol II',
+    Light='Light Carol II', Dark='Dark Carol II'}
+
+local ETUDES = {STR='Herculean Etude', DEX='Uncanny Etude', VIT='Vital Etude',
+    AGI='Swift Etude', INT='Sage Etude', MND='Logical Etude', CHR='Bewitching Etude'}
+
+local MARCATO_TARGETS = {HonorMarch='Honor March', AriaPassion='Aria of Passion'}
+
+local MARCATO_RECAST_ID = 48  -- Job ability recast slot for Marcato
+
+---  ═══════════════════════════════════════════════════════════════════════════
 ---   HELPER FUNCTIONS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Cast a song by name with optional Pianissimo auto-detection
----   Auto-activates Marcato for Honor March if Nitro active (without Soul Voice)
----   Auto-activates Pianissimo if targeting a party member
----   @param song_name string Song name to cast
----   @param auto_pianissimo boolean Enable auto-detection (default false)
-local function cast_song(song_name, auto_pianissimo)
-    if not song_name then
-        return
-    end
+--- True if the current target is a different PC (not self).
+local function is_targeting_other_pc()
+    if not (player and player.target) then return false end
+    local t = player.target
+    return t.id and t.id ~= player.id and t.spawn_type == 13
+end
 
-    -- NOTE: Pianissimo auto-activation is now handled ONLY by BRD_PRECAST.lua
-    -- This prevents double-casting when using song commands
-    -- Simply cast the song normally, BRD_PRECAST will auto-add Pianissimo if needed
+--- Try to auto-cast Marcato before a target song (Honor March / Aria of Passion).
+--- Conditions: state.MarcatoSong matches song_name, NI+TR up, no SV, Marcato off
+--- cooldown, and not targeting another player.
+--- @return boolean true if Marcato + song was auto-cast (caller should return)
+local function try_marcato_auto_cast(song_name)
+    if is_targeting_other_pc() then return false end
+    if not (state and state.MarcatoSong) then return false end
+    if state.MarcatoSong.value == 'Off' then return false end
 
-    -- Auto-Marcato for configured song (state.MarcatoSong) when NOT targeting another player
-    local targeting_other_player = false
+    local target_song = MARCATO_TARGETS[state.MarcatoSong.value]
+    if not target_song or song_name ~= target_song then return false end
+
+    local has_ni = buffactive['Nightingale'] or false
+    local has_tr = buffactive['Troubadour']  or false
+    local has_sv = buffactive['Soul Voice']  or false
+    if not has_ni or not has_tr or has_sv or buffactive['Marcato'] then return false end
+
+    local marcato_recast = windower.ffxi.get_ability_recasts()[MARCATO_RECAST_ID] or 0
+    if marcato_recast > 0 then return false end  -- on cooldown, cast song without
+
+    -- Marcato ready: chain Marcato then song
+    send_command('input /ja "Marcato" <me>')
+    send_command('wait 2; input /ma "' .. song_name .. '" <me>')
+    MessageFormatter.show_marcato_honor_march(target_song)
+    return true
+end
+
+--- Cast a song to the appropriate target using FFXI priority rules:
+---   1. Self target  -> <me>
+---   2. Other PC     -> "<player_name>"
+---   3. Mob/no target -> <stpc> (subtarget or self)
+local function cast_song_to_target(song_name)
     if player and player.target then
         local target = player.target
-        if target.id and target.id ~= player.id and target.spawn_type == 13 then
-            targeting_other_player = true
-        end
-    end
-
-    if not targeting_other_player and state and state.MarcatoSong then
-        local marcato_enabled = state.MarcatoSong.value ~= 'Off'
-        local target_song = nil
-
-        if state.MarcatoSong.value == 'HonorMarch' then
-            target_song = 'Honor March'
-        elseif state.MarcatoSong.value == 'AriaPassion' then
-            target_song = 'Aria of Passion'
-        end
-
-        if marcato_enabled and target_song and song_name == target_song then
-            local has_ni = buffactive['Nightingale'] or false
-            local has_tr = buffactive['Troubadour'] or false
-            local has_sv = buffactive['Soul Voice'] or false
-
-            if has_ni and has_tr and not has_sv and not buffactive['Marcato'] then
-                -- Check if Marcato is available (not on cooldown)
-                local marcato_recast = windower.ffxi.get_ability_recasts()[48] or 0
-
-                if marcato_recast == 0 then
-                    -- Marcato ready >> use before target song
-                    send_command('input /ja "Marcato" <me>')
-                    send_command('wait 2; input /ma "' .. song_name .. '" <me>')
-                    MessageFormatter.show_marcato_honor_march(target_song)
-                    return
-                end
-                -- If Marcato on cooldown: cast song without it (no spam)
-            end
-        end
-    end
-
-    -- Determine cast target
-    if player and player.target then
-        local target = player.target
-
-        -- PRIORITY 1: Targeting self explicitly
         if target.id == player.id then
             send_command('input /ma "' .. song_name .. '" <me>')
             return
         end
-
-        -- PRIORITY 2: Targeting another PC (not self)
         if target.spawn_type == 13 then
             send_command('input /ma "' .. song_name .. '" "' .. target.name .. '"')
             return
         end
     end
-
-    -- PRIORITY 3: Default (monstre, no target) - use <stpc> (subtarget or self)
     send_command('input /ma "' .. song_name .. '" <stpc>')
+end
+
+---   Cast a song by name. Auto-Marcato for configured songs (Honor March /
+---   Aria of Passion) when NI+TR up. Pianissimo auto-activation is handled
+---   by BRD_PRECAST.lua (do NOT add it here, would double-cast).
+---   @param song_name string Song name to cast
+---   @param auto_pianissimo boolean Reserved (currently unused, see PRECAST)
+local function cast_song(song_name, auto_pianissimo)
+    if not song_name then return end
+    if try_marcato_auto_cast(song_name) then return end
+    cast_song_to_target(song_name)
 end
 
 ---   Use a job ability by name
 ---   @param ability_name string Ability name
 local function use_ability(ability_name)
-    if not ability_name then
-        return
-    end
+    if not ability_name then return end
     send_command('input /ja "' .. ability_name .. '" <me>')
 end
 
 ---   Get threnody name for current element
----   @return string Threnody spell name
 local function get_current_threnody()
-    if not state or not state.ThrenodyElement then
-        return nil
-    end
-
-    local element = state.ThrenodyElement.current
-    local threnodies = {
-        Fire = 'Fire Threnody II',
-        Ice = 'Ice Threnody II',
-        Wind = 'Wind Threnody II',
-        Earth = 'Earth Threnody II',
-        Lightning = 'Lightning Threnody II',
-        Water = 'Water Threnody II',
-        Light = 'Light Threnody II',
-        Dark = 'Dark Threnody II'
-    }
-
-    return threnodies[element]
+    return state and state.ThrenodyElement and THRENODIES[state.ThrenodyElement.current] or nil
 end
 
 ---   Get carol name for current element
----   @return string Carol spell name
 local function get_current_carol()
-    if not state or not state.CarolElement then
-        return nil
-    end
-
-    local element = state.CarolElement.current
-    local carols = {
-        Fire = 'Fire Carol II',
-        Ice = 'Ice Carol II',
-        Wind = 'Wind Carol II',
-        Earth = 'Earth Carol II',
-        Lightning = 'Lightning Carol II',
-        Water = 'Water Carol II',
-        Light = 'Light Carol II',
-        Dark = 'Dark Carol II'
-    }
-
-    return carols[element]
+    return state and state.CarolElement and CAROLS[state.CarolElement.current] or nil
 end
 
 ---   Get etude name for current type
----   @return string Etude spell name
 local function get_current_etude()
-    if not state or not state.EtudeType then
-        return nil
-    end
-
-    local stat = state.EtudeType.current
-    local etudes = {
-        STR = 'Herculean Etude',
-        DEX = 'Uncanny Etude',
-        VIT = 'Vital Etude',
-        AGI = 'Swift Etude',
-        INT = 'Sage Etude',
-        MND = 'Logical Etude',
-        CHR = 'Bewitching Etude'
-    }
-
-    return etudes[stat]
+    return state and state.EtudeType and ETUDES[state.EtudeType.current] or nil
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -400,7 +356,8 @@ function job_self_command(cmdParams, eventArgs)
     if command == 'nt' then
         -- Nightingale + Troubadour combo
         use_ability('Nightingale')
-        local ability_delay = BRDTimingConfig.ABILITY_DELAYS.nt_combo_delay
+        local delays = BRDTimingConfig.ABILITY_DELAYS or {}
+        local ability_delay = delays.nt_combo_delay or 1.5  -- safe default if config missing
         coroutine.schedule(
             function()
                 use_ability('Troubadour')
@@ -596,13 +553,7 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     if command == 'song5' then
-        -- Check for Clarion Call
-        if not buffactive['Clarion Call'] then
-            MessageFormatter.show_clarion_required()
-            eventArgs.handled = true
-            return
-        end
-
+        -- No Clarion Call check: player can refresh 5 songs even after Clarion wears off
         local songs = SongRotationManager.get_songs_with_replacement()
         if songs and songs[5] then
             cast_song(songs[5], true) -- Enable auto-Pianissimo

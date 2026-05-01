@@ -64,11 +64,11 @@ local ChirichRing2 = {
 }
 local MoonlightRing1 = {
     name = 'Moonlight Ring',
-    bag = 'wardrobe 2'
+    bag = 'wardrobe 1'
 }
 local MoonlightRing2 = {
     name = 'Moonlight Ring',
-    bag = 'wardrobe 4'
+    bag = 'wardrobe 2'
 }
 
 local MoonShadeEarring = {
@@ -154,7 +154,7 @@ sets.Polearm = {
     sub = 'Alber Strap'
 }
 sets.Staff = {
-    main = 'Ram staff',
+    main = 'Ram Staff',
     sub = 'Alber Strap'
 }
 sets.Scythe = {
@@ -205,7 +205,7 @@ sets.idle.Regen = set_combine(sets.idle, {
 
 -- PDT Idle (Physical damage reduction)
 sets.idle.PDT = set_combine(sets.idle, {
-    ring2 = 'Defending Ring'
+    ring2 = 'Murky Ring'
 })
 
 -- Weak Idle (Low HP)
@@ -286,7 +286,7 @@ sets.precast.JA['Sneak Attack'] = {
     legs = 'Lustr. Subligar +1',
     feet = "Skulker's Poulaines +3",
     neck = 'Asn. Gorget +2',
-    waist = 'Kentarch belt +1',
+    waist = 'Kentarch Belt +1',
     ear1 = 'Mache Earring +1',
     ear2 = 'Odr Earring',
     ring1 = 'Regal Ring',
@@ -353,13 +353,13 @@ sets.precast.JA['Steal'] = {
 
 -- Despoil
 sets.precast.JA['Despoil'] = {
-    legs = "Skulker's culottes +3",
-    feet = "Skulker's poulaines +3"
+    legs = "Skulker's Culottes +3",
+    feet = "Skulker's Poulaines +3"
 }
 
 -- Collaborator / Accomplice
 sets.precast.JA['Collaborator'] = {
-    head = "Skulker's bonnet +3",
+    head = "Skulker's Bonnet +3",
     body = "Plunderer's Vest +4",
     hands = 'Plun. Armlets +4',
     ear1 = 'Friomisi Earring',
@@ -378,7 +378,7 @@ sets.precast.JA['Animated Flourish'] = {
     head = "Skulker's Bonnet +3",
     body = "Plunderer's Vest +4",
     hands = "Skulker's Armlets +3",
-    legs = "Skulker's culottes +3",
+    legs = "Skulker's Culottes +3",
     feet = "Skulker's Poulaines +3",
     neck = 'Unmoving Collar +1',
     waist = 'Svelt. Gouriz +1',
@@ -416,7 +416,7 @@ sets.precast.Step = {
     legs = 'Malignance Tights',
     feet = 'Malignance Boots',
     neck = 'Asn. Gorget +2',
-    waist = 'Kentarch belt +1',
+    waist = 'Kentarch Belt +1',
     ear1 = 'Crepuscular Earring',
     ear2 = "Skulker's Earring +1",
     ring1 = ChirichRing1,
@@ -451,8 +451,6 @@ sets.precast.FC.Utsusemi = sets.precast.FC
 --                   PRECAST: WEAPONSKILLS                    --
 -- ============================================================--
 
-sets.precast.WS = {}
-
 -- Base WS Set
 sets.precast.WS = {
     ammo = 'Yetshila +1',
@@ -465,7 +463,7 @@ sets.precast.WS = {
         name = 'Adhemar Wrist. +1',
         augments = {'STR+12', 'DEX+12', 'Attack+20'}
     },
-    legs = "Pillager's culottes +4",
+    legs = "Pillager's Culottes +4",
     feet = {
         name = 'Lustra. Leggings +1',
         augments = {'HP+65', 'STR+15', 'DEX+15'}
@@ -491,8 +489,8 @@ sets.precast.WS["Rudra's Storm"] = {
     waist = "Kentarch Belt +1",
     ear1 = "Odr Earring",
     ear2 = "Domin. Earring +1",
-    ring1 = "Defending Ring",
-    ring2 = "Cornelia's ring",
+    ring1 = "Murky Ring",
+    ring2 = "Cornelia's Ring",
     back = Toutatis.WS2
 }
 
@@ -518,7 +516,7 @@ sets.precast.WS["Rudra's Storm"].SATA = set_combine(sets.precast.WS["Rudra's Sto
     ear1 = "Odnowa Earring +1",
     ear2 = "Domin. Earring +1",
     ring1 = "Regal Ring",
-    ring2 = "Cornelia's ring"
+    ring2 = "Cornelia's Ring"
 })
 
 -- Evisceration (Multi-hit crit WS) --
@@ -547,7 +545,7 @@ sets.precast.WS['Evisceration'].TA = set_combine(sets.precast.WS['Evisceration']
     legs = "Pill. Culottes +4",
     ear1 = "Odnowa Earring +1",
     ear2 = "Odr Earring",
-    ring1 = "Defending Ring",
+    ring1 = "Murky Ring",
     ring2 = "Moonlight Ring"
 })
 
@@ -569,7 +567,7 @@ sets.precast.WS['Exenterator'] = {
     ear1 = "Odnowa Earring +1",
     ear2 = "Skulk. Earring +1",
     ring1 = "Regal Ring",
-    ring2 = "Defending Ring",
+    ring2 = "Murky Ring",
     back = Toutatis.WS2
 }
 
@@ -612,8 +610,8 @@ sets.precast.WS['Savage Blade'] = {
     waist = "Sailfi Belt +1",
     ear1 = "Sherida Earring",
     ear2 = "Odnowa Earring +1",
-    ring1 = "Defending Ring",
-    ring2 = "Cornelia's ring",
+    ring1 = "Murky Ring",
+    ring2 = "Cornelia's Ring",
     back = Toutatis.WS2
 }
 
@@ -639,8 +637,8 @@ sets.precast.WS['Savage Blade'].SATA = set_combine(sets.precast.WS['Savage Blade
     head = "Pill. Bonnet +4",
     ear1 = "Ishvara Earring",
     ear2 = "Odnowa Earring +1",
-    ring1 = "Defending Ring",
-    ring2 = "Cornelia's ring"
+    ring1 = "Murky Ring",
+    ring2 = "Cornelia's Ring"
 })
 
 -- Shark Bite (DEX/MND WS) --
@@ -656,8 +654,8 @@ sets.precast.WS['Shark Bite'] = {
     waist = "Sailfi Belt +1",
     ear1 = "Sherida Earring",
     ear2 = "Odnowa Earring +1",
-    ring1 = "Defending Ring",
-    ring2 = "Cornelia's ring",
+    ring1 = "Murky Ring",
+    ring2 = "Cornelia's Ring",
     back = Toutatis.WS2
 }
 
@@ -692,8 +690,8 @@ sets.precast.WS['Mandalic Stab'] = {
     waist = "Sailfi Belt +1",
     ear1 = "Sherida Earring",
     ear2 = "Odnowa Earring +1",
-    ring1 = "Defending Ring",
-    ring2 = "Cornelia's ring",
+    ring1 = "Murky Ring",
+    ring2 = "Cornelia's Ring",
     back = Toutatis.WS2
 }
 
@@ -799,7 +797,7 @@ sets.precast.RA = {
     ear2 = 'Telos Earring',
     ring1 = 'Cacoethic Ring',
     ring2 = 'Crepuscular Ring',
-    back = 'Sacro mantle'
+    back = 'Sacro Mantle'
 }
 
 sets.precast.RATH = set_combine(sets.precast.RA, {
@@ -829,14 +827,14 @@ sets.midcast.FastRecast = {
     head = "skulker's Bonnet +3",
     body = 'Nyame Mail',
     hands = "Skulker's Armlets +3",
-    legs = "Skulker's culottes +3",
+    legs = "Skulker's Culottes +3",
     feet = "Skulker's Poulaines +3",
     neck = 'Elite Royal Collar',
     waist = 'Svelt. Gouriz +1',
     ear1 = 'Sherida Earring',
     ear2 = 'Eabani Earring',
     ring1 = ChirichRing2,
-    ring2 = 'Defending Ring',
+    ring2 = 'Murky Ring',
     back = 'Solemnity Cape'
 }
 
@@ -850,7 +848,7 @@ sets.midcast.Utsusemi = sets.midcast.FastRecast
 -- Base Movement Speed
 sets.MoveSpeed = {
     feet = 'Pill. Poulaines +4',
-    ring1 = 'Defending Ring'
+    ring1 = 'Murky Ring'
 }
 
 -- Adoulin Movement (City-specific speed boost)

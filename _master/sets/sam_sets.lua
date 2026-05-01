@@ -92,7 +92,7 @@ sets.idle.PDT = set_combine(sets.idle.Normal, {
     legs = {name = 'Nyame Flanchard', augments = {'Path: B'}},
     feet = {name = 'Nyame Sollerets', augments = {'Path: B'}},
     neck = 'Loricate Torque +1',
-    left_ring = 'Defending Ring'
+    left_ring = 'Murky Ring'
 })
 
 ---============================================================================
@@ -108,7 +108,7 @@ sets.defense.PDT = {
     legs = {name = 'Nyame Flanchard', augments = {'Path: B'}},
     feet = 'Nyame Sollerets',
     neck = 'Loricate Torque +1',
-    left_ring = 'Defending Ring'
+    left_ring = 'Murky Ring'
 }
 
 sets.defense.MDT = set_combine(sets.defense.PDT, {
@@ -170,7 +170,7 @@ sets.engaged.PDT = set_combine(sets.engaged.Normal, {
     legs = {name = 'Nyame Flanchard', augments = {'Path: B'}},
     feet = {name = 'Nyame Sollerets', augments = {'Path: B'}},
     neck = 'Loricate Torque +1',
-    left_ring = 'Defending Ring'
+    left_ring = 'Murky Ring'
 })
 
 sets.engaged.Acc.PDT = set_combine(sets.engaged.Acc, {
@@ -180,7 +180,7 @@ sets.engaged.Acc.PDT = set_combine(sets.engaged.Acc, {
     legs = {name = 'Nyame Flanchard', augments = {'Path: B'}},
     feet = 'Nyame Sollerets',
     neck = 'Loricate Torque +1',
-    left_ring = 'Defending Ring'
+    left_ring = 'Murky Ring'
 })
 
 sets.engaged.MDT = {
@@ -460,7 +460,7 @@ sets.midcast['Phalanx'] = {
     body = 'Valorous Mail',
     legs = 'Valorous Hose',
     neck = 'Loricate Torque +1',
-    left_ring = 'Defending Ring'
+    left_ring = 'Murky Ring'
 }
 
 ---============================================================================

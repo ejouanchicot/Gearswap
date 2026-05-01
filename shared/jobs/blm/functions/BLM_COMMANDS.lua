@@ -298,7 +298,9 @@ function job_self_command(cmdParams, eventArgs)
     -- ══════════════════════════════════════════════════════════════════════════
 
     -- Buff: Automated self-buffing (Stoneskin, Blink, Aquaveil, Ice Spikes)
-    if command == 'buff' then
+    -- Accepts: buff, buffs, buffself, selfbuff (case-insensitive via :lower above)
+    if command == 'buff' or command == 'buffs'
+       or command == 'buffself' or command == 'selfbuff' then
         -- Function loaded globally via blm_functions.lua
         if BuffSelf then
             BuffSelf()

@@ -82,10 +82,10 @@ JumalikBody = {name = 'Jumalik Mail', priority = 0, augments = {'HP+50', 'Attack
 -- • Rings (Wardrobe-specific)
 ChirichRing1 = {name = 'Chirich Ring +1', priority = 0, bag = 'wardrobe 1'}
 ChirichRing2 = {name = 'Chirich Ring +1', priority = 0, bag = 'wardrobe 2'}
-StikiRing1 = {name = 'Stikini Ring +1', priority = 0, bag = 'wardrobe 6'}
-StikiRing2 = {name = 'Stikini Ring +1', priority = 0, bag = 'wardrobe 7'}
-Moonlight1 = {name = 'Moonlight Ring', priority = 13, bag = 'wardrobe 2'}
-Moonlight2 = {name = 'Moonlight Ring', priority = 12, bag = 'wardrobe 4'}
+StikiRing1 = {name = 'Stikini Ring +1', priority = 0, bag = 'wardrobe 1'}
+StikiRing2 = {name = 'Stikini Ring +1', priority = 0, bag = 'wardrobe 2'}
+Moonlight1 = {name = 'Moonlight Ring', priority = 13, bag = 'wardrobe 1'}
+Moonlight2 = {name = 'Moonlight Ring', priority = 12, bag = 'wardrobe 2'}
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- WEAPON SETS
@@ -118,7 +118,7 @@ sets.idle = {
     hands = {name = 'Chev. Gauntlets +3', priority = 8}, -- HP+64, DT -11%, Shield block bonus
     legs = {name = 'Chev. Cuisses +3', priority = 10}, -- HP+127, DT -13%, Enmity+14
     feet = {name = 'Chev. Sabatons +3', priority = 6}, -- HP+52, Completes set bonus for damage absorption
-    neck = {name = 'Kgt. beads +2', priority = 7}, -- HP+60, DT -7%, Enmity+10
+    neck = {name = 'Kgt. Beads +2', priority = 7}, -- HP+60, DT -7%, Enmity+10
     waist = {name = 'Null Belt', priority = 0}, -- Magic defense bonus, no HP gain
     left_ear = {name = 'Odnowa Earring +1', priority = 9}, -- HP+110, DT -3%, MDT -2%
     right_ear = {name = 'Chev. Earring +1', priority = 0}, -- DT -4%, Cure potency +11%
@@ -165,9 +165,9 @@ sets.idleNormal =
         head = {name = 'Chev. Armet +3', priority = 14},
         body = {name = 'Adamantite Armor', priority = 15},
         legs = {name = 'Chev. Cuisses +3', priority = 16},
-        neck = {name = 'Kgt. beads +2', priority = 17},
+        neck = {name = 'Kgt. Beads +2', priority = 17},
         waist = {name = 'Creed Baudrier', priority = 18},
-        Left_ring = Moonlight1,
+        left_ring = Moonlight1,
         right_ring = Moonlight2
     }
 )
@@ -198,7 +198,7 @@ sets.engaged =
         hands = {name = 'Chev. Gauntlets +3', priority = 8}, -- HP+64, DT -11%, Shield block bonus
         legs = {name = 'Chev. Cuisses +3', priority = 10}, -- HP+127, DT -13%, Enmity+14
         feet = {name = 'Chev. Sabatons +3', priority = 6}, -- HP+52, Completes set bonus for damage absorption
-        neck = {name = 'Kgt. beads +2', priority = 7}, -- HP+60, DT -7%, Enmity+10
+        neck = {name = 'Kgt. Beads +2', priority = 7}, -- HP+60, DT -7%, Enmity+10
         waist = {name = 'Null Belt', priority = 0}, -- Magic defense bonus, no HP gain
         left_ear = {name = 'Odnowa Earring +1', priority = 9}, -- HP+110, DT -3%, MDT -2%
         right_ear = {name = 'Chev. Earring +1', priority = 0}, -- DT -4%, Cure potency +11%
@@ -349,7 +349,7 @@ sets.precast.WS = {
     hands = "Sakpata's Gauntlets",
     legs = "Sakpata's Cuisses",
     feet = "Sulevia's Leggings +2",
-    neck = "Knight's bead Necklace +2",
+    neck = "Knight's Bead Necklace +2",
     waist = {name = 'Sailfi Belt +1', priority = 3},
     left_ear = 'Ishvara Earring',
     right_ear = 'Thrud Earring',
@@ -372,15 +372,15 @@ sets.precast.WS['Savage Blade'] =
     set_combine(
     sets.precast.WS,
     {
-        ammo = {name = "oshasha's treatise"},
+        ammo = {name = "Oshasha's Treatise"},
         head = {name = 'Nyame Helm'},
         body = {name = 'Nyame Mail'},
         hands = {name = 'Nyame Gauntlets'},
         legs = {name = 'Nyame Flanchard'},
         feet = {name = 'Nyame Sollerets'},
-        neck = {name = "knight's bead Necklace +2"},
+        neck = {name = "Knight's Bead Necklace +2"},
         waist = {name = 'Sailfi Belt +1'},
-        left_ear = {name = 'thrud Earring'},
+        left_ear = {name = 'Thrud Earring'},
         right_ear = {name = 'Tuisto Earring'},
         left_ring = {name = "Cornelia's Ring"},
         right_ring = {name = 'Regal Ring'},
@@ -415,7 +415,7 @@ sets.precast.WS['Aeolian Edge'] =
     set_combine(
     sets.precast.WS,
     {
-        ammo = {name = "Oshasha's treatise"},
+        ammo = {name = "Oshasha's Treatise"},
         head = {name = 'Nyame Helm'},
         body = {name = 'Nyame Mail'},
         hands = {name = 'Nyame Gauntlets'},
@@ -426,7 +426,7 @@ sets.precast.WS['Aeolian Edge'] =
         left_ear = {name = 'Crematio Earring'},
         right_ear = {name = 'Friomisi Earring'},
         left_ring = {name = "Cornelia's Ring"},
-        right_ring = {name = 'Defending ring'},
+        right_ring = {name = 'Murky Ring'},
         back = {name = 'Moonlight Cape'}
     }
 )
@@ -509,7 +509,7 @@ sets.midcast.PhalanxPotency = {
     main = {name = "Sakpata's Sword"},
     sub = {name = 'Priwen', priority = 0, augments = {'HP+50', 'Mag. Evasion+50', 'Damage Taken -3%'}},
     ammo = {name = 'Staunch Tathlum +1'},
-    head = {name = 'Odyssean helm', priority = 13},
+    head = {name = 'Odyssean Helm', priority = 13},
     neck = {name = "Melic Torque"},
     left_ear = {name = 'Tuisto Earring', priority = 12},
     right_ear = {name = 'Chev. Earring +1'},
@@ -543,7 +543,7 @@ sets.midcast.SIRDPhalanx = {
     waist = {name = 'Audumbla Sash'},
     left_ear = {name = 'Knightly Earring'},
     right_ear = {name = 'Odnowa Earring +1'},
-    left_ring = {name = 'Defending Ring'},
+    left_ring = {name = 'Murky Ring'},
     right_ring = {name = 'Gelatinous Ring +1'},
     back = {name = 'Weard Mantle', priority = 0, augments = {'VIT+4', 'Phalanx +5'}}
 }
@@ -558,9 +558,9 @@ sets.midcast['Enlight'] =
     sets.midcast.SIRDEnmity,
     {
         head = JumalikHead, --Refresh 1
-        body = {name = 'Reverence surcoat +4'},
+        body = {name = 'Reverence Surcoat +4'},
         hands = {name = 'Eschite Gauntlets'},
-        waist = {name = 'Asklepian belt'},
+        waist = {name = 'Asklepian Belt'},
         back = {name = 'Moonlight Cape', priority = 16},
         left_ear = {name = "Knight's Earring"}
     }
@@ -581,9 +581,9 @@ sets.midcast['Enhancing Magic'] =
 
 -- • Cure Base Set
 sets.Cure = {
-    ammo = {name = 'staunch Tathlum +1', priority = 1},
+    ammo = {name = 'Staunch Tathlum +1', priority = 1},
     head = {name = 'Souv. Schaller +1', priority = 8},
-    left_ear = {name = 'tuisto Earring', priority = 10},
+    left_ear = {name = 'Tuisto Earring', priority = 10},
     right_ear = {name = 'Chev. Earring +1', priority = 0},
     hands = {name = 'Regal Gauntlets', priority = 7},
     back = {name = 'Moonlight Cape', priority = 12},
@@ -601,13 +601,13 @@ sets.midcast.CureSelf =
         back = {name = 'Moonlight Cape', priority = 11}, -- PDT
         hands = {name = 'Regal Gauntlets', priority = 10}, -- PDT
         neck = {name = 'Unmoving Collar +1', priority = 9}, -- PDT
-        body = {name = 'Souveran cuirass +1', priority = 8}, -- PDT
-        left_ear = {name = 'tuisto Earring', priority = 7}, -- PDT
+        body = {name = 'Souveran Cuirass +1', priority = 8}, -- PDT
+        left_ear = {name = 'Tuisto Earring', priority = 7}, -- PDT
         right_ring = {name = 'Gelatinous Ring +1', priority = 6}, -- PDT
         left_ring = {name = 'Moonlight Ring', priority = 5}, -- PDT
         feet = {name = 'Odyssean Greaves', priority = 4}, -- Cure Potency
         legs = {name = "Founder's Hose", priority = 0},
-        ammo = {name = 'staunch Tathlum +1', priority = 1},
+        ammo = {name = 'Staunch Tathlum +1', priority = 1},
         right_ear = {name = 'Chev. Earring +1', priority = 0}
     }
 )
@@ -618,14 +618,14 @@ sets.midcast.CureOther =
     sets.Cure,
     {
         head = {name = 'Souv. Schaller +1', priority = 13}, -- Cure Potency
-        body = {name = 'Souveran cuirass +1', priority = 12}, -- Cure Potency
-        left_ear = {name = 'tuisto Earring', priority = 11}, -- MND
+        body = {name = 'Souveran Cuirass +1', priority = 12}, -- Cure Potency
+        left_ear = {name = 'Tuisto Earring', priority = 11}, -- MND
         hands = {name = "Chevalier's Gauntlets +3", priority = 10}, -- Cure Potency
         legs = {name = "Founder's Hose", priority = 9}, -- Enmity+
-        neck = {name = 'Sacro gorget', priority = 8}, -- MND
+        neck = {name = 'Sacro Gorget', priority = 8}, -- MND
         feet = {name = 'Odyssean Greaves', priority = 7}, -- Cure Potency
-        waist = {name = 'Audumbla sash', priority = 0},
-        ammo = {name = 'staunch Tathlum +1', priority = 0},
+        waist = {name = 'Audumbla Sash', priority = 0},
+        ammo = {name = 'Staunch Tathlum +1', priority = 0},
         right_ear = {name = 'Chev. Earring +1', priority = 0},
         right_ring = {name = 'Apeile Ring +1', priority = 0},
         left_ring = {name = 'Apeile Ring +1', priority = 0},

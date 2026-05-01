@@ -172,6 +172,13 @@ local function use_warp_destination(destination_key, destination_name)
 
     local first_item = items[1]
     if first_item then
+        -- Verify player mob data is available (prevents GearSwap band() error
+        -- when spawn_type is nil due to timing issues)
+        local me = windower.ffxi.get_mob_by_target('me')
+        if not me or not me.spawn_type then
+            MessageCore.error('[WARP] Player data unavailable, try again')
+            return false
+        end
         MessageWarp.show_using_destination(first_item.data.name, destination_name)
         send_command('input /item "' .. first_item.data.name .. '" <me>')
         return true
