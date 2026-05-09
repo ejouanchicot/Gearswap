@@ -81,8 +81,11 @@ TIMER('RDM_COMMANDS')
 ---   SECTION 7: DUAL-BOXING SYSTEM (non-critical, loaded last)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load dual-boxing manager (auto-initializes and handles ALT<>>MAIN communication)
-local dualbox_success, DualBoxManager = pcall(require, 'shared/utils/dualbox/dualbox_manager')
+-- Load dual-boxing manager (auto-initializes and handles ALT<>>MAIN communication).
+-- Plain `require` matches the convention used by every other job facade -
+-- dualbox_manager is load-bearing infrastructure and must fail loud, not
+-- silently degrade.
+local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 
 -- ═══════════════════════════════════════════════════════════════════
 TIMER('TOTAL RDM_functions', true)

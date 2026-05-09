@@ -114,7 +114,8 @@ local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- All module functions are now available in global scope
-print('[COR] All functions loaded (11 hooks + 3 logic modules)')
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+MessageFormatter.show_debug('COR', 'All functions loaded (11 hooks + 3 logic modules)')
 
 -- ═══════════════════════════════════════════════════════════════════
 TIMER('TOTAL COR_functions', true)

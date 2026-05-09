@@ -373,6 +373,33 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- Dispel: BLM only has access via /RDM, or via /SCH with Addendum: Black.
+    -- /RDM      : direct cast on <stnpc>
+    -- /SCH path : Addendum: Black is REQUIRED (Dark Arts alone doesn't grant Dispel)
+    --   Addendum: Black active                    -> cast Dispel directly
+    --   Dark Arts active, no Addendum: Black     -> Addendum: Black, then Dispel
+    --   Nothing active                            -> Dark Arts, Addendum: Black, then Dispel
+    -- FFXI rejects intermediate JAs if no stratagem charge is available.
+    if command == 'dispel' then
+        local sub = (player and player.sub_job) or 'NON'
+        if sub == 'RDM' then
+            send_command('input /ma "Dispel" <stnpc>')
+        elseif sub == 'SCH' then
+            if buffactive and buffactive['Addendum: Black'] then
+                send_command('input /ma "Dispel" <stnpc>')
+            elseif buffactive and buffactive['Dark Arts'] then
+                send_command('input /ja "Addendum: Black" <me>; wait 2; input /ma "Dispel" <stnpc>')
+            else
+                send_command('input /ja "Dark Arts" <me>; wait 2; input /ja "Addendum: Black" <me>; wait 2; input /ma "Dispel" <stnpc>')
+            end
+        else
+            local MessageCore = require('shared/utils/messages/message_core')
+            MessageCore.warning(('Dispel unavailable on BLM/%s. Need /RDM or /SCH.'):format(sub))
+        end
+        eventArgs.handled = true
+        return
+    end
+
     -- ══════════════════════════════════════════════════════════════════════════
     -- BLM INTELLIGENT NUKE COMMANDS (with validation + refinement)
     -- ══════════════════════════════════════════════════════════════════════════

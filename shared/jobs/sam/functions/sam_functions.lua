@@ -41,7 +41,8 @@ TIMER('SAM_MOVEMENT')
 -- Load dual-boxing manager (uses deferred init + lazy message loading)
 local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 
-print('[SAM] Functions loaded successfully')
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+MessageFormatter.show_debug('SAM', 'Functions loaded successfully')
 
 -- ═══════════════════════════════════════════════════════════════════
 TIMER('TOTAL SAM_functions', true)

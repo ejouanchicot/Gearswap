@@ -108,7 +108,8 @@ local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- All module functions are now available in global scope
-print('[RUN] Functions loaded successfully')
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+MessageFormatter.show_debug('RUN', 'Functions loaded successfully')
 
 -- ═══════════════════════════════════════════════════════════════════
 TIMER('TOTAL RUN_functions', true)

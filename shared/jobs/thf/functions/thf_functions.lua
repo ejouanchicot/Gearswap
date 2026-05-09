@@ -101,7 +101,8 @@ TIMER('THF_MOVEMENT')
 -- Load dual-boxing manager (uses deferred init + lazy message loading)
 local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 
-print('[THF] All functions loaded successfully')
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+MessageFormatter.show_debug('THF', 'All functions loaded successfully')
 
 -- ═══════════════════════════════════════════════════════════════════
 TIMER('TOTAL THF_functions', true)

@@ -378,12 +378,13 @@ end
 
 --- Print current configuration (for debugging)
 function UIConfig.print_config()
-    add_to_chat(123, '=== UI Configuration ===')
-    add_to_chat(123, 'Enabled: ' .. tostring(UIConfig.enabled))
-    add_to_chat(123, 'Show Header: ' .. tostring(UIConfig.show_header))
-    add_to_chat(123, 'Show Legend: ' .. tostring(UIConfig.show_legend))
-    add_to_chat(123, 'Position: ' .. UIConfig.default_position.x .. ', ' .. UIConfig.default_position.y)
-    add_to_chat(123, 'Font: ' .. UIConfig.text.font .. ' (' .. UIConfig.text.size .. ')')
+    local DebugLogger = require('shared/utils/debug/debug_logger')
+    DebugLogger.log('UI_CONFIG', '=== UI Configuration ===')
+    DebugLogger.log('UI_CONFIG', 'Enabled: ' .. tostring(UIConfig.enabled))
+    DebugLogger.log('UI_CONFIG', 'Show Header: ' .. tostring(UIConfig.show_header))
+    DebugLogger.log('UI_CONFIG', 'Show Legend: ' .. tostring(UIConfig.show_legend))
+    DebugLogger.log('UI_CONFIG', 'Position: ' .. UIConfig.default_position.x .. ', ' .. UIConfig.default_position.y)
+    DebugLogger.log('UI_CONFIG', 'Font: ' .. UIConfig.text.font .. ' (' .. UIConfig.text.size .. ')')
 end
 
 return UIConfig

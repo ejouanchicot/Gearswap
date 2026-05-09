@@ -98,7 +98,8 @@ local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- All module functions are now available in global scope
-print('[GEO] All functions loaded (11 hooks + 2 logic modules)')
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+MessageFormatter.show_debug('GEO', 'All functions loaded (11 hooks + 2 logic modules)')
 
 -- ═══════════════════════════════════════════════════════════════════
 TIMER('TOTAL GEO_functions', true)

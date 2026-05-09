@@ -136,40 +136,36 @@ end
 ---
 --- @return boolean true if all states valid, false otherwise
 function WHMStates.validate()
+    local MessageFormatter = require('shared/utils/messages/message_formatter')
     local valid = true
 
-    -- Check OffenseMode
     if not state.OffenseMode then
-        add_to_chat(167, '[WHM] WARNING: OffenseMode not configured')
+        MessageFormatter.show_error('[WHM] WARNING: OffenseMode not configured')
         valid = false
     end
 
-    -- Check CastingMode
     if not state.CastingMode then
-        add_to_chat(167, '[WHM] WARNING: CastingMode not configured')
+        MessageFormatter.show_error('[WHM] WARNING: CastingMode not configured')
         valid = false
     end
 
-    -- Check IdleMode
     if not state.IdleMode then
-        add_to_chat(167, '[WHM] WARNING: IdleMode not configured')
+        MessageFormatter.show_error('[WHM] WARNING: IdleMode not configured')
         valid = false
     end
 
-    -- Check CureMode
     if not state.CureMode then
-        add_to_chat(167, '[WHM] WARNING: CureMode not configured')
+        MessageFormatter.show_error('[WHM] WARNING: CureMode not configured')
         valid = false
     end
 
-    -- Check CombatMode
     if not state.CombatMode then
-        add_to_chat(167, '[WHM] WARNING: CombatMode not configured')
+        MessageFormatter.show_error('[WHM] WARNING: CombatMode not configured')
         valid = false
     end
 
     if valid then
-        add_to_chat(200, '[WHM] All states configured correctly')
+        MessageFormatter.show_debug('WHM', 'All states configured correctly')
     end
 
     return valid

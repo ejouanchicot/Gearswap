@@ -917,4 +917,5 @@ sets.engaged.TH = set_combine(sets.engaged, sets.TreasureHunter)
 --- INITIALIZATION MESSAGE
 ---============================================================================
 
-print('[THF] Equipment sets loaded successfully')
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+MessageFormatter.show_debug('THF', 'Equipment sets loaded successfully')

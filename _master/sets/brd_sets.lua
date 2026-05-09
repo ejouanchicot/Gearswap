@@ -248,7 +248,7 @@ sets.precast.WS['Evisceration'] = {
     ear2 = 'Domin. Earring +1',
     ring1 = 'Murky Ring',
     ring2 = MoonlightRing2,
-    back = "Intarabus's Cape"
+    back = Intarabus.ws_str
 }
 
 -- • Rudra's Storm (Dagger: Single-hit DEX)
@@ -500,4 +500,5 @@ sets.buff.Doom = {
     waist = 'Gishdubar Sash'
 }
 
-print('[BRD] Equipment sets loaded successfully')
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+MessageFormatter.show_debug('BRD', 'Equipment sets loaded successfully')

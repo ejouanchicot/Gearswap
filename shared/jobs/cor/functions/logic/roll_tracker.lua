@@ -386,7 +386,13 @@ function RollTracker.validate_party_cache()
         end
 
         local current_time = os.time()
-        local TTL = 30  -- 30 seconds time-to-live
+        -- TTL: how long a packet-derived party job entry stays trusted before
+        -- being purged. 30s was too short - quiet party members (no zone, no
+        -- equip, no buff change) wouldn't re-emit 0xDD/0xDF and their job
+        -- entry vanished, dropping their job-bonus contribution to rolls.
+        -- Zone changes and party composition changes already invalidate the
+        -- cache aggressively above, so a long TTL is safe.
+        local TTL = 600  -- 10 minutes
 
         for player_id, job_data in pairs(_G.cor_party_jobs) do
             -- Remove if player not in party anymore

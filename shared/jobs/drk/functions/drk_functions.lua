@@ -90,7 +90,8 @@ local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- All module functions are now available in global scope
-print('[DRK] All functions loaded (11 hooks)')
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+MessageFormatter.show_debug('DRK', 'All functions loaded (11 hooks)')
 
 -- ═══════════════════════════════════════════════════════════════════
 TIMER('TOTAL DRK_functions', true)

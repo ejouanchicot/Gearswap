@@ -108,7 +108,8 @@ local function save_to_file(settings)
         file:close()
         return true
     else
-        add_to_chat(167, '[UI_SETTINGS] ERROR: Cannot write to ' .. file_path)
+        local MessageFormatter = require('shared/utils/messages/message_formatter')
+        MessageFormatter.show_error('[UI_SETTINGS] ERROR: Cannot write to ' .. file_path)
         return false
     end
 end

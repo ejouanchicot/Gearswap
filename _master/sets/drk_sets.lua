@@ -590,4 +590,5 @@ sets.buff['Nether Void'] = {
     legs = "Heathen's Flanchard +3"
 }
 
-print('[DRK] Equipment sets loaded successfully (Typioni STP Build)')
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+MessageFormatter.show_debug('DRK', 'Equipment sets loaded successfully (Typioni STP Build)')

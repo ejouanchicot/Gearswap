@@ -88,8 +88,9 @@ function ENFEEBLING_MESSAGES_CONFIG.set_display_mode(mode)
         ENFEEBLING_MESSAGES_CONFIG.display_mode = mode
         return true
     else
-        add_to_chat(167, '[ENFEEBLING_CONFIG] Invalid mode: ' .. tostring(mode))
-        add_to_chat(167, '[ENFEEBLING_CONFIG] Valid modes: full, on, off')
+        local MessageFormatter = require('shared/utils/messages/message_formatter')
+        MessageFormatter.show_error('[ENFEEBLING_CONFIG] Invalid mode: ' .. tostring(mode))
+        MessageFormatter.show_error('[ENFEEBLING_CONFIG] Valid modes: full, on, off')
         return false
     end
 end

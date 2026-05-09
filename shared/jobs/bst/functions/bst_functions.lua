@@ -109,7 +109,8 @@ local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- All module functions are now available in global scope
-print('[BST] All functions loaded (13 hooks + 4 logic modules)')
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+MessageFormatter.show_debug('BST', 'All functions loaded (13 hooks + 4 logic modules)')
 
 -- ═══════════════════════════════════════════════════════════════════
 TIMER('TOTAL BST_functions', true)

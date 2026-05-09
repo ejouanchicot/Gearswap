@@ -808,4 +808,5 @@ sets.buff.Doom = {
     waist = "Gishdubar Sash"       -- Doom resistance
 }
 
-print('[WHM] Equipment sets loaded successfully')
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+MessageFormatter.show_debug('WHM', 'Equipment sets loaded successfully')

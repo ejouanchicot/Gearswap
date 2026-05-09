@@ -108,7 +108,8 @@ local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 -- All module functions are now available in global scope
 -- Individual modules handle their own initialization if needed
 
-print('[DNC] All functions loaded (hooks + logic modules)')
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+MessageFormatter.show_debug('DNC', 'All functions loaded (hooks + logic modules)')
 
 -- ═══════════════════════════════════════════════════════════════════
 TIMER('TOTAL DNC_functions', true)

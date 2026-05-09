@@ -1,32 +1,30 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   COR Party Tracker - Packet Parsing Module
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles two critical COR tracking systems via Windower packet parsing:
----   1. Phantom Roll Value Detection (action packet 0x028, category 6)
----   2. Party Member Job Detection (incoming chunk 0xDD/0xDF packets)
+---   Auto-detects party member main/sub jobs by parsing incoming party update
+---   packets (0xDD/0xDF). Used by RollTracker to grant correct roll bonuses
+---   based on party composition.
 ---
 ---   @module party_tracker
 ---   @author  Tetsouo
----   @version 2.0.0
+---   @version 2.1.0
 ---   @date    Created: 2025-11-03 (extracted from Tetsouo_COR.lua)
----   @date    Updated: 2026-02-17 - Raw action packet parsing (GearSwap sandbox fix)
+---   @date    Updated: 2026-05-08 - Single canonical roll-detection path:
+---            raw_register_event('action') is now owned by this module
+---            (PartyTracker.init_roll_listener), called from .init(). The
+---            inline duplicate that used to live in Tetsouo_COR/Kaories_COR
+---            entry points has been removed. Old 0x028 bit-unpack path
+---            removed earlier in the same update.
 ---
 ---   Features:
----   • Roll value detection (1-12) via raw action packet parsing (0x028)
+---   • Phantom Roll detection via raw_register_event('action')
 ---   • Auto-detection of party member jobs for accurate roll bonuses
----   • Event handler lifecycle management (init/cleanup)
----   • Prevents duplicate handlers via _G event ID tracking
----
----   Technical Notes:
----   • GearSwap sandbox does NOT support windower.register_event('action')
----     reliably - the parsed action table is not passed to user scripts
----   • Instead, we intercept raw incoming chunk 0x028 and parse the
----     bit-packed action data manually to extract roll values
----   • package.loaded is nil in GearSwap sandbox (cannot clear require cache)
+---     (incoming chunk 0xDD/0xDF parsed via the packets library)
+---   • Event handler lifecycle management (init/cleanup, idempotent)
 ---
 ---   Dependencies:
 ---   • RollTracker module (shared/jobs/cor/functions/logic/roll_tracker.lua)
----   • Windower packets library (for party member detection only)
+---   • Windower packets library (for party member detection)
 ---   • Windower resources library (job ID >> job code conversion)
 ---
 ---   Usage:
@@ -48,45 +46,68 @@ local function get_MessageCOR()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   BIT READER (for action packet 0x028 parsing)
----  ═══════════════════════════════════════════════════════════════════════════
----   FFXI action packets use LSB-first bit-packed data after an 8-byte header.
----   These helpers extract fields without requiring the `bit` library.
-
----   Read `count` bits starting at `bit_offset` from binary string `data`
----   Uses LSB-first ordering (standard for FFXI packets)
----   @param data string Binary packet data
----   @param bit_offset number Bit offset from start of data (0-indexed)
----   @param count number Number of bits to read
----   @return number Unsigned integer value
-local function read_bits(data, bit_offset, count)
-    local value = 0
-    local power = 1
-    for i = 0, count - 1 do
-        local byte_pos = math.floor((bit_offset + i) / 8) + 1
-        local bit_pos = (bit_offset + i) % 8
-        local byte_val = data:byte(byte_pos) or 0
-        if math.floor(byte_val / (2 ^ bit_pos)) % 2 == 1 then
-            value = value + power
-        end
-        power = power * 2
-    end
-    return value
-end
-
----   Read uint32 little-endian at byte offset (1-indexed)
----   @param data string Binary data
----   @param offset number Byte offset (1-indexed)
----   @return number uint32 value
-local function read_uint32_le(data, offset)
-    local b1, b2, b3, b4 = data:byte(offset, offset + 3)
-    if not b1 then return 0 end
-    return b1 + b2 * 256 + b3 * 65536 + b4 * 16777216
-end
-
----  ═══════════════════════════════════════════════════════════════════════════
 ---   INITIALIZATION
 ---  ═══════════════════════════════════════════════════════════════════════════
+
+---   Register the action event listener that detects Phantom Rolls and
+---   forwards them to RollTracker.on_roll_cast. Was previously inlined in
+---   both Tetsouo_COR.lua and Kaories_COR.lua (~50 identical lines each);
+---   centralized here so there is one canonical roll-detection path.
+---   Idempotent: unregisters any previous handler before registering a new
+---   one, so calling init() repeatedly is safe.
+function PartyTracker.init_roll_listener()
+    if _G.cor_action_event_id then
+        windower.unregister_event(_G.cor_action_event_id)
+        _G.cor_action_event_id = nil
+    end
+
+    _G.cor_action_event_id = windower.raw_register_event('action', function(act)
+        if not act or type(act) ~= 'table' then return end
+        if not player or not player.id then return end
+        if player.main_job ~= 'COR' then return end
+        if act.category ~= 6 then return end
+        if act.actor_id ~= player.id then return end
+        if act.param == 195 then return end  -- Exclude Fold
+
+        local is_phantom_roll = false
+        pcall(function()
+            local r = require('resources')
+            if r and r.job_abilities and r.job_abilities[act.param] then
+                if r.job_abilities[act.param].type == 'CorsairRoll' then
+                    is_phantom_roll = true
+                end
+            end
+        end)
+        if not is_phantom_roll and act.param >= 98 and act.param <= 192 then
+            is_phantom_roll = true
+        end
+        if not is_phantom_roll then return end
+
+        local roll_value = act.targets and act.targets[1] and act.targets[1].actions
+            and act.targets[1].actions[1] and act.targets[1].actions[1].param
+        if not roll_value or roll_value < 1 or roll_value > 12 then return end
+
+        local roll_name = nil
+        pcall(function()
+            local r = require('resources')
+            if r and r.job_abilities and r.job_abilities[act.param] then
+                roll_name = r.job_abilities[act.param].en
+            end
+        end)
+        if not roll_name then return end
+
+        local rt_ok, RollTracker = pcall(require, 'shared/jobs/cor/functions/logic/roll_tracker')
+        if rt_ok and RollTracker and RollTracker.on_roll_cast then
+            local call_ok, call_err = pcall(RollTracker.on_roll_cast, roll_name, roll_value)
+            if not call_ok then
+                local mf_ok, MF = pcall(require, 'shared/utils/messages/message_formatter')
+                if mf_ok and MF then
+                    MF.show_error('[COR] RollTracker error: ' .. tostring(call_err))
+                end
+            end
+        end
+    end)
+end
 
 ---   Initialize party tracking event handlers
 ---   Must be called after RollTracker is loaded
@@ -101,6 +122,9 @@ function PartyTracker.init()
         local mc = get_MessageCOR()
         if mc then mc.show_rolltracker_load_failed() end
     end
+
+    -- Register the roll detection listener (single canonical path)
+    PartyTracker.init_roll_listener()
 
     -- Initialize party job storage
     if not _G.cor_party_jobs then
@@ -132,113 +156,13 @@ function PartyTracker.init()
     end
 
     ---══════════════════════════════════════════════════════════════════════════
-    --- SINGLE INCOMING CHUNK HANDLER
-    --- Handles BOTH roll detection (0x028) AND party job detection (0xDD/0xDF)
+    --- PARTY MEMBER JOB DETECTION (Packets 0xDD/0xDF)
     ---══════════════════════════════════════════════════════════════════════════
+    --- Roll detection lives on its own action-event handler (init_roll_listener
+    --- above). Splitting the two avoids the historical double-fire of
+    --- RollTracker.on_roll_cast we used to get when both paths processed the
+    --- same Phantom Roll packet.
     _G.cor_party_event_id = windower.raw_register_event('incoming chunk', function(id, original, modified, injected, blocked)
-
-        ---══════════════════════════════════════════════════════════════════════════
-        --- PHANTOM ROLL DETECTION (Action Packet 0x028)
-        ---══════════════════════════════════════════════════════════════════════════
-        --- Action packet structure (after 8-byte header):
-        ---   Bit-packed: target_count(6) | category(4) | param(16) | unknown(16) | recast(32)
-        ---   Per target: target_id(32) | action_count(4)
-        ---   Per action: reaction(5) | animation(12) | effect(5) | stagger(7) |
-        ---              knockback(3) | param(17) | message(10) | unknown(31) | has_add(1)
-        ---
-        --- Roll value = first target's first action's param (17 bits at offset 142)
-        ---══════════════════════════════════════════════════════════════════════════
-        if id == 0x028 then
-            -- Safety: need at least header(8) + some packed data
-            if not original or #original < 16 then return end
-
-            -- CRITICAL: Exit if player not available
-            if not player or not player.id then return end
-
-            -- Only process if COR job
-            if not player.main_job or player.main_job ~= 'COR' then return end
-
-            -- Read actor ID from header (bytes 5-8, uint32 LE)
-            local actor_id = read_uint32_le(original, 5)
-
-            -- Only process own actions
-            if actor_id ~= player.id then return end
-
-            -- Read bit-packed data (starts at byte 9)
-            local packed = original:sub(9)
-            if not packed or #packed < 20 then return end
-
-            -- Category at bit offset 6 (4 bits)
-            local category = read_bits(packed, 6, 4)
-
-            -- Category 6 = Job Ability used
-            if category ~= 6 then return end
-
-            -- Param (ability ID) at bit offset 10 (16 bits)
-            local ability_id = read_bits(packed, 10, 16)
-
-            -- Exclude Fold (ability ID 195)
-            if ability_id == 195 then return end
-
-            -- Check if it's a Phantom Roll
-            local is_phantom_roll = false
-
-            -- Try Windower resources (cleanest method)
-            pcall(function()
-                if res and res.job_abilities and res.job_abilities[ability_id] then
-                    if res.job_abilities[ability_id].type == 'CorsairRoll' then
-                        is_phantom_roll = true
-                    end
-                end
-            end)
-
-            -- Fallback: Range check (Phantom Roll IDs are 98-192)
-            if not is_phantom_roll then
-                if ability_id >= 98 and ability_id <= 192 then
-                    is_phantom_roll = true
-                end
-            end
-
-            if not is_phantom_roll then return end
-
-            -- Extract roll value from first target's first action param
-            -- Bit offset 142 (17 bits) from start of packed data
-            local roll_value = read_bits(packed, 142, 17)
-
-            if roll_value and roll_value >= 1 and roll_value <= 12 then
-                -- Get roll name from ability ID
-                local roll_name = nil
-                pcall(function()
-                    if res and res.job_abilities and res.job_abilities[ability_id] then
-                        roll_name = res.job_abilities[ability_id].en
-                    end
-                end)
-
-                if roll_name then
-                    -- Load RollTracker dynamically (prevents stale closure across gs reloads)
-                    local rt_ok, RollTracker = pcall(require, 'shared/jobs/cor/functions/logic/roll_tracker')
-                    if rt_ok and RollTracker then
-                        local call_ok, call_err = pcall(RollTracker.on_roll_cast, roll_name, roll_value)
-                        if not call_ok then
-                            local mf_ok, MF = pcall(require, 'shared/utils/messages/message_formatter')
-                            if mf_ok and MF then
-                                MF.show_error('[COR] RollTracker error: ' .. tostring(call_err))
-                            end
-                        end
-                    end
-                else
-                    -- Fallback: store for buff detection if we couldn't get name
-                    _G.cor_pending_roll_value = roll_value
-                    _G.cor_pending_roll_timestamp = os.time()
-                end
-            end
-
-            return
-        end
-
-        ---══════════════════════════════════════════════════════════════════════════
-        --- PARTY MEMBER JOB DETECTION (Packets 0xDD/0xDF)
-        ---══════════════════════════════════════════════════════════════════════════
         if id ~= 0xDD and id ~= 0xDF then
             return
         end

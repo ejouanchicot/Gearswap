@@ -443,4 +443,5 @@ sets.buff.Doom = {
     waist = "Gishdubar Sash",
 }
 
-print('[GEO] Equipment sets loaded')
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+MessageFormatter.show_debug('GEO', 'Equipment sets loaded')
