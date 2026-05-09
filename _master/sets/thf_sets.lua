@@ -76,6 +76,11 @@ local MoonShadeEarring = {
     augments = {'Accuracy+4', 'TP Bonus +250'}
 }
 
+local PillPoulaines4 = {
+    name = 'Pill. Poulaines +4',
+    bag = 'wardrobe 2'
+}
+
 -- ============================================================--
 
 --                      WEAPON SETS                           --
@@ -189,7 +194,7 @@ sets.idle = {
 
 -- Town Idle (Movement speed)
 sets.idle.Town = set_combine(sets.idle, {
-    feet = 'Pill. Poulaines +4'
+    feet = PillPoulaines4
 })
 
 -- Regen Idle (HP regeneration focus)
@@ -324,7 +329,7 @@ sets.precast.JA.Hide = {
 
 -- Flee
 sets.precast.JA['Flee'] = {
-    feet = 'Pill. Poulaines +4'
+    feet = PillPoulaines4
 }
 
 -- Perfect Dodge
@@ -348,7 +353,7 @@ sets.precast.JA['Steal'] = {
     neck = 'Pentalagus Charm',
     hands = "Thief's Kote",
     legs = "Assassin's Culottes",
-    feet = 'Pill. Poulaines +4'
+    feet = PillPoulaines4
 }
 
 -- Despoil
@@ -369,7 +374,7 @@ sets.precast.JA['Accomplice'] = sets.precast.JA['Collaborator']
 
 -- Conspirator
 sets.precast.JA['Conspirator'] = {
-    body = "skulker's Vest +3"
+    body = "Skulker's Vest +3"
 }
 
 -- Animated Flourish / Provoke
@@ -745,8 +750,11 @@ sets.precast.WS['Aeolian Edge'] = {
 }
 
 -- Dancing Edge (DEX WS) --
-
-sets.precast.WS['Dancing Edge'] = sets.precast.WS
+-- Note: use set_combine to COPY sets.precast.WS, not assign reference.
+-- Direct assignment would alias both tables in memory: subsequent
+-- Dancing Edge.SA/.TA/.SATA mutations would pollute sets.precast.WS root,
+-- causing other WS without explicit .SATA to wrongly inherit Dancing Edge gear.
+sets.precast.WS['Dancing Edge'] = set_combine(sets.precast.WS, {})
 
 sets.precast.WS['Dancing Edge'].SA = set_combine(sets.precast.WS['Dancing Edge'], {
     hands = "Skulker's Armlets +3"
@@ -762,8 +770,8 @@ sets.precast.WS['Dancing Edge'].SATA = sets.precast.WS['Dancing Edge'].TA
 
 sets.precast.WS['Circle Blade'] = {
     ammo = "Oshasha's Treatise",
-    head = "skulker's Bonnet +3",
-    body = "skulker's Vest +3",
+    head = "Skulker's Bonnet +3",
+    body = "Skulker's Vest +3",
     hands = "Skulker's Armlets +3",
     legs = 'Pill. Culottes +4',
     feet = {
@@ -824,7 +832,7 @@ sets.midcast.EnhancingMagic = {}
 -- Fast Recast
 sets.midcast.FastRecast = {
     ammo = 'Aurgelmir Orb +1',
-    head = "skulker's Bonnet +3",
+    head = "Skulker's Bonnet +3",
     body = 'Nyame Mail',
     hands = "Skulker's Armlets +3",
     legs = "Skulker's Culottes +3",
@@ -847,7 +855,7 @@ sets.midcast.Utsusemi = sets.midcast.FastRecast
 
 -- Base Movement Speed
 sets.MoveSpeed = {
-    feet = 'Pill. Poulaines +4',
+    feet = PillPoulaines4,
     ring1 = 'Murky Ring'
 }
 

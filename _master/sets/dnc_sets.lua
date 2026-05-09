@@ -189,8 +189,8 @@ sets.engaged.FanDance = {
     waist = "Windbuffet Belt +1",
     ear1 = "Sherida Earring",
     ear2 = "Macu. Earring +1",
-    ring1 = "Moonlight Ring",
-    ring2 = "Moonlight Ring",
+    ring1 = Moonlight1, -- wardrobe 1
+    ring2 = Moonlight2, -- wardrobe 2
     back = Senuna.TP
 }
 
@@ -240,7 +240,7 @@ sets.precast.Step = {
     ammo = 'Ginsen',
     head = 'Maxixi Tiara +4',
     body = 'Macu. Casaque +3',
-    hands = 'maxixi bangles +4',
+    hands = 'Maxixi Bangles +4',
     legs = 'Maculele Tights +3',
     feet = 'Horos T. Shoes +3',
     neck = 'Sanctity Necklace',

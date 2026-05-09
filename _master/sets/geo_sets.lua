@@ -243,12 +243,12 @@ sets.precast.JA = {}
 
 -- • Bolster (+100% Geomancy effectiveness)
 sets.precast.JA['Bolster'] = {
-    body = 'bagua tunic'
+    body = 'Bagua Tunic'
 }
 
 -- • Life Cycle (Convert pet HP to user HP)
 sets.precast.JA['Life Cycle'] = {
-    body = 'geomancy tunic +2',
+    body = 'Geomancy Tunic +2',
     back = "Nantosuelta's Cape"
 }
 
