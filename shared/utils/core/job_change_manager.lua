@@ -3,6 +3,8 @@
 
 local JobChangeManager = {}
 
+local DebugLogger = require('shared/utils/debug/debug_logger')
+
 -- MessageFormatter lazy-loaded (only when showing error messages)
 local MessageFormatter = nil
 local function get_MessageFormatter()
@@ -81,9 +83,7 @@ local function cleanup_all_systems()
     end
 
     if _G.LagDebugger then _G.LagDebugger.on_cleanup() end
-    if _G.JOBCHANGE_DEBUG then
-        add_to_chat(207, '[JCM] cleanup_all_systems() completed')
-    end
+    DebugLogger.log_if('JOBCHANGE_DEBUG', 'JCM', 'cleanup_all_systems() completed')
 end
 
 
@@ -105,11 +105,10 @@ function JobChangeManager.on_job_change(main_job, sub_job)
     end
 
     -- DEBUG: Track job changes
-    if _G.JOBCHANGE_DEBUG then
-        add_to_chat(207, string.format('[JCM] on_job_change called: %s/%s -> %s/%s | counter=%d',
-            tostring(STATE.current_main_job), tostring(STATE.current_sub_job),
-            main_job, sub_job, STATE.debounce_counter))
-    end
+    DebugLogger.logf_if('JOBCHANGE_DEBUG', 'JCM',
+        'on_job_change called: %s/%s -> %s/%s | counter=%d',
+        tostring(STATE.current_main_job), tostring(STATE.current_sub_job),
+        main_job, sub_job, STATE.debounce_counter)
 
     -- CRITICAL: Cleanup all systems IMMEDIATELY to prevent:
     -- - AutoMove command spam during reload
@@ -139,18 +138,16 @@ function JobChangeManager.on_job_change(main_job, sub_job)
     STATE.debounce_timer = coroutine.schedule(function()
         -- Verify counter (prevent outdated execution)
         if my_counter ~= STATE.debounce_counter then
-            if _G.JOBCHANGE_DEBUG then
-                add_to_chat(207, string.format('[JCM] ABORT reload: my_counter=%d != current=%d',
-                    my_counter, STATE.debounce_counter))
-            end
+            DebugLogger.logf_if('JOBCHANGE_DEBUG', 'JCM',
+                'ABORT reload: my_counter=%d != current=%d',
+                my_counter, STATE.debounce_counter)
             return  -- Newer change queued, abort this reload
         end
 
         if _G.LagDebugger then _G.LagDebugger.on_gs_reload(delay) end
-        if _G.JOBCHANGE_DEBUG then
-            add_to_chat(207, string.format('[JCM] EXECUTING reload: counter=%d, %s/%s',
-                my_counter, main_job, sub_job))
-        end
+        DebugLogger.logf_if('JOBCHANGE_DEBUG', 'JCM',
+            'EXECUTING reload: counter=%d, %s/%s',
+            my_counter, main_job, sub_job)
 
         -- Update current job state before reload
         STATE.current_main_job = main_job

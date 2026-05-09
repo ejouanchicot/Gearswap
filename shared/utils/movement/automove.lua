@@ -34,6 +34,7 @@
 ---============================================================================
 
 local MessageCore = require('shared/utils/messages/message_core')
+local DebugLogger = require('shared/utils/debug/debug_logger')
 
 -- Global AutoMove API
 AutoMove = AutoMove or {}
@@ -91,9 +92,7 @@ function AutoMove.stop()
     windower._automove_seq = windower._automove_seq + 1
     _G._automove_sequence = windower._automove_seq  -- keep _G in sync for debug tools
     if _G.LagDebugger then _G.LagDebugger.on_automove_stop(windower._automove_seq) end
-    if _G.AUTOMOVE_DEBUG then
-        add_to_chat(207, string.format('[AutoMove] STOP called | seq=%d', windower._automove_seq))
-    end
+    DebugLogger.logf_if('AUTOMOVE_DEBUG', 'AutoMove', 'STOP called | seq=%d', windower._automove_seq)
 end
 
 --- Call all registered callbacks
@@ -199,9 +198,7 @@ function AutoMove.start()
     init_position()
 
     if _G.LagDebugger then _G.LagDebugger.on_automove_start(my_seq) end
-    if _G.AUTOMOVE_DEBUG then
-        add_to_chat(207, string.format('[AutoMove] START | seq=%d', my_seq))
-    end
+    DebugLogger.logf_if('AUTOMOVE_DEBUG', 'AutoMove', 'START | seq=%d', my_seq)
 
     -------------------------------------------------------------------
     -- CLOSURE: my_seq is fixed for the lifetime of this chain.
@@ -254,18 +251,16 @@ function AutoMove.start()
             local now = os.clock()
             if pending_update and should_move then
                 if (now - start_time) < config.job_change_cooldown then
-                    if _G.AUTOMOVE_DEBUG then
-                        add_to_chat(207, string.format('[AutoMove] COOLDOWN moving (%.1fs left)',
-                            config.job_change_cooldown - (now - start_time)))
-                    end
+                    DebugLogger.logf_if('AUTOMOVE_DEBUG', 'AutoMove', 'COOLDOWN moving (%.1fs left)',
+                        config.job_change_cooldown - (now - start_time))
                 elseif (now - last_update_time) >= config.update_debounce then
                     last_update_time = now
                     pending_update   = false
-                    if _G.AUTOMOVE_DEBUG then add_to_chat(207, '[AutoMove] moving') end
+                    DebugLogger.log_if('AUTOMOVE_DEBUG', 'AutoMove', 'moving')
                     if _G.UPDATE_DEBUG then
                         _G._update_sent_time = os.clock()
-                        add_to_chat(207, string.format('[UPDATE_DEBUG] 1. AutoMove SEND gs c update | t=%.3f',
-                            _G._update_sent_time))
+                        DebugLogger.logf('UPDATE_DEBUG', '1. AutoMove SEND gs c update | t=%.3f',
+                            _G._update_sent_time)
                     end
                     if _G.LagDebugger then _G.LagDebugger.on_automove_update('moving', dist, moving) end
                     windower.send_command('gs c update')
@@ -288,18 +283,16 @@ function AutoMove.start()
             local now = os.clock()
             if pending_update and not moving then
                 if (now - start_time) < config.job_change_cooldown then
-                    if _G.AUTOMOVE_DEBUG then
-                        add_to_chat(207, string.format('[AutoMove] COOLDOWN stopping (%.1fs left)',
-                            config.job_change_cooldown - (now - start_time)))
-                    end
+                    DebugLogger.logf_if('AUTOMOVE_DEBUG', 'AutoMove', 'COOLDOWN stopping (%.1fs left)',
+                        config.job_change_cooldown - (now - start_time))
                 elseif (now - last_update_time) >= config.update_debounce then
                     last_update_time = now
                     pending_update   = false
-                    if _G.AUTOMOVE_DEBUG then add_to_chat(207, '[AutoMove] stopping') end
+                    DebugLogger.log_if('AUTOMOVE_DEBUG', 'AutoMove', 'stopping')
                     if _G.UPDATE_DEBUG then
                         _G._update_sent_time = os.clock()
-                        add_to_chat(207, string.format('[UPDATE_DEBUG] 1. AutoMove SEND gs c update | t=%.3f',
-                            _G._update_sent_time))
+                        DebugLogger.logf('UPDATE_DEBUG', '1. AutoMove SEND gs c update | t=%.3f',
+                            _G._update_sent_time)
                     end
                     if _G.LagDebugger then _G.LagDebugger.on_automove_update('stopping', dist, moving) end
                     windower.send_command('gs c update')
