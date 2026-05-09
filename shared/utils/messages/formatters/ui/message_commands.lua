@@ -86,6 +86,36 @@ function MessageCommands.show_color_test_footer()
 end
 
 ---============================================================================
+--- CRAFT COMMAND
+---============================================================================
+
+--- Display "Equipping <description> (<count> pieces)..." line.
+--- @param description string Set description (e.g. "Bonecraft HQ").
+--- @param count number Piece count being equipped.
+function MessageCommands.show_craft_equipping(description, count)
+    local gray   = string.char(0x1F, 160)
+    local cyan   = string.char(0x1F, 121)
+    local green  = string.char(0x1F, 158)
+    local yellow = string.char(0x1F, 50)
+    add_to_chat(121, gray .. '[' .. cyan .. 'Craft' .. gray .. '] ' ..
+        yellow .. 'Equipping ' .. green .. description ..
+        gray .. ' (' .. count .. ' pieces)...')
+end
+
+--- Display "<description> ready - slots locked." line shown 2s after equip.
+--- @param description string Set description (e.g. "Bonecraft HQ").
+function MessageCommands.show_craft_ready(description)
+    local gray   = string.char(0x1F, 160)
+    local cyan   = string.char(0x1F, 121)
+    local green  = string.char(0x1F, 158)
+    local yellow = string.char(0x1F, 50)
+    add_to_chat(121, gray .. '[' .. cyan .. 'Craft' .. gray .. '] ' ..
+        green .. description ..
+        gray .. ' ready - slots locked. Run ' ..
+        yellow .. '//gs c uncraft' .. gray .. ' when done.')
+end
+
+---============================================================================
 --- DETECTREGION COMMAND
 ---============================================================================
 

@@ -155,116 +155,32 @@ end
 
 -- REFILL COMMAND
 
---- Handle inventory refill command (pull consumables from Case/Sack)
+--- Handle inventory refill command (pull consumables from Case/Sack).
+--- Also broadcasts via DualBoxSyncIPC so the paired character refills its
+--- own consumables in parallel (each instance reads its own Case/Sack).
 function CommonCommands.handle_refill()
     local refill_success, RefillManager = pcall(require, 'shared/utils/inventory/refill_manager')
-    if refill_success and RefillManager then
-        RefillManager.refill()
-        return true
-    else
+    if not refill_success or not RefillManager then
         local MessageFormatter = require('shared/utils/messages/message_formatter')
         MessageFormatter.show_error("Failed to load refill manager: " .. tostring(RefillManager))
         return false
     end
-end
 
--- ============================================================================
--- CRAFT / FISH COMMANDS
--- ============================================================================
--- Pattern matches handle_naked: synchronous equip() call from user-env scope,
--- followed by an async `gs disable all` once FFXI has acknowledged the swap.
--- ============================================================================
+    RefillManager.refill()
 
-local function _load_craft_manager()
-    local ok, m = pcall(require, 'shared/utils/craft/craft_manager')
-    if ok and m then return m end
-    local MessageFormatter = require('shared/utils/messages/message_formatter')
-    MessageFormatter.show_error("Failed to load craft manager: " .. tostring(m))
-    return nil
-end
-
---- Internal: equip a resolved craft set. Pattern mirrors handle_naked which
---- is known-working: synchronous `equip()` call from this user-env scope.
---- @param entry table  with .description and .gear
---- @param label string fallback name for messaging
-local function _equip_craft_gear(entry, label)
-    -- Inline color codes (project standard 0x1F + color id):
-    local gray   = string.char(0x1F, 160)
-    local cyan   = string.char(0x1F, 121)
-    local green  = string.char(0x1F, 158)
-    local yellow = string.char(0x1F, 50)
-
-    -- Defensive: unlock all slots in case a previous //gs c wo or craft
-    -- session left them disabled (equip respects gs disable, would no-op).
-    windower.send_command('gs enable all')
-
-    -- Trace: count gear pieces being equipped so the user can verify the set.
-    local count = 0
-    for _ in pairs(entry.gear) do count = count + 1 end
-    add_to_chat(121, gray .. '[' .. cyan .. 'Craft' .. gray .. '] ' ..
-        yellow .. 'Equipping ' .. green .. (entry.description or label) ..
-        gray .. ' (' .. count .. ' pieces)...')
-
-    -- The equip itself - same call pattern as handle_naked.
-    equip(entry.gear)
-
-    -- Lock slots after FFXI has time to process all packet swaps (~2s).
-    coroutine.schedule(function()
-        windower.send_command('gs disable all')
-        add_to_chat(121, gray .. '[' .. cyan .. 'Craft' .. gray .. '] ' ..
-            green .. (entry.description or label) ..
-            gray .. ' ready - slots locked. Run ' ..
-            yellow .. '//gs c uncraft' .. gray .. ' when done.')
-    end, 2.0)
-end
-
---- Handle //gs c craft [variant]   (default = bonecraft, hq variant)
-function CommonCommands.handle_craft(variant)
-    local m = _load_craft_manager()
-    if not m then return false end
-
-    -- "off"/"stop" -> unlock
-    if variant and (variant:lower() == 'off' or variant:lower() == 'stop'
-                    or variant:lower() == 'uncraft') then
-        m.unequip()
-        return true
-    end
-
-    local entry, err = m.resolve_set('bonecraft', variant)
-    if not entry then
-        local MF = require('shared/utils/messages/message_formatter')
-        MF.show_error('[Craft] ' .. (err or 'Unknown craft set'))
-        return false
-    end
-
-    _equip_craft_gear(entry, 'bonecraft')
-    m.mark_active(entry.description or 'bonecraft')
+    -- Mirror to paired instance (no-op when solo).
+    pcall(function()
+        local SyncIPC = require('shared/utils/dualbox/dualbox_sync_ipc')
+        SyncIPC.broadcast('rf')
+    end)
     return true
 end
 
---- Handle //gs c fish [variant]    (loads fishing_sets.lua)
-function CommonCommands.handle_fish(variant)
-    local m = _load_craft_manager()
-    if not m then return false end
-
-    local entry, err = m.resolve_set('fishing', variant)
-    if not entry then
-        local MF = require('shared/utils/messages/message_formatter')
-        MF.show_error('[Craft] ' .. (err or 'Unknown fishing set'))
-        return false
-    end
-
-    _equip_craft_gear(entry, 'fishing')
-    m.mark_active(entry.description or 'fishing')
-    return true
-end
-
---- Handle //gs c uncraft (alias for //gs c craft off)
-function CommonCommands.handle_uncraft()
-    local m = _load_craft_manager()
-    if m then m.unequip(); return true end
-    return false
-end
+-- CRAFT / FISH COMMANDS - extracted to CRAFT_COMMANDS.lua, re-exposed here.
+local CraftCommands = require('shared/utils/craft/craft_commands')
+CommonCommands.handle_craft   = CraftCommands.handle_craft
+CommonCommands.handle_fish    = CraftCommands.handle_fish
+CommonCommands.handle_uncraft = CraftCommands.handle_uncraft
 
 -- TESTCOLORS COMMAND
 
@@ -330,18 +246,28 @@ end
 
 -- LOCKSTYLE COMMAND
 
---- Handle lockstyle reapply command (useful after dressup reload)
+--- Handle lockstyle reapply command (useful after dressup reload).
+--- Also broadcasts to other Windower instances via DualBoxSyncIPC so the
+--- paired character (e.g. Kaories when Tetsouo runs //gs c ls) re-applies
+--- ITS OWN lockstyle. Each instance runs its local select_default_lockstyle,
+--- so no gear/lockstyle data is shared across the wire - only the trigger.
 function CommonCommands.handle_lockstyle()
-    -- Try to call the global lockstyle function (different per job)
-    if select_default_lockstyle then
-        MessageCommands.show_lockstyle_reapplying()
-        select_default_lockstyle()
-        return true
-    else
+    if not select_default_lockstyle then
         local MessageFormatter = require('shared/utils/messages/message_formatter')
         MessageFormatter.show_error("Lockstyle function not available")
         return false
     end
+
+    MessageCommands.show_lockstyle_reapplying()
+    select_default_lockstyle()
+
+    -- Mirror to paired instance (no-op when solo: harmless if no listener).
+    -- pcall: IPC is best-effort, never let it break the local lockstyle path.
+    pcall(function()
+        local SyncIPC = require('shared/utils/dualbox/dualbox_sync_ipc')
+        SyncIPC.broadcast('ls')
+    end)
+    return true
 end
 
 -- DRESSUP TOGGLE COMMAND (Persistent)
@@ -379,6 +305,7 @@ CommonCommands.handle_jamsg       = DebugCommands.handle_jamsg
 CommonCommands.handle_spellmsg    = DebugCommands.handle_spellmsg
 CommonCommands.handle_wsmsg       = DebugCommands.handle_wsmsg
 CommonCommands.handle_info        = DebugCommands.handle_info
+CommonCommands.handle_debugstate  = DebugCommands.handle_debugstate
 
 -- WARP COMMANDS (Universal Warp/Teleport System)
 
@@ -544,29 +471,7 @@ function CommonCommands.handle_command(command, job_name, ...)
         end
         return true
     elseif cmd == 'debugstate' or cmd == 'ds' then
-        -- Show global state for debugging accumulated issues
-        add_to_chat(207, '=== DEBUG STATE ===')
-        add_to_chat(207, string.format('AUTOMOVE_RUNNING: %s', tostring(_G.AUTOMOVE_RUNNING)))
-        add_to_chat(207, string.format('windower._automove_seq: %s (persistent)', tostring(windower._automove_seq)))
-        add_to_chat(207, string.format('_G._automove_sequence: %s (sync)', tostring(_G._automove_sequence)))
-        if _G.JobChangeManagerSTATE then
-            local S = _G.JobChangeManagerSTATE
-            add_to_chat(207, string.format('JCM counter: %d', S.debounce_counter or 0))
-            local reg_count = 0
-            if S.lockstyle_cancel_registry then
-                for _ in pairs(S.lockstyle_cancel_registry) do reg_count = reg_count + 1 end
-            end
-            add_to_chat(207, string.format('JCM lockstyle_registry: %d entries', reg_count))
-        end
-        if _G.ui_manager_state then
-            local U = _G.ui_manager_state
-            add_to_chat(207, string.format('UI smart_init_id: %d', U.smart_init_id or 0))
-            add_to_chat(207, string.format('UI pending_update_id: %d', U.pending_update_id or 0))
-            add_to_chat(207, string.format('UI update_cancel_id: %d', U.update_cancel_id or 0))
-            add_to_chat(207, string.format('UI consecutive_failures: %d', U.consecutive_failures or 0))
-        end
-        add_to_chat(207, '===================')
-        return true
+        return CommonCommands.handle_debugstate()
     elseif cmd == 'debugupdate' or cmd == 'du' then
         -- Toggle UPDATE debug mode (traces full gs c update flow)
         -- Use windower table for persistence across job changes

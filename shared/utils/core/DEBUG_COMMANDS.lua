@@ -217,4 +217,35 @@ function DebugCommands.handle_info(args)
     return InfoCommand.handle(args)
 end
 
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEBUG STATE DUMP  (//gs c debugstate | ds)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+--- Dump global state used to diagnose accumulated lifecycle issues
+--- (AutoMove sequence counters, JobChangeManager debounce, UI manager IDs).
+function DebugCommands.handle_debugstate()
+    add_to_chat(207, '=== DEBUG STATE ===')
+    add_to_chat(207, string.format('AUTOMOVE_RUNNING: %s', tostring(_G.AUTOMOVE_RUNNING)))
+    add_to_chat(207, string.format('windower._automove_seq: %s (persistent)', tostring(windower._automove_seq)))
+    add_to_chat(207, string.format('_G._automove_sequence: %s (sync)', tostring(_G._automove_sequence)))
+    if _G.JobChangeManagerSTATE then
+        local S = _G.JobChangeManagerSTATE
+        add_to_chat(207, string.format('JCM counter: %d', S.debounce_counter or 0))
+        local reg_count = 0
+        if S.lockstyle_cancel_registry then
+            for _ in pairs(S.lockstyle_cancel_registry) do reg_count = reg_count + 1 end
+        end
+        add_to_chat(207, string.format('JCM lockstyle_registry: %d entries', reg_count))
+    end
+    if _G.ui_manager_state then
+        local U = _G.ui_manager_state
+        add_to_chat(207, string.format('UI smart_init_id: %d', U.smart_init_id or 0))
+        add_to_chat(207, string.format('UI pending_update_id: %d', U.pending_update_id or 0))
+        add_to_chat(207, string.format('UI update_cancel_id: %d', U.update_cancel_id or 0))
+        add_to_chat(207, string.format('UI consecutive_failures: %d', U.consecutive_failures or 0))
+    end
+    add_to_chat(207, '===================')
+    return true
+end
+
 return DebugCommands
