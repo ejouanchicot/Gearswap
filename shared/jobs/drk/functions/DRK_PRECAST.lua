@@ -119,3 +119,9 @@ end
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
 
+-- Module table for require() compatibility (parity with _G exports above)
+return {
+    job_precast = job_precast,
+    job_post_precast = job_post_precast,
+}
+

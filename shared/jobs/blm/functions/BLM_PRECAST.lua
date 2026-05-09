@@ -162,8 +162,10 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- ══════════════════════════════════════════════════════════════════════════
     -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
     -- ══════════════════════════════════════════════════════════════════════════
-    if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, BLMTPConfig) then
-        return
+    if spell.type == 'WeaponSkill' then
+        if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, BLMTPConfig) then
+            return
+        end
     end
 end
 
@@ -186,4 +188,10 @@ end
 -- Export global for GearSwap (Mote-Include)
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
+
+-- Module table for require() compatibility (parity with _G exports above)
+return {
+    job_precast = job_precast,
+    job_post_precast = job_post_precast,
+}
 

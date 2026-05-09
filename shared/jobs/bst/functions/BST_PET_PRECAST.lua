@@ -95,3 +95,8 @@ end
 -- Export globally for GearSwap
 _G.job_pet_precast = job_pet_precast
 
+-- Module table for require() compatibility (parity with _G export above)
+return {
+    job_pet_precast = job_pet_precast,
+}
+

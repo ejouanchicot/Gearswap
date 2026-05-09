@@ -79,3 +79,9 @@ end
 
 _G.job_midcast = job_midcast
 _G.job_post_midcast = job_post_midcast
+
+-- Module table for require() compatibility (parity with _G exports above)
+return {
+    job_midcast = job_midcast,
+    job_post_midcast = job_post_midcast,
+}

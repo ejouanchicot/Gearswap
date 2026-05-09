@@ -250,3 +250,10 @@ end
 _G.job_midcast = job_midcast
 _G.job_post_midcast = job_post_midcast
 _G.job_get_spell_map = job_get_spell_map
+
+-- Module table for require() compatibility (parity with _G exports above)
+return {
+    job_midcast = job_midcast,
+    job_post_midcast = job_post_midcast,
+    job_get_spell_map = job_get_spell_map,
+}
