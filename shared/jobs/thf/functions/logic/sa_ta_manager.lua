@@ -78,6 +78,13 @@ function SATAManager.apply_variant(spell)
         -- If no .TA variant, base set is already equipped
     end
 
+    -- Consume pending flags: WS consumes SA/TA buffs, so the flags
+    -- (which only exist to bridge the lag before buffactive updates) must
+    -- be cleared. Otherwise they remain true forever and every subsequent
+    -- WS wrongly selects the SATA variant (e.g. body = Gleti's Cuirass).
+    _G.thf_sa_pending = false
+    _G.thf_ta_pending = false
+
     -- No buffs active: base set is already equipped by Mote
 end
 

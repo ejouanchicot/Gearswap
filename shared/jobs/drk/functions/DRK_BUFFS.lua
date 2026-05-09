@@ -33,7 +33,13 @@ function job_buff_change(buff, gain, eventArgs)
         return -- Doom handled, stop processing
     end
 
-    -- DRK-specific buff change logic can be added here
+    -- Aftermath Lv.3: Refresh engaged set to apply/remove AM3 gear (Liberator)
+    -- BUT: If Doom is active, don't change gear (Doom priority)
+    if buff == "Aftermath: Lv.3" then
+        if not buffactive['doom'] then
+            handle_equipping_gear(player.status)
+        end
+    end
 end
 
 -- Export to global scope (used by Mote-Include via include())

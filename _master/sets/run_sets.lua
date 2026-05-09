@@ -37,23 +37,17 @@ sets = {}
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- • RINGS (Wardrobe Management)
-ChirichRing1 = {}
-ChirichRing2 = {}
-StikiRing1 = {}
-StikiRing2 = {}
-Moonlight1 = {}
-Moonlight2 = {}
+Moonlight1 = {name = 'Moonlight Ring', bag = 'wardrobe 1'}
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- AUGMENTED EQUIPMENT DEFINITIONS
 -- ═══════════════════════════════════════════════════════════════════════════
 
--- • OGMA'S CAPES (Tank / FC+SIRD / Store TP / WS)
+-- • OGMA'S CAPES (Tank / FC+SIRD / Store TP)
 Ogma = {
-    tank = {},
-    FCSIRD = {},
-    STP = {},
-    WS = {}
+    tank   = {name = "Ogma's Cape", augments = {'HP+60','Eva.+20 /Mag. Eva.+20','Mag. Evasion+10','Enmity+10','Parrying rate+5%'}},
+    FCSIRD = {name = "Ogma's Cape", augments = {'"Fast Cast"+10','Spell interruption rate down-10%'}},
+    STP    = {name = "Ogma's Cape", augments = {'DEX+20','Accuracy+20 Attack+20','Accuracy+5','"Dbl.Atk."+10','Damage taken-5%'}}
 }
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -87,8 +81,8 @@ sets.idle = {
     left_ear="Tuisto Earring",
     right_ear="Odnowa Earring +1",
     left_ring="Karieyh Ring",
-    right_ring="Moonlight Ring",
-    back={ name="Ogma's Cape", augments={'HP+60','Eva.+20 /Mag. Eva.+20','Mag. Evasion+10','Enmity+10','Parrying rate+5%',}},}
+    right_ring = Moonlight1,
+    back = Ogma.tank,}
 
 -- • PDT MODE (Physical Damage Taken -50%)
 sets.idle.PDT = set_combine(sets.idle, {})
@@ -113,8 +107,8 @@ sets.engaged = {
     left_ear="Tuisto Earring",
     right_ear="Odnowa Earring +1",
     left_ring="Shadow Ring",
-    right_ring="Moonlight Ring",
-    back={ name="Ogma's Cape", augments={'HP+60','Eva.+20 /Mag. Eva.+20','Mag. Evasion+10','Enmity+10','Parrying rate+5%',}},
+    right_ring = Moonlight1,
+    back = Ogma.tank,
 }
 
 -- • PDT MODE (Physical Damage Taken -50%)
@@ -133,8 +127,8 @@ sets.engaged.MDT = set_combine(sets.engaged, {
     left_ear="Tuisto Earring",
     right_ear="Odnowa Earring +1",
     left_ring="Shadow Ring",
-    right_ring="Moonlight Ring",
-    back={ name="Ogma's Cape", augments={'HP+60','Eva.+20 /Mag. Eva.+20','Mag. Evasion+10','Enmity+10','Parrying rate+5%',}},
+    right_ring = Moonlight1,
+    back = Ogma.tank,
 })
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -158,7 +152,7 @@ sets.FullEnmity = {
     right_ear="Cryptic Earring",
     left_ring="Eihwaz Ring",
     right_ring="Vexer Ring +1",
-    back={ name="Ogma's Cape", augments={'HP+60','Eva.+20 /Mag. Eva.+20','Mag. Evasion+10','Enmity+10','Parrying rate+5%',}},
+    back = Ogma.tank,
 }
 
 -- • RUNES (NO GEAR SWAP - Maintains current idle/engaged set)
@@ -237,7 +231,7 @@ sets.precast.FC = {
     right_ear="Loquac. Earring",
     left_ring="Naji's Loop",
     right_ring="Kishar Ring",
-    back={ name="Ogma's Cape", augments={'"Fast Cast"+10','Spell interruption rate down-10%',}},
+    back = Ogma.FCSIRD,
 }
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -258,7 +252,7 @@ sets.precast.WS = {
     right_ear="Sherida Earring",
     left_ring="Cornelia's Ring",
     right_ring="Karieyh Ring",
-    back={ name="Ogma's Cape", augments={'DEX+20','Accuracy+20 Attack+20','Accuracy+5','"Dbl.Atk."+10','Damage taken-5%',}},
+    back = Ogma.STP,
 }
 
 -- • GREAT SWORD WEAPONSKILLS
@@ -282,7 +276,7 @@ sets.precast.WS['Armor Break'] = {
     right_ear="Gwati Earring",
     left_ring="Metamor. Ring +1",
     right_ring="Cornelia's Ring",
-    back={ name="Ogma's Cape", augments={'DEX+20','Accuracy+20 Attack+20','Accuracy+5','"Dbl.Atk."+10','Damage taken-5%',}},
+    back = Ogma.STP,
 }
 
 -- Note: TPBonus handled automatically by TPBonusHandler system
@@ -311,7 +305,7 @@ sets.midcast.SIRDEnmity = {
     right_ear="Cryptic Earring",
     left_ring="Evanescence Ring",
     right_ring="Murky Ring",
-    back={ name="Ogma's Cape", augments={'"Fast Cast"+10','Spell interruption rate down-10%',}},
+    back = Ogma.FCSIRD,
 }
 
 -- • ENHANCING MAGIC BASE (Used for ALL Enhancing Magic via MidcastManager fallback)
@@ -328,8 +322,8 @@ sets.midcast['Enhancing Magic'] = {
     left_ear="Tuisto Earring",
     right_ear="Odnowa Earring +1",
     left_ring="Shadow Ring",
-    right_ring="Moonlight Ring",
-    back={ name="Ogma's Cape", augments={'HP+60','Eva.+20 /Mag. Eva.+20','Mag. Evasion+10','Enmity+10','Parrying rate+5%',}},
+    right_ring = Moonlight1,
+    back = Ogma.tank,
 }
 
 -- • SPECIFIC ENHANCING SPELLS
@@ -345,8 +339,8 @@ sets.midcast['Regen'] = {
     left_ear="Tuisto Earring",
     right_ear="Odnowa Earring +1",
     left_ring="Shadow Ring",
-    right_ring="Moonlight Ring",
-    back={ name="Ogma's Cape", augments={'HP+60','Eva.+20 /Mag. Eva.+20','Mag. Evasion+10','Enmity+10','Parrying rate+5%',}},
+    right_ring = Moonlight1,
+    back = Ogma.tank,
 }
 
 -- • ENMITY SPELLS WITH SIRD
@@ -368,8 +362,8 @@ sets.midcast['Phalanx'] = {
     left_ear="Tuisto Earring",
     right_ear="Odnowa Earring +1",
     left_ring="Shadow Ring",
-    right_ring="Moonlight Ring",
-    back={ name="Ogma's Cape", augments={'HP+60','Eva.+20 /Mag. Eva.+20','Mag. Evasion+10','Enmity+10','Parrying rate+5%',}},
+    right_ring = Moonlight1,
+    back = Ogma.tank,
 }
 
 -- • BLUE MAGIC (RUN/BLU subjob - ALL spells use this set)

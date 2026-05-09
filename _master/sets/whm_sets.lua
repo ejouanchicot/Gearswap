@@ -755,7 +755,7 @@ sets.midcast['Repose'] = {
     neck = {name = 'Clr. Torque +1', augments = {'Path: A'}},
     waist = 'Eschan Stone',
     left_ear = 'Malignance Earring',
-    right_ear = 'Malignance Earring',
+    right_ear = 'Regal Earring',
     right_ring = 'Stikini Ring +1',
     left_ring = 'Kishar Ring',
     back = {name = "Alaunus's Cape", augments = {'MND+18', '"Fast Cast"+10', 'Occ. inc. resist. to stat. ailments+10'}}
