@@ -63,8 +63,8 @@ local DEFAULT_STORE_BAG = 'case'
 --- Scan <charname>/config/ for any *_REFILL.lua and load them.
 --- Returns a list of loaded config tables, regardless of which job they target.
 --- @param char_name string
---- @return table list of {job=string, cfg=table}
-local function load_all_refill_configs(char_name)
+--- @return table list of {char=string, job=string, cfg=table}
+local function load_char_refill_configs(char_name)
     if not char_name then
         return {}
     end
@@ -86,9 +86,36 @@ local function load_all_refill_configs(char_name)
                     local mod = char_name .. '/config/' .. entry .. '/' .. job .. '_REFILL'
                     local ok, cfg = pcall(require, mod)
                     if ok and type(cfg) == 'table' then
-                        table.insert(configs, {job = job:upper(), cfg = cfg})
+                        table.insert(configs, {char = char_name, job = job:upper(), cfg = cfg})
                     end
                 end
+            end
+        end
+    end
+    return configs
+end
+
+--- Scan ALL character folders under data/ for *_REFILL.lua configs.
+--- This makes foreign detection cross-character: Kaories on GEO will detect
+--- items used by Tetsouo's other jobs (e.g. Silent Oil from Tetsouo melee
+--- jobs) as foreign and push them back to the store_bag.
+---
+--- Heuristic for character folders: must start with uppercase letter (FFXI
+--- character names are PascalCase). Skips _master, _dev, gitignored backups.
+--- @return table list of {char=string, job=string, cfg=table}
+local function load_all_refill_configs()
+    local configs = {}
+    local data_dir = windower.windower_path .. 'addons/GearSwap/data/'
+    local entries = windower.get_dir(data_dir)
+    if not entries then
+        return {}
+    end
+
+    for _, char_entry in ipairs(entries) do
+        if char_entry:match('^[A-Z]') then
+            local char_configs = load_char_refill_configs(char_entry)
+            for _, c in ipairs(char_configs) do
+                table.insert(configs, c)
             end
         end
     end
@@ -133,8 +160,11 @@ function ConfigResolver.build_foreign_items_set(char_name, current_list)
         end
     end
 
+    -- GLOBAL scan: include configs from ALL characters so cross-character items
+    -- (e.g. Silent Oil used by Tetsouo melee jobs but not by any Kaories job)
+    -- are correctly flagged as foreign when running on a different character.
     local foreign = {}
-    for _, c in ipairs(load_all_refill_configs(char_name)) do
+    for _, c in ipairs(load_all_refill_configs()) do
         iterate_config_entries(c.cfg, function(entry)
             local variants = (type(entry.name) == 'table') and entry.name or {entry.name}
             for _, n in ipairs(variants) do
