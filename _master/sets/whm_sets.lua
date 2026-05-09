@@ -145,24 +145,9 @@ sets.engaged.Normal = {
     back = 'Null Shawl'
 }
 
--- Melee PDT (defensive melee)
-sets.engaged.PDT = {
-    main = 'Maxentius',
-    sub = 'Ammurapi Shield',
-    ammo = 'Homiliary',
-    head = 'Aya. Zucchetto +2',
-    body = 'Ayanmo Corazza +2',
-    hands = 'Aya. Manopolas +2',
-    legs = 'Aya. Cosciales +2',
-    feet = 'Aya. Gambieras +2',
-    neck = 'Null Loop',
-    waist = 'Null Belt',
-    left_ear = 'Telos Earring',
-    right_ear = 'Mache Earring +1',
-    left_ring = 'Rajas Ring',
-    right_ring = 'Ilabrat Ring',
-    back = 'Null Shawl'
-}
+-- Melee PDT (defensive melee) - currently identical to Normal.
+-- Add PDT-specific pieces here when differentiation is needed.
+sets.engaged.PDT = set_combine(sets.engaged.Normal, {})
 
 --============================================================--
 --                   PRECAST: JOB ABILITIES                   --
@@ -359,6 +344,7 @@ sets.midcast.CureSolace = {
         name = 'Queller Rod',
         augments = {'Healing magic skill +15', '"Cure" potency +10%', '"Cure" spellcasting time -7%'}
     },
+    sub = 'Ammurapi Shield',
     ammo = 'Ombre Tathlum +1',
     head = 'Kaykaus Mitra +1',
     body = 'Ebers Bliaut +3',

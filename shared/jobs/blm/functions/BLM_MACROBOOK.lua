@@ -25,7 +25,7 @@ local function get_macrobook_module()
         end
         macrobook_module = MacrobookManager.create(
             'BLM',                           -- job_code
-            'config/blm/BLM_MACROBOOK', -- config_path
+            'Tetsouo/config/blm/BLM_MACROBOOK', -- config_path
             'SAM',                            -- default_subjob
             1,                                -- default_book
             1                                 -- default_page

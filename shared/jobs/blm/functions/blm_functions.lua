@@ -307,7 +307,8 @@ local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- All hook functions loaded, logic modules will load on demand
-print('[BLM] Hook functions loaded (11 hooks + 5 global exports with lazy loading)')
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+MessageFormatter.show_debug('BLM', 'Hook functions loaded (11 hooks + 5 global exports with lazy loading)')
 
 -- ═══════════════════════════════════════════════════════════════════
 TIMER('TOTAL BLM_functions', true)

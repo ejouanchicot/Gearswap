@@ -25,7 +25,7 @@ local function get_lockstyle_module()
         end
         lockstyle_module = LockstyleManager.create(
             'BLM',                           -- job_code
-            'config/blm/BLM_LOCKSTYLE', -- config_path
+            'Tetsouo/config/blm/BLM_LOCKSTYLE', -- config_path
             1,                                -- default_lockstyle
             'SAM'                             -- default_subjob
         )

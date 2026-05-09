@@ -202,21 +202,9 @@ sets.engaged = {
 
 --- PDTTP Engaged (Balanced PDT + TP for survivability)
 --- Used as base for PDT mode and AM3 engaged set.
-sets.engaged.PDTTP = set_combine(sets.engaged, {
-    ammo = 'Coiste Bodhar',
-    head = 'Hjarrandi Helm',
-    body = 'Boii Lorica +3',
-    hands = "Sakpata's Gauntlets",
-    legs = 'Pumm. Cuisses +4',
-    feet = 'Pumm. Calligae +4',
-    neck = 'War. Beads +2',
-    waist = 'Sailfi Belt +1',
-    ear1 = 'Dedition Earring',
-    ear2 = 'Boii Earring +1',
-    ring1 = 'Niqmaddu Ring',
-    ring2 = 'Moonlight Ring',
-    back = Cichol.da
-})
+--- NOTE: currently identical to sets.engaged - empty overrides act as a copy.
+--- Add PDT-specific pieces here when differentiation is needed.
+sets.engaged.PDTTP = set_combine(sets.engaged, {})
 
 --- HybridMode: PDT (Uses PDTTP for maximum survivability)
 --- Activated when HybridMode is set to PDT.
@@ -224,21 +212,9 @@ sets.engaged.PDT = sets.engaged.PDTTP
 
 --- HybridMode: Normal (Pure DPS focused)
 --- Activated when HybridMode is set to Normal.
-sets.engaged.Normal = set_combine(sets.engaged, {
-    ammo = 'Coiste Bodhar',
-    head = 'Hjarrandi Helm',
-    body = 'Boii Lorica +3',
-    hands = "Sakpata's Gauntlets",
-    legs = 'Pumm. Cuisses +4',
-    feet = 'Pumm. Calligae +4',
-    neck = 'War. Beads +2',
-    waist = 'Sailfi Belt +1',
-    ear1 = 'Dedition Earring',
-    ear2 = 'Boii Earring +1',
-    ring1 = 'Niqmaddu Ring',
-    ring2 = 'Moonlight Ring',
-    back = Cichol.da
-})
+--- NOTE: currently identical to sets.engaged - empty overrides act as a copy.
+--- Add DPS-specific pieces here when differentiation is needed.
+sets.engaged.Normal = set_combine(sets.engaged, {})
 
 --- Aftermath Level 3 Specialized (Used with Ukonvasara)
 --- Automatically selected when Aftermath Lv.3 (buff ID 272) is active.
@@ -265,7 +241,7 @@ sets.engaged.PDTAFM3 = set_combine(sets.engaged.PDTTP, {
 --- See: set_builder.lua select_engaged_base()
 sets.engaged.PDTKC = set_combine(sets.engaged.PDTTP, {
     ammo = "Aurgelmir Orb +1",
-    head = "pummeler's Mask +4",
+    head = "Pummeler's Mask +4",
     body = "Boii Lorica +3",
     hands = "Tatena. Gote +1",
     legs = "Tatena. Haidate +1",
@@ -338,7 +314,7 @@ sets.precast.JA['Warcry'] = set_combine(sets.LessEnmity, {
 
 --- Aggressor (Increases accuracy and attack speed + extends duration)
 sets.precast.JA['Aggressor'] = set_combine(sets.LessEnmity, {
-    head = "pummeler's Mask +4", -- Duration +18 seconds
+    head = "Pummeler's Mask +4", -- Duration +18 seconds
     body = 'Agoge Lorica +3' -- Duration +30 seconds
 })
 

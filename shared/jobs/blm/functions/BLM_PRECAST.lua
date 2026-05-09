@@ -139,12 +139,6 @@ function job_precast(spell, action, spellMap, eventArgs)
         end
     end
 
-    -- Handle Death spell (special gear)
-    if spell.english == 'Death' then
-        -- Death uses HP for damage calculation
-        -- Special precast gear with high HP
-    end
-
     -- ══════════════════════════════════════════════════════════════════════════
     -- IMPACT BODY LOCK (Twilight Cloak Required - like Marsyas for BRD)
     -- ══════════════════════════════════════════════════════════════════════════
