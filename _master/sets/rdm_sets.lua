@@ -530,7 +530,7 @@ sets.buff = {}
 -- Priority: Equip Nicander's Necklace immediately when Doom detected
 -- Nicander's has 100% Doom removal rate (10/10 procs)
 sets.buff.Doom = {
-    -- neck = "Nicander's Necklace",  -- Removes Doom (10/10 procs) - PRIORITY ITEM
+    neck = "Nicander's Necklace",     -- Removes Doom (10/10 procs) - PRIORITY ITEM
     ring1 = "Purity Ring",         -- Doom resistance (reduces application chance)
     ring2 = "Blenmot's Ring +1",   -- Doom resistance (reduces application chance)
     waist = "Gishdubar Sash"       -- Doom resistance (reduces application chance)

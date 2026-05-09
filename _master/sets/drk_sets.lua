@@ -183,8 +183,27 @@ sets.engaged.PDT = set_combine(sets.engaged, {
     right_ring = ChirichRing2
 })
 
--- • Aftermath Lv.3 (Liberator mythic)
-sets.engaged.AM3 = set_combine(sets.engaged, {})
+-- • Aftermath Lv.3 (Liberator mythic) - auto-selected by set_builder.lua
+-- when buff 272 (AM3) is active AND main weapon is Liberator.
+-- See: shared/jobs/drk/functions/logic/set_builder.lua:53
+sets.engaged.AM3 = set_combine(sets.engaged, {
+    ammo = 'Aurgelmir Orb +1',
+    head = 'Hjarrandi Helm',
+    body = 'Hjarrandi Breast.',
+    hands = "Sakpata's Gauntlets",
+    legs = 'Flamma Dirs +2',
+    feet = 'Carmine Greaves +1',
+    neck = {name = 'Abyssal Beads +1', augments = {'Path: A'}},
+    waist = 'Null Belt',
+    left_ear = 'Crep. Earring',
+    right_ear = 'Dedition Earring',
+    left_ring = 'Moonlight Ring',
+    right_ring = 'Murky Ring',
+    back = {
+        name = "Ankou's Mantle",
+        augments = {'DEX+20', 'Accuracy+20 Attack+20', 'Accuracy+10', '"Store TP"+10', 'Damage taken-5%'}
+    }
+})
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- PRECAST SETS
@@ -547,9 +566,12 @@ sets.idle.Town = sets.MoveSpeed
 
 sets.buff = {}
 
--- • Doom Resistance
+-- • Doom Resistance (Nicander's removes Doom 100%, others reduce application)
 sets.buff.Doom = {
-    right_ring = 'Purity Ring'
+    neck = "Nicander's Necklace",
+    ring1 = "Purity Ring",
+    ring2 = "Blenmot's Ring +1",
+    waist = "Gishdubar Sash",
 }
 
 -- • Dark Seal (Buff ID 345)

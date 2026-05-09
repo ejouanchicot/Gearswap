@@ -146,11 +146,7 @@ function job_sub_job_change(newSubjob, oldSubjob)
         JobChangeManager.on_job_change(main_job, newSubjob)
     end
 
-    -- DUALBOX: Send job update to MAIN character after subjob change
-    local db_success, DualBoxManager = pcall(require, 'shared/utils/dualbox/dualbox_manager')
-    if db_success and DualBoxManager then
-        DualBoxManager.send_job_update()
-    end
+    -- DUALBOX IPC fires from user_setup() after the reload (covers main + subjob)
 end
 
 ---============================================================================
@@ -197,6 +193,14 @@ function user_setup()
             coroutine.schedule(select_default_lockstyle, LockstyleConfig.initial_load_delay)
         end
     end
+
+    -- ==========================================================================
+    -- DUALBOX IPC (covers main job change - job_sub_job_change is subjob-only)
+    -- The require() triggers dualbox_manager auto-init which schedules the
+    -- correct IPC call once per gs reload (request_alt_job for MAIN role,
+    -- send_job_update for ALT role). Do NOT call them explicitly here.
+    -- ==========================================================================
+    pcall(require, 'shared/utils/dualbox/dualbox_manager')
 end
 
 ---============================================================================
@@ -210,7 +214,8 @@ function job_update(cmdParams, eventArgs)
     if _G.UPDATE_DEBUG then
         local now = os.clock()
         local delta = _G._update_sent_time and (now - _G._update_sent_time) or 0
-        add_to_chat(207, string.format('[UPDATE_DEBUG] 2. job_update RECEIVED | t=%.3f | delta=%.3fms', now, delta * 1000))
+        local MessageFormatter = require('shared/utils/messages/message_formatter')
+        MessageFormatter.show_debug('PLD', string.format('[UPDATE_DEBUG] 2. job_update RECEIVED | t=%.3f | delta=%.3fms', now, delta * 1000))
     end
 
     -- Update UI when states change (F9, F10, etc.)
@@ -220,7 +225,8 @@ function job_update(cmdParams, eventArgs)
             local before = os.clock()
             KeybindUI.update()
             local after = os.clock()
-            add_to_chat(207, string.format('[UPDATE_DEBUG] 3. UI.update DONE | took=%.3fms', (after - before) * 1000))
+            local MessageFormatter = require('shared/utils/messages/message_formatter')
+            MessageFormatter.show_debug('PLD', string.format('[UPDATE_DEBUG] 3. UI.update DONE | took=%.3fms', (after - before) * 1000))
         else
             KeybindUI.update()
         end

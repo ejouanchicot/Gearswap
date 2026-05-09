@@ -148,22 +148,6 @@ sets.engaged.PDT = set_combine(sets.engaged.Normal, {
     back = "Null Shawl"
 })
 
--- • Dual Wield Engaged
-sets.engaged.DW = set_combine(sets.engaged.Normal, {
-    -- Dual Wield gear (for /NIN)
-    -- ear1 = "Suppanomimi",
-    -- ear2 = "Eabani Earring",
-})
-
-sets.engaged.DW.PDT = set_combine(sets.engaged.DW, {
-    head = "Malignance Chapeau",
-    body = "Malignance Tabard",
-    hands = "Malignance Gloves",
-    feet = "Malignance Boots",
-    left_ring = "Murky Ring",
-    back = "Null Shawl"
-})
-
 -- ═══════════════════════════════════════════════════════════════════════════
 -- PRECAST: JOB ABILITIES
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -419,10 +403,10 @@ sets.buff = {}
 
 -- • Doom removal
 sets.buff.Doom = {
-    -- neck = "Nicander's Necklace",
-    -- ring1 = "Purity Ring",
-    -- ring2 = "Blenmot's Ring +1",
-    -- waist = "Gishdubar Sash",
+    neck = "Nicander's Necklace",
+    ring1 = "Purity Ring",
+    ring2 = "Blenmot's Ring +1",
+    waist = "Gishdubar Sash",
 }
 
 print('[COR] Equipment sets loaded')

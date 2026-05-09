@@ -83,6 +83,9 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 
     -- SECOND: Song refinement (auto-downgrade debuff songs if on cooldown)
+    -- INTENTIONAL ORDER: must run BEFORE CooldownChecker so a song on recast
+    -- can be downgraded (e.g. Lullaby II -> Lullaby I) instead of being
+    -- cancelled outright. Do not move CooldownChecker above this block.
     if spell.type == 'BardSong' then
         if SongRefinement.refine_song(spell, eventArgs) then
             return -- Song was refined/cancelled, exit
@@ -160,7 +163,7 @@ function job_precast(spell, action, spellMap, eventArgs)
         end
     end
 
-    -- THIRD: Universal cooldown check
+    -- THIRD: Universal cooldown check (after SongRefinement so it can downgrade first)
     if CooldownChecker then
         if spell.action_type == 'Ability' then
             CooldownChecker.check_ability_cooldown(spell, eventArgs)

@@ -118,17 +118,11 @@ function SetBuilder.build_engaged_set(base_set)
         end
     end
 
-    -- Step 3: Apply Dual Wield gear if /NIN
-    if player and player.sub_job == 'NIN' then
-        if sets.engaged.DW then
-            local success, combined = pcall(set_combine, result, sets.engaged.DW)
-            if success then
-                result = combined
-            end
-        end
-    end
-
-    -- Step 4: Apply weapon sets from states (main+sub together, range separate)
+    -- Step 3: Apply weapon sets from states (main+sub together, range separate)
+    -- Note: Dual wield is handled here by apply_weapon() - if subjob is NIN/DNC,
+    -- the full weapon set (main + sub) is applied. No separate sets.engaged.DW
+    -- is needed because /NIN's DW% requirement is met by other gear (or the
+    -- player accepts the slower TP gain).
     result = SetBuilder.apply_weapon(result)
 
     return result

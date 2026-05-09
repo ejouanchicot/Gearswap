@@ -148,11 +148,7 @@ function job_sub_job_change(newSubjob, oldSubjob)
         JobChangeManager.on_job_change(main_job, newSubjob)
     end
 
-    -- DUALBOX: Send job update to MAIN character after subjob change
-    local db_success, DualBoxManager = pcall(require, 'shared/utils/dualbox/dualbox_manager')
-    if db_success and DualBoxManager then
-        DualBoxManager.send_job_update()
-    end
+    -- DUALBOX IPC fires from user_setup() after the reload (covers main + subjob)
 end
 
 ---============================================================================
@@ -207,6 +203,14 @@ function user_setup()
             coroutine.schedule(select_default_lockstyle, LockstyleConfig.initial_load_delay)
         end
     end
+
+    -- ==========================================================================
+    -- DUALBOX IPC (covers main job change - job_sub_job_change is subjob-only)
+    -- The require() triggers dualbox_manager auto-init which schedules the
+    -- correct IPC call once per gs reload (request_alt_job for MAIN role,
+    -- send_job_update for ALT role). Do NOT call them explicitly here.
+    -- ==========================================================================
+    pcall(require, 'shared/utils/dualbox/dualbox_manager')
 end
 
 ---============================================================================
@@ -221,7 +225,8 @@ function job_update(cmdParams, eventArgs)
     local debug_start = nil
     if _G.AUTOMOVE_DEBUG and _G.AUTOMOVE_DEBUG_START then
         debug_start = os.clock()
-        add_to_chat(207, string.format('[job_update] ENTER | dt from AutoMove=%.3fms', (debug_start - _G.AUTOMOVE_DEBUG_START) * 1000))
+        local MessageFormatter = require('shared/utils/messages/message_formatter')
+        MessageFormatter.show_debug('BLM', string.format('[job_update] ENTER | dt from AutoMove=%.3fms', (debug_start - _G.AUTOMOVE_DEBUG_START) * 1000))
     end
 
     -- Handle Combat Mode weapon locking
@@ -241,7 +246,8 @@ function job_update(cmdParams, eventArgs)
         if _G.AUTOMOVE_DEBUG then
             local t1 = os.clock()
             KeybindUI.update()
-            add_to_chat(207, string.format('[job_update] UI.update took %.3fms', (os.clock() - t1) * 1000))
+            local MessageFormatter = require('shared/utils/messages/message_formatter')
+            MessageFormatter.show_debug('BLM', string.format('[job_update] UI.update took %.3fms', (os.clock() - t1) * 1000))
         else
             KeybindUI.update()
         end
@@ -249,7 +255,8 @@ function job_update(cmdParams, eventArgs)
 
     -- DEBUG: Track total job_update time
     if _G.AUTOMOVE_DEBUG and debug_start then
-        add_to_chat(207, string.format('[job_update] EXIT | total=%.3fms', (os.clock() - debug_start) * 1000))
+        local MessageFormatter = require('shared/utils/messages/message_formatter')
+        MessageFormatter.show_debug('BLM', string.format('[job_update] EXIT | total=%.3fms', (os.clock() - debug_start) * 1000))
     end
 end
 

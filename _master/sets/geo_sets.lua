@@ -436,6 +436,11 @@ sets.Adoulin = set_combine(sets.MoveSpeed, {
 sets.buff = {}
 
 -- • Doom removal
-sets.buff.Doom = {}
+sets.buff.Doom = {
+    neck = "Nicander's Necklace",
+    ring1 = "Purity Ring",
+    ring2 = "Blenmot's Ring +1",
+    waist = "Gishdubar Sash",
+}
 
 print('[GEO] Equipment sets loaded')
