@@ -151,23 +151,47 @@ function Phases.enable_slots()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   SHARED BURST LOOP (used by Phase 2 and Phase 3)
+---   SHARED BURST LOOP (used by Phase 2 and Phase 3)  -  MIXED MODE
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Strict FILL/DRAIN mode alternation. On each step:
----     FILL  : discover items needing to leave the source; pull a burst into inv
----     DRAIN : discover inv items pushable to dst; push a burst out
----   Mode switches when the current side is empty/saturated.
+---   Per step we plan ONE mixed burst: pushes first (free inv slots), then
+---   pulls (fill newly-freed slots). This eliminates the FILL->DRAIN mode
+---   switching overhead of the old strict-alternation design.
+---
+---   Why pushes-then-pulls (not interleaved):
+---     discover_drainable() captures inv slot indices that are valid as long
+---     as no pull mutates inv. By executing all pushes first, those captured
+---     slots stay accurate. Pulls happen afterwards into freed slots without
+---     disturbing the original drainable set. Server processes packets
+---     serially in the order we send them, so push-before-pull is also the
+---     execution order on the server.
+---
+---   Burst sizing:
+---     push_budget = min(BURST_SIZE, #drainable)
+---     pull_budget = min(BURST_SIZE - push_budget, inv_free + push_budget, #pending)
+---       inv_free + push_budget = projected inv slots after pushes complete
+---     Total packets per burst <= BURST_SIZE (server rate limit ~10 pkt/s).
+---
+---   Adaptive delay:
+---     POST_BURST_DELAY is sized for a FULL 30-packet burst (~3s server
+---     processing). Small bursts wait less:  max(1.0, total*0.1).
+---     Floor of 1.0s absorbs network/server jitter.
 ---
 ---   Stop conditions:
----     - source AND inv both clean         -> normal completion
----     - same pending count >= 2 samples   -> cycle detection
----     - STUCK_LIMIT no-progress bursts    -> give up
----     - MAX_STEPS reached                 -> safety cap
+---     - #pending == 0 AND #drainable == 0    -> clean completion
+---     - total_remaining stuck across samples -> cycle detection
+---     - STUCK_LIMIT no-progress bursts       -> give up
+---     - MAX_STEPS reached                    -> safety cap
 ---
 ---   @param opts.label              string ('PHASE 2', 'PHASE 3')
 ---   @param opts.discover_pending   function() -> list of source entries to pull
 ---   @param opts.discover_drainable function() -> list of {slot, dst_list} inv entries
 ---   @param opts.on_done            function (called once when phase completes)
+
+-- Floor for adaptive delay: absorbs server/network jitter. 0.1s/packet is the
+-- baseline rate (10 pkt/s server cap); the floor prevents tiny bursts from
+-- being scheduled too tightly back-to-back.
+local ADAPTIVE_DELAY_FLOOR = 1.0
+local ADAPTIVE_DELAY_PER_PACKET = 0.1
 
 local function run_burst_loop(opts)
     local label              = opts.label
@@ -175,13 +199,12 @@ local function run_burst_loop(opts)
     local discover_drainable = opts.discover_drainable
     local on_done            = opts.on_done
 
-    local mode = 'FILL'
     local steps = 0
     local stuck = 0
     local total_pulled = 0
     local total_pushed = 0
-    local last_pending_count = nil
-    local same_pending_count = 0
+    local last_remaining = nil
+    local same_remaining_count = 0
 
     local function done(reason)
         dlog(('%s DONE: pulled=%d pushed=%d (%s in %d steps)'):format(
@@ -197,102 +220,98 @@ local function run_burst_loop(opts)
             return
         end
 
-        if mode == 'FILL' then
-            local pending = discover_pending()
-            local inv_free = space_in(INV_BAG)
+        local pending   = discover_pending()
+        local drainable = discover_drainable()
+        local inv_free  = space_in(INV_BAG)
+        local remaining = #pending + #drainable
 
-            -- Cycle detection: pending count stuck = no net progress
-            if #pending > 0 then
-                if last_pending_count == #pending then
-                    same_pending_count = same_pending_count + 1
-                    if same_pending_count >= CYCLE_THRESHOLD then
-                        dlog(('[%s] CYCLE: pending stuck at %d for %d samples'):format(
-                            label, #pending, same_pending_count + 1))
-                        done(('cycle exit, %d still pending'):format(#pending))
-                        return
-                    end
-                else
-                    same_pending_count = 0
-                end
-                last_pending_count = #pending
-            end
-
-            if #pending == 0 then
-                if #discover_drainable() > 0 then
-                    dlog(('[%s] mode -> DRAIN (pending empty)'):format(label))
-                    mode = 'DRAIN'
-                    coroutine.schedule(step, MOVE_DELAY)
-                    return
-                end
-                done('clean')
-                return
-            end
-
-            if inv_free <= 0 then
-                dlog(('[%s] mode -> DRAIN (inv full)'):format(label))
-                mode = 'DRAIN'
-                coroutine.schedule(step, MOVE_DELAY)
-                return
-            end
-
-            -- BURST PULL
-            local burst_cap = math.min(BURST_SIZE, inv_free, #pending)
-            local pulls = 0
-            for i = 1, burst_cap do
-                local entry = pending[i]
-                if pull_slot(entry.bag, entry.slot) then pulls = pulls + 1 end
-            end
-            total_pulled = total_pulled + pulls
-            dlog(('[%s] FILL burst: %d pulls (cap=%d, inv_free=%d, pending=%d)'):format(
-                label, pulls, burst_cap, inv_free, #pending))
-
-            stuck = (pulls == 0) and (stuck + 1) or 0
-            if stuck >= STUCK_LIMIT then
-                dlog(('%s STUCK after %d no-progress bursts'):format(label, stuck))
-                on_done()
-                return
-            end
-            coroutine.schedule(step, POST_BURST_DELAY)
-
-        elseif mode == 'DRAIN' then
-            local drainable = discover_drainable()
-            if #drainable == 0 then
-                if #discover_pending() > 0 then
-                    dlog(('[%s] mode -> FILL (inv drained)'):format(label))
-                    mode = 'FILL'
-                    coroutine.schedule(step, MOVE_DELAY)
-                    return
-                end
-                done('clean')
-                return
-            end
-
-            -- BURST PUSH
-            local burst_cap = math.min(BURST_SIZE, #drainable)
-            local pushes = 0
-            for i = 1, burst_cap do
-                local d = drainable[i]
-                for _, dst in ipairs(d.dst_list) do
-                    if space_in(dst) > 0 then
-                        if push_slot(d.slot, dst) then
-                            pushes = pushes + 1
-                            break
-                        end
-                    end
-                end
-            end
-            total_pushed = total_pushed + pushes
-            dlog(('[%s] DRAIN burst: %d pushes (cap=%d, drainable=%d)'):format(
-                label, pushes, burst_cap, #drainable))
-
-            stuck = (pushes == 0) and (stuck + 1) or 0
-            if stuck >= STUCK_LIMIT then
-                dlog(('%s STUCK after %d no-progress bursts'):format(label, stuck))
-                on_done()
-                return
-            end
-            coroutine.schedule(step, POST_BURST_DELAY)
+        -- Clean exit: nothing left to pull AND nothing left to drain.
+        if remaining == 0 then
+            done('clean')
+            return
         end
+
+        -- Cycle detection: total work-units (pending + drainable) not
+        -- decreasing across samples = no net progress.
+        if last_remaining == remaining then
+            same_remaining_count = same_remaining_count + 1
+            if same_remaining_count >= CYCLE_THRESHOLD then
+                dlog(('[%s] CYCLE: remaining stuck at %d for %d samples'):format(
+                    label, remaining, same_remaining_count + 1))
+                done(('cycle exit, %d still pending'):format(remaining))
+                return
+            end
+        else
+            same_remaining_count = 0
+        end
+        last_remaining = remaining
+
+        -- Plan burst sizes. Pushes go first (free inv slots), so pulls can
+        -- borrow against the slots that the pushes will free.
+        local push_budget = math.min(BURST_SIZE, #drainable)
+        local pull_budget = math.min(
+            BURST_SIZE - push_budget,    -- remaining packet quota
+            inv_free + push_budget,      -- projected inv space after pushes
+            #pending                     -- nothing more to pull
+        )
+
+        -- ── PUSHES (executed first) ───────────────────────────────────────
+        -- Multi-pin items (Stikini Ring +1 pinned to W1 AND W2) need in-burst
+        -- dedup: two copies of the same id would both target W1 (first pin
+        -- with space) because space_in() doesn't refresh mid-burst. Track
+        -- (id, bag) claims and skip pins already taken by an earlier copy.
+        local burst_claims = {}  -- [id] = { [bag] = true }
+        local pushes = 0
+        for i = 1, push_budget do
+            local d = drainable[i]
+            local claimed = d.is_pinned and burst_claims[d.id] or nil
+            for _, dst in ipairs(d.dst_list) do
+                if (not claimed or not claimed[dst]) and space_in(dst) > 0 then
+                    if push_slot(d.slot, dst) then
+                        if d.is_pinned then
+                            burst_claims[d.id] = burst_claims[d.id] or {}
+                            burst_claims[d.id][dst] = true
+                        end
+                        pushes = pushes + 1
+                        break
+                    end
+                end
+            end
+        end
+        total_pushed = total_pushed + pushes
+
+        -- ── PULLS (executed after pushes, into freed slots) ───────────────
+        -- pending entries reference source bags (W1/W2 in Phase 2, overflow
+        -- in Phase 3), not inventory, so push-side mutations don't invalidate
+        -- their slot indices. Pulls will land in slots freed by the pushes
+        -- above plus any slots that were already free pre-burst.
+        local pulls = 0
+        for i = 1, pull_budget do
+            local entry = pending[i]
+            if pull_slot(entry.bag, entry.slot) then pulls = pulls + 1 end
+        end
+        total_pulled = total_pulled + pulls
+
+        local burst_total = pushes + pulls
+        dlog(('[%s] MIXED burst: %d pulls + %d pushes (inv_free=%d pend=%d drain=%d)'):format(
+            label, pulls, pushes, inv_free, #pending, #drainable))
+
+        -- Stuck detection: a burst that moves nothing means destinations are
+        -- full and sources are blocked. Bail after STUCK_LIMIT in a row.
+        stuck = (burst_total == 0) and (stuck + 1) or 0
+        if stuck >= STUCK_LIMIT then
+            dlog(('%s STUCK after %d no-progress bursts'):format(label, stuck))
+            on_done()
+            return
+        end
+
+        -- Adaptive delay: scale to actual packet count, with a 1s floor for
+        -- jitter and a 3s ceiling (= POST_BURST_DELAY, the full-burst budget).
+        local adaptive_delay = math.max(
+            ADAPTIVE_DELAY_FLOOR,
+            math.min(POST_BURST_DELAY, burst_total * ADAPTIVE_DELAY_PER_PACKET)
+        )
+        coroutine.schedule(step, adaptive_delay)
     end
 
     coroutine.schedule(step, 0)
@@ -342,9 +361,9 @@ function Phases.empty_w1w2(state, on_done)
                 local pins = unclaimed_pins_first(it.id, state.pinned_bags)
                 local used = Items.is_used_name(it.id, state.used_names)
                 if #pins > 0 then
-                    table.insert(list, {slot = slot, dst_list = pins, name = Items.display_name(it.id)})
+                    table.insert(list, {slot = slot, dst_list = pins, name = Items.display_name(it.id), id = it.id, is_pinned = true})
                 elseif not used then
-                    table.insert(list, {slot = slot, dst_list = Config.OVERFLOW_BAGS, name = Items.display_name(it.id)})
+                    table.insert(list, {slot = slot, dst_list = Config.OVERFLOW_BAGS, name = Items.display_name(it.id), id = it.id, is_pinned = false})
                 end
             end
         end
@@ -406,9 +425,9 @@ function Phases.fill_w1w2(state, on_done)
                 local pins = unclaimed_pins_first(it.id, state.pinned_bags)
                 local used = Items.is_used_name(it.id, state.used_names)
                 if #pins > 0 then
-                    table.insert(list, {slot = slot, dst_list = pins, name = Items.display_name(it.id)})
+                    table.insert(list, {slot = slot, dst_list = pins, name = Items.display_name(it.id), id = it.id, is_pinned = true})
                 elseif used then
-                    table.insert(list, {slot = slot, dst_list = Config.PRIMARY_BAGS, name = Items.display_name(it.id)})
+                    table.insert(list, {slot = slot, dst_list = Config.PRIMARY_BAGS, name = Items.display_name(it.id), id = it.id, is_pinned = false})
                 end
             end
         end
@@ -467,6 +486,7 @@ function Phases.cleanup_inv(used_names, pinned_bags, on_done)
                     dst_priority = dst_priority,
                     name         = Items.display_name(it.id),
                     id           = it.id,
+                    is_pinned    = (#pins > 0),
                 })
             end
         end
@@ -500,6 +520,11 @@ function Phases.cleanup_inv(used_names, pinned_bags, on_done)
 
         local pushed_this_pass = 0
         local idx = 0
+        -- Pass-local (id, bag) claims so multi-pin items (Stikini W1+W2) don't
+        -- both land in the same pin within one pass. dst_priority is built
+        -- once per pass, so we need to skip pins already taken by an earlier
+        -- copy of the same id.
+        local pass_claims = {}  -- [id] = { [bag] = true }
         local function step()
             idx = idx + 1
             if idx > #plan then
@@ -514,9 +539,14 @@ function Phases.cleanup_inv(used_names, pinned_bags, on_done)
             local items_now = windower.ffxi.get_items(INV_BAG)
             if items_now and items_now[p.slot] and items_now[p.slot].id == p.id
                and items_now[p.slot].status == 0 then
+                local claimed = p.is_pinned and pass_claims[p.id] or nil
                 for _, dst in ipairs(p.dst_priority) do
-                    if space_in(dst) > 0 then
+                    if (not claimed or not claimed[dst]) and space_in(dst) > 0 then
                         if push_slot(p.slot, dst) then
+                            if p.is_pinned then
+                                pass_claims[p.id] = pass_claims[p.id] or {}
+                                pass_claims[p.id][dst] = true
+                            end
                             pushed_this_pass = pushed_this_pass + 1
                             break
                         end

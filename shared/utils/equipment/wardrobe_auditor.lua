@@ -526,45 +526,95 @@ local BAG_NAME_TO_ID = {
     ['wardrobe 8']=16, ['wardrobe8']=16,
 }
 
+--- Recursively walk a directory tree and return all .lua file paths.
+--- The modular sets layout (2026-05) puts gear definitions under subfolders
+--- (e.g. Tetsouo/sets/common/rings.lua, Tetsouo/sets/brd/armor.lua), so a
+--- flat scan would miss pin annotations like `{name='Stikini Ring +1', bag='wardrobe 1'}`.
+--- Heuristic: entries ending in `.lua` are files; everything else is a subdir
+--- (windower API doesn't expose is_dir).
+--- @param root_dir string Absolute path WITH trailing slash
+--- @return table Array of absolute .lua file paths
+local function walk_lua_files(root_dir)
+    local out = {}
+    local stack = {root_dir}
+    local visited = {}  -- guard against pathological loops
+    while #stack > 0 do
+        local dir = table.remove(stack)
+        if not visited[dir] then
+            visited[dir] = true
+            local entries = windower.get_dir(dir)
+            if entries then
+                for _, name in ipairs(entries) do
+                    if name:lower():match('%.lua$') then
+                        table.insert(out, dir .. name)
+                    else
+                        table.insert(stack, dir .. name .. '/')
+                    end
+                end
+            end
+        end
+    end
+    return out
+end
+
 --- Public: extract bag constraints from all set files. Items defined as
 --- `{name='X', bag='wardrobe N', ...}` need to physically live in that bag
 --- for GearSwap to find them (especially important for multi-instance rings
 --- like Chirich Ring +1 x2 that must be in different wardrobes).
+---
+--- Recursively scans every .lua file under data/<CharName>/sets/ so pin
+--- definitions in shared modules (e.g. common/rings.lua) and in modular
+--- per-job folders (e.g. brd/armor.lua) are all picked up.
 --- @return table {[item_name_lower] = {bag_id_1, bag_id_2, ...}} (set as array)
 function WardrobeAuditor.build_pinned_bags()
     local pinned = {}  -- item_name_lower -> set of bag ids (deduped)
 
-    local dir = sets_dir()
-    for _, job_lower in ipairs(discover_jobs()) do
-        local path = dir .. job_lower .. '_sets.lua'
-        if windower.file_exists(path) then
-            local file = io.open(path, 'r')
-            if file then
-                local content = file:read('*all')
-                file:close()
-                if content and content ~= '' then
-                    -- Strip comments
-                    local clean = content:gsub('%-%-[^\n]*', '')
-                    -- Find every {...} block; if it has both name= and bag=, pin it
-                    for block in clean:gmatch('%b{}') do
+    local function add_pin(name, bag)
+        local bag_id = BAG_NAME_TO_ID[bag:lower()]
+        if not bag_id then return end
+        local key = name:lower()
+        pinned[key] = pinned[key] or {}
+        for _, b in ipairs(pinned[key]) do
+            if b == bag_id then return end
+        end
+        table.insert(pinned[key], bag_id)
+    end
+
+    for _, path in ipairs(walk_lua_files(sets_dir())) do
+        local file = io.open(path, 'r')
+        if file then
+            local content = file:read('*all')
+            file:close()
+            if content and content ~= '' then
+                -- Strip comments
+                local clean = content:gsub('%-%-[^\n]*', '')
+                -- Iteratively process innermost {...} blocks (those with NO
+                -- nested braces). Each pass extracts name/bag from leaf-level
+                -- tables, then replaces the block with '' so the formerly-outer
+                -- table becomes a new leaf for the next pass.
+                --
+                -- This handles three layouts uniformly:
+                --   1. Flat:        {name='X', bag='W1'}                 (single pass)
+                --   2. With augs:   {name='X', augments={...}, bag='W1'} (augments
+                --                                                          stripped pass 1,
+                --                                                          name/bag pass 2)
+                --   3. Nested map:  local Rings = { A = {name='X', bag='W1'},
+                --                                   B = {name='X', bag='W2'} }
+                --                   (all inner ring defs found in pass 1; the
+                --                    old %b{} loop only matched the OUTER table
+                --                    and grabbed the FIRST name/bag — missing
+                --                    every other entry, including the W2 pin)
+                local guard = 0
+                while clean:find('{[^{}]*}') and guard < 200 do
+                    guard = guard + 1
+                    clean = clean:gsub('({[^{}]*})', function(block)
                         local name = block:match("name%s*=%s*['\"]([^'\"]+)['\"]")
                         local bag = block:match("bag%s*=%s*['\"]([^'\"]+)['\"]")
                         if name and bag then
-                            local bag_id = BAG_NAME_TO_ID[bag:lower()]
-                            if bag_id then
-                                local key = name:lower()
-                                pinned[key] = pinned[key] or {}
-                                -- Dedup: only add bag_id once
-                                local already = false
-                                for _, b in ipairs(pinned[key]) do
-                                    if b == bag_id then already = true; break end
-                                end
-                                if not already then
-                                    table.insert(pinned[key], bag_id)
-                                end
-                            end
+                            add_pin(name, bag)
                         end
-                    end
+                        return ''
+                    end)
                 end
             end
         end
