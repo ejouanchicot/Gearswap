@@ -39,6 +39,17 @@ function SpecialHandlers.announce_magic_burst(originalSpell, finalSpellName)
         return
     end
 
+    -- Guard against the double-announce that happens when refinement fires a
+    -- replacement: original spell precast announces "Fire V", then the
+    -- `@input /ma Fire V` from execute_replacement triggers a SECOND precast
+    -- which would announce again 0.2-0.4s later. Two /p in <5s gets rejected
+    -- by FFXI's anti-spam ("Cannot send messages so often").
+    local now = os.clock()
+    if not TimingGuards.is_announce_safe(now) then
+        return
+    end
+    TimingGuards.update_announce_time(now)
+
     -- Parse final name to get category and level
     local finalCategory, finalLevel = finalSpellName:match('(%a+)%s*(%a*)')
 

@@ -29,9 +29,18 @@ local REPLACEMENT_COOLDOWN = 0.2
 --- Default per-spell cooldown (used by Breakga -> Break).
 local CAST_COOLDOWN = 2.0
 
+--- Cooldown between Magic Burst /p announcements. FFXI rate-limits party
+--- messages to roughly one per 5s, but more importantly the replacement
+--- spell's precast fires ~0.2-0.4s after the original (via `wait 0.1;
+--- @input /ma`), and that's just past REPLACEMENT_COOLDOWN. So a dedicated
+--- announce guard is needed to avoid scheduling a second `/p Casting: ...`
+--- that would either spam the party or be rejected by FFXI's anti-spam.
+local ANNOUNCE_COOLDOWN = 2.5
+
 -- Module-local state (resets on gs reload)
 local last_replacement_time = 0
 local last_cast_times = {}  -- [spell_name] = timestamp
+local last_announce_time = 0
 
 --- Check if global spell replacement is safe (not in cooldown window).
 --- @param current_time number Result of os.clock()
@@ -65,6 +74,19 @@ end
 --- @param current_time number Result of os.clock()
 function TimingGuards.update_cast_time(spell_name, current_time)
     last_cast_times[spell_name] = current_time
+end
+
+--- Check if a Magic Burst announce is allowed (not in cooldown window).
+--- @param current_time number Result of os.clock()
+--- @return boolean True if enough time has passed since last announce
+function TimingGuards.is_announce_safe(current_time)
+    return (current_time - last_announce_time) >= ANNOUNCE_COOLDOWN
+end
+
+--- Stamp the current time as the latest announce timestamp.
+--- @param current_time number Result of os.clock()
+function TimingGuards.update_announce_time(current_time)
+    last_announce_time = current_time
 end
 
 return TimingGuards
