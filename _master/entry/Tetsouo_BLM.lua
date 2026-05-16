@@ -235,8 +235,17 @@ function job_update(cmdParams, eventArgs)
             -- Lock all weapon slots
             disable('main', 'sub', 'range', 'ammo')
         else
-            -- Unlock all weapon slots
-            enable('main', 'sub', 'range', 'ammo')
+            -- Unlock weapons UNLESS a craft/fish session owns the disable.
+            -- job_update fires on every `gs c update` (aftercast/automove/state
+            -- change), and an unconditional enable() here was silently breaking
+            -- `//gs c craft`: the first spell or movement after entering craft
+            -- mode would re-enable main/sub, the next idle hook would equip
+            -- the BLM staff+grip over the craft shield. CraftManager owns the
+            -- disable until //gs c uncraft (or //gs c craft again).
+            local craft_active = _G.__CraftManagerState and _G.__CraftManagerState.active
+            if not craft_active then
+                enable('main', 'sub', 'range', 'ammo')
+            end
         end
     end
 

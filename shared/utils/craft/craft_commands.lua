@@ -17,6 +17,41 @@ local CraftCommands = {}
 
 local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
 
+-- Default lockstyle numbers (overridden by per-character CRAFT_CONFIG.lua if present)
+local DEFAULT_CRAFT_LOCKSTYLE = 19
+local DEFAULT_FISH_LOCKSTYLE  = 17
+
+--- Resolve the lockstyle number from per-character config, with fallback.
+--- @param key string 'craft_lockstyle' or 'fish_lockstyle'
+--- @param fallback number Default value if config missing
+--- @return number
+local function get_configured_lockstyle(key, fallback)
+    local char_name = player and player.name
+    if not char_name then return fallback end
+
+    local ok, CraftConfig = pcall(require, char_name .. '/config/CRAFT_CONFIG')
+    if ok and CraftConfig and type(CraftConfig[key]) == 'number' then
+        return CraftConfig[key]
+    end
+    return fallback
+end
+
+--- Apply a specific lockstyle (DressUp-aware).
+--- @param style number Lockstyle number to apply
+local function apply_lockstyle(style)
+    local ok, LockstyleManager = pcall(require, 'shared/utils/lockstyle/lockstyle_manager')
+    if ok and LockstyleManager and LockstyleManager.apply_style then
+        LockstyleManager.apply_style(style)
+    end
+end
+
+--- Restore the current job's default lockstyle (via factory-exported global).
+local function restore_job_lockstyle()
+    if type(_G.select_default_lockstyle) == 'function' then
+        _G.select_default_lockstyle()
+    end
+end
+
 --- Lazy-load craft_manager. Reports a clean error via MessageFormatter on miss.
 --- @return table|nil The craft manager module, or nil on failure.
 local function load_craft_manager()
@@ -47,6 +82,12 @@ local function equip_craft_gear(entry, label)
         windower.send_command('gs disable all')
         MessageCommands.show_craft_ready(entry.description or label)
     end, 2.0)
+    -- Refill consumables after the lock has settled. Refill moves items
+    -- between bags only (no gear swaps), so it's safe to run while slots
+    -- are disabled.
+    coroutine.schedule(function()
+        windower.send_command('gs c rf')
+    end, 2.5)
 end
 
 --- Handle //gs c craft [variant]   (default = bonecraft, hq variant).
@@ -57,6 +98,7 @@ function CraftCommands.handle_craft(variant)
     if variant and (variant:lower() == 'off' or variant:lower() == 'stop'
                     or variant:lower() == 'uncraft') then
         m.unequip()
+        restore_job_lockstyle()
         return true
     end
 
@@ -69,6 +111,7 @@ function CraftCommands.handle_craft(variant)
 
     equip_craft_gear(entry, 'bonecraft')
     m.mark_active(entry.description or 'bonecraft')
+    apply_lockstyle(get_configured_lockstyle('craft_lockstyle', DEFAULT_CRAFT_LOCKSTYLE))
     return true
 end
 
@@ -86,13 +129,18 @@ function CraftCommands.handle_fish(variant)
 
     equip_craft_gear(entry, 'fishing')
     m.mark_active(entry.description or 'fishing')
+    apply_lockstyle(get_configured_lockstyle('fish_lockstyle', DEFAULT_FISH_LOCKSTYLE))
     return true
 end
 
 --- Handle //gs c uncraft (alias for //gs c craft off).
 function CraftCommands.handle_uncraft()
     local m = load_craft_manager()
-    if m then m.unequip(); return true end
+    if m then
+        m.unequip()
+        restore_job_lockstyle()
+        return true
+    end
     return false
 end
 

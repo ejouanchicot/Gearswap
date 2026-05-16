@@ -143,6 +143,10 @@ function CraftManager.unequip()
     _state.active      = false
     _state.active_name = nil
     formatter().show_success(('[Craft] Unlocked %s. Normal gear will resume.'):format(was or '?'))
+    -- Refill consumables after exiting craft mode (parity with gs c craft).
+    coroutine.schedule(function()
+        windower.send_command('gs c rf')
+    end, 0.5)
 end
 
 return CraftManager
