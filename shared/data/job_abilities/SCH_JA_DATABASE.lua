@@ -1,55 +1,25 @@
----============================================================================
---- SCH Job Ability Database - Legacy Wrapper
----============================================================================
---- Auto-generated wrapper for backward compatibility with UNIVERSAL_JA_DATABASE.
---- Loads from new modular structure (subjob/mainjob/sp) and merges into
---- simple {ability_name = ability_data} format.
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SCH Job Ability Database
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Wrapper around JA_DATABASE_FACTORY. Loads subjob/mainjob/sp + grimoire
+---   modules (white & black, both subjob and mainjob variants) into a flat table.
 ---
---- @file SCH_JA_DATABASE.lua
---- @author Tetsouo (auto-generated)
---- @version 1.0 - Improved formatting
---- @date Created: 2025-10-31
----============================================================================
+---   Note (v2.0): Legacy wrapper only loaded `_subjob` grimoire variants. The
+---   `_mainjob` grimoire files exist on disk and contain SCH-main-only abilities
+---   (Altruism, Tranquility, Perpetuance, etc.). They are now wired in.
+---
+---   @file    SCH_JA_DATABASE.lua
+---   @author  Tetsouo
+---   @version 2.0 - Factory-based + mainjob grimoires fix
+---   @date    Updated: 2026-05-06
+---  ═══════════════════════════════════════════════════════════════════════════
 
-local JA_DB = {}
+local Factory = require('shared/data/job_abilities/JA_DATABASE_FACTORY')
 
--- Load subjob abilities
-local subjob_success, subjob_module = pcall(require, 'shared/data/job_abilities/sch/sch_subjob')
-if subjob_success and subjob_module and subjob_module.abilities then
-    for ability_name, ability_data in pairs(subjob_module.abilities) do
-        JA_DB[ability_name] = ability_data
-    end
-end
-
--- Load main job abilities
-local mainjob_success, mainjob_module = pcall(require, 'shared/data/job_abilities/sch/sch_mainjob')
-if mainjob_success and mainjob_module and mainjob_module.abilities then
-    for ability_name, ability_data in pairs(mainjob_module.abilities) do
-        JA_DB[ability_name] = ability_data
-    end
-end
-
--- Load SP abilities
-local sp_success, sp_module = pcall(require, 'shared/data/job_abilities/sch/sch_sp')
-if sp_success and sp_module and sp_module.abilities then
-    for ability_name, ability_data in pairs(sp_module.abilities) do
-        JA_DB[ability_name] = ability_data
-    end
-end
-
-    -- Load SCH grimoire modules
-    local white_success, white_module = pcall(require, 'shared/data/job_abilities/sch/sch_white_grimoire_subjob')
-    if white_success and white_module and white_module.abilities then
-        for ability_name, ability_data in pairs(white_module.abilities) do
-            JA_DB[ability_name] = ability_data
-        end
-    end
-
-    local black_success, black_module = pcall(require, 'shared/data/job_abilities/sch/sch_black_grimoire_subjob')
-    if black_success and black_module and black_module.abilities then
-        for ability_name, ability_data in pairs(black_module.abilities) do
-            JA_DB[ability_name] = ability_data
-        end
-    end
-
-return JA_DB
+return Factory.create('SCH', {
+    modules = {
+        'subjob', 'mainjob', 'sp',
+        'white_grimoire_subjob', 'white_grimoire_mainjob',
+        'black_grimoire_subjob', 'black_grimoire_mainjob',
+    }
+})
