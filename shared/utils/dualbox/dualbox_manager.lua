@@ -131,6 +131,15 @@ end
 ---   ALT ROLE FUNCTIONS (Kaories >> Tetsouo)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+-- De-dup window for send_job_update. Both sides reloading simultaneously
+-- triggers two paths to send the same update almost back-to-back:
+--   1. ALT auto-init proactively sends once it has player data
+--   2. MAIN auto-init sends `requestjob`, ALT responds via handle_job_request
+-- Without de-dup MAIN sees two identical altjobupdates per startup, and any
+-- additional MAIN reloads pile on more redundant responses. State is stored
+-- on `windower` so it survives `gs reload` (which wipes `_G`).
+local SEND_DEDUP_WINDOW = 1.5
+
 --- Send job update from ALT to MAIN
 --- Called when alt character changes job
 --- Uses windower send command to communicate with main character
@@ -151,6 +160,16 @@ function DualBoxManager.send_job_update()
 
     local main_job = player.main_job
     local sub_job = player.sub_job or "NON"
+    local payload = main_job .. '/' .. sub_job
+
+    -- Drop if we just sent the same payload within SEND_DEDUP_WINDOW seconds.
+    -- Different payload = real job change, always send through.
+    local now = os.clock()
+    if windower._dualbox_last_send_payload == payload
+       and windower._dualbox_last_send_time
+       and (now - windower._dualbox_last_send_time) < SEND_DEDUP_WINDOW then
+        return
+    end
 
     -- Get target MAIN character using helper function
     local target_name = get_target_character()
@@ -165,6 +184,11 @@ function DualBoxManager.send_job_update()
     -- Send command to main character
     local command = string.format('send %s gs c altjobupdate %s %s', target_name, main_job, sub_job)
     send_command(command)
+
+    -- Record for de-dup (after we actually sent, so a failed get_target_character
+    -- attempt above doesn't poison the window)
+    windower._dualbox_last_send_payload = payload
+    windower._dualbox_last_send_time = now
 
     -- Debug message
     if _G.DualBoxConfig.debug then
@@ -373,33 +397,46 @@ end
 ---   AUTO-INITIALIZATION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Auto-initialize when module is loaded
--- This ensures the system is ready without manual initialization calls
--- Use global flag to prevent multiple initializations (module loaded by multiple jobs)
-if not _G.DualBoxManagerInitialized then
-    _G.DualBoxManagerInitialized = true
+-- Auto-init runs on every module body execution. The body re-runs on every
+-- `gs reload` and also when re-requires bypass `package.loaded` caching
+-- (e.g. RDM_COMMANDS doing `require('shared/utils/dualbox/dualbox_manager')`
+-- to deliver an altjobupdate message). The former is desired - we want one
+-- fresh init per reload. The latter creates a feedback loop:
+--   MAIN auto-init -> `requestjob` -> ALT `altjobupdate` -> MAIN command
+--   handler re-requires this module -> body re-runs -> schedules a new
+--   auto-init coroutine -> 2s later it fires another `requestjob`.
+--
+-- Tied directly to `windower._gs_reload_count` (incremented by INIT_SYSTEMS.lua
+-- on every gs reload, persists on `windower` across reload wipes). The
+-- coroutine fires only if the reload counter has advanced since the last
+-- fire - "fresh reload" vs "re-require in same session" becomes binary, no
+-- timing/threshold guesswork. The per-body counter still debounces multiple
+-- bodies queued in the same reload cycle.
+windower._dualbox_init_counter = (windower._dualbox_init_counter or 0) + 1
+local my_init_counter = windower._dualbox_init_counter
 
-    coroutine.schedule(function()
-        if player and player.name then
-            DualBoxManager.initialize()
+coroutine.schedule(function()
+    if my_init_counter ~= windower._dualbox_init_counter then return end
+    if not player or not player.name then return end
 
-            -- If this is ALT role, send initial job update
-            if _G.DualBoxConfig and _G.DualBoxConfig.role == "alt" then
-                if _G.DualBoxConfig.debug then
-                    get_MessageDualbox().show_alt_role_detected()
-                end
-                DualBoxManager.send_job_update()
+    local current_reload = windower._gs_reload_count or 0
+    if current_reload == windower._dualbox_init_last_reload then return end
+    windower._dualbox_init_last_reload = current_reload
 
-            -- If this is MAIN role, request job from ALT
-            elseif _G.DualBoxConfig and _G.DualBoxConfig.role == "main" then
-                if _G.DualBoxConfig.debug then
-                    get_MessageDualbox().show_main_role_detected()
-                end
-                DualBoxManager.request_alt_job()
-            end
+    DualBoxManager.initialize()
+
+    if _G.DualBoxConfig and _G.DualBoxConfig.role == "alt" then
+        if _G.DualBoxConfig.debug then
+            get_MessageDualbox().show_alt_role_detected()
         end
-    end, 2)  -- 2 second delay to ensure player data is loaded
-end
+        DualBoxManager.send_job_update()
+    elseif _G.DualBoxConfig and _G.DualBoxConfig.role == "main" then
+        if _G.DualBoxConfig.debug then
+            get_MessageDualbox().show_main_role_detected()
+        end
+        DualBoxManager.request_alt_job()
+    end
+end, 2)  -- 2 second delay to ensure player data is loaded
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT
