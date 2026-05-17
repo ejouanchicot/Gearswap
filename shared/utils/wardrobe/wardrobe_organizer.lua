@@ -346,6 +346,10 @@ end
 
 --- Phase 4: cleanup leftover inventory gear, then finish_run.
 local function start_phase4(state)
+    if job_changed() then
+        abort_run('Job changed before phase 4.')
+        return
+    end
     Chat.phase(4, 'Cleanup leftovers', nil)
     Phases.cleanup_inv(state.used_names, state.pinned_bags, finish_run)
 end

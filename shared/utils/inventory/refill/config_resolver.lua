@@ -69,7 +69,7 @@ local function load_char_refill_configs(char_name)
         return {}
     end
     local configs = {}
-    local config_dir = windower.windower_path .. 'addons/GearSwap/data/' .. char_name .. '/config/'
+    local config_dir = windower.addon_path .. 'data/' .. char_name .. '/config/'
     local subdirs = windower.get_dir(config_dir)
     if not subdirs then
         return {}
@@ -105,7 +105,7 @@ end
 --- @return table list of {char=string, job=string, cfg=table}
 local function load_all_refill_configs()
     local configs = {}
-    local data_dir = windower.windower_path .. 'addons/GearSwap/data/'
+    local data_dir = windower.addon_path .. 'data/'
     local entries = windower.get_dir(data_dir)
     if not entries then
         return {}

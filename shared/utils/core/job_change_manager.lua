@@ -42,7 +42,11 @@ local STATE = _G.JobChangeManagerSTATE
 
 --- Cancel all pending operations
 local function cancel_all_pending()
-    -- Cancel debounce timer (clear reference, GC will clean up)
+    -- Bumping the counter invalidates any in-flight coroutine: the scheduled
+    -- closure compares my_counter to STATE.debounce_counter and aborts on
+    -- mismatch. Clearing the timer reference alone does NOT stop a coroutine
+    -- already queued via coroutine.schedule.
+    STATE.debounce_counter = STATE.debounce_counter + 1
     STATE.debounce_timer = nil
 end
 

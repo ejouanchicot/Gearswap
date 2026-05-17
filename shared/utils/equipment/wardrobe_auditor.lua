@@ -39,21 +39,84 @@ local function sets_dir()
     return windower.addon_path .. 'data/' .. char_name .. '/sets/'
 end
 
---- Auto-discover job set files in <CharName>/sets/. Only scans jobs that have
---- a matching *_sets.lua file - new jobs added later will be picked up
---- automatically without needing to edit this script.
---- @return table Array of job_lower strings, sorted alphabetically
-local function discover_jobs()
-    local dir = sets_dir()
-    local files = windower.get_dir(dir)
-    local jobs = {}
-    if files then
-        for _, file in ipairs(files) do
-            local job = file:match('^(%w+)_sets%.lua$')
-            if job and VALID_JOBS[job:lower()] then
-                table.insert(jobs, job:lower())
+--- Recursively walk a directory tree and return all .lua file paths.
+--- Defined here (instead of further down) because discover_job_files() needs
+--- it. The modular sets layout (2026-05) puts gear definitions under subfolders
+--- (e.g. Tetsouo/sets/common/rings.lua, Tetsouo/sets/brd/armor.lua), so a
+--- flat scan would miss them.
+--- Heuristic: entries ending in `.lua` are files; everything else is a subdir
+--- (windower API doesn't expose is_dir).
+--- @param root_dir string Absolute path WITH trailing slash
+--- @return table Array of absolute .lua file paths
+local function walk_lua_files(root_dir)
+    local out = {}
+    local stack = {root_dir}
+    local visited = {}  -- guard against pathological loops
+    while #stack > 0 do
+        local dir = table.remove(stack)
+        if not visited[dir] then
+            visited[dir] = true
+            local entries = windower.get_dir(dir)
+            if entries then
+                for _, name in ipairs(entries) do
+                    if name:lower():match('%.lua$') then
+                        table.insert(out, dir .. name)
+                    else
+                        table.insert(stack, dir .. name .. '/')
+                    end
+                end
             end
         end
+    end
+    return out
+end
+
+--- Discover job set files and group them by job. Supports both layouts:
+---   - Flat:    Tetsouo/sets/blm_sets.lua          (legacy + Kaories)
+---   - Modular: Tetsouo/sets/blm/blm_sets.lua      (migrated 2026-05-11)
+---              Tetsouo/sets/blm/armor.lua, capes.lua, weapons.lua, ...
+--- Files in `common/` (e.g. rings.lua) apply to every discovered job because
+--- they typically declare equipment shared across all jobs.
+--- @return table {[job_lower] = {file_path, file_path, ...}}
+local function discover_job_files()
+    local dir = sets_dir()
+    local common = {}
+    local jobs = {}
+
+    for _, path in ipairs(walk_lua_files(dir)) do
+        local rel = path:sub(#dir + 1):gsub('\\', '/')
+        if rel:match('^common/') then
+            table.insert(common, path)
+        else
+            -- Try flat layout first: <job>_sets.lua at root
+            local flat = rel:match('^(%w+)_sets%.lua$')
+            -- Then modular: <job>/anything.lua
+            local nested = rel:match('^(%w+)/')
+            local job = (flat or nested or ''):lower()
+            if VALID_JOBS[job] then
+                jobs[job] = jobs[job] or {}
+                table.insert(jobs[job], path)
+            end
+        end
+    end
+
+    -- Common files apply to every discovered job
+    for _, paths in pairs(jobs) do
+        for _, cp in ipairs(common) do
+            table.insert(paths, cp)
+        end
+    end
+
+    return jobs
+end
+
+--- Auto-discover job set files in <CharName>/sets/. Drop a new <job>_sets.lua
+--- (flat) or <job>/anything.lua (modular) and it's picked up automatically.
+--- @return table Array of job_lower strings, sorted alphabetically
+local function discover_jobs()
+    local jobs = {}
+    for job in pairs(discover_job_files()) do
+        table.insert(jobs, job)
     end
     table.sort(jobs)
     return jobs
@@ -164,34 +227,40 @@ local function extract_items_from_text(content, used_items, job_upper)
     end
 end
 
---- Read and parse a single job's set file
+--- Read and parse all set files belonging to a single job. Handles flat
+--- (<job>_sets.lua) and modular (<job>/*.lua + common/*.lua) layouts uniformly
+--- by consulting discover_job_files().
 --- @param job_lower string Lowercase job abbreviation (e.g. 'war')
 --- @param used_items table Accumulator for item names
---- @return boolean success
---- @return boolean|string status: true=loaded, 'missing'=file absent (skip), false=error
+--- @return boolean|string status: true=loaded, 'missing'=no files (skip), false=error
 --- @return string|nil error message (only when status is false)
 local function parse_job_sets(job_lower, used_items)
-    local path = sets_dir() .. job_lower .. '_sets.lua'
-    local job_upper = job_lower:upper()
-
-    -- Job not configured = no set file. Skip silently, don't report as failed.
-    if not windower.file_exists(path) then
+    local paths = discover_job_files()[job_lower]
+    if not paths or #paths == 0 then
         return 'missing', nil
     end
 
-    local file, open_err = io.open(path, 'r')
-    if not file then
-        return false, open_err or ('Cannot open ' .. path)
+    local job_upper = job_lower:upper()
+    local any_loaded = false
+    local last_err
+
+    for _, path in ipairs(paths) do
+        local file, open_err = io.open(path, 'r')
+        if file then
+            local content = file:read('*all')
+            file:close()
+            if content and content ~= '' then
+                extract_items_from_text(content, used_items, job_upper)
+                any_loaded = true
+            end
+        else
+            last_err = open_err or ('Cannot open ' .. path)
+        end
     end
 
-    local content = file:read('*all')
-    file:close()
-
-    if not content or content == '' then
-        return false, 'Empty file'
+    if not any_loaded then
+        return false, last_err or 'no files readable'
     end
-
-    extract_items_from_text(content, used_items, job_upper)
     return true, nil
 end
 
@@ -439,6 +508,7 @@ function WardrobeAuditor.audit()
 
     if loaded_count == 0 then
         add_to_chat(167, red .. "[WARDROBE AUDIT] Failed to load any job sets")
+        add_to_chat(167, red .. "[WARDROBE AUDIT] Scanned dir: " .. sets_dir())
         return false
     end
 
@@ -525,37 +595,6 @@ local BAG_NAME_TO_ID = {
     ['wardrobe 7']=15, ['wardrobe7']=15,
     ['wardrobe 8']=16, ['wardrobe8']=16,
 }
-
---- Recursively walk a directory tree and return all .lua file paths.
---- The modular sets layout (2026-05) puts gear definitions under subfolders
---- (e.g. Tetsouo/sets/common/rings.lua, Tetsouo/sets/brd/armor.lua), so a
---- flat scan would miss pin annotations like `{name='Stikini Ring +1', bag='wardrobe 1'}`.
---- Heuristic: entries ending in `.lua` are files; everything else is a subdir
---- (windower API doesn't expose is_dir).
---- @param root_dir string Absolute path WITH trailing slash
---- @return table Array of absolute .lua file paths
-local function walk_lua_files(root_dir)
-    local out = {}
-    local stack = {root_dir}
-    local visited = {}  -- guard against pathological loops
-    while #stack > 0 do
-        local dir = table.remove(stack)
-        if not visited[dir] then
-            visited[dir] = true
-            local entries = windower.get_dir(dir)
-            if entries then
-                for _, name in ipairs(entries) do
-                    if name:lower():match('%.lua$') then
-                        table.insert(out, dir .. name)
-                    else
-                        table.insert(stack, dir .. name .. '/')
-                    end
-                end
-            end
-        end
-    end
-    return out
-end
 
 --- Public: extract bag constraints from all set files. Items defined as
 --- `{name='X', bag='wardrobe N', ...}` need to physically live in that bag
