@@ -178,11 +178,7 @@ function job_sub_job_change(newSubjob, oldSubjob)
         JobChangeManager.on_job_change(main_job, newSubjob)
     end
 
-    -- DUALBOX: Send job update to MAIN character after subjob change
-    local db_success, DualBoxManager = pcall(require, 'shared/utils/dualbox/dualbox_manager')
-    if db_success and DualBoxManager then
-        DualBoxManager.send_job_update()
-    end
+    -- DUALBOX IPC fires from user_setup() after the reload (covers main + subjob)
 end
 
 ---============================================================================
@@ -246,6 +242,14 @@ function user_setup()
             coroutine.schedule(select_default_lockstyle, LockstyleConfig.initial_load_delay)
         end
     end
+
+    -- ==========================================================================
+    -- DUALBOX IPC (covers main job change - job_sub_job_change is subjob-only)
+    -- The require() triggers dualbox_manager auto-init which schedules the
+    -- correct IPC call once per gs reload (request_alt_job for MAIN role,
+    -- send_job_update for ALT role). Do NOT call them explicitly here.
+    -- ==========================================================================
+    pcall(require, 'shared/utils/dualbox/dualbox_manager')
 end
 
 ---============================================================================
@@ -261,8 +265,14 @@ function job_update(cmdParams, eventArgs)
             -- Lock weapon slots (main, sub, range only - ammo can still swap)
             disable('main', 'sub', 'range')
         else
-            -- Unlock weapon slots
-            enable('main', 'sub', 'range')
+            -- Unlock weapon slots UNLESS a craft/fish session owns the disable.
+            -- job_update fires on every `gs c update` (aftercast/automove/state
+            -- change), so an unconditional enable() here would silently break
+            -- `//gs c craft`. CraftManager owns the disable until //gs c uncraft.
+            local craft_active = _G.__CraftManagerState and _G.__CraftManagerState.active
+            if not craft_active then
+                enable('main', 'sub', 'range')
+            end
         end
     end
 
