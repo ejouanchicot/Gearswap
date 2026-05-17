@@ -51,7 +51,7 @@ function SetBuilder.build_idle_set(base_idle_set)
         -- ══════════════════════════════════════════════════════════════════════════
 
         -- Check if pet is engaged (STRING comparison!)
-        if state.petEngaged and state.petEngaged.value == "true" then
+        if state.PetEngaged and state.PetEngaged.value == "true" then
             -- Pet is engaged - use pet engaged set
             final_set = sets.pet.engaged or sets.pet.idle or base_idle_set
 
@@ -65,7 +65,7 @@ function SetBuilder.build_idle_set(base_idle_set)
             end
         else
             -- Pet is idle - check petIdleMode
-            if state.petIdleMode and state.petIdleMode.value == "PetPDT" then
+            if state.PetIdleMode and state.PetIdleMode.value == "PetPDT" then
                 -- Focus on pet PDT
                 final_set = sets.pet.idle.PDT or sets.pet.idle or base_idle_set
 
@@ -162,7 +162,7 @@ function SetBuilder.build_engaged_set(base_engaged_set)
     local final_set = base_engaged_set
 
     -- Check if pet is engaged (STRING comparison!)
-    local pet_is_engaged = state.petEngaged and state.petEngaged.value == "true"
+    local pet_is_engaged = state.PetEngaged and state.PetEngaged.value == "true"
 
     -- Check if master is engaged
     local master_is_engaged = player and player.status == 'Engaged'
@@ -251,12 +251,12 @@ end
 ---   Check if pet is engaged (STRING comparison!)
 ---   @return boolean is_engaged True if pet is engaged
 function SetBuilder.is_pet_engaged()
-    if not state or not state.petEngaged then
+    if not state or not state.PetEngaged then
         return false
     end
 
     -- STRING comparison!
-    return state.petEngaged.current == "true"
+    return state.PetEngaged.current == "true"
 end
 
 ---   Get current pet mode focus ("pet" or "master")

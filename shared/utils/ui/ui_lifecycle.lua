@@ -40,7 +40,7 @@ local function are_states_ready()
     elseif job == "BLM" then
         return _G.state.MainLightSpell ~= nil
     elseif job == "BST" then
-        return _G.state.ecosystem ~= nil
+        return _G.state.Ecosystem ~= nil
     elseif job == "THF" then
         return _G.state.TreasureMode ~= nil
     elseif job == "WAR" then

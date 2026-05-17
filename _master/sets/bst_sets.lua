@@ -558,8 +558,16 @@ sets.pet.engagedBoth = {
 }
 
 -- Master + pet engaged PDT set (defensive variant for both engaged)
--- TODO: Fill with defensive gear for both master + pet
-sets.pet.engagedBoth.PDT = set_combine(sets.pet.engagedBoth,{})
+sets.pet.engagedBoth.PDT = set_combine(sets.pet.engagedBoth, {
+    head       = 'Malignance Chapeau',
+    body       = 'Malignance Tabard',
+    hands      = 'Malignance Gloves',
+    legs       = 'Malignance Tights',
+    feet       = 'Malignance Boots',
+    back       = Artio.STP,
+    left_ring  = MoonLightRing1,
+    right_ring = MoonLightRing2,
+})
 
 --============================================================--
 --                  PRECAST JOB ABILITY SETS                  --

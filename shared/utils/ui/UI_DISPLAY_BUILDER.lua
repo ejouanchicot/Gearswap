@@ -23,7 +23,7 @@ local KeybindLoader = require('shared/utils/ui/UI_LOADER')
 local categorization_rules = {
     spell_patterns = {
         "Spell", "Element", "Tier", "Aja", "Storm", "Bar", "EnSpell", "Spike",
-        "Gain", "ecosystem", "species", "RuneElement", "Light", "Dark", "Rune",
+        "Gain", "Ecosystem", "species", "RuneElement", "Light", "Dark", "Rune",
         "BRDRotation", "VictoryMarch",  -- BRD song settings moved from modes
         "Etude",  -- BRD Etude stat buffs (EtudeType: STR/DEX/VIT/AGI/INT/MND/CHR)
         "QuickDraw",  -- COR Quick Draw element selection
@@ -40,7 +40,7 @@ local categorization_rules = {
     },
 
     mode_patterns = {
-        "Mode", "Combat", "Engaged", "Idle", "Enfeeble", "Nuke", "petIdleMode", "AutoPetEngage",
+        "Mode", "Combat", "Engaged", "Idle", "Enfeeble", "Nuke", "PetIdleMode", "AutoPetEngage",
         "Rotation",  -- Removed BRDRotation and VictoryMarch - moved to spell_patterns
         "Xp",  -- XP mode for PLD/RDM
         "PhalanxSIRD",  -- Phalanx SIRD override for PLD

@@ -83,7 +83,7 @@ TIMER('BST_MOVEMENT')
 ---
 ---   logic/pet_manager.lua
 ---     • Auto pet engage (based on state.AutoPetEngage)
----     • Pet status monitoring (updates state.petEngaged)
+---     • Pet status monitoring (updates state.PetEngaged)
 ---     • Pet action validation and coordination
 ---
 ---   logic/ready_move_categorizer.lua

@@ -19,19 +19,19 @@ function BSTStates.configure()
     state.AutoPetEngage:set('On')
 
     -- Pet idle mode (MasterPDT/PetPDT focus)
-    state.petIdleMode = M{['description']='PetIdleMode', 'MasterPDT', 'PetPDT'}
-    state.petIdleMode:set('MasterPDT')
+    state.PetIdleMode = M{['description']='PetIdleMode', 'MasterPDT', 'PetPDT'}
+    state.PetIdleMode:set('MasterPDT')
 
     -- Ecosystem (7 ecosystems)
-    state.ecosystem = M{
+    state.Ecosystem = M{
         ['description']='Ecosystem',
         'Aquan', 'Beast', 'Amorph', 'Bird', 'Lizard', 'Plantoid', 'Vermin'
     }
-    state.ecosystem:set('Aquan')
+    state.Ecosystem:set('Aquan')
 
     -- Pet engaged state (STRINGS not booleans!)
-    state.petEngaged = M{['description']='petEngaged', 'false', 'true'}
-    state.petEngaged:set('false')
+    state.PetEngaged = M{['description']='PetEngaged', 'false', 'true'}
+    state.PetEngaged:set('false')
 
     -- Weapon set (main weapon)
     state.WeaponSet = M{['description']='Weapon', 'Aymur', 'Tauret'}

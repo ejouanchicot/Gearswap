@@ -130,7 +130,7 @@ end
 ---   1. AutoPetEngage state is 'On'
 ---   2. Player is Engaged
 ---   3. Pet is valid
----   4. Pet is NOT already engaged (state.petEngaged == "false" - STRING!)
+---   4. Pet is NOT already engaged (state.PetEngaged == "false" - STRING!)
 ---
 ---   @param pet table Pet object (optional, will fetch if nil)
 ---   @return boolean engaged True if pet was engaged, false otherwise
@@ -155,7 +155,7 @@ function PetManager.check_and_engage_pet(pet)
     end
 
     -- Condition 4: Pet is NOT already engaged
-    if not state.petEngaged or state.petEngaged.value ~= 'false' then
+    if not state.PetEngaged or state.PetEngaged.value ~= 'false' then
         return false
     end
 
@@ -163,8 +163,8 @@ function PetManager.check_and_engage_pet(pet)
     windower.send_command('input /pet "Fight" <t>')
     MessageFormatter.show_bst_pet_engage()
 
-    if state.petEngaged then
-        state.petEngaged:set('true')
+    if state.PetEngaged then
+        state.PetEngaged:set('true')
     end
     return true
 end
@@ -175,9 +175,9 @@ function PetManager.disengage_pet()
     windower.send_command('input /pet "Heel" <me>')
     MessageFormatter.show_bst_pet_disengage()
 
-    -- Update petEngaged state (STRING!)
-    if state and state.petEngaged then
-        state.petEngaged:set('false')
+    -- Update PetEngaged state (STRING!)
+    if state and state.PetEngaged then
+        state.PetEngaged:set('false')
     end
 end
 
@@ -187,9 +187,9 @@ function PetManager.engage_pet()
     windower.send_command('input /pet "Fight" <t>')
     MessageFormatter.show_bst_pet_engage()
 
-    -- Update petEngaged state (STRING!)
-    if state and state.petEngaged then
-        state.petEngaged:set('true')
+    -- Update PetEngaged state (STRING!)
+    if state and state.PetEngaged then
+        state.PetEngaged:set('true')
     end
 end
 
@@ -268,7 +268,7 @@ end
 local last_monitor_time = 0
 local MONITOR_DEBOUNCE = 1.0  -- Don't update more than once per 1.0s (matches monitoring interval)
 
----   Monitor pet status changes and update state.petEngaged
+---   Monitor pet status changes and update state.PetEngaged
 ---   Called periodically (e.g., in time change event)
 ---   Uses LIVE API call to get real-time pet status (not stale _G.pet snapshot)
 ---   @return void
@@ -284,24 +284,24 @@ function PetManager.monitor_pet_status()
     local pet = windower.ffxi.get_mob_by_target('pet')
 
     if not pet or not pet.isvalid then
-        -- No pet - ensure petEngaged is "false" (STRING!)
-        if state and state.petEngaged and state.petEngaged.value ~= "false" then
-            state.petEngaged:set('false')
+        -- No pet - ensure PetEngaged is "false" (STRING!)
+        if state and state.PetEngaged and state.PetEngaged.value ~= "false" then
+            state.PetEngaged:set('false')
         end
         return
     end
 
     -- Check if status is number 1 OR string "Engaged"
     if pet.status == 1 or pet.status == "Engaged" then
-        -- Pet is Engaged - ensure petEngaged is "true" (STRING!)
-        if state and state.petEngaged and state.petEngaged.value ~= "true" then
-            state.petEngaged:set('true')
+        -- Pet is Engaged - ensure PetEngaged is "true" (STRING!)
+        if state and state.PetEngaged and state.PetEngaged.value ~= "true" then
+            state.PetEngaged:set('true')
             return true -- State changed
         end
     else
-        -- Pet is Idle - ensure petEngaged is "false" (STRING!)
-        if state and state.petEngaged and state.petEngaged.value ~= "false" then
-            state.petEngaged:set('false')
+        -- Pet is Idle - ensure PetEngaged is "false" (STRING!)
+        if state and state.PetEngaged and state.PetEngaged.value ~= "false" then
+            state.PetEngaged:set('false')
             return true -- State changed
         end
     end

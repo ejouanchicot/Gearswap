@@ -37,12 +37,12 @@ BSTKeybinds.binds = {
     ---==========================================================================
     { key = "5", command = "cyclestate HybridMode", desc = "Hybrid Mode", state = "HybridMode" },
     { key = "6", command = "cyclestate AutoPetEngage", desc = "Auto Pet Engage", state = "AutoPetEngage" },
-    { key = "7", command = "cyclestate petIdleMode", desc = "Pet Idle Mode", state = "petIdleMode" },
+    { key = "7", command = "cyclestate PetIdleMode", desc = "Pet Idle Mode", state = "PetIdleMode" },
 
     ---==========================================================================
     --- ECOSYSTEM/SPECIES MANAGEMENT (Alt+Numbers - BST Functions)
     ---==========================================================================
-    { key = "!5", command = "ecosystem", desc = "Cycle Ecosystem", state = "ecosystem" },
+    { key = "!5", command = "ecosystem", desc = "Cycle Ecosystem", state = "Ecosystem" },
     { key = "!6", command = "species", desc = "Cycle Species", state = "species" },
 
     ---==========================================================================

@@ -21,12 +21,12 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 local res = require('resources')
 
 function EcosystemManager.change_ecosystem()
-    if not state or not state.ecosystem then
+    if not state or not state.Ecosystem then
         return nil, 0
     end
 
-    state.ecosystem:cycle()
-    local eco = state.ecosystem.value
+    state.Ecosystem:cycle()
+    local eco = state.Ecosystem.value
 
     local species_list = _G.BSTBeastPetData.get_species_for_ecosystem(eco)
     if #species_list > 0 then
@@ -58,14 +58,14 @@ end
 ---   Change species (cycle through species for current ecosystem)
 ---   CRITICAL: Recreates state.ammoSet dynamically based on species
 function EcosystemManager.change_species()
-    if not state or not state.ecosystem or not state.species then
+    if not state or not state.Ecosystem or not state.species then
         return nil, 0
     end
 
     -- Cycle to next species
     state.species:cycle()
     local species = state.species.value
-    local eco = state.ecosystem.value
+    local eco = state.Ecosystem.value
 
     -- Get pets for this specific species in current ecosystem
     local pets_list = _G.BSTBeastPetData.get_pets_for_species(eco, species)
@@ -210,8 +210,8 @@ end
 ---   Initialize ecosystem system (called in job_setup via coroutine)
 ---   Creates initial species and ammoSet states based on default ecosystem
 function EcosystemManager.initialize()
-    if not state or not state.ecosystem then
-        MessageFormatter.show_error('Cannot initialize ecosystem manager - state.ecosystem not found')
+    if not state or not state.Ecosystem then
+        MessageFormatter.show_error('Cannot initialize ecosystem manager - state.Ecosystem not found')
         return
     end
 
@@ -222,7 +222,7 @@ function EcosystemManager.initialize()
     end
 
     -- Get default ecosystem
-    local eco = state.ecosystem.value
+    local eco = state.Ecosystem.value
 
     -- Get species list
     local species_list = _G.BSTBeastPetData.get_species_for_ecosystem(eco)
