@@ -96,7 +96,11 @@ function job_self_command(cmdParams, eventArgs)
     -- COMMON COMMANDS (reload, checksets, waltz, aoewaltz, jump)
     -- ══════════════════════════════════════════════════════════════════════════
     if CommonCommands.is_common_command(command) then
-        if CommonCommands.handle_command(command, 'WHM') then
+        local args = {}
+        for i = 2, #cmdParams do
+            table.insert(args, cmdParams[i])
+        end
+        if CommonCommands.handle_command(command, 'WHM', table.unpack(args)) then
             eventArgs.handled = true
         end
         return
