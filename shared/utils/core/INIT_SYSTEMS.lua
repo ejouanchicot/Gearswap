@@ -91,6 +91,39 @@ coroutine.schedule(function()
 end, 2.0)
 
 ---  ═══════════════════════════════════════════════════════════════════════════
+---   IMMEDIATE: DUAL-BOX SYNC IPC
+---  ═══════════════════════════════════════════════════════════════════════════
+-- Registers a Windower IPC listener and the per-command hooks. Loaded
+-- synchronously (NOT in the deferred 0.5s block below) so the listener is
+-- available immediately after get_sets() returns - otherwise a broadcast
+-- arriving in the 0-0.5s window after a job change would be silently dropped
+-- (the new job's hooks wouldn't be registered yet, and the previous job's
+-- `select_default_lockstyle` closure would no longer match the new job).
+--
+-- Hooks are re-registered every load (cheap; replaces if present) so the
+-- captured `select_default_lockstyle` always points at the freshly-loaded
+-- GearSwap globals for the current job.
+local sync_ok, SyncIPC = pcall(require, 'shared/utils/dualbox/dualbox_sync_ipc')
+if sync_ok and SyncIPC then
+    SyncIPC.register_hook('ls', function()
+        if select_default_lockstyle then select_default_lockstyle() end
+    end)
+    SyncIPC.register_hook('lockstyle', function()
+        if select_default_lockstyle then select_default_lockstyle() end
+    end)
+    -- Refill: each instance pulls its own consumables from Case/Sack.
+    local refill_hook = function()
+        local ok, RefillManager = pcall(require, 'shared/utils/inventory/refill_manager')
+        if ok and RefillManager and RefillManager.refill then RefillManager.refill() end
+    end
+    SyncIPC.register_hook('rf', refill_hook)
+    SyncIPC.register_hook('refill', refill_hook)
+    SyncIPC.init_listener()
+else
+    ensure_message_init().show_module_load_failed('DualBox Sync IPC', SyncIPC)
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
 ---   NON-CRITICAL SYSTEMS: DEFERRED LOADING (0.5s delay to improve startup)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
