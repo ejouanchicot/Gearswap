@@ -111,6 +111,25 @@ local function clean_exit()
     IS_RUNNING = false
 end
 
+--- Schedule a lockstyle refresh + refill after wo finishes successfully.
+--- Why: wardrobe reorganization can leave the equipped lockstyle out of sync
+--- with the current gear (FFXI re-evaluates lockstyle from W1/W2 contents).
+--- Re-firing //gs c ls after a settle delay restores the intended look.
+--- Then //gs c rf refills consumables so the post-organize state is fully ready.
+--- How to apply: call only from successful completion paths (NOT abort_run /
+--- panic / preview / verify), and only after clean_exit has fired so slots
+--- are unlocked before the commands run.
+local LOCKSTYLE_AFTER_DELAY = 1.5
+local REFILL_AFTER_DELAY = 3.5  -- 1.5s + 2.0s after lockstyle settles
+local function schedule_lockstyle()
+    coroutine.schedule(function()
+        windower.send_command('gs c ls')
+    end, LOCKSTYLE_AFTER_DELAY)
+    coroutine.schedule(function()
+        windower.send_command('gs c rf')
+    end, REFILL_AFTER_DELAY)
+end
+
 --- Wrap a callback with a panic-handler that GUARANTEES enable_slots fires
 --- if the callback errors mid-coroutine. Without this, an uncaught error
 --- in a coroutine.schedule() callback leaves macros broken until reload.
@@ -278,6 +297,7 @@ local function finish_run()
                         Chat.success('DONE - safe to move, zone, change job.')
                         dlog('========== WARDROBE ORGANIZE END (verify clean) ==========')
                         clean_exit()
+                        schedule_lockstyle()
                         return
                     end
                     -- If verify shows progress vs initial, do one more retry
@@ -298,6 +318,7 @@ local function finish_run()
                     end
                     dlog('========== WARDROBE ORGANIZE END ==========')
                     clean_exit()
+                    schedule_lockstyle()
                     return
                 end
                 -- Verify state failed: fall back to original snapshot
@@ -306,6 +327,7 @@ local function finish_run()
                 Chat.warn('Run //gs c wo again to keep trying. Stuck-item details in wardrobe_debug.log.')
                 dlog('========== WARDROBE ORGANIZE END ==========')
                 clean_exit()
+                schedule_lockstyle()
             end, 'finish_run.verify'), Config.SETTLE_DELAY)
             return
         end
@@ -314,6 +336,7 @@ local function finish_run()
         print_summary(final, misplaced, inv_unused, truly_stuck)
         dlog('========== WARDROBE ORGANIZE END ==========')
         clean_exit()
+        schedule_lockstyle()
     end, 'finish_run.snapshot'), Config.SETTLE_DELAY)
 end
 
@@ -391,6 +414,7 @@ local function build_state_and_dispatch()
         Chat.success('DONE - safe to move, zone, change job.')
         clean_exit()
         dlog('========== WARDROBE ORGANIZE END (clean) ==========')
+        schedule_lockstyle()
         return
     end
 
@@ -606,6 +630,7 @@ local AltOrchestrator = require('shared/utils/wardrobe/lib/orchestrator_alt').cr
     clean_exit         = clean_exit,
     abort_run          = abort_run,
     map_bag_names      = map_bag_names,
+    schedule_lockstyle = schedule_lockstyle,
 })
 
 --- Run the alt-character wardrobe organize flow (4 wardrobes + Sack/Case).
