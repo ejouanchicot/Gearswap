@@ -67,216 +67,231 @@ function LockstyleManager.is_dressup_enabled()
     return _G.DRESSUP_MANAGEMENT_ENABLED == true
 end
 
---- Create a lockstyle module configured for a specific job
---- @param job_code string Job code (e.g., 'WAR', 'PLD', 'DNC')
---- @param config_path string Path to job lockstyle config (e.g., 'config/war/WAR_LOCKSTYLE')
---- @param default_lockstyle number Default lockstyle number for this job
---- @param default_subjob string Default subjob for this job (e.g., 'SAM', 'RUN', 'NIN')
---- @return table Lockstyle module with all functions
-function LockstyleManager.create(job_code, config_path, default_lockstyle, default_subjob)
+--- Apply an arbitrary lockstyle number with DressUp awareness.
+--- Stateless helper usable from anywhere (craft/fish commands, debug, etc).
+--- If DressUp management is enabled, unloads dressup, applies the style,
+--- and reloads dressup after 3s. Otherwise just sends /lockstyleset directly.
+--- @param style number Lockstyle number to apply (0-99, FFXI client limit)
+function LockstyleManager.apply_style(style)
+    if not style or type(style) ~= 'number' then return end
 
-    -- Load message formatter
-    local MessageFormatter = require('shared/utils/messages/message_formatter')
-    local MessageCore = require('shared/utils/messages/message_core')
-
-    -- Load lockstyle configuration from user config file
-    local lockstyle_config_success, LockstyleConfig = pcall(require, config_path)
-    if not lockstyle_config_success or not LockstyleConfig then
-        -- Fallback default config if file not found
-        LockstyleConfig = {
-            default = default_lockstyle,
-            get_style = function() return default_lockstyle end
-        }
-    end
-
-    -- System state and configuration
-    -- NOTE: manage_dressup reads from global _G.DRESSUP_MANAGEMENT_ENABLED (persistent)
-    local STATE = {
-        enabled = true,
-        is_processing = false,
-        current_coroutines = {},
-        dressup_state = 'unknown',
-        last_dressup_command_time = 0,
-        operation_id = 0
-    }
-
-    -- Helper to get current dressup management state (reads from global)
-    local function get_manage_dressup()
-        return _G.DRESSUP_MANAGEMENT_ENABLED == true
-    end
-
-    ---  ═══════════════════════════════════════════════════════════════════════════
-    ---   LOCKSTYLE FUNCTIONS WITH DELAY
-    ---  ═══════════════════════════════════════════════════════════════════════════
-
-    --- Cancel all pending lockstyle operations
-    --- Increments operation_id to invalidate all pending coroutines
-    local function cancel_pending_operations()
-        STATE.operation_id = STATE.operation_id + 1
-        STATE.current_coroutines = {}
-        STATE.is_processing = false
-    end
-
-    --- Apply lockstyle immediately with DressUp cycle if needed
-    --- @param style number Lockstyle number to apply
-    --- @param operation_id number Operation ID to validate this operation
-    local function apply_lockstyle_immediate(style, operation_id)
-        if not STATE.enabled then return end
-        if operation_id ~= STATE.operation_id then return end
-
-        local current_time = os.clock()
-
-        if get_manage_dressup() then
-            if STATE.dressup_state ~= 'unloaded' then
-                if current_time - STATE.last_dressup_command_time > 0.5 then
-                    send_command('lua unload dressup')
-                    STATE.last_dressup_command_time = current_time
-                    STATE.dressup_state = 'unloaded'
-                end
-            end
-
-            coroutine.schedule(function()
-                if operation_id ~= STATE.operation_id then return end
-
-                send_command('input /lockstyleset ' .. style)
-            end, 0.3)
-
-            -- Reload dressup after 3.0s to give lockstyle time to apply on FFXI server
-            coroutine.schedule(function()
-                if operation_id ~= STATE.operation_id then return end
-
-                -- Capture FRESH time when coroutine executes (not stale time from function start)
-                local reload_time = os.clock()
-                if reload_time - STATE.last_dressup_command_time > 0.5 then
-                    send_command('lua load dressup')
-                    STATE.last_dressup_command_time = reload_time
-                    STATE.dressup_state = 'loaded'
-                    STATE.is_processing = false
-                end
-            end, 3.0)
-        else
+    if _G.DRESSUP_MANAGEMENT_ENABLED == true then
+        send_command('lua unload dressup')
+        coroutine.schedule(function()
             send_command('input /lockstyleset ' .. style)
-            STATE.is_processing = false
+        end, 0.3)
+        coroutine.schedule(function()
+            send_command('lua load dressup')
+        end, 3.0)
+    else
+        send_command('input /lockstyleset ' .. style)
+    end
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SHARED DEPENDENCIES (loaded once, reused by every per-job ctx)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+local MessageCore      = require('shared/utils/messages/message_core')
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PER-INSTANCE OPERATIONS
+---  ═══════════════════════════════════════════════════════════════════════════
+---
+---   Each function takes a `ctx` table built by create():
+---     ctx.job_code           string  - 'WAR', 'PLD', ...
+---     ctx.default_lockstyle  number
+---     ctx.default_subjob     string  - 'SAM', 'RUN', ...
+---     ctx.LockstyleConfig    table   - per-job config (with .default + .get_style)
+---     ctx.STATE              table   - mutable per-job runtime state
+---
+---   STATE shape:
+---     enabled, is_processing, current_coroutines, dressup_state,
+---     last_dressup_command_time, operation_id
+
+local function get_manage_dressup()
+    return _G.DRESSUP_MANAGEMENT_ENABLED == true
+end
+
+--- Bump operation_id so any in-flight coroutine.schedule callback aborts on its
+--- next `operation_id ~= STATE.operation_id` check.
+local function cancel_pending_operations(ctx)
+    ctx.STATE.operation_id      = ctx.STATE.operation_id + 1
+    ctx.STATE.current_coroutines = {}
+    ctx.STATE.is_processing      = false
+end
+
+--- Send the lockstyleset command now, cycling DressUp if configured to.
+local function apply_lockstyle_immediate(ctx, style, operation_id)
+    local STATE = ctx.STATE
+    if not STATE.enabled then return end
+    if operation_id ~= STATE.operation_id then return end
+
+    if not get_manage_dressup() then
+        send_command('input /lockstyleset ' .. style)
+        STATE.is_processing = false
+        return
+    end
+
+    local current_time = os.clock()
+    if STATE.dressup_state ~= 'unloaded'
+       and current_time - STATE.last_dressup_command_time > 0.5 then
+        send_command('lua unload dressup')
+        STATE.last_dressup_command_time = current_time
+        STATE.dressup_state             = 'unloaded'
+    end
+
+    coroutine.schedule(function()
+        if operation_id ~= STATE.operation_id then return end
+        send_command('input /lockstyleset ' .. style)
+    end, 0.3)
+
+    -- Reload dressup after 3.0s to give the FFXI server time to apply lockstyle.
+    -- Capture FRESH os.clock() inside the coroutine, not the stale outer value.
+    coroutine.schedule(function()
+        if operation_id ~= STATE.operation_id then return end
+        local reload_time = os.clock()
+        if reload_time - STATE.last_dressup_command_time > 0.5 then
+            send_command('lua load dressup')
+            STATE.last_dressup_command_time = reload_time
+            STATE.dressup_state             = 'loaded'
+            STATE.is_processing             = false
         end
+    end, 3.0)
+end
+
+--- Schedule a lockstyle change after `delay` (default 2s). Cancels any pending
+--- operation first so rapid calls don't pile up.
+local function set_lockstyle_with_delay(ctx, style, delay)
+    if not ctx.STATE.enabled then return end
+    delay = delay or 2.0
+    cancel_pending_operations(ctx)
+    ctx.STATE.is_processing = true
+    local current_operation = ctx.STATE.operation_id
+    local coro = coroutine.schedule(function()
+        apply_lockstyle_immediate(ctx, style, current_operation)
+    end, delay)
+    table.insert(ctx.STATE.current_coroutines, coro)
+end
+
+--- Compute the lockstyle for the active (job, subjob) pair.
+--- @return number style, string subjob
+local function resolve_style(ctx)
+    local subjob = (player and player.sub_job) or ctx.default_subjob
+    local style  = ctx.LockstyleConfig.default or ctx.default_lockstyle
+    if ctx.LockstyleConfig.get_style then
+        style = ctx.LockstyleConfig.get_style(subjob) or style
     end
+    return style, subjob
+end
 
-    --- Set lockstyle with delay to prevent collisions
-    --- @param style number Lockstyle number to set
-    --- @param delay number Delay in seconds (default: 2.0)
-    local function set_lockstyle_with_delay(style, delay)
-        if not STATE.enabled then return end
+--- Apply the default lockstyle iff the player is on this job.
+local function select_default_lockstyle(ctx)
+    if not player or player.main_job ~= ctx.job_code then return end
+    local style = resolve_style(ctx)
+    set_lockstyle_with_delay(ctx, style, 2.0)
+end
 
-        delay = delay or 2.0
-        cancel_pending_operations()
-        STATE.is_processing = true
-        local current_operation = STATE.operation_id
-
-        local coro = coroutine.schedule(function()
-            apply_lockstyle_immediate(style, current_operation)
-        end, delay)
-        table.insert(STATE.current_coroutines, coro)
-    end
-
-    --- Select and apply default lockstyle for current job/subjob
-    local function select_default_lockstyle()
-        if not player or player.main_job ~= job_code then
-            return
-        end
-
-        local lockstyle_num = LockstyleConfig.default or default_lockstyle
-
-        if LockstyleConfig.get_style then
-            local subjob = player.sub_job or default_subjob
-            lockstyle_num = LockstyleConfig.get_style(subjob) or lockstyle_num
-        end
-
-        set_lockstyle_with_delay(lockstyle_num, 2.0)
-    end
-
-    --- Get current lockstyle configuration info
-    --- @return table Configuration info
-    local function get_lockstyle_info()
-        local subjob = (player and player.sub_job) or default_subjob
-        local style = LockstyleConfig.default or default_lockstyle
-
-        if LockstyleConfig.get_style then
-            style = LockstyleConfig.get_style(subjob) or style
-        end
-
-        return {
-            job = job_code,
-            subjob = subjob,
-            style = style,
-            enabled = STATE.enabled,
-            manage_dressup = get_manage_dressup()
-        }
-    end
-
-    --- Show lockstyle configuration status
-    local function show_lockstyle_config()
-        local info = get_lockstyle_info()
-        local status_msg = string.format(
-            "[%s] Lockstyle: %s | DressUp: %s | Style: %d",
-            info.job,
-            info.enabled and "ON" or "OFF",
-            info.manage_dressup and "Managed" or "Manual",
-            info.style
-        )
-
-        if MessageFormatter then
-            MessageFormatter.show_info(status_msg)
-        else
-            MessageCore.show_lockstyle_status(status_msg)
-        end
-    end
-
-    --- Set lockstyle enabled/disabled
-    --- @param enabled boolean Enable or disable lockstyle
-    local function set_lockstyle_enabled(enabled)
-        STATE.enabled = enabled
-        show_lockstyle_config()
-    end
-
-    --- Set DressUp management on/off (uses global persistent state)
-    --- @param manage_dressup boolean Manage DressUp or not
-    local function set_dressup_management(manage_dressup)
-        -- Update global state (persistent)
-        _G.DRESSUP_MANAGEMENT_ENABLED = manage_dressup
-        if manage_dressup then
-            save_dressup_enabled()
-        else
-            save_dressup_disabled()
-        end
-        show_lockstyle_config()
-    end
-
-    ---  ═══════════════════════════════════════════════════════════════════════════
-    ---   MODULE EXPORT
-    ---  ═══════════════════════════════════════════════════════════════════════════
-
-    -- Export functions globally for include() compatibility
-    _G.select_default_lockstyle = select_default_lockstyle
-    _G['cancel_' .. string.lower(job_code) .. '_lockstyle_operations'] = cancel_pending_operations
-    _G['set_' .. string.lower(job_code) .. '_lockstyle_enabled'] = set_lockstyle_enabled
-    _G['set_' .. string.lower(job_code) .. '_dressup_management'] = set_dressup_management
-    _G['get_' .. string.lower(job_code) .. '_lockstyle_info'] = get_lockstyle_info
-    _G['show_' .. string.lower(job_code) .. '_lockstyle_config'] = show_lockstyle_config
-
-    -- Also return as module for require() usage
+local function get_lockstyle_info(ctx)
+    local style, subjob = resolve_style(ctx)
     return {
-        -- Public API
-        select_default_lockstyle = select_default_lockstyle,
-        set_lockstyle_with_delay = set_lockstyle_with_delay,
-        get_lockstyle_info = get_lockstyle_info,
-        get_info = get_lockstyle_info,  -- Alias for backward compatibility
-        show_lockstyle_config = show_lockstyle_config,
-        set_lockstyle_enabled = set_lockstyle_enabled,
-        set_dressup_management = set_dressup_management,
-        cancel_pending_operations = cancel_pending_operations,
-
-        -- State access (for debugging)
-        get_state = function() return STATE end
+        job            = ctx.job_code,
+        subjob         = subjob,
+        style          = style,
+        enabled        = ctx.STATE.enabled,
+        manage_dressup = get_manage_dressup(),
     }
+end
+
+local function show_lockstyle_config(ctx)
+    local info = get_lockstyle_info(ctx)
+    local msg  = string.format(
+        "[%s] Lockstyle: %s | DressUp: %s | Style: %d",
+        info.job,
+        info.enabled and "ON" or "OFF",
+        info.manage_dressup and "Managed" or "Manual",
+        info.style
+    )
+    if MessageFormatter then
+        MessageFormatter.show_info(msg)
+    else
+        MessageCore.show_lockstyle_status(msg)
+    end
+end
+
+local function set_lockstyle_enabled(ctx, enabled)
+    ctx.STATE.enabled = enabled
+    show_lockstyle_config(ctx)
+end
+
+local function set_dressup_management(ctx, manage_dressup)
+    _G.DRESSUP_MANAGEMENT_ENABLED = manage_dressup
+    if manage_dressup then save_dressup_enabled() else save_dressup_disabled() end
+    show_lockstyle_config(ctx)
+end
+
+--- Load per-job lockstyle config, or build a minimal fallback that always
+--- returns `default_lockstyle` so callers can rely on .default / .get_style.
+local function load_config_or_fallback(config_path, default_lockstyle)
+    local ok, cfg = pcall(require, config_path)
+    if ok and cfg then return cfg end
+    return {
+        default   = default_lockstyle,
+        get_style = function() return default_lockstyle end,
+    }
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   FACTORY
+---  ═══════════════════════════════════════════════════════════════════════════
+
+--- Create a lockstyle module bound to a specific job.
+--- @param job_code string Job code (e.g., 'WAR', 'PLD', 'DNC')
+--- @param config_path string Path to job lockstyle config (e.g., 'Tetsouo/config/war/WAR_LOCKSTYLE')
+--- @param default_lockstyle number Default lockstyle number for this job
+--- @param default_subjob string Default subjob (used as fallback when player.sub_job is nil)
+--- @return table Per-job lockstyle module
+function LockstyleManager.create(job_code, config_path, default_lockstyle, default_subjob)
+    local ctx = {
+        job_code          = job_code,
+        default_lockstyle = default_lockstyle,
+        default_subjob    = default_subjob,
+        LockstyleConfig   = load_config_or_fallback(config_path, default_lockstyle),
+        STATE = {
+            enabled                   = true,
+            is_processing             = false,
+            current_coroutines        = {},
+            dressup_state             = 'unknown',
+            last_dressup_command_time = 0,
+            operation_id              = 0,
+        },
+    }
+
+    local function bind(fn) return function(...) return fn(ctx, ...) end end
+
+    local api = {
+        select_default_lockstyle  = bind(select_default_lockstyle),
+        set_lockstyle_with_delay  = bind(set_lockstyle_with_delay),
+        get_lockstyle_info        = bind(get_lockstyle_info),
+        show_lockstyle_config     = bind(show_lockstyle_config),
+        set_lockstyle_enabled     = bind(set_lockstyle_enabled),
+        set_dressup_management    = bind(set_dressup_management),
+        cancel_pending_operations = bind(cancel_pending_operations),
+        get_state                 = function() return ctx.STATE end,
+    }
+    api.get_info = api.get_lockstyle_info  -- backward-compat alias
+
+    -- Globals for include() compatibility (unchanged names).
+    local jl = job_code:lower()
+    _G.select_default_lockstyle                    = api.select_default_lockstyle
+    _G['cancel_' .. jl .. '_lockstyle_operations'] = api.cancel_pending_operations
+    _G['set_'    .. jl .. '_lockstyle_enabled']    = api.set_lockstyle_enabled
+    _G['set_'    .. jl .. '_dressup_management']   = api.set_dressup_management
+    _G['get_'    .. jl .. '_lockstyle_info']       = api.get_lockstyle_info
+    _G['show_'   .. jl .. '_lockstyle_config']     = api.show_lockstyle_config
+
+    return api
 end
 
 return LockstyleManager
