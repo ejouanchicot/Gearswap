@@ -45,7 +45,7 @@ AutoMove = AutoMove or {}
 
 local config = {
     movement_threshold  = 0.3,   -- Distance threshold to detect movement
-    check_interval      = 0.08,  -- Time in seconds between position checks
+    check_interval      = 0.12,  -- Time in seconds between position checks (~8.3 Hz, ~33% CPU saving vs 0.08)
     update_debounce     = 0.3,   -- Minimum time between gs c update calls
     job_change_cooldown = 2.0    -- Cooldown after job change before sending commands
 }
