@@ -281,7 +281,7 @@ local last_position = {x = 0, y = 0, z = 0}
 
 -- Dirty flag tracking (Option 2: only update if states changed)
 local previous_states = {
-    petEngaged = 'false',
+    PetEngaged = 'false',
     moving = 'false'
 }
 
@@ -315,9 +315,9 @@ local function smart_pet_monitor()
             end
         end
     else
-        -- No pet - ensure petEngaged is false
-        if state and state.petEngaged and state.petEngaged.value ~= "false" then
-            state.petEngaged:set('false')
+        -- No pet - ensure PetEngaged is false
+        if state and state.PetEngaged and state.PetEngaged.value ~= "false" then
+            state.PetEngaged:set('false')
         end
     end
 
@@ -357,11 +357,11 @@ local function smart_pet_monitor()
     -- ==========================================================================
     -- REFRESH GEAR (ONLY if states changed - dirty flag optimization)
     -- ==========================================================================
-    local current_petEngaged = state.petEngaged and state.petEngaged.value or 'false'
+    local current_PetEngaged = state.PetEngaged and state.PetEngaged.value or 'false'
     local current_moving = state.Moving and state.Moving.value or 'false'
 
     -- Check if any state changed
-    local states_changed = (current_petEngaged ~= previous_states.petEngaged or
+    local states_changed = (current_PetEngaged ~= previous_states.PetEngaged or
                            current_moving ~= previous_states.moving)
 
     if states_changed then
@@ -369,7 +369,7 @@ local function smart_pet_monitor()
         windower.send_command('gs c update')
 
         -- Update previous states
-        previous_states.petEngaged = current_petEngaged
+        previous_states.PetEngaged = current_PetEngaged
         previous_states.moving = current_moving
     end
 

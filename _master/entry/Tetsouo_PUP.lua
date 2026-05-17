@@ -261,7 +261,7 @@ _G.pup_time_change_event_id = windower.register_event('time change', function(ne
         end, 0.1)
     end
 
-    -- Monitor pet status (update petEngaged state)
+    -- Monitor pet status (update PetEngaged state)
     coroutine.schedule(function()
         if not player or player.main_job ~= 'PUP' then return end
         local PetManager = require('shared/jobs/pup/functions/logic/pet_manager')
