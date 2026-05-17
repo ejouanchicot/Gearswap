@@ -115,7 +115,7 @@ function WHMMessageFormatter.show_cure_tier_change(original_spell, new_spell, hp
         separator_color
     )
 
-    add_to_chat(001, msg)
+    MessageCore.raw(msg)
 end
 
 --- Show Cure cast (HP healed display)
@@ -137,7 +137,7 @@ function WHMMessageFormatter.show_cure_heal(spell_name, hp_healed, target_name)
         target_str
     )
 
-    add_to_chat(001, msg)
+    MessageCore.raw(msg)
 end
 
 --- Show Cure with Stoneskin (Afflatus Solace)
@@ -162,7 +162,7 @@ function WHMMessageFormatter.show_cure_stoneskin(spell_name, hp_healed, stoneski
         target_str
     )
 
-    add_to_chat(001, msg)
+    MessageCore.raw(msg)
 end
 
 ---============================================================================
@@ -186,7 +186,7 @@ function WHMMessageFormatter.show_afflatus_change(stance)
         description
     )
 
-    add_to_chat(001, msg)
+    MessageCore.raw(msg)
 end
 
 ---============================================================================
@@ -203,7 +203,7 @@ function WHMMessageFormatter.show_benediction()
         bene_color
     )
 
-    add_to_chat(001, msg)
+    MessageCore.raw(msg)
 end
 
 --- Show Devotion (MP transfer)
@@ -223,7 +223,7 @@ function WHMMessageFormatter.show_devotion(mp_transferred, target_name)
         target_name
     )
 
-    add_to_chat(001, msg)
+    MessageCore.raw(msg)
 end
 
 --- Show Martyr (HP sacrifice for party)
@@ -242,7 +242,7 @@ function WHMMessageFormatter.show_martyr(hp_sacrificed, hp_restored)
         potency_color .. "+" .. tostring(hp_restored)
     )
 
-    add_to_chat(001, msg)
+    MessageCore.raw(msg)
 end
 
 ---============================================================================
@@ -267,7 +267,7 @@ function WHMMessageFormatter.show_cursna(target_name, cursna_skill)
         skill_str
     )
 
-    add_to_chat(001, msg)
+    MessageCore.raw(msg)
 end
 
 --- Show status removal (Paralyna, Erase, etc.)
@@ -290,7 +290,7 @@ function WHMMessageFormatter.show_status_removal(spell_name, target_name, status
         status_str
     )
 
-    add_to_chat(001, msg)
+    MessageCore.raw(msg)
 end
 
 ---============================================================================
@@ -315,7 +315,7 @@ function WHMMessageFormatter.show_auto_tier_toggle(enabled)
         description
     )
 
-    add_to_chat(001, msg)
+    MessageCore.raw(msg)
 end
 
 ---============================================================================
@@ -334,7 +334,7 @@ function WHMMessageFormatter.warning(message)
         message
     )
 
-    add_to_chat(001, msg)
+    MessageCore.raw(msg)
 end
 
 --- Show error message
@@ -349,7 +349,7 @@ function WHMMessageFormatter.error(message)
         message
     )
 
-    add_to_chat(001, msg)
+    MessageCore.raw(msg)
 end
 
 ---============================================================================

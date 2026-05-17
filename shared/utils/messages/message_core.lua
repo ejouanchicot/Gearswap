@@ -93,6 +93,17 @@ function MessageCore.warning(message)
     add_to_chat(205, string.format("[%s] %s", job_tag, message))
 end
 
+--- Send a pre-formatted message that already contains embedded color codes
+--- (built via `create_color_code`). Uses chat color 001 (neutral) so the
+--- embedded codes are honored verbatim. This is the canonical entry point
+--- for module-specific formatters that build their own colored output;
+--- always preferred over a raw `add_to_chat(001, ...)` so we have one
+--- choke point if we ever need to filter/route chat output centrally.
+--- @param message string Pre-formatted message with embedded color codes
+function MessageCore.raw(message)
+    add_to_chat(001, message)
+end
+
 ---============================================================================
 --- UTILITY MESSAGES
 ---============================================================================

@@ -261,15 +261,15 @@ function RollMessages.show_roll_result(roll_name, value_display, bonus_display, 
     local separator = string.rep("=", max_length)
 
     -- Display opening separator
-    add_to_chat(001, separator_color .. separator)
+    MessageCore.raw( separator_color .. separator)
 
     -- Display all lines
     for _, line in ipairs(lines) do
-        add_to_chat(001, line)
+        MessageCore.raw( line)
     end
 
     -- Display closing separator
-    add_to_chat(001, separator_color .. separator)
+    MessageCore.raw( separator_color .. separator)
 end
 
 --- Display Natural 11 special benefits (simple one-line format)
@@ -292,7 +292,7 @@ function RollMessages.show_roll_natural_eleven()
         white_color
     )
 
-    add_to_chat(001, message)
+    MessageCore.raw( message)
 end
 
 --- Display bust rate warning (integrated in multi-line format)
@@ -337,7 +337,7 @@ function RollMessages.show_roll_bust_rate(bust_rate)
     end
 
     -- Display bust line
-    add_to_chat(001, string.format(
+    MessageCore.raw( string.format(
         "%sBust: %s%.1f%% %s(%s)",
         white_color,
         risk_color, bust_rate,
@@ -346,7 +346,7 @@ function RollMessages.show_roll_bust_rate(bust_rate)
 
     -- Final separator (gray, matching opening separator)
     local separator = string.rep("=", 48)
-    add_to_chat(001, separator_color .. separator)
+    MessageCore.raw( separator_color .. separator)
 end
 
 ---============================================================================
@@ -426,7 +426,7 @@ function RollMessages.show_active_rolls(active_rolls)
 
     -- Header
     local job_tag = MessageCore.get_job_tag()
-    add_to_chat(001, string.format("%s[%s]%s Active Rolls (%s%d%s):",
+    MessageCore.raw( string.format("%s[%s]%s Active Rolls (%s%d%s):",
         job_color, job_tag,
         white_color,
         number_color, #active_rolls, white_color))
@@ -441,7 +441,7 @@ function RollMessages.show_active_rolls(active_rolls)
             white_color,
             number_color, roll.value
         )
-        add_to_chat(001, formatted_message)
+        MessageCore.raw( formatted_message)
     end
 end
 
