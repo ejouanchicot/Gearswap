@@ -66,8 +66,11 @@ local function ensure_modules_loaded()
     EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
     mark('ENHANCING_DB')
 
+    -- Character-aware config paths (supports Tetsouo + clones)
+    local char_name = (player and player.name) or 'Tetsouo'
+
     -- MP conservation configuration
-    local mp_config_success, mp_config = pcall(require, 'Tetsouo/config/blm/BLM_MP_CONFIG')
+    local mp_config_success, mp_config = pcall(require, char_name .. '/config/blm/BLM_MP_CONFIG')
     if not mp_config_success or not mp_config then
         BLMMPConfig = { mp_threshold = 1000 }  -- Fallback default
     else
@@ -76,7 +79,7 @@ local function ensure_modules_loaded()
     mark('BLM_MP_CONFIG')
 
     -- Elemental matching configuration
-    local elemental_config_success, elemental_config = pcall(require, 'Tetsouo/config/blm/BLM_ELEMENTAL_CONFIG')
+    local elemental_config_success, elemental_config = pcall(require, char_name .. '/config/blm/BLM_ELEMENTAL_CONFIG')
     if not elemental_config_success or not elemental_config then
         BLMElementalConfig = {  -- Fallback defaults
             auto_hachirin = true,

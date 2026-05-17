@@ -23,11 +23,13 @@ local function get_lockstyle_module()
         if not LockstyleManager then
             LockstyleManager = require('shared/utils/lockstyle/lockstyle_manager')
         end
+        -- Character-aware config path (supports Tetsouo, Kaories, Hysoka, etc.)
+        local char_name = (player and player.name) or 'Tetsouo'
         lockstyle_module = LockstyleManager.create(
-            'BLM',                           -- job_code
-            'Tetsouo/config/blm/BLM_LOCKSTYLE', -- config_path
-            1,                                -- default_lockstyle
-            'SAM'                             -- default_subjob
+            'BLM',                                            -- job_code
+            char_name .. '/config/blm/BLM_LOCKSTYLE',         -- config_path
+            1,                                                -- default_lockstyle
+            'SAM'                                             -- default_subjob
         )
     end
     return lockstyle_module

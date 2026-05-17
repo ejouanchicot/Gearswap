@@ -23,12 +23,14 @@ local function get_macrobook_module()
         if not MacrobookManager then
             MacrobookManager = require('shared/utils/macrobook/macrobook_manager')
         end
+        -- Character-aware config path (supports Tetsouo, Kaories, Hysoka, etc.)
+        local char_name = (player and player.name) or 'Tetsouo'
         macrobook_module = MacrobookManager.create(
-            'BLM',                           -- job_code
-            'Tetsouo/config/blm/BLM_MACROBOOK', -- config_path
-            'SAM',                            -- default_subjob
-            1,                                -- default_book
-            1                                 -- default_page
+            'BLM',                                            -- job_code
+            char_name .. '/config/blm/BLM_MACROBOOK',         -- config_path
+            'SAM',                                            -- default_subjob
+            1,                                                -- default_book
+            1                                                 -- default_page
         )
     end
     return macrobook_module

@@ -312,17 +312,14 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     -- LightArts: Intelligent Light Arts / Addendum: White toggling (SCH subjob)
+    -- NOTE: Addendum: White REPLACES the Light Arts buff icon (mutually exclusive
+    -- in buffactive), so we check Addendum FIRST to avoid re-casting Light Arts.
     if command == 'lightarts' then
-        if buffactive and buffactive['Light Arts'] then
-            -- Light Arts active >> Use Addendum: White (if not already active)
-            if not buffactive['Addendum: White'] then
-                -- Don't check charges - FFXI will block if unavailable (Stratagems have multiple charges)
-                send_command('input /ja "Addendum: White" <me>')
-            else
-                BLMMessages.show_arts_already_active('Light Arts + Addendum: White')
-            end
+        if buffactive and buffactive['Addendum: White'] then
+            BLMMessages.show_arts_already_active('Light Arts + Addendum: White')
+        elseif buffactive and buffactive['Light Arts'] then
+            send_command('input /ja "Addendum: White" <me>')
         else
-            -- Light Arts not active >> Activate it
             send_command('input /ja "Light Arts" <me>')
         end
         eventArgs.handled = true
@@ -331,16 +328,11 @@ function job_self_command(cmdParams, eventArgs)
 
     -- DarkArts: Intelligent Dark Arts / Addendum: Black toggling (SCH subjob)
     if command == 'darkarts' then
-        if buffactive and buffactive['Dark Arts'] then
-            -- Dark Arts active >> Use Addendum: Black (if not already active)
-            if not buffactive['Addendum: Black'] then
-                -- Don't check charges - FFXI will block if unavailable (Stratagems have multiple charges)
-                send_command('input /ja "Addendum: Black" <me>')
-            else
-                BLMMessages.show_arts_already_active('Dark Arts + Addendum: Black')
-            end
+        if buffactive and buffactive['Addendum: Black'] then
+            BLMMessages.show_arts_already_active('Dark Arts + Addendum: Black')
+        elseif buffactive and buffactive['Dark Arts'] then
+            send_command('input /ja "Addendum: Black" <me>')
         else
-            -- Dark Arts not active >> Activate it
             send_command('input /ja "Dark Arts" <me>')
         end
         eventArgs.handled = true
@@ -348,12 +340,12 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     -- Sneak: Intelligent Light Arts + Accession + Sneak (party-wide)
+    -- Light Arts OR Addendum: White satisfies the Arts requirement.
     if command == 'sneak' then
-        if buffactive and buffactive['Light Arts'] then
-            -- Light Arts active >> Just use Accession + Sneak
+        local light_active = buffactive and (buffactive['Light Arts'] or buffactive['Addendum: White'])
+        if light_active then
             send_command('input /ja "Accession" <me>; wait 2; input /ma "Sneak" <me>')
         else
-            -- Light Arts not active >> Activate it first, then Accession + Sneak
             send_command('input /ja "Light Arts" <me>; wait 2; input /ja "Accession" <me>; wait 2; input /ma "Sneak" <me>')
         end
         eventArgs.handled = true
@@ -362,11 +354,10 @@ function job_self_command(cmdParams, eventArgs)
 
     -- Invi: Intelligent Light Arts + Accession + Invisible (party-wide)
     if command == 'invi' then
-        if buffactive and buffactive['Light Arts'] then
-            -- Light Arts active >> Just use Accession + Invisible
+        local light_active = buffactive and (buffactive['Light Arts'] or buffactive['Addendum: White'])
+        if light_active then
             send_command('input /ja "Accession" <me>; wait 2; input /ma "Invisible" <me>')
         else
-            -- Light Arts not active >> Activate it first, then Accession + Invisible
             send_command('input /ja "Light Arts" <me>; wait 2; input /ja "Accession" <me>; wait 2; input /ma "Invisible" <me>')
         end
         eventArgs.handled = true
