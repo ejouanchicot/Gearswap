@@ -165,16 +165,23 @@ function WarpDetector.clear_callbacks()
     _G.warp_detector_callbacks = {}
 end
 
---- Initialize action event listener for item usage detection
+--- Initialize action event listener for item usage detection.
+--- Idempotent: unregister-then-register so each gs reload gets a fresh handler
+--- and we never accumulate stale ones. The event id lives on `windower.*` so
+--- it survives the `_G` wipe that comes with `gs reload` (cf the same
+--- convention in dualbox_sync_ipc.init_listener).
 function WarpDetector.init_action_listener()
     -- ALWAYS clear callbacks on init (ensures fresh start on reload)
     WarpDetector.clear_callbacks()
-    -- Only register once (prevent duplicate event handlers on job change)
-    if _G.WARP_DETECTOR_LISTENER_REGISTERED then
-        return
+
+    if not windower or not windower.register_event then return end
+
+    if windower._warp_detector_event_id then
+        pcall(windower.unregister_event, windower._warp_detector_event_id)
+        windower._warp_detector_event_id = nil
     end
 
-    windower.register_event('action', function(act)
+    windower._warp_detector_event_id = windower.register_event('action', function(act)
         -- Safety: Check if act exists (Windower sometimes sends nil)
         if not act then return end
 
@@ -195,9 +202,6 @@ function WarpDetector.init_action_listener()
             end
         end
     end)
-
-    -- Mark as registered globally
-    _G.WARP_DETECTOR_LISTENER_REGISTERED = true
 end
 
 ---============================================================================

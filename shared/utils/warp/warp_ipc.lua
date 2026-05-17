@@ -142,18 +142,19 @@ end
 --- PUBLIC API
 ---============================================================================
 
---- Initialize IPC system (register listener)
+--- Initialize IPC system (register listener).
+--- Idempotent: unregister-then-register so each gs reload gets a fresh handler
+--- and we never accumulate stale ones. The event id lives on `windower.*` so
+--- it survives the `_G` wipe that comes with `gs reload`.
 function WarpIPC.init()
-    -- Only register once (prevent duplicate event handlers)
-    if _G.WARP_IPC_LISTENER_REGISTERED then
-        return
+    if not windower or not windower.register_event then return end
+
+    if windower._warp_ipc_event_id then
+        pcall(windower.unregister_event, windower._warp_ipc_event_id)
+        windower._warp_ipc_event_id = nil
     end
 
-    -- Register IPC message listener
-    windower.register_event('ipc message', handle_ipc_message)
-
-    -- Mark as registered globally
-    _G.WARP_IPC_LISTENER_REGISTERED = true
+    windower._warp_ipc_event_id = windower.register_event('ipc message', handle_ipc_message)
 
     -- Always show initialization message for debugging
     MessageWarp.show_ipc_registered()
