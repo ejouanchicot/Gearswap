@@ -84,6 +84,7 @@ function OrchestratorAlt.create(ctx)
             dlog('========== WARDROBE ORGANIZE ALT END ==========')
             ctx.reset_module_state()
             ctx.set_running(false)
+            if ctx.schedule_lockstyle then ctx.schedule_lockstyle() end
         end, Config.SETTLE_DELAY)
     end
 

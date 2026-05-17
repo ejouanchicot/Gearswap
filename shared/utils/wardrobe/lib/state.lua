@@ -30,21 +30,52 @@ local dlog       = Log.dlog
 local space_in   = Moves.space_in
 local INV_BAG    = Config.INV_BAG
 
+--- Initialize `claim_pool[name]` for a pinned item, pre-removing any pin
+--- bag already occupied by a NON-MOVABLE copy (status != 0: bazaar, equipped,
+--- linkshell-locked). Movable copies of the item must avoid those pins so
+--- they don't stack onto the locked one.
+--- @param name string item name (lowercase)
+--- @param pins table list of pin bag ids
+--- @param claim_pool table the shared claim_pool to mutate
+local function init_claim_pool_for(name, pins, claim_pool)
+    if claim_pool[name] then return end
+    local locked = {}  -- [bag] = true if a status!=0 copy already lives there
+    for _, b in ipairs(pins) do
+        local items = windower.ffxi.get_items(b)
+        if items then
+            for _, it in ipairs(items) do
+                if it.id and it.id > 0 and it.status ~= 0 then
+                    for _, variant in ipairs(Items.item_names(it.id)) do
+                        if variant == name then
+                            locked[b] = true
+                            break
+                        end
+                    end
+                    if locked[b] then break end
+                end
+            end
+        end
+    end
+    local remaining = {}
+    for _, b in ipairs(pins) do
+        if not locked[b] then table.insert(remaining, b) end
+    end
+    claim_pool[name] = {remaining = remaining}
+end
+
 --- Resolve the pinned target bag for an entry, given a `pinned_bags` map
 --- (item_name_lower -> { bag_id_1, bag_id_2, ... }). Multi-instance items
 --- are assigned greedily: each physical copy claims the next free pin slot.
 --- Prefers claiming the bag the item is currently in (avoids needless moves).
+--- Pins already occupied by status!=0 copies (bazaar/equipped/lockstyle) are
+--- pre-removed so movable copies don't get assigned to a locked bag.
 --- `claim_pool[name]` = { remaining = { bag_id, ... } }  (mutated).
 --- Returns nil if not pinned or pin slots exhausted.
 function State.pin_target_for(entry, pinned_bags, claim_pool)
     for _, n in ipairs(Items.item_names(entry.id)) do
         local pins = pinned_bags[n]
         if pins and #pins > 0 then
-            if not claim_pool[n] then
-                local remaining = {}
-                for _, b in ipairs(pins) do table.insert(remaining, b) end
-                claim_pool[n] = {remaining = remaining}
-            end
+            init_claim_pool_for(n, pins, claim_pool)
             local pool = claim_pool[n]
             -- Prefer claiming the bag the item is already in
             for i, b in ipairs(pool.remaining) do

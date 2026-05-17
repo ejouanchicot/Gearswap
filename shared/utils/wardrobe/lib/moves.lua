@@ -136,6 +136,11 @@ end
 --- pinned to W1 + W2) where one copy is already in W1: the inv copy must go
 --- to W2, not stack onto W1.
 ---
+--- Status is intentionally NOT filtered: a bazaar/equipped/linkshell-locked
+--- copy still physically occupies a slot in the bag, so the moveable copy
+--- must go to a DIFFERENT pin bag. (Without this, a bazaar Moonlight Ring in
+--- W1 would not "claim" W1 and the normal copy would land in W1 too.)
+---
 --- Returns: pins-with-no-copy first, then pins-already-having-a-copy as fallback.
 function Moves.unclaimed_pins_first(item_id, pinned_bags)
     local pins = Moves.all_pinned_bags(item_id, pinned_bags)
@@ -146,7 +151,7 @@ function Moves.unclaimed_pins_first(item_id, pinned_bags)
         local has_copy = false
         if items then
             for _, it in ipairs(items) do
-                if it.id == item_id and it.status == 0 then
+                if it.id == item_id then
                     has_copy = true; break
                 end
             end
