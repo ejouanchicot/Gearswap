@@ -115,13 +115,26 @@ function WaltzManager.cast_curing_waltz(target_type)
     -- Determine effective level (main job or subjob)
     local effective_level = player.main_job == 'DNC' and player.main_job_level or (player.sub_job_level or 0)
 
-    -- Get target info
-    local target = windower.ffxi.get_mob_by_target('st') or windower.ffxi.get_mob_by_target('me')
-    local missing_hp = get_missing_hp(target)
+    -- Get target info for HP-based tier selection.
+    -- Note: <stpc> prompt fires AFTER /ja is sent (line below), so 'st' is nil
+    -- here. We use the player's CURRENT target ('t') instead - if they already
+    -- have a party member focused (F2/F3 cycle, click), we can size the waltz
+    -- correctly. We accept the target only if it's self or an ally; targeting
+    -- a mob means HP is unknown (real target chosen via the upcoming prompt).
+    local missing_hp = nil
+    local cur_target = windower.ffxi.get_mob_by_target('t')
+    if cur_target and (cur_target.name == player.name or cur_target.isallymember) then
+        missing_hp = get_missing_hp(cur_target)
+    end
+    -- Self fallback (no target at all): heal self.
+    if not missing_hp and (not cur_target) then
+        missing_hp = get_missing_hp(windower.ffxi.get_mob_by_target('me'))
+    end
 
-    -- Determine optimal waltz tier based on missing HP
+    -- Determine optimal waltz tier.
     local preferred_waltz = nil
     if missing_hp then
+        -- HP known: pick the tier matching the missing-HP bracket.
         for _, waltz in ipairs(WALTZ_CONFIG.curing) do
             if effective_level >= waltz.level then
                 if (waltz.name == "Curing Waltz" and missing_hp < 200) or
@@ -132,6 +145,18 @@ function WaltzManager.cast_curing_waltz(target_type)
                     preferred_waltz = waltz
                     break
                 end
+            end
+        end
+    else
+        -- HP unknown (mob targeted; real cure target chosen via <stpc> prompt).
+        -- Default to the highest tier the player can cast - the priority list
+        -- below still tries lower tiers if recast/TP block the chosen one.
+        -- This avoids the old bug where unknown HP fell through to "self full
+        -- HP -> 0 missing -> Tier I" even when curing a low-HP party member.
+        for _, waltz in ipairs(WALTZ_CONFIG.curing) do
+            if effective_level >= waltz.level then
+                preferred_waltz = waltz
+                break
             end
         end
     end
@@ -152,9 +177,9 @@ function WaltzManager.cast_curing_waltz(target_type)
         local recast = ability_recasts[waltz.recast_id] or 0
         if is_recast_ready(recast) and current_tp >= waltz.tp then
             send_command('input /ja "' .. waltz.name .. '" ' .. target_type)
-            if missing_hp then
-                MessageFormatter.show_waltz_heal(waltz.name, missing_hp, nil, job_tag)
-            end
+            -- Always show which waltz fired; missing_hp may be nil when the
+            -- target is chosen via the upcoming <stpc> prompt.
+            MessageFormatter.show_waltz_heal(waltz.name, missing_hp, nil, job_tag)
             return
         end
     end

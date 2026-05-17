@@ -13,12 +13,29 @@ local function is_recast_ready(recast)
     end
 end
 
+-- Memoization cache for ability lookups.
+-- res.job_abilities:with('en', name) is an O(N) scan over ~700 abilities.
+-- Each ability name is queried multiple times per WS/precast cycle, so caching
+-- the result eliminates the bulk of the cost. The resource DB never changes at
+-- runtime, so we never need to invalidate.
+local ability_cache = {}
+
+local function get_ability_data(ability_name)
+    local cached = ability_cache[ability_name]
+    if cached ~= nil then
+        return cached or nil  -- false sentinel for "looked up, not found"
+    end
+    local res = require('resources')
+    local data = res.job_abilities:with('en', ability_name)
+    ability_cache[ability_name] = data or false  -- store negative result too
+    return data
+end
+
 function AbilityHelper.can_use_ability(ability_name)
     local player = windower.ffxi.get_player()
     if not player then return false end
 
-    local res = require('resources')
-    local ability_data = res.job_abilities:with('en', ability_name)
+    local ability_data = get_ability_data(ability_name)
     if not ability_data then return false end
 
     -- For abilities without levels table (merit/quest abilities like Climactic Flourish),
@@ -46,11 +63,10 @@ function AbilityHelper.can_use_ability(ability_name)
 end
 
 function AbilityHelper.is_ability_ready(ability_name)
-    local ability_recasts = windower.ffxi.get_ability_recasts()
-    local res = require('resources')
-    local ability_data = res.job_abilities:with('en', ability_name)
+    local ability_data = get_ability_data(ability_name)
     if not ability_data then return false end
 
+    local ability_recasts = windower.ffxi.get_ability_recasts()
     local recast_id = ability_data.recast_id or ability_data.id
     local cooldown = ability_recasts[recast_id] or 0
     return is_recast_ready(cooldown)

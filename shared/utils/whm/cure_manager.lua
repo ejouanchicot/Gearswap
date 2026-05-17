@@ -30,8 +30,10 @@ local CureManager = {}
 --- DEPENDENCIES
 ---============================================================================
 
--- Load configuration
-local config_success, WHMCureConfig = pcall(require, 'Tetsouo/config/whm/WHM_CURE_CONFIG')
+-- Load configuration (character-aware: supports Tetsouo + cloned characters)
+-- Module is lazy-required from WHM_PRECAST.lua, so `player` is defined at load time.
+local char_name = (player and player.name) or 'Tetsouo'
+local config_success, WHMCureConfig = pcall(require, char_name .. '/config/whm/WHM_CURE_CONFIG')
 if not config_success then
     print('[CureManager] ERROR: Could not load WHM_CURE_CONFIG')
     WHMCureConfig = {
