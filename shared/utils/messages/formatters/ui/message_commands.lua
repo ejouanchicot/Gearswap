@@ -550,7 +550,16 @@ function MessageCommands.show_commands_list()
     add_to_chat(121, " ")
     add_to_chat(121, orange .. ">> EQUIPMENT & INVENTORY")
     add_to_chat(121, cyan .. "   //gs c wardrobeaudit" .. gray .. " (or " .. cyan .. "wa" .. gray .. ") " .. white .. "Audit wardrobe across all jobs")
+    add_to_chat(121, cyan .. "   //gs c worganize" .. gray .. " (or " .. cyan .. "wo" .. gray .. ") ... " .. white .. "Organize wardrobes by job usage")
+    add_to_chat(121, cyan .. "   //gs c worganize alt" .. gray .. " ..... " .. white .. "Alt mode (4-wardrobe characters)")
     add_to_chat(121, cyan .. "   //gs c refill" .. gray .. " (or " .. cyan .. "rf" .. gray .. ") ..... " .. white .. "Pull consumables from Case/Sack")
+
+    -- Craft & Fish
+    add_to_chat(121, " ")
+    add_to_chat(121, orange .. ">> CRAFT & FISH")
+    add_to_chat(121, cyan .. "   //gs c craft" .. gray .. " ............ " .. white .. "Enable craft mode (locks weapon slots)")
+    add_to_chat(121, cyan .. "   //gs c fish" .. gray .. " (or " .. cyan .. "fishing" .. gray .. ") .. " .. white .. "Enable fish mode")
+    add_to_chat(121, cyan .. "   //gs c uncraft" .. gray .. " .......... " .. white .. "Exit craft/fish mode")
 
     -- UI Commands
     add_to_chat(121, " ")
@@ -613,7 +622,7 @@ function MessageCommands.show_commands_list()
     add_to_chat(121, cyan .. "   //gs c perf " .. yellow .. "[start|stop]" .. gray .. " .. " .. white .. "Performance profiler")
     add_to_chat(121, cyan .. "   //gs c fulltest" .. gray .. " (or " .. cyan .. "ft" .. gray .. ") ... " .. white .. "Run full in-game test suite")
     add_to_chat(121, cyan .. "   //gs c syscheck" .. gray .. " (or " .. cyan .. "sc" .. gray .. ") ... " .. white .. "System health check with score")
-    add_to_chat(121, cyan .. "   //gs c lagdebug" .. gray .. " (or " .. cyan .. "ld" .. gray .. ") ... " .. white .. "Lag debugger (toggle/export/reset)")
+    add_to_chat(121, cyan .. "   //gs c lagdebug" .. gray .. " (or " .. cyan .. "ldb" .. gray .. ") .. " .. white .. "Lag debugger (toggle/export/reset)")
     add_to_chat(121, cyan .. "   //gs c testmsg " .. yellow .. "[job]" .. gray .. " .... " .. white .. "Test message system")
     add_to_chat(121, cyan .. "   //gs c msgtests" .. gray .. " ........ " .. white .. "Validate message system")
 
