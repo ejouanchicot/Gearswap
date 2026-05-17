@@ -250,6 +250,94 @@ function job_self_command(cmdParams, eventArgs)
         end
         return
     end
+
+    -- ══════════════════════════════════════════════════════════════════════════
+    -- SCH SUBJOB COMMANDS (Arts / Addendum / Accession-based utility)
+    -- ══════════════════════════════════════════════════════════════════════════
+    -- Same pattern as BLM/SCH: intelligent toggles for Light/Dark Arts and
+    -- party-wide Sneak/Invi via Accession. Will fail gracefully in-game if
+    -- subjob is not /SCH (FFXI will reject the JA).
+
+    -- LightArts: toggle Light Arts / Addendum: White
+    -- NOTE: Addendum: White REPLACES the Light Arts buff icon (mutually exclusive
+    -- in buffactive), so we check Addendum FIRST to avoid re-casting Light Arts.
+    if command == 'lightarts' then
+        if buffactive and buffactive['Addendum: White'] then
+            local MC = require('shared/utils/messages/message_core')
+            MC.info('Light Arts + Addendum: White already active')
+        elseif buffactive and buffactive['Light Arts'] then
+            send_command('input /ja "Addendum: White" <me>')
+        else
+            send_command('input /ja "Light Arts" <me>')
+        end
+        eventArgs.handled = true
+        return
+    end
+
+    -- DarkArts: toggle Dark Arts / Addendum: Black (same logic as lightarts)
+    if command == 'darkarts' then
+        if buffactive and buffactive['Addendum: Black'] then
+            local MC = require('shared/utils/messages/message_core')
+            MC.info('Dark Arts + Addendum: Black already active')
+        elseif buffactive and buffactive['Dark Arts'] then
+            send_command('input /ja "Addendum: Black" <me>')
+        else
+            send_command('input /ja "Dark Arts" <me>')
+        end
+        eventArgs.handled = true
+        return
+    end
+
+    -- Sneak: Light Arts + Accession + Sneak (party-wide)
+    -- Light Arts OR Addendum: White satisfies the Light Arts requirement
+    -- (Addendum replaces Light Arts icon but inherits its effect).
+    if command == 'sneak' then
+        local light_active = buffactive and (buffactive['Light Arts'] or buffactive['Addendum: White'])
+        if light_active then
+            send_command('input /ja "Accession" <me>; wait 2; input /ma "Sneak" <me>')
+        else
+            send_command('input /ja "Light Arts" <me>; wait 2; input /ja "Accession" <me>; wait 2; input /ma "Sneak" <me>')
+        end
+        eventArgs.handled = true
+        return
+    end
+
+    -- Invi: Light Arts + Accession + Invisible (party-wide)
+    if command == 'invi' then
+        local light_active = buffactive and (buffactive['Light Arts'] or buffactive['Addendum: White'])
+        if light_active then
+            send_command('input /ja "Accession" <me>; wait 2; input /ma "Invisible" <me>')
+        else
+            send_command('input /ja "Light Arts" <me>; wait 2; input /ja "Accession" <me>; wait 2; input /ma "Invisible" <me>')
+        end
+        eventArgs.handled = true
+        return
+    end
+
+    -- Dispel: GEO needs /SCH (Addendum: Black) or /RDM for native Dispel.
+    --   /RDM                          -> direct cast
+    --   /SCH + Addendum: Black active -> cast directly
+    --   /SCH + Dark Arts only         -> Addendum: Black, then Dispel
+    --   /SCH neither active           -> Dark Arts, Addendum: Black, then Dispel
+    if command == 'dispel' then
+        local sub = (player and player.sub_job) or 'NON'
+        if sub == 'RDM' then
+            send_command('input /ma "Dispel" <stnpc>')
+        elseif sub == 'SCH' then
+            if buffactive and buffactive['Addendum: Black'] then
+                send_command('input /ma "Dispel" <stnpc>')
+            elseif buffactive and buffactive['Dark Arts'] then
+                send_command('input /ja "Addendum: Black" <me>; wait 2; input /ma "Dispel" <stnpc>')
+            else
+                send_command('input /ja "Dark Arts" <me>; wait 2; input /ja "Addendum: Black" <me>; wait 2; input /ma "Dispel" <stnpc>')
+            end
+        else
+            local MC = require('shared/utils/messages/message_core')
+            MC.warning(('Dispel unavailable on GEO/%s. Need /RDM or /SCH.'):format(sub))
+        end
+        eventArgs.handled = true
+        return
+    end
 end
 
 ---   Called when a state field changes value
