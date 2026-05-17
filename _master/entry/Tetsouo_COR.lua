@@ -185,11 +185,7 @@ function job_sub_job_change(newSubjob, oldSubjob)
         JobChangeManager.on_job_change(main_job, newSubjob)
     end
 
-    -- DUALBOX: Send job update to MAIN character after subjob change
-    local db_success, DualBoxManager = pcall(require, 'shared/utils/dualbox/dualbox_manager')
-    if db_success and DualBoxManager then
-        DualBoxManager.send_job_update()
-    end
+    -- DUALBOX IPC fires from user_setup() after the reload (covers main + subjob)
 end
 
 ---============================================================================
@@ -237,6 +233,14 @@ function user_setup()
     end
 
     -- ==========================================================================
+    -- DUALBOX IPC (covers main job change - job_sub_job_change is subjob-only)
+    -- The require() triggers dualbox_manager auto-init which schedules the
+    -- correct IPC call once per gs reload (request_alt_job for MAIN role,
+    -- send_job_update for ALT role). Do NOT call them explicitly here.
+    -- ==========================================================================
+    pcall(require, 'shared/utils/dualbox/dualbox_manager')
+
+    -- ==========================================================================
     -- PARTY TRACKER INITIALIZATION (Always executed after reload)
     -- Loaded here (not module level) to ensure GearSwap is fully initialized
     -- ==========================================================================
@@ -261,65 +265,8 @@ function user_setup()
         end
     end
 
-    -- ==========================================================================
-    -- ROLL DETECTION (registered fresh on every gs reload - no cache issues)
-    -- Uses raw_register_event('action') which passes a parsed table in GearSwap
-    -- ==========================================================================
-    if _G.cor_action_event_id then
-        windower.unregister_event(_G.cor_action_event_id)
-        _G.cor_action_event_id = nil
-    end
-
-    _G.cor_action_event_id = windower.raw_register_event('action', function(act)
-        if not act or type(act) ~= 'table' then return end
-        if not player or not player.id then return end
-        if player.main_job ~= 'COR' then return end
-        if act.category ~= 6 then return end
-        if act.actor_id ~= player.id then return end
-        if act.param == 195 then return end  -- Exclude Fold
-
-        -- Check if Phantom Roll
-        local is_phantom_roll = false
-        pcall(function()
-            local r = require('resources')
-            if r and r.job_abilities and r.job_abilities[act.param] then
-                if r.job_abilities[act.param].type == 'CorsairRoll' then
-                    is_phantom_roll = true
-                end
-            end
-        end)
-        if not is_phantom_roll and act.param >= 98 and act.param <= 192 then
-            is_phantom_roll = true
-        end
-        if not is_phantom_roll then return end
-
-        -- Extract roll value from action targets
-        local roll_value = act.targets and act.targets[1] and act.targets[1].actions
-            and act.targets[1].actions[1] and act.targets[1].actions[1].param
-        if not roll_value or roll_value < 1 or roll_value > 12 then return end
-
-        -- Get roll name from ability ID
-        local roll_name = nil
-        pcall(function()
-            local r = require('resources')
-            if r and r.job_abilities and r.job_abilities[act.param] then
-                roll_name = r.job_abilities[act.param].en
-            end
-        end)
-        if not roll_name then return end
-
-        -- Send to RollTracker
-        local rt_ok, RollTracker = pcall(require, 'shared/jobs/cor/functions/logic/roll_tracker')
-        if rt_ok and RollTracker and RollTracker.on_roll_cast then
-            local call_ok, call_err = pcall(RollTracker.on_roll_cast, roll_name, roll_value)
-            if not call_ok then
-                local mf_ok, MF = pcall(require, 'shared/utils/messages/message_formatter')
-                if mf_ok and MF then
-                    MF.show_error('[COR] RollTracker error: ' .. tostring(call_err))
-                end
-            end
-        end
-    end)
+    -- Roll detection registered by PartyTracker.init() above (single canonical
+    -- handler, see shared/jobs/cor/functions/logic/party_tracker.lua).
 
     -- ==========================================================================
     -- LOCKSTYLE WATCHDOG (Always executed after reload)
