@@ -24,7 +24,9 @@ local RuneManager = {}
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local MessageFormatter = require('shared/utils/messages/message_formatter')
-local RECAST_CONFIG = _G.RECAST_CONFIG or {}  -- Loaded from character main file
+
+-- is_on_cooldown resolved as global from RECAST_CONFIG.lua
+-- (loaded by entry point before job functions). Do not redeclare locally.
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   RUNE EXECUTION
@@ -57,16 +59,7 @@ function RuneManager.execute_rune()
     local recast_id = ability_data.recast_id
     local recast = recasts[recast_id] or 0
 
-    -- Check cooldown (with fallback if RECAST_CONFIG not loaded)
-    local is_on_cooldown = false
-    if RECAST_CONFIG and RECAST_CONFIG.on_cooldown then
-        is_on_cooldown = RECAST_CONFIG.on_cooldown(recast)
-    else
-        -- Fallback: simple check (no tolerance)
-        is_on_cooldown = (recast > 0)
-    end
-
-    if is_on_cooldown then
+    if is_on_cooldown(recast) then
         -- Ability on cooldown - show cooldown message
         local job_tag = MessageFormatter.get_job_tag()
         MessageFormatter.show_ability_cooldown(selected_rune, recast, job_tag)

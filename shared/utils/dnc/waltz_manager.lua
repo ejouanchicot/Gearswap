@@ -25,25 +25,8 @@
 
 local WaltzManager = {}
 
--- Load recast tolerance configuration
-local RECAST_CONFIG = _G.RECAST_CONFIG or {}  -- Loaded from character main file
-
--- Safe wrappers for RECAST_CONFIG methods (with fallback if config not loaded)
-local function is_recast_ready(recast)
-    if RECAST_CONFIG and RECAST_CONFIG.is_ready then
-        return RECAST_CONFIG.is_ready(recast)
-    else
-        return (recast == 0)
-    end
-end
-
-local function is_on_cooldown(recast)
-    if RECAST_CONFIG and RECAST_CONFIG.on_cooldown then
-        return RECAST_CONFIG.on_cooldown(recast)
-    else
-        return (recast > 0)
-    end
-end
+-- is_recast_ready / is_on_cooldown resolved as globals from RECAST_CONFIG.lua
+-- (loaded by entry point before job functions). Do not redeclare locally.
 
 --- Waltz configuration (from res/job_abilities.lua)
 local WALTZ_CONFIG = {

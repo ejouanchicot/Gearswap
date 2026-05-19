@@ -56,32 +56,12 @@ function MessageBuffs.show_buff_status(buffs_data, action_type)
 end
 
 ---============================================================================
---- GLOBAL FUNCTIONS FOR GEARSWAP INCLUDE() SYSTEM
----============================================================================
-
--- Make it globally available for GearSwap include() system
-function show_war_buff_status(buffs_data)
-    MessageBuffs.show_buff_status(buffs_data)
-end
-
-function show_pld_buff_status(buffs_data)
-    MessageBuffs.show_buff_status(buffs_data)
-end
-
-function show_run_buff_status(buffs_data)
-    MessageBuffs.show_buff_status(buffs_data)
-end
-
-function show_dnc_buff_status(buffs_data)
-    MessageBuffs.show_buff_status(buffs_data)
-end
-
-function show_thf_buff_status(buffs_data)
-    MessageBuffs.show_buff_status(buffs_data)
-end
-
----============================================================================
 --- MODULE EXPORT
 ---============================================================================
+--- Note: this module used to expose 5 globals (show_war_buff_status,
+--- show_pld_buff_status, show_run_buff_status, show_dnc_buff_status,
+--- show_thf_buff_status) -- all identical wrappers around show_buff_status.
+--- They polluted _G permanently and 2 (pld/run) had no caller. Callers now
+--- require this module and call MessageBuffs.show_buff_status() directly.
 
 return MessageBuffs

@@ -17,18 +17,8 @@ local MessageCooldowns = require('shared/utils/messages/formatters/combat/messag
 
 local DRGJumpManager = {}
 
--- Load recast tolerance configuration
-local RECAST_CONFIG = _G.RECAST_CONFIG or {}  -- Loaded from character main file
-
--- Safe wrapper for RECAST_CONFIG methods (with fallback if config not loaded)
-local function is_recast_ready(recast)
-    if RECAST_CONFIG and RECAST_CONFIG.is_ready then
-        return RECAST_CONFIG.is_ready(recast)
-    else
-        -- Fallback: simple check (no tolerance)
-        return (recast == 0)
-    end
-end
+-- is_recast_ready resolved as global from RECAST_CONFIG.lua
+-- (loaded by entry point before job functions). Do not redeclare locally.
 
 --- Handle smart jump command with TP checking
 --- Uses Jump first, High Jump as fallback

@@ -24,24 +24,11 @@ local SmartbuffManager = {}
 
 -- Load dependencies
 local MessageFormatter = require('shared/utils/messages/message_formatter')
-local RECAST_CONFIG = _G.RECAST_CONFIG or {}  -- Loaded from character main file
+local MessageBuffs     = require('shared/utils/messages/formatters/magic/message_buffs')
+local SubjobWarBuffs   = require('shared/utils/smartbuff/subjob_war_buffs')
 
--- Safe wrappers for RECAST_CONFIG methods (with fallback if config not loaded)
-local function is_recast_ready(recast)
-    if RECAST_CONFIG and RECAST_CONFIG.is_ready then
-        return RECAST_CONFIG.is_ready(recast)
-    else
-        return (recast == 0)
-    end
-end
-
-local function is_on_cooldown(recast)
-    if RECAST_CONFIG and RECAST_CONFIG.on_cooldown then
-        return RECAST_CONFIG.on_cooldown(recast)
-    else
-        return (recast > 0)
-    end
-end
+-- is_recast_ready / is_on_cooldown resolved as globals from RECAST_CONFIG.lua
+-- (loaded by entry point before job functions). Do not redeclare locally.
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SUBJOB BUFF FUNCTIONS
@@ -50,62 +37,14 @@ end
 ---   Apply WAR subjob buffs (Berserk, Aggressor, Warcry in priority order)
 ---   @return boolean Success status
 function SmartbuffManager.apply_war_buffs()
-    local ability_recasts = windower.ffxi.get_ability_recasts()
-    local abilities_to_cast = {}
-    local status_data = {}
+    local abilities_to_cast, status_data = SubjobWarBuffs.collect()
 
-    -- Berserk (Recast ID: 1) - Priority 1
-    if not buffactive['Berserk'] then
-        local berserk_recast = ability_recasts[1] or 0
-        if is_recast_ready(berserk_recast) then
-            table.insert(abilities_to_cast, { name = 'Berserk' })
-        else
-            table.insert(status_data, { name = 'Berserk', status = 'cooldown', time = math.ceil(berserk_recast) })
-        end
-    else
-        table.insert(status_data, { name = 'Berserk', status = 'active' })
+    -- DNC: always display status (no overlap with CooldownChecker on DNC main JAs)
+    if #status_data > 0 then
+        MessageBuffs.show_buff_status(status_data)
     end
 
-    -- Aggressor (Recast ID: 4) - Priority 2
-    if not buffactive['Aggressor'] then
-        local aggressor_recast = ability_recasts[4] or 0
-        if is_recast_ready(aggressor_recast) then
-            table.insert(abilities_to_cast, { name = 'Aggressor' })
-        else
-            table.insert(status_data, { name = 'Aggressor', status = 'cooldown', time = math.ceil(aggressor_recast) })
-        end
-    else
-        table.insert(status_data, { name = 'Aggressor', status = 'active' })
-    end
-
-    -- Warcry (Recast ID: 2) - Priority 3
-    if not buffactive['Warcry'] then
-        local warcry_recast = ability_recasts[2] or 0
-        if is_recast_ready(warcry_recast) then
-            table.insert(abilities_to_cast, { name = 'Warcry' })
-        else
-            table.insert(status_data, { name = 'Warcry', status = 'cooldown', time = math.ceil(warcry_recast) })
-        end
-    else
-        table.insert(status_data, { name = 'Warcry', status = 'active' })
-    end
-
-    -- Display buff status
-    if #status_data > 0 and show_dnc_buff_status then
-        show_dnc_buff_status(status_data)
-    end
-
-    -- Cast abilities sequentially (2 second spacing)
-    for i, ability in ipairs(abilities_to_cast) do
-        local command = 'input /ja "' .. ability.name .. '" <me>'
-        if i == 1 then
-            send_command(command)
-        else
-            local wait_time = (i - 1) * 2
-            send_command('wait ' .. wait_time .. '; ' .. command)
-        end
-    end
-
+    SubjobWarBuffs.cast(abilities_to_cast)
     return true
 end
 
@@ -125,9 +64,7 @@ function SmartbuffManager.apply_nin_buffs()
         local status_data = {}
         table.insert(status_data, { name = 'Utsusemi: Ni', status = 'cooldown', time = math.ceil(ni_recast) })
         table.insert(status_data, { name = 'Utsusemi: Ichi', status = 'cooldown', time = math.ceil(ichi_recast) })
-        if show_dnc_buff_status then
-            show_dnc_buff_status(status_data)
-        end
+        MessageBuffs.show_buff_status(status_data)
     end
 
     return true
@@ -152,8 +89,8 @@ function SmartbuffManager.apply_sam_buffs()
     end
 
     -- Display buff status
-    if #status_data > 0 and show_dnc_buff_status then
-        show_dnc_buff_status(status_data)
+    if #status_data > 0 then
+        MessageBuffs.show_buff_status(status_data)
     end
 
     -- Cast abilities
@@ -184,8 +121,8 @@ function SmartbuffManager.apply_thf_buffs()
             if is_on_cooldown(ta_recast) then
                 table.insert(status_data, { name = 'Trick Attack', status = 'cooldown', time = math.ceil(ta_recast) })
             end
-            if #status_data > 0 and show_dnc_buff_status then
-                show_dnc_buff_status(status_data)
+            if #status_data > 0 then
+                MessageBuffs.show_buff_status(status_data)
             end
         end
     else

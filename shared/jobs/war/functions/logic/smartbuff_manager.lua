@@ -23,25 +23,11 @@ local SmartbuffManager = {}
 ---   DEPENDENCIES
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load recast configuration for cooldown tolerance
-local RECAST_CONFIG = _G.RECAST_CONFIG or {}  -- Loaded from character main file
+-- Buff status display (was the global show_war_buff_status wrapper before)
+local MessageBuffs = require('shared/utils/messages/formatters/magic/message_buffs')
 
--- Safe wrappers for RECAST_CONFIG methods (with fallback if config not loaded)
-local function is_recast_ready(recast)
-    if RECAST_CONFIG and RECAST_CONFIG.is_ready then
-        return RECAST_CONFIG.is_ready(recast)
-    else
-        return (recast == 0)
-    end
-end
-
-local function is_on_cooldown(recast)
-    if RECAST_CONFIG and RECAST_CONFIG.on_cooldown then
-        return RECAST_CONFIG.on_cooldown(recast)
-    else
-        return (recast > 0)
-    end
-end
+-- is_recast_ready / is_on_cooldown resolved as globals from RECAST_CONFIG.lua
+-- (loaded by entry point before job functions). Do not redeclare locally.
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   WARRIOR ABILITY AUTOMATION
@@ -61,119 +47,70 @@ end
 ---
 ---   @param param string Optional mutual exclusion: 'Berserk' (exclude Defender) or 'Defender' (exclude Berserk)
 ---   @return void
-function SmartbuffManager.buff_war(param)
-    local recasts = windower.ffxi.get_ability_recasts()
-    local buffs = buffactive
+--- Main WAR abilities (Berserk/Defender/Aggressor/Retaliation/Restraint).
+--- Berserk and Defender are mutually exclusive via the `exclude` table.
+local MAIN_ABILITIES = {
+    { name = 'Berserk',     buff = 'Berserk',     id = 1 },
+    { name = 'Defender',    buff = 'Defender',    id = 3 },
+    { name = 'Aggressor',   buff = 'Aggressor',   id = 4 },
+    { name = 'Retaliation', buff = 'Retaliation', id = 8 },
+    { name = 'Restraint',   buff = 'Restraint',   id = 9 },
+}
 
-    -- Ability definitions
-    local abilities = {{
-        name = 'Berserk',
-        buff = 'Berserk',
-        id = 1
-    }, {
-        name = 'Defender',
-        buff = 'Defender',
-        id = 3
-    }, {
-        name = 'Aggressor',
-        buff = 'Aggressor',
-        id = 4
-    }, {
-        name = 'Retaliation',
-        buff = 'Retaliation',
-        id = 8
-    }, {
-        name = 'Restraint',
-        buff = 'Restraint',
-        id = 9
-    }}
-
-    -- Handle mutually exclusive abilities
-    local exclude = {}
-    if param == 'Berserk' then
-        exclude['Defender'] = true
-    elseif param == 'Defender' then
-        exclude['Berserk'] = true
-    end
-
-    -- Collect abilities to cast and status to display
-    local abilities_to_cast = {}
-    local status_data = {}
-
-    -- Check each ability
-    for _, ability in ipairs(abilities) do
-        local recast = recasts[ability.id] or 0
-        local isActive = buffs[ability.buff]
-        local isExcluded = exclude[ability.name]
-
-        if not isExcluded then
-            if isActive then
-                table.insert(status_data, {
-                    name = ability.name,
-                    status = 'active'
-                })
+--- Collect main 5 WAR abilities into cast queue + status display.
+--- @param recasts table windower.ffxi.get_ability_recasts() output
+--- @param buffs   table buffactive snapshot
+--- @param exclude table { [name] = true } abilities to skip (mutual exclusion)
+--- @return table abilities_to_cast, table status_data
+local function collect_main_abilities(recasts, buffs, exclude)
+    local to_cast = {}
+    local status = {}
+    for _, ability in ipairs(MAIN_ABILITIES) do
+        if not exclude[ability.name] then
+            local recast = recasts[ability.id] or 0
+            if buffs[ability.buff] then
+                table.insert(status, { name = ability.name, status = 'active' })
             elseif is_on_cooldown(recast) then
-                table.insert(status_data, {
-                    name = ability.name,
-                    status = 'cooldown',
-                    time = math.ceil(recast)
-                })
+                table.insert(status, { name = ability.name, status = 'cooldown', time = math.ceil(recast) })
             else
-                table.insert(abilities_to_cast, ability)
+                table.insert(to_cast, ability)
             end
         end
     end
+    return to_cast, status
+end
 
-    -- Handle Warcry / Blood Rage (mutual exclusion)
-    local warcry_recast = recasts[2] or 0
+--- Append Warcry / Blood Rage entries to existing cast queue + status.
+--- Warcry is preferred; Blood Rage is used only if Warcry is on cooldown.
+--- @param recasts table get_ability_recasts() output
+--- @param buffs   table buffactive snapshot
+--- @param to_cast table abilities_to_cast (mutated)
+--- @param status  table status_data (mutated)
+local function collect_warcry_bloodrage(recasts, buffs, to_cast, status)
+    local warcry_recast    = recasts[2]  or 0
     local bloodrage_recast = recasts[11] or 0
-    local warcry_active = buffs['Warcry']
+    local warcry_active    = buffs['Warcry']
     local bloodrage_active = buffs['Blood Rage']
 
-    -- Warcry status
     if warcry_active then
-        table.insert(status_data, {
-            name = 'Warcry',
-            status = 'active'
-        })
+        table.insert(status, { name = 'Warcry', status = 'active' })
     elseif is_recast_ready(warcry_recast) and not bloodrage_active then
-        table.insert(abilities_to_cast, {
-            name = 'Warcry',
-            id = 2
-        })
+        table.insert(to_cast, { name = 'Warcry', id = 2 })
     elseif is_on_cooldown(warcry_recast) then
-        table.insert(status_data, {
-            name = 'Warcry',
-            status = 'cooldown',
-            time = math.ceil(warcry_recast)
-        })
+        table.insert(status, { name = 'Warcry', status = 'cooldown', time = math.ceil(warcry_recast) })
     end
 
-    -- Blood Rage status (only use if Warcry on cooldown)
     if bloodrage_active then
-        table.insert(status_data, {
-            name = 'Blood Rage',
-            status = 'active'
-        })
+        table.insert(status, { name = 'Blood Rage', status = 'active' })
     elseif is_recast_ready(bloodrage_recast) and not warcry_active and is_on_cooldown(warcry_recast) then
-        table.insert(abilities_to_cast, {
-            name = 'Blood Rage',
-            id = 11
-        })
+        table.insert(to_cast, { name = 'Blood Rage', id = 11 })
     elseif is_on_cooldown(bloodrage_recast) then
-        table.insert(status_data, {
-            name = 'Blood Rage',
-            status = 'cooldown',
-            time = math.ceil(bloodrage_recast)
-        })
+        table.insert(status, { name = 'Blood Rage', status = 'cooldown', time = math.ceil(bloodrage_recast) })
     end
+end
 
-    -- Display buff status (using global function if available)
-    if #status_data > 0 and show_war_buff_status then
-        show_war_buff_status(status_data)
-    end
-
-    -- Cast abilities sequentially (2 second spacing)
+--- Cast collected abilities sequentially with 2-second spacing.
+local function cast_sequentially(abilities_to_cast)
     for i, ability in ipairs(abilities_to_cast) do
         local command = 'input /ja "' .. ability.name .. '" <me>'
         if i == 1 then
@@ -182,6 +119,28 @@ function SmartbuffManager.buff_war(param)
             send_command('wait ' .. ((i - 1) * 2) .. '; ' .. command)
         end
     end
+end
+
+function SmartbuffManager.buff_war(param)
+    local recasts = windower.ffxi.get_ability_recasts()
+    local buffs = buffactive
+
+    -- Mutual exclusion between Berserk and Defender (caller-driven via param).
+    local exclude = {}
+    if param == 'Berserk' then
+        exclude['Defender'] = true
+    elseif param == 'Defender' then
+        exclude['Berserk'] = true
+    end
+
+    local to_cast, status = collect_main_abilities(recasts, buffs, exclude)
+    collect_warcry_bloodrage(recasts, buffs, to_cast, status)
+
+    if #status > 0 then
+        MessageBuffs.show_buff_status(status)
+    end
+
+    cast_sequentially(to_cast)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -262,8 +221,8 @@ function SmartbuffManager.buff_sam_sub()
     end
 
     -- Display buff status
-    if #status_data > 0 and show_war_buff_status then
-        show_war_buff_status(status_data)
+    if #status_data > 0 then
+        MessageBuffs.show_buff_status(status_data)
     end
 
     -- Cast abilities sequentially (1 second spacing)

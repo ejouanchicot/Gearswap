@@ -16,7 +16,7 @@
 ---   Dependencies:
 ---   • MessageFormatter (status display, error messages)
 ---   • RECAST_CONFIG (recast tolerance configuration)
----   • show_thf_buff_status (global function for status display)
+---   • MessageBuffs (buff status display module)
 ---
 ---   @file    jobs/thf/functions/logic/smartbuff_manager.lua
 ---   @author  Tetsouo
@@ -28,24 +28,11 @@ local SmartbuffManager = {}
 
 -- Load dependencies
 local MessageFormatter = require('shared/utils/messages/message_formatter')
-local RECAST_CONFIG = _G.RECAST_CONFIG or {}  -- Loaded from character main file
+local MessageBuffs     = require('shared/utils/messages/formatters/magic/message_buffs')
+local SubjobWarBuffs   = require('shared/utils/smartbuff/subjob_war_buffs')
 
--- Safe wrappers for RECAST_CONFIG methods (with fallback if config not loaded)
-local function is_recast_ready(recast)
-    if RECAST_CONFIG and RECAST_CONFIG.is_ready then
-        return RECAST_CONFIG.is_ready(recast)
-    else
-        return (recast == 0)
-    end
-end
-
-local function is_on_cooldown(recast)
-    if RECAST_CONFIG and RECAST_CONFIG.on_cooldown then
-        return RECAST_CONFIG.on_cooldown(recast)
-    else
-        return (recast > 0)
-    end
-end
+-- is_recast_ready / is_on_cooldown resolved as globals from RECAST_CONFIG.lua
+-- (loaded by entry point before job functions). Do not redeclare locally.
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SUBJOB BUFF FUNCTIONS
@@ -80,8 +67,8 @@ function SmartbuffManager.apply_dnc_buffs()
 
     -- Only display status if there are NO abilities to cast
     -- (DNC only has 1 ability, so this is when Haste Samba is active or on cooldown)
-    if #status_data > 0 and show_thf_buff_status then
-        show_thf_buff_status(status_data)
+    if #status_data > 0 then
+        MessageBuffs.show_buff_status(status_data)
     end
 
     return true
@@ -90,57 +77,15 @@ end
 ---   Apply WAR subjob buffs (Berserk, Aggressor, Warcry in priority order)
 ---   @return boolean Success status
 function SmartbuffManager.apply_war_buffs()
-    local ability_recasts = windower.ffxi.get_ability_recasts()
-    local abilities_to_cast = {}
-    local status_data = {}
+    local abilities_to_cast, status_data = SubjobWarBuffs.collect()
 
-    -- Berserk (Recast ID: 1) - Priority 1
-    local berserk_recast = ability_recasts[1] or 0
-    if buffactive['Berserk'] then
-        table.insert(status_data, { name = 'Berserk', status = 'active' })
-    elseif is_recast_ready(berserk_recast) then
-        table.insert(abilities_to_cast, { name = 'Berserk' })
-    else
-        table.insert(status_data, { name = 'Berserk', status = 'cooldown', time = math.ceil(berserk_recast) })
+    -- THF: display status only if no casts happening — avoids duplicate
+    -- messages with CooldownChecker which reports cooldowns during cast cycle.
+    if #status_data > 0 and #abilities_to_cast == 0 then
+        MessageBuffs.show_buff_status(status_data)
     end
 
-    -- Aggressor (Recast ID: 4) - Priority 2
-    local aggressor_recast = ability_recasts[4] or 0
-    if buffactive['Aggressor'] then
-        table.insert(status_data, { name = 'Aggressor', status = 'active' })
-    elseif is_recast_ready(aggressor_recast) then
-        table.insert(abilities_to_cast, { name = 'Aggressor' })
-    else
-        table.insert(status_data, { name = 'Aggressor', status = 'cooldown', time = math.ceil(aggressor_recast) })
-    end
-
-    -- Warcry (Recast ID: 2) - Priority 3
-    local warcry_recast = ability_recasts[2] or 0
-    if buffactive['Warcry'] then
-        table.insert(status_data, { name = 'Warcry', status = 'active' })
-    elseif is_recast_ready(warcry_recast) then
-        table.insert(abilities_to_cast, { name = 'Warcry' })
-    else
-        table.insert(status_data, { name = 'Warcry', status = 'cooldown', time = math.ceil(warcry_recast) })
-    end
-
-    -- Only display status if there are NO abilities to cast (all on cooldown or active)
-    -- If we're casting abilities, CooldownChecker will display the messages
-    if #status_data > 0 and #abilities_to_cast == 0 and show_thf_buff_status then
-        show_thf_buff_status(status_data)
-    end
-
-    -- Cast abilities sequentially (2 second spacing)
-    for i, ability in ipairs(abilities_to_cast) do
-        local command = 'input /ja "' .. ability.name .. '" <me>'
-        if i == 1 then
-            send_command(command)
-        else
-            local wait_time = (i - 1) * 2
-            send_command('wait ' .. wait_time .. '; ' .. command)
-        end
-    end
-
+    SubjobWarBuffs.cast(abilities_to_cast)
     return true
 end
 
@@ -165,8 +110,8 @@ function SmartbuffManager.apply_nin_buffs()
     end
 
     -- Always display status
-    if #status_data > 0 and show_thf_buff_status then
-        show_thf_buff_status(status_data)
+    if #status_data > 0 then
+        MessageBuffs.show_buff_status(status_data)
     end
 
     return true
@@ -238,8 +183,8 @@ function SmartbuffManager.apply_fbc()
     end
 
     -- Display buff status (using global function if available)
-    if #status_data > 0 and show_thf_buff_status then
-        show_thf_buff_status(status_data)
+    if #status_data > 0 then
+        MessageBuffs.show_buff_status(status_data)
     end
 
     -- Set flag to suppress CooldownChecker messages for abilities being cast
@@ -263,8 +208,12 @@ function SmartbuffManager.apply_fbc()
     end
 
     -- Reset flag after all abilities have been cast
+    -- NOTE: `lua i _G.X = ...` writes to Windower scope, not GearSwap sandbox.
+    -- Use coroutine.schedule to defer the reset inside GearSwap.
     if #abilities_to_cast > 0 then
-        send_command('wait 3; lua i _G.suppress_cooldown_messages = false')
+        coroutine.schedule(function()
+            _G.suppress_cooldown_messages = false
+        end, 3.0)
     else
         _G.suppress_cooldown_messages = false
     end
