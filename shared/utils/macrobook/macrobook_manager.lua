@@ -12,6 +12,14 @@
 
 local MacrobookManager = {}
 
+-- Names of globals set by the most recent create() call. Cleared at the top
+-- of every new create() so PLD->RDM->... job changes don't accumulate stale
+-- _G.set_pld_macro_book / _G.get_pld_macro_info / _G.show_pld_macro_configs.
+-- Persists across job changes because package.loaded is NOT cleared on FFXI
+-- job change (only on gs reload), so this module-local table remembers what
+-- the previous job exported.
+local last_registered_globals = {}
+
 --- Create a macrobook module configured for a specific job
 --- @param job_code string Job code (e.g., 'WAR', 'PLD', 'DNC')
 --- @param config_path string Path to job macrobook config (e.g., 'config/war/WAR_MACROBOOK')
@@ -183,11 +191,26 @@ function MacrobookManager.create(job_code, config_path, default_subjob, default_
     ---   MODULE EXPORT
     ---  ═══════════════════════════════════════════════════════════════════════════
 
+    -- Clear globals registered by the previous create() (different job) so
+    -- old _G.set_pld_macro_book / _G.get_pld_macro_info / _G.show_pld_macro_configs
+    -- don't linger after PLD->RDM. Same rationale as LockstyleManager.
+    for _, name in ipairs(last_registered_globals) do
+        _G[name] = nil
+    end
+    last_registered_globals = {}
+
     -- Export functions globally for include() compatibility
-    _G.select_default_macro_book = select_default_macro_book
-    _G['set_' .. string.lower(job_code) .. '_macro_book'] = set_macro_book
-    _G['get_' .. string.lower(job_code) .. '_macro_info'] = get_macro_info
-    _G['show_' .. string.lower(job_code) .. '_macro_configs'] = show_macro_configs
+    local jl = string.lower(job_code)
+    local exports = {
+        ['select_default_macro_book']        = select_default_macro_book,
+        ['set_'  .. jl .. '_macro_book']     = set_macro_book,
+        ['get_'  .. jl .. '_macro_info']     = get_macro_info,
+        ['show_' .. jl .. '_macro_configs']  = show_macro_configs,
+    }
+    for name, fn in pairs(exports) do
+        _G[name] = fn
+        table.insert(last_registered_globals, name)
+    end
 
     -- Also return as module for require() usage
     return {

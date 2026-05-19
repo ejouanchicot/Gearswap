@@ -69,7 +69,18 @@ end
 local function equip_craft_gear(entry, label)
     -- Defensive: unlock all slots in case a previous //gs c wo or craft
     -- session left them disabled (equip respects gs disable, would no-op).
-    windower.send_command('gs enable all')
+    --
+    -- IMPORTANT: use the synchronous GearSwap `enable(...)` function, not
+    -- `windower.send_command('gs enable all')`. The send_command path goes
+    -- through Windower's command queue and lands AFTER `equip()` runs, so a
+    -- chained `gs c craft` -> `gs c craft nq` would do equip() while slots
+    -- were still disabled by the first session's `gs disable all`, making the
+    -- second equip a silent no-op. The list mirrors gearswap.lua's
+    -- `disenable(...,'all',...)` handler in user_functions.lua.
+    enable('main', 'sub', 'range', 'ammo',
+           'head', 'neck', 'ear1', 'ear2',
+           'body', 'hands', 'ring1', 'ring2',
+           'back', 'waist', 'legs', 'feet')
 
     local count = 0
     for _ in pairs(entry.gear) do count = count + 1 end

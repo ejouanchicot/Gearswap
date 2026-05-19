@@ -246,6 +246,14 @@ end
 ---   FACTORY
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+-- Names of globals set by the most recent create() call. Cleared at the top
+-- of every new create() so PLD->RDM->... job changes don't accumulate stale
+-- _G.cancel_pld_*, _G.set_pld_*, _G.get_pld_* etc. (slow leak: ~5 globals
+-- per unique job played per session). Survives across job changes because
+-- package.loaded is NOT cleared on FFXI job change (only on gs reload), so
+-- this module-local table persists and remembers the previous job's exports.
+local last_registered_globals = {}
+
 --- Create a lockstyle module bound to a specific job.
 --- @param job_code string Job code (e.g., 'WAR', 'PLD', 'DNC')
 --- @param config_path string Path to job lockstyle config (e.g., 'Tetsouo/config/war/WAR_LOCKSTYLE')
@@ -282,14 +290,29 @@ function LockstyleManager.create(job_code, config_path, default_lockstyle, defau
     }
     api.get_info = api.get_lockstyle_info  -- backward-compat alias
 
+    -- Clear globals registered by the previous create() (different job) so
+    -- old _G.cancel_pld_*, _G.set_pld_* etc. don't linger after PLD->RDM.
+    -- Safe: callers (Mote-Include / commands) only ever look up the active
+    -- job's suffixed names; nothing references a previous job's helpers.
+    for _, name in ipairs(last_registered_globals) do
+        _G[name] = nil
+    end
+    last_registered_globals = {}
+
     -- Globals for include() compatibility (unchanged names).
     local jl = job_code:lower()
-    _G.select_default_lockstyle                    = api.select_default_lockstyle
-    _G['cancel_' .. jl .. '_lockstyle_operations'] = api.cancel_pending_operations
-    _G['set_'    .. jl .. '_lockstyle_enabled']    = api.set_lockstyle_enabled
-    _G['set_'    .. jl .. '_dressup_management']   = api.set_dressup_management
-    _G['get_'    .. jl .. '_lockstyle_info']       = api.get_lockstyle_info
-    _G['show_'   .. jl .. '_lockstyle_config']     = api.show_lockstyle_config
+    local exports = {
+        ['select_default_lockstyle']                 = api.select_default_lockstyle,
+        ['cancel_' .. jl .. '_lockstyle_operations'] = api.cancel_pending_operations,
+        ['set_'    .. jl .. '_lockstyle_enabled']    = api.set_lockstyle_enabled,
+        ['set_'    .. jl .. '_dressup_management']   = api.set_dressup_management,
+        ['get_'    .. jl .. '_lockstyle_info']       = api.get_lockstyle_info,
+        ['show_'   .. jl .. '_lockstyle_config']     = api.show_lockstyle_config,
+    }
+    for name, fn in pairs(exports) do
+        _G[name] = fn
+        table.insert(last_registered_globals, name)
+    end
 
     return api
 end
