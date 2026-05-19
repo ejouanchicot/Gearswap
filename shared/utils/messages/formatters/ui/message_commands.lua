@@ -624,6 +624,7 @@ function MessageCommands.show_commands_list()
     add_to_chat(121, cyan .. "   //gs c fulltest" .. gray .. " (or " .. cyan .. "ft" .. gray .. ") ... " .. white .. "Run full in-game test suite")
     add_to_chat(121, cyan .. "   //gs c syscheck" .. gray .. " (or " .. cyan .. "sc" .. gray .. ") ... " .. white .. "System health check with score")
     add_to_chat(121, cyan .. "   //gs c lagdebug" .. gray .. " (or " .. cyan .. "ldb" .. gray .. ") .. " .. white .. "Lag debugger (toggle/export/reset)")
+    add_to_chat(121, cyan .. "   //gs c memcheck " .. yellow .. "[gc]" .. gray .. " (or " .. cyan .. "mem" .. gray .. ") " .. white .. "Show GearSwap Lua RAM usage")
     add_to_chat(121, cyan .. "   //gs c testmsg " .. yellow .. "[job]" .. gray .. " (or " .. cyan .. "msgtest" .. gray .. ") " .. white .. "Test message system")
     add_to_chat(121, cyan .. "   //gs c msgtests" .. gray .. " ........ " .. white .. "Validate message system")
 

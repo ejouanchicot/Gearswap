@@ -1,7 +1,9 @@
 -- CommonCommands: universal command handler shared across all 15 jobs.
 local CommonCommands = {}
 
-local MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
+local MessageCommands  = require('shared/utils/messages/formatters/ui/message_commands')
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+local MessageRenderer  = require('shared/utils/messages/core/message_renderer')
 
 -- Warp shortcut list (single source of truth in warp_command_registry).
 local WARP_COMMANDS = require('shared/utils/warp/warp_command_registry').COMMANDS
@@ -307,6 +309,152 @@ CommonCommands.handle_wsmsg       = DebugCommands.handle_wsmsg
 CommonCommands.handle_info        = DebugCommands.handle_info
 CommonCommands.handle_debugstate  = DebugCommands.handle_debugstate
 
+-- MEMCHECK COMMAND
+
+--- Memory diagnostic for GearSwap.
+--- The sandbox nukes `collectgarbage`/`gcinfo` (in-process introspection is
+--- impossible) and `//lua m` output goes to Windower's console (F11) which
+--- scrolls past the visible window. As a workaround we enumerate `_G` +
+--- `package.loaded` from inside the addon and EXPORT the full breakdown to
+--- `data/memcheck.txt` for offline review.
+---
+--- Output file: data/memcheck_<char>_<job>.txt
+---   - Sorted list of every loaded package
+---   - Sorted list of every _G entry grouped by type
+---   - Top tables ranked by direct child count (rough size proxy)
+---
+--- Chat shows just a summary + the file path.
+--- Usage: //gs c memcheck     (or //gs c mem)
+function CommonCommands.handle_memcheck(arg)
+    local sep = string.rep('=', 60)
+    MessageRenderer.send(sep, 121)
+    MessageRenderer.send('[MEMCHECK] GearSwap memory', 121)
+    MessageRenderer.send(sep, 121)
+
+    -- ── Resolve player/job for filename ─────────────────────────────────
+    local char = (player and player.name) or 'unknown'
+    local job  = (player and player.main_job) or 'XXX'
+
+    -- ── Enumerate _G grouped by type + table sizes ──────────────────────
+    local by_type = {}  -- [type] = { {name, size?}, ... }
+    local total_g = 0
+    for k, v in pairs(_G) do
+        total_g = total_g + 1
+        local t = type(v)
+        by_type[t] = by_type[t] or {}
+        if t == 'table' then
+            local n = 0
+            for _ in pairs(v) do n = n + 1 end
+            table.insert(by_type[t], {name = tostring(k), size = n})
+        else
+            table.insert(by_type[t], {name = tostring(k)})
+        end
+    end
+
+    -- ── Enumerate package.loaded ────────────────────────────────────────
+    local packages = {}
+    if package and package.loaded then
+        for name, _ in pairs(package.loaded) do
+            table.insert(packages, tostring(name))
+        end
+        table.sort(packages)
+    end
+
+    -- ── Top tables by direct child count (proxy for size) ───────────────
+    local top_tables = {}
+    for _, entry in ipairs(by_type['table'] or {}) do
+        table.insert(top_tables, entry)
+    end
+    table.sort(top_tables, function(a, b) return (a.size or 0) > (b.size or 0) end)
+
+    -- ── Build the text export ───────────────────────────────────────────
+    local out = {}
+    local function w(line) table.insert(out, line) end
+    local line_sep = string.rep('=', 75)
+    local sub_sep  = string.rep('-', 75)
+
+    w(line_sep)
+    w(string.format('  GEARSWAP MEMCHECK  -  %s / %s', char, job))
+    w(string.format('  Generated: %s', os.date('%Y-%m-%d %H:%M:%S')))
+    w(line_sep)
+    w('')
+
+    -- _G summary by type
+    w('SECTION 1 - _G entries by type')
+    w(sub_sep)
+    local type_order = {'table', 'function', 'string', 'number', 'boolean', 'userdata', 'thread'}
+    for _, t in ipairs(type_order) do
+        local list = by_type[t]
+        if list then
+            w(string.format('  %-10s : %d entries', t, #list))
+        end
+    end
+    w(string.format('  %-10s : %d', 'TOTAL', total_g))
+    w('')
+
+    -- Top tables
+    w(string.format('SECTION 2 - Top %d tables by child count (proxy for size)', math.min(50, #top_tables)))
+    w(sub_sep)
+    for i = 1, math.min(50, #top_tables) do
+        local entry = top_tables[i]
+        w(string.format('  %4d  %s', entry.size or 0, entry.name))
+    end
+    w('')
+
+    -- All globals sorted alphabetically
+    w('SECTION 3 - All _G entries (sorted)')
+    w(sub_sep)
+    for _, t in ipairs(type_order) do
+        local list = by_type[t]
+        if list then
+            table.sort(list, function(a, b) return a.name < b.name end)
+            w(string.format('-- [%s] %d entries', t, #list))
+            for _, entry in ipairs(list) do
+                if entry.size then
+                    w(string.format('  %s  (size=%d)', entry.name, entry.size))
+                else
+                    w('  ' .. entry.name)
+                end
+            end
+            w('')
+        end
+    end
+
+    -- Loaded packages
+    w(string.format('SECTION 4 - package.loaded (%d modules)', #packages))
+    w(sub_sep)
+    for _, p in ipairs(packages) do w('  ' .. p) end
+    w('')
+    w(line_sep)
+    w('END')
+    w(line_sep)
+
+    -- ── Write to file ───────────────────────────────────────────────────
+    local file_name = string.format('memcheck_%s_%s.txt', char, job)
+    local file_path = windower.addon_path .. 'data/' .. file_name
+    local fh, err = io.open(file_path, 'w')
+    if not fh then
+        MessageFormatter.show_error('MEMCHECK', 'Failed to open output file: ' .. tostring(err))
+        return true
+    end
+    fh:write(table.concat(out, '\n'))
+    fh:close()
+
+    -- ── Chat summary ────────────────────────────────────────────────────
+    MessageRenderer.send(string.format('  _G entries: %d  (tables=%d, functions=%d)',
+        total_g,
+        #(by_type['table'] or {}),
+        #(by_type['function'] or {})), 121)
+    MessageRenderer.send(string.format('  Loaded packages: %d', #packages), 121)
+    if top_tables[1] then
+        MessageRenderer.send(string.format('  Biggest table: %s (%d children)',
+            top_tables[1].name, top_tables[1].size or 0), 121)
+    end
+    MessageRenderer.send('  Exported: ' .. file_path, 123)
+    MessageRenderer.send(sep, 121)
+    return true
+end
+
 -- WARP COMMANDS (Universal Warp/Teleport System)
 
 --- Handle warp system commands (delegated to WarpCommands module)
@@ -455,16 +603,16 @@ function CommonCommands.handle_command(command, job_name, ...)
     elseif cmd == 'automovedebug' or cmd == 'amd' then
         -- Toggle AutoMove timing debug mode
         _G.AUTOMOVE_DEBUG = not _G.AUTOMOVE_DEBUG
-        add_to_chat(207, '[AutoMove] Debug mode: ' .. (_G.AUTOMOVE_DEBUG and 'ON' or 'OFF'))
+        MessageFormatter.show_debug('AutoMove', 'Debug mode: ' .. (_G.AUTOMOVE_DEBUG and 'ON' or 'OFF'))
         return true
     elseif cmd == 'debugjobchange' or cmd == 'djc' then
         -- Toggle job change debug mode
         _G.JOBCHANGE_DEBUG = not _G.JOBCHANGE_DEBUG
-        add_to_chat(207, '[JobChange] Debug mode: ' .. (_G.JOBCHANGE_DEBUG and 'ON' or 'OFF'))
+        MessageFormatter.show_debug('JobChange', 'Debug mode: ' .. (_G.JOBCHANGE_DEBUG and 'ON' or 'OFF'))
         -- Show current state
         if _G.JOBCHANGE_DEBUG and _G.JobChangeManagerSTATE then
             local S = _G.JobChangeManagerSTATE
-            add_to_chat(207, string.format('  counter=%d, current=%s/%s, target=%s/%s',
+            MessageFormatter.show_debug('JobChange', string.format('counter=%d, current=%s/%s, target=%s/%s',
                 S.debounce_counter or 0,
                 tostring(S.current_main_job), tostring(S.current_sub_job),
                 tostring(S.target_main_job), tostring(S.target_sub_job)))
@@ -479,7 +627,7 @@ function CommonCommands.handle_command(command, job_name, ...)
         windower._gs_debug.UPDATE = not windower._gs_debug.UPDATE
         _G.UPDATE_DEBUG = windower._gs_debug.UPDATE
         _G.AUTOMOVE_DEBUG = windower._gs_debug.UPDATE  -- Also enable AutoMove debug
-        add_to_chat(207, string.format('[UPDATE_DEBUG] %s (traces: AutoMove > job_update > UI.update > customize_set)',
+        MessageFormatter.show_debug('UPDATE', string.format('%s (traces: AutoMove > job_update > UI.update > customize_set)',
             _G.UPDATE_DEBUG and 'ON' or 'OFF'))
         return true
     elseif cmd == 'fulltest' or cmd == 'ft' then
@@ -499,12 +647,12 @@ function CommonCommands.handle_command(command, job_name, ...)
     elseif cmd == 'debugmsg' then
         -- Debug message settings
         if _G.MESSAGE_SETTINGS then
-            add_to_chat(159, '[DEBUG] MESSAGE_SETTINGS:')
-            add_to_chat(159, '  spell_mode: ' .. tostring(_G.MESSAGE_SETTINGS.spell_mode or 'nil'))
-            add_to_chat(159, '  ja_mode: ' .. tostring(_G.MESSAGE_SETTINGS.ja_mode or 'nil'))
-            add_to_chat(159, '  ws_mode: ' .. tostring(_G.MESSAGE_SETTINGS.ws_mode or 'nil'))
+            MessageFormatter.show_debug('MSG', 'MESSAGE_SETTINGS:')
+            MessageFormatter.show_debug('MSG', '  spell_mode: ' .. tostring(_G.MESSAGE_SETTINGS.spell_mode or 'nil'))
+            MessageFormatter.show_debug('MSG', '  ja_mode: '    .. tostring(_G.MESSAGE_SETTINGS.ja_mode    or 'nil'))
+            MessageFormatter.show_debug('MSG', '  ws_mode: '    .. tostring(_G.MESSAGE_SETTINGS.ws_mode    or 'nil'))
         else
-            add_to_chat(167, '[DEBUG] MESSAGE_SETTINGS is nil!')
+            MessageFormatter.show_error('MSG', 'MESSAGE_SETTINGS is nil!')
         end
         return true
     elseif cmd == 'testmsg' or cmd == 'msgtest' then
@@ -520,6 +668,8 @@ function CommonCommands.handle_command(command, job_name, ...)
         local MessageValidator = require('shared/utils/messages/message_validator')
         MessageValidator.run_all_tests()
         return true
+    elseif cmd == 'memcheck' or cmd == 'mem' then
+        return CommonCommands.handle_memcheck(args[1])
     elseif cmd == 'commands' or cmd == 'cmds' then
         -- Show list of all common commands
         MessageCommands.show_commands_list()
@@ -555,6 +705,7 @@ function CommonCommands.is_common_command(command)
         cmd == 'lagdebug' or cmd == 'ldb' or
         cmd == 'jamsg' or cmd == 'spellmsg' or cmd == 'wsmsg' or cmd == 'info' or cmd == 'debugmsg' or
         cmd == 'testmsg' or cmd == 'msgtest' or cmd == 'msgtests' or
+        cmd == 'memcheck' or cmd == 'mem' or
         cmd == 'commands' or cmd == 'cmds' or cmd == 'help' or cmd == '?' then
         return true
     end
