@@ -31,7 +31,7 @@ sets = {}
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- • Ankou's Capes (Multiple variants)
-Ankou = {
+local Ankou = {
     -- STP/DA Cape (DEX+20, Acc+20 Atk+20, Acc+10, DA+10%, DT-5%)
     STP = {
         name = "Ankou's Mantle",
@@ -71,10 +71,10 @@ Ankou = {
 }
 
 -- • Rings (Wardrobe-specific)
-ChirichRing1 = {name = 'Chirich Ring +1', bag = 'wardrobe 1'}
-ChirichRing2 = {name = 'Chirich Ring +1', bag = 'wardrobe 2'}
-Moonlight1 = {name = 'Moonlight Ring', bag = 'wardrobe 1'}
-Moonlight2 = {name = 'Moonlight Ring', bag = 'wardrobe 2'}
+local ChirichRing1 = {name = 'Chirich Ring +1', bag = 'wardrobe 1'}
+local ChirichRing2 = {name = 'Chirich Ring +1', bag = 'wardrobe 2'}
+local Moonlight1 = {name = 'Moonlight Ring', bag = 'wardrobe 1'}
+local Moonlight2 = {name = 'Moonlight Ring', bag = 'wardrobe 2'}
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- WEAPON SETS
@@ -589,6 +589,3 @@ sets.buff['Dark Seal'] = {
 sets.buff['Nether Void'] = {
     legs = "Heathen's Flanchard +3"
 }
-
-local MessageFormatter = require('shared/utils/messages/message_formatter')
-MessageFormatter.show_debug('DRK', 'Equipment sets loaded successfully (Typioni STP Build)')

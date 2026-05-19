@@ -36,14 +36,14 @@ local RINGS = {
 }
 
 -- Aliases for backward compatibility
-MoonLightRing1 = RINGS.MoonLight1
-MoonLightRing2 = RINGS.MoonLight2
-ChirichRing1 = RINGS.Chirich1
-ChirichRing2 = RINGS.Chirich2
-StikiniRing1 = RINGS.Stikini1
-StikiniRing2 = RINGS.Stikini2
-StikiRing1 = RINGS.Stikini1 -- Legacy alias
-VararRing2 = RINGS.Varar2
+local MoonLightRing1 = RINGS.MoonLight1
+local MoonLightRing2 = RINGS.MoonLight2
+local ChirichRing1 = RINGS.Chirich1
+local ChirichRing2 = RINGS.Chirich2
+local StikiniRing1 = RINGS.Stikini1
+local StikiniRing2 = RINGS.Stikini2
+local StikiRing1 = RINGS.Stikini1 -- Legacy alias
+local VararRing2 = RINGS.Varar2
 
 -- Common earrings
 local EARRINGS = {
@@ -72,7 +72,7 @@ local NECK = {
 }
 
 -- Cape pieces (Artio's Mantle variations)
-Artio = {
+local Artio = {
     STP = {
         name = "Artio's Mantle",
         augments = {
@@ -116,7 +116,7 @@ Artio = {
 }
 
 -- Alternative pet tanking mantle
-Pastoralist = {
+local Pastoralist = {
     petDT = {
         name = "Pastoralist's Mantle",
         augments = {
@@ -128,7 +128,7 @@ Pastoralist = {
 }
 
 -- Additional reusable gear
-JumalikHead = {
+local JumalikHead = {
     name = 'Jumalik Helm',
     augments = {
         'MND+10',
@@ -138,7 +138,7 @@ JumalikHead = {
     }
 }
 
-JumalikBody = {
+local JumalikBody = {
     name = 'Jumalik Mail',
     augments = {
         'HP+50',
@@ -166,11 +166,11 @@ local PhysMultiGear = {
 }
 
 -- Aliases for the PhysMultiGear pieces
-Emicho_Coronet_phys_multi = PhysMultiGear.head
-Valorous_Mail_phys_multi = PhysMultiGear.body
-Valorous_Mitts_phys_multi = PhysMultiGear.hands
-Emicho_Hose_phys_multi = PhysMultiGear.legs
-Valorous_Greaves_phys_multi = PhysMultiGear.feet
+local Emicho_Coronet_phys_multi = PhysMultiGear.head
+local Valorous_Mail_phys_multi = PhysMultiGear.body
+local Valorous_Mitts_phys_multi = PhysMultiGear.hands
+local Emicho_Hose_phys_multi = PhysMultiGear.legs
+local Valorous_Greaves_phys_multi = PhysMultiGear.feet
 
 -- Common augmented gear for pet MAB Ready moves
 local MabGear = {
@@ -197,11 +197,11 @@ local MabGear = {
 }
 
 -- Aliases for the MabGear pieces
-Valorous_Mask_mab = MabGear.head
-Valorous_Mail_mab = MabGear.body
-Valorous_Mitts_mab = MabGear.hands
-Valorous_Hose_mab = MabGear.legs
-Gleti_Boots_mab = MabGear.feet
+local Valorous_Mask_mab = MabGear.head
+local Valorous_Mail_mab = MabGear.body
+local Valorous_Mitts_mab = MabGear.hands
+local Valorous_Hose_mab = MabGear.legs
+local Gleti_Boots_mab = MabGear.feet
 
 --============================================================--
 --             WEAPON & AMMO VIRTUAL SETS (State.*)           --

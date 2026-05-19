@@ -20,33 +20,33 @@
 -- ============================================================--
 --                  EQUIPMENT DEFINITIONS                     --
 -- ============================================================--
-SouvHead = {
+local SouvHead = {
     name = 'Souv. Schaller +1',
     priority = 24,
     augments = {'HP+105', 'Enmity+9', 'Potency of "Cure" effect received +15%'}
 }
-SouvBody = {
+local SouvBody = {
     name = 'Souv. Cuirass +1',
     priority = 3,
     augments = {'HP+105', 'Enmity+9', 'Potency of "Cure" effect received +15%'}
 }
-SouvHands = {
+local SouvHands = {
     name = 'Souv. Handsch. +1',
     priority = 23,
     augments = {'HP+105', 'Enmity+9', 'Potency of "Cure" effect received +15%'}
 }
-SouvLegs = {
+local SouvLegs = {
     name = 'Souv. Diechlings +1',
     priority = 16,
     augments = {'HP+105', 'Enmity+9', 'Potency of "Cure" effect received +15%'}
 }
-SouvFeet = {
+local SouvFeet = {
     name = 'Souveran Schuhs +1',
     priority = 22,
     augments = {'HP+105', 'Enmity+9', 'Potency of "Cure" effect received +15%'}
 }
 
-Cichol = {
+local Cichol = {
     da = {
         name = "Cichol's Mantle",
         augments = {'STR+20', 'Accuracy+20 Attack+20', 'STR+10', '"Dbl.Atk."+10', 'Phys. dmg. taken-10%'}

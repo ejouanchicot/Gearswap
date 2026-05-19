@@ -912,10 +912,3 @@ sets.AeolianTH = set_combine(sets.precast.WS['Aeolian Edge'], {
 
 -- Engaged with TH
 sets.engaged.TH = set_combine(sets.engaged, sets.TreasureHunter)
-
----============================================================================
---- INITIALIZATION MESSAGE
----============================================================================
-
-local MessageFormatter = require('shared/utils/messages/message_formatter')
-MessageFormatter.show_debug('THF', 'Equipment sets loaded successfully')

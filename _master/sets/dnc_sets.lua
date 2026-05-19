@@ -42,31 +42,31 @@ sets = {}
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- • Chirich Rings (wardrobe management)
-ChirichRing1 = {
+local ChirichRing1 = {
     name = 'Chirich Ring +1',
     priority = 0,
     bag = 'wardrobe 1'
 }
-ChirichRing2 = {
+local ChirichRing2 = {
     name = 'Chirich Ring +1',
     priority = 0,
     bag = 'wardrobe 2'
 }
 
 -- • Moonlight Rings (wardrobe management)
-Moonlight1 = {
+local Moonlight1 = {
     name = 'Moonlight Ring',
     priority = 13,
     bag = 'wardrobe 1'
 }
-Moonlight2 = {
+local Moonlight2 = {
     name = 'Moonlight Ring',
     priority = 12,
     bag = 'wardrobe 2'
 }
 
 -- • Senuna's Mantle (TP and WS augments)
-Senuna = {}
+local Senuna = {}
 Senuna.TP = {
     name = "Senuna's Mantle",
     augments = {'DEX+20', 'Accuracy+20 Attack+20', 'DEX+10', '"Dbl.Atk."+10', 'Phys. dmg. taken-10%'}

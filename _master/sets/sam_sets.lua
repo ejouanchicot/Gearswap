@@ -25,7 +25,7 @@ sets['Utu'] = {sub = 'Utu Grip'}
 --- JSE CAPE (Smertrios's Mantle)
 ---============================================================================
 
-Smertrios = {}
+local Smertrios = {}
 Smertrios.ACC = {
     name = "Smertrios's Mantle",
     augments = {'DEX+20', 'Accuracy+20 Attack+20', 'Accuracy+10', '"Dbl.Atk."+10', 'Damage taken-5%'}

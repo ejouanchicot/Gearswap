@@ -34,11 +34,11 @@ sets = {}
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- • Chirich Rings in different wardrobes (prevents "already equipped" errors)
-ChirichRing1 = {
+local ChirichRing1 = {
     name = "Chirich Ring +1",
     bag = "wardrobe 1"
 }
-ChirichRing2 = {
+local ChirichRing2 = {
     name = "Chirich Ring +1",
     bag = "wardrobe 2"
 }
@@ -408,6 +408,3 @@ sets.buff.Doom = {
     ring2 = "Blenmot's Ring +1",
     waist = "Gishdubar Sash",
 }
-
-local MessageFormatter = require('shared/utils/messages/message_formatter')
-MessageFormatter.show_debug('COR', 'Equipment sets loaded')

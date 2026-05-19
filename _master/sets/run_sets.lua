@@ -37,14 +37,14 @@ sets = {}
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- • RINGS (Wardrobe Management)
-Moonlight1 = {name = 'Moonlight Ring', bag = 'wardrobe 1'}
+local Moonlight1 = {name = 'Moonlight Ring', bag = 'wardrobe 1'}
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- AUGMENTED EQUIPMENT DEFINITIONS
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- • OGMA'S CAPES (Tank / FC+SIRD / Store TP)
-Ogma = {
+local Ogma = {
     tank   = {name = "Ogma's Cape", augments = {'HP+60','Eva.+20 /Mag. Eva.+20','Mag. Evasion+10','Enmity+10','Parrying rate+5%'}},
     FCSIRD = {name = "Ogma's Cape", augments = {'"Fast Cast"+10','Spell interruption rate down-10%'}},
     STP    = {name = "Ogma's Cape", augments = {'DEX+20','Accuracy+20 Attack+20','Accuracy+5','"Dbl.Atk."+10','Damage taken-5%'}}

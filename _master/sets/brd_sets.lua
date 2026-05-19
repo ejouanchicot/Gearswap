@@ -499,6 +499,3 @@ sets.buff.Doom = {
     ring1 = 'Purity Ring',
     waist = 'Gishdubar Sash'
 }
-
-local MessageFormatter = require('shared/utils/messages/message_formatter')
-MessageFormatter.show_debug('BRD', 'Equipment sets loaded successfully')

@@ -37,7 +37,7 @@ sets = {}
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- • Rudianos Capes
-Rudianos = {
+local Rudianos = {
     tank = {
         name = "Rudianos's Mantle",
         priority = 1,
@@ -72,20 +72,20 @@ Rudianos = {
 }
 
 -- • Jumalik Gear
-JumalikHead = {
+local JumalikHead = {
     name = 'Jumalik Helm',
     priority = 0,
     augments = {'MND+10', '"Mag.Atk.Bns."+15', 'Magic burst dmg.+10%', '"Refresh"+1'}
 }
-JumalikBody = {name = 'Jumalik Mail', priority = 0, augments = {'HP+50', 'Attack+15', 'Enmity+9', '"Refresh"+2'}}
+local JumalikBody = {name = 'Jumalik Mail', priority = 0, augments = {'HP+50', 'Attack+15', 'Enmity+9', '"Refresh"+2'}}
 
 -- • Rings (Wardrobe-specific)
-ChirichRing1 = {name = 'Chirich Ring +1', priority = 0, bag = 'wardrobe 1'}
-ChirichRing2 = {name = 'Chirich Ring +1', priority = 0, bag = 'wardrobe 2'}
-StikiRing1 = {name = 'Stikini Ring +1', priority = 0, bag = 'wardrobe 1'}
-StikiRing2 = {name = 'Stikini Ring +1', priority = 0, bag = 'wardrobe 2'}
-Moonlight1 = {name = 'Moonlight Ring', priority = 13, bag = 'wardrobe 1'}
-Moonlight2 = {name = 'Moonlight Ring', priority = 12, bag = 'wardrobe 2'}
+local ChirichRing1 = {name = 'Chirich Ring +1', priority = 0, bag = 'wardrobe 1'}
+local ChirichRing2 = {name = 'Chirich Ring +1', priority = 0, bag = 'wardrobe 2'}
+local StikiRing1 = {name = 'Stikini Ring +1', priority = 0, bag = 'wardrobe 1'}
+local StikiRing2 = {name = 'Stikini Ring +1', priority = 0, bag = 'wardrobe 2'}
+local Moonlight1 = {name = 'Moonlight Ring', priority = 13, bag = 'wardrobe 1'}
+local Moonlight2 = {name = 'Moonlight Ring', priority = 12, bag = 'wardrobe 2'}
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- WEAPON SETS

@@ -807,6 +807,3 @@ sets.buff.Doom = {
     ring2 = "Blenmot's Ring +1",   -- Doom resistance
     waist = "Gishdubar Sash"       -- Doom resistance
 }
-
-local MessageFormatter = require('shared/utils/messages/message_formatter')
-MessageFormatter.show_debug('WHM', 'Equipment sets loaded successfully')
