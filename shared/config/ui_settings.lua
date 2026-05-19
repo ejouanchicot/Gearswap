@@ -36,6 +36,48 @@
 local UISettings = {}
 
 ---  ═══════════════════════════════════════════════════════════════════════════
+---   DEFAULTS (single source of truth)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Read from _G.UIConfig if available, else hardcoded fallback. UIConfig is
+---   set by config_loader.load_ui_config() right before it requires THIS module
+---   (see shared/utils/config/config_loader.lua:67-70), so under the normal
+---   load path UIConfig is always present here. The hardcoded fallback only
+---   matters if some other code path requires this module before UIConfig is
+---   loaded -- in that case the values still match UI_CONFIG.lua, so the file
+---   persisted to disk is consistent.
+
+local function compute_defaults()
+    local uc  = _G.UIConfig or {}
+    local pos = uc.default_position or {}
+    local bg  = uc.background or {}
+    local txt = uc.text or {}
+    local sec = uc.sections or {}
+    return {
+        pos_x                 = pos.x or 1600,
+        pos_y                 = pos.y or 300,
+        enabled               = uc.enabled ~= false,
+        show_header           = uc.show_header == true,
+        show_legend           = uc.show_legend ~= false,
+        show_column_headers   = uc.show_column_headers == true,
+        show_footer           = uc.show_footer == true,
+        bg_r                  = bg.r or 15,
+        bg_g                  = bg.g or 15,
+        bg_b                  = bg.b or 35,
+        bg_a                  = bg.a or 180,
+        bg_visible            = bg.visible ~= false,
+        font_size             = txt.size or 10,
+        font_name             = txt.font or 'Consolas',
+        section_spells        = sec.spells ~= false,
+        section_enhancing     = sec.enhancing ~= false,
+        section_job_abilities = sec.job_abilities ~= false,
+        section_weapons       = sec.weapons ~= false,
+        section_modes         = sec.modes ~= false,
+    }
+end
+
+local D = compute_defaults()
+
+---  ═══════════════════════════════════════════════════════════════════════════
 ---   FILE PERSISTENCE
 ---  ═══════════════════════════════════════════════════════════════════════════
 
@@ -77,8 +119,8 @@ local function save_to_file(settings)
         file:write('-- File: ' .. file_path .. '\n')
         file:write('return {\n')
         file:write('    -- Position\n')
-        file:write(string.format('    pos_x = %d,\n', settings.pos_x or 1600))
-        file:write(string.format('    pos_y = %d,\n', settings.pos_y or 300))
+        file:write(string.format('    pos_x = %d,\n', settings.pos_x or D.pos_x))
+        file:write(string.format('    pos_y = %d,\n', settings.pos_y or D.pos_y))
         file:write('\n')
         file:write('    -- Visibility\n')
         file:write(string.format('    enabled = %s,\n', tostring(settings.enabled ~= false)))
@@ -88,15 +130,15 @@ local function save_to_file(settings)
         file:write(string.format('    show_footer = %s,\n', tostring(settings.show_footer ~= false)))
         file:write('\n')
         file:write('    -- Background\n')
-        file:write(string.format('    bg_r = %d,\n', settings.bg_r or 15))
-        file:write(string.format('    bg_g = %d,\n', settings.bg_g or 15))
-        file:write(string.format('    bg_b = %d,\n', settings.bg_b or 35))
-        file:write(string.format('    bg_a = %d,\n', settings.bg_a or 180))
+        file:write(string.format('    bg_r = %d,\n', settings.bg_r or D.bg_r))
+        file:write(string.format('    bg_g = %d,\n', settings.bg_g or D.bg_g))
+        file:write(string.format('    bg_b = %d,\n', settings.bg_b or D.bg_b))
+        file:write(string.format('    bg_a = %d,\n', settings.bg_a or D.bg_a))
         file:write(string.format('    bg_visible = %s,\n', tostring(settings.bg_visible ~= false)))
         file:write('\n')
         file:write('    -- Font\n')
-        file:write(string.format('    font_size = %d,\n', settings.font_size or 10))
-        file:write(string.format('    font_name = "%s",\n', settings.font_name or 'Consolas'))
+        file:write(string.format('    font_size = %d,\n', settings.font_size or D.font_size))
+        file:write(string.format('    font_name = "%s",\n', settings.font_name or D.font_name))
         file:write('\n')
         file:write('    -- Sections\n')
         file:write(string.format('    section_spells = %s,\n', tostring(settings.section_spells ~= false)))
@@ -126,37 +168,11 @@ if loaded then
     -- File exists, use it (overwrite any existing _G.UI_SETTINGS)
     _G.UI_SETTINGS = loaded
 elseif _G.UI_SETTINGS == nil then
-    -- No file AND no global variable: create defaults
-    _G.UI_SETTINGS = {
-        -- Position
-        pos_x = 1600,
-        pos_y = 300,
-
-        -- Visibility
-        enabled = true,
-        show_header = false,
-        show_legend = true,
-        show_column_headers = false,
-        show_footer = false,
-
-        -- Background
-        bg_r = 15,
-        bg_g = 15,
-        bg_b = 35,
-        bg_a = 180,
-        bg_visible = true,
-
-        -- Font
-        font_size = 10,
-        font_name = 'Consolas',
-
-        -- Sections
-        section_spells = true,
-        section_enhancing = true,
-        section_job_abilities = true,
-        section_weapons = true,
-        section_modes = true
-    }
+    -- No file AND no global variable: seed from defaults (read from UIConfig).
+    -- Shallow-copy D so subsequent mutations to _G.UI_SETTINGS don't leak
+    -- back into the module-local defaults table.
+    _G.UI_SETTINGS = {}
+    for k, v in pairs(D) do _G.UI_SETTINGS[k] = v end
     -- Save defaults to file
     save_to_file(_G.UI_SETTINGS)
 end
@@ -168,8 +184,8 @@ end
 
 function UISettings.get_position()
     return {
-        x = _G.UI_SETTINGS.pos_x or 1600,
-        y = _G.UI_SETTINGS.pos_y or 300
+        x = _G.UI_SETTINGS.pos_x or D.pos_x,
+        y = _G.UI_SETTINGS.pos_y or D.pos_y
     }
 end
 
@@ -193,7 +209,7 @@ function UISettings.set_enabled(value)
 end
 
 function UISettings.get_show_header()
-    return _G.UI_SETTINGS.show_header ~= false
+    return _G.UI_SETTINGS.show_header == true
 end
 
 function UISettings.set_show_header(value)
@@ -211,7 +227,7 @@ function UISettings.set_show_legend(value)
 end
 
 function UISettings.get_show_column_headers()
-    return _G.UI_SETTINGS.show_column_headers ~= false
+    return _G.UI_SETTINGS.show_column_headers == true
 end
 
 function UISettings.set_show_column_headers(value)
@@ -220,7 +236,7 @@ function UISettings.set_show_column_headers(value)
 end
 
 function UISettings.get_show_footer()
-    return _G.UI_SETTINGS.show_footer ~= false
+    return _G.UI_SETTINGS.show_footer == true
 end
 
 function UISettings.set_show_footer(value)
@@ -234,10 +250,10 @@ end
 
 function UISettings.get_background()
     return {
-        r = _G.UI_SETTINGS.bg_r or 15,
-        g = _G.UI_SETTINGS.bg_g or 15,
-        b = _G.UI_SETTINGS.bg_b or 35,
-        a = _G.UI_SETTINGS.bg_a or 180,
+        r = _G.UI_SETTINGS.bg_r or D.bg_r,
+        g = _G.UI_SETTINGS.bg_g or D.bg_g,
+        b = _G.UI_SETTINGS.bg_b or D.bg_b,
+        a = _G.UI_SETTINGS.bg_a or D.bg_a,
         visible = _G.UI_SETTINGS.bg_visible ~= false
     }
 end
@@ -261,8 +277,8 @@ end
 
 function UISettings.get_font()
     return {
-        size = _G.UI_SETTINGS.font_size or 10,
-        name = _G.UI_SETTINGS.font_name or 'Consolas'
+        size = _G.UI_SETTINGS.font_size or D.font_size,
+        name = _G.UI_SETTINGS.font_name or D.font_name
     }
 end
 

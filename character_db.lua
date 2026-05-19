@@ -36,7 +36,7 @@ local CHARACTERS = {
     -- MAIN CHARACTER
     ---------------------------------------------------------------------------
     Tetsouo = {
-        jobs = { 'BLM', 'BRD', 'BST', 'DNC', 'PLD', 'THF', 'WAR' },
+        jobs = { 'BLM', 'BRD', 'BST', 'COR', 'DNC', 'PLD', 'THF', 'WAR' },
         role = 'main',
     },
 
@@ -44,7 +44,7 @@ local CHARACTERS = {
     -- ALT CHARACTER
     ---------------------------------------------------------------------------
     Kaories = {
-        jobs = { 'RDM', 'COR', 'GEO' },
+        jobs = { 'RDM', 'COR', 'GEO', 'PLD' },
         role = 'alt',
     },
 }
@@ -169,22 +169,26 @@ function CharDB.get_master_paths()
     return MASTER
 end
 
---- Validate database integrity (no duplicates, no missing jobs)
+--- Validate database integrity (allows multi-char ownership via overlay).
+--- A job may belong to several characters as long as each non-primary owner
+--- has its own overlay folder (_master/<CharName>/sets/<job>_sets.lua + config).
+--- The clone resolves overlay-first, so different characters get different
+--- gear from the same job slot.
 --- @return boolean, string True if valid, or false + error message
 function CharDB.validate()
-    local assigned = {}
+    local assigned = {}  -- [job] = first owner (for "any char plays it" check)
 
-    -- Check character jobs
+    -- Check character jobs (duplicates allowed for overlay-based multi-owner)
     for char_name, data in pairs(CHARACTERS) do
         for _, job in ipairs(data.jobs) do
-            if assigned[job] then
-                return false, job .. ' assigned to both ' .. assigned[job] .. ' and ' .. char_name
+            if not assigned[job] then
+                assigned[job] = char_name
             end
-            assigned[job] = char_name
+            -- duplicate is OK; the second owner relies on _master/<CharName>/ overlay
         end
     end
 
-    -- Check archive jobs
+    -- Check archive jobs: a job in _archive MUST NOT be assigned to a character
     for _, job in ipairs(ARCHIVE_JOBS) do
         if assigned[job] then
             return false, job .. ' is in both _archive and ' .. assigned[job]
@@ -192,7 +196,7 @@ function CharDB.validate()
         assigned[job] = '_archive'
     end
 
-    -- Check all jobs are accounted for
+    -- Check all jobs are accounted for (no orphans)
     for _, job in ipairs(ALL_JOBS) do
         if not assigned[job] then
             return false, job .. ' is not assigned to any character or _archive'
