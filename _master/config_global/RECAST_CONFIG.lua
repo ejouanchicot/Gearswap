@@ -28,7 +28,7 @@ local RECAST_CONFIG = {}
 --- - 1.0s: Conservative, safe for most scenarios
 --- - 1.5s: Balanced, covers most lag situations (RECOMMENDED)
 --- - 2.0s: Aggressive, rarely blocks but may trigger too early
-RECAST_CONFIG.tolerance = 5
+RECAST_CONFIG.tolerance = 2.0
 
 --- Enable/disable tolerance globally
 --- If false, reverts to strict recast == 0 checks
