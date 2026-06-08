@@ -30,6 +30,9 @@
 
 local DataLoader = {}
 
+-- Debug logging (silent unless DATA_DEBUG is toggled) - avoids direct print()
+local DebugLogger = require('shared/utils/debug/debug_logger')
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   GLOBAL DATA TABLE (Accessible everywhere via _G)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -108,7 +111,6 @@ local WEAPONSKILL_DATABASES = {
     'shared/data/weaponskills/DAGGER_WS_DATABASE',
     'shared/data/weaponskills/H2H_WS_DATABASE',
     'shared/data/weaponskills/ARCHERY_WS_DATABASE',
-    'shared/data/weaponskills/UNIVERSAL_WS_DATABASE',
 }
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -139,7 +141,7 @@ function DataLoader.load_spells()
     end
 
     _G.FFXI_DATA.loaded.spells = true
-    print(string.format('[DataLoader] Loaded %d spells', spell_count))
+    DebugLogger.logf_if('DATA_DEBUG', 'DataLoader', 'Loaded %d spells', spell_count)
     return true
 end
 
@@ -208,7 +210,7 @@ function DataLoader.load_abilities()
     end
 
     _G.FFXI_DATA.loaded.abilities = true
-    print(string.format('[DataLoader] Loaded %d job abilities', ability_count))
+    DebugLogger.logf_if('DATA_DEBUG', 'DataLoader', 'Loaded %d job abilities', ability_count)
     return true
 end
 
@@ -237,7 +239,7 @@ function DataLoader.load_weaponskills()
     end
 
     _G.FFXI_DATA.loaded.weaponskills = true
-    print(string.format('[DataLoader] Loaded %d weaponskills', ws_count))
+    DebugLogger.logf_if('DATA_DEBUG', 'DataLoader', 'Loaded %d weaponskills', ws_count)
     return true
 end
 

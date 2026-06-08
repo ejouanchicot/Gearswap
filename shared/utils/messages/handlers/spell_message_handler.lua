@@ -29,7 +29,7 @@
 ---   - BLM casting Fire III >> Shows message from ELEMENTAL_MAGIC_DATABASE
 ---   - WHM casting Banish >> Shows message from DIVINE_MAGIC_DATABASE
 ---
---- @file spell_message_handler.lua
+--- @file shared/utils/messages/handlers/spell_message_handler.lua
 --- @author Tetsouo
 --- @version 2.3 - Lazy Loading (performance optimization)
 --- @date Created: 2025-10-30 | Updated: 2025-11-04
