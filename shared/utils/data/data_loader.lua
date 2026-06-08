@@ -71,7 +71,7 @@ local SPELL_DATABASES = {
     'shared/data/magic/SMN_SPELL_DATABASE',
 
     -- Ninjutsu
-    'shared/data/magic/ninjutsu/NINJUTSU_DATABASE',
+    'shared/data/magic/NINJUTSU_DATABASE',
 }
 
 ---  ═══════════════════════════════════════════════════════════════════════════
