@@ -45,105 +45,61 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 local MessageCore = require('shared/utils/messages/message_core')
 
 ---============================================================================
---- SKILL-BASED DATABASES (Priority 1 - LAZY LOADING)
+--- MAGIC DATABASES (LAZY, PER-SKILL LOADING)
 ---============================================================================
+--- Databases load individually, on demand. The first cast of a spell loads ONLY
+--- the database matching that spell's skill (fast path), instead of every magic
+--- database at once. This removes the first-cast freeze. Loaded modules are
+--- cached; failed loads are remembered (false) so they are not retried per cast.
 
-local EnfeeblingSPELLS = nil
-local EnhancingSPELLS = nil
-local DarkSPELLS = nil
-local HealingSPELLS = nil
-local ElementalSPELLS = nil
-local DivineSPELLS = nil
+local db_cache = {}
 
--- LAZY LOADING: Databases load on first access, not at require time
--- Databases loaded on demand, not at startup
-local function ensure_skill_databases_loaded()
-    if not EnfeeblingSPELLS then
-        local success, db = pcall(require, 'shared/data/magic/ENFEEBLING_MAGIC_DATABASE')
-        if success then EnfeeblingSPELLS = db end
+--- Load a magic database by module path, memoized.
+--- @param path string Module path
+--- @return table|nil Database module, or nil if it failed to load
+local function load_db(path)
+    if db_cache[path] == nil then
+        local success, db = pcall(require, path)
+        db_cache[path] = (success and db) or false
     end
-
-    if not EnhancingSPELLS then
-        local success, db = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
-        if success then EnhancingSPELLS = db end
-    end
-
-    if not DarkSPELLS then
-        local success, db = pcall(require, 'shared/data/magic/DARK_MAGIC_DATABASE')
-        if success then DarkSPELLS = db end
-    end
-
-    if not HealingSPELLS then
-        local success, db = pcall(require, 'shared/data/magic/HEALING_MAGIC_DATABASE')
-        if success then HealingSPELLS = db end
-    end
-
-    if not ElementalSPELLS then
-        local success, db = pcall(require, 'shared/data/magic/ELEMENTAL_MAGIC_DATABASE')
-        if success then ElementalSPELLS = db end
-    end
-
-    if not DivineSPELLS then
-        local success, db = pcall(require, 'shared/data/magic/DIVINE_MAGIC_DATABASE')
-        if success then DivineSPELLS = db end
-    end
+    return db_cache[path] or nil
 end
 
----============================================================================
---- JOB-BASED DATABASES (Priority 2 - LAZY LOADING)
----============================================================================
+-- Fast path: spell.skill -> the single database that holds it.
+local SKILL_PATH = {
+    ['Enfeebling Magic'] = 'shared/data/magic/ENFEEBLING_MAGIC_DATABASE',
+    ['Enhancing Magic']  = 'shared/data/magic/ENHANCING_MAGIC_DATABASE',
+    ['Dark Magic']       = 'shared/data/magic/DARK_MAGIC_DATABASE',
+    ['Healing Magic']    = 'shared/data/magic/HEALING_MAGIC_DATABASE',
+    ['Elemental Magic']  = 'shared/data/magic/ELEMENTAL_MAGIC_DATABASE',
+    ['Divine Magic']     = 'shared/data/magic/DIVINE_MAGIC_DATABASE',
+    ['Ninjutsu']         = 'shared/data/magic/NINJUTSU_DATABASE',
+    ['Blue Magic']       = 'shared/data/magic/BLU_SPELL_DATABASE',
+    ['Summoning Magic']  = 'shared/data/magic/SMN_SPELL_DATABASE',
+    ['Singing']          = 'shared/data/magic/BRD_SPELL_DATABASE',
+    ['Geomancy']         = 'shared/data/magic/GEO_SPELL_DATABASE',
+}
 
-local BLMSpells = nil
-local RDMSpells = nil
-local WHMSpells = nil
-local GEOSpells = nil
-local BRDSpells = nil
-local SCHSpells = nil
-local BLUSpells = nil
-local SMNSpells = nil
-
--- LAZY LOADING: Job databases load on first access, not at require time
-local function ensure_job_databases_loaded()
-    if not BLMSpells then
-        local success, db = pcall(require, 'shared/data/magic/BLM_SPELL_DATABASE')
-        if success then BLMSpells = db end
-    end
-
-    if not RDMSpells then
-        local success, db = pcall(require, 'shared/data/magic/RDM_SPELL_DATABASE')
-        if success then RDMSpells = db end
-    end
-
-    if not WHMSpells then
-        local success, db = pcall(require, 'shared/data/magic/WHM_SPELL_DATABASE')
-        if success then WHMSpells = db end
-    end
-
-    if not GEOSpells then
-        local success, db = pcall(require, 'shared/data/magic/GEO_SPELL_DATABASE')
-        if success then GEOSpells = db end
-    end
-
-    if not BRDSpells then
-        local success, db = pcall(require, 'shared/data/magic/BRD_SPELL_DATABASE')
-        if success then BRDSpells = db end
-    end
-
-    if not SCHSpells then
-        local success, db = pcall(require, 'shared/data/magic/SCH_SPELL_DATABASE')
-        if success then SCHSpells = db end
-    end
-
-    if not BLUSpells then
-        local success, db = pcall(require, 'shared/data/magic/BLU_SPELL_DATABASE')
-        if success then BLUSpells = db end
-    end
-
-    if not SMNSpells then
-        local success, db = pcall(require, 'shared/data/magic/SMN_SPELL_DATABASE')
-        if success then SMNSpells = db end
-    end
-end
+-- Fallback search order (priority: skill databases first, then job databases).
+-- Only consulted when the fast path misses (skill/category mismatch, or a spell
+-- not declared by its expected skill). `name` is the returned database label.
+local FALLBACK_DATABASES = {
+    { name = 'Enfeebling Magic', path = 'shared/data/magic/ENFEEBLING_MAGIC_DATABASE' },
+    { name = 'Enhancing Magic',  path = 'shared/data/magic/ENHANCING_MAGIC_DATABASE' },
+    { name = 'Dark Magic',       path = 'shared/data/magic/DARK_MAGIC_DATABASE' },
+    { name = 'Healing Magic',    path = 'shared/data/magic/HEALING_MAGIC_DATABASE' },
+    { name = 'Elemental Magic',  path = 'shared/data/magic/ELEMENTAL_MAGIC_DATABASE' },
+    { name = 'Divine Magic',     path = 'shared/data/magic/DIVINE_MAGIC_DATABASE' },
+    { name = 'Ninjutsu',         path = 'shared/data/magic/NINJUTSU_DATABASE' },
+    { name = 'RDM',              path = 'shared/data/magic/RDM_SPELL_DATABASE' },
+    { name = 'WHM',              path = 'shared/data/magic/WHM_SPELL_DATABASE' },
+    { name = 'BLM',              path = 'shared/data/magic/BLM_SPELL_DATABASE' },
+    { name = 'GEO',              path = 'shared/data/magic/GEO_SPELL_DATABASE' },
+    { name = 'BRD',              path = 'shared/data/magic/BRD_SPELL_DATABASE' },
+    { name = 'SCH',              path = 'shared/data/magic/SCH_SPELL_DATABASE' },
+    { name = 'BLU',              path = 'shared/data/magic/BLU_SPELL_DATABASE' },
+    { name = 'SMN',              path = 'shared/data/magic/SMN_SPELL_DATABASE' },
+}
 
 -- Load message configs ONCE and cache the reference
 -- The table is modified by set_display_mode() so we always see current mode
@@ -182,53 +138,30 @@ end
 --- SPELL LOOKUP
 ---============================================================================
 
---- Search for spell in all loaded databases
---- PRIORITY 1: Skill-based databases (ENFEEBLING_MAGIC_DATABASE, etc.)
---- PRIORITY 2: Job-based databases (BLM_SPELL_DATABASE, etc.)
---- @param spell_name string Spell name
+--- Search for a spell, loading only the database(s) actually needed.
+--- Fast path: the spell's own skill maps to a single database (1 require).
+--- Fallback: scan the remaining databases in priority order (skill before job).
+--- @param spell table Spell object from GearSwap (needs .name and .skill)
 --- @return table|nil spell_data Spell data if found
 --- @return string|nil database_name Name of database where spell was found
-local function find_spell_in_databases(spell_name)
-    -- LAZY LOAD: Ensure databases are loaded before searching
-    ensure_skill_databases_loaded()
-    ensure_job_databases_loaded()
+local function find_spell_in_databases(spell)
+    local spell_name = spell.name
 
-    -- PRIORITY 1: Check skill-based databases FIRST
-    local skill_databases = {
-        {name = 'Enfeebling Magic', db = EnfeeblingSPELLS},
-        {name = 'Enhancing Magic', db = EnhancingSPELLS},
-        {name = 'Dark Magic', db = DarkSPELLS},
-        {name = 'Healing Magic', db = HealingSPELLS},
-        {name = 'Elemental Magic', db = ElementalSPELLS},
-        {name = 'Divine Magic', db = DivineSPELLS},
-    }
-
-    for _, db_entry in ipairs(skill_databases) do
-        if db_entry.db and db_entry.db.spells then
-            local spell_data = db_entry.db.spells[spell_name]
-            if spell_data then
-                return spell_data, db_entry.name
-            end
+    -- FAST PATH: one database, selected by the spell's skill.
+    local fast_path = spell.skill and SKILL_PATH[spell.skill]
+    if fast_path then
+        local db = load_db(fast_path)
+        if db and db.spells and db.spells[spell_name] then
+            return db.spells[spell_name], spell.skill
         end
     end
 
-    -- PRIORITY 2: Fallback to job-based databases (legacy support)
-    local job_databases = {
-        {name = 'RDM', db = RDMSpells},
-        {name = 'WHM', db = WHMSpells},
-        {name = 'BLM', db = BLMSpells},
-        {name = 'GEO', db = GEOSpells},
-        {name = 'BRD', db = BRDSpells},
-        {name = 'SCH', db = SCHSpells},
-        {name = 'BLU', db = BLUSpells},
-        {name = 'SMN', db = SMNSpells},
-    }
-
-    for _, db_entry in ipairs(job_databases) do
-        if db_entry.db and db_entry.db.spells then
-            local spell_data = db_entry.db.spells[spell_name]
-            if spell_data then
-                return spell_data, db_entry.name
+    -- FALLBACK: handles skill/category mismatches and job-unique spells.
+    for _, db_entry in ipairs(FALLBACK_DATABASES) do
+        if db_entry.path ~= fast_path then
+            local db = load_db(db_entry.path)
+            if db and db.spells and db.spells[spell_name] then
+                return db.spells[spell_name], db_entry.name
             end
         end
     end
@@ -273,7 +206,7 @@ function SpellMessageHandler.show_message(spell, show_separator)
     -- Find spell in databases FIRST (before checking spell.skill)
     -- This is critical because some spells have mismatched skill vs category
     -- Example: Bio has spell.skill = "Dark Magic" but category = "Enfeebling"
-    local spell_data, db_name = find_spell_in_databases(spell.name)
+    local spell_data, db_name = find_spell_in_databases(spell)
 
     if not spell_data then
         -- Spell not found in any database

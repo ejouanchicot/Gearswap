@@ -69,23 +69,19 @@ local JOBS = {
     'SAM', 'SCH', 'THF', 'WAR', 'WHM'
 }
 
--- LAZY LOADING: Load databases on first ability usage, not at module load
-local databases_loaded = false
-
-local function ensure_databases_loaded()
-    if databases_loaded then
-        return  -- Already loaded
-    end
-
-    -- Load each job database (safe loading)
-    for _, job_code in ipairs(JOBS) do
+-- LAZY LOADING: load a single job's ability database on demand, memoized.
+-- The first ability normally loads only the caster's main + sub job databases
+-- (1-2 files) instead of all 21 at once, which removes the first-ability freeze.
+-- Failed loads are remembered (false) so they are not retried on every ability.
+--- @param job_code string 3-letter job code
+--- @return table|nil The job's ability database, or nil if unavailable
+local function load_ja_db(job_code)
+    if not job_code then return nil end
+    if JOB_DATABASES[job_code] == nil then
         local success, db = pcall(require, 'shared/data/job_abilities/' .. job_code .. '_JA_DATABASE')
-        if success and db then
-            JOB_DATABASES[job_code] = db
-        end
+        JOB_DATABASES[job_code] = (success and db) or false
     end
-
-    databases_loaded = true
+    return JOB_DATABASES[job_code] or nil
 end
 
 -- Load message config ONCE and cache the reference
@@ -116,21 +112,29 @@ end
 --- @return table|nil ability_data Ability data if found
 --- @return string|nil database_name Name of database where ability was found
 local function find_ability_in_databases(ability_name)
-    -- LAZY LOAD: Ensure databases are loaded before searching
-    ensure_databases_loaded()
+    -- Read an ability out of a (possibly legacy-shaped) database
+    local function lookup(db)
+        if not db then return nil end
+        local abilities_table = db.abilities or db
+        return abilities_table and abilities_table[ability_name] or nil
+    end
 
-    -- PRIORITY 1: Check job ability databases
-    for job_code, db in pairs(JOB_DATABASES) do
-        if db then
-            -- Check if db has .abilities field (new format) or is direct table (legacy format)
-            local abilities_table = db.abilities or db
-
-            if abilities_table then
-                local ability_data = abilities_table[ability_name]
-                if ability_data then
-                    return ability_data, job_code
-                end
+    -- FAST PATH: the caster's own main + sub job databases (1-2 files).
+    local player = windower.ffxi.get_player()
+    if player then
+        for _, job_code in ipairs({ player.main_job, player.sub_job }) do
+            local ability_data = lookup(load_ja_db(job_code))
+            if ability_data then
+                return ability_data, job_code
             end
+        end
+    end
+
+    -- FALLBACK: remaining job databases (abilities outside the caster's main/sub).
+    for _, job_code in ipairs(JOBS) do
+        local ability_data = lookup(load_ja_db(job_code))
+        if ability_data then
+            return ability_data, job_code
         end
     end
 

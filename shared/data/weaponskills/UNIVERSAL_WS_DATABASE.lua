@@ -79,65 +79,105 @@ local weapon_type_configs = {
 }
 
 ---============================================================================
---- LAZY LOAD FUNCTION (Called on first WS usage)
+--- LAZY LOAD FUNCTIONS (Per-weapon-type, on demand)
 ---============================================================================
 
---- Load all weaponskill databases (lazy-loaded on first WS)
+-- Reverse lookup: weapon type name -> config entry
+local config_by_type = {}
+for _, config in ipairs(weapon_type_configs) do
+    config_by_type[config.type] = config
+end
+
+--- Merge a single weapon type's database into the global cache (idempotent).
+--- @param config table Entry from weapon_type_configs
+local function merge_weapon_db(config)
+    if _G.WS_DATABASE.weapon_types[config.type] then
+        return  -- Already merged
+    end
+
+    local success, weapon_db = pcall(require, 'shared/data/weaponskills/' .. config.file)
+    if not (success and weapon_db and weapon_db.weaponskills) then
+        return
+    end
+
+    local ws_count = 0
+    for ws_name, ws_data in pairs(weapon_db.weaponskills) do
+        ws_data.weapon_type = config.type
+        ws_data.weapon_file = config.file
+        -- Root level (jobs access WS_DB['Fast Blade']) + .weaponskills (helpers)
+        _G.WS_DATABASE[ws_name] = ws_data
+        _G.WS_DATABASE.weaponskills[ws_name] = ws_data
+        ws_count = ws_count + 1
+    end
+
+    _G.WS_DATABASE.weapon_types[config.type] = {
+        file = config.file,
+        count = ws_count,
+        expected = config.count
+    }
+end
+
+--- Load a single weapon type's database on demand.
+--- @param weapon_type string Weapon type name (e.g. 'Sword', 'Hand-to-Hand')
+function UniversalWS.ensure_weapon_type(weapon_type)
+    local config = weapon_type and config_by_type[weapon_type]
+    if config then
+        merge_weapon_db(config)
+    end
+end
+
+--- Resolve a weapon skill by name, loading only the database(s) actually needed.
+--- Fast path: try the equipped weapon's type first (1 file). Fallback: scan the
+--- remaining weapon types until found. Avoids merging all 13 databases at once.
+--- @param ws_name string Weapon skill name
+--- @param weapon_type_hint string|nil Preferred weapon type to try first
+--- @return table|nil Weapon skill data, or nil if not found in any database
+function UniversalWS.resolve(ws_name, weapon_type_hint)
+    if _G.WS_DATABASE.weaponskills[ws_name] then
+        return _G.WS_DATABASE.weaponskills[ws_name]
+    end
+
+    if weapon_type_hint then
+        UniversalWS.ensure_weapon_type(weapon_type_hint)
+        if _G.WS_DATABASE.weaponskills[ws_name] then
+            return _G.WS_DATABASE.weaponskills[ws_name]
+        end
+    end
+
+    for _, config in ipairs(weapon_type_configs) do
+        merge_weapon_db(config)
+        if _G.WS_DATABASE.weaponskills[ws_name] then
+            return _G.WS_DATABASE.weaponskills[ws_name]
+        end
+    end
+
+    return nil
+end
+
+--- Load ALL weaponskill databases (full merge). Kept for callers that need the
+--- complete set (audits, cross-job tools). First-WS display uses resolve().
 --- @return table The global WS_DATABASE table
 function UniversalWS.load()
-    -- Check if already loaded (cached in _G)
     if _G.WS_DATABASE.loaded then
         return _G.WS_DATABASE
     end
 
-    -- Message formatter for database load messages (load only when needed)
-    local MessageDatabase = require('shared/utils/messages/formatters/system/message_database')
+    for _, config in ipairs(weapon_type_configs) do
+        merge_weapon_db(config)
+    end
 
+    -- Recompute stats from what is now merged
     local total_loaded = 0
     local failed_loads = {}
-
-    -- Merge all weapon type databases
     for _, config in ipairs(weapon_type_configs) do
-        local success, weapon_db = pcall(require, 'shared/data/weaponskills/' .. config.file)
-
-        if success and weapon_db and weapon_db.weaponskills then
-            local ws_count = 0
-
-            -- Merge all weapon skills from this weapon type
-            for ws_name, ws_data in pairs(weapon_db.weaponskills) do
-                -- Add weapon type metadata to each WS
-                ws_data.weapon_type = config.type
-                ws_data.weapon_file = config.file
-
-                -- Add to global database at ROOT LEVEL (for job compatibility)
-                -- Jobs access like: WS_DB['Fast Blade'] not WS_DB.weaponskills['Fast Blade']
-                _G.WS_DATABASE[ws_name] = ws_data
-
-                -- Also add to .weaponskills table (for helper functions)
-                _G.WS_DATABASE.weaponskills[ws_name] = ws_data
-                ws_count = ws_count + 1
-            end
-
-            -- Track weapon type
-            _G.WS_DATABASE.weapon_types[config.type] = {
-                file = config.file,
-                count = ws_count,
-                expected = config.count
-            }
-
-            total_loaded = total_loaded + ws_count
-
+        local info = _G.WS_DATABASE.weapon_types[config.type]
+        if info then
+            total_loaded = total_loaded + info.count
         else
-            -- Track failed loads
-            table.insert(failed_loads, {
-                file = config.file,
-                type = config.type,
-                error = weapon_db or "Unknown error"
-            })
+            table.insert(failed_loads, { file = config.file, type = config.type, error = "load failed" })
         end
     end
 
-    -- Store load statistics
     _G.WS_DATABASE.load_stats = {
         total_loaded = total_loaded,
         expected_total = 212,
@@ -146,13 +186,7 @@ function UniversalWS.load()
         load_date = os.date("%Y-%m-%d %H:%M:%S")
     }
 
-    -- Mark as loaded
     _G.WS_DATABASE.loaded = true
-
-    -- Optional: Show load message (useful for debugging)
-    -- MessageDatabase.show_load_header('WS Database (Lazy)')
-    -- MessageDatabase.show_total_loaded_with_expected(total_loaded, 212, 'weapon skills')
-
     return _G.WS_DATABASE
 end
 
