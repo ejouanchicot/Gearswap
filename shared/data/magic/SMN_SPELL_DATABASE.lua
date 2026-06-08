@@ -46,9 +46,12 @@ local shiva = require('shared/data/magic/summoning/shiva')
 local siren = require('shared/data/magic/summoning/siren')
 local spirits = require('shared/data/magic/summoning/spirits')
 local titan = require('shared/data/magic/summoning/titan')
+local odin = require('shared/data/magic/summoning/odin')
+local alexander = require('shared/data/magic/summoning/alexander')
+local atomos = require('shared/data/magic/summoning/atomos')
 
 ---============================================================================
---- MERGE SPELL DATA (136 total SMN spells from 12 files)
+--- MERGE SPELL DATA (143 total SMN spells from 15 files)
 ---============================================================================
 
 -- Create unified .spells table for spell_message_handler compatibility
@@ -103,6 +106,18 @@ for spell_name, spell_data in pairs(titan.spells) do
     SMNSpells.spells[spell_name] = spell_data
 end
 
+for spell_name, spell_data in pairs(odin.spells) do
+    SMNSpells.spells[spell_name] = spell_data
+end
+
+for spell_name, spell_data in pairs(alexander.spells) do
+    SMNSpells.spells[spell_name] = spell_data
+end
+
+for spell_name, spell_data in pairs(atomos.spells) do
+    SMNSpells.spells[spell_name] = spell_data
+end
+
 -- Merge all blood pacts from avatar files into .spells table
 for pact_name, pact_data in pairs(carbuncle.blood_pacts or {}) do
     SMNSpells.spells[pact_name] = pact_data
@@ -145,6 +160,18 @@ for pact_name, pact_data in pairs(siren.blood_pacts or {}) do
 end
 
 for pact_name, pact_data in pairs(titan.blood_pacts or {}) do
+    SMNSpells.spells[pact_name] = pact_data
+end
+
+for pact_name, pact_data in pairs(odin.blood_pacts or {}) do
+    SMNSpells.spells[pact_name] = pact_data
+end
+
+for pact_name, pact_data in pairs(alexander.blood_pacts or {}) do
+    SMNSpells.spells[pact_name] = pact_data
+end
+
+for pact_name, pact_data in pairs(atomos.blood_pacts or {}) do
     SMNSpells.spells[pact_name] = pact_data
 end
 
