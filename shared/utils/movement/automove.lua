@@ -6,8 +6,14 @@
 ---
 --- @file utils/movement/automove.lua
 --- @author Tetsouo
---- @version 2.1.0 - FIX: Ghost coroutine accumulation across gs reload
---- @date Created: 2025-09-30 | Updated: 2026-03-03
+--- @version 2.2.0 - Discontinuity guard + self-heal + adaptive/engaged polling
+--- @date Created: 2025-09-30 | Updated: 2026-06-08
+---
+--- v2.2.0 changes:
+---   - Teleport/zone desync fix: jump guard (instant re-sync on large position
+---     delta) + periodic self-heal while moving (backstop, max heal_interval).
+---   - Efficiency: skip detection entirely while Engaged (movespeed is idle-only)
+---     and adaptive poll rate (fast while moving, slower while idle).
 ---
 --- Features:
 ---   - Centralized position tracking (shared by all modules)
@@ -47,7 +53,11 @@ local config = {
     movement_threshold  = 0.3,   -- Distance threshold to detect movement
     check_interval      = 0.12,  -- Time in seconds between position checks (~8.3 Hz, ~33% CPU saving vs 0.08)
     update_debounce     = 0.3,   -- Minimum time between gs c update calls
-    job_change_cooldown = 2.0    -- Cooldown after job change before sending commands
+    job_change_cooldown = 2.0,   -- Cooldown after job change before sending commands
+    jump_threshold      = 5.0,   -- Single-tick delta above this = teleport/zone (running maxes ~1 yalm/tick)
+    heal_interval       = 2.0,   -- Max interval to re-sync gear while moving (desync backstop)
+    idle_interval       = 0.3,   -- Slower poll while standing still (movespeed not changing)
+    engaged_interval    = 0.5    -- Slowest poll while Engaged (movespeed is idle-only; just watch for disengage)
 }
 
 -- Track last update time for debouncing
@@ -218,6 +228,25 @@ function AutoMove.start()
             return
         end
 
+        -------------------------------------------------------------------
+        -- ENGAGED: movespeed is idle-only, so skip movement detection entirely.
+        -- Keep the reference position fresh for a clean resume on disengage and
+        -- reset the moving flag (combat set is active anyway). Poll slowly just
+        -- to notice the disengage. Saves ~8 checks/s during fights.
+        -------------------------------------------------------------------
+        if player.status == 'Engaged' then
+            local pe = windower.ffxi.get_mob_by_index(player.index)
+            if pe and pe.x then
+                mov.x, mov.y, mov.z = pe.x, pe.y, pe.z
+            end
+            if moving then
+                moving = false
+                if state.Moving then state.Moving.value = 'false' end
+            end
+            coroutine.schedule(run, config.engaged_interval)
+            return
+        end
+
         -- Get current position
         local pl = windower.ffxi.get_mob_by_index(player.index)
         if not pl or not pl.x or not pl.y or not pl.z or mov.x == nil then
@@ -235,6 +264,20 @@ function AutoMove.start()
         mov.x = pl.x
         mov.y = pl.y
         mov.z = pl.z
+
+        -------------------------------------------------------------------
+        -- DISCONTINUITY GUARD (teleport / zone)
+        -- A single-tick delta this large is impossible by running (~1 yalm/tick),
+        -- so it is a teleport or zone. Position is already recaled above; force an
+        -- immediate re-equip so movespeed isn't lost across the jump. Covers cases
+        -- with no loading screen (e.g. in-area teleports).
+        -------------------------------------------------------------------
+        if dist > config.jump_threshold then
+            if _G.LagDebugger then _G.LagDebugger.on_automove_update('jump', dist, moving) end
+            windower.send_command('gs c update')
+            coroutine.schedule(run, config.check_interval)
+            return
+        end
 
         -------------------------------------------------------------------
         -- MOVEMENT DETECTED
@@ -265,6 +308,18 @@ function AutoMove.start()
                     if _G.LagDebugger then _G.LagDebugger.on_automove_update('moving', dist, moving) end
                     windower.send_command('gs c update')
                 end
+            end
+
+            -- SELF-HEAL: while moving, re-sync gear <-> state.Moving at most every
+            -- heal_interval. Backstop for desyncs the jump guard may miss (e.g. an
+            -- in-area teleport that slides instead of jumping). Throttled by
+            -- last_update_time and suppressed during the job-change cooldown.
+            if moving and should_move
+                and (now - start_time) >= config.job_change_cooldown
+                and (now - last_update_time) >= config.heal_interval then
+                last_update_time = now
+                if _G.LagDebugger then _G.LagDebugger.on_automove_update('heal', dist, moving) end
+                windower.send_command('gs c update')
             end
 
             trigger_callbacks(true, dist, player.status)
@@ -300,8 +355,9 @@ function AutoMove.start()
             end
         end
 
-        -- Reschedule via closure (my_seq preserved automatically)
-        coroutine.schedule(run, config.check_interval)
+        -- Adaptive reschedule: fast while moving, slower while idle (Engaged is
+        -- handled above with its own slow interval). my_seq preserved via closure.
+        coroutine.schedule(run, moving and config.check_interval or config.idle_interval)
     end
 
     coroutine.schedule(run, config.check_interval)
