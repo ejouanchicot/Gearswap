@@ -8,7 +8,6 @@ local WSPrecastHandler = {}
 local MessageFormatter = nil
 local WSValidator = nil
 local TPBonusHandler = nil
-local TPBonusCalculator = nil
 local WS_DB = nil
 
 local modules_loaded = false
@@ -27,10 +26,6 @@ local function ensure_modules_loaded()
     -- TP Bonus Handler (gear calculation)
     local _, tph = pcall(require, 'shared/utils/precast/tp_bonus_handler')
     TPBonusHandler = tph
-
-    -- TP Bonus Calculator (final TP with bonuses)
-    local _, tpc = pcall(require, 'shared/utils/weaponskill/tp_bonus_calculator')
-    TPBonusCalculator = tpc or _G.TPBonusCalculator
 
     -- WS Database (descriptions)
     local _, wsdb = pcall(require, 'shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
@@ -70,28 +65,6 @@ function WSPrecastHandler.handle(spell, eventArgs, tp_config)
         return false
     end
 
-    -- Final TP calculation with Moonshade bonus (stored for other systems, not displayed)
-    if TPBonusCalculator and TPBonusCalculator.get_final_tp and tp_config then
-        local weapon_name = player.equipment and player.equipment.main or nil
-        local sub_weapon = player.equipment and player.equipment.sub or nil
-        local tp_gear = _G.temp_tp_bonus_gear
-
-        local success, final_tp = pcall(
-            TPBonusCalculator.get_final_tp,
-            current_tp,
-            tp_gear,
-            tp_config,
-            weapon_name,
-            buffactive,
-            sub_weapon
-        )
-
-        if success then
-            -- Store final TP for potential use by other systems
-            _G.temp_final_tp = final_tp
-        end
-    end
-
     return true  -- WS should proceed
 end
 
@@ -108,8 +81,6 @@ function WSPrecastHandler.apply_tp_gear(spell)
         _G.temp_tp_bonus_gear = nil
     end
 
-    -- Cleanup final TP temp
-    _G.temp_final_tp = nil
 end
 
 return WSPrecastHandler
