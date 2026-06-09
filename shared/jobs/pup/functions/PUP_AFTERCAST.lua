@@ -31,12 +31,9 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     -- No PUP-specific aftercast logic required
     -- Mote-Include handles return to idle/engaged automatically
 
-    -- Force gear refresh after actions complete (handles Odyssey lag)
-    if not spell.interrupted then
-        coroutine.schedule(function()
-            send_command('gs c update')
-        end, 0.1)
-    end
+    -- Gear refresh is handled by Mote (status_change) + MidcastWatchdog (packet
+    -- loss). The forced 'gs c update' here was redundant (removed 2026-06-09,
+    -- validated in-game on WAR in Odyssey + Sortie).
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

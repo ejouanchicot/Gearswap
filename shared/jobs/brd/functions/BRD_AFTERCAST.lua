@@ -55,18 +55,9 @@ function job_aftercast(spell, action, spellMap, eventArgs)
         end
     end
 
-    -- CRITICAL FIX: Force gear refresh after songs/spells/WS
-    -- BRD uses direct equip() calls in midcast which can block Mote's auto-return
-    -- This ensures we ALWAYS return to idle/engaged gear correctly after action completes
-    if not spell.interrupted then
-        -- Use coroutine to delay gear refresh slightly (avoid race condition with lag)
-        -- This ensures Mote has finished processing before we force refresh
-        coroutine.schedule(function()
-            -- Force GearSwap to re-evaluate current status and equip proper set
-            -- This is the standard way to refresh gear (used by AutoMove, PetManager)
-            send_command('gs c update')
-        end, 0.1)  -- 100ms delay to handle lag/latency
-    end
+    -- Gear refresh is handled by Mote (status_change) + MidcastWatchdog (packet
+    -- loss). The forced 'gs c update' here was redundant (removed 2026-06-09,
+    -- validated in-game on WAR in Odyssey + Sortie).
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
