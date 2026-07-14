@@ -105,7 +105,7 @@ end
 
 ---   Apply weapon sets to result
 ---   BLM uses main weapon + sub weapon
----   Note: Combat Mode locking is handled via disable() in job_update()
+---   Note: Combat Mode locking is handled via disable() in job_state_change()
 ---   @param result table Current equipment set
 ---   @return table Modified set with weapons applied
 function SetBuilder.apply_weapon(result)

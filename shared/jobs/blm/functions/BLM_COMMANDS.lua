@@ -539,6 +539,26 @@ function job_state_change(stateField, newValue, oldValue)
         return
     end
 
+    -- Combat Mode weapon lock (immediate: fires on the cycle itself, unlike
+    -- job_update which lags behind the UI-visible cycle path). Equip the magic
+    -- weapon set BEFORE disabling so the lock holds Bunzi/Ammurapi/Sroda -
+    -- equip() only diverts an item to not_sent_out_equip when the slot is
+    -- ALREADY disabled (GearSwap helper_functions.lua:321), so equip-then-disable
+    -- in the same frame works. Accept both stateField spellings: 'CombatMode'
+    -- (CycleHandler key) and 'Combat Mode' (Mote-SelfCommands description).
+    if stateField == 'CombatMode' or stateField == 'Combat Mode' then
+        if newValue == 'On' then
+            equip({ main = "Bunzi's Rod", sub = "Ammurapi Shield", ammo = "Sroda Tathlum" })
+            disable('main', 'sub', 'range', 'ammo')
+        else
+            -- Don't steal the disable from an active craft/fish session.
+            local craft_active = _G.__CraftManagerState and _G.__CraftManagerState.active
+            if not craft_active then
+                enable('main', 'sub', 'range', 'ammo')
+            end
+        end
+    end
+
     update_ui()
 end
 

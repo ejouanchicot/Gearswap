@@ -229,25 +229,8 @@ function job_update(cmdParams, eventArgs)
         MessageFormatter.show_debug('BLM', string.format('[job_update] ENTER | dt from AutoMove=%.3fms', (debug_start - _G.AUTOMOVE_DEBUG_START) * 1000))
     end
 
-    -- Handle Combat Mode weapon locking
-    if state.CombatMode then
-        if state.CombatMode.current == "On" then
-            -- Lock all weapon slots
-            disable('main', 'sub', 'range', 'ammo')
-        else
-            -- Unlock weapons UNLESS a craft/fish session owns the disable.
-            -- job_update fires on every `gs c update` (aftercast/automove/state
-            -- change), and an unconditional enable() here was silently breaking
-            -- `//gs c craft`: the first spell or movement after entering craft
-            -- mode would re-enable main/sub, the next idle hook would equip
-            -- the BLM staff+grip over the craft shield. CraftManager owns the
-            -- disable until //gs c uncraft (or //gs c craft again).
-            local craft_active = _G.__CraftManagerState and _G.__CraftManagerState.active
-            if not craft_active then
-                enable('main', 'sub', 'range', 'ammo')
-            end
-        end
-    end
+    -- Combat Mode weapon locking is handled in job_state_change (BLM_COMMANDS.lua)
+    -- so it applies immediately on the cycle instead of lagging to the next update.
 
     -- Update UI when states change (F9, F10, etc.)
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
