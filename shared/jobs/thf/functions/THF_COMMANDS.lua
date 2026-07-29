@@ -181,11 +181,6 @@ function job_self_command(cmdParams, eventArgs)
         -- 5. Auto-attack sub-target (0.1s delay - minimal for equipment swap)
         send_command('wait 0.1; input /ra <stnpc>')
 
-        local MessageFormatter_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-        if MessageFormatter_success and MessageFormatter then
-            MessageFormatter.show_success("Ranged attack: Exalted Crossbow + Acid Bolt >> <stnpc>")
-        end
-
         eventArgs.handled = true
         return
     end
@@ -205,12 +200,15 @@ function job_state_change(stateField, newValue, oldValue)
 
     -- Handle RangeLock state changes
     if stateField == 'Range Lock' then
+        local MessageFormatter_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
         if newValue == false or newValue == 'false' then
-            -- Unlock ranged weapon slots when state toggled to OFF
             enable('range', 'ammo')
-            local MessageFormatter_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
             if MessageFormatter_success and MessageFormatter then
                 MessageFormatter.show_success("Ranged weapons unlocked")
+            end
+        elseif newValue == true or newValue == 'true' then
+            if MessageFormatter_success and MessageFormatter then
+                MessageFormatter.show_success("Ranged weapons locked")
             end
         end
     end
