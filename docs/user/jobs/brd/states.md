@@ -79,12 +79,13 @@ Selects which instrument to use for songs.
 
 ### VictoryMarch
 
-Controls what replaces Victory March when Haste is capped.
+Controls what replaces Victory March when Haste or Haste II is active.
 
 | Option | Description |
 |--------|-------------|
 | `Madrigal` | Replace with Blade Madrigal |
-| `Minuet` | Replace with Minuet |
+| `Minuet` | Replace with Valor Minuet III |
+| `Etude` | Replace with the Etude matching EtudeType (Alt+8) |
 | `None` | Keep Victory March |
 
 **Default**: `Madrigal`
@@ -226,7 +227,7 @@ Internal numeric state used by the watchdog system to calculate cast time timeou
 | EngagedMode | STP / Acc / DT / SB | STP | Alt+2 |
 | SongMode | Dirge / March / Madrigal / Minne / Etude / Tank / Healer / Carol / Scherzo / Arebati / Ngai | Ngai | Alt+3 |
 | MainInstrument | Gjallarhorn / Daurdabla / Marsyas | Gjallarhorn | Alt+4 |
-| VictoryMarch | Madrigal / Minuet / None | Madrigal | Alt+5 |
+| VictoryMarch | Madrigal / Minuet / Etude / None | Madrigal | Alt+5 |
 | MainWeapon | Naegling / Twashtar / Carnwenhan / Mpu Gandring | Mpu Gandring | Alt+6 |
 | SubWeapon | Kraken / Demersal / Genmei / Centovente | Genmei | Alt+7 |
 | EtudeType | STR / DEX / VIT / AGI / INT / MND / CHR | STR | Alt+8 |
