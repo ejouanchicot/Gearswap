@@ -64,7 +64,7 @@ local function ensure_modules_loaded()
     ClimaticManager = cm
     local _, wsv = pcall(require, 'shared/jobs/dnc/functions/logic/ws_variant_selector')
     WSVariantSelector = wsv
-    local _, jm = pcall(require, 'shared/jobs/dnc/functions/logic/jump_manager')
+    local _, jm = pcall(require, 'shared/utils/drg/auto_jump')
     JumpManager = jm
 
     DNCTPConfig = _G.DNCTPConfig or {}

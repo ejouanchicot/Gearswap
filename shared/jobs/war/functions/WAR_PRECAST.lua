@@ -23,6 +23,7 @@
 local CooldownChecker = nil
 local PrecastGuard = nil
 local WSPrecastHandler = nil
+local AutoJump = nil
 
 -- WAR TP configuration (loaded from character main file)
 local WARTPConfig = nil
@@ -45,6 +46,9 @@ local function ensure_modules_loaded()
     -- WS Precast Handler (unified WS validation + TP gear + messages)
     local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
     WSPrecastHandler = wph
+
+    local _, aj = pcall(require, 'shared/utils/drg/auto_jump')
+    AutoJump = aj
 
     -- Load job TP config
     WARTPConfig = _G.WARTPConfig or {}
@@ -92,6 +96,18 @@ function job_precast(spell, action, spellMap, eventArgs)
 
     if eventArgs.cancel then
         return
+    end
+
+    -- ══════════════════════════════════════════════════════════════════════════
+    -- AUTO-JUMP (WAR/DRG) - build TP before the WS when short
+    -- ══════════════════════════════════════════════════════════════════════════
+    -- Runs BEFORE WSPrecastHandler: it cancels the WS and replays it once the
+    -- Jump sequence has built the TP, so validation must not reject it first.
+    if spell.type == 'WeaponSkill' and AutoJump then
+        AutoJump.auto_trigger_jump(spell, eventArgs)
+        if eventArgs.cancel then
+            return
+        end
     end
 
     -- ══════════════════════════════════════════════════════════════════════════
