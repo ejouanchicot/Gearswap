@@ -137,7 +137,7 @@ function DNCStates.configure()
         'On',   -- Auto-trigger Jump before WS if TP < 1000 (DRG subjob only)
         'Off'   -- Manual Jump only
     }
-    state.JumpAuto:set('on')  -- Default: Auto-trigger enabled
+    state.JumpAuto:set('On')  -- Default: Auto-trigger enabled
 
     -- ==========================================================================
     -- TP BONUS MODE (MOONSHADE EARRING LOGIC)
@@ -167,6 +167,21 @@ function DNCStates.configure()
         'Fan Dance'     -- Defensive dance (+evasion)
     }
     state.Dance:set('Saber Dance')  -- Default: Saber Dance for DPS
+
+    -- ==========================================================================
+    -- SAMBA SELECTION
+    -- ==========================================================================
+
+    --- Samba: Active samba selection
+    --- Determines which samba //gs c smartbuff applies
+    --- Keybind: Alt+9 to cycle
+    state.Samba = M {
+        ['description'] = 'Samba',
+        'Haste Samba',    -- Haste +5% (350 TP)
+        'Drain Samba II', -- HP drain on hit (250 TP)
+        'Aspir Samba'     -- MP drain on hit (100 TP)
+    }
+    state.Samba:set('Haste Samba')  -- Default: Haste Samba
 
     -- ==========================================================================
     -- FAST CAST (WATCHDOG SYSTEM)
@@ -233,6 +248,11 @@ function DNCStates.validate()
     -- Check Dance state
     if not state.Dance then
         return false, "Dance state not configured"
+    end
+
+    -- Check Samba state
+    if not state.Samba then
+        return false, "Samba state not configured"
     end
 
     -- Check SubWeaponOverride state
