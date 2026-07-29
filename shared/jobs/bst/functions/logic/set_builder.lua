@@ -19,6 +19,9 @@ local SetBuilder = {}
 -- Load pet manager (for pet_valid cache)
 local PetManager = require('shared/jobs/bst/functions/logic/pet_manager')
 
+-- Town detection (pure, no set coupling) - BST uses nested sets.me.idle.Town
+local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   IDLE SET BUILDER (Pet vs Master Bifurcation)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -97,12 +100,8 @@ function SetBuilder.build_idle_set(base_idle_set)
         -- NO PET - Use master sets
         -- ══════════════════════════════════════════════════════════════════════════
 
-        -- Check if in town
-        if state.IdleMode and state.IdleMode.value == "Town" then
-            final_set = sets.me.idle.Town or sets.me.idle or base_idle_set
-        else
-            final_set = sets.me.idle or base_idle_set
-        end
+        -- Town feet handled by the overlay below (applies with or without a pet)
+        final_set = sets.me.idle or base_idle_set
 
         -- Apply master PDT if HybridMode is PDT
         if state.HybridMode and state.HybridMode.value == "PDT" then
@@ -132,6 +131,15 @@ function SetBuilder.build_idle_set(base_idle_set)
 
     if state.Moving and state.Moving.value == "true" and sets.MoveSpeed then
         final_set = set_combine(final_set, sets.MoveSpeed)
+    end
+
+    ---══════════════════════════════════════════════════════════════════════════
+    --- ALWAYS APPLY: Town movement feet (any city/Adoulin, pet or not, even idle)
+    ---══════════════════════════════════════════════════════════════════════════
+
+    if BaseSetBuilder.is_in_town() and sets.me and sets.me.idle
+        and sets.me.idle.Town and sets.me.idle.Town.feet then
+        final_set = set_combine(final_set, { feet = sets.me.idle.Town.feet })
     end
 
     return final_set

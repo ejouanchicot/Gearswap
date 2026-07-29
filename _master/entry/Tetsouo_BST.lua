@@ -51,9 +51,9 @@ function get_sets()
 
     mote_include_version = 2
 
-    -- DISABLE AUTOMOVE FOR BST (performance optimization)
-    -- BST has its own lightweight movement system in BST_IDLE.lua
-    _G.DISABLE_AUTOMOVE = true
+    -- AutoMove ENABLED for BST: movement-speed feet (sets.MoveSpeed) are applied
+    -- by SetBuilder.build_idle_set via state.Moving, which ONLY AutoMove maintains.
+    -- Disabling it left no replacement, so movement feet never equipped.
 
     -- Load BST-specific configs BEFORE Mote-Include (needed by user_setup)
     _G.LockstyleConfig = LockstyleConfig
