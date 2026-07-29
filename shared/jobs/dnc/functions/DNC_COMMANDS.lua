@@ -6,15 +6,16 @@
 ---   Features:
 ---   • Common commands integration (reload, checksets, waltz, aoewaltz, jump)
 ---   • UI commands (ui, showbinds)
----   • Smartbuff command (subjob buff automation)
+---   • Smartbuff command (selected dance + subjob buff automation)
 ---   • Step command with Presto integration
----   • Fan Dance toggle command
+---   • Dance command (state.Dance: Saber Dance / Fan Dance)
 ---   • State change UI updates
 ---
 ---   Dependencies:
 ---   • UICommands - centralized UI command handling
 ---   • CommonCommands - universal job commands
 ---   • StepManager (logic) - Step + Presto management
+---   • SmartbuffManager (logic) - Dance + subjob buff automation
 ---
 ---   @file    jobs/dnc/functions/DNC_COMMANDS.lua
 ---   @author  Tetsouo
@@ -33,6 +34,7 @@ local WatchdogCommands = nil
 local CycleHandler = nil
 local MessageCommands = nil
 local StepManager = nil
+local SmartbuffManager = nil
 
 local function ensure_commands_loaded()
     if not UICommands then
@@ -44,6 +46,7 @@ local function ensure_commands_loaded()
 
         -- Load DNC logic modules
         StepManager = require('shared/jobs/dnc/functions/logic/step_manager')
+        SmartbuffManager = require('shared/jobs/dnc/functions/logic/smartbuff_manager')
     end
 end
 
@@ -139,14 +142,9 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     -- DNC-specific commands
-    if command == 'smartbuff' then
-        if apply_smartbuff then
-            apply_smartbuff()
-            eventArgs.handled = true
-        else
-            local MessageFormatter = require('shared/utils/messages/message_formatter')
-            MessageFormatter.show_error('Smartbuff function not loaded')
-        end
+    if command == 'smartbuff' or command == 'buffself' then
+        SmartbuffManager.apply()
+        eventArgs.handled = true
         return
     end
 
@@ -159,29 +157,7 @@ function job_self_command(cmdParams, eventArgs)
 
     -- Dance command (uses state.Dance to determine which dance to activate)
     if command == 'fandance' or command == 'dance' then
-        local dance_name = (state.Dance and state.Dance.current) or "Fan Dance"
-
-        -- Check cooldown before activating
-        local recast_id = 0
-        if dance_name == "Saber Dance" then
-            recast_id = 191  -- Saber Dance recast ID
-        elseif dance_name == "Fan Dance" then
-            recast_id = 192  -- Fan Dance recast ID
-        end
-
-        -- Get recast time
-        local recast = windower.ffxi.get_ability_recasts()[recast_id]
-
-        if recast and recast > 0 then
-            -- Ability on cooldown, show cooldown warning and DO NOT execute
-            local MessageFormatter = require('shared/utils/messages/message_formatter')
-            MessageFormatter.show_ability_cooldown(dance_name, recast)
-            -- DO NOT send command - ability is on cooldown
-        else
-            -- Ability ready, execute (game will show native feedback)
-            send_command('input /ja "' .. dance_name .. '" <me>')
-        end
-
+        SmartbuffManager.apply_dance()
         eventArgs.handled = true
         return
     end
