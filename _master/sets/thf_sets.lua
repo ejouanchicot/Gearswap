@@ -478,7 +478,7 @@ sets.precast.WS = {
     ear1 = MoonShadeEarring,
     ear2 = 'Odr Earring',
     ring1 = 'Regal Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Toutatis.WS2
 }
 
@@ -495,7 +495,7 @@ sets.precast.WS["Rudra's Storm"] = {
     ear1 = "Odr Earring",
     ear2 = "Domin. Earring +1",
     ring1 = "Murky Ring",
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Toutatis.WS2
 }
 
@@ -521,7 +521,7 @@ sets.precast.WS["Rudra's Storm"].SATA = set_combine(sets.precast.WS["Rudra's Sto
     ear1 = "Odnowa Earring +1",
     ear2 = "Domin. Earring +1",
     ring1 = "Regal Ring",
-    ring2 = "Cornelia's Ring"
+    ring2 = "Ephramad's Ring"
 })
 
 -- Evisceration (Multi-hit crit WS) --
@@ -616,7 +616,7 @@ sets.precast.WS['Savage Blade'] = {
     ear1 = "Sherida Earring",
     ear2 = "Odnowa Earring +1",
     ring1 = "Murky Ring",
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Toutatis.WS2
 }
 
@@ -643,7 +643,7 @@ sets.precast.WS['Savage Blade'].SATA = set_combine(sets.precast.WS['Savage Blade
     ear1 = "Ishvara Earring",
     ear2 = "Odnowa Earring +1",
     ring1 = "Murky Ring",
-    ring2 = "Cornelia's Ring"
+    ring2 = "Ephramad's Ring"
 })
 
 -- Shark Bite (DEX/MND WS) --
@@ -660,7 +660,7 @@ sets.precast.WS['Shark Bite'] = {
     ear1 = "Sherida Earring",
     ear2 = "Odnowa Earring +1",
     ring1 = "Murky Ring",
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Toutatis.WS2
 }
 
@@ -696,7 +696,7 @@ sets.precast.WS['Mandalic Stab'] = {
     ear1 = "Sherida Earring",
     ear2 = "Odnowa Earring +1",
     ring1 = "Murky Ring",
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Toutatis.WS2
 }
 
@@ -745,7 +745,7 @@ sets.precast.WS['Aeolian Edge'] = {
     ear1 = 'Sortiarius Earring',
     ear2 = 'Friomisi Earring',
     ring1 = "Epaminondas's Ring",
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Toutatis.WS2
 }
 

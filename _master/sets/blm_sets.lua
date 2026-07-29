@@ -129,7 +129,13 @@ local WicceEarring = {
 -- • Taranus's Cape (MAB/INT)
 local TaranusCape = {
     name = "Taranus's Cape",
-    augments = {'INT+20', 'Mag. Acc+20 /Mag. Dmg.+20', 'INT+10', '"Mag.Atk.Bns."+10', 'Spell interruption rate down-10%'}
+    augments = {
+        'INT+20',
+        'Mag. Acc+20 /Mag. Dmg.+20',
+        'INT+10',
+        '"Mag.Atk.Bns."+10',
+        'Spell interruption rate down-10%'
+    }
 }
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -221,16 +227,24 @@ sets.precast.FC.Cure = sets.precast.FC
 sets.precast.FC.Curaga = sets.precast.FC.Cure
 
 -- • Impact Fast Cast (Twilight Cloak Required)
-sets.precast.FC.Impact = set_combine(sets.precast.FC, {
-    body = 'Twilight Cloak'
-})
+sets.precast.FC.Impact =
+    set_combine(
+    sets.precast.FC,
+    {
+        body = 'Twilight Cloak'
+    }
+)
 
 -- • Stoneskin Fast Cast
-sets.precast.FC.Stoneskin = set_combine(sets.precast.FC, {
-    head = 'Umuthi Hat',
-    legs = 'Doyen Pants',
-    waist = 'Siegel Sash'
-})
+sets.precast.FC.Stoneskin =
+    set_combine(
+    sets.precast.FC,
+    {
+        head = 'Umuthi Hat',
+        legs = 'Doyen Pants',
+        waist = 'Siegel Sash'
+    }
+)
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- PRECAST - JOB ABILITIES
@@ -270,7 +284,7 @@ sets.precast.WS = {
     waist = 'Fotia Belt',
     left_ear = 'Moonshade Earring',
     right_ear = 'Mache Earring +1',
-    left_ring = "Cornelia's Ring",
+    left_ring = "Ephramad's Ring",
     right_ring = 'Chirich Ring +1',
     back = "Taranus's Cape"
 }
@@ -326,20 +340,28 @@ sets.midcast['Enhancing Magic'] = {
 }
 
 -- • Stoneskin (HP Boost)
-sets.midcast.Stoneskin = set_combine(sets.midcast['Enhancing Magic'], {
-    legs = 'Shedir Seraweels',
-    waist = 'Siegel Sash',
-    neck = 'Nodens Gorget'
-})
+sets.midcast.Stoneskin =
+    set_combine(
+    sets.midcast['Enhancing Magic'],
+    {
+        legs = 'Shedir Seraweels',
+        waist = 'Siegel Sash',
+        neck = 'Nodens Gorget'
+    }
+)
 
 -- • Phalanx (Damage Reduction)
 sets.midcast.Phalanx = set_combine(sets.midcast['Enhancing Magic'], {})
 
 -- • Aquaveil (Interrupt Prevention)
-sets.midcast.Aquaveil = set_combine(sets.midcast['Enhancing Magic'], {
-    head = 'Amalric Coif +1',
-    legs = 'Shedir Seraweels'
-})
+sets.midcast.Aquaveil =
+    set_combine(
+    sets.midcast['Enhancing Magic'],
+    {
+        head = 'Amalric Coif +1',
+        legs = 'Shedir Seraweels'
+    }
+)
 
 -- • Refresh (MP Regeneration)
 sets.midcast.Refresh = set_combine(sets.midcast['Enhancing Magic'], {})
@@ -425,40 +447,64 @@ sets.midcast.Aspir = sets.midcast['Dark Magic']
 -- • ELEMENTAL MAGIC (MAB/MACC - Wicce +3 Full Set)
 sets.midcast['Elemental Magic'] = {
     main = "Bunzi's Rod",
-    sub = "Ammurapi Shield",
-    ammo = "Sroda Tathlum",
-    head = "Wicce Petasos +3",
-    body = "Wicce Coat +3",
-    hands = "Wicce Gloves +3",
-    legs = "Wicce Chausses +3",
-    feet = "Wicce Sabots +3",
-    neck = "Quanpur Necklace",
-    waist = "Sacro Cord",
-    ear1 = "Malignance Earring",
-    ear2 = "Regal Earring",
-    ring1 = "Freke Ring",
-    ring2 = "Metamor. Ring +1",
+    sub = 'Ammurapi Shield',
+    ammo = 'Sroda Tathlum',
+    head = 'Wicce Petasos +3',
+    body = 'Wicce Coat +3',
+    hands = 'Wicce Gloves +3',
+    legs = 'Wicce Chausses +3',
+    feet = 'Wicce Sabots +3',
+    neck = 'Quanpur Necklace',
+    waist = 'Sacro Cord',
+    ear1 = 'Malignance Earring',
+    ear2 = 'Regal Earring',
+    ring1 = 'Freke Ring',
+    ring2 = 'Metamor. Ring +1',
     back = "Taranus's Cape"
 }
 
 -- • Magic Burst Variant (Ea Hat +1 + Mujin Band)
 sets.midcast['Elemental Magic'].MagicBurst = {
     main = "Bunzi's Rod",
-    sub = "Ammurapi Shield",
-    ammo = "Sroda Tathlum",
-    head = "Ea Hat +1",
-    body = "Wicce Coat +3",
+    sub = 'Ammurapi Shield',
+    ammo = 'Sroda Tathlum',
+    head = 'Ea Hat +1',
+    body = 'Wicce Coat +3',
     hands = "Agwu's Gages",
-    legs = "Wicce Chausses +3",
-    feet = "Wicce Sabots +3",
-    neck = "Quanpur Necklace",
-    waist = "Sacro Cord",
-    ear1 = "Malignance Earring",
-    ear2 = "Regal Earring",
-    ring1 = "Freke Ring",
-    ring2 = "Mujin Band",
+    legs = 'Wicce Chausses +3',
+    feet = 'Wicce Sabots +3',
+    neck = 'Quanpur Necklace',
+    waist = 'Sacro Cord',
+    ear1 = 'Malignance Earring',
+    ear2 = 'Regal Earring',
+    ring1 = 'Freke Ring',
+    ring2 = 'Mujin Band',
     back = "Taranus's Cape"
 }
+
+-- • Magic Burst Accuracy Variant (MagicBurstMode: Acc - trades potency for Mag.Acc)
+sets.midcast['Elemental Magic'].MagicBurst.acc = set_combine(sets.midcast['Elemental Magic'].MagicBurst, {
+    ammo = 'Ghastly Tathlum +1',
+    head = 'Wicce Petasos +3',
+    hands = 'Wicce Gloves +3',
+    neck = {name = 'Src. Stole +2', augments = {'Path: A'}},
+    waist = 'Hachirin-no-Obi',
+    right_ear = {
+        name = 'Wicce Earring +2',
+        augments = {'System: 1 ID: 1676 Val: 0', 'Mag. Acc.+16', 'Enmity-6', 'INT+7 MND+7'}
+    },
+    right_ring = 'Metamor. Ring +1',
+    back = {
+        name = "Taranus's Cape",
+        augments = {
+            'INT+20',
+            'Mag. Acc+20 /Mag. Dmg.+20',
+            'INT+10',
+            '"Mag.Atk.Bns."+10',
+            'Spell interruption rate down-10%'
+        }
+    }
+})
 
 -- • MP Conservation Override (Auto-equipped when MP < 1000)
 sets.midcast.MPConservation = {
@@ -539,9 +585,13 @@ sets.MoveSpeed = {
 sets.idle.Town = sets.MoveSpeed
 
 -- • ADOULIN MOVEMENT (City-Specific Speed Boost)
-sets.Adoulin = set_combine(sets.MoveSpeed, {
-    body = "Councilor's Garb"
-})
+sets.Adoulin =
+    set_combine(
+    sets.MoveSpeed,
+    {
+        body = "Councilor's Garb"
+    }
+)
 
 -- • BUFF SETS
 sets.buff = {}

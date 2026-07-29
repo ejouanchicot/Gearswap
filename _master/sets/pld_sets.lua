@@ -353,7 +353,7 @@ sets.precast.WS = {
     waist = {name = 'Sailfi Belt +1', priority = 3},
     left_ear = 'Ishvara Earring',
     right_ear = 'Thrud Earring',
-    left_ring = "Cornelia's Ring",
+    left_ring = "Ephramad's Ring",
     right_ring = 'Sroda Ring',
     back = Rudianos.WS
 }
@@ -382,7 +382,7 @@ sets.precast.WS['Savage Blade'] =
         waist = {name = 'Sailfi Belt +1'},
         left_ear = {name = 'Thrud Earring'},
         right_ear = {name = 'Tuisto Earring'},
-        left_ring = {name = "Cornelia's Ring"},
+        left_ring = {name = "Ephramad's Ring"},
         right_ring = {name = 'Regal Ring'},
         back = Rudianos.WS
     }
@@ -425,7 +425,7 @@ sets.precast.WS['Aeolian Edge'] =
         waist = {name = "Orpheus's Sash"},
         left_ear = {name = 'Crematio Earring'},
         right_ear = {name = 'Friomisi Earring'},
-        left_ring = {name = "Cornelia's Ring"},
+        left_ring = {name = "Ephramad's Ring"},
         right_ring = {name = 'Murky Ring'},
         back = {name = 'Moonlight Cape'}
     }
@@ -446,7 +446,7 @@ sets.precast.WS['Circle Blade'] =
         waist = {name = "Orpheus's Sash"},
         left_ear = {name = 'Sortiarius Earring'},
         right_ear = {name = 'Chev. Earring +1'},
-        left_ring = {name = "Cornelia's Ring"},
+        left_ring = {name = "Ephramad's Ring"},
         right_ring = {name = 'Regal Ring'},
         back = {name = 'Toro Cape'}
     }

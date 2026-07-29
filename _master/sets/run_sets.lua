@@ -250,7 +250,7 @@ sets.precast.WS = {
     waist="Sailfi Belt +1",
     left_ear="Moonshade Earring",
     right_ear="Sherida Earring",
-    left_ring="Cornelia's Ring",
+    left_ring="Ephramad's Ring",
     right_ring="Karieyh Ring",
     back = Ogma.STP,
 }
@@ -275,7 +275,7 @@ sets.precast.WS['Armor Break'] = {
     left_ear="Hermetic Earring",
     right_ear="Gwati Earring",
     left_ring="Metamor. Ring +1",
-    right_ring="Cornelia's Ring",
+    right_ring="Ephramad's Ring",
     back = Ogma.STP,
 }
 
