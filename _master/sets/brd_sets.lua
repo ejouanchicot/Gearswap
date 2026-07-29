@@ -229,7 +229,7 @@ sets.precast.WS = {
     ear1 = 'Ishvara Earring',
     ear2 = 'Domin. Earring +1',
     ring1 = MoonlightRing1,
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Intarabus.ws_str
 }
 
@@ -263,7 +263,7 @@ sets.precast.WS["Rudra's Storm"] = {
     waist = 'Kentarch Belt +1',
     ear1 = 'Mache Earring +1',
     ear2 = 'Domin. Earring +1',
-    ring1 = "Cornelia's Ring",
+    ring1 = "Ephramad's Ring",
     ring2 = MoonlightRing2,
     back = Intarabus.ws_str
 }
@@ -280,7 +280,7 @@ sets.precast.WS['Mordant Rime'] = {
     waist = 'Sailfi Belt +1',
     ear1 = 'Ishvara Earring',
     ear2 = 'Regal Earring',
-    ring1 = "Cornelia's Ring",
+    ring1 = "Ephramad's Ring",
     ring2 = 'Metamor. Ring +1',
     back = Intarabus.ws_str
 }
@@ -316,7 +316,7 @@ sets.precast.WS['Savage Blade'] = {
     ear1 = 'Ishvara Earring',
     ear2 = 'Crep. Earring',
     ring1 = MoonlightRing1,
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Intarabus.ws_str
 }
 

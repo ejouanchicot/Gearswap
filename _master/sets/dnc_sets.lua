@@ -463,7 +463,7 @@ sets.precast.WS = {
     ear1 = 'Odr Earring',
     ear2 = 'Macu. Earring +1',
     ring1 = 'Regal Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Senuna.WS
 }
 
@@ -481,7 +481,7 @@ sets.precast.WS['Ruthless Stroke'] = {
     ear1 = 'Odnowa Earring +1',
     ear2 = 'Domin. Earring +1',
     ring1 = 'Regal Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Senuna.WS
 }
 
@@ -497,7 +497,7 @@ sets.precast.WS['Ruthless Stroke'].Clim = {
     waist = 'Kentarch Belt +1',
     ear1 = 'Odnowa Earring +1',
     ear2 = 'Macu. Earring +1',
-    ring1 = "Cornelia's Ring",
+    ring1 = "Ephramad's Ring",
     ring2 = 'Murky Ring',
     back = Senuna.WS
 }
@@ -514,7 +514,7 @@ sets.precast.WS['Ruthless Stroke'].FanDance = {
     waist = 'Grunfeld Rope',
     ear1 = 'Odr Earring',
     ear2 = 'Domin. Earring +1',
-    ring1 = "Cornelia's Ring",
+    ring1 = "Ephramad's Ring",
     ring2 = 'Regal Ring',
     back = Senuna.WS
 }
@@ -532,7 +532,7 @@ sets.precast.WS['Ruthless Stroke'].FanDance.Clim = {
     ear1 = 'Domin. Earring +1',
     ear2 = 'Macu. Earring +1',
     ring1 = "Epaminondas's Ring",
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Senuna.WS
 }
 
@@ -549,7 +549,7 @@ sets.precast.WS['Ruthless Stroke'].SaberDance = {
     ear1 = 'Sherida Earring',
     ear2 = 'Ishvara Earring',
     ring1 = 'Murky Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Senuna.WS
 }
 
@@ -566,7 +566,7 @@ sets.precast.WS['Ruthless Stroke'].SaberDance.Clim = {
     ear1 = 'Sherida Earring',
     ear2 = 'Ishvara Earring',
     ring1 = 'Murky Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Senuna.WS
 }
 
@@ -687,7 +687,7 @@ sets.precast.WS["Rudra's Storm"] = {
     ear1 = 'Domin. Earring +1',
     ear2 = 'Odnowa Earring +1',
     ring1 = 'Murky Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Senuna.WS
 }
 
@@ -704,7 +704,7 @@ sets.precast.WS["Rudra's Storm"].Clim = {
     ear1 = 'Domin. Earring +1',
     ear2 = 'Macu. Earring +1',
     ring1 = 'Murky Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Senuna.WS
 }
 
@@ -720,7 +720,7 @@ sets.precast.WS["Rudra's Storm"].FanDance = {
     waist = "Kentarch Belt +1",
     ear1 = "Odr Earring",
     ear2 = "Domin. Earring +1",
-    ring1 = "Cornelia's Ring",
+    ring1 = "Ephramad's Ring",
     ring2 = "Epaminondas's Ring",
     back = Senuna.WS
 }
@@ -738,7 +738,7 @@ sets.precast.WS["Rudra's Storm"].FanDance.Clim = {
     ear1 = "Odr Earring",
     ear2 = "Macu. Earring +1",
     ring1 = "Epaminondas's Ring",
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = "Senuna's Mantle"
 }
 
@@ -755,7 +755,7 @@ sets.precast.WS["Rudra's Storm"].SaberDance = {
     ear1 = 'Domin. Earring +1',
     ear2 = 'Odr Earring',
     ring1 = 'Murky Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Senuna.WS
 }
 
@@ -772,7 +772,7 @@ sets.precast.WS["Rudra's Storm"].SaberDance.Clim = {
     ear1 = 'Sherida Earring',
     ear2 = 'Domin. Earring +1',
     ring1 = "Murky Ring",
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Senuna.WS
 }
 
@@ -789,7 +789,7 @@ sets.precast.WS['Shark Bite'] = {
     waist = 'Sailfi Belt +1',
     ear1 = 'Domin. Earring +1',
     ear2 = 'Odnowa Earring +1',
-    ring1 = "Cornelia's Ring",
+    ring1 = "Ephramad's Ring",
     ring2 = 'Regal Ring',
     back = Senuna.WS
 }
@@ -807,7 +807,7 @@ sets.precast.WS['Shark Bite'].Clim = {
     ear1 = 'Domin. Earring +1',
     ear2 = 'Macu. Earring +1',
     ring1 = 'Murky Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Senuna.WS
 }
 
@@ -823,7 +823,7 @@ sets.precast.WS['Shark Bite'].FanDance = {
     waist = 'Kentarch Belt +1',
     ear1 = 'Domin. Earring +1',
     ear2 = 'Odr Earring',
-    ring1 = "Cornelia's Ring",
+    ring1 = "Ephramad's Ring",
     ring2 = 'Regal Ring',
     back = Senuna.WS
 }
@@ -841,7 +841,7 @@ sets.precast.WS['Shark Bite'].FanDance.Clim = {
     ear1 = 'Domin. Earring +1',
     ear2 = 'Macu. Earring +1',
     ring1 = 'Moonlight Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Senuna.WS
 }
 
@@ -875,7 +875,7 @@ sets.precast.WS['Shark Bite'].SaberDance.Clim = {
     ear1 = 'Sherida Earring',
     ear2 = 'Macu. Earring +1',
     ring1 = "Epaminondas's Ring",
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Senuna.WS
 }
 
@@ -923,7 +923,7 @@ sets.precast.WS['Exenterator'] = {
     waist = 'Fotia Belt',
     ear1 = 'Mache Earring +1',
     ear2 = 'Macu. Earring +1',
-    ring1 = "Cornelia's Ring",
+    ring1 = "Ephramad's Ring",
     ring2 = 'Regal Ring',
     back = Senuna.WS
 }
@@ -939,7 +939,7 @@ sets.precast.WS['Aeolian Edge'] = {
     waist = "Orpheus's Sash",
     ear1 = 'Friomisi Earring',
     ear2 = 'Crematio Earring',
-    ring1 = "Cornelia's Ring",
+    ring1 = "Ephramad's Ring",
     ring2 = "Epaminondas's Ring",
     back = Senuna.WS
 }

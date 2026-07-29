@@ -29,7 +29,7 @@ local RINGS = {
     CPalug = 'C. Palug Ring',
     Gere = 'Gere Ring',
     Hetairoi = 'Hetairoi Ring',
-    Cornelia = "Cornelia's Ring",
+    Cornelia = "Ephramad's Ring",
     Metamorph = 'Metamor. Ring +1',
     Purity = 'Purity Ring',
     Tali = "Tali'ah Ring"
@@ -763,7 +763,7 @@ sets.precast.WS['Bora Axe'] = {
     ear1 = 'Odnowa Earring +1',
     ear2 = 'Nukumi Earring +1',
     ring1 = 'Murky Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Artio.WS1
 }
 

@@ -380,7 +380,7 @@ sets.precast.WS['default'] = {
         }
     },
     left_ear = 'Thrud Earring',
-    left_ring = "Cornelia's Ring",
+    left_ring = "Ephramad's Ring",
     right_ring = 'Karieyh Ring',
     back = Ankou.WS_VIT
 }
@@ -422,7 +422,7 @@ sets.precast.WS['Origin'] =
             }
         },
         left_ring = {name = 'Beithir Ring', augments = {'Path: A'}},
-        right_ring = "Cornelia's Ring",
+        right_ring = "Ephramad's Ring",
         back = Ankou.WS_STR
     }
 )
@@ -451,7 +451,7 @@ sets.precast.WS['Resolution'] =
             }
         },
         left_ear = {name = 'Schere Earring', augments = {'Path: A'}},
-        left_ring = "Cornelia's Ring",
+        left_ring = "Ephramad's Ring",
         right_ring = 'Karieyh Ring',
         back = Ankou.WS_STR
     }
@@ -478,7 +478,7 @@ sets.precast.WS['Torcleaver'] = {
             'STR+9 INT+9'
         }
     },
-    left_ring = "Cornelia's Ring",
+    left_ring = "Ephramad's Ring",
     right_ring = 'Karieyh Ring',
     back = Ankou.WS_VIT
 }
@@ -508,7 +508,7 @@ sets.precast.WS['Quietus'] =
             }
         },
         left_ring = {name = 'Beithir Ring', augments = {'Path: A'}},
-        right_ring = "Cornelia's Ring",
+        right_ring = "Ephramad's Ring",
         back = Ankou.WS_STR
     }
 )
@@ -543,7 +543,7 @@ sets.precast.WS['Savage Blade'] = {
             'STR+9 INT+9'
         }
     },
-    left_ring = "Cornelia's Ring",
+    left_ring = "Ephramad's Ring",
     right_ring = 'Murky Ring',
     back = Ankou.WS_STR
 }

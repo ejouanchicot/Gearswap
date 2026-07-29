@@ -83,7 +83,7 @@ local WARTPConfig = {
     ---==========================================================================
     --- These are NOT shields, so Fencer does NOT activate.
 
-    grips = {'Utu Grip', 'Alber Strap'}
+    grips = {'Telopanos Grip', 'Alber Strap'}
 }
 
 ---============================================================================

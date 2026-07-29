@@ -82,21 +82,21 @@ local MoonlightRing2 = {
 --- Great Axes (Two-Handed)
 sets['Ukonvasara'] = {
     main = 'Ukonvasara',
-    sub = 'Utu Grip'
+    sub = 'Telopanos Grip'
 } -- Relic (AM3 TP reduction)
 sets['Chango'] = {
     main = 'Chango',
-    sub = 'Utu Grip'
+    sub = 'Telopanos Grip'
 } -- Empyrean (+500 TP bonus)
 sets['Lycurgos'] = {
     main = 'Lycurgos',
-    sub = 'Utu Grip'
+    sub = 'Telopanos Grip'
 } -- Mythic
 
 --- Polearms (Two-Handed)
 sets['Shining'] = {
     main = 'Shining One',
-    sub = 'Utu Grip'
+    sub = 'Telopanos Grip'
 } -- Great Sword
 
 --- Axes (One-Handed, Fencer-compatible with shield)
@@ -126,8 +126,8 @@ sets['Loxotic'] = {
 sets['Blurred Shield +1'] = {
     sub = 'Blurred Shield +1'
 }
-sets['Utu Grip'] = {
-    sub = 'Utu Grip'
+sets['Telopanos Grip'] = {
+    sub = 'Telopanos Grip'
 }
 sets['Alber Strap'] = {
     sub = 'Alber Strap'
@@ -346,7 +346,7 @@ sets.precast.WS = {
     ear1 = 'Thrud Earring',
     ear2 = 'Boii Earring +1',
     ring1 = 'Niqmaddu Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Cichol.ws1
 }
 
@@ -371,7 +371,7 @@ sets.precast.WS["Ukko's Fury"] = set_combine(sets.precast.WS, {
     ear1 = 'Schere Earring',
     ear2 = 'Boii Earring +1',
     ring1 = 'Niqmaddu Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Cichol.ws1
 })
 
@@ -387,7 +387,7 @@ sets.precast.WS['Upheaval'] = set_combine(sets.precast.WS, {
     ear1 = 'Schere Earring',
     ear2 = 'Thrud Earring',
     ring1 = 'Niqmaddu Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Cichol.ws1
 })
 
@@ -403,7 +403,7 @@ sets.precast.WS['Fell Cleave'] = set_combine(sets.precast.WS, {
     ear2 = 'Thrud Earring',
     ear1 = 'Schere Earring',
     ring1 = 'Murky Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Cichol.ws1
 })
 
@@ -419,7 +419,7 @@ sets.precast.WS["King's Justice"] = set_combine(sets.precast.WS, {
     ear1 = 'Schere Earring',
     ear2 = 'Boii Earring +1',
     ring1 = 'Murky Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back = Cichol.ws1
 })
 
@@ -435,7 +435,7 @@ sets.precast.WS['Impulse Drive'] = set_combine(sets.precast.WS, {
     body = "Sakpata's Plate",
     hands = 'Boii Mufflers +3',
     ring1 = 'Murky Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     waist = 'Sailfi Belt +1',
     legs = 'Boii Cuisses +3',
     feet = 'Boii Calligae +3',
@@ -451,7 +451,7 @@ sets.precast.WS['Stardiver'] = set_combine(sets.precast.WS, {
     body = "Sakpata's Plate",
     hands = "Sakpata's Gauntlets",
     ring1 = 'Niqmaddu Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     waist = 'Fotia Belt',
     legs = 'Boii Cuisses +3',
     feet = 'Boii Calligae +3',
@@ -472,7 +472,7 @@ sets.precast.WS['Savage Blade'] = set_combine(sets.precast.WS, {
     waist = "Kentarch Belt +1",
     ear1 = "Thrud Earring",
     ear2 = "Odnowa Earring +1",
-    ring1 = "Cornelia's Ring",
+    ring1 = "Ephramad's Ring",
     ring2 = "Sroda Ring",
     back = Cichol.ws1
 })
@@ -491,7 +491,7 @@ sets.precast.WS['Calamity'] = set_combine(sets.precast.WS, {
     waist = "Sailfi Belt +1",
     ear1 = "Thrud Earring",
     ear2 = "Odnowa Earring +1",
-    ring1 = "Cornelia's Ring",
+    ring1 = "Ephramad's Ring",
     ring2 = "Sroda Ring",
     back = Cichol.ws1
 })
