@@ -23,6 +23,7 @@
 
 local Correspondence = require('shared/jobs/blm/functions/logic/refiner/correspondence')
 local BLMMessages    = require('shared/utils/messages/formatters/jobs/message_blm')
+local TierRefiner    = require('shared/utils/precast/tier_refiner')
 
 local ReplacementLogic = {}
 
@@ -46,61 +47,16 @@ function ReplacementLogic.find_available_tier(spell, spell_recasts, player_mp, c
         return spell and spell.english or "", nil
     end
 
-    local currentLevel = spellLevel
-    local newSpell = spell.english
     local originalSpell = spell.english
 
     if not correspondence then
-        return newSpell, nil
+        return originalSpell, nil
     end
 
-    local res = res or windower.res or require('resources')
-    if not res then
-        return newSpell, nil
-    end
-
-    -- Walk down tiers (max 6 iterations: VI -> V -> IV -> III -> II -> I)
-    local maxIterations = 6
-    local resSpells = res.spells
-
-    for _ = 1, maxIterations do
-        if not currentLevel then
-            break
-        end
-
-        local testSpellName = (currentLevel == '') and spellCategory or (spellCategory .. ' ' .. currentLevel)
-        local testSpell = resSpells:with('en', testSpellName)
-
-        if testSpell then
-            local mpCost = testSpell.mp_cost or 999
-            local recastId = testSpell.recast_id
-
-            if spell_recasts[recastId] == 0 and player_mp >= mpCost then
-                newSpell = testSpellName
-                break -- Found an available tier
-            end
-        end
-
-        local tier = correspondence[currentLevel]
-        if not tier then
-            break
-        end
-
-        currentLevel = tier.replace
-
-        -- Handle base tier (empty string = tier I) with early exit
-        if currentLevel == '' then
-            local tierOneSpell = spellCategory
-            local tierOne = resSpells:with('en', tierOneSpell)
-            if tierOne then
-                local mpCost = tierOne.mp_cost or 999
-                if spell_recasts[tierOne.recast_id] == 0 and player_mp >= mpCost then
-                    newSpell = tierOneSpell
-                end
-            end
-            break
-        end
-    end
+    -- Tier walking lives in the shared engine so BLM and RDM share one copy
+    local newSpell = TierRefiner.find_available_tier(
+        originalSpell, correspondence, spellCategory, spellLevel, spell_recasts, player_mp
+    )
 
     return newSpell, (newSpell ~= originalSpell and newSpell or nil)
 end
