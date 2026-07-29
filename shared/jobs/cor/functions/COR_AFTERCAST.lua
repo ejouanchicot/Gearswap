@@ -31,6 +31,17 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     -- Weapons are automatically reapplied via customize_idle_set and customize_melee_set
     -- No manual intervention needed here
 
+    -- Auto-open a bullet pouch when the stack runs low after a ranged attack.
+    -- Delayed slightly so FFXI has decremented the ammo count before we read it.
+    if spell.type == 'RangedAttack' and not spell.interrupted then
+        coroutine.schedule(function()
+            local ok, QuiverManager = pcall(require, 'shared/utils/inventory/quiver_manager')
+            if ok and QuiverManager then
+                QuiverManager.check_and_refill('Bronze Bullet', 'Brz. Bull. Pouch', 15)
+            end
+        end, 1.0)
+    end
+
     -- Gear refresh is handled by Mote (status_change) + MidcastWatchdog (packet
     -- loss). The forced 'gs c update' here was redundant (removed 2026-06-09,
     -- validated in-game on WAR in Odyssey + Sortie).

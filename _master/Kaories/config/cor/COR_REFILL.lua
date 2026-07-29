@@ -15,6 +15,9 @@ M.default = {
     { name = 'Remedy',                                     target = 12 },
     { name = {'Sublime Sushi +1',  'Sublime Sushi'},         target = 12 },
     { name = {'R. Curry Bun +1',  'Red Curry Bun'},       target = 12 },
+    -- Bronze Bullet refills. Must sit in INVENTORY: /item only works there,
+    -- which is what lets the quiver manager open one automatically.
+    { name = 'Brz. Bull. Pouch',                           target = 2 },
 }
 
 return M
