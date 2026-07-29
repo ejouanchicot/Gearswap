@@ -83,6 +83,23 @@ function BaseSetBuilder.select_idle_base_town(base_set)
     return base_set, false
 end
 
+--- Pure town detection (no set coupling). For callers that apply their own
+--- town gear instead of a flat sets.idle.Town (e.g. BST nested sets.me.idle.Town).
+--- Adoulin counts as town. Dynamis zones are excluded (technically cities, not safe).
+--- @return boolean in_town True if in a city/Adoulin
+function BaseSetBuilder.is_in_town()
+    if world and world.area then
+        if world.area == 'Western Adoulin' or world.area == 'Eastern Adoulin' then
+            return true
+        end
+        if areas and areas.Cities and areas.Cities:contains(world.area)
+            and not world.area:contains('Dynamis') then
+            return true
+        end
+    end
+    return false
+end
+
 ---============================================================================
 --- MODULE EXPORT
 ---============================================================================
