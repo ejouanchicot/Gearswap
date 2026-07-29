@@ -21,37 +21,51 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 --- Keybind list with key, command, description, and state
 --- Key format: ! = Alt, ^ = Ctrl, @ = Windows, # = Shift
+--- Numpad only, always with a modifier so the bare numpad stays free for the
+--- game and for addons that inject numpad presses (Silmaril hover, follow
+--- macros). The modifier carries the meaning:
+---
+--- Ctrl is the primary bank and is filled first; Shift takes the overflow.
+---
+---   Ctrl  = Main side          Shift = Sub side
+---   Ctrl+1 Main Light          Shift+1 Sub Light
+---   Ctrl+2 Main Dark           Shift+2 Sub Dark
+---   Ctrl+3 Main Light AOE      Shift+3 Sub Light AOE
+---   Ctrl+4 Main Dark AOE       Shift+4 Sub Dark AOE
+---
+--- The same digit is always the same spell family; the modifier picks Main or
+--- Sub. Ctrl 5-0 hold tiers, Storm and the main modes; Shift 5-7 the rest.
 BLMKeybinds.binds = {
-    -- Main Elemental Spells (Light then Dark)
-    { key = "!1", command = "cyclestate MainLightSpell", desc = "Main Light", state = "MainLightSpell" },
-    { key = "!2", command = "cyclestate MainDarkSpell", desc = "Main Dark", state = "MainDarkSpell" },
+    -- Main / Sub Elemental Spells (same digit, Ctrl = Main, Shift = Sub)
+    { key = "^numpad1", command = "cyclestate MainLightSpell", desc = "Main Light", state = "MainLightSpell" },
+    { key = "#numpad1", command = "cyclestate SubLightSpell", desc = "Sub Light", state = "SubLightSpell" },
+    { key = "^numpad2", command = "cyclestate MainDarkSpell", desc = "Main Dark", state = "MainDarkSpell" },
+    { key = "#numpad2", command = "cyclestate SubDarkSpell", desc = "Sub Dark", state = "SubDarkSpell" },
 
-    -- Sub Elemental Spells (Light then Dark)
-    { key = "^1", command = "cyclestate SubLightSpell", desc = "Sub Light", state = "SubLightSpell" },
-    { key = "^2", command = "cyclestate SubDarkSpell", desc = "Sub Dark", state = "SubDarkSpell" },
+    -- Main / Sub AOE Spells
+    { key = "^numpad3", command = "cyclestate MainLightAOE", desc = "Main Light AOE", state = "MainLightAOE" },
+    { key = "#numpad3", command = "cyclestate SubLightAOE", desc = "Sub Light AOE", state = "SubLightAOE" },
+    { key = "^numpad4", command = "cyclestate MainDarkAOE", desc = "Main Dark AOE", state = "MainDarkAOE" },
+    { key = "#numpad4", command = "cyclestate SubDarkAOE", desc = "Sub Dark AOE", state = "SubDarkAOE" },
 
-    -- Spell Tier (VI, V, IV, III, II, I)
-    { key = "!-", command = "cyclestate SpellTier", desc = "Spell Tier", state = "SpellTier" },
-
-    -- AOE Spells (Light then Dark)
-    { key = "!3", command = "cyclestate MainLightAOE", desc = "Light AOE", state = "MainLightAOE" },
-    { key = "!4", command = "cyclestate MainDarkAOE", desc = "Dark AOE", state = "MainDarkAOE" },
-
-    -- AOE Tier (Aja/III/II/I)
-    { key = "!=", command = "cyclestate AOETier", desc = "AOE Tier", state = "AOETier" },
+    -- Tiers (shared by Main and Sub)
+    { key = "^numpad5", command = "cyclestate SpellTier", desc = "Spell Tier", state = "SpellTier" },
+    { key = "^numpad6", command = "cyclestate AOETier", desc = "AOE Tier", state = "AOETier" },
 
     -- Storm Spells (SCH subjob)
-    { key = "!0", command = "cyclestate Storm", desc = "Storm", state = "Storm" },
+    { key = "^numpad7", command = "cyclestate Storm", desc = "Storm", state = "Storm" },
 
     -- Combat Modes
-    { key = "!5", command = "cyclestate HybridMode", desc = "Hybrid Mode",  state = "HybridMode" },
-    { key = "!6", command = "cyclestate CombatMode", desc = "Combat Mode",  state = "CombatMode" },
+    { key = "^numpad8", command = "cyclestate HybridMode", desc = "Hybrid Mode",  state = "HybridMode" },
+    { key = "^numpad9", command = "cyclestate CombatMode", desc = "Combat Mode",  state = "CombatMode" },
 
-    -- Magic Burst Mode
-    { key = "!7", command = "cyclestate MagicBurstMode", desc = "MB Mode", state = "MagicBurstMode" },
+    -- Magic Burst / Death
+    { key = "^numpad0", command = "cyclestate MagicBurstMode", desc = "MB Mode", state = "MagicBurstMode" },
+    { key = "#numpad5", command = "cyclestate DeathMode", desc = "Death Mode", state = "DeathMode" },
 
-    -- Death Mode
-    { key = "!8", command = "cyclestate DeathMode", desc = "Death Mode", state = "DeathMode" },
+    -- Stratagem AOE Toggles (SCH subjob)
+    { key = "#numpad6", command = "cyclestate SneakInviAOE", desc = "Sneak/Invi AOE", state = "SneakInviAOE" },
+    { key = "#numpad7", command = "cyclestate KlimaformAOE", desc = "Klimaform AOE", state = "KlimaformAOE" },
 }
 
 ---============================================================================

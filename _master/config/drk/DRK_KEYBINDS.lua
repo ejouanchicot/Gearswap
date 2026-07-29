@@ -32,14 +32,14 @@ local DRKKeybinds = {}
 DRKKeybinds.binds = {
     -- Hybrid Mode (PDT/Normal)
     {
-        key = "!1",
+        key = "^numpad2",
         command = "cyclestate HybridMode",
         desc = "Hybrid Mode",
         state = "HybridMode"
     },
     -- Weapon Management
     {
-        key = "!2",
+        key = "^numpad1",
         command = "cyclestate MainWeapon",
         desc = "Main Weapon",
         state = "MainWeapon"

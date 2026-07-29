@@ -29,28 +29,25 @@ BSTKeybinds.binds = {
     ---==========================================================================
     --- WEAPON MANAGEMENT (Number Keys)
     ---==========================================================================
-    { key = "1", command = "cyclestate WeaponSet", desc = "Main Weapon", state = "WeaponSet" },
-    { key = "4", command = "cyclestate SubSet", desc = "Sub/Shield", state = "SubSet" },
+    { key = "^numpad1", command = "cyclestate WeaponSet", desc = "Main Weapon", state = "WeaponSet" },
+    { key = "^numpad2", command = "cyclestate SubSet", desc = "Sub/Shield", state = "SubSet" },
 
     ---==========================================================================
     --- COMBAT MODES (Number Keys)
     ---==========================================================================
-    { key = "5", command = "cyclestate HybridMode", desc = "Hybrid Mode", state = "HybridMode" },
-    { key = "6", command = "cyclestate AutoPetEngage", desc = "Auto Pet Engage", state = "AutoPetEngage" },
-    { key = "7", command = "cyclestate PetIdleMode", desc = "Pet Idle Mode", state = "PetIdleMode" },
+    { key = "^numpad3", command = "cyclestate HybridMode", desc = "Hybrid Mode", state = "HybridMode" },
+    { key = "^numpad5", command = "cyclestate AutoPetEngage", desc = "Auto Pet Engage", state = "AutoPetEngage" },
+    { key = "^numpad4", command = "cyclestate PetIdleMode", desc = "Pet Idle Mode", state = "PetIdleMode" },
 
     ---==========================================================================
     --- ECOSYSTEM/SPECIES MANAGEMENT (Alt+Numbers - BST Functions)
     ---==========================================================================
-    { key = "!5", command = "ecosystem", desc = "Cycle Ecosystem", state = "Ecosystem" },
-    { key = "!6", command = "species", desc = "Cycle Species", state = "species" },
+    { key = "^numpad6", command = "ecosystem", desc = "Cycle Ecosystem", state = "Ecosystem" },
+    { key = "^numpad7", command = "species", desc = "Cycle Species", state = "species" },
 
     ---==========================================================================
     --- PET MANAGEMENT (Alt+Numbers - BST Functions)
     ---==========================================================================
-    { key = "!7", command = "broth", desc = "Show Broth Count" },
-    { key = "!8", command = "pet engage", desc = "Engage Pet" },
-    { key = "!9", command = "pet disengage", desc = "Disengage Pet" }
 }
 
 ---============================================================================

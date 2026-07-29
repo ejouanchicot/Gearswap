@@ -31,7 +31,7 @@ local WHMKeybinds = {}
 WHMKeybinds.binds = {
     -- CureMode cycling (Alt+1 - most important for WHM)
     {
-        key = "!1",
+        key = "^numpad1",
         command = "cyclestate CureMode",
         desc = "Cure Mode",
         state = "CureMode"
@@ -39,7 +39,7 @@ WHMKeybinds.binds = {
 
     -- IdleMode cycling (Ctrl+=)
     {
-        key = "!2",
+        key = "^numpad5",
         command = "cyclestate IdleMode",
         desc = "Idle Mode",
         state = "IdleMode"
@@ -47,7 +47,7 @@ WHMKeybinds.binds = {
 
     -- AfflatusMode cycling (Alt+3)
     {
-        key = "!3",
+        key = "^numpad3",
         command = "cyclestate AfflatusMode",
         desc = "Afflatus Mode",
         state = "AfflatusMode"
@@ -55,7 +55,7 @@ WHMKeybinds.binds = {
 
     -- CureAutoTier cycling (Alt+4)
     {
-        key = "!4",
+        key = "^numpad2",
         command = "cyclestate CureAutoTier",
         desc = "Cure Auto-Tier",
         state = "CureAutoTier"
@@ -63,7 +63,7 @@ WHMKeybinds.binds = {
 
     -- CombatMode cycling (Alt+0) - Weapon lock control
     {
-        key = "!0",
+        key = "^numpad6",
         command = "cyclestate CombatMode",
         desc = "Combat Mode",
         state = "CombatMode"
@@ -71,24 +71,10 @@ WHMKeybinds.binds = {
 
     -- CastingMode cycling (Alt+5)
     {
-        key = "!5",
+        key = "^numpad4",
         command = "cyclestate CastingMode",
         desc = "Casting Mode",
         state = "CastingMode"
-    },
-
-    -- Lockstyle controls
-    {
-        key = "^[",
-        command = "send input /lockstyle on",
-        desc = "Lockstyle ON",
-        state = nil
-    },
-    {
-        key = "![",
-        command = "send input /lockstyle off",
-        desc = "Lockstyle OFF",
-        state = nil
     }
 
     -- Additional keybinds can be added here:

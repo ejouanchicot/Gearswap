@@ -27,38 +27,36 @@ GEOKeybinds.binds = {
     ---========================================================================
 
     -- Cycle Spells
-    { key = "!1", command = "cyclestate MainIndi", desc = "Main Indi", state = "MainIndi" },
-    { key = "!2", command = "cyclestate MainGeo", desc = "Main Geo", state = "MainGeo" },
+    { key = "^numpad1", command = "cyclestate MainIndi", desc = "Main Indi", state = "MainIndi" },
+    { key = "^numpad2", command = "cyclestate MainGeo", desc = "Main Geo", state = "MainGeo" },
 
     -- Cast Spells (Ctrl+1/2)
-    { key = "^1", command = "indi", desc = "Cast Indi (<me>)", state = nil },
-    { key = "^2", command = "geo", desc = "Cast Geo (auto target)", state = nil },
 
     ---========================================================================
     --- ELEMENTAL SPELLS
     ---========================================================================
 
     -- Elemental Spells (Light then Dark)
-    { key = "!3", command = "cyclestate MainLightSpell", desc = "Light Spell", state = "MainLightSpell" },
-    { key = "!4", command = "cyclestate MainDarkSpell", desc = "Dark Spell", state = "MainDarkSpell" },
+    { key = "^numpad3", command = "cyclestate MainLightSpell", desc = "Light Spell", state = "MainLightSpell" },
+    { key = "^numpad4", command = "cyclestate MainDarkSpell", desc = "Dark Spell", state = "MainDarkSpell" },
 
     -- Spell Tier (V, IV, III, II, I)
-    { key = "!-", command = "cyclestate SpellTier", desc = "Spell Tier", state = "SpellTier" },
+    { key = "^numpad7", command = "cyclestate SpellTier", desc = "Spell Tier", state = "SpellTier" },
 
     -- AOE Spells (Light then Dark)
-    { key = "!5", command = "cyclestate MainLightAOE", desc = "Light AOE", state = "MainLightAOE" },
-    { key = "!6", command = "cyclestate MainDarkAOE", desc = "Dark AOE", state = "MainDarkAOE" },
+    { key = "^numpad5", command = "cyclestate MainLightAOE", desc = "Light AOE", state = "MainLightAOE" },
+    { key = "^numpad6", command = "cyclestate MainDarkAOE", desc = "Dark AOE", state = "MainDarkAOE" },
 
     -- AOE Tier (III, II, I)
-    { key = "!=", command = "cyclestate AOETier", desc = "AOE Tier", state = "AOETier" },
+    { key = "^numpad8", command = "cyclestate AOETier", desc = "AOE Tier", state = "AOETier" },
 
     -- Combat Modes
-    { key = "!7", command = "cyclestate HybridMode", desc = "Hybrid Mode",  state = "HybridMode" },
-    { key = "!8", command = "cyclestate CombatMode", desc = "Combat Mode",  state = "CombatMode" },
-    { key = "!9", command = "cyclestate LuopanMode", desc = "Luopan Mode",  state = "LuopanMode" },
+    { key = "^numpad9", command = "cyclestate HybridMode", desc = "Hybrid Mode",  state = "HybridMode" },
+    { key = "^numpad0", command = "cyclestate CombatMode", desc = "Combat Mode",  state = "CombatMode" },
+    { key = "^numpad.", command = "cyclestate LuopanMode", desc = "Luopan Mode",  state = "LuopanMode" },
 
     -- Indicolure Mode (Self vs Entrust)
-    { key = "!0", command = "cyclestate IndicolureMode", desc = "Indi Mode", state = "IndicolureMode" },
+    { key = "^numpad+", command = "cyclestate IndicolureMode", desc = "Indi Mode", state = "IndicolureMode" },
 }
 
 ---============================================================================

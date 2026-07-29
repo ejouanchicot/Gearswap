@@ -22,36 +22,31 @@ RDMKeybinds.binds = {
     ---========================================================================
 
     -- Weapon & Combat States (1-5)
-    { key = "numpad1", command = "cyclestate MainWeapon",     desc = "Main Weapon",     state = "MainWeapon" },
-    { key = "numpad2", command = "cyclestate SubWeapon",      desc = "Sub Weapon",      state = "SubWeapon" },
-    { key = "numpad3", command = "cyclestate EngagedMode",    desc = "Engaged Mode",    state = "EngagedMode" },
-    { key = "numpad4", command = "cyclestate IdleMode",       desc = "Idle Mode",       state = "IdleMode" },
-    { key = "numpad5", command = "cyclestate CombatMode",     desc = "Combat Mode",     state = "CombatMode" },
+    { key = "^numpad1", command = "cyclestate MainWeapon",     desc = "Main Weapon",     state = "MainWeapon" },
+    { key = "^numpad2", command = "cyclestate SubWeapon",      desc = "Sub Weapon",      state = "SubWeapon" },
+    { key = "^numpad3", command = "cyclestate EngagedMode",    desc = "Engaged Mode",    state = "EngagedMode" },
+    { key = "^numpad4", command = "cyclestate IdleMode",       desc = "Idle Mode",       state = "IdleMode" },
+    { key = "^numpad5", command = "cyclestate CombatMode",     desc = "Combat Mode",     state = "CombatMode" },
 
     -- Magic States (6-9, 0)
-    { key = "numpad6", command = "cyclestate EnfeebleMode",   desc = "Enfeeble Mode",   state = "EnfeebleMode" },
-    { key = "numpad7", command = "cyclestate NukeMode",       desc = "Nuke Mode",       state = "NukeMode" },
-    { key = "numpad8", command = "cyclestate SaboteurMode",   desc = "Saboteur Mode",   state = "SaboteurMode" },
-    { key = "numpad9", command = "cyclestate NukeTier",       desc = "Nuke Tier",       state = "NukeTier" },
-    { key = "numpad0", command = "cyclestate Storm",          desc = "Storm (SCH)",     state = "Storm",    subjob = "SCH" },
+    { key = "^numpad6", command = "cyclestate EnfeebleMode",   desc = "Enfeeble Mode",   state = "EnfeebleMode" },
+    { key = "^numpad7", command = "cyclestate NukeMode",       desc = "Nuke Mode",       state = "NukeMode" },
+    { key = "^numpad0", command = "cyclestate SaboteurMode",   desc = "Saboteur Mode",   state = "SaboteurMode" },
+    { key = "^numpad8", command = "cyclestate NukeTier",       desc = "Nuke Tier",       state = "NukeTier" },
+    { key = "^numpad9", command = "cyclestate Storm",          desc = "Storm (SCH)",     state = "Storm",    subjob = "SCH" },
 
     ---========================================================================
     --- ALT+NUMPAD KEYS (Enhancement States & Cast - 10 touches)
     ---========================================================================
 
     -- Enhancement Spell Selection (1-5)
-    { key = "!numpad1", command = "cyclestate EnSpell",       desc = "Enspell",         state = "EnSpell" },
-    { key = "!numpad2", command = "cyclestate GainSpell",     desc = "Gain Spell",      state = "GainSpell" },
-    { key = "!numpad3", command = "cyclestate Barspell",      desc = "Bar Element",     state = "Barspell" },
-    { key = "!numpad4", command = "cyclestate BarAilment",    desc = "Bar Ailment",     state = "BarAilment" },
-    { key = "!numpad5", command = "cyclestate Spike",         desc = "Spike",           state = "Spike" },
+    { key = "^numpad.", command = "cyclestate EnSpell",       desc = "Enspell",         state = "EnSpell" },
+    { key = "^numpad+", command = "cyclestate GainSpell",     desc = "Gain Spell",      state = "GainSpell" },
+    { key = "^numpad-", command = "cyclestate Barspell",      desc = "Bar Element",     state = "Barspell" },
+    { key = "^numpad*", command = "cyclestate BarAilment",    desc = "Bar Ailment",     state = "BarAilment" },
+    { key = "^numpad/", command = "cyclestate Spike",         desc = "Spike",           state = "Spike" },
 
     -- Cast Enhancement Spells from states (6-9, 0)
-    { key = "!numpad6", command = "castenspell",         desc = "Cast Enspell",    state = nil },
-    { key = "!numpad7", command = "castgain",            desc = "Cast Gain",       state = nil },
-    { key = "!numpad8", command = "castbar",             desc = "Cast BarElement", state = nil },
-    { key = "!numpad9", command = "castbarailment",      desc = "Cast BarAilment", state = nil },
-    { key = "!numpad0", command = "castspike",           desc = "Cast Spike",      state = nil },
 }
 
 ---============================================================================
