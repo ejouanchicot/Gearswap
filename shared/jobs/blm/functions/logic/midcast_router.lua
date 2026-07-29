@@ -141,9 +141,11 @@ function Router.handle_elemental(spell, ctx)
     end
 
     -- MagicBurst variant resolved by MidcastManager via mode_value
-    -- Maps to sets.midcast['Elemental Magic'].MagicBurst (Priority 8)
+    -- On  -> sets.midcast['Elemental Magic'].MagicBurst (Priority 8)
+    -- Acc -> MagicBurst base, then the .acc accuracy override layered last
+    local mb_mode = state.MagicBurstMode and state.MagicBurstMode.current
     local mode_value = nil
-    if state.MagicBurstMode and state.MagicBurstMode.current == 'On' then
+    if mb_mode == 'On' or mb_mode == 'Acc' then
         mode_value = 'MagicBurst'
     end
 
@@ -161,6 +163,15 @@ function Router.handle_elemental(spell, ctx)
     apply_mp_conservation(ctx)
     apply_elemental_match(spell, ctx)
     apply_quanpur(spell)
+
+    -- Accuracy variant wins over all overrides: its Mag.Acc pieces are authoritative
+    if mb_mode == 'Acc' then
+        local eleset = sets.midcast['Elemental Magic']
+        local acc_set = eleset and eleset.MagicBurst and eleset.MagicBurst.acc
+        if acc_set then
+            equip(acc_set)
+        end
+    end
 
     if ctx.debug_enabled then
         ctx.messages.show_elemental_return()
