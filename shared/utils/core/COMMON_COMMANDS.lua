@@ -81,6 +81,21 @@ function CommonCommands.handle_aoewaltz()
     return handle_waltz_generic('divine', "Divine Waltz requires DNC main or subjob")
 end
 
+-- MOUNT COMMAND (ALL JOBS)
+
+--- Handle mount toggle command (dismount if riding, else random owned mount)
+--- @return boolean Success status
+function CommonCommands.handle_mount()
+    local mount_success, MountManager = pcall(require, 'shared/utils/mount/mount_manager')
+    if not mount_success or not MountManager then
+        local MessageFormatter = require('shared/utils/messages/message_formatter')
+        MessageFormatter.show_error("Failed to load mount manager")
+        return false
+    end
+
+    return MountManager.toggle()
+end
+
 -- CHECKSETS COMMAND
 
 --- Handle equipment check command
@@ -553,6 +568,8 @@ function CommonCommands.handle_command(command, job_name, ...)
         return CommonCommands.handle_naked()
     elseif cmd == 'equip' and args[1] and args[1]:lower() == 'naked' then
         return CommonCommands.handle_naked()
+    elseif cmd == 'mount' then
+        return CommonCommands.handle_mount()
     elseif cmd == 'reload' then
         return CommonCommands.handle_reload(job_name)
     elseif cmd == 'checksets' then
@@ -694,7 +711,8 @@ function CommonCommands.is_common_command(command)
     local cmd = command:lower()
 
     -- Check existing common commands
-    if cmd == 'naked' or cmd == 'equip' or cmd == 'reload' or cmd == 'checksets' or cmd == 'wardrobeaudit' or cmd == 'wa' or cmd == 'worganize' or cmd == 'wo' or cmd == 'refill' or cmd == 'rf' or cmd == 'craft' or cmd == 'uncraft' or cmd == 'fish' or cmd == 'fishing' or
+    if cmd == 'mount' or
+        cmd == 'naked' or cmd == 'equip' or cmd == 'reload' or cmd == 'checksets' or cmd == 'wardrobeaudit' or cmd == 'wa' or cmd == 'worganize' or cmd == 'wo' or cmd == 'refill' or cmd == 'rf' or cmd == 'craft' or cmd == 'uncraft' or cmd == 'fish' or cmd == 'fishing' or
         cmd == 'lockstyle' or cmd == 'ls' or cmd == 'dressup' or
         cmd == 'perf' or cmd == 'testcolors' or cmd == 'colors' or cmd == 'jump' or cmd == 'waltz' or
         cmd == 'aoewaltz' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'debugprecast' or
