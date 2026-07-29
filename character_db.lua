@@ -36,7 +36,7 @@ local CHARACTERS = {
     -- MAIN CHARACTER
     ---------------------------------------------------------------------------
     Tetsouo = {
-        jobs = { 'BLM', 'BRD', 'BST', 'COR', 'DNC', 'PLD', 'THF', 'WAR' },
+        jobs = { 'BLM', 'BRD', 'BST', 'COR', 'DNC', 'PLD', 'SMN', 'THF', 'WAR' },
         role = 'main',
     },
 
@@ -74,7 +74,7 @@ local MASTER = {
 
 local ALL_JOBS = {
     'BLM', 'BRD', 'BST', 'COR', 'DNC', 'DRK', 'GEO',
-    'PLD', 'PUP', 'RDM', 'RUN', 'SAM', 'THF', 'WAR', 'WHM',
+    'PLD', 'PUP', 'RDM', 'RUN', 'SAM', 'SMN', 'THF', 'WAR', 'WHM',
 }
 
 ---============================================================================
@@ -158,7 +158,7 @@ function CharDB.get_all()
 end
 
 --- Get the complete job list (for validation)
---- @return table All 15 supported job abbreviations
+--- @return table All 16 supported job abbreviations
 function CharDB.get_all_jobs()
     return ALL_JOBS
 end
@@ -203,7 +203,7 @@ function CharDB.validate()
         end
     end
 
-    return true, 'OK - all 15 jobs assigned'
+    return true, 'OK - all 16 jobs assigned'
 end
 
 return CharDB
