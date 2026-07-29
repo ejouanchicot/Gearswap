@@ -234,6 +234,26 @@ function job_self_command(cmdParams, eventArgs)
         end
         return
     end
+
+    -- TP building via subjob: /SAM -> Meditate, /DRG -> Jump rotation
+    if command == 'tp' then
+        if build_tp then
+            build_tp()
+            eventArgs.handled = true
+        end
+        return
+    end
+
+    -- Weaponskill slots: ws1..ws5 fire whatever the current weapon put there
+    local slot = command:match('^ws([1-9])$')
+    if slot then
+        local ok, WSSlots = pcall(require, 'shared/utils/weaponskill/ws_slots')
+        if ok and WSSlots then
+            WSSlots.cast(tonumber(slot))
+            eventArgs.handled = true
+        end
+        return
+    end
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -251,6 +271,14 @@ function job_state_change(stateField, newValue, oldValue)
     -- Skip UI update for Moving state (handled by AutoMove with flag)
     if stateField == 'Moving' then
         return
+    end
+
+    -- Weapon changed: refill the WS slots from that weapon's list
+    if stateField == 'MainWeapon' then
+        local ok, WSSlots = pcall(require, 'shared/utils/weaponskill/ws_slots')
+        if ok and WSSlots and _G.WARWSConfig then
+            WSSlots.rebuild(_G.WARWSConfig.get(newValue), _G.WARWSConfig.max_slots)
+        end
     end
 
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
