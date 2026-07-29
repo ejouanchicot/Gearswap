@@ -25,6 +25,8 @@ local CooldownChecker = nil
 local AbilityHelper = nil
 local PrecastGuard = nil
 local WSPrecastHandler = nil
+local TierRefiner = nil
+local RDMEnfeebleTiers = nil
 
 local modules_loaded = false
 
@@ -50,7 +52,24 @@ local function ensure_modules_loaded()
     local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
     WSPrecastHandler = wph
 
+    local _, tr = pcall(require, 'shared/utils/precast/tier_refiner')
+    TierRefiner = tr
+
+    local _, tiers = pcall(require, 'shared/data/spells/RDM_ENFEEBLE_TIERS')
+    RDMEnfeebleTiers = tiers
+
     modules_loaded = true
+end
+
+--- Resolve the tier mapping for a spell whose family has several tiers on RDM
+--- @param spell table Spell from job_precast
+--- @return table|nil Tier mapping, nil when the family has no tiers
+local function get_enfeeble_tiers(spell)
+    if not (TierRefiner and RDMEnfeebleTiers and spell and spell.name) then
+        return nil
+    end
+
+    return RDMEnfeebleTiers.get(spell.name:match('^(%a+)'))
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -131,10 +150,18 @@ function job_precast(spell, action, spellMap, eventArgs)
         MessagePrecast.show_debug_step(2, 'Cooldown', 'info', 'Checking cooldown...')
     end
 
-    if CooldownChecker then
-        if spell.action_type == 'Ability' then
+    -- Tiered enfeebles go through the refiner instead of the cooldown check:
+    -- the checker would cancel the cast before any downgrade could happen.
+    if spell.action_type == 'Ability' then
+        if CooldownChecker then
             CooldownChecker.check_ability_cooldown(spell, eventArgs)
-        elseif spell.action_type == 'Magic' then
+        end
+    elseif spell.action_type == 'Magic' then
+        local correspondence = get_enfeeble_tiers(spell)
+
+        if correspondence then
+            TierRefiner.refine(spell, eventArgs, correspondence)
+        elseif CooldownChecker then
             CooldownChecker.check_spell_cooldown(spell, eventArgs)
         end
     end
