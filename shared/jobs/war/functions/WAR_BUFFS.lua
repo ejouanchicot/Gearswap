@@ -71,6 +71,20 @@ function buff_sam_sub()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
+---   TP BUILDING (Public API)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+---   Build TP using the current subjob's ability
+---   • /SAM -> Meditate
+---   • /DRG -> Jump rotation (shared DRG jump manager)
+---
+---   @return void
+function build_tp()
+    ensure_managers_loaded()
+    SmartbuffManager.build_tp()
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
 ---   BUFF CHANGE HOOK
 ---  ═══════════════════════════════════════════════════════════════════════════
 
@@ -100,5 +114,6 @@ end
 -- Export to global scope (used by Mote-Include via include())
 _G.buff_war = buff_war
 _G.buff_sam_sub = buff_sam_sub
+_G.build_tp = build_tp
 _G.job_buff_change = job_buff_change
 

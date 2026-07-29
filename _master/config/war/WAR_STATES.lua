@@ -62,6 +62,33 @@ function WARStates.configure()
     }
 
     -- ==========================================================================
+    -- WEAPONSKILL SLOTS
+    -- ==========================================================================
+
+    -- Builds state.WS1..WS5 from WAR_WS_CONFIG for the current weapon.
+    -- Rebuilt on every MainWeapon change (see job_state_change in WAR_COMMANDS).
+    -- WARWSConfig is loaded by the entry point (character-scoped path).
+    local ws_ok, WSSlots = pcall(require, 'shared/utils/weaponskill/ws_slots')
+    if ws_ok and WSSlots and _G.WARWSConfig then
+        -- sync() aligns state.MainWeapon with the weapon actually equipped first:
+        -- a Mote state defaults to its first option, not to what is in hand.
+        WSSlots.sync(state.MainWeapon, _G.WARWSConfig)
+    end
+
+    -- ==========================================================================
+    -- AUTO-TRIGGERS
+    -- ==========================================================================
+
+    --- JumpAuto: Automatic Jump before a WS when TP < 1000 (/DRG only)
+    --- Cancels the WS, fires Jump (then High Jump if still short), replays the WS
+    state.JumpAuto = M {
+        ['description'] = 'Jump Auto',
+        'On',   -- Auto-trigger Jump before WS if TP < 1000 (DRG subjob only)
+        'Off'   -- Manual Jump only
+    }
+    state.JumpAuto:set('On')  -- Default: Auto-trigger enabled
+
+    -- ==========================================================================
     -- FAST CAST (WATCHDOG SYSTEM)
     -- ==========================================================================
 
@@ -94,6 +121,11 @@ function WARStates.validate()
     -- Check MainWeapon exists
     if not state.MainWeapon then
         return false, "MainWeapon state not configured"
+    end
+
+    -- Check JumpAuto exists
+    if not state.JumpAuto then
+        return false, "JumpAuto state not configured"
     end
 
     return true, "All WAR states configured successfully"

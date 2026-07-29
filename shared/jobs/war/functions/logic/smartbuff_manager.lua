@@ -5,6 +5,10 @@
 ---   Provides intelligent automation for:
 ---   • WAR core abilities (Berserk, Aggressor, Warcry, etc.)
 ---   • SAM subjob automation (Hasso/Seigan + Third Eye)
+---   • Subjob abilities folded into the main chain, so //gs c berserk and
+---     //gs c defender are the only two macros needed:
+---       /SAM -> Hasso + Third Eye  (Seigan + Third Eye under Defender)
+---       /DNC -> Haste Samba
 ---
 ---   Features:
 ---   • Mutual exclusion handling (Berserk vs Defender)
@@ -109,6 +113,53 @@ local function collect_warcry_bloodrage(recasts, buffs, to_cast, status)
     end
 end
 
+--- SAM stance paired with each WAR mode: Berserk goes with Hasso (offense),
+--- Defender with Seigan (defense).
+local SAM_STANCE = {
+    Berserk  = { name = 'Hasso',  id = 138 },
+    Defender = { name = 'Seigan', id = 139 },
+}
+
+local THIRD_EYE   = { name = 'Third Eye',   id = 133 }
+local HASTE_SAMBA = { name = 'Haste Samba', id = 216, tp_cost = 350 }
+local MEDITATE    = { name = 'Meditate',    id = 134 }
+
+--- Queue one ability unless it is already up or still on cooldown.
+--- @param ability table { name, id }
+--- @param recasts table get_ability_recasts() output
+--- @param buffs   table buffactive snapshot
+--- @param to_cast table abilities_to_cast (mutated)
+--- @param status  table status_data (mutated)
+local function collect_ability(ability, recasts, buffs, to_cast, status)
+    local recast = recasts[ability.id] or 0
+
+    if buffs[ability.name] then
+        table.insert(status, { name = ability.name, status = 'active' })
+    elseif is_on_cooldown(recast) then
+        table.insert(status, { name = ability.name, status = 'cooldown', time = math.ceil(recast) })
+    else
+        table.insert(to_cast, { name = ability.name, id = ability.id })
+    end
+end
+
+--- Append subjob abilities so one macro covers main job + subjob.
+--- The SAM stance follows `param`, NOT buffactive: at this point the Berserk or
+--- Defender cast is still queued, so its buff is not up yet and reading
+--- buffactive would always pick Hasso.
+--- Haste Samba is skipped silently below its 350 TP cost - it is a bonus on top
+--- of the WAR chain, and a warning on every macro press would be noise.
+--- @param param string 'Berserk' or 'Defender'
+local function collect_subjob_abilities(param, recasts, buffs, to_cast, status)
+    local sub = player and player.sub_job
+
+    if sub == 'SAM' then
+        collect_ability(SAM_STANCE[param] or SAM_STANCE.Berserk, recasts, buffs, to_cast, status)
+        collect_ability(THIRD_EYE, recasts, buffs, to_cast, status)
+    elseif sub == 'DNC' and (player.tp or 0) >= HASTE_SAMBA.tp_cost then
+        collect_ability(HASTE_SAMBA, recasts, buffs, to_cast, status)
+    end
+end
+
 --- Cast collected abilities sequentially with 2-second spacing.
 local function cast_sequentially(abilities_to_cast)
     for i, ability in ipairs(abilities_to_cast) do
@@ -135,6 +186,7 @@ function SmartbuffManager.buff_war(param)
 
     local to_cast, status = collect_main_abilities(recasts, buffs, exclude)
     collect_warcry_bloodrage(recasts, buffs, to_cast, status)
+    collect_subjob_abilities(param, recasts, buffs, to_cast, status)
 
     if #status > 0 then
         MessageBuffs.show_buff_status(status)
@@ -156,83 +208,66 @@ end
 ---
 ---   @return void
 function SmartbuffManager.buff_sam_sub()
-    -- Safety checks
-    if not player or not player.sub_job then
-        return
-    end
-    if player.sub_job ~= 'SAM' then
+    if not player or player.sub_job ~= 'SAM' then
         return
     end
 
     local recasts = windower.ffxi.get_ability_recasts()
     local buffs = buffactive
+    local to_cast, status = {}, {}
 
-    -- Ability IDs
-    local seigan_id = 139
-    local hasso_id = 138
-    local thirdeye_id = 133
+    -- Standalone call: nothing is queued ahead of it, so buffactive is the
+    -- authoritative source for the stance (unlike the chained path in buff_war).
+    local mode = buffs['Defender'] and 'Defender' or 'Berserk'
+    collect_ability(SAM_STANCE[mode], recasts, buffs, to_cast, status)
+    collect_ability(THIRD_EYE, recasts, buffs, to_cast, status)
 
-    -- Choose stance based on Defender status
-    local usingDefender = buffs['Defender'] ~= nil
-    local stance_name = usingDefender and 'Seigan' or 'Hasso'
-    local stance_buff = usingDefender and 'Seigan' or 'Hasso'
-    local stance_id = usingDefender and seigan_id or hasso_id
-
-    -- Collect abilities to cast and status to display
-    local abilities_to_cast = {}
-    local status_data = {}
-
-    -- Check stance (Hasso/Seigan)
-    local stance_recast = recasts[stance_id] or 0
-    if buffs[stance_buff] then
-        table.insert(status_data, {
-            name = stance_name,
-            status = 'active'
-        })
-    elseif is_on_cooldown(stance_recast) then
-        table.insert(status_data, {
-            name = stance_name,
-            status = 'cooldown',
-            time = math.ceil(stance_recast)
-        })
-    else
-        table.insert(abilities_to_cast, {
-            name = stance_name
-        })
+    if #status > 0 then
+        MessageBuffs.show_buff_status(status)
     end
 
-    -- Check Third Eye
-    local thirdeye_recast = recasts[thirdeye_id] or 0
-    if buffs['Third Eye'] then
-        table.insert(status_data, {
-            name = 'Third Eye',
-            status = 'active'
-        })
-    elseif is_on_cooldown(thirdeye_recast) then
-        table.insert(status_data, {
-            name = 'Third Eye',
-            status = 'cooldown',
-            time = math.ceil(thirdeye_recast)
-        })
-    else
-        table.insert(abilities_to_cast, {
-            name = 'Third Eye'
-        })
-    end
+    cast_sequentially(to_cast)
+end
 
-    -- Display buff status
-    if #status_data > 0 then
-        MessageBuffs.show_buff_status(status_data)
-    end
+---  ═══════════════════════════════════════════════════════════════════════════
+---   TP BUILDING (SUBJOB DEPENDENT)
+---  ═══════════════════════════════════════════════════════════════════════════
 
-    -- Cast abilities sequentially (1 second spacing)
-    for i, ability in ipairs(abilities_to_cast) do
-        local command = 'input /ja "' .. ability.name .. '" <me>'
-        if i == 1 then
-            send_command(command)
-        else
-            send_command('wait ' .. (i - 1) .. '; ' .. command)
+---   Build TP with whatever the current subjob offers
+---   • /SAM -> Meditate (ID: 134, Lv30, 3min recast)
+---   • /DRG -> the shared DRG jump manager (Jump / High Jump rotation)
+---   Any other subjob has no TP-building ability worth automating.
+---
+---   @return void
+function SmartbuffManager.build_tp()
+    local sub = player and player.sub_job
+
+    if sub == 'SAM' then
+        local recasts = windower.ffxi.get_ability_recasts()
+        local to_cast, status = {}, {}
+
+        collect_ability(MEDITATE, recasts, buffactive, to_cast, status)
+
+        if #status > 0 then
+            MessageBuffs.show_buff_status(status)
         end
+
+        cast_sequentially(to_cast)
+        return
+    end
+
+    if sub == 'DRG' then
+        -- execute_jump() does its own /DRG and Sheol Gaol checks
+        local ok, DRGJumpManager = pcall(require, 'shared/utils/drg/DRG_JUMP_MANAGER')
+        if ok and DRGJumpManager then
+            DRGJumpManager.execute_jump()
+        end
+        return
+    end
+
+    local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+    if ok and MessageFormatter then
+        MessageFormatter.show_warning('No TP ability for /' .. tostring(sub or '???'))
     end
 end
 
