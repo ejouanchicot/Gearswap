@@ -134,6 +134,38 @@ SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town
 
 ---  ═══════════════════════════════════════════════════════════════════════════
+---   SNEAK ATTACK / TRICK ATTACK BUFF OVERLAY (ENGAGED)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+---   Overlay SA/TA buff gear while the buff is active (or pending before it
+---   appears in buffactive). Keeps the SA/TA "waiting" set equipped between the
+---   ability and the melee hit / weaponskill that consumes it, instead of
+---   reverting to the plain engaged set right after the JA animation.
+---   The pending flags bridge the server lag before the buff lands in buffactive;
+---   their lifecycle is cleared in THF_BUFFS.job_buff_change (consumption/expiry)
+---   and SATAManager (weaponskill consumption).
+---   @param result table Current engaged set
+---   @return table Set with SA/TA buff gear overlaid (unchanged if neither active)
+function SetBuilder.apply_sata_buff(result)
+    local has_sa = (buffactive and buffactive['Sneak Attack']) or _G.thf_sa_pending
+    local has_ta = (buffactive and buffactive['Trick Attack']) or _G.thf_ta_pending
+
+    if not has_sa and not has_ta then
+        return result
+    end
+
+    if has_sa and sets.buff and sets.buff['Sneak Attack'] then
+        result = set_combine(result, sets.buff['Sneak Attack'])
+    end
+
+    if has_ta and sets.buff and sets.buff['Trick Attack'] then
+        result = set_combine(result, sets.buff['Trick Attack'])
+    end
+
+    return result
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
 ---   ENGAGED SET BUILDER
 ---  ═══════════════════════════════════════════════════════════════════════════
 
@@ -150,6 +182,9 @@ function SetBuilder.build_engaged_set(base_set)
 
     -- Step 2: Apply weapon
     result = SetBuilder.apply_weapon(result)
+
+    -- Step 3: Overlay SA/TA buff gear while active (keeps the "waiting" set on)
+    result = SetBuilder.apply_sata_buff(result)
 
     return result
 end
