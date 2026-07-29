@@ -158,16 +158,32 @@ BRDSongConfig.DUMMY_SONGS = {
 }
 
 ---============================================================================
+--- ETUDE SONGS BY STAT
+---============================================================================
+
+BRDSongConfig.ETUDES = {
+    STR = 'Herculean Etude',
+    DEX = 'Uncanny Etude',
+    VIT = 'Vital Etude',
+    AGI = 'Swift Etude',
+    INT = 'Sage Etude',
+    MND = 'Logical Etude',
+    CHR = 'Bewitching Etude'
+}
+
+---============================================================================
 --- VICTORY MARCH REPLACEMENT
 ---============================================================================
 
+--- Mode comes from state.VictoryMarch (Alt+5). Two modes are absent from the
+--- table on purpose: 'Etude' resolves at cast time from state.EtudeType (Alt+8),
+--- and 'None' has no entry so the lookup misses and Victory March stays.
 BRDSongConfig.VICTORY_MARCH_REPLACE = {
     enabled = true,
-    default = "Madrigal",
+    default = 'Madrigal',
     replacements = {
         Madrigal = 'Blade Madrigal',
-        Minne = 'Knight\'s Minne V',
-        Scherzo = 'Sentinel\'s Scherzo'
+        Minuet = 'Valor Minuet III'
     }
 }
 

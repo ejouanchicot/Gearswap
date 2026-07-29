@@ -88,9 +88,6 @@ local CAROLS = {Fire='Fire Carol II', Ice='Ice Carol II', Wind='Wind Carol II',
     Earth='Earth Carol II', Lightning='Lightning Carol II', Water='Water Carol II',
     Light='Light Carol II', Dark='Dark Carol II'}
 
-local ETUDES = {STR='Herculean Etude', DEX='Uncanny Etude', VIT='Vital Etude',
-    AGI='Swift Etude', INT='Sage Etude', MND='Logical Etude', CHR='Bewitching Etude'}
-
 local MARCATO_TARGETS = {HonorMarch='Honor March', AriaPassion='Aria of Passion'}
 
 local MARCATO_RECAST_ID = 48  -- Job ability recast slot for Marcato
@@ -182,7 +179,10 @@ end
 
 ---   Get etude name for current type
 local function get_current_etude()
-    return state and state.EtudeType and ETUDES[state.EtudeType.current] or nil
+    if not (state and state.EtudeType and BRDSongConfig and BRDSongConfig.ETUDES) then
+        return nil
+    end
+    return BRDSongConfig.ETUDES[state.EtudeType.current]
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

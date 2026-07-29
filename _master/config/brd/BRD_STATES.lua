@@ -95,7 +95,8 @@ function BRDStates.configure()
         M {
         ['description'] = 'Victory March Replace',
         'Madrigal', -- Replace with Blade Madrigal
-        'Minuet', -- Replace with Minuet
+        'Minuet', -- Replace with Valor Minuet III
+        'Etude', -- Replace with the Etude matching state.EtudeType
         'None' -- Keep Victory March
     }
     state.VictoryMarch:set('Madrigal')

@@ -41,6 +41,20 @@ function SongRotationManager.get_current_pack()
     return pack
 end
 
+---   Resolve the song replacing Victory March, based on state.VictoryMarch
+---   @return string|nil Replacement song name, or nil to keep Victory March
+local function resolve_victory_replacement()
+    local config = BRDSongConfig.VICTORY_MARCH_REPLACE
+    local mode = state.VictoryMarch and state.VictoryMarch.current or config.default
+
+    if mode == 'Etude' then
+        local stat = state.EtudeType and state.EtudeType.current
+        return stat and BRDSongConfig.ETUDES[stat] or nil
+    end
+
+    return config.replacements[mode]
+end
+
 ---   Get songs from current pack with Victory March replacement
 ---   @return table Array of song names
 function SongRotationManager.get_songs_with_replacement()
@@ -54,14 +68,12 @@ function SongRotationManager.get_songs_with_replacement()
         songs[i] = song
     end
 
-    -- Check for Victory March replacement
+    -- Victory March only stacks its Haste with itself, so swap it out when Haste is already up
     if BRDSongConfig.VICTORY_MARCH_REPLACE.enabled then
         for i, song in ipairs(songs) do
             if song == 'Victory March' then
-                -- Check if Haste buff active
                 if buffactive['Haste'] or buffactive['Haste II'] then
-                    local replacement_mode = state.MainInstrument and state.MainInstrument.current or 'Madrigal'
-                    local replacement = BRDSongConfig.VICTORY_MARCH_REPLACE.replacements[replacement_mode]
+                    local replacement = resolve_victory_replacement()
                     if replacement then
                         songs[i] = replacement
                     end
