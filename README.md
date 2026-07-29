@@ -8,7 +8,7 @@
 [![Windower](https://img.shields.io/badge/Windower-4-purple)](https://www.windower.net/)
 [![FFXI](https://img.shields.io/badge/FFXI-Retail-red)](https://www.playonline.com/ff11/)
 [![Jobs](https://img.shields.io/badge/Jobs-14-green)](#-supported-jobs)
-[![Files](https://img.shields.io/badge/Lua%20files-600%2B-blueviolet)](https://github.com/Tetsouo/Gearswap)
+[![Files](https://img.shields.io/badge/Lua%20files-600%2B-blueviolet)](https://github.com/ejouanchicot/Gearswap)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](https://opensource.org/licenses/MIT)
 
 **Zero duplication. 9 centralized systems. 14 jobs. 100+ warp aliases. 76-file message system (14k+ LoC).**
@@ -30,7 +30,7 @@
 
 ### 1. Download and extract into your GearSwap folder
 
-1. Open the project on GitHub: [github.com/Tetsouo/Gearswap](https://github.com/Tetsouo/Gearswap)
+1. Open the project on GitHub: [github.com/ejouanchicot/Gearswap](https://github.com/ejouanchicot/Gearswap)
 2. Click the green **Code** button → **Download ZIP**
 3. Open the ZIP and copy everything inside `Gearswap-master/` into:
 
@@ -770,6 +770,6 @@ MIT — do whatever you want with it. Attribution appreciated, not required.
 
 _Bringing software engineering discipline to GearSwap._
 
-[Report an issue](https://github.com/Tetsouo/Gearswap/issues) • [Star the repo](https://github.com/Tetsouo/Gearswap) • [Follow updates](https://github.com/Tetsouo/Gearswap/commits/master)
+[Report an issue](https://github.com/ejouanchicot/Gearswap/issues) • [Star the repo](https://github.com/ejouanchicot/Gearswap) • [Follow updates](https://github.com/ejouanchicot/Gearswap/commits/master)
 
 </div>

@@ -26,7 +26,7 @@ Optional but recommended Windower addons:
 
 ```bash
 cd "<Windower>/addons/GearSwap/data/"
-git clone https://github.com/Tetsouo/Gearswap.git temp
+git clone https://github.com/ejouanchicot/Gearswap.git temp
 xcopy /E /Y temp\* .\
 rmdir /S /Q temp
 ```
