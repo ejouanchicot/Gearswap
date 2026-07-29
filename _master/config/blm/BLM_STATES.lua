@@ -64,7 +64,8 @@ function BLMStates.configure()
     state.MagicBurstMode = M {
         ['description'] = 'Magic Burst Mode',
         'Off',  -- Normal nuke gear
-        'On'    -- Magic Burst potency gear
+        'On',   -- Magic Burst potency gear
+        'Acc'   -- Magic Burst accuracy gear (MagicBurst.acc variant)
     }
     state.MagicBurstMode:set('On')  -- Default to On (BLM benefits from MB gear)
 
@@ -132,7 +133,7 @@ function BLMStates.configure()
         "Blizzard",
         "Stone"
     }
-    state.SubDarkSpell:set("Water")  -- Default to Water (different from Main)
+    state.SubDarkSpell:set("Blizzard")  -- Default to Blizzard (different from Main)
 
     -- SpellTier: Nuke spell tier (VI/V/IV/III/II/I)
     -- Note: Tier "I" casts base spell (e.g., "Fire" not "Fire I")
@@ -166,6 +167,24 @@ function BLMStates.configure()
     }
     state.MainDarkAOE:set("Stonega")  -- Default to Stonega
 
+    -- SubLightAOE: Sub Light AOE elemental spells (-ga versions)
+    state.SubLightAOE = M {
+        ['description'] = 'Sub Light AOE',
+        "Thundaga",
+        "Firaga",
+        "Aeroga"
+    }
+    state.SubLightAOE:set("Thundaga")  -- Default to Thundaga (matches SubLightSpell)
+
+    -- SubDarkAOE: Sub Dark AOE elemental spells (-ga versions)
+    state.SubDarkAOE = M {
+        ['description'] = 'Sub Dark AOE',
+        "Blizzaga",
+        "Stonega",
+        "Waterga"
+    }
+    state.SubDarkAOE:set("Blizzaga")  -- Default to Blizzaga (matches SubDarkSpell)
+
     -- AOETier: AOE spell tier (Aja/III/II/I)
     -- Aja = highest tier (Firaja, Stoneja, etc.) - no numeral
     -- III/II/I = -ga spell tiers (Firaga III, Firaga II, Firaga I)
@@ -197,6 +216,28 @@ function BLMStates.configure()
         'Aurorastorm'
     }
     state.Storm:set('Firestorm')  -- Default to Firestorm
+
+    -- ========================================
+    -- STRATAGEM AOE TOGGLES (SCH SUBJOB)
+    -- ========================================
+
+    -- SneakInviAOE: whether //gs c sneak and //gs c invi spend a stratagem
+    -- charge on Accession to cover the party. Off casts on self only.
+    state.SneakInviAOE = M {
+        ['description'] = 'Sneak/Invi AOE',
+        'On',
+        'Off'
+    }
+    state.SneakInviAOE:set('On')  -- Default: cover the party
+
+    -- KlimaformAOE: whether //gs c klima spends a stratagem charge on
+    -- Manifestation. Klimaform itself is cast either way.
+    state.KlimaformAOE = M {
+        ['description'] = 'Klimaform AOE',
+        'On',
+        'Off'
+    }
+    state.KlimaformAOE:set('On')  -- Default: preserve the existing klima behaviour
 
     -- ========================================
     -- FAST CAST (WATCHDOG SYSTEM)
@@ -255,11 +296,23 @@ function BLMStates.validate()
     if not state.MainDarkAOE then
         return false, "MainDarkAOE state not configured"
     end
+    if not state.SubLightAOE then
+        return false, "SubLightAOE state not configured"
+    end
+    if not state.SubDarkAOE then
+        return false, "SubDarkAOE state not configured"
+    end
     if not state.AOETier then
         return false, "AOETier state not configured"
     end
     if not state.Storm then
         return false, "Storm state not configured"
+    end
+    if not state.SneakInviAOE then
+        return false, "SneakInviAOE state not configured"
+    end
+    if not state.KlimaformAOE then
+        return false, "KlimaformAOE state not configured"
     end
 
     return true, "All BLM states configured successfully"

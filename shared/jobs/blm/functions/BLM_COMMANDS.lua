@@ -30,6 +30,13 @@ local CycleHandler = nil
 local MessageCommands = nil
 local BLMMessages = nil
 local MessageFormatter = nil
+local StratagemCharges = nil
+
+--- Dark Arts has its own recast slot and costs no stratagem charge.
+local DARK_ARTS_RECAST_ID = 232
+
+--- Spacing between chained actions, matching the existing Arts sequences.
+local STEP_SPACING = 2
 
 local function ensure_commands_loaded()
     if not UICommands then
@@ -42,7 +49,97 @@ local function ensure_commands_loaded()
 
         -- BLM message formatter (handles all colored messages)
         BLMMessages = require('shared/utils/messages/formatters/jobs/message_blm')
+
+        StratagemCharges = require('shared/utils/scholar/stratagem_charges')
     end
+end
+
+---   Chain actions with the standard spacing
+---   @param steps table List of `input /ja ...` / `input /ma ...` strings
+---   @return string Command ready for send_command
+local function chain(steps)
+    return table.concat(steps, '; wait ' .. STEP_SPACING .. '; ')
+end
+
+---   Report that a stratagem cannot be used right now
+---   @param stratagem string Stratagem that was skipped
+local function warn_no_charge(stratagem)
+    BLMMessages.show_stratagem_no_charges(stratagem, StratagemCharges.next_charge_minutes())
+end
+
+---   Build a single-target nuke name ('Fire' + 'V' -> 'Fire V')
+---   Tier I casts the base spell, which carries no numeral.
+---   @param element string Element name from the spell state
+---   @param tier string    Tier from state.SpellTier
+---   @return string Spell name
+local function build_nuke_name(element, tier)
+    return element .. ((tier ~= 'I') and (' ' .. tier) or '')
+end
+
+---   Build an AOE nuke name ('Firaga' + 'III' -> 'Firaga III')
+---   Tier 'Aja' swaps the -ga family for its -ja counterpart (Firaga -> Firaja).
+---   @param element string -ga spell name from the AOE state
+---   @param tier string    Tier from state.AOETier
+---   @return string Spell name
+local function build_aoe_name(element, tier)
+    if tier == 'Aja' then
+        return element:match('(%a+)ga') .. 'ja'
+    end
+
+    return build_nuke_name(element, tier)
+end
+
+---   Cast the spell described by an element state and a tier state
+---   @param element_state table Mote state holding the element
+---   @param tier_state table    Mote state holding the tier
+---   @param builder function    build_nuke_name or build_aoe_name
+---   @return boolean True when the cast was issued
+local function cast_from_states(element_state, tier_state, builder)
+    if not (element_state and tier_state) then
+        return false
+    end
+
+    windower.chat.input('/ma "' .. builder(element_state.current, tier_state.current) .. '" <stnpc>')
+
+    return true
+end
+
+---   Whether a state is set to 'On' (missing state counts as On)
+---   @param mode table Mote state
+---   @return boolean
+local function is_on(mode)
+    return not mode or mode.value ~= 'Off'
+end
+
+---   Build the Sneak/Invisible chain for the current SneakInviAOE state
+---   AOE On  : Light Arts (if needed) + Accession, cast on <me> so the burst
+---             is centred on the player.
+---   AOE Off : no stratagem at all, cast on <stal> to pick a single ally.
+---   With AOE On but no charge left, Accession cannot fire and the Arts switch
+---   is dropped with it, since changing Arts buys nothing for a lone cast.
+---   @param spell_name string Spell to cast
+---   @return string Command ready for send_command
+local function build_accession_chain(spell_name)
+    local steps = {}
+    local target = '<stal>'
+
+    if is_on(state.SneakInviAOE) then
+        target = '<me>'
+
+        if StratagemCharges.has_charge() then
+            local light_active = buffactive and (buffactive['Light Arts'] or buffactive['Addendum: White'])
+            if not light_active then
+                table.insert(steps, 'input /ja "Light Arts" <me>')
+            end
+            table.insert(steps, 'input /ja "Accession" <me>')
+        else
+            warn_no_charge('Accession')
+        end
+    end
+
+    table.insert(steps, 'input /ma "' .. spell_name .. '" ' .. target)
+
+    return chain(steps)
 end
 
 ---   Update UI after state change (DRY helper)
@@ -182,6 +279,11 @@ end
 ---   • darkarts       - Smart Dark Arts / Addendum: Black (SCH subjob)
 ---   • sneak          - Party-wide Sneak (Light Arts + Accession + Sneak)
 ---   • invi           - Party-wide Invisible (Light Arts + Accession + Invisible)
+---   • klima          - Dark Arts + Manifestation + Klimaform (charge-aware)
+---   • light/dark     - Main single-target nuke (element state + SpellTier)
+---   • sublight/subdark   - Sub single-target nuke
+---   • aoelight/aoedark   - Main AOE nuke (-ga state + AOETier)
+---   • subaoelight/subaoedark - Sub AOE nuke
 ---
 ---   @param cmdParams table Command parameters array (e.g., {"buff"})
 ---   @param eventArgs table Event arguments with handled flag
@@ -342,24 +444,41 @@ function job_self_command(cmdParams, eventArgs)
     -- Sneak: Intelligent Light Arts + Accession + Sneak (party-wide)
     -- Light Arts OR Addendum: White satisfies the Arts requirement.
     if command == 'sneak' then
-        local light_active = buffactive and (buffactive['Light Arts'] or buffactive['Addendum: White'])
-        if light_active then
-            send_command('input /ja "Accession" <me>; wait 2; input /ma "Sneak" <me>')
-        else
-            send_command('input /ja "Light Arts" <me>; wait 2; input /ja "Accession" <me>; wait 2; input /ma "Sneak" <me>')
-        end
+        send_command(build_accession_chain('Sneak'))
         eventArgs.handled = true
         return
     end
 
     -- Invi: Intelligent Light Arts + Accession + Invisible (party-wide)
     if command == 'invi' then
-        local light_active = buffactive and (buffactive['Light Arts'] or buffactive['Addendum: White'])
-        if light_active then
-            send_command('input /ja "Accession" <me>; wait 2; input /ma "Invisible" <me>')
-        else
-            send_command('input /ja "Light Arts" <me>; wait 2; input /ja "Accession" <me>; wait 2; input /ma "Invisible" <me>')
+        send_command(build_accession_chain('Invisible'))
+        eventArgs.handled = true
+        return
+    end
+
+    -- Klima: Dark Arts + Manifestation + Klimaform, each step only when usable.
+    -- Klimaform itself always fires; the two stratagem steps are opportunistic.
+    if command == 'klima' or command == 'klimaform' then
+        local steps = {}
+
+        local dark_active = buffactive and (buffactive['Dark Arts'] or buffactive['Addendum: Black'])
+        local dark_recast = windower.ffxi.get_ability_recasts()[DARK_ARTS_RECAST_ID] or 0
+
+        if not dark_active and is_recast_ready(dark_recast) then
+            table.insert(steps, 'input /ja "Dark Arts" <me>')
         end
+
+        if is_on(state.KlimaformAOE) then
+            if StratagemCharges.has_charge() then
+                table.insert(steps, 'input /ja "Manifestation" <me>')
+            else
+                warn_no_charge('Manifestation')
+            end
+        end
+
+        table.insert(steps, 'input /ma "Klimaform" <me>')
+        send_command(chain(steps))
+
         eventArgs.handled = true
         return
     end
@@ -395,102 +514,45 @@ function job_self_command(cmdParams, eventArgs)
     -- BLM INTELLIGENT NUKE COMMANDS (with validation + refinement)
     -- ══════════════════════════════════════════════════════════════════════════
 
-    -- Light: Cast light element nuke (uses MainLightSpell + SpellTier)
+    -- Single-target nukes: element state + SpellTier
     if command == 'light' then
-        if state and state.MainLightSpell and state.SpellTier then
-            local element = state.MainLightSpell.current
-            local tier = state.SpellTier.current
-            local spell_name = element .. (tier ~= "I" and (" " .. tier) or "")
-
-            -- Use windower.ffxi.cast_spell to trigger refinement via precast
-            windower.chat.input('/ma "' .. spell_name .. '" <stnpc>')
-            eventArgs.handled = true
-        end
+        eventArgs.handled = cast_from_states(state.MainLightSpell, state.SpellTier, build_nuke_name)
         return
     end
 
-    -- Dark: Cast dark element nuke (uses MainDarkSpell + SpellTier)
     if command == 'dark' then
-        if state and state.MainDarkSpell and state.SpellTier then
-            local element = state.MainDarkSpell.current
-            local tier = state.SpellTier.current
-            local spell_name = element .. (tier ~= "I" and (" " .. tier) or "")
-
-            windower.chat.input('/ma "' .. spell_name .. '" <stnpc>')
-            eventArgs.handled = true
-        end
+        eventArgs.handled = cast_from_states(state.MainDarkSpell, state.SpellTier, build_nuke_name)
         return
     end
 
-    -- AOE Light: Cast light element AOE (uses MainLightAOE + AOETier)
-    -- AOETier: Aja (Firaja) >> III (Firaga III) >> II (Firaga II) >> I (Firaga I)
-    if command == 'aoelight' then
-        if state and state.MainLightAOE and state.AOETier then
-            local element = state.MainLightAOE.current  -- "Firaga", "Aeroga", "Thundaga"
-            local tier = state.AOETier.current
-            local spell_name
-
-            if tier == "Aja" then
-                -- Tier Aja: Convert "Firaga" >> "Firaja"
-                local base_element = element:match("(%a+)ga")  -- Extract "Fir" from "Firaga"
-                spell_name = base_element .. "ja"  -- "Firaja"
-            else
-                -- Tier III/II/I: "Firaga III", "Firaga II", "Firaga I"
-                spell_name = element .. (tier ~= "I" and (" " .. tier) or "")
-            end
-
-            windower.chat.input('/ma "' .. spell_name .. '" <stnpc>')
-            eventArgs.handled = true
-        end
-        return
-    end
-
-    -- AOE Dark: Cast dark element AOE (uses MainDarkAOE + AOETier)
-    -- AOETier: Aja (Blizzaja) >> III (Blizzaga III) >> II (Blizzaga II) >> I (Blizzaga I)
-    if command == 'aoedark' then
-        if state and state.MainDarkAOE and state.AOETier then
-            local element = state.MainDarkAOE.current  -- "Blizzaga", "Stonega", "Waterga"
-            local tier = state.AOETier.current
-            local spell_name
-
-            if tier == "Aja" then
-                -- Tier Aja: Convert "Blizzaga" >> "Blizzaja"
-                local base_element = element:match("(%a+)ga")  -- Extract "Blizz" from "Blizzaga"
-                spell_name = base_element .. "ja"  -- "Blizzaja"
-            else
-                -- Tier III/II/I: "Blizzaga III", "Blizzaga II", "Blizzaga I"
-                spell_name = element .. (tier ~= "I" and (" " .. tier) or "")
-            end
-
-            windower.chat.input('/ma "' .. spell_name .. '" <stnpc>')
-            eventArgs.handled = true
-        end
-        return
-    end
-
-    -- SubLight: Cast sub light element nuke (uses SubLightSpell + SpellTier)
     if command == 'sublight' then
-        if state and state.SubLightSpell and state.SpellTier then
-            local element = state.SubLightSpell.current
-            local tier = state.SpellTier.current
-            local spell_name = element .. (tier ~= "I" and (" " .. tier) or "")
-
-            windower.chat.input('/ma "' .. spell_name .. '" <stnpc>')
-            eventArgs.handled = true
-        end
+        eventArgs.handled = cast_from_states(state.SubLightSpell, state.SpellTier, build_nuke_name)
         return
     end
 
-    -- SubDark: Cast sub dark element nuke (uses SubDarkSpell + SpellTier)
     if command == 'subdark' then
-        if state and state.SubDarkSpell and state.SpellTier then
-            local element = state.SubDarkSpell.current
-            local tier = state.SpellTier.current
-            local spell_name = element .. (tier ~= "I" and (" " .. tier) or "")
+        eventArgs.handled = cast_from_states(state.SubDarkSpell, state.SpellTier, build_nuke_name)
+        return
+    end
 
-            windower.chat.input('/ma "' .. spell_name .. '" <stnpc>')
-            eventArgs.handled = true
-        end
+    -- AOE nukes: -ga element state + AOETier (Aja >> III >> II >> I)
+    if command == 'aoelight' then
+        eventArgs.handled = cast_from_states(state.MainLightAOE, state.AOETier, build_aoe_name)
+        return
+    end
+
+    if command == 'aoedark' then
+        eventArgs.handled = cast_from_states(state.MainDarkAOE, state.AOETier, build_aoe_name)
+        return
+    end
+
+    if command == 'subaoelight' then
+        eventArgs.handled = cast_from_states(state.SubLightAOE, state.AOETier, build_aoe_name)
+        return
+    end
+
+    if command == 'subaoedark' then
+        eventArgs.handled = cast_from_states(state.SubDarkAOE, state.AOETier, build_aoe_name)
         return
     end
 
