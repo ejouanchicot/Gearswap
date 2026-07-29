@@ -31,26 +31,26 @@ local PLDKeybinds = {}
 --- Format: { key = "key_combo", command = "gs_command", desc = "description", state = "state_name", subjob = "required_subjob" }
 PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT)
 {
-    key = "!1",
+    key = "^numpad2",
     command = "cyclestate HybridMode",
     desc = "Hybrid Mode",
     state = "HybridMode"
 }, -- Weapon Management
 {
-    key = "!2",
+    key = "^numpad1",
     command = "cyclestate MainWeapon",
     desc = "Main Weapon",
     state = "MainWeapon"
 }, -- XP Mode (PLD/RDM subjob only)
 {
-    key = "!4",
+    key = "^numpad4",
     command = "cyclestate Xp",
     desc = "XP Mode",
     state = "Xp",
     subjob = "RDM"
 }, -- Rune Mode (PLD/RUN subjob only)
 {
-    key = "!5",
+    key = "^numpad5",
     command = "cyclestate RuneMode",
     desc = "Rune Mode",
     state = "RuneMode",

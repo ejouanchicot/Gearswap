@@ -32,7 +32,8 @@ local categorization_rules = {
     },
 
     ja_patterns = {
-        "Step", "BRDSong"  -- Fixed from BRDSlot to BRDSong
+        "Step", "BRDSong",  -- Fixed from BRDSlot to BRDSong
+        "WS"  -- Weaponskill slots (WS1..WS5), rebuilt per equipped weapon
     },
 
     weapon_patterns = {
@@ -48,7 +49,12 @@ local categorization_rules = {
         "Auto",  -- Auto-trigger states (ClimacticAuto, etc.)
         "Lock",  -- Lock states (RangeLock for THF, etc.)
         "Marcato",  -- BRD auto-Marcato song selection (MarcatoSong: HonorMarch/AriaPassion/Off)
-        "Dance"  -- DNC dance selection (Dance: Saber Dance/Fan Dance)
+        "Dance",  -- DNC dance selection (Dance: Saber Dance/Fan Dance)
+        "Samba",  -- DNC samba selection (Samba: Haste/Drain II/Aspir)
+        -- BLM stratagem toggles: listed here so they land in modes rather than
+        -- matching the generic "AOE" spell pattern checked further down.
+        "SneakInvi",
+        "Klimaform"
     }
 }
 

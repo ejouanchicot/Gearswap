@@ -31,24 +31,24 @@ local RUNKeybinds = {}
 --- Format: { key = "key_combo", command = "gs_command", desc = "description", state = "state_name", subjob = "required_subjob" }
 RUNKeybinds.binds = { -- Hybrid Mode (PDT/MDT)
 {
-    key = "!1",
+    key = "^numpad3",
     command = "cyclestate HybridMode",
     desc = "Hybrid Mode",
     state = "HybridMode"
 }, -- Weapon Management
 {
-    key = "!2",
+    key = "^numpad1",
     command = "cyclestate MainWeapon",
     desc = "Main Weapon",
     state = "MainWeapon"
 }, {
-    key = "!3",
+    key = "^numpad2",
     command = "cyclestate SubWeapon",
     desc = "Sub Weapon",
     state = "SubWeapon"
 }, -- Rune Mode (RUN main job - always available)
 {
-    key = "!4",
+    key = "^numpad4",
     command = "cyclestate RuneMode",
     desc = "Rune Mode",
     state = "RuneMode"

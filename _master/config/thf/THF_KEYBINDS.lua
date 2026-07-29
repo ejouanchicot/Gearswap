@@ -42,21 +42,21 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 -- Format: { key = "key_combination", command = "gs_command", desc = "description", state = "state_name" }
 THFKeybinds.binds = {
     -- Weapon Management
-    { key = "!1", command = "cyclestate MainWeapon", desc = "Main Weapon",  state = "MainWeapon" },
-    { key = "!2", command = "cyclestate SubWeapon", desc = "Sub Weapon",  state = "SubWeapon" },
+    { key = "^numpad1", command = "cyclestate MainWeapon", desc = "Main Weapon",  state = "MainWeapon" },
+    { key = "^numpad2", command = "cyclestate SubWeapon", desc = "Sub Weapon",  state = "SubWeapon" },
 
     -- Combat Mode Control
-    { key = "!3", command = "cyclestate HybridMode", desc = "Hybrid Mode",  state = "HybridMode" },
+    { key = "^numpad3", command = "cyclestate HybridMode", desc = "Hybrid Mode",  state = "HybridMode" },
 
     -- Treasure Hunter Mode
-    { key = "!4", command = "cyclestate TreasureMode", desc = "TH Mode",  state = "TreasureMode" },
+    { key = "^numpad4", command = "cyclestate TreasureMode", desc = "TH Mode",  state = "TreasureMode" },
 
     -- Abyssea Proc Mode (for /WAR subjob)
-    { key = "!5", command = "toggle AbyProc", desc = "Aby Proc",  state = "AbyProc", subjob = "WAR" },
-    { key = "!6", command = "cyclestate AbyWeapon", desc = "Aby Weapon",  state = "AbyWeapon", subjob = "WAR" },
+    { key = "^numpad5", command = "toggle AbyProc", desc = "Aby Proc",  state = "AbyProc", subjob = "WAR" },
+    { key = "^numpad6", command = "cyclestate AbyWeapon", desc = "Aby Weapon",  state = "AbyWeapon", subjob = "WAR" },
 
     -- Ranged Weapon Lock
-    { key = "!7", command = "toggle RangeLock", desc = "Range Lock",  state = "RangeLock" },
+    { key = "^numpad7", command = "toggle RangeLock", desc = "Range Lock",  state = "RangeLock" },
 }
 
 ---============================================================================
