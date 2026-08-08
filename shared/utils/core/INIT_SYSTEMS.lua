@@ -96,18 +96,16 @@ end, 2.0)
 -- Creates state.AutoMedicine for every job. Loaded synchronously because
 -- PrecastGuard reads it on the very first action, which can land before a
 -- deferred block would have run.
+-- state.AutoMedicine itself is created by each job's [JOB]_STATES.lua, in
+-- user_setup(), alongside every other state. It has to be: the keybind HUD
+-- renders from user_setup and caches what it read, so a state created here -
+-- one line after `include('Mote-Include.lua')` returns - arrives too late and
+-- shows as N/A.
+--
+-- ensure() is the safety net for a job whose states config predates the state.
 local am_ok, AutoMedicine = pcall(require, 'shared/utils/debuff/auto_medicine')
 if am_ok and AutoMedicine then
-    AutoMedicine.init()
-
-    -- Re-assert it after Mote has finished settling. init_include() rebuilds
-    -- `state` wholesale, so a state created here can be wiped by a later
-    -- re-init - the keybind HUD then shows N/A for it. ensure() keeps the
-    -- current value when the state is already there, so this is a no-op in the
-    -- normal case. Two passes: one right after startup, one after the UI's
-    -- delayed init has run.
-    coroutine.schedule(function() AutoMedicine.ensure() end, 1.0)
-    coroutine.schedule(function() AutoMedicine.ensure() end, 6.0)
+    AutoMedicine.ensure()
 else
     ensure_message_init().show_module_load_failed('Auto Medicine', AutoMedicine)
 end

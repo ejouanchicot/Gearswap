@@ -198,6 +198,14 @@ function BRDStates.configure()
         0, 10, 20, 30, 40, 50, 60, 70, 80
     }
     state.FastCast:set(80)  -- Default: 80% (BRD has high FC for songs)
+
+    -- Universal toggle, created here rather than centrally: the keybind HUD
+    -- renders from user_setup() and caches what it reads, so a state added
+    -- afterwards shows as N/A until something forces a redraw.
+    local ok, AutoMedicine = pcall(require, 'shared/utils/debuff/auto_medicine')
+    if ok and AutoMedicine then
+        AutoMedicine.init(state, M)
+    end
 end
 
 ---============================================================================
