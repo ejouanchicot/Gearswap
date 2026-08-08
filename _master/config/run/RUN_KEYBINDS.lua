@@ -31,7 +31,7 @@ local RUNKeybinds = {}
 --- Format: { key = "key_combo", command = "gs_command", desc = "description", state = "state_name", subjob = "required_subjob" }
 RUNKeybinds.binds = { -- Hybrid Mode (PDT/MDT)
 {
-    key = "^numpad3",
+    key = "^numpad9",
     command = "cyclestate HybridMode",
     desc = "Hybrid Mode",
     state = "HybridMode"
@@ -48,7 +48,7 @@ RUNKeybinds.binds = { -- Hybrid Mode (PDT/MDT)
     state = "SubWeapon"
 }, -- Rune Mode (RUN main job - always available)
 {
-    key = "^numpad4",
+    key = "^numpad3",
     command = "cyclestate RuneMode",
     desc = "Rune Mode",
     state = "RuneMode"

@@ -24,16 +24,16 @@ RDMKeybinds.binds = {
     -- Weapon & Combat States (1-5)
     { key = "^numpad1", command = "cyclestate MainWeapon",     desc = "Main Weapon",     state = "MainWeapon" },
     { key = "^numpad2", command = "cyclestate SubWeapon",      desc = "Sub Weapon",      state = "SubWeapon" },
-    { key = "^numpad3", command = "cyclestate EngagedMode",    desc = "Engaged Mode",    state = "EngagedMode" },
+    { key = "^numpad6", command = "cyclestate EngagedMode",    desc = "Engaged Mode",    state = "EngagedMode" },
     { key = "^numpad4", command = "cyclestate IdleMode",       desc = "Idle Mode",       state = "IdleMode" },
     { key = "^numpad5", command = "cyclestate CombatMode",     desc = "Combat Mode",     state = "CombatMode" },
 
     -- Magic States (6-9, 0)
-    { key = "^numpad6", command = "cyclestate EnfeebleMode",   desc = "Enfeeble Mode",   state = "EnfeebleMode" },
+    { key = "^numpad3", command = "cyclestate EnfeebleMode",   desc = "Enfeeble Mode",   state = "EnfeebleMode" },
     { key = "^numpad7", command = "cyclestate NukeMode",       desc = "Nuke Mode",       state = "NukeMode" },
     { key = "^numpad0", command = "cyclestate SaboteurMode",   desc = "Saboteur Mode",   state = "SaboteurMode" },
     { key = "^numpad8", command = "cyclestate NukeTier",       desc = "Nuke Tier",       state = "NukeTier" },
-    { key = "^numpad9", command = "cyclestate Storm",          desc = "Storm (SCH)",     state = "Storm",    subjob = "SCH" },
+    { key = "#numpad1", command = "cyclestate Storm",          desc = "Storm (SCH)",     state = "Storm",    subjob = "SCH" },
 
     ---========================================================================
     --- ALT+NUMPAD KEYS (Enhancement States & Cast - 10 touches)

@@ -29,17 +29,17 @@ CORKeybinds.binds = {
     { key = "^numpad2", command = "cyclestate RangeWeapon", desc = "Range Weapon",  state = "RangeWeapon" },
 
     -- Quick Draw Element
-    { key = "^numpad4", command = "cyclestate QuickDraw", desc = "Quick Draw Element",  state = "QuickDraw" },
+    { key = "^numpad3", command = "cyclestate QuickDraw", desc = "Quick Draw Element",  state = "QuickDraw" },
 
     -- Combat Mode Control
-    { key = "^numpad3", command = "cyclestate HybridMode", desc = "Hybrid Mode",  state = "HybridMode" },
+    { key = "^numpad9", command = "cyclestate HybridMode", desc = "Hybrid Mode",  state = "HybridMode" },
 
     -- Rolls (Phantom Roll Selection)
-    { key = "^numpad5", command = "cyclestate MainRoll", desc = "Main Roll",  state = "MainRoll" },
-    { key = "^numpad6", command = "cyclestate SubRoll", desc = "Sub Roll",  state = "SubRoll" },
+    { key = "^numpad4", command = "cyclestate MainRoll", desc = "Main Roll",  state = "MainRoll" },
+    { key = "^numpad5", command = "cyclestate SubRoll", desc = "Sub Roll",  state = "SubRoll" },
 
     -- Luzaf Ring Toggle (affects roll range: ON=16y, OFF=8y)
-    { key = "^numpad7", command = "cyclestate LuzafRing", desc = "Luzaf Ring",  state = "LuzafRing" },
+    { key = "^numpad6", command = "cyclestate LuzafRing", desc = "Luzaf Ring",  state = "LuzafRing" },
 }
 
 ---============================================================================

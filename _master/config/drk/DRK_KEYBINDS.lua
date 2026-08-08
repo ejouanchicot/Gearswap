@@ -32,7 +32,7 @@ local DRKKeybinds = {}
 DRKKeybinds.binds = {
     -- Hybrid Mode (PDT/Normal)
     {
-        key = "^numpad2",
+        key = "^numpad9",
         command = "cyclestate HybridMode",
         desc = "Hybrid Mode",
         state = "HybridMode"
