@@ -50,6 +50,7 @@ DNCKeybinds.binds = {
 
     -- Samba Selection
     { key = "^numpad0", command = "cyclestate Samba", desc = "Samba Type",  state = "Samba" },
+    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 }
 
 ---============================================================================

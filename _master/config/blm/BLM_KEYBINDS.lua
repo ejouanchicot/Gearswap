@@ -71,6 +71,7 @@ BLMKeybinds.binds = {
     -- Stratagem AOE Toggles (SCH subjob)
     { key = "#numpad8", command = "cyclestate SneakInviAOE", desc = "Sneak/Invi AOE", state = "SneakInviAOE" },
     { key = "#numpad9", command = "cyclestate KlimaformAOE", desc = "Klimaform AOE", state = "KlimaformAOE" },
+    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 }
 
 ---============================================================================

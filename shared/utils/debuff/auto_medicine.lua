@@ -64,7 +64,12 @@ end
 --- @return boolean enabled True if auto-cure items may be used
 function AutoMedicine.is_enabled()
     if _G.state and state.AutoMedicine then
-        return state.AutoMedicine.value == ON
+        local value = state.AutoMedicine.value
+        -- The keybind cycles the state directly instead of going through
+        -- toggle(), so mirror it here: without this a cycled value would be
+        -- lost at the next job change, which restores from the windower copy.
+        persist_value(value)
+        return value == ON
     end
     return load_persisted_value() == ON
 end
