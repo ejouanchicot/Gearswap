@@ -35,15 +35,15 @@ BSTKeybinds.binds = {
     ---==========================================================================
     --- COMBAT MODES (Number Keys)
     ---==========================================================================
-    { key = "^numpad3", command = "cyclestate HybridMode", desc = "Hybrid Mode", state = "HybridMode" },
-    { key = "^numpad5", command = "cyclestate AutoPetEngage", desc = "Auto Pet Engage", state = "AutoPetEngage" },
-    { key = "^numpad4", command = "cyclestate PetIdleMode", desc = "Pet Idle Mode", state = "PetIdleMode" },
+    { key = "^numpad9", command = "cyclestate HybridMode", desc = "Hybrid Mode", state = "HybridMode" },
+    { key = "^numpad4", command = "cyclestate AutoPetEngage", desc = "Auto Pet Engage", state = "AutoPetEngage" },
+    { key = "^numpad3", command = "cyclestate PetIdleMode", desc = "Pet Idle Mode", state = "PetIdleMode" },
 
     ---==========================================================================
     --- ECOSYSTEM/SPECIES MANAGEMENT (Alt+Numbers - BST Functions)
     ---==========================================================================
-    { key = "^numpad6", command = "ecosystem", desc = "Cycle Ecosystem", state = "Ecosystem" },
-    { key = "^numpad7", command = "species", desc = "Cycle Species", state = "species" },
+    { key = "^numpad5", command = "ecosystem", desc = "Cycle Ecosystem", state = "Ecosystem" },
+    { key = "^numpad6", command = "species", desc = "Cycle Species", state = "species" },
 
     ---==========================================================================
     --- PET MANAGEMENT (Alt+Numbers - BST Functions)

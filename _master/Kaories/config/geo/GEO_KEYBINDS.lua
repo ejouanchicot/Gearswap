@@ -27,8 +27,8 @@ GEOKeybinds.binds = {
     ---========================================================================
 
     -- Cycle Spells
-    { key = "^numpad1", command = "cyclestate MainIndi", desc = "Main Indi", state = "MainIndi" },
-    { key = "^numpad2", command = "cyclestate MainGeo", desc = "Main Geo", state = "MainGeo" },
+    { key = "^numpad3", command = "cyclestate MainIndi", desc = "Main Indi", state = "MainIndi" },
+    { key = "^numpad4", command = "cyclestate MainGeo", desc = "Main Geo", state = "MainGeo" },
 
     -- Cast Spells (Ctrl+1/2)
 
@@ -37,18 +37,18 @@ GEOKeybinds.binds = {
     ---========================================================================
 
     -- Elemental Spells (Light then Dark)
-    { key = "^numpad3", command = "cyclestate MainLightSpell", desc = "Light Spell", state = "MainLightSpell" },
-    { key = "^numpad4", command = "cyclestate MainDarkSpell", desc = "Dark Spell", state = "MainDarkSpell" },
+    { key = "^numpad5", command = "cyclestate MainLightSpell", desc = "Light Spell", state = "MainLightSpell" },
+    { key = "^numpad6", command = "cyclestate MainDarkSpell", desc = "Dark Spell", state = "MainDarkSpell" },
 
     -- Spell Tier (V, IV, III, II, I)
-    { key = "^numpad7", command = "cyclestate SpellTier", desc = "Spell Tier", state = "SpellTier" },
+    { key = "^numpad1", command = "cyclestate SpellTier", desc = "Spell Tier", state = "SpellTier" },
 
     -- AOE Spells (Light then Dark)
-    { key = "^numpad5", command = "cyclestate MainLightAOE", desc = "Light AOE", state = "MainLightAOE" },
-    { key = "^numpad6", command = "cyclestate MainDarkAOE", desc = "Dark AOE", state = "MainDarkAOE" },
+    { key = "^numpad7", command = "cyclestate MainLightAOE", desc = "Light AOE", state = "MainLightAOE" },
+    { key = "^numpad8", command = "cyclestate MainDarkAOE", desc = "Dark AOE", state = "MainDarkAOE" },
 
     -- AOE Tier (III, II, I)
-    { key = "^numpad8", command = "cyclestate AOETier", desc = "AOE Tier", state = "AOETier" },
+    { key = "^numpad2", command = "cyclestate AOETier", desc = "AOE Tier", state = "AOETier" },
 
     -- Combat Modes
     { key = "^numpad9", command = "cyclestate HybridMode", desc = "Hybrid Mode",  state = "HybridMode" },

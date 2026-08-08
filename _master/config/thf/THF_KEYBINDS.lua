@@ -46,17 +46,17 @@ THFKeybinds.binds = {
     { key = "^numpad2", command = "cyclestate SubWeapon", desc = "Sub Weapon",  state = "SubWeapon" },
 
     -- Combat Mode Control
-    { key = "^numpad3", command = "cyclestate HybridMode", desc = "Hybrid Mode",  state = "HybridMode" },
+    { key = "^numpad9", command = "cyclestate HybridMode", desc = "Hybrid Mode",  state = "HybridMode" },
 
     -- Treasure Hunter Mode
-    { key = "^numpad4", command = "cyclestate TreasureMode", desc = "TH Mode",  state = "TreasureMode" },
+    { key = "^numpad3", command = "cyclestate TreasureMode", desc = "TH Mode",  state = "TreasureMode" },
 
     -- Abyssea Proc Mode (for /WAR subjob)
-    { key = "^numpad5", command = "toggle AbyProc", desc = "Aby Proc",  state = "AbyProc", subjob = "WAR" },
-    { key = "^numpad6", command = "cyclestate AbyWeapon", desc = "Aby Weapon",  state = "AbyWeapon", subjob = "WAR" },
+    { key = "^numpad4", command = "toggle AbyProc", desc = "Aby Proc",  state = "AbyProc", subjob = "WAR" },
+    { key = "^numpad5", command = "cyclestate AbyWeapon", desc = "Aby Weapon",  state = "AbyWeapon", subjob = "WAR" },
 
     -- Ranged Weapon Lock
-    { key = "^numpad7", command = "toggle RangeLock", desc = "Range Lock",  state = "RangeLock" },
+    { key = "^numpad6", command = "toggle RangeLock", desc = "Range Lock",  state = "RangeLock" },
 }
 
 ---============================================================================

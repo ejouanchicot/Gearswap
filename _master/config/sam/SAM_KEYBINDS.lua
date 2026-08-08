@@ -25,7 +25,7 @@ SAMKeybinds.binds = {
 
     -- HybridMode cycling (Alt+2)
     {
-        key = "^numpad2",
+        key = "^numpad9",
         command = "cyclestate HybridMode",
         desc = "Hybrid Mode",
         state = "HybridMode"

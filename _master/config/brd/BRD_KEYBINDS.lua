@@ -44,7 +44,7 @@ BRDKeybinds.binds = {
     { key = "^numpad2", command = "cyclestate SubWeapon", desc = "Sub Weapon", state = "SubWeapon" },
 
     -- Alt+8: Etude Type (STR/DEX/VIT/AGI/INT/MND/CHR)
-    { key = "^numpad9", command = "cyclestate EtudeType", desc = "Etude Type", state = "EtudeType" },
+    { key = "#numpad1", command = "cyclestate EtudeType", desc = "Etude Type", state = "EtudeType" },
 
     -- Alt+9: Carol Element (Fire/Ice/Wind/Earth/Lightning/Water/Light/Dark)
     { key = "^numpad0", command = "cyclestate CarolElement", desc = "Carol Element", state = "CarolElement" },

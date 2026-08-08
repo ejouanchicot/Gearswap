@@ -31,7 +31,7 @@ local PLDKeybinds = {}
 --- Format: { key = "key_combo", command = "gs_command", desc = "description", state = "state_name", subjob = "required_subjob" }
 PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT)
 {
-    key = "^numpad2",
+    key = "^numpad9",
     command = "cyclestate HybridMode",
     desc = "Hybrid Mode",
     state = "HybridMode"
@@ -50,7 +50,7 @@ PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT)
     subjob = "RDM"
 }, -- Rune Mode (PLD/RUN subjob only)
 {
-    key = "^numpad5",
+    key = "^numpad3",
     command = "cyclestate RuneMode",
     desc = "Rune Mode",
     state = "RuneMode",
