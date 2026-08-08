@@ -20,7 +20,7 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 ---============================================================================
 
 --- Keybind list with key, command, description, and state
---- Key format: ! = Alt, ^ = Ctrl, @ = Windows, # = Shift
+--- Key format: ! = Alt, ^ = Ctrl, @ = Windows, # = Apps, ~ = Shift
 GEOKeybinds.binds = {
     ---========================================================================
     --- GEOCOLURE & INDICOLURE
