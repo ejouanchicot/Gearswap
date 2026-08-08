@@ -141,7 +141,7 @@ end
 ---   @param base_spell string Base spell name
 ---   @param desired_tier string Desired tier
 ---   @param is_aoe boolean True if AOE spell
----   @param target string Target (<t>, <me>, <stpt>, etc.)
+---   @param target string Target (<t>, <me>, <stal>, etc.)
 ---   @return boolean True if spell was cast
 function GeoSpellRefiner.refine_and_cast(base_spell, desired_tier, is_aoe, target)
     target = target or "<t>"

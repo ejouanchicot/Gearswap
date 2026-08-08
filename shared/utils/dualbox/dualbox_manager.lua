@@ -430,6 +430,13 @@ coroutine.schedule(function()
             get_MessageDualbox().show_alt_role_detected()
         end
         DualBoxManager.send_job_update()
+
+        -- Also announce which tracked buffs are already up, otherwise the main
+        -- starts blind until the next gain/loss.
+        local abr_ok, AltBuffReporter = pcall(require, 'shared/utils/dualbox/alt_buff_reporter')
+        if abr_ok and AltBuffReporter then
+            AltBuffReporter.report_all()
+        end
     elseif _G.DualBoxConfig and _G.DualBoxConfig.role == "main" then
         if _G.DualBoxConfig.debug then
             get_MessageDualbox().show_main_role_detected()

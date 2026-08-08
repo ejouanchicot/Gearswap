@@ -248,4 +248,156 @@ function DebugCommands.handle_debugstate()
     return true
 end
 
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MEMCHECK
+---  ═══════════════════════════════════════════════════════════════════════════
+
+local MessageRenderer  = require('shared/utils/messages/core/message_renderer')
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+
+
+--- Memory diagnostic for GearSwap.
+--- The sandbox nukes `collectgarbage`/`gcinfo` (in-process introspection is
+--- impossible) and `//lua m` output goes to Windower's console (F11) which
+--- scrolls past the visible window. As a workaround we enumerate `_G` +
+--- `package.loaded` from inside the addon and EXPORT the full breakdown to
+--- `data/memcheck.txt` for offline review.
+---
+--- Output file: data/memcheck_<char>_<job>.txt
+---   - Sorted list of every loaded package
+---   - Sorted list of every _G entry grouped by type
+---   - Top tables ranked by direct child count (rough size proxy)
+---
+--- Chat shows just a summary + the file path.
+--- Usage: //gs c memcheck     (or //gs c mem)
+function DebugCommands.handle_memcheck(arg)
+    local sep = string.rep('=', 60)
+    MessageRenderer.send(sep, 121)
+    MessageRenderer.send('[MEMCHECK] GearSwap memory', 121)
+    MessageRenderer.send(sep, 121)
+
+    -- ── Resolve player/job for filename ─────────────────────────────────
+    local char = (player and player.name) or 'unknown'
+    local job  = (player and player.main_job) or 'XXX'
+
+    -- ── Enumerate _G grouped by type + table sizes ──────────────────────
+    local by_type = {}  -- [type] = { {name, size?}, ... }
+    local total_g = 0
+    for k, v in pairs(_G) do
+        total_g = total_g + 1
+        local t = type(v)
+        by_type[t] = by_type[t] or {}
+        if t == 'table' then
+            local n = 0
+            for _ in pairs(v) do n = n + 1 end
+            table.insert(by_type[t], {name = tostring(k), size = n})
+        else
+            table.insert(by_type[t], {name = tostring(k)})
+        end
+    end
+
+    -- ── Enumerate package.loaded ────────────────────────────────────────
+    local packages = {}
+    if package and package.loaded then
+        for name, _ in pairs(package.loaded) do
+            table.insert(packages, tostring(name))
+        end
+        table.sort(packages)
+    end
+
+    -- ── Top tables by direct child count (proxy for size) ───────────────
+    local top_tables = {}
+    for _, entry in ipairs(by_type['table'] or {}) do
+        table.insert(top_tables, entry)
+    end
+    table.sort(top_tables, function(a, b) return (a.size or 0) > (b.size or 0) end)
+
+    -- ── Build the text export ───────────────────────────────────────────
+    local out = {}
+    local function w(line) table.insert(out, line) end
+    local line_sep = string.rep('=', 75)
+    local sub_sep  = string.rep('-', 75)
+
+    w(line_sep)
+    w(string.format('  GEARSWAP MEMCHECK  -  %s / %s', char, job))
+    w(string.format('  Generated: %s', os.date('%Y-%m-%d %H:%M:%S')))
+    w(line_sep)
+    w('')
+
+    -- _G summary by type
+    w('SECTION 1 - _G entries by type')
+    w(sub_sep)
+    local type_order = {'table', 'function', 'string', 'number', 'boolean', 'userdata', 'thread'}
+    for _, t in ipairs(type_order) do
+        local list = by_type[t]
+        if list then
+            w(string.format('  %-10s : %d entries', t, #list))
+        end
+    end
+    w(string.format('  %-10s : %d', 'TOTAL', total_g))
+    w('')
+
+    -- Top tables
+    w(string.format('SECTION 2 - Top %d tables by child count (proxy for size)', math.min(50, #top_tables)))
+    w(sub_sep)
+    for i = 1, math.min(50, #top_tables) do
+        local entry = top_tables[i]
+        w(string.format('  %4d  %s', entry.size or 0, entry.name))
+    end
+    w('')
+
+    -- All globals sorted alphabetically
+    w('SECTION 3 - All _G entries (sorted)')
+    w(sub_sep)
+    for _, t in ipairs(type_order) do
+        local list = by_type[t]
+        if list then
+            table.sort(list, function(a, b) return a.name < b.name end)
+            w(string.format('-- [%s] %d entries', t, #list))
+            for _, entry in ipairs(list) do
+                if entry.size then
+                    w(string.format('  %s  (size=%d)', entry.name, entry.size))
+                else
+                    w('  ' .. entry.name)
+                end
+            end
+            w('')
+        end
+    end
+
+    -- Loaded packages
+    w(string.format('SECTION 4 - package.loaded (%d modules)', #packages))
+    w(sub_sep)
+    for _, p in ipairs(packages) do w('  ' .. p) end
+    w('')
+    w(line_sep)
+    w('END')
+    w(line_sep)
+
+    -- ── Write to file ───────────────────────────────────────────────────
+    local file_name = string.format('memcheck_%s_%s.txt', char, job)
+    local file_path = windower.addon_path .. 'data/' .. file_name
+    local fh, err = io.open(file_path, 'w')
+    if not fh then
+        MessageFormatter.show_error('MEMCHECK', 'Failed to open output file: ' .. tostring(err))
+        return true
+    end
+    fh:write(table.concat(out, '\n'))
+    fh:close()
+
+    -- ── Chat summary ────────────────────────────────────────────────────
+    MessageRenderer.send(string.format('  _G entries: %d  (tables=%d, functions=%d)',
+        total_g,
+        #(by_type['table'] or {}),
+        #(by_type['function'] or {})), 121)
+    MessageRenderer.send(string.format('  Loaded packages: %d', #packages), 121)
+    if top_tables[1] then
+        MessageRenderer.send(string.format('  Biggest table: %s (%d children)',
+            top_tables[1].name, top_tables[1].size or 0), 121)
+    end
+    MessageRenderer.send('  Exported: ' .. file_path, 123)
+    MessageRenderer.send(sep, 121)
+    return true
+end
+
 return DebugCommands
