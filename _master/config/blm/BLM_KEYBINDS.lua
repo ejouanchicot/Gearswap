@@ -20,28 +20,28 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 ---============================================================================
 
 --- Keybind list with key, command, description, and state
---- Key format: ! = Alt, ^ = Ctrl, @ = Windows, # = Shift
+--- Key format: ! = Alt, ^ = Ctrl, @ = Windows, # = Apps, ~ = Shift
 --- Numpad only, always with a modifier so the bare numpad stays free for the
 --- game and for addons that inject numpad presses (Silmaril hover, follow
 --- macros). The modifier carries the meaning:
 ---
---- Ctrl is the primary bank and is filled first; Shift takes the overflow.
+--- Ctrl is the primary bank and is filled first; Apps takes the overflow.
 ---
 --- Ctrl 3 and Ctrl 9 follow the project-wide layout (signature mechanic and
 --- HybridMode). Ctrl 1-2 hold weapons on jobs that have them; BLM binds no
 --- weapon, so the tiers take those slots.
 ---
----   Ctrl  = Main side          Shift = Sub side
----   Ctrl+3 Main Light          Shift+3 Sub Light
----   Ctrl+4 Main Dark           Shift+4 Sub Dark
----   Ctrl+5 Main Light AOE      Shift+5 Sub Light AOE
----   Ctrl+6 Main Dark AOE       Shift+6 Sub Dark AOE
+---   Ctrl  = Main side          Apps = Sub side
+---   Ctrl+3 Main Light          Apps+3 Sub Light
+---   Ctrl+4 Main Dark           Apps+4 Sub Dark
+---   Ctrl+5 Main Light AOE      Apps+5 Sub Light AOE
+---   Ctrl+6 Main Dark AOE       Apps+6 Sub Dark AOE
 ---
 --- The same digit is always the same spell family; the modifier picks Main or
---- Sub. Ctrl 7-8 and 0 hold Storm, Combat and MB modes; Shift 7-9 the
+--- Sub. Ctrl 7-8 and 0 hold Storm, Combat and MB modes; Apps 7-9 the
 --- remaining toggles.
 BLMKeybinds.binds = {
-    -- Main / Sub Elemental Spells (same digit, Ctrl = Main, Shift = Sub)
+    -- Main / Sub Elemental Spells (same digit, Ctrl = Main, Apps = Sub)
     { key = "^numpad3", command = "cyclestate MainLightSpell", desc = "Main Light", state = "MainLightSpell" },
     { key = "#numpad3", command = "cyclestate SubLightSpell", desc = "Sub Light", state = "SubLightSpell" },
     { key = "^numpad4", command = "cyclestate MainDarkSpell", desc = "Main Dark", state = "MainDarkSpell" },
