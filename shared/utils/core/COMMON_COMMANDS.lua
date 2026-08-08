@@ -193,6 +193,22 @@ function CommonCommands.handle_refill()
     return true
 end
 
+-- AUTO MEDICINE COMMAND
+
+--- Toggle automatic use of debuff cure items (Echo Drops / Remedy).
+--- Off keeps the debuff block in place, it only stops consuming items - which
+--- is what you want against unremovable debuff auras.
+--- @param arg string|nil Optional explicit value ('on' / 'off')
+--- @return boolean Success status
+function CommonCommands.handle_automedicine(arg)
+    local ok, AutoMedicine = pcall(require, 'shared/utils/debuff/auto_medicine')
+    if not ok or not AutoMedicine then
+        MessageFormatter.show_error("Failed to load auto medicine module: " .. tostring(AutoMedicine))
+        return false
+    end
+    return AutoMedicine.handle_command(arg)
+end
+
 -- CRAFT / FISH COMMANDS - extracted to CRAFT_COMMANDS.lua, re-exposed here.
 local CraftCommands = require('shared/utils/craft/craft_commands')
 CommonCommands.handle_craft   = CraftCommands.handle_craft
@@ -580,6 +596,8 @@ function CommonCommands.handle_command(command, job_name, ...)
         return CommonCommands.handle_wardrobeorganize(args[1], args[2])
     elseif cmd == 'refill' or cmd == 'rf' then
         return CommonCommands.handle_refill()
+    elseif cmd == 'automedicine' or cmd == 'am' then
+        return CommonCommands.handle_automedicine(args[1])
     elseif cmd == 'craft' then
         return CommonCommands.handle_craft(args[1])
     elseif cmd == 'fish' or cmd == 'fishing' then
@@ -713,6 +731,7 @@ function CommonCommands.is_common_command(command)
     -- Check existing common commands
     if cmd == 'mount' or
         cmd == 'naked' or cmd == 'equip' or cmd == 'reload' or cmd == 'checksets' or cmd == 'wardrobeaudit' or cmd == 'wa' or cmd == 'worganize' or cmd == 'wo' or cmd == 'refill' or cmd == 'rf' or cmd == 'craft' or cmd == 'uncraft' or cmd == 'fish' or cmd == 'fishing' or
+        cmd == 'automedicine' or cmd == 'am' or
         cmd == 'lockstyle' or cmd == 'ls' or cmd == 'dressup' or
         cmd == 'perf' or cmd == 'testcolors' or cmd == 'colors' or cmd == 'jump' or cmd == 'waltz' or
         cmd == 'aoewaltz' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'debugprecast' or

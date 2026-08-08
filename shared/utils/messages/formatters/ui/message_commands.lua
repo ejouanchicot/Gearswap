@@ -555,6 +555,7 @@ function MessageCommands.show_commands_list()
     add_to_chat(121, cyan .. "   //gs c worganize" .. gray .. " (or " .. cyan .. "wo" .. gray .. ") ... " .. white .. "Organize wardrobes by job usage")
     add_to_chat(121, cyan .. "   //gs c worganize alt" .. gray .. " ..... " .. white .. "Alt mode (4-wardrobe characters)")
     add_to_chat(121, cyan .. "   //gs c refill" .. gray .. " (or " .. cyan .. "rf" .. gray .. ") ..... " .. white .. "Pull consumables from Case/Sack")
+    add_to_chat(121, cyan .. "   //gs c automedicine" .. gray .. " (or " .. cyan .. "am" .. gray .. ") " .. white .. "Toggle auto Echo Drops/Remedy")
 
     -- Craft & Fish
     add_to_chat(121, " ")

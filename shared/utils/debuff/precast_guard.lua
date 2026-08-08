@@ -17,6 +17,7 @@ local PrecastGuard = {}
 -- Load dependencies
 local DebuffChecker = require('shared/utils/debuff/debuff_checker')
 local MessageDebuffs = require('shared/utils/messages/formatters/magic/message_debuffs')
+local AutoMedicine = require('shared/utils/debuff/auto_medicine')
 
 -- Load configuration
 local config_success, AutoCureConfig = pcall(require, 'shared/config/DEBUFF_AUTOCURE_CONFIG')
@@ -172,7 +173,9 @@ function PrecastGuard.check_and_block(spell, eventArgs)
         end
 
         -- Auto-cure handling
-        if should_auto_cure then
+        -- AutoMedicine Off only skips the item use - the action stays blocked,
+        -- since firing a JA while paralyzed burns its recast on a failed use.
+        if should_auto_cure and AutoMedicine.is_enabled() then
             local cure_success = false
 
             if cure_type == "silence" and action_type == "Magic" then
@@ -244,7 +247,7 @@ function PrecastGuard.check_magic(spell, eventArgs)
         end
 
         -- Special handling for Silence (or test mode) - try to auto-cure
-        if should_auto_cure then
+        if should_auto_cure and AutoMedicine.is_enabled() then
             -- Try to use Echo Drops or Remedy
             if try_cure_silence(spell.name, debuff_message) then
                 -- Successfully used cure item, don't cancel the action
@@ -300,7 +303,7 @@ function PrecastGuard.check_ja(spell, eventArgs)
         end
 
         -- Special handling for Paralysis (or test mode) - try to auto-cure
-        if should_auto_cure then
+        if should_auto_cure and AutoMedicine.is_enabled() then
             -- Try to use Remedy or Panacea
             if try_cure_paralysis(spell.name, debuff_message) then
                 -- Successfully used cure item, don't cancel the action

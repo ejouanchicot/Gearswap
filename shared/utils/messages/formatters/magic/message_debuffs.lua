@@ -352,6 +352,40 @@ function MessageDebuffs.show_no_paralysis_cure(action_name, debuff_message)
 end
 
 ---============================================================================
+--- AUTO MEDICINE TOGGLE
+---============================================================================
+
+--- Display the Auto Medicine toggle result
+--- @param enabled boolean True if auto-cure items are now allowed
+function MessageDebuffs.show_auto_medicine_toggled(enabled)
+    local separator_color = MessageCore.create_color_code(Colors.SEPARATOR)
+    local item_color = MessageCore.create_color_code(Colors.ITEM_COLOR)
+    local status_color = MessageCore.create_color_code(enabled and Colors.SUCCESS or Colors.ERROR)
+
+    M.send('DEBUFFS', 'separator')
+
+    local message = string.format(
+        "%s[%s%s%s] %s%s",
+        separator_color,
+        item_color, "Auto Medicine",
+        separator_color,
+        status_color, enabled and "ON" or "OFF"
+    )
+
+    MessageRenderer.send(1, message)
+
+    if not enabled then
+        local hint_color = MessageCore.create_color_code(Colors.ERROR)
+        MessageRenderer.send(1, string.format(
+            "%sNo Echo Drops / Remedy will be used automatically",
+            hint_color
+        ))
+    end
+
+    M.send('DEBUFFS', 'separator')
+end
+
+---============================================================================
 --- MODULE EXPORT
 ---============================================================================
 
