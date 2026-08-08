@@ -44,6 +44,7 @@ BSTKeybinds.binds = {
     ---==========================================================================
     { key = "^numpad5", command = "ecosystem", desc = "Cycle Ecosystem", state = "Ecosystem" },
     { key = "^numpad6", command = "species", desc = "Cycle Species", state = "species" },
+    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 
     ---==========================================================================
     --- PET MANAGEMENT (Alt+Numbers - BST Functions)

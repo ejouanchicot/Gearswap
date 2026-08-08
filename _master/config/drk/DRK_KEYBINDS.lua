@@ -43,7 +43,8 @@ DRKKeybinds.binds = {
         command = "cyclestate MainWeapon",
         desc = "Main Weapon",
         state = "MainWeapon"
-    }
+    },
+    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 }
 
 ---============================================================================

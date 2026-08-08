@@ -54,6 +54,7 @@ BRDKeybinds.binds = {
 
     -- Alt+=: Auto-Marcato Song (HonorMarch/AriaPassion/Off)
     { key = "^numpad8", command = "cyclestate MarcatoSong", desc = "Auto-Marcato Song", state = "MarcatoSong" },
+    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 
     ---========================================================================
     --- CTRL + KEYS (Actions/Abilities) - ^1 to ^9, ^-, ^=

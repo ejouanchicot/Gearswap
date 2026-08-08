@@ -53,7 +53,9 @@ RUNKeybinds.binds = { -- Hybrid Mode (PDT/MDT)
     desc = "Rune Mode",
     state = "RuneMode"
     -- No subjob filter - RuneMode is core RUN functionality
-}}
+},
+    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
+}
 
 ---============================================================================
 --- KEYBIND MANAGEMENT

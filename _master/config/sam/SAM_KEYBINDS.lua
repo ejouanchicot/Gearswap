@@ -29,7 +29,8 @@ SAMKeybinds.binds = {
         command = "cyclestate HybridMode",
         desc = "Hybrid Mode",
         state = "HybridMode"
-    }
+    },
+    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 }
 
 ---============================================================================

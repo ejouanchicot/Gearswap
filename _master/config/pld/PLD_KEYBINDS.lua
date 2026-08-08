@@ -55,7 +55,9 @@ PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT)
     desc = "Rune Mode",
     state = "RuneMode",
     subjob = "RUN"
-}}
+},
+    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
+}
 
 ---============================================================================
 --- KEYBIND MANAGEMENT

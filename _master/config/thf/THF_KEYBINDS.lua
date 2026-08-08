@@ -57,6 +57,7 @@ THFKeybinds.binds = {
 
     -- Ranged Weapon Lock
     { key = "^numpad6", command = "toggle RangeLock", desc = "Range Lock",  state = "RangeLock" },
+    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 }
 
 ---============================================================================
