@@ -91,6 +91,19 @@ coroutine.schedule(function()
 end, 2.0)
 
 ---  ═══════════════════════════════════════════════════════════════════════════
+---   IMMEDIATE: AUTO MEDICINE STATE
+---  ═══════════════════════════════════════════════════════════════════════════
+-- Creates state.AutoMedicine for every job. Loaded synchronously because
+-- PrecastGuard reads it on the very first action, which can land before a
+-- deferred block would have run.
+local am_ok, AutoMedicine = pcall(require, 'shared/utils/debuff/auto_medicine')
+if am_ok and AutoMedicine then
+    AutoMedicine.init()
+else
+    ensure_message_init().show_module_load_failed('Auto Medicine', AutoMedicine)
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
 ---   IMMEDIATE: DUAL-BOX SYNC IPC
 ---  ═══════════════════════════════════════════════════════════════════════════
 -- Registers a Windower IPC listener and the per-command hooks. Loaded
