@@ -9,14 +9,16 @@
 ---   { action = 'ma'|'ja'|'ws'|'so'|'item'|'pet'|'ra'|'raw',
 ---     spell = 'Name', target = 'lastst'|'me', desc = 'text' }
 ---
+--- Covers all 30 Indi- and all 30 Geo- spells. Names, effects and the
+--- buff/debuff split are taken from the project's own geomancy data
+--- (shared/data/magic/geomancy/), not written by hand.
+---
 --- GEOCOLURE TARGETING - the reason this file is split in sections
 ---   Indi-        always the alt, nothing to select        -> target 'me'
 ---   Indi- via Entrust  the ONLY case an Indi- leaves the
 ---                alt: needs a PC                          -> /ta <stpc>
----   Geo- buffs   (Fury, Haste, Refresh, Acumen, Focus, Regen,
----                 Precision) are PC ONLY   -> /ta <stpc> the ally, then fire
----   Geo- debuffs (Frailty, Malaise, Languor, Wilt, Torpor, Vex,
----                 Slow, Gravity) are ENEMY ONLY -> /ta <stnpc> the mob
+---   Geo- buffs   are PC ONLY     -> /ta <stpc> the ally, then fire
+---   Geo- debuffs are ENEMY ONLY  -> /ta <stnpc> the mob
 ---
 ---   A Geocolure refuses the wrong target type outright, so the split is not
 ---   cosmetic: fire a Geo- buff with a mob selected and nothing happens.
@@ -70,58 +72,79 @@ M.commands = {
     -- ========================================================================
     -- INDI- SPELLS
     -- ========================================================================
-    -- On the alt by default. If the alt has Entrust up, the same command aims
-    -- at your last subtarget instead - /ta <stal> the ally beforehand.
-    indifury    = { action = 'ma', spell = 'Indi-Fury',    target = indi_target, consumes_alt_buff = 'Entrust',
-                  desc = 'Attack +' },
-    indifrailty = { action = 'ma', spell = 'Indi-Frailty', target = indi_target, consumes_alt_buff = 'Entrust',
-                  desc = 'Enemy defense -' },
-    indimalaise = { action = 'ma', spell = 'Indi-Malaise', target = indi_target, consumes_alt_buff = 'Entrust',
-                  desc = 'Enemy magic evasion -' },
-    indiacumen  = { action = 'ma', spell = 'Indi-Acumen',  target = indi_target, consumes_alt_buff = 'Entrust',
-                  desc = 'Magic attack +' },
-    indifocus   = { action = 'ma', spell = 'Indi-Focus',   target = indi_target, consumes_alt_buff = 'Entrust',
-                  desc = 'Magic accuracy +' },
-    indihaste   = { action = 'ma', spell = 'Indi-Haste',   target = indi_target, consumes_alt_buff = 'Entrust',
-                  desc = 'Haste +' },
-    indirefresh = { action = 'ma', spell = 'Indi-Refresh', target = indi_target, consumes_alt_buff = 'Entrust',
-                  desc = 'Refresh +' },
-    indiregen   = { action = 'ma', spell = 'Indi-Regen',   target = indi_target, consumes_alt_buff = 'Entrust',
-                  desc = 'Regen +' },
-    indiprecision = { action = 'ma', spell = 'Indi-Precision', target = indi_target, consumes_alt_buff = 'Entrust',
-                  desc = 'Accuracy +' },
-    indivoidance  = { action = 'ma', spell = 'Indi-Voidance',  target = indi_target, consumes_alt_buff = 'Entrust',
-                  desc = 'Enemy evasion -' },
-    indiwilt    = { action = 'ma', spell = 'Indi-Wilt',    target = indi_target, consumes_alt_buff = 'Entrust',
-                  desc = 'Enemy STR -' },
-    indilanguor = { action = 'ma', spell = 'Indi-Languor', target = indi_target, consumes_alt_buff = 'Entrust',
-                  desc = 'Enemy magic defense -' },
+    -- On the alt by default. With Entrust up they aim at your last subtarget
+    -- instead - see indi_target above. Names and effects come from
+    -- shared/data/magic/geomancy/geomancy_indi.lua.
+    indiacumen       = { action = 'ma', spell = 'Indi-Acumen',        target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts magic atk.' },
+    indiagi          = { action = 'ma', spell = 'Indi-AGI',           target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts agility.' },
+    indiattunement   = { action = 'ma', spell = 'Indi-Attunement',    target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts magic acc.' },
+    indibarrier      = { action = 'ma', spell = 'Indi-Barrier',       target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts defense.' },
+    indichr          = { action = 'ma', spell = 'Indi-CHR',           target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts charisma.' },
+    indidex          = { action = 'ma', spell = 'Indi-DEX',           target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts dexterity.' },
+    indifend         = { action = 'ma', spell = 'Indi-Fend',          target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts defense.' },
+    indifocus        = { action = 'ma', spell = 'Indi-Focus',         target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts magic acc.' },
+    indifury         = { action = 'ma', spell = 'Indi-Fury',          target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts attack.' },
+    indihaste        = { action = 'ma', spell = 'Indi-Haste',         target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts attack speed.' },
+    indiint          = { action = 'ma', spell = 'Indi-INT',           target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts intelligence.' },
+    indimnd          = { action = 'ma', spell = 'Indi-MND',           target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts mind.' },
+    indipoison       = { action = 'ma', spell = 'Indi-Poison',        target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts poison dmg.' },
+    indiprecision    = { action = 'ma', spell = 'Indi-Precision',     target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts accuracy.' },
+    indirefresh      = { action = 'ma', spell = 'Indi-Refresh',       target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Restores MP.' },
+    indiregen        = { action = 'ma', spell = 'Indi-Regen',         target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Restores HP.' },
+    indistr          = { action = 'ma', spell = 'Indi-STR',           target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts strength.' },
+    indivit          = { action = 'ma', spell = 'Indi-VIT',           target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts vitality.' },
+    indivoidance     = { action = 'ma', spell = 'Indi-Voidance',      target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts evasion.' },
+    indislow         = { action = 'ma', spell = 'Indi-Slow',          target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Slows nearby foes.' },
+    indislip         = { action = 'ma', spell = 'Indi-Slip',          target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Lowers accuracy.' },
+    inditorpor       = { action = 'ma', spell = 'Indi-Torpor',        target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Lowers evasion.' },
+    indifade         = { action = 'ma', spell = 'Indi-Fade',          target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Lowers attack.' },
+    indifrailty      = { action = 'ma', spell = 'Indi-Frailty',       target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Lowers defense.' },
+    indigravity      = { action = 'ma', spell = 'Indi-Gravity',       target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Slows movement.' },
+    indilanguor      = { action = 'ma', spell = 'Indi-Languor',       target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Slows foes.' },
+    indimalaise      = { action = 'ma', spell = 'Indi-Malaise',       target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Lowers magic def.' },
+    indiparalysis    = { action = 'ma', spell = 'Indi-Paralysis',     target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Paralyzes foes.' },
+    indivex          = { action = 'ma', spell = 'Indi-Vex',           target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Lowers magic def.' },
+    indiwilt         = { action = 'ma', spell = 'Indi-Wilt',          target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Lowers attack.' },
 
     -- ========================================================================
     -- GEO- BUFFS - PC ONLY: select an ally first (/ta <stpc>)
     -- ========================================================================
-    -- A buffing Geocolure will not accept an enemy as its target. Pick the
-    -- player you want the luopan planted on before firing these.
-    geofury     = { action = 'ma', spell = 'Geo-Fury',     target = 'lastst', desc = 'Attack + (on a PC)' },
-    geoacumen   = { action = 'ma', spell = 'Geo-Acumen',   target = 'lastst', desc = 'Magic attack + (on a PC)' },
-    geofocus    = { action = 'ma', spell = 'Geo-Focus',    target = 'lastst', desc = 'Magic accuracy + (on a PC)' },
-    geohaste    = { action = 'ma', spell = 'Geo-Haste',    target = 'lastst', desc = 'Haste + (on a PC)' },
-    georefresh  = { action = 'ma', spell = 'Geo-Refresh',  target = 'lastst', desc = 'Refresh + (on a PC)' },
-    georegen    = { action = 'ma', spell = 'Geo-Regen',    target = 'lastst', desc = 'Regen + (on a PC)' },
-    geoprecision= { action = 'ma', spell = 'Geo-Precision', target = 'lastst', desc = 'Accuracy + (on a PC)' },
+    -- A buffing Geocolure will not accept an enemy as its target.
+    geoacumen        = { action = 'ma', spell = 'Geo-Acumen',         target = 'lastst', desc = 'Boosts magic atk. (on a PC)' },
+    geoagi           = { action = 'ma', spell = 'Geo-AGI',            target = 'lastst', desc = 'Boosts agility. (on a PC)' },
+    geoattunement    = { action = 'ma', spell = 'Geo-Attunement',     target = 'lastst', desc = 'Boosts magic acc. (on a PC)' },
+    geobarrier       = { action = 'ma', spell = 'Geo-Barrier',        target = 'lastst', desc = 'Boosts defense. (on a PC)' },
+    geochr           = { action = 'ma', spell = 'Geo-CHR',            target = 'lastst', desc = 'Boosts charisma. (on a PC)' },
+    geodex           = { action = 'ma', spell = 'Geo-DEX',            target = 'lastst', desc = 'Boosts dexterity. (on a PC)' },
+    geofend          = { action = 'ma', spell = 'Geo-Fend',           target = 'lastst', desc = 'Boosts defense. (on a PC)' },
+    geofocus         = { action = 'ma', spell = 'Geo-Focus',          target = 'lastst', desc = 'Boosts magic acc. (on a PC)' },
+    geofury          = { action = 'ma', spell = 'Geo-Fury',           target = 'lastst', desc = 'Boosts attack. (on a PC)' },
+    geohaste         = { action = 'ma', spell = 'Geo-Haste',          target = 'lastst', desc = 'Boosts attack speed. (on a PC)' },
+    geoint           = { action = 'ma', spell = 'Geo-INT',            target = 'lastst', desc = 'Boosts intelligence. (on a PC)' },
+    geomnd           = { action = 'ma', spell = 'Geo-MND',            target = 'lastst', desc = 'Boosts mind. (on a PC)' },
+    geopoison        = { action = 'ma', spell = 'Geo-Poison',         target = 'lastst', desc = 'Boosts poison dmg. (on a PC)' },
+    geoprecision     = { action = 'ma', spell = 'Geo-Precision',      target = 'lastst', desc = 'Boosts accuracy. (on a PC)' },
+    georefresh       = { action = 'ma', spell = 'Geo-Refresh',        target = 'lastst', desc = 'Restores MP. (on a PC)' },
+    georegen         = { action = 'ma', spell = 'Geo-Regen',          target = 'lastst', desc = 'Restores HP. (on a PC)' },
+    geostr           = { action = 'ma', spell = 'Geo-STR',            target = 'lastst', desc = 'Boosts strength. (on a PC)' },
+    geovit           = { action = 'ma', spell = 'Geo-VIT',            target = 'lastst', desc = 'Boosts vitality. (on a PC)' },
+    geovoidance      = { action = 'ma', spell = 'Geo-Voidance',       target = 'lastst', desc = 'Boosts evasion. (on a PC)' },
 
     -- ========================================================================
     -- GEO- DEBUFFS - ENEMY ONLY: select the mob first (/ta <stnpc>)
     -- ========================================================================
     -- A debuffing Geocolure will not accept a player as its target.
-    geofrailty  = { action = 'ma', spell = 'Geo-Frailty',  target = 'lastst', desc = 'Enemy defense - (on a mob)' },
-    geomalaise  = { action = 'ma', spell = 'Geo-Malaise',  target = 'lastst', desc = 'Enemy magic evasion - (on a mob)' },
-    geolanguor  = { action = 'ma', spell = 'Geo-Languor',  target = 'lastst', desc = 'Enemy magic defense - (on a mob)' },
-    geowilt     = { action = 'ma', spell = 'Geo-Wilt',     target = 'lastst', desc = 'Enemy STR - (on a mob)' },
-    geotorpor   = { action = 'ma', spell = 'Geo-Torpor',   target = 'lastst', desc = 'Enemy AGI - (on a mob)' },
-    geovex      = { action = 'ma', spell = 'Geo-Vex',      target = 'lastst', desc = 'Enemy magic acc - (on a mob)' },
-    geoslow     = { action = 'ma', spell = 'Geo-Slow',     target = 'lastst', desc = 'Enemy slow (on a mob)' },
-    geogravity  = { action = 'ma', spell = 'Geo-Gravity',  target = 'lastst', desc = 'Enemy gravity (on a mob)' },
+    geofade          = { action = 'ma', spell = 'Geo-Fade',           target = 'lastst', desc = 'Lowers attack. (on a mob)' },
+    geofrailty       = { action = 'ma', spell = 'Geo-Frailty',        target = 'lastst', desc = 'Lowers defense. (on a mob)' },
+    geogravity       = { action = 'ma', spell = 'Geo-Gravity',        target = 'lastst', desc = 'Slows movement. (on a mob)' },
+    geolanguor       = { action = 'ma', spell = 'Geo-Languor',        target = 'lastst', desc = 'Slows foes. (on a mob)' },
+    geomalaise       = { action = 'ma', spell = 'Geo-Malaise',        target = 'lastst', desc = 'Lowers magic def. (on a mob)' },
+    geoparalysis     = { action = 'ma', spell = 'Geo-Paralysis',      target = 'lastst', desc = 'Paralyzes foes. (on a mob)' },
+    geoslip          = { action = 'ma', spell = 'Geo-Slip',           target = 'lastst', desc = 'Lowers accuracy. (on a mob)' },
+    geoslow          = { action = 'ma', spell = 'Geo-Slow',           target = 'lastst', desc = 'Slows foes. (on a mob)' },
+    geotorpor        = { action = 'ma', spell = 'Geo-Torpor',         target = 'lastst', desc = 'Lowers evasion. (on a mob)' },
+    geovex           = { action = 'ma', spell = 'Geo-Vex',            target = 'lastst', desc = 'Lowers magic def. (on a mob)' },
+    geowilt          = { action = 'ma', spell = 'Geo-Wilt',           target = 'lastst', desc = 'Lowers attack. (on a mob)' },
 
     -- ========================================================================
     -- LUOPAN MANAGEMENT
