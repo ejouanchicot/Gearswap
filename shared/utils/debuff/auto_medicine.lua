@@ -10,8 +10,10 @@
 ---   is what matters against unremovable debuff auras where every cure is
 ---   immediately reapplied.
 ---
----   State lives here rather than in the 15 per-job [JOB]_STATES.lua configs:
----   the behaviour is universal, so the state is created once by INIT_SYSTEMS.
+---   The state is created from each job's [JOB]_STATES.lua, in user_setup(),
+---   like every other state. It cannot be created centrally from INIT_SYSTEMS:
+---   the keybind HUD renders during user_setup and caches what it read, so a
+---   state added afterwards displays as N/A until something forces a redraw.
 ---
 ---   @file    shared/utils/debuff/auto_medicine.lua
 ---   @author  Tetsouo
@@ -23,6 +25,21 @@ local AutoMedicine = {}
 
 local ON  = 'On'
 local OFF = 'Off'
+
+--- Mote's globals, handed in by the caller rather than read off _G.
+---
+--- This module is loaded with require(), and a required module does not
+--- reliably see the job sandbox's globals - `state` and `M` can both read nil
+--- here while being perfectly available to the file that includes us. That is
+--- why AutoMove, which creates state.Moving the same way, is loaded with
+--- include() instead. Taking them as arguments works either way.
+local Mote = { state = nil, M = nil }
+
+--- The state table we were given, if any.
+--- @return table|nil
+local function mote_state()
+    return Mote.state or _G.state
+end
 
 --- Read the value that survived the last job change.
 --- @return string 'On' or 'Off' (defaults to 'On' on a cold load)
@@ -45,17 +62,22 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Create state.AutoMedicine and restore its previous value.
---- Called by INIT_SYSTEMS after Mote-Include, so `state` and `M` both exist.
+--- Called by INIT_SYSTEMS, which is include()d and therefore has the sandbox
+--- globals to hand us.
+--- @param state_table table|nil Mote's `state` table
+--- @param mode_ctor function|nil Mote's `M` constructor
 --- @return boolean created True if the state is available after this call
-function AutoMedicine.init()
-    -- `M` is looked up as a plain global rather than through `_G`: GearSwap
-    -- gives each job its own environment, and depending on how it is chained
-    -- `_G.M` can read nil while `M` still resolves.
-    if not state or not M then
+function AutoMedicine.init(state_table, mode_ctor)
+    Mote.state = state_table or Mote.state or _G.state
+    Mote.M     = mode_ctor  or Mote.M     or _G.M
+
+
+    if not Mote.state or not Mote.M then
         return false
     end
 
-    local st = M { ['description'] = 'Auto Medicine', ON, OFF }
+    local state = Mote.state
+    local st = Mote.M { ['description'] = 'Auto Medicine', ON, OFF }
 
     -- Persist on every change, whoever makes it. The keybind runs
     -- `cyclestate AutoMedicine`, which calls cycle() straight on the Mote
@@ -75,34 +97,30 @@ function AutoMedicine.init()
     state.AutoMedicine = st
     st:set(load_persisted_value())
 
+
     return true
 end
 
 --- Create the state if it is missing, keeping the current value if it is not.
----
---- Mote rebuilds `state` from scratch in init_include(), so a state created
---- outside user_setup() can be wiped by a later re-init - and the keybind HUD
---- then shows N/A for it. Cheap enough to call from a timer.
 --- @return boolean True if the state exists after this call
 function AutoMedicine.ensure()
-    if state and state.AutoMedicine then
+    local st = mote_state()
+
+    if st and st.AutoMedicine then
         return true
     end
     return AutoMedicine.init()
 end
+
 
 --- Check whether PrecastGuard is allowed to consume a cure item.
 --- Falls back to the persisted value when the state is missing (module loaded
 --- before INIT_SYSTEMS ran, or a job that never created it).
 --- @return boolean enabled True if auto-cure items may be used
 function AutoMedicine.is_enabled()
-    if _G.state and state.AutoMedicine then
-        local value = state.AutoMedicine.value
-        -- The keybind cycles the state directly instead of going through
-        -- toggle(), so mirror it here: without this a cycled value would be
-        -- lost at the next job change, which restores from the windower copy.
-        persist_value(value)
-        return value == ON
+    local st = mote_state()
+    if st and st.AutoMedicine then
+        return st.AutoMedicine.value == ON
     end
     return load_persisted_value() == ON
 end
@@ -112,8 +130,9 @@ end
 function AutoMedicine.toggle()
     local new_value = AutoMedicine.is_enabled() and OFF or ON
 
-    if _G.state and state.AutoMedicine then
-        state.AutoMedicine:set(new_value)
+    local st = mote_state()
+    if st and st.AutoMedicine then
+        st.AutoMedicine:set(new_value)
     end
     persist_value(new_value)
 
@@ -146,8 +165,9 @@ end
 function AutoMedicine.set(enabled)
     local new_value = enabled and ON or OFF
 
-    if _G.state and state.AutoMedicine then
-        state.AutoMedicine:set(new_value)
+    local st = mote_state()
+    if st and st.AutoMedicine then
+        st.AutoMedicine:set(new_value)
     end
     persist_value(new_value)
 
