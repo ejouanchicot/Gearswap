@@ -23,25 +23,48 @@ local M = {}
 M.commands = {
 
     -- ========================================================================
-    -- PHANTOM ROLLS (self-targeted, party-wide effect)
     -- ========================================================================
-    chaos     = { action = 'ja', spell = "Chaos Roll",     target = 'me', desc = 'Attack +' },
-    samurai   = { action = 'ja', spell = "Samurai Roll",   target = 'me', desc = 'Store TP +' },
-    fighter   = { action = 'ja', spell = "Fighter's Roll", target = 'me', desc = 'Double Attack +' },
-    hunter    = { action = 'ja', spell = "Hunter's Roll",  target = 'me', desc = 'Accuracy +' },
-    wizard    = { action = 'ja', spell = "Wizard's Roll",  target = 'me', desc = 'Magic Attack +' },
-    warlock   = { action = 'ja', spell = "Warlock's Roll", target = 'me', desc = 'Magic Accuracy +' },
-    rogue     = { action = 'ja', spell = "Rogue's Roll",   target = 'me', desc = 'Critical rate +' },
-    corsair   = { action = 'ja', spell = "Corsair's Roll", target = 'me', desc = 'Experience +' },
-    tactician = { action = 'ja', spell = "Tactician's Roll", target = 'me', desc = 'Regain +' },
-    caster    = { action = 'ja', spell = "Caster's Roll",  target = 'me', desc = 'Fast Cast +' },
-    drachen   = { action = 'ja', spell = "Drachen Roll",   target = 'me', desc = 'Pet accuracy +' },
-    companion = { action = 'ja', spell = "Companion's Roll", target = 'me', desc = 'Pet regain +' },
+    -- PHANTOM ROLLS (self-targeted, the effect covers the party)
+    -- ========================================================================
+    -- All 31 rolls, names and effects taken from the project's own roll data
+    -- (shared/data/job_abilities/cor/cor_rolls_*.lua).
+    allies       = { action = 'ja', spell = "Allies' Roll",           target = 'me', desc = 'Skillchain damage+' },
+    avenger      = { action = 'ja', spell = "Avenger's Roll",         target = 'me', desc = 'Counter rate+' },
+    beast        = { action = 'ja', spell = "Beast Roll",             target = 'me', desc = 'Pet Attack/Ranged Attack+' },
+    blitzer      = { action = 'ja', spell = "Blitzer's Roll",         target = 'me', desc = 'Attack delay-' },
+    bolter       = { action = 'ja', spell = "Bolter's Roll",          target = 'me', desc = 'Movement speed+' },
+    caster       = { action = 'ja', spell = "Caster's Roll",          target = 'me', desc = 'Fast Cast+' },
+    chaos        = { action = 'ja', spell = "Chaos Roll",             target = 'me', desc = 'Attack+' },
+    choral       = { action = 'ja', spell = "Choral Roll",            target = 'me', desc = 'Spell interruption rate-' },
+    companion    = { action = 'ja', spell = "Companion's Roll",       target = 'me', desc = 'Pet Regain/Regen' },
+    corsair      = { action = 'ja', spell = "Corsair's Roll",         target = 'me', desc = 'EXP/CP/EP bonus' },
+    courser      = { action = 'ja', spell = "Courser's Roll",         target = 'me', desc = 'Snapshot+' },
+    dancer       = { action = 'ja', spell = "Dancer's Roll",          target = 'me', desc = 'Regen (HP/tick)' },
+    drachen      = { action = 'ja', spell = "Drachen Roll",           target = 'me', desc = 'Pet Accuracy/Ranged Accuracy+' },
+    evoker       = { action = 'ja', spell = "Evoker's Roll",          target = 'me', desc = 'Refresh (MP regen)' },
+    fighter      = { action = 'ja', spell = "Fighter's Roll",         target = 'me', desc = 'Double Attack rate+' },
+    gallant      = { action = 'ja', spell = "Gallant's Roll",         target = 'me', desc = 'Defense+' },
+    healer       = { action = 'ja', spell = "Healer's Roll",          target = 'me', desc = 'Cure potency+' },
+    hunter       = { action = 'ja', spell = "Hunter's Roll",          target = 'me', desc = 'Accuracy/Ranged Accuracy+' },
+    magus        = { action = 'ja', spell = "Magus's Roll",           target = 'me', desc = 'Magic Defense+' },
+    miser        = { action = 'ja', spell = "Miser's Roll",           target = 'me', desc = 'Save TP' },
+    monk         = { action = 'ja', spell = "Monk's Roll",            target = 'me', desc = 'Subtle Blow+' },
+    naturalist   = { action = 'ja', spell = "Naturalist's Roll",      target = 'me', desc = 'Enhancing magic duration+' },
+    ninja        = { action = 'ja', spell = "Ninja Roll",             target = 'me', desc = 'Evasion+' },
+    puppet       = { action = 'ja', spell = "Puppet Roll",            target = 'me', desc = 'Pet Magic Attack/Magic Accuracy+' },
+    rogue        = { action = 'ja', spell = "Rogue's Roll",           target = 'me', desc = 'Critical hit rate+' },
+    runeist      = { action = 'ja', spell = "Runeist's Roll",         target = 'me', desc = 'Magic Evasion+' },
+    samurai      = { action = 'ja', spell = "Samurai Roll",           target = 'me', desc = 'Store TP+' },
+    scholar      = { action = 'ja', spell = "Scholar's Roll",         target = 'me', desc = 'Conserve MP+' },
+    tactician    = { action = 'ja', spell = "Tactician's Roll",       target = 'me', desc = 'Regain (TP/tick)' },
+    warlock      = { action = 'ja', spell = "Warlock's Roll",         target = 'me', desc = 'Magic Accuracy+' },
+    wizard       = { action = 'ja', spell = "Wizard's Roll",          target = 'me', desc = 'Magic Attack+' },
 
-    altdoubleup = { action = 'ja', spell = 'Double-Up',      target = 'me', desc = 'Double-Up' },
-    fold      = { action = 'ja', spell = 'Fold',           target = 'me', desc = 'Fold' },
-    snakeeye  = { action = 'ja', spell = 'Snake Eye',      target = 'me', desc = 'Snake Eye' },
-    randomdeal= { action = 'ja', spell = 'Random Deal',    target = 'me', desc = 'Random Deal' },
+    -- Roll management
+    altdoubleup  = { action = 'ja', spell = 'Double-Up',   target = 'me', desc = 'Double-Up' },
+    fold         = { action = 'ja', spell = 'Fold',        target = 'me', desc = 'Fold' },
+    snakeeye     = { action = 'ja', spell = 'Snake Eye',   target = 'me', desc = 'Snake Eye' },
+    randomdeal   = { action = 'ja', spell = 'Random Deal', target = 'me', desc = 'Random Deal' },
 
     -- ========================================================================
     -- QUICK DRAW - select the mob first (/ta <stnpc>)
