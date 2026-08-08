@@ -48,14 +48,47 @@ end
 --- Called by INIT_SYSTEMS after Mote-Include, so `state` and `M` both exist.
 --- @return boolean created True if the state is available after this call
 function AutoMedicine.init()
-    if not _G.state or not _G.M then
+    -- `M` is looked up as a plain global rather than through `_G`: GearSwap
+    -- gives each job its own environment, and depending on how it is chained
+    -- `_G.M` can read nil while `M` still resolves.
+    if not state or not M then
         return false
     end
 
-    state.AutoMedicine = M { ['description'] = 'Auto Medicine', ON, OFF }
-    state.AutoMedicine:set(load_persisted_value())
+    local st = M { ['description'] = 'Auto Medicine', ON, OFF }
+
+    -- Persist on every change, whoever makes it. The keybind runs
+    -- `cyclestate AutoMedicine`, which calls cycle() straight on the Mote
+    -- object without going through this module - so wrap the mutators rather
+    -- than hoping something reads the value before the next job change.
+    for _, name in ipairs({ 'cycle', 'set', 'reset', 'toggle' }) do
+        local original = st[name]
+        if type(original) == 'function' then
+            st[name] = function(self, ...)
+                local result = original(self, ...)
+                persist_value(self.value)
+                return result
+            end
+        end
+    end
+
+    state.AutoMedicine = st
+    st:set(load_persisted_value())
 
     return true
+end
+
+--- Create the state if it is missing, keeping the current value if it is not.
+---
+--- Mote rebuilds `state` from scratch in init_include(), so a state created
+--- outside user_setup() can be wiped by a later re-init - and the keybind HUD
+--- then shows N/A for it. Cheap enough to call from a timer.
+--- @return boolean True if the state exists after this call
+function AutoMedicine.ensure()
+    if state and state.AutoMedicine then
+        return true
+    end
+    return AutoMedicine.init()
 end
 
 --- Check whether PrecastGuard is allowed to consume a cure item.
