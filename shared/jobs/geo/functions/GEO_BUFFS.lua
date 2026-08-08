@@ -14,10 +14,12 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local DoomManager = nil
+local AltBuffReporter = nil
 
 local function ensure_managers_loaded()
     if not DoomManager then
         DoomManager = require('shared/utils/debuff/doom_manager')
+        AltBuffReporter = require('shared/utils/dualbox/alt_buff_reporter')
     end
 end
 
@@ -27,6 +29,10 @@ end
 function job_buff_change(buff, gain, eventArgs)
     -- Lazy load managers on first buff change
     ensure_managers_loaded()
+
+    -- Tell the main about tracked buffs (Entrust). No-op unless this character
+    -- is the dual-box ALT, so it costs nothing on a solo GEO.
+    AltBuffReporter.report(buff, gain)
 
     -- Doom handling (centralized)
     if DoomManager.handle_buff_change(buff, gain) then

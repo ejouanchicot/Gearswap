@@ -8,6 +8,18 @@ local MessageRenderer  = require('shared/utils/messages/core/message_renderer')
 -- Warp shortcut list (single source of truth in warp_command_registry).
 local WARP_COMMANDS = require('shared/utils/warp/warp_command_registry').COMMANDS
 
+-- Alt commands are consulted on every unrecognised command, and `gs c update`
+-- (sent by AutoMove on each move) is one of those - so resolve the module once
+-- instead of pcall(require) per call. `false` means "tried and failed".
+local AltCommandsModule = nil
+local function alt_commands()
+    if AltCommandsModule == nil then
+        local ok, mod = pcall(require, 'shared/utils/dualbox/alt_commands')
+        AltCommandsModule = (ok and mod) or false
+    end
+    return AltCommandsModule or nil
+end
+
 -- RELOAD COMMAND
 
 --- Handle job reload command
@@ -209,6 +221,24 @@ function CommonCommands.handle_automedicine(arg)
     return AutoMedicine.handle_command(arg)
 end
 
+-- ALT COMMANDS (dual-box: drive the alt from the main)
+
+--- Run a command defined in the alt's per-job config, or list them.
+--- `//gs c altcmds` lists what the alt's current job offers.
+--- `//gs c alt <name>` is the explicit form; bare `//gs c <name>` also works
+--- for any name that does not collide with an existing command.
+--- @param cmd string Command name
+--- @param args table Arguments after the command
+--- @return boolean Success status
+function CommonCommands.handle_alt_command(cmd, args)
+    local AltCommands = alt_commands()
+    if not AltCommands then
+        MessageFormatter.show_error("Failed to load alt commands module.")
+        return false
+    end
+    return AltCommands.handle(cmd, args)
+end
+
 -- CRAFT / FISH COMMANDS - extracted to CRAFT_COMMANDS.lua, re-exposed here.
 local CraftCommands = require('shared/utils/craft/craft_commands')
 CommonCommands.handle_craft   = CraftCommands.handle_craft
@@ -340,151 +370,7 @@ CommonCommands.handle_wsmsg       = DebugCommands.handle_wsmsg
 CommonCommands.handle_info        = DebugCommands.handle_info
 CommonCommands.handle_debugstate  = DebugCommands.handle_debugstate
 
--- MEMCHECK COMMAND
-
---- Memory diagnostic for GearSwap.
---- The sandbox nukes `collectgarbage`/`gcinfo` (in-process introspection is
---- impossible) and `//lua m` output goes to Windower's console (F11) which
---- scrolls past the visible window. As a workaround we enumerate `_G` +
---- `package.loaded` from inside the addon and EXPORT the full breakdown to
---- `data/memcheck.txt` for offline review.
----
---- Output file: data/memcheck_<char>_<job>.txt
----   - Sorted list of every loaded package
----   - Sorted list of every _G entry grouped by type
----   - Top tables ranked by direct child count (rough size proxy)
----
---- Chat shows just a summary + the file path.
---- Usage: //gs c memcheck     (or //gs c mem)
-function CommonCommands.handle_memcheck(arg)
-    local sep = string.rep('=', 60)
-    MessageRenderer.send(sep, 121)
-    MessageRenderer.send('[MEMCHECK] GearSwap memory', 121)
-    MessageRenderer.send(sep, 121)
-
-    -- ── Resolve player/job for filename ─────────────────────────────────
-    local char = (player and player.name) or 'unknown'
-    local job  = (player and player.main_job) or 'XXX'
-
-    -- ── Enumerate _G grouped by type + table sizes ──────────────────────
-    local by_type = {}  -- [type] = { {name, size?}, ... }
-    local total_g = 0
-    for k, v in pairs(_G) do
-        total_g = total_g + 1
-        local t = type(v)
-        by_type[t] = by_type[t] or {}
-        if t == 'table' then
-            local n = 0
-            for _ in pairs(v) do n = n + 1 end
-            table.insert(by_type[t], {name = tostring(k), size = n})
-        else
-            table.insert(by_type[t], {name = tostring(k)})
-        end
-    end
-
-    -- ── Enumerate package.loaded ────────────────────────────────────────
-    local packages = {}
-    if package and package.loaded then
-        for name, _ in pairs(package.loaded) do
-            table.insert(packages, tostring(name))
-        end
-        table.sort(packages)
-    end
-
-    -- ── Top tables by direct child count (proxy for size) ───────────────
-    local top_tables = {}
-    for _, entry in ipairs(by_type['table'] or {}) do
-        table.insert(top_tables, entry)
-    end
-    table.sort(top_tables, function(a, b) return (a.size or 0) > (b.size or 0) end)
-
-    -- ── Build the text export ───────────────────────────────────────────
-    local out = {}
-    local function w(line) table.insert(out, line) end
-    local line_sep = string.rep('=', 75)
-    local sub_sep  = string.rep('-', 75)
-
-    w(line_sep)
-    w(string.format('  GEARSWAP MEMCHECK  -  %s / %s', char, job))
-    w(string.format('  Generated: %s', os.date('%Y-%m-%d %H:%M:%S')))
-    w(line_sep)
-    w('')
-
-    -- _G summary by type
-    w('SECTION 1 - _G entries by type')
-    w(sub_sep)
-    local type_order = {'table', 'function', 'string', 'number', 'boolean', 'userdata', 'thread'}
-    for _, t in ipairs(type_order) do
-        local list = by_type[t]
-        if list then
-            w(string.format('  %-10s : %d entries', t, #list))
-        end
-    end
-    w(string.format('  %-10s : %d', 'TOTAL', total_g))
-    w('')
-
-    -- Top tables
-    w(string.format('SECTION 2 - Top %d tables by child count (proxy for size)', math.min(50, #top_tables)))
-    w(sub_sep)
-    for i = 1, math.min(50, #top_tables) do
-        local entry = top_tables[i]
-        w(string.format('  %4d  %s', entry.size or 0, entry.name))
-    end
-    w('')
-
-    -- All globals sorted alphabetically
-    w('SECTION 3 - All _G entries (sorted)')
-    w(sub_sep)
-    for _, t in ipairs(type_order) do
-        local list = by_type[t]
-        if list then
-            table.sort(list, function(a, b) return a.name < b.name end)
-            w(string.format('-- [%s] %d entries', t, #list))
-            for _, entry in ipairs(list) do
-                if entry.size then
-                    w(string.format('  %s  (size=%d)', entry.name, entry.size))
-                else
-                    w('  ' .. entry.name)
-                end
-            end
-            w('')
-        end
-    end
-
-    -- Loaded packages
-    w(string.format('SECTION 4 - package.loaded (%d modules)', #packages))
-    w(sub_sep)
-    for _, p in ipairs(packages) do w('  ' .. p) end
-    w('')
-    w(line_sep)
-    w('END')
-    w(line_sep)
-
-    -- ── Write to file ───────────────────────────────────────────────────
-    local file_name = string.format('memcheck_%s_%s.txt', char, job)
-    local file_path = windower.addon_path .. 'data/' .. file_name
-    local fh, err = io.open(file_path, 'w')
-    if not fh then
-        MessageFormatter.show_error('MEMCHECK', 'Failed to open output file: ' .. tostring(err))
-        return true
-    end
-    fh:write(table.concat(out, '\n'))
-    fh:close()
-
-    -- ── Chat summary ────────────────────────────────────────────────────
-    MessageRenderer.send(string.format('  _G entries: %d  (tables=%d, functions=%d)',
-        total_g,
-        #(by_type['table'] or {}),
-        #(by_type['function'] or {})), 121)
-    MessageRenderer.send(string.format('  Loaded packages: %d', #packages), 121)
-    if top_tables[1] then
-        MessageRenderer.send(string.format('  Biggest table: %s (%d children)',
-            top_tables[1].name, top_tables[1].size or 0), 121)
-    end
-    MessageRenderer.send('  Exported: ' .. file_path, 123)
-    MessageRenderer.send(sep, 121)
-    return true
-end
+CommonCommands.handle_memcheck    = DebugCommands.handle_memcheck
 
 -- WARP COMMANDS (Universal Warp/Teleport System)
 
@@ -598,6 +484,49 @@ function CommonCommands.handle_command(command, job_name, ...)
         return CommonCommands.handle_refill()
     elseif cmd == 'automedicine' or cmd == 'am' then
         return CommonCommands.handle_automedicine(args[1])
+    elseif cmd == 'alt' or cmd == 'altcmds' or cmd == 'altlist' then
+        return CommonCommands.handle_alt_command(cmd, args)
+    elseif cmd == 'altbuff' then
+        -- Sent by the ALT when a tracked buff goes up or down.
+        local ok, AltBuffReporter = pcall(require, 'shared/utils/dualbox/alt_buff_reporter')
+        if ok and AltBuffReporter then
+            AltBuffReporter.receive(args)
+        end
+        return true
+    elseif cmd == 'altbuffsync' then
+        -- Sent BY the main TO the alt: resend every tracked buff.
+        local ok, AltBuffReporter = pcall(require, 'shared/utils/dualbox/alt_buff_reporter')
+        if ok and AltBuffReporter then
+            AltBuffReporter.report_all()
+        end
+        return true
+    elseif cmd == 'altsync' then
+        -- Run on the main: ask the alt to resend its buff state.
+        local ok, AltBuffReporter = pcall(require, 'shared/utils/dualbox/alt_buff_reporter')
+        if ok and AltBuffReporter and AltBuffReporter.request_sync() then
+            MessageFormatter.show_debug('ALTBUFF', 'Asked the alt to resync its buffs.')
+        else
+            MessageFormatter.show_error('Alt sync needs dual-boxing enabled as main.')
+        end
+        return true
+    elseif cmd == 'altbuffs' then
+        -- Diagnostic: what the main currently believes about the alt's buffs.
+        local ok, AltBuffReporter = pcall(require, 'shared/utils/dualbox/alt_buff_reporter')
+        if ok and AltBuffReporter then
+            AltBuffReporter.show_state()
+        end
+        return true
+    elseif cmd == 'altdebug' then
+        -- Trace buff reporting on whichever character you run it on.
+        local ok, AltBuffReporter = pcall(require, 'shared/utils/dualbox/alt_buff_reporter')
+        if ok and AltBuffReporter then
+            local on, path = AltBuffReporter.toggle_debug()
+            MessageFormatter.show_debug('ALTBUFF', 'Tracing ' .. (on and 'ON' or 'OFF'))
+            if on then
+                MessageFormatter.show_debug('ALTBUFF', 'Log: ' .. path)
+            end
+        end
+        return true
     elseif cmd == 'craft' then
         return CommonCommands.handle_craft(args[1])
     elseif cmd == 'fish' or cmd == 'fishing' then
@@ -715,6 +644,12 @@ function CommonCommands.handle_command(command, job_name, ...)
         return true
     end
 
+    -- Alt commands are checked last so a native command always wins the name.
+    local AltCommands = alt_commands()
+    if AltCommands and AltCommands.is_alt_command(cmd) then
+        return AltCommands.execute(cmd, args)
+    end
+
     return false
 end
 
@@ -732,6 +667,9 @@ function CommonCommands.is_common_command(command)
     if cmd == 'mount' or
         cmd == 'naked' or cmd == 'equip' or cmd == 'reload' or cmd == 'checksets' or cmd == 'wardrobeaudit' or cmd == 'wa' or cmd == 'worganize' or cmd == 'wo' or cmd == 'refill' or cmd == 'rf' or cmd == 'craft' or cmd == 'uncraft' or cmd == 'fish' or cmd == 'fishing' or
         cmd == 'automedicine' or cmd == 'am' or
+        cmd == 'alt' or cmd == 'altcmds' or cmd == 'altlist' or
+        cmd == 'altbuff' or cmd == 'altbuffs' or cmd == 'altdebug' or
+        cmd == 'altsync' or cmd == 'altbuffsync' or
         cmd == 'lockstyle' or cmd == 'ls' or cmd == 'dressup' or
         cmd == 'perf' or cmd == 'testcolors' or cmd == 'colors' or cmd == 'jump' or cmd == 'waltz' or
         cmd == 'aoewaltz' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'debugprecast' or
@@ -762,6 +700,13 @@ function CommonCommands.is_common_command(command)
                 return true
             end
         end
+    end
+
+    -- Alt commands last: every name above already won, so a config entry can
+    -- never shadow a built-in command.
+    local AltCommands = alt_commands()
+    if AltCommands and AltCommands.is_alt_command(cmd) then
+        return true
     end
 
     return false

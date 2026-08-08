@@ -192,7 +192,7 @@ function job_self_command(cmdParams, eventArgs)
         -- Wait for Entrust buff, then cast Indi on party member
         if state.MainIndi and state.MainIndi.current then
             coroutine.schedule(function()
-                send_command('input /ma "' .. state.MainIndi.current .. '" <stpt>')
+                send_command('input /ma "' .. state.MainIndi.current .. '" <stal>')
             end, 1.5)
         end
         eventArgs.handled = true
