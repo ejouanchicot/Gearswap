@@ -136,10 +136,10 @@ end
 
 --- Which set an enfeeble wants, by what it scales on.
 ---
---- Repose is WHM's own sleep and has a set of its own. The rest split on the
---- stat that decides landing it: MND for the Paralyze family, INT for the
---- rest. spellMap is Mote's classification, so this follows it rather than
---- keeping a second list of spell names in step.
+--- Repose is WHM's own sleep and has a set of its own. The rest split on
+--- Mote's spellMap - MndEnfeebles or IntEnfeebles - which is followed rather
+--- than duplicated, so a second list of spell names cannot drift out of step
+--- with Mote's.
 local function enfeeble_skill_for(spell, spellMap)
     if spell.name == 'Repose' then
         return 'Repose'
