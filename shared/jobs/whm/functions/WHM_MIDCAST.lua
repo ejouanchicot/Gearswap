@@ -134,87 +134,64 @@ local function job_post_midcast_enhancing_magic(spell)
 
 end
 
----   Post-midcast hook (MidcastManager routing and gear selection)
----   @param spell table Spell information from GearSwap
----   @param action string Action type
----   @param spellMap string Spell mapping from Mote-Include
----   @param eventArgs table Event arguments for cancellation/customization
+--- Which set an enfeeble wants, by what it scales on.
+---
+--- Repose is WHM's own sleep and has a set of its own. The rest split on the
+--- stat that decides landing it: MND for the Paralyze family, INT for the
+--- rest. spellMap is Mote's classification, so this follows it rather than
+--- keeping a second list of spell names in step.
+local function enfeeble_skill_for(spell, spellMap)
+    if spell.name == 'Repose' then
+        return 'Repose'
+    elseif spellMap == 'MndEnfeebles' then
+        return 'MndEnfeebles'
+    elseif spellMap == 'IntEnfeebles' then
+        return 'IntEnfeebles'
+    end
+    return 'Enfeebling Magic'
+end
+
+local function midcast_enfeebling(spell, spellMap)
+    MidcastManager.select_set({
+        skill = enfeeble_skill_for(spell, spellMap),
+        spell = spell
+    })
+end
+
+local function midcast_dark(spell)
+    MidcastManager.select_set({skill = 'Dark Magic', spell = spell})
+end
+
+local function midcast_elemental(spell)
+    MidcastManager.select_set({skill = 'Elemental Magic', spell = spell})
+end
+
 function job_post_midcast(spell, action, spellMap, eventArgs)
-    -- Lazy load modules on first spell cast
     ensure_modules_loaded()
 
-    -- Watchdog: Track midcast start
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_midcast_start(spell)
     end
 
-    -- Skip if already handled (Cure/Curaga/CureSolace)
+    -- Cures are already dressed by job_midcast, which knows the target's
+    -- missing HP; re-selecting here would undo that.
     if eventArgs.handled then
         job_post_midcast_eventargs_handled(spellMap)
         return
     end
 
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- STATUS REMOVAL (Cursna, Paralyna, Erase, etc.)
-    -- ══════════════════════════════════════════════════════════════════════════
     if spellMap == 'StatusRemoval' then
         job_post_midcast_statusremoval(spell)
-        return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- ENHANCING MAGIC (Database-driven spell_family routing)
-    -- ══════════════════════════════════════════════════════════════════════════
-    if spell.skill == 'Enhancing Magic' then
+    elseif spell.skill == 'Enhancing Magic' then
         job_post_midcast_enhancing_magic(spell)
-        return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- DIVINE MAGIC
-    -- ══════════════════════════════════════════════════════════════════════════
-    if spell.skill == 'Divine Magic' then
-        MidcastManager.select_set({
-            skill = 'Divine Magic',
-            spell = spell
-        })
-        return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- ENFEEBLING MAGIC
-    -- ══════════════════════════════════════════════════════════════════════════
-    if spell.skill == 'Enfeebling Magic' then
-        -- Repose (WHM-specific sleep)
-        if spell.name == 'Repose' then
-            MidcastManager.select_set({skill = 'Repose', spell = spell})
-        elseif spellMap == 'MndEnfeebles' then
-            MidcastManager.select_set({skill = 'MndEnfeebles', spell = spell})
-        elseif spellMap == 'IntEnfeebles' then
-            MidcastManager.select_set({skill = 'IntEnfeebles', spell = spell})
-        else
-            MidcastManager.select_set({skill = 'Enfeebling Magic', spell = spell})
-        end
-        return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- DARK MAGIC / ELEMENTAL MAGIC
-    -- ══════════════════════════════════════════════════════════════════════════
-    if spell.skill == 'Dark Magic' then
-        MidcastManager.select_set({
-            skill = 'Dark Magic',
-            spell = spell
-        })
-        return
-    end
-
-    if spell.skill == 'Elemental Magic' then
-        MidcastManager.select_set({
-            skill = 'Elemental Magic',
-            spell = spell
-        })
-        return
+    elseif spell.skill == 'Divine Magic' then
+        MidcastManager.select_set({skill = 'Divine Magic', spell = spell})
+    elseif spell.skill == 'Enfeebling Magic' then
+        midcast_enfeebling(spell, spellMap)
+    elseif spell.skill == 'Dark Magic' then
+        midcast_dark(spell)
+    elseif spell.skill == 'Elemental Magic' then
+        midcast_elemental(spell)
     end
 end
 
