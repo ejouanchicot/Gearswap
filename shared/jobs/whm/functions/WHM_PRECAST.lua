@@ -63,30 +63,52 @@ end
 ---   PRECAST HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Main precast hook for all spells/abilities
----   Implements 4-layer security: PrecastGuard >> CooldownChecker >> WSValidator >> WHM Logic
+--- Swap a cure for the tier the target actually needs.
 ---
----   @param spell table Spell/ability data from Mote-Include
----   @param action string Action type (not used)
----   @param spellMap string Spell mapping from Mote-Include
----   @param eventArgs table Event arguments (contains .handled, .cancel flags)
----   @return void
-function job_precast(spell, action, spellMap, eventArgs)
-    -- Lazy load modules on first action
-    ensure_modules_loaded()
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- LAYER 1: DEBUFF GUARD (Highest Priority)
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- Block casting if player has blocking debuffs (Amnesia, Silence, Stun, etc.)
-    if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
-        return  -- Action blocked, exit immediately
+--- Casting Cure VI into a scratch wastes the MP and the cast time both. The
+--- replacement goes out as a fresh command rather than editing the spell,
+--- because by precast the tier is already fixed.
+--- @return boolean True when the cast was replaced
+local function retier_cure(spell, eventArgs)
+    if not (CureManager and spell.action_type == 'Magic') then
+        return false
+    end
+    if not (spell.name:find('Cure') or spell.name:find('Curaga')) then
+        return false
     end
 
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- LAYER 2: COOLDOWN CHECK (Universal)
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- Check ability/spell recast timers (prevent premature casting)
+    local target = spell.target and windower.ffxi.get_mob_by_id(spell.target.id)
+    local new_spell = CureManager.select_cure_tier(spell, target)
+    if not new_spell or new_spell == spell.name then
+        return false
+    end
+
+    eventArgs.cancel = true
+    send_command('input /ma "' .. new_spell .. '" ' .. spell.target.raw)
+    return true
+end
+
+--- Curing your own paralysis, without swapping gear.
+---
+--- Every swap is a chance for the paralysis to land on the swap itself and
+--- lose the cast. Casting in whatever is already worn is worth more than the
+--- fast-cast pieces here.
+--- @return boolean True when this case applies
+local function paralyna_on_self(spell, eventArgs)
+    if spell.english == 'Paralyna' and buffactive.Paralyzed then
+        eventArgs.handled = true
+        return true
+    end
+    return false
+end
+
+function job_precast(spell, action, spellMap, eventArgs)
+    ensure_modules_loaded()
+
+    if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
+        return
+    end
+
     if CooldownChecker then
         if spell.action_type == 'Ability' then
             CooldownChecker.check_ability_cooldown(spell, eventArgs)
@@ -94,41 +116,18 @@ function job_precast(spell, action, spellMap, eventArgs)
             CooldownChecker.check_spell_cooldown(spell, eventArgs)
         end
     end
-
-    -- Exit if cooldown check cancelled the action
     if eventArgs.cancel then
         return
     end
 
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- LAYER 3: WHM-SPECIFIC LOGIC
-    -- ══════════════════════════════════════════════════════════════════════════
-
-    -- Auto-tier Cure selection (downgrade Cure tier if target doesn't need full heal)
-    if CureManager and spell.action_type == 'Magic' then
-        if spell.name:find('Cure') or spell.name:find('Curaga') then
-            local target = spell.target and windower.ffxi.get_mob_by_id(spell.target.id)
-            local new_spell = CureManager.select_cure_tier(spell, target)
-
-            if new_spell and new_spell ~= spell.name then
-                -- Cancel current spell and cast optimal tier instead
-                eventArgs.cancel = true
-                send_command('input /ma "' .. new_spell .. '" ' .. spell.target.raw)
-                return
-            end
-        end
-    end
-
-    -- Handle Paralyna when self is paralyzed (Timara WHM pattern)
-    if spell.english == 'Paralyna' and buffactive.Paralyzed then
-        -- No gear swaps to avoid blinking while paralyzed
-        eventArgs.handled = true
+    if retier_cure(spell, eventArgs) then
         return
     end
 
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
-    -- ══════════════════════════════════════════════════════════════════════════
+    if paralyna_on_self(spell, eventArgs) then
+        return
+    end
+
     if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, WHMTPConfig) then
         return
     end
