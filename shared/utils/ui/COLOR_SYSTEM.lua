@@ -408,119 +408,107 @@ end
 --- MAIN COLOR RESOLUTION
 ---============================================================================
 
---- Get color for a value based on context
-function ColorSystem.get_value_color(value, description)
-    local value_color = "\\cs(255,255,255)" -- Default white
+local DEFAULT_COLOR = "\\cs(255,255,255)"
 
-    -- Gain spells
+-- What the description says the value IS decides which palette to look it up
+-- in. Order matters, and "Element" already covers GEO's "Elemental".
+local DESCRIPTION_PALETTES = {
+    { keyword = "Element",    palette = element_colors },
+    { keyword = "AOE",        palette = element_colors },
+    { keyword = "Etude",      palette = stat_colors    },
+    { keyword = "Rune",       palette = element_colors },
+    { keyword = "Light",      palette = element_colors },
+    { keyword = "Dark",       palette = element_colors },
+    { keyword = "Aja",        palette = element_colors },
+    { keyword = "Storm",      palette = element_colors },
+    { keyword = "Quick Draw", palette = element_colors },
+}
+
+-- Mode names that colour themselves wherever they appear in a value, checked
+-- in order: a value holding both takes the first.
+local MODE_SUBSTRINGS = {
+    'PDT', 'MDT', 'Normal', 'Refresh', 'Potency', 'SIRD', 'Solace', 'Misery',
+}
+
+-- Each recognises one family of spell names and returns nil for the rest.
+local SPELL_COLOR_PROBES = {
+    get_bar_element_color,
+    get_bar_ailment_color,
+    get_en_spell_color,
+    get_spike_color,
+    get_quick_draw_color,
+}
+
+-- Literal values whose colour never depends on context.
+local EXACT_VALUE_COLORS = {
+    ['true']  = 'true',  ['True']  = 'true',  ['On']  = 'true',  ['on']  = 'true',
+    ['false'] = 'false', ['False'] = 'false', ['Off'] = 'false', ['off'] = 'false',
+    ['unknown'] = 'unknown', ['Unknown'] = 'unknown', ['N/A'] = 'unknown',
+}
+
+--- Colour the description asks for, if it names a kind this value belongs to.
+--- @param value string State value
+--- @param description string State description (never nil here)
+--- @return string|nil Colour code, or nil to keep looking
+local function color_from_description(value, description)
+    for _, rule in ipairs(DESCRIPTION_PALETTES) do
+        if description:find(rule.keyword) and rule.palette[value] then
+            return rule.palette[value]
+        end
+    end
+
+    if description:find("Storm") then
+        return get_storm_color(value)
+    end
+
+    return nil
+end
+
+--- Colour the value carries on its own, whatever the description says.
+--- @param value string State value
+--- @return string|nil Colour code, or nil if the value is not recognised
+local function color_from_value(value)
+    for _, name in ipairs(MODE_SUBSTRINGS) do
+        if value:find(name) then
+            return special_colors[name]
+        end
+    end
+
+    for _, probe in ipairs(SPELL_COLOR_PROBES) do
+        local color = probe(value)
+        if color then return color end
+    end
+
+    local exact = EXACT_VALUE_COLORS[value]
+    return exact and special_colors[exact] or nil
+end
+
+--- Get color for a value based on context
+--- @param value string State value as shown in the UI
+--- @param description string|nil What kind of value it is (element, rune, etude...)
+--- @return string|nil Colour code; white when nothing matches, nil for an
+---         unknown Gain (get_gain_color has the last word on those)
+function ColorSystem.get_value_color(value, description)
     if description and description:find("Gain") then
         return get_gain_color(value)
     end
 
-    -- Element contexts (including "Elemental" for GEO)
-    if description and (description:find("Element") or description:find("Elemental")) and element_colors[value] then
-        return element_colors[value]
+    if description then
+        local by_description = color_from_description(value, description)
+        if by_description then return by_description end
     end
 
-    -- AOE Spell context (for GEO AOE spells like Stonera, Watera, etc.)
-    if description and description:find("AOE") and element_colors[value] then
-        return element_colors[value]
-    end
-
-    -- Stat contexts (Etudes)
-    if description and description:find("Etude") and stat_colors[value] then
-        return stat_colors[value]
-    end
-
-    -- Rune elements
-    if description and description:find("Rune") and element_colors[value] then
-        return element_colors[value]
-    end
-
-    -- BLM spells
-    if description and (description:find("Light") or description:find("Dark") or description:find("Aja") or description:find("Storm")) then
-        if element_colors[value] then
-            return element_colors[value]
-        end
-    end
-
-    -- COR Quick Draw
-    if description and description:find("Quick Draw") then
-        if element_colors[value] then
-            return element_colors[value]
-        end
-    end
-
-    -- Storm spells
-    if description and description:find("Storm") then
-        local storm_color = get_storm_color(value)
-        if storm_color then return storm_color end
-    end
-
-    -- Defense modes
-    if value:find("PDT") then
-        return special_colors.PDT
-    elseif value:find("MDT") then
-        return special_colors.MDT
-    elseif value:find("Normal") then
-        return special_colors.Normal
-    elseif value:find("Refresh") then
-        return special_colors.Refresh
-    end
-
-    -- WHM Cure modes
-    if value:find("Potency") then
-        return special_colors.Potency
-    elseif value:find("SIRD") then
-        return special_colors.SIRD
-    end
-
-    -- WHM Afflatus modes
-    if value:find("Solace") then
-        return special_colors.Solace
-    elseif value:find("Misery") then
-        return special_colors.Misery
-    end
-
-    -- DNC Dance colors (symbolic)
+    -- Symbolic rather than elemental: Saber Dance is the offensive stance,
+    -- Fan Dance the defensive one.
     if description and description:find("Dance") then
         if value == "Saber Dance" then
-            return element_colors.Fire  -- Red (offensive/fire)
+            return element_colors.Fire
         elseif value == "Fan Dance" then
-            return "\\cs(150,255,150)"  -- Green (defensive/heal)
+            return "\\cs(150,255,150)"
         end
     end
 
-    -- Bar element spells
-    local bar_element = get_bar_element_color(value)
-    if bar_element then return bar_element end
-
-    -- Bar ailment spells (use element-based colors)
-    local bar_ailment = get_bar_ailment_color(value)
-    if bar_ailment then return bar_ailment end
-
-    -- En spells
-    local en_spell = get_en_spell_color(value)
-    if en_spell then return en_spell end
-
-    -- Spike spells
-    local spike = get_spike_color(value)
-    if spike then return spike end
-
-    -- Quick Draw spells
-    local quick_draw = get_quick_draw_color(value)
-    if quick_draw then return quick_draw end
-
-    -- Boolean values (True/False and On/Off)
-    if value == "true" or value == "True" or value == "On" or value == "on" then
-        return special_colors["true"]
-    elseif value == "false" or value == "False" or value == "Off" or value == "off" then
-        return special_colors["false"]
-    elseif value == "unknown" or value == "Unknown" or value == "N/A" then
-        return special_colors.unknown
-    end
-
-    return value_color
+    return color_from_value(value) or DEFAULT_COLOR
 end
 
 ---============================================================================
