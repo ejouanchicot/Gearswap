@@ -116,26 +116,32 @@ function RollTracker.on_roll_buff_gained(buff_name)
 end
 
 --- Extracted from RollTracker.on_roll_cast: the `roll_data and roll_data.job_bonus` branch.
-local function rolltracker_on_roll_cast_roll_data(roll_data, has_job_bonus)
-    local required_job = roll_data.job_bonus[1]
-
-    -- Check if job is in party (COR main/sub OR any party member via packet data)
-    -- NOTE: We do NOT apply bonus for Tricorne proc because we cannot detect if it actually proc'd
-    -- The game will apply the Tricorne bonus automatically if it procs, but we only display
-    -- job bonus in our messages if the job is actually detected in the party
-    if RollTracker.is_job_in_party_zone(required_job) then
-        has_job_bonus = true
-    end
+--- Is the job this roll favours actually in the party?
+---
+--- The Tricorne proc is deliberately not counted: there is no way to detect
+--- whether it fired, so the message only claims a job bonus when the job is
+--- really there. The game applies the proc regardless.
+--- @param roll_data table Roll definition carrying job_bonus
+--- @return boolean
+local function roll_has_job_bonus(roll_data)
+    return RollTracker.is_job_in_party_zone(roll_data.job_bonus[1]) and true or false
 end
 
 --- Extracted from RollTracker.on_roll_cast: the `_G.cor_active_rolls` branch.
-local function rolltracker_on_roll_cast_g_cor_active_rolls(roll_name)
+--- Was this roll made under Crooked Cards?
+---
+--- The buff is consumed the moment a new roll goes out, but the bonus stays
+--- attached to that roll through its Double-Ups, so the active list is what
+--- remembers it - not buffactive.
+--- @param roll_name string Roll being cast
+--- @return boolean
+local function roll_already_crooked(roll_name)
     for _, roll in ipairs(_G.cor_active_rolls) do
         if roll.name == roll_name and roll.has_crooked then
-            is_crooked = true
-            break
+            return true
         end
     end
+    return false
 end
 
 ---   Called when a roll is CAST (from precast/midcast/aftercast)
@@ -196,7 +202,7 @@ function RollTracker.on_roll_cast(roll_name, roll_value)
     local has_job_bonus = false
 
     if roll_data and roll_data.job_bonus then
-        rolltracker_on_roll_cast_roll_data(roll_data, has_job_bonus)
+        has_job_bonus = roll_has_job_bonus(roll_data)
     end
 
     local final_bonus = RollData.calculate_bonus(roll_name, roll_value, player_job, phantom_roll_bonus, has_job_bonus)
@@ -209,7 +215,7 @@ function RollTracker.on_roll_cast(roll_name, roll_value)
     -- PRIORITY 1: Check if this roll already has Crooked attached (from active rolls list)
     -- This handles Double-Up - if original roll had Crooked, Double-Up keeps it
     if _G.cor_active_rolls then
-        rolltracker_on_roll_cast_g_cor_active_rolls(roll_name)
+        is_crooked = roll_already_crooked(roll_name)
     end
 
     -- PRIORITY 2: Check if Crooked Cards was used recently OR buff is still active
