@@ -83,24 +83,53 @@ local function job_precast_double_up()
     end
 end
 
----   Called before any action (WS, JA, spell, etc.)
----   @param spell table Spell/ability data
----   @param action string Action type
----   @param spellMap string Spell mapping
----   @param eventArgs table Event arguments
----   @return void
+-- Spell type to the class name Mote looks the precast set up under.
+local CUSTOM_CLASS_BY_TYPE = {
+    ['CorsairShot']   = 'CorsairShot',
+    ['Ranged Attack'] = 'RA',
+}
+
+--- COR's own precast handling.
+---
+--- Written as independent checks, not a chain, and it has to stay that way.
+--- These are not alternatives: Double-Up is matched by name while the roll
+--- sets are matched by type, and a spell can satisfy both. An `elseif` here
+--- would silently drop one of them.
+---
+--- Nothing in here stops the precast either - the weaponskill handling still
+--- runs afterwards, which an earlier automated split got wrong by making
+--- these return.
+local function apply_cor_precast(spell)
+    -- Crooked Cards is recorded rather than acted on: the buff is consumed the
+    -- moment the next roll goes out, so the roll tracker needs the timestamp
+    -- to know it applied.
+    if spell.type == 'JobAbility' and spell.english == 'Crooked Cards' then
+        _G.cor_crooked_timestamp = os.time()
+    end
+
+    if spell.type == 'CorsairRoll' then
+        job_precast_corsairroll(spell)
+    end
+
+    -- Double-Up wears the gear of the roll it is doubling, so it needs the
+    -- last roll on record to know which that was.
+    if spell.english == 'Double-Up' and _G.cor_last_roll and _G.cor_last_roll.name then
+        job_precast_double_up()
+    end
+
+    local custom_class = CUSTOM_CLASS_BY_TYPE[spell.type]
+    if custom_class then
+        classes.CustomClass = custom_class
+    end
+end
+
 function job_precast(spell, action, spellMap, eventArgs)
-    -- Lazy load all dependencies on first precast
     ensure_modules_loaded()
 
-    -- FIRST: Check for blocking debuffs (Amnesia, Silence, etc.)
-    -- This prevents unnecessary equipment swaps when actions are blocked
     if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
-        -- Action was blocked by debuff, exit immediately
         return
     end
 
-    -- SECOND: Universal cooldown check - works for ALL abilities and spells
     if CooldownChecker then
         if spell.action_type == 'Ability' then
             CooldownChecker.check_ability_cooldown(spell, eventArgs)
@@ -108,44 +137,12 @@ function job_precast(spell, action, spellMap, eventArgs)
             CooldownChecker.check_spell_cooldown(spell, eventArgs)
         end
     end
-
-    -- If action was cancelled due to cooldown, exit early
     if eventArgs.cancel then
         return
     end
 
-    -- COR-specific precast gear logic
+    apply_cor_precast(spell)
 
-    -- SPECIAL HANDLING: Track Crooked Cards timestamp (keep this)
-    if spell.type == 'JobAbility' and spell.english == 'Crooked Cards' then
-        _G.cor_crooked_timestamp = os.time()
-    end
-
-    -- Phantom Roll precast (tell Mote to use CorsairRoll sets)
-    if spell.type == 'CorsairRoll' then
-        job_precast_corsairroll(spell)
-    end
-
-    -- Double-Up (use gear from last roll used)
-    if spell.english == 'Double-Up' and _G.cor_last_roll and _G.cor_last_roll.name then
-        job_precast_double_up()
-    end
-
-    -- Quick Draw precast (tell Mote to use CorsairShot sets)
-    if spell.type == 'CorsairShot' then
-        -- Set custom class so Mote looks in sets.precast.CorsairShot
-        classes.CustomClass = 'CorsairShot'
-    end
-
-    -- Ranged Attack precast
-    if spell.type == 'Ranged Attack' then
-        -- Set custom class so Mote looks in sets.precast.RA
-        classes.CustomClass = 'RA'
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
-    -- ══════════════════════════════════════════════════════════════════════════
     if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, CORTPConfig) then
         return
     end
