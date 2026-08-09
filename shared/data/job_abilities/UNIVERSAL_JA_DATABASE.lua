@@ -84,7 +84,8 @@ end
 -- PROFILING: Show what was loaded (only if profiling enabled)
 if _G.PERFORMANCE_PROFILING and _G.PERFORMANCE_PROFILING.enabled then
     local jobs_str = table.concat(loaded_jobs, '+') or 'none'
-    add_to_chat(158, string.format('[PERF] JA_DB loaded: %s (2 jobs max instead of 21)', jobs_str))
+    local MessageFormatter = require('shared/utils/messages/message_formatter')
+    MessageFormatter.show_debug('PERF', string.format('JA_DB loaded: %s (2 jobs max instead of 21)', jobs_str))
 end
 
 return UNIVERSAL_JA_DB

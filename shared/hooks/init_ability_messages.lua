@@ -55,7 +55,8 @@ local function ensure_handler_loaded()
     -- PROFILING: Show lazy-load time
     if profiling_enabled then
         local elapsed = (os.clock() - start_time) * 1000
-        add_to_chat(158, string.format('[PERF:LAZY] ability_message_handler loaded: %.0fms', elapsed))
+        local MessageFormatter = require('shared/utils/messages/message_formatter')
+        MessageFormatter.show_debug('PERF', string.format('ability_message_handler loaded: %.0fms', elapsed))
     end
 end
 

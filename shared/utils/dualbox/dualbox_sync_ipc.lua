@@ -122,7 +122,8 @@ function DualBoxSyncIPC._on_ipc_message(msg)
     -- (the event handler would be lost until next reload).
     local ok, err = pcall(hook)
     if not ok and _G.DUALBOX_SYNC_DEBUG then
-        windower.add_to_chat(167, '[SyncIPC] hook "' .. cmd .. '" error: ' .. tostring(err))
+        local MessageFormatter = require('shared/utils/messages/message_formatter')
+        MessageFormatter.show_error('[SyncIPC] hook "' .. cmd .. '" error: ' .. tostring(err))
     end
 end
 
