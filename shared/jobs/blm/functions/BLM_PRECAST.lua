@@ -90,72 +90,63 @@ end
 ---   PRECAST HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Handle precast actions
----   @param spell table Spell/ability data
----   @param action string Action type
----   @param spellMap string Spell mapping
----   @param eventArgs table Event arguments
-function job_precast(spell, action, spellMap, eventArgs)
-    -- Lazy load modules on first action
-    ensure_modules_loaded()
-
-    -- FIRST: Check for blocking debuffs (Amnesia, Silence, etc.)
-    if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
-        return
-    end
-
-    -- SECOND: Universal cooldown check OR refinement
-    -- IMPORTANT: Spells with tier systems use refinement instead of cooldown check
-    -- IMPORTANT: Abilities with charges (Stratagems) bypass cooldown check
+--- Stage 2: recast, or a tier downgrade for the spells that have one.
+---
+--- Three routes, and which one applies is not obvious from the call site.
+--- Stratagems hold charges, so FFXI blocks them itself and a cooldown check
+--- would refuse a cast the game would have allowed. Tiered spells go through
+--- refinement, which checks the recast itself and steps down a tier rather
+--- than cancelling. Everything else takes the plain check.
+local function check_recast_or_refine(spell, eventArgs)
     if spell.action_type == 'Ability' then
-        -- Skip cooldown check for abilities with multiple charges (FFXI handles blocking)
         if not has_charges(spell) and CooldownChecker then
             CooldownChecker.check_ability_cooldown(spell, eventArgs)
         end
+
     elseif spell.action_type == 'Magic' then
         if uses_refinement(spell) then
-            -- Use refinement system for tiered spells
-            -- Refinement handles cooldown checking internally and downgrades tiers
             if refine_various_spells then
                 refine_various_spells(spell, eventArgs)
             end
         elseif CooldownChecker then
-            -- Use standard cooldown check for non-tiered spells
             CooldownChecker.check_spell_cooldown(spell, eventArgs)
         end
     end
+end
 
+--- Impact needs Twilight Cloak on, and needs it to stay on.
+---
+--- The spell cannot be cast without the cloak and fails if the body slot
+--- changes mid-cast, so the flags exist to stop anything else touching it -
+--- the same arrangement BRD uses for Marsyas.
+local function lock_body_for_impact()
+    equip({body = 'Twilight Cloak'})
+    _G.casting_impact = true
+    _G.impact_body = 'Twilight Cloak'
+end
+
+function job_precast(spell, action, spellMap, eventArgs)
+    ensure_modules_loaded()
+
+    if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
+        return
+    end
+
+    check_recast_or_refine(spell, eventArgs)
     if eventArgs.cancel then
         return
     end
 
-    -- BLM-SPECIFIC PRECAST LOGIC
-
-    -- Check Arts for Scholar subjob (Dark Arts automation for Elemental Magic)
-    if spell.skill == 'Elemental Magic' then
-        -- Function loaded globally via blm_functions.lua
-        if checkArts then
-            checkArts(spell, eventArgs)
-        end
+    -- BLM/SCH puts Dark Arts up before a nuke. checkArts is a global from
+    -- blm_functions.lua and may not be loaded on every path.
+    if spell.skill == 'Elemental Magic' and checkArts then
+        checkArts(spell, eventArgs)
     end
 
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- IMPACT BODY LOCK (Twilight Cloak Required - like Marsyas for BRD)
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- Impact requires Twilight Cloak equipped to cast - must stay equipped
-    -- throughout entire cast or the spell fails
     if spell.english == 'Impact' then
-        -- Equip Twilight Cloak immediately
-        equip({body = 'Twilight Cloak'})
-
-        -- Set global flags to protect body during cast
-        _G.casting_impact = true
-        _G.impact_body = 'Twilight Cloak'
+        lock_body_for_impact()
     end
 
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
-    -- ══════════════════════════════════════════════════════════════════════════
     if spell.type == 'WeaponSkill' then
         if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, BLMTPConfig) then
             return
