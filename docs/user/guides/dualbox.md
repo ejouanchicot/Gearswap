@@ -198,22 +198,36 @@ prefix (`altdispel`, `altsneak`).
 
 ### Changing the commands
 
-`<JOB>_ALT_COMMANDS.lua` is **generated** from the game data and is rebuilt
-whenever the spell list changes - edits to it are lost.
+`<JOB>_ALT_COMMANDS.lua` is **generated** from the game data and gets rebuilt
+whenever the spell list changes - anything you write in it is lost.
 
-Put yours in `<JOB>_ALT_CUSTOM.lua` instead. It is never regenerated and is
-merged on top:
+Yours go in `<JOB>_ALT_CUSTOM.lua`, in the same folder. It is never
+regenerated, and it is merged on top of the generated file. A commented
+`.example` ships for every job: copy it without the `.example` and edit.
+
+```
+Tetsouo/config/alt/RDM_ALT_CUSTOM.lua
+```
+
+Three things it can do:
 
 ```lua
 M.commands = {
-    h    = { action = 'ma', spell = 'Haste II', target = 'lastst' },  -- add
-    dia  = { action = 'ma', spell = 'Dia', target = 'lastst' },       -- replace
-    aero = false,                                                     -- remove
+    -- add: a name the generator does not produce
+    h = { action = 'ma', spell = 'Haste II', target = 'lastst' },
+
+    -- change: reuse an existing name, yours wins
+    dia = { action = 'ma', spell = 'Dia III', target = 'lastst' },
+
+    -- remove: false drops a generated command
+    aero = false,
 }
 ```
 
-`RDM_ALT_CUSTOM.lua.example` ships as a commented template - copy it without
-the `.example` to start. The file is optional; absent means no overrides.
+Commands you do not mention are untouched. `//gs c altcmds` prints the path to
+the file for the job the alt is on, so you never have to remember it.
+
+Reload with `//lua reload gearswap` after editing - `require` caches the file.
 
 | Field | Values |
 |-------|--------|

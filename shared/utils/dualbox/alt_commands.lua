@@ -481,7 +481,8 @@ function AltCommands.list(filter)
 
     local MessageAlt = require('shared/utils/messages/formatters/ui/message_alt_commands')
     local _, subjob = get_alt_jobs()
-    MessageAlt.show_list(alt, job, names, commands, filter, subjob)
+    MessageAlt.show_list(alt, job, names, commands, filter, subjob,
+        (player and player.name) or 'Tetsouo')
     return true
 end
 
