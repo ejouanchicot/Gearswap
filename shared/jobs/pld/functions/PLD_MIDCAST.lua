@@ -67,115 +67,113 @@ function job_midcast(spell, action, spellMap, eventArgs)
     end
 end
 
+--- Cures pick their set by who is being healed: PLD's own cure gear is not
+--- what it wants when topping someone else up.
+local function midcast_healing(spell)
+    MidcastManager.select_set({
+        skill = 'Healing Magic',
+        spell = spell,
+        target_func = function(sp)
+            return sp.target.type == 'SELF' and 'Self' or 'Other'
+        end
+    })
+end
+
+--- Flash has its own set: it is cast for enmity, not for the blind.
+local function midcast_flash(spell)
+    MidcastManager.select_set({
+        skill = 'Flash',
+        spell = spell
+    })
+end
+
+--- Enlight is enmity gear too, under its own skill name.
+local function midcast_enlight(spell)
+    MidcastManager.select_set({
+        skill = 'Enmity',
+        spell = spell
+    })
+end
+
+--- Phalanx, which has a set of its own and a mode that overrides it.
+---
+--- With PhalanxSIRD or Xp on, the SIRD set wins outright: the point is to not
+--- lose the cast to a hit, and potency is worth nothing if it is interrupted.
+local function midcast_phalanx(spell)
+    local use_sird = (state.PhalanxSIRD and state.PhalanxSIRD.value == 'On')
+        or (state.Xp and state.Xp.value == 'On')
+
+    if use_sird and sets.midcast.SIRDPhalanx then
+        equip(sets.midcast.SIRDPhalanx)
+        return
+    end
+
+    MidcastManager.select_set({
+        skill = 'Phalanx',
+        spell = spell
+    })
+end
+
+--- Everything else under Enhancing, routed by spell family.
+local function midcast_enhancing(spell)
+    if spell.name == 'Phalanx' then
+        midcast_phalanx(spell)
+        return
+    end
+
+    MidcastManager.select_set({
+        skill = 'Enhancing Magic',
+        spell = spell,
+        target_func = MidcastManager.get_enhancing_target,
+        database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
+    })
+end
+
+local function midcast_divine(spell)
+    MidcastManager.select_set({
+        skill = 'Divine Magic',
+        spell = spell
+    })
+end
+
+--- Blue Magic from a /BLU subjob. Cocoon is a self-buff and wants defence
+--- gear; the rest are offensive and do not.
+local function midcast_blue(spell)
+    MidcastManager.select_set({
+        skill = (spell.name == 'Cocoon') and 'Cocoon' or 'Blue Magic',
+        spell = spell
+    })
+end
+
 ---   Post-midcast hook (MidcastManager routing and gear selection)
 ---   @param spell table Spell information from GearSwap
 ---   @param action string Action type
 ---   @param spellMap string Spell mapping from Mote-Include
 ---   @param eventArgs table Event arguments for cancellation/customization
 function job_post_midcast(spell, action, spellMap, eventArgs)
-    -- Watchdog: Track midcast start
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_midcast_start(spell)
     end
 
-    -- Skip if already handled (Cure III/IV)
+    -- Cure III and IV are already dressed by job_midcast above.
     if eventArgs.handled then
         return
     end
 
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- HEALING MAGIC (Other Cure spells)
-    -- ══════════════════════════════════════════════════════════════════════════
+    -- Name before skill: Flash and Enlight are Divine spells that want enmity
+    -- gear rather than the Divine set, so they have to be caught first.
     if spell.skill == 'Healing Magic' then
-        MidcastManager.select_set({
-            skill = 'Healing Magic',
-            spell = spell,
-            target_func = function(sp)
-                return sp.target.type == 'SELF' and 'Self' or 'Other'
-            end
-        })
-        return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- ENMITY SPELLS (Flash, Enlight)
-    -- ══════════════════════════════════════════════════════════════════════════
-    if spell.name == 'Flash' then
-        MidcastManager.select_set({
-            skill = 'Flash',
-            spell = spell
-        })
-        return
-    end
-
-    if spell.name == 'Enlight' or spell.name == 'Enlight II' then
-        MidcastManager.select_set({
-            skill = 'Enmity',
-            spell = spell
-        })
-        return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- ENHANCING MAGIC
-    -- ══════════════════════════════════════════════════════════════════════════
-    if spell.skill == 'Enhancing Magic' then
-        -- Phalanx: SIRD override (PhalanxSIRD or XP mode forces SIRD set)
-        if spell.name == 'Phalanx' then
-            local use_sird = (state.PhalanxSIRD and state.PhalanxSIRD.value == 'On')
-                or (state.Xp and state.Xp.value == 'On')
-            if use_sird and sets.midcast.SIRDPhalanx then
-                -- SIRD mode: Use SIRD Phalanx set directly (overrides MidcastManager)
-                equip(sets.midcast.SIRDPhalanx)
-            else
-                -- Normal mode: Use PhalanxPotency or fallback
-                MidcastManager.select_set({
-                    skill = 'Phalanx',
-                    spell = spell
-                })
-            end
-            return
-        end
-
-        -- Other Enhancing Magic (database-driven spell_family routing)
-        MidcastManager.select_set({
-            skill = 'Enhancing Magic',
-            spell = spell,
-            target_func = MidcastManager.get_enhancing_target,
-            database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
-        })
-        return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- DIVINE MAGIC
-    -- ══════════════════════════════════════════════════════════════════════════
-    if spell.skill == 'Divine Magic' then
-        MidcastManager.select_set({
-            skill = 'Divine Magic',
-            spell = spell
-        })
-        return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- BLUE MAGIC (PLD/BLU SUBJOB)
-    -- ══════════════════════════════════════════════════════════════════════════
-    if spell.skill == 'Blue Magic' then
-        -- Cocoon: Self-buff (defense+)
-        if spell.name == 'Cocoon' then
-            MidcastManager.select_set({
-                skill = 'Cocoon',
-                spell = spell
-            })
-        else
-            -- Default Blue Magic: Offensive spells
-            MidcastManager.select_set({
-                skill = 'Blue Magic',
-                spell = spell
-            })
-        end
-        return
+        midcast_healing(spell)
+    elseif spell.name == 'Flash' then
+        midcast_flash(spell)
+    elseif spell.name == 'Enlight' or spell.name == 'Enlight II' then
+        midcast_enlight(spell)
+    elseif spell.skill == 'Enhancing Magic' then
+        midcast_enhancing(spell)
+    elseif spell.skill == 'Divine Magic' then
+        midcast_divine(spell)
+    elseif spell.skill == 'Blue Magic' then
+        midcast_blue(spell)
     end
 end
 
