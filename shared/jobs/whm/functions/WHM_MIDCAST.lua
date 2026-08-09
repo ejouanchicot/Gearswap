@@ -19,23 +19,11 @@
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+local MidcastDeps = require('shared/utils/midcast/midcast_deps')
+
+-- Filled in by the first midcast; the handlers below read them from here.
 local MidcastManager = nil
 local EnhancingSPELLS = nil
-local EnhancingSPELLS_success = false
-
-local modules_loaded = false
-
-local function ensure_modules_loaded()
-    if modules_loaded then return end
-
-    local _, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
-    MidcastManager = mm
-
-    -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
-    EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
-
-    modules_loaded = true
-end
 
 ---   Pre-midcast hook (CureMode SIRD/Potency selection for Cure and Curaga)
 ---   @param spell table Spell information from GearSwap
@@ -124,7 +112,7 @@ local function job_post_midcast_enhancing_magic(spell)
         skill = 'Enhancing Magic',
         spell = spell,
         target_func = MidcastManager.get_enhancing_target,
-        database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
+        database_func = EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
     })
 
     -- Apply Afflatus Solace bonus for Bar-element spells
@@ -167,7 +155,7 @@ local function midcast_elemental(spell)
 end
 
 function job_post_midcast(spell, action, spellMap, eventArgs)
-    ensure_modules_loaded()
+    MidcastManager, EnhancingSPELLS = MidcastDeps.load()
 
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_midcast_start(spell)
