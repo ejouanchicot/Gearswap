@@ -102,6 +102,80 @@ local function bust_risk_style(bust_rate)
     return MessageCore.create_color_code(MessageCore.COLORS.SUCCESS), 'NO RISK'
 end
 
+--- The Lucky / Unlucky line, or nothing when the roll has neither.
+--- @param white string White colour code, reused as the separator colour
+--- @param lucky_num number|nil The lucky number for this roll
+--- @param unlucky_num number|table|nil The unlucky number, or several
+--- @return string|nil The line
+local function build_luck_line(white, lucky_num, unlucky_num)
+    local lucky_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS)
+    local unlucky_color = MessageCore.create_color_code(MessageCore.COLORS.ERROR)
+
+    local lucky_part, unlucky_part = "", ""
+
+    if lucky_num then
+        lucky_part = white .. "[Lucky: " .. lucky_color .. lucky_num .. white .. "]"
+    end
+
+    if unlucky_num then
+        local text = (type(unlucky_num) == "table")
+                     and table.concat(unlucky_num, ", ") or unlucky_num
+        unlucky_part = white .. "[Unlucky: " .. unlucky_color .. text .. white .. "]"
+    end
+
+    if lucky_part == "" and unlucky_part == "" then
+        return nil
+    end
+
+    local separator = (lucky_part ~= "" and unlucky_part ~= "") and (white .. " / ") or ""
+    return white .. "  - " .. lucky_part .. separator .. unlucky_part
+end
+
+--- How much of the party the roll reached, and who it missed.
+---
+--- The colour is the warning: green for everyone, cyan for most, orange once
+--- fewer than half are covered, which is the point at which the roll is
+--- worth doing again from somewhere else.
+--- @return table Zero, one or two lines
+local function build_coverage_lines(white, affected_count, total_count, missed_names, roll_range)
+    if not (affected_count and total_count and total_count > 0) then
+        return {}
+    end
+
+    local coverage_color = white
+    if affected_count == total_count then
+        coverage_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS)
+    elseif affected_count >= total_count * 0.75 then
+        coverage_color = MessageCore.create_color_code(MessageCore.COLORS.JOB_TAG)
+    elseif affected_count < total_count * 0.5 then
+        coverage_color = MessageCore.create_color_code(MessageCore.COLORS.get_warning_color())
+    end
+
+    local lines = {
+        white .. "  - Affected: " .. coverage_color .. affected_count .. "/" ..
+        total_count .. white .. " party members"
+    }
+
+    if missed_names and #missed_names > 0 then
+        local name_color = MessageCore.create_color_code(MessageCore.COLORS.ERROR)
+        local gray = MessageCore.create_color_code(MessageCore.COLORS.SEPARATOR)
+        -- 16y is the range with Luzaf's Ring, which is the usual case.
+        local range_text = roll_range and string.format("%dy", roll_range) or "16y"
+
+        local missed = white .. "  Missed " .. gray .. "(out of range >" ..
+                       range_text .. ")" .. white .. ": "
+        for i, name in ipairs(missed_names) do
+            missed = missed .. name_color .. name
+            if i < #missed_names then
+                missed = missed .. white .. ", "
+            end
+        end
+        table.insert(lines, missed)
+    end
+
+    return lines
+end
+
 --- Display roll result with value and bonus (new multi-line format)
 --- @param roll_name string Name of the roll (e.g., "Fighter's Roll")
 --- @param value_display string Formatted value (e.g., "7" or "11 LUCKY!")
@@ -176,64 +250,14 @@ function RollMessages.show_roll_result(roll_name, value_display, bonus_display, 
 
     table.insert(lines, line1)
 
-    -- Line 2: Lucky/Unlucky on same line
-    local lucky_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS)  -- Green
-    local unlucky_color = MessageCore.create_color_code(MessageCore.COLORS.ERROR)  -- Red
-
-    local lucky_part = ""
-    local unlucky_part = ""
-
-    if lucky_num then
-        lucky_part = white_color .. "[Lucky: " .. lucky_color .. lucky_num .. white_color .. "]"
+    local luck_line = build_luck_line(white_color, lucky_num, unlucky_num)
+    if luck_line then
+        table.insert(lines, luck_line)
     end
 
-    if unlucky_num then
-        if type(unlucky_num) == "table" then
-            local unlucky_str = table.concat(unlucky_num, ", ")
-            unlucky_part = white_color .. "[Unlucky: " .. unlucky_color .. unlucky_str .. white_color .. "]"
-        else
-            unlucky_part = white_color .. "[Unlucky: " .. unlucky_color .. unlucky_num .. white_color .. "]"
-        end
-    end
-
-    if lucky_part ~= "" or unlucky_part ~= "" then
-        local separator_lucky = (lucky_part ~= "" and unlucky_part ~= "") and (white_color .. " / ") or ""
-        local line2 = white_color .. "  - " .. lucky_part .. separator_lucky .. unlucky_part
-        table.insert(lines, line2)
-    end
-
-    -- Line 3: Affected
-    if affected_count and total_count and total_count > 0 then
-        local coverage_color = white_color
-        if affected_count == total_count then
-            coverage_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS)  -- Green (all members)
-        elseif affected_count >= total_count * 0.75 then
-            coverage_color = MessageCore.create_color_code(MessageCore.COLORS.JOB_TAG)  -- Cyan (most members)
-        elseif affected_count < total_count * 0.5 then
-            coverage_color = MessageCore.create_color_code(MessageCore.COLORS.get_warning_color())  -- Orange/Rose (less than half)
-        end
-
-        local line3 = white_color .. "  - Affected: " .. coverage_color .. affected_count .. "/" .. total_count .. white_color .. " party members"
-        table.insert(lines, line3)
-
-        -- Line 4: Missed (NO dash, just indentation)
-        if missed_names and #missed_names > 0 then
-            local missed_name_color = MessageCore.create_color_code(MessageCore.COLORS.ERROR)     -- Red names
-            local gray_color = MessageCore.create_color_code(MessageCore.COLORS.SEPARATOR)        -- Gray explanation
-
-            -- Use roll_range parameter or default to 16y (with Luzaf)
-            local range_text = roll_range and string.format("%dy", roll_range) or "16y"
-            local missed_line = white_color .. "  Missed " .. gray_color .. "(out of range >" .. range_text .. ")" .. white_color .. ": "
-
-            for i, name in ipairs(missed_names) do
-                missed_line = missed_line .. missed_name_color .. name
-                if i < #missed_names then
-                    missed_line = missed_line .. white_color .. ", "
-                end
-            end
-
-            table.insert(lines, missed_line)
-        end
+    for _, line in ipairs(build_coverage_lines(white_color, affected_count,
+                                               total_count, missed_names, roll_range)) do
+        table.insert(lines, line)
     end
 
     -- Line 5: Bust rate (with dash)
