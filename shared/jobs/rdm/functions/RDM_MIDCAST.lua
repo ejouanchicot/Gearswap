@@ -141,7 +141,49 @@ end
 --- @param spell table Spell information from GearSwap
 --- @param debug_enabled boolean Whether //gs c debugmidcast is on
 --- @return boolean True when this handler equipped a set
+--- The set paths //gs c debugmidcast says it will try, in order.
+---
+--- Pulled out because it was two thirds of the function and none of its
+--- behaviour: with debug off, not one of these lines runs. What remains in
+--- midcast_enhancing is what actually decides the gear.
+--- @param spell table Spell from GearSwap
+--- @param spell_family string|nil Family resolved from the database, if any
+local function trace_enhancing_priority(spell, spell_family)
+    if not spell_family then
+        return
+    end
+
+    local mode_value = state.EnhancingMode and state.EnhancingMode.value or nil
+    local target_value = MidcastManager.get_enhancing_target(spell)
+    if mode_value and target_value then
+        MessageRDMMidcast.show_enhancing_priority_full(spell_family, target_value, mode_value)
+    elseif target_value then
+        MessageRDMMidcast.show_enhancing_priority_target_only(spell_family, target_value)
+    else
+        MessageRDMMidcast.show_enhancing_priority_family_only(spell_family)
+    end
+end
+
+--- Which family the spell belongs to - Enspell, Regen, Refresh and so on.
+--- @return string|nil Family, nil when the database is not loaded
+local function enhancing_family(spell, debug_enabled)
+    if not (EnhancingSPELLS_success and EnhancingSPELLS) then
+        if debug_enabled then
+            MessageRDMMidcast.show_enhancing_database_not_loaded()
+        end
+        return nil
+    end
+
+    local family = EnhancingSPELLS.get_spell_family(spell.name)
+    if debug_enabled then
+        MessageRDMMidcast.show_spell_family_detection(spell.name, family)
+    end
+    return family
+end
+
 local function midcast_enhancing(spell, debug_enabled)
+    -- Printed before the Phalanx exception, as it always was: the trace is a
+    -- record of what was asked for, not of what was decided.
     if debug_enabled then
         MessageRDMMidcast.show_enhancing_routing(
             tostring(state.EnhancingMode and state.EnhancingMode.value or 'nil'),
@@ -149,45 +191,26 @@ local function midcast_enhancing(spell, debug_enabled)
         )
     end
 
-    -- EXCEPTION: Phalanx + Accession (SCH subjob)
-    -- When Accession is active, Phalanx becomes AoE party buff
-    -- Use base Enhancing Magic set (ignore Composure/spell_family logic)
-    if buffactive and buffactive['Accession'] and spell.english and spell.english:match("^Phalanx") then
+    -- Accession turns Phalanx into a party buff, and the AoE version wants the
+    -- plain Enhancing set - not the Composure or family gear that would win
+    -- for a single-target cast.
+    if buffactive and buffactive['Accession'] and spell.english
+       and spell.english:match("^Phalanx") then
         equip(sets.midcast['Enhancing Magic'])
         if debug_enabled then
             MessageFormatter.show_debug('RDM Midcast', 'Phalanx + Accession detected → Base Enhancing set')
         end
-    return true
+        return true
     end
 
-    -- DEBUG: Get spell_family BEFORE MidcastManager call
-    local spell_family = nil
-    if EnhancingSPELLS_success and EnhancingSPELLS then
-        spell_family = EnhancingSPELLS.get_spell_family(spell.name)
-        if debug_enabled then
-            MessageRDMMidcast.show_spell_family_detection(spell.name, spell_family)
-        end
-    else
-        if debug_enabled then
-            MessageRDMMidcast.show_enhancing_database_not_loaded()
-        end
+    local spell_family = enhancing_family(spell, debug_enabled)
+
+    if debug_enabled then
+        trace_enhancing_priority(spell, spell_family)
     end
 
-    -- DEBUG: Show expected nested set paths
-    if debug_enabled and spell_family then
-        local mode_value = state.EnhancingMode and state.EnhancingMode.value or nil
-        local target_value = MidcastManager.get_enhancing_target(spell)
-        if mode_value and target_value then
-            MessageRDMMidcast.show_enhancing_priority_full(spell_family, target_value, mode_value)
-        elseif target_value then
-            MessageRDMMidcast.show_enhancing_priority_target_only(spell_family, target_value)
-        else
-            MessageRDMMidcast.show_enhancing_priority_family_only(spell_family)
-        end
-    end
-
-    -- Select set using MidcastManager
-    -- Priority with spell_family: .Enspell.self.Duration > .Enspell.self > .Enspell.Duration > .Enspell > .self.Duration > .self > .Duration > base
+    -- With a family: .Enspell.self.Duration > .Enspell.self > .Enspell.Duration
+    -- > .Enspell > .self.Duration > .self > .Duration > base
     local success = MidcastManager.select_set({
         skill = 'Enhancing Magic',
         spell = spell,
