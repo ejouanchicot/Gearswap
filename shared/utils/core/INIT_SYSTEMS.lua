@@ -38,6 +38,20 @@ end
 windower._gs_reload_count = (windower._gs_reload_count or 0) + 1
 
 ---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE CACHE (first, so everything below is loaded once instead of N times)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+-- GearSwap's require never populates package.loaded, so without this every
+-- require re-reads and re-executes the file. Install it before anything else
+-- is pulled in - whatever loads earlier simply misses the benefit.
+pcall(function()
+    local ok, ModuleCache = pcall(require, 'shared/utils/core/module_cache')
+    if ok and ModuleCache then
+        ModuleCache.install()
+    end
+end)
+
+---  ═══════════════════════════════════════════════════════════════════════════
 ---   LAG DEBUGGER (loaded immediately, lightweight - only active when toggled)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
