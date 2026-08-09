@@ -148,10 +148,12 @@ function DualBoxManager.send_job_update()
         return
     end
 
-    -- Only alt should send updates
-    if _G.DualBoxConfig.role ~= "alt" then
-        return
-    end
+    -- Both sides report. It used to be alt-to-main only, which left the alt
+    -- with no idea what the main was playing - and COR needs exactly that to
+    -- credit a roll's job bonus. The other character's job is otherwise only
+    -- learnable from a 0xDD packet, which the server sends when a party member
+    -- changes state; a character standing still is invisible.
+    -- get_target_character already resolves the opposite side for both roles.
 
     -- Check if player data is available
     if not player or not player.main_job then
