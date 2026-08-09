@@ -49,6 +49,197 @@ local MOVE_DELAY = 0.6
 ---   PUBLIC API
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- What is already in the bag, and which spelling of it is there.
+---
+--- An entry can name several variants - {'Squid Sushi +1', 'Squid Sushi'} -
+--- and they all count towards the same target. The one actually held decides
+--- the name shown in the report.
+--- @param variants table Resolved variants, preferred first
+--- @param items_data table windower.ffxi.get_items()
+--- @return number count held, table|nil the variant that is held
+local function count_held(variants, items_data)
+    local inv_count = 0
+    local present_variant = nil
+    for _, v in ipairs(variants) do
+        local n = BagScanner.count_item_in_bag(items_data, 'inventory', v.id)
+        inv_count = inv_count + n
+        if n > 0 and not present_variant then
+            present_variant = v
+        end
+    end
+    return inv_count, present_variant
+end
+
+--- How many to end up holding.
+---
+--- `target = 'all'` means take everything there is rather than stop at a
+--- number, so it resolves to what is held plus what the other bags can give.
+--- @return number Effective target
+local function effective_target(refill_item, variants, inv_count, items_data)
+    if refill_item.target ~= 'all' then
+        return refill_item.target
+    end
+
+    local available = 0
+    for _, v in ipairs(variants) do
+        for _, source in ipairs(SOURCE_BAGS) do
+            available = available + BagScanner.count_item_in_bag(items_data, source.key, v.id)
+        end
+    end
+    return inv_count + available
+end
+
+--- Moves that push the excess back to the store bag.
+--- @return table moves, number how many were actually queued
+local function queue_surplus(variants, surplus, items_data, store_info)
+    local moves = {}
+    local remaining = surplus
+    for _, v in ipairs(variants) do
+        if remaining <= 0 then break end
+        local _, inv_slots = BagScanner.count_item_in_bag(items_data, 'inventory', v.id)
+        for _, slot_info in ipairs(inv_slots) do
+            if remaining <= 0 then break end
+            local to_move = math.min(remaining, slot_info.count)
+            table.insert(moves, {
+                bag_id = INVENTORY_BAG_ID, dst_id = store_info.id,
+                slot = slot_info.slot, count = to_move,
+                item_name = v.name, is_surplus = true
+            })
+            remaining = remaining - to_move
+        end
+    end
+    return moves, surplus - remaining
+end
+
+--- Moves that pull the shortfall out of Case and Sack.
+---
+--- Variants are tried in order, so the preferred spelling is taken first and
+--- the lesser one only makes up the difference.
+--- @return table moves, number pulled, number still short, string sources, table pulled variant names
+local function queue_deficit(variants, deficit, items_data)
+    local moves, sources, pulled_variants = {}, {}, {}
+    local remaining, moved = deficit, 0
+
+    for _, v in ipairs(variants) do
+        if remaining <= 0 then break end
+        for _, source in ipairs(SOURCE_BAGS) do
+            if remaining <= 0 then break end
+            local available, slots = BagScanner.count_item_in_bag(items_data, source.key, v.id)
+            if available > 0 then
+                for _, slot_info in ipairs(slots) do
+                    if remaining <= 0 then break end
+                    local to_move = math.min(remaining, slot_info.count)
+                    table.insert(moves, {
+                        bag_id = source.id, slot = slot_info.slot,
+                        count = to_move, item_name = v.name
+                    })
+                    remaining = remaining - to_move
+                    moved = moved + to_move
+                    if not sources[source.display] then
+                        sources[source.display] = true
+                        table.insert(sources, source.display)
+                    end
+                    pulled_variants[v.name] = true
+                end
+            end
+        end
+    end
+
+    return moves, moved, math.max(0, remaining), table.concat(sources, '+'), pulled_variants
+end
+
+--- Plan one line of the refill list.
+--- @return table result row, table moves to queue
+local function plan_item(refill_item, items_data, store_info)
+    local variants = ItemResolver.resolve_variants(refill_item.name)
+
+    if #variants == 0 then
+        local display = (type(refill_item.name) == 'table')
+                        and refill_item.name[1] or tostring(refill_item.name)
+        local fallback_target = (type(refill_item.target) == 'number')
+                                and refill_item.target or 0
+        return {
+            name = display, target = fallback_target, current = 0,
+            deficit = fallback_target, moved = 0, short = fallback_target, source = ''
+        }, {}
+    end
+
+    local inv_count, present_variant = count_held(variants, items_data)
+    local target = effective_target(refill_item, variants, inv_count, items_data)
+    local deficit = target - inv_count
+
+    local result = {
+        name = (present_variant and present_variant.name) or variants[1].name,
+        target = target, current = inv_count,
+        deficit = deficit, moved = 0, short = 0, source = '',
+        surplus = 0, surplus_dest = nil
+    }
+    local moves = {}
+
+    if deficit < 0 then
+        local surplus_moves, pushed = queue_surplus(variants, -deficit, items_data, store_info)
+        moves = surplus_moves
+        result.surplus = pushed
+        result.surplus_dest = store_info.display
+    elseif deficit > 0 then
+        local pull_moves, moved, short, sources, pulled = queue_deficit(variants, deficit, items_data)
+        moves = pull_moves
+        result.moved, result.short, result.source = moved, short, sources
+
+        -- Nothing of this item was held, so name the row after whichever
+        -- variant was actually pulled rather than the preferred spelling.
+        if not present_variant then
+            for _, v in ipairs(variants) do
+                if pulled[v.name] then
+                    result.name = v.name
+                    break
+                end
+            end
+        end
+    end
+
+    return result, moves
+end
+
+--- Push out anything in the bag that belongs to another job's list.
+---
+--- Omelette Sandwich on WAR is PLD's food: it is not surplus of this job's
+--- line, it has no business in the bag at all.
+--- @return table moves, table result rows
+local function sweep_foreign_items(items_data, list, store_info)
+    local foreign_set = ConfigResolver.build_foreign_items_set(player.name, list)
+    local moves, foreign_results, rows = {}, {}, {}
+
+    local inv_items = items_data.inventory
+    if type(inv_items) == 'table' then
+        for slot, it in pairs(inv_items) do
+            if type(slot) == 'number' and type(it) == 'table' and it.id
+               and it.count and it.count > 0 and foreign_set[it.id] then
+                local display = foreign_set[it.id]
+                table.insert(moves, {
+                    bag_id = INVENTORY_BAG_ID, dst_id = store_info.id,
+                    slot = slot, count = it.count,
+                    item_name = display, is_surplus = true
+                })
+                foreign_results[display] = foreign_results[display]
+                                           or {moved = 0, dest = store_info.display}
+                foreign_results[display].moved = foreign_results[display].moved + it.count
+            end
+        end
+    end
+
+    for name, info in pairs(foreign_results) do
+        table.insert(rows, {
+            name = name, target = 0, current = info.moved,
+            deficit = -info.moved, moved = 0, short = 0, source = '',
+            surplus = info.moved, surplus_dest = info.dest, is_foreign = true
+        })
+    end
+
+    return moves, rows
+end
+
+
 --- Execute the full refill operation: scan inventory, compute deficits,
 --- push surplus, pull from Case/Sack, push foreign items, display report.
 --- @return boolean Success
@@ -64,163 +255,27 @@ function RefillManager.refill()
         return false
     end
 
-    -- Resolve which list to use for the active job/subjob + store_bag for surplus
+    -- Which list applies to the job being played, and where surplus goes
     local list, source_label, store_info = ConfigResolver.resolve_list_for_player()
     RefillPanels.show_start(source_label, store_info.display, #list)
 
-    -- Build refill plan: each entry can have multiple item variants (e.g.
-    -- {'Squid Sushi +1', 'Squid Sushi'}). Total count across variants counts
-    -- toward `target`; pulls prefer the FIRST variant.
     local results = {}
     local move_queue = {}
 
     for _, refill_item in ipairs(list) do
-        local variants = ItemResolver.resolve_variants(refill_item.name)
-
-        if #variants == 0 then
-            -- Could not resolve any variant in res.items
-            local display = (type(refill_item.name) == 'table') and refill_item.name[1] or tostring(refill_item.name)
-            local fallback_target = (type(refill_item.target) == 'number') and refill_item.target or 0
-            table.insert(results, {
-                name = display, target = fallback_target, current = 0,
-                deficit = fallback_target, moved = 0, short = fallback_target, source = ''
-            })
-        else
-            -- Count current inventory across ALL variants
-            local inv_count = 0
-            local present_variant = nil -- first variant that is present in inventory
-            for _, v in ipairs(variants) do
-                local n = BagScanner.count_item_in_bag(items_data, 'inventory', v.id)
-                inv_count = inv_count + n
-                if n > 0 and not present_variant then
-                    present_variant = v
-                end
-            end
-            -- Display name: variant present in inv, else preferred variant
-            local display_name = (present_variant and present_variant.name) or variants[1].name
-
-            -- Resolve effective target. `target = 'all'` means "pull every piece
-            -- available across inv + case + sack, never cap".
-            local target = refill_item.target
-            if target == 'all' then
-                local available = 0
-                for _, v in ipairs(variants) do
-                    for _, source in ipairs(SOURCE_BAGS) do
-                        available = available + BagScanner.count_item_in_bag(items_data, source.key, v.id)
-                    end
-                end
-                target = inv_count + available
-            end
-            local deficit = target - inv_count
-
-            local result = {
-                name = display_name, target = target, current = inv_count,
-                deficit = deficit, moved = 0, short = 0, source = '',
-                surplus = 0, surplus_dest = nil
-            }
-
-            -- ---- SURPLUS: inv has more than target -> push back to store_bag ---
-            if deficit < 0 then
-                local surplus = -deficit
-                local remaining_surplus = surplus
-                for _, v in ipairs(variants) do
-                    if remaining_surplus <= 0 then break end
-                    local _, inv_slots = BagScanner.count_item_in_bag(items_data, 'inventory', v.id)
-                    for _, slot_info in ipairs(inv_slots) do
-                        if remaining_surplus <= 0 then break end
-                        local to_move = math.min(remaining_surplus, slot_info.count)
-                        table.insert(move_queue, {
-                            bag_id = INVENTORY_BAG_ID, dst_id = store_info.id,
-                            slot = slot_info.slot, count = to_move,
-                            item_name = v.name, is_surplus = true
-                        })
-                        remaining_surplus = remaining_surplus - to_move
-                    end
-                end
-                result.surplus = surplus - remaining_surplus
-                result.surplus_dest = store_info.display
-            end
-
-            -- ---- DEFICIT: pull from Case/Sack (preferred variants first) -----
-            if deficit > 0 then
-                local remaining = deficit
-                local sources = {}
-                local pulled_variants = {} -- track which variant was pulled
-
-                for _, v in ipairs(variants) do
-                    if remaining <= 0 then break end
-                    for _, source in ipairs(SOURCE_BAGS) do
-                        if remaining <= 0 then break end
-                        local available, slots = BagScanner.count_item_in_bag(items_data, source.key, v.id)
-                        if available > 0 then
-                            for _, slot_info in ipairs(slots) do
-                                if remaining <= 0 then break end
-                                local to_move = math.min(remaining, slot_info.count)
-                                table.insert(move_queue, {
-                                    bag_id = source.id, slot = slot_info.slot,
-                                    count = to_move, item_name = v.name
-                                })
-                                remaining = remaining - to_move
-                                result.moved = result.moved + to_move
-                                if not sources[source.display] then
-                                    sources[source.display] = true
-                                    table.insert(sources, source.display)
-                                end
-                                if not pulled_variants[v.name] then
-                                    pulled_variants[v.name] = true
-                                end
-                            end
-                        end
-                    end
-                end
-
-                result.short = math.max(0, remaining)
-                result.source = table.concat(sources, '+')
-                -- If preferred variant was missing in inv but we pulled it, update display
-                if not present_variant then
-                    for _, v in ipairs(variants) do
-                        if pulled_variants[v.name] then
-                            result.name = v.name
-                            break
-                        end
-                    end
-                end
-            end
-
-            table.insert(results, result)
+        local result, moves = plan_item(refill_item, items_data, store_info)
+        table.insert(results, result)
+        for _, m in ipairs(moves) do
+            table.insert(move_queue, m)
         end
     end
 
-    -- ====================================================================
-    -- FOREIGN ITEMS: items in inventory that belong to OTHER jobs' refill
-    -- lists (e.g. Omelette Sandwich on WAR - PLD's food). Push them all to
-    -- the store_bag so the inventory only keeps the active job's items.
-    -- ====================================================================
-    local foreign_set = ConfigResolver.build_foreign_items_set(player.name, list)
-    local foreign_results = {} -- {[item_name] = {moved=N, dest=str}}
-    local inv_items = items_data.inventory
-    if type(inv_items) == 'table' then
-        for slot, it in pairs(inv_items) do
-            if type(slot) == 'number' and type(it) == 'table' and it.id
-               and it.count and it.count > 0 and foreign_set[it.id] then
-                local display = foreign_set[it.id]
-                table.insert(move_queue, {
-                    bag_id = INVENTORY_BAG_ID, dst_id = store_info.id,
-                    slot = slot, count = it.count,
-                    item_name = display, is_surplus = true
-                })
-                foreign_results[display] = foreign_results[display] or {moved = 0, dest = store_info.display}
-                foreign_results[display].moved = foreign_results[display].moved + it.count
-            end
-        end
+    local foreign_moves, foreign_rows = sweep_foreign_items(items_data, list, store_info)
+    for _, m in ipairs(foreign_moves) do
+        table.insert(move_queue, m)
     end
-    -- Append a "foreign" result row for each pushed item type
-    for name, info in pairs(foreign_results) do
-        table.insert(results, {
-            name = name, target = 0, current = info.moved,
-            deficit = -info.moved, moved = 0, short = 0, source = '',
-            surplus = info.moved, surplus_dest = info.dest, is_foreign = true
-        })
+    for _, row in ipairs(foreign_rows) do
+        table.insert(results, row)
     end
 
     -- Execute move queue with delays
