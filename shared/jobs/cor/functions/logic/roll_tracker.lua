@@ -144,143 +144,140 @@ local function roll_already_crooked(roll_name)
     return false
 end
 
----   Called when a roll is CAST (from precast/midcast/aftercast)
----   This is where we'll actually track the roll value
----   @param roll_name string Name of the roll
----   @param roll_value number Value rolled (1-12)
+--- Has this exact roll and value just been reported?
+---
+--- Windower's action event fires more than once for a single roll, so without
+--- this the same result prints two or three times. 500ms is long enough to
+--- swallow the repeats and short enough that a real Double-Up, which cannot
+--- come that fast, still gets through.
+--- @return boolean
+local function is_duplicate_report(roll_name, roll_value, current_time)
+    local last = _G.cor_last_roll_display
+    return last.name == roll_name
+        and last.value == roll_value
+        and last.timestamp ~= nil
+        and (current_time - last.timestamp) < 0.5
+end
+
+--- Is this roll already up, making this cast a Double-Up rather than a new one?
+--- @return boolean
+local function is_double_up_of(roll_name)
+    for _, roll in ipairs(_G.cor_active_rolls) do
+        if roll.name == roll_name then
+            return true
+        end
+    end
+    return false
+end
+
+--- Does Crooked Cards apply to this cast?
+---
+--- The buff is consumed the instant a new roll goes out, so buffactive is
+--- unreliable by the time this runs. Three sources, in order: the roll's own
+--- record if it is being doubled up, the live buff, and a timestamp kept for
+--- the moment between casting and the buff disappearing.
+--- @return boolean
+local function crooked_applies(roll_name)
+    if _G.cor_active_rolls and roll_already_crooked(roll_name) then
+        return true
+    end
+
+    if not _G.cor_crooked_timestamp then
+        return false
+    end
+
+    if buffactive['Crooked Cards'] then
+        return true
+    end
+
+    -- Buff gone but recent: it was consumed by this very roll.
+    return (os.time() - _G.cor_crooked_timestamp) <= 60
+end
+
+--- The bonus this roll grants, job bonus and Crooked included.
+--- @return number bonus, boolean whether a job bonus applied
+local function compute_bonus(roll_name, roll_value, roll_data, is_crooked)
+    local phantom_roll_bonus = RollTracker.get_phantom_roll_bonus()
+    local player_job = player and player.main_job or 'COR'
+
+    local has_job_bonus = false
+    if roll_data and roll_data.job_bonus then
+        has_job_bonus = roll_has_job_bonus(roll_data)
+    end
+
+    local bonus = RollData.calculate_bonus(roll_name, roll_value, player_job,
+                                           phantom_roll_bonus, has_job_bonus)
+
+    if is_crooked then
+        bonus = bonus * 1.2
+    end
+
+    return bonus, has_job_bonus
+end
+
 function RollTracker.on_roll_cast(roll_name, roll_value)
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- DUPLICATE PREVENTION (Windower action event fires multiple times)
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- Check if this exact roll+value was just displayed (within 500ms)
     local current_time = os.clock()
-    if _G.cor_last_roll_display.name == roll_name and
-        _G.cor_last_roll_display.value == roll_value and
-        _G.cor_last_roll_display.timestamp and
-        (current_time - _G.cor_last_roll_display.timestamp) < 0.5 then
-        -- Duplicate detected - skip processing
+    if is_duplicate_report(roll_name, roll_value, current_time) then
         return
     end
 
-    -- Update last display timestamp
     _G.cor_last_roll_display.name = roll_name
     _G.cor_last_roll_display.value = roll_value
     _G.cor_last_roll_display.timestamp = current_time
 
-    -- Check if bust (12)
     if roll_value == 12 then
         RollTracker.handle_bust(roll_name)
         return
     end
 
-    -- Detect if this is a Double-Up (roll already exists) or initial roll
-    local is_double_up = false
-    for _, roll in ipairs(_G.cor_active_rolls) do
-        if roll.name == roll_name then
-            is_double_up = true
-            break
-        end
-    end
+    local is_double_up = is_double_up_of(roll_name)
 
-    -- Store for buff tracking
+    -- Recounted every cast: members move in and out of range between rolls.
+    local affected_count, total_count, missed_names =
+        RollTracker.count_party_members_with_buff(roll_name)
+
     _G.cor_last_roll.name = roll_name
     _G.cor_last_roll.value = roll_value
     _G.cor_last_roll.timestamp = os.time()
-
-    -- Count party members affected (recalculate each time in case members moved)
-    local affected_count, total_count, missed_names = RollTracker.count_party_members_with_buff(roll_name)
     _G.cor_last_roll.affected_count = affected_count
     _G.cor_last_roll.total_count = total_count
     _G.cor_last_roll.missed_names = missed_names
 
-    -- Calculate bonus with job detection
-    local phantom_roll_bonus = RollTracker.get_phantom_roll_bonus()
-    local player_job = player and player.main_job or 'COR'
-
-    -- Get roll data to check for job bonus
     local roll_data = RollData.get_roll(roll_name)
-    local has_job_bonus = false
+    local is_crooked = crooked_applies(roll_name)
+    local final_bonus, has_job_bonus = compute_bonus(roll_name, roll_value,
+                                                     roll_data, is_crooked)
 
-    if roll_data and roll_data.job_bonus then
-        has_job_bonus = roll_has_job_bonus(roll_data)
-    end
-
-    local final_bonus = RollData.calculate_bonus(roll_name, roll_value, player_job, phantom_roll_bonus, has_job_bonus)
-
-    -- Check for Crooked Cards buff and apply +20% multiplier
-    -- IMPORTANT: Crooked Cards buff is CONSUMED when you cast a new roll (disappears immediately)
-    -- But it PERSISTS on that roll through Double-Ups
-    local is_crooked = false
-
-    -- PRIORITY 1: Check if this roll already has Crooked attached (from active rolls list)
-    -- This handles Double-Up - if original roll had Crooked, Double-Up keeps it
-    if _G.cor_active_rolls then
-        is_crooked = roll_already_crooked(roll_name)
-    end
-
-    -- PRIORITY 2: Check if Crooked Cards was used recently OR buff is still active
-    -- Timestamp persists until we consume it with a NEW roll (not Double-Up)
-    if not is_crooked and _G.cor_crooked_timestamp then
-        -- Check if buff is still active OR if we just used Crooked recently
-        if buffactive['Crooked Cards'] then
-            is_crooked = true
-        else
-            -- Buff disappeared (was consumed or expired), but check timestamp for latency
-            local time_since_crooked = os.time() - _G.cor_crooked_timestamp
-            if time_since_crooked <= 60 then
-                is_crooked = true
-            end
-        end
-    end
-
-    -- Clear timestamp ONLY when consuming Crooked with a NEW roll (not Double-Up)
+    -- The timestamp is only spent by a NEW roll. A Double-Up inherits Crooked
+    -- from the roll it is doubling and must not consume it, or the third and
+    -- later Double-Ups would lose the bonus.
     if is_crooked and not is_double_up and _G.cor_crooked_timestamp then
         _G.cor_crooked_timestamp = nil
     end
 
-    -- Apply Crooked multiplier if active
-    if is_crooked then
-        final_bonus = final_bonus * 1.2
-    end
-
-    -- Check Lucky/Unlucky
     local is_lucky = RollData.is_lucky(roll_name, roll_value)
     local is_unlucky = RollData.is_unlucky(roll_name, roll_value)
 
-    -- Check Natural 11
-    -- NOTE: Natural 11 benefits (instant reset, 30s recast, bust DEBUFF immunity):
-    -- - Instant reset: Timer goes to 0 immediately (only if no Bust debuff active)
-    -- - 30s recast: Timer reduced to 30s for all rolls (while ANY 11 active)
-    -- - Bust immunity: You CAN still bust (roll 12), but NO BUST DEBUFF applied
-    --   This means you can immediately re-roll even after busting (no 2-bust penalty)
-    -- - Benefits persist as long as ANY 11 roll remains active on the Corsair
-    -- - Multiple 11s can be active simultaneously (2 max, or 3 with Crooked Cards)
+    -- An 11 resets the timer, drops every roll's recast to 30s and removes the
+    -- bust DEBUFF - you can still roll a 12, it just costs nothing. It holds
+    -- while ANY 11 is up, so the flag is set here and cleared elsewhere.
     local is_natural_eleven = (roll_value == 11)
     if is_natural_eleven then
         _G.cor_natural_eleven_active = true
     end
 
-    -- Get roll data for effect type (reuse from earlier in function)
-    -- Note: roll_data was already fetched at line 145, don't fetch again
-    local effect_type = roll_data and roll_data.effect_type or ''
-
-    -- Get job bonus info for display
     local job_bonus_info = nil
     if roll_data and roll_data.job_bonus and has_job_bonus then
-        job_bonus_info = roll_data.job_bonus[1]  -- Job code (e.g., "DNC")
+        job_bonus_info = roll_data.job_bonus[1]
     end
 
-    -- Calculate bust rate for NEXT Double-Up action
-    -- Roll system: Initial roll = 1d6 (1-6), Double-Up = +1d6 each time
-    -- Bust if total > 11
-    -- Display shows risk for the NEXT Double-Up, not current roll
+    -- The rate shown is for the NEXT Double-Up, not this roll.
     local bust_rate = RollData.calculate_bust_rate(roll_value)
 
-    -- Track this roll as active (with Crooked flag if applicable)
     RollTracker.track_active_roll(roll_name, roll_value, is_crooked)
-
-    -- Display formatted message
-    RollTracker.display_roll_result(roll_name, roll_value, final_bonus, effect_type, is_lucky, is_unlucky, is_natural_eleven, bust_rate, job_bonus_info, is_crooked, missed_names)
+    RollTracker.display_roll_result(roll_name, roll_value, final_bonus,
+        roll_data and roll_data.effect_type or '', is_lucky, is_unlucky,
+        is_natural_eleven, bust_rate, job_bonus_info, is_crooked, missed_names)
 end
 
 ---   Track active roll in state
