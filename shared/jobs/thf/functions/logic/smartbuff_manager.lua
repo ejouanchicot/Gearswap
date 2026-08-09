@@ -183,9 +183,12 @@ end
 --- Fire the openers a second apart.
 ---
 --- The first goes out immediately, the second a second later, the third after
---- two. The file header gives the reason as avoiding conflicts between
---- abilities sent together; DNC and WAR space theirs the same way, at two
---- seconds. The interval is left exactly as it was.
+--- two.
+---
+--- A safety margin for firing several abilities from one command, not a
+--- documented client limit - the same precaution DNC and WAR take at two
+--- seconds. Nobody has established the exact interval that is required, so
+--- the value is left alone rather than tightened.
 --- @param to_cast table From triage_fbc
 local function cast_fbc(to_cast)
     for i, ability in ipairs(to_cast) do
