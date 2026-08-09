@@ -21,7 +21,8 @@ local Colors = MessageCore.COLORS
 --- Order groups so the ones you reach for first come first.
 local GROUP_ORDER = {
     'enfeebling', 'enhancing', 'healing', 'elemental', 'dark',
-    'geomancy', 'roll', 'ja', 'other',
+    'geomancy', 'song', 'ninjutsu', 'blue',
+    'summon', 'rage', 'ward', 'roll', 'ja', 'other',
 }
 
 --- Note only what departs from the norm.
