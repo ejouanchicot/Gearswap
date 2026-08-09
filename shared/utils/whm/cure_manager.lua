@@ -101,6 +101,84 @@ local function is_spell_available(spell_name)
     return recast_seconds == 0, recast_seconds
 end
 
+--- Extracted from get_hp_missing: the `target.name == player.name or target.id == player.id` branch.
+local function get_hp_missing_target_name()
+    local missing = player.max_hp - player.hp
+    local hpp = math.floor((player.hp / player.max_hp) * 100)
+    if WHMCureConfig.debug_messages and WHMMessageFormatter then
+        WHMMessageFormatter.show_debug_self_hp(player.hp, player.max_hp, missing)
+    end
+    return missing, hpp
+end
+
+--- Extracted from get_hp_missing: the `party` branch.
+local function get_hp_missing_party(target)
+    -- Debug: show party composition
+    if WHMCureConfig.debug_messages and WHMMessageFormatter then
+        local party_names = {}
+        for i = 0, 5 do
+            if party['p' .. i] and party['p' .. i].name then
+                table.insert(party_names, party['p' .. i].name)
+            end
+        end
+        WHMMessageFormatter.show_debug_party_members(table.concat(party_names, ', '))
+    end
+
+    -- Check main party (p0-p5)
+    for i = 0, 5 do
+        local member = party['p' .. i]
+        if member and member.name == target.name then
+            -- Windower party data is unreliable for HP values in precast
+            -- Use HPP (HP%) instead to calculate missing HP
+            local hpp = member.hpp or 100
+            local max_hp = member.max_hp or 2000  -- Estimate if not available
+
+            -- Calculate current HP from percentage
+            local current_hp = math.floor(max_hp * hpp / 100)
+            local missing = math.max(0, max_hp - current_hp)
+
+            -- Debug output
+            if WHMCureConfig.debug_messages and WHMMessageFormatter then
+                WHMMessageFormatter.show_debug_party_member_hp(member.name or 'Unknown', hpp, max_hp, current_hp, missing)
+            end
+
+            return missing, hpp
+        end
+    end
+
+    -- Check alliance (a1p1-a3p6)
+    for i = 1, 3 do
+        for j = 1, 6 do
+            local member = party['a' .. i .. 'p' .. j]
+            if member and member.name == target.name then
+                -- Use HPP (HP%) instead of absolute HP values
+                local hpp = member.hpp or 100
+                local max_hp = member.max_hp or 2000
+
+                local current_hp = math.floor(max_hp * hpp / 100)
+                local missing = math.max(0, max_hp - current_hp)
+
+                if WHMCureConfig.debug_messages and WHMMessageFormatter then
+                    WHMMessageFormatter.show_debug_alliance_member_hp(member.name or 'Unknown', hpp, max_hp, current_hp, missing)
+                end
+
+                return missing, hpp
+            end
+        end
+    end
+end
+
+--- Extracted from get_hp_missing: the `target.hpp` branch.
+local function get_hp_missing_target_hpp(target)
+    -- Estimate max HP (rough approximation based on HPP)
+    -- This is VERY rough but better than nothing
+    local hpp = target.hpp
+    local est_max_hp = 2000 -- Rough estimate for player character
+    local current_hp = math.floor(est_max_hp * hpp / 100)
+    local missing = est_max_hp - current_hp
+    return missing, hpp
+end
+
 --- Calculate HP missing for target (using HPP estimation like DNC Waltz)
 --- @param target table Target mob data from windower.ffxi.get_mob_by_id()
 --- @return number, number hp_missing, hpp
@@ -119,81 +197,18 @@ local function get_hp_missing(target)
 
     -- Self: exact HP
     if target.name == player.name or target.id == player.id then
-        local missing = player.max_hp - player.hp
-        local hpp = math.floor((player.hp / player.max_hp) * 100)
-        if WHMCureConfig.debug_messages and WHMMessageFormatter then
-            WHMMessageFormatter.show_debug_self_hp(player.hp, player.max_hp, missing)
-        end
-        return missing, hpp
+        get_hp_missing_target_name()
     end
 
     -- Party/Alliance member: use party data
     local party = windower.ffxi.get_party()
     if party then
-        -- Debug: show party composition
-        if WHMCureConfig.debug_messages and WHMMessageFormatter then
-            local party_names = {}
-            for i = 0, 5 do
-                if party['p' .. i] and party['p' .. i].name then
-                    table.insert(party_names, party['p' .. i].name)
-                end
-            end
-            WHMMessageFormatter.show_debug_party_members(table.concat(party_names, ', '))
-        end
-
-        -- Check main party (p0-p5)
-        for i = 0, 5 do
-            local member = party['p' .. i]
-            if member and member.name == target.name then
-                -- Windower party data is unreliable for HP values in precast
-                -- Use HPP (HP%) instead to calculate missing HP
-                local hpp = member.hpp or 100
-                local max_hp = member.max_hp or 2000  -- Estimate if not available
-
-                -- Calculate current HP from percentage
-                local current_hp = math.floor(max_hp * hpp / 100)
-                local missing = math.max(0, max_hp - current_hp)
-
-                -- Debug output
-                if WHMCureConfig.debug_messages and WHMMessageFormatter then
-                    WHMMessageFormatter.show_debug_party_member_hp(member.name or 'Unknown', hpp, max_hp, current_hp, missing)
-                end
-
-                return missing, hpp
-            end
-        end
-
-        -- Check alliance (a1p1-a3p6)
-        for i = 1, 3 do
-            for j = 1, 6 do
-                local member = party['a' .. i .. 'p' .. j]
-                if member and member.name == target.name then
-                    -- Use HPP (HP%) instead of absolute HP values
-                    local hpp = member.hpp or 100
-                    local max_hp = member.max_hp or 2000
-
-                    local current_hp = math.floor(max_hp * hpp / 100)
-                    local missing = math.max(0, max_hp - current_hp)
-
-                    if WHMCureConfig.debug_messages and WHMMessageFormatter then
-                        WHMMessageFormatter.show_debug_alliance_member_hp(member.name or 'Unknown', hpp, max_hp, current_hp, missing)
-                    end
-
-                    return missing, hpp
-                end
-            end
-        end
+        get_hp_missing_party(target)
     end
 
     -- Fallback: estimate from HPP (mob data)
     if target.hpp then
-        -- Estimate max HP (rough approximation based on HPP)
-        -- This is VERY rough but better than nothing
-        local hpp = target.hpp
-        local est_max_hp = 2000 -- Rough estimate for player character
-        local current_hp = math.floor(est_max_hp * hpp / 100)
-        local missing = est_max_hp - current_hp
-        return missing, hpp
+        get_hp_missing_target_hpp(target)
     end
 
     return 0, 0

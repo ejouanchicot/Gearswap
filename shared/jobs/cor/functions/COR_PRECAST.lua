@@ -60,6 +60,29 @@ end
 ---   PRECAST HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- Extracted from job_precast: the `spell.type == 'CorsairRoll'` branch.
+local function job_precast_corsairroll(spell)
+    -- Set custom class so Mote looks in sets.precast.CorsairRoll
+    classes.CustomClass = 'CorsairRoll'
+
+    -- Track roll name for Double-Up to use same gear (using table structure)
+    if not _G.cor_last_roll then
+        _G.cor_last_roll = {}
+    end
+    _G.cor_last_roll.name = spell.english
+end
+
+--- Extracted from job_precast: the `spell.english == 'Double-Up' and _G.cor_last_roll and _G.cor` branch.
+local function job_precast_double_up()
+    -- Check if there's a specific set for this roll
+    if sets.precast.CorsairRoll[_G.cor_last_roll.name] then
+        equip(sets.precast.CorsairRoll[_G.cor_last_roll.name])
+    else
+        -- Fallback to base CorsairRoll set
+        equip(sets.precast.CorsairRoll)
+    end
+end
+
 ---   Called before any action (WS, JA, spell, etc.)
 ---   @param spell table Spell/ability data
 ---   @param action string Action type
@@ -100,25 +123,12 @@ function job_precast(spell, action, spellMap, eventArgs)
 
     -- Phantom Roll precast (tell Mote to use CorsairRoll sets)
     if spell.type == 'CorsairRoll' then
-        -- Set custom class so Mote looks in sets.precast.CorsairRoll
-        classes.CustomClass = 'CorsairRoll'
-
-        -- Track roll name for Double-Up to use same gear (using table structure)
-        if not _G.cor_last_roll then
-            _G.cor_last_roll = {}
-        end
-        _G.cor_last_roll.name = spell.english
+        job_precast_corsairroll(spell)
     end
 
     -- Double-Up (use gear from last roll used)
     if spell.english == 'Double-Up' and _G.cor_last_roll and _G.cor_last_roll.name then
-        -- Check if there's a specific set for this roll
-        if sets.precast.CorsairRoll[_G.cor_last_roll.name] then
-            equip(sets.precast.CorsairRoll[_G.cor_last_roll.name])
-        else
-            -- Fallback to base CorsairRoll set
-            equip(sets.precast.CorsairRoll)
-        end
+        job_precast_double_up()
     end
 
     -- Quick Draw precast (tell Mote to use CorsairShot sets)

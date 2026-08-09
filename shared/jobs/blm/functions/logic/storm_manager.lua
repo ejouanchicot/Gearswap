@@ -134,6 +134,44 @@ local function stormmanager_cast_storm_with_klimaform_klimaform_recast_2(storm_n
     return false
 end
 
+--- Extracted from StormManager.cast_storm_with_klimaform: the `klimaform_recast == 0 and storm_recast == 0` branch.
+local function stormmanager_cast_storm_with_klimaform_klimaform_recast(storm_name, currentTime, klimaform_active)
+    if klimaform_active then
+        -- Klimaform already active, just cast Storm
+        send_command('input /ma "' .. storm_name .. '" <me>')
+        updateLastCastTime(currentTime)
+        return true
+    else
+        -- Cast Klimaform, then Storm after delay
+        send_command('input /ma "Klimaform" <me>')
+        send_command('wait ' .. KLIMAFORM_STORM_DELAY .. '; input /ma "' .. storm_name .. '" <me>')
+        updateLastCastTime(currentTime)
+        return true
+    end
+end
+
+--- Extracted from StormManager.cast_storm_with_klimaform: the `storm_recast == 0 and klimaform_recast > 0` branch.
+local function stormmanager_cast_storm_with_klimaform_storm_recast(storm_name, currentTime, klimaform_active, klimaform_recast)
+    if klimaform_active then
+        -- Klimaform already active, cast Storm
+        send_command('input /ma "' .. storm_name .. '" <me>')
+        updateLastCastTime(currentTime)
+        return true
+    else
+        -- Need Klimaform but it's on cooldown - show both recasts
+        local cooldowns = {
+            {
+                type = "cooldown",
+                name = "Klimaform",
+                value = klimaform_recast,
+                action_type = "Magic"
+            }
+        }
+        MessageCooldowns.show_multi_status(cooldowns)
+        return false
+    end
+end
+
 ---   Cast Storm with automatic Klimaform if needed
 ---   @param storm_name string Name of the storm spell (e.g., "Firestorm", "Hailstorm")
 ---   @return boolean true if casting was initiated, false if on cooldown
@@ -159,40 +197,12 @@ function StormManager.cast_storm_with_klimaform(storm_name)
 
     -- CASE 1: Both spells ready
     if klimaform_recast == 0 and storm_recast == 0 then
-        if klimaform_active then
-            -- Klimaform already active, just cast Storm
-            send_command('input /ma "' .. storm_name .. '" <me>')
-            updateLastCastTime(currentTime)
-            return true
-        else
-            -- Cast Klimaform, then Storm after delay
-            send_command('input /ma "Klimaform" <me>')
-            send_command('wait ' .. KLIMAFORM_STORM_DELAY .. '; input /ma "' .. storm_name .. '" <me>')
-            updateLastCastTime(currentTime)
-            return true
-        end
+        stormmanager_cast_storm_with_klimaform_klimaform_recast(storm_name, currentTime, klimaform_active)
     end
 
     -- CASE 2: Storm ready, Klimaform on cooldown
     if storm_recast == 0 and klimaform_recast > 0 then
-        if klimaform_active then
-            -- Klimaform already active, cast Storm
-            send_command('input /ma "' .. storm_name .. '" <me>')
-            updateLastCastTime(currentTime)
-            return true
-        else
-            -- Need Klimaform but it's on cooldown - show both recasts
-            local cooldowns = {
-                {
-                    type = "cooldown",
-                    name = "Klimaform",
-                    value = klimaform_recast,
-                    action_type = "Magic"
-                }
-            }
-            MessageCooldowns.show_multi_status(cooldowns)
-            return false
-        end
+        stormmanager_cast_storm_with_klimaform_storm_recast(storm_name, currentTime, klimaform_active, klimaform_recast)
     end
 
     -- CASE 3: Klimaform ready, Storm on cooldown
