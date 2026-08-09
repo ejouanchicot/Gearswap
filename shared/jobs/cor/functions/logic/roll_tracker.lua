@@ -159,17 +159,6 @@ local function is_duplicate_report(roll_name, roll_value, current_time)
         and (current_time - last.timestamp) < 0.5
 end
 
---- Is this roll already up, making this cast a Double-Up rather than a new one?
---- @return boolean
-local function is_double_up_of(roll_name)
-    for _, roll in ipairs(_G.cor_active_rolls) do
-        if roll.name == roll_name then
-            return true
-        end
-    end
-    return false
-end
-
 --- Does Crooked Cards apply to this cast?
 ---
 --- The buff is consumed the instant a new roll goes out, so buffactive is
@@ -230,15 +219,25 @@ local function record_last_roll(roll_name, roll_value, affected_count,
     last.missed_names = missed_names
 end
 
---- Spend the Crooked Cards timestamp, if this roll is the one that used it.
+--- Spend the Crooked Cards timestamp once a roll has used it.
 ---
---- Only a NEW roll spends it. What this changes is not the current roll - a
---- doubled roll reports crooked from its own record either way - but the NEXT
---- different roll: the timestamp is a 60s window, so leaving it standing lets
---- the roll after a Double-Up claim crooked too. Whether that is intended is
---- not recorded anywhere.
-local function consume_crooked(is_crooked, is_double_up)
-    if is_crooked and not is_double_up then
+--- Crooked belongs to the ROLL, not to the player. The buff leaves the player
+--- the instant the roll goes out, but the roll keeps the property until
+--- another roll pushes it out of the active list - which is why a Double-Up of
+--- a crooked roll is still crooked long after the buff is gone.
+---
+--- The timestamp only covers the one cast between the buff vanishing and
+--- track_active_roll stamping has_crooked on the roll. Whichever cast first
+--- read it spends it, new roll or Double-Up alike: left standing, its 60s
+--- window hands Crooked to the next, unrelated roll.
+---
+--- A cast that already knew from the record spends nothing, so a Double-Up of
+--- an already-crooked roll does not waste a fresh Crooked Cards waiting for
+--- the next real roll.
+--- @param is_crooked boolean Whether Crooked applies to this cast
+--- @param from_record boolean Whether the roll's own record already said so
+local function consume_crooked(is_crooked, from_record)
+    if is_crooked and not from_record then
         _G.cor_crooked_timestamp = nil
     end
 end
@@ -280,11 +279,18 @@ function RollTracker.on_roll_cast(roll_name, roll_value)
     _G.cor_last_roll_display.timestamp = current_time
 
     if roll_value == 12 then
+        -- A bust is still a roll going out, so it still spent the buff. The
+        -- roll is discarded and never records has_crooked, so without this the
+        -- timestamp would outlive it and taint the next roll.
+        _G.cor_crooked_timestamp = nil
         RollTracker.handle_bust(roll_name)
         return
     end
 
-    local is_double_up = is_double_up_of(roll_name)
+    -- Read before track_active_roll stamps the record below: it decides which
+    -- cast spends the Crooked timestamp.
+    local crooked_from_record = _G.cor_active_rolls ~= nil
+                                and roll_already_crooked(roll_name)
 
     -- Recounted every cast: members move in and out of range between rolls.
     local affected_count, total_count, missed_names =
@@ -295,7 +301,7 @@ function RollTracker.on_roll_cast(roll_name, roll_value)
     local is_crooked = crooked_applies(roll_name)
     local final_bonus, has_job_bonus = compute_bonus(roll_name, roll_value,
                                                      roll_data, is_crooked)
-    consume_crooked(is_crooked, is_double_up)
+    consume_crooked(is_crooked, crooked_from_record)
 
     local is_natural_eleven = note_natural_eleven(roll_value)
 
