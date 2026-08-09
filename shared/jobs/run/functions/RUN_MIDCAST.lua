@@ -65,6 +65,46 @@ function job_midcast(spell, action, spellMap, eventArgs)
     end
 end
 
+--- Extracted from job_post_midcast: the `spell.skill == 'Healing Magic'` branch.
+local function job_post_midcast_healing_magic(spell)
+    MidcastManager.select_set({
+        skill = 'Healing Magic',
+        spell = spell,
+        target_func = function(sp)
+            return sp.target.type == 'SELF' and 'Self' or 'Other'
+        end
+    })
+end
+
+--- Extracted from job_post_midcast: the `spell.skill == 'Enhancing Magic'` branch.
+local function job_post_midcast_enhancing_magic(spell)
+    -- Phalanx: RUN always uses SIRD (tank priority: prevent interruption)
+    if spell.name == 'Phalanx' then
+        MidcastManager.select_set({
+            skill = 'Enhancing Magic',
+            spell = spell
+        })
+        return
+    end
+
+    -- Other Enhancing Magic (database-driven spell_family routing)
+    MidcastManager.select_set({
+        skill = 'Enhancing Magic',
+        spell = spell,
+        target_func = MidcastManager.get_enhancing_target,
+        database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
+    })
+end
+
+--- Extracted from job_post_midcast: the `spell.skill == 'Blue Magic'` branch.
+local function job_post_midcast_blue_magic(spell)
+    -- All Blue Magic spells use the same set (no distinction)
+    MidcastManager.select_set({
+        skill = 'Blue Magic',
+        spell = spell
+    })
+end
+
 ---   Post-midcast hook (MidcastManager routing and gear selection)
 ---   @param spell table Spell information from GearSwap
 ---   @param action string Action type
@@ -85,13 +125,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- HEALING MAGIC (Other Cure spells)
     -- ══════════════════════════════════════════════════════════════════════════
     if spell.skill == 'Healing Magic' then
-        MidcastManager.select_set({
-            skill = 'Healing Magic',
-            spell = spell,
-            target_func = function(sp)
-                return sp.target.type == 'SELF' and 'Self' or 'Other'
-            end
-        })
+        job_post_midcast_healing_magic(spell)
         return
     end
 
@@ -118,22 +152,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- ENHANCING MAGIC
     -- ══════════════════════════════════════════════════════════════════════════
     if spell.skill == 'Enhancing Magic' then
-        -- Phalanx: RUN always uses SIRD (tank priority: prevent interruption)
-        if spell.name == 'Phalanx' then
-            MidcastManager.select_set({
-                skill = 'Enhancing Magic',
-                spell = spell
-            })
-            return
-        end
-
-        -- Other Enhancing Magic (database-driven spell_family routing)
-        MidcastManager.select_set({
-            skill = 'Enhancing Magic',
-            spell = spell,
-            target_func = MidcastManager.get_enhancing_target,
-            database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
-        })
+        job_post_midcast_enhancing_magic(spell)
         return
     end
 
@@ -152,11 +171,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- BLUE MAGIC (RUN/BLU SUBJOB)
     -- ══════════════════════════════════════════════════════════════════════════
     if spell.skill == 'Blue Magic' then
-        -- All Blue Magic spells use the same set (no distinction)
-        MidcastManager.select_set({
-            skill = 'Blue Magic',
-            spell = spell
-        })
+        job_post_midcast_blue_magic(spell)
         return
     end
 end

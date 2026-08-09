@@ -68,6 +68,55 @@ end
 ---   PRECAST HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- Extracted from job_precast: the `spell.type == 'BardSong'` branch.
+local function job_precast_bardsong(spell, eventArgs)
+    local target_name = nil
+
+    -- Check if targeting another PC
+    if spell.target and spell.target.name and spell.target.name ~= player.name then
+        -- Verify it's a PC (not monster, not NPC, not charmed)
+        if spell.target.spawn_type and (spell.target.spawn_type == 13 or spell.target.in_party or spell.target.in_alliance) then
+            if not spell.target.charmed then
+                target_name = spell.target.name
+            end
+        end
+    end
+
+    -- If targeting another player, add Pianissimo
+    if target_name and not buffactive['Pianissimo'] then
+        -- ANTI-LOOP: Use synchronous flag to prevent double-cast
+        if _G.pianissimo_in_progress then
+            return
+        end
+
+        _G.pianissimo_in_progress = true
+
+        cancel_spell()
+        send_command('input /ja "Pianissimo" <me>')
+        send_command('wait 2; input /ma "' .. spell.english .. '" "' .. target_name .. '"')
+
+        MessageFormatter.show_pianissimo_target(target_name)
+        eventArgs.cancel = true
+        return
+    end
+end
+
+--- Extracted from job_precast: the `spell.type == 'BardSong' and InstrumentLockConfig.requires_l` branch.
+local function job_precast_bardsong_2(spell)
+    local instrument = InstrumentLockConfig.get_instrument(spell.english)
+
+    -- Equip instrument immediately
+    equip({range = instrument})
+
+    -- Set global flags to protect instrument during cast
+    _G.casting_locked_song = true
+    _G.locked_song_name = spell.english
+    _G.locked_instrument = instrument
+
+    -- Display lock message
+    MessageFormatter.show_instrument_locked(spell.english, instrument)
+end
+
 ---   Called before any action (song, JA, spell, etc.)
 ---   @param spell table Spell/ability data
 ---   @param action string Action type
@@ -95,35 +144,7 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- AUTO-PIANISSIMO
     -- If targeting another PC (not self, not charmed), auto-activate Pianissimo
     if spell.type == 'BardSong' then
-        local target_name = nil
-
-        -- Check if targeting another PC
-        if spell.target and spell.target.name and spell.target.name ~= player.name then
-            -- Verify it's a PC (not monster, not NPC, not charmed)
-            if spell.target.spawn_type and (spell.target.spawn_type == 13 or spell.target.in_party or spell.target.in_alliance) then
-                if not spell.target.charmed then
-                    target_name = spell.target.name
-                end
-            end
-        end
-
-        -- If targeting another player, add Pianissimo
-        if target_name and not buffactive['Pianissimo'] then
-            -- ANTI-LOOP: Use synchronous flag to prevent double-cast
-            if _G.pianissimo_in_progress then
-                return
-            end
-
-            _G.pianissimo_in_progress = true
-
-            cancel_spell()
-            send_command('input /ja "Pianissimo" <me>')
-            send_command('wait 2; input /ma "' .. spell.english .. '" "' .. target_name .. '"')
-
-            MessageFormatter.show_pianissimo_target(target_name)
-            eventArgs.cancel = true
-            return
-        end
+        job_precast_bardsong(spell, eventArgs)
     end
 
     -- AUTO-MARCATO: Configurable song (state.MarcatoSong) with Nitro and not using Pianissimo
@@ -188,18 +209,7 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- Some songs (Honor March, Aria of Passion) require specific instruments
     -- that MUST stay equipped throughout the entire cast or the song fails
     if spell.type == 'BardSong' and InstrumentLockConfig.requires_lock(spell.english) then
-        local instrument = InstrumentLockConfig.get_instrument(spell.english)
-
-        -- Equip instrument immediately
-        equip({range = instrument})
-
-        -- Set global flags to protect instrument during cast
-        _G.casting_locked_song = true
-        _G.locked_song_name = spell.english
-        _G.locked_instrument = instrument
-
-        -- Display lock message
-        MessageFormatter.show_instrument_locked(spell.english, instrument)
+        job_precast_bardsong_2(spell)
     end
 end
 
