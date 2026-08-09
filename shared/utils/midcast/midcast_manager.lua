@@ -348,160 +348,227 @@ local function resolve_metadata(config)
     return mode_value, type_value, target_value
 end
 
-local function select_standard_set(config, base_set)
-    local selected_set = nil
-    local selected_set_path = nil
+--- One level of the midcast priority cascade.
+---
+--- Every resolver takes the same context and returns the set it found together
+--- with the path that names it, or nothing. They RETURN rather than assign into
+--- a shared local: a resolver that wrote to a value it received would be
+--- writing to a copy, and the cascade would quietly stop selecting anything.
+---
+--- The order of RESOLVERS below IS the priority. Moving an entry changes which
+--- set wins.
 
+--- P0: the exact spell name at the root - sets.midcast["Refresh III"]
+local function resolve_exact_spell(ctx)
+    if not (ctx.config.spell and ctx.config.spell.english) then
+        return nil
+    end
+    local found_set, found_path, success = try_path(ctx.config.spell.english)
+    if success then
+        if is_debug_enabled() then
+            MessageMidcast.show_priority_check(0, '"' .. ctx.config.spell.english .. '"', true)
+        end
+        return found_set, found_path
+    end
+    if is_debug_enabled() then
+        MessageMidcast.show_priority_check(0, '"' .. ctx.config.spell.english .. '"', false)
+    end
+    return nil
+end
+
+--- P1: the tier-less spell name, crossed with target and skill.
+local function resolve_base_name(ctx)
+    if not (ctx.config.spell and ctx.config.spell.english) then
+        return nil
+    end
+
+    local base_name = ctx.config.spell.english:gsub("%s+[IVX]+$", "")
+    local paths_to_try = {}
+
+    if ctx.target then
+        table.insert(paths_to_try, {base_name, ctx.target})
+        table.insert(paths_to_try, {ctx.target, base_name})
+        if ctx.config.skill then
+            table.insert(paths_to_try, {ctx.config.skill, base_name, ctx.target})
+            table.insert(paths_to_try, {ctx.config.skill, ctx.target, base_name})
+        end
+    end
+
+    if ctx.target ~= 'others' then
+        table.insert(paths_to_try, {base_name})
+        if ctx.config.skill then
+            table.insert(paths_to_try, {ctx.config.skill, base_name})
+        end
+    end
+
+    for i, path_parts in ipairs(paths_to_try) do
+        local found_set, found_path, success = try_path(unpack(path_parts))
+        if success then
+            if is_debug_enabled() then
+                MessageMidcast.show_priority_check(1, table.concat(path_parts, '.'), true)
+            end
+            return found_set, found_path
+        elseif is_debug_enabled() and i == 1 then
+            MessageMidcast.show_priority_check(1, table.concat(path_parts, '.'), false)
+        end
+    end
+    return nil
+end
+
+--- P2: type, then target, then mode - the deepest nesting supported.
+local function resolve_type_target_mode(ctx)
+    if not (ctx.type and ctx.target and ctx.mode) then
+        return nil
+    end
+    local nested = ctx.base_set[ctx.type]
+    if not (nested and type(nested) == 'table') then
+        return nil
+    end
+    nested = nested[ctx.target]
+    if not (nested and type(nested) == 'table' and nested[ctx.mode]) then
+        return nil
+    end
+    if is_debug_enabled() then
+        MessageMidcast.show_priority_check(2, ctx.type .. '.' .. ctx.target .. '.' .. ctx.mode, true)
+    end
+    return nested[ctx.mode],
+           'sets.midcast["' .. ctx.config.skill .. '"].' .. ctx.type .. '.' .. ctx.target .. '.' .. ctx.mode
+end
+
+--- P3: type, then mode.
+local function resolve_type_mode(ctx)
+    if not (ctx.type and ctx.mode) then
+        return nil
+    end
+    local nested = ctx.base_set[ctx.type]
+    if not (nested and type(nested) == 'table' and nested[ctx.mode]) then
+        return nil
+    end
+    if is_debug_enabled() then
+        MessageMidcast.show_priority_check(3, ctx.type .. '.' .. ctx.mode, true)
+    end
+    return nested[ctx.mode],
+           'sets.midcast["' .. ctx.config.skill .. '"].' .. ctx.type .. '.' .. ctx.mode
+end
+
+--- P4: target, then mode.
+local function resolve_target_mode(ctx)
+    if not (ctx.target and ctx.mode) then
+        return nil
+    end
+    local nested = ctx.base_set[ctx.target]
+    if not (nested and type(nested) == 'table' and nested[ctx.mode]) then
+        return nil
+    end
+    if is_debug_enabled() then
+        MessageMidcast.show_priority_check(4, ctx.target .. '.' .. ctx.mode, true)
+    end
+    return nested[ctx.mode],
+           'sets.midcast["' .. ctx.config.skill .. '"].' .. ctx.target .. '.' .. ctx.mode
+end
+
+--- P5: target alone, under the skill first and then at the root.
+local function resolve_target(ctx)
+    if not ctx.target then
+        return nil
+    end
+    if ctx.base_set[ctx.target] then
+        if is_debug_enabled() then
+            MessageMidcast.show_priority_check(5, 'Target (' .. ctx.target .. ')', true)
+        end
+        return ctx.base_set[ctx.target],
+               'sets.midcast["' .. ctx.config.skill .. '"].' .. ctx.target
+    end
+    if sets.midcast[ctx.target] then
+        if is_debug_enabled() then
+            MessageMidcast.show_priority_check(5, 'Target root (' .. ctx.target .. ')', true)
+        end
+        return sets.midcast[ctx.target], 'sets.midcast.' .. ctx.target
+    end
+    if is_debug_enabled() then
+        MessageMidcast.show_priority_check(5, 'Target (' .. ctx.target .. ')', false)
+    end
+    return nil
+end
+
+--- P6: the spell family at the root.
+local function resolve_type_root(ctx)
+    if not ctx.type then
+        return nil
+    end
+    if sets.midcast[ctx.type] then
+        if is_debug_enabled() then
+            MessageMidcast.show_priority_check(6, 'Type root (' .. ctx.type .. ')', true)
+        end
+        return sets.midcast[ctx.type], 'sets.midcast.' .. ctx.type
+    end
+    if is_debug_enabled() then
+        MessageMidcast.show_priority_check(6, 'Type root (' .. ctx.type .. ')', false)
+    end
+    return nil
+end
+
+--- P7: the spell family under the skill.
+local function resolve_type_under_skill(ctx)
+    if not (ctx.type and ctx.base_set[ctx.type]) then
+        return nil
+    end
+    if is_debug_enabled() then
+        MessageMidcast.show_priority_check(7, 'Type (' .. ctx.type .. ')', true)
+    end
+    return ctx.base_set[ctx.type],
+           'sets.midcast["' .. ctx.config.skill .. '"].' .. ctx.type
+end
+
+--- P8: the mode under the skill.
+local function resolve_mode(ctx)
+    if not (ctx.mode and ctx.base_set[ctx.mode]) then
+        return nil
+    end
+    if is_debug_enabled() then
+        MessageMidcast.show_priority_check(8, 'Mode (' .. ctx.mode .. ')', true)
+    end
+    return ctx.base_set[ctx.mode],
+           'sets.midcast["' .. ctx.config.skill .. '"].' .. ctx.mode
+end
+
+-- Order is priority. P9, the base set itself, is the fallback below.
+local RESOLVERS = {
+    resolve_exact_spell,
+    resolve_base_name,
+    resolve_type_target_mode,
+    resolve_type_mode,
+    resolve_target_mode,
+    resolve_target,
+    resolve_type_root,
+    resolve_type_under_skill,
+    resolve_mode,
+}
+
+local function select_standard_set(config, base_set)
     local mode_value, type_value, target_value = resolve_metadata(config)
 
     if is_debug_enabled() then
         MessageMidcast.show_priorities_header()
     end
 
-    -- P0: exact spell name at root (sets.midcast["Refresh III"])
-    if config.spell and config.spell.english then
-        local found_set, found_path, success = try_path(config.spell.english)
-        if success then
-            selected_set = found_set
-            selected_set_path = found_path
-            if is_debug_enabled() then
-                MessageMidcast.show_priority_check(0, '"' .. config.spell.english .. '"', true)
-            end
-        elseif is_debug_enabled() then
-            MessageMidcast.show_priority_check(0, '"' .. config.spell.english .. '"', false)
+    local ctx = {
+        config   = config,
+        base_set = base_set,
+        mode     = mode_value,
+        type     = type_value,
+        target   = target_value,
+    }
+
+    local selected_set, selected_set_path
+    for _, resolve in ipairs(RESOLVERS) do
+        selected_set, selected_set_path = resolve(ctx)
+        if selected_set then
+            break
         end
     end
 
-    -- P1: exhaustive search with base name + target + skill combinations
-    if not selected_set and config.spell and config.spell.english then
-        local base_name = config.spell.english:gsub("%s+[IVX]+$", "")
-        local paths_to_try = {}
-
-        if target_value then
-            table.insert(paths_to_try, {base_name, target_value})
-            table.insert(paths_to_try, {target_value, base_name})
-            if config.skill then
-                table.insert(paths_to_try, {config.skill, base_name, target_value})
-                table.insert(paths_to_try, {config.skill, target_value, base_name})
-            end
-        end
-
-        if target_value ~= 'others' then
-            table.insert(paths_to_try, {base_name})
-            if config.skill then
-                table.insert(paths_to_try, {config.skill, base_name})
-            end
-        end
-
-        for i, path_parts in ipairs(paths_to_try) do
-            local found_set, found_path, success = try_path(unpack(path_parts))
-            if success then
-                selected_set = found_set
-                selected_set_path = found_path
-                if is_debug_enabled() then
-                    MessageMidcast.show_priority_check(1, table.concat(path_parts, '.'), true)
-                end
-                break
-            elseif is_debug_enabled() and i == 1 then
-                MessageMidcast.show_priority_check(1, table.concat(path_parts, '.'), false)
-            end
-        end
-    end
-
-    -- P2: triple nested (type + target + mode)
-    if not selected_set and type_value and target_value and mode_value then
-        local triple_nested = base_set[type_value]
-        if triple_nested and type(triple_nested) == 'table' then
-            triple_nested = triple_nested[target_value]
-            if triple_nested and type(triple_nested) == 'table' and triple_nested[mode_value] then
-                selected_set = triple_nested[mode_value]
-                selected_set_path = 'sets.midcast["' .. config.skill .. '"].' .. type_value .. '.' .. target_value .. '.' .. mode_value
-                if is_debug_enabled() then
-                    MessageMidcast.show_priority_check(2, type_value .. '.' .. target_value .. '.' .. mode_value, true)
-                end
-            end
-        end
-    end
-
-    -- P3: double nested (type + mode)
-    if not selected_set and type_value and mode_value then
-        local double_nested = base_set[type_value]
-        if double_nested and type(double_nested) == 'table' and double_nested[mode_value] then
-            selected_set = double_nested[mode_value]
-            selected_set_path = 'sets.midcast["' .. config.skill .. '"].' .. type_value .. '.' .. mode_value
-            if is_debug_enabled() then
-                MessageMidcast.show_priority_check(3, type_value .. '.' .. mode_value, true)
-            end
-        end
-    end
-
-    -- P4: double nested (target + mode)
-    if not selected_set and target_value and mode_value then
-        local double_nested = base_set[target_value]
-        if double_nested and type(double_nested) == 'table' and double_nested[mode_value] then
-            selected_set = double_nested[mode_value]
-            selected_set_path = 'sets.midcast["' .. config.skill .. '"].' .. target_value .. '.' .. mode_value
-            if is_debug_enabled() then
-                MessageMidcast.show_priority_check(4, target_value .. '.' .. mode_value, true)
-            end
-        end
-    end
-
-    -- P5: target-specific (under skill, then root)
-    if not selected_set and target_value then
-        if base_set[target_value] then
-            selected_set = base_set[target_value]
-            selected_set_path = 'sets.midcast["' .. config.skill .. '"].' .. target_value
-            if is_debug_enabled() then
-                MessageMidcast.show_priority_check(5, 'Target (' .. target_value .. ')', true)
-            end
-        elseif sets.midcast[target_value] then
-            selected_set = sets.midcast[target_value]
-            selected_set_path = 'sets.midcast.' .. target_value
-            if is_debug_enabled() then
-                MessageMidcast.show_priority_check(5, 'Target root (' .. target_value .. ')', true)
-            end
-        elseif is_debug_enabled() then
-            MessageMidcast.show_priority_check(5, 'Target (' .. target_value .. ')', false)
-        end
-    end
-
-    -- P6: type-specific at root (spell_family)
-    if not selected_set and type_value then
-        if sets.midcast[type_value] then
-            selected_set = sets.midcast[type_value]
-            selected_set_path = 'sets.midcast.' .. type_value
-            if is_debug_enabled() then
-                MessageMidcast.show_priority_check(6, 'Type root (' .. type_value .. ')', true)
-            end
-        elseif is_debug_enabled() then
-            MessageMidcast.show_priority_check(6, 'Type root (' .. type_value .. ')', false)
-        end
-    end
-
-    -- P7: type-specific (under skill)
-    if not selected_set and type_value then
-        if base_set[type_value] then
-            selected_set = base_set[type_value]
-            selected_set_path = 'sets.midcast["' .. config.skill .. '"].' .. type_value
-            if is_debug_enabled() then
-                MessageMidcast.show_priority_check(7, 'Type (' .. type_value .. ')', true)
-            end
-        end
-    end
-
-    -- P8: mode-specific (under skill)
-    if not selected_set and mode_value then
-        if base_set[mode_value] then
-            selected_set = base_set[mode_value]
-            selected_set_path = 'sets.midcast["' .. config.skill .. '"].' .. mode_value
-            if is_debug_enabled() then
-                MessageMidcast.show_priority_check(8, 'Mode (' .. mode_value .. ')', true)
-            end
-        end
-    end
-
-    -- P9: final fallback to base set
+    -- P9: nothing more specific matched, so the skill's own set stands.
     if not selected_set then
         selected_set = base_set
         selected_set_path = 'sets.midcast["' .. config.skill .. '"]'
