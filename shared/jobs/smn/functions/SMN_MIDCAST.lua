@@ -55,6 +55,103 @@ function job_midcast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 end
 
+---  ─────────────────────────────────────────────────────────────────────────
+---   PER-BRANCH HANDLERS
+---  ─────────────────────────────────────────────────────────────────────────
+---   Extracted from job_post_midcast, which dispatched on spell.skill.
+---   Each returns true once it has handled the call. Bodies unchanged.
+
+--- Handle Summoning Magic.
+--- @return boolean True when this handler took the action
+local function job_post_midcast_summoning_magic(spell)
+    if MidcastManager then
+        MidcastManager.select_set({
+            skill = 'Summoning Magic',
+            spell = spell
+        })
+    end
+    return true
+end
+
+--- Handle Healing Magic.
+--- @return boolean True when this handler took the action
+local function job_post_midcast_healing_magic(spell)
+    if MidcastManager then
+        MidcastManager.select_set({
+            skill = 'Healing Magic',
+            spell = spell
+        })
+    end
+    return true
+end
+
+--- Handle Enhancing Magic.
+--- @return boolean True when this handler took the action
+local function job_post_midcast_enhancing_magic(spell)
+    if MidcastManager then
+        MidcastManager.select_set({
+            skill = 'Enhancing Magic',
+            spell = spell,
+            target_func = MidcastManager.get_enhancing_target
+        })
+    end
+    return true
+end
+
+--- Handle Divine Magic.
+--- @return boolean True when this handler took the action
+local function job_post_midcast_divine_magic(spell)
+    if MidcastManager then
+        MidcastManager.select_set({ skill = 'Divine Magic', spell = spell })
+    end
+    return true
+end
+
+--- Handle Dark Magic.
+--- @return boolean True when this handler took the action
+local function job_post_midcast_dark_magic(spell)
+    if MidcastManager then
+        MidcastManager.select_set({ skill = 'Dark Magic', spell = spell })
+    end
+    return true
+end
+
+--- Handle Elemental Magic.
+--- @return boolean True when this handler took the action
+local function job_post_midcast_elemental_magic(spell)
+    if MidcastManager then
+        MidcastManager.select_set({
+            skill = 'Elemental Magic',
+            spell = spell,
+            mode_state = state.CastingMode
+        })
+    end
+    return true
+end
+
+--- Handle Enfeebling Magic.
+--- @return boolean True when this handler took the action
+local function job_post_midcast_enfeebling_magic(spell)
+    if MidcastManager then
+        MidcastManager.select_set({
+            skill = 'Enfeebling Magic',
+            spell = spell,
+            mode_state = state.CastingMode
+        })
+    end
+    return true
+end
+
+local JOB_POST_MIDCAST_HANDLERS = {
+    ['Summoning Magic'] = job_post_midcast_summoning_magic,
+    ['Healing Magic'] = job_post_midcast_healing_magic,
+    ['Enhancing Magic'] = job_post_midcast_enhancing_magic,
+    ['Divine Magic'] = job_post_midcast_divine_magic,
+    ['Dark Magic'] = job_post_midcast_dark_magic,
+    ['Elemental Magic'] = job_post_midcast_elemental_magic,
+    ['Enfeebling Magic'] = job_post_midcast_enfeebling_magic,
+}
+
 --- Post-midcast hook: dispatch BPs and subjob magic
 function job_post_midcast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
@@ -87,73 +184,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- =========================================================================
     -- SUMMONING MAGIC (avatar summon - reduces Pact Delay)
     -- =========================================================================
-    if spell.skill == 'Summoning Magic' then
-        if MidcastManager then
-            MidcastManager.select_set({
-                skill = 'Summoning Magic',
-                spell = spell
-            })
-        end
-        return
-    end
 
-    -- =========================================================================
-    -- SUBJOB HEALING / ENHANCING / etc.
-    -- =========================================================================
-    if spell.skill == 'Healing Magic' then
-        if MidcastManager then
-            MidcastManager.select_set({
-                skill = 'Healing Magic',
-                spell = spell
-            })
-        end
-        return
-    end
-
-    if spell.skill == 'Enhancing Magic' then
-        if MidcastManager then
-            MidcastManager.select_set({
-                skill = 'Enhancing Magic',
-                spell = spell,
-                target_func = MidcastManager.get_enhancing_target
-            })
-        end
-        return
-    end
-
-    if spell.skill == 'Divine Magic' then
-        if MidcastManager then
-            MidcastManager.select_set({ skill = 'Divine Magic', spell = spell })
-        end
-        return
-    end
-
-    if spell.skill == 'Dark Magic' then
-        if MidcastManager then
-            MidcastManager.select_set({ skill = 'Dark Magic', spell = spell })
-        end
-        return
-    end
-
-    if spell.skill == 'Elemental Magic' then
-        if MidcastManager then
-            MidcastManager.select_set({
-                skill = 'Elemental Magic',
-                spell = spell,
-                mode_state = state.CastingMode
-            })
-        end
-        return
-    end
-
-    if spell.skill == 'Enfeebling Magic' then
-        if MidcastManager then
-            MidcastManager.select_set({
-                skill = 'Enfeebling Magic',
-                spell = spell,
-                mode_state = state.CastingMode
-            })
-        end
+    local handler = JOB_POST_MIDCAST_HANDLERS[spell.skill]
+    if handler and handler(spell) then
         return
     end
 end

@@ -82,6 +82,72 @@ function job_midcast(spell, action, spellMap, eventArgs)
     end
 end
 
+---  ─────────────────────────────────────────────────────────────────────────
+---   PER-BRANCH HANDLERS
+---  ─────────────────────────────────────────────────────────────────────────
+---   Extracted from job_post_midcast, which dispatched on spell.skill.
+---   Each returns true once it has handled the call. Bodies unchanged.
+
+--- Handle Healing Magic.
+--- @return boolean True when this handler took the action
+local function job_post_midcast_healing_magic(spell)
+    MidcastManager.select_set({
+        skill = 'Healing Magic',
+        spell = spell
+    })
+    return true
+end
+
+--- Handle Enhancing Magic.
+--- @return boolean True when this handler took the action
+local function job_post_midcast_enhancing_magic(spell)
+    MidcastManager.select_set({
+        skill = 'Enhancing Magic',
+        spell = spell,
+        target_func = MidcastManager.get_enhancing_target,
+        database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
+    })
+    return true
+end
+
+--- Handle Enfeebling Magic.
+--- @return boolean True when this handler took the action
+local function job_post_midcast_enfeebling_magic(spell)
+    MidcastManager.select_set({
+        skill = 'Enfeebling Magic',
+        spell = spell
+    })
+    return true
+end
+
+--- Handle Elemental Magic.
+--- @return boolean True when this handler took the action
+local function job_post_midcast_elemental_magic(spell)
+    MidcastManager.select_set({
+        skill = 'Elemental Magic',
+        spell = spell
+    })
+    return true
+end
+
+--- Handle Blue Magic.
+--- @return boolean True when this handler took the action
+local function job_post_midcast_blue_magic(spell)
+    MidcastManager.select_set({
+        skill = 'Blue Magic',
+        spell = spell
+    })
+    return true
+end
+
+local JOB_POST_MIDCAST_HANDLERS = {
+    ['Healing Magic'] = job_post_midcast_healing_magic,
+    ['Enhancing Magic'] = job_post_midcast_enhancing_magic,
+    ['Enfeebling Magic'] = job_post_midcast_enfeebling_magic,
+    ['Elemental Magic'] = job_post_midcast_elemental_magic,
+    ['Blue Magic'] = job_post_midcast_blue_magic,
+}
+
 ---   Post-midcast hook (MidcastManager routing and gear selection)
 ---   @param spell table Spell information from GearSwap
 ---   @param action string Action type
@@ -111,49 +177,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     ---══════════════════════════════════════════════════════════════════════════
 
     -- Healing Magic (Cure, Cura, etc.)
-    if spell.skill == 'Healing Magic' then
-        MidcastManager.select_set({
-            skill = 'Healing Magic',
-            spell = spell
-        })
-        return
-    end
 
-    -- Enhancing Magic (Protect, Shell, Bar spells, etc.)
-    if spell.skill == 'Enhancing Magic' then
-        MidcastManager.select_set({
-            skill = 'Enhancing Magic',
-            spell = spell,
-            target_func = MidcastManager.get_enhancing_target,
-            database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
-        })
-        return
-    end
-
-    -- Enfeebling Magic (if RDM subjob)
-    if spell.skill == 'Enfeebling Magic' then
-        MidcastManager.select_set({
-            skill = 'Enfeebling Magic',
-            spell = spell
-        })
-        return
-    end
-
-    -- Elemental Magic (if BLU subjob)
-    if spell.skill == 'Elemental Magic' then
-        MidcastManager.select_set({
-            skill = 'Elemental Magic',
-            spell = spell
-        })
-        return
-    end
-
-    -- Blue Magic (if BLU subjob)
-    if spell.skill == 'Blue Magic' then
-        MidcastManager.select_set({
-            skill = 'Blue Magic',
-            spell = spell
-        })
+    local handler = JOB_POST_MIDCAST_HANDLERS[spell.skill]
+    if handler and handler(spell) then
         return
     end
 end
