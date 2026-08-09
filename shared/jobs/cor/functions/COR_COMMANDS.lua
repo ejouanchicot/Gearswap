@@ -262,7 +262,7 @@ function job_self_command(cmdParams, eventArgs)
         eventArgs.handled = true
 
         if _G.cor_party_jobs then
-            _G.cor_party_jobs = {}
+            for k in pairs(_G.cor_party_jobs) do _G.cor_party_jobs[k] = nil end
             MessageFormatter.show_info('Party job cache cleared - will refresh automatically')
         else
             MessageFormatter.show_error('Party tracking not initialized')

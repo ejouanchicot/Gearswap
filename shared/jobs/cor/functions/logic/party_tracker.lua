@@ -126,18 +126,21 @@ function PartyTracker.init()
     -- Register the roll detection listener (single canonical path)
     PartyTracker.init_roll_listener()
 
-    -- Initialize party job storage
-    if not _G.cor_party_jobs then
-        _G.cor_party_jobs = {}
-    end
-
-    -- Track current zone/party for auto-refresh
-    if not _G.cor_party_state then
-        _G.cor_party_state = {
-            zone_id = 0,
-            party_count = 0
-        }
-    end
+    -- Party jobs live in the windower table, not in _G.
+    --
+    -- _G here is the GearSwap sandbox, which is rebuilt on every reload and
+    -- every job change. The jobs themselves only arrive in 0xDD/0xDF packets,
+    -- which the server sends when a member changes state - joining, zoning,
+    -- gaining a buff. Keeping the table in the sandbox meant a reload threw
+    -- away everything learned and nothing came back until somebody moved.
+    -- The windower table is a C++ object and outlives all of that.
+    windower._cor_party_jobs = windower._cor_party_jobs or {}
+    windower._cor_party_state = windower._cor_party_state or {
+        zone_id = 0,
+        party_count = 0
+    }
+    _G.cor_party_jobs = windower._cor_party_jobs
+    _G.cor_party_state = windower._cor_party_state
 
     -- Load packets library for party member parsing (0xDD/0xDF)
     local packets_loaded, packets = pcall(require, 'packets')
@@ -215,9 +218,11 @@ function PartyTracker.init()
                     end
                 end
 
-                -- Re-initialize if needed (safety check)
+                -- Re-initialize if needed, keeping the persistent table and
+                -- the sandbox view pointing at the same object.
                 if not _G.cor_party_jobs then
-                    _G.cor_party_jobs = {}
+                    windower._cor_party_jobs = windower._cor_party_jobs or {}
+                    _G.cor_party_jobs = windower._cor_party_jobs
                 end
 
                 -- Store by player ID
