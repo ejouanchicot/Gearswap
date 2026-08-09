@@ -175,11 +175,45 @@ end
 
 --- Show spell message if config enabled
 --- @param spell table Spell object from GearSwap
---- @param show_separator boolean Optional - show separator after message (default: true)
-function SpellMessageHandler.show_message(spell, show_separator)
-    -- Handle magic spells and Blood Pacts (SMN abilities treated as spells)
+--- Who the spell landed on, and what kind of thing they are.
+---
+--- The order matters and is not obvious: a monster and an NPC both report
+--- is_npc = true, so spawn_type has to be read first or every mob is coloured
+--- as an NPC. Party membership wins over both, and a charmed mob counts as a
+--- player because it is fighting on our side.
+--- @param target table|nil spell.target as GearSwap reports it
+--- @return string|nil name, string|nil PLAYER, MONSTER or NPC
+local function describe_target(target)
+    if not (target and target.name) then
+        return nil, nil
+    end
+
+    if target.in_party or target.in_alliance then
+        return target.name, "PLAYER"
+    elseif target.charmed then
+        return target.name, "PLAYER"
+    elseif target.spawn_type == 16 then
+        return target.name, "MONSTER"
+    elseif target.spawn_type == 2 or target.is_npc then
+        return target.name, "NPC"
+    elseif target.type then
+        return target.name, target.type
+    end
+
+    -- Unknown shapes are almost always something being fought.
+    return target.name, "MONSTER"
+end
+
+--- Is this something this handler should announce at all?
+---
+--- Geomancy and songs are announced by their own job modules, which know
+--- things this one does not - the luopan for GEO, the instrument for BRD - so
+--- letting both speak would print the spell twice.
+--- @param spell table|nil Spell as GearSwap reports it
+--- @return boolean
+local function handles(spell)
     if not spell then
-        return
+        return false
     end
 
     -- Accept Magic, BloodPactRage, and BloodPactWard action types
@@ -190,16 +224,25 @@ function SpellMessageHandler.show_message(spell, show_separator)
     }
 
     if not valid_action_types[spell.action_type] then
-        return
+        return false
     end
 
     -- Skip Geomancy spells (handled manually in GEO_MIDCAST)
     if spell.skill == 'Geomancy' then
-        return
+        return false
     end
 
     -- Skip BRD songs (handled manually in BRD_MIDCAST)
     if spell.skill == 'Singing' then
+        return false
+    end
+
+    return true
+end
+
+--- @param show_separator boolean Optional - show separator after message (default: true)
+function SpellMessageHandler.show_message(spell, show_separator)
+    if not handles(spell) then
         return
     end
 
@@ -230,9 +273,6 @@ function SpellMessageHandler.show_message(spell, show_separator)
     if category == 'Enfeebling' then
         config = ENFEEBLING_MESSAGES_CONFIG
     else
-        -- Default: Use ENHANCING_MESSAGES_CONFIG for all other spell types
-        -- This includes: Enhancing, Healing, Divine, Dark, Elemental, Helix,
-        -- Blue Magic, Summoning, BRD songs, GEO spells, etc.
         config = ENHANCING_MESSAGES_CONFIG
     end
 
@@ -247,39 +287,7 @@ function SpellMessageHandler.show_message(spell, show_separator)
         description = spell_data.description
     end
 
-    -- Get target name and type (for buffs)
-    local target_name = nil
-    local target_type = nil
-    if spell.target and spell.target.name then
-        target_name = spell.target.name
-
-        -- Detect target type with priority logic:
-        -- IMPORTANT: Check spawn_type == 16 (monster) BEFORE is_npc!
-        -- Both monsters and NPCs have is_npc = true, so spawn_type differentiates them
-        -- 1. Player (in party/alliance or charmed)
-        -- 2. Monster (spawn_type 16 - CHECK FIRST!)
-        -- 3. NPC (spawn_type 2 or is_npc - portals, ???, vendors)
-
-        if spell.target.in_party or spell.target.in_alliance then
-            -- Party/alliance member = Player
-            target_type = "PLAYER"
-        elseif spell.target.charmed then
-            -- Charmed mob = treat as player (it's helping us)
-            target_type = "PLAYER"
-        elseif spell.target.spawn_type == 16 then
-            -- spawn_type 16 = Monster/Enemy (CHECK BEFORE is_npc!)
-            target_type = "MONSTER"
-        elseif spell.target.spawn_type == 2 or spell.target.is_npc then
-            -- spawn_type 2 = NPC (includes portals, ??? NPCs, vendors, etc.)
-            target_type = "NPC"
-        elseif spell.target.type then
-            -- Fallback to Windower's type if available
-            target_type = spell.target.type
-        else
-            -- Default to MONSTER for unknown types (combat target assumption)
-            target_type = "MONSTER"
-        end
-    end
+    local target_name, target_type = describe_target(spell.target)
 
     -- Use spell.english instead of spell.name (GearSwap convention)
     local spell_name = spell.english or spell.name or "Unknown"
