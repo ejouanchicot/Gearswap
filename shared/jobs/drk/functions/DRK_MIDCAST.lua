@@ -44,6 +44,95 @@ function job_midcast(spell, action, spellMap, eventArgs)
     -- No DRK-specific PRE-midcast logic
 end
 
+---  ─────────────────────────────────────────────────────────────────────────
+---   PER-BRANCH HANDLERS
+---  ─────────────────────────────────────────────────────────────────────────
+---   Extracted from job_post_midcast, which dispatched on spell.skill.
+---   Each returns true once it has handled the call. Bodies unchanged.
+
+--- Handle Dark Magic.
+--- @return boolean True when this handler took the action
+local function job_post_midcast_dark_magic(spell)
+    -- Spell-specific routing
+    if spell.name == 'Dread Spikes' then
+        MidcastManager.select_set({
+            skill = 'Dread Spikes',
+            spell = spell
+        })
+    elseif spell.name:match('Absorb') then
+        MidcastManager.select_set({
+            skill = 'Absorb',
+            spell = spell
+        })
+    else
+        MidcastManager.select_set({
+            skill = 'Dark Magic',
+            spell = spell
+        })
+    end
+
+    -- ══════════════════════════════════════════════════════════════════════════
+    -- DARK SEAL & NETHER VOID BUFF ENHANCEMENT
+    -- ══════════════════════════════════════════════════════════════════════════
+    -- Applied AFTER MidcastManager to override with buff-specific gear
+    local enhancements = {}
+
+    -- Dark Seal (Buff ID 345)
+    -- Effect: Dark Magic duration +10% per merit level
+    -- Affects: Dread Spikes, Absorb spells, Drain III
+    if buffactive['Dark Seal'] or buffactive[345] then
+        if sets.buff and sets.buff['Dark Seal'] and sets.buff['Dark Seal'].head then
+            enhancements.head = sets.buff['Dark Seal'].head
+        end
+    end
+
+    -- Nether Void (Buff ID 439)
+    -- Effect: +45% absorption potency (total 95% with gear)
+    -- Affects: Absorb spells, Drain/Aspir (NOT Dread Spikes)
+    if buffactive['Nether Void'] or buffactive[439] then
+        -- Only apply to Absorb/Drain spells (Nether Void doesn't affect Dread Spikes)
+        if spell.name:match('Absorb') or spell.name:match('Drain') or spell.name:match('Aspir') then
+            if sets.buff and sets.buff['Nether Void'] and sets.buff['Nether Void'].legs then
+                enhancements.legs = sets.buff['Nether Void'].legs
+            end
+        end
+    end
+
+    -- Apply buff enhancements if any buffs are active
+    if next(enhancements) then
+        equip(enhancements)
+    end
+
+    return true
+end
+
+--- Handle Enfeebling Magic.
+--- @return boolean True when this handler took the action
+local function job_post_midcast_enfeebling_magic(spell)
+    MidcastManager.select_set({
+        skill = 'Enfeebling Magic',
+        spell = spell,
+        database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
+    })
+    return true
+end
+
+--- Handle Elemental Magic.
+--- @return boolean True when this handler took the action
+local function job_post_midcast_elemental_magic(spell)
+    MidcastManager.select_set({
+        skill = 'Elemental Magic',
+        spell = spell
+    })
+    return true
+end
+
+local JOB_POST_MIDCAST_HANDLERS = {
+    ['Dark Magic'] = job_post_midcast_dark_magic,
+    ['Enfeebling Magic'] = job_post_midcast_enfeebling_magic,
+    ['Elemental Magic'] = job_post_midcast_elemental_magic,
+}
+
 ---   Post-midcast hook (MidcastManager routing and gear selection)
 ---   @param spell table Spell information from GearSwap
 ---   @param action string Action type
@@ -61,80 +150,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- ══════════════════════════════════════════════════════════════════════════
     -- DARK MAGIC (with spell-specific sets)
     -- ══════════════════════════════════════════════════════════════════════════
-    if spell.skill == 'Dark Magic' then
-        -- Spell-specific routing
-        if spell.name == 'Dread Spikes' then
-            MidcastManager.select_set({
-                skill = 'Dread Spikes',
-                spell = spell
-            })
-        elseif spell.name:match('Absorb') then
-            MidcastManager.select_set({
-                skill = 'Absorb',
-                spell = spell
-            })
-        else
-            MidcastManager.select_set({
-                skill = 'Dark Magic',
-                spell = spell
-            })
-        end
 
-        -- ══════════════════════════════════════════════════════════════════════════
-        -- DARK SEAL & NETHER VOID BUFF ENHANCEMENT
-        -- ══════════════════════════════════════════════════════════════════════════
-        -- Applied AFTER MidcastManager to override with buff-specific gear
-        local enhancements = {}
-
-        -- Dark Seal (Buff ID 345)
-        -- Effect: Dark Magic duration +10% per merit level
-        -- Affects: Dread Spikes, Absorb spells, Drain III
-        if buffactive['Dark Seal'] or buffactive[345] then
-            if sets.buff and sets.buff['Dark Seal'] and sets.buff['Dark Seal'].head then
-                enhancements.head = sets.buff['Dark Seal'].head
-            end
-        end
-
-        -- Nether Void (Buff ID 439)
-        -- Effect: +45% absorption potency (total 95% with gear)
-        -- Affects: Absorb spells, Drain/Aspir (NOT Dread Spikes)
-        if buffactive['Nether Void'] or buffactive[439] then
-            -- Only apply to Absorb/Drain spells (Nether Void doesn't affect Dread Spikes)
-            if spell.name:match('Absorb') or spell.name:match('Drain') or spell.name:match('Aspir') then
-                if sets.buff and sets.buff['Nether Void'] and sets.buff['Nether Void'].legs then
-                    enhancements.legs = sets.buff['Nether Void'].legs
-                end
-            end
-        end
-
-        -- Apply buff enhancements if any buffs are active
-        if next(enhancements) then
-            equip(enhancements)
-        end
-
-        return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- ENFEEBLING MAGIC
-    -- ══════════════════════════════════════════════════════════════════════════
-    if spell.skill == 'Enfeebling Magic' then
-        MidcastManager.select_set({
-            skill = 'Enfeebling Magic',
-            spell = spell,
-            database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
-        })
-        return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- ELEMENTAL MAGIC
-    -- ══════════════════════════════════════════════════════════════════════════
-    if spell.skill == 'Elemental Magic' then
-        MidcastManager.select_set({
-            skill = 'Elemental Magic',
-            spell = spell
-        })
+    local handler = JOB_POST_MIDCAST_HANDLERS[spell.skill]
+    if handler and handler(spell) then
         return
     end
 end
