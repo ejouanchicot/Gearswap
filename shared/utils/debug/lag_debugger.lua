@@ -70,10 +70,11 @@ local function install_module_probe()
     original_require = _G.require
     require_wrapped = true
 
+    -- Everything is timed, and only what costs anything is written down.
+    -- Skipping already-cached paths would be cheaper, but `package` is nil in
+    -- the GearSwap sandbox (like collectgarbage and loadfile), and a cached
+    -- require returns far under the threshold anyway - so it filters itself.
     _G.require = function(path, ...)
-        if package.loaded[path] ~= nil then
-            return original_require(path, ...)
-        end
         local t0 = os.clock()
         local a, b, c = original_require(path, ...)
         local ms = (os.clock() - t0) * 1000
