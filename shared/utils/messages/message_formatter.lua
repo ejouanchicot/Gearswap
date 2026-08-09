@@ -174,6 +174,7 @@ MessageFormatter.show_error = function(...) return get_MessageStatus().show_erro
 MessageFormatter.show_warning = function(...) return get_MessageStatus().show_warning(...) end
 MessageFormatter.show_success = function(...) return get_MessageStatus().show_success(...) end
 MessageFormatter.show_info = function(...) return get_MessageStatus().show_info(...) end
+MessageFormatter.show_state_display = function(...) return get_MessageStatus().show_state_display(...) end
 MessageFormatter.show_tp_ready = function(...) return get_MessageStatus().show_tp_ready(...) end
 MessageFormatter.show_tp_required = function(...) return get_MessageStatus().show_tp_required(...) end
 

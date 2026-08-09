@@ -34,6 +34,13 @@ return {
         color = 1
     },
 
+    -- Mote's own state line, reproduced for when the HUD is hidden and the
+    -- new value would otherwise go unreported. Colour 122 is Mote's.
+    state_display = {
+        template = "{state_name}: {value}",
+        color = 122
+    },
+
     ---========================================================================
     --- TP STATUS MESSAGES
     ---========================================================================
