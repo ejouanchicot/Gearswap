@@ -448,9 +448,24 @@ end
 windower._dualbox_init_counter = (windower._dualbox_init_counter or 0) + 1
 local my_init_counter = windower._dualbox_init_counter
 
-coroutine.schedule(function()
+-- Retried rather than tested once. Two seconds is usually enough for player
+-- data to land, but when it is not, giving up here meant the exchange never
+-- happened at all for that session and the other box's job stayed unknown
+-- until someone changed job. COR reads that to credit a roll's job bonus, so
+-- the symptom was the bonus going missing after some reloads and not others.
+local INIT_FIRST_DELAY = 2
+local INIT_RETRY_DELAY = 1
+local INIT_MAX_ATTEMPTS = 8
+
+local function run_auto_init(attempt)
     if my_init_counter ~= windower._dualbox_init_counter then return end
-    if not player or not player.name then return end
+
+    if not player or not player.name then
+        if attempt < INIT_MAX_ATTEMPTS then
+            coroutine.schedule(function() run_auto_init(attempt + 1) end, INIT_RETRY_DELAY)
+        end
+        return
+    end
 
     local current_reload = windower._gs_reload_count or 0
     if current_reload == windower._dualbox_init_last_reload then return end
@@ -476,7 +491,9 @@ coroutine.schedule(function()
         end
         DualBoxManager.request_alt_job()
     end
-end, 2)  -- 2 second delay to ensure player data is loaded
+end
+
+coroutine.schedule(function() run_auto_init(1) end, INIT_FIRST_DELAY)
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT
