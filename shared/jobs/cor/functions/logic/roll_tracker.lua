@@ -215,6 +215,60 @@ local function compute_bonus(roll_name, roll_value, roll_data, is_crooked)
     return bonus, has_job_bonus
 end
 
+--- Record the roll as the one now in effect.
+---
+--- The fields are assigned rather than the table replaced: other modules hold
+--- a reference to cor_last_roll and would keep reading the old one.
+local function record_last_roll(roll_name, roll_value, affected_count,
+                                total_count, missed_names)
+    local last = _G.cor_last_roll
+    last.name = roll_name
+    last.value = roll_value
+    last.timestamp = os.time()
+    last.affected_count = affected_count
+    last.total_count = total_count
+    last.missed_names = missed_names
+end
+
+--- Spend the Crooked Cards timestamp, if this roll is the one that used it.
+---
+--- Only a NEW roll spends it. What this changes is not the current roll - a
+--- doubled roll reports crooked from its own record either way - but the NEXT
+--- different roll: the timestamp is a 60s window, so leaving it standing lets
+--- the roll after a Double-Up claim crooked too. Whether that is intended is
+--- not recorded anywhere.
+local function consume_crooked(is_crooked, is_double_up)
+    if is_crooked and not is_double_up then
+        _G.cor_crooked_timestamp = nil
+    end
+end
+
+--- Note an 11 and report it.
+---
+--- An 11 resets the timer, drops every roll's recast to 30s and removes the
+--- bust DEBUFF - you can still roll a 12, it just costs nothing. It holds
+--- while ANY 11 is up, so the flag is set here and cleared elsewhere.
+--- @return boolean
+local function note_natural_eleven(roll_value)
+    if roll_value ~= 11 then
+        return false
+    end
+    _G.cor_natural_eleven_active = true
+    return true
+end
+
+--- The job-bonus entry to show, when the party actually has that job.
+--- @return table|nil
+local function job_bonus_entry(roll_data, has_job_bonus)
+    if roll_data and roll_data.job_bonus and has_job_bonus then
+        return roll_data.job_bonus[1]
+    end
+    return nil
+end
+
+---   Handle a roll landing: record it, work out the bonus, and report it
+---   @param roll_name string Name of the roll
+---   @param roll_value number Value rolled, 1-12
 function RollTracker.on_roll_cast(roll_name, roll_value)
     local current_time = os.clock()
     if is_duplicate_report(roll_name, roll_value, current_time) then
@@ -235,49 +289,25 @@ function RollTracker.on_roll_cast(roll_name, roll_value)
     -- Recounted every cast: members move in and out of range between rolls.
     local affected_count, total_count, missed_names =
         RollTracker.count_party_members_with_buff(roll_name)
-
-    _G.cor_last_roll.name = roll_name
-    _G.cor_last_roll.value = roll_value
-    _G.cor_last_roll.timestamp = os.time()
-    _G.cor_last_roll.affected_count = affected_count
-    _G.cor_last_roll.total_count = total_count
-    _G.cor_last_roll.missed_names = missed_names
+    record_last_roll(roll_name, roll_value, affected_count, total_count, missed_names)
 
     local roll_data = RollData.get_roll(roll_name)
     local is_crooked = crooked_applies(roll_name)
     local final_bonus, has_job_bonus = compute_bonus(roll_name, roll_value,
                                                      roll_data, is_crooked)
+    consume_crooked(is_crooked, is_double_up)
 
-    -- The timestamp is only spent by a NEW roll. A Double-Up inherits Crooked
-    -- from the roll it is doubling and must not consume it, or the third and
-    -- later Double-Ups would lose the bonus.
-    if is_crooked and not is_double_up and _G.cor_crooked_timestamp then
-        _G.cor_crooked_timestamp = nil
-    end
-
-    local is_lucky = RollData.is_lucky(roll_name, roll_value)
-    local is_unlucky = RollData.is_unlucky(roll_name, roll_value)
-
-    -- An 11 resets the timer, drops every roll's recast to 30s and removes the
-    -- bust DEBUFF - you can still roll a 12, it just costs nothing. It holds
-    -- while ANY 11 is up, so the flag is set here and cleared elsewhere.
-    local is_natural_eleven = (roll_value == 11)
-    if is_natural_eleven then
-        _G.cor_natural_eleven_active = true
-    end
-
-    local job_bonus_info = nil
-    if roll_data and roll_data.job_bonus and has_job_bonus then
-        job_bonus_info = roll_data.job_bonus[1]
-    end
-
-    -- The rate shown is for the NEXT Double-Up, not this roll.
-    local bust_rate = RollData.calculate_bust_rate(roll_value)
+    local is_natural_eleven = note_natural_eleven(roll_value)
 
     RollTracker.track_active_roll(roll_name, roll_value, is_crooked)
     RollTracker.display_roll_result(roll_name, roll_value, final_bonus,
-        roll_data and roll_data.effect_type or '', is_lucky, is_unlucky,
-        is_natural_eleven, bust_rate, job_bonus_info, is_crooked, missed_names)
+        roll_data and roll_data.effect_type or '',
+        RollData.is_lucky(roll_name, roll_value),
+        RollData.is_unlucky(roll_name, roll_value),
+        is_natural_eleven,
+        -- The rate shown is for the NEXT Double-Up, not this roll.
+        RollData.calculate_bust_rate(roll_value),
+        job_bonus_entry(roll_data, has_job_bonus), is_crooked, missed_names)
 end
 
 ---   Track active roll in state
