@@ -454,6 +454,16 @@ function RollTracker.is_job_in_party_zone(job_code)
         return true
     end
 
+    -- The other box, if there is one. This is the only source that does not
+    -- depend on the server volunteering a packet: the character tells us
+    -- directly when its job changes. Without it a dual-boxed party member who
+    -- is simply standing there never registers, and the roll loses its bonus
+    -- until something makes them emit a 0xDD.
+    local other = _G.AltJobState
+    if other and other.job == job_code then
+        return true
+    end
+
     -- Check party members (from packet parsing)
     -- NOTE: Only check MAIN job, not subjob (as requested by user)
     if _G.cor_party_jobs then
