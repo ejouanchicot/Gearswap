@@ -47,45 +47,36 @@ function job_midcast(spell, action, spellMap, eventArgs)
     -- No COR-specific PRE-midcast logic
 end
 
----   Post-midcast hook (MidcastManager routing and gear selection)
+-- Skills COR routes straight through under their own name. Everything COR can
+-- cast comes from a subjob, so the set is named after the skill and there is
+-- nothing job-specific to add.
+local PASSTHROUGH_SKILLS = {
+    ['Healing Magic'] = true,
+    ['Elemental Magic'] = true,
+    ['Enfeebling Magic'] = true,
+}
+
+---   Post-midcast hook
 ---   @param spell table Spell information from GearSwap
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping from Mote-Include
----   @param eventArgs table Event arguments for cancellation/customization
+---   @param eventArgs table Event arguments
 function job_post_midcast(spell, action, spellMap, eventArgs)
-    -- Lazy load modules on first spell cast
     ensure_modules_loaded()
 
-    -- Watchdog: Track midcast start
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_midcast_start(spell)
     end
 
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- RANGED ATTACK (Bullet flight time)
-    -- ══════════════════════════════════════════════════════════════════════════
+    -- Ranged attacks are matched on type, not skill, and want the RA set:
+    -- the gear that matters is snapshot while the bullet is in flight.
     if spell.type == 'Ranged Attack' then
-        MidcastManager.select_set({
-            skill = 'RA',
-            spell = spell
-        })
+        MidcastManager.select_set({skill = 'RA', spell = spell})
         return
     end
 
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- HEALING MAGIC (from subjob)
-    -- ══════════════════════════════════════════════════════════════════════════
-    if spell.skill == 'Healing Magic' then
-        MidcastManager.select_set({
-            skill = 'Healing Magic',
-            spell = spell
-        })
-        return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- ENHANCING MAGIC (from subjob)
-    -- ══════════════════════════════════════════════════════════════════════════
+    -- Enhancing is the one that needs more than its name: which set wins
+    -- depends on the spell family and on whether it is going on yourself.
     if spell.skill == 'Enhancing Magic' then
         MidcastManager.select_set({
             skill = 'Enhancing Magic',
@@ -96,26 +87,8 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- ELEMENTAL MAGIC (from COR/RDM or COR/BLM)
-    -- ══════════════════════════════════════════════════════════════════════════
-    if spell.skill == 'Elemental Magic' then
-        MidcastManager.select_set({
-            skill = 'Elemental Magic',
-            spell = spell
-        })
-        return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- ENFEEBLING MAGIC (from subjob)
-    -- ══════════════════════════════════════════════════════════════════════════
-    if spell.skill == 'Enfeebling Magic' then
-        MidcastManager.select_set({
-            skill = 'Enfeebling Magic',
-            spell = spell
-        })
-        return
+    if PASSTHROUGH_SKILLS[spell.skill] then
+        MidcastManager.select_set({skill = spell.skill, spell = spell})
     end
 end
 

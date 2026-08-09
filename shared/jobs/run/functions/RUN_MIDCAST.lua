@@ -105,74 +105,35 @@ local function job_post_midcast_blue_magic(spell)
     })
 end
 
----   Post-midcast hook (MidcastManager routing and gear selection)
+---   Post-midcast hook
 ---   @param spell table Spell information from GearSwap
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping from Mote-Include
----   @param eventArgs table Event arguments for cancellation/customization
+---   @param eventArgs table Event arguments
 function job_post_midcast(spell, action, spellMap, eventArgs)
-    -- Watchdog: Track midcast start
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_midcast_start(spell)
     end
 
-    -- Skip if already handled (Cure III/IV)
     if eventArgs.handled then
         return
     end
 
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- HEALING MAGIC (Other Cure spells)
-    -- ══════════════════════════════════════════════════════════════════════════
-    if spell.skill == 'Healing Magic' then
-        job_post_midcast_healing_magic(spell)
-        return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- ENMITY SPELLS (Flash, Enlight)
-    -- ══════════════════════════════════════════════════════════════════════════
+    -- Name before skill: Flash and Enlight are Divine Magic spells that a RUN
+    -- casts for enmity, so they must be caught before the Divine branch claims
+    -- them and dresses them for damage.
     if spell.name == 'Flash' then
-        MidcastManager.select_set({
-            skill = 'Flash',
-            spell = spell
-        })
-        return
-    end
-
-    if spell.name == 'Enlight' or spell.name == 'Enlight II' then
-        MidcastManager.select_set({
-            skill = 'Enmity',
-            spell = spell
-        })
-        return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- ENHANCING MAGIC
-    -- ══════════════════════════════════════════════════════════════════════════
-    if spell.skill == 'Enhancing Magic' then
+        MidcastManager.select_set({skill = 'Flash', spell = spell})
+    elseif spell.name == 'Enlight' or spell.name == 'Enlight II' then
+        MidcastManager.select_set({skill = 'Enmity', spell = spell})
+    elseif spell.skill == 'Healing Magic' then
+        job_post_midcast_healing_magic(spell)
+    elseif spell.skill == 'Enhancing Magic' then
         job_post_midcast_enhancing_magic(spell)
-        return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- DIVINE MAGIC
-    -- ══════════════════════════════════════════════════════════════════════════
-    if spell.skill == 'Divine Magic' then
-        MidcastManager.select_set({
-            skill = 'Divine Magic',
-            spell = spell
-        })
-        return
-    end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- BLUE MAGIC (RUN/BLU SUBJOB)
-    -- ══════════════════════════════════════════════════════════════════════════
-    if spell.skill == 'Blue Magic' then
+    elseif spell.skill == 'Divine Magic' then
+        MidcastManager.select_set({skill = 'Divine Magic', spell = spell})
+    elseif spell.skill == 'Blue Magic' then
         job_post_midcast_blue_magic(spell)
-        return
     end
 end
 
