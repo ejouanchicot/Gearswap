@@ -191,81 +191,94 @@ function refine_various_spells(spell, eventArgs)
     return SpellRefiner.refine_various_spells(spell, eventArgs)
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   checkArts - Scholar Subjob Dark Arts Automation
----  ═══════════════════════════════════════════════════════════════════════════
----   Automatically activates Dark Arts when casting Elemental Magic
----   Only for BLM/SCH subjob combination
----   Includes lag compensation to prevent Dark Arts spam
----   @param spell table The spell being cast
----   @param eventArgs table Event arguments
----   @usage checkArts(spell, eventArgs)
-function checkArts(spell, eventArgs)
-    -- Check if parameters are tables
+--- Reject a malformed call, saying which part is wrong.
+--- @return boolean True when the arguments are usable
+local function arts_args_valid(spell, eventArgs)
+    local problem
     if type(spell) ~= 'table' then
-        ensure_message_formatter()
-        MessageFormatter.show_error('checkArts - spell must be a table')
-        return
+        problem = 'spell must be a table'
+    elseif type(eventArgs) ~= 'table' then
+        problem = 'eventArgs must be a table'
+    elseif not spell.name then
+        problem = 'spell.name missing'
     end
 
-    if type(eventArgs) ~= 'table' then
+    if problem then
         ensure_message_formatter()
-        MessageFormatter.show_error('checkArts - eventArgs must be a table')
-        return
+        MessageFormatter.show_error('checkArts - ' .. problem)
+        return false
     end
+    return true
+end
 
-    -- Check if spell has required keys
-    if not spell.name then
-        ensure_message_formatter()
-        MessageFormatter.show_error('checkArts - spell.name missing')
-        return
-    end
-
-    -- Check if player's sub-job is Scholar (SCH)
+--- Is Dark Arts available to this character right now?
+---
+--- Sub-job level 0 is a real state, not a mistake: Odyssey Sheol Gaol locks
+--- subjobs, and the ability is gone there even though the subjob still reads
+--- as SCH.
+--- @return boolean
+local function dark_arts_ready()
     if not player or player.sub_job ~= 'SCH' or player.sub_job_level == 0 then
-        return
+        return false
     end
 
-    -- Get resources for Dark Arts ID
     local res_success, res = pcall(require, 'resources')
     if not res_success or not res then
-        return
+        return false
     end
 
-    -- Get Dark Arts recast ID
+    local ability_recasts = windower.ffxi.get_ability_recasts()
+    if not ability_recasts then
+        return false
+    end
+
     local dark_arts_data = res.job_abilities:with('en', 'Dark Arts')
     local dark_arts_id = dark_arts_data and dark_arts_data.recast_id or 232
-    local ability_recasts = windower.ffxi.get_ability_recasts()
 
-    if not ability_recasts then
+    -- 99999 rather than 0 when the id is unknown: an unknown recast must read
+    -- as "not ready", never as "off cooldown".
+    return (ability_recasts[dark_arts_id] or 99999) < 1
+end
+
+--- Is Dark Arts already up?
+---
+--- Addendum: Black counts. It replaces Dark Arts in buffactive rather than
+--- sitting alongside it, so checking only 'Dark Arts' would re-cast over an
+--- Addendum that is already active.
+--- @return boolean
+local function dark_arts_active()
+    return buffactive ~= nil
+        and (buffactive['Dark Arts'] or buffactive['Addendum: Black']) ~= nil
+end
+
+---   Put Dark Arts up before an elemental nuke, on BLM/SCH.
+---   @param spell table Spell information from GearSwap
+---   @param eventArgs table Event arguments
+function checkArts(spell, eventArgs)
+    if not arts_args_valid(spell, eventArgs) then
         return
     end
 
-    local darkArtsRecast = ability_recasts[dark_arts_id] or 99999
-
-    -- Check conditions for Dark Arts activation
-    if spell.skill == 'Elemental Magic' and
-        not (buffactive and (buffactive['Dark Arts'] or buffactive['Addendum: Black'])) and
-        darkArtsRecast < 1 then
-
-        -- LAG COMPENSATION: Simple timestamp check (2s cooldown)
-        local currentTime = os.clock()
-        _G.BLM_ARTS_LAST_CAST = _G.BLM_ARTS_LAST_CAST or 0
-
-        if currentTime - _G.BLM_ARTS_LAST_CAST >= 2.0 then
-            -- Cancel current spell
-            cancel_spell()
-
-            -- Activate Dark Arts and recast spell after 2s
-            send_command('input /ja "Dark Arts" <me>; wait 2; input /ma "' .. spell.name .. '" <t>')
-
-            -- Update timestamp
-            _G.BLM_ARTS_LAST_CAST = currentTime
-
-            -- NOTE: Message disabled - Job Ability message will show automatically
-            -- MessageFormatter.show_dark_arts_activated(spell.name)
-        end
+    if spell.skill ~= 'Elemental Magic' then
+        return
     end
+
+    if dark_arts_active() or not dark_arts_ready() then
+        return
+    end
+
+    -- Two seconds between attempts. The buff takes a moment to register, and
+    -- without this a second nuke sent in that window cancels itself and queues
+    -- Dark Arts again on top of the first.
+    local currentTime = os.clock()
+    _G.BLM_ARTS_LAST_CAST = _G.BLM_ARTS_LAST_CAST or 0
+    if currentTime - _G.BLM_ARTS_LAST_CAST < 2.0 then
+        return
+    end
+
+    cancel_spell()
+    send_command('input /ja "Dark Arts" <me>; wait 2; input /ma "' .. spell.name .. '" <t>')
+    _G.BLM_ARTS_LAST_CAST = currentTime
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
