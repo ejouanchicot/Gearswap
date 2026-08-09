@@ -65,29 +65,26 @@ end
 ---   ROLL DETECTION (Packet Parsing)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Detect roll via buff application (more reliable for GearSwap)
----   Called from job_buff_change when roll buff is gained
----   @param buff_name string Name of the buff (e.g., "Fighter's Roll")
----   @return boolean True if roll was tracked
-function RollTracker.on_roll_buff_gained(buff_name)
-    -- Check if buff is a Phantom Roll
-    if not buff_name:endswith(' Roll') then
-        return false
+---   A roll's buff has dropped, so the roll is gone
+---
+---   Nothing else removes an entry: a bust discards its own roll, and a third
+---   roll pushes out the oldest, but a roll that simply wears off used to stay
+---   listed forever. Dropping it here is what makes "lost" mean lost - the
+---   Crooked flag goes with the entry, so the next cast of that roll starts
+---   clean instead of inheriting from the instance that expired.
+---
+---   buff_change hands over the name from res.buffs, which is the roll's own
+---   name, so no mapping is needed.
+---   @param buff_name string Buff that was lost
+---   @return boolean True when a roll was removed
+function RollTracker.on_roll_buff_lost(buff_name)
+    for i, roll in ipairs(_G.cor_active_rolls) do
+        if roll.name == buff_name then
+            table.remove(_G.cor_active_rolls, i)
+            return true
+        end
     end
-
-    -- Get roll data
-    local roll_data = RollData.get_roll(buff_name)
-    if not roll_data then
-        return false
-    end
-
-    -- Since we can't get the exact value from buff alone, we'll track it when cast
-    -- This function is called AFTER the roll, so we use last_roll data
-    if _G.cor_last_roll and _G.cor_last_roll.name == buff_name then
-        RollTracker.track_active_roll(buff_name, _G.cor_last_roll.value)
-    end
-
-    return true
+    return false
 end
 
 --- Is the job this roll favours actually in the party?
@@ -136,9 +133,10 @@ end
 --- while it is still up. So the roll's buff being on the player means this
 --- cast can only be a Double-Up.
 ---
---- The active list is checked too, because nothing ever expires an entry from
---- it: a roll that wore off is still listed, and it is the buff that says it
---- is gone. A roll's buff carries the roll's own name.
+--- The buff is the authority on whether the roll is up; the active list only
+--- remembers what it was rolled at. on_roll_buff_lost keeps the two in step,
+--- and checking both means a loss event that never arrives - a reload or a
+--- zone mid-roll - cannot leave a stale entry answering for a live one.
 --- @return boolean
 local function roll_is_active(roll_name)
     for _, roll in ipairs(_G.cor_active_rolls or {}) do
