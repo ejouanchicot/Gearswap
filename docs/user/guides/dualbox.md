@@ -164,42 +164,37 @@ still reaches the alt.
 
 ### Finding a command
 
-A job config carries dozens of commands, so `//gs c altcmds` shows the map
-first:
+`//gs c altcmds` opens with the syntax, then the choices grouped by school:
 
 ```
-=== what Kaories can do for you (RDM/WHM) - 111 ===
-  enfeebling (16)  addle, altdispel, bind, ...
-  enhancing (70)  altsneak, aquaveil, auspice, ...
-  healing (12)  blindna, cura, curaga, ...
+=== Kaories (RDM/WHM) - 111 commands ===
+  //gs c <name> and Kaories casts it - the name IS the spell name.
+  enfeebling:     addle altdispel bind blind breakspell ... (16)
+  enhancing:      altsneak aquaveil auspice baraera baraero ... (70)
+  healing:        blindna cura curaga cure cursna ... (12)
+  //gs c altcmds <group> for the rest, or search: //gs c altcmds haste
 ```
 
-Then drill in with a group name, or search any word - it matches the command
-name and the spell alike:
+A group or a search word gives the full set, split by what you have to do
+first rather than listed one per line:
 
 ```
 //gs c altcmds healing
 
-  Select first: /ta <stpc> for an ally, /ta <stnpc> for a mob.
-  //gs c cure  Cure IV
-  //gs c cura  Cura (on Kaories) [/WHM]
-  //gs c curaga  Curaga III [/WHM]
+  //gs c <name> and Kaories casts it.
+  needs a target: blindna curaga cure cursna paralyna poisona raise silena
+                  stona viruna
+  on Kaories:     cura reraise
+  pick it with /ta <stpc> for an ally, /ta <stnpc> for a mob
 ```
 
-Read a row as: type this, it casts that. Nothing else means the usual rule
-applies - it lands on what you selected. A row only adds something when it
-breaks that rule:
+Searching matches the command name and the spell alike, so `//gs c altcmds
+haste` finds it wherever it lives.
 
-| Suffix | Meaning |
-|--------|---------|
-| *(nothing)* | goes on what you selected |
-| `(on Kaories)` | goes on the alt, no selection needed |
-| `[/WHM]` | comes from the subjob, so a lower tier than the main would cast |
-
-You rarely need the list: **the command name is the spell name**, in lowercase
-without spaces - `//gs c haste`, `//gs c dia`, `//gs c poisona`. The exceptions
-are names that clash with an existing command, prefixed `alt` (`altdispel`,
-`altsneak`).
+Most of the time you will not open the list at all: **the command name is the
+spell name**, lowercase, no spaces - `//gs c haste`, `//gs c dia`,
+`//gs c poisona`. Names that would clash with an existing command take an `alt`
+prefix (`altdispel`, `altsneak`).
 
 ### Changing the commands
 
