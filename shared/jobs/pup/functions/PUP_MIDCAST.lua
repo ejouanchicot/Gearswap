@@ -48,71 +48,87 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
----   Pre-midcast hook (Ready Move filtering and pet ability handling)
----   @param spell table Spell information from GearSwap
----   @param action string Action type
----   @param spellMap string Spell mapping from Mote-Include
----   @param eventArgs table Event arguments for cancellation/customization
-function job_midcast(spell, action, spellMap, eventArgs)
-    -- Lazy load modules on first cast
-    ensure_modules_loaded()
+-- Pet commands that precast has already dressed. Midcast must leave them
+-- alone or it undoes the set precast just chose.
+local PRECAST_ONLY = {
+    ['Call Beast'] = true, ['Bestial Loyalty'] = true, ['Reward'] = true,
+    ['Killer Instinct'] = true, ['Spur'] = true,
+    ['Fight'] = true, ['Heel'] = true, ['Stay'] = true,
+}
 
-    ---══════════════════════════════════════════════════════════════════════════
-    --- SKIP NON-READY MOVES (Call Beast, Fight, Heel, etc.)
-    ---══════════════════════════════════════════════════════════════════════════
-    -- These are handled in precast ONLY (no midcast override needed)
-    if
-        spell.name == 'Call Beast' or spell.name == 'Bestial Loyalty' or spell.name == 'Reward' or
-        spell.name == 'Killer Instinct' or
-        spell.name == 'Spur' or
-        spell.name == 'Fight' or
-        spell.name == 'Heel' or
-        spell.name == 'Stay'
-    then
-        return -- Don't override precast set
-    end
-
-    ---══════════════════════════════════════════════════════════════════════════
-    --- READY MOVES (Pet Abilities) - 4 CATEGORIES
-    ---══════════════════════════════════════════════════════════════════════════
-    -- PUP-SPECIFIC LOGIC: Not handled by MidcastManager (pet-specific)
-
-    -- Detect Ready Moves: check if category was set in precast OR use categorizer
+--- Which Ready move category this is, if any.
+---
+--- precast stores it on the spell because by midcast the name alone no longer
+--- says which kind of move it was. The categoriser is the fallback for paths
+--- that did not go through precast.
+--- @return string|nil Category, nil when this is not a Ready move
+local function ready_move_category(spell)
     local category = spell.ready_move_category
     if not category and ReadyMoveCategorizer and spell.action_type == 'Ability' then
         category = ReadyMoveCategorizer.get_category(spell.name)
     end
 
-    -- If we have a VALID category (not "Default" = Fight/Heel/etc), this is a Ready Move
-    if category and category ~= 'Default' then
-        -- Check if player is engaged (for _ww variants)
-        local player_engaged = (player and player.status == 'Engaged')
+    -- 'Default' is the categoriser saying it recognised nothing.
+    if category == 'Default' then
+        return nil
+    end
+    return category
+end
 
-        -- Equip appropriate set based on category
-        if category == 'Physical' and sets.midcast.pet_physical_moves then
-            equip(sets.midcast.pet_physical_moves)
-        elseif category == 'PhysicalMulti' and sets.midcast.pet_physicalMulti_moves then
-            equip(sets.midcast.pet_physicalMulti_moves)
-        elseif category == 'MagicAtk' then
-            -- Choose between normal and _ww (with weapon) variant
-            local set = player_engaged and sets.midcast.pet_magicAtk_moves_ww or sets.midcast.pet_magicAtk_moves
-            if set then
-                equip(set)
-            end
-        elseif category == 'MagicAcc' then
-            -- Choose between normal and _ww (with weapon) variant
-            local set = player_engaged and sets.midcast.pet_magicAcc_moves_ww or sets.midcast.pet_magicAcc_moves
-            if set then
-                equip(set)
-            end
-        elseif sets.midcast.pet_physical_moves then
-            -- Fallback to physical set
-            equip(sets.midcast.pet_physical_moves)
-        end
+--- The set for a Ready move category.
+---
+--- The magic categories have a _ww variant for when the master is engaged:
+--- the automaton's magic scales off gear the master cannot wear while meleeing,
+--- so the two situations want different pieces.
+--- @param category string From ready_move_category
+--- @param engaged boolean Whether the master is fighting
+--- @return table|nil Set to equip
+local function set_for_category(category, engaged)
+    local m = sets.midcast
 
-        eventArgs.handled = true
+    -- Set existence is part of the condition, not an afterthought: a
+    -- PhysicalMulti move on a job that never defined a multi set falls through
+    -- to the physical one rather than equipping nothing. The magic categories
+    -- deliberately do NOT fall back - melee gear on a magic move is worse than
+    -- leaving what precast chose.
+    if category == 'Physical' and m.pet_physical_moves then
+        return m.pet_physical_moves
+    elseif category == 'PhysicalMulti' and m.pet_physicalMulti_moves then
+        return m.pet_physicalMulti_moves
+    elseif category == 'MagicAtk' then
+        return engaged and m.pet_magicAtk_moves_ww or m.pet_magicAtk_moves
+    elseif category == 'MagicAcc' then
+        return engaged and m.pet_magicAcc_moves_ww or m.pet_magicAcc_moves
+    end
+
+    -- Unknown category: physical is the safe guess for a pet ability.
+    return m.pet_physical_moves
+end
+
+---   Midcast hook - Ready moves only; everything else is precast's business
+---   @param spell table Spell information from GearSwap
+---   @param action table Action information from GearSwap
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments
+function job_midcast(spell, action, spellMap, eventArgs)
+    ensure_modules_loaded()
+
+    if PRECAST_ONLY[spell.name] then
         return
     end
+
+    local category = ready_move_category(spell)
+    if not category then
+        return
+    end
+
+    local engaged = (player and player.status == 'Engaged')
+    local set = set_for_category(category, engaged)
+    if set then
+        equip(set)
+    end
+
+    eventArgs.handled = true
 end
 
 ---  ─────────────────────────────────────────────────────────────────────────
