@@ -41,6 +41,67 @@ local chars = {
 --- ROLL RESULT MESSAGES
 ---============================================================================
 
+--- Visible width of a line, ignoring what the console does not draw.
+---
+--- Windower colour codes and the circled digits are bytes in the string that
+--- occupy no column, so counting #text would size the separator far too wide.
+--- @param text string Line with colour codes embedded
+--- @return number Number of characters actually drawn
+local function get_visual_length(text)
+    local count = 0
+    local i = 1
+    while i <= #text do
+        local byte = text:byte(i)
+        if byte == 0x1E then
+            i = i + 4  -- \x1E + 3 bytes
+        elseif byte == 0x1F then
+            i = i + 2  -- \x1F + 1 byte
+        elseif byte == 0x87 or byte == 0x81 or byte == 0x84 then
+            i = i + 2  -- 2-byte sequence
+            count = count + 1
+        else
+            i = i + 1
+            count = count + 1
+        end
+    end
+    return count
+end
+
+--- Bust risk bands, highest first. The first band the rate reaches wins, so
+--- the order here is the rule - it is not a list that can be sorted.
+local BUST_BANDS = {
+    { at = 100,  color = 'ERROR',   text = 'GUARANTEED BUST' },
+    { at = 83.3, color = 'ERROR',   text = 'EXTREME DANGER' },
+    { at = 66.6, color = 'ERROR',   text = 'HIGH RISK' },
+    { at = 50,   color = 'WARNING', text = 'MODERATE RISK' },
+    { at = 33.3, color = 'WARNING', text = 'LOW RISK' },
+    { at = 16.6, color = 'JOB_TAG', text = 'VERY LOW RISK' },
+    -- `above` and not `at`: any bust chance at all is SAFE rather than NO RISK,
+    -- however small. A threshold of 0.01 would have relabelled a 0.005% roll.
+    { at = 0,    color = 'SUCCESS', text = 'SAFE', above = true },
+    -- -inf, so the table is total: the original's `else` caught every
+    -- remaining value including a negative rate, and a band list that
+    -- stopped at zero would have returned nothing at all.
+    { at = -math.huge, color = 'SUCCESS', text = 'NO RISK' },
+}
+
+--- Colour and wording for a bust percentage.
+--- @param bust_rate number Percentage chance the next Double-Up busts
+--- @return string colour code, string risk wording
+local function bust_risk_style(bust_rate)
+    for _, band in ipairs(BUST_BANDS) do
+        local hit = band.above and bust_rate > band.at or
+                    (not band.above and bust_rate >= band.at)
+        if hit then
+            local color = band.color == 'WARNING'
+                          and MessageCore.COLORS.get_warning_color()
+                          or MessageCore.COLORS[band.color]
+            return MessageCore.create_color_code(color), band.text
+        end
+    end
+    return MessageCore.create_color_code(MessageCore.COLORS.SUCCESS), 'NO RISK'
+end
+
 --- Display roll result with value and bonus (new multi-line format)
 --- @param roll_name string Name of the roll (e.g., "Fighter's Roll")
 --- @param value_display string Formatted value (e.g., "7" or "11 LUCKY!")
@@ -90,30 +151,6 @@ function RollMessages.show_roll_result(roll_name, value_display, bonus_display, 
     if is_crooked then
         local crooked_color = MessageCore.create_color_code(207)  -- Magenta/Pink for visibility
         crooked_text = crooked_color .. " [CROOKED +20%]" .. white_color
-    end
-
-    -- Helper function to calculate visual length (excluding color codes)
-    local function get_visual_length(text)
-        -- Count only visible characters, not color codes or special chars
-        local count = 0
-        local i = 1
-        while i <= #text do
-            local byte = text:byte(i)
-            -- Skip Windower color codes
-            if byte == 0x1E then
-                i = i + 4  -- \x1E + 3 bytes
-            elseif byte == 0x1F then
-                i = i + 2  -- \x1F + 1 byte
-            -- Skip multi-byte UTF-8 sequences (circled numbers, etc.)
-            elseif byte == 0x87 or byte == 0x81 or byte == 0x84 then
-                i = i + 2  -- 2-byte sequence
-                count = count + 1
-            else
-                i = i + 1
-                count = count + 1
-            end
-        end
-        return count
     end
 
     -- Build all lines first to calculate max length
@@ -201,34 +238,7 @@ function RollMessages.show_roll_result(roll_name, value_display, bonus_display, 
 
     -- Line 5: Bust rate (with dash)
     if bust_rate then
-        -- Color code AND risk text based on level
-        local risk_color, risk_text
-        if bust_rate >= 100 then
-            risk_color = MessageCore.create_color_code(MessageCore.COLORS.ERROR)
-            risk_text = "GUARANTEED BUST"
-        elseif bust_rate >= 83.3 then
-            risk_color = MessageCore.create_color_code(MessageCore.COLORS.ERROR)
-            risk_text = "EXTREME DANGER"
-        elseif bust_rate >= 66.6 then
-            risk_color = MessageCore.create_color_code(MessageCore.COLORS.ERROR)
-            risk_text = "HIGH RISK"
-        elseif bust_rate >= 50 then
-            risk_color = MessageCore.create_color_code(MessageCore.COLORS.get_warning_color())
-            risk_text = "MODERATE RISK"
-        elseif bust_rate >= 33.3 then
-            risk_color = MessageCore.create_color_code(MessageCore.COLORS.get_warning_color())
-            risk_text = "LOW RISK"
-        elseif bust_rate >= 16.6 then
-            risk_color = MessageCore.create_color_code(MessageCore.COLORS.JOB_TAG)
-            risk_text = "VERY LOW RISK"
-        elseif bust_rate > 0 then
-            risk_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS)
-            risk_text = "SAFE"
-        else
-            risk_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS)
-            risk_text = "NO RISK"
-        end
-
+        local risk_color, risk_text = bust_risk_style(bust_rate)
         local bust_line = white_color .. "  - Bust: " .. risk_color .. string.format("%.1f%%", bust_rate) .. " " .. white_color .. "(" .. risk_text .. ")"
         table.insert(lines, bust_line)
     end
