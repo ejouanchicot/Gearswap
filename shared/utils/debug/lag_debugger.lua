@@ -1,7 +1,10 @@
 ---============================================================================
 --- Lag Debugger - Diagnostic Event Journal for FPS/Lag Investigation
 ---============================================================================
---- Records all events related to movement, job changes, and gs c update calls.
+--- Records what the client was doing when it stuttered: movement, job changes,
+--- gs c update calls, the actions you take, every first-time module load with
+--- its cost, and any frame long enough to be felt.
+---
 --- Export the journal to a file, share with developer for analysis.
 ---
 --- Usage:
@@ -12,7 +15,7 @@
 ---
 --- @file    shared/utils/debug/lag_debugger.lua
 --- @author  Tetsouo
---- @version 1.1 - FIX: Persist state in windower table (survives gs reload)
+--- @version 1.2 - Module-load, stall and action probes
 --- @date    Created: 2026-03-03
 ---============================================================================
 
@@ -37,6 +40,128 @@ local S = windower._lagdebug  -- Shorthand alias
 
 local _max = 2000  -- Ring buffer max (enough for ~3min at 80ms intervals)
 
+-- A frame longer than this is what a player calls a freeze. 40ms is about
+-- 2.5 frames at 60fps: short enough to catch a hitch, long enough that normal
+-- frame jitter does not fill the journal.
+local STALL_MS = 40
+
+-- Reading a cached module is free; only a real load is worth a line.
+local MODULE_MS = 1.0
+
+-- Deliberately module-local, NOT in the windower table. A gs reload builds a
+-- fresh Lua state with a fresh `require`, so a flag that survived the reload
+-- would claim the probe is installed when it no longer is.
+local require_wrapped = false
+local original_require = nil
+
+---============================================================================
+--- PROBES
+---============================================================================
+
+--- Time every module GearSwap loads for the first time.
+---
+--- This is what answers "is it loading the whole database?" - a lazy require
+--- that costs real milliseconds shows up here with its path, at the moment it
+--- happens, so it can be lined up against the action that triggered it.
+local function install_module_probe()
+    if require_wrapped or type(_G.require) ~= 'function' then
+        return
+    end
+    original_require = _G.require
+    require_wrapped = true
+
+    _G.require = function(path, ...)
+        if package.loaded[path] ~= nil then
+            return original_require(path, ...)
+        end
+        local t0 = os.clock()
+        local a, b, c = original_require(path, ...)
+        local ms = (os.clock() - t0) * 1000
+        if ms >= MODULE_MS then
+            S.last_module = path
+            LagDebugger._raw('MODULE_LOAD', { path = path, ms = string.format('%.1f', ms) })
+        end
+        return a, b, c
+    end
+end
+
+--- Put `require` back the way it was.
+local function remove_module_probe()
+    if require_wrapped and original_require then
+        _G.require = original_require
+    end
+    require_wrapped = false
+    original_require = nil
+end
+
+--- Report any frame long enough to be felt.
+---
+--- The point of measuring here rather than around suspected code is that it
+--- makes no assumption about the cause: whatever stalls the client shows up,
+--- including whatever nobody thought to instrument.
+local function install_stall_probe()
+    -- The id lives in the windower table because GearSwap does NOT unregister
+    -- events registered from data files on reload. Without this, every reload
+    -- would leave another live listener behind - which is exactly how the lag
+    -- this tool exists to find got introduced in the first place.
+    if S.stall_event_id then
+        windower.unregister_event(S.stall_event_id)
+        S.stall_event_id = nil
+    end
+
+    S.last_frame = os.clock()
+    S.stall_event_id = windower.register_event('prerender', function()
+        if not S.enabled then return end
+        local now = os.clock()
+        local gap_ms = (now - (S.last_frame or now)) * 1000
+        S.last_frame = now
+        if gap_ms >= STALL_MS then
+            LagDebugger._raw('STALL', {
+                gap_ms      = math.floor(gap_ms),
+                last_action = S.last_action or '-',
+                last_module = S.last_module or '-',
+            })
+        end
+    end)
+end
+
+--- Record what the player just did, so a stall has something to be blamed on.
+local function install_action_probe()
+    if S.action_event_id then
+        windower.unregister_event(S.action_event_id)
+        S.action_event_id = nil
+    end
+
+    local CATEGORY = {
+        [1] = 'melee', [2] = 'ranged', [3] = 'weaponskill', [4] = 'magic',
+        [5] = 'item',  [6] = 'job_ability', [7] = 'ws_start', [8] = 'magic_start',
+        [9] = 'item_start', [12] = 'ranged_start', [13] = 'pet_ability',
+    }
+
+    S.action_event_id = windower.register_event('action', function(act)
+        if not S.enabled or not act then return end
+        -- Filter on the actor before touching anything else: this fires for
+        -- every action in the zone, and a party in a busy camp is a lot.
+        if not (player and act.actor_id == player.id) then return end
+
+        local label = CATEGORY[act.category] or ('category_' .. tostring(act.category))
+        S.last_action = label
+        LagDebugger._raw('ACTION', { kind = label, cat = act.category })
+    end)
+end
+
+--- Tear both event probes down.
+local function remove_event_probes()
+    if S.stall_event_id then
+        windower.unregister_event(S.stall_event_id)
+        S.stall_event_id = nil
+    end
+    if S.action_event_id then
+        windower.unregister_event(S.action_event_id)
+        S.action_event_id = nil
+    end
+end
+
 ---============================================================================
 --- CORE API
 ---============================================================================
@@ -56,6 +181,13 @@ function LagDebugger.start()
     local am_seq   = tostring(_G._automove_sequence or 0)
     local am_run   = tostring(_G.AUTOMOVE_RUNNING or false)
 
+    S.last_action = nil
+    S.last_module = nil
+
+    install_module_probe()
+    install_stall_probe()
+    install_action_probe()
+
     LagDebugger._raw('SESSION_START', {
         job    = job,
         sub    = sub,
@@ -63,13 +195,15 @@ function LagDebugger.start()
         am_seq = am_seq,
         am_run = am_run,
     })
-    add_to_chat(207, '[LagDebug] Recording ON - Change job + move around, then //gs c lagdebug export')
+    add_to_chat(207, '[LagDebug] Recording ON - use a JA, a WS and a spell, then //gs c lagdebug export')
 end
 
 --- Stop recording
 function LagDebugger.stop()
     LagDebugger._raw('SESSION_END', {total_updates = S.update_count})
     S.enabled = false
+    remove_module_probe()
+    remove_event_probes()
     add_to_chat(207, string.format('[LagDebug] Recording OFF - %d events, %d gs_c_update', #S.log, S.update_count))
 end
 
@@ -241,7 +375,17 @@ function LagDebugger.export()
     table.insert(lines, '  GS_RELOAD_SCHED    : gs reload scheduled (debounce)')
     table.insert(lines, '  GS_RELOAD_COMPLETE : GearSwap finished reloading (INIT_SYSTEMS)')
     table.insert(lines, '  BST_PRERENDER      : prerender BST (pet monitoring)')
+    table.insert(lines, '  ACTION             : you used a JA / WS / spell (kind=what)')
+    table.insert(lines, '  MODULE_LOAD        : a module was loaded for the FIRST time, with its cost')
+    table.insert(lines, '                       -> this is where a database load would show up')
+    table.insert(lines, '  STALL              : a frame took >= ' .. STALL_MS .. 'ms - a visible freeze')
+    table.insert(lines, '                       gap_ms = how long, last_action / last_module = context')
     table.insert(lines, '  SESSION_END        : Recording stopped')
+    table.insert(lines, '')
+    table.insert(lines, 'HOW TO READ IT:')
+    table.insert(lines, '  A STALL right after a MODULE_LOAD with a matching cost means the load')
+    table.insert(lines, '  caused it. A STALL with no MODULE_LOAD near it means the freeze is')
+    table.insert(lines, '  somewhere else entirely, and the databases are not to blame.')
     table.insert(lines, '')
     table.insert(lines, '----------------------------------------------------------------')
     table.insert(lines, string.format('%-12s %-25s %s', '[TIME(ms)]', '[EVENT]', '[DATA]'))
@@ -281,6 +425,21 @@ end
 ---============================================================================
 --- MODULE EXPORT (global + module)
 ---============================================================================
+
+-- Recording survives a gs reload because the journal lives in the windower
+-- table - but the probes do not: `require` is fresh in the new Lua state, and
+-- the event ids point at listeners this state never registered. Reinstall them
+-- so a session that spans a job change keeps recording instead of going quiet
+-- while still reporting itself as ON.
+if S.enabled then
+    install_module_probe()
+    install_stall_probe()
+    install_action_probe()
+    LagDebugger._raw('PROBES_REARMED', {
+        job = player and player.main_job or 'UNK',
+        sub = player and player.sub_job or 'UNK',
+    })
+end
 
 _G.LagDebugger = LagDebugger
 return LagDebugger
