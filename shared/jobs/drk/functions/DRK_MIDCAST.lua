@@ -17,23 +17,11 @@
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+local MidcastDeps = require('shared/utils/midcast/midcast_deps')
+
+-- Filled in by the first midcast; the handlers below read them from here.
 local MidcastManager = nil
 local EnhancingSPELLS = nil
-local EnhancingSPELLS_success = false
-
-local modules_loaded = false
-
-local function ensure_modules_loaded()
-    if modules_loaded then return end
-
-    local _, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
-    MidcastManager = mm
-
-    -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
-    EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
-
-    modules_loaded = true
-end
 
 ---   Pre-midcast hook (job-specific logic before set selection)
 ---   @param spell table Spell information from GearSwap
@@ -112,7 +100,7 @@ local function job_post_midcast_enfeebling_magic(spell)
     MidcastManager.select_set({
         skill = 'Enfeebling Magic',
         spell = spell,
-        database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
+        database_func = EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
     })
     return true
 end
@@ -139,8 +127,7 @@ local JOB_POST_MIDCAST_HANDLERS = {
 ---   @param spellMap string Spell mapping from Mote-Include
 ---   @param eventArgs table Event arguments for cancellation/customization
 function job_post_midcast(spell, action, spellMap, eventArgs)
-    -- Lazy load modules on first spell cast
-    ensure_modules_loaded()
+    MidcastManager, EnhancingSPELLS = MidcastDeps.load()
 
     -- Watchdog: Track midcast start
     if _G.MidcastWatchdog then

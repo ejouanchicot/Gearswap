@@ -20,23 +20,10 @@
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+local MidcastDeps = require('shared/utils/midcast/midcast_deps')
+
 local MidcastManager = nil
 local EnhancingSPELLS = nil
-local EnhancingSPELLS_success = false
-
-local modules_loaded = false
-
-local function ensure_modules_loaded()
-    if modules_loaded then return end
-
-    local _, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
-    MidcastManager = mm
-
-    -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
-    EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
-
-    modules_loaded = true
-end
 
 ---   Pre-midcast hook (job-specific logic before set selection)
 ---   @param spell table Spell information from GearSwap
@@ -62,7 +49,7 @@ local PASSTHROUGH_SKILLS = {
 ---   @param spellMap string Spell mapping from Mote-Include
 ---   @param eventArgs table Event arguments
 function job_post_midcast(spell, action, spellMap, eventArgs)
-    ensure_modules_loaded()
+    MidcastManager, EnhancingSPELLS = MidcastDeps.load()
 
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_midcast_start(spell)
@@ -82,7 +69,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
             skill = 'Enhancing Magic',
             spell = spell,
             target_func = MidcastManager.get_enhancing_target,
-            database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
+            database_func = EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
         })
         return
     end
