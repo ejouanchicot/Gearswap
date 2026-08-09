@@ -58,8 +58,105 @@ TPBonusCalculator.config = {
 --- @param active_buffs table Table of active buffs (buffactive)
 --- @param sub_weapon string Current sub weapon name (optional, for Fencer detection)
 --- @return table|nil Table of gear to equip {ear1="...", legs="..."} or nil if none needed
+--- TP the weaponskill will actually open with.
+---
+--- Weapon, buff and Fencer bonuses are already in effect when the skill fires,
+--- so they count towards the threshold before any gear is chosen.
+--- @param current_tp number TP shown right now
+--- @param tp_config table Job TP config supplying the bonus lookups
+--- @param weapon_name string|nil Equipped main weapon
+--- @param active_buffs table|nil buffactive, or a stand-in
+--- @param sub_weapon string|nil Equipped sub, which Fencer depends on
+--- @return number Effective TP
+local function effective_tp(current_tp, tp_config, weapon_name, active_buffs, sub_weapon)
+    local weapon_bonus = 0
+    if weapon_name and tp_config.get_weapon_bonus then
+        weapon_bonus = tp_config.get_weapon_bonus(weapon_name)
+    end
+
+    local buff_bonus = 0
+    if active_buffs and active_buffs['Warcry'] and tp_config.get_warcry_bonus then
+        buff_bonus = buff_bonus + tp_config.get_warcry_bonus()
+    end
+    if tp_config.get_hagakure_bonus then
+        buff_bonus = buff_bonus + tp_config.get_hagakure_bonus()
+    end
+
+    local fencer_bonus = 0
+    if weapon_name and tp_config.get_fencer_bonus then
+        fencer_bonus = tp_config.get_fencer_bonus(weapon_name, sub_weapon)
+    end
+
+    return current_tp + weapon_bonus + buff_bonus + fencer_bonus
+end
+
+--- The next TP threshold worth reaching for.
+--- @param real_tp number Effective TP
+--- @return number|nil Threshold, or nil when already past the last one
+local function next_threshold(real_tp)
+    for _, threshold in ipairs(TPBonusCalculator.config.thresholds) do
+        if real_tp < threshold then
+            return threshold
+        end
+    end
+    return nil
+end
+
+--- Job TP pieces, biggest bonus first, with the total they add up to.
+--- @param tp_config table Job TP config
+--- @return table|nil pieces sorted descending, number total bonus
+local function ranked_pieces(tp_config)
+    if not tp_config.pieces or type(tp_config.pieces) ~= 'table' then
+        return nil, 0
+    end
+
+    local sorted = {}
+    local total = 0
+    for _, piece in ipairs(tp_config.pieces) do
+        table.insert(sorted, piece)
+        total = total + piece.bonus
+    end
+    table.sort(sorted, function(a, b) return a.bonus > b.bonus end)
+    return sorted, total
+end
+
+--- Fewest pieces that close the gap.
+---
+--- One piece is preferred over several even when a combination would be a
+--- tighter fit: every extra slot spent here is a slot taken from the
+--- weaponskill set.
+--- @param sorted table Pieces, biggest bonus first
+--- @param gap number TP still missing
+--- @return table|nil slot to item name, or nil when the gap cannot be closed
+local function pieces_for_gap(sorted, gap)
+    for _, piece in ipairs(sorted) do
+        if TPBonusCalculator.config.debug_mode then
+            get_message_ws().show_checking_piece(piece.name, piece.slot, piece.bonus, gap)
+        end
+        if piece.bonus >= gap then
+            if TPBonusCalculator.config.debug_mode then
+                get_message_ws().show_equipping_piece(piece.slot, piece.name, piece.bonus, gap)
+            end
+            return {[piece.slot] = piece.name}
+        end
+    end
+
+    local gear_to_equip = {}
+    local current_bonus = 0
+    for _, piece in ipairs(sorted) do
+        if current_bonus < gap then
+            gear_to_equip[piece.slot] = piece.name
+            current_bonus = current_bonus + piece.bonus
+        end
+    end
+
+    if current_bonus >= gap then
+        return gear_to_equip
+    end
+    return nil
+end
+
 function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_buffs, sub_weapon)
-    -- Validation
     if not current_tp or not tp_config then
         if TPBonusCalculator.config.debug_mode then
             get_message_ws().show_tp_validation_failed(current_tp, tp_config)
@@ -67,48 +164,17 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
         return nil
     end
 
-    -- Calculate base TP bonus from weapon
-    local weapon_bonus = 0
-    if weapon_name and tp_config.get_weapon_bonus then
-        weapon_bonus = tp_config.get_weapon_bonus(weapon_name)
-    end
-
-    -- Calculate buff bonus (e.g., Warcry for WAR, Hagakure for SAM)
-    local buff_bonus = 0
-
-    -- WAR: Warcry
-    if active_buffs and active_buffs['Warcry'] and tp_config.get_warcry_bonus then
-        buff_bonus = buff_bonus + tp_config.get_warcry_bonus()
-    end
-
-    -- SAM: Hagakure
-    if tp_config.get_hagakure_bonus then
-        buff_bonus = buff_bonus + tp_config.get_hagakure_bonus()
-    end
-
-    -- Calculate Fencer bonus (e.g., WAR with 1-hand + shield)
-    local fencer_bonus = 0
-    if weapon_name and tp_config.get_fencer_bonus then
-        fencer_bonus = tp_config.get_fencer_bonus(weapon_name, sub_weapon)
-    end
-
-    -- Calculate real TP (TP + weapon + buff + Fencer bonuses that are already active)
-    local real_tp = current_tp + weapon_bonus + buff_bonus + fencer_bonus
+    local real_tp = effective_tp(current_tp, tp_config, weapon_name, active_buffs, sub_weapon)
 
     if TPBonusCalculator.config.debug_mode then
+        local weapon_bonus = 0
+        if weapon_name and tp_config.get_weapon_bonus then
+            weapon_bonus = tp_config.get_weapon_bonus(weapon_name)
+        end
         get_message_ws().show_tp_calculation(current_tp, weapon_name, weapon_bonus, real_tp)
     end
 
-    -- Determine next threshold to aim for
-    local target_threshold = nil
-    for _, threshold in ipairs(TPBonusCalculator.config.thresholds) do
-        if real_tp < threshold then
-            target_threshold = threshold
-            break
-        end
-    end
-
-    -- Already at or above max threshold (3000+), no gear needed
+    local target_threshold = next_threshold(real_tp)
     if not target_threshold then
         if TPBonusCalculator.config.debug_mode then
             get_message_ws().show_already_at_max()
@@ -116,37 +182,16 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
         return nil
     end
 
-    -- Calculate gap to next threshold
     local gap = target_threshold - real_tp
-
     if TPBonusCalculator.config.debug_mode then
         get_message_ws().show_target_threshold(target_threshold, gap)
     end
 
-    -- Determine which pieces to equip based on gap
-    -- Strategy: Equip MINIMUM necessary pieces
-    local gear_to_equip = {}
-
-    -- Validate tp_config.pieces exists
-    if not tp_config.pieces or type(tp_config.pieces) ~= 'table' then
-        -- No TP bonus pieces configured for this job
+    local sorted, total_available = ranked_pieces(tp_config)
+    if not sorted then
         return nil
     end
 
-    -- Get available pieces sorted by bonus (descending)
-    local sorted_pieces = {}
-    for _, piece in ipairs(tp_config.pieces) do
-        table.insert(sorted_pieces, piece)
-    end
-    table.sort(sorted_pieces, function(a, b) return a.bonus > b.bonus end)
-
-    -- Calculate total available bonus from pieces
-    local total_available = 0
-    for _, piece in ipairs(sorted_pieces) do
-        total_available = total_available + piece.bonus
-    end
-
-    -- Gap too large, can't reach threshold even with all pieces
     if gap > total_available then
         if TPBonusCalculator.config.debug_mode then
             get_message_ws().show_gap_too_large(gap, total_available)
@@ -158,42 +203,7 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
         get_message_ws().show_total_available(total_available)
     end
 
-    -- Find minimum combination of pieces to reach threshold
-    -- Try single pieces first (most efficient)
-    for _, piece in ipairs(sorted_pieces) do
-        if TPBonusCalculator.config.debug_mode then
-            get_message_ws().show_checking_piece(piece.name, piece.slot, piece.bonus, gap)
-        end
-
-        if piece.bonus >= gap then
-            -- Single piece is enough
-            gear_to_equip[piece.slot] = piece.name
-
-            if TPBonusCalculator.config.debug_mode then
-                get_message_ws().show_equipping_piece(piece.slot, piece.name, piece.bonus, gap)
-            end
-
-            return gear_to_equip
-        end
-    end
-
-    -- Need multiple pieces
-    -- Greedy approach: add pieces until gap is covered
-    local current_bonus = 0
-    for _, piece in ipairs(sorted_pieces) do
-        if current_bonus < gap then
-            gear_to_equip[piece.slot] = piece.name
-            current_bonus = current_bonus + piece.bonus
-        end
-    end
-
-    -- Final validation: did we reach threshold?
-    if current_bonus >= gap then
-        return gear_to_equip
-    end
-
-    -- Shouldn't reach here, but safety fallback
-    return nil
+    return pieces_for_gap(sorted, gap)
 end
 
 --- Get expected final TP after applying TP bonus gear
