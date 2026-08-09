@@ -107,29 +107,16 @@ end
 ---   @param action string Action type
 ---   @param spellMap string Spell mapping
 ---   @param eventArgs table Event arguments
-function job_precast(spell, action, spellMap, eventArgs)
-    -- Lazy load modules on first action
-    ensure_modules_loaded()
+---  ─────────────────────────────────────────────────────────────────────────
+---   PRECAST STAGES
+---  ─────────────────────────────────────────────────────────────────────────
+---   Each stage returns true when the action must stop there. The order they
+---   run in is the documented precast contract, and job_precast below is short
+---   enough that the order is now the first thing you see.
 
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- COMBAT MODE WEAPON LOCKING (SAFETY GUARD)
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- Ensure weapon slots are locked BEFORE precast gear is applied
-    -- This prevents midcast from equipping weapons from sets
-    if state.CombatMode and state.CombatMode.current == "On" then
-        disable('main', 'sub', 'range')
-    end
-
-    local debug_enabled = is_precast_debug_enabled()
-
-    -- DEBUG: Show precast entry
-    if debug_enabled then
-        local action_type = spell.type or 'Unknown'
-        local action_name = spell.english or spell.name or 'Unknown'
-        MessagePrecast.show_debug_header(action_name, action_type)
-    end
-
-    -- FIRST: Check for blocking debuffs (Amnesia, Silence, etc.)
+---   Stage 1 - blocking debuffs: Amnesia, Silence, dead, and so on.
+---   @return boolean True when the action is blocked
+local function stage_guard(spell, eventArgs, debug_enabled)
     if debug_enabled then
         MessagePrecast.show_debug_step(1, 'PrecastGuard', 'info', 'Checking debuffs...')
     end
@@ -138,14 +125,18 @@ function job_precast(spell, action, spellMap, eventArgs)
         if debug_enabled then
             MessagePrecast.show_debug_step(1, 'PrecastGuard', 'fail', 'BLOCKED by debuff!')
         end
-        return -- Action blocked, exit immediately
+        return true
     end
 
     if debug_enabled then
         MessagePrecast.show_debug_step(1, 'PrecastGuard', 'ok', 'No blocking debuffs')
     end
+    return false
+end
 
-    -- SECOND: Universal cooldown check
+---   Stage 2 - recast, or a tier downgrade for enfeebles that have one.
+---   @return boolean True when the action was cancelled
+local function stage_cooldown(spell, eventArgs, debug_enabled)
     if debug_enabled then
         MessagePrecast.show_debug_step(2, 'Cooldown', 'info', 'Checking cooldown...')
     end
@@ -166,90 +157,118 @@ function job_precast(spell, action, spellMap, eventArgs)
         end
     end
 
-    -- Exit if action was cancelled
     if eventArgs.cancel then
         if debug_enabled then
             MessagePrecast.show_debug_step(2, 'Cooldown', 'fail', 'CANCELLED (on cooldown or blocked)')
         end
-        return
+        return true
     end
 
     if debug_enabled then
         MessagePrecast.show_debug_step(2, 'Cooldown', 'ok', 'Ready to use')
     end
+    return false
+end
 
-    ---  ─────────────────────────────────────────────────────────────────────────
-    ---   PHALANX OPTIMIZATION (Auto-swap between Phalanx/Phalanx II)
-    ---  ─────────────────────────────────────────────────────────────────────────
-    -- Logic:
-    --   - Phalanx II on self → Downgrade to Phalanx (better for self)
-    --   - Phalanx on others → Upgrade to Phalanx II (better for others)
-    if spell.action_type == 'Magic' and spell.skill == 'Enhancing Magic' then
-        local spell_name = spell.english or spell.name
-
-        if spell_name == 'Phalanx' or spell_name == 'Phalanx II' then
-            local target = spell.target
-            local is_self = (target and target.name == player.name)
-            local new_spell = nil
-
-            if spell_name == 'Phalanx II' and is_self then
-                -- Phalanx II on self → Cast Phalanx instead
-                new_spell = 'Phalanx'
-                MessageFormatter.show_phalanx_downgrade()
-            elseif spell_name == 'Phalanx' and not is_self then
-                -- Phalanx on others → Cast Phalanx II instead
-                new_spell = 'Phalanx II'
-                MessageFormatter.show_phalanx_upgrade()
-            end
-
-            if new_spell then
-                -- Cancel current spell and cast optimal tier
-                eventArgs.cancel = true
-                send_command('input /ma "' .. new_spell .. '" ' .. spell.target.raw)
-                return
-            end
-        end
+---   Stage 3 - Phalanx picks its own tier by target.
+---   Phalanx II on yourself is worse than Phalanx; on anyone else it is better.
+---   @return boolean True when the cast was swapped for the other tier
+local function stage_phalanx(spell, eventArgs)
+    if not (spell.action_type == 'Magic' and spell.skill == 'Enhancing Magic') then
+        return false
     end
 
-    ---  ─────────────────────────────────────────────────────────────────────────
-    ---   MAGIC PRECAST (Fast Cast)
-    ---  ─────────────────────────────────────────────────────────────────────────
-    if spell.action_type == 'Magic' then
+    local spell_name = spell.english or spell.name
+    if spell_name ~= 'Phalanx' and spell_name ~= 'Phalanx II' then
+        return false
+    end
+
+    local target = spell.target
+    local is_self = (target and target.name == player.name)
+    local new_spell = nil
+
+    if spell_name == 'Phalanx II' and is_self then
+        new_spell = 'Phalanx'
+        MessageFormatter.show_phalanx_downgrade()
+    elseif spell_name == 'Phalanx' and not is_self then
+        new_spell = 'Phalanx II'
+        MessageFormatter.show_phalanx_upgrade()
+    end
+
+    if not new_spell then
+        return false
+    end
+
+    eventArgs.cancel = true
+    send_command('input /ma "' .. new_spell .. '" ' .. spell.target.raw)
+    return true
+end
+
+---   Stage 4 - fire Saboteur ahead of the enfeebles configured for it.
+---   Never stops the chain: the enfeeble still goes out either way.
+local function stage_saboteur(spell, eventArgs, debug_enabled)
+    if spell.action_type ~= 'Magic' then
+        return
+    end
+
+    if debug_enabled then
+        MessagePrecast.show_debug_step(5, 'Magic (Fast Cast)', 'info', 'Skill: ' .. (spell.skill or 'Unknown'))
+    end
+
+    if spell.skill ~= 'Enfeebling Magic' then
+        return
+    end
+
+    if not (state.SaboteurMode and state.SaboteurMode.current == 'On') then
         if debug_enabled then
-            MessagePrecast.show_debug_step(5, 'Magic (Fast Cast)', 'info', 'Skill: ' .. (spell.skill or 'Unknown'))
+            MessagePrecast.show_debug_step(5, 'Saboteur Auto', 'info', 'Mode is Off')
         end
-
-        -- Auto-trigger Saboteur before configured enfeebling spells
-        if spell.skill == 'Enfeebling Magic' then
-            -- Check if SaboteurMode is On
-            if state.SaboteurMode and state.SaboteurMode.current == 'On' then
-                -- Check if this spell is in the auto-trigger list
-                if RDMSaboteurConfig.auto_trigger_spells[spell.english] then
-                    if debug_enabled then
-                        MessagePrecast.show_debug_step(5, 'Saboteur Auto', 'ok', 'Will trigger before ' .. spell.english)
-                    end
-                    AbilityHelper.try_ability_smart(spell, eventArgs, 'Saboteur', RDMSaboteurConfig.wait_time)
-                else
-                    if debug_enabled then
-                        MessagePrecast.show_debug_step(5, 'Saboteur Auto', 'info', 'Not in auto-trigger list')
-                    end
-                end
-            else
-                if debug_enabled then
-                    MessagePrecast.show_debug_step(5, 'Saboteur Auto', 'info', 'Mode is Off')
-                end
-            end
-        end
+        return
     end
 
-    ---  ─────────────────────────────────────────────────────────────────────────
-    ---   WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
-    ---  ─────────────────────────────────────────────────────────────────────────
+    if not RDMSaboteurConfig.auto_trigger_spells[spell.english] then
+        if debug_enabled then
+            MessagePrecast.show_debug_step(5, 'Saboteur Auto', 'info', 'Not in auto-trigger list')
+        end
+        return
+    end
+
+    if debug_enabled then
+        MessagePrecast.show_debug_step(5, 'Saboteur Auto', 'ok', 'Will trigger before ' .. spell.english)
+    end
+    AbilityHelper.try_ability_smart(spell, eventArgs, 'Saboteur', RDMSaboteurConfig.wait_time)
+end
+
+function job_precast(spell, action, spellMap, eventArgs)
+    -- Lazy load modules on first action
+    ensure_modules_loaded()
+
+    -- Lock the weapon slots BEFORE any precast gear goes on, or midcast will
+    -- happily equip a weapon out of a set.
+    if state.CombatMode and state.CombatMode.current == "On" then
+        disable('main', 'sub', 'range')
+    end
+
+    local debug_enabled = is_precast_debug_enabled()
+
+    if debug_enabled then
+        local action_type = spell.type or 'Unknown'
+        local action_name = spell.english or spell.name or 'Unknown'
+        MessagePrecast.show_debug_header(action_name, action_type)
+    end
+
+    -- Guard >> Cooldown >> job logic >> WS. This order is the contract; moving
+    -- a line here changes behaviour even though nothing looks broken.
+    if stage_guard(spell, eventArgs, debug_enabled) then return end
+    if stage_cooldown(spell, eventArgs, debug_enabled) then return end
+    if stage_phalanx(spell, eventArgs) then return end
+
+    stage_saboteur(spell, eventArgs, debug_enabled)
+
     if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, RDMTPConfig) then
         return
     end
 
-    -- DEBUG: Show completion
     if debug_enabled then
         MessagePrecast.show_completion()
     end
@@ -261,6 +280,46 @@ end
 ---   @param action string Action type
 ---   @param spellMap string Spell mapping
 ---   @param eventArgs table Event arguments
+---   Name the set precast just equipped, for `//gs c debugprecast`.
+---
+---   This mirrors the resolution Mote does rather than observing it, so it is
+---   a description and not a measurement: if a set stops matching what is
+---   actually worn, this is the thing that drifted.
+---   @param spell table Spell information from GearSwap
+---   @return string Set name, table|nil The set itself when there is one
+local function describe_equipped_set(spell)
+    if spell.type == 'WeaponSkill' then
+        if sets.precast.WS and sets.precast.WS[spell.english] then
+            return "sets.precast.WS[" .. spell.english .. "]", sets.precast.WS[spell.english]
+        elseif sets.precast.WS then
+            return "sets.precast.WS (base)", sets.precast.WS
+        end
+
+    elseif spell.type == 'JobAbility' then
+        if sets.precast.JA and sets.precast.JA[spell.english] then
+            return "sets.precast.JA[" .. spell.english .. "]", sets.precast.JA[spell.english]
+        elseif sets.precast.JA then
+            return "sets.precast.JA (base)", sets.precast.JA
+        end
+
+    elseif spell.action_type == 'Magic' then
+        if buffactive['Chainspell'] then
+            return "No FC (Chainspell active)", nil
+        elseif sets.precast.FC and sets.precast.FC[spell.english] then
+            return "sets.precast.FC[" .. spell.english .. "]", sets.precast.FC[spell.english]
+        elseif sets.precast.FC and spell.skill and sets.precast.FC[spell.skill] then
+            return "sets.precast.FC[" .. spell.skill .. "]", sets.precast.FC[spell.skill]
+        elseif sets.precast.FC then
+            return "sets.precast.FC (base)", sets.precast.FC
+        end
+
+    elseif spell.type == 'RangedAttack' then
+        return "sets.precast.RA", sets.precast.RA
+    end
+
+    return "Unknown", nil
+end
+
 function job_post_precast(spell, action, spellMap, eventArgs)
     local debug_enabled = is_precast_debug_enabled()
 
@@ -275,47 +334,8 @@ function job_post_precast(spell, action, spellMap, eventArgs)
         equip(sets.precast.FC[spell.english])
     end
 
-    -- DEBUG: Display equipped set and gear
     if debug_enabled then
-        -- Determine which set was equipped and get the actual set table
-        local set_name = "Unknown"
-        local gear_set = nil
-
-        if spell.type == 'WeaponSkill' then
-            if sets.precast.WS and sets.precast.WS[spell.english] then
-                set_name = "sets.precast.WS[" .. spell.english .. "]"
-                gear_set = sets.precast.WS[spell.english]
-            elseif sets.precast.WS then
-                set_name = "sets.precast.WS (base)"
-                gear_set = sets.precast.WS
-            end
-        elseif spell.type == 'JobAbility' then
-            if sets.precast.JA and sets.precast.JA[spell.english] then
-                set_name = "sets.precast.JA[" .. spell.english .. "]"
-                gear_set = sets.precast.JA[spell.english]
-            elseif sets.precast.JA then
-                set_name = "sets.precast.JA (base)"
-                gear_set = sets.precast.JA
-            end
-        elseif spell.action_type == 'Magic' then
-            if buffactive['Chainspell'] then
-                set_name = "No FC (Chainspell active)"
-                gear_set = nil
-            elseif sets.precast.FC and sets.precast.FC[spell.english] then
-                set_name = "sets.precast.FC[" .. spell.english .. "]"
-                gear_set = sets.precast.FC[spell.english]
-            elseif sets.precast.FC and spell.skill and sets.precast.FC[spell.skill] then
-                set_name = "sets.precast.FC[" .. spell.skill .. "]"
-                gear_set = sets.precast.FC[spell.skill]
-            elseif sets.precast.FC then
-                set_name = "sets.precast.FC (base)"
-                gear_set = sets.precast.FC
-            end
-        elseif spell.type == 'RangedAttack' then
-            set_name = "sets.precast.RA"
-            gear_set = sets.precast.RA
-        end
-
+        local set_name, gear_set = describe_equipped_set(spell)
         MessagePrecast.show_equipped_set(set_name)
         if gear_set then
             MessagePrecast.show_equipment(gear_set)
