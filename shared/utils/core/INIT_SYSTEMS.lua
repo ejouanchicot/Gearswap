@@ -247,9 +247,12 @@ end, 0.5)  -- Defer by 0.5 seconds (non-blocking)
 -- Snapshot _G now. Anything that appears afterwards was created during play,
 -- and //gs c syscheck will name it. This is what catches a helper writing to a
 -- variable it never declared - valid Lua that silently drops the value.
-pcall(function()
+-- On a delay: the deferred blocks above run at 0.5s and 2s, and job modules
+-- load later still. Snapshotting synchronously here caught none of them and
+-- reported every one as a leak.
+coroutine.schedule(function()
     local ok, GlobalProbe = pcall(require, 'shared/utils/debug/global_probe')
     if ok and GlobalProbe then
         GlobalProbe.snapshot()
     end
-end)
+end, 5.0)

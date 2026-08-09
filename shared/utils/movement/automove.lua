@@ -43,7 +43,10 @@ local MessageCore = require('shared/utils/messages/message_core')
 local DebugLogger = require('shared/utils/debug/debug_logger')
 
 -- Global AutoMove API
-AutoMove = AutoMove or {}
+-- Explicit _G, per the dual-export convention: a bare assignment here is
+-- indistinguishable from the accidental kind the global probe hunts for.
+_G.AutoMove = _G.AutoMove or {}
+local AutoMove = _G.AutoMove
 
 ---============================================================================
 --- CONFIGURATION
