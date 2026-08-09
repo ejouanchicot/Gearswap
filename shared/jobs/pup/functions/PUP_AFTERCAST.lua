@@ -14,27 +14,11 @@
 ---   AFTERCAST HOOK
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Called after spell/ability completes
----   Returns to idle or engaged gear based on player status
----
----   @param spell table Spell/ability data
----   @param action string Action type (not used)
----   @param spellMap string Spell mapping (not used)
----   @param eventArgs table Event arguments (not used)
----   @return void
-function job_aftercast(spell, action, spellMap, eventArgs)
-    -- Watchdog: Track aftercast
-    if _G.MidcastWatchdog then
-        _G.MidcastWatchdog.on_aftercast()
-    end
+--- PUP adds nothing of its own: the shared handler is the whole
+--- behaviour. Pass a function to aftercast() to extend it.
+local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 
-    -- No PUP-specific aftercast logic required
-    -- Mote-Include handles return to idle/engaged automatically
-
-    -- Gear refresh is handled by Mote (status_change) + MidcastWatchdog (packet
-    -- loss). The forced 'gs c update' here was redundant (removed 2026-06-09,
-    -- validated in-game on WAR in Odyssey + Sortie).
-end
+job_aftercast = LifecycleManager.aftercast()
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT

@@ -9,24 +9,11 @@
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Handle aftercast events (return to idle/engaged gear)
----   @param spell table Spell data
----   @param action string Action type
----   @param spellMap string Spell mapping
----   @param eventArgs table Event arguments
-function job_aftercast(spell, action, spellMap, eventArgs)
-    -- Watchdog: Track aftercast
-    if _G.MidcastWatchdog then
-        _G.MidcastWatchdog.on_aftercast()
-    end
+--- RDM adds nothing of its own: the shared handler is the whole
+--- behaviour. Pass a function to aftercast() to extend it.
+local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 
-    -- RDM-specific aftercast logic
-    -- Mote-Include will automatically return to idle/engaged sets
-
-    -- Gear refresh is handled by Mote (status_change) + MidcastWatchdog (packet
-    -- loss). The forced 'gs c update' here was redundant (removed 2026-06-09,
-    -- validated in-game on WAR in Odyssey + Sortie).
-end
+job_aftercast = LifecycleManager.aftercast()
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT

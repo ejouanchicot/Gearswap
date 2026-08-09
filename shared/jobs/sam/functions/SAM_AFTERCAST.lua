@@ -7,18 +7,11 @@
 ---   @date    Created: 2025-10-21
 ---  ═══════════════════════════════════════════════════════════════════════════
 
-function job_aftercast(spell, action, spellMap, eventArgs)
-    -- Watchdog: Track aftercast
-    if _G.MidcastWatchdog then
-        _G.MidcastWatchdog.on_aftercast()
-    end
+--- SAM adds nothing of its own: the shared handler is the whole
+--- behaviour. Pass a function to aftercast() to extend it.
+local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 
-    -- SAM-specific aftercast logic
-
-    -- Gear refresh is handled by Mote (status_change) + MidcastWatchdog (packet
-    -- loss). The forced 'gs c update' here was redundant (removed 2026-06-09,
-    -- validated in-game on WAR in Odyssey + Sortie).
-end
+job_aftercast = LifecycleManager.aftercast()
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT

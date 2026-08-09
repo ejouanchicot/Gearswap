@@ -173,19 +173,11 @@ end
 ---   STATE CHANGE HANDLER
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Update UI when state changes
----   Called after state changes to update UI display
-function job_state_change(stateField, newValue, oldValue)
-    -- Skip UI update for Moving state (handled by AutoMove with flag)
-    if stateField == 'Moving' then
-        return
-    end
+--- DNC adds nothing of its own: the shared handler is the whole
+--- behaviour. Pass a function to state_change() to extend it.
+local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 
-    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-    if ui_success and KeybindUI then
-        KeybindUI.update()
-    end
-end
+job_state_change = LifecycleManager.state_change()
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT
