@@ -117,74 +117,86 @@ local function job_precast_bardsong_2(spell)
     MessageFormatter.show_instrument_locked(spell.english, instrument)
 end
 
----   Called before any action (song, JA, spell, etc.)
----   @param spell table Spell/ability data
----   @param action string Action type
----   @param spellMap string Spell mapping
----   @param eventArgs table Event arguments
+--- The song Marcato is configured to boost, if any.
+--- @return string|nil Song name, nil when the mode is off or unrecognised
+local function marcato_target_song()
+    if not (state and state.MarcatoSong) or state.MarcatoSong.value == 'Off' then
+        return nil
+    end
+    if state.MarcatoSong.value == 'HonorMarch' then
+        return 'Honor March'
+    elseif state.MarcatoSong.value == 'AriaPassion' then
+        return 'Aria of Passion'
+    end
+    return nil
+end
+
+--- Slip Marcato in ahead of the configured song, when it is worth doing.
+---
+--- Only under Nightingale and Troubadour together, which is the window where
+--- the extra potency is worth an ability charge. Soul Voice already maxes the
+--- song, so Marcato on top of it is wasted. Targeting another player is the
+--- Pianissimo path and takes the song as it is.
+---
+--- On success the original cast is cancelled and replaced by Marcato followed
+--- by the song, which is why it reports whether it acted.
+--- @return boolean True when the cast was replaced
+local function try_marcato(spell, eventArgs)
+    local target_song = marcato_target_song()
+    if not target_song or spell.english ~= target_song then
+        return false
+    end
+
+    -- Another player as target means Pianissimo, not Marcato.
+    if spell.target.type == 'PLAYER' and spell.target.id ~= player.id then
+        return false
+    end
+
+    local has_ni = buffactive['Nightingale'] or false
+    local has_tr = buffactive['Troubadour'] or false
+    local has_sv = buffactive['Soul Voice'] or false
+    if not (has_ni and has_tr) or has_sv or buffactive['Marcato'] then
+        return false
+    end
+
+    -- 48 is Marcato. On cooldown, cast the song plainly rather than nag.
+    local marcato_recast = windower.ffxi.get_ability_recasts()[48] or 0
+    if marcato_recast > 0 then
+        return false
+    end
+
+    cancel_spell()
+    send_command('input /ja "Marcato" <me>')
+    send_command('wait 2; input /ma "' .. target_song .. '" <me>')
+    MessageFormatter.show_marcato_honor_march(target_song)
+    eventArgs.cancel = true
+    return true
+end
+
 function job_precast(spell, action, spellMap, eventArgs)
-    -- Lazy load modules on first action
     ensure_modules_loaded()
 
-    -- FIRST: Check for blocking debuffs (Amnesia, Silence, etc.)
     if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
-        return -- Action blocked, exit immediately
+        return
     end
 
-    -- SECOND: Song refinement (auto-downgrade debuff songs if on cooldown)
-    -- INTENTIONAL ORDER: must run BEFORE CooldownChecker so a song on recast
-    -- can be downgraded (e.g. Lullaby II -> Lullaby I) instead of being
-    -- cancelled outright. Do not move CooldownChecker above this block.
     if spell.type == 'BardSong' then
+        -- Refinement runs BEFORE the cooldown check, and must keep doing so.
+        -- A song on recast can be downgraded - Lullaby II to Lullaby I - but
+        -- only if it is still alive to downgrade; checking the cooldown first
+        -- cancels it outright and the downgrade never happens. This is the one
+        -- documented departure from the standard precast order.
         if SongRefinement.refine_song(spell, eventArgs) then
-            return -- Song was refined/cancelled, exit
+            return
         end
-    end
 
-    -- AUTO-PIANISSIMO
-    -- If targeting another PC (not self, not charmed), auto-activate Pianissimo
-    if spell.type == 'BardSong' then
         job_precast_bardsong(spell, eventArgs)
-    end
 
-    -- AUTO-MARCATO: Configurable song (state.MarcatoSong) with Nitro and not using Pianissimo
-    if spell.type == 'BardSong' and state and state.MarcatoSong then
-        local marcato_enabled = state.MarcatoSong.value ~= 'Off'
-        local target_song = nil
-
-        if state.MarcatoSong.value == 'HonorMarch' then
-            target_song = 'Honor March'
-        elseif state.MarcatoSong.value == 'AriaPassion' then
-            target_song = 'Aria of Passion'
-        end
-
-        if marcato_enabled and target_song and spell.english == target_song then
-            if spell.target.type ~= 'PLAYER' or spell.target.id == player.id then
-                -- Not targeting another player >> check for Marcato
-                local has_ni = buffactive['Nightingale'] or false
-                local has_tr = buffactive['Troubadour'] or false
-                local has_sv = buffactive['Soul Voice'] or false
-
-                if has_ni and has_tr and not has_sv and not buffactive['Marcato'] then
-                    -- Check if Marcato is available (not on cooldown)
-                    local marcato_recast = windower.ffxi.get_ability_recasts()[48] or 0
-
-                    if marcato_recast == 0 then
-                        -- Marcato ready >> use before target song
-                        cancel_spell()
-                        send_command('input /ja "Marcato" <me>')
-                        send_command('wait 2; input /ma "' .. target_song .. '" <me>')
-                        MessageFormatter.show_marcato_honor_march(target_song)
-                        eventArgs.cancel = true
-                        return
-                    end
-                    -- If Marcato on cooldown: just cast song without it (no message spam)
-                end
-            end
+        if try_marcato(spell, eventArgs) then
+            return
         end
     end
 
-    -- THIRD: Universal cooldown check (after SongRefinement so it can downgrade first)
     if CooldownChecker then
         if spell.action_type == 'Ability' then
             CooldownChecker.check_ability_cooldown(spell, eventArgs)
@@ -193,21 +205,16 @@ function job_precast(spell, action, spellMap, eventArgs)
         end
     end
 
-    -- Exit if action was cancelled
     if eventArgs.cancel then
         return
     end
 
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
-    -- ══════════════════════════════════════════════════════════════════════════
     if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, BRDTPConfig) then
         return
     end
 
-    -- CRITICAL: Instrument Lock Protection System
-    -- Some songs (Honor March, Aria of Passion) require specific instruments
-    -- that MUST stay equipped throughout the entire cast or the song fails
+    -- Honor March and Aria of Passion need their instrument to stay on for the
+    -- whole cast, or the song simply fails.
     if spell.type == 'BardSong' and InstrumentLockConfig.requires_lock(spell.english) then
         job_precast_bardsong_2(spell)
     end
