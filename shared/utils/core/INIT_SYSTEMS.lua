@@ -239,3 +239,17 @@ end, 0.5)  -- Defer by 0.5 seconds (non-blocking)
 -- All universal systems initialized
 -- Individual system messages displayed above (if any errors occurred)
 -- This is a pure initialization script - no return value needed
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   GLOBAL PROBE BASELINE (last, so it sees everything the load created)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+-- Snapshot _G now. Anything that appears afterwards was created during play,
+-- and //gs c syscheck will name it. This is what catches a helper writing to a
+-- variable it never declared - valid Lua that silently drops the value.
+pcall(function()
+    local ok, GlobalProbe = pcall(require, 'shared/utils/debug/global_probe')
+    if ok and GlobalProbe then
+        GlobalProbe.snapshot()
+    end
+end)

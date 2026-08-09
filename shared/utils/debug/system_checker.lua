@@ -158,6 +158,47 @@ end
 
 -- MAIN CHECK RUNNER
 
+--- Variables that escaped into _G during play.
+---
+--- A helper that writes to a name it neither declared nor received creates a
+--- global instead, and the caller's value never changes. Valid Lua, silent at
+--- runtime, invisible in a diff - and it has already cost this project one
+--- live bug in the COR roll tracker.
+local function check_global_leaks()
+    local ok, Probe = pcall(require, 'shared/utils/debug/global_probe')
+    if not ok or not Probe then
+        return {name = 'Global leaks', status = 'WARN', score = 0.5,
+                detail = 'probe not loaded'}
+    end
+
+    local leaks = Probe.leaks()
+    if leaks == nil then
+        return {name = 'Global leaks', status = 'WARN', score = 0.5,
+                detail = 'no baseline - reload to arm the probe'}
+    end
+    if #leaks == 0 then
+        return {name = 'Global leaks', status = 'OK', score = 1, detail = 'none'}
+    end
+    return {name = 'Global leaks', status = 'FAIL', score = 0,
+            detail = table.concat(leaks, ', ')}
+end
+
+--- Hooks Mote looks up by name on this job.
+local function check_job_hooks()
+    local ok, Probe = pcall(require, 'shared/utils/debug/global_probe')
+    if not ok or not Probe then
+        return {name = 'Job hooks', status = 'WARN', score = 0.5,
+                detail = 'probe not loaded'}
+    end
+
+    local missing = Probe.missing_hooks()
+    if #missing == 0 then
+        return {name = 'Job hooks', status = 'OK', score = 1, detail = 'all present'}
+    end
+    return {name = 'Job hooks', status = 'FAIL', score = 0,
+            detail = 'missing: ' .. table.concat(missing, ', ')}
+end
+
 function SystemChecker.run()
     local session = check_session()
 
@@ -170,6 +211,8 @@ function SystemChecker.run()
         check_jobchange_manager(),
         check_ui(),
         check_lagdebugger(),
+        check_global_leaks(),
+        check_job_hooks(),
     }
 
     -- Calculate score
