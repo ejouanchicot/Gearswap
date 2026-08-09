@@ -98,6 +98,42 @@ end
 ---   STORM CASTING LOGIC
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- Extracted from StormManager.cast_storm_with_klimaform: the `klimaform_recast == 0 and storm_recast > 0` branch.
+local function stormmanager_cast_storm_with_klimaform_klimaform_recast(storm_name, storm_recast)
+    -- Storm on cooldown - show recast
+    local cooldowns = {
+        {
+            type = "cooldown",
+            name = storm_name,
+            value = storm_recast,
+            action_type = "Magic"
+        }
+    }
+    MessageCooldowns.show_multi_status(cooldowns)
+    return false
+end
+
+--- Extracted from StormManager.cast_storm_with_klimaform: the `klimaform_recast > 0 and storm_recast > 0` branch.
+local function stormmanager_cast_storm_with_klimaform_klimaform_recast_2(storm_name, klimaform_recast, storm_recast)
+    -- Both on cooldown - show both recasts in single block
+    local cooldowns = {
+        {
+            type = "cooldown",
+            name = "Klimaform",
+            value = klimaform_recast,
+            action_type = "Magic"
+        },
+        {
+            type = "cooldown",
+            name = storm_name,
+            value = storm_recast,
+            action_type = "Magic"
+        }
+    }
+    MessageCooldowns.show_multi_status(cooldowns)
+    return false
+end
+
 ---   Cast Storm with automatic Klimaform if needed
 ---   @param storm_name string Name of the storm spell (e.g., "Firestorm", "Hailstorm")
 ---   @return boolean true if casting was initiated, false if on cooldown
@@ -161,38 +197,12 @@ function StormManager.cast_storm_with_klimaform(storm_name)
 
     -- CASE 3: Klimaform ready, Storm on cooldown
     if klimaform_recast == 0 and storm_recast > 0 then
-        -- Storm on cooldown - show recast
-        local cooldowns = {
-            {
-                type = "cooldown",
-                name = storm_name,
-                value = storm_recast,
-                action_type = "Magic"
-            }
-        }
-        MessageCooldowns.show_multi_status(cooldowns)
-        return false
+        stormmanager_cast_storm_with_klimaform_klimaform_recast(storm_name, storm_recast)
     end
 
     -- CASE 4: Both spells on cooldown
     if klimaform_recast > 0 and storm_recast > 0 then
-        -- Both on cooldown - show both recasts in single block
-        local cooldowns = {
-            {
-                type = "cooldown",
-                name = "Klimaform",
-                value = klimaform_recast,
-                action_type = "Magic"
-            },
-            {
-                type = "cooldown",
-                name = storm_name,
-                value = storm_recast,
-                action_type = "Magic"
-            }
-        }
-        MessageCooldowns.show_multi_status(cooldowns)
-        return false
+        stormmanager_cast_storm_with_klimaform_klimaform_recast_2(storm_name, klimaform_recast, storm_recast)
     end
 
     return false

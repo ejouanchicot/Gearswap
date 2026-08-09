@@ -88,6 +88,52 @@ function job_midcast(spell, action, spellMap, eventArgs)
     end
 end
 
+--- Extracted from job_post_midcast: the `eventArgs.handled` branch.
+local function job_post_midcast_eventargs_handled(spellMap)
+    -- Apply Divine Caress boosting if StatusRemoval
+    if spellMap == 'StatusRemoval' and buffactive['Divine Caress'] then
+        equip(sets.buff['Divine Caress'])
+    end
+
+    -- Apply Afflatus Solace gear bonuses
+    if buffactive['Afflatus Solace'] then
+        if spellMap == 'Cure' or spellMap == 'Curaga' or spellMap == 'CureSolace' then
+            equip(sets.buff['Afflatus Solace'])
+        end
+    end
+end
+
+--- Extracted from job_post_midcast: the `spellMap == 'StatusRemoval'` branch.
+local function job_post_midcast_statusremoval(spell)
+    MidcastManager.select_set({
+        skill = 'StatusRemoval',
+        spell = spell
+    })
+
+    -- Apply Divine Caress boosting if buff is active
+    if buffactive['Divine Caress'] then
+        equip(sets.buff['Divine Caress'])
+    end
+end
+
+--- Extracted from job_post_midcast: the `spell.skill == 'Enhancing Magic'` branch.
+local function job_post_midcast_enhancing_magic(spell)
+    -- Use database-driven spell_family routing (replaces manual pattern matching)
+    -- Database automatically routes: Regen, Refresh, BarElement, BarAilment, Stoneskin, Aquaveil, Boost, etc.
+    MidcastManager.select_set({
+        skill = 'Enhancing Magic',
+        spell = spell,
+        target_func = MidcastManager.get_enhancing_target,
+        database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
+    })
+
+    -- Apply Afflatus Solace bonus for Bar-element spells
+    if spell.name:match('^Bar') and buffactive['Afflatus Solace'] then
+        equip(sets.buff['Afflatus Solace'])
+    end
+
+end
+
 ---   Post-midcast hook (MidcastManager routing and gear selection)
 ---   @param spell table Spell information from GearSwap
 ---   @param action string Action type
@@ -104,17 +150,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
 
     -- Skip if already handled (Cure/Curaga/CureSolace)
     if eventArgs.handled then
-        -- Apply Divine Caress boosting if StatusRemoval
-        if spellMap == 'StatusRemoval' and buffactive['Divine Caress'] then
-            equip(sets.buff['Divine Caress'])
-        end
-
-        -- Apply Afflatus Solace gear bonuses
-        if buffactive['Afflatus Solace'] then
-            if spellMap == 'Cure' or spellMap == 'Curaga' or spellMap == 'CureSolace' then
-                equip(sets.buff['Afflatus Solace'])
-            end
-        end
+        job_post_midcast_eventargs_handled(spellMap)
         return
     end
 
@@ -122,15 +158,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- STATUS REMOVAL (Cursna, Paralyna, Erase, etc.)
     -- ══════════════════════════════════════════════════════════════════════════
     if spellMap == 'StatusRemoval' then
-        MidcastManager.select_set({
-            skill = 'StatusRemoval',
-            spell = spell
-        })
-
-        -- Apply Divine Caress boosting if buff is active
-        if buffactive['Divine Caress'] then
-            equip(sets.buff['Divine Caress'])
-        end
+        job_post_midcast_statusremoval(spell)
         return
     end
 
@@ -138,20 +166,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     -- ENHANCING MAGIC (Database-driven spell_family routing)
     -- ══════════════════════════════════════════════════════════════════════════
     if spell.skill == 'Enhancing Magic' then
-        -- Use database-driven spell_family routing (replaces manual pattern matching)
-        -- Database automatically routes: Regen, Refresh, BarElement, BarAilment, Stoneskin, Aquaveil, Boost, etc.
-        MidcastManager.select_set({
-            skill = 'Enhancing Magic',
-            spell = spell,
-            target_func = MidcastManager.get_enhancing_target,
-            database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
-        })
-
-        -- Apply Afflatus Solace bonus for Bar-element spells
-        if spell.name:match('^Bar') and buffactive['Afflatus Solace'] then
-            equip(sets.buff['Afflatus Solace'])
-        end
-
+        job_post_midcast_enhancing_magic(spell)
         return
     end
 

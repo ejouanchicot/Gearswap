@@ -88,6 +88,38 @@ end
 ---   PRECAST HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- Extracted from job_precast: the `spell.type == 'Samba' and MessageFormatter` branch.
+local function job_precast_samba(spell, eventArgs)
+    local current_tp = player and player.tp or 0
+    if current_tp < 350 then
+        MessageFormatter.show_ability_tp_error(spell.name, current_tp, 350)
+        eventArgs.cancel = true
+        return
+    end
+end
+
+--- Extracted from job_precast: the `spell.type == 'WeaponSkill'` branch.
+local function job_precast_weaponskill(spell, eventArgs)
+    -- Auto-trigger Jump before WS (DRG subjob)
+    if JumpManager then
+        JumpManager.auto_trigger_jump(spell, eventArgs)
+        if eventArgs.cancel then
+            return
+        end
+    end
+
+    -- Auto-trigger Climactic Flourish
+    if ClimaticManager then
+        ClimaticManager.auto_trigger(spell, eventArgs)
+        if eventArgs.cancel then
+            return
+        end
+    end
+
+    -- Reset auto-recast flag
+    _G.DNC_AUTO_WS_RECAST = false
+end
+
 ---   Called before any action (WS, JA, spell, etc.)
 ---   @param spell table Spell/ability data
 ---   @param action string Action type
@@ -116,12 +148,7 @@ function job_precast(spell, action, spellMap, eventArgs)
 
     -- DNC-SPECIFIC: Samba TP requirement (350 TP)
     if spell.type == 'Samba' and MessageFormatter then
-        local current_tp = player and player.tp or 0
-        if current_tp < 350 then
-            MessageFormatter.show_ability_tp_error(spell.name, current_tp, 350)
-            eventArgs.cancel = true
-            return
-        end
+        job_precast_samba(spell, eventArgs)
     end
 
     -- DNC-SPECIFIC: Climactic Flourish timestamp
@@ -131,24 +158,7 @@ function job_precast(spell, action, spellMap, eventArgs)
 
     -- DNC-SPECIFIC: Auto-triggers for WS
     if spell.type == 'WeaponSkill' then
-        -- Auto-trigger Jump before WS (DRG subjob)
-        if JumpManager then
-            JumpManager.auto_trigger_jump(spell, eventArgs)
-            if eventArgs.cancel then
-                return
-            end
-        end
-
-        -- Auto-trigger Climactic Flourish
-        if ClimaticManager then
-            ClimaticManager.auto_trigger(spell, eventArgs)
-            if eventArgs.cancel then
-                return
-            end
-        end
-
-        -- Reset auto-recast flag
-        _G.DNC_AUTO_WS_RECAST = false
+        job_precast_weaponskill(spell, eventArgs)
     end
 
     -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
