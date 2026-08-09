@@ -35,7 +35,10 @@ function StateDisplayOverride.init()
         end
 
         -- UI hidden → Display Mote-Include default message (with nil protection)
-        add_to_chat(122, (state_name or 'State')..': '..(new_current_state or 'Unknown'))
+        local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+        if ok and MessageFormatter then
+            MessageFormatter.show_state_display(state_name or 'State', new_current_state or 'Unknown')
+        end
     end
 end
 

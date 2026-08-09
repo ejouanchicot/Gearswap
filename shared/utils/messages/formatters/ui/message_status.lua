@@ -41,6 +41,16 @@ function MessageStatus.show_info(message)
     M.send('STATUS', 'info', {message = message})
 end
 
+--- Show a state change the way Mote-Include would have shown it.
+--- @param state_name string Name of the state that changed
+--- @param value string New value of that state
+function MessageStatus.show_state_display(state_name, value)
+    M.send('STATUS', 'state_display', {
+        state_name = state_name,
+        value = value
+    })
+end
+
 ---============================================================================
 --- TP STATUS MESSAGES
 ---============================================================================
