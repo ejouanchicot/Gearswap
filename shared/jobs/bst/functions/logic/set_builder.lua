@@ -88,9 +88,9 @@ local function idle_without_pet(base_idle_set)
     return with_pdt(final_set, sets.me.idle, sets.me.PDT)
 end
 
---- Overlays that apply whatever the pet is doing.
+--- The chosen main and sub weapon sets, which apply in every situation.
 --- @return table
-local function apply_common_overlays(final_set)
+local function apply_weapon_sets(final_set)
     if state.WeaponSet and state.WeaponSet.value and sets[state.WeaponSet.value] then
         final_set = set_combine(final_set, sets[state.WeaponSet.value])
     end
@@ -98,6 +98,14 @@ local function apply_common_overlays(final_set)
     if state.SubSet and state.SubSet.value and sets[state.SubSet.value] then
         final_set = set_combine(final_set, sets[state.SubSet.value])
     end
+
+    return final_set
+end
+
+--- Overlays that apply whatever the pet is doing.
+--- @return table
+local function apply_common_overlays(final_set)
+    final_set = apply_weapon_sets(final_set)
 
     if state.Moving and state.Moving.value == "true" and sets.MoveSpeed then
         final_set = set_combine(final_set, sets.MoveSpeed)
@@ -131,98 +139,41 @@ end
 ---   ENGAGED SET BUILDER (Pet vs Master Bifurcation)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Build engaged set with Pet vs Master bifurcation
----   CRITICAL LOGIC (3 CASES):
----   • Case 1: BOTH master AND pet engaged >> Use engagedBoth sets
----   • Case 2: Pet engaged ONLY (master idle) >> Use pet engaged sets
----   • Case 3: Master engaged ONLY (no pet OR pet idle) >> Use master engaged sets
----   • ALWAYS apply: WeaponSet, SubSet, HybridMode
+--- Melee gear, chosen by who is actually fighting.
 ---
----   @param base_engaged_set table Base engaged set from sets.me.engaged
----   @return table final_set Final engaged set after all customizations
-function SetBuilder.build_engaged_set(base_engaged_set)
-    -- Use GLOBAL pet and player from Mote-Include (cached, no API call)
-    local pet = _G.pet
-    local player = _G.player
+--- Three situations and they are not interchangeable: with both master and pet
+--- engaged the engagedBoth set exists precisely because neither the pure pet
+--- nor the pure master set is right; pet-only means the master is standing
+--- there while the pet works; master-only covers no pet at all and a pet that
+--- is merely following.
+--- @param base_engaged_set table Fallback when nothing more specific exists
+--- @param pet_valid boolean Whether a pet is actually out
+--- @return table
+local function engaged_for_situation(base_engaged_set, pet_valid)
+    -- String comparison: Mote states hold "true", not true.
+    local pet_engaged = state.PetEngaged and state.PetEngaged.value == "true"
+    local master_engaged = _G.player and _G.player.status == 'Engaged'
 
-    -- Update pet mode cache
-    PetManager.update_pet_mode(pet)
+    if master_engaged and pet_valid and pet_engaged then
+        local final_set = sets.pet.engagedBoth or sets.me.engaged or base_engaged_set
+        return with_pdt(final_set, sets.pet.engagedBoth, sets.pet.PDT)
+    end
+
+    if pet_valid and pet_engaged then
+        local final_set = sets.pet.engaged or base_engaged_set
+        return with_pdt(final_set, sets.pet.engaged, sets.pet.PDT)
+    end
+
+    local final_set = sets.me.engaged or base_engaged_set
+    return with_pdt(final_set, sets.me.engaged, sets.me.PDT)
+end
+
+function SetBuilder.build_engaged_set(base_engaged_set)
+    PetManager.update_pet_mode(_G.pet)
     local pet_mode = PetManager.get_pet_mode()
 
-    local final_set = base_engaged_set
-
-    -- Check if pet is engaged (STRING comparison!)
-    local pet_is_engaged = state.PetEngaged and state.PetEngaged.value == "true"
-
-    -- Check if master is engaged
-    local master_is_engaged = player and player.status == 'Engaged'
-
-    ---══════════════════════════════════════════════════════════════════════════
-    --- BIFURCATION: 3-Way Split (Both / Pet Only / Master Only)
-    ---══════════════════════════════════════════════════════════════════════════
-
-    if master_is_engaged and pet_mode.pet_valid and pet_is_engaged then
-        -- ══════════════════════════════════════════════════════════════════════════
-        -- CASE 1: BOTH MASTER AND PET ENGAGED - Use engagedBoth sets
-        -- ══════════════════════════════════════════════════════════════════════════
-
-        final_set = sets.pet.engagedBoth or sets.me.engaged or base_engaged_set
-
-        -- Apply engagedBoth PDT if HybridMode is PDT
-        if state.HybridMode and state.HybridMode.value == "PDT" then
-            if sets.pet.engagedBoth and sets.pet.engagedBoth.PDT then
-                final_set = set_combine(final_set, sets.pet.engagedBoth.PDT)
-            elseif sets.pet.PDT then
-                final_set = set_combine(final_set, sets.pet.PDT)
-            end
-        end
-
-    elseif pet_mode.pet_valid and pet_is_engaged then
-        -- ══════════════════════════════════════════════════════════════════════════
-        -- CASE 2: PET ENGAGED ONLY (master idle) - Use pet engaged sets
-        -- ══════════════════════════════════════════════════════════════════════════
-
-        final_set = sets.pet.engaged or base_engaged_set
-
-        -- Apply pet engaged PDT if HybridMode is PDT
-        if state.HybridMode and state.HybridMode.value == "PDT" then
-            if sets.pet.engaged and sets.pet.engaged.PDT then
-                final_set = set_combine(final_set, sets.pet.engaged.PDT)
-            elseif sets.pet.PDT then
-                final_set = set_combine(final_set, sets.pet.PDT)
-            end
-        end
-
-    else
-        -- ══════════════════════════════════════════════════════════════════════════
-        -- CASE 3: MASTER ENGAGED ONLY (no pet OR pet idle) - Use master sets
-        -- ══════════════════════════════════════════════════════════════════════════
-
-        final_set = sets.me.engaged or base_engaged_set
-
-        -- Apply master engaged PDT if HybridMode is PDT
-        if state.HybridMode and state.HybridMode.value == "PDT" then
-            if sets.me.engaged and sets.me.engaged.PDT then
-                final_set = set_combine(final_set, sets.me.engaged.PDT)
-            elseif sets.me.PDT then
-                final_set = set_combine(final_set, sets.me.PDT)
-            end
-        end
-    end
-
-    ---══════════════════════════════════════════════════════════════════════════
-    --- ALWAYS APPLY: Dual Weapon System
-    ---══════════════════════════════════════════════════════════════════════════
-
-    if state.WeaponSet and state.WeaponSet.value and sets[state.WeaponSet.value] then
-        final_set = set_combine(final_set, sets[state.WeaponSet.value])
-    end
-
-    if state.SubSet and state.SubSet.value and sets[state.SubSet.value] then
-        final_set = set_combine(final_set, sets[state.SubSet.value])
-    end
-
-    return final_set
+    return apply_weapon_sets(
+        engaged_for_situation(base_engaged_set, pet_mode.pet_valid))
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
