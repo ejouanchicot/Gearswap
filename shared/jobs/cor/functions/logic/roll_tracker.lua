@@ -388,7 +388,10 @@ function RollTracker.validate_party_cache()
         _G.cor_party_state.party_count = current_party_count
     elseif _G.cor_party_state.zone_id ~= current_zone then
         -- A real zone change: jobs collected in the old zone are stale.
-        _G.cor_party_jobs = {}
+        -- Empty in place: the sandbox name and windower._cor_party_jobs are
+        -- the same table, and reassigning would leave the persistent one full
+        -- of stale entries that come back on the next reload.
+        for k in pairs(_G.cor_party_jobs) do _G.cor_party_jobs[k] = nil end
         _G.cor_party_state.zone_id = current_zone
         _G.cor_party_state.party_count = current_party_count
         return
@@ -396,7 +399,7 @@ function RollTracker.validate_party_cache()
 
     -- Check if party composition changed
     if _G.cor_party_state.party_count ~= current_party_count then
-        _G.cor_party_jobs = {}
+        for k in pairs(_G.cor_party_jobs) do _G.cor_party_jobs[k] = nil end
         _G.cor_party_state.party_count = current_party_count
         return
     end
@@ -762,9 +765,10 @@ function RollTracker.cleanup()
     -- Clear Crooked Cards timestamp
     _G.cor_crooked_timestamp = nil
 
-    -- Clear party state (managed by party_tracker but cleanup here too)
-    _G.cor_party_state = nil
-    _G.cor_party_jobs = nil
+    -- Party jobs are deliberately NOT cleared here. They live in the windower
+    -- table so they survive a reload; wiping them on unload would defeat that
+    -- and put us back to learning every member's job from scratch.
+    -- //gs c clearparty is the way to drop them on purpose.
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
