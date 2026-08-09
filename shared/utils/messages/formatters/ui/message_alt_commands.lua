@@ -108,8 +108,8 @@ local function header(alt, job, subjob, count)
     local gray = MessageCore.create_color_code(Colors.SEPARATOR)
     local hi = MessageCore.create_color_code(Colors.HEADER)
     local jobs = job .. (subjob and subjob ~= 'NON' and ('/' .. subjob) or '')
-    MessageRenderer.send(1, string.format('%s=== what %s%s%s can do for you (%s%s%s) - %d ===',
-        gray, hi, alt, gray, hi, jobs, gray, count))
+    MessageRenderer.send(1, string.format('%s=== %s%s %s(%s)%s - %d commands ===',
+        gray, hi, alt, gray, jobs, gray, count))
 end
 
 --- Which job a command came from, main or sub.
@@ -123,30 +123,50 @@ local function job_label(entry)
     return entry.source == 'sub' and ('/' .. job) or job
 end
 
---- Print one command row.
----
---- No padding: FFXI's chat is a proportional font, so spaces cannot align
---- columns - they only lengthen the row. Command first, then what it casts,
---- then anything unusual about it.
---- @param name string Command name
+--- Bucket a command by what the player has to do before firing it.
 --- @param entry table Command definition
---- @param alt string Alt character name
-local function row(name, entry, alt)
-    local gray = MessageCore.create_color_code(Colors.SEPARATOR)
-    local key = MessageCore.create_color_code(Colors.KEYBIND_KEY)
-    local spell = MessageCore.create_color_code(Colors.SPELL)
+--- @return string 'select' or 'alt'
+local function behaviour_of(entry)
+    local target = entry.target or 'lastst'
+    if type(target) == 'function' then
+        local ok, resolved = pcall(target)
+        target = (ok and type(resolved) == 'string') and resolved or 'lastst'
+    end
+    target = target:lower()
+    if target == 'me' or target == 'pet' then
+        return 'alt'
+    end
+    return 'select'
+end
 
-    -- Flag the subjob only: it is the surprising case, since the tier is lower
-    -- than the same spell would be on a main job.
-    local from = ''
-    if entry.source == 'sub' then
-        from = ' [/' .. (entry.source_job or '?') .. ']'
+--- Print names on as few lines as possible, wrapped to the chat width.
+---
+--- One line per command wastes the window: a dozen names fit on two lines, and
+--- what the reader wants is the set of choices, not a table.
+--- @param label string Leading label, e.g. 'on your target:'
+--- @param names table Command names
+--- @param width number Characters to wrap at
+local function name_block(label, names, width)
+    if #names == 0 then
+        return
     end
 
-    MessageRenderer.send(1, string.format('%s  %s//gs c %s  %s%s%s%s%s',
-        gray, key, name,
-        spell, action_label(entry),
-        gray, target_note(entry, alt), from))
+    local gray = MessageCore.create_color_code(Colors.SEPARATOR)
+    local key = MessageCore.create_color_code(Colors.KEYBIND_KEY)
+
+    local line, first = '', true
+    for _, n in ipairs(names) do
+        if #line + #n + 1 > width then
+            MessageRenderer.send(1, string.format('%s  %-16s%s%s',
+                gray, first and label or '', key, line))
+            line, first = '', false
+        end
+        line = line == '' and n or (line .. ' ' .. n)
+    end
+    if line ~= '' then
+        MessageRenderer.send(1, string.format('%s  %-16s%s%s',
+            gray, first and label or '', key, line))
+    end
 end
 
 --- Display the alt's commands, grouped or filtered.
@@ -165,7 +185,7 @@ function MessageAltCommands.show_list(alt, job, names, commands, filter, subjob)
         return
     end
 
-    -- Filtered view: a group name, or any command whose name or spell matches.
+    -- Filtered view: syntax once, then the choices.
     if filter and filter ~= '' then
         local needle = filter:lower()
         local hits = {}
@@ -183,10 +203,21 @@ function MessageAltCommands.show_list(alt, job, names, commands, filter, subjob)
             MessageRenderer.send(1, gray .. '  nothing matches "' .. filter .. '"')
             return
         end
-        MessageRenderer.send(1, gray ..
-            '  Select first: /ta <stpc> for an ally, /ta <stnpc> for a mob.')
+
+        MessageRenderer.send(1, string.format('%s  %s//gs c <name>%s and %s casts it.',
+            gray, key, gray, alt))
+
+        local by = { select = {}, alt = {} }
         for _, name in ipairs(hits) do
-            row(name, commands[name], alt)
+            table.insert(by[behaviour_of(commands[name])], name)
+        end
+
+        name_block('needs a target:', by.select, 58)
+        name_block('on ' .. alt .. ':', by.alt, 58)
+
+        if #by.select > 0 then
+            MessageRenderer.send(1, gray ..
+                '  pick it with /ta <stpc> for an ally, /ta <stnpc> for a mob')
         end
         return
     end
@@ -213,19 +244,19 @@ function MessageAltCommands.show_list(alt, job, names, commands, filter, subjob)
     end
 
     header(alt, job, subjob, #names)
+    MessageRenderer.send(1, string.format('%s  %s//gs c <name>%s and %s casts it - the name IS the spell name.',
+        gray, key, gray, alt))
+
     for _, g in ipairs(sorted) do
         local list = buckets[g]
-        local sample = table.concat(list, ', ', 1, math.min(3, #list))
-        if #list > 3 then sample = sample .. ', ...' end
-        MessageRenderer.send(1, string.format('%s  %s%s %s(%d)%s  %s',
-            gray, key, g, gray, #list,
-            MessageCore.create_color_code(Colors.SPELL), sample))
+        local sample = table.concat(list, ' ', 1, math.min(5, #list))
+        if #list > 5 then sample = sample .. ' ...' end
+        MessageRenderer.send(1, string.format('%s  %-16s%s%s %s(%d)',
+            gray, g .. ':', MessageCore.create_color_code(Colors.SPELL), sample, gray, #list))
     end
 
-    MessageRenderer.send(1, string.format('%s  %s//gs c altcmds <group>%s or %s//gs c altcmds <word>%s to see the commands',
-        gray, key, gray, key, gray))
-    MessageRenderer.send(1, string.format('%s  the command name is the spell name: %s//gs c haste%s, %s//gs c dia%s',
-        gray, key, gray, key, gray))
+    MessageRenderer.send(1, string.format('%s  %s//gs c altcmds <group>%s for the rest, or search: %s//gs c altcmds haste',
+        gray, key, gray, key))
 end
 
 ---============================================================================
