@@ -480,7 +480,8 @@ function AltCommands.list(filter)
     table.sort(names)
 
     local MessageAlt = require('shared/utils/messages/formatters/ui/message_alt_commands')
-    MessageAlt.show_list(alt, job, names, commands, filter)
+    local _, subjob = get_alt_jobs()
+    MessageAlt.show_list(alt, job, names, commands, filter, subjob)
     return true
 end
 

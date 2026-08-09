@@ -165,13 +165,13 @@ still reaches the alt.
 ### Finding a command
 
 A job config carries dozens of commands, so `//gs c altcmds` shows the map
-first, not the whole list:
+first:
 
 ```
-=== Kaories (RDM) - 111 commands ===
-  enfeebling   16  addle, altdispel, bind, ...
-  enhancing    70  altsneak, aquaveil, auspice, ...
-  healing      12  blindna, cura, curaga, ...
+=== what Kaories can do for you (RDM/WHM) - 111 ===
+  enfeebling (16)  addle, altdispel, bind, ...
+  enhancing (70)  altsneak, aquaveil, auspice, ...
+  healing (12)  blindna, cura, curaga, ...
 ```
 
 Then drill in with a group name, or search any word - it matches the command
@@ -179,20 +179,27 @@ name and the spell alike:
 
 ```
 //gs c altcmds healing
-//gs c altcmds haste
 
- job   | command        | casts                | on
- /WHM  | cura           | Cura                 | the alt
- RDM   | cure           | Cure IV              | your subtarget
+  Select first: /ta <stpc> for an ally, /ta <stnpc> for a mob.
+  //gs c cure  Cure IV
+  //gs c cura  Cura (on Kaories) [/WHM]
+  //gs c curaga  Curaga III [/WHM]
 ```
 
-The `job` column matters: two jobs are loaded at once, and `/WHM` means the
-command comes from the subjob - so it casts at a subjob tier.
+Read a row as: type this, it casts that. Nothing else means the usual rule
+applies - it lands on what you selected. A row only adds something when it
+breaks that rule:
 
-You rarely need the list, though: **the command name is the spell name**, in
-lowercase without spaces. `//gs c haste`, `//gs c dia`, `//gs c poisona`,
-`//gs c indifury`. The only exceptions are names that clash with an existing
-command, which get an `alt` prefix (`altdispel`, `altsneak`).
+| Suffix | Meaning |
+|--------|---------|
+| *(nothing)* | goes on what you selected |
+| `(on Kaories)` | goes on the alt, no selection needed |
+| `[/WHM]` | comes from the subjob, so a lower tier than the main would cast |
+
+You rarely need the list: **the command name is the spell name**, in lowercase
+without spaces - `//gs c haste`, `//gs c dia`, `//gs c poisona`. The exceptions
+are names that clash with an existing command, prefixed `alt` (`altdispel`,
+`altsneak`).
 
 ### Changing the commands
 
