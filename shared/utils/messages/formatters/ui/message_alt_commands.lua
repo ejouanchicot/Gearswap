@@ -114,8 +114,10 @@ end
 
 --- Print one command row.
 ---
---- FFXI's chat font is proportional, so padding with spaces never lines up.
---- Fixed separators do, and they also survive a long spell name.
+--- No padding here. FFXI's chat uses a proportional font, so spaces cannot
+--- line columns up - they only make the lines longer and push the tail off the
+--- window. Colour and separators do the work instead: the command name is the
+--- thing you scan for, so it comes first and in its own colour.
 --- @param name string Command name
 --- @param entry table Command definition
 local function row(name, entry)
@@ -124,14 +126,11 @@ local function row(name, entry)
     local spell = MessageCore.create_color_code(Colors.SPELL)
     local job = MessageCore.create_color_code(Colors.JOB_TAG)
 
-    -- Pad each cell AND separate with a bar: the padding carries most of the
-    -- alignment, the bars keep the columns readable when a long spell name
-    -- overflows its cell.
-    MessageRenderer.send(1, string.format('%s %s%-5s %s| %s%-14s %s| %s%-20s %s| %s',
-        gray, job, job_label(entry),
-        gray, key, name,
+    MessageRenderer.send(1, string.format('%s  %s%s %s- %s%s %s(%s%s%s, %s)',
+        gray,
+        key, name,
         gray, spell, action_label(entry),
-        gray, target_label(entry)))
+        gray, job, job_label(entry), gray, target_label(entry)))
 end
 
 --- Display the alt's commands, grouped or filtered.
@@ -168,8 +167,6 @@ function MessageAltCommands.show_list(alt, job, names, commands, filter)
             MessageRenderer.send(1, gray .. '  nothing matches "' .. filter .. '"')
             return
         end
-        MessageRenderer.send(1, string.format('%s %-5s | %-14s | %-20s | %s',
-            gray, 'job', 'command', 'casts', 'on'))
         for _, name in ipairs(hits) do
             row(name, commands[name])
         end
@@ -202,7 +199,7 @@ function MessageAltCommands.show_list(alt, job, names, commands, filter)
         local list = buckets[g]
         local sample = table.concat(list, ', ', 1, math.min(3, #list))
         if #list > 3 then sample = sample .. ', ...' end
-        MessageRenderer.send(1, string.format('%s  %s%-12s %s%2d  %s%s',
+        MessageRenderer.send(1, string.format('%s  %s%s %s(%d)%s  %s',
             gray, key, g, gray, #list,
             MessageCore.create_color_code(Colors.SPELL), sample))
     end
