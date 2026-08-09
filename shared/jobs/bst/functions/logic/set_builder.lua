@@ -26,97 +26,71 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 ---   IDLE SET BUILDER (Pet vs Master Bifurcation)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Build idle set with Pet vs Master bifurcation
----   CRITICAL LOGIC:
----   • If pet valid >> Use pet sets (pet.idle or pet.engaged based on petEngaged state)
----   • If no pet >> Use master sets (me.idle with town detection)
----   • ALWAYS apply: WeaponSet, SubSet, HybridMode, Movement
+--- Is the hybrid mode asking for damage taken gear?
+local function wants_pdt()
+    return state.HybridMode ~= nil and state.HybridMode.value == "PDT"
+end
+
+--- The PDT overlay for a group of sets, preferring the specific one.
 ---
----   @param base_idle_set table Base idle set from sets.me.idle
----   @return table final_set Final idle set after all customizations
-function SetBuilder.build_idle_set(base_idle_set)
-    -- Use GLOBAL pet from Mote-Include (cached, no API call)
-    local pet = _G.pet
+--- Written out four times before, once per branch, always the same shape:
+--- take sets.<group>.<situation>.PDT if it exists, otherwise the group's
+--- catch-all PDT. A job that only defines sets.pet.PDT still gets covered in
+--- every pet situation, which is the point of the fallback.
+--- @param specific table|nil e.g. sets.pet.engaged
+--- @param fallback table|nil e.g. sets.pet.PDT
+--- @return table|nil Set to combine, nil when neither exists
+local function pdt_overlay(specific, fallback)
+    if specific and specific.PDT then
+        return specific.PDT
+    end
+    return fallback
+end
 
-    -- Update pet mode cache
-    PetManager.update_pet_mode(pet)
-    local pet_mode = PetManager.get_pet_mode()
+--- Combine the PDT overlay in, if the mode calls for one and one exists.
+local function with_pdt(final_set, specific, fallback)
+    if not wants_pdt() then
+        return final_set
+    end
+    local overlay = pdt_overlay(specific, fallback)
+    return overlay and set_combine(final_set, overlay) or final_set
+end
 
-    local final_set = base_idle_set
-
-    ---══════════════════════════════════════════════════════════════════════════
-    --- BIFURCATION 1: Pet Valid or Not
-    ---══════════════════════════════════════════════════════════════════════════
-
-    if pet_mode.pet_valid then
-        -- ══════════════════════════════════════════════════════════════════════════
-        -- PET ACTIVE - Use pet sets
-        -- ══════════════════════════════════════════════════════════════════════════
-
-        -- Check if pet is engaged (STRING comparison!)
-        if state.PetEngaged and state.PetEngaged.value == "true" then
-            -- Pet is engaged - use pet engaged set
-            final_set = sets.pet.engaged or sets.pet.idle or base_idle_set
-
-            -- Apply pet engaged PDT if HybridMode is PDT
-            if state.HybridMode and state.HybridMode.value == "PDT" then
-                if sets.pet.engaged and sets.pet.engaged.PDT then
-                    final_set = set_combine(final_set, sets.pet.engaged.PDT)
-                elseif sets.pet.PDT then
-                    final_set = set_combine(final_set, sets.pet.PDT)
-                end
-            end
-        else
-            -- Pet is idle - check petIdleMode
-            if state.PetIdleMode and state.PetIdleMode.value == "PetPDT" then
-                -- Focus on pet PDT
-                final_set = sets.pet.idle.PDT or sets.pet.idle or base_idle_set
-
-                -- Apply pet idle PDT overlay if HybridMode is PDT (only in PetPDT mode)
-                if state.HybridMode and state.HybridMode.value == "PDT" then
-                    if sets.pet.idle and sets.pet.idle.PDT then
-                        final_set = set_combine(final_set, sets.pet.idle.PDT)
-                    elseif sets.pet.PDT then
-                        final_set = set_combine(final_set, sets.pet.PDT)
-                    end
-                end
-            else
-                -- Focus on master PDT (MasterPDT mode)
-                final_set = sets.me.idle.PDT or sets.me.idle or base_idle_set
-
-                -- Apply master PDT overlay if HybridMode is PDT (only in MasterPDT mode)
-                if state.HybridMode and state.HybridMode.value == "PDT" then
-                    if sets.me.idle and sets.me.idle.PDT then
-                        final_set = set_combine(final_set, sets.me.idle.PDT)
-                    elseif sets.me.PDT then
-                        final_set = set_combine(final_set, sets.me.PDT)
-                    end
-                end
-            end
-        end
-
-    else
-        -- ══════════════════════════════════════════════════════════════════════════
-        -- NO PET - Use master sets
-        -- ══════════════════════════════════════════════════════════════════════════
-
-        -- Town feet handled by the overlay below (applies with or without a pet)
-        final_set = sets.me.idle or base_idle_set
-
-        -- Apply master PDT if HybridMode is PDT
-        if state.HybridMode and state.HybridMode.value == "PDT" then
-            if sets.me.idle and sets.me.idle.PDT then
-                final_set = set_combine(final_set, sets.me.idle.PDT)
-            elseif sets.me.PDT then
-                final_set = set_combine(final_set, sets.me.PDT)
-            end
-        end
+--- Idle gear while a pet is out.
+---
+--- Three situations, and which one wins is a choice the player makes with
+--- PetIdleMode: protect the pet, or protect yourself. Engaged always protects
+--- the pet, because that is what is being hit.
+--- @param base_idle_set table Fallback when nothing more specific is defined
+--- @return table
+local function idle_with_pet(base_idle_set)
+    -- String comparison: Mote states hold "true", not true.
+    if state.PetEngaged and state.PetEngaged.value == "true" then
+        local final_set = sets.pet.engaged or sets.pet.idle or base_idle_set
+        return with_pdt(final_set, sets.pet.engaged, sets.pet.PDT)
     end
 
-    ---══════════════════════════════════════════════════════════════════════════
-    --- ALWAYS APPLY: Dual Weapon System (Pet or No Pet)
-    ---══════════════════════════════════════════════════════════════════════════
+    if state.PetIdleMode and state.PetIdleMode.value == "PetPDT" then
+        local final_set = sets.pet.idle.PDT or sets.pet.idle or base_idle_set
+        return with_pdt(final_set, sets.pet.idle, sets.pet.PDT)
+    end
 
+    -- MasterPDT: the pet is out but the player is the one being protected.
+    local final_set = sets.me.idle.PDT or sets.me.idle or base_idle_set
+    return with_pdt(final_set, sets.me.idle, sets.me.PDT)
+end
+
+--- Idle gear with no pet: the master's own sets, nothing else.
+--- @param base_idle_set table Fallback when sets.me.idle is not defined
+--- @return table
+local function idle_without_pet(base_idle_set)
+    local final_set = sets.me.idle or base_idle_set
+    return with_pdt(final_set, sets.me.idle, sets.me.PDT)
+end
+
+--- Overlays that apply whatever the pet is doing.
+--- @return table
+local function apply_common_overlays(final_set)
     if state.WeaponSet and state.WeaponSet.value and sets[state.WeaponSet.value] then
         final_set = set_combine(final_set, sets[state.WeaponSet.value])
     end
@@ -125,24 +99,32 @@ function SetBuilder.build_idle_set(base_idle_set)
         final_set = set_combine(final_set, sets[state.SubSet.value])
     end
 
-    ---══════════════════════════════════════════════════════════════════════════
-    --- ALWAYS APPLY: Movement Speed (Pet or No Pet)
-    ---══════════════════════════════════════════════════════════════════════════
-
     if state.Moving and state.Moving.value == "true" and sets.MoveSpeed then
         final_set = set_combine(final_set, sets.MoveSpeed)
     end
 
-    ---══════════════════════════════════════════════════════════════════════════
-    --- ALWAYS APPLY: Town movement feet (any city/Adoulin, pet or not, even idle)
-    ---══════════════════════════════════════════════════════════════════════════
-
+    -- Town feet go on last and regardless: in a city the movement bonus is
+    -- worth more than whatever that slot was holding, pet out or not, moving
+    -- or standing.
     if BaseSetBuilder.is_in_town() and sets.me and sets.me.idle
         and sets.me.idle.Town and sets.me.idle.Town.feet then
         final_set = set_combine(final_set, { feet = sets.me.idle.Town.feet })
     end
 
     return final_set
+end
+
+function SetBuilder.build_idle_set(base_idle_set)
+    -- Mote caches the pet globally, so this costs nothing.
+    local pet = _G.pet
+    PetManager.update_pet_mode(pet)
+    local pet_mode = PetManager.get_pet_mode()
+
+    local final_set = pet_mode.pet_valid
+                      and idle_with_pet(base_idle_set)
+                      or idle_without_pet(base_idle_set)
+
+    return apply_common_overlays(final_set)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
