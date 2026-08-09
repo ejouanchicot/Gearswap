@@ -182,9 +182,10 @@ end
 
 --- Fire the openers a second apart.
 ---
---- The first goes out immediately and each next one waits its turn. The
---- spacing is deliberate but the original does not record why, so it is left
---- exactly as it was.
+--- The first goes out immediately, the second a second later, the third after
+--- two. The file header gives the reason as avoiding conflicts between
+--- abilities sent together; DNC and WAR space theirs the same way, at two
+--- seconds. The interval is left exactly as it was.
 --- @param to_cast table From triage_fbc
 local function cast_fbc(to_cast)
     for i, ability in ipairs(to_cast) do
