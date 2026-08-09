@@ -192,6 +192,39 @@ end
 --- MAIN COMMAND ROUTER
 ---============================================================================
 
+--- Extracted from WarpCommands.handle_command: the `command == 'warp' and subcommand` branch.
+local function warpcommands_handle_command_warp(subcommand)
+    if subcommand == 'status' then command_status(); return true end
+    if subcommand == 'unlock' then command_unlock(); return true end
+    if subcommand == 'fix' then command_fix(); return true end
+    if subcommand == 'lock' then command_lock(); return true end
+    if subcommand == 'test' then command_test(); return true end
+    if subcommand == 'help' then command_help(); return true end
+    if subcommand == 'ipctest' then
+        -- Test IPC system
+        local ipc_success, WarpIPC = pcall(require, 'shared/utils/warp/warp_ipc')
+        if ipc_success and WarpIPC then
+            MessageWarp.show_ipc_test_sent()
+            windower.send_ipc_message('tetsouo_warp_test_' .. (player and player.name or 'unknown'))
+        else
+            MessageCore.error('[WARP] IPC system not available')
+        end
+        return true
+    end
+end
+
+--- Extracted from WarpCommands.handle_command: the `command:find('all$') or (command:lower() ~= 'all' and subcom` branch.
+local function warpcommands_handle_command_all(command)
+    local base_cmd = command:find('all$') and command:gsub('all$', '') or command
+    local ipc_success, WarpIPC = pcall(require, 'shared/utils/warp/warp_ipc')
+    if ipc_success and WarpIPC then
+        return WarpIPC.send_to_all(base_cmd)
+    else
+        MessageCore.error('[WARP] IPC system not available')
+        return false
+    end
+end
+
 function WarpCommands.handle_command(cmdParams)
     if not cmdParams or #cmdParams == 0 then return false end
 
@@ -218,23 +251,7 @@ function WarpCommands.handle_command(cmdParams)
 
     -- SYSTEM COMMANDS (warp status, warp unlock, etc.)
     if command == 'warp' and subcommand then
-        if subcommand == 'status' then command_status(); return true end
-        if subcommand == 'unlock' then command_unlock(); return true end
-        if subcommand == 'fix' then command_fix(); return true end
-        if subcommand == 'lock' then command_lock(); return true end
-        if subcommand == 'test' then command_test(); return true end
-        if subcommand == 'help' then command_help(); return true end
-        if subcommand == 'ipctest' then
-            -- Test IPC system
-            local ipc_success, WarpIPC = pcall(require, 'shared/utils/warp/warp_ipc')
-            if ipc_success and WarpIPC then
-                MessageWarp.show_ipc_test_sent()
-                windower.send_ipc_message('tetsouo_warp_test_' .. (player and player.name or 'unknown'))
-            else
-                MessageCore.error('[WARP] IPC system not available')
-            end
-            return true
-        end
+        warpcommands_handle_command_warp(subcommand)
     end
 
     -- DEBUG TOGGLE
@@ -243,14 +260,7 @@ function WarpCommands.handle_command(cmdParams)
     -- IPC BROADCAST: Commands ending with "all" (multi-boxing support)
     -- Examples: warpall, tphall, sdall, escall
     if command:find('all$') or (command:lower() ~= 'all' and subcommand == 'all') then
-        local base_cmd = command:find('all$') and command:gsub('all$', '') or command
-        local ipc_success, WarpIPC = pcall(require, 'shared/utils/warp/warp_ipc')
-        if ipc_success and WarpIPC then
-            return WarpIPC.send_to_all(base_cmd)
-        else
-            MessageCore.error('[WARP] IPC system not available')
-            return false
-        end
+        warpcommands_handle_command_all(command)
     end
 
     -- BLM SPELLS
