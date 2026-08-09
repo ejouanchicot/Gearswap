@@ -162,23 +162,56 @@ Built-in commands always win a name conflict, so an entry called `dispel` would
 be shadowed on a job that already has `//gs c dispel`. `//gs c alt dispel`
 still reaches the alt.
 
-### Editing the command list
+### Finding a command
 
-One file per ALT job, in `<MainCharacter>/config/alt/`:
+A job config carries dozens of commands, so `//gs c altcmds` shows the map
+first, not the whole list:
 
 ```
-Tetsouo/config/alt/RDM_ALT_COMMANDS.lua
-Tetsouo/config/alt/COR_ALT_COMMANDS.lua
-Tetsouo/config/alt/GEO_ALT_COMMANDS.lua
+=== Kaories (RDM) - 111 commands ===
+  enfeebling   16  addle, altdispel, bind, ...
+  enhancing    70  altsneak, aquaveil, auspice, ...
+  healing      12  blindna, cura, curaga, ...
 ```
 
-Adding a command is one line:
+Then drill in with a group name, or search any word - it matches the command
+name and the spell alike:
+
+```
+//gs c altcmds healing
+//gs c altcmds haste
+
+ job   | command        | casts                | on
+ /WHM  | cura           | Cura                 | the alt
+ RDM   | cure           | Cure IV              | your subtarget
+```
+
+The `job` column matters: two jobs are loaded at once, and `/WHM` means the
+command comes from the subjob - so it casts at a subjob tier.
+
+You rarely need the list, though: **the command name is the spell name**, in
+lowercase without spaces. `//gs c haste`, `//gs c dia`, `//gs c poisona`,
+`//gs c indifury`. The only exceptions are names that clash with an existing
+command, which get an `alt` prefix (`altdispel`, `altsneak`).
+
+### Changing the commands
+
+`<JOB>_ALT_COMMANDS.lua` is **generated** from the game data and is rebuilt
+whenever the spell list changes - edits to it are lost.
+
+Put yours in `<JOB>_ALT_CUSTOM.lua` instead. It is never regenerated and is
+merged on top:
 
 ```lua
 M.commands = {
-    haste = { action = 'ma', spell = 'Haste II', target = 'lastst', desc = 'Haste II' },
+    h    = { action = 'ma', spell = 'Haste II', target = 'lastst' },  -- add
+    dia  = { action = 'ma', spell = 'Dia', target = 'lastst' },       -- replace
+    aero = false,                                                     -- remove
 }
 ```
+
+`RDM_ALT_CUSTOM.lua.example` ships as a commented template - copy it without
+the `.example` to start. The file is optional; absent means no overrides.
 
 | Field | Values |
 |-------|--------|

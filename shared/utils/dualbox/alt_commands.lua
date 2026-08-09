@@ -156,13 +156,31 @@ local function load_job_config(job, level, source)
     end
 
     local char = (player and player.name) or 'Tetsouo'
-    local ok, loaded = pcall(require, char .. '/config/alt/' .. job:upper() .. '_ALT_COMMANDS')
+    local base = char .. '/config/alt/' .. job:upper()
+
+    local ok, loaded = pcall(require, base .. '_ALT_COMMANDS')
     if not ok or type(loaded) ~= 'table' or type(loaded.commands) ~= 'table' then
         return nil
     end
 
-    local out = {}
+    -- Merge the hand-written file over the generated one. _ALT_COMMANDS is
+    -- rebuilt from game data and any edit to it would be lost; _ALT_CUSTOM is
+    -- yours and never regenerated. An entry set to false there removes the
+    -- generated command instead of replacing it.
+    local merged = {}
     for name, entry in pairs(loaded.commands) do
+        merged[name] = entry
+    end
+
+    local ok_custom, custom = pcall(require, base .. '_ALT_CUSTOM')
+    if ok_custom and type(custom) == 'table' and type(custom.commands) == 'table' then
+        for name, entry in pairs(custom.commands) do
+            merged[name] = entry or nil
+        end
+    end
+
+    local out = {}
+    for name, entry in pairs(merged) do
         local usable = true
 
         -- A tiered entry resolves against the level; drop it when nothing in
@@ -184,6 +202,7 @@ local function load_job_config(job, level, source)
 
         if usable then
             entry.source = source
+            entry.source_job = job:upper()
             out[name:lower()] = entry
         end
     end
@@ -430,7 +449,7 @@ function AltCommands.handle(cmd, args)
     args = args or {}
 
     if cmd == 'altcmds' or cmd == 'altlist' then
-        return AltCommands.list()
+        return AltCommands.list(args[1])
     end
 
     if cmd == 'alt' then
@@ -445,7 +464,7 @@ end
 
 --- Show every command the alt's current job offers.
 --- @return boolean True when a list was displayed
-function AltCommands.list()
+function AltCommands.list(filter)
     local alt = get_alt_name()
     local commands, job = load_config()
 
@@ -461,7 +480,7 @@ function AltCommands.list()
     table.sort(names)
 
     local MessageAlt = require('shared/utils/messages/formatters/ui/message_alt_commands')
-    MessageAlt.show_list(alt, job, names, commands)
+    MessageAlt.show_list(alt, job, names, commands, filter)
     return true
 end
 
