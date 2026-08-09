@@ -376,8 +376,18 @@ function RollTracker.validate_party_cache()
         end
     end
 
-    -- Check if zone changed
-    if _G.cor_party_state.zone_id ~= current_zone then
+    -- Adopt the zone the first time without wiping anything.
+    --
+    -- The state starts at zone_id = 0, which is not a real zone, so the very
+    -- first roll after a load saw a "zone change", cleared the party jobs the
+    -- packet listener had already collected, and returned - which is why the
+    -- job bonus only ever appeared from the Double-Up onwards, once a later
+    -- packet had refilled the table.
+    if _G.cor_party_state.zone_id == 0 then
+        _G.cor_party_state.zone_id = current_zone
+        _G.cor_party_state.party_count = current_party_count
+    elseif _G.cor_party_state.zone_id ~= current_zone then
+        -- A real zone change: jobs collected in the old zone are stale.
         _G.cor_party_jobs = {}
         _G.cor_party_state.zone_id = current_zone
         _G.cor_party_state.party_count = current_party_count
