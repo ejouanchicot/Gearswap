@@ -88,11 +88,12 @@ local function retier_cure(spell, eventArgs)
     return true
 end
 
---- Curing your own paralysis, without swapping gear.
+--- Curing your own paralysis: cast in whatever is worn, swap nothing.
 ---
---- Every swap is a chance for the paralysis to land on the swap itself and
---- lose the cast. Casting in whatever is already worn is worth more than the
---- fast-cast pieces here.
+--- Paralysis blocks the spell, never the equipment change - so this is not
+--- about protecting the cast. It is about the blinking: a paralyzed Paralyna
+--- is retried until it lands, and each attempt would swap the set on and off
+--- again. (Timara WHM pattern.)
 --- @return boolean True when this case applies
 local function paralyna_on_self(spell, eventArgs)
     if spell.english == 'Paralyna' and buffactive.Paralyzed then
