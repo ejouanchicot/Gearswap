@@ -175,7 +175,7 @@ end
 --- @param names table Sorted list of command names
 --- @param commands table Command definitions keyed by name
 --- @param filter string|nil Group name, or a substring to search for
-function MessageAltCommands.show_list(alt, job, names, commands, filter, subjob)
+function MessageAltCommands.show_list(alt, job, names, commands, filter, subjob, char)
     local gray = MessageCore.create_color_code(Colors.SEPARATOR)
     local key = MessageCore.create_color_code(Colors.KEYBIND_KEY)
 
@@ -257,6 +257,12 @@ function MessageAltCommands.show_list(alt, job, names, commands, filter, subjob)
 
     MessageRenderer.send(1, string.format('%s  %s//gs c altcmds <group>%s for the rest, or search: %s//gs c altcmds haste',
         gray, key, gray, key))
+
+    -- Say where to edit. The generated file is rebuilt and would lose changes,
+    -- so point at the override instead - people look for this exactly once and
+    -- never remember the path.
+    MessageRenderer.send(1, string.format('%s  add/remove/rename: %s%s/config/alt/%s_ALT_CUSTOM.lua%s (copy the .example)',
+        gray, key, char or 'Tetsouo', job, gray))
 end
 
 ---============================================================================

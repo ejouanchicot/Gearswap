@@ -1,0 +1,70 @@
+---============================================================================
+--- COR Alt Commands - your overrides
+---============================================================================
+--- Copy this file to COR_ALT_CUSTOM.lua (drop the .example) to use it.
+---
+--- WHY THIS FILE EXISTS
+---   COR_ALT_COMMANDS.lua is generated from the game data and gets rebuilt
+---   whenever the spell list changes - anything you write in it is lost. This
+---   file is never regenerated, and it is merged ON TOP of the generated one.
+---
+---   Same idea for every job: COR_ALT_CUSTOM.lua, GEO_ALT_CUSTOM.lua, and so
+---   on. All optional; missing files simply mean "no overrides".
+---
+--- THREE THINGS YOU CAN DO
+---   replace  reuse an existing command name with your own definition
+---   add      pick a name the generator did not produce
+---   remove   set the name to false
+---
+--- ENTRY FORMAT (identical to the generated file)
+---   <name> = {
+---       action = 'ma',        -- ma | ja | ws | so | item | pet | ra | raw
+---       spell  = 'Haste II',  -- fixed spell...
+---       tiers  = { { spell = 'Dia III', level = 75 },   -- ...or a tier chain,
+---                  { spell = 'Dia II',  level = 31 } }, --    highest first
+---       target = 'lastst',    -- 'lastst' = what you subtargeted, 'me' = the alt
+---       desc   = 'text',      -- shown by //gs c altcmds
+---   }
+---
+---   With `tiers`, the engine sends the highest tier the alt's level allows -
+---   which differs between a main job and a subjob.
+---
+--- @file    config/alt/COR_ALT_CUSTOM.lua
+--- @author  Tetsouo
+---============================================================================
+
+local M = {}
+
+M.commands = {
+
+    -- ------------------------------------------------------------------
+    -- REPLACE: same name, your definition wins
+    -- ------------------------------------------------------------------
+    -- Always send Dia III and never fall back to a lower tier:
+    -- dia = { action = 'ma', spell = 'Dia III', target = 'lastst', desc = 'Dia III only' },
+
+    -- ------------------------------------------------------------------
+    -- ADD: a name the generator does not produce
+    -- ------------------------------------------------------------------
+    -- A shorter alias for something you cast constantly:
+    -- h = { action = 'ma', spell = 'Haste II', target = 'lastst', desc = 'Haste II' },
+
+    -- A sequence, each step sent to the alt separately:
+    -- opener = {
+    --     target = 'lastst', step_delay = 2,
+    --     desc = 'Dia then Slow',
+    --     chain = {
+    --         { action = 'ma', spell = 'Dia III' },
+    --         { action = 'ma', spell = 'Slow II' },
+    --     },
+    -- },
+
+    -- ------------------------------------------------------------------
+    -- REMOVE: false drops a generated command
+    -- ------------------------------------------------------------------
+    -- Stop `//gs c aero` from existing:
+    -- aero = false,
+
+}
+
+return M
