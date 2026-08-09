@@ -9,32 +9,11 @@
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----  ═══════════════════════════════════════════════════════════════════════════
----   DEPENDENCIES - LAZY LOADING (Performance Optimization)
----  ═══════════════════════════════════════════════════════════════════════════
+--- BLM adds nothing of its own: the shared handler is the whole
+--- behaviour. Pass a function to buff_change() to extend it.
+local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 
-local DoomManager = nil
-
-local function ensure_managers_loaded()
-    if not DoomManager then
-        DoomManager = require('shared/utils/debuff/doom_manager')
-    end
-end
-
----   Handle buff change events
----   @param buff string Buff name
----   @param gain boolean True if buff gained, false if lost
-function job_buff_change(buff, gain, eventArgs)
-    -- Lazy load managers on first buff change
-    ensure_managers_loaded()
-
-    -- Doom handling (centralized)
-    if DoomManager.handle_buff_change(buff, gain) then
-        return -- Doom handled, stop processing
-    end
-
-    -- BLM-specific buff change logic can be added here
-end
+job_buff_change = LifecycleManager.buff_change()
 
 -- Export to global scope (used by Mote-Include via include())
 _G.job_buff_change = job_buff_change

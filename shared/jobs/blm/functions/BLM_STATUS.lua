@@ -9,27 +9,11 @@
 ---   @date    Updated: 2025-11-14
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----  ═══════════════════════════════════════════════════════════════════════════
----   DEPENDENCIES - LAZY LOADING (Performance Optimization)
----  ═══════════════════════════════════════════════════════════════════════════
+--- BLM adds nothing of its own: the shared handler is the whole
+--- behaviour. Pass a function to status_change() to extend it.
+local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 
-local DoomManager = nil
-
----   Handle status change events
----   @param newStatus string New status (Idle, Engaged, Resting, Dead, etc.)
----   @param oldStatus string Previous status
----   @param eventArgs table Event arguments
-function job_status_change(newStatus, oldStatus, eventArgs)
-    -- Lazy load DoomManager on first status change
-    if not DoomManager then
-        DoomManager = require('shared/utils/debuff/doom_manager')
-    end
-
-    -- Safety: Unlock Doom slots after death (prevents stuck locks after raise)
-    DoomManager.handle_status_change(newStatus, oldStatus)
-
-    -- BLM-specific status change logic can be added here
-end
+job_status_change = LifecycleManager.status_change()
 
 -- Export to global scope
 _G.job_status_change = job_status_change

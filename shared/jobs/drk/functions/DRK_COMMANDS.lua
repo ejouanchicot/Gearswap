@@ -163,24 +163,11 @@ end
 ---   STATE CHANGE HOOK
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Update UI when state changes (MainWeapon, HybridMode, etc.)
----   Called by Mote-Include after any state change.
----
----   @param stateField string State that changed (e.g., "MainWeapon")
----   @param newValue   string New value
----   @param oldValue   string Previous value
----   @return void
-function job_state_change(stateField, newValue, oldValue)
-    -- Skip UI update for Moving state (handled by AutoMove with flag)
-    if stateField == 'Moving' then
-        return
-    end
+--- DRK adds nothing of its own: the shared handler is the whole
+--- behaviour. Pass a function to state_change() to extend it.
+local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 
-    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-    if ui_success and KeybindUI then
-        KeybindUI.update()
-    end
-end
+job_state_change = LifecycleManager.state_change()
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT
