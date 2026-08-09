@@ -304,6 +304,95 @@ function ItemUser._execute_ring_sequence(ring_name, ring_id, is_warp_ring, tag)
     end, 2.5)
 end
 
+--- Give the ring slot back and stop waiting.
+---
+--- Every failure path here has to release ring1, or the slot stays locked and
+--- the player cannot equip anything in it until a reload. It was written out
+--- five times; forgetting it once is a stuck slot with no error.
+local function abandon_wait()
+    send_command('gs enable ring1')
+end
+
+--- Find a ring by id in any equippable, enabled bag.
+--- @param ring_id number Item id
+--- @return table|nil The item as the bag reports it
+local function find_equippable_item(ring_id)
+    local get_items = windower.ffxi.get_items
+    for bag_id in pairs(res_bags:equippable(true)) do
+        local bag = get_items(bag_id)
+        if bag.enabled then
+            for _, item in ipairs(bag) do
+                if item.id == ring_id then
+                    return item
+                end
+            end
+        end
+    end
+    return nil
+end
+
+--- How long until the ring can actually be used.
+---
+--- Three separate things gate it: charges left, the recast on the item, and an
+--- activation delay that runs from the moment it was equipped. All three have
+--- to be clear, and the timestamps are in the game's epoch so they need the
+--- offset before they mean anything.
+--- @param ext table Decoded extdata for the item
+--- @return boolean has_charges, number recast seconds, number activation seconds, boolean ready
+local function usability(ext)
+    local has_charges = ext.charges_remaining and ext.charges_remaining > 0
+
+    local recast_delay = 0
+    if has_charges and ext.next_use_time then
+        recast_delay = math.max((ext.next_use_time + EXTDATA_TIME_OFFSET) - os.time(), 0)
+    end
+
+    local activation_delay = 0
+    if ext.activation_time then
+        activation_delay = math.max((ext.activation_time + EXTDATA_TIME_OFFSET) - os.time(), 0)
+    end
+
+    return has_charges, recast_delay, activation_delay,
+           (has_charges and recast_delay == 0 and activation_delay == 0) or false
+end
+
+--- Say why the wait ran out, and what the player can do about it.
+local function report_timeout(tag, ext, max_wait, check_interval, recast_delay, activation_delay)
+    local charges = ext.charges_remaining or 0
+    MessageWarp.show_casting_timeout(string.format(
+        '[%s] Timeout after %ds - charges:%d recast:%ds activation:%ds',
+        tag, max_wait * check_interval, charges, recast_delay, activation_delay))
+
+    if charges == 0 then
+        MessageWarp.show_item_needs_recharge(tag, recast_delay)
+    elseif recast_delay > 0 then
+        MessageWarp.show_item_recast_pending(tag, recast_delay)
+    elseif activation_delay > 0 then
+        MessageWarp.show_item_equip_delay(tag, activation_delay)
+    end
+end
+
+--- Fire the item, once everything has cleared.
+local function use_now(ring_name, ring_id, is_warp_ring, tag, initial_ring1)
+    if is_warp_ring then
+        MessageWarp.show_warp_using(ring_name)
+    else
+        MessageWarp.show_tele_using(ring_name)
+    end
+
+    local item_name = res.items[ring_id] and res.items[ring_id].en or ring_name
+
+    local WarpDatabase = require('shared/utils/warp/warp_item_database')
+    local item_data, _ = WarpDatabase.get_item_by_id(ring_id)
+    local cast_time = (item_data and item_data.cast_time) or 8
+    local cast_delay = (item_data and item_data.cast_delay) or 0
+    local cast_duration = cast_time + cast_delay + 5  -- +5s buffer against lag
+
+    ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, item_name)
+    send_command('input /item "' .. item_name .. '" <me>')
+end
+
+
 function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, initial_ring1)
     local wait_count = 0
     local max_wait = 15
@@ -313,131 +402,64 @@ function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, i
     local function check_usable()
         wait_count = wait_count + 1
 
-        -- Load extdata
         local has_extdata, extdata = pcall(require, 'extdata')
         if not has_extdata then
             MessageWarp.show_extdata_error(tag)
-            send_command('gs enable ring1')
-            return
+            return abandon_wait()
         end
 
-        -- Find ring in bags and check usability
-        local get_items = windower.ffxi.get_items
-        local found_item = nil
-
-        for bag_id in pairs(res_bags:equippable(true)) do
-            local bag = get_items(bag_id)
-            if bag.enabled then
-                for _, item in ipairs(bag) do
-                    if item.id == ring_id then
-                        found_item = item
-                        break
-                    end
-                end
-            end
-            if found_item then break end
-        end
-
+        local found_item = find_equippable_item(ring_id)
         if not found_item then
             MessageWarp.show_item_disappeared(tag)
-            send_command('gs enable ring1')
-            return
+            return abandon_wait()
         end
 
-        -- Decode extdata to check usability
         local ext = extdata.decode(found_item)
         if not ext then
             MessageWarp.show_item_read_failed(tag)
-            send_command('gs enable ring1')
-            return
+            return abandon_wait()
         end
 
-        -----------------------------------------------------------
-        -- CHECK 1: Is item on full cooldown? (charges = 0)
-        -----------------------------------------------------------
-        local has_charges = ext.charges_remaining and ext.charges_remaining > 0
+        local has_charges, recast_delay, activation_delay, is_ready = usability(ext)
 
         if not has_charges then
-            -- Item is on full recast, no point waiting
+            -- No charges at all: waiting cannot help, say when it recharges.
             local cooldown_delay = 0
             if ext.next_use_time then
                 cooldown_delay = math.max((ext.next_use_time + EXTDATA_TIME_OFFSET) - os.time(), 0)
             end
-
             MessageWarp.show_item_on_cooldown(tag, cooldown_delay)
-            send_command('gs enable ring1')
-            return
+            return abandon_wait()
         end
-
-        -----------------------------------------------------------
-        -- CHECK 2: Calculate recast (like MyHome.lua)
-        -----------------------------------------------------------
-        local recast_delay = 0
-        if has_charges and ext.next_use_time then
-            recast_delay = math.max((ext.next_use_time + EXTDATA_TIME_OFFSET) - os.time(), 0)
-        end
-
-        -- Also check activation time for equip delay
-        local activation_delay = 0
-        if ext.activation_time then
-            activation_delay = math.max((ext.activation_time + EXTDATA_TIME_OFFSET) - os.time(), 0)
-        end
-
-        -- Item is truly ready if: has charges AND recast = 0 AND activation = 0
-        local is_ready = has_charges and recast_delay == 0 and activation_delay == 0
 
         debug_log(string.format('Wait check - charges:%s recast:%ds activation:%ds ready:%s',
             tostring(ext.charges_remaining), recast_delay, activation_delay, tostring(is_ready)))
 
-        -----------------------------------------------------------
-        -- CHECK 3: Is item ready to use?
-        -----------------------------------------------------------
         if is_ready then
-            -- SAFETY DELAY: Wait extra time after item appears ready (lag/desync protection)
+            -- The item can read as ready a moment before the server agrees, so
+            -- hold for SAFETY_DELAY after first seeing it rather than firing.
             if not ready_timestamp then
-                -- First time seeing item as ready, record timestamp
                 ready_timestamp = os.time()
                 debug_log(string.format('Item ready detected, starting safety delay (%.1fs)...', SAFETY_DELAY))
                 coroutine.schedule(check_usable, SAFETY_DELAY)
                 return
             end
 
-            -- Check if safety delay has elapsed
             local elapsed = os.time() - ready_timestamp
             if elapsed < SAFETY_DELAY then
-                -- Still waiting for safety delay - check timeout
                 if wait_count >= max_wait then
                     MessageWarp.show_safety_timeout(tag, max_wait, check_interval)
-                    send_command('gs enable ring1')
-                    return
+                    return abandon_wait()
                 end
-
                 debug_log(string.format('Safety delay: %.1fs / %.1fs', elapsed, SAFETY_DELAY))
                 coroutine.schedule(check_usable, 0.5)
                 return
             end
 
-            -- Safety delay complete, now use the item
             debug_log('Safety delay complete, using item now...')
 
-            -- Show using message
-            if is_warp_ring then
-                MessageWarp.show_warp_using(ring_name)
-            else
-                MessageWarp.show_tele_using(ring_name)
-            end
-
-            local item_name = res.items[ring_id] and res.items[ring_id].en or ring_name
-
-            -- Get cast time from database for proper timing
-            local WarpDatabase = require('shared/utils/warp/warp_item_database')
-            local item_data, _ = WarpDatabase.get_item_by_id(ring_id)
-            local cast_time = (item_data and item_data.cast_time) or 8
-            local cast_delay = (item_data and item_data.cast_delay) or 0
-            local cast_duration = cast_time + cast_delay + 5  -- +5s safety buffer (lag protection)
-
-            -- Verify player/target data is available (prevents GearSwap band() error
-            -- when spawn_type is nil due to timing issues)
+            -- GearSwap throws inside band() when spawn_type is nil, which
+            -- happens on a zone edge. Wait for the mob record rather than fire.
             local me = windower.ffxi.get_mob_by_target('me')
             if not me or not me.spawn_type then
                 debug_log('Player mob data unavailable, retrying in 1s...')
@@ -445,18 +467,11 @@ function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, i
                 return
             end
 
-            -- Setup auto-fix system BEFORE sending command
-            ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, item_name)
-
-            -- Send item usage command
-            send_command('input /item "' .. item_name .. '" <me>')
+            use_now(ring_name, ring_id, is_warp_ring, tag, initial_ring1)
             return
 
-        -----------------------------------------------------------
-        -- CHECK 4: Item not ready yet - retry or timeout
-        -----------------------------------------------------------
         elseif wait_count < max_wait then
-            -- Show countdown only once at the beginning (use activation_delay for display)
+            -- Announce the wait once, not every second.
             if wait_count == 1 and activation_delay > 1 then
                 local COLORS = MessageCore.COLORS
                 local tag_color = MessageCore.create_color_code(COLORS.JOB_TAG)
@@ -464,29 +479,11 @@ function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, i
                 MessageWarp.show_waiting_safety(tag_color, tag, action_color, math.floor(activation_delay))
             end
 
-            -- Schedule next check
             coroutine.schedule(check_usable, check_interval)
 
-        -----------------------------------------------------------
-        -- TIMEOUT: Item never became ready
-        -----------------------------------------------------------
         else
-            -- Detailed timeout message with item state
-            local charges = ext.charges_remaining or 0
-            local timeout_msg = string.format('[%s] Timeout after %ds - charges:%d recast:%ds activation:%ds',
-                tag, max_wait * check_interval, charges, recast_delay, activation_delay)
-            MessageWarp.show_casting_timeout(timeout_msg)
-
-            -- Suggest solution based on state
-            if charges == 0 then
-                MessageWarp.show_item_needs_recharge(tag, recast_delay)
-            elseif recast_delay > 0 then
-                MessageWarp.show_item_recast_pending(tag, recast_delay)
-            elseif activation_delay > 0 then
-                MessageWarp.show_item_equip_delay(tag, activation_delay)
-            end
-
-            send_command('gs enable ring1')
+            report_timeout(tag, ext, max_wait, check_interval, recast_delay, activation_delay)
+            abandon_wait()
         end
     end
 
