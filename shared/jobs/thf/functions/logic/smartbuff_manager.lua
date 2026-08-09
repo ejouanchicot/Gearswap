@@ -185,10 +185,11 @@ end
 --- The first goes out immediately, the second a second later, the third after
 --- two.
 ---
---- A safety margin for firing several abilities from one command, not a
---- documented client limit - the same precaution DNC and WAR take at two
---- seconds. Nobody has established the exact interval that is required, so
---- the value is left alone rather than tightened.
+--- A safety margin, for one of two reasons and possibly both: so each ability
+--- actually fires, and so the gear for it lands - FFXI rate-limits equipment
+--- changes, and actions sent too close together can equip wrong. DNC and WAR
+--- take the same precaution at two seconds. Neither reason has been measured,
+--- so the value is left alone rather than tightened.
 --- @param to_cast table From triage_fbc
 local function cast_fbc(to_cast)
     for i, ability in ipairs(to_cast) do
