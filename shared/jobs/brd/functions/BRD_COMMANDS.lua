@@ -208,7 +208,7 @@ function job_self_command(cmdParams, eventArgs)
     if command == 'altjobupdate' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         if cmdParams[2] and cmdParams[3] then
-            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3])
+            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3], cmdParams[4], cmdParams[5])
         end
         eventArgs.handled = true
         return

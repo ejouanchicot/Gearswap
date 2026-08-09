@@ -160,7 +160,15 @@ function DualBoxManager.send_job_update()
 
     local main_job = player.main_job
     local sub_job = player.sub_job or "NON"
-    local payload = main_job .. '/' .. sub_job
+
+    -- Levels travel with the job: the main needs them to pick a spell tier
+    -- the alt can actually cast. A subjob caps well below the main (Master
+    -- Level 50 reaches sub 58), so "best tier" is a different question on
+    -- each side.
+    local main_level = player.main_job_level or 0
+    local sub_level  = player.sub_job_level or 0
+
+    local payload = main_job .. '/' .. sub_job .. '/' .. main_level .. '/' .. sub_level
 
     -- Drop if we just sent the same payload within SEND_DEDUP_WINDOW seconds.
     -- Different payload = real job change, always send through.
@@ -182,7 +190,8 @@ function DualBoxManager.send_job_update()
     end
 
     -- Send command to main character
-    local command = string.format('send %s gs c altjobupdate %s %s', target_name, main_job, sub_job)
+    local command = string.format('send %s gs c altjobupdate %s %s %d %d',
+        target_name, main_job, sub_job, main_level, sub_level)
     send_command(command)
 
     -- Record for de-dup (after we actually sent, so a failed get_target_character
@@ -252,7 +261,7 @@ end
 --- Stores alt job info and triggers macrobook reload
 --- @param main_job string Alt's main job (e.g., "COR")
 --- @param sub_job string Alt's subjob (e.g., "RDM")
-function DualBoxManager.receive_alt_job(main_job, sub_job)
+function DualBoxManager.receive_alt_job(main_job, sub_job, main_level, sub_level)
     if not _G.DualBoxConfig or not _G.DualBoxConfig.enabled then
         return
     end
@@ -271,6 +280,10 @@ function DualBoxManager.receive_alt_job(main_job, sub_job)
     _G.AltJobState = {
         job = main_job,
         subjob = sub_job or "NON",
+        -- 0 when an older alt sends the two-argument form; consumers treat
+        -- 0 as "unknown" and fall back to the main-job tier.
+        main_level = tonumber(main_level) or 0,
+        sub_level = tonumber(sub_level) or 0,
         last_update = os.time(),
         online = true
     }
