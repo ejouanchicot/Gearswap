@@ -187,6 +187,117 @@ end
 --- START API (creates isolated closure chain - one per call)
 ---============================================================================
 
+--- Keep the reference position fresh while engaged, without polling for
+--- movement.
+---
+--- Movespeed gear is idle-only, so detecting movement in combat buys nothing
+--- and costs about eight checks a second. The position is still tracked so a
+--- disengage resumes cleanly rather than reporting a huge jump.
+local function track_while_engaged()
+    local pe = windower.ffxi.get_mob_by_index(player.index)
+    if pe and pe.x then
+        mov.x, mov.y, mov.z = pe.x, pe.y, pe.z
+    end
+    if moving then
+        moving = false
+        if state.Moving then state.Moving.value = 'false' end
+    end
+end
+
+--- Distance travelled since the last tick, with the reference position moved up.
+--- @return number|nil Distance, or nil when the position cannot be read yet
+local function step_distance()
+    local pl = windower.ffxi.get_mob_by_index(player.index)
+    if not pl or not pl.x or not pl.y or not pl.z or mov.x == nil then
+        return nil
+    end
+
+    local dx, dy, dz = pl.x - mov.x, pl.y - mov.y, pl.z - mov.z
+    local dist = math.sqrt(dx * dx + dy * dy + dz * dz)
+
+    mov.last_distance = dist
+    mov.x, mov.y, mov.z = pl.x, pl.y, pl.z
+    return dist
+end
+
+--- Ask GearSwap to re-equip, no more often than the debounce allows.
+---
+--- Shared by the moving and the stopped branch, which ran the same throttle
+--- with different wording. The job-change cooldown wins over the debounce: for
+--- a moment after a job change the sets are not settled and an update would
+--- equip from the previous job.
+--- @param reason string Label for the trace: moving, stopping, jump, heal
+--- @param dist number Distance that triggered it
+--- @param now number os.clock() as read by the caller
+--- @return boolean True when an update was actually sent
+local function send_update(reason, dist, now)
+    if (now - start_time) < config.job_change_cooldown then
+        DebugLogger.logf_if('AUTOMOVE_DEBUG', 'AutoMove', 'COOLDOWN %s (%.1fs left)',
+            reason, config.job_change_cooldown - (now - start_time))
+        return false
+    end
+    if (now - last_update_time) < config.update_debounce then
+        return false
+    end
+
+    last_update_time = now
+    pending_update   = false
+    DebugLogger.log_if('AUTOMOVE_DEBUG', 'AutoMove', reason)
+    if _G.UPDATE_DEBUG then
+        _G._update_sent_time = os.clock()
+        DebugLogger.logf('UPDATE_DEBUG', '1. AutoMove SEND gs c update | t=%.3f',
+            _G._update_sent_time)
+    end
+    if _G.LagDebugger then _G.LagDebugger.on_automove_update(reason, dist, moving) end
+    windower.send_command('gs c update')
+    return true
+end
+
+--- The player is moving: raise the flag, update, and keep gear in sync.
+local function handle_moving(dist)
+    local should_move = (player.status ~= 'Engaged')
+
+    if should_move and not moving then
+        state.Moving.value = 'true'
+        moving = true
+        pending_update = true
+    end
+
+    local now = os.clock()
+    if pending_update and should_move then
+        send_update('moving', dist, now)
+    end
+
+    -- Backstop for a desync the jump guard can miss, such as an in-area
+    -- teleport that slides rather than jumping. Throttled well below the
+    -- debounce so it costs nothing while simply running.
+    if moving and should_move
+        and (now - start_time) >= config.job_change_cooldown
+        and (now - last_update_time) >= config.heal_interval then
+        last_update_time = now
+        if _G.LagDebugger then _G.LagDebugger.on_automove_update('heal', dist, moving) end
+        windower.send_command('gs c update')
+    end
+
+    trigger_callbacks(true, dist, player.status)
+end
+
+--- The player has stopped: drop the flag and put the idle set back.
+local function handle_stopped(dist)
+    if moving then
+        state.Moving.value = 'false'
+        moving = false
+        pending_update = true
+        trigger_callbacks(false, dist, player.status)
+    end
+
+    local now = os.clock()
+    if pending_update and not moving then
+        send_update('stopping', dist, now)
+    end
+end
+
+
 --- Start the movement detection loop.
 --- Creates a NEW closure chain with a unique sequence ID captured at call time.
 --- Old chains from previous start() calls are instantly invalidated when
@@ -210,12 +321,6 @@ function AutoMove.start()
     if _G.LagDebugger then _G.LagDebugger.on_automove_start(my_seq) end
     DebugLogger.logf_if('AUTOMOVE_DEBUG', 'AutoMove', 'START | seq=%d', my_seq)
 
-    -------------------------------------------------------------------
-    -- CLOSURE: my_seq is fixed for the lifetime of this chain.
-    -- Two guards kill this closure immediately when outdated:
-    --   1. windower._automove_seq changed  (stop() or new start() called)
-    --   2. _G.AUTOMOVE_RUNNING is false    (stop() called in same reload)
-    -------------------------------------------------------------------
     local function run()
         -- Guard 1: windower seq changed → this chain is a ghost, die
         if my_seq ~= windower._automove_seq then return end
@@ -228,50 +333,21 @@ function AutoMove.start()
             return
         end
 
-        -------------------------------------------------------------------
-        -- ENGAGED: movespeed is idle-only, so skip movement detection entirely.
-        -- Keep the reference position fresh for a clean resume on disengage and
-        -- reset the moving flag (combat set is active anyway). Poll slowly just
-        -- to notice the disengage. Saves ~8 checks/s during fights.
-        -------------------------------------------------------------------
         if player.status == 'Engaged' then
-            local pe = windower.ffxi.get_mob_by_index(player.index)
-            if pe and pe.x then
-                mov.x, mov.y, mov.z = pe.x, pe.y, pe.z
-            end
-            if moving then
-                moving = false
-                if state.Moving then state.Moving.value = 'false' end
-            end
+            track_while_engaged()
             coroutine.schedule(run, config.engaged_interval)
             return
         end
 
-        -- Get current position
-        local pl = windower.ffxi.get_mob_by_index(player.index)
-        if not pl or not pl.x or not pl.y or not pl.z or mov.x == nil then
+        local dist = step_distance()
+        if not dist then
             coroutine.schedule(run, config.check_interval)
             return
         end
 
-        -- Calculate distance moved
-        local dx = pl.x - mov.x
-        local dy = pl.y - mov.y
-        local dz = pl.z - mov.z
-        local dist = math.sqrt(dx * dx + dy * dy + dz * dz)
-
-        mov.last_distance = dist
-        mov.x = pl.x
-        mov.y = pl.y
-        mov.z = pl.z
-
-        -------------------------------------------------------------------
-        -- DISCONTINUITY GUARD (teleport / zone)
-        -- A single-tick delta this large is impossible by running (~1 yalm/tick),
-        -- so it is a teleport or zone. Position is already recaled above; force an
-        -- immediate re-equip so movespeed isn't lost across the jump. Covers cases
-        -- with no loading screen (e.g. in-area teleports).
-        -------------------------------------------------------------------
+        -- A single-tick delta this large cannot come from running (~1 yalm a
+        -- tick), so it is a teleport or a zone. Re-equip at once or movespeed
+        -- is lost across the jump - including the cases with no loading screen.
         if dist > config.jump_threshold then
             if _G.LagDebugger then _G.LagDebugger.on_automove_update('jump', dist, moving) end
             windower.send_command('gs c update')
@@ -279,84 +355,16 @@ function AutoMove.start()
             return
         end
 
-        -------------------------------------------------------------------
-        -- MOVEMENT DETECTED
-        -------------------------------------------------------------------
+        -- `elseif dist <` and not `else`: at a distance exactly equal to the
+        -- threshold the original ran neither branch, and a float from sqrt
+        -- landing exactly there is unlikely but not impossible.
         if dist > config.movement_threshold then
-            local should_move = (player.status ~= 'Engaged')
-
-            if should_move and not moving then
-                state.Moving.value = 'true'
-                moving = true
-                pending_update = true
-            end
-
-            local now = os.clock()
-            if pending_update and should_move then
-                if (now - start_time) < config.job_change_cooldown then
-                    DebugLogger.logf_if('AUTOMOVE_DEBUG', 'AutoMove', 'COOLDOWN moving (%.1fs left)',
-                        config.job_change_cooldown - (now - start_time))
-                elseif (now - last_update_time) >= config.update_debounce then
-                    last_update_time = now
-                    pending_update   = false
-                    DebugLogger.log_if('AUTOMOVE_DEBUG', 'AutoMove', 'moving')
-                    if _G.UPDATE_DEBUG then
-                        _G._update_sent_time = os.clock()
-                        DebugLogger.logf('UPDATE_DEBUG', '1. AutoMove SEND gs c update | t=%.3f',
-                            _G._update_sent_time)
-                    end
-                    if _G.LagDebugger then _G.LagDebugger.on_automove_update('moving', dist, moving) end
-                    windower.send_command('gs c update')
-                end
-            end
-
-            -- SELF-HEAL: while moving, re-sync gear <-> state.Moving at most every
-            -- heal_interval. Backstop for desyncs the jump guard may miss (e.g. an
-            -- in-area teleport that slides instead of jumping). Throttled by
-            -- last_update_time and suppressed during the job-change cooldown.
-            if moving and should_move
-                and (now - start_time) >= config.job_change_cooldown
-                and (now - last_update_time) >= config.heal_interval then
-                last_update_time = now
-                if _G.LagDebugger then _G.LagDebugger.on_automove_update('heal', dist, moving) end
-                windower.send_command('gs c update')
-            end
-
-            trigger_callbacks(true, dist, player.status)
-
-        -------------------------------------------------------------------
-        -- STOPPED
-        -------------------------------------------------------------------
+            handle_moving(dist)
         elseif dist < config.movement_threshold then
-            if moving then
-                state.Moving.value = 'false'
-                moving = false
-                pending_update = true
-                trigger_callbacks(false, dist, player.status)
-            end
-
-            local now = os.clock()
-            if pending_update and not moving then
-                if (now - start_time) < config.job_change_cooldown then
-                    DebugLogger.logf_if('AUTOMOVE_DEBUG', 'AutoMove', 'COOLDOWN stopping (%.1fs left)',
-                        config.job_change_cooldown - (now - start_time))
-                elseif (now - last_update_time) >= config.update_debounce then
-                    last_update_time = now
-                    pending_update   = false
-                    DebugLogger.log_if('AUTOMOVE_DEBUG', 'AutoMove', 'stopping')
-                    if _G.UPDATE_DEBUG then
-                        _G._update_sent_time = os.clock()
-                        DebugLogger.logf('UPDATE_DEBUG', '1. AutoMove SEND gs c update | t=%.3f',
-                            _G._update_sent_time)
-                    end
-                    if _G.LagDebugger then _G.LagDebugger.on_automove_update('stopping', dist, moving) end
-                    windower.send_command('gs c update')
-                end
-            end
+            handle_stopped(dist)
         end
 
-        -- Adaptive reschedule: fast while moving, slower while idle (Engaged is
-        -- handled above with its own slow interval). my_seq preserved via closure.
+        -- Fast while moving, slow while idle. Engaged reschedules itself above.
         coroutine.schedule(run, moving and config.check_interval or config.idle_interval)
     end
 
