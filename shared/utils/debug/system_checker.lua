@@ -261,7 +261,11 @@ end
 -- EXPORT (FILE)
 
 function SystemChecker.export(report)
-    local path = windower.addon_path .. 'data/syscheck.txt'
+    -- One file per character. Both boxes wrote to the same path, so
+    -- running it on the second simply erased the first and only one
+    -- report ever survived to be read.
+    local who = (player and player.name) or 'unknown'
+    local path = windower.addon_path .. 'data/syscheck_' .. who .. '.txt'
     local lines = {}
 
     table.insert(lines, '================================================================')
