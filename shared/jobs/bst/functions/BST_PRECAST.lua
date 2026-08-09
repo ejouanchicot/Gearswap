@@ -76,26 +76,79 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
---- Precast order: debuff guard → cooldown → WS handler → Call Beast → Ready moves
----   @param spell table Spell/ability data
----   @param action string Action type
----   @param spellMap string Spell mapping
----   @param eventArgs table Event arguments
+--- Is this a pet Ready move, and which category?
+---
+--- Ready moves spend charges rather than a recast, so FFXI blocks them itself
+--- and a cooldown check would refuse a move the game would have allowed.
+--- 'Default' means the categoriser recognised nothing, which is not a Ready
+--- move as far as this is concerned.
+--- @return boolean is a ready move, string|nil category
+local function ready_move_info(spell)
+    if not (ReadyMoveCategorizer and spell.action_type == 'Ability') then
+        return false, nil
+    end
+
+    local category = ReadyMoveCategorizer.get_category(spell.name)
+    if category == nil or category == 'Default' then
+        return false, nil
+    end
+    return true, category
+end
+
+--- Summon gear, then the broth on top.
+---
+--- The broth goes on last and by itself: it decides which pet appears, and the
+--- Call Beast set has its own ammo that would otherwise win and summon the
+--- wrong one.
+local function equip_for_summon(spell)
+    if _G.BST_DEBUG_PRECAST then
+        MessagePrecast.show_debug_header(spell.name, 'Pet Summon')
+    end
+
+    if sets.precast.JA['Call Beast'] then
+        equip(sets.precast.JA['Call Beast'])
+        if _G.BST_DEBUG_PRECAST then
+            MessagePrecast.show_equipped_set('precast.JA["Call Beast"]')
+            MessagePrecast.show_equipment(sets.precast.JA['Call Beast'])
+        end
+    end
+
+    if state.ammoSet and state.ammoSet.value and sets[state.ammoSet.value] then
+        local broth_set = sets[state.ammoSet.value]
+        if broth_set and broth_set.ammo then
+            equip({ammo = broth_set.ammo})
+            if _G.BST_DEBUG_PRECAST then
+                MessagePrecast.show_debug_step(1, 'Broth Override', 'ok', broth_set.ammo)
+            end
+        end
+    end
+
+    if _G.BST_DEBUG_PRECAST then
+        MessagePrecast.show_completion()
+    end
+end
+
+--- Mark the move for midcast and put the precast piece on.
+---
+--- The category is carried on the spell because midcast cannot work it out
+--- again: by then the ability has resolved and the name alone does not say
+--- which kind of move it was.
+local function prepare_ready_move(spell, category)
+    spell.ready_move_category = category
+    spell.bst_is_ready_move = true
+    if sets.precast.JA['Sic'] then
+        equip(sets.precast.JA['Sic'])
+    end
+end
+
 function job_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
-    -- Debuff guard
     if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
         return
     end
 
-    -- Cooldown check (skip Ready Moves - they use charges, not recast)
-    local is_ready_move = false
-    local ready_move_category = nil
-    if ReadyMoveCategorizer and spell.action_type == 'Ability' then
-        ready_move_category = ReadyMoveCategorizer.get_category(spell.name)
-        is_ready_move = (ready_move_category ~= nil and ready_move_category ~= 'Default')
-    end
+    local is_ready_move, ready_move_category = ready_move_info(spell)
 
     if CooldownChecker and not is_ready_move then
         if spell.action_type == 'Ability' then
@@ -104,48 +157,21 @@ function job_precast(spell, action, spellMap, eventArgs)
             CooldownChecker.check_spell_cooldown(spell, eventArgs)
         end
     end
-    if eventArgs.cancel then return end
+    if eventArgs.cancel then
+        return
+    end
 
-    -- WS handling
     if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, BSTTPConfig) then
         return
     end
 
-    -- Call Beast / Bestial Loyalty: equip summon set + broth
     if spell.name == 'Call Beast' or spell.name == 'Bestial Loyalty' then
-        if _G.BST_DEBUG_PRECAST then
-            MessagePrecast.show_debug_header(spell.name, 'Pet Summon')
-        end
-
-        if sets.precast.JA['Call Beast'] then
-            equip(sets.precast.JA['Call Beast'])
-            if _G.BST_DEBUG_PRECAST then
-                MessagePrecast.show_equipped_set('precast.JA["Call Beast"]')
-                MessagePrecast.show_equipment(sets.precast.JA['Call Beast'])
-            end
-        end
-
-        if state.ammoSet and state.ammoSet.value and sets[state.ammoSet.value] then
-            local broth_set = sets[state.ammoSet.value]
-            if broth_set and broth_set.ammo then
-                equip({ammo = broth_set.ammo})
-                if _G.BST_DEBUG_PRECAST then
-                    MessagePrecast.show_debug_step(1, 'Broth Override', 'ok', broth_set.ammo)
-                end
-            end
-        end
-
-        if _G.BST_DEBUG_PRECAST then MessagePrecast.show_completion() end
+        equip_for_summon(spell)
         return
     end
 
-    -- Ready move: equip Gleti's Breeches (recast snaps at precast), store category for midcast
-    if is_ready_move and ready_move_category and ready_move_category ~= 'Default' then
-        spell.ready_move_category = ready_move_category
-        spell.bst_is_ready_move = true
-        if sets.precast.JA['Sic'] then
-            equip(sets.precast.JA['Sic'])
-        end
+    if is_ready_move then
+        prepare_ready_move(spell, ready_move_category)
     end
 end
 
