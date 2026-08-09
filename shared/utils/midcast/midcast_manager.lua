@@ -136,122 +136,137 @@ end
 --- instrument layer → Troubadour overlay → base set (BardSong)
 ---============================================================================
 
+--- Song set selection, in two phases.
+---
+--- PICKERS choose one set, most specific first, and stop at the first hit.
+--- LAYERS then add to whatever was chosen - instrument gear and the Troubadour
+--- overlay combine with the pick rather than replacing it, which is why they
+--- are not part of the same chain.
+---
+--- Every picker returns (set, path, debug_step) instead of writing into shared
+--- locals. The debug trail is collected by the caller for the same reason the
+--- set is: a function cannot append to a table it was handed a copy of, and
+--- that mistake does not show up in any diff.
+
+--- Step 1: the song's own name, spaced or PascalCase.
+local function song_by_name(spell_name)
+    if sets.midcast[spell_name] then
+        return sets.midcast[spell_name],
+               'sets.midcast["' .. spell_name .. '"]',
+               {step = 1, label = "Exact Name", status = "ok", value = spell_name}
+    end
+
+    local pascal_name = spell_name:gsub("%s+", "")
+    if pascal_name ~= spell_name and sets.midcast[pascal_name] then
+        return sets.midcast[pascal_name],
+               'sets.midcast.' .. pascal_name,
+               {step = 1.5, label = "PascalCase", status = "ok", value = pascal_name}
+    end
+
+    return nil, nil, {step = 1, label = "Exact Name", status = "warn", value = "Not found"}
+end
+
+--- Step 2: the song without its tier - "Valor Minuet IV" to "Valor Minuet".
+local function song_by_base_name(spell_name)
+    local base_song = spell_name:match("^(.+)%s+[IVX]+$") or spell_name
+    if base_song ~= spell_name and sets.midcast[base_song] then
+        return sets.midcast[base_song],
+               'sets.midcast["' .. base_song .. '"]',
+               {step = 2, label = "Base Song", status = "ok", value = base_song}
+    end
+    return nil, nil, {step = 2, label = "Base Song", status = "warn", value = "Not found"}
+end
+
+--- Step 3: the family, which is the last word - Minne, Madrigal, March.
+local function song_by_type(spell_name)
+    local song_type = MidcastManager.get_song_type(spell_name)
+    if song_type and sets.midcast[song_type] then
+        return sets.midcast[song_type],
+               'sets.midcast.' .. song_type,
+               {step = 3, label = "Song Type", status = "ok", value = song_type}
+    end
+    return nil, nil, {step = 3, label = "Song Type", status = "warn", value = "Not found"}
+end
+
+--- Step 3.5: the first word - "Honor March" to "Honor".
+local function song_by_first_word(spell_name)
+    local base_song = spell_name:match("^(.+)%s+[IVX]+$") or spell_name
+    local first_word = base_song:match("^(%S+)")
+    if not (first_word and first_word ~= base_song) then
+        return nil
+    end
+    if sets.midcast[first_word] then
+        return sets.midcast[first_word],
+               'sets.midcast.' .. first_word,
+               {step = 3.5, label = "First Word", status = "ok", value = first_word}
+    end
+    return nil, nil, {step = 3.5, label = "First Word", status = "warn", value = "Not found"}
+end
+
+-- Order is priority: the first picker that returns a set wins.
+local SONG_PICKERS = { song_by_name, song_by_base_name, song_by_type, song_by_first_word }
+
+--- Step 4: instrument gear, combined onto whatever was picked.
+local function layer_instrument(selected_set, spell_name)
+    local instrument = MidcastManager.get_song_instrument(spell_name)
+    if instrument and sets.midcast.Songs and sets.midcast.Songs[instrument] then
+        local layered = selected_set
+                        and set_combine(selected_set, sets.midcast.Songs[instrument])
+                        or sets.midcast.Songs[instrument]
+        return layered, {step = 4, label = "Instrument", status = "ok", value = instrument}
+    end
+    return selected_set, {step = 4, label = "Instrument", status = "info", value = "Default"}
+end
+
+--- Step 5: Troubadour extends the song, so its duration gear goes on top.
+local function layer_troubadour(selected_set)
+    if buffactive and buffactive['Troubadour']
+       and sets.midcast.Songs and sets.midcast.Songs.Duration then
+        local layered = selected_set
+                        and set_combine(selected_set, sets.midcast.Songs.Duration)
+                        or sets.midcast.Songs.Duration
+        return layered, {step = 5, label = "Buff", status = "ok", value = "Troubadour (duration)"}
+    end
+    return selected_set, nil
+end
+
 local function select_singing_set(config, base_set)
     if not (config.spell and config.spell.english) then
         return false
     end
 
-    local spell_name   = config.spell.english
-    local selected_set = nil
-    local selected_set_path = nil
-    local debug_steps  = {}
+    local spell_name = config.spell.english
+    local debug_steps = {}
+    local selected_set, selected_set_path
 
-    -- Step 1: Exact spell name (sets.midcast["Honor March"])
-    if sets.midcast[spell_name] then
-        selected_set = sets.midcast[spell_name]
-        selected_set_path = 'sets.midcast["' .. spell_name .. '"]'
-        if is_debug_enabled() then
-            table.insert(debug_steps, {step=1, label="Exact Match", status="ok", value=spell_name})
+    for _, pick in ipairs(SONG_PICKERS) do
+        local found, path, step = pick(spell_name)
+        if step and is_debug_enabled() then
+            table.insert(debug_steps, step)
         end
-    else
-        -- Step 1.5: PascalCase ("Honor March" → "HonorMarch")
-        local pascal_name = spell_name:gsub("%s+", "")
-        if pascal_name ~= spell_name and sets.midcast[pascal_name] then
-            selected_set = sets.midcast[pascal_name]
-            selected_set_path = 'sets.midcast.' .. pascal_name
-            if is_debug_enabled() then
-                table.insert(debug_steps, {step=1.5, label="PascalCase", status="ok", value=pascal_name})
-            end
-        else
-            if is_debug_enabled() then
-                table.insert(debug_steps, {step=1, label="Exact Match", status="warn", value="Not found"})
-            end
+        if found then
+            selected_set, selected_set_path = found, path
+            break
         end
     end
 
-    if not selected_set then
-        -- Step 2: Base song (strip tier "V" etc.)
-        local base_song = spell_name:match("^(.+)%s+[IVX]+$") or spell_name
-        if base_song ~= spell_name and sets.midcast[base_song] then
-            selected_set = sets.midcast[base_song]
-            selected_set_path = 'sets.midcast["' .. base_song .. '"]'
-            if is_debug_enabled() then
-                table.insert(debug_steps, {step=2, label="Base Song", status="ok", value=base_song})
-            end
-        else
-            if is_debug_enabled() then
-                table.insert(debug_steps, {step=2, label="Base Song", status="warn", value="Not found"})
-            end
-
-            -- Step 3: Song type (last word: "Minne", "Madrigal", etc.)
-            local song_type = MidcastManager.get_song_type(spell_name)
-            if song_type and sets.midcast[song_type] then
-                selected_set = sets.midcast[song_type]
-                selected_set_path = 'sets.midcast.' .. song_type
-                if is_debug_enabled() then
-                    table.insert(debug_steps, {step=3, label="Song Type", status="ok", value=song_type})
-                end
-            else
-                if is_debug_enabled() then
-                    table.insert(debug_steps, {step=3, label="Song Type", status="warn", value="Not found"})
-                end
-            end
-        end
+    local step
+    selected_set, step = layer_instrument(selected_set, spell_name)
+    if step and is_debug_enabled() then
+        table.insert(debug_steps, step)
     end
 
-    -- Step 3.5: First word ("Honor March" → "Honor")
-    if not selected_set then
-        local base_song = spell_name:match("^(.+)%s+[IVX]+$") or spell_name
-        local first_word = base_song:match("^(%S+)")
-        if first_word and first_word ~= base_song and sets.midcast[first_word] then
-            selected_set = sets.midcast[first_word]
-            selected_set_path = 'sets.midcast.' .. first_word
-            if is_debug_enabled() then
-                table.insert(debug_steps, {step=3.5, label="First Word", status="ok", value=first_word})
-            end
-        else
-            if is_debug_enabled() and first_word and first_word ~= base_song then
-                table.insert(debug_steps, {step=3.5, label="First Word", status="warn", value="Not found"})
-            end
-        end
+    selected_set, step = layer_troubadour(selected_set)
+    if step and is_debug_enabled() then
+        table.insert(debug_steps, step)
     end
 
-    -- Step 4: Layer instrument-specific gear
-    local instrument = MidcastManager.get_song_instrument(spell_name)
-    if instrument and sets.midcast.Songs and sets.midcast.Songs[instrument] then
-        if selected_set then
-            selected_set = set_combine(selected_set, sets.midcast.Songs[instrument])
-        else
-            selected_set = sets.midcast.Songs[instrument]
-        end
-        if is_debug_enabled() then
-            table.insert(debug_steps, {step=4, label="Instrument", status="ok", value=instrument})
-        end
-    else
-        if is_debug_enabled() then
-            table.insert(debug_steps, {step=4, label="Instrument", status="info", value="Default"})
-        end
-    end
-
-    -- Step 5: Troubadour buff overlay (duration gear)
-    if buffactive and buffactive['Troubadour']
-       and sets.midcast.Songs and sets.midcast.Songs.Duration then
-        if selected_set then
-            selected_set = set_combine(selected_set, sets.midcast.Songs.Duration)
-        else
-            selected_set = sets.midcast.Songs.Duration
-        end
-        if is_debug_enabled() then
-            table.insert(debug_steps, {step=5, label="Buff", status="ok", value="Troubadour (duration)"})
-        end
-    end
-
-    -- Step 6: Final fallback to BardSong base
+    -- Step 6: no song set of any kind matched, so the BardSong base stands.
     if not selected_set then
         selected_set = base_set
         selected_set_path = 'sets.midcast.BardSong'
         if is_debug_enabled() then
-            table.insert(debug_steps, {step=6, label="Fallback", status="info", value="BardSong (base)"})
+            table.insert(debug_steps, {step = 6, label = "Fallback", status = "info", value = "BardSong (base)"})
         end
     end
 
@@ -259,7 +274,6 @@ local function select_singing_set(config, base_set)
         return false
     end
 
-    -- Emit debug steps before equipping
     if is_debug_enabled() then
         for _, step_data in ipairs(debug_steps) do
             MessageMidcast.show_debug_step(step_data.step, step_data.label, step_data.status, step_data.value)
