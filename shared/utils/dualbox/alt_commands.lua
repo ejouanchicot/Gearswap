@@ -96,7 +96,9 @@ local ACTION_VERBS = {
 ---   CONFIG LOADING
 ---  ═══════════════════════════════════════════════════════════════════════════
 
-local cache = { job = nil, config = nil }
+-- Cached per job pair, since resolving a config means a require() and a walk
+-- over its entries.
+local cache = { key = nil, commands = nil }
 
 --- Name of the alt character this main drives.
 --- @return string|nil Alt character name, nil when dual-boxing is off
@@ -108,58 +110,129 @@ local function get_alt_name()
     return cfg.alt_character or cfg.alt_name
 end
 
---- Job the alt is currently playing.
+--- What the alt is playing, and at what level.
 ---
---- Reads `_G.AltJobState` directly instead of calling
---- `DualBoxManager.get_alt_job()`. That helper returns nil once the state is
---- older than `DualBoxConfig.timeout` (30s), but `last_update` is only written
---- when the alt CHANGES JOB - so half a minute after the last job change it
---- reports the alt as offline forever. That freshness rule exists to grey out
---- the UI; gating commands on it made every alt command die 30s in and only
---- come back after a full GearSwap reload.
----
---- The alt's job does not become unknown because time passed, so the raw value
---- is what we want. If the alt really is gone, the `send` simply reaches
---- nobody - far better than the command silently ceasing to exist.
---- @return string|nil Job code (e.g. 'RDM'), nil if the alt never reported one
-local function get_alt_job()
-    return _G.AltJobState and _G.AltJobState.job or nil
+--- Reads `_G.AltJobState` directly instead of DualBoxManager.get_alt_job():
+--- that helper returns nil once the state is older than DualBoxConfig.timeout
+--- (30s), but `last_update` is only written on a job CHANGE - so half a minute
+--- later it reports the alt as offline forever. That freshness rule exists to
+--- grey out the UI; gating commands on it killed them 30s in.
+--- @return string|nil job, string|nil subjob, number main_level, number sub_level
+local function get_alt_jobs()
+    local s = _G.AltJobState
+    if not s then
+        return nil, nil, 0, 0
+    end
+    return s.job, s.subjob, s.main_level or 0, s.sub_level or 0
 end
 
---- Load the command table for the alt's current job, cached until it changes.
---- @return table|nil Command table (keys are lowercase command names)
---- @return string|nil Job the table belongs to
+--- Pick the highest tier the alt is actually high enough to cast.
+---
+--- A spell the alt has not learned is not "on recast" - the client simply
+--- refuses the command, silently. So the tier has to be chosen here, from the
+--- level the alt reported, before anything goes out.
+--- @param entry table Command definition carrying a `tiers` list
+--- @param level number Level of the job this entry belongs to
+--- @return string|nil Spell name, nil when even the base tier is out of reach
+local function tier_for_level(entry, level)
+    local best, best_level = nil, -1
+    for _, t in ipairs(entry.tiers) do
+        local need = t.level or 1
+        if need <= level and need > best_level then
+            best, best_level = t.spell, need
+        end
+    end
+    return best
+end
+
+--- Load one job's command table.
+--- @param job string Job code
+--- @param level number Level the alt has in that job
+--- @param source string 'main' or 'sub', recorded on each entry
+--- @return table|nil Commands keyed by lowercase name
+local function load_job_config(job, level, source)
+    if not job or job == '' or job == 'NON' then
+        return nil
+    end
+
+    local char = (player and player.name) or 'Tetsouo'
+    local ok, loaded = pcall(require, char .. '/config/alt/' .. job:upper() .. '_ALT_COMMANDS')
+    if not ok or type(loaded) ~= 'table' or type(loaded.commands) ~= 'table' then
+        return nil
+    end
+
+    local out = {}
+    for name, entry in pairs(loaded.commands) do
+        local usable = true
+
+        -- A tiered entry resolves against the level; drop it when nothing in
+        -- the chain is reachable (common for a subjob).
+        if entry.tiers then
+            local spell = tier_for_level(entry, level)
+            if spell then
+                local copy = {}
+                for k, v in pairs(entry) do copy[k] = v end
+                copy.spell = spell
+                copy.tiers = nil
+                entry = copy
+            else
+                usable = false
+            end
+        elseif entry.level and entry.level > level then
+            usable = false
+        end
+
+        if usable then
+            entry.source = source
+            out[name:lower()] = entry
+        end
+    end
+    return out
+end
+
+--- Commands available right now: the alt's main job, plus its subjob.
+---
+--- Both are loaded because a subjob is a real spell list - a GEO/RDM can still
+--- Haste and Dia, just at lower tiers. The main wins a name clash, since that
+--- is the job whose full kit you asked for.
+--- @return table|nil commands, string|nil job
 local function load_config()
-    local job = get_alt_job()
+    local job, subjob, main_level, sub_level = get_alt_jobs()
     if not job then
         return nil, nil
     end
 
-    if cache.job == job then
-        return cache.config, job
+    local key = table.concat({ job, subjob or '-', main_level, sub_level }, '/')
+    if cache.key == key then
+        return cache.commands, job
     end
 
-    local char = (player and player.name) or 'Tetsouo'
-    local path = char .. '/config/alt/' .. job:upper() .. '_ALT_COMMANDS'
-    local ok, loaded = pcall(require, path)
+    local commands = {}
 
-    local commands = nil
-    if ok and type(loaded) == 'table' and type(loaded.commands) == 'table' then
-        commands = {}
-        for name, entry in pairs(loaded.commands) do
-            commands[name:lower()] = entry
-        end
+    -- Sub first, main second: the main overwrites on a name clash.
+    local sub_cmds = load_job_config(subjob, sub_level, 'sub')
+    if sub_cmds then
+        for name, e in pairs(sub_cmds) do commands[name] = e end
     end
 
-    cache.job = job
-    cache.config = commands
+    local main_cmds = load_job_config(job, main_level, 'main')
+    if main_cmds then
+        for name, e in pairs(main_cmds) do commands[name] = e end
+    end
+
+    if not next(commands) then
+        commands = nil
+    end
+
+    cache.key = key
+    cache.commands = commands
     return commands, job
 end
 
 --- Drop the cached table so the next lookup re-reads the file.
 function AltCommands.clear_cache()
-    cache.job = nil
-    cache.config = nil
+    cache.key = nil
+    cache.commands = nil
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
