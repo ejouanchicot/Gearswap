@@ -111,11 +111,25 @@ local function install_stall_probe()
     end
 
     S.last_frame = os.clock()
+    S.frames = S.frames or { n = 0, total = 0, max = 0, buckets = {} }
+
     S.stall_event_id = windower.register_event('prerender', function()
         if not S.enabled then return end
         local now = os.clock()
         local gap_ms = (now - (S.last_frame or now)) * 1000
         S.last_frame = now
+
+        -- Every frame is counted, not just the slow ones. Without the baseline
+        -- a "40ms stall" means nothing: it is a freeze on a client running at
+        -- 60fps and an ordinary frame on one running at 22.
+        local f = S.frames
+        f.n = f.n + 1
+        f.total = f.total + gap_ms
+        if gap_ms > f.max then f.max = gap_ms end
+        local bucket = math.floor(gap_ms / 10) * 10
+        if bucket > 200 then bucket = 200 end
+        f.buckets[bucket] = (f.buckets[bucket] or 0) + 1
+
         if gap_ms >= STALL_MS then
             LagDebugger._raw('STALL', {
                 gap_ms      = math.floor(gap_ms),
@@ -184,6 +198,7 @@ function LagDebugger.start()
 
     S.last_action = nil
     S.last_module = nil
+    S.frames = { n = 0, total = 0, max = 0, buckets = {} }
 
     install_module_probe()
     install_stall_probe()
@@ -363,6 +378,31 @@ function LagDebugger.export()
     table.insert(lines, 'Date    : ' .. os.date('%Y-%m-%d %H:%M:%S'))
     table.insert(lines, 'Events  : ' .. #S.log)
     table.insert(lines, 'Updates : ' .. S.update_count .. ' gs c update sent during recording')
+
+    -- The baseline. A stall threshold is only meaningful next to it.
+    local f = S.frames
+    if f and f.n > 0 then
+        local avg = f.total / f.n
+        table.insert(lines, '')
+        table.insert(lines, 'FRAME TIME (this is the yardstick - read it before the stalls):')
+        table.insert(lines, string.format('  frames  : %d over %.1fs', f.n, f.total / 1000))
+        table.insert(lines, string.format('  average : %.1f ms  (%.0f fps)', avg, 1000 / avg))
+        table.insert(lines, string.format('  worst   : %.0f ms', f.max))
+        table.insert(lines, string.format('  a %dms frame is %.1fx your average', STALL_MS, STALL_MS / avg))
+        table.insert(lines, '  distribution:')
+
+        local keys = {}
+        for b in pairs(f.buckets) do keys[#keys + 1] = b end
+        table.sort(keys)
+        for _, b in ipairs(keys) do
+            local count = f.buckets[b]
+            local pct = count / f.n * 100
+            local bar = string.rep('#', math.max(1, math.floor(pct / 2)))
+            table.insert(lines, string.format('    %3d-%3dms  %5d  %5.1f%%  %s',
+                b, b + 9, count, pct, bar))
+        end
+    end
+
     table.insert(lines, '================================================================')
     table.insert(lines, '')
     table.insert(lines, 'LEGEND:')
