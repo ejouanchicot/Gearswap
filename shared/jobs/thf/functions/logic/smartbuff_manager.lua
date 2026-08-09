@@ -147,70 +147,72 @@ end
 ---   THF DEBUFF COMBO
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Apply THF debuff combo: Feint + Bully + Conspirator
----   @return boolean Success status
+-- The Feint-Bully-Conspirator opener, in the order it is fired.
+--
+-- Bully carries no buff name on purpose: it lands a debuff on the mob, not a
+-- buff on the player, so buffactive has nothing to say about it and only its
+-- recast decides whether it can go out.
+local FBC_ABILITIES = {
+    {name = 'Feint',       recast_id = 68,  buff = 'Feint',       target = '<me>'},
+    {name = 'Bully',       recast_id = 240, buff = nil,           target = '<t>'},
+    {name = 'Conspirator', recast_id = 40,  buff = 'Conspirator', target = '<me>'},
+}
+
+--- Sort the openers into what can be used and what has to be reported.
+--- @param ability_recasts table windower.ffxi.get_ability_recasts()
+--- @return table to cast, table status lines for the ones that cannot
+local function triage_fbc(ability_recasts)
+    local to_cast, status = {}, {}
+
+    for _, ability in ipairs(FBC_ABILITIES) do
+        local recast = ability_recasts[ability.recast_id] or 0
+
+        if ability.buff and buffactive[ability.buff] then
+            table.insert(status, {name = ability.name, status = 'active'})
+        elseif is_on_cooldown(recast) then
+            table.insert(status, {name = ability.name, status = 'cooldown',
+                                  time = math.ceil(recast)})
+        else
+            table.insert(to_cast, ability)
+        end
+    end
+
+    return to_cast, status
+end
+
+--- Fire the openers a second apart.
+---
+--- Spaced because the client drops a job ability sent while another is still
+--- resolving; the first goes out immediately and each next one waits its turn.
+--- @param to_cast table From triage_fbc
+local function cast_fbc(to_cast)
+    for i, ability in ipairs(to_cast) do
+        local command = 'input /ja "' .. ability.name .. '" ' .. ability.target
+        if i == 1 then
+            send_command(command)
+        else
+            send_command('wait ' .. ((i - 1) * 1) .. '; ' .. command)
+        end
+    end
+end
+
 function SmartbuffManager.apply_fbc()
-    local ability_recasts = windower.ffxi.get_ability_recasts()
-    local abilities_to_cast = {}
-    local status_data = {}
+    local to_cast, status_data = triage_fbc(windower.ffxi.get_ability_recasts())
 
-    -- Feint (Recast ID: 68) - Buff on player
-    local feint_recast = ability_recasts[68] or 0
-    if buffactive['Feint'] then
-        table.insert(status_data, { name = 'Feint', status = 'active' })
-    elseif is_on_cooldown(feint_recast) then
-        table.insert(status_data, { name = 'Feint', status = 'cooldown', time = math.ceil(feint_recast) })
-    else
-        table.insert(abilities_to_cast, { name = 'Feint' })
-    end
-
-    -- Bully (Recast ID: 240) - Debuff on mob (no buffactive check)
-    local bully_recast = ability_recasts[240] or 0
-    if is_on_cooldown(bully_recast) then
-        table.insert(status_data, { name = 'Bully', status = 'cooldown', time = math.ceil(bully_recast) })
-    else
-        table.insert(abilities_to_cast, { name = 'Bully' })
-    end
-
-    -- Conspirator (Recast ID: 40) - Buff on player
-    local conspirator_recast = ability_recasts[40] or 0
-    if buffactive['Conspirator'] then
-        table.insert(status_data, { name = 'Conspirator', status = 'active' })
-    elseif is_on_cooldown(conspirator_recast) then
-        table.insert(status_data, { name = 'Conspirator', status = 'cooldown', time = math.ceil(conspirator_recast) })
-    else
-        table.insert(abilities_to_cast, { name = 'Conspirator' })
-    end
-
-    -- Display buff status (using global function if available)
     if #status_data > 0 then
         MessageBuffs.show_buff_status(status_data)
     end
 
-    -- Set flag to suppress CooldownChecker messages for abilities being cast
+    -- The abilities about to go out are knowingly on the way; CooldownChecker
+    -- would otherwise report each one as blocked.
     _G.suppress_cooldown_messages = true
 
-    -- Cast abilities sequentially (1 second spacing)
-    for i, ability in ipairs(abilities_to_cast) do
-        -- Determine target based on ability name
-        local target = '<me>'
-        if ability.name == 'Bully' then
-            target = '<t>'
-        end
+    cast_fbc(to_cast)
 
-        local command = 'input /ja "' .. ability.name .. '" ' .. target
-        if i == 1 then
-            send_command(command)
-        else
-            local wait_time = (i - 1) * 1
-            send_command('wait ' .. wait_time .. '; ' .. command)
-        end
-    end
-
-    -- Reset flag after all abilities have been cast
-    -- NOTE: `lua i _G.X = ...` writes to Windower scope, not GearSwap sandbox.
-    -- Use coroutine.schedule to defer the reset inside GearSwap.
-    if #abilities_to_cast > 0 then
+    -- Deferred inside GearSwap on purpose. `lua i _G.X = ...` writes to the
+    -- Windower scope, not this sandbox, so the flag would never come back and
+    -- cooldown messages would stay suppressed for the rest of the session.
+    if #to_cast > 0 then
         coroutine.schedule(function()
             _G.suppress_cooldown_messages = false
         end, 3.0)
