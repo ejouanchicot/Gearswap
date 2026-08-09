@@ -65,31 +65,6 @@ end
 ---   ROLL DETECTION (Packet Parsing)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Detect roll from action packet
----   Action category 6 = Job Ability used
----   @param act table Action packet data
----   @return string|nil roll_name, number|nil roll_value
-function RollTracker.detect_roll(act)
-    if not act or act.category ~= 6 then
-        return nil, nil
-    end
-
-    -- Check if actor is the player (with nil protection)
-    if not player or not player.id or act.actor_id ~= player.id then
-        return nil, nil
-    end
-
-    -- Get roll ID from param (ability ID)
-    local roll_id = act.param
-
-    -- Map roll IDs to roll names (from resources)
-    -- This requires res.job_abilities which might not be available in GearSwap
-    -- For now, we'll detect via buff application instead
-    -- This is a placeholder - actual implementation will detect via buff names
-
-    return nil, nil
-end
-
 ---   Detect roll via buff application (more reliable for GearSwap)
 ---   Called from job_buff_change when roll buff is gained
 ---   @param buff_name string Name of the buff (e.g., "Fighter's Roll")
@@ -115,7 +90,6 @@ function RollTracker.on_roll_buff_gained(buff_name)
     return true
 end
 
---- Extracted from RollTracker.on_roll_cast: the `roll_data and roll_data.job_bonus` branch.
 --- Is the job this roll favours actually in the party?
 ---
 --- The Tricorne proc is deliberately not counted: there is no way to detect
@@ -127,12 +101,8 @@ local function roll_has_job_bonus(roll_data)
     return RollTracker.is_job_in_party_zone(roll_data.job_bonus[1]) and true or false
 end
 
---- Extracted from RollTracker.on_roll_cast: the `_G.cor_active_rolls` branch.
---- Was this roll made under Crooked Cards?
----
---- The buff is consumed the moment a new roll goes out, but the bonus stays
---- attached to that roll through its Double-Ups, so the active list is what
---- remembers it - not buffactive.
+--- Does the roll's own record carry Crooked? See crooked_applies for why the
+--- record, and not buffactive, is what remembers.
 --- @param roll_name string Roll being cast
 --- @return boolean
 local function roll_already_crooked(roll_name)
@@ -159,18 +129,46 @@ local function is_duplicate_report(roll_name, roll_value, current_time)
         and (current_time - last.timestamp) < 0.5
 end
 
+--- Is this roll already running, so this cast is a Double-Up of it?
+---
+--- The action packet cannot tell the two apart - a Double-Up arrives as the
+--- roll it doubles - but the game itself settles it: a roll cannot be re-cast
+--- while it is still up. So the roll's buff being on the player means this
+--- cast can only be a Double-Up.
+---
+--- The active list is checked too, because nothing ever expires an entry from
+--- it: a roll that wore off is still listed, and it is the buff that says it
+--- is gone. A roll's buff carries the roll's own name.
+--- @return boolean
+local function roll_is_active(roll_name)
+    for _, roll in ipairs(_G.cor_active_rolls or {}) do
+        if roll.name == roll_name then
+            return buffactive[roll_name] and true or false
+        end
+    end
+    return false
+end
+
 --- Does Crooked Cards apply to this cast?
 ---
---- The buff is consumed the instant a new roll goes out, so buffactive is
---- unreliable by the time this runs. Three sources, in order: the roll's own
---- record if it is being doubled up, the live buff, and a timestamp kept for
---- the moment between casting and the buff disappearing.
+--- Crooked is a property of the ROLL. The buff leaves the player the instant
+--- the Phantom Roll goes out, so the roll's own record carries it from then
+--- on - which is why a Double-Up stays crooked long after the buff is gone.
+---
+--- Only a fresh Phantom Roll can pick Crooked up: a Double-Up of a roll that
+--- is not crooked stays that way, and leaves the buff for the next real roll.
+--- @param roll_name string
+--- @param is_new_roll boolean False when this cast is a Double-Up
 --- @return boolean
-local function crooked_applies(roll_name)
-    if _G.cor_active_rolls and roll_already_crooked(roll_name) then
-        return true
+local function crooked_applies(roll_name, is_new_roll)
+    -- A Double-Up adds to the roll already running, so that roll's record is
+    -- the only thing that can say Crooked is on it.
+    if not is_new_roll then
+        return roll_already_crooked(roll_name)
     end
 
+    -- A fresh Phantom Roll replaces whatever was there, stale flag included.
+    -- Only the buff counts.
     if not _G.cor_crooked_timestamp then
         return false
     end
@@ -227,17 +225,14 @@ end
 --- a crooked roll is still crooked long after the buff is gone.
 ---
 --- The timestamp only covers the one cast between the buff vanishing and
---- track_active_roll stamping has_crooked on the roll. Whichever cast first
---- read it spends it, new roll or Double-Up alike: left standing, its 60s
---- window hands Crooked to the next, unrelated roll.
----
---- A cast that already knew from the record spends nothing, so a Double-Up of
---- an already-crooked roll does not waste a fresh Crooked Cards waiting for
---- the next real roll.
+--- track_active_roll stamping the roll. The Phantom Roll that read it spends
+--- it: left standing, its 60s window would hand Crooked to the next roll.
+--- A Double-Up spends nothing, so it cannot waste a buff meant for the next
+--- real roll.
 --- @param is_crooked boolean Whether Crooked applies to this cast
---- @param from_record boolean Whether the roll's own record already said so
-local function consume_crooked(is_crooked, from_record)
-    if is_crooked and not from_record then
+--- @param is_new_roll boolean False when this cast is a Double-Up
+local function consume_crooked(is_crooked, is_new_roll)
+    if is_crooked and is_new_roll then
         _G.cor_crooked_timestamp = nil
     end
 end
@@ -278,19 +273,20 @@ function RollTracker.on_roll_cast(roll_name, roll_value)
     _G.cor_last_roll_display.value = roll_value
     _G.cor_last_roll_display.timestamp = current_time
 
+    -- Read before track_active_roll rewrites the record below.
+    local is_new_roll = not roll_is_active(roll_name)
+
     if roll_value == 12 then
-        -- A bust is still a roll going out, so it still spent the buff. The
-        -- roll is discarded and never records has_crooked, so without this the
-        -- timestamp would outlive it and taint the next roll.
-        _G.cor_crooked_timestamp = nil
+        -- The busted roll is lost, and a fresh Phantom Roll spent the buff on
+        -- its way out - it never reaches track_active_roll, so nothing else
+        -- would clear the timestamp and the next roll would inherit Crooked.
+        -- A Double-Up that busts spent nothing.
+        if is_new_roll then
+            _G.cor_crooked_timestamp = nil
+        end
         RollTracker.handle_bust(roll_name)
         return
     end
-
-    -- Read before track_active_roll stamps the record below: it decides which
-    -- cast spends the Crooked timestamp.
-    local crooked_from_record = _G.cor_active_rolls ~= nil
-                                and roll_already_crooked(roll_name)
 
     -- Recounted every cast: members move in and out of range between rolls.
     local affected_count, total_count, missed_names =
@@ -298,14 +294,14 @@ function RollTracker.on_roll_cast(roll_name, roll_value)
     record_last_roll(roll_name, roll_value, affected_count, total_count, missed_names)
 
     local roll_data = RollData.get_roll(roll_name)
-    local is_crooked = crooked_applies(roll_name)
+    local is_crooked = crooked_applies(roll_name, is_new_roll)
     local final_bonus, has_job_bonus = compute_bonus(roll_name, roll_value,
                                                      roll_data, is_crooked)
-    consume_crooked(is_crooked, crooked_from_record)
+    consume_crooked(is_crooked, is_new_roll)
 
     local is_natural_eleven = note_natural_eleven(roll_value)
 
-    RollTracker.track_active_roll(roll_name, roll_value, is_crooked)
+    RollTracker.track_active_roll(roll_name, roll_value, is_crooked, is_new_roll)
     RollTracker.display_roll_result(roll_name, roll_value, final_bonus,
         roll_data and roll_data.effect_type or '',
         RollData.is_lucky(roll_name, roll_value),
@@ -320,15 +316,20 @@ end
 ---   @param roll_name string Name of the roll
 ---   @param roll_value number Value of the roll
 ---   @param has_crooked boolean If this roll has Crooked Cards attached
-function RollTracker.track_active_roll(roll_name, roll_value, has_crooked)
+function RollTracker.track_active_roll(roll_name, roll_value, has_crooked, is_new_roll)
     -- Find existing roll or add new
     local found = false
     for i, roll in ipairs(_G.cor_active_rolls) do
         if roll.name == roll_name then
             roll.value = roll_value
             roll.timestamp = os.time()
-            -- Update Crooked flag (only set if true, don't clear if false)
-            if has_crooked then
+            -- A fresh Phantom Roll replaces the old one, Crooked included, so
+            -- a re-roll cannot inherit it from the instance that wore off. A
+            -- Double-Up only adds to what is there and keeps the flag - as
+            -- does the buff-detection path, which passes no is_new_roll.
+            if is_new_roll then
+                roll.has_crooked = has_crooked or false
+            elseif has_crooked then
                 roll.has_crooked = true
             end
             found = true
