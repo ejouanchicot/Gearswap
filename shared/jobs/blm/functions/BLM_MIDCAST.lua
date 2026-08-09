@@ -31,74 +31,90 @@ local BLMElementalConfig = nil
 
 local modules_loaded = false
 
+--- Load a per-character config, falling back to a built-in default.
+---
+--- The path carries the character name so a clone reads its own settings
+--- rather than Tetsouo's. A missing file is normal, not an error: a fresh
+--- clone has none until the player writes one, and the defaults have to be
+--- good enough to play with.
+--- @param char_name string Character whose config directory to read
+--- @param config_name string File under <char>/config/blm/
+--- @param fallback table Defaults when the file is absent or fails to load
+--- @return table
+local function load_blm_config(char_name, config_name, fallback)
+    local ok, config = pcall(require, char_name .. '/config/blm/' .. config_name)
+    if ok and config then
+        return config
+    end
+    return fallback
+end
+
+--- Timing probe for the lazy load, active only under //gs c perf.
+---
+--- This runs on the first spell of a job, so a slow require here is felt as a
+--- hitch at exactly the wrong moment. The per-module marks say which one.
+--- @return function mark(name), function total()
+local function lazy_load_timer()
+    local enabled = _G.PERFORMANCE_PROFILING and _G.PERFORMANCE_PROFILING.enabled
+    local start_time = os.clock()
+    local last_time = start_time
+
+    local function mark(name)
+        if not enabled then return end
+        local now = os.clock()
+        MessageFormatter.show_debug('MIDCAST',
+            string.format('    [MIDCAST] %s: %.0fms', name, (now - last_time) * 1000))
+        last_time = now
+    end
+
+    local function total()
+        if not enabled then return end
+        MessageFormatter.show_debug('MIDCAST',
+            string.format('[PERF:LAZY] BLM_MIDCAST TOTAL: %.0fms',
+                          (os.clock() - start_time) * 1000))
+    end
+
+    return mark, total
+end
+
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    -- PROFILING: Measure lazy-load time on first spell
-    local start_time = os.clock()
-    local last_time = start_time
-    local profiling_enabled = _G.PERFORMANCE_PROFILING and _G.PERFORMANCE_PROFILING.enabled
-
-    -- Load MessageFormatter first so it's available inside mark()
+    -- MessageFormatter first: the timer below reports through it.
     local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
     MessageFormatter = mf
 
-    local function mark(name)
-        if profiling_enabled then
-            local now = os.clock()
-            local elapsed = (now - last_time) * 1000
-            MessageFormatter.show_debug('MIDCAST', string.format('    [MIDCAST] %s: %.0fms', name, elapsed))
-            last_time = now
-        end
-    end
+    local mark, total = lazy_load_timer()
 
-    -- Router (loads MidcastManager + ElementalMatcher internally)
+    -- Pulls in MidcastManager and ElementalMatcher itself.
     local _, mr = pcall(require, 'shared/jobs/blm/functions/logic/midcast_router')
     MidcastRouter = mr
     mark('MidcastRouter')
 
-    -- BLM Midcast Debug Messages
     local _, mbm = pcall(require, 'shared/utils/messages/formatters/jobs/message_blm_midcast')
     MessageBLMMidcast = mbm
     mark('MessageBLMMidcast')
 
-    -- ENHANCING_MAGIC_DATABASE for spell_family routing (used by Enfeebling)
+    -- Enfeebling routes on spell_family, which lives in the enhancing database.
     EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
     mark('ENHANCING_DB')
 
-    -- Character-aware config paths (supports Tetsouo + clones)
     local char_name = (player and player.name) or 'Tetsouo'
 
-    -- MP conservation configuration
-    local mp_config_success, mp_config = pcall(require, char_name .. '/config/blm/BLM_MP_CONFIG')
-    if not mp_config_success or not mp_config then
-        BLMMPConfig = { mp_threshold = 1000 }  -- Fallback default
-    else
-        BLMMPConfig = mp_config
-    end
+    BLMMPConfig = load_blm_config(char_name, 'BLM_MP_CONFIG',
+        { mp_threshold = 1000 })
     mark('BLM_MP_CONFIG')
 
-    -- Elemental matching configuration
-    local elemental_config_success, elemental_config = pcall(require, char_name .. '/config/blm/BLM_ELEMENTAL_CONFIG')
-    if not elemental_config_success or not elemental_config then
-        BLMElementalConfig = {  -- Fallback defaults
-            auto_hachirin = true,
-            check_storm = true,
-            check_day = true,
-            check_weather = true,
-        }
-    else
-        BLMElementalConfig = elemental_config
-    end
+    BLMElementalConfig = load_blm_config(char_name, 'BLM_ELEMENTAL_CONFIG', {
+        auto_hachirin = true,
+        check_storm = true,
+        check_day = true,
+        check_weather = true,
+    })
     mark('BLM_ELEMENTAL_CONFIG')
 
     modules_loaded = true
-
-    -- PROFILING: Show total lazy-load time
-    if profiling_enabled then
-        local elapsed = (os.clock() - start_time) * 1000
-        MessageFormatter.show_debug('MIDCAST', string.format('[PERF:LAZY] BLM_MIDCAST TOTAL: %.0fms', elapsed))
-    end
+    total()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
