@@ -24,28 +24,38 @@ local GROUP_ORDER = {
     'geomancy', 'roll', 'ja', 'other',
 }
 
---- Short label describing what a command entry targets.
---- A target may be a function evaluated at command time (a GEO Indi- switches
---- to an ally while the alt holds Entrust), so it is resolved here too.
+--- Note only what departs from the norm.
+---
+--- Most commands act on what you selected, and repeating that on every row
+--- buries the useful part. The rule is stated once above the list; a row only
+--- speaks up when it does something else - going to the alt itself, say.
+--- A target may also be a function evaluated at command time (a GEO Indi-
+--- switches to an ally while the alt holds Entrust).
 --- @param entry table Command definition
---- @return string Human-readable target label
-local function target_label(entry)
+--- @param alt string Alt character name, so the line can name them
+--- @return string Suffix, empty when the command follows the norm
+local function target_note(entry, alt)
     local target = entry.target or 'lastst'
 
     if type(target) == 'function' then
         local ok, resolved = pcall(target)
         if not ok or type(resolved) ~= 'string' then
-            return 'depends'
+            return ' (target varies)'
         end
         target = resolved
     end
 
-    local labels = {
-        lastst = 'your subtarget', t = 'your target',
-        bt = 'battle target', ft = 'follow target', scan = 'scan target',
-        me = 'the alt', pet = "the alt's pet",
+    local notes = {
+        lastst = '',                                  -- the norm
+        t      = ' (on your current target)',
+        bt     = ' (on the mob you are fighting)',
+        ft     = ' (on who you are following)',
+        scan   = ' (on your scan target)',
+        me     = ' (on ' .. (alt or 'the alt') .. ')',
+        pet    = " (on " .. (alt or 'the alt') .. "'s pet)",
     }
-    return labels[target:lower()] or target
+    local note = notes[target:lower()]
+    return note ~= nil and note or (' (target: ' .. target .. ')')
 end
 
 --- What a command will cast, as text.
@@ -94,11 +104,12 @@ end
 --- @param alt string Alt character name
 --- @param job string Alt's current job code
 --- @param count number Number of commands being described
-local function header(alt, job, count)
+local function header(alt, job, subjob, count)
     local gray = MessageCore.create_color_code(Colors.SEPARATOR)
     local hi = MessageCore.create_color_code(Colors.HEADER)
-    MessageRenderer.send(1, string.format('%s=== %s%s (%s)%s - %d commands ===',
-        gray, hi, alt, job, gray, count))
+    local jobs = job .. (subjob and subjob ~= 'NON' and ('/' .. subjob) or '')
+    MessageRenderer.send(1, string.format('%s=== what %s%s%s can do for you (%s%s%s) - %d ===',
+        gray, hi, alt, gray, hi, jobs, gray, count))
 end
 
 --- Which job a command came from, main or sub.
@@ -114,23 +125,28 @@ end
 
 --- Print one command row.
 ---
---- No padding here. FFXI's chat uses a proportional font, so spaces cannot
---- line columns up - they only make the lines longer and push the tail off the
---- window. Colour and separators do the work instead: the command name is the
---- thing you scan for, so it comes first and in its own colour.
+--- No padding: FFXI's chat is a proportional font, so spaces cannot align
+--- columns - they only lengthen the row. Command first, then what it casts,
+--- then anything unusual about it.
 --- @param name string Command name
 --- @param entry table Command definition
-local function row(name, entry)
+--- @param alt string Alt character name
+local function row(name, entry, alt)
     local gray = MessageCore.create_color_code(Colors.SEPARATOR)
     local key = MessageCore.create_color_code(Colors.KEYBIND_KEY)
     local spell = MessageCore.create_color_code(Colors.SPELL)
-    local job = MessageCore.create_color_code(Colors.JOB_TAG)
 
-    MessageRenderer.send(1, string.format('%s  %s%s %s- %s%s %s(%s%s%s, %s)',
-        gray,
-        key, name,
-        gray, spell, action_label(entry),
-        gray, job, job_label(entry), gray, target_label(entry)))
+    -- Flag the subjob only: it is the surprising case, since the tier is lower
+    -- than the same spell would be on a main job.
+    local from = ''
+    if entry.source == 'sub' then
+        from = ' [/' .. (entry.source_job or '?') .. ']'
+    end
+
+    MessageRenderer.send(1, string.format('%s  %s//gs c %s  %s%s%s%s%s',
+        gray, key, name,
+        spell, action_label(entry),
+        gray, target_note(entry, alt), from))
 end
 
 --- Display the alt's commands, grouped or filtered.
@@ -139,12 +155,12 @@ end
 --- @param names table Sorted list of command names
 --- @param commands table Command definitions keyed by name
 --- @param filter string|nil Group name, or a substring to search for
-function MessageAltCommands.show_list(alt, job, names, commands, filter)
+function MessageAltCommands.show_list(alt, job, names, commands, filter, subjob)
     local gray = MessageCore.create_color_code(Colors.SEPARATOR)
     local key = MessageCore.create_color_code(Colors.KEYBIND_KEY)
 
     if #names == 0 then
-        header(alt, job, 0)
+        header(alt, job, subjob, 0)
         MessageRenderer.send(1, gray .. '  (nothing configured)')
         return
     end
@@ -162,13 +178,15 @@ function MessageAltCommands.show_list(alt, job, names, commands, filter)
             end
         end
 
-        header(alt, job, #hits)
+        header(alt, job, subjob, #hits)
         if #hits == 0 then
             MessageRenderer.send(1, gray .. '  nothing matches "' .. filter .. '"')
             return
         end
+        MessageRenderer.send(1, gray ..
+            '  Select first: /ta <stpc> for an ally, /ta <stnpc> for a mob.')
         for _, name in ipairs(hits) do
-            row(name, commands[name])
+            row(name, commands[name], alt)
         end
         return
     end
@@ -194,7 +212,7 @@ function MessageAltCommands.show_list(alt, job, names, commands, filter)
         if not seen then sorted[#sorted + 1] = g end
     end
 
-    header(alt, job, #names)
+    header(alt, job, subjob, #names)
     for _, g in ipairs(sorted) do
         local list = buckets[g]
         local sample = table.concat(list, ', ', 1, math.min(3, #list))
@@ -204,8 +222,10 @@ function MessageAltCommands.show_list(alt, job, names, commands, filter)
             MessageCore.create_color_code(Colors.SPELL), sample))
     end
 
-    MessageRenderer.send(1, string.format('%s  %s//gs c altcmds <group|word>%s to list or search',
-        gray, key, gray))
+    MessageRenderer.send(1, string.format('%s  %s//gs c altcmds <group>%s or %s//gs c altcmds <word>%s to see the commands',
+        gray, key, gray, key, gray))
+    MessageRenderer.send(1, string.format('%s  the command name is the spell name: %s//gs c haste%s, %s//gs c dia%s',
+        gray, key, gray, key, gray))
 end
 
 ---============================================================================
