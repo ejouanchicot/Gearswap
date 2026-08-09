@@ -436,68 +436,41 @@ function RollTracker.validate_party_cache()
     drop_departed_and_expired(valid_ids)
 end
 
----   Check if job is present in party (COR or party members)
----   Uses packet-parsed party job data from _G.cor_party_jobs AND windower party data as fallback
----   @param job_code string Job code (e.g., "WAR", "RNG", "SAM")
----   @return boolean True if job found in party
+---   Is a job present in the party, for the purpose of a roll's job bonus?
+---
+---   Three sources, tried in order of how much they can be trusted.
+---
+---   1. The Corsair's own main or subjob, which needs no lookup at all.
+---   2. The other box, when dual-boxing. This is the only source that does not
+---      wait for the server: the character says so itself when its job
+---      changes. Without it, a dual-boxed member standing still never
+---      registers and the roll silently loses the bonus.
+---   3. The packet cache, filled from 0xDD as members join, zone or change
+---      state.
+---
+---   @param job_code string Job the roll wants, e.g. 'WAR'
+---   @return boolean
 function RollTracker.is_job_in_party_zone(job_code)
-    -- CRITICAL: Protect ALL player accesses
     if not job_code or not player or not player.main_job then
         return false
     end
 
-    -- Auto-refresh party cache if needed
     RollTracker.validate_party_cache()
 
-    -- Check if player (COR) has the job as main or sub
-    if player.main_job == job_code then
+    if player.main_job == job_code or player.sub_job == job_code then
         return true
     end
 
-    if player.sub_job and player.sub_job == job_code then
-        return true
-    end
-
-    -- The other box, if there is one. This is the only source that does not
-    -- depend on the server volunteering a packet: the character tells us
-    -- directly when its job changes. Without it a dual-boxed party member who
-    -- is simply standing there never registers, and the roll loses its bonus
-    -- until something makes them emit a 0xDD.
     local other = _G.AltJobState
     if other and other.job == job_code then
         return true
     end
 
-    -- Check party members (from packet parsing)
-    -- NOTE: Only check MAIN job, not subjob (as requested by user)
-    if _G.cor_party_jobs then
-        for player_id, job_data in pairs(_G.cor_party_jobs) do
-            if job_data.main_job == job_code then
-                return true
-            end
-        end
-    end
-
-    -- FALLBACK: Check windower party data directly (works for trusts and multibox)
-    -- This is more reliable than packet parsing for local party members
-    local party = windower.ffxi.get_party()
-    if party and player.id then
-        for i = 0, 5 do
-            local member = party['p' .. i]
-            if member and member.mob then
-                -- Get member's job from party data
-                -- Note: party data contains main_job and sub_job as JOB IDs, not names
-                -- We need to check the mob name and see if we can get job from elsewhere
-
-                -- Try to get from windower party member info
-                if member.mob.id and member.mob.id ~= player.id then
-                    -- Check if we have cached job data that matches (MAIN job only)
-                    local cached = _G.cor_party_jobs and _G.cor_party_jobs[member.mob.id]
-                    if cached and cached.main_job == job_code then
-                        return true
-                    end
-                end
-            end
+    -- Main job only, by choice: a party member's subjob does not grant the
+    -- roll's job bonus.
+    for _, job_data in pairs(_G.cor_party_jobs or {}) do
+        if job_data.main_job == job_code then
+            return true
         end
     end
 
