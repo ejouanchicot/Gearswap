@@ -79,30 +79,14 @@ end
 ---   BUFF MANAGEMENT CORE
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Manages self-buff spells in FFXI
----   Checks recast time of each spell and if the buff is active
----   If buff is not active or about to expire, queues the spell to be cast
----   ENHANCED: Includes lag compensation and optimized loop processing
-function BuffManager.BuffSelf()
-    -- Cache frequently accessed values for performance
-    local currentTime = os.clock() -- More precise than os.time() for anti-spam
-    local spellRecasts = windower.ffxi.get_spell_recasts()
-    local buffActive = buffactive
-
-    -- Validate spell recasts availability
-    if type(spellRecasts) ~= "table" then
-        BLMMessages.show_buffself_recasts_error()
-        return false
-    end
-
-    -- Get resources for spell ID resolution
-    local res = res or windower.res or require('resources')
-    if not res then
-        BLMMessages.show_buffself_resources_error()
-        return false
-    end
-
-    -- Populate recast IDs dynamically for all spells
+--- The buff list with a recast id attached to each entry.
+---
+--- The id comes from resources by name, with a hardcoded fallback for the
+--- three that matter most: without one, a missing id would read as recast 0
+--- and the spell would be cast on every call.
+--- @param res table Windower resources
+--- @return table Spells, in the order BUFF_SPELLS declares them
+local function spells_with_recast_ids(res)
     local spells = {}
     for i, spellDef in ipairs(BUFF_SPELLS) do
         spells[i] = {
@@ -112,66 +96,93 @@ function BuffManager.BuffSelf()
             duration = spellDef.duration
         }
 
-        -- Get spell ID dynamically from resources
         local spell_data = res.spells:with('en', spellDef.name)
         spells[i].recastId = spell_data and spell_data.id or
             (spellDef.name == 'Stoneskin' and 54 or
                 spellDef.name == 'Blink' and 53 or
                 spellDef.name == 'Aquaveil' and 55 or 251)
     end
+    return spells
+end
 
-    -- Pre-allocate arrays for better performance
-    local readySpells = {}
+--- Which buffs are worth casting right now, and how long to wait for each.
+---
+--- The delay accumulates across the queue rather than being per spell: the
+--- second cast waits for the first to finish, the third for both. The first
+--- one carries no delay at all, which is why the counter is checked before it
+--- is incremented.
+--- @param spells table From spells_with_recast_ids
+--- @param spellRecasts table windower.ffxi.get_spell_recasts()
+--- @param buffActive table buffactive
+--- @param currentTime number os.clock()
+--- @return table List of {spell, delay}
+local function queue_ready_buffs(spells, spellRecasts, buffActive, currentTime)
+    local ready = {}
     local totalDelay = 0
-    local readyCount = 0
 
-    -- Single loop to process all spells (optimized iteration)
     for i = 1, #spells do
         local spell = spells[i]
-        local recastTime_raw = spellRecasts[spell.recastId]
-        local recastTime = recastTime_raw or 0
-        local isBuffActive = buffActive[spell.buffName]
+        local recastTime = spellRecasts[spell.recastId] or 0
 
-        -- Only process spells with valid duration and without active buff
-        if spell.duration > 0 and not isBuffActive then
-            -- Check if spell is ready and safe to cast
+        -- duration 0 means the entry is not a timed buff; an active buff needs
+        -- no recast. Neither is a candidate.
+        if spell.duration > 0 and not buffActive[spell.buffName] then
             if recastTime == 0 and isSpellSafeToCast(spell.name, currentTime) then
-                -- Increment delay only if we have previous spells queued
-                if readyCount > 0 then
+                if #ready > 0 then
                     totalDelay = totalDelay + spell.delay
                 end
-
-                -- Add to ready spells using pre-incremented count
-                readyCount = readyCount + 1
-                readySpells[readyCount] = { spell = spell, delay = totalDelay }
+                ready[#ready + 1] = { spell = spell, delay = totalDelay }
             end
-            -- NOTE: Cooldown tracking completely removed - no spam
         end
-        -- NOTE: No cooldown tracking for active buffs either
     end
 
-    -- Process ready spells if any (optimized command building)
-    if readyCount > 0 then
-        for i = 1, readyCount do
-            local readySpell = readySpells[i]
-            local spellName = readySpell.spell.name
+    return ready
+end
 
-            -- Build command string efficiently
-            local command = readySpell.delay > 0 and
-                ('wait ' .. readySpell.delay .. '; input /ma "' .. spellName .. '" <me>') or
-                ('input /ma "' .. spellName .. '" <me>')
+--- Send the queue, each cast waiting out the ones before it.
+--- @param ready table From queue_ready_buffs
+--- @param currentTime number os.clock(), recorded to keep the anti-spam honest
+local function cast_queue(ready, currentTime)
+    for i = 1, #ready do
+        local readySpell = ready[i]
+        local spellName = readySpell.spell.name
 
-            send_command(command)
-            updateLastCastTime(spellName, currentTime)
+        local command = readySpell.delay > 0 and
+            ('wait ' .. readySpell.delay .. '; input /ma "' .. spellName .. '" <me>') or
+            ('input /ma "' .. spellName .. '" <me>')
 
-            -- NOTE: Casting messages disabled - real buff gain messages will show automatically
-            -- BLMMessages.show_buff_casting(spellName, readySpell.delay)
-        end
+        send_command(command)
+        updateLastCastTime(spellName, currentTime)
+    end
+end
 
+function BuffManager.BuffSelf()
+    -- os.clock rather than os.time: the anti-spam window is shorter than a
+    -- second, so whole seconds would let a double press through.
+    local currentTime = os.clock()
+    local spellRecasts = windower.ffxi.get_spell_recasts()
+    local buffActive = buffactive
+
+    if type(spellRecasts) ~= "table" then
+        BLMMessages.show_buffself_recasts_error()
+        return false
+    end
+
+    local res = res or windower.res or require('resources')
+    if not res then
+        BLMMessages.show_buffself_resources_error()
+        return false
+    end
+
+    local spells = spells_with_recast_ids(res)
+    local ready = queue_ready_buffs(spells, spellRecasts, buffActive, currentTime)
+
+    if #ready > 0 then
+        cast_queue(ready, currentTime)
         return true
     end
 
-    -- Show ACTIVE buffs only (no cooldowns)
+    -- Nothing to cast: say what is already up instead of staying silent.
     return BuffManager._displayBuffStatus(spells, buffActive, spellRecasts)
 end
 
