@@ -52,6 +52,15 @@ local SAMBAS = {
 local SAMBA_RECAST_ID = 216
 
 --- Cast spacing between queued abilities (seconds).
+---
+--- A safety margin, for one of two reasons and possibly both: so each ability
+--- actually fires, and so the gear for it lands - FFXI rate-limits equipment
+--- changes, and actions sent too close together can equip wrong. Neither has
+--- been measured, so the value is deliberately generous.
+---
+--- Anyone tightening this should test it in game rather than reason about it:
+--- drop it to 0, queue several buffs, and watch both the abilities and the
+--- gear.
 local CAST_SPACING = 2
 
 ---  ═══════════════════════════════════════════════════════════════════════════
