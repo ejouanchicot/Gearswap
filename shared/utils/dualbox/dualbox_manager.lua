@@ -268,10 +268,10 @@ function DualBoxManager.receive_alt_job(main_job, sub_job, main_level, sub_level
         return
     end
 
-    -- Only main should receive updates
-    if _G.DualBoxConfig.role ~= "main" then
-        return
-    end
+    -- Both sides receive, mirroring the send. _G.AltJobState means "the other
+    -- box's job" on either character - the alt's job when read on the main,
+    -- the main's job when read on the alt. Rejecting it here left the alt
+    -- with nothing, which made the symmetric send added alongside inert.
 
     -- Validate parameters
     if not main_job or main_job == "" then
@@ -290,8 +290,26 @@ function DualBoxManager.receive_alt_job(main_job, sub_job, main_level, sub_level
         online = true
     }
 
+    -- Correct the packet-derived party cache for this character.
+    --
+    -- That cache is only refreshed when the server sends a 0xDD, so after a
+    -- job change it keeps claiming the old job until one arrives. COR reads it
+    -- to credit a roll's job bonus, and would credit the wrong one. The
+    -- character has just told us what it is playing, so trust that over a
+    -- packet that may be minutes old.
+    local other = get_target_character()
+    if other and _G.cor_party_jobs then
+        for _, entry in pairs(_G.cor_party_jobs) do
+            if entry.name == other then
+                entry.main_job = main_job
+                entry.sub_job = sub_job or "NON"
+                entry.timestamp = os.time()
+            end
+        end
+    end
+
     -- Always show alt job confirmation (info message)
-    local alt_name = get_target_character() or "Alt"
+    local alt_name = other or "Alt"
     get_MessageDualbox().show_job_update_received(alt_name, main_job, sub_job or "NON")
 
     -- Additional debug details (only if debug enabled)
