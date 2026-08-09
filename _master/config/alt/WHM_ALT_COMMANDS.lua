@@ -30,17 +30,11 @@ M.commands = {
     dia            = { action = 'ma', target = 'lastst', desc = 'Dia',
                        tiers = { { spell = 'Dia II', level = 36 }, { spell = 'Dia', level = 3 } } },
     diaga          = { action = 'ma', target = 'lastst', desc = 'Diaga',
-                       tiers = { { spell = 'Diaga II', level = 52 }, { spell = 'Diaga', level = 18 } } },
-    dispelga       = { action = 'ma', target = 'lastst', desc = 'Dispelga',
-                       tiers = { { spell = 'Dispelga', level = 99 } } },
-    paralyga       = { action = 'ma', target = 'lastst', desc = 'Paralyga',
-                       tiers = { { spell = 'Paralyga', level = 61 } } },
+                       tiers = { { spell = 'Diaga', level = 18 } } },
     paralyze       = { action = 'ma', target = 'lastst', desc = 'Paralyze',
                        tiers = { { spell = 'Paralyze', level = 4 } } },
     silence        = { action = 'ma', target = 'lastst', desc = 'Silence',
                        tiers = { { spell = 'Silence', level = 15 } } },
-    silencega      = { action = 'ma', target = 'lastst', desc = 'Silencega',
-                       tiers = { { spell = 'Silencega', level = 61 } } },
     slow           = { action = 'ma', target = 'lastst', desc = 'Slow',
                        tiers = { { spell = 'Slow', level = 13 } } },
     slowga         = { action = 'ma', target = 'lastst', desc = 'Slowga',
@@ -181,8 +175,6 @@ M.commands = {
     -- ========================================================================
     impact         = { action = 'ma', target = 'lastst', desc = 'Impact',
                        tiers = { { spell = 'Impact', level = 90 } } },
-    meteor         = { action = 'ma', target = 'lastst', desc = 'Meteor',
-                       tiers = { { spell = 'Meteor II', level = 75 } } },
 }
 
 return M

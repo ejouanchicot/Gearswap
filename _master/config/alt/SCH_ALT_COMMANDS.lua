@@ -29,8 +29,6 @@ M.commands = {
                        tiers = { { spell = 'Break', level = 90 } } },
     altdispel      = { action = 'ma', target = 'lastst', desc = 'Dispel',
                        tiers = { { spell = 'Dispel', level = 32 } } },
-    dispelga       = { action = 'ma', target = 'lastst', desc = 'Dispelga',
-                       tiers = { { spell = 'Dispelga', level = 99 } } },
     sleep          = { action = 'ma', target = 'lastst', desc = 'Sleep',
                        tiers = { { spell = 'Sleep II', level = 65 }, { spell = 'Sleep', level = 30 } } },
 
