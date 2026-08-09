@@ -182,8 +182,9 @@ end
 
 --- Fire the openers a second apart.
 ---
---- Spaced because the client drops a job ability sent while another is still
---- resolving; the first goes out immediately and each next one waits its turn.
+--- The first goes out immediately and each next one waits its turn. The
+--- spacing is deliberate but the original does not record why, so it is left
+--- exactly as it was.
 --- @param to_cast table From triage_fbc
 local function cast_fbc(to_cast)
     for i, ability in ipairs(to_cast) do

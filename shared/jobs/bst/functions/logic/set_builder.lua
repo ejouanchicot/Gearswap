@@ -141,11 +141,11 @@ end
 
 --- Melee gear, chosen by who is actually fighting.
 ---
---- Three situations and they are not interchangeable: with both master and pet
---- engaged the engagedBoth set exists precisely because neither the pure pet
---- nor the pure master set is right; pet-only means the master is standing
---- there while the pet works; master-only covers no pet at all and a pet that
---- is merely following.
+--- Three situations and they are not interchangeable. engagedBoth is for when
+--- master and pet are both fighting: it is a mix, built to keep both of them
+--- viable rather than favouring either. Pet-only is the master standing there
+--- while the pet works, and master-only covers no pet at all as well as a pet
+--- that is merely following.
 --- @param base_engaged_set table Fallback when nothing more specific exists
 --- @param pet_valid boolean Whether a pet is actually out
 --- @return table

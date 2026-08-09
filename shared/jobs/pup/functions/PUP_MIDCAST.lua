@@ -77,9 +77,9 @@ end
 
 --- The set for a Ready move category.
 ---
---- The magic categories have a _ww variant for when the master is engaged:
---- the automaton's magic scales off gear the master cannot wear while meleeing,
---- so the two situations want different pieces.
+--- The magic categories have a separate _ww set for when the master is
+--- engaged. Why the two differ is a gear decision that lives in the sets, not
+--- here; this only picks between them.
 --- @param category string From ready_move_category
 --- @param engaged boolean Whether the master is fighting
 --- @return table|nil Set to equip
