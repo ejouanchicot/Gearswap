@@ -347,89 +347,93 @@ end
 ---   BONUS CALCULATION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- How many party members are actually present.
+--- @param party table windower.ffxi.get_party()
+--- @return number count, table set of member ids still in the party
+local function party_membership(party)
+    local count, ids = 0, {}
+    for i = 0, 5 do
+        local member = party['p' .. i]
+        if member and member.mob then
+            count = count + 1
+            if member.mob.id then
+                ids[member.mob.id] = true
+            end
+        end
+    end
+    return count, ids
+end
+
+--- Empty the cache without replacing it.
+---
+--- The sandbox name and windower._cor_party_jobs are the same table, so
+--- assigning a fresh one would leave the persistent copy full of stale entries
+--- that came back on the next reload.
+local function clear_party_jobs()
+    for k in pairs(_G.cor_party_jobs) do
+        _G.cor_party_jobs[k] = nil
+    end
+end
+
+--- Drop members who left, and entries too old to trust.
+---
+--- Ten minutes, not thirty seconds. A quiet party member emits no 0xDD - no
+--- zone, no equipment change, no buff - so a short TTL made their job vanish
+--- and took their contribution to the roll bonus with it. Zoning and party
+--- changes already clear the cache above, so a long life here is safe.
+--- @param valid_ids table Ids still in the party
+local function drop_departed_and_expired(valid_ids)
+    local TTL = 600
+    local now = os.time()
+
+    for player_id, job_data in pairs(_G.cor_party_jobs) do
+        if not valid_ids[player_id] then
+            _G.cor_party_jobs[player_id] = nil
+        elseif job_data.timestamp and (now - job_data.timestamp > TTL) then
+            _G.cor_party_jobs[player_id] = nil
+        end
+    end
+end
+
 ---   Validate and clean party job cache (auto-refresh on zone/party changes)
----   Detects zone changes and party composition changes to clear stale data
 ---   @return void
 function RollTracker.validate_party_cache()
     if not player or not _G.cor_party_state then
         return
     end
 
-    -- Get current zone and party info
     local info = windower.ffxi.get_info()
     local party = windower.ffxi.get_party()
-
     if not info or not party then
         return
     end
 
     local current_zone = info.zone
-    local current_party_count = 0
+    local current_party_count, valid_ids = party_membership(party)
+    local cache_state = _G.cor_party_state
 
-    -- Count actual party members
-    for i = 0, 5 do
-        if party['p' .. i] and party['p' .. i].mob then
-            current_party_count = current_party_count + 1
-        end
-    end
+    -- zone_id starts at 0, which is not a zone. Adopting it silently is the
+    -- point: treating it as a zone change made the first roll after a load
+    -- wipe the jobs the packet listener had just collected, and the job bonus
+    -- only ever appeared from the Double-Up onwards.
+    if cache_state.zone_id == 0 then
+        cache_state.zone_id = current_zone
+        cache_state.party_count = current_party_count
 
-    -- Adopt the zone the first time without wiping anything.
-    --
-    -- The state starts at zone_id = 0, which is not a real zone, so the very
-    -- first roll after a load saw a "zone change", cleared the party jobs the
-    -- packet listener had already collected, and returned - which is why the
-    -- job bonus only ever appeared from the Double-Up onwards, once a later
-    -- packet had refilled the table.
-    if _G.cor_party_state.zone_id == 0 then
-        _G.cor_party_state.zone_id = current_zone
-        _G.cor_party_state.party_count = current_party_count
-    elseif _G.cor_party_state.zone_id ~= current_zone then
-        -- A real zone change: jobs collected in the old zone are stale.
-        -- Empty in place: the sandbox name and windower._cor_party_jobs are
-        -- the same table, and reassigning would leave the persistent one full
-        -- of stale entries that come back on the next reload.
-        for k in pairs(_G.cor_party_jobs) do _G.cor_party_jobs[k] = nil end
-        _G.cor_party_state.zone_id = current_zone
-        _G.cor_party_state.party_count = current_party_count
+    elseif cache_state.zone_id ~= current_zone then
+        -- A real zone change: jobs read in the old zone are stale.
+        clear_party_jobs()
+        cache_state.zone_id = current_zone
+        cache_state.party_count = current_party_count
+        return
+
+    elseif cache_state.party_count ~= current_party_count then
+        clear_party_jobs()
+        cache_state.party_count = current_party_count
         return
     end
 
-    -- Check if party composition changed
-    if _G.cor_party_state.party_count ~= current_party_count then
-        for k in pairs(_G.cor_party_jobs) do _G.cor_party_jobs[k] = nil end
-        _G.cor_party_state.party_count = current_party_count
-        return
-    end
-
-    -- Remove entries for players no longer in party + expired entries (TTL)
-    if _G.cor_party_jobs then
-        local valid_ids = {}
-        for i = 0, 5 do
-            local member = party['p' .. i]
-            if member and member.mob and member.mob.id then
-                valid_ids[member.mob.id] = true
-            end
-        end
-
-        local current_time = os.time()
-        -- TTL: how long a packet-derived party job entry stays trusted before
-        -- being purged. 30s was too short - quiet party members (no zone, no
-        -- equip, no buff change) wouldn't re-emit 0xDD/0xDF and their job
-        -- entry vanished, dropping their job-bonus contribution to rolls.
-        -- Zone changes and party composition changes already invalidate the
-        -- cache aggressively above, so a long TTL is safe.
-        local TTL = 600  -- 10 minutes
-
-        for player_id, job_data in pairs(_G.cor_party_jobs) do
-            -- Remove if player not in party anymore
-            if not valid_ids[player_id] then
-                _G.cor_party_jobs[player_id] = nil
-            -- Remove if data is older than TTL (stale data)
-            elseif job_data.timestamp and (current_time - job_data.timestamp > TTL) then
-                _G.cor_party_jobs[player_id] = nil
-            end
-        end
-    end
+    drop_departed_and_expired(valid_ids)
 end
 
 ---   Check if job is present in party (COR or party members)
