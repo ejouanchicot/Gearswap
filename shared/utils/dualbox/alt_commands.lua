@@ -90,6 +90,7 @@ local ALT_SIDE_TARGETS = {
 local ACTION_VERBS = {
     ma = '/ma', ja = '/ja', ws = '/ws', so = '/so',
     item = '/item', pet = '/pet', ra = '/ra',
+    ninjutsu = '/ninjutsu',
 }
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -172,10 +173,16 @@ local function load_job_config(job, level, source)
         merged[name] = entry
     end
 
+    local refine
     local ok_custom, custom = pcall(require, base .. '_ALT_CUSTOM')
-    if ok_custom and type(custom) == 'table' and type(custom.commands) == 'table' then
-        for name, entry in pairs(custom.commands) do
-            merged[name] = entry or nil
+    if ok_custom and type(custom) == 'table' then
+        if type(custom.commands) == 'table' then
+            for name, entry in pairs(custom.commands) do
+                merged[name] = entry or nil
+            end
+        end
+        if type(custom.refine) == 'function' then
+            refine = custom.refine
         end
     end
 
@@ -198,6 +205,30 @@ local function load_job_config(job, level, source)
             end
         elseif entry.level and entry.level > level then
             usable = false
+        end
+
+        -- A main-job-only ability simply does not exist on a subjob, so it
+        -- must not be offered when this config was loaded as the sub.
+        if entry.main_only and source == 'sub' then
+            usable = false
+        end
+
+        -- A CUSTOM file may also export `refine(entry, name)`, one pass over
+        -- every command. GEO needs it: some thirty Indi- spells all have to aim
+        -- at an ally while the alt holds Entrust, and spelling each one out as
+        -- an override would be a wall of copies that grows with the generator.
+        -- It edits a copy, so the required table stays as generated.
+        if usable and refine then
+            local copy = {}
+            for k, v in pairs(entry) do copy[k] = v end
+            local ok_refine, result = pcall(refine, copy, name)
+            if ok_refine then
+                if result == false then
+                    usable = false
+                else
+                    entry = (type(result) == 'table') and result or copy
+                end
+            end
         end
 
         if usable then

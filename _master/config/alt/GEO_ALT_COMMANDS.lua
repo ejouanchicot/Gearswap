@@ -1,266 +1,213 @@
 ---============================================================================
 --- GEO Alt Commands - what the alt does when it is on GEO
 ---============================================================================
---- Read by shared/utils/dualbox/alt_commands.lua when the alt character is on
---- GEO. Type the key on the MAIN (//gs c indifury) and the alt performs it.
+--- Read by shared/utils/dualbox/alt_commands.lua, whether GEO is the alt's
+--- MAIN job or its SUBJOB. Type the key on the MAIN and the alt performs it.
 ---
---- See config/alt/RDM_ALT_COMMANDS.lua for the full entry format reference.
---- Short version:
----   { action = 'ma'|'ja'|'ws'|'so'|'item'|'pet'|'ra'|'raw',
----     spell = 'Name', target = 'lastst'|'me', desc = 'text' }
+--- GENERATED - do not edit. Put your changes in GEO_ALT_CUSTOM.lua, which is
+--- merged on top of this file and never regenerated.
 ---
---- Covers all 30 Indi- and all 30 Geo- spells. Names, effects and the
---- buff/debuff split are taken from the project's own geomancy data
---- (shared/data/magic/geomancy/), not written by hand.
+--- Sources: the project's own data decides what exists and at which level
+--- (shared/data/job_abilities/ and shared/data/magic/), res/spells.lua and
+--- res/job_abilities.lua supply targeting.
 ---
---- GEOCOLURE TARGETING - the reason this file is split in sections
----   Indi-        always the alt, nothing to select        -> target 'me'
----   Indi- via Entrust  the ONLY case an Indi- leaves the
----                alt: needs a PC                          -> /ta <stpc>
----   Geo- buffs   are PC ONLY     -> /ta <stpc> the ally, then fire
----   Geo- debuffs are ENEMY ONLY  -> /ta <stnpc> the mob
----
----   A Geocolure refuses the wrong target type outright, so the split is not
----   cosmetic: fire a Geo- buff with a mob selected and nothing happens.
----   Both kinds use `lastst`, which is fed by <stpc> and <stnpc> alike - only
----   the selection you make beforehand differs.
+--- Abilities carry `level`, spells carry every tier with the level it needs.
+--- The engine picks the highest the alt is high enough for, from the level it
+--- reported - a subjob caps far below a main (Master Level 50 reaches sub 58).
+--- `main_only` entries disappear entirely when the job is the subjob.
 ---
 --- @file    config/alt/GEO_ALT_COMMANDS.lua
 --- @author  Tetsouo
 --- @version 1.0
---- @date    Created: 2026-08-07
+--- @date    Created: 2026-08-09
 ---============================================================================
 
 local M = {}
 
---- Where an Indi- should land.
----
---- Normally the alt itself. But Entrust redirects the next Indi- onto an ally,
---- and the alt tells us when it holds that buff (see alt_buff_reporter), so the
---- same command adapts and aims at your last subtarget instead.
----
---- Bind it as a two-line macro so FFXI does the waiting for you:
----     /target <stal>
----     /console gs c indifury
---- The second line does not run until you confirm the cursor, and by then
---- `lastst` holds your pick. The same macro works with or without Entrust: the
---- selection is simply ignored when the spell goes on the alt.
----
---- Reads the shared globals directly rather than requiring alt_commands, which
---- would be a require cycle (alt_commands loads this file). `AltBuffExpiry`
---- guards the case where the main assumed Entrust after //gs c altentrust but
---- the alt never confirmed it - without that check a wrong guess would latch on
---- and every Indi- would keep asking for a target.
---- @return string 'lastst' while the alt holds Entrust, 'me' otherwise
-local function indi_target()
-    local buffs = _G.AltBuffState
-    if not buffs or not buffs['Entrust'] then
-        return 'me'
-    end
-
-    local expires = _G.AltBuffExpiry and _G.AltBuffExpiry['Entrust']
-    if expires and os.clock() > expires then
-        buffs['Entrust'] = false
-        return 'me'
-    end
-
-    return 'lastst'
-end
-
 M.commands = {
+    -- ========================================================================
+    -- JOB ABILITIES
+    -- ========================================================================
+    blazeofglory     = { action = 'ja', spell = 'Blaze of Glory',         target = 'me', level = 60, main_only = true, group = 'ja', desc = 'Next luopan +50%, -50% HP' },
+    bolster          = { action = 'ja', spell = 'Bolster',                target = 'me', level = 1, main_only = true, group = 'ja', desc = 'Geomancy effects x2' },
+    collimatedfervor = { action = 'ja', spell = 'Collimated Fervor',      target = 'me', level = 40, group = 'ja', desc = 'Next Cardinal Chant +50%' },
+    concentricpulse  = { action = 'ja', spell = 'Concentric Pulse',       target = 'lastst', level = 90, main_only = true, group = 'ja', desc = 'Dismiss luopan, AoE damage' },
+    dematerialize    = { action = 'ja', spell = 'Dematerialize',          target = 'me', level = 70, main_only = true, group = 'ja', desc = 'Luopan damage immunity' },
+    eclipticattrition = { action = 'ja', spell = 'Ecliptic Attrition',     target = 'me', level = 25, main_only = true, group = 'ja', desc = 'Luopan +25%, HP consumption +6/tick' },
+    entrust          = { action = 'ja', spell = 'Entrust',                target = 'me', level = 75, main_only = true, group = 'ja', desc = 'Next Indi targets party member' },
+    fullcircle       = { action = 'ja', spell = 'Full Circle',            target = 'me', level = 5, main_only = true, group = 'ja', desc = 'Dismiss luopan, recover MP' },
+    lastingemanation = { action = 'ja', spell = 'Lasting Emanation',      target = 'me', level = 25, main_only = true, group = 'ja', desc = 'Luopan HP consumption -7/tick' },
+    lifecycle        = { action = 'ja', spell = 'Life Cycle',             target = 'me', level = 50, group = 'ja', desc = '25% your HP >> luopan' },
+    mendinghalation  = { action = 'ja', spell = 'Mending Halation',       target = 'me', level = 75, main_only = true, group = 'ja', desc = 'Dismiss luopan, party HP' },
+    radialarcana     = { action = 'ja', spell = 'Radial Arcana',          target = 'me', level = 75, main_only = true, group = 'ja', desc = 'Dismiss luopan, party MP' },
+    theurgicfocus    = { action = 'ja', spell = 'Theurgic Focus',         target = 'me', level = 80, main_only = true, group = 'ja', desc = 'Next -ra spell MAB+50' },
+    widenedcompass   = { action = 'ja', spell = 'Widened Compass',        target = 'me', level = 96, main_only = true, group = 'ja', desc = 'Geomancy range x2' },
 
     -- ========================================================================
-    -- INDI- SPELLS
+    -- ENFEEBLING - select the mob first
     -- ========================================================================
-    -- On the alt by default. With Entrust up they aim at your last subtarget
-    -- instead - see indi_target above. Names and effects come from
-    -- shared/data/magic/geomancy/geomancy_indi.lua.
-    indiacumen       = { action = 'ma', spell = 'Indi-Acumen',        target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts magic atk.' },
-    indiagi          = { action = 'ma', spell = 'Indi-AGI',           target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts agility.' },
-    indiattunement   = { action = 'ma', spell = 'Indi-Attunement',    target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts magic acc.' },
-    indibarrier      = { action = 'ma', spell = 'Indi-Barrier',       target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts defense.' },
-    indichr          = { action = 'ma', spell = 'Indi-CHR',           target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts charisma.' },
-    indidex          = { action = 'ma', spell = 'Indi-DEX',           target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts dexterity.' },
-    indifend         = { action = 'ma', spell = 'Indi-Fend',          target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts defense.' },
-    indifocus        = { action = 'ma', spell = 'Indi-Focus',         target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts magic acc.' },
-    indifury         = { action = 'ma', spell = 'Indi-Fury',          target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts attack.' },
-    indihaste        = { action = 'ma', spell = 'Indi-Haste',         target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts attack speed.' },
-    indiint          = { action = 'ma', spell = 'Indi-INT',           target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts intelligence.' },
-    indimnd          = { action = 'ma', spell = 'Indi-MND',           target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts mind.' },
-    indipoison       = { action = 'ma', spell = 'Indi-Poison',        target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts poison dmg.' },
-    indiprecision    = { action = 'ma', spell = 'Indi-Precision',     target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts accuracy.' },
-    indirefresh      = { action = 'ma', spell = 'Indi-Refresh',       target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Restores MP.' },
-    indiregen        = { action = 'ma', spell = 'Indi-Regen',         target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Restores HP.' },
-    indistr          = { action = 'ma', spell = 'Indi-STR',           target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts strength.' },
-    indivit          = { action = 'ma', spell = 'Indi-VIT',           target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts vitality.' },
-    indivoidance     = { action = 'ma', spell = 'Indi-Voidance',      target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Boosts evasion.' },
-    indislow         = { action = 'ma', spell = 'Indi-Slow',          target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Slows nearby foes.' },
-    indislip         = { action = 'ma', spell = 'Indi-Slip',          target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Lowers accuracy.' },
-    inditorpor       = { action = 'ma', spell = 'Indi-Torpor',        target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Lowers evasion.' },
-    indifade         = { action = 'ma', spell = 'Indi-Fade',          target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Lowers attack.' },
-    indifrailty      = { action = 'ma', spell = 'Indi-Frailty',       target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Lowers defense.' },
-    indigravity      = { action = 'ma', spell = 'Indi-Gravity',       target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Slows movement.' },
-    indilanguor      = { action = 'ma', spell = 'Indi-Languor',       target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Slows foes.' },
-    indimalaise      = { action = 'ma', spell = 'Indi-Malaise',       target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Lowers magic def.' },
-    indiparalysis    = { action = 'ma', spell = 'Indi-Paralysis',     target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Paralyzes foes.' },
-    indivex          = { action = 'ma', spell = 'Indi-Vex',           target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Lowers magic def.' },
-    indiwilt         = { action = 'ma', spell = 'Indi-Wilt',          target = indi_target, consumes_alt_buff = 'Entrust', desc = 'Lowers attack.' },
+    sleep            = { action = 'ma', target = 'lastst', group = 'enfeebling', desc = 'Sleep',
+                       tiers = { { spell = 'Sleep II', level = 70 }, { spell = 'Sleep', level = 35 } } },
 
     -- ========================================================================
-    -- GEO- BUFFS - PC ONLY: select an ally first (/ta <stpc>)
+    -- ELEMENTAL - select the mob first
     -- ========================================================================
-    -- A buffing Geocolure will not accept an enemy as its target.
-    geoacumen        = { action = 'ma', spell = 'Geo-Acumen',         target = 'lastst', desc = 'Boosts magic atk. (on a PC)' },
-    geoagi           = { action = 'ma', spell = 'Geo-AGI',            target = 'lastst', desc = 'Boosts agility. (on a PC)' },
-    geoattunement    = { action = 'ma', spell = 'Geo-Attunement',     target = 'lastst', desc = 'Boosts magic acc. (on a PC)' },
-    geobarrier       = { action = 'ma', spell = 'Geo-Barrier',        target = 'lastst', desc = 'Boosts defense. (on a PC)' },
-    geochr           = { action = 'ma', spell = 'Geo-CHR',            target = 'lastst', desc = 'Boosts charisma. (on a PC)' },
-    geodex           = { action = 'ma', spell = 'Geo-DEX',            target = 'lastst', desc = 'Boosts dexterity. (on a PC)' },
-    geofend          = { action = 'ma', spell = 'Geo-Fend',           target = 'lastst', desc = 'Boosts defense. (on a PC)' },
-    geofocus         = { action = 'ma', spell = 'Geo-Focus',          target = 'lastst', desc = 'Boosts magic acc. (on a PC)' },
-    geofury          = { action = 'ma', spell = 'Geo-Fury',           target = 'lastst', desc = 'Boosts attack. (on a PC)' },
-    geohaste         = { action = 'ma', spell = 'Geo-Haste',          target = 'lastst', desc = 'Boosts attack speed. (on a PC)' },
-    geoint           = { action = 'ma', spell = 'Geo-INT',            target = 'lastst', desc = 'Boosts intelligence. (on a PC)' },
-    geomnd           = { action = 'ma', spell = 'Geo-MND',            target = 'lastst', desc = 'Boosts mind. (on a PC)' },
-    geopoison        = { action = 'ma', spell = 'Geo-Poison',         target = 'lastst', desc = 'Boosts poison dmg. (on a PC)' },
-    geoprecision     = { action = 'ma', spell = 'Geo-Precision',      target = 'lastst', desc = 'Boosts accuracy. (on a PC)' },
-    georefresh       = { action = 'ma', spell = 'Geo-Refresh',        target = 'lastst', desc = 'Restores MP. (on a PC)' },
-    georegen         = { action = 'ma', spell = 'Geo-Regen',          target = 'lastst', desc = 'Restores HP. (on a PC)' },
-    geostr           = { action = 'ma', spell = 'Geo-STR',            target = 'lastst', desc = 'Boosts strength. (on a PC)' },
-    geovit           = { action = 'ma', spell = 'Geo-VIT',            target = 'lastst', desc = 'Boosts vitality. (on a PC)' },
-    geovoidance      = { action = 'ma', spell = 'Geo-Voidance',       target = 'lastst', desc = 'Boosts evasion. (on a PC)' },
+    aero             = { action = 'ma', target = 'lastst', group = 'elemental', desc = 'Aero',
+                       tiers = { { spell = 'Aero V', level = 99 }, { spell = 'Aero IV', level = 82 }, { spell = 'Aero III', level = 64 }, { spell = 'Aero II', level = 42 }, { spell = 'Aero', level = 14 } } },
+    blizzara         = { action = 'ma', target = 'lastst', group = 'elemental', desc = 'Blizzara',
+                       tiers = { { spell = 'Blizzara III', level = 99 }, { spell = 'Blizzara II', level = 90 }, { spell = 'Blizzara', level = 45 } } },
+    blizzard         = { action = 'ma', target = 'lastst', group = 'elemental', desc = 'Blizzard',
+                       tiers = { { spell = 'Blizzard V', level = 99 }, { spell = 'Blizzard IV', level = 88 }, { spell = 'Blizzard III', level = 70 }, { spell = 'Blizzard II', level = 50 }, { spell = 'Blizzard', level = 24 } } },
+    fira             = { action = 'ma', target = 'lastst', group = 'elemental', desc = 'Fira',
+                       tiers = { { spell = 'Fira III', level = 99 }, { spell = 'Fira II', level = 85 }, { spell = 'Fira', level = 40 } } },
+    fire             = { action = 'ma', target = 'lastst', group = 'elemental', desc = 'Fire',
+                       tiers = { { spell = 'Fire V', level = 99 }, { spell = 'Fire IV', level = 85 }, { spell = 'Fire III', level = 67 }, { spell = 'Fire II', level = 46 }, { spell = 'Fire', level = 19 } } },
+    impact           = { action = 'ma', target = 'lastst', group = 'elemental', desc = 'Impact',
+                       tiers = { { spell = 'Impact', level = 90 } } },
+    stone            = { action = 'ma', target = 'lastst', group = 'elemental', desc = 'Stone',
+                       tiers = { { spell = 'Stone V', level = 99 }, { spell = 'Stone IV', level = 76 }, { spell = 'Stone III', level = 58 }, { spell = 'Stone II', level = 34 }, { spell = 'Stone', level = 4 } } },
+    stonera          = { action = 'ma', target = 'lastst', group = 'elemental', desc = 'Stonera',
+                       tiers = { { spell = 'Stonera III', level = 99 }, { spell = 'Stonera II', level = 70 }, { spell = 'Stonera', level = 25 } } },
+    thundara         = { action = 'ma', target = 'lastst', group = 'elemental', desc = 'Thundara',
+                       tiers = { { spell = 'Thundara III', level = 99 }, { spell = 'Thundara II', level = 95 }, { spell = 'Thundara', level = 50 } } },
+    thunder          = { action = 'ma', target = 'lastst', group = 'elemental', desc = 'Thunder',
+                       tiers = { { spell = 'Thunder V', level = 99 }, { spell = 'Thunder IV', level = 91 }, { spell = 'Thunder III', level = 73 }, { spell = 'Thunder II', level = 54 }, { spell = 'Thunder', level = 29 } } },
+    water            = { action = 'ma', target = 'lastst', group = 'elemental', desc = 'Water',
+                       tiers = { { spell = 'Water V', level = 99 }, { spell = 'Water IV', level = 79 }, { spell = 'Water III', level = 61 }, { spell = 'Water II', level = 38 }, { spell = 'Water', level = 9 } } },
+    watera           = { action = 'ma', target = 'lastst', group = 'elemental', desc = 'Watera',
+                       tiers = { { spell = 'Watera III', level = 99 }, { spell = 'Watera II', level = 75 }, { spell = 'Watera', level = 30 } } },
 
     -- ========================================================================
-    -- GEO- DEBUFFS - ENEMY ONLY: select the mob first (/ta <stnpc>)
+    -- DARK MAGIC - select the mob first
     -- ========================================================================
-    -- A debuffing Geocolure will not accept a player as its target.
-    geofade          = { action = 'ma', spell = 'Geo-Fade',           target = 'lastst', desc = 'Lowers attack. (on a mob)' },
-    geofrailty       = { action = 'ma', spell = 'Geo-Frailty',        target = 'lastst', desc = 'Lowers defense. (on a mob)' },
-    geogravity       = { action = 'ma', spell = 'Geo-Gravity',        target = 'lastst', desc = 'Slows movement. (on a mob)' },
-    geolanguor       = { action = 'ma', spell = 'Geo-Languor',        target = 'lastst', desc = 'Slows foes. (on a mob)' },
-    geomalaise       = { action = 'ma', spell = 'Geo-Malaise',        target = 'lastst', desc = 'Lowers magic def. (on a mob)' },
-    geoparalysis     = { action = 'ma', spell = 'Geo-Paralysis',      target = 'lastst', desc = 'Paralyzes foes. (on a mob)' },
-    geoslip          = { action = 'ma', spell = 'Geo-Slip',           target = 'lastst', desc = 'Lowers accuracy. (on a mob)' },
-    geoslow          = { action = 'ma', spell = 'Geo-Slow',           target = 'lastst', desc = 'Slows foes. (on a mob)' },
-    geotorpor        = { action = 'ma', spell = 'Geo-Torpor',         target = 'lastst', desc = 'Lowers evasion. (on a mob)' },
-    geovex           = { action = 'ma', spell = 'Geo-Vex',            target = 'lastst', desc = 'Lowers magic def. (on a mob)' },
-    geowilt          = { action = 'ma', spell = 'Geo-Wilt',           target = 'lastst', desc = 'Lowers attack. (on a mob)' },
+    aspir            = { action = 'ma', target = 'lastst', group = 'dark', desc = 'Aspir',
+                       tiers = { { spell = 'Aspir III', level = 99 }, { spell = 'Aspir II', level = 90 }, { spell = 'Aspir', level = 30 } } },
+    drain            = { action = 'ma', target = 'lastst', group = 'dark', desc = 'Drain',
+                       tiers = { { spell = 'Drain', level = 15 } } },
 
     -- ========================================================================
-    -- LUOPAN MANAGEMENT
+    -- GEOMANCY
     -- ========================================================================
-    fullcircle  = { action = 'ja', spell = 'Full Circle',  target = 'me', desc = 'Absorb the luopan' },
-    -- `sets_alt_buff` marks Entrust as up right away, so the next Indi- knows
-    -- to ask for a target even if the alt is not reporting its buffs back.
-    -- The alt's own report still overrides this when it arrives.
-    -- `sync_after` is REQUIRED here, not a safety net.
-    --
-    -- Verified in game (trace 2026-08-08): FFXI never fires buff_change when
-    -- Entrust is GAINED - only when it is lost. So the alt has nothing to
-    -- report at cast time, and the main would never learn the buff is up.
-    -- Asking the alt to resend its buff list 3s later is what makes it work.
-    --
-    -- It doubles as the answer to "what if the alt was paralysed / on recast":
-    -- the resync returns the truth either way, so a failed Entrust correctly
-    -- leaves the Indi- commands aimed at the alt.
-    altentrust  = {
-        action = 'ja', spell = 'Entrust', target = 'me',
-        sets_alt_buff = 'Entrust', alt_buff_duration = 60,
-        sync_after = 3,
-        desc = 'Entrust (next Indi on an ally)',
-    },
-    lifecycle   = { action = 'ja', spell = 'Life Cycle',   target = 'me', desc = 'Restore luopan HP' },
-    blazeofglory= { action = 'ja', spell = 'Blaze of Glory', target = 'me', desc = 'Boost the current bubble' },
-    ecliptic    = { action = 'ja', spell = 'Ecliptic Attrition', target = 'me', desc = 'Strengthen the bubble' },
-
-    -- ========================================================================
-    -- ENTRUST - the ONLY case where an Indi- leaves the alt
-    -- ========================================================================
-    -- Entrust redirects the next Indi- onto an ally, so these need a PC
-    -- selected first (/ta <stpc>). `chain` runs the two actions in order, each
-    -- sent to the alt separately: the JA on <me>, the Indi- on your pick.
-    -- Only buffs are worth entrusting - an Indi- debuff following an ally is
-    -- useless.
-    entrusthaste = {
-        target = 'lastst', step_delay = 2,
-        desc = 'Entrust + Indi-Haste (on a PC)',
-        chain = {
-            { action = 'ja', spell = 'Entrust', target = 'me' },
-            { action = 'ma', spell = 'Indi-Haste' },
-        },
-    },
-    entrustrefresh = {
-        target = 'lastst', step_delay = 2,
-        desc = 'Entrust + Indi-Refresh (on a PC)',
-        chain = {
-            { action = 'ja', spell = 'Entrust', target = 'me' },
-            { action = 'ma', spell = 'Indi-Refresh' },
-        },
-    },
-    entrustfury = {
-        target = 'lastst', step_delay = 2,
-        desc = 'Entrust + Indi-Fury (on a PC)',
-        chain = {
-            { action = 'ja', spell = 'Entrust', target = 'me' },
-            { action = 'ma', spell = 'Indi-Fury' },
-        },
-    },
-    entrustacumen = {
-        target = 'lastst', step_delay = 2,
-        desc = 'Entrust + Indi-Acumen (on a PC)',
-        chain = {
-            { action = 'ja', spell = 'Entrust', target = 'me' },
-            { action = 'ma', spell = 'Indi-Acumen' },
-        },
-    },
-    entrustfocus = {
-        target = 'lastst', step_delay = 2,
-        desc = 'Entrust + Indi-Focus (on a PC)',
-        chain = {
-            { action = 'ja', spell = 'Entrust', target = 'me' },
-            { action = 'ma', spell = 'Indi-Focus' },
-        },
-    },
-    entrustregen = {
-        target = 'lastst', step_delay = 2,
-        desc = 'Entrust + Indi-Regen (on a PC)',
-        chain = {
-            { action = 'ja', spell = 'Entrust', target = 'me' },
-            { action = 'ma', spell = 'Indi-Regen' },
-        },
-    },
-    entrustprecision = {
-        target = 'lastst', step_delay = 2,
-        desc = 'Entrust + Indi-Precision (on a PC)',
-        chain = {
-            { action = 'ja', spell = 'Entrust', target = 'me' },
-            { action = 'ma', spell = 'Indi-Precision' },
-        },
-    },
-
-    -- ========================================================================
-    -- NUKES THAT FOLLOW THE MAIN'S BLM ELEMENT
-    -- ========================================================================
-    altlight = {
-        action = 'ma',
-        spell_from_state = 'MainLightSpell',
-        fallback = 'Fire IV',
-        target = 'lastst',
-        desc = 'Nuke, follows the main light element',
-    },
-    altdark = {
-        action = 'ma',
-        spell_from_state = 'MainDarkSpell',
-        fallback = 'Blizzard IV',
-        target = 'lastst',
-        desc = 'Nuke, follows the main dark element',
-    },
-
-    -- ========================================================================
-    -- SUPPORT (from a magic subjob)
-    -- ========================================================================
-    cure  = { action = 'ma', spell = 'Cure IV', target = 'lastst', desc = 'Cure IV' },
-    raise = { action = 'ma', spell = 'Raise',   target = 'lastst', desc = 'Raise' },
+    geoagi           = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-AGI',
+                       tiers = { { spell = 'Geo-AGI', level = 43 } } },
+    geoacumen        = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Acumen',
+                       tiers = { { spell = 'Geo-Acumen', level = 50 } } },
+    geoattunement    = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Attunement',
+                       tiers = { { spell = 'Geo-Attunement', level = 20 } } },
+    geobarrier       = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Barrier',
+                       tiers = { { spell = 'Geo-Barrier', level = 32 } } },
+    geochr           = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-CHR',
+                       tiers = { { spell = 'Geo-CHR', level = 34 } } },
+    geodex           = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-DEX',
+                       tiers = { { spell = 'Geo-DEX', level = 49 } } },
+    geofade          = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Fade',
+                       tiers = { { spell = 'Geo-Fade', level = 98 } } },
+    geofend          = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Fend',
+                       tiers = { { spell = 'Geo-Fend', level = 44 } } },
+    geofocus         = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Focus',
+                       tiers = { { spell = 'Geo-Focus', level = 26 } } },
+    geofrailty       = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Frailty',
+                       tiers = { { spell = 'Geo-Frailty', level = 80 } } },
+    geofury          = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Fury',
+                       tiers = { { spell = 'Geo-Fury', level = 38 } } },
+    geogravity       = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Gravity',
+                       tiers = { { spell = 'Geo-Gravity', level = 92 } } },
+    geohaste         = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Haste',
+                       tiers = { { spell = 'Geo-Haste', level = 97 } } },
+    geoint           = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-INT',
+                       tiers = { { spell = 'Geo-INT', level = 40 } } },
+    geolanguor       = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Languor',
+                       tiers = { { spell = 'Geo-Languor', level = 68 } } },
+    geomnd           = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-MND',
+                       tiers = { { spell = 'Geo-MND', level = 37 } } },
+    geomalaise       = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Malaise',
+                       tiers = { { spell = 'Geo-Malaise', level = 92 } } },
+    geoparalysis     = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Paralysis',
+                       tiers = { { spell = 'Geo-Paralysis', level = 72 } } },
+    geopoison        = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Poison',
+                       tiers = { { spell = 'Geo-Poison', level = 5 } } },
+    geoprecision     = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Precision',
+                       tiers = { { spell = 'Geo-Precision', level = 14 } } },
+    georefresh       = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Refresh',
+                       tiers = { { spell = 'Geo-Refresh', level = 34 } } },
+    georegen         = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Regen',
+                       tiers = { { spell = 'Geo-Regen', level = 19 } } },
+    geostr           = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-STR',
+                       tiers = { { spell = 'Geo-STR', level = 52 } } },
+    geoslip          = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Slip',
+                       tiers = { { spell = 'Geo-Slip', level = 62 } } },
+    geoslow          = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Slow',
+                       tiers = { { spell = 'Geo-Slow', level = 52 } } },
+    geotorpor        = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Torpor',
+                       tiers = { { spell = 'Geo-Torpor', level = 56 } } },
+    geovit           = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-VIT',
+                       tiers = { { spell = 'Geo-VIT', level = 46 } } },
+    geovex           = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Vex',
+                       tiers = { { spell = 'Geo-Vex', level = 74 } } },
+    geovoidance      = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Voidance',
+                       tiers = { { spell = 'Geo-Voidance', level = 8 } } },
+    geowilt          = { action = 'ma', target = 'lastst', group = 'geomancy', desc = 'Geo-Wilt',
+                       tiers = { { spell = 'Geo-Wilt', level = 86 } } },
+    indiagi          = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-AGI',
+                       tiers = { { spell = 'Indi-AGI', level = 39 } } },
+    indiacumen       = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Acumen',
+                       tiers = { { spell = 'Indi-Acumen', level = 46 } } },
+    indiattunement   = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Attunement',
+                       tiers = { { spell = 'Indi-Attunement', level = 16 } } },
+    indibarrier      = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Barrier',
+                       tiers = { { spell = 'Indi-Barrier', level = 28 } } },
+    indichr          = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-CHR',
+                       tiers = { { spell = 'Indi-CHR', level = 30 } } },
+    indidex          = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-DEX',
+                       tiers = { { spell = 'Indi-DEX', level = 45 } } },
+    indifade         = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Fade',
+                       tiers = { { spell = 'Indi-Fade', level = 94 } } },
+    indifend         = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Fend',
+                       tiers = { { spell = 'Indi-Fend', level = 40 } } },
+    indifocus        = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Focus',
+                       tiers = { { spell = 'Indi-Focus', level = 22 } } },
+    indifrailty      = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Frailty',
+                       tiers = { { spell = 'Indi-Frailty', level = 76 } } },
+    indifury         = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Fury',
+                       tiers = { { spell = 'Indi-Fury', level = 34 } } },
+    indigravity      = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Gravity',
+                       tiers = { { spell = 'Indi-Gravity', level = 88 } } },
+    indihaste        = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Haste',
+                       tiers = { { spell = 'Indi-Haste', level = 93 } } },
+    indiint          = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-INT',
+                       tiers = { { spell = 'Indi-INT', level = 36 } } },
+    indilanguor      = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Languor',
+                       tiers = { { spell = 'Indi-Languor', level = 64 } } },
+    indimnd          = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-MND',
+                       tiers = { { spell = 'Indi-MND', level = 33 } } },
+    indimalaise      = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Malaise',
+                       tiers = { { spell = 'Indi-Malaise', level = 88 } } },
+    indiparalysis    = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Paralysis',
+                       tiers = { { spell = 'Indi-Paralysis', level = 68 } } },
+    indipoison       = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Poison',
+                       tiers = { { spell = 'Indi-Poison', level = 1 } } },
+    indiprecision    = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Precision',
+                       tiers = { { spell = 'Indi-Precision', level = 10 } } },
+    indirefresh      = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Refresh',
+                       tiers = { { spell = 'Indi-Refresh', level = 30 } } },
+    indiregen        = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Regen',
+                       tiers = { { spell = 'Indi-Regen', level = 15 } } },
+    indistr          = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-STR',
+                       tiers = { { spell = 'Indi-STR', level = 48 } } },
+    indislip         = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Slip',
+                       tiers = { { spell = 'Indi-Slip', level = 58 } } },
+    indislow         = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Slow',
+                       tiers = { { spell = 'Indi-Slow', level = 48 } } },
+    inditorpor       = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Torpor',
+                       tiers = { { spell = 'Indi-Torpor', level = 52 } } },
+    indivit          = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-VIT',
+                       tiers = { { spell = 'Indi-VIT', level = 42 } } },
+    indivex          = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Vex',
+                       tiers = { { spell = 'Indi-Vex', level = 70 } } },
+    indivoidance     = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Voidance',
+                       tiers = { { spell = 'Indi-Voidance', level = 4 } } },
+    indiwilt         = { action = 'ma', target = 'me', group = 'geomancy', desc = 'Indi-Wilt',
+                       tiers = { { spell = 'Indi-Wilt', level = 82 } } },
 }
 
 return M

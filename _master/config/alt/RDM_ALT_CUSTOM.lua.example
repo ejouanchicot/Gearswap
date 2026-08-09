@@ -67,4 +67,23 @@ M.commands = {
 
 }
 
+---============================================================================
+--- REFINE - optional, one pass over every command
+---============================================================================
+--- Export `M.refine(entry, name)` to touch every command at load time instead
+--- of copying entries one by one. Useful when a rule applies to a whole family
+--- that the generator keeps growing - GEO uses it to send every Indi- to an
+--- ally while the alt holds Entrust.
+---
+--- `entry` is a copy, so editing it leaves the generated file alone. Return the
+--- entry (or nothing) to keep it, or return false to drop it.
+---
+---   function M.refine(entry, name)
+---       if name:sub(1, 4) == 'cure' then
+---           entry.target = 'lastst'
+---       end
+---       return entry
+---   end
+---============================================================================
+
 return M
