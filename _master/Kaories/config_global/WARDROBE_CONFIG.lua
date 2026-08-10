@@ -1,14 +1,17 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Kaories - Wardrobe Organizer Configuration
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Kaories plays four jobs and has four wardrobes, so her whole collection
----   fits at once: `//gs c wo` places the gear of EVERY job with a set file in
----   Kaories/sets/ (COR, GEO, PLD, RDM) across W1-W4, and moves out only what
----   no job of hers asks for.
+---   The game reads wardrobes in order, so the job being played belongs in W1
+---   and W2. Everything else goes to W4 and W3, which are still wardrobes -
+---   whatever lands there stays equippable.
 ---
----   That is what SCOPE = 'all_jobs' means. Without it the organizer would
----   consider the current job alone, fill W1 and part of W2, and treat the
----   rest as storage - which is why W3 and W4 used to come out empty.
+---   This means `//gs c wo` must be re-run after a job change, which is already
+---   the habit here.
+---
+---   Sizing (measured 2026-08-10 with //gs c wo scan, not guessed from the
+---   sets, which name 238 pieces of which 139 are actually owned):
+---     biggest job held  = RDM, 63 pieces   -> W1+W2 hold 160
+---     largest surplus   = COR active, 91   -> W4+W3 hold 160
 ---
 ---   FFXI bag IDs (for reference):
 ---     0 = inventory      5 = satchel        6 = sack          7 = case
@@ -19,14 +22,20 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 return {
-    -- Every job's gear, not just the one currently loaded.
-    SCOPE = 'all_jobs',
+    -- The job currently loaded, so W1/W2 hold what the game reads first.
+    SCOPE = 'active_job',
 
-    -- Where the used gear lives.
-    PRIMARY_BAGS  = {8, 10, 11, 12},            -- W1, W2, W3, W4
+    -- Where the active job's gear goes, in load order.
+    PRIMARY_BAGS  = {8, 10},                    -- W1, W2
 
-    -- Where the rest goes: Sack > Case > Satchel.
-    OVERFLOW_BAGS = {6, 7, 5},                  -- Sack, Case, Satchel
+    -- Everything else. W4 before W3 so W3 stays the emptier of the two.
+    --
+    -- Sack, Case and Satchel are listed last on purpose. They are NOT meant to
+    -- be used: FFXI cannot equip from them. They are here so the organizer
+    -- still LOOKS there and can bring back gear that earlier runs exiled -
+    -- there were 161 items sitting in them when this was written. Once the
+    -- wardrobes have taken everything back, nothing should reach them again.
+    OVERFLOW_BAGS = {12, 11, 6, 7, 5},          -- W4, W3, then Sack, Case, Satchel
 
     -- Nothing protected (Kaories doesn't use a craft wardrobe).
     PROTECTED     = {},
@@ -35,17 +44,15 @@ return {
     ALL_WARDROBES = {8, 10, 11, 12},
 
     -- ─── OBJETS A GARDER EN WARDROBE  ───────────────────────────────────────
-    -- Items no gear set names, but that must stay somewhere equippable.
-    -- Without this they count as unused and go to Sack/Case/Satchel, which
-    -- FFXI cannot equip from - so they become unreachable, not just tidied.
+    -- Items no gear set names, kept where they can be equipped.
     --
-    -- The warp and teleport rings are already handled: the organizer reads
-    -- them from the warp database on its own, because her overflow is
-    -- unequippable. Nothing to list here for those.
+    -- Her three warp items (Warp Ring, Dim. Ring (Holla), Nexus Cape) are
+    -- handled without being listed: the organizer reads them from the warp
+    -- database. It does so because the overflow list above still ends in bags
+    -- FFXI cannot equip from - three pinned items out of 160 primary slots.
     --
-    -- Use this for the rest. Names must match the game exactly.
+    -- Use this for anything else. Names must match the game exactly.
     KEEP_ITEMS = {
-        -- 'Nexus Cape',
         -- 'Emporer Hairpin',
     },
 }
