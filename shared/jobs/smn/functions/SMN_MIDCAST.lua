@@ -36,8 +36,11 @@ local function ensure_modules_loaded()
     local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
     MessageFormatter = mf
 
-    local _, bpc = pcall(require, 'shared/jobs/smn/functions/logic/blood_pact_classifier')
-    BloodPactClassifier = bpc
+    -- ok is kept, unlike elsewhere: a failed pcall hands back the error STRING,
+    -- which is truthy, so `if not BloodPactClassifier then return end` below
+    -- would wave it through and then index a string.
+    local bpc_ok, bpc = pcall(require, 'shared/jobs/smn/functions/logic/blood_pact_classifier')
+    BloodPactClassifier = bpc_ok and bpc or nil
 
     modules_loaded = true
 end
