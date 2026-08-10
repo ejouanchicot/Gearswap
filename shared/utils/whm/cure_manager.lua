@@ -112,7 +112,13 @@ local function get_hp_missing_target_name()
 end
 
 --- Extracted from get_hp_missing: the `party` branch.
-local function get_hp_missing_party(target)
+--- @param party table Result of windower.ffxi.get_party() - passed in, not read
+---        from a global: the keys are p0..p5 / a1p1.., which GearSwap's own
+---        `party` global does not have.
+--- @param target table Target being cured
+--- @return number|nil Missing HP, nil when the target is not in the party
+--- @return number|nil HP percent
+local function get_hp_missing_party(party, target)
     -- Debug: show party composition
     if WHMCureConfig.debug_messages and WHMMessageFormatter then
         local party_names = {}
@@ -197,18 +203,22 @@ local function get_hp_missing(target)
 
     -- Self: exact HP
     if target.name == player.name or target.id == player.id then
-        get_hp_missing_target_name()
+        return get_hp_missing_target_name()
     end
 
-    -- Party/Alliance member: use party data
+    -- Party/Alliance member: use party data. A target absent from the party
+    -- returns nothing here and falls through to the HPP estimate below.
     local party = windower.ffxi.get_party()
     if party then
-        get_hp_missing_party(target)
+        local missing, hpp = get_hp_missing_party(party, target)
+        if missing then
+            return missing, hpp
+        end
     end
 
     -- Fallback: estimate from HPP (mob data)
     if target.hpp then
-        get_hp_missing_target_hpp(target)
+        return get_hp_missing_target_hpp(target)
     end
 
     return 0, 0
