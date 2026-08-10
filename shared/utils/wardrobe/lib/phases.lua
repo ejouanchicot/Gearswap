@@ -91,7 +91,14 @@ end
 ---                          slots are locked, OR strategies exhausted.
 function Phases.unequip(on_done)
     dlog('PHASE 0: //gs c naked FIRST (slots must be unlocked for equip() to work)')
-    -- Note: if a previous run crashed and left slots locked, run //gs c wo recover.
+
+    -- Unlock before undressing. This phase LOCKS the slots when it succeeds and
+    -- only unlocks them on a clean exit, so a run cut short - a reload, a job
+    -- change, an error - leaves them locked. Every later run then failed here
+    -- without saying why: equip() is a no-op on a disabled slot, so all four
+    -- strategies reported "still equipped" and the run carried on regardless.
+    -- Sending it unconditionally costs nothing and removes the whole class.
+    windower.send_command('gs enable all')
 
     local SETTLE = 1.2  -- seconds between attempts (server gear-swap window)
     local attempt = 0
@@ -141,7 +148,9 @@ function Phases.unequip(on_done)
         end, SETTLE)
     end
 
-    try_next()
+    -- Small gap so the unlock above is in effect before the first equip():
+    -- sending both in the same tick would race the very thing it fixes.
+    coroutine.schedule(try_next, 0.3)
 end
 
 --- Re-enable all slots so normal idle/engaged swaps resume.
