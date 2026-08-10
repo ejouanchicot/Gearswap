@@ -84,6 +84,52 @@ local function walk_sets(t, used, visited, depth)
     end
 end
 
+--- Can everything sent to overflow still be equipped from where it lands?
+--- FFXI equips from inventory and wardrobes only; Sack, Case and Satchel are
+--- storage. A character overflowing into wardrobes loses nothing by it.
+--- @return boolean
+local function overflow_stays_reachable()
+    local bags = Config.OVERFLOW_BAGS or {}
+    if #bags == 0 then return true end
+    for _, bag_id in ipairs(bags) do
+        local bag = res.bags[bag_id]
+        if not (bag and bag.equippable) then
+            return false
+        end
+    end
+    return true
+end
+
+--- Mark the items a feature needs but no gear set names.
+---
+--- KEEP_ITEMS is always honoured: it is an explicit choice.
+---
+--- The warp and teleport rings are added only when overflow leads somewhere
+--- unequippable. Pinning 65 warp items costs primary-bag slots, and a
+--- character overflowing into wardrobes does not need it - the warp system
+--- searches every equippable bag, so the rings work fine out there.
+--- @param used table Set of lowercase item names, modified in place
+--- @return table The same table
+function Items.add_always_kept(used)
+    for _, name in ipairs(Config.KEEP_ITEMS or {}) do
+        used[tostring(name):lower()] = true
+    end
+
+    if overflow_stays_reachable() then
+        return used
+    end
+
+    local ok, WarpDatabase = pcall(require, 'shared/utils/warp/database/warp_database_core')
+    if not ok then WarpDatabase = nil end
+    if WarpDatabase and WarpDatabase.get_all_item_names then
+        for _, name in ipairs(WarpDatabase.get_all_item_names()) do
+            used[tostring(name):lower()] = true
+        end
+    end
+
+    return used
+end
+
 --- Walk the active job's _G.sets table and return a set of used item names.
 --- Returns nil if no sets table is loaded (e.g. no job active).
 function Items.collect_used_names()
@@ -92,7 +138,7 @@ function Items.collect_used_names()
     end
     local used = {}
     walk_sets(_G.sets, used)
-    return used
+    return Items.add_always_kept(used)
 end
 
 return Items

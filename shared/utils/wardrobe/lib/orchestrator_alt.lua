@@ -25,6 +25,7 @@
 local Config = require('shared/utils/wardrobe/lib/config')
 local Log    = require('shared/utils/wardrobe/lib/log')
 local Chat   = require('shared/utils/wardrobe/lib/chat')
+local Items  = require('shared/utils/wardrobe/lib/items')
 local Moves  = require('shared/utils/wardrobe/lib/moves')
 local Phases = require('shared/utils/wardrobe/lib/phases')
 
@@ -43,6 +44,9 @@ local function build_alt_state()
     if not used_names or not next(used_names) then
         return nil, 'no used items found - is the sets folder populated?'
     end
+    -- Same additions the active-job flow makes: warp rings and KEEP_ITEMS are
+    -- needed where they can be equipped, and no set names them.
+    Items.add_always_kept(used_names)
     local wardrobe_free = {}
     for _, b in ipairs(Config.ALT_ALL_BAGS) do
         wardrobe_free[b] = Moves.space_in(b)
