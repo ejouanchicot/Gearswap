@@ -33,6 +33,7 @@ local Config = require('shared/utils/wardrobe/lib/config')
 local Log = require('shared/utils/wardrobe/lib/log')
 local Chat = require('shared/utils/wardrobe/lib/chat')
 local Items = require('shared/utils/wardrobe/lib/items')
+local res = require('resources')
 local Moves = require('shared/utils/wardrobe/lib/moves')
 local State = require('shared/utils/wardrobe/lib/state')
 local Phases = require('shared/utils/wardrobe/lib/phases')
@@ -647,6 +648,69 @@ local AltOrchestrator = require('shared/utils/wardrobe/lib/orchestrator_alt').cr
 
 --- Run the alt-character wardrobe organize flow (4 wardrobes + Sack/Case).
 --- Considers items used by ANY job, not just the active one.
+--- Show what the organizer keeps out of overflow beyond what the sets name.
+---
+--- This exists because the rule is otherwise invisible: a player cannot tell
+--- whether their Warp Ring is safe without moving their whole wardrobe to find
+--- out. Reads nothing, moves nothing.
+--- Four per line: sixty-five names one per line would push the rest of the
+--- chat window out of view, and the reader wants the set, not a column.
+local function list_names(names)
+    table.sort(names)
+    for i = 1, #names, 4 do
+        local row = {}
+        for j = i, math.min(i + 3, #names) do row[#row + 1] = names[j] end
+        Chat.info('  ' .. table.concat(row, ',  '))
+    end
+end
+
+function WardrobeOrganizer.show_kept()
+    Config.refresh()
+
+    local overflow_ok = true
+    for _, bag_id in ipairs(Config.OVERFLOW_BAGS or {}) do
+        local bag = res.bags[bag_id]
+        if not (bag and bag.equippable) then overflow_ok = false end
+    end
+
+    -- Read the names from their sources rather than from the lowercased set
+    -- the organizer works with, so they print the way the game spells them.
+    local keep_items = {}
+    for _, name in ipairs(Config.KEEP_ITEMS or {}) do keep_items[#keep_items + 1] = tostring(name) end
+
+    local warp_items = {}
+    if not overflow_ok then
+        local ok, WarpDatabase = pcall(require, 'shared/utils/warp/database/warp_database_core')
+        if ok and WarpDatabase and WarpDatabase.get_all_item_names then
+            warp_items = WarpDatabase.get_all_item_names()
+        end
+    end
+
+    Chat.banner('Wardrobe - kept out of overflow')
+    Chat.detail('Config', Config.LOADED_CHAR_CONFIG or 'defaults')
+    Chat.detail('Overflow equippable', overflow_ok and 'yes' or 'no')
+    Chat.detail('Total kept', #keep_items + #warp_items)
+
+    if #keep_items > 0 then
+        Chat.section('KEEP_ITEMS (' .. #keep_items .. ')')
+        list_names(keep_items)
+    end
+
+    if overflow_ok then
+        Chat.section('Warp items')
+        Chat.info('  not pinned - overflow is equippable, so they work from there')
+    else
+        Chat.section('Warp database (' .. #warp_items .. ')')
+        Chat.info('  pinned - overflow cannot be equipped from')
+        list_names(warp_items)
+    end
+
+    if #keep_items + #warp_items == 0 then
+        Chat.info('  nothing beyond what the sets name')
+    end
+    Chat.separator()
+end
+
 function WardrobeOrganizer.organize_alt()
     if IS_RUNNING then
         Chat.warn('Organize already in progress (use //gs c wo reset to clear).')
