@@ -250,8 +250,13 @@ function WarpCommands.handle_command(cmdParams)
     end
 
     -- SYSTEM COMMANDS (warp status, warp unlock, etc.)
+    -- Answering here has to end the dispatch: `warp` also names the spell
+    -- further down, so `warp status` would print the status and then teleport.
+    -- An unrecognised subcommand returns nothing and falls through on purpose.
     if command == 'warp' and subcommand then
-        warpcommands_handle_command_warp(subcommand)
+        if warpcommands_handle_command_warp(subcommand) then
+            return true
+        end
     end
 
     -- DEBUG TOGGLE
@@ -260,7 +265,7 @@ function WarpCommands.handle_command(cmdParams)
     -- IPC BROADCAST: Commands ending with "all" (multi-boxing support)
     -- Examples: warpall, tphall, sdall, escall
     if command:find('all$') or (command:lower() ~= 'all' and subcommand == 'all') then
-        warpcommands_handle_command_all(command)
+        return warpcommands_handle_command_all(command)
     end
 
     -- BLM SPELLS
