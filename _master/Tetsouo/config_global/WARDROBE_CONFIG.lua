@@ -13,6 +13,12 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 return {
+    -- Fifteen jobs do not fit in eight wardrobes at once, so the organizer
+    -- works on the job currently loaded and rotates: run it again after a job
+    -- change. (The other value, 'all_jobs', suits a character whose whole
+    -- collection fits - see Kaories.)
+    SCOPE = 'active_job',
+
     -- ─── REGULAR MODE  (//gs c wo)  ─────────────────────────────────────────
     -- Where the active job's gear lives (fast-load slots).
     PRIMARY_BAGS  = {8, 10},                    -- W1, W2
