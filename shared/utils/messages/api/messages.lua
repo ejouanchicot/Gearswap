@@ -361,108 +361,104 @@ local function create_test_runner()
     return test, function() return passed, total end
 end
 
+local TEST_GRAY   = string.char(0x1F, 160)
+local TEST_YELLOW = string.char(0x1F, 50)
+local TEST_GREEN  = string.char(0x1F, 158)
+local TEST_RED    = string.char(0x1F, 167)
+local TEST_SEPARATOR = string.rep("=", 74)
+
+-- 21 jobs plus the general suite. Order is the order they run in.
+local TEST_JOBS = {
+    'system',                                    -- magic, JA, WS
+    'whm', 'blm', 'rdm', 'sch', 'geo', 'blu',    -- mages
+    'brd', 'cor',                                -- support
+    'war', 'mnk', 'thf', 'pld', 'drk', 'bst',
+    'rng', 'sam', 'nin', 'drg', 'pup', 'dnc', 'run',
+}
+
+local function test_module_path(job)
+    return 'shared/utils/messages/api/tests/test_' .. job:lower()
+end
+
+local function show_test_header(job_filter)
+    add_to_chat(121, TEST_GRAY .. TEST_SEPARATOR)
+    if job_filter then
+        add_to_chat(121, TEST_YELLOW .. "[Messages] Running " .. job_filter .. " Test Suite")
+    else
+        add_to_chat(121, TEST_YELLOW .. "[Messages] Running ALL Test Suites")
+    end
+    add_to_chat(121, TEST_GRAY .. TEST_SEPARATOR)
+    add_to_chat(121, " ")
+end
+
+--- Names the caller could have passed, listed when the one they did is unknown.
+local function show_missing_test_file(test_file)
+    add_to_chat(167, TEST_RED .. "Test file not found: " .. test_file .. ".lua")
+    add_to_chat(167, TEST_RED .. "Available tests (22 total):")
+    add_to_chat(167, TEST_RED .. "  SYSTEM (general)")
+    add_to_chat(167, TEST_RED .. "  Mages: WHM, BLM, RDM, SCH, GEO, BLU")
+    add_to_chat(167, TEST_RED .. "  Support: BRD, COR")
+    add_to_chat(167, TEST_RED .. "  Melee: WAR, MNK, THF, PLD, DRK, BST")
+    add_to_chat(167, TEST_RED .. "  Melee: RNG, SAM, NIN, DRG, PUP, DNC, RUN")
+    add_to_chat(121, TEST_GRAY .. TEST_SEPARATOR)
+end
+
+--- Run one named suite, or every suite that exists.
+--- A suite missing from the full run is skipped silently: the list names jobs
+--- that have no test file yet, and that is not an error.
+--- @return boolean False only when a suite the caller NAMED does not exist
+local function run_test_suites(test, job_filter)
+    if job_filter then
+        local test_file = test_module_path(job_filter)
+        local ok, test_module = pcall(require, test_file)
+        if not (ok and test_module and test_module.run) then
+            show_missing_test_file(test_file)
+            return false
+        end
+        test_module.run(test)
+        return true
+    end
+
+    for _, job in ipairs(TEST_JOBS) do
+        local ok, test_module = pcall(require, test_module_path(job))
+        if ok and test_module and test_module.run then
+            test_module.run(test)
+        end
+    end
+    return true
+end
+
+local function show_test_results(passed, total)
+    add_to_chat(121, " ")
+    add_to_chat(121, TEST_GRAY .. TEST_SEPARATOR)
+
+    if passed == total then
+        add_to_chat(121, TEST_GREEN .. string.format("[OK] Message System: %d/%d tests PASSED", passed, total))
+    else
+        add_to_chat(121, TEST_RED .. string.format("[FAIL] Message System: %d/%d tests FAILED (%d passed)", total - passed, total, passed))
+    end
+
+    add_to_chat(121, TEST_GRAY .. TEST_SEPARATOR)
+end
+
 --- Run integrated test suite (all jobs or specific job)
 --- Usage: M.test() or M.test('BRD') or M.test('system')
 --- @param job_filter string|nil Optional job filter (e.g., "BRD", "GEO", "WAR", "system")
 function Messages.test(job_filter)
     local test, get_stats = create_test_runner()
 
-    -- Normalize job filter to uppercase
     if job_filter then
         job_filter = job_filter:upper()
     end
 
-    -- Color codes
-    local gray = string.char(0x1F, 160)
-    local yellow = string.char(0x1F, 50)
-    local green = string.char(0x1F, 158)
-    local red = string.char(0x1F, 167)
-    local separator = string.rep("=", 74)
+    show_test_header(job_filter)
 
-    -- Header
-    add_to_chat(121, gray .. separator)
-    if job_filter then
-        add_to_chat(121, yellow .. "[Messages] Running " .. job_filter .. " Test Suite")
-    else
-        add_to_chat(121, yellow .. "[Messages] Running ALL Test Suites")
-    end
-    add_to_chat(121, gray .. separator)
-    add_to_chat(121, " ")
-
-    local total_tests = 0
-
-    -- Load job-specific test file if filter provided
-    if job_filter then
-        local test_file = 'shared/utils/messages/api/tests/test_' .. job_filter:lower()
-        local ok, test_module = pcall(require, test_file)
-
-        if ok and test_module and test_module.run then
-            -- Run job-specific tests
-            total_tests = test_module.run(test)
-        else
-            add_to_chat(167, red .. "Test file not found: " .. test_file .. ".lua")
-            add_to_chat(167, red .. "Available tests (22 total):")
-            add_to_chat(167, red .. "  SYSTEM (general)")
-            add_to_chat(167, red .. "  Mages: WHM, BLM, RDM, SCH, GEO, BLU")
-            add_to_chat(167, red .. "  Support: BRD, COR")
-            add_to_chat(167, red .. "  Melee: WAR, MNK, THF, PLD, DRK, BST")
-            add_to_chat(167, red .. "  Melee: RNG, SAM, NIN, DRG, PUP, DNC, RUN")
-            add_to_chat(121, gray .. separator)
-            return false
-        end
-    else
-        -- Run all available tests (21 jobs + system = 22 total)
-        local test_jobs = {
-            'system',  -- General system tests (magic, JA, WS)
-            -- Mages
-            'whm',     -- White Mage
-            'blm',     -- Black Mage
-            'rdm',     -- Red Mage
-            'sch',     -- Scholar
-            'geo',     -- Geomancer
-            'blu',     -- Blue Mage
-            -- Support
-            'brd',     -- Bard
-            'cor',     -- Corsair
-            -- Melee
-            'war',     -- Warrior
-            'mnk',     -- Monk
-            'thf',     -- Thief
-            'pld',     -- Paladin
-            'drk',     -- Dark Knight
-            'bst',     -- Beastmaster
-            'rng',     -- Ranger
-            'sam',     -- Samurai
-            'nin',     -- Ninja
-            'drg',     -- Dragoon
-            'pup',     -- Puppetmaster
-            'dnc',     -- Dancer
-            'run'      -- Runemaster
-        }
-
-        for _, job in ipairs(test_jobs) do
-            local test_file = 'shared/utils/messages/api/tests/test_' .. job
-            local ok, test_module = pcall(require, test_file)
-
-            if ok and test_module and test_module.run then
-                total_tests = total_tests + test_module.run(test)
-            end
-        end
+    if not run_test_suites(test, job_filter) then
+        return false
     end
 
-    -- Results
     local passed, total = get_stats()
-
-    add_to_chat(121, " ")
-    add_to_chat(121, gray .. separator)
-
-    if passed == total then
-        add_to_chat(121, green .. string.format("[OK] Message System: %d/%d tests PASSED", passed, total))
-    else
-        add_to_chat(121, red .. string.format("[FAIL] Message System: %d/%d tests FAILED (%d passed)", total - passed, total, passed))
-    end
-
-    add_to_chat(121, gray .. separator)
+    show_test_results(passed, total)
 
     return passed == total
 end
