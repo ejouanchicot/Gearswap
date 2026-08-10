@@ -417,7 +417,11 @@ end
 --- `data/memcheck.txt` for offline review.
 ---
 --- Output file: data/memcheck_<char>_<job>.txt
----   - Sorted list of every loaded package
+---   - Sorted list of package.loaded. That is Windower's own libs and nothing
+---     else: GearSwap's require is include_user, which reads package.loaded
+---     but never writes to it, so no project module ever appears there. The
+---     project's own modules live in `_G.__require_cache` instead, and show up
+---     in the _G sections below (see shared/utils/core/module_cache.lua).
 ---   - Sorted list of every _G entry grouped by type
 ---   - Top tables ranked by direct child count (rough size proxy)
 ---
