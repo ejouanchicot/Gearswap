@@ -170,60 +170,57 @@ local function name_block(label, names, width)
     end
 end
 
---- Display the alt's commands, grouped or filtered.
---- @param alt string Alt character name
---- @param job string Alt's current job code
---- @param names table Sorted list of command names
---- @param commands table Command definitions keyed by name
---- @param filter string|nil Group name, or a substring to search for
-function MessageAltCommands.show_list(alt, job, names, commands, filter, subjob, char)
-    local gray = MessageCore.create_color_code(Colors.SEPARATOR)
-    local key = MessageCore.create_color_code(Colors.KEYBIND_KEY)
+local function gray_code() return MessageCore.create_color_code(Colors.SEPARATOR) end
+local function key_code() return MessageCore.create_color_code(Colors.KEYBIND_KEY) end
 
-    if #names == 0 then
-        header(alt, job, subjob, 0)
-        MessageRenderer.send(1, gray .. '  (nothing configured)')
+--- Commands whose group, name or action text contains the needle.
+local function matching_names(names, commands, needle)
+    local hits = {}
+    for _, name in ipairs(names) do
+        local entry = commands[name]
+        if group_of(entry) == needle
+           or name:find(needle, 1, true)
+           or action_label(entry):lower():find(needle, 1, true) then
+            hits[#hits + 1] = name
+        end
+    end
+    return hits
+end
+
+--- Filtered view: the syntax once, then the choices split by whether they
+--- need a target chosen first.
+local function show_filtered(alt, job, subjob, names, commands, filter)
+    local gray, key = gray_code(), key_code()
+    local hits = matching_names(names, commands, filter:lower())
+
+    header(alt, job, subjob, #hits)
+    if #hits == 0 then
+        MessageRenderer.send(1, gray .. '  nothing matches "' .. filter .. '"')
         return
     end
 
-    -- Filtered view: syntax once, then the choices.
-    if filter and filter ~= '' then
-        local needle = filter:lower()
-        local hits = {}
-        for _, name in ipairs(names) do
-            local entry = commands[name]
-            if group_of(entry) == needle
-               or name:find(needle, 1, true)
-               or action_label(entry):lower():find(needle, 1, true) then
-                hits[#hits + 1] = name
-            end
-        end
+    MessageRenderer.send(1, string.format('%s  %s//gs c <name>%s and %s casts it.',
+        gray, key, gray, alt))
 
-        header(alt, job, subjob, #hits)
-        if #hits == 0 then
-            MessageRenderer.send(1, gray .. '  nothing matches "' .. filter .. '"')
-            return
-        end
-
-        MessageRenderer.send(1, string.format('%s  %s//gs c <name>%s and %s casts it.',
-            gray, key, gray, alt))
-
-        local by = { select = {}, alt = {} }
-        for _, name in ipairs(hits) do
-            table.insert(by[behaviour_of(commands[name])], name)
-        end
-
-        name_block('needs a target:', by.select, 58)
-        name_block('on ' .. alt .. ':', by.alt, 58)
-
-        if #by.select > 0 then
-            MessageRenderer.send(1, gray ..
-                '  pick it with /ta <stpc> for an ally, /ta <stnpc> for a mob')
-        end
-        return
+    local by = { select = {}, alt = {} }
+    for _, name in ipairs(hits) do
+        table.insert(by[behaviour_of(commands[name])], name)
     end
 
-    -- Overview: one line per group, with a couple of names as a hint.
+    name_block('needs a target:', by.select, 58)
+    name_block('on ' .. alt .. ':', by.alt, 58)
+
+    if #by.select > 0 then
+        MessageRenderer.send(1, gray ..
+            '  pick it with /ta <stpc> for an ally, /ta <stnpc> for a mob')
+    end
+end
+
+--- Bucket the commands by group. GROUP_ORDER comes first; any group not named
+--- there follows, in the order the commands introduced it.
+--- @return table buckets keyed by group
+--- @return table Group names in display order
+local function group_commands(names, commands)
     local buckets, order = {}, {}
     for _, name in ipairs(names) do
         local g = group_of(commands[name])
@@ -243,6 +240,14 @@ function MessageAltCommands.show_list(alt, job, names, commands, filter, subjob,
         for _, s in ipairs(sorted) do if s == g then seen = true end end
         if not seen then sorted[#sorted + 1] = g end
     end
+
+    return buckets, sorted
+end
+
+--- Overview: one line per group, with a few names as a hint.
+local function show_overview(alt, job, subjob, names, commands, char)
+    local gray, key = gray_code(), key_code()
+    local buckets, sorted = group_commands(names, commands)
 
     header(alt, job, subjob, #names)
     MessageRenderer.send(1, string.format('%s  %s//gs c <name>%s and %s casts it - the name IS the spell name.',
@@ -264,6 +269,27 @@ function MessageAltCommands.show_list(alt, job, names, commands, filter, subjob,
     -- never remember the path.
     MessageRenderer.send(1, string.format('%s  add/remove/rename: %s%s/config/alt/%s_ALT_CUSTOM.lua%s (copy the .example)',
         gray, key, char or 'Tetsouo', job, gray))
+end
+
+--- Display the alt's commands, grouped or filtered.
+--- @param alt string Alt character name
+--- @param job string Alt's current job code
+--- @param names table Sorted list of command names
+--- @param commands table Command definitions keyed by name
+--- @param filter string|nil Group name, or a substring to search for
+function MessageAltCommands.show_list(alt, job, names, commands, filter, subjob, char)
+    if #names == 0 then
+        header(alt, job, subjob, 0)
+        MessageRenderer.send(1, gray_code() .. '  (nothing configured)')
+        return
+    end
+
+    if filter and filter ~= '' then
+        show_filtered(alt, job, subjob, names, commands, filter)
+        return
+    end
+
+    show_overview(alt, job, subjob, names, commands, char)
 end
 
 ---============================================================================
