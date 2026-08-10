@@ -98,8 +98,9 @@ end
 ---   STORM CASTING LOGIC
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Extracted from StormManager.cast_storm_with_klimaform: the `klimaform_recast == 0 and storm_recast > 0` branch.
-local function stormmanager_cast_storm_with_klimaform_klimaform_recast(storm_name, storm_recast)
+--- CASE 3: Klimaform is up but the Storm itself is not.
+--- @return boolean Always false - nothing was cast
+local function report_storm_cooldown(storm_name, storm_recast)
     -- Storm on cooldown - show recast
     local cooldowns = {
         {
@@ -113,8 +114,9 @@ local function stormmanager_cast_storm_with_klimaform_klimaform_recast(storm_nam
     return false
 end
 
---- Extracted from StormManager.cast_storm_with_klimaform: the `klimaform_recast > 0 and storm_recast > 0` branch.
-local function stormmanager_cast_storm_with_klimaform_klimaform_recast_2(storm_name, klimaform_recast, storm_recast)
+--- CASE 4: neither is up.
+--- @return boolean Always false - nothing was cast
+local function report_both_cooldowns(storm_name, klimaform_recast, storm_recast)
     -- Both on cooldown - show both recasts in single block
     local cooldowns = {
         {
@@ -134,8 +136,10 @@ local function stormmanager_cast_storm_with_klimaform_klimaform_recast_2(storm_n
     return false
 end
 
---- Extracted from StormManager.cast_storm_with_klimaform: the `klimaform_recast == 0 and storm_recast == 0` branch.
-local function stormmanager_cast_storm_with_klimaform_klimaform_recast(storm_name, currentTime, klimaform_active)
+--- CASE 1: both are up. Klimaform first when it is not already running,
+--- because the Storm has to land while the buff is on.
+--- @return boolean Always true - something was cast
+local function cast_with_both_ready(storm_name, currentTime, klimaform_active)
     if klimaform_active then
         -- Klimaform already active, just cast Storm
         send_command('input /ma "' .. storm_name .. '" <me>')
@@ -151,7 +155,10 @@ local function stormmanager_cast_storm_with_klimaform_klimaform_recast(storm_nam
 end
 
 --- Extracted from StormManager.cast_storm_with_klimaform: the `storm_recast == 0 and klimaform_recast > 0` branch.
-local function stormmanager_cast_storm_with_klimaform_storm_recast(storm_name, currentTime, klimaform_active, klimaform_recast)
+--- CASE 2: the Storm is up, Klimaform is not. Castable only if the buff is
+--- already running.
+--- @return boolean True when the Storm went out
+local function cast_storm_klimaform_down(storm_name, currentTime, klimaform_active, klimaform_recast)
     if klimaform_active then
         -- Klimaform already active, cast Storm
         send_command('input /ma "' .. storm_name .. '" <me>')
@@ -197,22 +204,22 @@ function StormManager.cast_storm_with_klimaform(storm_name)
 
     -- CASE 1: Both spells ready
     if klimaform_recast == 0 and storm_recast == 0 then
-        stormmanager_cast_storm_with_klimaform_klimaform_recast(storm_name, currentTime, klimaform_active)
+        return cast_with_both_ready(storm_name, currentTime, klimaform_active)
     end
 
     -- CASE 2: Storm ready, Klimaform on cooldown
     if storm_recast == 0 and klimaform_recast > 0 then
-        stormmanager_cast_storm_with_klimaform_storm_recast(storm_name, currentTime, klimaform_active, klimaform_recast)
+        return cast_storm_klimaform_down(storm_name, currentTime, klimaform_active, klimaform_recast)
     end
 
     -- CASE 3: Klimaform ready, Storm on cooldown
     if klimaform_recast == 0 and storm_recast > 0 then
-        stormmanager_cast_storm_with_klimaform_klimaform_recast(storm_name, storm_recast)
+        return report_storm_cooldown(storm_name, storm_recast)
     end
 
     -- CASE 4: Both spells on cooldown
     if klimaform_recast > 0 and storm_recast > 0 then
-        stormmanager_cast_storm_with_klimaform_klimaform_recast_2(storm_name, klimaform_recast, storm_recast)
+        return report_both_cooldowns(storm_name, klimaform_recast, storm_recast)
     end
 
     return false
