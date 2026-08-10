@@ -694,11 +694,14 @@ end
 --- @param where table [name] = bag it was found in
 --- @return string|nil Path written
 local function write_scan_report(found, total, where)
-    local path = windower.addon_path .. 'data/wardrobe_scan.txt'
+    local p = windower.ffxi.get_player()
+    -- Named per character: scanning the alt after the main used to overwrite
+    -- the main's report, and the two are meant to be compared.
+    local path = windower.addon_path .. 'data/wardrobe_scan_'
+        .. ((p and p.name) or 'unknown') .. '.txt'
     local file = io.open(path, 'w')
     if not file then return nil end
 
-    local p = windower.ffxi.get_player()
     local out = {}
     local function w(line) out[#out + 1] = line end
 
