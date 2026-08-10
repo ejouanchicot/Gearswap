@@ -198,10 +198,64 @@ end
 --- MAIN VALIDATION RUNNER
 ---============================================================================
 
+--- Check one job's message data and its formatter.
+--- A missing data file is an error; a missing formatter is not, since a job
+--- may have templates without a module of its own yet.
+local function validate_job(job)
+    print("Testing " .. job .. " messages...")
+
+    local data_path = 'shared/utils/messages/data/jobs/' .. job:lower() .. '_messages'
+    local success_data, message_data = pcall(require, data_path)
+
+    if not success_data then
+        add_error(job, "Failed to load message data: " .. data_path)
+    else
+        for key, data in pairs(message_data) do
+            if type(data) == "table" and data.template then
+                validate_template(job, key, data)
+            end
+        end
+    end
+
+    local formatter_path = 'shared/utils/messages/formatters/jobs/message_' .. job:lower()
+    local success_formatter, formatter_module = pcall(require, formatter_path)
+
+    if success_formatter and type(formatter_module) == "table" then
+        validate_function_naming(job, formatter_module)
+        validate_exports(job, formatter_module)
+    end
+end
+
+local function print_results()
+    print("")
+    print("==============================================")
+    print("   RESULTS")
+    print("==============================================")
+
+    if test_results.failed == 0 then
+        print(string.format("[OK] ALL TESTS PASSED! (%d/%d)",
+            test_results.passed, test_results.total))
+        print("")
+        print("Message system is valid!")
+        return
+    end
+
+    print(string.format("[FAIL] TESTS FAILED: %d/%d",
+        test_results.failed, test_results.total))
+    print("")
+    print("Errors found:")
+
+    for _, err in ipairs(test_results.errors) do
+        print(string.format("  • %s: %s", err.test, err.message))
+    end
+
+    print("")
+    print("Please fix these errors before deploying.")
+end
+
 --- Run all validation tests
 --- @return boolean true if all tests passed
 function MessageValidator.run_all_tests()
-    -- Reset results
     test_results = {
         total = 0,
         passed = 0,
@@ -214,75 +268,17 @@ function MessageValidator.run_all_tests()
     print("==============================================")
     print("")
 
-    -- Test each job
     for _, job in ipairs(JOBS_TO_VALIDATE) do
-        print("Testing " .. job .. " messages...")
-
-        -- Load message data
-        local data_path = 'shared/utils/messages/data/jobs/' .. job:lower() .. '_messages'
-        local success_data, message_data = pcall(require, data_path)
-
-        if not success_data then
-            add_error(job, "Failed to load message data: " .. data_path)
-        else
-            -- Validate each template
-            for key, data in pairs(message_data) do
-                if type(data) == "table" and data.template then
-                    validate_template(job, key, data)
-                end
-            end
-        end
-
-        -- Load message formatter module
-        local formatter_path = 'shared/utils/messages/formatters/jobs/message_' .. job:lower()
-        local success_formatter, formatter_module = pcall(require, formatter_path)
-
-        if success_formatter and type(formatter_module) == "table" then
-            -- Validate function naming
-            validate_function_naming(job, formatter_module)
-
-            -- Validate exports
-            validate_exports(job, formatter_module)
-        end
+        validate_job(job)
     end
 
-    -- Print results
-    print("")
-    print("==============================================")
-    print("   RESULTS")
-    print("==============================================")
+    print_results()
 
-    if test_results.failed == 0 then
-        print(string.format("[OK] ALL TESTS PASSED! (%d/%d)",
-            test_results.passed, test_results.total))
-        print("")
-        print("Message system is valid!")
+    -- Exported either way: a failing run is exactly the one worth reading back.
+    MessageValidator.export_json()
+    MessageValidator.export_txt()
 
-        -- Auto-export results
-        MessageValidator.export_json()
-        MessageValidator.export_txt()
-
-        return true
-    else
-        print(string.format("[FAIL] TESTS FAILED: %d/%d",
-            test_results.failed, test_results.total))
-        print("")
-        print("Errors found:")
-
-        -- Group errors by test
-        for _, error in ipairs(test_results.errors) do
-            print(string.format("  • %s: %s", error.test, error.message))
-        end
-
-        print("")
-        print("Please fix these errors before deploying.")
-
-        -- Auto-export results (even on failure for debugging)
-        MessageValidator.export_json()
-        MessageValidator.export_txt()
-
-        return false
-    end
+    return test_results.failed == 0
 end
 
 --- Get test statistics
