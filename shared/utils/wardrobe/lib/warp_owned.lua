@@ -47,6 +47,7 @@ end
 --- reachable this second".
 --- @return table Array of item names, sorted
 --- @return number How many the warp database knows in total
+--- @return table Where each was found: { [name] = bag api name }
 function WarpOwned.scan()
     local known = {}
     local total = 0
@@ -58,13 +59,14 @@ function WarpOwned.scan()
             total = total + 1
         end
     end
-    if total == 0 then return {}, 0 end
+    if total == 0 then return {}, 0, {} end
 
-    local found, seen = {}, {}
+    local found, seen, where = {}, {}, {}
     local items = windower.ffxi.get_items()
     if items then
         for bag_id in pairs(res.bags) do
-            local bag = items[res.bags[bag_id].api]
+            local api = res.bags[bag_id].api
+            local bag = items[api]
             if type(bag) == 'table' then
                 for _, entry in pairs(bag) do
                     local id = type(entry) == 'table' and entry.id or nil
@@ -74,6 +76,7 @@ function WarpOwned.scan()
                     if real and not seen[real] then
                         seen[real] = true
                         found[#found + 1] = real
+                        where[real] = api
                     end
                 end
             end
@@ -81,7 +84,7 @@ function WarpOwned.scan()
     end
 
     table.sort(found)
-    return found, total
+    return found, total, where
 end
 
 --- Write the list so the organizer picks it up on its next run.
