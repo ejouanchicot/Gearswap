@@ -362,107 +362,56 @@ end
 --- SPELL ACTIVATION (ALREADY MIGRATED)
 ---============================================================================
 
+-- A spell family gets its own template so it can carry its own colour. Skills
+-- absent here fall back to the plain, unprefixed one.
+local SPELL_KEY_PREFIX = {
+    ['Healing Magic']    = 'healing_',
+    ['Enhancing Magic']  = 'enhancing_',
+    ['Enfeebling Magic'] = 'enfeebling_',
+    ['Divine Magic']     = 'divine_',
+    ['Dark Magic']       = 'dark_',
+    ['Blue Magic']       = 'blue_',
+}
+
+--- Which of the 28 spell_activated templates this line wants: the family it
+--- belongs to, plus whichever of the description and the target it can show.
+--- @param spell_skill string|nil Skill the spell belongs to
+--- @param description string|nil Effect text, when there is one
+--- @param target string|nil Target name, when it is not the caster
+--- @return string Template key in the MAGIC namespace
+local function spell_activated_key(spell_skill, description, target)
+    local suffix = ''
+    if description and target then
+        suffix = '_full_target'
+    elseif description then
+        suffix = '_full'
+    elseif target then
+        suffix = '_target'
+    end
+
+    return (SPELL_KEY_PREFIX[spell_skill] or '') .. 'spell_activated' .. suffix
+end
+
 function MessageCombat.show_spell_activated(spell_name, description, target_name, spell_skill, spell_element, target_type)
     local job_tag = MessageCore.get_job_tag()
 
-    -- Apply element color to spell name if element provided
     if spell_element then
         spell_name = apply_element_color(spell_name, spell_element)
     end
 
-    -- Apply target color to target name if target provided
-    if target_name and target_name ~= player.name then
-        target_name = apply_target_color(target_name, target_type)
-    end
-
-    -- Detect spell type by skill
-    local is_healing = spell_skill == 'Healing Magic'
-    local is_enhancing = spell_skill == 'Enhancing Magic'
-    local is_enfeebling = spell_skill == 'Enfeebling Magic'
-    local is_divine = spell_skill == 'Divine Magic'
-    local is_dark = spell_skill == 'Dark Magic'
-    local is_blue = spell_skill == 'Blue Magic'
-
-    local key
-    if description and target_name and target_name ~= player.name then
-        if is_healing then
-            key = 'healing_spell_activated_full_target'
-        elseif is_enhancing then
-            key = 'enhancing_spell_activated_full_target'
-        elseif is_enfeebling then
-            key = 'enfeebling_spell_activated_full_target'
-        elseif is_divine then
-            key = 'divine_spell_activated_full_target'
-        elseif is_dark then
-            key = 'dark_spell_activated_full_target'
-        elseif is_blue then
-            key = 'blue_spell_activated_full_target'
-        else
-            key = 'spell_activated_full_target'
-        end
-    elseif description then
-        if is_healing then
-            key = 'healing_spell_activated_full'
-        elseif is_enhancing then
-            key = 'enhancing_spell_activated_full'
-        elseif is_enfeebling then
-            key = 'enfeebling_spell_activated_full'
-        elseif is_divine then
-            key = 'divine_spell_activated_full'
-        elseif is_dark then
-            key = 'dark_spell_activated_full'
-        elseif is_blue then
-            key = 'blue_spell_activated_full'
-        else
-            key = 'spell_activated_full'
-        end
-    elseif target_name and target_name ~= player.name then
-        if is_healing then
-            key = 'healing_spell_activated_target'
-        elseif is_enhancing then
-            key = 'enhancing_spell_activated_target'
-        elseif is_enfeebling then
-            key = 'enfeebling_spell_activated_target'
-        elseif is_divine then
-            key = 'divine_spell_activated_target'
-        elseif is_dark then
-            key = 'dark_spell_activated_target'
-        elseif is_blue then
-            key = 'blue_spell_activated_target'
-        else
-            key = 'spell_activated_target'
-        end
-    else
-        if is_healing then
-            key = 'healing_spell_activated'
-        elseif is_enhancing then
-            key = 'enhancing_spell_activated'
-        elseif is_enfeebling then
-            key = 'enfeebling_spell_activated'
-        elseif is_divine then
-            key = 'divine_spell_activated'
-        elseif is_dark then
-            key = 'dark_spell_activated'
-        elseif is_blue then
-            key = 'blue_spell_activated'
-        else
-            key = 'spell_activated'
-        end
-    end
+    -- Curing yourself does not name a target: the line already says who cast it.
+    local target = (target_name and target_name ~= player.name)
+        and apply_target_color(target_name, target_type)
+        or nil
 
     local params = {
         job = job_tag,
-        spell = spell_name
+        spell = spell_name,
+        description = description,
+        target = target,
     }
 
-    if description then
-        params.description = description
-    end
-
-    if target_name and target_name ~= player.name then
-        params.target = target_name
-    end
-
+    local key = spell_activated_key(spell_skill, description, target)
     local success, message_length = M.send('MAGIC', key, params)
     return message_length or 0
 end
