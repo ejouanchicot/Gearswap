@@ -361,48 +361,45 @@ end
 --- EXPORT TO FILE
 ---============================================================================
 
---- Export journal to data/debug_lag.txt
-function LagDebugger.export()
-    if #S.log == 0 then
-        add_to_chat(207, '[LagDebug] Nothing to export - run //gs c lagdebug first')
-        return false
-    end
-
-    local path = windower.addon_path .. 'data/debug_lag.txt'
-    local lines = {}
-
-    -- Header
+local function write_export_header(lines)
     table.insert(lines, '================================================================')
     table.insert(lines, '  LAG DEBUG JOURNAL - GearSwap Tetsouo')
     table.insert(lines, '================================================================')
     table.insert(lines, 'Date    : ' .. os.date('%Y-%m-%d %H:%M:%S'))
     table.insert(lines, 'Events  : ' .. #S.log)
     table.insert(lines, 'Updates : ' .. S.update_count .. ' gs c update sent during recording')
+end
 
-    -- The baseline. A stall threshold is only meaningful next to it.
+--- The baseline. A stall threshold means nothing without the average beside it,
+--- which is why this block comes before the events and says so out loud.
+local function write_frame_stats(lines)
     local f = S.frames
-    if f and f.n > 0 then
-        local avg = f.total / f.n
-        table.insert(lines, '')
-        table.insert(lines, 'FRAME TIME (this is the yardstick - read it before the stalls):')
-        table.insert(lines, string.format('  frames  : %d over %.1fs', f.n, f.total / 1000))
-        table.insert(lines, string.format('  average : %.1f ms  (%.0f fps)', avg, 1000 / avg))
-        table.insert(lines, string.format('  worst   : %.0f ms', f.max))
-        table.insert(lines, string.format('  a %dms frame is %.1fx your average', STALL_MS, STALL_MS / avg))
-        table.insert(lines, '  distribution:')
+    if not (f and f.n > 0) then return end
 
-        local keys = {}
-        for b in pairs(f.buckets) do keys[#keys + 1] = b end
-        table.sort(keys)
-        for _, b in ipairs(keys) do
-            local count = f.buckets[b]
-            local pct = count / f.n * 100
-            local bar = string.rep('#', math.max(1, math.floor(pct / 2)))
-            table.insert(lines, string.format('    %3d-%3dms  %5d  %5.1f%%  %s',
-                b, b + 9, count, pct, bar))
-        end
+    local avg = f.total / f.n
+    table.insert(lines, '')
+    table.insert(lines, 'FRAME TIME (this is the yardstick - read it before the stalls):')
+    table.insert(lines, string.format('  frames  : %d over %.1fs', f.n, f.total / 1000))
+    table.insert(lines, string.format('  average : %.1f ms  (%.0f fps)', avg, 1000 / avg))
+    table.insert(lines, string.format('  worst   : %.0f ms', f.max))
+    table.insert(lines, string.format('  a %dms frame is %.1fx your average', STALL_MS, STALL_MS / avg))
+    table.insert(lines, '  distribution:')
+
+    local keys = {}
+    for b in pairs(f.buckets) do keys[#keys + 1] = b end
+    table.sort(keys)
+    for _, b in ipairs(keys) do
+        local count = f.buckets[b]
+        local pct = count / f.n * 100
+        local bar = string.rep('#', math.max(1, math.floor(pct / 2)))
+        table.insert(lines, string.format('    %3d-%3dms  %5d  %5.1f%%  %s',
+            b, b + 9, count, pct, bar))
     end
+end
 
+--- What each event name means and how to read the journal. Whoever opens the
+--- file has not been in this code and needs both.
+local function write_legend(lines)
     table.insert(lines, '================================================================')
     table.insert(lines, '')
     table.insert(lines, 'LEGEND:')
@@ -431,8 +428,10 @@ function LagDebugger.export()
     table.insert(lines, '----------------------------------------------------------------')
     table.insert(lines, string.format('%-12s %-25s %s', '[TIME(ms)]', '[EVENT]', '[DATA]'))
     table.insert(lines, '----------------------------------------------------------------')
+end
 
-    -- Events
+--- One line per event, its extra fields sorted so two runs line up.
+local function write_events(lines)
     for _, e in ipairs(S.log) do
         local parts = {}
         for k, v in pairs(e) do
@@ -448,19 +447,34 @@ function LagDebugger.export()
     table.insert(lines, '')
     table.insert(lines, '================================================================')
     table.insert(lines, 'END OF LOG')
+end
 
-    -- Write file
-    local f = io.open(path, 'w')
-    if f then
-        f:write(table.concat(lines, '\n'))
-        f:close()
-        add_to_chat(207, '[LagDebug] Export OK: ' .. path)
-        add_to_chat(207, '[LagDebug] Share this file for analysis.')
-        return true
-    else
+--- Export journal to data/debug_lag.txt
+function LagDebugger.export()
+    if #S.log == 0 then
+        add_to_chat(207, '[LagDebug] Nothing to export - run //gs c lagdebug first')
+        return false
+    end
+
+    local path = windower.addon_path .. 'data/debug_lag.txt'
+    local lines = {}
+
+    write_export_header(lines)
+    write_frame_stats(lines)
+    write_legend(lines)
+    write_events(lines)
+
+    local file = io.open(path, 'w')
+    if not file then
         add_to_chat(207, '[LagDebug] ERROR: could not write to ' .. path)
         return false
     end
+
+    file:write(table.concat(lines, '\n'))
+    file:close()
+    add_to_chat(207, '[LagDebug] Export OK: ' .. path)
+    add_to_chat(207, '[LagDebug] Share this file for analysis.')
+    return true
 end
 
 ---============================================================================
