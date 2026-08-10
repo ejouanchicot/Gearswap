@@ -664,6 +664,41 @@ local function list_names(names)
     end
 end
 
+--- Record which warp items this character actually has, and write the list.
+---
+--- Without it the organizer works from all 65 the database knows, which is
+--- harmless for slots but tells you nothing about your own rings.
+function WardrobeOrganizer.scan_warp_items()
+    local ok, WarpOwned = pcall(require, 'shared/utils/wardrobe/lib/warp_owned')
+    if not ok or not WarpOwned then
+        Chat.error('warp_owned module not available')
+        return
+    end
+
+    local found, total = WarpOwned.scan()
+
+    Chat.banner('Wardrobe - warp items owned')
+    Chat.detail('Known to the database', total)
+    Chat.detail('Found on this character', #found)
+
+    if #found == 0 then
+        Chat.warn('None found. Nothing written - the organizer keeps using the full list.')
+        Chat.separator()
+        return
+    end
+
+    list_names(found)
+
+    local path, err = WarpOwned.save(found)
+    if path then
+        Chat.success('Written: ' .. path)
+        Chat.info('  Re-run after acquiring or discarding one.')
+    else
+        Chat.error('Could not write the list: ' .. tostring(err))
+    end
+    Chat.separator()
+end
+
 function WardrobeOrganizer.show_kept()
     Config.refresh()
 
@@ -678,11 +713,18 @@ function WardrobeOrganizer.show_kept()
     local keep_items = {}
     for _, name in ipairs(Config.KEEP_ITEMS or {}) do keep_items[#keep_items + 1] = tostring(name) end
 
-    local warp_items = {}
+    local warp_items, warp_source = {}, 'none'
     if not overflow_ok then
-        local ok, WarpDatabase = pcall(require, 'shared/utils/warp/database/warp_database_core')
-        if ok and WarpDatabase and WarpDatabase.get_all_item_names then
-            warp_items = WarpDatabase.get_all_item_names()
+        local owned_ok, WarpOwned = pcall(require, 'shared/utils/wardrobe/lib/warp_owned')
+        local owned = owned_ok and WarpOwned and WarpOwned.load() or nil
+        if owned then
+            warp_items, warp_source = owned, 'scanned (//gs c wo scan)'
+        else
+            local ok, WarpDatabase = pcall(require, 'shared/utils/warp/database/warp_database_core')
+            if ok and WarpDatabase and WarpDatabase.get_all_item_names then
+                warp_items = WarpDatabase.get_all_item_names()
+                warp_source = 'full database - run //gs c wo scan to narrow it'
+            end
         end
     end
 
@@ -700,8 +742,9 @@ function WardrobeOrganizer.show_kept()
         Chat.section('Warp items')
         Chat.info('  not pinned - overflow is equippable, so they work from there')
     else
-        Chat.section('Warp database (' .. #warp_items .. ')')
+        Chat.section('Warp items (' .. #warp_items .. ')')
         Chat.info('  pinned - overflow cannot be equipped from')
+        Chat.info('  source: ' .. warp_source)
         list_names(warp_items)
     end
 

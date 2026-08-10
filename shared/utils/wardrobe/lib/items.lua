@@ -119,12 +119,20 @@ function Items.add_always_kept(used)
         return used
     end
 
-    local ok, WarpDatabase = pcall(require, 'shared/utils/warp/database/warp_database_core')
-    if not ok then WarpDatabase = nil end
-    if WarpDatabase and WarpDatabase.get_all_item_names then
-        for _, name in ipairs(WarpDatabase.get_all_item_names()) do
-            used[tostring(name):lower()] = true
+    -- Prefer the scanned list when the character has one: it names the rings
+    -- actually owned instead of all 65 the database knows.
+    local owned_ok, WarpOwned = pcall(require, 'shared/utils/wardrobe/lib/warp_owned')
+    local names = owned_ok and WarpOwned and WarpOwned.load() or nil
+
+    if not names then
+        local ok, WarpDatabase = pcall(require, 'shared/utils/warp/database/warp_database_core')
+        if ok and WarpDatabase and WarpDatabase.get_all_item_names then
+            names = WarpDatabase.get_all_item_names()
         end
+    end
+
+    for _, name in ipairs(names or {}) do
+        used[tostring(name):lower()] = true
     end
 
     return used
