@@ -27,7 +27,8 @@ local MessageFormatter = nil
 function job_pet_precast(spell)
     if _G.BST_DEBUG_PRECAST then
         if not MessageFormatter then
-            local _, mod = pcall(require, 'shared/utils/messages/message_formatter')
+            local mod_ok, mod = pcall(require, 'shared/utils/messages/message_formatter')
+            if not mod_ok then mod = nil end
             MessageFormatter = mod
         end
         MessageFormatter.show_debug('PET_PRECAST', '========================================')

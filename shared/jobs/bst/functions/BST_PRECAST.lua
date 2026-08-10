@@ -32,25 +32,31 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    local mf_ok, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    if not mf_ok then mf = nil end
     MessageFormatter = mf
 
-    local _, mp = pcall(require, 'shared/utils/messages/formatters/magic/message_precast')
+    local mp_ok, mp = pcall(require, 'shared/utils/messages/formatters/magic/message_precast')
+    if not mp_ok then mp = nil end
     MessagePrecast = mp
 
-    local _, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    local cc_ok, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    if not cc_ok then cc = nil end
     CooldownChecker = cc
 
-    local _, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    local pg_ok, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    if not pg_ok then pg = nil end
     PrecastGuard = pg
 
-    local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    local wph_ok, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    if not wph_ok then wph = nil end
     WSPrecastHandler = wph
 
     BSTTPConfig = _G.BSTTPConfig or {}
 
     -- BST specific
-    local _, rmc = pcall(require, 'shared/jobs/bst/functions/logic/ready_move_categorizer')
+    local rmc_ok, rmc = pcall(require, 'shared/jobs/bst/functions/logic/ready_move_categorizer')
+    if not rmc_ok then rmc = nil end
     ReadyMoveCategorizer = rmc
 
     modules_loaded = true

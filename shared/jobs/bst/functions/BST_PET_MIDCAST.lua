@@ -29,7 +29,8 @@ local function show_equipment_pet_mid(label)
     if not _G.BST_DEBUG_PRECAST then return end
 
     -- Lazy load MessageFormatter if needed
-    local _, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+    local MessageFormatter_ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+    if not MessageFormatter_ok then MessageFormatter = nil end
 
     local eq = player.equipment
     MessageFormatter.show_debug('PET_MIDCAST', '========================================================')

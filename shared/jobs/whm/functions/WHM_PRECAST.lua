@@ -39,21 +39,26 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    local _, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    local cc_ok, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    if not cc_ok then cc = nil end
     CooldownChecker = cc
 
-    local _, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    local pg_ok, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    if not pg_ok then pg = nil end
     PrecastGuard = pg
 
-    local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    local wph_ok, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    if not wph_ok then wph = nil end
     WSPrecastHandler = wph
 
     WHMTPConfig = _G.WHMTPConfig or {}
 
-    local _, msg = pcall(require, 'shared/utils/messages/formatters/jobs/message_whm')
+    local msg_ok, msg = pcall(require, 'shared/utils/messages/formatters/jobs/message_whm')
+    if not msg_ok then msg = nil end
     MessageWHM = msg
 
-    local _, cm = pcall(require, 'shared/utils/whm/cure_manager')
+    local cm_ok, cm = pcall(require, 'shared/utils/whm/cure_manager')
+    if not cm_ok then cm = nil end
     CureManager = cm
 
     modules_loaded = true

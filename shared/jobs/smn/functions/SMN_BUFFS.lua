@@ -14,7 +14,8 @@ local DoomManager = nil
 
 local function ensure_loaded()
     if DoomManager then return end
-    local _, dm = pcall(require, 'shared/utils/debuff/doom_manager')
+    local dm_ok, dm = pcall(require, 'shared/utils/debuff/doom_manager')
+    if not dm_ok then dm = nil end
     DoomManager = dm
 end
 

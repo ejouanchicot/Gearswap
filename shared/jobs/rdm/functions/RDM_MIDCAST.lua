@@ -42,11 +42,14 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    local mf_ok, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    if not mf_ok then mf = nil end
     MessageFormatter = mf
-    local _, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
+    local mm_ok, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
+    if not mm_ok then mm = nil end
     MidcastManager = mm
-    local _, mrm = pcall(require, 'shared/utils/messages/formatters/jobs/message_rdm_midcast')
+    local mrm_ok, mrm = pcall(require, 'shared/utils/messages/formatters/jobs/message_rdm_midcast')
+    if not mrm_ok then mrm = nil end
     MessageRDMMidcast = mrm
 
     -- The file-scope database locals are the only record that a load worked.

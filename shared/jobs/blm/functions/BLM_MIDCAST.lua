@@ -81,17 +81,20 @@ local function ensure_modules_loaded()
     if modules_loaded then return end
 
     -- MessageFormatter first: the timer below reports through it.
-    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    local mf_ok, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    if not mf_ok then mf = nil end
     MessageFormatter = mf
 
     local mark, total = lazy_load_timer()
 
     -- Pulls in MidcastManager and ElementalMatcher itself.
-    local _, mr = pcall(require, 'shared/jobs/blm/functions/logic/midcast_router')
+    local mr_ok, mr = pcall(require, 'shared/jobs/blm/functions/logic/midcast_router')
+    if not mr_ok then mr = nil end
     MidcastRouter = mr
     mark('MidcastRouter')
 
-    local _, mbm = pcall(require, 'shared/utils/messages/formatters/jobs/message_blm_midcast')
+    local mbm_ok, mbm = pcall(require, 'shared/utils/messages/formatters/jobs/message_blm_midcast')
+    if not mbm_ok then mbm = nil end
     MessageBLMMidcast = mbm
     mark('MessageBLMMidcast')
 

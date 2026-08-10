@@ -40,21 +40,26 @@ local function ensure_commands_loaded()
 
     MessageFormatter = require('shared/utils/messages/message_formatter')
 
-    local _, cc = pcall(require, 'shared/utils/core/COMMON_COMMANDS')
+    local cc_ok, cc = pcall(require, 'shared/utils/core/COMMON_COMMANDS')
+    if not cc_ok then cc = nil end
     CommonCommands = cc
 
-    local _, wd = pcall(require, 'shared/utils/core/WATCHDOG_COMMANDS')
+    local wd_ok, wd = pcall(require, 'shared/utils/core/WATCHDOG_COMMANDS')
+    if not wd_ok then wd = nil end
     WatchdogCommands = wd
 
-    local _, ui = pcall(require, 'shared/utils/ui/UI_COMMANDS')
+    local ui_load_ok, ui = pcall(require, 'shared/utils/ui/UI_COMMANDS')
+    if not ui_load_ok then ui = nil end
     UICommands = ui
 
-    local _, ch = pcall(require, 'shared/utils/core/CYCLE_HANDLER')
+    local ch_ok, ch = pcall(require, 'shared/utils/core/CYCLE_HANDLER')
+    if not ch_ok then ch = nil end
     CycleHandler = ch
 
     MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
 
-    local _, bpc = pcall(require, 'shared/jobs/smn/functions/logic/blood_pact_classifier')
+    local bpc_ok, bpc = pcall(require, 'shared/jobs/smn/functions/logic/blood_pact_classifier')
+    if not bpc_ok then bpc = nil end
     BloodPactClassifier = bpc
 end
 
