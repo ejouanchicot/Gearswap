@@ -5,7 +5,7 @@
 --- Supports per-subjob macro books with default fallback.
 ---
 --- @file config/geo/GEO_MACROBOOK.lua
---- @author Kaories
+--- @author Tetsouo
 --- @version 2.0 - Dual-boxing support
 --- @date Created: 2025-10-09 | Updated: 2025-10-22
 ---============================================================================

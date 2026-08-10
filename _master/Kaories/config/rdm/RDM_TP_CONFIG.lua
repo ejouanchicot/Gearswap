@@ -22,7 +22,7 @@
 ---   • TPBonusCalculator (uses this configuration for dynamic gear selection)
 ---
 --- @file    config/rdm/RDM_TP_CONFIG.lua
---- @author  Kaories
+--- @author  Tetsouo
 --- @version 1.0
 --- @date    Created: 2025-10-14
 ---============================================================================

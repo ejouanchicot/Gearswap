@@ -21,7 +21,7 @@
 ---     • Weapon sets (Naegling, Daybreak, Colada, Malevolence, Shields)
 ---     • Movement sets (Base speed, Adoulin)
 ---   @file    jobs/rdm/sets/rdm_sets.lua
----   @author  Kaories
+---   @author  Tetsouo
 ---   @version 3.1 - Standardized Organization
 ---   @date    Updated: 2025-11-10
 ---  ═════════════════════════════════════════════════════════════════════════

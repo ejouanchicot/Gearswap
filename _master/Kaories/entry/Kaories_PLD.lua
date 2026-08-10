@@ -23,7 +23,7 @@
 ---   • 4 Logic: aoe_manager, cure_set_builder, rune_manager, set_builder
 ---
 --- @file    Kaories_PLD.lua
---- @author  Kaories
+--- @author  Tetsouo
 --- @version 1.0.0
 --- @date    Created: 2025-10-03
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+

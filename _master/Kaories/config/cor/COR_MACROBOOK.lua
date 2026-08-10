@@ -5,7 +5,7 @@
 --- Configure different macro books/pages by subjob or role.
 ---
 --- @file config/cor/COR_MACROBOOK.lua
---- @author Kaories
+--- @author Tetsouo
 --- @version 2.0 - Dual-boxing support
 --- @date Created: 2025-10-07 | Updated: 2025-10-22
 ---============================================================================

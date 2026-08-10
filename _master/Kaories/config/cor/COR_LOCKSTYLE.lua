@@ -5,7 +5,7 @@
 --- Configure different lockstyles by subjob, role, or personal preference.
 ---
 --- @file config/cor/COR_LOCKSTYLE.lua
---- @author Kaories
+--- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2025-10-07
 ---============================================================================

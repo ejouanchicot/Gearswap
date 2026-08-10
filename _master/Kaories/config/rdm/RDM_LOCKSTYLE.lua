@@ -4,7 +4,7 @@
 --- Defines lockstyle sets for Red Mage based on subjob.
 ---
 --- @file config/rdm/RDM_LOCKSTYLE.lua
---- @author Kaories
+--- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2025-10-12
 ---============================================================================

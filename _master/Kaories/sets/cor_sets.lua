@@ -22,7 +22,7 @@
 ---     • Movement sets (Base speed, Adoulin)
 ---     • Buff sets (Doom resistance)
 ---   @file    jobs/cor/sets/cor_sets.lua
----   @author  Kaories
+---   @author  Tetsouo
 ---   @version 3.0 - Standardized Organization
 ---   @date    Updated: 2025-11-10
 ---  ═════════════════════════════════════════════════════════════════════════

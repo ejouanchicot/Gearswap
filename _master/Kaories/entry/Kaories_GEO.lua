@@ -6,7 +6,7 @@
 --- to dedicated modules for maximum maintainability and scalability.
 ---
 --- @file Kaories_GEO.lua
---- @author Kaories
+--- @author Tetsouo
 --- @version 1.0.0 - Initial Release
 --- @date Created: 2025-10-09
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+

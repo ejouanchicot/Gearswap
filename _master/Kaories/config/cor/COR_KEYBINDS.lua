@@ -6,7 +6,7 @@
 --- their key mappings according to their preferences and setup.
 ---
 --- @file config/cor/COR_KEYBINDS.lua
---- @author Kaories
+--- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2025-10-07
 --- @requires Kaories architecture

@@ -4,7 +4,7 @@
 --- Defines macrobook pages for Red Mage based on subjob.
 ---
 --- @file config/rdm/RDM_MACROBOOK.lua
---- @author Kaories
+--- @author Tetsouo
 --- @version 2.0 - Dual-boxing support
 --- @date Created: 2025-10-12 | Updated: 2025-10-22
 ---============================================================================

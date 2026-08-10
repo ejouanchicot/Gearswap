@@ -6,7 +6,7 @@
 ---
 --- @file config/cor/COR_TP_CONFIG.lua
 --- @module COR_TP_CONFIG
---- @author Kaories
+--- @author Tetsouo
 --- @version 1.0.0
 --- @date Created: 2025-10-08
 ---============================================================================
