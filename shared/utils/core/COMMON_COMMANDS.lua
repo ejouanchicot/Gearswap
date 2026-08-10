@@ -154,7 +154,12 @@ function CommonCommands.handle_wardrobeorganize(arg, arg2)
         MessageFormatter.show_error("Failed to load wardrobe organizer: " .. tostring(WardrobeOrganizer))
         return false
     end
-    if arg == 'verify' or arg == 'check' then
+    if arg == 'keep' or arg == 'kept' or arg == 'items' then
+        -- What survives overflow beyond what the sets name. Reads only.
+        if WardrobeOrganizer.show_kept then
+            WardrobeOrganizer.show_kept()
+        end
+    elseif arg == 'verify' or arg == 'check' then
         WardrobeOrganizer.verify_global()
     elseif arg == 'reset' then
         if WardrobeOrganizer.reset then WardrobeOrganizer.reset() end
