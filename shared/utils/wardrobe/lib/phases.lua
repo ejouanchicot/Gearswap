@@ -571,6 +571,97 @@ end
 ---   typically don't have multi-instance pin constraints to worry about).
 
 --- Empty W1-W4 of items NOT used by any job  ->  Sack/Case.
+--- Items sitting in a later primary bag while an earlier one still has room.
+---
+--- The game reads wardrobes in order, so the active job belongs in W1 first
+--- and only spills into W2 when W1 is full. No other phase moves anything
+--- WITHIN the primary bags - they only evict what does not belong and fetch
+--- what does - so a piece that happened to be in W2 stayed there for good, and
+--- the run reported "already optimized" while W1 sat half empty.
+--- @return number How many could move down
+function Phases.count_unpacked()
+    local primary = Config.PRIMARY_BAGS or {}
+    if #primary < 2 then return 0 end
+
+    local total = 0
+    for i = 2, #primary do
+        local room = 0
+        for j = 1, i - 1 do room = room + Moves.space_in(primary[j]) end
+        if room > 0 then
+            local items = windower.ffxi.get_items(primary[i])
+            local n = 0
+            if items then
+                for _, it in ipairs(items) do
+                    if it.id and it.id > 0 and it.status == 0 and Items.is_equipment(it.id) then
+                        n = n + 1
+                    end
+                end
+            end
+            total = total + math.min(n, room)
+        end
+    end
+    return total
+end
+
+--- Pack the primary bags: pull from the later ones, push back into the first
+--- with room. Only as many as fit are pulled, so nothing is left stranded in
+--- inventory and the item cannot bounce back where it came from.
+function Phases.compact_primary(state, on_done)
+    dlog('===== PHASE 3.5: PACK PRIMARY (later bags -> earlier ones) =====')
+
+    local primary = Config.PRIMARY_BAGS or {}
+
+    local function discover_pending()
+        local list = {}
+        if #primary < 2 then return list end
+        for i = 2, #primary do
+            local room = 0
+            for j = 1, i - 1 do room = room + Moves.space_in(primary[j]) end
+            if room > 0 then
+                local items = windower.ffxi.get_items(primary[i])
+                if items then
+                    local taken = 0
+                    for slot, it in ipairs(items) do
+                        if taken >= room then break end
+                        if it.id and it.id > 0 and it.status == 0 and Items.is_equipment(it.id) then
+                            list[#list + 1] = {
+                                bag = primary[i], slot = slot, id = it.id,
+                                name = Items.display_name(it.id),
+                            }
+                            taken = taken + 1
+                        end
+                    end
+                end
+            end
+        end
+        return list
+    end
+
+    --- Anything just pulled goes back to the earliest primary bag with room.
+    local function discover_drainable()
+        local list = {}
+        local items = windower.ffxi.get_items(INV_BAG)
+        if not items then return list end
+        for slot, it in ipairs(items) do
+            if it.id and it.id > 0 and it.status == 0 and Items.is_equipment(it.id)
+               and Items.is_used_name(it.id, state.used_names) then
+                list[#list + 1] = {
+                    slot = slot, dst_list = primary,
+                    name = Items.display_name(it.id),
+                }
+            end
+        end
+        return list
+    end
+
+    run_burst_loop({
+        label              = 'PHASE 3.5',
+        discover_pending   = discover_pending,
+        discover_drainable = discover_drainable,
+        on_done            = on_done,
+    })
+end
+
 function Phases.empty_alt(state, on_done)
     dlog('===== PHASE A2: EMPTY W1-W4 (any-job-unused -> Sack/Case) =====')
 

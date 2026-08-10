@@ -355,11 +355,25 @@ local function start_phase4(state)
     Phases.cleanup_inv(state.used_names, state.pinned_bags, finish_run)
 end
 
+--- Phase 3.5: pack the active job into W1 before W2.
+local function start_phase_pack(state, on_done)
+    local unpacked = Phases.count_unpacked()
+    if unpacked == 0 then
+        on_done()
+        return
+    end
+    Chat.phase(3.5, 'Pack into ' .. Log.bag_name((Config.PRIMARY_BAGS or {})[1] or 8),
+        string.format('%d items', unpacked))
+    Phases.compact_primary(state, on_done)
+end
+
 --- Phase 3: promote used items from overflow to W1/W2.
 local function start_phase3(state)
     Chat.phase(3, 'Fill W1/W2', string.format('%d items', #state.w3w6_used))
     Phases.fill_w1w2(state, function()
-        coroutine.schedule(function() start_phase4(state) end, Config.PHASE_DELAY)
+        coroutine.schedule(function()
+            start_phase_pack(state, function() start_phase4(state) end)
+        end, Config.PHASE_DELAY)
     end)
 end
 
@@ -406,11 +420,17 @@ local function build_state_and_dispatch()
     -- Inventory split: only "unused" inv items count as cleanup work.
     -- "used" inv items will be auto-equipped at next swap, so they're fine to leave.
     local inv_unused, inv_used = count_inv_gear(state.used_names)
+    -- Counted here too: a layout can have nothing misplaced and still be wrong,
+    -- with the active job spread over W2 while W1 has room. Leaving it out of
+    -- the test is what made the run answer "already optimized" to a player
+    -- looking at a half-empty W1.
+    local unpacked = Phases.count_unpacked()
     Chat.phase(1, 'Recensement complete',
-        string.format('inv=%d  evict=%d  promote=%d  cleanup=%d',
-            state.inv_free, #state.w1w2_unused, #state.w3w6_used, inv_unused))
+        string.format('inv=%d  evict=%d  promote=%d  pack=%d  cleanup=%d',
+            state.inv_free, #state.w1w2_unused, #state.w3w6_used, unpacked, inv_unused))
 
-    if #state.w1w2_unused == 0 and #state.w3w6_used == 0 and inv_unused == 0 then
+    if #state.w1w2_unused == 0 and #state.w3w6_used == 0 and inv_unused == 0
+       and unpacked == 0 then
         if outer_iteration == 1 then
             Chat.success('Wardrobes already optimized for this job.')
         else
@@ -426,9 +446,9 @@ local function build_state_and_dispatch()
     -- If W1/W2 are already correct but inventory has leftovers, skip Phase 2/3
     -- and jump straight to cleanup.
     if #state.w1w2_unused == 0 and #state.w3w6_used == 0 then
-        dlog(('PHASE 1 -> direct PHASE 4 (inv_unused=%d, inv_used=%d, layout already OK)'):format(
-            inv_unused, inv_used))
-        start_phase4(state)
+        dlog(('PHASE 1 -> pack then PHASE 4 (inv_unused=%d, inv_used=%d, unpacked=%d)'):format(
+            inv_unused, inv_used, unpacked))
+        start_phase_pack(state, function() start_phase4(state) end)
         return
     end
 
