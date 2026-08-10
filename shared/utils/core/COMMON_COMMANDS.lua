@@ -154,7 +154,12 @@ function CommonCommands.handle_wardrobeorganize(arg, arg2)
         MessageFormatter.show_error("Failed to load wardrobe organizer: " .. tostring(WardrobeOrganizer))
         return false
     end
-    if arg == 'keep' or arg == 'kept' or arg == 'items' then
+    if arg == 'scan' or arg == 'scanwarp' then
+        -- Record which warp items this character owns, and write the list.
+        if WardrobeOrganizer.scan_warp_items then
+            WardrobeOrganizer.scan_warp_items()
+        end
+    elseif arg == 'keep' or arg == 'kept' or arg == 'items' then
         -- What survives overflow beyond what the sets name. Reads only.
         if WardrobeOrganizer.show_kept then
             WardrobeOrganizer.show_kept()
