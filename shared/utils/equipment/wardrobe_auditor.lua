@@ -337,25 +337,21 @@ end
 ---   EXPORT TO TXT
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Build and write the audit report
---- @param unused table {bag_name = {item_name, ...}}
---- @param total_items number Total wardrobe items
---- @param total_ignored number Items in IGNORED_WARDROBES (not counted as used/unused)
---- @param used_items table Master used items set
---- @param jobs_loaded table {job_upper = true}
---- @param jobs_failed table {job_upper = error_msg}
---- @return string|nil File path on success
-local function export_report(unused, total_items, total_ignored, used_items, jobs_loaded, jobs_failed)
-    local output_path = windower.addon_path .. 'data/wardrobe_audit.txt'
-    local lines = {}
+local REPORT_SEP = string.rep("=", 75)
 
-    -- Header
-    local sep = string.rep("=", 75)
-    table.insert(lines, sep)
+--- @return number Number of keys in a set-style table
+local function count_keys(t)
+    local n = 0
+    for _ in pairs(t) do n = n + 1 end
+    return n
+end
+
+--- What was scanned and what refused to load.
+local function write_report_header(lines, used_items, jobs_loaded, jobs_failed)
+    table.insert(lines, REPORT_SEP)
     table.insert(lines, "  WARDROBE AUDIT - Unused Items Report")
     table.insert(lines, "  Date: " .. os.date('%Y-%m-%d %H:%M'))
 
-    -- Jobs info
     local loaded_list = {}
     for job in pairs(jobs_loaded) do
         table.insert(loaded_list, job)
@@ -372,22 +368,19 @@ local function export_report(unused, total_items, total_ignored, used_items, job
         table.insert(lines, "  Jobs FAILED: " .. table.concat(failed_list, ', '))
     end
 
-    -- Unique items count
-    local unique_count = 0
-    for _ in pairs(used_items) do unique_count = unique_count + 1 end
-    table.insert(lines, "  Unique items in sets: " .. unique_count)
-
-    table.insert(lines, sep)
+    table.insert(lines, "  Unique items in sets: " .. count_keys(used_items))
+    table.insert(lines, REPORT_SEP)
     table.insert(lines, "")
+end
 
-    -- Per-wardrobe unused items
+--- One block per wardrobe, listing what no job asks for.
+--- @return number Total unused items across every wardrobe judged
+local function write_report_body(lines, unused)
     local total_unused = 0
 
     for _, bag_name in ipairs(WARDROBE_BAGS) do
-        local display = BAG_DISPLAY[bag_name] or bag_name
         local bag_unused = unused[bag_name]
-
-        table.insert(lines, "--- " .. display .. " ---")
+        table.insert(lines, "--- " .. (BAG_DISPLAY[bag_name] or bag_name) .. " ---")
 
         if IGNORED_WARDROBES[bag_name] then
             table.insert(lines, "  (ignored - reserved for craft/utility)")
@@ -403,18 +396,38 @@ local function export_report(unused, total_items, total_ignored, used_items, job
         table.insert(lines, "")
     end
 
-    -- Summary
-    local total_used = total_items - total_unused - total_ignored
-    table.insert(lines, sep)
+    return total_unused
+end
+
+--- The three numbers that have to add up to the wardrobe total.
+local function write_report_summary(lines, total_items, total_unused, total_ignored)
+    table.insert(lines, REPORT_SEP)
     table.insert(lines, string.format("  Total wardrobe items:     %d", total_items))
     if total_ignored > 0 then
         table.insert(lines, string.format("  Ignored (craft/utility):  %d", total_ignored))
     end
-    table.insert(lines, string.format("  Used by at least 1 job:   %d", total_used))
+    table.insert(lines, string.format("  Used by at least 1 job:   %d",
+        total_items - total_unused - total_ignored))
     table.insert(lines, string.format("  UNUSED:                   %d", total_unused))
-    table.insert(lines, sep)
+    table.insert(lines, REPORT_SEP)
+end
 
-    -- Write file
+--- Build and write the audit report
+--- @param unused table {bag_name = {item_name, ...}}
+--- @param total_items number Total wardrobe items
+--- @param total_ignored number Items in IGNORED_WARDROBES (not counted as used/unused)
+--- @param used_items table Master used items set
+--- @param jobs_loaded table {job_upper = true}
+--- @param jobs_failed table {job_upper = error_msg}
+--- @return string|nil File path on success
+local function export_report(unused, total_items, total_ignored, used_items, jobs_loaded, jobs_failed)
+    local output_path = windower.addon_path .. 'data/wardrobe_audit.txt'
+    local lines = {}
+
+    write_report_header(lines, used_items, jobs_loaded, jobs_failed)
+    local total_unused = write_report_body(lines, unused)
+    write_report_summary(lines, total_items, total_unused, total_ignored)
+
     local file = io.open(output_path, 'w')
     if not file then
         return nil
@@ -478,33 +491,76 @@ end
 
 --- Run the full wardrobe audit across all jobs
 --- @return boolean Success
-function WardrobeAuditor.audit()
-    -- PHASE 1: Discover available job set files and parse them.
-    -- Auto-discovery means: drop a new job_sets.lua file in Tetsouo/sets/ and
-    -- it gets picked up on the next audit run, no script edit needed.
-    local used_items = {}  -- {[item_name_lower] = {[JOB]=true}}
-    local jobs_loaded = {}
-    local jobs_failed = {}
+--- Parse every job whose set file auto-discovery found.
+--- Drop a new job_sets.lua in Tetsouo/sets/ and the next audit picks it up;
+--- no edit here is needed.
+--- @return table used_items {[item_name_lower] = {[JOB]=true}}
+--- @return table jobs_loaded {[JOB] = true}
+--- @return table jobs_failed {[JOB] = error message}
+local function parse_all_job_sets()
+    local used_items, jobs_loaded, jobs_failed = {}, {}, {}
 
-    local jobs = discover_jobs()
-    for _, job_lower in ipairs(jobs) do
+    for _, job_lower in ipairs(discover_jobs()) do
         local job_upper = job_lower:upper()
         local status, err = parse_job_sets(job_lower, used_items)
 
         if status == true then
             jobs_loaded[job_upper] = true
-        elseif status == 'missing' then
-            -- Should not happen since we auto-discovered, but skip silently
-        else
+        elseif status ~= 'missing' then
+            -- 'missing' cannot happen here: the job came from discovery
             jobs_failed[job_upper] = err or 'unknown error'
         end
     end
 
-    local loaded_count = 0
-    for _ in pairs(jobs_loaded) do loaded_count = loaded_count + 1 end
+    return used_items, jobs_loaded, jobs_failed
+end
 
-    local unique_count = 0
-    for _ in pairs(used_items) do unique_count = unique_count + 1 end
+--- Wardrobe items no job asks for.
+--- Every name variant is checked, not just the one res.items reports: a set
+--- file may spell a piece out in full ("Spaekona's Coat +4") where the
+--- resource gives the abbreviation ("Spae. Coat +4").
+--- @return table [bag_name] = { item names }
+local function find_unused_items(wardrobe_contents, used_items)
+    local unused = {}
+
+    for _, bag_name in ipairs(WARDROBE_BAGS) do
+        unused[bag_name] = {}
+        -- Ignored wardrobes hold gear deliberately absent from every job's
+        -- sets - craft gear, utility items - so nothing there is "unused".
+        if not IGNORED_WARDROBES[bag_name] then
+            for _, item in ipairs(wardrobe_contents[bag_name] or {}) do
+                local is_used = false
+                for _, variant in ipairs(item.all_names) do
+                    if used_items[variant] then
+                        is_used = true
+                        break
+                    end
+                end
+                if not is_used then
+                    table.insert(unused[bag_name], item.name)
+                end
+            end
+        end
+    end
+
+    return unused
+end
+
+--- @return number Items sitting in wardrobes the audit does not judge
+local function count_ignored_items(wardrobe_contents)
+    local total = 0
+    for bag_name in pairs(IGNORED_WARDROBES) do
+        local bag_items = wardrobe_contents[bag_name]
+        if bag_items then
+            total = total + #bag_items
+        end
+    end
+    return total
+end
+
+function WardrobeAuditor.audit()
+    local used_items, jobs_loaded, jobs_failed = parse_all_job_sets()
+    local loaded_count = count_keys(jobs_loaded)
 
     if loaded_count == 0 then
         add_to_chat(167, red .. "[WARDROBE AUDIT] Failed to load any job sets")
@@ -512,63 +568,22 @@ function WardrobeAuditor.audit()
         return false
     end
 
-    -- Report failed jobs
     for job, err in pairs(jobs_failed) do
         add_to_chat(200, yellow .. "[WARDROBE AUDIT] Failed to load " .. job .. ": " .. tostring(err):sub(1, 80))
     end
 
-    -- PHASE 2: Scan wardrobes
     local wardrobe_contents, total_items = scan_wardrobes()
-
     if total_items == 0 then
         add_to_chat(200, yellow .. "[WARDROBE AUDIT] No items found in wardrobes")
         return false
     end
 
-    -- PHASE 3: Compare - find unused items per wardrobe
-    -- Skip IGNORED_WARDROBES entirely (their contents are intentionally
-    -- not in any job's sets: craft gear, utility items, etc.)
-    local unused = {}
+    local unused = find_unused_items(wardrobe_contents, used_items)
+    local total_ignored = count_ignored_items(wardrobe_contents)
 
-    for _, bag_name in ipairs(WARDROBE_BAGS) do
-        unused[bag_name] = {}
-        if not IGNORED_WARDROBES[bag_name] then
-            local bag_items = wardrobe_contents[bag_name]
-
-            if bag_items then
-                for _, item in ipairs(bag_items) do
-                    -- Check ALL name variants (en, enl, english, english_log)
-                    -- Set files may use full name ("Spaekona's Coat +4")
-                    -- while res.items.en returns abbreviated ("Spae. Coat +4")
-                    local is_used = false
-                    for _, variant in ipairs(item.all_names) do
-                        if used_items[variant] then
-                            is_used = true
-                            break
-                        end
-                    end
-                    if not is_used then
-                        table.insert(unused[bag_name], item.name)
-                    end
-                end
-            end
-        end
-    end
-
-    -- Count items in ignored wardrobes (excluded from used/unused stats)
-    local total_ignored = 0
-    for bag_name in pairs(IGNORED_WARDROBES) do
-        local bag_items = wardrobe_contents[bag_name]
-        if bag_items then
-            total_ignored = total_ignored + #bag_items
-        end
-    end
-
-    -- PHASE 4: Export to txt
-    local export_path = export_report(unused, total_items, total_ignored, used_items, jobs_loaded, jobs_failed)
-
-    -- PHASE 5: Show in-game summary
-    show_ingame_summary(unused, total_items, loaded_count, unique_count, export_path)
+    local export_path = export_report(unused, total_items, total_ignored, used_items,
+        jobs_loaded, jobs_failed)
+    show_ingame_summary(unused, total_items, loaded_count, count_keys(used_items), export_path)
 
     return true
 end
