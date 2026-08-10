@@ -578,10 +578,14 @@ end
 --- WITHIN the primary bags - they only evict what does not belong and fetch
 --- what does - so a piece that happened to be in W2 stayed there for good, and
 --- the run reported "already optimized" while W1 sat half empty.
+--- Counts exactly what compact_primary would move - same filters. Counting
+--- more would report work the phase then refuses to do, and the outer loop
+--- would retry for ever chasing a number that never drops.
+--- @param state table Built state (needs used_names and pinned_bags)
 --- @return number How many could move down
-function Phases.count_unpacked()
+function Phases.count_unpacked(state)
     local primary = Config.PRIMARY_BAGS or {}
-    if #primary < 2 then return 0 end
+    if #primary < 2 or not state then return 0 end
 
     local total = 0
     for i = 2, #primary do
@@ -592,7 +596,9 @@ function Phases.count_unpacked()
             local n = 0
             if items then
                 for _, it in ipairs(items) do
-                    if it.id and it.id > 0 and it.status == 0 and Items.is_equipment(it.id) then
+                    if it.id and it.id > 0 and it.status == 0 and Items.is_equipment(it.id)
+                       and Items.is_used_name(it.id, state.used_names)
+                       and #unclaimed_pins_first(it.id, state.pinned_bags) == 0 then
                         n = n + 1
                     end
                 end
@@ -606,6 +612,12 @@ end
 --- Pack the primary bags: pull from the later ones, push back into the first
 --- with room. Only as many as fit are pulled, so nothing is left stranded in
 --- inventory and the item cannot bounce back where it came from.
+---
+--- Two kinds of item are left where they are, or this phase fights the others:
+---   * anything the active job does not use - Phase 2 just evicted it, and
+---     dragging it back would make the run loop until it gave up;
+---   * anything pinned - a pin already names the bag that piece belongs in,
+---     usually to keep two copies of a ring in separate wardrobes.
 function Phases.compact_primary(state, on_done)
     dlog('===== PHASE 3.5: PACK PRIMARY (later bags -> earlier ones) =====')
 
@@ -623,7 +635,9 @@ function Phases.compact_primary(state, on_done)
                     local taken = 0
                     for slot, it in ipairs(items) do
                         if taken >= room then break end
-                        if it.id and it.id > 0 and it.status == 0 and Items.is_equipment(it.id) then
+                        if it.id and it.id > 0 and it.status == 0 and Items.is_equipment(it.id)
+                           and Items.is_used_name(it.id, state.used_names)
+                           and #unclaimed_pins_first(it.id, state.pinned_bags) == 0 then
                             list[#list + 1] = {
                                 bag = primary[i], slot = slot, id = it.id,
                                 name = Items.display_name(it.id),

@@ -357,7 +357,7 @@ end
 
 --- Phase 3.5: pack the active job into W1 before W2.
 local function start_phase_pack(state, on_done)
-    local unpacked = Phases.count_unpacked()
+    local unpacked = Phases.count_unpacked(state)
     if unpacked == 0 then
         on_done()
         return
@@ -424,7 +424,7 @@ local function build_state_and_dispatch()
     -- with the active job spread over W2 while W1 has room. Leaving it out of
     -- the test is what made the run answer "already optimized" to a player
     -- looking at a half-empty W1.
-    local unpacked = Phases.count_unpacked()
+    local unpacked = Phases.count_unpacked(state)
     Chat.phase(1, 'Recensement complete',
         string.format('inv=%d  evict=%d  promote=%d  pack=%d  cleanup=%d',
             state.inv_free, #state.w1w2_unused, #state.w3w6_used, unpacked, inv_unused))
