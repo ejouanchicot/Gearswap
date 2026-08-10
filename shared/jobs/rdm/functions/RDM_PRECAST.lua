@@ -34,28 +34,36 @@ local function ensure_modules_loaded()
     if modules_loaded then return end
 
     -- Load all modules on first action
-    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    local mf_ok, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    if not mf_ok then mf = nil end
     MessageFormatter = mf
 
-    local _, mp = pcall(require, 'shared/utils/messages/formatters/magic/message_precast')
+    local mp_ok, mp = pcall(require, 'shared/utils/messages/formatters/magic/message_precast')
+    if not mp_ok then mp = nil end
     MessagePrecast = mp
 
-    local _, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    local cc_ok, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    if not cc_ok then cc = nil end
     CooldownChecker = cc
 
-    local _, ah = pcall(require, 'shared/utils/precast/ability_helper')
+    local ah_ok, ah = pcall(require, 'shared/utils/precast/ability_helper')
+    if not ah_ok then ah = nil end
     AbilityHelper = ah
 
-    local _, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    local pg_ok, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    if not pg_ok then pg = nil end
     PrecastGuard = pg
 
-    local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    local wph_ok, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    if not wph_ok then wph = nil end
     WSPrecastHandler = wph
 
-    local _, tr = pcall(require, 'shared/utils/precast/tier_refiner')
+    local tr_ok, tr = pcall(require, 'shared/utils/precast/tier_refiner')
+    if not tr_ok then tr = nil end
     TierRefiner = tr
 
-    local _, tiers = pcall(require, 'shared/data/spells/RDM_ENFEEBLE_TIERS')
+    local tiers_ok, tiers = pcall(require, 'shared/data/spells/RDM_ENFEEBLE_TIERS')
+    if not tiers_ok then tiers = nil end
     RDMEnfeebleTiers = tiers
 
     modules_loaded = true

@@ -30,17 +30,17 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    local _, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
+    local mm_ok, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
+    if not mm_ok then mm = nil end
     MidcastManager = mm
 
-    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    local mf_ok, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    if not mf_ok then mf = nil end
     MessageFormatter = mf
 
-    -- ok is kept, unlike elsewhere: a failed pcall hands back the error STRING,
-    -- which is truthy, so `if not BloodPactClassifier then return end` below
-    -- would wave it through and then index a string.
     local bpc_ok, bpc = pcall(require, 'shared/jobs/smn/functions/logic/blood_pact_classifier')
-    BloodPactClassifier = bpc_ok and bpc or nil
+    if not bpc_ok then bpc = nil end
+    BloodPactClassifier = bpc
 
     modules_loaded = true
 end

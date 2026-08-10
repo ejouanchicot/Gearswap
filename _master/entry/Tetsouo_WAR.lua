@@ -31,7 +31,8 @@
 ---============================================================================
 
 -- Load global configurations with fallbacks
-local _, LockstyleConfig = pcall(require, 'Tetsouo/config/LOCKSTYLE_CONFIG')
+local LockstyleConfig_ok, LockstyleConfig = pcall(require, 'Tetsouo/config/LOCKSTYLE_CONFIG')
+if not LockstyleConfig_ok then LockstyleConfig = nil end
 LockstyleConfig = LockstyleConfig or {
     initial_load_delay = 8.0,
     job_change_delay = 8.0,
@@ -39,7 +40,8 @@ LockstyleConfig = LockstyleConfig or {
 }
 
 -- Load region configuration (must load before message system for color codes)
-local _, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
+local RegionConfig_ok, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
+if not RegionConfig_ok then RegionConfig = nil end
 if RegionConfig then
     _G.RegionConfig = RegionConfig
 end

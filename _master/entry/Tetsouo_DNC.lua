@@ -49,7 +49,8 @@
 ---============================================================================
 
 -- Load lockstyle timing configuration with fallback defaults
-local _, LockstyleConfig = pcall(require, 'Tetsouo/config/LOCKSTYLE_CONFIG')
+local LockstyleConfig_ok, LockstyleConfig = pcall(require, 'Tetsouo/config/LOCKSTYLE_CONFIG')
+if not LockstyleConfig_ok then LockstyleConfig = nil end
 LockstyleConfig = LockstyleConfig or {
     initial_load_delay = 8.0,  -- Initial lockstyle delay on job load (FFXI cooldown)
     job_change_delay   = 8.0,  -- Lockstyle delay on job/subjob change

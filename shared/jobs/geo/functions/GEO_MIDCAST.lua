@@ -27,9 +27,11 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    local _, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
+    local mm_ok, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
+    if not mm_ok then mm = nil end
     MidcastManager = mm
-    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    local mf_ok, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    if not mf_ok then mf = nil end
     MessageFormatter = mf
 
     -- Load ENHANCING_MAGIC_DATABASE for spell_family routing

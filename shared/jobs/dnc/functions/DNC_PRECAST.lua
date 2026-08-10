@@ -47,24 +47,31 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    local mf_ok, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    if not mf_ok then mf = nil end
     MessageFormatter = mf
 
-    local _, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    local cc_ok, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    if not cc_ok then cc = nil end
     CooldownChecker = cc
 
-    local _, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    local pg_ok, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    if not pg_ok then pg = nil end
     PrecastGuard = pg
 
-    local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    local wph_ok, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    if not wph_ok then wph = nil end
     WSPrecastHandler = wph
 
     -- DNC logic modules
-    local _, cm = pcall(require, 'shared/jobs/dnc/functions/logic/climactic_manager')
+    local cm_ok, cm = pcall(require, 'shared/jobs/dnc/functions/logic/climactic_manager')
+    if not cm_ok then cm = nil end
     ClimaticManager = cm
-    local _, wsv = pcall(require, 'shared/jobs/dnc/functions/logic/ws_variant_selector')
+    local wsv_ok, wsv = pcall(require, 'shared/jobs/dnc/functions/logic/ws_variant_selector')
+    if not wsv_ok then wsv = nil end
     WSVariantSelector = wsv
-    local _, jm = pcall(require, 'shared/utils/drg/auto_jump')
+    local jm_ok, jm = pcall(require, 'shared/utils/drg/auto_jump')
+    if not jm_ok then jm = nil end
     JumpManager = jm
 
     DNCTPConfig = _G.DNCTPConfig or {}

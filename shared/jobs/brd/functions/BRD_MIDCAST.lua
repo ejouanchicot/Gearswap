@@ -34,16 +34,19 @@ local function ensure_modules_loaded()
     if modules_loaded then return end
 
     -- Router (loads MidcastManager internally)
-    local _, mr = pcall(require, 'shared/jobs/brd/functions/logic/midcast_router')
+    local mr_ok, mr = pcall(require, 'shared/jobs/brd/functions/logic/midcast_router')
+    if not mr_ok then mr = nil end
     MidcastRouter = mr
 
     -- MessageFormatter (passed to router via ctx)
-    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    local mf_ok, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    if not mf_ok then mf = nil end
     MessageFormatter = mf
 
     -- Expose SongRotationManager globally for MidcastManager.get_song_instrument()
     -- (used during Singing set selection inside MidcastManager.select_set)
-    local _, srm = pcall(require, 'shared/jobs/brd/functions/logic/song_rotation_manager')
+    local srm_ok, srm = pcall(require, 'shared/jobs/brd/functions/logic/song_rotation_manager')
+    if not srm_ok then srm = nil end
     if srm then _G.SongRotationManager = srm end
 
     -- ENHANCING_MAGIC_DATABASE for spell_family routing (Enhancing Magic subjob)

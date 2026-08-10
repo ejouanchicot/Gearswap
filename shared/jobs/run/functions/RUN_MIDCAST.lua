@@ -29,9 +29,11 @@ local modules_loaded = false
 local function ensure_modules_loaded()
     if modules_loaded then return end
 
-    local _, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
+    local mm_ok, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
+    if not mm_ok then mm = nil end
     MidcastManager = mm
-    local _, csb = pcall(require, 'shared/jobs/run/functions/logic/cure_set_builder')
+    local csb_ok, csb = pcall(require, 'shared/jobs/run/functions/logic/cure_set_builder')
+    if not csb_ok then csb = nil end
     CureSetBuilder = csb
 
     -- Load ENHANCING_MAGIC_DATABASE for spell_family routing

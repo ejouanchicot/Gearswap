@@ -36,18 +36,22 @@ local function ensure_modules_loaded()
     end
 
     -- Cooldown checker (universal ability/spell recast validation)
-    local _, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    local cc_ok, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
+    if not cc_ok then cc = nil end
     CooldownChecker = cc
 
     -- Precast guard (debuff blocking: Amnesia, Silence, Stun, etc.)
-    local _, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    local pg_ok, pg = pcall(require, 'shared/utils/debuff/precast_guard')
+    if not pg_ok then pg = nil end
     PrecastGuard = pg
 
     -- WS Precast Handler (unified WS validation + TP gear + messages)
-    local _, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    local wph_ok, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
+    if not wph_ok then wph = nil end
     WSPrecastHandler = wph
 
-    local _, aj = pcall(require, 'shared/utils/drg/auto_jump')
+    local aj_ok, aj = pcall(require, 'shared/utils/drg/auto_jump')
+    if not aj_ok then aj = nil end
     AutoJump = aj
 
     -- Load job TP config

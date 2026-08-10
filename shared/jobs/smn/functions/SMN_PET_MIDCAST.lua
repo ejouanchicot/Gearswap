@@ -17,7 +17,8 @@ local BloodPactClassifier = nil
 
 local function ensure_loaded()
     if BloodPactClassifier then return end
-    local _, bpc = pcall(require, 'shared/jobs/smn/functions/logic/blood_pact_classifier')
+    local bpc_ok, bpc = pcall(require, 'shared/jobs/smn/functions/logic/blood_pact_classifier')
+    if not bpc_ok then bpc = nil end
     BloodPactClassifier = bpc
 end
 

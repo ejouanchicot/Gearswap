@@ -16,19 +16,23 @@ local function ensure_modules_loaded()
     if modules_loaded then return end
 
     -- Message formatter
-    local _, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    local mf_ok, mf = pcall(require, 'shared/utils/messages/message_formatter')
+    if not mf_ok then mf = nil end
     MessageFormatter = mf
 
     -- WS Validator (range + validity)
-    local _, wsv = pcall(require, 'shared/utils/precast/ws_validator')
+    local wsv_ok, wsv = pcall(require, 'shared/utils/precast/ws_validator')
+    if not wsv_ok then wsv = nil end
     WSValidator = wsv
 
     -- TP Bonus Handler (gear calculation)
-    local _, tph = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+    local tph_ok, tph = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+    if not tph_ok then tph = nil end
     TPBonusHandler = tph
 
     -- WS Database (descriptions)
-    local _, wsdb = pcall(require, 'shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+    local wsdb_ok, wsdb = pcall(require, 'shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
+    if not wsdb_ok then wsdb = nil end
     WS_DB = wsdb
 
     modules_loaded = true
