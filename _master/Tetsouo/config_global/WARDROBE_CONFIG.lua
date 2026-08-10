@@ -33,6 +33,18 @@ return {
     -- All wardrobes scanned by the algorithm (must include primary + overflow).
     ALL_WARDROBES = {8, 10, 11, 12, 13, 14, 16},
 
+    -- ─── OBJETS A GARDER EN PRIMAIRE  ───────────────────────────────────────
+    -- Items no gear set names, forced into W1/W2 rather than left to overflow.
+    --
+    -- Rarely needed here: this character's overflow is wardrobes, which are
+    -- equippable, so a warp ring pushed to W8 still works and the warp system
+    -- still finds it. That is also why the organizer does NOT pin the warp
+    -- database's 65 items for this character - they would eat the W1/W2 slots
+    -- the active job needs.
+    --
+    -- List something here only to force it into W1/W2 on purpose.
+    KEEP_ITEMS = {},
+
     -- ─── ALT MODE  (//gs c wo alt)  ─────────────────────────────────────────
     -- For Tetsouo this isn't needed (full 8-wardrobe setup), but provided
     -- for parity. If you ever want a "minimal" layout, uncomment.

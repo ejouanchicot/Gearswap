@@ -33,4 +33,19 @@ return {
 
     -- All wardrobes Kaories has unlocked.
     ALL_WARDROBES = {8, 10, 11, 12},
+
+    -- ─── OBJETS A GARDER EN WARDROBE  ───────────────────────────────────────
+    -- Items no gear set names, but that must stay somewhere equippable.
+    -- Without this they count as unused and go to Sack/Case/Satchel, which
+    -- FFXI cannot equip from - so they become unreachable, not just tidied.
+    --
+    -- The warp and teleport rings are already handled: the organizer reads
+    -- them from the warp database on its own, because her overflow is
+    -- unequippable. Nothing to list here for those.
+    --
+    -- Use this for the rest. Names must match the game exactly.
+    KEEP_ITEMS = {
+        -- 'Nexus Cape',
+        -- 'Emporer Hairpin',
+    },
 }
