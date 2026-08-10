@@ -26,6 +26,16 @@ Config.INV_BAG = 0
 ---   behaviour for any character without a config.
 Config.SCOPE = 'active_job'
 
+---   Items to treat as used even though no gear set names them, so they stay
+---   in the primary bags. The warp and teleport rings are added automatically
+---   from the warp database; this is for anything else - a Nexus Cape, craft
+---   gear, whatever a feature needs but no set mentions.
+---
+---   It matters most for a character whose overflow bags are Sack/Case/Satchel:
+---   FFXI cannot equip from those, so an item filed there is out of reach, not
+---   merely out of the way.
+Config.KEEP_ITEMS = {}
+
 Config.PRIMARY_BAGS = {8, 10} -- W1, W2 (target = active job)
 
 -- Overflow priority (push order): W8 first, then W6 > W5 > W4 > W3.
@@ -168,6 +178,7 @@ function Config.refresh()
 
     -- Apply overrides (only those defined in the char file)
     if char_cfg.SCOPE             then Config.SCOPE             = char_cfg.SCOPE             end
+    if char_cfg.KEEP_ITEMS        then Config.KEEP_ITEMS        = char_cfg.KEEP_ITEMS        end
     if char_cfg.PRIMARY_BAGS      then Config.PRIMARY_BAGS      = char_cfg.PRIMARY_BAGS      end
     if char_cfg.OVERFLOW_BAGS     then Config.OVERFLOW_BAGS     = char_cfg.OVERFLOW_BAGS     end
     if char_cfg.FILL_FALLBACK     then Config.FILL_FALLBACK     = char_cfg.FILL_FALLBACK     end

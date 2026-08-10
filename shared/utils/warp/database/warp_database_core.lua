@@ -225,6 +225,33 @@ end
 
 --- Count total items across all destinations
 --- @return number Total item count
+--- Every item name the warp system can reach for, across all destinations.
+---
+--- The wardrobe organizer needs this: no gear set names a Warp Ring, so
+--- without it these read as unused and get filed into overflow. On a character
+--- whose overflow is Sack/Case/Satchel that puts them somewhere FFXI cannot
+--- equip from, and the warp system - which only searches equippable bags -
+--- stops finding them.
+--- @return table Array of item names, no duplicates
+function WarpDatabase.get_all_item_names()
+    local names, seen = {}, {}
+
+    for destination, module_name in pairs(MODULE_ROUTING) do
+        local module = load_module(module_name)
+        if module and module.get_items then
+            for _, entry in ipairs(module.get_items(destination) or {}) do
+                local name = entry.data and entry.data.name
+                if name and not seen[name] then
+                    seen[name] = true
+                    names[#names + 1] = name
+                end
+            end
+        end
+    end
+
+    return names
+end
+
 function WarpDatabase.count_total_items()
     local total = 0
     local counted_modules = {}
