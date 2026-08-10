@@ -10,6 +10,11 @@
 
 local SAMKeybinds = {}
 
+-- File scope, like every other job's keybind config: bind_all reports its
+-- failures through this too, and a require living inside show_intro left that
+-- error path reaching for a global of the same name.
+local MessageFormatter = require('shared/utils/messages/message_formatter')
+
 ---============================================================================
 --- KEYBIND DEFINITIONS
 ---============================================================================
@@ -43,7 +48,6 @@ SAMKeybinds.binds = {
 ---
 --- @return void
 function SAMKeybinds.show_intro()
-    local MessageFormatter = require('shared/utils/messages/message_formatter')
 
     -- Try to get macro info from SAM_MACROBOOK module
     local macro_info = nil
