@@ -13,6 +13,19 @@
 local Config = {}
 
 Config.INV_BAG = 0
+
+---   What `//gs c wo` should consider "used", which is the real difference
+---   between the two flows:
+---     'active_job' - only the job currently loaded. Suits a character with
+---                    more jobs than wardrobes: re-run it on each job change
+---                    and the active job's gear rotates into the primary bags.
+---     'all_jobs'   - every job with a set file under data/<char>/sets/. Suits
+---                    a character whose whole collection fits at once: run it
+---                    when the gear changes, not when the job does.
+---   Set per character in WARDROBE_CONFIG.lua. The default keeps the original
+---   behaviour for any character without a config.
+Config.SCOPE = 'active_job'
+
 Config.PRIMARY_BAGS = {8, 10} -- W1, W2 (target = active job)
 
 -- Overflow priority (push order): W8 first, then W6 > W5 > W4 > W3.
@@ -123,9 +136,14 @@ Config.EQUIP_SLOTS = 'main sub range ammo head body hands legs feet neck waist b
 ---   PER-CHARACTER OVERRIDE  (data/<charname>/config/WARDROBE_CONFIG.lua)
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Loaded by Config.refresh(). The char file may define any subset of:
----     PRIMARY_BAGS, OVERFLOW_BAGS, FILL_FALLBACK, PROTECTED, ALL_WARDROBES,
----     ALT_PRIMARY_BAGS, ALT_OVERFLOW_BAGS, ALT_ALL_BAGS
+---     SCOPE, PRIMARY_BAGS, OVERFLOW_BAGS, FILL_FALLBACK, PROTECTED,
+---     ALL_WARDROBES, ALT_PRIMARY_BAGS, ALT_OVERFLOW_BAGS, ALT_ALL_BAGS
 ---   Missing keys keep their default values (defined above).
+---
+---   A config that sets SCOPE = 'all_jobs' need not repeat its bag lists under
+---   ALT_*: those mirror PRIMARY_BAGS / OVERFLOW_BAGS unless stated otherwise.
+---   The ALT_* keys remain for a character who wants `//gs c wo alt` to use a
+---   different layout from its own `//gs c wo`.
 ---
 ---   Last loaded char's name (for the chat banner / debug log).
 Config.LOADED_CHAR_CONFIG = nil
@@ -149,6 +167,7 @@ function Config.refresh()
     end
 
     -- Apply overrides (only those defined in the char file)
+    if char_cfg.SCOPE             then Config.SCOPE             = char_cfg.SCOPE             end
     if char_cfg.PRIMARY_BAGS      then Config.PRIMARY_BAGS      = char_cfg.PRIMARY_BAGS      end
     if char_cfg.OVERFLOW_BAGS     then Config.OVERFLOW_BAGS     = char_cfg.OVERFLOW_BAGS     end
     if char_cfg.FILL_FALLBACK     then Config.FILL_FALLBACK     = char_cfg.FILL_FALLBACK     end
@@ -168,6 +187,13 @@ function Config.refresh()
     -- so push order stays consistent.
     if not char_cfg.FILL_FALLBACK then
         Config.FILL_FALLBACK = Config.OVERFLOW_BAGS
+    end
+
+    -- A character organising on 'all_jobs' has one layout, not two: unless it
+    -- says otherwise, the alt flow uses the bags it already declared.
+    if Config.SCOPE == 'all_jobs' then
+        if not char_cfg.ALT_PRIMARY_BAGS  then Config.ALT_PRIMARY_BAGS  = Config.PRIMARY_BAGS  end
+        if not char_cfg.ALT_OVERFLOW_BAGS then Config.ALT_OVERFLOW_BAGS = Config.OVERFLOW_BAGS end
     end
 
     -- If ALT_ALL_BAGS was not set, derive it from ALT_PRIMARY + ALT_OVERFLOW

@@ -485,6 +485,14 @@ function WardrobeOrganizer.organize()
         return
     end
     Config.refresh()  -- load per-character WARDROBE_CONFIG.lua overrides
+
+    -- Which flow a character wants is a property of the character, not of the
+    -- command typed: `//gs c wo` now asks the config rather than the player to
+    -- remember. `//gs c wo alt` still forces the all-jobs flow either way.
+    if Config.SCOPE == 'all_jobs' then
+        return WardrobeOrganizer.organize_alt()
+    end
+
     reset_module_state()
     local ok, err = pcall(start_organize)
     if not ok then
