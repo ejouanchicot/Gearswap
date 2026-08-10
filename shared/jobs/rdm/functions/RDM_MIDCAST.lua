@@ -49,9 +49,15 @@ local function ensure_modules_loaded()
     local _, mrm = pcall(require, 'shared/utils/messages/formatters/jobs/message_rdm_midcast')
     MessageRDMMidcast = mrm
 
-    local EnfeeblingSPELLS_success, EnhancingSPELLS_success
-    EnfeeblingSPELLS_success, EnfeeblingSPELLS = pcall(require, 'shared/data/magic/ENFEEBLING_MAGIC_DATABASE')
-    EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
+    -- The file-scope database locals are the only record that a load worked.
+    -- A separate success flag cannot be: declared here it would be local to
+    -- this function, while every reader of it lives outside - which is exactly
+    -- how the flags used to read nil and switch the routing off for good.
+    local enfeebling_ok, enfeebling_db = pcall(require, 'shared/data/magic/ENFEEBLING_MAGIC_DATABASE')
+    EnfeeblingSPELLS = enfeebling_ok and enfeebling_db or nil
+
+    local enhancing_ok, enhancing_db = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
+    EnhancingSPELLS = enhancing_ok and enhancing_db or nil
 
     modules_loaded = true
 end
@@ -86,13 +92,13 @@ local function midcast_enfeebling(spell, debug_enabled)
         MessageRDMMidcast.show_enfeebling_routing(
             spell.name or 'Unknown',
             tostring(state.EnfeebleMode and state.EnfeebleMode.value or 'nil'),
-            EnfeeblingSPELLS_success
+            EnfeeblingSPELLS ~= nil
         )
     end
 
     -- DEBUG: Get enfeebling_type BEFORE MidcastManager call
     local enfeebling_type = nil
-    if EnfeeblingSPELLS_success and EnfeeblingSPELLS then
+    if EnfeeblingSPELLS then
         enfeebling_type = EnfeeblingSPELLS.get_enfeebling_type(spell.name)
         if debug_enabled then
             MessageRDMMidcast.show_enfeebling_type_detection(spell.name, enfeebling_type)
@@ -119,7 +125,7 @@ local function midcast_enfeebling(spell, debug_enabled)
         skill = 'Enfeebling Magic',
         spell = spell,
         mode_state = state.EnfeebleMode,
-        database_func = EnfeeblingSPELLS_success and EnfeeblingSPELLS and EnfeeblingSPELLS.get_enfeebling_type or nil
+        database_func = EnfeeblingSPELLS and EnfeeblingSPELLS.get_enfeebling_type or nil
     })
 
     if debug_enabled then
@@ -167,7 +173,7 @@ end
 --- Which family the spell belongs to - Enspell, Regen, Refresh and so on.
 --- @return string|nil Family, nil when the database is not loaded
 local function enhancing_family(spell, debug_enabled)
-    if not (EnhancingSPELLS_success and EnhancingSPELLS) then
+    if not EnhancingSPELLS then
         if debug_enabled then
             MessageRDMMidcast.show_enhancing_database_not_loaded()
         end
@@ -216,7 +222,7 @@ local function midcast_enhancing(spell, debug_enabled)
         spell = spell,
         mode_state = state.EnhancingMode,
         target_func = MidcastManager.get_enhancing_target,
-        database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
+        database_func = EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
     })
 
     if debug_enabled then
