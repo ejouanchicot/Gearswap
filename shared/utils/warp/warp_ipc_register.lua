@@ -13,11 +13,14 @@
 --- @date 2025-10-28
 ---============================================================================
 
--- Unregister old listener before re-registering (survives job changes/reloads)
-if _G.WARP_IPC_REGISTERED and _G.WARP_IPC_EVENT_ID then
-    windower.unregister_event(_G.WARP_IPC_EVENT_ID)
-    _G.WARP_IPC_EVENT_ID = nil
-    _G.WARP_IPC_REGISTERED = false
+-- Unregister the old listener before re-registering. The token lives on
+-- `windower.*`, not `_G`: WarpInit includes this file on every job load, and a
+-- `_G` token is gone by then (the reload builds a fresh sandbox), so the
+-- unregister would never fire and each job change would leave another live
+-- listener behind. Same convention as warp_detector and dualbox_sync_ipc.
+if windower._warp_ipc_register_event_id then
+    pcall(windower.unregister_event, windower._warp_ipc_register_event_id)
+    windower._warp_ipc_register_event_id = nil
 end
 
 -- Load MessageWarp for formatted messages
@@ -44,7 +47,7 @@ local IPC_DEBOUNCE = Registry.IPC_DEBOUNCE
 --- IPC LISTENER (Registered at Job Level - Like MyHome)
 ---============================================================================
 
-_G.WARP_IPC_EVENT_ID = windower.register_event('ipc message', function(msg)
+windower._warp_ipc_register_event_id = windower.register_event('ipc message', function(msg)
     -- Debug: Show ALL IPC messages
     if _G.WARP_DEBUG then
         MessageWarp.show_ipc_raw_received(msg)
@@ -100,8 +103,5 @@ _G.WARP_IPC_EVENT_ID = windower.register_event('ipc message', function(msg)
         windower.chat.input('//gs c ' .. command)
     end, 0.5)
 end)
-
--- Mark as registered
-_G.WARP_IPC_REGISTERED = true
 
 MessageWarp.show_ipc_registered()
