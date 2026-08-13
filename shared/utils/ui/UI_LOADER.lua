@@ -84,16 +84,23 @@ end
 ---============================================================================
 
 --- Add job-specific display elements (non-keybind items)
+--- Returns a COPY: get_job_keybinds() hands back the config module's own binds
+--- table, which require() caches for the whole session. Appending in place made
+--- the BRD song slots pile up on every redraw (10 slots on the first render,
+--- 20 on the second, ...).
 --- @param job string The job abbreviation
 --- @param keybinds table The existing keybind table
---- @return table Modified keybind table with additions
+--- @return table New keybind table with the job's display-only additions
 function KeybindLoader.add_job_specific_elements(job, keybinds)
-    keybinds = keybinds or {}
+    local result = {}
+    for i, bind in ipairs(keybinds or {}) do
+        result[i] = bind
+    end
 
     -- BRD: Add song slot displays
     if job == "BRD" then
         for i = 1, 5 do
-            table.insert(keybinds, {
+            table.insert(result, {
                 key = "", -- No key, display only
                 desc = "Slot " .. i,
                 state = "BRDSong" .. i  -- Changed from BRDSlot to BRDSong to match TETSOUO_BRD states
@@ -101,7 +108,7 @@ function KeybindLoader.add_job_specific_elements(job, keybinds)
         end
     end
 
-    return keybinds
+    return result
 end
 
 ---============================================================================
