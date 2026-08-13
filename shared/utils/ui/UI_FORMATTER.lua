@@ -205,6 +205,9 @@ function UIFormatter.get_section_title(job, category)
     elseif category == "ja" then
         if job == "BRD" then
             return "Song Slots"
+        elseif job == "WAR" then
+            -- WAR fills this section with its weapon-aware WS slots, not JAs
+            return "Weapon Skills"
         else
             return "JA"
         end
