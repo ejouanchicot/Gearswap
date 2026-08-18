@@ -46,7 +46,7 @@ end
 -- State stored on _G so it survives module re-requires (GearSwap may invalidate
 -- the package.loaded cache between command invocations, which would reset
 -- a module-local table).
-_G.__CraftManagerState = _G.__CraftManagerState or { active = false, active_name = nil }
+_G.__CraftManagerState = _G.__CraftManagerState or { active = false, active_name = nil, gear = nil }
 local _state = _G.__CraftManagerState
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -127,9 +127,20 @@ function CraftManager.resolve_set(file_name, variant)
 end
 
 --- Mark the manager as active so uncraft knows there's a session to close.
-function CraftManager.mark_active(name)
+--- @param name string Description of the set that was applied
+--- @param gear table|nil Gear the session put on, keyed by canonical slot name
+function CraftManager.mark_active(name, gear)
     _state.active      = true
     _state.active_name = name
+    _state.gear        = gear
+end
+
+--- Gear the running session is wearing, so switching variant can equip only
+--- the pieces that differ. Nil when no session is active.
+--- @return table|nil Canonical slot -> item table
+function CraftManager.active_gear()
+    if not _state.active then return nil end
+    return _state.gear
 end
 
 --- Unlock slots, allowing the idle/engaged hook to resume normal gear.
@@ -142,6 +153,7 @@ function CraftManager.unequip()
     local was = _state.active_name
     _state.active      = false
     _state.active_name = nil
+    _state.gear        = nil
     formatter().show_success(('[Craft] Unlocked %s. Normal gear will resume.'):format(was or '?'))
     -- Refill consumables after exiting craft mode (parity with gs c craft).
     coroutine.schedule(function()
