@@ -6,7 +6,7 @@
 ---   • UI commands (ui toggle, reload UI)
 ---   • BLM element cycling (MainLight, MainDark, SubLight, SubDark)
 ---   • BLM spell cycling (Storm, Tier)
----   • BLM-specific commands (buff, storm, lightarts, darkarts, sneak, invi)
+---   • BLM-specific commands (buff, storm, lightarts, darkarts, aoe sneak/invi)
 ---   • State change UI synchronization with colored element messages
 ---
 ---   Uses centralized command handlers for consistency across all jobs.
@@ -31,12 +31,10 @@ local MessageCommands = nil
 local BLMMessages = nil
 local MessageFormatter = nil
 local StratagemCharges = nil
+local ScholarActions = nil
 
 --- Dark Arts has its own recast slot and costs no stratagem charge.
 local DARK_ARTS_RECAST_ID = 232
-
---- Spacing between chained actions, matching the existing Arts sequences.
-local STEP_SPACING = 2
 
 local function ensure_commands_loaded()
     if not UICommands then
@@ -51,20 +49,8 @@ local function ensure_commands_loaded()
         BLMMessages = require('shared/utils/messages/formatters/jobs/message_blm')
 
         StratagemCharges = require('shared/utils/scholar/stratagem_charges')
+        ScholarActions = require('shared/utils/scholar/scholar_actions')
     end
-end
-
----   Chain actions with the standard spacing
----   @param steps table List of `input /ja ...` / `input /ma ...` strings
----   @return string Command ready for send_command
-local function chain(steps)
-    return table.concat(steps, '; wait ' .. STEP_SPACING .. '; ')
-end
-
----   Report that a stratagem cannot be used right now
----   @param stratagem string Stratagem that was skipped
-local function warn_no_charge(stratagem)
-    BLMMessages.show_stratagem_no_charges(stratagem, StratagemCharges.next_charge_minutes())
 end
 
 ---   Build a single-target nuke name ('Fire' + 'V' -> 'Fire V')
@@ -102,44 +88,6 @@ local function cast_from_states(element_state, tier_state, builder)
     windower.chat.input('/ma "' .. builder(element_state.current, tier_state.current) .. '" <stnpc>')
 
     return true
-end
-
----   Whether a state is set to 'On' (missing state counts as On)
----   @param mode table Mote state
----   @return boolean
-local function is_on(mode)
-    return not mode or mode.value ~= 'Off'
-end
-
----   Build the Sneak/Invisible chain for the current SneakInviAOE state
----   AOE On  : Light Arts (if needed) + Accession, cast on <me> so the burst
----             is centred on the player.
----   AOE Off : no stratagem at all, cast on <stal> to pick a single ally.
----   With AOE On but no charge left, Accession cannot fire and the Arts switch
----   is dropped with it, since changing Arts buys nothing for a lone cast.
----   @param spell_name string Spell to cast
----   @return string Command ready for send_command
-local function build_accession_chain(spell_name)
-    local steps = {}
-    local target = '<stal>'
-
-    if is_on(state.SneakInviAOE) then
-        target = '<me>'
-
-        if StratagemCharges.has_charge() then
-            local light_active = buffactive and (buffactive['Light Arts'] or buffactive['Addendum: White'])
-            if not light_active then
-                table.insert(steps, 'input /ja "Light Arts" <me>')
-            end
-            table.insert(steps, 'input /ja "Accession" <me>')
-        else
-            warn_no_charge('Accession')
-        end
-    end
-
-    table.insert(steps, 'input /ma "' .. spell_name .. '" ' .. target)
-
-    return chain(steps)
 end
 
 ---   Update UI after state change (DRY helper)
@@ -277,7 +225,7 @@ end
 ---   • buff           - Automated self-buffing (Stoneskin, Blink, Aquaveil, Ice Spikes)
 ---   • lightarts      - Smart Light Arts / Addendum: White (SCH subjob)
 ---   • darkarts       - Smart Dark Arts / Addendum: Black (SCH subjob)
----   • sneak          - Party-wide Sneak (Light Arts + Accession + Sneak)
+---   • aoe sneak      - Party-wide Sneak (Light Arts + Accession + Sneak)
 ---   • invi           - Party-wide Invisible (Light Arts + Accession + Invisible)
 ---   • klima          - Dark Arts + Manifestation + Klimaform (charge-aware)
 ---   • light/dark     - Main single-target nuke (element state + SpellTier)
@@ -413,46 +361,27 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- LightArts: Intelligent Light Arts / Addendum: White toggling (SCH subjob)
-    -- NOTE: Addendum: White REPLACES the Light Arts buff icon (mutually exclusive
-    -- in buffactive), so we check Addendum FIRST to avoid re-casting Light Arts.
+    -- LightArts / DarkArts: Arts, then Addendum on the next press (SCH subjob)
     if command == 'lightarts' then
-        if buffactive and buffactive['Addendum: White'] then
-            BLMMessages.show_arts_already_active('Light Arts + Addendum: White')
-        elseif buffactive and buffactive['Light Arts'] then
-            send_command('input /ja "Addendum: White" <me>')
-        else
-            send_command('input /ja "Light Arts" <me>')
-        end
+        ScholarActions.light_arts()
         eventArgs.handled = true
         return
     end
 
-    -- DarkArts: Intelligent Dark Arts / Addendum: Black toggling (SCH subjob)
     if command == 'darkarts' then
-        if buffactive and buffactive['Addendum: Black'] then
-            BLMMessages.show_arts_already_active('Dark Arts + Addendum: Black')
-        elseif buffactive and buffactive['Dark Arts'] then
-            send_command('input /ja "Addendum: Black" <me>')
-        else
-            send_command('input /ja "Dark Arts" <me>')
+        ScholarActions.dark_arts()
+        eventArgs.handled = true
+        return
+    end
+
+    -- Sneak / Invi: Light Arts + Accession + the spell, party-wide.
+    -- They ride under 'aoe' because the alt-command configs claim their own
+    -- names, and CommonCommands answers before this block, so '//gs c sneak'
+    -- would cast on the dual-box partner rather than here.
+    if command == 'aoe' then
+        if ScholarActions.try_aoe_subcommand(cmdParams[2], state.SneakInviAOE) then
+            eventArgs.handled = true
         end
-        eventArgs.handled = true
-        return
-    end
-
-    -- Sneak: Intelligent Light Arts + Accession + Sneak (party-wide)
-    -- Light Arts OR Addendum: White satisfies the Arts requirement.
-    if command == 'sneak' then
-        send_command(build_accession_chain('Sneak'))
-        eventArgs.handled = true
-        return
-    end
-
-    -- Invi: Intelligent Light Arts + Accession + Invisible (party-wide)
-    if command == 'invi' then
-        send_command(build_accession_chain('Invisible'))
-        eventArgs.handled = true
         return
     end
 
@@ -468,16 +397,16 @@ function job_self_command(cmdParams, eventArgs)
             table.insert(steps, 'input /ja "Dark Arts" <me>')
         end
 
-        if is_on(state.KlimaformAOE) then
+        if ScholarActions.is_on(state.KlimaformAOE) then
             if StratagemCharges.has_charge() then
                 table.insert(steps, 'input /ja "Manifestation" <me>')
             else
-                warn_no_charge('Manifestation')
+                ScholarActions.warn_no_charge('Manifestation')
             end
         end
 
         table.insert(steps, 'input /ma "Klimaform" <me>')
-        send_command(chain(steps))
+        send_command(ScholarActions.chain(steps))
 
         eventArgs.handled = true
         return

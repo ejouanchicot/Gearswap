@@ -5,6 +5,7 @@
 ---   • Common commands (reload, checksets, waltz, jump, etc.)
 ---   • UI commands (toggle, update, reload UI)
 ---   • PLD-specific commands (aoe, rune)
+---   • SCH subjob commands (lightarts, aoe sneak/invi/erase)
 ---   • State change UI synchronization
 ---
 ---   Uses centralized command handlers for consistency across all jobs.
@@ -28,6 +29,7 @@ local MessageCommands = nil
 -- PLD logic modules
 local AOEManager = nil
 local RuneManager = nil
+local ScholarActions = nil
 
 local function ensure_commands_loaded()
     if not UICommands then
@@ -40,6 +42,7 @@ local function ensure_commands_loaded()
         -- PLD logic modules
         AOEManager = require('shared/jobs/pld/functions/logic/aoe_manager')
         RuneManager = require('shared/jobs/pld/functions/logic/rune_manager')
+        ScholarActions = require('shared/utils/scholar/scholar_actions')
     end
 end
 
@@ -62,6 +65,12 @@ end
 ---   PLD-specific commands:
 ---   • aoe            - Execute Blue Magic AOE spell rotation (PLD/BLU)
 ---   • rune           - Execute Rune ability (PLD/RUN)
+---
+---   SCH subjob commands:
+---   • lightarts      - Light Arts, then Addendum: White
+---   • aoe sneak      - Sneak (Light Arts + Accession when SneakInviAOE is On)
+---   • aoe invi       - Invisible (Light Arts + Accession when SneakInviAOE is On)
+---   • aoe erase      - Erase (Light Arts + Accession whenever a charge is left)
 ---
 ---   @param cmdParams table Command parameters array (e.g., {"aoe"})
 ---   @param eventArgs table Event arguments with handled flag
@@ -161,8 +170,16 @@ function job_self_command(cmdParams, eventArgs)
     -- PLD-SPECIFIC COMMANDS
     -- ══════════════════════════════════════════════════════════════════════════
 
-    -- AOE: Execute Blue Magic AOE spell rotation (PLD/BLU)
+    -- AOE: bare word runs the Blue Magic rotation (PLD/BLU); followed by
+    -- sneak/invi/erase it runs the /SCH Accession chain instead. Those three
+    -- ride under 'aoe' because the alt-command configs claim their own names,
+    -- and CommonCommands answers before this block, so '//gs c sneak' would
+    -- cast on the dual-box partner rather than here.
     if command == 'aoe' then
+        if ScholarActions.try_aoe_subcommand(cmdParams[2], state.SneakInviAOE) then
+            eventArgs.handled = true
+            return
+        end
         if AOEManager then
             AOEManager.execute_aoe()
             eventArgs.handled = true
@@ -178,17 +195,48 @@ function job_self_command(cmdParams, eventArgs)
         end
         return
     end
+
+    -- ══════════════════════════════════════════════════════════════════════════
+    -- SCH SUBJOB COMMANDS
+    -- ══════════════════════════════════════════════════════════════════════════
+
+    if command == 'lightarts' then
+        ScholarActions.light_arts()
+        eventArgs.handled = true
+        return
+    end
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   STATE CHANGE HOOK
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- PLD adds nothing of its own: the shared handler is the whole
---- behaviour. Pass a function to state_change() to extend it.
 local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 
-job_state_change = LifecycleManager.state_change()
+--- React to a HybridMode change by reshaping the states that depend on it
+--- (rune list, Phalanx default). The profile itself lives in the character's
+--- PLD_STATES config, reached through _G because its path carries the
+--- character name; a config without it simply gets nothing.
+---
+--- The two cycle paths disagree on what they pass: the UI-aware handler sends
+--- the state key ('HybridMode'), Mote sends the description ('Hybrid Mode').
+--- Stripping spaces accepts both.
+---
+---   @param stateField string State key or description of what changed
+---   @param newValue string New value of that state
+---   @return void
+local function on_state_change(stateField, newValue)
+    if type(stateField) ~= 'string' or stateField:gsub(' ', '') ~= 'HybridMode' then
+        return
+    end
+
+    local PLDStates = _G.PLDStates
+    if PLDStates and type(PLDStates.apply_hybrid_profile) == 'function' then
+        PLDStates.apply_hybrid_profile(newValue)
+    end
+end
+
+job_state_change = LifecycleManager.state_change(on_state_change)
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT

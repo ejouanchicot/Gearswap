@@ -288,29 +288,15 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- Sneak: Light Arts + Accession + Sneak (party-wide)
-    -- Light Arts OR Addendum: White satisfies the Light Arts requirement
-    -- (Addendum replaces Light Arts icon but inherits its effect).
-    if command == 'sneak' then
-        local light_active = buffactive and (buffactive['Light Arts'] or buffactive['Addendum: White'])
-        if light_active then
-            send_command('input /ja "Accession" <me>; wait 2; input /ma "Sneak" <me>')
-        else
-            send_command('input /ja "Light Arts" <me>; wait 2; input /ja "Accession" <me>; wait 2; input /ma "Sneak" <me>')
+    -- Sneak / Invi: Light Arts + Accession + the spell, party-wide.
+    -- They ride under 'aoe' because the alt-command configs claim their own
+    -- names, and CommonCommands answers before this block, so '//gs c sneak'
+    -- would cast on the dual-box partner rather than here.
+    if command == 'aoe' then
+        local ScholarActions = require('shared/utils/scholar/scholar_actions')
+        if ScholarActions.try_aoe_subcommand(cmdParams[2], nil) then
+            eventArgs.handled = true
         end
-        eventArgs.handled = true
-        return
-    end
-
-    -- Invi: Light Arts + Accession + Invisible (party-wide)
-    if command == 'invi' then
-        local light_active = buffactive and (buffactive['Light Arts'] or buffactive['Addendum: White'])
-        if light_active then
-            send_command('input /ja "Accession" <me>; wait 2; input /ma "Invisible" <me>')
-        else
-            send_command('input /ja "Light Arts" <me>; wait 2; input /ja "Accession" <me>; wait 2; input /ma "Invisible" <me>')
-        end
-        eventArgs.handled = true
         return
     end
 
