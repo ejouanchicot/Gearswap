@@ -69,8 +69,10 @@ end
 --- Prefers claiming the bag the item is currently in (avoids needless moves).
 --- Pins already occupied by status!=0 copies (bazaar/equipped/lockstyle) are
 --- pre-removed so movable copies don't get assigned to a locked bag.
+--- When the pins run out, a copy already sitting in one of its own pins keeps
+--- that bag rather than reporting "unpinned".
 --- `claim_pool[name]` = { remaining = { bag_id, ... } }  (mutated).
---- Returns nil if not pinned or pin slots exhausted.
+--- Returns nil only when the item is unpinned, or pinned somewhere it is not.
 function State.pin_target_for(entry, pinned_bags, claim_pool)
     for _, n in ipairs(Items.item_names(entry.id)) do
         local pins = pinned_bags[n]
@@ -87,7 +89,17 @@ function State.pin_target_for(entry, pinned_bags, claim_pool)
             if #pool.remaining > 0 then
                 return table.remove(pool.remaining, 1)
             end
-            return nil  -- more instances than pin slots
+            -- Pins exhausted (more copies than pins, or every pin held by a
+            -- non-movable copy). A copy already in one of its pins is placed
+            -- correctly, so claim that bag. Answering nil here would send it
+            -- down the unpinned path, which evicts anything the active job
+            -- does not use -- while the drainer routes every pinned item back
+            -- to its pin. The two disagree, and the run ping-pongs the item
+            -- out and back until the retry cap gives up.
+            for _, b in ipairs(pins) do
+                if b == entry.bag then return b end
+            end
+            return nil  -- pinned, but this copy is not in any of its pins
         end
     end
     return nil
