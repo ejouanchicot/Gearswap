@@ -220,6 +220,24 @@ sets.engaged.PDT =
 -- • MDT Engaged
 sets.engaged.MDT = sets.idle.MDT -- Already has Aegis shield
 
+-- • Sortie Engaged (HybridMode 'Sortie')
+-- Mitigation body/head/legs kept, accessories traded for Store TP: the mode is
+-- meant to hold hate while still feeding weaponskills.
+-- No sub slot on purpose: in Sortie the shield follows the weapon
+-- (Burtgang > Aegis, Naegling > Blurred Shield +1), decided by SetBuilder.
+sets.engaged.TP =
+    set_combine(
+    sets.engaged,
+    {
+        ammo = "Aurgelmir Orb +1",
+        left_ear = "Crep. Earring",
+        right_ear = "Dedition Earring",
+        left_ring = ChirichRing1,
+        right_ring = ChirichRing2,
+        back = Rudianos.STP
+    }
+)
+
 -- • Kraken Club Specialized (PLD/DNC multi-attack build)
 -- Used when BurtgangKC weapon set is active
 -- Focuses on Store TP reduction to leverage Kraken Club's multi-attack proc rate
@@ -276,6 +294,12 @@ sets.FullEnmity = {
     -- Gear Enmity 159
     -- Crusade Enmity 189
 }
+
+-- • Sortie Enmity (HybridMode 'Sortie' - the JAs and spells that wore FullEnmity)
+-- FullEnmity plus the shield: in Sortie the sub is part of the enmity build.
+-- No main slot on purpose: a main hand change zeroes TP, and Sortie is a mode
+-- that builds it. Only the shield moves.
+sets.EnmityMax = set_combine(sets.FullEnmity, {sub = 'Srivatsa'})
 
 -- • Job Abilities
 sets.precast.JA = set_combine(sets.FullEnmity, {})
@@ -573,6 +597,35 @@ sets.midcast['Enhancing Magic'] =
     {
         body = {name = 'Shabti Cuirass'}
     }
+)
+
+-- • Stoneskin
+-- Named after the spell, so MidcastManager picks it over 'Enhancing Magic'.
+--
+-- The priorities are HP deltas against THIS file's precast.FC, the set this
+-- one replaces mid-cast. Equipping a loss before a gain drops max HP below
+-- where the swap ends, and FFXI trims current HP to every dip without giving
+-- it back - so gains go first, the heaviest loss goes last. Recompute them
+-- whenever either set changes; a character whose FC set differs will not have
+-- the same order (see Tetsouo/sets/pld/pld_sets.lua for one that does not).
+--
+-- body and waist are the two heaviest losses and both sit at 0; GearSwap
+-- breaks that tie by slot order, which puts body before waist - the order we
+-- want, waist being the larger of the two.
+sets.midcast['Stoneskin'] =
+    set_combine(sets.idle, {
+        hands = {name = 'Regal Gauntlets', priority = 13},       -- delta FC=+180 (biggest GAIN, equip FIRST)
+        head = {name = 'Chev. Armet +3', priority = 12},         -- delta FC=+107
+        left_ear = {name = 'Alabaster Earring', priority = 11},  -- delta FC=+100
+        right_ring = {name = 'Gelatinous Ring +1', priority = 10}, -- delta FC=+100
+        ammo = {name = 'Staunch Tathlum +1', priority = 9},      -- delta FC=0
+        neck = {name = 'Stone Gorget', priority = 8},            -- delta FC=0
+        right_ear = {name = 'Earthcry Earring', priority = 7},   -- delta FC=0
+        left_ring = {name = 'Murky Ring', priority = 6},         -- delta FC=0
+        legs = {name = 'Haven Hose', priority = 5},              -- delta FC=-40
+        back = Rudianos.tank,                                    -- delta FC=-80, priority via def (1)
+        body = {name = 'Shabti Cuirass', priority = 0},          -- delta FC=-152
+        waist = {name = 'Siegel Sash', priority = 0}}            -- delta FC=-10% max HP (biggest LOSS, equip LAST)
 )
 
 -- ───────────────────────────────────────────────────────────────────────────
