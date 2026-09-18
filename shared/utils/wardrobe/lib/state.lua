@@ -63,14 +63,34 @@ local function init_claim_pool_for(name, pins, claim_pool)
     claim_pool[name] = {remaining = remaining}
 end
 
+--- Does this bag already hold a copy of the item?
+--- Status is deliberately ignored: a bazaared or linkshell-locked copy still
+--- occupies the slot, and `Moves.unclaimed_pins_first` -- the drainer that
+--- picks where a pulled item lands -- counts it the same way. The two have to
+--- agree, or one sends an item somewhere the other sends it straight back.
+--- @param bag_id number bag to look in
+--- @param item_id number item to look for
+--- @return boolean
+local function bag_holds(bag_id, item_id)
+    local items = windower.ffxi.get_items(bag_id)
+    if not items then return false end
+    for _, it in ipairs(items) do
+        if it.id == item_id then return true end
+    end
+    return false
+end
+
 --- Resolve the pinned target bag for an entry, given a `pinned_bags` map
 --- (item_name_lower -> { bag_id_1, bag_id_2, ... }). Multi-instance items
 --- are assigned greedily: each physical copy claims the next free pin slot.
---- Prefers claiming the bag the item is currently in (avoids needless moves).
+--- Prefers claiming the bag the item is currently in (avoids needless moves),
+--- then a pin no copy occupies yet. It never targets a pin that already holds
+--- a copy: one copy per pin is the whole point, and there is no gain in
+--- shuffling two copies between two bags that are both taken.
 --- Pins already occupied by status!=0 copies (bazaar/equipped/lockstyle) are
 --- pre-removed so movable copies don't get assigned to a locked bag.
---- When the pins run out, a copy already sitting in one of its own pins keeps
---- that bag rather than reporting "unpinned".
+--- A copy sitting in one of its own pins with nowhere better to go keeps that
+--- bag rather than reporting "unpinned".
 --- `claim_pool[name]` = { remaining = { bag_id, ... } }  (mutated).
 --- Returns nil only when the item is unpinned, or pinned somewhere it is not.
 function State.pin_target_for(entry, pinned_bags, claim_pool)
@@ -86,16 +106,22 @@ function State.pin_target_for(entry, pinned_bags, claim_pool)
                     return b
                 end
             end
-            if #pool.remaining > 0 then
-                return table.remove(pool.remaining, 1)
+            -- Its own bag is taken, so spread onto a pin that holds no copy
+            -- yet. This is what puts the second Moonlight Ring in W2 when both
+            -- sit in W1. An occupied pin is never a target: the drainer fills
+            -- empty pins first, so it would send the item right back.
+            for i, b in ipairs(pool.remaining) do
+                if not bag_holds(b, entry.id) then
+                    table.remove(pool.remaining, i)
+                    return b
+                end
             end
-            -- Pins exhausted (more copies than pins, or every pin held by a
-            -- non-movable copy). A copy already in one of its pins is placed
-            -- correctly, so claim that bag. Answering nil here would send it
-            -- down the unpinned path, which evicts anything the active job
-            -- does not use -- while the drainer routes every pinned item back
-            -- to its pin. The two disagree, and the run ping-pongs the item
-            -- out and back until the retry cap gives up.
+
+            -- Every other pin already holds a copy, so there is nothing to
+            -- gain by moving: more copies than pins, or a pin held by one the
+            -- mover cannot touch. A copy already inside its own pins is as
+            -- well placed as it can be, and saying so is what stops the run
+            -- from pulling it out and putting it back every iteration.
             for _, b in ipairs(pins) do
                 if b == entry.bag then return b end
             end
