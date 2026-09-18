@@ -72,33 +72,60 @@ function ScholarActions.dark_arts()
     end
 end
 
---- Build the Sneak/Invisible chain for an AOE toggle state
---- AOE On  : Light Arts (if needed) + Accession, cast on <me> so the burst
----           is centred on the player.
---- AOE Off : no stratagem at all, cast on <stal> to pick a single ally.
---- With AOE On but no charge left, Accession cannot fire and the Arts switch
---- is dropped with it, since changing Arts buys nothing for a lone cast.
+--- Build the chain for one of the party utility spells
+--- AOE On  : Accession, cast on <me> so the burst is centred on the player.
+--- AOE Off : no Accession, cast on <stal> to pick a single ally.
+--- A spell the subjob only reaches through Addendum: White gets that
+--- stratagem first: without it the cast is refused outright, while Accession
+--- only decides whether the cast reaches the party. So when one charge is
+--- left, Addendum takes it and Accession is the one dropped.
+--- Light Arts is prepended only when a stratagem will actually run - it costs
+--- no charge, but switching Arts buys nothing for a lone cast.
+--- The spell itself is always the last step, charge or no charge.
 --- @param spell_name string Spell to cast
 --- @param aoe_state table|nil Mote On/Off state (missing counts as On)
+--- @param needs_addendum boolean|nil True when /SCH needs Addendum: White for it
 --- @return string Command ready for send_command
-function ScholarActions.build_accession_chain(spell_name, aoe_state)
-    local steps = {}
-    local target = '<stal>'
+function ScholarActions.build_accession_chain(spell_name, aoe_state, needs_addendum)
+    local target = ScholarActions.is_on(aoe_state) and '<me>' or '<stal>'
+    local budget = StratagemCharges.available()
 
-    if ScholarActions.is_on(aoe_state) then
-        target = '<me>'
+    -- Addendum: White replaces Light Arts in buffactive, so it also proves the
+    -- Arts are up. Checking it first is what keeps Light Arts from being recast
+    -- over an addendum that is already running.
+    local addendum_up  = (buffactive and buffactive['Addendum: White']) and true or false
+    local arts_up      = addendum_up or ((buffactive and buffactive['Light Arts']) and true or false)
+    local accession_up = (buffactive and buffactive['Accession']) and true or false
 
-        if StratagemCharges.has_charge() then
-            local light_active = buffactive and (buffactive['Light Arts'] or buffactive['Addendum: White'])
-            if not light_active then
-                table.insert(steps, 'input /ja "Light Arts" <me>')
-            end
-            table.insert(steps, 'input /ja "Accession" <me>')
+    local stratagems = {}
+
+    if needs_addendum and not addendum_up then
+        if budget > 0 then
+            table.insert(stratagems, 'input /ja "Addendum: White" <me>')
+            budget = budget - 1
+        else
+            ScholarActions.warn_no_charge('Addendum: White')
+        end
+    end
+
+    -- An Accession already running covers this cast; spending a second charge
+    -- would only re-apply a buff that is up.
+    if target == '<me>' and not accession_up then
+        if budget > 0 then
+            table.insert(stratagems, 'input /ja "Accession" <me>')
+            budget = budget - 1
         else
             ScholarActions.warn_no_charge('Accession')
         end
     end
 
+    local steps = {}
+    if #stratagems > 0 and not arts_up then
+        table.insert(steps, 'input /ja "Light Arts" <me>')
+    end
+    for _, stratagem in ipairs(stratagems) do
+        table.insert(steps, stratagem)
+    end
     table.insert(steps, 'input /ma "' .. spell_name .. '" ' .. target)
 
     return ScholarActions.chain(steps)
@@ -110,11 +137,14 @@ end
 --- block, so those names cast on the dual-box partner instead of here.
 --- `toggle` says whether the job's SneakInviAOE state applies; Erase has none
 --- of its own and takes Accession whenever a charge is left.
+--- `addendum` marks the spells a /SCH only reaches under Addendum: White.
+--- Sneak and Invisible are Scholar's own spells and need nothing; Erase comes
+--- from the white addendum, and without it the cast is simply refused.
 local AOE_SPELLS = {
     sneak     = { spell = 'Sneak',     toggle = true },
     invi      = { spell = 'Invisible', toggle = true },
     invisible = { spell = 'Invisible', toggle = true },
-    erase     = { spell = 'Erase',     toggle = false },
+    erase     = { spell = 'Erase',     toggle = false, addendum = true },
 }
 
 --- Send the Scholar chain for an `aoe <name>` subcommand
@@ -126,7 +156,7 @@ function ScholarActions.try_aoe_subcommand(subcommand, aoe_state)
     if not entry then return false end
 
     send_command(ScholarActions.build_accession_chain(
-        entry.spell, entry.toggle and aoe_state or nil))
+        entry.spell, entry.toggle and aoe_state or nil, entry.addendum))
     return true
 end
 
