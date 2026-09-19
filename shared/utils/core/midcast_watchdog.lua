@@ -422,10 +422,13 @@ end
 
 -- STARTUP
 
--- Use global flag to prevent multiple watchdog instances across job changes
-if not _G.MIDCAST_WATCHDOG_TIMER then
-    _G.MIDCAST_WATCHDOG_TIMER = nil
-end
+-- Scan loop generation. It lives on `windower` because scheduled coroutines
+-- outlive their environment: a load replaced within 2 s runs its deferred
+-- start() after the new load, on a second instance of this module, and a flag
+-- on `_G` would then keep the new load's own instance - the one the jobs
+-- report to - from scanning. Every start() and stop() bumps the generation, so
+-- only the newest loop keeps running.
+windower._midcast_wd_seq = windower._midcast_wd_seq or 0
 
 --- Background check function (called by timer)
 local function background_check()
@@ -435,16 +438,15 @@ local function background_check()
     end
 end
 
---- Start the watchdog background check
+--- Start the watchdog background check, replacing any loop already running
 function MidcastWatchdog.start()
-    if _G.MIDCAST_WATCHDOG_TIMER then
-        return -- Already running
-    end
+    windower._midcast_wd_seq = windower._midcast_wd_seq + 1
+    local my_seq = windower._midcast_wd_seq
 
     -- Use self-rescheduling coroutine (avoids prerender spam in debugmode)
     local function watchdog_check_and_reschedule()
-        if not _G.MIDCAST_WATCHDOG_TIMER then
-            return -- Watchdog was stopped
+        if my_seq ~= windower._midcast_wd_seq then
+            return -- Stopped, or a newer start() owns the scan
         end
 
         background_check()
@@ -462,8 +464,9 @@ end
 
 --- Stop the watchdog background check (called during job change cleanup)
 function MidcastWatchdog.stop()
+    windower._midcast_wd_seq = windower._midcast_wd_seq + 1
     if _G.MIDCAST_WATCHDOG_TIMER then
-        _G.MIDCAST_WATCHDOG_TIMER = nil -- This will stop the recursive coroutine
+        _G.MIDCAST_WATCHDOG_TIMER = nil
         clear_midcast_state() -- Clear any tracked midcast
     end
     -- Silent stop - no message during job change
