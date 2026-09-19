@@ -258,10 +258,11 @@ local last_registered_globals = {}
 -- twice per load (the keybind intro requires it, the facade includes it), and
 -- each copy calls create(): the entry schedules the initial lockstyle through
 -- one copy and registers the JobChangeManager cancel from the other, so both
--- must share the same STATE for that cancel to stop the pending style. The
--- intro runs in user_setup, before INIT_SYSTEMS installs the module cache, so
--- the two copies also get two instances of this module: a module-local table
--- would not be shared. The sandbox _G is, and it dies with the load.
+-- must share the same STATE for that cancel to stop the pending style. Today
+-- both copies require this factory lazily, after INIT_SYSTEMS has installed
+-- the module cache, so they reach one instance of it; keeping the table on
+-- the sandbox _G makes the sharing independent of that order. It dies with
+-- the load.
 local function contexts()
     local by_job = rawget(_G, '__lockstyle_contexts')
     if not by_job then
