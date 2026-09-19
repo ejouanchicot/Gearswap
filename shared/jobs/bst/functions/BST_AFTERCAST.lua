@@ -78,7 +78,9 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     -- READY MOVES - Swap to pet damage gear (recast already captured in PRECAST)
     -- ══════════════════════════════════════════════════════════════════════════
     -- Use spell.type == 'Monster' like reference BST.lua (custom properties don't persist)
-    if spell.type == 'Monster' and ReadyMoveCategorizer then
+    -- A refused or interrupted move gets no pet aftercast, so the pet set
+    -- would stay on: let Mote re-equip instead.
+    if spell.type == 'Monster' and not spell.interrupted and ReadyMoveCategorizer then
         -- Recalculate category (spell properties from precast don't persist to aftercast)
         local category = ReadyMoveCategorizer.get_category(spell.name)
 

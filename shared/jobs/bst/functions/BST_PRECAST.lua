@@ -64,8 +64,6 @@ end
 
 --- Is this a pet Ready move, and which category?
 ---
---- Ready moves spend charges rather than a recast, so FFXI blocks them itself
---- and a cooldown check would refuse a move the game would have allowed.
 --- 'Default' means the categoriser recognised nothing, which is not a Ready
 --- move as far as this is concerned.
 --- @return boolean is a ready move, string|nil category
@@ -136,7 +134,10 @@ function job_precast(spell, action, spellMap, eventArgs)
 
     local is_ready_move, ready_move_category = ready_move_info(spell)
 
-    if CooldownChecker and not is_ready_move then
+    -- Ready moves (type 'Monster') spend charges. Their recast (id 102) is the
+    -- charge timer, which runs while charges remain, so a cooldown check would
+    -- refuse a move the game allows; the game refuses it itself at 0 charges.
+    if CooldownChecker and spell.type ~= 'Monster' then
         if spell.action_type == 'Ability' then
             CooldownChecker.check_ability_cooldown(spell, eventArgs)
         elseif spell.action_type == 'Magic' then

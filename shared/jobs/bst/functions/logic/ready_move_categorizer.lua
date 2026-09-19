@@ -59,14 +59,17 @@ ReadyMoveCategorizer.petPhysicalMoves =
     'Head Butt',
     'Wild Oats',
     'Leaf Dagger',
-    'Needle Shot',
+    'Needleshot',
+    '??? Needles',
     'Disembowel',
     'Extirpating Salvo',
     'Mega Scissors',
     'Rhinowrecker',
     'Back Heel',
     'Fluid Toss',
-    'Fluid Spread'
+    'Fluid Spread',
+    'Fantod',
+    'Crossthrash'
 }
 
 ---   Physical Multi Moves (Multi-hit physical attacks)
@@ -110,7 +113,8 @@ ReadyMoveCategorizer.petMagicAtkMoves =
     'Venom Shower',
     'Gloom Spray',
     'Foul Waters',
-    'Pestilent Plume'
+    'Pestilent Plume',
+    'Aqua Breath'
 }
 
 ---   Magic Accuracy Moves (Magical accuracy/debuff moves - debuffs, steals, drains)
@@ -131,7 +135,9 @@ ReadyMoveCategorizer.petMagicAccMoves =
     'Noisome Powder',
     'Infrasonics',
     'Hi-Freq Field',
-    'Sonic Buffet',
+    'Geist Wall',
+    'Nihility Song',
+    'Digest',
     -- Buffs (Self)
     'Wild Carrot',
     'Bubble Curtain',
@@ -140,10 +146,10 @@ ReadyMoveCategorizer.petMagicAccMoves =
     'Harden Shell',
     'Secretion',
     'Rage',
-    'Sheep Bleat',
-    'Molting',
+    'Frenzied Rage',
     'Zealous Snort',
-    'Rhinocerator',
+    'Rhino Guard',
+    'Water Wall',
     -- Paralyze
     'Palsy Pollen',
     'Spore',
@@ -156,7 +162,6 @@ ReadyMoveCategorizer.petMagicAccMoves =
     'Toxic Spit',
     'Venom Spray',
     'Infected Leech',
-    'Pollen',
     -- Silence
     'Choke Breath',
     'Chaotic Eye',
