@@ -276,7 +276,7 @@ SONG_DEBUFFS.spells = {
         notes                   = "Ice resistance -75. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. Job Point ability (BRD).",
     },
 
-    ["Lightning Threnody"] = {
+    ["Ltng. Threnody"] = {
         description             = "Lowers resistance against Lightning.",
         category                = "Threnody",
         element                 = "Earth",
@@ -288,7 +288,7 @@ SONG_DEBUFFS.spells = {
         notes                   = "Lightning resistance -50. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD (subjob OK).",
     },
 
-    ["Lightning Threnody II"] = {
+    ["Ltng. Threnody II"] = {
         description             = "Lowers resistance against Lightning.",
         category                = "Threnody",
         element                 = "Earth",

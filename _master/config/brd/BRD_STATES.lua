@@ -18,7 +18,7 @@
 ---   • MainInstrument: Instrument selection (Gjallarhorn REMA default)
 ---   • VictoryMarch: Replacement when Haste capped (Madrigal/Minuet/etc.)
 ---   • EtudeType: Stat buff selection (STR/DEX/VIT/AGI/INT/MND/CHR)
----   • CarolElement: Resistance buff element (Fire/Ice/Wind/Earth/Thunder/Water)
+---   • CarolElement: Resistance buff element (Fire/Ice/Wind/Earth/Lightning/Water/Light/Dark)
 ---   • ThrenodyElement: Resistance debuff element
 ---
 --- Dependencies:
@@ -121,8 +121,10 @@ function BRDStates.configure()
         'Ice',
         'Wind',
         'Earth',
-        'Thunder',
-        'Water'
+        'Lightning',
+        'Water',
+        'Light',
+        'Dark'
     }
     state.CarolElement:set('Fire')
 
