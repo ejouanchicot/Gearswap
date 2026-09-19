@@ -19,8 +19,8 @@
 
 local WarpInit = {}
 
--- Module-local flag (ephemeral, reset on each gs reload when package.loaded is cleared)
--- Use windower._warp_init_done for persistence across reloads
+-- True once init() has run in this sandbox. windower._warp_init_done only
+-- marks the once-per-session part.
 local initialized = false
 
 -- Load MessageWarp for formatted messages
@@ -32,8 +32,16 @@ local MessageWarp = require('shared/utils/messages/formatters/system/message_war
 
 local original_precast = nil
 
---- Hook the global precast function to inject warp detection
+--- Hook the global precast function to inject warp detection (once per sandbox)
 local function hook_global_precast()
+    -- A load replaced within 0.5 s runs its deferred init after the new load,
+    -- on a second copy of this module in the new sandbox; wrapping twice would
+    -- handle every warp spell twice.
+    if rawget(_G, 'WARP_PRECAST_HOOKED') then
+        return
+    end
+    _G.WARP_PRECAST_HOOKED = true
+
     -- Save original precast if exists
     if _G.precast and type(_G.precast) == 'function' then
         original_precast = _G.precast
@@ -59,25 +67,17 @@ end
 ---============================================================================
 
 --- Initialize the universal warp system
---- Call this from user_setup() or get_sets() in each job file
+--- Called by INIT_SYSTEMS 0.5 s after every job-file load
 function WarpInit.init()
-    -- IPC listener MUST re-register on every GearSwap reload
-    -- (GearSwap clears event handlers on reload, but windower._warp_init_done persists)
+    -- Everything up to the precast hook runs on every load: GearSwap drops
+    -- every sandbox event listener when it loads a job file, and the new
+    -- sandbox's precast is Mote's own.
     local ipc_success = pcall(include, 'shared/utils/warp/warp_ipc_register.lua')
     if not ipc_success then
         MessageWarp.show_ipc_unavailable()
     end
 
-    -- Sync module-local from windower persistence (survives gs reload)
-    if windower._warp_init_done then
-        initialized = true
-    end
-
-    if initialized then
-        return  -- Already initialized (other systems only need one-time setup)
-    end
-
-    -- Load and initialize warp equipment manager
+    -- Load and initialize warp equipment manager (detector action listener)
     local eq_success, WarpEquipment = pcall(require, 'shared/utils/warp/warp_equipment')
     if eq_success and WarpEquipment then
         -- Wrap init() in pcall: if WarpDetector throws, catch silently and report
@@ -106,6 +106,12 @@ function WarpInit.init()
 
     -- Hook global precast function
     hook_global_precast()
+    initialized = true
+
+    -- Once per Windower session: command registration and its messages
+    if windower._warp_init_done then
+        return
+    end
 
     -- Register warp commands with common commands
     local cmd_success, WarpCommands = pcall(require, 'shared/utils/warp/warp_commands')
@@ -114,8 +120,6 @@ function WarpInit.init()
         MessageWarp.show_commands_registered()
     end
 
-    -- Mark as initialized — persist to windower table (survives gs reload)
-    initialized = true
     windower._warp_init_done = true
     MessageWarp.show_init_success()
 end
@@ -124,11 +128,10 @@ end
 --- CONVENIENCE FUNCTIONS
 ---============================================================================
 
---- Check if system is initialized
---- Checks both module-local and windower persistent state
+--- Check if system is initialized in this sandbox (listeners + precast hook)
 --- @return boolean True if initialized
 function WarpInit.is_initialized()
-    return initialized or (windower._warp_init_done == true)
+    return initialized
 end
 
 --- Manual warp detection (for custom integrations)
