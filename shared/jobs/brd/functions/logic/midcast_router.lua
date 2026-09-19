@@ -150,6 +150,31 @@ local function handle_dummy_song(spell, ctx)
     ctx.message_formatter.show_daurdabla_dummy(spell.english, instrument)
 end
 
+--- Put the instrument chosen by state.MainInstrument in the range slot.
+--- Only the range of sets.midcast.Songs.<instrument> is taken: those sets are
+--- whole BardSong copies, and equipping one would undo the family piece
+--- (Minne legs, Etude head...) the song set has just put on.
+--- Songs with a required instrument (Honor March, Aria of Passion) keep theirs.
+--- @param spell table Spell information from GearSwap
+--- @param ctx table Router context (debug_enabled, message_formatter)
+local function apply_main_instrument(spell, ctx)
+    if MidcastManager.get_song_instrument(spell.english) then
+        return
+    end
+
+    local instrument = state and state.MainInstrument and state.MainInstrument.value
+    local songs = sets.midcast and sets.midcast.Songs
+    local instrument_set = instrument and songs and songs[instrument]
+    if not (instrument_set and instrument_set.range) then
+        return
+    end
+
+    equip({range = instrument_set.range})
+    if ctx.debug_enabled then
+        ctx.message_formatter.show_debug('BRD', 'Main instrument: ' .. instrument)
+    end
+end
+
 --- Equip normal song via MidcastManager + lock instrument if Honor March / Aria of Passion.
 --- MidcastManager handles: exact name -> base song -> song type -> instrument -> Troubadour -> base.
 local function equip_normal_song(spell, ctx)
@@ -167,7 +192,10 @@ local function equip_normal_song(spell, ctx)
         if ctx.debug_enabled then
             ctx.message_formatter.show_debug('BRD', 'Instrument locked: ' .. _G.locked_instrument)
         end
+        return
     end
+
+    apply_main_instrument(spell, ctx)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

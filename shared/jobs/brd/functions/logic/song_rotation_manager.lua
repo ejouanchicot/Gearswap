@@ -146,7 +146,8 @@ end
 ---   Get required instrument for specific song
 ---   Only returns instruments for songs that are LOCKED (cannot be cast without them)
 ---   For dummy songs: instrument selected by sets.midcast.DummySong
----   For other songs: instrument selected by state.MainInstrument or sets.midcast.BardSong
+---   For buff songs: state.MainInstrument, applied by midcast_router after the song set
+---   (debuff songs keep the instrument of their own set)
 ---   @param song_name string Song name
 ---   @return string|nil Instrument name or nil (uses sets/state)
 function SongRotationManager.get_required_instrument(song_name)
@@ -169,7 +170,7 @@ function SongRotationManager.get_required_instrument(song_name)
     end
 
     -- For all other songs: Use player's current instrument preference
-    return nil  -- Use state.MainInstrument or sets.midcast.BardSong
+    return nil  -- state.MainInstrument (midcast_router.apply_main_instrument)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
