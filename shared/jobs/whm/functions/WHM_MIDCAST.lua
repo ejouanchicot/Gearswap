@@ -211,7 +211,7 @@ function job_get_spell_map(spell, default_spell_map)
 
         -- Map ONLY Cure (not Curaga) to CureSolace if Afflatus Solace is active
         -- Curaga stays as 'Curaga' and uses CureMode logic normally
-        if default_spell_map == 'Cure' and state.Buff['Afflatus Solace'] then
+        if default_spell_map == 'Cure' and buffactive['Afflatus Solace'] then
             return 'CureSolace'
         end
 

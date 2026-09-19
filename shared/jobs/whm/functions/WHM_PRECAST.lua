@@ -101,7 +101,7 @@ end
 --- again. (Timara WHM pattern.)
 --- @return boolean True when this case applies
 local function paralyna_on_self(spell, eventArgs)
-    if spell.english == 'Paralyna' and buffactive.Paralyzed then
+    if spell.english == 'Paralyna' and buffactive['paralysis'] then
         eventArgs.handled = true
         return true
     end
@@ -115,6 +115,13 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
+    -- Cures are re-tiered before the recast check: the checker would cancel
+    -- a tier on recast before CureManager could swap it for a ready one.
+    -- A cure left as it is still goes through the check below.
+    if retier_cure(spell, eventArgs) then
+        return
+    end
+
     if CooldownChecker then
         if spell.action_type == 'Ability' then
             CooldownChecker.check_ability_cooldown(spell, eventArgs)
@@ -123,10 +130,6 @@ function job_precast(spell, action, spellMap, eventArgs)
         end
     end
     if eventArgs.cancel then
-        return
-    end
-
-    if retier_cure(spell, eventArgs) then
         return
     end
 

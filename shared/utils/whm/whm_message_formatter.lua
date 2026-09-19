@@ -404,12 +404,6 @@ function WHMMessageFormatter.show_debug_alliance_member_hp(name, hpp, max_hp, cu
         name, hpp, max_hp, current_hp, missing_hp))
 end
 
---- Show cure recast error
---- @param recast_reason string Recast error reason
-function WHMMessageFormatter.show_cure_recast_error(recast_reason)
-    add_to_chat(123, string.format('[WHM] ERROR: %s', recast_reason or "All Cure spells on recast"))
-end
-
 ---============================================================================
 --- MODULE EXPORT
 ---============================================================================
