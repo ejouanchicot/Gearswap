@@ -8,14 +8,14 @@ Nothing in the organizer is loaded at job load: `COMMON_COMMANDS.lua:151` requir
 
 | Path | Lines | Role |
 |---|---|---|
-| `shared/utils/wardrobe/wardrobe_organizer.lua` | 697 | Public API, active-job phase chain, outer retry loop, module run state (`IS_RUNNING`, iteration counters, `start_job_tag`). Uncommitted: the reports were moved out to `lib/reports.lua` |
+| `shared/utils/wardrobe/wardrobe_organizer.lua` | 697 | Public API, active-job phase chain, outer retry loop, module run state (`IS_RUNNING`, iteration counters, `start_job_tag`). The reports were moved out to `lib/reports.lua` in `0af901e` |
 | `shared/utils/wardrobe/lib/config.lua` | 238 | Defaults (bag lists, timing, limits, log path) and `Config.refresh()` which overlays `data/<char>/config/WARDROBE_CONFIG.lua` |
 | `shared/utils/wardrobe/lib/phases.lua` | 787 | Phase 0 (unequip + lock), shared burst loop, Phase 2/3/3.5/4, alt phases A2/A3, `enable_slots`, `force_enable_all`, `count_unpacked` |
 | `shared/utils/wardrobe/lib/state.lua` | 262 | Snapshot of the bags into a state table, pin resolution (`pin_target_for`) |
 | `shared/utils/wardrobe/lib/moves.lua` | 172 | Packet primitives `pull_slot` / `push_slot`, `space_in`, pin-bag ordering (`unclaimed_pins_first`) |
 | `shared/utils/wardrobe/lib/items.lua` | 152 | `res.items` helpers, walk of `_G.sets` to collect used names, always-kept items (KEEP_ITEMS, warp rings) |
 | `shared/utils/wardrobe/lib/orchestrator_alt.lua` | 161 | Alt / all-jobs phase chain, built by a factory that receives the organizer's state setters |
-| `shared/utils/wardrobe/lib/reports.lua` | 265 | Untracked (new). `wo scan` and `wo keep` |
+| `shared/utils/wardrobe/lib/reports.lua` | 265 | New in `0af901e`. `wo scan` and `wo keep` |
 | `shared/utils/wardrobe/lib/warp_owned.lua` | 114 | Scan / load / save of the warp items the character owns (`WARP_ITEMS_OWNED.lua`) |
 | `shared/utils/wardrobe/lib/chat.lua` | 151 | Chat panel helpers (direct `windower.add_to_chat`; listed as an allowed exception in `.claude/CODE_QUALITY.md` section 6) |
 | `shared/utils/wardrobe/lib/log.lua` | 42 | `wardrobe_debug.log` writer, `bag_name()` |

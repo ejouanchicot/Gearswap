@@ -12,9 +12,9 @@ trigger (`AbilityHelper`), the weaponskill chain (`WSPrecastHandler` ->
 `LifecycleManager`, and `AutoMedicine` by every job's `[JOB]_STATES.lua` plus
 `INIT_SYSTEMS.lua`.
 
-All line references are to the working tree as of 2026-09-18, including the
-uncommitted changes to `precast_guard.lua`, `auto_medicine.lua` and
-`DEBUFF_AUTOCURE_CONFIG.lua`. Every file listed below was read in full.
+All line references are to the code as of 2026-09-18, including the
+changes to `precast_guard.lua`, `auto_medicine.lua` and
+`DEBUFF_AUTOCURE_CONFIG.lua` committed as `b89d7d6`. Every file listed below was read in full.
 
 ## Files
 

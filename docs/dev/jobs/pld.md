@@ -20,7 +20,7 @@ What PLD adds on top of the shared pipeline:
   character defines it).
 - **Weapon/shield/hybrid set builder**: weapon state, Shining (grip) and
   Burtgang + Kraken Club exceptions, HybridMode sets, XP sets.
-- **Sortie HybridMode** (uncommitted work): its own engaged/idle mapping, a
+- **Sortie HybridMode** (`df01a96`): its own engaged/idle mapping, a
   shield chosen by the weapon, a reshaped state profile, and `sets.EnmityMax`
   replacing `sets.FullEnmity` for job abilities and the spells that wear it.
 - **Subjob helpers**: BLU AOE enmity rotation (`aoe`), rune casting (`rune`),
@@ -28,8 +28,8 @@ What PLD adds on top of the shared pipeline:
 
 Every file in scope was read in full except the gear content of the sets files
 (only structure and set names were read, as gear choice is out of scope). All
-line numbers refer to the working tree on 2026-09-19, uncommitted changes
-included.
+line numbers refer to the code as of 2026-09-19, after the Sortie work
+(`df01a96`).
 
 ## Files
 
@@ -206,8 +206,8 @@ flowchart LR
   has them: `Modes:options()` alone resets a mode to its first entry
   (`Modes.lua:273-299`), which for `MainWeapon` meant a weapon swap and lost TP.
   A weapon missing from the Sortie list (e.g. Shining) falls back to Burtgang.
-  Changed on 2026-09-19 at the player's request (uncommitted, like the rest of
-  the Sortie work).
+  Changed on 2026-09-19 at the player's request (`df01a96`, with the rest
+  of the Sortie work).
 - The profile lives in the character config and is reached through
   `_G.PLDStates` (`PLD_STATES.lua:241`); a config without it (Kaories today) just
   gets no profile.
@@ -219,7 +219,7 @@ flowchart LR
 
 ### Enmity override (Sortie)
 
-`logic/enmity_override.lua` (untracked) is active when `HybridMode == 'Sortie'`
+`logic/enmity_override.lua` is active when `HybridMode == 'Sortie'`
 and `sets.EnmityMax` exists (`:35-40`).
 
 - `apply_precast` (102-116), called last in `job_post_precast`: every

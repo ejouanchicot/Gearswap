@@ -47,7 +47,7 @@ A character exists in up to four places:
 |---|---|
 | `_master/**` (193 files, incl. both overlays via `!_master/Kaories/**`, `!_master/Tetsouo/**` at `.gitignore:60-63`) | `Tetsouo/`, `Kaories/`, `Hysoka/`, `Gabvanstronger/`, `Morphetrix/`, `Typioni/` (`.gitignore:51-56`) |
 | `character_db.lua`, `clone_character.py`, `CLONE_CHARACTER.bat`, `.markdownlint.json`, `README.md` | `.gitignore` itself (`:79`), `data.code-workspace` (`:66`), `.vscode/` (`:31`), `CLAUDE.md` (`:76`, again `:104`), `.claude/` (`:77`) |
-| `shared/**`, `docs/` (except the new `docs/dev/`, untracked at the time of writing) | `_dev/`, `scripts/` (`:91-92`), `export/` (`:43`), `*.log`, `*.png`, debug exports listed at `:106-114` |
+| `shared/**`, `docs/` (including `docs/dev/`, versioned in `5ca30fc`) | `_dev/`, `scripts/` (`:91-92`), `export/` (`:43`), `*.log`, `*.png`, debug exports listed at `:106-114` |
 
 The pattern `Kaories/` at `.gitignore:55` has no leading slash, so it also matches `_master/Kaories/`. The negation at `:60-61` is what keeps the overlay tracked (checked with `git check-ignore -v`). Lines 8-11 ignore `Tetsouo/jobs/`, `Tetsouo/utils/`, `Kaories/jobs/` and `Kaories/utils/`, junctions from an old migration. Neither live folder contains them any more, and lines 55-56 already cover them.
 
@@ -208,7 +208,7 @@ Classification: **intentional** (per-character values or modular sets by design)
 
 | Live file(s) | Template | Class | Detail |
 |---|---|---|---|
-| `Tetsouo_{BLM,BRD,COR,DNC,PLD,THF}.lua` | `_master/entry/Tetsouo_<JOB>.lua` | intentional | Only `include('sets/<job>/<job>_sets.lua')` (plus a header comment line in DNC and THF). COR already contains the uncommitted `init_party_tracking()` change |
+| `Tetsouo_{BLM,BRD,COR,DNC,PLD,THF}.lua` | `_master/entry/Tetsouo_<JOB>.lua` | intentional | Only `include('sets/<job>/<job>_sets.lua')` (plus a header comment line in DNC and THF). COR already contains the `init_party_tracking()` change (`10ca4e6`) |
 | `Tetsouo_WAR.lua` | same | intentional + live-only line | Modular include and header comment line, plus `if _G.LagDebugger then _G.LagDebugger.on_job_update() end` at `:244`. The same hook is in `Tetsouo_BST.lua:244` and `Tetsouo_SMN.lua:160`. Reason not recorded |
 | `Tetsouo_BST.lua` | `_master/entry/Tetsouo_BST.lua` | **live-ahead** | 196 differing lines. Live uses a `prerender` pet monitor (`:293-345`), guards the scheduled start (`:224-225`), requires `dualbox_manager` in `user_setup` (`:234`) and drops `send_job_update()` from `job_sub_job_change`. The template still has the coroutine monitor (`:277-398`), the unguarded start (`:223-225`) and the subjob send (`:262-266`). Commit `ba783ae` lists BST among the 10 templates it moved to the `user_setup` pattern, but its BST hunk only renames `petEngaged` |
 | `Tetsouo_SMN.lua`, `config/smn/*` (4), `sets/smn/smn_sets.lua` | `_master/Tetsouo/entry/`, `config/smn/`, `sets/smn/` (overlay) | identical | Live-only until `da68606` saved them byte for byte. There is still no generic template under `_master/entry`, `config` or `sets` |
@@ -234,7 +234,7 @@ Classification: **intentional** (per-character values or modular sets by design)
 
 | Live file(s) | Template | Class | Detail |
 |---|---|---|---|
-| `Kaories_{COR,GEO,PLD,RDM}.lua` | `_master/Kaories/entry/` | identical | COR includes the uncommitted change |
+| `Kaories_{COR,GEO,PLD,RDM}.lua` | `_master/Kaories/entry/` | identical | COR includes the `init_party_tracking()` change (`10ca4e6`) |
 | `sets/cor_sets.lua` | overlay | identical | - |
 | `sets/geo_sets.lua` | overlay | **live typo** | `:402` `neck = 'Sybil Scarf'`. The overlay has had `'Sibyl Scarf'` since it was added in `25dce0c`, and `Sybil Scarf` appears nowhere in git history (`git log --all -S`), so the typo was made in the live file. `res/items.lua` only knows `Sibyl Scarf`. A re-clone fixes it |
 | `sets/pld_sets.lua` | overlay | **live-ahead** | Live (2026-08-12) is newer than the overlay (2026-07-24): `Cornelia's Ring` instead of `Ephramad's Ring`, different Odyssean Greaves augments |
@@ -253,19 +253,19 @@ Classification: **intentional** (per-character values or modular sets by design)
 
 Overlay duplication: 15 of the 16 non-REFILL files in `_master/Kaories/config/` match the generic templates line for line (ignoring line endings). The exception is `COR_KEYBINDS.lua`, which differs only in its `@requires` comment. `_master/Kaories/sets/cor_sets.lua` is identical to `_master/sets/cor_sets.lua`, and `geo_sets`/`rdm_sets` differ by 2 and 3 lines. Every template edit therefore has to be made twice, or Kaories's next redeploy gets the old copy.
 
-## Uncommitted `_master` changes and what they mean for live
+## `_master` changes of 2026-09-19 and what they mean for live
 
-`git status` lists five modified files under `_master/`:
+Every `_master/` change of 2026-09-19 is committed. The ones that have a live copy:
 
 | File | Change | Live status |
 |---|---|---|
-| `_master/entry/Tetsouo_COR.lua` | PartyTracker init moved from `user_setup()` into a local `init_party_tracking()` called from `get_sets()`. `select_default_macro_book` and `select_default_lockstyle` are guarded in `user_setup` | Already in `Tetsouo/Tetsouo_COR.lua` (only the modular include differs). Nothing to deploy |
-| `_master/Kaories/entry/Kaories_COR.lua` | Same patch | `Kaories/Kaories_COR.lua` is identical. Nothing to deploy |
+| `_master/entry/Tetsouo_COR.lua` | `10ca4e6`: PartyTracker init moved from `user_setup()` into a local `init_party_tracking()` called from `get_sets()`. `select_default_macro_book` and `select_default_lockstyle` are guarded in `user_setup` | Already in `Tetsouo/Tetsouo_COR.lua` (only the modular include differs). Nothing to deploy |
+| `_master/Kaories/entry/Kaories_COR.lua` | `10ca4e6`: same patch | `Kaories/Kaories_COR.lua` is identical. Nothing to deploy |
 | `_master/config/pld/PLD_KEYBINDS.lua` | Committed in `df01a96` (keys per the rule, `^numpad7` `SneakInviAOE`, unbind loop) | Tetsouo and Kaories identical |
 | `_master/config/pld/PLD_STATES.lua` | Committed in `df01a96` (Sortie profile, `PhalanxSIRD`, `SneakInviAOE`) | Tetsouo and Kaories identical |
-| `_master/config/run/RUN_KEYBINDS.lua` | Unbind the whole key list before rebinding | No live target: RUN is archived in the DB and only the frozen Hysoka plays it |
+| `_master/config/run/RUN_KEYBINDS.lua` | `e94d286`: unbind the whole key list before rebinding | No live target: RUN is archived in the DB and only the frozen Hysoka plays it |
 
-`.claude/audits/2026-09-18.md` P3-5 says `Tetsouo/config/pld/` has not been redeployed with the Sortie profile. On disk it has been. Only Kaories is behind. The shared code tolerates the stale Kaories files: `PLD_COMMANDS.lua:233-236` checks `_G.PLDStates` before calling it, and `ScholarActions.build_accession_chain` treats a missing `SneakInviAOE` state as `On` (`shared/utils/scholar/scholar_actions.lua:47-48,90`). Do not deploy Kaories PLD by re-running the clone, because it would revert the live-ahead files listed above. Copy the two PLD config files by hand (next section). Fix the template's missing `PhalanxSIRD` state first.
+`.claude/audits/2026-09-18.md` P3-5 (PLD Sortie profile not redeployed) is resolved: the template has `PhalanxSIRD` since `df01a96`, and `PLD_STATES.lua` and `PLD_KEYBINDS.lua` are identical in `_master/config/pld/`, `Tetsouo/config/pld/` and `Kaories/config/pld/`. Do not redeploy Kaories by re-running the clone: it would revert the live-ahead files listed above. Copy single files by hand (next section).
 
 ## How to deploy a template change
 
