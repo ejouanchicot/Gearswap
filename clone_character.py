@@ -26,6 +26,7 @@ import os
 import re
 import shutil
 import sys
+from datetime import datetime
 from pathlib import Path
 
 # ============================================================================
@@ -69,9 +70,9 @@ TRANSLATIONS = {
         'target_length': "ERREUR: Le nom doit faire entre 2 et 15 caractères!",
         'target_exists': "ATTENTION: Le personnage '{}' existe déjà!",
         'target_location': "   Emplacement: {}",
-        'delete_existing': "Supprimer l'existant et continuer? (o/n): ",
-        'delete_ok': "[OK] Répertoire '{}' supprimé",
-        'delete_failed': "ERREUR: Échec de suppression: {}",
+        'replace_existing': "Le remplacer? Il sera mis en sauvegarde après la confirmation finale (o/n): ",
+        'backup_ok': "[OK] Ancien répertoire mis en sauvegarde: {}",
+        'backup_failed': "ERREUR: Échec de la mise en sauvegarde, rien n'a été modifié: {}",
 
         # Dual-boxing
         'dualbox_intro': "\nLe dual-boxing permet à 2 personnages de communiquer (ALT >> MAIN).",
@@ -174,9 +175,9 @@ TRANSLATIONS = {
         'target_length': "ERROR: Name must be between 2 and 15 characters!",
         'target_exists': "WARNING: Character '{}' already exists!",
         'target_location': "   Location: {}",
-        'delete_existing': "Delete existing and continue? (y/n): ",
-        'delete_ok': "[OK] Deleted '{}' directory",
-        'delete_failed': "ERROR: Failed to delete: {}",
+        'replace_existing': "Replace it? It is moved to a backup after the final confirmation (y/n): ",
+        'backup_ok': "[OK] Old directory moved to backup: {}",
+        'backup_failed': "ERROR: Backup failed, nothing was changed: {}",
 
         'dualbox_intro': "\nDual-boxing allows 2 characters to communicate (ALT >> MAIN).",
         'dualbox_desc': "The ALT sends job updates to the MAIN.\n",
@@ -374,17 +375,30 @@ class SmartCharacterCloner:
         if target_dir.exists():
             print(self.t['target_exists'].format(name))
             print(self.t['target_location'].format(target_dir))
-            response = input(self.t['delete_existing']).lower()
-            if response in self.yes_answers:
-                try:
-                    shutil.rmtree(target_dir)
-                    print(self.t['delete_ok'].format(name))
-                except Exception as e:
-                    print(self.t['delete_failed'].format(e))
-                    return False
-            else:
+            response = input(self.t['replace_existing']).lower()
+            if response not in self.yes_answers:
                 return False
+            # Nothing is touched here: clone() moves the folder aside, and it
+            # only runs once the final confirmation has been answered yes.
 
+        return True
+
+    def _backup_existing(self, target_dir, target_name):
+        """Move an existing character folder aside instead of deleting it.
+
+        The backup goes next to data/, not inside it: GearSwap only searches
+        data/<name>/, data/common/ and data/ for job files, and the wardrobe
+        and refill scanners only walk data/, so a backup is never loaded.
+        """
+        stamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+        backup_dir = self.base_dir.parent / 'clone_backups' / f'{target_name}_{stamp}'
+        try:
+            backup_dir.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(target_dir), str(backup_dir))
+        except Exception as e:
+            print(self.t['backup_failed'].format(e))
+            return False
+        print(self.t['backup_ok'].format(backup_dir))
         return True
 
     # ------------------------------------------------------------------
@@ -529,6 +543,9 @@ class SmartCharacterCloner:
         jobs_lower = [j.lower() for j in jobs]
         jobs_upper = [j.upper() for j in jobs]
 
+        if target_dir.exists() and not self._backup_existing(target_dir, target_name):
+            return False
+
         # ── Step 1: Create directory structure ─────────────────────────
         print(self.t['step_dirs'])
         (target_dir / 'sets').mkdir(parents=True, exist_ok=True)
@@ -575,9 +592,16 @@ class SmartCharacterCloner:
         for job_lower in jobs_lower:
             src = self._resolve_src(('sets', f'{job_lower}_sets.lua'))
             dst = target_dir / 'sets' / f'{job_lower}_sets.lua'
+            modular_src = self.override_dir / 'sets' / job_lower
             if src.exists():
                 shutil.copy2(src, dst)
                 print(self.t['copy_ok'].format(f"sets/{job_lower}_sets.lua"))
+                self.count_sets += 1
+            elif modular_src.is_dir():
+                # A job with no flat set (SMN) is saved as its live modular
+                # tree, and its entry includes sets/<job>/<job>_sets.lua.
+                shutil.copytree(modular_src, target_dir / 'sets' / job_lower, dirs_exist_ok=True)
+                print(self.t['copy_ok'].format(f"sets/{job_lower}/"))
                 self.count_sets += 1
             else:
                 print(self.t['copy_skip'].format(f"sets/{job_lower}_sets.lua"))
