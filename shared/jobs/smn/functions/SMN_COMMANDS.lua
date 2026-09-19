@@ -267,7 +267,7 @@ local function handle_bp(args)
     end
 
     local bp_name = table.concat(args, ' ')
-    local _, category = BloodPactClassifier and BloodPactClassifier.resolve(bp_name) or nil, nil
+    local category = BloodPactClassifier and BloodPactClassifier.classify(bp_name)
 
     -- Default target: <t> for damage/debuff pacts, <me> for self-buffs/heals
     local target = '<t>'
@@ -414,20 +414,10 @@ function job_self_command(cmdParams, eventArgs)
     end
 end
 
---- Called when a Mote state field changes value
-function job_state_change(stateField, newValue, oldValue)
-    if stateField == 'Moving' then return end
-
-    local ui_ok, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-    if ui_ok and KeybindUI and KeybindUI.update then
-        KeybindUI.update()
-    end
-
-    -- Avatar's Favor toggle changed -> refresh idle gear
-    if stateField == 'AvatarFavor' or stateField == 'IdleMode' then
-        send_command('gs c update')
-    end
-end
+--- Called when a Mote state field changes value: repaints the HUD.
+--- No gear refresh here: Mote's state commands and CycleHandler both run
+--- handle_update (job_update + idle/engaged gear) right after this hook.
+job_state_change = require('shared/utils/core/lifecycle_manager').state_change()
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT
