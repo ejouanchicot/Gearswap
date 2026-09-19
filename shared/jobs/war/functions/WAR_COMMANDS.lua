@@ -263,7 +263,10 @@ end
 ---   Update UI when state changes (MainWeapon, HybridMode, etc.)
 ---   Called by Mote-Include after any state change.
 ---
----   @param stateField string State that changed (e.g., "MainWeapon")
+---   Mote passes the state description ('Main Weapon'); stripping spaces also
+---   accepts the key ('MainWeapon'), so either spelling rebuilds the WS slots.
+---
+---   @param stateField string State key or description (e.g., "Main Weapon")
 ---   @param newValue   string New value
 ---   @param oldValue   string Previous value
 ---   @return void
@@ -273,8 +276,10 @@ function job_state_change(stateField, newValue, oldValue)
         return
     end
 
+    local field = type(stateField) == 'string' and stateField:gsub(' ', '') or stateField
+
     -- Weapon changed: refill the WS slots from that weapon's list
-    if stateField == 'MainWeapon' then
+    if field == 'MainWeapon' then
         local ok, WSSlots = pcall(require, 'shared/utils/weaponskill/ws_slots')
         if ok and WSSlots and _G.WARWSConfig then
             WSSlots.rebuild(_G.WARWSConfig.get(newValue), _G.WARWSConfig.max_slots)
