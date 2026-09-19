@@ -70,9 +70,14 @@ end
 
 ---   Build engaged set with Seigan/Third Eye buff handling
 ---   Priority:
+---   0. Base: AM3 set, else sets.engaged[HybridMode], else Mote's base
 ---   1. Seigan buff >> thirdeye set (PDT) or seigan set (Normal)
 ---   2. Apply weapon
 ---   3. Bow equipped (Yoichinoyumi) >> bow set
+---
+---   Mote nests HybridMode under the OffenseMode node (sets.engaged.Normal.PDT),
+---   so its base never reaches the sibling sets.engaged.PDT; the base is
+---   re-selected here.
 ---
 ---   @param base_set table Base engaged set from sam_sets.lua
 ---   @return table Complete engaged set with all modifications
@@ -81,7 +86,7 @@ function SetBuilder.build_engaged_set(base_set)
         return {}
     end
 
-    local result = base_set
+    local result = SetBuilder.select_engaged_base(base_set)
 
     -- Priority 1: Seigan buff handling
     if buffactive and buffactive['Seigan'] then
@@ -114,7 +119,7 @@ function SetBuilder.build_engaged_set(base_set)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   AFTERMATH LV.3 DETECTION (FUTURE EXPANSION)
+---   ENGAGED BASE SELECTION (Aftermath Lv.3, HybridMode)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Select engaged base set with Aftermath Lv.3 detection

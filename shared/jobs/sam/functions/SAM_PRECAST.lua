@@ -163,14 +163,17 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     end
 
     -- SAM-SPECIFIC: Apply buff gear for WS
+    -- Read the buffs themselves: Mote sets state.Buff[name] true on the JA
+    -- press, and a press cancelled on recast never gains the buff, so no
+    -- buff_change ever sets it back to false.
     if spell.type == 'WeaponSkill' then
         -- Apply Sekkanoki buff gear
-        if state and state.Buff and state.Buff.Sekkanoki and sets.buff and sets.buff.Sekkanoki then
+        if buffactive['Sekkanoki'] and sets.buff and sets.buff.Sekkanoki then
             equip(sets.buff.Sekkanoki)
         end
 
         -- Apply Meikyo Shisui buff gear
-        if state and state.Buff and state.Buff['Meikyo Shisui'] and sets.buff and sets.buff['Meikyo Shisui'] then
+        if buffactive['Meikyo Shisui'] and sets.buff and sets.buff['Meikyo Shisui'] then
             equip(sets.buff['Meikyo Shisui'])
         end
     end

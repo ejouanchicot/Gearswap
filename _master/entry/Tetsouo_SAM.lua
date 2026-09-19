@@ -65,6 +65,7 @@ function get_sets()
     -- ============================================
     _G.LockstyleConfig = LockstyleConfig
     _G.UIConfig = UIConfig
+    _G.RECAST_CONFIG = require('Tetsouo/config/RECAST_CONFIG')
 
     -- Load region configuration (must load before message system for color codes)
     local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
