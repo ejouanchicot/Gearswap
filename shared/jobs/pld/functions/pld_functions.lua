@@ -86,6 +86,11 @@ TIMER('PLD_MOVEMENT')
 ---     • Potency optimization based on HP thresholds
 ---     • Light Arts bonus detection & gear adjustment
 ---
+---   logic/enmity_override.lua
+---     • Sortie HybridMode: spells that wore sets.FullEnmity wear
+---       sets.EnmityMax; job abilities keep their own set and gain what
+---       EnmityMax adds to FullEnmity (the shield)
+---
 ---   logic/rune_manager.lua
 ---     • Rune ability management (PLD/RUN subjob)
 ---     • Mode-based rune selection (Sulpor/Lux)
@@ -94,7 +99,7 @@ TIMER('PLD_MOVEMENT')
 ---   logic/set_builder.lua
 ---     • Shared engaged set construction
 ---     • Shared idle set construction
----     • Hybrid mode application (PDT/MDT/Normal)
+---     • Hybrid mode application (PDT/MDT/Sortie)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -110,7 +115,7 @@ local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 
 -- All module functions are now available in global scope
 local MessageFormatter = require('shared/utils/messages/message_formatter')
-MessageFormatter.show_debug('PLD', 'All functions loaded (11 hooks + 4 logic modules)')
+MessageFormatter.show_debug('PLD', 'All functions loaded (11 hooks + 5 logic modules)')
 
 -- ═══════════════════════════════════════════════════════════════════
 TIMER('TOTAL PLD_functions', true)

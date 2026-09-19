@@ -2,7 +2,7 @@
 ---   PLD Precast Module - Precast Action Handling & Auto-Abilities
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Debuff guard, cooldown check, auto-abilities (Majesty/Divine Emblem),
----   WS handling.
+---   WS handling, Sortie enmity override.
 ---
 ---   @file    PLD_PRECAST.lua
 ---   @author  Tetsouo
@@ -18,6 +18,7 @@ local CooldownChecker = nil
 local AbilityHelper = nil
 local PrecastGuard = nil
 local WSPrecastHandler = nil
+local EnmityOverride = nil
 local PLDTPConfig = nil
 
 local modules_loaded = false
@@ -40,6 +41,10 @@ local function ensure_modules_loaded()
     local wph_ok, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
     if not wph_ok then wph = nil end
     WSPrecastHandler = wph
+
+    local eo_ok, eo = pcall(require, 'shared/jobs/pld/functions/logic/enmity_override')
+    if not eo_ok then eo = nil end
+    EnmityOverride = eo
 
     PLDTPConfig = _G.PLDTPConfig or {}
 
@@ -161,6 +166,11 @@ function job_post_precast(spell, action, spellMap, eventArgs)
         and spell.target and spell.target.type == 'SELF'
         and sets.precast and sets.precast.FC and sets.precast.FC.CureSelf then
         equip(sets.precast.FC.CureSelf)
+    end
+
+    -- Sortie: job abilities also get what sets.EnmityMax adds (the shield)
+    if EnmityOverride then
+        EnmityOverride.apply_precast(spell)
     end
 end
 

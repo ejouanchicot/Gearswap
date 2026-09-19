@@ -23,6 +23,7 @@
 
 local MidcastManager = nil
 local CureSetBuilder = nil
+local EnmityOverride = nil
 local EnhancingSPELLS = nil
 local EnhancingSPELLS_success = false
 
@@ -37,6 +38,10 @@ local function ensure_modules_loaded()
     local csb_ok, csb = pcall(require, 'shared/jobs/pld/functions/logic/cure_set_builder')
     if not csb_ok then csb = nil end
     CureSetBuilder = csb
+
+    local eo_ok, eo = pcall(require, 'shared/jobs/pld/functions/logic/enmity_override')
+    if not eo_ok then eo = nil end
+    EnmityOverride = eo
 
     -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
     EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
@@ -176,6 +181,11 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         midcast_divine(spell)
     elseif spell.skill == 'Blue Magic' then
         midcast_blue(spell)
+    end
+
+    -- Sortie: the spells that wore sets.FullEnmity wear sets.EnmityMax
+    if EnmityOverride then
+        EnmityOverride.apply_midcast(spell)
     end
 end
 

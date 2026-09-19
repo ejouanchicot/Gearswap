@@ -5,7 +5,7 @@
 --- Delegates all specialized logic to dedicated modules for maximum maintainability.
 ---
 --- Features:
----   • Modular architecture (12 hooks + 4 logic modules)
+---   • Modular architecture (12 hooks + 5 logic modules)
 ---   • Tank-focused gear automation (PDT/MDT modes)
 ---   • Blu Magic spell rotation support
 ---   • Rune management (RUN subjob)
@@ -20,7 +20,7 @@
 --- Modules:
 ---   • 11 Hooks: PRECAST, MIDCAST, AFTERCAST, IDLE, ENGAGED, STATUS, BUFFS,
 ---               COMMANDS, MOVEMENT, LOCKSTYLE, MACROBOOK
----   • 4 Logic: aoe_manager, cure_set_builder, rune_manager, set_builder
+---   • 5 Logic: aoe_manager, cure_set_builder, enmity_override, rune_manager, set_builder
 ---
 --- @file    Kaories_PLD.lua
 --- @author  Tetsouo
