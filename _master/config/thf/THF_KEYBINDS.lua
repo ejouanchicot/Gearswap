@@ -39,7 +39,7 @@ local THFKeybinds = {}
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 -- Keybind definitions for THF job
--- Format: { key = "key_combination", command = "gs_command", desc = "description", state = "state_name" }
+-- Format: { key = "key_combination", command = "gs_command", desc = "description", state = "state_name", subjob = "required_subjob" }
 THFKeybinds.binds = {
     -- Weapon Management
     { key = "^numpad1", command = "cyclestate MainWeapon", desc = "Main Weapon",  state = "MainWeapon" },
@@ -64,7 +64,24 @@ THFKeybinds.binds = {
 --- KEYBIND MANAGEMENT FUNCTIONS
 ---============================================================================
 
---- Apply all keybinds defined in the configuration
+--- Get filtered keybinds based on current subjob
+--- Filters out subjob-specific binds that don't match current subjob.
+--- @return table Filtered keybinds appropriate for current subjob
+function THFKeybinds.get_active_binds()
+    local active_binds = {}
+    local current_subjob = player and player.sub_job or nil
+
+    for _, bind in ipairs(THFKeybinds.binds) do
+        -- Include bind if no subjob requirement, or if subjob matches
+        if not bind.subjob or bind.subjob == current_subjob then
+            table.insert(active_binds, bind)
+        end
+    end
+
+    return active_binds
+end
+
+--- Apply the keybinds of the current subjob
 --- @return boolean Success status of binding operation
 function THFKeybinds.bind_all()
     -- Validate binds exist
@@ -73,9 +90,19 @@ function THFKeybinds.bind_all()
         return false
     end
 
+    -- Get filtered binds based on current subjob
+    local active_binds = THFKeybinds.get_active_binds()
+
+    -- Clear the whole key list before rebinding. bind_all only lays down
+    -- the keys the CURRENT subjob uses, so a /WAR bind (AbyProc, AbyWeapon)
+    -- would otherwise stay bound after leaving /WAR.
+    for _, bind in pairs(THFKeybinds.binds) do
+        pcall(send_command, 'unbind ' .. bind.key)
+    end
+
     -- Attempt to bind each key
     local bound_count = 0
-    for _, bind in pairs(THFKeybinds.binds) do
+    for _, bind in pairs(active_binds) do
         local success, error_msg = pcall(send_command, 'bind ' .. bind.key .. ' gs c ' .. bind.command)
         if success then
             bound_count = bound_count + 1
@@ -127,12 +154,15 @@ function THFKeybinds.show_intro()
         lockstyle_info = THF_LOCKSTYLE.get_info()
     end
 
+    -- Get active binds (filtered by subjob)
+    local active_binds = THFKeybinds.get_active_binds()
+
     -- Show complete intro with macro and lockstyle info
     if macro_info or lockstyle_info then
-        MessageFormatter.show_system_intro_complete("THF SYSTEM LOADED", THFKeybinds.binds, macro_info, lockstyle_info)
+        MessageFormatter.show_system_intro_complete("THF SYSTEM LOADED", active_binds, macro_info, lockstyle_info)
     else
         -- Fallback to regular intro if no additional info available
-        MessageFormatter.show_system_intro("THF SYSTEM LOADED", THFKeybinds.binds)
+        MessageFormatter.show_system_intro("THF SYSTEM LOADED", active_binds)
     end
 end
 
