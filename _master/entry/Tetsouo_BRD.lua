@@ -236,24 +236,6 @@ function job_update(cmdParams, eventArgs)
 end
 
 ---============================================================================
--- COMBAT FORM UPDATE (FORCE GEAR UPDATE AFTER STATE CHANGE)
----============================================================================
-
---- Called by Mote-Include after state changes to force gear re-equip
---- This is CRITICAL for IdleMode/EngagedMode changes to take effect
-function update_combat_form()
-    -- Force gear update based on current player status
-    if not player then return end
-
-    -- Call handle_equipping_gear to force proper set selection
-    if player.status == 'Idle' then
-        handle_equipping_gear(player.status)
-    elseif player.status == 'Engaged' then
-        handle_equipping_gear(player.status)
-    end
-end
-
----============================================================================
 -- GEAR SET INITIALIZATION
 ---============================================================================
 
