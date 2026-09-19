@@ -8,7 +8,6 @@ local WSPrecastHandler = {}
 local MessageFormatter = nil
 local WSValidator = nil
 local TPBonusHandler = nil
-local WS_DB = nil
 
 local modules_loaded = false
 
@@ -29,11 +28,6 @@ local function ensure_modules_loaded()
     local tph_ok, tph = pcall(require, 'shared/utils/precast/tp_bonus_handler')
     if not tph_ok then tph = nil end
     TPBonusHandler = tph
-
-    -- WS Database (descriptions)
-    local wsdb_ok, wsdb = pcall(require, 'shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
-    if not wsdb_ok then wsdb = nil end
-    WS_DB = wsdb
 
     modules_loaded = true
 end

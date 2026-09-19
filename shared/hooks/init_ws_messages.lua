@@ -77,38 +77,6 @@ local function ensure_modules_loaded()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   EQUIPPED WEAPON TYPE (for per-weapon lazy WS loading)
----  ═══════════════════════════════════════════════════════════════════════════
-
---- Get the FFXI resources table (cached global, windower.res, or require).
---- @return table|nil Resources table, or nil if unavailable
-local function get_resources()
-    local r = rawget(_G, 'res') or windower.res
-    if r then return r end
-    local ok, mod = pcall(require, 'resources')
-    return ok and mod or nil
-end
-
---- Resolve the equipped main weapon's skill type (e.g. 'Sword', 'Dagger').
---- Lets the first weaponskill load ONLY the matching WS database instead of all.
---- @return string|nil Weapon type name, or nil if it cannot be determined
-local function get_equipped_weapon_type()
-    if not (player and player.equipment and player.equipment.main) then
-        return nil
-    end
-    local res = get_resources()
-    if not (res and res.items and res.skills) then
-        return nil
-    end
-    local item = res.items:with('en', player.equipment.main)
-    if not (item and item.skill) then
-        return nil
-    end
-    local skill = res.skills[item.skill]
-    return skill and skill.en or nil
-end
-
----  ═══════════════════════════════════════════════════════════════════════════
 ---   HOOK INJECTION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
@@ -151,19 +119,17 @@ function user_post_precast(spell, action, spellMap, eventArgs)
             return
         end
 
-        -- LAZY LOAD: load ONLY the equipped weapon's WS database on first WS
-        if UniversalWS then
-            local weapon_type = get_equipped_weapon_type()
-            local ws_data = UniversalWS.resolve(spell.english, weapon_type)
-
-            -- Show WS message
-            if ws_data and WS_MESSAGES_CONFIG.show_description() then
-                -- Full mode: show description + TP
+        if WS_MESSAGES_CONFIG.show_description() then
+            -- Full mode: description + TP. Only this mode reads the database,
+            -- and only the file of the weaponskill's own skill (spell.skill):
+            -- the main hand is not always the weapon the WS belongs to.
+            local ws_data = UniversalWS and UniversalWS.resolve(spell.english, spell.skill)
+            if ws_data then
                 MessageFormatter.show_ws_activated(spell.english, ws_data.description, current_tp)
-            elseif WS_MESSAGES_CONFIG.is_tp_only() then
-                -- TP only mode: show name + TP (use show_ws_tp for templates without description)
-                MessageFormatter.show_ws_tp(spell.english, current_tp)
             end
+        elseif WS_MESSAGES_CONFIG.is_tp_only() then
+            -- TP only mode: show name + TP (use show_ws_tp for templates without description)
+            MessageFormatter.show_ws_tp(spell.english, current_tp)
         end
     end
 end

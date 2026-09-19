@@ -2,7 +2,7 @@
 --- Universal Spell Message Handler - Multi-Database Spell Message System
 ---============================================================================
 --- Automatically detects and displays spell messages for ANY job/subjob combo.
---- Works by checking ALL spell databases until spell is found.
+--- Looks the spell up in its skill's database, then in the other magic databases.
 ---
 --- Features:
 ---   - Works for main job AND subjob spells
@@ -156,6 +156,12 @@ local function find_spell_in_databases(spell)
         end
     end
 
+    -- A Trust (skill '(N/A)') is in no database; walking them all would only
+    -- load every one of them on the first summon.
+    if not fast_path or spell.type == 'Trust' then
+        return nil, nil
+    end
+
     -- FALLBACK: handles skill/category mismatches and job-unique spells.
     for _, db_entry in ipairs(FALLBACK_DATABASES) do
         if db_entry.path ~= fast_path then
@@ -246,18 +252,22 @@ function SpellMessageHandler.show_message(spell, show_separator)
         return
     end
 
-    -- Find spell in databases FIRST (before checking spell.skill)
-    -- This is critical because some spells have mismatched skill vs category
-    -- Example: Bio has spell.skill = "Dark Magic" but category = "Enfeebling"
+    -- Ensure configs are loaded (only loads once, then cached)
+    ensure_configs_loaded()
+
+    -- With both off there is nothing to show: skip the database lookup.
+    if not (ENFEEBLING_MESSAGES_CONFIG.is_enabled() or ENHANCING_MESSAGES_CONFIG.is_enabled()) then
+        return
+    end
+
+    -- The config is picked from the record's category, not spell.skill:
+    -- Bio has spell.skill = "Dark Magic" but category = "Enfeebling"
     local spell_data, db_name = find_spell_in_databases(spell)
 
     if not spell_data then
         -- Spell not found in any database
         return
     end
-
-    -- Ensure configs are loaded (only loads once, then cached)
-    ensure_configs_loaded()
 
     -- Determine config based on spell CATEGORY (not spell.skill!)
     -- This allows Dark Magic spells with Enfeebling effects to show correctly
