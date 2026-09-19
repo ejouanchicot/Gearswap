@@ -157,6 +157,13 @@ function user_setup()
     local THFStates = require('Tetsouo/config/thf/THF_STATES')
     THFStates.configure()
 
+    -- A subjob change re-runs this in the same sandbox: keep RangeLock On
+    -- while the range/ammo lock is still in place.
+    local rl_ok, RangeLock = pcall(require, 'shared/jobs/thf/functions/logic/range_lock')
+    if rl_ok and RangeLock then
+        RangeLock.sync_state()
+    end
+
     -- ==========================================================================
     -- KEYBIND LOADING (Always executed after reload)
     -- ==========================================================================
@@ -227,5 +234,12 @@ function file_unload()
     -- Unbind all keybinds (Windower binds persist across gs reload)
     if THFKeybinds and THFKeybinds.unbind_all then
         THFKeybinds.unbind_all()
+    end
+
+    -- Release the range/ammo lock: GearSwap keeps slot locks across job files
+    -- while RangeLock starts Off in the next one.
+    local rl_ok, RangeLock = pcall(require, 'shared/jobs/thf/functions/logic/range_lock')
+    if rl_ok and RangeLock then
+        RangeLock.release()
     end
 end
