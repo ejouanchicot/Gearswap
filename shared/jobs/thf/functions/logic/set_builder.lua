@@ -142,8 +142,8 @@ SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town
 ---   ability and the melee hit / weaponskill that consumes it, instead of
 ---   reverting to the plain engaged set right after the JA animation.
 ---   The pending flags bridge the server lag before the buff lands in buffactive;
----   their lifecycle is cleared in THF_BUFFS.job_buff_change (consumption/expiry)
----   and SATAManager (weaponskill consumption).
+---   their lifecycle is cleared in THF_BUFFS.job_buff_change (consumption/expiry),
+---   SATAManager (weaponskill) and THF_AFTERCAST (ability refused).
 ---   @param result table Current engaged set
 ---   @return table Set with SA/TA buff gear overlaid (unchanged if neither active)
 function SetBuilder.apply_sata_buff(result)
