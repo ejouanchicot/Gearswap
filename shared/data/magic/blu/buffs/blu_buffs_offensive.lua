@@ -179,7 +179,7 @@ BLU_BUFFS_OFFENSIVE.spells = {
     -- LEVEL 99
     --============================================================
 
-    ["Nature's Meditation"] = {
+    ["Nat. Meditation"] = {
         description             = "Grants TP regen + attack.",
         category                = "Buff",
         magic_type              = "Blue",

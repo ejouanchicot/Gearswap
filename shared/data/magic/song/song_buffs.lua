@@ -797,7 +797,7 @@ SONG_BUFFS.spells = {
         notes                   = "Grants Stoneskin-like effect. Absorbs physical and magical damage (potency: Singing skill + CHR). Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (main job).",
     },
 
-    ["Goddess' Hymnus"] = {
+    ["Goddess's Hymnus"] = {
         description             = "Grants reraise.",
         category                = "Hymnus",
         element                 = "Light",
