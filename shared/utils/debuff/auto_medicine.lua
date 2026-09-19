@@ -17,8 +17,8 @@
 ---
 ---   @file    shared/utils/debuff/auto_medicine.lua
 ---   @author  Tetsouo
----   @version 1.0
----   @date    Created: 2026-08-07
+---   @version 1.1
+---   @date    Created: 2026-08-07 | Updated: 2026-08-18
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local AutoMedicine = {}
@@ -55,6 +55,31 @@ end
 --- @param value string 'On' or 'Off'
 local function persist_value(value)
     windower._auto_medicine = (value == ON)
+end
+
+--- Repaint the keybind HUD after a value change made outside CycleHandler.
+---
+--- The keybind path (`cyclestate AutoMedicine`) repaints through CycleHandler,
+--- but `//gs c am` does not - the HUD kept showing the previous value until an
+--- unrelated state change forced a redraw, so the display could read On while
+--- the toggle was actually Off.
+--- @return nil
+local function refresh_hud()
+    local ok, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
+    if not ok or not KeybindUI then
+        return
+    end
+
+    -- Only repaint an HUD that is already up: update() falls back to
+    -- safe_init() when there is no display, which would pop the HUD open on a
+    -- player who deliberately hid it.
+    if not (KeybindUI.is_visible and KeybindUI.is_visible()) then
+        return
+    end
+
+    if type(KeybindUI.update) == 'function' then
+        KeybindUI.update()
+    end
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -153,6 +178,8 @@ function AutoMedicine.handle_command(arg)
     else
         enabled = AutoMedicine.toggle()
     end
+
+    refresh_hud()
 
     local MessageDebuffs = require('shared/utils/messages/formatters/magic/message_debuffs')
     MessageDebuffs.show_auto_medicine_toggled(enabled)
