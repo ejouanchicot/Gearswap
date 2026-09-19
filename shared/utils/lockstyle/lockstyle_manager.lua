@@ -254,6 +254,23 @@ end
 -- this module-local table persists and remembers the previous job's exports.
 local last_registered_globals = {}
 
+-- One ctx per job code, kept on the sandbox _G. A job's wrapper file runs
+-- twice per load (the keybind intro requires it, the facade includes it), and
+-- each copy calls create(): the entry schedules the initial lockstyle through
+-- one copy and registers the JobChangeManager cancel from the other, so both
+-- must share the same STATE for that cancel to stop the pending style. The
+-- intro runs in user_setup, before INIT_SYSTEMS installs the module cache, so
+-- the two copies also get two instances of this module: a module-local table
+-- would not be shared. The sandbox _G is, and it dies with the load.
+local function contexts()
+    local by_job = rawget(_G, '__lockstyle_contexts')
+    if not by_job then
+        by_job = {}
+        _G.__lockstyle_contexts = by_job
+    end
+    return by_job
+end
+
 --- Create a lockstyle module bound to a specific job.
 --- @param job_code string Job code (e.g., 'WAR', 'PLD', 'DNC')
 --- @param config_path string Path to job lockstyle config (e.g., 'Tetsouo/config/war/WAR_LOCKSTYLE')
@@ -261,22 +278,27 @@ local last_registered_globals = {}
 --- @param default_subjob string Default subjob (used as fallback when player.sub_job is nil)
 --- @return table Per-job lockstyle module
 function LockstyleManager.create(job_code, config_path, default_lockstyle, default_subjob)
-    local ctx = {
-        job_code          = job_code,
-        default_lockstyle = default_lockstyle,
-        default_subjob    = default_subjob,
-        LockstyleConfig   = load_config_or_fallback(config_path, default_lockstyle),
-        STATE = {
-            enabled                   = true,
-            is_processing             = false,
-            current_coroutines        = {},
-            dressup_state             = 'unknown',
-            last_dressup_command_time = 0,
-            operation_id              = 0,
-        },
-    }
+    local ctx = contexts()[job_code]
+    if not ctx then
+        ctx = {
+            job_code          = job_code,
+            default_lockstyle = default_lockstyle,
+            default_subjob    = default_subjob,
+            LockstyleConfig   = load_config_or_fallback(config_path, default_lockstyle),
+            STATE = {
+                enabled                   = true,
+                is_processing             = false,
+                current_coroutines        = {},
+                dressup_state             = 'unknown',
+                last_dressup_command_time = 0,
+                operation_id              = 0,
+            },
+        }
+        contexts()[job_code] = ctx
+    end
 
     local function bind(fn) return function(...) return fn(ctx, ...) end end
+    local jl = job_code:lower()
 
     local api = {
         select_default_lockstyle  = bind(select_default_lockstyle),
@@ -289,6 +311,8 @@ function LockstyleManager.create(job_code, config_path, default_lockstyle, defau
         get_state                 = function() return ctx.STATE end,
     }
     api.get_info = api.get_lockstyle_info  -- backward-compat alias
+    -- The name every <JOB>_LOCKSTYLE.lua wrapper calls on this table.
+    api['cancel_' .. jl .. '_lockstyle_operations'] = api.cancel_pending_operations
 
     -- Clear globals registered by the previous create() (different job) so
     -- old _G.cancel_pld_*, _G.set_pld_* etc. don't linger after PLD->RDM.
@@ -300,7 +324,6 @@ function LockstyleManager.create(job_code, config_path, default_lockstyle, defau
     last_registered_globals = {}
 
     -- Globals for include() compatibility (unchanged names).
-    local jl = job_code:lower()
     local exports = {
         ['select_default_lockstyle']                 = api.select_default_lockstyle,
         ['cancel_' .. jl .. '_lockstyle_operations'] = api.cancel_pending_operations,
