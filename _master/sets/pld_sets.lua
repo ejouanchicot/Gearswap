@@ -93,6 +93,7 @@ local Moonlight2 = {name = 'Moonlight Ring', priority = 12, bag = 'wardrobe 2'}
 
 -- • Main Weapons
 sets.Burtgang = {main = 'Burtgang'}
+sets.KC = {main = 'Kraken Club'}
 sets.BurtgangKC = {main = 'Burtgang', sub = 'Kraken Club'} -- PLD/DNC multi-attack build
 sets.Shining = {main = 'Shining One'} -- Polearm (uses Alber Strap grip)
 sets.Naegling = {main = 'Naegling'}

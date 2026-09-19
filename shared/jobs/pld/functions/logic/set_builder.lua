@@ -4,9 +4,9 @@
 ---   Provides centralized set building for both engaged and idle states.
 ---   Handles complex PLD-specific gear logic:
 ---   • Main weapon selection (Burtgang, Naegling, Shining, Malevo)
----   • Shield selection (Duban, Aegis, Blurred Shield +1)
+---   • Shield selection (Duban, Aegis, Blurred Shield +1; weapon-driven in Sortie)
 ---   • Shining exception (Alber Strap grip requirement requirement)
----   • HybridMode application (PDT/MDT with shield awareness)
+---   • HybridMode application (PDT/MDT/Sortie with shield awareness)
 ---   • XP mode support (idleXp/meleeXp sets)
 ---   • Movement speed gear
 ---   • Town detection and town gear
@@ -32,6 +32,43 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 
 -- Load message formatter for error display
 local MessageFormatter = require('shared/utils/messages/message_formatter')
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HYBRIDMODE → SET MAPPING
+---  ═══════════════════════════════════════════════════════════════════════════
+
+--- Which set each HybridMode wears. Most modes name their own set, but Sortie
+--- borrows: it wants the mitigation/TP mix while engaged and the magic
+--- mitigation set while idle, both of which already exist.
+local ENGAGED_SET_BY_MODE = {
+    PDT    = 'PDT',
+    MDT    = 'MDT',
+    Sortie = 'TP'
+}
+
+local IDLE_SET_BY_MODE = {
+    PDT    = 'PDT',
+    MDT    = 'MDT',
+    Sortie = 'MDT'
+}
+
+--- In Sortie the shield follows the weapon instead of the mode's set: the
+--- mitigation sets are shared with the other modes and carry their own sub,
+--- so the sub is decided here rather than duplicated into every Sortie set.
+local SORTIE_SHIELD_BY_WEAPON = {
+    Burtgang = 'Aegis',
+    Naegling = 'Blurred Shield +1'
+}
+
+---   Resolve the set a HybridMode maps to, or nil when the mode names no set
+---   @param source table Set container (sets.engaged or sets.idle)
+---   @param mode_map table ENGAGED_SET_BY_MODE or IDLE_SET_BY_MODE
+---   @return table|nil Set for the active HybridMode
+local function hybrid_set(source, mode_map)
+    local mode = state.HybridMode and state.HybridMode.value
+    local set_name = mode and mode_map[mode]
+    return set_name and source[set_name] or nil
+end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   WEAPON/SHIELD APPLICATION
@@ -69,19 +106,34 @@ function SetBuilder.apply_shield(result, in_town)
     end
 
     -- Exception 2: In town, use HybridMode shield
-    if in_town and state.HybridMode and state.HybridMode.value then
-        if state.HybridMode.value == 'PDT' and sets.idle.PDT and sets.idle.PDT.sub then
+    if in_town then
+        local idle_set = hybrid_set(sets.idle, IDLE_SET_BY_MODE)
+        if idle_set and idle_set.sub then
             result = set_combine(result, {
-                sub = sets.idle.PDT.sub
-            })
-        elseif state.HybridMode.value == 'MDT' and sets.idle.MDT and sets.idle.MDT.sub then
-            result = set_combine(result, {
-                sub = sets.idle.MDT.sub
+                sub = idle_set.sub
             })
         end
         return result
     end
 
+
+    return result
+end
+
+---   Force the Sortie shield for the current weapon (no-op outside Sortie)
+---   Runs last so it wins over the sub carried by the mode's own set.
+---   @param result table Current equipment set
+---   @return table Set with the Sortie shield applied
+function SetBuilder.apply_sortie_shield(result)
+    if not (state.HybridMode and state.HybridMode.value == 'Sortie') then
+        return result
+    end
+
+    local weapon = state.MainWeapon and state.MainWeapon.value
+    local shield = weapon and SORTIE_SHIELD_BY_WEAPON[weapon]
+    if shield then
+        result = set_combine(result, {sub = shield})
+    end
 
     return result
 end
@@ -129,22 +181,20 @@ function SetBuilder.select_engaged_base(base_set)
         end
     end
 
-    -- PRIORITY 3: Normal HybridMode logic (PDT or MDT)
-    if state.HybridMode and state.HybridMode.current then
-        local hybrid_set = sets.engaged[state.HybridMode.current]
-        if hybrid_set then
-            -- If Shining weapon, return HybridMode set WITHOUT sub (Alber will be applied after)
-            if state.MainWeapon and state.MainWeapon.current == 'Shining' then
-                local hybrid_no_sub = {}
-                for slot, item in pairs(hybrid_set) do
-                    if slot ~= 'sub' then
-                        hybrid_no_sub[slot] = item
-                    end
+    -- PRIORITY 3: Normal HybridMode logic (PDT, MDT or Sortie)
+    local mode_set = hybrid_set(sets.engaged, ENGAGED_SET_BY_MODE)
+    if mode_set then
+        -- If Shining weapon, return HybridMode set WITHOUT sub (Alber will be applied after)
+        if state.MainWeapon and state.MainWeapon.current == 'Shining' then
+            local hybrid_no_sub = {}
+            for slot, item in pairs(mode_set) do
+                if slot ~= 'sub' then
+                    hybrid_no_sub[slot] = item
                 end
-                return hybrid_no_sub
             end
-            return hybrid_set
+            return hybrid_no_sub
         end
+        return mode_set
     end
 
     return base_set
@@ -181,6 +231,9 @@ function SetBuilder.build_engaged_set(base_set)
         result = set_combine(result, sets.meleeXp)
     end
 
+    -- Step 5: Sortie shield (weapon-driven, overrides any sub set above)
+    result = SetBuilder.apply_sortie_shield(result)
+
     return result
 end
 
@@ -212,32 +265,24 @@ function SetBuilder.build_idle_set(base_set)
 
     -- Step 4: Early return if in town (weapons/shields already applied)
     if in_town then
-        return result
+        return SetBuilder.apply_sortie_shield(result)
     end
 
-    -- Step 5: Apply HybridMode (PDT/MDT) outside of town - SKIP sub if Shining or BurtgangKC
-    if state.HybridMode and state.HybridMode.value then
-        local hybrid_set = nil
-        if state.HybridMode.value == 'PDT' and sets.idle.PDT then
-            hybrid_set = sets.idle.PDT
-        elseif state.HybridMode.value == 'MDT' and sets.idle.MDT then
-            hybrid_set = sets.idle.MDT
-        end
-
-        if hybrid_set then
-            if is_shining or is_burtgang_kc then
-                -- Shining/BurtgangKC: Apply HybridMode WITHOUT sub (keep Alber Strap/Kraken Club)
-                local hybrid_no_sub = {}
-                for slot, item in pairs(hybrid_set) do
-                    if slot ~= 'sub' then
-                        hybrid_no_sub[slot] = item
-                    end
+    -- Step 5: Apply HybridMode (PDT/MDT/Sortie) outside of town - SKIP sub if Shining or BurtgangKC
+    local mode_set = hybrid_set(sets.idle, IDLE_SET_BY_MODE)
+    if mode_set then
+        if is_shining or is_burtgang_kc then
+            -- Shining/BurtgangKC: Apply HybridMode WITHOUT sub (keep Alber Strap/Kraken Club)
+            local hybrid_no_sub = {}
+            for slot, item in pairs(mode_set) do
+                if slot ~= 'sub' then
+                    hybrid_no_sub[slot] = item
                 end
-                result = set_combine(result, hybrid_no_sub)
-            else
-                -- Normal: Apply full HybridMode set (including sub)
-                result = set_combine(result, hybrid_set)
             end
+            result = set_combine(result, hybrid_no_sub)
+        else
+            -- Normal: Apply full HybridMode set (including sub)
+            result = set_combine(result, mode_set)
         end
     end
 
@@ -248,6 +293,9 @@ function SetBuilder.build_idle_set(base_set)
 
     -- Step 7: Apply movement speed
     result = SetBuilder.apply_movement(result)
+
+    -- Step 8: Sortie shield (weapon-driven, overrides any sub set above)
+    result = SetBuilder.apply_sortie_shield(result)
 
     return result
 end

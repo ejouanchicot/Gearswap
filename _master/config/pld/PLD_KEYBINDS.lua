@@ -29,7 +29,7 @@ local PLDKeybinds = {}
 
 --- Keybind definitions for PLD job
 --- Format: { key = "key_combo", command = "gs_command", desc = "description", state = "state_name", subjob = "required_subjob" }
-PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT)
+PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie)
 {
     key = "^numpad9",
     command = "cyclestate HybridMode",
@@ -56,6 +56,8 @@ PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT)
     state = "RuneMode",
     subjob = "RUN"
 },
+    { key = "^numpad2", command = "cyclestate PhalanxSIRD", desc = "Phalanx SIRD", state = "PhalanxSIRD" },
+    { key = "^numpad7", command = "cyclestate SneakInviAOE", desc = "Sneak/Invi AOE", state = "SneakInviAOE", subjob = "SCH" },
     { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 }
 
@@ -94,6 +96,15 @@ function PLDKeybinds.bind_all()
 
     -- Get filtered binds based on current subjob
     local active_binds = PLDKeybinds.get_active_binds()
+
+    -- Clear the whole key list before rebinding. bind_all only lays down
+    -- the keys the CURRENT subjob uses, so a conditional bind from the
+    -- previous subjob (Xp on /RDM, RuneMode on /RUN) would otherwise stay
+    -- bound to a state this subjob does not create, and the key would
+    -- silently do nothing.
+    for _, bind in pairs(PLDKeybinds.binds) do
+        pcall(send_command, 'unbind ' .. bind.key)
+    end
 
     -- Attempt to bind each key
     local bound_count = 0
