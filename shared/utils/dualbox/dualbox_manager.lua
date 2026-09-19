@@ -4,10 +4,11 @@
 ---   Manages communication between main and alt characters for dual-boxing.
 ---   Handles job change notifications and online status tracking.
 ---
----   Communication Flow:
----     ALT changes job >> send_job_update() >> send tetsouo gs c altjobupdate JOB SUBJOB
----     MAIN receives >> job_self_command() >> receive_alt_job() >> stores in _G.AltJobState
----     MAIN reloads macrobook based on alt job
+---   Communication Flow (both roles; "alt" = the other box):
+---     auto-init >> send_job_update() >> send <other> gs c altjobupdate JOB SUB MLVL SLVL
+---     auto-init >> request_alt_job() >> send <other> gs c requestjob
+---     requestjob >> handle_job_request() >> send_job_update(true)
+---     altjobupdate >> receive_alt_job() >> stores in _G.AltJobState, reloads macrobook
 ---
 ---   @file    shared/utils/dualbox/dualbox_manager.lua
 ---   @author  Tetsouo
@@ -128,22 +129,23 @@ function DualBoxManager.initialize(config)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   ALT ROLE FUNCTIONS (Kaories >> Tetsouo)
+---   SEND (both roles)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- De-dup window for send_job_update. Both sides reloading simultaneously
--- triggers two paths to send the same update almost back-to-back:
---   1. ALT auto-init proactively sends once it has player data
---   2. MAIN auto-init sends `requestjob`, ALT responds via handle_job_request
--- Without de-dup MAIN sees two identical altjobupdates per startup, and any
--- additional MAIN reloads pile on more redundant responses. State is stored
--- on `windower` so it survives `gs reload` (which wipes `_G`).
+-- De-dup window for send_job_update: an identical payload sent less than
+-- SEND_DEDUP_WINDOW seconds after the previous send is dropped. A reply to
+-- requestjob bypasses it (see send_job_update). State is stored on `windower`
+-- so it survives `gs reload` (which wipes `_G`).
 local SEND_DEDUP_WINDOW = 1.5
 
---- Send job update from ALT to MAIN
---- Called when alt character changes job
---- Uses windower send command to communicate with main character
-function DualBoxManager.send_job_update()
+--- Send this character's job to the other box (either role)
+--- Called at auto-init and in reply to a requestjob
+--- Uses windower send command to communicate with the other character
+--- @param force boolean|nil Skip the de-dup window. A reply to requestjob is
+---   forced: the other box asked because it has nothing, even if this box sent
+---   the same payload a moment ago (that send may have landed before the other
+---   box had initialised, and been dropped).
+function DualBoxManager.send_job_update(force)
     if not _G.DualBoxConfig or not _G.DualBoxConfig.enabled then
         return
     end
@@ -175,7 +177,8 @@ function DualBoxManager.send_job_update()
     -- Drop if we just sent the same payload within SEND_DEDUP_WINDOW seconds.
     -- Different payload = real job change, always send through.
     local now = os.clock()
-    if windower._dualbox_last_send_payload == payload
+    if not force
+       and windower._dualbox_last_send_payload == payload
        and windower._dualbox_last_send_time
        and (now - windower._dualbox_last_send_time) < SEND_DEDUP_WINDOW then
         return
@@ -207,15 +210,10 @@ function DualBoxManager.send_job_update()
     end
 end
 
---- Handle job request from MAIN
---- Called when ALT receives requestjob command
+--- Handle a job request from the other box (either role)
+--- Called when this character receives the requestjob command
 function DualBoxManager.handle_job_request()
     if not _G.DualBoxConfig or not _G.DualBoxConfig.enabled then
-        return
-    end
-
-    -- Only alt should respond
-    if _G.DualBoxConfig.role ~= "alt" then
         return
     end
 
@@ -225,22 +223,18 @@ function DualBoxManager.handle_job_request()
     end
 
     -- Send current job info
-    DualBoxManager.send_job_update()
+    DualBoxManager.send_job_update(true)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   MAIN ROLE FUNCTIONS (Tetsouo ← Kaories)
+---   REQUEST / RECEIVE (both roles: "alt" below means "the other box")
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Request job info from ALT
---- Called by MAIN on startup to get ALT's current job
+--- Ask the other box for its job
+--- Called by both roles at auto-init: a reload wipes _G.AltJobState, and the
+--- other box only sends on its own reload or when asked.
 function DualBoxManager.request_alt_job()
     if not _G.DualBoxConfig or not _G.DualBoxConfig.enabled then
-        return
-    end
-
-    -- Only main should request
-    if _G.DualBoxConfig.role ~= "main" then
         return
     end
 
@@ -278,6 +272,12 @@ function DualBoxManager.receive_alt_job(main_job, sub_job, main_level, sub_level
         return
     end
 
+    -- Both boxes send at every reload, so most updates repeat what this box
+    -- already holds: only a new job is announced and re-selects the macro book.
+    local previous = _G.AltJobState
+    local job_changed = not previous or previous.job ~= main_job
+        or previous.subjob ~= (sub_job or "NON")
+
     -- Store alt job state
     _G.AltJobState = {
         job = main_job,
@@ -308,7 +308,10 @@ function DualBoxManager.receive_alt_job(main_job, sub_job, main_level, sub_level
         end
     end
 
-    -- Always show alt job confirmation (info message)
+    if not job_changed then
+        return
+    end
+
     local alt_name = other or "Alt"
     get_MessageDualbox().show_job_update_received(alt_name, main_job, sub_job or "NON")
 
@@ -473,23 +476,32 @@ local function run_auto_init(attempt)
 
     DualBoxManager.initialize()
 
-    if _G.DualBoxConfig and _G.DualBoxConfig.role == "alt" then
-        if _G.DualBoxConfig.debug then
-            get_MessageDualbox().show_alt_role_detected()
-        end
-        DualBoxManager.send_job_update()
+    local role = _G.DualBoxConfig and _G.DualBoxConfig.role
+    if role ~= "alt" and role ~= "main" then
+        return
+    end
 
+    if _G.DualBoxConfig.debug then
+        if role == "alt" then
+            get_MessageDualbox().show_alt_role_detected()
+        else
+            get_MessageDualbox().show_main_role_detected()
+        end
+    end
+
+    -- Both directions, from both roles. This reload wiped this box's copy of
+    -- the other box's job, and the other box may have missed this box's job:
+    -- a send that lands before the receiver's own init is dropped.
+    DualBoxManager.send_job_update()
+    DualBoxManager.request_alt_job()
+
+    if role == "alt" then
         -- Also announce which tracked buffs are already up, otherwise the main
         -- starts blind until the next gain/loss.
         local abr_ok, AltBuffReporter = pcall(require, 'shared/utils/dualbox/alt_buff_reporter')
         if abr_ok and AltBuffReporter then
             AltBuffReporter.report_all()
         end
-    elseif _G.DualBoxConfig and _G.DualBoxConfig.role == "main" then
-        if _G.DualBoxConfig.debug then
-            get_MessageDualbox().show_main_role_detected()
-        end
-        DualBoxManager.request_alt_job()
     end
 end
 
