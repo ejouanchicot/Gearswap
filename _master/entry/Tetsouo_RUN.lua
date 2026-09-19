@@ -92,7 +92,11 @@ function get_sets()
     _G.LockstyleConfig = LockstyleConfig
     _G.RECAST_CONFIG = require('Tetsouo/config/RECAST_CONFIG')
 
-    -- RUN-specific configs (DISABLED FOR TESTING)
+    -- RUN-specific configs
+    -- aoe_manager reads _G.BluMagicConfig when first required (//gs c aoe)
+    _G.BluMagicConfig = require('Tetsouo/config/run/RUN_BLU_MAGIC')
+
+    -- (DISABLED FOR TESTING)
     --_G.RUNTPCONFIG = require('Tetsouo/config/run/RUN_TP_CONFIG')
     --_G.WardConfig = require('Tetsouo/config/run/RUN_WARD_CONFIG')
 
@@ -110,9 +114,6 @@ function get_sets()
     if jcm_success and JobChangeManager and cancel_run_lockstyle_operations then
         JobChangeManager.register_lockstyle_cancel("RUN", cancel_run_lockstyle_operations)
     end
-
-    -- Note: Macro/lockstyle are handled by JobChangeManager on job changes
-    -- Initial load will be handled by JobChangeManager after initialization
 
     Profiler.finish()
 end
@@ -184,11 +185,17 @@ function user_setup()
         -- Initialize with current job state
         JobChangeManager.initialize()
 
-        -- Trigger initial macrobook/lockstyle with delay
-        if player and select_default_macro_book and select_default_lockstyle then
-            select_default_macro_book()
-            coroutine.schedule(select_default_lockstyle, LockstyleConfig.initial_load_delay)
-        end
+        -- Trigger initial macrobook/lockstyle with delay.
+        -- user_setup() runs inside include('Mote-Include.lua'), before the
+        -- facade defines select_default_macro_book / select_default_lockstyle,
+        -- and RUN's keybind intro does not load them early as other jobs' do:
+        -- check once get_sets() has finished (same pattern as BRD).
+        coroutine.schedule(function()
+            if player and select_default_macro_book and select_default_lockstyle then
+                select_default_macro_book()
+                coroutine.schedule(select_default_lockstyle, LockstyleConfig.initial_load_delay)
+            end
+        end, 0.2)
     end
 
     -- ==========================================================================
