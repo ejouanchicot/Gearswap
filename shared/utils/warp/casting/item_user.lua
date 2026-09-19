@@ -131,6 +131,27 @@ local EXTDATA_TIME_OFFSET = 18000
 -- Safety delay after item appears ready (lag/desync protection)
 local SAFETY_DELAY = 3.5  -- Extra seconds to wait before using item (zone-dependent lag buffer)
 
+-- Bounds for the activation wait, in seconds.
+--
+-- A ring equipped from cold reports an activation delay of around twenty
+-- seconds. The wait used to be a flat budget of fifteen one-second polls, so
+-- it gave up while the item was still counting down - "Timeout after 15s -
+-- charges:1 recast:0 activation:6s" was the ring working exactly as intended
+-- and the loop running out of patience. The deadline now follows what the item
+-- reports, between a floor (an item that reads ready straight away still gets
+-- a chance) and a ceiling (ring1 is never held hostage by a stuck item).
+local WAIT_FLOOR   = 15
+local WAIT_CEILING = 60
+local WAIT_GRACE   = 5    -- slack on top of the delay the item reports
+
+-- Absolute stop for every path, including the ones that retry on their own
+-- (safety delay, missing mob record). Without it a path that never resolves
+-- leaves the ring1 slot disabled until a reload.
+local WAIT_HARD_CEILING = 90
+
+local POLL_INTERVAL  = 1.0
+local MAX_POLL_SLEEP = 5.0
+
 --- Check if a warp item is usable right now
 --- Handles both 'General' items (scrolls) and 'Enchanted Equipment' (rings/wings)
 function ItemUser._check_ring_usable(item_id)
@@ -311,6 +332,16 @@ end
 --- five times; forgetting it once is a stuck slot with no error.
 local function abandon_wait()
     send_command('gs enable ring1')
+
+    -- The warp ring is still on the finger here. Releasing the slot without
+    -- putting the normal set back leaves the player wearing it until the next
+    -- unrelated gear swap. Same 1s delay as cleanup_and_restore, to let
+    -- GearSwap process the unlock first.
+    coroutine.schedule(function()
+        if player then
+            restore_equipment()
+        end
+    end, 1.0)
 end
 
 --- Find a ring by id in any equippable, enabled bag.
@@ -357,11 +388,11 @@ local function usability(ext)
 end
 
 --- Say why the wait ran out, and what the player can do about it.
-local function report_timeout(tag, ext, max_wait, check_interval, recast_delay, activation_delay)
+local function report_timeout(tag, ext, waited, recast_delay, activation_delay)
     local charges = ext.charges_remaining or 0
     MessageWarp.show_casting_timeout(string.format(
         '[%s] Timeout after %ds - charges:%d recast:%ds activation:%ds',
-        tag, max_wait * check_interval, charges, recast_delay, activation_delay))
+        tag, waited, charges, recast_delay, activation_delay))
 
     if charges == 0 then
         MessageWarp.show_item_needs_recharge(tag, recast_delay)
@@ -394,13 +425,17 @@ end
 
 
 function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, initial_ring1)
-    local wait_count = 0
-    local max_wait = 15
-    local check_interval = 1  -- Check every second
-    local ready_timestamp = nil  -- Track when item first became ready (for safety delay)
+    local started = os.time()
+    local deadline = started + WAIT_FLOOR
+    local ready_timestamp = nil
+    local announced = false
 
     local function check_usable()
-        wait_count = wait_count + 1
+        if os.time() - started > WAIT_HARD_CEILING then
+            MessageWarp.show_casting_timeout(string.format(
+                '[%s] Gave up after %ds', tag, os.time() - started))
+            return abandon_wait()
+        end
 
         local has_extdata, extdata = pcall(require, 'extdata')
         if not has_extdata then
@@ -447,10 +482,6 @@ function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, i
 
             local elapsed = os.time() - ready_timestamp
             if elapsed < SAFETY_DELAY then
-                if wait_count >= max_wait then
-                    MessageWarp.show_safety_timeout(tag, max_wait, check_interval)
-                    return abandon_wait()
-                end
                 debug_log(string.format('Safety delay: %.1fs / %.1fs', elapsed, SAFETY_DELAY))
                 coroutine.schedule(check_usable, 0.5)
                 return
@@ -469,22 +500,32 @@ function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, i
 
             use_now(ring_name, ring_id, is_warp_ring, tag, initial_ring1)
             return
-
-        elseif wait_count < max_wait then
-            -- Announce the wait once, not every second.
-            if wait_count == 1 and activation_delay > 1 then
-                local COLORS = MessageCore.COLORS
-                local tag_color = MessageCore.create_color_code(COLORS.JOB_TAG)
-                local action_color = MessageCore.create_color_code(COLORS.SEPARATOR)
-                MessageWarp.show_waiting_safety(tag_color, tag, action_color, math.floor(activation_delay))
-            end
-
-            coroutine.schedule(check_usable, check_interval)
-
-        else
-            report_timeout(tag, ext, max_wait, check_interval, recast_delay, activation_delay)
-            abandon_wait()
         end
+
+        -- Not ready yet. Stretch the deadline to cover what the item now says
+        -- it needs; it only ever grows, and never past the ceiling.
+        local wanted = os.time() + math.max(recast_delay, activation_delay) + SAFETY_DELAY + WAIT_GRACE
+        if wanted > deadline then
+            deadline = math.min(wanted, started + WAIT_CEILING)
+        end
+
+        if os.time() >= deadline then
+            report_timeout(tag, ext, os.time() - started, recast_delay, activation_delay)
+            return abandon_wait()
+        end
+
+        -- Announce the wait once, not every second.
+        if not announced and activation_delay > 1 then
+            announced = true
+            local COLORS = MessageCore.COLORS
+            local tag_color = MessageCore.create_color_code(COLORS.JOB_TAG)
+            local action_color = MessageCore.create_color_code(COLORS.SEPARATOR)
+            MessageWarp.show_waiting_safety(tag_color, tag, action_color, math.floor(activation_delay))
+        end
+
+        -- Sleep for what is actually left instead of polling once a second.
+        local remaining = math.max(recast_delay, activation_delay)
+        coroutine.schedule(check_usable, math.min(math.max(remaining, POLL_INTERVAL), MAX_POLL_SLEEP))
     end
 
     -- Start checking
@@ -506,11 +547,30 @@ local function get_action_name(item_name, tag)
     return tag == 'WARP' and 'Warp' or 'Teleport'
 end
 
+--- Drop the auto-fix listeners left over from a previous sequence.
+---
+--- Only one ring sequence runs at a time, so a new sequence clears the pair
+--- the previous one may have left. The ids are parked on `windower.*`, the
+--- same convention as the IPC listener. Across a `gs reload` the engine has
+--- already unregistered every sandbox event (GearSwap refresh.lua:69-71), so
+--- this only matters for a re-entry within the same load.
+--- @return nil
+local function drop_stale_autofix_listeners()
+    for _, key in ipairs({ '_warp_autofix_action_id', '_warp_autofix_zone_id' }) do
+        if windower[key] then
+            pcall(windower.unregister_event, windower[key])
+            windower[key] = nil
+        end
+    end
+end
+
 function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, item_name)
     local cleanup_done = false
     local initial_status = player and player.status or 'Idle'
     local action_listener = nil
     local zone_listener = nil
+
+    drop_stale_autofix_listeners()
 
     -- Detect action name for dynamic messages (Warp, Teleport, Recall, Escape)
     local action_name = get_action_name(item_name, tag)
@@ -578,10 +638,12 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
         -- Unregister all listeners
         if action_listener then
             windower.unregister_event(action_listener)
+            windower._warp_autofix_action_id = nil
             debug_log('Action listener unregistered')
         end
         if zone_listener then
             windower.unregister_event(zone_listener)
+            windower._warp_autofix_zone_id = nil
             debug_log('Zone listener unregistered')
         end
 
@@ -632,6 +694,7 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
         end
     end)
 
+    windower._warp_autofix_action_id = action_listener
     debug_log('Action listener registered (watching for category 1)')
 
     -- Register zone change listener
@@ -640,6 +703,7 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
         cleanup_and_restore('success')
     end)
 
+    windower._warp_autofix_zone_id = zone_listener
     debug_log('Zone change listener registered')
 
     -- Monitor cast status in real-time
