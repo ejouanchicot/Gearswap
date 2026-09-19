@@ -20,9 +20,6 @@ local WatchdogCommands = nil
 local CycleHandler = nil
 local MessageFormatter = nil
 local MessageCommands = nil
-local JA_DB = nil
-local WS_DB = nil
-local MA_DB = nil
 
 local function ensure_commands_loaded()
     if not UICommands then
@@ -32,11 +29,35 @@ local function ensure_commands_loaded()
         CycleHandler = require('shared/utils/core/CYCLE_HANDLER')
         MessageFormatter = require('shared/utils/messages/message_formatter')
         MessageCommands = require('shared/utils/messages/formatters/ui/message_commands')
-        JA_DB = require('shared/data/job_abilities/UNIVERSAL_JA_DATABASE')
-        WS_DB = require('shared/data/weaponskills/UNIVERSAL_WS_DATABASE')
-        local MA_DB_MODULE = require('shared/data/magic/UNIVERSAL_SPELL_DATABASE')
-        MA_DB = MA_DB_MODULE.spells or {}
     end
+end
+
+-- Game resource tables searched by the cast-by-name fallback, in the order
+-- a name is tried: ability, then weaponskill, then spell.
+-- res.job_abilities also holds pet moves (prefix '/pet'), and 51 of them share
+-- a spell's name (Fire II, Hastega, Sheep Song...), so only the player's own
+-- abilities ('/jobability') count as a /ja.
+local ACTION_RESOURCES = {
+    {prefix = '/ja', resource = 'job_abilities', res_prefix = '/jobability'},
+    {prefix = '/ws', resource = 'weapon_skills'},
+    {prefix = '/ma', resource = 'spells'},
+}
+
+--- Command prefix that casts an action name, from the game resources.
+--- @param action_name string Exact English name ("Refresh II", "Savage Blade")
+--- @return string|nil '/ja', '/ws' or '/ma'; nil when no resource has the name
+local function resolve_action_prefix(action_name)
+    if not res then
+        return nil
+    end
+    for _, entry in ipairs(ACTION_RESOURCES) do
+        local resource = res[entry.resource]
+        local found = resource and resource:with('en', action_name)
+        if found and (not entry.res_prefix or found.prefix == entry.res_prefix) then
+            return entry.prefix
+        end
+    end
+    return nil
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -346,31 +367,13 @@ function job_self_command(cmdParams, eventArgs)
             end
 
             -- Auto-detect action type (JA, WS, or Magic)
-            local action_type = nil
-            local action_found = false
+            local action_type = resolve_action_prefix(spell_name)
 
-            -- Check if it's a Job Ability
-            if JA_DB[spell_name] then
-                action_type = '/ja'
-                action_found = true
-            -- Check if it's a Weaponskill
-            elseif WS_DB[spell_name] then
-                action_type = '/ws'
-                action_found = true
-            -- Check if it's a Magic spell
-            elseif MA_DB[spell_name] then
-                action_type = '/ma'
-                action_found = true
+            if action_type then
+                send_command('input ' .. action_type .. ' "' .. spell_name .. '" ' .. target)
             else
-                -- Command not recognized - show error message
                 MessageFormatter.show_error(string.format("Command not recognized: '%s'", spell_name))
                 MessageFormatter.show_info("Valid types: Job Abilities, Weaponskills, Magic Spells")
-                action_found = false
-            end
-
-            -- Execute command if valid
-            if action_found and action_type then
-                send_command('input ' .. action_type .. ' "' .. spell_name .. '" ' .. target)
             end
         end
     end
@@ -382,7 +385,10 @@ end
 
 ---   Update UI when state changes
 ---   Called after state changes to update UI display
----   @param stateField string The state field that changed
+---
+---   The UI-aware cycle passes the state key ('MainWeapon'), Mote passes the
+---   description ('Main Weapon'); stripping spaces accepts both.
+---   @param stateField string The state key or description that changed
 ---   @param newValue any The new value
 ---   @param oldValue any The old value
 function job_state_change(stateField, newValue, oldValue)
@@ -397,8 +403,10 @@ function job_state_change(stateField, newValue, oldValue)
         KeybindUI.update()
     end
 
+    local field = type(stateField) == 'string' and stateField:gsub(' ', '') or stateField
+
     -- Force equipment refresh when weapon states change
-    if stateField == 'MainWeapon' or stateField == 'SubWeapon' then
+    if field == 'MainWeapon' or field == 'SubWeapon' then
         -- Re-equip gear with new weapons
         if player and player.status then
             handle_equipping_gear(player.status)

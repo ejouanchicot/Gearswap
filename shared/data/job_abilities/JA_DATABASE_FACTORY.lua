@@ -14,7 +14,6 @@
 ---
 ---   Consumers:
 ---     - shared/utils/messages/handlers/ability_message_handler.lua (per-job)
----     - shared/data/job_abilities/UNIVERSAL_JA_DATABASE.lua (main+sub)
 ---
 ---   @file    shared/data/job_abilities/JA_DATABASE_FACTORY.lua
 ---   @author  Tetsouo

@@ -15,7 +15,7 @@ local RDMKeybinds = {}
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 -- Keybind definitions - NUMPAD ONLY (Numpad + Alt+Numpad)
--- Format: { key = "key", command = "gs_command", desc = "description", state = "state_name" }
+-- Format: { key = "key", command = "gs_command", desc = "description", state = "state_name", subjob = "required_subjob" }
 RDMKeybinds.binds = {
     ---========================================================================
     --- NUMPAD KEYS (States - 10 touches)
@@ -54,6 +54,24 @@ RDMKeybinds.binds = {
 --- KEYBIND MANAGEMENT
 ---============================================================================
 
+--- Get filtered keybinds based on current subjob
+--- Filters out subjob-specific binds that don't match current subjob.
+---
+--- @return table Filtered keybinds appropriate for current subjob
+function RDMKeybinds.get_active_binds()
+    local active_binds = {}
+    local current_subjob = player and player.sub_job or nil
+
+    for _, bind in ipairs(RDMKeybinds.binds) do
+        -- Include bind if no subjob requirement, or if subjob matches
+        if not bind.subjob or bind.subjob == current_subjob then
+            table.insert(active_binds, bind)
+        end
+    end
+
+    return active_binds
+end
+
 --- Apply all keybinds
 function RDMKeybinds.bind_all()
     if not RDMKeybinds.binds or #RDMKeybinds.binds == 0 then
@@ -61,8 +79,16 @@ function RDMKeybinds.bind_all()
         return false
     end
 
-    local bound_count = 0
+    -- Clear the whole key list before rebinding. bind_all only lays down
+    -- the keys the CURRENT subjob uses, so a conditional bind from the
+    -- previous subjob (Storm on /SCH) would otherwise stay bound to a state
+    -- this subjob does not create, and the key would silently do nothing.
     for _, bind in pairs(RDMKeybinds.binds) do
+        pcall(send_command, 'unbind ' .. bind.key)
+    end
+
+    local bound_count = 0
+    for _, bind in pairs(RDMKeybinds.get_active_binds()) do
         local success, error_msg = pcall(send_command, 'bind ' .. bind.key .. ' gs c ' .. bind.command)
         if success then
             bound_count = bound_count + 1
@@ -110,11 +136,12 @@ function RDMKeybinds.show_intro()
         lockstyle_info = RDM_LOCKSTYLE.get_info()
     end
 
-    -- Display formatted intro with macro and lockstyle info
+    -- Display formatted intro with macro and lockstyle info (binds for this subjob)
+    local active_binds = RDMKeybinds.get_active_binds()
     if macro_info or lockstyle_info then
-        MessageFormatter.show_system_intro_complete("RDM SYSTEM LOADED", RDMKeybinds.binds, macro_info, lockstyle_info)
+        MessageFormatter.show_system_intro_complete("RDM SYSTEM LOADED", active_binds, macro_info, lockstyle_info)
     else
-        MessageFormatter.show_system_intro("RDM SYSTEM LOADED", RDMKeybinds.binds)
+        MessageFormatter.show_system_intro("RDM SYSTEM LOADED", active_binds)
     end
 end
 
