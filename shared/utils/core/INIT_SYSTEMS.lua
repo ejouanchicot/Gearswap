@@ -125,6 +125,20 @@ else
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
+---   IMMEDIATE: JOB SYNC WATCHDOG
+---  ═══════════════════════════════════════════════════════════════════════════
+-- GearSwap picks the job file from the job-change REQUEST, so a refused or
+-- reordered request leaves the wrong file loaded - wrong keybinds, missing
+-- states - and nothing corrects it. The job read here is the one this file was
+-- loaded for; the watchdog compares it against the client from then on.
+local jsw_ok, JobSyncWatchdog = pcall(require, 'shared/utils/core/job_sync_watchdog')
+if jsw_ok and JobSyncWatchdog then
+    JobSyncWatchdog.start(player and player.main_job)
+else
+    ensure_message_init().show_module_load_failed('Job Sync Watchdog', JobSyncWatchdog)
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
 ---   IMMEDIATE: DUAL-BOX SYNC IPC
 ---  ═══════════════════════════════════════════════════════════════════════════
 -- Registers a Windower IPC listener and the per-command hooks. Loaded
