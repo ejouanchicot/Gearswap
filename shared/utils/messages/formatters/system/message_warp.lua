@@ -571,14 +571,6 @@ function MessageWarp.show_item_on_cooldown(tag, cooldown_delay)
     add_to_chat(167, '[' .. tag .. '] Item is on cooldown (' .. math.floor(cooldown_delay) .. 's remaining)')
 end
 
---- Show timeout during safety delay
---- @param tag string Item tag
---- @param max_wait number Max wait time
---- @param check_interval number Check interval
-function MessageWarp.show_safety_timeout(tag, max_wait, check_interval)
-    add_to_chat(167, string.format('[%s] Timeout during safety delay after %ds', tag, max_wait * check_interval))
-end
-
 --- Show waiting for safety delay
 --- @param tag_color string Tag color code
 --- @param tag string Item tag
