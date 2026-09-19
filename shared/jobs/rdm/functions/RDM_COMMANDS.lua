@@ -60,6 +60,14 @@ local function resolve_action_prefix(action_name)
     return nil
 end
 
+--- Mote's command table. Its __index also answers the alt's commands
+--- (AltCommands.install_fallback).
+--- @return table|nil selfCommandMaps, nil before Mote has built it
+local function mote_command_maps()
+    local maps = rawget(_G, 'selfCommandMaps')
+    return type(maps) == 'table' and maps or nil
+end
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   HELPER TABLES (Reduce code duplication)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -203,10 +211,12 @@ function job_self_command(cmdParams, eventArgs)
     ---   MOTE-INCLUDE NATIVE COMMANDS (prevent fallback)
     ---  ─────────────────────────────────────────────────────────────────────────
 
-    if command == 'update' or command == 'cycle' or command == 'cycleback' or command == 'set' or command == 'reset' or command == 'toggle' then
-        -- Mote-Include native commands (update, cycle, set, etc.)
-        -- Don't handle these - let Mote process them after job_self_command returns
-        -- Just exit early to prevent fallback from trying to cast them
+    -- Mote's own commands (update, cycle, set, naked...) are left unhandled:
+    -- Mote runs them once job_self_command returns. rawget, because a plain
+    -- lookup would also answer the alt's command names, and those must not
+    -- get past the RDM commands below.
+    local mote_maps = mote_command_maps()
+    if mote_maps and rawget(mote_maps, command) then
         return
     end
 
@@ -349,8 +359,6 @@ function job_self_command(cmdParams, eventArgs)
         local spell_name = table.concat(cmdParams, " ")
 
         if spell_name and spell_name ~= "" then
-            eventArgs.handled = true
-
             -- Default target: <me> (self - avoids sub-target cursor)
             -- Can be overridden by adding target after spell name (e.g., <stpc>, <t>)
             local target = '<me>'
@@ -370,8 +378,14 @@ function job_self_command(cmdParams, eventArgs)
             local action_type = resolve_action_prefix(spell_name)
 
             if action_type then
+                eventArgs.handled = true
                 send_command('input ' .. action_type .. ' "' .. spell_name .. '" ' .. target)
+            elseif mote_maps and mote_maps[cmdParams[1]] then
+                -- Not an action but one of the alt's commands: left unhandled,
+                -- Mote runs it through selfCommandMaps.
+                return
             else
+                eventArgs.handled = true
                 MessageFormatter.show_error(string.format("Command not recognized: '%s'", spell_name))
                 MessageFormatter.show_info("Valid types: Job Abilities, Weaponskills, Magic Spells")
             end
