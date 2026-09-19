@@ -198,8 +198,14 @@ function job_get_spell_map(spell, default_spell_map)
         -- ══════════════════════════════════════════════════════════════════════════
         -- CURE MAPPING (with Afflatus Solace detection)
         -- ══════════════════════════════════════════════════════════════════════════
-        -- Map Cure/Curaga to CureMelee if engaged (checked FIRST, higher priority)
-        if (default_spell_map == 'Cure' or default_spell_map == 'Curaga') and player and player.status == 'Engaged' then
+        -- Map Cure/Curaga to CureMelee if engaged (checked FIRST, higher priority),
+        -- but only when that set holds gear. The template ships
+        -- `sets.midcast.CureMelee = {}` as a placeholder: job_midcast would equip
+        -- that empty table and skip Mote's default, so the cure kept its precast
+        -- gear. Without it, the cure keeps its Cure/Curaga map and CureMode.
+        local melee_set = sets.midcast and sets.midcast.CureMelee
+        if (default_spell_map == 'Cure' or default_spell_map == 'Curaga') and player and player.status == 'Engaged'
+            and melee_set and next(melee_set) ~= nil then
             return 'CureMelee'
         end
 
