@@ -255,12 +255,13 @@ sets.precast.WS = {
     back = Ogma.STP,
 }
 
--- • GREAT SWORD WEAPONSKILLS
-sets.precast.WS['Resolution'] = {}
-sets.precast.WS['Dimidiation'] = {}
-sets.precast.WS['Herculean Slash'] = {}
-sets.precast.WS['Spinning Slash'] = {}
-sets.precast.WS['Ground Strike'] = {}
+-- • GREAT SWORD WEAPONSKILLS (generic gear until given their own; an empty
+--   named set would hide sets.precast.WS and equip nothing)
+sets.precast.WS['Resolution'] = set_combine(sets.precast.WS, {})
+sets.precast.WS['Dimidiation'] = set_combine(sets.precast.WS, {})
+sets.precast.WS['Herculean Slash'] = set_combine(sets.precast.WS, {})
+sets.precast.WS['Spinning Slash'] = set_combine(sets.precast.WS, {})
+sets.precast.WS['Ground Strike'] = set_combine(sets.precast.WS, {})
 
 -- • DEBUFF WEAPONSKILLS
 sets.precast.WS['Armor Break'] = {
