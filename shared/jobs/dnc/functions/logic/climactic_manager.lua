@@ -28,9 +28,28 @@ local ClimaticManager = {}
 local AbilityHelper = require('shared/utils/precast/ability_helper')
 local DNCWSConfig = _G.DNCWSConfig or {}  -- Loaded from character main file
 
+-- The game shows one buff per count up to 5, then a single "(6+)" buff.
+local FINISHING_MOVES_3_PLUS = {
+    'Finishing Move 3',
+    'Finishing Move 4',
+    'Finishing Move 5',
+    'Finishing Move (6+)',
+}
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   AUTO-TRIGGER LOGIC
 ---  ═══════════════════════════════════════════════════════════════════════════
+
+--- True when at least 3 Finishing Moves are up.
+--- @return boolean
+local function has_three_finishing_moves()
+    for _, buff_name in ipairs(FINISHING_MOVES_3_PLUS) do
+        if buffactive[buff_name] then
+            return true
+        end
+    end
+    return false
+end
 
 ---   Auto-trigger Climactic Flourish before configured weaponskills
 ---   @param spell table Weaponskill spell object
@@ -49,7 +68,7 @@ function ClimaticManager.auto_trigger(spell, eventArgs)
     -- Check conditions: TP >= min_tp, target HP > min_hpp, 3+ Finishing Moves
     if player.tp >= DNCWSConfig.min_tp and
         player.target and player.target.hpp and player.target.hpp > DNCWSConfig.min_target_hpp and
-        (buffactive['Finishing Move (3+)'] or buffactive['Finishing Move (6+)']) then
+        has_three_finishing_moves() then
         -- Check if this WS is configured to auto-trigger Climactic Flourish
         if DNCWSConfig.should_use_climactic(spell.name) then
             -- Use centralized ability helper (1s delay before WS - optimized from 2s)
