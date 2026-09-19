@@ -350,12 +350,7 @@ MessageFormatter.show_spell_refinement_error = function(...) return get_BLMMessa
 MessageFormatter.show_spell_recasts_error = function(...) return get_BLMMessages().show_spell_recasts_error(...) end
 MessageFormatter.show_insufficient_mp_error = function(...) return get_BLMMessages().show_insufficient_mp_error(...) end
 MessageFormatter.show_breakga_blocked = function(...) return get_BLMMessages().show_breakga_blocked(...) end
-MessageFormatter.show_buffself_recasts_error = function(...) return get_BLMMessages().show_buffself_recasts_error(...) end
-MessageFormatter.show_buffself_resources_error = function(...) return get_BLMMessages().show_buffself_resources_error(...) end
 MessageFormatter.show_buff_casting = function(...) return get_BLMMessages().show_buff_casting(...) end
-MessageFormatter.show_unknown_buff_error = function(...) return get_BLMMessages().show_unknown_buff_error(...) end
-MessageFormatter.show_buff_already_active = function(...) return get_BLMMessages().show_buff_already_active(...) end
-MessageFormatter.show_manual_buff_cast = function(...) return get_BLMMessages().show_manual_buff_cast(...) end
 
 -- BST functions (Beastmaster) - LAZY LOADED
 -- Legacy names with show_bst_ prefix (backward compatibility)

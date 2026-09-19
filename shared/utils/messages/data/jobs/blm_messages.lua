@@ -147,16 +147,6 @@ return {
         color = 1
     },
 
-    buffself_recasts_error = {
-        template = "{gray}[{lightblue}{job}{gray}] {red}Error: Failed to get spell recasts for BuffSelf",
-        color = 1
-    },
-
-    buffself_resources_error = {
-        template = "{gray}[{lightblue}{job}{gray}] {red}Error: Failed to load resources for BuffSelf",
-        color = 1
-    },
-
     ---========================================================================
     --- BUFF MANAGEMENT MESSAGES
     ---========================================================================
@@ -168,21 +158,6 @@ return {
 
     buff_status = {
         template = "{gray}[{lightblue}{job}{gray}]{gray} Buff Status: {status}",
-        color = 1
-    },
-
-    unknown_buff_error = {
-        template = "{gray}[{lightblue}{job}{gray}]{gray} Error: {red}Unknown buff spell: {spell}",
-        color = 1
-    },
-
-    buff_already_active = {
-        template = "{gray}[{lightblue}{job}{gray}]{gray} Buff {green}{spell}{gray} already active",
-        color = 1
-    },
-
-    manual_buff_cast = {
-        template = "{gray}[{lightblue}{job}{gray}]{gray} Manual buff cast: {cyan}{spell}",
         color = 1
     }
 }

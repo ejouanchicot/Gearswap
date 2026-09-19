@@ -283,20 +283,6 @@ function BLMMessages.show_breakga_blocked()
     })
 end
 
---- Display error for failed spell recasts in BuffSelf
-function BLMMessages.show_buffself_recasts_error()
-    M.job('BLM', 'buffself_recasts_error', {
-        job = get_job_tag()
-    })
-end
-
---- Display error for failed resources loading in BuffSelf
-function BLMMessages.show_buffself_resources_error()
-    M.job('BLM', 'buffself_resources_error', {
-        job = get_job_tag()
-    })
-end
-
 --- Display buff casting message
 --- @param spell_name string Name of the buff spell
 --- @param delay number Delay in seconds before casting (unused, kept for compatibility)
@@ -313,33 +299,6 @@ function BLMMessages.show_buff_status(status_string)
     M.job('BLM', 'buff_status', {
         job = get_job_tag(),
         status = status_string
-    })
-end
-
---- Display error for unknown buff spell
---- @param spell_name string Name of the unknown spell
-function BLMMessages.show_unknown_buff_error(spell_name)
-    M.job('BLM', 'unknown_buff_error', {
-        job = get_job_tag(),
-        spell = spell_name
-    })
-end
-
---- Display buff already active message
---- @param spell_name string Name of the buff spell
-function BLMMessages.show_buff_already_active(spell_name)
-    M.job('BLM', 'buff_already_active', {
-        job = get_job_tag(),
-        spell = spell_name
-    })
-end
-
---- Display manual buff cast message
---- @param spell_name string Name of the buff spell
-function BLMMessages.show_manual_buff_cast(spell_name)
-    M.job('BLM', 'manual_buff_cast', {
-        job = get_job_tag(),
-        spell = spell_name
     })
 end
 
