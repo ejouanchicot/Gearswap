@@ -11,7 +11,6 @@
 ---   • WS range validation (6y melee, 15y ranged)
 ---   • TP bonus calculation (Moonshade Earring automation)
 ---   • SA/TA pending flag tracking (instant detection before buff appears)
----   • Treasure Hunter tagging support (TreasureMode state)
 ---
 ---   Processing Order (CRITICAL - do not reorder):
 ---   1. Debuff guard (PrecastGuard) - blocks if silenced/amnesia/stunned
@@ -20,6 +19,7 @@
 ---   4. WS validation (WSPrecastHandler) - TP check + range check
 ---   5. TP bonus calculation (TPBonusCalculator) - optimize WS gear
 ---   6. SA/TA variant selection (SATAManager) - apply set variants
+---   7. TP bonus gear applied last (post-precast), over the variant
 ---
 ---   @file    THF_PRECAST.lua
 ---   @author  Tetsouo
@@ -121,14 +121,16 @@ end
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
+    -- THF-SPECIFIC: Apply WS set variant based on SA/TA buffs.
+    -- Before the TP gear: the variants are full WS sets and would overwrite
+    -- the Moonshade Earring.
+    if spell.type == 'WeaponSkill' and SATAManager then
+        SATAManager.apply_variant(spell)
+    end
+
     -- Apply TP gear via unified handler
     if WSPrecastHandler then
         WSPrecastHandler.apply_tp_gear(spell)
-    end
-
-    -- THF-SPECIFIC: Apply WS set variant based on SA/TA buffs
-    if spell.type == 'WeaponSkill' and SATAManager then
-        SATAManager.apply_variant(spell)
     end
 end
 
