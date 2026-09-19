@@ -95,13 +95,22 @@ end
 ---   PRECAST HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Extracted from job_precast: the `spell.type == 'Samba' and MessageFormatter` branch.
+--- Cancel a Samba the player cannot pay for, before it reaches the server.
+--- Each Samba has its own cost (Drain 100, Drain II 250, Haste 350, Drain III
+--- 400), read from the resource line GearSwap puts on the spell.
+--- Trance makes dances free (shared/data/job_abilities/dnc/dnc_sp.lua).
+--- @param spell table Spell information from GearSwap
+--- @param eventArgs table Event args (eventArgs.cancel for cancellation)
 local function job_precast_samba(spell, eventArgs)
-    local current_tp = player and player.tp or 0
-    if current_tp < 350 then
-        MessageFormatter.show_ability_tp_error(spell.name, current_tp, 350)
-        eventArgs.cancel = true
+    if buffactive['Trance'] then
         return
+    end
+
+    local cost = spell.tp_cost or 0
+    local current_tp = player and player.tp or 0
+    if current_tp < cost then
+        MessageFormatter.show_ability_tp_error(spell.name, current_tp, cost)
+        eventArgs.cancel = true
     end
 end
 
@@ -153,7 +162,7 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- DNC-SPECIFIC: Samba TP requirement (350 TP)
+    -- DNC-SPECIFIC: Samba TP cost
     if spell.type == 'Samba' and MessageFormatter then
         job_precast_samba(spell, eventArgs)
     end
