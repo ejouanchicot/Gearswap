@@ -4,7 +4,7 @@
 ---   Watches a paired (ammo / quiver) item and auto-uses the quiver to
 ---   replenish the ammo stack when the count drops at or below a threshold.
 ---
----   Typical use: hooked from job_aftercast for spell.type == 'RangedAttack'.
+---   Typical use: QuiverManager.after_ranged_attack() from job_aftercast.
 ---
 ---   Constraints:
 ---     • FFXI's `/item` command only works on inventory items, so the quiver
@@ -133,6 +133,34 @@ function QuiverManager.check_and_refill(ammo_name, quiver_name, threshold)
             ('%s low (%d) -> opening %s'):format(ammo_name, ammo_total, quiver_name))
     end
 
+    return true
+end
+
+--- Schedule a refill check after a completed ranged attack with this ammo.
+---
+--- A ranged attack is recognised by spell.action_type: GearSwap gives /ra the
+--- type 'Misc'. The check only runs when the tracked ammo is the one equipped,
+--- so a ranged attack with other ammo does not warn about a stack that is not
+--- in use. It is delayed so FFXI has decremented the ammo count before it is
+--- read.
+--- @param spell table Spell from job_aftercast
+--- @param ammo_name string e.g. 'Acid Bolt'
+--- @param quiver_name string e.g. 'Ac. Bolt Quiver'
+--- @param threshold number Open when the ammo total is at or below this
+--- @return boolean True when a check was scheduled
+function QuiverManager.after_ranged_attack(spell, ammo_name, quiver_name, threshold)
+    if not spell or spell.action_type ~= 'Ranged Attack' or spell.interrupted then
+        return false
+    end
+
+    local equipped = player and player.equipment and player.equipment.ammo
+    if equipped ~= ammo_name then
+        return false
+    end
+
+    coroutine.schedule(function()
+        QuiverManager.check_and_refill(ammo_name, quiver_name, threshold)
+    end, 1.0)
     return true
 end
 

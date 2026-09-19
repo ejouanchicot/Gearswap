@@ -87,9 +87,10 @@ local function job_precast_double_up()
 end
 
 -- Spell type to the class name Mote looks the precast set up under.
+-- Ranged attacks need no entry: Mote reaches sets.precast.RA through
+-- spell.action_type.
 local CUSTOM_CLASS_BY_TYPE = {
     ['CorsairShot']   = 'CorsairShot',
-    ['Ranged Attack'] = 'RA',
 }
 
 --- COR's own precast handling.

@@ -55,9 +55,9 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         _G.MidcastWatchdog.on_midcast_start(spell)
     end
 
-    -- Ranged attacks are matched on type, not skill, and want the RA set:
-    -- the gear that matters is snapshot while the bullet is in flight.
-    if spell.type == 'Ranged Attack' then
+    -- Ranged attacks are matched on action_type (GearSwap gives /ra the type
+    -- 'Misc' and no skill) and want the RA set, sets.midcast.RA.
+    if spell.action_type == 'Ranged Attack' then
         MidcastManager.select_set({skill = 'RA', spell = spell})
         return
     end
