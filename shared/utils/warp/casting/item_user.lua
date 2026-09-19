@@ -550,17 +550,20 @@ end
 --- Drop the auto-fix listeners left over from a previous sequence.
 ---
 --- Only one ring sequence runs at a time, so a new sequence clears the pair
---- the previous one may have left. The ids are parked on `windower.*`, the
---- same convention as the IPC listener. Across a `gs reload` the engine has
---- already unregistered every sandbox event (GearSwap refresh.lua:69-71), so
---- this only matters for a re-entry within the same load.
+--- the previous one may have left. The ids are parked on `windower.*` with the
+--- load that registered them (windower._gs_reload_count), the same convention
+--- as the IPC listener. Across a `gs reload` the engine has already
+--- unregistered every sandbox event (GearSwap refresh.lua:69-71) and an old id
+--- could now belong to another listener, so only ids from this load are
+--- unregistered.
 --- @return nil
 local function drop_stale_autofix_listeners()
+    local same_load = windower._warp_autofix_load == windower._gs_reload_count
     for _, key in ipairs({ '_warp_autofix_action_id', '_warp_autofix_zone_id' }) do
-        if windower[key] then
+        if windower[key] and same_load then
             pcall(windower.unregister_event, windower[key])
-            windower[key] = nil
         end
+        windower[key] = nil
     end
 end
 
@@ -569,6 +572,7 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
     local initial_status = player and player.status or 'Idle'
     local action_listener = nil
     local zone_listener = nil
+    local my_load = windower._gs_reload_count
 
     drop_stale_autofix_listeners()
 
@@ -635,16 +639,20 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
 
         debug_log('Cleanup triggered - Reason: ' .. tostring(reason))
 
-        -- Unregister all listeners
-        if action_listener then
-            windower.unregister_event(action_listener)
-            windower._warp_autofix_action_id = nil
-            debug_log('Action listener unregistered')
-        end
-        if zone_listener then
-            windower.unregister_event(zone_listener)
-            windower._warp_autofix_zone_id = nil
-            debug_log('Zone listener unregistered')
+        -- Unregister all listeners. After a reload (the timeout path keeps
+        -- running) the engine already removed them, and their ids and the
+        -- windower slots may belong to the new load: leave those alone.
+        if my_load == windower._gs_reload_count then
+            if action_listener then
+                windower.unregister_event(action_listener)
+                windower._warp_autofix_action_id = nil
+                debug_log('Action listener unregistered')
+            end
+            if zone_listener then
+                windower.unregister_event(zone_listener)
+                windower._warp_autofix_zone_id = nil
+                debug_log('Zone listener unregistered')
+            end
         end
 
         -- Re-enable ring slot
@@ -704,6 +712,7 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
     end)
 
     windower._warp_autofix_zone_id = zone_listener
+    windower._warp_autofix_load = my_load
     debug_log('Zone change listener registered')
 
     -- Monitor cast status in real-time
