@@ -12,12 +12,12 @@
 ---
 ---   Priority System:
 ---     • Silence: Echo Drops (Priority 1) → Remedy (Priority 2)
----     • Paralysis: Remedy only (cures ID 4 + ID 566)
+---     • Paralysis: Remedy (Priority 1) -> Panacea (Priority 2)
 ---
 ---   @file    shared/config/DEBUFF_AUTOCURE_CONFIG.lua
 ---   @author  Tetsouo GearSwap Project
----   @version 1.2 - Refactored with new header style
----   @date    Updated: 2025-11-12
+---   @version 1.3 - Panacea added as paralysis fallback
+---   @date    Updated: 2026-08-18
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local DebuffAutoCureConfig = {}
@@ -47,7 +47,8 @@ DebuffAutoCureConfig.silence_cure_items   = {
 ---  ─────────────────────────────────────────────────────────────────────────
 DebuffAutoCureConfig.auto_cure_paralysis  = true
 DebuffAutoCureConfig.paralysis_cure_items = {
-    { name = "Remedy",     id = 4155 }   -- Cures Paralysis (ID 4) + Paralyzed (ID 566)
+    { name = "Remedy",     id = 4155 },  -- Priority 1: cures Paralysis (ID 4) + Paralyzed (ID 566)
+    { name = "Panacea",    id = 4145 }   -- Priority 2: fallback when Remedy runs out
 }
 
 ---  ─────────────────────────────────────────────────────────────────────────
