@@ -187,21 +187,13 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
-    if spell.type == 'BardSong' then
-        -- Refinement runs BEFORE the cooldown check, and must keep doing so.
-        -- A song on recast can be downgraded - Lullaby II to Lullaby I - but
-        -- only if it is still alive to downgrade; checking the cooldown first
-        -- cancels it outright and the downgrade never happens. This is the one
-        -- documented departure from the standard precast order.
-        if SongRefinement.refine_song(spell, eventArgs) then
-            return
-        end
-
-        job_precast_bardsong(spell, eventArgs)
-
-        if try_marcato(spell, eventArgs) then
-            return
-        end
+    -- Refinement runs BEFORE the cooldown check, and must keep doing so.
+    -- A song on recast can be downgraded - Lullaby II to Lullaby I - but
+    -- only if it is still alive to downgrade; checking the cooldown first
+    -- cancels it outright and the downgrade never happens. This is the one
+    -- documented departure from the standard precast order.
+    if spell.type == 'BardSong' and SongRefinement.refine_song(spell, eventArgs) then
+        return
     end
 
     if CooldownChecker then
@@ -214,6 +206,16 @@ function job_precast(spell, action, spellMap, eventArgs)
 
     if eventArgs.cancel then
         return
+    end
+
+    -- Pianissimo and Marcato spend a job ability and re-send the song, so they
+    -- wait until the song's own recast has passed: a song on recast would
+    -- burn the ability and then be refused.
+    if spell.type == 'BardSong' then
+        job_precast_bardsong(spell, eventArgs)
+        if eventArgs.cancel or try_marcato(spell, eventArgs) then
+            return
+        end
     end
 
     if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, BRDTPConfig) then

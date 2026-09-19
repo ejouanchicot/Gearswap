@@ -84,47 +84,9 @@ local CAROLS = {Fire='Fire Carol II', Ice='Ice Carol II', Wind='Wind Carol II',
     Earth='Earth Carol II', Lightning='Lightning Carol II', Water='Water Carol II',
     Light='Light Carol II', Dark='Dark Carol II'}
 
-local MARCATO_TARGETS = {HonorMarch='Honor March', AriaPassion='Aria of Passion'}
-
-local MARCATO_RECAST_ID = 48  -- Job ability recast slot for Marcato
-
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   HELPER FUNCTIONS
 ---  ═══════════════════════════════════════════════════════════════════════════
-
---- True if the current target is a different PC (not self).
-local function is_targeting_other_pc()
-    if not (player and player.target) then return false end
-    local t = player.target
-    return t.id and t.id ~= player.id and t.spawn_type == 13
-end
-
---- Try to auto-cast Marcato before a target song (Honor March / Aria of Passion).
---- Conditions: state.MarcatoSong matches song_name, NI+TR up, no SV, Marcato off
---- cooldown, and not targeting another player.
---- @return boolean true if Marcato + song was auto-cast (caller should return)
-local function try_marcato_auto_cast(song_name)
-    if is_targeting_other_pc() then return false end
-    if not (state and state.MarcatoSong) then return false end
-    if state.MarcatoSong.value == 'Off' then return false end
-
-    local target_song = MARCATO_TARGETS[state.MarcatoSong.value]
-    if not target_song or song_name ~= target_song then return false end
-
-    local has_ni = buffactive['Nightingale'] or false
-    local has_tr = buffactive['Troubadour']  or false
-    local has_sv = buffactive['Soul Voice']  or false
-    if not has_ni or not has_tr or has_sv or buffactive['Marcato'] then return false end
-
-    local marcato_recast = windower.ffxi.get_ability_recasts()[MARCATO_RECAST_ID] or 0
-    if marcato_recast > 0 then return false end  -- on cooldown, cast song without
-
-    -- Marcato ready: chain Marcato then song
-    send_command('input /ja "Marcato" <me>')
-    send_command('wait 2; input /ma "' .. song_name .. '" <me>')
-    MessageFormatter.show_marcato_honor_march(target_song)
-    return true
-end
 
 --- Cast a song to the appropriate target using FFXI priority rules:
 ---   1. Self target  -> <me>
@@ -145,14 +107,13 @@ local function cast_song_to_target(song_name)
     send_command('input /ma "' .. song_name .. '" <stpc>')
 end
 
----   Cast a song by name. Auto-Marcato for configured songs (Honor March /
----   Aria of Passion) when NI+TR up. Pianissimo auto-activation is handled
----   by BRD_PRECAST.lua (do NOT add it here, would double-cast).
+---   Cast a song by name. Marcato and Pianissimo are added by BRD_PRECAST.lua,
+---   after the song's recast check (do NOT add them here: sent from a command
+---   they would be spent even when the song is on recast).
 ---   @param song_name string Song name to cast
 ---   @param auto_pianissimo boolean Reserved (currently unused, see PRECAST)
 local function cast_song(song_name, auto_pianissimo)
     if not song_name then return end
-    if try_marcato_auto_cast(song_name) then return end
     cast_song_to_target(song_name)
 end
 
