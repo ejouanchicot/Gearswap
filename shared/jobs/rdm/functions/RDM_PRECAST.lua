@@ -321,7 +321,7 @@ local function describe_equipped_set(spell)
             return "sets.precast.FC (base)", sets.precast.FC
         end
 
-    elseif spell.type == 'RangedAttack' then
+    elseif spell.action_type == 'Ranged Attack' then
         return "sets.precast.RA", sets.precast.RA
     end
 
