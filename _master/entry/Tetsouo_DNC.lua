@@ -14,7 +14,7 @@
 --- Features:
 ---   • Modular architecture (12 hooks + 6 logic modules)
 ---   • DPS-focused gear automation with survival modes (PDT/Normal)
----   • Step management system (Quick Step, Box Step rotation)
+---   • Step management system (Quickstep, Box Step rotation)
 ---   • Climactic Flourish auto-trigger for weaponskills
 ---   • Jump auto-trigger (DRG subjob support)
 ---   • Waltz healing system with HP-based tier selection
