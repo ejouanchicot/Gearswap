@@ -28,6 +28,11 @@ if not _G.thf_ta_pending then
     _G.thf_ta_pending = false
 end
 
+local SATA_PENDING_FLAGS = {
+    ['Sneak Attack'] = 'thf_sa_pending',
+    ['Trick Attack'] = 'thf_ta_pending',
+}
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   AFTERCAST HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -43,13 +48,12 @@ function job_aftercast(spell, action, spellMap, eventArgs)
         _G.MidcastWatchdog.on_aftercast()
     end
 
-    -- Track SA/TA usage for immediate gear application (before buff appears in buffactive)
-    if spell.type == 'JobAbility' and not spell.interrupted then
-        if spell.english == 'Sneak Attack' then
-            _G.thf_sa_pending = true
-        elseif spell.english == 'Trick Attack' then
-            _G.thf_ta_pending = true
-        end
+    -- Track SA/TA usage for immediate gear application (before buff appears in buffactive).
+    -- Precast already raised the flag; an SA/TA the server refuses comes back
+    -- here interrupted, and must lower it or the SA/TA gear stays on.
+    local pending_flag = SATA_PENDING_FLAGS[spell.english]
+    if spell.type == 'JobAbility' and pending_flag then
+        _G[pending_flag] = not spell.interrupted
     end
 
     -- Auto-open Acid Bolt quiver when stack runs low after a ranged attack.
