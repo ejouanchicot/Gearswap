@@ -144,6 +144,28 @@ end
 --- @return void
 function init_gear_sets()
     include('sets/war_sets.lua')
+    sync_weapon_with_hand()
+end
+
+--- Align state.MainWeapon (and the WS slots) with the weapon in hand.
+--- WARStates.configure() runs from user_setup(), which Mote calls before
+--- init_gear_sets() (Mote-Include.lua:170,175): the weapon sets do not exist
+--- yet, so its sync cannot recognise the weapon and MainWeapon stays on its
+--- first option. Called again here, once the sets are loaded.
+--- @return void
+function sync_weapon_with_hand()
+    local ok, WSSlots = pcall(require, 'shared/utils/weaponskill/ws_slots')
+    if not (ok and WSSlots and _G.WARWSConfig and state.MainWeapon) then
+        return
+    end
+
+    local before = state.MainWeapon.value
+    WSSlots.sync(state.MainWeapon, _G.WARWSConfig)
+
+    -- The keybind HUD was drawn in user_setup() with the old value
+    if state.MainWeapon.value ~= before and ui_success and KeybindUI then
+        KeybindUI.update()
+    end
 end
 
 ---============================================================================
