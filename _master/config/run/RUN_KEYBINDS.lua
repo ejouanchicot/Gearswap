@@ -93,6 +93,14 @@ function RUNKeybinds.bind_all()
     -- Get filtered binds based on current subjob
     local active_binds = RUNKeybinds.get_active_binds()
 
+    -- Clear the whole key list before rebinding. bind_all only lays down the
+    -- keys get_active_binds() returns for the CURRENT subjob, so any bind the
+    -- previous subjob had and this one does not would otherwise stay pointing
+    -- at a state that no longer exists, and the key would silently do nothing.
+    for _, bind in pairs(RUNKeybinds.binds) do
+        pcall(send_command, 'unbind ' .. bind.key)
+    end
+
     -- Attempt to bind each key
     local bound_count = 0
     for _, bind in pairs(active_binds) do
