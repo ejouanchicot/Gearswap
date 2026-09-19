@@ -3,6 +3,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Provides shared logic for building engaged and idle sets with:
 ---   - Luopan detection (sets.me.* vs sets.luopan.*)
+---   - HybridMode base without a luopan (sets.idle/engaged.PDT or .Normal)
 ---   - Town/Adoulin detection (idle only)
 ---   - Weapon set application (Idris)
 ---   - Movement gear application
@@ -71,6 +72,21 @@ end
 ---   Apply movement speed gear to result (inherited from BaseSetBuilder)
 SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 
+---   Base set when no luopan is out, chosen by HybridMode.
+---   The mode sets are sets.idle.PDT / .Normal and sets.engaged.PDT / .Normal;
+---   the set files point both at sets.me today, so the two modes wear the same
+---   gear until one of them is given its own.
+---   @param mode_sets table sets.idle or sets.engaged
+---   @param fallback table sets.me.idle or sets.me.engaged
+---   @return table Selected base set
+local function select_hybrid_base(mode_sets, fallback)
+    local mode = state.HybridMode and state.HybridMode.current
+    if mode and mode_sets and mode_sets[mode] then
+        return mode_sets[mode]
+    end
+    return fallback or {}
+end
+
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   COMPLETE SET BUILDERS
@@ -102,7 +118,7 @@ function SetBuilder.build_engaged_set(base_set)
         end
     else
         -- No Luopan - use standard engaged set
-        result = sets.me.engaged or {}
+        result = select_hybrid_base(sets.engaged, sets.me.engaged)
     end
 
     -- Step 2: Apply weapon sets from states (Idris)
@@ -122,7 +138,7 @@ function SetBuilder.build_idle_set(base_set)
         result = sets.luopan.idle or sets.me.idle or {}
     else
         -- No Luopan - use standard idle set
-        result = sets.me.idle or {}
+        result = select_hybrid_base(sets.idle, sets.me.idle)
     end
 
     -- Step 2: Town detection - use town set if in town (inherited from BaseSetBuilder)

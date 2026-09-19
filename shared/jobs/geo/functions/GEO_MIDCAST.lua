@@ -1,13 +1,12 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   GEO Midcast Module - Midcast Gear Selection
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles midcast for Geomancer. Only intercepts Geomancy spells (job-specific).
----   All other magic (Cure, Elemental, Enfeebling, Enhancing) is handled by
----   Mote-Include's natural pattern matching.
+---   Handles midcast for Geomancer through MidcastManager.
 ---
 ---   Features:
----   - Geomancy: Indi/Geo spells (handbell + duration) - INTERCEPTED
----   - All other magic: Handled by Mote-Include naturally
+---   - Geomancy: Indi/Geo spells (handbell + duration), Entrust override
+---   - Healing, Enhancing (spell family + Composure target), Enfeebling,
+---     Elemental, Dark: MidcastManager on sets.midcast[skill]
 ---
 ---   @file    GEO_MIDCAST.lua
 ---   @author  Tetsouo
@@ -49,6 +48,50 @@ function job_midcast(spell, action, spellMap, eventArgs)
     -- No GEO-specific PRE-midcast logic
 end
 
+---   Geomancy: cast message, Entrust override, then MidcastManager.
+---   @param spell table Spell information from GearSwap
+local function midcast_geomancy(spell)
+    -- Display casting message
+    if spell.english and spell.english:find("^Indi%-") then
+        MessageFormatter.show_indi_cast(spell.english)
+    elseif spell.english and spell.english:find("^Geo%-") then
+        MessageFormatter.show_geo_cast(spell.english)
+    end
+
+    -- Check for Entrust + Indi on someone else (special gear)
+    if spell.english and spell.english:find("^Indi%-") then
+        -- Check active buff OR pending flag (instant detection before buffactive updates)
+        local has_entrust = (buffactive and buffactive['Entrust']) or _G.geo_entrust_pending
+        -- Check if target is NOT self (casting on party member)
+        local target_is_other = spell.target and spell.target.type ~= 'SELF'
+
+        if has_entrust and target_is_other then
+            -- Entrust + Indi on party member = special set for duration/potency
+            -- Direct equip: sets.midcast.Indi.Entrust (logical naming)
+            if sets.midcast.Indi and sets.midcast.Indi.Entrust then
+                equip(sets.midcast.Indi.Entrust)
+                return
+            end
+        end
+    end
+
+    -- Standard Geomancy gear (self Indi or Geo spells)
+    MidcastManager.select_set({
+        skill = 'Geomancy',
+        spell = spell
+    })
+end
+
+---   Skills other than Geomancy that go through MidcastManager with no extra
+---   metadata. A skill without sets.midcast[skill] equips nothing more, so
+---   Mote's default choice (sets.midcast.Cure by spell map, for instance) stands.
+local PLAIN_SKILLS = {
+    ['Healing Magic'] = true,
+    ['Enfeebling Magic'] = true,
+    ['Elemental Magic'] = true,
+    ['Dark Magic'] = true,
+}
+
 ---   Post-midcast hook (MidcastManager routing and gear selection)
 ---   @param spell table Spell information from GearSwap
 ---   @param action string Action type
@@ -63,53 +106,21 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         _G.MidcastWatchdog.on_midcast_start(spell)
     end
 
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- GEOMANCY (Indi/Geo spells) - Job-specific, Mote doesn't handle
-    -- ══════════════════════════════════════════════════════════════════════════
     if spell.skill == 'Geomancy' then
-        -- Display casting message
-        if spell.english and spell.english:find("^Indi%-") then
-            MessageFormatter.show_indi_cast(spell.english)
-        elseif spell.english and spell.english:find("^Geo%-") then
-            MessageFormatter.show_geo_cast(spell.english)
-        end
-
-        -- Check for Entrust + Indi on someone else (special gear)
-        if spell.english and spell.english:find("^Indi%-") then
-            -- Check active buff OR pending flag (instant detection before buffactive updates)
-            local has_entrust = (buffactive and buffactive['Entrust']) or _G.geo_entrust_pending
-            -- Check if target is NOT self (casting on party member)
-            local target_is_other = spell.target and spell.target.type ~= 'SELF'
-
-            if has_entrust and target_is_other then
-                -- Entrust + Indi on party member = special set for duration/potency
-                -- Direct equip: sets.midcast.Indi.Entrust (logical naming)
-                if sets.midcast.Indi and sets.midcast.Indi.Entrust then
-                    equip(sets.midcast.Indi.Entrust)
-                    return
-                end
-            end
-        end
-
-        -- Standard Geomancy gear (self Indi or Geo spells)
+        midcast_geomancy(spell)
+    elseif spell.skill == 'Enhancing Magic' then
         MidcastManager.select_set({
-            skill = 'Geomancy',
+            skill = 'Enhancing Magic',
+            spell = spell,
+            target_func = MidcastManager.get_enhancing_target,
+            database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
+        })
+    elseif PLAIN_SKILLS[spell.skill] then
+        MidcastManager.select_set({
+            skill = spell.skill,
             spell = spell
         })
-        return
     end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- ALL OTHER MAGIC - Let Mote-Include handle naturally
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- Mote automatically handles:
-    --   - Cure/Curaga >> sets.midcast.Cure / sets.midcast.Curaga
-    --   - Elemental Magic >> sets.midcast['Elemental Magic']
-    --   - Enfeebling Magic >> sets.midcast['Enfeebling Magic']
-    --   - Enhancing Magic >> sets.midcast['Enhancing Magic']
-    --   - Specific spells >> sets.midcast[spell.english]
-    --
-    -- No need to intercept - Mote's logic is sufficient for GEO!
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
