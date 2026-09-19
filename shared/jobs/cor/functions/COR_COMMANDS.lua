@@ -45,6 +45,32 @@ local function ensure_commands_loaded()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
+---   SELECTED ABILITY COMMANDS
+---  ═══════════════════════════════════════════════════════════════════════════
+
+-- Commands that use the ability selected in a state: the state value plus the
+-- suffix is the ability name ('Light' -> 'Light Shot', 'Chaos Roll' as is).
+local SELECTED_ABILITY_COMMANDS = {
+    shot  = { state = 'QuickDraw', suffix = ' Shot', target = '<t>' },
+    roll1 = { state = 'MainRoll',  suffix = '',      target = '<me>' },
+    roll2 = { state = 'SubRoll',   suffix = '',      target = '<me>' },
+}
+
+--- Use the ability selected in a state. Sent as a normal /ja, so it goes
+--- through precast like a macro would (debuff guard, recast check, gear).
+--- @param entry table One SELECTED_ABILITY_COMMANDS entry
+--- @return void
+local function use_selected_ability(entry)
+    local selection = state[entry.state]
+    if not selection then
+        MessageFormatter.show_error(entry.state .. ' state is not configured')
+        return
+    end
+
+    send_command(string.format('input /ja "%s%s" %s', selection.value, entry.suffix, entry.target))
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
 ---   COMMAND HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
@@ -268,18 +294,10 @@ function job_self_command(cmdParams, eventArgs)
             MessageFormatter.show_error('Party tracking not initialized')
         end
 
-    elseif command == 'shot' then
-        -- Quick Draw shot command (uses current QuickDraw element)
-        -- Example: //gs c shot
-        -- Element determined by state.QuickDraw.value (cycle with Alt+4)
+    elseif SELECTED_ABILITY_COMMANDS[command] then
+        -- shot / roll1 / roll2: the ability selected in QuickDraw / MainRoll / SubRoll
         eventArgs.handled = true
-
-        if state.QuickDraw then
-            local element = state.QuickDraw.value
-            MessageFormatter.show_info('Quick Draw: ' .. element .. ' (not yet implemented)')
-        else
-            MessageFormatter.show_error('Shot command not yet implemented')
-        end
+        use_selected_ability(SELECTED_ABILITY_COMMANDS[command])
 
     elseif command == 'testcolors' or command == 'colors' then
         -- Display all FFXI color codes to find which ones work
@@ -298,31 +316,33 @@ function job_self_command(cmdParams, eventArgs)
     end
 end
 
----   Update UI when state changes
----   Called after state changes to update UI display
----   @param stateField string The state field that changed
----   @param newValue any The new value
----   @param oldValue any The old value
-function job_state_change(stateField, newValue, oldValue)
-    -- Skip UI update for Moving state (handled by AutoMove with flag)
-    if stateField == 'Moving' then
+---  ═══════════════════════════════════════════════════════════════════════════
+---   STATE CHANGE HOOK
+---  ═══════════════════════════════════════════════════════════════════════════
+
+local LifecycleManager = require('shared/utils/core/lifecycle_manager')
+
+-- Weapon states whose change re-equips gear
+local WEAPON_STATES = { MainWeapon = true, RangeWeapon = true }
+
+--- Re-equip when a weapon state changes.
+---
+--- The field is compared with spaces stripped, so the state key ('MainWeapon')
+--- and the description Mote passes ('Main Weapon') both match.
+---
+---   @param stateField string State key or description of what changed
+---   @return void
+local function on_state_change(stateField)
+    if type(stateField) ~= 'string' or not WEAPON_STATES[stateField:gsub(' ', '')] then
         return
     end
 
-    -- Update UI display
-    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-    if ui_success and KeybindUI then
-        KeybindUI.update()
-    end
-
-    -- Force equipment refresh when weapon states change
-    if stateField == 'MainWeapon' or stateField == 'SubWeapon' or stateField == 'RangeWeapon' then
-        -- Re-equip gear with new weapon
-        if player and player.status then
-            handle_equipping_gear(player.status)
-        end
+    if player and player.status then
+        handle_equipping_gear(player.status)
     end
 end
+
+job_state_change = LifecycleManager.state_change(on_state_change)
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT
