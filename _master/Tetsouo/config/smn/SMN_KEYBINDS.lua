@@ -76,7 +76,14 @@ end
 --- SYSTEM INTRO & DISPLAY
 ---============================================================================
 
+--- Display the SMN intro.
+--- Loading the macrobook and lockstyle wrappers here is what defines
+--- select_default_macro_book / select_default_lockstyle before user_setup
+--- tests them: user_setup runs inside include('Mote-Include.lua'), before the
+--- facade loads those files. The other jobs' intros load them the same way.
 function SMNKeybinds.show_intro()
+    pcall(require, 'shared/jobs/smn/functions/SMN_MACROBOOK')
+    pcall(require, 'shared/jobs/smn/functions/SMN_LOCKSTYLE')
     MessageFormatter.show_system_intro("SMN SYSTEM LOADED", SMNKeybinds.binds)
 end
 
