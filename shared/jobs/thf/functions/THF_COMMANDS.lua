@@ -40,6 +40,7 @@ local WatchdogCommands = nil
 local CycleHandler = nil
 local MessageCommands = nil
 local SmartbuffManager = nil
+local RangeLock = nil
 
 local function ensure_commands_loaded()
     if not UICommands then
@@ -51,6 +52,7 @@ local function ensure_commands_loaded()
 
         -- Load THF logic modules
         SmartbuffManager = require('shared/jobs/thf/functions/logic/smartbuff_manager')
+        RangeLock = require('shared/jobs/thf/functions/logic/range_lock')
     end
 end
 
@@ -160,25 +162,14 @@ function job_self_command(cmdParams, eventArgs)
 
     -- Range weapon lock with auto-attack (one-way, no toggle)
     if command == 'range' then
-        -- CRITICAL ORDER: Equip >> Lock >> State >> UI Update >> Attack
+        -- CRITICAL ORDER: Equip >> Lock (+ state, UI) >> Attack
         -- 1. Equip ranged setup FIRST (before locking slots)
         equip({ range = "Exalted Crossbow", ammo = "Acid Bolt" })
 
-        -- 2. Lock slots AFTER equipping (prevents future swaps)
-        disable('range', 'ammo')
+        -- 2. Lock slots AFTER equipping (prevents future swaps), RangeLock ON
+        RangeLock.engage()
 
-        -- 3. Set RangeLock state to ON
-        if state.RangeLock then
-            state.RangeLock:set(true)
-        end
-
-        -- 4. Update UI to reflect state change
-        local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-        if ui_success and KeybindUI then
-            KeybindUI.update()
-        end
-
-        -- 5. Auto-attack sub-target (0.1s delay - minimal for equipment swap)
+        -- 3. Auto-attack sub-target (0.1s delay - minimal for equipment swap)
         send_command('wait 0.1; input /ra <stnpc>')
 
         eventArgs.handled = true
@@ -190,35 +181,37 @@ function job_self_command(cmdParams, eventArgs)
     -- - 'sata' for SA/TA management
 end
 
----   Update UI when state changes
----   Called after state changes to update UI display
-function job_state_change(stateField, newValue, oldValue)
-    -- Skip UI update for Moving state (handled by AutoMove with flag)
-    if stateField == 'Moving' then
+---  ═══════════════════════════════════════════════════════════════════════════
+---   STATE CHANGE HOOK
+---  ═══════════════════════════════════════════════════════════════════════════
+
+local LifecycleManager = require('shared/utils/core/lifecycle_manager')
+
+--- Lock or unlock range and ammo when RangeLock changes.
+---
+--- The field is compared with spaces stripped, so the state key ('RangeLock')
+--- and the description Mote passes ('Range Lock') both match.
+---
+---   @param stateField string State key or description of what changed
+---   @return void
+local function on_state_change(stateField)
+    if type(stateField) ~= 'string' or stateField:gsub(' ', '') ~= 'RangeLock' then
+        return
+    end
+    if not state.RangeLock then
         return
     end
 
-    -- Handle RangeLock state changes
-    if stateField == 'Range Lock' then
-        local MessageFormatter_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-        if newValue == false or newValue == 'false' then
-            enable('range', 'ammo')
-            if MessageFormatter_success and MessageFormatter then
-                MessageFormatter.show_success("Ranged weapons unlocked")
-            end
-        elseif newValue == true or newValue == 'true' then
-            if MessageFormatter_success and MessageFormatter then
-                MessageFormatter.show_success("Ranged weapons locked")
-            end
-        end
-    end
+    local locked = state.RangeLock.value == true
+    require('shared/jobs/thf/functions/logic/range_lock').set_slots(locked)
 
-    -- Update UI
-    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-    if ui_success and KeybindUI then
-        KeybindUI.update()
+    local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+    if ok and MessageFormatter then
+        MessageFormatter.show_success(locked and "Ranged weapons locked" or "Ranged weapons unlocked")
     end
 end
+
+job_state_change = LifecycleManager.state_change(on_state_change)
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT

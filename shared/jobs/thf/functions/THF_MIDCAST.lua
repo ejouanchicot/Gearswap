@@ -28,13 +28,9 @@ function job_midcast(spell, action, spellMap, eventArgs)
     -- ALWAYS lock on Ranged Attack, regardless of previous state
     -- This creates an infinite cycle: /ra → lock+ON, bind → unlock+OFF, /ra → lock+ON, etc.
     if spell.action_type == 'Ranged Attack' and not spell.interrupted then
-        -- Lock range/ammo slots (prevent future swaps)
-        disable('range', 'ammo')
-
-        -- Set RangeLock state to ON (even if it was OFF before)
-        -- Use :set(true) to trigger state change callback
-        if state and state.RangeLock then
-            state.RangeLock:set(true)
+        local ok, RangeLock = pcall(require, 'shared/jobs/thf/functions/logic/range_lock')
+        if ok and RangeLock then
+            RangeLock.engage()
         end
     end
 end
