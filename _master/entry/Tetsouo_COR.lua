@@ -53,7 +53,7 @@ if not lockstyle_config_success or not LockstyleConfig then
     }
 end
 
--- PartyTracker loaded in user_setup() for reliable initialization after GearSwap is fully ready
+-- PartyTracker is brought up from get_sets(), see init_party_tracking() below
 
 -- Lockstyle watchdog state (detects when DressUp is reloaded)
 if not _G.cor_lockstyle_watchdog then
@@ -69,6 +69,47 @@ end
 -- Centralized loading via config_loader to eliminate duplication
 local ConfigLoader = require('shared/utils/config/config_loader')
 local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'COR')
+
+--- Bring up party tracking and Phantom Roll detection.
+---
+--- Called from get_sets() and NOT from user_setup(): Mote-Include runs
+--- user_setup() from inside init_include(), which is halfway through
+--- include('Mote-Include.lua') - long before cor_functions.lua and
+--- INIT_SYSTEMS.lua exist. Roll detection used to be the last thing
+--- user_setup() registered, so anything that threw earlier in that function
+--- took it down with it, and the only symptom was a Phantom Roll that
+--- reported nothing at all.
+local function init_party_tracking()
+    local pt_ok, PartyTracker = pcall(require, 'shared/jobs/cor/functions/logic/party_tracker')
+    if not pt_ok then PartyTracker = nil end
+
+    local mf_ok, MF = pcall(require, 'shared/utils/messages/message_formatter')
+    if not mf_ok then MF = nil end
+
+    if not PartyTracker then
+        if MF then
+            MF.show_error('[COR] PartyTracker failed to load - no roll detection')
+        end
+        return
+    end
+
+    local init_ok, init_err = pcall(PartyTracker.init)
+    if init_ok then
+        return
+    end
+
+    if MF then
+        MF.show_error('[COR] PartyTracker.init() failed: ' .. tostring(init_err))
+    end
+
+    -- init() unregisters the previous handler before it rebuilds anything, so a
+    -- throw partway through leaves NO roll detection at all. The party job cache
+    -- is a nicety - the roll report is the point - so re-arm the listener alone.
+    local listener_ok, listener_err = pcall(PartyTracker.init_roll_listener)
+    if not listener_ok and MF then
+        MF.show_error('[COR] Roll detection unavailable: ' .. tostring(listener_err))
+    end
+end
 
 function get_sets()
     -- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
@@ -163,6 +204,10 @@ function get_sets()
         JobChangeManager.register_lockstyle_cancel("COR", cancel_cor_lockstyle_operations)
     end
 
+    -- Party tracking + roll detection. Here, after cor_functions.lua, because
+    -- every dependency it needs exists by this point in get_sets().
+    init_party_tracking()
+
     -- Note: Macro/lockstyle are handled by JobChangeManager on job changes
     -- Initial load will be handled by JobChangeManager after initialization
 
@@ -241,43 +286,24 @@ function user_setup()
     pcall(require, 'shared/utils/dualbox/dualbox_manager')
 
     -- ==========================================================================
-    -- PARTY TRACKER INITIALIZATION (Always executed after reload)
-    -- Loaded here (not module level) to ensure GearSwap is fully initialized
-    -- ==========================================================================
-    local pt_ok, PartyTracker = pcall(require, 'shared/jobs/cor/functions/logic/party_tracker')
-    if pt_ok and PartyTracker then
-        local init_ok, init_err = pcall(PartyTracker.init)
-        if init_ok then
-            local mf_ok, MF = pcall(require, 'shared/utils/messages/message_formatter')
-            if mf_ok and MF then
-                -- PartyTracker initialized (silent)
-            end
-        else
-            local mf_ok, MF = pcall(require, 'shared/utils/messages/message_formatter')
-            if mf_ok and MF then
-                MF.show_error('[COR] PartyTracker.init() failed: ' .. tostring(init_err))
-            end
-        end
-    else
-        local mf_ok, MF = pcall(require, 'shared/utils/messages/message_formatter')
-        if mf_ok and MF then
-            MF.show_error('[COR] Failed to load PartyTracker: ' .. tostring(PartyTracker))
-        end
-    end
-
-    -- Roll detection registered by PartyTracker.init() above (single canonical
-    -- handler, see shared/jobs/cor/functions/logic/party_tracker.lua).
-
-    -- ==========================================================================
     -- LOCKSTYLE WATCHDOG (Always executed after reload)
     -- ==========================================================================
     -- This ensures lockstyle reapplies after //gs reload or dressup reload
     if player then
-        select_default_macro_book()
+        -- Guarded: these globals come from the COR_MACROBOOK / COR_LOCKSTYLE
+        -- wrappers, which exist only once something has required them. Today
+        -- CORKeybinds.show_intro() does, from bind_all() above; if the keybinds
+        -- failed to load they are absent, and an unguarded call would raise and
+        -- end user_setup() here.
+        if select_default_macro_book then
+            select_default_macro_book()
+        end
 
         -- Schedule lockstyle after delay
         coroutine.schedule(function()
-            select_default_lockstyle()
+            if select_default_lockstyle then
+                select_default_lockstyle()
+            end
             _G.cor_lockstyle_watchdog.lockstyle_applied = true
         end, LockstyleConfig.initial_load_delay)
 
