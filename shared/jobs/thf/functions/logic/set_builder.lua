@@ -11,6 +11,7 @@
 ---   • Abyssea proc mode (AbyProc toggle + AbyWeapon selection)
 ---   • Movement gear application (idle only, never in combat)
 ---   • HybridMode integration (PDT/Normal sets)
+---   • Treasure Hunter gear per TreasureMode (engaged only, via treasure_hunter)
 ---   • Error handling with MessageFormatter
 ---   • Modular set augmentation (base >> weapon >> movement >> final)
 ---
@@ -35,6 +36,7 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 
 -- Load dependencies
 local MessageFormatter = require('shared/utils/messages/message_formatter')
+local TreasureHunter = require('shared/jobs/thf/functions/logic/treasure_hunter')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   AFTERMATH LV.3 DETECTION (ENGAGED)
@@ -154,6 +156,12 @@ function SetBuilder.apply_sata_buff(result)
         return result
     end
 
+    -- TreasureMode SATA/Full: the TreasureHunterSA/TA/SATA sets replace sets.buff
+    local th_overlay = TreasureHunter.sata_overlay(has_sa, has_ta)
+    if th_overlay then
+        return set_combine(result, th_overlay)
+    end
+
     if has_sa and sets.buff and sets.buff['Sneak Attack'] then
         result = set_combine(result, sets.buff['Sneak Attack'])
     end
@@ -185,6 +193,9 @@ function SetBuilder.build_engaged_set(base_set)
 
     -- Step 3: Overlay SA/TA buff gear while active (keeps the "waiting" set on)
     result = SetBuilder.apply_sata_buff(result)
+
+    -- Step 4: Treasure Hunter gear per TreasureMode
+    result = TreasureHunter.apply_engaged(result)
 
     return result
 end

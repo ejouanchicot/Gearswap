@@ -96,7 +96,13 @@ TIMER('THF_MOVEMENT')
 ---   • logic/sa_ta_manager.lua    - Sneak Attack/Trick Attack automation
 ---   • logic/set_builder.lua      - Shared set construction (engaged/idle)
 ---   • logic/smartbuff_manager.lua - Subjob-specific buff management
+---   • logic/range_lock.lua        - Range/ammo lock kept in step with RangeLock
+---   • logic/treasure_hunter.lua   - TreasureMode gear and mob tagging
 ---  ═══════════════════════════════════════════════════════════════════════════
+
+-- TreasureMode tag tracking: its events die with each load, so register here
+local TreasureHunter = require('shared/jobs/thf/functions/logic/treasure_hunter')
+TreasureHunter.init()
 
 -- Load dual-boxing manager (uses deferred init + lazy message loading)
 local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
