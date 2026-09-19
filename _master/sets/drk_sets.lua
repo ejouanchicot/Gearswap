@@ -357,10 +357,9 @@ sets.midcast.Aspir = sets.midcast.Drain
 -- WEAPONSKILL SETS
 -- ═══════════════════════════════════════════════════════════════════════════
 
-sets.precast.WS = {}
-
--- • Default WS (VIT-based)
-sets.precast.WS['default'] = {
+-- • Default WS (VIT-based) - Mote falls back to sets.precast.WS itself for
+--   any weaponskill without a named set; a child named 'default' is never read.
+sets.precast.WS = {
     ammo = 'Knobkierrie',
     head = 'Heath. Bur. +3',
     body = 'Ignominy Cuirass +3',
@@ -386,12 +385,12 @@ sets.precast.WS['default'] = {
 }
 
 -- • Accuracy WS
-sets.precast.WS.Acc = set_combine(sets.precast.WS['default'], {})
+sets.precast.WS.Acc = set_combine(sets.precast.WS, {})
 
 -- • Entropy (STR 80% VIT 80%)
 sets.precast.WS['Entropy'] =
     set_combine(
-    sets.precast.WS['default'],
+    sets.precast.WS,
     {
         back = Ankou.WS_STR
     }
@@ -400,7 +399,7 @@ sets.precast.WS['Entropy'] =
 -- • Origin (STR 85% VIT 85%)
 sets.precast.WS['Origin'] =
     set_combine(
-    sets.precast.WS['default'],
+    sets.precast.WS,
     {
         ammo = 'Knobkierrie',
         head = 'Heath. Bur. +3',
@@ -430,7 +429,7 @@ sets.precast.WS['Origin'] =
 -- • Resolution (STR 85% - Multihit)
 sets.precast.WS['Resolution'] =
     set_combine(
-    sets.precast.WS['default'],
+    sets.precast.WS,
     {
         ammo = 'Knobkierrie',
         head = 'Heath. Bur. +3',
@@ -486,7 +485,7 @@ sets.precast.WS['Torcleaver'] = {
 -- • Quietus (STR 60% INT 60%)
 sets.precast.WS['Quietus'] =
     set_combine(
-    sets.precast.WS['default'],
+    sets.precast.WS,
     {
         ammo = 'Knobkierrie',
         head = 'Heath. Bur. +3',
@@ -516,7 +515,7 @@ sets.precast.WS['Quietus'] =
 -- • Judgment (MND 75% STR 75%)
 sets.precast.WS['Judgment'] =
     set_combine(
-    sets.precast.WS['default'],
+    sets.precast.WS,
     {
         back = Ankou.WS_MND
     }
