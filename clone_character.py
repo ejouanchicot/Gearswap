@@ -304,6 +304,9 @@ class SmartCharacterCloner:
 
     The cloner picks one as the source via `source_name` (default: Tetsouo).
     Use `--source Kaories` (CLI) to clone from the Kaories template instead.
+    The overlay is applied only to the character it belongs to (target ==
+    source) or when `--source` names it; any other character is built from
+    the generic _master/ files alone.
     """
 
     DEFAULT_SOURCE = "Tetsouo"  # Default template character
@@ -316,13 +319,13 @@ class SmartCharacterCloner:
 
         # Source character (template name used in file headers etc.)
         self.TEMPLATE_NAME = source_name or self.DEFAULT_SOURCE
+        self.source_explicit = source_name is not None
         # Master dir = generic Tetsouo-based template (root of _master/).
         self.master_dir = self.base_dir / '_master'
-        # Override dir = per-character overlay. For non-Tetsouo source, files
-        # found here REPLACE the corresponding files from master_dir during
-        # clone (e.g. _master/Kaories/sets/cor_sets.lua wins over
-        # _master/sets/cor_sets.lua). When source == Tetsouo (default), the
-        # overlay path may not exist - that's fine, we just skip the lookup.
+        # Override dir = per-character overlay. Files found here REPLACE the
+        # corresponding files from master_dir during clone (e.g.
+        # _master/Kaories/sets/cor_sets.lua wins over _master/sets/cor_sets.lua).
+        # clone() drops it (None) when the target is another character.
         self.override_dir = self.master_dir / self.TEMPLATE_NAME
         self.db_path = self.base_dir / 'character_db.lua'
         self.lang = lang
@@ -526,10 +529,24 @@ class SmartCharacterCloner:
                         e.g. ('sets', 'cor_sets.lua') or
                              ('entry', f'{self.TEMPLATE_NAME}_{job}.lua').
         """
-        overlay = self.override_dir.joinpath(*relative_parts)
-        if overlay.exists():
-            return overlay
+        if self.override_dir is not None:
+            overlay = self.override_dir.joinpath(*relative_parts)
+            if overlay.exists():
+                return overlay
         return self.master_dir.joinpath(*relative_parts)
+
+    def _select_overlay(self, target_name):
+        """Return the overlay folder to use for target_name, or None.
+
+        _master/<source>/ holds one character's own files (Tetsouo's
+        wardrobe layout and refill lists, his SMN). A new character must not
+        inherit them just because Tetsouo is the default source, so the
+        overlay applies only when the target is that character or when
+        --source asked for it.
+        """
+        if self.source_explicit or target_name.lower() == self.TEMPLATE_NAME.lower():
+            return self.master_dir / self.TEMPLATE_NAME
+        return None
 
     # ------------------------------------------------------------------
     # CLONING ENGINE
@@ -546,6 +563,8 @@ class SmartCharacterCloner:
         if target_dir.exists() and not self._backup_existing(target_dir, target_name):
             return False
 
+        self.override_dir = self._select_overlay(target_name)
+
         # ── Step 1: Create directory structure ─────────────────────────
         print(self.t['step_dirs'])
         (target_dir / 'sets').mkdir(parents=True, exist_ok=True)
@@ -554,9 +573,9 @@ class SmartCharacterCloner:
         print(self.t['copy_ok'].format(f"{target_name}/config/"))
 
         # Note: each file is resolved via _resolve_src() so that any file
-        # present under _master/<TEMPLATE_NAME>/ overrides its counterpart in
-        # _master/. For default source (Tetsouo) the overlay folder doesn't
-        # exist, so behaviour matches the legacy single-source clone.
+        # present under the overlay (_master/<TEMPLATE_NAME>/, when selected
+        # above) overrides its counterpart in _master/. Without an overlay the
+        # clone uses _master/ alone.
 
         # Determine entry-file basename. Kaories overlay stores "Kaories_<JOB>"
         # files; the Tetsouo template uses "Tetsouo_<JOB>". We try the
@@ -564,9 +583,10 @@ class SmartCharacterCloner:
         # (since the overlay's file may use the source name as the prefix).
         def find_entry_src(job_upper):
             # Try overlay with TEMPLATE_NAME prefix
-            cand = self.override_dir / 'entry' / f'{self.TEMPLATE_NAME}_{job_upper}.lua'
-            if cand.exists():
-                return cand, f'{self.TEMPLATE_NAME}_{job_upper}.lua'
+            if self.override_dir is not None:
+                cand = self.override_dir / 'entry' / f'{self.TEMPLATE_NAME}_{job_upper}.lua'
+                if cand.exists():
+                    return cand, f'{self.TEMPLATE_NAME}_{job_upper}.lua'
             # Try master with Tetsouo prefix (the canonical generic template)
             cand = self.master_dir / 'entry' / f'{self.DEFAULT_SOURCE}_{job_upper}.lua'
             if cand.exists():
@@ -592,12 +612,12 @@ class SmartCharacterCloner:
         for job_lower in jobs_lower:
             src = self._resolve_src(('sets', f'{job_lower}_sets.lua'))
             dst = target_dir / 'sets' / f'{job_lower}_sets.lua'
-            modular_src = self.override_dir / 'sets' / job_lower
+            modular_src = self.override_dir / 'sets' / job_lower if self.override_dir else None
             if src.exists():
                 shutil.copy2(src, dst)
                 print(self.t['copy_ok'].format(f"sets/{job_lower}_sets.lua"))
                 self.count_sets += 1
-            elif modular_src.is_dir():
+            elif modular_src is not None and modular_src.is_dir():
                 # A job with no flat set (SMN) is saved as its live modular
                 # tree, and its entry includes sets/<job>/<job>_sets.lua.
                 shutil.copytree(modular_src, target_dir / 'sets' / job_lower, dirs_exist_ok=True)
@@ -614,16 +634,16 @@ class SmartCharacterCloner:
         no_config_jobs = []
         for job_lower in jobs_lower:
             master_jobdir = self.master_dir / 'config' / job_lower
-            override_jobdir = self.override_dir / 'config' / job_lower
+            override_jobdir = self.override_dir / 'config' / job_lower if self.override_dir else None
             dst_dir = target_dir / 'config' / job_lower
-            if not master_jobdir.exists() and not override_jobdir.exists():
+            if not master_jobdir.exists() and not (override_jobdir and override_jobdir.exists()):
                 no_config_jobs.append(job_lower.upper())
                 continue
             dst_dir.mkdir(parents=True, exist_ok=True)
             # Union of filenames in master and overlay
             seen = set()
             for d in (master_jobdir, override_jobdir):
-                if d.exists():
+                if d and d.exists():
                     for f in d.glob('*.lua'):
                         seen.add(f.name)
             file_count = 0
@@ -641,10 +661,10 @@ class SmartCharacterCloner:
         # Global configs (overlay-aware: Kaories' DUALBOX/WARDROBE/REGION
         # override generic templates; new files in overlay are also copied).
         master_globals = self.master_dir / 'config_global'
-        override_globals = self.override_dir / 'config_global'
+        override_globals = self.override_dir / 'config_global' if self.override_dir else None
         seen_globals = set()
         for d in (master_globals, override_globals):
-            if d.exists():
+            if d and d.exists():
                 for f in d.glob('*.lua'):
                     seen_globals.add(f.name)
         for fname in sorted(seen_globals):
