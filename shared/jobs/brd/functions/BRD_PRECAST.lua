@@ -190,8 +190,8 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- Refinement runs BEFORE the cooldown check, and must keep doing so.
     -- A song on recast can be downgraded - Lullaby II to Lullaby I - but
     -- only if it is still alive to downgrade; checking the cooldown first
-    -- cancels it outright and the downgrade never happens. This is the one
-    -- documented departure from the standard precast order.
+    -- cancels it outright and the downgrade never happens. BLM, RDM and WHM
+    -- depart from the standard order for the same reason.
     if spell.type == 'BardSong' and SongRefinement.refine_song(spell, eventArgs) then
         return
     end
