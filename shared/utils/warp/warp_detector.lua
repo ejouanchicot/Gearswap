@@ -166,19 +166,20 @@ function WarpDetector.clear_callbacks()
 end
 
 --- Initialize action event listener for item usage detection.
---- Idempotent: unregister-then-register so each gs reload gets a fresh handler
---- and we never accumulate stale ones. The event id lives on `windower.*` so
---- it survives the `_G` wipe that comes with `gs reload` (cf the same
---- convention in dualbox_sync_ipc.init_listener).
+--- Called on every job-file load: GearSwap drops every sandbox listener at the
+--- load. The id is kept on `windower.*` with its load
+--- (windower._gs_reload_count); only an id from this same load is
+--- unregistered, since an older one is already gone and could now belong to
+--- another listener (cf dualbox_sync_ipc.init_listener).
 function WarpDetector.init_action_listener()
     -- ALWAYS clear callbacks on init (ensures fresh start on reload)
     WarpDetector.clear_callbacks()
 
     if not windower or not windower.register_event then return end
 
-    if windower._warp_detector_event_id then
+    if windower._warp_detector_event_id
+       and windower._warp_detector_event_load == windower._gs_reload_count then
         pcall(windower.unregister_event, windower._warp_detector_event_id)
-        windower._warp_detector_event_id = nil
     end
 
     windower._warp_detector_event_id = windower.register_event('action', function(act)
@@ -202,6 +203,7 @@ function WarpDetector.init_action_listener()
             end
         end
     end)
+    windower._warp_detector_event_load = windower._gs_reload_count
 end
 
 ---============================================================================

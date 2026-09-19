@@ -13,15 +13,17 @@
 --- @date 2025-10-28
 ---============================================================================
 
--- Unregister the old listener before re-registering. The token lives on
--- `windower.*`, not `_G`: WarpInit includes this file on every job load, and a
--- `_G` token is gone by then (the reload builds a fresh sandbox), so the
--- unregister would never fire and each job change would leave another live
--- listener behind. Same convention as warp_detector and dualbox_sync_ipc.
-if windower._warp_ipc_register_event_id then
+-- WarpInit includes this file on every job load. GearSwap has already dropped
+-- the previous load's listener by then (refresh.lua:69-71), so only an id
+-- registered earlier in this same load is removed: a stale id could now belong
+-- to another listener. The load stamp is windower._gs_reload_count, bumped by
+-- INIT_SYSTEMS on every load. Same convention as warp_detector and
+-- dualbox_sync_ipc.
+if windower._warp_ipc_register_event_id
+   and windower._warp_ipc_register_event_load == windower._gs_reload_count then
     pcall(windower.unregister_event, windower._warp_ipc_register_event_id)
-    windower._warp_ipc_register_event_id = nil
 end
+windower._warp_ipc_register_event_id = nil
 
 -- Load MessageWarp for formatted messages
 local MessageWarp = require('shared/utils/messages/formatters/system/message_warp')
@@ -103,5 +105,6 @@ windower._warp_ipc_register_event_id = windower.register_event('ipc message', fu
         windower.chat.input('//gs c ' .. command)
     end, 0.5)
 end)
+windower._warp_ipc_register_event_load = windower._gs_reload_count
 
 MessageWarp.show_ipc_registered()

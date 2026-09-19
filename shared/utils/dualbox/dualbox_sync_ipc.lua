@@ -130,22 +130,25 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   LISTENER LIFECYCLE
 ---  ═══════════════════════════════════════════════════════════════════════════
---- Idempotent registration: GearSwap reloads wipe event handlers but the
---- registration token persists on `windower`, so we unregister-then-register
---- to avoid stacking duplicate handlers across rapid job changes.
+--- GearSwap drops every sandbox event listener when it loads a job file
+--- (refresh.lua:69-71), so INIT_SYSTEMS registers this one on every load. The
+--- id is kept on `windower` with the load it belongs to
+--- (windower._gs_reload_count): a second call in the same load replaces its
+--- own listener, while an id from an earlier load is already gone and could
+--- now belong to another listener, so it is left alone.
 
---- Register the IPC listener exactly once per Windower process.
---- Safe to call multiple times.
+--- Register the IPC listener for this load. Safe to call multiple times.
 function DualBoxSyncIPC.init_listener()
     if not windower or not windower.register_event then return end
 
-    if windower._sync_ipc_event_id then
+    if windower._sync_ipc_event_id
+       and windower._sync_ipc_event_load == windower._gs_reload_count then
         pcall(windower.unregister_event, windower._sync_ipc_event_id)
-        windower._sync_ipc_event_id = nil
     end
 
     windower._sync_ipc_event_id =
         windower.register_event('ipc message', DualBoxSyncIPC._on_ipc_message)
+    windower._sync_ipc_event_load = windower._gs_reload_count
 end
 
 return DualBoxSyncIPC
