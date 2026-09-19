@@ -173,7 +173,10 @@ end
 ---   Called when a state variable changes (OffenseMode, IdleMode, etc.)
 ---   Handles weapon locking for melee mode AND updates UI.
 ---
----   @param stateField string State field that changed ('Offense Mode', 'Idle Mode', etc.)
+---   The UI-aware cycle passes the state key ('CombatMode'), Mote passes the
+---   description ('Combat Mode'); stripping spaces accepts both.
+---
+---   @param stateField string State key or description that changed
 ---   @param newValue string New value of the state
 ---   @param oldValue string Old value of the state
 ---   @return void
@@ -183,11 +186,13 @@ function job_state_change(stateField, newValue, oldValue)
         return
     end
 
+    local field = type(stateField) == 'string' and stateField:gsub(' ', '') or stateField
+
     -- ══════════════════════════════════════════════════════════════════════════
     -- COMBAT MODE - WEAPON LOCK (RDM-style)
     -- ══════════════════════════════════════════════════════════════════════════
     -- When CombatMode = 'On', lock weapons to prevent accidental swaps
-    if stateField == 'Combat Mode' then
+    if field == 'CombatMode' then
         if newValue == 'On' then
             disable('main', 'sub', 'range', 'ammo')
         else
@@ -199,7 +204,7 @@ function job_state_change(stateField, newValue, oldValue)
     -- OFFENSE MODE - WEAPON LOCK (Legacy - kept for compatibility)
     -- ══════════════════════════════════════════════════════════════════════════
     -- When switching to Melee ON, lock weapons to prevent accidental swaps
-    if stateField == 'Offense Mode' then
+    if field == 'OffenseMode' then
         if newValue == 'Melee ON' then
             disable('main', 'sub', 'range')
         else

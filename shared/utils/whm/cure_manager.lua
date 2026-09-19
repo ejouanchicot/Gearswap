@@ -370,11 +370,10 @@ function CureManager.select_cure_tier(spell, target)
     -- Check availability with recast fallback
     local available_spell, recast_reason = find_available_cure_with_fallback(optimal_spell, tier_config)
 
-    -- If all Cures in recast, cancel cast
+    -- All tiers on recast: leave the cast as it is. WHM_PRECAST runs the recast
+    -- check right after this, which reports and cancels it with the shared
+    -- recast tolerance (this module tests for exactly 0).
     if not available_spell then
-        if WHMMessageFormatter then
-            WHMMessageFormatter.show_cure_recast_error(recast_reason or "All Cure spells on recast")
-        end
         return nil
     end
 
