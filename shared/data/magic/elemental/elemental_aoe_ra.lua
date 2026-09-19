@@ -12,7 +12,7 @@
 --- NOTES:
 --- - All -ra spells are GEO-only (NOT available to BLM, SCH, RDM, DRK)
 --- - Six elements: Fire (Fira), Ice (Blizzara), Thunder (Thundara),
----   Water (Watera), Wind (Aerora), Earth (Stonera)
+---   Water (Watera), Wind (Aera), Earth (Stonera)
 --- - Tier III requires 1200 Job Points (Job Point Gift)
 --- - AOE range: 10 yards
 ---============================================================================
@@ -50,7 +50,7 @@ elemental_aoe_ra.spells = {
         notes                   = "AOE water damage (~10y range). GEO-only.",
     },
 
-    ["Aerora"] = {
+    ["Aera"] = {
         description             = "Deals AOE dmg.",
         category                = "Elemental",
         element                 = "Wind",
@@ -132,7 +132,7 @@ elemental_aoe_ra.spells = {
         notes                   = "AOE water damage (~10y range). GEO-only.",
     },
 
-    ["Aerora II"] = {
+    ["Aera II"] = {
         description             = "Deals AOE dmg.",
         category                = "Elemental",
         element                 = "Wind",
@@ -214,7 +214,7 @@ elemental_aoe_ra.spells = {
         notes                   = "AOE water damage (~10y range). Requires 1200 Job Points (Gift). GEO-only.",
     },
 
-    ["Aerora III"] = {
+    ["Aera III"] = {
         description             = "Deals AOE dmg.",
         category                = "Elemental",
         element                 = "Wind",

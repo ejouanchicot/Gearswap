@@ -54,7 +54,7 @@ local ELEMENT_COLORS = {
     -- Spell name patterns (-ra AOE spells: Fira, Blizzara, etc.)
     ['Fira']     = string.char(0x1F, 2),    -- Fire (matches "Fira", "Fira II", "Fira III")
     ['Blizzara'] = string.char(0x1F, 30),   -- Ice
-    ['Aerora']   = string.char(0x1F, 14),   -- Wind
+    ['Aera']     = string.char(0x1F, 14),   -- Wind (Aera, Aera II, Aera III)
     ['Stonera']  = string.char(0x1F, 37),   -- Earth
     ['Thundara'] = string.char(0x1F, 16),   -- Thunder
     ['Watera']   = string.char(0x1F, 219),  -- Water
