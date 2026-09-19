@@ -83,14 +83,14 @@ function DNCStates.configure()
     state.MainStep = M {
         ['description'] = 'Main Step',
         'Box Step',     -- Defense down (party benefit)
-        'Quick Step',  -- Evasion down (DPS boost)
+        'Quickstep',    -- Evasion down (DPS boost)
         'Feather Step', -- Critical hit rate
     }
     
     --- AltStep: Alternative step ability (for rotation)
     state.AltStep = M {
         ['description'] = 'Alt Step',
-        'Quick Step',   -- Evasion down (alternative)
+        'Quickstep',    -- Evasion down (alternative)
         'Box Step',    -- Defense down (default alt)
         'Feather Step', -- Critical hit rate
     }

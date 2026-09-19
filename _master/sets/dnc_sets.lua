@@ -256,7 +256,7 @@ sets.precast.Step['Feather Step'] = set_combine(sets.precast.Step, {
     feet = 'Macu. Toe Sh. +3'
 })
 
-sets.precast.Step['Quick Step'] = set_combine(sets.precast.Step, {
+sets.precast.Step['Quickstep'] = set_combine(sets.precast.Step, {
     feet = 'Macu. Toe Sh. +3'
 })
 
