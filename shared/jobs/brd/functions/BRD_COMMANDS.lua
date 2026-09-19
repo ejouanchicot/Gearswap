@@ -77,7 +77,7 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local THRENODIES = {Fire='Fire Threnody II', Ice='Ice Threnody II', Wind='Wind Threnody II',
-    Earth='Earth Threnody II', Lightning='Lightning Threnody II', Water='Water Threnody II',
+    Earth='Earth Threnody II', Lightning='Ltng. Threnody II', Water='Water Threnody II',
     Light='Light Threnody II', Dark='Dark Threnody II'}
 
 local CAROLS = {Fire='Fire Carol II', Ice='Ice Carol II', Wind='Wind Carol II',
