@@ -143,7 +143,7 @@ sequenceDiagram
 5. Delay: 0.5 s when `STATE.current_main_job == main_job`, else 3.0 s (`:149-152`). `current_main_job` is the job seeded when this sandbox ran `user_setup()` the first time.
 6. Schedules the reload (`:158-182`). When it fires it aborts if `my_counter ~= debounce_counter`; otherwise it records the new current jobs and sends `gs reload` (`:179`).
 
-Every subjob change inside the debounce window bumps the counter, so only the last one reloads. A round trip (SAM/WAR -> SAM/DNC -> SAM/WAR) still reloads once after 0.5 s: the comment at `:144-148` states this is intended because cleanup has already torn the UI and AutoMove down. (This is the on-disk resolution of 2026-09-18 audit P2-3; the uncommitted change keys the delay on the main job only.)
+Every subjob change inside the debounce window bumps the counter, so only the last one reloads. A round trip (SAM/WAR -> SAM/DNC -> SAM/WAR) still reloads once after 0.5 s: the comment at `:144-148` states this is intended because cleanup has already torn the UI and AutoMove down. (This resolves 2026-09-18 audit P2-3; commit `5223943` keys the delay on the main job only.)
 
 When the 3.0 s branch is reached: only when `player.main_job` at the subjob event differs from the job seeded in this sandbox. A normal main job change never reaches `on_job_change` (GearSwap reloads on the 0x100 request itself), so in practice this branch is taken in a sandbox whose file does not match the client's job (the situation `JobSyncWatchdog` also corrects).
 

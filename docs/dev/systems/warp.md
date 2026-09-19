@@ -2,7 +2,7 @@
 
 The warp system turns short `//gs c` words into a way home: it casts the BLM/WHM transport spell when the current job can, otherwise it equips a warp or teleport ring in `ring1`, waits for the ring to become usable, fires `/item`, and watches the cast until the character zones. The same words suffixed with `all` are broadcast over Windower IPC so every dual-boxed instance runs them. A third family (79 aliases for 39 destinations) names a destination and sends `/item` for an item from a built-in database. The system is loaded for every job 0.5 s after each file load by `INIT_SYSTEMS.lua`, and every command reaches it through `CommonCommands`. The mount toggle (`//gs c mount`) is a small, independent module routed the same way; it is documented at the end.
 
-Everything below was read on disk on 2026-09-18, including the uncommitted changes to `item_user.lua` (patience windows, `abandon_wait()` restore, listener ids on `windower.*`) and the removal of `MessageWarp.show_safety_timeout()`.
+Everything below was read on disk on 2026-09-18, including the changes to `item_user.lua` (patience windows, `abandon_wait()` restore, listener ids on `windower.*`) and the removal of `MessageWarp.show_safety_timeout()`, committed as `4d2b9d6`.
 
 ## Files
 

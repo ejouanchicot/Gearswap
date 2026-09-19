@@ -25,8 +25,7 @@ It has no ward/rune tracking, no Gambit/Rayke logic and no Dark Magic routing,
 whatever the entry header says (`Tetsouo_RUN.lua:9-13,23`).
 
 Every file in scope was read in full except the gear content of the sets file.
-All line numbers refer to the working tree on 2026-09-19, uncommitted changes
-included (only `RUN_KEYBINDS.lua` is modified).
+All line numbers refer to the code as of 2026-09-19.
 
 ## Files
 
@@ -50,7 +49,7 @@ included (only `RUN_KEYBINDS.lua` is modified).
 | `shared/jobs/run/functions/logic/cure_set_builder.lua` | 53 | CureSelf / CureOther for Cure III/IV (identical to PLD's) |
 | `shared/jobs/run/functions/logic/rune_manager.lua` | 79 | `//gs c rune` (identical to PLD's) |
 | `_master/config/run/RUN_STATES.lua` | 154 | States, unused `validate` |
-| `_master/config/run/RUN_KEYBINDS.lua` | 171 | 5 binds, unbind-all-then-bind (uncommitted), intro without macro/lockstyle info |
+| `_master/config/run/RUN_KEYBINDS.lua` | 171 | 5 binds, unbind-all-then-bind (`e94d286`), intro without macro/lockstyle info |
 | `_master/config/run/RUN_LOCKSTYLE.lua` | 73 | Style 3 (`default`, `by_subjob`, `get_style`) |
 | `_master/config/run/RUN_MACROBOOK.lua` | 78 | Books 15-20 (same numbers as PLD) |
 | `_master/config/run/RUN_TP_CONFIG.lua` | 74 | `_G.RUNTPConfig` - **never loaded** |
@@ -366,7 +365,7 @@ T = `_master/sets/run_sets.lua` (the only sets file in scope).
 - Rune descriptions for Gelus, Tellus and Unda disagree with the RUN/PLD state
   comments (`shared/data/job_abilities/run/run_subjob.lua:35,51,67` vs
   `RUN_STATES.lua:85-89`).
-- The uncommitted unbind loop in `bind_all` fixes nothing today: no RUN bind
+- The unbind loop in `bind_all` (`e94d286`) fixes nothing today: no RUN bind
   has a `subjob` filter (`RUN_KEYBINDS.lua:32-58,100-102`).
 - Duplicated with PLD: `aoe_manager`, `cure_set_builder`, `rune_manager`,
   `RUN_BLU_MAGIC`, `cooldown_exclusions`, the `job_midcast` skeleton

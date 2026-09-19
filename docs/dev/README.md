@@ -3,7 +3,7 @@
 This is the entry point to the developer documentation of the GearSwap Tetsouo
 project. It explains how the whole thing fits together in one read, then points
 to the detailed pages. Every page under `docs/dev/` was written from the code
-(working tree of 2026-09-18/19, uncommitted changes included) and cites
+(as of 2026-09-19, updated after that day's fixes) and cites
 `path:line`. Engine paths are relative to `D:\Windower Tetsouo\addons\GearSwap\`
 and marked *(engine)*; everything else is relative to the repo root
 (`addons/GearSwap/data`).

@@ -24,7 +24,7 @@ What COR adds on top of the shared pipeline:
 
 Every file in scope was read in full except the gear content of the sets files
 (structure and names only). All line numbers refer to the working tree on
-2026-09-19, including the uncommitted changes to `_master/entry/Tetsouo_COR.lua`
+2026-09-19, including commit `10ca4e6`'s changes to `_master/entry/Tetsouo_COR.lua`
 and `_master/Kaories/entry/Kaories_COR.lua` (party tracking moved from
 `user_setup()` into `init_party_tracking()` in `get_sets()`, and the
 macrobook/lockstyle calls of the second `user_setup()` block guarded).
@@ -68,7 +68,7 @@ macrobook/lockstyle calls of the second `user_setup()` block guarded).
 
 Live copies (gitignored): `Kaories/Kaories_COR.lua`, `Kaories/config/cor/*` and
 `Kaories/sets/cor_sets.lua` are identical to the overlay (including the
-uncommitted change). `Tetsouo/Tetsouo_COR.lua` is the template except line 385
+`10ca4e6` change). `Tetsouo/Tetsouo_COR.lua` is the template except line 385
 (`sets/cor/cor_sets.lua`). `Tetsouo/config/cor/*` equal the templates except the
 headers `@author Kaories` in `COR_LOCKSTYLE.lua:8`, `COR_MACROBOOK.lua:8`,
 `COR_STATES.lua:29`, `COR_TP_CONFIG.lua:9`; `COR_REFILL.lua` equals its template.
