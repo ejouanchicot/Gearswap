@@ -2,12 +2,13 @@
 --- Universal Ability Message Handler - Multi-Database Ability Message System
 ---============================================================================
 --- Automatically detects and displays ability messages for ANY job/subjob combo.
---- Works by checking ALL ability databases until ability is found.
+--- Looks the ability up in the job ability databases, main and sub job first.
 ---
 --- **PERFORMANCE OPTIMIZATION:**
 ---   • LAZY-LOADED: Databases load on first ability usage (not at startup)
----   • Lazy-loaded on first ability usage
----   • 21 job databases load only when first ability is used
+---   • An ability loads the main + sub job databases; the other 19 only
+---     for an ability type that has records in them and was not found there
+---   • Weaponskills return at once; Blood Pacts go straight to the SMN database
 ---
 --- Features:
 ---   - Works for main job AND subjob abilities
@@ -21,8 +22,8 @@
 ---   - 'off': Silent mode
 ---
 --- Architecture:
----   - Lazy-loads all 21 job ability databases on first ability
----   - Searches mainjob + subjob + SP abilities
+---   - Searches mainjob + subjob databases (SP abilities included) first
+---   - Then the other job databases, for ability types they hold
 ---   - Falls back gracefully if not found
 ---
 --- Examples:
@@ -84,6 +85,21 @@ local function load_ja_db(job_code)
     return JOB_DATABASES[job_code] or nil
 end
 
+-- Ability types (res.job_abilities `type`) that have records in the job
+-- ability databases. GearSwap also reports Ready moves (Monster), Quick Draw
+-- shots (CorsairShot) and the SMN/PUP/DRG pet commands with action_type
+-- 'Ability'; none of them is in any database, so they must not trigger the
+-- walk over all 21. BST's own pet commands are in the BST database, which the
+-- main/sub pass already covers for a BST.
+local DATABASE_TYPES = {
+    JobAbility = true, Scholar = true, Rune = true, Ward = true, Effusion = true,
+    Waltz = true, Samba = true, Step = true, Jig = true,
+    Flourish1 = true, Flourish2 = true, Flourish3 = true,
+}
+
+-- Blood Pacts are records of the SMN spell database, not of a job ability one.
+local BLOOD_PACT_TYPES = { BloodPactRage = true, BloodPactWard = true }
+
 -- Load message config ONCE and cache the reference
 -- The table is modified by set_display_mode() so we always see current mode
 local JA_MESSAGES_CONFIG = nil
@@ -107,11 +123,35 @@ end
 --- ABILITY LOOKUP
 ---============================================================================
 
---- Search for ability in all loaded databases
+--- Look a Blood Pact up in the SMN spell database
+--- @param ability_name string Blood Pact name
+--- @return table|nil blood_pact Blood Pact data if found
+--- @return string|nil database_name 'SMN' when found
+local function find_blood_pact(ability_name)
+    local smn_success, SMNSpells = pcall(require, 'shared/data/magic/SMN_SPELL_DATABASE')
+    if smn_success and SMNSpells and SMNSpells.spells then
+        local blood_pact = SMNSpells.spells[ability_name]
+        if blood_pact then
+            -- Check if it's actually a Blood Pact (not Avatar Summon)
+            if blood_pact.category == "Blood Pact: Rage" or blood_pact.category == "Blood Pact: Ward" then
+                return blood_pact, 'SMN'
+            end
+        end
+    end
+
+    return nil, nil
+end
+
+--- Search for an ability, loading only the databases that can hold it
 --- @param ability_name string Ability name
+--- @param ability_type string|nil GearSwap spell.type (res.job_abilities type)
 --- @return table|nil ability_data Ability data if found
 --- @return string|nil database_name Name of database where ability was found
-local function find_ability_in_databases(ability_name)
+local function find_ability_in_databases(ability_name, ability_type)
+    if BLOOD_PACT_TYPES[ability_type] then
+        return find_blood_pact(ability_name)
+    end
+
     -- Read an ability out of a (possibly legacy-shaped) database
     local function lookup(db)
         if not db then return nil end
@@ -130,24 +170,15 @@ local function find_ability_in_databases(ability_name)
         end
     end
 
+    if not DATABASE_TYPES[ability_type] then
+        return nil, nil
+    end
+
     -- FALLBACK: remaining job databases (abilities outside the caster's main/sub).
     for _, job_code in ipairs(JOBS) do
         local ability_data = lookup(load_ja_db(job_code))
         if ability_data then
             return ability_data, job_code
-        end
-    end
-
-    -- PRIORITY 2: Fallback to SMN spell database for Blood Pacts
-    -- Blood Pacts are stored as spells but treated as abilities by GearSwap
-    local smn_success, SMNSpells = pcall(require, 'shared/data/magic/SMN_SPELL_DATABASE')
-    if smn_success and SMNSpells and SMNSpells.spells then
-        local blood_pact = SMNSpells.spells[ability_name]
-        if blood_pact then
-            -- Check if it's actually a Blood Pact (not Avatar Summon)
-            if blood_pact.category == "Blood Pact: Rage" or blood_pact.category == "Blood Pact: Ward" then
-                return blood_pact, 'SMN'
-            end
         end
     end
 
@@ -187,6 +218,12 @@ function AbilityMessageHandler.show_message(spell, show_separator)
         return
     end
 
+    -- GearSwap reports weaponskills with action_type 'Ability' too; their
+    -- message comes from init_ws_messages.
+    if spell.type == 'WeaponSkill' then
+        return
+    end
+
     -- EXCLUSION: Skip CorsairRoll (has specialized roll_tracker messages)
     if spell.type == 'CorsairRoll' then
         return
@@ -203,7 +240,7 @@ function AbilityMessageHandler.show_message(spell, show_separator)
     end
 
     -- Find ability in databases
-    local ability_data, db_name = find_ability_in_databases(spell.name)
+    local ability_data, db_name = find_ability_in_databases(spell.name, spell.type)
 
     if not ability_data then
         -- Ability not found in any database (might be pet command, universal ability, etc.)

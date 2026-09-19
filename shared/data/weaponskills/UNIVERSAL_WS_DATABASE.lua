@@ -1,18 +1,18 @@
 ---============================================================================
 --- Universal Weapon Skills Database - Complete Integration (LAZY-LOADED)
 ---============================================================================
---- Automatically merges all 12 weapon-specific WS databases into one universal
---- database for easy lookup and display.
+--- Merges the weapon-specific WS databases into one lookup table,
+--- _G.WS_DATABASE, one weapon type at a time.
 ---
 --- **PERFORMANCE OPTIMIZATION:**
----   • LAZY-LOADED: Database loads on first WS usage (not at startup)
----   • Lazy-loaded on first WS usage
+---   • LAZY-LOADED: nothing loads at startup
+---   • resolve() loads only the file of the weaponskill's own skill
 ---   • Cached in _G.WS_DATABASE for all jobs
 ---
---- Pattern: Same as UNIVERSAL_JA_DATABASE
+--- Pattern:
 ---   1. Individual weapon databases maintained separately (easy editing)
----   2. Universal database auto-merges all at runtime
----   3. PRECAST modules use universal database for WS validation & display
+---   2. Merged into _G.WS_DATABASE on demand, per weapon type
+---   3. Read by the WS messages (full mode only)
 ---
 --- Database Coverage:
 ---   • SWORD (22 WS)
@@ -126,32 +126,20 @@ function UniversalWS.ensure_weapon_type(weapon_type)
     end
 end
 
---- Resolve a weapon skill by name, loading only the database(s) actually needed.
---- Fast path: try the equipped weapon's type first (1 file). Fallback: scan the
---- remaining weapon types until found. Avoids merging all 13 databases at once.
+--- Resolve a weapon skill by name, loading only the database of its weapon type.
+--- Every record sits in the file of its own skill, so a weaponskill that is not
+--- there (Atonement, or a Marksmanship one: no file) is in none of them, and a
+--- miss returns nil instead of merging all 13 databases.
 --- @param ws_name string Weapon skill name
---- @param weapon_type_hint string|nil Preferred weapon type to try first
---- @return table|nil Weapon skill data, or nil if not found in any database
-function UniversalWS.resolve(ws_name, weapon_type_hint)
+--- @param weapon_type string|nil The weaponskill's skill (GearSwap spell.skill, e.g. 'Sword')
+--- @return table|nil Weapon skill data, or nil if its weapon type's database lacks it
+function UniversalWS.resolve(ws_name, weapon_type)
     if _G.WS_DATABASE.weaponskills[ws_name] then
         return _G.WS_DATABASE.weaponskills[ws_name]
     end
 
-    if weapon_type_hint then
-        UniversalWS.ensure_weapon_type(weapon_type_hint)
-        if _G.WS_DATABASE.weaponskills[ws_name] then
-            return _G.WS_DATABASE.weaponskills[ws_name]
-        end
-    end
-
-    for _, config in ipairs(weapon_type_configs) do
-        merge_weapon_db(config)
-        if _G.WS_DATABASE.weaponskills[ws_name] then
-            return _G.WS_DATABASE.weaponskills[ws_name]
-        end
-    end
-
-    return nil
+    UniversalWS.ensure_weapon_type(weapon_type)
+    return _G.WS_DATABASE.weaponskills[ws_name]
 end
 
 --- Load ALL weaponskill databases (full merge). Kept for callers that need the
