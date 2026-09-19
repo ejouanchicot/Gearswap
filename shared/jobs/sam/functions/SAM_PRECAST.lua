@@ -11,7 +11,6 @@
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
-local MessageFormatter = nil
 local CooldownChecker = nil
 local PrecastGuard = nil
 local WSPrecastHandler = nil
@@ -21,10 +20,6 @@ local modules_loaded = false
 
 local function ensure_modules_loaded()
     if modules_loaded then return end
-
-    local mf_ok, mf = pcall(require, 'shared/utils/messages/message_formatter')
-    if not mf_ok then mf = nil end
-    MessageFormatter = mf
 
     local cc_ok, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
     if not cc_ok then cc = nil end
@@ -65,7 +60,6 @@ local function try_seigan_before_third_eye(spell, eventArgs)
             seigan_cast_attempted = true
             send_command('input /ja Seigan <me>')
             send_command('@wait 1;input /ja "Third Eye" <me>')
-            MessageFormatter.show_auto_ability('Seigan', 'Third Eye', 'SAM')
             return true
         else
             seigan_cast_attempted = false
@@ -92,12 +86,13 @@ local function try_third_eye_ws(spell, eventArgs)
             for _, ability_id in ipairs(abilities.job_abilities) do
                 local res_ability = res.job_abilities[ability_id]
                 if res_ability and res_ability.en == 'Third Eye' then
-                    local recast = ability_recasts[ability_id] or 0
+                    -- Recasts are indexed by recast id, not ability id: Third
+                    -- Eye is ability 62 but recast 133, and slot 62 is Flee's.
+                    local recast = ability_recasts[res_ability.recast_id] or 0
                     if recast == 0 then
                         -- Third Eye ready, cast it before WS
                         eventArgs.cancel = true
                         send_command('input /ja "Third Eye" <me>; wait 1.5; input /ws "' .. spell.name .. '" ' .. spell.target.raw)
-                        MessageFormatter.show_auto_ability('Third Eye', spell.name, 'SAM')
                         return true
                     end
                 end
