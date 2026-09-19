@@ -91,13 +91,25 @@ local function cleanup_all_systems()
 end
 
 
---- Initialize job change manager with current job state
---- NOTE: This now only sets initial job state (module references removed)
+--- Seed the job state this manager compares against, once per environment.
+---
+--- Deliberately a seed and not an assignment. Mote calls `user_setup()` BEFORE
+--- `job_sub_job_change()` (Mote-Include.lua:981-988), and every job's
+--- user_setup calls this. Overwriting here meant `current_sub_job` already held
+--- the NEW subjob by the time `on_job_change()` compared them, so the
+--- subjob-only branch could never be true and every change waited the full
+--- main-job delay. Seeding only when unset keeps the value captured at load
+--- time, which is what the comparison actually needs.
+--- @param config table Unused, kept for the call sites that pass job modules
 function JobChangeManager.initialize(config)
-    -- Set initial job state
-    if player then
+    if not player then
+        return
+    end
+    if STATE.current_main_job == nil then
         STATE.current_main_job = player.main_job
-        STATE.current_sub_job  = player.sub_job
+    end
+    if STATE.current_sub_job == nil then
+        STATE.current_sub_job = player.sub_job
     end
 end
 
@@ -129,10 +141,14 @@ function JobChangeManager.on_job_change(main_job, sub_job)
     STATE.debounce_counter = STATE.debounce_counter + 1
     local my_counter = STATE.debounce_counter
 
-    -- Determine debounce delay based on change type
-    local delay = 3.0  -- Default: main job change
-    if STATE.current_main_job == main_job and STATE.current_sub_job ~= sub_job then
-        delay = 0.5  -- Faster for subjob-only changes
+    -- Only a main job change needs the long delay. Keyed on the main job alone:
+    -- a subjob round trip (WAR -> DNC -> WAR inside the window) ends where it
+    -- started, and the old test read "same subjob" as a main job change. The
+    -- reload itself still has to happen - cleanup_all_systems() above has
+    -- already torn the UI and AutoMove down.
+    local delay = 3.0
+    if STATE.current_main_job == main_job then
+        delay = 0.5
     end
 
     -- Cancel previous debounce timer
