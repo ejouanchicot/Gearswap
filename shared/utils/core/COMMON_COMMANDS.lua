@@ -8,9 +8,9 @@ local MessageRenderer  = require('shared/utils/messages/core/message_renderer')
 -- Warp shortcut list (single source of truth in warp_command_registry).
 local WARP_COMMANDS = require('shared/utils/warp/warp_command_registry').COMMANDS
 
--- Alt commands are consulted on every unrecognised command, and `gs c update`
--- (sent by AutoMove on each move) is one of those - so resolve the module once
--- instead of pcall(require) per call. `false` means "tried and failed".
+-- Alt commands are consulted for every command nothing else answered, so
+-- resolve the module once instead of pcall(require) per call. `false` means
+-- "tried and failed".
 local AltCommandsModule = nil
 local function alt_commands()
     if AltCommandsModule == nil then
@@ -236,7 +236,7 @@ end
 --- Run a command defined in the alt's per-job config, or list them.
 --- `//gs c altcmds` lists what the alt's current job offers.
 --- `//gs c alt <name>` is the explicit form; bare `//gs c <name>` also works
---- for any name that does not collide with an existing command.
+--- for any name no local command answers (AltCommands.install_fallback).
 --- @param cmd string Command name
 --- @param args table Arguments after the command
 --- @return boolean Success status
@@ -246,7 +246,7 @@ function CommonCommands.handle_alt_command(cmd, args)
         MessageFormatter.show_error("Failed to load alt commands module.")
         return false
     end
-    return AltCommands.handle(cmd, args)
+    return AltCommands.handle(cmd, args, CommonCommands.runs_locally)
 end
 
 -- CRAFT / FISH COMMANDS - extracted to CRAFT_COMMANDS.lua, re-exposed here.
@@ -594,7 +594,7 @@ function CommonCommands.handle_command(command, job_name, ...)
         return true
     elseif cmd == 'debugstate' or cmd == 'ds' then
         return CommonCommands.handle_debugstate()
-    elseif cmd == 'debugupdate' or cmd == 'du' then
+    elseif cmd == 'debugupdate' then
         -- Toggle UPDATE debug mode (traces full gs c update flow)
         -- Use windower table for persistence across job changes
         windower._gs_debug = windower._gs_debug or {}
@@ -654,12 +654,6 @@ function CommonCommands.handle_command(command, job_name, ...)
         return true
     end
 
-    -- Alt commands are checked last so a native command always wins the name.
-    local AltCommands = alt_commands()
-    if AltCommands and AltCommands.is_alt_command(cmd) then
-        return AltCommands.execute(cmd, args)
-    end
-
     return false
 end
 
@@ -684,7 +678,7 @@ function CommonCommands.is_common_command(command)
         cmd == 'perf' or cmd == 'testcolors' or cmd == 'colors' or cmd == 'jump' or cmd == 'waltz' or
         cmd == 'aoewaltz' or cmd == 'debugsubjob' or cmd == 'dsj' or cmd == 'debugwarp' or cmd == 'debugprecast' or
         cmd == 'automovedebug' or cmd == 'amd' or cmd == 'debugjobchange' or cmd == 'djc' or
-        cmd == 'debugstate' or cmd == 'ds' or cmd == 'debugupdate' or cmd == 'du' or
+        cmd == 'debugstate' or cmd == 'ds' or cmd == 'debugupdate' or
         cmd == 'fulltest' or cmd == 'ft' or
         cmd == 'syscheck' or cmd == 'sc' or
         cmd == 'lagdebug' or cmd == 'ldb' or
@@ -712,14 +706,29 @@ function CommonCommands.is_common_command(command)
         end
     end
 
-    -- Alt commands last: every name above already won, so a config entry can
-    -- never shadow a built-in command.
-    local AltCommands = alt_commands()
-    if AltCommands and AltCommands.is_alt_command(cmd) then
+    return false
+end
+
+-- ALT COMMANDS AS A LAST RESORT
+
+--- Does this name run on this character rather than reach the alt?
+--- True for common commands, warp aliases and Mote's own commands.
+--- @param name string Command word
+--- @return boolean True when a bare `//gs c <name>` never reaches the alt
+function CommonCommands.runs_locally(name)
+    if CommonCommands.is_common_command(name) then
         return true
     end
+    local maps = rawget(_G, 'selfCommandMaps')
+    return type(maps) == 'table' and rawget(maps, name) ~= nil
+end
 
-    return false
+-- Alt keys answer only what nothing on this side does: they are Mote's last
+-- lookup, never a common command (AltCommands.install_fallback). Installed
+-- once per job file load, when the first command loads this module.
+local AltCommandsAtLoad = alt_commands()
+if AltCommandsAtLoad then
+    AltCommandsAtLoad.install_fallback(rawget(_G, 'selfCommandMaps'), CommonCommands.runs_locally)
 end
 
 return CommonCommands
