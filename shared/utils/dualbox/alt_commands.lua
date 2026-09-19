@@ -475,27 +475,57 @@ end
 --- short forms to the right place.
 --- @param cmd string Command name typed by the player
 --- @param args table Arguments after the command
+--- @param runs_locally function|nil name -> true when a bare name runs here
 --- @return boolean True when something was handled
-function AltCommands.handle(cmd, args)
+function AltCommands.handle(cmd, args, runs_locally)
     args = args or {}
 
     if cmd == 'altcmds' or cmd == 'altlist' then
-        return AltCommands.list(args[1])
+        return AltCommands.list(args[1], runs_locally)
     end
 
     if cmd == 'alt' then
         if not args[1] then
-            return AltCommands.list()
+            return AltCommands.list(nil, runs_locally)
         end
-        return AltCommands.execute(args[1], { table.unpack(args, 2) })
+        -- Lua's unpack: Windower's table.unpack(t, 2) returns t[2] alone.
+        return AltCommands.execute(args[1], { unpack(args, 2) })
     end
 
     return AltCommands.execute(cmd, args)
 end
 
+--- Make the alt's commands Mote's last lookup for `//gs c <name>`.
+---
+--- Mote reads selfCommandMaps only when job_self_command left the command
+--- unhandled (Mote-SelfCommands.lua:26-35), so a job command keeps its name
+--- even when the alt's config has the same key. __index runs only for names
+--- the table lacks, so Mote's own commands are never shadowed either. Mote
+--- rebuilds the table on every job file load, so this runs once per load.
+--- @param maps table Mote's selfCommandMaps
+--- @param runs_locally function|nil name -> true when the name runs on this side
+function AltCommands.install_fallback(maps, runs_locally)
+    if type(maps) ~= 'table' or getmetatable(maps) ~= nil then
+        return
+    end
+    setmetatable(maps, { __index = function(_, name)
+        if type(name) ~= 'string' or (runs_locally and runs_locally(name))
+            or not AltCommands.is_alt_command(name) then
+            return nil
+        end
+        return function(args)
+            AltCommands.execute(name, args)
+        end
+    end })
+end
+
 --- Show every command the alt's current job offers.
+--- Names that run on this side (a common command, a warp alias) are listed
+--- apart, since only `//gs c alt <name>` reaches the alt for them.
+--- @param filter string|nil Group name or substring
+--- @param runs_locally function|nil name -> true when a bare name runs here
 --- @return boolean True when a list was displayed
-function AltCommands.list(filter)
+function AltCommands.list(filter, runs_locally)
     local alt = get_alt_name()
     local commands, job = load_config()
 
@@ -504,16 +534,18 @@ function AltCommands.list(filter)
         return false
     end
 
-    local names = {}
+    local names, shadowed = {}, {}
     for name in pairs(commands) do
-        names[#names + 1] = name
+        local bucket = (runs_locally and runs_locally(name)) and shadowed or names
+        bucket[#bucket + 1] = name
     end
     table.sort(names)
+    table.sort(shadowed)
 
     local MessageAlt = require('shared/utils/messages/formatters/ui/message_alt_commands')
     local _, subjob = get_alt_jobs()
     MessageAlt.show_list(alt, job, names, commands, filter, subjob,
-        (player and player.name) or 'Tetsouo')
+        (player and player.name) or 'Tetsouo', shadowed)
     return true
 end
 

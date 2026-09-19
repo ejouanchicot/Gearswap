@@ -271,25 +271,43 @@ local function show_overview(alt, job, subjob, names, commands, char)
         gray, key, char or 'Tetsouo', job, gray))
 end
 
+--- Names whose bare form runs on the main, so only `alt <name>` reaches the alt.
+--- @param alt string Alt character name
+--- @param shadowed table Sorted names (already filtered)
+local function show_shadowed(alt, shadowed)
+    if not shadowed or #shadowed == 0 then
+        return
+    end
+    MessageRenderer.send(1, string.format('%s  %s//gs c alt <name>%s for these (the bare name runs here, not on %s):',
+        gray_code(), key_code(), gray_code(), alt))
+    name_block('', shadowed, 58)
+end
+
 --- Display the alt's commands, grouped or filtered.
 --- @param alt string Alt character name
 --- @param job string Alt's current job code
---- @param names table Sorted list of command names
+--- @param names table Sorted command names reachable as `//gs c <name>`
 --- @param commands table Command definitions keyed by name
 --- @param filter string|nil Group name, or a substring to search for
-function MessageAltCommands.show_list(alt, job, names, commands, filter, subjob, char)
+--- @param subjob string|nil Alt's current subjob code
+--- @param char string|nil Main character name (for the config path hint)
+--- @param shadowed table|nil Sorted names reachable only as `//gs c alt <name>`
+function MessageAltCommands.show_list(alt, job, names, commands, filter, subjob, char, shadowed)
+    shadowed = shadowed or {}
+    local filtering = filter and filter ~= ''
+    if filtering then
+        shadowed = matching_names(shadowed, commands, filter:lower())
+    end
+
     if #names == 0 then
         header(alt, job, subjob, 0)
         MessageRenderer.send(1, gray_code() .. '  (nothing configured)')
-        return
-    end
-
-    if filter and filter ~= '' then
+    elseif filtering then
         show_filtered(alt, job, subjob, names, commands, filter)
-        return
+    else
+        show_overview(alt, job, subjob, names, commands, char)
     end
-
-    show_overview(alt, job, subjob, names, commands, char)
+    show_shadowed(alt, shadowed)
 end
 
 ---============================================================================

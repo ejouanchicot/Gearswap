@@ -607,7 +607,7 @@ function MessageCommands.show_commands_list()
     add_to_chat(121, cyan .. "   //gs c debugwarp" .. gray .. " ........ " .. white .. "Toggle warp debug mode")
     add_to_chat(121, cyan .. "   //gs c debugmsg" .. gray .. " ......... " .. white .. "Debug message settings")
     add_to_chat(121, cyan .. "   //gs c debugstate" .. gray .. " (or " .. cyan .. "ds" .. gray .. ") . " .. white .. "Show global debug state")
-    add_to_chat(121, cyan .. "   //gs c debugupdate" .. gray .. " (or " .. cyan .. "du" .. gray .. ") " .. white .. "Toggle update flow trace")
+    add_to_chat(121, cyan .. "   //gs c debugupdate" .. gray .. " ...... " .. white .. "Toggle update flow trace")
     add_to_chat(121, cyan .. "   //gs c debugjobchange" .. gray .. " (or " .. cyan .. "djc" .. gray .. ") " .. white .. "Toggle job change debug")
     add_to_chat(121, cyan .. "   //gs c automovedebug" .. gray .. " (or " .. cyan .. "amd" .. gray .. ") " .. white .. "Toggle AutoMove debug")
 
