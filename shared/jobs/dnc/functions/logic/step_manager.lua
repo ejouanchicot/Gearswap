@@ -75,9 +75,9 @@ function StepManager.execute_step()
 
     -- Execute: Presto+Step if available, otherwise Step only
     if presto_available then
-        send_command('input /ja "Presto" <me>; wait 1; input /ma "' .. step_name .. '" <t>')
+        send_command('input /ja "Presto" <me>; wait 1; input /ja "' .. step_name .. '" <t>')
     else
-        send_command('input /ma "' .. step_name .. '" <t>')
+        send_command('input /ja "' .. step_name .. '" <t>')
     end
 
     -- Toggle CurrentStep for next step ONLY if alternation is enabled
