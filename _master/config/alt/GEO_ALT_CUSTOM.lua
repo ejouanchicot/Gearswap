@@ -19,6 +19,18 @@ local M = {}
 M.commands = {
 
     -- ------------------------------------------------------------------
+    -- Short names
+    -- ------------------------------------------------------------------
+    -- The generated names are the ability without its spaces, so Widened
+    -- Compass answers to `widenedcompass`. This is the short name the macro
+    -- uses; the generated one keeps working.
+    compass = {
+        action = 'ja', spell = 'Widened Compass', target = 'me',
+        level = 96, main_only = true, group = 'ja',
+        desc = 'Geomancy range x2',
+    },
+
+    -- ------------------------------------------------------------------
     -- Entrust chains: the JA on the alt, then the Indi- on your pick
     -- ------------------------------------------------------------------
     entrusthaste = {
