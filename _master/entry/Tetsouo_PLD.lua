@@ -162,6 +162,15 @@ function user_setup()
     local PLDStates = require('Tetsouo/config/pld/PLD_STATES')
     PLDStates.configure()
 
+    -- configure() has just put HybridMode back to its default, so any ammo
+    -- lock still held by the sandbox belongs to a stance that is no longer
+    -- selected. GearSwap slot locks outlive the job file; nothing else would
+    -- ever give the slot back.
+    local al_ok, AmpullaLock = pcall(require, 'shared/jobs/pld/functions/logic/ampulla_lock')
+    if al_ok and AmpullaLock then
+        AmpullaLock.apply(state.HybridMode and state.HybridMode.value)
+    end
+
     -- ==========================================================================
     -- KEYBINDS LOADING (Always executed after reload)
     -- ==========================================================================
@@ -248,5 +257,12 @@ function file_unload()
     -- Unbind all keybinds (Windower binds persist across gs reload)
     if PLDKeybinds and PLDKeybinds.unbind_all then
         PLDKeybinds.unbind_all()
+    end
+
+    -- Give the ammo slot back before the next job file loads: a GearSwap slot
+    -- lock survives a job change, and nothing on the other side knows it.
+    local al_ok, AmpullaLock = pcall(require, 'shared/jobs/pld/functions/logic/ampulla_lock')
+    if al_ok and AmpullaLock then
+        AmpullaLock.release()
     end
 end

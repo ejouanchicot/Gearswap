@@ -240,30 +240,34 @@ sets.engaged.TP =
     }
 )
 
--- • SCH Engaged (HybridMode 'Engaged', PLD/SCH only)
--- The TP stance of the Sortie-only /SCH setup: the same Sakpata armor the
--- Tanking stance wears, with every accessory traded for Store TP and
--- multi-attack. The damage taken floor is kept, the survivability accessories
--- are not.
+-- • SCH Engaged (HybridMode 'Engaged' and 'Hoxne', PLD/SCH only)
+-- The TP stance of the Sortie-only /SCH setup: Store TP and multi-attack,
+-- keeping the damage taken floor the content needs (-41% across the set).
+--
+-- Priorities rank the slots by the HP each piece carries, highest first, so
+-- that swapping into this set raises the HP pool before it touches the slots
+-- that add none. A tank that equips its empty slots first spends the swap at
+-- a lower maximum HP than either set intends.
+--
 -- No sub slot on purpose: the stance names its shield (Duban), applied by
--- SetBuilder alongside the weapon.
+-- SetBuilder alongside the weapon. The ammo is what the Hoxne stance freezes.
 sets.engaged.Engaged =
     set_combine(
     sets.engaged,
     {
-        ammo = 'Coiste Bodhar',
-        head = "Sakpata's Helm",
-        body = "Sakpata's Plate",
-        hands = "Sakpata's Gauntlets",
-        legs = "Sakpata's Cuisses",
-        feet = "Sakpata's Leggings",
-        neck = 'Null Loop',
-        waist = 'Sailfi Belt +1',
-        left_ear = 'Crep. Earring',
-        right_ear = 'Dedition Earring',
-        left_ring = Moonlight1,
-        right_ring = Moonlight2,
-        back = Rudianos.STP
+        ammo = 'Hoxne Ampulla',                                 -- HP+0, DA+100% on charge
+        body = {name = 'Hjarrandi Breast.', priority = 16},     -- HP+228, biggest gain, equip FIRST
+        head = {name = 'Chev. Armet +3', priority = 15},        -- HP+145
+        left_ring = {name = 'Moonlight Ring', priority = 14, bag = 'wardrobe 1'},  -- HP+110
+        right_ring = {name = 'Moonlight Ring', priority = 13, bag = 'wardrobe 2'}, -- HP+110
+        legs = {name = 'Flamma Dirs +2', priority = 12},        -- HP+100
+        hands = {name = "Sakpata's Gauntlets", augments = {'Path: A'}, priority = 11}, -- HP+91
+        feet = {name = 'Flam. Gambieras +2', priority = 10},    -- HP+40
+        neck = 'Lissome Necklace',                              -- HP+0
+        waist = 'Sailfi Belt +1',                               -- HP+0
+        left_ear = 'Dedition Earring',                          -- HP+0
+        right_ear = 'Telos Earring',                            -- HP+0
+        back = Rudianos.STP                                     -- HP+0, priority 0
     }
 )
 

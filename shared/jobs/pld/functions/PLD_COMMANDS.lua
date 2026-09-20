@@ -234,6 +234,14 @@ local function on_state_change(stateField, newValue)
     if PLDStates and type(PLDStates.apply_hybrid_profile) == 'function' then
         PLDStates.apply_hybrid_profile(newValue)
     end
+
+    -- The Hoxne stance holds the ammo slot on its Ampulla; every other stance
+    -- gives the slot back. Kept here rather than in the profile because it
+    -- equips gear, which a states config has no business doing.
+    local ok, AmpullaLock = pcall(require, 'shared/jobs/pld/functions/logic/ampulla_lock')
+    if ok and AmpullaLock then
+        AmpullaLock.apply(newValue)
+    end
 end
 
 job_state_change = LifecycleManager.state_change(on_state_change)

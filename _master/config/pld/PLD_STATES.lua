@@ -71,9 +71,12 @@ local SORTIE_WEAPON_OPTIONS = {
 local STANDARD_HYBRID_OPTIONS = {'PDT', 'MDT', 'Sortie'}
 
 --- PLD/SCH is played for Sortie and nothing else, so it drops the general
---- PDT/MDT/Sortie split for the only two stances that content asks for:
---- hold hate, or feed weaponskills.
-local SCH_HYBRID_OPTIONS = {'Engaged', 'Tanking'}
+--- PDT/MDT/Sortie split for the stances that content asks for: hold hate,
+--- feed weaponskills, or carry the Hoxne Ampulla.
+--- Hoxne wears the Engaged build and differs from it by one thing: the ammo
+--- slot is frozen on the Ampulla (logic/ampulla_lock.lua), which otherwise
+--- gets swapped out by the next set the moment it is equipped.
+local SCH_HYBRID_OPTIONS = {'Engaged', 'Tanking', 'Hoxne'}
 
 --- Under /SCH the stance owns the weapon rather than the other way round.
 --- Cycling HybridMode therefore swaps the main hand and zeroes TP; that is
@@ -81,7 +84,8 @@ local SCH_HYBRID_OPTIONS = {'Engaged', 'Tanking'}
 --- SetBuilder pairs each with its shield (Excalibur > Duban, Burtgang > Aegis).
 local SCH_WEAPON_BY_MODE = {
     Engaged = 'Excalibur',
-    Tanking = 'Burtgang'
+    Tanking = 'Burtgang',
+    Hoxne   = 'Excalibur'
 }
 
 local SCH_WEAPON_OPTIONS = {
@@ -135,6 +139,8 @@ function PLDStates.configure()
     ---   • 'Tanking' - Burtgang + Aegis, sets.engaged.MDT,
     ---              and sets.EnmityMax replaces sets.FullEnmity
     ---   • 'Engaged' - Excalibur + Duban, sets.engaged.Engaged (TP build)
+    ---   • 'Hoxne'   - the Engaged build with the ammo slot frozen on
+    ---              Hoxne Ampulla, so nothing swaps the charge away
     --- Keybind: Ctrl+Numpad9 to cycle
     if is_sch() then
         state.HybridMode:options(table.unpack(SCH_HYBRID_OPTIONS))
