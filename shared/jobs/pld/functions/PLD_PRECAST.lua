@@ -2,7 +2,8 @@
 ---   PLD Precast Module - Precast Action Handling & Auto-Abilities
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Debuff guard, cooldown check, auto-abilities (Majesty/Divine Emblem),
----   WS handling, Sortie enmity override.
+---   WS handling (with /SCH weaponskill variants), max-enmity override
+---   (Sortie / Tanking).
 ---
 ---   @file    PLD_PRECAST.lua
 ---   @author  Tetsouo
@@ -149,6 +150,25 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 end
 
+---   Swap in the /SCH variant of a weaponskill set, where one exists
+---   PLD/SCH is the Sortie-only setup and builds its weaponskills differently
+---   from the general tanking one, so sets.precast.WS.SCH holds the variants.
+---   Runs in post_precast because Mote has laid down sets.precast.WS[name] by
+---   then, and before apply_tp_gear so the TP bonus piece still wins.
+---   @param spell table Spell/ability data
+---   @return void
+local function apply_sch_ws_set(spell)
+    if spell.type ~= 'WeaponSkill' or not (player and player.sub_job == 'SCH') then
+        return
+    end
+
+    local sch_sets = sets.precast and sets.precast.WS and sets.precast.WS.SCH
+    local ws_set = sch_sets and (sch_sets[spell.english] or sch_sets[spell.name])
+    if ws_set then
+        equip(ws_set)
+    end
+end
+
 ---   Apply final gear adjustments before equipping
 ---   @param spell table Spell/ability data
 ---   @param action string Action type
@@ -156,6 +176,9 @@ end
 ---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
+
+    apply_sch_ws_set(spell)
+
     if WSPrecastHandler then
         WSPrecastHandler.apply_tp_gear(spell)
     end
@@ -168,7 +191,7 @@ function job_post_precast(spell, action, spellMap, eventArgs)
         equip(sets.precast.FC.CureSelf)
     end
 
-    -- Sortie: job abilities also get what sets.EnmityMax adds (the shield)
+    -- Hate-holding modes: job abilities also get what sets.EnmityMax adds
     if EnmityOverride then
         EnmityOverride.apply_precast(spell)
     end

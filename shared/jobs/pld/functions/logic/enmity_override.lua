@@ -1,13 +1,17 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Enmity Override - Sortie Maximum Enmity Routing (PLD)
+---   Enmity Override - Maximum Enmity Routing (PLD)
 ---  ═══════════════════════════════════════════════════════════════════════════
----   While HybridMode is on 'Sortie', whatever would have worn
----   sets.FullEnmity wears sets.EnmityMax instead. Spells swap to it whole;
----   abilities keep their own pieces and only gain what EnmityMax adds.
+---   While HybridMode is on a hate-holding mode - 'Sortie', or 'Tanking' in
+---   the /SCH setup - whatever would have worn sets.FullEnmity wears
+---   sets.EnmityMax instead. Spells swap to it whole; abilities keep their own
+---   pieces and only gain what EnmityMax adds.
 ---
 ---   sets.EnmityMax differs from sets.FullEnmity by owning the sub slot: in
----   Sortie the shield is part of the enmity build, not left to whatever the
----   engaged set holds. It owns no main slot - a main hand change zeroes TP.
+---   those modes the shield is part of the enmity build, not left to whatever
+---   the engaged set holds. It owns no main slot - a main hand change zeroes
+---   TP. /SCH's 'Engaged' stance is deliberately left out for the same reason
+---   the main hand is: it is the TP build, and swapping its shield mid-fight
+---   is a cost its stance was chosen to avoid.
 ---
 ---   Scope - exactly what wore sets.FullEnmity:
 ---   • Job abilities  -> all of them; every PLD JA set is FullEnmity-based
@@ -25,16 +29,22 @@ local EnmityOverride = {}
 ---   CONFIGURATION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
-local SORTIE_MODE = 'Sortie'
+--- The modes that route through sets.EnmityMax: Sortie on the general
+--- profile, Tanking on the /SCH one.
+local ENMITY_MAX_MODES = {
+    Sortie  = true,
+    Tanking = true
+}
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   INTERNAL
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Whether the Sortie enmity override is currently in effect
----   @return boolean True when HybridMode is Sortie and sets.EnmityMax exists
+---   Whether the enmity override is currently in effect
+---   @return boolean True on a hate-holding mode with sets.EnmityMax defined
 local function is_active()
-    if not (state.HybridMode and state.HybridMode.value == SORTIE_MODE) then
+    local mode = state.HybridMode and state.HybridMode.value
+    if not (mode and ENMITY_MAX_MODES[mode]) then
         return false
     end
     return sets and sets.EnmityMax ~= nil

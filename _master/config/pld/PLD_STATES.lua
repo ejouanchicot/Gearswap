@@ -4,8 +4,9 @@
 --- Defines all PLD job states (Combat Modes, Weapon Sets, XP Mode, Rune Mode).
 ---
 --- Features:
----   • HybridMode configuration (PDT/MDT/Sortie)
----   • MainWeapon state (full list, or Burtgang/Naegling in Sortie)
+---   • HybridMode configuration (PDT/MDT/Sortie, or Engaged/Tanking under /SCH)
+---   • MainWeapon state (full list, Burtgang/Naegling in Sortie, mode-driven
+---     under /SCH)
 ---   • XP Mode for Phalanx optimization (SIRD vs Potency)
 ---   • RuneMode for RUN subjob (Ignis/Gelus/Flabra/Tellus/Sulpor/Unda/Lux/Tenebrae)
 ---   • SneakInviAOE for SCH subjob (Accession on Sneak/Invisible)
@@ -62,9 +63,40 @@ local SORTIE_WEAPON_OPTIONS = {
     'Burtgang', 'Naegling'
 }
 
---- Which lists the states hold: true = Sortie, false = standard, nil = none
---- applied since configure() created the states.
-local sortie_profile = nil
+---============================================================================
+--- COMBAT MODE OPTIONS
+---============================================================================
+
+--- The three stances every subjob but SCH gets.
+local STANDARD_HYBRID_OPTIONS = {'PDT', 'MDT', 'Sortie'}
+
+--- PLD/SCH is played for Sortie and nothing else, so it drops the general
+--- PDT/MDT/Sortie split for the only two stances that content asks for:
+--- hold hate, or feed weaponskills.
+local SCH_HYBRID_OPTIONS = {'Engaged', 'Tanking'}
+
+--- Under /SCH the stance owns the weapon rather than the other way round.
+--- Cycling HybridMode therefore swaps the main hand and zeroes TP; that is
+--- the intended trade, the two stances being two different builds.
+--- SetBuilder pairs each with its shield (Excalibur > Duban, Burtgang > Aegis).
+local SCH_WEAPON_BY_MODE = {
+    Engaged = 'Excalibur',
+    Tanking = 'Burtgang'
+}
+
+local SCH_WEAPON_OPTIONS = {
+    'Excalibur', 'Burtgang'
+}
+
+--- Which lists the states hold: 'sch', 'sortie', 'standard', or nil when
+--- configure() has created the states without applying a profile yet.
+local active_profile = nil
+
+--- Whether the current subjob is the Sortie-only Scholar setup
+--- @return boolean True when the subjob is SCH
+local function is_sch()
+    return player ~= nil and player.sub_job == 'SCH'
+end
 
 --- Replace a mode's options, keeping its current value when the new list has it.
 --- Modes' options() resets the mode to its first entry, and for MainWeapon that
@@ -94,14 +126,23 @@ function PLDStates.configure()
     -- ==========================================================================
 
     --- HybridMode: Defensive stance configuration
-    --- Options:
+    --- Options outside /SCH:
     ---   • 'PDT' - Physical Damage Taken -50% (default for physical enemies)
     ---   • 'MDT' - Magic Damage Taken -50% (for magical enemies)
     ---   • 'Sortie' - Mitigation + TP build (sets.engaged.TP / sets.idle.MDT),
     ---              and sets.EnmityMax replaces sets.FullEnmity
+    --- Options under /SCH (Sortie-only setup):
+    ---   • 'Tanking' - Burtgang + Aegis, sets.engaged.MDT,
+    ---              and sets.EnmityMax replaces sets.FullEnmity
+    ---   • 'Engaged' - Excalibur + Duban, sets.engaged.Engaged (TP build)
     --- Keybind: Ctrl+Numpad9 to cycle
-    state.HybridMode:options('PDT', 'MDT', 'Sortie')
-    state.HybridMode:set('PDT') -- Default to PDT
+    if is_sch() then
+        state.HybridMode:options(table.unpack(SCH_HYBRID_OPTIONS))
+        state.HybridMode:set('Tanking') -- Hold hate first, TP once it sticks
+    else
+        state.HybridMode:options(table.unpack(STANDARD_HYBRID_OPTIONS))
+        state.HybridMode:set('PDT') -- Default to PDT
+    end
 
     -- ==========================================================================
     -- WEAPON SETS
@@ -133,7 +174,7 @@ function PLDStates.configure()
     --- Options:
     ---   • 'Off' - Use normal Phalanx routing (Potency or XP-based)
     ---   • 'On'  - Force SIRD Phalanx set (Spell Interruption Rate Down)
-    --- Keybind: Ctrl+Numpad2 to cycle
+    --- Keybind: Ctrl+Numpad2 to cycle (held On, and unbound, under /SCH)
     state.PhalanxSIRD =
         M {
         ['description'] = 'Phalanx SIRD',
@@ -159,6 +200,8 @@ function PLDStates.configure()
     --- charge on Accession to cover the party (SCH subjob).
     ---   • 'On'  - Light Arts + Accession, cast on self
     ---   • 'Off' - no stratagem, cast on a single target (<stal>)
+    --- Held On and unbound under /SCH: covering the party is the only reason
+    --- this setup takes Scholar, so the single-target path has no caller.
     state.SneakInviAOE =
         M {
         ['description'] = 'Sneak/Invi AOE',
@@ -180,9 +223,10 @@ function PLDStates.configure()
     }
     state.FastCast:set(80)  -- Default: 80% (PLD needs FC for SIRD build)
 
-    -- Rune list and Phalanx default follow the combat mode, not the other way
-    -- round: cold load starts on PDT, so this installs the standard profile.
-    sortie_profile = nil
+    -- Rune list and Phalanx default follow the subjob and the combat mode, not
+    -- the other way round. configure() runs again on every reload, so clearing
+    -- the marker here is what lets a subjob change reinstall its profile.
+    active_profile = nil
     PLDStates.apply_hybrid_profile(state.HybridMode.value)
 
     -- Universal toggle, created here rather than centrally: the keybind HUD
@@ -198,38 +242,76 @@ end
 --- HYBRIDMODE PROFILE
 ---============================================================================
 
---- Reshape the states that depend on HybridMode.
+--- Which profile the states should hold right now.
+--- The subjob decides first: /SCH is the Sortie-only setup and has its own
+--- stances, so the PDT/MDT/Sortie question never reaches it.
+--- @param mode string HybridMode value
+--- @return string 'sch', 'sortie' or 'standard'
+local function profile_for(mode)
+    if is_sch() then
+        return 'sch'
+    end
+    return (mode == 'Sortie') and 'sortie' or 'standard'
+end
+
+--- Install the option lists and forced toggles a profile owns.
+--- @param profile string 'sch', 'sortie' or 'standard'
+--- @return void
+local function install_profile(profile)
+    if profile == 'sch' then
+        reshape(state.MainWeapon, SCH_WEAPON_OPTIONS)
+        state.PhalanxSIRD:set('On')
+        state.SneakInviAOE:set('On')
+        return
+    end
+
+    if profile == 'sortie' then
+        reshape(state.RuneMode, SORTIE_RUNE_OPTIONS)
+        reshape(state.MainWeapon, SORTIE_WEAPON_OPTIONS)
+        state.PhalanxSIRD:set('On')
+        return
+    end
+
+    reshape(state.RuneMode, RUNE_OPTIONS)
+    reshape(state.MainWeapon, WEAPON_OPTIONS)
+    state.PhalanxSIRD:set('Off')
+end
+
+--- Reshape the states that depend on the subjob and on HybridMode.
 ---
 --- Sortie is a fixed rotation: five runes and two weapons are ever wanted
 --- there, and Phalanx is cast under fire, so SIRD is the default rather than
 --- potency. Any other mode restores the full lists and potency Phalanx.
 ---
---- Only a move into or out of Sortie changes anything: PDT <-> MDT keeps every
---- choice, the Phalanx SIRD toggle included. When the lists do change, the
---- weapon and rune in use are kept if the new list has them; a weapon the
---- Sortie list lacks falls back to its first entry.
+--- /SCH is that same content with the stance carrying the weapon, so it holds
+--- Phalanx SIRD and the Accession sneak/invi on for good, and MainWeapon
+--- follows the stance instead of being cycled by hand.
 ---
---- @param mode string HybridMode value ('PDT', 'MDT', 'Sortie')
+--- Installing a profile is skipped while it is already the one in place:
+--- PDT <-> MDT keeps every choice, the Phalanx SIRD toggle included. When the
+--- lists do change, the weapon and rune in use are kept if the new list has
+--- them; a weapon the new list lacks falls back to its first entry.
+---
+--- @param mode string HybridMode value ('PDT'/'MDT'/'Sortie', or 'Engaged'/'Tanking')
 --- @return void
 function PLDStates.apply_hybrid_profile(mode)
-    if not (state.RuneMode and state.PhalanxSIRD and state.MainWeapon) then
+    if not (state.RuneMode and state.PhalanxSIRD and state.MainWeapon and state.SneakInviAOE) then
         return
     end
 
-    local sortie = (mode == 'Sortie')
-    if sortie == sortie_profile then
-        return
+    local profile = profile_for(mode)
+    if profile ~= active_profile then
+        active_profile = profile
+        install_profile(profile)
     end
-    sortie_profile = sortie
 
-    if sortie then
-        reshape(state.RuneMode, SORTIE_RUNE_OPTIONS)
-        reshape(state.MainWeapon, SORTIE_WEAPON_OPTIONS)
-        state.PhalanxSIRD:set('On')
-    else
-        reshape(state.RuneMode, RUNE_OPTIONS)
-        reshape(state.MainWeapon, WEAPON_OPTIONS)
-        state.PhalanxSIRD:set('Off')
+    -- Unlike the lists above, this runs on every /SCH mode change: the stance
+    -- IS the weapon there, so Engaged <-> Tanking has to move the main hand.
+    if profile == 'sch' then
+        local weapon = SCH_WEAPON_BY_MODE[mode]
+        if weapon and state.MainWeapon.value ~= weapon then
+            state.MainWeapon:set(weapon)
+        end
     end
 end
 

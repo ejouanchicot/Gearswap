@@ -93,6 +93,7 @@ local Moonlight2 = {name = 'Moonlight Ring', priority = 12, bag = 'wardrobe 2'}
 
 -- • Main Weapons
 sets.Burtgang = {main = 'Burtgang'}
+sets.Excalibur = {main = 'Excalibur'} -- Engaged stance of the PLD/SCH setup
 sets.KC = {main = 'Kraken Club'}
 sets.BurtgangKC = {main = 'Burtgang', sub = 'Kraken Club'} -- PLD/DNC multi-attack build
 sets.Shining = {main = 'Shining One'} -- Polearm (uses Alber Strap grip)
@@ -235,6 +236,33 @@ sets.engaged.TP =
         right_ear = "Dedition Earring",
         left_ring = ChirichRing1,
         right_ring = ChirichRing2,
+        back = Rudianos.STP
+    }
+)
+
+-- • SCH Engaged (HybridMode 'Engaged', PLD/SCH only)
+-- The TP stance of the Sortie-only /SCH setup: the same Sakpata armor the
+-- Tanking stance wears, with every accessory traded for Store TP and
+-- multi-attack. The damage taken floor is kept, the survivability accessories
+-- are not.
+-- No sub slot on purpose: the stance names its shield (Duban), applied by
+-- SetBuilder alongside the weapon.
+sets.engaged.Engaged =
+    set_combine(
+    sets.engaged,
+    {
+        ammo = 'Coiste Bodhar',
+        head = "Sakpata's Helm",
+        body = "Sakpata's Plate",
+        hands = "Sakpata's Gauntlets",
+        legs = "Sakpata's Cuisses",
+        feet = "Sakpata's Leggings",
+        neck = 'Null Loop',
+        waist = 'Sailfi Belt +1',
+        left_ear = 'Crep. Earring',
+        right_ear = 'Dedition Earring',
+        left_ring = Moonlight1,
+        right_ring = Moonlight2,
         back = Rudianos.STP
     }
 )
