@@ -28,19 +28,26 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 local PLDKeybinds = {}
 
 --- Keybind definitions for PLD job
---- Format: { key = "key_combo", command = "gs_command", desc = "description", state = "state_name", subjob = "required_subjob" }
-PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie)
+--- Format: { key = "key_combo", command = "gs_command", desc = "description",
+---           state = "state_name", subjob = "required_subjob",
+---           exclude_subjob = "subjob_that_skips_this_bind" }
+---
+--- Under /SCH the stance decides the weapon and holds Phalanx SIRD on, so
+--- those two binds are excluded rather than left cycling a state nothing
+--- reads any more. Ctrl+Numpad1 and Ctrl+Numpad2 are simply free there.
+PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie, Engaged/Tanking under /SCH)
 {
     key = "^numpad9",
     command = "cyclestate HybridMode",
     desc = "Hybrid Mode",
     state = "HybridMode"
-}, -- Weapon Management
+}, -- Weapon Management (mode-driven under /SCH)
 {
     key = "^numpad1",
     command = "cyclestate MainWeapon",
     desc = "Main Weapon",
-    state = "MainWeapon"
+    state = "MainWeapon",
+    exclude_subjob = "SCH"
 }, -- XP Mode (PLD/RDM subjob only)
 {
     key = "^numpad4",
@@ -56,9 +63,17 @@ PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie)
     state = "RuneMode",
     subjob = "RUN"
 },
-    { key = "^numpad2", command = "cyclestate PhalanxSIRD", desc = "Phalanx SIRD", state = "PhalanxSIRD" },
-    { key = "^numpad7", command = "cyclestate SneakInviAOE", desc = "Sneak/Invi AOE", state = "SneakInviAOE", subjob = "SCH" },
+    { key = "^numpad2", command = "cyclestate PhalanxSIRD", desc = "Phalanx SIRD", state = "PhalanxSIRD", exclude_subjob = "SCH" },
     { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
+}
+
+--- Keys this file used to bind and no longer does.
+--- bind_all/unbind_all only ever walk PLDKeybinds.binds, so a key dropped from
+--- that table keeps whatever Windower bound to it last - across reloads, for
+--- the rest of the session. Listing it here is what finally clears it.
+--- ^numpad7 held SneakInviAOE, retired when /SCH started holding it On.
+PLDKeybinds.retired_keys = {
+    "^numpad7"
 }
 
 ---============================================================================
@@ -66,7 +81,8 @@ PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie)
 ---============================================================================
 
 --- Get filtered keybinds based on current subjob
---- Filters out subjob-specific binds that don't match current subjob.
+--- Filters out subjob-specific binds that don't match current subjob, and
+--- binds the current subjob explicitly excludes (a state it holds fixed).
 ---
 --- @return table Filtered keybinds appropriate for current subjob
 function PLDKeybinds.get_active_binds()
@@ -74,8 +90,9 @@ function PLDKeybinds.get_active_binds()
     local current_subjob = player and player.sub_job or nil
 
     for _, bind in ipairs(PLDKeybinds.binds) do
-        -- Include bind if no subjob requirement, or if subjob matches
-        if not bind.subjob or bind.subjob == current_subjob then
+        local required = (not bind.subjob) or bind.subjob == current_subjob
+        local excluded = bind.exclude_subjob and bind.exclude_subjob == current_subjob
+        if required and not excluded then
             table.insert(active_binds, bind)
         end
     end
@@ -104,6 +121,9 @@ function PLDKeybinds.bind_all()
     -- silently do nothing.
     for _, bind in pairs(PLDKeybinds.binds) do
         pcall(send_command, 'unbind ' .. bind.key)
+    end
+    for _, key in pairs(PLDKeybinds.retired_keys) do
+        pcall(send_command, 'unbind ' .. key)
     end
 
     -- Attempt to bind each key
@@ -139,6 +159,9 @@ function PLDKeybinds.unbind_all()
 
     for _, bind in pairs(PLDKeybinds.binds) do
         pcall(send_command, 'unbind ' .. bind.key)
+    end
+    for _, key in pairs(PLDKeybinds.retired_keys) do
+        pcall(send_command, 'unbind ' .. key)
     end
 
     MessageFormatter.show_success("PLD keybinds unloaded.")

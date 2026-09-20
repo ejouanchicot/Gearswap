@@ -183,7 +183,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         midcast_blue(spell)
     end
 
-    -- Sortie: the spells that wore sets.FullEnmity wear sets.EnmityMax
+    -- Hate-holding modes: the spells that wore sets.FullEnmity wear EnmityMax
     if EnmityOverride then
         EnmityOverride.apply_midcast(spell)
     end
