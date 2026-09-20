@@ -7,8 +7,8 @@
 ---   • Shield selection (Duban, Aegis, Blurred Shield +1; weapon-driven in
 ---     Sortie, stance-driven under /SCH)
 ---   • Shining exception (Alber Strap grip requirement requirement)
----   • HybridMode application (PDT/MDT/Sortie, Engaged/Tanking under /SCH,
----     with shield awareness)
+---   • HybridMode application (PDT/MDT/Sortie, or Engaged/Tanking/Hoxne
+---     under /SCH, with shield awareness)
 ---   • XP mode support (idleXp/meleeXp sets)
 ---   • Movement speed gear
 ---   • Town detection and town gear
@@ -42,13 +42,15 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 --- Which set each HybridMode wears. Most modes name their own set, but some
 --- borrow: Sortie wants the mitigation/TP mix while engaged and the magic
 --- mitigation set while idle, and /SCH's Tanking stance is that same magic
---- mitigation set - all of which already exist.
+--- mitigation set - all of which already exist. Hoxne is Engaged plus a lock
+--- on the ammo slot, so it wears the Engaged sets unchanged.
 local ENGAGED_SET_BY_MODE = {
     PDT     = 'PDT',
     MDT     = 'MDT',
     Sortie  = 'TP',
     Engaged = 'Engaged',
-    Tanking = 'MDT'
+    Tanking = 'MDT',
+    Hoxne   = 'Engaged'
 }
 
 local IDLE_SET_BY_MODE = {
@@ -56,7 +58,8 @@ local IDLE_SET_BY_MODE = {
     MDT     = 'MDT',
     Sortie  = 'MDT',
     Engaged = 'MDT',
-    Tanking = 'MDT'
+    Tanking = 'MDT',
+    Hoxne   = 'MDT'
 }
 
 --- In Sortie the shield follows the weapon instead of the mode's set: the
@@ -69,11 +72,12 @@ local SORTIE_SHIELD_BY_WEAPON = {
 
 --- Under /SCH the same job is done by the stance rather than the weapon:
 --- each stance owns a weapon (PLD_STATES) and the shield that goes with it.
---- Both stances share sets.idle.MDT, which carries Aegis, so Engaged has to
---- be corrected back to Duban here.
+--- Every stance idles in sets.idle.MDT, which carries Aegis, so the two that
+--- hold Excalibur have to be corrected back to Duban here.
 local SCH_SHIELD_BY_MODE = {
     Engaged = 'Duban',
-    Tanking = 'Aegis'
+    Tanking = 'Aegis',
+    Hoxne   = 'Duban'
 }
 
 ---   Resolve the set a HybridMode maps to, or nil when the mode names no set
@@ -137,7 +141,7 @@ function SetBuilder.apply_shield(result, in_town)
 end
 
 ---   Force the shield the current mode calls for, where the mode owns it
----   Sortie reads it off the weapon, /SCH's two stances name it outright, and
+---   Sortie reads it off the weapon, the /SCH stances name it outright, and
 ---   every other mode leaves the sub to its own set. Runs last so it wins over
 ---   the sub carried by that set.
 ---   @param result table Current equipment set

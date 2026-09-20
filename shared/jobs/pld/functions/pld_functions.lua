@@ -76,6 +76,11 @@ TIMER('PLD_MOVEMENT')
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   The following business logic modules are loaded via require() in hooks:
 ---
+---   logic/ampulla_lock.lua
+---     • Hoxne stance: ammo slot frozen on Hoxne Ampulla
+---     • Released by the entry file on load and on unload, GearSwap slot
+---       locks outliving the job file
+
 ---   logic/aoe_manager.lua
 ---     • Blue Magic AOE spell rotation (PLD/BLU subjob)
 ---     • Auto-target selection for AOE spells
@@ -87,7 +92,7 @@ TIMER('PLD_MOVEMENT')
 ---     • Light Arts bonus detection & gear adjustment
 ---
 ---   logic/enmity_override.lua
----     • Sortie HybridMode: spells that wore sets.FullEnmity wear
+---     • Sortie and /SCH Tanking: spells that wore sets.FullEnmity wear
 ---       sets.EnmityMax; job abilities keep their own set and gain what
 ---       EnmityMax adds to FullEnmity (the shield)
 ---
@@ -99,7 +104,7 @@ TIMER('PLD_MOVEMENT')
 ---   logic/set_builder.lua
 ---     • Shared engaged set construction
 ---     • Shared idle set construction
----     • Hybrid mode application (PDT/MDT/Sortie)
+---     • Hybrid mode application (PDT/MDT/Sortie, Engaged/Tanking/Hoxne)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
