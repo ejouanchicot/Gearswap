@@ -121,7 +121,13 @@ sets['Blurred Shield +1'] = {sub = 'Blurred Shield +1'}
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- • Base Idle Set (Foundation for all idle variants)
-sets.idle = {
+-- Held in a local, and copied into sets.idle rather than being it. Every
+-- variant below attaches itself as a key on sets.idle (sets.idle.PDT, .MDT,
+-- .Town), and set_combine copies every key of its source - so deriving from
+-- sets.idle would carry those variants into the derived set as slots that are
+-- not slots. GearSwap ignores them, but they read as intentional and follow
+-- the chain all the way down (idleNormal -> engaged -> engaged.DPS -> ...).
+local IdleBase = {
     ammo = {name = 'Staunch Tathlum +1', priority = 0}, -- DT -3%, Status resistance +11, Spell interruption rate -11%
     head = {name = 'Chev. Armet +3', priority = 12}, -- HP+145, DT -11%, Converts 8% of physical damage to MP
     body = {name = 'Adamantite Armor', priority = 13}, -- HP+182, DT -20%, Very high DEF
@@ -137,10 +143,12 @@ sets.idle = {
     back = Rudianos.tank -- PDT -10%, VIT+20, Enmity+10
 }
 
+sets.idle = set_combine(IdleBase, {})
+
 -- • PDT Idle (Physical Defense)
 sets.idle.PDT =
     set_combine(
-    sets.idle,
+    IdleBase,
     {
         sub = 'Duban' -- PDT shield
     }
@@ -167,7 +175,7 @@ sets.idle.MDT = {
 -- • Normal Idle (Balanced)
 sets.idleNormal =
     set_combine(
-    sets.idle,
+    IdleBase,
     {
         head = {name = 'Chev. Armet +3', priority = 14},
         body = {name = 'Adamantite Armor', priority = 15},
@@ -182,7 +190,7 @@ sets.idleNormal =
 -- • XP Idle (Experience points focus)
 sets.idleXp =
     set_combine(
-    sets.idle,
+    IdleBase,
     {
         main = 'Burtgang',
         sub = 'Duban',
@@ -195,7 +203,10 @@ sets.idleXp =
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- • Base Engaged Set
-sets.engaged =
+-- Local for the same reason IdleBase is: the stances below hang off
+-- sets.engaged, and deriving from it would hand each of them the ones
+-- declared before it.
+local EngagedBase =
     set_combine(
     sets.idleNormal,
     {
@@ -215,10 +226,12 @@ sets.engaged =
     }
 )
 
+sets.engaged = set_combine(EngagedBase, {})
+
 -- • PDT Engaged
 sets.engaged.PDT =
     set_combine(
-    sets.engaged,
+    EngagedBase,
     {
         sub = 'Duban' -- PDT shield for engaged
     }
@@ -236,7 +249,7 @@ sets.engaged.MDT = sets.idle.MDT -- Already has Aegis shield
 -- (Burtgang > Aegis, Naegling > Blurred Shield +1), decided by SetBuilder.
 sets.engaged.TP =
     set_combine(
-    sets.engaged,
+    EngagedBase,
     {
         ammo = "Aurgelmir Orb +1",
         left_ear = "Crep. Earring",
@@ -260,7 +273,7 @@ sets.engaged.TP =
 -- SetBuilder alongside the weapon.
 sets.engaged.DPS =
     set_combine(
-    sets.engaged,
+    EngagedBase,
     {
         body = {name = "Sakpata's Plate", priority = 16},     -- HP+136, biggest gain, equip FIRST
         legs = {name = "Sakpata's Cuisses", priority = 15},   -- HP+114
@@ -291,7 +304,7 @@ sets.engaged.DPS =
 -- SetBuilder alongside the weapon, which also holds the ammo on the Ampulla.
 sets.engaged.Hoxne =
     set_combine(
-    sets.engaged,
+    EngagedBase,
     {
         ammo = 'Hoxne Ampulla',                                 -- HP+0, DA+100% on charge
         body = {name = 'Hjarrandi Breast.', priority = 16},     -- HP+228, biggest gain, equip FIRST
@@ -314,7 +327,7 @@ sets.engaged.Hoxne =
 -- Focuses on Store TP reduction to leverage Kraken Club's multi-attack proc rate
 sets.engaged.BurtgangKC =
     set_combine(
-    sets.engaged,
+    EngagedBase,
     {
         ammo="Aurgelmir Orb +1",
         head="Sulevia's Mask +2",
@@ -437,7 +450,10 @@ sets.precast.FC['Foil'] = sets.precast.FC
 -- ───────────────────────────────────────────────────────────────────────────
 
 -- • Base Weaponskill Set
-sets.precast.WS = {
+-- Held in a local for the same reason IdleBase and EngagedBase are: every
+-- named weaponskill below attaches itself as a key on sets.precast.WS, and
+-- set_combine copies every key of its source.
+local WSBase = {
     ammo = 'Crepuscular Pebble',
     head = "Sakpata's Helm",
     body = "Sakpata's Plate",
@@ -454,10 +470,12 @@ sets.precast.WS = {
 }
 
 -- • Requiescat
-sets.precast.WS['Requiescat'] = set_combine(sets.precast.WS, {})
+sets.precast.WS = set_combine(WSBase, {})
+
+sets.precast.WS['Requiescat'] = set_combine(WSBase, {})
 
 -- • Chant du Cygne
-sets.precast.WS['Chant du Cygne'] = set_combine(sets.precast.WS, {})
+sets.precast.WS['Chant du Cygne'] = set_combine(WSBase, {})
 
 -- • Atonement (Enmity WS)
 sets.precast.WS['Atonement'] = sets.FullEnmity
@@ -465,7 +483,7 @@ sets.precast.WS['Atonement'] = sets.FullEnmity
 -- • Savage Blade
 sets.precast.WS['Savage Blade'] =
     set_combine(
-    sets.precast.WS,
+    WSBase,
     {
         ammo = {name = "Oshasha's Treatise"},
         head = {name = 'Nyame Helm'},
@@ -490,7 +508,7 @@ sets.precast.WS['Savage Blade'] =
 -- • Sanguine Blade (Dark Magic WS)
 sets.precast.WS['Sanguine Blade'] =
     set_combine(
-    sets.precast.WS,
+    WSBase,
     {
         head = {name = 'Nyame Helm'},
         body = {name = 'Nyame Mail'},
@@ -508,7 +526,7 @@ sets.precast.WS['Sanguine Blade'] =
 -- • Aeolian Edge (Wind Magic WS)
 sets.precast.WS['Aeolian Edge'] =
     set_combine(
-    sets.precast.WS,
+    WSBase,
     {
         ammo = {name = "Oshasha's Treatise"},
         head = {name = 'Nyame Helm'},
@@ -529,7 +547,7 @@ sets.precast.WS['Aeolian Edge'] =
 -- • Circle Blade (Magic WS)
 sets.precast.WS['Circle Blade'] =
     set_combine(
-    sets.precast.WS,
+    WSBase,
     {
         ammo = {name = 'Staunch Tathlum +1'},
         head = {name = 'Nyame Helm'},
@@ -684,7 +702,7 @@ sets.midcast['Enhancing Magic'] =
 -- breaks that tie by slot order, which puts body before waist - the order we
 -- want, waist being the larger of the two.
 sets.midcast['Stoneskin'] =
-    set_combine(sets.idle, {
+    set_combine(IdleBase, {
         hands = {name = 'Regal Gauntlets', priority = 13},       -- delta FC=+180 (biggest GAIN, equip FIRST)
         head = {name = 'Chev. Armet +3', priority = 12},         -- delta FC=+107
         left_ear = {name = 'Alabaster Earring', priority = 11},  -- delta FC=+100
