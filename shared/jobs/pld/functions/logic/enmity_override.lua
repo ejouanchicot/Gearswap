@@ -9,9 +9,9 @@
 ---   sets.EnmityMax differs from sets.FullEnmity by owning the sub slot: in
 ---   those modes the shield is part of the enmity build, not left to whatever
 ---   the engaged set holds. It owns no main slot - a main hand change zeroes
----   TP. /SCH's 'Engaged' stance is deliberately left out for the same reason
----   the main hand is: it is the TP build, and swapping its shield mid-fight
----   is a cost its stance was chosen to avoid.
+---   TP. /SCH's 'DPS' and 'Hoxne' stances are left out for the same reason
+---   the main hand is: they are the TP builds, and swapping their shield
+---   mid-fight is a cost the stance was chosen to avoid.
 ---
 ---   Scope - exactly what wore sets.FullEnmity:
 ---   • Job abilities  -> all of them; every PLD JA set is FullEnmity-based

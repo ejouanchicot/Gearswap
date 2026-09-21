@@ -32,22 +32,21 @@ local PLDKeybinds = {}
 ---           state = "state_name", subjob = "required_subjob",
 ---           exclude_subjob = "subjob_that_skips_this_bind" }
 ---
---- Under /SCH the stance decides the weapon and holds Phalanx SIRD on, so
---- those two binds are excluded rather than left cycling a state nothing
---- reads any more. Ctrl+Numpad1 and Ctrl+Numpad2 are simply free there.
-PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie, Engaged/Tanking under /SCH)
+--- Under /SCH Phalanx SIRD is held on, so its bind is excluded rather than
+--- left cycling a state nothing reads any more; Ctrl+Numpad2 is free there.
+--- The weapon stays cyclable: the /SCH stances pick the set, not the sword.
+PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie, DPS/Tanking/Hoxne under /SCH)
 {
     key = "^numpad9",
     command = "cyclestate HybridMode",
     desc = "Hybrid Mode",
     state = "HybridMode"
-}, -- Weapon Management (mode-driven under /SCH)
+}, -- Weapon Management
 {
     key = "^numpad1",
     command = "cyclestate MainWeapon",
     desc = "Main Weapon",
-    state = "MainWeapon",
-    exclude_subjob = "SCH"
+    state = "MainWeapon"
 }, -- XP Mode (PLD/RDM subjob only)
 {
     key = "^numpad4",

@@ -4,9 +4,9 @@
 --- Defines all PLD job states (Combat Modes, Weapon Sets, XP Mode, Rune Mode).
 ---
 --- Features:
----   • HybridMode configuration (PDT/MDT/Sortie, or Engaged/Tanking under /SCH)
----   • MainWeapon state (full list, Burtgang/Naegling in Sortie, mode-driven
----     under /SCH)
+---   • HybridMode configuration (PDT/MDT/Sortie, or DPS/Tanking/Hoxne under /SCH)
+---   • MainWeapon state (full list, Burtgang/Naegling in Sortie,
+---     Excalibur/Naegling under /SCH)
 ---   • XP Mode for Phalanx optimization (SIRD vs Potency)
 ---   • RuneMode for RUN subjob (Ignis/Gelus/Flabra/Tellus/Sulpor/Unda/Lux/Tenebrae)
 ---   • SneakInviAOE for SCH subjob (Accession on Sneak/Invisible)
@@ -73,23 +73,21 @@ local STANDARD_HYBRID_OPTIONS = {'PDT', 'MDT', 'Sortie'}
 --- PLD/SCH is played for Sortie and nothing else, so it drops the general
 --- PDT/MDT/Sortie split for the stances that content asks for: hold hate,
 --- feed weaponskills, or carry the Hoxne Ampulla.
---- Hoxne wears the Engaged build and differs from it by one thing: the ammo
---- slot is frozen on the Ampulla (logic/ampulla_lock.lua), which otherwise
---- gets swapped out by the next set the moment it is equipped.
-local SCH_HYBRID_OPTIONS = {'Engaged', 'Tanking', 'Hoxne'}
+--- DPS and Hoxne each own their engaged build: the Ampulla's charge supplies
+--- the Double Attack that DPS has to buy with gear. Hoxne also freezes the
+--- ammo slot (logic/ampulla_lock.lua), the Ampulla being swapped out by the
+--- next set the moment it is equipped otherwise.
+local SCH_HYBRID_OPTIONS = {'DPS', 'Tanking', 'Hoxne'}
 
---- Under /SCH the stance owns the weapon rather than the other way round.
---- Cycling HybridMode therefore swaps the main hand and zeroes TP; that is
---- the intended trade, the two stances being two different builds.
---- SetBuilder pairs each with its shield (Excalibur > Duban, Burtgang > Aegis).
-local SCH_WEAPON_BY_MODE = {
-    Engaged = 'Excalibur',
-    Tanking = 'Burtgang',
-    Hoxne   = 'Excalibur'
-}
-
+--- Under /SCH the stance and the weapon are separate choices: the stance
+--- picks the set, the ammo and the lock, MainWeapon picks what is in hand.
+--- Burtgang is not on this list - the Tanking stance holds it outright, that
+--- weapon being what makes it the hate stance (SetBuilder decides), so cycling
+--- here never lands on it by accident.
+--- SetBuilder pairs each weapon with its shield: Excalibur and Naegling take
+--- Duban, Burtgang takes Aegis.
 local SCH_WEAPON_OPTIONS = {
-    'Excalibur', 'Burtgang'
+    'Excalibur', 'Naegling'
 }
 
 --- Which lists the states hold: 'sch', 'sortie', 'standard', or nil when
@@ -138,9 +136,9 @@ function PLDStates.configure()
     --- Options under /SCH (Sortie-only setup):
     ---   • 'Tanking' - Burtgang + Aegis, sets.engaged.MDT,
     ---              and sets.EnmityMax replaces sets.FullEnmity
-    ---   • 'Engaged' - Excalibur + Duban, sets.engaged.Engaged (TP build)
-    ---   • 'Hoxne'   - the Engaged build with the ammo slot frozen on
-    ---              Hoxne Ampulla, so nothing swaps the charge away
+    ---   • 'DPS'     - sets.engaged.DPS (TP build), weapon from MainWeapon
+    ---   • 'Hoxne'   - sets.engaged.Hoxne, weapon from MainWeapon, ammo
+    ---              frozen on Hoxne Ampulla so nothing swaps the charge away
     --- Keybind: Ctrl+Numpad9 to cycle
     if is_sch() then
         state.HybridMode:options(table.unpack(SCH_HYBRID_OPTIONS))
@@ -155,8 +153,8 @@ function PLDStates.configure()
     -- ==========================================================================
 
     --- MainWeapon: Primary weapon selection
-    --- Options and their order come from WEAPON_OPTIONS / SORTIE_WEAPON_OPTIONS,
-    --- reapplied by apply_hybrid_profile() whenever HybridMode changes.
+    --- Options and their order come from WEAPON_OPTIONS / SORTIE_WEAPON_OPTIONS
+    --- / SCH_WEAPON_OPTIONS, reapplied by apply_hybrid_profile().
     --- Keybind: Ctrl+Numpad1 to cycle
     state.MainWeapon =
         M {
@@ -289,16 +287,16 @@ end
 --- there, and Phalanx is cast under fire, so SIRD is the default rather than
 --- potency. Any other mode restores the full lists and potency Phalanx.
 ---
---- /SCH is that same content with the stance carrying the weapon, so it holds
---- Phalanx SIRD and the Accession sneak/invi on for good, and MainWeapon
---- follows the stance instead of being cycled by hand.
+--- /SCH is that same content with its own stances, so it holds Phalanx SIRD
+--- and the Accession sneak/invi on for good, and offers the two weapons its
+--- DPS and Hoxne stances swing (the Tanking stance brings its own).
 ---
 --- Installing a profile is skipped while it is already the one in place:
 --- PDT <-> MDT keeps every choice, the Phalanx SIRD toggle included. When the
 --- lists do change, the weapon and rune in use are kept if the new list has
 --- them; a weapon the new list lacks falls back to its first entry.
 ---
---- @param mode string HybridMode value ('PDT'/'MDT'/'Sortie', or 'Engaged'/'Tanking')
+--- @param mode string HybridMode value ('PDT'/'MDT'/'Sortie', or 'DPS'/'Tanking'/'Hoxne')
 --- @return void
 function PLDStates.apply_hybrid_profile(mode)
     if not (state.RuneMode and state.PhalanxSIRD and state.MainWeapon and state.SneakInviAOE) then
@@ -311,14 +309,6 @@ function PLDStates.apply_hybrid_profile(mode)
         install_profile(profile)
     end
 
-    -- Unlike the lists above, this runs on every /SCH mode change: the stance
-    -- IS the weapon there, so Engaged <-> Tanking has to move the main hand.
-    if profile == 'sch' then
-        local weapon = SCH_WEAPON_BY_MODE[mode]
-        if weapon and state.MainWeapon.value ~= weapon then
-            state.MainWeapon:set(weapon)
-        end
-    end
 end
 
 ---============================================================================

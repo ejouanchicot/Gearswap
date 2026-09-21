@@ -5,9 +5,9 @@
 ---   Handles complex PLD-specific gear logic:
 ---   • Main weapon selection (Burtgang, Naegling, Shining, Malevo)
 ---   • Shield selection (Duban, Aegis, Blurred Shield +1; weapon-driven in
----     Sortie, stance-driven under /SCH)
+---     Sortie and under /SCH)
 ---   • Shining exception (Alber Strap grip requirement requirement)
----   • HybridMode application (PDT/MDT/Sortie, or Engaged/Tanking/Hoxne
+---   • HybridMode application (PDT/MDT/Sortie, or DPS/Tanking/Hoxne
 ---     under /SCH, with shield awareness)
 ---   • XP mode support (idleXp/meleeXp sets)
 ---   • Movement speed gear
@@ -41,23 +41,24 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 --- Which set each HybridMode wears. Most modes name their own set, but some
 --- borrow: Sortie wants the mitigation/TP mix while engaged and the magic
---- mitigation set while idle, and /SCH's Tanking stance is that same magic
---- mitigation set - all of which already exist. Hoxne is Engaged plus a lock
---- on the ammo slot, so it wears the Engaged sets unchanged.
+--- mitigation set while idle, and /SCH's Tanking and Hoxne stances idle in
+--- that same magic mitigation set - all of which already exist. DPS and Hoxne
+--- each own their engaged build: the Ampulla's charge supplies the Double
+--- Attack that DPS has to buy with gear.
 local ENGAGED_SET_BY_MODE = {
     PDT     = 'PDT',
     MDT     = 'MDT',
     Sortie  = 'TP',
-    Engaged = 'Engaged',
+    DPS     = 'DPS',
     Tanking = 'MDT',
-    Hoxne   = 'Engaged'
+    Hoxne   = 'Hoxne'
 }
 
 local IDLE_SET_BY_MODE = {
     PDT     = 'PDT',
     MDT     = 'MDT',
     Sortie  = 'MDT',
-    Engaged = 'MDT',
+    DPS     = 'MDT',
     Tanking = 'MDT',
     Hoxne   = 'MDT'
 }
@@ -70,14 +71,46 @@ local SORTIE_SHIELD_BY_WEAPON = {
     Naegling = 'Blurred Shield +1'
 }
 
---- Under /SCH the same job is done by the stance rather than the weapon:
---- each stance owns a weapon (PLD_STATES) and the shield that goes with it.
---- Every stance idles in sets.idle.MDT, which carries Aegis, so the two that
---- hold Excalibur have to be corrected back to Duban here.
-local SCH_SHIELD_BY_MODE = {
-    Engaged = 'Duban',
-    Tanking = 'Aegis',
-    Hoxne   = 'Duban'
+--- The /SCH stances. DPS and Hoxne swing whatever MainWeapon holds; Tanking
+--- owns Burtgang outright, that weapon being what makes it the hate stance.
+local SCH_MODES = {
+    DPS     = true,
+    Tanking = true,
+    Hoxne   = true
+}
+
+local SCH_WEAPON_BY_MODE = {
+    Tanking = 'Burtgang'
+}
+
+--- Which shield each /SCH weapon pairs with: the damage swords take Duban,
+--- Burtgang takes Aegis. Keyed by weapon rather than by stance because that
+--- is where the rule actually lives - a weapon added later brings its shield
+--- with it. Every stance idles in sets.idle.MDT, which carries Aegis, so the
+--- damage swords have to be corrected back to Duban here.
+local SCH_SHIELD_BY_WEAPON = {
+    Excalibur = 'Duban',
+    Naegling  = 'Duban',
+    Burtgang  = 'Aegis'
+}
+
+---   The weapon a /SCH stance actually puts in hand, or nil outside /SCH
+---   @return string|nil Weapon set name
+local function sch_weapon()
+    local mode = state.HybridMode and state.HybridMode.value
+    if not (mode and SCH_MODES[mode]) then
+        return nil
+    end
+    return SCH_WEAPON_BY_MODE[mode]
+        or (state.MainWeapon and state.MainWeapon.value)
+end
+
+--- The Hoxne stance carries its Ampulla in every set, the way the stances
+--- carry their shield. The ammo lock (logic/ampulla_lock.lua) keeps the WS and
+--- midcast sets off the slot; this is what puts the piece on in the first
+--- place, so idling or engaging cannot land on a set's own ammo instead.
+local SCH_AMMO_BY_MODE = {
+    Hoxne = 'Hoxne Ampulla'
 }
 
 ---   Resolve the set a HybridMode maps to, or nil when the mode names no set
@@ -99,12 +132,13 @@ end
 ---   @param result table Current equipment set
 ---   @return table Set with main weapon applied
 function SetBuilder.apply_weapon(result)
-    if not state.MainWeapon or not state.MainWeapon.current then
+    local weapon = sch_weapon() or (state.MainWeapon and state.MainWeapon.current)
+    if not weapon then
         return result
     end
 
     -- Use sets.* directly (defined in pld_sets.lua)
-    local weapon_set = sets[state.MainWeapon.current]
+    local weapon_set = sets[weapon]
     if weapon_set then
         result = set_combine(result, weapon_set)
     end
@@ -140,10 +174,24 @@ function SetBuilder.apply_shield(result, in_town)
     return result
 end
 
+---   Force the ammo the current mode calls for, where the mode owns it
+---   Only the Hoxne stance does; every other mode leaves the slot to its set.
+---   @param result table Current equipment set
+---   @return table Set with the mode's ammo applied
+function SetBuilder.apply_mode_ammo(result)
+    local mode = state.HybridMode and state.HybridMode.value
+    local ammo = mode and SCH_AMMO_BY_MODE[mode]
+    if ammo then
+        result = set_combine(result, {ammo = ammo})
+    end
+
+    return result
+end
+
 ---   Force the shield the current mode calls for, where the mode owns it
----   Sortie reads it off the weapon, the /SCH stances name it outright, and
----   every other mode leaves the sub to its own set. Runs last so it wins over
----   the sub carried by that set.
+---   Both Sortie and the /SCH stances read it off the weapon; every other mode
+---   leaves the sub to its own set. Runs last so it wins over the sub carried
+---   by that set.
 ---   @param result table Current equipment set
 ---   @return table Set with the mode's shield applied
 function SetBuilder.apply_mode_shield(result)
@@ -152,7 +200,7 @@ function SetBuilder.apply_mode_shield(result)
         return result
     end
 
-    local shield = SCH_SHIELD_BY_MODE[mode]
+    local shield = SCH_SHIELD_BY_WEAPON[sch_weapon() or '']
     if not shield and mode == 'Sortie' then
         local weapon = state.MainWeapon and state.MainWeapon.value
         shield = weapon and SORTIE_SHIELD_BY_WEAPON[weapon]
@@ -260,6 +308,7 @@ function SetBuilder.build_engaged_set(base_set)
 
     -- Step 5: Mode shield (Sortie weapon-driven, /SCH stance-driven)
     result = SetBuilder.apply_mode_shield(result)
+    result = SetBuilder.apply_mode_ammo(result)
 
     return result
 end
@@ -292,7 +341,7 @@ function SetBuilder.build_idle_set(base_set)
 
     -- Step 4: Early return if in town (weapons/shields already applied)
     if in_town then
-        return SetBuilder.apply_mode_shield(result)
+        return SetBuilder.apply_mode_ammo(SetBuilder.apply_mode_shield(result))
     end
 
     -- Step 5: Apply HybridMode (PDT/MDT/Sortie) outside of town - SKIP sub if Shining or BurtgangKC
@@ -323,6 +372,7 @@ function SetBuilder.build_idle_set(base_set)
 
     -- Step 8: Mode shield (Sortie weapon-driven, /SCH stance-driven)
     result = SetBuilder.apply_mode_shield(result)
+    result = SetBuilder.apply_mode_ammo(result)
 
     return result
 end
