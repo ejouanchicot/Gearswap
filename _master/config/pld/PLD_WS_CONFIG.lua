@@ -13,8 +13,8 @@
 --- Savage Blade sits in slot 1 on every weapon: it is the one weaponskill all
 --- three swords can use, so the same key always does the same thing. Slot 2
 --- holds what the weapon alone unlocks - Knights of Round needs Excalibur,
---- Atonement needs Burtgang. Naegling unlocks neither, so its slot 2 reports
---- 'None' and its command does nothing.
+--- Atonement needs Burtgang. Naegling unlocks neither and takes Chant du
+--- Cygne, a weaponskill any sword can swing.
 ---
 --- Keys MUST match the weapon set names in pld_sets.lua (sets.Excalibur, ...),
 --- which are also the options of state.MainWeapon.
@@ -47,6 +47,7 @@ PLDWSConfig.by_weapon = {
     -- Savage Blade is the whole point of this one
     Naegling = {
         'Savage Blade',
+        'Chant du Cygne',
     },
 }
 

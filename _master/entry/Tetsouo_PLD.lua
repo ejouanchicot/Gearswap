@@ -106,6 +106,13 @@ function get_sets()
     -- Load job-specific functions (AutoMove loaded via INIT_SYSTEMS)
     include('../shared/jobs/pld/functions/pld_functions.lua')
     Profiler.mark('After pld_functions')
+
+    -- Build state.WS1/WS2 now the modules that own them are loaded.
+    -- user_setup() ran inside the Mote-Include above, long before this point,
+    -- so a cold load has to fill the slots here or the HUD shows them as N/A.
+    if _G.pld_rebuild_ws_slots then
+        _G.pld_rebuild_ws_slots()
+    end
     -- Keybinds loaded via require() in user_setup() for better control
 
     -- Register PLD lockstyle cancel function
@@ -164,9 +171,10 @@ function user_setup()
     local PLDStates = require('Tetsouo/config/pld/PLD_STATES')
     PLDStates.configure()
 
-    -- Fill state.WS1/WS2 for the weapon in hand. Done here rather than in the
-    -- states config because the weaponskill lists live in a character-scoped
-    -- file, which shared/ cannot name.
+    -- Fill state.WS1/WS2 for the weapon in hand. Reached on a subjob change,
+    -- which re-runs user_setup() in a sandbox where the job modules are
+    -- already loaded; on a cold load the function does not exist yet and
+    -- get_sets() does it instead, right after including them.
     if _G.pld_rebuild_ws_slots then
         _G.pld_rebuild_ws_slots()
     end
