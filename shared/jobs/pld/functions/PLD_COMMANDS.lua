@@ -205,7 +205,38 @@ function job_self_command(cmdParams, eventArgs)
         eventArgs.handled = true
         return
     end
+
+    -- Weaponskill slots: 'ws' is slot 1, 'ws1'/'ws2' name theirs. Each fires
+    -- whatever the weapon currently in hand put in that slot.
+    local slot = command == 'ws' and '1' or command:match('^ws([1-9])$')
+    if slot then
+        local ok, WSSlots = pcall(require, 'shared/utils/weaponskill/ws_slots')
+        if ok and WSSlots then
+            WSSlots.cast(tonumber(slot))
+            eventArgs.handled = true
+        end
+        return
+    end
 end
+
+---   Rebuild the weaponskill slots for the weapon now in hand
+---   Both the weapon choice and the stance can change it: under /SCH the
+---   Tanking stance holds Burtgang whatever state.MainWeapon says, so a
+---   HybridMode change moves the main hand as surely as Ctrl+Numpad1 does.
+---   @return void
+local function rebuild_ws_slots()
+    local ws_ok, WSSlots = pcall(require, 'shared/utils/weaponskill/ws_slots')
+    local sb_ok, SetBuilder = pcall(require, 'shared/jobs/pld/functions/logic/set_builder')
+    local config = _G.PLDWSConfig
+
+    if not (ws_ok and sb_ok and WSSlots and SetBuilder and config) then
+        return
+    end
+
+    WSSlots.rebuild(config.get(SetBuilder.current_weapon()), config.max_slots)
+end
+
+_G.pld_rebuild_ws_slots = rebuild_ws_slots
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   STATE CHANGE HOOK
@@ -226,7 +257,18 @@ local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 ---   @param newValue string New value of that state
 ---   @return void
 local function on_state_change(stateField, newValue)
-    if type(stateField) ~= 'string' or stateField:gsub(' ', '') ~= 'HybridMode' then
+    if type(stateField) ~= 'string' then
+        return
+    end
+
+    local field = stateField:gsub(' ', '')
+
+    if field == 'MainWeapon' then
+        rebuild_ws_slots()
+        return
+    end
+
+    if field ~= 'HybridMode' then
         return
     end
 
@@ -234,6 +276,8 @@ local function on_state_change(stateField, newValue)
     if PLDStates and type(PLDStates.apply_hybrid_profile) == 'function' then
         PLDStates.apply_hybrid_profile(newValue)
     end
+
+    rebuild_ws_slots()
 
     -- The Hoxne stance holds the ammo slot on its Ampulla; every other stance
     -- gives the slot back. Kept here rather than in the profile because it

@@ -127,12 +127,21 @@ end
 ---   WEAPON/SHIELD APPLICATION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+---   The weapon actually in hand, stance override included
+---   state.MainWeapon is the player's choice, but the Tanking stance holds
+---   Burtgang whatever that choice says. Anything that has to know what is
+---   being swung - the weaponskill slots, not just the gear - asks here.
+---   @return string|nil Weapon set name
+function SetBuilder.current_weapon()
+    return sch_weapon() or (state.MainWeapon and state.MainWeapon.value)
+end
+
 ---   Apply main weapon to set
 ---   Uses weapon sets defined in pld_sets.lua (sets.Burtgang, sets.Naegling, etc.)
 ---   @param result table Current equipment set
 ---   @return table Set with main weapon applied
 function SetBuilder.apply_weapon(result)
-    local weapon = sch_weapon() or (state.MainWeapon and state.MainWeapon.current)
+    local weapon = SetBuilder.current_weapon()
     if not weapon then
         return result
     end
