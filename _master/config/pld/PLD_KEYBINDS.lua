@@ -30,7 +30,12 @@ local PLDKeybinds = {}
 --- Keybind definitions for PLD job
 --- Format: { key = "key_combo", command = "gs_command", desc = "description",
 ---           state = "state_name", subjob = "required_subjob",
----           exclude_subjob = "subjob_that_skips_this_bind" }
+---           exclude_subjob = "subjob_that_skips_this_bind",
+---           visible = function() ... end }
+---
+--- `subjob` and `exclude_subjob` are settled once per load; `visible` is asked
+--- again on every HUD refresh, for a bind whose usefulness depends on a state
+--- rather than on the job.
 ---
 --- Under /SCH Phalanx SIRD is held on, so its bind is excluded rather than
 --- left cycling a state nothing reads any more; Ctrl+Numpad2 is free there.
@@ -46,7 +51,15 @@ PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie, DPS/Tanking/Hoxne under /S
     key = "^numpad1",
     command = "cyclestate MainWeapon",
     desc = "Main Weapon",
-    state = "MainWeapon"
+    state = "MainWeapon",
+    -- Under /SCH the Tanking stance holds Burtgang whatever this says, so the
+    -- choice has nothing to act on there: hide the row and drop the key rather
+    -- than leave a live-looking control that changes nothing until you leave
+    -- the stance.
+    visible = function()
+        return not (player and player.sub_job == 'SCH'
+            and state and state.HybridMode and state.HybridMode.value == 'Tanking')
+    end
 }, -- XP Mode (PLD/RDM subjob only)
 {
     key = "^numpad4",
@@ -81,11 +94,14 @@ PLDKeybinds.retired_keys = {
 --- KEYBIND MANAGEMENT
 ---============================================================================
 
---- Get filtered keybinds based on current subjob
---- Filters out subjob-specific binds that don't match current subjob, and
---- binds the current subjob explicitly excludes (a state it holds fixed).
+--- Get the keybinds that apply right now
+--- Drops subjob-specific binds that do not match, binds this subjob excludes,
+--- and binds whose visible() says they have nothing to act on.
 ---
---- @return table Filtered keybinds appropriate for current subjob
+--- Both the HUD and bind_all() read this, so a bind dropped here disappears
+--- from the display and loses its key together.
+---
+--- @return table Keybinds that apply to the current subjob and state
 function PLDKeybinds.get_active_binds()
     local active_binds = {}
     local current_subjob = player and player.sub_job or nil
@@ -93,7 +109,8 @@ function PLDKeybinds.get_active_binds()
     for _, bind in ipairs(PLDKeybinds.binds) do
         local required = (not bind.subjob) or bind.subjob == current_subjob
         local excluded = bind.exclude_subjob and bind.exclude_subjob == current_subjob
-        if required and not excluded then
+        local shown = (type(bind.visible) ~= 'function') or bind.visible()
+        if required and not excluded and shown then
             table.insert(active_binds, bind)
         end
     end
@@ -104,8 +121,9 @@ end
 --- Apply all keybinds defined in the configuration
 --- Validates binds, attempts to bind each key, and displays intro on success.
 ---
+--- @param silent boolean|nil True to skip the intro message (see refresh)
 --- @return boolean True if at least one keybind was successfully applied, false otherwise
-function PLDKeybinds.bind_all()
+function PLDKeybinds.bind_all(silent)
     -- Validate binds exist
     if not PLDKeybinds.binds or #PLDKeybinds.binds == 0 then
         MessageFormatter.show_no_binds_error("PLD")
@@ -142,11 +160,22 @@ function PLDKeybinds.bind_all()
 
     -- Show intro message if at least one bind succeeded
     if bound_count > 0 then
-        PLDKeybinds.show_intro()
+        if not silent then
+            PLDKeybinds.show_intro()
+        end
         return true
     end
 
     return false
+end
+
+--- Re-apply the keys for the state the job is in now, without the intro.
+--- A `visible` bind can come and go while the job stays the same, and
+--- bind_all only ever runs on load and on a subjob change - so the key would
+--- outlive the row it belongs to. Called from the HybridMode state hook.
+--- @return boolean True if at least one keybind was applied
+function PLDKeybinds.refresh()
+    return PLDKeybinds.bind_all(true)
 end
 
 --- Remove all keybinds
