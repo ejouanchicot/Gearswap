@@ -63,6 +63,8 @@ PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie, DPS/Tanking/Hoxne under /S
     subjob = "RUN"
 },
     { key = "^numpad2", command = "cyclestate PhalanxSIRD", desc = "Phalanx SIRD", state = "PhalanxSIRD", exclude_subjob = "SCH" },
+    { key = "^numpad5", command = "cyclestate WS1", desc = "WS Slot 1", state = "WS1" },
+    { key = "^numpad6", command = "cyclestate WS2", desc = "WS Slot 2", state = "WS2" },
     { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 }
 

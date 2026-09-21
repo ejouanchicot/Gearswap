@@ -159,8 +159,17 @@ function user_setup()
     -- STATE DEFINITIONS (Loaded from PLD_STATES.lua)
     -- ==========================================================================
 
+    _G.PLDWSConfig = require('Tetsouo/config/pld/PLD_WS_CONFIG')
+
     local PLDStates = require('Tetsouo/config/pld/PLD_STATES')
     PLDStates.configure()
+
+    -- Fill state.WS1/WS2 for the weapon in hand. Done here rather than in the
+    -- states config because the weaponskill lists live in a character-scoped
+    -- file, which shared/ cannot name.
+    if _G.pld_rebuild_ws_slots then
+        _G.pld_rebuild_ws_slots()
+    end
 
     -- configure() has just put HybridMode back to its default, so any ammo
     -- lock still held by the sandbox belongs to a stance that is no longer
