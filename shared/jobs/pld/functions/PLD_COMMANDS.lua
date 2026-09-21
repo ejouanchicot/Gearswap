@@ -286,6 +286,13 @@ local function on_state_change(stateField, newValue)
     if ok and AmpullaLock then
         AmpullaLock.apply(newValue)
     end
+
+    -- A stance change can add or remove a bind: /SCH Tanking holds the weapon,
+    -- so MainWeapon has nothing to cycle there. The HUD re-reads the bind list
+    -- on every refresh; the keys themselves are only laid down by bind_all.
+    if _G.PLDKeybinds and type(_G.PLDKeybinds.refresh) == 'function' then
+        _G.PLDKeybinds.refresh()
+    end
 end
 
 job_state_change = LifecycleManager.state_change(on_state_change)
