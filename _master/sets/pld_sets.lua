@@ -152,10 +152,7 @@ sets.idle.MDT = {
     right_ear = 'Eabani Earring',
     left_ring = 'Purity Ring',
     right_ring = {name = 'Gelatinous Ring +1', augments = {'Path: A'}},
-    back = {
-        name = "Rudianos's Mantle",
-        augments = {'VIT+20', 'Eva.+20 /Mag. Eva.+20', 'Mag. Evasion+10', 'Enmity+10', 'Phys. dmg. taken-10%'}
-    },
+    back = Rudianos.tank,
     sub = 'Aegis' -- MDT shield
 }
 
