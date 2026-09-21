@@ -251,25 +251,30 @@ sets.engaged.TP =
 -- The damage stance: full Sakpata's for the damage taken floor, every
 -- accessory traded for Store TP. Tanking is what holds hate; this one is
 -- what spends the TP.
+--
+-- Priorities rank the slots by the HP each piece carries, highest first, so
+-- that swapping into this set raises the HP pool before it touches the slots
+-- that add none. 770 HP across eight pieces; the other five carry none.
+--
 -- No sub slot on purpose: the stance names its shield (Duban), applied by
 -- SetBuilder alongside the weapon.
 sets.engaged.DPS =
     set_combine(
     sets.engaged,
     {
-        ammo = 'Coiste Bodhar',
-        head = "Sakpata's Helm",
-        body = "Sakpata's Plate",
-        hands = "Sakpata's Gauntlets",
-        legs = "Sakpata's Cuisses",
-        feet = "Sakpata's Leggings",
-        neck = 'Null Loop',
-        waist = 'Sailfi Belt +1',
-        left_ear = 'Crep. Earring',
-        right_ear = 'Dedition Earring',
-        left_ring = Moonlight1,
-        right_ring = Moonlight2,
-        back = Rudianos.STP
+        body = {name = "Sakpata's Plate", priority = 16},     -- HP+136, biggest gain, equip FIRST
+        legs = {name = "Sakpata's Cuisses", priority = 15},   -- HP+114
+        left_ring = {name = 'Moonlight Ring', priority = 14, bag = 'wardrobe 1'},  -- HP+110
+        right_ring = {name = 'Moonlight Ring', priority = 13, bag = 'wardrobe 2'}, -- HP+110
+        head = {name = "Sakpata's Helm", priority = 12},      -- HP+91
+        hands = {name = "Sakpata's Gauntlets", priority = 11},-- HP+91
+        feet = {name = "Sakpata's Leggings", priority = 10},  -- HP+68
+        neck = {name = 'Null Loop', priority = 9},            -- HP+50
+        ammo = 'Coiste Bodhar',                               -- HP+0
+        waist = 'Sailfi Belt +1',                             -- HP+0
+        left_ear = 'Crep. Earring',                           -- HP+0
+        right_ear = 'Dedition Earring',                       -- HP+0
+        back = Rudianos.STP                                   -- HP+0, priority 0
     }
 )
 
