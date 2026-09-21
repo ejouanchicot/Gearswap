@@ -93,7 +93,7 @@ local Moonlight2 = {name = 'Moonlight Ring', priority = 12, bag = 'wardrobe 2'}
 
 -- • Main Weapons
 sets.Burtgang = {main = 'Burtgang'}
-sets.Excalibur = {main = 'Excalibur'} -- Engaged stance of the PLD/SCH setup
+sets.Excalibur = {main = 'Excalibur'} -- DPS and Hoxne stances of the PLD/SCH setup
 sets.KC = {main = 'Kraken Club'}
 sets.BurtgangKC = {main = 'Burtgang', sub = 'Kraken Club'} -- PLD/DNC multi-attack build
 sets.Shining = {main = 'Shining One'} -- Polearm (uses Alber Strap grip)
@@ -240,9 +240,34 @@ sets.engaged.TP =
     }
 )
 
--- • SCH Engaged (HybridMode 'Engaged' and 'Hoxne', PLD/SCH only)
--- The TP stance of the Sortie-only /SCH setup: Store TP and multi-attack,
--- keeping the damage taken floor the content needs (-41% across the set).
+-- • SCH DPS (HybridMode 'DPS', PLD/SCH only)
+-- The hate-holding TP stance: full Sakpata's for the damage taken floor, with
+-- the accessories traded for Store TP.
+-- No sub slot on purpose: the stance names its shield (Duban), applied by
+-- SetBuilder alongside the weapon.
+sets.engaged.DPS =
+    set_combine(
+    sets.engaged,
+    {
+        ammo = 'Coiste Bodhar',
+        head = "Sakpata's Helm",
+        body = "Sakpata's Plate",
+        hands = "Sakpata's Gauntlets",
+        legs = "Sakpata's Cuisses",
+        feet = "Sakpata's Leggings",
+        neck = 'Null Loop',
+        waist = 'Sailfi Belt +1',
+        left_ear = 'Crep. Earring',
+        right_ear = 'Dedition Earring',
+        left_ring = Moonlight1,
+        right_ring = Moonlight2,
+        back = Rudianos.STP
+    }
+)
+
+-- • SCH Hoxne (HybridMode 'Hoxne', PLD/SCH only)
+-- The Ampulla stance: Double Attack comes from the ammo's charge, so the
+-- build spends its slots on Store TP and haste instead of chasing DA.
 --
 -- Priorities rank the slots by the HP each piece carries, highest first, so
 -- that swapping into this set raises the HP pool before it touches the slots
@@ -250,8 +275,8 @@ sets.engaged.TP =
 -- a lower maximum HP than either set intends.
 --
 -- No sub slot on purpose: the stance names its shield (Duban), applied by
--- SetBuilder alongside the weapon. The ammo is what the Hoxne stance freezes.
-sets.engaged.Engaged =
+-- SetBuilder alongside the weapon, which also holds the ammo on the Ampulla.
+sets.engaged.Hoxne =
     set_combine(
     sets.engaged,
     {

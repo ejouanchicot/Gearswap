@@ -104,7 +104,7 @@ TIMER('PLD_MOVEMENT')
 ---   logic/set_builder.lua
 ---     • Shared engaged set construction
 ---     • Shared idle set construction
----     • Hybrid mode application (PDT/MDT/Sortie, Engaged/Tanking/Hoxne)
+---     • Hybrid mode application (PDT/MDT/Sortie, DPS/Tanking/Hoxne)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
