@@ -90,6 +90,13 @@ PLDKeybinds.retired_keys = {
     "^numpad7"
 }
 
+--- The keys currently laid down, as key -> command.
+--- bind_all() rewrites it wholesale; refresh() diffs against it and sends only
+--- what actually changed. A stance change usually changes nothing at all -
+--- DPS and Hoxne carry the same binds - and re-issuing the whole list on every
+--- press put dozens of commands into Windower's queue for no effect.
+local applied = {}
+
 ---============================================================================
 --- KEYBIND MANAGEMENT
 ---============================================================================
@@ -158,6 +165,12 @@ function PLDKeybinds.bind_all(silent)
         end
     end
 
+    -- Record what is down, so refresh() has something to diff against.
+    applied = {}
+    for _, bind in pairs(active_binds) do
+        applied[bind.key] = bind.command
+    end
+
     -- Show intro message if at least one bind succeeded
     if bound_count > 0 then
         if not silent then
@@ -169,13 +182,41 @@ function PLDKeybinds.bind_all(silent)
     return false
 end
 
---- Re-apply the keys for the state the job is in now, without the intro.
---- A `visible` bind can come and go while the job stays the same, and
---- bind_all only ever runs on load and on a subjob change - so the key would
---- outlive the row it belongs to. Called from the HybridMode state hook.
---- @return boolean True if at least one keybind was applied
+--- Bring the keys in line with the state the job is in now.
+---
+--- A `visible` bind can come and go while the job stays the same, and bind_all
+--- only runs on load and on a subjob change - so a key would outlive the row
+--- it belongs to. Called from the HybridMode state hook, which fires on every
+--- press of the cycle key.
+---
+--- Sends only the difference. Re-issuing the whole list meant nineteen
+--- commands per press to change nothing, and cycling quickly buried Windower's
+--- queue under hundreds of them.
+--- @return number How many bind/unbind commands were sent
 function PLDKeybinds.refresh()
-    return PLDKeybinds.bind_all(true)
+    local desired = {}
+    for _, bind in pairs(PLDKeybinds.get_active_binds()) do
+        desired[bind.key] = bind.command
+    end
+
+    local sent = 0
+
+    for key, command in pairs(applied) do
+        if desired[key] ~= command then
+            pcall(send_command, 'unbind ' .. key)
+            sent = sent + 1
+        end
+    end
+
+    for key, command in pairs(desired) do
+        if applied[key] ~= command then
+            pcall(send_command, 'bind ' .. key .. ' gs c ' .. command)
+            sent = sent + 1
+        end
+    end
+
+    applied = desired
+    return sent
 end
 
 --- Remove all keybinds
