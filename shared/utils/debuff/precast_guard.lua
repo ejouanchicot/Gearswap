@@ -251,8 +251,16 @@ function PrecastGuard.check_and_block(spell, eventArgs)
                     MessageDebuffs.show_no_silence_cure(spell.name, debuff_message)
                     return true
                 end
-            elseif cure_type == "paralysis" and (action_type == "Ability" or action_type == "JobAbility") and not (action_type == "WeaponSkill" or action_type == "Weaponskill") then
-                -- Try to use Remedy or Panacea for Paralysis (ONLY for Job Abilities, NOT WeaponSkills)
+            elseif cure_type == "paralysis"
+                and (action_type == "Ability" or action_type == "JobAbility")
+                and spell.type ~= "WeaponSkill" and spell.type ~= "Weaponskill" then
+                -- Remedy or Panacea for Paralysis, job abilities only.
+                -- The weaponskill test reads spell.type, not action_type:
+                -- weaponskills report action_type 'Ability' like any other, so
+                -- testing action_type for 'WeaponSkill' never matches anything.
+                -- guard_precast routes weaponskills to check_ws long before
+                -- here, which lets paralysis through on purpose, so this only
+                -- guards the fallback path for action types we do not know.
                 cure_status = try_cure_paralysis(spell.name, debuff_message)
                 if cure_status == CURE_NONE then
                     eventArgs.cancel = true
