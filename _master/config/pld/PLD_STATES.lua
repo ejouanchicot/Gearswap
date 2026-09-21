@@ -86,8 +86,10 @@ local SCH_HYBRID_OPTIONS = {'DPS', 'Tanking', 'Hoxne'}
 --- here never lands on it by accident.
 --- SetBuilder pairs each weapon with its shield: Excalibur and Naegling take
 --- Duban, Burtgang takes Aegis.
+--- Naegling leads: it is what the setup opens on, Excalibur being the choice
+--- you make when you want Knights of Round.
 local SCH_WEAPON_OPTIONS = {
-    'Excalibur', 'Naegling'
+    'Naegling', 'Excalibur'
 }
 
 --- Which lists the states hold: 'sch', 'sortie', 'standard', or nil when
@@ -280,6 +282,13 @@ end
 local function install_profile(profile)
     if profile == 'sch' then
         reshape(state.MainWeapon, SCH_WEAPON_OPTIONS)
+
+        -- reshape keeps whatever weapon was already selected when the new list
+        -- has it, to spare the TP a swap costs. Entering the setup is not that
+        -- case: the stance defaults have just been reset too, so the weapon
+        -- opens on the same footing rather than carrying over the last job's.
+        state.MainWeapon:set(SCH_WEAPON_OPTIONS[1])
+
         state.PhalanxSIRD:set('On')
         state.SneakInviAOE:set('On')
         return
