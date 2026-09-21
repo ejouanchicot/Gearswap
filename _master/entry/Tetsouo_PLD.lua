@@ -195,6 +195,14 @@ function user_setup()
     if success and keybinds then
         PLDKeybinds = keybinds
         PLDKeybinds.bind_all()
+    else
+        -- Loudly, because the failure is otherwise invisible: the job loads,
+        -- //gs c commands answer, and only the keys are dead. Chased for a
+        -- long time before it was worth a line.
+        local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+        if ok and MessageFormatter then
+            MessageFormatter.show_error('PLD keybinds failed to load: ' .. tostring(keybinds))
+        end
     end
 
     -- ==========================================================================

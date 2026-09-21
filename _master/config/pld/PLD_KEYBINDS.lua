@@ -179,6 +179,13 @@ function PLDKeybinds.bind_all(silent)
         return true
     end
 
+    -- Zero keys down while binds are defined means every send_command failed.
+    -- Silence here is what made this hard to chase: GearSwap keeps working,
+    -- //gs c commands keep working, and only the keys are missing.
+    MessageFormatter.show_error(
+        ('PLD keybinds: %d bind(s) defined but none applied - keys will not respond')
+        :format(#active_binds))
+
     return false
 end
 
