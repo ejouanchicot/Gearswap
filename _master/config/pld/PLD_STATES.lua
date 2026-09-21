@@ -233,6 +233,22 @@ function PLDStates.configure()
     active_profile = nil
     PLDStates.apply_hybrid_profile(state.HybridMode.value)
 
+    -- Weaponskill slots (state.WS1, state.WS2), built from the weapon in hand.
+    -- Created here for the same reason AutoMedicine is: a state born after
+    -- user_setup() is missing from the row structure the HUD lays out, and
+    -- reads as N/A however live its value lookup is.
+    --
+    -- SetBuilder knows the stance overrides the weapon choice (Tanking holds
+    -- Burtgang); it is pcall'd because this runs early, and the weapon choice
+    -- alone is a good enough fallback - the first state change refreshes it.
+    local ws_ok, WSSlots = pcall(require, 'shared/utils/weaponskill/ws_slots')
+    if ws_ok and WSSlots and _G.PLDWSConfig then
+        local sb_ok, SetBuilder = pcall(require, 'shared/jobs/pld/functions/logic/set_builder')
+        local weapon = (sb_ok and SetBuilder and SetBuilder.current_weapon())
+            or (state.MainWeapon and state.MainWeapon.value)
+        WSSlots.rebuild(_G.PLDWSConfig.get(weapon), _G.PLDWSConfig.max_slots)
+    end
+
     -- Universal toggle, created here rather than centrally: the keybind HUD
     -- renders from user_setup() and caches what it reads, so a state added
     -- afterwards shows as N/A until something forces a redraw.

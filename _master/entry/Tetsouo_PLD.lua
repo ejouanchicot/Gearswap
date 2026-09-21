@@ -107,9 +107,9 @@ function get_sets()
     include('../shared/jobs/pld/functions/pld_functions.lua')
     Profiler.mark('After pld_functions')
 
-    -- Build state.WS1/WS2 now the modules that own them are loaded.
-    -- user_setup() ran inside the Mote-Include above, long before this point,
-    -- so a cold load has to fill the slots here or the HUD shows them as N/A.
+    -- Refresh the slots now set_builder can be loaded: PLDStates created them
+    -- during user_setup (the HUD needs them by then) with whatever weapon it
+    -- could resolve that early.
     if _G.pld_rebuild_ws_slots then
         _G.pld_rebuild_ws_slots()
     end
