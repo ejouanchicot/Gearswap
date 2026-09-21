@@ -15,11 +15,19 @@
 ---     • Fast Cast + SIRD hybrid gear for spell safety
 ---     • Movement speed optimization (Adoulin city support)
 ---     • Rudianos capes for all situations (5 variants: tank, FCSIRD, STP, WS, cure)
+---
+---   HybridMode picks the engaged set. PDT / MDT / Sortie on most subjobs;
+---   under /SCH, three stances of their own:
+---     • DPS     -> sets.engaged.DPS     Sakpata's, Coiste Bodhar
+---     • Tanking -> sets.engaged.MDT     mitigation, Burtgang + Aegis
+---     • Hoxne   -> sets.engaged.Hoxne   Hoxne Ampulla, ammo slot frozen
+---   The mapping itself lives in shared/jobs/pld/functions/logic/set_builder.lua.
+---
 ---    Architecture:
 ---     • Equipment definitions (Rudianos capes, Jumalik augments, wardrobe rings)
 ---     • Weapon sets (main weapons + shields)
 ---     • Idle sets (Normal, PDT, MDT, Town, XP)
----     • Engaged sets (Normal, PDT, MDT, Melee XP)
+---     • Engaged sets (Normal, PDT, MDT, Sortie, Melee XP, /SCH stances)
 ---     • Precast sets (Job abilities, Fast Cast, Weaponskills with TP bonus)
 ---     • Midcast sets (Enmity, SIRD+Enmity, Phalanx, Cure, Enhancing Magic)
 ---     • Movement sets (Base speed, Adoulin city boost)
@@ -216,10 +224,12 @@ sets.engaged.PDT =
     }
 )
 
--- • MDT Engaged
+-- • MDT Engaged (HybridMode 'MDT', and the 'Tanking' stance under /SCH)
+-- The idle mitigation set doubles as the engaged one: holding hate does not
+-- ask for different gear, only for the shield it already carries.
 sets.engaged.MDT = sets.idle.MDT -- Already has Aegis shield
 
--- • Sortie Engaged (HybridMode 'Sortie')
+-- • Sortie (HybridMode 'Sortie', subjobs other than /SCH)
 -- Mitigation body/head/legs kept, accessories traded for Store TP: the mode is
 -- meant to hold hate while still feeding weaponskills.
 -- No sub slot on purpose: in Sortie the shield follows the weapon
@@ -237,9 +247,10 @@ sets.engaged.TP =
     }
 )
 
--- • SCH DPS (HybridMode 'DPS', PLD/SCH only)
--- The hate-holding TP stance: full Sakpata's for the damage taken floor, with
--- the accessories traded for Store TP.
+-- • DPS (HybridMode 'DPS', /SCH only)
+-- The damage stance: full Sakpata's for the damage taken floor, every
+-- accessory traded for Store TP. Tanking is what holds hate; this one is
+-- what spends the TP.
 -- No sub slot on purpose: the stance names its shield (Duban), applied by
 -- SetBuilder alongside the weapon.
 sets.engaged.DPS =
@@ -262,14 +273,14 @@ sets.engaged.DPS =
     }
 )
 
--- • SCH Hoxne (HybridMode 'Hoxne', PLD/SCH only)
+-- • Hoxne (HybridMode 'Hoxne', /SCH only)
 -- The Ampulla stance: Double Attack comes from the ammo's charge, so the
 -- build spends its slots on Store TP and haste instead of chasing DA.
 --
 -- Priorities rank the slots by the HP each piece carries, highest first, so
 -- that swapping into this set raises the HP pool before it touches the slots
 -- that add none. A tank that equips its empty slots first spends the swap at
--- a lower maximum HP than either set intends.
+-- a lower maximum HP than either end of it intends.
 --
 -- No sub slot on purpose: the stance names its shield (Duban), applied by
 -- SetBuilder alongside the weapon, which also holds the ammo on the Ampulla.
