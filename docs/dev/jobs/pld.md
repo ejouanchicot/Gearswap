@@ -474,15 +474,19 @@ on every `user_setup()`. Keybinds from `PLD_KEYBINDS.lua:38-87`; `^` = Ctrl,
 | `AutoMedicine` | shared On/Off | persisted | `#numpad0` | `AutoMedicine.init(state, M)` (`PLD_STATES.lua:160-163`), see [precast pipeline](../systems/precast-pipeline.md) |
 | `PhalanxSIRD` | Off, On | Off, **held On under /SCH** | `^numpad2`, excluded in /SCH | read by `PLD_MIDCAST.lua:110` and required by `apply_hybrid_profile`; `On` on entering Sortie or /SCH, `Off` on the standard profile |
 | `WS1`, `WS2` | that weapon's list (`PLD_WS_CONFIG.lua`) | entry 1 and 2 | `^numpad5`, `^numpad6` | `ws_slots.lua`; rebuilt from `SetBuilder.current_weapon()` on a `MainWeapon` **or** `HybridMode` change |
-| `Regen` | Off, On | Off, **forced Off outside /SCH** | `^numpad7` (/SCH) | `set_builder.lua` step 6b: lays `sets.idleRegen` over the idle set |
+| `Regen` | Off, On | Off, **forced Off outside /SCH** | none - macros only, `gs c set Regen On\|Off` | `set_builder.lua` step 6b: lays `sets.idleRegen` over the idle set |
 
 `Regen` is idle-only and two slots wide - Sacro Breastplate and Regal
 Gauntlets over whatever body and hands the stance chose - so DPS, Tanking and
-Hoxne each keep their own mitigation and nothing changes in combat. Its key is
-bound under /SCH alone, which is why `apply_hybrid_profile` forces it Off on
-the other profiles: a toggle left On with no key to reach it would strand the
-Regen body in idle. It took back `^numpad7`, the key /SCH had freed when
-`SneakInviAOE` became a permanent On, so `retired_keys` is now empty.
+Hoxne each keep their own mitigation and nothing changes in combat.
+
+It has no key: it is driven by `gs c set Regen On` / `Off` from FFXI macros,
+which name the value instead of toggling. It is still listed in
+`PLD_KEYBINDS.lua` with an empty `key`, the convention the BRD song slots use
+(`UI_LOADER.lua:104`), so the HUD shows the row and its current value with no
+key beside it - `bind_all` and `unbind_all` skip empty keys. `subjob = "SCH"`
+keeps the row out of the other subjobs, and `apply_hybrid_profile` forces the
+state Off there for the same reason.
 
 Mote defaults also exist: `OffenseMode`, `IdleMode`, `CastingMode` (all
 `'Normal'`, no set reads them), `DefenseMode` (None). `state.Moving` comes from

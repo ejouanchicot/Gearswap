@@ -76,9 +76,11 @@ PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie, DPS/Tanking/Hoxne under /S
     subjob = "RUN"
 },
     { key = "^numpad2", command = "cyclestate PhalanxSIRD", desc = "Phalanx SIRD", state = "PhalanxSIRD", exclude_subjob = "SCH" },
-    -- Regen pair over the idle set, /SCH only. It takes back Ctrl+Numpad7,
-    -- the key /SCH freed when SneakInviAOE became a permanent On.
-    { key = "^numpad7", command = "cyclestate Regen", desc = "Regen", state = "Regen", subjob = "SCH" },
+    -- Regen is driven by macros (`gs c set Regen On|Off`), not by a key: it
+    -- wants an explicit value, and a key can only toggle. Listed with an
+    -- empty key so the HUD still shows the row and its current value -
+    -- same convention as the BRD song slots (UI_LOADER.lua:104).
+    { key = "", desc = "Regen", state = "Regen", subjob = "SCH" },
     { key = "^numpad5", command = "cyclestate WS1", desc = "WS Slot 1", state = "WS1" },
     { key = "^numpad6", command = "cyclestate WS2", desc = "WS Slot 2", state = "WS2" },
     { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
@@ -88,9 +90,10 @@ PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie, DPS/Tanking/Hoxne under /S
 --- bind_all/unbind_all only ever walk PLDKeybinds.binds, so a key dropped from
 --- that table keeps whatever Windower bound to it last - across reloads, for
 --- the rest of the session. Listing it here is what finally clears it.
---- Empty since 2026-09-22: ^numpad7 went back into binds for the /SCH Regen
---- toggle. A key listed in both would be unbound right after being bound.
-PLDKeybinds.retired_keys = {}
+--- ^numpad7 held SneakInviAOE, retired when /SCH started holding it On.
+PLDKeybinds.retired_keys = {
+    "^numpad7"
+}
 
 --- The keys currently laid down, as key -> command.
 --- bind_all() rewrites it wholesale; refresh() diffs against it and sends only
@@ -159,7 +162,7 @@ function PLDKeybinds.bind_all(silent)
         keeping[bind.key] = true
     end
     for _, bind in ipairs(PLDKeybinds.binds) do
-        if not keeping[bind.key] then
+        if bind.key ~= '' and not keeping[bind.key] then
             pcall(send_command, 'unbind ' .. bind.key)
         end
     end
@@ -170,13 +173,17 @@ function PLDKeybinds.bind_all(silent)
     -- Attempt to bind each key
     local bound_count = 0
     for _, bind in ipairs(active_binds) do
-        local success, error_msg = pcall(send_command, 'bind ' .. bind.key .. ' gs c ' .. bind.command)
-        if success then
-            bound_count = bound_count + 1
-        else
-            -- Log specific error if available
-            local error_detail = error_msg and tostring(error_msg) or "Command execution failed"
-            MessageFormatter.show_bind_failed_error(bind.key, error_detail)
+        -- An empty key is a display-only row: it earns a line in the HUD and
+        -- has nothing to lay down.
+        if bind.key ~= '' then
+            local success, error_msg = pcall(send_command, 'bind ' .. bind.key .. ' gs c ' .. bind.command)
+            if success then
+                bound_count = bound_count + 1
+            else
+                -- Log specific error if available
+                local error_detail = error_msg and tostring(error_msg) or "Command execution failed"
+                MessageFormatter.show_bind_failed_error(bind.key, error_detail)
+            end
         end
     end
 
@@ -250,10 +257,12 @@ function PLDKeybinds.unbind_all()
         return false
     end
 
-    for _, bind in pairs(PLDKeybinds.binds) do
-        pcall(send_command, 'unbind ' .. bind.key)
+    for _, bind in ipairs(PLDKeybinds.binds) do
+        if bind.key ~= '' then
+            pcall(send_command, 'unbind ' .. bind.key)
+        end
     end
-    for _, key in pairs(PLDKeybinds.retired_keys) do
+    for _, key in ipairs(PLDKeybinds.retired_keys) do
         pcall(send_command, 'unbind ' .. key)
     end
 
