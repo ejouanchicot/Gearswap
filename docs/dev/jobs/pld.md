@@ -28,42 +28,45 @@ What PLD adds on top of the shared pipeline:
 
 Every file in scope was read in full except the gear content of the sets files
 (only structure and set names were read, as gear choice is out of scope). All
-line numbers refer to the code as of 2026-09-19, after the Sortie work
+line numbers refer to the code as of 2026-09-22, after the /SCH stance work
 (`df01a96`).
 
 ## Files
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_PLD.lua` | 252 | Entry point (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
-| `_master/Kaories/entry/Kaories_PLD.lua` | 252 | Kaories overlay: identical except the `Kaories/...` paths (lines 25, 36, 49, 52, 93, 97-98, 162, 168) |
+| `_master/entry/Tetsouo_PLD.lua` | 293 | Entry point (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
+| `_master/Kaories/entry/Kaories_PLD.lua` | 293 | Kaories overlay: identical except the `Kaories/...` paths (lines 25, 36, 49, 52, 93, 97-98, 162, 168) |
 | `shared/jobs/pld/functions/pld_functions.lua` | 121 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager` |
-| `shared/jobs/pld/functions/PLD_PRECAST.lua` | 188 | `job_precast` (guard, cooldown, auto-abilities, WS) / `job_post_precast` (TP gear, CureSelf FC, Sortie override) |
-| `shared/jobs/pld/functions/PLD_MIDCAST.lua` | 203 | `job_midcast` (Cure III/IV) / `job_post_midcast` (name-before-skill dispatch, Sortie override) |
+| `shared/jobs/pld/functions/PLD_PRECAST.lua` | 211 | `job_precast` (guard, cooldown, auto-abilities, WS) / `job_post_precast` (/SCH weaponskill variants, TP gear, CureSelf FC, enmity override) |
+| `shared/jobs/pld/functions/PLD_MIDCAST.lua` | 203 | `job_midcast` (Cure III/IV) / `job_post_midcast` (name-before-skill dispatch, enmity override) |
 | `shared/jobs/pld/functions/PLD_AFTERCAST.lua` | 27 | `LifecycleManager.aftercast()`, empty `job_post_aftercast` |
 | `shared/jobs/pld/functions/PLD_IDLE.lua` | 49 | `customize_idle_set` -> `SetBuilder.build_idle_set` (+ `UPDATE_DEBUG` trace) |
 | `shared/jobs/pld/functions/PLD_ENGAGED.lua` | 49 | `customize_melee_set` -> `SetBuilder.build_engaged_set` (+ trace) |
 | `shared/jobs/pld/functions/PLD_STATUS.lua` | 19 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/pld/functions/PLD_BUFFS.lua` | 19 | `job_buff_change = LifecycleManager.buff_change()` |
-| `shared/jobs/pld/functions/PLD_COMMANDS.lua` | 247 | `job_self_command` router, `job_state_change` (HybridMode profile hook) |
+| `shared/jobs/pld/functions/PLD_COMMANDS.lua` | 306 | `job_self_command` router (incl. `ws`/`wsN`), `rebuild_ws_slots`, `job_state_change` (profile, WS slots, ammo lock, keybind refresh) |
 | `shared/jobs/pld/functions/PLD_MOVEMENT.lua` | 32 | Comments only (AutoMove needs no registration) |
 | `shared/jobs/pld/functions/PLD_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('PLD', 'config/pld/PLD_LOCKSTYLE', 1, 'SAM')` wrappers |
 | `shared/jobs/pld/functions/PLD_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('PLD', ..., 'SAM', 1, 1)` wrapper |
-| `shared/jobs/pld/functions/logic/set_builder.lua` | 307 | Idle/engaged construction: weapon, shield, HybridMode map, XP, movement, town, Sortie shield |
-| `shared/jobs/pld/functions/logic/enmity_override.lua` | 141 | Sortie: FullEnmity spells wear `sets.EnmityMax`; JAs keep their set and gain what EnmityMax adds |
+| `shared/jobs/pld/functions/logic/set_builder.lua` | 393 | Idle/engaged construction: weapon, shield, ammo, HybridMode map, XP, movement, town; `current_weapon()` is the authority on what is in hand |
+| `shared/jobs/pld/functions/logic/enmity_override.lua` | 151 | Sortie and /SCH Tanking: FullEnmity spells wear `sets.EnmityMax`; JAs keep their set and gain what EnmityMax adds |
+| `shared/jobs/pld/functions/logic/ampulla_lock.lua` | 168 | Hoxne stance: closes the ammo slot on Hoxne Ampulla once it is worn, or leaves it open and says so |
 | `shared/jobs/pld/functions/logic/cure_set_builder.lua` | 53 | CureSelf / CureOther choice for Cure III/IV |
 | `shared/jobs/pld/functions/logic/aoe_manager.lua` | 172 | `//gs c aoe` BLU rotation (identical to RUN's copy) |
 | `shared/jobs/pld/functions/logic/rune_manager.lua` | 79 | `//gs c rune` (identical to RUN's copy) |
-| `_master/config/pld/PLD_STATES.lua` | 243 | States, rune/weapon option lists, `apply_hybrid_profile`, unused `validate`, `_G.PLDStates` |
-| `_master/config/pld/PLD_KEYBINDS.lua` | 195 | 6 binds, subjob filter, unbind-all-then-bind, intro |
+| `_master/config/pld/PLD_STATES.lua` | 385 | States (incl. `WS1`/`WS2`), three option profiles (`standard`/`sortie`/`sch`), `apply_hybrid_profile`, unused `validate`, `_G.PLDStates` |
+| `_master/config/pld/PLD_KEYBINDS.lua` | 297 | 7 binds, subjob filter + `visible` predicate + `retired_keys`, `refresh()` sends only the delta, loud failure when nothing binds |
+| `_master/config/pld/PLD_WS_CONFIG.lua` | 64 | `_G.PLDWSConfig`: the two weaponskills each sword offers |
 | `_master/config/pld/PLD_LOCKSTYLE.lua` | 73 | Style 3 (`default`, `by_subjob`, `get_style`) |
 | `_master/config/pld/PLD_MACROBOOK.lua` | 78 | Book 15/18/20 per subjob, dual-box table |
 | `_master/config/pld/PLD_TP_CONFIG.lua` | 75 | `_G.PLDTPConfig` (Moonshade piece, Sequence weapon) |
 | `_master/config/pld/PLD_BLU_MAGIC.lua` | 203 | `_G.BluMagicConfig`: AOE spell table, dynamic/manual rotation |
-| `_master/sets/pld_sets.lua` | 756 | Template sets (flat) |
+| `_master/sets/pld_sets.lua` | 845 | Template sets (flat); families derive from local bases so variants are not inherited as slots |
 | `_master/Kaories/sets/pld_sets.lua` | 808 | Kaories overlay sets (no Sortie sets, see below) |
 | `shared/data/job_abilities/PLD_JA_DATABASE.lua` + `pld/*.lua` | 13 + 194 | JA descriptions for `ability_message_handler` (messages only) |
-| `shared/utils/scholar/scholar_actions.lua`, `stratagem_charges.lua` | 163 + 104 | /SCH chains, shared with BLM and others |
+| `shared/utils/scholar/scholar_actions.lua`, `stratagem_charges.lua` | 270 + 104 | /SCH chains, shared with BLM and GEO; waits on the stratagem buffs |
+| `shared/utils/weaponskill/ws_slots.lua` | 141 | Weapon-aware weaponskill slot states, shared with WAR |
 
 Live copies (gitignored): `Tetsouo/Tetsouo_PLD.lua` (identical to the template
 except line 238 includes `sets/pld/pld_sets.lua`), `Tetsouo/sets/pld/` (modular:
@@ -177,50 +180,104 @@ flowchart TD
   III/IV on self (only the live Tetsouo sets define it), then the Sortie
   override below.
 
-### Sortie profile (HybridMode)
+### HybridMode profiles
 
-`HybridMode` has three values (`PLD_STATES.lua:85-86`). `PLD_COMMANDS.lua:228-239`
-wires `job_state_change = LifecycleManager.state_change(on_state_change)`:
+`HybridMode` carries a different set of values depending on the subjob, chosen
+in `configure()` (`_master/config/pld/PLD_STATES.lua:71,80`):
+
+| subjob | values | default |
+|---|---|---|
+| anything but /SCH | `PDT` / `MDT` / `Sortie` | `PDT` |
+| /SCH | `DPS` / `Tanking` / `Hoxne` | `Tanking` |
+
+PLD/SCH is played for Sortie and nothing else, so it drops the general split
+for three stances of its own. `PLD_COMMANDS.lua:259` wires
+`job_state_change = LifecycleManager.state_change(on_state_change)`.
 
 ```mermaid
 flowchart LR
-    A[cyclestate HybridMode] -->|UI visible| B[CycleHandler: cycle, job_state_change 'Hybrid Mode', handle_update, UI]
-    A -->|UI hidden| C[gs c cycle HybridMode: Mote handle_cycle, job_state_change 'Hybrid Mode', handle_update]
+    A[cyclestate HybridMode] -->|UI visible| B[CycleHandler: cycle, job_state_change, handle_update, UI]
+    A -->|UI hidden| C[gs c cycle: Mote handle_cycle, job_state_change, handle_update]
     B --> D[on_state_change strips spaces]
     C --> D
-    D --> E{_G.PLDStates.apply_hybrid_profile}
-    E -- same side of Sortie as before --> H[nothing changes]
-    E -- into Sortie --> F[RuneMode 5 runes, MainWeapon Burtgang/Naegling, PhalanxSIRD On]
-    E -- out of Sortie --> G[full lists, PhalanxSIRD Off]
+    D --> E[PLDStates.apply_hybrid_profile]
+    D --> F[rebuild_ws_slots]
+    D --> G[AmpullaLock.apply]
+    D --> H[PLDKeybinds.refresh]
 ```
 
-- `apply_hybrid_profile` (`_master/config/pld/PLD_STATES.lua:202-222`) returns immediately unless `state.RuneMode`,
-  `state.PhalanxSIRD` and `state.MainWeapon` all exist. All three are created
-  by `configure()` (`PhalanxSIRD` at `:137`, added to the template on
-  2026-09-19; before, the profile did nothing on a character built from the
-  template).
-- It only acts when the mode crosses the Sortie boundary: a module flag
-  (`sortie_profile`, reset by `configure()`) remembers which lists are in place,
-  so PDT <-> MDT changes nothing, the `PhalanxSIRD` toggle included. When the
-  lists do change, `reshape()` keeps the current weapon and rune if the new list
-  has them: `Modes:options()` alone resets a mode to its first entry
-  (`Modes.lua:273-299`), which for `MainWeapon` meant a weapon swap and lost TP.
-  A weapon missing from the Sortie list (e.g. Shining) falls back to Burtgang.
-  Changed on 2026-09-19 at the player's request (`df01a96`, with the rest
-  of the Sortie work).
-- The profile lives in the character config and is reached through
-  `_G.PLDStates` (`PLD_STATES.lua:241`); a config without it (Kaories today) just
-  gets no profile.
-- Gear side (`set_builder.lua:43-61`): engaged `PDT -> sets.engaged.PDT`,
-  `MDT -> .MDT`, `Sortie -> sets.engaged.TP`; idle `PDT -> sets.idle.PDT`,
-  `MDT` and `Sortie -> sets.idle.MDT`. In Sortie the shield follows the weapon:
-  Burtgang -> Aegis, Naegling -> Blurred Shield +1 (`:58-61`), applied last
-  (`apply_sortie_shield`, `:127-139`).
+Four things react to a stance change, in that order
+(`PLD_COMMANDS.lua:259-296`). The order matters: everything runs inside
+`job_state_change`, which Mote calls **before** `handle_update`, so gear posted
+here would be overwritten by the set `handle_update` re-equips.
 
-### Enmity override (Sortie)
+- **`apply_hybrid_profile`** (`PLD_STATES.lua:326`) asks `profile_for`
+  (`:272`) which of three profiles should be in place — `sch`, `sortie` or
+  `standard`. The subjob decides first: /SCH never reaches the PDT/MDT/Sortie
+  question. `install_profile` (`:282`) then reshapes the option lists, and is
+  skipped while the profile is already the one in place, so PDT <-> MDT and
+  DPS <-> Hoxne change nothing.
+  `reshape()` keeps the current weapon and rune when the new list has them:
+  `Modes:options()` alone resets a mode to its first entry
+  (`Modes.lua:273-299`), which for `MainWeapon` is a weapon swap and lost TP.
+  The /SCH profile is the exception — it sets `MainWeapon` outright, entering
+  the setup being the one moment where resetting it is intended.
+- **`rebuild_ws_slots`** (`PLD_COMMANDS.lua:227`) refills `state.WS1`/`WS2`
+  from the weapon now in hand. See *Weaponskill slots* below.
+- **`AmpullaLock.apply`** (`logic/ampulla_lock.lua:160`) closes or releases the
+  ammo slot. See *Ammo lock* below.
+- **`PLDKeybinds.refresh`** (`PLD_KEYBINDS.lua:203`) re-lays only the keys that
+  changed, since a stance can add or remove a bind.
 
-`logic/enmity_override.lua` is active when `HybridMode == 'Sortie'`
-and `sets.EnmityMax` exists (`:35-40`).
+#### Stances under /SCH
+
+The stance owns the set, the ammo and the lock; the weapon is a separate axis.
+
+| stance | engaged set | ammo | EnmityMax | ammo locked |
+|---|---|---|---|---|
+| `DPS` | `sets.engaged.DPS` | from the set | no | no |
+| `Tanking` | `sets.engaged.MDT` | from the set | **yes** | no |
+| `Hoxne` | `sets.engaged.Hoxne` | **Hoxne Ampulla** | no | **yes** |
+
+Gear side (`set_builder.lua:48,57`): engaged `PDT -> .PDT`, `MDT -> .MDT`,
+`Sortie -> .TP`, `DPS -> .DPS`, `Tanking -> .MDT`, `Hoxne -> .Hoxne`; every
+mode idles in its own set except the three /SCH stances, which share
+`sets.idle.MDT`.
+
+The shield follows the **weapon**, not the stance, in both Sortie and /SCH:
+`SORTIE_SHIELD_BY_WEAPON` (`:69`) pairs Burtgang with Aegis and Naegling with
+Blurred Shield +1; `SCH_SHIELD_BY_WEAPON` (`:91`) gives Duban to the damage
+swords and Aegis to Burtgang. `apply_mode_shield` (`:206`) runs last so it wins
+over the sub carried by the mode's own set.
+
+`SCH_AMMO_BY_MODE` (`:112`) names the Ampulla for the Hoxne stance and
+`apply_mode_ammo` (`:190`) applies it. This, not the lock, is what puts the
+piece on: it is in the set, so every later `handle_update` wears it again.
+
+#### The weapon is its own axis
+
+`MainWeapon` offers `Naegling` / `Excalibur` under /SCH
+(`PLD_STATES.lua:91`), Naegling first. Burtgang is deliberately absent: the
+Tanking stance holds it outright through `SCH_WEAPON_BY_MODE`
+(`set_builder.lua:82`), that weapon being what makes it the hate stance, so
+cycling never lands on it by accident.
+
+`SetBuilder.current_weapon()` (`:135`) is the authority on what is in hand —
+the stance override first, then `state.MainWeapon`. Anything that has to know
+what is being swung asks here rather than reading the state, which would be
+wrong in Tanking.
+
+The `Main Weapon` bind disappears in Tanking: it carries a `visible` predicate
+(`PLD_KEYBINDS.lua:59`) that `get_active_binds` (`:112`) asks on every HUD
+refresh, unlike `subjob`/`exclude_subjob` which are settled once per load.
+
+### Enmity override (Sortie, and /SCH Tanking)
+
+`logic/enmity_override.lua` is active on a hate-holding mode -
+`ENMITY_MAX_MODES` (`:34`) lists `Sortie` and `Tanking` - and when
+`sets.EnmityMax` exists (`:45-51`). The /SCH `DPS` and `Hoxne` stances are left
+out for the same reason the main hand is: they are the TP builds, and swapping
+their shield mid-fight is a cost the stance was chosen to avoid.
 
 - `apply_precast` (102-116), called last in `job_post_precast`: every
   `action_type == 'Ability'` except weaponskills gets `enmity_max_extra()`
@@ -249,6 +306,66 @@ and `sets.EnmityMax` exists (`:35-40`).
   them (`PLD_MIDCAST.lua:166-168`). They do not wear FullEnmity, so nothing is
   lost today, but any future override added after the dispatch has the same
   blind spot.
+
+### Weaponskill slots
+
+Two fixed macros (`//gs c ws1`, `//gs c ws2`, and `//gs c ws` for the first)
+fire whatever the weapon in hand put in that slot, through the same
+`shared/utils/weaponskill/ws_slots.lua` WAR uses. The slots are real Mote
+states, so the HUD picks them up on its own: `"WS"` is already in
+`ja_patterns` (`UI_DISPLAY_BUILDER.lua:36`).
+
+`Tetsouo/config/pld/PLD_WS_CONFIG.lua` holds the lists. Savage Blade takes
+slot 1 on every sword - the one weaponskill all three can use, so the same key
+always does the same thing - and slot 2 holds what the weapon alone unlocks:
+
+| weapon | WS 1 | WS 2 |
+|---|---|---|
+| Excalibur | Savage Blade | Knights of Round |
+| Burtgang | Savage Blade | Atonement |
+| Naegling | Savage Blade | Chant du Cygne |
+
+Two things about the wiring are easy to get wrong:
+
+- The slots follow `SetBuilder.current_weapon()`, **not** `state.MainWeapon`.
+  In Tanking the state says Naegling or Excalibur while Burtgang is in hand, so
+  a state-driven rebuild would offer the wrong weaponskill. Both a `MainWeapon`
+  and a `HybridMode` change rebuild them (`PLD_COMMANDS.lua:259-296`).
+- They are created in `configure()` (`PLD_STATES.lua:251`), with every other
+  state, and only refreshed later from `get_sets()`. The keybind HUD fixes its
+  row structure during `user_setup`, so a state born after that reads `N/A`
+  however live the value lookup is - the same reason `AutoMedicine` is created
+  there (`:259`).
+
+### Ammo lock (Hoxne stance)
+
+The Hoxne Ampulla is an ammo-slot item with a single charge and a 60s recast,
+so it has to stay equipped to be usable - and every PLD set names its own ammo.
+
+`logic/ampulla_lock.lua` closes the slot on it. Two halves, both needed:
+
+- **SetBuilder wears it.** `apply_mode_ammo` names the Ampulla in the Hoxne
+  idle and engaged sets, so every `handle_update` puts it back. This module
+  equips nothing itself: `equip()` from a scheduled callback is dropped, since
+  `flow.lua:59-60` clears `equip_list` at the top of every `equip_sets` cycle.
+- **The lock keeps it.** `disable('ammo')` stops the weaponskill, midcast and
+  precast sets - none of them built by SetBuilder - from taking it back.
+
+The lock reads `player.equipment.ammo` until the Ampulla is there
+(`lock_when_worn`, `:111`) rather than waiting a fixed delay. Order is forced
+by the engine: `equip()` is `set_merge(true, ...)` and `set_merge` sends any
+disabled slot to `not_sent_out_equip` instead of wearing it
+(`helper_functions.lua:321`), so a slot closed early can no longer receive the
+piece it was closed for.
+
+If the Ampulla never arrives the slot is **left open** and the player is told
+what is worn instead (`:75-88`). That is the harmless failure: an open slot
+follows the sets, while a lock shut on the wrong ammo would hold it for the
+whole stance without saying anything.
+
+`disable_table` survives `gs reload` and job changes, so the slot is given back
+at both ends - `file_unload` and, on the way back up, `user_setup` right after
+`configure()` has reset `HybridMode` to its default.
 
 ### Midcast
 
@@ -341,20 +458,21 @@ flowchart TD
 
 ## Mote states
 
-Created by `PLDStates.configure()` (`_master/config/pld/PLD_STATES.lua:73-164`)
-on every `user_setup()`. Keybinds from `PLD_KEYBINDS.lua:32-61`; `^` = Ctrl,
+Created by `PLDStates.configure()` (`_master/config/pld/PLD_STATES.lua:127-260`)
+on every `user_setup()`. Keybinds from `PLD_KEYBINDS.lua:38-87`; `^` = Ctrl,
 `#` = Apps.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
-| `HybridMode` (Mote) | PDT, MDT, Sortie | PDT | `^numpad9` | Mote `get_melee_set`; `set_builder.lua:67-71,128`; `enmity_override.lua:36`; profile hook `PLD_COMMANDS.lua:228-237`; UI anchor |
-| `MainWeapon` | Burtgang, BurtgangKC, Naegling, Shining, Malevo (Sortie profile: Burtgang, Naegling) | Burtgang | `^numpad1` | `set_builder.lua:87,103,132,172,188,217-218,254-255` |
+| `HybridMode` (Mote) | PDT, MDT, Sortie — **/SCH: DPS, Tanking, Hoxne** | PDT, **Tanking** under /SCH | `^numpad9` | Mote `get_melee_set`; `set_builder.lua:48,57,99,206`; `enmity_override.lua:34`; profile hook `PLD_COMMANDS.lua:259-296`; UI anchor |
+| `MainWeapon` | Excalibur, Burtgang, KC, BurtgangKC, Naegling, Shining, Malevo (Sortie: Burtgang, Naegling — **/SCH: Naegling, Excalibur**) | Burtgang, **Naegling** under /SCH | `^numpad1`, hidden in /SCH Tanking (`visible`, `PLD_KEYBINDS.lua:59`) | `set_builder.lua:99,135,149` and the weaponskill slots |
 | `Xp` | Off, On | Off | `^numpad4` (/RDM) | `set_builder.lua:230,290`; `PLD_MIDCAST.lua:111` |
 | `RuneMode` | Ignis .. Tenebrae (8) (Sortie profile: Ignis, Tenebrae, Tellus, Flabra, Unda) | Ignis | `^numpad3` (/RUN) | `rune_manager.lua:95` |
-| `SneakInviAOE` | On, Off | On | `^numpad7` (/SCH) | `PLD_COMMANDS.lua:179` -> `scholar_actions.lua:90` (missing state counts as On) |
+| `SneakInviAOE` | On, Off | On, **held On under /SCH** | none (bind retired, see `retired_keys` `PLD_KEYBINDS.lua:89`) | `PLD_COMMANDS.lua:179` -> `scholar_actions.lua` (missing state counts as On) |
 | `FastCast` | 0..80 step 10 | 80 | none | `midcast_watchdog.lua` |
 | `AutoMedicine` | shared On/Off | persisted | `#numpad0` | `AutoMedicine.init(state, M)` (`PLD_STATES.lua:160-163`), see [precast pipeline](../systems/precast-pipeline.md) |
-| `PhalanxSIRD` | Off, On | Off | `^numpad2` | read by `PLD_MIDCAST.lua:110` and required by `apply_hybrid_profile`; `On` on entering Sortie, `Off` on leaving it |
+| `PhalanxSIRD` | Off, On | Off, **held On under /SCH** | `^numpad2`, excluded in /SCH | read by `PLD_MIDCAST.lua:110` and required by `apply_hybrid_profile`; `On` on entering Sortie or /SCH, `Off` on the standard profile |
+| `WS1`, `WS2` | that weapon's list (`PLD_WS_CONFIG.lua`) | entry 1 and 2 | `^numpad5`, `^numpad6` | `ws_slots.lua`; rebuilt from `SetBuilder.current_weapon()` on a `MainWeapon` **or** `HybridMode` change |
 
 Mote defaults also exist: `OffenseMode`, `IdleMode`, `CastingMode` (all
 `'Normal'`, no set reads them), `DefenseMode` (None). `state.Moving` comes from
@@ -379,7 +497,8 @@ has SCH. See
 | `debugmidcast` | Toggle MidcastManager debug | 145-155 |
 | `cyclestate <State>` | `CycleHandler.handle_cyclestate` (all keybinds) | 164-167 |
 | `aoe` | BLU rotation: first castable spell of `BluMagicConfig.get_rotation()` on `<stnpc>`, 5 s anti-spam per spell; otherwise recast list and `/target <stnpc>` | 178-188 -> `aoe_manager.lua:111-166` |
-| `aoe sneak` / `aoe invi` / `aoe invisible` / `aoe erase` | /SCH chain: Light Arts + Addendum: White (Erase) + Accession as charges allow; `SneakInviAOE` Off casts on `<stal>` without Accession | 179 -> `scholar_actions.lua:154-161` |
+| `aoe sneak` / `aoe invi` / `aoe invisible` / `aoe erase` | /SCH chain: Light Arts + Addendum: White (Erase) + Accession as charges allow; the spell leaves only once every stratagem it queued is actually up, and is **cancelled with a message** if they never come; `SneakInviAOE` Off casts on `<stal>` without Accession | 179 -> `scholar_actions.cast_with_stratagems` |
+| `ws` / `ws1` / `ws2` | Fire the weaponskill that slot holds for the weapon in hand; `ws` is slot 1 | 211 -> `ws_slots.cast` |
 | `rune` | `/ja "<RuneMode>" <me>` unless on recast (no subjob check) | 191-197 -> `rune_manager.lua:89-126` |
 | `lightarts` | Light Arts, then Addendum: White on the next press | 203-207 |
 
@@ -406,7 +525,10 @@ through the loop at `:58-60`).
 | `sets.Duban`, `sets.Aegis`, `sets['Blurred Shield +1']` | nothing (shields come from mode sets or literals) | 104-107 | 104-107 | weapons.lua |
 | `sets.idle`, `sets.idle.PDT`, `sets.idle.MDT` | Mote base, `IDLE_SET_BY_MODE` | 114, 131, 140 | 114, 131, 140 | 67, 87, 96 |
 | `sets.engaged`, `.PDT`, `.MDT` | Mote base, `ENGAGED_SET_BY_MODE` | 191, 212, 221 | 209, 230, 239 | 153, 175, 184 |
-| `sets.engaged.TP` | Sortie engaged (`set_builder.lua:46`) | 228 | **absent** | 191 |
+| `sets.engaged.TP` | Sortie engaged (`ENGAGED_SET_BY_MODE`) | 228 | **absent** | 191 |
+| `sets.engaged.DPS` | /SCH DPS stance | 250 | **absent** | 230 |
+| `sets.engaged.Hoxne` | /SCH Hoxne stance | 279 | **absent** | 261 |
+| `sets.precast.WS.SCH['Knights of Round']` | `PLD_PRECAST.apply_sch_ws_set` | **absent** | **absent** | 593 |
 | `sets.engaged.BurtgangKC` | `set_builder.lua:172-181` | 244 | 244 | 215 |
 | `sets.idleXp`, `sets.meleeXp` | `set_builder.lua:290,230` | 176, 265 | 176, 265 | 138, 236 |
 | `sets.idle.Town`, `sets.Adoulin`, `sets.MoveSpeed` | BaseSetBuilder, Mote Town scope, movement | 737 (`= MoveSpeed`), 740, 732 | 789, 792, 784 | 731 (`idle.PDT + MoveSpeed`), 734, 726 |
@@ -538,13 +660,21 @@ through the loop at `:58-60`).
 
 - `job_post_midcast` returns before `EnmityOverride` for Cure III/IV
   (`PLD_MIDCAST.lua:166-168`).
+- The Kaories and template sets have no `sets.engaged.DPS` / `.Hoxne`, so the
+  /SCH stances fall back to `sets.engaged` there. Only the live Tetsouo sets
+  define them, like `sets.precast.WS.SCH`.
+- The Hoxne ammo lock can still fire in a new sandbox: a pending check
+  scheduled before a job change survives the reload, and its sequence counter
+  is a module local rather than a `windower.*` value
+  (`ampulla_lock.lua:70`). Worst case is one stray `disable('ammo')`, which
+  `file_unload` and `user_setup` both release.
 - The Kaories overlay has no `sets.EnmityMax`, `sets.engaged.TP`,
   `sets.midcast.Stoneskin` or `sets.precast.FC.CureSelf`
   (`_master/Kaories/sets/pld_sets.lua`); in Sortie she keeps her normal sets.
   Left as is on purpose (player's decision, 2026-09-19).
 - AbilityHelper sets only `handled`: the cancelled Cure/Protect/Flash still goes
   through the rest of `job_precast` and `job_post_precast`, so precast gear
-  flickers for a spell that is not cast (`ability_helper.lua:89-92,111-114`).
+  flickers for a spell that is not cast (`ability_helper.lua`).
 - Cure and Cure II wear the set of the last Cure III/IV target, or none
   (`cure_set_builder.lua:44`); the Healing route is a no-op without
   `sets.midcast['Healing Magic']` (`PLD_MIDCAST.lua:79-87`).
