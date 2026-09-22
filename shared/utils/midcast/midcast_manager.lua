@@ -11,10 +11,13 @@ local MidcastManager = {}
 
 local MessageMidcast = require('shared/utils/messages/formatters/magic/message_midcast')
 
--- Persist debug state in global scope (survives reloads)
-if _G.MidcastManagerDebugState == nil then
-    _G.MidcastManagerDebugState = false
-end
+-- The sandbox rebuilds _G on every job load (refresh.lua:83,114,149), so a flag
+-- kept only there is lost at the moment it is most wanted: `//gs c debugmidcast`
+-- then went quiet after a subjob change, and the silence read as "the traced
+-- code never ran". windower.* outlives the sandbox and holds the truth; _G
+-- mirrors it, because two dozen call sites read the flag by that name.
+windower._midcast_debug = windower._midcast_debug or false
+_G.MidcastManagerDebugState = windower._midcast_debug
 
 --- Get debug state (always read from global)
 local function is_debug_enabled()
@@ -23,6 +26,7 @@ end
 
 --- Enable debug logging
 function MidcastManager.enable_debug()
+    windower._midcast_debug = true
     _G.MidcastManagerDebugState = true
     MessageMidcast.show_debug_enabled()
 end
@@ -30,6 +34,7 @@ end
 --- Disable debug logging
 function MidcastManager.disable_debug()
     MessageMidcast.show_debug_disabled()
+    windower._midcast_debug = false
     _G.MidcastManagerDebugState = false
 end
 

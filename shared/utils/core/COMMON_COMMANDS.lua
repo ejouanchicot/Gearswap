@@ -560,13 +560,18 @@ function CommonCommands.handle_command(command, job_name, ...)
     elseif cmd == 'debugsubjob' or cmd == 'dsj' then
         return CommonCommands.handle_debugsubjob()
     elseif cmd == 'debugwarp' then
-        -- Toggle warp debug mode
-        _G.WARP_DEBUG = not _G.WARP_DEBUG
+        -- Toggle warp debug mode. Kept on windower, which outlives the
+        -- sandbox: a flag only in _G is gone at the next job load.
+        windower._gs_debug = windower._gs_debug or {}
+        windower._gs_debug.WARP = not windower._gs_debug.WARP
+        _G.WARP_DEBUG = windower._gs_debug.WARP
         MessageCommands.show_warp_debug_toggled(_G.WARP_DEBUG)
         return true
     elseif cmd == 'debugprecast' then
         -- Toggle precast debug mode
-        _G.PrecastDebugState = not _G.PrecastDebugState
+        windower._gs_debug = windower._gs_debug or {}
+        windower._gs_debug.PRECAST = not windower._gs_debug.PRECAST
+        _G.PrecastDebugState = windower._gs_debug.PRECAST
         local MessagePrecast = require('shared/utils/messages/formatters/magic/message_precast')
         if _G.PrecastDebugState then
             MessagePrecast.show_debug_enabled()
@@ -575,13 +580,21 @@ function CommonCommands.handle_command(command, job_name, ...)
         end
         return true
     elseif cmd == 'automovedebug' or cmd == 'amd' then
-        -- Toggle AutoMove timing debug mode
-        _G.AUTOMOVE_DEBUG = not _G.AUTOMOVE_DEBUG
+        -- Toggle AutoMove timing debug mode. It needs its own persistent
+        -- field: writing only _G meant INIT_SYSTEMS overwrote it from
+        -- _gs_debug.UPDATE at the next load, so the toggle silently undid
+        -- itself on a subjob change.
+        windower._gs_debug = windower._gs_debug or {}
+        windower._gs_debug.AUTOMOVE = not windower._gs_debug.AUTOMOVE
+        _G.AUTOMOVE_DEBUG = windower._gs_debug.AUTOMOVE
         MessageFormatter.show_debug('AutoMove', 'Debug mode: ' .. (_G.AUTOMOVE_DEBUG and 'ON' or 'OFF'))
         return true
     elseif cmd == 'debugjobchange' or cmd == 'djc' then
-        -- Toggle job change debug mode
-        _G.JOBCHANGE_DEBUG = not _G.JOBCHANGE_DEBUG
+        -- Toggle job change debug mode. On windower so it survives the very
+        -- event it traces.
+        windower._gs_debug = windower._gs_debug or {}
+        windower._gs_debug.JOBCHANGE = not windower._gs_debug.JOBCHANGE
+        _G.JOBCHANGE_DEBUG = windower._gs_debug.JOBCHANGE
         MessageFormatter.show_debug('JobChange', 'Debug mode: ' .. (_G.JOBCHANGE_DEBUG and 'ON' or 'OFF'))
         -- Show current state
         if _G.JOBCHANGE_DEBUG and _G.JobChangeManagerSTATE then
@@ -600,7 +613,8 @@ function CommonCommands.handle_command(command, job_name, ...)
         windower._gs_debug = windower._gs_debug or {}
         windower._gs_debug.UPDATE = not windower._gs_debug.UPDATE
         _G.UPDATE_DEBUG = windower._gs_debug.UPDATE
-        _G.AUTOMOVE_DEBUG = windower._gs_debug.UPDATE  -- Also enable AutoMove debug
+        windower._gs_debug.AUTOMOVE = windower._gs_debug.UPDATE  -- traces AutoMove too
+        _G.AUTOMOVE_DEBUG = windower._gs_debug.AUTOMOVE
         MessageFormatter.show_debug('UPDATE', string.format('%s (traces: AutoMove > job_update > UI.update > customize_set)',
             _G.UPDATE_DEBUG and 'ON' or 'OFF'))
         return true
