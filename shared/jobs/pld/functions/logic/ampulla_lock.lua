@@ -17,6 +17,11 @@
 ---   keeps the weaponskill, midcast and precast sets - none of them built by
 ---   SetBuilder - from taking it back.
 ---
+---   It closes the slot on the Ampulla or not at all: it reads the ammo slot
+---   until the piece is there rather than assuming a delay was enough. A lock
+---   that shut on the wrong ammo would hold it for the whole stance without
+---   saying anything.
+---
 ---   It deliberately does not equip anything itself. equip() writes into
 ---   equip_list, and flow.lua clears equip_list at the top of every equip_sets
 ---   cycle, so an equip() issued from a scheduled callback - outside any cycle
@@ -40,22 +45,47 @@ local AmpullaLock = {}
 ---   CONFIGURATION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+local AMPULLA = 'Hoxne Ampulla'
 local HOXNE_MODE = 'Hoxne'
 
---- How long to wait before freezing the slot.
+--- How often to check whether the Ampulla is actually worn yet.
 --- A state change runs job_state_change and THEN handle_update (cycle_handler,
---- and Mote's handle_cycle does the same), so the Ampulla is not on yet when
---- this module is called - handle_update is what wears it, a moment later.
---- Freezing before that locks whatever ammo the previous stance had on, and
---- the slot can no longer receive the Ampulla: equip() is set_merge(true, ...)
---- and set_merge sends a disabled slot to not_sent_out_equip instead of
---- wearing it (helper_functions.lua). That was the first version's bug.
-local LOCK_DELAY = 1.0
+--- and Mote's handle_cycle does the same), so the Ampulla is not on when this
+--- module is called - handle_update is what wears it, a moment later. Freezing
+--- before that locks whatever ammo the previous stance had on, and the slot can
+--- no longer receive the Ampulla: equip() is set_merge(true, ...) and set_merge
+--- sends a disabled slot to not_sent_out_equip instead of wearing it
+--- (helper_functions.lua). That was the first version's bug.
+---
+--- Waiting a fixed delay only made that rare. Reading the slot makes it
+--- impossible: the lock closes on the Ampulla or it does not close at all.
+local POLL_INTERVAL = 0.5
+
+--- How long to keep checking before giving up and leaving the slot open.
+local POLL_TIMEOUT = 5.0
 
 --- Invalidates a pending lock when the stance is left before it fires.
---- Without it, leaving Hoxne inside LOCK_DELAY would still be caught by the
---- scheduled disable, freezing the ammo the next stance had just equipped.
+--- Without it, leaving Hoxne while a check is still pending would still be
+--- caught by the scheduled disable, freezing the ammo the next stance had just
+--- equipped.
 local lock_sequence = 0
+
+--- The ammo currently worn, or nil when it cannot be read.
+--- @return string|nil
+local function worn_ammo()
+    return player and player.equipment and player.equipment.ammo
+end
+
+--- Report that the stance could not take hold.
+--- @param reason string What was worn instead
+--- @return void
+local function warn_not_worn(reason)
+    local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+    if ok and MessageFormatter then
+        MessageFormatter.show_warning(
+            ('Hoxne: ammo left unlocked, %s is worn instead of %s'):format(reason, AMPULLA))
+    end
+end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SLOT LOCK
@@ -73,6 +103,33 @@ function AmpullaLock.set_slot(locked)
     _G.pld_ammo_locked = locked
 end
 
+--- Close the slot once the Ampulla is actually worn, or not at all.
+--- @param deadline number os.clock() value past which we give up
+--- @param my_sequence number Generation this attempt belongs to
+--- @return void
+local lock_when_worn
+lock_when_worn = function(deadline, my_sequence)
+    if my_sequence ~= lock_sequence then
+        return
+    end
+
+    if worn_ammo() == AMPULLA then
+        AmpullaLock.set_slot(true)
+        return
+    end
+
+    if os.clock() >= deadline then
+        -- Leaving the slot open is the safe failure: a lock closed on the
+        -- wrong ammo would hold it for the whole stance, silently.
+        warn_not_worn(tostring(worn_ammo() or 'nothing'))
+        return
+    end
+
+    coroutine.schedule(function()
+        lock_when_worn(deadline, my_sequence)
+    end, POLL_INTERVAL)
+end
+
 --- Freeze the ammo slot once the stance's gear has settled on the Ampulla.
 --- @return void
 function AmpullaLock.engage()
@@ -84,12 +141,7 @@ function AmpullaLock.engage()
     -- otherwise keep whatever the slot already holds.
     AmpullaLock.set_slot(false)
 
-    coroutine.schedule(function()
-        if my_sequence ~= lock_sequence then
-            return
-        end
-        AmpullaLock.set_slot(true)
-    end, LOCK_DELAY)
+    lock_when_worn(os.clock() + POLL_TIMEOUT, my_sequence)
 end
 
 --- Release the lock this module placed, if any.
