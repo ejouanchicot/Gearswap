@@ -279,7 +279,7 @@ function job_update(cmdParams, eventArgs)
             -- job_update fires on every `gs c update` (aftercast/automove/state
             -- change), so an unconditional enable() here would silently break
             -- `//gs c craft`. CraftManager owns the disable until //gs c uncraft.
-            local craft_active = _G.__CraftManagerState and _G.__CraftManagerState.active
+            local craft_active = _G.CraftManager and _G.CraftManager.is_active()
             if not craft_active then
                 enable('main', 'sub', 'range')
             end

@@ -13,7 +13,7 @@
 ---     { name = {'Squid Sushi +1', 'Squid Sushi'}, target = 12 }
 ---   The list is tried in order: prefer +1, fall back to base.
 ---
----   CRAFT MODE override: when _G.__CraftManagerState.active is true, uses
+---   CRAFT MODE override: when CraftManager.is_active() is true, uses
 ---   <charname>/config/craft/CRAFT_REFILL.lua instead so inventory gets
 ---   craft-relevant items and everything else is detected as foreign.
 ---
@@ -196,8 +196,9 @@ function ConfigResolver.resolve_list_for_player()
     end
     local char = p.name
 
-    -- Craft mode override: check the global flag set by craft_manager.
-    if _G.__CraftManagerState and _G.__CraftManagerState.active then
+    -- Craft mode override: ask craft_manager, which owns the session state.
+    local CraftManager = _G.CraftManager
+    if CraftManager and CraftManager.is_active() then
         local craft_path = char .. '/config/craft/CRAFT_REFILL'
         local ok_c, cfg_c = pcall(require, craft_path)
         if ok_c and type(cfg_c) == 'table' then
@@ -206,8 +207,9 @@ function ConfigResolver.resolve_list_for_player()
             end
             if cfg_c.default then
                 local label = 'CRAFT'
-                if _G.__CraftManagerState.active_name then
-                    label = label .. ' (' .. _G.__CraftManagerState.active_name .. ')'
+                local name = CraftManager.active_name()
+                if name then
+                    label = label .. ' (' .. name .. ')'
                 end
                 return cfg_c.default, label, store_info
             end

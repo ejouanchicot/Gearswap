@@ -46,6 +46,13 @@ end
 -- State stored on _G so it survives module re-requires (GearSwap may invalidate
 -- the package.loaded cache between command invocations, which would reset
 -- a module-local table).
+--
+-- It does NOT survive a job or subjob change: the sandbox rebuilds _G on every
+-- load (refresh.lua:83,114,149), while the slot lock this state describes lives
+-- in disable_table, which is addon-scoped and survives. Changing subjob mid
+-- session therefore leaves the 16 slots locked with no session to close them -
+-- `//gs enable all` is the only way out. Read through is_active() so that
+-- moving this onto windower.*, which does persist, stays a change to one file.
 _G.__CraftManagerState = _G.__CraftManagerState or { active = false, active_name = nil, gear = nil }
 local _state = _G.__CraftManagerState
 
@@ -135,6 +142,24 @@ function CraftManager.mark_active(name, gear)
     _state.gear        = gear
 end
 
+--- Whether a craft session is running.
+--- Jobs ask this before re-enabling the weapon slots in job_update or on a
+--- CombatMode change: doing it during a session would strip the synthesis gear.
+--- They used to read the internal global directly, which meant every job had
+--- to know its name - and a job that did not know left the guard out.
+--- @return boolean True while a craft set is applied
+function CraftManager.is_active()
+    return _state.active == true
+end
+
+--- Description of the set the running session applied, for labelling.
+--- Nil when no session is active.
+--- @return string|nil
+function CraftManager.active_name()
+    if not _state.active then return nil end
+    return _state.active_name
+end
+
 --- Gear the running session is wearing, so switching variant can equip only
 --- the pieces that differ. Nil when no session is active.
 --- @return table|nil Canonical slot -> item table
@@ -160,5 +185,11 @@ function CraftManager.unequip()
         windower.send_command('gs c rf')
     end, 0.5)
 end
+
+-- Dual export: the jobs that guard their enable() on is_active() run inside
+-- job_update, which fires on every `gs c update`, so they read the global
+-- rather than paying for a require on a hot path. Nil before any craft command
+-- has been used, which is the same answer as "no session".
+_G.CraftManager = CraftManager
 
 return CraftManager
