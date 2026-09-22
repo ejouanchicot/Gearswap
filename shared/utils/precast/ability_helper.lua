@@ -83,6 +83,40 @@ local POLL_INTERVAL = 0.3
 --- that the game refused it. A refused ability leaves its recast untouched.
 local JA_REGISTER_WINDOW = 1.0
 
+--- Whether an ability owns its recast, or shares it with others.
+---
+--- The four stratagems - Accession, Manifestation and both Addendums - all
+--- report recast 231, the shared charge pool. For them a recast still ready
+--- says only that a charge is left, never that this ability failed to fire, so
+--- the "never fired" shortcut below must not be applied.
+--- @param ability_name string
+--- @return boolean True when the recast is shared with another ability
+local shared_recast_cache = {}
+local function has_shared_recast(ability_name)
+    local cached = shared_recast_cache[ability_name]
+    if cached ~= nil then
+        return cached
+    end
+
+    local data = get_ability_data(ability_name)
+    if not data then
+        shared_recast_cache[ability_name] = false
+        return false
+    end
+
+    local recast_id = data.recast_id or data.id
+    local res = require('resources')
+    local count = 0
+    for _, ability in pairs(res.job_abilities) do
+        if type(ability) == 'table' and (ability.recast_id or ability.id) == recast_id then
+            count = count + 1
+        end
+    end
+
+    shared_recast_cache[ability_name] = count > 1
+    return shared_recast_cache[ability_name]
+end
+
 --- How long past the caller's wait_time to keep waiting for the buff.
 --- Only reached when the ability fired but its buff is slow to appear.
 local FOLLOW_UP_GRACE = 3.0
@@ -106,10 +140,18 @@ windower._ability_follow_seq = windower._ability_follow_seq or 0
 ---   • buff slow          -> once it lands, up to wait_time + grace
 ---
 --- @param ability_name string Ability whose buff we are waiting on
---- @param follow_command string Command to send once it has landed
+--- @param follow_command string|function Command to send, or a function to run
 --- @param wait_time number Caller's original delay, used as the soft deadline
 --- @return void
 function AbilityHelper.follow_up(ability_name, follow_command, wait_time)
+    local function act()
+        if type(follow_command) == 'function' then
+            follow_command()
+        else
+            send_command(follow_command)
+        end
+    end
+
     windower._ability_follow_seq = windower._ability_follow_seq + 1
     local my_seq = windower._ability_follow_seq
 
@@ -126,20 +168,22 @@ function AbilityHelper.follow_up(ability_name, follow_command, wait_time)
 
         -- The buff is up: the ability did its job, go.
         if AbilityHelper.is_buff_active(ability_name) then
-            send_command(follow_command)
+            act()
             return
         end
 
         -- Still off cooldown after long enough to have registered means the
-        -- game never accepted it. Nothing more to wait for.
+        -- game never accepted it. Nothing more to wait for. Skipped for the
+        -- stratagems, whose recast counts charges rather than this one use.
         if now - started >= JA_REGISTER_WINDOW
+            and not has_shared_recast(ability_name)
             and AbilityHelper.is_ability_ready(ability_name) then
-            send_command(follow_command)
+            act()
             return
         end
 
         if now >= deadline then
-            send_command(follow_command)
+            act()
             return
         end
 

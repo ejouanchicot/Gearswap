@@ -424,13 +424,8 @@ function job_self_command(cmdParams, eventArgs)
         if sub == 'RDM' then
             send_command('input /ma "Dispel" <stnpc>')
         elseif sub == 'SCH' then
-            if buffactive and buffactive['Addendum: Black'] then
-                send_command('input /ma "Dispel" <stnpc>')
-            elseif buffactive and buffactive['Dark Arts'] then
-                send_command('input /ja "Addendum: Black" <me>; wait 2; input /ma "Dispel" <stnpc>')
-            else
-                send_command('input /ja "Dark Arts" <me>; wait 2; input /ja "Addendum: Black" <me>; wait 2; input /ma "Dispel" <stnpc>')
-            end
+            local ScholarActions = require('shared/utils/scholar/scholar_actions')
+            ScholarActions.cast_under_black_addendum('Dispel', '<stnpc>')
         else
             local MessageCore = require('shared/utils/messages/message_core')
             MessageCore.warning(('Dispel unavailable on BLM/%s. Need /RDM or /SCH.'):format(sub))

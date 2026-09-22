@@ -277,7 +277,11 @@ function checkArts(spell, eventArgs)
     end
 
     cancel_spell()
-    send_command('input /ja "Dark Arts" <me>; wait 2; input /ma "' .. spell.name .. '" <t>')
+    -- cancel_spell() has already killed the cast, so the follow-up is the only
+    -- thing that will send it - it goes out with or without the Arts.
+    local AbilityHelper = require('shared/utils/precast/ability_helper')
+    send_command('input /ja "Dark Arts" <me>')
+    AbilityHelper.follow_up('Dark Arts', 'input /ma "' .. spell.name .. '" <t>', 2)
     _G.BLM_ARTS_LAST_CAST = currentTime
 end
 

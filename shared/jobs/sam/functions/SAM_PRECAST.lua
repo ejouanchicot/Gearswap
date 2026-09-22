@@ -92,7 +92,14 @@ local function try_third_eye_ws(spell, eventArgs)
                     if recast == 0 then
                         -- Third Eye ready, cast it before WS
                         eventArgs.cancel = true
-                        send_command('input /ja "Third Eye" <me>; wait 1.5; input /ws "' .. spell.name .. '" ' .. spell.target.raw)
+                        -- The weaponskill is cancelled above, so the follow-up
+                        -- is the only thing left that will fire it: it goes out
+                        -- whether Third Eye lands or not, just sooner when the
+                        -- game refuses the ability outright.
+                        local AbilityHelper = require('shared/utils/precast/ability_helper')
+                        send_command('input /ja "Third Eye" <me>')
+                        AbilityHelper.follow_up('Third Eye',
+                            'input /ws "' .. spell.name .. '" ' .. spell.target.raw, 1.5)
                         return true
                     end
                 end

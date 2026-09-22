@@ -201,6 +201,43 @@ function ScholarActions.cast_with_stratagems(spell_name, aoe_state, needs_addend
         os.clock() + chain_time + POLL_GRACE, windower._sch_cast_seq)
 end
 
+--- Cast a spell the subjob only reaches under Addendum: Black
+---
+--- Dark Arts then Addendum: Black then the spell, skipping whichever is
+--- already up. Each step waits on the buff it needs rather than on a fixed
+--- delay: without the addendum the cast is simply refused by the game, so
+--- firing it early achieves nothing at all.
+---
+--- Addendum shares recast 231 with the other stratagems, so "still off
+--- cooldown" proves nothing about it - AbilityHelper knows this and falls back
+--- to watching the buff.
+---
+--- @param spell_name string Spell to cast
+--- @param target string Target token
+--- @return void
+function ScholarActions.cast_under_black_addendum(spell_name, target)
+    local cast = 'input /ma "' .. spell_name .. '" ' .. target
+
+    if buff_up('Addendum: Black') then
+        send_command(cast)
+        return
+    end
+
+    local AbilityHelper = require('shared/utils/precast/ability_helper')
+
+    if buff_up('Dark Arts') then
+        send_command('input /ja "Addendum: Black" <me>')
+        AbilityHelper.follow_up('Addendum: Black', cast, STEP_SPACING)
+        return
+    end
+
+    send_command('input /ja "Dark Arts" <me>')
+    AbilityHelper.follow_up('Dark Arts', function()
+        send_command('input /ja "Addendum: Black" <me>')
+        AbilityHelper.follow_up('Addendum: Black', cast, STEP_SPACING)
+    end, STEP_SPACING)
+end
+
 --- Spells reachable through the `aoe <name>` subcommand.
 --- They are not commands of their own: the alt-command configs already claim
 --- 'sneak', 'invi' and 'erase', and CommonCommands answers before the job
