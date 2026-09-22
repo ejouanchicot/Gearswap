@@ -498,28 +498,64 @@ une deuxième fois quand quelqu'un la reprend.
 
 ## 7. Ordre d'exécution proposé
 
-| # | Action | Effort | Pourquoi à ce rang |
+| # | Action | Effort | Statut |
 |---|---|---|---|
-| 1 | §1.1 Verser le PLD de cette session dans l'overlay | 15 min | Risque de perte, créé aujourd'hui |
-| 2 | §1.3 Suivre les standards et les audits dans git | 10 min | Trivial, et tout le reste en dépend |
-| 3 | §2.1 Propager la branche `else` des keybinds (9 fichiers) | 45 min | Le bug chassé depuis longtemps |
-| 4 | §3.2 PUP/DRG `opts.modules` | 10 min | Deux lignes, un job réparé |
-| 5 | §4.1 Remettre `docs/dev` d'accord avec `AbilityHelper` | 1 h | Tant que le modèle est frais |
-| 6 | §2.2 Verrou de craft sur `windower.*` + génération | 2 h | Le seul défaut qui gèle tout l'équipement |
-| 7 | §2.3 Les trois drapeaux qui ne redescendent pas | 1 h 30 | Silencieux, reproductible |
-| 8 | §1.2 `check_overlay.py` | 1 h | Ferme la classe de défauts §1 |
-| 9 | §3.4 Harnais de stubs + réparer les checkers | 3 h | Le plus rentable à long terme |
-| 10 | §2.4 `modules_loaded` conditionnel, gardes bavardes | 3 h | 16 fichiers, mécanique |
-| 11 | §3.1 / §3.3 / §4.2 / §4.3 / §4.4 | ~5 h | Friction, à faire par lots |
-| 12 | §3.5 `.gitattributes` d'une ligne | 5 min | Sans urgence, avant distribution |
+| 1 | §1.1 Verser le PLD de cette session dans l'overlay | 15 min | ✅ `51fe4c4` |
+| 2 | §2.1 Propager la branche `else` des keybinds | 45 min | ✅ `6969e3b` — 19 entrées, couverture 100 % |
+| 3 | §3.2 PUP/DRG `opts.modules` | 10 min | ✅ `45e28d9` — PUP 10→21 abilities, DRG 14→18 |
+| 4 | §4.1 Remettre `docs/dev` d'accord avec `AbilityHelper` | 1 h | ✅ `7bd1a07` |
+| 5 | §2.3 Les drapeaux qui ne redescendent pas | 1 h 30 | ✅ DRK `89ea984`, GEO `a4e6d05`, BRD `c93bd1f` |
+| 6 | §3.3 `CraftManager.is_active()` + les 2 gardes manquants | 45 min | ✅ `e43ef55`, `34ba527` |
+| 7 | §3.1 Code mort de `shared/data/` | 2 h | ✅ `72e135d` — 1 562 lignes retirées |
+| 8 | §4.4 Les petits mensonges | 30 min | ✅ `f5a0976` |
+| 9 | §4.3 Drapeaux de debug sur `windower.*` | 1 h | ✅ `11ff91e` |
+| 10 | §1.2 Contrôle de la chaîne d'overlays | 1 h | ✅ `fd34a2c` — `scripts/check_overlay.py`, Tetsouo couvert à 100 % |
+| 11 | §3.4 Harnais de vérification versionné | 3 h | ◐ `a7c8c34` — `check_syntax.py` livré (1 256 fichiers) ; harnais de stubs et réparation de `check.py` restants |
+| 12 | §2.4 Gardes PRECAST bavardes | 3 h | ◐ `d07265c` — l'échec est signalé et le rapporteur ne plante plus ; le verrou `modules_loaded` reste volontairement en place (le lever ferait réessayer un `require` cassé à chaque action) |
+| 13 | §2.2 Verrou de craft sur `windower.*` | 2 h | ☐ préparé : tous les appelants passent par `is_active()`, la migration ne touche plus qu'un fichier |
+| 14 | §1.3 Suivre les standards et les audits dans git | 10 min | ☐ **décision à prendre** : le dépôt distant est public, et `.gitignore` s'ignore lui-même (ligne 79) donc la politique n'est pas versionnée non plus |
+| 15 | §3.5 `.gitattributes` | 5 min | ☐ dépend du 14 (le `.gitignore` non suivi) |
+| 16 | §4.2 Métriques de `CLAUDE.md` | 45 min | ◐ remesurées en v3.3.0 ; reste à décider si la table survit ou est générée |
 
-Total : environ 19 h. Les quatre premières lignes (1 h 20) couvrent tout ce qui
-peut faire perdre du travail ou coûter un nouveau mois de diagnostic.
+### Corrigés en plus, hors plan initial
 
-**Note sur la ligne 1 : faite le 2026-09-22** (commit `51fe4c4`) — les 4
-fichiers de `Tetsouo/sets/pld/` sont versés dans l'overlay, `Excalibur` est
-dans le template de states, et les 9 jobs de Tetsouo sont désormais identiques
-entre live et `_master/Tetsouo/`.
+Trouvés en vérifiant les points ci-dessus :
+
+- **`a6dcd81`** — `DoomManager.is_doom_locked()` sondait le verrou en appelant
+  `enable('neck')` : dans le sandbox `enable` rend une **table** (toujours vraie),
+  donc la fonction rendait toujours `false` **et déverrouillait le collier** au
+  passage. Une lecture qui détruit ce qu'elle lit, sur le verrou qui garde le
+  joueur en vie. Zéro appelant, mais documentée comme utilisable. Supprimée.
+- **`2ad2a0d`** — dans `file_unload`, PLD et THF relâchaient leur verrou de slot
+  en **dernier**, derrière deux appels qui peuvent lever. Un seul `pcall` entoure
+  toute la fonction (`flow.lua:339-348`), donc une erreur avant laissait le slot
+  verrouillé dans le job suivant, qui n'a aucun moyen de le savoir. Remonté en tête.
+- **`033846e`** — `//gs c entrust` envoyait l'Indi- à un allié 1,5 s plus tard quoi
+  qu'il arrive, alors qu'Entrust a 5 min de recast. `AbilityHelper` gagne
+  `follow_up_or_abort` pour le cas symétrique de `follow_up` : quand rien n'a été
+  annulé, le bon comportement à l'échec est d'abandonner avec un message.
+- **`d07265c`** — `ensure_message_init()` pouvait rendre `nil` et ses 8 appelants
+  l'indexent sans garde, dont 5 dans des `coroutine.schedule` : le plantage y
+  emportait les initialisations suivantes du même bloc. Le cas où ce rapporteur
+  sert le plus — la chaîne de messages cassée — était le seul où il aggravait.
+
+### Ce qui reste, et pourquoi
+
+Trois points seulement, tous en attente d'un arbitrage plutôt que de travail :
+
+1. **Kaories a 4 fichiers divergents de son propre overlay**, dans les deux sens
+   (`sets/pld_sets.lua` et `sets/rdm_sets.lua` sont **en retard** sur le template,
+   `config/DUALBOX_CONFIG.lua` et `config/rdm/RDM_STATES.lua` en avance). Lancer
+   `python scripts/check_overlay.py Kaories` les liste. Copier dans le mauvais sens
+   perdrait du travail, donc rien n'a été touché.
+2. **Suivre `CLAUDE.md`, `.claude/` et `scripts/audit/` dans git** (§1.3) revient à
+   les publier sur un dépôt public. Et `.gitignore` s'ignore lui-même, donc la
+   politique d'exclusion elle-même n'est pas sauvegardée : un clone ailleurs n'a
+   aucune règle et committerait les dossiers personnages.
+3. **Le verrou de craft sur `windower.*`** (§2.2) est le dernier défaut qui
+   immobilise tout l'équipement d'un job sans message. Le travail préparatoire est
+   fait : plus aucun appelant ne lit le global interne, donc la migration se joue
+   dans `craft_manager.lua` seul.
 
 **Règle transverse à ajouter à `.claude/CODE_QUALITY.md`**, dont découle la
 moitié de ce plan : *dans le sandbox GearSwap, `_G` est reconstruit à chaque
