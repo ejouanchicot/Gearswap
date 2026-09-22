@@ -79,12 +79,26 @@ function RDMKeybinds.bind_all()
         return false
     end
 
-    -- Clear the whole key list before rebinding. bind_all only lays down
-    -- the keys the CURRENT subjob uses, so a conditional bind from the
-    -- previous subjob (Storm on /SCH) would otherwise stay bound to a state
-    -- this subjob does not create, and the key would silently do nothing.
-    for _, bind in pairs(RDMKeybinds.binds) do
-        pcall(send_command, 'unbind ' .. bind.key)
+    -- Unbind only the keys that will NOT be bound back. Dropping a conditional
+    -- bind left over from another subjob is the whole point of this pass: it
+    -- would otherwise stay bound to a state this subjob never creates, and do
+    -- nothing when pressed.
+    --
+    -- The keys we are about to bind are deliberately left alone. A bind
+    -- overwrites an existing one, so unbinding first gains nothing and opens a
+    -- window where the key is down. That window is where ^numpad9 went missing
+    -- after a reload: its bind is sent unconditionally every time, and
+    -- `//gs c cyclestate HybridMode` still answered while the key was dead - so
+    -- the key had been unbound and the bind that should have followed never
+    -- took effect.
+    local keeping = {}
+    for _, bind in ipairs(active_binds) do
+        keeping[bind.key] = true
+    end
+    for _, bind in ipairs(RDMKeybinds.binds) do
+        if not keeping[bind.key] then
+            pcall(send_command, 'unbind ' .. bind.key)
+        end
     end
 
     local bound_count = 0

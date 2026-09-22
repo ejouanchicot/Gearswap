@@ -276,6 +276,22 @@ end, 0.5)  -- Defer by 0.5 seconds (non-blocking)
 -- This is a pure initialization script - no return value needed
 
 ---  ═══════════════════════════════════════════════════════════════════════════
+---   KEYBINDS - re-assert once the console has gone quiet
+---  ═══════════════════════════════════════════════════════════════════════════
+
+-- Mote has already run user_setup(), so bind_all() has fired by now. Its
+-- commands are not always the last word: the outgoing job file queued its own
+-- unbind burst from file_unload a moment earlier, and the order in which a
+-- dying sandbox's commands and a new one's reach Windower is decided in
+-- Hook.dll. See keybind_guard.lua for what was observed and ruled out.
+local kg_ok, KeybindGuard = pcall(require, 'shared/utils/core/keybind_guard')
+if kg_ok and KeybindGuard then
+    KeybindGuard.schedule()
+else
+    ensure_message_init().show_module_load_failed('Keybind Guard', KeybindGuard)
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
 ---   PRECAST SAFETY MODULES - confirm they load, once per job load
 ---  ═══════════════════════════════════════════════════════════════════════════
 

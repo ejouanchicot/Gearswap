@@ -97,7 +97,7 @@ Step by step, with the WAR template:
 
 | Line | When | What | State touched |
 |---|---|---|---|
-| 32-35 | sync | Restore `_G.UPDATE_DEBUG` and `_G.AUTOMOVE_DEBUG` from `windower._gs_debug.UPDATE` | reads `windower._gs_debug` |
+| 31-38 | sync | Restore `_G.UPDATE_DEBUG`, `_G.AUTOMOVE_DEBUG`, `_G.WARP_DEBUG`, `_G.PrecastDebugState`, `_G.JOBCHANGE_DEBUG`, each from its own `windower._gs_debug.*` field | reads `windower._gs_debug` |
 | 38 | sync | `windower._gs_reload_count += 1` (counts INIT runs, i.e. sandboxes that got this far) | `windower._gs_reload_count` |
 | 47-52 | sync | `ModuleCache.install()` | replaces `_G.require` |
 | 60-69 | sync | Load `LagDebugger` if absent, `on_reload_complete(job, sub, windower._automove_seq)` | `_G.LagDebugger` |
@@ -106,9 +106,37 @@ Step by step, with the WAR template:
 | 134-139 | sync | `JobSyncWatchdog.start(player.main_job)` | `windower._job_sync_seq` |
 | 154-172 | sync | DualBox sync IPC: hooks `ls`, `lockstyle`, `rf`, `refill`, then `init_listener()` | see dualbox page |
 | 181-234 | +0.5 s | `WarpInit.init()`; AutoMove `include` + `start()` unless `_G.DISABLE_AUTOMOVE == true`; `StateDisplayOverride.init()` | `_G.AutoMove`, `_G.display_current_state` |
-| 267-272 | +5.0 s | `GlobalProbe.snapshot()` (baseline for `//gs c syscheck` leak report) | `_G.__global_baseline` |
+| 250-256 | +2.0 s | `KeybindGuard.schedule()` re-sends the job's binds once the console is quiet | `windower._keybind_guard_seq` |
+| 276-290 | +3.0 s | Confirm `PrecastGuard`, `CooldownChecker` and `WSPrecastHandler` load; report the ones that do not | none |
+| 300-306 | +5.0 s | `GlobalProbe.snapshot()` (baseline for `//gs c syscheck` leak report) | `_G.__global_baseline` |
 
-A module that fails to load is reported through `MessageInit.show_module_load_failed` (`shared/utils/messages/formatters/system/message_init.lua:23`), loaded lazily by `ensure_message_init()` (`INIT_SYSTEMS.lua:78-86`). If `message_init` itself fails to load, `ensure_message_init()` returns nil and the calling line raises.
+A module that fails to load is reported through `MessageInit.show_module_load_failed` (`shared/utils/messages/formatters/system/message_init.lua:23`), loaded lazily by `ensure_message_init()`. When `message_init` itself cannot be loaded the helper falls back to writing straight to chat, so the eight unguarded `ensure_message_init().show_*` call sites - five of them inside `coroutine.schedule` blocks - can no longer raise and take the rest of their block down with them.
+
+### Keybind guard
+
+`KeybindGuard.schedule()` (`shared/utils/core/keybind_guard.lua`) re-sends the
+current job's binds 2 s after the load. Mote has already run `user_setup()` by
+the time INIT_SYSTEMS is included, so `bind_all()` has fired; this is a second,
+silent pass for the case where it did not stick.
+
+It exists because a bind that never lands is invisible: the job loads, `//gs c`
+answers, the HUD shows the row, and only the key is dead. Confirmed on PLD -
+with `^numpad9` unbound, `//gs c cyclestate HybridMode` still cycled the state,
+so GearSwap was healthy and the bind alone was missing. `^numpad9` carries no
+`subjob`, `exclude_subjob` or `visible`, so `get_active_binds()` always returns
+it and the bind is always sent.
+
+The race is not ours to win: a load fires the whole bind list as console
+commands while the outgoing job file has just queued its own unbind burst from
+`file_unload`, and the order in which a dying sandbox's commands and a new
+one's reach Windower is decided in `Hook.dll`. Binding an already-bound key
+overwrites it, so a load where nothing was lost pays a few silent commands.
+
+The other half of the fix is in the keybind files themselves: `bind_all()` in
+PLD, THF, RDM and RUN used to unbind every key in `binds` before binding the
+active ones. It now unbinds only the keys that will *not* be bound back - the
+conditional binds of another subjob, plus `retired_keys` - so no key is ever
+unbound and rebound in the same burst. PLD went from 17 commands to 9.
 
 The header of `INIT_SYSTEMS.lua` (lines 7-19) is out of date: it says the watchdog loads immediately with a 3.5 s timeout and lists four systems. The code defers the watchdog by 2 s, uses a per-spell timeout, and starts ten things.
 
