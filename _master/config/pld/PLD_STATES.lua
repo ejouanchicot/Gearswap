@@ -215,6 +215,19 @@ function PLDStates.configure()
         'Off'
     }
 
+    --- Regen: lay the Regen pair (Sacro Breastplate, Regal Gauntlets) over
+    --- the idle set the stance already chose. Idle only, so it never costs
+    --- anything in combat, and two slots only, so DPS, Tanking and Hoxne
+    --- each keep their own mitigation.
+    --- Keybind: Ctrl+Numpad7, bound under /SCH alone - the other subjobs
+    --- force it Off below rather than leave a toggle they cannot reach.
+    state.Regen =
+        M {
+        ['description'] = 'Regen',
+        'Off',
+        'On'
+    }
+
     -- ==========================================================================
     -- FAST CAST (WATCHDOG SYSTEM)
     -- ==========================================================================
@@ -298,12 +311,16 @@ local function install_profile(profile)
         reshape(state.RuneMode, SORTIE_RUNE_OPTIONS)
         reshape(state.MainWeapon, SORTIE_WEAPON_OPTIONS)
         state.PhalanxSIRD:set('On')
+        state.Regen:set('Off')
         return
     end
 
     reshape(state.RuneMode, RUNE_OPTIONS)
     reshape(state.MainWeapon, WEAPON_OPTIONS)
     state.PhalanxSIRD:set('Off')
+    -- Its key is only bound under /SCH, so leaving it On here would strand
+    -- the Regen body in idle with no way to take it off.
+    state.Regen:set('Off')
 end
 
 --- Reshape the states that depend on the subjob and on HybridMode.
@@ -324,7 +341,8 @@ end
 --- @param mode string HybridMode value ('PDT'/'MDT'/'Sortie', or 'DPS'/'Tanking'/'Hoxne')
 --- @return void
 function PLDStates.apply_hybrid_profile(mode)
-    if not (state.RuneMode and state.PhalanxSIRD and state.MainWeapon and state.SneakInviAOE) then
+    if not (state.RuneMode and state.PhalanxSIRD and state.MainWeapon and state.SneakInviAOE
+        and state.Regen) then
         return
     end
 

@@ -176,6 +176,14 @@ sets.idleXp =
     }
 )
 
+--- Regen overlay, /SCH only. Two slots rather than a whole set: it rides on
+--- top of the idle set the stance already chose, so DPS, Tanking and Hoxne
+--- each keep their own mitigation and only the body and hands change.
+sets.idleRegen = {
+    body  = Misc.SacroBreastplate,
+    hands = Misc.RegalGauntlets
+}
+
 -- ═══════════════════════════════════════════════════════════════════════════
 -- ENGAGED SETS
 -- ═══════════════════════════════════════════════════════════════════════════

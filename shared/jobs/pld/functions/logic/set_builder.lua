@@ -376,6 +376,13 @@ function SetBuilder.build_idle_set(base_set)
         result = set_combine(result, sets.idleXp)
     end
 
+    -- Step 6b: Regen pair (/SCH only, idle only). Two slots laid over whatever
+    -- the stance chose, so DPS, Tanking and Hoxne each keep their own
+    -- mitigation and only the body and hands change.
+    if state.Regen and state.Regen.value == 'On' and sets.idleRegen then
+        result = set_combine(result, sets.idleRegen)
+    end
+
     -- Step 7: Apply movement speed
     result = SetBuilder.apply_movement(result)
 
