@@ -28,10 +28,15 @@
 ---   RESTORE PERSISTENT DEBUG FLAGS (survives job changes)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Restore debug flags from windower table (persists across GearSwap reloads)
+-- Restore debug flags from the windower table, which outlives the sandbox.
+-- Each toggle owns its own field: AUTOMOVE used to be restored from UPDATE,
+-- so `//gs c automovedebug` was undone at the next job load.
 if windower._gs_debug then
-    _G.UPDATE_DEBUG = windower._gs_debug.UPDATE
-    _G.AUTOMOVE_DEBUG = windower._gs_debug.UPDATE
+    _G.UPDATE_DEBUG       = windower._gs_debug.UPDATE
+    _G.AUTOMOVE_DEBUG     = windower._gs_debug.AUTOMOVE
+    _G.WARP_DEBUG         = windower._gs_debug.WARP
+    _G.PrecastDebugState  = windower._gs_debug.PRECAST
+    _G.JOBCHANGE_DEBUG    = windower._gs_debug.JOBCHANGE
 end
 
 -- Track total gs reload count (persists across reloads via windower table)

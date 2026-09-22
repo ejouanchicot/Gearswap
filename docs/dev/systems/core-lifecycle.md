@@ -177,7 +177,9 @@ flowchart TD
 - The client job comes from `windower.ffxi.get_player().main_job` (`:65-74`), independent of GearSwap's `player` table.
 - `windower._job_sync_last_reload` (`:94-101`) keeps a 30 s floor between corrective reloads across sandboxes. It stays nil until the first correction because `os.clock()` counts from process start (`:53-56`).
 - The earliest correction is 13 s after the bad load (8 s + one 5 s confirmation).
-- Its debug traces use `JOBCHANGE_DEBUG`, which is not persisted across reloads (see Known issues).
+- Its debug traces use `JOBCHANGE_DEBUG`, now backed by
+  `windower._gs_debug.JOBCHANGE` and restored by `INIT_SYSTEMS.lua:31-38`, so it
+  survives the job change it is there to trace.
 
 ### Zone change
 
@@ -332,7 +334,7 @@ Callers: all 16 `shared/jobs/*/functions/*_COMMANDS.lua`, lazily required.
 | `//gs c watchdog stats` | `:90-92` | Detailed stats |
 | `//gs c watchdog <other>` | `:93-94` | Help |
 | `//gs c cyclestate <State> [reverse]` | `CYCLE_HANDLER.lua:90` via each job's `_COMMANDS.lua` | UI-aware cycle (silent with the HUD visible, Mote's chat line otherwise) |
-| `//gs c debugjobchange` / `djc` | `COMMON_COMMANDS.lua:582-595` | Toggles `_G.JOBCHANGE_DEBUG` and prints `JobChangeManagerSTATE` |
+| `//gs c debugjobchange` / `djc` | `COMMON_COMMANDS.lua:595-611` | Toggles `windower._gs_debug.JOBCHANGE` (mirrored to `_G.JOBCHANGE_DEBUG`) and prints `JobChangeManagerSTATE` |
 | `//gs c debugstate` / `ds` | `DEBUG_COMMANDS.lua:226-245` | Dumps JCM counter and registry size among others |
 | `//gs c debugupdate` | `COMMON_COMMANDS.lua:597-605` | Toggles `windower._gs_debug.UPDATE` (restored by INIT on reload) |
 
@@ -366,7 +368,7 @@ Runtime changes made with `watchdog buffer/fallback/on/off/debug` live in module
 | `JobSyncWatchdog`, `LifecycleManager`, `ModuleCache` | module exports | no reader. `LifecycleManager` and `ModuleCache` are in the GlobalProbe expected list (`global_probe.lua:53-56`); `JobSyncWatchdog` is not, but it is created before the 5 s snapshot so it is part of the baseline |
 | `require` (replaced), `__require_cache`, `__require_cache_installed`, `__require_cache_stats` | `module_cache.lua:55-60` | every `require` |
 | `display_current_state` | `state_display_override.lua:30` | Mote `handle_update` |
-| `UPDATE_DEBUG`, `AUTOMOVE_DEBUG` | `INIT_SYSTEMS.lua:33-34` | DebugLogger users |
+| `UPDATE_DEBUG`, `AUTOMOVE_DEBUG`, `WARP_DEBUG`, `PrecastDebugState`, `JOBCHANGE_DEBUG` | `INIT_SYSTEMS.lua:31-38` | Mirrors of `windower._gs_debug.*`, re-seeded on every load; DebugLogger users |
 | `keybind_ui_display`, `keybind_ui_visible`, `ui_manager_state.*` | cleared by `job_change_manager.lua:73-87` | UI manager |
 | `job_status_change`, `job_buff_change`, `job_aftercast`, `job_state_change` | job modules via `LifecycleManager` builders | Mote |
 

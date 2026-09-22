@@ -328,7 +328,7 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 | `//gs c reload` | `JobChangeManager.force_reload()` | `COMMON_COMMANDS.lua:485`, `:26-38` |
 | `//gs c ls` / `lockstyle` | `select_default_lockstyle()` + `SyncIPC.broadcast('ls')` | `COMMON_COMMANDS.lua:546`, `:327-346` |
 | `//gs c dressup` | toggles DressUp management, persisted as `data/.dressup_disabled` | `COMMON_COMMANDS.lua:548`, `lockstyle_manager.lua:20-62` |
-| `//gs c debugjobchange` / `djc` | toggles `_G.JOBCHANGE_DEBUG` and prints `JobChangeManagerSTATE` | `COMMON_COMMANDS.lua:582-594` |
+| `//gs c debugjobchange` / `djc` | toggles `windower._gs_debug.JOBCHANGE` (mirrored to `_G.JOBCHANGE_DEBUG`) and prints `JobChangeManagerSTATE` | `COMMON_COMMANDS.lua:595-611` |
 | `//gs c debugupdate` | toggles `windower._gs_debug.UPDATE` (persists), mirrors to `_G.UPDATE_DEBUG`/`AUTOMOVE_DEBUG` | `COMMON_COMMANDS.lua:597-605` |
 | `//gs c craft [variant]`, `fish [variant]`, `uncraft` | craft session | `COMMON_COMMANDS.lua:540-545`, `craft_commands.lua:241-295` |
 | `//gs c wo [reset|recover|alt|preview|verify|scan|keep]` | wardrobe organizer | `COMMON_COMMANDS.lua:491`, `:150-192` |
@@ -374,7 +374,7 @@ Timing constants: JCM 0.5 s / 3.0 s (`job_change_manager.lua:149-152`); JobSyncW
 
 ### `_G` state that dies with every environment
 
-`JobChangeManagerSTATE`, `JOBCHANGE_DEBUG`, `ui_manager_state`, `keybind_ui_display`, `keybind_ui_visible`, `ui_display_config`, `UIConfig`, `MidcastWatchdog`, `MIDCAST_WATCHDOG_TIMER`, `__lockstyle_contexts`, `WARP_PRECAST_HOOKED`, `AUTOMOVE_RUNNING`, `_automove_sequence`, `AutoMove`, `DualBoxConfig`, `AltJobState`, `AltBuffState`, `AltBuffExpiry`, `DUALBOX_SYNC_HOOKS`, `__CraftManagerState`, `_macrobook_schedule_id`, `DRESSUP_MANAGEMENT_ENABLED` (re-read from disk), `warp_detector_callbacks`, `__require_cache`, `LockstyleConfig`, `RECAST_CONFIG`, every `state.*` value and every module-local table (wardrobe run, AutoMove callbacks). Several comments call some of these "persistent across reloads"; they are not.
+`JobChangeManagerSTATE`, `ui_manager_state`, `keybind_ui_display`, `keybind_ui_visible`, `ui_display_config`, `UIConfig`, `MidcastWatchdog`, `MIDCAST_WATCHDOG_TIMER`, `__lockstyle_contexts`, `WARP_PRECAST_HOOKED`, `AUTOMOVE_RUNNING`, `_automove_sequence`, `AutoMove`, `DualBoxConfig`, `AltJobState`, `AltBuffState`, `AltBuffExpiry`, `DUALBOX_SYNC_HOOKS`, `__CraftManagerState`, `_macrobook_schedule_id`, `DRESSUP_MANAGEMENT_ENABLED` (re-read from disk), `warp_detector_callbacks`, `__require_cache`, `LockstyleConfig`, `RECAST_CONFIG`, every `state.*` value and every module-local table (wardrobe run, AutoMove callbacks). Several comments call some of these "persistent across reloads"; they are not.
 
 ### Engine state that survives `gs reload`
 

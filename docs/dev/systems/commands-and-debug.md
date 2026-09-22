@@ -167,10 +167,10 @@ Arguments are passed through with their original case unless the handler lower-c
 | `waltz` | - | DNC main or sub only; cancels Saber Dance; `WaltzManager.cast_curing_waltz('<stpc>')` | `556` -> `87-89`, `58-84` |
 | `aoewaltz` | - | Same guard; `cast_divine_waltz()` | `558` -> `92-94` |
 | `debugsubjob` (`dsj`) | - | Prints main/sub job + levels, zone id/name | `560` -> `DEBUG_COMMANDS.lua:117-143` |
-| `debugwarp` | - | Toggles `_G.WARP_DEBUG` | `562-566` |
-| `debugprecast` | - | Toggles `_G.PrecastDebugState` (read by `BRD_PRECAST.lua:251`, `RDM_PRECAST.lua:101-106`, `RUN_PRECAST.lua:134`). On BST the job file answers first and toggles `_G.BST_DEBUG_PRECAST` instead | `567-576` |
-| `automovedebug` (`amd`) | - | Toggles `_G.AUTOMOVE_DEBUG` (not persisted) | `577-581` |
-| `debugjobchange` (`djc`) | - | Toggles `_G.JOBCHANGE_DEBUG` (not persisted); when turning on, prints `_G.JobChangeManagerSTATE` counter/current/target | `582-594` |
+| `debugwarp` | - | Toggles `windower._gs_debug.WARP`, mirrored to `_G.WARP_DEBUG` | `562-569` |
+| `debugprecast` | - | Toggles `windower._gs_debug.PRECAST`, mirrored to `_G.PrecastDebugState` (read by `BRD_PRECAST.lua`, `RDM_PRECAST.lua`, `RUN_PRECAST.lua`). On BST the job file answers first and toggles `_G.BST_DEBUG_PRECAST` instead | `570-582` |
+| `automovedebug` (`amd`) | - | Toggles `windower._gs_debug.AUTOMOVE`, mirrored to `_G.AUTOMOVE_DEBUG`. It has its own field because it used to be restored from `UPDATE`, which silently undid the toggle at the next job load | `583-594` |
+| `debugjobchange` (`djc`) | - | Toggles `windower._gs_debug.JOBCHANGE`, mirrored to `_G.JOBCHANGE_DEBUG` - it has to survive the event it traces; when turning on, prints `_G.JobChangeManagerSTATE` counter/current/target | `595-611` |
 | `debugstate` (`ds`) | - | Dumps AutoMove, JobChangeManager and UI manager counters | `595` -> `DEBUG_COMMANDS.lua:226-249` |
 | `debugupdate` | - | Toggles `windower._gs_debug.UPDATE`, mirrors it to `_G.UPDATE_DEBUG` and `_G.AUTOMOVE_DEBUG`; restored on every load by `INIT_SYSTEMS.lua:32-35` | `597-606` |
 | `fulltest` (`ft`) | `[export]` | Runs `FullTest`, prints, optionally writes the report | `607` -> `DEBUG_COMMANDS.lua:60-72` |
