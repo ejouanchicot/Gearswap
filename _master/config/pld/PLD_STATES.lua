@@ -53,7 +53,7 @@ local SORTIE_RUNE_OPTIONS = {
 --- BurtgangKC (PLD/DNC combo)      Naegling (Savage Blade)
 --- Shining (Shining One, polearm)  Malevo (Malevolence, club)
 local WEAPON_OPTIONS = {
-    'Burtgang', 'KC', 'BurtgangKC', 'Naegling', 'Shining', 'Malevo'
+    'Excalibur', 'Burtgang', 'KC', 'BurtgangKC', 'Naegling', 'Shining', 'Malevo'
 }
 
 --- Sortie runs on two weapons only. Their shields are picked by SetBuilder

@@ -9,14 +9,24 @@
 ---
 ---   This file only declares the SET COMPOSITIONS using imports above.
 ---
----   PLD relies heavily on `priority = N` fields for HP-delta optimization
----   (gear equip order during set swaps). These priorities are preserved
----   from the original definitions — see armor.lua / capes.lua for details.
+---   PLD relies heavily on `priority = N` fields: GearSwap equips in
+---   descending priority, so ranking a set's slots by the HP each piece gains
+---   over the set being left keeps the HP pool from dipping mid-swap. The rank
+---   belongs to the set, not to the piece - the same item outranks itself in
+---   another context, which is what the local prio() helper below expresses.
+---   See armor.lua / capes.lua for the ranks carried by the lookups.
+---
+---   HybridMode picks the engaged set. PDT / MDT / Sortie on most subjobs;
+---   under /SCH, three stances of their own:
+---     • DPS     -> sets.engaged.DPS     Sakpata's, Coiste Bodhar
+---     • Tanking -> sets.engaged.MDT     mitigation, Burtgang + Aegis
+---     • Hoxne   -> sets.engaged.Hoxne   Hoxne Ampulla, ammo slot frozen
+---   The mapping itself lives in logic/set_builder.lua.
 ---
 ---   @file    Tetsouo/sets/pld/pld_sets.lua
 ---   @author  Tetsouo
----   @version 4.0 - Modularized
----   @date    Updated: 2026-05-11
+---   @version 4.1
+---   @date    Updated: 2026-09-21
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---@diagnostic disable: lowercase-global
@@ -49,6 +59,28 @@ local Rudianos = Capes.Rudianos
 local Moonlight1 = {name = 'Moonlight Ring', priority = 13, bag = 'wardrobe 1'}
 local Moonlight2 = {name = 'Moonlight Ring', priority = 12, bag = 'wardrobe 2'}
 
+-- Priority ranks the slots of ONE set swap: GearSwap equips in descending
+-- priority (helper_functions.lua, priority_list:it takes the maximum each
+-- pass), so a piece needs its own rank per set it appears in. Copying the
+-- definition keeps the name and the augments declared in a single place -
+-- retyping them is how a set ends up wearing the wrong item.
+--- @param item table|string Equipment definition to copy
+--- @param priority number Rank within the set this copy is used in
+--- @return table Copy carrying the new priority
+local function prio(item, priority)
+    if type(item) == 'string' then
+        return {name = item, priority = priority}
+    end
+
+    local copy = {priority = priority}
+    for key, value in pairs(item) do
+        if key ~= 'priority' then
+            copy[key] = value
+        end
+    end
+    return copy
+end
+
 sets = {}
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -64,7 +96,13 @@ end
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- • Base Idle Set (Foundation for all idle variants)
-sets.idle = {
+-- Held in a local, and copied into sets.idle rather than being it. Every
+-- variant below attaches itself as a key on sets.idle (sets.idle.PDT, .MDT,
+-- .Town), and set_combine copies every key of its source - so deriving from
+-- sets.idle would carry those variants into the derived set as slots that are
+-- not slots. GearSwap ignores them, but they read as intentional and follow
+-- the chain all the way down (idleNormal -> engaged -> engaged.DPS -> ...).
+local IdleBase = {
     ammo = Misc.StaunchTathlum, -- delta Phx=0
     head = Chev.head, -- delta Phx=+145
     body = Misc.Adamantite, -- delta Phx=+182 (biggest GAIN, equip FIRST)
@@ -83,10 +121,12 @@ sets.idle = {
     back = Rudianos.tank -- delta Phx=0, priority via def (3)
 }
 
+sets.idle = set_combine(IdleBase, {})
+
 -- • PDT Idle (Physical Defense)
 sets.idle.PDT =
     set_combine(
-    sets.idle,
+    IdleBase,
     {
         sub = 'Duban' -- PDT shield
     }
@@ -106,23 +146,14 @@ sets.idle.MDT = {
     right_ear = 'Eabani Earring',
     left_ring = 'Purity Ring',
     right_ring = {name = 'Gelatinous Ring +1', augments = {'Path: A'}},
-    back = {
-        name = "Rudianos's Mantle",
-        augments = {
-            'VIT+20',
-            'Eva.+20 /Mag. Eva.+20',
-            'Mag. Evasion+10',
-            'Enmity+10',
-            'Phys. dmg. taken-10%'
-        }
-    },
+    back = Rudianos.tank,
     sub = 'Aegis' -- MDT shield
 }
 
 -- • Normal Idle (Balanced)
 sets.idleNormal =
     set_combine(
-    sets.idle,
+    IdleBase,
     {
         head = {name = 'Chev. Armet +3', priority = 14},
         body = Misc.AdamantiteEng,
@@ -137,7 +168,7 @@ sets.idleNormal =
 -- • XP Idle (Experience points focus)
 sets.idleXp =
     set_combine(
-    sets.idle,
+    IdleBase,
     {
         main = 'Burtgang',
         sub = 'Duban',
@@ -150,7 +181,10 @@ sets.idleXp =
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- • Base Engaged Set
-sets.engaged =
+-- Local for the same reason IdleBase is: the stances below hang off
+-- sets.engaged, and deriving from it would hand each of them the ones
+-- declared before it.
+local EngagedBase =
     set_combine(
     sets.idleNormal,
     {
@@ -165,39 +199,43 @@ sets.engaged =
         left_ear = {name = 'Odnowa Earring +1', priority = 9}, -- HP+110, DT -3%, MDT -2%
         right_ear = {name = 'Chev. Earring +1', priority = 0}, -- DT -4%, Cure potency +11%
         left_ring = {name = 'Fortified Ring', priority = 5}, -- MDT -5%, reduces enemy crit rate
-        right_ring = {name = 'Gelatinous Ring +1', priority = 11},
-        -- HP+100, PDT -7%, VIT+15
+        right_ring = {name = 'Gelatinous Ring +1', priority = 11}, -- HP+100, PDT -7%, VIT+15
         back = Rudianos.tank -- PDT -10%, VIT+20, Enmity+10
     }
 )
 
+sets.engaged = set_combine(EngagedBase, {})
+
 -- • PDT Engaged
 sets.engaged.PDT =
     set_combine(
-    sets.engaged,
+    EngagedBase,
     {
         sub = 'Duban' -- PDT shield for engaged
     }
 )
 
--- • MDT Engaged
+-- • MDT Engaged (HybridMode 'MDT', and the 'Tanking' stance under /SCH)
+-- The idle mitigation set doubles as the engaged one: holding hate does not
+-- ask for different gear, only for the shield it already carries.
 sets.engaged.MDT = sets.idle.MDT -- Already has Aegis shield
 
--- • Sortie Engaged (HybridMode 'Sortie')
+-- • Sortie (HybridMode 'Sortie', subjobs other than /SCH)
 -- Mitigation body/head/legs kept, accessories traded for Store TP: the mode is
 -- meant to hold hate while still feeding weaponskills.
--- No sub slot on purpose: in Sortie the shield follows the weapon
--- (Burtgang > Aegis, Naegling > Blurred Shield +1), decided by SetBuilder.
+-- The sub below is only a default. SetBuilder overrides it from the weapon in
+-- Sortie (Burtgang > Aegis, Naegling > Blurred Shield +1), so it stands for
+-- the case where the weapon names no shield of its own.
 sets.engaged.TP =
     set_combine(
-    sets.engaged,
+    EngagedBase,
     {
         sub = 'Blurred Shield +1',
         ammo = 'Coiste Bodhar',
         head = 'Hjarrandi Helm',
-        body = 'Hjarrandi Breast.',
-        hands = "Sakpata's Gauntlets",
-        legs = "Sakpata's Cuisses",
+        body = Misc.HjarrandiBreast,
+        hands = Sakpata.hands_plain,
+        legs = Sakpata.legs_plain_b,
         feet = "Sakpata's Leggings",
         neck = 'Null Loop',
         waist = 'Sailfi Belt +1',
@@ -209,12 +247,74 @@ sets.engaged.TP =
     }
 )
 
+-- • DPS (HybridMode 'DPS', /SCH only)
+-- The damage stance: full Sakpata's for the damage taken floor, every
+-- accessory traded for Store TP. Tanking is what holds hate; this one is
+-- what spends the TP.
+--
+-- Priorities rank the slots by the HP each piece carries, highest first, so
+-- that swapping into this set raises the HP pool before it touches the slots
+-- that add none. 770 HP across eight pieces; the other five carry none.
+--
+-- No sub slot on purpose: the stance names its shield (Duban), applied by
+-- SetBuilder alongside the weapon.
+sets.engaged.DPS =
+    set_combine(
+    EngagedBase,
+    {
+        body = prio(Sakpata.body, 16), -- HP+136, biggest gain, equip FIRST
+        legs = prio(Sakpata.legs, 15), -- HP+114
+        left_ring = prio(Moonlight1, 14), -- HP+110
+        right_ring = prio(Moonlight2, 13), -- HP+110
+        head = prio(Sakpata.head, 12), -- HP+91
+        hands = prio(Sakpata.hands, 11), -- HP+91
+        feet = prio(Sakpata.feet, 10), -- HP+68
+        neck = {name = 'Null Loop', priority = 9}, -- HP+50
+        ammo = 'Coiste Bodhar', -- HP+0
+        waist = 'Sailfi Belt +1', -- HP+0
+        left_ear = 'Crep. Earring', -- HP+0
+        right_ear = 'Dedition Earring', -- HP+0
+        back = Rudianos.STP -- HP+0, priority 0
+    }
+)
+
+-- • Hoxne (HybridMode 'Hoxne', /SCH only)
+-- The Ampulla stance: Double Attack comes from the ammo's charge, so the
+-- build spends its slots on Store TP and haste instead of chasing DA.
+--
+-- Priorities rank the slots by the HP each piece carries, highest first, so
+-- that swapping into this set raises the HP pool before it touches the slots
+-- that add none. A tank that equips its empty slots first spends the swap at
+-- a lower maximum HP than either end of it intends.
+--
+-- No sub slot on purpose: the stance names its shield (Duban), applied by
+-- SetBuilder alongside the weapon, which also holds the ammo on the Ampulla.
+sets.engaged.Hoxne =
+    set_combine(
+    EngagedBase,
+    {
+        ammo = 'Hoxne Ampulla', -- HP+0, DA+100% on charge
+        body = prio(Misc.HjarrandiBreast, 16), -- HP+228, biggest gain, equip FIRST
+        head = prio(Chev.head, 15), -- HP+145
+        left_ring = prio(Moonlight1, 14), -- HP+110
+        right_ring = prio(Moonlight2, 13), -- HP+110
+        legs = {name = 'Flamma Dirs +2', priority = 12}, -- HP+100
+        hands = prio(Sakpata.hands, 11), -- HP+91
+        feet = {name = 'Flam. Gambieras +2', priority = 10}, -- HP+40
+        neck = 'Lissome Necklace', -- HP+0
+        waist = 'Sailfi Belt +1', -- HP+0
+        left_ear = 'Dedition Earring', -- HP+0
+        right_ear = 'Telos Earring', -- HP+0
+        back = Rudianos.STP -- HP+0, priority 0
+    }
+)
+
 -- • Kraken Club Specialized (PLD/DNC multi-attack build)
 -- Used when BurtgangKC weapon set is active
 -- Focuses on Store TP reduction to leverage Kraken Club's multi-attack proc rate
 sets.engaged.BurtgangKC =
     set_combine(
-    sets.engaged,
+    EngagedBase,
     {
         ammo = 'Aurgelmir Orb +1',
         head = Misc.SuleviasMask,
@@ -320,16 +420,7 @@ sets.precast.FC = {
     left_ear = {name = "Enchanter's Earring +1", priority = 1},
     -- delta idle=-150 (biggest LOSS)
     right_ear = {name = 'Loquac. Earring', priority = 2}, -- delta idle=-110
-    body = {
-        name = 'Odyss. Chestplate',
-        augments = {
-            'DEX+3',
-            'Magic Damage +2',
-            '"Fast Cast"+7',
-            'Accuracy+13 Attack+13',
-            'Mag. Acc.+1 "Mag.Atk.Bns."+1'
-        }
-    },
+    body = Odyssean.chestplate_fc,
     hands = Misc.LeylineGloves, -- delta idle=-39
     left_ring = {name = 'Kishar Ring', priority = 7}, -- delta idle=0
     right_ring = {name = 'Prolix Ring', priority = 4}, -- delta idle=-100
@@ -376,7 +467,13 @@ sets.precast.FC['Foil'] = sets.precast.FC
 -- ───────────────────────────────────────────────────────────────────────────
 
 -- • Base Weaponskill Set
-sets.precast.WS = {
+-- Held in a local for the same reason IdleBase and EngagedBase are: every
+-- named weaponskill below attaches itself as a key on sets.precast.WS, and
+-- set_combine copies every key of its source. Deriving from sets.precast.WS
+-- would hand each weaponskill the ones declared before it as slots that are
+-- not slots - Aeolian Edge carried Knights of Round, which carried Savage
+-- Blade, which carried its own TPBonus.
+local WSBase = {
     ammo = 'Crepuscular Pebble',
     head = Sakpata.head_plain,
     body = Sakpata.body_plain,
@@ -393,10 +490,12 @@ sets.precast.WS = {
 }
 
 -- • Requiescat
-sets.precast.WS['Requiescat'] = set_combine(sets.precast.WS, {})
+sets.precast.WS = set_combine(WSBase, {})
+
+sets.precast.WS['Requiescat'] = set_combine(WSBase, {})
 
 -- • Chant du Cygne
-sets.precast.WS['Chant du Cygne'] = set_combine(sets.precast.WS, {})
+sets.precast.WS['Chant du Cygne'] = set_combine(WSBase, {})
 
 -- • Atonement (Enmity WS)
 sets.precast.WS['Atonement'] = sets.FullEnmity
@@ -404,7 +503,26 @@ sets.precast.WS['Atonement'] = sets.FullEnmity
 -- • Savage Blade
 sets.precast.WS['Savage Blade'] =
     set_combine(
-    sets.precast.WS,
+    WSBase,
+    {
+        ammo = {name = "Oshasha's Treatise"},
+        head = Nyame.head,
+        body = Nyame.body,
+        hands = Nyame.hands,
+        legs = Nyame.legs,
+        feet = Nyame.feet,
+        neck = {name = "Knight's Bead Necklace +2"},
+        waist = {name = 'Sailfi Belt +1'},
+        left_ear = {name = 'Tuisto Earring'},
+        right_ear = {name = 'Thrud Earring'},
+        left_ring = {name = "Cornelia's Ring"},
+        right_ring = {name = 'Regal Ring'},
+        back = Rudianos.WS
+    }
+)
+sets.precast.WS['Knights of Round'] =
+    set_combine(
+    WSBase,
     {
         ammo = {name = "Oshasha's Treatise"},
         head = Nyame.head,
@@ -429,7 +547,7 @@ sets.precast.WS['Savage Blade'] =
 -- • Sanguine Blade (Dark Magic WS)
 sets.precast.WS['Sanguine Blade'] =
     set_combine(
-    sets.precast.WS,
+    WSBase,
     {
         head = Nyame.head,
         body = Nyame.body,
@@ -447,7 +565,7 @@ sets.precast.WS['Sanguine Blade'] =
 -- • Aeolian Edge (Wind Magic WS)
 sets.precast.WS['Aeolian Edge'] =
     set_combine(
-    sets.precast.WS,
+    WSBase,
     {
         ammo = {name = "Oshasha's Treatise"},
         head = Nyame.head,
@@ -468,7 +586,7 @@ sets.precast.WS['Aeolian Edge'] =
 -- • Circle Blade (Magic WS)
 sets.precast.WS['Circle Blade'] =
     set_combine(
-    sets.precast.WS,
+    WSBase,
     {
         ammo = {name = 'Staunch Tathlum +1'},
         head = Nyame.head,
@@ -500,6 +618,30 @@ sets.precast.WS['Savage Blade'].TPBonus = set_combine(sets.precast.WS['Savage Bl
 sets.precast.WS['Sanguine Blade'].TPBonus = set_combine(sets.precast.WS['Sanguine Blade'], sets.precast.WS.TPBonus)
 sets.precast.WS['Aeolian Edge'].TPBonus = set_combine(sets.precast.WS['Aeolian Edge'], sets.precast.WS.TPBonus)
 sets.precast.WS['Circle Blade'].TPBonus = set_combine(sets.precast.WS['Circle Blade'], sets.precast.WS.TPBonus)
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- Weaponskills specific to the /SCH setup
+-- ───────────────────────────────────────────────────────────────────────────
+-- PLD/SCH is played for Sortie alone, where the weaponskill is fed by the
+-- DPS and Hoxne stances rather than the tanking build, so it trades the
+-- survivability accessories for damage. The armor is the same Nyame set;
+-- only what is listed below differs.
+-- Equipped over the standard set by PLD_PRECAST, under /SCH only.
+-- Safe to attach here: the weaponskills above derive from WSBase, not from
+-- sets.precast.WS, so a sub-table on the latter reaches none of them.
+sets.precast.WS.SCH = {}
+
+sets.precast.WS.SCH['Knights of Round'] =
+    set_combine(
+    sets.precast.WS['Knights of Round'],
+    {
+        ammo = 'Crepuscular Pebble',
+        neck = 'Fotia Gorget',
+        left_ear = 'Hoxne Earring',
+        left_ring = 'Sroda Ring',
+        right_ring = "Ephramad's Ring"
+    }
+)
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- MIDCAST SETS
@@ -566,7 +708,7 @@ sets.midcast.SIRDPhalanx = {
     head = Misc.SouvSchallerPlain,
     body = Misc.ChevBodySirdPlain,
     hands = {name = 'Souv. Handsch. +1'},
-    legs = {name = "Sakpata's Cuisses"},
+    legs = Sakpata.legs_plain_b,
     feet = Odyssean.greaves_phalanx,
     neck = {name = 'Moonlight Necklace'},
     waist = {name = 'Audumbla Sash'},
@@ -607,20 +749,27 @@ sets.midcast['Enhancing Magic'] =
 -- • Stoneskin Magic
 -- Deltas are HP against precast.FC, the set this one replaces. feet keeps the
 -- idle priority: Chev. Sabatons +3 sits in both sets, so that slot never moves.
+-- Gains go on first and the heaviest loss last, so the swap never dips below
+-- the HP either set holds. Keep the ranks in step with the deltas beside them:
+-- the hands carried priority 1 against a +180 gain, the largest of the set,
+-- and so went on last alongside the largest loss.
 sets.midcast['Stoneskin'] =
-    set_combine(sets.idle, {
-        hands = {name = 'Regal Gauntlets', priority = 13},      -- delta FC=+180 (biggest GAIN, equip FIRST)
-        head = {name = 'Chev. Armet +3', priority = 12},        -- delta FC=+107
-        body = {name = 'Shabti Cuirass', priority = 11},        -- delta FC=+102
+    set_combine(
+    IdleBase,
+    {
+        head = {name = 'Chev. Armet +3', priority = 12}, -- delta FC=+107
+        body = {name = 'Adamantite Armor', priority = 11}, -- delta FC=+102
+        hands = {name = 'Stone Mufflers', priority = 13}, -- delta FC=+180 (biggest GAIN, equip FIRST)
         left_ear = {name = 'Alabaster Earring', priority = 10}, -- delta FC=+100
         right_ring = {name = 'Gelatinous Ring +1', priority = 9}, -- delta FC=+100
-        ammo = {name = 'Staunch Tathlum +1', priority = 8},     -- delta FC=0
-        neck = {name = 'Stone Gorget', priority = 7},           -- delta FC=0
-        waist = {name = 'Siegel Sash', priority = 6},           -- delta FC=0
-        right_ear = {name = 'Earthcry Earring', priority = 5},  -- delta FC=0
-        left_ring = {name = 'Murky Ring', priority = 4},        -- delta FC=0
-        back = Rudianos.tank,                                   -- delta FC=-80, priority via def (3)
-        legs = {name = 'Haven Hose', priority = 1}}             -- delta FC=-164 (biggest LOSS, equip LAST)
+        ammo = {name = 'Impatiens', priority = 8}, -- delta FC=0
+        neck = {name = 'Stone Gorget', priority = 7}, -- delta FC=0
+        waist = {name = 'Siegel Sash', priority = 6}, -- delta FC=0
+        right_ear = {name = 'Earthcry Earring', priority = 5}, -- delta FC=0
+        left_ring = {name = 'Murky Ring', priority = 4}, -- delta FC=0
+        back = Rudianos.tank, -- delta FC=-80, priority via def (3)
+        legs = {name = 'Haven Hose', priority = 1}
+    } -- delta FC=-164 (biggest LOSS, equip LAST)
 )
 -- ───────────────────────────────────────────────────────────────────────────
 -- Healing Magic (Cure Sets)
@@ -639,23 +788,29 @@ sets.Cure = {
 }
 
 -- • Cure Self (PDT/Survivability focused)
+-- Entered from sets.precast.FC.CureSelf, which is deliberately low on HP so a
+-- self cure does not overheal (PLD_PRECAST equips it over Mote's FC set). The
+-- midcast then puts the HP back on, and the priorities rank the slots by how
+-- much each one gains against that precast - the file's usual "delta FC".
+--
+-- Only the slots that differ from sets.Cure are listed; ammo, head and hands
+-- are inherited from it unchanged. The left ear is the same piece but outranks
+-- what it holds there, so it is re-ranked rather than retyped.
 sets.midcast.CureSelf =
     set_combine(
     sets.Cure,
     {
-        ammo="Staunch Tathlum +1",
-    head={ name="Souv. Schaller +1", augments={'HP+105','Enmity+9','Potency of "Cure" effect received +15%',}},
-    body={ name="Souv. Cuirass +1", augments={'HP+105','Enmity+9','Potency of "Cure" effect received +15%',}},
-    hands="Regal Gauntlets",
-    legs={ name="Founder's Hose", augments={'MND+10','Mag. Acc.+15','Attack+15','Breath dmg. taken -5%',}},
-    feet={ name="Odyssean Greaves", augments={'Attack+19','Enmity+8','Accuracy+8',}},
-    neck="Unmoving Collar +1",
-    waist="Plat. Mog. Belt",
-    left_ear="Tuisto Earring",
-    right_ear="Trux Earring",
-    left_ring="Apeile Ring +1",
-    right_ring="Gelatinous Ring +1",
-    back="Moonlight Cape",
+        neck = {name = 'Unmoving Collar +1', priority = 14}, -- +200 vs Orunmila's Torque, biggest gain
+        back = Misc.MoonlightCapeCure, -- +195, priority 13
+        left_ear = prio(sets.Cure.left_ear, 12), -- +150: Tuisto converts 150 MP to HP,
+        -- the precast's Enchanter's Earring +1 gives none
+        right_ring = {name = 'Gelatinous Ring +1', priority = 11}, -- +110 vs Prolix Ring
+        feet = Odyssean.greaves_sird, -- priority 4
+        body = Souveran.cuirass_cure, -- priority 2
+        legs = Misc.FoundersHoseCure, -- priority 1
+        waist = {name = 'Platinum Moogle Belt'}, -- HP+10%, same piece as the precast: no swap
+        right_ear = 'Trux Earring', -- delta 0
+        left_ring = 'Apeile Ring +1' -- delta 0
     }
 )
 

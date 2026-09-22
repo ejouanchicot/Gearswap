@@ -7,7 +7,8 @@
 ---
 ---     • tank        = VIT/Eva/MEva/Enmity/PDT (idle, engaged, JA base)
 ---     • FCSIRD      = HP/FC/SIRD (precast FC, equip early — delta idle = +80)
----     • STP         = DEX/Acc/Atk/STP (BurtgangKC engaged)
+---     • STP         = DEX/Acc/Atk/STP (every TP build: Sortie, DPS,
+---                     Hoxne, BurtgangKC)
 ---     • WS          = STR/Acc/Atk/WSD/PDT (physical WS)
 ---     • cure        = MND/Eva/MEva/Cure potency/PDT (CureOther, equip late)
 ---     • EnmitySIRD  = VIT/Eva/MEva/Enmity/SIRD (SIRDEnmity midcast)
@@ -18,8 +19,8 @@
 ---
 ---   @file    Tetsouo/sets/pld/capes.lua
 ---   @author  Tetsouo
----   @version 1.0
----   @date    Created: 2026-05-11
+---   @version 1.1
+---   @date    Created: 2026-05-11 | Updated: 2026-09-21
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local Capes = {}

@@ -4,7 +4,8 @@
 ---   Each entry returns a partial gear set (main or sub slot only) so it can
 ---   be combined with engaged / WS sets via set_combine.
 ---
----     • Burtgang     = Relic sword (enmity tank)
+---     • Burtgang     = Mythic sword (enmity tank, unlocks Atonement)
+---     • Excalibur    = Relic sword (unlocks Knights of Round)
 ---     • Naegling     = Savage Blade focus
 ---     • Shining One  = Polearm (uses Alber Strap grip)
 ---     • Malevolence  = Magic burst / FC sword
@@ -25,8 +26,8 @@
 ---
 ---   @file    Tetsouo/sets/pld/weapons.lua
 ---   @author  Tetsouo
----   @version 1.0
----   @date    Created: 2026-05-11
+---   @version 1.1
+---   @date    Created: 2026-05-11 | Updated: 2026-09-21
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local Weapons = {}
@@ -34,6 +35,7 @@ local Weapons = {}
 -- • Main Weapons
 Weapons['Burtgang']    = {main = 'Burtgang'}
 Weapons['KC']          = {main = 'Kraken Club'}
+Weapons['Excalibur']   = {main = 'Excalibur'}
 Weapons['BurtgangKC']  = {main = 'Burtgang', sub = 'Kraken Club'} -- PLD/DNC multi-attack build
 Weapons['Shining']     = {main = 'Shining One'} -- Polearm (uses Alber Strap grip)
 Weapons['Naegling']    = {main = 'Naegling'}

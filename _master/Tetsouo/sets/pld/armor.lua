@@ -211,7 +211,6 @@ Armor.Misc = {
     CarmineCuisses   = 'Carmine Cuisses +1',
     CouncilorsGarb   = "Councilor's Garb",
     -- Chev. variants used in engaged (different priorities than idle)
-    ChevHeadEng    = {name = 'Chev. Armet +3', priority = 14},
     ChevHandsEng   = {name = 'Chev. Gauntlets +3', priority = 8},
     ChevHandsCure  = {name = "Chevalier's Gauntlets +3", priority = 11},
     ChevLegsEng    = {name = 'Chev. Cuisses +3', priority = 10},
