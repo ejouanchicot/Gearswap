@@ -476,12 +476,18 @@ on every `user_setup()`. Keybinds from `PLD_KEYBINDS.lua:38-87`; `^` = Ctrl,
 | `WS1`, `WS2` | that weapon's list (`PLD_WS_CONFIG.lua`) | entry 1 and 2 | `^numpad5`, `^numpad6` | `ws_slots.lua`; rebuilt from `SetBuilder.current_weapon()` on a `MainWeapon` **or** `HybridMode` change |
 | `Regen` | Off, On | Off, **forced Off outside /SCH** | none - macros only, `gs c set Regen On\|Off` | `set_builder.lua` step 6b: lays `sets.idleRegen` over the idle set |
 
-`Regen` is idle-only and four slots wide - Sacro Breastplate, Regal Gauntlets
-and a Chirich Ring +1 in each ring slot, laid over whatever the stance chose -
-so DPS, Tanking and Hoxne each keep the rest of their mitigation and nothing
-changes in combat. Regen+27 and Refresh+1 in total. The two Chirich come from
-`common/rings.lua`, each pinned to its own wardrobe: GearSwap cannot tell two
-copies of one item apart and would otherwise equip the same ring twice.
+`Regen` is idle-only and six slots wide - Sacro Breastplate, Regal Gauntlets,
+Infused Earring, Null Belt and a Chirich Ring +1 in each ring slot, laid over
+whatever the stance chose. **Regen+31 and Refresh+1** in total, and DPS,
+Tanking and Hoxne each keep the rest of their mitigation; nothing changes in
+combat.
+
+Two details worth keeping: the Chirich come from `common/rings.lua`, each
+pinned to its own wardrobe, because GearSwap cannot tell two copies of one
+item apart and would equip the same ring twice. And Infused takes the **right**
+ear, the one `sets.idle.MDT` fills with Eabani - both are evasion earrings, so
+Regen+1 costs five evasion there, where the left ear holds Tuisto and its
+~150 HP.
 
 It has no key: it is driven by `gs c set Regen On` / `Off` from FFXI macros,
 which name the value instead of toggling. It is still listed in

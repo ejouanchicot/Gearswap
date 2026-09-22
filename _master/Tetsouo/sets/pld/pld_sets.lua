@@ -185,13 +185,18 @@ sets.idleXp =
 --- nothing, which is why it was never ranked. So neither piece is ranked here.
 --- Misc.RegalGauntlets is deliberately not reused - its priority 7 belongs to
 --- the fast-cast sets, and would make the hands equip first here for no reason.
---- Regen+27 between the four, plus Refresh+1 from the hands.
+--- Regen+31 between the six, plus Refresh+1 from the hands.
 --- The two Chirich are the same item in both ring slots, so they come from
 --- common/rings.lua where each is pinned to its own wardrobe - GearSwap
 --- cannot tell two copies apart otherwise and would equip one twice.
+--- Infused takes the right ear, the one sets.idle.MDT fills with Eabani:
+--- both are evasion earrings, so Regen+1 costs 5 evasion there, where the
+--- left ear holds Tuisto and its ~150 HP.
 sets.idleRegen = {
     body       = Misc.SacroBreastplate,  -- Regen+13, HP+182
     hands      = 'Regal Gauntlets',      -- Regen+10, HP+205, Refresh+1
+    right_ear  = 'Infused Earring',      -- Regen+1, Evasion+10
+    waist      = 'Null Belt',            -- Regen+3
     left_ring  = Rings.Chirich1,         -- Regen+2
     right_ring = Rings.Chirich2          -- Regen+2
 }
