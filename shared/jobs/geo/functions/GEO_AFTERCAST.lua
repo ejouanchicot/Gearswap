@@ -30,9 +30,11 @@ function job_aftercast(spell, action, spellMap, eventArgs)
 
     -- GEO-SPECIFIC AFTERCAST LOGIC
 
-    -- Track Entrust usage for immediate gear application (before buff appears in buffactive)
-    if spell.type == 'JobAbility' and spell.english == 'Entrust' and not spell.interrupted then
-        _G.geo_entrust_pending = true
+    -- Track Entrust usage for immediate gear application (before buff appears
+    -- in buffactive). Precast raises the flag optimistically, so an interrupted
+    -- Entrust has to lower it here - no buff will arrive, hence no buff_change.
+    if spell.type == 'JobAbility' and spell.english == 'Entrust' then
+        _G.geo_entrust_pending = not spell.interrupted
     end
 
     -- Clear Entrust pending flag after Indi spell completes (buff consumed)
