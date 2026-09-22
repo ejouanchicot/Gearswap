@@ -471,11 +471,6 @@ function MessageWarp.show_using_destination(item_name, destination)
     })
 end
 
---- Show registered with common commands
-function MessageWarp.show_registered_common()
-    M.send('WARP', 'registered_common', {})
-end
-
 ---============================================================================
 --- PRECAST MESSAGES
 ---============================================================================

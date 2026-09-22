@@ -247,8 +247,6 @@ function AbilityHelper.try_ability_ws(spell, eventArgs, ability_name, wait_time)
         eventArgs.handled = true
         eventArgs.cancel = true  -- CRITICAL: Cancel current WS (will auto-recast after ability)
         cancel_spell()
-        -- Set flag to suppress WS message on auto-recast (DNC Jump/Climactic system)
-        _G.DNC_AUTO_WS_RECAST = true
         send_command(string.format('input /ja "%s" <me>', ability_name))
         AbilityHelper.follow_up(ability_name,
             string.format('input /ws "%s" <t>', spell.name), wait_time)

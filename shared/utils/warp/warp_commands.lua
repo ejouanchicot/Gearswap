@@ -351,11 +351,5 @@ end
 --- MODULE EXPORT
 ---============================================================================
 
-function WarpCommands.register()
-    local success, CommonCommands = pcall(require, 'utils/core/COMMON_COMMANDS')
-    if success and CommonCommands then
-        MessageWarp.show_registered_common()
-    end
-end
 
 return WarpCommands

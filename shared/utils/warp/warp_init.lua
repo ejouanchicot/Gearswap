@@ -113,12 +113,9 @@ function WarpInit.init()
         return
     end
 
-    -- Register warp commands with common commands
-    local cmd_success, WarpCommands = pcall(require, 'shared/utils/warp/warp_commands')
-    if cmd_success and WarpCommands then
-        WarpCommands.register()
-        MessageWarp.show_commands_registered()
-    end
+    -- Warp commands need no registration: COMMON_COMMANDS.handle_warp_commands
+    -- requires this module directly when a //gs c warp command arrives.
+    MessageWarp.show_commands_registered()
 
     windower._warp_init_done = true
     MessageWarp.show_init_success()
