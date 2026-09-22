@@ -284,6 +284,10 @@ Interactions, Invariants & gotchas, Extending, Known issues):
 
 ### Elsewhere
 
+- [plan-maintenabilite.md](plan-maintenabilite.md) (French): the working
+  register of what to improve and in what order, each item with its measured
+  evidence. Also records what was verified healthy, and the audit claims that
+  did not reproduce — read it before re-chasing an old finding.
 - `docs/user/` (tracked, public): user guides. Several pages are stale (key
   layout, job count, commands); see the latest audit.
 - `.claude/CODE_QUALITY.md`: coding standard (private). `.claude/audits/`:
