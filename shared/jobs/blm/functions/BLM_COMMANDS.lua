@@ -538,7 +538,7 @@ function job_state_change(stateField, newValue, oldValue)
             disable('main', 'sub', 'range', 'ammo')
         else
             -- Don't steal the disable from an active craft/fish session.
-            local craft_active = _G.__CraftManagerState and _G.__CraftManagerState.active
+            local craft_active = _G.CraftManager and _G.CraftManager.is_active()
             if not craft_active then
                 enable('main', 'sub', 'range', 'ammo')
             end
