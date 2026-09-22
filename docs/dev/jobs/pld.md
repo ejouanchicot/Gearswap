@@ -476,11 +476,11 @@ on every `user_setup()`. Keybinds from `PLD_KEYBINDS.lua:38-87`; `^` = Ctrl,
 | `WS1`, `WS2` | that weapon's list (`PLD_WS_CONFIG.lua`) | entry 1 and 2 | `^numpad5`, `^numpad6` | `ws_slots.lua`; rebuilt from `SetBuilder.current_weapon()` on a `MainWeapon` **or** `HybridMode` change |
 | `Regen` | Off, On | Off, **forced Off outside /SCH** | none - macros only, `gs c set Regen On\|Off` | `set_builder.lua` step 6b: lays `sets.idleRegen` over the idle set |
 
-`Regen` is idle-only and six slots wide - Sacro Breastplate, Regal Gauntlets,
-Infused Earring, Null Belt and a Chirich Ring +1 in each ring slot, laid over
-whatever the stance chose. **Regen+31 and Refresh+1** in total, and DPS,
-Tanking and Hoxne each keep the rest of their mitigation; nothing changes in
-combat.
+`Regen` is idle-only and seven slots wide - Sacro Breastplate, Regal Gauntlets,
+Bathy Choker +1, Infused Earring, Null Belt and a Chirich Ring +1 in each ring
+slot, laid over whatever the stance chose. **Regen+34 and Refresh+1** in total,
+and DPS, Tanking and Hoxne each keep the rest of their mitigation; nothing
+changes in combat.
 
 Two details worth keeping: the Chirich come from `common/rings.lua`, each
 pinned to its own wardrobe, because GearSwap cannot tell two copies of one
