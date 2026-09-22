@@ -100,7 +100,17 @@ local function job_precast_bardsong(spell, eventArgs)
 
         cancel_spell()
         send_command('input /ja "Pianissimo" <me>')
-        send_command('wait 2; input /ma "' .. spell.english .. '" "' .. target_name .. '"')
+
+        -- Wait for Pianissimo rather than a fixed two seconds. A song aimed at
+        -- another player is refused outright without it, so re-sending blind
+        -- gained nothing - and left the flag raised, since the refused song
+        -- produces no BardSong aftercast to clear it. From then on every
+        -- ally-targeted song skipped Pianissimo until one was sung on self.
+        local AbilityHelper = require('shared/utils/precast/ability_helper')
+        AbilityHelper.follow_up_or_abort('Pianissimo',
+            'input /ma "' .. spell.english .. '" "' .. target_name .. '"',
+            2,
+            function() _G.pianissimo_in_progress = false end)
 
         MessageFormatter.show_pianissimo_target(target_name)
         eventArgs.cancel = true
