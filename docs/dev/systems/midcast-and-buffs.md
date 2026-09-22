@@ -260,7 +260,16 @@ It does not check the subjob. Callers: THF `SmartbuffManager.apply_war_buffs()` 
 
 `ScholarActions` (`scholar_actions.lua`):
 
-- `chain(steps)` (`:34-36`): joins steps with `; wait 2; ` (`STEP_SPACING`, `:18`).
+- `run_chain(steps, on_done, finish_anyway)`: sends each step only once the
+  previous one's buff is actually up, then runs `on_done`. This is what the
+  stratagem chains use. `finish_anyway` decides what a step that never lands
+  means: Klimaform is worth casting without Manifestation, a lone Sneak
+  instead of a party one is not.
+- `chain(steps)` (`:34-36`): joins steps with `; wait 2; ` (`STEP_SPACING`,
+  `:18`). A blind Windower chain - an ability sent while the previous one
+  still holds the action lock is refused and nothing notices. Kept only as
+  the spacing hint passed to `AbilityHelper.follow_up`; no chain is built
+  with it any more.
 - `light_arts()` / `dark_arts()` (`:54-73`): Addendum already up -> message; Arts up -> Addendum; otherwise Arts. Addendum is tested first because it replaces the Arts buff in `buffactive`.
 - `build_accession_chain(spell, aoe_state, needs_addendum)` (`:89-132`): target `<me>` when the state is missing or not `'Off'`, else `<stal>`. Addendum: White takes the first charge when `needs_addendum` and it is not up; Accession takes the next when the target is `<me>` and Accession is not up. Each stratagem that cannot be paid shows `show_stratagem_no_charges` and is dropped. Light Arts is prepended only when at least one stratagem is queued and neither Light Arts nor Addendum: White is up. The spell is always the last step.
 - `try_aoe_subcommand(word, aoe_state)` (`:154-161`) maps `sneak`, `invi`, `invisible` (use the state) and `erase` (ignores the state, needs Addendum) through `AOE_SPELLS` (`:143-148`).

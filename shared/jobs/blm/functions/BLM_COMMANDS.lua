@@ -394,19 +394,25 @@ function job_self_command(cmdParams, eventArgs)
         local dark_recast = windower.ffxi.get_ability_recasts()[DARK_ARTS_RECAST_ID] or 0
 
         if not dark_active and is_recast_ready(dark_recast) then
-            table.insert(steps, 'input /ja "Dark Arts" <me>')
+            table.insert(steps, {command = 'input /ja "Dark Arts" <me>', buff = 'Dark Arts'})
         end
 
         if ScholarActions.is_on(state.KlimaformAOE) then
             if StratagemCharges.has_charge() then
-                table.insert(steps, 'input /ja "Manifestation" <me>')
+                table.insert(steps, {command = 'input /ja "Manifestation" <me>', buff = 'Manifestation'})
             else
                 ScholarActions.warn_no_charge('Manifestation')
             end
         end
 
-        table.insert(steps, 'input /ma "Klimaform" <me>')
-        send_command(ScholarActions.chain(steps))
+        -- Each step waits on its own buff instead of a fixed `wait 2`: an
+        -- ability sent while the previous one still holds the action lock is
+        -- refused, and the old chain never noticed. finish_anyway because
+        -- Klimaform is worth casting even when Manifestation did not land -
+        -- it is simply single-target then.
+        ScholarActions.run_chain(steps, function()
+            send_command('input /ma "Klimaform" <me>')
+        end, true)
 
         eventArgs.handled = true
         return
