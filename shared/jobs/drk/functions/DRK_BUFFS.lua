@@ -33,6 +33,20 @@ function job_buff_change(buff, gain, eventArgs)
         return -- Doom handled, stop processing
     end
 
+    -- Dark Seal and Nether Void are single-charge buffs, consumed by the next
+    -- dark spell. Precast raises a pending flag so the gear is right before
+    -- buffactive catches up; the buff going away is what consumption looks
+    -- like, and is the only moment the flag can be lowered. Without this it
+    -- stayed raised for the rest of the session and every later Absorb, Drain
+    -- and Aspir kept applying the variant set.
+    if not gain then
+        if buff == 'Dark Seal' then
+            _G.drk_dark_seal_pending = false
+        elseif buff == 'Nether Void' then
+            _G.drk_nether_void_pending = false
+        end
+    end
+
     -- Aftermath Lv.3: Refresh engaged set to apply/remove AM3 gear (Liberator)
     -- BUT: If Doom is active, don't change gear (Doom priority)
     if buff == "Aftermath: Lv.3" then

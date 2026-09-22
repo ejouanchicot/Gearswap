@@ -122,22 +122,6 @@ function DRKBuffAnticipation.apply_buff_variants(current_set, weapon_name, hybri
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   PENDING FLAG INITIALIZATION
----  ═══════════════════════════════════════════════════════════════════════════
-
----   Initialize DRK pending flags for Dark Seal and Nether Void
----   Called from DRK_AFTERCAST.lua at module load time
-function DRKBuffAnticipation.initialize_flags()
-    if not _G.drk_dark_seal_pending then
-        _G.drk_dark_seal_pending = false
-    end
-
-    if not _G.drk_nether_void_pending then
-        _G.drk_nether_void_pending = false
-    end
-end
-
----  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT
 ---  ═══════════════════════════════════════════════════════════════════════════
 
