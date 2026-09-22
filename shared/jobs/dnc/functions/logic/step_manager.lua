@@ -75,7 +75,11 @@ function StepManager.execute_step()
 
     -- Execute: Presto+Step if available, otherwise Step only
     if presto_available then
-        send_command('input /ja "Presto" <me>; wait 1; input /ja "' .. step_name .. '" <t>')
+        -- Presto raises the step's tier, so the step is worth waiting for it -
+        -- but it still fires if the game refuses the ability.
+        local AbilityHelper = require('shared/utils/precast/ability_helper')
+        send_command('input /ja "Presto" <me>')
+        AbilityHelper.follow_up('Presto', 'input /ja "' .. step_name .. '" <t>', 1)
     else
         send_command('input /ja "' .. step_name .. '" <t>')
     end
