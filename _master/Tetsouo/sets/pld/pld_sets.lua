@@ -185,10 +185,15 @@ sets.idleXp =
 --- nothing, which is why it was never ranked. So neither piece is ranked here.
 --- Misc.RegalGauntlets is deliberately not reused - its priority 7 belongs to
 --- the fast-cast sets, and would make the hands equip first here for no reason.
---- Regen+23 between them, plus Refresh+1 from the hands.
+--- Regen+27 between the four, plus Refresh+1 from the hands.
+--- The two Chirich are the same item in both ring slots, so they come from
+--- common/rings.lua where each is pinned to its own wardrobe - GearSwap
+--- cannot tell two copies apart otherwise and would equip one twice.
 sets.idleRegen = {
-    body  = Misc.SacroBreastplate,  -- Regen+13, HP+182
-    hands = 'Regal Gauntlets'       -- Regen+10, HP+205, Refresh+1
+    body       = Misc.SacroBreastplate,  -- Regen+13, HP+182
+    hands      = 'Regal Gauntlets',      -- Regen+10, HP+205, Refresh+1
+    left_ring  = Rings.Chirich1,         -- Regen+2
+    right_ring = Rings.Chirich2          -- Regen+2
 }
 
 -- ═══════════════════════════════════════════════════════════════════════════
