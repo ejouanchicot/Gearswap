@@ -39,7 +39,12 @@ function job_buff_change(buff, gain, eventArgs)
         return -- Doom handled, stop processing
     end
 
-    -- GEO-specific buff change logic can be added here
+    -- Entrust expires if it is never spent. Aftercast only lowers the pending
+    -- flag once an Indi- consumes it, so without this an expired Entrust left
+    -- the flag raised and the next Indi- went out in the Entrust set.
+    if buff == 'Entrust' and not gain then
+        _G.geo_entrust_pending = false
+    end
 end
 
 -- Export to global scope (used by Mote-Include via include())
