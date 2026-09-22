@@ -159,22 +159,6 @@ function DoomManager.handle_status_change(newStatus, oldStatus)
     end
 end
 
---- Checks if Doom slots are currently locked
---- Useful for debugging or conditional logic in jobs
----
---- @return boolean True if Doom slots are locked, false otherwise
-function DoomManager.is_doom_locked()
-    -- Try to enable neck slot
-    -- If it was already enabled, returns true (slot was NOT disabled)
-    -- If it was disabled, enables it and returns false
-    -- We immediately disable again to restore state
-    local was_enabled = enable('neck')
-    if not was_enabled then
-        disable('neck') -- Restore disabled state
-    end
-    return not was_enabled
-end
-
 --- Validates that Doom set is properly configured
 --- Checks if sets.buff.Doom exists and is not empty
 ---
