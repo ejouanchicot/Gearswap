@@ -26,7 +26,6 @@ local function ensure_module_loaded()
         local ok, mod = pcall(require, 'shared/jobs/drk/functions/logic/drk_buff_anticipation')
         if ok then
             DRKBuffAnticipation = mod
-            DRKBuffAnticipation.initialize_flags()
         end
         module_initialized = true
     end
@@ -51,12 +50,14 @@ function job_aftercast(spell, action, spellMap, eventArgs)
         _G.MidcastWatchdog.on_aftercast()
     end
 
-    -- Confirm buff pending flags after JA completes (if not interrupted)
-    if spell.type == 'JobAbility' and not spell.interrupted then
+    -- Confirm or withdraw the pending flags precast raised. An interrupted JA
+    -- never grants the buff, so no buff_change will come to lower the flag -
+    -- this is the only chance to do it.
+    if spell.type == 'JobAbility' then
         if spell.name == 'Dark Seal' then
-            _G.drk_dark_seal_pending = true
+            _G.drk_dark_seal_pending = not spell.interrupted
         elseif spell.name == 'Nether Void' then
-            _G.drk_nether_void_pending = true
+            _G.drk_nether_void_pending = not spell.interrupted
         end
     end
 
