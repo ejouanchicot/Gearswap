@@ -25,7 +25,6 @@ M.default = {
 M.subjobs = {
     SCH = {
         {name = 'Panacea', target = 12},
-        {name = 'Echo Drops', target = 12},
         {name = 'Antacid', target = 12},
         {name = 'Holy Water', target = 12},
         {name = 'Remedy', target = 12},
@@ -33,20 +32,9 @@ M.subjobs = {
     },
     RDM = {
         {name = 'Panacea', target = 12},
-        {name = 'Echo Drops', target = 12},
         {name = 'Antacid', target = 12},
         {name = 'Holy Water', target = 12},
         {name = 'Remedy', target = 12},
-        {name = {'Omelette Sandwich +1', 'Omelette Sandwich'}, target = 12}
-    },
-    RUN = {
-        {name = 'Panacea', target = 12},
-        {name = 'Echo Drops', target = 12},
-        {name = 'Antacid', target = 12},
-        {name = 'Holy Water', target = 12},
-        {name = 'Remedy', target = 12},
-        {name = 'Prism Powder', target = 12},
-        {name = 'Silent Oil', target = 12},
         {name = {'Omelette Sandwich +1', 'Omelette Sandwich'}, target = 12}
     }
 }
