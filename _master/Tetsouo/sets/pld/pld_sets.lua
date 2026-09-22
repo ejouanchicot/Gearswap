@@ -185,9 +185,10 @@ sets.idleXp =
 --- nothing, which is why it was never ranked. So neither piece is ranked here.
 --- Misc.RegalGauntlets is deliberately not reused - its priority 7 belongs to
 --- the fast-cast sets, and would make the hands equip first here for no reason.
+--- Regen+23 between them, plus Refresh+1 from the hands.
 sets.idleRegen = {
     body  = Misc.SacroBreastplate,  -- Regen+13, HP+182
-    hands = 'Regal Gauntlets'
+    hands = 'Regal Gauntlets'       -- Regen+10, HP+205, Refresh+1
 }
 
 -- ═══════════════════════════════════════════════════════════════════════════

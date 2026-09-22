@@ -200,6 +200,8 @@ Armor.Misc = {
     EnifCosciales    = {name = 'Enif Cosciales', priority = 9},
     FoundersHose     = {name = "Founder's Hose", priority = 0},
     FoundersHoseCure = {name = "Founder's Hose", priority = 1},
+    -- priority 7 is for the fast-cast sets; sets.idleRegen uses a plain
+    -- reference instead, the set it lands on carrying no priorities.
     RegalGauntlets   = {name = 'Regal Gauntlets', priority = 7},
     -- Regen+13, HP+182. Worn by sets.idleRegen, which only ever lands on
     -- sets.idle.MDT - a set that carries no priorities at all, so this one
