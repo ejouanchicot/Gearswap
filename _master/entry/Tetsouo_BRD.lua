@@ -170,6 +170,16 @@ function user_setup()
     if success and keybinds then
         BRDKeybinds = keybinds
         BRDKeybinds.bind_all()
+    else
+        -- Loudly, because the failure is otherwise silent: the job loads,
+        -- //gs c answers, and only the keys are dead. Note that a failed
+        -- pcall here does NOT mean the file is missing - in the sandbox
+        -- require raises the same way for an error in any dependency, so
+        -- the real message is the only useful thing to show.
+        local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+        if ok and MessageFormatter then
+            MessageFormatter.show_error('[BRD] Keybinds failed to load: ' .. tostring(keybinds))
+        end
     end
 
     -- ==========================================================================

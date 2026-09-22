@@ -221,7 +221,7 @@ function user_setup()
         WARKeybinds = keybinds
         WARKeybinds.bind_all()
     else
-        show_keybind_error()
+        show_keybind_error(keybinds)
     end
 
     -- ==========================================================================
@@ -288,11 +288,15 @@ end
 ---============================================================================
 
 --- Display keybind loading error message
+--- The error itself matters: a failed pcall(require) does NOT mean the
+--- file is missing - in the sandbox require raises the same way for an
+--- error in any dependency, so only the real message identifies it.
+--- @param err any Whatever pcall returned in place of the module
 --- @return void
-function show_keybind_error()
+function show_keybind_error(err)
     local msg_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
     if msg_success and MessageFormatter then
-        MessageFormatter.show_error("[WAR] Failed to load keybinds")
+        MessageFormatter.show_error('[WAR] Keybinds failed to load: ' .. tostring(err))
     end
     -- Silent fallback - MessageFormatter should always be available
 end
