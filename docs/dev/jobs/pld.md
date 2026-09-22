@@ -56,7 +56,7 @@ line numbers refer to the code as of 2026-09-22, after the /SCH stance work
 | `shared/jobs/pld/functions/logic/aoe_manager.lua` | 172 | `//gs c aoe` BLU rotation (identical to RUN's copy) |
 | `shared/jobs/pld/functions/logic/rune_manager.lua` | 79 | `//gs c rune` (identical to RUN's copy) |
 | `_master/config/pld/PLD_STATES.lua` | 385 | States (incl. `WS1`/`WS2`), three option profiles (`standard`/`sortie`/`sch`), `apply_hybrid_profile`, unused `validate`, `_G.PLDStates` |
-| `_master/config/pld/PLD_KEYBINDS.lua` | 297 | 7 binds, subjob filter + `visible` predicate + `retired_keys`, `refresh()` sends only the delta, loud failure when nothing binds |
+| `_master/config/pld/PLD_KEYBINDS.lua` | 312 | 9 binds, subjob filter + `visible` predicate, `refresh()` sends only the delta, loud failure when nothing binds |
 | `_master/config/pld/PLD_WS_CONFIG.lua` | 64 | `_G.PLDWSConfig`: the two weaponskills each sword offers |
 | `_master/config/pld/PLD_LOCKSTYLE.lua` | 73 | Style 3 (`default`, `by_subjob`, `get_style`) |
 | `_master/config/pld/PLD_MACROBOOK.lua` | 78 | Book 15/18/20 per subjob, dual-box table |
@@ -469,11 +469,20 @@ on every `user_setup()`. Keybinds from `PLD_KEYBINDS.lua:38-87`; `^` = Ctrl,
 | `MainWeapon` | Excalibur, Burtgang, KC, BurtgangKC, Naegling, Shining, Malevo (Sortie: Burtgang, Naegling — **/SCH: Naegling, Excalibur**) | Burtgang, **Naegling** under /SCH | `^numpad1`, hidden in /SCH Tanking (`visible`, `PLD_KEYBINDS.lua:59`) | `set_builder.lua:99,135,149` and the weaponskill slots |
 | `Xp` | Off, On | Off | `^numpad4` (/RDM) | `set_builder.lua:230,290`; `PLD_MIDCAST.lua:111` |
 | `RuneMode` | Ignis .. Tenebrae (8) (Sortie profile: Ignis, Tenebrae, Tellus, Flabra, Unda) | Ignis | `^numpad3` (/RUN) | `rune_manager.lua:95` |
-| `SneakInviAOE` | On, Off | On, **held On under /SCH** | none (bind retired, see `retired_keys` `PLD_KEYBINDS.lua:89`) | `PLD_COMMANDS.lua:179` -> `scholar_actions.lua` (missing state counts as On) |
+| `SneakInviAOE` | On, Off | On, **held On under /SCH** | none (held On under /SCH, so nothing to cycle) | `PLD_COMMANDS.lua:179` -> `scholar_actions.lua` (missing state counts as On) |
 | `FastCast` | 0..80 step 10 | 80 | none | `midcast_watchdog.lua` |
 | `AutoMedicine` | shared On/Off | persisted | `#numpad0` | `AutoMedicine.init(state, M)` (`PLD_STATES.lua:160-163`), see [precast pipeline](../systems/precast-pipeline.md) |
 | `PhalanxSIRD` | Off, On | Off, **held On under /SCH** | `^numpad2`, excluded in /SCH | read by `PLD_MIDCAST.lua:110` and required by `apply_hybrid_profile`; `On` on entering Sortie or /SCH, `Off` on the standard profile |
 | `WS1`, `WS2` | that weapon's list (`PLD_WS_CONFIG.lua`) | entry 1 and 2 | `^numpad5`, `^numpad6` | `ws_slots.lua`; rebuilt from `SetBuilder.current_weapon()` on a `MainWeapon` **or** `HybridMode` change |
+| `Regen` | Off, On | Off, **forced Off outside /SCH** | `^numpad7` (/SCH) | `set_builder.lua` step 6b: lays `sets.idleRegen` over the idle set |
+
+`Regen` is idle-only and two slots wide - Sacro Breastplate and Regal
+Gauntlets over whatever body and hands the stance chose - so DPS, Tanking and
+Hoxne each keep their own mitigation and nothing changes in combat. Its key is
+bound under /SCH alone, which is why `apply_hybrid_profile` forces it Off on
+the other profiles: a toggle left On with no key to reach it would strand the
+Regen body in idle. It took back `^numpad7`, the key /SCH had freed when
+`SneakInviAOE` became a permanent On, so `retired_keys` is now empty.
 
 Mote defaults also exist: `OffenseMode`, `IdleMode`, `CastingMode` (all
 `'Normal'`, no set reads them), `DefenseMode` (None). `state.Moving` comes from

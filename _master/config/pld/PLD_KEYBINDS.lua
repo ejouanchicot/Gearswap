@@ -76,6 +76,9 @@ PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie, DPS/Tanking/Hoxne under /S
     subjob = "RUN"
 },
     { key = "^numpad2", command = "cyclestate PhalanxSIRD", desc = "Phalanx SIRD", state = "PhalanxSIRD", exclude_subjob = "SCH" },
+    -- Regen pair over the idle set, /SCH only. It takes back Ctrl+Numpad7,
+    -- the key /SCH freed when SneakInviAOE became a permanent On.
+    { key = "^numpad7", command = "cyclestate Regen", desc = "Regen", state = "Regen", subjob = "SCH" },
     { key = "^numpad5", command = "cyclestate WS1", desc = "WS Slot 1", state = "WS1" },
     { key = "^numpad6", command = "cyclestate WS2", desc = "WS Slot 2", state = "WS2" },
     { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
@@ -85,10 +88,9 @@ PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie, DPS/Tanking/Hoxne under /S
 --- bind_all/unbind_all only ever walk PLDKeybinds.binds, so a key dropped from
 --- that table keeps whatever Windower bound to it last - across reloads, for
 --- the rest of the session. Listing it here is what finally clears it.
---- ^numpad7 held SneakInviAOE, retired when /SCH started holding it On.
-PLDKeybinds.retired_keys = {
-    "^numpad7"
-}
+--- Empty since 2026-09-22: ^numpad7 went back into binds for the /SCH Regen
+--- toggle. A key listed in both would be unbound right after being bound.
+PLDKeybinds.retired_keys = {}
 
 --- The keys currently laid down, as key -> command.
 --- bind_all() rewrites it wholesale; refresh() diffs against it and sends only
