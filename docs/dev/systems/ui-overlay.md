@@ -111,11 +111,11 @@ flowchart TD
 
 | Order | Category | Patterns |
 |---|---|---|
-| 1 | mode | `Mode Combat Engaged Idle Enfeeble Nuke PetIdleMode AutoPetEngage Rotation Xp PhalanxSIRD UseAltStep Auto Lock Marcato Dance Samba SneakInvi Klimaform` |
+| 1 | mode | `Mode Combat Engaged Idle Enfeeble Nuke PetIdleMode AutoPetEngage Rotation Xp PhalanxSIRD UseAltStep Auto Lock Marcato Dance Samba SneakInvi Klimaform Favor Regen` |
 | 2 | spell | `Spell Element Tier Aja Storm Bar EnSpell Spike Gain Ecosystem species RuneElement Light Dark Rune BRDRotation VictoryMarch Etude QuickDraw Roll Luzaf Indi Geo AOE` |
 | 3 | ja | `Step BRDSong WS` |
-| 4 | weapon | `Weapon WeaponSet SubSet Proc` |
-| 5 | other | anything else, including binds with no `state`. **Not rendered.** |
+| 4 | weapon | `Weapon WeaponSet SubSet Proc Instrument` |
+| 5 | mode (default) | anything else. An unmatched name used to fall into an "other" bucket that `extract_display_keys` had nowhere to put, so the row vanished; it now defaults to mode. Binds with no `state` are still not rendered - there is no value to show. |
 
 Matching is case-sensitive, and the first category that matches wins. For example `NukeTier` becomes a mode because `Nuke` is tested before `Tier`, and `KlimaformAOE` becomes a mode because `Klimaform` is tested before `AOE`. The builder stores **keys**, not binds. `render_section` (`UI_SECTIONS.lua:46-79`) walks the keybind list in file order and prints each bind whose key is in the section's key list, skipping binds whose `subjob` differs from `player.sub_job`. Rows therefore follow file order within each section, and the design depends on keys being unique within one keybind file (they are today).
 
@@ -326,7 +326,7 @@ Takes effect: `elements`, `stats`, `modes`, `special.true/false/unknown`, `spell
 
 ## Invariants & gotchas
 
-- A new state only appears in the HUD if its **name** matches one of the category patterns. Anything classified as "other" is dropped without a warning, even though its keybind still works. With the HUD visible, `cyclestate` prints no chat line, so an unclassified state gives no feedback at all.
+- A state's **name** decides its section, and an unmatched name now defaults to mode rather than disappearing. It is still worth adding a pattern for a new state so it lands in the right section - a row under the wrong heading is merely odd, where the old silent drop cost BRD and SMN their signature `^numpad3` row for months, keys working the whole time.
 - Pattern order matters: mode patterns are tested first, so a name containing `Mode`, `Auto`, `Lock`, `Idle`... is a mode even if it also contains `Spell` or `Weapon`.
 - Rows are matched to sections **by key**. Two binds sharing a key in one file would appear in both sections.
 - The first render inside `init()` is not protected by `pcall`. When `smart_init` runs synchronously in `user_setup()`, a render error aborts `user_setup`, and with it the rest of Mote's `init_include` and the job's `get_sets()`.
@@ -346,8 +346,7 @@ Takes effect: `elements`, `stats`, `modes`, `special.true/false/unknown`, `spell
 
 - With the HUD disabled or hidden before a reload, `is_visible()` still reports true, so keybind cycling prints nothing (`shared/utils/ui/UI_MANAGER.lua:67`).
 - A keybind without `desc` makes the first render throw inside `user_setup()` and aborts the job load (`shared/utils/ui/ui_lifecycle.lua:100`, `shared/utils/ui/UI_DISPLAY_BUILDER.lua:102`).
-- SMN `AvatarFavor` matches no category pattern and never appears in the HUD (`shared/utils/ui/UI_DISPLAY_BUILDER.lua:43-58`).
-- BRD `MainInstrument` matches no category pattern, and nothing reads the state (`shared/utils/ui/UI_DISPLAY_BUILDER.lua:39-41`).
+- BRD `MainInstrument` now renders, but nothing reads the state.
 - Header/legend/column toggles move the box in the wrong direction, so it jumps instead of staying put (`shared/utils/ui/ui_section_toggles.lua:42`).
 - RUN's readiness anchor `RuneElement` does not exist, so the RUN HUD waits the full `init_delay` (`shared/utils/ui/ui_lifecycle.lua:56-57`).
 - WAR/BST/PUP (and live SMN) require `UI_MANAGER` before `config_loader`. A missing `ui_settings.lua` is then regenerated from stub defaults, and `UI_SECTIONS` keeps the stub `UIConfig` (`shared/utils/ui/UI_MANAGER.lua:43`).

@@ -37,7 +37,8 @@ local categorization_rules = {
     },
 
     weapon_patterns = {
-        "Weapon", "WeaponSet", "SubSet", "Proc"
+        "Weapon", "WeaponSet", "SubSet", "Proc",
+        "Instrument"  -- BRD MainInstrument: the instrument IS the range slot
     },
 
     mode_patterns = {
@@ -54,7 +55,9 @@ local categorization_rules = {
         -- BLM stratagem toggles: listed here so they land in modes rather than
         -- matching the generic "AOE" spell pattern checked further down.
         "SneakInvi",
-        "Klimaform"
+        "Klimaform",
+        "Favor",  -- SMN AvatarFavor toggle
+        "Regen"   -- PLD /SCH Regen pair over the idle set
     }
 }
 
@@ -88,9 +91,16 @@ local function categorize_keybind(bind)
         return "ja"
     elseif matches_category(bind.state, categorization_rules.weapon_patterns) then
         return "weapon"
-    else
-        return "other"
     end
+
+    -- Anything unmatched is a mode rather than nothing. extract_display_keys
+    -- builds four buckets and has nowhere to put an "other", so a state whose
+    -- name matched no pattern used to be dropped without a word - which is how
+    -- BRD's MainInstrument and SMN's AvatarFavor, both the job's signature
+    -- ^numpad3 slot, were missing from the HUD while their keys worked fine.
+    -- A row in a section you did not expect is a far cheaper mistake than a
+    -- row that is not there at all.
+    return "mode"
 end
 
 --- Filter out reverse keybinds (those with arrows)
