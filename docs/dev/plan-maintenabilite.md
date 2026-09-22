@@ -12,6 +12,10 @@ mesures sur l'arbre au commit `7015832`, et deux audits automatisés dont les
 affirmations ont été revérifiées une par une — cinq ne se reproduisent pas et
 sont listées en §6 pour qu'on ne les rechasse pas.
 
+> **Statuts : voir §7.** Les constats ci-dessous sont conservés tels qu'écrits,
+> avec les preuves telles qu'elles étaient au moment de la mesure ; c'est §7 qui
+> dit ce qui a été livré et sous quel commit. La plupart des points sont faits.
+
 ## Taille réelle du projet
 
 | Périmètre | Fichiers | Lignes |
