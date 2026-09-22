@@ -131,9 +131,6 @@ local function job_precast_weaponskill(spell, eventArgs)
             return
         end
     end
-
-    -- Reset auto-recast flag
-    _G.DNC_AUTO_WS_RECAST = false
 end
 
 ---   Called before any action (WS, JA, spell, etc.)

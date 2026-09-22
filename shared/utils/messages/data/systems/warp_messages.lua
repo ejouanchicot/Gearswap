@@ -225,11 +225,6 @@ return {
         color = 1
     },
 
-    registered_common = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}]{green} Registered with common commands",
-        color = 1
-    },
-
     ---========================================================================
     --- PRECAST MESSAGES
     ---========================================================================

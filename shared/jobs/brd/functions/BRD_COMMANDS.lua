@@ -111,8 +111,7 @@ end
 ---   after the song's recast check (do NOT add them here: sent from a command
 ---   they would be spent even when the song is on recast).
 ---   @param song_name string Song name to cast
----   @param auto_pianissimo boolean Reserved (currently unused, see PRECAST)
-local function cast_song(song_name, auto_pianissimo)
+local function cast_song(song_name)
     if not song_name then return end
     cast_song_to_target(song_name)
 end
@@ -468,7 +467,7 @@ function job_self_command(cmdParams, eventArgs)
     if command == 'song1' then
         local songs = SongRotationManager.get_songs_with_replacement()
         if songs and songs[1] then
-            cast_song(songs[1], true) -- Enable auto-Pianissimo
+            cast_song(songs[1])
             MessageFormatter.show_song_cast(1, songs[1])
         else
             MessageFormatter.show_no_song_in_slot(1)
@@ -480,7 +479,7 @@ function job_self_command(cmdParams, eventArgs)
     if command == 'song2' then
         local songs = SongRotationManager.get_songs_with_replacement()
         if songs and songs[2] then
-            cast_song(songs[2], true) -- Enable auto-Pianissimo
+            cast_song(songs[2])
             MessageFormatter.show_song_cast(2, songs[2])
         else
             MessageFormatter.show_no_song_in_slot(2)
@@ -492,7 +491,7 @@ function job_self_command(cmdParams, eventArgs)
     if command == 'song3' then
         local songs = SongRotationManager.get_songs_with_replacement()
         if songs and songs[3] then
-            cast_song(songs[3], true) -- Enable auto-Pianissimo
+            cast_song(songs[3])
             MessageFormatter.show_song_cast(3, songs[3])
         else
             MessageFormatter.show_no_song_in_slot(3)
@@ -504,7 +503,7 @@ function job_self_command(cmdParams, eventArgs)
     if command == 'song4' then
         local songs = SongRotationManager.get_songs_with_replacement()
         if songs and songs[4] then
-            cast_song(songs[4], true) -- Enable auto-Pianissimo
+            cast_song(songs[4])
             MessageFormatter.show_song_cast(4, songs[4])
         else
             MessageFormatter.show_no_song_in_slot(4)
@@ -517,7 +516,7 @@ function job_self_command(cmdParams, eventArgs)
         -- No Clarion Call check: player can refresh 5 songs even after Clarion wears off
         local songs = SongRotationManager.get_songs_with_replacement()
         if songs and songs[5] then
-            cast_song(songs[5], true) -- Enable auto-Pianissimo
+            cast_song(songs[5])
             MessageFormatter.show_song_cast(5, songs[5])
         else
             MessageFormatter.show_no_song_in_slot(5)
