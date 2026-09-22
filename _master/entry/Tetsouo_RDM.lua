@@ -168,7 +168,11 @@ function job_sub_job_change(newSubjob, oldSubjob)
     if state.CombatMode and state.CombatMode.current == "On" then
         disable('main', 'sub', 'range')
     else
-        enable('main', 'sub', 'range')
+        -- Same guard as job_update below: a subjob change during a craft
+        -- session must not take the synthesis gear off.
+        if not (_G.CraftManager and _G.CraftManager.is_active()) then
+            enable('main', 'sub', 'range')
+        end
     end
 
     -- Let JobChangeManager handle the full reload sequence

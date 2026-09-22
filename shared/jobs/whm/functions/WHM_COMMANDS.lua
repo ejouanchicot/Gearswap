@@ -196,7 +196,11 @@ function job_state_change(stateField, newValue, oldValue)
         if newValue == 'On' then
             disable('main', 'sub', 'range', 'ammo')
         else
-            enable('main', 'sub', 'range', 'ammo')
+            -- Not during a craft session: CraftManager owns the lock until
+            -- //gs c uncraft, and enabling here would drop the synthesis gear.
+            if not (_G.CraftManager and _G.CraftManager.is_active()) then
+                enable('main', 'sub', 'range', 'ammo')
+            end
         end
     end
 
@@ -208,7 +212,11 @@ function job_state_change(stateField, newValue, oldValue)
         if newValue == 'Melee ON' then
             disable('main', 'sub', 'range')
         else
-            enable('main', 'sub', 'range')
+            -- Not during a craft session: CraftManager owns the lock until
+            -- //gs c uncraft, and enabling here would drop the synthesis gear.
+            if not (_G.CraftManager and _G.CraftManager.is_active()) then
+                enable('main', 'sub', 'range')
+            end
         end
     end
 
