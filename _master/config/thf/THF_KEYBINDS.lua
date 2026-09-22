@@ -93,16 +93,31 @@ function THFKeybinds.bind_all()
     -- Get filtered binds based on current subjob
     local active_binds = THFKeybinds.get_active_binds()
 
-    -- Clear the whole key list before rebinding. bind_all only lays down
-    -- the keys the CURRENT subjob uses, so a /WAR bind (AbyProc, AbyWeapon)
-    -- would otherwise stay bound after leaving /WAR.
-    for _, bind in pairs(THFKeybinds.binds) do
-        pcall(send_command, 'unbind ' .. bind.key)
+    -- Unbind only the keys that will NOT be bound back. Dropping a conditional
+    -- bind left over from another subjob is the whole point of this pass: it
+    -- would otherwise stay bound to a state this subjob never creates, and do
+    -- nothing when pressed.
+    --
+    -- The keys we are about to bind are deliberately left alone. A bind
+    -- overwrites an existing one, so unbinding first gains nothing and opens a
+    -- window where the key is down. That window is where ^numpad9 went missing
+    -- after a reload: its bind is sent unconditionally every time, and
+    -- `//gs c cyclestate HybridMode` still answered while the key was dead - so
+    -- the key had been unbound and the bind that should have followed never
+    -- took effect.
+    local keeping = {}
+    for _, bind in ipairs(active_binds) do
+        keeping[bind.key] = true
+    end
+    for _, bind in ipairs(THFKeybinds.binds) do
+        if not keeping[bind.key] then
+            pcall(send_command, 'unbind ' .. bind.key)
+        end
     end
 
     -- Attempt to bind each key
     local bound_count = 0
-    for _, bind in pairs(active_binds) do
+    for _, bind in ipairs(active_binds) do
         local success, error_msg = pcall(send_command, 'bind ' .. bind.key .. ' gs c ' .. bind.command)
         if success then
             bound_count = bound_count + 1
