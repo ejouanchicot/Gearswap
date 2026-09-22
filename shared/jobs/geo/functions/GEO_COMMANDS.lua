@@ -189,11 +189,15 @@ function job_self_command(cmdParams, eventArgs)
     -- Cast Indi with Entrust
     if command == 'entrust' then
         send_command('input /ja "Entrust" <me>')
-        -- Wait for Entrust buff, then cast Indi on party member
+        -- Wait for the buff, not for a fixed delay. Entrust has a five minute
+        -- recast, so pressing this while it is down used to put the Indi- on an
+        -- ally anyway a second and a half later - a targeting cursor followed by
+        -- a refusal. Nothing was cancelled here, so giving up is the right
+        -- answer: an Indi- aimed at an ally does nothing without Entrust.
         if state.MainIndi and state.MainIndi.current then
-            coroutine.schedule(function()
-                send_command('input /ma "' .. state.MainIndi.current .. '" <stal>')
-            end, 1.5)
+            local AbilityHelper = require('shared/utils/precast/ability_helper')
+            AbilityHelper.follow_up_or_abort('Entrust',
+                'input /ma "' .. state.MainIndi.current .. '" <stal>', 1.5)
         end
         eventArgs.handled = true
         return
