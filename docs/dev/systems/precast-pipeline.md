@@ -27,7 +27,7 @@ changes to `precast_guard.lua`, `auto_medicine.lua` and
 | `shared/config/DEBUFF_AUTOCURE_CONFIG.lua` | 70 | Auto-cure switches, cure item lists, test mode |
 | `shared/utils/precast/cooldown_checker.lua` | 136 | CooldownChecker: ability and spell recast checks with tolerance |
 | `_master/config_global/RECAST_CONFIG.lua` | 98 | Recast tolerance (2.0 s) and global `is_recast_ready` / `is_on_cooldown` |
-| `shared/utils/precast/ability_helper.lua` | 138 | AbilityHelper: fire a JA, then re-send the spell/WS after a wait |
+| `shared/utils/precast/ability_helper.lua` | 256 | AbilityHelper: fire a JA, then re-send the spell/WS once it has landed |
 | `shared/utils/precast/ws_precast_handler.lua` | 84 | WSPrecastHandler: validation, TP gear, TP >= 1000 check, TP gear application |
 | `shared/utils/precast/ws_validator.lua` | 35 | Thin wrapper over WeaponSkillManager (range + Amnesia) |
 | `shared/utils/weaponskill/weaponskill_manager.lua` | 145 | Range formula and Amnesia check; exported as `_G.WeaponSkillManager` |
@@ -207,19 +207,50 @@ once when the module is first executed (17). With `ModuleCache` installed
 ### AbilityHelper
 
 `try_ability` / `try_ability_smart` / `try_ability_ws`
-(`ability_helper.lua:79-136`) all do the same thing when the helper ability is
+(`ability_helper.lua:196-254`) all do the same thing when the helper ability is
 "usable", ready (tolerance applies) and its buff is not up: `cancel_spell()`,
-then one `send_command` that chains the JA, a `wait`, and the original action
-again (`/ma "<spell>" <target id>` or `/ws "<ws>" <t>`). The re-sent action goes
-through the whole precast pipeline again; by then the buff is normally up and
-the helper does nothing.
+send the JA, then hand the original action to `AbilityHelper.follow_up`. The
+re-sent action goes through the whole precast pipeline again; by then the buff
+is normally up and the helper does nothing.
+
+**`follow_up` waits for the ability to land, it does not wait a fixed delay**
+(`ability_helper.lua:146-194`). This matters when adding a new call site,
+because the shape it replaced looks reasonable and is not: a single
+`send_command('input /ja X; wait N; input /ma Y')` is a Windower chain that
+never looks back, so an ability refused during an action lock let the spell go
+out without it. Instead `follow_up` polls every `POLL_INTERVAL` (0.3 s) and
+acts on whichever comes first:
+
+- the buff is up — usually sooner than the old fixed delay;
+- the ability provably never fired — its recast is still ready more than
+  `JA_REGISTER_WINDOW` (1.0 s) after the send;
+- the soft deadline `wait_time + FOLLOW_UP_GRACE` (3.0 s) passes.
+
+In all three cases the follow-up **is sent**. That is deliberate: the caller
+has already run `cancel_spell()`, so the follow-up is the only thing that will
+cast, and dropping it would leave the player doing nothing at all. Where the
+right answer is instead to abort — Accession failing would turn an AoE Sneak
+into a single-target one — that belongs in the caller, as
+`scholar_actions.lua:110-130` does with its own poll and a warning.
+
+The "never fired" shortcut is skipped for abilities whose recast is shared
+(`has_shared_recast`, `:95-118`). The four stratagems all report recast 231,
+the shared charge pool, so a ready recast there only means a charge is left.
+
+`windower._ability_follow_seq` (`:127`) invalidates a pending follow-up when a
+new one starts. It lives on `windower` because that outlives the sandbox: after
+a `gs reload` an orphaned poll would otherwise still believe it is current.
 
 | Caller | Helper ability | Trigger |
 |---|---|---|
-| `PLD_PRECAST.lua:85-104` | Divine Emblem (`try_ability`) | Flash |
-| `PLD_PRECAST.lua:85-104` | Majesty (`try_ability_smart`) | Protect III/IV/V, Cure III/IV |
-| `RDM_PRECAST.lua:217-247` | Saboteur (`try_ability_smart`) | enfeebles in `RDMSaboteurConfig.auto_trigger_spells` when `state.SaboteurMode` is On |
+| `PLD_PRECAST.lua:88` | Divine Emblem (`try_ability`) | Flash |
+| `PLD_PRECAST.lua:91-103` | Majesty (`try_ability_smart`) | Protect III/IV/V, Cure III/IV |
+| `RDM_PRECAST.lua:247` | Saboteur (`try_ability_smart`) | enfeebles in `RDMSaboteurConfig.auto_trigger_spells` when `state.SaboteurMode` is On |
 | `dnc/functions/logic/climactic_manager.lua:75` | Climactic Flourish (`try_ability_ws`, 1 s) | configured WS, `player.tp >= min_tp`, target HP above `min_target_hpp`, and 3 or more Finishing Moves: any of the buffs `Finishing Move 3`, `4`, `5`, `(6+)` (`FINISHING_MOVES_3_PLUS`, `:32-37`, tested at `:45-52`) |
+| `blm_functions.lua:284` | Dark Arts (`follow_up`) | a Dark Magic spell cast without Dark Arts up |
+| `dnc/functions/logic/step_manager.lua:82` | Presto (`follow_up`) | a step, to guarantee the extra Finishing Move |
+| `SAM_PRECAST.lua:101` | Third Eye (`follow_up`) | before Third Eye-gated actions |
+| `scholar_actions.lua:230-237` | Dark Arts, Addendum: Black (`follow_up`) | `cast_under_black_addendum`, e.g. Dispel on BLM/GEO |
 
 `try_ability` and `try_ability_smart` set `eventArgs.handled` but not
 `eventArgs.cancel`, so the job's `job_precast` keeps running after them and Mote

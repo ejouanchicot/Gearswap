@@ -185,7 +185,8 @@ sequenceDiagram
     U->>P: replayed /ws (TP now >= 1000)
     P->>C: auto_trigger: ClimacticAuto On, TP >= 900, target HP > 25%, FM buff, whitelisted WS
     C->>H: try_ability_ws(spell, eventArgs, 'Climactic Flourish', 1)
-    H->>H: ready and buff down -> cancel, /ja Climactic Flourish <me>; wait 1; /ws <t>
+    H->>H: ready and buff down -> cancel, /ja Climactic Flourish <me>
+    H->>H: follow_up polls for the buff, then replays /ws <t>
     U->>P: replayed /ws -> Climactic now on recast -> WS proceeds
 ```
 
@@ -251,8 +252,9 @@ weapon, then `sets.MoveSpeed` outside town while moving.
 `StepManager.execute_step` (`step_manager.lua:39-91`): picks `MainStep`, or
 `AltStep` when `UseAltStep` is On and `CurrentStep` is `Alt`; aborts with a
 cooldown message if the shared step recast (id 220) is on cooldown; sends
-`input /ja "Presto" <me>; wait 1; input /ja "<step>" <t>` when Presto (236) is
-ready, not active and level >= 77, else `input /ja "<step>" <t>` (78-80); flips
+`input /ja "Presto" <me>` and hands the step to `AbilityHelper.follow_up`,
+which replays it once Presto registers rather than after a fixed second, when
+Presto (236) is ready, not active and level >= 77, else `input /ja "<step>" <t>` (78-80); flips
 `CurrentStep`. Steps are job abilities (`prefix="/jobability"`), so they go out
 as `/ja`, the prefix GearSwap intercepts for them (`statics.lua:51-59`,
 `triggers.lua:74-82`); until 2026-09-19 they were sent as `/ma`.
