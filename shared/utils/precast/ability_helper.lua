@@ -205,8 +205,10 @@ end
 --- @param ability_name string Ability whose buff we are waiting on
 --- @param follow_command string|function Command to send, or a function to run
 --- @param wait_time number Soft deadline before giving up
+--- @param on_abort function|nil Run when we give up - for callers holding a
+---        flag that the cancelled action's aftercast would otherwise clear
 --- @return void
-function AbilityHelper.follow_up_or_abort(ability_name, follow_command, wait_time)
+function AbilityHelper.follow_up_or_abort(ability_name, follow_command, wait_time, on_abort)
     local function act()
         if type(follow_command) == 'function' then
             follow_command()
@@ -216,6 +218,9 @@ function AbilityHelper.follow_up_or_abort(ability_name, follow_command, wait_tim
     end
 
     local function give_up(reason)
+        if on_abort then
+            on_abort()
+        end
         local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
         if ok and MessageFormatter then
             MessageFormatter.show_warning(

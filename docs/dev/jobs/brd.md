@@ -200,11 +200,16 @@ pair is `Ltng. Threnody II` -> `Ltng. Threnody`, the resource names).
   another character that is a PC (`spawn_type == 13`), in party or in alliance,
   and not charmed, and Pianissimo is not active, it sets
   `_G.pianissimo_in_progress`, cancels the cast, sends
-  `input /ja "Pianissimo" <me>` then `wait 2; input /ma "<song>" "<name>"`, and
-  sets `eventArgs.cancel`. The flag blocks a second insertion until the next
-  `BardSong` aftercast clears it (`BRD_AFTERCAST.lua:32-34`). A cast cancelled
-  in precast produces no aftercast, so the flag can outlive a failed attempt
-  until the next song completes.
+  `input /ja "Pianissimo" <me>` and hands the song to
+  `AbilityHelper.follow_up_or_abort`, then sets `eventArgs.cancel`.
+  The song is re-sent once Pianissimo actually registers; if the ability was
+  refused, the attempt is abandoned with a warning instead, because a song
+  aimed at another player is refused outright without Pianissimo.
+  The flag blocks a second insertion until the next `BardSong` aftercast
+  clears it (`BRD_AFTERCAST.lua:32-34`); on the abandon path the helper's
+  `on_abort` callback clears it, since a refused song produces no aftercast
+  and the flag would otherwise make every later ally-targeted song skip
+  Pianissimo until one was sung on self.
 - **Marcato** (`try_marcato`, 151-181): only for the song named by
   `state.MarcatoSong` (`HonorMarch` -> Honor March, `AriaPassion` -> Aria of
   Passion), not on another player, only with Nightingale **and** Troubadour, not
