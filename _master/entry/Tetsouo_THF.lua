@@ -235,6 +235,17 @@ function init_gear_sets()
 end
 
 function file_unload()
+    -- Release the range/ammo lock: GearSwap keeps slot locks across job files
+    -- while RangeLock starts Off in the next one.
+    -- First, before anything else in here can throw: GearSwap wraps the whole
+    -- of file_unload in a single pcall (engine flow.lua:339-348), so an error
+    -- in the cleanup below would skip this and leak the slot lock into the
+    -- next job, which has no way to know it exists.
+    local rl_ok, RangeLock = pcall(require, 'shared/jobs/thf/functions/logic/range_lock')
+    if rl_ok and RangeLock then
+        RangeLock.release()
+    end
+
     -- Cancel pending job change operations (debounce timer + lockstyles)
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if jcm_success and JobChangeManager then
@@ -244,12 +255,5 @@ function file_unload()
     -- Unbind all keybinds (Windower binds persist across gs reload)
     if THFKeybinds and THFKeybinds.unbind_all then
         THFKeybinds.unbind_all()
-    end
-
-    -- Release the range/ammo lock: GearSwap keeps slot locks across job files
-    -- while RangeLock starts Off in the next one.
-    local rl_ok, RangeLock = pcall(require, 'shared/jobs/thf/functions/logic/range_lock')
-    if rl_ok and RangeLock then
-        RangeLock.release()
     end
 end

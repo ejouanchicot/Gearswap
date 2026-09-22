@@ -273,6 +273,17 @@ function init_gear_sets()
 end
 
 function file_unload()
+    -- Give the ammo slot back before the next job file loads: a GearSwap slot
+    -- lock survives a job change, and nothing on the other side knows it.
+    -- First, before anything else in here can throw: GearSwap wraps the whole
+    -- of file_unload in a single pcall (engine flow.lua:339-348), so an error
+    -- in the cleanup below would skip this and leak the slot lock into the
+    -- next job, which has no way to know it exists.
+    local al_ok, AmpullaLock = pcall(require, 'shared/jobs/pld/functions/logic/ampulla_lock')
+    if al_ok and AmpullaLock then
+        AmpullaLock.release()
+    end
+
     -- Cancel pending job change operations (debounce timer + lockstyles)
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if jcm_success and JobChangeManager then
@@ -282,12 +293,5 @@ function file_unload()
     -- Unbind all keybinds (Windower binds persist across gs reload)
     if PLDKeybinds and PLDKeybinds.unbind_all then
         PLDKeybinds.unbind_all()
-    end
-
-    -- Give the ammo slot back before the next job file loads: a GearSwap slot
-    -- lock survives a job change, and nothing on the other side knows it.
-    local al_ok, AmpullaLock = pcall(require, 'shared/jobs/pld/functions/logic/ampulla_lock')
-    if al_ok and AmpullaLock then
-        AmpullaLock.release()
     end
 end
