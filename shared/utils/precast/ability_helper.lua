@@ -76,6 +76,79 @@ function AbilityHelper.is_buff_active(buff_name)
     return buffactive[buff_name] or false
 end
 
+--- How often the pending follow-up re-reads the game state.
+local POLL_INTERVAL = 0.3
+
+--- How long to let the job ability register on its recast before concluding
+--- that the game refused it. A refused ability leaves its recast untouched.
+local JA_REGISTER_WINDOW = 1.0
+
+--- How long past the caller's wait_time to keep waiting for the buff.
+--- Only reached when the ability fired but its buff is slow to appear.
+local FOLLOW_UP_GRACE = 3.0
+
+--- Invalidates a pending follow-up when another one is started.
+--- Kept on `windower`, which outlives the sandbox: a gs reload would otherwise
+--- leave an orphaned follow-up believing it is still current.
+windower._ability_follow_seq = windower._ability_follow_seq or 0
+
+--- Send the follow-up action once the ability has actually taken effect.
+---
+--- The old form was `input /ja X; wait N; input /ma Y`, a Windower chain that
+--- never looks back: an ability refused during an action lock left the spell
+--- to fire without it. Worse, the caller has already run cancel_spell(), so
+--- the follow-up is the ONLY thing that will cast - dropping it would leave
+--- the player with nothing at all.
+---
+--- So the follow-up always goes out. What changed is when:
+---   • buff up            -> immediately, usually sooner than the old delay
+---   • ability never fired -> as soon as that is provable, sooner than before
+---   • buff slow          -> once it lands, up to wait_time + grace
+---
+--- @param ability_name string Ability whose buff we are waiting on
+--- @param follow_command string Command to send once it has landed
+--- @param wait_time number Caller's original delay, used as the soft deadline
+--- @return void
+function AbilityHelper.follow_up(ability_name, follow_command, wait_time)
+    windower._ability_follow_seq = windower._ability_follow_seq + 1
+    local my_seq = windower._ability_follow_seq
+
+    local started = os.clock()
+    local deadline = started + wait_time + FOLLOW_UP_GRACE
+
+    local poll
+    poll = function()
+        if my_seq ~= windower._ability_follow_seq then
+            return
+        end
+
+        local now = os.clock()
+
+        -- The buff is up: the ability did its job, go.
+        if AbilityHelper.is_buff_active(ability_name) then
+            send_command(follow_command)
+            return
+        end
+
+        -- Still off cooldown after long enough to have registered means the
+        -- game never accepted it. Nothing more to wait for.
+        if now - started >= JA_REGISTER_WINDOW
+            and AbilityHelper.is_ability_ready(ability_name) then
+            send_command(follow_command)
+            return
+        end
+
+        if now >= deadline then
+            send_command(follow_command)
+            return
+        end
+
+        coroutine.schedule(poll, POLL_INTERVAL)
+    end
+
+    poll()
+end
+
 function AbilityHelper.try_ability(spell, eventArgs, ability_name, wait_time)
     wait_time = wait_time or 2
 
@@ -88,8 +161,9 @@ function AbilityHelper.try_ability(spell, eventArgs, ability_name, wait_time)
     if AbilityHelper.is_ability_ready(ability_name) and not AbilityHelper.is_buff_active(ability_name) then
         eventArgs.handled = true
         cancel_spell()
-        send_command(string.format('input /ja "%s" <me>; wait %d; input /ma "%s" %s',
-            ability_name, wait_time, spell.name, spell.target.id))
+        send_command(string.format('input /ja "%s" <me>', ability_name))
+        AbilityHelper.follow_up(ability_name,
+            string.format('input /ma "%s" %s', spell.name, spell.target.id), wait_time)
     end
 end
 
@@ -110,8 +184,9 @@ function AbilityHelper.try_ability_smart(spell, eventArgs, ability_name, wait_ti
     if AbilityHelper.is_ability_ready(ability_name) then
         eventArgs.handled = true
         cancel_spell()
-        send_command(string.format('input /ja "%s" <me>; wait %d; input /ma "%s" %s',
-            ability_name, wait_time, spell.name, spell.target.id))
+        send_command(string.format('input /ja "%s" <me>', ability_name))
+        AbilityHelper.follow_up(ability_name,
+            string.format('input /ma "%s" %s', spell.name, spell.target.id), wait_time)
     end
 end
 
@@ -130,8 +205,9 @@ function AbilityHelper.try_ability_ws(spell, eventArgs, ability_name, wait_time)
         cancel_spell()
         -- Set flag to suppress WS message on auto-recast (DNC Jump/Climactic system)
         _G.DNC_AUTO_WS_RECAST = true
-        send_command(string.format('input /ja "%s" <me>; wait %d; input /ws "%s" <t>',
-            ability_name, wait_time, spell.name))
+        send_command(string.format('input /ja "%s" <me>', ability_name))
+        AbilityHelper.follow_up(ability_name,
+            string.format('input /ws "%s" <t>', spell.name), wait_time)
     end
 end
 
