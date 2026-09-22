@@ -325,10 +325,12 @@ code looks up is missing.
 - `windower.*`: nothing written by GEO code. No events registered.
 - Outside the sandbox: the PetTP addon (load/unload), the `disable_table` slot
   locks of CombatMode (they survive `gs reload` and job change).
-- Coroutines: the 8 s lockstyle and the 1.5 s `entrust` follow-up, neither
-  cancelled on reload. `dispel` no longer chains `wait N`: it goes through
-  `ScholarActions.cast_under_black_addendum`, which polls for the stratagem
-  buffs and aborts with a warning if they never arrive.
+- Coroutines: the 8 s lockstyle, and the polls behind `entrust` and `dispel`.
+  Neither chains `wait N` any more: `entrust` uses
+  `AbilityHelper.follow_up_or_abort`, `dispel` goes through
+  `ScholarActions.cast_under_black_addendum`. Both wait for the buff and
+  abort with a warning instead of casting without it. The lockstyle is not
+  cancelled on reload; the polls carry a generation counter and are.
 - Subjob change: Mote re-runs `user_setup()` (PetTP load, states reset, keys
   rebound, macrobook/lockstyle again), then `job_sub_job_change`
   (`Tetsouo_GEO.lua:134-158`) calls `JobChangeManager.initialize({...})`, whose

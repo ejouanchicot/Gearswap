@@ -27,7 +27,7 @@ changes to `precast_guard.lua`, `auto_medicine.lua` and
 | `shared/config/DEBUFF_AUTOCURE_CONFIG.lua` | 70 | Auto-cure switches, cure item lists, test mode |
 | `shared/utils/precast/cooldown_checker.lua` | 136 | CooldownChecker: ability and spell recast checks with tolerance |
 | `_master/config_global/RECAST_CONFIG.lua` | 98 | Recast tolerance (2.0 s) and global `is_recast_ready` / `is_on_cooldown` |
-| `shared/utils/precast/ability_helper.lua` | 256 | AbilityHelper: fire a JA, then re-send the spell/WS once it has landed |
+| `shared/utils/precast/ability_helper.lua` | 322 | AbilityHelper: fire a JA, then re-send the spell/WS once it has landed (or abort, via follow_up_or_abort) |
 | `shared/utils/precast/ws_precast_handler.lua` | 84 | WSPrecastHandler: validation, TP gear, TP >= 1000 check, TP gear application |
 | `shared/utils/precast/ws_validator.lua` | 35 | Thin wrapper over WeaponSkillManager (range + Amnesia) |
 | `shared/utils/weaponskill/weaponskill_manager.lua` | 145 | Range formula and Amnesia check; exported as `_G.WeaponSkillManager` |
@@ -228,10 +228,20 @@ acts on whichever comes first:
 
 In all three cases the follow-up **is sent**. That is deliberate: the caller
 has already run `cancel_spell()`, so the follow-up is the only thing that will
-cast, and dropping it would leave the player doing nothing at all. Where the
-right answer is instead to abort — Accession failing would turn an AoE Sneak
-into a single-target one — that belongs in the caller, as
-`scholar_actions.lua:110-130` does with its own poll and a warning.
+cast, and dropping it would leave the player doing nothing at all.
+
+`follow_up_or_abort` (`:196-259`) is the sibling for the opposite situation:
+nothing was cancelled, and the follow-up on its own would be wrong. It sends
+on the buff and otherwise gives up with a warning — "Cancelled: X was refused"
+when the recast proves the ability never fired, "Cancelled: X never came up"
+at the deadline. Used by GEO's `entrust` (`GEO_COMMANDS.lua:190-200`), where an
+Indi- aimed at an ally does nothing without Entrust and Entrust carries a five
+minute recast. `scholar_actions.lua:110-130` implements the same idea inline,
+because it waits on several buffs at once rather than one.
+
+Choosing between them is the whole decision at a new call site: **did the
+caller already cancel the player's action?** If yes, `follow_up`. If no,
+`follow_up_or_abort`.
 
 The "never fired" shortcut is skipped for abilities whose recast is shared
 (`has_shared_recast`, `:95-118`). The four stratagems all report recast 231,

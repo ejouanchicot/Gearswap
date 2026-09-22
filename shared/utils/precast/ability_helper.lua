@@ -193,6 +193,73 @@ function AbilityHelper.follow_up(ability_name, follow_command, wait_time)
     poll()
 end
 
+--- Send the follow-up only if the ability landed, and say so when it did not.
+---
+--- The sibling of follow_up, for the opposite situation. follow_up is for a
+--- caller that has already run cancel_spell(): the player's action is gone, so
+--- the follow-up has to go out regardless. Use this one when nothing was
+--- cancelled and the follow-up alone would be wrong - an Indi- meant for an
+--- ally is useless without Entrust, an AoE Sneak becomes a single-target one
+--- without Accession. There, casting anyway spends a cast on the wrong thing.
+---
+--- @param ability_name string Ability whose buff we are waiting on
+--- @param follow_command string|function Command to send, or a function to run
+--- @param wait_time number Soft deadline before giving up
+--- @return void
+function AbilityHelper.follow_up_or_abort(ability_name, follow_command, wait_time)
+    local function act()
+        if type(follow_command) == 'function' then
+            follow_command()
+        else
+            send_command(follow_command)
+        end
+    end
+
+    local function give_up(reason)
+        local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+        if ok and MessageFormatter then
+            MessageFormatter.show_warning(
+                ('Cancelled: %s %s'):format(ability_name, reason))
+        end
+    end
+
+    windower._ability_follow_seq = windower._ability_follow_seq + 1
+    local my_seq = windower._ability_follow_seq
+
+    local started = os.clock()
+    local deadline = started + (wait_time or 2) + FOLLOW_UP_GRACE
+
+    local poll
+    poll = function()
+        if my_seq ~= windower._ability_follow_seq then
+            return
+        end
+
+        if AbilityHelper.is_buff_active(ability_name) then
+            act()
+            return
+        end
+
+        local now = os.clock()
+
+        if now - started >= JA_REGISTER_WINDOW
+            and not has_shared_recast(ability_name)
+            and AbilityHelper.is_ability_ready(ability_name) then
+            give_up('was refused')
+            return
+        end
+
+        if now >= deadline then
+            give_up('never came up')
+            return
+        end
+
+        coroutine.schedule(poll, POLL_INTERVAL)
+    end
+
+    poll()
+end
+
 function AbilityHelper.try_ability(spell, eventArgs, ability_name, wait_time)
     wait_time = wait_time or 2
 
