@@ -179,9 +179,15 @@ sets.idleXp =
 --- Regen overlay, /SCH only. Two slots rather than a whole set: it rides on
 --- top of the idle set the stance already chose, so DPS, Tanking and Hoxne
 --- each keep their own mitigation and only the body and hands change.
+---
+--- All three /SCH stances idle in sets.idle.MDT (set_builder IDLE_SET_BY_MODE),
+--- and that set carries no priorities: out of combat an HP dip mid-swap costs
+--- nothing, which is why it was never ranked. So neither piece is ranked here.
+--- Misc.RegalGauntlets is deliberately not reused - its priority 7 belongs to
+--- the fast-cast sets, and would make the hands equip first here for no reason.
 sets.idleRegen = {
-    body  = Misc.SacroBreastplate,
-    hands = Misc.RegalGauntlets
+    body  = Misc.SacroBreastplate,  -- Regen+13, HP+182
+    hands = 'Regal Gauntlets'
 }
 
 -- ═══════════════════════════════════════════════════════════════════════════

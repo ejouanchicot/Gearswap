@@ -201,8 +201,9 @@ Armor.Misc = {
     FoundersHose     = {name = "Founder's Hose", priority = 0},
     FoundersHoseCure = {name = "Founder's Hose", priority = 1},
     RegalGauntlets   = {name = 'Regal Gauntlets', priority = 7},
-    -- Regen pair, worn together by sets.idleRegen. No priority yet: the
-    -- HP delta against the idle body it replaces has not been measured.
+    -- Regen+13, HP+182. Worn by sets.idleRegen, which only ever lands on
+    -- sets.idle.MDT - a set that carries no priorities at all, so this one
+    -- takes none either rather than being the single ranked piece in it.
     SacroBreastplate = {name = 'Sacro Breastplate'},
     CarmineMask      = {name = 'Carmine Mask +1', priority = 3},
     LeylineGloves    = {name = 'Leyline Gloves', priority = 6},
