@@ -80,11 +80,27 @@ end
 -- MessageInit loaded on-demand (only when showing errors)
 local MessageInit = nil
 
+-- Never returns nil. Every caller below is `ensure_message_init().show_*(...)`
+-- with no guard, and five of them sit inside a coroutine.schedule block: if the
+-- formatter failed to load, indexing nil would throw there and take the rest of
+-- that block's initialisations down with it. The one case where this reporter is
+-- needed most - the message chain itself being broken - was the one case where
+-- it made things worse. The fallback writes straight to chat for the same
+-- reason the diagnostic tools are allowed to (CODE_QUALITY section 6): a
+-- reporter that cannot speak because the thing it reports on is broken is no
+-- reporter at all.
 local function ensure_message_init()
     if not MessageInit then
         local success, module = pcall(require, 'shared/utils/messages/formatters/system/message_init')
-        if success then
+        if success and module then
             MessageInit = module
+        else
+            MessageInit = {
+                show_module_load_failed = function(module_name, error_msg)
+                    add_to_chat(167, ('[INIT] %s failed to load: %s')
+                        :format(tostring(module_name), tostring(error_msg)))
+                end,
+            }
         end
     end
     return MessageInit
@@ -258,6 +274,37 @@ end, 0.5)  -- Defer by 0.5 seconds (non-blocking)
 -- All universal systems initialized
 -- Individual system messages displayed above (if any errors occurred)
 -- This is a pure initialization script - no return value needed
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PRECAST SAFETY MODULES - confirm they load, once per job load
+---  ═══════════════════════════════════════════════════════════════════════════
+
+-- Every [JOB]_PRECAST.lua pcalls these three and carries on with nil when one
+-- fails, then sets modules_loaded = true regardless - so the failure is
+-- permanent for the session and completely silent. What disappears is not a
+-- nicety: PrecastGuard is the Silence/Amnesia/death block, CooldownChecker is
+-- every recast message, WSPrecastHandler is the range check and the TP bonus
+-- gear. Worse, precast_guard requires message_core without a pcall, so the very
+-- error that removes the guard on all 16 jobs also takes MessageFormatter down
+-- with it - the channel that would have said so.
+--
+-- Checked here rather than in the 16 job files, and on a delay rather than
+-- inline: ModuleCache means this require is the same one the job will get, so
+-- an answer here is the answer there, and waiting keeps the cost of loading
+-- the chain off the cold-load path.
+coroutine.schedule(function()
+    local critical = {
+        { 'PrecastGuard',     'shared/utils/debuff/precast_guard' },
+        { 'CooldownChecker',  'shared/utils/precast/cooldown_checker' },
+        { 'WSPrecastHandler', 'shared/utils/precast/ws_precast_handler' },
+    }
+    for _, entry in ipairs(critical) do
+        local ok, mod = pcall(require, entry[2])
+        if not ok or not mod then
+            ensure_message_init().show_module_load_failed(entry[1], mod)
+        end
+    end
+end, 3.0)
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   GLOBAL PROBE BASELINE (last, so it sees everything the load created)
