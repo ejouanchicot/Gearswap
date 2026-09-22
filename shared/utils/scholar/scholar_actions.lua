@@ -129,6 +129,80 @@ cast_when_ready = function(spell_name, target, required, deadline, my_seq)
     send_command('input /ma "' .. spell_name .. '" ' .. target)
 end
 
+--- Send each step only once the previous one has actually landed.
+---
+--- The old form was a Windower chain with a fixed `wait 2` between steps, which
+--- sends Accession whether or not Light Arts went out. An ability issued while
+--- the previous one still holds the action lock is refused outright, and the
+--- chain never looks back - so Accession was simply lost and the spell went out
+--- single-target, or was cancelled for a stratagem that never came.
+---
+--- Each step therefore waits on the buff it raises. Light Arts is the one that
+--- matters here: it costs no charge, but Accession is a Light Arts stratagem
+--- and will not go out before the Arts are up.
+---
+--- A step that never lands ends the chain, unless `finish_anyway` is set: some
+--- callers want the spell either way (Klimaform is worth casting without
+--- Manifestation, a lone Sneak instead of a party one is not).
+---
+--- @param steps table List of {command = string, buff = string}
+--- @param index number Step being sent or waited on
+--- @param deadline number os.clock() past which this step is given up on
+--- @param my_seq number Generation this chain belongs to
+--- @param on_done function Runs once every step has landed
+--- @param finish_anyway boolean|nil Run on_done even when a step is given up on
+--- @return void
+local run_steps
+run_steps = function(steps, index, deadline, my_seq, on_done, finish_anyway)
+    if my_seq ~= windower._sch_cast_seq or not player then
+        return
+    end
+
+    if index > #steps then
+        on_done()
+        return
+    end
+
+    local step = steps[index]
+
+    if not step.sent then
+        step.sent = true
+        send_command(step.command)
+    end
+
+    if buff_up(step.buff) then
+        run_steps(steps, index + 1, os.clock() + POLL_GRACE, my_seq, on_done, finish_anyway)
+        return
+    end
+
+    if os.clock() >= deadline then
+        if finish_anyway then
+            get_formatter().show_warning(('%s never came up'):format(step.buff))
+            on_done()
+        else
+            get_formatter().show_warning(
+                ('Cancelled: %s never came up'):format(step.buff))
+        end
+        return
+    end
+
+    coroutine.schedule(function()
+        run_steps(steps, index, deadline, my_seq, on_done, finish_anyway)
+    end, POLL_INTERVAL)
+end
+
+--- Run a chain of abilities, each waiting on the buff it raises, then act.
+--- Exposed for callers whose final step is not a ScholarActions cast.
+--- @param steps table List of {command = string, buff = string}
+--- @param on_done function Runs once every step has landed
+--- @param finish_anyway boolean|nil Run on_done even when a step is given up on
+--- @return void
+function ScholarActions.run_chain(steps, on_done, finish_anyway)
+    windower._sch_cast_seq = windower._sch_cast_seq + 1
+    run_steps(steps, 1, os.clock() + POLL_GRACE, windower._sch_cast_seq,
+        on_done, finish_anyway)
+end
+
 --- Cast one of the party utility spells, stratagems first
 --- AOE On  : Accession, cast on <me> so the burst is centred on the player.
 --- AOE Off : no Accession, cast on <stal> to pick a single ally.
@@ -188,17 +262,17 @@ function ScholarActions.cast_with_stratagems(spell_name, aoe_state, needs_addend
 
     local steps = {}
     if not arts_up then
-        table.insert(steps, 'input /ja "Light Arts" <me>')
+        table.insert(steps, {command = 'input /ja "Light Arts" <me>', buff = 'Light Arts'})
     end
-    for _, stratagem in ipairs(stratagems) do
-        table.insert(steps, stratagem)
+    for i, stratagem in ipairs(stratagems) do
+        table.insert(steps, {command = stratagem, buff = required[i]})
     end
-    send_command(ScholarActions.chain(steps))
 
-    -- The chain spaces its own steps, so the last one fires that much later.
-    local chain_time = STEP_SPACING * (#steps - 1)
-    cast_when_ready(spell_name, target, required,
-        os.clock() + chain_time + POLL_GRACE, windower._sch_cast_seq)
+    local my_seq = windower._sch_cast_seq
+    run_steps(steps, 1, os.clock() + POLL_GRACE, my_seq, function()
+        cast_when_ready(spell_name, target, required,
+            os.clock() + POLL_GRACE, my_seq)
+    end)
 end
 
 --- Cast a spell the subjob only reaches under Addendum: Black
