@@ -181,10 +181,10 @@ flowchart TD
   spell's English name listed in `auto_trigger_spells`. It calls
   `AbilityHelper.try_ability_smart(spell, eventArgs, 'Saboteur', wait_time)`,
   which, when Saboteur is ready and not up, calls `cancel_spell()`, sets
-  `eventArgs.handled` and sends
-  `input /ja "Saboteur" <me>; wait 2; input /ma "<spell>" <target id>`
-  (`ability_helper.lua:94-113`). Because only `handled` is set, Mote skips the
-  default precast but still runs `job_post_precast`.
+  `eventArgs.handled`, sends `input /ja "Saboteur" <me>` and replays the
+  spell through `follow_up` once Saboteur registers, rather than after a
+  fixed `wait 2` (`ability_helper.lua:146-235`). Because only `handled` is
+  set, Mote skips the default precast but still runs `job_post_precast`.
 - `WSPrecastHandler.handle` is called for every action (it returns true for
   non-WS). `RDMTPConfig` defines `pieces` and `get_weapon_bonus`, so the TP
   calculator works for RDM (compare BLM).

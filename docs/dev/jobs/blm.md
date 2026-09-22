@@ -172,9 +172,13 @@ flowchart TD
   when `player.sub_job == 'SCH'`, `sub_job_level ~= 0` (Odyssey subjob lock),
   Dark Arts recast (id from `res.job_abilities`, fallback 232) is 0, and
   neither Dark Arts nor Addendum: Black is active. It calls `cancel_spell()`
-  directly (not `eventArgs.cancel`), sends
-  `input /ja "Dark Arts" <me>; wait 2; input /ma "<spell>" <t>`, and stamps
-  `_G.BLM_ARTS_LAST_CAST` (2 s guard). Because `eventArgs.cancel` stays false,
+  directly (not `eventArgs.cancel`), sends `input /ja "Dark Arts" <me>`, then
+  hands the nuke to `AbilityHelper.follow_up`, which re-sends it once Dark Arts
+  actually registers rather than after a fixed `wait 2`. It goes out either way
+  — `cancel_spell()` has already killed the cast, so the follow-up is the only
+  thing that will send it. `_G.BLM_ARTS_LAST_CAST` still stamps a 2 s guard, so
+  a second nuke inside that window does not queue Dark Arts a second time.
+  Because `eventArgs.cancel` stays false,
   Mote still runs `default_precast` and `job_post_precast` for the cancelled
   cast (`Mote-Include.lua:254-276`), and `job_precast` continues to the Impact
   lock.

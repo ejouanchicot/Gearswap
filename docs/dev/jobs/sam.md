@@ -120,7 +120,7 @@ flowchart TD
     D -- no --> E{Third Eye and Seigan down}
     E -- "yes, first attempt" --> S[cancel; /ja Seigan; wait 1; /ja Third Eye]
     E -- no --> F{WeaponSkill and Third Eye down}
-    F -- "recast slot reads 0" --> T[cancel; /ja Third Eye; wait 1.5; /ws same target]
+    F -- "recast slot reads 0" --> T[cancel; /ja Third Eye; follow_up replays /ws]
     F -- no --> W[WSPrecastHandler.handle with SAMTPConfig]
 ```
 

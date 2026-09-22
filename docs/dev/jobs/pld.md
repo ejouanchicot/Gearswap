@@ -164,10 +164,11 @@ flowchart TD
   already skips stratagems itself (see
   [precast pipeline](../systems/precast-pipeline.md#recast-check)).
 - The helper abilities: when ready and their buff is down, `AbilityHelper`
-  calls `cancel_spell()`, sends `input /ja "<JA>" <me>; wait 2; input /ma
-  "<spell>" <target id>` and sets `eventArgs.handled`, not `cancel`
-  (`ability_helper.lua:79-116`). `job_precast` goes on to line 150 and Mote
-  still runs `job_post_precast` for the cancelled spell.
+  calls `cancel_spell()`, sends `input /ja "<JA>" <me>`, then replays the
+  spell through `follow_up`, which waits for the buff to land instead of a
+  fixed delay (`ability_helper.lua:146-235`). It sets `eventArgs.handled`,
+  not `cancel`, so `job_precast` goes on to line 150 and Mote still runs
+  `job_post_precast` for the cancelled spell.
 - `WSPrecastHandler.handle` returns true at once for anything that is not a
   weaponskill (`ws_precast_handler.lua:35-38`); for a WS it validates range,
   computes TP-bonus gear from `_G.PLDTPConfig` and refuses below 1000 TP.
