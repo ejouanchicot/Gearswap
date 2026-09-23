@@ -183,7 +183,7 @@ function user_setup()
     -- lock still held by the sandbox belongs to a stance that is no longer
     -- selected. GearSwap slot locks outlive the job file; nothing else would
     -- ever give the slot back.
-    local al_ok, AmpullaLock = pcall(require, 'shared/jobs/pld/functions/logic/ampulla_lock')
+    local al_ok, AmpullaLock = pcall(require, 'shared/utils/equipment/ampulla_lock')
     if al_ok and AmpullaLock then
         AmpullaLock.apply(state.HybridMode and state.HybridMode.value)
     end
@@ -279,7 +279,7 @@ function file_unload()
     -- of file_unload in a single pcall (engine flow.lua:339-348), so an error
     -- in the cleanup below would skip this and leak the slot lock into the
     -- next job, which has no way to know it exists.
-    local al_ok, AmpullaLock = pcall(require, 'shared/jobs/pld/functions/logic/ampulla_lock')
+    local al_ok, AmpullaLock = pcall(require, 'shared/utils/equipment/ampulla_lock')
     if al_ok and AmpullaLock then
         AmpullaLock.release()
     end

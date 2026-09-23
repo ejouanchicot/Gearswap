@@ -75,7 +75,7 @@ local STANDARD_HYBRID_OPTIONS = {'PDT', 'MDT', 'Sortie'}
 --- feed weaponskills, or carry the Hoxne Ampulla.
 --- DPS and Hoxne each own their engaged build: the Ampulla's charge supplies
 --- the Double Attack that DPS has to buy with gear. Hoxne also freezes the
---- ammo slot (logic/ampulla_lock.lua), the Ampulla being swapped out by the
+--- ammo slot (shared/utils/equipment/ampulla_lock.lua), the Ampulla being swapped out by the
 --- next set the moment it is equipped otherwise.
 local SCH_HYBRID_OPTIONS = {'DPS', 'Tanking', 'Hoxne'}
 

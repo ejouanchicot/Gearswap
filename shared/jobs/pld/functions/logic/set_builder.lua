@@ -106,7 +106,7 @@ local function sch_weapon()
 end
 
 --- The Hoxne stance carries its Ampulla in every set, the way the stances
---- carry their shield. The ammo lock (logic/ampulla_lock.lua) keeps the WS and
+--- carry their shield. The ammo lock (shared/utils/equipment/ampulla_lock.lua) keeps the WS and
 --- midcast sets off the slot; this is what puts the piece on in the first
 --- place, so idling or engaging cannot land on a set's own ammo instead.
 local SCH_AMMO_BY_MODE = {
