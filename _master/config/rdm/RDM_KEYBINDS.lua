@@ -91,6 +91,7 @@ function RDMKeybinds.bind_all()
     -- `//gs c cyclestate HybridMode` still answered while the key was dead - so
     -- the key had been unbound and the bind that should have followed never
     -- took effect.
+    local active_binds = RDMKeybinds.get_active_binds()
     local keeping = {}
     for _, bind in ipairs(active_binds) do
         keeping[bind.key] = true
@@ -102,7 +103,7 @@ function RDMKeybinds.bind_all()
     end
 
     local bound_count = 0
-    for _, bind in pairs(RDMKeybinds.get_active_binds()) do
+    for _, bind in ipairs(active_binds) do
         local success, error_msg = pcall(send_command, 'bind ' .. bind.key .. ' gs c ' .. bind.command)
         if success then
             bound_count = bound_count + 1
