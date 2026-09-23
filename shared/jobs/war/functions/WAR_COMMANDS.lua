@@ -286,6 +286,15 @@ function job_state_change(stateField, newValue, oldValue)
         end
     end
 
+    -- The Hoxne stance holds the ammo slot on its Ampulla; every other
+    -- stance gives the slot back.
+    if field == 'HybridMode' then
+        local al_ok, AmpullaLock = pcall(require, 'shared/utils/equipment/ampulla_lock')
+        if al_ok and AmpullaLock then
+            AmpullaLock.apply(newValue)
+        end
+    end
+
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI then
         KeybindUI.update()
