@@ -76,8 +76,12 @@ local function walk_sets(t, used, visited, depth)
     visited[t] = true
 
     for k, v in pairs(t) do
-        if type(v) == 'string' and Config.SLOT_KEYS[k] then
-            used[v:lower()] = true
+        -- A slot holds either a name or an advanced entry {name=, augments=,
+        -- bag=, priority=}; the entry is the piece, not a nested set.
+        local name = Config.SLOT_KEYS[k]
+            and ((type(v) == 'string' and v) or (type(v) == 'table' and type(v.name) == 'string' and v.name))
+        if name then
+            used[name:lower()] = true
         elseif type(v) == 'table' then
             walk_sets(v, used, visited, depth + 1)
         end
