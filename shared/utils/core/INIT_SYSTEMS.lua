@@ -17,6 +17,7 @@
 ---     2. Warp System (universal warp detection + IPC multi-boxing) - DEFERRED
 ---     3. AutoMove (movement speed detection) - DEFERRED
 ---     4. State Display Override (conditional state messages) - DEFERRED
+---     5. HP Priority (equip order by piece HP, see equipment/hp_priority) - IMMEDIATE
 ---
 ---   @file    shared/utils/core/INIT_SYSTEMS.lua
 ---   @author  Tetsouo
@@ -53,6 +54,18 @@ pcall(function()
     local ok, ModuleCache = pcall(require, 'shared/utils/core/module_cache')
     if ok and ModuleCache then
         ModuleCache.install()
+    end
+end)
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   HP PRIORITY (the sets are loaded: Mote ran init_gear_sets before this file)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+-- Every HP piece gets priority = its HP, so a swap never dips max HP.
+pcall(function()
+    local ok, HPPriority = pcall(require, 'shared/utils/equipment/hp_priority')
+    if ok and HPPriority then
+        HPPriority.apply()
     end
 end)
 
