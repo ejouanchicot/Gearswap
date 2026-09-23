@@ -32,15 +32,55 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 ---   AFTERMATH LV.3 DETECTION (ENGAGED)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- HybridMode values that are explicit stances: their set wins over the
+--- Aftermath and weapon-specific sets, since the player picked them on purpose.
+local STANCE_MODES = {
+    SubtleBlow = true,
+    Hoxne      = true,
+}
+
+---   Aftermath Lv.3 (buff ID 272) is up on Ukonvasara
+---   @return boolean
+local function ukonvasara_am3()
+    return buffactive[272] ~= nil and state.MainWeapon ~= nil
+        and state.MainWeapon.current == 'Ukonvasara'
+end
+
+---   Engaged set of the active stance (sets.engaged.SubtleBlow / .Hoxne)
+---   Under Ukonvasara AM3 the stance's AFM3 variant wins when it is defined
+---   (sets.engaged.HoxneAFM3).
+---   @return table|nil Stance set, or nil outside a stance or if undefined
+local function select_stance_engaged()
+    local mode = state.HybridMode and state.HybridMode.current
+    if not (mode and STANCE_MODES[mode]) then
+        return nil
+    end
+    if ukonvasara_am3() and sets.engaged[mode .. 'AFM3'] then
+        return sets.engaged[mode .. 'AFM3']
+    end
+    return sets.engaged[mode]
+end
+
+---   Engaged set dedicated to the current weapon set (e.g. sets.engaged.Naegling)
+---   @return table|nil Weapon engaged set, or nil if none is defined
+local function select_weapon_engaged()
+    if not (state.MainWeapon and state.MainWeapon.current) then
+        return nil
+    end
+    return sets.engaged[state.MainWeapon.current]
+end
+
 ---   Select engaged base set with Kraken Club and Aftermath Lv.3 detection
 ---   Kraken Club detection takes highest priority for specialized multi-attack set.
 ---   Aftermath Lv.3 (buff ID: 272) + Ukonvasara = Use specialized PDTAFM3 set
 ---
 ---   Priority order:
 ---   1. Kraken Club weapon set       >> sets.engaged.PDTKC
----   2. Aftermath Lv.3 + Ukonvasara  >> sets.engaged.PDTAFM3
----   3. HybridMode (PDT/Normal/SubtleBlow) >> sets.engaged[HybridMode]
----   4. Fallback                      >> base_set
+---   2. Stance (SubtleBlow / Hoxne)  >> sets.engaged[HybridMode] (or its AFM3 variant)
+---   3. Aftermath Lv.3 + Ukonvasara  >> sets.engaged.PDTAFM3
+---   4. Weapon-specific set          >> sets.engaged[MainWeapon] (e.g. Naegling)
+---   5. HybridMode (PDT/Normal)      >> sets.engaged[HybridMode]
+---   6. Fallback                     >> base_set
 ---
 ---   @param base_set table Base engaged set from war_sets.lua
 ---   @return table Selected engaged set (PDTKC/PDTAFM3 if conditions met, otherwise hybrid/base)
@@ -58,16 +98,24 @@ function SetBuilder.select_engaged_base(base_set)
         end
     end
 
-    -- PRIORITY 2: Check for Aftermath Lv.3 (buff ID 272) + Ukonvasara
-    -- Skipped if HybridMode is set to SubtleBlow (user override)
-    if buffactive[272] and state.MainWeapon and state.MainWeapon.current == 'Ukonvasara'
-       and not (state.HybridMode and state.HybridMode.current == 'SubtleBlow') then
-        if sets.engaged.PDTAFM3 then
-            return sets.engaged.PDTAFM3
-        end
+    -- PRIORITY 2: Explicit stance chosen by the player
+    local stance_set = select_stance_engaged()
+    if stance_set then
+        return stance_set
     end
 
-    -- PRIORITY 3: Normal HybridMode logic (PDT or Normal)
+    -- PRIORITY 3: Check for Aftermath Lv.3 (buff ID 272) + Ukonvasara
+    if ukonvasara_am3() and sets.engaged.PDTAFM3 then
+        return sets.engaged.PDTAFM3
+    end
+
+    -- PRIORITY 4: Weapon-specific set (sets.engaged.Naegling, .Ukonvasara...)
+    local weapon_set = select_weapon_engaged()
+    if weapon_set then
+        return weapon_set
+    end
+
+    -- PRIORITY 5: Normal HybridMode logic (PDT or Normal)
     if state.HybridMode and state.HybridMode.current then
         local hybrid_set = sets.engaged[state.HybridMode.current]
         if hybrid_set then

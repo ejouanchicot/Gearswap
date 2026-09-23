@@ -213,6 +213,14 @@ function user_setup()
     local WARStates = require('Tetsouo/config/war/WAR_STATES')
     WARStates.configure()
 
+    -- configure() has just put HybridMode back to its default, so any ammo
+    -- lock still held by the sandbox belongs to a stance that is no longer
+    -- selected. GearSwap slot locks outlive the job file.
+    local al_ok, AmpullaLock = pcall(require, 'shared/utils/equipment/ampulla_lock')
+    if al_ok and AmpullaLock then
+        AmpullaLock.apply(state.HybridMode and state.HybridMode.value)
+    end
+
     -- ==========================================================================
     -- KEYBINDS LOADING (Always executed after reload)
     -- ==========================================================================
@@ -272,6 +280,14 @@ end
 
 --- @return void
 function file_unload()
+    -- Give the ammo slot back first: a GearSwap slot lock survives a job
+    -- change, and GearSwap runs file_unload in a single pcall, so an error
+    -- further down would otherwise leak the lock into the next job.
+    local al_ok, AmpullaLock = pcall(require, 'shared/utils/equipment/ampulla_lock')
+    if al_ok and AmpullaLock then
+        AmpullaLock.release()
+    end
+
     -- Cancel pending job change operations (debounce timer + lockstyles)
     if jcm_success and JobChangeManager then
         JobChangeManager.cancel_all()
