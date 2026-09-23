@@ -2,20 +2,24 @@
 ---   Ampulla Lock - ammo slot held on Hoxne Ampulla for the Hoxne stance
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   The Hoxne Ampulla is an ammo-slot item with a single charge and a 60s
----   recast: it has to stay equipped to be usable. Every PLD set names its own
+---   recast: it has to stay equipped to be usable. Every set names its own
 ---   ammo, so idling, engaging, weaponskilling or casting would swap it out
 ---   within a second of equipping it.
 ---
----   The Hoxne stance therefore locks the ammo slot. It has its own engaged
----   build (sets.engaged.Hoxne), the Ampulla's charge supplying the Double
----   Attack the DPS stance buys with gear; elsewhere - idling, casting - it
----   wears what the other stances wear, minus this slot.
+---   The Hoxne stance (HybridMode 'Hoxne', used by PLD and WAR) therefore
+---   locks the ammo slot. It has its own engaged build (sets.engaged.Hoxne);
+---   elsewhere it wears what the other stances wear, minus this slot.
 ---
----   SetBuilder is what puts the Ampulla on: it names the piece in the Hoxne
----   idle and engaged sets, so the handle_update that follows a stance change
----   wears it. This module only closes the slot afterwards, which is what
----   keeps the weaponskill, midcast and precast sets - none of them built by
----   SetBuilder - from taking it back.
+---   The job's SetBuilder is what puts the Ampulla on: it names the piece in
+---   the Hoxne idle and engaged sets, so the handle_update that follows a
+---   stance change wears it. This module only closes the slot afterwards,
+---   which is what keeps the weaponskill, midcast and precast sets - none of
+---   them built by SetBuilder - from taking it back.
+---
+---   Wiring, for each job that has the stance:
+---     • job_state_change on HybridMode  -> AmpullaLock.apply(new_value)
+---     • entry user_setup                -> AmpullaLock.apply(current value)
+---     • entry file_unload (first thing) -> AmpullaLock.release()
 ---
 ---   It closes the slot on the Ampulla or not at all: it reads the ammo slot
 ---   until the piece is there rather than assuming a delay was enough. A lock
@@ -29,14 +33,14 @@
 ---
 ---   GearSwap keeps slot locks in its own table, which outlives the job file:
 ---   a lock left in place survives gs reload, subjob and main job changes,
----   while state.HybridMode goes back to Tanking on every load. The lock is
+---   while state.HybridMode goes back to its default on every load. The lock is
 ---   therefore recorded in the sandbox and released by the entry file, both on
 ---   file_unload and on the way back up in user_setup.
 ---
----   @file    shared/jobs/pld/functions/logic/ampulla_lock.lua
+---   @file    shared/utils/equipment/ampulla_lock.lua
 ---   @author  Tetsouo
----   @version 1.0
----   @date    Created: 2026-09-20
+---   @version 1.1 - Shared by PLD and WAR
+---   @date    Created: 2026-09-20 | Updated: 2026-09-23
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local AmpullaLock = {}
@@ -100,7 +104,7 @@ function AmpullaLock.set_slot(locked)
     else
         enable('ammo')
     end
-    _G.pld_ammo_locked = locked
+    _G.ampulla_ammo_locked = locked
 end
 
 --- Close the slot once the Ampulla is actually worn, or not at all.
@@ -149,7 +153,7 @@ end
 --- @return void
 function AmpullaLock.release()
     lock_sequence = lock_sequence + 1
-    if _G.pld_ammo_locked then
+    if _G.ampulla_ammo_locked then
         AmpullaLock.set_slot(false)
     end
 end

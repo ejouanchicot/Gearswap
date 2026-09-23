@@ -282,7 +282,7 @@ local function on_state_change(stateField, newValue)
     -- The Hoxne stance holds the ammo slot on its Ampulla; every other stance
     -- gives the slot back. Kept here rather than in the profile because it
     -- equips gear, which a states config has no business doing.
-    local ok, AmpullaLock = pcall(require, 'shared/jobs/pld/functions/logic/ampulla_lock')
+    local ok, AmpullaLock = pcall(require, 'shared/utils/equipment/ampulla_lock')
     if ok and AmpullaLock then
         AmpullaLock.apply(newValue)
     end

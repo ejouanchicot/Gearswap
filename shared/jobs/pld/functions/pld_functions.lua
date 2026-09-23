@@ -76,7 +76,7 @@ TIMER('PLD_MOVEMENT')
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   The following business logic modules are loaded via require() in hooks:
 ---
----   logic/ampulla_lock.lua
+---   shared/utils/equipment/ampulla_lock.lua (shared with WAR)
 ---     • Hoxne stance: ammo slot frozen on Hoxne Ampulla
 ---     • Released by the entry file on load and on unload, GearSwap slot
 ---       locks outliving the job file
