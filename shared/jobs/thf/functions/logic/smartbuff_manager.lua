@@ -9,6 +9,7 @@
 ---   • WAR subjob buffs (Berserk, Aggressor, Warcry - priority order)
 ---   • NIN subjob buffs (Utsusemi: Ni >> Ichi fallback)
 ---   • THF Feint / Bully / Conspirator opener (//gs c fbc)
+---   • THF Steal / Mug / Despoil chain (//gs c steal)
 ---   • Intelligent recast checking (RECAST_CONFIG integration)
 ---   • Sequential ability casting (1-2s spacing to avoid conflicts)
 ---   • Status display (active/cooldown with time remaining)
@@ -163,16 +164,28 @@ local FBC_ABILITIES = {
     {name = 'Conspirator', recast_id = 40,  buff = 'Conspirator', target = '<me>'},
 }
 
---- Sort the openers into what can be used and what has to be reported.
+-- Despoil is learned at THF 77, out of reach of a THF subjob.
+local STEAL_ABILITIES = {
+    {name = 'Steal',   recast_id = 60, target = '<t>'},
+    {name = 'Mug',     recast_id = 65, target = '<t>'},
+    {name = 'Despoil', recast_id = 61, target = '<t>', main_only = true},
+}
+
+--- Sort a sequence into what can be used and what has to be reported.
+--- Main-job-only abilities are dropped silently when THF is the subjob.
+--- @param abilities table Sequence (FBC_ABILITIES or STEAL_ABILITIES)
 --- @param ability_recasts table windower.ffxi.get_ability_recasts()
 --- @return table to cast, table status lines for the ones that cannot
-local function triage_fbc(ability_recasts)
+local function triage(abilities, ability_recasts)
     local to_cast, status = {}, {}
+    local is_main = player and player.main_job == 'THF'
 
-    for _, ability in ipairs(FBC_ABILITIES) do
+    for _, ability in ipairs(abilities) do
         local recast = ability_recasts[ability.recast_id] or 0
 
-        if ability.buff and buffactive[ability.buff] then
+        if ability.main_only and not is_main then
+            -- not available, nothing to report
+        elseif ability.buff and buffactive[ability.buff] then
             table.insert(status, {name = ability.name, status = 'active'})
         elseif is_on_cooldown(recast) then
             table.insert(status, {name = ability.name, status = 'cooldown',
@@ -185,7 +198,7 @@ local function triage_fbc(ability_recasts)
     return to_cast, status
 end
 
---- Fire the openers a second apart.
+--- Fire the abilities a second apart.
 ---
 --- The first goes out immediately, the second a second later, the third after
 --- two.
@@ -195,8 +208,8 @@ end
 --- changes, and actions sent too close together can equip wrong. DNC and WAR
 --- take the same precaution at two seconds. Neither reason has been measured,
 --- so the value is left alone rather than tightened.
---- @param to_cast table From triage_fbc
-local function cast_fbc(to_cast)
+--- @param to_cast table From triage
+local function cast_sequence(to_cast)
     for i, ability in ipairs(to_cast) do
         local command = 'input /ja "' .. ability.name .. '" ' .. ability.target
         if i == 1 then
@@ -207,10 +220,11 @@ local function cast_fbc(to_cast)
     end
 end
 
---- Fire Feint, Bully and Conspirator (those ready), report the others.
+--- Fire the ready abilities of a sequence, report the others.
+--- @param abilities table Sequence (FBC_ABILITIES or STEAL_ABILITIES)
 --- @return boolean Always true
-function SmartbuffManager.apply_fbc()
-    local to_cast, status_data = triage_fbc(windower.ffxi.get_ability_recasts())
+local function run_sequence(abilities)
+    local to_cast, status_data = triage(abilities, windower.ffxi.get_ability_recasts())
 
     if #status_data > 0 then
         MessageBuffs.show_buff_status(status_data)
@@ -220,7 +234,7 @@ function SmartbuffManager.apply_fbc()
     -- would otherwise report each one as blocked.
     _G.suppress_cooldown_messages = true
 
-    cast_fbc(to_cast)
+    cast_sequence(to_cast)
 
     -- Deferred inside GearSwap on purpose. `lua i _G.X = ...` writes to the
     -- Windower scope, not this sandbox, so the flag would never come back and
@@ -234,6 +248,30 @@ function SmartbuffManager.apply_fbc()
     end
 
     return true
+end
+
+--- Fire Feint, Bully and Conspirator (those ready), report the others.
+--- @return boolean Always true
+function SmartbuffManager.apply_fbc()
+    return run_sequence(FBC_ABILITIES)
+end
+
+--- True when <t> is a living monster (spawn_type 16).
+--- @return boolean
+local function target_is_enemy()
+    local t = windower.ffxi.get_mob_by_target('t')
+    return t ~= nil and t.spawn_type == 16 and t.valid_target and (t.hpp or 0) > 0
+end
+
+--- Fire Steal, Mug and Despoil on the target (those ready), report the others.
+--- Nothing is sent unless <t> is a living enemy.
+--- @return boolean False when the target is not an enemy
+function SmartbuffManager.apply_steal()
+    if not target_is_enemy() then
+        MessageFormatter.show_error('Steal: no enemy targeted.')
+        return false
+    end
+    return run_sequence(STEAL_ABILITIES)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

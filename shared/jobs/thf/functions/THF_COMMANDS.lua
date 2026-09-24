@@ -6,7 +6,7 @@
 ---   Features:
 ---   • Common commands (reload, checksets, etc. via COMMON_COMMANDS)
 ---   • UI commands (ui toggle, visibility via UI_COMMANDS)
----   • THF-specific commands (smartbuff, fbc, range)
+---   • THF-specific commands (smartbuff, fbc, steal, range)
 ---   • Ranged weapon lock with auto-attack (one-way: equip >> lock >> /ra)
 ---   • State change: UI refresh, range/ammo lock when RangeLock changes
 ---
@@ -15,6 +15,7 @@
 ---   • //gs c checksets      - Validate equipment sets
 ---   • //gs c smartbuff      - Apply subjob-specific buffs
 ---   • //gs c fbc            - Feint / Bully / Conspirator opener
+---   • //gs c steal          - Steal / Mug / Despoil on <t>
 ---   • //gs c range          - Equip + lock ranged + attack <stnpc> (one-way)
 ---   • //gs c ui             - Toggle UI visibility
 ---
@@ -88,6 +89,14 @@ function job_self_command(cmdParams, eventArgs)
     if command == 'requestjob' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         DualBoxManager.handle_job_request()
+        eventArgs.handled = true
+        return
+    end
+
+    -- Checked before the common commands: 'steal' is also a dual-box alt
+    -- command, which would otherwise send it to the alt when the alt is THF.
+    if command == 'steal' then
+        SmartbuffManager.apply_steal()
         eventArgs.handled = true
         return
     end
