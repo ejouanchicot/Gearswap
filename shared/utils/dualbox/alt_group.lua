@@ -11,6 +11,7 @@
 ---   //gs c alts follow <name> | off   alts follow that character / stop
 ---   //gs c alts do <command> any console command, sent to every alt
 ---   //gs c alts mirror       mirror request, sent from this character
+---   //gs c alts window       show / hide the alt window (alt_window.lua)
 ---
 --- Who receives the orders: see AltGroup.get_alts (DualBoxConfig.group,
 --- or the main/alt names already in DUALBOX_CONFIG.lua).
@@ -32,9 +33,60 @@ local function messages()
     return ok and m or nil
 end
 
+local function state_file()
+    local name = player and player.name
+    return name and (windower.addon_path .. 'data/' .. name .. '/config/alt_state.lua')
+end
+
+--- The orders saved by the last session of this game. Stamped with os.clock
+--- (time since the game process started), like //gs c tb: a stamp later than
+--- now means the game restarted, and the alts start in an unknown state.
+local function load_state()
+    local ok, data = pcall(dofile, state_file() or '')
+    if not ok or type(data) ~= 'table' or (tonumber(data.clock) or math.huge) > os.clock() then
+        return {}
+    end
+    return {on = data.on, follow = data.follow, mirror = data.mirror}
+end
+
+local function save_state(state)
+    local path = state_file()
+    local file = path and io.open(path, 'w')
+    if not file then return end
+    local function lua(v) return type(v) == 'string' and string.format('%q', v) or tostring(v) end
+    file:write('-- Last //gs c alts orders (alt window). Ignored after a game restart.\n')
+    file:write(string.format('return {clock = %s, on = %s, follow = %s, mirror = %s}\n',
+        os.clock(), lua(state.on), lua(state.follow), lua(state.mirror)))
+    file:close()
+end
+
+--- Last orders sent: on (bool), follow (leader name or false), mirror
+--- (bool). nil = nothing sent yet, shown as "?" by the alt window. Kept
+--- across GearSwap reloads (alt_state.lua), not across a game restart.
 local function group_state()
-    windower._alt_group = windower._alt_group or {on = false, follow = false}
+    windower._alt_group = windower._alt_group or load_state()
     return windower._alt_group
+end
+
+--- An order changed the state: save it and redraw the window.
+local function changed()
+    save_state(group_state())
+    local ok, AltWindow = pcall(require, 'shared/utils/dualbox/alt_window')
+    if ok and AltWindow then AltWindow.refresh() end
+end
+
+--- The state shown by the alt window (read-only use).
+--- @return table {on, follow, mirror}
+function AltGroup.state()
+    return group_state()
+end
+
+--- Record orders sent another way (//gs c sortie) so the window follows.
+--- @param changes table Any of on, follow, mirror
+function AltGroup.note(changes)
+    local state = group_state()
+    for key, value in pairs(changes) do state[key] = value end
+    changed()
 end
 
 --- The other characters of this box group: whoever presses the key orders
@@ -80,6 +132,7 @@ end
 local function set_auto(alts, on)
     to_alts(alts, on and 'sm on' or 'sm off')
     group_state().on = on
+    changed()
     if messages() then messages().show_auto(table.concat(alts, ', '), on) end
 end
 
@@ -96,7 +149,8 @@ local function set_follow(alts, leader)
     else
         to_alts(alts, 'sm follow off')
     end
-    group_state().follow = leader ~= nil
+    group_state().follow = leader or false
+    changed()
     if messages() then messages().show_follow(table.concat(alts, ', '), leader) end
 end
 
@@ -128,7 +182,7 @@ function AltGroup.handle(args)
     local sub = args[1] and args[1]:lower() or ''
     local alts = AltGroup.get_alts()
 
-    if sub ~= 'mirror' and #alts == 0 then
+    if sub ~= 'mirror' and sub ~= 'window' and #alts == 0 then
         if messages() then messages().show_no_alts() end
         return true
     end
@@ -145,7 +199,11 @@ function AltGroup.handle(args)
         if messages() then messages().show_sent(table.concat(alts, ', '), command) end
     elseif sub == 'mirror' then
         send_command('sm mirror')
+        group_state().mirror = not group_state().mirror
+        changed()
         if messages() then messages().show_mirror() end
+    elseif sub == 'window' then
+        require('shared/utils/dualbox/alt_window').toggle()
     elseif messages() then
         messages().show_usage()
     end
