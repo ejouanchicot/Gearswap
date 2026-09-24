@@ -1,10 +1,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   GEO Aftercast Module - Post-Action Handling
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles aftercast cleanup for Geomancer job.
----   Returns to idle/engaged gear after spell completion.
+---   Aftercast hook for Geomancer: watchdog notification, Entrust pending flag,
+---   and the escort follow-up. Gear return is left to Mote.
 ---
----   @file    GEO_AFTERCAST.lua
+---   @file    shared/jobs/geo/functions/GEO_AFTERCAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-09
@@ -22,6 +22,11 @@ end
 ---   AFTERCAST HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+---   Aftercast hook (called by Mote-Include)
+---   @param spell table Spell/ability that just finished
+---   @param action table Action information from GearSwap
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments
 function job_aftercast(spell, action, spellMap, eventArgs)
     -- Watchdog: Track aftercast
     if _G.MidcastWatchdog then
@@ -35,6 +40,11 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     -- Entrust has to lower it here - no buff will arrive, hence no buff_change.
     if spell.type == 'JobAbility' and spell.english == 'Entrust' then
         _G.geo_entrust_pending = not spell.interrupted
+    end
+
+    -- Escort: follow the leader the moment the escort Indi- is done
+    if _G.geo_escort_on_aftercast then
+        _G.geo_escort_on_aftercast(spell)
     end
 
     -- Clear Entrust pending flag after Indi spell completes (buff consumed)
