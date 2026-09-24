@@ -16,9 +16,11 @@
 --- Who receives the orders: see AltGroup.get_alts (DualBoxConfig.group,
 --- or the main/alt names already in DUALBOX_CONFIG.lua).
 ---
---- The on/follow states are the last order sent, kept on `windower` so they
---- survive a job change. Orders sent another way (//gs c sortie, a macro)
---- are not seen, so a toggle can take one press to catch up.
+--- The on/follow/mirror states are the last orders sent (//gs c sortie
+--- reports its own through AltGroup.note), saved in alt_state.lua. Orders
+--- sent another way (a macro, the alt's own keys) are not seen, so a toggle
+--- can take one press to catch up. While the alt window is on screen, those
+--- orders print nothing in chat: the window shows them.
 ---
 --- @file shared/utils/dualbox/alt_group.lua
 --- @author Tetsouo
@@ -31,6 +33,14 @@ local AltGroup = {}
 local function messages()
     local ok, m = pcall(require, 'shared/utils/messages/formatters/system/message_altgroup')
     return ok and m or nil
+end
+
+--- Messages for the state the alt window shows (Auto, Follow, Mirror):
+--- none while the window is on screen, it already says it.
+local function state_messages()
+    local ok, AltWindow = pcall(require, 'shared/utils/dualbox/alt_window')
+    if ok and AltWindow and AltWindow.is_shown() then return nil end
+    return messages()
 end
 
 local function state_file()
@@ -133,7 +143,7 @@ local function set_auto(alts, on)
     to_alts(alts, on and 'sm on' or 'sm off')
     group_state().on = on
     changed()
-    if messages() then messages().show_auto(table.concat(alts, ', '), on) end
+    if state_messages() then state_messages().show_auto(table.concat(alts, ', '), on) end
 end
 
 --- Alts follow `leader`, or stop when leader is nil. The leader itself is
@@ -151,7 +161,7 @@ local function set_follow(alts, leader)
     end
     group_state().follow = leader or false
     changed()
-    if messages() then messages().show_follow(table.concat(alts, ', '), leader) end
+    if state_messages() then state_messages().show_follow(table.concat(alts, ', '), leader) end
 end
 
 --- `follow` alone toggles following this character; `follow off` stops;
@@ -201,7 +211,7 @@ function AltGroup.handle(args)
         send_command('sm mirror')
         group_state().mirror = not group_state().mirror
         changed()
-        if messages() then messages().show_mirror() end
+        if state_messages() then state_messages().show_mirror() end
     elseif sub == 'window' then
         require('shared/utils/dualbox/alt_window').toggle()
     elseif messages() then

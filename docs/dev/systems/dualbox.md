@@ -28,8 +28,8 @@ ordinary `//gs c` commands. Part 4 uses `windower.send_ipc_message` and an `ipc 
 | `shared/utils/dualbox/alt_commands.lua` | 558 | Loads the alt's command configs, resolves tier/target, builds and sends `send <alt> input ...`; installs the `selfCommandMaps` fallback |
 | `shared/utils/dualbox/alt_buff_reporter.lua` | 331 | ALT: report tracked buffs. MAIN: store them, guess/expire, trace log |
 | `shared/utils/dualbox/dualbox_sync_ipc.lua` | 154 | Windower IPC broadcast/hook registry for `ls`/`rf` mirroring |
-| `shared/utils/dualbox/alt_group.lua` | 228 | `//gs c alts`: orders to every other member of the box group (`sm on/off`, follow, `do <command>`, mirror); `route()` also dispatches `main`/`setalt` |
-| `shared/utils/dualbox/alt_window.lua` | 211 | Small overlay on the main: each alt (job, online) and the last Auto / Follow / Mirror orders; `//gs c alts window` shows/hides it |
+| `shared/utils/dualbox/alt_group.lua` | 238 | `//gs c alts`: orders to every other member of the box group (`sm on/off`, follow, `do <command>`, mirror); `route()` also dispatches `main`/`setalt` |
+| `shared/utils/dualbox/alt_window.lua` | 218 | Small overlay on the main: each alt (job, online) and the last Auto / Follow / Mirror orders; `//gs c alts window` shows/hides it |
 | `shared/utils/dualbox/dualbox_role.lua` | 144 | `//gs c main` / `setalt`: switches the roles at runtime and saves them in `<Character>/config/dualbox_role.lua` |
 | `shared/utils/messages/formatters/system/message_altgroup.lua` + `data/systems/altgroup_messages.lua` | - | `[ALTS]` / `[DUALBOX]` lines of the two modules above |
 | `shared/utils/messages/formatters/ui/message_dualbox.lua` | 191 | Chat output for the job exchange (via `M.send('DUALBOX', ...)`) |
@@ -332,7 +332,8 @@ states that FFXI fires `buff_change` for Entrust only on loss. The 3 s resync is
   (`AltGroup.state()`, `?` until one is sent; saved in `<Character>/config/alt_state.lua`
   with an `os.clock` stamp, so they survive a GearSwap reload but not a game restart), because the automation addon's real state
   is not readable from GearSwap. `//gs c sortie` records its orders through
-  `AltGroup.note`. Redrawn on every order, job update and role switch, and every 5 s
+  `AltGroup.note`. While it is on screen (`AltWindow.is_shown`), the Auto / Follow / Mirror
+  orders print nothing in chat. Redrawn on every order, job update and role switch, and every 5 s
   (loop stopped by `windower._alt_window_gen` when a newer load starts). Position and
   visibility in `<Character>/config/alt_window.lua`; a drag is saved by the 5 s loop, not a
   `mouse` event: an event registered from a job file runs GearSwap's `refresh_globals` +
