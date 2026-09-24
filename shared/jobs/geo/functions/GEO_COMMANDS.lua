@@ -1,15 +1,15 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   GEO Commands Module - Self Command Handling
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles custom commands for Geomancer job.
+---   Handles custom commands for Geomancer job (indi, geo, escort, entrust,
+---   nukes with tier fallback, /SCH arts and aoe, dispel).
 ---   Integrates with CommonCommands for shared functionality (reload, checksets).
 ---   Integrates with UICommands for UI management.
 ---
----   @file    GEO_COMMANDS.lua
+---   @file    shared/jobs/geo/functions/GEO_COMMANDS.lua
 ---   @author  Tetsouo
 ---   @version 1.1 - Added UICommands integration
----   @date    Created: 2025-10-09
----   @date    Updated: 2025-10-10
+---   @date    Created: 2025-10-09 | Updated: 2025-10-10
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -22,6 +22,27 @@ local WatchdogCommands = nil
 local CycleHandler = nil
 local MessageCommands = nil
 local GeoSpellRefiner = nil
+
+--- `//gs c escort` timings, in seconds.
+local ESCORT_JA_DELAY = 2          -- Full Circle -> Indi- (job ability delay)
+local ESCORT_DEFAULT_CAST = 3      -- cast time when the spell is not found
+local ESCORT_FOLLOW_MARGIN = 3     -- safety net: follow anyway this long after the cast
+
+--- Follow waiting for the escort Indi- to finish: {spell, leader, seq}.
+local escort_pending = nil
+local escort_seq = 0
+
+--- Called from job_aftercast: follow the leader once the escort Indi- is over
+--- (interrupted or not - the escort goes on either way).
+--- @param spell table GearSwap spell
+function geo_escort_on_aftercast(spell)
+    if escort_pending and spell and spell.english == escort_pending.spell then
+        local leader = escort_pending.leader
+        escort_pending = nil
+        send_command('sm follow ' .. leader)
+    end
+end
+_G.geo_escort_on_aftercast = geo_escort_on_aftercast
 
 local function ensure_commands_loaded()
     if not UICommands then
@@ -75,6 +96,9 @@ end
 ---   COMMAND HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+---   Handle //gs c commands (command router)
+---   @param cmdParams table Command words; cmdParams[1] is the command name
+---   @param eventArgs table Event arguments (handled = true stops Mote's handling)
 function job_self_command(cmdParams, eventArgs)
     if not cmdParams or #cmdParams == 0 then
         return
@@ -97,6 +121,7 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DUAL-BOXING: Handle job request from MAIN
     -- ══════════════════════════════════════════════════════════════════════════
     if command == 'requestjob' then
@@ -183,6 +208,51 @@ function job_self_command(cmdParams, eventArgs)
             send_command('input /ma "' .. spell_name .. '" ' .. target)
             eventArgs.handled = true
         end
+        return
+    end
+
+    -- Escort: //gs c escort [Indi-X] [leader]
+    -- Dismiss the luopan if there is one, put up an Indi- on self, and only
+    -- once the cast is over start following the leader: moving cancels the
+    -- cast. Without a luopan the Indi- goes out at once, since waiting after
+    -- a Full Circle that has nothing to dismiss only delays it.
+    if command == 'escort' then
+        local indi = cmdParams[2] or 'Indi-Regen'
+        local leader = cmdParams[3]
+        local cast = 'input /ma "' .. indi .. '" <me>'
+        local cast_start = 0
+        if pet and pet.isvalid then
+            send_command('input /ja "Full Circle" <me>')
+            -- A spell right after a job ability is refused until the ability
+            -- delay has passed.
+            cast_start = ESCORT_JA_DELAY
+            coroutine.schedule(function() send_command(cast) end, cast_start)
+        else
+            send_command(cast)
+        end
+        if leader then
+            -- Follow as soon as the Indi- is done: job_aftercast calls
+            -- geo_escort_on_aftercast. The timer is only a safety net in case
+            -- no aftercast comes (cast refused before it started).
+            -- `res` is not a global in every job sandbox (it crashed here on GEO).
+            local resources = rawget(_G, 'res') or windower.res or require('resources')
+            local spell = resources.spells:with('en', indi)
+            local cast_time = spell and spell.cast_time or ESCORT_DEFAULT_CAST
+            escort_seq = escort_seq + 1
+            local my_seq = escort_seq
+            escort_pending = {spell = indi, leader = leader, seq = my_seq}
+            coroutine.schedule(function()
+                if escort_pending and escort_pending.seq == my_seq then
+                    escort_pending = nil
+                    send_command('sm follow ' .. leader)
+                end
+            end, cast_start + cast_time + ESCORT_FOLLOW_MARGIN)
+        end
+        local ok, MessageSortie = pcall(require, 'shared/utils/messages/formatters/system/message_sortie')
+        if ok and MessageSortie then
+            MessageSortie.show_alt_escort(indi, cast_start > 0, leader)
+        end
+        eventArgs.handled = true
         return
     end
 
