@@ -1,0 +1,170 @@
+---============================================================================
+--- Alt Group - //gs c alts : orders to every alt attached to this main
+---============================================================================
+--- Drives the alts' automation addon (console "sm ...") through the send
+--- addon, one alt at a time, so it reaches only the characters named in
+--- config/DUALBOX_CONFIG.lua and not every other box on the machine.
+---
+---   //gs c alts on | off     automation on / off
+---   //gs c alts toggle       flip it
+---   //gs c alts follow       alts follow this character / stop (toggle)
+---   //gs c alts follow <name> | off   alts follow that character / stop
+---   //gs c alts do <command> any console command, sent to every alt
+---   //gs c alts mirror       mirror request, sent from this character
+---
+--- Who receives the orders: see AltGroup.get_alts (DualBoxConfig.group,
+--- or the main/alt names already in DUALBOX_CONFIG.lua).
+---
+--- The on/follow states are the last order sent, kept on `windower` so they
+--- survive a job change. Orders sent another way (//gs c sortie, a macro)
+--- are not seen, so a toggle can take one press to catch up.
+---
+--- @file shared/utils/dualbox/alt_group.lua
+--- @author Tetsouo
+--- @version 1.0
+--- @date Created: 2026-09-24
+---============================================================================
+
+local AltGroup = {}
+
+local function messages()
+    local ok, m = pcall(require, 'shared/utils/messages/formatters/system/message_altgroup')
+    return ok and m or nil
+end
+
+local function group_state()
+    windower._alt_group = windower._alt_group or {on = false, follow = false}
+    return windower._alt_group
+end
+
+--- The other characters of this box group: whoever presses the key orders
+--- the rest, so it works the same the day the roles are swapped.
+---   group = {'Tetsouo', 'Kaories'}   everyone but this character
+---   otherwise                        alt_characters / alt_character on a
+---                                    main, main_character on an alt
+--- @return table List of names (may be empty)
+function AltGroup.get_alts()
+    local cfg = _G.DualBoxConfig
+    if not cfg or cfg.enabled == false then
+        return {}
+    end
+    local me = (player and player.name or ''):lower()
+    local names
+    if type(cfg.group) == 'table' and #cfg.group > 0 then
+        names = cfg.group
+    elseif cfg.role == 'alt' then
+        names = {cfg.main_character}
+    elseif type(cfg.alt_characters) == 'table' and #cfg.alt_characters > 0 then
+        names = cfg.alt_characters
+    else
+        names = {cfg.alt_character or cfg.alt_name}
+    end
+    local others = {}
+    for _, name in ipairs(names) do
+        if type(name) == 'string' and name ~= '' and name:lower() ~= me then
+            others[#others + 1] = name
+        end
+    end
+    return others
+end
+
+--- Send one console command to every alt.
+--- @param alts table Names
+--- @param command string Console command
+local function to_alts(alts, command)
+    for _, name in ipairs(alts) do
+        send_command('send ' .. name .. ' ' .. command)
+    end
+end
+
+local function set_auto(alts, on)
+    to_alts(alts, on and 'sm on' or 'sm off')
+    group_state().on = on
+    if messages() then messages().show_auto(table.concat(alts, ', '), on) end
+end
+
+--- Alts follow `leader`, or stop when leader is nil. The leader itself is
+--- left out: it cannot follow itself.
+local function set_follow(alts, leader)
+    if leader then
+        local followers = {}
+        for _, name in ipairs(alts) do
+            if name:lower() ~= leader:lower() then followers[#followers + 1] = name end
+        end
+        alts = followers
+        to_alts(alts, 'sm follow ' .. leader)
+    else
+        to_alts(alts, 'sm follow off')
+    end
+    group_state().follow = leader ~= nil
+    if messages() then messages().show_follow(table.concat(alts, ', '), leader) end
+end
+
+--- `follow` alone toggles following this character; `follow off` stops;
+--- `follow <name>` follows that character.
+local function follow(alts, target)
+    if target and target:lower() == 'off' then
+        set_follow(alts, nil)
+    elseif target then
+        set_follow(alts, target:sub(1, 1):upper() .. target:sub(2):lower())
+    elseif group_state().follow or not (player and player.name) then
+        set_follow(alts, nil)
+    else
+        set_follow(alts, player.name)
+    end
+end
+
+--- Words after `do`, joined back into one console command.
+local function rest_of(args)
+    local words = {}
+    for i = 2, #args do words[#words + 1] = args[i] end
+    return table.concat(words, ' ')
+end
+
+--- Handle //gs c alts ...
+--- @param args table Words after "alts"
+--- @return boolean handled
+function AltGroup.handle(args)
+    local sub = args[1] and args[1]:lower() or ''
+    local alts = AltGroup.get_alts()
+
+    if sub ~= 'mirror' and #alts == 0 then
+        if messages() then messages().show_no_alts() end
+        return true
+    end
+
+    if sub == 'on' or sub == 'off' then
+        set_auto(alts, sub == 'on')
+    elseif sub == 'toggle' then
+        set_auto(alts, not group_state().on)
+    elseif sub == 'follow' then
+        follow(alts, args[2])
+    elseif sub == 'do' and args[2] then
+        local command = rest_of(args)
+        to_alts(alts, command)
+        if messages() then messages().show_sent(table.concat(alts, ', '), command) end
+    elseif sub == 'mirror' then
+        send_command('sm mirror')
+        if messages() then messages().show_mirror() end
+    elseif messages() then
+        messages().show_usage()
+    end
+    return true
+end
+
+--- Entry point for the box-group words of //gs c: alts, main, setalt.
+--- @param cmd string Command word (lowercase)
+--- @param args table Words after it
+--- @return boolean handled
+function AltGroup.route(cmd, args)
+    if cmd == 'alts' then
+        return AltGroup.handle(args)
+    end
+    local DualBoxRole = require('shared/utils/dualbox/dualbox_role')
+    if cmd == 'main' then
+        return DualBoxRole.become_main()
+    end
+    return DualBoxRole.become_alt(args)
+end
+
+return AltGroup
