@@ -25,7 +25,7 @@ IFRIT.spells = {
         type                    = "summon",
         SMN                     = 1,
         mp_cost                 = 7,
-        notes                   = "Fire-based avatar. MP cost: 7. Perpetuation: 2 MP/3s. Specializes in physical melee attacks and attack buffs (Crimson Howl). Strong against ice, weak to water. SMN (subjob OK).",
+        notes                   = "Fire-based avatar. MP cost: 7. Blood Pacts include Crimson Howl (Warcry-like attack boost) and Inferno Howl (Enfire). Highly resistant to fire and ice, weak to water. SMN (subjob OK).",
     },
 
 }
@@ -46,7 +46,7 @@ IFRIT.blood_pacts = {
         level                   = 1,
         mp_cost                 = 9,
         skillchain              = "Liquefaction",
-        notes                   = "Physical blunt damage. MP: 9. Recast: Instant. Damage: Pet STR. Accuracy bonus scales with TP. Single target. SMN (subjob OK).",
+        notes                   = "Physical blunt damage. MP: 9. Damage: Pet STR. Accuracy bonus varies with TP. Single target. SMN (subjob OK).",
     },
 
     ["Fire II"] = {
@@ -57,7 +57,7 @@ IFRIT.blood_pacts = {
         type                    = "magical",
         level                   = 10,
         mp_cost                 = 24,
-        notes                   = "Fire-based magical damage. MP: 24. Recast: Instant. Damage: Pet INT. Single target. SMN (subjob OK).",
+        notes                   = "Fire-based magical damage. MP: 24. Damage: Pet INT. Damage affected by pet TP. Single target. SMN (subjob OK).",
     },
 
     ["Burning Strike"] = {
@@ -70,7 +70,7 @@ IFRIT.blood_pacts = {
         level                   = 23,
         mp_cost                 = 48,
         skillchain              = "Impaction",
-        notes                   = "Fire-enhanced physical blunt damage. MP: 48. Recast: Instant. Damage: Pet STR + INT. Accuracy bonus scales with TP. Single target. SMN (subjob OK).",
+        notes                   = "Fire-enhanced physical blunt damage. MP: 48. Damage: Pet STR + INT. Accuracy bonus varies with TP. Single target. SMN (subjob OK).",
     },
 
     ["Double Punch"] = {
@@ -81,9 +81,9 @@ IFRIT.blood_pacts = {
         type                    = "physical",
         damage_type             = "Blunt",
         level                   = 30,
-        mp_cost                 = 36,
-        skillchain              = "Impaction",
-        notes                   = "Double-hit physical blunt damage. MP: 36. Recast: Instant. Damage: Pet STR (×2 hits). Accuracy bonus scales with TP. Single target. SMN (subjob OK).",
+        mp_cost                 = 56,
+        skillchain              = "Compression",
+        notes                   = "Two-hit physical blunt damage. MP: 56. Damage: Pet STR. Damage varies with TP (fTP carries to all hits). Single target. SMN (subjob OK).",
     },
 
     ["Fire IV"] = {
@@ -94,43 +94,43 @@ IFRIT.blood_pacts = {
         type                    = "magical",
         level                   = 60,
         mp_cost                 = 118,
-        notes                   = "Enhanced fire-based magical damage. MP: 118. Recast: Instant. Damage: Pet INT. Magic burst compatible. Single target. SMN (subjob OK).",
+        notes                   = "Fire-based magical damage. MP: 118. Damage: Pet INT. Single target. SMN (main job only).",
     },
 
     ["Flaming Crush"] = {
-        description             = "Deals fire physical dmg.",
+        description             = "Deals 3-fold fire dmg.",
         category                = "Blood Pact: Rage",
         element                 = "Fire",
         avatar                  = "Ifrit",
         type                    = "physical",
         damage_type             = "Blunt",
         level                   = 70,
-        mp_cost                 = 118,
-        skillchain              = "Liquefaction",
-        notes                   = "Enhanced fire-based physical blunt damage. MP: 118. Recast: Instant. Damage: Pet STR + INT. Accuracy bonus scales with TP. Single target. SMN (subjob OK).",
+        mp_cost                 = 164,
+        skillchain              = "Fusion/Reverberation",
+        notes                   = "Hybrid three-hit attack (2 physical hits + 1 magical fire hit). MP: 164. Damage: Pet STR + INT. Accuracy bonus varies with TP. Single target. SMN (main job only).",
     },
 
     ["Meteor Strike"] = {
-        description             = "Deals fire physical dmg (AoE).",
+        description             = "Deals fire dmg.",
         category                = "Blood Pact: Rage",
         element                 = "Fire",
         avatar                  = "Ifrit",
-        type                    = "physical",
+        type                    = "magical",
         level                   = 75,
         mp_cost                 = 182,
         merit                   = true,
-        notes                   = "Fire-based physical AoE damage. MP: 182. Recast: Instant. Damage: Pet INT. TP Bonus: +400 per merit level. Merit-based ability. AoE range. SMN (subjob OK).",
+        notes                   = "Fire-based magical damage. MP: 182. Damage: Pet INT. Damage varies with avatar TP; each extra merit level adds +400 TP Bonus. Merit-based ability. Single target. SMN (main job only).",
     },
 
     ["Conflag Strike"] = {
-        description             = "Deals fire physical dmg (multi-hit).",
+        description             = "Deals fire dmg + burn.",
         category                = "Blood Pact: Rage",
         element                 = "Fire",
         avatar                  = "Ifrit",
         type                    = "physical",
         level                   = 99,
-        mp_cost                 = 200,
-        notes                   = "Multi-hit fire-based physical damage with burn effect. MP: 200. Recast: Instant. Damage: Pet STR (×5 hits). Inflicts Burn status. Breath damage. SMN (subjob OK).",
+        mp_cost                 = 141,
+        notes                   = "Fire breath damage + Burn (30 HP/tick, INT -63, 1 min). MP: 141. Damage: Pet INT. Can be resisted. Single target. SMN (main job only).",
     },
 
     ["Inferno"] = {
@@ -142,7 +142,7 @@ IFRIT.blood_pacts = {
         level                   = 1,
         mp_cost                 = 0,
         astral_flow             = true,
-        notes                   = "Ultimate fire-based magical AoE damage. MP: 0. Recast: N/A. Only available during Astral Flow. Extreme damage. Wide AoE range. SMN (subjob OK).",
+        notes                   = "Ultimate fire-based magical AoE damage. Requires MP = caster's level x2. Uses all MP (Astral Flow). Only usable during Astral Flow. Damage: Pet INT. SMN (main job only).",
     },
 
     --============================================================
@@ -157,18 +157,18 @@ IFRIT.blood_pacts = {
         type                    = "buff",
         level                   = 38,
         mp_cost                 = 84,
-        notes                   = "Attack boost for party. MP: 84. Recast: Instant. Duration: 60s. Effect: Attack +11.2% (at level 99). Overwrites Warcry/Blood Rage. Party AoE. Range: Area effect. SMN (subjob OK).",
+        notes                   = "Attack boost for party. MP: 84. Duration: 60s. Effect: Attack +11.2% (at level 99). Overwrites Warcry/Blood Rage. Party AoE. SMN (subjob OK).",
     },
 
     ["Inferno Howl"] = {
-        description             = "Boosts attack + accuracy (AoE).",
+        description             = "Grants enfire (AoE).",
         category                = "Blood Pact: Ward",
         element                 = "Fire",
         avatar                  = "Ifrit",
         type                    = "buff",
         level                   = 88,
-        mp_cost                 = 118,
-        notes                   = "Enhanced attack + accuracy boost for party. MP: 118. Recast: Instant. Duration: 90s. Effect: Attack +15%, Accuracy +20. Party AoE. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 72,
+        notes                   = "Enfire effect for party. MP: 72. Duration: 60s. Damage increases with Summoning Magic skill. Party AoE. SMN (main job only).",
     },
 
 }

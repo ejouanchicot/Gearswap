@@ -87,7 +87,7 @@ axe_ws.weaponskills = {
         ftp                 = {[1000] = 2.0, [2000] = 4.0, [3000] = 6.5},
         skill_required      = 150,
         jobs                = {WAR = 49, BST = 49, DRK = 51, RNG = 51, RUN = 51},
-        special_notes       = 'Can only be used with WAR/DRK/BST/RNG/RUN as main or sub job.'
+        special_notes       = 'Can only be used with WAR/DRK/BST/RUN as main or sub job.'
     },
 
     ---========================================================================
@@ -104,7 +104,7 @@ axe_ws.weaponskills = {
         ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 175,
         jobs                = {WAR = 55, BST = 55, DRK = 56, RNG = 56, RUN = 56},
-        special_notes       = 'fTP-replicating weapon skill. Critical hit rate: 0%@1000TP / +20%@2000TP / +40%@3000TP.'
+        special_notes       = 'fTP-replicating weapon skill. Critical hit rate: +0%@1000TP / +20%@2000TP / +40%@3000TP (from tests with N<30, unverified).'
     },
 
     ['Calamity'] = {
@@ -129,12 +129,7 @@ axe_ws.weaponskills = {
         skillchain          = {'Fusion'},
         ftp                 = {[1000] = 4.0, [2000] = 10.5, [3000] = 13.625},
         skill_required      = 225,
-        jobs                = {
-            WAR                 = 66,
-            BST                 = 66,
-            DRK                 = 99, -- via Beryllium Pick/+1
-            RUN                 = 99  -- via Beryllium Pick/+1
-        },
+        jobs                = {WAR = 66, BST = 65, DRK = 99, RUN = 99},
         special_notes       = 'Ranged attack (effective range >15 feet). DRK/RUN access via Beryllium Pick/+1 at level 99.'
     },
 
@@ -147,8 +142,8 @@ axe_ws.weaponskills = {
         skillchain          = {'Fusion', 'Reverberation'},
         ftp                 = {[1000] = 1.75, [2000] = 1.75, [3000] = 1.75},
         skill_required      = 240,
-        jobs                = {WAR = 70, BST = 70, DRK = 75, RNG = 75, RUN = 75},
-        special_notes       = "Requires 'Axe the Competition' quest. Kaja Axe/Dolichenus: +15% damage bonus (applies to all hits) and enable use at level 99. fTP transfers across hits."
+        jobs                = {BST = 68, DRK = 75, RNG = 75, RUN = 75, WAR = 70},
+        special_notes       = 'Requires \'Axe the Competition\' quest. Kaja Axe/Dolichenus (main hand): +120% damage bonus (applies to all hits) and enable use regardless of job, skill level or quest. fTP transfers across hits.'
     },
 
     ['Bora Axe'] = {
@@ -160,7 +155,7 @@ axe_ws.weaponskills = {
         skillchain          = {'Scission', 'Detonation'},
         ftp                 = {[1000] = 4.5, [2000] = 4.5, [3000] = 4.5},
         skill_required      = 290,
-        jobs                = {WAR = 80, BST = 80, DRK = 85, RNG = 85, RUN = 85},
+        jobs                = {BST = 78, DRK = 85, RNG = 85, RUN = 85, WAR = 80},
         special_notes       = 'Can only be used with WAR/DRK/BST/RUN as main or sub job. Ranged attack (effective range >15 feet).'
     },
 
@@ -177,7 +172,7 @@ axe_ws.weaponskills = {
         skillchain          = {'Darkness', 'Distortion', 'Detonation'},
         ftp                 = {[1000] = 1.08, [2000] = 1.08, [3000] = 1.08},
         skill_required      = 357,
-        jobs                = {WAR = 91, BST = 91, DRK = 95, RNG = 95, RUN = 95},
+        jobs                = {BST = 90, WAR = 91, DRK = 95, RNG = 95, RUN = 95},
         special_notes       = "Requires 'Martial Mastery' quest. fTP-replicating weapon skill. Attack modifier: +10%. Merits: 73% STR@1/5, +3% per merit, 85% STR@5/5. Can only be used as main job."
     },
 

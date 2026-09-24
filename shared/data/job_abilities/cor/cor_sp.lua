@@ -24,11 +24,11 @@ COR_SP.abilities = {
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 300
     },
     ['Cutting Cards'] = {
-        description             = "Party SP recast -5-50%",
+        description             = "One party member's SP recast -5-50%",
         level                   = 96,
         recast                  = 3600,  -- 1hr (SP2)
         main_job_only           = true,

@@ -31,9 +31,9 @@ THF_MAINJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Collaborator'] = {
-        description             = 'Transfer 25% enmity to ally',
+        description             = 'Steal 25% enmity from ally',
         level                   = 65,
-        recast                  = 300,  -- 5min
+        recast                  = 60,  -- 1min
         main_job_only           = true,
         cumulative_enmity       = 0,
         volatile_enmity         = 80
@@ -50,22 +50,22 @@ THF_MAINJOB.abilities = {
         recast                  = 120,  -- 2min
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 320
     },
     ['Despoil'] = {
         description             = 'Steal items, inflict debuff',
         level                   = 77,
         recast                  = 300,  -- 5min
         main_job_only           = true,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 320
     },
     ['Conspirator'] = {
         description             = 'Party ACC+, Subtle Blow+',
         level                   = 87,
-        recast                  = 180,  -- 3min
+        recast                  = 300,  -- 5min
         main_job_only           = true,
-        cumulative_enmity       = 0,
+        cumulative_enmity       = 1,
         volatile_enmity         = 80
     },
     ['Bully'] = {
@@ -73,8 +73,8 @@ THF_MAINJOB.abilities = {
         level                   = 93,
         recast                  = 180,  -- 3min
         main_job_only           = true,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 320
     }
 }
 

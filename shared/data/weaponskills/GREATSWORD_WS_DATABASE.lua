@@ -135,7 +135,7 @@ greatsword_ws.weaponskills = {
             PLD                 = 69,
             WAR                 = 99 -- via Beryllium Sword/+1
         },
-        special_notes       = 'WAR access via Beryllium Sword/+1 only. Beryllium/Dervish/Foreshock Sword: +35% damage bonus.'
+        special_notes       = 'WAR access via Beryllium Sword/+1 only. Dervish/Foreshock Sword: +35% damage bonus.'
     },
 
     ['Ground Strike'] = {
@@ -163,7 +163,7 @@ greatsword_ws.weaponskills = {
         element             = 'Ice',
         skillchain          = {'Induration', 'Impaction', 'Detonation'},
         ftp                 = {[1000] = 3.5, [2000] = 3.5, [3000] = 3.5},
-        skill_required      = 300,
+        skill_required      = 290,
         jobs                = {RUN = 78, DRK = 80, WAR = 82, PLD = 83},
         special_notes       = 'Paralyze duration: 60s@1000TP / 120s@2000TP / 180s@3000TP.'
     },

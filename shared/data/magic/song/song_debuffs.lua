@@ -25,7 +25,7 @@ SONG_DEBUFFS.spells = {
         type                    = "aoe",
         tier                    = "I",
         BRD                     = 7,
-        notes                   = "Sonic damage to enemies (damage: Singing skill + CHR). Duration: 90s base + Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD (subjob OK).",
+        notes                   = "Light-based DoT on an enemy: 2 HP/tick base cap (before Requiem gear; Requiem job points add +3 HP DoT per level). Duration varies. BRD (subjob OK).",
     },
 
     ["Foe Requiem II"] = {
@@ -36,7 +36,7 @@ SONG_DEBUFFS.spells = {
         type                    = "aoe",
         tier                    = "II",
         BRD                     = 17,
-        notes                   = "Enhanced sonic damage to enemies (damage: Singing skill + CHR). Duration: 90s base + Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD (subjob OK).",
+        notes                   = "Light-based DoT on an enemy: 3 HP/tick base cap (before Requiem gear; Requiem job points add +3 HP DoT per level). Duration varies. BRD (subjob OK).",
     },
 
     ["Foe Requiem III"] = {
@@ -47,7 +47,7 @@ SONG_DEBUFFS.spells = {
         type                    = "aoe",
         tier                    = "III",
         BRD                     = 37,
-        notes                   = "Enhanced sonic damage to enemies (damage: Singing skill + CHR). Duration: 90s base + Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD (subjob OK).",
+        notes                   = "Light-based DoT on an enemy: 4 HP/tick base cap (before Requiem gear; Requiem job points add +3 HP DoT per level). Duration varies. BRD (subjob OK).",
     },
 
     ["Foe Requiem IV"] = {
@@ -58,7 +58,7 @@ SONG_DEBUFFS.spells = {
         type                    = "aoe",
         tier                    = "IV",
         BRD                     = 47,
-        notes                   = "Enhanced sonic damage to enemies (damage: Singing skill + CHR). Duration: 90s base + Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD (subjob OK).",
+        notes                   = "Light-based DoT on an enemy: 5 HP/tick base cap (before Requiem gear; Requiem job points add +3 HP DoT per level). Duration varies. BRD (subjob OK).",
     },
 
     ["Foe Requiem V"] = {
@@ -70,7 +70,7 @@ SONG_DEBUFFS.spells = {
         tier                    = "V",
         BRD                     = 57,
         subjob_master_only      = true,
-        notes                   = "Enhanced sonic damage to enemies (damage: Singing skill + CHR). Duration: 90s base + Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD (subjob master OK).",
+        notes                   = "Light-based DoT on an enemy: 6 HP/tick base cap (before Requiem gear; Requiem job points add +3 HP DoT per level). Duration varies. BRD (subjob master OK).",
     },
 
     ["Foe Requiem VI"] = {
@@ -82,7 +82,7 @@ SONG_DEBUFFS.spells = {
         tier                    = "VI",
         BRD                     = 67,
         main_job_only           = true,
-        notes                   = "Enhanced sonic damage to enemies (damage: Singing skill + CHR). Duration: 90s base + Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Light-based DoT on an enemy: 7 HP/tick base cap (before Requiem gear; Requiem job points add +3 HP DoT per level). Duration varies. BRD-only (main job).",
     },
 
     ["Foe Requiem VII"] = {
@@ -94,7 +94,7 @@ SONG_DEBUFFS.spells = {
         tier                    = "VII",
         BRD                     = 76,
         main_job_only           = true,
-        notes                   = "Highest sonic damage to enemies (damage: Singing skill + CHR). Duration: 90s base + Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Light-based DoT on an enemy: 8 HP/tick base cap (before Requiem gear; Requiem job points add +3 HP DoT per level). Duration varies. BRD-only (main job).",
     },
 
     --============================================================
@@ -110,7 +110,7 @@ SONG_DEBUFFS.spells = {
         resist_element          = "Light",
         tier                    = "I",
         BRD                     = 10,
-        notes                   = "Light resistance -50. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD (subjob OK).",
+        notes                   = "Light magic evasion -50 (base, before Threnody gear). Duration: 1 min. Only one Threnody at a time. BRD (subjob OK).",
     },
 
     ["Light Threnody II"] = {
@@ -123,7 +123,7 @@ SONG_DEBUFFS.spells = {
         tier                    = "II",
         BRD                     = 100,
         job_points              = true,
-        notes                   = "Light resistance -75. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. Job Point ability (BRD).",
+        notes                   = "Light magic evasion -160 (base, before Threnody gear). Duration: 1.5 min. Only one Threnody at a time. BRD Job Point spell (100 JP).",
     },
 
     ["Dark Threnody"] = {
@@ -135,7 +135,7 @@ SONG_DEBUFFS.spells = {
         resist_element          = "Dark",
         tier                    = "I",
         BRD                     = 12,
-        notes                   = "Dark resistance -50. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD (subjob OK).",
+        notes                   = "Dark resistance -50. Duration: 60s. BRD (subjob OK).",
     },
 
     ["Dark Threnody II"] = {
@@ -148,7 +148,7 @@ SONG_DEBUFFS.spells = {
         tier                    = "II",
         BRD                     = 100,
         job_points              = true,
-        notes                   = "Dark resistance -75. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. Job Point ability (BRD).",
+        notes                   = "Dark magic evasion -160 (base, before Threnody gear). Duration: 1.5 min. Only one Threnody at a time. BRD Job Point spell (100 JP).",
     },
 
     ["Earth Threnody"] = {
@@ -160,7 +160,7 @@ SONG_DEBUFFS.spells = {
         resist_element          = "Earth",
         tier                    = "I",
         BRD                     = 14,
-        notes                   = "Earth resistance -50. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD (subjob OK).",
+        notes                   = "Earth resistance -50. Duration: 60s. BRD (subjob OK).",
     },
 
     ["Earth Threnody II"] = {
@@ -173,7 +173,7 @@ SONG_DEBUFFS.spells = {
         tier                    = "II",
         BRD                     = 100,
         job_points              = true,
-        notes                   = "Earth resistance -75. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. Job Point ability (BRD).",
+        notes                   = "Earth magic evasion -160 (base, before Threnody gear). Duration: 1.5 min. Only one Threnody at a time. BRD Job Point spell (100 JP).",
     },
 
     ["Water Threnody"] = {
@@ -185,7 +185,7 @@ SONG_DEBUFFS.spells = {
         resist_element          = "Water",
         tier                    = "I",
         BRD                     = 16,
-        notes                   = "Water resistance -50. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD (subjob OK).",
+        notes                   = "Water magic evasion -50 (base, before Threnody gear). Duration: 1 min. Only one Threnody at a time. BRD (subjob OK).",
     },
 
     ["Water Threnody II"] = {
@@ -198,7 +198,7 @@ SONG_DEBUFFS.spells = {
         tier                    = "II",
         BRD                     = 100,
         job_points              = true,
-        notes                   = "Water resistance -75. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. Job Point ability (BRD).",
+        notes                   = "Water magic evasion -160 (base, before Threnody gear). Duration: 1.5 min. Only one Threnody at a time. BRD Job Point spell (100 JP).",
     },
 
     ["Wind Threnody"] = {
@@ -210,7 +210,7 @@ SONG_DEBUFFS.spells = {
         resist_element          = "Wind",
         tier                    = "I",
         BRD                     = 18,
-        notes                   = "Wind resistance -50. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD (subjob OK).",
+        notes                   = "Wind magic evasion -50 (base, before Threnody gear). Duration: 1 min. Only one Threnody at a time. BRD (subjob OK).",
     },
 
     ["Wind Threnody II"] = {
@@ -223,7 +223,7 @@ SONG_DEBUFFS.spells = {
         tier                    = "II",
         BRD                     = 100,
         job_points              = true,
-        notes                   = "Wind resistance -75. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. Job Point ability (BRD).",
+        notes                   = "Wind magic evasion -160 (base, before Threnody gear). Duration: 1.5 min. Only one Threnody at a time. BRD Job Point spell (100 JP).",
     },
 
     ["Fire Threnody"] = {
@@ -235,7 +235,7 @@ SONG_DEBUFFS.spells = {
         resist_element          = "Fire",
         tier                    = "I",
         BRD                     = 20,
-        notes                   = "Fire resistance -50. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD (subjob OK).",
+        notes                   = "Fire resistance -50. Duration: 60s. BRD (subjob OK).",
     },
 
     ["Fire Threnody II"] = {
@@ -248,7 +248,7 @@ SONG_DEBUFFS.spells = {
         tier                    = "II",
         BRD                     = 100,
         job_points              = true,
-        notes                   = "Fire resistance -75. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. Job Point ability (BRD).",
+        notes                   = "Fire magic evasion -160 (base, before Threnody gear). Duration: 1.5 min. Only one Threnody at a time. BRD Job Point spell (100 JP).",
     },
 
     ["Ice Threnody"] = {
@@ -260,7 +260,7 @@ SONG_DEBUFFS.spells = {
         resist_element          = "Ice",
         tier                    = "I",
         BRD                     = 22,
-        notes                   = "Ice resistance -50. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD (subjob OK).",
+        notes                   = "Ice magic evasion -50 (base, before Threnody gear). Duration: 1 min. Only one Threnody at a time. BRD (subjob OK).",
     },
 
     ["Ice Threnody II"] = {
@@ -273,7 +273,7 @@ SONG_DEBUFFS.spells = {
         tier                    = "II",
         BRD                     = 100,
         job_points              = true,
-        notes                   = "Ice resistance -75. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. Job Point ability (BRD).",
+        notes                   = "Ice magic evasion -160 (base, before Threnody gear). Duration: 1.5 min. Only one Threnody at a time. BRD Job Point spell (100 JP).",
     },
 
     ["Ltng. Threnody"] = {
@@ -285,7 +285,7 @@ SONG_DEBUFFS.spells = {
         resist_element          = "Lightning",
         tier                    = "I",
         BRD                     = 24,
-        notes                   = "Lightning resistance -50. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD (subjob OK).",
+        notes                   = "Lightning magic evasion -50 (base, before Threnody gear). Duration: 1 min. Only one Threnody at a time. BRD (subjob OK).",
     },
 
     ["Ltng. Threnody II"] = {
@@ -298,7 +298,7 @@ SONG_DEBUFFS.spells = {
         tier                    = "II",
         BRD                     = 100,
         job_points              = true,
-        notes                   = "Lightning resistance -75. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. Job Point ability (BRD).",
+        notes                   = "Lightning magic evasion -160 (base, before Threnody gear). Duration: 1.5 min. Only one Threnody at a time. BRD Job Point spell (100 JP).",
     },
 
     --============================================================
@@ -310,10 +310,10 @@ SONG_DEBUFFS.spells = {
         category                = "Lullaby",
         element                 = "Light",
         magic_type              = "Song",
-        type                    = "aoe",
+        type                    = "single",
         tier                    = "I",
         BRD                     = 16,
-        notes                   = "Inflicts Sleep on single enemy. Duration: 60s base + Singing skill. Success rate: Singing skill + CHR vs Sleep resistance. Instrument: Wind (Flute/Piccolo) enhances potency. BRD (subjob OK).",
+        notes                   = "Inflicts Light-based Sleep on a single enemy. Duration: 30s base (before Lullaby gear); Singing skill has no effect. BRD (subjob OK).",
     },
 
     ["Foe Lullaby II"] = {
@@ -321,11 +321,11 @@ SONG_DEBUFFS.spells = {
         category                = "Lullaby",
         element                 = "Light",
         magic_type              = "Song",
-        type                    = "aoe",
+        type                    = "single",
         tier                    = "II",
         BRD                     = 83,
         main_job_only           = true,
-        notes                   = "Inflicts enhanced Sleep on single enemy. Duration: 60s base + Singing skill. Success rate: Singing skill + CHR vs Sleep resistance. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Inflicts Light-based Sleep on a single enemy. Duration: 60s base (before Lullaby gear); Singing skill has no effect. BRD-only (main job).",
     },
 
     ["Horde Lullaby"] = {
@@ -336,7 +336,7 @@ SONG_DEBUFFS.spells = {
         type                    = "aoe",
         tier                    = "I",
         BRD                     = 27,
-        notes                   = "Inflicts Sleep on multiple enemies (wider AoE than Foe Lullaby). Duration: 60s base + Singing skill. Success rate: Singing skill + CHR vs Sleep resistance. Instrument: Wind (Flute/Piccolo) enhances potency. BRD (subjob OK).",
+        notes                   = "Inflicts Light-based Sleep on enemies in an area. Duration: 30s base (before Lullaby gear). Radius: 4 yalms, up to 8 with String skill on a string instrument (wind instruments stay at 4); Singing and Wind skill have no effect. BRD (subjob OK).",
     },
 
     ["Horde Lullaby II"] = {
@@ -348,7 +348,7 @@ SONG_DEBUFFS.spells = {
         tier                    = "II",
         BRD                     = 92,
         main_job_only           = true,
-        notes                   = "Inflicts enhanced Sleep on multiple enemies (wider AoE). Duration: 60s base + Singing skill. Success rate: Singing skill + CHR vs Sleep resistance. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Inflicts Light-based Sleep on enemies in an area. Duration: 60s base (before Lullaby gear). Radius: 4 yalms, up to 8 with String skill on a string instrument (wind instruments stay at 4); Singing and Wind skill have no effect. BRD-only (main job).",
     },
 
     --============================================================
@@ -363,7 +363,7 @@ SONG_DEBUFFS.spells = {
         type                    = "aoe",
         tier                    = "I",
         BRD                     = 39,
-        notes                   = "Slow effect: Attack speed -25%. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD (subjob OK).",
+        notes                   = "Slow effect: Attack speed -25%. BRD (subjob OK).",
     },
 
     ["Carnage Elegy"] = {
@@ -375,7 +375,7 @@ SONG_DEBUFFS.spells = {
         tier                    = "II",
         BRD                     = 59,
         subjob_master_only      = true,
-        notes                   = "Enhanced Slow effect: Attack speed -50%. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD (subjob master OK).",
+        notes                   = "Enhanced Slow effect: Attack speed -50%. BRD (subjob master OK).",
     },
 
     --============================================================
@@ -390,7 +390,7 @@ SONG_DEBUFFS.spells = {
         type                    = "single",
         effect                  = "Dispel",
         BRD                     = 33,
-        notes                   = "Dispels one beneficial effect from enemy (similar to Dispel spell). Success rate: Singing skill + CHR. Single target. Instrument: String (Harp/Lute) enhances success rate. BRD (subjob OK).",
+        notes                   = "Dispels one beneficial magic effect from an enemy (similar to Dispel). Built-in +175 magic accuracy. Single target. BRD (subjob OK).",
     },
 
     ["Maiden's Virelai"] = {
@@ -402,7 +402,7 @@ SONG_DEBUFFS.spells = {
         effect                  = "Charm",
         BRD                     = 75,
         main_job_only           = true,
-        notes                   = "Inflicts Charm status (enemy becomes temporary ally). Duration: 90s base + Singing skill. Success rate: Singing skill + CHR vs Charm resistance. Single target. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Inflicts Charm (the enemy attacks what you attack; it cannot be ordered). Duration: 30s base (Virelai gear +10% each; Song duration gear has no effect). Removes shadows even when the charm fails. Cast 4s, recast 1 min; range depends on the instrument. Single target. BRD-only (main job).",
     },
 
     ["Pining Nocturne"] = {
@@ -414,7 +414,7 @@ SONG_DEBUFFS.spells = {
         effect                  = "Magic Accuracy Down + Cast Time Up",
         BRD                     = 95,
         main_job_only           = true,
-        notes                   = "Magic Accuracy -50, Cast Time +100%. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Addle effect: enemy magic accuracy -15 and casting time +15% (base, before Song+ gear). Duration: 2-4 min. Does not overwrite Addle and is overwritten by it. BRD-only (main job).",
     },
 
 }

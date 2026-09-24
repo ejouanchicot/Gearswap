@@ -25,7 +25,7 @@ THF_SP.abilities = {
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 0
     },
     ['Larceny'] = {
         description             = "Steal buff from enemy",

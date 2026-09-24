@@ -33,7 +33,7 @@ ENFEEBLING_DOTS.spells = {
         enfeebling_type         = "potency",
         RDM                     = 1,
         WHM                     = 3,
-        notes                   = "Light DoT (ticks every 3s) + defense down. Potency: Enfeebling Magic skill. RDM/WHM.",
+        notes                   = "Light DoT (1/tick, ticks every 3s) + defense down (-10%). RDM/WHM.",
     },
 
     ["Dia II"] = {
@@ -46,7 +46,7 @@ ENFEEBLING_DOTS.spells = {
         enfeebling_type         = "potency",
         RDM                     = 31,
         WHM                     = 36,
-        notes                   = "Enhanced light DoT (ticks every 3s) + defense down. Potency: Enfeebling Magic skill. RDM/WHM.",
+        notes                   = "Enhanced light DoT (2/tick, ticks every 3s) + defense down (-15%). RDM/WHM.",
     },
 
     ["Dia III"] = {
@@ -58,11 +58,11 @@ ENFEEBLING_DOTS.spells = {
         type                    = "single",
         enfeebling_type         = "potency",
         RDM                     = 75,
-        notes                   = "Maximum light DoT (ticks every 3s) + defense down. Potency: Enfeebling Magic skill. RDM-only.",
+        notes                   = "Maximum light DoT (3/tick, ticks every 3s; +1/tick per Enfeebling magic effect+ gear) + defense down (-20%). RDM-only.",
     },
 
     ["Diaga"] = {
-        description             = "Light DoT (AOE).",
+        description             = "Light DoT + def down (AOE).",
         element                 = "Light",
         tier                    = "I",
         category                = "Enfeebling",
@@ -71,7 +71,7 @@ ENFEEBLING_DOTS.spells = {
         enfeebling_type         = "potency",
         RDM                     = 15,
         WHM                     = 18,
-        notes                   = "AOE light DoT (ticks every 3s). No defense down effect. Potency: Enfeebling Magic skill. RDM/WHM.",
+        notes                   = "AOE light DoT (1/tick, ticks every 3s) + defense down (-10%). RDM/WHM.",
     },
 
     ---========================================================================
@@ -90,7 +90,7 @@ ENFEEBLING_DOTS.spells = {
         BLM                     = 10,
         DRK                     = 15,
         RDM                     = 10,
-        notes                   = "Dark DoT (ticks every 3s) + attack down. Potency: Enfeebling Magic skill. BLM/DRK/RDM.",
+        notes                   = "Bio effect (attack down -10%, static) + darkness DoT (scales with Dark Magic skill, caps at 3/tick). Ticks every 3 seconds. Duration: 60s. BLM/DRK/RDM.",
     },
 
     ["Bio II"] = {
@@ -104,7 +104,7 @@ ENFEEBLING_DOTS.spells = {
         BLM                     = 35,
         DRK                     = 40,
         RDM                     = 36,
-        notes                   = "Enhanced dark DoT (ticks every 3s) + attack down. Potency: Enfeebling Magic skill. BLM/DRK/RDM.",
+        notes                   = "Stronger Bio effect (attack down -15%, static) + darkness DoT (5-8/tick by Dark Magic skill). Ticks every 3 seconds. Duration: 120s. BLM/DRK/RDM.",
     },
 
     ["Bio III"] = {
@@ -116,7 +116,7 @@ ENFEEBLING_DOTS.spells = {
         type                    = "single",
         enfeebling_type         = "potency",
         RDM                     = 75,
-        notes                   = "Maximum dark DoT (ticks every 3s) + attack down. Potency: Enfeebling Magic skill. RDM-only.",
+        notes                   = "Bio effect (attack down -20%, static) + darkness DoT (scales with Dark Magic skill, caps at 17/tick). Ticks every 3 seconds. RDM-only.",
     },
 
     ---========================================================================

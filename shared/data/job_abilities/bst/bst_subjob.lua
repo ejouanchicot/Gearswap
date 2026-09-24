@@ -26,8 +26,8 @@ BST_SUBJOB.abilities = {
         level                   = 1,
         recast                  = 15,  -- 15s
         main_job_only           = false,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 320,
+        volatile_enmity         = 0
     },
     ['Gauge'] = {
         description             = 'Check charm success rate',
@@ -35,7 +35,7 @@ BST_SUBJOB.abilities = {
         recast                  = 30,  -- 30s
         main_job_only           = false,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 0
     },
     ['Reward'] = {
         description             = 'Restore pet HP (food required)',
@@ -43,7 +43,7 @@ BST_SUBJOB.abilities = {
         recast                  = 90,  -- 1.5 minutes
         main_job_only           = false,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 160
     },
     ['Call Beast'] = {
         description             = 'Summon jug pet (consumes jug)',
@@ -51,7 +51,7 @@ BST_SUBJOB.abilities = {
         recast                  = 300,  -- 5min (base)
         main_job_only           = false,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 0
     },
     ['Bestial Loyalty'] = {
         description             = 'Summon jug pet (no consume)',
@@ -59,7 +59,7 @@ BST_SUBJOB.abilities = {
         recast                  = 1200,  -- 20min
         main_job_only           = false,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 0
     },
     ['Tame'] = {
         description             = 'Lower enemy resistance to charm',
@@ -67,7 +67,7 @@ BST_SUBJOB.abilities = {
         recast                  = 600,  -- 10min
         main_job_only           = false,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 0
     }
 }
 

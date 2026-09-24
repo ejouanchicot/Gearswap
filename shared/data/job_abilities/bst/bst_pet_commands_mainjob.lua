@@ -25,7 +25,7 @@ BST_PET_COMMANDS_MAINJOB.abilities = {
         recast                  = 30,  -- 30s per charge (base)
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 0
     },
     ['Snarl'] = {
         description             = 'Transfer 99% enmity to pet',
@@ -33,7 +33,7 @@ BST_PET_COMMANDS_MAINJOB.abilities = {
         recast                  = 30,  -- 30s
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 0
     },
     ['Spur'] = {
         description             = 'Pet Store TP +20',

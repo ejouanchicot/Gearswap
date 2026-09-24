@@ -184,11 +184,11 @@ polearm_ws.weaponskills = {
         ftp                 = {[1000] = 0.75, [2000] = 1.25, [3000] = 1.75},
         skill_required      = 357,
         jobs                = {DRG = 90, WAR = 95, SAM = 95},
-        special_notes       = "Requires 'Martial Mastery' quest. fTP-replicating weapon skill. Critical evasion down: +5% critical hit rate for 60s. Merits: 73% STR@1/5, +3% per merit, 85% STR@5/5. Can only be used as main job. Darkness becomes exclusive during Aeonic Aftermath."
+        special_notes       = 'Requires \'Martial Mastery\' quest. fTP-replicating weapon skill. Critical evasion down: +5% critical hit rate for 60s. Merits: 73% STR@1/5, +3% per merit, 85% STR@5/5. Can only be used with WAR/SAM/DRG as main job. Darkness is only available under Aeonic Aftermath.'
     },
 
     ['Geirskogul'] = {
-        description         = 'Lowers defense. Shock Spikes aftermath.',
+        description         = 'Shock Spikes aftermath. Duration varies with TP.',
         type                = 'Physical',
         mods                = {DEX = 80},
         hits                = 1,
@@ -200,14 +200,14 @@ polearm_ws.weaponskills = {
             DRG                 = 75, -- via Gae Assail or Gungnir
             -- Level 85 via Skogul Lance
         },
-        special_notes       = 'Gae Assail/Gungnir: DRG level 75. Skogul Lance: DRG level 85. Aftermath: Shock Spikes with ~10% stun proc rate for 20s@1000TP / 40s@2000TP / 60s@3000TP. Gungnir level 90+: +25-40% damage bonus. Only Gae Assail/Gungnir grant Relic Aftermath.'
+        special_notes       = 'Gae Assail/Gungnir: DRG level 75. Skogul Lance: DRG level 85. Aftermath: Shock Spikes (low stun proc rate) for 20s@1000TP / 40s@2000TP / 60s@3000TP. Gungnir level 90+: +25-40% damage bonus. Only Gae Assail/Gungnir grant Relic Aftermath.'
     },
 
     ['Camlann\'s Torment'] = {
         description         = 'Triple damage. Ignores defense.',
         type                = 'Physical',
         mods                = {STR = 60, VIT = 60},
-        hits                = 3,
+        hits                = 1,
         element             = nil,
         skillchain          = {'Light', 'Fragmentation'},
         ftp                 = {[1000] = 3.0, [2000] = 3.0, [3000] = 3.0},
@@ -226,7 +226,7 @@ polearm_ws.weaponskills = {
         ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 357,
         jobs                = {DRG = 75},
-        special_notes       = "Requires 'Unlocking a Myth (Dragoon)' quest. Can only be used with DRG as main job. Critical hit rate: +10%@1000TP / +25%@2000TP / +40%@3000TP. Attack modifier: 0.8125. Ryunohige: +15% damage@90-95, +30% damage@99-119."
+        special_notes       = 'Requires \'Unlocking a Myth (Dragoon)\' quest. Can only be used with DRG as main job. Critical hit rate: +10%@1000TP / +25%@2000TP / +40%@3000TP. Attack modifier: 0.8125. Ryunohige: Mythic Aftermath, +15% damage@90-95, +30% damage@99/99 II.'
     },
 
     ---========================================================================

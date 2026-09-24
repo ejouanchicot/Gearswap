@@ -65,7 +65,7 @@ ENFEEBLING_DEBUFFS.spells = {
         enfeebling_type         = "macc",
         RDM                     = 13,
         WHM                     = 13,
-        notes                   = "Reduces attack speed (~14% delay). Success rate: Magic Accuracy. RDM/WHM.",
+        notes                   = "Reduces attack speed (7-29%, by caster vs target MND). Success rate: Magic Accuracy. RDM/WHM.",
     },
 
     ["Slow II"] = {
@@ -77,7 +77,7 @@ ENFEEBLING_DEBUFFS.spells = {
         type                    = "single",
         enfeebling_type         = "mnd_potency",
         RDM                     = 75,
-        notes                   = "Enhanced slow. Reduces attack speed (~30% delay). Potency: MND. RDM-only.",
+        notes                   = "Enhanced slow. Reduces attack speed (16-39%, by caster vs target MND). RDM-only.",
     },
 
     ---========================================================================
@@ -124,7 +124,7 @@ ENFEEBLING_DEBUFFS.spells = {
         type                    = "single",
         enfeebling_type         = "macc",
         RDM                     = 21,
-        notes                   = "Reduces movement speed (~50%). Success rate: Magic Accuracy. RDM-only.",
+        notes                   = "Reduces movement speed (~26%). Success rate: Magic Accuracy. RDM-only.",
     },
 
     ["Gravity II"] = {
@@ -136,7 +136,7 @@ ENFEEBLING_DEBUFFS.spells = {
         type                    = "single",
         enfeebling_type         = "potency",
         RDM                     = 98,
-        notes                   = "Enhanced gravity. Reduces movement speed (~75%). Potency scaling. RDM-only.",
+        notes                   = "Enhanced gravity. Reduces movement speed (~32%, more with Saboteur). RDM-only.",
     },
 
     ---========================================================================

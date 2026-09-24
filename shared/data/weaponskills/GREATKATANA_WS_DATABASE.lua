@@ -49,7 +49,7 @@ greatkatana_ws.weaponskills = {
         ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0}, -- 2000/3000 need verification
         skill_required      = 30,
         jobs                = {SAM = 9, NIN = 10},
-        special_notes       = 'Stun accuracy varies with TP. fTP values at 2000/3000 TP require verification.'
+        special_notes       = 'Stun chance varies with TP (exact values unknown).'
     },
 
     ['Tachi: Goten'] = {
@@ -180,7 +180,7 @@ greatkatana_ws.weaponskills = {
     },
 
     ['Tachi: Kaiten'] = {
-        description         = 'TP Bonus aftermath. Duration varies.',
+        description         = 'Store TP aftermath. Duration varies.',
         type                = 'Physical',
         mods                = {STR = 80},
         hits                = 1,
@@ -193,7 +193,7 @@ greatkatana_ws.weaponskills = {
             -- Level 85 via Ame-no-ohabari
             -- Level 99 via Fusenaikyo with Sekkanoki
         },
-        special_notes       = 'Totsukanotsurugi/Amanomurakumo: SAM level 75. Ame-no-ohabari: SAM level 85. Fusenaikyo (with Sekkanoki): SAM level 99. Aftermath: Store TP +7 (standard) or +10 (Afterglow) for 20s@1000TP / 40s@2000TP / 60s@3000TP. Amanomurakumo level 90+: +25-40% damage bonus. Only Totsukanotsurugi/Amanomurakumo grant Relic Aftermath.'
+        special_notes       = 'Totsukanotsurugi/Amanomurakumo: SAM level 75. Ame-no-ohabari: SAM level 85. Fusenaikyo (with Sekkanoki): SAM level 99. Aftermath (75-119 II): Store TP +10 for 20s@1000TP / 40s@2000TP / 60s@3000TP. Amanomurakumo 119 III Aftermath: Store TP +10 and Zanshin +10% for 60s@1000TP / 120s@2000TP / 180s@3000TP. Amanomurakumo: +25% damage@90-95, +40% damage@99-119 III. Ame-no-ohabari does not give Aftermath.'
     },
 
     ['Tachi: Fudo'] = {
@@ -219,7 +219,7 @@ greatkatana_ws.weaponskills = {
         ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 357,
         jobs                = {SAM = 75},
-        special_notes       = "Requires 'Unlocking a Myth (Samurai)' quest. Can only be used with SAM as main job. Accuracy varies with TP (exact values unknown). Kogarasumaru: +15% damage@90-95, +30% damage@99-119."
+        special_notes       = 'Requires \'Unlocking a Myth (Samurai)\' quest. Can only be used with SAM as main job. Accuracy varies with TP (exact values unknown). Kogarasumaru: Mythic Aftermath, +15% damage@90-95, +30% damage@99/99 II.'
     },
 
     ---========================================================================

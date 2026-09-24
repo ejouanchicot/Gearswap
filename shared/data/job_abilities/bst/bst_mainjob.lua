@@ -23,7 +23,7 @@ BST_MAINJOB.abilities = {
         recast                  = 300,  -- 5min
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 640
     },
     ['Killer Instinct'] = {
         description             = "Grant pet's killer trait to party",

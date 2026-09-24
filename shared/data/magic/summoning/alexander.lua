@@ -38,7 +38,7 @@ ALEXANDER.blood_pacts = {
     --============================================================
 
     ["Perfect Defense"] = {
-        description             = "Grants party invincibility.",
+        description             = "Reduces party dmg taken; resists ailments.",
         category                = "Blood Pact: Ward",
         element                 = "Light",
         avatar                  = "Alexander",
@@ -47,7 +47,7 @@ ALEXANDER.blood_pacts = {
         mp_cost                 = 0,
         astral_flow             = true,
         restriction             = "two_hour",
-        notes                   = "Astral Flow ability. Grants party-wide damage immunity for a short duration (scales with summon duration). MP: 0. Requires Astral Flow active. SMN main job only.",
+        notes                   = "Astral Flow ability. Reduces damage taken by party members in range and grants resistance to status ailments; potency varies with the summoner's MP and starts to decay at half duration. Duration: 30s + Summoning skill/20 (max 60s). Uses all MP (Astral Flow). SMN (main job only).",
     },
 
 }

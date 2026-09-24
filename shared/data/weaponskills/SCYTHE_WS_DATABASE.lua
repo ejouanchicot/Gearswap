@@ -36,7 +36,7 @@ scythe_ws.weaponskills = {
         skillchain          = {'Scission'},
         ftp                 = {[1000] = 1.0, [2000] = 2.5, [3000] = 4.125},
         skill_required      = 5,
-        jobs                = {DRK = 1, WAR = 3, BST = 3, BLM = 4}
+        jobs                = {WAR = 1, DRK = 1, BST = 1, BLM = 2}
     },
 
     ['Dark Harvest'] = {
@@ -88,7 +88,7 @@ scythe_ws.weaponskills = {
         ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 125,
         jobs                = {DRK = 41, WAR = 43, BST = 43, BLM = 50},
-        special_notes       = 'AoE radius: 3.5@1000TP / 4.5@2000TP / 5.5@3000TP.'
+        special_notes       = 'AoE radius: 4@1000TP / 5@2000TP / 6@3000TP.'
     },
 
     ['Vorpal Scythe'] = {
@@ -176,7 +176,7 @@ scythe_ws.weaponskills = {
     ---========================================================================
 
     ['Entropy'] = {
-        description         = 'Four hits. Damage to MP. Accuracy varies.',
+        description         = 'Four hits. Converts damage to MP. Damage varies with TP.',
         type                = 'Physical',
         mods                = {INT = 73}, -- 73-85% with merits
         hits                = 4,
@@ -185,7 +185,7 @@ scythe_ws.weaponskills = {
         ftp                 = {[1000] = 0.75, [2000] = 1.25, [3000] = 2.0},
         skill_required      = 357,
         jobs                = {DRK = 90, WAR = 93, BST = 95},
-        special_notes       = "Requires 'Martial Mastery' quest. fTP-replicating weapon skill. MP drain: 15-25% of damage. Merits: 73% INT@1/5, +3% per merit, 85% INT@5/5. Functions against undead. Can only be used as main job. Darkness becomes exclusive during Aeonic Aftermath."
+        special_notes       = 'Requires \'Martial Mastery\' quest. fTP-replicating weapon skill. MP drain: 15-25% of damage. Merits: 73% INT@1/5, +3% per merit, 85% INT@5/5. Functions against undead. Can only be used with WAR/DRK/BST as main job. Darkness is only available under Aeonic Aftermath.'
     },
 
     ['Catastrophe'] = {
@@ -208,7 +208,7 @@ scythe_ws.weaponskills = {
         description         = 'Triple damage. Ignores defense.',
         type                = 'Physical',
         mods                = {STR = 60, MND = 60},
-        hits                = 3,
+        hits                = 1,
         element             = nil,
         skillchain          = {'Darkness', 'Distortion'},
         ftp                 = {[1000] = 3.0, [2000] = 3.0, [3000] = 3.0},

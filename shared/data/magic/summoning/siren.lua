@@ -25,7 +25,7 @@ SIREN.spells = {
         type                    = "summon",
         SMN                     = 1,
         mp_cost                 = 7,
-        notes                   = "Wind-based avatar. MP cost: 7. Perpetuation: 3 MP/3s. Specializes in debuffs via songs (Lunatic Voice, Hysteric Assault) and status ailments. Quest required. SMN (subjob OK).",
+        notes                   = "Wind-based avatar. MP cost: 7. Blood Pacts include debuffs (Lunatic Voice, Bitter Elegy) and party wards (Katabatic Blades, Chinook, Wind's Blessing). Obtained from the quest The Silent Forest or Winds of Eternity. SMN (subjob OK).",
     },
 
 }
@@ -42,11 +42,11 @@ SIREN.blood_pacts = {
         element                 = "Wind",
         avatar                  = "Siren",
         type                    = "physical",
-        damage_type             = "Blunt",
+        damage_type             = "Slashing",
         level                   = 1,
         mp_cost                 = 9,
-        skillchain              = "Transfixion",
-        notes                   = "Physical blunt damage. MP: 9. Recast: Instant. Damage: Pet STR. Single target. SMN (subjob OK).",
+        skillchain              = "Scission",
+        notes                   = "Physical slashing damage. MP: 9. Single target. SMN (subjob OK).",
     },
 
     ["Roundhouse"] = {
@@ -57,20 +57,20 @@ SIREN.blood_pacts = {
         type                    = "physical",
         damage_type             = "Blunt",
         level                   = 25,
-        mp_cost                 = 56,
-        skillchain              = "Reverberation",
-        notes                   = "Enhanced physical blunt damage. MP: 56. Recast: Instant. Damage: Pet STR. Single target. SMN (subjob OK).",
+        mp_cost                 = 52,
+        skillchain              = "Detonation",
+        notes                   = "Physical blunt damage. MP: 52. Single target. SMN (subjob OK).",
     },
 
     ["Sonic Buffet"] = {
-        description             = "Deals wind damage + dispel (AoE).",
+        description             = "Deals wind dmg + dispel.",
         category                = "Blood Pact: Rage",
         element                 = "Wind",
         avatar                  = "Siren",
         type                    = "magical",
         level                   = 65,
-        mp_cost                 = 118,
-        notes                   = "Wind-based magical AoE damage with dispel effect. MP: 118. Recast: Instant. Damage: Pet MAB + level. Dispels one beneficial effect from enemies. AoE range. SMN (subjob OK).",
+        mp_cost                 = 164,
+        notes                   = "Wind-based magical damage + Dispel (removes 1 buff, procs regardless of damage). MP: 164. Damage: Pet INT. Single target. SMN (main job only).",
     },
 
     ["Tornado II"] = {
@@ -81,7 +81,7 @@ SIREN.blood_pacts = {
         type                    = "magical",
         level                   = 75,
         mp_cost                 = 182,
-        notes                   = "Wind-based magical damage. MP: 182. Recast: Instant. Damage: Pet INT. Single target. SMN (subjob OK).",
+        notes                   = "Wind-based magical damage. MP: 182. Damage: Pet INT. Single target. SMN (main job only).",
     },
 
     ["Hysteric Assault"] = {
@@ -90,11 +90,11 @@ SIREN.blood_pacts = {
         element                 = "Wind",
         avatar                  = "Siren",
         type                    = "physical",
-        damage_type             = "Blunt",
+        damage_type             = "Piercing",
         level                   = 99,
-        mp_cost                 = 200,
-        skillchain              = "Fragmentation",
-        notes                   = "Triple-hit physical damage with HP drain. MP: 200. Recast: Instant. Damage: Pet STR (×3 hits). Drains HP from enemy. Single target. SMN (subjob OK).",
+        mp_cost                 = 222,
+        skillchain              = "Fragmentation/Transfixion",
+        notes                   = "Three-hit physical piercing damage + HP drain (also works on undead). MP: 222. Damage: Pet DEX + INT. Single target. SMN (main job only).",
     },
 
     ["Clarsach Call"] = {
@@ -106,7 +106,7 @@ SIREN.blood_pacts = {
         level                   = 1,
         mp_cost                 = 0,
         astral_flow             = true,
-        notes                   = "Ultimate wind-based magical AoE damage + buffs Siren. MP: 0. Recast: N/A. Only available during Astral Flow. Extreme damage + enhances Siren's stats. Wide AoE range. SMN (subjob OK).",
+        notes                   = "Ultimate wind-based magical AoE damage. Requires MP = caster's level x2. Uses all MP (Astral Flow). Only usable during Astral Flow. Damage: Pet INT. Also grants Siren Attack/Defense +25% and Evasion +50 for 3 min. SMN (main job only).",
     },
 
     --============================================================
@@ -120,8 +120,8 @@ SIREN.blood_pacts = {
         avatar                  = "Siren",
         type                    = "debuff",
         level                   = 15,
-        mp_cost                 = 33,
-        notes                   = "Silence status to enemies (prevents spellcasting). MP: 33. Recast: Instant. Duration: 60s. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 37,
+        notes                   = "Silences enemies in area (10'). MP: 37. Duration: 90s (unresisted). Overwrites and is overwritten by Silence. SMN (subjob OK).",
     },
 
     ["Katabatic Blades"] = {
@@ -131,8 +131,8 @@ SIREN.blood_pacts = {
         avatar                  = "Siren",
         type                    = "buff",
         level                   = 31,
-        mp_cost                 = 69,
-        notes                   = "Enaero effect (adds wind damage to attacks). MP: 69. Recast: Instant. Duration: 180s. Party AoE. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 52,
+        notes                   = "Enaero effect (adds wind damage to attacks). MP: 52. Duration: 120s. Potency scales with Summoning Magic skill. Party AoE. SMN (subjob OK).",
     },
 
     ["Chinook"] = {
@@ -142,8 +142,8 @@ SIREN.blood_pacts = {
         avatar                  = "Siren",
         type                    = "buff",
         level                   = 42,
-        mp_cost                 = 94,
-        notes                   = "Aquaveil effect (reduces spell interruption). MP: 94. Recast: Instant. Duration: 180s. Party AoE. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 118,
+        notes                   = "Aquaveil effect (prevents up to 3 spell interruptions). MP: 118. Duration: 15 min. Party AoE. SMN (subjob OK).",
     },
 
     ["Bitter Elegy"] = {
@@ -153,8 +153,8 @@ SIREN.blood_pacts = {
         avatar                  = "Siren",
         type                    = "debuff",
         level                   = 50,
-        mp_cost                 = 112,
-        notes                   = "Elegy effect (slow + haste down). MP: 112. Recast: Instant. Duration: 180s. Target: Single enemy. SMN (subjob OK).",
+        mp_cost                 = 96,
+        notes                   = "Elegy effect (50% wind-aligned Slow). MP: 96. Duration: 180s. Single enemy. SMN (subjob OK).",
     },
 
     ["Wind's Blessing"] = {
@@ -164,8 +164,8 @@ SIREN.blood_pacts = {
         avatar                  = "Siren",
         type                    = "buff",
         level                   = 88,
-        mp_cost                 = 196,
-        notes                   = "Magic Shield effect (absorbs magical damage). MP: 196. Recast: Instant. Duration: 180s. Party AoE. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 135,
+        notes                   = "Magic Shield effect (reduces magic damage only, by Siren's MND/5). MP: 135. Duration: 60s (affected by Summoning Magic skill). Party AoE. SMN (main job only).",
     },
 
 }

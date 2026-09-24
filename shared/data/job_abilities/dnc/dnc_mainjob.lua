@@ -22,9 +22,9 @@ DNC_MAINJOB.abilities = {
     ['Saber Dance'] = {
         description             = "Double Attack+ but disables Waltzes",
         level                   = 75,
-        recast                  = 300,  -- 5min
+        recast                  = 180,  -- 3min
         main_job_only           = true,
-        cumulative_enmity       = 0,
+        cumulative_enmity       = 1,
         volatile_enmity         = 80
     },
     ['Fan Dance'] = {
@@ -32,7 +32,7 @@ DNC_MAINJOB.abilities = {
         level                   = 75,
         recast                  = 180,  -- 3min
         main_job_only           = true,
-        cumulative_enmity       = 0,
+        cumulative_enmity       = 1,
         volatile_enmity         = 80
     },
     ['No Foot Rise'] = {
@@ -40,7 +40,7 @@ DNC_MAINJOB.abilities = {
         level                   = 75,
         recast                  = 180,  -- 3min
         main_job_only           = true,
-        cumulative_enmity       = 0,
+        cumulative_enmity       = 1,
         volatile_enmity         = 80
     },
     ['Presto'] = {
@@ -48,7 +48,7 @@ DNC_MAINJOB.abilities = {
         level                   = 77,
         recast                  = 15,  -- 15s
         main_job_only           = true,
-        cumulative_enmity       = 0,
+        cumulative_enmity       = 1,
         volatile_enmity         = 80
     }
 }

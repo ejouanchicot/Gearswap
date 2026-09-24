@@ -17,17 +17,17 @@ DNC_JIGS_MAINJOB.abilities = {
         description             = "Movement speed +20%",
         level                   = 55,
         recast                  = 60,
-        main_job_only           = true,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        main_job_only           = false,
+        cumulative_enmity       = 1,
+        volatile_enmity         = 300
     },
     ['Chocobo Jig II'] = {
         description             = "Movement speed +20% (AoE)",
         level                   = 70,
         recast                  = 60,
         main_job_only           = true,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 300
     }
 }
 

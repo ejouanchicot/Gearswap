@@ -18,7 +18,7 @@ local BLM_SUBJOB = {}
 
 BLM_SUBJOB.abilities = {
     ['Elemental Seal'] = {
-        description             = 'Next elemental spell MACC +256',
+        description             = 'Next spell MACC greatly up (~+256)',
         level                   = 15,
         recast                  = 600, -- 10min (reducible with merits)
         main_job_only           = false, -- Accessible as subjob

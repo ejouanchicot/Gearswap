@@ -23,26 +23,26 @@ BST_PET_COMMANDS_SUBJOB.abilities = {
     ['Fight'] = {
         description             = 'Pet attacks target',
         level                   = 1,
-        recast                  = 0,
+        recast                  = 5,
         main_job_only           = false,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 0
     },
     ['Heel'] = {
         description             = 'Pet returns to master',
         level                   = 10,
-        recast                  = 0,
+        recast                  = 5,
         main_job_only           = false,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 160
     },
     ['Stay'] = {
         description             = 'Pet holds position',
         level                   = 15,
-        recast                  = 0,
+        recast                  = 5,
         main_job_only           = false,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 160
     },
     ['Sic'] = {
         description             = 'Pet uses random TP move',
@@ -50,15 +50,15 @@ BST_PET_COMMANDS_SUBJOB.abilities = {
         recast                  = 90,  -- 90s (base)
         main_job_only           = false,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 160
     },
     ['Leave'] = {
         description             = 'Dismiss pet',
         level                   = 35,
-        recast                  = 0,
+        recast                  = 5,
         main_job_only           = false,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 160
     }
 }
 

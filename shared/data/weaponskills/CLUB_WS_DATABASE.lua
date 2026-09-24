@@ -82,7 +82,7 @@ club_ws.weaponskills = {
 
     ['Starlight'] = {
         description         = 'Restores own MP. Amount varies with TP.',
-        type                = 'Magical',
+        type                = 'None',
         mods                = {}, -- Club Skill based
         hits                = 0, -- Self-targeted utility
         element             = nil,
@@ -101,7 +101,7 @@ club_ws.weaponskills = {
 
     ['Moonlight'] = {
         description         = 'Restores party MP. Amount varies with TP.',
-        type                = 'Magical',
+        type                = 'None',
         mods                = {}, -- Club Skill based
         hits                = 0, -- Party utility
         element             = nil,
@@ -157,7 +157,7 @@ club_ws.weaponskills = {
             RDM                 = 59, BST = 59, BRD = 59, PUP = 59,
             THF                 = 63, SAM = 63, NIN = 63, DRG = 63
         },
-        special_notes       = '100% critical hit rate. Attack modifier: 2.0. Large accuracy penalty across all TP levels.'
+        special_notes       = '100% critical hit rate. Attack modifier: 2.0. Accuracy varies with TP (large penalty at 1000TP, unverified).'
     },
 
     ['Judgment'] = {
@@ -259,7 +259,7 @@ club_ws.weaponskills = {
             WAR                 = 95, BLU = 95,
             MNK                 = 96, BLM = 96, SMN = 96, RUN = 96
         },
-        special_notes       = "Requires 'Martial Mastery' quest. fTP-replicating weapon skill. Merits: 73% MND@1/5, +3% per merit, 85% MND@5/5. Can only be used as main job (WAR/MNK/WHM/BLM/PLD/SMN/BLU/SCH/GEO). Light becomes primary under Aeonic Aftermath."
+        special_notes       = 'Requires \'Martial Mastery\' quest. fTP-replicating weapon skill. Merits: 73% MND@1/5, +3% per merit, 85% MND@5/5. Can only be used as main job (WAR/MNK/WHM/BLM/PLD/SMN/BLU/SCH/GEO). Light only available under Aeonic Aftermath.'
     },
 
     ['Randgrith'] = {
@@ -281,7 +281,7 @@ club_ws.weaponskills = {
 
     ['Dagan'] = {
         description         = 'Restores HP and MP. Amount varies with TP.',
-        type                = 'Magical',
+        type                = 'None',
         mods                = {}, -- Max HP/MP based
         hits                = 0, -- Self-targeted utility
         element             = nil,
@@ -312,7 +312,7 @@ club_ws.weaponskills = {
         hits                = 1,
         element             = nil,
         skillchain          = {'Darkness', 'Fragmentation'},
-        ftp                 = {[1000] = 1.5, [2000] = 3.625, [3000] = 4.75},
+        ftp                 = {[1000] = 2.8, [2000] = 2.8, [3000] = 2.8},
         skill_required      = 1,
         jobs                = {GEO = 99},
         special_notes       = "Requires 'Geomancerrific' quest. Can only be used with GEO as main job. Ergon weapon skill. Idris (Level 119): Ergon Aftermath varies with TP. Attack varies with TP: +50%@1000TP / +262.5%@2000TP / +375%@3000TP."

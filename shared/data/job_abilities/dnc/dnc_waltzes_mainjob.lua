@@ -16,15 +16,15 @@ DNC_WALTZES_MAINJOB.abilities = {
     ['Curing Waltz IV'] = {
         description             = "Restores HP",
         level                   = 70,
-        recast                  = 10,
+        recast                  = 13,
         main_job_only           = true,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 400,
+        volatile_enmity         = 700
     },
     ['Divine Waltz II'] = {
         description             = "Restores HP (AoE)",
         level                   = 78,
-        recast                  = 15,
+        recast                  = 20,
         main_job_only           = true,
         cumulative_enmity       = 0,
         volatile_enmity         = 80
@@ -32,10 +32,10 @@ DNC_WALTZES_MAINJOB.abilities = {
     ['Curing Waltz V'] = {
         description             = "Restores HP",
         level                   = 87,
-        recast                  = 13,
+        recast                  = 16,
         main_job_only           = true,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 400,
+        volatile_enmity         = 800
     }
 }
 

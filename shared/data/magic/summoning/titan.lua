@@ -25,7 +25,7 @@ TITAN.spells = {
         type                    = "summon",
         SMN                     = 1,
         mp_cost                 = 7,
-        notes                   = "Earth-based avatar. MP cost: 7. Perpetuation: 2 MP/3s. Specializes in physical damage (Rock Throw, Earthen Fury) and defense buffs (Earthen Armor, Earthen Ward). Strong against thunder, weak to wind. SMN (subjob OK).",
+        notes                   = "Earth-based avatar. MP cost: 7. Specializes in physical damage (Rock Throw, Mountain Buster) and party wards (Earthen Ward, Earthen Armor). Resists earth and thunder, weak to wind. SMN (subjob OK).",
     },
 
 }
@@ -44,9 +44,9 @@ TITAN.blood_pacts = {
         type                    = "physical",
         damage_type             = "Blunt",
         level                   = 1,
-        mp_cost                 = 9,
+        mp_cost                 = 10,
         skillchain              = "Scission",
-        notes                   = "Physical blunt ranged damage with slow effect. MP: 9. Recast: Instant. Damage: Pet STR. Inflicts Slow. Single target. SMN (subjob OK).",
+        notes                   = "Physical blunt damage + Slow. MP: 10. Damage: Pet STR + AGI. Accuracy bonus varies with TP. Single target. SMN (subjob OK).",
     },
 
     ["Stone II"] = {
@@ -57,20 +57,20 @@ TITAN.blood_pacts = {
         type                    = "magical",
         level                   = 10,
         mp_cost                 = 24,
-        notes                   = "Earth-based magical damage. MP: 24. Recast: Instant. Damage: Pet INT. Single target. SMN (subjob OK).",
+        notes                   = "Earth-based magical damage. MP: 24. Damage: Pet INT. Single target. SMN (subjob OK).",
     },
 
     ["Rock Buster"] = {
-        description             = "Deals earth physical dmg + bind.",
+        description             = "Deals physical dmg + bind.",
         category                = "Blood Pact: Rage",
         element                 = "Earth",
         avatar                  = "Titan",
         type                    = "physical",
         damage_type             = "Blunt",
         level                   = 21,
-        mp_cost                 = 48,
-        skillchain              = "Impaction",
-        notes                   = "Earth-enhanced physical blunt damage with bind effect. MP: 48. Recast: Instant. Damage: Pet STR + INT. Inflicts Bind. Single target. SMN (subjob OK).",
+        mp_cost                 = 39,
+        skillchain              = "Reverberation",
+        notes                   = "Physical blunt damage + Bind (30s). MP: 39. Damage: Pet VIT. Damage varies with TP. Single target. SMN (subjob OK).",
     },
 
     ["Megalith Throw"] = {
@@ -81,9 +81,9 @@ TITAN.blood_pacts = {
         type                    = "physical",
         damage_type             = "Blunt",
         level                   = 35,
-        mp_cost                 = 78,
-        skillchain              = "Scission",
-        notes                   = "Enhanced physical blunt ranged damage with slow effect. MP: 78. Recast: Instant. Damage: Pet STR. Inflicts Slow. Single target. SMN (subjob OK).",
+        mp_cost                 = 62,
+        skillchain              = "Induration",
+        notes                   = "Physical blunt damage + Slow. MP: 62. Damage: Pet STR + AGI. Accuracy bonus varies with TP. Single target. SMN (subjob OK).",
     },
 
     ["Stone IV"] = {
@@ -94,44 +94,45 @@ TITAN.blood_pacts = {
         type                    = "magical",
         level                   = 60,
         mp_cost                 = 118,
-        notes                   = "Enhanced earth-based magical damage. MP: 118. Recast: Instant. Damage: Pet INT. Magic burst compatible. Single target. SMN (subjob OK).",
+        notes                   = "Enhanced earth-based magical damage. MP: 118. Damage: Pet INT. Single target. SMN (subjob OK).",
     },
 
     ["Mountain Buster"] = {
-        description             = "Deals earth physical dmg.",
+        description             = "Deals physical dmg + bind.",
         category                = "Blood Pact: Rage",
         element                 = "Earth",
         avatar                  = "Titan",
         type                    = "physical",
         damage_type             = "Blunt",
         level                   = 70,
-        mp_cost                 = 118,
-        skillchain              = "Induration",
-        notes                   = "Enhanced earth-based physical blunt damage. MP: 118. Recast: Instant. Damage: Pet STR + INT. Accuracy bonus scales with TP. Single target. SMN (subjob OK).",
+        mp_cost                 = 164,
+        skillchain              = "Gravitation/Induration",
+        notes                   = "Physical damage + Bind (broken by further damage). MP: 164. Damage: Pet VIT. Damage varies with TP. Single target. SMN (main job only).",
     },
 
     ["Geocrush"] = {
-        description             = "Deals earth physical dmg (AoE).",
+        description             = "Deals earth damage + stun.",
         category                = "Blood Pact: Rage",
         element                 = "Earth",
         avatar                  = "Titan",
-        type                    = "physical",
+        type                    = "magical",
         level                   = 75,
         mp_cost                 = 182,
         merit                   = true,
-        notes                   = "Earth-based physical AoE damage. MP: 182. Recast: Instant. Damage: Pet STR + INT. Merit-based ability. AoE range. SMN (subjob OK).",
+        notes                   = "Earth magical damage + Stun. MP: 182. Damage: Pet INT. Damage varies with avatar TP. Merit-based ability. Single target. SMN (main job only).",
     },
 
     ["Crag Throw"] = {
-        description             = "Deals earth physical dmg + slow.",
+        description             = "Deals physical dmg + slow.",
         category                = "Blood Pact: Rage",
         element                 = "Earth",
         avatar                  = "Titan",
         type                    = "physical",
         damage_type             = "Blunt",
         level                   = 99,
-        mp_cost                 = 200,
-        notes                   = "Multi-hit earth-based physical damage. MP: 200. Recast: Instant. Damage: Pet STR (×5 hits). Inflicts Slow 30% for 2 minutes. SMN (subjob OK).",
+        mp_cost                 = 124,
+        skillchain              = "Gravitation/Scission",
+        notes                   = "Physical damage + Slow (30%, 2 min). MP: 124. Damage: Pet STR + AGI. Accuracy bonus varies with TP. Single target. SMN (main job only).",
     },
 
     ["Earthen Fury"] = {
@@ -143,7 +144,7 @@ TITAN.blood_pacts = {
         level                   = 1,
         mp_cost                 = 0,
         astral_flow             = true,
-        notes                   = "Ultimate earth-based magical AoE damage. MP: 0. Recast: N/A. Only available during Astral Flow. Extreme damage. Wide AoE range. SMN (subjob OK).",
+        notes                   = "Earth magical AoE damage. Uses all MP (Astral Flow). Requires MP of caster's level x2. Only available during Astral Flow. Damage: Pet INT. SMN (main job only).",
     },
 
     --============================================================
@@ -157,19 +158,19 @@ TITAN.blood_pacts = {
         avatar                  = "Titan",
         type                    = "buff",
         level                   = 46,
-        mp_cost                 = 103,
-        notes                   = "Stoneskin effect (absorbs damage). MP: 103. Recast: Instant. Duration: Until absorbed. Party AoE. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 92,
+        notes                   = "Stoneskin effect (potency 2 x level + 50). MP: 92. Duration: 900s. Party AoE. SMN (subjob OK).",
     },
 
     ["Earthen Armor"] = {
-        description             = "Boosts defense (AoE).",
+        description             = "Reduces heavy damage (AoE).",
         category                = "Blood Pact: Ward",
         element                 = "Earth",
         avatar                  = "Titan",
         type                    = "buff",
         level                   = 88,
-        mp_cost                 = 118,
-        notes                   = "Defense boost for party. MP: 118. Recast: Instant. Duration: 90s. Effect: Defense +30%. Party AoE. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 156,
+        notes                   = "Reduces any single action over 75% of max HP by 45%. MP: 156. Duration: 60s. Party AoE. SMN (main job only).",
     },
 
 }

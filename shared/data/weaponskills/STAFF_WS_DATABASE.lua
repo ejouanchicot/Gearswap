@@ -81,7 +81,7 @@ staff_ws.weaponskills = {
         type                = 'Magical',
         mods                = {STR = 40, MND = 40},
         hits                = 1,
-        element             = nil, -- Random Light/Dark
+        element             = 'Light/Dark', -- Random Light/Dark
         skillchain          = {'Compression', 'Reverberation'},
         ftp                 = {[1000] = 1.0, [2000] = 3.27, [3000] = 5.54},
         skill_required      = 100,
@@ -98,7 +98,7 @@ staff_ws.weaponskills = {
         type                = 'Magical',
         mods                = {STR = 40, MND = 40},
         hits                = 1,
-        element             = nil, -- Random Light/Dark
+        element             = 'Light/Dark', -- Random Light/Dark
         skillchain          = {'Compression', 'Reverberation'},
         ftp                 = {[1000] = 1.0, [2000] = 3.58, [3000] = 6.16},
         skill_required      = 150,
@@ -128,7 +128,7 @@ staff_ws.weaponskills = {
             WAR                 = 56, MNK = 56, BLM = 56, DRG = 56, SMN = 56,
             WHM                 = 57, BRD = 57, SCH = 57, GEO = 57
         },
-        special_notes       = 'Defense Down: -25%. Duration: 180s@1000TP / 360s@2000TP / 540s@3000TP (halved if resisted). Wind-based. Does not stack with Dia, Full Break, or Angon.'
+        special_notes       = 'Defense Down: -25%. Duration: 180s@1000TP / 360s@2000TP / 540s@3000TP (halved if resisted). Wind-based. Does not stack with other Defense Down effects (Full Break, Angon, etc.); stacks with Dia.'
     },
 
     ['Full Swing'] = {
@@ -174,13 +174,7 @@ staff_ws.weaponskills = {
         skillchain          = {'Gravitation', 'Reverberation'},
         ftp                 = {[1000] = 2.0, [2000] = 3.0, [3000] = 5.0},
         skill_required      = 230,
-        jobs                = {
-            PLD                 = 67,
-            WAR                 = 71, MNK = 71, SMN = 71,
-            BLM                 = 73, DRG = 73,
-            WHM                 = 75, BRD = 75, GEO = 75,
-            RDM                 = 99, BST = 99, SCH = 99 -- via Kaja Staff/Xoanon
-        },
+        jobs                = {BLM = 73, BRD = 75, BST = 99, DRG = 73, GEO = 75, MNK = 71, PLD = 67, RDM = 99, SCH = 75, SMN = 71, WAR = 71, WHM = 75},
         special_notes       = "Requires 'Blood and Glory' quest for main job usage. Kaja Staff/Xoanon: enable use by any job at level 99 without quest. Attack modifier: 1.5. PLD cannot complete quest before level 71."
     },
 
@@ -221,7 +215,7 @@ staff_ws.weaponskills = {
             BLM                 = 95, DRG = 95,
             WHM                 = 96, BRD = 96, SCH = 96, GEO = 96
         },
-        special_notes       = "Requires 'Martial Mastery' quest. fTP-replicating weapon skill. Magic Defense Bonus -10 for 120 seconds. Merits: 73% INT@1/5, +3% per merit, 85% INT@5/5. Darkness becomes primary only under Aeonic Aftermath."
+        special_notes       = 'Requires \'Martial Mastery\' quest. fTP-replicating weapon skill. Magic Defense Bonus -10 for 120 seconds. Merits: 73% INT@1/5, +3% per merit, 85% INT@5/5. Darkness only available under Aeonic Aftermath.'
     },
 
     ['Gate of Tartarus'] = {
@@ -285,7 +279,7 @@ staff_ws.weaponskills = {
 
     ['Myrkr'] = {
         description         = 'Restores MP and removes status ailments.',
-        type                = 'Magical',
+        type                = 'None',
         mods                = {}, -- Based on Max MP
         hits                = 0, -- Self-targeted utility
         element             = nil,
@@ -314,7 +308,7 @@ staff_ws.weaponskills = {
         jobs                = {
             BLM                 = 99, SMN = 99, SCH = 99
         },
-        special_notes       = 'Requires Opashoro (Level 119/119 II/119 III). Prime weapon skill with Prime Aftermath (Magic Damage Limit+). Stat modifiers require verification.'
+        special_notes       = 'Requires Opashoro (Level 119/119 II/119 III). Prime weapon skill with Prime Aftermath (Magic Atk. Bonus +40, Magic Damage +80 at Prime Stage 5). Stat modifiers require verification.'
     },
 
     ---========================================================================

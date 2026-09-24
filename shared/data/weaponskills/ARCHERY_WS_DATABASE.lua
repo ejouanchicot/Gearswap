@@ -108,10 +108,10 @@ archery_ws.weaponskills = {
         hits                = 1,
         element             = nil,
         skillchain          = {'Induration', 'Transfixion'},
-        ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0}, -- verification needed
+        ftp                 = {[1000] = 2.0, [2000] = 2.0, [3000] = 2.0}, -- verification needed
         skill_required      = 200,
         jobs                = {RNG = 60},
-        special_notes       = 'Can only be used with RNG as main job. Close range only (within melee distance). Does not stack with Sneak Attack. fTP values require verification.'
+        special_notes       = 'Can only be used with RNG as main job. Close range only (within melee distance). Does not stack with Sneak Attack.'
     },
 
     ['Arching Arrow'] = {
@@ -183,7 +183,7 @@ archery_ws.weaponskills = {
         ftp                 = {[1000] = 3.0, [2000] = 3.0, [3000] = 3.0},
         skill_required      = 357,
         jobs                = {RNG = 91, SAM = 96},
-        special_notes       = "Requires 'Martial Mastery' quest. Merits: 73% AGI@1/5, +3% per merit, 85% AGI@5/5. Can only be used with RNG/SAM as main job. Defense ignore: 15%@1000TP (2000/3000TP unknown). Light becomes primary under Aeonic Aftermath. Description mentions '4x attack' but actually single hit."
+        special_notes       = 'Requires \'Martial Mastery\' quest. Merits: 73% AGI@1/5, +3% per merit, 85% AGI@5/5. Can only be used with RNG/SAM as main job. Defense ignore: 15%@1000TP (2000/3000TP unknown). Light only available under Aeonic Aftermath. Description mentions \'4x attack\' but seems to be a single hit.'
     },
 
     ['Namas Arrow'] = {

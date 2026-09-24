@@ -24,7 +24,7 @@ INDI_SPELLS.spells = {
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 46,
-        notes                   = "Self-centered aura. Increases magic attack for party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Increases magic attack for party members within range. Base duration: 180s. GEO-only (subjob OK).",
     },
 
     ["Indi-AGI"] = {
@@ -34,17 +34,17 @@ INDI_SPELLS.spells = {
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 39,
-        notes                   = "Self-centered aura. Increases AGI for party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Increases AGI for party members within range. Base duration: 180s. GEO-only (subjob OK).",
     },
 
     ["Indi-Attunement"] = {
-        description             = "Boosts magic acc.",
+        description             = "Boosts magic evasion.",
         category                = "Indicolure",
         element                 = "Light",
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 16,
-        notes                   = "Self-centered aura. Increases magic accuracy for party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Increases magic evasion for party members within range. Base duration: 180s. GEO-only (subjob OK).",
     },
 
     ["Indi-Barrier"] = {
@@ -54,7 +54,7 @@ INDI_SPELLS.spells = {
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 28,
-        notes                   = "Self-centered aura. Increases defense for party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Increases defense for party members within range. Base duration: 180s. GEO-only (subjob OK).",
     },
 
     ["Indi-CHR"] = {
@@ -64,7 +64,7 @@ INDI_SPELLS.spells = {
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 30,
-        notes                   = "Self-centered aura. Increases CHR for party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Increases CHR for party members within range. Base duration: 180s. GEO-only (subjob OK).",
     },
 
     ["Indi-DEX"] = {
@@ -74,17 +74,17 @@ INDI_SPELLS.spells = {
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 45,
-        notes                   = "Self-centered aura. Increases DEX for party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Increases DEX for party members within range. Duration: 180s base. GEO-only (subjob OK).",
     },
 
     ["Indi-Fend"] = {
-        description             = "Boosts defense.",
+        description             = "Boosts magic def.",
         category                = "Indicolure",
         element                 = "Water",
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 40,
-        notes                   = "Self-centered aura. Increases defense for party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Increases magic defense for party members within range. Base duration: 180s. GEO-only (subjob OK).",
     },
 
     ["Indi-Focus"] = {
@@ -94,7 +94,7 @@ INDI_SPELLS.spells = {
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 22,
-        notes                   = "Self-centered aura. Increases magic accuracy for party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Increases magic accuracy for party members within range. Duration: 180s base. GEO-only (subjob OK).",
     },
 
     ["Indi-Fury"] = {
@@ -104,7 +104,7 @@ INDI_SPELLS.spells = {
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 34,
-        notes                   = "Self-centered aura. Increases attack for party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Increases attack for party members within range. Duration: 180s base. GEO-only (subjob OK).",
     },
 
     ["Indi-Haste"] = {
@@ -115,7 +115,7 @@ INDI_SPELLS.spells = {
         type                    = "self",
         GEO                     = 93,
         main_job_only           = true,
-        notes                   = "Self-centered aura. Reduces melee delay for party members within range. Duration: Geomancy skill. GEO-only (main job only).",
+        notes                   = "Self-centered aura. Reduces melee delay for party members within range. Duration: 180s base. GEO-only (main job only).",
     },
 
     ["Indi-INT"] = {
@@ -125,7 +125,7 @@ INDI_SPELLS.spells = {
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 36,
-        notes                   = "Self-centered aura. Increases INT for party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Increases INT for party members within range. Duration: 180s base. GEO-only (subjob OK).",
     },
 
     ["Indi-MND"] = {
@@ -135,17 +135,17 @@ INDI_SPELLS.spells = {
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 33,
-        notes                   = "Self-centered aura. Increases MND for party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Increases MND for party members within range. Duration: 180s base. GEO-only (subjob OK).",
     },
 
     ["Indi-Poison"] = {
-        description             = "Boosts poison dmg.",
+        description             = "Poisons foes.",
         category                = "Indicolure",
         element                 = "Water",
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 1,
-        notes                   = "Self-centered aura. Increases poison damage dealt by party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Poisons enemies within range (HP loss per tick). Base duration: 180s. GEO-only (subjob OK).",
     },
 
     ["Indi-Precision"] = {
@@ -155,7 +155,7 @@ INDI_SPELLS.spells = {
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 10,
-        notes                   = "Self-centered aura. Increases accuracy for party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Increases accuracy for party members within range. Duration: 180s base. GEO-only (subjob OK).",
     },
 
     ["Indi-Refresh"] = {
@@ -165,7 +165,7 @@ INDI_SPELLS.spells = {
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 30,
-        notes                   = "Self-centered aura. Restores MP over time for party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Restores MP over time for party members within range. Duration: 180s base. GEO-only (subjob OK).",
     },
 
     ["Indi-Regen"] = {
@@ -175,7 +175,7 @@ INDI_SPELLS.spells = {
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 15,
-        notes                   = "Self-centered aura. Restores HP over time for party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Restores HP over time for party members within range. Duration: 180s base. GEO-only (subjob OK).",
     },
 
     ["Indi-STR"] = {
@@ -185,7 +185,7 @@ INDI_SPELLS.spells = {
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 48,
-        notes                   = "Self-centered aura. Increases STR for party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Increases STR for party members within range. Duration: 180s base. GEO-only (subjob OK).",
     },
 
     ["Indi-VIT"] = {
@@ -195,7 +195,7 @@ INDI_SPELLS.spells = {
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 42,
-        notes                   = "Self-centered aura. Increases VIT for party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Increases VIT for party members within range. Duration: 180s base. GEO-only (subjob OK).",
     },
 
     ["Indi-Voidance"] = {
@@ -205,7 +205,7 @@ INDI_SPELLS.spells = {
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 4,
-        notes                   = "Self-centered aura. Increases evasion for party members within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Increases evasion for party members within range. Duration: 180s base. GEO-only (subjob OK).",
     },
 
     --============================================================
@@ -219,7 +219,7 @@ INDI_SPELLS.spells = {
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 48,
-        notes                   = "Self-centered aura. Slows attack speed for enemies within range. Duration: Geomancy skill. GEO-only (subjob OK).",
+        notes                   = "Self-centered aura. Slows attack speed for enemies within range. Duration: 180s base. GEO-only (subjob OK).",
     },
 
     --============================================================
@@ -234,7 +234,7 @@ INDI_SPELLS.spells = {
         type                    = "self",
         GEO                     = 58,
         subjob_master_only      = true,
-        notes                   = "Self-centered aura. Lowers accuracy for enemies within range. Duration: Geomancy skill. GEO-only (subjob master OK).",
+        notes                   = "Self-centered aura. Lowers accuracy for enemies within range. Base duration: 180s. GEO-only (subjob master OK).",
     },
 
     ["Indi-Torpor"] = {
@@ -245,7 +245,7 @@ INDI_SPELLS.spells = {
         type                    = "self",
         GEO                     = 52,
         subjob_master_only      = true,
-        notes                   = "Self-centered aura. Lowers evasion for enemies within range. Duration: Geomancy skill. GEO-only (subjob master OK).",
+        notes                   = "Self-centered aura. Lowers evasion for enemies within range. Duration: 180s base. GEO-only (subjob master OK).",
     },
 
     --============================================================
@@ -253,14 +253,14 @@ INDI_SPELLS.spells = {
     --============================================================
 
     ["Indi-Fade"] = {
-        description             = "Lowers attack.",
+        description             = "Lowers magic atk.",
         category                = "Indicolure",
         element                 = "Fire",
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 94,
         main_job_only           = true,
-        notes                   = "Self-centered aura. Lowers attack for enemies within range. Duration: Geomancy skill. GEO-only (main job only).",
+        notes                   = "Self-centered aura. Lowers magic attack for enemies within range. Base duration: 180s. GEO-only (main job only).",
     },
 
     ["Indi-Frailty"] = {
@@ -271,7 +271,7 @@ INDI_SPELLS.spells = {
         type                    = "self",
         GEO                     = 76,
         main_job_only           = true,
-        notes                   = "Self-centered aura. Lowers defense for enemies within range. Duration: Geomancy skill. GEO-only (main job only).",
+        notes                   = "Self-centered aura. Lowers defense for enemies within range. Duration: 180s base. GEO-only (main job only).",
     },
 
     ["Indi-Gravity"] = {
@@ -282,18 +282,18 @@ INDI_SPELLS.spells = {
         type                    = "self",
         GEO                     = 88,
         main_job_only           = true,
-        notes                   = "Self-centered aura. Reduces movement speed for enemies within range. Duration: Geomancy skill. GEO-only (main job only).",
+        notes                   = "Self-centered aura. Reduces movement speed for enemies within range. Duration: 180s base. GEO-only (main job only).",
     },
 
     ["Indi-Languor"] = {
-        description             = "Slows foes.",
+        description             = "Lowers magic evasion.",
         category                = "Indicolure",
         element                 = "Dark",
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 64,
         main_job_only           = true,
-        notes                   = "Self-centered aura. Slows attack speed for enemies within range. Duration: Geomancy skill. GEO-only (main job only).",
+        notes                   = "Self-centered aura. Lowers magic evasion for enemies within range. Base duration: 180s. GEO-only (main job only).",
     },
 
     ["Indi-Malaise"] = {
@@ -304,7 +304,7 @@ INDI_SPELLS.spells = {
         type                    = "self",
         GEO                     = 88,
         main_job_only           = true,
-        notes                   = "Self-centered aura. Lowers magic defense for enemies within range. Duration: Geomancy skill. GEO-only (main job only).",
+        notes                   = "Self-centered aura. Lowers magic defense for enemies within range. Duration: 180s base. GEO-only (main job only).",
     },
 
     ["Indi-Paralysis"] = {
@@ -315,18 +315,18 @@ INDI_SPELLS.spells = {
         type                    = "self",
         GEO                     = 68,
         main_job_only           = true,
-        notes                   = "Self-centered aura. Inflicts paralysis on enemies within range. Duration: Geomancy skill. GEO-only (main job only).",
+        notes                   = "Self-centered aura. Inflicts paralysis on enemies within range. Duration: 180s base. GEO-only (main job only).",
     },
 
     ["Indi-Vex"] = {
-        description             = "Lowers magic def.",
+        description             = "Lowers magic acc.",
         category                = "Indicolure",
         element                 = "Light",
         magic_type              = "Geomancy",
         type                    = "self",
         GEO                     = 70,
         main_job_only           = true,
-        notes                   = "Self-centered aura. Lowers magic defense for enemies within range. Duration: Geomancy skill. GEO-only (main job only).",
+        notes                   = "Self-centered aura. Lowers magic accuracy for enemies within range. Base duration: 180s. GEO-only (main job only).",
     },
 
     ["Indi-Wilt"] = {
@@ -337,7 +337,7 @@ INDI_SPELLS.spells = {
         type                    = "self",
         GEO                     = 82,
         main_job_only           = true,
-        notes                   = "Self-centered aura. Lowers attack for enemies within range. Duration: Geomancy skill. GEO-only (main job only).",
+        notes                   = "Self-centered aura. Lowers attack for enemies within range. Duration: 180s base. GEO-only (main job only).",
     },
 
 }

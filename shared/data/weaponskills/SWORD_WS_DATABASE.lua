@@ -35,8 +35,8 @@ sword_ws.weaponskills = {
         element             = nil,
         skillchain          = {'Scission'},
         ftp                 = {[1000] = 1.0, [2000] = 3.0, [3000] = 5.0},
-        skill_required      = 1,
-        jobs                = {PLD = 1, BLU = 1, WAR = 3, RDM = 3, DRK = 4, COR = 5, BRD = 6, SAM = 7, NIN = 7, DRG = 8, THF = 11, RNG = 11, DNC = 11, BST = 15}
+        skill_required      = 5,
+        jobs                = {BLU = 1, BRD = 3, BST = 4, COR = 3, DNC = 4, DRG = 3, DRK = 3, NIN = 3, PLD = 1, RDM = 3, RNG = 4, RUN = 3, SAM = 3, THF = 4, WAR = 3}
     },
     ['Burning Blade'] = {
         description         = 'Fire damage. Varies with TP.',
@@ -46,8 +46,8 @@ sword_ws.weaponskills = {
         element             = 'Fire',
         skillchain          = {'Liquefaction'},
         ftp                 = {[1000] = 1.0, [2000] = 2.09, [3000] = 3.39},
-        skill_required      = 10,
-        jobs                = {PLD = 10, BLU = 10, RUN = 11, WAR = 12, RDM = 12, DRK = 13, COR = 14, BRD = 15, SAM = 16, NIN = 16, DRG = 17, THF = 20, RNG = 20, DNC = 20, BST = 24}
+        skill_required      = 30,
+        jobs                = {BLU = 9, BRD = 10, BST = 12, COR = 10, DNC = 11, DRG = 10, DRK = 10, NIN = 10, PLD = 9, RDM = 10, RNG = 11, RUN = 9, SAM = 10, THF = 11, WAR = 10}
     },
     ['Red Lotus Blade'] = {
         description         = 'Fire damage. Varies with TP.',
@@ -57,11 +57,11 @@ sword_ws.weaponskills = {
         element             = 'Fire',
         skillchain          = {'Liquefaction', 'Detonation'},
         ftp                 = {[1000] = 1.0, [2000] = 2.38, [3000] = 3.75},
-        skill_required      = 30,
-        jobs                = {PLD = 20, BLU = 20, RUN = 21, WAR = 22, RDM = 22, DRK = 23, COR = 24, BRD = 25, SAM = 26, NIN = 26, DRG = 27, THF = 30, RNG = 30, DNC = 30, BST = 34}
+        skill_required      = 50,
+        jobs                = {BLU = 16, BRD = 18, BST = 20, COR = 17, DNC = 19, DRG = 18, DRK = 17, NIN = 18, PLD = 16, RDM = 17, RNG = 19, RUN = 16, SAM = 18, THF = 19, WAR = 17}
     },
     ['Flat Blade'] = {
-        description         = 'Stun. Duration varies with TP.',
+        description         = 'Stun. Chance varies with TP.',
         type                = 'Physical',
         mods                = {STR = 100},
         hits                = 1,
@@ -69,8 +69,8 @@ sword_ws.weaponskills = {
         skillchain          = {'Impaction'},
         ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 75,
-        jobs                = {PLD = 30, BLU = 30, RUN = 31, WAR = 32, RDM = 32, DRK = 33, COR = 34, BRD = 35, SAM = 36, NIN = 36, DRG = 37, THF = 40, RNG = 40, DNC = 40, BST = 44},
-        special_notes       = 'Stun effect duration varies with TP'
+        jobs                = {BLU = 24, BRD = 26, BST = 30, COR = 26, DNC = 28, DRG = 26, DRK = 26, NIN = 26, PLD = 24, RDM = 26, RNG = 28, RUN = 24, SAM = 26, THF = 28, WAR = 26},
+        special_notes       = 'Stun chance varies with TP'
     },
     ['Shining Blade'] = {
         description         = 'Light damage. Varies with TP.',
@@ -81,7 +81,7 @@ sword_ws.weaponskills = {
         skillchain          = {'Scission'},
         ftp                 = {[1000] = 1.125, [2000] = 2.22, [3000] = 3.52},
         skill_required      = 100,
-        jobs                = {PLD = 40, BLU = 40, RUN = 41, WAR = 42, RDM = 42, DRK = 43, COR = 44, BRD = 45, SAM = 46, NIN = 46, DRG = 47, THF = 50, RNG = 50, DNC = 50, BST = 54}
+        jobs                = {BLU = 33, BRD = 35, BST = 40, COR = 34, DNC = 37, DRG = 35, DRK = 34, NIN = 35, PLD = 33, RDM = 34, RNG = 37, RUN = 33, SAM = 35, THF = 37, WAR = 34}
     },
     ['Seraph Blade'] = {
         description         = 'Light damage. Varies with TP.',
@@ -159,24 +159,7 @@ sword_ws.weaponskills = {
         skillchain          = {'Fragmentation', 'Scission'},
         ftp                 = {[1000] = 4.0, [2000] = 10.25, [3000] = 13.75},
         skill_required      = 240,
-        jobs                = {
-            PLD                 = 70,
-            BLU                 = 70,
-            RUN                 = 70,
-            WAR                 = 73,
-            RDM                 = 73,
-            DRK                 = 75,
-            COR                 = 75,
-            -- Level 99 via Kaja Sword or Naegling:
-            BRD                 = 99,
-            SAM                 = 99,
-            NIN                 = 99,
-            THF                 = 99,
-            RNG                 = 99,
-            DRG                 = 99,
-            DNC                 = 99,
-            BST                 = 99
-        },
+        jobs                = {BLU = 68, BRD = 99, BST = 99, COR = 75, DRG = 99, DRK = 75, NIN = 99, PLD = 68, RDM = 73, RNG = 99, RUN = 70, SAM = 99, THF = 99, WAR = 73},
         special_notes       = "Requires 'Old Wounds' quest (bypassed with Kaja Sword or Naegling). Kaja Sword/Naegling: +15% damage bonus."
     },
     ['Sanguine Blade'] = {
@@ -189,7 +172,7 @@ sword_ws.weaponskills = {
         ftp                 = {[1000] = 2.75, [2000] = 2.75, [3000] = 2.75},
         skill_required      = 300,
         jobs                = {PLD = 80, BLU = 80, RUN = 81, WAR = 85, RDM = 85, DRK = 86, COR = 86, SAM = 88, NIN = 89, BRD = 90, DRG = 90, THF = 94, RNG = 94, DNC = 94, BST = 99},
-        special_notes       = "HP drain: 50%@1000TP / 100%@2000TP / 160%@3000TP. Can restore more HP than target's remaining HP. Does not work on undead."
+        special_notes       = 'HP drain: 50%@1000TP / 100%@2000TP / 160%@3000TP. Can restore more HP than target\'s remaining HP. Damage dealt to undead is not converted to HP.'
     },
     ---========================================================================
     --- ADVANCED SWORD WEAPON SKILLS (Quest/Merit/Empyrean)
@@ -203,16 +186,15 @@ sword_ws.weaponskills = {
         element             = nil,
         skillchain          = {'Darkness', 'Gravitation', 'Scission'},
         ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
-        skill_required      = 290,
+        skill_required      = 357,
         jobs                = {PLD = 90, BLU = 90, RUN = 91, WAR = 94, RDM = 94, DRK = 95, COR = 95, SAM = 96},
         special_notes       = "Requires 'Martial Mastery' quest. fTP-replicating weapon skill. Property-less damage (uses physical equations but neither Physical nor Magical property). Attack penalty: -20%@1000TP / -10%@2000TP / 0%@3000TP. Merits: +3% MND per merit (2nd-5th)."
     },
     ['Knights of Round'] = {
-        description         = 'Light damage + Regen aftermath.',
+        description         = 'Regen aftermath (Caliburn/Excalibur).',
         type                = 'Physical',
         mods                = {STR = 40, MND = 40},
         hits                = 1,
-        element             = 'Light',
         skillchain          = {'Light', 'Fusion'},
         ftp                 = {[1000] = 5.0, [2000] = 5.0, [3000] = 5.0},
         skill_required      = 300,
@@ -221,7 +203,7 @@ sword_ws.weaponskills = {
             PLD                 = 75, -- via Caliburn or Excalibur
             BLU                 = 85 -- via Corbenic Sword
         },
-        special_notes       = 'Caliburn/Excalibur: PLD+RDM level 75. Corbenic Sword: RDM+PLD+BLU level 85 (requires 13 other WS first). Aftermath: Regen +10HP/tick for 20s@1000TP / 40s@2000TP / 60s@3000TP. Excalibur level 90+: +25-40% damage bonus.'
+        special_notes       = 'Caliburn/Excalibur: PLD+RDM level 75. Corbenic Sword: RDM+PLD+BLU level 85 (requires 13 other WS first). Aftermath (75-119 II): Regen +10HP/tick for 20s@1000TP / 40s@2000TP / 60s@3000TP. Excalibur 119 III: Regen +30HP/tick and Refresh +3MP/tick for 60s/120s/180s. Excalibur level 90+: +25-40% damage bonus.'
     },
     ['Death Blossom'] = {
         description         = 'Three hits. Magic Evasion down.',
@@ -233,7 +215,7 @@ sword_ws.weaponskills = {
         ftp                 = {[1000] = 4.0, [2000] = 4.0, [3000] = 4.0},
         skill_required      = 357,
         jobs                = {RDM = 75},
-        special_notes       = "Requires 'Unlocking a Myth (Red Mage)' quest. Magic Evasion -10 (60s duration, chance increases with TP). Murgleis: +15-30% damage bonus."
+        special_notes       = 'Requires \'Unlocking a Myth (Red Mage)\' quest. Magic Evasion Down about -10 (60s duration, chance varies with TP). Murgleis: +15% damage@90-95, +30% damage@99/99 II.'
     },
     ['Chant du Cygne'] = {
         description         = 'Three hits. Crit rate increase.',
@@ -257,7 +239,7 @@ sword_ws.weaponskills = {
         ftp                 = {[1000] = 3.796875, [2000] = 9.390625, [3000] = 12.1875},
         skill_required      = 357,
         jobs                = {BLU = 75},
-        special_notes       = "Requires 'Unlocking a Myth (Blue Mage)' quest. Can only be used with BLU as main job. Tizona: +15-30% damage bonus (level 99 II and 119 III)."
+        special_notes       = 'Requires \'Unlocking a Myth (Blue Mage)\' quest. Can only be used with BLU as main job. Tizona: +15% damage@90-95, +30% damage@99/99 II/119 III.'
     },
     ['Uriel Blade'] = {
         description         = 'Light AoE damage + Flash. Varies with TP.',

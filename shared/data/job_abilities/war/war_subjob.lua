@@ -29,7 +29,7 @@ WAR_SUBJOB.abilities = {
         volatile_enmity         = 1800
     },
     ['Berserk'] = {
-        description             = 'ATK+25% DEF-25%',
+        description             = 'ATK+25-35% (by level) DEF-25%',
         level                   = 15,
         recast                  = 300,  -- 5min
         main_job_only           = false,
@@ -37,9 +37,9 @@ WAR_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Defender'] = {
-        description             = 'DEF+25% ATK-25%',
+        description             = 'DEF+25-35% (by level) ATK-25%',
         level                   = 25,
-        recast                  = 300,  -- 5min
+        recast                  = 180,  -- 3min
         main_job_only           = false,
         cumulative_enmity       = 0,
         volatile_enmity         = 80

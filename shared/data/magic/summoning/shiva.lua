@@ -25,7 +25,7 @@ SHIVA.spells = {
         type                    = "summon",
         SMN                     = 1,
         mp_cost                 = 7,
-        notes                   = "Ice-based avatar. MP cost: 7. Perpetuation: 2 MP/3s. Specializes in ice magic damage (Blizzard series, Diamond Dust) and evasion buffs (Frost Armor). Strong against wind, weak to fire. SMN (subjob OK).",
+        notes                   = "Ice-based avatar. MP cost: 7. Specializes in ice magic damage (Blizzard series, Diamond Dust) and Ice Spikes (Frost Armor). Resists ice and wind, weak to fire. SMN (subjob OK).",
     },
 
 }
@@ -44,9 +44,9 @@ SHIVA.blood_pacts = {
         type                    = "physical",
         damage_type             = "Blunt",
         level                   = 1,
-        mp_cost                 = 9,
-        skillchain              = "Liquefaction",
-        notes                   = "Physical blunt damage. MP: 9. Recast: Instant. Damage: Pet STR. Accuracy bonus scales with TP. Single target. SMN (subjob OK).",
+        mp_cost                 = 10,
+        skillchain              = "Induration",
+        notes                   = "Physical blunt damage. MP: 10. Damage: Pet STR. Damage varies with TP. Single target. SMN (subjob OK).",
     },
 
     ["Blizzard II"] = {
@@ -57,7 +57,7 @@ SHIVA.blood_pacts = {
         type                    = "magical",
         level                   = 10,
         mp_cost                 = 24,
-        notes                   = "Ice-based magical damage. MP: 24. Recast: Instant. Damage: Pet INT. Single target. SMN (subjob OK).",
+        notes                   = "Ice-based magical damage. MP: 24. Damage: Pet INT. Single target. SMN (subjob OK).",
     },
 
     ["Double Slap"] = {
@@ -68,9 +68,9 @@ SHIVA.blood_pacts = {
         type                    = "physical",
         damage_type             = "Blunt",
         level                   = 50,
-        mp_cost                 = 36,
-        skillchain              = "Impaction",
-        notes                   = "Double-hit physical blunt damage. MP: 36. Recast: Instant. Damage: Pet STR (×2 hits). Accuracy bonus scales with TP. Single target. SMN (subjob OK).",
+        mp_cost                 = 96,
+        skillchain              = "Scission",
+        notes                   = "Double-hit physical blunt damage. MP: 96. Damage: Pet CHR. Accuracy bonus varies with TP. Single target. SMN (subjob OK).",
     },
 
     ["Blizzard IV"] = {
@@ -81,32 +81,32 @@ SHIVA.blood_pacts = {
         type                    = "magical",
         level                   = 60,
         mp_cost                 = 118,
-        notes                   = "Enhanced ice-based magical damage. MP: 118. Recast: Instant. Damage: Pet INT. Magic burst compatible. Single target. SMN (subjob OK).",
+        notes                   = "Enhanced ice-based magical damage. MP: 118. Damage: Pet INT. Single target. SMN (subjob OK).",
     },
 
     ["Rush"] = {
-        description             = "Deals 4-fold physical dmg.",
+        description             = "Deals 5-fold physical dmg.",
         category                = "Blood Pact: Rage",
         element                 = "Ice",
         avatar                  = "Shiva",
         type                    = "physical",
         damage_type             = "Blunt",
         level                   = 70,
-        mp_cost                 = 118,
-        skillchain              = "Liquefaction",
-        notes                   = "Quad-hit physical blunt damage. MP: 118. Recast: Instant. Damage: Pet STR (×4 hits). Accuracy bonus scales with TP. Single target. SMN (subjob OK).",
+        mp_cost                 = 164,
+        skillchain              = "Distortion/Scission",
+        notes                   = "Five-hit physical damage. MP: 164. Damage: Pet STR + DEX. Accuracy bonus varies with TP. Single target. SMN (main job only).",
     },
 
     ["Heavenly Strike"] = {
-        description             = "Deals ice physical dmg (AoE).",
+        description             = "Deals ice damage.",
         category                = "Blood Pact: Rage",
         element                 = "Ice",
         avatar                  = "Shiva",
-        type                    = "physical",
+        type                    = "magical",
         level                   = 75,
         mp_cost                 = 182,
         merit                   = true,
-        notes                   = "Ice-based physical AoE damage. MP: 182. Recast: Instant. Damage: Pet STR + INT. Merit-based ability. AoE range. SMN (subjob OK).",
+        notes                   = "Ice magical damage. MP: 182. Damage: Pet INT. Damage varies with avatar TP. Merit-based ability. Single target. SMN (main job only).",
     },
 
     ["Diamond Dust"] = {
@@ -118,7 +118,7 @@ SHIVA.blood_pacts = {
         level                   = 1,
         mp_cost                 = 0,
         astral_flow             = true,
-        notes                   = "Ultimate ice-based magical AoE damage. MP: 0. Recast: N/A. Only available during Astral Flow. Extreme damage. Wide AoE range. SMN (subjob OK).",
+        notes                   = "Ice magical AoE damage. Uses all MP (Astral Flow). Requires MP of caster's level x2. Only available during Astral Flow. Damage: Pet INT. SMN (main job only).",
     },
 
     --============================================================
@@ -126,14 +126,14 @@ SHIVA.blood_pacts = {
     --============================================================
 
     ["Frost Armor"] = {
-        description             = "Grants ice spikes.",
+        description             = "Grants ice spikes (AoE).",
         category                = "Blood Pact: Ward",
         element                 = "Ice",
         avatar                  = "Shiva",
         type                    = "buff",
         level                   = 28,
         mp_cost                 = 63,
-        notes                   = "Ice Spikes effect (ice damage to attackers). MP: 63. Recast: Instant. Duration: 180s. Target: Single party member. SMN (subjob OK).",
+        notes                   = "Ice Spikes effect. MP: 63. Duration: 180s. Party AoE. SMN (subjob OK).",
     },
 
     ["Sleepga"] = {
@@ -143,30 +143,30 @@ SHIVA.blood_pacts = {
         avatar                  = "Shiva",
         type                    = "debuff",
         level                   = 39,
-        mp_cost                 = 84,
-        notes                   = "Sleep status AoE (no damage). MP: 84. Recast: Instant. Duration: 90s. Range: 10 yalms. Enemies only. SMN (subjob OK).",
+        mp_cost                 = 54,
+        notes                   = "Sleep status AoE (no damage). MP: 54. Duration: 90s. Range: 10 yalms. Enemies only. SMN (subjob OK).",
     },
 
     ["Diamond Storm"] = {
-        description             = "Deals ice damage (AoE).",
+        description             = "Lowers evasion (AoE).",
         category                = "Blood Pact: Ward",
         element                 = "Ice",
         avatar                  = "Shiva",
-        type                    = "magical",
+        type                    = "debuff",
         level                   = 90,
-        mp_cost                 = 182,
-        notes                   = "Ice-based magical AoE damage. MP: 182. Recast: Instant. Damage: Pet MAB + level. Range: 15 yalms. Ultimate Ward ability. SMN (subjob OK).",
+        mp_cost                 = 138,
+        notes                   = "Evasion -25 to enemies in range. MP: 138. Duration: 180s. Range: 10 yalms. SMN (main job only).",
     },
 
     ["Crystal Blessing"] = {
-        description             = "Boosts max HP (AoE).",
+        description             = "Grants TP bonus (AoE).",
         category                = "Blood Pact: Ward",
         element                 = "Ice",
         avatar                  = "Shiva",
         type                    = "buff",
         level                   = 99,
-        mp_cost                 = 118,
-        notes                   = "Max HP +10%. MP: 118. Recast: Instant. Duration: 180s. Party AoE. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 201,
+        notes                   = "TP Bonus +250. MP: 201. Duration: 180s. Party AoE. SMN (main job only).",
     },
 
 }

@@ -50,7 +50,7 @@ katana_ws.weaponskills = {
         ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 30,
         jobs                = {NIN = 9},
-        special_notes       = 'Paralyze duration: 30s@1000TP / 60s@2000TP / 120s@3000TP. Potency ~30%.'
+        special_notes       = 'Paralyze duration: 30s@1000TP / 60s@2000TP / 120s@3000TP.'
     },
 
     ['Blade: Teki'] = {
@@ -103,7 +103,7 @@ katana_ws.weaponskills = {
         ftp                 = {[1000] = 1.0, [2000] = 3.0, [3000] = 5.0},
         skill_required      = 175,
         jobs                = {NIN = 55},
-        special_notes       = 'Damage formula: (pINT-mINT)/2 + 8 (cap: 32). Bypasses Utsusemi and barrier spells.'
+        special_notes       = 'Damage formula: (pINT-mINT)/2 + 8 (cap: 32). Ignores Utsusemi and Blink.'
     },
 
     ['Blade: Jin'] = {
@@ -169,14 +169,14 @@ katana_ws.weaponskills = {
         hits                = 5,
         element             = nil,
         skillchain          = {'Light', 'Fusion', 'Impaction'},
-        ftp                 = {[1000] = 1.0, [2000] = 2.0, [3000] = 3.0},
+        ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 357,
         jobs                = {NIN = 91},
-        special_notes       = "Requires 'Martial Mastery' quest and 'Heart of the Bushin' key item. fTP-replicating weapon skill. Merits: 73% DEX@1/5, +3% per merit, 85% DEX@5/5. Can only be used as main job. Light becomes primary during Aeonic Aftermath."
+        special_notes       = 'Requires \'Martial Mastery\' quest and \'Heart of the Bushin\' key item. fTP-replicating weapon skill. Attack bonus varies with TP: +0%@1000TP / +100%@2000TP / +200%@3000TP (unverified). Merits: 73% DEX@1/5, +3% per merit, 85% DEX@5/5. Can only be used as main job. Light is only available under Aeonic Aftermath.'
     },
 
     ['Blade: Metsu'] = {
-        description         = 'Critical damage. Subtle Blow aftermath.',
+        description         = 'Subtle Blow aftermath. Duration varies with TP.',
         type                = 'Physical',
         mods                = {DEX = 80},
         hits                = 1,
@@ -188,7 +188,7 @@ katana_ws.weaponskills = {
             NIN                 = 75, -- via Yoshimitsu or Kikoku
             -- Level 85 via Sekirei
         },
-        special_notes       = 'Yoshimitsu/Kikoku: NIN level 75. Sekirei: NIN level 85. Aftermath: Subtle Blow +10 for 20s@1000TP / 40s@2000TP / 60s@3000TP (capped at +50 total). Kikoku level 119 III: +40% damage bonus + Attack +10. Only Yoshimitsu/Kikoku grant Relic Aftermath.'
+        special_notes       = 'Yoshimitsu/Kikoku: NIN level 75. Sekirei: NIN level 85. Aftermath: Subtle Blow +10 for 20s@1000TP / 40s@2000TP / 60s@3000TP (subject to the 50 Subtle Blow cap). Kikoku: +25% damage@90-95, +40% damage@99-119 III. Kikoku 119 III Aftermath: Subtle Blow +10, Attack +10%. Only Yoshimitsu/Kikoku grant Relic Aftermath.'
     },
 
     ['Blade: Kamu'] = {
@@ -201,7 +201,7 @@ katana_ws.weaponskills = {
         ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 357,
         jobs                = {NIN = 75},
-        special_notes       = "Requires 'Unlocking a Myth (Ninja)' quest. Can only be used with NIN as main job. Accuracy Down: -10. Duration: 60s@1000TP / 120s@2000TP / 180s@3000TP. Attack modifier: 3.0. Kannagi: +15% damage@90-95, +30% damage@99-119."
+        special_notes       = 'Requires \'Unlocking a Myth (Ninja)\' quest. Can only be used with NIN as main job. Accuracy Down: -10 (supposed). Duration: 60s@1000TP / 120s@2000TP / 180s@3000TP. Attack modifier: ~3.0. Nagi: Mythic Aftermath, +15% damage@90-95, +30% damage@99/99 II.'
     },
 
     ['Blade: Hi'] = {
