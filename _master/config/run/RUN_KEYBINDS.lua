@@ -40,7 +40,6 @@ RUNKeybinds.binds = { -- Hybrid Mode (PDT/MDT)
     state = "RuneMode"
     -- No subjob filter - RuneMode is core RUN functionality
 },
-    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 }
 
 return require('shared/utils/keybinds/keybind_manager').create('RUN', RUNKeybinds)

@@ -47,7 +47,6 @@ BSTKeybinds.binds = {
     ---==========================================================================
     --- UNIVERSAL TOGGLES (Apps+Numpad)
     ---==========================================================================
-    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 }
 
 return require('shared/utils/keybinds/keybind_manager').create('BST', BSTKeybinds)

@@ -67,7 +67,6 @@ WHMKeybinds.binds = {
         desc = "Casting Mode",
         state = "CastingMode"
     },
-    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 
     -- Additional keybinds can be added here:
     -- Examples:

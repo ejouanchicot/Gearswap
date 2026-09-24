@@ -32,7 +32,6 @@ SAMKeybinds.binds = {
         desc = "Hybrid Mode",
         state = "HybridMode"
     },
-    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 }
 
 return require('shared/utils/keybinds/keybind_manager').create('SAM', SAMKeybinds)

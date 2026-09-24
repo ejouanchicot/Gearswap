@@ -85,7 +85,9 @@ function KeybindGuard.schedule()
 
         for _, bind in ipairs(list) do
             if bind.key and bind.command then
-                pcall(send_command, 'bind ' .. bind.key .. ' gs c ' .. bind.command)
+                local KM = rawget(_G, 'KeybindManager')
+                local line = KM and KM.bind_line(bind) or ('gs c ' .. bind.command)
+                pcall(send_command, 'bind ' .. bind.key .. ' ' .. line)
             end
         end
     end, REASSERT_DELAY)

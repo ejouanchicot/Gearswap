@@ -17,6 +17,8 @@
 ---           A leading /ma, /ja, /ws or /item picks the kind when a name
 ---           exists as more than one (spells win otherwise). Words that
 ---           name no action are sent as they are (addon commands).
+---           "//cmd" is always sent as the console command cmd, and any
+---           other slash command (/p, /follow...) goes out with input.
 ---   target  what follows the action: t, st, stnpc, bt, me... are the
 ---           game's own <t>, <st>...; anything else is a name, looked up at
 ---           each key press as the nearest player/NPC/monster (same lookup
@@ -192,14 +194,35 @@ local function find_action(words, only_verb)
     return nil, nil, 0
 end
 
+--- Whether `word` is the slash command of an action kind (/ma, /ja, /ws...).
+local function is_action_verb(word)
+    for _, kind in ipairs(KINDS) do
+        if kind.slash[word] then return true end
+    end
+    return false
+end
+
 --- Stored form of what follows the key.
+---   //anything      console command, sent as typed (any addon)
+---   /ma /ja /ws /item <name> [target]   action, name completed from res
+---   /other ...      game chat command (/p, /follow...), sent with input
+---   anything else   action if it names one, else console command as typed
 --- @param words table Words after the key
 --- @return string|nil command, string|nil error
 function Parse.command(words)
     if #words == 0 then return nil, 'nothing after the key' end
+    local text = table.concat(words, ' ')
+    if text:sub(1, 2) == '//' then
+        local console = text:sub(3)
+        if console == '' then return nil, 'nothing after //' end
+        return console
+    end
     local list, only_verb = {}, nil
     for i, w in ipairs(words) do list[i] = (w:gsub('"', '')) end
     if list[1]:sub(1, 1) == '/' then
+        if not is_action_verb(list[1]:lower()) then
+            return 'input ' .. text
+        end
         only_verb = list[1]:lower()
         table.remove(list, 1)
     end

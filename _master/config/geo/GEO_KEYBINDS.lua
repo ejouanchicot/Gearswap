@@ -53,7 +53,6 @@ GEOKeybinds.binds = {
 
     -- Indicolure Mode (Self vs Entrust)
     { key = "^numpad+", command = "cyclestate IndicolureMode", desc = "Indi Mode", state = "IndicolureMode" },
-    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 }
 
 return require('shared/utils/keybinds/keybind_manager').create('GEO', GEOKeybinds)

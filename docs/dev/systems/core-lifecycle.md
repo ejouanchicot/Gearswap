@@ -138,6 +138,26 @@ active ones. It now unbinds only the keys that will *not* be bound back - the
 conditional binds of another subjob, plus `retired_keys` - so no key is ever
 unbound and rebound in the same burst. PLD went from 17 commands to 9.
 
+### What a key runs, and the common keys
+
+`KeybindManager.bind_line(bind)` (`shared/utils/keybinds/keybind_manager.lua`) turns an entry into
+the console line bound to the key; `bind_all`, `refresh` and `KeybindGuard` all go through it:
+
+| `command` | Bound as |
+|---|---|
+| `"//sm mirror"` | `sm mirror` - console command of any addon |
+| `"/p ready"` | `input /p ready` - game command |
+| `raw = true` | the command exactly as written |
+| anything else | `gs c <command>` |
+
+`KeybindManager.create()` appends the character's common keys after the job's (and after the
+`<JOB>_CUSTOM.lua` ones): `shared/utils/keybinds/common_keybinds.lua` reads
+`<Character>/config/COMMON_KEYBINDS.lua` (template `_master/config_global/`, Kaories overlay in
+`_master/Kaories/config_global/`) and skips any key the job already uses, so the job wins. A marker
+on the list stops a second `create()` from appending twice. `AutoMedicine` (`#numpad0`) moved there
+from the 15 job files; the file also carries `!numpad7`-`!numpad9` for `//gs c alts`.
+`//gs c tb` sees the merged list, so it never hands out a common key.
+
 The header of `INIT_SYSTEMS.lua` (lines 7-19) is out of date: it says the watchdog loads immediately with a 3.5 s timeout and lists four systems. The code defers the watchdog by 2 s, uses a per-spell timeout, and starts ten things.
 
 ## Job and subjob changes

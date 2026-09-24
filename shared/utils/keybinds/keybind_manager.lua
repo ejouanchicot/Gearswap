@@ -71,21 +71,42 @@ local function applies(bind)
     return true
 end
 
---- key -> command for the binds that lay down a key.
+--- What the key runs:
+---   "//sm mirror"   console command of any addon (the // is dropped)
+---   "/p hello"      game chat command, sent with input
+---   raw = true      the command exactly as written
+---   anything else   gs c <command>
+--- @param bind table Bind entry
+--- @return string
+function KeybindManager.bind_line(bind)
+    local command = bind.command
+    if bind.raw then
+        return command
+    end
+    if command:sub(1, 2) == '//' then
+        return command:sub(3)
+    end
+    if command:sub(1, 1) == '/' then
+        return 'input ' .. command
+    end
+    return 'gs c ' .. command
+end
+
+--- key -> console line for the binds that lay down a key.
 --- @param binds table List of bind entries
 --- @return table
 local function key_map(binds)
     local map = {}
     for _, bind in ipairs(binds) do
         if bind.key and bind.key ~= '' and bind.command then
-            map[bind.key] = bind.command
+            map[bind.key] = KeybindManager.bind_line(bind)
         end
     end
     return map
 end
 
-local function send_bind(key, command)
-    return pcall(send_command, 'bind ' .. key .. ' gs c ' .. command)
+local function send_bind(key, line)
+    return pcall(send_command, 'bind ' .. key .. ' ' .. line)
 end
 
 local function send_unbind(key)
@@ -127,11 +148,12 @@ end
 local function lay_down(active, desired)
     local bound = 0
     for _, b in ipairs(active) do
-        if b.command and desired[b.key] == b.command then
-            local ok, err = send_bind(b.key, b.command)
+        local line = b.command and KeybindManager.bind_line(b)
+        if line and desired[b.key] == line then
+            local ok, err = send_bind(b.key, line)
             if ok then
                 bound = bound + 1
-                bound_keys()[b.key] = b.command
+                bound_keys()[b.key] = line
             else
                 MessageFormatter.show_bind_failed_error(b.key, tostring(err or 'Command execution failed'))
             end
@@ -256,7 +278,8 @@ end
 --- @param module table Holds .binds and optionally .retired_keys
 --- @return table The same module, with get_active_binds, bind_all, refresh,
 ---   unbind_all, show_intro and show_binds attached, and the player's custom
----   keys appended to .binds
+---   keys, then the character's common keys (config/COMMON_KEYBINDS.lua),
+---   appended to .binds
 function KeybindManager.create(job, module)
     local ctx = {job = job, module = module, applied = {}, api = module}
     local function bind(fn) return function(...) return fn(ctx, ...) end end
@@ -267,6 +290,10 @@ function KeybindManager.create(job, module)
     module.show_intro = bind(show_intro)
     module.show_binds = bind(show_binds)
     add_custom_states(job, module)
+    local ok, CommonKeybinds = pcall(require, 'shared/utils/keybinds/common_keybinds')
+    if ok and CommonKeybinds then
+        CommonKeybinds.merge_into(module.binds)
+    end
     return module
 end
 

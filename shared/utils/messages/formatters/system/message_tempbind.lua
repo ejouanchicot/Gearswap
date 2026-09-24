@@ -80,6 +80,8 @@ local HELP = {
     {'dia2  cure4  provoke', '', 'Case, spaces, digits ignored'},
     {'beastmens seal', '', "Punctuation ignored"},
     {'tradenpc 1 ...', '', 'Anything else: sent as is'},
+    {'//sm follow off', '', 'Any addon command, as is'},
+    {'/p ready  /follow', '', 'Game command, as is'},
     {'TARGET', 'after the name'},
     {'t  st  stnpc  me  bt', '', "The game's <t> <st> ..."},
     {'vampire leech', '', 'Nearest one, at each press'},

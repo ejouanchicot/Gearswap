@@ -54,7 +54,6 @@ BRDKeybinds.binds = {
     { key = "^numpad8", command = "cyclestate MarcatoSong", desc = "Auto-Marcato Song", state = "MarcatoSong" },
 
     -- Apps+Numpad0: Auto Medicine (universal toggle)
-    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 
     -- No action keys (abilities, song casts) are bound in this file.
 }

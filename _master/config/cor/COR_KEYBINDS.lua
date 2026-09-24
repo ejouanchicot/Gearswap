@@ -32,7 +32,6 @@ CORKeybinds.binds = {
 
     -- Luzaf Ring Toggle (affects roll range: ON=16y, OFF=8y)
     { key = "^numpad6", command = "cyclestate LuzafRing", desc = "Luzaf Ring",  state = "LuzafRing" },
-    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 }
 
 return require('shared/utils/keybinds/keybind_manager').create('COR', CORKeybinds)
