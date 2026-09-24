@@ -24,7 +24,7 @@ What THF adds on top of the shared pipeline:
   target is tagged (`Tag`), plus TH SA/TA overlays (`SATA`), or always (`Full`).
 - **Subjob smartbuff** (`//gs c smartbuff`: /DNC Haste Samba, /WAR Berserk,
   Aggressor, Warcry, /NIN Utsusemi) and the **Feint-Bully-Conspirator** opener
-  (`//gs c fbc`).
+  (`//gs c fbc`), and Steal / Mug / Despoil on `<t>` (`//gs c steal`).
 
 THF has no spell refinement, no midcast overrides and no job-specific message
 formatter.
@@ -46,13 +46,13 @@ line numbers refer to the working tree on 2026-09-19.
 | `shared/jobs/thf/functions/THF_ENGAGED.lua` | 43 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/thf/functions/THF_STATUS.lua` | 19 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/thf/functions/THF_BUFFS.lua` | 66 | `job_buff_change`: DoomManager, SA/TA pending reset, `gs c update` on SA/TA loss |
-| `shared/jobs/thf/functions/THF_COMMANDS.lua` | 221 | `job_self_command` router, `job_state_change` (`LifecycleManager.state_change` + RangeLock lock/unlock) |
+| `shared/jobs/thf/functions/THF_COMMANDS.lua` | 226 | `job_self_command` router, `job_state_change` (`LifecycleManager.state_change` + RangeLock lock/unlock) |
 | `shared/jobs/thf/functions/THF_MOVEMENT.lua` | 66 | Empty AutoMove callback, unused `get_thf_movement_status` |
 | `shared/jobs/thf/functions/THF_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('THF', ...)` wrappers |
 | `shared/jobs/thf/functions/THF_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('THF', ...)` wrapper |
 | `shared/jobs/thf/functions/logic/sa_ta_manager.lua` | 95 | WS variant (`SATA` > `SA` > `TA`) from buffs or pending flags; consumes the flags |
 | `shared/jobs/thf/functions/logic/set_builder.lua` | 236 | Engaged base (Aftermath / HybridMode), weapons or Aby weapons, SA/TA overlay, TH overlay, town, movement |
-| `shared/jobs/thf/functions/logic/smartbuff_manager.lua` | 236 | `smartbuff` per subjob and the FBC opener |
+| `shared/jobs/thf/functions/logic/smartbuff_manager.lua` | 281 | `smartbuff` per subjob, the FBC opener and the Steal chain |
 | `shared/jobs/thf/functions/logic/range_lock.lua` | 63 | Range/ammo lock in step with `RangeLock`; `_G.thf_range_locked`; release at unload |
 | `shared/jobs/thf/functions/logic/treasure_hunter.lua` | 236 | `TreasureMode`: TH engaged overlay, TH SA/TA overlay, tagged-mob tracking (4 raw events) |
 | `shared/utils/smartbuff/subjob_war_buffs.lua` | 73 | Berserk / Aggressor / Warcry collection and casting (shared with DNC) |
@@ -290,7 +290,7 @@ Mote-TreasureHunter (`libs/Mote-TreasureHunter.lua`), without its slot locks
 - Cycling `TreasureMode` ends in a gear update on both cycle paths (Mote's
   `cycle` and `cyclestate`), so the new mode applies at once.
 
-### Smartbuff and FBC
+### Smartbuff, FBC and Steal
 
 `SmartbuffManager.apply()` (`smartbuff_manager.lua:126-144`) by `player.sub_job`:
 
@@ -301,11 +301,16 @@ Mote-TreasureHunter (`libs/Mote-TreasureHunter.lua`), without its slot locks
 | NIN | Utsusemi: Ni if ready, else Ichi, else both cooldowns (94-118); uses `windower.send_command` |
 | other | warning "No smartbuff configured" |
 
-`apply_fbc()` (205-230): `triage_fbc` sorts Feint (recast 68, buff `Feint`,
-`<me>`), Bully (240, no buff, `<t>`), Conspirator (40, buff `Conspirator`,
-`<me>`) into "cast" and "status"; the ones to cast are sent 0, 1 and 2 s apart.
+`apply_fbc()` (255) and `apply_steal()` (269) share one runner, `run_sequence`
+(226): `triage` (179) sorts a list into "cast" and "status", and
+`cast_sequence` (212) sends the ones to cast 0, 1 and 2 s apart.
+FBC: Feint (recast 68, buff `Feint`, `<me>`), Bully (240, no buff, `<t>`),
+Conspirator (40, buff `Conspirator`, `<me>`). Steal: Steal (60), Mug (65),
+Despoil (61, `main_only`: dropped silently with THF as subjob), all on `<t>`;
+`apply_steal` sends nothing and shows an error unless `<t>` is a living monster
+(`target_is_enemy`, 261: `spawn_type == 16`, `valid_target`, `hpp > 0`).
 `_G.suppress_cooldown_messages` is set to true for the sequence and reset 3 s
-later by `coroutine.schedule` inside the sandbox (218-227). While it is true,
+later by `coroutine.schedule` inside the sandbox. While it is true,
 `CooldownChecker.check_ability_cooldown` returns before checking anything
 (`cooldown_checker.lua:92-94`), for every ability, not only the three.
 
@@ -373,22 +378,24 @@ tests, in order: `altjobupdate`, `requestjob`, `watchdog`, CommonCommands
 only), `ui`, `debugmidcast`, `cyclestate`, then THF commands. A name none of them
 answers goes to Mote, whose last lookup is the dual-box partner's alt config
 (see [commands](../systems/commands-and-debug.md#4-alt-commands-and-name-shadowing)).
-None of `smartbuff`, `fbc`, `range` is a key of any current alt config.
+None of `smartbuff`, `fbc`, `range` is a key of any current alt config. `steal` is (THF alt
+config), so the router checks it before the common commands (98).
 
 | Command | Effect | Handler |
 |---------|--------|---------|
-| `altjobupdate <job> <sub> ...` / `requestjob` | Dual-box job exchange | 77-93 |
-| `watchdog ...` | MidcastWatchdog commands | 96-101 |
-| common commands | `reload`, `checksets`, `wa`, `wo`, `refill`, `craft`, `am`, `jump`, `waltz`, `aoewaltz`, debug, warp, alt names | 104-114 |
-| `ui ...` | UI toggles | 117-121 |
-| `debugmidcast` | Toggle MidcastManager debug | 126-136 |
-| `cyclestate <State>` | `CycleHandler.handle_cyclestate` (all keybinds except the two `toggle`s) | 145-148 |
-| `smartbuff` | `SmartbuffManager.apply()` | 151-155 |
-| `fbc` | `SmartbuffManager.apply_fbc()` | 157-161 |
-| `range` | Equip crossbow + bolts, `RangeLock.engage()`, `/ra <stnpc>` | 164-176 |
+| `altjobupdate <job> <sub> ...` / `requestjob` | Dual-box job exchange | 77-94 |
+| `steal` | `SmartbuffManager.apply_steal()` | 98-102 |
+| `watchdog ...` | MidcastWatchdog commands | 105-110 |
+| common commands | `reload`, `checksets`, `wa`, `wo`, `refill`, `craft`, `am`, `jump`, `waltz`, `aoewaltz`, `alts`, `main`, debug, warp, alt names | 113-123 |
+| `ui ...` | UI toggles | 126-130 |
+| `debugmidcast` | Toggle MidcastManager debug | 135-145 |
+| `cyclestate <State>` | `CycleHandler.handle_cyclestate` (all keybinds except the two `toggle`s) | 154-157 |
+| `smartbuff` | `SmartbuffManager.apply()` | 160-164 |
+| `fbc` | `SmartbuffManager.apply_fbc()` | 166-170 |
+| `range` | Equip crossbow + bolts, `RangeLock.engage()`, `/ra <stnpc>` | 173-186 |
 | `toggle AbyProc` / `toggle RangeLock` | Mote `handle_toggle` -> `job_state_change` + `handle_update` | Mote |
 
-`job_state_change` (214) is `LifecycleManager.state_change(on_state_change)`:
+`job_state_change` (219) is `LifecycleManager.state_change(on_state_change)`:
 the shared part skips `Moving` and refreshes the HUD; `on_state_change`
 (197-212) handles `RangeLock` (key or description, see Ranged attacks).
 

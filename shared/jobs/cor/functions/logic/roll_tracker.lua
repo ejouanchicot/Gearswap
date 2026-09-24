@@ -557,82 +557,30 @@ function RollTracker.is_job_in_party_zone(job_code)
     return false
 end
 
----   Check if equipped gear can proc job bonus (Comm/Lanun Tricorne)
----   @return boolean True if wearing Comm/Lanun Tricorne
-function RollTracker.has_job_bonus_proc_gear()
-    if not player or not player.equipment then
-        return false
-    end
+--- "Phantom Roll +" potency pieces. Only the highest one counts: they do not
+--- add up (Compensator, Camulus's Mantle... give duration, not potency).
+local PHANTOM_ROLL_GEAR = {
+    {slots = {'main'}, pattern = 'Rostam', value = 8},
+    {slots = {'main'}, pattern = 'Lanun Knife', value = 7},
+    {slots = {'main'}, pattern = "Commodore'?s? Knife", value = 6},
+    {slots = {'neck'}, pattern = 'Regal Necklace', value = 7},
+    {slots = {'left_ring', 'right_ring'}, pattern = 'Barataria Ring', value = 5},
+    {slots = {'left_ring', 'right_ring'}, pattern = 'Merirosvo Ring', value = 3},
+}
 
-    local head = player.equipment.head
-    if not head then
-        return false
-    end
-
-    -- Comm. Tricorne / +1 / +2 (~33% proc)
-    if head:match('Comm%.? Tricorne') or head:match('Commodore Tricorne') then
-        return true
-    end
-
-    -- Lanun Tricorne / +1 / +2 / +3 (~50% proc)
-    if head:match('Lanun Tricorne') then
-        return true
-    end
-
-    return false
-end
-
----   Get highest +Phantom Roll bonus from equipped gear
----   NOTE: Phantom Roll potency is NOT cumulative - only highest value counts
----   (Unlike Phantom Roll Duration which IS cumulative)
----   @return number Highest Phantom Roll bonus
+---   Highest "Phantom Roll +" value in the gear worn right now
+---   @return number
 function RollTracker.get_phantom_roll_bonus()
-    local max_bonus = 0
-
-    -- Check specific gear pieces and track the HIGHEST value only
-    if player and player.equipment then
-        local gear = player.equipment
-
-        -- Main Hand Weapons (highest bonuses)
-        -- Rostam (main) = +8 (BEST)
-        if gear.main and gear.main:match('Rostam') then
-            max_bonus = math.max(max_bonus, 8)
+    local gear = player and player.equipment
+    local best = 0
+    for _, piece in ipairs(gear and PHANTOM_ROLL_GEAR or {}) do
+        for _, slot in ipairs(piece.slots) do
+            if type(gear[slot]) == 'string' and gear[slot]:match(piece.pattern) then
+                best = math.max(best, piece.value)
+            end
         end
-
-        -- Lanun Knife (main) = +7
-        if gear.main and gear.main:match('Lanun Knife') then
-            max_bonus = math.max(max_bonus, 7)
-        end
-
-        -- Commodore's Knife (main) = +6
-        if gear.main and (gear.main:match('Commodore\'s Knife') or gear.main:match('Commodore Knife')) then
-            max_bonus = math.max(max_bonus, 6)
-        end
-
-        -- Neck
-        -- Regal Necklace (neck) = +7
-        if gear.neck and gear.neck:match('Regal Necklace') then
-            max_bonus = math.max(max_bonus, 7)
-        end
-
-        -- Rings
-        -- Barataria Ring (ring) = +5
-        if (gear.left_ring and gear.left_ring:match('Barataria Ring')) or
-            (gear.right_ring and gear.right_ring:match('Barataria Ring')) then
-            max_bonus = math.max(max_bonus, 5)
-        end
-
-        -- Merirosvo Ring (ring) = +3
-        if (gear.left_ring and gear.left_ring:match('Merirosvo Ring')) or
-            (gear.right_ring and gear.right_ring:match('Merirosvo Ring')) then
-            max_bonus = math.max(max_bonus, 3)
-        end
-
-        -- NOTE: Compensator, Camulus's Mantle, etc. give +Duration, NOT +Potency
-        -- They are NOT checked here
     end
-
-    return max_bonus
+    return best
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -48,7 +48,7 @@ macrobook/lockstyle calls of the second `user_setup()` block guarded).
 | `shared/jobs/cor/functions/COR_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('COR', ..., 1, 'SAM')` wrappers |
 | `shared/jobs/cor/functions/COR_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('COR', ..., 'SAM', 1, 1)` wrapper |
 | `shared/jobs/cor/functions/logic/party_tracker.lua` | 266 | Roll `action` listener, `0xDD`/`0xDF` party job listener, cleanup |
-| `shared/jobs/cor/functions/logic/roll_tracker.lua` | 787 | Roll state, Crooked, bonus, party cache validation, coverage, display, cleanup |
+| `shared/jobs/cor/functions/logic/roll_tracker.lua` | 778 | Roll state, Crooked, bonus, party cache validation, coverage, display, cleanup |
 | `shared/jobs/cor/functions/logic/roll_data.lua` | 439 | 31 rolls: values 1-11, lucky/unlucky, bust effect, `+Phantom Roll` step, job bonus |
 | `shared/jobs/cor/functions/logic/set_builder.lua` | 201 | Town, weapons (DW-aware), PDT, Refresh, movement; unused `apply_buff_gear` |
 | `_master/config/cor/COR_STATES.lua` | 218 | All states (`CORStates.configure()`), unused `validate()` |
@@ -189,17 +189,22 @@ sequenceDiagram
 - Crooked (`crooked_applies`, 161-180): a Double-Up inherits the roll's
   `has_crooked`; a fresh roll takes Crooked when the buff is still visible or
   the precast timestamp is at most 60 s old, and then spends the timestamp
-  (`consume_crooked`, 232-236). Bonus x1.2 (196-198).
-- Bonus (`compute_bonus`, 184-201; `RollData.calculate_bonus`,
-  `roll_data.lua:378-398`): value for the roll number + job bonus when
-  `is_job_in_party_zone` + highest `+Phantom Roll` gear (Rostam 8, Lanun Knife 7,
-  Regal Necklace 7, Commodore's Knife 6, Barataria 5, Merirosvo 3;
-  `roll_tracker.lua:544-591`) x the roll's step.
-- Job bonus source (`is_job_in_party_zone`, 488-513): own main/sub, then
+  (`consume_crooked`, 265). Bonus x1.2 (`compute_bonus`, 223).
+- Bonus (`compute_bonus`, 223; `RollData.calculate_bonus`,
+  `roll_data.lua:378-398`): value for the roll number + job bonus +
+  highest `+Phantom Roll` gear (`PHANTOM_ROLL_GEAR`, 562: Rostam 8, Lanun Knife 7,
+  Regal Necklace 7, Commodore's Knife 6, Barataria 5, Merirosvo 3) x the roll's step.
+- Both are settled per roll, not per cast (`roll_bonus_sources`, 206; BG-Wiki,
+  Phantom Roll): the initial Phantom Roll reads the gear and
+  `is_job_in_party_zone`; a Double-Up keeps the record's job bonus as it was and
+  the higher of the record's gear value and the gear worn now (gear counts from
+  the cast it was worn on). `track_active_roll` stores them as `gear_bonus` /
+  `job_bonus` on the active-roll record.
+- Job bonus source (`is_job_in_party_zone`, 533): own main/sub, then
   `_G.AltJobState.job` (the dual-box partner), then the packet cache (main job
-  only). `validate_party_cache` (435-472) clears the cache on a zone or
+  only). `validate_party_cache` (480) clears the cache on a zone or
   party-size change and drops departed or 600 s-old entries.
-- Coverage (`count_party_members_with_buff`, 602-653): the COR always counts;
+- Coverage (`count_party_members_with_buff`, 595): the COR always counts;
   other members count when within 8 yalms, or 16 with `LuzafRing = ON`.
 - Expiry: `COR_BUFFS.lua:22-33` removes the roll from the active list when a
   buff ending in `" Roll"` is lost (`on_roll_buff_lost`, 80-88).
@@ -444,7 +449,7 @@ identical), L = `Tetsouo/sets/cor/cor_sets.lua` (weapon sets from
   (then `roll1`/`roll2` can cast it).
 - Roll-specific precast gear: `sets.precast.CorsairRoll["<Roll>"] =
   set_combine(sets.precast.CorsairRoll, {...})`; Double-Up picks it up.
-- New `+Phantom Roll` item: add it to `get_phantom_roll_bonus`
+- New `+Phantom Roll` item: add it to `PHANTOM_ROLL_GEAR` (`get_phantom_roll_bonus`)
   (`roll_tracker.lua:544-591`).
 - New command: branch after the CommonCommands block; check the name against
   the common list. A name that is also a key of `Tetsouo/config/alt/COR_ALT_*.lua`
