@@ -13,7 +13,7 @@
 
 local RDMKeybinds = {}
 
--- Keybind definitions - numpad only (Ctrl+Numpad, Apps+Numpad for Storm and AutoMedicine)
+-- Keybind definitions - numpad only (Ctrl+Numpad, Apps+Numpad for Storm; AutoMedicine is in config/COMMON_KEYBINDS.lua)
 -- Format: { key = "key", command = "gs_command", desc = "description", state = "state_name", subjob = "required_subjob" }
 RDMKeybinds.binds = {
     ---========================================================================
@@ -44,7 +44,6 @@ RDMKeybinds.binds = {
     { key = "^numpad-", command = "cyclestate Barspell",      desc = "Bar Element",     state = "Barspell" },
     { key = "^numpad*", command = "cyclestate BarAilment",    desc = "Bar Ailment",     state = "BarAilment" },
     { key = "^numpad/", command = "cyclestate Spike",         desc = "Spike",           state = "Spike" },
-    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 }
 
 return require('shared/utils/keybinds/keybind_manager').create('RDM', RDMKeybinds)

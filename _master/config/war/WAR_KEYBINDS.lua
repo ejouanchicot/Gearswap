@@ -58,7 +58,6 @@ WARKeybinds.binds = { -- Weapon Management
     desc = "WS Slot 4",
     state = "WS4"
 },
-    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 {
     key = "^numpad7",
     command = "cyclestate WS5",

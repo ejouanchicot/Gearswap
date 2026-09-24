@@ -23,7 +23,6 @@ SMNKeybinds.binds = {
     { key = "^numpad1", command = "cyclestate IdleMode",     desc = "Idle Mode",     state = "IdleMode"     },
     { key = "^numpad2", command = "cyclestate CastingMode",  desc = "Casting Mode",  state = "CastingMode"  },
     { key = "^numpad3", command = "cyclestate AvatarFavor",  desc = "Avatar Favor",  state = "AvatarFavor"  },
-    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 
     ---==========================================================================
     --- JOB ABILITIES (Function keys + modifiers)

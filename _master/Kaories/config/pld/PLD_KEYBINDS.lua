@@ -44,7 +44,6 @@ PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie)
 },
     { key = "^numpad2", command = "cyclestate PhalanxSIRD", desc = "Phalanx SIRD", state = "PhalanxSIRD" },
     { key = "^numpad7", command = "cyclestate SneakInviAOE", desc = "Sneak/Invi AOE", state = "SneakInviAOE", subjob = "SCH" },
-    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 }
 
 return require('shared/utils/keybinds/keybind_manager').create('PLD', PLDKeybinds)
