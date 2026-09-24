@@ -124,7 +124,7 @@ ENHANCING_BUFFS.spells = {
         WHM                     = 63,
         RDM                     = 63,
         PLD                     = 70,
-        SCH                     = 70,
+        SCH                     = 66,
         RUN                     = 80,
     },
 
@@ -220,8 +220,7 @@ ENHANCING_BUFFS.spells = {
         enhancing_skill_affects = false,
         effect                  = "MP +3/tick",
         RDM                     = 41,
-        SCH                     = 41,
-        BRD                     = 52,
+        RUN                     = 62,
     },
 
     ["Refresh II"] = {
@@ -234,8 +233,7 @@ ENHANCING_BUFFS.spells = {
         magic_type              = "White",
         enhancing_skill_affects = false,
         effect                  = "MP +6/tick",
-        RDM                     = 76,
-        SCH                     = 76,
+        RDM                     = 82,
     },
 
     ["Refresh III"] = {
@@ -248,7 +246,7 @@ ENHANCING_BUFFS.spells = {
         magic_type              = "White",
         enhancing_skill_affects = false,
         effect                  = "MP +9/tick",
-        RDM                     = 99,
+        RDM                     = 1200,
         main_job_only           = true,
     },
 

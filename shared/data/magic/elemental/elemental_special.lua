@@ -32,9 +32,9 @@ elemental_special.spells = {
     },
 
     ["Meteor"] = {
-        description             = "Deals fire dmg (AOE).",
+        description             = "Deals non-elemental dmg (AoE).",
         category                = "Elemental",
-        element                 = "Fire",
+        element                 = "None",
         magic_type              = "Black",
         tier                    = nil,
         type                    = "aoe",

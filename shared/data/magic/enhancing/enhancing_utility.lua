@@ -148,11 +148,11 @@ ENHANCING_UTILITY.spells = {
     },
 
     ["Inundation"] = {
-        description             = "Reduces target's magic evasion.",
+        description             = "Boosts skillchain dmg per weapon type used.",
         skill                   = "Enhancing Magic",
         spell_family            = nil,
         target_type             = "single",
-        element                 = "Water",
+        element                 = "Light",
         magic_type              = "White",
         enhancing_skill_affects = true,
         RDM                     = 64,
@@ -180,8 +180,7 @@ ENHANCING_UTILITY.spells = {
         element                 = "Dark",
         magic_type              = "White",
         enhancing_skill_affects = true,
-        GEO                     = 35,
-        SCH                     = 68,
+        SCH                     = 46,
     },
 
     ["Reprisal"] = {

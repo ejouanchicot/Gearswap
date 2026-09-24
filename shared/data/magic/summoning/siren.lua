@@ -23,7 +23,7 @@ SIREN.spells = {
         element                 = "Wind",
         magic_type              = "Summoning",
         type                    = "summon",
-        SMN                     = 75,
+        SMN                     = 1,
         mp_cost                 = 7,
         notes                   = "Wind-based avatar. MP cost: 7. Perpetuation: 3 MP/3s. Specializes in debuffs via songs (Lunatic Voice, Hysteric Assault) and status ailments. Quest required. SMN (subjob OK).",
     },

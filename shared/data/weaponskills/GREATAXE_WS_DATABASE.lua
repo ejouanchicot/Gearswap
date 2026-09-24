@@ -28,7 +28,7 @@ greataxe_ws.weaponskills = {
         mods                = {STR = 100},
         hits                = 1,
         element             = nil,
-        skillchain          = {'Scission'},
+        skillchain          = {'Impaction'},
         ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 5,
         jobs                = {
@@ -43,7 +43,7 @@ greataxe_ws.weaponskills = {
         mods                = {STR = 100},
         hits                = 1,
         element             = nil,
-        skillchain          = {'Scission', 'Impaction'},
+        skillchain          = {'Scission'},
         ftp                 = {[1000] = 1.0, [2000] = 1.5, [3000] = 2.0},
         skill_required      = 40,
         jobs                = {
@@ -58,7 +58,7 @@ greataxe_ws.weaponskills = {
         mods                = {STR = 100},
         hits                = 2,
         element             = nil,
-        skillchain          = {'Reverberation', 'Impaction'},
+        skillchain          = {'Reverberation', 'Scission'},
         ftp                 = {[1000] = 1.0, [2000] = 1.25, [3000] = 1.5},
         skill_required      = 70,
         jobs                = {
@@ -73,7 +73,7 @@ greataxe_ws.weaponskills = {
         mods                = {STR = 100},
         hits                = 1,
         element             = nil,
-        skillchain          = {'Impaction', 'Detonation'},
+        skillchain          = {'Impaction'},
         ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 100,
         jobs                = {
@@ -88,7 +88,7 @@ greataxe_ws.weaponskills = {
         mods                = {STR = 100},
         hits                = 1,
         element             = nil,
-        skillchain          = {'Compression', 'Transfixion'},
+        skillchain          = {'Compression'},
         ftp                 = {[1000] = 1.0, [2000] = 1.5, [3000] = 2.0},
         skill_required      = 150,
         jobs                = {
@@ -103,7 +103,7 @@ greataxe_ws.weaponskills = {
         mods                = {STR = 100},
         hits                = 1,
         element             = nil,
-        skillchain          = {'Impaction', 'Detonation'},
+        skillchain          = {'Impaction'},
         ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 175,
         jobs                = {
@@ -118,7 +118,7 @@ greataxe_ws.weaponskills = {
         mods                = {STR = 100},
         hits                = 3,
         element             = nil,
-        skillchain          = {'Induration', 'Impaction'},
+        skillchain          = {'Induration', 'Reverberation'},
         ftp                 = {[1000] = 1.0, [2000] = 1.3, [3000] = 1.6},
         skill_required      = 200,
         jobs                = {WAR = 1},
@@ -248,18 +248,6 @@ greataxe_ws.weaponskills = {
     --- AEONIC WEAPON SKILLS (Dolichenus)
     ---========================================================================
 
-    ['Decimation'] = {
-        description         = 'Three hits. Damage varies with TP.',
-        type                = 'Physical',
-        mods                = {STR = 50},
-        hits                = 3,
-        element             = nil,
-        skillchain          = {'Fusion'},
-        ftp                 = {[1000] = 1.5, [2000] = 2.5, [3000] = 4.0},
-        skill_required      = 1,
-        jobs                = {WAR = 1},
-        special_notes       = 'Requires Dolichenus (Aeonic). WAR main job only. Aftermath: Critical hit rate +5% (duration varies with TP).'
-    }
 }
 
 ---============================================================================

@@ -23,7 +23,7 @@ CAIT_SITH.spells = {
         element                 = "Light",
         magic_type              = "Summoning",
         type                    = "summon",
-        SMN                     = 30,
+        SMN                     = 1,
         mp_cost                 = 5,
         notes                   = "Light-based avatar. MP cost: 5. Perpetuation: 3 MP/3s. Specializes in support buffs (Raise II, regen, hastega) and TP manipulation (Level ? Holy). Quest required. SMN (subjob OK).",
     },

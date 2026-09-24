@@ -65,7 +65,7 @@ healing_raise.spells = {
         main_job_only           = false,
         subjob_master_only      = false,
         WHM                     = 70,
-        SCH                     = 92, -- Requires Addendum: White
+        SCH                     = 91, -- Requires Addendum: White
         notes                   = "SCH requires Addendum: White."
     },
 
@@ -111,7 +111,7 @@ healing_raise.spells = {
         main_job_only           = false,
         subjob_master_only      = false,
         WHM                     = 70,
-        SCH                     = 92, -- Requires Addendum: White
+        SCH                     = 91, -- Requires Addendum: White
         notes                   = "Self-buff. SCH requires Addendum: White."
     },
 
@@ -124,7 +124,7 @@ healing_raise.spells = {
         type                    = "self",
         main_job_only           = true,
         subjob_master_only      = false,
-        WHM                     = 99,  -- NOT learned at level 99 - requires 100 Job Points Gift
+        WHM                     = 100,  -- NOT learned at level 99 - requires 100 Job Points Gift
         notes                   = "REQUIRES: 100 Job Points (Gift: Reraise IV) - NOT learned at level 99. Self-buff only."
     },
 
