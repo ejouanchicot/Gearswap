@@ -23,11 +23,11 @@ local COR_SUBJOB = {}
 
 COR_SUBJOB.abilities = {
     ['Double-Up'] = {
-        description             = "Reroll last roll (max 11)",
+        description             = "Adds a die to active roll (max 11)",
         level                   = 5,
         recast                  = 5,  -- 5s
         main_job_only           = false,  -- Accessible as subjob
-        cumulative_enmity       = 0,
+        cumulative_enmity       = 1,
         volatile_enmity         = 80
     },
     ['Quick Draw'] = {
@@ -43,8 +43,8 @@ COR_SUBJOB.abilities = {
         level                   = 50,
         recast                  = 1200,  -- 20min (reducible with merits)
         main_job_only           = false,  -- Accessible as subjob
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 300
     }
 }
 

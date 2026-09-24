@@ -18,24 +18,24 @@ DNC_STEPS_SUBJOB.abilities = {
         level                   = 20,
         recast                  = 5,
         main_job_only           = false,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 0
     },
     ['Box Step'] = {
         description             = "Defense down. Grants FM if successful",
         level                   = 30,
         recast                  = 5,
         main_job_only           = false,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 0
     },
     ['Stutter Step'] = {
         description             = "Magic Evasion down. Grants FM if successful",
         level                   = 40,
         recast                  = 5,
         main_job_only           = false,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 0
     }
 }
 

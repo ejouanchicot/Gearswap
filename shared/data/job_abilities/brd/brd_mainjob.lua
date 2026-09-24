@@ -29,7 +29,7 @@ BRD_MAINJOB.abilities = {
         recast                  = 600,  -- 10min
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 320
     },
     ['Troubadour'] = {
         description             = "Song duration x2",
@@ -37,7 +37,7 @@ BRD_MAINJOB.abilities = {
         recast                  = 600,  -- 10min
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 320
     },
     ['Tenuto'] = {
         description             = "Next self song no overwrite (5 max)",

@@ -19,8 +19,8 @@ DNC_FLOURISHES2_MAINJOB.abilities = {
         recast                  = 30,
         fm_cost                 = 2,
         main_job_only           = true,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 0
     }
 }
 

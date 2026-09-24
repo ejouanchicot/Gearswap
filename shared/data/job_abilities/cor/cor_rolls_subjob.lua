@@ -57,7 +57,7 @@ COR_ROLLS.abilities = {
         unlucky                 = 6
     },
     ["Healer's Roll"] = {
-        description             = "Cure potency+",
+        description             = "Cure potency received+",
         level                   = 20,
         recast                  = 0,
         main_job_only           = false,

@@ -24,8 +24,8 @@ FENRIR.spells = {
         magic_type              = "Summoning",
         type                    = "summon",
         SMN                     = 1,
-        mp_cost                 = 7,
-        notes                   = "Dark-based avatar. MP cost: 7. Perpetuation: 2 MP/3s. Specializes in physical attacks with additional effects (Eclipse Bite, Howling Moon) and unique buffs/debuffs. Quest required. SMN (subjob OK).",
+        mp_cost                 = 15,
+        notes                   = "Dark-based avatar. MP cost: 15. Moon-phase Blood Pacts (Ecliptic Growl, Ecliptic Howl, Lunar Cry, Heavenward Howl) and physical pacts with added effects (Moonlit Charge, Crescent Fang). Obtained from the quest The Moonlit Path. SMN (subjob OK).",
     },
 
 }
@@ -44,46 +44,46 @@ FENRIR.blood_pacts = {
         type                    = "physical",
         damage_type             = "Blunt",
         level                   = 5,
-        mp_cost                 = 11,
-        skillchain              = "Impaction",
-        notes                   = "Physical blunt damage with blindness effect. MP: 11. Recast: Instant. Damage: Pet STR. Inflicts Blind. Single target. SMN (subjob OK).",
+        mp_cost                 = 17,
+        skillchain              = "Compression",
+        notes                   = "Physical blunt damage + Blind. MP: 17. Stat: Pet VIT. Accuracy bonus varies with TP. SMN (subjob OK).",
     },
 
     ["Crescent Fang"] = {
-        description             = "Deals 3-fold physical dmg + paralyze.",
+        description             = "Deals physical dmg + paralyze.",
         category                = "Blood Pact: Rage",
         element                 = "Dark",
         avatar                  = "Fenrir",
         type                    = "physical",
         damage_type             = "Piercing",
         level                   = 10,
-        mp_cost                 = 24,
-        skillchain              = "Gravitation",
-        notes                   = "Triple-hit physical piercing damage with paralysis. MP: 24. Recast: Instant. Damage: Pet STR (×3 hits). Inflicts Paralysis. Single target. SMN (subjob OK).",
+        mp_cost                 = 19,
+        skillchain              = "Transfixion",
+        notes                   = "Physical piercing damage + Paralysis. MP: 19. Stat: Pet STR. Damage varies with TP. SMN (subjob OK).",
     },
 
     ["Eclipse Bite"] = {
-        description             = "Deals physical dmg + blindness.",
+        description             = "Deals 3-fold physical dmg.",
         category                = "Blood Pact: Rage",
         element                 = "Dark",
         avatar                  = "Fenrir",
         type                    = "physical",
         damage_type             = "Slashing",
         level                   = 65,
-        mp_cost                 = 118,
-        skillchain              = "Umbra",
-        notes                   = "Enhanced physical slashing damage with blindness. MP: 118. Recast: Instant. Damage: Pet STR + INT. Inflicts Blind. Single target. SMN (subjob OK).",
+        mp_cost                 = 109,
+        skillchain              = "Gravitation/Scission",
+        notes                   = "Three-hit physical slashing attack. MP: 109. Stat: Pet DEX. Damage varies with TP (fTP carries to all hits). SMN (main job only).",
     },
 
     ["Lunar Bay"] = {
-        description             = "Deals dark damage (AoE).",
+        description             = "Deals dark dmg.",
         category                = "Blood Pact: Rage",
         element                 = "Dark",
         avatar                  = "Fenrir",
         type                    = "magical",
         level                   = 78,
         mp_cost                 = 174,
-        notes                   = "Dark-based magical AoE damage. MP: 174. Recast: Instant. Damage: Pet MAB + level. AoE range. SMN (subjob OK).",
+        notes                   = "Dark-based magical damage to one enemy. Stat: Pet INT. MP: 174. SMN (main job only).",
     },
 
     ["Impact"] = {
@@ -93,8 +93,8 @@ FENRIR.blood_pacts = {
         avatar                  = "Fenrir",
         type                    = "magical",
         level                   = 99,
-        mp_cost                 = 200,
-        notes                   = "Enhanced dark-based magical AoE damage. MP: 200. Recast: Instant. Damage: Pet MAB + level. Reduces enemy attributes. AoE range. SMN (subjob OK).",
+        mp_cost                 = 222,
+        notes                   = "Enhanced dark-based magical AoE damage. MP: 222. Damage: Pet MAB + level. Reduces enemy attributes. AoE range. SMN (subjob OK).",
     },
 
     ["Howling Moon"] = {
@@ -106,7 +106,7 @@ FENRIR.blood_pacts = {
         level                   = 1,
         mp_cost                 = 0,
         astral_flow             = true,
-        notes                   = "Ultimate dark-based magical AoE damage. MP: 0. Recast: N/A. Only available during Astral Flow. Extreme damage. Wide AoE range. SMN (subjob OK).",
+        notes                   = "Astral Flow ability. Darkness damage to enemies in range. Requires MP of at least caster's level x2. Stat: Pet INT. Uses all MP (Astral Flow). SMN (main job only).",
     },
 
     --============================================================
@@ -114,14 +114,14 @@ FENRIR.blood_pacts = {
     --============================================================
 
     ["Lunar Cry"] = {
-        description             = "Lowers accuracy + evasion (AoE).",
+        description             = "Lowers accuracy + evasion.",
         category                = "Blood Pact: Ward",
         element                 = "Dark",
         avatar                  = "Fenrir",
         type                    = "debuff",
         level                   = 21,
-        mp_cost                 = 47,
-        notes                   = "Accuracy -20, Evasion -20 to enemies. MP: 47. Recast: Instant. Duration: 90s. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 41,
+        notes                   = "Lowers the target's Accuracy and Evasion by moon phase: Full Moon Accuracy -31, New Moon Evasion -31 (-16/-16 at 50%). MP: 41. SMN (subjob OK).",
     },
 
     ["Lunar Roar"] = {
@@ -131,19 +131,19 @@ FENRIR.blood_pacts = {
         avatar                  = "Fenrir",
         type                    = "debuff",
         level                   = 32,
-        mp_cost                 = 71,
-        notes                   = "Dispels up to 2 beneficial effects from enemies. MP: 71. Recast: Instant. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 27,
+        notes                   = "Removes two beneficial magic effects from enemies in range. MP: 27. Range: 10'. SMN (subjob OK).",
     },
 
     ["Ecliptic Growl"] = {
-        description             = "Boosts accuracy + evasion.",
+        description             = "Boosts attributes (AoE).",
         category                = "Blood Pact: Ward",
         element                 = "Dark",
         avatar                  = "Fenrir",
         type                    = "buff",
         level                   = 43,
-        mp_cost                 = 96,
-        notes                   = "Accuracy +15%, Evasion +15%. MP: 96. Recast: Instant. Duration: 90s. Party AoE. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 46,
+        notes                   = "Attributes +1 to +7 depending on moon phase, for party members in range. Not overwritten by Glittering Ruby. MP: 46. Duration: 180s. SMN (subjob OK).",
     },
 
     ["Ecliptic Howl"] = {
@@ -153,19 +153,19 @@ FENRIR.blood_pacts = {
         avatar                  = "Fenrir",
         type                    = "buff",
         level                   = 54,
-        mp_cost                 = 121,
-        notes                   = "Accuracy +20%, Evasion +20%. MP: 121. Recast: Instant. Duration: 90s. Party AoE. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 57,
+        notes                   = "Accuracy + Evasion boost for party members in range: +26 total split by moon phase (Full Moon mostly accuracy, New Moon mostly evasion; +1 to +25 each). MP: 57. Duration: 180s. SMN (subjob OK).",
     },
 
     ["Heavenward Howl"] = {
-        description             = "Grants drain + aspir effect.",
+        description             = "Grants Endrain or Enaspir (AoE).",
         category                = "Blood Pact: Ward",
         element                 = "Dark",
         avatar                  = "Fenrir",
         type                    = "buff",
         level                   = 96,
-        mp_cost                 = 214,
-        notes                   = "Grants party members drain/aspir effect on attacks. MP: 214. Recast: Instant. Duration: 90s. Party AoE. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 96,
+        notes                   = "Grants party members in range Endrain (5-15%) or Enaspir (1-5%) depending on moon phase. MP: 96. Duration: 60s. SMN (main job only).",
     },
 
 }

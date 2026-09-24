@@ -109,7 +109,7 @@ elemental_ancient.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         BLM                     = 75,
-        notes                   = "Ancient Magic. Lowers enemy Fire resist by 30 for 10s. BLM-only.",
+        notes                   = "Ancient Magic. Lowers enemy Fire resist. BLM-only.",
     },
 
     ["Tornado II"] = {
@@ -122,7 +122,7 @@ elemental_ancient.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         BLM                     = 75,
-        notes                   = "Ancient Magic. Lowers enemy Ice resist by 30 for 10s. BLM-only.",
+        notes                   = "Ancient Magic. Lowers enemy Ice resist. BLM-only.",
     },
 
     ["Quake II"] = {
@@ -135,7 +135,7 @@ elemental_ancient.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         BLM                     = 75,
-        notes                   = "Ancient Magic. Lowers enemy Wind resist by 30 for 10s. BLM-only.",
+        notes                   = "Ancient Magic. Lowers enemy Wind resist. BLM-only.",
     },
 
     ["Burst II"] = {
@@ -148,7 +148,7 @@ elemental_ancient.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         BLM                     = 75,
-        notes                   = "Ancient Magic. Lowers enemy Earth resist by 30 for 10s. BLM-only.",
+        notes                   = "Ancient Magic. Lowers enemy Earth resist. BLM-only.",
     },
 
     ["Flood II"] = {
@@ -161,7 +161,7 @@ elemental_ancient.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         BLM                     = 75,
-        notes                   = "Ancient Magic. Lowers enemy Thunder resist by 30 for 10s. BLM-only.",
+        notes                   = "Ancient Magic. Lowers enemy Thunder resist. BLM-only.",
     },
 
     ["Flare II"] = {
@@ -174,7 +174,7 @@ elemental_ancient.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         BLM                     = 75,
-        notes                   = "Ancient Magic. Lowers enemy Water resist by 30 for 10s. BLM-only.",
+        notes                   = "Ancient Magic. Lowers enemy Water resist. BLM-only.",
     },
 }
 

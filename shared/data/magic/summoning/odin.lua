@@ -48,7 +48,7 @@ ODIN.blood_pacts = {
         mp_cost                 = 0,
         astral_flow             = true,
         restriction             = "two_hour",
-        notes                   = "Astral Flow ability. Attempts instant death on enemies in range; deals heavy dark damage otherwise. MP: 0. Requires Astral Flow active. SMN main job only.",
+        notes                   = "Astral Flow ability. Attempts to KO all enemies in range; against NMs it deals dark magic damage instead (can Magic Burst). Damage and accuracy vary with MP consumed. Uses all MP (Astral Flow). SMN (main job only).",
     },
 
 }

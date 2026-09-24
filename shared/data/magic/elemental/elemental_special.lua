@@ -41,11 +41,11 @@ elemental_special.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         BLM                     = 99,
-        notes                   = "Requires Elemental Seal. BLM-only merit spell.",
+        notes                   = "Requires Elemental Seal. BLM-only (level 99).",
     },
 
     ["Impact"] = {
-        description             = "Deals dark dmg (DoT), lowers all stats.",
+        description             = "Deals dark dmg, lowers all stats.",
         category                = "Elemental",
         element                 = "Dark",
         magic_type              = "Black",
@@ -60,7 +60,7 @@ elemental_special.spells = {
         DRK                     = 90,
         SMN                     = 90,
         GEO                     = 90,
-        notes                   = "Requires Twilight/Crepuscular Cloak. Inflicts DoT and lowers all stats, DEF & MDEF.",
+        notes                   = "Requires Twilight/Crepuscular Cloak. Lowers STR/DEX/VIT/AGI/INT/MND/CHR by 20% for 3 min.",
     },
 }
 

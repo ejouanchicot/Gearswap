@@ -41,14 +41,14 @@ GEO_SPELLS.spells = {
     },
 
     ["Geo-Attunement"] = {
-        description             = "Boosts magic acc.",
+        description             = "Boosts magic evasion.",
         category                = "Geocolure",
         element                 = "Light",
         magic_type              = "Geomancy",
         type                    = "aoe",
         GEO                     = 20,
         main_job_only           = true,
-        notes                   = "Luopan field effect. Increases magic accuracy for party members within Luopan range. Duration: Luopan HP. GEO-only (main job).",
+        notes                   = "Luopan field effect. Increases magic evasion for party members within Luopan range. Duration: Luopan HP. GEO-only (main job).",
     },
 
     ["Geo-Barrier"] = {
@@ -85,14 +85,14 @@ GEO_SPELLS.spells = {
     },
 
     ["Geo-Fend"] = {
-        description             = "Boosts defense.",
+        description             = "Boosts magic def.",
         category                = "Geocolure",
         element                 = "Water",
         magic_type              = "Geomancy",
         type                    = "aoe",
         GEO                     = 44,
         main_job_only           = true,
-        notes                   = "Luopan field effect. Increases defense for party members within Luopan range. Duration: Luopan HP. GEO-only (main job).",
+        notes                   = "Luopan field effect. Increases magic defense for party members within Luopan range. Duration: Luopan HP. GEO-only (main job).",
     },
 
     ["Geo-Focus"] = {
@@ -151,14 +151,14 @@ GEO_SPELLS.spells = {
     },
 
     ["Geo-Poison"] = {
-        description             = "Boosts poison dmg.",
+        description             = "Poisons foes.",
         category                = "Geocolure",
         element                 = "Water",
         magic_type              = "Geomancy",
         type                    = "aoe",
         GEO                     = 5,
         main_job_only           = true,
-        notes                   = "Luopan field effect. Increases poison damage dealt by party members within Luopan range. Duration: Luopan HP. GEO-only (main job).",
+        notes                   = "Luopan field effect. Poisons enemies within Luopan range (HP loss per tick). Duration: Luopan HP. GEO-only (main job).",
     },
 
     ["Geo-Precision"] = {
@@ -233,14 +233,14 @@ GEO_SPELLS.spells = {
     --============================================================
 
     ["Geo-Fade"] = {
-        description             = "Lowers attack.",
+        description             = "Lowers magic atk.",
         category                = "Geocolure",
         element                 = "Fire",
         magic_type              = "Geomancy",
         type                    = "aoe",
         GEO                     = 98,
         main_job_only           = true,
-        notes                   = "Luopan field effect. Lowers attack for enemies within Luopan range. Duration: Luopan HP. GEO-only (main job).",
+        notes                   = "Luopan field effect. Lowers magic attack for enemies within Luopan range. Duration: Luopan HP. GEO-only (main job).",
     },
 
     ["Geo-Frailty"] = {
@@ -266,14 +266,14 @@ GEO_SPELLS.spells = {
     },
 
     ["Geo-Languor"] = {
-        description             = "Slows foes.",
+        description             = "Lowers magic evasion.",
         category                = "Geocolure",
         element                 = "Dark",
         magic_type              = "Geomancy",
         type                    = "aoe",
         GEO                     = 68,
         main_job_only           = true,
-        notes                   = "Luopan field effect. Slows attack speed for enemies within Luopan range. Duration: Luopan HP. GEO-only (main job).",
+        notes                   = "Luopan field effect. Lowers magic evasion for enemies within Luopan range. Duration: Luopan HP. GEO-only (main job).",
     },
 
     ["Geo-Malaise"] = {
@@ -334,14 +334,14 @@ GEO_SPELLS.spells = {
     },
 
     ["Geo-Vex"] = {
-        description             = "Lowers magic def.",
+        description             = "Lowers magic acc.",
         category                = "Geocolure",
         element                 = "Light",
         magic_type              = "Geomancy",
         type                    = "aoe",
         GEO                     = 74,
         main_job_only           = true,
-        notes                   = "Luopan field effect. Lowers magic defense for enemies within Luopan range. Duration: Luopan HP. GEO-only (main job).",
+        notes                   = "Luopan field effect. Lowers magic accuracy for enemies within Luopan range. Duration: Luopan HP. GEO-only (main job).",
     },
 
     ["Geo-Wilt"] = {

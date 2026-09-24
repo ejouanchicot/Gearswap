@@ -28,7 +28,7 @@ BST_SP.abilities = {
         volatile_enmity         = 80
     },
     ['Unleash'] = {
-        description             = "Charm 95% success, Sic/Ready no recast",
+        description             = "Charm acc up (max ~95%), Sic/Ready no recast",
         level                   = 96,
         recast                  = 3600,  -- 1hr (SP2)
         main_job_only           = true,

@@ -61,7 +61,7 @@ elemental_dot.spells = {
     },
 
     ["Frost"] = {
-        description             = "Lowers intelligence, drains HP.",
+        description             = "Lowers agility, drains HP.",
         category                = "Elemental",
         element                 = "Ice",
         magic_type              = "Black",

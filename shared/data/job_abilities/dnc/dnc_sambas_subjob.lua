@@ -14,36 +14,36 @@ local DNC_SAMBAS_SUBJOB = {}
 
 DNC_SAMBAS_SUBJOB.abilities = {
     ['Drain Samba'] = {
-        description             = "Party drains HP from target",
+        description             = "Attackers drain HP from target",
         level                   = 5,
         recast                  = 60,
         main_job_only           = false,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 300
     },
     ['Aspir Samba'] = {
-        description             = "Party drains MP from target",
+        description             = "Attackers drain MP from target",
         level                   = 25,
         recast                  = 60,
         main_job_only           = false,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 300
     },
     ['Drain Samba II'] = {
-        description             = "Party drains HP from target (enhanced)",
+        description             = "Attackers drain HP from target (enhanced)",
         level                   = 35,
         recast                  = 60,
         main_job_only           = false,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 300
     },
     ['Haste Samba'] = {
-        description             = "Party gains Haste from target",
+        description             = "Attackers gain Haste from target",
         level                   = 45,
         recast                  = 60,
         main_job_only           = false,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 300
     }
 }
 

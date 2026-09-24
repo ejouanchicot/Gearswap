@@ -24,8 +24,8 @@ DIABOLOS.spells = {
         magic_type              = "Summoning",
         type                    = "summon",
         SMN                     = 1,
-        mp_cost                 = 7,
-        notes                   = "Dark-based avatar. MP cost: 7. Perpetuation: 3 MP/3s. Specializes in gravity effects, darkness damage (Night Terror, Ruinous Omen), and drain-type abilities. Quest required. SMN (subjob OK).",
+        mp_cost                 = 15,
+        notes                   = "Dark-based avatar. MP cost: 15. Sleep and debuff Blood Pacts (Nightmare, Somnolence, Ultimate Terror) and darkness damage (Nether Blast, Night Terror). Obtained from the quest Waking Dreams. SMN (subjob OK).",
     },
 
 }
@@ -37,16 +37,16 @@ DIABOLOS.blood_pacts = {
     --============================================================
 
     ["Camisado"] = {
-        description             = "Deals physical dmg + darkness.",
+        description             = "Deals physical dmg.",
         category                = "Blood Pact: Rage",
         element                 = "Dark",
         avatar                  = "Diabolos",
         type                    = "physical",
         damage_type             = "Blunt",
         level                   = 1,
-        mp_cost                 = 9,
-        skillchain              = "Gravitation",
-        notes                   = "Physical blunt damage with darkness effect. MP: 9. Recast: Instant. Damage: Pet STR. Inflicts Darkness (-50 accuracy). Single target. SMN (subjob OK).",
+        mp_cost                 = 20,
+        skillchain              = "Compression",
+        notes                   = "Physical blunt damage. MP: 20. Stat: Pet STR + MND. Accuracy bonus varies with TP. SMN (subjob OK).",
     },
 
     ["Nether Blast"] = {
@@ -56,36 +56,36 @@ DIABOLOS.blood_pacts = {
         avatar                  = "Diabolos",
         type                    = "magical",
         level                   = 65,
-        mp_cost                 = 118,
-        notes                   = "Dark-based magical damage. MP: 118. Recast: Instant. Damage: Pet INT. Single target. SMN (subjob OK).",
+        mp_cost                 = 109,
+        notes                   = "Darkness breath damage (ranged). Level-based: (avatar level + 2) x 5, not affected by pet TP. MP: 109. SMN (main job only).",
     },
 
     ["Night Terror"] = {
-        description             = "Deals dark damage (AoE).",
+        description             = "Deals dark dmg.",
         category                = "Blood Pact: Rage",
         element                 = "Dark",
         avatar                  = "Diabolos",
         type                    = "magical",
         level                   = 80,
-        mp_cost                 = 178,
-        notes                   = "Dark-based magical AoE damage. MP: 178. Recast: Instant. Damage: Pet MAB + level. AoE range. SMN (subjob OK).",
+        mp_cost                 = 177,
+        notes                   = "Dark-based magical damage to one enemy. Stat: Pet INT. +40% damage to sleeping targets. MP: 177. SMN (main job only).",
     },
 
     ["Blindside"] = {
-        description             = "Deals physical dmg (ignores Utsusemi).",
+        description             = "Deals physical dmg.",
         category                = "Blood Pact: Rage",
         element                 = "Dark",
         avatar                  = "Diabolos",
         type                    = "physical",
-        damage_type             = "Piercing",
+        damage_type             = "Slashing",
         level                   = 99,
-        mp_cost                 = 150,
-        skillchain              = "Fragmentation",
-        notes                   = "Physical piercing damage that ignores shadows. MP: 150. Recast: Instant. Damage: Pet STR. Bypasses Utsusemi/Blink. Single target. SMN (subjob OK).",
+        mp_cost                 = 147,
+        skillchain              = "Gravitation/Transfixion",
+        notes                   = "Physical slashing damage. MP: 147. Stat: Pet STR + MND. Damage varies with TP. SMN (main job only).",
     },
 
     ["Ruinous Omen"] = {
-        description             = "Deals dark damage (AoE).",
+        description             = "Cuts enemy HP by a random % (AoE).",
         category                = "Blood Pact: Rage",
         element                 = "Dark",
         avatar                  = "Diabolos",
@@ -93,7 +93,7 @@ DIABOLOS.blood_pacts = {
         level                   = 1,
         mp_cost                 = 0,
         astral_flow             = true,
-        notes                   = "Ultimate dark-based magical AoE damage. MP: 0. Recast: N/A. Only available during Astral Flow. Extreme damage. Wide AoE range. SMN (subjob OK).",
+        notes                   = "Astral Flow ability. Reduces the HP of enemies in range by a random percentage (caps around 10% on NMs). Requires MP of at least caster's level x2. Uses all MP (Astral Flow). SMN (main job only).",
     },
 
     --============================================================
@@ -101,14 +101,14 @@ DIABOLOS.blood_pacts = {
     --============================================================
 
     ["Somnolence"] = {
-        description             = "Restores HP + MP + gravity.",
+        description             = "Deals dark dmg + weight.",
         category                = "Blood Pact: Ward",
         element                 = "Dark",
         avatar                  = "Diabolos",
-        type                    = "healing",
+        type                    = "debuff",
         level                   = 20,
-        mp_cost                 = 44,
-        notes                   = "HP and MP recovery over time + Gravity effect. MP: 44. Recast: Instant. Duration: 90s. Regen: HP +3/tick, MP +1/tick. Gravity: Movement speed down. Target: Single party member. SMN (subjob OK).",
+        mp_cost                 = 30,
+        notes                   = "Inflicts Weight on the target (about -26% movement speed, same as Gravity) and deals magical dark damage. MP: 30. SMN (subjob OK).",
     },
 
     ["Nightmare"] = {
@@ -118,52 +118,52 @@ DIABOLOS.blood_pacts = {
         avatar                  = "Diabolos",
         type                    = "debuff",
         level                   = 29,
-        mp_cost                 = 65,
-        notes                   = "Sleep status + Bio damage over time to enemies. MP: 65. Recast: Instant. Duration: 60s. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 42,
+        notes                   = "Sleep + Bio (2 HP/tick) on enemies in range. MP: 42. Duration: 90s (unresisted). Range: 10'. SMN (subjob OK).",
     },
 
     ["Ultimate Terror"] = {
-        description             = "Inflicts terror (AoE).",
+        description             = "Lowers attributes (AoE).",
         category                = "Blood Pact: Ward",
         element                 = "Dark",
         avatar                  = "Diabolos",
         type                    = "debuff",
         level                   = 37,
-        mp_cost                 = 82,
-        notes                   = "Terror status to enemies (prevents action). MP: 82. Recast: Instant. Duration: 15s. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 27,
+        notes                   = "Absorbs 0-7 random attributes from each enemy in range and adds them to Diabolos. MP: 27. Range: 10' around Diabolos. SMN (subjob OK).",
     },
 
     ["Noctoshield"] = {
-        description             = "Grants damage shield (AoE).",
+        description             = "Grants Phalanx (AoE).",
         category                = "Blood Pact: Ward",
         element                 = "Dark",
         avatar                  = "Diabolos",
         type                    = "buff",
         level                   = 49,
-        mp_cost                 = 110,
-        notes                   = "Phalanx-like effect (absorbs damage). MP: 110. Recast: Instant. Duration: 180s. Party AoE. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 92,
+        notes                   = "Phalanx effect (-13 damage taken) on party members in range; overwritten by the Phalanx spells. MP: 92. Duration: 180s. SMN (subjob OK).",
     },
 
     ["Dream Shroud"] = {
-        description             = "Boosts magic attack + accuracy (AoE).",
+        description             = "Boosts magic attack + magic defense (AoE).",
         category                = "Blood Pact: Ward",
         element                 = "Dark",
         avatar                  = "Diabolos",
         type                    = "buff",
         level                   = 56,
-        mp_cost                 = 125,
-        notes                   = "Magic Attack Bonus +30%, Magic Defense Bonus +30%. MP: 125. Recast: Instant. Duration: 90s. Party AoE. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 121,
+        notes                   = "Magic Attack Bonus and Magic Defense Bonus +1 to +13 depending on time of day (MAB +13 at 0:00, MDB +13 at 12:00). MP: 121. Duration: 180s. Party AoE. SMN (subjob OK).",
     },
 
     ["Pavor Nocturnus"] = {
-        description             = "Inflicts death or dispel (AoE).",
+        description             = "Inflicts death or dispel.",
         category                = "Blood Pact: Ward",
         element                 = "Dark",
         avatar                  = "Diabolos",
         type                    = "debuff",
         level                   = 98,
-        mp_cost                 = 218,
-        notes                   = "Instant death OR dispel to enemies (priority: Death on weak enemies). MP: 218. Recast: Instant. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 246,
+        notes                   = "Attempts to inflict Death on the target; if Death misses, Dispels instead. Death almost never lands unless the target is asleep; does not work on NMs. MP: 246. SMN (main job only).",
     },
 
 }

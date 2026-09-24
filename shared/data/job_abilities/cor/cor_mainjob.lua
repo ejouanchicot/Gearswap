@@ -28,16 +28,16 @@ COR_MAINJOB.abilities = {
         level                   = 75,  -- Merit ability
         recast                  = 300,  -- 5min
         main_job_only           = true,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 300
     },
     ['Fold'] = {
         description             = "Remove longest roll/bust",
         level                   = 75,  -- Merit ability
         recast                  = 300,  -- 5min
         main_job_only           = true,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 300
     },
     ['Triple Shot'] = {
         description             = "40% triple shot",

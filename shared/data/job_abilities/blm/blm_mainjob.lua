@@ -48,7 +48,7 @@ BLM_MAINJOB.abilities = {
     -- Enmity Douse (Lv87)
     -------------------------------------------
     ['Enmity Douse'] = {
-        description             = 'Reduces enmity to 0',
+        description             = 'Reset target\'s enmity toward you',
         level                   = 87,
         recast                  = 600,   -- 10min (reducible with Job Points)
         main_job_only           = true,

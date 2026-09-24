@@ -14,20 +14,20 @@ local DNC_SAMBAS_MAINJOB = {}
 
 DNC_SAMBAS_MAINJOB.abilities = {
     ['Aspir Samba II'] = {
-        description             = "Party drains MP from target (enhanced)",
+        description             = "Attackers drain MP from target (enhanced)",
         level                   = 60,
         recast                  = 60,
         main_job_only           = true,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 300
     },
     ['Drain Samba III'] = {
-        description             = "Party drains HP from target (superior)",
+        description             = "Attackers drain HP from target (superior)",
         level                   = 65,
         recast                  = 60,
         main_job_only           = true,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 300
     }
 }
 

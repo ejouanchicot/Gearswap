@@ -18,8 +18,8 @@ DNC_STEPS_MAINJOB.abilities = {
         level                   = 83,
         recast                  = 5,
         main_job_only           = true,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 0
     }
 }
 

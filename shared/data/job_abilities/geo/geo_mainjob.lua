@@ -28,10 +28,10 @@ GEO_MAINJOB.abilities = {
     ['Full Circle'] = {
         description             = 'Dismiss luopan, recover MP',
         level                   = 5,
-        recast                  = 15,
+        recast                  = 10,
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 320
     },
     ['Lasting Emanation'] = {
         description             = 'Luopan HP consumption -7/tick',
@@ -39,7 +39,7 @@ GEO_MAINJOB.abilities = {
         recast                  = 300,  -- 5min
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 320
     },
     ['Ecliptic Attrition'] = {
         description             = 'Luopan +25%, HP consumption +6/tick',
@@ -47,7 +47,7 @@ GEO_MAINJOB.abilities = {
         recast                  = 300,  -- 5min
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 320
     },
     ['Blaze of Glory'] = {
         description             = 'Next luopan +50%, -50% HP',
@@ -55,7 +55,7 @@ GEO_MAINJOB.abilities = {
         recast                  = 600,  -- 10min
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 320
     },
     ['Dematerialize'] = {
         description             = 'Luopan damage immunity',
@@ -63,7 +63,7 @@ GEO_MAINJOB.abilities = {
         recast                  = 600,  -- 10min
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 320
     },
     ['Entrust'] = {
         description             = 'Next Indi targets party member',
@@ -95,14 +95,14 @@ GEO_MAINJOB.abilities = {
         recast                  = 300,  -- 5min
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 320
     },
     ['Concentric Pulse'] = {
         description             = 'Dismiss luopan, AoE damage',
         level                   = 90,
         recast                  = 300,  -- 5min
         main_job_only           = true,
-        cumulative_enmity       = 0,
+        cumulative_enmity       = 1,
         volatile_enmity         = 80
     }
 }

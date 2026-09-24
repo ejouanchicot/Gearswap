@@ -27,16 +27,16 @@ PLD_MAINJOB.abilities = {
         level                   = 62,
         recast                  = 180,  -- 3min
         main_job_only           = true,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 320,
+        volatile_enmity         = 320
     },
     ['Majesty'] = {
         description             = 'Cure/Protect AoE, +potency/-recast',
         level                   = 70,
-        recast                  = 300,  -- 5min
+        recast                  = 60,  -- 1min
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 340
     },
     ['Fealty'] = {
         description             = 'Enfeebling resist, blocks Charm',
@@ -44,7 +44,7 @@ PLD_MAINJOB.abilities = {
         recast                  = 600,  -- 10min
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 320
     },
     ['Chivalry'] = {
         description             = 'TP >> MP',
@@ -52,12 +52,12 @@ PLD_MAINJOB.abilities = {
         recast                  = 600,  -- 10min
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 320
     },
     ['Divine Emblem'] = {
         description             = 'Next divine spell MACC+, enmity+',
         level                   = 78,
-        recast                  = 300,  -- 5min
+        recast                  = 180,  -- 3min
         main_job_only           = true,
         cumulative_enmity       = 0,
         volatile_enmity         = 320
@@ -65,18 +65,18 @@ PLD_MAINJOB.abilities = {
     ['Sepulcher'] = {
         description             = 'Undead: ACC/EVA/MACC/MEVA/TP down',
         level                   = 87,
-        recast                  = 180,  -- 3min
+        recast                  = 300,  -- 5min
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 320
     },
     ['Palisade'] = {
         description             = 'Shield block +30%, no enmity loss',
         level                   = 95,
         recast                  = 300,  -- 5min
         main_job_only           = true,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 900,
+        volatile_enmity         = 1800
     }
 }
 

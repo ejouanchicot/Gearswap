@@ -20,20 +20,20 @@ local PLD_SUBJOB = {}
 
 PLD_SUBJOB.abilities = {
     ['Holy Circle'] = {
-        description             = 'ATK/DEF+ vs Undead (party AoE)',
+        description             = 'Party AoE: dmg dealt+/taken- vs Undead',
         level                   = 5,
         recast                  = 300,  -- 5min
         main_job_only           = false,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 5
     },
     ['Shield Bash'] = {
         description             = 'Stun attack',
         level                   = 15,
-        recast                  = 300,  -- 5min
+        recast                  = 60,  -- 1min
         main_job_only           = false,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 450,
+        volatile_enmity         = 900
     },
     ['Sentinel'] = {
         description             = 'Physical damage -90>>-50%, +enmity',
@@ -46,10 +46,10 @@ PLD_SUBJOB.abilities = {
     ['Cover'] = {
         description             = 'Redirect ally damage to self',
         level                   = 35,
-        recast                  = 15,
+        recast                  = 180,
         main_job_only           = false,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 1
     }
 }
 

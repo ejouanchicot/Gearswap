@@ -36,7 +36,7 @@ ENFEEBLING_CONTROL.spells = {
         GEO                     = 35,
         RDM                     = 25,
         SCH                     = 30,
-        notes                   = "Prevents target actions. Duration: Enfeebling Magic skill. BLM/DRK/GEO/RDM/SCH.",
+        notes                   = "Prevents target actions. Duration: 60s (half on partial resist). BLM/DRK/GEO/RDM/SCH.",
     },
 
     ["Sleep II"] = {
@@ -52,7 +52,7 @@ ENFEEBLING_CONTROL.spells = {
         GEO                     = 70,
         RDM                     = 46,
         SCH                     = 65,
-        notes                   = "Enhanced sleep. Prevents target actions. Duration: Enfeebling Magic skill. BLM/DRK/GEO/RDM/SCH.",
+        notes                   = "Enhanced sleep. Prevents target actions. Duration: 90s (half on partial resist). BLM/DRK/GEO/RDM/SCH.",
     },
 
     ["Sleepga"] = {
@@ -64,7 +64,7 @@ ENFEEBLING_CONTROL.spells = {
         type                    = "aoe",
         enfeebling_type         = "duration",
         BLM                     = 31,
-        notes                   = "AOE sleep. Prevents targets actions. Duration: Enfeebling Magic skill. BLM-only.",
+        notes                   = "AOE sleep. Prevents targets actions. Duration: 60s (half on partial resist). BLM-only.",
     },
 
     ["Sleepga II"] = {
@@ -76,7 +76,7 @@ ENFEEBLING_CONTROL.spells = {
         type                    = "aoe",
         enfeebling_type         = "duration",
         BLM                     = 56,
-        notes                   = "Enhanced AOE sleep. Prevents targets actions. Duration: Enfeebling Magic skill. BLM-only.",
+        notes                   = "Enhanced AOE sleep. Prevents targets actions. Duration: 90s (half on partial resist). BLM-only.",
     },
 
     ---========================================================================
@@ -95,7 +95,7 @@ ENFEEBLING_CONTROL.spells = {
         DRK                     = 95,
         RDM                     = 87,
         SCH                     = 90,
-        notes                   = "Petrification. Prevents target actions. Duration: Enfeebling Magic skill. BLM/DRK/RDM/SCH.",
+        notes                   = "Petrification. Prevents target actions. Duration: 30s; ends when the target takes damage (except DoT). BLM/DRK/RDM/SCH.",
     },
 
     ["Breakga"] = {
@@ -106,7 +106,7 @@ ENFEEBLING_CONTROL.spells = {
         type                    = "aoe",
         enfeebling_type         = "duration",
         BLM                     = 95,
-        notes                   = "AOE petrification. Prevents targets actions. Duration: Enfeebling Magic skill. BLM-only.",
+        notes                   = "AOE petrification. Prevents targets actions. Duration: 30s; ends when a target takes damage (except DoT). BLM-only.",
     },
 
     ---========================================================================
@@ -124,7 +124,7 @@ ENFEEBLING_CONTROL.spells = {
         BLM                     = 7,
         DRK                     = 20,
         RDM                     = 11,
-        notes                   = "Prevents movement. Duration: Enfeebling Magic skill. BLM/DRK/RDM.",
+        notes                   = "Prevents movement. Duration: up to 60s; direct damage can break it. BLM/DRK/RDM.",
     },
 
     ["Silence"] = {
@@ -136,7 +136,7 @@ ENFEEBLING_CONTROL.spells = {
         enfeebling_type         = "duration",
         RDM                     = 18,
         WHM                     = 15,
-        notes                   = "Prevents magic casting. Duration: Enfeebling Magic skill. RDM/WHM.",
+        notes                   = "Prevents magic casting. Duration: 120s. RDM/WHM.",
     },
 
     ["Dispel"] = {

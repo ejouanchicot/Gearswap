@@ -184,7 +184,7 @@ ENHANCING_UTILITY.spells = {
     },
 
     ["Reprisal"] = {
-        description             = "Reflects damage back to attacker when you parry.",
+        description             = "Raises shield block rate, reflects part of blocked damage.",
         skill                   = "Enhancing Magic",
         spell_family            = nil,
         target_type             = "single",
@@ -468,7 +468,7 @@ ENHANCING_UTILITY.spells = {
     },
 
     ["Retrace"] = {
-        description             = "Returns you to last visited location.",
+        description             = "Sends party member to their allied nation (past).",
         skill                   = "Enhancing Magic",
         spell_family            = nil,
         target_type             = "single",
@@ -566,7 +566,7 @@ ENHANCING_UTILITY.spells = {
     },
 
     ["Warp II"] = {
-        description             = "Leader to HP, party to yours",
+        description             = "Sends party member to their Home Point",
         skill                   = "Enhancing Magic",
         spell_family            = nil,
         target_type             = "single",

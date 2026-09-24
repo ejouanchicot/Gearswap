@@ -25,104 +25,92 @@ greataxe_ws.weaponskills = {
     ['Shield Break'] = {
         description         = 'Lowers target evasion.',
         type                = 'Physical',
-        mods                = {STR = 100},
+        mods                = {STR = 60, VIT = 60},
         hits                = 1,
         element             = nil,
         skillchain          = {'Impaction'},
         ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 5,
-        jobs                = {
-            WAR                 = 1, DRK = 1, RUN = 1
-        },
+        jobs                = {WAR = 1, DRK = 3, RUN = 3},
         special_notes       = 'Basic WS. Lowers target evasion.'
     },
 
     ['Iron Tempest'] = {
-        description         = 'Damage varies with TP.',
+        description         = 'Single hit. Attack varies with TP.',
         type                = 'Physical',
-        mods                = {STR = 100},
+        mods                = {STR = 60},
         hits                = 1,
         element             = nil,
         skillchain          = {'Scission'},
-        ftp                 = {[1000] = 1.0, [2000] = 1.5, [3000] = 2.0},
+        ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 40,
-        jobs                = {
-            WAR                 = 1, DRK = 1, RUN = 1
-        },
-        special_notes       = 'Basic WS. Damage scales with TP.'
+        jobs                = {WAR = 13, DRK = 14, RUN = 14},
+        special_notes       = 'Attack bonus varies with TP: +0%@1000TP / +100%@2000TP / +250%@3000TP (unverified).'
     },
 
     ['Sturmwind'] = {
-        description         = 'Two hits. Damage varies with TP.',
+        description         = 'Two hits. Attack varies with TP.',
         type                = 'Physical',
-        mods                = {STR = 100},
+        mods                = {STR = 60},
         hits                = 2,
         element             = nil,
         skillchain          = {'Reverberation', 'Scission'},
-        ftp                 = {[1000] = 1.0, [2000] = 1.25, [3000] = 1.5},
+        ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 70,
-        jobs                = {
-            WAR                 = 1, DRK = 1, RUN = 1
-        },
-        special_notes       = 'WAR/DRK/RUN only. Twofold attack.'
+        jobs                = {WAR = 23, DRK = 24, RUN = 24},
+        special_notes       = 'WAR/DRK/RUN main or sub job only. Twofold attack. Attack bonus varies with TP: +0%@1000TP / +100%@2000TP / +250%@3000TP (unverified).'
     },
 
     ['Armor Break'] = {
         description         = 'Lowers target defense.',
         type                = 'Physical',
-        mods                = {STR = 100},
+        mods                = {STR = 60, VIT = 60},
         hits                = 1,
         element             = nil,
         skillchain          = {'Impaction'},
         ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 100,
-        jobs                = {
-            WAR                 = 1, DRK = 1, RUN = 1
-        },
+        jobs                = {WAR = 33, DRK = 34, RUN = 34},
         special_notes       = 'Lowers target defense. Effect duration varies with TP.'
     },
 
     ['Keen Edge'] = {
-        description         = 'Damage varies with TP.',
+        description         = 'Single hit. Crit rate varies with TP.',
         type                = 'Physical',
         mods                = {STR = 100},
         hits                = 1,
         element             = nil,
         skillchain          = {'Compression'},
-        ftp                 = {[1000] = 1.0, [2000] = 1.5, [3000] = 2.0},
+        ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 150,
-        jobs                = {
-            WAR                 = 1, DRK = 1, RUN = 1
-        },
-        special_notes       = 'Basic WS. Damage scales with TP.'
+        jobs                = {WAR = 49, DRK = 51, RUN = 51},
+        special_notes       = 'Critical hit rate varies with TP (exact values unknown).'
     },
 
     ['Weapon Break'] = {
         description         = 'Lowers target attack.',
         type                = 'Physical',
-        mods                = {STR = 100},
+        mods                = {STR = 60, VIT = 60},
         hits                = 1,
         element             = nil,
         skillchain          = {'Impaction'},
         ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 175,
-        jobs                = {
-            WAR                 = 1, DRK = 1, RUN = 1
-        },
+        jobs                = {WAR = 55, DRK = 56, RUN = 56},
         special_notes       = 'Lowers target attack. Effect duration varies with TP.'
     },
 
     ['Raging Rush'] = {
-        description         = 'Three hits. Damage varies with TP.',
+        description         = 'Three hits. Crit rate varies with TP.',
         type                = 'Physical',
-        mods                = {STR = 100},
+        mods                = {STR = 50},
         hits                = 3,
         element             = nil,
         skillchain          = {'Induration', 'Reverberation'},
-        ftp                 = {[1000] = 1.0, [2000] = 1.3, [3000] = 1.6},
+        ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 200,
-        jobs                = {WAR = 1},
-        special_notes       = 'WAR only. Threefold attack.'
+        jobs                = {WAR = 60},
+        special_notes       = 'WAR main job only. Critical hit rate: +15%@1000TP / +30%@2000TP / +50%@3000TP (2000/3000 values unverified).'
     },
 
     ---========================================================================
@@ -171,7 +159,7 @@ greataxe_ws.weaponskills = {
         jobs                = {
             WAR                 = 80, DRK = 86, RUN = 85
         },
-        special_notes       = 'Area of effect. Radius: 4 yalms at 1000-2349 TP, 5 yalms at 2350-3000 TP. WAR/DRK/RUN main or sub job only.'
+        special_notes       = 'Area of effect. Radius: 4 yalms at 1000-2000 TP, scales to 5 yalms at 2334 TP. WAR/DRK/RUN main job only.'
     },
 
     ---========================================================================
@@ -190,7 +178,7 @@ greataxe_ws.weaponskills = {
         jobs                = {
             WAR                 = 90, DRK = 95, RUN = 94
         },
-        special_notes       = 'Requires "Martial Mastery" quest. Merit enhancement: +3% VIT per rank (max 85% VIT at 5/5). Compression skillchain requires Aeonic Aftermath (Chango). Main job only.'
+        special_notes       = 'Requires "Martial Mastery" quest. Merit enhancement: +3% VIT per rank (max 85% VIT at 5/5). Light is only available under Aeonic Aftermath. WAR/DRK/RUN main job only.'
     },
 
     ---========================================================================
@@ -198,16 +186,15 @@ greataxe_ws.weaponskills = {
     ---========================================================================
 
     ['Metatron Torment'] = {
-        description         = 'Lowers defense. Wind damage.',
-        type                = 'Hybrid',
+        description         = 'Lowers defense. Damage taken aftermath.',
+        type                = 'Physical',
         mods                = {STR = 80},
         hits                = 1,
-        element             = 'Wind',
         skillchain          = {'Light', 'Fusion'},
         ftp                 = {[1000] = 2.75, [2000] = 2.75, [3000] = 2.75},
         skill_required      = 1,
         jobs                = {WAR = 75},
-        special_notes       = 'Requires Bravura or Abaddon Killer. Wind-based hybrid WS. Lowers target defense -18.75% for 2 minutes. Aftermath: -20% Damage Taken (duration: 20s/40s/60s at 1000/2000/3000 TP).'
+        special_notes       = 'Abaddon Killer/Bravura: WAR level 75. Barbarus Bhuj: WAR level 85. Single hit. Defense Down -18.75% for 2 minutes (wind-based additional effect). Aftermath: -20% Damage Taken (duration: 20s/40s/60s at 1000/2000/3000 TP). Bravura: +25% damage@90-95, +40% damage@99/99 II. Only Abaddon Killer/Bravura grant Relic Aftermath.'
     },
 
     ---========================================================================
@@ -224,7 +211,7 @@ greataxe_ws.weaponskills = {
         ftp                 = {[1000] = 1.0, [2000] = 3.0, [3000] = 5.0},
         skill_required      = 1,
         jobs                = {WAR = 75},
-        special_notes       = 'Requires Conqueror (Mythic). WAR main job only. Requires "Unlocking a Myth (Warrior)" quest. Equipment modifier: 15-30% damage bonus with Conqueror variants.'
+        special_notes       = 'Requires "Unlocking a Myth (Warrior)" quest. WAR main job only. Conqueror: Mythic Aftermath, +15% damage@90-95, +30% damage@99/99 II.'
     },
 
     ---========================================================================
@@ -241,7 +228,7 @@ greataxe_ws.weaponskills = {
         ftp                 = {[1000] = 2.0, [2000] = 2.0, [3000] = 2.0},
         skill_required      = 1,
         jobs                = {WAR = 85},
-        special_notes       = 'Requires Ukonvasara (Empyrean). WAR main job only. Critical hit rate: +20%/+35%/+65% at 1000/2000/3000 TP. Inflicts 15% Slow (overwrites Hojo: Ni, overwritten by Slow II). Requires "Kupofried\'s Weapon Skill Moogle Magic" quest.'
+        special_notes       = 'Ukonvasara/Maschu/Shamash: WAR level 85. WAR main job only. Critical hit rate: +20%/+35%/+65% at 1000/2000/3000 TP (3000 TP value unverified). Inflicts 15% Slow (overwrites Hojo: Ni, overwritten by Slow II). Requires "Kupofried\'s Weapon Skill Moogle Magic" quest. Only Ukonvasara grants Empyrean Aftermath.'
     },
 
     ---========================================================================

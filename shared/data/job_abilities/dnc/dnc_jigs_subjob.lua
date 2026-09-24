@@ -18,8 +18,8 @@ DNC_JIGS_SUBJOB.abilities = {
         level                   = 25,
         recast                  = 30,
         main_job_only           = false,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 300
     }
 }
 

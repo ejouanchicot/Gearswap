@@ -35,7 +35,7 @@ h2h_ws.weaponskills = {
         element             = nil,
         skillchain          = {'Impaction'},
         ftp                 = {[1000] = 1.0, [2000] = 3.75, [3000] = 5.5},
-        skill_required      = 1,
+        skill_required      = 5,
         jobs                = {MNK = 1, PUP = 1, WAR = 2, THF = 2, NIN = 2, DNC = 2},
         special_notes       = 'fTP-replicating weapon skill. TP bonus increased when 2000+ TP.'
     },
@@ -102,7 +102,7 @@ h2h_ws.weaponskills = {
         ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
         skill_required      = 150,
         jobs                = {MNK = 49, PUP = 51, WAR = 53, DNC = 53, THF = 56, NIN = 56},
-        special_notes       = 'fTP-replicating weapon skill. AoE radius: 4 yalms@1000-2349TP / 5 yalms@2350+TP.'
+        special_notes       = 'fTP-replicating weapon skill. AoE radius: 4 yalms@1000-2333TP / 5 yalms@2334+TP.'
     },
 
     ---========================================================================
@@ -195,7 +195,7 @@ h2h_ws.weaponskills = {
         element             = nil,
         skillchain          = {'Fusion', 'Reverberation'},
         ftp                 = {[1000] = 1.5, [2000] = 1.5, [3000] = 1.5},
-        skill_required      = 290,
+        skill_required      = 357,
         jobs                = {MNK = 90, PUP = 93},
         special_notes       = "Requires 'Martial Mastery' quest. fTP-replicating weapon skill. Plague: -50 TP/tick for 5-8 ticks. Merits: 73% DEX@1/5, +3% per merit, 85% DEX@5/5."
     },
@@ -223,17 +223,17 @@ h2h_ws.weaponskills = {
         hits                = 4,
         element             = nil,
         skillchain          = {'Light', 'Fragmentation'},
-        ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
+        ftp                 = {[1000] = 1.5, [2000] = 1.5, [3000] = 1.5},
         skill_required      = 290,
         jobs                = {MNK = 85, PUP = 85},
         special_notes       = "Requires 'Kupofried's Weapon Skill Moogle Magic' quest. fTP-replicating weapon skill. Critical hit rate: +10%@1000TP / +25%@2000TP / +45%@3000TP. Verethragna/Revenant Fists/Dumuzis required."
     },
 
     ['Ascetic\'s Fury'] = {
-        description         = 'Single hit. Crit rate varies with TP.',
+        description         = 'Two hits. Crit rate varies with TP.',
         type                = 'Physical',
         mods                = {STR = 50, VIT = 50},
-        hits                = 1,
+        hits                = 2,
         element             = nil,
         skillchain          = {'Fusion', 'Transfixion'},
         ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
@@ -262,11 +262,11 @@ h2h_ws.weaponskills = {
     ['Maru Kala'] = {
         description         = 'Two hits. Damage varies with TP.',
         type                = 'Physical',
-        mods                = {STR = 60, DEX = 60},
+        mods                = {DEX = 41.75, STR = 41.75},
         hits                = 2,
         element             = nil,
         skillchain          = {'Detonation', 'Compression', 'Distortion'},
-        ftp                 = {[1000] = 3.092, [2000] = 7.516, [3000] = 11.94},
+        ftp                 = {[1000] = 3.128, [2000] = 7.273, [3000] = 11.414},
         skill_required      = 1,
         jobs                = {MNK = 99, PUP = 99},
         special_notes       = 'Requires Varga Purnikawa (Level 119/119 II/119 III). Prime weapon skill with Prime Aftermath. Available in Sortie content.'

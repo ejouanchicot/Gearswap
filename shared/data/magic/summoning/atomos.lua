@@ -24,7 +24,7 @@ ATOMOS.spells = {
         magic_type              = "Summoning",
         type                    = "summon",
         SMN                     = 75,
-        mp_cost                 = 7,
+        mp_cost                 = 50,
         restriction             = "main_job_only",
         notes                   = "Dark-based special avatar. SMN main job only. Provides support Blood Pacts (Chronoshift, Deconstruction).",
     },
@@ -38,25 +38,25 @@ ATOMOS.blood_pacts = {
     --============================================================
 
     ["Chronoshift"] = {
-        description             = "Party Haste; enemy Slow.",
+        description             = "Gives party the buff taken by Deconstruction.",
         category                = "Blood Pact: Ward",
         element                 = "Dark",
         avatar                  = "Atomos",
         type                    = "buff",
         level                   = 75,
         mp_cost                 = 0,
-        notes                   = "Grants Haste to the party and inflicts Slow on nearby enemies. SMN main job only.",
+        notes                   = "Used automatically right after Deconstruction. Grants the party the beneficial effect (if any) absorbed by Deconstruction. Range: 14 yalms around Atomos. MP: 0. SMN (main job only).",
     },
 
     ["Deconstruction"] = {
-        description             = "Lowers defense (AoE).",
+        description             = "Absorbs a buff from an enemy.",
         category                = "Blood Pact: Ward",
         element                 = "Dark",
         avatar                  = "Atomos",
         type                    = "debuff",
         level                   = 75,
         mp_cost                 = 0,
-        notes                   = "AoE Defense Down on enemies. SMN main job only.",
+        notes                   = "Used automatically after summoning Atomos on an enemy. Absorbs a beneficial status effect from the target (not all buffs can be absorbed). MP: 0. SMN (main job only).",
     },
 
 }

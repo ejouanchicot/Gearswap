@@ -27,7 +27,7 @@ divine_enlight.spells = {
     },
 
     ["Enlight II"] = {
-        description             = "Adds light dmg to attacks; Acc/Atk+.",
+        description             = "Adds light dmg to attacks; Acc+.",
         category                = "Divine",
         element                 = "Light",
         magic_type              = "White",
@@ -36,7 +36,7 @@ divine_enlight.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         PLD                     = "JP",
-        notes                   = "Enhanced weapon enchantment. Adds light damage to attacks; boosts accuracy and attack. Requires 100 JP Gift (PLD). Scales with Divine Magic skill.",
+        notes                   = "Enhanced weapon enchantment. Adds light damage to attacks; boosts accuracy. Requires 100 JP Gift (PLD). Scales with Divine Magic skill.",
     },
 }
 

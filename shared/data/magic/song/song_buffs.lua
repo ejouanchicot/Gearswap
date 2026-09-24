@@ -25,7 +25,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         tier                    = "I",
         BRD                     = 3,
-        notes                   = "Attack +10. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "Attack and Ranged Attack +32 (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Valor Minuet II"] = {
         description             = "Boosts attack.",
@@ -35,7 +35,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         tier                    = "II",
         BRD                     = 23,
-        notes                   = "Attack +16. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "Attack and Ranged Attack +64 (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Valor Minuet III"] = {
         description             = "Boosts attack.",
@@ -45,7 +45,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         tier                    = "III",
         BRD                     = 43,
-        notes                   = "Attack +22. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "Attack and Ranged Attack +96 (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Valor Minuet IV"] = {
         description             = "Boosts attack.",
@@ -56,7 +56,7 @@ SONG_BUFFS.spells = {
         tier                    = "IV",
         BRD                     = 63,
         main_job_only           = true,
-        notes                   = "Attack +28. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (main job).",
+        notes                   = "Attack and Ranged Attack +112 (base). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
     ["Valor Minuet V"] = {
         description             = "Boosts attack.",
@@ -67,7 +67,7 @@ SONG_BUFFS.spells = {
         tier                    = "V",
         BRD                     = 87,
         main_job_only           = true,
-        notes                   = "Attack +33. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (main job).",
+        notes                   = "Attack and Ranged Attack +124 (base). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     --============================================================
@@ -82,7 +82,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         tier                    = "I",
         BRD                     = 5,
-        notes                   = "HP +4/tick (every 3s). Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only.",
+        notes                   = "HP +2/tick (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Army's Paeon II"] = {
         description             = "Restores HP.",
@@ -92,7 +92,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         tier                    = "II",
         BRD                     = 15,
-        notes                   = "HP +6/tick (every 3s). Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only.",
+        notes                   = "HP +3/tick (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Army's Paeon III"] = {
         description             = "Restores HP.",
@@ -102,7 +102,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         tier                    = "III",
         BRD                     = 35,
-        notes                   = "HP +8/tick (every 3s). Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only.",
+        notes                   = "HP +4/tick (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Army's Paeon IV"] = {
         description             = "Restores HP.",
@@ -112,7 +112,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         tier                    = "IV",
         BRD                     = 45,
-        notes                   = "HP +10/tick (every 3s). Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only.",
+        notes                   = "HP +5/tick (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Army's Paeon V"] = {
         description             = "Restores HP.",
@@ -123,7 +123,7 @@ SONG_BUFFS.spells = {
         tier                    = "V",
         BRD                     = 65,
         main_job_only           = true,
-        notes                   = "HP +12/tick (every 3s). Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "HP +7/tick (base). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
     ["Army's Paeon VI"] = {
         description             = "Restores HP.",
@@ -134,7 +134,7 @@ SONG_BUFFS.spells = {
         tier                    = "VI",
         BRD                     = 78,
         main_job_only           = true,
-        notes                   = "HP +14/tick (every 3s). Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "HP +8/tick (base). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     --============================================================
@@ -149,7 +149,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         tier                    = "I",
         BRD                     = 29,
-        notes                   = "Haste +10% (base). Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only.",
+        notes                   = "Haste +10.55% (base, 108/1024). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Victory March"] = {
         description             = "Boosts attack speed.",
@@ -160,10 +160,10 @@ SONG_BUFFS.spells = {
         tier                    = "II",
         BRD                     = 60,
         main_job_only           = true,
-        notes                   = "Haste +15% (base). Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Haste +15.92% (base, 163/1024). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
     ["Honor March"] = {
-        description             = "Boosts attack speed.",
+        description             = "Boosts attack speed, attack and accuracy.",
         category                = "March",
         element                 = "Light",
         magic_type              = "Song",
@@ -172,7 +172,7 @@ SONG_BUFFS.spells = {
         BRD                     = 99,
         main_job_only           = true,
         master_level            = true,
-        notes                   = "Haste +18% (base). Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. Master Level ability. BRD-only (main job).",
+        notes                   = "Haste +12.3%, Attack and Ranged Attack +168, Accuracy and Ranged Accuracy +42 (base, Marsyas only). Requires Marsyas equipped. Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     --============================================================
@@ -187,7 +187,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         tier                    = "I",
         BRD                     = 11,
-        notes                   = "Accuracy +10. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "Accuracy +45 (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Blade Madrigal"] = {
         description             = "Boosts melee accuracy.",
@@ -198,7 +198,7 @@ SONG_BUFFS.spells = {
         tier                    = "II",
         BRD                     = 51,
         subjob_master_only      = true,
-        notes                   = "Accuracy +16. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (subjob master OK).",
+        notes                   = "Accuracy +60 (base). Duration: 2 min base (song gear extends). BRD-only (subjob master OK).",
     },
 
     --============================================================
@@ -213,7 +213,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         tier                    = "I",
         BRD                     = 25,
-        notes                   = "MP +3/tick (every 3s). Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "MP +1/tick (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Mage's Ballad II"] = {
         description             = "Restores MP.",
@@ -224,7 +224,7 @@ SONG_BUFFS.spells = {
         tier                    = "II",
         BRD                     = 55,
         subjob_master_only      = true,
-        notes                   = "MP +5/tick (every 3s). Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (subjob master OK).",
+        notes                   = "MP +2/tick (base). Duration: 2 min base (song gear extends). BRD-only (subjob master OK).",
     },
     ["Mage's Ballad III"] = {
         description             = "Restores MP.",
@@ -235,7 +235,7 @@ SONG_BUFFS.spells = {
         tier                    = "III",
         BRD                     = 85,
         main_job_only           = true,
-        notes                   = "MP +7/tick (every 3s). Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (main job).",
+        notes                   = "MP +3/tick (base). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     --============================================================
@@ -250,7 +250,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         tier                    = "I",
         BRD                     = 1,
-        notes                   = "Defense +20. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "Defense +30 (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Knight's Minne II"] = {
         description             = "Boosts defense.",
@@ -260,7 +260,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         tier                    = "II",
         BRD                     = 21,
-        notes                   = "Defense +32. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "Defense +69 (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Knight's Minne III"] = {
         description             = "Boosts defense.",
@@ -270,7 +270,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         tier                    = "III",
         BRD                     = 41,
-        notes                   = "Defense +44. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "Defense +108 (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Knight's Minne IV"] = {
         description             = "Boosts defense.",
@@ -281,7 +281,7 @@ SONG_BUFFS.spells = {
         tier                    = "IV",
         BRD                     = 61,
         main_job_only           = true,
-        notes                   = "Defense +56. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (main job).",
+        notes                   = "Defense +164 (base). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
     ["Knight's Minne V"] = {
         description             = "Boosts defense.",
@@ -292,7 +292,7 @@ SONG_BUFFS.spells = {
         tier                    = "V",
         BRD                     = 80,
         main_job_only           = true,
-        notes                   = "Defense +68. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (main job).",
+        notes                   = "Defense +204 (base). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     --============================================================
@@ -304,21 +304,21 @@ SONG_BUFFS.spells = {
         category                = "Etude",
         element                 = "Light",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         stat                    = "CHR",
         BRD                     = 22,
-        notes                   = "CHR +4 (base). Single target. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "CHR +9 (base). Party AoE. Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Bewitching Etude"] = {
         description             = "Boosts charisma.",
         category                = "Etude",
         element                 = "Light",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         stat                    = "CHR",
         BRD                     = 62,
         main_job_only           = true,
-        notes                   = "CHR +8 (base). Single target. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (main job).",
+        notes                   = "CHR +15 (base). Party AoE. Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Spirited Etude"] = {
@@ -326,21 +326,21 @@ SONG_BUFFS.spells = {
         category                = "Etude",
         element                 = "Water",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         stat                    = "MND",
         BRD                     = 24,
-        notes                   = "MND +4 (base). Single target. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "MND +9 (base). Party AoE. Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Logical Etude"] = {
         description             = "Boosts mind.",
         category                = "Etude",
         element                 = "Water",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         stat                    = "MND",
         BRD                     = 64,
         main_job_only           = true,
-        notes                   = "MND +8 (base). Single target. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (main job).",
+        notes                   = "MND +15 (base). Party AoE. Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Learned Etude"] = {
@@ -348,21 +348,21 @@ SONG_BUFFS.spells = {
         category                = "Etude",
         element                 = "Ice",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         stat                    = "INT",
         BRD                     = 26,
-        notes                   = "INT +4 (base). Single target. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "INT +9 (base). Party AoE. Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Sage Etude"] = {
         description             = "Boosts intelligence.",
         category                = "Etude",
         element                 = "Ice",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         stat                    = "INT",
         BRD                     = 66,
         main_job_only           = true,
-        notes                   = "INT +8 (base). Single target. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (main job).",
+        notes                   = "INT +15 (base). Party AoE. Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Quick Etude"] = {
@@ -370,21 +370,21 @@ SONG_BUFFS.spells = {
         category                = "Etude",
         element                 = "Wind",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         stat                    = "AGI",
         BRD                     = 28,
-        notes                   = "AGI +4 (base). Single target. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "AGI +9 (base). Party AoE. Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Swift Etude"] = {
         description             = "Boosts agility.",
         category                = "Etude",
         element                 = "Wind",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         stat                    = "AGI",
         BRD                     = 68,
         main_job_only           = true,
-        notes                   = "AGI +8 (base). Single target. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (main job).",
+        notes                   = "AGI +15 (base). Party AoE. Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Vivacious Etude"] = {
@@ -392,21 +392,21 @@ SONG_BUFFS.spells = {
         category                = "Etude",
         element                 = "Earth",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         stat                    = "VIT",
         BRD                     = 30,
-        notes                   = "VIT +4 (base). Single target. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "VIT +9 (base). Party AoE. Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Vital Etude"] = {
         description             = "Boosts vitality.",
         category                = "Etude",
         element                 = "Earth",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         stat                    = "VIT",
         BRD                     = 70,
         main_job_only           = true,
-        notes                   = "VIT +8 (base). Single target. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (main job).",
+        notes                   = "VIT +15 (base). Party AoE. Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Dextrous Etude"] = {
@@ -414,21 +414,21 @@ SONG_BUFFS.spells = {
         category                = "Etude",
         element                 = "Lightning",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         stat                    = "DEX",
         BRD                     = 32,
-        notes                   = "DEX +4 (base). Single target. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "DEX +9 (base). Party AoE. Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Uncanny Etude"] = {
         description             = "Boosts dexterity.",
         category                = "Etude",
         element                 = "Lightning",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         stat                    = "DEX",
         BRD                     = 72,
         main_job_only           = true,
-        notes                   = "DEX +8 (base). Single target. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (main job).",
+        notes                   = "DEX +15 (base). Party AoE. Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Sinewy Etude"] = {
@@ -436,21 +436,21 @@ SONG_BUFFS.spells = {
         category                = "Etude",
         element                 = "Fire",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         stat                    = "STR",
         BRD                     = 34,
-        notes                   = "STR +4 (base). Single target. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "STR +9 (base). Party AoE. Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Herculean Etude"] = {
         description             = "Boosts strength.",
         category                = "Etude",
         element                 = "Fire",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         stat                    = "STR",
         BRD                     = 74,
         main_job_only           = true,
-        notes                   = "STR +8 (base). Single target. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (main job).",
+        notes                   = "STR +15 (base). Party AoE. Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     --============================================================
@@ -466,10 +466,10 @@ SONG_BUFFS.spells = {
         resist_element          = "Light",
         tier                    = "I",
         BRD                     = 36,
-        notes                   = "Light resistance +20. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only.",
+        notes                   = "Light resistance +80 (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Light Carol II"] = {
-        description             = "Boosts light resist.",
+        description             = "Boosts light resist; may nullify light damage.",
         category                = "Carol",
         element                 = "Dark",
         magic_type              = "Song",
@@ -478,7 +478,7 @@ SONG_BUFFS.spells = {
         tier                    = "II",
         BRD                     = 99,
         main_job_only           = true,
-        notes                   = "Light resistance +40. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Light resistance +100 and 15% chance to nullify light damage (base). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Dark Carol"] = {
@@ -491,10 +491,10 @@ SONG_BUFFS.spells = {
         tier                    = "I",
         BRD                     = 50,
         subjob_master_only      = true,
-        notes                   = "Dark resistance +20. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (subjob master OK).",
+        notes                   = "Dark resistance +80 (base). Duration: 2 min base (song gear extends). BRD-only (subjob master OK).",
     },
     ["Dark Carol II"] = {
-        description             = "Boosts dark resist.",
+        description             = "Boosts dark resist; may nullify dark damage.",
         category                = "Carol",
         element                 = "Light",
         magic_type              = "Song",
@@ -503,7 +503,7 @@ SONG_BUFFS.spells = {
         tier                    = "II",
         BRD                     = 99,
         main_job_only           = true,
-        notes                   = "Dark resistance +40. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Dark resistance +100 and 15% chance to nullify dark damage (base). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Earth Carol"] = {
@@ -515,10 +515,10 @@ SONG_BUFFS.spells = {
         resist_element          = "Earth",
         tier                    = "I",
         BRD                     = 38,
-        notes                   = "Earth resistance +20. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only.",
+        notes                   = "Earth resistance +80 (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Earth Carol II"] = {
-        description             = "Boosts earth resist.",
+        description             = "Boosts earth resist; may nullify earth damage.",
         category                = "Carol",
         element                 = "Wind",
         magic_type              = "Song",
@@ -527,7 +527,7 @@ SONG_BUFFS.spells = {
         tier                    = "II",
         BRD                     = 81,
         main_job_only           = true,
-        notes                   = "Earth resistance +40. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Earth resistance +100 and 15% chance to nullify earth damage (base). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Water Carol"] = {
@@ -539,10 +539,10 @@ SONG_BUFFS.spells = {
         resist_element          = "Water",
         tier                    = "I",
         BRD                     = 40,
-        notes                   = "Water resistance +20. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only.",
+        notes                   = "Water resistance +80 (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Water Carol II"] = {
-        description             = "Boosts water resist.",
+        description             = "Boosts water resist; may nullify water damage.",
         category                = "Carol",
         element                 = "Lightning",
         magic_type              = "Song",
@@ -551,7 +551,7 @@ SONG_BUFFS.spells = {
         tier                    = "II",
         BRD                     = 84,
         main_job_only           = true,
-        notes                   = "Water resistance +40. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Water resistance +100 and 15% chance to nullify water damage (base). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Wind Carol"] = {
@@ -563,10 +563,10 @@ SONG_BUFFS.spells = {
         resist_element          = "Wind",
         tier                    = "I",
         BRD                     = 42,
-        notes                   = "Wind resistance +20. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only.",
+        notes                   = "Wind resistance +80 (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Wind Carol II"] = {
-        description             = "Boosts wind resist.",
+        description             = "Boosts wind resist; may nullify wind damage.",
         category                = "Carol",
         element                 = "Ice",
         magic_type              = "Song",
@@ -575,7 +575,7 @@ SONG_BUFFS.spells = {
         tier                    = "II",
         BRD                     = 87,
         main_job_only           = true,
-        notes                   = "Wind resistance +40. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Wind resistance +100 and 15% chance to nullify wind damage (base). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Fire Carol"] = {
@@ -587,10 +587,10 @@ SONG_BUFFS.spells = {
         resist_element          = "Fire",
         tier                    = "I",
         BRD                     = 44,
-        notes                   = "Fire resistance +20. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only.",
+        notes                   = "Fire resistance +80 (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Fire Carol II"] = {
-        description             = "Boosts fire resist.",
+        description             = "Boosts fire resist; may nullify fire damage.",
         category                = "Carol",
         element                 = "Water",
         magic_type              = "Song",
@@ -599,7 +599,7 @@ SONG_BUFFS.spells = {
         tier                    = "II",
         BRD                     = 90,
         main_job_only           = true,
-        notes                   = "Fire resistance +40. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Fire resistance +100 and 15% chance to nullify fire damage (base). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Ice Carol"] = {
@@ -611,10 +611,10 @@ SONG_BUFFS.spells = {
         resist_element          = "Ice",
         tier                    = "I",
         BRD                     = 46,
-        notes                   = "Ice resistance +20. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only.",
+        notes                   = "Ice resistance +80 (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Ice Carol II"] = {
-        description             = "Boosts ice resist.",
+        description             = "Boosts ice resist; may nullify ice damage.",
         category                = "Carol",
         element                 = "Fire",
         magic_type              = "Song",
@@ -623,7 +623,7 @@ SONG_BUFFS.spells = {
         tier                    = "II",
         BRD                     = 93,
         main_job_only           = true,
-        notes                   = "Ice resistance +40. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Ice resistance +100 and 15% chance to nullify ice damage (base). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Lightning Carol"] = {
@@ -635,10 +635,10 @@ SONG_BUFFS.spells = {
         resist_element          = "Lightning",
         tier                    = "I",
         BRD                     = 48,
-        notes                   = "Lightning resistance +20. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only.",
+        notes                   = "Lightning resistance +80 (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Lightning Carol II"] = {
-        description             = "Boosts lightning resist.",
+        description             = "Boosts lightning resist; may nullify lightning damage.",
         category                = "Carol",
         element                 = "Earth",
         magic_type              = "Song",
@@ -647,7 +647,7 @@ SONG_BUFFS.spells = {
         tier                    = "II",
         BRD                     = 96,
         main_job_only           = true,
-        notes                   = "Lightning resistance +40. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Lightning resistance +100 and 15% chance to nullify lightning damage (base). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     --============================================================
@@ -659,21 +659,21 @@ SONG_BUFFS.spells = {
         category                = "Prelude",
         element                 = "Lightning",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         tier                    = "I",
         BRD                     = 31,
-        notes                   = "Ranged Accuracy +8. Single target. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "Ranged Accuracy +45 (base). Party AoE. Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Archer's Prelude"] = {
         description             = "Boosts ranged accuracy.",
         category                = "Prelude",
         element                 = "Lightning",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         tier                    = "II",
         BRD                     = 71,
         main_job_only           = true,
-        notes                   = "Ranged Accuracy +16. Single target. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (main job).",
+        notes                   = "Ranged Accuracy +60 (base). Party AoE. Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     --============================================================
@@ -688,7 +688,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         tier                    = "I",
         BRD                     = 13,
-        notes                   = "Evasion +8. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "Evasion +48 (base). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Dragonfoe Mambo"] = {
         description             = "Boosts evasion.",
@@ -699,7 +699,7 @@ SONG_BUFFS.spells = {
         tier                    = "II",
         BRD                     = 53,
         subjob_master_only      = true,
-        notes                   = "Evasion +16. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (subjob master OK).",
+        notes                   = "Evasion +72 (base). Duration: 2 min base (song gear extends). BRD-only (subjob master OK).",
     },
 
     --============================================================
@@ -714,7 +714,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         resist_status           = "Silence",
         BRD                     = 19,
-        notes                   = "Silence resistance +50. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only.",
+        notes                   = "Boosts silence resistance (potency unknown). Duration: 2 min base (song gear extends). BRD-only.",
     },
     ["Puppet's Operetta"] = {
         description             = "Boosts silence resist.",
@@ -725,7 +725,7 @@ SONG_BUFFS.spells = {
         resist_status           = "Silence",
         BRD                     = 69,
         main_job_only           = true,
-        notes                   = "Silence resistance +70. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Boosts silence resistance (potency unknown). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Herb Pastoral"] = {
@@ -736,7 +736,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         resist_status           = "Poison",
         BRD                     = 9,
-        notes                   = "Poison resistance +50. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only.",
+        notes                   = "Boosts poison resistance (potency unknown). Duration: 2 min base (song gear extends). BRD-only.",
     },
 
     ["Fowl Aubade"] = {
@@ -747,7 +747,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         resist_status           = "Sleep",
         BRD                     = 33,
-        notes                   = "Sleep resistance +50. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only.",
+        notes                   = "Boosts sleep resistance (potency unknown). Duration: 2 min base (song gear extends). BRD-only.",
     },
 
     ["Goblin Gavotte"] = {
@@ -758,7 +758,7 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         resist_status           = "Bind",
         BRD                     = 49,
-        notes                   = "Bind resistance +50. Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only.",
+        notes                   = "Boosts bind resistance (potency unknown). Duration: 2 min base (song gear extends). BRD-only.",
     },
 
     ["Gold Capriccio"] = {
@@ -770,7 +770,7 @@ SONG_BUFFS.spells = {
         resist_status           = "Petrification",
         BRD                     = 54,
         subjob_master_only      = true,
-        notes                   = "Petrification resistance +50. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (subjob master OK).",
+        notes                   = "Boosts petrification resistance (potency unknown). Duration: 2 min base (song gear extends). BRD-only (subjob master OK).",
     },
 
     ["Shining Fantasia"] = {
@@ -782,11 +782,11 @@ SONG_BUFFS.spells = {
         resist_status           = "Blindness",
         BRD                     = 56,
         subjob_master_only      = true,
-        notes                   = "Blindness resistance +50. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (subjob master OK).",
+        notes                   = "Boosts blindness resistance (potency unknown). Duration: 2 min base (song gear extends). BRD-only (subjob master OK).",
     },
 
     ["Sentinel's Scherzo"] = {
-        description             = "Grants damage absorption.",
+        description             = "Mitigates severe damage.",
         category                = "Scherzo",
         element                 = "Earth",
         magic_type              = "Song",
@@ -794,7 +794,7 @@ SONG_BUFFS.spells = {
         effect                  = "Damage Mitigation (Stoneskin)",
         BRD                     = 82,
         main_job_only           = true,
-        notes                   = "Grants Stoneskin-like effect. Absorbs physical and magical damage (potency: Singing skill + CHR). Duration: Singing skill. Instrument: String (Harp/Lute) enhances potency. BRD-only (main job).",
+        notes                   = "Reduces damage from severely damaging attacks by 45% (base). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Goddess's Hymnus"] = {
@@ -806,7 +806,7 @@ SONG_BUFFS.spells = {
         effect                  = "Reraise",
         BRD                     = 71,
         main_job_only           = true,
-        notes                   = "Grants Reraise I effect. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Grants Reraise I (returns 50% of lost EXP). Skill and gear do not change potency. Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Warding Round"] = {
@@ -818,7 +818,7 @@ SONG_BUFFS.spells = {
         resist_status           = "Curse",
         BRD                     = 73,
         main_job_only           = true,
-        notes                   = "Curse resistance +50. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Boosts curse resistance (potency unknown). Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Foe Sirvente"] = {
@@ -826,11 +826,11 @@ SONG_BUFFS.spells = {
         category                = "Sirvente",
         element                 = "Light",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         effect                  = "Enmity Loss Reduction",
         BRD                     = 75,
         main_job_only           = true,
-        notes                   = "Reduces enmity decay from non-actions. Single target. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Reduces cumulative enmity loss by 35% (base); volatile enmity is unaffected. Party AoE. Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     ["Adventurer's Dirge"] = {
@@ -838,11 +838,11 @@ SONG_BUFFS.spells = {
         category                = "Dirge",
         element                 = "Light",
         magic_type              = "Song",
-        type                    = "single",
+        type                    = "aoe",
         effect                  = "Enmity Down",
         BRD                     = 75,
         main_job_only           = true,
-        notes                   = "Reduces current enmity. Single target. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Enmity -32. Song gear only extends its duration. Party AoE. Duration: 2 min base. BRD-only (main job).",
     },
 
     ["Aria of Passion"] = {
@@ -855,7 +855,7 @@ SONG_BUFFS.spells = {
         BRD                     = 99,
         main_job_only           = true,
         master_level            = true,
-        notes                   = "Raises physical damage limit. Duration: Singing skill. Master Level ability. Instrument: String (Harp/Lute) enhances potency. BRD-only (main job).",
+        notes                   = "Physical damage limit +15.6% at the lowest listed song bonus (+2). Requires an advanced-stage Loughnashade equipped. Duration: 2 min base (song gear extends). BRD-only (main job).",
     },
 
     --============================================================
@@ -870,10 +870,10 @@ SONG_BUFFS.spells = {
         type                    = "aoe",
         effect                  = "Movement Speed +25%",
         BRD                     = 37,
-        notes                   = "Movement speed +25%. Duration: Singing skill. Overwritten by Chocobo Mazurka. Instrument: Wind (Flute/Piccolo) enhances duration. BRD-only.",
+        notes                   = "Movement speed +10%. Skill and gear do not change potency. Duration: 2 min base (Mazurka gear extends). Overwritten by Chocobo Mazurka. BRD-only.",
     },
     ["Chocobo Mazurka"] = {
-        description             = "Greatly boosts movement speed.",
+        description             = "Boosts movement speed.",
         category                = "Mazurka",
         element                 = "Wind",
         magic_type              = "Song",
@@ -881,7 +881,7 @@ SONG_BUFFS.spells = {
         effect                  = "Movement Speed +100%",
         BRD                     = 73,
         main_job_only           = true,
-        notes                   = "Movement speed +100% (Chocobo Jig equivalent). Duration: Singing skill. Overwrites Raptor Mazurka. Instrument: Wind (Flute/Piccolo) enhances duration. BRD-only (main job).",
+        notes                   = "Movement speed +20%. Skill and gear do not change potency. Duration: 2 min base (Mazurka gear extends). Overwrites Raptor Mazurka. BRD-only (main job).",
     },
 
 }

@@ -25,7 +25,7 @@ SONG_SPECIAL.spells = {
         type                    = "aoe",
         effect                  = "Movement Speed +10%",
         BRD                     = 37,
-        notes                   = "Movement speed +10%. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD (subjob OK).",
+        notes                   = "Movement speed +10%. BRD (subjob OK).",
     },
 
     ["Chocobo Mazurka"] = {
@@ -37,7 +37,7 @@ SONG_SPECIAL.spells = {
         effect                  = "Movement Speed +20%",
         BRD                     = 73,
         main_job_only           = true,
-        notes                   = "Movement speed +20%. Duration: Singing skill. Instrument: Wind (Flute/Piccolo) enhances potency. BRD-only (main job).",
+        notes                   = "Movement speed +20%. BRD-only (main job).",
     },
 
 }

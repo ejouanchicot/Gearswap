@@ -22,8 +22,8 @@ DNC_SP.abilities = {
         level                   = 1,
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 300
     },
     ['Grand Pas'] = {
         description             = "Flourishes without FM cost (30s or 3 uses)",

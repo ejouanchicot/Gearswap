@@ -25,10 +25,10 @@ WAR_SP.abilities = {
         recast                  = 3600,  -- 1hr (SP1)
         main_job_only           = true,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 320
     },
     ['Brazen Rush'] = {
-        description             = "Double attack 100%",
+        description             = "Double attack 100%, decays over time",
         level                   = 96,
         recast                  = 3600,  -- 1hr (SP2)
         main_job_only           = true,

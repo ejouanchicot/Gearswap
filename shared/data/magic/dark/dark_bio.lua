@@ -40,7 +40,7 @@ DARK_BIO.spells = {
         BLM                     = 10,
         DRK                     = 15,
         RDM                     = 10,
-        notes                   = "Bio effect (attack down) + darkness DoT. Ticks every 3 seconds. Duration/potency scale with Dark Magic skill. BLM/DRK/RDM.",
+        notes                   = "Bio effect (attack down -10%, static) + darkness DoT (scales with Dark Magic skill, caps at 3/tick). Ticks every 3 seconds. Duration: 60s. BLM/DRK/RDM.",
     },
 
     ["Bio II"] = {
@@ -55,7 +55,7 @@ DARK_BIO.spells = {
         BLM                     = 35,
         DRK                     = 40,
         RDM                     = 36,
-        notes                   = "Stronger Bio effect (attack down) + darkness DoT. Ticks every 3 seconds. Duration/potency scale with Dark Magic skill. BLM/DRK/RDM.",
+        notes                   = "Stronger Bio effect (attack down -15%, static) + darkness DoT (5-8/tick by Dark Magic skill). Ticks every 3 seconds. Duration: 120s. BLM/DRK/RDM.",
     },
 
     ["Bio III"] = {
@@ -68,7 +68,7 @@ DARK_BIO.spells = {
         main_job_only           = false,
         subjob_master_only      = false,
         RDM                     = 75,
-        notes                   = "Bio effect (attack down) + darkness DoT. Ticks every 3 seconds. Duration/potency scale with Dark Magic skill. RDM-only.",
+        notes                   = "Bio effect (attack down -20%, static) + darkness DoT (scales with Dark Magic skill, caps at 17/tick). Ticks every 3 seconds. RDM-only.",
     },
 
 }

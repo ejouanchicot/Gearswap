@@ -20,26 +20,26 @@ DNC_FLOURISHES1_SUBJOB.abilities = {
         recast                  = 30,
         fm_cost                 = 1,
         main_job_only           = false,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 1000
     },
     ['Desperate Flourish'] = {
-        description             = "Slow. Requires 1 FM",
+        description             = "Weight. Requires 1 FM",
         level                   = 30,
-        recast                  = 30,
+        recast                  = 20,
         fm_cost                 = 1,
         main_job_only           = false,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 0
     },
     ['Violent Flourish'] = {
         description             = "Stun. Requires 1 FM",
         level                   = 45,
-        recast                  = 30,
+        recast                  = 20,
         fm_cost                 = 1,
         main_job_only           = false,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 0
     }
 }
 

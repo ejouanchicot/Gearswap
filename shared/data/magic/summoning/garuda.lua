@@ -25,7 +25,7 @@ GARUDA.spells = {
         type                    = "summon",
         SMN                     = 1,
         mp_cost                 = 7,
-        notes                   = "Wind-based avatar. MP cost: 7. Perpetuation: 2 MP/3s. Specializes in wind magic damage (Aero series, Aerial Blast) and evasion buffs (Aerial Armor). Strong against ice, weak to earth. SMN (subjob OK).",
+        notes                   = "Wind-based avatar. MP cost: 7. Specializes in wind magic damage (Aero series, Aerial Blast), Blink (Aerial Armor) and Haste (Hastega). Resists wind and earth, weak to ice. SMN (subjob OK).",
     },
 
 }
@@ -42,11 +42,11 @@ GARUDA.blood_pacts = {
         element                 = "Wind",
         avatar                  = "Garuda",
         type                    = "physical",
-        damage_type             = "Slashing",
+        damage_type             = "Piercing",
         level                   = 1,
-        mp_cost                 = 9,
-        skillchain              = "Transfixion",
-        notes                   = "Physical slashing damage. MP: 9. Recast: Instant. Damage: Pet STR. Accuracy bonus scales with TP. Single target. SMN (subjob OK).",
+        mp_cost                 = 7,
+        skillchain              = "Detonation",
+        notes                   = "Physical piercing damage. MP: 7. Critical hit rate bonus varies with TP. Single target. SMN (subjob OK).",
     },
 
     ["Aero II"] = {
@@ -57,7 +57,7 @@ GARUDA.blood_pacts = {
         type                    = "magical",
         level                   = 10,
         mp_cost                 = 24,
-        notes                   = "Wind-based magical damage. MP: 24. Recast: Instant. Damage: Pet INT. Single target. SMN (subjob OK).",
+        notes                   = "Wind-based magical damage. MP: 24. Damage: Pet INT. Single target. SMN (subjob OK).",
     },
 
     ["Aero IV"] = {
@@ -68,32 +68,32 @@ GARUDA.blood_pacts = {
         type                    = "magical",
         level                   = 60,
         mp_cost                 = 118,
-        notes                   = "Enhanced wind-based magical damage. MP: 118. Recast: Instant. Damage: Pet INT. Magic burst compatible. Single target. SMN (subjob OK).",
+        notes                   = "Enhanced wind-based magical damage. MP: 118. Damage: Pet INT. Single target. SMN (subjob OK).",
     },
 
     ["Predator Claws"] = {
-        description             = "Deals wind physical dmg.",
+        description             = "Deals 3-fold physical dmg.",
         category                = "Blood Pact: Rage",
         element                 = "Wind",
         avatar                  = "Garuda",
         type                    = "physical",
         damage_type             = "Slashing",
         level                   = 70,
-        mp_cost                 = 118,
-        skillchain              = "Transfixion",
-        notes                   = "Enhanced wind-based physical slashing damage. MP: 118. Recast: Instant. Damage: Pet STR + INT. Accuracy bonus scales with TP. Single target. SMN (subjob OK).",
+        mp_cost                 = 164,
+        skillchain              = "Fragmentation/Scission",
+        notes                   = "Three-hit physical damage. MP: 164. Damage: Pet DEX. Critical hit rate bonus varies with TP. Single target. SMN (main job only).",
     },
 
     ["Wind Blade"] = {
-        description             = "Deals wind physical dmg.",
+        description             = "Deals wind damage.",
         category                = "Blood Pact: Rage",
         element                 = "Wind",
         avatar                  = "Garuda",
-        type                    = "physical",
+        type                    = "magical",
         level                   = 75,
         mp_cost                 = 182,
         merit                   = true,
-        notes                   = "Wind-based physical damage. MP: 182. Recast: Instant. Damage: Pet STR + INT. Merit-based ability. Single target. SMN (subjob OK).",
+        notes                   = "Wind magical damage. MP: 182. Damage: Pet INT. Damage varies with avatar TP. Merit-based ability. Single target. SMN (main job only).",
     },
 
     ["Aerial Blast"] = {
@@ -105,7 +105,7 @@ GARUDA.blood_pacts = {
         level                   = 1,
         mp_cost                 = 0,
         astral_flow             = true,
-        notes                   = "Ultimate wind-based magical AoE damage. MP: 0. Recast: N/A. Only available during Astral Flow. Extreme damage. Wide AoE range. SMN (subjob OK).",
+        notes                   = "Wind magical AoE damage. Uses all MP (Astral Flow). Requires MP of caster's level x2. Only available during Astral Flow. Damage: Pet INT. SMN (main job only).",
     },
 
     --============================================================
@@ -113,14 +113,14 @@ GARUDA.blood_pacts = {
     --============================================================
 
     ["Aerial Armor"] = {
-        description             = "Boosts evasion.",
+        description             = "Grants Blink (AoE).",
         category                = "Blood Pact: Ward",
         element                 = "Wind",
         avatar                  = "Garuda",
         type                    = "buff",
         level                   = 25,
-        mp_cost                 = 56,
-        notes                   = "Evasion +30%. MP: 56. Recast: Instant. Duration: 90s. Target: Single party member. SMN (subjob OK).",
+        mp_cost                 = 92,
+        notes                   = "Blink effect (3-4 shadows). MP: 92. Duration: 900s. Party AoE. SMN (subjob OK).",
     },
 
     ["Whispering Wind"] = {
@@ -130,8 +130,8 @@ GARUDA.blood_pacts = {
         avatar                  = "Garuda",
         type                    = "healing",
         level                   = 36,
-        mp_cost                 = 80,
-        notes                   = "Party HP recovery. MP: 80. Recast: Instant. Healing: Pet MND + Avatar level. Target: Party AoE. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 119,
+        notes                   = "Party HP recovery. MP: 119. Potency based on avatar max HP; TP only widens the area. Party AoE. SMN (subjob OK).",
     },
 
     ["Hastega"] = {
@@ -141,19 +141,19 @@ GARUDA.blood_pacts = {
         avatar                  = "Garuda",
         type                    = "buff",
         level                   = 48,
-        mp_cost                 = 108,
-        notes                   = "Haste +15%. MP: 108. Recast: Instant. Duration: 180s. Party AoE. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 129,
+        notes                   = "Magic haste +15%. MP: 129. Duration: 180s. Party AoE. SMN (subjob OK).",
     },
 
     ["Fleet Wind"] = {
-        description             = "Deals wind damage (AoE).",
+        description             = "Boosts movement speed (AoE).",
         category                = "Blood Pact: Ward",
         element                 = "Wind",
         avatar                  = "Garuda",
-        type                    = "magical",
+        type                    = "buff",
         level                   = 86,
-        mp_cost                 = 210,
-        notes                   = "Multi-hit wind-based magical AoE damage. MP: 210. Recast: Instant. Damage: Pet MAB + level (×3 hits). Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 114,
+        notes                   = "Movement speed +20%. MP: 114. Duration: 120s. Party AoE. SMN (main job only).",
     },
 
     ["Hastega II"] = {
@@ -163,8 +163,8 @@ GARUDA.blood_pacts = {
         avatar                  = "Garuda",
         type                    = "buff",
         level                   = 99,
-        mp_cost                 = 118,
-        notes                   = "Enhanced Haste +30%. MP: 118. Recast: Instant. Duration: 180s. Party AoE. Range: Area effect. SMN (subjob OK).",
+        mp_cost                 = 248,
+        notes                   = "Magic haste +30%. MP: 248. Duration: 180s. Party AoE. SMN (main job only).",
     },
 
 }

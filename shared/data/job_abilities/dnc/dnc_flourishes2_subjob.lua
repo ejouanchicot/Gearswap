@@ -16,20 +16,20 @@ DNC_FLOURISHES2_SUBJOB.abilities = {
     ['Reverse Flourish'] = {
         description             = "Converts FM to TP. Requires 1 FM",
         level                   = 40,
-        recast                  = 60,
+        recast                  = 30,
         fm_cost                 = 1,  -- Consumes all finishing moves
         main_job_only           = false,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 0
     },
     ['Building Flourish'] = {
         description             = "Next WS potency+. Requires 1 FM",
         level                   = 50,
-        recast                  = 60,
+        recast                  = 10,
         fm_cost                 = 1,
         main_job_only           = false,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 0
     }
 }
 

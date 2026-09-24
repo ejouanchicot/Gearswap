@@ -26,16 +26,16 @@ THF_SUBJOB.abilities = {
         level                   = 5,
         recast                  = 300,  -- 5min
         main_job_only           = false,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 320
     },
     ['Sneak Attack'] = {
-        description             = 'Crit from behind, +DEX damage',
+        description             = 'Crit from behind, +DEX dmg (THF main)',
         level                   = 15,
         recast                  = 60,  -- 1min
         main_job_only           = false,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 0
     },
     ['Flee'] = {
         description             = 'Movement speed +60%',
@@ -46,28 +46,28 @@ THF_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Trick Attack'] = {
-        description             = 'Behind ally: Crit, +AGI, transfer enmity',
+        description             = 'Behind ally: transfer enmity, +AGI dmg (THF main)',
         level                   = 30,
         recast                  = 60,  -- 1min
         main_job_only           = false,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 0
     },
     ['Mug'] = {
-        description             = 'Steal gil, drain HP',
+        description             = 'Steal gil (HP drain with Job Points)',
         level                   = 35,
         recast                  = 300,  -- 5min
         main_job_only           = false,
-        cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        cumulative_enmity       = 1,
+        volatile_enmity         = 320
     },
     ['Hide'] = {
-        description             = 'Invisible, reset enmity',
+        description             = 'Invisible, can lose aggro (some enemies)',
         level                   = 45,
         recast                  = 300,  -- 5min
         main_job_only           = false,
         cumulative_enmity       = 0,
-        volatile_enmity         = 80
+        volatile_enmity         = 0
     }
 }
 
