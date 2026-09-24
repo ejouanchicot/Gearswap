@@ -1,0 +1,135 @@
+---============================================================================
+--- WAR (Warrior) - your own modes and gear rules
+---============================================================================
+--- Everything here is optional. Save, then //gs reload: mistakes are
+--- reported in the chat, with what to fix.
+---
+--- Your pieces go on LAST, on top of what the job picked. Only the slots
+--- you list change; everything else stays as the job chose.
+---
+--- There are two kinds of block.
+---
+--- 1) A MODE: a key that cycles values, shown in the HUD.
+---
+---    {
+---        state   = 'TPMode',               one word: letters, digits, _
+---        desc    = 'TP Mode',              label in the HUD
+---        key     = '^numpad0',            ^ Ctrl  ! Alt  @ Win  # Apps  ~ Shift
+---        values  = {'Normal', 'Acc'},      the first value is the default
+---               -- or 'onoff'              a simple on/off switch
+---        section = 'mode',                 HUD section: mode, spell, ability, weapon
+---        subjob  = 'SAM',                  optional: key only with this subjob
+---                                          (exclude_subjob = never with it)
+---        Acc = {                           gear for the value "Acc"
+---            engaged = { head = "..." },
+---            when    = { ... },            optional: only if (see below)
+---        },
+---    },
+---
+---    A mode the job already has works too: name it (state = 'HybridMode')
+---    without values or key, and give gear to one of its values.
+---
+--- 2) A RULE: gear that goes on by itself when conditions hold.
+---
+---    { when = { buff = 'Aftermath: Lv.3' }, engaged = { ring1 = "..." } },
+---
+--- WHEN - the gear is used at these moments:
+---    idle         standing, not fighting
+---    engaged      fighting
+---    weaponskill  weaponskills
+---    ability      job abilities (Provoke, Berserk...)
+---    precast      spells, while casting starts (fast cast)
+---    midcast      spells, when they land (potency)
+---    all          every moment above
+---    A moment holds pieces { head = "...", ring1 = "..." } or the name of
+---    one of your sets: 'sets.engaged.Acc'. Slots: main sub range ammo head
+---    neck ear1 ear2 body hands ring1 ring2 back waist legs feet.
+---
+--- IF - conditions (when = {...}). All must hold. A list = any of them:
+---    buff = 'Haste' / {'Haste', 'Haste II'}   buff active
+---    no_buff = 'Doom'                     buff NOT active
+---    weapon = 'Naegling'                  main weapon (also the job's weapon choice)
+---    sub / range / ammo = '...'           item in that slot
+---    subjob = 'NIN' / no_subjob = 'NIN'
+---    mode = { HybridMode = 'PDT' }        a mode's current value
+---    hp_below = 50 / hp_above = 50        HP percent
+---    mp_below = 50 / mp_above = 50        MP percent
+---    tp_below = 1000 / tp_above = 2000    TP
+---    spell = 'Cure IV' / 'Cure*'          action name, * = "starts with"
+---    skill = 'Enfeebling Magic'           magic skill
+---    spell_type = 'WhiteMagic'            WhiteMagic BlackMagic BardSong Ninjutsu
+---                                         WeaponSkill JobAbility ...
+---    element = 'Fire'                     spell element
+---    day_weather = true                   spell element = day or weather (Obi)
+---    target = 'self' / 'other' / 'enemy'  who the action is on
+---    distance_below = 5                   yalms to the target (Orpheus)
+---    town = true / moving = true / pet = true
+---    zone = 'Walk of Echoes [P1]'
+---    Spell conditions only hold during an action, never idle/engaged.
+---
+--- ORDER: blocks further down win when two touch the same slot.
+---
+--- LEFT ALONE automatically, so a rule can't break them:
+---    nothing is changed while Doomed, resting, for pet moves, ranged
+---    attacks and items; Impact keeps its body/head, songs their
+---    instrument, Phantom Roll its rings, Dispelga its weapon, call beast
+---    its jug, the Hoxne stance its ammo, Treasure Hunter its pieces; a
+---    slot the job has locked stays locked.
+---    Anything else, your piece wins: a rule that replaces your Moonshade,
+---    Obi or TH piece removes that effect.
+---
+--- Buff conditions are re-checked when the buff comes or goes. HP/MP/TP
+--- conditions are checked at every gear change (action, engage, reload).
+---============================================================================
+
+return {
+
+    -- Test: Ctrl+Numpad8 puts the full Empyrean set on, whatever you do.
+    {
+        state  = 'FullEmpy',
+        desc   = 'Full Empy',
+        key    = '^numpad8',
+        values = 'onoff',
+        On     = {
+            all = {
+                head  = "Boii Mask +3",
+                body  = "Boii Lorica +3",
+                hands = "Boii Mufflers +3",
+                legs  = "Boii Cuisses +3",
+                feet  = "Boii Calligae +3",
+            },
+        },
+    },
+
+    -- Examples: remove the "--" at the start of a block's lines to use it.
+
+    -- A mode with its own key
+    -- {
+    --     state  = 'TPMode',
+    --     desc   = 'TP Mode',
+    --     key    = '^numpad0',
+    --     values = {'Normal', 'Acc'},
+    --     Acc    = {
+    --         engaged = { head = "Nyame Helm", ring1 = "Chirich Ring +1" },
+    --     },
+    -- },
+
+    -- An on/off switch
+    -- {
+    --     state  = 'Kiting',
+    --     desc   = 'Kiting',
+    --     key    = '^numpad.',
+    --     values = 'onoff',
+    --     On     = { idle = { feet = "Hermes' Sandals" } },
+    -- },
+
+    -- Low HP: a safer ring when idle
+    -- { when = { hp_below = 50 }, idle = { ring1 = "Gelatinous Ring +1" } },
+
+    -- Aftermath Lv.3 with Ukonvasara: more multi-attack while it lasts
+    -- { when = { buff = 'Aftermath: Lv.3', weapon = 'Ukonvasara' }, engaged = { ring1 = "Chirich Ring +1" } },
+
+    -- Savage Blade with Naegling only
+    -- { when = { spell = 'Savage Blade', weapon = 'Naegling' }, weaponskill = { neck = "Rep. Plat. Medal" } },
+
+}
