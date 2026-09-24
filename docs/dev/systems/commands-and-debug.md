@@ -156,6 +156,11 @@ Arguments are passed through with their original case unless the handler lower-c
 | `altsync` | - | On the main: ask the alt to resync | `513-521` -> `request_sync` |
 | `altbuffs` | - | Show what the main believes about the alt's buffs | `522-528` -> `show_state` |
 | `altdebug` | - | Toggle buff-report tracing (`windower._alt_buff_debug`), log to `data/altbuff_<char>.log` | `529-539` -> `alt_buff_reporter.lua:84` |
+| `alts` | `on`, `off`, `toggle`, `follow [name|off]`, `do <command>`, `mirror` | Orders to every other member of the box group (`DualBoxConfig.group`), from either box | `AltGroup.route` -> `dualbox/alt_group.lua` (see [dual-box](dualbox.md)) |
+| `main` / `setalt <main>` | - / main name | `main`: this box becomes main and sends `setalt <me>` to the others; the role is saved in `<Character>/config/dualbox_role.lua` | `AltGroup.route` -> `dualbox/dualbox_role.lua` |
+| `sortie` | `<target>`, `escort [Indi-X]`, `off`, `judgment`, `fullcircle`, `list` | Stance for this character + Silmaril profile for the GEO alt Kaories | `sortie/sortie_commands.lua` |
+| `tb` | `[force] <key> <what>`, `<what>`, `list`, `del <key>`, `clear`, `help`, `run <key>` | Temporary keybinds. `<what>`: spell/JA/WS/item name (+ target), `//<console command>`, `/<game command>`, or anything else sent as typed | `keybinds/temp_binds.lua`, parsing in `temp_binds_parse.lua` |
+| `trace` | `on`, `off`, `clear` | Records what the game returns to `<Character>/trace.log` | `debug/trace_log.lua` |
 | `craft` | `[variant|off|stop|uncraft]` | Equip / leave a crafting set | `540` -> `craft/craft_commands.lua:241` |
 | `fish` (`fishing`) | `[variant]` | Equip fishing set | `542` -> `craft_commands.lua:268` |
 | `uncraft` | - | Unlock and restore gear | `544` -> `craft_commands.lua:287` |

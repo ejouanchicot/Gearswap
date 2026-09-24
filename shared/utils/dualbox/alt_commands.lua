@@ -162,7 +162,12 @@ local function load_job_config(job, level, source)
 
     local ok, loaded = pcall(require, base .. '_ALT_COMMANDS')
     if not ok or type(loaded) ~= 'table' or type(loaded.commands) ~= 'table' then
-        return nil
+        -- A character that became main with //gs c main may have no alt
+        -- commands of its own yet: use the templates.
+        ok, loaded = pcall(require, '_master/config/alt/' .. job:upper() .. '_ALT_COMMANDS')
+        if not ok or type(loaded) ~= 'table' or type(loaded.commands) ~= 'table' then
+            return nil
+        end
     end
 
     -- Merge the hand-written file over the generated one. _ALT_COMMANDS is

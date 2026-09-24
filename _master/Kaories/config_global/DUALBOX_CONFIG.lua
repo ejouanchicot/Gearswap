@@ -13,6 +13,9 @@ DualBoxConfig.role = "alt"
 DualBoxConfig.character_name = "Kaories"
 DualBoxConfig.main_character = "Tetsouo"
 
+-- Characters of this box group. //gs c alts sends its orders to every one
+-- but the character pressing the key, whichever of them is main today.
+DualBoxConfig.group = {"Tetsouo", "Kaories"}
 DualBoxConfig.enabled = true
 DualBoxConfig.timeout = 30
 DualBoxConfig.debug = false

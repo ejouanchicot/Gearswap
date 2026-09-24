@@ -632,6 +632,8 @@ function MessageCommands.show_commands_list()
     add_to_chat(121, cyan .. "   //gs c altcmds" .. gray .. " .......... " .. white .. "List what the alt can do right now")
     add_to_chat(121, cyan .. "   //gs c alt " .. yellow .. "<name>" .. gray .. " ..... " .. white .. "Run an alt command explicitly")
     add_to_chat(121, cyan .. "   //gs c " .. yellow .. "<name>" .. gray .. " ......... " .. white .. "Short form " .. dgray .. "(e.g. haste, chaos, indifury)")
+    add_to_chat(121, cyan .. "   //gs c alts " .. yellow .. "<cmd>" .. gray .. " ..... " .. white .. "Every alt: " .. dgray .. "on, off, toggle, follow, mirror")
+    add_to_chat(121, cyan .. "   //gs c main" .. gray .. " ............. " .. white .. "I am the main now, the others my alts")
 
     -- Craft & Fish
     add_to_chat(121, " ")

@@ -80,6 +80,9 @@ function DualBoxManager.initialize(config)
 
         if success and loaded_config then
             _G.DualBoxConfig = loaded_config
+            -- A role switched with //gs c main overrides the file's.
+            local role_ok, DualBoxRole = pcall(require, 'shared/utils/dualbox/dualbox_role')
+            if role_ok and DualBoxRole then DualBoxRole.apply_saved() end
             if _G.DualBoxConfig.debug then
                 get_MessageDualbox().show_config_loaded(config_path)
                 get_MessageDualbox().show_role(_G.DualBoxConfig.role)
