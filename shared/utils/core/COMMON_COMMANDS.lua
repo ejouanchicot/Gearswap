@@ -1,9 +1,25 @@
--- CommonCommands: universal command handler shared across all 15 jobs.
+---============================================================================
+--- Common Commands - Commands shared by every job
+---============================================================================
+--- Router for the `//gs c <command>` words every job answers (warp aliases,
+--- naked, mount, reload, checksets, wardrobe, refill, craft, lockstyle, alt
+--- commands, debug toggles, help...). Each job's [JOB]_COMMANDS.lua forwards
+--- here; handle_command() returns false when the word is not a common command
+--- so the job can try its own.
+---
+--- Diagnostic handlers live in DEBUG_COMMANDS.lua and craft/fish handlers in
+--- craft/craft_commands.lua; both are re-exposed as CommonCommands.handle_*.
+---
+--- @file    shared/utils/core/COMMON_COMMANDS.lua
+--- @author  Tetsouo
+--- @version 3.3
+--- @date    Created: 2025-11-03
+---============================================================================
+
 local CommonCommands = {}
 
 local MessageCommands  = require('shared/utils/messages/formatters/ui/message_commands')
 local MessageFormatter = require('shared/utils/messages/message_formatter')
-local MessageRenderer  = require('shared/utils/messages/core/message_renderer')
 
 -- Warp shortcut list (single source of truth in warp_command_registry).
 local WARP_COMMANDS = require('shared/utils/warp/warp_command_registry').COMMANDS
@@ -22,7 +38,9 @@ end
 
 -- RELOAD COMMAND
 
---- Handle job reload command
+--- Reload the job file through JobChangeManager.force_reload().
+--- @param job_name string|nil Fallback main job when `player` is unavailable
+--- @return boolean True if the reload was requested
 function CommonCommands.handle_reload(job_name)
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if jcm_success and JobChangeManager then
@@ -39,7 +57,8 @@ end
 
 -- JUMP COMMAND (SUB DRG)
 
---- Handle jump command for DRG subjob
+--- Use the best available Jump (DRG main or sub).
+--- @return boolean True if the jump manager loaded
 function CommonCommands.handle_jump()
     local drg_success, DRGJumpManager = pcall(require, 'shared/utils/drg/DRG_JUMP_MANAGER')
     if drg_success and DRGJumpManager then
@@ -54,9 +73,11 @@ end
 
 -- WALTZ COMMANDS (DNC MAIN/SUB)
 
---- Generic waltz handler (eliminates duplication between curing/divine)
+--- Shared body of the curing / divine waltz commands.
+--- @param waltz_type string 'curing' or 'divine'
+--- @param error_msg string Message shown when neither main nor sub is DNC
+--- @return boolean True if a waltz was attempted
 local function handle_waltz_generic(waltz_type, error_msg)
-    -- Check if DNC main or sub
     if player.main_job ~= 'DNC' and player.sub_job ~= 'DNC' then
         local MessageFormatter = require('shared/utils/messages/message_formatter')
         MessageFormatter.show_error(error_msg)
@@ -83,12 +104,14 @@ local function handle_waltz_generic(waltz_type, error_msg)
     end
 end
 
---- Handle curing waltz command (single target, intelligent tier selection)
+--- Curing Waltz on <stpc>, tier chosen by WaltzManager.
+--- @return boolean True if a waltz was attempted
 function CommonCommands.handle_waltz()
     return handle_waltz_generic('curing', "Waltz requires DNC main or subjob")
 end
 
---- Handle divine waltz command (AoE healing)
+--- Divine Waltz (AoE).
+--- @return boolean True if a waltz was attempted
 function CommonCommands.handle_aoewaltz()
     return handle_waltz_generic('divine', "Divine Waltz requires DNC main or subjob")
 end
@@ -110,7 +133,9 @@ end
 
 -- CHECKSETS COMMAND
 
---- Handle equipment check command
+--- Compare the job's sets with the items actually owned.
+--- @param job_name string Job code passed to EquipmentChecker
+--- @return boolean True if the checker loaded
 function CommonCommands.handle_checksets(job_name)
     local equipment_success, EquipmentChecker = pcall(require, 'shared/utils/equipment/equipment_checker')
     if equipment_success and EquipmentChecker then
@@ -125,7 +150,8 @@ end
 
 -- WARDROBE AUDIT COMMAND
 
---- Handle wardrobe audit command (scan all jobs, find unused wardrobe items)
+--- Scan every job's sets and list wardrobe items none of them use.
+--- @return boolean True if the auditor loaded
 function CommonCommands.handle_wardrobeaudit()
     local audit_success, WardrobeAuditor = pcall(require, 'shared/utils/equipment/wardrobe_auditor')
     if audit_success and WardrobeAuditor then
@@ -140,13 +166,20 @@ end
 
 -- WARDROBE ORGANIZE COMMAND
 
---- Reorganize wardrobes. Modes:
+--- Reorganize wardrobes. Modes (arguments are case-sensitive; anything
+--- unrecognised runs the default per-job organize):
 ---   `//gs c wo`                  - per-active-job: move job's items to W1/W2
----   `//gs c wo preview`          - dry-run of per-job mode
+---   `//gs c wo preview|dry`      - dry-run of per-job mode
 ---   `//gs c wo global`           - cross-job freq-based static layout
 ---   `//gs c wo global preview`   - dry-run of global mode
----   `//gs c wo verify`           - check current layout matches the plan
---- W7 (craft) and W8 (reserve) are always protected.
+---   `//gs c wo verify|check`     - check current layout matches the plan
+---   `//gs c wo scan|scanwarp`    - record owned warp items
+---   `//gs c wo keep|kept|items`  - list what overflow keeps (read only)
+---   `//gs c wo reset`, `recover|unlock`, `alt|kaories`
+--- W7 (craft) is always protected (wardrobe/lib/config.lua Config.PROTECTED).
+--- @param arg string|nil Mode
+--- @param arg2 string|nil Sub-mode (only 'preview' / 'dry' after 'global')
+--- @return boolean False only if the organizer failed to load
 function CommonCommands.handle_wardrobeorganize(arg, arg2)
     local ok, WardrobeOrganizer = pcall(require, 'shared/utils/wardrobe/wardrobe_organizer')
     if not ok or not WardrobeOrganizer then
@@ -197,6 +230,7 @@ end
 --- Handle inventory refill command (pull consumables from Case/Sack).
 --- Also broadcasts via DualBoxSyncIPC so the paired character refills its
 --- own consumables in parallel (each instance reads its own Case/Sack).
+--- @return boolean True if the refill manager loaded
 function CommonCommands.handle_refill()
     local refill_success, RefillManager = pcall(require, 'shared/utils/inventory/refill_manager')
     if not refill_success or not RefillManager then
@@ -257,14 +291,12 @@ CommonCommands.handle_uncraft = CraftCommands.handle_uncraft
 
 -- TESTCOLORS COMMAND
 
---- Display all FFXI color codes (001-509) to find which ones work
---- Uses dual-prefix system: 0x1F (codes 1-255), 0x1E (codes 256-509)
---- Filters out problematic codes that corrupt chat output
+--- Display the FFXI chat color codes 1-509, skipping those that corrupt chat
+--- output, 14 samples per row.
+--- @return boolean Always true
 function CommonCommands.handle_testcolors()
     MessageCommands.show_color_test_header()
 
-    -- Build list of valid color codes (skip problematic ones)
-    -- FFXI supports 509 colors total, but some are bugged/redundant
     local valid_codes = {}
     for code = 1, 509 do
         -- Skip problematic codes:
@@ -280,7 +312,6 @@ function CommonCommands.handle_testcolors()
         end
     end
 
-    -- Display valid codes in rows of 14
     local row_count = 0
     for i = 1, #valid_codes, 14 do
         if row_count > 0 then
@@ -299,7 +330,8 @@ end
 
 -- NAKED COMMAND (Strip all equipment)
 
---- Strip all equipment slots (//gs c naked or //gs c equip naked)
+--- Strip all equipment slots (//gs c naked or //gs c equip naked).
+--- @return boolean Always true
 function CommonCommands.handle_naked()
     local all_slots = {
         'main', 'sub', 'range', 'ammo',
@@ -324,6 +356,7 @@ end
 --- paired character (e.g. Kaories when Tetsouo runs //gs c ls) re-applies
 --- ITS OWN lockstyle. Each instance runs its local select_default_lockstyle,
 --- so no gear/lockstyle data is shared across the wire - only the trigger.
+--- @return boolean False when the job has no select_default_lockstyle
 function CommonCommands.handle_lockstyle()
     if not select_default_lockstyle then
         local MessageFormatter = require('shared/utils/messages/message_formatter')
@@ -345,10 +378,11 @@ end
 
 -- DRESSUP TOGGLE COMMAND (Persistent)
 
---- Toggle DressUp management on/off (persistent across reloads)
---- When OFF: lockstyle commands won't try to unload/reload DressUp addon
---- Useful for players who don't have DressUp installed
+--- Toggle DressUp management on/off (LockstyleManager.toggle_dressup owns
+--- the persisted value). When OFF, lockstyle commands do not unload/reload
+--- the DressUp addon; useful for players who do not have DressUp installed.
 --- Usage: //gs c dressup
+--- @return boolean True if the toggle was applied
 function CommonCommands.handle_dressup()
     local lockstyle_success, LockstyleManager = pcall(require, 'shared/utils/lockstyle/lockstyle_manager')
     if lockstyle_success and LockstyleManager and LockstyleManager.toggle_dressup then
@@ -362,11 +396,9 @@ function CommonCommands.handle_dressup()
     end
 end
 
--- PERFORMANCE PROFILER COMMAND
+-- DIAGNOSTIC COMMANDS
 
---- Handle performance profiler commands
---- Usage: //gs c perf [start|stop|status]
--- Diagnostic / debug-toggle handlers extracted to DEBUG_COMMANDS.lua.
+-- Diagnostic / debug-toggle handlers live in DEBUG_COMMANDS.lua.
 -- Aliases preserve the existing CommonCommands.handle_X public surface.
 local DebugCommands = require('shared/utils/core/DEBUG_COMMANDS')
 CommonCommands.handle_perf        = DebugCommands.handle_perf
@@ -384,18 +416,19 @@ CommonCommands.handle_memcheck    = DebugCommands.handle_memcheck
 
 -- WARP COMMANDS (Universal Warp/Teleport System)
 
---- Handle warp system commands (delegated to WarpCommands module)
+--- Run a warp command through WarpCommands. When the module fails to load,
+--- print the error and try its dependencies one by one.
+--- @param cmdParams table Full command, cmdParams[1] being the command word
+--- @return boolean Result of WarpCommands.handle_command, false on load failure
 function CommonCommands.handle_warp_commands(cmdParams)
     local warp_success, WarpCommands = pcall(require, 'shared/utils/warp/warp_commands')
     if warp_success and WarpCommands then
         return WarpCommands.handle_command(cmdParams)
     else
-        -- DETAILED ERROR REPORTING
         MessageCommands.show_warp_error_header()
         MessageCommands.show_warp_error(WarpCommands)
         MessageCommands.show_warp_error_footer()
 
-        -- Also try to load each dependency separately to find the issue
         MessageCommands.show_warp_testing_modules()
 
         local test1, res1 = pcall(require, 'shared/utils/warp/warp_item_database')
@@ -413,12 +446,14 @@ function CommonCommands.handle_warp_commands(cmdParams)
     end
 end
 
--- (handle_debugsubjob, handle_jamsg, handle_spellmsg, handle_wsmsg, handle_info
---  moved to DEBUG_COMMANDS.lua and re-exposed via aliases above.)
-
 -- MAIN COMMAND ROUTER
 
---- Handle common commands (centralized for all jobs)
+--- Route a common command. Accepts either the command word followed by its
+--- arguments, or a cmdParams table ({word, arg1, ...}) as first argument.
+--- @param command string|table Command word, or the full cmdParams table
+--- @param job_name string|nil Job code (used by reload and checksets)
+--- @param ... string Arguments after the command word (string form only)
+--- @return boolean True if a common command handled it
 function CommonCommands.handle_command(command, job_name, ...)
     if not command then
         return false
@@ -427,7 +462,7 @@ function CommonCommands.handle_command(command, job_name, ...)
     -- Support both string command and table cmdParams (for warp system)
     local cmd
     local cmdParams
-    local varargs = {...} -- Capture varargs first (after job_name)
+    local varargs = {...}
 
     if type(command) == "table" then
         -- Table format (used by warp system via job_self_command)
@@ -443,29 +478,39 @@ function CommonCommands.handle_command(command, job_name, ...)
         end
     end
 
-    -- Extract arguments (everything after command, which is cmdParams[1])
+    -- Arguments after the command word
     local args = {}
     for i = 2, #cmdParams do
         table.insert(args, cmdParams[i])
     end
 
-    -- ==========================================================================
-    -- WARP COMMANDS (50+ commands: spells + 40+ destinations)
-    -- ==========================================================================
-    -- Check warp commands first (includes: w, w2, ret, esc, tph, tpd, tpm, tpa,
-    -- tpy, tpv, rj, rp, rm, warp [status|unlock|lock|test|help])
+    -- Sortie: this character's stance + the GEO alt's Silmaril profile
+    if cmd == 'sortie' then
+        return require('shared/utils/sortie/sortie_commands').handle(args)
+    end
 
-    -- Check exact matches first
+    -- Temporary keybinds for a repetitive task
+    if cmd == 'tb' then
+        return require('shared/utils/keybinds/temp_binds').handle(args)
+    end
+
+    -- Record what the game really returns to <Character>/trace.log
+    if cmd == 'trace' then
+        return require('shared/utils/debug/trace_log').handle(args)
+    end
+
+    -- ==========================================================================
+    -- WARP COMMANDS (every alias in warp_command_registry.COMMANDS)
+    -- ==========================================================================
     for _, warp_cmd in ipairs(WARP_COMMANDS) do
         if cmd == warp_cmd then
             return CommonCommands.handle_warp_commands(cmdParams)
         end
     end
 
-    -- Check for "all" suffix (multi-boxing commands like warpall, tphall, sdall)
+    -- "<alias>all" is the multi-boxing form (warpall, tphall, sdall...)
     if cmd:find('all$') then
         local base_cmd = cmd:gsub('all$', '')
-        -- Verify base command is a valid warp command
         for _, warp_cmd in ipairs(WARP_COMMANDS) do
             if base_cmd == warp_cmd then
                 return CommonCommands.handle_warp_commands(cmdParams)
@@ -568,7 +613,6 @@ function CommonCommands.handle_command(command, job_name, ...)
         MessageCommands.show_warp_debug_toggled(_G.WARP_DEBUG)
         return true
     elseif cmd == 'debugprecast' then
-        -- Toggle precast debug mode
         windower._gs_debug = windower._gs_debug or {}
         windower._gs_debug.PRECAST = not windower._gs_debug.PRECAST
         _G.PrecastDebugState = windower._gs_debug.PRECAST
@@ -596,7 +640,6 @@ function CommonCommands.handle_command(command, job_name, ...)
         windower._gs_debug.JOBCHANGE = not windower._gs_debug.JOBCHANGE
         _G.JOBCHANGE_DEBUG = windower._gs_debug.JOBCHANGE
         MessageFormatter.show_debug('JobChange', 'Debug mode: ' .. (_G.JOBCHANGE_DEBUG and 'ON' or 'OFF'))
-        -- Show current state
         if _G.JOBCHANGE_DEBUG and _G.JobChangeManagerSTATE then
             local S = _G.JobChangeManagerSTATE
             MessageFormatter.show_debug('JobChange', string.format('counter=%d, current=%s/%s, target=%s/%s',
@@ -608,12 +651,12 @@ function CommonCommands.handle_command(command, job_name, ...)
     elseif cmd == 'debugstate' or cmd == 'ds' then
         return CommonCommands.handle_debugstate()
     elseif cmd == 'debugupdate' then
-        -- Toggle UPDATE debug mode (traces full gs c update flow)
-        -- Use windower table for persistence across job changes
+        -- Traces the full gs c update flow. Kept on windower so it survives
+        -- job changes; also sets the AutoMove trace to the same value.
         windower._gs_debug = windower._gs_debug or {}
         windower._gs_debug.UPDATE = not windower._gs_debug.UPDATE
         _G.UPDATE_DEBUG = windower._gs_debug.UPDATE
-        windower._gs_debug.AUTOMOVE = windower._gs_debug.UPDATE  -- traces AutoMove too
+        windower._gs_debug.AUTOMOVE = windower._gs_debug.UPDATE
         _G.AUTOMOVE_DEBUG = windower._gs_debug.AUTOMOVE
         MessageFormatter.show_debug('UPDATE', string.format('%s (traces: AutoMove > job_update > UI.update > customize_set)',
             _G.UPDATE_DEBUG and 'ON' or 'OFF'))
@@ -633,7 +676,7 @@ function CommonCommands.handle_command(command, job_name, ...)
     elseif cmd == 'info' then
         return CommonCommands.handle_info(args)
     elseif cmd == 'debugmsg' then
-        -- Debug message settings
+        -- Dump the current message display modes
         if _G.MESSAGE_SETTINGS then
             MessageFormatter.show_debug('MSG', 'MESSAGE_SETTINGS:')
             MessageFormatter.show_debug('MSG', '  spell_mode: ' .. tostring(_G.MESSAGE_SETTINGS.spell_mode or 'nil'))
@@ -644,11 +687,10 @@ function CommonCommands.handle_command(command, job_name, ...)
         end
         return true
     elseif cmd == 'testmsg' or cmd == 'msgtest' then
-        -- Test new message system
-        -- Usage: //gs c testmsg [job]
-        -- Examples: //gs c testmsg, //gs c testmsg brd, //gs c testmsg system
+        -- Preview messages. Usage: //gs c testmsg [job]
+        -- (e.g. //gs c testmsg, //gs c testmsg brd, //gs c testmsg system)
         local M = require('shared/utils/messages/api/messages')
-        local job_filter = args[1] -- Optional job filter (e.g., "brd", "geo", "system")
+        local job_filter = args[1]
         M.test(job_filter)
         return true
     elseif cmd == 'msgtests' then
@@ -659,11 +701,9 @@ function CommonCommands.handle_command(command, job_name, ...)
     elseif cmd == 'memcheck' or cmd == 'mem' then
         return CommonCommands.handle_memcheck(args[1])
     elseif cmd == 'commands' or cmd == 'cmds' then
-        -- Show list of all common commands
         MessageCommands.show_commands_list()
         return true
     elseif cmd == 'help' or cmd == '?' then
-        -- Show quick help (redirects to main commands)
         MessageCommands.show_help()
         return true
     end
@@ -673,7 +713,10 @@ end
 
 -- HELPER FUNCTIONS
 
---- Check if command is a common command
+--- Check if a word is answered by handle_command(). Must stay in step with
+--- the router above.
+--- @param command string|nil Command word
+--- @return boolean True for a common command or a warp alias
 function CommonCommands.is_common_command(command)
     if not command then
         return false
@@ -681,9 +724,11 @@ function CommonCommands.is_common_command(command)
 
     local cmd = command:lower()
 
-    -- Check existing common commands
     if cmd == 'mount' or
-        cmd == 'naked' or cmd == 'equip' or cmd == 'reload' or cmd == 'checksets' or cmd == 'wardrobeaudit' or cmd == 'wa' or cmd == 'worganize' or cmd == 'wo' or cmd == 'refill' or cmd == 'rf' or cmd == 'craft' or cmd == 'uncraft' or cmd == 'fish' or cmd == 'fishing' or
+        cmd == 'naked' or cmd == 'equip' or cmd == 'reload' or cmd == 'checksets' or
+        cmd == 'wardrobeaudit' or cmd == 'wa' or cmd == 'worganize' or cmd == 'wo' or
+        cmd == 'refill' or cmd == 'rf' or
+        cmd == 'craft' or cmd == 'uncraft' or cmd == 'fish' or cmd == 'fishing' or
         cmd == 'automedicine' or cmd == 'am' or
         cmd == 'alt' or cmd == 'altcmds' or cmd == 'altlist' or
         cmd == 'altbuff' or cmd == 'altbuffs' or cmd == 'altdebug' or
@@ -698,19 +743,18 @@ function CommonCommands.is_common_command(command)
         cmd == 'lagdebug' or cmd == 'ldb' or
         cmd == 'jamsg' or cmd == 'spellmsg' or cmd == 'wsmsg' or cmd == 'info' or cmd == 'debugmsg' or
         cmd == 'testmsg' or cmd == 'msgtest' or cmd == 'msgtests' or
-        cmd == 'memcheck' or cmd == 'mem' or
+        cmd == 'memcheck' or cmd == 'mem' or cmd == 'sortie' or cmd == 'tb' or cmd == 'trace' or
         cmd == 'commands' or cmd == 'cmds' or cmd == 'help' or cmd == '?' then
         return true
     end
 
-    -- Check warp commands (50+ commands total)
     for _, warp_cmd in ipairs(WARP_COMMANDS) do
         if cmd == warp_cmd then
             return true
         end
     end
 
-    -- Check for "all" suffix (multi-boxing commands)
+    -- "<alias>all" multi-boxing form
     if cmd:find('all$') then
         local base_cmd = cmd:gsub('all$', '')
         for _, warp_cmd in ipairs(WARP_COMMANDS) do
