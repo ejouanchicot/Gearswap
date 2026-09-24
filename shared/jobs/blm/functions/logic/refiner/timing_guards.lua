@@ -1,11 +1,12 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Timing Guards - Anti-spam protection for spell refinement
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Two independent rate limiters:
+---   Three independent rate limiters:
 ---     • Replacement timer  - global cooldown after any spell refinement
 ---       (prevents recursive refinement when @input fires hooks again)
 ---     • Per-spell timer    - per-spell cooldown to throttle individual spells
 ---       (currently only used by Breakga -> Break to prevent lag-induced spam)
+---     • Announce timer     - Magic Burst /p announcement cooldown
 ---
 ---   Module-local state persists across calls but resets on gs reload.
 ---
@@ -14,8 +15,10 @@
 ---     • update_replacement_time(now)
 ---     • is_spell_safe_to_cast(name, now)   -> bool
 ---     • update_cast_time(name, now)
+---     • is_announce_safe(now)             -> bool
+---     • update_announce_time(now)
 ---
----   @file    jobs/blm/functions/logic/refiner/timing_guards.lua
+---   @file    shared/jobs/blm/functions/logic/refiner/timing_guards.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2026-05-09 (extracted from spell_refiner.lua)

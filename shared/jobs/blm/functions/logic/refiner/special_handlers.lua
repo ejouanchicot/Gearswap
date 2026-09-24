@@ -16,7 +16,7 @@
 ---      Special Breakga -> Break fallback with lag protection (per-spell
 ---      timing guard prevents repeated triggering during high latency).
 ---
----   @file    jobs/blm/functions/logic/refiner/special_handlers.lua
+---   @file    shared/jobs/blm/functions/logic/refiner/special_handlers.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2026-05-09 (extracted from spell_refiner.lua)

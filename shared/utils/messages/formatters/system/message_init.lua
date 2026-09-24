@@ -1,10 +1,9 @@
 ---============================================================================
---- Init Message Formatter - Module Initialization Messages (NEW SYSTEM)
+--- Init Message Formatter - Module Initialization Messages
 ---============================================================================
---- Uses template-based messaging via MessageRenderer
---- Migrated from old system to new system: 2025-11-06
+--- Load errors reported by INIT_SYSTEMS.lua. Templates: data/systems/init_messages.lua.
 ---
---- @file    messages/message_init.lua
+--- @file    shared/utils/messages/formatters/system/message_init.lua
 --- @author  Tetsouo
 --- @version 2.0
 --- @date    Created: 2025-11-06
@@ -27,7 +26,7 @@ function MessageInit.show_module_load_failed(module_name, error_msg)
     })
 end
 
---- Show watchdog failed to load (backward compatibility with INIT_WATCHDOG.lua)
+--- Show watchdog failed to load (no caller: INIT_SYSTEMS uses show_module_load_failed)
 --- @param error_msg any Error message or object
 function MessageInit.show_watchdog_load_failed(error_msg)
     M.send('INIT', 'watchdog_load_failed', {error_msg = tostring(error_msg)})

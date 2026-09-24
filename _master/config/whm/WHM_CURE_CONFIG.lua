@@ -8,13 +8,13 @@
 --- Features:
 ---   • Auto-tier selection based on target HP missing
 ---   • MP efficiency (don't waste Cure VI on 100 HP missing)
----   • Stoneskin awareness (optional override to force big Cure)
+---   • Stoneskin farming: set state.CureAutoTier Off to keep the tier you cast
 ---   • Configurable thresholds per Cure tier
 ---
 --- Usage:
----   • Loaded by WHM_PRECAST.lua during Cure spell precast
----   • Call CureManager.select_cure_tier(spell, target_hpp) to get optimal tier
----   • Override with //gs c cure max to force highest tier (for Stoneskin farming)
+---   • Loaded by shared/utils/whm/cure_manager.lua (lazy-required from WHM_PRECAST.lua)
+---   • CureManager.select_cure_tier(spell, target) reads cure_tiers, curaga_tiers,
+---     safety_margin and debug_messages
 ---
 --- @file    config/whm/WHM_CURE_CONFIG.lua
 --- @author  Tetsouo

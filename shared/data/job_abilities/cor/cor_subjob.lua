@@ -1,15 +1,15 @@
 ---============================================================================
 --- COR Job Abilities - Sub-Job Accessible Module
 ---============================================================================
---- Corsair abilities accessible as subjob (3 abilities + 15 Phantom Rolls)
---- Note: Phantom Rolls are in separate cor_rolls.lua module
+--- Corsair abilities accessible as subjob (3 abilities)
+--- Note: Phantom Rolls are in cor_rolls_subjob.lua and cor_rolls_mainjob.lua
 ---
 --- Contents:
 ---   - Double-Up (Lv5) - Reroll last phantom roll (max 11)
 ---   - Quick Draw (Lv40) - Ranged elemental damage
 ---   - Random Deal (Lv50) - Random party ability reset
 ---
---- @file cor_subjob.lua
+--- @file shared/data/job_abilities/cor/cor_subjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06

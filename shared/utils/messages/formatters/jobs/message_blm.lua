@@ -1,21 +1,21 @@
 ---============================================================================
 --- BLM Messages Module - Black Mage Element and Spell Message Formatting
 ---============================================================================
---- Uses NEW message system with inline colors
---- Delegates to api/messages.lua for all formatting
+--- Element/spell cycle, buff, casting-mode, refinement and error lines for
+--- BLM. Templates: data/jobs/blm_messages.lua, sent through M.job.
 ---
---- @file utils/messages/message_blm.lua
+--- @file shared/utils/messages/formatters/jobs/message_blm.lua
 --- @author Tetsouo
---- @version 2.0 (NEW SYSTEM)
+--- @version 2.0
 --- @date Created: 2025-10-15 | Migrated: 2025-11-06
 ---============================================================================
 
 local BLMMessages = {}
 
--- NEW message system
 local M = require('shared/utils/messages/api/messages')
 
--- Get job tag (for subjob support: BLM/WHM >> "BLM/WHM")
+-- Job tag with subjob ("BLM/WHM"). Same logic as MessageCore.get_job_tag,
+-- except the fallback is 'BLM' instead of 'JOB'.
 local function get_job_tag()
     local main_job = player and player.main_job or 'BLM'
     local sub_job = player and player.sub_job or ''
@@ -60,7 +60,7 @@ local ELEMENT_COLORS = {
 }
 
 ---============================================================================
---- ELEMENT CYCLE MESSAGES (NEW SYSTEM)
+--- ELEMENT CYCLE MESSAGES
 ---============================================================================
 
 --- Display element cycle message with colored element name
@@ -77,7 +77,7 @@ function BLMMessages.show_element_cycle(state_type, element_name)
 end
 
 ---============================================================================
---- SPELL CYCLE MESSAGES (NEW SYSTEM)
+--- SPELL CYCLE MESSAGES
 ---============================================================================
 
 --- Display Aja spell cycle message
@@ -112,7 +112,7 @@ function BLMMessages.show_tier_cycle(tier_value)
 end
 
 ---============================================================================
---- BUFF MESSAGES (NEW SYSTEM)
+--- BUFF MESSAGES
 ---============================================================================
 
 --- Display self-buff activation message
@@ -132,7 +132,7 @@ function BLMMessages.show_buff_cast(buff_name)
 end
 
 ---============================================================================
---- CASTING MODE MESSAGES (NEW SYSTEM)
+--- CASTING MODE MESSAGES
 ---============================================================================
 
 --- Display Magic Burst mode activation
@@ -157,7 +157,7 @@ function BLMMessages.show_free_nuke_on()
 end
 
 ---============================================================================
---- SPELL REFINEMENT MESSAGES (NEW SYSTEM)
+--- SPELL REFINEMENT MESSAGES
 ---============================================================================
 
 --- Display spell refinement (tier downgrade) message
@@ -185,10 +185,12 @@ function BLMMessages.show_spell_refinement_failed(spell_name, recast_seconds)
 end
 
 ---============================================================================
---- MP CONSERVATION MESSAGES (NEW SYSTEM)
+--- MP CONSERVATION MESSAGES
 ---============================================================================
 
 --- Display MP conservation gear switch message
+--- Note: mp_color is passed as a parameter, so the engine prints the text
+--- "{orange}"/"{green}" instead of a color. No caller today.
 --- @param mp_status string 'Low' or 'High'
 function BLMMessages.show_mp_conservation(mp_status)
     local mp_color = mp_status == 'Low' and '{orange}' or '{green}'
@@ -203,7 +205,7 @@ function BLMMessages.show_mp_conservation(mp_status)
 end
 
 ---============================================================================
---- DARK ARTS MESSAGES (SCH SUBJOB) (NEW SYSTEM)
+--- DARK ARTS MESSAGES (SCH SUBJOB)
 ---============================================================================
 
 --- Display Dark Arts activation message
@@ -236,7 +238,7 @@ function BLMMessages.show_stratagem_no_charges(stratagem_name, recast_minutes)
 end
 
 ---============================================================================
---- ERROR MESSAGES (NEW SYSTEM)
+--- ERROR MESSAGES
 ---============================================================================
 
 --- Display error message for missing BuffSelf function

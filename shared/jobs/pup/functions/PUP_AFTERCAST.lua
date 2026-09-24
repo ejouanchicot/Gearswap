@@ -1,10 +1,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PUP Aftercast Module - Post-Action Cleanup
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles aftercast logic for Puppetmaster:
----   • Return to idle or engaged gear after action completes
+---   Aftercast hook. Mote puts idle/engaged gear back on its own; the shared
+---   LifecycleManager handler only ticks the watchdog.
 ---
----   @file    jobs/pup/functions/PUP_AFTERCAST.lua
+---   @file    shared/jobs/pup/functions/PUP_AFTERCAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-17

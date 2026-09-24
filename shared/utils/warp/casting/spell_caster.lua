@@ -1,13 +1,14 @@
 ---============================================================================
 --- Spell Caster - BLM/WHM Spell Casting Logic with Level Validation
 ---============================================================================
---- Handles casting of warp/teleport spells with automatic level checking.
---- Extracted from monolithic cast_warp_spell() for modularity.
+--- Casts warp/teleport spells after checking that BLM/WHM is main or sub
+--- and that its level reaches the spell. MP, recast, silence and whether the
+--- spell is learned are not checked.
 ---
---- @file spell_caster.lua
+--- @file shared/utils/warp/casting/spell_caster.lua
 --- @author Tetsouo
---- @version 4.0 - Modular Architecture
---- @date 2025-10-28
+--- @version 4.0
+--- @date Created: 2025-10-28
 ---============================================================================
 
 local MessageWarp = require('shared/utils/messages/formatters/system/message_warp')
@@ -55,7 +56,6 @@ local function can_cast_spell(spell_name)
     local has_blm = player.main_job == 'BLM' or player.sub_job == 'BLM'
     local has_whm = player.main_job == 'WHM' or player.sub_job == 'WHM'
 
-    -- Check if it's a BLM spell
     if BLM_SPELLS[spell_name] then
         if not has_blm then
             return false, 'Requires BLM main/sub'
@@ -71,7 +71,6 @@ local function can_cast_spell(spell_name)
         return true
     end
 
-    -- Check if it's a WHM spell
     if WHM_SPELLS[spell_name] then
         if not has_whm then
             return false, 'Requires WHM main/sub'
@@ -106,11 +105,9 @@ function SpellCaster.cast_spell(spell_name)
     local can_cast, error_reason = can_cast_spell(spell_name)
 
     if not can_cast then
-        -- Check if player has the required job first
         local has_blm = player.main_job == 'BLM' or player.sub_job == 'BLM'
         local has_whm = player.main_job == 'WHM' or player.sub_job == 'WHM'
 
-        -- Show appropriate error message
         if BLM_SPELLS[spell_name] then
             local required_level = BLM_SPELLS[spell_name]
             if not has_blm then
@@ -133,7 +130,6 @@ function SpellCaster.cast_spell(spell_name)
         return false
     end
 
-    -- Cast the spell
     if BLM_SPELLS[spell_name] then
         MessageWarp.show_warp_casting(spell_name)
     else
@@ -144,7 +140,7 @@ function SpellCaster.cast_spell(spell_name)
     return true
 end
 
---- Check if player can cast a spell (without casting)
+--- Check if player can cast a spell (without casting; no caller today)
 --- @param spell_name string Spell name
 --- @return boolean True if player can cast
 function SpellCaster.can_cast(spell_name)

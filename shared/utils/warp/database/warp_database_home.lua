@@ -4,10 +4,10 @@
 --- Contains all items that warp to home point (Warp spell equivalent).
 --- Total: 5 items
 ---
---- @file warp_database_home.lua
+--- @file shared/utils/warp/database/warp_database_home.lua
 --- @author Tetsouo
---- @version 4.0 - Modular Architecture
---- @date 2025-10-28
+--- @version 4.0
+--- @date Created: 2025-10-28
 ---============================================================================
 
 local WarpDatabaseCore = require('shared/utils/warp/database/warp_database_core')

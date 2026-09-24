@@ -33,9 +33,9 @@ THFMacroConfig.default = { book = 1, page = 1 }
 
 -- Macrobooks per subjob
 THFMacroConfig.solo = {
-    ['DNC'] = { book = 1, page = 1 },  -- THF/DNC >> Book 23, Page 1
-    ['NIN'] = { book = 1, page = 1 },  -- THF/NIN >> Book 23, Page 2
-    ['WAR'] = { book = 1, page = 1 },  -- THF/WAR >> Book 23, Page 3
+    ['DNC'] = { book = 1, page = 1 },  -- THF/DNC
+    ['NIN'] = { book = 1, page = 1 },  -- THF/NIN
+    ['WAR'] = { book = 1, page = 1 },  -- THF/WAR
 
     -- Default fallback
     ['default'] = { book = 1, page = 1 }

@@ -1,11 +1,13 @@
 ---============================================================================
---- Debuff Message Formatter - Debuff Blocking (NEW SYSTEM - HYBRID)
+--- Debuff Message Formatter - Debuff Blocking
 ---============================================================================
 --- Displays messages when actions are blocked by debuffs (Silence, Amnesia, etc.)
---- Uses hybrid approach: Templates for separators, direct rendering for dynamic messages
---- Migrated from old system to new system: 2025-11-06
+--- Separators come from the DEBUFFS templates; the lines are built by hand
+--- with inline colors and sent with MessageRenderer.send(1, text), arguments
+--- swapped: GearSwap's add_to_chat recovers (base color 8, every segment
+--- carries its own inline color).
 ---
---- @file    messages/message_debuffs.lua
+--- @file    shared/utils/messages/formatters/magic/message_debuffs.lua
 --- @author  Tetsouo
 --- @version 2.0
 --- @date    Created: 2025-11-06

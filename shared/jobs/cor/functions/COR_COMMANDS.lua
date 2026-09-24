@@ -5,7 +5,14 @@
 ---   Provides job-specific commands and integrates with common commands.
 ---   Integrates with UICommands for UI management.
 ---
----   @file    COR_COMMANDS.lua
+---   COR commands: track_roll <short> <value>, rolls, doubleup (du),
+---   clearrolls, party, clearparty, shot / roll1 / roll2 (ability selected in
+---   QuickDraw / MainRoll / SubRoll), testcolors (colors).
+---   Note: testcolors / colors are also common commands, and the common
+---   handler runs first.
+---   job_state_change re-equips gear when MainWeapon / RangeWeapon changes.
+---
+---   @file    shared/jobs/cor/functions/COR_COMMANDS.lua
 ---   @author  Tetsouo
 ---   @version 1.1 - Added UICommands integration
 ---   @date    Created: 2025-10-07
@@ -306,7 +313,7 @@ function job_self_command(cmdParams, eventArgs)
 
         MessageFormatter.show_color_test_header()
 
-        -- Test codes in groups of 10
+        -- Test every code from 1 to 255
         for i = 1, 255 do
             MessageFormatter.show_color_test_sample(i)
         end

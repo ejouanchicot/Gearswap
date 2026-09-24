@@ -7,11 +7,11 @@
 ---
 ---   Uses centralized AutoMove for position tracking (performance optimization).
 ---
----   @file    jobs/war/functions/WAR_MOVEMENT.lua
+---   @file    shared/jobs/war/functions/WAR_MOVEMENT.lua
 ---   @author  Tetsouo
 ---   @version 3.0.0
 ---   @date    Created: 2025-09-29
----   @requires utils/movement/automove.lua
+---   @requires shared/utils/movement/automove.lua
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -31,7 +31,8 @@ local retaliation_config = {
     debug_mode = false            -- Toggle with //gs c debugretaliation
 }
 
--- Debug helper
+--- Print a debug line when Retaliation debug mode is on.
+--- @param msg string Message to print
 local function debug_print(msg)
     if retaliation_config.debug_mode then
         if not MessageFormatter then

@@ -11,12 +11,12 @@
 ---   • Phantom Roll configuration (MainRoll/SubRoll: 20 different rolls each)
 ---   • Luzaf's Ring mode (ON = 16y range, OFF = 8y range)
 ---   • Default state values for optimal gameplay
----   • Validation API for state verification
+---   • validate() helper (not called anywhere today)
 ---
 --- State Purposes:
 ---   • HybridMode: PDT = 50% damage reduction, Normal = maximum DPS
 ---   • MainWeapon: Primary melee weapon (Naegling default - Savage Blade)
----   • RangeWeapon: Ranged weapon selection (Anarchy default - best DPS)
+---   • RangeWeapon: Ranged weapon selection (Anarchy default)
 ---   • QuickDraw: Element selection for Quick Draw shots (Light default)
 ---   • LuzafRing: Roll range mode (ON = 16y Luzaf bonus, OFF = 8y standard)
 ---   • MainRoll: Primary Phantom Roll selection (Chaos default - Attack+)
@@ -38,6 +38,7 @@ local CORStates = {}
 ---============================================================================
 
 --- Configure all COR states (called from user_setup in main file)
+--- @return nil
 function CORStates.configure()
     -- ========================================
     -- COMBAT MODES
@@ -61,7 +62,7 @@ function CORStates.configure()
     -- RangeWeapon: Ranged weapon selection
     state.RangeWeapon = M {
         ['description'] = 'Range Weapon',
-        'Anarchy',      -- REMA gun (best DPS)
+        'Anarchy',      -- Gun, TP Bonus +1000
         'Compensator'   -- High-tier gun (alternative)
     }
     state.RangeWeapon:set('Anarchy')  -- Default to Anarchy (best DPS)

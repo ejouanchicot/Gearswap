@@ -10,12 +10,12 @@
 ---   - This system protects critical instruments from being swapped
 ---
 ---   How it works:
----   1. PRECAST: Detect song + equip instrument + set lock flag
----   2. MIDCAST: Force instrument to stay equipped
----   3. MOVEMENT: Prevent speed gear from replacing instrument
----   4. AFTERCAST: Clear lock flag + release instrument
+---   1. PRECAST (BRD_PRECAST): Detect song + equip instrument + set lock flag
+---   2. MIDCAST (midcast_router): Force instrument to stay equipped
+---   3. MOVEMENT (BRD_MOVEMENT job_handle_equipping_gear): re-equip the instrument
+---   4. AFTERCAST (BRD_AFTERCAST): Clear lock flag + release instrument
 ---
----   @file    instrument_lock_config.lua
+---   @file    shared/jobs/brd/functions/logic/instrument_lock_config.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-11-07

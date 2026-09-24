@@ -30,11 +30,11 @@ local THFLockstyleConfig = {}
 THFLockstyleConfig.default = 1
 
 -- Lockstyle per subjob (optional)
--- Uncomment and customize as needed
+-- Edit the numbers as needed
 THFLockstyleConfig.by_subjob = {
-    ['DNC'] = 1,  -- THF/DNC >> lockstyle 1
-    ['NIN'] = 1,  -- THF/NIN >> lockstyle 2
-    ['WAR'] = 1,  -- THF/WAR >> lockstyle 3
+    ['DNC'] = 1,  -- THF/DNC
+    ['NIN'] = 1,  -- THF/NIN
+    ['WAR'] = 1,  -- THF/WAR
 }
 
 return THFLockstyleConfig

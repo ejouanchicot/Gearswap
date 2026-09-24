@@ -2,9 +2,9 @@
 --- UI Sections - Display Section Rendering Engine
 ---============================================================================
 --- Handles rendering of all UI sections (spells, weapons, modes, etc.)
---- with intelligent categorization and consistent formatting.
+--- from the key lists built by UI_DISPLAY_BUILDER, with consistent formatting.
 ---
---- @file ui/UI_SECTIONS.lua
+--- @file shared/utils/ui/UI_SECTIONS.lua
 --- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2025-09-26
@@ -12,8 +12,9 @@
 
 local UISections = {}
 
--- Load dependencies
-local UIConfig = _G.UIConfig or {}  -- Loaded from character main file
+-- Captured once when this module loads (set by config_loader.lua). Later
+-- changes to _G.UIConfig or the persisted section_* settings are not seen here.
+local UIConfig = _G.UIConfig or {}
 
 -- Provide default sections if not loaded
 if not UIConfig.sections then
@@ -127,6 +128,7 @@ end
 --- @param function_column_width number Function column width for alignment
 --- @param get_state_value_func function Function to get state values
 --- @param content_width number Total UI content width
+--- @param value_column_width number Value column width for fixed padding
 --- @return string Rendered spells section
 function UISections.render_spells_section(display_structure, keybinds, job, key_column_width, function_column_width, get_state_value_func, content_width, value_column_width)
     if not UIConfig.sections.spells then
@@ -143,6 +145,7 @@ end
 --- @param function_column_width number Function column width for alignment
 --- @param get_state_value_func function Function to get state values
 --- @param content_width number Total UI content width
+--- @param value_column_width number Value column width for fixed padding
 --- @return string Rendered enhancing section
 function UISections.render_enhancing_section(display_structure, keybinds, job, key_column_width, function_column_width, get_state_value_func, content_width, value_column_width)
     if not UIConfig.sections.enhancing or not display_structure.enhancing_keys then
@@ -161,6 +164,7 @@ end
 --- @param function_column_width number Function column width for alignment
 --- @param get_state_value_func function Function to get state values
 --- @param content_width number Total UI content width
+--- @param value_column_width number Value column width for fixed padding
 --- @return string Rendered JA section
 function UISections.render_ja_section(display_structure, keybinds, job, key_column_width, function_column_width, get_state_value_func, content_width, value_column_width)
     if not UIConfig.sections.job_abilities then
@@ -184,6 +188,7 @@ end
 --- @param function_column_width number Function column width for alignment
 --- @param get_state_value_func function Function to get state values
 --- @param content_width number Total UI content width
+--- @param value_column_width number Value column width for fixed padding
 --- @return string Rendered weapons section
 function UISections.render_weapons_section(display_structure, keybinds, job, key_column_width, function_column_width, get_state_value_func, content_width, value_column_width)
     if not UIConfig.sections.weapons then
@@ -200,6 +205,7 @@ end
 --- @param function_column_width number Function column width for alignment
 --- @param get_state_value_func function Function to get state values
 --- @param content_width number Total UI content width
+--- @param value_column_width number Value column width for fixed padding
 --- @return string Rendered modes section
 function UISections.render_modes_section(display_structure, keybinds, job, key_column_width, function_column_width, get_state_value_func, content_width, value_column_width)
     if not UIConfig.sections.modes then
@@ -231,7 +237,7 @@ function UISections.render_complete_ui(display_structure, keybinds, job, get_sta
     -- Header (pass content_width for centering title)
     text = text .. UIFormatter.create_header(job, content_width)
 
-    -- Separator after header/legend (only if no header, since header now has its own separator)
+    -- Separator only when both header and legend are shown
     if not _G.ui_display_config or not _G.ui_display_config.show_header then
         -- No separator needed
     elseif _G.ui_display_config.show_legend then
@@ -314,7 +320,7 @@ end
 --- VALIDATION AND UTILITIES
 ---============================================================================
 
---- Validate section rendering configuration
+--- Validate section rendering configuration (no caller in the repository)
 --- @return boolean, table valid, issues
 function UISections.validate_configuration()
     local issues = {}
@@ -339,7 +345,7 @@ function UISections.validate_configuration()
     return #issues == 0, issues
 end
 
---- Get section rendering statistics
+--- Get section rendering statistics (no caller in the repository)
 --- @param display_structure table Display structure to analyze
 --- @return table Statistics about sections
 function UISections.get_section_statistics(display_structure)

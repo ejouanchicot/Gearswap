@@ -1,24 +1,26 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Warp Command Registry - Single source of truth for warp shortcuts
----  ═══════════════════════════════════════════════════════════════════════════
----   Lists every short alias the warp system accepts. Imported by:
----     - shared/utils/core/COMMON_COMMANDS.lua  (command dispatch)
----     - shared/utils/warp/warp_ipc.lua         (IPC broadcast whitelist)
+---============================================================================
+--- Warp Command Registry - Single source of truth for warp shortcuts
+---============================================================================
+--- Lists every short alias the warp system accepts. Imported by:
+---   - shared/utils/core/COMMON_COMMANDS.lua     (command dispatch)
+---   - shared/utils/warp/warp_ipc.lua            (IPC broadcast whitelist)
+---   - shared/utils/warp/warp_ipc_register.lua   (IPC receiver whitelist)
 ---
----   Adding a new warp command:
----     1. Add the alias here (in the appropriate category)
----     2. Add a handler in warp_commands.lua's command_status()
----     3. Define the destination in warp_database/* (if a destination cmd)
+--- Adding a new warp command:
+---   1. Add the alias here (in the appropriate category)
+---   2. Add its branch in WarpCommands.handle_command() (warp_commands.lua)
+---   3. Define the destination in database/* (if a destination cmd)
 ---
----   @file shared/utils/warp/warp_command_registry.lua
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/warp/warp_command_registry.lua
+--- @author Tetsouo
+--- @version 1.0
+--- @date Created: 2026-05-01
+---============================================================================
 
 local Registry = {}
 
---- Master list of every warp-related short command, organized by category.
---- Both COMMON_COMMANDS (flat list of allowed cmds) and warp_ipc.lua (broadcast
---- whitelist) consume this. Order doesn't matter; semantically grouped for
---- readability.
+--- Master list of every warp-related short command, grouped by category.
+--- Order doesn't matter.
 Registry.COMMANDS = {
     -- BLM Spells
     'w', 'warp', 'w2', 'warp2', 'ret', 'retrace', 'esc', 'escape',
@@ -67,15 +69,16 @@ for _, cmd in ipairs(Registry.COMMANDS) do
     Registry.SET[cmd] = true
 end
 
+--- Check whether a word is a registered warp alias.
 --- @param cmd string Short alias (lowercased) to check
 --- @return boolean true if cmd is a known warp command
 function Registry.is_warp_command(cmd)
     return Registry.SET[cmd] == true
 end
 
----  ═══════════════════════════════════════════════════════════════════════════
----   Shared timing constants for the warp subsystem
----  ═══════════════════════════════════════════════════════════════════════════
+---============================================================================
+--- SHARED TIMING CONSTANTS
+---============================================================================
 -- Debounce window for IPC messages between dual-boxed clients.
 -- Used by both warp_ipc.lua (sender) and warp_ipc_register.lua (receiver) so
 -- they MUST agree on the value. Don't override locally.

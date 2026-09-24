@@ -4,9 +4,10 @@
 ---   Extracted from COMMON_COMMANDS.lua to keep that file under the 600-line
 ---   soft limit. These are command handlers for diagnostics, performance
 ---   profiling, and message-config toggles - none of them are user-facing
----   gameplay commands.
+---   gameplay commands. As a diagnostic tool it may write to chat directly
+---   (CODE_QUALITY section 6).
 ---
----   Public API (called by COMMON_COMMANDS.handle_command dispatcher):
+---   Public API (re-exposed as CommonCommands.handle_* by COMMON_COMMANDS.lua):
 ---     DebugCommands.handle_perf(action)        - performance profiler control
 ---     DebugCommands.handle_fulltest(action)    - full system test runner
 ---     DebugCommands.handle_syscheck(action)    - system health check
@@ -16,8 +17,13 @@
 ---     DebugCommands.handle_spellmsg(mode)      - Spell messages display mode
 ---     DebugCommands.handle_wsmsg(mode)         - WS messages display mode
 ---     DebugCommands.handle_info(args)          - info command (JA/Spell/WS detail)
+---     DebugCommands.handle_debugstate()        - lifecycle counters dump
+---     DebugCommands.handle_memcheck()          - _G / package.loaded export
 ---
----   @file shared/utils/core/DEBUG_COMMANDS.lua
+---   @file    shared/utils/core/DEBUG_COMMANDS.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2026-05-01
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local DebugCommands = {}
@@ -28,7 +34,9 @@ local MessageCommands = require('shared/utils/messages/formatters/ui/message_com
 ---   PERFORMANCE PROFILER
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Handle //gs c perf [start|stop|toggle|status]
+--- Handle //gs c perf [start|stop|toggle|status] (anything else = status).
+--- @param action string|nil Sub-command
+--- @return boolean False if the profiler failed to load
 function DebugCommands.handle_perf(action)
     local profiler_success, Profiler = pcall(require, 'shared/utils/debug/performance_profiler')
     if not profiler_success or not Profiler then
@@ -57,6 +65,8 @@ end
 
 --- Run comprehensive in-game test across all verifiable areas.
 --- Usage: //gs c fulltest [export]
+--- @param action string|nil 'export' also writes the report to a file
+--- @return boolean False if the test module failed to load
 function DebugCommands.handle_fulltest(action)
     local ok_load, FullTest = pcall(require, 'shared/utils/debug/full_test')
     if not ok_load or not FullTest then
@@ -73,6 +83,8 @@ end
 
 --- Run a full system health check with % score.
 --- Usage: //gs c syscheck [export]
+--- @param action string|nil 'export' also writes the report to a file
+--- @return boolean False if the checker failed to load
 function DebugCommands.handle_syscheck(action)
     local ok, SystemChecker = pcall(require, 'shared/utils/debug/system_checker')
     if not ok or not SystemChecker then
@@ -88,7 +100,9 @@ function DebugCommands.handle_syscheck(action)
 end
 
 --- Handle lag debugger commands.
---- Usage: //gs c lagdebug [export|reset|status]  (no arg = toggle)
+--- Usage: //gs c lagdebug [export|reset|status]  (any other arg or none = toggle)
+--- @param action string|nil Sub-command
+--- @return boolean False if _G.LagDebugger is not loaded
 function DebugCommands.handle_lagdebug(action)
     local ld = _G.LagDebugger
     if not ld then
@@ -114,6 +128,7 @@ end
 
 --- Display detailed subjob information for testing.
 --- Used to verify player.sub_job_level returns 0 in Odyssey Sheol Gaol.
+--- @return boolean False if `player` is unavailable
 function DebugCommands.handle_debugsubjob()
     if not player then
         MessageCommands.show_debugsubjob_no_player()
@@ -145,14 +160,19 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MESSAGE CONFIG TOGGLES (jamsg / spellmsg / wsmsg)
 ---  ═══════════════════════════════════════════════════════════════════════════
---- Generic handler eliminates 114 lines of duplication across 3 commands.
 
+-- One handler for the three commands; the MessageCommands function names are
+-- built from `prefix` ('show_jamsg_status_header', ...).
 local MSG_CONFIG_MAP = {
     ja    = {path = 'shared/config/JA_MESSAGES_CONFIG',        prefix = 'jamsg'},
     spell = {path = 'shared/config/ENHANCING_MESSAGES_CONFIG', prefix = 'spellmsg'},
     ws    = {path = 'shared/config/WS_MESSAGES_CONFIG',        prefix = 'wsmsg'},
 }
 
+--- Show or change one message display mode.
+--- @param msg_type string 'ja', 'spell' or 'ws'
+--- @param mode_arg string|nil New mode (nil = show the current one)
+--- @return boolean True if shown or changed
 local function handle_message_config_generic(msg_type, mode_arg)
     local cfg = MSG_CONFIG_MAP[msg_type]
     if not cfg then return false end
@@ -194,16 +214,23 @@ local function handle_message_config_generic(msg_type, mode_arg)
 end
 
 --- //gs c jamsg <full|on|off>
+--- @param mode_arg string|nil New mode (nil = show the current one)
+--- @return boolean True if shown or changed
 function DebugCommands.handle_jamsg(mode_arg)
     return handle_message_config_generic('ja', mode_arg)
 end
 
---- //gs c spellmsg <full|on|off>  (controls all non-Enfeebling spell categories)
+--- //gs c spellmsg <full|on|off>. Enhancing and Enfeebling share spell_mode
+--- (message_settings.lua), so this changes both.
+--- @param mode_arg string|nil New mode (nil = show the current one)
+--- @return boolean True if shown or changed
 function DebugCommands.handle_spellmsg(mode_arg)
     return handle_message_config_generic('spell', mode_arg)
 end
 
---- //gs c wsmsg <full|on|off|tp>
+--- //gs c wsmsg <full|on|off|tp> ('tp' is an alias of 'on').
+--- @param mode_arg string|nil New mode (nil = show the current one)
+--- @return boolean True if shown or changed
 function DebugCommands.handle_wsmsg(mode_arg)
     return handle_message_config_generic('ws', mode_arg)
 end
@@ -212,6 +239,9 @@ end
 ---   INFO COMMAND  (JA/Spell/WS detail viewer)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- //gs c info <name>: delegated to commands/info_command.lua.
+--- @param args table Arguments after 'info'
+--- @return boolean Result of InfoCommand.handle
 function DebugCommands.handle_info(args)
     local InfoCommand = require('shared/utils/commands/info_command')
     return InfoCommand.handle(args)
@@ -223,6 +253,7 @@ end
 
 --- Dump global state used to diagnose accumulated lifecycle issues
 --- (AutoMove sequence counters, JobChangeManager debounce, UI manager IDs).
+--- @return boolean Always true
 function DebugCommands.handle_debugstate()
     add_to_chat(207, '=== DEBUG STATE ===')
     add_to_chat(207, string.format('AUTOMOVE_RUNNING: %s', tostring(_G.AUTOMOVE_RUNNING)))
@@ -254,7 +285,6 @@ end
 
 local MessageRenderer  = require('shared/utils/messages/core/message_renderer')
 local MessageFormatter = require('shared/utils/messages/message_formatter')
-
 
 local TYPE_ORDER = {'table', 'function', 'string', 'number', 'boolean', 'userdata', 'thread'}
 local LINE_SEP = string.rep('=', 75)
@@ -368,6 +398,7 @@ local function write_packages(w, packages)
     w(LINE_SEP)
 end
 
+--- Assemble the memcheck text file.
 --- @return string The whole report, ready to write
 local function build_report(char, job, by_type, total, top_tables, packages)
     local out = {}
@@ -382,6 +413,7 @@ local function build_report(char, job, by_type, total, top_tables, packages)
     return table.concat(out, '\n')
 end
 
+--- Write the report to data/memcheck_<char>_<job>.txt.
 --- @return string|nil Path written, nil on failure
 --- @return string|nil Reason it could not be written
 local function export_report(char, job, text)
@@ -413,8 +445,8 @@ end
 --- The sandbox nukes `collectgarbage`/`gcinfo` (in-process introspection is
 --- impossible) and `//lua m` output goes to Windower's console (F11) which
 --- scrolls past the visible window. As a workaround we enumerate `_G` +
---- `package.loaded` from inside the addon and EXPORT the full breakdown to
---- `data/memcheck.txt` for offline review.
+--- `package.loaded` from inside the addon and EXPORT the full breakdown to a
+--- file for offline review.
 ---
 --- Output file: data/memcheck_<char>_<job>.txt
 ---   - Sorted list of package.loaded. That is Windower's own libs and nothing
@@ -427,6 +459,8 @@ end
 ---
 --- Chat shows just a summary + the file path.
 --- Usage: //gs c memcheck     (or //gs c mem)
+--- @param arg string|nil Unused (the router passes args[1])
+--- @return boolean Always true
 function DebugCommands.handle_memcheck(arg)
     local sep = string.rep('=', 60)
     MessageRenderer.send(sep, 121)

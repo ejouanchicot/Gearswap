@@ -1,20 +1,22 @@
 ---============================================================================
 --- Message System Validator - Automated Testing
 ---============================================================================
---- Validates the entire message system automatically:
----   • Template parameters match function signatures
----   • All color tags are valid
----   • All functions follow naming conventions
----   • All exports exist in MessageFormatter
----   • No broken templates
+--- Static checks of the job message templates and job formatters, for the
+--- jobs listed in JOBS_TO_VALIDATE:
+---   • every template has a 'template' and a 'color' field
+---   • every {tag} is a known color, a COMMON_PARAMS name, or ends in
+---     _color/_text/_name
+---   • every formatter function starts with show_
+---   • every formatter function is exported by MessageFormatter
+--- Results are printed and written to data/message_validation.{json,txt}.
 ---
 --- Usage:
 ---   //gs c msgtests
 ---
---- @file utils/messages/message_validator.lua
+--- @file shared/utils/messages/message_validator.lua
 --- @author Tetsouo
 --- @version 1.0
---- @date Created: 2025-01-07
+--- @date Created: 2025-11-07
 ---============================================================================
 
 local MessageValidator = {}
@@ -201,6 +203,7 @@ end
 --- Check one job's message data and its formatter.
 --- A missing data file is an error; a missing formatter is not, since a job
 --- may have templates without a module of its own yet.
+--- @param job string Job code (e.g. "BLM")
 local function validate_job(job)
     print("Testing " .. job .. " messages...")
 

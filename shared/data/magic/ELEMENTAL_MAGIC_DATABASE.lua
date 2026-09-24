@@ -4,7 +4,7 @@
 --- Provides unified access to all Elemental Magic spells.
 --- Merges spells from 7 modules into a single interface.
 ---
---- @file ELEMENTAL_MAGIC_DATABASE.lua
+--- @file shared/data/magic/ELEMENTAL_MAGIC_DATABASE.lua
 --- @author Tetsouo
 --- @version 2.0 - Improved formatting - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06

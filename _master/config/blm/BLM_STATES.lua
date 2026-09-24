@@ -6,25 +6,29 @@
 ---
 --- Features:
 ---   • Combat modes (HybridMode: PDT/Normal, CombatMode: weapon locking)
----   • Magic Burst mode (MagicBurstMode: On/Off)
+---   • Magic Burst mode (MagicBurstMode: Off/On/Acc)
 ---   • Weapon selection (MainWeapon: Staves, SubWeapon: Grips)
 ---   • Elemental nuke system (Light/Dark + Single/AOE + Tier selection)
 ---   • Death spell mode (DeathMode: On/Off)
 ---   • Default state values for optimal gameplay
----   • Validation API for state verification
+---   • validate() helper (not called anywhere today)
 ---
 --- State Purposes:
 ---   • HybridMode: PDT = 50% damage reduction, Normal = maximum MAB
 ---   • CombatMode: Off = free swapping, On = weapon slots locked
----   • MagicBurstMode: On = burst potency gear, Off = normal nuke gear
+---   • MagicBurstMode: On = burst potency gear, Acc = burst accuracy gear,
+---     Off = normal nuke gear
 ---   • MainWeapon: Elemental Staves (Hvergelmir, etc.)
 ---   • SubWeapon: Grips (Alber Strap, Enki Strap, etc.)
 ---   • MainLightSpell: Fire/Aero/Thunder (Light-based nukes)
 ---   • MainDarkSpell: Blizzard/Stone/Water (Dark-based nukes)
 ---   • SpellTier: VI/V/IV/III/II/I (nuke tier - BLM goes up to VI)
+---   • Sub*Spell / Sub*AOE: second set of the same spell families
+---   • Storm, SneakInviAOE, KlimaformAOE: SCH subjob helpers
+---   • FastCast: Fast Cast % used by the midcast watchdog
 ---   • MainLightAOE: Fira/Aera/Thundara (Light AOE spells)
 ---   • MainDarkAOE: Blizzara/Stonera/Watera (Dark AOE spells)
----   • AOETier: III/II/I (AOE spell tier)
+---   • AOETier: Aja/III/II/I (AOE spell tier)
 ---   • DeathMode: On = optimize for Death spell, Off = normal nukes
 ---
 --- Dependencies:
@@ -43,6 +47,7 @@ local BLMStates = {}
 ---============================================================================
 
 --- Configure all BLM states (called from user_setup in main file)
+--- @return nil
 function BLMStates.configure()
     -- ========================================
     -- COMBAT MODES
@@ -237,7 +242,7 @@ function BLMStates.configure()
         'On',
         'Off'
     }
-    state.KlimaformAOE:set('On')  -- Default: preserve the existing klima behaviour
+    state.KlimaformAOE:set('On')  -- Default: Manifestation used
 
     -- ========================================
     -- FAST CAST (WATCHDOG SYSTEM)

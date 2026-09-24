@@ -7,7 +7,7 @@
 ---   - Blood Weapon (SP1, Lv1) - Drain HP with melee attacks
 ---   - Soul Enslavement (SP2, Lv96) - Absorb TP with melee attacks
 ---
---- @file drk_sp.lua
+--- @file shared/data/job_abilities/drk/drk_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

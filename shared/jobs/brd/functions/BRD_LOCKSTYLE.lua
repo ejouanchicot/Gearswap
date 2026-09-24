@@ -13,11 +13,11 @@
 ---   • Default subjob: WHM
 ---   • Automatic subjob-based selection
 ---
----   @file    jobs/brd/functions/BRD_LOCKSTYLE.lua
+---   @file    shared/jobs/brd/functions/BRD_LOCKSTYLE.lua
 ---   @author  Tetsouo
 ---   @version 2.1 - Lazy Loading for performance
 ---   @date    Created: 2025-10-13 | Updated: 2025-11-15
----   @requires utils/lockstyle/lockstyle_manager
+---   @requires shared/utils/lockstyle/lockstyle_manager
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Lazy loading: Module created on first use
@@ -39,12 +39,14 @@ local function get_lockstyle_module()
     return lockstyle_module
 end
 
--- Export select_default_lockstyle() to global scope
+--- Apply the lockstyle configured for the current subjob.
+--- @return any Result of LockstyleManager's select_default_lockstyle
 function select_default_lockstyle()
     return get_lockstyle_module().select_default_lockstyle()
 end
 
--- Export cancel_brd_lockstyle_operations() to global scope
+--- Cancel any pending (delayed) lockstyle operation.
+--- @return any Result of LockstyleManager's cancel function
 function cancel_brd_lockstyle_operations()
     return get_lockstyle_module().cancel_brd_lockstyle_operations()
 end

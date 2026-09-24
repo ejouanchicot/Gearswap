@@ -7,7 +7,7 @@
 ---   - Overdrive (SP1, Lv1) - Automaton max power, no overload
 ---   - Heady Artifice (SP2, Lv96) - Head-specific special ability
 ---
---- @file pup_sp.lua
+--- @file shared/data/job_abilities/pup/pup_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

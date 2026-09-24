@@ -11,7 +11,7 @@
 ---   - Chi Blast (Lv41) - Ranged attack (TP based)
 ---   - Counterstance (Lv45) - Counter boost, defense penalty
 ---
---- @file mnk_subjob.lua
+--- @file shared/data/job_abilities/mnk/mnk_subjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

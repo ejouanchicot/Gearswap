@@ -1,18 +1,22 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Wardrobe Organizer - Item Helpers
----  ═══════════════════════════════════════════════════════════════════════════
----   Read-only utilities that consult the FFXI resource database (`res.items`)
----   and walk the active GearSwap `sets` table to discover used item names.
+---============================================================================
+--- Wardrobe Organizer - Item Helpers
+---============================================================================
+--- Read-only utilities that consult the FFXI resource database (`res.items`)
+--- and walk the active GearSwap `sets` table to discover used item names.
 ---
----   Public functions:
----     Items.item_names(item_id)           - all name variants (en/enl/log) lowercase
----     Items.display_name(item_id)         - canonical English name (or 'id:N')
----     Items.is_equipment(item_id)         - true if has wearable slot bits
----     Items.is_used_name(id, used_set)    - true if any name variant is in used_set
----     Items.collect_used_names()          - walks _G.sets, returns {[name_lower]=true}
+--- Public functions:
+---   Items.item_names(item_id)           - all name variants lowercase
+---   Items.display_name(item_id)         - canonical English name (or 'id:N')
+---   Items.is_equipment(item_id)         - true if has wearable slot bits
+---   Items.is_used_name(id, used_set)    - true if any name variant is in used_set
+---   Items.add_always_kept(used)         - adds KEEP_ITEMS and, if needed, warp items
+---   Items.collect_used_names()          - walks _G.sets, returns {[name_lower]=true}
 ---
----   @file shared/utils/wardrobe/lib/items.lua
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/wardrobe/lib/items.lua
+--- @author Tetsouo
+--- @version 1.0
+--- @date Created: 2026-05-01
+---============================================================================
 
 local Config = require('shared/utils/wardrobe/lib/config')
 local res = require('resources')
@@ -20,6 +24,8 @@ local res = require('resources')
 local Items = {}
 
 --- Return all name variants for an item (en, enl, english, english_log) lowercase.
+--- @param item_id number Item id
+--- @return table Array of lowercase names (empty if unknown id)
 function Items.item_names(item_id)
     local d = res.items[item_id]
     if not d then
@@ -36,6 +42,8 @@ function Items.item_names(item_id)
 end
 
 --- Canonical display name (English) or 'id:N' fallback.
+--- @param item_id number Item id
+--- @return string Name
 function Items.display_name(item_id)
     local d = res.items[item_id]
     return (d and d.en) or ('id:' .. tostring(item_id))
@@ -43,12 +51,17 @@ end
 
 --- True if the item has at least one wearable slot bit set.
 --- This filters out consumables, food, key items, currency etc.
+--- @param item_id number Item id
+--- @return boolean
 function Items.is_equipment(item_id)
     local d = res.items[item_id]
     return (d and d.slots and d.slots ~= 0) or false
 end
 
 --- Check if any name variant of `item_id` appears in the `used_names` set.
+--- @param item_id number Item id
+--- @param used_names table Set {[name_lower] = true}
+--- @return boolean
 function Items.is_used_name(item_id, used_names)
     for _, n in ipairs(Items.item_names(item_id)) do
         if used_names[n] then
@@ -144,6 +157,7 @@ end
 
 --- Walk the active job's _G.sets table and return a set of used item names.
 --- Returns nil if no sets table is loaded (e.g. no job active).
+--- @return table|nil Set {[name_lower] = true}
 function Items.collect_used_names()
     if not _G.sets or type(_G.sets) ~= 'table' then
         return nil

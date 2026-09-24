@@ -1,23 +1,27 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Wardrobe Organizer - State Recensement
----  ═══════════════════════════════════════════════════════════════════════════
----   Builds the algorithm's state table by scanning W1-W6 + W8 and categorizing
----   each item as either "needs to leave W1/W2" (w1w2_unused) or "needs to be
----   promoted from W3-W6" (w3w6_used). Honors `bag = 'wardrobe N'` pins via a
----   greedy claim_pool (multi-instance items each claim a different pin slot).
+---============================================================================
+--- Wardrobe Organizer - State Recensement
+---============================================================================
+--- Builds the algorithm's state table by scanning Config.ALL_WARDROBES
+--- (default W1-W6 + W8) and categorizing each item as either "needs to leave
+--- the primary bags" (w1w2_unused) or "needs to be promoted from overflow"
+--- (w3w6_used). Honors `bag = 'wardrobe N'` pins via a greedy claim_pool
+--- (multi-instance items each claim a different pin slot).
 ---
----   Public functions:
----     State.pin_target_for(entry, pinned_bags, claim_pool)
----           - resolve a pin target for one entry (mutates claim_pool)
----     State.snapshot_bag(bag_id, used_names)
----           - list of {bag, slot, id, count, name, used} entries in a bag
----     State.build_state()
----           - full state object: see returned table shape below
----     State.dlog_state(state, label)
----           - dump state summary to debug log
+--- Public functions:
+---   State.pin_target_for(entry, pinned_bags, claim_pool)
+---         - resolve a pin target for one entry (mutates claim_pool)
+---   State.snapshot_bag(bag_id, used_names)
+---         - list of {bag, slot, id, count, name, used} entries in a bag
+---   State.build_state()
+---         - full state object: see returned table shape below
+---   State.dlog_state(state, label)
+---         - dump state summary to debug log
 ---
----   @file shared/utils/wardrobe/lib/state.lua
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/wardrobe/lib/state.lua
+--- @author Tetsouo
+--- @version 1.0
+--- @date Created: 2026-05-01
+---============================================================================
 
 local Config = require('shared/utils/wardrobe/lib/config')
 local Log    = require('shared/utils/wardrobe/lib/log')
@@ -92,7 +96,11 @@ end
 --- A copy sitting in one of its own pins with nowhere better to go keeps that
 --- bag rather than reporting "unpinned".
 --- `claim_pool[name]` = { remaining = { bag_id, ... } }  (mutated).
---- Returns nil only when the item is unpinned, or pinned somewhere it is not.
+--- @param entry table Snapshot entry ({bag, id, ...})
+--- @param pinned_bags table Map {[name_lower] = {bag_id, ...}}
+--- @param claim_pool table Shared claim pool (mutated)
+--- @return number|nil Target bag; nil only when the item is unpinned, or
+---         pinned somewhere it is not.
 function State.pin_target_for(entry, pinned_bags, claim_pool)
     for _, n in ipairs(Items.item_names(entry.id)) do
         local pins = pinned_bags[n]
@@ -132,7 +140,10 @@ function State.pin_target_for(entry, pinned_bags, claim_pool)
 end
 
 --- Snapshot all equipment items in a single bag.
---- Returns a list of entries: {bag, slot, id, count, name, used, target=nil}.
+--- Only movable (status 0) equipment is listed.
+--- @param bag_id number Bag id
+--- @param used_names table Set {[name_lower] = true}
+--- @return table List of entries: {bag, slot, id, count, name, used, target=nil}
 function State.snapshot_bag(bag_id, used_names)
     local entries = {}
     local items = windower.ffxi.get_items(bag_id)
@@ -156,7 +167,7 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Returned state shape:
 ---     {
----        used_names    = { [name_lower] = true },     -- items used by active job
+---        used_names    = { [name_lower] = true },     -- items used (see Config.SCOPE)
 ---        pinned_bags   = { [name_lower] = {bag,...} }, -- pins from sets
 ---        inv_free      = N,
 ---        wardrobe_free = { [bag_id] = N, ... },
@@ -165,6 +176,8 @@ end
 ---        w3w6_used     = list of entries currently in W3-W6 needing promotion
 ---     }
 ---  ═══════════════════════════════════════════════════════════════════════════
+--- @return table|nil State (shape above)
+--- @return string|nil Error when no sets table is loaded
 function State.build_state()
     local used_names = Items.collect_used_names()
     if not used_names then
@@ -246,6 +259,8 @@ function State.build_state()
 end
 
 --- Dump a state summary to the debug log.
+--- @param state table State from build_state()
+--- @param label string Section label
 function State.dlog_state(state, label)
     dlog(('===== %s ====='):format(label))
     dlog(('  inv_free=%d  W1=%d W2=%d W3=%d W4=%d W5=%d W6=%d W8=%d'):format(

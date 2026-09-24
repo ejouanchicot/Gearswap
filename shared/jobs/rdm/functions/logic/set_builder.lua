@@ -3,7 +3,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Provides centralized set building for both engaged and idle states.
 ---   Handles weapon selection (MainWeapon/SubWeapon), mode detection (IdleMode,
----   EngagedMode), town detection, and movement speed.
+---   EngagedMode, legacy HybridMode PDT), shield vs dual-wield detection,
+---   town detection, and movement speed.
 ---
 ---   @file    shared/jobs/rdm/functions/logic/set_builder.lua
 ---   @author  Tetsouo
@@ -25,9 +26,8 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 ---   Select idle base set based on IdleMode state
 ---   @param base_set table Base idle set
----   @return table Selected idle set based on IdleMode (DT, Refresh, Regain, Evasion)
+---   @return table sets.idle[IdleMode] (Refresh, DT) when defined, else sets.idle.PDT under HybridMode PDT, else base_set
 function SetBuilder.select_idle_base(base_set)
-    -- Use IdleMode state to select idle set (DT, Refresh, Regain, Evasion)
     if state.IdleMode and state.IdleMode.current then
         local mode = state.IdleMode.current
 
@@ -55,7 +55,7 @@ end
 ---   @param base_set table Base engaged set
 ---   @return table Selected engaged set based on EngagedMode and shield status
 function SetBuilder.select_engaged_base(base_set)
-    -- Use EngagedMode state to select engaged set (DT, Enspell, Refresh, TP)
+    -- EngagedMode values: DT, Acc, TP, Enspell
     if state.EngagedMode and state.EngagedMode.current then
         local mode = state.EngagedMode.current
 
@@ -103,7 +103,7 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Apply main weapon and sub weapon to set (separately)
----   Uses weapon sets defined in rdm_sets.lua (sets['Crocea Mors'], sets['Genmei Shield'], etc.)
+---   Uses the weapon sets of rdm_sets.lua, keyed by state value (sets['Naegling'], sets['Genmei'], etc.)
 ---   Note: CombatMode weapon locking is handled by disable()/enable() in job_update()
 ---   @param result table Current equipment set
 ---   @return table Set with weapons applied
@@ -117,7 +117,7 @@ function SetBuilder.apply_weapon(result)
         return result
     end
 
-    -- Apply main weapon (Crocea Mors, Naegling, Daybreak)
+    -- Apply main weapon (sets[state.MainWeapon.current])
     if state.MainWeapon and state.MainWeapon.current then
         local weapon_set = sets[state.MainWeapon.current]
         if weapon_set then
@@ -130,7 +130,7 @@ function SetBuilder.apply_weapon(result)
         end
     end
 
-    -- Apply sub weapon (Colada, Tauret, Ammurapi Shield, Genmei Shield)
+    -- Apply sub weapon (sets[state.SubWeapon.current])
     if state.SubWeapon and state.SubWeapon.current then
         local sub_set = sets[state.SubWeapon.current]
         if sub_set then
@@ -188,13 +188,12 @@ end
 -- Inherit universal movement function from BaseSetBuilder
 SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 
-
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   TOWN DETECTION (INHERITED FROM BASE)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Inherit universal town detection function from BaseSetBuilder
--- RDM doesn't use sets.Adoulin, so BaseSetBuilder will fallback to sets.idle.Town for all cities
+-- Returns sets.Adoulin in the Adoulin cities when it exists (the RDM sets define it),
+-- sets.idle.Town in the other cities, plus a second value telling whether the player is in town.
 SetBuilder.check_town = BaseSetBuilder.select_idle_base_town
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -209,15 +208,11 @@ function SetBuilder.build_engaged_set(base_set)
         return {}
     end
 
-    -- Step 1: Select base set based on EngagedMode and shield detection
-    -- This now handles both normal sets (shield/single wield) and .DW sets (dual wield)
+    -- Step 1: Select base set based on EngagedMode and shield detection (normal or .DW)
     local result = SetBuilder.select_engaged_base(base_set)
 
-    -- Step 2: Apply weapon (MainWeapon state)
+    -- Step 2: Apply weapons (MainWeapon / SubWeapon states)
     result = SetBuilder.apply_weapon(result)
-
-    -- Note: Dual wield detection is now handled in select_engaged_base()
-    -- Old apply_dualwield() function removed (was NIN subjob only)
 
     return result
 end

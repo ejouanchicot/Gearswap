@@ -19,10 +19,10 @@
 ---   - Fixed attack speed/multi-attack rates (no skill scaling)
 ---   - No specific gear for potency
 ---
---- @file enhancing_combat.lua
+--- @file shared/data/magic/enhancing/enhancing_combat.lua
 --- @author Tetsouo
 --- @version 2.1 - Improved alignment - Standardized with spell_family
---- @date Created: 2025-10-30 | Updated: 2025-11-06 | Updated: 2025-11-05
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 ---============================================================================
 
 local ENHANCING_COMBAT = {}

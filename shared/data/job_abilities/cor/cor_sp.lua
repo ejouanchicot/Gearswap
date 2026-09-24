@@ -7,7 +7,7 @@
 ---   - Wild Card (SP1, Lv1) - Random party ability reset (1-6)
 ---   - Cutting Cards (SP2, Lv96) - Reduce party SP recast (5-50%)
 ---
---- @file cor_sp.lua
+--- @file shared/data/job_abilities/cor/cor_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06

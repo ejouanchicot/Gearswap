@@ -1,11 +1,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   COR Engaged Module - Combat State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all engaged state logic for Corsair job:
----   - Combat set selection based on EngagedMode (DT, Enspell, Refresh, TP)
----   - Dual wield detection and optimization (NIN subjob)
----   - Dynamic weapon application to engaged sets
----   - Combat state transitions
+---   customize_melee_set (SetBuilder.build_engaged_set): engaged set chosen by
+---   Mote, PDT overlay when HybridMode is PDT, then weapons (main+sub on /NIN
+---   or /DNC, main only otherwise, plus RangeWeapon).
 ---
 ---   @file    shared/jobs/cor/functions/COR_ENGAGED.lua
 ---   @author  Tetsouo

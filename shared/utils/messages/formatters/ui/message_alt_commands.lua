@@ -6,7 +6,7 @@
 --- prints one line per group and lets you drill in, and with an argument it
 --- filters by group or by substring.
 ---
---- @file    messages/formatters/ui/message_alt_commands.lua
+--- @file    shared/utils/messages/formatters/ui/message_alt_commands.lua
 --- @author  Tetsouo
 --- @version 2.0
 --- @date    Created: 2026-08-07 | Updated: 2026-08-09
@@ -25,40 +25,6 @@ local GROUP_ORDER = {
     'summon', 'rage', 'ward', 'roll', 'ja', 'other',
 }
 
---- Note only what departs from the norm.
----
---- Most commands act on what you selected, and repeating that on every row
---- buries the useful part. The rule is stated once above the list; a row only
---- speaks up when it does something else - going to the alt itself, say.
---- A target may also be a function evaluated at command time (a GEO Indi-
---- switches to an ally while the alt holds Entrust).
---- @param entry table Command definition
---- @param alt string Alt character name, so the line can name them
---- @return string Suffix, empty when the command follows the norm
-local function target_note(entry, alt)
-    local target = entry.target or 'lastst'
-
-    if type(target) == 'function' then
-        local ok, resolved = pcall(target)
-        if not ok or type(resolved) ~= 'string' then
-            return ' (target varies)'
-        end
-        target = resolved
-    end
-
-    local notes = {
-        lastst = '',                                  -- the norm
-        t      = ' (on your current target)',
-        bt     = ' (on the mob you are fighting)',
-        ft     = ' (on who you are following)',
-        scan   = ' (on your scan target)',
-        me     = ' (on ' .. (alt or 'the alt') .. ')',
-        pet    = " (on " .. (alt or 'the alt') .. "'s pet)",
-    }
-    local note = notes[target:lower()]
-    return note ~= nil and note or (' (target: ' .. target .. ')')
-end
-
 --- What a command will cast, as text.
 --- @param entry table Command definition
 --- @return string Action label
@@ -71,7 +37,8 @@ local function action_label(entry)
         return table.concat(names, ' + ')
     end
     if entry.tiers then
-        -- Show what would actually go out now, not the whole chain.
+        -- One name instead of the whole chain: the highest tier, whatever the
+        -- alt's level (AltCommands picks the tier by level when it casts).
         local best, best_level = nil, -1
         for _, t in ipairs(entry.tiers) do
             local need = t.level or 1
@@ -104,6 +71,7 @@ end
 --- Print the header line shared by both views.
 --- @param alt string Alt character name
 --- @param job string Alt's current job code
+--- @param subjob string|nil Alt's current subjob code
 --- @param count number Number of commands being described
 local function header(alt, job, subjob, count)
     local gray = MessageCore.create_color_code(Colors.SEPARATOR)
@@ -111,17 +79,6 @@ local function header(alt, job, subjob, count)
     local jobs = job .. (subjob and subjob ~= 'NON' and ('/' .. subjob) or '')
     MessageRenderer.send(1, string.format('%s=== %s%s %s(%s)%s - %d commands ===',
         gray, hi, alt, gray, jobs, gray, count))
-end
-
---- Which job a command came from, main or sub.
---- Two jobs are loaded at once, so without this you cannot tell whether a
---- command belongs to the alt's main kit or to its subjob - which is also what
---- decides the tier you get.
---- @param entry table Command definition
---- @return string e.g. 'RDM' for a main job, '/WHM' for a subjob
-local function job_label(entry)
-    local job = entry.source_job or '?'
-    return entry.source == 'sub' and ('/' .. job) or job
 end
 
 --- Bucket a command by what the player has to do before firing it.

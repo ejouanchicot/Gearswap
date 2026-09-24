@@ -1,17 +1,15 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DRK Aftercast Module - Aftercast Action Handling
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all aftercast actions for Dark Knight job:
----   • Return to appropriate gear sets after actions
----   • Post-weaponskill equipment swaps
----   • Post-ability cleanup
----   • Buff pending flag confirmation
+---   Aftercast hook for Dark Knight:
+---   • Midcast watchdog notification
+---   • Dark Seal / Nether Void pending flag confirmation (withdrawn if interrupted)
+---   Returning to idle/engaged gear is left to Mote's default aftercast.
 ---
----   @file    DRK_AFTERCAST.lua
+---   @file    shared/jobs/drk/functions/DRK_AFTERCAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-23
----   @requires Tetsouo architecture, drk_buff_anticipation
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -43,9 +41,8 @@ end
 ---   @param eventArgs table  Event arguments (not used)
 ---   @return void
 function job_aftercast(spell, action, spellMap, eventArgs)
-    -- Lazy load DRK buff anticipation on first use
     ensure_module_loaded()
-    -- Watchdog: Track aftercast
+
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_aftercast()
     end
@@ -77,14 +74,13 @@ end
 ---   @param eventArgs table  Event arguments (not used)
 ---   @return void
 function job_post_aftercast(spell, action, spellMap, eventArgs)
-    -- DRK-specific post-aftercast adjustments
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Export globally for GearSwap
+-- Export to global scope (used by Mote-Include via include())
 _G.job_aftercast = job_aftercast
 _G.job_post_aftercast = job_post_aftercast
 

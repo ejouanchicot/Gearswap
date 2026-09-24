@@ -13,7 +13,7 @@
 --- Usage:
 ---   • Edit the book numbers and pages to match your in-game macro setup
 ---   • Use the 'default' entry as fallback for subjobs without specific config
----   • Book range: 1-20 | Page range: 1-10
+---   • Book range: 1-40 | Page range: 1-10
 ---
 --- @file    config/dnc/DNC_MACROBOOK.lua
 --- @author  Tetsouo
@@ -40,7 +40,7 @@ DNCMacroConfig.solo = {
     ['SAM'] = {book = 4, page = 1}, -- DNC/SAM
     ['WAR'] = {book = 5, page = 1}, -- DNC/WAR
     ['THF'] = {book = 4, page = 1}, -- DNC/THF
-    -- Default fallback
+    -- Replaced by DNCMacroConfig.default when MacrobookManager loads this file
     ['default'] = {book = 4, page = 1}
 }
 
@@ -50,7 +50,7 @@ DNCMacroConfig.solo = {
 --- Structure: dualbox[ALT_JOB][SUBJOB] = {book, page}
 --- Example: dualbox['GEO']['SAM'] = DNC/SAM macros optimized for playing with GEO alt
 ---
---- Uncomment and customize sections below as needed:
+--- Used while the alt is online on ALT_JOB; otherwise the solo table applies.
 ---============================================================================
 
 DNCMacroConfig.dualbox = {
@@ -66,8 +66,8 @@ DNCMacroConfig.dualbox = {
     },
     -- DNC + RDM alt
     ['RDM'] = {
-        ['DRG'] = {book = 5, page = 1}, -- DNC/DRG + RUN
-        ['WAR'] = {book = 5, page = 1}  -- DNC/WAR + RUN
+        ['DRG'] = {book = 5, page = 1}, -- DNC/DRG + RDM
+        ['WAR'] = {book = 5, page = 1}  -- DNC/WAR + RDM
     }
 }
 

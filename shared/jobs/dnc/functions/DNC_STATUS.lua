@@ -6,7 +6,7 @@
 ---   @file    shared/jobs/dnc/functions/DNC_STATUS.lua
 ---   @author  Tetsouo
 ---   @version 1.2 - Added DoomManager safety unlock
----   @date    Updated: 2025-11-14
+---   @date    Created: 2025-10-04 | Updated: 2025-11-14
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- DNC adds nothing of its own: the shared handler is the whole

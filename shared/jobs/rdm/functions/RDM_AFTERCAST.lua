@@ -1,7 +1,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   RDM Aftercast Module - Post-Action Cleanup
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles gear return after actions complete (return to idle/engaged).
+---   Aftercast hook. Mote puts idle/engaged gear back on its own; the shared
+---   LifecycleManager handler only ticks the watchdog.
 ---
 ---   @file    shared/jobs/rdm/functions/RDM_AFTERCAST.lua
 ---   @author  Tetsouo

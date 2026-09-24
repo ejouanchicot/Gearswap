@@ -5,17 +5,13 @@
 ---   when conditions are met.
 ---
 ---   Features:
----   • Auto-trigger Climactic Flourish before configured WS (Rudra's, Ruthless, Shark Bite)
----   • Condition checks (TP >= 1000, target HP > 25%, 3+ Finishing Moves)
----   • User toggle support (state.ClimacticAuto On/Off)
----   • Optimized 1s delay (down from 2s for faster execution)
----   • AbilityHelper integration for centralized ability triggering
----   • DNCWSConfig integration for WS whitelist
+---   • WS whitelist, min TP and min target HP% from DNCWSConfig
+---   • Requires 3+ Finishing Moves
+---   • User toggle (state.ClimacticAuto On/Off)
+---   • AbilityHelper.try_ability_ws: cancels the WS, uses Climactic Flourish,
+---     replays the WS once the buff shows (1 s soft deadline + grace)
 ---
----   Performance:
----   • Climactic >> WS total time: ~1.3s (1s ability delay + 0.3s stability)
----
----   @file    jobs/dnc/functions/logic/climactic_manager.lua
+---   @file    shared/jobs/dnc/functions/logic/climactic_manager.lua
 ---   @author  Tetsouo
 ---   @version 1.1 - Optimized Timing
 ---   @date    Created: 2025-10-06
@@ -26,7 +22,7 @@ local ClimaticManager = {}
 
 -- Load dependencies
 local AbilityHelper = require('shared/utils/precast/ability_helper')
-local DNCWSConfig = _G.DNCWSConfig or {}  -- Loaded from character main file
+local DNCWSConfig = _G.DNCWSConfig or {}  -- Set by the entry point before this module is required
 
 -- The game shows one buff per count up to 5, then a single "(6+)" buff.
 local FINISHING_MOVES_3_PLUS = {
@@ -55,23 +51,18 @@ end
 ---   @param spell table Weaponskill spell object
 ---   @param eventArgs table Event arguments for cancellation
 function ClimaticManager.auto_trigger(spell, eventArgs)
-    -- Only process weaponskills
     if spell.type ~= 'WeaponSkill' then
         return
     end
 
-    -- Check if auto-trigger is enabled (state.ClimacticAuto)
     if state and state.ClimacticAuto and state.ClimacticAuto.value == 'Off' then
-        return  -- Auto-trigger disabled by user
+        return
     end
 
-    -- Check conditions: TP >= min_tp, target HP > min_hpp, 3+ Finishing Moves
     if player.tp >= DNCWSConfig.min_tp and
         player.target and player.target.hpp and player.target.hpp > DNCWSConfig.min_target_hpp and
         has_three_finishing_moves() then
-        -- Check if this WS is configured to auto-trigger Climactic Flourish
         if DNCWSConfig.should_use_climactic(spell.name) then
-            -- Use centralized ability helper (1s delay before WS - optimized from 2s)
             AbilityHelper.try_ability_ws(spell, eventArgs, 'Climactic Flourish', 1)
         end
     end

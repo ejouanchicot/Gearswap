@@ -8,9 +8,13 @@
 ---   Public API (called by COMMON_COMMANDS.handle_command dispatcher):
 ---     CraftCommands.handle_craft(variant)   - equip bonecraft set + lock slots
 ---     CraftCommands.handle_fish(variant)    - equip fishing set + lock slots
----     CraftCommands.handle_uncraft()        - unlock + restore previous gear
+---     CraftCommands.handle_uncraft()        - unlock, normal gear and job
+---                                             lockstyle resume
 ---
----   @file shared/utils/craft/craft_commands.lua
+---   @file    shared/utils/craft/craft_commands.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2026-05-10
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local CraftCommands = {}
@@ -235,7 +239,8 @@ end
 ---   COMMAND HANDLERS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Handle //gs c craft [variant]   (default = bonecraft, hq variant).
+--- Handle //gs c craft [variant] (bonecraft_sets.lua; no variant = the file's
+--- `default`). 'off' / 'stop' / 'uncraft' close the session instead.
 --- @param variant string|nil Variant key or alias, nil for the file default
 --- @return boolean True when the set was applied
 function CraftCommands.handle_craft(variant)

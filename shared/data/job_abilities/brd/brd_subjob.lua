@@ -6,7 +6,7 @@
 --- Contents:
 ---   - Pianissimo (Lv20) - Next song affects single target only
 ---
---- @file brd_subjob.lua
+--- @file shared/data/job_abilities/brd/brd_subjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06

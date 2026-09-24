@@ -9,23 +9,22 @@
 ---   • Hook modules (GEO_*.lua) provide GearSwap event handlers
 ---   • Logic modules (logic/*.lua) contain business logic, loaded via require()
 ---
----   @file    geo_functions.lua
+---   @file    shared/jobs/geo/functions/geo_functions.lua
 ---   @author  Tetsouo
 ---   @version 2.0 - Logic Extracted to logic/
 ---   @date    Created: 2025-10-09 | Updated: 2025-10-14
 ---   @requires All GEO_*.lua modules in functions directory
 ---  ═══════════════════════════════════════════════════════════════════════════
+
+-- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+local Profiler = require('shared/utils/debug/performance_profiler')
+local TIMER = Profiler.create_timer('GEO')
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SECTION 1: MESSAGE SYSTEM
 ---  ═══════════════════════════════════════════════════════════════════════════
--- Message system (must load first for buff status display)
--- ═══════════════════════════════════════════════════════════════════
--- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
--- ═══════════════════════════════════════════════════════════════════
-local Profiler = require('shared/utils/debug/performance_profiler')
-local TIMER = Profiler.create_timer('GEO')
--- ═══════════════════════════════════════════════════════════════════
 
+-- Message system (must load first for buff status display)
 include('../shared/utils/messages/formatters/magic/message_buffs.lua')
 TIMER('message_buffs')
 
@@ -76,28 +75,24 @@ TIMER('GEO_MOVEMENT')
 ---   The following business logic modules are loaded via require() in hooks:
 ---
 ---   logic/geo_spell_refiner.lua
----     • Auto-select optimal Indi/Geo spell based on mode
----     • Nuke tier and spell element selection
----     • Spell refinement based on context
+---     • Nuke tier fallback (not learned / on recast) for the nuke commands
 ---
 ---   logic/set_builder.lua
----     • Shared engaged set construction
----     • Shared idle set construction
----     • Hybrid mode application (PDT/MDT/Normal)
+---     • Engaged/idle set construction (luopan vs no luopan)
+---     • HybridMode base selection (PDT/Normal) when no luopan is out
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SECTION 6: DUAL-BOXING SYSTEM
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load dual-boxing manager (uses deferred init + lazy message loading)
-local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
+-- Loaded for its side effect: requiring dualbox_manager runs its deferred init.
+require('shared/utils/dualbox/dualbox_manager')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   INITIALIZATION COMPLETE
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- All module functions are now available in global scope
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 MessageFormatter.show_debug('GEO', 'All functions loaded (11 hooks + 2 logic modules)')
 

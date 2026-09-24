@@ -1,12 +1,13 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PLD Buffs Module - Buff Gain/Loss Handler
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles job-specific buff gain/loss events (Doom, Chainspell, etc.).
+---   Buff gain/loss hook. Delegates to the shared LifecycleManager handler
+---   (Doom handling).
 ---
 ---   @file    shared/jobs/pld/functions/PLD_BUFFS.lua
 ---   @author  Tetsouo
 ---   @version 1.1 - Removed dead code + refactored header
----   @date    Updated: 2025-11-12
+---   @date    Created: 2025-11-03 | Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- PLD adds nothing of its own: the shared handler is the whole

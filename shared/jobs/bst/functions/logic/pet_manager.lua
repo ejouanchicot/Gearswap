@@ -2,9 +2,9 @@
 ---   BST Pet Manager - Pet Tracking & Auto-Engage
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Manages pet status tracking, auto-engage system, and ready moves caching.
----   Uses multiple cache layers for performance (0.1s, 0.1s, 5s).
+---   Uses multiple cache layers for performance (1.0s, 0.5s, 30s).
 ---
----   @file    jobs/bst/functions/logic/pet_manager.lua
+---   @file    shared/jobs/bst/functions/logic/pet_manager.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-17
@@ -26,7 +26,7 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 ---   PERFORMANCE CACHING (3 LAYERS)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Cache Layer 1: Pet Mode (0.1s duration)
+-- Cache Layer 1: Pet Mode (1.0s duration)
 local cached_pet_mode = {
     pet_valid = false,
     pet_id = nil,
@@ -54,7 +54,7 @@ local READY_MOVES_CACHE_DURATION = 30.0  -- Increased from 10.0s (moves rarely c
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Update pet mode cache (pet_valid, pet_id)
----   @param pet table Pet object from windower.ffxi.get_mob_by_target('pet')
+---   @param pet table|nil Pet object (_G.pet or windower.ffxi.get_mob_by_target('pet'))
 ---   @return void
 function PetManager.update_pet_mode(pet)
     local current_time = os.clock()
@@ -264,14 +264,15 @@ end
 ---   PET STATUS MONITORING (for auto-engage)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Debouncing: Prevent spam of gs c update (expensive operation)
+-- Debouncing: at most one live pet check per MONITOR_DEBOUNCE seconds
 local last_monitor_time = 0
 local MONITOR_DEBOUNCE = 1.0  -- Don't update more than once per 1.0s (matches monitoring interval)
 
 ---   Monitor pet status changes and update state.PetEngaged
 ---   Called periodically (e.g., in time change event)
 ---   Uses LIVE API call to get real-time pet status (not stale _G.pet snapshot)
----   @return void
+---   @return boolean|nil True when state.PetEngaged changed, false when not,
+---           nil when skipped by the debounce or when there is no pet
 function PetManager.monitor_pet_status()
     -- DEBOUNCING: Skip if called too recently (prevents lag spikes)
     local current_time = os.clock()

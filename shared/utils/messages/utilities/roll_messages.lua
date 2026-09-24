@@ -8,7 +8,7 @@
 --- - Bust rate calculations
 --- - Double-Up window status
 ---
---- @file utils/messages/roll_messages.lua
+--- @file shared/utils/messages/utilities/roll_messages.lua
 --- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2025-10-08
@@ -16,7 +16,6 @@
 
 local RollMessages = {}
 
--- Load message core for formatting
 local MessageCore = require('shared/utils/messages/message_core')
 
 -- Windower chars for special characters (circled numbers ①②③④⑤⑥⑦⑧⑨⑩⑪)
@@ -191,11 +190,11 @@ end
 --- @param roll_range number|nil Roll range in yalms (8 without Luzaf, 16 with Luzaf)
 function RollMessages.show_roll_result(roll_name, value_display, bonus_display, is_crooked, affected_count, total_count, lucky_num, unlucky_num, missed_names, bust_rate, job_bonus_info, roll_range)
     local job_tag = MessageCore.get_job_tag()
-    local job_color = MessageCore.create_color_code(MessageCore.COLORS.JOB_TAG)      -- Cyan
-    local roll_color = MessageCore.create_color_code(MessageCore.COLORS.JA)         -- Yellow
-    local white_color = MessageCore.create_color_code(001)                          -- White
-    local bonus_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS)   -- Green
-    local separator_color = MessageCore.create_color_code(MessageCore.COLORS.SEPARATOR) -- Gray
+    local job_color = MessageCore.create_color_code(MessageCore.COLORS.JOB_TAG)
+    local roll_color = MessageCore.create_color_code(MessageCore.COLORS.JA)
+    local white_color = MessageCore.create_color_code(001)
+    local bonus_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS)
+    local separator_color = MessageCore.create_color_code(MessageCore.COLORS.SEPARATOR)
 
     -- Extract just the number from value_display (e.g., "11 LUCKY!" >> 11)
     local roll_value = tonumber(value_display:match("%d+"))
@@ -260,14 +259,14 @@ function RollMessages.show_roll_result(roll_name, value_display, bonus_display, 
         table.insert(lines, line)
     end
 
-    -- Line 5: Bust rate (with dash)
+    -- Bust rate line
     if bust_rate then
         local risk_color, risk_text = bust_risk_style(bust_rate)
         local bust_line = white_color .. "  - Bust: " .. risk_color .. string.format("%.1f%%", bust_rate) .. " " .. white_color .. "(" .. risk_text .. ")"
         table.insert(lines, bust_line)
     end
 
-    -- Line 6: Natural 11 special benefits (if roll value is 11)
+    -- Natural 11 line
     if roll_value == 11 then
         local success_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS)
         local natural11_line = white_color .. "  " .. success_color .. "11!" .. white_color .. " Reset / 30s Recast / Bust Immunity"
@@ -290,32 +289,34 @@ function RollMessages.show_roll_result(roll_name, value_display, bonus_display, 
     if max_length < 60 then
         max_length = 60
     end
+    max_length = math.min(max_length, MessageCore.SEPARATOR_WIDTH)
 
     -- Create dynamic separator
     local separator = string.rep("=", max_length)
 
     -- Display opening separator
-    MessageCore.raw( separator_color .. separator)
+    MessageCore.raw(separator_color .. separator)
 
     -- Display all lines
     for _, line in ipairs(lines) do
-        MessageCore.raw( line)
+        MessageCore.raw(line)
     end
 
     -- Display closing separator
-    MessageCore.raw( separator_color .. separator)
+    MessageCore.raw(separator_color .. separator)
 end
 
---- Display Natural 11 special benefits (simple one-line format)
+--- Display Natural 11 special benefits (simple one-line format). No caller:
+--- show_roll_result prints the same line itself.
 --- Shows instant recast reset, 30s recast, and bust debuff immunity
 --- NOTE: Immunity = NO BUST DEBUFF if you bust (you can still bust but no penalty)
 --- Benefits only apply if NO Bust debuff is currently active
 --- Benefits persist as long as ANY 11 roll remains active
 function RollMessages.show_roll_natural_eleven()
     local job_tag = MessageCore.get_job_tag()
-    local job_color = MessageCore.create_color_code(MessageCore.COLORS.JOB_TAG)     -- Cyan tag
-    local success_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS) -- Green
-    local white_color = MessageCore.create_color_code(001)                          -- White
+    local job_color = MessageCore.create_color_code(MessageCore.COLORS.JOB_TAG)
+    local success_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS)
+    local white_color = MessageCore.create_color_code(001)
 
     -- Simple one-line message: [COR/DNC] 11! Reset / 30s Recast / Bust Immunity
     local message = string.format(
@@ -326,10 +327,11 @@ function RollMessages.show_roll_natural_eleven()
         white_color
     )
 
-    MessageCore.raw( message)
+    MessageCore.raw(message)
 end
 
---- Display bust rate warning (integrated in multi-line format)
+--- Display bust rate warning. No caller: show_roll_result prints the bust line
+--- itself (through BUST_BANDS, which repeats the thresholds below).
 --- @param bust_rate number Bust rate percentage
 function RollMessages.show_roll_bust_rate(bust_rate)
     local white_color = MessageCore.create_color_code(001)
@@ -371,7 +373,7 @@ function RollMessages.show_roll_bust_rate(bust_rate)
     end
 
     -- Display bust line
-    MessageCore.raw( string.format(
+    MessageCore.raw(string.format(
         "%sBust: %s%.1f%% %s(%s)",
         white_color,
         risk_color, bust_rate,
@@ -380,7 +382,7 @@ function RollMessages.show_roll_bust_rate(bust_rate)
 
     -- Final separator (gray, matching opening separator)
     local separator = string.rep("=", 48)
-    MessageCore.raw( separator_color .. separator)
+    MessageCore.raw(separator_color .. separator)
 end
 
 ---============================================================================
@@ -393,13 +395,12 @@ end
 --- @param effect_type string Type of effect (e.g., "% Double-Attack")
 function RollMessages.show_roll_bust(roll_name, bust_effect, effect_type)
     local job_tag = MessageCore.get_job_tag()
-    local job_color = MessageCore.create_color_code(MessageCore.COLORS.JOB_TAG)   -- Cyan tag
-    local error_color = MessageCore.create_color_code(MessageCore.COLORS.ERROR)   -- Red BUST
-    local roll_color = MessageCore.create_color_code(MessageCore.COLORS.JA)       -- Yellow roll name
-    local white_color = MessageCore.create_color_code(001)                        -- White text
+    local job_color = MessageCore.create_color_code(MessageCore.COLORS.JOB_TAG)
+    local error_color = MessageCore.create_color_code(MessageCore.COLORS.ERROR)
+    local roll_color = MessageCore.create_color_code(MessageCore.COLORS.JA)
+    local white_color = MessageCore.create_color_code(001)
 
-    -- Use WARNING color (region-specific: US=057 orange, EU=002 rose)
-    -- Get warning color dynamically (config/REGION_CONFIG.lua or manual override)
+    -- Region-specific orange, read at call time (see message_colors.lua)
     local warning_code = MessageCore.COLORS.get_warning_color()
     local warning_color = MessageCore.create_color_code(warning_code)
 
@@ -460,7 +461,7 @@ function RollMessages.show_active_rolls(active_rolls)
 
     -- Header
     local job_tag = MessageCore.get_job_tag()
-    MessageCore.raw( string.format("%s[%s]%s Active Rolls (%s%d%s):",
+    MessageCore.raw(string.format("%s[%s]%s Active Rolls (%s%d%s):",
         job_color, job_tag,
         white_color,
         number_color, #active_rolls, white_color))
@@ -475,7 +476,7 @@ function RollMessages.show_active_rolls(active_rolls)
             white_color,
             number_color, roll.value
         )
-        MessageCore.raw( formatted_message)
+        MessageCore.raw(formatted_message)
     end
 end
 

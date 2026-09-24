@@ -2,9 +2,9 @@
 ---   RUN Precast Module - Precast Action Handling & Fast Cast
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Debuff guard, cooldown check, WS handling.
----   FC fallback: spell-specific > skill-specific > base set.
+---   Fast Cast set is chosen by Mote-Include (spell > skill > sets.precast.FC).
 ---
----   @file    RUN_PRECAST.lua
+---   @file    shared/jobs/run/functions/RUN_PRECAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-05
@@ -39,13 +39,14 @@ local function ensure_modules_loaded()
     success, result = pcall(require, 'shared/utils/precast/ws_precast_handler')
     if success then WSPrecastHandler = result end
 
+    -- The entry does not load RUN_TP_CONFIG, so this is normally {}
+    -- and no TP-bonus gear is computed for RUN weaponskills.
     RUNTPConfig = _G.RUNTPConfig or {}
 
     modules_loaded = true
 end
 
 -- Scholar Stratagems skipped from cooldown check (charge-based, player manages manually)
-
 local cooldown_exclusions = {
     -- Scholar Stratagems (charge-based abilities)
     ['Light Arts'] = true,
@@ -73,12 +74,6 @@ local cooldown_exclusions = {
     ['Klimaform'] = true
 }
 
--- No auto-abilities for RUN
-
-local auto_abilities = {
-    -- No auto-abilities for RUN
-}
-
 --- Precast order: debuff guard → cooldown → WS handler
 ---   @param spell table Spell/ability data
 ---   @param action string Action type
@@ -103,11 +98,6 @@ function job_precast(spell, action, spellMap, eventArgs)
         if eventArgs.cancel then return end
     end
 
-    -- No auto-abilities for RUN
-    if spell.action_type == 'Magic' and auto_abilities[spell.name] then
-        auto_abilities[spell.name](spell, eventArgs)
-    end
-
     -- WS handling (range check, TP requirement, gear)
     if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, RUNTPConfig) then
         return
@@ -115,7 +105,7 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- Fast Cast handled automatically by Mote-Include (sets.precast.FC)
 end
 
----   Apply final gear adjustments before equipping
+---   Apply TP-bonus gear for weaponskills, then the optional precast debug display
 ---   @param spell table Spell/ability data
 ---   @param action string Action type
 ---   @param spellMap string Spell mapping

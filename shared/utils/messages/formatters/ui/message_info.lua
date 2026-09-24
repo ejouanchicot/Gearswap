@@ -3,8 +3,9 @@
 ---============================================================================
 --- Provides formatted messages for the info command (JA/Spell/WS display).
 --- Handles all info-related output including headers, fields, and errors.
+--- Built by hand with add_to_chat; the INFO templates are not used.
 ---
---- @file    messages/message_info.lua
+--- @file    shared/utils/messages/formatters/ui/message_info.lua
 --- @author  Tetsouo
 --- @version 1.0
 --- @date    Created: 2025-11-06
@@ -16,6 +17,7 @@ local MessageInfo = {}
 --- DEPENDENCIES
 ---============================================================================
 
+local MessageCore = require('shared/utils/messages/message_core')
 local MessageColors = require('shared/utils/messages/message_colors')
 
 ---============================================================================
@@ -45,7 +47,7 @@ end
 function MessageInfo.show_entity_header(header_text)
     local gray = string.char(0x1F, 160)
     local yellow = string.char(0x1F, 50)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
     add_to_chat(121, gray .. separator)
     add_to_chat(121, yellow .. header_text)
     add_to_chat(121, gray .. separator)
@@ -69,7 +71,7 @@ end
 --- Show entity footer separator
 function MessageInfo.show_entity_footer()
     local gray = string.char(0x1F, 160)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
     add_to_chat(121, gray .. separator)
 end
 

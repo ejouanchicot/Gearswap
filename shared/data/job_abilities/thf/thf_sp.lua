@@ -7,7 +7,7 @@
 ---   - Perfect Dodge (SP1, Lv1) - Dodge all melee attacks
 ---   - Larceny (SP2, Lv96) - Steal buff from enemy (1hr)
 ---
---- @file thf_sp.lua
+--- @file shared/data/job_abilities/thf/thf_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

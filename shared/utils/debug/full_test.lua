@@ -1,5 +1,17 @@
--- FullTest: comprehensive in-game health check (systems + modules + hooks + sets), no player action needed.
--- //gs c fulltest [export]  (alias: ft)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   FullTest - In-Game Health Check
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Comprehensive health check (systems + modules + hooks + sets) that needs
+---   no player action. Diagnostic tool: prints with add_to_chat directly
+---   (CODE_QUALITY §6).
+---
+---   Usage: //gs c fulltest [export]  (alias: ft)
+---
+---   @file    shared/utils/debug/full_test.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2026-03-04
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local FullTest = {}
 
@@ -150,6 +162,8 @@ end
 
 -- MAIN RUNNER
 
+--- Run every check section and aggregate the score.
+--- @return table Report {job, reloads, sections, score, total, passed}
 function FullTest.run()
     local job     = player and string.format('%s/%s', player.main_job, player.sub_job) or 'UNK'
     local reloads = windower._gs_reload_count or 0
@@ -195,6 +209,8 @@ end
 local STATUS_ICON  = {OK = '[  OK  ]', WARN = '[ WARN ]', FAIL = '[ FAIL ]'}
 local STATUS_COLOR = {OK = 204,        WARN = 50,         FAIL = 167}
 
+--- Print a report in chat.
+--- @param report table Report returned by FullTest.run()
 function FullTest.display(report)
     add_to_chat(207, '========== FULL TEST REPORT ==========')
     add_to_chat(207, string.format('Job: %s | Reloads: %d', report.job, report.reloads))
@@ -228,6 +244,9 @@ end
 
 -- EXPORT (FILE)
 
+--- Write a report to data/fulltest_report.txt.
+--- @param report table Report returned by FullTest.run()
+--- @return boolean True if the file was written
 function FullTest.export(report)
     local path = windower.addon_path .. 'data/fulltest_report.txt'
     local lines = {}

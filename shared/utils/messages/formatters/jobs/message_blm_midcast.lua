@@ -1,12 +1,12 @@
 ---============================================================================
---- BLM Midcast Message Formatter - BLM Midcast Debug (NEW SYSTEM)
+--- BLM Midcast Message Formatter - BLM Midcast Debug
 ---============================================================================
 --- Provides formatted debug messages for the BLM Midcast system.
 --- Handles all debug output for Elemental/Dark/Enfeebling Magic routing.
---- Includes BLM-specific features: MP Conservation, Elemental Matching
---- Migrated from old system to new system: 2025-11-06
+--- Includes BLM-specific features: MP Conservation, Elemental Matching.
+--- Templates: data/systems/blm_midcast_messages.lua.
 ---
---- @file    messages/message_blm_midcast.lua
+--- @file    shared/utils/messages/formatters/jobs/message_blm_midcast.lua
 --- @author  Tetsouo
 --- @version 2.0
 --- @date    Created: 2025-11-06

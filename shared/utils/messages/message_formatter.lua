@@ -1,10 +1,23 @@
--- MessageFormatter: facade for all message modules (lazy-loaded for performance).
+---============================================================================
+--- MessageFormatter - Facade for all message modules
+---============================================================================
+--- Single entry point for chat messages. Every show_* function is a thin
+--- wrapper that requires its formatter module on first call, so a job only
+--- loads the formatters it actually uses.
+---
+--- Some formatter functions are exposed under two names (show_bst_* and the
+--- unprefixed name, *_new aliases for BRD). //gs c msgtests requires every
+--- job formatter function to be exported here under its own name.
+---
+--- @file shared/utils/messages/message_formatter.lua
+--- @author Tetsouo
+--- @version 2.0
+--- @date Created: 2025-11-03
+---============================================================================
 
 local MessageFormatter = {}
 
--- Modules loaded on first use
-
--- Core module (loaded on first use)
+-- Core module
 local _MessageCore = nil
 local function get_MessageCore()
     if not _MessageCore then _MessageCore = require('shared/utils/messages/message_core') end
@@ -146,8 +159,6 @@ MessageFormatter.show_song_marcato_honor_march = function(...) return get_SongMe
 MessageFormatter.show_song_marcato_skip_buffs = function(...) return get_SongMessages().show_marcato_skip_buffs(...) end
 MessageFormatter.show_song_marcato_skip_soul_voice = function(...) return get_SongMessages().show_marcato_skip_soul_voice(...) end
 
--- Dance Messages removed - DNC now uses global JABuffs system (show_ja_activated)
-
 -- Backward-compat wrappers for old BRD function names
 MessageFormatter.show_soul_voice_activated_new = function(...) return get_JABuffs().show_soul_voice_activated(...) end
 MessageFormatter.show_nightingale_activated_new = function(...) return get_JABuffs().show_nightingale_activated(...) end
@@ -178,7 +189,7 @@ MessageFormatter.show_state_display = function(...) return get_MessageStatus().s
 MessageFormatter.show_tp_ready = function(...) return get_MessageStatus().show_tp_ready(...) end
 MessageFormatter.show_tp_required = function(...) return get_MessageStatus().show_tp_required(...) end
 
--- Cooldown functions (professional system ready)
+-- Cooldown functions
 MessageFormatter.show_spell_cooldown = function(...) return get_MessageCooldowns().show_spell_cooldown(...) end
 MessageFormatter.show_ability_cooldown = function(...) return get_MessageCooldowns().show_ability_cooldown(...) end
 MessageFormatter.show_ws_cooldown = function(...) return get_MessageCooldowns().show_ws_cooldown(...) end
@@ -482,9 +493,9 @@ MessageFormatter.show_high_jump_on_cooldown = function(...) return get_MessageDR
 -- WHM functions (White Mage) - LAZY LOADED
 MessageFormatter.show_curemanager_not_loaded = function(...) return get_MessageWHM().show_curemanager_not_loaded(...) end
 
--- DNC functions removed - migrated to JABuffs (use show_ja_activated instead)
-
-
+--- Print a gray debug line tagged with a prefix.
+--- @param prefix string Tag shown in brackets (e.g. 'PERF', job code)
+--- @param message string Debug text
 function MessageFormatter.show_debug(prefix, message)
     local MessageRenderer = require('shared/utils/messages/core/message_renderer')
     local formatted = string.format('[%s] %s', prefix, message)

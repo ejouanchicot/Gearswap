@@ -12,7 +12,7 @@
 ---   - Liement (Lv85) - Absorb elemental damage
 ---   - One for All (Lv95) - Party Magic Shield (HP × 0.2)
 ---
---- @file run_mainjob.lua
+--- @file shared/data/job_abilities/run/run_mainjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

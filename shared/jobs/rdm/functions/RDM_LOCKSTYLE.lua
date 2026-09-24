@@ -13,11 +13,11 @@
 ---   • Default subjob: NIN
 ---   • Automatic subjob-based selection
 ---
----   @file    jobs/rdm/functions/RDM_LOCKSTYLE.lua
+---   @file    shared/jobs/rdm/functions/RDM_LOCKSTYLE.lua
 ---   @author  Tetsouo
 ---   @version 2.1 - Lazy Loading for performance
 ---   @date    Created: 2025-10-13 | Updated: 2025-11-15
----   @requires utils/lockstyle/lockstyle_manager
+---   @requires shared/utils/lockstyle/lockstyle_manager
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Lazy loading: Module created on first use
@@ -39,12 +39,12 @@ local function get_lockstyle_module()
     return lockstyle_module
 end
 
--- Export select_default_lockstyle() to global scope
+--- Apply the lockstyle for the current subjob (see config/rdm/RDM_LOCKSTYLE.lua).
 function select_default_lockstyle()
     return get_lockstyle_module().select_default_lockstyle()
 end
 
--- Export cancel_rdm_lockstyle_operations() to global scope
+--- Cancel any pending (scheduled) lockstyle operation.
 function cancel_rdm_lockstyle_operations()
     return get_lockstyle_module().cancel_rdm_lockstyle_operations()
 end

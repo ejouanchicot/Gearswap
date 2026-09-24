@@ -7,11 +7,11 @@
 ---   **PERFORMANCE OPTIMIZATION:**
 ---   • Lazy-loaded: Module created on first function call
 ---
----   @file    jobs/dnc/functions/DNC_LOCKSTYLE.lua
+---   @file    shared/jobs/dnc/functions/DNC_LOCKSTYLE.lua
 ---   @author  Tetsouo
 ---   @version 2.1 - Lazy Loading for performance
 ---   @date    Created: 2025-10-13 | Updated: 2025-11-15
----   @requires utils/lockstyle/lockstyle_manager
+---   @requires shared/utils/lockstyle/lockstyle_manager
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Lazy loading: Module created on first use
@@ -24,21 +24,21 @@ local function get_lockstyle_module()
             LockstyleManager = require('shared/utils/lockstyle/lockstyle_manager')
         end
         lockstyle_module = LockstyleManager.create(
-            'DNC',                           -- job_code
+            'DNC',                      -- job_code
             'config/dnc/DNC_LOCKSTYLE', -- config_path
-            1,                                -- default_lockstyle
-            'SAM'                             -- default_subjob
+            1,                          -- default_lockstyle
+            'SAM'                       -- default_subjob
         )
     end
     return lockstyle_module
 end
 
--- Export select_default_lockstyle() to global scope
+--- Apply the lockstyle configured for the current subjob
 function select_default_lockstyle()
     return get_lockstyle_module().select_default_lockstyle()
 end
 
--- Export cancel_dnc_lockstyle_operations() to global scope
+--- Cancel pending lockstyle operations (called on job change / unload)
 function cancel_dnc_lockstyle_operations()
     return get_lockstyle_module().cancel_dnc_lockstyle_operations()
 end

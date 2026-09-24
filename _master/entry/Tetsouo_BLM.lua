@@ -16,7 +16,7 @@
 ---   - Fast Cast optimization (cap 80%)
 ---   - Magic Burst support (burst mode tracking)
 ---   - Manawall/Manafont management
----   - Elemental Staff swapping system
+---   - Hachirin-no-Obi on matching day/weather
 ---   - Death spell optimization
 ---   - Light/Dark elemental spell management
 ---   - AOE nuke support (tier III/II/I)
@@ -57,14 +57,19 @@ end
 local ConfigLoader = require('shared/utils/config/config_loader')
 local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'BLM')
 
--- Load region configuration (must load before message system for color codes)
+-- Load region configuration. message_colors captures _G.RegionConfig once,
+-- when it is first required - ConfigLoader above already required it, so
+-- this assignment comes too late for the region warning color.
 local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig
 end
 
+--- GearSwap entry hook: loads Mote-Include, the shared systems and the BLM modules.
+--- Called by GearSwap each time this job file is loaded.
+--- @return void
 function get_sets()
-    -- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+    -- PERFORMANCE PROFILING (enable with: //gs c perf start)
     local Profiler = require('shared/utils/debug/performance_profiler')
     Profiler.start('get_sets')
 
@@ -113,8 +118,8 @@ function get_sets()
         JobChangeManager.register_lockstyle_cancel("BLM", cancel_blm_lockstyle_operations)
     end
 
-    -- Note: Macro/lockstyle are handled by JobChangeManager on job changes
-    -- Initial load will be handled by JobChangeManager after initialization
+    -- Initial macrobook/lockstyle are triggered from user_setup();
+    -- subjob changes go through JobChangeManager (job_sub_job_change).
 end
 
 ---============================================================================
@@ -125,6 +130,7 @@ end
 --- Coordinates lockstyle, macros, keybinds, and UI reload via JobChangeManager
 --- @param newSubjob string New subjob
 --- @param oldSubjob string Old subjob
+--- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
     -- Note: Mote-Include already called user_setup() before this
 
@@ -155,6 +161,10 @@ end
 -- USER SETUP
 ---============================================================================
 
+--- Configure states, keybinds, UI and the initial macrobook/lockstyle.
+--- Called by Mote-Include from init_include() (inside include('Mote-Include.lua'),
+--- before init_gear_sets) and again on every subjob change, before job_sub_job_change().
+--- @return void
 function user_setup()
     -- ==========================================================================
     -- STATE DEFINITIONS (Loaded from BLM_STATES.lua)
@@ -220,6 +230,9 @@ end
 --- Called by Mote-Include after state changes (e.g., cycling MainNuke, MagicBurstMode)
 --- Updates the UI to reflect current state values
 --- Note: Movement gear is handled passively via customize_idle_set() in BLM_IDLE.lua
+--- @param cmdParams table Parameters passed to Mote's handle_update
+--- @param eventArgs table Mote event arguments (unused)
+--- @return void
 function job_update(cmdParams, eventArgs)
     -- DEBUG: Track timing from AutoMove
     local debug_start = nil
@@ -232,7 +245,7 @@ function job_update(cmdParams, eventArgs)
     -- Combat Mode weapon locking is handled in job_state_change (BLM_COMMANDS.lua)
     -- so it applies immediately on the cycle instead of lagging to the next update.
 
-    -- Update UI when states change (F9, F10, etc.)
+    -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI and KeybindUI.update then
         if _G.AUTOMOVE_DEBUG then
@@ -256,6 +269,9 @@ end
 -- GEAR SET INITIALIZATION
 ---============================================================================
 
+--- Load the BLM equipment sets.
+--- Called by Mote-Include at the end of init_include(), after user_setup().
+--- @return void
 function init_gear_sets()
     include('sets/blm_sets.lua')
 end
@@ -264,6 +280,9 @@ end
 -- CLEANUP
 ---============================================================================
 
+--- Called by GearSwap when this job file is unloaded (job change, reload).
+--- Cancels pending job-change operations and unbinds the job keys.
+--- @return void
 function file_unload()
     -- Cancel pending job change operations (debounce timer + lockstyles)
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')

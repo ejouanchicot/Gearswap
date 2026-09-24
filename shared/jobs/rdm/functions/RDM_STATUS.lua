@@ -1,7 +1,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   RDM Status Module - Player Status Change Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles status changes (Idle, Engaged, Resting, Dead, etc.)
+---   Status change hook. Only the shared LifecycleManager handler runs
+---   (Doom slot unlock); RDM has no status logic of its own.
 ---
 ---   @file    shared/jobs/rdm/functions/RDM_STATUS.lua
 ---   @author  Tetsouo

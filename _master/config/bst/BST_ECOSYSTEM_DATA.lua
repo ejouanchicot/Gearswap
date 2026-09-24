@@ -2,7 +2,7 @@
 --- BST Ecosystem Correlation Database
 ---============================================================================
 --- Monster ecosystem correlation data (strengths and weaknesses).
---- Used for pet selection strategy and ecosystem advantage tracking.
+--- Not loaded by any file today (no require of BST_ECOSYSTEM_DATA).
 ---
 --- @file config/bst/BST_ECOSYSTEM_DATA.lua
 --- @author Tetsouo

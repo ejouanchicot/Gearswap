@@ -1,11 +1,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SAM Engaged Module - Combat State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all engaged state logic for Samurai job:
----   - Combat set selection based on EngagedMode (DT, Enspell, Refresh, TP)
----   - Dual wield detection and optimization (NIN subjob)
----   - Dynamic weapon application to engaged sets
----   - Combat state transitions
+---   customize_melee_set delegates to logic/set_builder.lua:
+---   - Base set: AM3 set, else sets.engaged[HybridMode]
+---   - Seigan layer (sets.thirdeye in PDT, sets.seigan otherwise)
+---   - Main weapon set, bow set when Yoichinoyumi is equipped
 ---
 ---   @file    shared/jobs/sam/functions/SAM_ENGAGED.lua
 ---   @author  Tetsouo
@@ -23,9 +22,9 @@ local SetBuilder = nil
 ---   ENGAGED HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Apply weapon sets, mode selection, and movement gear to all engaged configurations
+---   Apply base selection, Seigan layer, weapon and bow to the engaged set
 ---   @param meleeSet table The engaged set to customize
----   @return table Modified engaged set with current weapon, mode, and movement gear
+---   @return table Modified engaged set
 function customize_melee_set(meleeSet)
     -- Lazy load SetBuilder on first engage
     if not SetBuilder then

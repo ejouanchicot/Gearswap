@@ -1,21 +1,28 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Wardrobe Organizer - Physical Move Primitives
----  ═══════════════════════════════════════════════════════════════════════════
----   Slot-precise FFXI item moves via windower.ffxi.get_item / put_item.
----   These functions send packets to the server; they do NOT wait for confirmation.
----   Callers must space their calls (see Config.POST_BURST_DELAY) to avoid
----   silent rate-limit rejections.
+---============================================================================
+--- Wardrobe Organizer - Physical Move Primitives
+---============================================================================
+--- Slot-precise FFXI item moves via windower.ffxi.get_item / put_item.
+--- These functions send packets to the server; they do NOT wait for confirmation.
+--- Callers must space their calls (see Config.POST_BURST_DELAY) to avoid
+--- silent rate-limit rejections.
 ---
----   Public functions:
----     Moves.space_in(bag_id)            - free slots in a bag (0 if bag disabled)
----     Moves.pull_slot(src_bag, src_slot) - get_item from a specific source slot
----     Moves.push_slot(inv_slot, dst_bag) - put_item from a specific inv slot
----     Moves.find_inv_slot(item_id)      - first inv slot containing item_id
----     Moves.first_pinned_bag(id, pinned_bags)
----                                       - resolve first pin bag for an item id
+--- Public functions:
+---   Moves.space_in(bag_id)             - free slots in a bag (0 if bag disabled)
+---   Moves.pull_slot(src_bag, src_slot) - get_item from a specific source slot
+---   Moves.push_slot(inv_slot, dst_bag) - put_item from a specific inv slot
+---   Moves.find_inv_slot(item_id)       - first inv slot containing item_id
+---   Moves.first_pinned_bag(id, pinned_bags)
+---                                      - resolve first pin bag for an item id
+---   Moves.all_pinned_bags(id, pinned_bags)
+---                                      - every pin bag for an item id
+---   Moves.unclaimed_pins_first(id, pinned_bags)
+---                                      - pins without a copy first
 ---
----   @file shared/utils/wardrobe/lib/moves.lua
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/wardrobe/lib/moves.lua
+--- @author Tetsouo
+--- @version 1.0
+--- @date Created: 2026-05-01
+---============================================================================
 
 local Config = require('shared/utils/wardrobe/lib/config')
 local Log = require('shared/utils/wardrobe/lib/log')
@@ -28,6 +35,8 @@ local dlog = Log.dlog
 local bag_name = Log.bag_name
 
 --- Free slots in a bag (0 if bag is disabled).
+--- @param bag_id number Bag id
+--- @return number Free slots
 function Moves.space_in(bag_id)
     local b = windower.ffxi.get_bag_info(bag_id)
     return (b and b.enabled) and (b.max - b.count) or 0
@@ -35,6 +44,10 @@ end
 
 --- Pull a SPECIFIC slot from a bag into inventory.
 --- Returns (success, reason). Failure reasons: 'inv_full', 'empty', 'invalid'.
+--- @param src_bag number Source bag id
+--- @param src_slot number Source slot index
+--- @return boolean success
+--- @return string reason
 function Moves.pull_slot(src_bag, src_slot)
     if Moves.space_in(INV_BAG) <= 0 then
         dlog(('  pull SKIP %s[%d]: inv full'):format(bag_name(src_bag), src_slot))
@@ -64,6 +77,10 @@ end
 
 --- Push a SPECIFIC inventory slot to a target bag.
 --- Returns (success, reason). Failure reasons: 'dst_full', 'empty', 'invalid'.
+--- @param inv_slot number Inventory slot index
+--- @param dst_bag number Destination bag id
+--- @return boolean success
+--- @return string reason
 function Moves.push_slot(inv_slot, dst_bag)
     if Moves.space_in(dst_bag) <= 0 then
         dlog(('  push SKIP inv[%d]>>%s: dst full'):format(inv_slot, bag_name(dst_bag)))
@@ -83,7 +100,9 @@ function Moves.push_slot(inv_slot, dst_bag)
     return true, 'ok'
 end
 
---- Find an inventory slot containing item_id (returns slot index or nil).
+--- Find an inventory slot containing item_id (no caller today).
+--- @param item_id number Item id
+--- @return number|nil Slot index
 function Moves.find_inv_slot(item_id)
     local items = windower.ffxi.get_items(INV_BAG)
     if not items then
@@ -99,7 +118,9 @@ end
 
 --- Resolve the first pin bag for an item id (used by drain logic when we
 --- don't have a snapshot entry, only an item id).
---- Returns nil if not pinned.
+--- @param item_id number Item id
+--- @param pinned_bags table|nil Map {[name_lower] = {bag_id, ...}}
+--- @return number|nil Bag id, nil if not pinned
 function Moves.first_pinned_bag(item_id, pinned_bags)
     if not pinned_bags then
         return nil
@@ -117,6 +138,8 @@ end
 --- multi-instance items (e.g. Chirich Ring +1 with bag='wardrobe 1' and
 --- bag='wardrobe 2'): when one pin is full the drainer can fall back to
 --- the next.
+--- @param item_id number Item id
+--- @param pinned_bags table|nil Map {[name_lower] = {bag_id, ...}}
 --- @return table list of bag ids (empty if not pinned)
 function Moves.all_pinned_bags(item_id, pinned_bags)
     local out = {}
@@ -141,7 +164,9 @@ end
 --- must go to a DIFFERENT pin bag. (Without this, a bazaar Moonlight Ring in
 --- W1 would not "claim" W1 and the normal copy would land in W1 too.)
 ---
---- Returns: pins-with-no-copy first, then pins-already-having-a-copy as fallback.
+--- @param item_id number Item id
+--- @param pinned_bags table|nil Map {[name_lower] = {bag_id, ...}}
+--- @return table Pins with no copy first, then pins already holding a copy
 function Moves.unclaimed_pins_first(item_id, pinned_bags)
     local pins = Moves.all_pinned_bags(item_id, pinned_bags)
     if #pins <= 1 then return pins end
@@ -162,7 +187,6 @@ function Moves.unclaimed_pins_first(item_id, pinned_bags)
             table.insert(unclaimed, b)
         end
     end
-    -- Empty pins first, occupied pins as last-resort fallback
     local out = {}
     for _, b in ipairs(unclaimed) do table.insert(out, b) end
     for _, b in ipairs(claimed)   do table.insert(out, b) end

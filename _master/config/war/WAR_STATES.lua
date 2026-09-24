@@ -6,7 +6,8 @@
 --- Features:
 ---   • HybridMode configuration (PDT/Normal)
 ---   • MainWeapon state with multiple weapon options
----   • Keybind integration (Alt+1 for weapon cycling, Alt+2 for HybridMode)
+---   • WS1..WS5 slots built from WAR_WS_CONFIG, JumpAuto, FastCast, AutoMedicine
+---   • Keys are bound in WAR_KEYBINDS.lua (Ctrl+numpad)
 ---   • Validation function to verify state configuration
 ---
 --- Usage:
@@ -28,9 +29,7 @@ local WARStates = {}
 
 --- Configure all WAR states
 --- Must be called from user_setup() after Mote-Include is loaded.
---- Defines HybridMode and MainWeapon states with their default values.
----
---- @return void
+--- Defines HybridMode, MainWeapon, WS slots, JumpAuto, FastCast and AutoMedicine.
 function WARStates.configure()
     -- ==========================================================================
     -- COMBAT MODES
@@ -40,7 +39,7 @@ function WARStates.configure()
     --- Options:
     ---   • 'PDT'    - Physical Damage Taken -50% (safe mode)
     ---   • 'Normal' - Full offense (max DPS)
-    --- Keybind: Alt+2 to cycle
+    --- Keybind: Ctrl+Numpad9 to cycle (WAR_KEYBINDS.lua)
     state.HybridMode = M{['description']='Hybrid Mode', 'PDT', 'Normal'}
     state.HybridMode:set('PDT') -- Default to PDT for safety
 
@@ -49,14 +48,14 @@ function WARStates.configure()
     -- ==========================================================================
 
     --- MainWeapon: Primary weapon selection
-    --- Keybind: Alt+1 to cycle
+    --- Keybind: Ctrl+Numpad1 to cycle (WAR_KEYBINDS.lua)
     state.MainWeapon = M {
         ['description'] = 'Main Weapon',
-        'Ukonvasara', -- Relic Great Axe (Aftermath: TP reduction, best for AM3)
+        'Ukonvasara', -- Empyrean Great Axe (Ukko's Fury)
         'Naegling', -- Savage Blade sword (1H with shield for Fencer TP bonus)
         'NaeglingKC', -- Naegling + Kraken Club (multi-attack focus)
-        'Shining', -- Shining One (Great Sword)
-        'Chango', -- Empyrean Great Axe (Aftermath: Multi-Attack, +500 TP bonus)
+        'Shining', -- Shining One (Polearm)
+        'Chango', -- Aeonic Great Axe (+500 TP bonus, see WAR_TP_CONFIG)
         'Ikenga', -- Ikenga's Axe (1H option)
         'Loxotic' -- Loxotic Mace (1H option)
     }
@@ -116,12 +115,12 @@ end
 ---============================================================================
 
 --- Validate that states were configured correctly
---- Checks that all required states exist and have proper structure.
+--- Checks that HybridMode, MainWeapon and JumpAuto exist.
 ---
 --- @return boolean success True if validation passed, false otherwise
 --- @return string  message Validation message (success or error description)
 function WARStates.validate()
-    -- Check HybridMode exists and has correct options
+    -- Check HybridMode exists
     if not state.HybridMode then
         return false, "HybridMode state not configured"
     end

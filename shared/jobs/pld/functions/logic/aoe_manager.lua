@@ -6,7 +6,7 @@
 ---   • Spell rotation management (Geist Wall, Stinking Gas, Sound Blast, etc.)
 ---   • Cooldown tracking and validation
 ---   • Anti-spam protection (prevents duplicate casts)
----   • Auto-targeting (<stnpc> fallback)
+---   • Casts on <stnpc>; falls back to /target <stnpc> when nothing is ready
 ---
 ---   Features:
 ---   • First-available spell selection
@@ -14,7 +14,7 @@
 ---   • Unknown spell detection (wrong subjob)
 ---   • Recent cast tracking (5s threshold)
 ---
----   @file    jobs/pld/functions/logic/aoe_manager.lua
+---   @file    shared/jobs/pld/functions/logic/aoe_manager.lua
 ---   @author  Tetsouo
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-06
@@ -31,7 +31,9 @@ local MessageCooldowns = require('shared/utils/messages/formatters/combat/messag
 -- is_recast_ready / is_on_cooldown resolved as globals from RECAST_CONFIG.lua
 -- (loaded by entry point before job functions). Do not redeclare locally.
 
-local BluMagicConfig = _G.BluMagicConfig or {}  -- Loaded from character main file
+-- Read once, when this module is first required (first //gs c command);
+-- the entry file sets _G.BluMagicConfig in get_sets(), before that.
+local BluMagicConfig = _G.BluMagicConfig or {}
 
 -- Spell tracking to prevent spam when FFXI doesn't send cast confirmation
 local SpellTracker = {}
@@ -108,19 +110,18 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Handle AOE command - cast first available BLU AOE spell
+---   Shows recasts and targets <stnpc> when none can be cast.
 function AOEManager.execute_aoe()
     cleanup_spell_tracking()
     local spells_on_cooldown = {}
     local AOE_SPELLS = BluMagicConfig.get_rotation()
 
-    -- Try to cast first available spell
     local unknown_spells = 0
     for _, spell_name in ipairs(AOE_SPELLS) do
         local can_cast, reason, time_value = can_cast_spell(spell_name)
         if can_cast then
-            -- Show casting message using centralized formatter (displays [MAIN/SUB])
             MessageFormatter.show_spell_cast(spell_name)
-            mark_spell_cast(spell_name) -- Track cast to prevent spam
+            mark_spell_cast(spell_name)
             send_command('@input /ma "' .. spell_name .. '" <stnpc>')
             return
         elseif reason == "on_cooldown" and time_value then
@@ -144,16 +145,13 @@ function AOEManager.execute_aoe()
 
     -- All spells on cooldown - display recast info + fallback stnpc
     if #spells_on_cooldown > 0 then
-        -- Top separator
         MessageFormatter.show_separator()
 
-        -- Each spell with professional formatting (no separators per line)
         local job_tag = MessageFormatter.get_job_tag()
         for _, spell in ipairs(spells_on_cooldown) do
             MessageCooldowns.show_cooldown_message(job_tag, "Magic", spell.name, spell.recast, nil, true)
         end
 
-        -- Bottom separator
         MessageFormatter.show_separator()
 
         -- Fallback: target stnpc without opening menu (prevents macro spam issues)

@@ -1,20 +1,27 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Wardrobe Organizer - Phases
----  ═══════════════════════════════════════════════════════════════════════════
----   The five sequential phases that the orchestrator chains together:
+---============================================================================
+--- Wardrobe Organizer - Phases
+---============================================================================
+--- The sequential phases that the orchestrators chain together:
 ---
----     Phase 0  unequip          - send //gs c naked + lock all slots
----             enable_slots      - re-enable slots after the run completes
----     Phase 2  empty_w1w2       - evict unused items from W1/W2 to overflow
----     Phase 3  fill_w1w2        - promote used items from overflow to W1/W2
----     Phase 4  cleanup_inv      - flush leftover inventory gear (with retries)
+---   Phase 0    unequip          - //gs c naked, verify, then lock all slots
+---              enable_slots     - re-enable slots after the run completes
+---              force_enable_all - 3x `gs enable all` (//gs c wo recover)
+---   Phase 2    empty_w1w2       - evict unused items from primary to overflow
+---   Phase 3    fill_w1w2        - promote used items from overflow to primary
+---   Phase 3.5  compact_primary  - pack later primary bags into earlier ones
+---              count_unpacked   - how many items compact_primary would move
+---   Phase 4    cleanup_inv      - flush leftover inventory gear (with retries)
+---   Alt mode   empty_alt / fill_alt - Phase 2 / 3 on the ALT_* bag lists
 ---
----   Phase 2 and Phase 3 share `run_burst_loop()` (strict FILL/DRAIN burst
----   alternation with re-discovery + cycle detection). Each phase only supplies
----   its own discover_pending() and discover_drainable() closures.
+--- Phases 2, 3, 3.5, A2 and A3 share `run_burst_loop()` (one mixed burst per
+--- step: pushes then pulls, with re-discovery + cycle detection). Each phase
+--- only supplies its own discover_pending() and discover_drainable() closures.
 ---
----   @file shared/utils/wardrobe/lib/phases.lua
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/wardrobe/lib/phases.lua
+--- @author Tetsouo
+--- @version 1.0
+--- @date Created: 2026-05-01
+---============================================================================
 
 local Config = require('shared/utils/wardrobe/lib/config')
 local Log    = require('shared/utils/wardrobe/lib/log')
@@ -24,16 +31,12 @@ local State  = require('shared/utils/wardrobe/lib/state')
 
 local Phases = {}
 
-local dlog             = Log.dlog
-local bag_name         = Log.bag_name
-local space_in         = Moves.space_in
-local pull_slot        = Moves.pull_slot
-local push_slot        = Moves.push_slot
-local first_pinned_bag    = Moves.first_pinned_bag
-local all_pinned_bags     = Moves.all_pinned_bags
+local dlog                 = Log.dlog
+local space_in             = Moves.space_in
+local pull_slot            = Moves.pull_slot
+local push_slot            = Moves.push_slot
 local unclaimed_pins_first = Moves.unclaimed_pins_first
 
--- Static constants (never change at runtime).
 local INV_BAG          = Config.INV_BAG
 local BURST_SIZE       = Config.BURST_SIZE
 local STUCK_LIMIT      = Config.STUCK_LIMIT
@@ -182,8 +185,9 @@ end
 ---
 ---   Adaptive delay:
 ---     POST_BURST_DELAY is sized for a FULL 30-packet burst (~3s server
----     processing). Small bursts wait less:  max(1.0, total*0.1).
----     Floor of 1.0s absorbs network/server jitter.
+---     processing). Small bursts wait less:
+---     max(ADAPTIVE_DELAY_FLOOR, min(POST_BURST_DELAY, total * 0.1)).
+---     The 1.0s floor absorbs network/server jitter.
 ---
 ---   Stop conditions:
 ---     - #pending == 0 AND #drainable == 0    -> clean completion
@@ -196,9 +200,6 @@ end
 ---   @param opts.discover_drainable function() -> list of {slot, dst_list} inv entries
 ---   @param opts.on_done            function (called once when phase completes)
 
--- Floor for adaptive delay: absorbs server/network jitter. 0.1s/packet is the
--- baseline rate (10 pkt/s server cap); the floor prevents tiny bursts from
--- being scheduled too tightly back-to-back.
 local ADAPTIVE_DELAY_FLOOR = 1.0
 local ADAPTIVE_DELAY_PER_PACKET = 0.1
 
@@ -234,7 +235,6 @@ local function run_burst_loop(opts)
         local inv_free  = space_in(INV_BAG)
         local remaining = #pending + #drainable
 
-        -- Clean exit: nothing left to pull AND nothing left to drain.
         if remaining == 0 then
             done('clean')
             return
@@ -255,8 +255,6 @@ local function run_burst_loop(opts)
         end
         last_remaining = remaining
 
-        -- Plan burst sizes. Pushes go first (free inv slots), so pulls can
-        -- borrow against the slots that the pushes will free.
         local push_budget = math.min(BURST_SIZE, #drainable)
         local pull_budget = math.min(
             BURST_SIZE - push_budget,    -- remaining packet quota
@@ -314,8 +312,6 @@ local function run_burst_loop(opts)
             return
         end
 
-        -- Adaptive delay: scale to actual packet count, with a 1s floor for
-        -- jitter and a 3s ceiling (= POST_BURST_DELAY, the full-burst budget).
         local adaptive_delay = math.max(
             ADAPTIVE_DELAY_FLOOR,
             math.min(POST_BURST_DELAY, burst_total * ADAPTIVE_DELAY_PER_PACKET)
@@ -330,6 +326,8 @@ end
 ---   PHASE 2  -  EMPTY W1/W2  (W1/W2 unused  >>  overflow chain)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- @param state table Built state (needs used_names and pinned_bags)
+--- @param on_done function Called once when the phase completes
 function Phases.empty_w1w2(state, on_done)
     dlog('===== PHASE 2: EMPTY W1/W2 (unused -> overflow) =====')
 
@@ -394,6 +392,8 @@ end
 ---   "used in overflow re-pulls forever" cycle. If W1/W2 are full, items
 ---   wait in inv and Phase 4 / outer-retry handles them.
 
+--- @param state table Built state (needs used_names and pinned_bags)
+--- @param on_done function Called once when the phase completes
 function Phases.fill_w1w2(state, on_done)
     dlog('===== PHASE 3: FILL W1/W2 (used <- overflow) =====')
 
@@ -457,6 +457,9 @@ end
 ---   FFXI silently rejects some put_item calls under sustained load.
 ---   Up to CLEANUP_MAX_PASSES re-runs let stuck items get another chance.
 
+--- @param used_names table Set {[name_lower] = true}
+--- @param pinned_bags table Map {[name_lower] = {bag_id, ...}}
+--- @param on_done function Called once when the phase completes or gives up
 function Phases.cleanup_inv(used_names, pinned_bags, on_done)
     dlog('===== PHASE 4: CLEANUP INVENTORY =====')
 
@@ -544,7 +547,6 @@ function Phases.cleanup_inv(used_names, pinned_bags, on_done)
                 return
             end
             local p = plan[idx]
-            -- Verify slot still has the same item before pushing
             local items_now = windower.ffxi.get_items(INV_BAG)
             if items_now and items_now[p.slot] and items_now[p.slot].id == p.id
                and items_now[p.slot].status == 0 then
@@ -571,15 +573,9 @@ function Phases.cleanup_inv(used_names, pinned_bags, on_done)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   ALT MODE (4-wardrobe characters: W1-W4 primary, Sack/Case overflow)
+---   PHASE 3.5  -  PACK PRIMARY  (later primary bags  >>  earlier ones)
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Phase A2 / A3 mirror Phase 2 / 3 but operate on the alt bag set.
----   `state.used_names` here comes from Auditor.collect_all_used_names()
----   (union across ALL jobs in data/<charname>/sets/), not just the active one.
----   Pinned items are intentionally ignored in alt mode (4-wardrobe chars
----   typically don't have multi-instance pin constraints to worry about).
 
---- Empty W1-W4 of items NOT used by any job  ->  Sack/Case.
 --- Items sitting in a later primary bag while an earlier one still has room.
 ---
 --- The game reads wardrobes in order, so the active job belongs in W1 first
@@ -627,11 +623,12 @@ end
 ---     dragging it back would make the run loop until it gave up;
 ---   * anything pinned - a pin already names the bag that piece belongs in,
 ---     usually to keep two copies of a ring in separate wardrobes.
+--- @param state table Built state (needs used_names and pinned_bags)
+--- @param on_done function Called once when the phase completes
 function Phases.compact_primary(state, on_done)
     dlog('===== PHASE 3.5: PACK PRIMARY (later bags -> earlier ones) =====')
 
     local primary = Config.PRIMARY_BAGS or {}
-
     local function discover_pending()
         local list = {}
         if #primary < 2 then return list end
@@ -685,6 +682,18 @@ function Phases.compact_primary(state, on_done)
     })
 end
 
+---  ═══════════════════════════════════════════════════════════════════════════
+---   ALT MODE (default: W1-W4 primary, Sack/Case/Satchel overflow)
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Phase A2 / A3 mirror Phase 2 / 3 but operate on the alt bag set.
+---   `state.used_names` here comes from Auditor.collect_all_used_names()
+---   (union across ALL jobs in data/<charname>/sets/), not just the active one.
+---   Pinned items are intentionally ignored in alt mode (4-wardrobe chars
+---   typically don't have multi-instance pin constraints to worry about).
+
+--- Empty the alt primary bags of items NOT used by any job  ->  alt overflow.
+--- @param state table Alt state (needs used_names)
+--- @param on_done function Called once when the phase completes
 function Phases.empty_alt(state, on_done)
     dlog('===== PHASE A2: EMPTY W1-W4 (any-job-unused -> Sack/Case) =====')
 
@@ -734,7 +743,9 @@ function Phases.empty_alt(state, on_done)
     })
 end
 
---- Promote items used by any job from Sack/Case  ->  W1-W4.
+--- Promote items used by any job from alt overflow  ->  alt primary bags.
+--- @param state table Alt state (needs used_names)
+--- @param on_done function Called once when the phase completes
 function Phases.fill_alt(state, on_done)
     dlog('===== PHASE A3: FILL W1-W4 (any-job-used <- Sack/Case) =====')
 

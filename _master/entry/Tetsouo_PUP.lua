@@ -1,8 +1,13 @@
 ---============================================================================
 --- FFXI GearSwap Configuration - Puppetmaster (PUP) - Modular Architecture
 ---============================================================================
---- Main file for Puppetmaster job with dynamic automaton head/frame states.
---- CRITICAL: Uses dynamic state recreation for species and ammoSet.
+--- Main file for Puppetmaster job.
+---
+--- WARNING: unfinished template, adapted from Tetsouo_BST.lua, and it does not
+--- load: _master/config/pup/ does not exist, so the unprotected
+--- require('Tetsouo/config/pup/PUP_PET_DATA') in get_sets() raises. It also
+--- still refers to BST concepts (ecosystem/species) and to logic modules
+--- (shared/jobs/pup/functions/logic/) that do not exist.
 ---
 --- @file Tetsouo_PUP.lua
 --- @author Tetsouo
@@ -39,14 +44,20 @@ local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'PUP')
 --- GEARSWAP ENTRY POINT
 ---============================================================================
 
--- Load region configuration (must load before message system for color codes)
+-- Load region configuration. message_colors captures _G.RegionConfig once,
+-- when it is first required - ConfigLoader above already required it, so
+-- this assignment comes too late for the region warning color.
 local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig
 end
 
+--- GearSwap entry hook: loads the PUP configs, Mote-Include, the shared systems
+--- and the PUP modules.
+--- Called by GearSwap each time this job file is loaded.
+--- @return void
 function get_sets()
-    -- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+    -- PERFORMANCE PROFILING (enable with: //gs c perf start)
     local Profiler = require('shared/utils/debug/performance_profiler')
     Profiler.start('get_sets')
 
@@ -109,6 +120,10 @@ end
 --- USER SETUP (STATE DEFINITIONS + INITIALIZATION)
 ---============================================================================
 
+--- Configure states, ecosystem, keybinds, UI and the initial macrobook/lockstyle.
+--- Called by Mote-Include from init_include() (inside include('Mote-Include.lua'),
+--- before init_gear_sets) and again on every subjob change, before job_sub_job_change().
+--- @return void
 function user_setup()
     -- ==========================================================================
     -- STATES CONFIGURATION
@@ -158,7 +173,9 @@ function user_setup()
     -- JOB CHANGE MANAGER INITIALIZATION
     -- ==========================================================================
     if jcm_success and JobChangeManager then
-        -- Check if functions are loaded (they should be after get_sets completes)
+        -- pup_functions.lua is not included yet when Mote runs user_setup();
+        -- these globals exist only if PUPKeybinds.bind_all() above
+        -- (KeybindManager show_intro) required PUP_MACROBOOK / PUP_LOCKSTYLE.
         if select_default_lockstyle and select_default_macro_book then
             JobChangeManager.initialize({
                 keybinds = PUPKeybinds,
@@ -198,8 +215,11 @@ end
 
 --- Called by Mote-Include after state changes
 --- Updates the UI to reflect current state values
+--- @param cmdParams table Parameters passed to Mote's handle_update
+--- @param eventArgs table Mote event arguments (unused)
+--- @return void
 function job_update(cmdParams, eventArgs)
-    -- Update UI when states change (F9, F10, etc.)
+    -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI and KeybindUI.update then
         KeybindUI.update()
@@ -210,6 +230,9 @@ end
 --- EQUIPMENT SETS LOADING
 ---============================================================================
 
+--- Load the PUP equipment sets.
+--- Called by Mote-Include at the end of init_include(), after user_setup().
+--- @return void
 function init_gear_sets()
     include('sets/pup_sets.lua')
 end
@@ -218,6 +241,11 @@ end
 --- SUBJOB CHANGE HANDLER
 ---============================================================================
 
+--- Handle sub job change events (called by Mote-Include after user_setup())
+--- Hands the reload sequence to JobChangeManager, then notifies the dualbox partner.
+--- @param newSubjob string New subjob
+--- @param oldSubjob string Old subjob
+--- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
     -- Let JobChangeManager handle the full reload sequence
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
@@ -237,7 +265,7 @@ end
 --- PET MONITORING (TIME CHANGE EVENT)
 ---============================================================================
 --- Monitor pet status and trigger auto-engage when conditions met
---- Runs every minute change in-game (FFXI time)
+--- Runs on every in-game minute (Windower 'time change' event)
 ---============================================================================
 
 -- Cleanup previous event handler if reloading (coroutine.schedule timers survive gs reload)
@@ -276,6 +304,10 @@ end)
 --- CLEANUP ON UNLOAD
 ---============================================================================
 
+--- Called by GearSwap when this job file is unloaded (job change, reload).
+--- Unregisters the time change handler, cancels pending job-change operations,
+--- clears exported globals and unbinds the job keys.
+--- @return void
 function file_unload()
     -- Unregister time change event handler (prevents ghost events on other jobs)
     if _G.pup_time_change_event_id then

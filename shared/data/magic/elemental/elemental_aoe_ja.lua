@@ -3,10 +3,10 @@
 ---============================================================================
 --- Area of Effect elemental spells tier IV (-ja suffix)
 ---
---- @file elemental_aoe_ja.lua
+--- @file shared/data/magic/elemental/elemental_aoe_ja.lua
 --- @author Tetsouo
 --- @version 2.0 - Improved alignment
---- @date Created: 2025-10-30 | Updated: 2025-11-06 | Updated: 2025-10-31
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @verified bg-wiki.com (2025-10-31)
 ---============================================================================
 

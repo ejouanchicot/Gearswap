@@ -12,7 +12,7 @@
 ---   - Decoy Shot (Lv95) - Transfer 80% ranged enmity to party
 ---   - Hover Shot (Lv95) - Damage/ACC+ per shot from different position
 ---
---- @file rng_mainjob.lua
+--- @file shared/data/job_abilities/rng/rng_mainjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

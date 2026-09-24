@@ -18,7 +18,7 @@
 --- Usage:
 ---   • Edit the book numbers and pages to match your in-game macro setup
 ---   • Use the 'default' entry as fallback for subjobs without specific config
----   • Book range: 1-20 | Page range: 1-10
+---   • Book range: 1-40 | Page range: 1-10
 ---
 --- @file    config/war/WAR_MACROBOOK.lua
 --- @author  Tetsouo

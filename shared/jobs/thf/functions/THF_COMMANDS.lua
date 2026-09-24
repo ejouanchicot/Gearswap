@@ -8,14 +8,13 @@
 ---   • UI commands (ui toggle, visibility via UI_COMMANDS)
 ---   • THF-specific commands (smartbuff, fbc, range)
 ---   • Ranged weapon lock with auto-attack (one-way: equip >> lock >> /ra)
----   • State change UI updates (automatic refresh)
----   • Future: TH tracking commands, SA/TA management commands
+---   • State change: UI refresh, range/ammo lock when RangeLock changes
 ---
 ---   Commands:
 ---   • //gs c reload         - Reload THF configuration
 ---   • //gs c checksets      - Validate equipment sets
 ---   • //gs c smartbuff      - Apply subjob-specific buffs
----   • //gs c fbc            - Apply Fighter's Buff Combo (Feint/Bully/Conspirator)
+---   • //gs c fbc            - Feint / Bully / Conspirator opener
 ---   • //gs c range          - Equip + lock ranged + attack <stnpc> (one-way)
 ---   • //gs c ui             - Toggle UI visibility
 ---
@@ -24,7 +23,7 @@
 ---   • UICommands (UI toggle and management)
 ---   • SmartbuffManager (subjob-specific buff automation)
 ---
----   @file    jobs/thf/functions/THF_COMMANDS.lua
+---   @file    shared/jobs/thf/functions/THF_COMMANDS.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
@@ -83,6 +82,7 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DUAL-BOXING: Handle job request from MAIN
     -- ══════════════════════════════════════════════════════════════════════════
     if command == 'requestjob' then
@@ -175,10 +175,6 @@ function job_self_command(cmdParams, eventArgs)
         eventArgs.handled = true
         return
     end
-
-    -- Future: Additional THF-specific commands
-    -- - 'th' for Treasure Hunter tracking
-    -- - 'sata' for SA/TA management
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

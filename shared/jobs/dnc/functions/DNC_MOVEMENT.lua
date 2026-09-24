@@ -1,19 +1,11 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DNC Movement Management Module
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles movement-based buff management for Dancer with AutoMove integration.
+---   Movement status accessor for Dancer, delegating to the global AutoMove.
+---   Movement speed gear itself is applied by AutoMove and the set builder;
+---   nothing in the project calls get_dnc_movement_status today.
 ---
----   Features:
----   • Movement status API (delegates to centralized AutoMove)
----   • Distance tracking (determines movement speed gear triggers)
----   • Position tracking (X/Y/Z coordinates)
----   • Haste Samba auto-off when moving (avoids wasting TP)
----   • Speed gear integration (Skadi's Jambeaux +1)
----
----   Dependencies:
----   • AutoMove - centralized position tracking system
----
----   @file    jobs/dnc/functions/DNC_MOVEMENT.lua
+---   @file    shared/jobs/dnc/functions/DNC_MOVEMENT.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-04
@@ -24,7 +16,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Get current movement status (delegates to AutoMove)
----   @return table movement_info
+---   @return table { is_moving = boolean, distance = number, position = {x, y, z} }
 function get_dnc_movement_status()
     if not AutoMove then
         return {

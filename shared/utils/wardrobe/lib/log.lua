@@ -1,19 +1,23 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Wardrobe Organizer - Debug Log
----  ═══════════════════════════════════════════════════════════════════════════
----   Appends to <addon>/data/wardrobe_debug.log when Config.DEBUG_LOG is true.
----   Truncates the file at the start of each run via dlog_clear().
+---============================================================================
+--- Wardrobe Organizer - Debug Log
+---============================================================================
+--- Appends to <addon>/data/wardrobe_debug.log when Config.DEBUG_LOG is true.
+--- Truncates the file at the start of each run via dlog_clear().
 ---
----   Also provides bag_name(bag_id) used for human-readable log lines.
+--- Also provides bag_name(bag_id) used for human-readable log lines.
 ---
----   @file shared/utils/wardrobe/lib/log.lua
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/wardrobe/lib/log.lua
+--- @author Tetsouo
+--- @version 1.0
+--- @date Created: 2026-05-01
+---============================================================================
 
 local Config = require('shared/utils/wardrobe/lib/config')
 
 local Log = {}
 
 --- Append one line to the debug log file (no-op if DEBUG_LOG is false).
+--- @param line any Text to log (passed through tostring)
 function Log.dlog(line)
     if not Config.DEBUG_LOG then
         return
@@ -33,8 +37,10 @@ function Log.dlog_clear()
     end
 end
 
---- Convert a bag id to its human-readable label (W1, W2, W3..W8, inv).
+--- Convert a bag id to its human-readable label (W1..W8, inv, Sack...).
 --- Falls back to 'b<id>' for unknown bag ids.
+--- @param b number Bag id
+--- @return string Label
 function Log.bag_name(b)
     return Config.BAG_LABELS[b] or ('b' .. tostring(b))
 end

@@ -1,10 +1,10 @@
 ---============================================================================
---- Buff Message Formatter - Buff Status Display (NEW SYSTEM)
+--- Buff Message Formatter - Buff Status Display
 ---============================================================================
---- Uses template-based messaging via MessageRenderer
---- Migrated from old system to new system: 2025-11-06
+--- Buff status block used by the smartbuff managers: one cooldown-style line
+--- per buff (MessageCooldowns) between two BUFFS separators.
 ---
---- @file    messages/message_buffs.lua
+--- @file    shared/utils/messages/formatters/magic/message_buffs.lua
 --- @author  Tetsouo
 --- @version 2.0
 --- @date    Created: 2025-11-06
@@ -22,7 +22,7 @@ local MessageCooldowns = require('shared/utils/messages/formatters/combat/messag
 --- Display buff status with color formatting (one buff per line)
 --- @param buffs_data table Array of buff status objects
 ---   Each object: { name = string, status = string, time = number (optional), action_type = string (optional) }
----   Status values: 'active', 'cooldown', 'excluded'
+---   Status values: 'active', 'ready', 'cooldown' (any other value prints no line)
 --- @param action_type string Optional action type override ("Ability" or "Magic"), defaults to "Ability"
 function MessageBuffs.show_buff_status(buffs_data, action_type)
     if not buffs_data or #buffs_data == 0 then return end
@@ -30,13 +30,12 @@ function MessageBuffs.show_buff_status(buffs_data, action_type)
     -- Default to "Ability" for backwards compatibility with WAR/PLD/DNC
     local default_action_type = action_type or "Ability"
 
-    -- Get dynamic job tag (e.g., "WAR/SAM", "PLD/BLU")
     local job_tag = MessageCore.get_job_tag()
 
     -- Separator at the top of the block
     M.send('BUFFS', 'separator')
 
-    -- Display each buff using professional cooldown format (no separators per line)
+    -- One line per buff, without the per-line separators
     for _, buff in ipairs(buffs_data) do
         -- Use buff-specific action_type if provided, otherwise use default
         local buff_action_type = buff.action_type or default_action_type
@@ -48,7 +47,6 @@ function MessageBuffs.show_buff_status(buffs_data, action_type)
         elseif buff.status == 'cooldown' then
             MessageCooldowns.show_cooldown_message(job_tag, buff_action_type, buff.name, buff.time or 0, nil, true)
         end
-        -- Note: 'excluded' status is no longer used (excluded buffs are filtered before display)
     end
 
     -- Separator at the bottom of the block
@@ -58,10 +56,5 @@ end
 ---============================================================================
 --- MODULE EXPORT
 ---============================================================================
---- Note: this module used to expose 5 globals (show_war_buff_status,
---- show_pld_buff_status, show_run_buff_status, show_dnc_buff_status,
---- show_thf_buff_status) -- all identical wrappers around show_buff_status.
---- They polluted _G permanently and 2 (pld/run) had no caller. Callers now
---- require this module and call MessageBuffs.show_buff_status() directly.
 
 return MessageBuffs

@@ -4,10 +4,10 @@
 --- Equipment sets for Beastmaster job.
 --- Includes master sets, pet sets, ready move sets, weapon sets, and 25 jug pet broth sets.
 ---
---- @file jobs/bst/sets/bst_sets.lua
---- @author Tetsouo
+--- @file    sets/bst_sets.lua
+--- @author  Tetsouo
 --- @version 2.0
---- @date Created: 2025-10-17 | Updated: 2025-10-18
+--- @date    Created: 2025-10-17 | Updated: 2025-10-18
 ---============================================================================
 
 ---@diagnostic disable: lowercase-global

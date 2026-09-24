@@ -1,32 +1,36 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   BRD Equipment Sets - Ultimate Bard Song Configuration
----  ═══════════════════════════════════════════════════════════════════════════
----   Complete equipment configuration for Bard support role with optimized
----   song performance and survivability across all situations.
----   Features:
----     • Song potency maximization (Fili +3, Bihu +3, Brioso +3 sets)
----     • Instrument swapping (Gjallarhorn, Marsyas, Daurdabla, Carnwenhan)
----     • Honor March protection system (Marsyas lock throughout cast)
----     • Dummy song preparation (Daurdabla +2 song slots)
----     • Debuff song accuracy (Lullaby, Elegy, Requiem with Magic Acc)
----     • Melee TP generation (Ayanmo +2, Store TP focus)
----     • Weaponskill optimization (Savage Blade, Mordant Rime, Rudra's Storm)
----     • Movement speed optimization (Fili Cothurnes +3)
----     • Intarabus capes for all situations (Fast Cast, STP, WS)
----    Architecture:
----     • Equipment definitions (Intarabus capes, Linos, wardrobe rings)
----     • Weapon sets (main weapons + subs)
----     • Idle sets (Refresh, DT, Regen, Town)
----     • Engaged sets (Normal, PDT, Accuracy, Kraken Club)
----     • Precast sets (Fast Cast, Job Abilities)
----     • Weaponskill sets (Savage Blade, Rudra's Storm, Mordant Rime)
----     • Midcast sets (Songs by instrument, Debuff songs, Dummy songs)
----     • Movement & Buff sets (Speed optimization, Doom resistance)
----   @file    jobs/brd/sets/brd_sets.lua
----   @author  Tetsouo
----   @version 3.2 - Reorganized Priority Order
----   @date    Updated: 2025-11-10
----  ═════════════════════════════════════════════════════════════════════════
+---============================================================================
+--- BRD Equipment Sets - Bard Song Configuration
+---============================================================================
+--- Complete equipment configuration for Bard support role with optimized
+--- song performance and survivability across all situations.
+---
+--- Features:
+---   • Song potency (Fili +3, Bihu +3, Brioso +3/+4 pieces)
+---   • Instrument swapping (Gjallarhorn, Marsyas, Loughnashade, Daurdabla)
+---   • Honor March / Aria of Passion instrument lock (Marsyas / Loughnashade)
+---   • Dummy song preparation (Daurdabla extra song slots)
+---   • Debuff song accuracy (Lullaby, Elegy, Requiem with Magic Acc)
+---   • Melee TP generation (Fili +3, Linos Store TP)
+---   • Weaponskill sets (Savage Blade, Evisceration, Rudra's Storm,
+---     Mordant Rime, Ruthless Stroke)
+---   • Movement speed (Fili Cothurnes +3)
+---   • Intarabus capes (Fast Cast, STP, WS)
+---
+--- Architecture:
+---   • Equipment definitions (Intarabus capes, Linos, wardrobe rings)
+---   • Weapon sets (main weapons + subs)
+---   • Idle sets (Refresh, DT, Regen, Town)
+---   • Engaged sets (base, STP, Acc, SB, PDTKC for Kraken Club)
+---   • Precast sets (Fast Cast, Job Abilities)
+---   • Weaponskill sets
+---   • Midcast sets (Songs by instrument, Debuff songs, Dummy songs)
+---   • Movement & Buff sets (Speed optimization, Doom resistance)
+---
+--- @file    sets/brd_sets.lua
+--- @author  Tetsouo
+--- @version 3.2
+--- @date    Created: 2025-11-03 | Updated: 2025-11-10
+---============================================================================
 
 sets = {}
 
@@ -166,7 +170,7 @@ sets.engaged.SB = set_combine(sets.engaged, {})
 
 -- • KRAKEN CLUB SPECIALIZED (Multi-Attack Focus)
 --   Automatically selected when Kraken Club is equipped in sub-weapon slot
---   Reduces Store TP to leverage Kraken Club's multi-attack proc rate
+--   Placeholder: currently identical to base engaged
 --   See: set_builder.lua select_engaged_base()
 sets.engaged.PDTKC = set_combine(sets.engaged, {})
 
@@ -208,7 +212,7 @@ sets.precast.JA.Nightingale = {feet = 'Bihu Slippers +3'}
 -- • Troubadour (Enhance song effects) - Bihu Justaucorps +3
 sets.precast.JA.Troubadour = {body = 'Bihu Justaucorps +3'}
 
--- • Troubadour (Enhance song effects) - Bihu Justaucorps +3
+-- • Soul Voice - Bihu Cannions +3
 sets.precast.JA['Soul Voice'] = {legs = 'Bihu Cannions +3'}
 
 
@@ -285,7 +289,7 @@ sets.precast.WS['Mordant Rime'] = {
     back = Intarabus.ws_str
 }
 
--- • Ruthless Stroke (Sword: Single-hit STR Crit)
+-- • Ruthless Stroke (Dagger)
 sets.precast.WS['Ruthless Stroke'] = {
     ranged = LinosWS,
     head = 'Nyame Helm',
@@ -377,10 +381,10 @@ sets.midcast.Minne = set_combine(sets.midcast.BardSong, {legs = 'Mousai Seraweel
 -- • Etude (Stat Boost) - Mousai Turban +1
 sets.midcast.Etude = set_combine(sets.midcast.BardSong, {head = 'Mousai Turban +1'})
 
--- • March 
+-- • March - Fili Manchettes +3
 sets.midcast.March = set_combine(sets.midcast.BardSong, {hands = 'Fili Manchettes +3'})
 
--- • Paeon 
+-- • Paeon / Dirge - Brioso Roundlet +4
 sets.midcast["Army's Paeon"] = set_combine(sets.midcast.BardSong, {head = 'Brioso Roundlet +4'})
 sets.midcast.Dirge = set_combine(sets.midcast.BardSong, {head = 'Brioso Roundlet +4'})
 sets.midcast.Paeon = set_combine(sets.midcast.BardSong, {head = 'Brioso Roundlet +4'})

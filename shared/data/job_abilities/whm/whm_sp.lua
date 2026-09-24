@@ -7,7 +7,7 @@
 ---   - Benediction (SP1, Lv1) - Restore party HP, remove status (instant)
 ---   - Asylum (SP2, Lv96) - Party debuff/dispel immunity
 ---
---- @file whm_sp.lua
+--- @file shared/data/job_abilities/whm/whm_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

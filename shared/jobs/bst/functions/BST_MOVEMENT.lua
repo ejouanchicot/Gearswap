@@ -1,10 +1,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BST Movement Module - Movement Gear Handling
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles movement speed gear for Beastmaster.
----   Registers with AutoMove for automatic movement detection.
+---   Movement hook for Beastmaster. Nothing to do here: AutoMove tracks
+---   movement (state.Moving) and SetBuilder.build_idle_set adds sets.MoveSpeed.
 ---
----   @file    jobs/bst/functions/BST_MOVEMENT.lua
+---   @file    shared/jobs/bst/functions/BST_MOVEMENT.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-17
@@ -13,17 +13,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   AUTOMOVE INTEGRATION (PERFORMANCE OPTIMIZED - No Startup Cost)
 ---  ═══════════════════════════════════════════════════════════════════════════
--- AutoMove (if available) automatically handles:
---   • Movement detection
---   • Speed gear swapping (sets.MoveSpeed from bst_sets.lua)
---   • Idle gear restoration when stopped
---
--- No explicit registration needed - AutoMove auto-detects job modules.
--- Movement gear applied in SetBuilder.build_idle_set().
---
--- PERFORMANCE NOTE: Previous version loaded MessageFormatter at startup and
--- showed a warning. This version does nothing at startup.
--- AutoMove will work if present, otherwise no-op.
+-- AutoMove (if available) handles movement detection. The speed gear
+-- (sets.MoveSpeed) is applied in SetBuilder.build_idle_set() while
+-- state.Moving is "true".
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MOVEMENT GEAR HOOK

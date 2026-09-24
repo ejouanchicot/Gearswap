@@ -2,16 +2,17 @@
 --- UI Appearance - Background and Font Customization
 ---============================================================================
 --- Manages UI background color (preset + custom RGBA + visibility toggle)
---- and font selection. Extracted from UI_MANAGER.lua. Each setter applies
+--- and font selection. Each setter applies
 --- the change to the live texts element (if present) and persists to
 --- _G.keybind_saved_settings via KeybindSettings.save().
 ---
 --- Reads UIConfig.background_presets / UIConfig.text from _G.UIConfig
---- (loaded by the character main file).
+--- (set by config_loader.lua from the character's config/UI_CONFIG.lua).
 ---
---- @file ui/ui_appearance.lua
+--- @file shared/utils/ui/ui_appearance.lua
 --- @author Tetsouo
 --- @version 1.0
+--- @date Created: 2026-05-09
 ---============================================================================
 
 local KeybindSettings = require('shared/utils/ui/UI_SETTINGS')
@@ -93,7 +94,9 @@ function Appearance.set_background_rgba(r, g, b, a)
     return true
 end
 
---- Toggle background visibility (true/false), persisted to settings.
+--- Toggle background visibility, persisted to settings as bg_visible.
+--- NOTE: flips UIConfig.background.visible, which is seeded from UI_CONFIG,
+--- not from the persisted bg_visible (known issue, ui-overlay.md).
 function Appearance.toggle_background()
     local UIConfig = _G.UIConfig or {}
     UIConfig.background = UIConfig.background or {}

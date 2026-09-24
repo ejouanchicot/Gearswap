@@ -4,10 +4,10 @@
 --- Automatically detects player movement and equips movement speed gear.
 --- Provides centralized position tracking for all movement-based systems.
 ---
---- @file utils/movement/automove.lua
---- @author Tetsouo
+--- @file    shared/utils/movement/automove.lua
+--- @author  Tetsouo
 --- @version 2.2.0 - Discontinuity guard + self-heal + adaptive/engaged polling
---- @date Created: 2025-09-30 | Updated: 2026-06-08
+--- @date    Created: 2025-09-30 | Updated: 2026-06-08
 ---
 --- v2.2.0 changes:
 ---   - Teleport/zone desync fix: jump guard (instant re-sync on large position
@@ -75,7 +75,8 @@ local pending_update = false
 ---============================================================================
 --- PERSISTENT SEQUENCE COUNTER (survives gs reload)
 ---============================================================================
--- windower._automove_seq is a C++ object field - never reset by gs reload.
+-- windower._automove_seq lives on the windower table, which outlives the
+-- sandbox rebuilt by every gs reload, so it is never reset.
 -- Each start() and stop() increments it. Closures capture it once at start()
 -- time, so ghost coroutines from previous chains always see a stale my_seq.
 
@@ -108,7 +109,10 @@ function AutoMove.stop()
     DebugLogger.logf_if('AUTOMOVE_DEBUG', 'AutoMove', 'STOP called | seq=%d', windower._automove_seq)
 end
 
---- Call all registered callbacks
+--- Call all registered callbacks (errors are reported, not raised)
+--- @param is_moving boolean
+--- @param distance number
+--- @param player_status string
 local function trigger_callbacks(is_moving, distance, player_status)
     for _, callback in ipairs(callbacks) do
         local success, err = pcall(callback, is_moving, distance, player_status)
@@ -122,7 +126,6 @@ end
 --- STATE INITIALIZATION
 ---============================================================================
 
--- Create movement state if it doesn't exist
 if not state.Moving then
     state.Moving = M('false', 'true')
 end
@@ -131,7 +134,6 @@ end
 --- MOVEMENT TRACKING
 ---============================================================================
 
--- Movement tracking variables
 local mov = {
     x = 0,
     y = 0,
@@ -141,7 +143,8 @@ local mov = {
 
 local moving = false
 
--- Initialize starting position
+--- Read the player's position into mov.
+--- @return boolean True if the position could be read
 local function init_position()
     if player and player.index then
         local mob = windower.ffxi.get_mob_by_index(player.index)
@@ -155,7 +158,6 @@ local function init_position()
     return false
 end
 
--- Try to initialize position
 init_position()
 
 ---============================================================================
@@ -257,6 +259,7 @@ local function send_update(reason, dist, now)
 end
 
 --- The player is moving: raise the flag, update, and keep gear in sync.
+--- @param dist number Distance moved this tick
 local function handle_moving(dist)
     local should_move = (player.status ~= 'Engaged')
 
@@ -272,8 +275,9 @@ local function handle_moving(dist)
     end
 
     -- Backstop for a desync the jump guard can miss, such as an in-area
-    -- teleport that slides rather than jumping. Throttled well below the
-    -- debounce so it costs nothing while simply running.
+    -- teleport that slides rather than jumping. Fires at most once per
+    -- heal_interval, far rarer than the debounce, so it costs nothing while
+    -- simply running.
     if moving and should_move
         and (now - start_time) >= config.job_change_cooldown
         and (now - last_update_time) >= config.heal_interval then
@@ -286,6 +290,7 @@ local function handle_moving(dist)
 end
 
 --- The player has stopped: drop the flag and put the idle set back.
+--- @param dist number Distance moved this tick
 local function handle_stopped(dist)
     if moving then
         state.Moving.value = 'false'
@@ -300,7 +305,6 @@ local function handle_stopped(dist)
     end
 end
 
-
 --- Start the movement detection loop.
 --- Creates a NEW closure chain with a unique sequence ID captured at call time.
 --- Old chains from previous start() calls are instantly invalidated when
@@ -310,11 +314,10 @@ function AutoMove.start()
     windower._automove_seq = windower._automove_seq + 1
     local my_seq = windower._automove_seq  -- captured ONCE in closure
 
-    -- Sync _G for debug tools / LagDebugger
+    -- Mirrored on _G for debug tools / LagDebugger
     _G._automove_sequence = my_seq
     _G.AUTOMOVE_RUNNING   = true
 
-    -- Reset movement state for clean start
     start_time    = os.clock()
     moving        = false
     pending_update = false

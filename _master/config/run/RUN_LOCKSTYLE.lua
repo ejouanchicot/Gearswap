@@ -32,7 +32,6 @@ RUNLockstyleConfig.default = 3
 --- Configure different lockstyles per subjob here.
 --- If a subjob is not in this table, the default lockstyle will be used.
 RUNLockstyleConfig.by_subjob = {
-    -- Examples:
     ['RUN'] = 3, -- RUN/RUN uses lockstyle 3
     ['BLU'] = 3, -- RUN/BLU uses lockstyle 3
     ['RDM'] = 3, -- RUN/RDM uses lockstyle 3

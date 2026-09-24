@@ -8,10 +8,10 @@
 ---   `_mainjob` grimoire files exist on disk and contain SCH-main-only abilities
 ---   (Altruism, Tranquility, Perpetuance, etc.). They are now wired in.
 ---
----   @file    SCH_JA_DATABASE.lua
+---   @file    shared/data/job_abilities/SCH_JA_DATABASE.lua
 ---   @author  Tetsouo
 ---   @version 2.0 - Factory-based + mainjob grimoires fix
----   @date    Updated: 2026-05-06
+---   @date    Created: 2025-11-03 | Updated: 2026-05-06
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local Factory = require('shared/data/job_abilities/JA_DATABASE_FACTORY')

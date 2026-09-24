@@ -12,7 +12,8 @@
 
 local BSTStates = {}
 
---- Configure all BST states
+--- Configure all BST states (called from user_setup in the entry file)
+--- @return nil
 function BSTStates.configure()
     -- Auto pet engage (ON/OFF)
     state.AutoPetEngage = M{['description']='AutoPetEngage', 'Off', 'On'}
@@ -45,9 +46,8 @@ function BSTStates.configure()
     state.HybridMode = M{['description']='Hybrid Mode', 'PDT', 'Normal'}
     state.HybridMode:set('PDT')
 
-    -- Moving state (manual toggle - no auto-detection for performance)
-    -- Note: AutoMove is disabled for BST to reduce overhead
-    -- Toggle manually if you want movement speed gear: //gs c toggle Moving
+    -- Moving state: kept up to date by AutoMove (enabled on BST); read by
+    -- SetBuilder.build_idle_set to add sets.MoveSpeed
     state.Moving = M{['description']='Moving', 'false', 'true'}
     state.Moving:set('false')
 

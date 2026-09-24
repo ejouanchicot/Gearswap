@@ -63,16 +63,27 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Pre-midcast hook (no BRD-specific PRE-midcast logic).
+--- @param spell table Spell information from GearSwap
+--- @param action table Action information from GearSwap
+--- @param spellMap string Spell mapping from Mote-Include
+--- @param eventArgs table Event arguments
 function job_midcast(spell, action, spellMap, eventArgs)
     -- Handled by MidcastRouter in job_post_midcast
 end
 
 --- Mote-Include customization hook (passthrough - kept for future use).
+--- @param midcastSet table Set chosen by Mote
+--- @param spell table Spell information from GearSwap
+--- @return table The set, unchanged
 function job_customize_midcast_set(midcastSet, spell)
     return midcastSet
 end
 
 --- Post-midcast dispatcher: route spell to the appropriate router handler.
+--- @param spell table Spell information from GearSwap
+--- @param action table Action information from GearSwap
+--- @param spellMap string Spell mapping from Mote-Include
+--- @param eventArgs table Event arguments
 function job_post_midcast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 

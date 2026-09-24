@@ -7,7 +7,7 @@
 ---   - Spirit Surge (SP1, Lv1) - Adds wyvern's strength to your own
 ---   - Fly High (SP2, Lv96) - Reset Jump timers, 10s recast
 ---
---- @file drg_sp.lua
+--- @file shared/data/job_abilities/drg/drg_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

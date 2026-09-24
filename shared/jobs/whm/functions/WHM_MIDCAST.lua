@@ -4,17 +4,19 @@
 ---   Handles midcast for White Mage with comprehensive spell-specific sets.
 ---
 ---   Features:
----   - Cure: CureMode (Potency vs SIRD), Afflatus Solace, Divine Caress
+---   - Cure: CureMode (Potency vs SIRD), Afflatus Solace, CureMelee
 ---   - Curaga: CureMode support
----   - Status Removal: Cursna, Paralyna, Erase
+---   - Status Removal: Cursna, Paralyna, Erase (+ Divine Caress)
 ---   - Enhancing Magic: Database-driven spell_family routing (Regen, Refresh, BarElement, etc.)
 ---   - Divine Magic: Banish, Holy, Repose
 ---   - Enfeebling Magic: MND-based vs INT-based
 ---
----   @file    WHM_MIDCAST.lua
+---   @file    shared/jobs/whm/functions/WHM_MIDCAST.lua
 ---   @author  Tetsouo
 ---   @version 3.0 - Added spell_family database support
 ---   @date    Created: 2025-10-21 | Updated: 2025-11-05
+---  ═══════════════════════════════════════════════════════════════════════════
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -76,7 +78,8 @@ function job_midcast(spell, action, spellMap, eventArgs)
     end
 end
 
---- Extracted from job_post_midcast: the `eventArgs.handled` branch.
+--- Buff layers for a cast job_midcast already dressed (eventArgs.handled).
+--- @param spellMap string Spell mapping (Cure, Curaga, CureSolace, ...)
 local function job_post_midcast_eventargs_handled(spellMap)
     -- Apply Divine Caress boosting if StatusRemoval
     if spellMap == 'StatusRemoval' and buffactive['Divine Caress'] then
@@ -91,7 +94,8 @@ local function job_post_midcast_eventargs_handled(spellMap)
     end
 end
 
---- Extracted from job_post_midcast: the `spellMap == 'StatusRemoval'` branch.
+--- Status removal: MidcastManager set, then the Divine Caress layer.
+--- @param spell table Spell information from GearSwap
 local function job_post_midcast_statusremoval(spell)
     MidcastManager.select_set({
         skill = 'StatusRemoval',
@@ -104,7 +108,8 @@ local function job_post_midcast_statusremoval(spell)
     end
 end
 
---- Extracted from job_post_midcast: the `spell.skill == 'Enhancing Magic'` branch.
+--- Enhancing Magic: spell-family routing, then the Solace layer on Bar-spells.
+--- @param spell table Spell information from GearSwap
 local function job_post_midcast_enhancing_magic(spell)
     -- Use database-driven spell_family routing (replaces manual pattern matching)
     -- Database automatically routes: Regen, Refresh, BarElement, BarAilment, Stoneskin, Aquaveil, Boost, etc.
@@ -124,10 +129,13 @@ end
 
 --- Which set an enfeeble wants, by what it scales on.
 ---
---- Repose is WHM's own sleep and has a set of its own. The rest split on
---- Mote's spellMap - MndEnfeebles or IntEnfeebles - which is followed rather
---- than duplicated, so a second list of spell names cannot drift out of step
---- with Mote's.
+--- Repose is WHM's own sleep and has a set of its own; it is Divine Magic,
+--- so job_post_midcast never routes it here today. The rest split on the
+--- spellMap from job_get_spell_map below: MndEnfeebles for White Magic,
+--- IntEnfeebles otherwise.
+--- @param spell table Spell information from GearSwap
+--- @param spellMap string Spell mapping
+--- @return string Pseudo-skill passed to MidcastManager
 local function enfeeble_skill_for(spell, spellMap)
     if spell.name == 'Repose' then
         return 'Repose'
@@ -154,6 +162,11 @@ local function midcast_elemental(spell)
     MidcastManager.select_set({skill = 'Elemental Magic', spell = spell})
 end
 
+--- Post-midcast hook: watchdog, then MidcastManager routing by spell map/skill.
+--- @param spell table Spell information from GearSwap
+--- @param action string Action type
+--- @param spellMap string Spell mapping from Mote-Include
+--- @param eventArgs table Event arguments
 function job_post_midcast(spell, action, spellMap, eventArgs)
     MidcastManager, EnhancingSPELLS = MidcastDeps.load()
 
@@ -161,8 +174,8 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         _G.MidcastWatchdog.on_midcast_start(spell)
     end
 
-    -- Cures are already dressed by job_midcast, which knows the target's
-    -- missing HP; re-selecting here would undo that.
+    -- Cures are already dressed by job_midcast (CureMode, Solace,
+    -- CureMelee); re-selecting here would undo that.
     if eventArgs.handled then
         job_post_midcast_eventargs_handled(spellMap)
         return

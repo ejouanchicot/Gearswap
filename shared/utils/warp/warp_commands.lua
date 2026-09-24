@@ -1,16 +1,16 @@
 ---============================================================================
---- Warp Commands - REFACTORED (Uses Modular System)
+--- Warp Commands - Command router for the warp system
 ---============================================================================
---- Command router for warp system. Now uses modular architecture:
+--- Routes warp, teleport, recall and destination aliases. Delegates to:
 ---   - casting/spell_caster.lua - Spell casting logic
 ---   - casting/item_user.lua - Ring usage with auto-fix
 ---   - casting/cast_helpers.lua - Shared helpers
 ---   - database/warp_database_core.lua - Item database
 ---
---- @file warp_commands.lua
+--- @file shared/utils/warp/warp_commands.lua
 --- @author Tetsouo
---- @version 4.0 - Modular Architecture
---- @date 2025-10-28
+--- @version 4.0
+--- @date Created: 2025-10-28
 ---============================================================================
 
 -- Load modular systems
@@ -192,7 +192,9 @@ end
 --- MAIN COMMAND ROUTER
 ---============================================================================
 
---- Extracted from WarpCommands.handle_command: the `command == 'warp' and subcommand` branch.
+--- Handle the `warp <subcommand>` system commands.
+--- @param subcommand string Lowercased second word
+--- @return boolean|nil True when handled, nil to let the caller fall through
 local function warpcommands_handle_command_warp(subcommand)
     if subcommand == 'status' then command_status(); return true end
     if subcommand == 'unlock' then command_unlock(); return true end
@@ -213,7 +215,9 @@ local function warpcommands_handle_command_warp(subcommand)
     end
 end
 
---- Extracted from WarpCommands.handle_command: the `command:find('all$') or (command:lower() ~= 'all' and subcom` branch.
+--- Broadcast a command to every instance over IPC (`<alias>all` or `<alias> all`).
+--- @param command string Lowercased first word
+--- @return boolean Result of WarpIPC.send_to_all, false when IPC is unavailable
 local function warpcommands_handle_command_all(command)
     local base_cmd = command:find('all$') and command:gsub('all$', '') or command
     local ipc_success, WarpIPC = pcall(require, 'shared/utils/warp/warp_ipc')
@@ -225,6 +229,9 @@ local function warpcommands_handle_command_all(command)
     end
 end
 
+--- Route a warp command.
+--- @param cmdParams table Command words, {command, subcommand, ...}
+--- @return boolean True when handled (or debounced), false otherwise
 function WarpCommands.handle_command(cmdParams)
     if not cmdParams or #cmdParams == 0 then return false end
 
@@ -259,7 +266,7 @@ function WarpCommands.handle_command(cmdParams)
         end
     end
 
-    -- DEBUG TOGGLE
+    -- Unreachable today: CommonCommands handles `debugwarp` before routing here.
     if command == 'debugwarp' then command_debugwarp(); return true end
 
     -- IPC BROADCAST: Commands ending with "all" (multi-boxing support)
@@ -350,6 +357,5 @@ end
 ---============================================================================
 --- MODULE EXPORT
 ---============================================================================
-
 
 return WarpCommands

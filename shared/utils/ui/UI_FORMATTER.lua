@@ -2,9 +2,9 @@
 --- UI Formatter - Text Formatting and Layout Management
 ---============================================================================
 --- Handles all text formatting, headers, alignment, and color formatting
---- for the keybind UI system. Eliminates repetitive formatting logic.
+--- for the keybind UI system.
 ---
---- @file ui/UI_FORMATTER.lua
+--- @file shared/utils/ui/UI_FORMATTER.lua
 --- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2025-09-26
@@ -12,8 +12,7 @@
 
 local UIFormatter = {}
 
--- Load dependencies
-local UIConfig = _G.UIConfig or {}  -- Loaded from character main file
+local UIConfig = _G.UIConfig or {}  -- Set by config_loader.lua (only read by get_statistics)
 local ColorSystem = require('shared/utils/ui/COLOR_SYSTEM')
 
 ---============================================================================
@@ -73,7 +72,7 @@ function UIFormatter.calculate_content_width(keybinds, key_column_width, functio
     return max_width + 2
 end
 
---- Calculate dynamic header/footer width based on content
+--- Calculate dynamic header/footer width based on content (no caller in the repository)
 --- @param job string The job abbreviation
 --- @return number Width for separators
 function UIFormatter.calculate_header_width(job)
@@ -165,8 +164,6 @@ end
 --- SECTION TITLE FORMATTING
 ---============================================================================
 
--- Section title mappings - no longer needed, dynamic centering now
-
 --- Create a centered section title
 --- @param title string The section title
 --- @param content_width number Total UI content width (optional)
@@ -231,6 +228,7 @@ end
 --- @param key_column_width number Width for key column alignment
 --- @param function_column_width number Width for function column alignment
 --- @param get_state_value_func function Function to get state values
+--- @param value_column_width number|nil Value column width (value left unpadded when nil)
 --- @return string Formatted keybind line
 function UIFormatter.format_keybind_line(bind, key_column_width, function_column_width, get_state_value_func, value_column_width)
     -- Get current state value
@@ -340,7 +338,7 @@ function UIFormatter.create_colored_section_header(title, content_width)
     return spacing .. "\\cs(120,220,255)" .. centered_title .. "  \\cr\n\n"
 end
 
---- Format empty state message
+--- Format empty state message (no caller in the repository)
 --- @param category string The category name
 --- @return string Formatted empty message
 function UIFormatter.format_empty_section(category)
@@ -351,7 +349,7 @@ end
 --- VALIDATION AND DIAGNOSTICS
 ---============================================================================
 
---- Validate formatter configuration
+--- Validate formatter configuration (no caller in the repository)
 --- @return boolean, table valid, issues
 function UIFormatter.validate_configuration()
     local issues = {}
@@ -372,7 +370,7 @@ function UIFormatter.validate_configuration()
     return #issues == 0, issues
 end
 
---- Get formatting statistics
+--- Get formatting statistics (no caller in the repository)
 --- @return table Statistics about formatter configuration
 function UIFormatter.get_statistics()
     -- Count job titles

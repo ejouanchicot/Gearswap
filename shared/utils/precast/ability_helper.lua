@@ -1,10 +1,27 @@
--- AbilityHelper: auto-triggers abilities (Divine Emblem, Majesty, Flourish) before WS/spells.
+---============================================================================
+--- Ability Helper - Auto-Ability Execution Functions
+---============================================================================
+--- Fires a job ability before a spell or weaponskill, then sends the action
+--- once the ability has taken effect.
+---   try_ability / try_ability_smart / try_ability_ws - precast auto-trigger
+---       (PLD Divine Emblem / Majesty, DNC Climactic Flourish)
+---   follow_up / follow_up_or_abort - "ability, then action" chains used by
+---       BLM, BRD, DNC, GEO, SAM and the Scholar helpers
+---
+--- @file    shared/utils/precast/ability_helper.lua
+--- @author  Tetsouo
+--- @version 1.0
+--- @date    Created: 2025-10-05
+---============================================================================
 
 local AbilityHelper = {}
 
--- Load recast configuration for cooldown tolerance
+-- Set by each job entry point before the job modules load; read once, when
+-- this module is first required.
 local RECAST_CONFIG = _G.RECAST_CONFIG or {}
 
+--- @param recast number Remaining recast in seconds
+--- @return boolean True if ready (RECAST_CONFIG tolerance, else < 1 second)
 local function is_recast_ready(recast)
     if RECAST_CONFIG and RECAST_CONFIG.is_ready then
         return RECAST_CONFIG.is_ready(recast)
@@ -23,14 +40,17 @@ local ability_cache = {}
 local function get_ability_data(ability_name)
     local cached = ability_cache[ability_name]
     if cached ~= nil then
-        return cached or nil  -- false sentinel for "looked up, not found"
+        return cached or nil  -- false = "looked up, not found"
     end
     local res = require('resources')
     local data = res.job_abilities:with('en', ability_name)
-    ability_cache[ability_name] = data or false  -- store negative result too
+    ability_cache[ability_name] = data or false
     return data
 end
 
+--- Check whether the player's main job, at its current level, has the ability.
+--- @param ability_name string Ability name (English)
+--- @return boolean True if usable (also true when res has no level table for it)
 function AbilityHelper.can_use_ability(ability_name)
     local player = windower.ffxi.get_player()
     if not player then return false end
@@ -44,24 +64,24 @@ function AbilityHelper.can_use_ability(ability_name)
         return true
     end
 
-    -- Check if ability has levels defined for current job
     local main_job_id = player.main_job_id
     local main_job_level = player.main_job_level
 
-    -- Check if this ability is available for player's main job
     local required_level = ability_data.levels[main_job_id]
     if not required_level then
-        return false -- Job doesn't have this ability
+        return false
     end
 
-    -- Check level requirement
     if main_job_level < required_level then
-        return false -- Level too low
+        return false
     end
 
     return true
 end
 
+--- Check whether the ability's recast is ready (RECAST_CONFIG tolerance).
+--- @param ability_name string Ability name (English)
+--- @return boolean True if ready; false if unknown or on cooldown
 function AbilityHelper.is_ability_ready(ability_name)
     local ability_data = get_ability_data(ability_name)
     if not ability_data then return false end
@@ -72,6 +92,8 @@ function AbilityHelper.is_ability_ready(ability_name)
     return is_recast_ready(cooldown)
 end
 
+--- @param buff_name string Buff name
+--- @return boolean True if the buff is active
 function AbilityHelper.is_buff_active(buff_name)
     return buffactive[buff_name] or false
 end
@@ -83,15 +105,17 @@ local POLL_INTERVAL = 0.3
 --- that the game refused it. A refused ability leaves its recast untouched.
 local JA_REGISTER_WINDOW = 1.0
 
+local shared_recast_cache = {}
+
 --- Whether an ability owns its recast, or shares it with others.
 ---
---- The four stratagems - Accession, Manifestation and both Addendums - all
---- report recast 231, the shared charge pool. For them a recast still ready
---- says only that a charge is left, never that this ability failed to fire, so
---- the "never fired" shortcut below must not be applied.
+--- The stratagems chained through this helper - Accession, Manifestation and
+--- both Addendums - report recast 231, the charge pool every stratagem shares.
+--- For them a recast still ready says only that a charge is left, never that
+--- this ability failed to fire, so the "never fired" shortcut below must not
+--- be applied.
 --- @param ability_name string
 --- @return boolean True when the recast is shared with another ability
-local shared_recast_cache = {}
 local function has_shared_recast(ability_name)
     local cached = shared_recast_cache[ability_name]
     if cached ~= nil then
@@ -142,7 +166,6 @@ windower._ability_follow_seq = windower._ability_follow_seq or 0
 --- @param ability_name string Ability whose buff we are waiting on
 --- @param follow_command string|function Command to send, or a function to run
 --- @param wait_time number Caller's original delay, used as the soft deadline
---- @return void
 function AbilityHelper.follow_up(ability_name, follow_command, wait_time)
     local function act()
         if type(follow_command) == 'function' then
@@ -207,7 +230,6 @@ end
 --- @param wait_time number Soft deadline before giving up
 --- @param on_abort function|nil Run when we give up - for callers holding a
 ---        flag that the cancelled action's aftercast would otherwise clear
---- @return void
 function AbilityHelper.follow_up_or_abort(ability_name, follow_command, wait_time, on_abort)
     local function act()
         if type(follow_command) == 'function' then
@@ -265,15 +287,20 @@ function AbilityHelper.follow_up_or_abort(ability_name, follow_command, wait_tim
     poll()
 end
 
+--- Cancel the spell, fire the ability, then recast the spell once the
+--- ability's buff is up (see follow_up). No-op when the ability is not
+--- available, on cooldown, or its buff is already active.
+--- @param spell table Spell object from GearSwap
+--- @param eventArgs table Event args (handled is set when the ability fires)
+--- @param ability_name string Ability to fire first
+--- @param wait_time number|nil Soft delay before the spell (default 2)
 function AbilityHelper.try_ability(spell, eventArgs, ability_name, wait_time)
     wait_time = wait_time or 2
 
-    -- VALIDATION: Check if player can use this ability (job + level)
     if not AbilityHelper.can_use_ability(ability_name) then
-        return -- Player doesn't have this ability, skip silently
+        return
     end
 
-    -- Check if ability ready and buff not active
     if AbilityHelper.is_ability_ready(ability_name) and not AbilityHelper.is_buff_active(ability_name) then
         eventArgs.handled = true
         cancel_spell()
@@ -283,20 +310,22 @@ function AbilityHelper.try_ability(spell, eventArgs, ability_name, wait_time)
     end
 end
 
+--- Same outcome as try_ability; checks the buff before reading the recast.
+--- @param spell table Spell object from GearSwap
+--- @param eventArgs table Event args (handled is set when the ability fires)
+--- @param ability_name string Ability to fire first
+--- @param wait_time number|nil Soft delay before the spell (default 2)
 function AbilityHelper.try_ability_smart(spell, eventArgs, ability_name, wait_time)
     wait_time = wait_time or 2
 
-    -- VALIDATION: Check if player can use this ability (job + level)
     if not AbilityHelper.can_use_ability(ability_name) then
-        return -- Player doesn't have this ability, skip silently
+        return
     end
 
-    -- If buff already active, don't bother checking recast
     if AbilityHelper.is_buff_active(ability_name) then
         return
     end
 
-    -- Check if ability ready
     if AbilityHelper.is_ability_ready(ability_name) then
         eventArgs.handled = true
         cancel_spell()
@@ -306,18 +335,22 @@ function AbilityHelper.try_ability_smart(spell, eventArgs, ability_name, wait_ti
     end
 end
 
+--- Weaponskill variant: cancel the WS, fire the ability, then resend the WS
+--- on <t> once the ability's buff is up.
+--- @param spell table Weaponskill object from GearSwap
+--- @param eventArgs table Event args (handled and cancel are set when it fires)
+--- @param ability_name string Ability to fire first
+--- @param wait_time number|nil Soft delay before the WS (default 2)
 function AbilityHelper.try_ability_ws(spell, eventArgs, ability_name, wait_time)
     wait_time = wait_time or 2
 
-    -- VALIDATION: Check if player can use this ability (job + level)
     if not AbilityHelper.can_use_ability(ability_name) then
-        return -- Player doesn't have this ability, skip silently
+        return
     end
 
-    -- Check if ability ready and buff not active
     if AbilityHelper.is_ability_ready(ability_name) and not AbilityHelper.is_buff_active(ability_name) then
         eventArgs.handled = true
-        eventArgs.cancel = true  -- CRITICAL: Cancel current WS (will auto-recast after ability)
+        eventArgs.cancel = true  -- the WS is resent by follow_up after the ability
         cancel_spell()
         send_command(string.format('input /ja "%s" <me>', ability_name))
         AbilityHelper.follow_up(ability_name,

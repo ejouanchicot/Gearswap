@@ -5,21 +5,25 @@
 ---
 --- Features:
 ---   • Combat modes (EngagedMode: STP/Acc/DT/SB, IdleMode: Refresh/DT/Regen)
----   • Song pack system (SongMode: pre-configured 4-song rotations)
+---   • Song pack system (SongMode: pre-configured 5-song rotations)
 ---   • Instrument selection (MainInstrument: Gjallarhorn/Daurdabla/etc.)
 ---   • Song customization (VictoryMarch replacement, Etude, Carol, Threnody)
 ---   • Default state values for optimal gameplay
----   • Validation API for state verification
+---   • validate() helper (not called anywhere today)
 ---
 --- State Purposes:
 ---   • EngagedMode: STP = TP gain, Acc = accuracy, DT = damage reduction, SB = subtle blow
 ---   • IdleMode: Refresh/DT/Regen (idle gear focus)
----   • SongMode: Pre-configured song rotation packs (March/Madrigal/Minuet/etc.)
+---   • SongMode: Pre-configured song rotation packs (BRD_SONG_CONFIG.lua)
 ---   • MainInstrument: Instrument selection (Gjallarhorn REMA default)
 ---   • VictoryMarch: Replacement when Haste capped (Madrigal/Minuet/etc.)
 ---   • EtudeType: Stat buff selection (STR/DEX/VIT/AGI/INT/MND/CHR)
 ---   • CarolElement: Resistance buff element (Fire/Ice/Wind/Earth/Lightning/Water/Light/Dark)
 ---   • ThrenodyElement: Resistance debuff element
+---   • MarcatoSong: song that gets Marcato automatically (or Off)
+---   • MainWeapon / SubWeapon: melee weapon selection
+---   • BRDSong1-5: display-only song slots for the HUD
+---   • FastCast: Fast Cast % used by the midcast watchdog
 ---
 --- Dependencies:
 ---   • Mote-Include (M state creator, state:options(), state:set())
@@ -36,6 +40,8 @@ local BRDStates = {}
 --- STATE CONFIGURATION
 ---============================================================================
 
+--- Configure all BRD states (called from user_setup in the entry file)
+--- @return nil
 function BRDStates.configure()
     -- ========================================
     -- COMBAT MODES
@@ -68,16 +74,16 @@ function BRDStates.configure()
     state.SongMode =
         M {
         ['description'] = 'Song Pack',
-        'Dirge', -- Honor + Min5/4 + Dirge
+        'Dirge', -- Honor + Min5/4 + Dirge + Victory
         'March', -- Honor + Min5/4 + Victory + Scherzo
         'Madrigal', -- Honor + Min5/4 + Madrigal + Victory
         'Minne', -- Honor + Min5/4 + Minne + Victory
         'Etude', -- Honor + Min5/4 + Etude + Victory
-        'Tank', -- Victory + Minne + Ballad rotation (for tanks)
-        'Healer', -- Victory + Minne + Ballad rotation (for healers)
+        'Tank', -- Victory + Minne + Ballad III/II + Scherzo (for tanks)
+        'Healer', -- Victory + Minne + Ballad III/II + Scherzo (for healers)
         'Carol', -- Honor + Min5/4 + Carol + Victory
         'Scherzo', -- Honor + Min5/4 + Scherzo + Victory
-        'Arebati', -- Honor + Min5/4 + Scherzo + Victory
+        'Arebati', -- Dirge + Honor + Min5/4 + Minne
         'Ngai' -- Honor + Minuet 5 + Water Carol II + Minne 5 + Scherzo
     }
     state.SongMode:set('Ngai')
@@ -185,7 +191,7 @@ function BRDStates.configure()
     state.BRDSong4 = M {['description'] = 'Song 4', 'Empty'}
     state.BRDSong5 = M {['description'] = 'Song 5', 'Empty'}
 
-    -- NOTE: Song slots are initialized in user_setup() after states are configured
+    -- Filled by SongRotationManager.update_song_slots() (_G.update_brd_song_slots)
 
     -- ========================================
     -- FAST CAST (WATCHDOG SYSTEM)
@@ -214,6 +220,9 @@ end
 --- VALIDATION
 ---============================================================================
 
+--- Check that the main BRD states exist
+--- @return boolean success True if all checked states exist
+--- @return string message Validation result message
 function BRDStates.validate()
     if not state.EngagedMode then
         return false, 'EngagedMode not configured'

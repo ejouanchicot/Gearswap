@@ -7,7 +7,7 @@
 ---   @file    shared/jobs/dnc/functions/DNC_BUFFS.lua
 ---   @author  Tetsouo
 ---   @version 1.2 - Refresh engaged gear on dance gain/loss
----   @date    Updated: 2026-09-19
+---   @date    Created: 2025-10-04 | Updated: 2026-09-19
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local LifecycleManager = require('shared/utils/core/lifecycle_manager')

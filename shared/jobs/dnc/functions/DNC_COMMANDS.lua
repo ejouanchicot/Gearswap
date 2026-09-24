@@ -4,7 +4,7 @@
 ---   Handles job-specific custom commands for Dancer job.
 ---
 ---   Features:
----   • Common commands integration (reload, checksets, waltz, aoewaltz, jump)
+---   • Common commands integration (reload, checksets, waltz, aoewaltz, jump, ...)
 ---   • UI commands (ui, showbinds)
 ---   • Smartbuff command (selected dance + subjob buff automation)
 ---   • Step command with Presto integration
@@ -17,7 +17,7 @@
 ---   • StepManager (logic) - Step + Presto management
 ---   • SmartbuffManager (logic) - Dance + subjob buff automation
 ---
----   @file    jobs/dnc/functions/DNC_COMMANDS.lua
+---   @file    shared/jobs/dnc/functions/DNC_COMMANDS.lua
 ---   @author  Tetsouo
 ---   @version 2.0 - Logic Extracted to logic/
 ---   @date    Created: 2025-10-04
@@ -77,6 +77,7 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DUAL-BOXING: Handle job request from MAIN
     -- ══════════════════════════════════════════════════════════════════════════
     if command == 'requestjob' then
@@ -162,11 +163,8 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- Waltz commands are now handled by COMMON_COMMANDS (centralized for all jobs with DNC main/sub)
-    -- This allows WAR/DNC, NIN/DNC, etc. to use //gs c waltz and //gs c aoewaltz
-
-    -- Additional DNC commands can be added here
-    -- Example: samba rotation, etc.
+    -- waltz / aoewaltz live in COMMON_COMMANDS so that WAR/DNC, NIN/DNC, etc.
+    -- can use them too.
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -183,7 +181,7 @@ job_state_change = LifecycleManager.state_change()
 ---   MODULE EXPORT
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Make functions available globally for GearSwap
+-- Export to global scope (used by Mote-Include via include())
 _G.job_self_command = job_self_command
 _G.job_state_change = job_state_change
 

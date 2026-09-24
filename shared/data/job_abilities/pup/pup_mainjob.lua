@@ -11,7 +11,7 @@
 ---   - Tactical Switch (Lv79) - Swap TP with automaton
 ---   - Cooldown (Lv95) - Reduce burden, remove overload
 ---
---- @file pup_mainjob.lua
+--- @file shared/data/job_abilities/pup/pup_mainjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

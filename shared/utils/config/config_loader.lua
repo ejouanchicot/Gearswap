@@ -6,7 +6,7 @@
 ---   and sets up global variables required by the UI system.
 ---
 ---   @file    shared/utils/config/config_loader.lua
----   @author  Tetsouo GearSwap System
+---   @author  Tetsouo
 ---   @version 2.0 - Eliminated duplication (use UISettingsManager)
 ---   @date    Created: 2025-11-03 | Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -31,7 +31,6 @@ local ConfigLoader = {}
 --- @param job_name string The job name for error messages (e.g., 'WAR', 'BRD')
 --- @return table The loaded or default UI configuration
 function ConfigLoader.load_ui_config(char_name, job_name)
-    -- Validate parameters
     if not char_name or char_name == '' then
         MessageCore.show_config_error('ConfigLoader', 'Error: char_name is required')
         char_name = 'Tetsouo'  -- Fallback
@@ -41,10 +40,8 @@ function ConfigLoader.load_ui_config(char_name, job_name)
         job_name = 'UNKNOWN'
     end
 
-    -- Construct path to UI_CONFIG.lua
     local config_path = windower.windower_path .. 'addons/GearSwap/data/' .. char_name .. '/config/UI_CONFIG.lua'
 
-    -- Attempt to load configuration
     local success, UIConfig = pcall(function()
         return dofile(config_path)
     end)
@@ -63,7 +60,6 @@ function ConfigLoader.load_ui_config(char_name, job_name)
         MessageCore.show_config_error(job_name, 'UIConfig load failed, using defaults')
     end
 
-    -- Set global UIConfig (required by UI system)
     _G.UIConfig = UIConfig
 
     -- Load UI display config from UISettingsManager (centralized)

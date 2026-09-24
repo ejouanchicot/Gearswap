@@ -8,10 +8,10 @@
 ---   - Bio family (3): Bio I/II/III (Attack down + Dark DoT)
 ---   - Poison family (3): Poison I/II, Poisonga (Water DoT)
 ---
---- @file enfeebling_dots.lua
+--- @file shared/data/magic/enfeebling/enfeebling_dots.lua
 --- @author Tetsouo
 --- @version 2.0 - Improved alignment
---- @date Created: 2025-10-30 | Updated: 2025-11-06 | Updated: 2025-10-31
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 ---============================================================================
 
 local ENFEEBLING_DOTS = {}

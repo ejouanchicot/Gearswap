@@ -1,30 +1,32 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   RDM Equipment Sets - Ultimate Red Mage Spellblade Configuration
----  ═══════════════════════════════════════════════════════════════════════════
----   Complete equipment configuration for Red Mage hybrid DPS/support role with
----   optimized enfeebling, enhancing, and melee capabilities.
----   Features:
----     • Enfeebling Magic mastery (Vitiation +4, Lethargy +3, Magic Accuracy)
----     • Enhancing Magic duration (Telchine, Atrophy Gloves +4, Ghostfyre cape)
----     • Elemental Magic nuking (Bunzi's Rod, Lethargy full set, Magic Burst)
----     • Cure support (Daybreak main, Revealer's Mitts, Cure Potency)
----     • Melee DPS capability (Malignance hybrid, Store TP, Enspell bonus)
----     • Fast Cast optimization (Merlinic set, Sucellos cape FC+10)
----     • Movement speed optimization (Carmine Cuisses +1)
----   Architecture:
----     • Equipment definitions (Chirich rings, wardrobe management)
----     • Precast sets (Fast Cast, Job Abilities, Weaponskills)
----     • Midcast sets (Elemental, Enfeebling, Enhancing, Cure, Dark Magic)
----     • Navigation tables (self/others path helpers for MidcastManager)
----     • Idle sets (DT, Refresh, Town)
----     • Engaged sets (DT, Enspell, Refresh, TP, Acc, Dual Wield)
----     • Weapon sets (Naegling, Daybreak, Colada, Malevolence, Shields)
----     • Movement sets (Base speed, Adoulin)
----   @file    jobs/rdm/sets/rdm_sets.lua
----   @author  Tetsouo
----   @version 3.1 - Standardized Organization
----   @date    Updated: 2025-11-10
----  ═════════════════════════════════════════════════════════════════════════
+---============================================================================
+--- RDM Equipment Sets - Red Mage Spellblade Configuration
+---============================================================================
+--- Complete equipment configuration for Red Mage hybrid DPS/support role with
+--- optimized enfeebling, enhancing, and melee capabilities.
+---
+--- Features:
+---   • Enfeebling Magic (Vitiation +3/+4, Lethargy +3, Magic Accuracy)
+---   • Enhancing Magic duration (Telchine, Atrophy Gloves +4, Ghostfyre cape)
+---   • Elemental Magic nuking (Bunzi's Rod, Lethargy set, Magic Burst)
+---   • Cure support (Daybreak main, Revealer's Mitts, Cure Potency)
+---   • Melee DPS capability (Malignance hybrid, Store TP, Enspell bonus)
+---   • Fast Cast optimization (Merlinic, Sucellos cape FC+10)
+---   • Movement speed (Carmine Cuisses +1)
+---
+--- Architecture:
+---   • Equipment definitions (Chirich rings, wardrobe management)
+---   • Precast sets (Fast Cast, Job Abilities, Weaponskills)
+---   • Midcast sets (Elemental, Enfeebling, Enhancing, Cure, Dark Magic)
+---   • Idle sets (DT, Refresh, Town)
+---   • Engaged sets (DT, Enspell, Refresh, TP, Acc, and .DW variants)
+---   • Weapon sets (Naegling, Daybreak, Colada; subs Ammurapi, Genmei, Malevolence)
+---   • Movement sets (Base speed, Adoulin)
+---
+--- @file    sets/rdm_sets.lua
+--- @author  Tetsouo
+--- @version 3.1
+--- @date    Created: 2025-11-03 | Updated: 2025-11-10
+---============================================================================
 
 sets = {}
 
@@ -430,7 +432,7 @@ sets.midcast.BarElement = set_combine(sets.midcast['Enhancing Magic'], {})
 sets.midcast.BarAilment = set_combine(sets.midcast['Enhancing Magic'], {})
 sets.midcast.Spikes = set_combine(sets.midcast['Enhancing Magic'], {})
 sets.midcast.Aquaveil = set_combine(sets.midcast['Enhancing Magic'], {})
--- Note: Phalanx already defined above (line 419) as PRIORITY 1 spell name set
+-- Note: Phalanx already defined above as PRIORITY 1 spell name set
 
 -- Spell Name Sets (Root-level sets for MidcastManager v2.0 PRIORITY 1)
 -- These sets use base spell name matching (no spell_family in database)

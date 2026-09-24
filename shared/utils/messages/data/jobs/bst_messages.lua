@@ -2,9 +2,9 @@
 --- BST Message Data - Beastmaster Messages
 ---============================================================================
 --- Pure data file for BST job messages
---- Used by new message system (api/messages.lua)
+--- Loaded by the message engine when a formatter sends a key from it (api/messages.lua)
 ---
---- @file data/jobs/bst_messages.lua
+--- @file shared/utils/messages/data/jobs/bst_messages.lua
 --- @author Tetsouo
 --- @version 2.0 - Complete rebuild to BRD standard
 --- @date Created: 2025-11-06 | Updated: 2025-11-17

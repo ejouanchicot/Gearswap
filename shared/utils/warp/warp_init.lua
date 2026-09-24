@@ -1,20 +1,19 @@
 ---============================================================================
---- Warp System Auto-Initialization (Universal - No Mote Modification)
+--- Warp Init - Per-load bootstrap of the warp system
 ---============================================================================
---- Provides universal warp detection + equipment lock for ALL jobs
---- WITHOUT modifying Mote-Include.lua
+--- Called by INIT_SYSTEMS 0.5 s after every job-file load, for every job.
+--- Without modifying Mote-Include.lua it:
+---   1. Registers the warp IPC listener (warp_ipc_register.lua)
+---   2. Initializes WarpEquipment (detector `action` listener)
+---   3. Initializes WarpPrecast
+---   4. Wraps _G.precast so warp spells get Fast Cast before Mote's precast
+--- Warp commands need no registration: CommonCommands requires
+--- warp_commands.lua on demand.
 ---
---- How it works:
----   1. Load this file from each job's user_setup() or get_sets()
----   2. It hooks into global precast function
----   3. Detects warp spells + items automatically
----   4. Forces FC + locks equipment
----   5. Registers warp commands (//gs c warp [status|unlock|lock|test|help])
----
---- @file warp_init.lua
+--- @file shared/utils/warp/warp_init.lua
 --- @author Tetsouo
---- @version 1.1 - Added command support
---- @date 2025-10-26
+--- @version 1.1
+--- @date Created: 2025-10-26
 ---============================================================================
 
 local WarpInit = {}
@@ -23,7 +22,6 @@ local WarpInit = {}
 -- marks the once-per-session part.
 local initialized = false
 
--- Load MessageWarp for formatted messages
 local MessageWarp = require('shared/utils/messages/formatters/system/message_warp')
 
 ---============================================================================
@@ -42,20 +40,16 @@ local function hook_global_precast()
     end
     _G.WARP_PRECAST_HOOKED = true
 
-    -- Save original precast if exists
     if _G.precast and type(_G.precast) == 'function' then
         original_precast = _G.precast
     end
 
-    -- Replace with our hooked version
     _G.precast = function(spell)
-        -- FIRST: Check for warp spells and handle them
         if spell and spell.action_type == 'Magic' then
             local WarpPrecast = require('shared/utils/warp/warp_precast')
             WarpPrecast.handle_precast(spell, nil)
         end
 
-        -- SECOND: Call original precast
         if original_precast then
             original_precast(spell)
         end
@@ -77,10 +71,9 @@ function WarpInit.init()
         MessageWarp.show_ipc_unavailable()
     end
 
-    -- Load and initialize warp equipment manager (detector action listener)
+    -- Warp equipment manager (registers the detector action listener)
     local eq_success, WarpEquipment = pcall(require, 'shared/utils/warp/warp_equipment')
     if eq_success and WarpEquipment then
-        -- Wrap init() in pcall: if WarpDetector throws, catch silently and report
         local ok_eq, err_eq = pcall(WarpEquipment.init)
         if not ok_eq then
             MessageWarp.show_init_error('WarpEquipment.init', err_eq)
@@ -91,7 +84,6 @@ function WarpInit.init()
         return
     end
 
-    -- Load warp precast
     local pc_success, WarpPrecast = pcall(require, 'shared/utils/warp/warp_precast')
     if pc_success and WarpPrecast then
         local ok_pc, err_pc = pcall(WarpPrecast.init)
@@ -104,17 +96,16 @@ function WarpInit.init()
         return
     end
 
-    -- Hook global precast function
     hook_global_precast()
     initialized = true
 
-    -- Once per Windower session: command registration and its messages
+    -- Once per addon session (windower.* survives reloads): the init messages
     if windower._warp_init_done then
         return
     end
 
     -- Warp commands need no registration: COMMON_COMMANDS.handle_warp_commands
-    -- requires this module directly when a //gs c warp command arrives.
+    -- requires warp_commands.lua directly when a //gs c warp command arrives.
     MessageWarp.show_commands_registered()
 
     windower._warp_init_done = true
@@ -131,7 +122,7 @@ function WarpInit.is_initialized()
     return initialized
 end
 
---- Manual warp detection (for custom integrations)
+--- Manual warp detection (for custom integrations; no caller today)
 --- @param spell table The spell object
 function WarpInit.handle_warp_spell(spell)
     local WarpPrecast = require('shared/utils/warp/warp_precast')

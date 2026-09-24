@@ -2,7 +2,7 @@
 --- COR Lockstyle Configuration
 ---============================================================================
 --- User-configurable lockstyle settings for Corsair job.
---- Configure different lockstyles by subjob, role, or personal preference.
+--- Configure a default lockstyle and optional per-subjob overrides.
 ---
 --- @file config/cor/COR_LOCKSTYLE.lua
 --- @author Tetsouo
@@ -20,14 +20,12 @@ local CORLockstyleConfig = {}
 CORLockstyleConfig.default = 3
 
 -- Lockstyle by subjob (OPTIONAL)
--- If you want different lockstyles per subjob, uncomment and configure below
--- If not configured, the default lockstyle will be used
+-- A subjob missing from this table uses the default lockstyle
 CORLockstyleConfig.by_subjob = {
-    -- Examples:
-    ['DNC'] = 3,  -- COR/DNC uses lockstyle 1
-    ['NIN'] = 3,  -- COR/NIN uses lockstyle 2
-    ['WAR'] = 3,  -- COR/WAR uses lockstyle 3
-    ['SAM'] = 3,  -- COR/SAM uses lockstyle 4
+    ['DNC'] = 3,  -- COR/DNC
+    ['NIN'] = 3,  -- COR/NIN
+    ['WAR'] = 3,  -- COR/WAR
+    ['SAM'] = 3,  -- COR/SAM
 }
 
 ---============================================================================
@@ -47,7 +45,7 @@ function CORLockstyleConfig.get_style(subjob)
     return CORLockstyleConfig.default
 end
 
--- Backward compatibility (for old code using .style)
+-- Legacy field: nothing under shared/ reads .style any more
 CORLockstyleConfig.style = CORLockstyleConfig.default
 
 return CORLockstyleConfig

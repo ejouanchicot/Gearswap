@@ -8,10 +8,12 @@
 ---   - Healing, Enhancing (spell family + Composure target), Enfeebling,
 ---     Elemental, Dark: MidcastManager on sets.midcast[skill]
 ---
----   @file    GEO_MIDCAST.lua
+---   @file    shared/jobs/geo/functions/GEO_MIDCAST.lua
 ---   @author  Tetsouo
 ---   @version 3.1 - Added spell_family database support
 ---   @date    Created: 2025-10-09 | Updated: 2025-11-05
+---  ═══════════════════════════════════════════════════════════════════════════
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -41,7 +43,7 @@ end
 
 ---   Pre-midcast hook (job-specific logic before set selection)
 ---   @param spell table Spell information from GearSwap
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping from Mote-Include
 ---   @param eventArgs table Event arguments for cancellation/customization
 function job_midcast(spell, action, spellMap, eventArgs)
@@ -51,7 +53,6 @@ end
 ---   Geomancy: cast message, Entrust override, then MidcastManager.
 ---   @param spell table Spell information from GearSwap
 local function midcast_geomancy(spell)
-    -- Display casting message
     if spell.english and spell.english:find("^Indi%-") then
         MessageFormatter.show_indi_cast(spell.english)
     elseif spell.english and spell.english:find("^Geo%-") then
@@ -66,8 +67,6 @@ local function midcast_geomancy(spell)
         local target_is_other = spell.target and spell.target.type ~= 'SELF'
 
         if has_entrust and target_is_other then
-            -- Entrust + Indi on party member = special set for duration/potency
-            -- Direct equip: sets.midcast.Indi.Entrust (logical naming)
             if sets.midcast.Indi and sets.midcast.Indi.Entrust then
                 equip(sets.midcast.Indi.Entrust)
                 return
@@ -94,14 +93,12 @@ local PLAIN_SKILLS = {
 
 ---   Post-midcast hook (MidcastManager routing and gear selection)
 ---   @param spell table Spell information from GearSwap
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping from Mote-Include
 ---   @param eventArgs table Event arguments for cancellation/customization
 function job_post_midcast(spell, action, spellMap, eventArgs)
-    -- Lazy load modules on first spell cast
     ensure_modules_loaded()
 
-    -- Watchdog: Track midcast start
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_midcast_start(spell)
     end

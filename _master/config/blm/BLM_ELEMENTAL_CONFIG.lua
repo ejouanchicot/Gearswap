@@ -2,10 +2,10 @@
 --- BLM Elemental Match Configuration
 ---============================================================================
 --- Configure automatic Hachirin-no-obi equipping based on elemental conditions.
---- When spell element matches storm/day/weather, waist is overridden with
---- Hachirin-no-obi for bonus magic damage.
+--- When the spell element matches storm/day/weather, sets.midcast.ElementalMatch
+--- (normally Hachirin-no-Obi) is equipped on top of the midcast set.
 ---
---- @file BLM_ELEMENTAL_CONFIG.lua
+--- @file config/blm/BLM_ELEMENTAL_CONFIG.lua
 --- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2025-10-25
@@ -43,9 +43,9 @@ BLMElementalConfig.check_weather = true
 --- How Elemental Matching Works:
 ---   1. When casting Elemental Magic, elemental conditions are checked
 ---   2. If ANY enabled condition matches spell element:
----      - Hachirin-no-obi is equipped (overrides waist slot)
+---      - sets.midcast.ElementalMatch is equipped (Hachirin-no-Obi, waist slot)
 ---      - Bonus: +10% magic damage (single weather/day/storm)
----      - Bonus: +25% magic damage (double weather, e.g., Blizzards on Iceday)
+---      - Bonus: +25% magic damage (double weather, e.g. Blizzards)
 ---   3. If no conditions match:
 ---      - Base set waist is used (no override)
 ---
@@ -57,8 +57,8 @@ BLMElementalConfig.check_weather = true
 ---   BLMElementalConfig.check_day = false
 ---   BLMElementalConfig.check_weather = false
 ---
---- To check day AND storm (both must match):
----   Modify BLM_MIDCAST.lua to use AND logic instead of OR
+--- Conditions are combined with OR. AND logic would need a change in
+--- ElementalMatcher.has_elemental_match (shared/jobs/blm/functions/logic/elemental_matcher.lua).
 ---============================================================================
 
 return BLMElementalConfig

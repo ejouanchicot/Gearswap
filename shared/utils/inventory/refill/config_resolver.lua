@@ -101,7 +101,8 @@ end
 --- jobs) as foreign and push them back to the store_bag.
 ---
 --- Heuristic for character folders: must start with uppercase letter (FFXI
---- character names are PascalCase). Skips _master, _dev, gitignored backups.
+--- character names are PascalCase), so _master, shared, scripts etc. are
+--- skipped. Every such folder counts, frozen clones included.
 --- @return table list of {char=string, job=string, cfg=table}
 local function load_all_refill_configs()
     local configs = {}

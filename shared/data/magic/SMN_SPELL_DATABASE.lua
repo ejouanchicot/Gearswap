@@ -4,7 +4,7 @@
 --- Contains all SMN avatars/spirits and blood pacts (Rage/Ward)
 --- Data extracted from FFXI SMN ability list.
 ---
---- @file config/magic/SMN_SPELL_DATABASE.lua
+--- @file shared/data/magic/SMN_SPELL_DATABASE.lua
 --- @author Tetsouo
 --- @version 2.1 - Improved formatting - Improved alignment - Facade Architecture
 --- @date Created: 2025-10-12 | Updated: 2025-11-06
@@ -30,7 +30,7 @@
 local SMNSpells = {}
 
 ---============================================================================
---- LOAD MODULAR FILES (NEW ARCHITECTURE - 12 files organized by avatar)
+--- LOAD MODULAR FILES (NEW ARCHITECTURE - 15 files organized by avatar)
 ---============================================================================
 
 -- Load all avatar files from summoning/ directory

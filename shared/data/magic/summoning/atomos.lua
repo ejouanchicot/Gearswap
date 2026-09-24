@@ -3,7 +3,7 @@
 ---============================================================================
 --- Atomos summon spell and Blood Pact: Ward abilities (main job only).
 ---
---- @file atomos.lua
+--- @file shared/data/magic/summoning/atomos.lua
 --- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2026-06-08

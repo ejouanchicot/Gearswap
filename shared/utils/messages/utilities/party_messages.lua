@@ -4,7 +4,7 @@
 --- Provides formatted messages for party member detection and job tracking.
 --- Universal module usable by any job (COR, BRD, etc.) that needs party info.
 ---
---- @file utils/messages/utility/party_messages.lua
+--- @file shared/utils/messages/utilities/party_messages.lua
 --- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2025-10-29
@@ -12,7 +12,6 @@
 
 local PartyMessages = {}
 
--- Load message core for formatting
 local MessageCore = require('shared/utils/messages/message_core')
 local Colors = MessageCore.COLORS
 
@@ -21,8 +20,8 @@ local Colors = MessageCore.COLORS
 ---============================================================================
 
 --- Display party members table with job information
---- @param party_jobs table Party jobs data (_G.cor_party_jobs or similar)
---- Format: {player_id = {name, main_job, sub_job, main_job_level}}
+--- @param party_jobs table Party jobs keyed by player id:
+---   {player_id = {name, main_job, sub_job, main_job_level}}
 function PartyMessages.show_party_members(party_jobs)
     if not party_jobs then
         MessageCore.error("Party tracking not initialized")

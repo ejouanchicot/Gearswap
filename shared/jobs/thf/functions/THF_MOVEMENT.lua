@@ -5,18 +5,14 @@
 ---   AutoMove position tracking for performance.
 ---
 ---   Features:
----   • AutoMove integration (centralized movement tracking)
----   • Movement speed gear application (via SetBuilder)
----   • Position tracking (x/y/z coordinates)
----   • Distance calculation (movement detection)
----   • Future: Hide auto-cancel on extended movement
----   • Future: TH optimization based on movement patterns
+---   • Movement status API (delegates to AutoMove)
+---   • Empty AutoMove callback (placeholder, does nothing)
+---   Movement speed gear itself is laid by logic/set_builder.lua (idle only).
 ---
 ---   Dependencies:
 ---   • AutoMove (centralized movement tracking system)
----   • SetBuilder (applies MoveSpeed sets)
 ---
----   @file    jobs/thf/functions/THF_MOVEMENT.lua
+---   @file    shared/jobs/thf/functions/THF_MOVEMENT.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
@@ -26,12 +22,9 @@
 ---   AUTOMOVE REGISTRATION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Register callback with AutoMove for THF-specific movement logic
+-- Placeholder callback: registered but has no body.
 if AutoMove then
     AutoMove.register_callback(function(is_moving, distance, player_status)
-        -- Future: THF-specific movement logic
-        -- - Hide cancellation on extended movement
-        -- - Treasure Hunter optimization based on movement
     end)
 end
 

@@ -4,10 +4,10 @@
 --- Elemental damage-over-time spells that lower enemy stats.
 --- SCH-UNIQUE - Only Scholar can cast Helix spells.
 ---
---- @file helix.lua
+--- @file shared/data/magic/elemental/helix.lua
 --- @author Tetsouo
 --- @version 2.1 - Improved alignment - Organized by magic type
---- @date Created: 2025-10-31 | Updated: 2025-11-06 | Updated: 2025-10-31
+--- @date Created: 2025-10-31 | Updated: 2025-11-06
 --- @verified bg-wiki.com (2025-10-31)
 ---
 --- NOTES:

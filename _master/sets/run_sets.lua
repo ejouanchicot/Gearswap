@@ -1,34 +1,34 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   RUN Equipment Sets - Ultimate Tank Configuration
----  ═══════════════════════════════════════════════════════════════════════════
----   Complete equipment configuration for Rune Fencer tank role with optimized
----   defensive and enmity gear across all combat situations.
+---============================================================================
+--- RUN Equipment Sets - Tank Configuration
+---============================================================================
+--- Complete equipment configuration for Rune Fencer tank role with optimized
+--- defensive and enmity gear across all combat situations.
 ---
----   Features:
----     • Tank optimization (Erilaz +3, Turms +1, Futhark +3)
----     • Enmity maximization (Full Enmity sets for all JAs)
----     • Rune system (No gear swap - maintains tank set)
----     • Spell Interruption Rate Down (SIRD for Phalanx, Enhancing)
----     • HybridMode support (PDT/MDT switching)
----     • Weapon switching (Epeolatry, Lycurgos with auto-grip management)
----     • Movement speed optimization (Carmine Cuisses +1)
----     • Weaponskill optimization (Nyame, Herculean augments)
+--- Features:
+---   • Tank optimization (Erilaz +3, Turms +1, Futhark +3)
+---   • Enmity maximization (Full Enmity sets for all JAs)
+---   • Rune system (No gear swap - maintains tank set)
+---   • Spell Interruption Rate Down (SIRD for Phalanx, Enhancing)
+---   • HybridMode support (PDT/MDT switching)
+---   • Weapon switching (Epeolatry, Lycurgos with auto-grip management)
+---   • Movement speed optimization (Carmine Cuisses +1)
+---   • Weaponskill optimization (Nyame, Herculean augments)
 ---
----   Architecture:
----     • Equipment definitions (Ogma capes, wardrobe rings)
----     • Weapon sets (Epeolatry, Lycurgos + grips)
----     • Idle sets (Base, PDT, MDT, Town)
----     • Engaged sets (Base, PDT, MDT)
----     • Precast sets (Job Abilities, Fast Cast)
----     • Weaponskill sets (Resolution, Dimidiation, Armor Break)
----     • Midcast sets (Enmity, SIRD, Enhancing Magic, Phalanx)
----     • Movement & Buff sets (Speed, Doom, Adoulin)
+--- Architecture:
+---   • Equipment definitions (Ogma capes, wardrobe rings)
+---   • Weapon sets (Epeolatry, Lycurgos + grips)
+---   • Idle sets (Base, PDT, MDT, Town)
+---   • Engaged sets (Base, PDT, MDT)
+---   • Precast sets (Job Abilities, Fast Cast)
+---   • Weaponskill sets (Great Sword WS on generic gear, Armor Break)
+---   • Midcast sets (Enmity, SIRD, Enhancing Magic, Phalanx, Blue Magic)
+---   • Movement & Buff sets (Speed, Doom, Adoulin)
 ---
----   @file    jobs/run/sets/run_sets.lua
----   @author  Tetsouo
----   @version 3.2 - Reorganized to BRD format
----   @date    Updated: 2025-11-11
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file    sets/run_sets.lua
+--- @author  Tetsouo
+--- @version 3.2
+--- @date    Created: 2025-11-03 | Updated: 2025-11-11
+---============================================================================
 
 sets = {}
 

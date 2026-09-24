@@ -20,7 +20,7 @@
 ---   - Endark series are DRK-exclusive offensive buffs
 ---   - Kaustra requires Ebullience (Scholar SP ability) active
 ---
---- @file dark_utility.lua
+--- @file shared/data/magic/dark/dark_utility.lua
 --- @author Tetsouo
 --- @version 2.0 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

@@ -45,6 +45,8 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
+--- @param spell table Spell/ability data
+--- @return boolean True for BloodPactRage / BloodPactWard actions
 local function is_blood_pact(spell)
     return spell.type == 'BloodPactRage' or spell.type == 'BloodPactWard'
 end
@@ -54,6 +56,10 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Pre-midcast hook (no job-specific gear here, all handled in job_post_midcast)
+--- @param spell table Spell information from GearSwap
+--- @param action table Action information from GearSwap
+--- @param spellMap string Spell mapping from Mote-Include
+--- @param eventArgs table Event arguments
 function job_midcast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 end
@@ -61,8 +67,8 @@ end
 ---  ─────────────────────────────────────────────────────────────────────────
 ---   PER-BRANCH HANDLERS
 ---  ─────────────────────────────────────────────────────────────────────────
----   Extracted from job_post_midcast, which dispatched on spell.skill.
----   Each returns true once it has handled the call. Bodies unchanged.
+---   One handler per spell.skill, looked up in JOB_POST_MIDCAST_HANDLERS.
+---   Each takes the spell and returns true once it has handled the call.
 
 --- Handle Summoning Magic.
 --- @return boolean True when this handler took the action
@@ -156,6 +162,10 @@ local JOB_POST_MIDCAST_HANDLERS = {
 }
 
 --- Post-midcast hook: dispatch BPs and subjob magic
+--- @param spell table Spell information from GearSwap
+--- @param action table Action information from GearSwap
+--- @param spellMap string Spell mapping from Mote-Include
+--- @param eventArgs table Event arguments
 function job_post_midcast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
@@ -185,9 +195,8 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     end
 
     -- =========================================================================
-    -- SUMMONING MAGIC (avatar summon - reduces Pact Delay)
+    -- MAGIC BY SKILL (summons and subjob magic)
     -- =========================================================================
-
     local handler = JOB_POST_MIDCAST_HANDLERS[spell.skill]
     if handler and handler(spell) then
         return

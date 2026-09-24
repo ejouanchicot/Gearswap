@@ -1,14 +1,18 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Wardrobe Organizer - Configuration Constants
----  ═══════════════════════════════════════════════════════════════════════════
----   Pure constants. No functions, no state, no FFI calls.
+---============================================================================
+--- Wardrobe Organizer - Configuration Constants
+---============================================================================
+--- Defaults for the organizer, plus Config.refresh() which overlays the
+--- character's WARDROBE_CONFIG.lua on them.
 ---
----   FFXI bag IDs:
----     0=inventory, 8=wardrobe1, 10=wardrobe2, 11..14=wardrobe3..6,
----     15=wardrobe7 (PROTECTED, craft), 16=wardrobe8.
+--- FFXI bag IDs:
+---   0=inventory, 8=wardrobe1, 10=wardrobe2, 11..14=wardrobe3..6,
+---   15=wardrobe7 (craft), 16=wardrobe8.
 ---
----   @file shared/utils/wardrobe/lib/config.lua
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/wardrobe/lib/config.lua
+--- @author Tetsouo
+--- @version 1.0
+--- @date Created: 2026-05-01
+---============================================================================
 
 local Config = {}
 
@@ -45,6 +49,8 @@ Config.PRIMARY_BAGS = {8, 10} -- W1, W2 (target = active job)
 -- find used items needing promotion.
 Config.OVERFLOW_BAGS = {16, 14, 13, 12, 11} -- W8, W6, W5, W4, W3
 Config.FILL_FALLBACK = {16, 14, 13, 12, 11} -- Used items fallback: same order
+-- Not read by any organizer code today: W7 stays untouched because it is in
+-- none of the bag lists above/below, not because of this table.
 Config.PROTECTED = {[15] = true} -- ONLY W7 (craft) is protected
 
 -- All wardrobes touched by the algorithm
@@ -137,7 +143,7 @@ Config.LOG_PATH = windower.addon_path .. 'data/wardrobe_debug.log'
 -- In-game chat formatting
 Config.CHAT_TAG = 'Wardrobe'
 Config.SEP_CHAR = '='
-Config.SEP_LEN = 74
+Config.SEP_LEN = 69  -- same as MessageCore.SEPARATOR_WIDTH
 
 -- Equipment slots used by `//gs c naked` and disable/enable
 Config.EQUIP_SLOTS = 'main sub range ammo head body hands legs feet neck waist back ear1 ear2 ring1 ring2'
@@ -146,16 +152,17 @@ Config.EQUIP_SLOTS = 'main sub range ammo head body hands legs feet neck waist b
 ---   PER-CHARACTER OVERRIDE  (data/<charname>/config/WARDROBE_CONFIG.lua)
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Loaded by Config.refresh(). The char file may define any subset of:
----     SCOPE, PRIMARY_BAGS, OVERFLOW_BAGS, FILL_FALLBACK, PROTECTED,
----     ALL_WARDROBES, ALT_PRIMARY_BAGS, ALT_OVERFLOW_BAGS, ALT_ALL_BAGS
+---     SCOPE, KEEP_ITEMS, PRIMARY_BAGS, OVERFLOW_BAGS, FILL_FALLBACK,
+---     PROTECTED, ALL_WARDROBES, ALT_PRIMARY_BAGS, ALT_OVERFLOW_BAGS,
+---     ALT_ALL_BAGS
 ---   Missing keys keep their default values (defined above).
 ---
 ---   A config that sets SCOPE = 'all_jobs' need not repeat its bag lists under
 ---   ALT_*: those mirror PRIMARY_BAGS / OVERFLOW_BAGS unless stated otherwise.
 ---   The ALT_* keys remain for a character who wants `//gs c wo alt` to use a
 ---   different layout from its own `//gs c wo`.
----
----   Last loaded char's name (for the chat banner / debug log).
+
+-- Path of the last loaded char config (for the chat banner / debug log).
 Config.LOADED_CHAR_CONFIG = nil
 
 --- Reload character-specific overrides from data/<charname>/config/WARDROBE_CONFIG.lua.

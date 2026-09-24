@@ -1,12 +1,13 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   State Display Override - Conditional State Change Messages
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Overrides Mote-Include's display_current_state() globally for all jobs.
----   Provides conditional behavior based on UI visibility:
----     • UI visible → Silent (no state change messages)
----     • UI hidden → Display Mote-Include default messages
----
----   This eliminates message spam when UI is showing state values visually.
+---   Replaces Mote-Include's display_current_state() for all jobs (installed
+---   by INIT_SYSTEMS at +0.5 s). Mote calls it with no arguments, only from
+---   `gs c update user` (F12) - Mote-SelfCommands.lua:256.
+---     • HUD enabled in the settings (_G.ui_display_config.enabled) → silent
+---     • HUD disabled → one show_state_display line. Since Mote passes no
+---       arguments, that line always reads "State: Unknown" (see
+---       docs/dev/systems/ui-overlay.md, Known issues).
 ---
 ---   @file    shared/utils/core/state_display_override.lua
 ---   @author  Tetsouo
@@ -20,21 +21,17 @@ local StateDisplayOverride = {}
 ---   MOTE-INCLUDE OVERRIDE
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Override Mote-Include's display_current_state function
---- Called automatically by Mote-Include whenever a state changes (cycle, set, etc.)
----
---- @param new_current_state string New state value
---- @param state_name string Name of the state that changed
---- @param _old_state string Previous state value (unused)
+--- Install the replacement _G.display_current_state. The replacement keeps a
+--- (new_current_state, state_name, _old_state) signature, but Mote's only
+--- caller passes nothing, so both are nil and the 'State' / 'Unknown'
+--- fallbacks are what gets shown.
 function StateDisplayOverride.init()
     _G.display_current_state = function(new_current_state, state_name, _old_state)
-        -- Check if UI is enabled and visible
+        -- The settings flag, not whether the HUD is actually shown right now
         if _G.ui_display_config and _G.ui_display_config.enabled then
-            -- UI visible → Silent mode (no messages needed)
             return
         end
 
-        -- UI hidden → Display Mote-Include default message (with nil protection)
         local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
         if ok and MessageFormatter then
             MessageFormatter.show_state_display(state_name or 'State', new_current_state or 'Unknown')

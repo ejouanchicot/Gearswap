@@ -117,6 +117,8 @@ local WEAPONSKILL_DATABASES = {
 ---   LOAD SPELLS (From all databases)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- Merge every spell database into _G.FFXI_DATA.spells (first one wins).
+--- @return boolean Always true
 function DataLoader.load_spells()
     if _G.FFXI_DATA.loaded.spells then
         return true  -- Already loaded
@@ -149,6 +151,8 @@ end
 ---   LOAD JOB ABILITIES (From all jobs)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- Merge every job ability database into _G.FFXI_DATA.abilities.
+--- @return boolean Always true
 function DataLoader.load_abilities()
     if _G.FFXI_DATA.loaded.abilities then
         return true  -- Already loaded
@@ -218,6 +222,8 @@ end
 ---   LOAD WEAPONSKILLS (From all weapon types)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- Merge every weaponskill database into _G.FFXI_DATA.weaponskills.
+--- @return boolean Always true
 function DataLoader.load_weaponskills()
     if _G.FFXI_DATA.loaded.weaponskills then
         return true  -- Already loaded
@@ -247,6 +253,7 @@ end
 ---   LOAD ALL DATA (Convenience function)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- @return boolean Always true
 function DataLoader.load_all()
     DataLoader.load_spells()
     DataLoader.load_abilities()

@@ -8,7 +8,7 @@
 ---   Public API (called by BRD_MIDCAST.job_post_midcast dispatcher):
 ---     • handle_singing(spell, ctx)     - dummy/debuff/normal song dispatch
 ---     • handle_healing(spell, ctx)     - Cure / Healing Magic
----     • handle_enhancing(spell, ctx)   - Stoneskin/etc + target_func + database
+---     • handle_enhancing(spell, ctx)   - Enhancing Magic (self/other target + spell_family DB)
 ---     • handle_enfeebling(spell, ctx)  - Slow/Paralyze (RDM subjob)
 ---     • handle_elemental(spell, ctx)   - Elemental Magic (BLM subjob)
 ---
@@ -19,7 +19,7 @@
 ---     • brd_spells_loaded (boolean)
 ---     • enhancing_database (function|nil: spell_name -> spell_family)
 ---
----   @file    jobs/brd/functions/logic/midcast_router.lua
+---   @file    shared/jobs/brd/functions/logic/midcast_router.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2026-05-09
@@ -203,6 +203,8 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Singing: dispatch between dummy / debuff / normal song handling.
+--- @param spell table Spell information from GearSwap
+--- @param ctx table Context built by BRD_MIDCAST (see file header)
 function Router.handle_singing(spell, ctx)
     ensure_loaded()
 
@@ -230,12 +232,16 @@ function Router.handle_singing(spell, ctx)
 end
 
 --- Healing Magic (Cure) - subjob delegation to MidcastManager.
+--- @param spell table Spell information from GearSwap
+--- @param ctx table Context built by BRD_MIDCAST (see file header)
 function Router.handle_healing(spell, ctx)
     ensure_loaded()
     MidcastManager.select_set({skill = 'Healing Magic', spell = spell})
 end
 
---- Enhancing Magic (Stoneskin/Phalanx/etc.) - subjob with Composure target + spell_family DB.
+--- Enhancing Magic (Stoneskin/Phalanx/etc.) - self/other target set + spell_family DB.
+--- @param spell table Spell information from GearSwap
+--- @param ctx table Context built by BRD_MIDCAST (see file header)
 function Router.handle_enhancing(spell, ctx)
     ensure_loaded()
     MidcastManager.select_set({
@@ -247,12 +253,16 @@ function Router.handle_enhancing(spell, ctx)
 end
 
 --- Enfeebling Magic (Slow/Paralyze/etc., usually from RDM subjob) - delegation to MidcastManager.
+--- @param spell table Spell information from GearSwap
+--- @param ctx table Context built by BRD_MIDCAST (see file header)
 function Router.handle_enfeebling(spell, ctx)
     ensure_loaded()
     MidcastManager.select_set({skill = 'Enfeebling Magic', spell = spell})
 end
 
 --- Elemental Magic (from BLM subjob) - delegation to MidcastManager.
+--- @param spell table Spell information from GearSwap
+--- @param ctx table Context built by BRD_MIDCAST (see file header)
 function Router.handle_elemental(spell, ctx)
     ensure_loaded()
     MidcastManager.select_set({skill = 'Elemental Magic', spell = spell})

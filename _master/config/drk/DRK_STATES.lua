@@ -4,10 +4,10 @@
 --- Defines all DRK job states (Combat Modes, Weapon Sets).
 ---
 --- Features:
----   • HybridMode configuration (PDT/Normal)
+---   • HybridMode configuration (PDT/Accu)
 ---   • MainWeapon state with multiple weapon options
----   • Keybind integration (Alt+1/Alt+2)
----   • Validation function to verify state configuration
+---   • Keybind integration (Ctrl+Numpad9 HybridMode, Ctrl+Numpad1 MainWeapon)
+---   • validate() helper (not called anywhere today)
 ---
 --- Usage:
 ---   • Loaded in user_setup() after Mote-Include initializes
@@ -30,7 +30,7 @@ local DRKStates = {}
 --- Must be called from user_setup() after Mote-Include is loaded.
 --- Defines HybridMode and MainWeapon states.
 ---
---- @return void
+--- @return nil
 function DRKStates.configure()
     -- ==========================================================================
     -- COMBAT MODES
@@ -40,7 +40,7 @@ function DRKStates.configure()
     --- Options:
     ---   • 'PDT' - Physical Damage Taken -50% (defensive mode) [DEFAULT]
     ---   • 'Accu' - High Accuracy mode (for evasive enemies)
-    --- Keybind: Alt+1 to cycle
+    --- Keybind: Ctrl+Numpad9 to cycle
     state.HybridMode:options('PDT', 'Accu')
     state.HybridMode:set('PDT') -- Default to PDT for safety
 
@@ -51,13 +51,13 @@ function DRKStates.configure()
     --- MainWeapon: Primary weapon selection
     --- Two-handed weapons use Utu Grip, one-handed use Blurred Shield +1
     --- Each weapon has its own engaged TP set for optimization
-    --- Keybind: Alt+2 to cycle
+    --- Keybind: Ctrl+Numpad1 to cycle
     state.MainWeapon =
         M {
         ['description'] = 'Main Weapon',
         'Caladbolg', -- Caladbolg (Great Sword REMA) + Utu Grip
         'Liberator', -- Liberator (Scythe Mythic) + Utu Grip
-        'Redemption', -- Redemption (Scythe Empyrrean) + Utu Grip
+        'Redemption', -- Redemption (Scythe Empyrean) + Utu Grip
         'Lycurgos', -- Lycurgos (Great Axe) + Utu Grip
         'Loxotic' -- Loxotic Mace +1 (Club) + Blurred Shield +1
         --'Apocalypse', -- Apocalypse (Scythe Relic) + Utu Grip

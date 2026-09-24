@@ -3,9 +3,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Handles all precast actions for Thief job with intelligent SA/TA combo
 ---   detection, treasure hunter tagging, and weaponskill optimization:
----   • Weaponskill precast (Fast Cast, TP bonus optimization, SA/TA variants)
----   • Job ability precast (Sneak Attack, Trick Attack, Flee, Hide, etc.)
----   • Fast cast for subjob spells (NIN/DNC/WAR/etc.)
+---   • Weaponskill precast (TP bonus optimization, SA/TA variants)
+---   • Job ability and Fast Cast sets are left to Mote-Include
 ---   • Cooldown tracking with formatted messages
 ---   • Debuff guard integration (blocks actions if silenced/amnesia)
 ---   • WS range validation (6y melee, 15y ranged)
@@ -21,11 +20,11 @@
 ---   6. SA/TA variant selection (SATAManager) - apply set variants
 ---   7. TP bonus gear applied last (post-precast), over the variant
 ---
----   @file    THF_PRECAST.lua
+---   @file    shared/jobs/thf/functions/THF_PRECAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
----   @requires Tetsouo architecture, THF logic modules, TPBonusCalculator
+---   @requires shared/jobs/thf/functions/logic/sa_ta_manager, WSPrecastHandler
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════

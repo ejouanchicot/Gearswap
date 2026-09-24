@@ -1,11 +1,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   COR Idle Module - Idle State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all idle state logic for Corsair job:
----   - Idle set selection based on IdleMode (DT, Refresh, Regain, Evasion)
----   - Movement speed optimization
----   - Town gear management
----   - Dynamic weapon application to idle sets
+---   customize_idle_set (SetBuilder.build_idle_set): town base, weapons, then
+---   outside town the PDT overlay (HybridMode), sets.idle.Refresh under 50% MP
+---   and movement gear.
 ---
 ---   @file    shared/jobs/cor/functions/COR_IDLE.lua
 ---   @author  Tetsouo

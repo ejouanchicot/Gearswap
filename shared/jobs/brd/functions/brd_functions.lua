@@ -5,7 +5,7 @@
 ---   This facade ensures all hooks are registered before GearSwap events fire.
 ---
 ---   Features:
----   • Modular architecture (11 hooks + 3 logic modules)
+---   • Modular architecture (11 hook files + logic modules under logic/)
 ---   • Dependency-ordered loading (lockstyle >> macros >> combat >> utility)
 ---   • Separation of concerns (hooks = orchestration, logic = implementation)
 ---
@@ -13,8 +13,10 @@
 ---   • song_rotation_manager.lua - Song casting, dummy phases, dynamic timing
 ---   • song_refinement.lua - Song tier downgrade system (Lullaby II >> I, etc.)
 ---   • set_builder.lua - Shared set construction (engaged/idle)
+---   • midcast_router.lua - Per-skill midcast handlers (BRD_MIDCAST)
+---   • instrument_lock_config.lua - Songs that lock a specific instrument
 ---
----   @file    brd_functions.lua
+---   @file    shared/jobs/brd/functions/brd_functions.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-13
@@ -24,12 +26,9 @@
 ---   SECTION 1: INITIALIZATION MODULES
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- ═══════════════════════════════════════════════════════════════════
--- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
--- ═══════════════════════════════════════════════════════════════════
+-- TIMER() calls are no-ops unless //gs c perf start
 local Profiler = require('shared/utils/debug/performance_profiler')
 local TIMER = Profiler.create_timer('BRD')
--- ═══════════════════════════════════════════════════════════════════
 
 -- LOCKSTYLE and MACROBOOK use lazy loading - loaded on first call, not during startup
 include('../shared/jobs/brd/functions/BRD_LOCKSTYLE.lua')
@@ -77,12 +76,10 @@ TIMER('BRD_MOVEMENT')
 ---   FAÇADE LOAD COMPLETE
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load dual-boxing manager (uses deferred init + lazy message loading)
+-- Load dual-boxing manager for its side effect (deferred auto-init)
 local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 MessageFormatter.show_debug('BRD', 'Functions loaded successfully')
 
--- ═══════════════════════════════════════════════════════════════════
 TIMER('TOTAL BRD_functions', true)
--- ═══════════════════════════════════════════════════════════════════

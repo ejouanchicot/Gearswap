@@ -31,7 +31,7 @@
 ---   - DNC/WAR using Provoke >> Shows message from WAR database
 ---   - PLD using Sentinel >> Shows message from PLD database
 ---
---- @file ability_message_handler.lua
+--- @file shared/utils/messages/handlers/ability_message_handler.lua
 --- @author Tetsouo
 --- @version 1.2 - PERFORMANCE: Lazy loading for 21 job databases
 --- @date Created: 2025-11-01 | Updated: 2025-11-15
@@ -59,8 +59,7 @@ local DUPLICATE_THRESHOLD = 0.5  -- seconds (500ms)
 --- JOB-BASED DATABASES (LAZY LOADING - Performance Optimization)
 ---============================================================================
 
--- PERFORMANCE FIX: Databases are nil until first ability is used
--- Databases loaded on demand, not at startup
+-- job_code -> loaded database, or false when the load failed
 local JOB_DATABASES = {}
 
 -- List of all jobs with ability databases
@@ -240,7 +239,7 @@ function AbilityMessageHandler.show_message(spell, show_separator)
     end
 
     -- Find ability in databases
-    local ability_data, db_name = find_ability_in_databases(spell.name, spell.type)
+    local ability_data = find_ability_in_databases(spell.name, spell.type)
 
     if not ability_data then
         -- Ability not found in any database (might be pet command, universal ability, etc.)
@@ -270,8 +269,8 @@ function AbilityMessageHandler.show_message(spell, show_separator)
     -- Mode 'on': shows name only (description = nil)
     local message_length = MessageFormatter.show_ja_activated(spell.name, description)
 
-    -- Display separator after ability message (default: true unless explicitly disabled)
-    -- Length = message length + 2 additional "=" characters
+    -- Separator after the message unless explicitly disabled. The length
+    -- argument is ignored: separators are always SEPARATOR_WIDTH wide.
     if show_separator ~= false then
         MessageCore.show_separator((message_length or 0) + 2)
     end

@@ -21,7 +21,7 @@
 ---   5. Clim - Climactic only (pure DPS)
 ---   6. Base set - No buffs (standard WS gear)
 ---
----   @file    jobs/dnc/functions/logic/ws_variant_selector.lua
+---   @file    shared/jobs/dnc/functions/logic/ws_variant_selector.lua
 ---   @author  Tetsouo
 ---   @version 1.1 - Saber Dance Support
 ---   @date    Created: 2025-10-06

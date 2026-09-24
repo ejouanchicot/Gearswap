@@ -8,10 +8,10 @@
 ---   - Duration scales with Enhancing Magic skill (cap 500 = 300 seconds)
 ---   - Equipment: Duration gear (Telchine set) - no specific Storm potency gear found
 ---
---- @file storm.lua
+--- @file shared/data/magic/enhancing/storm.lua
 --- @author Tetsouo
 --- @version 2.1 - Improved alignment - Standardized with spell_family
---- @date Created: 2025-10-30 | Updated: 2025-11-06 | Updated: 2025-11-05
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 ---============================================================================
 
 local STORM = {}

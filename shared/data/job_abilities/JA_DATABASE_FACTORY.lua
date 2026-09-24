@@ -5,12 +5,14 @@
 ---   parametrised loader. Each wrapper now reduces to a one-liner that calls
 ---   this factory with optional overrides for non-standard layouts.
 ---
----   Standard jobs (17): subjob / mainjob / sp modules with `.abilities` field.
----   Special cases:
+---   Standard jobs (15): subjob / mainjob / sp modules with `.abilities` field.
+---   Special cases (explicit `opts.modules`, all read `.abilities`):
 ---     - DNC: 15 modules (waltzes, sambas, steps, flourishes, jigs)
 ---     - BST: + pet_commands_mainjob / pet_commands_subjob
----     - SCH: + white_grimoire_subjob / black_grimoire_subjob
----     - COR: + rolls module (uses `.rolls` field, not `.abilities`)
+---     - SCH: + white/black grimoire, subjob and mainjob variants
+---     - COR: + rolls_subjob / rolls_mainjob
+---     - PUP: + pet_commands_subjob
+---     - DRG: + pet_commands
 ---
 ---   Consumers:
 ---     - shared/utils/messages/handlers/ability_message_handler.lua (per-job)
@@ -52,7 +54,7 @@ function Factory.create(job_code, opts)
 
     load_modules(modules, source_field)
 
-    -- Merge any extra module groups (used by COR for rolls with a different field)
+    -- Merge any extra module groups (no wrapper passes opts.extra today)
     if opts.extra then
         for _, group in ipairs(opts.extra) do
             load_modules(group.modules, group.source_field or 'abilities')

@@ -1,16 +1,15 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DNC Idle Module - Idle State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all idle state logic for Dancer job:
----   - Idle set selection based on IdleMode (DT, Refresh, Regain, Evasion)
----   - Movement speed optimization
----   - Town gear management
----   - Dynamic weapon application to idle sets
+---   Idle set customization for Dancer, delegated to logic/set_builder:
+---   - Town / Adoulin idle base (BaseSetBuilder)
+---   - MainWeapon set and SubWeaponOverride
+---   - Movement speed gear outside town
 ---
 ---   @file    shared/jobs/dnc/functions/DNC_IDLE.lua
 ---   @author  Tetsouo
 ---   @version 2.1 - Removed dead code + refactored header
----   @date    Updated: 2025-11-12
+---   @date    Created: 2025-10-04 | Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -23,11 +22,10 @@ local SetBuilder = nil
 ---   IDLE HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Apply weapon sets, mode selection, and movement gear to all idle configurations
+---   Apply town base, weapon sets and movement gear to the idle set
 ---   @param idleSet table The idle set to customize
----   @return table Modified idle set with current weapon, mode, and movement gear
+---   @return table Modified idle set ({} when idleSet is nil)
 function customize_idle_set(idleSet)
-    -- Lazy load SetBuilder on first idle
     if not SetBuilder then
         SetBuilder = require('shared/jobs/dnc/functions/logic/set_builder')
     end

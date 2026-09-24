@@ -7,7 +7,7 @@
 ---   - Manafont (SP1, Lv1) - Zero MP cost spells, interruption immunity
 ---   - Subtle Sorcery (SP2, Lv96) - Lower enmity, +MACC, bypass resists
 ---
---- @file blm_sp.lua
+--- @file shared/data/job_abilities/blm/blm_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06

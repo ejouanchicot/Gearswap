@@ -1,11 +1,11 @@
 ---============================================================================
---- UI Message Formatter - UI Control Messages (NEW SYSTEM - HYBRID)
+--- UI Message Formatter - UI Control Messages
 ---============================================================================
---- Handles all UI-related messages (toggle, enable/disable, save position)
---- Uses hybrid approach: Templates for simple messages, direct rendering for complex menus
---- Migrated from old system to new system: 2025-11-06
+--- Handles all UI-related messages (toggle, enable/disable, save position).
+--- Short lines use data/systems/ui_messages.lua; the theme list and the help
+--- menu are built here with add_to_chat.
 ---
---- @file    messages/message_ui.lua
+--- @file    shared/utils/messages/formatters/ui/message_ui.lua
 --- @author  Tetsouo
 --- @version 2.0
 --- @date    Created: 2025-11-06
@@ -14,8 +14,6 @@
 local MessageUI = {}
 local M = require('shared/utils/messages/api/messages')
 local MessageCore = require('shared/utils/messages/message_core')
-local MessageRenderer = require('shared/utils/messages/core/message_renderer')
-local Colors = MessageCore.COLORS
 
 ---============================================================================
 --- UI TOGGLE MESSAGES
@@ -111,11 +109,10 @@ end
 
 --- Display available UI theme presets
 function MessageUI.show_theme_list()
-    -- Color codes (same as msgtest)
     local gray = string.char(0x1F, 160)
     local yellow = string.char(0x1F, 50)
     local green = string.char(0x1F, 158)
-    local separator = string.rep("=", 70)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
 
     -- Header
     add_to_chat(121, gray .. separator)
@@ -159,11 +156,10 @@ end
 
 --- Display UI help menu
 function MessageUI.show_help()
-    -- Color codes (same as msgtest)
     local gray = string.char(0x1F, 160)
     local yellow = string.char(0x1F, 50)
     local green = string.char(0x1F, 158)
-    local separator = string.rep("=", 70)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
 
     -- Header
     add_to_chat(121, gray .. separator)

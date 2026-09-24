@@ -19,7 +19,7 @@
 ---
 --- Module Structure:
 ---   - enfeebling_dots.lua (10 spells): Dia/Bio/Poison (DoT effects)
----   - enfeebling_debuffs.lua (17 spells): Paralyze/Slow/Blind/Gravity + Red Magic
+---   - enfeebling_debuffs.lua (16 spells): Paralyze/Slow/Blind/Gravity + Red Magic
 ---   - enfeebling_control.lua (9 spells): Sleep/Bind/Silence/Break/Dispel (CC + utility)
 ---
 --- Usage:
@@ -27,10 +27,10 @@
 ---   local spell_data = EnfeeblingSPELLS.spells["Slow II"]
 ---   local enfeebling_type = spell_data.enfeebling_type  -- "mnd_potency"
 ---
---- @file ENFEEBLING_MAGIC_DATABASE.lua
+--- @file shared/data/magic/ENFEEBLING_MAGIC_DATABASE.lua
 --- @author Tetsouo
 --- @version 2.1 - Improved formatting - Improved alignment - Modular Architecture (3 files)
---- @date Created: 2025-10-30 | Updated: 2025-11-06 | Updated: 2025-10-30
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 ---============================================================================
 
 local ENFEEBLING_MAGIC_DATABASE = {}
@@ -54,7 +54,7 @@ for spell_name, spell_data in pairs(DOTS.spells) do
     ENFEEBLING_MAGIC_DATABASE.spells[spell_name] = spell_data
 end
 
--- Merge Debuff spells (17 spells)
+-- Merge Debuff spells (16 spells)
 for spell_name, spell_data in pairs(DEBUFFS.spells) do
     ENFEEBLING_MAGIC_DATABASE.spells[spell_name] = spell_data
 end

@@ -7,7 +7,7 @@
 ---   - Feral Howl (Lv75 Merit) - Terrorize target
 ---   - Killer Instinct (Lv75 Merit) - Grant pet's killer trait to party
 ---
---- @file bst_mainjob.lua
+--- @file shared/data/job_abilities/bst/bst_mainjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

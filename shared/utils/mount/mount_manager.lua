@@ -13,10 +13,10 @@
 --- A failure at any layer falls through instead of erroring, so the command
 --- can never break a job load.
 ---
---- @file shared/utils/mount/mount_manager.lua
---- @author Tetsouo
+--- @file    shared/utils/mount/mount_manager.lua
+--- @author  Tetsouo
 --- @version 1.0
---- @date Created: 2026-07-28
+--- @date    Created: 2026-07-28
 ---============================================================================
 
 local MountManager = {}

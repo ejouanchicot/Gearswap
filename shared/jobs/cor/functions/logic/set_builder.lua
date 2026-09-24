@@ -4,10 +4,11 @@
 ---   Provides shared logic for building engaged and idle sets with:
 ---   - Town/Adoulin detection (idle only)
 ---   - Weapon set application (main/sub/range)
----   - Movement gear application
+---   - Movement gear application (idle, outside town)
 ---   - Hybrid mode support (PDT)
+---   - sets.idle.Refresh under 50% MP (idle, outside town)
 ---
----   @file    jobs/cor/functions/logic/set_builder.lua
+---   @file    shared/jobs/cor/functions/logic/set_builder.lua
 ---   @author  Tetsouo
 ---   @version 2.0
 ---   @date    Updated: 2025-10-08 (Refactored to modular architecture)
@@ -97,7 +98,7 @@ SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 ---   COMPLETE SET BUILDERS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Build complete engaged set (base selection + PDT + DW + weapons + movement)
+---   Build complete engaged set (Mote's base set + PDT + weapons)
 ---   @param base_set table Base engaged set from Mote
 ---   @return table Complete engaged set
 function SetBuilder.build_engaged_set(base_set)
@@ -120,9 +121,8 @@ function SetBuilder.build_engaged_set(base_set)
 
     -- Step 3: Apply weapon sets from states (main+sub together, range separate)
     -- Note: Dual wield is handled here by apply_weapon() - if subjob is NIN/DNC,
-    -- the full weapon set (main + sub) is applied. No separate sets.engaged.DW
-    -- is needed because /NIN's DW% requirement is met by other gear (or the
-    -- player accepts the slower TP gain).
+    -- the full weapon set (main + sub) is applied. No sets.engaged.DW is
+    -- selected anywhere in this builder.
     result = SetBuilder.apply_weapon(result)
 
     return result

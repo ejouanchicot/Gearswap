@@ -2,13 +2,13 @@
 ---   SAM Functions Facade - Module Loader
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Loads all SAM-specific function modules in correct order.
----   @file    sam_functions.lua
+---   @file    shared/jobs/sam/functions/sam_functions.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-21
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load all modules in dependency order (paths relative to TETSOUO_SAM.lua)
+-- Load all modules in dependency order
 -- ═══════════════════════════════════════════════════════════════════
 -- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
 -- ═══════════════════════════════════════════════════════════════════
@@ -39,7 +39,7 @@ include('../shared/jobs/sam/functions/SAM_MOVEMENT.lua')
 TIMER('SAM_MOVEMENT')
 
 -- Load dual-boxing manager (uses deferred init + lazy message loading)
-local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
+require('shared/utils/dualbox/dualbox_manager')
 
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 MessageFormatter.show_debug('SAM', 'Functions loaded successfully')

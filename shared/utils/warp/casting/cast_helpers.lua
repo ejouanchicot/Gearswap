@@ -1,12 +1,13 @@
 ---============================================================================
 --- Cast Helpers - Shared Helper Functions for Casting System
 ---============================================================================
---- Provides utility functions used by spell_caster and item_user modules.
+--- Item lookup over the equippable bags and the ring name -> id table,
+--- used by item_user.lua.
 ---
---- @file cast_helpers.lua
+--- @file shared/utils/warp/casting/cast_helpers.lua
 --- @author Tetsouo
---- @version 4.0 - Modular Architecture
---- @date 2025-10-28
+--- @version 4.0
+--- @date Created: 2025-10-28
 ---============================================================================
 
 local CastHelpers = {}
@@ -39,7 +40,6 @@ function CastHelpers.has_item(item_name, item_id)
         'wardrobe8'     -- Bag 16
     }
 
-    -- Load resources for item name lookups
     local res = require('resources')
 
     -- Check all equippable bags using STRING keys (like equipment_checker)
@@ -48,12 +48,10 @@ function CastHelpers.has_item(item_name, item_id)
         if bag_items and type(bag_items) == 'table' then
             for _, item in ipairs(bag_items) do
                 if item and item.id and item.id > 0 then
-                    -- Check by ID (most reliable)
                     if item_id and item.id == item_id then
                         return true
                     end
 
-                    -- Check by name
                     local res_item = res.items[item.id]
                     if res_item and res_item.en and res_item.en:lower() == item_name:lower() then
                         return true
@@ -91,7 +89,7 @@ function CastHelpers.get_ring_id(ring_name)
     return CastHelpers.RING_IDS[ring_name]
 end
 
---- Check if player has a specific ring
+--- Check if player has a specific ring (no caller today)
 --- @param ring_name string Ring name
 --- @return boolean True if player has the ring
 function CastHelpers.has_ring(ring_name)

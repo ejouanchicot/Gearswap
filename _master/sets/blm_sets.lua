@@ -1,30 +1,30 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   BLM Equipment Sets - Black Mage Nuker Configuration
----  ═══════════════════════════════════════════════════════════════════════════
----   Complete equipment configuration for Black Mage pure nuker role
----   with optimized elemental magic damage and magic burst capability.
+---============================================================================
+--- BLM Equipment Sets - Black Mage Nuker Configuration
+---============================================================================
+--- Complete equipment configuration for Black Mage pure nuker role
+--- with optimized elemental magic damage and magic burst capability.
 ---
----   Features:
----     • Elemental Magic mastery (Wicce +3 full set, Magic Burst capability)
----     • Fast Cast optimization (Merlinic augments, 80% FC cap)
----     • Dark Magic (Drain/Aspir potency augments)
----     • MP Conservation (Auto-equips when MP < 1000)
----     • Elemental Match (Auto-equips with storm/day/weather match)
----     • Magic Burst Mode (Toggle for burst damage gear)
+--- Features:
+---   • Elemental Magic mastery (Wicce +3 full set, Magic Burst capability)
+---   • Fast Cast optimization (Merlinic augments, 80% FC cap)
+---   • Dark Magic (Drain/Aspir potency augments)
+---   • MP Conservation (auto-equipped below BLM_MP_CONFIG.mp_threshold, default 1000)
+---   • Elemental Match (auto-equipped on storm/day/weather match)
+---   • Magic Burst Mode (MagicBurstMode On/Acc selects the MagicBurst variants)
 ---
----    Architecture:
----     • Equipment definitions (Merlinic sets, Telchine duration, Taranus cape)
----     • Idle sets (Normal, PDT, Town)
----     • Engaged sets (Normal, PDT)
----     • Precast sets (Fast Cast, Job Abilities, Weaponskills)
----     • Midcast sets (Cure, Enhancing, Enfeebling, Dark Magic, Elemental Magic)
----     • Special sets (Movement speed, Buffs, Doom resistance)
+--- Architecture:
+---   • Equipment definitions (Merlinic sets, Telchine duration, Taranus cape)
+---   • Idle sets (Normal, PDT, Town)
+---   • Engaged sets (Normal, PDT)
+---   • Precast sets (Fast Cast, Job Abilities, Weaponskills)
+---   • Midcast sets (Cure, Enhancing, Enfeebling, Dark Magic, Elemental Magic)
+---   • Special sets (Movement speed, Buffs, Doom resistance)
 ---
----   @file    jobs/blm/sets/blm_sets.lua
----   @author  Tetsouo
----   @version 3.2 - Unified Headers Style
----   @date    Updated: 2025-11-10
----  ═════════════════════════════════════════════════════════════════════════
+--- @file    sets/blm_sets.lua
+--- @author  Tetsouo
+--- @version 3.2
+--- @date    Created: 2025-11-03 | Updated: 2025-11-10
+---============================================================================
 -- ═══════════════════════════════════════════════════════════════════════════
 -- EQUIPMENT DEFINITIONS
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -161,7 +161,7 @@ sets.idle.Normal = {
     back = 'Solemnity Cape'
 }
 
--- • PDT MODE (Physical Damage Reduction)
+-- • PDT MODE (placeholder: currently identical to Normal)
 sets.idle.PDT = set_combine(sets.idle.Normal, {})
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -187,7 +187,7 @@ sets.engaged.Normal = {
     back = "Taranus's Cape"
 }
 
--- • PDT MODE (Physical Damage Reduction)
+-- • PDT MODE (placeholder: currently identical to Normal)
 sets.engaged.PDT = set_combine(sets.engaged.Normal, {})
 
 -- ═══════════════════════════════════════════════════════════════════════════

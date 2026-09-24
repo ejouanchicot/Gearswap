@@ -7,7 +7,7 @@
 ---   - Chainspell (SP1, Lv1) - Rapid spellcasting
 ---   - Stymie (SP2, Lv96) - Next enfeebling 100% MACC
 ---
---- @file rdm_sp.lua
+--- @file shared/data/job_abilities/rdm/rdm_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

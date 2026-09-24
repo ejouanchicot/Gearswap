@@ -1,21 +1,23 @@
 ---============================================================================
 --- RDM Messages Module - Red Mage Job Ability and Spell Message Formatting
 ---============================================================================
---- Uses NEW message system with inline colors
---- Delegates to api/messages.lua for all formatting
+--- Doom, spell casting, state display, configuration errors and Phalanx
+--- lines for RDM. Templates: data/jobs/rdm_messages.lua, sent through M.job.
+--- The facade also points show_convert_* / show_chainspell_* /
+--- show_composure_* here, but this module does not define them.
 ---
---- @file utils/messages/message_rdm.lua
+--- @file shared/utils/messages/formatters/jobs/message_rdm.lua
 --- @author Tetsouo
---- @version 2.0 (NEW SYSTEM)
+--- @version 2.0
 --- @date Created: 2025-10-16 | Migrated: 2025-11-06
 ---============================================================================
 
 local RDMMessages = {}
 
--- NEW message system
 local M = require('shared/utils/messages/api/messages')
 
--- Get job tag (for subjob support: RDM/WHM >> "RDM/WHM")
+-- Job tag with subjob ("RDM/WHM"). Same logic as MessageCore.get_job_tag,
+-- except the fallback is 'RDM' instead of 'JOB'.
 local function get_job_tag()
     local main_job = player and player.main_job or 'RDM'
     local sub_job = player and player.sub_job or ''
@@ -26,7 +28,7 @@ local function get_job_tag()
 end
 
 ---============================================================================
---- DEBUFF WARNING MESSAGES (NEW SYSTEM)
+--- DEBUFF WARNING MESSAGES
 ---============================================================================
 
 --- Display DOOM warning message
@@ -44,7 +46,7 @@ function RDMMessages.show_doom_removed()
 end
 
 ---============================================================================
---- SPELL CASTING MESSAGES (NEW SYSTEM)
+--- SPELL CASTING MESSAGES
 ---============================================================================
 
 --- Display spell casting message
@@ -64,7 +66,7 @@ function RDMMessages.show_element_list()
 end
 
 ---============================================================================
---- STATE DISPLAY MESSAGES (NEW SYSTEM)
+--- STATE DISPLAY MESSAGES
 ---============================================================================
 
 --- Display current Enspell state
@@ -86,7 +88,7 @@ function RDMMessages.show_storm_current(storm_value)
 end
 
 ---============================================================================
---- ERROR MESSAGES (NEW SYSTEM)
+--- ERROR MESSAGES
 ---============================================================================
 
 --- Display no Enspell selected error
@@ -132,7 +134,7 @@ function RDMMessages.show_storm_requires_sch()
 end
 
 ---============================================================================
---- SPELL OPTIMIZATION MESSAGES (NEW SYSTEM)
+--- SPELL OPTIMIZATION MESSAGES
 ---============================================================================
 
 --- Display Phalanx spell detected (debug)

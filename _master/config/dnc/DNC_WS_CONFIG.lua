@@ -6,7 +6,7 @@
 ---
 --- Features:
 ---   • Climactic Flourish automation for configured weaponskills
----   • Minimum TP threshold for auto-trigger (1000 TP default)
+---   • Minimum TP threshold for auto-trigger (900 TP, see min_tp)
 ---   • Minimum target HP% threshold (25% default - prevents waste on dying mobs)
 ---   • WS whitelist system (Rudra's Storm, Ruthless Stroke, Shark Bite)
 ---   • Helper function to check if WS should trigger Climactic

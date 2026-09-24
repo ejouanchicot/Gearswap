@@ -87,15 +87,14 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Create state.AutoMedicine and restore its previous value.
---- Called by INIT_SYSTEMS, which is include()d and therefore has the sandbox
---- globals to hand us.
+--- Called from each job's [JOB]_STATES.lua (inside user_setup), which has the
+--- sandbox globals to hand us. INIT_SYSTEMS only calls ensure() as a fallback.
 --- @param state_table table|nil Mote's `state` table
 --- @param mode_ctor function|nil Mote's `M` constructor
 --- @return boolean created True if the state is available after this call
 function AutoMedicine.init(state_table, mode_ctor)
     Mote.state = state_table or Mote.state or _G.state
     Mote.M     = mode_ctor  or Mote.M     or _G.M
-
 
     if not Mote.state or not Mote.M then
         return false
@@ -122,7 +121,6 @@ function AutoMedicine.init(state_table, mode_ctor)
     state.AutoMedicine = st
     st:set(load_persisted_value())
 
-
     return true
 end
 
@@ -136,7 +134,6 @@ function AutoMedicine.ensure()
     end
     return AutoMedicine.init()
 end
-
 
 --- Check whether PrecastGuard is allowed to consume a cure item.
 --- Falls back to the persisted value when the state is missing (module loaded

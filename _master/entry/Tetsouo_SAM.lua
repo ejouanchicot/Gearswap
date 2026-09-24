@@ -1,6 +1,9 @@
 ---============================================================================
 --- FFXI GearSwap Configuration - Samurai (SAM) - Modular Architecture
 ---============================================================================
+--- Main coordinator for Samurai job configuration. Loads Mote-Include, the
+--- shared systems and the SAM modules (shared/jobs/sam/functions/sam_functions.lua).
+---
 --- @file Tetsouo_SAM.lua
 --- @author Tetsouo
 --- @version 1.0.0 - Initial Release
@@ -25,8 +28,11 @@ end
 local ConfigLoader = require('shared/utils/config/config_loader')
 local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'SAM')
 
+--- GearSwap entry hook: loads Mote-Include, the shared systems and the SAM modules.
+--- Called by GearSwap each time this job file is loaded.
+--- @return void
 function get_sets()
-    -- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+    -- PERFORMANCE PROFILING (enable with: //gs c perf start)
     local Profiler = require('shared/utils/debug/performance_profiler')
     Profiler.start('get_sets')
 
@@ -67,7 +73,9 @@ function get_sets()
     _G.UIConfig = UIConfig
     _G.RECAST_CONFIG = require('Tetsouo/config/RECAST_CONFIG')
 
-    -- Load region configuration (must load before message system for color codes)
+    -- Load region configuration. Too late for the region warning color:
+    -- message_colors captured _G.RegionConfig when ConfigLoader (module
+    -- level, above) first required it.
     local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
     if region_success and RegionConfig then
         _G.RegionConfig = RegionConfig
@@ -94,6 +102,11 @@ function get_sets()
     Profiler.finish()
 end
 
+--- Handle sub job change events (called by Mote-Include after user_setup())
+--- Re-registers the SAM modules and hands the reload to JobChangeManager.
+--- @param newSubjob string New subjob
+--- @param oldSubjob string Old subjob
+--- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
     local success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if success and JobChangeManager then
@@ -116,10 +129,13 @@ function job_sub_job_change(newSubjob, oldSubjob)
     -- DUALBOX IPC fires from user_setup() after the reload (covers main + subjob)
 end
 
+--- Configure states, keybinds, UI and the initial macrobook/lockstyle.
+--- Called by Mote-Include from init_include() (inside include('Mote-Include.lua'),
+--- before init_gear_sets) and again on every subjob change, before job_sub_job_change().
+--- @return void
 function user_setup()
     -- STATE DEFINITIONS (Loaded from SAM_STATES.lua)
     -- All state configurations (HybridMode, MainWeapon, Buff tracking) managed by SAMStates module
-    -- This ensures consistency with WAR/PLD/DNC/RDM/WHM architecture
     local SAMStates = require('Tetsouo/config/sam/SAM_STATES')
     SAMStates.configure()
 
@@ -180,18 +196,27 @@ end
 
 --- Called by Mote-Include after state changes
 --- Updates the UI to reflect current state values
+--- @param cmdParams table Parameters passed to Mote's handle_update
+--- @param eventArgs table Mote event arguments (unused)
+--- @return void
 function job_update(cmdParams, eventArgs)
-    -- Update UI when states change (F9, F10, etc.)
+    -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI and KeybindUI.update then
         KeybindUI.update()
     end
 end
 
+--- Load the SAM equipment sets.
+--- Called by Mote-Include at the end of init_include(), after user_setup().
+--- @return void
 function init_gear_sets()
     include('sets/sam_sets.lua')
 end
 
+--- Called by GearSwap when this job file is unloaded (job change, reload).
+--- Cancels pending job-change operations and unbinds the job keys.
+--- @return void
 function file_unload()
     -- Cancel pending job change operations (debounce timer + lockstyles)
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')

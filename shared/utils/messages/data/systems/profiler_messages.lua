@@ -4,8 +4,9 @@
 --- Pure data file for performance profiler messages
 --- Used by performance_profiler.lua via new message system
 ---
---- @file data/systems/profiler_messages.lua
+--- @file shared/utils/messages/data/systems/profiler_messages.lua
 --- @author Tetsouo
+--- @version 1.0
 --- @date Created: 2025-11-15
 ---============================================================================
 

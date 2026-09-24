@@ -4,7 +4,7 @@
 --- Provides unified access to all GEO spells using modular architecture.
 --- Merges spells from geomancy/, ELEMENTAL_MAGIC_DATABASE, and DARK_MAGIC_DATABASE.
 ---
---- @file GEO_SPELL_DATABASE.lua
+--- @file shared/data/magic/GEO_SPELL_DATABASE.lua
 --- @author Tetsouo
 --- @version 3.0 - Improved formatting - Modular Architecture Migration
 --- @date Created: 2025-10-12 | Updated: 2025-10-31

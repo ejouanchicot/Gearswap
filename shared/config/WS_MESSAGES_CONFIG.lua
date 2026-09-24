@@ -18,7 +18,7 @@
 ---     • Helper functions for mode checks
 ---
 ---   Settings File:
----     • shared/config/message_modes.lua (per-character)
+---     • [CharName]/config/message_modes.lua (written by message_settings.lua)
 ---
 ---   @file    shared/config/WS_MESSAGES_CONFIG.lua
 ---   @author  Tetsouo
@@ -56,6 +56,7 @@ WS_MESSAGES_CONFIG.VALID_MODES = {
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Check if messages are enabled (not 'off')
+--- @return boolean True unless the mode is off (or an off alias)
 function WS_MESSAGES_CONFIG.is_enabled()
     -- Always read current mode from persistent settings
     local mode = MessageSettings.get_ws_mode()
@@ -63,12 +64,14 @@ function WS_MESSAGES_CONFIG.is_enabled()
 end
 
 --- Check if descriptions should be shown (mode = 'full')
+--- @return boolean True when the mode is full
 function WS_MESSAGES_CONFIG.show_description()
     -- Always read current mode from persistent settings
     return MessageSettings.get_ws_mode() == 'full'
 end
 
 --- Check if only TP should be shown (mode = 'on')
+--- @return boolean True when the mode is on (or a TP-only alias)
 function WS_MESSAGES_CONFIG.is_tp_only()
     -- Always read current mode from persistent settings
     local mode = MessageSettings.get_ws_mode()
@@ -80,8 +83,8 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Validate and set display mode
---- @param mode string 'full' | 'on' | 'off'
---- @return boolean true if mode is valid
+--- @param mode string 'full' | 'on' | 'off' (legacy aliases accepted, see VALID_MODES)
+--- @return boolean True if the mode was valid and saved
 function WS_MESSAGES_CONFIG.set_display_mode(mode)
     if WS_MESSAGES_CONFIG.VALID_MODES[mode] then
         -- Save to persistent settings file ([CharName]/config/message_modes.lua)

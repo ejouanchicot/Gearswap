@@ -3,7 +3,7 @@
 ---============================================================================
 --- Resurrection and reraise spells (Raise I-III, Reraise I-IV, Arise)
 ---
---- @file healing_raise.lua
+--- @file shared/data/magic/healing/healing_raise.lua
 --- @author Tetsouo
 --- @version 2.0 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06

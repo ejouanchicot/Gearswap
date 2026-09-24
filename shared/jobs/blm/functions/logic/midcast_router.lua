@@ -9,8 +9,8 @@
 ---   Public API (called by BLM_MIDCAST.job_post_midcast dispatcher):
 ---     • handle_impact(spell, ctx)        - Twilight Cloak lock
 ---     • handle_elemental(spell, ctx)     - MagicBurst + MP cons + ElementalMatch + Quanpur
----     • handle_dark(spell, ctx)          - Drain/Aspir
----     • handle_enfeebling(spell, ctx)    - Burn/Frost/Choke/etc.
+---     • handle_dark(spell, ctx)          - Dark Magic (Drain/Aspir/Bio/...)
+---     • handle_enfeebling(spell, ctx)    - Enfeebling Magic (Sleep/Bind/...)
 ---
 ---   ctx (context) table fields used by handlers:
 ---     • debug_enabled (boolean)
@@ -19,7 +19,7 @@
 ---     • elemental_config (BLMElementalConfig: { auto_hachirin, check_storm/day/weather })
 ---     • enfeebling_database (function|nil: spell_name -> spell_family)
 ---
----   @file    jobs/blm/functions/logic/midcast_router.lua
+---   @file    shared/jobs/blm/functions/logic/midcast_router.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2026-05-09
@@ -98,6 +98,8 @@ end
 
 --- Impact: requires Twilight Cloak. Body slot must NEVER be overwritten during cast.
 --- Handles MagicBurst variant via dedicated sets.midcast['Impact'].MagicBurst.
+--- @param spell table Spell information from GearSwap
+--- @param ctx table Context built by BLM_MIDCAST (see file header)
 function Router.handle_impact(spell, ctx)
     local impact_set = sets.midcast['Impact'] or sets.midcast['Elemental Magic']
 
@@ -122,6 +124,8 @@ end
 
 --- Elemental Magic: MidcastManager (with MagicBurst mode_value) + 3 BLM overrides.
 --- Death is special-cased to its own set.
+--- @param spell table Spell information from GearSwap
+--- @param ctx table Context built by BLM_MIDCAST (see file header)
 function Router.handle_elemental(spell, ctx)
     ensure_loaded()
 
@@ -178,7 +182,9 @@ function Router.handle_elemental(spell, ctx)
     end
 end
 
---- Dark Magic: pure delegation to MidcastManager (Drain/Aspir).
+--- Dark Magic: pure delegation to MidcastManager.
+--- @param spell table Spell information from GearSwap
+--- @param ctx table Context built by BLM_MIDCAST (see file header)
 function Router.handle_dark(spell, ctx)
     ensure_loaded()
 
@@ -197,6 +203,8 @@ function Router.handle_dark(spell, ctx)
 end
 
 --- Enfeebling Magic: MidcastManager with optional spell_family database router.
+--- @param spell table Spell information from GearSwap
+--- @param ctx table Context built by BLM_MIDCAST (see file header)
 function Router.handle_enfeebling(spell, ctx)
     ensure_loaded()
 

@@ -1,16 +1,14 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   RDM Functions Facade - Module Loader
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Loads all RDM-specific function modules in correct dependency order.
----   This file acts as the central coordinator for all RDM modules.
+---   Loads every RDM hook module, then the dual-box manager.
 ---
----   Features:
----     • Modular architecture (12 hooks + 1 logic module)
----     • Dependency-ordered loading (lockstyle >> macros >> combat >> movement >> utility)
----     • Separation of concerns (hooks = orchestration, logic = implementation)
+---   Load order: lockstyle >> macrobook >> precast/midcast/aftercast >>
+---   idle/engaged >> status/buffs >> movement >> commands >> dual-box.
 ---
 ---   Logic Modules:
----     • set_builder.lua - Shared set construction (engaged/idle/nuking)
+---     • set_builder.lua - Shared set construction (engaged/idle), lazy-loaded
+---       by RDM_IDLE / RDM_ENGAGED
 ---
 ---   @file    shared/jobs/rdm/functions/rdm_functions.lua
 ---   @author  Tetsouo
@@ -22,12 +20,9 @@
 ---   SECTION 1: INITIALIZATION MODULES
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- ═══════════════════════════════════════════════════════════════════
--- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
--- ═══════════════════════════════════════════════════════════════════
+-- Performance profiling (toggle with: //gs c perf start)
 local Profiler = require('shared/utils/debug/performance_profiler')
 local TIMER = Profiler.create_timer('RDM')
--- ═══════════════════════════════════════════════════════════════════
 
 include('../shared/jobs/rdm/functions/RDM_LOCKSTYLE.lua')
 TIMER('RDM_LOCKSTYLE')
@@ -81,12 +76,10 @@ TIMER('RDM_COMMANDS')
 ---   SECTION 7: DUAL-BOXING SYSTEM (non-critical, loaded last)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load dual-boxing manager (auto-initializes and handles ALT<>>MAIN communication).
+-- Load dual-boxing manager (auto-initializes and handles ALT<>MAIN communication).
 -- Plain `require` matches the convention used by every other job facade -
 -- dualbox_manager is load-bearing infrastructure and must fail loud, not
 -- silently degrade.
-local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
+require('shared/utils/dualbox/dualbox_manager')
 
--- ═══════════════════════════════════════════════════════════════════
 TIMER('TOTAL RDM_functions', true)
--- ═══════════════════════════════════════════════════════════════════

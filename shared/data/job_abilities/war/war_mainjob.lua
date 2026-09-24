@@ -10,11 +10,10 @@
 ---   - Restraint (Lv77) - WS damage bonus builder
 ---   - Blood Rage (Lv87) - Party critical hit boost
 ---
---- @file war_mainjob.lua
+--- @file shared/data/job_abilities/war/war_mainjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06
---- @updated 2025-10-31
 --- @source https://www.bg-wiki.com/ffxi/Warrior
 ---============================================================================
 

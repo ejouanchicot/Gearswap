@@ -2,10 +2,11 @@
 --- RDM Message Data - Red Mage Messages
 ---============================================================================
 --- Pure data file for RDM job messages
---- Used by new message system (api/messages.lua)
+--- Loaded by the message engine when a formatter sends a key from it (api/messages.lua)
 ---
---- @file data/jobs/rdm_messages.lua
+--- @file shared/utils/messages/data/jobs/rdm_messages.lua
 --- @author Tetsouo
+--- @version 1.0
 --- @date Created: 2025-11-06
 ---============================================================================
 

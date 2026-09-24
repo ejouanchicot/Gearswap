@@ -9,23 +9,22 @@
 ---   • Hook modules (PLD_*.lua) provide GearSwap event handlers
 ---   • Logic modules (logic/*.lua) contain business logic, loaded via require()
 ---
----   @file    pld_functions.lua
+---   @file    shared/jobs/pld/functions/pld_functions.lua
 ---   @author  Tetsouo
 ---   @version 2.0 - Logic Extracted to logic/
 ---   @date    Created: 2025-10-03 | Updated: 2025-10-06
 ---   @requires All PLD_*.lua modules in functions directory
 ---  ═══════════════════════════════════════════════════════════════════════════
+
+-- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+local Profiler = require('shared/utils/debug/performance_profiler')
+local TIMER = Profiler.create_timer('PLD')
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SECTION 1: MESSAGE SYSTEM
 ---  ═══════════════════════════════════════════════════════════════════════════
--- Message system (must load first for buff status display)
--- ═══════════════════════════════════════════════════════════════════
--- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
--- ═══════════════════════════════════════════════════════════════════
-local Profiler = require('shared/utils/debug/performance_profiler')
-local TIMER = Profiler.create_timer('PLD')
--- ═══════════════════════════════════════════════════════════════════
 
+-- Message system (must load first for buff status display)
 include('../shared/utils/messages/formatters/magic/message_buffs.lua')
 TIMER('message_buffs')
 
@@ -80,16 +79,14 @@ TIMER('PLD_MOVEMENT')
 ---     • Hoxne stance: ammo slot frozen on Hoxne Ampulla
 ---     • Released by the entry file on load and on unload, GearSwap slot
 ---       locks outliving the job file
-
+---
 ---   logic/aoe_manager.lua
----     • Blue Magic AOE spell rotation (PLD/BLU subjob)
----     • Auto-target selection for AOE spells
----     • Spell tier escalation based on target count
+---     • Blue Magic AOE spell rotation (PLD/BLU subjob): first spell off
+---       recast from BluMagicConfig.get_rotation(), cast on <stnpc>
+---     • Anti-spam (5s) and recast display when every spell is down
 ---
 ---   logic/cure_set_builder.lua
----     • Dynamic Cure III/IV set generation
----     • Potency optimization based on HP thresholds
----     • Light Arts bonus detection & gear adjustment
+---     • Cure III/IV: sets.midcast.CureSelf vs CureOther by target
 ---
 ---   logic/enmity_override.lua
 ---     • Sortie and /SCH Tanking: spells that wore sets.FullEnmity wear
@@ -98,12 +95,10 @@ TIMER('PLD_MOVEMENT')
 ---
 ---   logic/rune_manager.lua
 ---     • Rune ability management (PLD/RUN subjob)
----     • Mode-based rune selection (Sulpor/Lux)
----     • Auto-application timing coordination
+---     • Casts the rune selected in state.RuneMode, after a recast check
 ---
 ---   logic/set_builder.lua
----     • Shared engaged set construction
----     • Shared idle set construction
+---     • Engaged and idle set construction
 ---     • Hybrid mode application (PDT/MDT/Sortie, DPS/Tanking/Hoxne)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
@@ -111,14 +106,13 @@ TIMER('PLD_MOVEMENT')
 ---   SECTION 6: DUAL-BOXING SYSTEM
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load dual-boxing manager (uses deferred init + lazy message loading)
-local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
+-- Loaded for its side effect: requiring dualbox_manager runs its deferred init.
+require('shared/utils/dualbox/dualbox_manager')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   INITIALIZATION COMPLETE
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- All module functions are now available in global scope
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 MessageFormatter.show_debug('PLD', 'All functions loaded (11 hooks + 5 logic modules)')
 

@@ -1,17 +1,16 @@
 ---============================================================================
---- Warp Database - Cities, Chocobo Stables & Conquest (15 destinations, 17 items)
+--- Warp Database - Cities, Chocobo Stables & Conquest (14 destinations, 16 items)
 ---============================================================================
 --- Contains:
 ---   - Outpost Cities: Selbina, Mhaura, Rabao, Kazham, Norg (5)
 ---   - Expansion Cities: Tavnazia, Whitegate, Nashmau, Adoulin (4)
 ---   - Chocobo Stables: San d'Oria, Bastok, Windurst, Jeuno (4)
 ---   - Conquest Outpost: Current outpost (1)
----   - Adoulin City: Adoulin Castle Gates (1)
 ---
---- @file warp_database_cities_chocobo_conquest.lua
+--- @file shared/utils/warp/database/warp_database_cities_chocobo_conquest.lua
 --- @author Tetsouo
---- @version 4.0 - Modular Architecture
---- @date 2025-10-28
+--- @version 4.0
+--- @date Created: 2025-10-28
 ---============================================================================
 
 local WarpDatabaseCore = require('shared/utils/warp/database/warp_database_core')
@@ -20,7 +19,7 @@ local DEST = WarpDatabaseCore.DESTINATIONS
 local CitiesDB = {}
 
 ---============================================================================
---- ALL ITEMS (17 items across 15 destinations)
+--- ALL ITEMS (16 items across 14 destinations)
 ---============================================================================
 
 local ITEMS = {
@@ -57,6 +56,9 @@ local ITEMS = {
 --- PUBLIC API (Standard Interface)
 ---============================================================================
 
+--- Get all items for a destination (sorted by priority)
+--- @param destination_key string Destination constant
+--- @return table Array of {data={item fields}, item_id=number}
 function CitiesDB.get_items(destination_key)
     local destination_items = ITEMS[destination_key]
     if not destination_items then return {} end
@@ -70,6 +72,10 @@ function CitiesDB.get_items(destination_key)
     return items_array
 end
 
+--- Get item data by item ID
+--- @param item_id number Item ID
+--- @return table|nil Item data
+--- @return string|nil Destination key
 function CitiesDB.get_item_by_id(item_id)
     for destination_key, destination_items in pairs(ITEMS) do
         local item_data = destination_items[item_id]
@@ -78,6 +84,8 @@ function CitiesDB.get_item_by_id(item_id)
     return nil, nil
 end
 
+--- Count total items in this module
+--- @return number Item count
 function CitiesDB.count_items()
     local count = 0
     for _, destination_items in pairs(ITEMS) do

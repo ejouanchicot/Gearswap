@@ -2,22 +2,22 @@
 ---   WAR Idle Module - Idle State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Handles all idle state logic for Warrior job:
----   • Idle set selection based on conditions
----   • Movement speed optimization
+---   • Town set, else the HybridMode idle set
 ---   • Dynamic weapon application to idle sets
----   • Town gear management
+---   • Movement speed gear outside town
 ---
 ---   **PERFORMANCE OPTIMIZATION:**
 ---   • Lazy-loaded: SetBuilder loaded on first idle event
 ---
 ---   Delegates to SetBuilder (logic module) for shared construction logic.
 ---
----   @file    WAR_IDLE.lua
+---   @file    shared/jobs/war/functions/WAR_IDLE.lua
 ---   @author  Tetsouo
 ---   @version 2.1 - Lazy Loading for performance
 ---   @date    Created: 2025-09-29 | Updated: 2025-11-15
----   @requires jobs/war/functions/logic/set_builder
+---   @requires shared/jobs/war/functions/logic/set_builder
 ---  ═══════════════════════════════════════════════════════════════════════════
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -31,13 +31,13 @@ local SetBuilder = nil
 ---   Apply weapon sets and movement gear to idle configuration
 ---   Called by Mote-Include when idle set is selected.
 ---
----   Processing order:
----   1. Apply current weapon set (state.MainWeapon)
----   2. Apply movement gear if moving
----   3. Detect Aftermath Lv.3 and apply AM3 gear if active
+---   Processing order (SetBuilder.build_idle_set):
+---   1. Town set, else sets.idle[HybridMode], else the base set
+---   2. Apply current weapon set (state.MainWeapon)
+---   3. Apply movement gear if moving (outside town)
 ---
 ---   @param idleSet table The base idle set from war_sets.lua
----   @return table Modified idle set with weapon/movement/AM3 gear applied
+---   @return table Modified idle set with weapon/movement gear applied
 function customize_idle_set(idleSet)
     -- Lazy load SetBuilder on first call
     if not SetBuilder then

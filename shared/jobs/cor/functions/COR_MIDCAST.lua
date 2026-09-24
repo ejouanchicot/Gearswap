@@ -8,14 +8,17 @@
 ---   - Healing Magic: Cure spells (from subjob)
 ---   - Enhancing Magic: Buff spells (from subjob)
 ---   - Elemental Magic: Nuking (if COR/RDM or COR/BLM)
+---   - Enfeebling Magic: from subjob
 ---
 ---   Important Notes:
 ---   - Phantom Rolls/Quick Draw are instantaneous (PRECAST only, no midcast)
 ---
----   @file    COR_MIDCAST.lua
+---   @file    shared/jobs/cor/functions/COR_MIDCAST.lua
 ---   @author  Tetsouo
 ---   @version 3.1 - Added spell_family database support
 ---   @date    Created: 2025-10-07 | Updated: 2025-11-05
+---  ═══════════════════════════════════════════════════════════════════════════
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -27,7 +30,7 @@ local EnhancingSPELLS = nil
 
 ---   Pre-midcast hook (job-specific logic before set selection)
 ---   @param spell table Spell information from GearSwap
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping from Mote-Include
 ---   @param eventArgs table Event arguments for cancellation/customization
 function job_midcast(spell, action, spellMap, eventArgs)

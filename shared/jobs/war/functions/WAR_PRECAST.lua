@@ -3,19 +3,21 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Handles all precast actions for Warrior job:
 ---   • Weaponskills preparation & TP gear optimization
----   • Job ability precast logic & cooldown tracking
----   • Fast cast for sub-job spells
+---   • Cooldown check for abilities and spells
+---   • Auto-Jump before a weaponskill on /DRG (AutoJump)
 ---   • Security layers (debuff guard, range checks, validation)
+---   Job ability and Fast Cast sets are left to Mote-Include.
 ---
 ---   **PERFORMANCE OPTIMIZATION:**
 ---   • Lazy-loaded: All modules loaded on first action
 ---
----   @file    WAR_PRECAST.lua
+---   @file    shared/jobs/war/functions/WAR_PRECAST.lua
 ---   @author  Tetsouo
 ---   @version 2.1 - Lazy Loading for performance
 ---   @date    Created: 2025-09-29 | Updated: 2025-11-15
----   @requires Tetsouo architecture, MessageFormatter, CooldownChecker
+---   @requires PrecastGuard, CooldownChecker, WSPrecastHandler, AutoJump
 ---  ═══════════════════════════════════════════════════════════════════════════
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -25,7 +27,7 @@ local PrecastGuard = nil
 local WSPrecastHandler = nil
 local AutoJump = nil
 
--- WAR TP configuration (loaded from character main file)
+-- WAR TP configuration (_G.WARTPConfig, set by the entry file)
 local WARTPConfig = nil
 
 local modules_loaded = false
@@ -65,11 +67,11 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Called before any action (WS, JA, spell, etc.)
----   Implements 4-layer security validation:
----   1. PrecastGuard    >> Block if Amnesia/Silence/Stun/etc.
----   2. CooldownChecker >> Block if ability/spell on cooldown
----   3. WSPrecastHandler >> Validate range & weaponskill validity
----   4. TP Bonus Calculation >> Optimize WS TP gear
+---   Processing order:
+---   1. PrecastGuard     >> Block if Amnesia/Silence/Stun/etc.
+---   2. CooldownChecker  >> Block if ability/spell on cooldown
+---   3. AutoJump (/DRG)  >> Cancel the WS, Jump for TP, replay it
+---   4. WSPrecastHandler >> Range/validity, TP check, TP bonus calculation
 ---
 ---   @param spell     table  Spell/ability data from GearSwap
 ---   @param action    string Action type (not used)

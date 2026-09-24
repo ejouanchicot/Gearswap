@@ -7,7 +7,7 @@
 ---   • Default lockstyle (used when no subjob-specific override exists)
 ---   • Subjob-specific lockstyle overrides (optional)
 ---   • Automatic selection based on current subjob
----   • Backward compatibility with legacy code
+---   • Legacy .style field (unused)
 ---
 --- Usage:
 ---   • Edit the `default` value to set your preferred lockstyle
@@ -30,15 +30,13 @@ local DNCLockstyleConfig = {}
 DNCLockstyleConfig.default = 2
 
 -- Lockstyle by subjob (OPTIONAL)
--- If you want different lockstyles per subjob, uncomment and configure below
--- If not configured, the default lockstyle will be used
+-- A subjob missing from this table uses the default lockstyle
 DNCLockstyleConfig.by_subjob = {
-    -- Examples:
-    ['NIN'] = 2,  -- DNC/NIN uses lockstyle 2
-    ['SAM'] = 2,  -- DNC/SAM uses lockstyle 2
-    ['WAR'] = 2,  -- DNC/WAR uses lockstyle 2
-    ['THF'] = 2,  -- DNC/THF uses lockstyle 2
-    ['DRG'] = 2,  -- DNC/THF uses lockstyle 2
+    ['NIN'] = 2,  -- DNC/NIN
+    ['SAM'] = 2,  -- DNC/SAM
+    ['WAR'] = 2,  -- DNC/WAR
+    ['THF'] = 2,  -- DNC/THF
+    ['DRG'] = 2,  -- DNC/DRG
 }
 
 ---============================================================================
@@ -58,7 +56,7 @@ function DNCLockstyleConfig.get_style(subjob)
     return DNCLockstyleConfig.default
 end
 
--- Backward compatibility (for old code using .style)
+-- Legacy field: nothing under shared/ reads .style any more
 DNCLockstyleConfig.style = DNCLockstyleConfig.default
 
 return DNCLockstyleConfig

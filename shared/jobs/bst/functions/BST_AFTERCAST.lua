@@ -2,9 +2,11 @@
 ---   BST Aftercast Module - Post-Action Cleanup
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Handles aftercast logic for Beastmaster:
----   • Return to idle or engaged gear after action completes
+---   • Ready moves: equip the pet damage set for the move's category
+---   • Pet summon / Ready move: start the entry file's pet monitor (2 s later)
+---   Mote-Include returns to idle/engaged gear otherwise.
 ---
----   @file    jobs/bst/functions/BST_AFTERCAST.lua
+---   @file    shared/jobs/bst/functions/BST_AFTERCAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-17
@@ -14,7 +16,9 @@
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Pet manager (for pet status monitoring)
+-- Pet manager: nothing in this file calls it any more (its only user, a
+-- post-command monitor helper, had no caller and was removed). The require
+-- is kept so the module keeps loading at the same point.
 local success_pm, PetManager = pcall(require, 'shared/jobs/bst/functions/logic/pet_manager')
 if not success_pm then
     PetManager = nil
@@ -29,44 +33,16 @@ if not success_rmc then
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   TEMPORARY PET MONITORING (after pet commands)
----  ═══════════════════════════════════════════════════════════════════════════
-
----   Monitor pet status multiple times after pet command (Fight, Heel, etc.)
----   Checks 10 times over 5 seconds, then stops (event-driven, not constant polling)
----
----   @param checks_remaining number Number of checks remaining
----   @return void
-local function monitor_pet_after_command(checks_remaining)
-    if not PetManager or checks_remaining <= 0 then
-        return
-    end
-
-    -- Check current pet status
-    local status_changed = PetManager.monitor_pet_status()
-
-    -- If status changed, stop monitoring (mission accomplished)
-    if status_changed then
-        return
-    end
-
-    -- Schedule next check (0.5s later)
-    coroutine.schedule(function()
-        monitor_pet_after_command(checks_remaining - 1)
-    end, 0.5)
-end
-
----  ═══════════════════════════════════════════════════════════════════════════
 ---   AFTERCAST HOOK
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Called after spell/ability completes
----   Returns to idle or engaged gear based on player status
+---   Ready moves get the pet damage set; everything else is left to Mote
 ---
 ---   @param spell table Spell/ability data
----   @param action string Action type (not used)
+---   @param action table Action information (not used)
 ---   @param spellMap string Spell mapping (not used)
----   @param eventArgs table Event arguments (not used)
+---   @param eventArgs table Event arguments (handled set after a Ready move)
 ---   @return void
 function job_aftercast(spell, action, spellMap, eventArgs)
     -- Watchdog: Track aftercast
@@ -77,7 +53,8 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     -- ══════════════════════════════════════════════════════════════════════════
     -- READY MOVES - Swap to pet damage gear (recast already captured in PRECAST)
     -- ══════════════════════════════════════════════════════════════════════════
-    -- Use spell.type == 'Monster' like reference BST.lua (custom properties don't persist)
+    -- Detect on spell.type == 'Monster' and recompute the category here rather
+    -- than reading the fields BST_PRECAST put on the spell.
     -- A refused or interrupted move gets no pet aftercast, so the pet set
     -- would stay on: let Mote re-equip instead.
     if spell.type == 'Monster' and not spell.interrupted and ReadyMoveCategorizer then
@@ -109,8 +86,6 @@ function job_aftercast(spell, action, spellMap, eventArgs)
         end
     end
 
-    -- No unlock needed - main weapon was already unlocked at start of midcast
-
     -- ══════════════════════════════════════════════════════════════════════════
     -- PET SUMMON DETECTION (Start background monitoring)
     -- ══════════════════════════════════════════════════════════════════════════
@@ -123,11 +98,8 @@ function job_aftercast(spell, action, spellMap, eventArgs)
         end
     end
 
-    -- No other BST-specific aftercast logic required
-    -- Mote-Include handles return to idle/engaged automatically
-
-    -- REMOVED: gs c update (caused lag spikes after each action)
-    -- GearSwap already handles gear refresh automatically via status_change
+    -- No forced 'gs c update' here: it caused lag spikes after each action,
+    -- and Mote-Include returns to idle/engaged by itself.
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

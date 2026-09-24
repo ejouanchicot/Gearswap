@@ -7,11 +7,13 @@
 ---
 --- Key concept: smart_init waits for job-critical states (HybridMode for
 --- WAR/PLD, MainLightSpell for BLM, etc.) before initializing, so the UI
---- never displays "N/A" for states that just take a tick to populate.
+--- does not display "N/A" for states that take a tick to populate. After
+--- max_wait_time it initializes anyway.
 ---
---- @file ui/ui_lifecycle.lua
+--- @file shared/utils/ui/ui_lifecycle.lua
 --- @author Tetsouo
 --- @version 1.0
+--- @date Created: 2026-05-09
 ---============================================================================
 
 local texts              = require('texts')
@@ -64,6 +66,7 @@ end
 
 --- Public exposure of are_states_ready for the orchestrator (force_reinit
 --- needs to make the same readiness check).
+--- @return boolean True if states are ready (or job has no anchor)
 function Lifecycle.are_states_ready()
     return are_states_ready()
 end
@@ -71,7 +74,8 @@ end
 --- Attach lifecycle methods to the given KeybindUI table.
 --- @param KeybindUI table The KeybindUI module table to populate
 function Lifecycle.attach(KeybindUI)
-    --- Initialize UI: load settings, create texts element, show + first render
+    --- Initialize UI: load settings, create texts element, show + first render.
+    --- No-op when the HUD is disabled or the display already exists.
     function KeybindUI.init()
         -- ALWAYS load saved settings first (toggle/save need them even when disabled)
         if not _G.keybind_saved_settings then
@@ -94,7 +98,6 @@ function Lifecycle.attach(KeybindUI)
         _G.keybind_ui_display = texts.new(current_ui_settings)
         _G.keybind_ui_visible = _G.ui_display_config.enabled
 
-        -- Show UI if enabled
         if _G.ui_display_config.enabled then
             _G.keybind_ui_display:show()
             Display.update_display()
@@ -153,7 +156,8 @@ function Lifecycle.attach(KeybindUI)
         coroutine.schedule(try_init, check_interval)
     end
 
-    --- Safe initialization - can be called multiple times without side effects
+    --- Initialize only if no display exists yet (idempotent), recording the
+    --- current job/subjob in _G.ui_manager_state first.
     function KeybindUI.safe_init()
         if not _G.keybind_ui_display then
             local ui_state = _G.ui_manager_state
@@ -174,12 +178,11 @@ function Lifecycle.attach(KeybindUI)
         end
 
         -- Destroy texts element with error protection
-        local success, error_msg = pcall(function()
+        -- Destroy failures are ignored: the reference is cleared regardless
+        pcall(function()
             _G.keybind_ui_display:destroy()
         end)
-        -- Ignore destroy failures - we still clear the reference below
 
-        -- Always clear reference even if destroy failed
         _G.keybind_ui_display = nil
         _G.keybind_ui_visible = false
 

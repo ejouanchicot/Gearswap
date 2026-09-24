@@ -4,10 +4,10 @@
 ---   Wrapper around JA_DATABASE_FACTORY. Loads 15 ability modules (waltzes, sambas, steps, flourishes, jigs) into a flat
 ---   {ability_name = ability_data} table.
 ---
----   @file    DNC_JA_DATABASE.lua
+---   @file    shared/data/job_abilities/DNC_JA_DATABASE.lua
 ---   @author  Tetsouo
 ---   @version 2.0 - Factory-based
----   @date    Updated: 2026-05-06
+---   @date    Created: 2025-11-03 | Updated: 2026-05-06
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local Factory = require('shared/data/job_abilities/JA_DATABASE_FACTORY')

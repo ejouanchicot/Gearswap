@@ -3,10 +3,10 @@
 ---============================================================================
 --- Slashing physical damage Blue Magic spells
 ---
---- @file blu_physical_slashing.lua
+--- @file shared/data/magic/blu/physical/blu_physical_slashing.lua
 --- @author Tetsouo
 --- @version 2.0 - Improved alignment
---- @date Created: 2025-11-01 | Updated: 2025-11-06 | Updated: 2025-11-01
+--- @date Created: 2025-11-01 | Updated: 2025-11-06
 ---============================================================================
 
 local BLU_PHYSICAL_SLASHING = {}

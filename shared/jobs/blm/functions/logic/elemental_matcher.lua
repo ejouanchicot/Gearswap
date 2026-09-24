@@ -6,7 +6,7 @@
 ---   - Day of the week (Firesday, Iceday, etc.)
 ---   - Active weather (Heat waves, Blizzards, etc.)
 ---
----   @file    elemental_matcher.lua
+---   @file    shared/jobs/blm/functions/logic/elemental_matcher.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-25
@@ -135,7 +135,7 @@ end
 ---   @param spell table Spell object from GearSwap
 ---   @param config table Configuration options {check_storm, check_day, check_weather}
 ---   @return boolean True if any condition matches
----   @return string|nil Reason for match (for debug)
+---   @return string|nil Reasons for the match, comma-separated (for debug)
 function ElementalMatcher.has_elemental_match(spell, config)
     if not spell or not spell.element then
         return false, nil

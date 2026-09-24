@@ -44,22 +44,19 @@ function WatchdogCommands.handle_command(cmdParams, eventArgs)
         return false
     end
 
-    -- Get MidcastWatchdog from global
+    -- Published by INIT_SYSTEMS 2 s after the load
     local MidcastWatchdog = _G.MidcastWatchdog
     if not MidcastWatchdog then
         MessageWatchdog.show_not_loaded()
         return true
     end
 
-    -- Extract sub-command args
     local cmd_args = {}
     for i = 2, #cmdParams do
         table.insert(cmd_args, cmdParams[i])
     end
 
-    -- Handle sub-commands
     if #cmd_args == 0 then
-        -- Show status
         local stats = MidcastWatchdog.get_stats()
         MessageWatchdog.show_status(stats)
     elseif cmd_args[1] == 'on' then
@@ -72,7 +69,7 @@ function WatchdogCommands.handle_command(cmdParams, eventArgs)
         MidcastWatchdog.toggle_debug()
     elseif cmd_args[1] == 'buffer' and cmd_args[2] then
         local buffer = tonumber(cmd_args[2])
-        if buffer then
+        if buffer then  -- a non-numeric value is ignored without a message
             MidcastWatchdog.set_buffer(buffer)
         end
     elseif cmd_args[1] == 'fallback' and cmd_args[2] then
@@ -83,9 +80,11 @@ function WatchdogCommands.handle_command(cmdParams, eventArgs)
     elseif cmd_args[1] == 'clear' then
         MidcastWatchdog.clear_all()
     elseif cmd_args[1] == 'test' then
-        -- Test mode: simulate stuck midcast with specific spell ID
+        -- Test mode: simulate a stuck midcast. The default id 262 is Warp II
+        -- (5 s cast), not Teleport-Holla (122, 20 s): the label and the timing
+        -- used do not match.
         local spell_name = cmd_args[2] or 'Teleport-Holla'
-        local spell_id = tonumber(cmd_args[3]) or 262  -- Default: Teleport-Holla (ID 262, 20s cast)
+        local spell_id = tonumber(cmd_args[3]) or 262
         MidcastWatchdog.simulate_stuck(spell_name, spell_id)
     elseif cmd_args[1] == 'stats' then
         local stats = MidcastWatchdog.get_stats()

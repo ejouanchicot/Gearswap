@@ -1,14 +1,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SAM Movement Module - Movement Handling
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles movement-based gear management for Samurai with AutoMove integration.
+---   Movement status API over the centralized AutoMove (moving flag,
+---   last distance, position). SAM's set builder applies no movement gear.
 ---
----   Features:
----   • Movement status API (delegates to centralized AutoMove)
----   • Distance tracking (determines movement speed gear triggers)
----   • Position tracking (X/Y/Z coordinates)
----
----   @file    SAM_MOVEMENT.lua
+---   @file    shared/jobs/sam/functions/SAM_MOVEMENT.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-21
@@ -36,8 +32,10 @@ function get_sam_movement_status()
     }
 end
 
+---   Mote hook called before gear is equipped. Empty on SAM.
+---   @param playerStatus string Current player status
+---   @param eventArgs table Event arguments
 function job_handle_equipping_gear(playerStatus, eventArgs)
-    -- Movement gear handling if needed
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

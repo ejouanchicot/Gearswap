@@ -1,32 +1,25 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DNC Precast Module - Precast Action Handling & Cooldown Monitoring
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all precast actions for Dancer job with auto-buff systems:
----   • Weaponskill precast (Fast Cast, TP bonus optimization)
----   • Auto-Jump integration (DRG subjob - 0.5s timing)
----   • Auto-Climactic Flourish (optimized 1s timing before configured WS)
----   • Job ability precast (Steps, Sambas, Jigs, Waltzes, Flourishes)
----   • Fast cast for subjob spells (NIN/SAM/WAR/etc.)
----   • Cooldown tracking with formatted messages
----   • Debuff guard integration (blocks actions if silenced/amnesia)
----   • WS range validation (6y melee, 15y ranged)
----   • TP bonus calculation (Moonshade Earring automation)
----   • Mote refine_waltz override (allows waltzes on full HP targets)
+---   Handles all precast actions for Dancer:
+---   • Mote refine_waltz override (waltzes are never re-tiered or blocked)
+---   • Samba TP cost check (cancels a Samba the player cannot pay for)
+---   • Climactic Flourish timestamp (read by ws_variant_selector)
+---   • Auto-Jump before WS on /DRG (shared/utils/drg/auto_jump.lua)
+---   • Auto-Climactic Flourish before configured WS (logic/climactic_manager)
+---   • WS variant from dance/Climactic buffs, then TP bonus gear (post-precast)
 ---
----   Processing order (CRITICAL - do not reorder):
----   1. Debuff guard (PrecastGuard) - blocks if silenced/amnesia/stunned
----   2. Cooldown check (CooldownChecker) - validates ability/spell ready
----   3. Climactic timestamp tracking (instant detection before buff appears)
----   4. Auto-Jump trigger (JumpManager) - if DNC/DRG and TP < 1000
----   5. Auto-Climactic trigger (ClimaticManager) - if configured WS
----   6. WS validation (WSPrecastHandler) - range check + validation
----   7. TP bonus calculation (TPBonusCalculator) - optimize WS gear
+---   job_precast order (do not reorder):
+---   1. Debuff guard (PrecastGuard)
+---   2. Cooldown check (CooldownChecker; Utsusemi excluded)
+---   3. Samba TP cost, Climactic timestamp
+---   4. Auto-Jump, then Auto-Climactic (WS only; each may cancel and replay)
+---   5. WSPrecastHandler.handle
 ---
----   @file    DNC_PRECAST.lua
+---   @file    shared/jobs/dnc/functions/DNC_PRECAST.lua
 ---   @author  Tetsouo
 ---   @version 3.2
 ---   @date    Created: 2025-10-04 | Updated: 2025-10-10
----   @requires Tetsouo architecture, DNC logic modules, TPBonusCalculator
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -83,12 +76,14 @@ end
 ---   MOTE OVERRIDES
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Override Mote's refine_waltz to allow waltzes even when target is full HP
----   This is needed for wake-up utility (removing sleep from party members)
----   Mote calls this function during precast for all waltz abilities
+---   Override Mote's refine_waltz with a no-op, so a waltz is never blocked on
+---   a full-HP target (wake-up utility: removing sleep from party members).
+---   Tier selection is done by WaltzManager through //gs c waltz / aoewaltz.
+---   @param spell table Spell information from GearSwap
+---   @param action string Action type
+---   @param spellMap string Spell mapping from Mote-Include
+---   @param eventArgs table Event arguments
 function refine_waltz(spell, action, spellMap, eventArgs)
-    -- Do nothing - let our WaltzManager handle everything via //gs c waltz commands
-    -- This disables Mote's automatic waltz blocking/refinement when target is full HP
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -114,7 +109,10 @@ local function job_precast_samba(spell, eventArgs)
     end
 end
 
---- Extracted from job_precast: the `spell.type == 'WeaponSkill'` branch.
+--- Weaponskill auto-triggers: Jump (/DRG), then Climactic Flourish.
+--- Either one may cancel the WS and replay it once the ability has landed.
+--- @param spell table Spell information from GearSwap
+--- @param eventArgs table Event args (eventArgs.cancel for cancellation)
 local function job_precast_weaponskill(spell, eventArgs)
     -- Auto-trigger Jump before WS (DRG subjob)
     if JumpManager then
@@ -184,7 +182,7 @@ end
 ---   POST-PRECAST HOOK (Called AFTER set selection, BEFORE equipping)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Apply any final gear adjustments before equipping
+---   WS variant (dance/Climactic) then TP bonus gear, before equipping
 ---   @param spell table Spell/ability data
 ---   @param action string Action type
 ---   @param spellMap string Spell mapping
@@ -210,7 +208,7 @@ end
 ---   MODULE EXPORT
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Make job_precast available globally for GearSwap
+-- Export to global scope (used by Mote-Include via include())
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
 

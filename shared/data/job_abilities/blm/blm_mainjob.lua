@@ -9,7 +9,7 @@
 ---   - Enmity Douse (Lv87) - Reset target enmity to minimum
 ---   - Manawell (Lv95) - Target's next spell costs 0 MP (1min duration)
 ---
---- @file blm_mainjob.lua
+--- @file shared/data/job_abilities/blm/blm_mainjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06

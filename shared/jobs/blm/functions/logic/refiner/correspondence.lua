@@ -11,7 +11,7 @@
 ---     Fire family: VI -> V -> IV -> III -> II -> I (no numeral)
 ---     Firaga family: III -> II -> I (no numeral)
 ---
----   @file    jobs/blm/functions/logic/refiner/correspondence.lua
+---   @file    shared/jobs/blm/functions/logic/refiner/correspondence.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2026-05-09 (extracted from spell_refiner.lua)

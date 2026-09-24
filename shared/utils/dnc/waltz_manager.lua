@@ -144,6 +144,8 @@ local function preferred_curing_waltz(effective_level, missing_hp)
 end
 
 --- The preferred tier first, then every other castable one as fallback.
+--- @param effective_level number DNC level, main or sub
+--- @param preferred_waltz table|nil Entry from WALTZ_CONFIG.curing
 --- @return table Array of WALTZ_CONFIG.curing entries
 local function curing_priority(effective_level, preferred_waltz)
     local priority = {}
@@ -159,6 +161,9 @@ local function curing_priority(effective_level, preferred_waltz)
 end
 
 --- Why nothing fired: a cooldown per tier, and the TP shortfall once.
+--- @param effective_level number DNC level, main or sub
+--- @param ability_recasts table windower.ffxi.get_ability_recasts()
+--- @param current_tp number
 --- @return table Array of message descriptors for show_multi_status
 local function curing_blockers(effective_level, ability_recasts, current_tp)
     local messages = {}
@@ -210,33 +215,28 @@ function WaltzManager.cast_curing_waltz(target_type)
     end
 end
 
---- Cast Divine Waltz (AoE)
+--- Cast Divine Waltz (AoE), highest castable tier first
 function WaltzManager.cast_divine_waltz()
     local MessageFormatter = require('shared/utils/messages/message_formatter')
     local ability_recasts = windower.ffxi.get_ability_recasts()
     local current_tp = player.tp
     local job_tag = MessageFormatter.get_job_tag()
 
-    -- Determine effective level
     local effective_level = player.main_job == 'DNC' and player.main_job_level or (player.sub_job_level or 0)
 
-    -- Try each Divine Waltz from highest to lowest
     for _, waltz in ipairs(WALTZ_CONFIG.divine) do
         if effective_level >= waltz.level then
             local recast = ability_recasts[waltz.recast_id] or 0
 
             if is_recast_ready(recast) and current_tp >= waltz.tp then
-                -- Execute Divine Waltz
                 send_command('input /ja "' .. waltz.name .. '" <me>')
-
-                -- Display success message
                 MessageFormatter.show_waltz_heal(waltz.name, nil, nil, job_tag)
                 return
             end
         end
     end
 
-    -- No Divine Waltz available - collect blocking reasons
+    -- Nothing fired: same blocker report as curing_blockers, on the divine list
     local messages = {}
     local tp_message_added = false
 

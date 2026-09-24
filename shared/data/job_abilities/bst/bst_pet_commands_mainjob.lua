@@ -9,7 +9,7 @@
 ---   - Spur (Lv83) - Pet Store TP +20
 ---   - Run Wild (Lv93) - Pet stats +25%, pet vanishes after
 ---
---- @file bst_pet_commands_mainjob.lua
+--- @file shared/data/job_abilities/bst/bst_pet_commands_mainjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

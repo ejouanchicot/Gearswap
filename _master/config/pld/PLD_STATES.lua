@@ -49,7 +49,8 @@ local SORTIE_RUNE_OPTIONS = {
 ---============================================================================
 
 --- Every weapon set, in cycle order.
---- Burtgang (relic, enmity tank)   KC (Kraken Club, multi-attack)
+--- Excalibur (relic, Knights of Round)
+--- Burtgang (mythic, enmity tank)  KC (Kraken Club, multi-attack)
 --- BurtgangKC (PLD/DNC combo)      Naegling (Savage Blade)
 --- Shining (Shining One, polearm)  Malevo (Malevolence, club)
 local WEAPON_OPTIONS = {
@@ -219,8 +220,9 @@ function PLDStates.configure()
     --- the idle set the stance already chose. Idle only, so it never costs
     --- anything in combat, and two slots only, so DPS, Tanking and Hoxne
     --- each keep their own mitigation.
-    --- Keybind: Ctrl+Numpad7, bound under /SCH alone - the other subjobs
-    --- force it Off below rather than leave a toggle they cannot reach.
+    --- No key: set by macro (//gs c set Regen On|Off), shown in the HUD under
+    --- /SCH alone - the other subjobs force it Off below rather than leave a
+    --- toggle they cannot reach.
     state.Regen =
         M {
         ['description'] = 'Regen',
@@ -248,7 +250,7 @@ function PLDStates.configure()
     active_profile = nil
     PLDStates.apply_hybrid_profile(state.HybridMode.value)
 
-    -- Weaponskill slots (state.WS1, state.WS2), built from the weapon in hand.
+    -- Weaponskill slots (state.WS1..WSn, n = PLDWSConfig.max_slots), built from the weapon in hand.
     -- Created here for the same reason AutoMedicine is: a state born after
     -- user_setup() is missing from the row structure the HUD lays out, and
     -- reads as N/A however live its value lookup is.
@@ -351,7 +353,6 @@ function PLDStates.apply_hybrid_profile(mode)
         active_profile = profile
         install_profile(profile)
     end
-
 end
 
 ---============================================================================
@@ -359,12 +360,12 @@ end
 ---============================================================================
 
 --- Validate that states were configured correctly
---- Checks that all required states exist and have proper structure.
+--- Checks that HybridMode, MainWeapon, Xp, RuneMode and SneakInviAOE exist.
 ---
 --- @return boolean success True if validation passed, false otherwise
 --- @return string  message Validation message (success or error description)
 function PLDStates.validate()
-    -- Check HybridMode exists and has correct options
+    -- Check HybridMode exists
     if not state.HybridMode then
         return false, 'HybridMode state not configured'
     end
@@ -373,7 +374,6 @@ function PLDStates.validate()
     if not state.MainWeapon then
         return false, 'MainWeapon state not configured'
     end
-
 
     -- Check XP mode exists
     if not state.Xp then

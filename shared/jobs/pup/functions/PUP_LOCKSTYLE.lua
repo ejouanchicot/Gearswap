@@ -7,11 +7,11 @@
 ---   **PERFORMANCE OPTIMIZATION:**
 ---   • Lazy-loaded: Module created on first function call
 ---
----   @file    jobs/pup/functions/PUP_LOCKSTYLE.lua
+---   @file    shared/jobs/pup/functions/PUP_LOCKSTYLE.lua
 ---   @author  Tetsouo
 ---   @version 2.1 - Lazy Loading for performance
 ---   @date    Created: 2025-10-13 | Updated: 2025-11-15
----   @requires utils/lockstyle/lockstyle_manager
+---   @requires shared/utils/lockstyle/lockstyle_manager
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Lazy loading: Module created on first use
@@ -24,21 +24,21 @@ local function get_lockstyle_module()
             LockstyleManager = require('shared/utils/lockstyle/lockstyle_manager')
         end
         lockstyle_module = LockstyleManager.create(
-            'PUP',                           -- job_code
+            'PUP',                      -- job_code
             'config/pup/PUP_LOCKSTYLE', -- config_path
-            1,                                -- default_lockstyle
-            'SAM'                             -- default_subjob
+            1,                          -- default_lockstyle
+            'SAM'                       -- default_subjob
         )
     end
     return lockstyle_module
 end
 
--- Export select_default_lockstyle() to global scope
+--- Apply the lockstyle for the current subjob (see config/pup/PUP_LOCKSTYLE.lua).
 function select_default_lockstyle()
     return get_lockstyle_module().select_default_lockstyle()
 end
 
--- Export cancel_pup_lockstyle_operations() to global scope
+--- Cancel any pending (scheduled) lockstyle operation.
 function cancel_pup_lockstyle_operations()
     return get_lockstyle_module().cancel_pup_lockstyle_operations()
 end

@@ -1,9 +1,10 @@
 ---============================================================================
---- Song Message Formatter - Bard Song Messages (NEW SYSTEM)
+--- Song Message Formatter - Bard Song Messages
 ---============================================================================
 --- BRD-specific song casting, rotation, and instrument messages.
---- Uses template-based messaging via MessageRenderer
---- Migrated from old system to new system: 2025-11-06
+--- Templates: data/systems/songs_messages.lua (namespace SONGS).
+--- Reached only through the facade's show_song_* wrappers, which have no
+--- caller today: BRD code uses the message_brd.lua versions.
 ---
 --- Usage Examples:
 ---   SongMessages.show_songs_casting(4, "4-Song")
@@ -12,7 +13,7 @@
 ---   SongMessages.show_daurdabla_dummy()
 ---   SongMessages.show_pianissimo_target("Kaories")
 ---
---- @file    messages/message_songs.lua
+--- @file    shared/utils/messages/formatters/magic/message_songs.lua
 --- @author  Tetsouo
 --- @version 2.0
 --- @date    Created: 2025-11-06
@@ -121,7 +122,7 @@ end
 ---
 --- @param song_name string Optional song name (defaults to "Honor March")
 function SongMessages.show_marcato_honor_march(song_name)
-    song_name = song_name or "Honor March" -- Backward compatibility
+    song_name = song_name or "Honor March"
 
     local job_tag = MessageCore.get_job_tag()
 

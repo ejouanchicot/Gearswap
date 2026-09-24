@@ -13,10 +13,13 @@
 ---   • HP/MP display for healing actions
 ---   • Integration with MessageCore for standardized output
 ---
---- @file utils/whm/whm_message_formatter.lua
---- @author Tetsouo
+--- This is a formatter living outside utils/messages/: its add_to_chat calls
+--- are the documented exception (CODE_QUALITY.md section 6, point 3).
+---
+--- @file    shared/utils/whm/whm_message_formatter.lua
+--- @author  Tetsouo
 --- @version 1.0.0
---- @date Created: 2025-10-21
+--- @date    Created: 2025-10-21
 ---============================================================================
 
 local WHMMessageFormatter = {}
@@ -71,7 +74,7 @@ local COLORS = {
 --- @return string Formatted job tag [WHM/SAM] with color
 local function get_job_tag()
     local job_color = MessageCore.create_color_code(COLORS.job_tag)
-    local tag = MessageCore.get_job_tag()  -- Returns "WHM/SAM" or "WHM"
+    local tag = MessageCore.get_job_tag()  -- "WHM/SAM" or "WHM"
     return string.format("%s[%s]", job_color, tag)
 end
 

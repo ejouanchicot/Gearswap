@@ -1,21 +1,22 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Refill Panels - In-game ASCII display (74-char width, project-standard)
----  ═══════════════════════════════════════════════════════════════════════════
----   All UI rendering for the refill operation:
----     • banner / section / kv / divider / separator   (low-level builders)
----     • show_error                                     (one-line tagged error)
----     • show_start                                     (start banner + config)
----     • show_progress                                  (transferring N ops)
----     • show_report                                    (final per-item table)
+---============================================================================
+--- Refill Panels - In-game ASCII display (WIDTH-char panels, project-standard)
+---============================================================================
+--- All UI rendering for the refill operation:
+---   - banner / kv / tagged / item_row / separator   (low-level builders)
+---   - show_error                                    (one-line tagged error)
+---   - show_start                                    (start banner + config)
+---   - show_progress                                 (transferring N ops)
+---   - show_report                                   (final per-item table)
+--- Diagnostic tool: direct add_to_chat is allowed here (CODE_QUALITY.md 6).
 ---
----   Color palette aligned with shared/utils/messages/core/message_engine.lua.
----   Item names are color-coded: brown=food, pink=ammo, healgreen=medicine.
+--- Color palette aligned with shared/utils/messages/core/message_engine.lua.
+--- Item names are color-coded: brown=food, pink=ammo, healgreen=medicine.
 ---
----   @file    shared/utils/inventory/refill/refill_panels.lua
----   @author  Tetsouo
----   @version 1.0
----   @date    Created: 2026-05-09 (extracted from refill_manager.lua)
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/inventory/refill/refill_panels.lua
+--- @author Tetsouo
+--- @version 1.0
+--- @date Created: 2026-05-09
+---============================================================================
 
 local RefillPanels = {}
 
@@ -24,9 +25,8 @@ local RefillPanels = {}
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local CHANNEL = 121
-local WIDTH = 74
+local WIDTH = 69  -- same as MessageCore.SEPARATOR_WIDTH (diagnostic tool: no message-chain dependency)
 local SEP = string.rep('=', WIDTH)
-local SUBSEP = string.rep('-', WIDTH)
 
 -- Inline FFXI color codes
 local C = {
@@ -65,7 +65,7 @@ local function separator()
     send(C.gray .. SEP)
 end
 
---- 3-line banner block (project standard, 74-char wide).
+--- 3-line banner block (project standard, WIDTH chars wide).
 --- Middle line has +1 '=' on each side (total +2) so the variable-width FFXI
 --- font makes the title row visually match the outer rules.
 local function banner(title)

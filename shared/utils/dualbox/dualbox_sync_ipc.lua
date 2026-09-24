@@ -1,28 +1,31 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Dual-Box Sync IPC - Mirror local commands across paired Windower instances
----  ═══════════════════════════════════════════════════════════════════════════
----   Generic Windower-IPC bridge for "do the same thing on every running
----   instance of this addon" commands. Modeled on warp_ipc but with two
----   important design differences:
+---============================================================================
+--- Dual-Box Sync IPC - Mirror local commands across paired Windower instances
+---============================================================================
+--- Generic Windower-IPC bridge for "do the same thing on every running
+--- instance of this addon" commands. Modeled on warp_ipc but with two
+--- important design differences:
 ---
----     1. The receiver dispatches to a registered Lua HOOK (not via
----        windower.chat.input '//gs c <cmd>'). This avoids re-entering the
----        command router that issued the broadcast in the first place, so
----        the broadcast itself does NOT need a separate "*all" alias to
----        stay loop-free.
+---   1. The receiver dispatches to a registered Lua HOOK (not via
+---      windower.chat.input '//gs c <cmd>'). This avoids re-entering the
+---      command router that issued the broadcast in the first place, so
+---      the broadcast itself does NOT need a separate "*all" alias to
+---      stay loop-free.
 ---
----     2. Self-echo suppression uses a per-message flag with a short TTL
----        (the broadcaster's own listener fires too).
+---   2. Self-echo suppression uses a per-message flag with a short TTL
+---      (the broadcaster's own listener fires too).
 ---
----   Current hooks:
----     ls / lockstyle  ->  select_default_lockstyle()
+--- Current hooks (registered by INIT_SYSTEMS on every load):
+---   ls / lockstyle  ->  select_default_lockstyle()
+---   rf / refill     ->  RefillManager.refill()
 ---
----   To register a new sync command:
----     DualBoxSyncIPC.register_hook('mycmd', function() ... end)
+--- To register a new sync command:
+---   DualBoxSyncIPC.register_hook('mycmd', function() ... end)
 ---
----   @file shared/utils/dualbox/dualbox_sync_ipc.lua
----   @author Tetsouo
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/dualbox/dualbox_sync_ipc.lua
+--- @author Tetsouo
+--- @version 1.0
+--- @date Created: 2026-05-17
+---============================================================================
 
 local DualBoxSyncIPC = {}
 
@@ -33,8 +36,8 @@ local BROADCAST_TTL  = 1.5   -- seconds: how long after send to ignore self-echo
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   HOOK REGISTRY (cmd_name -> function)
 ---  ═══════════════════════════════════════════════════════════════════════════
---- Stored on `_G` so registrations survive `package.loaded` clears on reload
---- and are visible to any caller that re-requires this module.
+--- Stored on `_G`, which is rebuilt on every job load: the hooks do not
+--- survive a reload, which is why INIT_SYSTEMS registers them on every load.
 _G.DUALBOX_SYNC_HOOKS = _G.DUALBOX_SYNC_HOOKS or {}
 
 --- Register a Lua function to run when this instance receives `<cmd>` via IPC.
@@ -46,7 +49,8 @@ function DualBoxSyncIPC.register_hook(cmd, fn)
     _G.DUALBOX_SYNC_HOOKS[cmd:lower()] = fn
 end
 
---- Remove a previously registered hook (no-op if absent).
+--- Remove a previously registered hook (no-op if absent; no caller today).
+--- @param cmd string Hook name
 function DualBoxSyncIPC.unregister_hook(cmd)
     if type(cmd) == 'string' then
         _G.DUALBOX_SYNC_HOOKS[cmd:lower()] = nil
@@ -120,6 +124,7 @@ function DualBoxSyncIPC._on_ipc_message(msg)
 
     -- Run hook in pcall so a buggy hook doesn't kill the IPC listener
     -- (the event handler would be lost until next reload).
+    -- Note: nothing sets _G.DUALBOX_SYNC_DEBUG today, so errors stay silent.
     local ok, err = pcall(hook)
     if not ok and _G.DUALBOX_SYNC_DEBUG then
         local MessageFormatter = require('shared/utils/messages/message_formatter')

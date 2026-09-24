@@ -5,9 +5,9 @@
 --- Delegates all specialized logic to dedicated modules for maximum maintainability.
 ---
 --- Features:
----   • Modular architecture (12 hooks + 5 logic modules)
+---   • Modular architecture (11 hook modules + 5 logic modules)
 ---   • Tank-focused gear automation (PDT/MDT modes)
----   • Blu Magic spell rotation support
+---   • Blue Magic AOE spell rotation (PLD/BLU)
 ---   • Rune management (RUN subjob)
 ---   • Cure set automation with potency optimization
 ---   • AOE spell management
@@ -15,7 +15,7 @@
 ---   • UI + Keybind system
 ---
 --- Architecture:
----   Main File >> pld_functions.lua (facade) >> 11 Hooks + 4 Logic Modules
+---   Main File >> pld_functions.lua (facade) >> 11 Hooks + 5 Logic Modules
 ---
 --- Modules:
 ---   • 11 Hooks: PRECAST, MIDCAST, AFTERCAST, IDLE, ENGAGED, STATUS, BUFFS,
@@ -28,11 +28,12 @@
 --- @date    Created: 2025-10-03
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+
 ---============================================================================
+
 ---============================================================================
 --- INITIALIZATION
 ---============================================================================
 
---- Load global configurations with fallbacks
+-- Load global configurations with fallbacks
 local LockstyleConfig_ok, LockstyleConfig = pcall(require, 'Tetsouo/config/LOCKSTYLE_CONFIG')
 if not LockstyleConfig_ok then LockstyleConfig = nil end
 LockstyleConfig = LockstyleConfig or {
@@ -48,14 +49,19 @@ LockstyleConfig = LockstyleConfig or {
 local ConfigLoader = require('shared/utils/config/config_loader')
 local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'PLD')
 
--- Load region configuration (must load before message system for color codes)
+-- Load region configuration. message_colors captures _G.RegionConfig once,
+-- when it is first required - ConfigLoader above already required it, so
+-- this assignment comes too late for the region warning color.
 local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig
 end
 
+--- GearSwap entry hook: loads Mote-Include, the shared systems and the PLD modules.
+--- Called by GearSwap each time this job file is loaded.
+--- @return void
 function get_sets()
-    -- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+    -- PERFORMANCE PROFILING (enable with: //gs c perf start)
     local Profiler = require('shared/utils/debug/performance_profiler')
     Profiler.start('get_sets')
 
@@ -120,8 +126,8 @@ function get_sets()
         JobChangeManager.register_lockstyle_cancel("PLD", cancel_pld_lockstyle_operations)
     end
 
-    -- Note: Macro/lockstyle are handled by JobChangeManager on job changes
-    -- Initial load will be handled by JobChangeManager after initialization
+    -- Initial macrobook/lockstyle are triggered from user_setup();
+    -- subjob changes go through JobChangeManager (job_sub_job_change).
 
     Profiler.finish()
 end
@@ -135,6 +141,7 @@ end
 ---
 --- @param newSubjob string New subjob code
 --- @param oldSubjob string Old subjob code
+--- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
     -- Re-initialize JobChangeManager with PLD-specific functions
     local success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
@@ -161,6 +168,10 @@ end
 --- SETUP FUNCTIONS
 ---============================================================================
 
+--- Configure states, keybinds, UI and the initial macrobook/lockstyle.
+--- Called by Mote-Include from init_include() (inside include('Mote-Include.lua'),
+--- before init_gear_sets) and again on every subjob change, before job_sub_job_change().
+--- @return void
 function user_setup()
     -- ==========================================================================
     -- STATE DEFINITIONS (Loaded from PLD_STATES.lua)
@@ -244,6 +255,9 @@ end
 
 --- Called by Mote-Include after state changes
 --- Updates the UI to reflect current state values
+--- @param cmdParams table Parameters passed to Mote's handle_update
+--- @param eventArgs table Mote event arguments (unused)
+--- @return void
 function job_update(cmdParams, eventArgs)
     -- DEBUG: Trace gs c update reception
     if _G.UPDATE_DEBUG then
@@ -253,7 +267,7 @@ function job_update(cmdParams, eventArgs)
         MessageFormatter.show_debug('PLD', string.format('[UPDATE_DEBUG] 2. job_update RECEIVED | t=%.3f | delta=%.3fms', now, delta * 1000))
     end
 
-    -- Update UI when states change (F9, F10, etc.)
+    -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI and KeybindUI.update then
         if _G.UPDATE_DEBUG then
@@ -268,10 +282,17 @@ function job_update(cmdParams, eventArgs)
     end
 end
 
+--- Load the PLD equipment sets.
+--- Called by Mote-Include at the end of init_include(), after user_setup().
+--- @return void
 function init_gear_sets()
     include('sets/pld_sets.lua')
 end
 
+--- Called by GearSwap when this job file is unloaded (job change, reload).
+--- Releases the ammo lock first, then cancels pending job-change operations
+--- and unbinds the job keys.
+--- @return void
 function file_unload()
     -- Give the ammo slot back before the next job file loads: a GearSwap slot
     -- lock survives a job change, and nothing on the other side knows it.

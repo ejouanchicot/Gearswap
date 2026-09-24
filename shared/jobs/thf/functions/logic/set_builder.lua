@@ -10,10 +10,9 @@
 ---   • Weapon set application (MainWeapon + SubWeapon states)
 ---   • Abyssea proc mode (AbyProc toggle + AbyWeapon selection)
 ---   • Movement gear application (idle only, never in combat)
----   • HybridMode integration (PDT/Normal sets)
+---   • HybridMode base selection (engaged only)
 ---   • Treasure Hunter gear per TreasureMode (engaged only, via treasure_hunter)
 ---   • Error handling with MessageFormatter
----   • Modular set augmentation (base >> weapon >> movement >> final)
 ---
 ---   Dependencies:
 ---   • MessageFormatter (error display for set_combine failures)
@@ -23,7 +22,7 @@
 ---   • sets.MoveSpeed (movement speed gear)
 ---   • state.MainWeapon, state.SubWeapon, state.AbyProc, state.AbyWeapon
 ---
----   @file    jobs/thf/functions/logic/set_builder.lua
+---   @file    shared/jobs/thf/functions/logic/set_builder.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-06

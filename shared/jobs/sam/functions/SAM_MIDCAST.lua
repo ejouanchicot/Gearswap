@@ -3,10 +3,12 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Handles midcast for Samurai (primarily subjob spells).
 ---
----   @file    SAM_MIDCAST.lua
+---   @file    shared/jobs/sam/functions/SAM_MIDCAST.lua
 ---   @author  Tetsouo
 ---   @version 3.0 - Added spell_family database support
 ---   @date    Updated: 2025-11-05
+---  ═══════════════════════════════════════════════════════════════════════════
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════

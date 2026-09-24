@@ -1,9 +1,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BST Ecosystem Manager - Ecosystem/Species Cycling
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Dynamic state.species + state.ammoSet recreation.
+---   Dynamic state.species + state.ammoSet recreation, broth equip and jug
+---   counting. Pet data comes from _G.BSTBeastPetData (set by the entry file).
 ---
----   @file    ecosystem_manager.lua
+---   @file    shared/jobs/bst/functions/logic/ecosystem_manager.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-18
@@ -20,6 +21,9 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 -- Load Windower resources for item lookups
 local res = require('resources')
 
+---   Cycle state.Ecosystem and rebuild state.species / state.ammoSet for it
+---   @return string|nil New ecosystem (nil when state.Ecosystem is missing)
+---   @return number Number of species in that ecosystem
 function EcosystemManager.change_ecosystem()
     if not state or not state.Ecosystem then
         return nil, 0
@@ -57,6 +61,8 @@ end
 
 ---   Change species (cycle through species for current ecosystem)
 ---   CRITICAL: Recreates state.ammoSet dynamically based on species
+---   @return string|nil New species (nil when states are missing)
+---   @return number Jugs of that species found in inventory/wardrobes
 function EcosystemManager.change_species()
     if not state or not state.Ecosystem or not state.species then
         return nil, 0
@@ -126,7 +132,7 @@ function EcosystemManager.equip_pet_broth()
 end
 
 ---   Cycle ammoSet (cycle through pets for current ecosystem/species)
----   Called when user cycles ammoSet state directly
+---   No caller in the project
 function EcosystemManager.cycle_ammo()
     if not state or not state.ammoSet then
         return
@@ -148,6 +154,9 @@ end
 
 
 ---   Count jugs in inventory for a specific species
+---   @param ecosystem string Ecosystem name
+---   @param species string Species name
+---   @return number Total count across inventory and wardrobes 1-8
 function EcosystemManager.count_species_jugs(ecosystem, species)
     local total_count = 0
 
@@ -207,7 +216,7 @@ function EcosystemManager.count_species_jugs(ecosystem, species)
 end
 
 
----   Initialize ecosystem system (called in job_setup via coroutine)
+---   Initialize ecosystem system (called by the BST entry file)
 ---   Creates initial species and ammoSet states based on default ecosystem
 function EcosystemManager.initialize()
     if not state or not state.Ecosystem then

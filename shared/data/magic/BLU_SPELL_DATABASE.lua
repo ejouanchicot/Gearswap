@@ -5,7 +5,7 @@
 --- and trait data for optimal spell set building.
 --- Data extracted from FFXI BLU spell list.
 ---
---- @file config/magic/BLU_SPELL_DATABASE.lua
+--- @file shared/data/magic/BLU_SPELL_DATABASE.lua
 --- @author Tetsouo
 --- @version 2.1 - Improved formatting - Improved alignment - Facade Architecture
 --- @date Created: 2025-10-12 | Updated: 2025-11-06

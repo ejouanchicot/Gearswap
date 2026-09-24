@@ -3,7 +3,7 @@
 ---============================================================================
 --- Dancer jigs accessible as subjob (1 jig, Lv25)
 ---
---- @file dnc_jigs_subjob.lua
+--- @file shared/data/job_abilities/dnc/dnc_jigs_subjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06

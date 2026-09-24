@@ -1,8 +1,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SMN Buffs Module - Buff Gain/Loss Handler
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Delegates to DoomManager and re-equips idle when Avatar's Favor toggles
----   (so sets.idle.Avatar swaps in/out without an explicit `gs c update`).
+---   Delegates to DoomManager, and mirrors the Avatar's Favor buff into
+---   state.AvatarFavor then sends `gs c update`, so sets.idle.Avatar swaps
+---   in/out without the player toggling anything.
 ---
 ---   @file    shared/jobs/smn/functions/SMN_BUFFS.lua
 ---   @author  Tetsouo
@@ -19,6 +20,10 @@ local function ensure_loaded()
     DoomManager = dm
 end
 
+--- Buff change hook: Doom first, then Avatar's Favor sync.
+--- @param buff string Buff name
+--- @param gain boolean True on gain, false on loss
+--- @param eventArgs table Event arguments
 function job_buff_change(buff, gain, eventArgs)
     ensure_loaded()
 

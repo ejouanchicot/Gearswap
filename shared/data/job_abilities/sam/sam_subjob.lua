@@ -11,11 +11,10 @@
 ---   - Seigan (Lv35) - Third Eye enhancement
 ---   - Sekkanoki (Lv40) - Next WS TP reduction
 ---
---- @file sam_subjob.lua
+--- @file shared/data/job_abilities/sam/sam_subjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06
---- @updated 2025-10-31
 --- @source https://www.bg-wiki.com/ffxi/Samurai
 ---============================================================================
 

@@ -7,7 +7,7 @@
 ---   - Familiar (SP1, Lv1) - Pet powers enhanced
 ---   - Unleash (SP2, Lv96) - Charm 95% success, no recast Sic/Ready
 ---
---- @file bst_sp.lua
+--- @file shared/data/job_abilities/bst/bst_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

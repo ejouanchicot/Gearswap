@@ -9,6 +9,7 @@
 ---     - Berserk   >> Silence (blocks magic)
 ---     - Aggressor >> Amnesia (blocks JA/WS)
 ---     - Warcry    >> Stun (blocks EVERYTHING)
+---     - Defender  >> Paralysis (blocks JA/WS)
 ---
 ---   @file    shared/utils/debuff/debuff_checker.lua
 ---   @author  Tetsouo
@@ -18,7 +19,6 @@
 
 local DebuffChecker = {}
 
--- Load configuration
 local config_success, AutoCureConfig = pcall(require, 'shared/config/DEBUFF_AUTOCURE_CONFIG')
 local TEST_MODE = config_success and AutoCureConfig.test_mode or false
 
@@ -26,10 +26,8 @@ local TEST_MODE = config_success and AutoCureConfig.test_mode or false
 ---   DEBUFF DEFINITIONS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- TEST MODE: Use WAR buffs to simulate blocking debuffs for easy testing
--- Controlled by shared/config/DEBUFF_AUTOCURE_CONFIG.lua
-
--- Test buff mappings (WAR buffs simulate debuffs)
+-- TEST MODE: WAR buffs simulate blocking debuffs, so the guard can be tested
+-- without being debuffed (see shared/config/DEBUFF_AUTOCURE_CONFIG.lua)
 local TEST_DEBUFF_MAPPINGS = {
     ['Berserk'] = "Silence",      -- Berserk simulates Silence (blocks magic)
     ['Aggressor'] = "Amnesia",    -- Aggressor simulates Amnesia (blocks JA/WS)
@@ -37,7 +35,9 @@ local TEST_DEBUFF_MAPPINGS = {
     ['Defender'] = "Paralysis"    -- Defender simulates Paralysis (blocks JA/WS)
 }
 
--- Real debuff definitions (TEST_MODE uses these to map buffs to debuffs)
+-- Debuff definitions read only in TEST_MODE, to give each test buff the
+-- category/priority/message of the debuff it simulates. Production mode uses
+-- the lowercase tables below.
 local DEBUFF_DEFINITIONS = {
     -- Magic blocking
     Silence = { category = "magic", priority = 1, message = "Silenced" },
@@ -69,7 +69,6 @@ local WS_BLOCKING_DEBUFFS = {}
 local ITEM_BLOCKING_DEBUFFS = {}
 
 if TEST_MODE then
-    -- Map each test buff to its simulated debuff
     for test_buff, debuff_type in pairs(TEST_DEBUFF_MAPPINGS) do
         local def = DEBUFF_DEFINITIONS[debuff_type]
         if def then
@@ -84,7 +83,6 @@ if TEST_MODE then
                 JA_BLOCKING_DEBUFFS[test_buff] = entry  -- Paralysis blocks JA
                 WS_BLOCKING_DEBUFFS[test_buff] = entry  -- Paralysis also blocks WS
             elseif def.category == "universal" then
-                -- Universal blocks ALL action types
                 UNIVERSAL_BLOCKING_DEBUFFS[test_buff] = entry
             elseif def.category == "item" then
                 ITEM_BLOCKING_DEBUFFS[test_buff] = entry
@@ -92,7 +90,7 @@ if TEST_MODE then
         end
     end
 else
-    -- Production mode: use real debuffs (buffactive uses lowercase names)
+    -- Production mode: real debuff names (buffactive lookups are case-insensitive)
     MAGIC_BLOCKING_DEBUFFS = {
         ['silence'] = { priority = 1, message = "Silenced" },
         ['mute'] = { priority = 2, message = "Muted" },
@@ -160,13 +158,11 @@ end
 --- @return string|nil debuff_name The debuff blocking the action
 --- @return string|nil message User-friendly message
 local function check_blocking_debuffs(specific_debuffs)
-    -- Check universal blocks first
     local universal_debuff, universal_msg = get_active_blocking_debuff(UNIVERSAL_BLOCKING_DEBUFFS)
     if universal_debuff then
         return true, universal_debuff, universal_msg
     end
 
-    -- Check specific blocks
     local specific_debuff, specific_msg = get_active_blocking_debuff(specific_debuffs)
     if specific_debuff then
         return true, specific_debuff, specific_msg
@@ -222,10 +218,9 @@ function DebuffChecker.check_action_blocked(action_type)
     elseif action_type == "Item" then
         return DebuffChecker.check_item_blocked()
     elseif action_type == "Ranged" then
-        -- Ranged attacks have same restrictions as WS generally
+        -- Ranged attacks are gated like weaponskills
         return DebuffChecker.check_ws_blocked()
     else
-        -- Unknown action type, check universal blocks only
         local universal_debuff, universal_msg = get_active_blocking_debuff(UNIVERSAL_BLOCKING_DEBUFFS)
         if universal_debuff then
             return true, universal_debuff, universal_msg
@@ -239,7 +234,8 @@ end
 ---   UTILITY FUNCTIONS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get all currently active blocking debuffs
+--- Get all currently active blocking debuffs (universal, magic and JA lists
+--- only - WS and item blocks are not listed)
 --- @return table List of active blocking debuffs {name, message, blocks}
 function DebuffChecker.get_all_active_blocks()
     if not buffactive then
@@ -248,7 +244,6 @@ function DebuffChecker.get_all_active_blocks()
 
     local active_blocks = {}
 
-    -- Check universal blocks
     for debuff_name, debuff_info in pairs(UNIVERSAL_BLOCKING_DEBUFFS) do
         if buffactive[debuff_name] then
             table.insert(active_blocks, {
@@ -259,7 +254,6 @@ function DebuffChecker.get_all_active_blocks()
         end
     end
 
-    -- Check magic blocks
     for debuff_name, debuff_info in pairs(MAGIC_BLOCKING_DEBUFFS) do
         if buffactive[debuff_name] and not UNIVERSAL_BLOCKING_DEBUFFS[debuff_name] then
             table.insert(active_blocks, {
@@ -270,7 +264,6 @@ function DebuffChecker.get_all_active_blocks()
         end
     end
 
-    -- Check JA blocks
     for debuff_name, debuff_info in pairs(JA_BLOCKING_DEBUFFS) do
         if buffactive[debuff_name] and not UNIVERSAL_BLOCKING_DEBUFFS[debuff_name] then
             table.insert(active_blocks, {
@@ -284,8 +277,9 @@ function DebuffChecker.get_all_active_blocks()
     return active_blocks
 end
 
---- Check if player is currently incapacitated (any blocking debuff active)
---- @return boolean incapacitated True if any blocking debuff is active
+--- Check if player is currently incapacitated (a universal blocker: Stun,
+--- Sleep, Petrification or Terror - not Silence/Amnesia/Paralysis)
+--- @return boolean incapacitated True if a universal blocking debuff is active
 function DebuffChecker.is_incapacitated()
     local universal_debuff = get_active_blocking_debuff(UNIVERSAL_BLOCKING_DEBUFFS)
     return universal_debuff ~= nil

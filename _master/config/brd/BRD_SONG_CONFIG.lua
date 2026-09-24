@@ -2,7 +2,7 @@
 --- BRD Song Configuration
 ---============================================================================
 --- Centralized configuration for BRD song rotations, packs, and settings.
---- Migrated from old BRD_CONFIG.lua to new modular architecture.
+--- Pack names must match the values of state.SongMode (BRD_STATES.lua).
 ---
 --- @file config/brd/BRD_SONG_CONFIG.lua
 --- @author Tetsouo
@@ -123,11 +123,11 @@ BRDSongConfig.SONG_PACKS = {
         name = "Arebati",
         description = "Critical hit evasion and defensive buffs",
         songs = {
-            "Adventurer's Dirge",         -- [1] Haste + Attack + Accuracy
-            "Honor March",
-            'Valor Minuet V',      -- [2] Attack +112
-            'Valor Minuet IV',     -- [3] Attack +96
-            'Knight\'s Minne V', -- [4] Critical hit evasion
+            "Adventurer's Dirge",  -- [1] Reduces EXP loss on death
+            "Honor March",         -- [2] Haste + Attack + Accuracy
+            'Valor Minuet V',      -- [3] Attack +112
+            'Valor Minuet IV',     -- [4] Attack +96
+            'Knight\'s Minne V',   -- [5] Defense +200
         }
     },
     Ngai = {
@@ -135,10 +135,10 @@ BRDSongConfig.SONG_PACKS = {
         description = "Critical hit evasion and defensive buffs",
         songs = {
             "Honor March",         -- [1] Haste + Attack + Accuracy
-            "Valor Minuet V",
-            'Water Carol II',      -- [2] Attack +112
-            'Knight\'s Minne V', -- [4] Critical hit evasion
-            'Sentinel\'s Scherzo',     -- [3] Attack +96
+            "Valor Minuet V",      -- [2] Attack +112
+            'Water Carol II',      -- [3] Water resistance
+            'Knight\'s Minne V',   -- [4] Defense +200
+            'Sentinel\'s Scherzo', -- [5] Critical hit evasion
         }
     }
 }
@@ -149,7 +149,7 @@ BRDSongConfig.SONG_PACKS = {
 
 BRDSongConfig.DUMMY_SONGS = {
     standard = {
-        'Gold Capriccio',  -- [1] Enmity -50
+        'Gold Capriccio',  -- [1] Petrification resistance
         'Goblin Gavotte',  -- [2] Bind resistance +20
         'Fowl Aubade',     -- [3] Sleep resistance +20
         'Herb Pastoral',   -- [4] Poison resistance +20
@@ -175,8 +175,8 @@ BRDSongConfig.ETUDES = {
 --- VICTORY MARCH REPLACEMENT
 ---============================================================================
 
---- Mode comes from state.VictoryMarch (Alt+5). Two modes are absent from the
---- table on purpose: 'Etude' resolves at cast time from state.EtudeType (Alt+8),
+--- Mode comes from state.VictoryMarch (Ctrl+Numpad7). Two modes are absent from
+--- the table on purpose: 'Etude' resolves at cast time from state.EtudeType (Apps+Numpad1),
 --- and 'None' has no entry so the lookup misses and Victory March stays.
 BRDSongConfig.VICTORY_MARCH_REPLACE = {
     enabled = true,
@@ -258,7 +258,8 @@ BRDSongConfig.SHORT_NAMES = {
 ---============================================================================
 --- SONG REFINEMENT SYSTEM
 ---============================================================================
---- Automatically downgrades songs to lower tiers if higher tier is on cooldown
+--- When a listed song is on cooldown, the mapped song is cast instead
+--- (usually a lower tier; Horde Lullaby maps up to tier II)
 --- Useful for Lullaby and Threnody where tier II has longer recast
 
 BRDSongConfig.SONG_REFINE = {

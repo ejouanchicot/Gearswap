@@ -1,10 +1,9 @@
 ---============================================================================
---- Midcast Message Formatter - MidcastManager Debug Messages (NEW SYSTEM)
+--- Midcast Message Formatter - MidcastManager Debug Messages
 ---============================================================================
---- Uses template-based messaging via MessageRenderer
---- Migrated from old system to new system: 2025-11-06
+--- Output of //gs c debugmidcast. Templates: data/systems/midcast_messages.lua.
 ---
---- @file    messages/message_midcast.lua
+--- @file    shared/utils/messages/formatters/magic/message_midcast.lua
 --- @author  Tetsouo
 --- @version 2.0
 --- @date    Created: 2025-11-06

@@ -1,7 +1,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   RDM Buffs Module - Buff Gain/Loss Handler
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles job-specific buff gain/loss events (Doom, Chainspell, etc.).
+---   Buff gain/loss hook. Only the shared LifecycleManager handler runs (Doom);
+---   RDM has no buff-specific logic of its own.
 ---
 ---   @file    shared/jobs/rdm/functions/RDM_BUFFS.lua
 ---   @author  Tetsouo

@@ -6,7 +6,7 @@
 --- Contents:
 ---   - Convert (Lv40) - Swap HP with MP
 ---
---- @file rdm_subjob.lua
+--- @file shared/data/job_abilities/rdm/rdm_subjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

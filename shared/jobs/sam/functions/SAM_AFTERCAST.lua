@@ -1,7 +1,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SAM Aftercast Module - Aftercast Logic
 ---  ═══════════════════════════════════════════════════════════════════════════
----   @file    SAM_AFTERCAST.lua
+---   job_aftercast is the shared LifecycleManager handler (watchdog tick).
+---
+---   @file    shared/jobs/sam/functions/SAM_AFTERCAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-21

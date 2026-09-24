@@ -7,11 +7,11 @@
 ---   **PERFORMANCE OPTIMIZATION:**
 ---   • Lazy-loaded: Module created on first function call
 ---
----   @file    jobs/cor/functions/COR_LOCKSTYLE.lua
+---   @file    shared/jobs/cor/functions/COR_LOCKSTYLE.lua
 ---   @author  Tetsouo
 ---   @version 2.1 - Lazy Loading for performance
 ---   @date    Created: 2025-10-13 | Updated: 2025-11-15
----   @requires utils/lockstyle/lockstyle_manager
+---   @requires shared/utils/lockstyle/lockstyle_manager
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Lazy loading: Module created on first use
@@ -24,21 +24,23 @@ local function get_lockstyle_module()
             LockstyleManager = require('shared/utils/lockstyle/lockstyle_manager')
         end
         lockstyle_module = LockstyleManager.create(
-            'COR',                           -- job_code
+            'COR',                      -- job_code
             'config/cor/COR_LOCKSTYLE', -- config_path
-            1,                                -- default_lockstyle
-            'SAM'                             -- default_subjob
+            1,                          -- default_lockstyle
+            'SAM'                       -- default_subjob
         )
     end
     return lockstyle_module
 end
 
--- Export select_default_lockstyle() to global scope
+--- Apply the lockstyle configured for the current subjob.
+--- @return any Result of LockstyleManager's select_default_lockstyle
 function select_default_lockstyle()
     return get_lockstyle_module().select_default_lockstyle()
 end
 
--- Export cancel_cor_lockstyle_operations() to global scope
+--- Cancel any pending (delayed) lockstyle operation.
+--- @return any Result of LockstyleManager's cancel function
 function cancel_cor_lockstyle_operations()
     return get_lockstyle_module().cancel_cor_lockstyle_operations()
 end

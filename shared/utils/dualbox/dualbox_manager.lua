@@ -1,20 +1,20 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Dual-Boxing Manager - Inter-Character Communication System
----  ═══════════════════════════════════════════════════════════════════════════
----   Manages communication between main and alt characters for dual-boxing.
----   Handles job change notifications and online status tracking.
+---============================================================================
+--- Dual-Boxing Manager - Inter-Character Communication System
+---============================================================================
+--- Manages communication between main and alt characters for dual-boxing.
+--- Handles job change notifications and online status tracking.
 ---
----   Communication Flow (both roles; "alt" = the other box):
----     auto-init >> send_job_update() >> send <other> gs c altjobupdate JOB SUB MLVL SLVL
----     auto-init >> request_alt_job() >> send <other> gs c requestjob
----     requestjob >> handle_job_request() >> send_job_update(true)
----     altjobupdate >> receive_alt_job() >> stores in _G.AltJobState, reloads macrobook
+--- Communication Flow (both roles; "alt" = the other box):
+---   auto-init >> send_job_update() >> send <other> gs c altjobupdate JOB SUB MLVL SLVL
+---   auto-init >> request_alt_job() >> send <other> gs c requestjob
+---   requestjob >> handle_job_request() >> send_job_update(true)
+---   altjobupdate >> receive_alt_job() >> stores in _G.AltJobState, reloads macrobook
 ---
----   @file    shared/utils/dualbox/dualbox_manager.lua
----   @author  Tetsouo
----   @version 1.1 - Style standardization (BRD headers)
----   @date    Created: 2025-10-22 | Updated: 2025-11-13
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/dualbox/dualbox_manager.lua
+--- @author Tetsouo
+--- @version 1.1
+--- @date Created: 2025-10-22
+---============================================================================
 
 -- MessageDualbox lazy-loaded (only when showing messages)
 local MessageDualbox = nil
@@ -31,21 +31,19 @@ local DualBoxManager = {}
 ---   HELPER FUNCTIONS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Get the target character name based on role
---- For ALT: returns the MAIN character to send updates to
---- For MAIN: returns the ALT character to receive updates from
---- @return string Target character name
+--- Get the other box's character name based on role
+--- For ALT: returns the MAIN character
+--- For MAIN: returns the ALT character
+--- @return string|nil Target character name
 local function get_target_character()
     if not _G.DualBoxConfig then
         return nil
     end
 
-    -- Try new clear variable names first
+    -- New variable names first, legacy alt_name as fallback
     if _G.DualBoxConfig.role == "alt" then
-        -- ALT sends to MAIN
         return _G.DualBoxConfig.main_character or _G.DualBoxConfig.alt_name
     else
-        -- MAIN receives from ALT
         return _G.DualBoxConfig.alt_character or _G.DualBoxConfig.alt_name
     end
 end
@@ -184,7 +182,6 @@ function DualBoxManager.send_job_update(force)
         return
     end
 
-    -- Get target MAIN character using helper function
     local target_name = get_target_character()
 
     if not target_name then
@@ -194,7 +191,6 @@ function DualBoxManager.send_job_update(force)
         return
     end
 
-    -- Send command to main character
     local command = string.format('send %s gs c altjobupdate %s %s %d %d',
         target_name, main_job, sub_job, main_level, sub_level)
     send_command(command)
@@ -204,7 +200,6 @@ function DualBoxManager.send_job_update(force)
     windower._dualbox_last_send_payload = payload
     windower._dualbox_last_send_time = now
 
-    -- Debug message
     if _G.DualBoxConfig.debug then
         get_MessageDualbox().show_job_update_sent(target_name, main_job, sub_job)
     end
@@ -222,7 +217,6 @@ function DualBoxManager.handle_job_request()
         get_MessageDualbox().show_job_request_received(target_name)
     end
 
-    -- Send current job info
     DualBoxManager.send_job_update(true)
 end
 
@@ -243,7 +237,6 @@ function DualBoxManager.request_alt_job()
         return
     end
 
-    -- Send request command to alt
     local command = string.format('send %s gs c requestjob', target_name)
     send_command(command)
 
@@ -252,11 +245,13 @@ function DualBoxManager.request_alt_job()
     end
 end
 
---- Receive job update from ALT
---- Called when main character receives altjobupdate command
---- Stores alt job info and triggers macrobook reload
---- @param main_job string Alt's main job (e.g., "COR")
---- @param sub_job string Alt's subjob (e.g., "RDM")
+--- Receive a job update from the other box (either role)
+--- Called when this character receives the altjobupdate command
+--- Stores the other box's job and, on a change, reloads the macrobook
+--- @param main_job string Other box's main job (e.g., "COR")
+--- @param sub_job string|nil Other box's subjob (e.g., "RDM")
+--- @param main_level string|number|nil Main job level (0 when not sent)
+--- @param sub_level string|number|nil Subjob level (0 when not sent)
 function DualBoxManager.receive_alt_job(main_job, sub_job, main_level, sub_level)
     if not _G.DualBoxConfig or not _G.DualBoxConfig.enabled then
         return
@@ -267,7 +262,6 @@ function DualBoxManager.receive_alt_job(main_job, sub_job, main_level, sub_level
     -- the main's job when read on the alt. Rejecting it here left the alt
     -- with nothing, which made the symmetric send added alongside inert.
 
-    -- Validate parameters
     if not main_job or main_job == "" then
         return
     end
@@ -278,7 +272,6 @@ function DualBoxManager.receive_alt_job(main_job, sub_job, main_level, sub_level
     local job_changed = not previous or previous.job ~= main_job
         or previous.subjob ~= (sub_job or "NON")
 
-    -- Store alt job state
     _G.AltJobState = {
         job = main_job,
         subjob = sub_job or "NON",
@@ -320,7 +313,6 @@ function DualBoxManager.receive_alt_job(main_job, sub_job, main_level, sub_level
         get_MessageDualbox().show_reloading_macrobook()
     end
 
-    -- Trigger macrobook reload
     if select_default_macro_book then
         coroutine.schedule(function()
             select_default_macro_book()
@@ -343,7 +335,6 @@ function DualBoxManager.is_alt_online()
     local timeout = (_G.DualBoxConfig and _G.DualBoxConfig.timeout) or 30
     local time_since_update = os.time() - _G.AltJobState.last_update
 
-    -- Check if timeout exceeded
     if time_since_update > timeout then
         _G.AltJobState.online = false
         return false
@@ -376,15 +367,14 @@ end
 ---   UTILITY FUNCTIONS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Mark alt as offline
---- Called when alt logs out or timeout occurs
+--- Mark alt as offline (no caller today)
 function DualBoxManager.mark_alt_offline()
     if _G.AltJobState then
         _G.AltJobState.online = false
     end
 end
 
---- Get time since last alt update
+--- Get time since last alt update (used by show_status)
 --- @return number Seconds since last update
 function DualBoxManager.get_time_since_update()
     if not _G.AltJobState then
@@ -394,8 +384,7 @@ function DualBoxManager.get_time_since_update()
     return os.time() - _G.AltJobState.last_update
 end
 
---- Display current dual-boxing status
---- Debug command to show current state
+--- Display current dual-boxing status (no caller today)
 function DualBoxManager.show_status()
     if not _G.DualBoxConfig then
         get_MessageDualbox().show_not_initialized()
@@ -434,10 +423,11 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Auto-init runs on every module body execution. The body re-runs on every
--- `gs reload` and also when re-requires bypass `package.loaded` caching
--- (e.g. RDM_COMMANDS doing `require('shared/utils/dualbox/dualbox_manager')`
--- to deliver an altjobupdate message). The former is desired - we want one
--- fresh init per reload. The latter creates a feedback loop:
+-- `gs reload`, and also on every re-require when the require cache
+-- (shared/utils/core/module_cache.lua) is not in place (e.g. a job's COMMANDS
+-- doing `require('shared/utils/dualbox/dualbox_manager')` to deliver an
+-- altjobupdate message). The former is desired - we want one fresh init per
+-- reload. The latter creates a feedback loop:
 --   MAIN auto-init -> `requestjob` -> ALT `altjobupdate` -> MAIN command
 --   handler re-requires this module -> body re-runs -> schedules a new
 --   auto-init coroutine -> 2s later it fires another `requestjob`.

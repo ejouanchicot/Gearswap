@@ -1,5 +1,18 @@
--- JobChangeManager: debounced job/subjob change handling with full GearSwap reload.
--- 3.0s debounce for main job, 0.5s for subjob. Guarantees clean state on every change.
+---============================================================================
+--- Job Change Manager - Debounced reload on job/subjob change
+---============================================================================
+--- Called from every job's job_sub_job_change(). Tears the running systems
+--- down at once (AutoMove, MidcastWatchdog, UI), then sends `gs reload` after
+--- a debounce: 0.5 s when the main job is the one this environment was loaded
+--- for, 3.0 s otherwise. Every new change bumps debounce_counter, so only the
+--- last change of a burst reloads. A normal main job change never reaches
+--- on_job_change(): GearSwap reloads the job file by itself.
+---
+--- @file    shared/utils/core/job_change_manager.lua
+--- @author  Tetsouo
+--- @version 2.0
+--- @date    Created: 2025-11-03
+---============================================================================
 
 local JobChangeManager = {}
 
@@ -16,8 +29,10 @@ local function get_MessageFormatter()
     return MessageFormatter
 end
 
--- State persisted in _G to survive module reloads (resets on full GearSwap reload)
--- (Reload GearSwap will reset these, but they persist during debounce delays)
+-- State lives on _G, not in a module local: the entry point requires this
+-- module before ModuleCache is installed, so the same sandbox can hold two
+-- instances of it (entry's and the cached one). _G is what they share. It does
+-- NOT survive a job file load: the sandbox, and its _G, are rebuilt each time.
 if not _G.JobChangeManagerSTATE then
     _G.JobChangeManagerSTATE = {
         -- Current job state
@@ -39,8 +54,7 @@ end
 
 local STATE = _G.JobChangeManagerSTATE
 
-
---- Cancel all pending operations
+--- Invalidate any scheduled reload.
 local function cancel_all_pending()
     -- Bumping the counter invalidates any in-flight coroutine: the scheduled
     -- closure compares my_counter to STATE.debounce_counter and aborts on
@@ -50,8 +64,8 @@ local function cancel_all_pending()
     STATE.debounce_timer = nil
 end
 
---- Cleanup all systems before job change/reload
---- This prevents memory leaks and zombie coroutines
+--- Stop the running systems before the reload: their coroutines outlive the
+--- sandbox, so they would otherwise keep running until the next load.
 local function cleanup_all_systems()
     -- 1. Stop AutoMove (movement detection coroutine)
     if AutoMove and AutoMove.stop then
@@ -90,7 +104,6 @@ local function cleanup_all_systems()
     DebugLogger.log_if('JOBCHANGE_DEBUG', 'JCM', 'cleanup_all_systems() completed')
 end
 
-
 --- Seed the job state this manager compares against, once per environment.
 ---
 --- Deliberately a seed and not an assignment. Mote calls `user_setup()` BEFORE
@@ -113,27 +126,26 @@ function JobChangeManager.initialize(config)
     end
 end
 
---- Handle job change event (call from job_sub_job_change)
---- Full GearSwap reload to guarantee a clean state
+--- Handle a job/subjob change (call from job_sub_job_change): clean up now,
+--- `gs reload` after the debounce delay.
+--- @param main_job string New main job
+--- @param sub_job string New subjob
 function JobChangeManager.on_job_change(main_job, sub_job)
     if not main_job or not sub_job then
         return
     end
 
-    -- DEBUG: Track job changes
     DebugLogger.logf_if('JOBCHANGE_DEBUG', 'JCM',
         'on_job_change called: %s/%s -> %s/%s | counter=%d',
         tostring(STATE.current_main_job), tostring(STATE.current_sub_job),
         main_job, sub_job, STATE.debounce_counter)
 
-    -- CRITICAL: Cleanup all systems IMMEDIATELY to prevent:
-    -- - AutoMove command spam during reload
-    -- - UI memory leaks
-    -- - Zombie watchdog coroutines
+    -- Cleanup happens now, before the delay, so AutoMove, the watchdog and
+    -- the UI do not keep acting on the old job while the reload is pending.
     if _G.LagDebugger then _G.LagDebugger.on_job_change(main_job, sub_job) end
     cleanup_all_systems()
 
-    -- Update target job
+    -- Only read by the debug displays
     STATE.target_main_job = main_job
     STATE.target_sub_job = sub_job
 
@@ -151,12 +163,10 @@ function JobChangeManager.on_job_change(main_job, sub_job)
         delay = 0.5
     end
 
-    -- Cancel previous debounce timer
+    -- Clearing the handle does not stop a queued coroutine; the counter above does.
     STATE.debounce_timer = nil
 
-    -- Schedule reload with debounce
     STATE.debounce_timer = coroutine.schedule(function()
-        -- Verify counter (prevent outdated execution)
         if my_counter ~= STATE.debounce_counter then
             DebugLogger.logf_if('JOBCHANGE_DEBUG', 'JCM',
                 'ABORT reload: my_counter=%d != current=%d',
@@ -173,17 +183,15 @@ function JobChangeManager.on_job_change(main_job, sub_job)
         STATE.current_main_job = main_job
         STATE.current_sub_job = sub_job
 
-        -- Reload job file only (NOT full addon reload - much faster)
-        -- 'gs reload' reloads only the character file, preserving addon state
-        -- This is what happens on main job change - fast and clean
+        -- Reloads the job file only (not the addon), the same thing GearSwap
+        -- does on a main job change.
         windower.send_command('gs reload')
-
-        -- Note: Code after this line won't execute (GearSwap reloaded)
     end, delay)
 end
 
---- Force immediate job change (skip debounce, for manual triggers)
---- Force immediate GearSwap reload
+--- Immediate `gs reload` (no debounce, no cleanup), for //gs c reload.
+--- @param main_job string|nil Defaults to player.main_job
+--- @param sub_job string|nil Defaults to player.sub_job
 function JobChangeManager.force_reload(main_job, sub_job)
     main_job = main_job or (player and player.main_job)
     sub_job  = sub_job or (player and player.sub_job)
@@ -196,30 +204,30 @@ function JobChangeManager.force_reload(main_job, sub_job)
         return
     end
 
-    -- Update state
     STATE.current_main_job = main_job
     STATE.current_sub_job = sub_job
 
     -- Increment counter to invalidate any pending debounced changes
     STATE.debounce_counter = STATE.debounce_counter + 1
 
-    -- Reload job file immediately (no debounce) - fast reload
     windower.send_command('gs reload')
 end
 
---- Cancel all pending operations (for cleanup in file_unload)
+--- Cancel the pending reload and every registered lockstyle operation
+--- (called from each entry point's file_unload).
 function JobChangeManager.cancel_all()
     cancel_all_pending()
 
-    -- Cancel all registered job lockstyle operations
-    for job_name, cancel_func in pairs(STATE.lockstyle_cancel_registry) do
+    for _, cancel_func in pairs(STATE.lockstyle_cancel_registry) do
         if cancel_func then
             pcall(cancel_func)
         end
     end
 end
 
---- Register a job's lockstyle cancel function
+--- Register a job's lockstyle cancel function, run by cancel_all().
+--- @param job_name string Registry key (job code)
+--- @param cancel_func function Cancels that job's pending lockstyle
 function JobChangeManager.register_lockstyle_cancel(job_name, cancel_func)
     STATE.lockstyle_cancel_registry[job_name] = cancel_func
 end

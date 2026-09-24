@@ -6,11 +6,12 @@
 ---   • Town detection (safe zones with optimized gear)
 ---   • MP recovery optimization (latent refresh)
 ---   • Movement speed gear application
----   • PDT mode support
+---   Unlike the other jobs, latent refresh and movement gear are applied in
+---   town too (in_town is not used).
 ---
 ---   Used by: WHM_IDLE.lua and WHM_ENGAGED.lua
 ---
----   @file    jobs/whm/functions/logic/set_builder.lua
+---   @file    shared/jobs/whm/functions/logic/set_builder.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-21
@@ -30,7 +31,7 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 
 ---   Build idle set with town detection, MP recovery, and movement
 ---   Priority:
----   1. Town detection >> sets.idle.Town
+---   1. Town detection >> sets.idle.Town / sets.Adoulin
 ---   2. MP recovery (< 51%) >> sets.latent_refresh
 ---   3. Movement speed >> movement gear
 ---
@@ -78,7 +79,6 @@ function SetBuilder.build_engaged_set(base_set)
     end
 
     -- WHM rarely melees, return base set as-is
-    -- Future expansion: Apply PDT overlays if needed
 
     return base_set
 end

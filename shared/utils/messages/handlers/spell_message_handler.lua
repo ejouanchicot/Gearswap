@@ -10,21 +10,17 @@
 ---   - Respects ENFEEBLING_MESSAGES_CONFIG
 ---   - Respects ENHANCING_MESSAGES_CONFIG
 ---   - Zero job-specific code needed
----   - LAZY LOADING: Databases load on first spell cast (eliminates startup lag)
+---   - Databases load on demand, one at a time, and stay cached
 ---
 --- Architecture:
----   - PRIORITY 1: Skill-based databases (6 total: ENFEEBLING, ENHANCING, DARK, HEALING, ELEMENTAL, DIVINE)
----   - PRIORITY 2: Job-based databases (BLM_SPELL_DATABASE, RDM_SPELL_DATABASE, etc.)
----
---- Performance:
----   - Databases load on-demand when first spell is cast (not at require time)
----   - Lazy-loaded on first spell usage
----   - Once loaded, databases remain cached for instant access
+---   - Fast path: the database mapped to spell.skill (SKILL_PATH, 11 skills)
+---   - Fallback: the other skill databases, then the job databases
+---     (FALLBACK_DATABASES order)
+---   - Geomancy and Singing are skipped: their job modules announce them
 ---
 --- Examples:
 ---   - WAR/RDM casting Haste >> Shows message from ENHANCING_MAGIC_DATABASE
 ---   - DNC/WHM casting Cure III >> Shows message from HEALING_MAGIC_DATABASE
----   - BLM casting Bio >> Shows message from ENFEEBLING_MAGIC_DATABASE
 ---   - GEO casting Aspir >> Shows message from DARK_MAGIC_DATABASE
 ---   - BLM casting Fire III >> Shows message from ELEMENTAL_MAGIC_DATABASE
 ---   - WHM casting Banish >> Shows message from DIVINE_MAGIC_DATABASE
@@ -179,8 +175,6 @@ end
 --- MESSAGE DISPLAY
 ---============================================================================
 
---- Show spell message if config enabled
---- @param spell table Spell object from GearSwap
 --- Who the spell landed on, and what kind of thing they are.
 ---
 --- The order matters and is not obvious: a monster and an NPC both report
@@ -233,12 +227,12 @@ local function handles(spell)
         return false
     end
 
-    -- Skip Geomancy spells (handled manually in GEO_MIDCAST)
+    -- Skip Geomancy spells (announced by GEO_MIDCAST)
     if spell.skill == 'Geomancy' then
         return false
     end
 
-    -- Skip BRD songs (handled manually in BRD_MIDCAST)
+    -- Skip BRD songs (announced by the BRD midcast router, logic/midcast_router.lua)
     if spell.skill == 'Singing' then
         return false
     end
@@ -246,6 +240,8 @@ local function handles(spell)
     return true
 end
 
+--- Show spell message if config enabled
+--- @param spell table Spell object from GearSwap
 --- @param show_separator boolean Optional - show separator after message (default: true)
 function SpellMessageHandler.show_message(spell, show_separator)
     if not handles(spell) then
@@ -260,25 +256,21 @@ function SpellMessageHandler.show_message(spell, show_separator)
         return
     end
 
-    -- The config is picked from the record's category, not spell.skill:
-    -- Bio has spell.skill = "Dark Magic" but category = "Enfeebling"
-    local spell_data, db_name = find_spell_in_databases(spell)
+    local spell_data = find_spell_in_databases(spell)
 
     if not spell_data then
         -- Spell not found in any database
         return
     end
 
-    -- Determine config based on spell CATEGORY (not spell.skill!)
-    -- This allows Dark Magic spells with Enfeebling effects to show correctly
+    -- The config is picked from the record's category, not spell.skill, so a
+    -- Dark Magic spell recorded as Enfeebling follows the Enfeebling config.
     local config = nil
     local category = spell_data.category
 
     -- Strategy: Only Enfeebling uses ENFEEBLING_MESSAGES_CONFIG
     -- All other categories use ENHANCING_MESSAGES_CONFIG by default
-    -- This automatically covers: Enhancing, Healing, Divine, Dark, Elemental, Helix,
-    -- Blue Magic (Buff/Physical/Magical/Breath/Debuff), Summoning (Avatar/Spirit/BP),
-    -- BRD songs (26+ categories), GEO (Geocolure/Indicolure), and any future categories
+    -- (Enhancing, Healing, Divine, Dark, Elemental, Helix, Blue Magic, Summoning...)
 
     if category == 'Enfeebling' then
         config = ENFEEBLING_MESSAGES_CONFIG
@@ -309,8 +301,8 @@ function SpellMessageHandler.show_message(spell, show_separator)
     -- Pass spell.skill to detect Healing Magic spells, spell_element for color, and target_type for target color
     local message_length = MessageFormatter.show_spell_activated(spell_name, description, target_name, spell.skill, spell_element, target_type)
 
-    -- Display separator after spell message (default: true unless explicitly disabled)
-    -- Length = message length + 2 additional "=" characters
+    -- Separator after the message unless explicitly disabled. The length
+    -- argument is ignored: separators are always SEPARATOR_WIDTH wide.
     if show_separator ~= false then
         MessageCore.show_separator(message_length + 2)
     end

@@ -6,15 +6,17 @@
 ---   • update()                       - state-aware redraw (skips if no change)
 ---   • force_reinit()                 - destroy + init with timeout polling
 ---   • schedule_update()              - debounced update with cancel token
----   • handle_job_configuration_change - dispatched by JobChangeManager
+---   • handle_job_configuration_change - schedules an update per change type
 ---
---- Bonus over previous version: 5 raw add_to_chat(207, '[UPDATE_DEBUG]') calls
---- migrated to MessageFormatter.show_debug('UI', ...) - consistent with the
---- entry-point migration done earlier.
+--- Only update() has callers outside this file. force_reinit() is reached
+--- from update() after repeated render failures; schedule_update(),
+--- needs_reinit(), get_status() and handle_job_configuration_change() have
+--- no caller in the repository.
 ---
---- @file ui/ui_update_orchestrator.lua
+--- @file shared/utils/ui/ui_update_orchestrator.lua
 --- @author Tetsouo
 --- @version 1.0
+--- @date Created: 2026-05-09
 ---============================================================================
 
 local Display      = require('shared/utils/ui/ui_display')
@@ -90,6 +92,9 @@ function Orchestrator.attach(KeybindUI)
     --- Force complete UI reinitialization with cancel support.
     --- Uses cancel ID system (similar to JCM counter) to handle rapid job changes.
     --- Uses coroutine.schedule() for non-blocking state checking.
+    --- @param job_name string Job name (unused)
+    --- @param max_wait_time number Seconds to wait for states before init anyway (default 3)
+    --- @return boolean init success when states were ready, else true (result comes async)
     function KeybindUI.force_reinit(job_name, max_wait_time)
         local ui_state = _G.ui_manager_state
 
@@ -162,7 +167,10 @@ function Orchestrator.attach(KeybindUI)
         return true -- Return immediately, actual result comes async
     end
 
-    --- Schedule UI update with intelligent debouncing
+    --- Schedule a debounced UI update; a newer call cancels a pending one.
+    --- Reinits instead of updating when the job/subjob changed meanwhile.
+    --- @param reason string Change reason (unused)
+    --- @param delay number Delay in seconds (default 1.0)
     function KeybindUI.schedule_update(reason, delay)
         delay = delay or 1.0
         local ui_state = _G.ui_manager_state
@@ -195,6 +203,8 @@ function Orchestrator.attach(KeybindUI)
     end
 
     --- Check if UI needs reinitialization
+    --- @param job string Main job to compare with the tracked job
+    --- @return boolean True if the job changed, the display is missing or >3 failures
     function KeybindUI.needs_reinit(job)
         local ui_state = _G.ui_manager_state
 
@@ -216,7 +226,9 @@ function Orchestrator.attach(KeybindUI)
         return false
     end
 
-    --- Get UI status information (for debug / monitoring)
+    --- Get UI status information (for debug / monitoring).
+    --- NOTE: total_update_time is never incremented, so avg_update_time is always 0.
+    --- @return table Status snapshot
     function KeybindUI.get_status()
         local ui_state = _G.ui_manager_state
         local avg_update_time = 0
@@ -238,7 +250,9 @@ function Orchestrator.attach(KeybindUI)
         }
     end
 
-    --- Handle job configuration change from coordinator (JobChangeManager)
+    --- Schedule an update for a job configuration change (0.5 s job, 1.0 s
+    --- subjob, 1.5 s otherwise).
+    --- @param change_data table { type = 'job_change'|'subjob_change'|... }
     function KeybindUI.handle_job_configuration_change(change_data)
         local change_type = change_data.type or 'unknown'
         local reason = string.format('%s_change', change_type)

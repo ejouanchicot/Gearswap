@@ -1,19 +1,19 @@
 ---============================================================================
 --- ENFEEBLING MAGIC DATABASE - Debuff Spells Module
 ---============================================================================
---- Stat and performance debuff spells (17 total)
+--- Stat and performance debuff spells (16 total)
 ---
 --- Contents:
 ---   - Paralyze family (2): Paralyze I/II (Interrupt actions)
 ---   - Slow family (2): Slow I/II (Delay between attacks)
 ---   - Blind family (2): Blind I/II (Accuracy down)
 ---   - Gravity family (2): Gravity I/II (Movement speed down)
----   - Red Magic (9): Distract I/II/III, Frazzle I/II/III, Addle I/II (RDM job spells)
+---   - Red Magic (8): Distract I/II/III, Frazzle I/II/III, Addle I/II (RDM job spells)
 ---
---- @file enfeebling_debuffs.lua
+--- @file shared/data/magic/enfeebling/enfeebling_debuffs.lua
 --- @author Tetsouo
 --- @version 2.0 - Improved alignment
---- @date Created: 2025-10-30 | Updated: 2025-11-06 | Updated: 2025-10-31
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 ---============================================================================
 
 local ENFEEBLING_DEBUFFS = {}

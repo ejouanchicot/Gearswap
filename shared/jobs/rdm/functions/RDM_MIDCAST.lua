@@ -1,20 +1,17 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   RDM Midcast Module - Midcast Gear Selection
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles midcast gear selection for Red Mage spells using centralized MidcastManager.
----   Only intercepts skills that require job-specific logic. All other magic is handled
----   by Mote-Include's natural pattern matching.
+---   Midcast gear selection for Red Mage through MidcastManager, after Mote
+---   has equipped its default midcast set. One handler per skill:
+---     - Enfeebling: type from the enfeebling database + EnfeebleMode, then the
+---       Saboteur set while Saboteur is up
+---     - Enhancing: spell family from the enhancing database + target (self /
+---       others under Composure); Phalanx under Accession uses the base set
+---     - Healing / Dark: spell name, then the skill's base set
+---     - Elemental: NukeMode
+---   Other skills keep Mote's default set (see midcast_subjob below).
 ---
----   Intercepted Skills (Job-Specific Logic):
----     - Enfeebling: Nested sets (mnd_potency.Valeur), Saboteur override, Database type detection
----     - Enhancing: Spell family routing (Enspell/Gain/BarElement/etc.), Target detection (self vs others)
----     - Healing: Spell-specific sets (Cure/Curaga/Raise) with fallback to base Healing Magic set
----     - Elemental: NukeMode-based selection (FreeNuke vs base)
----     - Dark: Spell-specific sets (Drain/Aspir/Stun) with fallback to base Dark Magic set
----     - Universal: ALL other magic types (Blue Magic, Summoning, Geomancy, Ninjutsu, Songs, Divine, etc.)
----
----   Enhancing Magic Spell Families (NEW - v6.2):
----     Sets can now be created for spell families using database-driven routing:
+---   Enhancing Magic spell families (database-driven routing):
 ---     - sets.midcast['Enhancing Magic'].Enspell (Enfire, Enblizzard, etc.)
 ---     - sets.midcast['Enhancing Magic'].Gain (Gain-STR, Gain-INT, etc.)
 ---     - sets.midcast['Enhancing Magic'].BarElement (Barfire, Barblizzard, etc.)
@@ -75,17 +72,13 @@ end
 ---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping from Mote-Include
 ---   @param eventArgs table Event arguments for cancellation/customization
----   @return nil (no action taken, handled in post-midcast)
 function job_midcast(spell, action, spellMap, eventArgs)
-    -- Handled by Mote-Include default behavior
-    -- Customization done in job_post_midcast
 end
 
 ---  ─────────────────────────────────────────────────────────────────────────
 ---   PER-SKILL HANDLERS
 ---  ─────────────────────────────────────────────────────────────────────────
 ---   One function per magic skill, each returning true once it has equipped.
----   Bodies are unchanged from the single 243-line dispatcher they replace.
 
 --- @param spell table Spell information from GearSwap
 --- @param debug_enabled boolean Whether //gs c debugmidcast is on
@@ -99,7 +92,8 @@ local function midcast_enfeebling(spell, debug_enabled)
         )
     end
 
-    -- DEBUG: Get enfeebling_type BEFORE MidcastManager call
+    -- Only the debug trace reads this lookup: MidcastManager resolves the
+    -- type again itself through database_func.
     local enfeebling_type = nil
     if EnfeeblingSPELLS then
         enfeebling_type = EnfeeblingSPELLS.get_enfeebling_type(spell.name)
@@ -112,7 +106,6 @@ local function midcast_enfeebling(spell, debug_enabled)
         end
     end
 
-    -- DEBUG: Show expected nested set paths
     if debug_enabled and enfeebling_type then
         local mode_value = state.EnfeebleMode and state.EnfeebleMode.value or nil
         if mode_value then
@@ -122,8 +115,7 @@ local function midcast_enfeebling(spell, debug_enabled)
         end
     end
 
-    -- Select set using MidcastManager
-    -- Priority: .mnd_potency.Valeur > .mnd_potency > .Valeur > base
+    -- Fallback order: see MidcastManager (docs/dev/systems/midcast-and-buffs.md)
     local success = MidcastManager.select_set({
         skill = 'Enfeebling Magic',
         spell = spell,
@@ -135,8 +127,7 @@ local function midcast_enfeebling(spell, debug_enabled)
         MessageRDMMidcast.show_enfeebling_result(success)
     end
 
-    -- SABOTEUR BONUS: Equip Saboteur set when active
-    -- (+5 enfeebling potency from Lethargy Gants +3, extends duration)
+    -- Saboteur up: the Saboteur set goes on top of the enfeebling set
     if buffactive['Saboteur'] and sets.midcast['Enfeebling Magic'].Saboteur then
         if debug_enabled then
             MessageRDMMidcast.show_saboteur_override()
@@ -147,14 +138,8 @@ local function midcast_enfeebling(spell, debug_enabled)
     return true
 end
 
---- @param spell table Spell information from GearSwap
---- @param debug_enabled boolean Whether //gs c debugmidcast is on
---- @return boolean True when this handler equipped a set
---- The set paths //gs c debugmidcast says it will try, in order.
----
---- Pulled out because it was two thirds of the function and none of its
---- behaviour: with debug off, not one of these lines runs. What remains in
---- midcast_enhancing is what actually decides the gear.
+--- The set paths //gs c debugmidcast says it will try, in order (debug only:
+--- nothing here decides the gear).
 --- @param spell table Spell from GearSwap
 --- @param spell_family string|nil Family resolved from the database, if any
 local function trace_enhancing_priority(spell, spell_family)
@@ -174,6 +159,8 @@ local function trace_enhancing_priority(spell, spell_family)
 end
 
 --- Which family the spell belongs to - Enspell, Regen, Refresh and so on.
+--- @param spell table Spell from GearSwap
+--- @param debug_enabled boolean Whether //gs c debugmidcast is on
 --- @return string|nil Family, nil when the database is not loaded
 local function enhancing_family(spell, debug_enabled)
     if not EnhancingSPELLS then
@@ -190,6 +177,9 @@ local function enhancing_family(spell, debug_enabled)
     return family
 end
 
+--- @param spell table Spell information from GearSwap
+--- @param debug_enabled boolean Whether //gs c debugmidcast is on
+--- @return boolean True when this handler equipped a set
 local function midcast_enhancing(spell, debug_enabled)
     -- Printed before the Phalanx exception, as it always was: the trace is a
     -- record of what was asked for, not of what was decided.
@@ -219,7 +209,8 @@ local function midcast_enhancing(spell, debug_enabled)
     end
 
     -- With a family: .Enspell.self.Duration > .Enspell.self > .Enspell.Duration
-    -- > .Enspell > .self.Duration > .self > .Duration > base
+    -- > .Enspell > .self.Duration > .self > .Duration > base.
+    -- state.EnhancingMode is not defined for RDM, so the mode levels never apply.
     local success = MidcastManager.select_set({
         skill = 'Enhancing Magic',
         spell = spell,
@@ -243,7 +234,6 @@ local function midcast_healing(spell, debug_enabled)
         MessageFormatter.show_debug('RDM Midcast', 'Healing Magic detected: ' .. (spell.name or 'Unknown'))
     end
 
-    -- Select set using MidcastManager
     -- Priority: sets.midcast[spell.name] (Cure/Curaga/Raise) > sets.midcast['Healing Magic'] (base)
     local success = MidcastManager.select_set({
         skill = 'Healing Magic',
@@ -265,8 +255,7 @@ local function midcast_elemental(spell, debug_enabled)
         MessageRDMMidcast.show_elemental_routing(tostring(state.NukeMode and state.NukeMode.value or 'nil'))
     end
 
-    -- Select set using MidcastManager
-    -- Priority: .FreeNuke > base
+    -- Priority: sets.midcast['Elemental Magic'][NukeMode] > base
     local success = MidcastManager.select_set({
         skill = 'Elemental Magic',
         spell = spell,
@@ -288,7 +277,6 @@ local function midcast_dark(spell, debug_enabled)
         MessageFormatter.show_debug('RDM Midcast', 'Dark Magic detected: ' .. (spell.name or 'Unknown'))
     end
 
-    -- Select set using MidcastManager
     -- Priority: sets.midcast[spell.name] (Drain/Aspir/Stun) > sets.midcast['Dark Magic'] (base)
     local success = MidcastManager.select_set({
         skill = 'Dark Magic',
@@ -310,7 +298,6 @@ local function midcast_subjob(spell, debug_enabled)
         MessageFormatter.show_debug('RDM Midcast', 'Universal Magic detected: ' .. (spell.skill or 'Unknown') .. ' - ' .. (spell.name or 'Unknown'))
     end
 
-    -- Select set using MidcastManager
     -- Priority: sets.midcast[spell.name] > sets.midcast[spell.skill] (base)
     local success = MidcastManager.select_set({
         skill = spell.skill,
@@ -340,15 +327,11 @@ local SKILL_HANDLERS = {
 ---   @param spellMap string Spell mapping from Mote-Include
 ---   @param eventArgs table Event arguments for cancellation/customization
 function job_post_midcast(spell, action, spellMap, eventArgs)
-    -- Lazy load modules on first midcast
     ensure_modules_loaded()
-    -- Watchdog: Track midcast start
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_midcast_start(spell)
     end
-    -- Check debug state from global
     local debug_enabled = _G.MidcastManagerDebugState == true
-    -- DEBUG: Log entry (only when debug mode is ON)
     if debug_enabled then
         MessageRDMMidcast.show_function_entry(spell.english or 'Unknown', spell.skill or 'Unknown')
     end
@@ -359,6 +342,8 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     end
 
     -- Magic RDM only gets from a subjob: BLU, SMN, GEO, NIN, BRD, WHM.
+    -- Never reached today: spell.type is 'WhiteMagic', 'BlackMagic', 'Ninjutsu'...
+    -- never 'Magic' (that is spell.action_type).
     if spell.type == 'Magic' and spell.skill and midcast_subjob(spell, debug_enabled) then
         return
     end
@@ -376,7 +361,7 @@ end
 _G.job_midcast = job_midcast
 _G.job_post_midcast = job_post_midcast
 
--- Module export (used by require() callers, parity with the other 13 jobs)
+-- Module export (used by require() callers)
 local RDM_MIDCAST = {}
 RDM_MIDCAST.job_midcast       = job_midcast
 RDM_MIDCAST.job_post_midcast  = job_post_midcast

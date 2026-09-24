@@ -1,7 +1,7 @@
 ---============================================================================
 --- ENHANCING MAGIC DATABASE - Utility & Travel Module
 ---============================================================================
---- Utility, stat buffs, and travel spells (41 total)
+--- Utility, stat buffs, and travel spells (42 total)
 ---
 --- Stoneskin:
 ---   - Damage absorption scales with MND + Enhancing Magic skill (cap 540 with 0 MND)
@@ -17,10 +17,10 @@
 ---   - Fixed stat bonus (+25 base stat)
 ---   - Duration scales with Enhancing Magic skill
 ---
---- @file enhancing_utility.lua
+--- @file shared/data/magic/enhancing/enhancing_utility.lua
 --- @author Tetsouo
 --- @version 2.1 - Improved alignment - Standardized with spell_family
---- @date Created: 2025-10-30 | Updated: 2025-11-06 | Updated: 2025-11-05
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 ---============================================================================
 
 local ENHANCING_UTILITY = {}

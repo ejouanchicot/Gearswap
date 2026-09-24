@@ -1,11 +1,22 @@
--- MidcastManager: universal nested set selection with 9-level fallback chain.
--- Supports spell name > skill > type > target > mode > base, plus Bard song matching.
---
--- Refactored 2026-05-12: split god function `select_set` (499 lines) into:
---   - `select_singing_set()` for BRD Singing skill
---   - `select_standard_set()` for the 9-priority chain (all other skills)
---   - `equip_with_debug()` for the duplicated equipment debug dump
---   - `try_path()` lifted to module-private helper
+---============================================================================
+--- Midcast Manager - Universal Nested Set Selection
+---============================================================================
+--- select_set() picks and equips the most specific midcast set available.
+---
+--- Standard skills walk the P0-P9 chain declared by RESOLVERS below (the
+--- order of that table IS the priority): exact spell name, tier-less name
+--- crossed with target/skill, type.target.mode, type.mode, target.mode,
+--- target, type at root, type under skill, mode under skill, and finally the
+--- skill's own set (P9).
+---
+--- Singing (BRD) has its own chain: exact name, base song, song type, first
+--- word, then instrument and Troubadour layers, then sets.midcast.BardSong.
+---
+--- @file    shared/utils/midcast/midcast_manager.lua
+--- @author  Tetsouo
+--- @version 2.0
+--- @date    Created: 2025-10-24
+---============================================================================
 
 local MidcastManager = {}
 
@@ -19,7 +30,7 @@ local MessageMidcast = require('shared/utils/messages/formatters/magic/message_m
 windower._midcast_debug = windower._midcast_debug or false
 _G.MidcastManagerDebugState = windower._midcast_debug
 
---- Get debug state (always read from global)
+--- @return boolean True when midcast debug output is on
 local function is_debug_enabled()
     return _G.MidcastManagerDebugState == true
 end
@@ -47,7 +58,7 @@ function MidcastManager.toggle_debug()
     end
 end
 
---- Get debug property (for external access).
+--- Read-only debug view: MidcastManager.debug.enabled.
 --- Only the canonical key 'enabled' is recognized; any other key returns nil
 --- so typos surface immediately instead of silently returning the boolean.
 local DEBUG_KEYS = { enabled = true }
@@ -70,10 +81,10 @@ local SLOT_ORDER = {
     'back', 'waist', 'legs', 'feet'
 }
 
---- Helper: try to find a set at a given nested path.
---- IMPORTANT: Only the FINAL destination needs to be a valid equipment set.
---- Intermediate paths can be missing (no need to create empty tables).
---- @return set, path_string, success
+--- Look up a set at a nested path under sets.midcast.
+--- A missing intermediate level simply means "not found".
+--- @param ... string Path parts, outermost first
+--- @return table|nil set, string|nil path_string, boolean success
 local function try_path(...)
     local path_parts = {...}
     local current = sets.midcast
@@ -86,7 +97,6 @@ local function try_path(...)
 
         current = current[part]
 
-        -- Build path string for debug
         if type(part) == 'string' and part:match('[^%w_]') then
             path_str = path_str .. '["' .. part .. '"]'
         else
@@ -106,7 +116,7 @@ local function try_path(...)
 end
 
 --- Equip a set and (when debug enabled) print its full equipment list.
---- Shared by singing and standard branches to eliminate duplicate slot-order loops.
+--- Shared by the singing and standard branches.
 --- @param selected_set table Equipment set to apply
 --- @param selected_set_path string Path string for debug display
 --- @param is_fallback boolean Whether this is the base/fallback set
@@ -290,7 +300,7 @@ local function select_singing_set(config, base_set)
 end
 
 ---============================================================================
---- STANDARD 9-PRIORITY BRANCH
+--- STANDARD BRANCH (P0-P9)
 --- Fallback chain (highest priority first):
 ---   P0: exact spell name at root
 ---   P1: exhaustive base-name combinations (target/skill/spell mix)
@@ -305,11 +315,11 @@ end
 ---============================================================================
 
 --- Resolve mode/type/target values from config and database functions.
---- @return mode_value, type_value, target_value
+--- @param config table select_set config
+--- @return any mode_value, any type_value, any target_value
 local function resolve_metadata(config)
     local mode_value, type_value, target_value
 
-    -- Mode
     if config.mode_value then
         mode_value = config.mode_value
         if is_debug_enabled() then
@@ -326,7 +336,6 @@ local function resolve_metadata(config)
         end
     end
 
-    -- Type (from database func)
     if config.database_func and config.spell and config.spell.english then
         local success, result = pcall(config.database_func, config.spell.english)
         if success then
@@ -345,7 +354,6 @@ local function resolve_metadata(config)
         end
     end
 
-    -- Target (from target func)
     if config.target_func and config.spell then
         local success, result = pcall(config.target_func, config.spell)
         if success then
@@ -608,11 +616,10 @@ end
 
 --- Universal midcast set selection.
 --- Validates input, resolves base set, then delegates to the appropriate
---- branch (Singing for BRD, standard 9-priority chain otherwise).
+--- branch (Singing for BRD, the standard P0-P9 chain otherwise).
 --- @param config table { skill, spell, mode_state?, mode_value?, database_func?, target_func? }
 --- @return boolean True if a set was equipped, false on validation failure
 function MidcastManager.select_set(config)
-    -- Validate input
     if not config or not config.skill then
         return false
     end
@@ -633,7 +640,6 @@ function MidcastManager.select_set(config)
         return false
     end
 
-    -- Debug header
     if is_debug_enabled() and config.spell then
         local spell_name = config.spell.english or 'Unknown'
         local target_name = (config.spell.target and config.spell.target.name)
@@ -641,7 +647,6 @@ function MidcastManager.select_set(config)
         MessageMidcast.show_debug_header(spell_name, config.skill, target_name)
     end
 
-    -- Route to the appropriate branch
     if config.skill == 'Singing' then
         return select_singing_set(config, base_set)
     else
@@ -654,14 +659,14 @@ end
 ---============================================================================
 
 --- Determine target type for Enhancing Magic (Composure logic)
+--- @param spell table Spell object from GearSwap
+--- @return string|nil 'Composure' when Composure is up and the target is not the player
 function MidcastManager.get_enhancing_target(spell)
     if not spell or not spell.target then
         return nil
     end
 
-    -- If Composure is active AND casting on someone else (not self)
-    -- Return 'Composure' to use sets.midcast['Enhancing Magic'].Composure
-    -- (regardless of target type: PLAYER, NPC, TRUST, MOB, etc.)
+    -- Any target type other than self (PLAYER, NPC, TRUST...) counts
     if buffactive and buffactive['Composure']
        and spell.target.name and spell.target.name ~= player.name then
         return 'Composure'
@@ -671,6 +676,8 @@ function MidcastManager.get_enhancing_target(spell)
 end
 
 --- Determine element for Elemental Magic (optional filter)
+--- @param spell table Spell object from GearSwap
+--- @return string|nil spell.element
 function MidcastManager.get_element(spell)
     if not spell or not spell.element then
         return nil
@@ -683,7 +690,9 @@ end
 ---============================================================================
 
 --- Extract song type from spell name (last word after removing tier)
---- Examples: "Knight's Minne V" → "Minne", "Blade Madrigal" → "Madrigal"
+--- Examples: "Knight's Minne V" -> "Minne", "Blade Madrigal" -> "Madrigal"
+--- @param spell_name string|nil Song name
+--- @return string|nil Song family
 function MidcastManager.get_song_type(spell_name)
     if not spell_name then
         return nil
@@ -695,6 +704,8 @@ end
 
 --- Get required instrument for a song (if any).
 --- Uses SongRotationManager if available, otherwise falls back to known specials.
+--- @param spell_name string|nil Song name
+--- @return string|nil Instrument name
 function MidcastManager.get_song_instrument(spell_name)
     if not spell_name then
         return nil
@@ -718,6 +729,9 @@ end
 ---============================================================================
 
 --- RDM Enfeebling Magic configuration
+--- @param spell table Spell object
+--- @param database_func function|nil Spell -> type lookup
+--- @return table select_set config
 function MidcastManager.rdm_enfeebling(spell, database_func)
     return {
         skill = 'Enfeebling Magic',
@@ -728,6 +742,8 @@ function MidcastManager.rdm_enfeebling(spell, database_func)
 end
 
 --- RDM/WHM/GEO Enhancing Magic configuration
+--- @param spell table Spell object
+--- @return table select_set config
 function MidcastManager.enhancing(spell)
     return {
         skill = 'Enhancing Magic',
@@ -738,6 +754,8 @@ function MidcastManager.enhancing(spell)
 end
 
 --- BLM/RDM/GEO Elemental Magic configuration
+--- @param spell table Spell object
+--- @return table select_set config
 function MidcastManager.elemental(spell)
     return {
         skill = 'Elemental Magic',
@@ -747,6 +765,8 @@ function MidcastManager.elemental(spell)
 end
 
 --- WHM/RDM/PLD Cure Magic configuration
+--- @param spell table Spell object
+--- @return table select_set config
 function MidcastManager.cure(spell)
     return {
         skill = 'Healing Magic',

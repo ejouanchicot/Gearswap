@@ -5,7 +5,7 @@
 ---   WS handling (with /SCH weaponskill variants), max-enmity override
 ---   (Sortie / Tanking).
 ---
----   @file    PLD_PRECAST.lua
+---   @file    shared/jobs/pld/functions/PLD_PRECAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-05
@@ -53,9 +53,7 @@ local function ensure_modules_loaded()
 end
 
 -- Scholar Stratagems skipped from cooldown check (charge-based, player manages manually)
-
 local cooldown_exclusions = {
-    -- Scholar Stratagems (charge-based abilities)
     ['Light Arts'] = true,
     ['Dark Arts'] = true,
     ['Addendum: White'] = true,
@@ -82,7 +80,6 @@ local cooldown_exclusions = {
 }
 
 -- Auto-abilities: Divine Emblem before Flash, Majesty before Protect/Cure
-
 local auto_abilities = {
     ['Flash'] = function(spell, eventArgs)
         AbilityHelper.try_ability(spell, eventArgs, 'Divine Emblem', 2)
@@ -106,7 +103,7 @@ local auto_abilities = {
 
 --- Precast order: debuff guard → cooldown → auto-abilities → WS handler → job gear
 ---   @param spell table Spell/ability data
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping
 ---   @param eventArgs table Event arguments
 function job_precast(spell, action, spellMap, eventArgs)
@@ -156,7 +153,6 @@ end
 ---   Runs in post_precast because Mote has laid down sets.precast.WS[name] by
 ---   then, and before apply_tp_gear so the TP bonus piece still wins.
 ---   @param spell table Spell/ability data
----   @return void
 local function apply_sch_ws_set(spell)
     if spell.type ~= 'WeaponSkill' or not (player and player.sub_job == 'SCH') then
         return
@@ -171,7 +167,7 @@ end
 
 ---   Apply final gear adjustments before equipping
 ---   @param spell table Spell/ability data
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping
 ---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)

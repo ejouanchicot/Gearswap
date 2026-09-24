@@ -1,11 +1,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BRD Idle Module - Idle State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all idle state logic for Bard job:
----   - Idle set selection based on IdleMode (DT, Refresh, Regain, Evasion)
----   - Movement speed optimization
----   - Town gear management
----   - Dynamic weapon application to idle sets
+---   customize_idle_set (SetBuilder.build_idle_set):
+---   - Town set in town, otherwise sets.idle[IdleMode] when defined
+---   - MainWeapon / SubWeapon sets
+---   - Movement gear outside town
 ---
 ---   @file    shared/jobs/brd/functions/BRD_IDLE.lua
 ---   @author  Tetsouo

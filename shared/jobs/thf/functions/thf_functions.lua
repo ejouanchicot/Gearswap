@@ -6,7 +6,7 @@
 ---   the GearSwap event system via Mote-Include framework.
 ---
 ---   Features:
----   • Modular architecture (11 hooks + 3 logic modules)
+---   • Modular architecture (11 hooks + 5 logic modules)
 ---   • Dependency-ordered loading (messages >> combat >> status >> utility)
 ---   • Separation of concerns (hooks = orchestration, logic = implementation)
 ---   • Clean integration with GearSwap event system
@@ -14,22 +14,24 @@
 ---   Architecture:
 ---   • Hook modules (11): PRECAST, MIDCAST, AFTERCAST, IDLE, ENGAGED, STATUS,
 ---     BUFFS, COMMANDS, MOVEMENT, LOCKSTYLE, MACROBOOK
----   • Logic modules (3): sa_ta_manager, set_builder, smartbuff_manager
+---   • Logic modules (5): sa_ta_manager, set_builder, smartbuff_manager,
+---     range_lock, treasure_hunter
 ---   • Loaded via include() for GearSwap _G integration
 ---   • Logic modules use require() within hooks for encapsulation
 ---
 ---   Loading Order:
 ---   1. Message system (buff display foundation)
 ---   2. Combat action hooks (precast >> midcast >> aftercast)
----   3. Status & state hooks (status >> buffs >> idle >> engaged)
----   4. Utility & command hooks (macrobook >> lockstyle >> commands >> movement)
+---   3. Gear selection hooks (idle >> engaged)
+---   4. Event hooks (status >> buffs)
+---   5. Utility & command hooks (lockstyle >> macrobook >> commands >> movement)
 ---
 ---   Dependencies:
 ---   • Mote-Include (provides base hook structure)
----   • AutoMove (movement tracking - loaded in main file before this)
----   • utils/messages/message_buffs.lua (buff gain/loss messages)
+---   • AutoMove (movement tracking - loaded before this facade)
+---   • shared/utils/messages/formatters/magic/message_buffs.lua
 ---
----   @file    jobs/thf/functions/thf_functions.lua
+---   @file    shared/jobs/thf/functions/thf_functions.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
@@ -53,20 +55,20 @@ TIMER('message_buffs')
 ---   SECTION 2: COMBAT ACTION HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
-include('../shared/jobs/thf/functions/THF_PRECAST.lua')   -- Precast: Fast Cast, WS, SA/TA, TH
+include('../shared/jobs/thf/functions/THF_PRECAST.lua')   -- Precast: guard, cooldown, SA/TA flags, WS, SA/TA WS variants
 TIMER('THF_PRECAST')
-include('../shared/jobs/thf/functions/THF_MIDCAST.lua')   -- Midcast: Spell potency, Utsusemi
+include('../shared/jobs/thf/functions/THF_MIDCAST.lua')   -- Midcast: RangeLock on /ra, subjob magic
 TIMER('THF_MIDCAST')
-include('../shared/jobs/thf/functions/THF_AFTERCAST.lua') -- Aftercast: Return to idle/engaged
+include('../shared/jobs/thf/functions/THF_AFTERCAST.lua') -- Aftercast: SA/TA flags, quiver refill
 TIMER('THF_AFTERCAST')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SECTION 3: GEAR SELECTION HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
-include('../shared/jobs/thf/functions/THF_IDLE.lua')    -- Idle gear: PDT, movement, town
+include('../shared/jobs/thf/functions/THF_IDLE.lua')    -- Idle gear: town, weapons, movement
 TIMER('THF_IDLE')
-include('../shared/jobs/thf/functions/THF_ENGAGED.lua') -- Combat gear: DPS, TP bonus, DW tiers
+include('../shared/jobs/thf/functions/THF_ENGAGED.lua') -- Combat gear: AM3/Hybrid base, weapons, SA/TA overlay, TH
 TIMER('THF_ENGAGED')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -75,7 +77,7 @@ TIMER('THF_ENGAGED')
 
 include('../shared/jobs/thf/functions/THF_STATUS.lua')  -- Status change: Idle/Engaged/Dead/Resting
 TIMER('THF_STATUS')
-include('../shared/jobs/thf/functions/THF_BUFFS.lua')   -- Buff change: SA/TA tracking
+include('../shared/jobs/thf/functions/THF_BUFFS.lua')   -- Buff change: Doom, SA/TA pending flags
 TIMER('THF_BUFFS')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -85,9 +87,9 @@ TIMER('THF_BUFFS')
 -- LOCKSTYLE and MACROBOOK use lazy loading - loaded on first call, not during startup
 include('../shared/jobs/thf/functions/THF_LOCKSTYLE.lua') -- Lockstyle management with delays
 include('../shared/jobs/thf/functions/THF_MACROBOOK.lua') -- Macro book selection per subjob
-include('../shared/jobs/thf/functions/THF_COMMANDS.lua')  -- Custom commands (sata, smartbuff, etc.)
+include('../shared/jobs/thf/functions/THF_COMMANDS.lua')  -- Custom commands (smartbuff, fbc, range)
 TIMER('THF_COMMANDS')
-include('../shared/jobs/thf/functions/THF_MOVEMENT.lua')  -- Movement tracking, gear swapping
+include('../shared/jobs/thf/functions/THF_MOVEMENT.lua')  -- Movement status API
 TIMER('THF_MOVEMENT')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -105,7 +107,7 @@ local TreasureHunter = require('shared/jobs/thf/functions/logic/treasure_hunter'
 TreasureHunter.init()
 
 -- Load dual-boxing manager (uses deferred init + lazy message loading)
-local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
+require('shared/utils/dualbox/dualbox_manager')
 
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 MessageFormatter.show_debug('THF', 'All functions loaded successfully')

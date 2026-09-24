@@ -15,15 +15,12 @@ local MessageCore = require('shared/utils/messages/message_core')
 
 local PrecastGuard = {}
 
--- Load dependencies
 local DebuffChecker = require('shared/utils/debuff/debuff_checker')
 local MessageDebuffs = require('shared/utils/messages/formatters/magic/message_debuffs')
 local AutoMedicine = require('shared/utils/debuff/auto_medicine')
 
--- Load configuration
 local config_success, AutoCureConfig = pcall(require, 'shared/config/DEBUFF_AUTOCURE_CONFIG')
 if not config_success then
-    -- Fallback to defaults if config not found
     AutoCureConfig = {
         test_mode = false,
         test_debuff = "Berserk",
@@ -41,10 +38,8 @@ if not config_success then
     }
 end
 
--- Silence cure items (from config with validation)
+-- Cure item lists, tried in order (empty list when the config omits them)
 local SILENCE_CURE_ITEMS = AutoCureConfig.silence_cure_items or {}
-
--- Paralysis cure items (from config with validation)
 local PARALYSIS_CURE_ITEMS = AutoCureConfig.paralysis_cure_items or {}
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -143,7 +138,6 @@ local function try_cure_debuff(cure_items, action_name, debuff_message, success_
         return CURE_BUSY
     end
 
-    -- Try each cure item in priority order
     for _, cure_item in ipairs(cure_items) do
         if has_item_in_inventory(cure_item.id) then
             cure_lock_until = os.clock() + CURE_LOCK_DURATION
@@ -154,7 +148,6 @@ local function try_cure_debuff(cure_items, action_name, debuff_message, success_
                 '; input /item "' .. cure_item.name .. '" <me>'
             )
 
-            -- Display success message using MessageDebuffs module
             success_msg_func(cure_item.name, action_name, debuff_message)
 
             return CURE_SENT
@@ -193,27 +186,23 @@ function PrecastGuard.check_and_block(spell, eventArgs)
         return false
     end
 
-    -- Use action_type which is more reliable for action detection
+    -- action_type is the engine's broad category (Magic/Ability/Item...), set
+    -- for every action, whereas spell.type is the resource sub-type.
     local action_type = spell.action_type or spell.type
 
-    -- Check if action is blocked by debuffs
     local blocked, debuff_name, debuff_message = DebuffChecker.check_action_blocked(action_type)
 
     if blocked then
-        -- Normalize debuff name to lowercase for consistent comparison
         local debuff_lower = normalize_debuff_name(debuff_name)
 
-        -- Check if this debuff should trigger auto-cure
         local should_auto_cure = false
         local cure_type = nil  -- "silence" or "paralysis"
 
-        -- Real Silence always triggers auto-cure (if enabled)
         if debuff_lower == "silence" and AutoCureConfig.auto_cure_silence then
             should_auto_cure = true
             cure_type = "silence"
         end
 
-        -- Real Paralysis always triggers auto-cure (if enabled)
         if debuff_lower == "paralysis" and AutoCureConfig.auto_cure_paralysis then
             should_auto_cure = true
             cure_type = "paralysis"
@@ -237,14 +226,12 @@ function PrecastGuard.check_and_block(spell, eventArgs)
             end
         end
 
-        -- Auto-cure handling
         -- AutoMedicine Off only skips the item use - the action stays blocked,
         -- since firing a JA while paralyzed burns its recast on a failed use.
         if should_auto_cure and AutoMedicine.is_enabled() then
             local cure_status = nil
 
             if cure_type == "silence" and action_type == "Magic" then
-                -- Try to use Echo Drops or Remedy for Silence
                 cure_status = try_cure_silence(spell.name, debuff_message)
                 if cure_status == CURE_NONE then
                     eventArgs.cancel = true
@@ -276,10 +263,8 @@ function PrecastGuard.check_and_block(spell, eventArgs)
             -- CURE_BUSY falls through to the plain blocked message below.
         end
 
-        -- Cancel the action to prevent equipment swap
+        -- Cancel before any gear is swapped for an action that cannot happen
         eventArgs.cancel = true
-
-        -- Display appropriate message with the detected action type
         MessageDebuffs.show_action_blocked(spell.name, action_type, debuff_message or debuff_name)
 
         return true
@@ -288,7 +273,10 @@ function PrecastGuard.check_and_block(spell, eventArgs)
     return false
 end
 
---- Check magic spells specifically
+--- Check magic spells specifically.
+--- Only acts when spell.type is 'Magic'. GearSwap sets spell.type to the
+--- resource sub-type (WhiteMagic, BlackMagic, Ninjutsu, BardSong...), so real
+--- spells never match here and reach check_and_block through guard_precast.
 --- @param spell table Spell object
 --- @param eventArgs table Event arguments
 --- @return boolean blocked True if spell was blocked
@@ -300,13 +288,9 @@ function PrecastGuard.check_magic(spell, eventArgs)
     local blocked, debuff_name, debuff_message = DebuffChecker.check_magic_blocked()
 
     if blocked then
-        -- Normalize debuff name to lowercase for consistent comparison
         local debuff_lower = normalize_debuff_name(debuff_name)
-
-        -- Check if this debuff should trigger auto-cure
         local should_auto_cure = false
 
-        -- Real Silence always triggers auto-cure (if enabled)
         if debuff_lower == "silence" and AutoCureConfig.auto_cure_silence then
             should_auto_cure = true
         end
@@ -320,9 +304,7 @@ function PrecastGuard.check_magic(spell, eventArgs)
             end
         end
 
-        -- Special handling for Silence (or test mode) - try to auto-cure
         if should_auto_cure and AutoMedicine.is_enabled() then
-            -- Try to use Echo Drops or Remedy
             local cure_status = try_cure_silence(spell.name, debuff_message)
             if cure_status == CURE_SENT or cure_status == CURE_PENDING then
                 eventArgs.cancel = true  -- Cancel this attempt, player can retry after cure
@@ -356,18 +338,14 @@ function PrecastGuard.check_ja(spell, eventArgs)
     local blocked, debuff_name, debuff_message = DebuffChecker.check_ja_blocked()
 
     if blocked then
-        -- Normalize debuff name to lowercase for consistent comparison
         local debuff_lower = normalize_debuff_name(debuff_name)
-
-        -- Check if this is Paralysis/Paralyzed and should trigger auto-cure
         local should_auto_cure = false
 
-        -- Real Paralysis always triggers auto-cure (if enabled)
         if debuff_lower == "paralysis" and AutoCureConfig.auto_cure_paralysis then
             should_auto_cure = true
         end
 
-        -- Test mode: use configured test debuff (e.g., Defender) to simulate Paralysis
+        -- Test mode: Defender simulates Paralysis (hardcoded, unlike test_debuff)
         if AutoCureConfig.test_mode and debuff_lower == "defender" then
             should_auto_cure = true
             if AutoCureConfig.debug then
@@ -375,9 +353,7 @@ function PrecastGuard.check_ja(spell, eventArgs)
             end
         end
 
-        -- Special handling for Paralysis (or test mode) - try to auto-cure
         if should_auto_cure and AutoMedicine.is_enabled() then
-            -- Try to use Remedy or Panacea
             local cure_status = try_cure_paralysis(spell.name, debuff_message)
             if cure_status == CURE_SENT or cure_status == CURE_PENDING then
                 eventArgs.cancel = true  -- Cancel this attempt, player can retry after cure
@@ -413,15 +389,12 @@ function PrecastGuard.check_ws(spell, eventArgs)
     local blocked, debuff_name, debuff_message = DebuffChecker.check_ws_blocked()
 
     if blocked then
-        -- Normalize debuff name to lowercase for consistent comparison
         local debuff_lower = normalize_debuff_name(debuff_name)
 
-        -- Skip blocking if it's just paralysis (FFXI will handle WS proc/fail)
         if debuff_lower == "paralysis" then
-            return false  -- Don't block, let FFXI handle
+            return false
         end
 
-        -- Block for other debuffs (Amnesia, Terror, etc.)
         eventArgs.cancel = true
         MessageDebuffs.show_ws_blocked(spell.name, debuff_message or debuff_name)
         return true
@@ -460,10 +433,12 @@ end
 --- @param eventArgs table Event arguments
 --- @return boolean blocked True if action was blocked
 function PrecastGuard.guard_precast(spell, eventArgs)
-    -- Check specific action type using dedicated functions
-    -- WeaponSkills get special handling (no auto-cure, no blocking for paralysis)
-    -- JobAbilities get auto-cure for paralysis
-    -- Magic gets auto-cure for silence
+    -- WeaponSkills: no auto-cure, paralysis not blocked.
+    -- JobAbilities: auto-cure for paralysis.
+    -- Spells (spell.type WhiteMagic, BlackMagic, ... never 'Magic') and other
+    -- ability sub-types (CorsairRoll, Waltz, ...) fall through to
+    -- check_and_block, which routes on action_type: auto-cure for silence
+    -- (magic) and paralysis (abilities).
     if spell.type == "WeaponSkill" or spell.type == "Weaponskill" then
         return PrecastGuard.check_ws(spell, eventArgs)
     elseif spell.type == "JobAbility" or spell.type == "Ability" or spell.type == "PetCommand" then
@@ -473,7 +448,6 @@ function PrecastGuard.guard_precast(spell, eventArgs)
     elseif spell.type == "Item" then
         return PrecastGuard.check_item(spell, eventArgs)
     else
-        -- Fallback for unknown types - use generic check
         return PrecastGuard.check_and_block(spell, eventArgs)
     end
 end

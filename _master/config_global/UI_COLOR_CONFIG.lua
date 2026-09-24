@@ -68,6 +68,8 @@ UIColorConfig.bar_spells = {
     -- No need to define bar-specific colors unless you want them different
 
     -- Bar Ailment Spells (Barsilence, Barparalyze, etc.)
+    -- Note: COLOR_SYSTEM.lua currently colors Bar-ailment spells by their
+    -- element (get_bar_ailment_color), so this value does not change them.
     ailment = {255, 200, 150} -- Light Orange (universal color)
 }
 
@@ -123,9 +125,10 @@ UIColorConfig.jobs = {
         ["Dark Shot"] = {150, 100, 200} -- Dark (Dispel, Bio, Blind)
     },
 
-    -- RUN Runes (uses elements table, defined here for reference)
+    -- RUN Runes: this table is not read. Rune colors (Ignis, Gelus, ...) are
+    -- defined in COLOR_SYSTEM.lua; to override one, add its Latin name to
+    -- UIColorConfig.elements above (e.g. Ignis = {255, 100, 100}).
     runes = {
-        -- Uses UIColorConfig.elements (Ignis = Fire, Gelus = Ice, etc.)
     }
 }
 
@@ -153,6 +156,8 @@ UIColorConfig.special = {
 ---============================================================================
 --- HELPER FUNCTIONS
 ---============================================================================
+--- Not called by any module at the moment: COLOR_SYSTEM.lua reads the tables
+--- above directly and converts them with its own rgb_to_code().
 
 --- Convert RGB table to color code string
 --- @param rgb table { r, g, b }

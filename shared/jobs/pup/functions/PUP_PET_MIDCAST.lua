@@ -4,17 +4,19 @@
 ---   Handles midcast gear for Ready Moves (pet TP moves).
 ---   This is a SPECIAL hook called ONLY for pet abilities during midcast.
 ---
----   @file    jobs/pup/functions/PUP_PET_MIDCAST.lua
+---   @file    shared/jobs/pup/functions/PUP_PET_MIDCAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-18
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---   DEPENDENCIES
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Ready move categorizer
+-- Loaded when the file is included. The module does not exist yet (PUP is
+-- incomplete), so ReadyMoveCategorizer is nil and every move falls back to
+-- the physical set.
 local success_rmc, ReadyMoveCategorizer = pcall(require, 'shared/jobs/pup/functions/logic/ready_move_categorizer')
 if not success_rmc then
     ReadyMoveCategorizer = nil
@@ -26,7 +28,6 @@ end
 
 ---   Called during pet ability midcast (specifically for Ready Moves)
 ---   @param spell table Spell/ability data
----   @return void
 function job_pet_midcast(spell)
     local name = spell.name
 

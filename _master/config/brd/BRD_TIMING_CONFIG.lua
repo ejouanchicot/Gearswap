@@ -4,6 +4,10 @@
 --- Centralized timing configuration for BRD song casting system.
 --- Defines all delays for different casting scenarios.
 ---
+--- Read today: SONG_DELAYS (through get_song_delay, song_rotation_manager.lua)
+--- and ABILITY_DELAYS.nt_combo_delay (//gs c nt, BRD_COMMANDS.lua). The other
+--- values and helpers below are not read by any code.
+---
 --- @file config/brd/BRD_TIMING_CONFIG.lua
 --- @author Tetsouo
 --- @version 1.0
@@ -32,6 +36,7 @@ BRDTimingConfig.SONG_DELAYS = {
 --- ABILITY DELAYS
 ---============================================================================
 --- Delays for job abilities before songs can be cast
+--- Only nt_combo_delay is read (//gs c nt); the others are unused.
 
 BRDTimingConfig.ABILITY_DELAYS = {
     -- Marcato delays
@@ -53,7 +58,7 @@ BRDTimingConfig.ABILITY_DELAYS = {
 ---============================================================================
 --- ROTATION-SPECIFIC DELAYS
 ---============================================================================
---- Special delays for specific song rotation scenarios
+--- Special delays for specific song rotation scenarios (not read by any code)
 
 BRDTimingConfig.ROTATION_DELAYS = {
     -- Phase switching delays
@@ -69,6 +74,7 @@ BRDTimingConfig.ROTATION_DELAYS = {
 --- CASTING WINDOW ADJUSTMENTS
 ---============================================================================
 --- Fine-tuning adjustments for latency and animation times
+--- (only used by apply_adjustments(), which nothing calls)
 
 BRDTimingConfig.ADJUSTMENTS = {
     -- Latency compensation (adjust based on your connection)
@@ -139,21 +145,16 @@ end
 --- Quick reference for all timing scenarios:
 ---
 --- SCENARIO 1: Normal Casting (no buffs)
----   - Song delay: 6.0s
----   - Total time for 4 songs: ~24 seconds
+---   - Song delay: 6.0s (SONG_DELAYS.normal)
 ---
 --- SCENARIO 2: Nitro Mode (Nightingale + Troubadour)
----   - Song delay: 2.5s
----   - Total time for 4 songs: ~10 seconds
+---   - Song delay: 2.5s (SONG_DELAYS.nitro)
 ---
 --- SCENARIO 3: Nitro + Marcato
----   - Initial delay: 1.0s (Marcato animation)
----   - Song delay: 3.5s (2.5s + 1.0s Marcato offset)
----   - Total time for 4 songs: ~15 seconds (1.0 + 3.5 + 3.5 + 3.5)
+---   - Song delay: 3.5s (SONG_DELAYS.nitro_marcato)
 ---
---- SCENARIO 4: Song Refresh (no dummies)
----   - Normal: 6.0s between songs
----   - Nitro: 2.5s between songs
+--- Marcato without Nitro uses the normal delay: get_song_delay() only
+--- looks at Marcato when both Nightingale and Troubadour are up.
 ---============================================================================
 
 return BRDTimingConfig

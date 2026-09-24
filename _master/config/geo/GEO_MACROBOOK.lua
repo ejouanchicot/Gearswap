@@ -2,7 +2,8 @@
 --- GEO Macro Book Configuration - Dual-Boxing Support
 ---============================================================================
 --- Defines macro book settings for Geomancer job.
---- Supports per-subjob macro books with default fallback.
+--- Supports per-subjob macro books with default fallback, and per alt job
+--- when dual-boxing.
 ---
 --- @file config/geo/GEO_MACROBOOK.lua
 --- @author Tetsouo
@@ -22,10 +23,10 @@ GEOMacroConfig.default = { book = 5, page = 1 }
 -- Macro books per subjob (optional)
 -- If subjob not listed, uses default
 GEOMacroConfig.solo = {
-    ['WHM'] = { book = 5, page = 1 },  -- GEO/WHM >> Book 1, Page 1
-    ['RDM'] = { book = 5, page = 1 },  -- GEO/RDM >> Book 1, Page 2
-    ['BLM'] = { book = 5, page = 1 },  -- GEO/BLM >> Book 1, Page 3
-    ['SCH'] = { book = 5, page = 1 },  -- GEO/SCH >> Book 1, Page 4
+    ['WHM'] = { book = 5, page = 1 },  -- GEO/WHM
+    ['RDM'] = { book = 5, page = 1 },  -- GEO/RDM
+    ['BLM'] = { book = 5, page = 1 },  -- GEO/BLM
+    ['SCH'] = { book = 5, page = 1 },  -- GEO/SCH
 }
 
 
@@ -33,8 +34,9 @@ GEOMacroConfig.solo = {
 --- DUAL-BOXING CONFIGURATION (Playing GEO + Alt)
 ---============================================================================
 --- Structure: dualbox[ALT_JOB][SUBJOB] = {book, page}
---- Example: dualbox['GEO']['SAM'] = GEO/SAM macros optimized for playing with GEO alt
+--- Example: dualbox['COR']['WHM'] = GEO/WHM macros while the alt plays COR
 ---
+--- Used while the alt is online on ALT_JOB; otherwise the solo table applies.
 --- Uncomment and customize sections below as needed:
 ---============================================================================
 

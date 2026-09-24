@@ -1,7 +1,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   WHM Status Module - Player Status Change Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles status changes (Idle, Engaged, Resting, Dead, etc.)
+---   Status change handler: the shared LifecycleManager one (unlocks Doom
+---   slots so a raise does not leave them stuck).
 ---
 ---   @file    shared/jobs/whm/functions/WHM_STATUS.lua
 ---   @author  Tetsouo

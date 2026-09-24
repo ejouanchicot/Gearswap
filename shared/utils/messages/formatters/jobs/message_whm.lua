@@ -1,22 +1,20 @@
 ---============================================================================
 --- WHM Message Formatter - Centralized WHM Messages
 ---============================================================================
---- Uses NEW message system with inline colors
---- Delegates to api/messages.lua for all formatting
+--- Templates: data/jobs/whm_messages.lua, sent through M.job.
 ---
---- @file    messages/message_whm.lua
+--- @file    shared/utils/messages/formatters/jobs/message_whm.lua
 --- @author  Tetsouo
---- @version 2.0 (NEW SYSTEM)
---- @date    Created: 2025-11-06 | Migrated: 2025-11-06
+--- @version 2.0
+--- @date    Created: 2025-11-06
 ---============================================================================
 
 local MessageWHM = {}
 
--- NEW message system
 local M = require('shared/utils/messages/api/messages')
 
 ---============================================================================
---- MODULE LOAD WARNINGS (NEW SYSTEM)
+--- MODULE LOAD WARNINGS
 ---============================================================================
 
 --- Show CureManager failed to load warning

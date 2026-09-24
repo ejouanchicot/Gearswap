@@ -12,7 +12,7 @@
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+
 ---
 --- Features:
----   • Modular architecture (12 hooks + 6 logic modules)
+---   • Modular architecture (11 hook modules + 5 logic modules)
 ---   • DPS-focused gear automation with survival modes (PDT/Normal)
 ---   • Step management system (Quickstep, Box Step rotation)
 ---   • Climactic Flourish auto-trigger for weaponskills
@@ -26,21 +26,21 @@
 ---   • Smart lockstyle/macrobook per subjob
 ---
 --- Architecture Overview:
----   Main File (this) >> dnc_functions.lua >> 11 Hooks + 6 Logic Modules
+---   Main File (this) >> dnc_functions.lua >> 11 Hooks + 5 Logic Modules
 ---
 --- Module Organization:
 ---   ├── functions/dnc_functions.lua        [Facade Loader]
 ---   ├── sets/dnc_sets.lua                  [Equipment Sets]
 ---   ├── functions/DNC_*.lua                [11 Hook Modules]
----   └── functions/logic/*.lua              [6 Logic Modules]
+---   └── functions/logic/*.lua              [5 Logic Modules]
 ---
 --- Hook Modules (11):
 ---   DNC_PRECAST | DNC_MIDCAST | DNC_AFTERCAST | DNC_IDLE | DNC_ENGAGED
 ---   DNC_STATUS | DNC_BUFFS | DNC_COMMANDS | DNC_MOVEMENT
 ---   DNC_LOCKSTYLE | DNC_MACROBOOK
 ---
---- Logic Modules (6):
----   climactic_manager | jump_manager | set_builder | smartbuff_manager
+--- Logic Modules (5):
+---   climactic_manager | set_builder | smartbuff_manager
 ---   step_manager | ws_variant_selector
 ---============================================================================
 
@@ -64,14 +64,19 @@ LockstyleConfig = LockstyleConfig or {
 local ConfigLoader = require('shared/utils/config/config_loader')
 local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'DNC')
 
--- Load region configuration (must load before message system for color codes)
+-- Load region configuration. message_colors captures _G.RegionConfig once,
+-- when it is first required - ConfigLoader above already required it, so
+-- this assignment comes too late for the region warning color.
 local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig
 end
 
+--- GearSwap entry hook: loads Mote-Include, the shared systems and the DNC modules.
+--- Called by GearSwap each time this job file is loaded.
+--- @return void
 function get_sets()
-    -- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+    -- PERFORMANCE PROFILING (enable with: //gs c perf start)
     local Profiler = require('shared/utils/debug/performance_profiler')
     Profiler.start('get_sets')
 
@@ -154,8 +159,8 @@ function get_sets()
         JobChangeManager.register_lockstyle_cancel("DNC", cancel_dnc_lockstyle_operations)
     end
 
-    -- Note: Macro/lockstyle are handled by JobChangeManager on job changes
-    -- Initial load will be handled by JobChangeManager after initialization
+    -- Initial macrobook/lockstyle are triggered from user_setup();
+    -- subjob changes go through JobChangeManager (job_sub_job_change).
 
     Profiler.finish()
 end
@@ -168,6 +173,7 @@ end
 --- Coordinates lockstyle, macros, keybinds, and UI reload via JobChangeManager
 --- @param newSubjob string New subjob
 --- @param oldSubjob string Old subjob
+--- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
     -- Let JobChangeManager handle the full reload sequence
     local success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
@@ -183,6 +189,10 @@ end
 -- SETUP FUNCTIONS
 ---============================================================================
 
+--- Configure states, keybinds, UI and the initial macrobook/lockstyle.
+--- Called by Mote-Include from init_include() (inside include('Mote-Include.lua'),
+--- before init_gear_sets) and again on every subjob change, before job_sub_job_change().
+--- @return void
 function user_setup()
     -- ========================================
     -- STATE DEFINITIONS (Loaded from DNC_STATES.lua)
@@ -256,18 +266,27 @@ end
 
 --- Called by Mote-Include after state changes
 --- Updates the UI to reflect current state values
+--- @param cmdParams table Parameters passed to Mote's handle_update
+--- @param eventArgs table Mote event arguments (unused)
+--- @return void
 function job_update(cmdParams, eventArgs)
-    -- Update UI when states change (F9, F10, etc.)
+    -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI and KeybindUI.update then
         KeybindUI.update()
     end
 end
 
+--- Load the DNC equipment sets.
+--- Called by Mote-Include at the end of init_include(), after user_setup().
+--- @return void
 function init_gear_sets()
     include('sets/dnc_sets.lua')
 end
 
+--- Called by GearSwap when this job file is unloaded (job change, reload).
+--- Cancels pending job-change operations and unbinds the job keys.
+--- @return void
 function file_unload()
     -- Cancel pending job change operations (debounce timer + lockstyles)
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')

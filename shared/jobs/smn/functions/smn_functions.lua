@@ -4,7 +4,7 @@
 ---   Loads all SMN-specific function modules in correct order.
 ---   All hook modules must be loaded via include() for _G availability.
 ---
----   @file    shared/jobs/smn/smn_functions.lua
+---   @file    shared/jobs/smn/functions/smn_functions.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2026-05-28
@@ -68,7 +68,7 @@ TIMER('SMN_MOVEMENT')
 ---   DUAL-BOXING SYSTEM
 ---  ═══════════════════════════════════════════════════════════════════════════
 
-local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
+require('shared/utils/dualbox/dualbox_manager')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   INITIALIZATION COMPLETE

@@ -9,16 +9,17 @@
 ---   • Hook modules (DRK_*.lua) provide GearSwap event handlers
 ---   • Logic modules (logic/*.lua) contain business logic, loaded via require()
 ---
----   @file    drk_functions.lua
+---   @file    shared/jobs/drk/functions/drk_functions.lua
 ---   @author  Tetsouo
 ---   @version 1.0 - Initial DRK Implementation
 ---   @date    Created: 2025-10-23
 ---   @requires All DRK_*.lua modules in functions directory
 ---  ═══════════════════════════════════════════════════════════════════════════
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SECTION 1: MESSAGE SYSTEM
 ---  ═══════════════════════════════════════════════════════════════════════════
--- Message system (must load first for buff status display)
+
 -- ═══════════════════════════════════════════════════════════════════
 -- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
 -- ═══════════════════════════════════════════════════════════════════
@@ -75,21 +76,21 @@ TIMER('DRK_MOVEMENT')
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   The following business logic modules are loaded via require() in hooks:
 ---
----   To be added as needed for DRK-specific complex logic
+---   • set_builder.lua            - Engaged/idle set construction (AM3, PDT, weapon)
+---   • drk_buff_anticipation.lua  - Dark Seal / Nether Void engaged variants
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SECTION 6: DUAL-BOXING SYSTEM
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load dual-boxing manager (uses deferred init + lazy message loading)
-local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
+-- Loaded for its side effects (deferred init + lazy message loading)
+require('shared/utils/dualbox/dualbox_manager')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   INITIALIZATION COMPLETE
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- All module functions are now available in global scope
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 MessageFormatter.show_debug('DRK', 'All functions loaded (11 hooks)')
 

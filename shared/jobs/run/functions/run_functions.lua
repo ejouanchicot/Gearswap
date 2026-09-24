@@ -9,7 +9,7 @@
 ---   • Hook modules (RUN_*.lua) provide GearSwap event handlers
 ---   • Logic modules (logic/*.lua) contain business logic, loaded via require()
 ---
----   @file    pld_functions.lua
+---   @file    shared/jobs/run/functions/run_functions.lua
 ---   @author  Tetsouo
 ---   @version 2.0 - Logic Extracted to logic/
 ---   @date    Created: 2025-10-03 | Updated: 2025-10-06
@@ -77,23 +77,20 @@ TIMER('RUN_MOVEMENT')
 ---
 ---   logic/aoe_manager.lua
 ---     • Blue Magic AOE spell rotation (RUN/BLU subjob)
----     • Auto-target selection for AOE spells
----     • Spell tier escalation based on target count
+---     • Casts the first ready spell of the rotation on <stnpc>
 ---
 ---   logic/cure_set_builder.lua
----     • Dynamic Cure III/IV set generation
----     • Potency optimization based on HP thresholds
----     • Light Arts bonus detection & gear adjustment
+---     • Cure III/IV set chosen by target (sets.midcast.CureSelf / CureOther)
 ---
 ---   logic/rune_manager.lua
----     • Rune ability management (RUN/RUN subjob)
----     • Mode-based rune selection (Sulpor/Lux)
----     • Auto-application timing coordination
+---     • //gs c rune: casts the rune selected in state.RuneMode
+---     • Shows the recast instead when the rune is on cooldown
 ---
 ---   logic/set_builder.lua
 ---     • Shared engaged set construction
 ---     • Shared idle set construction
----     • Hybrid mode application (PDT/MDT/Normal)
+---     • Hybrid mode application (PDT/MDT)
+---     • Weapon + grip (grip skipped for Lycurgos)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -101,7 +98,7 @@ TIMER('RUN_MOVEMENT')
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Load dual-boxing manager (uses deferred init + lazy message loading)
-local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
+require('shared/utils/dualbox/dualbox_manager')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   INITIALIZATION COMPLETE

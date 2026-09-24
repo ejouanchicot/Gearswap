@@ -3,7 +3,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Provides centralized set building for both engaged and idle states.
 ---   Handles:
----   • Aftermath Lv.3 detection and specialized gear application
+---   • Engaged base selection: Kraken Club, stances (SubtleBlow/Hoxne),
+---     Aftermath Lv.3 on Ukonvasara, weapon-specific sets, HybridMode
 ---   • Weapon selection and set application
 ---   • Town detection (safe zones with optimized gear)
 ---   • Movement speed gear application
@@ -11,7 +12,7 @@
 ---
 ---   Used by: WAR_IDLE.lua and WAR_ENGAGED.lua
 ---
----   @file    jobs/war/functions/logic/set_builder.lua
+---   @file    shared/jobs/war/functions/logic/set_builder.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
@@ -29,7 +30,7 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   AFTERMATH LV.3 DETECTION (ENGAGED)
+---   ENGAGED BASE SELECTION (KRAKEN CLUB, STANCE, AFTERMATH LV.3, WEAPON)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- HybridMode values that are explicit stances: their set wins over the
@@ -201,7 +202,7 @@ end
 
 ---   Build complete engaged set with all WAR logic
 ---   Processing order:
----   1. Select base (Aftermath Lv.3 detection + HybridMode)
+---   1. Select base (see select_engaged_base)
 ---   2. Apply weapon
 ---
 ---   @param base_set table Base engaged set from war_sets.lua
@@ -211,7 +212,7 @@ function SetBuilder.build_engaged_set(base_set)
         return {}
     end
 
-    -- Step 1: Select base set (Aftermath Lv.3 detection + HybridMode)
+    -- Step 1: Select base set (see select_engaged_base)
     local result = SetBuilder.select_engaged_base(base_set)
 
     -- Step 2: Apply weapon
@@ -226,7 +227,7 @@ end
 
 ---   Build complete idle set with all WAR logic
 ---   Processing order:
----   1. Town detection (use town set as base if in safe zone)
+---   1. Town set, else sets.idle[HybridMode], else base_set
 ---   2. Apply weapon (applies to both town and non-town)
 ---   3. Apply movement speed (non-town only)
 ---
@@ -237,7 +238,7 @@ function SetBuilder.build_idle_set(base_set)
         return {}
     end
 
-    -- Step 1: Town detection - use town set as base
+    -- Step 1: Town set, else HybridMode idle set
     local result, in_town = SetBuilder.select_idle_base(base_set)
 
     -- Step 2: Apply weapon (applies to both town and non-town)

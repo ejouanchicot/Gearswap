@@ -7,7 +7,7 @@
 ---   - Elemental Sforzo (SP1, Lv1) - Immune to all magic attacks
 ---   - Odyllic Subterfuge (SP2, Lv96) - Enemy MACC -40
 ---
---- @file run_sp.lua
+--- @file shared/data/job_abilities/run/run_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

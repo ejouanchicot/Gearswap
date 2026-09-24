@@ -1,11 +1,10 @@
 ---============================================================================
---- Cooldown Message Formatter - Cooldown Display (NEW SYSTEM - HYBRID)
+--- Cooldown Message Formatter - Cooldown Display
 ---============================================================================
---- Professional cooldown and recast timing messages
---- Uses hybrid approach: Templates for separators, direct rendering for dynamic messages
---- Migrated from old system to new system: 2025-11-06
+--- Cooldown and recast lines. Separators come from the COOLDOWNS templates;
+--- the lines themselves are built by hand with inline color codes.
 ---
---- @file    messages/message_cooldowns.lua
+--- @file    shared/utils/messages/formatters/combat/message_cooldowns.lua
 --- @author  Tetsouo
 --- @version 2.0
 --- @date    Created: 2025-11-06
@@ -47,7 +46,6 @@ function MessageCooldowns.format_recast_duration(recast)
     -- For short durations, show seconds with decimal
     return string.format("%.1f sec", recast)
 end
-
 
 ---============================================================================
 --- WINDOWER RECAST HELPERS (DIFFERENT TIME UNITS!)
@@ -91,23 +89,18 @@ function MessageCooldowns.show_cooldown_message(job_name, action_type, name, rem
         return
     end
 
-    -- Color codes based on action type (from backup system)
-    local colorGray = MessageCore.create_color_code(Colors.SEPARATOR) -- Gray-violet
-    local colorJob = MessageCore.create_color_code(Colors.JOB_TAG)  -- Light blue for job names
-    local colorAction, actionColor
+    local colorGray = MessageCore.create_color_code(Colors.SEPARATOR)
+    local colorJob = MessageCore.create_color_code(Colors.JOB_TAG)
+    local colorAction
 
     if action_type:lower():find("magic") or action_type:lower():find("spell") then
-        colorAction = MessageCore.create_color_code(Colors.SPELL) -- Cyan for magic
-        actionColor = 5
+        colorAction = MessageCore.create_color_code(Colors.SPELL)
     elseif action_type:lower():find("ability") or action_type:lower():find("ja") then
-        colorAction = MessageCore.create_color_code(Colors.JA) -- Yellow for abilities
-        actionColor = 50
+        colorAction = MessageCore.create_color_code(Colors.JA)
     elseif action_type:lower():find("weapon") or action_type:lower():find("ws") then
-        colorAction = MessageCore.create_color_code(Colors.WS) -- Yellow for weaponskills
-        actionColor = 167
+        colorAction = MessageCore.create_color_code(Colors.WS)
     else
-        colorAction = MessageCore.create_color_code(Colors.ITEM_COLOR) -- Item color
-        actionColor = 30
+        colorAction = MessageCore.create_color_code(Colors.ITEM_COLOR)
     end
 
     -- Separator at the top (skip if in block mode)
@@ -115,7 +108,6 @@ function MessageCooldowns.show_cooldown_message(job_name, action_type, name, rem
         M.send('COOLDOWNS', 'separator')
     end
 
-    -- Build message with professional formatting
     local message_parts = {}
 
     -- Job tag
@@ -143,7 +135,10 @@ function MessageCooldowns.show_cooldown_message(job_name, action_type, name, rem
     end
 
     local final_message = table.concat(message_parts)
-    MessageRenderer.send(1, final_message) -- White base color, inline colors handle the rest
+    -- Arguments are swapped (send takes message, color). GearSwap's add_to_chat
+    -- recovers: the text is printed with base color 8, and the inline codes
+    -- color every visible segment.
+    MessageRenderer.send(1, final_message)
 
     -- Separator at the bottom (skip if in block mode)
     if not no_separators then
@@ -154,7 +149,7 @@ end
 --- Display spell cooldown with magic-specific formatting
 --- @param spell_name string Spell name
 --- @param remaining_centiseconds number Remaining cooldown time in centiseconds (windower.ffxi.get_spell_recasts())
---- @param job_name string Job tag (e.g., "WAR/SAM", "PLD/BLU") - REQUIRED
+--- @param job_name string|nil Job tag (e.g., "WAR/SAM"), defaults to the current one
 function MessageCooldowns.show_spell_cooldown(spell_name, remaining_centiseconds, job_name)
     job_name = job_name or MessageCore.get_job_tag()
     -- Convert centiseconds to seconds (Magic spells from get_spell_recasts() are in centiseconds!)
@@ -165,7 +160,7 @@ end
 --- Display job ability cooldown with ability-specific formatting
 --- @param ability_name string Job ability name
 --- @param remaining_seconds number Remaining cooldown time in seconds (windower.ffxi.get_ability_recasts())
---- @param job_name string Job tag (e.g., "WAR/SAM", "PLD/BLU") - REQUIRED
+--- @param job_name string|nil Job tag (e.g., "WAR/SAM"), defaults to the current one
 function MessageCooldowns.show_ability_cooldown(ability_name, remaining_seconds, job_name)
     job_name = job_name or MessageCore.get_job_tag()
     -- Ability recasts are already in seconds (no conversion needed)
@@ -175,7 +170,7 @@ end
 --- Display weaponskill cooldown with WS-specific formatting
 --- @param ws_name string Weaponskill name
 --- @param remaining number Remaining cooldown time in seconds
---- @param job_name string Job tag (e.g., "WAR/SAM", "PLD/BLU") - REQUIRED
+--- @param job_name string|nil Job tag (e.g., "WAR/SAM"), defaults to the current one
 function MessageCooldowns.show_ws_cooldown(ws_name, remaining, job_name)
     job_name = job_name or MessageCore.get_job_tag()
     MessageCooldowns.show_cooldown_message(job_name, "WeaponSkill", ws_name, remaining)
@@ -184,7 +179,7 @@ end
 --- Display item recast with item-specific formatting
 --- @param item_name string Item name
 --- @param remaining number Remaining recast time in seconds
---- @param job_name string Job tag (e.g., "WAR/SAM", "PLD/BLU") - REQUIRED
+--- @param job_name string|nil Job tag (e.g., "WAR/SAM"), defaults to the current one
 function MessageCooldowns.show_item_recast(item_name, remaining, job_name)
     job_name = job_name or MessageCore.get_job_tag()
     MessageCooldowns.show_cooldown_message(job_name, "Item", item_name, remaining)
@@ -210,7 +205,7 @@ end
 
 --- Display multiple cooldown/TP messages in a single block with shared separators
 --- @param messages table Array of message objects {type="cooldown|tp", name=string, value=number, extra=number, action_type=string}
---- @param job_name string Job tag (e.g., "DNC/WAR", "PLD/BLU")
+--- @param job_name string|nil Job tag (e.g., "DNC/WAR"), defaults to the current one
 function MessageCooldowns.show_multi_status(messages, job_name)
     if not messages or #messages == 0 then return end
 
@@ -261,12 +256,12 @@ function MessageCooldowns.show_multi_status(messages, job_name)
 end
 
 ---============================================================================
---- COMPACT STATUS MESSAGES (from backup system)
+--- COMPACT STATUS MESSAGES
 ---============================================================================
 
---- Display compact status for multiple cooldowns (like WAR backup system)
---- @param cooldowns table Array of cooldown objects {name, type, time, status}
---- @param job_name string Job tag (e.g., "WAR/SAM", "PLD/BLU") - REQUIRED
+--- Display compact status for multiple cooldowns on one line
+--- @param cooldowns table Array of cooldown objects {name, time, status}
+--- @param job_name string|nil Job tag (e.g., "WAR/SAM"), defaults to the current one
 function MessageCooldowns.show_compact_status(cooldowns, job_name)
     if not cooldowns or #cooldowns == 0 then
         return
@@ -278,7 +273,7 @@ function MessageCooldowns.show_compact_status(cooldowns, job_name)
     local colorJob = MessageCore.create_color_code(Colors.JOB_TAG)   -- Light Blue for job names
     local colorAction = MessageCore.create_color_code(Colors.JA) -- Yellow for ability names
     local colorGreen = MessageCore.create_color_code(Colors.SUCCESS) -- Green for active status
-    local colorRed = MessageCore.create_color_code(Colors.COOLDOWN)   -- Red for cooldown time
+    local colorRed = MessageCore.create_color_code(Colors.COOLDOWN)   -- Dark red for cooldown time
 
     -- Start with job tag
     local message_parts = { colorGray .. '[' .. colorJob .. job_name .. colorGray .. '] ' }

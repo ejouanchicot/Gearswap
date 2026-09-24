@@ -7,11 +7,10 @@
 ---   - Meikyo Shisui (SP1, Lv1) - WS TP cost reduced
 ---   - Yaegasumi (SP2, Lv96) - Evade special attacks
 ---
---- @file sam_sp.lua
+--- @file shared/data/job_abilities/sam/sam_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06
---- @updated 2025-10-31
 --- @source https://www.bg-wiki.com/ffxi/Samurai
 --- @source https://www.bg-wiki.com/ffxi/Meikyo_Shisui
 --- @source https://www.bg-wiki.com/ffxi/Yaegasumi

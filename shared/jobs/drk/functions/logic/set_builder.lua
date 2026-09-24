@@ -8,19 +8,20 @@
 ---   • Weapon application via weapon sets (sets.Liberator, etc.)
 ---   • Buff variant integration (Dark Seal, Nether Void)
 ---
----   Simplified Architecture (3 sets total):
+---   Engaged sets (3 total):
 ---   • sets.engaged        - Base DPS set (all weapons)
 ---   • sets.engaged.PDT    - Physical defense mode (all weapons)
 ---   • sets.engaged.AM3    - Aftermath Lv.3 (Liberator mythic)
 ---   • Weapons applied separately via sets[weapon_name]
 ---
----   Used by: DRK_ENGAGED.lua
+---   Used by: DRK_ENGAGED.lua, DRK_IDLE.lua
 ---
----   @file    jobs/drk/functions/logic/set_builder.lua
+---   @file    shared/jobs/drk/functions/logic/set_builder.lua
 ---   @author  Tetsouo
 ---   @version 2.2
 ---   @date    Created: 2025-11-10 | Updated: 2025-11-10
 ---  ═══════════════════════════════════════════════════════════════════════════
+
 local DRKSetBuilder = {}
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -69,7 +70,7 @@ end
 ---   WEAPON APPLICATION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Apply weapon to set (like WAR)
+---   Apply weapon to set
 ---   Uses weapon sets defined in drk_sets.lua (e.g., sets.Liberator).
 ---   Falls back gracefully if weapon set not found.
 ---
@@ -133,7 +134,7 @@ function DRKSetBuilder.build_idle_set(base_set)
         result = DRKSetBuilder.apply_weapon(result, weapon_name)
     end
 
-    -- Apply movement speed gear if moving
+    -- state.Moving is created and updated by AutoMove
     if state.Moving and state.Moving.value == 'true' and sets.MoveSpeed then
         result = set_combine(result, sets.MoveSpeed)
     end

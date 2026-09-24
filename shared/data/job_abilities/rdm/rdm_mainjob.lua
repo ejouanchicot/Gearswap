@@ -8,7 +8,7 @@
 ---   - Saboteur (Lv83) - Enfeebling potency/duration x2
 ---   - Spontaneity (Lv95) - Next spell instant cast
 ---
---- @file rdm_mainjob.lua
+--- @file shared/data/job_abilities/rdm/rdm_mainjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

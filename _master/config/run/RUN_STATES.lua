@@ -8,7 +8,7 @@
 ---   • MainWeapon state with multiple weapon options
 ---   • SubWeapon state (grip selection: Utu/Refined)
 ---   • RuneMode for Rune selection (Ignis/Gelus/Flabra/Tellus/Sulpor/Unda/Lux/Tenebrae)
----   • Keybind integration (Alt+1/Alt+2/Alt+3/Alt+4)
+---   • Keys are bound in RUN_KEYBINDS.lua (Ctrl+Numpad1/2/3/9)
 ---   • Validation function to verify state configuration
 ---
 --- Usage:
@@ -30,9 +30,7 @@ local RUNStates = {}
 
 --- Configure all RUN states
 --- Must be called from user_setup() after Mote-Include is loaded.
---- Defines HybridMode, MainWeapon, SubWeapon, and RuneMode states.
----
---- @return void
+--- Defines HybridMode, MainWeapon, SubWeapon, RuneMode, FastCast and AutoMedicine.
 function RUNStates.configure()
     -- ==========================================================================
     -- COMBAT MODES
@@ -42,7 +40,7 @@ function RUNStates.configure()
     --- Options:
     ---   • 'PDT' - Physical Damage Taken -50% (default for physical enemies)
     ---   • 'MDT' - Magic Damage Taken -50% (for magical enemies)
-    --- Keybind: Alt+2 to cycle
+    --- Keybind: Ctrl+Numpad9 to cycle
     state.HybridMode:options('PDT', 'MDT')
     state.HybridMode:set('PDT') -- Default to PDT
 
@@ -51,7 +49,7 @@ function RUNStates.configure()
     -- ==========================================================================
 
     --- MainWeapon: Primary weapon selection
-    --- Keybind: Alt+1 to cycle
+    --- Keybind: Ctrl+Numpad1 to cycle
     state.MainWeapon =
         M {
         ['description'] = 'Main Weapon',
@@ -63,7 +61,7 @@ function RUNStates.configure()
     }
 
     --- SubWeapon: Sub weapon/grip selection
-    --- Keybind: Alt+3 to cycle
+    --- Keybind: Ctrl+Numpad2 to cycle
     state.SubWeapon =
         M {
         ['description'] = 'Sub Weapon',
@@ -77,7 +75,7 @@ function RUNStates.configure()
     -- ==========================================================================
 
     --- RuneMode: Rune selection for quick casting
-    --- Keybind: Alt+4 to cycle
+    --- Keybind: Ctrl+Numpad3 to cycle
     state.RuneMode =
         M {
         ['description'] = 'Rune Mode',
@@ -119,12 +117,12 @@ end
 ---============================================================================
 
 --- Validate that states were configured correctly
---- Checks that all required states exist and have proper structure.
+--- Checks that HybridMode, MainWeapon, SubWeapon and RuneMode exist.
 ---
 --- @return boolean success True if validation passed, false otherwise
 --- @return string  message Validation message (success or error description)
 function RUNStates.validate()
-    -- Check HybridMode exists and has correct options
+    -- Check HybridMode exists
     if not state.HybridMode then
         return false, 'HybridMode state not configured'
     end

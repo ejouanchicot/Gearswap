@@ -2,10 +2,11 @@
 ---   RDM Idle Module - Idle State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Handles all idle state logic for Red Mage job:
----   - Idle set selection based on IdleMode (DT, Refresh, Regain, Evasion)
----   - Movement speed optimization
----   - Town gear management
----   - Dynamic weapon application to idle sets
+---   - Idle set selection based on IdleMode (Refresh, DT)
+---   - Town gear (sets.Adoulin / sets.idle.Town)
+---   - Weapon application from MainWeapon / SubWeapon
+---   - Movement speed gear outside town
+---   The logic lives in logic/set_builder.lua.
 ---
 ---   @file    shared/jobs/rdm/functions/RDM_IDLE.lua
 ---   @author  Tetsouo
@@ -25,9 +26,8 @@ local SetBuilder = nil
 
 ---   Apply weapon sets, mode selection, and movement gear to all idle configurations
 ---   @param idleSet table The idle set to customize
----   @return table Modified idle set with current weapon, mode, and movement gear
+---   @return table Idle set for the current IdleMode/town, with weapons and movement gear
 function customize_idle_set(idleSet)
-    -- Lazy load SetBuilder on first idle
     if not SetBuilder then
         SetBuilder = require('shared/jobs/rdm/functions/logic/set_builder')
     end

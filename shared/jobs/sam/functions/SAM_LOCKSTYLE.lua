@@ -7,11 +7,11 @@
 ---   **PERFORMANCE OPTIMIZATION:**
 ---   • Lazy-loaded: Module created on first function call
 ---
----   @file    jobs/sam/functions/SAM_LOCKSTYLE.lua
+---   @file    shared/jobs/sam/functions/SAM_LOCKSTYLE.lua
 ---   @author  Tetsouo
 ---   @version 2.1 - Lazy Loading for performance
 ---   @date    Created: 2025-10-13 | Updated: 2025-11-15
----   @requires utils/lockstyle/lockstyle_manager
+---   @requires shared/utils/lockstyle/lockstyle_manager
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Lazy loading: Module created on first use

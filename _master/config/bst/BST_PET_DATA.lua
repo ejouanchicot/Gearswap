@@ -6,7 +6,7 @@
 --- This data drives the intelligent pet selection and ecosystem management
 --- systems for optimal Beastmaster performance.
 ---
---- Database includes 25+ jug pets across all ecosystems:
+--- Database includes 25 jug pets across all ecosystems:
 --- • **Aquan Ecosystem** - Fish, Crab species with tank/DD specializations
 --- • **Amorph Ecosystem** - Acuex, Slime, Leech, Slug with diverse roles
 --- • **Beast Ecosystem** - Tiger, Sheep, Rabbit, Raaz with combat focus
@@ -22,13 +22,13 @@
 --- @author Tetsouo
 --- @version 2.0
 --- @date Created: 2023-07-10 | Modified: 2025-10-17
---- @requires BST job configuration
+--- Loaded by the BST entry file into _G.BSTBeastPetData.
 ---
 --- @usage
----   local BSTBeastPetData = require('config/bst/BST_PET_DATA')
+---   local BSTBeastPetData = require('Tetsouo/config/bst/BST_PET_DATA')
 ---   local pet_info = BSTBeastPetData.pets[pet_name]
 ---
---- @see jobs/bst/functions/logic/ecosystem_manager.lua for ecosystem management
+--- @see shared/jobs/bst/functions/logic/ecosystem_manager.lua for ecosystem management
 ---============================================================================
 
 local BSTBeastPetData = {}
@@ -110,7 +110,7 @@ end
 
 --- Get list of unique species for an ecosystem
 --- @param ecosystem string Ecosystem name ("Aquan", "Beast", etc.)
---- @return table species_list Array of unique species names (in definition order)
+--- @return table species_list Array of unique species names (pairs() order, not guaranteed)
 function BSTBeastPetData.get_species_for_ecosystem(ecosystem)
     local species_set = {}
     local species_list = {}
@@ -119,8 +119,8 @@ function BSTBeastPetData.get_species_for_ecosystem(ecosystem)
         return species_list
     end
 
-    -- Collect unique species IN DEFINITION ORDER (not alphabetical)
-    -- This ensures species state matches the first pet in ammoSet state
+    -- pairs() over a hash table: the order is NOT the definition order,
+    -- only stable within one Lua state
     for pet_name, pet_data in pairs(BSTBeastPetData.pets) do
         if pet_data.ecosystem == ecosystem and not species_set[pet_data.species] then
             species_set[pet_data.species] = true
@@ -133,7 +133,7 @@ end
 
 --- Get list of all pets for an ecosystem
 --- @param ecosystem string Ecosystem name ("Aquan", "Beast", etc.)
---- @return table pets_list Array of pet names (in definition order)
+--- @return table pets_list Array of pet names (pairs() order, not guaranteed)
 function BSTBeastPetData.get_pets_for_ecosystem(ecosystem)
     local pets_list = {}
 
@@ -141,8 +141,7 @@ function BSTBeastPetData.get_pets_for_ecosystem(ecosystem)
         return pets_list
     end
 
-    -- Collect all pet names IN DEFINITION ORDER (not alphabetical)
-    -- This ensures pet order matches species order
+    -- pairs() over a hash table: the order is NOT the definition order
     for pet_name, pet_data in pairs(BSTBeastPetData.pets) do
         if pet_data.ecosystem == ecosystem then
             table.insert(pets_list, pet_name)
@@ -155,7 +154,7 @@ end
 --- Get list of pets for a specific species in an ecosystem
 --- @param ecosystem string Ecosystem name ("Aquan", "Beast", etc.)
 --- @param species string Species name ("Fish", "Tiger", etc.)
---- @return table pets_list Array of pet names (in definition order)
+--- @return table pets_list Array of pet names (pairs() order, not guaranteed)
 function BSTBeastPetData.get_pets_for_species(ecosystem, species)
     local pets_list = {}
 
@@ -163,7 +162,7 @@ function BSTBeastPetData.get_pets_for_species(ecosystem, species)
         return pets_list
     end
 
-    -- Collect pets matching species IN DEFINITION ORDER
+    -- pairs() over a hash table: the order is NOT the definition order
     for pet_name, pet_data in pairs(BSTBeastPetData.pets) do
         if pet_data.ecosystem == ecosystem and pet_data.species == species then
             table.insert(pets_list, pet_name)

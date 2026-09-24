@@ -1,10 +1,9 @@
 ---============================================================================
---- Dualbox Message Formatter - Dual-Boxing System Messages (NEW SYSTEM)
+--- Dualbox Message Formatter - Dual-Boxing System Messages
 ---============================================================================
---- Uses template-based messaging via MessageRenderer
---- Migrated from old system to new system: 2025-11-06
+--- Templates: data/systems/dualbox_messages.lua.
 ---
---- @file    messages/message_dualbox.lua
+--- @file    shared/utils/messages/formatters/ui/message_dualbox.lua
 --- @author  Tetsouo
 --- @version 2.0
 --- @date    Created: 2025-11-06

@@ -3,8 +3,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Handles intelligent song tier downgrading for debuff songs.
 ---   Automatically downgrades songs (Lullaby II >> I, etc.) if higher tier is on cooldown.
+---   Applies to Lullaby / Elegy / Requiem / Threnody songs, using the
+---   BRDSongConfig.SONG_REFINE table (enabled flag + tiers map).
 ---
----   @file    jobs/brd/functions/logic/song_refinement.lua
+---   @file    shared/jobs/brd/functions/logic/song_refinement.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-13
@@ -37,7 +39,7 @@ end
 ---   Refine song based on recast availability
 ---   @param spell table Spell being cast
 ---   @param eventArgs table Event arguments
----   @return boolean refined True if spell was refined/cancelled
+---   @return boolean refined True if spell was refined/cancelled (eventArgs.cancel is then set)
 function SongRefinement.refine_song(spell, eventArgs)
     -- Only process bard songs
     if not spell or spell.type ~= 'BardSong' then

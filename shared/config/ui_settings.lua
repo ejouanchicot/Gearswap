@@ -9,7 +9,7 @@
 ---     • Global variable storage (_G.UI_SETTINGS)
 ---     • Auto-load from file on startup
 ---     • Auto-save on every setting change
----     • 14 configurable parameters (position, visibility, background, font, sections)
+---     • 19 configurable parameters (position, visibility, background, font, sections)
 ---
 ---   Architecture:
 ---     • File persistence via dofile() and io.open()
@@ -38,13 +38,12 @@ local UISettings = {}
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEFAULTS (single source of truth)
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Read from _G.UIConfig if available, else hardcoded fallback. UIConfig is
----   set by config_loader.load_ui_config() right before it requires THIS module
----   (see shared/utils/config/config_loader.lua:67-70), so under the normal
----   load path UIConfig is always present here. The hardcoded fallback only
----   matters if some other code path requires this module before UIConfig is
----   loaded -- in that case the values still match UI_CONFIG.lua, so the file
----   persisted to disk is consistent.
+---   Read from _G.UIConfig if available, else hardcoded fallback. Computed once,
+---   on the first require in a sandbox. ConfigLoader.load_ui_config() sets
+---   _G.UIConfig right before it requires this module. Entries that require
+---   UI_MANAGER before config_loader (WAR, BST, PUP) reach this file first, so
+---   the fallback is used there. The fallback visibility flags match
+---   UI_CONFIG.lua, but the position (1600, 300) does not.
 
 local function compute_defaults()
     local uc  = _G.UIConfig or {}
@@ -81,9 +80,9 @@ local D = compute_defaults()
 ---   FILE PERSISTENCE
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Get absolute path to settings file (per character)
+--- Absolute path of the per-character settings file
+--- @return string Path to [CharName]/config/ui_settings.lua
 local function get_settings_path()
-    -- Detect character name from player data
     local char_name = player and player.name or 'Tetsouo'
 
     -- Save in character's own config directory (using dynamic path)
@@ -108,10 +107,10 @@ end
 
 --- Save settings to file
 --- @param settings table Settings to save
+--- @return boolean True if the file was written
 local function save_to_file(settings)
     local file_path = get_settings_path()
 
-    -- Write settings to file
     local file = io.open(file_path, 'w')
     if file then
         file:write('-- UI Settings (auto-generated)\n')
@@ -173,7 +172,6 @@ elseif _G.UI_SETTINGS == nil then
     -- back into the module-local defaults table.
     _G.UI_SETTINGS = {}
     for k, v in pairs(D) do _G.UI_SETTINGS[k] = v end
-    -- Save defaults to file
     save_to_file(_G.UI_SETTINGS)
 end
 -- If file doesn't exist but _G.UI_SETTINGS exists, keep the global (in-session changes)
@@ -182,6 +180,7 @@ end
 ---   SETTINGS ACCESS - Position
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- @return table {x, y} saved HUD position
 function UISettings.get_position()
     return {
         x = _G.UI_SETTINGS.pos_x or D.pos_x,
@@ -189,6 +188,9 @@ function UISettings.get_position()
     }
 end
 
+--- Save the HUD position (floored to integers)
+--- @param x number
+--- @param y number
 function UISettings.set_position(x, y)
     _G.UI_SETTINGS.pos_x = math.floor(x)
     _G.UI_SETTINGS.pos_y = math.floor(y)
@@ -199,46 +201,56 @@ end
 ---   SETTINGS ACCESS - Visibility
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- @return boolean True unless the HUD was explicitly disabled
 function UISettings.get_enabled()
     return _G.UI_SETTINGS.enabled ~= false
 end
 
+--- @param value boolean
 function UISettings.set_enabled(value)
     _G.UI_SETTINGS.enabled = value
     save_to_file(_G.UI_SETTINGS)
 end
 
+--- @return boolean True only if explicitly enabled
 function UISettings.get_show_header()
     return _G.UI_SETTINGS.show_header == true
 end
 
+--- @param value boolean
 function UISettings.set_show_header(value)
     _G.UI_SETTINGS.show_header = value
     save_to_file(_G.UI_SETTINGS)
 end
 
+--- @return boolean True unless explicitly disabled
 function UISettings.get_show_legend()
     return _G.UI_SETTINGS.show_legend ~= false
 end
 
+--- @param value boolean
 function UISettings.set_show_legend(value)
     _G.UI_SETTINGS.show_legend = value
     save_to_file(_G.UI_SETTINGS)
 end
 
+--- @return boolean True only if explicitly enabled
 function UISettings.get_show_column_headers()
     return _G.UI_SETTINGS.show_column_headers == true
 end
 
+--- @param value boolean
 function UISettings.set_show_column_headers(value)
     _G.UI_SETTINGS.show_column_headers = value
     save_to_file(_G.UI_SETTINGS)
 end
 
+--- @return boolean True only if explicitly enabled
 function UISettings.get_show_footer()
     return _G.UI_SETTINGS.show_footer == true
 end
 
+--- @param value boolean
 function UISettings.set_show_footer(value)
     _G.UI_SETTINGS.show_footer = value
     save_to_file(_G.UI_SETTINGS)
@@ -248,6 +260,7 @@ end
 ---   SETTINGS ACCESS - Background
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- @return table {r, g, b, a, visible}
 function UISettings.get_background()
     return {
         r = _G.UI_SETTINGS.bg_r or D.bg_r,
@@ -258,6 +271,10 @@ function UISettings.get_background()
     }
 end
 
+--- @param r number Red (0-255)
+--- @param g number Green (0-255)
+--- @param b number Blue (0-255)
+--- @param a number Alpha (0-255)
 function UISettings.set_background(r, g, b, a)
     _G.UI_SETTINGS.bg_r = r
     _G.UI_SETTINGS.bg_g = g
@@ -266,6 +283,7 @@ function UISettings.set_background(r, g, b, a)
     save_to_file(_G.UI_SETTINGS)
 end
 
+--- @param value boolean
 function UISettings.set_background_visible(value)
     _G.UI_SETTINGS.bg_visible = value
     save_to_file(_G.UI_SETTINGS)
@@ -275,6 +293,7 @@ end
 ---   SETTINGS ACCESS - Font
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- @return table {size, name}
 function UISettings.get_font()
     return {
         size = _G.UI_SETTINGS.font_size or D.font_size,
@@ -282,6 +301,9 @@ function UISettings.get_font()
     }
 end
 
+--- Save font settings; a nil argument leaves that field unchanged
+--- @param name string|nil Font name
+--- @param size number|nil Font size
 function UISettings.set_font(name, size)
     if name then
         _G.UI_SETTINGS.font_name = name
@@ -296,6 +318,7 @@ end
 ---   SETTINGS ACCESS - Sections
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- @return table {spells, enhancing, job_abilities, weapons, modes} booleans
 function UISettings.get_sections()
     return {
         spells = _G.UI_SETTINGS.section_spells ~= false,
@@ -306,6 +329,8 @@ function UISettings.get_sections()
     }
 end
 
+--- @param section_name string Suffix of a section_* key (e.g. 'spells')
+--- @param value boolean
 function UISettings.set_section(section_name, value)
     local key = 'section_' .. section_name
     _G.UI_SETTINGS[key] = value

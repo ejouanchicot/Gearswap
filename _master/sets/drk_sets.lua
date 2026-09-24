@@ -1,28 +1,33 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   DRK Equipment Sets - Dark Knight DPS Configuration
----  ═══════════════════════════════════════════════════════════════════════════
----   Complete equipment configuration for Dark Knight DPS role with optimized
----   offensive gear and Aftermath Lv.3 support.
----   Features:
----     • Aftermath Lv.3 detection (Liberator mythic weapon)
----     • Store TP optimization for fast TP gain
----     • Weaponskill optimization (Torcleaver, Entropy, Resolution, Cross Reaper)
----     • Dark Magic effectiveness (Drain, Aspir, Absorb spells)
----     • Last Resort enhancement
----     • Physical and Magical damage mitigation (PDT/MDT modes)
----    Architecture:
----     • Equipment definitions (Ankou's Capes, rings, weapons)
----     • Weapon sets (Liberator, Caladbolg, Apocalypse, Naegling, etc.)
----     • Idle sets (Normal, PDT, Town)
----     • Engaged sets (Base DPS, PDT, Aftermath Lv.3)
----     • Precast sets (Job abilities, Fast Cast, Weaponskills)
----     • Midcast sets (Dark Magic, Absorb spells, Dread Spikes, Drain/Aspir)
----     • Movement sets (Base speed, Adoulin)
----   @file    sets/drk_sets.lua
----   @author  Tetsouo
----   @version 3.0 - Simplified Engaged Structure + AM3 Support
----   @date    Updated: 2025-11-10
----  ═════════════════════════════════════════════════════════════════════════
+---============================================================================
+--- DRK Equipment Sets - Dark Knight DPS Configuration
+---============================================================================
+--- Complete equipment configuration for Dark Knight DPS role with optimized
+--- offensive gear and Aftermath Lv.3 support.
+---
+--- Features:
+---   • Aftermath Lv.3 engaged set (Liberator mythic weapon)
+---   • Store TP optimization for fast TP gain
+---   • Weaponskill sets (Torcleaver, Entropy, Origin, Resolution, Quietus,
+---     Judgment, Savage Blade)
+---   • Dark Magic effectiveness (Drain, Aspir, Absorb spells, Dread Spikes)
+---   • Job ability gear (Last Resort, Nether Void, Dark Seal, etc.)
+---   • Physical damage mitigation (PDT idle/engaged)
+---
+--- Architecture:
+---   • Equipment definitions (Ankou's Capes, rings)
+---   • Weapon sets (Caladbolg, Liberator, Apocalypse, Redemption, Foenaria,
+---     Tokko, Lycurgos, Naegling, Loxotic)
+---   • Idle sets (Normal, PDT, Town)
+---   • Engaged sets (Base DPS, PDT, AM3)
+---   • Precast sets (Job abilities, Fast Cast, Weaponskills)
+---   • Midcast sets (Dark Magic, Enfeebling, Absorb, Dread Spikes, Drain/Aspir)
+---   • Movement and buff sets (Base speed, Doom, Dark Seal, Nether Void)
+---
+--- @file    sets/drk_sets.lua
+--- @author  Tetsouo
+--- @version 3.0
+--- @date    Created: 2025-11-03 | Updated: 2025-11-10
+---============================================================================
 
 sets = {}
 
@@ -100,7 +105,7 @@ sets['Loxotic'] = {main = 'Loxotic Mace +1', sub = 'Blurred Shield +1'}
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- • Base Idle Set (Refresh/Regen focus)
---   NOTE: main/sub will be applied by customize_idle_set based on state.MainWeapon
+--   NOTE: main/sub are applied by customize_idle_set (SetBuilder.build_idle_set)
 sets.idle = {
     ammo = {name = 'Seeth. Bomblet +1', augments = {'Path: A'}},
     head = "Sakpata's Helm",
@@ -185,7 +190,7 @@ sets.engaged.PDT = set_combine(sets.engaged, {
 
 -- • Aftermath Lv.3 (Liberator mythic) - auto-selected by set_builder.lua
 -- when buff 272 (AM3) is active AND main weapon is Liberator.
--- See: shared/jobs/drk/functions/logic/set_builder.lua:53
+-- See: shared/jobs/drk/functions/logic/set_builder.lua select_engaged_base()
 sets.engaged.AM3 = set_combine(sets.engaged, {
     ammo = 'Aurgelmir Orb +1',
     head = 'Hjarrandi Helm',

@@ -5,12 +5,11 @@
 --- Delegates all specialized logic to dedicated modules for maximum maintainability.
 ---
 --- Features:
----   • Modular architecture (12 hooks + 4 logic modules)
----   • Tank/DD hybrid gear automation (Tank/DD/PDT/MDT modes)
----   • Ward spell rotation support (Vallation, Valiance, Pflug)
----   • Rune buff tracking (3-rune rotation management)
----   • Gambit/Rayke rune consumption logic
----   • Dark Magic optimization (Drain, Aspir, Stun)
+---   • Modular architecture (11 hook modules + 4 logic modules)
+---   • Tank gear automation (HybridMode PDT/MDT)
+---   • Rune selection from state.RuneMode (rune_manager)
+---   • Blue Magic AOE spell rotation (RUN/BLU, aoe_manager)
+---   • Cure set selection by target (cure_set_builder)
 ---   • JobChangeManager integration (anti-collision)
 ---   • UI + Keybind system
 ---
@@ -20,7 +19,7 @@
 --- Modules:
 ---   • 11 Hooks: PRECAST, MIDCAST, AFTERCAST, IDLE, ENGAGED, STATUS, BUFFS,
 ---               COMMANDS, MOVEMENT, LOCKSTYLE, MACROBOOK
----   • 4 Logic: ward_manager, rune_buff_tracker, gambit_manager, set_builder
+---   • 4 Logic: aoe_manager, cure_set_builder, rune_manager, set_builder
 ---
 --- @file    Tetsouo_RUN.lua
 --- @author  Tetsouo
@@ -28,11 +27,12 @@
 --- @date    Created: 2025-11-02
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+
 ---============================================================================
+
 ---============================================================================
 --- INITIALIZATION
 ---============================================================================
 
---- Load global configurations with fallbacks
+-- Load global configurations with fallbacks
 local LockstyleConfig_ok, LockstyleConfig = pcall(require, 'Tetsouo/config/LOCKSTYLE_CONFIG')
 if not LockstyleConfig_ok then LockstyleConfig = nil end
 LockstyleConfig = LockstyleConfig or {
@@ -48,14 +48,19 @@ LockstyleConfig = LockstyleConfig or {
 local ConfigLoader = require('shared/utils/config/config_loader')
 local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'RUN')
 
--- Load region configuration (must load before message system for color codes)
+-- Load region configuration. message_colors captures _G.RegionConfig once,
+-- when it is first required - ConfigLoader above already required it, so
+-- this assignment comes too late for the region warning color.
 local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig
 end
 
+--- GearSwap entry hook: loads Mote-Include, the shared systems and the RUN modules.
+--- Called by GearSwap each time this job file is loaded.
+--- @return void
 function get_sets()
-    -- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+    -- PERFORMANCE PROFILING (enable with: //gs c perf start)
     local Profiler = require('shared/utils/debug/performance_profiler')
     Profiler.start('get_sets')
 
@@ -96,7 +101,9 @@ function get_sets()
     -- aoe_manager reads _G.BluMagicConfig when first required (//gs c aoe)
     _G.BluMagicConfig = require('Tetsouo/config/run/RUN_BLU_MAGIC')
 
-    -- (DISABLED FOR TESTING)
+    -- Disabled: RUN_PRECAST therefore gets an empty RUNTPConfig. Note the
+    -- global name below does not match the one RUN_PRECAST reads (RUNTPConfig);
+    -- RUN_TP_CONFIG.lua sets _G.RUNTPConfig itself when required.
     --_G.RUNTPCONFIG = require('Tetsouo/config/run/RUN_TP_CONFIG')
     --_G.WardConfig = require('Tetsouo/config/run/RUN_WARD_CONFIG')
 
@@ -127,6 +134,7 @@ end
 ---
 --- @param newSubjob string New subjob code
 --- @param oldSubjob string Old subjob code
+--- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
     -- Re-initialize JobChangeManager with RUN-specific functions
     local success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
@@ -153,6 +161,10 @@ end
 --- SETUP FUNCTIONS
 ---============================================================================
 
+--- Configure states, keybinds (deferred 0.5s), UI and the initial macrobook/lockstyle.
+--- Called by Mote-Include from init_include() (inside include('Mote-Include.lua'),
+--- before init_gear_sets) and again on every subjob change, before job_sub_job_change().
+--- @return void
 function user_setup()
     -- RUN-specific states (defines all states including HybridMode)
     local RUNStates = require('Tetsouo/config/run/RUN_STATES')
@@ -198,8 +210,8 @@ function user_setup()
         -- Trigger initial macrobook/lockstyle with delay.
         -- user_setup() runs inside include('Mote-Include.lua'), before the
         -- facade defines select_default_macro_book / select_default_lockstyle,
-        -- and RUN's keybind intro does not load them early as other jobs' do:
-        -- check once get_sets() has finished (same pattern as BRD).
+        -- and RUN's keybinds (whose intro loads them early in other jobs) are
+        -- deferred 0.5s: check once get_sets() has finished (same pattern as BRD).
         coroutine.schedule(function()
             if player and select_default_macro_book and select_default_lockstyle then
                 select_default_macro_book()
@@ -217,12 +229,11 @@ function user_setup()
     pcall(require, 'shared/utils/dualbox/dualbox_manager')
 
     -- ==========================================================================
-    -- WARP SYSTEM INITIALIZATION (REMOVED - Redundant with full GearSwap reload)
+    -- WARP SYSTEM INITIALIZATION (not needed here)
     -- ==========================================================================
-    -- WarpInit previously handled equipment locking during warp/teleport actions.
-    -- With JobChangeManager's full reload strategy (windower.send_command('lua reload gearswap')),
-    -- warp protection is no longer necessary as any state is cleared on reload.
-    -- Removed for consistency across all 15 jobs (no job uses WarpInit anymore).
+    -- WarpInit.init() is called for every job by INIT_SYSTEMS.lua; no entry
+    -- file calls it directly any more. The old job-level call is kept below,
+    -- commented out.
     --
     -- local warp_success, WarpInit = pcall(require, 'shared/utils/warp/warp_init')
     -- if warp_success and WarpInit then
@@ -236,18 +247,27 @@ end
 
 --- Called by Mote-Include after state changes
 --- Updates the UI to reflect current state values
+--- @param cmdParams table Parameters passed to Mote's handle_update
+--- @param eventArgs table Mote event arguments (unused)
+--- @return void
 function job_update(cmdParams, eventArgs)
-    -- Update UI when states change (F9, F10, etc.)
+    -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI and KeybindUI.update then
         KeybindUI.update()
     end
 end
 
+--- Load the RUN equipment sets.
+--- Called by Mote-Include at the end of init_include(), after user_setup().
+--- @return void
 function init_gear_sets()
     include('sets/run_sets.lua')
 end
 
+--- Called by GearSwap when this job file is unloaded (job change, reload).
+--- Cancels pending job-change operations and unbinds the job keys.
+--- @return void
 function file_unload()
     -- Cancel pending job change operations (debounce timer + lockstyles)
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')

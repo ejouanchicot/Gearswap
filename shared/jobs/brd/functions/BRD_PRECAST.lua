@@ -1,15 +1,18 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BRD Precast Module - Precast Action Handling & Fast Cast Optimization
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all precast actions for Bard job:
----   • Fast Cast optimization (cap 80%)
----   • Song precast (Casting Time reduction)
----   • Job ability precast (Soul Voice, Nightingale, Troubadour, Pianissimo)
----   • Honor March protection system (Marsyas lock)
----   • Song refinement (auto-downgrade debuff songs on cooldown)
----   • Security layers (debuff guard, cooldown check)
+---   Precast pipeline for Bard (precast gear itself comes from the sets
+---   through Mote):
+---   • PrecastGuard first (debuffs that block the action)
+---   • Song refinement (downgrade a song on recast) BEFORE the cooldown check
+---   • CooldownChecker for abilities and spells
+---   • Pianissimo inserted for a song aimed at another player
+---   • Marcato inserted before the configured song (MarcatoSong state)
+---   • WSPrecastHandler for weaponskills
+---   • Instrument lock for the songs listed in InstrumentLockConfig
+---   • Precast set debug display (job_post_precast)
 ---
----   @file    BRD_PRECAST.lua
+---   @file    shared/jobs/brd/functions/BRD_PRECAST.lua
 ---   @author  Tetsouo
 ---   @version 2.0
 ---   @date    Created: 2025-10-13
@@ -75,7 +78,10 @@ end
 ---   PRECAST HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Extracted from job_precast: the `spell.type == 'BardSong'` branch.
+--- Song aimed at another player: cancel it, send Pianissimo, then re-send the
+--- song once Pianissimo is up (eventArgs.cancel is set when that happens).
+--- @param spell table Spell information from GearSwap
+--- @param eventArgs table Event arguments
 local function job_precast_bardsong(spell, eventArgs)
     local target_name = nil
 
@@ -118,7 +124,9 @@ local function job_precast_bardsong(spell, eventArgs)
     end
 end
 
---- Extracted from job_precast: the `spell.type == 'BardSong' and InstrumentLockConfig.requires_l` branch.
+--- Equip the song's required instrument and raise the lock flags that keep it
+--- on for the whole cast (cleared in BRD_AFTERCAST).
+--- @param spell table Spell information from GearSwap
 local function job_precast_bardsong_2(spell)
     local instrument = InstrumentLockConfig.get_instrument(spell.english)
 
@@ -190,6 +198,11 @@ local function try_marcato(spell, eventArgs)
     return true
 end
 
+--- Precast hook: guard, song refinement, cooldown, Pianissimo/Marcato, WS, instrument lock.
+--- @param spell table Spell information from GearSwap
+--- @param action table Action information from GearSwap
+--- @param spellMap string Spell mapping from Mote-Include
+--- @param eventArgs table Event arguments (eventArgs.cancel for cancellation)
 function job_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
@@ -239,20 +252,15 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----   Apply final gear adjustments before equipping
+---   Apply final gear adjustments before equipping (WS TP gear, precast debug)
 ---   @param spell table Spell/ability data
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping
 ---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
     if WSPrecastHandler then
         WSPrecastHandler.apply_tp_gear(spell)
-    end
-
-    -- Nightingale active - even faster cast time for songs
-    if buffactive['Nightingale'] and spell.skill == 'Singing' then
-    -- Keep precast gear as-is (instant cast with Nightingale + Fast Cast cap)
     end
 
     -- ══════════════════════════════════════════════════════════════════════════

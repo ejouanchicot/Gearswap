@@ -3,10 +3,10 @@
 ---============================================================================
 --- Special elemental spells (Comet, Meteor, Impact)
 ---
---- @file elemental_special.lua
+--- @file shared/data/magic/elemental/elemental_special.lua
 --- @author Tetsouo
 --- @version 2.0 - Improved alignment
---- @date Created: 2025-10-30 | Updated: 2025-11-06 | Updated: 2025-10-31
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @verified bg-wiki.com (2025-10-31)
 ---
 --- NOTES:

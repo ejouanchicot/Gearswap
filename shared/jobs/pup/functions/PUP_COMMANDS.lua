@@ -10,19 +10,19 @@
 ---   • rdylist - List all available Ready Moves with index numbers
 ---   • rdymove [1-6] - Execute Ready Move by index
 ---
----   Uses centralized MessageFormatter for all messages (professional multi-color).
+---   NOTE: these commands are BST's (ecosystems, broths, Ready moves), not
+---   automaton commands. The logic/ modules they need do not exist and the
+---   error_pup_* / show_pup_* formatter functions are not defined.
 ---
----   @file    jobs/pup/functions/PUP_COMMANDS.lua
+---   @file    shared/jobs/pup/functions/PUP_COMMANDS.lua
 ---   @author  Tetsouo
 ---   @version 2.0
----   @date    Created: 2025-10-17
----   @date    Updated: 2025-10-18 - Standardized all messages with MessageFormatter
+---   @date    Created: 2025-10-17 | Updated: 2025-10-18
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---   DEPENDENCIES - LAZY LOADING (loaded on first command)
 ---  ═══════════════════════════════════════════════════════════════════════════
--- Command handlers loaded on first command
 local MessageFormatter = nil
 local CommonCommands = nil
 local WatchdogCommands = nil
@@ -92,9 +92,7 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Display broth counts in inventory
----   @return void
 local function display_broth_count()
-    -- Load resources for item lookup
     local res = require('resources')
 
     -- Get player items
@@ -136,7 +134,6 @@ end
 ---   Handle job-specific commands
 ---   @param cmdParams table Command parameters (array of strings)
 ---   @param eventArgs table Event arguments (modified if command handled)
----   @return void
 function job_self_command(cmdParams, eventArgs)
     if not cmdParams or #cmdParams == 0 then
         return
@@ -161,7 +158,6 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     -- DUAL-BOXING: Handle job request from MAIN
-    -- ══════════════════════════════════════════════════════════════════════════
     if command == 'requestjob' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         DualBoxManager.handle_job_request()

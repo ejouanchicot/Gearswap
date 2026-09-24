@@ -15,11 +15,11 @@
 ---   3. Read by the WS messages (full mode only)
 ---
 --- Database Coverage:
----   • SWORD (22 WS)
+---   • SWORD (24 WS, 6 of them non-sword copies)
 ---   • DAGGER (18 WS)
 ---   • H2H (17 WS)
 ---   • GREATSWORD (15 WS)
----   • GREATAXE (18 WS)
+---   • GREATAXE (15 WS)
 ---   • AXE (15 WS)
 ---   • SCYTHE (15 WS)
 ---   • POLEARM (15 WS)
@@ -28,9 +28,9 @@
 ---   • STAFF (18 WS)
 ---   • CLUB (17 WS)
 ---   • ARCHERY (12 WS)
----   TOTAL: 212 Weapon Skills
+---   TOTAL: 211 file entries, 204 distinct names (7 WS are filed twice)
 ---
---- @file UNIVERSAL_WS_DATABASE.lua
+--- @file shared/data/weaponskills/UNIVERSAL_WS_DATABASE.lua
 --- @author Tetsouo
 --- @version 2.3 - PERFORMANCE: Lazy loading to reduce job load time
 --- @date Created: 2025-10-29
@@ -102,7 +102,7 @@ local function merge_weapon_db(config)
     for ws_name, ws_data in pairs(weapon_db.weaponskills) do
         ws_data.weapon_type = config.type
         ws_data.weapon_file = config.file
-        -- Root level (jobs access WS_DB['Fast Blade']) + .weaponskills (helpers)
+        -- Root-level copy has no reader in the repo; resolve() reads .weaponskills
         _G.WS_DATABASE[ws_name] = ws_data
         _G.WS_DATABASE.weaponskills[ws_name] = ws_data
         ws_count = ws_count + 1

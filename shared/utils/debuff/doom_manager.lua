@@ -9,7 +9,7 @@
 ---   • Locks 4 critical slots (neck, ring1, ring2, waist) during Doom
 ---   • Unlocks slots automatically when Doom is removed
 ---   • Safety unlock when player dies (prevents stuck locked slots after raise)
----   • Centralized logic - no code duplication across 15 jobs
+---   • Centralized logic shared by every job that wires it (see callers)
 ---   • Integrates with MessageFormatter for user feedback
 ---
 --- Usage (in job_buff_change):
@@ -54,14 +54,6 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 local DoomManager = {}
 
 ---============================================================================
---- CONSTANTS
----============================================================================
-
--- Slots that must be locked when Doom is active
--- These slots contain Doom resistance/removal gear
-local DOOM_SLOTS = {'neck', 'ring1', 'ring2', 'waist'}
-
----============================================================================
 --- CORE FUNCTIONS
 ---============================================================================
 
@@ -73,7 +65,6 @@ local DOOM_SLOTS = {'neck', 'ring1', 'ring2', 'waist'}
 --- @param gain boolean True if buff gained, false if lost
 --- @return boolean True if Doom was handled (caller should return), false otherwise
 function DoomManager.handle_buff_change(buff, gain)
-    -- Only handle 'doom' buff
     if buff ~= 'doom' then
         return false
     end
@@ -83,27 +74,21 @@ function DoomManager.handle_buff_change(buff, gain)
     local is_doomed = buffactive['doom']
 
     if is_doomed then
-        -- DOOM DETECTED: Equip resistance gear and lock slots
-
-        -- Validate that Doom set exists
         if not sets.buff or not sets.buff.Doom then
             MessageFormatter.show_error("ERROR: sets.buff.Doom not defined! Cannot equip Doom gear.")
             return true -- Still return true to prevent other processing
         end
 
-        -- Equip Doom resistance/removal gear
         equip(sets.buff.Doom)
 
-        -- Lock critical slots to prevent other gear swaps from overwriting Doom gear
-        -- This is CRITICAL - without locking, midcast/aftercast/idle will overwrite
+        -- Lock AFTER equipping (equip() honours the disable table): without the
+        -- lock, the next midcast/aftercast/idle swap would overwrite the Doom gear.
         disable('neck', 'ring1', 'ring2', 'waist')
 
-        -- User feedback
         MessageFormatter.show_warning("DOOM detected! Equipping Doom gear.")
     else
-        -- DOOM REMOVED: Unlock slots and restore normal gear
-
-        -- Unlock slots first (order matters!)
+        -- Unlock first: equip() skips disabled slots, so re-equipping before
+        -- enable() would leave the Doom pieces on.
         enable('neck', 'ring1', 'ring2', 'waist')
 
         -- Restore appropriate gear based on current status
@@ -112,12 +97,9 @@ function DoomManager.handle_buff_change(buff, gain)
             handle_equipping_gear(player.status)
         end
 
-        -- User feedback
         MessageFormatter.show_success("Doom removed.")
     end
 
-    -- Return true to signal that Doom was handled
-    -- Caller should return immediately to prevent other buff processing
     return true
 end
 
@@ -127,35 +109,26 @@ end
 ---
 --- @param newStatus string New status ("Idle", "Engaged", "Resting", "Dead")
 --- @param oldStatus string Previous status
---- @return void
 function DoomManager.handle_status_change(newStatus, oldStatus)
     -- EDGE CASE FIX: Player died with Doom active
     -- Problem: When player dies, buffs are cleared but disable() persists
     -- Result: After raise, slots are still locked but Doom is gone
     -- Solution: Always unlock Doom slots when transitioning from Dead status
 
-    -- If player just died, unlock slots (prevents stuck locks)
     if newStatus == 'Dead' then
-        -- Player just died - unlock Doom slots immediately
-        -- This prevents slots from staying locked after raise
         enable('neck', 'ring1', 'ring2', 'waist')
-        -- No message needed (player is dead, won't see it anyway)
         return
     end
 
     -- If player was dead and is now alive (raise/homepoint)
     if oldStatus == 'Dead' and newStatus ~= 'Dead' then
-        -- Safety unlock: Ensure Doom slots are not stuck locked
         enable('neck', 'ring1', 'ring2', 'waist')
 
-        -- Restore appropriate gear for new status
-        -- Only restore if Doom is not currently active
         if not buffactive['doom'] then
             if handle_equipping_gear then
                 handle_equipping_gear(newStatus)
             end
         end
-        -- No message needed (silent safety operation)
     end
 end
 
@@ -168,7 +141,6 @@ function DoomManager.validate_doom_set()
         return false
     end
 
-    -- Check if set is not empty (has at least one piece of gear)
     local has_gear = false
     for slot, item in pairs(sets.buff.Doom) do
         has_gear = true

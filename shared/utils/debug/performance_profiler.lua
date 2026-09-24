@@ -7,7 +7,10 @@
 --- Usage:
 ---   //gs c perf start   - Enable profiling
 ---   //gs c perf stop    - Disable profiling
+---   //gs c perf toggle  - Toggle profiling
 ---   //gs c perf status  - Show current status
+---   The on/off flag is a marker file (data/.profiler_enabled), so it
+---   survives reloads and takes effect from the next get_sets().
 ---
 --- In code:
 ---   local Profiler = require('shared/utils/debug/performance_profiler')
@@ -21,13 +24,12 @@
 --- @file    shared/utils/debug/performance_profiler.lua
 --- @author  Tetsouo
 --- @version 1.0
---- @date    2025-11-15
+--- @date    Created: 2025-11-15
 ---============================================================================
 
 local Profiler = {}
 
--- Import message system (LAZY LOADED for performance)
--- Only loaded when actually showing profiling messages
+-- Message system, loaded on the first profiling message only
 local M = nil
 local function get_M()
     if not M then
@@ -97,6 +99,7 @@ function Profiler.disable()
 end
 
 --- Toggle profiling on/off
+--- @return boolean New enabled state
 function Profiler.toggle()
     if _G.PERFORMANCE_PROFILING.enabled then
         Profiler.disable()
@@ -129,7 +132,7 @@ end
 --- Determine color based on performance timing
 --- @param elapsed number Elapsed time in milliseconds
 --- @param checkpoint_type string Type: 'main', 'job', 'total_main', 'total_job'
---- @return string Color code (green, yellow, red)
+--- @return string Color name ('green', 'yellow', 'red'; 'cyan' for an unknown type)
 local function get_performance_color(elapsed, checkpoint_type)
     if checkpoint_type == 'main' then
         -- Main checkpoints (cumulative): green < 50ms, yellow 50-100ms, red > 100ms
