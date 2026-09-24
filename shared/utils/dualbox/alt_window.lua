@@ -164,6 +164,13 @@ function AltWindow.refresh()
     display:show()
 end
 
+--- Whether the window is on screen now (its orders need no chat line then).
+--- @return boolean
+function AltWindow.is_shown()
+    local display = _G._alt_window_display
+    return display ~= nil and display:visible() == true
+end
+
 --- Save the position if the window was dragged since the last check.
 ---
 --- Polled from the refresh loop rather than a `mouse` event on purpose: an
