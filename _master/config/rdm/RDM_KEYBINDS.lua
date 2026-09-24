@@ -1,34 +1,33 @@
 ---============================================================================
 --- RDM Keybind Configuration
 ---============================================================================
---- Defines all keybindings for Red Mage job.
+--- RDM keys. Data only: KeybindManager (shared/utils/keybinds) binds,
+--- filters, refreshes and unbinds them. Entry fields are listed in
+--- keybind_manager.lua.
 ---
---- @file config/rdm/RDM_KEYBINDS.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-12
+--- @file    config/rdm/RDM_KEYBINDS.lua
+--- @author  Tetsouo
+--- @version 2.0
+--- @date    Created: 2025-10-12 | Updated: 2026-09-24 (KeybindManager)
 ---============================================================================
 
 local RDMKeybinds = {}
 
--- Load message formatter
-local MessageFormatter = require('shared/utils/messages/message_formatter')
-
--- Keybind definitions - NUMPAD ONLY (Numpad + Alt+Numpad)
+-- Keybind definitions - numpad only (Ctrl+Numpad, Apps+Numpad for Storm and AutoMedicine)
 -- Format: { key = "key", command = "gs_command", desc = "description", state = "state_name", subjob = "required_subjob" }
 RDMKeybinds.binds = {
     ---========================================================================
-    --- NUMPAD KEYS (States - 10 touches)
+    --- CTRL+NUMPAD DIGITS (States)
     ---========================================================================
 
-    -- Weapon & Combat States (1-5)
+    -- Weapon & Combat States
     { key = "^numpad1", command = "cyclestate MainWeapon",     desc = "Main Weapon",     state = "MainWeapon" },
     { key = "^numpad2", command = "cyclestate SubWeapon",      desc = "Sub Weapon",      state = "SubWeapon" },
     { key = "^numpad6", command = "cyclestate EngagedMode",    desc = "Engaged Mode",    state = "EngagedMode" },
     { key = "^numpad4", command = "cyclestate IdleMode",       desc = "Idle Mode",       state = "IdleMode" },
     { key = "^numpad5", command = "cyclestate CombatMode",     desc = "Combat Mode",     state = "CombatMode" },
 
-    -- Magic States (6-9, 0)
+    -- Magic States
     { key = "^numpad3", command = "cyclestate EnfeebleMode",   desc = "Enfeeble Mode",   state = "EnfeebleMode" },
     { key = "^numpad7", command = "cyclestate NukeMode",       desc = "Nuke Mode",       state = "NukeMode" },
     { key = "^numpad0", command = "cyclestate SaboteurMode",   desc = "Saboteur Mode",   state = "SaboteurMode" },
@@ -36,128 +35,16 @@ RDMKeybinds.binds = {
     { key = "#numpad1", command = "cyclestate Storm",          desc = "Storm (SCH)",     state = "Storm",    subjob = "SCH" },
 
     ---========================================================================
-    --- ALT+NUMPAD KEYS (Enhancement States & Cast - 10 touches)
+    --- CTRL+NUMPAD OPERATORS (Enhancement States)
     ---========================================================================
 
-    -- Enhancement Spell Selection (1-5)
+    -- Enhancement Spell Selection
     { key = "^numpad.", command = "cyclestate EnSpell",       desc = "Enspell",         state = "EnSpell" },
     { key = "^numpad+", command = "cyclestate GainSpell",     desc = "Gain Spell",      state = "GainSpell" },
     { key = "^numpad-", command = "cyclestate Barspell",      desc = "Bar Element",     state = "Barspell" },
     { key = "^numpad*", command = "cyclestate BarAilment",    desc = "Bar Ailment",     state = "BarAilment" },
     { key = "^numpad/", command = "cyclestate Spike",         desc = "Spike",           state = "Spike" },
     { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
-
-    -- Cast Enhancement Spells from states (6-9, 0)
 }
 
----============================================================================
---- KEYBIND MANAGEMENT
----============================================================================
-
---- Get filtered keybinds based on current subjob
---- Filters out subjob-specific binds that don't match current subjob.
----
---- @return table Filtered keybinds appropriate for current subjob
-function RDMKeybinds.get_active_binds()
-    local active_binds = {}
-    local current_subjob = player and player.sub_job or nil
-
-    for _, bind in ipairs(RDMKeybinds.binds) do
-        -- Include bind if no subjob requirement, or if subjob matches
-        if not bind.subjob or bind.subjob == current_subjob then
-            table.insert(active_binds, bind)
-        end
-    end
-
-    return active_binds
-end
-
---- Apply all keybinds
-function RDMKeybinds.bind_all()
-    if not RDMKeybinds.binds or #RDMKeybinds.binds == 0 then
-        MessageFormatter.show_error("RDM: No keybinds defined")
-        return false
-    end
-
-    -- Unbind only the keys that will NOT be bound back. Dropping a conditional
-    -- bind left over from another subjob is the whole point of this pass: it
-    -- would otherwise stay bound to a state this subjob never creates, and do
-    -- nothing when pressed.
-    --
-    -- The keys we are about to bind are deliberately left alone. A bind
-    -- overwrites an existing one, so unbinding first gains nothing and opens a
-    -- window where the key is down. That window is where ^numpad9 went missing
-    -- after a reload: its bind is sent unconditionally every time, and
-    -- `//gs c cyclestate HybridMode` still answered while the key was dead - so
-    -- the key had been unbound and the bind that should have followed never
-    -- took effect.
-    local active_binds = RDMKeybinds.get_active_binds()
-    local keeping = {}
-    for _, bind in ipairs(active_binds) do
-        keeping[bind.key] = true
-    end
-    for _, bind in ipairs(RDMKeybinds.binds) do
-        if not keeping[bind.key] then
-            pcall(send_command, 'unbind ' .. bind.key)
-        end
-    end
-
-    local bound_count = 0
-    for _, bind in ipairs(active_binds) do
-        local success, error_msg = pcall(send_command, 'bind ' .. bind.key .. ' gs c ' .. bind.command)
-        if success then
-            bound_count = bound_count + 1
-        else
-            MessageFormatter.show_error('[RDM] Keybind Error on ' .. bind.key .. ': ' .. tostring(error_msg))
-        end
-    end
-
-    -- Show intro message if successful
-    if bound_count > 0 then
-        RDMKeybinds.show_intro()
-        return true
-    else
-        MessageFormatter.show_error("RDM: Failed to bind any keys")
-        return false
-    end
-end
-
---- Remove all keybinds
-function RDMKeybinds.unbind_all()
-    if not RDMKeybinds.binds then return end
-
-    for _, bind in pairs(RDMKeybinds.binds) do
-        pcall(send_command, 'unbind ' .. bind.key)
-    end
-
-    MessageFormatter.show_success("RDM keybinds unloaded.")
-    return true
-end
-
---- Display RDM system intro message with macrobook and lockstyle info
---- @return void
-function RDMKeybinds.show_intro()
-    -- Try to get macro info from RDM_MACROBOOK module
-    local macro_info = nil
-    local success, RDM_MACROBOOK = pcall(require, 'shared/jobs/rdm/functions/RDM_MACROBOOK')
-    if success and RDM_MACROBOOK and RDM_MACROBOOK.get_rdm_macro_info then
-        macro_info = RDM_MACROBOOK.get_rdm_macro_info()
-    end
-
-    -- Try to get lockstyle info from RDM_LOCKSTYLE module
-    local lockstyle_info = nil
-    local lockstyle_success, RDM_LOCKSTYLE = pcall(require, 'shared/jobs/rdm/functions/RDM_LOCKSTYLE')
-    if lockstyle_success and RDM_LOCKSTYLE and RDM_LOCKSTYLE.get_info then
-        lockstyle_info = RDM_LOCKSTYLE.get_info()
-    end
-
-    -- Display formatted intro with macro and lockstyle info (binds for this subjob)
-    local active_binds = RDMKeybinds.get_active_binds()
-    if macro_info or lockstyle_info then
-        MessageFormatter.show_system_intro_complete("RDM SYSTEM LOADED", active_binds, macro_info, lockstyle_info)
-    else
-        MessageFormatter.show_system_intro("RDM SYSTEM LOADED", active_binds)
-    end
-end
-
-return RDMKeybinds
+return require('shared/utils/keybinds/keybind_manager').create('RDM', RDMKeybinds)
