@@ -1,10 +1,11 @@
 ---============================================================================
 --- UI Display Builder - Centralized Job Display Logic
 ---============================================================================
---- Replaces 247 lines of job-specific display duplication with intelligent
---- categorization system. Eliminates monolithic if/elseif job blocks.
+--- Sorts a job's keybinds into the HUD sections (spells, abilities, weapons,
+--- modes) from an explicit `section` field or, failing that, from patterns
+--- matched against the state name. Shared by every job.
 ---
---- @file ui/UI_DISPLAY_BUILDER.lua
+--- @file shared/utils/ui/UI_DISPLAY_BUILDER.lua
 --- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2025-09-26
@@ -12,19 +13,19 @@
 
 local UIDisplayBuilder = {}
 
--- Load dependencies
 local KeybindLoader = require('shared/utils/ui/UI_LOADER')
 
 ---============================================================================
 --- KEYBIND CATEGORIZATION SYSTEM
 ---============================================================================
 
--- State categorization patterns
+-- State categorization patterns (plain substring match via string.find).
+-- mode_patterns are checked first, then spell, ja, weapon.
 local categorization_rules = {
     spell_patterns = {
         "Spell", "Element", "Tier", "Aja", "Storm", "Bar", "EnSpell", "Spike",
         "Gain", "Ecosystem", "species", "RuneElement", "Light", "Dark", "Rune",
-        "BRDRotation", "VictoryMarch",  -- BRD song settings moved from modes
+        "BRDRotation", "VictoryMarch",  -- BRD song settings (no BRDRotation state exists today)
         "Etude",  -- BRD Etude stat buffs (EtudeType: STR/DEX/VIT/AGI/INT/MND/CHR)
         "QuickDraw",  -- COR Quick Draw element selection
         "Roll", "Luzaf",  -- COR Phantom Roll selection (MainRoll, SubRoll, LuzafRing)
@@ -32,7 +33,7 @@ local categorization_rules = {
     },
 
     ja_patterns = {
-        "Step", "BRDSong",  -- Fixed from BRDSlot to BRDSong
+        "Step", "BRDSong",  -- DNC steps, BRD song slots (BRDSong1..5)
         "WS"  -- Weaponskill slots (WS1..WS5), rebuilt per equipped weapon
     },
 
@@ -43,7 +44,7 @@ local categorization_rules = {
 
     mode_patterns = {
         "Mode", "Combat", "Engaged", "Idle", "Enfeeble", "Nuke", "PetIdleMode", "AutoPetEngage",
-        "Rotation",  -- Removed BRDRotation and VictoryMarch - moved to spell_patterns
+        "Rotation",
         "Xp",  -- XP mode for PLD/RDM
         "PhalanxSIRD",  -- Phalanx SIRD override for PLD
         "UseAltStep",  -- DNC step configuration mode (must be before ja_patterns check)
@@ -59,6 +60,14 @@ local categorization_rules = {
         "Favor",  -- SMN AvatarFavor toggle
         "Regen"   -- PLD /SCH Regen pair over the idle set
     }
+}
+
+--- Section names accepted in a bind's `section` field -> HUD bucket.
+local SECTION_ALIASES = {
+    mode = "mode", modes = "mode",
+    spell = "spell", spells = "spell",
+    ability = "ja", abilities = "ja", ja = "ja",
+    weapon = "weapon", weapons = "weapon",
 }
 
 --- Check if a state matches any pattern in a category
@@ -78,6 +87,12 @@ end
 --- @param bind table Keybind object with key, desc, state
 --- @return string Category name (spell, ja, weapon, mode, other)
 local function categorize_keybind(bind)
+    -- An explicit section (custom states, see custom_states.lua) wins over
+    -- guessing from the state name.
+    if SECTION_ALIASES[bind.section] then
+        return SECTION_ALIASES[bind.section]
+    end
+
     if not bind.state then
         return "other"
     end
@@ -124,7 +139,6 @@ end
 --- @param job string The job abbreviation
 --- @return table Categories with their respective keys
 function UIDisplayBuilder.extract_display_keys(job)
-    -- Get keybinds from KeybindLoader
     local keybinds = KeybindLoader.get_job_keybinds(job)
 
     if not keybinds then
@@ -132,7 +146,8 @@ function UIDisplayBuilder.extract_display_keys(job)
         keybinds = KeybindLoader.get_fallback_keybinds(job)
     end
 
-    -- Add job-specific elements (like BRD song slots) - IMPORTANT: Must match UI_MANAGER flow
+    -- Add job-specific elements (like BRD song slots). Must stay in step with
+    -- ui_display.get_current_job_keybinds(), which feeds the rendered rows.
     if keybinds then
         keybinds = KeybindLoader.add_job_specific_elements(job, keybinds)
     end
@@ -184,7 +199,9 @@ end
 --- JOB-SPECIFIC ENHANCEMENTS
 ---============================================================================
 
--- Job-specific enhancement rules
+-- Job-specific enhancement rules.
+-- NOTE: RDM's enhancing_keys ("Ctrl+6"..) match no key in RDM_KEYBINDS.lua
+-- (keys use the ^numpadX form), so the enhancing section never renders.
 local job_enhancements = {
     BRD = {
         enhancing_keys = nil, -- BRD doesn't use enhancing section
@@ -204,7 +221,6 @@ local job_enhancements = {
         end
     },
 
-    -- Add more job-specific enhancements as needed
     default = {
         enhancing_keys = nil,
         special_handling = function(categories)
@@ -261,7 +277,7 @@ end
 --- VALIDATION AND DIAGNOSTICS
 ---============================================================================
 
---- Validate display structure
+--- Validate display structure (no caller in the repository)
 --- @param job string The job abbreviation
 --- @param structure table Display structure to validate
 --- @return boolean, table valid, issues
@@ -293,7 +309,7 @@ function UIDisplayBuilder.validate_structure(job, structure)
     return #issues == 0, issues
 end
 
---- Get statistics about categorization rules
+--- Get statistics about categorization rules (no caller in the repository)
 --- @return table Statistics about rules and patterns
 function UIDisplayBuilder.get_categorization_stats()
     local stats = {

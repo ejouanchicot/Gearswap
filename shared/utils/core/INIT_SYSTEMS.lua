@@ -1,28 +1,28 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Universal Systems Auto-Initialization Facade (OPTIMIZED)
+---   Universal Systems Initialization
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Loads all universal systems that should be active for ALL jobs/characters.
----   Include this file in each job's main file to enable all universal features.
+---   Starts the systems every job needs. Included by each entry point's
+---   get_sets(), after include('Mote-Include.lua') has returned, so Mote has
+---   already run user_setup() and init_gear_sets() by the time this file runs.
 ---
----   **PERFORMANCE OPTIMIZATION:**
----     • Critical systems load immediately (MidcastWatchdog)
----     • Non-critical systems defer to 0.5s (WarpInit, AutoMove, StateDisplay)
----     • Non-blocking initialization
----
----   Usage in character file (e.g., Tetsouo_WAR.lua, KAORIES_BRD.lua):
+---   Usage in an entry point (e.g. Tetsouo_WAR.lua):
 ---     include('../shared/utils/core/INIT_SYSTEMS.lua')
 ---
----   Systems Initialized:
----     1. Midcast Watchdog (3.5s timeout protection) - CRITICAL
----     2. Warp System (universal warp detection + IPC multi-boxing) - DEFERRED
----     3. AutoMove (movement speed detection) - DEFERRED
----     4. State Display Override (conditional state messages) - DEFERRED
----     5. HP Priority (equip order by piece HP, see equipment/hp_priority) - IMMEDIATE
+---   Order of what it starts:
+---     immediate  debug flags restored from windower._gs_debug, reload counter,
+---                ModuleCache, HP priority, LagDebugger, AutoMedicine,
+---                JobSyncWatchdog, DualBox sync IPC, KeybindGuard, custom
+---                states hooks
+---     +0.5 s     WarpInit, AutoMove, StateDisplayOverride
+---     +2.0 s     MidcastWatchdog
+---     +3.0 s     load check of the PrecastGuard / CooldownChecker /
+---                WSPrecastHandler chain
+---     +5.0 s     GlobalProbe baseline snapshot
 ---
 ---   @file    shared/utils/core/INIT_SYSTEMS.lua
 ---   @author  Tetsouo
----   @version 1.3 - PERFORMANCE: Deferred loading for non-critical systems
----   @date    Created: 2025-10-28 | Updated: 2025-11-15
+---   @version 1.4
+---   @date    Created: 2025-10-28 | Updated: 2026-09-25
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -120,11 +120,9 @@ local function ensure_message_init()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   CRITICAL SYSTEM: MIDCAST WATCHDOG (Deferred loading)
+---   MIDCAST WATCHDOG (+2.0 s, kept off the cold-load path)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- PERFORMANCE: Defer MidcastWatchdog loading, deferred for fast startup
--- It already starts after 2s delay anyway, so load it then
 coroutine.schedule(function()
     local watchdog_success, MidcastWatchdog = pcall(require, 'shared/utils/core/midcast_watchdog')
 
@@ -132,7 +130,6 @@ coroutine.schedule(function()
         -- Expose globally for command access (e.g., //gs c watchdog status)
         _G.MidcastWatchdog = MidcastWatchdog
         MidcastWatchdog.start()
-        -- Silent init - no message displayed
     else
         ensure_message_init().show_module_load_failed('Watchdog', MidcastWatchdog)
     end
@@ -141,16 +138,15 @@ end, 2.0)
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   IMMEDIATE: AUTO MEDICINE STATE
 ---  ═══════════════════════════════════════════════════════════════════════════
--- Creates state.AutoMedicine for every job. Loaded synchronously because
--- PrecastGuard reads it on the very first action, which can land before a
--- deferred block would have run.
--- state.AutoMedicine itself is created by each job's [JOB]_STATES.lua, in
+-- state.AutoMedicine is normally created by each job's [JOB]_STATES.lua, in
 -- user_setup(), alongside every other state. It has to be: the keybind HUD
 -- renders from user_setup and caches what it read, so a state created here -
--- one line after `include('Mote-Include.lua')` returns - arrives too late and
+-- after `include('Mote-Include.lua')` has returned - arrives too late and
 -- shows as N/A.
 --
 -- ensure() is the safety net for a job whose states config predates the state.
+-- It runs synchronously because PrecastGuard reads the state on the very first
+-- action, which can land before a deferred block would have run.
 local am_ok, AutoMedicine = pcall(require, 'shared/utils/debuff/auto_medicine')
 if am_ok and AutoMedicine then
     AutoMedicine.ensure()
@@ -206,15 +202,12 @@ else
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   NON-CRITICAL SYSTEMS: DEFERRED LOADING (0.5s delay to improve startup)
+---   DEFERRED SYSTEMS (+0.5 s, kept off the cold-load path)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- PERFORMANCE OPTIMIZATION: Defer non-critical systems to avoid blocking get_sets()
--- These systems are not needed immediately and can load asynchronously
--- Non-blocking initialization
 coroutine.schedule(function()
     ---  ─────────────────────────────────────────────────────────────────────────
-    ---   SYSTEM 2: WARP SYSTEM (with IPC Multi-Boxing Support)
+    ---   WARP SYSTEM (with IPC multi-boxing support)
     ---  ─────────────────────────────────────────────────────────────────────────
 
     local warp_success, WarpInit = pcall(require, 'shared/utils/warp/warp_init')
@@ -229,64 +222,48 @@ coroutine.schedule(function()
     end
 
     ---  ─────────────────────────────────────────────────────────────────────────
-    ---   SYSTEM 3: AUTOMOVE (Movement Detection)
+    ---   AUTOMOVE (movement detection)
     ---  ─────────────────────────────────────────────────────────────────────────
 
-    -- Check if job wants to disable AutoMove (e.g., BST uses custom movement system)
+    -- A job can opt out by setting _G.DISABLE_AUTOMOVE = true (no entry point
+    -- sets it at the moment).
     if _G.DISABLE_AUTOMOVE ~= true then
-        -- IMPORTANT: AutoMove uses include() not require() because it's a GearSwap script,
-        -- not a Lua module. It registers event handlers in global scope.
+        -- automove.lua is loaded with include(), not require(): it publishes
+        -- itself as _G.AutoMove instead of returning a module.
         local automove_success, automove_error = pcall(include, '../shared/utils/movement/automove.lua')
 
         if automove_success then
-            -- Start AutoMove explicitly (no longer auto-starts on include)
+            -- The include does not start it (avoids a double start on reload).
             if AutoMove and AutoMove.start then
                 AutoMove.start()
             end
         else
             ensure_message_init().show_module_load_failed('AutoMove', automove_error)
         end
-        -- Silent init when successful
-    else
-        -- AutoMove disabled by job (custom movement system used)
-        -- Silent - no message needed (job explicitly requested this)
     end
 
     ---  ─────────────────────────────────────────────────────────────────────────
-    ---   SYSTEM 4: STATE DISPLAY OVERRIDE (Conditional State Messages)
+    ---   STATE DISPLAY OVERRIDE (conditional state messages)
     ---  ─────────────────────────────────────────────────────────────────────────
 
     local state_display_success, StateDisplayOverride = pcall(require, 'shared/utils/core/state_display_override')
 
     if state_display_success and StateDisplayOverride then
-        -- Override Mote-Include's display_current_state globally
+        -- Replaces Mote-Include's display_current_state
         StateDisplayOverride.init()
-        -- Silent init
     else
         ensure_message_init().show_module_load_failed('State Display Override', StateDisplayOverride)
     end
-end, 0.5)  -- Defer by 0.5 seconds (non-blocking)
+end, 0.5)
 
----  ═══════════════════════════════════════════════════════════════════════════
----   SYSTEM 5: FUTURE SYSTEMS
----  ═══════════════════════════════════════════════════════════════════════════
-
--- Example template for adding new universal systems:
+-- Template for adding a new universal system:
 --
 -- local system_success, SystemModule = pcall(require, 'shared/utils/path/to/system')
 -- if system_success and SystemModule then
 --     SystemModule.init()
 -- else
---     MessageInit.show_module_load_failed('System Name', SystemModule)
+--     ensure_message_init().show_module_load_failed('System Name', SystemModule)
 -- end
-
----  ═══════════════════════════════════════════════════════════════════════════
----   INITIALIZATION COMPLETE
----  ═══════════════════════════════════════════════════════════════════════════
-
--- All universal systems initialized
--- Individual system messages displayed above (if any errors occurred)
--- This is a pure initialization script - no return value needed
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   KEYBINDS - re-assert once the console has gone quiet
@@ -303,6 +280,20 @@ if kg_ok and KeybindGuard then
 else
     ensure_message_init().show_module_load_failed('Keybind Guard', KeybindGuard)
 end
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   CUSTOM STATES - hook the player's own gear (<JOB>_CUSTOM.lua)
+---  ═══════════════════════════════════════════════════════════════════════════
+
+-- Not from user_setup(): Mote calls it from the middle of Mote-Include, before
+-- defining handle_equipping_gear and cleanup_precast/midcast, and those
+-- definitions then replace any hook laid on them. By now they all exist.
+pcall(function()
+    local ok, CustomStates = pcall(require, 'shared/utils/custom/custom_states')
+    if ok and CustomStates then
+        CustomStates.install_hooks()
+    end
+end)
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PRECAST SAFETY MODULES - confirm they load, once per job load
