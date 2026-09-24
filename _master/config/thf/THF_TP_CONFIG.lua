@@ -39,7 +39,7 @@ local THFTPConfig = {
     ---============================================================================
     --- Weapons with automatic TP bonus
     ---============================================================================
-    -- These provide TP bonus when equipped as main weapon
+    -- TP bonus counted in either hand (main or off-hand)
 
     weapons = {
         { name = "Aeneas", bonus = 500 },      -- REMA dagger (shared with DNC/BRD)
@@ -64,7 +64,7 @@ function THFTPConfig.get_weapon_bonus(weapon_name)
     return 0
 end
 
--- Make globally available
+-- Global export: the entry file also assigns it, THF_PRECAST reads _G.THFTPConfig
 _G.THFTPConfig = THFTPConfig
 
 return THFTPConfig

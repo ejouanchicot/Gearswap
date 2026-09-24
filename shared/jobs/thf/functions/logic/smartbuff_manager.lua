@@ -8,7 +8,7 @@
 ---   • DNC subjob buffs (Haste Samba - requires 350 TP)
 ---   • WAR subjob buffs (Berserk, Aggressor, Warcry - priority order)
 ---   • NIN subjob buffs (Utsusemi: Ni >> Ichi fallback)
----   • THF Fighter's Buff Combo (Feint, Bully, Conspirator)
+---   • THF Feint / Bully / Conspirator opener (//gs c fbc)
 ---   • Intelligent recast checking (RECAST_CONFIG integration)
 ---   • Sequential ability casting (1-2s spacing to avoid conflicts)
 ---   • Status display (active/cooldown with time remaining)
@@ -18,7 +18,7 @@
 ---   • RECAST_CONFIG (recast tolerance configuration)
 ---   • MessageBuffs (buff status display module)
 ---
----   @file    jobs/thf/functions/logic/smartbuff_manager.lua
+---   @file    shared/jobs/thf/functions/logic/smartbuff_manager.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
@@ -47,8 +47,13 @@ function SmartbuffManager.apply_dnc_buffs()
     local required_tp = 350  -- Haste Samba TP cost
     local job_tag = MessageFormatter.get_job_tag()
 
-    -- Haste Samba (Recast ID: 191)
-    local samba_recast = ability_recasts[191] or 0
+    -- Haste Samba (recast id 216, shared by all Sambas; res/job_abilities.lua)
+    local samba_recast = ability_recasts[216] or 0
+    local ok_t, Trace = pcall(require, 'shared/utils/debug/trace_log')
+    if ok_t and Trace then
+        Trace.log('SAMBA', 'recast[216] %s buff %s tp %s -> %s', samba_recast, buffactive['Haste Samba'] ~= nil,
+            current_tp, buffactive['Haste Samba'] and 'active' or (is_recast_ready(samba_recast) and 'cast' or 'cooldown'))
+    end
     if buffactive['Haste Samba'] then
         table.insert(status_data, { name = 'Haste Samba', status = 'active' })
     elseif is_recast_ready(samba_recast) then
@@ -202,6 +207,8 @@ local function cast_fbc(to_cast)
     end
 end
 
+--- Fire Feint, Bully and Conspirator (those ready), report the others.
+--- @return boolean Always true
 function SmartbuffManager.apply_fbc()
     local to_cast, status_data = triage_fbc(windower.ffxi.get_ability_recasts())
 

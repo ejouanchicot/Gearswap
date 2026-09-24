@@ -6,9 +6,9 @@
 ---
 --- Features:
 ---   • TP bonus equipment configuration (Moonshade Earring)
----   • Weapon-based TP bonus tracking (REMA daggers)
+---   • Weapon-based TP bonus tracking (daggers with TP Bonus)
 ---   • Automatic TP threshold optimization (2000/3000 TP)
----   • Shared configuration with DNC/THF (REMA daggers)
+---   • Same dagger list as DNC/THF (each job keeps its own copy)
 ---   • Intelligent minimum gear selection
 ---
 --- TP Thresholds:
@@ -39,11 +39,11 @@ local BRDTPConfig = {
     ---============================================================================
     --- Weapons with automatic TP bonus
     ---============================================================================
-    -- These provide TP bonus when equipped as main weapon
+    -- TP bonus counted in either hand (main or off-hand)
 
     weapons = {
-        { name = "Aeneas", bonus = 500 },      -- REMA dagger (shared with DNC/THF)
-        { name = "Centovente", bonus = 1000 }  -- High-tier dagger (shared with DNC/THF)
+        { name = "Aeneas", bonus = 500 },      -- Dagger, TP Bonus +500
+        { name = "Centovente", bonus = 1000 }  -- Dagger, TP Bonus +1000
     }
 }
 

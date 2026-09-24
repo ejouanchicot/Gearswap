@@ -1,7 +1,11 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SAM Precast Module - Precast Action Handling & Cooldown Monitoring
 ---  ═══════════════════════════════════════════════════════════════════════════
----   @file    SAM_PRECAST.lua
+---   Guard >> Cooldown >> auto-Seigan before Third Eye >> auto-Third Eye
+---   before a weaponskill >> WSPrecastHandler. Post-precast adds TP gear and
+---   the Sekkanoki / Meikyo Shisui WS layers.
+---
+---   @file    shared/jobs/sam/functions/SAM_PRECAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-21
@@ -42,12 +46,14 @@ end
 ---   SAM-SPECIFIC HELPERS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Module-level variable to track Seigan cast attempts
+-- Anti-loop guard: if Seigan is still down when the replayed Third Eye
+-- arrives, let it through instead of queueing Seigan again.
 local seigan_cast_attempted = false
 
 ---   Auto-cast Seigan before Third Eye if Seigan not active
 ---   @param spell table Spell data
 ---   @param eventArgs table Event arguments
+---   @return boolean True when Third Eye was cancelled and re-queued after Seigan
 local function try_seigan_before_third_eye(spell, eventArgs)
     if spell.english ~= 'Third Eye' then
         return false
@@ -72,6 +78,7 @@ end
 ---   Auto-cast Third Eye before weaponskills if available
 ---   @param spell table Spell data
 ---   @param eventArgs table Event arguments
+---   @return boolean|nil True when the WS was cancelled to cast Third Eye first
 local function try_third_eye_ws(spell, eventArgs)
     if spell.type ~= 'WeaponSkill' then
         return
@@ -82,9 +89,11 @@ local function try_third_eye_ws(spell, eventArgs)
         local abilities = windower.ffxi.get_abilities()
         local ability_recasts = windower.ffxi.get_ability_recasts()
 
-        if abilities and abilities.job_abilities then
+        -- `res` is not a global in every job sandbox (GEO's escort crashed on it).
+        local resources = rawget(_G, 'res') or windower.res or require('resources')
+        if abilities and abilities.job_abilities and resources then
             for _, ability_id in ipairs(abilities.job_abilities) do
-                local res_ability = res.job_abilities[ability_id]
+                local res_ability = resources.job_abilities[ability_id]
                 if res_ability and res_ability.en == 'Third Eye' then
                     -- Recasts are indexed by recast id, not ability id: Third
                     -- Eye is ability 62 but recast 133, and slot 62 is Flee's.
@@ -156,7 +165,7 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----   Apply final gear adjustments before equipping
+---   Apply TP gear and the Sekkanoki / Meikyo Shisui layers for weaponskills
 ---   @param spell table Spell/ability data
 ---   @param action string Action type
 ---   @param spellMap string Spell mapping

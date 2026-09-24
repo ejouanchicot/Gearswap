@@ -1,19 +1,21 @@
 ---============================================================================
---- Weapon Skill Manager
+--- Weapon Skill Manager - WS range and status validation
 ---============================================================================
---- Centralized weapon skill validation and management system
---- Based on RANGE_MANAGER pattern for distance validation
+--- Range check (target model size + WS range x multiplier) and Amnesia check
+--- for weaponskills. Loaded with include() by ws_validator.lua, which is the
+--- layer WSPrecastHandler calls; published as the global WeaponSkillManager.
 ---
---- @module WEAPONSKILL_MANAGER
---- @author Tetsouo
+--- @file    shared/utils/weaponskill/weaponskill_manager.lua
+--- @author  Tetsouo
 --- @version 1.0.0
---- @date Created: 2025-01-02
+--- @date    Created: 2025-01-02
 ---============================================================================
 
 local MessageWeaponskill = require('shared/utils/messages/formatters/combat/message_weaponskill')
 
 local WeaponSkillManager = {
-    -- MessageFormatter will be set by the caller if available
+    -- Optional formatter override. Nothing assigns it today, so the
+    -- MessageWeaponskill fallbacks below are the messages actually shown.
     MessageFormatter = nil
 }
 
@@ -21,11 +23,8 @@ local WeaponSkillManager = {
 --- Configuration
 ---============================================================================
 WeaponSkillManager.config = {
-    -- Distance validation settings
-    distance_check_enabled = true,
-    range_multiplier = 1.55,  -- Range multiplier for effective distance calculation
-
-    -- Debug settings
+    distance_check_enabled = true,  -- not read anywhere
+    range_multiplier = 1.55,        -- applied to spell.range in the range check
     debug_mode = false
 }
 
@@ -35,7 +34,6 @@ WeaponSkillManager.config = {
 
 --- Initialize the WeaponSkill manager
 function WeaponSkillManager.initialize()
-    -- Initialization logic here
     if WeaponSkillManager.config.debug_mode then
         MessageWeaponskill.show_ws_manager_initialized()
     end
@@ -45,12 +43,10 @@ end
 --- @param spell table The spell/WS data from GearSwap
 --- @return boolean True if in range, false if should be cancelled
 function WeaponSkillManager.check_weaponskill_range(spell)
-    -- Only check weapon skills
     if spell.type ~= "WeaponSkill" then
         return true
     end
 
-    -- Validation
     if not spell or type(spell) ~= 'table' then
         if WeaponSkillManager.config.debug_mode then
             MessageWeaponskill.show_invalid_spell_parameter()
@@ -58,7 +54,7 @@ function WeaponSkillManager.check_weaponskill_range(spell)
         return false
     end
 
-    -- Validate TP and status before range check
+    -- Status (Amnesia) before range
     if not WeaponSkillManager.validate_weaponskill(spell.name) then
         cancel_spell()
         return false
@@ -71,7 +67,6 @@ function WeaponSkillManager.check_weaponskill_range(spell)
         return false
     end
 
-    -- Check required numeric values
     if type(spell.range) ~= 'number' or type(spell.target.distance) ~= 'number' or type(spell.target.model_size) ~= 'number' then
         if WeaponSkillManager.config.debug_mode then
             MessageWeaponskill.show_missing_numeric_values()
@@ -79,23 +74,17 @@ function WeaponSkillManager.check_weaponskill_range(spell)
         return false
     end
 
-    -- Calculate effective range
     local range_multiplier = WeaponSkillManager.config.range_multiplier or 1.55
     local effective_range = spell.target.model_size + spell.range * range_multiplier
 
-    -- Check if target is out of range
     if effective_range < spell.target.distance then
-        -- Cancel the spell
         cancel_spell()
 
-        -- Display error message using MessageFormatter if available
         local distance_info = string.format("Distance: %.1fy", spell.target.distance)
 
         if WeaponSkillManager.MessageFormatter then
-            -- Use the proper formatted message
             WeaponSkillManager.MessageFormatter.show_range_error(spell.name, distance_info)
         else
-            -- Fallback to basic message (no MessageFormatter loaded)
             MessageWeaponskill.show_too_far(spell.name, distance_info)
         end
 
@@ -109,7 +98,6 @@ end
 --- @param ws_name string The weapon skill name
 --- @return boolean True if WS can be used, false otherwise
 function WeaponSkillManager.validate_weaponskill(ws_name)
-    -- Get player info
     local player = windower.ffxi.get_player()
 
     if not player then
@@ -119,10 +107,10 @@ function WeaponSkillManager.validate_weaponskill(ws_name)
         return false
     end
 
-    -- TP validation removed - lag causes false positives (GS sees 800-950 when player has 1000)
+    -- No TP check here: WSPrecastHandler checks >= 1000 on the TP read from
+    -- the game itself (TPBonusHandler.live_tp), not GearSwap's lagging copy.
     -- TP display is handled in job_post_precast via MessageFormatter.show_ws_tp()
 
-    -- Status ailment check (Amnesia only)
     if buffactive and buffactive['Amnesia'] then
         if WeaponSkillManager.MessageFormatter then
             WeaponSkillManager.MessageFormatter.show_ws_validation_error(
@@ -140,7 +128,7 @@ function WeaponSkillManager.validate_weaponskill(ws_name)
     return true
 end
 
--- Make it globally available for GearSwap
+-- Global for include() callers (ws_validator.lua)
 _G.WeaponSkillManager = WeaponSkillManager
 
 return WeaponSkillManager

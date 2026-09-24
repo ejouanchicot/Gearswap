@@ -5,15 +5,14 @@
 ---   - Ring being swapped off during warp >> warp cancels
 ---   - Main weapon being swapped off during warp >> warp cancels
 ---
---- @file warp_equipment.lua
+--- @file shared/utils/warp/warp_equipment.lua
 --- @author Tetsouo
 --- @version 1.0
---- @date 2025-10-26
+--- @date Created: 2025-10-26
 ---============================================================================
 
 local WarpEquipment = {}
 
--- Load MessageWarp for formatted messages
 local MessageWarp = require('shared/utils/messages/formatters/system/message_warp')
 
 ---============================================================================
@@ -36,17 +35,16 @@ local current_slot = nil  -- Track which slot is locked
 --- @param slot string Optional slot being used ('ring1', 'main', etc.)
 function WarpEquipment.lock(warp_type, duration, tag, slot)
     if is_locked then
-        -- Already locked, will create new timer (old one will complete or be overwritten)
+        -- Dropping the reference does not cancel the previous auto-unlock:
+        -- it still fires at its own time.
         lock_timer = nil
     end
 
     -- Lock specific slot or all equipment slots
     local success, err = pcall(function()
         if slot then
-            -- Lock only the specified slot
             disable(slot)
         else
-            -- Lock ALL equipment slots (for spells or when slot not specified)
             disable('main', 'sub', 'range', 'ammo',
                     'head', 'neck', 'ear1', 'ear2',
                     'body', 'hands', 'ring1', 'ring2',
@@ -63,7 +61,6 @@ function WarpEquipment.lock(warp_type, duration, tag, slot)
     current_warp_type = warp_type
     current_slot = slot or 'all'
 
-    -- Show lock message
     local display_tag = tag or 'WARP'
     local display_slot = slot or 'all slots'
     MessageWarp.show_equipment_locked(display_tag, display_slot)
@@ -80,19 +77,17 @@ end
 --- @param tag string Optional tag to display ([WARP] or [TELE])
 function WarpEquipment.unlock(is_timeout, tag)
     if not is_locked then
-        return  -- Not locked, nothing to do
+        return
     end
 
-    -- Clear timer reference (no need to cancel, will complete naturally)
+    -- The scheduled auto-unlock is not cancelled; it no-ops once unlocked.
     lock_timer = nil
 
     -- Unlock specific slot or all equipment slots
     local success, err = pcall(function()
         if current_slot and current_slot ~= 'all' then
-            -- Unlock only the slot that was locked
             enable(current_slot)
         else
-            -- Unlock ALL equipment slots
             enable('main', 'sub', 'range', 'ammo',
                    'head', 'neck', 'ear1', 'ear2',
                    'body', 'hands', 'ring1', 'ring2',
@@ -105,7 +100,6 @@ function WarpEquipment.unlock(is_timeout, tag)
         return
     end
 
-    -- Show unlock message
     local display_tag = tag or 'WARP'
     local display_slot = current_slot or 'all slots'
     MessageWarp.show_equipment_unlocked(display_tag, display_slot)
@@ -114,14 +108,12 @@ function WarpEquipment.unlock(is_timeout, tag)
     current_warp_type = nil
     current_slot = nil
 
-    -- Force gear update after unlock to restore proper sets
+    -- Put the job's set back. Not equip() here: from a scheduled callback it
+    -- runs outside a GearSwap event and is dropped; `gs c update` goes through
+    -- a real event (Mote's handle_update).
     coroutine.schedule(function()
         if player then
-            if player.status == 'Engaged' then
-                equip(sets.engaged)
-            elseif player.status == 'Idle' then
-                equip(sets.idle)
-            end
+            send_command('gs c update')
         end
     end, 0.5)
 end
@@ -146,11 +138,11 @@ function WarpEquipment.on_warp_item(warp_data)
     local duration = warp_data.duration or 12
     local slot = warp_data.slot
 
-    -- Convert generic slot names to specific GearSwap slots
+    -- Database slot names are not GearSwap slot names: only 'ring' is mapped.
+    -- 'main' is valid; 'ears', 'item' and the others are passed through as-is.
     if slot == 'ring' then
-        slot = 'ring1'  -- Default to ring1
+        slot = 'ring1'
     end
-    -- 'main' and 'item' stay as-is
 
     -- Determine tag based on item name
     local tag = 'WARP'
@@ -168,21 +160,25 @@ end
 --- INITIALIZATION
 ---============================================================================
 
---- Initialize the warp equipment system
+--- Initialize the warp equipment system (called by WarpInit.init on every load)
 function WarpEquipment.init()
     local WarpDetector = require('shared/utils/warp/warp_detector')
 
-    -- Register callback for item usage detection
+    -- Inactive on purpose: init_action_listener() below clears every callback
+    -- first, so this one never fires. Do not just swap the two calls - the
+    -- auto-lock has never run and is not ready: the detector reads the item id
+    -- from act.param (for category 9 that is a start/interrupt code, the id is
+    -- in targets[1].actions[1].param), database slots such as 'ears' and 'item'
+    -- are not GearSwap slot names, and the ring commands already lock ring1
+    -- themselves, so a second timed lock would fight them.
     WarpDetector.register_callback(function(warp_type, warp_data)
         if warp_type == 'item' then
             WarpEquipment.on_warp_item(warp_data)
         end
     end)
 
-    -- Initialize action listener for item detection
     WarpDetector.init_action_listener()
 
-    -- Show init message
     MessageWarp.show_equipment_initialized()
 end
 

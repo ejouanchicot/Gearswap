@@ -15,8 +15,6 @@ local CORTPConfig = {
     ---============================================================================
     --- USER CONFIG - Adjust according to your character
     ---============================================================================
-
-    ---============================================================================
     --- TP Bonus Equipment Pieces
     ---============================================================================
     -- These pieces will be equipped intelligently based on TP thresholds
@@ -29,11 +27,13 @@ local CORTPConfig = {
     ---============================================================================
     --- Ranged Weapons with automatic TP bonus
     ---============================================================================
-    -- COR uses RANGED weapons (guns) for TP bonus, not main weapons
+    -- COR uses RANGED weapons (guns) for TP bonus, not main weapons.
+    -- Caveat: TPBonusHandler passes the MAIN weapon name to get_weapon_bonus(),
+    -- so this list does not match anything today.
 
     ranged_weapons = {
-        { name = "Anarchy +2", bonus = 1000 },  -- Equipped permanently
-        { name = "Fomalhaut", bonus = 500 }     -- REMA weapon
+        { name = "Anarchy +2", bonus = 1000 },
+        { name = "Fomalhaut", bonus = 500 }     -- Aeonic gun
     }
 }
 

@@ -17,10 +17,6 @@
 ---============================================================================
 local WHMTPConfig = {
     ---==========================================================================
-    --- USER CONFIGURATION - Adjust According to Your Character
-    ---==========================================================================
-
-    ---==========================================================================
     --- TP BONUS EQUIPMENT PIECES
     ---==========================================================================
     --- These pieces will be equipped intelligently based on TP thresholds.
@@ -37,7 +33,7 @@ local WHMTPConfig = {
     ---==========================================================================
     --- WEAPONS WITH AUTOMATIC TP BONUS
     ---==========================================================================
-    --- These provide TP bonus when equipped as main weapon.
+    --- TP bonus counted in either hand (main or off-hand).
 
     weapons = {
         -- Add WHM weapons with TP bonus here if any
@@ -71,7 +67,7 @@ end
 --- GLOBAL EXPORT & MODULE RETURN
 ---============================================================================
 
--- Make globally available for legacy code
+-- Global export: the entry file also assigns it, WHM_PRECAST reads _G.WHMTPConfig
 _G.WHMTPConfig = WHMTPConfig
 
 return WHMTPConfig

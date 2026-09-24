@@ -6,14 +6,14 @@
 ---
 --- Features:
 ---   • TP bonus equipment configuration (Moonshade Earring)
----   • Weapon-based TP bonus tracking (REMA daggers)
+---   • Weapon-based TP bonus tracking (daggers with TP Bonus)
 ---   • Automatic TP threshold optimization (2000/3000 TP)
----   • Shared configuration with THF/BRD (REMA daggers)
+---   • Same dagger list as THF/BRD (each job keeps its own copy)
 ---   • Intelligent minimum gear selection
 ---
 --- Usage:
 ---   • Modify pieces table to add/remove TP bonus accessories
----   • Modify weapons table to add/remove REMA weapons with TP bonus
+---   • Modify weapons table to add/remove weapons with TP bonus
 ---   • get_weapon_bonus(weapon_name) - Get TP bonus from equipped weapon
 ---
 --- @file    config/dnc/DNC_TP_CONFIG.lua
@@ -37,11 +37,11 @@ local DNCTPConfig = {
     ---============================================================================
     --- Weapons with automatic TP bonus
     ---============================================================================
-    -- These provide TP bonus when equipped as main weapon
+    -- TP bonus counted in either hand (main or off-hand)
 
     weapons = {
-        { name = "Aeneas", bonus = 500 },      -- REMA dagger (shared with THF/BRD)
-        { name = "Centovente", bonus = 1000 }  -- High-tier dagger (shared with THF)
+        { name = "Aeneas", bonus = 500 },      -- Dagger, TP Bonus +500
+        { name = "Centovente", bonus = 1000 }  -- Dagger, TP Bonus +1000
     }
 }
 

@@ -3,37 +3,32 @@
 ---============================================================================
 --- Manages the runtime visibility of the keybind UI. Uses the "attach" pattern
 --- because enable() / toggle() call back into KeybindUI.init() (defined in
---- UI_MANAGER) - attaching at the end of UI_MANAGER's load lets these methods
---- resolve KeybindUI.init at CALL time, sidestepping the require cycle.
+--- ui_lifecycle and attached by UI_MANAGER) - these methods resolve
+--- KeybindUI.init at CALL time, so attach order only matters for the facade.
 ---
 --- Public methods attached:
 ---   save_position, toggle, show, hide, is_visible, enable, disable
 ---
---- @file ui/ui_visibility.lua
+--- @file shared/utils/ui/ui_visibility.lua
 --- @author Tetsouo
 --- @version 1.0
+--- @date Created: 2026-05-09
 ---============================================================================
 
 local KeybindSettings    = require('shared/utils/ui/UI_SETTINGS')
 local MessageUI          = require('shared/utils/messages/formatters/ui/message_ui')
-local UISettingsResolver = require('shared/utils/ui/ui_settings_resolver')
 local Display            = require('shared/utils/ui/ui_display')
 
 local Visibility = {}
 
-local calculate_y_offset = UISettingsResolver.calculate_y_offset
-
 --- Persist current position + all UI display states.
---- Subtracts the dynamic Y offset so the saved Y is always relative to the
---- header position (even when header is hidden), making the layout stable
---- across toggle_header changes between sessions.
+--- The saved position is where the box is on screen; the section toggles
+--- move the box themselves (ui_section_toggles.lua) and save the result.
 --- @param x number Current screen X
 --- @param y number Current screen Y
 local function save_position_internal(x, y)
-    local current_y_offset = calculate_y_offset()
-
     _G.keybind_saved_settings.pos.x = x
-    _G.keybind_saved_settings.pos.y = y - current_y_offset
+    _G.keybind_saved_settings.pos.y = y
 
     -- Include all UI display states from global config
     _G.keybind_saved_settings.enabled             = _G.ui_display_config.enabled
@@ -77,7 +72,8 @@ function Visibility.attach(KeybindUI)
                 _G.keybind_ui_display:hide()
             end
 
-            -- Update ui_display_config (required for reload persistence)
+            -- Keep the in-memory config in sync; the save below is what
+            -- persists the choice across loads.
             _G.ui_display_config.enabled = _G.keybind_ui_visible
 
             if _G.keybind_saved_settings then
@@ -112,9 +108,13 @@ function Visibility.attach(KeybindUI)
     end
 
     --- Check if UI is currently visible
+    --- The display must exist too: UI_MANAGER seeds keybind_ui_visible = true
+    --- on every load, and with the HUD disabled no display is ever created, so
+    --- the flag alone would claim a HUD that is not on screen (and the cycle
+    --- keys would then change states without any chat message).
     --- @return boolean True if UI is visible, false otherwise
     function KeybindUI.is_visible()
-        return _G.keybind_ui_visible == true
+        return _G.keybind_ui_display ~= nil and _G.keybind_ui_visible == true
     end
 
     --- Enable UI (initialize if needed, then show)

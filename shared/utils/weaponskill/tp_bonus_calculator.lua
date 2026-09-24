@@ -15,7 +15,7 @@
 ---   Logic: Only equip TP bonus gear if it allows reaching the next TP threshold (2000 or 3000)
 ---   Equipment strategy: Equip the MINIMUM necessary pieces to reach threshold
 ---
----   @module  TP_BONUS_CALCULATOR
+---   @file    shared/utils/weaponskill/tp_bonus_calculator.lua
 ---   @author  Tetsouo
 ---   @version 1.3 - Lazy loading for MessageWeaponskill
 ---   @date    Created: 2025-01-02 | Updated: 2025-11-27
@@ -40,10 +40,7 @@ local TPBonusCalculator = {}
 ---   Configuration
 ---  ═══════════════════════════════════════════════════════════════════════════
 TPBonusCalculator.config = {
-    -- TP thresholds for weaponskills
     thresholds = { 2000, 3000 },
-
-    -- Debug mode
     debug_mode = false
 }
 
@@ -51,13 +48,6 @@ TPBonusCalculator.config = {
 ---   Core Functions
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Calculate which TP bonus gear to equip based on current TP and available bonuses
---- @param current_tp number Current TP amount (1000-2999)
---- @param tp_config table Job-specific TP config (pieces, weapons, buffs)
---- @param weapon_name string Current main weapon name
---- @param active_buffs table Table of active buffs (buffactive)
---- @param sub_weapon string Current sub weapon name (optional, for Fencer detection)
---- @return table|nil Table of gear to equip {ear1="...", legs="..."} or nil if none needed
 --- TP the weaponskill will actually open with.
 ---
 --- Weapon, buff and Fencer bonuses are already in effect when the skill fires,
@@ -66,12 +56,18 @@ TPBonusCalculator.config = {
 --- @param tp_config table Job TP config supplying the bonus lookups
 --- @param weapon_name string|nil Equipped main weapon
 --- @param active_buffs table|nil buffactive, or a stand-in
---- @param sub_weapon string|nil Equipped sub, which Fencer depends on
+--- @param sub_weapon string|nil Equipped sub (its own TP Bonus, and Fencer)
 --- @return number Effective TP
 local function effective_tp(current_tp, tp_config, weapon_name, active_buffs, sub_weapon)
     local weapon_bonus = 0
     if weapon_name and tp_config.get_weapon_bonus then
-        weapon_bonus = tp_config.get_weapon_bonus(weapon_name)
+        weapon_bonus = tp_config.get_weapon_bonus(weapon_name) or 0
+    end
+    -- An off-hand TP Bonus weapon counts too (Centovente on THF/DNC is always
+    -- the sub): without it, 2750-2999 TP looked short of the cap and Moonshade
+    -- replaced an earring for nothing. Same weapon in both hands: counted once.
+    if sub_weapon and sub_weapon ~= weapon_name and tp_config.get_weapon_bonus then
+        weapon_bonus = weapon_bonus + (tp_config.get_weapon_bonus(sub_weapon) or 0)
     end
 
     local buff_bonus = 0
@@ -156,6 +152,13 @@ local function pieces_for_gap(sorted, gap)
     return nil
 end
 
+--- Calculate which TP bonus gear to equip based on current TP and available bonuses
+--- @param current_tp number Current TP amount (1000-2999)
+--- @param tp_config table Job-specific TP config (pieces, weapons, buffs)
+--- @param weapon_name string Current main weapon name
+--- @param active_buffs table Table of active buffs (buffactive)
+--- @param sub_weapon string Current sub weapon name (optional, for Fencer detection)
+--- @return table|nil Table of gear to equip {ear1="...", legs="..."} or nil if none needed
 function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_buffs, sub_weapon)
     if not current_tp or not tp_config then
         if TPBonusCalculator.config.debug_mode then
@@ -206,7 +209,8 @@ function TPBonusCalculator.calculate(current_tp, tp_config, weapon_name, active_
     return pieces_for_gap(sorted, gap)
 end
 
---- Get expected final TP after applying TP bonus gear
+--- Get expected final TP after applying TP bonus gear (Fencer not counted,
+--- unlike calculate())
 --- @param current_tp number Current TP
 --- @param gear_table table Gear to equip (result from calculate())
 --- @param tp_config table Job-specific TP config
@@ -216,12 +220,10 @@ end
 function TPBonusCalculator.get_final_tp(current_tp, gear_table, tp_config, weapon_name, active_buffs)
     local total_tp = current_tp
 
-    -- Add weapon bonus
     if weapon_name and tp_config.get_weapon_bonus then
         total_tp = total_tp + tp_config.get_weapon_bonus(weapon_name)
     end
 
-    -- Add buff bonuses
     -- WAR: Warcry
     if active_buffs and active_buffs['Warcry'] and tp_config.get_warcry_bonus then
         total_tp = total_tp + tp_config.get_warcry_bonus()
@@ -232,11 +234,10 @@ function TPBonusCalculator.get_final_tp(current_tp, gear_table, tp_config, weapo
         total_tp = total_tp + tp_config.get_hagakure_bonus()
     end
 
-    -- Add gear bonus from TP bonus pieces
-    -- Check both gear_table (dynamically equipped) and currently equipped gear
+    -- TP pieces: those about to be equipped (gear_table), then those already
+    -- worn that gear_table does not cover
     local counted_slots = {}
 
-    -- First, add from gear_table (Moonshade/Boii from TP bonus system)
     if gear_table then
         for slot, item_name in pairs(gear_table) do
             for _, piece in ipairs(tp_config.pieces) do
@@ -249,8 +250,7 @@ function TPBonusCalculator.get_final_tp(current_tp, gear_table, tp_config, weapo
         end
     end
 
-    -- Then check currently equipped gear for TP bonus pieces not already counted
-    -- (e.g., Boii Cuisses +3 already in WS set)
+    -- e.g. Boii Cuisses +3 already in the WS set
     if player and player.equipment then
         for _, piece in ipairs(tp_config.pieces) do
             if not counted_slots[piece.slot] then
@@ -270,7 +270,6 @@ function TPBonusCalculator.get_final_tp(current_tp, gear_table, tp_config, weapo
     return total_tp
 end
 
--- Make globally available
 _G.TPBonusCalculator = TPBonusCalculator
 
 return TPBonusCalculator

@@ -5,52 +5,15 @@
 --- saved position from KeybindSettings, _G.ui_display_config) into a single
 --- table in the shape that the `texts` Windower library expects.
 ---
---- Extracted from UI_MANAGER.lua to keep that file focused on lifecycle,
---- state-change tracking and rendering.
----
 --- @file shared/utils/ui/ui_settings_resolver.lua
 --- @author Tetsouo
+--- @version 1.0
 --- @date Created: 2026-05-08
 ---============================================================================
 
 local UISettingsResolver = {}
 
 local KeybindSettings = require('shared/utils/ui/UI_SETTINGS')
-
----============================================================================
---- POSITION OFFSET CALCULATION
----============================================================================
-
---- Calculate Y offset based on hidden UI elements.
---- The display has optional sections (header / column headers / legend);
---- when they're hidden the visible content moves up, and we shift Y down by
---- the equivalent number of lines so the text appears in the same screen
---- location regardless of which sections are toggled.
---- @return number Y offset (in pixels) to apply
-function UISettingsResolver.calculate_y_offset()
-    local offset = 0
-
-    -- Get current font size from saved settings
-    local UISettingsManager = require('shared/config/ui_settings')
-    local font = UISettingsManager.get_font()
-    local text_size = font.size or 10
-    local line_height = text_size + 4  -- Font size + spacing
-
-    -- Add offset for hidden header (title + separator + legend if visible)
-    if not _G.ui_display_config.show_header then
-        offset = offset + (line_height * 2)  -- Title + separator
-        if _G.ui_display_config.show_legend then
-            offset = offset + (line_height * 2)  -- Legend takes ~2 lines
-        end
-    end
-
-    -- Add offset for hidden column headers
-    if not _G.ui_display_config.show_column_headers then
-        offset = offset + (line_height * 1)
-    end
-
-    return offset
-end
 
 ---============================================================================
 --- BACKGROUND SETTINGS
@@ -93,11 +56,14 @@ function UISettingsResolver.create_ui_settings()
     local default_y = 300
     local base_x = (saved_pos and saved_pos.x) or default_x
     local base_y = (saved_pos and saved_pos.y) or default_y
+    windower._hud_virtual_y = base_y
 
     return {
         pos = {
             x = base_x,
-            y = base_y + (UISettingsResolver.calculate_y_offset() or 0)
+            -- A section toggle near the top may save a negative Y (see
+            -- ui_section_toggles.lua): draw at the screen edge, remember the rest.
+            y = math.max(0, base_y)
         },
         text = {
             size = saved_settings.font_size or 10,
@@ -111,12 +77,11 @@ function UISettingsResolver.create_ui_settings()
 end
 
 ---============================================================================
---- DEFAULT UI SETTINGS (used before saved position is loaded)
+--- DEFAULT UI SETTINGS
 ---============================================================================
 
 --- Return a static default settings table with hardcoded fallback values.
---- Used at module-init time before the saved position file is read; init()
---- replaces it with create_ui_settings() output.
+--- No caller in the repository (init() uses create_ui_settings()).
 --- @return table Default settings table
 function UISettingsResolver.default_ui_settings()
     return {

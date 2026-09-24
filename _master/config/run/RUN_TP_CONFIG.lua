@@ -36,7 +36,7 @@ local RUNTPConfig = {
     ---============================================================================
     --- Weapons with automatic TP bonus
     ---============================================================================
-    -- These provide TP bonus when equipped as main weapon
+    -- TP bonus counted in either hand (main or off-hand)
 
     weapons = {{
         name = "Lionheart",
@@ -68,7 +68,7 @@ end
 --- MODULE EXPORT
 ---============================================================================
 
--- Make globally available
+-- Global export: the entry file also assigns it, RUN_PRECAST reads _G.RUNTPConfig
 _G.RUNTPConfig = RUNTPConfig
 
 return RUNTPConfig

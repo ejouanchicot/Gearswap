@@ -2,10 +2,11 @@
 --- WARP Message Data - Warp/Teleport System Messages
 ---============================================================================
 --- Pure data file for warp system messages
---- Used by new message system (api/messages.lua)
+--- Loaded by the message engine when a formatter sends a key from it (api/messages.lua)
 ---
---- @file data/systems/warp_messages.lua
+--- @file shared/utils/messages/data/systems/warp_messages.lua
 --- @author Tetsouo
+--- @version 1.0
 --- @date Created: 2025-11-06
 ---============================================================================
 
@@ -253,8 +254,8 @@ return {
         color = 1
     },
 
-    item_equip_delay = {
-        template = "  {itemcolor}{item_name}{separatorcolor} - equip delay",
+    item_not_ready = {
+        template = "  {itemcolor}{item_name}{separatorcolor} - not ready",
         color = 1
     },
 

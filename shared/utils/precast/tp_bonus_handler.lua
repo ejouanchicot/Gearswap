@@ -9,24 +9,20 @@
 ---   `TPBonusCalculator` (shared/utils/weaponskill/tp_bonus_calculator.lua).
 ---   Don't require this file directly.
 ---
----   @file shared/utils/precast/tp_bonus_handler.lua
+---   @file    shared/utils/precast/tp_bonus_handler.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-10-17
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local TPBonusHandler = {}
 
-local MessageFormatter = nil
 local TPBonusCalculatorLoaded = false
 
-local function get_formatter()
-    if not MessageFormatter then
-        MessageFormatter = require('shared/utils/messages/message_formatter')
-    end
-    return MessageFormatter
-end
-
+--- Load TPBonusCalculator once and publish it as _G.TPBonusCalculator.
+--- @return table|nil The calculator, or nil if it failed to load
 local function ensure_calculator_loaded()
     if not TPBonusCalculatorLoaded then
-        -- Use require instead of include for caching
         local success, calc = pcall(require, 'shared/utils/weaponskill/tp_bonus_calculator')
         if success then
             _G.TPBonusCalculator = calc
@@ -36,13 +32,29 @@ local function ensure_calculator_loaded()
     return _G.TPBonusCalculator
 end
 
+--- Compute the TP bonus gear for a weaponskill and store it in
+--- _G.temp_tp_bonus_gear, where WSPrecastHandler.apply_tp_gear picks it up.
+--- @param spell table Spell object from GearSwap
+--- @param tp_config table Job TP config (e.g. WARTPConfig)
+--- TP read straight from the game's memory.
+--- player.vitals.tp is GearSwap's copy, re-read from the game only when the
+--- last read is over 0.5 s old (refresh.lua refresh_player), so it can trail
+--- the real value; get_player() reads the game directly.
+--- Falls back to the copy if the direct read fails.
+--- @return number
+function TPBonusHandler.live_tp()
+    local ok, me = pcall(windower.ffxi.get_player)
+    if ok and me and me.vitals and me.vitals.tp then
+        return me.vitals.tp
+    end
+    return player and player.vitals and player.vitals.tp or 0
+end
+
 function TPBonusHandler.calculate_tp_gear(spell, tp_config)
-    -- Early exit if not weaponskill
     if spell.type ~= 'WeaponSkill' then
         return
     end
 
-    -- Validate config
     if not tp_config then
         return
     end
@@ -50,21 +62,23 @@ function TPBonusHandler.calculate_tp_gear(spell, tp_config)
         return
     end
 
-    -- Lazy-load calculator only when needed
     local calculator = ensure_calculator_loaded()
     if not calculator then
         return
     end
 
-    -- Extract player state
-    local current_tp = player.vitals.tp or 0
+    local current_tp = TPBonusHandler.live_tp()
     local weapon_name = player.equipment and player.equipment.main or nil
     local sub_weapon = player.equipment and player.equipment.sub or nil
 
-    -- Calculate optimal TP bonus gear
     local tp_gear = calculator.calculate(current_tp, tp_config, weapon_name, buffactive, sub_weapon)
+    local ok_t, Trace = pcall(require, 'shared/utils/debug/trace_log')
+    if ok_t and Trace then
+        Trace.log('TP', '%s tp %s main %s sub %s range %s -> gear %s', spell.english, current_tp,
+            weapon_name, sub_weapon, player.equipment and player.equipment.range, tp_gear)
+    end
 
-    -- Store for application in post_precast
+    -- Applied in job_post_precast by WSPrecastHandler.apply_tp_gear
     _G.temp_tp_bonus_gear = tp_gear
 end
 

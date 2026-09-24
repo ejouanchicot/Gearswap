@@ -55,7 +55,7 @@ local BSTTPConfig = {
     ---==========================================================================
     --- WEAPONS WITH AUTOMATIC TP BONUS
     ---==========================================================================
-    --- These provide TP bonus when equipped as main weapon.
+    --- TP bonus counted in either hand (main or off-hand).
 
     weapons = {}
 }
@@ -85,13 +85,14 @@ end
 
 --- Get Fencer TP bonus if single-wielding
 --- Fencer grants TP bonus when wielding main hand only (no sub weapon OR with shield).
+--- This check treats any sub item as dual-wield when the subjob is NIN/DNC.
 --- Base bonus depends on job level (BST trait):
 ---   - Lv 94+: +400 TP (Tier III)
 ---   - Lv 87-93: +300 TP (Tier II)
 ---   - Lv 80-86: +200 TP (Tier I)
 --- JP Gifts add additional bonus (up to +230 TP total).
 ---
---- @param  weapon_name string Name of the main weapon (optional, for future checks)
+--- @param  weapon_name string Name of the main weapon (unused)
 --- @param  sub_weapon string Name of the sub weapon (optional, to check single-wield)
 --- @return number TP bonus from Fencer (0 if dual-wielding)
 function BSTTPConfig.get_fencer_bonus(weapon_name, sub_weapon)
@@ -116,7 +117,8 @@ function BSTTPConfig.get_fencer_bonus(weapon_name, sub_weapon)
             sub_name = player.equipment.sub
         end
 
-        -- If no sub weapon OR sub is shield/grip >> Fencer active
+        -- Sub slot empty >> Fencer active. Any item in sub (weapon OR shield)
+        -- counts as dual-wielding here.
         if not sub_name or sub_name == 'empty' or sub_name == '' then
             is_fencer_active = true
         else
@@ -164,7 +166,7 @@ end
 --- GLOBAL EXPORT & MODULE RETURN
 ---============================================================================
 
--- Make globally available for legacy code
+-- Read as _G.BSTTPConfig by BST_PRECAST.lua
 _G.BSTTPConfig = BSTTPConfig
 
 return BSTTPConfig

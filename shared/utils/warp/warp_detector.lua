@@ -1,25 +1,19 @@
 ---============================================================================
---- Warp Detector - Universal Warp/Teleport Detection System (DATABASE POWERED)
+--- Warp Detector - Warp/teleport spell and item classification
 ---============================================================================
---- Detects warp usage from:
+--- Classifies:
 ---   1. BLM spells (Warp, Warp II, Retrace, Escape) - Lv17-55
 ---   2. WHM spells (Teleport-*, Recall-*) - Lv36-53
----   3. Warp items: 68 items from WarpItemDB
----      - Rings (warp, teleport, dimensional, adoulin, special)
----      - Earrings (nation/city teleports)
----      - Necks (chocobo stables)
----      - Body/Head items (event rewards)
----      - Weapons (warp cudgel, staves, bow, wand)
----      - Consumables (Instant Warp scrolls)
----   4. MyHome addon automatic detection
+---   3. Warp items listed in the warp database (warp_item_database.lua):
+---      rings, earrings, necks, body/head items, weapons, Instant Warp
 ---
---- Total: 13 spells + 68 items detected
---- Source: D:\Windower Tetsouo\addons\GearSwap\data\shared\utils\warp\warp_item_database.lua (verified 2025-10-27)
+--- Also registers an `action` listener meant to report the player's warp item
+--- use to callbacks (see WarpEquipment.init).
 ---
---- @file warp_detector.lua
+--- @file shared/utils/warp/warp_detector.lua
 --- @author Tetsouo
---- @version 2.1 - Fixed callback persistence across reloads (68 items)
---- @date 2025-10-27
+--- @version 2.1
+--- @date Created: 2025-10-27
 ---============================================================================
 
 local WarpDetector = {}
@@ -28,7 +22,6 @@ local WarpDetector = {}
 --- LOAD ITEM DATABASE
 ---============================================================================
 
--- Load the comprehensive warp item database
 local WarpItemDB = require('shared/utils/warp/warp_item_database')
 
 ---============================================================================
@@ -160,7 +153,7 @@ function WarpDetector.register_callback(callback)
     table.insert(_G.warp_detector_callbacks, callback)
 end
 
---- Clear all registered callbacks (called during job change cleanup)
+--- Clear all registered callbacks (called by init_action_listener on every load)
 function WarpDetector.clear_callbacks()
     _G.warp_detector_callbacks = {}
 end
@@ -172,7 +165,8 @@ end
 --- unregistered, since an older one is already gone and could now belong to
 --- another listener (cf dualbox_sync_ipc.init_listener).
 function WarpDetector.init_action_listener()
-    -- ALWAYS clear callbacks on init (ensures fresh start on reload)
+    -- Also drops any callback registered earlier in this load, including the
+    -- one WarpEquipment.init() registers just before calling this function.
     WarpDetector.clear_callbacks()
 
     if not windower or not windower.register_event then return end
@@ -183,21 +177,17 @@ function WarpDetector.init_action_listener()
     end
 
     windower._warp_detector_event_id = windower.register_event('action', function(act)
-        -- Safety: Check if act exists (Windower sometimes sends nil)
         if not act then return end
 
         -- Category 9 = Item usage
         if act.category ~= 9 then return end
 
-        -- Check if action is from player
         if not player or act.actor_id ~= player.id then return end
 
-        -- Check if item is a warp item
         local item_id = act.param
         local is_warp, warp_data = WarpDetector.is_warp_item(item_id)
 
         if is_warp then
-            -- Notify all registered callbacks
             for _, callback in ipairs(_G.warp_detector_callbacks) do
                 pcall(callback, 'item', warp_data)
             end
@@ -220,15 +210,19 @@ function WarpDetector.get_warp_spells()
     return spell_list
 end
 
---- Get list of all warp item IDs (from WarpItemDB)
+--- Get list of all warp item IDs (from WarpItemDB), each id once.
+--- The database is split per destination module, so it is walked through
+--- its DESTINATIONS keys (there is no flat item table to iterate).
 --- @return table List of warp item IDs
 function WarpDetector.get_warp_items()
-    local item_list = {}
+    local item_list, seen = {}, {}
 
-    -- Iterate through all destinations in WarpItemDB
-    for destination, items in pairs(WarpItemDB.ITEMS) do
-        for item_id, _ in pairs(items) do
-            table.insert(item_list, item_id)
+    for _, destination in pairs(WarpItemDB.DESTINATIONS or {}) do
+        for _, entry in ipairs(WarpItemDB.get_items_by_destination(destination) or {}) do
+            if entry.item_id and not seen[entry.item_id] then
+                seen[entry.item_id] = true
+                table.insert(item_list, entry.item_id)
+            end
         end
     end
 
@@ -243,6 +237,7 @@ function WarpDetector.get_items_by_destination(destination)
 end
 
 --- Get all available destinations
+--- Known issue: WarpItemDB has no get_all_destinations(); no caller today.
 --- @return table List of destination keys
 function WarpDetector.get_all_destinations()
     return WarpItemDB.get_all_destinations()
