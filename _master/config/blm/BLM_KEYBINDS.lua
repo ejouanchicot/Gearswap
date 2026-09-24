@@ -1,19 +1,17 @@
 ---============================================================================
 --- BLM Keybind Configuration
 ---============================================================================
---- Defines all keybinds for Black Mage job with descriptions.
---- Format: { key = "key", command = "gs_command", desc = "description", state = "state_name" }
+--- BLM keys. Data only: KeybindManager (shared/utils/keybinds) binds,
+--- filters, refreshes and unbinds them. Entry fields are listed in
+--- keybind_manager.lua.
 ---
---- @file config/blm/BLM_KEYBINDS.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-15
+--- @file    config/blm/BLM_KEYBINDS.lua
+--- @author  Tetsouo
+--- @version 2.0
+--- @date    Created: 2025-10-15 | Updated: 2026-09-24 (KeybindManager)
 ---============================================================================
 
 local BLMKeybinds = {}
-
--- Load message formatter
-local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 ---============================================================================
 --- KEYBIND DEFINITIONS
@@ -38,7 +36,7 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 ---   Ctrl+6 Main Dark AOE       Apps+6 Sub Dark AOE
 ---
 --- The same digit is always the same spell family; the modifier picks Main or
---- Sub. Ctrl 7-8 and 0 hold Storm, Combat and MB modes; Apps 7-9 the
+--- Sub. Ctrl 7-8 and 0 hold Storm, Combat and MB modes; Apps 7-9 and 0 the
 --- remaining toggles.
 BLMKeybinds.binds = {
     -- Main / Sub Elemental Spells (same digit, Ctrl = Main, Apps = Sub)
@@ -74,74 +72,4 @@ BLMKeybinds.binds = {
     { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 }
 
----============================================================================
---- KEYBIND MANAGEMENT
----============================================================================
-
---- Apply all keybinds
-function BLMKeybinds.bind_all()
-    if not BLMKeybinds.binds or #BLMKeybinds.binds == 0 then
-        MessageFormatter.show_no_binds_error("BLM")
-        return false
-    end
-
-    local bound_count = 0
-    for _, bind in pairs(BLMKeybinds.binds) do
-        local success, error_msg = pcall(send_command, 'bind ' .. bind.key .. ' gs c ' .. bind.command)
-        if success then
-            bound_count = bound_count + 1
-        else
-            MessageFormatter.show_error('[BLM] Keybind Error: ' .. tostring(error_msg))
-        end
-    end
-
-    if bound_count > 0 then
-        -- Show intro with system info like other jobs
-        BLMKeybinds.show_intro()
-        return true
-    end
-
-    return false
-end
-
---- Remove all keybinds
-function BLMKeybinds.unbind_all()
-    if not BLMKeybinds.binds then
-        return
-    end
-
-    for _, bind in pairs(BLMKeybinds.binds) do
-        pcall(send_command, 'unbind ' .. bind.key)
-    end
-end
-
---- Display BLM system intro message with macrobook and lockstyle info
-function BLMKeybinds.show_intro()
-    -- Try to get macro info from BLM_MACROBOOK module
-    local macro_info = nil
-    local success, BLM_MACROBOOK = pcall(require, 'shared/jobs/blm/functions/BLM_MACROBOOK')
-    if success and BLM_MACROBOOK and BLM_MACROBOOK.get_blm_macro_info then
-        macro_info = BLM_MACROBOOK.get_blm_macro_info()
-    end
-
-    -- Try to get lockstyle info from BLM_LOCKSTYLE module
-    local lockstyle_info = nil
-    local lockstyle_success, BLM_LOCKSTYLE = pcall(require, 'shared/jobs/blm/functions/BLM_LOCKSTYLE')
-    if lockstyle_success and BLM_LOCKSTYLE and BLM_LOCKSTYLE.get_info then
-        lockstyle_info = BLM_LOCKSTYLE.get_info()
-    end
-
-    -- Show complete intro with macro and lockstyle info
-    if macro_info or lockstyle_info then
-        MessageFormatter.show_system_intro_complete("BLM SYSTEM LOADED", BLMKeybinds.binds, macro_info, lockstyle_info)
-    else
-        -- Fallback to regular intro if no additional info available
-        MessageFormatter.show_system_intro("BLM SYSTEM LOADED", BLMKeybinds.binds)
-    end
-end
-
----============================================================================
---- MODULE EXPORT
----============================================================================
-
-return BLMKeybinds
+return require('shared/utils/keybinds/keybind_manager').create('BLM', BLMKeybinds)

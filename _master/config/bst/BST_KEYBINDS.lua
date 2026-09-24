@@ -1,19 +1,17 @@
 ---============================================================================
 --- BST Keybind Configuration
 ---============================================================================
---- Keybind configuration for Beastmaster job.
---- Uses DUAL SYSTEM: Number keys (1,4-7) for state cycling + Alt+Numbers (!5,!6) for ecosystem/species functions.
+--- BST keys. Data only: KeybindManager (shared/utils/keybinds) binds,
+--- filters, refreshes and unbinds them. Entry fields are listed in
+--- keybind_manager.lua.
 ---
---- @file config/bst/BST_KEYBINDS.lua
---- @author Tetsouo
---- @version 1.0
---- @date Created: 2025-10-17
+--- @file    config/bst/BST_KEYBINDS.lua
+--- @author  Tetsouo
+--- @version 2.0
+--- @date    Created: 2025-10-17 | Updated: 2026-09-24 (KeybindManager)
 ---============================================================================
 
 local BSTKeybinds = {}
-
--- Load message formatter
-local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 ---============================================================================
 --- KEYBIND DEFINITIONS (DUAL SYSTEM)
@@ -23,115 +21,33 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 --- Format: { key = "key", command = "gs_command", desc = "description", state = "state_name" }
 ---
 --- DUAL SYSTEM EXPLANATION:
---- • Number keys (1,4-7): Cycle Mote states using "cycle StateNam" command
---- • Alt+Numbers (!5,!6): Call BST-specific functions using command name directly
+--- • "cyclestate <State>" entries cycle a Mote state
+--- • "ecosystem" / "species" call BST commands directly; their state field
+---   only tells the HUD which value to show
 BSTKeybinds.binds = {
     ---==========================================================================
-    --- WEAPON MANAGEMENT (Number Keys)
+    --- WEAPON MANAGEMENT (Ctrl+Numpad)
     ---==========================================================================
     { key = "^numpad1", command = "cyclestate WeaponSet", desc = "Main Weapon", state = "WeaponSet" },
     { key = "^numpad2", command = "cyclestate SubSet", desc = "Sub/Shield", state = "SubSet" },
 
     ---==========================================================================
-    --- COMBAT MODES (Number Keys)
+    --- COMBAT MODES (Ctrl+Numpad)
     ---==========================================================================
     { key = "^numpad9", command = "cyclestate HybridMode", desc = "Hybrid Mode", state = "HybridMode" },
     { key = "^numpad4", command = "cyclestate AutoPetEngage", desc = "Auto Pet Engage", state = "AutoPetEngage" },
     { key = "^numpad3", command = "cyclestate PetIdleMode", desc = "Pet Idle Mode", state = "PetIdleMode" },
 
     ---==========================================================================
-    --- ECOSYSTEM/SPECIES MANAGEMENT (Alt+Numbers - BST Functions)
+    --- ECOSYSTEM/SPECIES MANAGEMENT (Ctrl+Numpad - BST commands)
     ---==========================================================================
     { key = "^numpad5", command = "ecosystem", desc = "Cycle Ecosystem", state = "Ecosystem" },
     { key = "^numpad6", command = "species", desc = "Cycle Species", state = "species" },
-    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 
     ---==========================================================================
-    --- PET MANAGEMENT (Alt+Numbers - BST Functions)
+    --- UNIVERSAL TOGGLES (Apps+Numpad)
     ---==========================================================================
+    { key = "#numpad0", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
 }
 
----============================================================================
---- KEYBIND MANAGEMENT FUNCTIONS
----============================================================================
-
---- Apply all keybinds
---- @return boolean success True if at least one keybind was applied successfully
-function BSTKeybinds.bind_all()
-    if not BSTKeybinds.binds or #BSTKeybinds.binds == 0 then
-        MessageFormatter.show_no_binds_error("BST")
-        return false
-    end
-
-    local bound_count = 0
-    for _, bind in pairs(BSTKeybinds.binds) do
-        local success, error_msg = pcall(send_command, 'bind ' .. bind.key .. ' gs c ' .. bind.command)
-        if success then
-            bound_count = bound_count + 1
-        else
-            MessageFormatter.show_error('[BST] Keybind Error (' .. bind.key .. '): ' .. tostring(error_msg))
-        end
-    end
-
-    if bound_count > 0 then
-        BSTKeybinds.show_intro()
-        return true
-    else
-        MessageFormatter.show_no_binds_error("BST")
-        return false
-    end
-end
-
---- Remove all keybinds
---- @return void
-function BSTKeybinds.unbind_all()
-    if not BSTKeybinds.binds then return end
-
-    for _, bind in pairs(BSTKeybinds.binds) do
-        pcall(send_command, 'unbind ' .. bind.key)
-    end
-
-    MessageFormatter.show_success("BST keybinds unloaded.")
-end
-
----============================================================================
---- SYSTEM INTRO & DISPLAY
----============================================================================
-
---- Display BST system intro message
---- @return void
-function BSTKeybinds.show_intro()
-    MessageFormatter.show_system_intro("BST SYSTEM LOADED", BSTKeybinds.binds)
-end
-
---- Display current keybind configuration
---- @return void
-function BSTKeybinds.show_binds()
-    MessageFormatter.show_keybind_list("BST Keybinds", BSTKeybinds.binds)
-end
-
----============================================================================
---- KEYBIND STATE GETTER (for UI display)
----============================================================================
-
---- Get current state value for a keybind
---- @param bind_config table Keybind configuration entry
---- @return string|nil state_value Current state value or nil if state not found
-function BSTKeybinds.get_state_value(bind_config)
-    if not bind_config.state then
-        return nil
-    end
-
-    -- Check if state exists globally
-    if _G.state and _G.state[bind_config.state] then
-        return _G.state[bind_config.state].current or _G.state[bind_config.state].value
-    end
-
-    return nil
-end
-
----============================================================================
---- MODULE EXPORT
----============================================================================
-
-return BSTKeybinds
+return require('shared/utils/keybinds/keybind_manager').create('BST', BSTKeybinds)
