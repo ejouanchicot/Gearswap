@@ -613,18 +613,32 @@ class SmartCharacterCloner:
             src = self._resolve_src(('sets', f'{job_lower}_sets.lua'))
             dst = target_dir / 'sets' / f'{job_lower}_sets.lua'
             modular_src = self.override_dir / 'sets' / job_lower if self.override_dir else None
-            if src.exists():
-                shutil.copy2(src, dst)
-                print(self.t['copy_ok'].format(f"sets/{job_lower}_sets.lua"))
-                self.count_sets += 1
-            elif modular_src is not None and modular_src.is_dir():
-                # A job with no flat set (SMN) is saved as its live modular
-                # tree, and its entry includes sets/<job>/<job>_sets.lua.
+            if modular_src is not None and modular_src.is_dir():
+                # The character plays this job with modular sets (Tetsouo:
+                # sets/<job>/{armor,capes,weapons,<job>_sets}.lua) and his
+                # overlay entry includes sets/<job>/<job>_sets.lua: the
+                # modular tree wins over the generic flat file.
                 shutil.copytree(modular_src, target_dir / 'sets' / job_lower, dirs_exist_ok=True)
                 print(self.t['copy_ok'].format(f"sets/{job_lower}/"))
                 self.count_sets += 1
+            elif src.exists():
+                shutil.copy2(src, dst)
+                print(self.t['copy_ok'].format(f"sets/{job_lower}_sets.lua"))
+                self.count_sets += 1
             else:
                 print(self.t['copy_skip'].format(f"sets/{job_lower}_sets.lua"))
+
+        # Files the modular sets and the craft/fish commands need, whatever
+        # the jobs: sets/common/ (shared rings) and loose sets at the root of
+        # the overlay's sets/ (bonecraft_sets.lua, fishing_sets.lua).
+        if self.override_dir is not None and (self.override_dir / 'sets').is_dir():
+            overlay_sets = self.override_dir / 'sets'
+            if (overlay_sets / 'common').is_dir():
+                shutil.copytree(overlay_sets / 'common', target_dir / 'sets' / 'common', dirs_exist_ok=True)
+                print(self.t['copy_ok'].format("sets/common/"))
+            for loose in sorted(overlay_sets.glob('*.lua')):
+                shutil.copy2(loose, target_dir / 'sets' / loose.name)
+                print(self.t['copy_ok'].format(f"sets/{loose.name}"))
 
         # ── Step 4: Copy configs (job-specific + global) ──────────────
         print(self.t['step_configs'].format(len(jobs)))
@@ -654,6 +668,31 @@ class SmartCharacterCloner:
                     file_count += 1
             self.count_configs += file_count
             print(self.t['copy_ok'].format(f"config/{job_lower}/ ({file_count} files)"))
+
+        # Config folders that belong to no single job: the dual-box alt
+        # commands (config/alt/, read whatever the job) and craft/fish
+        # refills (config/craft/). Same per-file rule: the overlay wins.
+        # config/alt/ is how a MAIN drives its alt; an alt given the folder
+        # would send its own command names to the main instead.
+        shared_dirs = ['craft']
+        if (dualbox_config or {}).get('role') == 'main':
+            shared_dirs.insert(0, 'alt')
+        for shared_dir in shared_dirs:
+            names = set()
+            for d in (self.master_dir / 'config' / shared_dir,
+                      self.override_dir / 'config' / shared_dir if self.override_dir else None):
+                if d and d.exists():
+                    names.update(f.name for f in d.glob('*.lua'))
+            if not names:
+                continue
+            dst_dir = target_dir / 'config' / shared_dir
+            dst_dir.mkdir(parents=True, exist_ok=True)
+            for fname in sorted(names):
+                src = self._resolve_src(('config', shared_dir, fname))
+                if src.exists():
+                    shutil.copy2(src, dst_dir / fname)
+            self.count_configs += len(names)
+            print(self.t['copy_ok'].format(f"config/{shared_dir}/ ({len(names)} files)"))
 
         if no_config_jobs:
             print(self.t['jobs_no_config'].format(', '.join(no_config_jobs)))
