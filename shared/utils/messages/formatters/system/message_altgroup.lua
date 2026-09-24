@@ -57,6 +57,12 @@ function MessageAltGroup.show_role_alt(name, main)
     M.send('ALTGROUP', 'role_alt', {name = name, main = main})
 end
 
+--- The alt window was shown or hidden.
+--- @param visible boolean
+function MessageAltGroup.show_window(visible)
+    M.send('ALTGROUP', visible and 'window_on' or 'window_off', {})
+end
+
 --- No alt is configured for this character.
 function MessageAltGroup.show_no_alts()
     M.send('ALTGROUP', 'no_alts', {})

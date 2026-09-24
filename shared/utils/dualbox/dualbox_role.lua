@@ -92,6 +92,8 @@ local function resync(role)
         local ok2, Reporter = pcall(require, 'shared/utils/dualbox/alt_buff_reporter')
         if ok2 and Reporter then Reporter.report_all() end
     end
+    local ok3, AltWindow = pcall(require, 'shared/utils/dualbox/alt_window')
+    if ok3 and AltWindow then AltWindow.refresh() end
 end
 
 --- //gs c main - this character becomes main, the others its alts.

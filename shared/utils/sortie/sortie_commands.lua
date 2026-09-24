@@ -89,6 +89,13 @@ local function to_alt(command)
     send_command('send ' .. ALT .. ' ' .. command)
 end
 
+--- Tell the alt window what was just ordered (on / follow).
+--- @param changes table Fields of AltGroup.state()
+local function note(changes)
+    local ok, AltGroup = pcall(require, 'shared/utils/dualbox/alt_group')
+    if ok and AltGroup then AltGroup.note(changes) end
+end
+
 --- One entry per target, sorted by name, with the aliases that share it.
 --- @return table Array of {name, aliases, indi, summary}
 local function list_entries()
@@ -149,6 +156,7 @@ local function engage_target(name)
     to_alt('sm load ' .. PROFILE_ROOT .. target.profile)
     to_alt('sm follow off')
     to_alt('sm on')
+    note({on = true, follow = false})
     to_alt('/ma "' .. target.indi .. '" <me>')
     if messages() then
         local shown = key ~= name
@@ -167,6 +175,7 @@ local function escort(args)
     local indi = args[1] or 'Indi-Regen'
     set_states({'Regen on'})
     to_alt('sm off')
+    note({on = false, follow = me()})
     -- The alt starts following only once its Indi- is cast: moving would
     -- interrupt it. Its escort command schedules the follow itself.
     to_alt('gs c escort ' .. indi .. ' ' .. me())
@@ -202,6 +211,7 @@ function SortieCommands.handle(args)
     elseif SIMPLE[sub] then
         local order = SIMPLE[sub]
         to_alt(order.command)
+        if order.command == 'sm off' then note({on = false}) end
         if messages() then
             if order.action then messages().show_alt_action(ALT, order.action) else messages().show_alt_off(ALT) end
         end

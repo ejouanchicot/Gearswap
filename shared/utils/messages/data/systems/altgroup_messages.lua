@@ -18,6 +18,8 @@ return {
     mirror = { template = "{gray}[{lightblue}ALTS{gray}] Mirror sent", color = 1 },
     role_main = { template = "{gray}[{lightblue}DUALBOX{gray}] {white}{name}{gray} : {green}MAIN{gray} - alts : {white}{alts}", color = 1 },
     role_alt = { template = "{gray}[{lightblue}DUALBOX{gray}] {white}{name}{gray} : {yellow}ALT{gray} of {white}{main}", color = 1 },
+    window_on = { template = "{gray}[{lightblue}ALTS{gray}] Window {green}ON", color = 1 },
+    window_off = { template = "{gray}[{lightblue}ALTS{gray}] Window {red}OFF", color = 1 },
     no_alts = { template = "{gray}[{lightblue}ALTS{gray}] {red}No alt set in config/DUALBOX_CONFIG.lua", color = 1 },
-    usage = { template = "{gray}[{lightblue}ALTS{gray}] {white}//gs c alts on | off | toggle | follow [name|off] | do <command> | mirror", color = 1 },
+    usage = { template = "{gray}[{lightblue}ALTS{gray}] {white}//gs c alts on | off | toggle | follow [name|off] | do <command> | mirror | window", color = 1 },
 }

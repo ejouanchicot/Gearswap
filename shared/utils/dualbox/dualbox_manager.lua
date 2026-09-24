@@ -286,6 +286,9 @@ function DualBoxManager.receive_alt_job(main_job, sub_job, main_level, sub_level
         online = true
     }
 
+    local win_ok, AltWindow = pcall(require, 'shared/utils/dualbox/alt_window')
+    if win_ok and AltWindow then AltWindow.refresh() end
+
     -- Correct the packet-derived party cache for this character.
     --
     -- That cache is only refreshed when the server sends a 0xDD, so after a
@@ -496,6 +499,10 @@ local function run_auto_init(attempt)
             AltBuffReporter.report_all()
         end
     end
+
+    -- The alts' state window (main only; hides itself elsewhere)
+    local win_ok, AltWindow = pcall(require, 'shared/utils/dualbox/alt_window')
+    if win_ok and AltWindow then AltWindow.start() end
 end
 
 coroutine.schedule(function() run_auto_init(1) end, INIT_FIRST_DELAY)
