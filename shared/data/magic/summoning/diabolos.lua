@@ -23,7 +23,7 @@ DIABOLOS.spells = {
         element                 = "Dark",
         magic_type              = "Summoning",
         type                    = "summon",
-        SMN                     = 20,
+        SMN                     = 1,
         mp_cost                 = 7,
         notes                   = "Dark-based avatar. MP cost: 7. Perpetuation: 3 MP/3s. Specializes in gravity effects, darkness damage (Night Terror, Ruinous Omen), and drain-type abilities. Quest required. SMN (subjob OK).",
     },

@@ -124,7 +124,7 @@ healing_cure.spells = {
         type                    = "single",
         main_job_only           = true,
         subjob_master_only      = false,
-        WHM                     = 99,  -- NOT learned at level 99 - requires 1200 Job Points Gift
+        WHM                     = 1200,  -- NOT learned at level 99 - requires 1200 Job Points Gift
         notes                   = "REQUIRES: 1200 Job Points (Gift: Full Cure) - NOT learned at level 99. Consumes all MP. Afflatus Solace: Grants Stoneskin effect."
     },
 }

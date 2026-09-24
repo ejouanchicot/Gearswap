@@ -73,17 +73,17 @@ shared/data/magic/
 
 ### 3. **Bio Series** (3 spells - DoT)
 
-| Spell | Jobs | Levels | Disease Effect |
+| Spell | Jobs | Levels | Effect |
 |:--|:--|:--|:--|
-| Bio | BLM, DRK, RDM | 10-15 | ATK -10%, Regen -10 |
-| Bio II | BLM, DRK, RDM | 35-40 | ATK -15%, Regen -15 |
-| Bio III | SCH | 75 | ATK -18.75%, Regen -18.75 |
+| Bio | BLM, DRK, RDM | 10-15 | Attack down + DoT |
+| Bio II | BLM, DRK, RDM | 35-40 | Stronger attack down + DoT |
+| Bio III | RDM | 75 | Strongest attack down + DoT |
 
 **Notes:**
 
-- All inflict Disease status + Darkness DoT
+- All inflict the Bio status (attack down) + Darkness DoT
 - DoT ticks every 3 seconds
-- Bio III is SCH-exclusive
+- Bio III is RDM-exclusive
 
 ---
 
@@ -142,8 +142,8 @@ Your table listed Klimaform under Dark Magic, but this is **incorrect**:
 | **BLM** | 8 spells | Aspir, Drain, Bio, Death, Stun, Tractor |
 | **DRK** | 23 spells | ALL Absorbs, ALL Drains, Endark, Dread Spikes |
 | **GEO** | 3 spells | Aspir I-III, Drain |
-| **RDM** | 2 spells | Bio I-II |
-| **SCH** | 5 spells | Aspir, Drain, Bio III, Kaustra |
+| **RDM** | 3 spells | Bio I-III |
+| **SCH** | 4 spells | Aspir, Drain, Kaustra |
 
 ---
 
@@ -184,7 +184,7 @@ local absorbs = DarkDB.get_absorb_spells(45)  -- Returns available Absorbs
 local spell = DarkDB.get_drain_spell("Aspir", "II", "BLM", 83)  -- "Aspir II"
 
 -- Get Bio by tier
-local bio = DarkDB.get_bio_spell("III", "SCH", 75)  -- "Bio III"
+local bio = DarkDB.get_bio_spell("III", "RDM", 75)  -- "Bio III"
 ```
 
 ---
@@ -197,7 +197,7 @@ The Dark Magic database is compatible with the spell message handler system:
 -- Spell messages will automatically show descriptions
 [BLM/RDM] Aspir >> Drains MP from target.
 [DRK/SAM] Absorb-STR >> Absorbs target's strength.
-[SCH/WHM] Bio III >> Inflicts Disease (ATK -18.75%) and maximum Darkness DoT.
+[RDM/WHM] Bio III >> Weakens attacks, drains HP.
 ```
 
 Controlled by `DARK_MESSAGES_CONFIG.lua` (if created):

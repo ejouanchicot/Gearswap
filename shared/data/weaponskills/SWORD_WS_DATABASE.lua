@@ -247,18 +247,6 @@ sword_ws.weaponskills = {
         jobs                = {RDM = 85, PLD = 85, BLU = 85},
         special_notes       = "Requires 'Kupofried's Weapon Skill Moogle Magic' quest. fTP-replicating weapon skill. Critical hit rate: +15%@1000TP / +25%@2000TP / +40%@3000TP. Almace: Empyrean Aftermath."
     },
-    ['Aeolian Edge'] = {
-        description         = 'Wind AoE damage. Varies with TP.',
-        type                = 'Magical',
-        mods                = {DEX = 40, INT = 40},
-        hits                = 1,
-        element             = 'Wind',
-        skillchain          = {'Scission', 'Detonation', 'Impaction'},
-        ftp                 = {[1000] = 2.0, [2000] = 3.0, [3000] = 4.5},
-        skill_required      = 290,
-        jobs                = {THF = 78, DNC = 78, COR = 82, RDM = 83, WAR = 85, BRD = 85, RNG = 85, BST = 86, NIN = 86, DRK = 87, PLD = 88, PUP = 88, GEO = 88, BLM = 92, SCH = 92, SAM = 97, DRG = 97, SMN = 97},
-        special_notes       = 'Requires dagger (290 skill) and melee range. Can only be used with RDM/THF/BRD/RNG/NIN/DNC as main or sub job. Damage formula: (pINT-mINT)/2 + 8 (cap: 32).'
-    },
     ['Expiacion'] = {
         description         = 'Two hits. Damage varies with TP.',
         type                = 'Physical',
@@ -282,66 +270,6 @@ sword_ws.weaponskills = {
         skill_required      = 250,
         jobs                = {WAR = 73, RDM = 73, PLD = 73, DRK = 73, BLU = 73, COR = 73, RUN = 73},
         special_notes       = 'Only usable during Campaign Battles while equipped with Griffinclaw. AoE attack with Flash effect.'
-    },
-    ['Black Halo'] = {
-        description         = 'Two hits. Damage varies with TP.',
-        type                = 'Physical',
-        mods                = {MND = 70, STR = 30},
-        hits                = 2,
-        element             = nil,
-        skillchain          = {'Fragmentation', 'Compression'},
-        ftp                 = {[1000] = 3.0, [2000] = 7.25, [3000] = 9.75},
-        skill_required      = 230,
-        jobs                = {
-            PLD                 = 67,
-            WHM                 = 67,
-            GEO                 = 70,
-            WAR                 = 73,
-            BLU                 = 73,
-            MNK                 = 74,
-            BLM                 = 74,
-            SMN                 = 75,
-            -- RDM/SCH via Kaja Rod or Maxentius as main-hand
-            RDM                 = 99,
-            SCH                 = 99
-        },
-        special_notes       = "Requires 'Orastery Woes' quest (club skill 230). Kaja Rod or Maxentius: +50% damage bonus (RDM/SCH access)."
-    },
-    ['Judgment'] = {
-        description         = 'Single attack. Damage varies with TP.',
-        type                = 'Physical',
-        mods                = {STR = 50, MND = 50},
-        hits                = 1,
-        element             = nil,
-        skillchain          = {'Impaction'},
-        ftp                 = {[1000] = 3.5, [2000] = 8.75, [3000] = 12.0},
-        skill_required      = 200,
-        jobs                = {PLD = 60, WAR = 62, WHM = 62, BLU = 62, GEO = 62, MNK = 64, BLM = 64, SMN = 64, SCH = 64, RUN = 64, DRK = 65, RDM = 70, BST = 70, BRD = 70, PUP = 70, THF = 75, RNG = 75, SAM = 75, NIN = 75, DRG = 75},
-        special_notes       = 'Club weapon skill (200 skill). Must be set as main or sub job.'
-    },
-    ['True Strike'] = {
-        description         = '100% crit rate. Accuracy varies.',
-        type                = 'Physical',
-        mods                = {STR = 100},
-        hits                = 1,
-        element             = nil,
-        skillchain          = {'Detonation', 'Impaction'},
-        ftp                 = {[1000] = 1.0, [2000] = 1.0, [3000] = 1.0},
-        skill_required      = 175,
-        jobs                = {PLD = 55, WAR = 56, WHM = 56, BLU = 56, GEO = 56, MNK = 57, BLM = 57, DRK = 57, SMN = 57, SCH = 57, RUN = 57, RDM = 59, BST = 59, BRD = 59, PUP = 59, THF = 63, SAM = 63, NIN = 63, DRG = 63},
-        special_notes       = 'Club weapon skill (175 skill). 100% critical hit rate. Large accuracy penalty at all TP levels. Attack modifier: 2.0.'
-    },
-    ['Shining Strike'] = {
-        description         = 'Light elemental. Varies with TP.',
-        type                = 'Magical',
-        mods                = {STR = 40, MND = 40},
-        hits                = 1,
-        element             = 'Light',
-        skillchain          = {'Impaction'},
-        ftp                 = {[1000] = 1.625, [2000] = 3.0, [3000] = 4.625},
-        skill_required      = 5,
-        jobs                = {PLD = 1, WAR = 3, MNK = 3, WHM = 3, BLM = 3, DRK = 3, SMN = 3, BLU = 3, SCH = 3, RUN = 3, GEO = 3, RDM = 4, THF = 4, BST = 4, BRD = 4, SAM = 4, NIN = 4, DRG = 4, PUP = 4},
-        special_notes       = 'Club weapon skill (5 skill). Deals light elemental damage.'
     },
     ---========================================================================
     --- SPECIAL WEAPON SKILLS (Level 99 - All Jobs)
@@ -383,18 +311,6 @@ sword_ws.weaponskills = {
         },
         special_notes       = 'Requires Onion Sword III. fTP-replicating weapon skill. Available to all jobs at level 99.'
     },
-    ['Dimidiation'] = {
-        description         = 'Two hits. Damage varies with TP.',
-        type                = 'Physical',
-        mods                = {DEX = 80},
-        hits                = 2,
-        element             = nil,
-        skillchain          = {'Light', 'Fragmentation'},
-        ftp                 = {[1000] = 2.25, [2000] = 4.5, [3000] = 6.75},
-        skill_required      = 357,
-        jobs                = {RUN = 99},
-        special_notes       = "Requires 'Rune Fencing the Night Away' quest. Can only be used with RUN as main job. Epeolatry (Level 119): Aftermath effect varies with TP. Attack modifier: 1.25."
-    }
 }
 
 ---============================================================================

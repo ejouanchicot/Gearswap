@@ -355,7 +355,7 @@ ENHANCING_COMBAT.spells = {
         enhancing_skill_affects = true,
         effect                  = "Double Attack: Skill-based, 5% @ <360 skill, then floor((skill-300)/10)%",
         RDM                     = 95,
-        RUN                     = 99,
+        RUN                     = 550,
     },
 
     ["Temper II"] = {
@@ -368,7 +368,7 @@ ENHANCING_COMBAT.spells = {
         magic_type              = "White",
         enhancing_skill_affects = true,
         effect                  = "Triple Attack: floor((skill-300)/10)%, no cap",
-        RDM                     = 99,
+        RDM                     = 1200,
         main_job_only           = true,
     },
 

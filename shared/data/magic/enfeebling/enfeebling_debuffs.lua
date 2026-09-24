@@ -176,7 +176,7 @@ ENFEEBLING_DEBUFFS.spells = {
         magic_type              = "Red",
         type                    = "single",
         enfeebling_type         = "skill_mnd_potency",
-        RDM                     = 99,
+        RDM                     = 550,
         notes                   = "Maximum evasion reduction. Potency: Skill + MND. Job Point ability (RDM).",
     },
 
@@ -217,7 +217,7 @@ ENFEEBLING_DEBUFFS.spells = {
         magic_type              = "Red",
         type                    = "single",
         enfeebling_type         = "skill_mnd_potency",
-        RDM                     = 99,
+        RDM                     = 550,
         notes                   = "Maximum magic evasion reduction. Potency: Skill + MND. Job Point ability (RDM).",
     },
 
@@ -247,7 +247,7 @@ ENFEEBLING_DEBUFFS.spells = {
         magic_type              = "Red",
         type                    = "single",
         enfeebling_type         = "mnd_potency",
-        RDM                     = 99,
+        RDM                     = 550,
         notes                   = "Enhanced magic accuracy reduction and casting time increase. Potency: MND. Job Point ability (RDM).",
     },
 

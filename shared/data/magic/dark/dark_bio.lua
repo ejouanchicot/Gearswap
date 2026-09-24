@@ -5,13 +5,13 @@
 --- Data source: bg-wiki.com (official FFXI documentation)
 ---
 --- Contents:
----   - Bio (Lv10-15) - Disease + Darkness DoT
----   - Bio II (Lv35-40) - Enhanced Disease + Darkness DoT
----   - Bio III (Lv75 SCH) - Maximum Disease + Darkness DoT
+---   - Bio (Lv10-15) - Attack down + Darkness DoT
+---   - Bio II (Lv35-40) - Stronger attack down + Darkness DoT
+---   - Bio III (RDM Lv75) - Strongest attack down + Darkness DoT
 ---
 --- Notes:
----   - All Bio spells inflict Disease status (Attack down, Regen down)
----   - Bio III is SCH-exclusive
+---   - All Bio spells inflict the Bio status (attack down + DoT)
+---   - Bio III is RDM-exclusive
 ---   - Duration and potency scale with Dark Magic skill
 ---   - DoT damage ticks every 3 seconds
 ---
@@ -40,7 +40,7 @@ DARK_BIO.spells = {
         BLM                     = 10,
         DRK                     = 15,
         RDM                     = 10,
-        notes                   = "Inflicts Disease (Attack down, Regen down) + darkness DoT. Ticks every 3 seconds. Duration/potency scale with Dark Magic skill. BLM/DRK/RDM.",
+        notes                   = "Bio effect (attack down) + darkness DoT. Ticks every 3 seconds. Duration/potency scale with Dark Magic skill. BLM/DRK/RDM.",
     },
 
     ["Bio II"] = {
@@ -55,7 +55,7 @@ DARK_BIO.spells = {
         BLM                     = 35,
         DRK                     = 40,
         RDM                     = 36,
-        notes                   = "Enhanced Disease (Attack down, Regen down) + darkness DoT. Ticks every 3 seconds. Duration/potency scale with Dark Magic skill. BLM/DRK/RDM.",
+        notes                   = "Stronger Bio effect (attack down) + darkness DoT. Ticks every 3 seconds. Duration/potency scale with Dark Magic skill. BLM/DRK/RDM.",
     },
 
     ["Bio III"] = {
@@ -67,8 +67,8 @@ DARK_BIO.spells = {
         type                    = "single",
         main_job_only           = false,
         subjob_master_only      = false,
-        SCH                     = 75,
-        notes                   = "Maximum Disease (Attack down, Regen down) + darkness DoT. Ticks every 3 seconds. Duration/potency scale with Dark Magic skill. SCH-only.",
+        RDM                     = 75,
+        notes                   = "Bio effect (attack down) + darkness DoT. Ticks every 3 seconds. Duration/potency scale with Dark Magic skill. RDM-only.",
     },
 
 }
