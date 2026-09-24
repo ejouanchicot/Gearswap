@@ -29,7 +29,7 @@ ordinary `//gs c` commands. Part 4 uses `windower.send_ipc_message` and an `ipc 
 | `shared/utils/dualbox/alt_buff_reporter.lua` | 331 | ALT: report tracked buffs. MAIN: store them, guess/expire, trace log |
 | `shared/utils/dualbox/dualbox_sync_ipc.lua` | 154 | Windower IPC broadcast/hook registry for `ls`/`rf` mirroring |
 | `shared/utils/dualbox/alt_group.lua` | 238 | `//gs c alts`: orders to every other member of the box group (`sm on/off`, follow, `do <command>`, mirror); `route()` also dispatches `main`/`setalt` |
-| `shared/utils/dualbox/alt_window.lua` | 218 | Small overlay on the main: each alt (job, online) and the last Auto / Follow / Mirror orders; `//gs c alts window` shows/hides it |
+| `shared/utils/dualbox/alt_window.lua` | 247 | Small overlay on the main: each alt (job, online) and the last Auto / Follow / Mirror orders; `//gs c alts window` shows/hides it |
 | `shared/utils/dualbox/dualbox_role.lua` | 144 | `//gs c main` / `setalt`: switches the roles at runtime and saves them in `<Character>/config/dualbox_role.lua` |
 | `shared/utils/messages/formatters/system/message_altgroup.lua` + `data/systems/altgroup_messages.lua` | - | `[ALTS]` / `[DUALBOX]` lines of the two modules above |
 | `shared/utils/messages/formatters/ui/message_dualbox.lua` | 191 | Chat output for the job exchange (via `M.send('DUALBOX', ...)`) |
@@ -327,8 +327,11 @@ states that FFXI fires `buff_change` for Entrust only on loss. The 3 s resync is
 - **Persistence.** `<Character>/config/dualbox_role.lua` (`{role = ..., names = {...}}`) is applied
   over `DUALBOX_CONFIG.lua` by `DualBoxManager.initialize` right after the require, so it survives a
   reload and a game restart. Deleting the file restores the config file's role.
-- **Alt window** (`alt_window.lua`): drawn on the main only. Job and online come from
-  `_G.AltJobState`; Auto / Follow / Mirror are the last orders sent from this box
+- **Alt window** (`alt_window.lua`): drawn on the main only. Job comes from
+  `_G.AltJobState` (last one received), online from the party list (`get_party`, with the
+  alt's zone when it differs; `no party` when absent) - not `is_alt_online()`, whose 30 s
+  timeout reads a quiet alt as offline because the job exchange only speaks at a load or
+  a job change; Auto / Follow / Mirror are the last orders sent from this box
   (`AltGroup.state()`, `?` until one is sent; saved in `<Character>/config/alt_state.lua`
   with an `os.clock` stamp, so they survive a GearSwap reload but not a game restart), because the automation addon's real state
   is not readable from GearSwap. `//gs c sortie` records its orders through
