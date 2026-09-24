@@ -2,7 +2,7 @@
 --- GEO Lockstyle Configuration
 ---============================================================================
 --- User-configurable lockstyle settings for Geomancer job.
---- Configure different lockstyles by subjob, role, or personal preference.
+--- Configure a default lockstyle and optional per-subjob overrides.
 ---
 --- @file config/geo/GEO_LOCKSTYLE.lua
 --- @author Tetsouo
@@ -20,14 +20,12 @@ local GEOLockstyleConfig = {}
 GEOLockstyleConfig.default = 5
 
 -- Lockstyle by subjob (OPTIONAL)
--- If you want different lockstyles per subjob, uncomment and configure below
--- If not configured, the default lockstyle will be used
+-- A subjob missing from this table uses the default lockstyle
 GEOLockstyleConfig.by_subjob = {
-    -- Examples:
-    ['WHM'] = 5,  -- GEO/WHM uses lockstyle 1
-    ['RDM'] = 5,  -- GEO/RDM uses lockstyle 1
-    ['BLM'] = 5,  -- GEO/BLM uses lockstyle 1
-    ['SCH'] = 5,  -- GEO/SCH uses lockstyle 1
+    ['WHM'] = 5,  -- GEO/WHM
+    ['RDM'] = 5,  -- GEO/RDM
+    ['BLM'] = 5,  -- GEO/BLM
+    ['SCH'] = 5,  -- GEO/SCH
 }
 
 ---============================================================================
@@ -47,7 +45,7 @@ function GEOLockstyleConfig.get_style(subjob)
     return GEOLockstyleConfig.default
 end
 
--- Backward compatibility (for old code using .style)
+-- Legacy field: nothing under shared/ reads .style any more
 GEOLockstyleConfig.style = GEOLockstyleConfig.default
 
 return GEOLockstyleConfig

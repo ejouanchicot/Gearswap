@@ -2,7 +2,7 @@
 --- COR Macrobook Configuration
 ---============================================================================
 --- User-configurable macro book settings for Corsair job.
---- Configure different macro books/pages by subjob or role.
+--- Configure macro books/pages by subjob and by dual-box alt job.
 ---
 --- @file config/cor/COR_MACROBOOK.lua
 --- @author Tetsouo
@@ -24,7 +24,6 @@ CORMacroConfig.default = { book = 3, page = 1 }
 -- Macrobook by subjob (OPTIONAL)
 -- Format: ['SUBJOB'] = { book = X, page = Y }
 CORMacroConfig.solo = {
-    -- Examples:
     ['DNC'] = { book = 3, page = 1 },  -- COR/DNC
     ['NIN'] = { book = 3, page = 1 },  -- COR/NIN
     ['WAR'] = { book = 3, page = 1 },  -- COR/WAR
@@ -33,6 +32,8 @@ CORMacroConfig.solo = {
 
 ---============================================================================
 --- DUAL-BOXING CONFIGURATION (Playing COR + Alt)
+--- Structure: dualbox[ALT_JOB][YOUR_SUBJOB] = {book, page}, used while the
+--- alt is online on ALT_JOB; otherwise the solo table applies.
 ---============================================================================
 
 CORMacroConfig.dualbox = {
@@ -48,7 +49,7 @@ CORMacroConfig.dualbox = {
 }
 
 ---============================================================================
---- HELPER FUNCTION - DO NOT MODIFY
+--- HELPER FUNCTION (not called: MacrobookManager reads .solo/.default directly)
 ---============================================================================
 
 --- Get macrobook for current subjob

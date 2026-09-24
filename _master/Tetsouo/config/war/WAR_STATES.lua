@@ -1,0 +1,150 @@
+---============================================================================
+--- WAR State Configuration - Job States & Modes
+---============================================================================
+--- Defines all WAR job states (Combat Modes, Weapon Sets, etc.)
+---
+--- Features:
+---   • HybridMode configuration (PDT/Normal/SubtleBlow/Hoxne)
+---   • MainWeapon state with multiple weapon options
+---   • WS1..WS5 slots built from WAR_WS_CONFIG, JumpAuto, FastCast, AutoMedicine
+---   • Keys are bound in WAR_KEYBINDS.lua (Ctrl+numpad)
+---   • validate() helper (not called anywhere today)
+---
+--- Usage:
+---   • Loaded in user_setup(), which Mote-Include runs during its own init
+---   • Call WARStates.configure() to initialize all states
+---   • Call WARStates.validate() to verify configuration (optional)
+---
+--- @file    Tetsouo/config/war/WAR_STATES.lua
+--- @author  Tetsouo
+--- @version 1.0
+--- @date    Created: 2025-10-14
+--- @requires Mote-Include (state, M objects)
+---============================================================================
+local WARStates = {}
+
+---============================================================================
+--- STATE CONFIGURATION
+---============================================================================
+
+--- Configure all WAR states
+--- Must be called from user_setup() after Mote-Include is loaded.
+--- Defines HybridMode, MainWeapon, WS slots, JumpAuto, FastCast and AutoMedicine.
+---
+--- @return void
+function WARStates.configure()
+    -- ==========================================================================
+    -- COMBAT MODES
+    -- ==========================================================================
+
+    --- HybridMode: Defensive stance configuration
+    --- Options:
+    ---   • 'PDT'        - Physical Damage Taken -50% (safe mode)
+    ---   • 'Normal'     - Full offense (max DPS)
+    ---   • 'SubtleBlow' - Reduces TP fed to mob (uses sets.engaged.SubtleBlow)
+    ---   • 'Hoxne'      - Sortie Hoxne Ampulla stance (sets.engaged.Hoxne);
+    ---                    the ammo slot stays locked on the Ampulla
+    --- Keybind: Ctrl+Numpad9 to cycle (WAR_KEYBINDS.lua)
+    state.HybridMode = M{['description']='Hybrid Mode', 'PDT', 'Normal', 'SubtleBlow', 'Hoxne'}
+    state.HybridMode:set('PDT') -- Default to PDT for safety
+
+    -- ==========================================================================
+    -- WEAPON SETS
+    -- ==========================================================================
+
+    --- MainWeapon: Primary weapon selection
+    --- Keybind: Ctrl+Numpad1 to cycle (WAR_KEYBINDS.lua)
+    state.MainWeapon = M {
+        ['description'] = 'Main Weapon',
+        'Ukonvasara', -- Relic Great Axe (Aftermath: TP reduction, best for AM3)
+        'Chango', -- Empyrean Great Axe (Aftermath: Multi-Attack, +500 TP bonus)
+        'Naegling', -- Savage Blade sword (1H with shield for Fencer TP bonus)
+        'NaeglingKC', -- Naegling + Kraken Club (multi-attack focus)
+        'Shining', -- Shining One (Polearm)
+        'Ikenga', -- Ikenga's Axe (1H option)
+        'Loxotic', -- Loxotic Mace (1H option)
+    }
+
+    -- ==========================================================================
+    -- WEAPONSKILL SLOTS
+    -- ==========================================================================
+
+    -- Builds state.WS1..WS5 from WAR_WS_CONFIG for the current weapon.
+    -- Rebuilt on every MainWeapon change (see job_state_change in WAR_COMMANDS).
+    -- WARWSConfig is loaded by the entry point (character-scoped path).
+    local ws_ok, WSSlots = pcall(require, 'shared/utils/weaponskill/ws_slots')
+    if ws_ok and WSSlots and _G.WARWSConfig then
+        -- sync() aligns state.MainWeapon with the weapon actually equipped first:
+        -- a Mote state defaults to its first option, not to what is in hand.
+        WSSlots.sync(state.MainWeapon, _G.WARWSConfig)
+    end
+
+    -- ==========================================================================
+    -- AUTO-TRIGGERS
+    -- ==========================================================================
+
+    --- JumpAuto: Automatic Jump before a WS when TP < 1000 (/DRG only)
+    --- Cancels the WS, fires Jump (then High Jump if still short), replays the WS
+    state.JumpAuto = M {
+        ['description'] = 'Jump Auto',
+        'On',   -- Auto-trigger Jump before WS if TP < 1000 (DRG subjob only)
+        'Off'   -- Manual Jump only
+    }
+    state.JumpAuto:set('On')  -- Default: Auto-trigger enabled
+
+    -- ==========================================================================
+    -- FAST CAST (WATCHDOG SYSTEM)
+    -- ==========================================================================
+
+    --- FastCast: Fast Cast % for watchdog timeout calculation
+    --- Set this to your total Fast Cast % from gear/traits
+    --- Formula: adjusted_cast = base_cast × (1 - FC%/100)
+    --- Cap: 80% maximum (FFXI mechanics)
+    state.FastCast = M {
+        ['description'] = 'Fast Cast %',
+        0, 10, 20, 30, 40, 50, 60, 70, 80
+    }
+    state.FastCast:set(0)  -- Default: 0% (adjust based on your gear)
+
+    -- Universal toggle, created here rather than centrally: the keybind HUD
+    -- renders from user_setup() and caches what it reads, so a state added
+    -- afterwards shows as N/A until something forces a redraw.
+    local ok, AutoMedicine = pcall(require, 'shared/utils/debuff/auto_medicine')
+    if ok and AutoMedicine then
+        AutoMedicine.init(state, M)
+    end
+end
+
+---============================================================================
+--- VALIDATION
+---============================================================================
+
+--- Validate that states were configured correctly
+--- Checks that HybridMode, MainWeapon and JumpAuto exist.
+---
+--- @return boolean success True if validation passed, false otherwise
+--- @return string  message Validation message (success or error description)
+function WARStates.validate()
+    -- Check HybridMode exists
+    if not state.HybridMode then
+        return false, "HybridMode state not configured"
+    end
+
+    -- Check MainWeapon exists
+    if not state.MainWeapon then
+        return false, "MainWeapon state not configured"
+    end
+
+    -- Check JumpAuto exists
+    if not state.JumpAuto then
+        return false, "JumpAuto state not configured"
+    end
+
+    return true, "All WAR states configured successfully"
+end
+
+---============================================================================
+--- MODULE EXPORT
+---============================================================================
+
+return WARStates

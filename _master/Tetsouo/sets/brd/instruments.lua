@@ -3,7 +3,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Bard instruments grouped by family:
 ---     • Linos       — Augmented ranged for TP / WS
----     • Strings     — Carnwenhan, Daurdabla (song slot)
+---     • Strings     — Daurdabla (dummy song slots)
+---     • Carnwenhan  — Mythic dagger, not an instrument: main slot of song sets
 ---     • Wind        — Gjallarhorn, Marsyas (Honor March), Loughnashade (Aria of Passion)
 ---
 ---   Usage:
@@ -32,6 +33,6 @@ Instruments.Loughnashade = 'Loughnashade'   -- Aria of Passion (CRITICAL)
 
 -- • String Instruments
 Instruments.Daurdabla    = 'Daurdabla'      -- Dummy songs (+2 slots)
-Instruments.Carnwenhan   = 'Carnwenhan'     -- Mythic dagger (used as ranged-substitute or main)
+Instruments.Carnwenhan   = 'Carnwenhan'     -- Mythic dagger (main slot of song midcast)
 
 return Instruments

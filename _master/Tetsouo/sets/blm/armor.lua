@@ -3,8 +3,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   All BLM-specific armor pieces grouped by set:
 ---     • Wicce      = Empyrean +3 (elemental magic / enfeebles)
----     • Spaekona   = Relic +4 (MP conservation / DoT body)
----     • Archmage   = Relic +3 (Manafont body, Aspir feet, debuff legs)
+---     • Spaekona   = Artifact +4 (MP conservation / DoT body)
+---     • Archmage   = Relic +1/+3 (Manafont body, Aspir feet, debuff legs)
 ---     • Nyame      = WS armor (staff WS)
 ---     • Merlinic   = Augmented (Fast Cast set + Drain/Aspir set)
 ---     • Telchine   = Enhancing Magic duration +10 set
@@ -33,12 +33,12 @@ Armor.Wicce = {
     feet  = 'Wicce Sabots +3',
 }
 
--- • Relic +4 (Spaekona) — MP Conservation / DoT
+-- • Artifact +4 (Spaekona) — MP Conservation / DoT
 Armor.Spaekona = {
     body = "Spaekona's Coat +4",
 }
 
--- • Relic +3 (Archmage) — Manafont / Aspir / Debuff potency
+-- • Relic +1/+3 (Archmage) — Manafont / Aspir / Debuff potency
 Armor.Archmage = {
     body   = "Archmage's Coat +1",
     legs   = {

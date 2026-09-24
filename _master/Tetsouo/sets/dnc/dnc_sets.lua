@@ -24,7 +24,7 @@
 ---   @file    Tetsouo/sets/dnc/dnc_sets.lua
 ---   @author  Tetsouo
 ---   @version 2.0 - Modularized
----   @date    Updated: 2026-05-11
+---   @date    Created: 2026-05-11 (modular split)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---@diagnostic disable: lowercase-global
@@ -389,8 +389,8 @@ sets.precast.FC.Utsusemi = sets.precast.FC
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- • Base Weaponskill
---   NOTE: Moonshade Earring is managed dynamically by TPBonusCalculator
---   It will equip automatically at 1750-1999 TP to reach 2000 TP threshold
+--   NOTE: Moonshade Earring is added at WS time by TPBonusCalculator, only
+--   when it closes the gap to the next TP threshold (2000 or 3000)
 sets.precast.WS = {
     ammo = "Oshasha's Treatise",
     head = Adhemar.bonnet_p1,

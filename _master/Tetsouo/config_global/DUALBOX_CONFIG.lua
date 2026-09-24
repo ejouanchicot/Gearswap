@@ -4,7 +4,10 @@
 --- Centralized configuration for dual-boxing support between main and alt.
 --- This file defines the role, character names, and communication settings.
 ---
---- @file DUALBOX_CONFIG.lua
+--- Loaded by shared/utils/dualbox/dualbox_manager.lua as
+--- <Char>/config/DUALBOX_CONFIG and exposed as _G.DualBoxConfig.
+---
+--- @file Tetsouo/config/DUALBOX_CONFIG.lua
 --- @author Tetsouo
 --- @version 1.0.0
 --- @date Created: 2025-10-22
@@ -17,8 +20,9 @@ local DualBoxConfig = {}
 ---============================================================================
 
 -- Character role: "main" or "alt"
--- MAIN: Receives job updates from alt, selects appropriate macrobooks
--- ALT: Sends job updates to main when job changes
+-- Both boxes send and receive job updates and pick macrobooks from the other
+-- box's job. The role decides which name below is the other box, and which
+-- side sends buff reports (alt) and runs the alt commands (main).
 DualBoxConfig.role = "main"
 
 ---============================================================================
@@ -28,7 +32,7 @@ DualBoxConfig.role = "main"
 -- This character's name (the MAIN)
 DualBoxConfig.character_name = "Tetsouo"
 
--- The ALT character to receive job updates from
+-- The ALT character (the other box)
 DualBoxConfig.alt_character = "Kaories"
 
 ---============================================================================

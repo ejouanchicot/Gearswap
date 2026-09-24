@@ -1,6 +1,6 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
----   COR Refill Config (Kaories)
----   See Tetsouo/config/war/WAR_REFILL.lua for the format reference.
+---   COR Refill Config
+---   See WAR_REFILL.lua for the format reference.
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   COR: never needs Powder/Oil (per user spec) - uses ranged play, less need.
 

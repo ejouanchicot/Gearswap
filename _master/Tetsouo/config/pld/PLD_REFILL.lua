@@ -4,8 +4,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PLD typical subjobs: /RUN, /SCH, /BLU.
 ---   Default = full kit + tank food.
----   /SCH override = drop Powder/Oil (Sublimation/Stratagems unrelated, just user pref),
----                    add Echo Drops for Silence on /SCH cures.
+---   /SCH and /RDM overrides = default minus Powder/Oil (user preference).
+---   /RUN override = same list as the default.
 
 local M = {}
 

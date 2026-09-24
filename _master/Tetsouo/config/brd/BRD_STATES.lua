@@ -1,0 +1,254 @@
+---============================================================================
+--- BRD State Configuration - Centralized State Management
+---============================================================================
+--- Centralizes all BRD state definitions for consistency and maintainability.
+---
+--- Features:
+---   • Combat modes (EngagedMode: STP/Acc/DT/SB, IdleMode: Refresh/DT/Regen)
+---   • Song pack system (SongMode: pre-configured 5-song rotations)
+---   • Instrument selection (MainInstrument: Gjallarhorn/Daurdabla/etc.)
+---   • Song customization (VictoryMarch replacement, Etude, Carol, Threnody)
+---   • Default state values for optimal gameplay
+---   • validate() helper (not called anywhere today)
+---
+--- State Purposes:
+---   • EngagedMode: STP = TP gain, Acc = accuracy, DT = damage reduction, SB = subtle blow
+---   • IdleMode: Refresh/DT/Regen (idle gear focus)
+---   • SongMode: Pre-configured song rotation packs (BRD_SONG_CONFIG.lua)
+---   • MainInstrument: Instrument selection (Gjallarhorn REMA default)
+---   • VictoryMarch: Replacement when Haste capped (Madrigal/Minuet/etc.)
+---   • EtudeType: Stat buff selection (STR/DEX/VIT/AGI/INT/MND/CHR)
+---   • CarolElement: Resistance buff element (Fire/Ice/Wind/Earth/Lightning/Water/Light/Dark)
+---   • ThrenodyElement: Resistance debuff element
+---   • MarcatoSong: song that gets Marcato automatically (or Off)
+---   • MainWeapon / SubWeapon: melee weapon selection
+---   • BRDSong1-5: display-only song slots for the HUD
+---   • FastCast: Fast Cast % used by the midcast watchdog
+---
+--- Dependencies:
+---   • Mote-Include (M state creator, state:options(), state:set())
+---
+--- @file    Tetsouo/config/brd/BRD_STATES.lua
+--- @author  Tetsouo
+--- @version 1.0
+--- @date    Created: 2025-10-14
+---============================================================================
+
+local BRDStates = {}
+
+---============================================================================
+--- STATE CONFIGURATION
+---============================================================================
+
+--- Configure all BRD states (called from user_setup in the entry file)
+--- @return nil
+function BRDStates.configure()
+    -- ========================================
+    -- COMBAT MODES
+    -- ========================================
+
+    -- IdleMode: Primary mode for idle gear selection
+    state.IdleMode =
+        M {
+        ['description'] = 'Idle Mode',
+        'Refresh', -- MP Refresh gear (Fili +3)
+        'DT', -- Damage Taken reduction (Nyame)
+        'Regen' -- HP Regen gear (Nyame)
+    }
+    state.IdleMode:set('DT')
+
+    -- EngagedMode: Melee combat focus (Store TP, Accuracy, DT, Subtle Blow)
+    state.EngagedMode = M {
+        ['description'] = 'Engaged Mode',
+        'STP',  -- Store TP focus (default)
+        'Acc',  -- Accuracy for high evasion
+        'DT',   -- Damage Taken reduction
+        'SB'    -- Subtle Blow (reduce enemy TP gain)
+    }
+    state.EngagedMode:set('STP')
+
+    -- ========================================
+    -- SONG SYSTEM
+    -- ========================================
+
+    state.SongMode =
+        M {
+        ['description'] = 'Song Pack',
+        'Dirge', -- Honor + Min5/4 + Dirge + Victory
+        'March', -- Honor + Min5/4 + Victory + Scherzo
+        'Madrigal', -- Honor + Min5/4 + Madrigal + Victory
+        'Minne', -- Honor + Min5/4 + Minne + Victory
+        'Etude', -- Honor + Min5/4 + Etude + Victory
+        'Tank', -- Victory + Minne + Ballad III/II + Scherzo (for tanks)
+        'Healer', -- Victory + Minne + Ballad III/II + Scherzo (for healers)
+        'Carol', -- Honor + Min5/4 + Carol + Victory
+        'Scherzo', -- Honor + Min5/4 + Scherzo + Victory
+        'Arebati', -- Dirge + Honor + Min5/4 + Minne
+        'Ngai' -- Honor + Minuet 5 + Water Carol II + Minne 5 + Scherzo
+    }
+    state.SongMode:set('Madrigal')
+
+    state.MainInstrument =
+        M {
+        ['description'] = 'Main Instrument',
+        'Gjallarhorn', -- REMA horn (best)
+        'Daurdabla', -- Dummy songs instrument
+        'Marsyas' -- Alternative horn
+    }
+    state.MainInstrument:set('Gjallarhorn')
+
+    state.VictoryMarch =
+        M {
+        ['description'] = 'Victory March Replace',
+        'Madrigal', -- Replace with Blade Madrigal
+        'Minuet', -- Replace with Valor Minuet III
+        'Etude', -- Replace with the Etude matching state.EtudeType
+        'None' -- Keep Victory March
+    }
+    state.VictoryMarch:set('Etude')
+
+    state.EtudeType =
+        M {
+        ['description'] = 'Etude Type',
+        'STR',
+        'DEX',
+        'VIT',
+        'AGI',
+        'INT',
+        'MND',
+        'CHR'
+    }
+    state.EtudeType:set('STR')
+
+    state.CarolElement =
+        M {
+        ['description'] = 'Carol Element',
+        'Fire',
+        'Ice',
+        'Wind',
+        'Earth',
+        'Lightning',
+        'Water',
+        'Light',
+        'Dark'
+    }
+    state.CarolElement:set('Fire')
+
+    state.ThrenodyElement =
+        M {
+        ['description'] = 'Threnody Element',
+        'Fire',
+        'Ice',
+        'Wind',
+        'Earth',
+        'Lightning',
+        'Water',
+        'Light',
+        'Dark'
+    }
+    state.ThrenodyElement:set('Fire')
+
+    state.MarcatoSong =
+        M {
+        ['description'] = 'Auto-Marcato Song',
+        'HonorMarch', -- Auto-Marcato for Honor March with Nitro
+        'AriaPassion', -- Auto-Marcato for Aria of Passion with Nitro
+        'Off' -- Disable auto-Marcato
+    }
+    state.MarcatoSong:set('HonorMarch')
+
+    -- ========================================
+    -- WEAPON SELECTION
+    -- ========================================
+
+    state.MainWeapon =
+        M {
+        ['description'] = 'Main Weapon',
+        'Mpu Gandring',
+        'Naegling',
+    }
+    state.MainWeapon:set('Mpu Gandring')
+
+    state.SubWeapon =
+        M {
+        ['description'] = 'Sub Weapon',
+        'Kraken',
+        'Centovente',
+        'Genmei',
+    }
+    state.SubWeapon:set('Kraken')
+
+    -- ========================================
+    -- SONG SLOTS (display only)
+    -- ========================================
+
+    state.BRDSong1 = M {['description'] = 'Song 1', 'Empty'}
+    state.BRDSong2 = M {['description'] = 'Song 2', 'Empty'}
+    state.BRDSong3 = M {['description'] = 'Song 3', 'Empty'}
+    state.BRDSong4 = M {['description'] = 'Song 4', 'Empty'}
+    state.BRDSong5 = M {['description'] = 'Song 5', 'Empty'}
+
+    -- Filled by SongRotationManager.update_song_slots() (_G.update_brd_song_slots)
+
+    -- ========================================
+    -- FAST CAST (WATCHDOG SYSTEM)
+    -- ========================================
+
+    --- FastCast: Fast Cast % for watchdog timeout calculation
+    --- Set this to your total Fast Cast % from gear/traits
+    --- Formula: adjusted_cast = base_cast × (1 - FC%/100)
+    --- Cap: 80% maximum (FFXI mechanics)
+    state.FastCast = M {
+        ['description'] = 'Fast Cast %',
+        0, 10, 20, 30, 40, 50, 60, 70, 80
+    }
+    state.FastCast:set(80)  -- Default: 80% (BRD has high FC for songs)
+
+    -- Universal toggle, created here rather than centrally: the keybind HUD
+    -- renders from user_setup() and caches what it reads, so a state added
+    -- afterwards shows as N/A until something forces a redraw.
+    local ok, AutoMedicine = pcall(require, 'shared/utils/debuff/auto_medicine')
+    if ok and AutoMedicine then
+        AutoMedicine.init(state, M)
+    end
+end
+
+---============================================================================
+--- VALIDATION
+---============================================================================
+
+--- Check that the main BRD states exist
+--- @return boolean success True if all checked states exist
+--- @return string message Validation result message
+function BRDStates.validate()
+    if not state.EngagedMode then
+        return false, 'EngagedMode not configured'
+    end
+    if not state.IdleMode then
+        return false, 'IdleMode not configured'
+    end
+    if not state.SongMode then
+        return false, 'SongMode not configured'
+    end
+    if not state.MainInstrument then
+        return false, 'MainInstrument not configured'
+    end
+    if not state.VictoryMarch then
+        return false, 'VictoryMarch not configured'
+    end
+    if not state.EtudeType then
+        return false, 'EtudeType not configured'
+    end
+    if not state.CarolElement then
+        return false, 'CarolElement not configured'
+    end
+    if not state.ThrenodyElement then
+        return false, 'ThrenodyElement not configured'
+    end
+    if not state.MarcatoSong then
+        return false, 'MarcatoSong not configured'
+    end
+    return true, 'All BRD states configured successfully'
+end
+
+return BRDStates

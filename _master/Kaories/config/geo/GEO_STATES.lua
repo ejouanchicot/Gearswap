@@ -8,17 +8,17 @@
 ---   • Combat modes (HybridMode: PDT/Normal, CombatMode: weapon locking)
 ---   • Luopan modes (LuopanMode: DT/DPS pet focus)
 ---   • Weapon selection (MainWeapon: Idris, SubWeapon: Genmei Shield)
----   • Indicolure system (Self/Entrust mode + 27 Indi spells)
----   • Geocolure system (26 Geo spells for Luopan bubble)
+---   • Indicolure system (Self/Entrust mode + 30 Indi spells)
+---   • Geocolure system (28 Geo spells for Luopan bubble)
 ---   • Elemental nuke system (Light/Dark + Single/AOE + Tier selection)
 ---   • Default state values for optimal gameplay
----   • Validation API for state verification
+---   • validate() helper (not called anywhere today)
 ---
 --- State Purposes:
 ---   • HybridMode: PDT = 50% damage reduction, Normal = maximum DPS
 ---   • CombatMode: Off = free swapping, On = weapon slots locked
 ---   • LuopanMode: DT = Luopan survival, DPS = damage optimization
----   • MainWeapon: Idris (REMA - best handbell)
+---   • MainWeapon: Idris (club)
 ---   • SubWeapon: Genmei Shield (PDT shield)
 ---   • IndicolureMode: Self = Indi on self, Entrust = Indi on party member
 ---   • MainIndi: Indicolure spell selection (buffs on self/party)
@@ -46,6 +46,7 @@ local GEOStates = {}
 ---============================================================================
 
 --- Configure all GEO states (called from user_setup in main file)
+--- @return nil
 function GEOStates.configure()
     -- ========================================
     -- COMBAT MODES
@@ -75,10 +76,10 @@ function GEOStates.configure()
     -- WEAPON SELECTION
     -- ========================================
 
-    -- MainWeapon: Primary weapon selection (handbell)
+    -- MainWeapon: Primary weapon selection (club)
     state.MainWeapon = M {
         ['description'] = 'Main Weapon',
-        'Idris'  -- REMA handbell (best for GEO)
+        'Idris'  -- Club
     }
     state.MainWeapon:set('Idris')  -- Default to Idris
 
@@ -113,7 +114,7 @@ function GEOStates.configure()
         "Indi-Acumen",       -- MAB+
         "Indi-Focus",        -- MACC+
         "Indi-Voidance",     -- Evasion+
-        "Indi-Attunement",   -- MDB+
+        "Indi-Attunement",   -- Magic Evasion+
         "Indi-Regen",        -- Regen+
         -- Stats buffs
         "Indi-STR",          -- STR+
@@ -124,18 +125,18 @@ function GEOStates.configure()
         "Indi-MND",          -- MND+
         "Indi-CHR",          -- CHR+
         -- Debuffs (offensive)
-        "Indi-Frailty",      -- Attack-
+        "Indi-Frailty",      -- Defense-
         "Indi-Malaise",      -- MDB-
         "Indi-Torpor",       -- Evasion-
-        "Indi-Slow",         -- Magic Haste-
+        "Indi-Slow",         -- Slow (attack speed-)
         "Indi-Languor",      -- Magic Attack/Defense-
         "Indi-Paralysis",    -- Adds Paralysis
         "Indi-Vex",          -- Magic Evasion-
-        "Indi-Wilt",         -- Magic Defense-
+        "Indi-Wilt",         -- Attack-
         "Indi-Slip",         -- Accuracy-
         "Indi-Fade",         -- Magic Accuracy-
         "Indi-Gravity",      -- Movement Speed-
-        "Indi-Fend",         -- Physical Defense-
+        "Indi-Fend",         -- Magic Defense+ (buff)
         "Indi-Poison"        -- Adds Poison
     }
     state.MainIndi:set("Indi-Haste")  -- Default to Haste (most common)
@@ -148,18 +149,18 @@ function GEOStates.configure()
     state.MainGeo = M {
         ['description'] = 'Main Geo Spell',
         -- Most used debuffs first
-        "Geo-Frailty",       -- Attack- (most common)
+        "Geo-Frailty",       -- Defense- (most common)
         "Geo-Malaise",       -- MDB-
         "Geo-Torpor",        -- Evasion-
-        "Geo-Slow",          -- Magic Haste-
+        "Geo-Slow",          -- Slow (attack speed-)
         "Geo-Languor",       -- Magic Attack/Defense-
         "Geo-Paralysis",     -- Adds Paralysis
         "Geo-Vex",           -- Magic Evasion-
-        "Geo-Wilt",          -- Physical Defense-
+        "Geo-Wilt",          -- Attack-
         "Geo-Slip",          -- Accuracy-
         "Geo-Fade",          -- Magic Accuracy-
         "Geo-Gravity",       -- Movement Speed-
-        "Geo-Fend",          -- Physical Defense-
+        "Geo-Fend",          -- Magic Defense+ (buff)
         "Geo-Poison",        -- Adds Poison
         -- Buffs (less common for Geo)
         "Geo-Haste",         -- Haste+
@@ -169,7 +170,7 @@ function GEOStates.configure()
         "Geo-Acumen",        -- MAB+
         "Geo-Focus",         -- MACC+
         "Geo-Voidance",      -- Evasion+
-        "Geo-Attunement",    -- MDB+
+        "Geo-Attunement",    -- Magic Evasion+
         "Geo-Regen",         -- Regen+
         -- Stats buffs
         "Geo-STR",           -- STR+
@@ -179,7 +180,7 @@ function GEOStates.configure()
         "Geo-INT",           -- INT+
         "Geo-MND"            -- MND+
     }
-    state.MainGeo:set("Geo-Frailty")  -- Default to Frailty (Attack- debuff)
+    state.MainGeo:set("Geo-Frailty")  -- Default to Frailty (Defense- debuff)
 
     -- ========================================
     -- ELEMENTAL NUKE SYSTEM

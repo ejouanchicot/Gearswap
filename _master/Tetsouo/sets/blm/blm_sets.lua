@@ -20,7 +20,7 @@
 ---   @file    Tetsouo/sets/blm/blm_sets.lua
 ---   @author  Tetsouo
 ---   @version 4.0 - Modularized
----   @date    Updated: 2026-05-11
+---   @date    Created: 2026-05-11 (modular split)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---@diagnostic disable: lowercase-global

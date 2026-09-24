@@ -14,15 +14,15 @@
 ---     • Quick Draw magic damage (Malignance set, Magic Attack Bonus)
 ---     • Ranged attack excellence (Snapshot, Rapid Shot, Store TP)
 ---     • Melee DPS capability (Dual Wield support, Malignance hybrid)
----     • Savage Blade weaponskill (Nyame +2, Camulus WSD cape)
+---     • Savage Blade weaponskill (Nyame Path B, Camulus WSD cape)
 ---     • Roll-specific gear (Caster's, Courser's, Blitzer's, Tactician's, Allies')
 ---     • Movement speed optimization (Carmine Cuisses +1)
 ---     • Hybrid survivability (PDT sets with Malignance)
 ---
 ---   @file    Tetsouo/sets/cor/cor_sets.lua
----   @author  Kaories / Tetsouo
+---   @author  Tetsouo
 ---   @version 4.0 - Modularized
----   @date    Updated: 2026-05-11
+---   @date    Created: 2026-05-11 (modular split)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---@diagnostic disable: lowercase-global

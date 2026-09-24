@@ -8,7 +8,7 @@
 ---     • Excalibur    = Relic sword (unlocks Knights of Round)
 ---     • Naegling     = Savage Blade focus
 ---     • Shining One  = Polearm (uses Alber Strap grip)
----     • Malevolence  = Magic burst / FC sword
+---     • Malevolence  = Magic burst / FC dagger (key Malevo)
 ---     • Kraken Club  = Multi-attack proc focus (PLD/DNC build)
 ---     • BurtgangKC   = Burtgang + Kraken Club combo
 ---

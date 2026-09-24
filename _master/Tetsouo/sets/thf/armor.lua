@@ -2,10 +2,10 @@
 ---   THF Armor - AF / Relic / Empyrean and Other Job Armor
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   All THF-specific armor pieces grouped by set:
----     • Plunderer = AF +3/+4 (Ambush body, Feint legs, Perfect Dodge hands)
----     • Pillager  = Relic +3/+4 (Flee feet, Steal-related, WS-friendly)
+---     • Plunderer = Relic +3/+4 (Ambush body, Feint legs, Perfect Dodge hands)
+---     • Pillager  = Artifact +3/+4 (Flee feet, Steal-related, WS-friendly)
 ---     • Skulker   = Empyrean +3 (Treasure Hunter, TA support)
----     • Adhemar   = Mythic Reforged (DEX/STR augments, melee/WS)
+---     • Adhemar   = Augmented (DEX/STR augments, melee/WS)
 ---     • Mummu     = Crit-focused mid-tier
 ---     • Nyame     = Magic WS / DT (Path B)
 ---     • Malignance= DT engaged base
@@ -34,7 +34,7 @@ Armor.Skulker = {
     earring = 'Skulk. Earring +1',
 }
 
--- • Relic +3/+4 (Pillager) — WS / Steal / Flee
+-- • Artifact +3/+4 (Pillager) — WS / Steal / Flee
 -- body_ambush = augmented for Ambush JA (different gear config, kept separate)
 Armor.Pillager = {
     head        = 'Pill. Bonnet +4',
@@ -45,7 +45,7 @@ Armor.Pillager = {
     feet        = 'Pill. Poulaines +4',
 }
 
--- • AF +3/+4 (Plunderer) — Ambush / Feint / Perfect Dodge / Crit
+-- • Relic +3/+4 (Plunderer) — Ambush / Feint / Perfect Dodge / Crit
 Armor.Plunderer = {
     body              = "Plunderer's Vest +4",
     body_ambush       = {name = "Plunderer's Vest +4", augments = {'Enhances "Ambush" effect'}},
@@ -56,7 +56,7 @@ Armor.Plunderer = {
     feet_ac           = {name = 'Plun. Poulaines +3', augments = {"Enhances \"Assassin's Charge\" effect"}},
 }
 
--- • Mythic Reforged (Adhemar) — DEX / STR melee+WS
+-- • Adhemar (augmented) — DEX / STR melee+WS
 Armor.Adhemar = {
     head  = {name = 'Adhemar Bonnet +1', augments = {'STR+12', 'DEX+12', 'Attack+20'}},
     hands = {name = 'Adhemar Wrist. +1', augments = {'STR+12', 'DEX+12', 'Attack+20'}},

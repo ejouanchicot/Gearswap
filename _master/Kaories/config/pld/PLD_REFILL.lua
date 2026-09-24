@@ -1,11 +1,11 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
----   PLD Refill Config
----   See WAR_REFILL.lua for the format reference.
+---   PLD Refill Config (Kaories)
+---   See Tetsouo/config/war/WAR_REFILL.lua for the format reference.
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PLD typical subjobs: /RUN, /SCH, /BLU.
 ---   Default = full kit + tank food.
----   /SCH override = drop Powder/Oil (Sublimation/Stratagems unrelated, just user pref),
----                    add Echo Drops for Silence on /SCH cures.
+---   /SCH and /RDM overrides = default minus Powder/Oil and Echo Drops
+---   (user preference).
 
 local M = {}
 

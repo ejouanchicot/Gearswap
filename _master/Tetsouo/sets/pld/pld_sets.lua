@@ -26,7 +26,7 @@
 ---   @file    Tetsouo/sets/pld/pld_sets.lua
 ---   @author  Tetsouo
 ---   @version 4.1
----   @date    Updated: 2026-09-21
+---   @date    Created: 2026-05-11 (modular split) | Updated: 2026-09-21
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---@diagnostic disable: lowercase-global

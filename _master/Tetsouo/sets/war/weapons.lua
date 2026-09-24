@@ -15,7 +15,7 @@
 ---
 ---   Sub weapons / utilities:
 ---     • Blurred Shield +1 = Fencer shield
----     • Telopanos Grip          = Two-handed grip
+---     • Telopanos Grip    = Two-handed grip
 ---     • Alber Strap       = Two-handed grip alt
 ---     • Kraken Club       = Multi-attack sub
 ---     • Aurgelmir Orb +1  = Ammo slot
@@ -54,7 +54,7 @@ Weapons['Loxotic']    = {main = 'Loxotic Mace +1', sub = 'Blurred Shield +1'}
 
 -- • Sub-slot only utilities
 Weapons['Blurred Shield +1'] = {sub = 'Blurred Shield +1'}
-Weapons['Telopanos Grip']          = {sub = 'Telopanos Grip'}
+Weapons['Telopanos Grip']    = {sub = 'Telopanos Grip'}
 Weapons['Alber Strap']       = {sub = 'Alber Strap'}
 
 -- • Ammo slot utilities

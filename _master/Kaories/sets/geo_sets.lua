@@ -1,32 +1,35 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   GEO Equipment Sets - Ultimate Geomancer Bubble Configuration
----  ═══════════════════════════════════════════════════════════════════════════
----   Complete equipment configuration for Geomancer support role with optimized
----   Luopan (pet bubble) survivability and geomancy effectiveness.
----   Features:
----     • Luopan survivability (Pet: DT-, Pet: Regen maximization with Telchine +3)
----     • Dual configuration system (sets.me.* vs sets.luopan.* for pet/no-pet)
----     • Geomancy skill maximization (Azimuth +3, Bagua +3, Idris relic club)
----     • Fast Cast optimization (Merlinic full set with FC+7 augments)
----     • Bolster enhancement (Bagua Tunic relic)
----     • Cure potency support (Daybreak main, Azimuth set)
----     • Elemental Magic Burst (Nantosuelta cape, Metamorph Ring +1)
----     • Movement speed optimization (Geomancy Sandals +3)
----    Architecture:
----     • Equipment definitions (Chirich rings, wardrobe management)
----     • Weapon sets (Idris club, Dunna bell, Genmei Shield)
----     • Idle sets (sets.me.idle, sets.luopan.idle with Pet gear)
----     • Engaged sets (sets.me.engaged, sets.luopan.engaged DT/DPS modes)
----     • Precast sets (Fast Cast, Job Abilities)
----     • Midcast sets (Geomancy, Cure, Enhancing, Enfeebling, Elemental)
----     • Weaponskill sets (Nyame full set for magic WS)
----     • Movement sets (Base speed, Adoulin)
----     • Buff sets (Doom resistance)
----   @file    jobs/geo/sets/geo_sets.lua
----   @author  Tetsouo
----   @version 3.0 - Standardized Organization
----   @date    Updated: 2025-11-10
----  ═════════════════════════════════════════════════════════════════════════
+---============================================================================
+--- GEO Equipment Sets - Geomancer Bubble Configuration
+---============================================================================
+--- Complete equipment configuration for Geomancer support role with optimized
+--- Luopan (pet bubble) survivability and geomancy effectiveness.
+---
+--- Features:
+---   • Luopan survivability (Pet: DT-, Pet: Regen with Telchine, Nantosuelta)
+---   • Dual configuration system (sets.me.* vs sets.luopan.* for pet/no-pet)
+---   • Geomancy skill maximization (Azimuth +3, Bagua +3, Idris club)
+---   • Fast Cast optimization (Merlinic set with Fast Cast augments)
+---   • Bolster enhancement (Bagua Tunic)
+---   • Cure potency support (Daybreak main, Azimuth set)
+---   • Elemental Magic (Nantosuelta cape)
+---   • Movement speed (Geo. Sandals +4)
+---
+--- Architecture:
+---   • Equipment definitions (Chirich rings, wardrobe management)
+---   • Weapon sets (Idris club, Genmei Shield); Dunna bell in idle/luopan sets
+---   • Idle sets (sets.me.idle, sets.luopan.idle with Pet gear)
+---   • Engaged sets (sets.me.engaged, sets.luopan.engaged DT/DPS modes)
+---   • Precast sets (Fast Cast, Job Abilities)
+---   • Midcast sets (Geomancy, Cure, Enhancing, Enfeebling, Elemental)
+---   • Weaponskill sets (Nyame set for magic WS)
+---   • Movement sets (Base speed, Adoulin)
+---   • Buff sets (Doom resistance)
+---
+--- @file    sets/geo_sets.lua
+--- @author  Tetsouo
+--- @version 3.0
+--- @date    Created: 2025-11-03 | Updated: 2025-11-10
+---============================================================================
 sets = {}
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -166,7 +169,7 @@ sets.luopan.engaged.DT = {
     }
 }
 
--- • DPS Mode - DPS focus perso (less pet gear, more melee stats)
+-- • DPS Mode - DPS focus (less pet gear, more melee stats)
 sets.luopan.engaged.DPS = {
     head = 'Azimuth Hood +3',
     body = 'Nyame Mail',

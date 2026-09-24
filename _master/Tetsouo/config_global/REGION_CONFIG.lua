@@ -20,7 +20,7 @@
 ---   3. Save the file
 ---   4. Reload GearSwap: //lua r gearswap
 ---
---- @file config/REGION_CONFIG.lua
+--- @file Tetsouo/config/REGION_CONFIG.lua
 --- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2025-10-12
@@ -78,7 +78,7 @@ function RegionConfig.get_orange_code(region)
     end
 end
 
---- Get orange/warning color code for current character
+--- Get orange/warning color code for a character
 --- @param char_name string Character name
 --- @return number color_code FFXI color code for orange/warning
 function RegionConfig.get_orange_for_character(char_name)
@@ -90,6 +90,7 @@ end
 --- REGION INFO (for reference)
 ---============================================================================
 
+-- Not read by any module; documentation only.
 RegionConfig.region_info = {
     US = {
         name = "United States / North America",

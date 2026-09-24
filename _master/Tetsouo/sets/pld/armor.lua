@@ -4,8 +4,8 @@
 ---   All PLD-specific armor pieces grouped by set:
 ---     • Chev        = Empyrean +3 (Chev. Armet/Cuirass/Gauntlets/Cuisses/Sabatons)
 ---                     Highest tier tank gear (DT, HP, enmity)
----     • Reverence   = Relic +4 (Surcoat = FC body)
----     • Caballarius = AF +4 (Coronet, Gauntlets, Surcoat, Breeches, Leggings)
+---     • Reverence   = Artifact +4 (Surcoat = FC body)
+---     • Caballarius = Relic +3/+4 (Coronet, Gauntlets, Surcoat, Breeches, Leggings)
 ---                     JA enhancement bodies
 ---     • Souveran    = Souv. Schaller/Cuirass/Handsch./Schuhs (extra HP)
 ---     • Sakpata     = MDT set + magical accuracy WS pieces (Path A / no aug)
@@ -38,13 +38,13 @@ Armor.Chev = {
     feet  = {name = 'Chev. Sabatons +3',  priority = 1},  -- delta Phx=-175 (idle, equip last)
 }
 
--- • Relic +4 (Reverence) — FC body + JA
+-- • Artifact +4 (Reverence) — FC body + JA
 Armor.Reverence = {
     surcoat = {name = 'Reverence Surcoat +4', priority = 13}, -- precast.FC delta idle=+82
     feet    = {name = 'Rev. Leggings +4'},                    -- Holy Circle
 }
 
--- • AF +4 (Caballarius) — Job Ability enhancements
+-- • Relic +3/+4 (Caballarius) — Job Ability enhancements
 Armor.Caballarius = {
     coronet   = {name = 'Cab. Coronet +4'},                            -- Rampart
     gauntlets = {name = 'Cab. Gauntlets +4'},                          -- Shield Bash

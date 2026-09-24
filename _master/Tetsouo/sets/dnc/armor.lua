@@ -2,10 +2,10 @@
 ---   DNC Armor - AF / Relic / Empyrean and Other Job Armor
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   All DNC-specific armor pieces grouped by set:
----     • Etoile     = AF +2 (Gorget neck only)
----     • Maculele   = Relic +3 (Tiara, Casaque, Bangles, Tights, Toe Sh.)
----     • Maxixi     = Relic +4 (Tiara, Bangles, Casaque, Toe Shoes)
----     • Horos      = Empyrean +3/+4 (Casaque, Bangles, Tights, Tiara, Shoes)
+---     • Etoile     = JSE neck +2 (Etoile Gorget only)
+---     • Maculele   = Empyrean +3 (Tiara, Casaque, Bangles, Tights, Toe Sh.)
+---     • Maxixi     = Artifact +3/+4 (Tiara, Bangles, Casaque, Toe Shoes)
+---     • Horos      = Relic +3/+4 (Casaque, Bangles, Tights, Tiara, Shoes)
 ---     • Nyame      = WS armor (Path A baseline)
 ---     • Malignance = DT / accuracy hybrid
 ---     • Adhemar    = Multi-attack body / hands / head
@@ -25,13 +25,13 @@
 
 local Armor = {}
 
--- • AF +2 (Etoile) — TP / Skillchain support
+-- • JSE neck +2 (Etoile Gorget) — TP / Skillchain support
 Armor.Etoile = {
     gorget    = 'Etoile Gorget +2',
     gorget_a  = {name = 'Etoile Gorget +2', augments = {'Path: A'}},
 }
 
--- • Relic +3 (Maculele) — TP / WS / Step
+-- • Empyrean +3 (Maculele) — TP / WS / Step
 Armor.Maculele = {
     head    = 'Maculele Tiara +3',
     body    = 'Macu. Casaque +3',
@@ -41,7 +41,7 @@ Armor.Maculele = {
     earring = 'Macu. Earring +1',
 }
 
--- • Relic +4 (Maxixi) — Waltz / Step potency upgrades
+-- • Artifact +3/+4 (Maxixi) — Waltz / Step potency upgrades
 Armor.Maxixi = {
     head  = 'Maxixi Tiara +4',
     body  = 'Maxixi Casaque +3',
@@ -49,7 +49,7 @@ Armor.Maxixi = {
     feet  = 'Maxixi Toe Shoes +4',
 }
 
--- • Empyrean +3/+4 (Horos) — Job Ability / Saber Dance
+-- • Relic +3/+4 (Horos) — Job Ability / Saber Dance
 Armor.Horos = {
     head  = 'Horos Tiara +3',
     body  = 'Horos Casaque +3',

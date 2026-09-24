@@ -9,7 +9,13 @@
 ---     8 = wardrobe1     10 = wardrobe2     11 = wardrobe3    12 = wardrobe4
 ---    13 = wardrobe5     14 = wardrobe6     15 = wardrobe7    16 = wardrobe8
 ---
----   @file Tetsouo/config/WARDROBE_CONFIG.lua
+---   Loaded with dofile() by shared/utils/wardrobe/lib/config.lua
+---   (Config.refresh); keys left out keep the defaults defined there.
+---
+---   @file    Tetsouo/config/WARDROBE_CONFIG.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2026-08-10
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 return {
@@ -33,14 +39,14 @@ return {
     -- All wardrobes scanned by the algorithm (must include primary + overflow).
     ALL_WARDROBES = {8, 10, 11, 12, 13, 14, 16},
 
-    -- ─── OBJETS A GARDER EN PRIMAIRE  ───────────────────────────────────────
+    -- ─── ITEMS TO KEEP IN PRIMARY BAGS  ─────────────────────────────────────
     -- Items no gear set names, forced into W1/W2 rather than left to overflow.
     --
     -- Rarely needed here: this character's overflow is wardrobes, which are
     -- equippable, so a warp ring pushed to W8 still works and the warp system
     -- still finds it. That is also why the organizer does NOT pin the warp
-    -- database's 65 items for this character - they would eat the W1/W2 slots
-    -- the active job needs.
+    -- items for this character (shared/utils/wardrobe/lib/items.lua) - they
+    -- would eat the W1/W2 slots the active job needs.
     --
     -- List something here only to force it into W1/W2 on purpose.
     KEEP_ITEMS = {},

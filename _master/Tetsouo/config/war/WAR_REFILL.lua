@@ -41,7 +41,7 @@ M.subjobs = {
         {name = 'Remedy', target = 12},
         {name = {'Sublime Sushi +1', 'Sublime Sushi'}, target = 12},
         {name = {'R. Curry Bun +1', 'Red Curry Bun'}, target = 12},
-    {name = {'Gyudon +1', 'Gyudon'}, target = 12}
+        {name = {'Gyudon +1', 'Gyudon'}, target = 12}
     }
 }
 

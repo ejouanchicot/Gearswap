@@ -13,7 +13,7 @@
 ---   @file    Tetsouo/sets/brd/brd_sets.lua
 ---   @author  Tetsouo
 ---   @version 4.0 - Modularized
----   @date    Updated: 2026-05-10
+---   @date    Created: 2026-05-10 (modular split)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---@diagnostic disable: lowercase-global

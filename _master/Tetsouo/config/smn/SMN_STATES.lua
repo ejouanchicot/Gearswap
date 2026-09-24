@@ -13,6 +13,8 @@
 local SMNStates = {}
 
 --- Configure all SMN states
+--- Must be called from user_setup() (Mote-Include provides `state` and `M`).
+--- @return nil
 function SMNStates.configure()
     -- Idle mode: standard / damage taken / Avatar's Favor
     state.IdleMode = M{['description']='Idle Mode', 'Normal', 'DT', 'Avatar'}

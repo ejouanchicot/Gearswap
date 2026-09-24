@@ -17,8 +17,10 @@
 ---     0 = inventory      5 = satchel        6 = sack          7 = case
 ---     8 = wardrobe1     10 = wardrobe2     11 = wardrobe3    12 = wardrobe4
 ---
----   @file Kaories/config/WARDROBE_CONFIG.lua
----   @author Tetsouo
+---   @file    Kaories/config/WARDROBE_CONFIG.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2026-05-01
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 return {
@@ -43,7 +45,7 @@ return {
     -- All wardrobes Kaories has unlocked.
     ALL_WARDROBES = {8, 10, 11, 12},
 
-    -- ─── OBJETS A GARDER EN WARDROBE  ───────────────────────────────────────
+    -- ─── ITEMS TO KEEP IN WARDROBES  ────────────────────────────────────────
     -- Items no gear set names, kept where they can be equipped.
     --
     -- Her three warp items (Warp Ring, Dim. Ring (Holla), Nexus Cape) are

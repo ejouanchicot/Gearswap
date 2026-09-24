@@ -6,7 +6,7 @@
 ---     • Senuna.WS        = WS (DEX+20, Acc/Atk+20, DEX+10, WSD+10%)
 ---     • Toetapper        = Step / Waltz utility cape (no augments)
 ---     • Earthcry         = Provoke / Animated Flourish
----     • Toetapper plain  = Reverse Flourish, Waltz
+---     • Senuna.plain     = Unaugmented Senuna's Mantle
 ---
 ---   Usage:
 ---     local Capes = require('Tetsouo/sets/dnc/capes')

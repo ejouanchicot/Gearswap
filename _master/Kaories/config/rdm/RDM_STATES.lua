@@ -6,42 +6,42 @@
 --- Features:
 ---   • Combat modes (HybridMode: PDT/Normal, CombatMode: weapon locking)
 ---   • Engaged modes (EngagedMode: DT/Acc/TP/Enspell - melee focus)
----   • Idle modes (IdleMode: Refresh/DT/Regen)
----   • Weapon selection (MainWeapon: Crocea Mors, SubWeapon: Colada)
+---   • Idle modes (IdleMode: Refresh/DT)
+---   • Weapon selection (MainWeapon: Naegling/Colada/Maxentius,
+---     SubWeapon: Ammurapi/Genmei/Malevolence)
 ---   • Enfeebling system (EnfeebleMode: Potency/Skill/Duration)
----   • Nuke system (NukeMode: FreeNuke/LowTierNuke/Accuracy)
+---   • Nuke system (NukeMode: FreeNuke/Magic Burst)
 ---   • Spell selection (MainLight/Dark, SubLight/Dark, NukeTier)
 ---   • Buff system (Enspell, GainSpell, Barspell, BarAilment, Spike)
----   • Automation (RefreshMode, SaboteurMode)
+---   • Automation (SaboteurMode)
 ---   • SCH subjob support (Storm - conditional)
 ---   • Default state values for optimal gameplay
----   • Validation API for state verification
+---   • validate() helper (not called anywhere today)
 ---
 --- State Purposes:
 ---   • HybridMode: PDT = 50% damage reduction, Normal = maximum DPS
 ---   • EngagedMode: DT/Acc/TP/Enspell (melee focus when engaged)
----   • IdleMode: Refresh/DT/Regen (idle gear focus)
+---   • IdleMode: Refresh/DT (idle gear focus)
 ---   • CombatMode: Off = free swapping, On = weapon slots locked
 ---   • EnfeebleMode: Potency/Skill/Duration (enfeebling magic focus)
----   • NukeMode: FreeNuke/LowTierNuke/Accuracy (elemental magic strategy)
+---   • NukeMode: FreeNuke/Magic Burst (elemental magic strategy)
 ---   • MainLightSpell: Fire/Aero/Thunder (primary light nuke)
 ---   • SubLightSpell: Fire/Aero/Thunder (secondary light nuke)
 ---   • MainDarkSpell: Blizzard/Stone/Water (primary dark nuke)
 ---   • SubDarkSpell: Blizzard/Stone/Water (secondary dark nuke)
----   • NukeTier: V/VI/IV/III/II/I (nuke tier selection)
----   • Enspell: Off/Enfire/Enblizzard/etc. (weapon enchantment)
+---   • NukeTier: V/IV/III/II/I (nuke tier selection)
+---   • EnSpell: Enfire/Enblizzard/etc. (weapon enchantment)
 ---   • GainSpell: Gain-STR/DEX/VIT/etc. (stat buff cycling)
----   • Barspell: Barfira/Barblizzara/etc. (elemental resist buff)
----   • BarAilment: Baramnesia/Barparalysis/etc. (ailment resist buff)
+---   • Barspell: Barfire/Barblizzard/etc. (elemental resist buff)
+---   • BarAilment: Baramnesia/Barparalyze/etc. (ailment resist buff)
 ---   • Spike: Blaze/Ice/Shock Spikes (damage reflection)
----   • RefreshMode: On/Off (auto-refresh on party members)
 ---   • SaboteurMode: On/Off (auto-Saboteur before enfeebles)
 ---   • Storm: Firestorm/Hailstorm/etc. (SCH subjob only - conditional)
 ---
 --- Dependencies:
 ---   • Mote-Include (M state creator, state:options(), state:set())
 ---
---- @file    config/rdm/RDM_STATES.lua
+--- @file    Kaories/config/rdm/RDM_STATES.lua
 --- @author  Tetsouo
 --- @version 1.0
 --- @date    Created: 2025-10-14
@@ -53,6 +53,8 @@ local RDMStates = {}
 --- STATE CONFIGURATION
 ---============================================================================
 
+--- Configure all RDM states (called from user_setup in the entry file)
+--- @return nil
 function RDMStates.configure()
     -- ========================================
     -- COMBAT MODES
@@ -87,17 +89,17 @@ function RDMStates.configure()
         M {
         ['description'] = 'Main Weapon',
         'Naegling', -- Savage Blade weapon
-        'Colada', -- Enspell shield
-        'Daybreak' -- Magic nuke weapon
+        'Colada', -- Enspell sword
+        'Maxentius' -- Magic nuke weapon
     }
-    state.MainWeapon:set('Naegling')
+    state.MainWeapon:set('Maxentius')
 
     state.SubWeapon =
         M {
         ['description'] = 'Sub Weapon',
-        'Ammurapi', -- Enfeebling sword
-        'Genmei', -- Enfeebling sword
-        'Malevolence' -- Enfeebling sword
+        'Ammurapi', -- Ammurapi Shield
+        'Genmei', -- Genmei Shield
+        'Malevolence' -- Dagger
     }
     state.SubWeapon:set('Genmei')
 
@@ -107,7 +109,7 @@ function RDMStates.configure()
         'Off', -- Weapons can swap freely
         'On' -- Weapons locked (main/sub/range/ammo)
     }
-    state.CombatMode:set('Off')
+    state.CombatMode:set('On')
 
     -- ========================================
     -- MAGIC SYSTEMS
@@ -317,6 +319,9 @@ end
 --- VALIDATION
 ---============================================================================
 
+--- Check that the main RDM states exist
+--- @return boolean success True if all checked states exist
+--- @return string message Validation result message
 function RDMStates.validate()
     if not state.HybridMode then
         return false, 'HybridMode not configured'

@@ -4,8 +4,8 @@
 ---   All BST-specific armor pieces grouped by set, plus common BST gear and
 ---   BST-only ring extensions not covered by the shared common/rings module.
 ---
----     • Ankusa   = AF +3 (pet status / Reward)
----     • Totemic  = Relic +3 (master / pet)
+---     • Ankusa   = Relic +3 (pet status / Reward)
+---     • Totemic  = Artifact +3 (master / pet; body_fh is an Ankusa Jackcoat)
 ---     • Anwig    = Anwig Salade (pet DT head)
 ---     • Nukumi   = Empyrean +3 (pet acc/atk, master)
 ---     • Mavi     = (legacy support)
@@ -63,7 +63,7 @@ Armor.Nukumi = {
     feet  = 'Nukumi Ocreae +3',
 }
 
--- • Ankusa (AF +3 - Pet status / Beast Affinity / Healer)
+-- • Ankusa (Relic +3 - Pet status / Beast Affinity / Healer)
 Armor.Ankusa = {
     head  = 'Ankusa Helm +3',
     gloves_ba = {name = 'Ankusa Gloves +3', augments = {'Enhances "Beast Affinity" effect'}},
@@ -73,7 +73,7 @@ Armor.Ankusa = {
     gaiters   = 'Ankusa Gaiters +3',
 }
 
--- • Totemic (Relic +3)
+-- • Totemic (Artifact +3) - body_fh is the Relic Ankusa Jackcoat (Feral Howl)
 Armor.Totemic = {
     body_fh = {name = 'An. Jackcoat +3', augments = {'Enhances "Feral Howl" effect'}},
     body    = 'Tot. Jackcoat +3',

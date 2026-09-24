@@ -20,7 +20,7 @@
 ---     • Engaged sets (DT, Enspell, Refresh, TP, Acc, Dual Wield)
 ---     • Weapon sets (Naegling, Daybreak, Colada, Malevolence, Shields)
 ---     • Movement sets (Base speed, Adoulin)
----   @file    jobs/rdm/sets/rdm_sets.lua
+---   @file    Kaories/sets/rdm_sets.lua
 ---   @author  Tetsouo
 ---   @version 3.1 - Standardized Organization
 ---   @date    Updated: 2025-11-10
@@ -42,6 +42,7 @@ local ChirichRing2 = {name = 'Chirich Ring +1', bag = 'wardrobe 2'}
 -- • Main Weapons (cycle via state.MainWeapon)
 sets['Naegling'] = {main = 'Naegling'}
 sets['Daybreak'] = {main = 'Daybreak'}
+sets['Maxentius'] = {main = 'Maxentius'}
 sets['Colada'] = {main = 'Colada'}
 
 -- • Sub Weapons (cycle via state.SubWeapon)
@@ -51,10 +52,10 @@ sets['Malevolence'] = {sub = 'Malevolence'}
 
 -- • Shield Configuration List
 sets.shields = {
-    'Ammurapi',            -- Short name
-    'Ammurapi Shield',     -- Full name (FFXI uses both formats!)
-    'Genmei',              -- Short name
-    'Genmei Shield',       -- Full name
+    'Ammurapi', -- Short name
+    'Ammurapi Shield', -- Full name (FFXI uses both formats!)
+    'Genmei', -- Short name
+    'Genmei Shield', -- Full name
     'Blurred Shield +1',
     'Blurred Shield',
     'Aegis',
@@ -91,13 +92,17 @@ sets.idle.DT = {
 }
 
 -- • Refresh Idle (maximize Refresh+)
-sets.idle.Refresh = set_combine(sets.idle.DT, {
-    head = 'Viti. Chapeau +4',
-    body = 'Lethargy Sayon +3',
-    legs = 'Leth. Fuseau +3',
-    left_ring = 'Woltaris Ring',
-    right_ring = "Gurebu's Ring"
-})
+sets.idle.Refresh =
+    set_combine(
+    sets.idle.DT,
+    {
+        head = 'Viti. Chapeau +4',
+        body = 'Lethargy Sayon +3',
+        legs = 'Leth. Fuseau +3',
+        left_ring = 'Woltaris Ring',
+        right_ring = "Gurebu's Ring"
+    }
+)
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- ENGAGED SETS
@@ -125,11 +130,15 @@ sets.engaged.DT = {
 }
 
 -- • Enspell Engaged (enspell bonus)
-sets.engaged.Enspell = set_combine(sets.engaged.DT, {
-    head = 'Umuthi Hat',
-    hands = 'Ayanmo Manopolas +2',
-    back = 'Ghostfyre Cape'
-})
+sets.engaged.Enspell =
+    set_combine(
+    sets.engaged.DT,
+    {
+        head = 'Umuthi Hat',
+        hands = 'Ayanmo Manopolas +2',
+        back = 'Ghostfyre Cape'
+    }
+)
 
 -- • Refresh Engaged (MP refresh while engaged - add Refresh+ gear if needed)
 sets.engaged.Refresh = set_combine(sets.engaged.DT, {})
@@ -145,17 +154,18 @@ sets.engaged.Acc = set_combine(sets.engaged.DT, {})
 -- ───────────────────────────────────────────────────────────────────────────
 
 -- • DT Dual Wield (defensive melee with dual wield gear)
-sets.engaged.DT.DW = set_combine(sets.engaged.DT, {
-    -- left_ear = 'Suppanomimi',    -- DW+5
-    -- right_ear = 'Eabani Earring' -- DW+4
-})
+sets.engaged.DT.DW = set_combine(sets.engaged.DT, {})
 
 -- • Enspell Dual Wield (enspell bonus with dual wield)
-sets.engaged.Enspell.DW = set_combine(sets.engaged.Enspell, {
-    head = "Nyame Helm",
-    -- left_ear = 'Suppanomimi',
-    -- right_ear = 'Eabani Earring'
-})
+sets.engaged.Enspell.DW =
+    set_combine(
+    sets.engaged.Enspell,
+    {
+        head = 'Nyame Helm'
+        -- left_ear = 'Suppanomimi',
+        -- right_ear = 'Eabani Earring'
+    }
+)
 
 -- • Refresh Dual Wield (MP refresh while dual wielding - add Refresh+ gear if needed)
 sets.engaged.Refresh.DW = set_combine(sets.engaged.DT.DW, {})
@@ -172,7 +182,7 @@ sets.engaged.Acc.DW = set_combine(sets.engaged.DT.DW, {})
 
 -- • Precast table initialization (REQUIRED - do not remove)
 sets.precast = {}
-sets.precast.JA = {}  -- Job Abilities sub-table
+sets.precast.JA = {} -- Job Abilities sub-table
 
 -- • Fast Cast (generic - maximize Fast Cast % for all spells)
 -- Target: 80% Fast Cast cap (RDM gets 30% from job traits = need 50% from gear)
@@ -191,16 +201,20 @@ sets.precast.FC = {
     right_ring = 'Murky Ring',
     back = {
         name = "Sucellos's Cape",
-        augments = {'MP+60', 'Mag. Acc+20 /Mag. Dmg.+20', 'Mag. Acc.+10', '"Fast Cast"+10'}
+        augments = {'MND+20', 'Mag. Acc+20 /Mag. Dmg.+20', 'Mag. Acc.+10', '"Fast Cast"+10'}
     }
 }
 
 -- • Stoneskin Fast Cast (Stoneskin Casting Time-, add if casting Stoneskin often)
-sets.precast.FC["Stoneskin"] = set_combine(sets.precast.FC, {
-    head = "Umuthi Hat",       -- Stoneskin Casting Time-
-    waist = "Siegel Sash",     -- Stoneskin Casting Time-
-    legs = "Nyame Flanchard"   -- Defensive
-})
+sets.precast.FC['Stoneskin'] =
+    set_combine(
+    sets.precast.FC,
+    {
+        head = 'Umuthi Hat', -- Stoneskin Casting Time-
+        waist = 'Siegel Sash', -- Stoneskin Casting Time-
+        legs = 'Nyame Flanchard' -- Defensive
+    }
+)
 
 -- ───────────────────────────────────────────────────────────────────────────
 -- Job Abilities
@@ -209,14 +223,12 @@ sets.precast.FC["Stoneskin"] = set_combine(sets.precast.FC, {
 -- • Chainspell (2-hour ability - instant cast magic for 1 minute)
 -- Vitiation Tabard +3 enhances Chainspell effect (doubles duration to 2 minutes)
 sets.precast.JA['Chainspell'] = {
-    body = 'Vitiation Tabard +4'  -- Extends Chainspell duration 100% (1min >> 2min)
+    body = 'Vitiation Tabard +4' -- Extends Chainspell duration 100% (1min >> 2min)
 }
 
 -- • Convert (swaps HP and MP values - useful for emergency MP recovery)
 -- Murgleis (Mythic) reduces Convert recast time (10min >> 5min)
-sets.precast.JA['Convert'] = {
-    -- main = "Murgleis",  -- Uncomment if you have Murgleis (Mythic RDM sword)
-}
+sets.precast.JA['Convert'] = {}
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- MIDCAST SETS
@@ -290,30 +302,61 @@ sets.midcast.CureSelf = set_combine(sets.midcast['Healing Magic'], {})
 sets.midcast['Enfeebling Magic'] = {
     main = "Bunzi's Rod",
     sub = 'Ammurapi Shield',
-    range = 'Ullr',
+    range = empty,
+    ammo = 'Regal Gem',
     head = 'Viti. Chapeau +4',
     body = 'Lethargy Sayon +3',
     hands = 'Leth. Ganth. +3',
-    legs = 'Chironic Hose',
+    legs = {name = 'Chironic Hose', augments = {'Mag. Acc.+29', 'MND+15', '"Mag.Atk.Bns."+1'}},
     feet = 'Vitiation Boots +4',
     neck = 'Dls. Torque +2',
     waist = 'Acuity Belt +1',
-    left_ear = 'Malignance Earring',
+    left_ear = 'Snotra Earring',
     right_ear = 'Regal Earring',
     left_ring = 'Kishar Ring',
-    right_ring = 'Metamor. Ring +1',
-    back = "Aurist's Cape +1"
+    right_ring = 'Stikini Ring +1',
+    back = {
+        name = "Sucellos's Cape",
+        augments = {'MND+20', 'Mag. Acc+20 /Mag. Dmg.+20', 'Mag. Acc.+10', '"Fast Cast"+10'}
+    }
 }
 
 -- Enfeebling Type Sets (Auto-selected based on spell from RDM_SPELL_DATABASE)
 -- Magic Accuracy focus (Dia, Paralyze, Slow, etc.)
-sets.midcast['Enfeebling Magic'].macc = set_combine(sets.midcast['Enfeebling Magic'], {})
+sets.midcast['Enfeebling Magic'].macc =
+    set_combine(
+    sets.midcast['Enfeebling Magic'],
+    {
+        ammo = empty,
+        range = 'Ullr',
+        right_ring = 'Metamor. Ring +1',
+        back = {name = "Sucellos's Cape", augments = {'INT+20', 'Mag. Acc+20 /Mag. Dmg.+20', 'INT+10'}}
+    }
+)
 
 -- MND Potency (Slow II, Paralyze II - scale with MND)
-sets.midcast['Enfeebling Magic'].mnd_potency = set_combine(sets.midcast['Enfeebling Magic'], {})
+sets.midcast['Enfeebling Magic'].mnd_potency =
+    set_combine(
+    sets.midcast['Enfeebling Magic'],
+    {
+        left_ring = 'Metamor. Ring +1',
+        back = {
+            name = "Sucellos's Cape",
+            augments = {'MND+20', 'Mag. Acc+20 /Mag. Dmg.+20', 'MND+10', '"Fast Cast"+10'}
+        }
+    }
+)
 
 -- INT Potency (Poison II, Burn, etc. - scale with INT)
-sets.midcast['Enfeebling Magic'].int_potency = set_combine(sets.midcast['Enfeebling Magic'], {})
+sets.midcast['Enfeebling Magic'].int_potency =
+    set_combine(
+    sets.midcast['Enfeebling Magic'],
+    {
+        legs = {name = 'Chironic Hose', augments = {'Mag. Acc.+25 "Mag.Atk.Bns."+25', 'INT+12', 'Mag. Acc.+12'}},
+        right_ring = 'Metamor. Ring +1',
+        back = {name = "Sucellos's Cape", augments = {'INT+20', 'Mag. Acc+20 /Mag. Dmg.+20', 'INT+10'}}
+    }
+)
 
 -- Enfeebling Skill Potency (Frazzle, Distract - scale with Enfeebling Skill)
 sets.midcast['Enfeebling Magic'].skill_potency = set_combine(sets.midcast['Enfeebling Magic'], {})
@@ -322,10 +365,16 @@ sets.midcast['Enfeebling Magic'].skill_potency = set_combine(sets.midcast['Enfee
 sets.midcast['Enfeebling Magic'].skill_mnd_potency = set_combine(sets.midcast['Enfeebling Magic'], {})
 
 -- Generic Potency (mixed potency enfeebles)
-sets.midcast['Enfeebling Magic'].potency = set_combine(sets.midcast['Enfeebling Magic'], {})
+sets.midcast['Enfeebling Magic'].potency =
+    set_combine(
+    sets.midcast['Enfeebling Magic'],
+    {
+        back = {name = "Sucellos's Cape", augments = {'INT+20', 'Mag. Acc+20 /Mag. Dmg.+20', 'INT+10'}}
+    }
+)
 
 -- Duration focus (maximize duration - composure, relic, etc.)
-sets.midcast['Enfeebling Magic'].duration = set_combine(sets.midcast['Enfeebling Magic'], {})
+sets.midcast['Enfeebling Magic'].duration = set_combine(sets.midcast['Enfeebling Magic'].macc, {})
 
 -- Enfeebling Mode Sets (selected via EnfeebleMode state)
 -- Potency mode (maximize enfeeble potency over landing rate)
@@ -338,9 +387,13 @@ sets.midcast['Enfeebling Magic'].Mixed = set_combine(sets.midcast['Enfeebling Ma
 sets.midcast['Enfeebling Magic'].Acc = set_combine(sets.midcast['Enfeebling Magic'], {})
 
 -- Enfeebling with Saboteur active (2x duration - can swap to potency gear)
-sets.midcast['Enfeebling Magic'].Saboteur = set_combine(sets.midcast['Enfeebling Magic'], {
-    hands = "Leth. Ganth. +3",
-})
+sets.midcast['Enfeebling Magic'].Saboteur =
+    set_combine(
+    sets.midcast['Enfeebling Magic'],
+    {
+        hands = 'Leth. Ganth. +3'
+    }
+)
 
 --╭──────────────────────────────────────────────────────────────────────────────╮
 --│ ENHANCING MAGIC (BUFFS)                                                      │
@@ -364,7 +417,8 @@ sets.midcast['Enhancing Magic'] = {
     },
     left_ring = "Gurebu's Ring",
     right_ring = {name = 'Metamor. Ring +1', augments = {'Path: A'}},
-    back = 'Ghostfyre Cape'}
+    back = 'Ghostfyre Cape'
+}
 
 -- Enhancing with Composure (on others - duration bonus)
 sets.midcast['Enhancing Magic'].Composure = {
@@ -392,10 +446,14 @@ sets.midcast.Refresh = {
 }
 
 -- Refresh with Composure (on others - Empyrean bonus)
-sets.midcast.Refresh.Composure = set_combine(sets.midcast['Enhancing Magic'].Composure, {
-    body = 'Atrophy Tabard +4',
-    legs = 'Leth. Fuseau +3'
-})
+sets.midcast.Refresh.Composure =
+    set_combine(
+    sets.midcast['Enhancing Magic'].Composure,
+    {
+        body = 'Atrophy Tabard +4',
+        legs = 'Leth. Fuseau +3'
+    }
+)
 
 -- Regen (base - HP regen potency)
 sets.midcast.Regen = {
@@ -404,10 +462,14 @@ sets.midcast.Regen = {
 }
 
 -- Regen with Composure (on others - duration + potency)
-sets.midcast.Regen.Composure = set_combine(sets.midcast['Enhancing Magic'].Composure, {
-    main = 'Bolelabunga',
-    body = {name = 'Telchine Chas.', augments = {'"Conserve MP"+5', '"Regen" potency+3'}}
-})
+sets.midcast.Regen.Composure =
+    set_combine(
+    sets.midcast['Enhancing Magic'].Composure,
+    {
+        main = 'Bolelabunga',
+        body = {name = 'Telchine Chas.', augments = {'"Conserve MP"+5', '"Regen" potency+3'}}
+    }
+)
 
 -- Phalanx (base - Damage Taken -)
 sets.midcast.Phalanx = set_combine(sets.midcast['Enhancing Magic'], {})
@@ -416,11 +478,15 @@ sets.midcast.Phalanx = set_combine(sets.midcast['Enhancing Magic'], {})
 sets.midcast.Phalanx.Composure = set_combine(sets.midcast['Enhancing Magic'].Composure, {})
 
 -- Stoneskin
-sets.midcast.Stoneskin = set_combine(sets.midcast['Enhancing Magic'], {
-    left_ear = 'Earthcry Earring',
-    neck = 'Nodens Gorget',
-    waist = 'Siegel Sash'
-})
+sets.midcast.Stoneskin =
+    set_combine(
+    sets.midcast['Enhancing Magic'],
+    {
+        left_ear = 'Earthcry Earring',
+        neck = 'Nodens Gorget',
+        waist = 'Siegel Sash'
+    }
+)
 
 -- Spell Family Sets (Root-level sets for MidcastManager v2.0 PRIORITY 6)
 -- These sets use spell_family from ENHANCING_MAGIC_DATABASE
@@ -503,6 +569,28 @@ sets.precast.WS['Chant du Cygne'] = set_combine(sets.precast.WS, {})
 -- MND-based physical option
 sets.precast.WS['Requiescat'] = set_combine(sets.precast.WS, {})
 
+-- Black Halo (Physical WS - 50% MND / 50% STR, Hybrid damage, Distortion/Fragmentation SC)
+-- Used with Maxentius (club) - MND-scaled hybrid weaponskill
+sets.precast.WS['Black Halo'] = {
+    range = empty,
+    ammo = "Oshasha's Treatise",
+    head = 'Viti. Chapeau +4',
+    body = {name = 'Nyame Mail', augments = {'Path: B'}},
+    hands = 'Atrophy Gloves +4',
+    legs = {name = 'Nyame Flanchard', augments = {'Path: B'}},
+    feet = 'Leth. Houseaux +3',
+    neck = 'Rep. Plat. Medal',
+    waist = {name = 'Sailfi Belt +1', augments = {'Path: A'}},
+    left_ear = 'Regal Earring',
+    right_ear = 'Odnowa Earring +1',
+    left_ring = 'Defending Ring',
+    right_ring = "Epaminondas's Ring",
+    back = {
+        name = "Sucellos's Cape",
+        augments = {'MND+20', 'Mag. Acc+20 /Mag. Dmg.+20', 'MND+10', '"Fast Cast"+10'}
+    }
+}
+
 --╭──────────────────────────────────────────────────────────────────────────────╮
 --│ MOVEMENT SETS                                                                │
 --╰──────────────────────────────────────────────────────────────────────────────╯
@@ -512,14 +600,23 @@ sets.MoveSpeed = {
 }
 
 -- Adoulin Movement (City-specific speed boost)
-sets.Adoulin = set_combine(sets.MoveSpeed, {
-    body = "Councilor's Garb" -- Speed bonus in Adoulin city
-})
+sets.Adoulin =
+    set_combine(
+    sets.MoveSpeed,
+    {
+        body = "Councilor's Garb" -- Speed bonus in Adoulin city
+    }
+)
 
 -- Town Idle
-sets.idle.Town = set_combine(sets.idle.DT, sets.MoveSpeed, {
-    body = "Councilor's Garb" -- Speed bonus in Adoulin city
-})
+sets.idle.Town =
+    set_combine(
+    sets.idle.DT,
+    sets.MoveSpeed,
+    {
+        body = "Councilor's Garb" -- Speed bonus in Adoulin city
+    }
+)
 
 --╭──────────────────────────────────────────────────────────────────────────────╮
 --│ BUFF SETS                                                                    │
@@ -530,8 +627,8 @@ sets.buff = {}
 -- Priority: Equip Nicander's Necklace immediately when Doom detected
 -- Nicander's has 100% Doom removal rate (10/10 procs)
 sets.buff.Doom = {
-    neck = "Nicander's Necklace",     -- Removes Doom (10/10 procs) - PRIORITY ITEM
-    ring1 = "Purity Ring",         -- Doom resistance (reduces application chance)
-    ring2 = "Blenmot's Ring +1",   -- Doom resistance (reduces application chance)
-    waist = "Gishdubar Sash"       -- Doom resistance (reduces application chance)
+    neck = "Nicander's Necklace", -- Removes Doom (10/10 procs) - PRIORITY ITEM
+    ring1 = 'Purity Ring', -- Doom resistance (reduces application chance)
+    ring2 = "Blenmot's Ring +1", -- Doom resistance (reduces application chance)
+    waist = 'Gishdubar Sash' -- Doom resistance (reduces application chance)
 }

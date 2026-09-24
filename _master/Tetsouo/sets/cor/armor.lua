@@ -2,8 +2,8 @@
 ---   COR Armor - AF / Relic / Empyrean and Other Job Armor
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   All COR-specific armor pieces grouped by set:
----     • Lanun     = Empyrean +4 (Phantom Roll, Wild Card, Random Deal, Fold)
----     • Chasseur  = Relic +1/+2/+3 (specific roll bonuses, melee accuracy)
+---     • Lanun     = Relic +3/+4 (Phantom Roll, Wild Card, Random Deal, Fold)
+---     • Chasseur  = Empyrean +1/+2/+3 (specific roll bonuses, melee accuracy)
 ---     • Laksamana = Artifact +4 (Snapshot / RA body)
 ---     • Malignance = Magic damage / PDT / Quick Draw
 ---     • Nyame     = WS armor (Path B)
@@ -21,7 +21,7 @@
 
 local Armor = {}
 
--- • Empyrean +4 (Lanun) — Phantom Roll / Wild Card / Random Deal / Fold
+-- • Relic +3/+4 (Lanun) — Phantom Roll / Wild Card / Random Deal / Fold
 Armor.Lanun = {
     head  = 'Lanun Tricorne +4',  -- Roll duration / potency
     body  = 'Lanun Frac +4',      -- Random Deal
@@ -30,7 +30,7 @@ Armor.Lanun = {
     feet  = 'Lanun Bottes +4',    -- Wild Card
 }
 
--- • Relic +1/+2/+3 (Chasseur) — Specific Roll Bonuses / Melee
+-- • Empyrean +1/+2/+3 (Chasseur) — Specific Roll Bonuses / Melee
 Armor.Chasseur = {
     head_t2     = 'Chass. Tricorne +2',          -- Blitzer's Roll
     body_f2     = "Chasseur's Frac +2",          -- Tactician's Roll

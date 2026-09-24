@@ -27,6 +27,8 @@ SMNMacroConfig.solo = {
 }
 
 --- Dual-boxing macro overrides (book/page when playing alongside a specific alt)
+--- Format: dualbox[<alt main job>][<SMN subjob>] = { book = N, page = N }
+--- Used only while the alt is online; otherwise the solo table applies.
 SMNMacroConfig.dualbox = {}
 
 return SMNMacroConfig

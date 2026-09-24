@@ -1,0 +1,301 @@
+---============================================================================
+--- FFXI GearSwap Configuration - Dancer (DNC) - Modular Architecture
+---============================================================================
+--- Advanced Dancer job configuration built on modular architecture principles.
+--- This file serves as the main coordinator, delegating all specialized logic
+--- to dedicated modules for maximum maintainability and scalability.
+---
+--- @file    Tetsouo/Tetsouo_DNC.lua
+--- @author  Tetsouo
+--- @version 1.0.0 - Initial Release
+--- @date    Created: 2025-10-04
+--- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+
+---
+--- Features:
+---   • Modular architecture (11 hook modules + 5 logic modules)
+---   • DPS-focused gear automation with survival modes (PDT/Normal)
+---   • Step management system (Quickstep, Box Step rotation)
+---   • Climactic Flourish auto-trigger for weaponskills
+---   • Jump auto-trigger (DRG subjob support)
+---   • Waltz healing system with HP-based tier selection
+---   • TP bonus optimization (Moonshade Earring automation)
+---   • Weapon management (Mpu Gandring, Demersal Degen)
+---   • JobChangeManager integration (anti-collision on job switches)
+---   • Keybind system with subjob filtering
+---   • UI display with real-time state tracking
+---   • Smart lockstyle/macrobook per subjob
+---
+--- Architecture Overview:
+---   Main File (this) >> dnc_functions.lua >> 11 Hooks + 5 Logic Modules
+---
+--- Module Organization:
+---   ├── functions/dnc_functions.lua        [Facade Loader]
+---   ├── sets/dnc/dnc_sets.lua              [Equipment Sets - Modular]
+---   ├── functions/DNC_*.lua                [11 Hook Modules]
+---   └── functions/logic/*.lua              [5 Logic Modules]
+---
+--- Hook Modules (11):
+---   DNC_PRECAST | DNC_MIDCAST | DNC_AFTERCAST | DNC_IDLE | DNC_ENGAGED
+---   DNC_STATUS | DNC_BUFFS | DNC_COMMANDS | DNC_MOVEMENT
+---   DNC_LOCKSTYLE | DNC_MACROBOOK
+---
+--- Logic Modules (5):
+---   climactic_manager | set_builder | smartbuff_manager
+---   step_manager | ws_variant_selector
+---============================================================================
+
+---============================================================================
+-- INITIALIZATION
+---============================================================================
+
+-- Load lockstyle timing configuration with fallback defaults
+local LockstyleConfig_ok, LockstyleConfig = pcall(require, 'Tetsouo/config/LOCKSTYLE_CONFIG')
+if not LockstyleConfig_ok then LockstyleConfig = nil end
+LockstyleConfig = LockstyleConfig or {
+    initial_load_delay = 8.0,  -- Initial lockstyle delay on job load (FFXI cooldown)
+    job_change_delay   = 8.0,  -- Lockstyle delay on job/subjob change
+    cooldown           = 15.0  -- Minimum time between lockstyle commands
+}
+
+-- ============================================
+-- LOAD UICONFIG AT MODULE LEVEL (executed on EVERY reload)
+-- ============================================
+-- Centralized loading via config_loader to eliminate duplication
+local ConfigLoader = require('shared/utils/config/config_loader')
+local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'DNC')
+
+-- Load region configuration. message_colors captures _G.RegionConfig once,
+-- when it is first required - ConfigLoader above already required it, so
+-- this assignment comes too late for the region warning color.
+local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
+if region_success and RegionConfig then
+    _G.RegionConfig = RegionConfig
+end
+
+--- GearSwap entry hook: loads Mote-Include, the shared systems and the DNC modules.
+--- Called by GearSwap each time this job file is loaded.
+--- @return void
+function get_sets()
+    -- PERFORMANCE PROFILING (enable with: //gs c perf start)
+    local Profiler = require('shared/utils/debug/performance_profiler')
+    Profiler.start('get_sets')
+
+    mote_include_version = 2
+    include('Mote-Include.lua')
+    Profiler.mark('After Mote-Include')
+    include('../shared/utils/core/INIT_SYSTEMS.lua')
+    Profiler.mark('After INIT_SYSTEMS')
+
+    -- ============================================
+    -- UNIVERSAL DATA ACCESS (All Spells/Abilities/Weaponskills)
+    -- ============================================
+    require('shared/utils/data/data_loader')
+    Profiler.mark('After data_loader')
+
+    -- ============================================
+    -- UNIVERSAL SPELL MESSAGES (All Jobs/Subjobs)
+    -- ============================================
+    include('../shared/hooks/init_spell_messages.lua')
+    Profiler.mark('After spell messages')
+
+    -- ============================================
+    -- UNIVERSAL ABILITY MESSAGES (All Jobs/Subjobs)
+    -- ============================================
+    include('../shared/hooks/init_ability_messages.lua')
+    Profiler.mark('After ability messages')
+
+    -- ============================================
+    -- UNIVERSAL WEAPONSKILL MESSAGES (All Jobs/Subjobs)
+    -- ============================================
+    include('../shared/hooks/init_ws_messages.lua')
+    Profiler.mark('After WS messages')
+
+    -- ============================================
+    -- LOAD CONFIGS INTO GLOBAL NAMESPACE
+    -- ============================================
+    -- Shared code in shared/ uses _G to access these configs
+
+    -- Global configs (loaded above, now put in _G)
+    _G.LockstyleConfig = LockstyleConfig
+    _G.UIConfig = UIConfig
+
+    -- Additional global configs
+    _G.RECAST_CONFIG = require('Tetsouo/config/RECAST_CONFIG')
+
+
+    -- DNC-specific configs
+    _G.DNCTPConfig = require('Tetsouo/config/dnc/DNC_TP_CONFIG')
+    _G.DNCWSConfig = require('Tetsouo/config/dnc/DNC_WS_CONFIG')
+
+    -- Override Mote's cancel_conflicting_buffs to disable native cooldown/recast checks
+    -- (CooldownChecker handles recast messages with better formatting)
+    -- BUT keep buff cancellation for Spectral Jig/Sneak/Stoneskin
+    -- NOTE: Utsusemi handled by DNC_MIDCAST, Waltz/Samba dance cancels skipped
+    --       to preserve DNC set variants (SaberDance/FanDance gear sets)
+    _G.cancel_conflicting_buffs = function(spell, action, spellMap, eventArgs)
+        if spell.english == 'Spectral Jig' and buffactive.sneak then
+            cast_delay(0.2)
+            send_command('cancel sneak')
+        elseif spell.english == 'Sneak' and spell.target.type == 'SELF' and buffactive.sneak then
+            send_command('cancel sneak')
+        elseif spell.english == 'Stoneskin' then
+            send_command('@wait 1.0;cancel stoneskin')
+        end
+    end
+
+    -- Cancel any pending operations from previous job (including ALL job lockstyles)
+    local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
+    if jcm_success and JobChangeManager then
+        JobChangeManager.cancel_all()
+    end
+
+    -- Load job-specific functions (AutoMove loaded via INIT_SYSTEMS)
+    include('../shared/jobs/dnc/functions/dnc_functions.lua')
+    Profiler.mark('After dnc_functions')
+    -- Keybinds loaded via require() in user_setup() for better control
+
+    -- Register DNC lockstyle cancel function
+    if jcm_success and JobChangeManager and cancel_dnc_lockstyle_operations then
+        JobChangeManager.register_lockstyle_cancel("DNC", cancel_dnc_lockstyle_operations)
+    end
+
+    -- Initial macrobook/lockstyle are triggered from user_setup();
+    -- subjob changes go through JobChangeManager (job_sub_job_change).
+
+    Profiler.finish()
+end
+
+---============================================================================
+-- JOB CHANGE HANDLING
+---============================================================================
+
+--- Handle sub job change events (called by Mote-Include)
+--- Coordinates lockstyle, macros, keybinds, and UI reload via JobChangeManager
+--- @param newSubjob string New subjob
+--- @param oldSubjob string Old subjob
+--- @return void
+function job_sub_job_change(newSubjob, oldSubjob)
+    -- Let JobChangeManager handle the full reload sequence
+    local success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
+    if success and JobChangeManager then
+        local main_job = player and player.main_job or "DNC"
+        JobChangeManager.on_job_change(main_job, newSubjob)
+    end
+
+    -- DUALBOX IPC fires from user_setup() after the reload (covers main + subjob)
+end
+
+---============================================================================
+-- SETUP FUNCTIONS
+---============================================================================
+
+--- Configure states, keybinds, UI and the initial macrobook/lockstyle.
+--- Called by Mote-Include from init_include() (inside include('Mote-Include.lua'),
+--- before init_gear_sets) and again on every subjob change, before job_sub_job_change().
+--- @return void
+function user_setup()
+    -- ========================================
+    -- STATE DEFINITIONS (Loaded from DNC_STATES.lua)
+    -- ========================================
+
+    local DNCStates = require('Tetsouo/config/dnc/DNC_STATES')
+    DNCStates.configure()
+
+    -- ========================================
+    -- DISABLE MOTE NATIVE COOLDOWN CHECKS
+    -- ========================================
+    -- Let our CooldownChecker handle all cooldown messages
+    state.CancelAbilityRecasts = M(false)
+    state.CancelSpellRecasts = M(false)
+
+    -- ==========================================================================
+    -- KEYBIND LOADING (Always executed after reload)
+    -- ==========================================================================
+    local success, keybinds = pcall(require, 'Tetsouo/config/dnc/DNC_KEYBINDS')
+    if success and keybinds then
+        DNCKeybinds = keybinds
+        DNCKeybinds.bind_all()
+    else
+        -- Loudly, because the failure is otherwise silent: the job loads,
+        -- //gs c answers, and only the keys are dead. Note that a failed
+        -- pcall here does NOT mean the file is missing - in the sandbox
+        -- require raises the same way for an error in any dependency, so
+        -- the real message is the only useful thing to show.
+        local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+        if ok and MessageFormatter then
+            MessageFormatter.show_error('[DNC] Keybinds failed to load: ' .. tostring(keybinds))
+        end
+    end
+
+    -- ==========================================================================
+    -- UI INITIALIZATION (Always executed after reload)
+    -- ==========================================================================
+    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
+    if ui_success and KeybindUI then
+        local init_delay = (_G.UIConfig and _G.UIConfig.init_delay) or 5.0
+        KeybindUI.smart_init("DNC", init_delay)
+    end
+
+    -- ==========================================================================
+    -- JOB CHANGE MANAGER INITIALIZATION (Always executed after reload)
+    -- ==========================================================================
+    local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
+    if jcm_success and JobChangeManager then
+        -- Initialize with current job state
+        JobChangeManager.initialize()
+
+        -- Trigger initial macrobook/lockstyle with delay
+        if player and select_default_macro_book and select_default_lockstyle then
+            select_default_macro_book()
+            coroutine.schedule(select_default_lockstyle, LockstyleConfig.initial_load_delay)
+        end
+    end
+
+    -- ==========================================================================
+    -- DUALBOX IPC (covers main job change - job_sub_job_change is subjob-only)
+    -- The require() triggers dualbox_manager auto-init which schedules the
+    -- correct IPC call once per gs reload (request_alt_job for MAIN role,
+    -- send_job_update for ALT role). Do NOT call them explicitly here.
+    -- ==========================================================================
+    pcall(require, 'shared/utils/dualbox/dualbox_manager')
+end
+
+---============================================================================
+--- STATE UPDATE HOOK
+---============================================================================
+
+--- Called by Mote-Include after state changes
+--- Updates the UI to reflect current state values
+--- @param cmdParams table Parameters passed to Mote's handle_update
+--- @param eventArgs table Mote event arguments (unused)
+--- @return void
+function job_update(cmdParams, eventArgs)
+    -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
+    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
+    if ui_success and KeybindUI and KeybindUI.update then
+        KeybindUI.update()
+    end
+end
+
+--- Load the DNC equipment sets.
+--- Called by Mote-Include at the end of init_include(), after user_setup().
+--- @return void
+function init_gear_sets()
+    include('sets/dnc/dnc_sets.lua')
+end
+
+--- Called by GearSwap when this job file is unloaded (job change, reload).
+--- Cancels pending job-change operations and unbinds the job keys.
+--- @return void
+function file_unload()
+    -- Cancel pending job change operations (debounce timer + lockstyles)
+    local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
+    if jcm_success and JobChangeManager then
+        JobChangeManager.cancel_all()
+    end
+
+    -- Unbind all keybinds (Windower binds persist across gs reload)
+    if DNCKeybinds and DNCKeybinds.unbind_all then
+        DNCKeybinds.unbind_all()
+    end
+end

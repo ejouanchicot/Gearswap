@@ -111,8 +111,12 @@ local function init_party_tracking()
     end
 end
 
+--- GearSwap entry hook: cleans old COR event handlers, loads Mote-Include,
+--- the shared systems, the COR modules and party/roll tracking.
+--- Called by GearSwap each time this job file is loaded.
+--- @return void
 function get_sets()
-    -- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+    -- PERFORMANCE PROFILING (enable with: //gs c perf start)
     local Profiler = require('shared/utils/debug/performance_profiler')
     Profiler.start('get_sets')
 
@@ -176,7 +180,9 @@ function get_sets()
     _G.LockstyleConfig = LockstyleConfig
     _G.RECAST_CONFIG = require('Kaories/config/RECAST_CONFIG')
 
-    -- Load region configuration (must load before message system for color codes)
+    -- Load region configuration. Too late for the region warning color:
+    -- message_colors captured _G.RegionConfig when ConfigLoader (module
+    -- level, above) first required it.
     local region_success, RegionConfig = pcall(require, 'Kaories/config/REGION_CONFIG')
     if region_success and RegionConfig then
         _G.RegionConfig = RegionConfig
@@ -208,8 +214,8 @@ function get_sets()
     -- every dependency it needs exists by this point in get_sets().
     init_party_tracking()
 
-    -- Note: Macro/lockstyle are handled by JobChangeManager on job changes
-    -- Initial load will be handled by JobChangeManager after initialization
+    -- Initial macrobook/lockstyle are triggered from user_setup();
+    -- subjob changes go through JobChangeManager (job_sub_job_change).
 
     Profiler.finish()
 end
@@ -222,6 +228,7 @@ end
 --- Coordinates lockstyle, macros, keybinds, and UI reload via JobChangeManager
 --- @param newSubjob string New subjob
 --- @param oldSubjob string Old subjob
+--- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
     -- Let JobChangeManager handle the full reload sequence
     -- DUALBOX IPC fires from user_setup() after the reload (covers main + subjob)
@@ -236,6 +243,10 @@ end
 -- USER SETUP
 ---============================================================================
 
+--- Configure states, keybinds, UI, macrobook/lockstyle and the DressUp watchdog.
+--- Called by Mote-Include from init_include() (inside include('Mote-Include.lua'),
+--- before init_gear_sets) and again on every subjob change, before job_sub_job_change().
+--- @return void
 function user_setup()
     -- ==========================================================================
     -- STATE DEFINITIONS (Loaded from COR_STATES.lua)
@@ -300,7 +311,7 @@ function user_setup()
     if player then
         -- Guarded: these globals come from the COR_MACROBOOK / COR_LOCKSTYLE
         -- wrappers, which exist only once something has required them. Today
-        -- CORKeybinds.show_intro() does, from bind_all() above; if the keybinds
+        -- KeybindManager's show_intro() does, from bind_all() above; if the keybinds
         -- failed to load they are absent, and an unguarded call would raise and
         -- end user_setup() here.
         if select_default_macro_book then
@@ -379,8 +390,11 @@ end
 
 --- Called by Mote-Include after state changes
 --- Updates the UI to reflect current state values
+--- @param cmdParams table Parameters passed to Mote's handle_update
+--- @param eventArgs table Mote event arguments (unused)
+--- @return void
 function job_update(cmdParams, eventArgs)
-    -- Update UI when states change (F9, F10, etc.)
+    -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI and KeybindUI.update then
         KeybindUI.update()
@@ -391,6 +405,9 @@ end
 -- GEAR SET INITIALIZATION
 ---============================================================================
 
+--- Load the COR equipment sets.
+--- Called by Mote-Include at the end of init_include(), after user_setup().
+--- @return void
 function init_gear_sets()
     include('sets/cor_sets.lua')
 end
@@ -399,8 +416,12 @@ end
 -- CLEANUP
 ---============================================================================
 
+--- Called by GearSwap when this job file is unloaded (job change, reload).
+--- Removes roll/party tracking, stops the lockstyle watchdog, reloads the
+--- rolltracker addon, cancels pending job-change operations and unbinds keys.
+--- @return void
 function file_unload()
-    -- Cleanup roll detection handler (registered in user_setup)
+    -- Cleanup roll detection handler (registered by PartyTracker.init() from get_sets)
     if _G.cor_action_event_id then
         windower.unregister_event(_G.cor_action_event_id)
         _G.cor_action_event_id = nil

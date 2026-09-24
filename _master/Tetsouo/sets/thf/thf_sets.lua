@@ -233,7 +233,7 @@ sets.precast.JA['Collaborator'] = {
     body  = Plunderer.body,
     hands = Plunderer.hands,
     ear1  = 'Friomisi Earring',
-    ring1 = 'Cacoethic Ring'
+    ring1 = 'Cacoethic Ring +1'
 }
 sets.precast.JA['Accomplice'] = sets.precast.JA['Collaborator']
 
@@ -641,7 +641,7 @@ sets.precast.RA = {
     waist = 'Yemaya Belt',
     ear1  = 'Crepuscular Earring',
     ear2  = 'Telos Earring',
-    ring1 = 'Cacoethic Ring',
+    ring1 = 'Cacoethic Ring +1',
     ring2 = "Hoxne Ring",
     back  = 'Sacro Mantle'
 }

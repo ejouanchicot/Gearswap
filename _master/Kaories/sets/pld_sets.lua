@@ -24,7 +24,7 @@
 ---     • Midcast sets (Enmity, SIRD+Enmity, Phalanx, Cure, Enhancing Magic)
 ---     • Movement sets (Base speed, Adoulin city boost)
 ---     • Buff sets (Doom resistance)
----   @file    jobs/pld/sets/pld_sets.lua
+---   @file    Kaories/sets/pld_sets.lua
 ---   @author  Tetsouo
 ---   @version 3.1 - Standardized Organization
 ---   @date    Updated: 2025-11-10
@@ -371,7 +371,7 @@ sets.precast.WS = {
     waist = {name = 'Sailfi Belt +1', priority = 3},
     left_ear = 'Ishvara Earring',
     right_ear = 'Thrud Earring',
-    left_ring = "Ephramad's Ring",
+    left_ring = "Cornelia's Ring",
     right_ring = 'Sroda Ring',
     back = Rudianos.WS
 }
@@ -400,7 +400,7 @@ sets.precast.WS['Savage Blade'] =
         waist = {name = 'Sailfi Belt +1'},
         left_ear = {name = 'Thrud Earring'},
         right_ear = {name = 'Tuisto Earring'},
-        left_ring = {name = "Ephramad's Ring"},
+        left_ring = {name = "Cornelia's Ring"},
         right_ring = {name = 'Regal Ring'},
         back = Rudianos.WS
     }
@@ -443,7 +443,7 @@ sets.precast.WS['Aeolian Edge'] =
         waist = {name = "Orpheus's Sash"},
         left_ear = {name = 'Crematio Earring'},
         right_ear = {name = 'Friomisi Earring'},
-        left_ring = {name = "Ephramad's Ring"},
+        left_ring = {name = "Cornelia's Ring"},
         right_ring = {name = 'Murky Ring'},
         back = {name = 'Moonlight Cape'}
     }
@@ -464,7 +464,7 @@ sets.precast.WS['Circle Blade'] =
         waist = {name = "Orpheus's Sash"},
         left_ear = {name = 'Sortiarius Earring'},
         right_ear = {name = 'Chev. Earring +1'},
-        left_ring = {name = "Ephramad's Ring"},
+        left_ring = {name = "Cornelia's Ring"},
         right_ring = {name = 'Regal Ring'},
         back = {name = 'Toro Cape'}
     }
@@ -507,10 +507,7 @@ sets.midcast.SIRDEnmity = {
     body = {name = 'Yorium Cuirass', augments = {'Spell interruption rate down -10%', 'Phalanx +3'}},
     hands = 'Chev. Gauntlets +3',
     legs = {name = "Founder's Hose", augments = {'MND+10', 'Mag. Acc.+15', 'Attack+15', 'Breath dmg. taken -5%'}},
-    feet = {
-        name = 'Odyssean Greaves',
-        augments = {'MND+5', 'Pet: "Dbl.Atk."+3 Pet: Crit.hit rate +3', 'Phalanx +4', 'Mag. Acc.+2 "Mag.Atk.Bns."+2'}
-    },
+    feet = {name = 'Odyssean Greaves', augments = {'MND+6', '"Dbl.Atk."+1', 'Phalanx +4', 'Accuracy+3 Attack+3'}},
     neck = 'Moonbeam Necklace',
     waist = 'Asklepian Belt',
     left_ear = 'Alabaster Earring',
@@ -549,10 +546,7 @@ sets.midcast.PhalanxPotency = {
     back = {name = 'Weard Mantle', priority = 1},
     waist = {name = 'Audumbla Sash'},
     legs = {name = "Sakpata's Cuisses", priority = 1},
-    feet = {
-        name = 'Odyssean Greaves',
-        augments = {'"Fast Cast"+2', 'STR+7', 'Phalanx +5', 'Accuracy+14 Attack+14', 'Mag. Acc.+10 "Mag.Atk.Bns."+10'}
-    }
+    feet = {name = 'Odyssean Greaves', augments = {'MND+6', '"Dbl.Atk."+1', 'Phalanx +4', 'Accuracy+3 Attack+3'}},
 }
 
 -- • SIRD Phalanx
@@ -564,10 +558,7 @@ sets.midcast.SIRDPhalanx = {
     body = {name = 'Yorium Cuirass', augments = {'Spell interruption rate down -10%', 'Phalanx +3'}},
     hands = 'Regal Gauntlets',
     legs = {name = "Founder's Hose", augments = {'MND+10', 'Mag. Acc.+15', 'Attack+15', 'Breath dmg. taken -5%'}},
-    feet = {
-        name = 'Odyssean Greaves',
-        augments = {'MND+5', 'Pet: "Dbl.Atk."+3 Pet: Crit.hit rate +3', 'Phalanx +4', 'Mag. Acc.+2 "Mag.Atk.Bns."+2'}
-    },
+    feet = {name = 'Odyssean Greaves', augments = {'MND+6', '"Dbl.Atk."+1', 'Phalanx +4', 'Accuracy+3 Attack+3'}},
     neck = 'Loricate Torque +1',
     waist = 'Asklepian Belt',
     left_ear = 'Alabaster Earring',
@@ -620,10 +611,7 @@ sets.Cure = {
     body = {name = 'Yorium Cuirass', augments = {'Spell interruption rate down -10%', 'Phalanx +3'}},
     hands = 'Chev. Gauntlets +3',
     legs = {name = "Founder's Hose", augments = {'MND+10', 'Mag. Acc.+15', 'Attack+15', 'Breath dmg. taken -5%'}},
-    feet = {
-        name = 'Odyssean Greaves',
-        augments = {'MND+5', 'Pet: "Dbl.Atk."+3 Pet: Crit.hit rate +3', 'Phalanx +4', 'Mag. Acc.+2 "Mag.Atk.Bns."+2'}
-    },
+    feet = {name = 'Odyssean Greaves', augments = {'MND+6', '"Dbl.Atk."+1', 'Phalanx +4', 'Accuracy+3 Attack+3'}},
     neck = 'Moonbeam Necklace',
     waist = 'Asklepian Belt',
     left_ear = 'Alabaster Earring',
@@ -651,15 +639,7 @@ sets.midcast.CureSelf =
         body = {name = 'Yorium Cuirass', augments = {'Spell interruption rate down -10%', 'Phalanx +3'}},
         hands = 'Chev. Gauntlets +3',
         legs = {name = "Founder's Hose", augments = {'MND+10', 'Mag. Acc.+15', 'Attack+15', 'Breath dmg. taken -5%'}},
-        feet = {
-            name = 'Odyssean Greaves',
-            augments = {
-                'MND+5',
-                'Pet: "Dbl.Atk."+3 Pet: Crit.hit rate +3',
-                'Phalanx +4',
-                'Mag. Acc.+2 "Mag.Atk.Bns."+2'
-            }
-        },
+        feet = {name = 'Odyssean Greaves', augments = {'MND+6', '"Dbl.Atk."+1', 'Phalanx +4', 'Accuracy+3 Attack+3'}},
         neck = 'Moonbeam Necklace',
         waist = 'Asklepian Belt',
         left_ear = 'Alabaster Earring',
@@ -688,15 +668,7 @@ sets.midcast.CureOther =
         body = {name = 'Yorium Cuirass', augments = {'Spell interruption rate down -10%', 'Phalanx +3'}},
         hands = 'Chev. Gauntlets +3',
         legs = {name = "Founder's Hose", augments = {'MND+10', 'Mag. Acc.+15', 'Attack+15', 'Breath dmg. taken -5%'}},
-        feet = {
-            name = 'Odyssean Greaves',
-            augments = {
-                'MND+5',
-                'Pet: "Dbl.Atk."+3 Pet: Crit.hit rate +3',
-                'Phalanx +4',
-                'Mag. Acc.+2 "Mag.Atk.Bns."+2'
-            }
-        },
+        feet = {name = 'Odyssean Greaves', augments = {'MND+6', '"Dbl.Atk."+1', 'Phalanx +4', 'Accuracy+3 Attack+3'}},
         neck = 'Moonbeam Necklace',
         waist = 'Asklepian Belt',
         left_ear = 'Alabaster Earring',
@@ -746,10 +718,7 @@ sets.midcast['Reprisal'] = {
     body = {name = 'Yorium Cuirass', augments = {'Spell interruption rate down -10%', 'Phalanx +3'}},
     hands = 'Chev. Gauntlets +3',
     legs = {name = "Founder's Hose", augments = {'MND+10', 'Mag. Acc.+15', 'Attack+15', 'Breath dmg. taken -5%'}},
-    feet = {
-        name = 'Odyssean Greaves',
-        augments = {'MND+5', 'Pet: "Dbl.Atk."+3 Pet: Crit.hit rate +3', 'Phalanx +4', 'Mag. Acc.+2 "Mag.Atk.Bns."+2'}
-    },
+    feet = {name = 'Odyssean Greaves', augments = {'MND+6', '"Dbl.Atk."+1', 'Phalanx +4', 'Accuracy+3 Attack+3'}},
     neck = 'Moonbeam Necklace',
     waist = 'Asklepian Belt',
     left_ear = 'Alabaster Earring',

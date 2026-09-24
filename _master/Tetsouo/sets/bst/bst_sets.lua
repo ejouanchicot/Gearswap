@@ -13,7 +13,7 @@
 ---   @file    Tetsouo/sets/bst/bst_sets.lua
 ---   @author  Tetsouo
 ---   @version 3.0 - Modularized
----   @date    Updated: 2026-05-11
+---   @date    Created: 2026-05-11 (modular split)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---@diagnostic disable: lowercase-global

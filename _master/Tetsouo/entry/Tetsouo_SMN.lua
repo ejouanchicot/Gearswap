@@ -40,6 +40,9 @@ local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'SMN')
 --- GEARSWAP HOOKS - INITIALIZATION
 ---============================================================================
 
+--- GearSwap entry hook: loads Mote-Include, the shared systems and the SMN modules.
+--- Called by GearSwap each time this job file is loaded.
+--- @return void
 function get_sets()
     local Profiler = require('shared/utils/debug/performance_profiler')
     Profiler.start('get_sets')
@@ -82,7 +85,9 @@ function get_sets()
     Profiler.finish()
 end
 
---- Load SMN equipment sets from external file
+--- Load SMN equipment sets from external file (modular: sets/smn/smn_sets.lua).
+--- Called by Mote-Include at the end of init_include(), after user_setup().
+--- @return void
 function init_gear_sets()
     include('sets/smn/smn_sets.lua')
 end
@@ -91,6 +96,11 @@ end
 --- GEARSWAP HOOKS - JOB CHANGE HANDLING
 ---============================================================================
 
+--- Handle sub job change events (called by Mote-Include after user_setup())
+--- Re-registers the SMN modules and hands the reload to JobChangeManager.
+--- @param newSubjob string New subjob
+--- @param oldSubjob string Old subjob
+--- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
     if not jcm_success or not JobChangeManager then return end
 
@@ -111,6 +121,10 @@ end
 --- GEARSWAP HOOKS - USER SETUP
 ---============================================================================
 
+--- Configure states, keybinds, UI, initial macrobook/lockstyle and Carbuncle auto-summon.
+--- Called by Mote-Include from init_include() (inside include('Mote-Include.lua'),
+--- before init_gear_sets) and again on every subjob change, before job_sub_job_change().
+--- @return void
 function user_setup()
     local SMNStates = require('Tetsouo/config/smn/SMN_STATES')
     SMNStates.configure()
@@ -139,7 +153,8 @@ function user_setup()
         end
     end
 
-    -- Auto-summon Carbuncle on first load (no pet currently summoned)
+    -- Auto-summon Carbuncle when no pet is out (runs on load and on every
+    -- subjob change, since both go through user_setup)
     coroutine.schedule(function()
         if player and player.main_job == 'SMN' and player.status ~= 'Dead' then
             local pet = windower.ffxi.get_mob_by_target('pet')
@@ -149,6 +164,8 @@ function user_setup()
         end
     end, LockstyleConfig.initial_load_delay + 2.0)
 
+    -- DUALBOX IPC: the require() triggers dualbox_manager auto-init, which
+    -- schedules the IPC call once per gs reload. Do NOT call it explicitly here.
     pcall(require, 'shared/utils/dualbox/dualbox_manager')
 end
 
@@ -156,6 +173,10 @@ end
 --- GEARSWAP HOOKS - STATE UPDATE
 ---============================================================================
 
+--- Called by Mote-Include after state changes; updates the UI.
+--- @param cmdParams table Parameters passed to Mote's handle_update
+--- @param eventArgs table Mote event arguments (unused)
+--- @return void
 function job_update(cmdParams, eventArgs)
     if _G.LagDebugger then _G.LagDebugger.on_job_update() end
     local ui_ok, KeybindUI_local = pcall(require, 'shared/utils/ui/UI_MANAGER')
@@ -168,6 +189,9 @@ end
 --- GEARSWAP HOOKS - CLEANUP
 ---============================================================================
 
+--- Called by GearSwap when this job file is unloaded (job change, reload).
+--- Stops the skillup loop, cancels pending job-change operations and unbinds keys.
+--- @return void
 function file_unload()
     -- Halt the Summoning Magic skillup loop before module unload so orphan
     -- coroutines can't keep spamming Siren on the next job.

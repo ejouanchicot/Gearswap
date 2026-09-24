@@ -5,7 +5,7 @@
 ---   combined with engaged / WS sets via set_combine.
 ---
 ---   Includes:
----     • Main daggers (Aeneas/Vajra/Twashtar/Tauret/Malevolence/Qutrub)
+---     • Main daggers (Vajra/Twashtar/Mpu Gandring/Tauret/Malevolence/Qutrub)
 ---     • Main swords (Naegling, Excalipoor for Abyssea proc)
 ---     • Sub daggers (Centovente, Gleti's Knife, Tanmogayi, Crepuscular, etc.)
 ---     • Sub clubs (Kraken)
@@ -49,7 +49,7 @@ Weapons['Centovente']     = {sub = 'Centovente'}       -- Multi-attack sub
 Weapons['Blurred']        = {sub = 'Blurred Knife +1'} -- Sub dagger
 Weapons['Gleti']          = {sub = "Gleti's Knife"}    -- Crit sub
 Weapons['Kraken']         = {sub = 'Kraken Club'}      -- Multi-attack club sub
-Weapons['Telop Knife']    = {sub = 'Telopanos Knife'}  -- Multi-attack club sub
+Weapons['Telop Knife']    = {sub = 'Telopanos Knife'}  -- Sub dagger
 
 -- ─────────────────────────────────────────────────────────────────────────
 -- Abyssea Proc Weapons (1-handed with dagger sub for DW)

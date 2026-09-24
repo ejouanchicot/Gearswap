@@ -5,7 +5,8 @@
 --- //gs c craft / //gs c fish). Replaces the active job's refill list while
 --- crafting so the inventory holds only craft-relevant consumables.
 ---
---- Detection: refill_manager checks _G.__CraftManagerState.active.
+--- Detection: refill/config_resolver.lua asks _G.CraftManager.is_active()
+--- (craft_manager.lua owns the craft session state).
 ---
 --- Format: same as job refill configs (BLM_REFILL.lua etc.).
 ---   - store_bag : 'case' | 'sack' | 'satchel'  - destination for surplus

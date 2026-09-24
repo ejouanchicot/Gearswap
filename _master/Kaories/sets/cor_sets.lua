@@ -1,31 +1,34 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   COR Equipment Sets - Ultimate Corsair Gunslinger Configuration
----  ═══════════════════════════════════════════════════════════════════════════
----   Complete equipment configuration for Corsair support/DPS hybrid role with
----   optimized buff support and ranged damage across all situations.
----   Features:
----     • Phantom Roll optimization (Lanun +3, Chasseur +3, Rostam augmented)
----     • Quick Draw magic damage (Malignance set, Magic Attack Bonus)
----     • Ranged attack excellence (Snapshot, Rapid Shot, Store TP)
----     • Melee DPS capability (Dual Wield support, Malignance hybrid)
----     • Savage Blade weaponskill (Nyame +2, Camulus WSD cape)
----     • Roll-specific gear (Caster's, Courser's, Blitzer's, Tactician's, Allies')
----     • Movement speed optimization (Carmine Cuisses +1)
----     • Hybrid survivability (PDT sets with Malignance)
----    Architecture:
----     • Equipment definitions (Chirich rings, wardrobe management)
----     • Weapon sets (Naegling, Anarchy, Compensator, Rostam)
----     • Idle sets (Refresh, PDT, Regen)
----     • Engaged sets (Normal, PDT, Dual Wield variants)
----     • Precast sets (Job Abilities, Weaponskills, Ranged Attack)
----     • Midcast sets (Ranged Attack continuation)
----     • Movement sets (Base speed, Adoulin)
----     • Buff sets (Doom resistance)
----   @file    jobs/cor/sets/cor_sets.lua
----   @author  Tetsouo
----   @version 3.0 - Standardized Organization
----   @date    Updated: 2025-11-10
----  ═════════════════════════════════════════════════════════════════════════
+---============================================================================
+--- COR Equipment Sets - Corsair Gunslinger Configuration
+---============================================================================
+--- Complete equipment configuration for Corsair support/DPS hybrid role with
+--- optimized buff support and ranged damage across all situations.
+---
+--- Features:
+---   • Phantom Roll optimization (Lanun +3/+4, Chasseur +3, Camulus's Mantle)
+---   • Quick Draw magic damage (Malignance set, Magic Attack Bonus)
+---   • Ranged attack (Snapshot, Rapid Shot, Store TP)
+---   • Melee DPS capability (Malignance hybrid; DW weapons applied by SetBuilder)
+---   • Savage Blade weaponskill (Nyame pieces, Camulus WSD cape)
+---   • Roll-specific gear (Caster's, Courser's, Blitzer's, Tactician's, Allies')
+---   • Movement speed (Carmine Cuisses +1)
+---   • Hybrid survivability (PDT sets with Malignance)
+---
+--- Architecture:
+---   • Equipment definitions (Chirich rings, wardrobe management)
+---   • Weapon sets (Naegling, Anarchy, Compensator)
+---   • Idle sets (Normal, PDT, Refresh)
+---   • Engaged sets (Normal, PDT)
+---   • Precast sets (Job Abilities, Weaponskills, Ranged Attack)
+---   • Midcast sets (Ranged Attack)
+---   • Movement sets (Base speed, Adoulin)
+---   • Buff sets (Doom resistance)
+---
+--- @file    sets/cor_sets.lua
+--- @author  Tetsouo
+--- @version 3.0
+--- @date    Created: 2025-11-03 | Updated: 2025-11-10
+---============================================================================
 
 sets = {}
 
