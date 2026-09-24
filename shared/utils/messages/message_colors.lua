@@ -11,23 +11,24 @@
 ---   EU Region (BQJS): Code 003 = Orange equivalent for EU
 ---   JP Region: Code 057 = Orange
 ---
---- Region is configured in config/REGION_CONFIG.lua
---- Users add their character name to that file to set their region.
+--- Region is configured in <Char>/config/REGION_CONFIG.lua (exposed by the
+--- entry point as _G.RegionConfig). Users add their character name to that
+--- file to set their region.
 ---
---- Can also be overridden via:
----   //gs c setregion <us|eu|jp>  (temporary, resets on reload)
+--- _G.ORANGE_COLOR_CODE and _G.DETECTED_FFXI_REGION are also honored as
+--- overrides, but nothing sets them: //gs c setregion is not implemented.
 ---
---- @file utils/messages/message_colors.lua
+--- @file shared/utils/messages/message_colors.lua
 --- @author Tetsouo
 --- @version 1.3
---- @date Created: 2025-10-02
---- @date Updated: 2025-10-12 - Added config-based region detection
+--- @date Created: 2025-10-02 | Updated: 2025-10-12 - Added config-based region detection
 ---============================================================================
 
 local MessageColors = {}
 
--- Load region configuration
-local RegionConfig = _G.RegionConfig or {}  -- Loaded from character main file
+-- Read once at require time: _G.RegionConfig must already be set when this
+-- module is first required.
+local RegionConfig = _G.RegionConfig or {}
 
 ---============================================================================
 --- REGION DETECTION
@@ -36,12 +37,12 @@ local RegionConfig = _G.RegionConfig or {}  -- Loaded from character main file
 --- Get orange/warning color code based on detected region
 --- @return number warning_code Region-specific warning color code
 local function get_region_orange()
-    -- Priority 1: Manual override via //gs c setregion
+    -- Priority 1: explicit color override (no setter exists today)
     if _G.ORANGE_COLOR_CODE then
         return _G.ORANGE_COLOR_CODE
     end
 
-    -- Priority 2: Manual region set via //gs c setregion
+    -- Priority 2: explicit region override (no setter exists today)
     if _G.DETECTED_FFXI_REGION then
         if _G.DETECTED_FFXI_REGION == "EU" then
             return 003  -- Orange equivalent for EU
@@ -50,7 +51,7 @@ local function get_region_orange()
         end
     end
 
-    -- Priority 3: Config file (config/REGION_CONFIG.lua)
+    -- Priority 3: <Char>/config/REGION_CONFIG.lua
     if RegionConfig and RegionConfig.get_region and player and player.name then
         local region = RegionConfig.get_region(player.name)
         if RegionConfig.get_orange_code then
@@ -60,6 +61,18 @@ local function get_region_orange()
 
     -- Priority 4: Default to US (most common)
     return 057
+end
+
+--- Record which orange this load ended up with (//gs c trace).
+--- @param code number
+local function trace_region(code)
+    local ok, Trace = pcall(require, 'shared/utils/debug/trace_log')
+    if ok and Trace then
+        local region = RegionConfig and RegionConfig.get_region and player and player.name
+            and RegionConfig.get_region(player.name)
+        Trace.log('REGION', 'orange %s (RegionConfig loaded at require: %s, region %s, _G.RegionConfig now %s)',
+            code, RegionConfig.get_region ~= nil, region, rawget(_G, 'RegionConfig') ~= nil)
+    end
 end
 
 ---============================================================================
@@ -84,6 +97,7 @@ MessageColors.INFO = 158           -- Light Cyan - Info text/counts
 MessageColors.SUCCESS = 158        -- Green - Success, Ready, Active
 MessageColors.ERROR = 167          -- Red - Errors
 MessageColors.WARNING = get_region_orange()  -- Region-specific Orange - Warnings
+trace_region(MessageColors.WARNING)
 MessageColors.DEBUFF = 208         -- Purple - Debuffs
 MessageColors.READY = 158          -- Green - Ready state
 MessageColors.ACTIVE = 158         -- Green - Active state

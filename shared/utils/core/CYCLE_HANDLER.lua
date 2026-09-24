@@ -104,6 +104,12 @@ function CycleHandler.handle_cyclestate(cmdParams, _eventArgs)
     local reverse = cmdParams[3] ~= nil and REVERSE_WORDS[cmdParams[3]:lower()] == true
 
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
+    local ok_t, Trace = pcall(require, 'shared/utils/debug/trace_log')
+    if ok_t and Trace then
+        Trace.log('CYCLE', '%s: HUD exists %s, visible flag %s -> %s', state_name, _G.keybind_ui_display ~= nil,
+            _G.keybind_ui_visible, (ui_success and KeybindUI and KeybindUI.is_visible and KeybindUI.is_visible())
+            and 'silent (HUD shows it)' or 'Mote chat message')
+    end
     if not (ui_success and KeybindUI and KeybindUI.is_visible and KeybindUI.is_visible()) then
         delegate_to_mote(state_name, reverse)
         return true

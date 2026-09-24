@@ -1,8 +1,11 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   RDM Commands Module - Custom Command Handler
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles custom commands for Red Mage job via //gs c [command].
----   Provides job-specific commands and integrates with common commands.
+---   Handles custom commands for Red Mage job via //gs c [command]:
+---   dual-box, UI, watchdog and common commands first, then the RDM commands
+---   (enspell, quick JAs, nukes and spells from states), then a cast-by-name
+---   fallback for any JA / WS / spell name.
+---   Also defines job_state_change (HUD refresh, weapon re-equip).
 ---
 ---   @file    shared/jobs/rdm/functions/RDM_COMMANDS.lua
 ---   @author  Tetsouo
@@ -47,11 +50,13 @@ local ACTION_RESOURCES = {
 --- @param action_name string Exact English name ("Refresh II", "Savage Blade")
 --- @return string|nil '/ja', '/ws' or '/ma'; nil when no resource has the name
 local function resolve_action_prefix(action_name)
-    if not res then
+    -- `res` is not a global in every job sandbox (GEO's escort crashed on it).
+    local resources = rawget(_G, 'res') or windower.res or require('resources')
+    if not resources then
         return nil
     end
     for _, entry in ipairs(ACTION_RESOURCES) do
-        local resource = res[entry.resource]
+        local resource = resources[entry.resource]
         local found = resource and resource:with('en', action_name)
         if found and (not entry.res_prefix or found.prefix == entry.res_prefix) then
             return entry.prefix
@@ -274,7 +279,6 @@ function job_self_command(cmdParams, eventArgs)
             local spell = enspell_map[element]
             if spell then
                 send_command('input /ma "' .. spell .. '" <me>')
-                -- MessageFormatter.show_spell_casting(spell)  -- Removed: duplicate message (universal spell system shows activation)
             else
                 MessageFormatter.show_error('Unknown element: ' .. cmdParams[2])
                 MessageFormatter.show_element_list()
@@ -312,7 +316,6 @@ function job_self_command(cmdParams, eventArgs)
             end
 
             send_command('input /ma "' .. spell_name .. '" <t>')
-            -- MessageFormatter.show_spell_casting(spell_name)  -- Removed: duplicate message (universal spell system shows activation)
         else
             MessageFormatter.show_error(config.error_msg)
         end
@@ -330,7 +333,6 @@ function job_self_command(cmdParams, eventArgs)
                 config.error_func()
             else
                 send_command('input /ma "' .. spell_state.value .. '" ' .. config.target)
-                -- MessageFormatter.show_spell_casting(spell_state.value)  -- Removed: duplicate message (universal spell system shows activation)
             end
         else
             config.error_func()
@@ -353,7 +355,7 @@ function job_self_command(cmdParams, eventArgs)
         ---  ─────────────────────────────────────────────────────────────────────────
         -- This allows users to bind spells without creating explicit commands
         -- Example: { key = "^5", command = "Refresh II", desc = "Refresh II", state = nil }
-        -- Will cast: /ma "Refresh II" <stpc>
+        -- Will cast: /ma "Refresh II" <me> (default target, see below)
 
         -- Reconstruct full spell name from cmdParams (handles multi-word spells)
         local spell_name = table.concat(cmdParams, " ")
@@ -376,6 +378,11 @@ function job_self_command(cmdParams, eventArgs)
 
             -- Auto-detect action type (JA, WS, or Magic)
             local action_type = resolve_action_prefix(spell_name)
+            local ok_t, Trace = pcall(require, 'shared/utils/debug/trace_log')
+            if ok_t and Trace then
+                Trace.log('RDM', 'cast by name "%s" target %s -> %s (res global %s)', spell_name, target,
+                    action_type, rawget(_G, 'res') ~= nil)
+            end
 
             if action_type then
                 eventArgs.handled = true

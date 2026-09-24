@@ -10,7 +10,7 @@
 ---   • Minimal configuration (GEO is primarily a mage job)
 ---
 --- Note:
----   GEO does not use REMA weapons with TP bonus (uses clubs: Idris, Solstice, Dunna)
+---   GEO weapons here (Idris, Solstice clubs; Dunna handbell) have no TP bonus
 ---   This config provides basic TP bonus support via Moonshade Earring only
 ---
 --- TP Thresholds:
@@ -41,7 +41,7 @@ local GEOTPConfig = {
     ---============================================================================
     --- Weapons with automatic TP bonus
     ---============================================================================
-    -- GEO does not use weapons with TP bonus (Idris/Solstice/Dunna are clubs)
+    -- GEO weapons (Idris, Solstice, Dunna) have no TP bonus
 
     weapons = {}
 }

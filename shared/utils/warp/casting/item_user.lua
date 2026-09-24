@@ -1,10 +1,20 @@
--- Item User: ring equip/use with cooldown check and automatic slot restore on interrupt.
+---============================================================================
+--- Item User - Warp/teleport ring sequence
+---============================================================================
+--- Equips a warp or teleport ring in ring1, waits until its extdata says it
+--- can be used, fires /item, watches the cast until the character zones, and
+--- releases ring1 on every exit (success, interruption, timeout, failure).
+---
+--- @file shared/utils/warp/casting/item_user.lua
+--- @author Tetsouo
+--- @version 4.0
+--- @date Created: 2025-10-28
+---============================================================================
 
 local MessageWarp = require('shared/utils/messages/formatters/system/message_warp')
 local MessageCore = require('shared/utils/messages/message_core')
 local CastHelpers = require('shared/utils/warp/casting/cast_helpers')
 
--- Cache resources for performance
 local res = require('resources')
 local res_bags = res.bags
 
@@ -20,93 +30,62 @@ local function debug_log(message)
     end
 end
 
---- Helper: Restore appropriate equipment set (universal for all jobs)
---- Uses Mote-Include's native logic to determine correct set
+--- Helper: Put the job's current set back on (universal for all jobs).
+--- Every caller runs from a coroutine.schedule callback, outside any GearSwap
+--- event, where equip() is dropped: GearSwap only sends the equip list at the
+--- end of an event. `gs c update` goes through a real event (Mote's
+--- handle_update -> handle_equipping_gear), so the gear is actually sent.
+--- Callers release ring1 (`gs enable ring1`) a second before calling this.
 local function restore_equipment()
     if not player then
         debug_log('Cannot restore equipment - player data unavailable')
         return
     end
 
-    -- METHOD 1: Use status_change to FORCE full set reevaluation
-    -- This is the most reliable method to restore disabled slots
-    if status_change then
-        debug_log('Restoring equipment via status_change() [FORCE REFRESH]')
-        status_change(player.status, player.status)
-        return
+    debug_log('Restoring equipment via gs c update')
+    local ok_t, Trace = pcall(require, 'shared/utils/debug/trace_log')
+    if ok_t and Trace then
+        Trace.log('WARP', 'restore: gs c update (ring1 now %s)', player.equipment and player.equipment.ring1)
     end
-
-    -- METHOD 2: Fallback - use handle_equipping_gear (if available)
-    -- This respects ALL states (HybridMode, IdleMode, CastingMode, etc.)
-    if handle_equipping_gear then
-        debug_log('Restoring equipment via handle_equipping_gear()')
-        handle_equipping_gear(player.status)
-        return
-    end
-
-    -- METHOD 3: Last resort - construct set name manually
-    local base_set = (player.status == 'Engaged') and 'sets.engaged' or 'sets.idle'
-
-    -- Try to detect active modes (HybridMode, IdleMode, etc.)
-    if state then
-        -- Check common mode states
-        local modes_to_check = {'HybridMode', 'IdleMode', 'OffenseMode', 'DefenseMode'}
-        for _, mode_name in ipairs(modes_to_check) do
-            local mode_state = state[mode_name]
-            if mode_state then
-                local mode_value = mode_state.value or mode_state.current
-                if mode_value and mode_value ~= 'Normal' and mode_value ~= 'None' then
-                    base_set = base_set .. '.' .. mode_value
-                    debug_log('Detected ' .. mode_name .. ': ' .. mode_value .. ' >> ' .. base_set)
-                    break  -- Use first non-default mode found
-                end
-            end
-        end
-    end
-
-    debug_log('Restoring equipment manually: ' .. base_set)
-    windower.send_command('gs equip ' .. base_set)
+    windower.send_command('gs c update')
 end
 
+--- Use the first owned and ready ring of a list; report cooldowns otherwise.
+--- @param ring_names string|table Ring name or ordered list of ring names
+--- @param context any Forwarded to _show_all_cooldowns, which ignores it
+--- @return boolean True once a ring sequence has started
 function ItemUser.use_ring(ring_names, context)
     if not player then
         MessageCore.error('[WARP] Player data not available')
         return false
     end
 
-    -- Normalize ring_names to table
     local ring_list = type(ring_names) == 'table' and ring_names or {ring_names}
 
     -- Track cooldowns of unavailable rings
     local cooldown_info = {}
 
-    -- Try each ring in order
     for _, ring_name in ipairs(ring_list) do
         local ring_id = CastHelpers.get_ring_id(ring_name)
 
         if ring_id and CastHelpers.has_item(ring_name, ring_id) then
-            -- Check if ring is usable (returns usable, delay, status)
             local usable, delay, status = ItemUser._check_ring_usable(ring_id)
 
             if usable then
-                -- Ring is ready! Use it
                 local is_warp_ring = (ring_name == 'Warp Ring')
                 local tag = is_warp_ring and 'WARP' or 'TELE'
 
                 debug_log('Item is ready! Status: ' .. tostring(status))
 
-                -- Show equipping message
                 if is_warp_ring then
                     MessageWarp.show_warp_equipping(ring_name)
                 else
                     MessageWarp.show_tele_equipping(ring_name)
                 end
 
-                -- Execute ring usage sequence
                 ItemUser._execute_ring_sequence(ring_name, ring_id, is_warp_ring, tag)
                 return true
             else
-                -- Ring not available, store info
                 local reason = status or 'unknown'
                 debug_log('Ring ' .. ring_name .. ' not ready - status: ' .. reason .. ' (' .. tostring(delay) .. 's)')
                 table.insert(cooldown_info, {name = ring_name, delay = delay, status = reason})
@@ -114,7 +93,6 @@ function ItemUser.use_ring(ring_names, context)
         end
     end
 
-    -- No ring available - show all cooldowns
     if #cooldown_info > 0 then
         ItemUser._show_all_cooldowns(cooldown_info, context)
     else
@@ -124,12 +102,12 @@ function ItemUser.use_ring(ring_names, context)
     return false
 end
 
--- Windower extdata timezone offset (JST server time vs local time)
--- Based on MyHome addon which uses +18000 seconds (5 hours)
+-- Added to extdata timestamps before comparing them with os.time().
+-- Same constant as the MyHome addon (MyHome.lua uses +18000).
 local EXTDATA_TIME_OFFSET = 18000
 
 -- Safety delay after item appears ready (lag/desync protection)
-local SAFETY_DELAY = 3.5  -- Extra seconds to wait before using item (zone-dependent lag buffer)
+local SAFETY_DELAY = 3.5  -- Hold after the first "ready" reading before using the item
 
 -- Bounds for the activation wait, in seconds.
 --
@@ -152,8 +130,13 @@ local WAIT_HARD_CEILING = 90
 local POLL_INTERVAL  = 1.0
 local MAX_POLL_SLEEP = 5.0
 
---- Check if a warp item is usable right now
+--- Check if a warp item is usable right now (charges and recast only; the
+--- activation delay is read later by the wait loop).
 --- Handles both 'General' items (scrolls) and 'Enchanted Equipment' (rings/wings)
+--- @param item_id number Item id
+--- @return boolean usable
+--- @return number delay Seconds until usable (0 when unknown)
+--- @return string status 'ready', 'cooldown', 'not_found', 'decode_failed', 'unknown_type' or 'extdata_missing'
 function ItemUser._check_ring_usable(item_id)
     local has_extdata, extdata = pcall(require, 'extdata')
     if not has_extdata then
@@ -164,15 +147,12 @@ function ItemUser._check_ring_usable(item_id)
     local get_items = windower.ffxi.get_items
     local current_time = os.time()
 
-    -- Search all equippable bags for the item
     for bag_id in pairs(res_bags:equippable(true)) do
         local bag = get_items(bag_id)
 
-        -- Check if bag is accessible
         if bag.enabled then
             for _, item in ipairs(bag) do
                 if item.id == item_id then
-                    -- Decode extdata
                     local ext = extdata.decode(item)
                     if not ext then
                         debug_log('ERROR: extdata.decode() returned nil for item ID ' .. item_id)
@@ -191,7 +171,7 @@ function ItemUser._check_ring_usable(item_id)
                     -- CASE 2: Enchanted Equipment (rings, wings, slips)
                     -----------------------------------------------------------
                     if ext.type == 'Enchanted Equipment' then
-                        -- Calculate recast like MyHome.lua does (AUTHORITATIVE METHOD)
+                        -- Same recast formula as MyHome.lua:
                         -- recast = charges_remaining > 0 AND next_use_time delay
                         local has_charges = ext.charges_remaining and ext.charges_remaining > 0
                         local recast_delay = 0
@@ -200,7 +180,6 @@ function ItemUser._check_ring_usable(item_id)
                             recast_delay = math.max((ext.next_use_time + EXTDATA_TIME_OFFSET) - current_time, 0)
                         end
 
-                        -- Item is usable if: has charges AND recast = 0
                         local is_usable = has_charges and recast_delay == 0
 
                         debug_log(string.format('Enchanted item - charges:%s recast:%ds usable:%s',
@@ -248,8 +227,9 @@ function ItemUser._check_ring_usable(item_id)
 end
 
 --- Show all ring cooldowns when none are available
+--- @param cooldown_info table List of {name, delay, status}
+--- @param context any Unused
 function ItemUser._show_all_cooldowns(cooldown_info, context)
-    -- Find soonest available
     local soonest = nil
     local soonest_delay = 999999
 
@@ -260,30 +240,27 @@ function ItemUser._show_all_cooldowns(cooldown_info, context)
         end
     end
 
-    -- Header message
     MessageWarp.show_all_items_cooldown()
 
-    -- Show each item cooldown
     for _, info in ipairs(cooldown_info) do
         local delay = info.delay
         local time_msg
 
         if delay > 0 then
             if delay >= 60 then
-                -- Show in minutes (for delays > 60s)
                 local minutes = math.floor(delay / 60)
                 local seconds = delay % 60
                 time_msg = seconds > 0 and
                     string.format('%dm %ds', minutes, seconds) or
                     string.format('%dm', minutes)
             else
-                -- Show in seconds (for delays <= 60s)
                 time_msg = string.format('%ds', delay)
             end
             MessageWarp.show_item_cooldown_time(info.name, time_msg)
         else
-            -- Equip delay (just equipped)
-            MessageWarp.show_item_equip_delay(info.name)
+            -- delay 0 is not a cooldown: decode failure, unknown type, missing
+            -- extdata, or no charges with next_use_time already past.
+            MessageWarp.show_item_not_ready(info.name)
         end
     end
 
@@ -304,6 +281,11 @@ function ItemUser._show_all_cooldowns(cooldown_info, context)
     end
 end
 
+--- Lock ring1, equip the ring (+0.5 s) and start the wait (+2.5 s).
+--- @param ring_name string Ring name
+--- @param ring_id number Ring item id
+--- @param is_warp_ring boolean True for the Warp Ring (message wording)
+--- @param tag string 'WARP' or 'TELE'
 function ItemUser._execute_ring_sequence(ring_name, ring_id, is_warp_ring, tag)
     local initial_ring1 = nil
     if player and player.equipment and player.equipment.ring1 then
@@ -423,7 +405,12 @@ local function use_now(ring_name, ring_id, is_warp_ring, tag, initial_ring1)
     send_command('input /item "' .. item_name .. '" <me>')
 end
 
-
+--- Poll the ring until it can be used, then use it; release ring1 on any failure.
+--- @param ring_name string Ring name
+--- @param ring_id number Ring item id
+--- @param is_warp_ring boolean True for the Warp Ring (message wording)
+--- @param tag string 'WARP' or 'TELE'
+--- @param initial_ring1 string|nil ring1 before the sequence (forwarded, unused)
 function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, initial_ring1)
     local started = os.time()
     local deadline = started + WAIT_FLOOR
@@ -528,7 +515,6 @@ function ItemUser._wait_for_ring_usable(ring_name, ring_id, is_warp_ring, tag, i
         coroutine.schedule(check_usable, math.min(math.max(remaining, POLL_INTERVAL), MAX_POLL_SLEEP))
     end
 
-    -- Start checking
     check_usable()
 end
 
@@ -543,7 +529,6 @@ local function get_action_name(item_name, tag)
     if lower_name:find('recall') then return 'Recall' end
     if lower_name:find('escape') then return 'Escape' end
 
-    -- Fallback based on tag
     return tag == 'WARP' and 'Warp' or 'Teleport'
 end
 
@@ -567,6 +552,13 @@ local function drop_stale_autofix_listeners()
     end
 end
 
+--- Watch the item cast: zone -> success, own melee round or status change ->
+--- interrupted, cast_duration elapsed -> timeout. Every outcome re-enables ring1.
+--- @param ring_id number Item id
+--- @param tag string 'WARP' or 'TELE'
+--- @param cast_duration number Seconds to monitor
+--- @param initial_ring1 string|nil Unused
+--- @param item_name string Item name (message wording)
 function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, item_name)
     local cleanup_done = false
     local initial_status = player and player.status or 'Idle'
@@ -592,12 +584,10 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
 
         debug_log('Verifying ring1 restoration...')
 
-        -- Get warp item name for comparison
         local warp_item_name = res.items[ring_id] and res.items[ring_id].en or 'unknown'
 
         coroutine.schedule(function()
-            -- Wait for GearSwap to restore equipment
-            local max_checks = 4  -- Increased from 3 to allow more retry attempts
+            local max_checks = 4
             local check_count = 0
 
             local function check_equipment()
@@ -615,18 +605,17 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
                 if check_count < max_checks then
                     debug_log(string.format('Ring1 still "%s", forcing restore (attempt %d/%d)', current_ring1, check_count, max_checks))
                     restore_equipment()
-                    coroutine.schedule(check_equipment, 1.5)  -- Increased retry interval
+                    coroutine.schedule(check_equipment, 1.5)
                 else
-                    -- After max attempts, just notify but don't warn (set is correct)
+                    -- After max attempts: debug line only, no warning to the player
                     if _G.WARP_DEBUG then
                         MessageWarp.show_ring_final_state(tostring(current_ring1), warp_item_name)
                     end
-                    -- No warning - restore_equipment() was called, trust Mote logic
                 end
             end
 
             check_equipment()
-        end, 1.5)  -- Increased initial delay
+        end, 1.5)
     end
 
     -- SINGLE cleanup function to avoid conflicts
@@ -655,17 +644,13 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
             end
         end
 
-        -- Re-enable ring slot
         send_command('gs enable ring1')
         debug_log('Ring1 slot re-enabled')
 
-        -- Restore equipment based on reason
         if reason == 'success' then
-            -- Action succeeded, no message needed (already zoning)
             debug_log(action_name .. ' succeeded, player zoning (no restoration needed)')
             return
         elseif reason == 'interrupted' then
-            -- Cast interrupted - restore equipment immediately
             debug_log(action_name .. ' interrupted - initiating equipment restoration')
             MessageWarp.show_equipment_unlocked_ring1(tag_color, tag, action_color, slot_color)
             MessageWarp.show_action_interrupted(tag_color, tag, action_color, action_name)
@@ -674,9 +659,8 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
                     restore_equipment()
                     verify_ring_restored()
                 end
-            end, 1.0)  -- Increased delay to allow GearSwap slot unlock
+            end, 1.0)  -- let GearSwap process the slot unlock first
         elseif reason == 'timeout' then
-            -- Timeout - action didn't complete
             debug_log('Timeout reached - ' .. action_name .. ' did not complete')
             MessageWarp.show_equipment_unlocked_ring1(tag_color, tag, action_color, slot_color)
             if player then
@@ -684,18 +668,17 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
                 coroutine.schedule(function()
                     restore_equipment()
                     verify_ring_restored()
-                end, 1.0)  -- Increased delay to allow GearSwap slot unlock
+                end, 1.0)
             end
         else
             MessageWarp.show_unknown_cleanup_reason(reason)
         end
     end
 
-    -- Register action listener for interruption detection
     action_listener = windower.register_event('action', function(act)
         if cleanup_done or not player or act.actor_id ~= player.id then return end
 
-        -- Category 1 = Melee attack (movement/engaged = interrupted)
+        -- Category 1 = the player's own melee round
         if act.category == 1 then
             debug_log('Action event category 1 detected (melee/movement) - triggering interruption')
             cleanup_and_restore('interrupted')
@@ -705,7 +688,6 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
     windower._warp_autofix_action_id = action_listener
     debug_log('Action listener registered (watching for category 1)')
 
-    -- Register zone change listener
     zone_listener = windower.register_event('zone change', function()
         debug_log('Zone change event detected - warp successful')
         cleanup_and_restore('success')
@@ -715,7 +697,6 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
     windower._warp_autofix_load = my_load
     debug_log('Zone change listener registered')
 
-    -- Monitor cast status in real-time
     local check_interval = 0.5
     local elapsed = 0
 
@@ -725,9 +706,8 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
         if cleanup_done then return end
 
         elapsed = elapsed + check_interval
-        -- REMOVED: Monitoring tick spam (too verbose)
 
-        -- Check if interrupted by status change (movement during cast)
+        -- A status change (e.g. engaging) during the cast counts as an interruption
         if player and player.status ~= initial_status and elapsed < cast_duration then
             debug_log(string.format('Status change detected: %s >> %s (interruption!)',
                 tostring(initial_status), tostring(player.status)))
@@ -735,25 +715,22 @@ function ItemUser._setup_auto_fix(ring_id, tag, cast_duration, initial_ring1, it
             return
         end
 
-        -- Check if player is gone (zoned)
+        -- Defensive only: GearSwap's player table is never nil
         if not player then
             debug_log('Player data nil - zone change detected')
             cleanup_and_restore('success')
             return
         end
 
-        -- Check if timeout (cast should be done)
         if elapsed >= cast_duration then
             debug_log(string.format('Cast duration reached (%.1fs), triggering timeout', elapsed))
             cleanup_and_restore('timeout')
             return
         end
 
-        -- Continue monitoring
         coroutine.schedule(check_cast_status, check_interval)
     end
 
-    -- Start monitoring after small delay
     coroutine.schedule(check_cast_status, 1)
 end
 

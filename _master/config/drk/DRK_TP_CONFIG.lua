@@ -6,13 +6,13 @@
 ---
 --- Features:
 ---   • TP bonus equipment configuration (accessories)
----   • Weapon-based TP bonus tracking (REMA weapons)
+---   • Weapon-based TP bonus tracking
 ---   • Automatic TP threshold optimization (2000/3000 TP)
 ---   • Intelligent minimum gear selection
 ---
 --- Usage:
 ---   • Modify pieces table to add/remove TP bonus accessories
----   • Modify weapons table to add/remove REMA weapons with TP bonus
+---   • Modify weapons table to add/remove weapons with TP bonus
 ---   • get_weapon_bonus(weapon_name) - Get TP bonus from equipped weapon
 ---
 --- @file    config/drk/DRK_TP_CONFIG.lua
@@ -38,11 +38,11 @@ local DRKTPConfig = {
     ---============================================================================
     --- Weapons with automatic TP bonus
     ---============================================================================
-    -- These provide TP bonus when equipped as main weapon
+    -- TP bonus counted in either hand (main or off-hand)
 
     weapons = {
         {
-            name = "Anguta",     -- DRK REMA Great Axe (only DRK weapon with TP bonus 500)
+            name = "Anguta",     -- Aeonic scythe, TP Bonus +500
             bonus = 500
         }
     }
@@ -71,7 +71,7 @@ end
 --- MODULE EXPORT
 ---============================================================================
 
--- Make globally available for backward compatibility
+-- Read as _G.DRKTPConfig by DRK_PRECAST.lua
 _G.DRKTPConfig = DRKTPConfig
 
 return DRKTPConfig

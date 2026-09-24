@@ -1,15 +1,14 @@
 ---============================================================================
---- Message Warp - Warp/Teleport System Messages (NEW SYSTEM - HYBRID)
+--- Message Warp - Warp/Teleport System Messages
 ---============================================================================
---- Provides formatted messages for warp and teleport system
---- Uses HYBRID approach:
----   - Templates for standard messages (via M.send())
----   - Direct MessageRenderer.send() for complex multi-line displays (help, status)
----   - Direct add_to_chat() for DEBUG messages with inline color codes
+--- Provides formatted messages for warp and teleport system:
+---   - Templates for standard messages (M.send, data/systems/warp_messages.lua)
+---   - MessageRenderer.send(1, text) for multi-line displays (help, status);
+---     the arguments are swapped, GearSwap's add_to_chat recovers (color 8,
+---     inline codes color each segment)
+---   - Direct add_to_chat() for debug/error lines with inline color codes
 ---
---- Migrated from old system to new system: 2025-11-06
----
---- @file utils/messages/message_warp.lua
+--- @file shared/utils/messages/formatters/system/message_warp.lua
 --- @author Tetsouo
 --- @version 2.0
 --- @date Created: 2025-10-26 | Migrated: 2025-11-06
@@ -17,7 +16,6 @@
 
 local MessageWarp = {}
 
--- NEW message system
 local M = require('shared/utils/messages/api/messages')
 local MessageRenderer = require('shared/utils/messages/core/message_renderer')
 local MessageCore = require('shared/utils/messages/message_core')
@@ -212,7 +210,6 @@ end
 --- @param locked boolean Equipment locked
 --- @param can_warp boolean Can cast warp spells
 function MessageWarp.show_status(initialized, locked, can_warp)
-    -- Multi-line display - use MessageRenderer.send() directly
     local header_color = MessageCore.create_color_code(COLORS.JOB_TAG)
     local label_color = MessageCore.create_color_code(COLORS.SEPARATOR)
     local success_color = MessageCore.create_color_code(COLORS.SUCCESS)
@@ -235,7 +232,6 @@ end
 
 --- Show warp system help
 function MessageWarp.show_help()
-    -- Multi-line help menu - use MessageRenderer.send() directly
     local header_color = MessageCore.create_color_code(COLORS.JOB_TAG)
     local command_color = MessageCore.create_color_code(COLORS.ITEM_COLOR)
     local desc_color = MessageCore.create_color_code(COLORS.SEPARATOR)
@@ -388,7 +384,7 @@ end
 function MessageWarp.show_status_header()
     local gray = string.char(0x1F, 160)
     local yellow = string.char(0x1F, 50)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
     add_to_chat(121, gray .. separator)
     add_to_chat(121, yellow .. "Warp System Status")
     add_to_chat(121, gray .. separator)
@@ -435,7 +431,7 @@ end
 function MessageWarp.show_test_header()
     local gray = string.char(0x1F, 160)
     local yellow = string.char(0x1F, 50)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
     add_to_chat(121, gray .. separator)
     add_to_chat(121, yellow .. "Warp Detection Test")
     add_to_chat(121, gray .. separator)
@@ -451,6 +447,8 @@ function MessageWarp.show_test_line(label, count)
 end
 
 --- Show debug toggle
+--- Note: status_color is passed as a parameter, so the engine prints the text
+--- "{green}"/"{red}" instead of a color.
 --- @param enabled boolean Debug enabled status
 function MessageWarp.show_debug_toggle(enabled)
     local status_color = enabled and "{green}" or "{red}"
@@ -511,10 +509,12 @@ function MessageWarp.show_item_cooldown_time(item_name, time_msg)
     })
 end
 
---- Show item equip delay
+--- One line of the "all items on cooldown" list, for an item that is not on
+--- a timed cooldown but cannot be used either (unreadable data, unknown
+--- type, no charges with the recast already over).
 --- @param item_name string Item name
-function MessageWarp.show_item_equip_delay(item_name)
-    M.send('WARP', 'item_equip_delay', {item_name = item_name})
+function MessageWarp.show_item_not_ready(item_name)
+    M.send('WARP', 'item_not_ready', {item_name = item_name})
 end
 
 --- Show next available item
@@ -607,7 +607,7 @@ end
 --- @param tag_color string Tag color code
 --- @param tag string Item tag
 --- @param action_color string Action color code
---- @param slot_color string Slot color code
+--- @param slot_color string Slot color code (not used)
 --- @param ring_name string Ring name
 function MessageWarp.show_ring_restored(tag_color, tag, action_color, slot_color, ring_name)
     add_to_chat(122, string.format('%s[%s]%s Ring1 restored: %s',

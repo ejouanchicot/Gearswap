@@ -49,7 +49,7 @@ local SAMTPConfig = {
     ---==========================================================================
     --- WEAPONS WITH AUTOMATIC TP BONUS
     ---==========================================================================
-    --- These provide TP bonus when equipped as main weapon.
+    --- TP bonus counted in either hand (main or off-hand).
 
     weapons = {
         {
@@ -92,7 +92,7 @@ function SAMTPConfig.get_hagakure_bonus()
         return 0
     end
 
-    if buffactive.Hagakure or buffactive['Hagakure'] then
+    if buffactive['Hagakure'] then
         local jp_bonus = SAMTPConfig.hagakure_jp_gifts * 10
         return 1000 + jp_bonus
     end
@@ -100,12 +100,11 @@ function SAMTPConfig.get_hagakure_bonus()
     return 0
 end
 
-
 ---============================================================================
 --- GLOBAL EXPORT & MODULE RETURN
 ---============================================================================
 
--- Make globally available for legacy code
+-- Global export: the entry file also assigns it, SAM_PRECAST reads _G.SAMTPConfig
 _G.SAMTPConfig = SAMTPConfig
 
 return SAMTPConfig

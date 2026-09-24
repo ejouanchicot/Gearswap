@@ -37,7 +37,7 @@ local PLDTPConfig = {
     ---============================================================================
     --- Weapons with automatic TP bonus
     ---============================================================================
-    -- These provide TP bonus when equipped as main weapon
+    -- TP bonus counted in either hand (main or off-hand)
 
     weapons = {{
         name = "Sequence",
@@ -69,7 +69,7 @@ end
 --- MODULE EXPORT
 ---============================================================================
 
--- Make globally available for backward compatibility
+-- Global export: the entry file also assigns it, PLD_PRECAST reads _G.PLDTPConfig
 _G.PLDTPConfig = PLDTPConfig
 
 return PLDTPConfig
