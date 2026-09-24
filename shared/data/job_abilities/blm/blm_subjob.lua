@@ -6,7 +6,7 @@
 --- Contents:
 ---   - Elemental Seal (Lv15) - Next elemental spell MACC +256
 ---
---- @file blm_subjob.lua
+--- @file shared/data/job_abilities/blm/blm_subjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06

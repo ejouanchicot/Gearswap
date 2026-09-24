@@ -1,34 +1,22 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DRK Movement Management Module - Movement Detection & Speed Gear
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles movement detection and automatic movement speed gear application:
----   • AutoMove utility integration
----   • Movement callback registration
----   • Automatic speed gear swapping
+---   Placeholder kept for the 12-module layout: movement is handled by the
+---   shared AutoMove system.
 ---
----   Uses centralized AutoMove for position tracking (performance optimization).
----
----   @file    DRK_MOVEMENT.lua
+---   @file    shared/jobs/drk/functions/DRK_MOVEMENT.lua
 ---   @author  Tetsouo
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-23
----   @requires utils/movement/automove.lua
+---   @requires shared/utils/movement/automove.lua
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   AUTOMOVE INTEGRATION (PERFORMANCE OPTIMIZED - No Startup Cost)
 ---  ═══════════════════════════════════════════════════════════════════════════
--- AutoMove (if available) automatically handles:
---   • Movement detection
---   • Speed gear swapping (sets.MoveSpeed from drk_sets.lua)
---   • Idle gear restoration when stopped
---
--- No explicit registration needed - AutoMove auto-detects job modules.
+-- This file defines nothing. AutoMove sets state.Moving and triggers a gear
+-- update; logic/set_builder.lua lays sets.MoveSpeed over the idle set.
 -- If AutoMove is not loaded, movement speed gear is simply not available.
---
--- PERFORMANCE NOTE: Previous version checked AutoMove availability at startup
--- and showed a warning. This version does nothing at startup.
--- AutoMove will work if present, otherwise no-op.
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT

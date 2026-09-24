@@ -9,7 +9,7 @@
 ---   - Restoring Breath (Lv90) - Order wyvern to heal with breath
 ---   - Steady Wing (Lv95) - Create damage barrier for wyvern
 ---
---- @file drg_pet_commands.lua
+--- @file shared/data/job_abilities/drg/drg_pet_commands.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

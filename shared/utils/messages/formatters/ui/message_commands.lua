@@ -1,16 +1,19 @@
 ---============================================================================
---- Commands Message Formatter - Centralized Command Messages (NEW SYSTEM)
+--- Commands Message Formatter - Centralized Command Messages
 ---============================================================================
---- Uses template-based messaging via MessageRenderer
---- Migrated from old system to new system: 2025-11-06
+--- Output of the common //gs c commands. Short lines use the COMMANDS
+--- templates (data/systems/commands_messages.lua); multi-line screens (help,
+--- commands list, color test, mode status) are built here with add_to_chat,
+--- this module being a last rendering level (CODE_QUALITY §6).
 ---
---- @file    messages/message_commands.lua
+--- @file    shared/utils/messages/formatters/ui/message_commands.lua
 --- @author  Tetsouo
 --- @version 2.0
 --- @date    Created: 2025-11-06
 ---============================================================================
 
 local MessageCommands = {}
+local MessageCore = require('shared/utils/messages/message_core')
 local M = require('shared/utils/messages/api/messages')
 local MessageColors = require('shared/utils/messages/message_colors')
 
@@ -35,24 +38,30 @@ local function generate_color_code(code)
     end
 end
 
+--- Header of //gs c testcolors (separator, title, separator)
 function MessageCommands.show_color_test_header()
     local gray = string.char(0x1F, 160)
     local yellow = string.char(0x1F, 50)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
     add_to_chat(121, gray .. separator)
     add_to_chat(121, yellow .. "FFXI Color Code Test (001-509) - Dual Prefix System")
     add_to_chat(121, gray .. separator)
 end
 
+--- One color sample line (codes 1-255 only)
+--- @param code number Color code
 function MessageCommands.show_color_sample(code)
     local color_code = string.char(0x1F, code)
     local sample_text = color_code .. string.format("%03d - Sample Text", code)
     M.send('COMMANDS', 'testcolors_sample', {sample = sample_text})
 end
 
+--- Up to 14 color codes on one line, each in its own color (1-509)
+--- @param code1 number First code; code2..code14 follow, nil entries are skipped
 function MessageCommands.show_color_sample_row(code1, code2, code3, code4, code5, code6, code7, code8, code9, code10, code11, code12, code13, code14)
     -- Build up to 14 samples per line (compact format for FFXI chat)
-    -- Each sample: "001" = 3 chars, 14 samples + separators = ~68 chars total (under 74 char limit)
+    -- Each sample is 3 digits and entries are joined by " | ": 14 codes make 81
+    -- visible characters, wider than the separator line.
     -- NOTE: Problematic codes are filtered out before calling this function
     local samples = {}
     local gray_separator = string.char(0x1F, 8) .. " | "  -- Gray color code + pipe separator
@@ -71,15 +80,17 @@ function MessageCommands.show_color_sample_row(code1, code2, code3, code4, code5
     M.send('COMMANDS', 'testcolors_sample', {sample = row_text})
 end
 
+--- Gray separator line between testcolors rows
 function MessageCommands.show_color_test_separator()
     local gray = string.char(0x1F, 160)
-    add_to_chat(121, gray .. string.rep("=", 74))
+    add_to_chat(121, gray .. string.rep("=", MessageCore.SEPARATOR_WIDTH))
 end
 
+--- Footer of //gs c testcolors
 function MessageCommands.show_color_test_footer()
     local gray = string.char(0x1F, 160)
     local yellow = string.char(0x1F, 50)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
     add_to_chat(121, gray .. separator)
     add_to_chat(121, yellow .. "Color test complete!")
     add_to_chat(121, gray .. separator)
@@ -119,33 +130,41 @@ end
 --- DETECTREGION COMMAND
 ---============================================================================
 
+--- Header of the region detection output
 function MessageCommands.show_detect_region_header()
     local gray = string.char(0x1F, 160)
     local yellow = string.char(0x1F, 50)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
     add_to_chat(121, gray .. separator)
     add_to_chat(121, yellow .. "FFXI Region Auto-Detection")
     add_to_chat(121, gray .. separator)
 end
 
+--- Show the COMMANDS.windower_info_header message
 function MessageCommands.show_windower_info_header()
     M.send('COMMANDS', 'windower_info_header')
 end
 
+--- @param key string Field name
+--- @param value any Field value
 function MessageCommands.show_windower_info_field(key, value)
     M.send('COMMANDS', 'windower_info_field', {key = key, value = value})
 end
 
+--- Blank line + header before the detection results
 function MessageCommands.show_detection_results_header()
     local gray = string.char(0x1F, 160)
     local yellow = string.char(0x1F, 50)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
     add_to_chat(121, " ")  -- Blank line
     add_to_chat(121, gray .. separator)
     add_to_chat(121, yellow .. "DETECTION RESULTS:")
     add_to_chat(121, gray .. separator)
 end
 
+--- @param region string Detected region
+--- @param method string How it was detected
+--- @param orange_code any Orange color code for that region
 function MessageCommands.show_region_detected(region, method, orange_code)
     M.send('COMMANDS', 'region_detected', {
         region = region,
@@ -154,6 +173,8 @@ function MessageCommands.show_region_detected(region, method, orange_code)
     })
 end
 
+--- Manual region test shown when detection failed. It advertises
+--- //gs c setregion, which is not implemented.
 function MessageCommands.show_region_detection_failed()
     local red = string.char(0x1F, 167)
     local blue = string.char(0x1F, 122)
@@ -177,12 +198,14 @@ function MessageCommands.show_region_detection_failed()
     add_to_chat(121, blue .. "  //gs c setregion eu")
 end
 
+--- Footer separator of the region detection output
 function MessageCommands.show_detect_region_footer()
     local gray = string.char(0x1F, 160)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
     add_to_chat(121, gray .. separator)
 end
 
+--- Show the COMMANDS.region_saved message
 function MessageCommands.show_region_saved()
     M.send('COMMANDS', 'region_saved')
 end
@@ -191,26 +214,32 @@ end
 --- SETREGION COMMAND
 ---============================================================================
 
+--- Show the COMMANDS.setregion_usage message
 function MessageCommands.show_setregion_usage()
     M.send('COMMANDS', 'setregion_usage')
 end
 
+--- Show the COMMANDS.region_set_us message
 function MessageCommands.show_region_set_us()
     M.send('COMMANDS', 'region_set_us')
 end
 
+--- Show the COMMANDS.region_set_eu message
 function MessageCommands.show_region_set_eu()
     M.send('COMMANDS', 'region_set_eu')
 end
 
+--- Show the COMMANDS.region_set_jp message
 function MessageCommands.show_region_set_jp()
     M.send('COMMANDS', 'region_set_jp')
 end
 
+--- @param region string Region as typed
 function MessageCommands.show_invalid_region(region)
     M.send('COMMANDS', 'invalid_region', {region = region})
 end
 
+--- Show the COMMANDS.region_reload_required message
 function MessageCommands.show_region_reload_required()
     M.send('COMMANDS', 'region_reload_required')
 end
@@ -219,6 +248,7 @@ end
 --- LOCKSTYLE COMMAND
 ---============================================================================
 
+--- Show the COMMANDS.lockstyle_reapplying message
 function MessageCommands.show_lockstyle_reapplying()
     M.send('COMMANDS', 'lockstyle_reapplying')
 end
@@ -227,6 +257,7 @@ end
 --- DRESSUP TOGGLE COMMAND
 ---============================================================================
 
+--- @param enabled boolean New DressUp management state
 function MessageCommands.show_dressup_toggled(enabled)
     local status = enabled and "ON" or "OFF"
     local color = enabled and MessageColors.SUCCESS or MessageColors.WARNING
@@ -240,22 +271,29 @@ end
 --- WARP ERROR MESSAGES
 ---============================================================================
 
+--- Show the COMMANDS.warp_error_header message
 function MessageCommands.show_warp_error_header()
     M.send('COMMANDS', 'warp_error_header')
 end
 
+--- @param error_msg any Error to show
 function MessageCommands.show_warp_error(error_msg)
     M.send('COMMANDS', 'warp_error', {error = tostring(error_msg)})
 end
 
+--- Show the COMMANDS.warp_error_footer message
 function MessageCommands.show_warp_error_footer()
     M.send('COMMANDS', 'warp_error_footer')
 end
 
+--- Show the COMMANDS.warp_testing_modules message
 function MessageCommands.show_warp_testing_modules()
     M.send('COMMANDS', 'warp_testing_modules')
 end
 
+--- @param module_name string Module tested
+--- @param success boolean Whether it loaded
+--- @param error_msg any Error when it did not
 function MessageCommands.show_warp_module_test(module_name, success, error_msg)
     local status = success and '✓ OK' or ('✗ ' .. tostring(error_msg))
     M.send('COMMANDS', 'warp_module_test', {
@@ -268,46 +306,57 @@ end
 --- DEBUGSUBJOB COMMAND
 ---============================================================================
 
+--- Header of //gs c debugsubjob
 function MessageCommands.show_debugsubjob_header()
     local gray = string.char(0x1F, 160)
     local yellow = string.char(0x1F, 50)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
     add_to_chat(121, gray .. separator)
     add_to_chat(121, yellow .. "[DEBUG] Subjob Detection")
     add_to_chat(121, gray .. separator)
 end
 
+--- Show the COMMANDS.debugsubjob_no_player message
 function MessageCommands.show_debugsubjob_no_player()
     M.send('COMMANDS', 'debugsubjob_no_player')
 end
 
+--- @param job string Main job
+--- @param level number Main job level
 function MessageCommands.show_main_job_info(job, level)
     M.send('COMMANDS', 'main_job_info', {job = tostring(job), level = tostring(level)})
 end
 
+--- @param job string Sub job
+--- @param level number Sub job level
 function MessageCommands.show_sub_job_info(job, level)
     M.send('COMMANDS', 'sub_job_info', {job = tostring(job), level = tostring(level)})
 end
 
+--- Show the COMMANDS.zone_info_header message
 function MessageCommands.show_zone_info_header()
     M.send('COMMANDS', 'zone_info_header')
 end
 
+--- @param zone_id number Zone id
 function MessageCommands.show_zone_id(zone_id)
     M.send('COMMANDS', 'zone_id', {zone_id = tostring(zone_id)})
 end
 
+--- @param zone_name string Zone name
 function MessageCommands.show_zone_name(zone_name)
     M.send('COMMANDS', 'zone_name', {zone_name = tostring(zone_name)})
 end
 
+--- Show the COMMANDS.zone_info_unavailable message
 function MessageCommands.show_zone_info_unavailable()
     M.send('COMMANDS', 'zone_info_unavailable')
 end
 
+--- Closing separator of //gs c debugsubjob
 function MessageCommands.show_debugsubjob_instructions()
     local gray = string.char(0x1F, 160)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
     add_to_chat(121, gray .. separator)
 end
 
@@ -315,26 +364,29 @@ end
 --- JAMSG COMMAND
 ---============================================================================
 
+--- Show the COMMANDS.jamsg_config_error message
 function MessageCommands.show_jamsg_config_error()
     M.send('COMMANDS', 'jamsg_config_error')
 end
 
+--- Header of //gs c jamsg with no argument
 function MessageCommands.show_jamsg_status_header()
     local gray = string.char(0x1F, 160)
     local yellow = string.char(0x1F, 50)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
     add_to_chat(121, gray .. separator)
     add_to_chat(121, yellow .. "[JA_MSG] Current Display Mode")
     add_to_chat(121, gray .. separator)
 end
 
+--- @param mode string Current JA message mode
 function MessageCommands.show_jamsg_current_mode(mode)
     local gray = string.char(0x1F, 160)
     local green = string.char(0x1F, 158)
     local cyan = string.char(0x1F, 122)
     local yellow = string.char(0x1F, 50)
     local white = string.char(0x1F, 1)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
 
     add_to_chat(121, green .. "Mode: " .. yellow .. mode)
     add_to_chat(121, " ")
@@ -347,16 +399,18 @@ function MessageCommands.show_jamsg_current_mode(mode)
     add_to_chat(121, gray .. separator)
 end
 
+--- @param mode string Mode as typed
 function MessageCommands.show_jamsg_invalid_mode(mode)
     M.send('COMMANDS', 'jamsg_invalid_mode', {mode = mode})
 end
 
+--- @param mode string New mode: 'full', 'on' or 'off' (selects the template)
 function MessageCommands.show_jamsg_mode_changed(mode)
-    -- Select template based on mode
     local key = 'jamsg_mode_changed_' .. mode
     M.send('COMMANDS', key)
 end
 
+--- Show the COMMANDS.jamsg_set_failed message
 function MessageCommands.show_jamsg_set_failed()
     M.send('COMMANDS', 'jamsg_set_failed')
 end
@@ -365,26 +419,29 @@ end
 --- SPELLMSG COMMAND
 ---============================================================================
 
+--- Show the COMMANDS.spellmsg_config_error message
 function MessageCommands.show_spellmsg_config_error()
     M.send('COMMANDS', 'spellmsg_config_error')
 end
 
+--- Header of //gs c spellmsg with no argument
 function MessageCommands.show_spellmsg_status_header()
     local gray = string.char(0x1F, 160)
     local yellow = string.char(0x1F, 50)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
     add_to_chat(121, gray .. separator)
     add_to_chat(121, yellow .. "[SPELL_MSG] Current Display Mode")
     add_to_chat(121, gray .. separator)
 end
 
+--- @param mode string Current spell message mode
 function MessageCommands.show_spellmsg_current_mode(mode)
     local gray = string.char(0x1F, 160)
     local green = string.char(0x1F, 158)
     local cyan = string.char(0x1F, 122)
     local yellow = string.char(0x1F, 50)
     local white = string.char(0x1F, 1)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
 
     add_to_chat(121, green .. "Mode: " .. yellow .. mode)
     add_to_chat(121, " ")
@@ -397,16 +454,18 @@ function MessageCommands.show_spellmsg_current_mode(mode)
     add_to_chat(121, gray .. separator)
 end
 
+--- @param mode string Mode as typed
 function MessageCommands.show_spellmsg_invalid_mode(mode)
     M.send('COMMANDS', 'spellmsg_invalid_mode', {mode = mode})
 end
 
+--- @param mode string New mode: 'full', 'on' or 'off' (selects the template)
 function MessageCommands.show_spellmsg_mode_changed(mode)
-    -- Select template based on mode
     local key = 'spellmsg_mode_changed_' .. mode
     M.send('COMMANDS', key)
 end
 
+--- Show the COMMANDS.spellmsg_set_failed message
 function MessageCommands.show_spellmsg_set_failed()
     M.send('COMMANDS', 'spellmsg_set_failed')
 end
@@ -415,26 +474,29 @@ end
 --- WSMSG COMMAND
 ---============================================================================
 
+--- Show the COMMANDS.wsmsg_config_error message
 function MessageCommands.show_wsmsg_config_error()
     M.send('COMMANDS', 'wsmsg_config_error')
 end
 
+--- Header of //gs c wsmsg with no argument
 function MessageCommands.show_wsmsg_status_header()
     local gray = string.char(0x1F, 160)
     local yellow = string.char(0x1F, 50)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
     add_to_chat(121, gray .. separator)
     add_to_chat(121, yellow .. "[WS_MSG] Current Display Mode")
     add_to_chat(121, gray .. separator)
 end
 
+--- @param mode string Current WS message mode
 function MessageCommands.show_wsmsg_current_mode(mode)
     local gray = string.char(0x1F, 160)
     local green = string.char(0x1F, 158)
     local cyan = string.char(0x1F, 122)
     local yellow = string.char(0x1F, 50)
     local white = string.char(0x1F, 1)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
 
     add_to_chat(121, green .. "Mode: " .. yellow .. mode)
     add_to_chat(121, " ")
@@ -447,16 +509,18 @@ function MessageCommands.show_wsmsg_current_mode(mode)
     add_to_chat(121, gray .. separator)
 end
 
+--- @param mode string Mode as typed
 function MessageCommands.show_wsmsg_invalid_mode(mode)
     M.send('COMMANDS', 'wsmsg_invalid_mode', {mode = mode})
 end
 
+--- @param mode string New mode: 'full', 'on' or 'off' (selects the template)
 function MessageCommands.show_wsmsg_mode_changed(mode)
-    -- Select template based on mode
     local key = 'wsmsg_mode_changed_' .. mode
     M.send('COMMANDS', key)
 end
 
+--- Show the COMMANDS.wsmsg_set_failed message
 function MessageCommands.show_wsmsg_set_failed()
     M.send('COMMANDS', 'wsmsg_set_failed')
 end
@@ -465,6 +529,7 @@ end
 --- DEBUGWARP COMMAND
 ---============================================================================
 
+--- @param enabled boolean New warp debug state
 function MessageCommands.show_warp_debug_toggled(enabled)
     local status = enabled and 'ENABLED' or 'DISABLED'
     M.send('COMMANDS', 'warp_debug_toggled', {status = status})
@@ -474,6 +539,8 @@ end
 --- DEBUGMIDCAST COMMAND
 ---============================================================================
 
+--- @param job_name string Job tag
+--- @param debug_state boolean New midcast debug state
 function MessageCommands.show_debugmidcast_toggled(job_name, debug_state)
     M.send('COMMANDS', 'debugmidcast_toggled', {
         job = job_name,
@@ -485,6 +552,7 @@ end
 --- HELP DISPLAY
 ---============================================================================
 
+--- Output of //gs c help (no branching: its length is the screen's)
 function MessageCommands.show_help()
     local gray = string.char(0x1F, 8)
     local yellow = string.char(0x1F, 36)
@@ -493,7 +561,7 @@ function MessageCommands.show_help()
     local white = string.char(0x1F, 1)
     local green = string.char(0x1F, 158)
 
-    local top_sep = string.rep("=", 74)
+    local top_sep = string.rep("=", MessageCore.SEPARATOR_WIDTH)
 
     add_to_chat(121, " ")
     add_to_chat(121, yellow .. top_sep)
@@ -514,6 +582,7 @@ end
 --- COMMANDS LIST
 ---============================================================================
 
+--- Output of //gs c commands (no branching: its length is the screen's)
 function MessageCommands.show_commands_list()
     local gray = string.char(0x1F, 8)
     local dgray = string.char(0x1F, 160)
@@ -529,8 +598,8 @@ function MessageCommands.show_commands_list()
     local pink = string.char(0x1F, 13)
     local purple = string.char(0x1F, 200)
 
-    local top_sep = string.rep("=", 74)
-    local mid_sep = string.rep("-", 74)
+    local top_sep = string.rep("=", MessageCore.SEPARATOR_WIDTH)
+    local mid_sep = string.rep("-", MessageCore.SEPARATOR_WIDTH)
 
     -- Header
     add_to_chat(121, " ")

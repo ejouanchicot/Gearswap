@@ -1,7 +1,7 @@
 ---============================================================================
 --- ENHANCING MAGIC DATABASE - Buff Spells Module
 ---============================================================================
---- Defensive and regeneration buffs (32 total)
+--- Defensive and regeneration buffs (30 total)
 ---
 --- Aquaveil:
 ---   - Prevents spell interruption based on Enhancing Magic skill
@@ -20,10 +20,10 @@
 ---   - Base HP/tick + equipment bonuses (no skill scaling for potency)
 ---   - Equipment: Arbatel Bonnet, various armor pieces with Regen potency+
 ---
---- @file enhancing_buffs.lua
+--- @file shared/data/magic/enhancing/enhancing_buffs.lua
 --- @author Tetsouo
 --- @version 2.1 - Improved alignment - Standardized with spell_family
---- @date Created: 2025-10-30 | Updated: 2025-11-06 | Updated: 2025-11-05
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 ---============================================================================
 
 local ENHANCING_BUFFS = {}

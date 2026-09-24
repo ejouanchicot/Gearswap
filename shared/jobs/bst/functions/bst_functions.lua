@@ -4,7 +4,7 @@
 ---   Loads all BST-specific function modules in correct order.
 ---   CRITICAL: All 11 hook modules must be loaded via include() for _G availability.
 ---
----   @file    jobs/bst/functions/bst_functions.lua
+---   @file    shared/jobs/bst/functions/bst_functions.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-17
@@ -13,14 +13,11 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SECTION 1: MESSAGE SYSTEM
 ---  ═══════════════════════════════════════════════════════════════════════════
--- Message system (must load first for buff status display)
--- ═══════════════════════════════════════════════════════════════════
--- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
--- ═══════════════════════════════════════════════════════════════════
+-- TIMER() calls are no-ops unless //gs c perf start
 local Profiler = require('shared/utils/debug/performance_profiler')
 local TIMER = Profiler.create_timer('BST')
--- ═══════════════════════════════════════════════════════════════════
 
+-- Message system (must load first for buff status display)
 include('../shared/utils/messages/formatters/magic/message_buffs.lua')
 TIMER('message_buffs')
 
@@ -84,24 +81,22 @@ TIMER('BST_MOVEMENT')
 ---   logic/pet_manager.lua
 ---     • Auto pet engage (based on state.AutoPetEngage)
 ---     • Pet status monitoring (updates state.PetEngaged)
----     • Pet action validation and coordination
+---     • Ready move list (rdylist / rdymove commands)
 ---
 ---   logic/ready_move_categorizer.lua
----     • Physical vs Magical Ready Move categorization
----     • Potency tier detection (Low/Mid/High)
----     • Equipment set selection optimization
+---     • Ready Move categorization (Physical, PhysicalMulti, MagicAtk,
+---       MagicAcc, Default) read by BST_PRECAST / BST_AFTERCAST
 ---
 ---   logic/set_builder.lua
----     • Shared engaged set construction (master + pet bifurcation)
----     • Shared idle set construction (PetPDT vs MasterPDT)
----     • Pet mode detection and gear swapping
+---     • Engaged set construction (master / pet / both engaged)
+---     • Idle set construction (PetEngaged, PetPDT vs MasterPDT)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SECTION 6: DUAL-BOXING SYSTEM
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load dual-boxing manager (uses deferred init + lazy message loading)
+-- Load dual-boxing manager for its side effect (deferred auto-init)
 local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -112,6 +107,4 @@ local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 MessageFormatter.show_debug('BST', 'All functions loaded (13 hooks + 4 logic modules)')
 
--- ═══════════════════════════════════════════════════════════════════
 TIMER('TOTAL BST_functions', true)
--- ═══════════════════════════════════════════════════════════════════

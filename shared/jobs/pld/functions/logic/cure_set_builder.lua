@@ -2,17 +2,12 @@
 ---   Cure Set Builder - Dynamic Cure Set Selection (PLD)
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Selects optimized cure sets based on spell target (SELF vs OTHER).
----   Provides intelligent automation for:
----   • Target-based set selection (CureSelf vs CureOther)
----   • Cure III/IV optimization
----   • Dynamic midcast gear updates
+---   Only Cure III and Cure IV are handled (called from PLD job_midcast):
+---   • SELF  -> sets.midcast.CureSelf
+---   • OTHER -> sets.midcast.CureOther
+---   Sets are defined in pld_sets.lua.
 ---
----   Features:
----   • Self-cure: Focus on Enmity + Cure Potency
----   • Other-cure: Focus on Cure Potency + Cast Time
----   • Sets defined in pld_sets.lua (external configuration)
----
----   @file    jobs/pld/functions/logic/cure_set_builder.lua
+---   @file    shared/jobs/pld/functions/logic/cure_set_builder.lua
 ---   @author  Tetsouo
 ---   @version 2.0.0 - Sets moved to pld_sets.lua
 ---   @date    Created: 2025-10-06 | Updated: 2025-10-06
@@ -40,7 +35,8 @@ function CureSetBuilder.generate(spell, target_type)
         return nil
     end
 
-    -- Update global midcast cure set (used by GearSwap)
+    -- Side effect: sets.midcast.Cure keeps this choice afterwards, so Cure and
+    -- Cure II (resolved by Mote from sets.midcast.Cure) wear it too.
     sets.midcast.Cure = selected_set
 
     return sets.midcast.Cure

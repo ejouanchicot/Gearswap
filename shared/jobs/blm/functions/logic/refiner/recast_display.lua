@@ -17,7 +17,7 @@
 ---                                   spell_recasts, eventArgs)
 ---     • collect_ga_tier_cooldowns(base_element, spell_recasts) -> list
 ---
----   @file    jobs/blm/functions/logic/refiner/recast_display.lua
+---   @file    shared/jobs/blm/functions/logic/refiner/recast_display.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2026-05-09 (extracted from spell_refiner.lua)

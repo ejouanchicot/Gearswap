@@ -4,7 +4,7 @@
 ---   Handles complex gear logic with Pet vs Master bifurcation.
 ---   CRITICAL MODULE: Determines whether to use pet or master gear based on pet.isvalid.
 ---
----   @file    jobs/bst/functions/logic/set_builder.lua
+---   @file    shared/jobs/bst/functions/logic/set_builder.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-17
@@ -48,6 +48,10 @@ local function pdt_overlay(specific, fallback)
 end
 
 --- Combine the PDT overlay in, if the mode calls for one and one exists.
+--- @param final_set table Set built so far
+--- @param specific table|nil Specific group (see pdt_overlay)
+--- @param fallback table|nil Group catch-all PDT
+--- @return table
 local function with_pdt(final_set, specific, fallback)
     if not wants_pdt() then
         return final_set
@@ -122,6 +126,9 @@ local function apply_common_overlays(final_set)
     return final_set
 end
 
+--- Build the idle set (pet or master branch, then weapons/movement/town feet).
+--- @param base_idle_set table Idle set selected by Mote
+--- @return table
 function SetBuilder.build_idle_set(base_idle_set)
     -- Mote caches the pet globally, so this costs nothing.
     local pet = _G.pet
@@ -168,6 +175,9 @@ local function engaged_for_situation(base_engaged_set, pet_valid)
     return with_pdt(final_set, sets.me.engaged, sets.me.PDT)
 end
 
+--- Build the engaged set (master / pet / both, then weapons).
+--- @param base_engaged_set table Engaged set selected by Mote
+--- @return table
 function SetBuilder.build_engaged_set(base_engaged_set)
     PetManager.update_pet_mode(_G.pet)
     local pet_mode = PetManager.get_pet_mode()

@@ -12,7 +12,7 @@
 ---   These are fixed values from FFXI and should not be modified unless
 ---   game data changes (e.g., version update).
 ---
----   @file    jobs/cor/functions/logic/roll_data.lua
+---   @file    shared/jobs/cor/functions/logic/roll_data.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-08
@@ -371,7 +371,7 @@ end
 ---   Calculate final bonus value including job bonus and gear bonus
 ---   @param roll_name string Name of the roll
 ---   @param roll_value number Roll value (1-11)
----   @param player_job string Current main job
+---   @param player_job string Current main job (not read: the job bonus comes from has_job_bonus)
 ---   @param phantom_roll_bonus number Total +Phantom Roll from gear
 ---   @param has_job_bonus boolean|nil Whether job bonus should be applied (auto-detected from party)
 ---   @return number Final bonus value

@@ -17,7 +17,8 @@ local RDMSaboteurConfig = {}
 ---============================================================================
 --- Spells in this list will auto-trigger Saboteur when SaboteurMode = 'On'
 ---
---- Saboteur Effect: +5 enfeebling potency/duration (60s duration, 5min cooldown)
+--- Saboteur: boosts the potency and duration of the next enfeebling spell.
+--- Read by RDM_PRECAST (via _G.RDMSaboteurConfig, set by the entry file).
 ---
 --- Default spells:
 ---   • Distract III - Red Magic tier III (very potent, Saboteur maximizes effect)

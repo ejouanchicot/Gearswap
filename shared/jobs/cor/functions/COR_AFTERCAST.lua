@@ -1,10 +1,11 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   COR Aftercast Module - Post-Action Gear Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles aftercast gear restoration for Corsair job.
----   Returns to appropriate idle/engaged gear after actions complete.
+---   Aftercast hook for Corsair: stops the midcast watchdog and opens a bullet
+---   pouch when the stack runs low after a ranged attack. Mote returns to
+---   idle/engaged gear by itself.
 ---
----   @file    COR_AFTERCAST.lua
+---   @file    shared/jobs/cor/functions/COR_AFTERCAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-07
@@ -16,7 +17,7 @@
 
 ---   Called after action completes
 ---   @param spell table Spell/ability data
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping
 ---   @param eventArgs table Event arguments
 ---   @return void
@@ -25,11 +26,6 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_aftercast()
     end
-
-    -- COR-specific aftercast logic
-    -- Crooked Cards is now tracked via timestamp in PRECAST
-    -- Weapons are automatically reapplied via customize_idle_set and customize_melee_set
-    -- No manual intervention needed here
 
     -- Auto-open a bullet pouch when the stack runs low after a ranged attack.
     local ok, QuiverManager = pcall(require, 'shared/utils/inventory/quiver_manager')
@@ -42,14 +38,13 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     -- validated in-game on WAR in Odyssey + Sortie).
 end
 
----   Called after aftercast gear is equipped
+---   Called after aftercast gear is equipped (empty)
 ---   @param spell table Spell/ability data
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping
 ---   @param eventArgs table Event arguments
 ---   @return void
 function job_post_aftercast(spell, action, spellMap, eventArgs)
-    -- COR-specific post-aftercast adjustments
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -4,11 +4,11 @@
 ---   Handles movement-based gear management for Black Mage.
 ---   Uses centralized AutoMove position tracking for performance.
 ---
----   @file    jobs/blm/functions/BLM_MOVEMENT.lua
+---   @file    shared/jobs/blm/functions/BLM_MOVEMENT.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-15
----   @requires utils/movement/automove.lua
+---   @requires shared/utils/movement/automove.lua
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -16,7 +16,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Get current movement status (delegates to AutoMove)
----   @return table movement_info
+---   @return table { is_moving, distance, position }
 function get_blm_movement_status()
     if not AutoMove then
         return {
@@ -43,9 +43,6 @@ function job_handle_equipping_gear(playerStatus, eventArgs)
         -- Force Twilight Cloak to stay equipped during Impact cast
         equip({body = _G.impact_body})
     end
-
-    -- AutoMove handles speed gear automatically
-    -- This function can be used for additional BLM-specific gear logic
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

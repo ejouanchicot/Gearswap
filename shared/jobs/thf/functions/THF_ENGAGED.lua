@@ -1,11 +1,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   THF Engaged Module - Combat State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all engaged state logic for Thief job:
----   - Combat set selection based on EngagedMode (DT, Enspell, Refresh, TP)
----   - Dual wield detection and optimization (NIN subjob)
----   - Dynamic weapon application to engaged sets
----   - Combat state transitions
+---   customize_melee_set delegates to logic/set_builder.lua:
+---   - Base set: PDTAFM3 (Vajra + Aftermath Lv.3), else sets.engaged[HybridMode]
+---   - Weapon sets (MainWeapon/SubWeapon, or AbyWeapon when AbyProc is on)
+---   - SA/TA buff overlay, then Treasure Hunter gear per TreasureMode
 ---
 ---   @file    shared/jobs/thf/functions/THF_ENGAGED.lua
 ---   @author  Tetsouo
@@ -23,9 +22,9 @@ local SetBuilder = nil
 ---   ENGAGED HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Apply weapon sets, mode selection, and movement gear to all engaged configurations
+---   Apply base selection, weapons, SA/TA overlay and TH to the engaged set
 ---   @param meleeSet table The engaged set to customize
----   @return table Modified engaged set with current weapon, mode, and movement gear
+---   @return table Modified engaged set
 function customize_melee_set(meleeSet)
     -- Lazy load SetBuilder on first engage
     if not SetBuilder then

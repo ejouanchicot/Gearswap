@@ -1,11 +1,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SMN Pet Midcast Module
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Called when the avatar (pet) is mid-action. For SMN, Blood Pacts are
----   already gear-equipped via the MASTER's job_post_midcast (because BP gear
----   is read off the master at the moment the avatar fires). This hook is a
----   safety net: if a BP somehow reaches pet midcast without gear, re-apply
----   the classified set.
+---   Called when the avatar (pet) readies an action. The master's
+---   job_post_midcast already equipped the classified Blood Pact set; this
+---   hook equips the same set again when the avatar acts, whatever the
+---   master's aftercast did in between.
 ---
 ---   @file    shared/jobs/smn/functions/SMN_PET_MIDCAST.lua
 ---   @author  Tetsouo

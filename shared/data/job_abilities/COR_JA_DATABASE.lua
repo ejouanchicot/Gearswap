@@ -8,10 +8,10 @@
 ---   exist on disk; the rolls live in `cor_rolls_subjob.lua` and
 ---   `cor_rolls_mainjob.lua`. The factory load now wires them in correctly.
 ---
----   @file    COR_JA_DATABASE.lua
+---   @file    shared/data/job_abilities/COR_JA_DATABASE.lua
 ---   @author  Tetsouo
 ---   @version 2.0 - Factory-based + rolls path fix
----   @date    Updated: 2026-05-06
+---   @date    Created: 2025-11-03 | Updated: 2026-05-06
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local Factory = require('shared/data/job_abilities/JA_DATABASE_FACTORY')

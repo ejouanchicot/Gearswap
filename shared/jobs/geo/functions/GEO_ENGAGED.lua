@@ -1,16 +1,15 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   GEO Engaged Module - Combat State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all engaged state logic for Geomancer job:
----   - Combat set selection based on EngagedMode (DT, Enspell, Refresh, TP)
----   - Dual wield detection and optimization (NIN subjob)
----   - Dynamic weapon application to engaged sets
----   - Combat state transitions
+---   Mote engaged hook for Geomancer. Delegates to SetBuilder.build_engaged_set:
+---   - sets.luopan.engaged.DT / .DPS (LuopanMode) while a luopan is out
+---   - HybridMode base (sets.engaged.PDT / .Normal) otherwise
+---   - Weapon sets (MainWeapon / SubWeapon) applied on top
 ---
 ---   @file    shared/jobs/geo/functions/GEO_ENGAGED.lua
 ---   @author  Tetsouo
 ---   @version 2.1 - Removed dead code + refactored header
----   @date    Updated: 2025-11-12
+---   @date    Created: 2025-10-09 | Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -23,9 +22,9 @@ local SetBuilder = nil
 ---   ENGAGED HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Apply weapon sets, mode selection, and movement gear to all engaged configurations
----   @param meleeSet table The engaged set to customize
----   @return table Modified engaged set with current weapon, mode, and movement gear
+---   Build the engaged set (base selection + weapons; no movement gear engaged)
+---   @param meleeSet table The engaged set Mote selected (only checked for nil)
+---   @return table Engaged set to wear
 function customize_melee_set(meleeSet)
     -- Lazy load SetBuilder on first engage
     if not SetBuilder then

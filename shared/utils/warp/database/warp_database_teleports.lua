@@ -4,10 +4,10 @@
 --- Contains all items that teleport to the 6 crag locations.
 --- Destinations: Holla, Dem, Mea, Vahzl, Yhoat, Altep
 ---
---- @file warp_database_teleports.lua
+--- @file shared/utils/warp/database/warp_database_teleports.lua
 --- @author Tetsouo
---- @version 4.0 - Modular Architecture
---- @date 2025-10-28
+--- @version 4.0
+--- @date Created: 2025-10-28
 ---============================================================================
 
 local WarpDatabaseCore = require('shared/utils/warp/database/warp_database_core')
@@ -135,6 +135,9 @@ local ITEMS = {
 --- PUBLIC API (Standard Interface)
 ---============================================================================
 
+--- Get all items for a destination (sorted by priority)
+--- @param destination_key string Destination constant
+--- @return table Array of {data={item fields}, item_id=number}
 function TeleportsDB.get_items(destination_key)
     local destination_items = ITEMS[destination_key]
     if not destination_items then
@@ -156,6 +159,10 @@ function TeleportsDB.get_items(destination_key)
     return items_array
 end
 
+--- Get item data by item ID
+--- @param item_id number Item ID
+--- @return table|nil Item data
+--- @return string|nil Destination key
 function TeleportsDB.get_item_by_id(item_id)
     for destination_key, destination_items in pairs(ITEMS) do
         local item_data = destination_items[item_id]
@@ -166,6 +173,8 @@ function TeleportsDB.get_item_by_id(item_id)
     return nil, nil
 end
 
+--- Count total items in this module
+--- @return number Item count
 function TeleportsDB.count_items()
     local count = 0
     for _, destination_items in pairs(ITEMS) do

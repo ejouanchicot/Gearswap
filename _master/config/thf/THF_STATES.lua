@@ -6,7 +6,7 @@
 ---
 --- Features:
 ---   • Combat modes (HybridMode: PDT/Normal)
----   • Weapon selection (MainWeapon: 8 options, SubWeapon: 8 options)
+---   • Weapon selection (MainWeapon: 7 options, SubWeapon: 3 options)
 ---   • Abyssea proc system (AbyProc: On/Off, AbyWeapon: 7 weapon types)
 ---   • Treasure Hunter modes (TreasureMode: Tag/SATA/Full)
 ---   • Ranged weapon lock (RangeLock: On/Off for Exalted Crossbow + Acid Bolt)
@@ -59,7 +59,7 @@ function THFStates.configure()
         'Mpu Gandring', -- REMA dagger (DNC shared)
         'Tauret',       -- High accuracy dagger
         'Naegling',     -- Savage Blade sword
-        'Malevolence',  -- Magic damage club
+        'Malevolence',  -- Malevolence (dagger)
         'Dagger'        -- Generic dagger (for weapon sets)
     }
     state.MainWeapon:set('Vajra')  -- Default to Vajra (best DPS)
@@ -69,7 +69,7 @@ function THFStates.configure()
         ['description'] = 'Sub Weapon',
         'Centovente',   -- REMA dagger offhand (best)
         'Tanmogayi',    -- High DPS sword offhand
-        'Kraken',  -- High magic damage club offhand
+        'Kraken',  -- Kraken Club offhand (multi-attack)
     }
     state.SubWeapon:set('Centovente')  -- Default to Centovente (REMA)
 
@@ -98,7 +98,7 @@ function THFStates.configure()
     -- ========================================
 
     -- TreasureMode: Treasure Hunter application strategy
-    -- REQUIRED by UI_MANAGER.are_states_ready() for THF
+    -- REQUIRED: ui_lifecycle.are_states_ready() waits for it as THF's anchor state
     state.TreasureMode = M {
         ['description'] = 'Treasure Hunter Mode',
         'Tag',   -- Quick TH tag (minimal gear for speed)

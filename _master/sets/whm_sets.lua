@@ -5,7 +5,7 @@
 ---
 --- Features:
 ---   • Cure optimization (Potency vs SIRD modes via CureMode state)
----   • Enhancing Magic duration maximization (Telchine full set)
+---   • Enhancing Magic duration (Telchine head/body/hands/legs)
 ---   • Status removal optimization (Cursna skill, Yagrush)
 ---   • Fast Cast maximization (48%+ Fast Cast for all spells)
 ---   • Idle modes (PDT defensive vs Refresh MP recovery)
@@ -18,12 +18,12 @@
 ---   • Precast sets (Job abilities, Fast Cast, Weaponskills)
 ---   • Midcast sets (Cure, Enhancing, Divine, Enfeebling, Status Removal)
 ---   • Movement sets (Kiting speed)
----   • Buff sets (Divine Caress status removal enhancement)
+---   • Buff sets (Divine Caress, Afflatus Solace, Doom)
 ---
 --- @file    sets/whm_sets.lua
 --- @author  Tetsouo
---- @version 2.0 - Reorganized to standard order
---- @date    Updated: 2025-10-21
+--- @version 2.0
+--- @date    Updated: 2025-10-21 (creation date not recorded)
 --- @source  Timara WHM.lua (equipment data)
 ---============================================================================
 

@@ -15,11 +15,10 @@
 ---   - Theurgic Focus (Lv80) - Enhance next -ra spell
 ---   - Concentric Pulse (Lv90) - Dismiss luopan, AoE damage
 ---
---- @file geo_mainjob.lua
+--- @file shared/data/job_abilities/geo/geo_mainjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06
---- @updated 2025-10-31
 --- @source https://www.bg-wiki.com/ffxi/Geomancer
 ---============================================================================
 

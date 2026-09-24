@@ -1,17 +1,23 @@
 ---============================================================================
 --- Message Core - Base colors and utilities for all message modules
 ---============================================================================
---- @file utils/message_core.lua
+--- Color-code builder, job tag, fixed-width separator and a few direct-output
+--- helpers. The helpers call add_to_chat themselves: this module is a last
+--- rendering level, like the formatters (CODE_QUALITY §6).
+---
+--- @file shared/utils/messages/message_core.lua
 --- @author Tetsouo
 --- @version 2.0
---- @date Updated: 2025-10-02 - Centralized color configuration
+--- @date Created: 2025-10-02 | Updated: 2025-10-02 - Centralized color configuration
 ---============================================================================
 
 local MessageCore = {}
 
--- Load centralized color configuration
 local MessageColors = require('shared/utils/messages/message_colors')
 MessageCore.COLORS = MessageColors
+
+--- Width of every chat separator line, sized to the chat window.
+MessageCore.SEPARATOR_WIDTH = 69
 
 --- Create FFXI color code string
 --- @param color_code number FFXI color code (1-255)
@@ -37,10 +43,9 @@ function MessageCore.convert_key_display(key)
 end
 
 --- Display a colored separator line (FIXED LENGTH)
---- @param length number Ignored - separator is always 74 characters
+--- @param length number Ignored - separator is always SEPARATOR_WIDTH characters
 function MessageCore.show_separator(length)
-    -- Fixed length: always 74 characters
-    local fixed_length = 74
+    local fixed_length = MessageCore.SEPARATOR_WIDTH
     local colorGray = MessageCore.create_color_code(MessageCore.COLORS.SEPARATOR)
     local separator = string.rep("=", fixed_length)
     add_to_chat(1, colorGray .. separator)

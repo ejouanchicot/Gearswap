@@ -2,17 +2,18 @@
 ---   COR Roll Tracker - Smart Roll Tracking and Display
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Tracks Phantom Rolls cast by the player and provides intelligent feedback:
----   - Detects rolls via action packets (category 6)
----   - Calculates exact bonuses including gear/job bonuses
----   - Automatic party member job detection via packet parsing (0xDD/0xDF)
+---   - Receives rolls from PartyTracker's action listener (on_roll_cast)
+---   - Calculates exact bonuses including gear/job bonuses and Crooked Cards
+---   - Reads the party job cache that PartyTracker fills from 0xDD/0xDF
 ---   - Displays Lucky/Unlucky status with formatted messages
----   - Tracks Natural 11 benefits (instant recast + 30s recast + bust immunity)
----   - Monitors Double-Up windows (45 seconds)
----   - Calculates bust rates with color-coded warnings
+---   - Flags a Natural 11 in the result message
+---   - Double-Up window status (45 seconds, //gs c doubleup)
+---   - Bust rate of the next Double-Up
 ---   - Non-cumulative Phantom Roll +X gear (only highest bonus applies)
----   - Job bonus detection: COR main/sub OR any party member OR Tricorne proc
+---   - Job bonus: COR main/sub, the dual-box partner, or a party member's
+---     main job (a Tricorne proc is not counted, see roll_has_job_bonus)
 ---
----   @file    jobs/cor/functions/logic/roll_tracker.lua
+---   @file    shared/jobs/cor/functions/logic/roll_tracker.lua
 ---   @author  Tetsouo
 ---   @version 1.2
 ---   @date    Created: 2025-10-08
@@ -41,8 +42,8 @@ if not _G.cor_last_roll then
         name = nil,
         value = nil,
         timestamp = nil,
-        affected_count = nil,  -- Party members affected (calculated only on initial roll)
-        total_count = nil,     -- Total party members (calculated only on initial roll)
+        affected_count = nil,  -- Party members affected (recounted on every cast)
+        total_count = nil,     -- Total party members (recounted on every cast)
         missed_names = nil      -- Names of party members who missed the roll
     }
 end
@@ -314,6 +315,7 @@ end
 ---   @param roll_name string Name of the roll
 ---   @param roll_value number Value of the roll
 ---   @param has_crooked boolean If this roll has Crooked Cards attached
+---   @param is_new_roll boolean|nil True for a fresh Phantom Roll, false for a Double-Up
 function RollTracker.track_active_roll(roll_name, roll_value, has_crooked, is_new_roll)
     -- Find existing roll or add new
     local found = false
@@ -680,9 +682,7 @@ function RollTracker.display_roll_result(roll_name, roll_value, final_bonus, eff
     -- Format bonus display with proper sign
     local bonus_display = string.format("%+g%s", final_bonus, effect_type)
 
-    -- Job bonus indicator passed separately (not added to bonus_display)
-
-    -- Get party member count from stored state (calculated only on initial roll, not Double-Up)
+    -- Party member count stored by on_roll_cast (recounted on every cast)
     local affected_count = _G.cor_last_roll.affected_count
     local total_count = _G.cor_last_roll.total_count
 
@@ -702,7 +702,7 @@ function RollTracker.display_roll_result(roll_name, roll_value, final_bonus, eff
 end
 
 ---   Display Double-Up window status
----   Called from commands or periodically
+---   Called by //gs c doubleup (du)
 function RollTracker.display_double_up_status()
     if not _G.cor_last_roll.name or not _G.cor_last_roll.timestamp then
         MessageFormatter.show_no_active_roll()

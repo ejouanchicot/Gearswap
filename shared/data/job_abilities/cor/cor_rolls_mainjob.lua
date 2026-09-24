@@ -4,7 +4,7 @@
 --- Corsair Phantom Rolls restricted to main job (13 rolls, Lv61-97)
 --- These rolls cannot be used when COR is a subjob
 ---
---- @file cor_rolls_mainjob.lua
+--- @file shared/data/job_abilities/cor/cor_rolls_mainjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06

@@ -20,7 +20,7 @@
 ---   - Aspir III is BLM/GEO Job Points ability
 ---   - Drain III is DRK Job Points ability
 ---
---- @file dark_drain.lua
+--- @file shared/data/magic/dark/dark_drain.lua
 --- @author Tetsouo
 --- @version 2.0 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

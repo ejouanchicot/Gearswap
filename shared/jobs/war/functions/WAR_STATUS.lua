@@ -1,20 +1,16 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   WAR Status Module - Status Change Handling
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles player status changes for Warrior job:
----   • Player status transitions (Idle/Engaged/Resting/Dead)
----   • Combat state detection
----   • Status-based equipment swaps
----   • Doom slot safety unlock (death/raise)
+---   Status change hook for Warrior job: Doom slot safety unlock
+---   (death/raise) through DoomManager. Mote-Include does the gear swaps.
 ---
 ---   **PERFORMANCE OPTIMIZATION:**
 ---   • Lazy-loaded: DoomManager loaded on first status change
 ---
----   @file    WAR_STATUS.lua
+---   @file    shared/jobs/war/functions/WAR_STATUS.lua
 ---   @author  Tetsouo
 ---   @version 1.2 - Lazy Loading for performance
 ---   @date    Updated: 2025-11-15
----   @requires Tetsouo architecture
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -27,8 +23,8 @@ local DoomManager = nil
 ---   STATUS CHANGE HOOK
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Called when player status changes
----   Mote-Include automatically handles idle/engaged/resting gear swaps.
----   WAR currently doesn't need custom status change logic.
+---   Mote-Include handles idle/engaged/resting gear swaps; this hook only
+---   lets DoomManager unlock Doom slots.
 ---
 ---   @param newStatus string New status ("Idle", "Engaged", "Resting", "Dead")
 ---   @param oldStatus string Previous status

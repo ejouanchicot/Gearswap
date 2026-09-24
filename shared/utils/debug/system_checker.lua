@@ -1,5 +1,18 @@
--- SystemChecker: runtime health check for all GearSwap systems, outputs a % score.
--- //gs c syscheck [export]
+---  ═══════════════════════════════════════════════════════════════════════════
+---   SystemChecker - Runtime Health Check
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Checks the runtime state of the universal systems (AutoMove, watchdog,
+---   warp, hook chain, JobChangeManager, UI, LagDebugger, global leaks, job
+---   hooks) and outputs a % score. Also used as section A of FullTest.
+---   Diagnostic tool: prints with add_to_chat directly (CODE_QUALITY §6).
+---
+---   Usage: //gs c syscheck [export]
+---
+---   @file    shared/utils/debug/system_checker.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2026-03-04
+---  ═══════════════════════════════════════════════════════════════════════════
 
 local SystemChecker = {}
 
@@ -156,8 +169,6 @@ local function check_session()
     }
 end
 
--- MAIN CHECK RUNNER
-
 --- Variables that escaped into _G during play.
 ---
 --- A helper that writes to a name it neither declared nor received creates a
@@ -199,6 +210,10 @@ local function check_job_hooks()
             detail = 'missing: ' .. table.concat(missing, ', ')}
 end
 
+-- MAIN CHECK RUNNER
+
+--- Run every check and compute the score.
+--- @return table Report {session, results, score, total, passed}
 function SystemChecker.run()
     local session = check_session()
 
@@ -235,8 +250,10 @@ end
 -- DISPLAY (CHAT)
 
 local STATUS_ICON = {OK = '[  OK  ]', WARN = '[ WARN ]', FAIL = '[ FAIL ]'}
-local STATUS_COLOR = {OK = 204, WARN = 167, FAIL = 167}  -- green-ish, orange, orange
+local STATUS_COLOR = {OK = 204, WARN = 167, FAIL = 167}  -- WARN shares FAIL's color
 
+--- Print a report in chat.
+--- @param report table Report returned by SystemChecker.run()
 function SystemChecker.display(report)
     add_to_chat(207, '====== SYSTEM HEALTH CHECK ======')
     add_to_chat(207, string.format('Job: %s | Reloads: %d | AutoMove seq: %d',
@@ -260,6 +277,9 @@ end
 
 -- EXPORT (FILE)
 
+--- Write a report to data/syscheck_<name>.txt.
+--- @param report table Report returned by SystemChecker.run()
+--- @return boolean True if the file was written
 function SystemChecker.export(report)
     -- One file per character. Both boxes wrote to the same path, so
     -- running it on the second simply erased the first and only one

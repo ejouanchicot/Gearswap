@@ -1,8 +1,8 @@
 ---============================================================================
---- Warp IPC - Inter-Process Communication for Multi-Boxing
+--- Warp IPC - Broadcast warp commands to every dual-boxed instance
 ---============================================================================
---- Enables sending warp commands to all characters simultaneously.
---- Based on MyHome addon's IPC system.
+--- Sender side of the `all` commands. The receiver side is the listener in
+--- warp_ipc_register.lua (registered by WarpInit on every load).
 ---
 --- Usage:
 ---   //gs c warpall       >> All characters warp
@@ -11,14 +11,14 @@
 ---
 --- How it works:
 ---   1. Character 1 types //gs c warpall
----   2. WarpIPC.send_to_all('warp') executes locally + broadcasts IPC message
----   3. Characters 2-4 receive IPC message and execute //gs c warp
----   4. All characters warp simultaneously
+---   2. WarpIPC.send_to_all('warp') runs '//gs c warp' locally (+0.3 s) and
+---      sends 'tetsouo_warp_warp' over IPC (+0.5 s)
+---   3. The other instances' warp_ipc_register listener runs //gs c warp
 ---
---- @file warp_ipc.lua
+--- @file shared/utils/warp/warp_ipc.lua
 --- @author Tetsouo
 --- @version 1.0
---- @date 2025-10-28
+--- @date Created: 2025-10-28
 ---============================================================================
 
 local MessageCore = require('shared/utils/messages/message_core')
@@ -63,28 +63,19 @@ local function is_command_allowed(command)
     return false
 end
 
---- Count active Windower instances (for confirmation message)
---- @return number Number of other characters that will receive broadcast
-local function count_other_characters()
-    -- Simple heuristic: assume 1-3 other characters
-    -- (Windower doesn't provide direct API to count instances)
-    -- User will see actual execution in game
-    return "other characters"
-end
-
 ---============================================================================
 --- IPC LISTENER
 ---============================================================================
 
---- Handle incoming IPC messages from other characters
+--- Handle incoming IPC messages from other characters.
+--- Only reachable through WarpIPC.init(), which has no caller: the live
+--- listener is warp_ipc_register.lua.
 --- @param msg string IPC message received
 local function handle_ipc_message(msg)
-    -- Debug: Show ALL IPC messages received (even non-warp ones)
     if _G.WARP_DEBUG then
         MessageWarp.show_ipc_raw_received(msg)
     end
 
-    -- Only process messages with our prefix
     if not msg:find('^tetsouo_warp_') then
         return
     end
@@ -97,7 +88,6 @@ local function handle_ipc_message(msg)
         return
     end
 
-    -- TEST MESSAGE: Show test IPC messages
     if msg:find('^tetsouo_warp_test_') then
         local sender = msg:gsub('^tetsouo_warp_test_', '')
         MessageWarp.show_ipc_test_received(sender)
@@ -106,7 +96,6 @@ local function handle_ipc_message(msg)
 
     MessageWarp.show_ipc_command_received(msg)
 
-    -- Debounce: Ignore duplicate messages within 1 second
     local current_time = os.clock()
     if msg == last_ipc_message and (current_time - last_ipc_time) < IPC_DEBOUNCE then
         if _G.WARP_DEBUG then
@@ -123,7 +112,6 @@ local function handle_ipc_message(msg)
 
     MessageWarp.show_ipc_command_received(command)
 
-    -- Verify command is whitelisted
     if not is_command_allowed(command) then
         MessageWarp.show_ipc_not_allowed(command)
         return
@@ -131,9 +119,7 @@ local function handle_ipc_message(msg)
 
     MessageWarp.show_ipc_executing(command)
 
-    -- Execute command locally
     coroutine.schedule(function()
-        -- Small delay to avoid packet collision with initiating character
         windower.chat.input('//gs c ' .. command)
     end, 0.5)
 end
@@ -142,10 +128,9 @@ end
 --- PUBLIC API
 ---============================================================================
 
---- Initialize IPC system (register listener).
---- Idempotent: unregister-then-register so each gs reload gets a fresh handler
---- and we never accumulate stale ones. The event id lives on `windower.*` so
---- it survives the `_G` wipe that comes with `gs reload`.
+--- Initialize IPC system (register listener). No caller today: the live
+--- listener is registered by warp_ipc_register.lua. Unlike that file, this
+--- unregisters the stored id without checking which load registered it.
 function WarpIPC.init()
     if not windower or not windower.register_event then return end
 
@@ -156,7 +141,6 @@ function WarpIPC.init()
 
     windower._warp_ipc_event_id = windower.register_event('ipc message', handle_ipc_message)
 
-    -- Always show initialization message for debugging
     MessageWarp.show_ipc_registered()
 
     if _G.WARP_DEBUG then
@@ -170,18 +154,16 @@ end
 function WarpIPC.send_to_all(command)
     local cmd = command:lower()
 
-    -- Verify command is whitelisted
     if not is_command_allowed(cmd) then
         MessageCore.error('[WARP] Command "' .. cmd .. '" not allowed for broadcast')
         MessageCore.error('[WARP] Allowed commands: warp, tph, sd, etc. (see //gs c warp help)')
         return false
     end
 
-    -- Show confirmation message
     MessageWarp.show_ipc_broadcasting(cmd)
 
-    -- Set broadcast flag BEFORE sending (prevents self-IPC processing)
-    -- Use GLOBAL flag so warp_ipc_register.lua listener can also check it
+    -- Set BEFORE sending. The global is what the warp_ipc_register listener
+    -- checks to drop incoming warp messages while this instance broadcasts.
     initiated_broadcast = true
     _G.WARP_IPC_BROADCASTING = true
 
@@ -219,14 +201,13 @@ function WarpIPC.send_to_all(command)
     return true
 end
 
---- Check if IPC system is initialized
---- @return boolean True if initialized
+--- Check that the Windower IPC functions are available (no caller today)
+--- @return boolean True if send_ipc_message and register_event exist
 function WarpIPC.is_initialized()
-    -- Check if windower IPC functions are available
     return windower.send_ipc_message ~= nil and windower.register_event ~= nil
 end
 
---- Get list of allowed commands (for help display)
+--- Get list of allowed commands (no caller today)
 --- @return table List of allowed command strings
 function WarpIPC.get_allowed_commands()
     return ALLOWED_COMMANDS

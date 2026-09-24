@@ -9,10 +9,12 @@
 ---   - Nether Void buff enhancement (legs)
 ---   - Enfeebling Magic and Elemental Magic support
 ---
----   @file    DRK_MIDCAST.lua
+---   @file    shared/jobs/drk/functions/DRK_MIDCAST.lua
 ---   @author  Tetsouo
 ---   @version 3.0 - Added spell_family database support
 ---   @date    Created: 2025-10-23 | Updated: 2025-11-05
+---  ═══════════════════════════════════════════════════════════════════════════
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -23,22 +25,23 @@ local MidcastDeps = require('shared/utils/midcast/midcast_deps')
 local MidcastManager = nil
 local EnhancingSPELLS = nil
 
----   Pre-midcast hook (job-specific logic before set selection)
+---   Pre-midcast hook (DRK has no pre-midcast logic)
 ---   @param spell table Spell information from GearSwap
 ---   @param action string Action type
 ---   @param spellMap string Spell mapping from Mote-Include
 ---   @param eventArgs table Event arguments for cancellation/customization
 function job_midcast(spell, action, spellMap, eventArgs)
-    -- No DRK-specific PRE-midcast logic
 end
 
 ---  ─────────────────────────────────────────────────────────────────────────
 ---   PER-BRANCH HANDLERS
 ---  ─────────────────────────────────────────────────────────────────────────
----   Extracted from job_post_midcast, which dispatched on spell.skill.
----   Each returns true once it has handled the call. Bodies unchanged.
+---   One handler per spell.skill, dispatched by job_post_midcast.
+---   Each returns true once it has handled the call.
 
---- Handle Dark Magic.
+--- Handle Dark Magic: Dread Spikes / Absorb pseudo-skills, then Dark Seal
+--- and Nether Void overlays.
+--- @param spell table Spell information from GearSwap
 --- @return boolean True when this handler took the action
 local function job_post_midcast_dark_magic(spell)
     -- Spell-specific routing
@@ -95,6 +98,7 @@ local function job_post_midcast_dark_magic(spell)
 end
 
 --- Handle Enfeebling Magic.
+--- @param spell table Spell information from GearSwap
 --- @return boolean True when this handler took the action
 local function job_post_midcast_enfeebling_magic(spell)
     MidcastManager.select_set({
@@ -106,6 +110,7 @@ local function job_post_midcast_enfeebling_magic(spell)
 end
 
 --- Handle Elemental Magic.
+--- @param spell table Spell information from GearSwap
 --- @return boolean True when this handler took the action
 local function job_post_midcast_elemental_magic(spell)
     MidcastManager.select_set({
@@ -133,10 +138,6 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_midcast_start(spell)
     end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- DARK MAGIC (with spell-specific sets)
-    -- ══════════════════════════════════════════════════════════════════════════
 
     local handler = JOB_POST_MIDCAST_HANDLERS[spell.skill]
     if handler and handler(spell) then

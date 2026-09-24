@@ -1,7 +1,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SAM Status Module - Player Status Change Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles status changes (Idle, Engaged, Resting, Dead, etc.)
+---   Status change handler: the shared LifecycleManager one (unlocks Doom
+---   slots so a raise does not leave them stuck).
 ---
 ---   @file    shared/jobs/sam/functions/SAM_STATUS.lua
 ---   @author  Tetsouo

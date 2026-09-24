@@ -1,12 +1,13 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   GEO Buffs Module - Buff Gain/Loss Handler
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles job-specific buff gain/loss events (Doom, Chainspell, etc.).
+---   Handles buff gain/loss events: dual-box buff reporting, Doom, and the
+---   Entrust pending flag.
 ---
 ---   @file    shared/jobs/geo/functions/GEO_BUFFS.lua
 ---   @author  Tetsouo
 ---   @version 1.1 - Removed dead code + refactored header
----   @date    Updated: 2025-11-12
+---   @date    Created: 2025-11-03 | Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -26,15 +27,14 @@ end
 ---   Handle buff change events
 ---   @param buff string Buff name
 ---   @param gain boolean True if buff gained, false if lost
+---   @param eventArgs table Event arguments (unused)
 function job_buff_change(buff, gain, eventArgs)
-    -- Lazy load managers on first buff change
     ensure_managers_loaded()
 
     -- Tell the main about tracked buffs (Entrust). No-op unless this character
     -- is the dual-box ALT, so it costs nothing on a solo GEO.
     AltBuffReporter.report(buff, gain)
 
-    -- Doom handling (centralized)
     if DoomManager.handle_buff_change(buff, gain) then
         return -- Doom handled, stop processing
     end

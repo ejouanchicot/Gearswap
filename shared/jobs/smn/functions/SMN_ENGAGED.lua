@@ -10,6 +10,9 @@
 ---   @date    Created: 2026-05-28
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- Return Mote's engaged set unchanged.
+--- @param meleeSet table The engaged set Mote selected
+--- @return table The set to equip
 function customize_melee_set(meleeSet)
     if not meleeSet then return {} end
     return meleeSet

@@ -1,27 +1,27 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Refill Manager - Restock consumables from Mog Case/Sack (Facade)
----  ═══════════════════════════════════════════════════════════════════════════
----   Scans inventory for consumable items and pulls from Mog Case / Mog Sack
----   to maintain target quantities. Items above target are pushed back to a
----   configurable store_bag (default Case). Items belonging to OTHER jobs'
----   refill lists are detected as "foreign" and pushed back too.
+---============================================================================
+--- Refill Manager - Restock consumables from Mog Case/Sack (Facade)
+---============================================================================
+--- Scans inventory for consumable items and pulls from Mog Case / Mog Sack
+--- to maintain target quantities. Items above target are pushed back to a
+--- configurable store_bag (default Case). Items belonging to OTHER jobs'
+--- refill lists are detected as "foreign" and pushed back too.
 ---
----   Usage: //gs c refill  (or //gs c rf)
+--- Usage: //gs c refill  (or //gs c rf)
 ---
----   This file is now a thin orchestrator (~150 lines). The actual logic
----   lives in 4 specialized sub-modules under refill/:
----     • item_resolver   - lazy item name -> resource ID lookup with cache
----     • bag_scanner     - count item stacks across FFXI bags
----     • config_resolver - load per-character refill configs + foreign detection
----     • refill_panels   - 74-char ASCII display (start banner, report, errors)
+--- This file is the orchestrator (planning + move queue). Lookups and
+--- display live in 4 sub-modules under refill/:
+---   - item_resolver   - lazy item name -> resource ID lookup with cache
+---   - bag_scanner     - count item stacks across FFXI bags
+---   - config_resolver - load per-character refill configs + foreign detection
+---   - refill_panels   - ASCII chat display (start banner, report, errors)
 ---
----   Public API: RefillManager.refill() - single entry point.
+--- Public API: RefillManager.refill() - single entry point.
 ---
----   @file    shared/utils/inventory/refill_manager.lua
----   @author  Tetsouo
----   @version 2.0 - Modular refactor (840 lines -> 150 lines facade + 4 modules)
----   @date    2026-02-14 (initial), 2026-05-09 (refactor)
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/inventory/refill_manager.lua
+--- @author Tetsouo
+--- @version 2.0
+--- @date Created: 2026-02-14
+---============================================================================
 
 local ItemResolver    = require('shared/utils/inventory/refill/item_resolver')
 local BagScanner      = require('shared/utils/inventory/refill/bag_scanner')
@@ -46,7 +46,7 @@ local INVENTORY_BAG_ID = 0
 local MOVE_DELAY = 0.6
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   PUBLIC API
+---   PLANNING HELPERS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- What is already in the bag, and which spelling of it is there.
@@ -239,6 +239,9 @@ local function sweep_foreign_items(items_data, list, store_info)
     return moves, rows
 end
 
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PUBLIC API
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Execute the full refill operation: scan inventory, compute deficits,
 --- push surplus, pull from Case/Sack, push foreign items, display report.
@@ -282,7 +285,6 @@ function RefillManager.refill()
     if #move_queue > 0 then
         local function execute_move(index)
             if index > #move_queue then
-                -- All moves complete - show report
                 RefillPanels.show_report(results)
                 return
             end
@@ -296,7 +298,6 @@ function RefillManager.refill()
                 windower.ffxi.get_item(move.bag_id, move.slot, move.count)
             end
 
-            -- Schedule next move after delay
             coroutine.schedule(function()
                 execute_move(index + 1)
             end, MOVE_DELAY)

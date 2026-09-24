@@ -1,10 +1,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BRD Aftercast Module - Post-Action Cleanup
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles aftercast behavior for Bard job.
----   Returns to idle/engaged sets after songs/spells complete.
+---   Aftercast hook for Bard: stops the midcast watchdog, clears the
+---   Pianissimo flag after a song, and releases the instrument lock.
 ---
----   @file    BRD_AFTERCAST.lua
+---   @file    shared/jobs/brd/functions/BRD_AFTERCAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-13
@@ -18,7 +18,7 @@ local MessageFormatter = nil
 
 ---   Handle post-action cleanup
 ---   @param spell table Spell/ability data
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping
 ---   @param eventArgs table Event arguments
 function job_aftercast(spell, action, spellMap, eventArgs)

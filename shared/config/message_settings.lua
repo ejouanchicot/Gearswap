@@ -9,7 +9,7 @@
 ---     • Global variable storage (_G.MESSAGE_SETTINGS)
 ---     • Auto-load from file on startup
 ---     • Auto-save on every setting change
----     • Legacy compatibility functions
+---     • Enhancing/Enfeebling aliases of the shared spell_mode
 ---
 ---   Architecture:
 ---     • File persistence via dofile() and io.open()
@@ -32,9 +32,9 @@ local MessageSettings = {}
 ---   FILE PERSISTENCE
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Get absolute path to settings file (per character)
+--- Absolute path of the per-character settings file
+--- @return string Path to [CharName]/config/message_modes.lua
 local function get_settings_path()
-    -- Detect character name from player data
     local char_name = player and player.name or 'Tetsouo'
 
     -- Save in character's own config directory (using dynamic path)
@@ -59,6 +59,7 @@ end
 
 --- Save settings to file
 --- @param settings table Settings to save
+--- @return boolean True if the file was written
 local function save_to_file(settings)
     local file_path = get_settings_path()
 
@@ -131,12 +132,14 @@ function MessageSettings.get_ws_mode()
     return _G.MESSAGE_SETTINGS.ws_mode or 'on'
 end
 
---- Legacy compatibility - get_enhancing_mode() redirects to get_spell_mode()
+--- Enhancing alias of get_spell_mode() (read by ENHANCING_MESSAGES_CONFIG)
+--- @return string Current mode ('full', 'on', 'off')
 function MessageSettings.get_enhancing_mode()
     return MessageSettings.get_spell_mode()
 end
 
---- Legacy compatibility - get_enfeebling_mode() redirects to get_spell_mode()
+--- Enfeebling alias of get_spell_mode() (read by ENFEEBLING_MESSAGES_CONFIG)
+--- @return string Current mode ('full', 'on', 'off')
 function MessageSettings.get_enfeebling_mode()
     return MessageSettings.get_spell_mode()
 end
@@ -166,12 +169,14 @@ function MessageSettings.set_ws_mode(mode)
     save_to_file(_G.MESSAGE_SETTINGS)
 end
 
---- Legacy compatibility - set_enhancing_mode() redirects to set_spell_mode()
+--- Enhancing alias of set_spell_mode(): also changes Enfeebling (shared spell_mode)
+--- @param mode string New mode ('full', 'on', 'off')
 function MessageSettings.set_enhancing_mode(mode)
     MessageSettings.set_spell_mode(mode)
 end
 
---- Legacy compatibility - set_enfeebling_mode() redirects to set_spell_mode()
+--- Enfeebling alias of set_spell_mode(): also changes Enhancing (shared spell_mode)
+--- @param mode string New mode ('full', 'on', 'off')
 function MessageSettings.set_enfeebling_mode(mode)
     MessageSettings.set_spell_mode(mode)
 end

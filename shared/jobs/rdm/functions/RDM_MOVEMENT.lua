@@ -14,28 +14,23 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   AUTOMOVE INTEGRATION (PERFORMANCE OPTIMIZED - No Startup Cost)
 ---  ═══════════════════════════════════════════════════════════════════════════
--- AutoMove (if available) automatically handles:
+-- AutoMove is started for every job by INIT_SYSTEMS and handles:
 --   • Movement detection
 --   • Speed gear swapping (sets.MoveSpeed from rdm_sets.lua)
 --   • Idle gear restoration when stopped
 --
--- No explicit registration needed - AutoMove auto-detects job modules.
 -- If AutoMove is not loaded, movement speed gear is simply not available.
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   EQUIPPING GEAR HANDLER
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Called when gear is being equipped (movement speed check)
----   AutoMove handles movement detection automatically, but this hook
----   allows for job-specific overrides if needed.
+---   Mote hook called before gear is equipped. Empty on purpose: AutoMove
+---   handles movement speed; add RDM-specific overrides here if needed.
 ---
 ---   @param playerStatus string Player status ('Idle', 'Engaged', etc.)
 ---   @param eventArgs table Event arguments
----   @return void
 function job_handle_equipping_gear(playerStatus, eventArgs)
-    -- AutoMove handles movement speed automatically
-    -- This function is here for RDM-specific movement logic if needed
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

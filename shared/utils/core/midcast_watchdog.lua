@@ -1,15 +1,29 @@
--- MidcastWatchdog: detects stuck midcast states (packet loss) and force-recovers.
--- Timeout based on spell cast time from resources (spells + items).
+---============================================================================
+--- Midcast Watchdog - Recovery from a lost aftercast
+---============================================================================
+--- Jobs report every midcast (on_midcast_start) and every aftercast
+--- (on_aftercast, directly or through LifecycleManager). A 0.5 s loop checks
+--- the tracked action: when no aftercast has arrived within cast time (Fast
+--- Cast from state.FastCast applied) + WATCHDOG_BUFFER, it clears the
+--- tracking and sends `gs c update` so the idle/engaged set comes back. Only spells and items
+--- are tracked; job abilities, waltzes, steps... are ignored.
+---
+--- Started by INIT_SYSTEMS 2 s after a load, stopped by JobChangeManager's
+--- cleanup. Settings changed with //gs c watchdog live in module locals and
+--- are lost at the next job file load.
+---
+--- @file    shared/utils/core/midcast_watchdog.lua
+--- @author  Tetsouo
+--- @version 2.0
+--- @date    Created: 2025-11-03
+---============================================================================
 
 local MidcastWatchdog = {}
 
--- Load spell resource data (contains cast_time for all spells)
+-- cast_time for spells, cast_delay for usable items (Warp Ring...)
 local res_spells = require('resources').spells
-
--- Load item resource data (contains cast_delay for usable items like Warp Ring)
 local res_items = require('resources').items
 
--- Message formatter for watchdog messages
 local MessageWatchdog = require('shared/utils/messages/formatters/system/message_watchdog')
 
 -- CONFIGURATION
@@ -52,30 +66,30 @@ local test_mode_active = false
 
 -- HELPER FUNCTIONS
 
---- Get Fast Cast percentage from state.FastCast
+--- Fast Cast percentage from state.FastCast (defined per job), capped at 80.
+--- @return number Fast Cast percent, 0 when the job has no FastCast state
 local function get_fast_cast_percent()
-    -- Check if state.FastCast exists (defined in job config)
     if state and state.FastCast then
         -- Get current value (Mote state objects use .value or .current)
         local fc_value = state.FastCast.value or state.FastCast.current or 0
         local fc_percent = tonumber(fc_value) or 0
-        -- Cap at 80% (FFXI mechanics)
         return math.min(fc_percent, FAST_CAST_CAP)
     end
     return 0
 end
 
---- Calculate timeout for a spell or item based on its cast time/delay
---- Applies Fast Cast reduction from state.FastCast
+--- Calculate timeout for a spell or item based on its cast time/delay.
+--- Fast Cast applies to spells only.
+--- @param spell_id number|nil Spell id (res.spells)
+--- @param item_id number|nil Item id (res.items), checked first
+--- @return number timeout, number base_cast_time, number adjusted_cast_time
 local function calculate_timeout(spell_id, item_id)
     local base_cast_time = 0
 
     -- PRIORITY 1: Check if it's an item (use cast_delay) - NO FC reduction for items
     if item_id and res_items[item_id] then
         local item_data = res_items[item_id]
-        -- Items use cast_delay (priority) or cast_time as fallback
         base_cast_time = item_data.cast_delay or item_data.cast_time or 0
-        -- Items don't benefit from Fast Cast
         local timeout = base_cast_time + WATCHDOG_BUFFER
         return timeout, base_cast_time, base_cast_time
 
@@ -93,7 +107,6 @@ local function calculate_timeout(spell_id, item_id)
     local fc_percent = get_fast_cast_percent()
     local adjusted_cast_time = base_cast_time * (1 - fc_percent / 100)
 
-    -- Timeout = adjusted cast time + safety buffer
     local timeout = adjusted_cast_time + WATCHDOG_BUFFER
 
     return timeout, base_cast_time, adjusted_cast_time
@@ -113,20 +126,19 @@ local function clear_midcast_state()
     current_midcast.fast_cast_percent  = nil
 end
 
---- Get cast time for current midcast action
+--- Base cast time of the tracked action, and a label for the messages.
+--- @return number cast_time, string action_label
 local function get_current_cast_time()
     local cast_time = 0
     local action_label = 'spell'
 
     if current_midcast.action_type == 'item' and current_midcast.item_id then
-        -- Item: use cast_delay
         if res_items[current_midcast.item_id] then
             cast_time = res_items[current_midcast.item_id].cast_delay or
                         res_items[current_midcast.item_id].cast_time or 0
         end
         action_label = 'item (cast_delay)'
     elseif current_midcast.spell_id then
-        -- Spell: use cast_time
         if res_spells[current_midcast.spell_id] then
             cast_time = res_spells[current_midcast.spell_id].cast_time or 0
         end
@@ -150,7 +162,8 @@ local MONITORED_SPELL_TYPES = {
     ['Trust']         = true,
 }
 
---- Called when midcast starts
+--- Start tracking an action (called from the jobs' midcast).
+--- @param spell table GearSwap spell table
 function MidcastWatchdog.on_midcast_start(spell)
     if not watchdog_enabled then
         return
@@ -160,28 +173,22 @@ function MidcastWatchdog.on_midcast_start(spell)
     local spell_type  = spell and spell.type or 'Unknown'
     local spell_id    = nil
     local item_id     = nil
-    local action_type = 'spell'  -- Default to spell
+    local action_type = 'spell'
 
-    -- Detect action type: spell vs item vs ability
     if spell_type == 'Item' then
-        -- It's an item (Warp Ring, etc.)
         item_id     = spell.id
         action_type = 'item'
     elseif MONITORED_SPELL_TYPES[spell_type] then
-        -- It's a real spell (magic) - monitor it
         spell_id    = spell and spell.id or nil
         action_type = 'spell'
     else
-        -- It's a Job Ability, Waltz, Step, etc. - IGNORE
+        -- Job abilities, waltzes, steps...: not tracked
         if debug_enabled then
             MessageWatchdog.show_debug_ignored_action(spell_name, spell_type)
         end
         return
     end
 
-    -- Calculate dynamic timeout based on spell cast_time or item cast_delay
-    -- For spells: applies Fast Cast reduction
-    -- For items: no FC reduction
     local timeout, base_cast_time, adjusted_cast_time = calculate_timeout(spell_id, item_id)
     local fc_percent = get_fast_cast_percent()
 
@@ -200,13 +207,12 @@ function MidcastWatchdog.on_midcast_start(spell)
         if action_type == 'item' then
             MessageWatchdog.show_debug_midcast_item(spell_name, base_cast_time, timeout)
         else
-            -- Show FC info for spells
             MessageWatchdog.show_debug_midcast_spell_fc(spell_name, base_cast_time, fc_percent, adjusted_cast_time, timeout)
         end
     end
 end
 
---- Called when aftercast happens
+--- Stop tracking (called from the jobs' aftercast).
 function MidcastWatchdog.on_aftercast()
     if not watchdog_enabled then
         return
@@ -220,7 +226,7 @@ function MidcastWatchdog.on_aftercast()
     clear_midcast_state()
 end
 
---- Check for stuck midcast (called every 0.5s)
+--- Check for stuck midcast (called every 0.5 s by the loop started in start()).
 function MidcastWatchdog.check_stuck()
     if not watchdog_enabled then
         if debug_enabled then
@@ -245,20 +251,16 @@ function MidcastWatchdog.check_stuck()
     end
 
     if age > timeout then
-        -- STUCK! Force cleanup
         local cast_time, action_label = get_current_cast_time()
         MessageWatchdog.show_stuck_detected(current_midcast.spell_name, action_label, cast_time, age)
 
-        -- Reset tracking
         clear_midcast_state()
 
-        -- Disable test mode if it was active
         if test_mode_active then
             test_mode_active = false
             MessageWatchdog.show_test_deactivated()
         end
 
-        -- Force gear refresh
         send_command('gs c update')
     end
 end
@@ -286,12 +288,13 @@ function MidcastWatchdog.toggle()
     end
 end
 
---- Get current watchdog status
+--- @return boolean True when the watchdog is enabled
 function MidcastWatchdog.is_enabled()
     return watchdog_enabled
 end
 
---- Set buffer value (added to cast time)
+--- Set the buffer added to the cast time (0..10 s, else an error message).
+--- @param seconds number|nil New buffer
 function MidcastWatchdog.set_buffer(seconds)
     if seconds and seconds >= 0 and seconds <= 10 then
         WATCHDOG_BUFFER = seconds
@@ -301,12 +304,13 @@ function MidcastWatchdog.set_buffer(seconds)
     end
 end
 
---- Get current buffer value
+--- @return number Current buffer in seconds
 function MidcastWatchdog.get_buffer()
     return WATCHDOG_BUFFER
 end
 
---- Set fallback timeout for unknown spells
+--- Set the timeout used for unknown spells ((0..30] s, else an error message).
+--- @param seconds number|nil New fallback timeout
 function MidcastWatchdog.set_fallback_timeout(seconds)
     if seconds and seconds > 0 and seconds <= 30 then
         WATCHDOG_FALLBACK_TIMEOUT = seconds
@@ -316,7 +320,7 @@ function MidcastWatchdog.set_fallback_timeout(seconds)
     end
 end
 
---- Get current fallback timeout value
+--- @return number Current fallback timeout in seconds
 function MidcastWatchdog.get_fallback_timeout()
     return WATCHDOG_FALLBACK_TIMEOUT
 end
@@ -342,12 +346,15 @@ function MidcastWatchdog.toggle_debug()
     end
 end
 
---- Get debug status
+--- @return boolean True when debug output is on
 function MidcastWatchdog.is_debug_enabled()
     return debug_enabled
 end
 
---- Get stats
+--- Snapshot of the tracked action and the settings, for the status displays.
+--- @return table active, spell_name, spell_id, item_id, action_type, cast_time,
+---   base_cast_time, adjusted_cast_time, fast_cast, age, enabled, timeout,
+---   buffer, fallback_timeout, debug
 function MidcastWatchdog.get_stats()
     local age = 0
     if current_midcast.active and current_midcast.start_time then
@@ -375,7 +382,8 @@ function MidcastWatchdog.get_stats()
     }
 end
 
---- Clear current midcast tracking (emergency cleanup)
+--- Clear current midcast tracking and send `gs c update` (emergency cleanup).
+--- Does not leave test mode.
 function MidcastWatchdog.clear_all()
     if current_midcast.active then
         MessageWatchdog.show_force_clearing(current_midcast.spell_name)
@@ -387,12 +395,14 @@ function MidcastWatchdog.clear_all()
     MessageWatchdog.show_all_cleared()
 end
 
---- TEST MODE: Simulate stuck midcast (for debugging)
+--- TEST MODE: track a fake midcast whose aftercast is ignored, so the next
+--- scan past its timeout reports it stuck.
+--- @param spell_name string|nil Label shown in the messages
+--- @param spell_id number|nil Spell id used for the timeout (nil = fallback)
 function MidcastWatchdog.simulate_stuck(spell_name, spell_id)
     spell_name = spell_name or 'Test Spell'
     spell_id   = spell_id or nil
 
-    -- Calculate timeout for this test spell
     local timeout, base_cast_time = calculate_timeout(spell_id, nil)
 
     MessageWatchdog.show_test_simulating(spell_name)
@@ -403,10 +413,8 @@ function MidcastWatchdog.simulate_stuck(spell_name, spell_id)
     end
     MessageWatchdog.show_test_aftercast_blocked()
 
-    -- Enable test mode (blocks aftercast)
     test_mode_active = true
 
-    -- Simulate midcast start
     current_midcast.active      = true
     current_midcast.spell_name  = spell_name
     current_midcast.spell_id    = spell_id
@@ -430,7 +438,7 @@ end
 -- only the newest loop keeps running.
 windower._midcast_wd_seq = windower._midcast_wd_seq or 0
 
---- Background check function (called by timer)
+--- One scan, with errors reported instead of ending the loop.
 local function background_check()
     local success, err = pcall(MidcastWatchdog.check_stuck)
     if not success then
@@ -451,15 +459,13 @@ function MidcastWatchdog.start()
 
         background_check()
 
-        -- Reschedule next check
         coroutine.schedule(watchdog_check_and_reschedule, 0.5)
     end
 
-    -- Start the loop
+    -- Does not control the loop (the generation above does); stop() only
+    -- reads it to decide whether to clear the tracked midcast.
     _G.MIDCAST_WATCHDOG_TIMER = true
     coroutine.schedule(watchdog_check_and_reschedule, 0.5)
-
-    -- Silent start - no message displayed
 end
 
 --- Stop the watchdog background check (called during job change cleanup)
@@ -467,9 +473,8 @@ function MidcastWatchdog.stop()
     windower._midcast_wd_seq = windower._midcast_wd_seq + 1
     if _G.MIDCAST_WATCHDOG_TIMER then
         _G.MIDCAST_WATCHDOG_TIMER = nil
-        clear_midcast_state() -- Clear any tracked midcast
+        clear_midcast_state()
     end
-    -- Silent stop - no message during job change
 end
 
 return MidcastWatchdog

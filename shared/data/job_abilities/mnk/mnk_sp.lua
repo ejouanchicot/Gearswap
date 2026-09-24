@@ -7,7 +7,7 @@
 ---   - Hundred Fists (SP1, Lv1) - Attack speed +75%
 ---   - Inner Strength (SP2, Lv96) - Max HP x2, Counter/Guard 100%
 ---
---- @file mnk_sp.lua
+--- @file shared/data/job_abilities/mnk/mnk_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

@@ -1,11 +1,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BLM Idle Module - Idle State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all idle state logic for Black Mage job:
----   - Idle set selection based on IdleMode (DT, Refresh, Regain, Evasion)
----   - Movement speed optimization
----   - Town gear management
----   - Dynamic weapon application to idle sets
+---   customize_idle_set: takes the idle set Mote selected, then applies the
+---   town base, the weapon sets, movement gear outside town and the Mana Wall
+---   set (SetBuilder.build_idle_set).
 ---
 ---   @file    shared/jobs/blm/functions/BLM_IDLE.lua
 ---   @author  Tetsouo

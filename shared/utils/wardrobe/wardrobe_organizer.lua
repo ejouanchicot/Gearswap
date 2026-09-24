@@ -1,40 +1,43 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Wardrobe Organizer - Public Entry & Orchestrator
----  ═══════════════════════════════════════════════════════════════════════════
----   Modular structure:
----     lib/config.lua  - Constants (bags, timing, limits)
----     lib/log.lua     - Debug log + bag_name util
----     lib/chat.lua    - In-game FFXI chat helpers (FFXI-style ASCII panels)
----     lib/items.lua   - Item helpers (resource lookup, sets walking)
----     lib/moves.lua   - Move primitives (pull_slot, push_slot, space_in)
----     lib/state.lua   - State recensement (build_state, pin assignment)
----     lib/phases.lua  - Phase 0 unequip + Phase 2/3/4 algorithms
----     lib/reports.lua - Read-only reports (//gs c wo scan, //gs c wo keep)
+---============================================================================
+--- Wardrobe Organizer - Public Entry & Orchestrator
+---============================================================================
+--- Modular structure:
+---   lib/config.lua           - Constants (bags, timing, limits) + per-char overrides
+---   lib/log.lua              - Debug log + bag_name util
+---   lib/chat.lua             - In-game FFXI chat helpers (FFXI-style ASCII panels)
+---   lib/items.lua            - Item helpers (resource lookup, sets walking)
+---   lib/moves.lua            - Move primitives (pull_slot, push_slot, space_in)
+---   lib/state.lua            - State recensement (build_state, pin assignment)
+---   lib/phases.lua           - Phase 0 unequip + Phase 2/3/3.5/4 algorithms
+---   lib/orchestrator_alt.lua - All-jobs flow (//gs c wo alt, SCOPE = 'all_jobs')
+---   lib/reports.lua          - Read-only reports (//gs c wo scan, //gs c wo keep)
+---   lib/warp_owned.lua       - Warp items owned by the character (wo scan)
 ---
----   This file owns:
----     - Public API exposed to COMMON_COMMANDS (organize/preview/verify_global/reset)
----     - Outer-loop retry orchestration (start_organize -> finish_run)
----     - Module-level state (IS_RUNNING, outer_iteration, last_misplaced)
+--- This file owns:
+---   - Public API exposed to COMMON_COMMANDS (organize/preview/verify_global/
+---     reset/recover/organize_alt/scan_warp_items/show_kept)
+---   - Outer-loop retry orchestration (start_organize -> finish_run)
+---   - Module-level state (IS_RUNNING, outer_iteration, last_misplaced)
 ---
----   Algorithm summary:
----     Phase 0  Lock all slots + send //gs c naked
----     Phase 1  Build state (recensement)
----     Phase 2  Empty W1/W2 of unused items   (W8 > W6 > W5 > W4 > W3)
----     Phase 3  Fill W1/W2 with used items    (from overflow)
----     Phase 4  Cleanup any leftover inventory gear (with retries)
----     ----     Re-enable all slots, snapshot final state, auto-retry if needed
+--- Algorithm summary:
+---   Phase 0    //gs c naked, verify, then lock all slots
+---   Phase 1    Build state (recensement)
+---   Phase 2    Empty W1/W2 of unused items   (overflow order: Config.OVERFLOW_BAGS)
+---   Phase 3    Fill W1/W2 with used items    (from overflow)
+---   Phase 3.5  Pack the job into the first primary bag before the next
+---   Phase 4    Cleanup any leftover inventory gear (with retries)
+---   ----       Re-enable all slots, snapshot final state, auto-retry if needed
 ---
----   @file    shared/utils/wardrobe/wardrobe_organizer.lua
----   @author  Tetsouo
----   @version 3.0  (modularized)
----   @date    2026-04-30
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/wardrobe/wardrobe_organizer.lua
+--- @author Tetsouo
+--- @version 3.0
+--- @date Created: 2026-04-30
+---============================================================================
 
 local Config = require('shared/utils/wardrobe/lib/config')
 local Log = require('shared/utils/wardrobe/lib/log')
 local Chat = require('shared/utils/wardrobe/lib/chat')
 local Items = require('shared/utils/wardrobe/lib/items')
-local Moves = require('shared/utils/wardrobe/lib/moves')
 local State = require('shared/utils/wardrobe/lib/state')
 local Phases = require('shared/utils/wardrobe/lib/phases')
 
@@ -68,7 +71,8 @@ local function reset_module_state()
     start_job_tag = nil
 end
 
---- Detect that the user changed job (or sub-job) since start_organize was first invoked.
+--- Detect that the user changed job (or sub-job) since the run started.
+--- @return boolean
 local function job_changed()
     if not start_job_tag then return false end
     if not player or not player.main_job then return false end
@@ -117,9 +121,9 @@ end
 --- with the current gear (FFXI re-evaluates lockstyle from W1/W2 contents).
 --- Re-firing //gs c ls after a settle delay restores the intended look.
 --- Then //gs c rf refills consumables so the post-organize state is fully ready.
---- How to apply: call only from successful completion paths (NOT abort_run /
---- panic / preview / verify), and only after clean_exit has fired so slots
---- are unlocked before the commands run.
+--- Call only from successful completion paths (NOT abort_run / panic /
+--- preview / verify), and only after clean_exit has fired so slots are
+--- unlocked before the commands run.
 local LOCKSTYLE_AFTER_DELAY = 1.5
 local REFILL_AFTER_DELAY = 3.5  -- 1.5s + 2.0s after lockstyle settles
 local function schedule_lockstyle()
@@ -146,6 +150,7 @@ local function with_panic_unlock(fn, label)
 end
 
 --- Abort the run with a warning chat message and full cleanup.
+--- @param reason string Message shown and logged
 local function abort_run(reason)
     Chat.warn(reason)
     dlog('ABORT: ' .. reason)
@@ -179,8 +184,10 @@ local function count_inv_gear(used_names)
     return unused, used, inv_items
 end
 
---- Decide if we should auto-retry. Returns true iff conditions allow another iteration.
---- Side effect: updates last_misplaced and same_misplaced_count.
+--- Decide if we should auto-retry.
+--- Side effect: updates same_misplaced_count (last_misplaced is set by the caller).
+--- @param misplaced number Items still misplaced
+--- @return boolean retry, boolean truly_stuck
 local function should_retry(misplaced)
     if misplaced == last_misplaced then
         same_misplaced_count = same_misplaced_count + 1
@@ -274,7 +281,7 @@ local function finish_run()
             dlog(('AUTO-RETRY: iter %d -> %d misplaced (was %s)'):format(
                 outer_iteration, misplaced, tostring(last_misplaced)))
             last_misplaced = misplaced
-            -- Keep slots locked through the retry; re-enable only on final exit
+            -- No enable here: the retry's Phase 0 unlocks, undresses and relocks
             coroutine.schedule(start_organize, Config.RETRY_DELAY)
             return
         end
@@ -485,9 +492,8 @@ start_organize = function()
     end
 
     Chat.phase(0, is_first and 'Unequipping current gear' or 'Unequipping (retry)', nil)
-    -- New behaviour: Phases.unequip is async and verifies the player is fully
-    -- naked before invoking its callback. This prevents Phase 1 from running on
-    -- a stale equipment state where some slots are still occupied.
+    -- Phases.unequip is async and verifies the player is fully naked before
+    -- invoking its callback, so Phase 1 never snapshots half-dressed state.
     Phases.unequip(with_panic_unlock(build_state_and_dispatch, 'build_state_and_dispatch'))
 end
 
@@ -495,7 +501,8 @@ end
 ---   PUBLIC API
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Run the per-job wardrobe organize flow.
+--- Run the per-job wardrobe organize flow (//gs c wo). Delegates to
+--- organize_alt() when the character config sets SCOPE = 'all_jobs'.
 function WardrobeOrganizer.organize()
     if IS_RUNNING then
         Chat.warn('Organize already in progress (use //gs c wo reset to clear).')
@@ -648,7 +655,7 @@ WardrobeOrganizer.organize_global = WardrobeOrganizer.organize
 WardrobeOrganizer.preview_global = WardrobeOrganizer.preview
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   ALT MODE  (4-wardrobe characters: W1-W4 + Sack/Case)
+---   ALT MODE  (all jobs; default W1-W4 + Sack/Case/Satchel)
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Implementation lives in lib/orchestrator_alt.lua. The factory below wires
 ---   in this module's mutable state (IS_RUNNING / start_job_tag) and shared
@@ -675,7 +682,7 @@ local Reports = require('shared/utils/wardrobe/lib/reports')
 WardrobeOrganizer.scan_warp_items = Reports.scan_warp_items
 WardrobeOrganizer.show_kept = Reports.show_kept
 
---- Run the alt-character wardrobe organize flow (4 wardrobes + Sack/Case).
+--- Run the all-jobs wardrobe organize flow (Config.ALT_* bag lists).
 --- Considers items used by ANY job, not just the active one.
 function WardrobeOrganizer.organize_alt()
     if IS_RUNNING then

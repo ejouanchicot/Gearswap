@@ -1,11 +1,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BLM Engaged Module - Combat State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all engaged state logic for Black Mage job:
----   - Combat set selection based on EngagedMode (DT, Enspell, Refresh, TP)
----   - Dual wield detection and optimization (NIN subjob)
----   - Dynamic weapon application to engaged sets
----   - Combat state transitions
+---   customize_melee_set: takes the engaged set Mote selected and applies the
+---   MainWeapon / SubWeapon sets on top (SetBuilder.build_engaged_set).
 ---
 ---   @file    shared/jobs/blm/functions/BLM_ENGAGED.lua
 ---   @author  Tetsouo

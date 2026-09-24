@@ -5,10 +5,10 @@
 --- Source: BG-Wiki (https://www.bg-wiki.com/ffxi/)
 --- Verified: 2025-10-30
 ---
---- @file GREATAXE_WS_DATABASE.lua
+--- @file shared/data/weaponskills/GREATAXE_WS_DATABASE.lua
 --- @author Tetsouo
 --- @version 1.0 - Improved formatting
---- @date 2025-10-30
+--- @date Created: 2025-10-30
 ---============================================================================
 
 local greataxe_ws = {}

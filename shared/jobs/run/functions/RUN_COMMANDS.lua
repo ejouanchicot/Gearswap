@@ -9,12 +9,13 @@
 ---
 ---   Uses centralized command handlers for consistency across all jobs.
 ---
----   @file    jobs/run/functions/RUN_COMMANDS.lua
+---   @file    shared/jobs/run/functions/RUN_COMMANDS.lua
 ---   @author  Tetsouo
 ---   @version 3.0.0 - Logic Extracted to logic/
 ---   @date    Created: 2025-10-03 | Updated: 2025-10-06
----   @requires utils/ui/UI_COMMANDS, utils/core/COMMON_COMMANDS
+---   @requires shared/utils/ui/UI_COMMANDS, shared/utils/core/COMMON_COMMANDS
 ---  ═══════════════════════════════════════════════════════════════════════════
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -48,7 +49,8 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Handle job-specific self commands
----   Processes commands in order: Common >> UI >> RUN-specific
+---   Processes commands in order: Watchdog >> Dual-box >> Common >> UI >>
+---   debugmidcast >> cyclestate >> RUN-specific
 ---
 ---   Common commands:
 ---   • reload         - Reload GearSwap
@@ -61,7 +63,7 @@ end
 ---
 ---   RUN-specific commands:
 ---   • aoe            - Execute Blue Magic AOE spell rotation (RUN/BLU)
----   • rune           - Execute Rune ability (RUN/RUN)
+---   • rune           - Execute the rune selected in state.RuneMode
 ---
 ---   @param cmdParams table Command parameters array (e.g., {"aoe"})
 ---   @param eventArgs table Event arguments with handled flag
@@ -96,6 +98,7 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DUAL-BOXING: Handle job request from MAIN
     -- ══════════════════════════════════════════════════════════════════════════
     if command == 'requestjob' then
@@ -170,7 +173,7 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- Rune: Execute Rune ability (RUN/RUN)
+    -- Rune: cast the rune selected in state.RuneMode
     if command == 'rune' then
         if RuneManager then
             RuneManager.execute_rune()

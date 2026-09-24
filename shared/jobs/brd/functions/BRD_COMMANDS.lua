@@ -11,24 +11,20 @@
 ---   marcato (ma)      - Marcato
 ---   pianissimo (pi)   - Pianissimo
 ---
----   Debuff Songs (4 commands):
----   lullaby           - Horde Lullaby (AOE: auto-upgrade to II if I on cooldown)
----   lullaby2, foe     - Foe Lullaby II (Single: auto-downgrade to I if II on cooldown)
----   elegy             - Carnage Elegy (auto-downgrade to Battlefield if on cooldown)
----   requiem           - Foe Requiem VII (auto-downgrade to VI if on cooldown)
+---   Debuff Songs (4 commands, on <stnpc>; a song on recast is downgraded by
+---   SongRefinement in precast when BRDSongConfig.SONG_REFINE lists it):
+---   lullaby           - Horde Lullaby
+---   lullaby2, foe     - Foe Lullaby II
+---   elegy             - Carnage Elegy
+---   requiem           - Foe Requiem VII
 ---
----   Pack Rotations (10 commands):
----   songs, meleesong, melee, allsongs - Cast current song pack
----   refresh, meleerefresh             - Refresh melee songs (no dummies)
----   tanksong, tank                    - Cast Tank pack
----   tankrefresh                       - Refresh Tank pack (no dummies)
----   healersong, healer                - Cast Healer pack
----   healerrefresh                     - Refresh Healer pack (no dummies)
+---   Pack Rotation:
+---   songs, meleesong, melee, allsongs - Cast current song pack (SongMode)
 ---
 ---   Dummy Songs (3 commands):
 ---   dummy, dummysongs - Cast all dummy songs
----   dummy1            - Cast dummy song 1 (Gold Capriccio)
----   dummy2            - Cast dummy song 2 (Goblin Gavotte)
+---   dummy1            - Cast dummy song 1 (BRDSongConfig.DUMMY_SONGS.standard)
+---   dummy2            - Cast dummy song 2
 ---
 ---   Element/Type Songs (3 commands):
 ---   threnody          - Cast threnody (current ThrenodyElement state)
@@ -42,7 +38,10 @@
 ---   song4             - Cast song from slot 4 of current pack
 ---   song5             - Cast song from slot 5 of current pack
 ---
----   @file    BRD_COMMANDS.lua
+---   Other: forceidle (re-equip idle ring1), debugmidcast, cyclestate,
+---   dual-box (altjobupdate, requestjob), UI / watchdog / common commands.
+---
+---   @file    shared/jobs/brd/functions/BRD_COMMANDS.lua
 ---   @author  Tetsouo
 ---   @version 3.0 - Complete migration from old system
 ---   @date    Created: 2025-10-13
@@ -92,6 +91,7 @@ local CAROLS = {Fire='Fire Carol II', Ice='Ice Carol II', Wind='Wind Carol II',
 ---   1. Self target  -> <me>
 ---   2. Other PC     -> "<player_name>"
 ---   3. Mob/no target -> <stpc> (subtarget or self)
+--- @param song_name string Song name to cast
 local function cast_song_to_target(song_name)
     if player and player.target then
         local target = player.target
@@ -124,16 +124,19 @@ local function use_ability(ability_name)
 end
 
 ---   Get threnody name for current element
+---   @return string|nil Threnody II name for state.ThrenodyElement
 local function get_current_threnody()
     return state and state.ThrenodyElement and THRENODIES[state.ThrenodyElement.current] or nil
 end
 
 ---   Get carol name for current element
+---   @return string|nil Carol II name for state.CarolElement
 local function get_current_carol()
     return state and state.CarolElement and CAROLS[state.CarolElement.current] or nil
 end
 
 ---   Get etude name for current type
+---   @return string|nil Etude name for state.EtudeType (BRDSongConfig.ETUDES)
 local function get_current_etude()
     if not (state and state.EtudeType and BRDSongConfig and BRDSongConfig.ETUDES) then
         return nil
@@ -170,6 +173,7 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DUAL-BOXING: Handle job request from MAIN
     -- ══════════════════════════════════════════════════════════════════════════
     if command == 'requestjob' then
@@ -190,14 +194,13 @@ function job_self_command(cmdParams, eventArgs)
     -- WARP RING FIX COMMAND
     -- ══════════════════════════════════════════════════════════════════════════
     if command == 'forceidle' then
-        -- Force equip idle gear (used by warp system to fix stuck rings after interruption)
-        -- Uses multiple retry attempts because FFXI equipment lock takes time to clear
+        -- Re-equip the idle left_ring in ring1 after a warp interruption.
+        -- No code in the project sends this command any more (manual use only).
 
         -- Step 1: Re-enable ring1 using SAME method as disable (via gs command)
         send_command('gs enable ring1')
 
-        -- Step 2: Single attempt with proper timing
-        -- With the 20+ second delay, equipment lock should be cleared
+        -- Step 2: Single /equip attempt 1 second later
         coroutine.schedule(function()
             -- Get the target ring from idle set
             local ring_data = nil
@@ -397,7 +400,7 @@ function job_self_command(cmdParams, eventArgs)
         local dummy_songs = SongRotationManager.get_dummy_songs()
         if dummy_songs and dummy_songs[1] then
             cast_song(dummy_songs[1])
-            -- DISABLED: Message already shown by BRD_MIDCAST.lua (daurdabla_dummy)
+            -- DISABLED: Message already shown by midcast_router.lua (show_daurdabla_dummy)
             -- MessageFormatter.show_dummy_cast(dummy_songs[1])
         end
         eventArgs.handled = true
@@ -408,7 +411,7 @@ function job_self_command(cmdParams, eventArgs)
         local dummy_songs = SongRotationManager.get_dummy_songs()
         if dummy_songs and dummy_songs[2] then
             cast_song(dummy_songs[2])
-            -- DISABLED: Message already shown by BRD_MIDCAST.lua (daurdabla_dummy)
+            -- DISABLED: Message already shown by midcast_router.lua (show_daurdabla_dummy)
             -- MessageFormatter.show_dummy_cast(dummy_songs[2])
         end
         eventArgs.handled = true

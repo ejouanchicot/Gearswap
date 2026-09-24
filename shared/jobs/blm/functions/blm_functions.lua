@@ -5,18 +5,19 @@
 ---   This file includes all specialized BLM modules and makes their functions
 ---   available to the main job file.
 ---
----   ADDITIONALLY: Exports key functions globally (like old BLM_FUNCTION.lua)
+---   ADDITIONALLY: Exports key functions globally
 ---   • BuffSelf() - Automated self-buffing
----   • SaveMP() - MP conservation gear switching
+---   • SaveMP() - MP-based elemental set switch (no caller, see below)
 ---   • refine_various_spells() - Spell tier downgrading
 ---   • checkArts() - Scholar subjob Dark Arts automation
+---   • CastStorm() - Storm casting with Klimaform
 ---
 ---   Architecture:
 ---   • Hook modules (BLM_*.lua) provide GearSwap event handlers
 ---   • Logic modules (logic/*.lua) contain business logic, loaded via require()
 ---   • Global exports allow direct function calls in hooks (old system compatibility)
 ---
----   @file    blm_functions.lua
+---   @file    shared/jobs/blm/functions/blm_functions.lua
 ---   @author  Tetsouo
 ---   @version 2.0 (Added facade pattern + global exports)
 ---   @date    Created: 2025-10-15 | Updated: 2025-10-15
@@ -26,12 +27,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SECTION 1: PERFORMANCE PROFILER (Load first for timing)
 ---  ═══════════════════════════════════════════════════════════════════════════
--- ═══════════════════════════════════════════════════════════════════
--- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
--- ═══════════════════════════════════════════════════════════════════
+-- TIMER() calls are no-ops unless //gs c perf start
 local Profiler = require('shared/utils/debug/performance_profiler')
 local TIMER = Profiler.create_timer('BLM')
--- ═══════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SECTION 2: MESSAGE SYSTEM (Load first for caching by logic modules)
@@ -137,10 +135,10 @@ TIMER('BLM_MOVEMENT')
 ---
 ---   logic/buff_manager.lua (loaded on first BuffSelf() call)
 ---     • Automated self-buffing (Stoneskin, Blink, Aquaveil, Ice Spikes)
----   logic/set_builder.lua (loaded on first SaveMP() call)
----     • MP conservation gear switching
----     • Shared engaged set construction
----     • Shared idle set construction
+---   logic/set_builder.lua (required by BLM_IDLE / BLM_ENGAGED for the idle and
+---     engaged builders; loaded here only by SaveMP())
+---     • Engaged set construction (weapons)
+---     • Idle set construction (town, weapons, movement, Mana Wall)
 ---   logic/spell_refiner.lua (loaded on first spell cast with refinement)
 ---     • Spell tier downgrading (Fire VI >> V >> IV >> III >> II >> I)
 ---   logic/storm_manager.lua (loaded on first CastStorm() call)
@@ -157,8 +155,9 @@ TIMER('BLM_MOVEMENT')
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BuffSelf - Automated Self-Buffing
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Automatically casts Stoneskin, Blink, Aquaveil, Ice Spikes if not active
----   Includes anti-spam protection and recast checking
+---   Casts Stoneskin, Blink, Aquaveil, Ice Spikes when missing, skipping the
+---   ones the job/subjob cannot cast and the ones still on recast
+---   @return boolean True when casts were queued or a status was displayed
 ---   @usage BuffSelf()
 function BuffSelf()
     ensure_buff_manager()
@@ -168,9 +167,10 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SaveMP - MP Conservation Gear Switching
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Dynamically switches elemental magic gear based on current MP
----   Low MP (< 1000): Conservation gear (max Refresh)
----   High MP (>= 1000): Full potency gear (max MAB)
+---   Writes an MP-based set (global blm_dynamic_sets, threshold 1000 MP) into
+---   sets.midcast['Elemental Magic'] or its .MagicBurst entry. No sets file
+---   defines blm_dynamic_sets, so the current set is written back onto itself,
+---   and nothing in the project calls SaveMP().
 ---   @usage SaveMP()
 function SaveMP()
     ensure_set_builder()
@@ -185,6 +185,7 @@ end
 ---   Also handles -ja spells (Firaja >> Firaga III) and Breakga >> Break
 ---   @param spell table The spell being cast
 ---   @param eventArgs table Event arguments (can set eventArgs.cancel = true)
+---   @return any Result of SpellRefiner.refine_various_spells
 ---   @usage refine_various_spells(spell, eventArgs)
 function refine_various_spells(spell, eventArgs)
     ensure_spell_refiner()
@@ -292,6 +293,7 @@ end
 ---   If Klimaform already active, casts Storm only
 ---   If spells on cooldown, displays recast information
 ---   @param storm_name string Name of the storm spell (e.g., "Firestorm")
+---   @return any Result of StormManager.cast_storm_with_klimaform
 ---   @usage CastStorm("Firestorm")
 function CastStorm(storm_name)
     ensure_storm_manager()
@@ -327,6 +329,4 @@ local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 MessageFormatter.show_debug('BLM', 'Hook functions loaded (11 hooks + 5 global exports with lazy loading)')
 
--- ═══════════════════════════════════════════════════════════════════
 TIMER('TOTAL BLM_functions', true)
--- ═══════════════════════════════════════════════════════════════════

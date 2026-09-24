@@ -7,7 +7,7 @@
 ---   • MagicAtk (magical attack moves)
 ---   • MagicAcc (magical accuracy/debuff moves)
 ---
----   @file    jobs/bst/functions/logic/ready_move_categorizer.lua
+---   @file    shared/jobs/bst/functions/logic/ready_move_categorizer.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-17
@@ -229,7 +229,7 @@ end
 
 ---   Get midcast set name for ready move
 ---   @param move_name string Ready move name
----   @return string set_name Set name for sets.midcast.Pet[set_name]
+---   @return string set_name Same value as get_category (no caller in the project)
 function ReadyMoveCategorizer.get_midcast_set_name(move_name)
     local category = ReadyMoveCategorizer.get_category(move_name)
     return category -- "Physical", "PhysicalMulti", "MagicAtk", "MagicAcc", or "Default"
@@ -273,7 +273,8 @@ end
 ---   MODULE EXPORT
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Export sets globally for compatibility with old code
+-- Export sets globally for compatibility with old code. The sets files also
+-- define these globals; whichever runs last wins.
 _G.petPhysicalMoves = ReadyMoveCategorizer.petPhysicalMoves
 _G.petPhysicalMultiMoves = ReadyMoveCategorizer.petPhysicalMultiMoves
 _G.petMagicAtkMoves = ReadyMoveCategorizer.petMagicAtkMoves

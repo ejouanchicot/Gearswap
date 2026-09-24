@@ -1,22 +1,24 @@
 ---============================================================================
 --- Messages API - Unified public interface for all message operations
 ---============================================================================
---- Single entry point for all messaging needs
---- Replaces 40+ message_*.lua files with one clean API
+--- Template path of the message system: formatters call M.send / M.job with
+--- a namespace and a key; the engine fills the template from
+--- data/jobs/<job>_messages.lua (3-letter job namespace) or
+--- data/systems/<namespace>_messages.lua, and the renderer prints it.
 ---
 --- Usage:
 ---   local M = require('shared/utils/messages/api/messages')
----   M.job('BLM', 'manawall_ready', {time = 30})
----   M.combat('ws_tp', {ws = 'Tachi: Fudo', tp = 2500})
+---   M.send('NAMESPACE', 'key', {param = value})
+---   M.job('BLM', 'element_cycle', {job = ..., state_type = ..., element_color = ..., element = ...})
 ---   M.error("Something went wrong")
 ---
---- @file api/messages.lua
+--- @file shared/utils/messages/api/messages.lua
 --- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2025-11-06
 ---============================================================================
 
--- Lazy-load core modules (only when first message is sent)
+-- Engine and renderer are loaded when the first message is sent
 local MessageEngine = nil
 local MessageRenderer = nil
 
@@ -36,6 +38,8 @@ end
 
 local Messages = {}
 
+local MessageCore = require('shared/utils/messages/message_core')
+
 ---============================================================================
 --- CORE MESSAGING API
 ---============================================================================
@@ -50,13 +54,11 @@ function Messages.send(namespace, key, params, options)
     params = params or {}
     options = options or {}
 
-    -- Try to format the message
     local ok, message, color = pcall(function()
         return get_MessageEngine().format(namespace, key, params)
     end)
 
     if not ok then
-        -- Error formatting message
         get_MessageRenderer().show_error(string.format(
             "Failed to format message %s.%s: %s",
             namespace, key, tostring(message)
@@ -69,10 +71,9 @@ function Messages.send(namespace, key, params, options)
     local visible_message = message:gsub(string.char(0x1F) .. ".", "")
     local message_length = #visible_message
 
-    -- Add namespace to options for statistics
+    -- Only used for the renderer statistics
     options.namespace = namespace
 
-    -- Render the message
     get_MessageRenderer().send(message, color, options)
 
     return true, message_length
@@ -86,6 +87,7 @@ end
 --- @param job string Job code ("BLM", "BRD", "RDM", etc.)
 --- @param key string Message key
 --- @param params table? Parameters
+--- @return boolean success, number message_length Same as Messages.send
 function Messages.job(job, key, params)
     return Messages.send(job, key, params)
 end
@@ -93,6 +95,7 @@ end
 --- Send a combat message (WS, TP, engaged, etc.)
 --- @param key string Message key
 --- @param params table? Parameters
+--- @return boolean success, number message_length Same as Messages.send
 function Messages.combat(key, params)
     return Messages.send('COMBAT', key, params)
 end
@@ -100,19 +103,23 @@ end
 --- Send a magic message (spells, buffs, debuffs)
 --- @param key string Message key
 --- @param params table? Parameters
+--- @return boolean success, number message_length Same as Messages.send
 function Messages.magic(key, params)
     return Messages.send('MAGIC', key, params)
 end
 
 --- Send an ability message (JA, pet commands)
+--- Note: there is no data/systems/ability_messages.lua, so any call prints a
+--- "Failed to format message" error instead. No caller exists today.
 --- @param key string Message key
 --- @param params table? Parameters
+--- @return boolean success, number message_length Same as Messages.send
 function Messages.ability(key, params)
     return Messages.send('ABILITY', key, params)
 end
 
 --- Send a system message (errors, warnings, info, success)
---- @param level string "error"|"warning"|"info"|"success"
+--- @param level string "error"|"warning"|"info"|"success"|"debug" (unknown = info)
 --- @param message string Message text
 function Messages.system(level, message)
     local colors = {
@@ -206,9 +213,9 @@ function Messages.custom(template, color)
         return self
     end
 
-    --- Build and send the message
+    --- Build and send the message. Plain gsub replacement, not the engine:
+    --- color tags are not converted and keys are used as Lua patterns.
     function builder:send()
-        -- Simple template replacement (no caching for custom messages)
         local message = self.template
         for key, value in pairs(self.params) do
             local placeholder = "{" .. key .. "}"
@@ -307,6 +314,7 @@ function Messages.list(namespace)
 end
 
 --- Get cache statistics from engine
+--- @return table {compiled_templates, loaded_namespaces, total_messages}
 function Messages.get_engine_stats()
     return get_MessageEngine().get_stats()
 end
@@ -365,9 +373,12 @@ local TEST_GRAY   = string.char(0x1F, 160)
 local TEST_YELLOW = string.char(0x1F, 50)
 local TEST_GREEN  = string.char(0x1F, 158)
 local TEST_RED    = string.char(0x1F, 167)
-local TEST_SEPARATOR = string.rep("=", 74)
+local TEST_SEPARATOR = string.rep("=", MessageCore.SEPARATOR_WIDTH)
 
 -- 21 jobs plus the general suite. Order is the order they run in.
+-- The suites were moved to _dev/message_api_tests/, outside the require path:
+-- nothing exists under api/tests/, so a full run executes no test and prints
+-- "0/0 tests PASSED", and a named run prints "Test file not found".
 local TEST_JOBS = {
     'system',                                    -- magic, JA, WS
     'whm', 'blm', 'rdm', 'sch', 'geo', 'blu',    -- mages

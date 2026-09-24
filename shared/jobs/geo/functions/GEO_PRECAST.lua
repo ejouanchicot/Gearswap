@@ -1,14 +1,13 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   GEO Precast Module - Precast Action Handling & Cooldown Monitoring
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles precast gear for Geomancer job:
----   • Fast Cast for all spells
----   • Job Abilities (Radial Arcana, Ecliptic Attrition, Life Cycle)
----   • Geomancy spells precast (Indi/Geo)
----   • Entrust ability logic
----   • Security layers (debuff guard, cooldown check)
+---   Precast hook for Geomancer. Precast gear itself (Fast Cast, JA sets) is
+---   chosen by Mote from sets.precast; this module adds:
+---   • PrecastGuard (debuffs) then CooldownChecker (abilities and spells)
+---   • Entrust pending flag (read by GEO_MIDCAST before the buff appears)
+---   • WSPrecastHandler for weaponskills and TP bonus gear
 ---
----   @file    GEO_PRECAST.lua
+---   @file    shared/jobs/geo/functions/GEO_PRECAST.lua
 ---   @author  Tetsouo
 ---   @version 2.0
 ---   @date    Created: 2025-10-09
@@ -52,7 +51,7 @@ end
 
 ---   Handle precast actions
 ---   @param spell table Spell/ability data
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping
 ---   @param eventArgs table Event arguments
 function job_precast(spell, action, spellMap, eventArgs)
@@ -76,7 +75,7 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- GEO-SPECIFIC: Entrust pending flag
+    -- Raised optimistically: aftercast lowers it again if Entrust is interrupted
     if spell.type == 'JobAbility' and spell.name == 'Entrust' then
         _G.geo_entrust_pending = true
     end
@@ -89,7 +88,7 @@ end
 
 ---   Apply final gear adjustments before equipping
 ---   @param spell table Spell/ability data
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping
 ---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)

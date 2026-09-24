@@ -1,7 +1,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PUP Buffs Module - Buff Gain/Loss Handler
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles job-specific buff gain/loss events (Doom, Chainspell, etc.).
+---   Buff gain/loss hook. Only the shared LifecycleManager handler runs (Doom);
+---   PUP has no buff-specific logic of its own.
 ---
 ---   @file    shared/jobs/pup/functions/PUP_BUFFS.lua
 ---   @author  Tetsouo

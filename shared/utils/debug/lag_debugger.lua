@@ -24,9 +24,10 @@ local LagDebugger = {}
 ---============================================================================
 --- STATE (persisted in windower table - survives gs reload)
 ---============================================================================
--- windower is a C++ object that persists across all GearSwap reloads.
--- Module-local variables are destroyed on each gs reload (package.loaded cleared).
--- Using windower._lagdebug guarantees the journal survives job changes.
+-- Inside the sandbox `windower` is a GearSwap engine table that outlives every
+-- reload, while module locals die with the sandbox GearSwap rebuilds on each
+-- gs reload and job change. Keeping the journal on windower._lagdebug is what
+-- lets it span a job change.
 
 windower._lagdebug = windower._lagdebug or {
     enabled       = false,
@@ -49,7 +50,7 @@ local STALL_MS = 40
 local MODULE_MS = 1.0
 
 -- Deliberately module-local, NOT in the windower table. A gs reload builds a
--- fresh Lua state with a fresh `require`, so a flag that survived the reload
+-- fresh sandbox with a fresh `require`, so a flag that survived the reload
 -- would claim the probe is installed when it no longer is.
 local require_wrapped = false
 local original_require = nil
@@ -101,10 +102,11 @@ end
 --- makes no assumption about the cause: whatever stalls the client shows up,
 --- including whatever nobody thought to instrument.
 local function install_stall_probe()
-    -- The id lives in the windower table because GearSwap does NOT unregister
-    -- events registered from data files on reload. Without this, every reload
-    -- would leave another live listener behind - which is exactly how the lag
-    -- this tool exists to find got introduced in the first place.
+    -- GearSwap itself unregisters every event a data file registered when it
+    -- loads the next file (load_user_files in refresh.lua), so a reload does
+    -- not leave this listener behind. The stored id guards the other case: a
+    -- second start() while recording replaces the listener instead of stacking
+    -- a second one. After a reload the stored id is already unregistered.
     if S.stall_event_id then
         windower.unregister_event(S.stall_event_id)
         S.stall_event_id = nil
@@ -181,7 +183,7 @@ end
 --- CORE API
 ---============================================================================
 
---- Start recording
+--- Start recording (clears the journal and installs the three probes)
 function LagDebugger.start()
     S.enabled       = true
     S.log           = {}
@@ -241,6 +243,7 @@ function LagDebugger.reset()
 end
 
 --- Check if recording
+--- @return boolean
 function LagDebugger.is_enabled()
     return S.enabled
 end
@@ -256,7 +259,9 @@ end
 --- INTERNAL LOG FUNCTION
 ---============================================================================
 
---- Internal: log one event (bypasses enabled check for SESSION_START/END)
+--- Internal: log one event, without checking whether recording is on
+--- @param event_type string Event name written in the journal
+--- @param data table|nil Extra fields, written as key=value
 function LagDebugger._raw(event_type, data)
     local t_ms = math.floor((os.clock() - S.t0) * 1000)
     local entry = { t = t_ms, type = event_type }
@@ -273,6 +278,8 @@ function LagDebugger._raw(event_type, data)
 end
 
 --- Log an event (only when recording)
+--- @param event_type string Event name written in the journal
+--- @param data table|nil Extra fields
 function LagDebugger.log(event_type, data)
     if not S.enabled then return end
     LagDebugger._raw(event_type, data)
@@ -283,6 +290,9 @@ end
 ---============================================================================
 
 --- Called by AutoMove just before sending gs c update
+--- @param reason string Why AutoMove sends the update
+--- @param dist number|nil Distance moved since the last check
+--- @param moving_state any New movement state
 function LagDebugger.on_automove_update(reason, dist, moving_state)
     if not S.enabled then return end
     S.update_count = S.update_count + 1
@@ -300,18 +310,22 @@ function LagDebugger.on_automove_update(reason, dist, moving_state)
 end
 
 --- Called by AutoMove.start()
+--- @param seq number AutoMove loop sequence
 function LagDebugger.on_automove_start(seq)
     if not S.enabled then return end
     LagDebugger._raw('AUTOMOVE_START', {seq = seq})
 end
 
 --- Called by AutoMove.stop()
+--- @param seq number AutoMove loop sequence
 function LagDebugger.on_automove_stop(seq)
     if not S.enabled then return end
     LagDebugger._raw('AUTOMOVE_STOP', {seq = seq})
 end
 
 --- Called by job_change_manager on_job_change
+--- @param main_job string
+--- @param sub_job string
 function LagDebugger.on_job_change(main_job, sub_job)
     if not S.enabled then return end
     LagDebugger._raw('JOB_CHANGE', {job = main_job, sub = sub_job})
@@ -325,19 +339,26 @@ function LagDebugger.on_cleanup()
     LagDebugger._raw('CLEANUP_SYSTEMS', {am_seq = am_seq, am_run = am_run})
 end
 
---- Called by GearSwap gs reload schedule (before windower.send_command('gs reload'))
+--- Called by JobChangeManager when it schedules a gs reload
+--- @param delay number Debounce delay in seconds
 function LagDebugger.on_gs_reload(delay)
     if not S.enabled then return end
     LagDebugger._raw('GS_RELOAD_SCHEDULED', {delay_s = string.format('%.1f', delay or 0)})
 end
 
---- Called by INIT_SYSTEMS.lua at the end of each reload (marks reload complete)
+--- Called by INIT_SYSTEMS.lua on each file load (marks reload complete)
+--- @param job string Main job
+--- @param sub string Sub job
+--- @param am_seq number|nil AutoMove sequence at load time
 function LagDebugger.on_reload_complete(job, sub, am_seq)
     if not S.enabled then return end
     LagDebugger._raw('GS_RELOAD_COMPLETE', {job = job, sub = sub, am_seq = tostring(am_seq or 0)})
 end
 
---- Called by BST prerender when it fires and sends an update
+--- Called by the BST prerender pet monitor when it sends an update
+--- @param pet_eng_val any Current pet engaged state
+--- @param prev_pet_eng any Previous pet engaged state
+--- @param sent_update boolean True if the check sent gs c update
 function LagDebugger.on_prerender_check(pet_eng_val, prev_pet_eng, sent_update)
     if not S.enabled then return end
     if sent_update then
@@ -350,7 +371,8 @@ function LagDebugger.on_prerender_check(pet_eng_val, prev_pet_eng, sent_update)
     })
 end
 
---- Called by job_update() (fires on every gs c update received by GearSwap)
+--- Called by job_update() (fires on every gs c update received by GearSwap).
+--- Wired only in live Tetsouo WAR/BST/SMN entry files.
 function LagDebugger.on_job_update()
     if not S.enabled then return end
     local moving_val = (state and state.Moving and state.Moving.value) or 'nil'
@@ -450,6 +472,7 @@ local function write_events(lines)
 end
 
 --- Export journal to data/debug_lag.txt
+--- @return boolean True if the file was written
 function LagDebugger.export()
     if #S.log == 0 then
         add_to_chat(207, '[LagDebug] Nothing to export - run //gs c lagdebug first')

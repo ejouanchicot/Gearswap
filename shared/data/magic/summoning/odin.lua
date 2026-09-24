@@ -3,7 +3,7 @@
 ---============================================================================
 --- Odin summon spell and Blood Pact ability (main job only, Astral Flow).
 ---
---- @file odin.lua
+--- @file shared/data/magic/summoning/odin.lua
 --- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2026-06-08

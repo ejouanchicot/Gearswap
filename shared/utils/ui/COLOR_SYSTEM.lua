@@ -3,12 +3,13 @@
 ---============================================================================
 --- Centralized color management for all UI elements across all jobs.
 --- Provides consistent color coding for elements, stats, spells, and modes.
---- Supports per-character customization via config/UI_COLOR_CONFIG.lua
+--- Supports per-character customization via <character>/config/UI_COLOR_CONFIG.lua,
+--- read once when this module loads.
 ---
---- @file ui/COLOR_SYSTEM.lua
+--- @file shared/utils/ui/COLOR_SYSTEM.lua
 --- @author Tetsouo
 --- @version 4.0
---- @date Updated: 2025-11-10
+--- @date Created: 2025-11-03 (updated 2025-11-10)
 ---============================================================================
 
 local ColorSystem = {}
@@ -120,7 +121,7 @@ local special_colors = {
     ["true"] = "\\cs(150,255,150)",
     ["false"] = "\\cs(255,100,100)",
     unknown = "\\cs(128,128,128)",
-    bar_ailment = "\\cs(255,200,150)"
+    bar_ailment = "\\cs(255,200,150)"  -- NOTE: never read (Bar-ailments use element colors)
 }
 
 -- Spell colors (can be overridden by custom config)
@@ -233,30 +234,20 @@ end
 --- HELPER FUNCTIONS
 ---============================================================================
 
---- Check if value matches any pattern in list
-local function matches_patterns(value, patterns)
-    for _, pattern in ipairs(patterns) do
-        if value:find(pattern) then
-            return true
-        end
-    end
-    return false
-end
-
 --- Get color for Gain spells based on stat
 local function get_gain_color(value)
     if value:find("STR") then
         return element_colors.Fire       -- Fire element
     elseif value:find("DEX") then
-        return element_colors.Wind       -- Wind element (fixed: was Lightning)
+        return element_colors.Wind       -- Wind element
     elseif value:find("VIT") then
         return element_colors.Earth      -- Earth element
     elseif value:find("AGI") then
-        return element_colors.Lightning  -- Thunder/Lightning element (fixed: was Wind)
+        return element_colors.Lightning  -- Thunder/Lightning element
     elseif value:find("INT") then
-        return element_colors.Ice        -- Ice element (fixed: was Dark)
+        return element_colors.Ice        -- Ice element
     elseif value:find("MND") then
-        return element_colors.Water      -- Water element (fixed: was Ice)
+        return element_colors.Water      -- Water element
     elseif value:find("CHR") then
         return element_colors.Light      -- Light element
     end
@@ -486,8 +477,8 @@ end
 --- Get color for a value based on context
 --- @param value string State value as shown in the UI
 --- @param description string|nil What kind of value it is (element, rune, etude...)
---- @return string|nil Colour code; white when nothing matches, nil for an
----         unknown Gain (get_gain_color has the last word on those)
+--- @return string Colour code; white when nothing matches. Gain values always
+---         resolve in get_gain_color (fallback red when no stat is recognised).
 function ColorSystem.get_value_color(value, description)
     if description and description:find("Gain") then
         return get_gain_color(value)
@@ -515,14 +506,20 @@ end
 --- UTILITY FUNCTIONS
 ---============================================================================
 
+--- @return table The live element color table (name -> color code). No caller in the repository.
 function ColorSystem.get_element_colors()
     return element_colors
 end
 
+--- @return table The live stat color table (STR..CHR -> color code). No caller in the repository.
 function ColorSystem.get_stat_colors()
     return stat_colors
 end
 
+--- Override one color at runtime. No caller in the repository.
+--- @param pattern_type string 'element', 'stat' or 'special' (anything else is ignored)
+--- @param pattern_name string Key in that table
+--- @param color_code string Windower text color code, e.g. \cs(255,0,0)
 function ColorSystem.add_custom_color(pattern_type, pattern_name, color_code)
     if pattern_type == "element" then
         element_colors[pattern_name] = color_code

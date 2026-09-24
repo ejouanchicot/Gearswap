@@ -14,10 +14,10 @@
 --- Job-agnostic: the caller supplies the weapon key and its weaponskill list,
 --- so any job with a weapon state can adopt it.
 ---
---- @file shared/utils/weaponskill/ws_slots.lua
---- @author Tetsouo
+--- @file    shared/utils/weaponskill/ws_slots.lua
+--- @author  Tetsouo
 --- @version 1.0
---- @date Created: 2026-07-29
+--- @date    Created: 2026-07-29
 ---============================================================================
 
 local WSSlots = {}

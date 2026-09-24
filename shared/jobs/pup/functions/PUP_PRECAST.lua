@@ -1,9 +1,12 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PUP Precast Module - Precast Action Handling & Pet Commands
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Debuff guard, cooldown check, WS handling, Activate/Deploy/Retrieve.
+---   Debuff guard, cooldown check (Ready moves skipped), WS handling, then the
+---   Call Beast / Bestial Loyalty and Ready move gear. NOTE: this job logic is
+---   BST's (beast pets), not automaton commands; ready_move_categorizer does
+---   not exist, so the Ready move branch never runs.
 ---
----   @file    PUP_PRECAST.lua
+---   @file    shared/jobs/pup/functions/PUP_PRECAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-05
@@ -117,6 +120,10 @@ function job_post_precast(spell, action, spellMap, eventArgs)
         WSPrecastHandler.apply_tp_gear(spell)
     end
 end
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MODULE EXPORT
+---  ═══════════════════════════════════════════════════════════════════════════
 
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast

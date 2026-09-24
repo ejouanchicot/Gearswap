@@ -1,11 +1,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BRD Engaged Module - Combat State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all engaged state logic for Bard job:
----   - Combat set selection based on EngagedMode (DT, Enspell, Refresh, TP)
----   - Dual wield detection and optimization (NIN subjob)
----   - Dynamic weapon application to engaged sets
----   - Combat state transitions
+---   customize_melee_set (SetBuilder.build_engaged_set):
+---   - sets.engaged.PDTKC when Kraken Club is in the sub slot
+---   - otherwise sets.engaged[EngagedMode] when defined
+---   - MainWeapon / SubWeapon sets, then movement gear
 ---
 ---   @file    shared/jobs/brd/functions/BRD_ENGAGED.lua
 ---   @author  Tetsouo

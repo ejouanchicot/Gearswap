@@ -1,12 +1,13 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   RDM Precast Module - Precast Action Handling & Fast Cast Optimization
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all precast actions for Red Mage job:
----     • Fast Cast optimization (cap 80%)
----     • Weaponskills preparation & TP display
----     • Job ability precast (Convert, Chainspell, Saboteur, Composure)
----     • Enfeebling/Elemental spell precast
----     • Security layers (debuff guard, cooldown check, range validation)
+---   Precast pipeline for Red Mage (the gear itself comes from Mote's sets):
+---     • PrecastGuard (blocking debuffs)
+---     • Cooldown check, or tier downgrade for tiered enfeebles (TierRefiner)
+---     • Phalanx / Phalanx II swap depending on the target
+---     • Auto-Saboteur before the configured enfeebles
+---     • WSPrecastHandler (weaponskill validation, TP gear)
+---     • Post-precast: spell-specific FC sets and the debugprecast trace
 ---
 ---   @file    shared/jobs/rdm/functions/RDM_PRECAST.lua
 ---   @author  Tetsouo
@@ -84,20 +85,20 @@ end
 ---   DEPENDENCIES - RDM SPECIFIC
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- RDM configuration
-local RDMTPConfig = _G.RDMTPConfig or {}  -- Loaded from character main file
+-- Both are set by the entry point (Tetsouo_RDM.lua) before this file is included.
+local RDMTPConfig = _G.RDMTPConfig or {}
 
--- RDM Saboteur configuration (character-specific)
 local RDMSaboteurConfig = _G.RDMSaboteurConfig or {
     auto_trigger_spells = {},
     wait_time = 2
 }
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   DEBUG STATE (Global persist across reloads)
+---   DEBUG STATE
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Initialize global debug state if not exists
+-- Toggled by //gs c debugprecast. It survives reloads through
+-- windower._gs_debug.PRECAST, which INIT_SYSTEMS copies back into _G.
 if _G.PrecastDebugState == nil then
     _G.PrecastDebugState = false
 end
@@ -107,20 +108,11 @@ local function is_precast_debug_enabled()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   PRECAST HOOKS
----  ═══════════════════════════════════════════════════════════════════════════
-
----   Called before any action (WS, JA, spell, etc.)
----   @param spell table Spell/ability data
----   @param action string Action type
----   @param spellMap string Spell mapping
----   @param eventArgs table Event arguments
----  ─────────────────────────────────────────────────────────────────────────
 ---   PRECAST STAGES
----  ─────────────────────────────────────────────────────────────────────────
+---  ═══════════════════════════════════════════════════════════════════════════
 ---   Each stage returns true when the action must stop there. The order they
 ---   run in is the documented precast contract, and job_precast below is short
----   enough that the order is now the first thing you see.
+---   enough that the order is the first thing you see.
 
 ---   Stage 1 - blocking debuffs: Amnesia, Silence, dead, and so on.
 ---   @return boolean True when the action is blocked
@@ -247,8 +239,16 @@ local function stage_saboteur(spell, eventArgs, debug_enabled)
     AbilityHelper.try_ability_smart(spell, eventArgs, 'Saboteur', RDMSaboteurConfig.wait_time)
 end
 
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PRECAST HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
+
+---   Called before any action (WS, JA, spell, etc.)
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_precast(spell, action, spellMap, eventArgs)
-    -- Lazy load modules on first action
     ensure_modules_loaded()
 
     -- Lock the weapon slots BEFORE any precast gear goes on, or midcast will
@@ -282,12 +282,6 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----   Apply final gear adjustments before equipping
----   NOTE: TP display now integrated in job_precast WS message
----   @param spell table Spell/ability data
----   @param action string Action type
----   @param spellMap string Spell mapping
----   @param eventArgs table Event arguments
 ---   Name the set precast just equipped, for `//gs c debugprecast`.
 ---
 ---   This mirrors the resolution Mote does rather than observing it, so it is
@@ -328,6 +322,12 @@ local function describe_equipped_set(spell)
     return "Unknown", nil
 end
 
+---   Apply final gear adjustments after Mote equipped the precast set:
+---   WS TP gear, then a spell-specific FC set when one exists.
+---   @param spell table Spell/ability data
+---   @param action string Action type
+---   @param spellMap string Spell mapping
+---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
     local debug_enabled = is_precast_debug_enabled()
 
@@ -336,8 +336,8 @@ function job_post_precast(spell, action, spellMap, eventArgs)
         WSPrecastHandler.apply_tp_gear(spell)
     end
 
-    -- Spell-specific Fast Cast sets (PRIORITY over generic FC)
-    -- Example: sets.precast.FC["Stoneskin"] overrides sets.precast.FC
+    -- Spell-specific Fast Cast sets win over the generic FC set
+    -- (e.g. sets.precast.FC["Stoneskin"]).
     if spell.action_type == 'Magic' and sets.precast.FC and sets.precast.FC[spell.english] then
         equip(sets.precast.FC[spell.english])
     end

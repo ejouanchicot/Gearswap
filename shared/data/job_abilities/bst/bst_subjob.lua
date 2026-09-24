@@ -11,7 +11,7 @@
 ---   - Bestial Loyalty (Lv23) - Summon jug pet (no consume)
 ---   - Tame (Lv30) - Lower enemy resistance to charm
 ---
---- @file bst_subjob.lua
+--- @file shared/data/job_abilities/bst/bst_subjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

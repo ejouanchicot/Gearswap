@@ -6,11 +6,10 @@
 --- Contents:
 ---   - Divine Seal (Lv15) - Next cure x2 potency
 ---
---- @file whm_subjob.lua
+--- @file shared/data/job_abilities/whm/whm_subjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06
---- @updated 2025-10-31
 --- @source https://www.bg-wiki.com/ffxi/White_Mage
 ---============================================================================
 

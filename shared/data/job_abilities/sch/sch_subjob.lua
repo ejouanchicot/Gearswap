@@ -8,7 +8,7 @@
 ---   - Dark Arts (Lv10) - Black magic optimized, -10% cost/time
 ---   - Sublimation (Lv35) - Convert HP >> MP over time
 ---
---- @file sch_subjob.lua
+--- @file shared/data/job_abilities/sch/sch_subjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

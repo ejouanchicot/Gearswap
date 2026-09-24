@@ -1,14 +1,15 @@
 ---============================================================================
 --- UI State Tracker - Capture and Compare Mote State Values
 ---============================================================================
---- Pure helpers extracted from UI_MANAGER.lua to track which Mote states are
+--- Pure helpers to track which Mote states are
 --- relevant to the keybind UI and detect changes between successive update
 --- ticks. The display layer redraws only when this module reports a change,
 --- which prevents per-frame redraw spam (e.g. AutoMove triggering 1-2 Hz).
 ---
---- @file ui/ui_state_tracker.lua
+--- @file shared/utils/ui/ui_state_tracker.lua
 --- @author Tetsouo
 --- @version 1.0
+--- @date Created: 2026-05-09
 ---============================================================================
 
 local StateTracker = {}
@@ -76,7 +77,7 @@ function StateTracker.have_states_changed(current_states)
         end
     end
 
-    -- Check for new states (e.g., BRD song slots added dynamically)
+    -- Check for states that disappeared since the cached capture
     for state_name, cached_value in pairs(cached) do
         if current_states[state_name] == nil then
             return true

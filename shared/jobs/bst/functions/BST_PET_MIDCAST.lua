@@ -4,7 +4,7 @@
 ---   Handles midcast gear for Ready Moves (pet TP moves).
 ---   This is a SPECIAL hook called ONLY for pet abilities during midcast.
 ---
----   @file    jobs/bst/functions/BST_PET_MIDCAST.lua
+---   @file    shared/jobs/bst/functions/BST_PET_MIDCAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-18
@@ -24,24 +24,6 @@ end
 ---   PET MIDCAST HOOK
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Debug helper
-local function show_equipment_pet_mid(label)
-    if not _G.BST_DEBUG_PRECAST then return end
-
-    -- Lazy load MessageFormatter if needed
-    local MessageFormatter_ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-    if not MessageFormatter_ok then MessageFormatter = nil end
-
-    local eq = player.equipment
-    MessageFormatter.show_debug('PET_MIDCAST', '========================================================')
-    MessageFormatter.show_debug('PET_MIDCAST', label)
-    MessageFormatter.show_debug('PET_MIDCAST', '--------------------------------------------------------')
-    MessageFormatter.show_debug('PET_MIDCAST', '  main: ' .. (eq.main or 'empty'))
-    MessageFormatter.show_debug('PET_MIDCAST', '  hands: ' .. (eq.hands or 'empty'))
-    MessageFormatter.show_debug('PET_MIDCAST', '  legs: ' .. (eq.legs or 'empty'))
-    MessageFormatter.show_debug('PET_MIDCAST', '========================================================')
-end
-
 ---   Called during pet ability midcast (specifically for Ready Moves)
 ---   @param spell table Spell/ability data
 ---   @return void
@@ -53,8 +35,10 @@ function job_pet_midcast(spell)
     -- during the ENTIRE cast (precast + midcast). Do NOT swap to pet damage
     -- gear until aftercast (after the recast timer is set).
 
-    -- For ALL pet abilities: Keep precast set (Gleti's Breeches)
-    -- The pet damage gear will be equipped in job_aftercast
+    -- For ALL pet abilities: keep the precast set (Sic). The pet damage gear
+    -- is equipped in job_aftercast. eventArgs.handled is not set, so Mote's
+    -- default_pet_midcast still runs and equips sets.midcast.Pet if the sets
+    -- file defines one.
 
     return  -- Exit without changing gear
 end

@@ -1,13 +1,15 @@
 ---============================================================================
---- Message Combat - Combat state and validation messages (NEW SYSTEM)
+--- Message Combat - Combat state and validation messages
 ---============================================================================
---- Uses template-based messaging via MessageRenderer
---- Migrated from old system to new system: 2025-11-06
+--- Range/target/WS validation errors, WS and TP lines, Waltz and Jump lines,
+--- and the universal spell line (show_spell_activated) with element and
+--- target colors. Templates: data/systems/combat_messages.lua and
+--- magic_messages.lua, sent through the Messages API.
 ---
---- @file utils/message_combat.lua
+--- @file shared/utils/messages/formatters/combat/message_combat.lua
 --- @author Tetsouo
 --- @version 2.0
---- @date Updated: 2025-11-06
+--- @date Created: 2025-11-06
 ---============================================================================
 
 local MessageCore = require('shared/utils/messages/message_core')
@@ -139,6 +141,9 @@ end
 --- RANGE & VALIDATION ERRORS
 ---============================================================================
 
+--- Action refused: target out of range
+--- @param ability string Action name
+--- @param distance_info string Distance text shown to the player
 function MessageCombat.show_range_error(ability, distance_info)
     M.send('COMBAT', 'range_error', {
         ability = ability,
@@ -146,6 +151,13 @@ function MessageCombat.show_range_error(ability, distance_info)
     })
 end
 
+--- Weapon skill refused. The template depends on which optional field is set
+--- (status ailment first, then detail).
+--- @param ws_name string Weapon skill name
+--- @param reason string Why it was refused
+--- @param detail string|nil Extra detail
+--- @param status_ailment string|nil Blocking status ailment
+--- @param detail_color_code number|nil Not used
 function MessageCombat.show_ws_validation_error(ws_name, reason, detail, status_ailment, detail_color_code)
     local job_tag = MessageCore.get_job_tag()
 
@@ -176,6 +188,9 @@ function MessageCombat.show_ws_validation_error(ws_name, reason, detail, status_
     end
 end
 
+--- Action refused: invalid target
+--- @param action string Action name
+--- @param reason string Why the target is invalid
 function MessageCombat.show_target_error(action, reason)
     M.send('COMBAT', 'target_error', {
         action = action,
@@ -183,6 +198,8 @@ function MessageCombat.show_target_error(action, reason)
     })
 end
 
+--- @param old_state string Previous state
+--- @param new_state string New state
 function MessageCombat.show_state_change(old_state, new_state)
     M.send('COMBAT', 'state_change', {
         old_state = old_state,
@@ -190,6 +207,11 @@ function MessageCombat.show_state_change(old_state, new_state)
     })
 end
 
+--- Ability refused: not enough TP
+--- @param ability_name string Ability name
+--- @param current_tp number Current TP
+--- @param required_tp number Required TP
+--- @param job_tag string|nil Job tag (defaults to the current one)
 function MessageCombat.show_ability_tp_error(ability_name, current_tp, required_tp, job_tag)
     job_tag = job_tag or MessageCore.get_job_tag()
     M.send('COMBAT', 'ability_tp_error', {
@@ -204,8 +226,10 @@ end
 --- WEAPONSKILL MESSAGES
 ---============================================================================
 
+--- Weapon skill name + TP, colored by TP tier (1000 / 2000 / 3000)
+--- @param ws_name string Weapon skill name
+--- @param total_tp number TP at use
 function MessageCombat.show_ws_tp(ws_name, total_tp)
-    -- Select template based on TP threshold
     local key
     if total_tp >= 3000 then
         key = 'ws_tp_ultimate'
@@ -221,6 +245,10 @@ function MessageCombat.show_ws_tp(ws_name, total_tp)
     })
 end
 
+--- Weapon skill name + description, and TP when given
+--- @param ws_name string Weapon skill name
+--- @param description string Weapon skill description
+--- @param total_tp number|nil TP at use
 function MessageCombat.show_ws_activated(ws_name, description, total_tp)
     local job_tag = MessageCore.get_job_tag()
 
@@ -254,6 +282,7 @@ end
 --- SPELL & ABILITY USAGE
 ---============================================================================
 
+--- @param spell_name string Spell name
 function MessageCombat.show_spell_cast(spell_name)
     local job_tag = MessageCore.get_job_tag()
     M.send('COMBAT', 'spell_cast', {
@@ -262,6 +291,8 @@ function MessageCombat.show_spell_cast(spell_name)
     })
 end
 
+--- @param ability_name string Ability name
+--- @param job_tag string|nil Job tag (defaults to the current one)
 function MessageCombat.show_ability_use(ability_name, job_tag)
     job_tag = job_tag or MessageCore.get_job_tag()
     M.send('COMBAT', 'ability_use', {
@@ -274,6 +305,11 @@ end
 --- WALTZ HEALING (DNC)
 ---============================================================================
 
+--- Waltz line: single target when missing_hp is given, AoE otherwise
+--- @param waltz_name string Waltz used
+--- @param missing_hp number|nil HP missing on the target
+--- @param extra_ability string|nil Ability used alongside
+--- @param job_tag string|nil Job tag (defaults to the current one)
 function MessageCombat.show_waltz_heal(waltz_name, missing_hp, extra_ability, job_tag)
     job_tag = job_tag or MessageCore.get_job_tag()
 
@@ -317,6 +353,9 @@ end
 --- JUMP MESSAGES (DRG)
 ---============================================================================
 
+--- @param jump_ability string Jump used
+--- @param description string Description text
+--- @param job_tag string|nil Job tag (defaults to the current one)
 function MessageCombat.show_jump_activated(jump_ability, description, job_tag)
     job_tag = job_tag or MessageCore.get_job_tag()
     M.send('COMBAT', 'jump_activated', {
@@ -326,6 +365,9 @@ function MessageCombat.show_jump_activated(jump_ability, description, job_tag)
     })
 end
 
+--- @param second_jump string Jump chained next
+--- @param description string|nil Description text
+--- @param job_tag string|nil Job tag (defaults to the current one)
 function MessageCombat.show_jump_chaining(second_jump, description, job_tag)
     job_tag = job_tag or MessageCore.get_job_tag()
 
@@ -343,6 +385,7 @@ function MessageCombat.show_jump_chaining(second_jump, description, job_tag)
     end
 end
 
+--- @param job_tag string|nil Job tag (defaults to the current one)
 function MessageCombat.show_jump_complete(job_tag)
     job_tag = job_tag or MessageCore.get_job_tag()
     M.send('COMBAT', 'jump_complete', {
@@ -350,6 +393,8 @@ function MessageCombat.show_jump_complete(job_tag)
     })
 end
 
+--- @param ws_name string Weapon skill name
+--- @param job_tag string|nil Job tag (defaults to the current one)
 function MessageCombat.show_jump_relaunch(ws_name, job_tag)
     job_tag = job_tag or MessageCore.get_job_tag()
     M.send('COMBAT', 'jump_relaunch', {
@@ -359,7 +404,7 @@ function MessageCombat.show_jump_relaunch(ws_name, job_tag)
 end
 
 ---============================================================================
---- SPELL ACTIVATION (ALREADY MIGRATED)
+--- SPELL ACTIVATION
 ---============================================================================
 
 -- A spell family gets its own template so it can carry its own colour. Skills
@@ -392,6 +437,14 @@ local function spell_activated_key(spell_skill, description, target)
     return (SPELL_KEY_PREFIX[spell_skill] or '') .. 'spell_activated' .. suffix
 end
 
+--- Universal spell line, used by the spell message hook
+--- @param spell_name string Spell name
+--- @param description string|nil Description (full mode only)
+--- @param target_name string|nil Target name
+--- @param spell_skill string|nil spell.skill, selects the template family
+--- @param spell_element string|nil Element, colors the spell name
+--- @param target_type string|nil PLAYER / MONSTER / NPC, colors the target
+--- @return number Visible length of the line (0 when it failed)
 function MessageCombat.show_spell_activated(spell_name, description, target_name, spell_skill, spell_element, target_type)
     local job_tag = MessageCore.get_job_tag()
 
@@ -399,7 +452,7 @@ function MessageCombat.show_spell_activated(spell_name, description, target_name
         spell_name = apply_element_color(spell_name, spell_element)
     end
 
-    -- Curing yourself does not name a target: the line already says who cast it.
+    -- A spell on yourself does not name a target: the line already says who cast it.
     local target = (target_name and target_name ~= player.name)
         and apply_target_color(target_name, target_type)
         or nil
@@ -412,7 +465,7 @@ function MessageCombat.show_spell_activated(spell_name, description, target_name
     }
 
     local key = spell_activated_key(spell_skill, description, target)
-    local success, message_length = M.send('MAGIC', key, params)
+    local _, message_length = M.send('MAGIC', key, params)
     return message_length or 0
 end
 

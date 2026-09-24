@@ -8,7 +8,7 @@
 ---   - Enlightenment (Lv75 Merit) - Both Arts active, both Addenda
 ---   - Libra (Lv76) - Examine target enmity levels
 ---
---- @file sch_mainjob.lua
+--- @file shared/data/job_abilities/sch/sch_mainjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

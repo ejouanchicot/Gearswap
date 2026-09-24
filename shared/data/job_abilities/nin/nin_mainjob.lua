@@ -10,7 +10,7 @@
 ---   - Futae (Lv77) - Next elemental ninjutsu +50% (2 tools)
 ---   - Issekigan (Lv95) - Parry rate+, enmity on parry
 ---
---- @file nin_mainjob.lua
+--- @file shared/data/job_abilities/nin/nin_mainjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

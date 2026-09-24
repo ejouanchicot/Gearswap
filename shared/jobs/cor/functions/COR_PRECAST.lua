@@ -1,24 +1,22 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   COR Precast Module - Precast Action Handling & Cooldown Monitoring
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all precast actions for Corsair job:
----   • Weaponskill precast (Fast Cast, TP bonus optimization)
----   • Phantom Roll precast (gear selection + roll tracking for Double-Up)
----   • Quick Draw precast (element-based shots)
----   • Ranged Attack precast (Snapshot gear)
----   • Job ability precast (Crooked Cards tracking)
----   • Fast Cast for subjob spells (NIN/DNC/RDM/etc.)
----   • Security layers (debuff guard, cooldown check, range validation)
----   • Luzaf's Ring management (16y vs 8y roll range)
+---   Handles all precast actions for Corsair job (precast gear itself comes
+---   from the sets through Mote):
+---   • Phantom Roll: CorsairRoll class + last roll name for Double-Up
+---   • Double-Up: wears the set of the roll it doubles
+---   • Quick Draw: CorsairShot class
+---   • Crooked Cards: timestamp read by the roll tracker
+---   • Luzaf's Ring / Gurebu's Ring on Phantom Roll (LuzafRing state)
 ---
 ---   Processing Order (CRITICAL):
 ---   1. Debuff guard (PrecastGuard) - blocks if silenced/amnesia/stunned
 ---   2. Cooldown check (CooldownChecker) - validates ability/spell ready
----   3. WS validation (WSPrecastHandler) - TP check + range check
----   4. COR-specific logic (Rolls, Quick Draw, Crooked Cards)
----   5. TP bonus calculation (TPBonusCalculator) - ranged WS optimization
+---   3. COR-specific logic (Rolls, Double-Up, Quick Draw, Crooked Cards)
+---   4. WS handling (WSPrecastHandler)
+---   5. job_post_precast: WS TP gear, roll ring
 ---
----   @file    COR_PRECAST.lua
+---   @file    shared/jobs/cor/functions/COR_PRECAST.lua
 ---   @author  Tetsouo
 ---   @version 2.0
 ---   @date    Created: 2025-10-07
@@ -63,7 +61,9 @@ end
 ---   PRECAST HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Extracted from job_precast: the `spell.type == 'CorsairRoll'` branch.
+--- Phantom Roll: point Mote at sets.precast.CorsairRoll and remember the roll
+--- name so a following Double-Up can wear the same set.
+--- @param spell table Spell information from GearSwap
 local function job_precast_corsairroll(spell)
     -- Set custom class so Mote looks in sets.precast.CorsairRoll
     classes.CustomClass = 'CorsairRoll'
@@ -75,7 +75,7 @@ local function job_precast_corsairroll(spell)
     _G.cor_last_roll.name = spell.english
 end
 
---- Extracted from job_precast: the `spell.english == 'Double-Up' and _G.cor_last_roll and _G.cor` branch.
+--- Double-Up: equip the set of the last roll, or the base CorsairRoll set.
 local function job_precast_double_up()
     -- Check if there's a specific set for this roll
     if sets.precast.CorsairRoll[_G.cor_last_roll.name] then
@@ -101,8 +101,8 @@ local CUSTOM_CLASS_BY_TYPE = {
 --- would silently drop one of them.
 ---
 --- Nothing in here stops the precast either - the weaponskill handling still
---- runs afterwards, which an earlier automated split got wrong by making
---- these return.
+--- runs afterwards, so none of these checks may return early.
+--- @param spell table Spell information from GearSwap
 local function apply_cor_precast(spell)
     -- Crooked Cards is recorded rather than acted on: the buff is consumed the
     -- moment the next roll goes out, so the roll tracker needs the timestamp
@@ -127,6 +127,11 @@ local function apply_cor_precast(spell)
     end
 end
 
+--- Precast hook: guard, cooldown, COR logic, weaponskill.
+--- @param spell table Spell information from GearSwap
+--- @param action table Action information from GearSwap
+--- @param spellMap string Spell mapping from Mote-Include
+--- @param eventArgs table Event arguments (eventArgs.cancel for cancellation)
 function job_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
@@ -154,7 +159,7 @@ end
 
 ---   Called after precast gear is equipped
 ---   @param spell table Spell/ability data
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping
 ---   @param eventArgs table Event arguments
 ---   @return void

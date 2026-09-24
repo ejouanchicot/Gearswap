@@ -1,16 +1,15 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   GEO Idle Module - Idle State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all idle state logic for Geomancer job:
----   - Idle set selection based on IdleMode (DT, Refresh, Regain, Evasion)
----   - Movement speed optimization
----   - Town gear management
----   - Dynamic weapon application to idle sets
+---   Mote idle hook for Geomancer. Delegates to SetBuilder.build_idle_set:
+---   - sets.luopan.idle while a luopan is out
+---   - HybridMode base (sets.idle.PDT / .Normal) otherwise
+---   - Town set, weapon sets, then movement gear (outside town)
 ---
 ---   @file    shared/jobs/geo/functions/GEO_IDLE.lua
 ---   @author  Tetsouo
 ---   @version 2.1 - Removed dead code + refactored header
----   @date    Updated: 2025-11-12
+---   @date    Created: 2025-10-09 | Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -23,9 +22,9 @@ local SetBuilder = nil
 ---   IDLE HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Apply weapon sets, mode selection, and movement gear to all idle configurations
----   @param idleSet table The idle set to customize
----   @return table Modified idle set with current weapon, mode, and movement gear
+---   Build the idle set (base selection + town + weapons + movement gear)
+---   @param idleSet table The idle set Mote selected (only checked for nil)
+---   @return table Idle set to wear
 function customize_idle_set(idleSet)
     -- Lazy load SetBuilder on first idle
     if not SetBuilder then

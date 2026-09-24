@@ -3,10 +3,12 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Handles midcast for Thief (primarily subjob spells).
 ---
----   @file    THF_MIDCAST.lua
+---   @file    shared/jobs/thf/functions/THF_MIDCAST.lua
 ---   @author  Tetsouo
 ---   @version 3.0 - Added spell_family database support
 ---   @date    Created: 2025-10-06 | Updated: 2025-11-05
+---  ═══════════════════════════════════════════════════════════════════════════
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -25,8 +27,8 @@ function job_midcast(spell, action, spellMap, eventArgs)
     -- ══════════════════════════════════════════════════════════════════════════
     -- RANGED ATTACK AUTO-LOCK (during midcast)
     -- ══════════════════════════════════════════════════════════════════════════
-    -- ALWAYS lock on Ranged Attack, regardless of previous state
-    -- This creates an infinite cycle: /ra → lock+ON, bind → unlock+OFF, /ra → lock+ON, etc.
+    -- Every /ra locks range+ammo and turns RangeLock on, whatever its state;
+    -- the RangeLock key is what turns it off again.
     if spell.action_type == 'Ranged Attack' and not spell.interrupted then
         local ok, RangeLock = pcall(require, 'shared/jobs/thf/functions/logic/range_lock')
         if ok and RangeLock then

@@ -12,7 +12,7 @@
 ---
 ---   Used by: SAM_IDLE.lua and SAM_ENGAGED.lua
 ---
----   @file    jobs/sam/functions/logic/set_builder.lua
+---   @file    shared/jobs/sam/functions/logic/set_builder.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-21
@@ -39,7 +39,7 @@ function SetBuilder.build_idle_set(base_set)
 
     local result = base_set
 
-    -- Priority 1: Weak status (HP/MP critically low)
+    -- Priority 1: Weak (HP < 50%)
     if player then
         if player.hpp < 50 and sets.idle and sets.idle.Weak then
             result = set_combine(result, sets.idle.Weak)

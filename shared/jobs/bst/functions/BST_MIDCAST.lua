@@ -10,10 +10,12 @@
 ---
 ---   Note: Ready Move logic is BST-specific and NOT handled by MidcastManager.
 ---
----   @file    BST_MIDCAST.lua
+---   @file    shared/jobs/bst/functions/BST_MIDCAST.lua
 ---   @author  Tetsouo
 ---   @version 3.0 - Added spell_family database support
 ---   @date    Created: 2025-10-17 | Updated: 2025-11-05
+---  ═══════════════════════════════════════════════════════════════════════════
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -52,7 +54,7 @@ end
 
 ---   Pre-midcast hook (Ready Move filtering and pet ability handling)
 ---   @param spell table Spell information from GearSwap
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping from Mote-Include
 ---   @param eventArgs table Event arguments for cancellation/customization
 function job_midcast(spell, action, spellMap, eventArgs)
@@ -75,10 +77,10 @@ function job_midcast(spell, action, spellMap, eventArgs)
     end
 
     ---══════════════════════════════════════════════════════════════════════════
-    --- READY MOVES - Already equipped Gleti's in PRECAST, skip midcast
+    --- READY MOVES - Sic set already equipped in PRECAST, skip midcast
     ---══════════════════════════════════════════════════════════════════════════
     if spell.bst_is_ready_move or (spell.ready_move_category and spell.ready_move_category ~= 'Default') then
-        -- Gleti's Breeches already equipped in job_precast
+        -- Sic set (sets.precast.JA.Sic) already equipped in job_precast
         -- Don't set eventArgs.handled - let job_aftercast run to swap to pet damage gear
         return
     end
@@ -87,8 +89,8 @@ end
 ---  ─────────────────────────────────────────────────────────────────────────
 ---   PER-BRANCH HANDLERS
 ---  ─────────────────────────────────────────────────────────────────────────
----   Extracted from job_post_midcast, which dispatched on spell.skill.
----   Each returns true once it has handled the call. Bodies unchanged.
+---   One handler per subjob magic skill, dispatched on spell.skill by
+---   job_post_midcast. Each returns true once it has handled the call.
 
 --- Handle Healing Magic.
 --- @return boolean True when this handler took the action
@@ -152,7 +154,7 @@ local JOB_POST_MIDCAST_HANDLERS = {
 
 ---   Post-midcast hook (MidcastManager routing and gear selection)
 ---   @param spell table Spell information from GearSwap
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping from Mote-Include
 ---   @param eventArgs table Event arguments for cancellation/customization
 function job_post_midcast(spell, action, spellMap, eventArgs)
@@ -162,10 +164,10 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     end
 
     ---══════════════════════════════════════════════════════════════════════════
-    --- READY MOVES - Keep Gleti's equipped, let job_aftercast swap to pet damage gear
+    --- READY MOVES - Keep the Sic set, let job_aftercast swap to pet damage gear
     ---══════════════════════════════════════════════════════════════════════════
     if spell.ready_move_category and spell.ready_move_category ~= 'Default' then
-        -- Do nothing - keep Gleti's Breeches equipped until aftercast
+        -- Do nothing - keep the Sic set equipped until aftercast
         return
     end
 
@@ -177,8 +179,6 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     ---══════════════════════════════════════════════════════════════════════════
     --- SUBJOB SPELLS (Handled by MidcastManager)
     ---══════════════════════════════════════════════════════════════════════════
-
-    -- Healing Magic (Cure, Cura, etc.)
 
     local handler = JOB_POST_MIDCAST_HANDLERS[spell.skill]
     if handler and handler(spell) then

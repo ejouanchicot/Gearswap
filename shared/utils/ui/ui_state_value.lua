@@ -1,16 +1,17 @@
 ---============================================================================
 --- UI State Value - Read Mote State Values for Display
 ---============================================================================
---- Pure helpers extracted from UI_MANAGER.lua to read individual Mote state
+--- Pure helpers to read individual Mote state
 --- values for UI display. Two functions:
 ---   • get_state_value()      - current value of a state (for live display)
 ---   • get_all_state_values() - all possible values (for column width calc)
 ---
 --- Handles BRD song slots (BRDSong1..N) and Mote M{} tables specially.
 ---
---- @file ui/ui_state_value.lua
+--- @file shared/utils/ui/ui_state_value.lua
 --- @author Tetsouo
 --- @version 1.0
+--- @date Created: 2026-05-09
 ---============================================================================
 
 local StateValue = {}
@@ -68,7 +69,7 @@ end
 --- @param keybind_key string The keybind key (used for GEO numeric tier filtering)
 --- @return string The current value as a string
 function StateValue.get_state_value(state_name, keybind_key)
-    -- BRD song slot handling - Fixed to use BRDSong instead of BRDSlot
+    -- BRD song slots (BRDSong<digit>): show "Empty" instead of "N/A"
     if state_name and state_name:match("^BRDSong(%d)$") then
         if _G.state and _G.state[state_name] then
             local state_obj = _G.state[state_name]
@@ -112,8 +113,8 @@ function StateValue.get_state_value(state_name, keybind_key)
         return ""
     end
 
-    -- NOTE: 'result' below is undeclared in the original code - these branches
-    -- never trigger (result == nil). Preserved as-is for behavior parity.
+    -- NOTE: 'result' below is an undeclared global (nil), so these branches
+    -- never trigger. Kept as-is for behavior parity.
     if state_name == "TierSpell" and (result == "" or result == "Unknown") then
         return ""
     end

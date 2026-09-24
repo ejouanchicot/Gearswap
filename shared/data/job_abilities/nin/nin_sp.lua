@@ -7,7 +7,7 @@
 ---   - Mijin Gakure (SP1, Lv1) - Sacrifice self, damage enemy
 ---   - Mikage (SP2, Lv96) - Multi-attack based on Utsusemi shadows
 ---
---- @file nin_sp.lua
+--- @file shared/data/job_abilities/nin/nin_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

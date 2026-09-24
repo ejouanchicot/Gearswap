@@ -1,10 +1,10 @@
 ---============================================================================
---- Message System - System intro and status messages (NEW SYSTEM)
+--- Message System - System intro and status messages
 ---============================================================================
---- Uses template-based messaging via MessageRenderer
---- Migrated from old system to new system: 2025-11-06
+--- Job-load intro box (macro book, lockstyle, keybind count, HUD state) and
+--- a color test (called from COR_COMMANDS). Templates: data/systems/system_messages.lua.
 ---
---- @file    messages/message_system.lua
+--- @file    shared/utils/messages/formatters/system/message_system.lua
 --- @author  Tetsouo
 --- @version 3.0
 --- @date    Created: 2025-11-06
@@ -13,47 +13,21 @@
 local MessageSystem = {}
 local M = require('shared/utils/messages/api/messages')
 local MessageCore = require('shared/utils/messages/message_core')
-local MessageKeybinds = require('shared/utils/messages/formatters/ui/message_keybinds')
 local Colors = MessageCore.COLORS
 
 ---============================================================================
 --- INTERNAL HELPERS
 ---============================================================================
 
---- Calculate content width including keybinds, macros, and lockstyle
---- @param keybinds table Array of keybind objects
---- @param macro_info table Optional macro info {book, page, subjob}
---- @param lockstyle_info table Optional lockstyle info {style, enabled, subjob}
---- @param job_name string Job name for macro/lockstyle display
---- @return number Maximum content width
-local function calculate_content_width(keybinds, macro_info, lockstyle_info, job_name)
-    local content_width = MessageKeybinds.calculate_max_width(keybinds)
-
-    -- Include macro line length if provided
-    if macro_info and macro_info.book and macro_info.page then
-        local macro_text = string.format("[MacroBook] %s Book %d Page %d",
-            job_name or "JOB", macro_info.book, macro_info.page)
-        content_width = math.max(content_width, string.len(macro_text))
-    end
-
-    -- Include lockstyle line length if provided
-    if lockstyle_info and lockstyle_info.style then
-        local lockstyle_text = string.format("[Lockstyle] %s Style %d (%s)",
-            job_name or "JOB", lockstyle_info.style,
-            lockstyle_info.enabled and "Enabled" or "Disabled")
-        content_width = math.max(content_width, string.len(lockstyle_text))
-    end
-
-    return content_width
-end
-
--- The intro box is a fixed width. An earlier version measured the longest line
--- and sized the box to it; that measuring code was still running, still
--- building every line a second time to do it, and its result was never read.
-local SEPARATOR_LENGTH = 74
+-- The intro box is a fixed width, like every chat separator.
+local SEPARATOR_LENGTH = MessageCore.SEPARATOR_WIDTH
 
 --- The lines that depend on what the job was given: its macro book and its
 --- lockstyle. Either is skipped when the job passed nothing for it.
+--- @param macro_info table|nil {book, page}
+--- @param lockstyle_info table|nil {style}
+--- @param key_color string Inline color code for labels
+--- @param desc_color string Inline color code for values
 local function send_intro_config(macro_info, lockstyle_info, key_color, desc_color)
     if macro_info and macro_info.book and macro_info.page then
         M.send('SYSTEM', 'intro_macrobook', {
@@ -132,7 +106,7 @@ end
 --- Display a system intro with centered title and keybinds
 --- @param title string System title (e.g., "WAR SYSTEM LOADED")
 --- @param keybinds table Array of keybind objects with 'key' and 'desc' fields
---- @param job_name string Optional job name (auto-detected if nil)
+--- @param job_name string Not used (the intro carries no job tag)
 function MessageSystem.show_system_intro(title, keybinds, job_name)
     build_and_display_intro(title, keybinds, nil, nil, job_name)
 end
@@ -141,7 +115,7 @@ end
 --- @param title string System title (e.g., "WAR SYSTEM LOADED")
 --- @param keybinds table Array of keybind objects with 'key' and 'desc' fields
 --- @param macro_info table Optional macro info {book, page, subjob}
---- @param job_name string Optional job name (auto-detected if nil)
+--- @param job_name string Not used (the intro carries no job tag)
 function MessageSystem.show_system_intro_with_macros(title, keybinds, macro_info, job_name)
     build_and_display_intro(title, keybinds, macro_info, nil, job_name)
 end
@@ -151,7 +125,7 @@ end
 --- @param keybinds table Array of keybind objects with 'key' and 'desc' fields
 --- @param macro_info table Optional macro info {book, page, subjob}
 --- @param lockstyle_info table Optional lockstyle info {style, enabled, subjob}
---- @param job_name string Optional job name (auto-detected if nil)
+--- @param job_name string Not used (the intro carries no job tag)
 function MessageSystem.show_system_intro_complete(title, keybinds, macro_info, lockstyle_info, job_name)
     build_and_display_intro(title, keybinds, macro_info, lockstyle_info, job_name)
 end

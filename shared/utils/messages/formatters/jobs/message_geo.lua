@@ -1,18 +1,17 @@
 ---============================================================================
 --- GEO Messages Module - Geomancer Spell and Luopan Message Formatting
 ---============================================================================
---- Uses NEW message system with inline colors
---- Delegates to api/messages.lua for all formatting
+--- Indi/Geo cast lines (with description and element color) and tier
+--- refinement lines. Templates: data/jobs/geo_messages.lua, sent through M.job.
 ---
---- @file utils/messages/message_geo.lua
+--- @file shared/utils/messages/formatters/jobs/message_geo.lua
 --- @author Tetsouo
---- @version 2.0 (NEW SYSTEM)
+--- @version 2.0
 --- @date Created: 2025-10-16 | Migrated: 2025-11-06
 ---============================================================================
 
 local GEOMessages = {}
 
--- NEW message system
 local M = require('shared/utils/messages/api/messages')
 
 -- Load Geomancy databases for descriptions
@@ -21,7 +20,8 @@ local geo_module = require('shared/data/magic/geomancy/geomancy_geo')
 local indi_db = indi_module.spells or indi_module
 local geo_db = geo_module.spells or geo_module
 
--- Get job tag (for subjob support: GEO/WHM >> "GEO/WHM")
+-- Job tag with subjob ("GEO/WHM"). Same logic as MessageCore.get_job_tag,
+-- except the fallback is 'GEO' instead of 'JOB'.
 local function get_job_tag()
     local main_job = player and player.main_job or 'GEO'
     local sub_job = player and player.sub_job or ''
@@ -84,11 +84,11 @@ local function get_element_color_from_name(spell_name)
 end
 
 ---============================================================================
---- INDI/GEO SPELL CASTING MESSAGES (NEW SYSTEM)
+--- INDI/GEO SPELL CASTING MESSAGES
 ---============================================================================
 
 --- Display Indi spell cast message
---- Format: [cyan][GEO/WHM] [ELEMENT_COLOR][Indi-Acumen] [gray]>> Boosts magic atk. (Ice element)
+--- Format: [GEO/WHM] [Indi-Acumen] >> Boosts magic atk. (spell name in its element color)
 --- @param spell_name string Full spell name (e.g., "Indi-Acumen")
 function GEOMessages.show_indi_cast(spell_name)
     if not indi_db then
@@ -113,7 +113,6 @@ function GEOMessages.show_indi_cast(spell_name)
         colored_spell = element_color .. spell_name .. gray_code
     end
 
-    -- Use NEW system with inline colors
     M.job('GEO', 'indi_cast', {
         job = get_job_tag(),
         spell = colored_spell,
@@ -121,9 +120,9 @@ function GEOMessages.show_indi_cast(spell_name)
     })
 end
 
---- Display Geo spell cast message (includes -ra AOE spells like Fira, Blizzara)
---- Format: [cyan][GEO/WHM] [ELEMENT_COLOR][Geo-Fury] [gray]>> Boosts attack. (Fire element)
---- Format: [cyan][GEO/WHM] [FIRE_COLOR][Fira II] [gray]>> Deals AOE dmg.
+--- Display Geo spell cast message (GEO_MIDCAST calls it for Geo- spells only)
+--- Format: [GEO/WHM] [Geo-Fury] >> Boosts attack. (spell name in its element color)
+--- A spell missing from the Geo database (e.g. a -ra spell) prints an error line.
 --- @param spell_name string Full spell name (e.g., "Geo-Fury", "Fira II")
 function GEOMessages.show_geo_cast(spell_name)
     if not geo_db then
@@ -148,7 +147,6 @@ function GEOMessages.show_geo_cast(spell_name)
         colored_spell = element_color .. spell_name .. gray_code
     end
 
-    -- Use NEW system with inline colors
     M.job('GEO', 'geo_cast', {
         job = get_job_tag(),
         spell = colored_spell,
@@ -157,7 +155,7 @@ function GEOMessages.show_geo_cast(spell_name)
 end
 
 ---============================================================================
---- SPELL REFINEMENT MESSAGES (NEW SYSTEM)
+--- SPELL REFINEMENT MESSAGES
 ---============================================================================
 
 --- Display spell refinement message (tier downgrade)

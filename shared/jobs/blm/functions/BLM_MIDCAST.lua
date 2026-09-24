@@ -11,7 +11,7 @@
 ---                              -> MidcastManager (universal set selection)
 ---                              -> ElementalMatcher (Hachirin-no-Obi detection)
 ---
----   @file    BLM_MIDCAST.lua
+---   @file    shared/jobs/blm/functions/BLM_MIDCAST.lua
 ---   @author  Tetsouo
 ---   @version 2.0 - Extracted handlers to logic/midcast_router.lua
 ---   @date    Created: 2025-10-05 | Refactored: 2026-05-09
@@ -126,12 +126,20 @@ end
 
 --- Pre-midcast hook (job-specific logic before set selection).
 --- All gear handling happens in job_post_midcast via the router.
+--- @param spell table Spell information from GearSwap
+--- @param action table Action information from GearSwap
+--- @param spellMap string Spell mapping from Mote-Include
+--- @param eventArgs table Event arguments
 function job_midcast(spell, action, spellMap, eventArgs)
     -- Handled by MidcastRouter in job_post_midcast
 end
 
 --- Post-midcast dispatcher: route spell to the appropriate router handler.
 --- Each handler owns the gear selection + BLM-specific overrides for its skill.
+--- @param spell table Spell information from GearSwap
+--- @param action table Action information from GearSwap
+--- @param spellMap string Spell mapping from Mote-Include
+--- @param eventArgs table Event arguments
 function job_post_midcast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 

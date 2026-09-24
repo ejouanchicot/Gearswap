@@ -39,11 +39,10 @@ BSTMacroConfig.solo = {
 --- Structure: dualbox[ALT_JOB][SUBJOB] = {book, page}
 --- Example: dualbox['GEO']['SAM'] = BST/SAM macros optimized for playing with GEO alt
 ---
---- Uncomment and customize sections below as needed:
+--- Used while the alt is online on ALT_JOB; otherwise the solo table applies.
 ---============================================================================
 
 BSTMacroConfig.dualbox = {
-    -- Uncomment to add dual-boxing configurations
     ['GEO'] = {
         ['DNC'] = {book = 13, page = 1},
     },

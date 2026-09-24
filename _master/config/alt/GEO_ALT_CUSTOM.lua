@@ -12,6 +12,8 @@
 ---
 --- @file    config/alt/GEO_ALT_CUSTOM.lua
 --- @author  Tetsouo
+--- @version 1.0
+--- @date    Created: 2026-08-09
 ---============================================================================
 
 local M = {}

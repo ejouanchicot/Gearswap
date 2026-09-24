@@ -32,7 +32,6 @@ PLDLockstyleConfig.default = 3
 --- Configure different lockstyles per subjob here.
 --- If a subjob is not in this table, the default lockstyle will be used.
 PLDLockstyleConfig.by_subjob = {
-    -- Examples:
     ['RUN'] = 3, -- PLD/RUN uses lockstyle 3
     ['BLU'] = 3, -- PLD/BLU uses lockstyle 3
     ['RDM'] = 3, -- PLD/RDM uses lockstyle 3

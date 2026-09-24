@@ -8,7 +8,7 @@
 ---   - Equanimity (Lv75 Merit) - Next black magic -enmity
 ---   - Immanence (Lv87) - Next elemental can skillchain (not MB)
 ---
---- @file sch_black_grimoire_mainjob.lua
+--- @file shared/data/job_abilities/sch/sch_black_grimoire_mainjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

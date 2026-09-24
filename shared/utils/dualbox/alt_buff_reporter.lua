@@ -1,26 +1,30 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Alt Buff Reporter - the ALT tells the MAIN which buffs it holds
----  ═══════════════════════════════════════════════════════════════════════════
----   The main cannot read an alt's buffs: they only arrive in the 0x076 party
----   packet, and parsing that needs a permanent `incoming chunk` listener - the
----   kind that piles up one per job change in the GearSwap sandbox.
+---============================================================================
+--- Alt Buff Reporter - the ALT tells the MAIN which buffs it holds
+---============================================================================
+--- The main cannot read an alt's buffs: they only arrive in the 0x076 party
+--- packet, and parsing that needs a permanent `incoming chunk` listener - the
+--- kind that piles up one per job change in the GearSwap sandbox.
 ---
----   So the alt reports instead, the same way it already reports its job:
+--- So the alt reports instead, the same way it already reports its job:
 ---
----     ALT gains Entrust  ->  send Tetsouo gs c altbuff Entrust 1
----     MAIN receives      ->  _G.AltBuffState['Entrust'] = true
+---   ALT gains/loses a tracked buff -> send <main> gs c altbuff <Buff> 1|0
+---   MAIN receives                  -> _G.AltBuffState['<Buff>'] = true|false
 ---
----   Only buffs in TRACKED are reported, so this stays quiet during a fight
----   instead of broadcasting every Regen tick.
+--- Entrust is the exception: per the GEO alt config (verified in game),
+--- buff_change fires for it only on loss, so the main learns of the gain from
+--- the resync that `altentrust` requests (sync_after -> altbuffsync).
 ---
----   Read it from an alt command config with:
----     (_G.AltBuffState or {})['Entrust']
+--- Only buffs in TRACKED are reported, so this stays quiet during a fight
+--- instead of broadcasting every Regen tick.
 ---
----   @file    shared/utils/dualbox/alt_buff_reporter.lua
----   @author  Tetsouo
----   @version 1.0
----   @date    Created: 2026-08-08
----  ═══════════════════════════════════════════════════════════════════════════
+--- Read it from an alt command config with:
+---   (_G.AltBuffState or {})['Entrust']
+---
+--- @file shared/utils/dualbox/alt_buff_reporter.lua
+--- @author Tetsouo
+--- @version 1.0
+--- @date Created: 2026-08-08
+---============================================================================
 
 local AltBuffReporter = {}
 
@@ -150,7 +154,8 @@ end
 ---
 --- Reporting the DOWN ones matters as much as the up ones: without it the main
 --- keeps believing in a buff that lapsed while it was not listening.
---- Called on load, on job change, and on demand via `//gs c altsync`.
+--- Called at every load (DualBoxManager auto-init, alt role) and when the
+--- main asks for it (`altbuffsync`, sent by `//gs c altsync` or `sync_after`).
 --- @return number How many buffs were reported
 function AltBuffReporter.report_all()
     if not buffactive then

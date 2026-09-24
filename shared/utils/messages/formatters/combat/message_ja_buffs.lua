@@ -1,9 +1,8 @@
 ---============================================================================
---- JA Buffs Message Formatter - Job Ability Activation (NEW SYSTEM)
+--- JA Buffs Message Formatter - Job Ability Activation
 ---============================================================================
 --- Universal job ability activation/deactivation messages for ALL jobs.
---- Uses template-based messaging via MessageRenderer
---- Migrated from old system to new system: 2025-11-06
+--- Templates: data/systems/ja_buffs_messages.lua (namespace JA_BUFFS).
 ---
 --- Usage Examples:
 ---   JABuffs.show_activated("Soul Voice", "Song power boost!")          -- [BRD/WHM] Soul Voice Song power boost!
@@ -13,7 +12,7 @@
 ---   JABuffs.show_ended("Soul Voice")                                   -- [BRD/WHM] Soul Voice ended
 ---   JABuffs.show_with_description("Troubadour", "Song duration extended") -- [BRD/WHM] Troubadour: Song duration extended
 ---
---- @file    messages/message_ja_buffs.lua
+--- @file    shared/utils/messages/formatters/combat/message_ja_buffs.lua
 --- @author  Tetsouo
 --- @version 2.0
 --- @date    Created: 2025-11-06
@@ -23,7 +22,6 @@ local JABuffs = {}
 local M = require('shared/utils/messages/api/messages')
 local MessageCore = require('shared/utils/messages/message_core')
 
--- Load JA messages configuration
 local ja_config_success, JAConfig = pcall(require, 'shared/config/JA_MESSAGES_CONFIG')
 if not ja_config_success then
     -- Fallback: If config not found, default to 'full' mode
@@ -44,12 +42,13 @@ end
 --- Example: [BRD/WHM] Soul Voice Song power boost!
 ---
 --- Respects JA_MESSAGES_CONFIG display_mode:
----   • 'full'       - Show name + description
----   • 'name_only'  - Show only name
----   • 'disabled'   - Show nothing
+---   • 'full' - Show name + description
+---   • 'on'   - Show only name
+---   • 'off'  - Show nothing
 ---
 --- @param ability_name string Name of the job ability
 --- @param description string Description of the effect (optional)
+--- @return number Visible length of the line (0 when nothing was shown)
 function JABuffs.show_activated(ability_name, description)
     -- Check if messages are disabled
     if not JAConfig.is_enabled() then
@@ -57,19 +56,19 @@ function JABuffs.show_activated(ability_name, description)
     end
 
     local job_tag = MessageCore.get_job_tag()
-    local success, message_length
+    local _, message_length
 
     -- Check if we should show description
     if description and JAConfig.show_description() then
         -- Mode: 'full' - Show name + description (without "activated!")
-        success, message_length = M.send('JA_BUFFS', 'activated_full', {
+        _, message_length = M.send('JA_BUFFS', 'activated_full', {
             job_tag = job_tag,
             ability_name = ability_name,
             description = description
         })
     else
-        -- Mode: 'name_only' - Show only name (without "activated!")
-        success, message_length = M.send('JA_BUFFS', 'activated_name_only', {
+        -- Mode: 'on' - Show only name (without "activated!")
+        _, message_length = M.send('JA_BUFFS', 'activated_name_only', {
             job_tag = job_tag,
             ability_name = ability_name
         })
@@ -176,33 +175,40 @@ end
 ---============================================================================
 --- BACKWARD COMPATIBILITY WRAPPERS (BRD-specific)
 ---============================================================================
---- These functions maintain backward compatibility with existing BRD code
---- while using the new global system. Can be deprecated after full migration.
+--- Fixed-text BRD shortcuts. No caller today: the facade exposes the first
+--- four only through its *_new aliases, which nothing calls.
 
+--- Soul Voice activated, fixed description
 function JABuffs.show_soul_voice_activated()
     JABuffs.show_activated("Soul Voice", "Song power boost!")
 end
 
+--- Soul Voice ended
 function JABuffs.show_soul_voice_ended()
     JABuffs.show_ended("Soul Voice")
 end
 
+--- Nightingale, fixed description
 function JABuffs.show_nightingale_activated()
     JABuffs.show_with_description("Nightingale", "Casting Time reduced")
 end
 
+--- Nightingale active
 function JABuffs.show_nightingale_active()
     JABuffs.show_active("Nightingale")
 end
 
+--- Troubadour, fixed description
 function JABuffs.show_troubadour_activated()
     JABuffs.show_with_description("Troubadour", "Song duration extended")
 end
 
+--- Troubadour active
 function JABuffs.show_troubadour_active()
     JABuffs.show_active("Troubadour")
 end
 
+--- Using Marcato
 function JABuffs.show_marcato_used()
     JABuffs.show_using("Marcato")
 end

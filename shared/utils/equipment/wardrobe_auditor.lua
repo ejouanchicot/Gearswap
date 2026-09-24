@@ -1,17 +1,20 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Wardrobe Auditor - Find unused items across all jobs
----  ═══════════════════════════════════════════════════════════════════════════
----   Parses ALL job set files as text to extract item names, scans wardrobe
----   bags, and identifies items not referenced by any job's sets.
----   Exports results to wardrobe_audit.txt for easy review.
+---============================================================================
+--- Wardrobe Auditor - Find unused items across all jobs
+---============================================================================
+--- Parses ALL job set files as text to extract item names, scans wardrobe
+--- bags, and identifies items not referenced by any job's sets.
+--- Exports results to wardrobe_audit.txt for easy review.
+--- Also feeds the wardrobe organizer (build_pinned_bags,
+--- collect_all_used_names) and its scan report (build_frequency_map).
+--- Diagnostic tool: direct add_to_chat is allowed here (CODE_QUALITY.md 6).
 ---
----   Usage: //gs c wardrobeaudit  (or //gs c wa)
+--- Usage: //gs c wardrobeaudit  (or //gs c wa)
 ---
----   @file    shared/utils/equipment/wardrobe_auditor.lua
----   @author  Tetsouo
----   @version 1.1 - Text parsing (GearSwap blocks loadfile/setfenv)
----   @date    2026-02-13
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/equipment/wardrobe_auditor.lua
+--- @author Tetsouo
+--- @version 1.1
+--- @date Created: 2026-02-13
+---============================================================================
 
 local WardrobeAuditor = {}
 
@@ -144,14 +147,6 @@ local BAG_DISPLAY = {
     wardrobe6 = 'Wardrobe 6',
     wardrobe7 = 'Wardrobe 7',
     wardrobe8 = 'Wardrobe 8',
-}
-
--- Equipment slot names used in set files
-local SLOT_NAMES = {
-    'main', 'sub', 'range', 'ammo',
-    'head', 'neck', 'ear1', 'ear2', 'left_ear', 'right_ear',
-    'body', 'hands', 'ring1', 'ring2', 'left_ring', 'right_ring',
-    'back', 'waist', 'legs', 'feet'
 }
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -449,8 +444,9 @@ local yellow = string.char(0x1F, 50)
 local red    = string.char(0x1F, 167)
 local cyan   = string.char(0x1F, 123)
 
+--- Chat summary of the audit (per-bag unused counts, totals, export path).
 local function show_ingame_summary(unused, total_items, jobs_count, unique_items, export_path)
-    local sep = string.rep("=", 74)
+    local sep = string.rep("=", 69)  -- same as MessageCore.SEPARATOR_WIDTH
 
     add_to_chat(121, gray .. sep)
     add_to_chat(121, yellow .. "[WARDROBE AUDIT] " .. cyan .. jobs_count .. " jobs scanned" .. gray .. " | " .. cyan .. unique_items .. " unique items in sets")
@@ -489,11 +485,9 @@ end
 ---   PUBLIC API
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Run the full wardrobe audit across all jobs
---- @return boolean Success
 --- Parse every job whose set file auto-discovery found.
---- Drop a new job_sets.lua in Tetsouo/sets/ and the next audit picks it up;
---- no edit here is needed.
+--- Drop a new <job>_sets.lua in <CharName>/sets/ and the next audit picks it
+--- up; no edit here is needed.
 --- @return table used_items {[item_name_lower] = {[JOB]=true}}
 --- @return table jobs_loaded {[JOB] = true}
 --- @return table jobs_failed {[JOB] = error message}
@@ -558,6 +552,8 @@ local function count_ignored_items(wardrobe_contents)
     return total
 end
 
+--- Run the full wardrobe audit across all jobs
+--- @return boolean Success
 function WardrobeAuditor.audit()
     local used_items, jobs_loaded, jobs_failed = parse_all_job_sets()
     local loaded_count = count_keys(jobs_loaded)
@@ -589,7 +585,7 @@ function WardrobeAuditor.audit()
 end
 
 --- Public: build the cross-job item usage map without exporting a report.
---- Used by the wardrobe organizer to compute frequency-based wardrobe layout.
+--- Used by the wardrobe scan report (lib/reports.lua) for declared vs held.
 --- @return table {[item_name_lower] = {[JOB]=true, ...}}
 function WardrobeAuditor.build_frequency_map()
     local used_items = {}
@@ -654,10 +650,9 @@ function WardrobeAuditor.build_pinned_bags()
                 --                                                          name/bag pass 2)
                 --   3. Nested map:  local Rings = { A = {name='X', bag='W1'},
                 --                                   B = {name='X', bag='W2'} }
-                --                   (all inner ring defs found in pass 1; the
-                --                    old %b{} loop only matched the OUTER table
-                --                    and grabbed the FIRST name/bag — missing
-                --                    every other entry, including the W2 pin)
+                --                   (all inner ring defs found in pass 1; a
+                --                    %b{} match would only see the OUTER table
+                --                    and its FIRST name/bag)
                 local guard = 0
                 while clean:find('{[^{}]*}') and guard < 200 do
                     guard = guard + 1
@@ -691,8 +686,8 @@ end
 function WardrobeAuditor.collect_all_used_names()
     local used = {}
     for _, job_lower in ipairs(discover_jobs()) do
-        local status, _err = parse_job_sets(job_lower, used)
-        -- status ∈ {true, 'missing', false}; we only care about success
+        -- Status ignored: a job whose files cannot be read adds nothing
+        parse_job_sets(job_lower, used)
     end
     return used
 end

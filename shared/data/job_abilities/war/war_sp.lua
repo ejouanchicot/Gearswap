@@ -7,7 +7,7 @@
 ---   - Mighty Strikes (SP1, Lv1) - All attacks critical
 ---   - Brazen Rush (SP2, Lv96) - Double attack 100%
 ---
---- @file war_sp.lua
+--- @file shared/data/job_abilities/war/war_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

@@ -5,7 +5,7 @@
 --- Merges spells from HEALING_MAGIC_DATABASE, ENHANCING_MAGIC_DATABASE,
 --- ENFEEBLING_MAGIC_DATABASE, and RDM-specific elemental spells.
 ---
---- @file RDM_SPELL_DATABASE.lua
+--- @file shared/data/magic/RDM_SPELL_DATABASE.lua
 --- @author Tetsouo
 --- @version 3.0 - Improved formatting - Skill-Based Architecture Migration
 --- @date Created: 2025-10-12 | Updated: 2025-10-31

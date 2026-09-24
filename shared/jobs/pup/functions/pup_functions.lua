@@ -1,10 +1,11 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PUP Functions Facade - Module Loader
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Loads all PUP-specific function modules in correct order.
----   CRITICAL: All 11 hook modules must be loaded via include() for _G availability.
+---   Loads all PUP hook modules via include() (they publish Mote hooks in _G).
+---   NOTE: PUP is incomplete - the logic/ modules listed below and the PUP
+---   configs do not exist, so the job does not load today.
 ---
----   @file    jobs/pup/functions/pup_functions.lua
+---   @file    shared/jobs/pup/functions/pup_functions.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-17
@@ -13,14 +14,11 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SECTION 1: MESSAGE SYSTEM
 ---  ═══════════════════════════════════════════════════════════════════════════
--- Message system (must load first for buff status display)
--- ═══════════════════════════════════════════════════════════════════
--- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
--- ═══════════════════════════════════════════════════════════════════
+-- Performance profiling (toggle with: //gs c perf start)
 local Profiler = require('shared/utils/debug/performance_profiler')
 local TIMER = Profiler.create_timer('PUP')
--- ═══════════════════════════════════════════════════════════════════
 
+-- Message system (must load first for buff status display)
 include('../shared/utils/messages/formatters/magic/message_buffs.lua')
 TIMER('message_buffs')
 
@@ -74,7 +72,9 @@ TIMER('PUP_MOVEMENT')
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   LOGIC MODULES REFERENCE
 ---  ═══════════════════════════════════════════════════════════════════════════
----   The following business logic modules are loaded via require() in hooks:
+---   The hooks require() these business logic modules. NONE of them exists
+---   yet under shared/jobs/pup/functions/logic/; the descriptions below are
+---   the intended design (taken from BST), not working code.
 ---
 ---   logic/ecosystem_manager.lua
 ---     • Dynamic state creation (species/ammoSet per ecosystem)
@@ -101,17 +101,14 @@ TIMER('PUP_MOVEMENT')
 ---   SECTION 6: DUAL-BOXING SYSTEM
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load dual-boxing manager (uses deferred init + lazy message loading)
-local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
+-- Load dual-boxing manager (auto-initializes on load)
+require('shared/utils/dualbox/dualbox_manager')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   INITIALIZATION COMPLETE
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- All module functions are now available in global scope
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 MessageFormatter.show_debug('PUP', 'All functions loaded (13 hooks + 4 logic modules)')
 
--- ═══════════════════════════════════════════════════════════════════
 TIMER('TOTAL PUP_functions', true)
--- ═══════════════════════════════════════════════════════════════════

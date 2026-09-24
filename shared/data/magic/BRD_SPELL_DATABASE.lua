@@ -4,14 +4,14 @@
 --- Contains all BRD songs with accurate level requirements and official bg-wiki descriptions.
 --- BRD-UNIQUE - Only Bard can cast songs.
 ---
---- @file BRD_SPELL_DATABASE.lua
+--- @file shared/data/magic/BRD_SPELL_DATABASE.lua
 --- @author Tetsouo
 --- @version 3.0 - Improved formatting - Modular Architecture Migration
 --- @date Created: 2025-10-12 | Updated: 2025-10-31
 --- @verified bg-wiki.com (2025-10-31)
 ---
 --- ARCHITECTURE:
----   • song/song_buffs.lua: Party buff songs (68 total - Minuets, Paeons, Marches, Madrigals, Ballads, Etudes, Carols, Mambos, Status Resist, etc.)
+---   • song/song_buffs.lua: Party buff songs (73 total - Minuets, Paeons, Marches, Madrigals, Ballads, Etudes, Carols, Mambos, Status Resist, etc.)
 ---   • song/song_debuffs.lua: Enemy debuff songs (32 total - Requiems, Threnodies, Lullabies, Elegies, Finale, Virelai, Nocturne)
 ---   • song/song_special.lua: Special utility songs (2 total - Mazurkas only)
 ---

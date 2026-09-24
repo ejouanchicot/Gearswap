@@ -1,14 +1,14 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   GEO Movement Management Module
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles movement-based gear management for Geomancer.
----   Uses centralized AutoMove position tracking for performance.
+---   Exposes the AutoMove movement status for Geomancer. Movement gear itself
+---   is applied by the shared AutoMove system and the GEO set builder.
 ---
----   @file    jobs/geo/functions/GEO_MOVEMENT.lua
+---   @file    shared/jobs/geo/functions/GEO_MOVEMENT.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-09
----   @requires utils/movement/automove.lua
+---   @requires shared/utils/movement/automove.lua
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -16,7 +16,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Get current movement status (delegates to AutoMove)
----   @return table movement_info
+---   @return table { is_moving = boolean, distance = number, position = {x, y, z} }
 function get_geo_movement_status()
     if not AutoMove then
         return {

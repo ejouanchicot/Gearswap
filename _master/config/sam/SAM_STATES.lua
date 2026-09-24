@@ -6,7 +6,8 @@
 --- Features:
 ---   • HybridMode configuration (PDT/Normal)
 ---   • MainWeapon state with multiple weapon options
----   • Keybind integration (Alt+1 for weapon cycling, Alt+2 for HybridMode)
+---   • Buff tracking table (state.Buff), FastCast, AutoMedicine
+---   • Keys are bound in SAM_KEYBINDS.lua (Ctrl+Numpad1 weapon, Ctrl+Numpad9 HybridMode)
 ---   • Validation function to verify state configuration
 ---
 --- Usage:
@@ -28,9 +29,7 @@ local SAMStates = {}
 
 --- Configure all SAM states
 --- Must be called from user_setup() after Mote-Include is loaded.
---- Defines HybridMode and MainWeapon states with their default values.
----
---- @return void
+--- Defines HybridMode, MainWeapon, state.Buff, FastCast and AutoMedicine.
 function SAMStates.configure()
     -- ==========================================================================
     -- COMBAT MODES
@@ -40,7 +39,7 @@ function SAMStates.configure()
     --- Options:
     ---   • 'PDT'    - Physical Damage Taken -50% (safe mode, default)
     ---   • 'Normal' - Full offense (max DPS)
-    --- Keybind: Alt+2 to cycle
+    --- Keybind: Ctrl+Numpad9 to cycle
     state.HybridMode:options('PDT', 'Normal')
     state.HybridMode:set('PDT') -- Default to PDT for safety
 
@@ -49,7 +48,7 @@ function SAMStates.configure()
     -- ==========================================================================
 
     --- MainWeapon: Primary weapon selection
-    --- Keybind: Alt+1 to cycle
+    --- Keybind: Ctrl+Numpad1 to cycle
     state.MainWeapon = M {
         ['description'] = 'Main Weapon',
         'Masamune',  -- Empyrean Great Katana (Aftermath: 30-50% Triple Damage)
@@ -65,7 +64,7 @@ function SAMStates.configure()
     -- BUFF TRACKING
     -- ==========================================================================
     -- Note: Buff tracking states are initialized here for consistency
-    -- Actual buff updates handled by WHM_BUFFS.lua module
+    -- Mote-Include flips a listed state.Buff entry on JA use and on buff_change
 
     state.Buff = {}
     state.Buff.Hasso = false
@@ -103,12 +102,12 @@ end
 ---============================================================================
 
 --- Validate that states were configured correctly
---- Checks that all required states exist and have proper structure.
+--- Checks that HybridMode, MainWeapon and state.Buff exist.
 ---
 --- @return boolean success True if validation passed, false otherwise
 --- @return string  message Validation message (success or error description)
 function SAMStates.validate()
-    -- Check HybridMode exists and has correct options
+    -- Check HybridMode exists
     if not state.HybridMode then
         return false, 'HybridMode state not configured'
     end

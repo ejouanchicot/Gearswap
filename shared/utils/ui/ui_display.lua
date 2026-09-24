@@ -7,9 +7,10 @@
 ---   • get_current_job_keybinds() - load keybinds for current job (with fallback)
 ---   • update_display()           - render and push text to keybind_ui_display
 ---
---- @file ui/ui_display.lua
+--- @file shared/utils/ui/ui_display.lua
 --- @author Tetsouo
 --- @version 1.0
+--- @date Created: 2026-05-09
 ---============================================================================
 
 local KeybindLoader     = require('shared/utils/ui/UI_LOADER')

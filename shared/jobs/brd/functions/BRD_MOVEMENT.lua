@@ -4,11 +4,11 @@
 ---   Handles movement-based gear management for Bard.
 ---   Uses centralized AutoMove position tracking for performance.
 ---
----   @file    jobs/brd/functions/BRD_MOVEMENT.lua
+---   @file    shared/jobs/brd/functions/BRD_MOVEMENT.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-13
----   @requires utils/movement/automove.lua
+---   @requires shared/utils/movement/automove.lua
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -16,7 +16,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Get current movement status (delegates to AutoMove)
----   @return table movement_info
+---   @return table { is_moving, distance, position }
 function get_brd_movement_status()
     if not AutoMove then
         return {
@@ -43,17 +43,15 @@ function job_handle_equipping_gear(playerStatus, eventArgs)
         equip({range = _G.locked_instrument})
         return
     end
-
-    -- AutoMove handles speed gear automatically
-    -- This function can be used for additional BRD-specific gear logic
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- DO NOT EXPORT job_handle_equipping_gear to _G - it interferes with warp ring fix
--- The function exists for module use but should NOT be registered as GearSwap hook
+-- The explicit _G export below was disabled because the hook was meant to stay
+-- unregistered (it interfered with the warp ring fix). Note that the
+-- `function job_handle_equipping_gear` declaration above already defines it as
+-- a global of the job sandbox, so Mote does see it (docs/dev/jobs/brd.md,
+-- Known issues).
 -- _G.job_handle_equipping_gear = job_handle_equipping_gear
-
--- Export module (for internal use only, not as GearSwap hook)

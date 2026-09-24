@@ -4,7 +4,7 @@
 --- Handles ALL UI-related commands for ALL jobs. Eliminates duplication
 --- of UI command logic across job-specific COMMANDS.lua files.
 ---
---- @file utils/ui/UI_COMMANDS.lua
+--- @file shared/utils/ui/UI_COMMANDS.lua
 --- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2025-10-04
@@ -14,7 +14,6 @@ local MessageCore = require('shared/utils/messages/message_core')
 
 local UICommands = {}
 
--- Load dependencies
 local MessageUI = require('shared/utils/messages/formatters/ui/message_ui')
 
 ---============================================================================
@@ -22,8 +21,8 @@ local MessageUI = require('shared/utils/messages/formatters/ui/message_ui')
 ---============================================================================
 
 --- Handle all UI commands (centralized for all jobs)
---- @param cmdParams table Command parameters array
---- @return boolean True if command was handled
+--- @param cmdParams table Command parameters array (cmdParams[1] == 'ui')
+--- @return boolean False only if UI_MANAGER failed to load, true otherwise
 function UICommands.handle_ui_command(cmdParams)
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if not ui_success or not KeybindUI then
@@ -51,7 +50,6 @@ function UICommands.handle_ui_command(cmdParams)
     elseif subcommand == 'off' or subcommand == 'disable' then
         KeybindUI.disable()
     elseif subcommand == 'font' then
-        -- Font command
         local font_name = cmdParams[3]
         if not font_name then
             MessageUI.show_error("Missing font name. Use: //gs c ui font <Consolas|Courier New>")
@@ -59,7 +57,6 @@ function UICommands.handle_ui_command(cmdParams)
             KeybindUI.set_font(font_name)
         end
     elseif subcommand == 'bg' or subcommand == 'background' or subcommand == 'theme' then
-        -- Background/Theme commands
         local bg_action = cmdParams[3] and cmdParams[3]:lower()
 
         if not bg_action then
@@ -67,11 +64,10 @@ function UICommands.handle_ui_command(cmdParams)
         elseif bg_action == 'toggle' then
             KeybindUI.toggle_background()
         elseif bg_action == 'list' then
-            -- List available presets using proper message formatting
             MessageUI.show_theme_list()
         else
             -- Try as preset name first
-            local UIConfig = _G.UIConfig or {}  -- Loaded from character main file
+            local UIConfig = _G.UIConfig or {}  -- Set by config_loader.lua
             if UIConfig.background_presets and UIConfig.background_presets[bg_action] then
                 KeybindUI.set_background_preset(bg_action)
             else

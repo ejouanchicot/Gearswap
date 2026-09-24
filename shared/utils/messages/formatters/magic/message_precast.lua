@@ -1,9 +1,9 @@
 ---============================================================================
 --- Precast Message Formatter - Debug Messages for Precast System
 ---============================================================================
---- Uses template-based messaging via MessageRenderer
+--- Output of //gs c debugprecast. Templates: data/systems/precast_messages.lua.
 ---
---- @file    messages/formatters/magic/message_precast.lua
+--- @file    shared/utils/messages/formatters/magic/message_precast.lua
 --- @author  Tetsouo
 --- @version 1.0
 --- @date    Created: 2025-11-09
@@ -85,7 +85,9 @@ function MessagePrecast.show_equipped_set(set_type)
     })
 end
 
---- Show equipment details from set table (only slots that exist in the set)
+--- Show equipment details from set table (only slots that exist in the set).
+--- Only the long slot names are read: a set written with ear1/ring1 keys
+--- shows no ear/ring line.
 --- @param gear_set table The gear set table to display
 function MessagePrecast.show_equipment(gear_set)
     if not gear_set then

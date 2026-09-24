@@ -7,7 +7,7 @@
 ---   - Bolster (SP1, Lv1) - Double geomancy potency
 ---   - Widened Compass (SP2, Lv96) - Double geomancy range
 ---
---- @file geo_sp.lua
+--- @file shared/data/job_abilities/geo/geo_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

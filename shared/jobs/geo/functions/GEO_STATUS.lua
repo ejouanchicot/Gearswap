@@ -1,12 +1,13 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   GEO Status Module - Player Status Change Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles status changes (Idle, Engaged, Resting, Dead, etc.)
+---   Status change hook (Idle, Engaged, Resting, Dead...). Delegates to the
+---   shared LifecycleManager handler, which unlocks Doom slots after a raise.
 ---
 ---   @file    shared/jobs/geo/functions/GEO_STATUS.lua
 ---   @author  Tetsouo
 ---   @version 1.2 - Added DoomManager safety unlock
----   @date    Updated: 2025-11-14
+---   @date    Created: 2025-11-03 | Updated: 2025-11-14
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- GEO adds nothing of its own: the shared handler is the whole

@@ -1,10 +1,11 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   GEO Spell Refiner - Intelligent Tier Fallback System
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Automatically downgrades spell tier if higher tier is unavailable.
----   Example: If Fire V is not available, tries Fire IV >> Fire III >> Fire II >> Fire
+---   Automatically downgrades spell tier if higher tier is not learned or is
+---   on recast. Example: If Fire V is unavailable, tries Fire IV >> Fire III >>
+---   Fire II >> Fire. Used by the GEO nuke commands (GEO_COMMANDS.lua).
 ---
----   @file    jobs/geo/functions/logic/geo_spell_refiner.lua
+---   @file    shared/jobs/geo/functions/logic/geo_spell_refiner.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-12
@@ -12,10 +13,8 @@
 
 local GeoSpellRefiner = {}
 
--- Load spell resources from windower
 local res = require('resources')
 
--- Load MessageFormatter for standardized messages
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -30,16 +29,13 @@ local function has_spell(spell_name)
         return false
     end
 
-    -- Get player's learned spells
     local learned_spells = windower.ffxi.get_spells()
     if not learned_spells then
         return false
     end
 
-    -- Find spell ID by name
     for spell_id, spell_data in pairs(res.spells) do
         if spell_data.en == spell_name then
-            -- Check if player has learned this spell
             return learned_spells[spell_id] == true
         end
     end
@@ -55,7 +51,6 @@ local function is_spell_ready(spell_name)
         return false
     end
 
-    -- Find spell ID
     local spell_id = nil
     for id, spell_data in pairs(res.spells) do
         if spell_data.en == spell_name then
@@ -68,13 +63,11 @@ local function is_spell_ready(spell_name)
         return false
     end
 
-    -- Check recast time
     local recast_info = windower.ffxi.get_spell_recasts()
     if not recast_info or not recast_info[spell_id] then
         return true -- If we can't check recast, assume it's ready
     end
 
-    -- Recast time is in centiseconds (1/100th of a second)
     return recast_info[spell_id] == 0
 end
 
@@ -98,7 +91,6 @@ function GeoSpellRefiner.refine_spell(base_spell, desired_tier, is_aoe)
         return nil
     end
 
-    -- Select tier order based on spell type
     local tier_order = is_aoe and AOE_TIER_ORDER or SPELL_TIER_ORDER
 
     -- Find starting position in tier list
@@ -122,18 +114,14 @@ function GeoSpellRefiner.refine_spell(base_spell, desired_tier, is_aoe)
             spell_name = base_spell .. " " .. tier
         end
 
-        -- Check if player has this spell
+        -- Not learned or on recast: fall through to the next tier down
         if has_spell(spell_name) then
-            -- Check if spell is ready (not on cooldown)
             if is_spell_ready(spell_name) then
                 return spell_name
             end
-            -- If on cooldown, try next tier down
         end
-        -- If spell not learned, try next tier down
     end
 
-    -- No available tier found
     return nil
 end
 
@@ -149,17 +137,14 @@ function GeoSpellRefiner.refine_and_cast(base_spell, desired_tier, is_aoe, targe
     local final_spell = GeoSpellRefiner.refine_spell(base_spell, desired_tier, is_aoe)
 
     if final_spell then
-        -- Display refined spell if different from desired
         local desired_spell = (desired_tier == "I") and base_spell or (base_spell .. " " .. desired_tier)
         if final_spell ~= desired_spell then
             MessageFormatter.show_spell_refined(desired_spell, final_spell)
         end
 
-        -- Cast the refined spell
         send_command('input /ma "' .. final_spell .. '" ' .. target)
         return true
     else
-        -- No tier available
         local desired_spell = (desired_tier == "I") and base_spell or (base_spell .. " " .. desired_tier)
         MessageFormatter.show_no_tier_available(desired_spell)
         return false

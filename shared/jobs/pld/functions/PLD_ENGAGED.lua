@@ -1,9 +1,11 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PLD Engaged Module - Combat Set Selection
 ---  ═══════════════════════════════════════════════════════════════════════════
----   DT/Enspell/Refresh/TP modes, dual wield detection, weapon overlay.
+---   Mote engaged hook for Paladin. Delegates to SetBuilder.build_engaged_set
+---   (BurtgangKC / HybridMode base, weapon, Alber Strap, Xp overlay, mode
+---   shield and ammo).
 ---
----   @file    PLD_ENGAGED.lua
+---   @file    shared/jobs/pld/functions/PLD_ENGAGED.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-05
@@ -16,8 +18,10 @@
 local SetBuilder = nil
 local MessageFormatter = nil
 
+---   Build the engaged set, with optional //gs c debugupdate timing trace
+---   @param meleeSet table The engaged set Mote selected
+---   @return table Engaged set to wear
 function customize_melee_set(meleeSet)
-    -- DEBUG: Trace customize_melee_set call
     local debug_start
     if _G.UPDATE_DEBUG then
         if not MessageFormatter then MessageFormatter = require('shared/utils/messages/message_formatter') end
@@ -25,7 +29,6 @@ function customize_melee_set(meleeSet)
         MessageFormatter.show_debug('PLD', string.format('[UPDATE_DEBUG] 4. customize_melee_set CALLED | t=%.3f', debug_start))
     end
 
-    -- Lazy load SetBuilder on first engage
     if not SetBuilder then
         SetBuilder = require('shared/jobs/pld/functions/logic/set_builder')
     end
@@ -36,7 +39,6 @@ function customize_melee_set(meleeSet)
 
     local result = SetBuilder.build_engaged_set(meleeSet)
 
-    -- DEBUG: Trace customize_melee_set end
     if _G.UPDATE_DEBUG and debug_start then
         local debug_end = os.clock()
         MessageFormatter.show_debug('PLD', string.format('[UPDATE_DEBUG] 5. customize_melee_set DONE | took=%.3fms', (debug_end - debug_start) * 1000))

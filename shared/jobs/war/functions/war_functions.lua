@@ -9,7 +9,7 @@
 ---   • Hook modules (WAR_*.lua) provide GearSwap event handlers
 ---   • Logic modules (logic/*.lua) contain business logic, loaded via require()
 ---
----   @file    war_functions.lua
+---   @file    shared/jobs/war/functions/war_functions.lua
 ---   @author  Tetsouo
 ---   @version 2.0 - Logic Extracted to logic/
 ---   @date    Created: 2025-09-29 | Updated: 2025-10-06
@@ -78,13 +78,15 @@ TIMER('WAR_MOVEMENT')
 ---
 ---   logic/smartbuff_manager.lua
 ---     • WAR core abilities (Berserk, Aggressor, Warcry, etc.)
----     • SAM subjob automation (Hasso/Seigan + Third Eye)
----     • DRG subjob automation (Jump/High Jump TP building)
+---     • SAM subjob automation (Hasso/Seigan + Third Eye, Meditate)
+---     • DNC subjob Haste Samba folded into the buff chain
+---     • DRG subjob TP building (shared DRG jump manager)
 ---
 ---   logic/set_builder.lua
 ---     • Shared engaged set construction
 ---     • Shared idle set construction
----     • Aftermath Lv.3 detection & gear application
+---     • Engaged base: Kraken Club, stances (SubtleBlow/Hoxne), Aftermath Lv.3,
+---       weapon-specific sets, HybridMode
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -92,7 +94,7 @@ TIMER('WAR_MOVEMENT')
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Load dual-boxing manager (uses deferred init + lazy message loading)
-local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
+require('shared/utils/dualbox/dualbox_manager')
 TIMER('DualBoxManager')
 
 -- ═══════════════════════════════════════════════════════════════════

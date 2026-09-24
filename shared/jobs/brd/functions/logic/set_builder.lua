@@ -1,10 +1,11 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Set Builder - Shared Set Construction Logic (BRD)
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Provides centralized set building for both engaged and idle states.
----   Handles mode detection (IdleMode), town detection, and movement speed.
+---   Provides centralized set building for both engaged and idle states:
+---   town detection and IdleMode (idle), Kraken Club and EngagedMode (engaged),
+---   weapon sets and movement speed (both).
 ---
----   @file    jobs/brd/functions/logic/set_builder.lua
+---   @file    shared/jobs/brd/functions/logic/set_builder.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-13
@@ -164,7 +165,7 @@ function SetBuilder.build_engaged_set(base_set)
         return {}
     end
 
-    -- Step 1: Select base set based on EngagedMode
+    -- Step 1: Select base set (Kraken Club, then EngagedMode)
     local result = SetBuilder.select_engaged_base(base_set)
 
     -- Step 2: Apply weapons (MainWeapon + SubWeapon)
@@ -193,7 +194,7 @@ function SetBuilder.build_idle_set(base_set)
         return {}
     end
 
-    -- Step 1: Town detection + Mode selection (select_idle_base does BOTH now)
+    -- Step 1: Town detection + IdleMode selection
     local result, in_town = SetBuilder.select_idle_base(base_set)
 
     -- Step 2: Apply weapons (applies to both town and non-town)

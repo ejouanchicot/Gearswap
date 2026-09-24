@@ -1,18 +1,16 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Rune Manager - Rune Ability Management (RUN/RUN)
+---   Rune Manager - Rune Ability Management (RUN)
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Manages Rune ability usage based on state.RuneMode selection.
 ---   Provides intelligent automation for:
 ---   • Mode-based rune selection (Sulpor/Lux/etc.)
----   • Cooldown tracking and validation
----   • Professional message display
+---   • Cooldown check before casting
 ---
 ---   Features:
 ---   • Dynamic rune selection from state.RuneMode
----   • Automatic cooldown checking
----   • User-friendly error messages
+---   • Cooldown message instead of a cast when on recast
 ---
----   @file    jobs/run/functions/logic/rune_manager.lua
+---   @file    shared/jobs/run/functions/logic/rune_manager.lua
 ---   @author  Tetsouo
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-06
@@ -66,9 +64,8 @@ function RuneManager.execute_rune()
         return
     end
 
-    -- Ability ready - execute rune (message handled by ability_message_handler)
-    -- NOTE: Message display is handled by universal ability_message_handler system
-    --       which loads RUN_JA_DATABASE and shows description (e.g., "Ignis Fire rune, resist ice")
+    -- No message here: ability_message_handler shows the rune description
+    -- from RUN_JA_DATABASE when the ability is used.
     send_command('@input /ja "' .. selected_rune .. '" <me>')
 end
 

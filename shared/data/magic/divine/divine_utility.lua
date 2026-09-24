@@ -3,10 +3,10 @@
 ---============================================================================
 --- Utility Divine Magic spells (Holy I-II, Flash, Repose)
 ---
---- @file divine_utility.lua
+--- @file shared/data/magic/divine/divine_utility.lua
 --- @author Tetsouo
 --- @version 2.0 - Improved alignment
---- @date Created: 2025-10-30 | Updated: 2025-11-06 | Updated: 2025-10-31
+--- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @verified bg-wiki.com (2025-10-31)
 ---============================================================================
 

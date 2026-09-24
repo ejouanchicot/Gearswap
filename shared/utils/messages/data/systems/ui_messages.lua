@@ -2,13 +2,14 @@
 --- UI Message Data - UI Control Messages
 ---============================================================================
 --- Pure data file for UI control and status messages
---- Used by new message system (api/messages.lua)
+--- Loaded by the message engine when a formatter sends a key from it (api/messages.lua)
 ---
 --- NOTE: Complex multi-line help menus are dynamically built
 ---       This template file contains simple UI status messages only
 ---
---- @file data/systems/ui_messages.lua
+--- @file shared/utils/messages/data/systems/ui_messages.lua
 --- @author Tetsouo
+--- @version 1.0
 --- @date Created: 2025-11-06
 ---============================================================================
 

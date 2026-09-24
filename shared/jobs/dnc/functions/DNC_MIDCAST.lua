@@ -4,14 +4,15 @@
 ---   Handles midcast for Dancer (including NIN subjob Utsusemi management).
 ---
 ---   Features:
----   - Utsusemi: Ichi shadow management (auto-cancel)
----   - Waltz healing gear (handled in precast)
----   - Step/Samba duration (handled in precast)
+---   - Utsusemi: Ichi cancels existing Copy Image buffs during the cast
+---   - MidcastManager routing for Ninjutsu, Healing and Enhancing Magic
 ---
----   @file    DNC_MIDCAST.lua
+---   @file    shared/jobs/dnc/functions/DNC_MIDCAST.lua
 ---   @author  Tetsouo
 ---   @version 3.0 - Added spell_family database support
 ---   @date    Created: 2025-10-04 | Updated: 2025-11-05
+---  ═══════════════════════════════════════════════════════════════════════════
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -27,8 +28,7 @@ local EnhancingSPELLS = nil
 ---   @param spellMap string Spell mapping from Mote-Include
 ---   @param eventArgs table Event arguments for cancellation/customization
 function job_midcast(spell, action, spellMap, eventArgs)
-    -- Utsusemi: Ichi shadow management
-    -- Cancel existing shadows mid-cast (2.3 sec delay) before Ichi finishes casting
+    -- Ichi cannot overwrite existing shadows: cancel them 2.3 s into the cast
     if spell.english == 'Utsusemi: Ichi' then
         send_command('wait 2.3; cancel 66')   -- Copy Image
         send_command('wait 2.3; cancel 444')  -- Copy Image (2)

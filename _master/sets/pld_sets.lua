@@ -1,42 +1,45 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   PLD Equipment Sets - Ultimate Tanking Configuration
----  ═══════════════════════════════════════════════════════════════════════════
----   Complete equipment configuration for Paladin tank role with optimized
----   defensive and enmity gear across all combat situations.
----   Features:
----     • Ultimate tanking systems (PDT/MDT cap optimization)
----     • Enmity maximization with survivability balance
----     • Weapon-specific configurations (Burtgang, Naegling, Shining One, Malevo)
----     • Shield optimization per situation (Duban PDT, Aegis MDT, Priwen Phalanx)
----     • Cure set automation (CureSelf vs CureOther variants)
----     • Phalanx potency vs SIRD variants (XP mode support)
----     • Blue Magic spell support (SIRD + Enmity for AOE rotation)
----     • Weaponskill optimization (Savage Blade, Sanguine Blade, etc.)
----     • Fast Cast + SIRD hybrid gear for spell safety
----     • Movement speed optimization (Adoulin city support)
----     • Rudianos capes for all situations (5 variants: tank, FCSIRD, STP, WS, cure)
+---============================================================================
+--- PLD Equipment Sets - Tanking Configuration
+---============================================================================
+--- Complete equipment configuration for Paladin tank role with optimized
+--- defensive and enmity gear across all combat situations.
 ---
----   HybridMode picks the engaged set. PDT / MDT / Sortie on most subjobs;
----   under /SCH, three stances of their own:
----     • DPS     -> sets.engaged.DPS     Sakpata's, Coiste Bodhar
----     • Tanking -> sets.engaged.MDT     mitigation, Burtgang + Aegis
----     • Hoxne   -> sets.engaged.Hoxne   Hoxne Ampulla, ammo slot frozen
----   The mapping itself lives in shared/jobs/pld/functions/logic/set_builder.lua.
+--- Features:
+---   • Tanking systems (PDT/MDT cap optimization)
+---   • Enmity maximization with survivability balance
+---   • Weapon sets (Burtgang, Excalibur, Kraken Club, BurtgangKC, Shining One,
+---     Naegling, Malevolence)
+---   • Shield optimization per situation (Duban PDT, Aegis MDT, Priwen Phalanx)
+---   • Cure set automation (CureSelf vs CureOther variants)
+---   • Phalanx potency vs SIRD variants (XP mode support)
+---   • Blue Magic spell support (SIRD + Enmity for AOE rotation)
+---   • Weaponskill optimization (Savage Blade, Sanguine Blade, etc.)
+---   • Fast Cast + SIRD hybrid gear for spell safety
+---   • Movement speed optimization (Adoulin city support)
+---   • Rudianos capes (5 variants: tank, FCSIRD, STP, WS, cure)
 ---
----    Architecture:
----     • Equipment definitions (Rudianos capes, Jumalik augments, wardrobe rings)
----     • Weapon sets (main weapons + shields)
----     • Idle sets (Normal, PDT, MDT, Town, XP)
----     • Engaged sets (Normal, PDT, MDT, Sortie, Melee XP, /SCH stances)
----     • Precast sets (Job abilities, Fast Cast, Weaponskills with TP bonus)
----     • Midcast sets (Enmity, SIRD+Enmity, Phalanx, Cure, Enhancing Magic)
----     • Movement sets (Base speed, Adoulin city boost)
----     • Buff sets (Doom resistance)
----   @file    jobs/pld/sets/pld_sets.lua
----   @author  Tetsouo
----   @version 3.1 - Standardized Organization
----   @date    Updated: 2025-11-10
----  ═════════════════════════════════════════════════════════════════════════
+--- HybridMode picks the engaged set. PDT / MDT / Sortie (sets.engaged.TP) on
+--- most subjobs; under /SCH, three stances of their own:
+---   • DPS     -> sets.engaged.DPS     Sakpata's, Coiste Bodhar
+---   • Tanking -> sets.engaged.MDT     mitigation, Burtgang + Aegis
+---   • Hoxne   -> sets.engaged.Hoxne   Hoxne Ampulla, ammo slot frozen
+--- The mapping itself lives in shared/jobs/pld/functions/logic/set_builder.lua.
+---
+--- Architecture:
+---   • Equipment definitions (Rudianos capes, Jumalik augments, wardrobe rings)
+---   • Weapon sets (main weapons + shields)
+---   • Idle sets (Normal, PDT, MDT, Town, XP)
+---   • Engaged sets (PDT, MDT, TP for Sortie, BurtgangKC, Melee XP, /SCH stances)
+---   • Precast sets (Job abilities, Fast Cast, Weaponskills with TP bonus)
+---   • Midcast sets (Enmity, SIRD+Enmity, Phalanx, Cure, Enhancing Magic)
+---   • Movement sets (Base speed, Adoulin city boost)
+---   • Buff sets (Doom resistance)
+---
+--- @file    sets/pld_sets.lua
+--- @author  Tetsouo
+--- @version 3.1
+--- @date    Created: 2025-11-03 | Updated: 2025-11-10
+---============================================================================
 
 sets = {}
 
@@ -469,7 +472,7 @@ local WSBase = {
     back = Rudianos.WS
 }
 
--- • Requiescat
+-- • Generic weaponskill + Requiescat
 sets.precast.WS = set_combine(WSBase, {})
 
 sets.precast.WS['Requiescat'] = set_combine(WSBase, {})

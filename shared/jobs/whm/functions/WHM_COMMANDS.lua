@@ -4,11 +4,11 @@
 ---   Handles user commands for White Mage:
 ---   • UI commands (ui, ui h, ui show, ui hide, ui toggle, ui update, ui reload)
 ---   • Common commands (reload, checksets, waltz, aoewaltz)
----   • WHM-specific commands (if any)
+---   • WHM-specific commands (afflatus)
 ---   • State cycling commands (automatically handled by Mote-Include)
 ---   • State change monitoring (updates UI when states change)
 ---
----   @file    WHM_COMMANDS.lua
+---   @file    shared/jobs/whm/functions/WHM_COMMANDS.lua
 ---   @author  Tetsouo
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-21
@@ -73,6 +73,7 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DUAL-BOXING: Handle job request from MAIN
     -- ══════════════════════════════════════════════════════════════════════════
     if command == 'requestjob' then
@@ -191,7 +192,8 @@ function job_state_change(stateField, newValue, oldValue)
     -- ══════════════════════════════════════════════════════════════════════════
     -- COMBAT MODE - WEAPON LOCK (RDM-style)
     -- ══════════════════════════════════════════════════════════════════════════
-    -- When CombatMode = 'On', lock weapons to prevent accidental swaps
+    -- When CombatMode = 'On', lock weapons to prevent accidental swaps.
+    -- WHM_STATES defines no CombatMode today, so this branch does not fire.
     if field == 'CombatMode' then
         if newValue == 'On' then
             disable('main', 'sub', 'range', 'ammo')
@@ -205,7 +207,7 @@ function job_state_change(stateField, newValue, oldValue)
     end
 
     -- ══════════════════════════════════════════════════════════════════════════
-    -- OFFENSE MODE - WEAPON LOCK (Legacy - kept for compatibility)
+    -- OFFENSE MODE - WEAPON LOCK (the mode WHM_STATES defines: None / Melee ON)
     -- ══════════════════════════════════════════════════════════════════════════
     -- When switching to Melee ON, lock weapons to prevent accidental swaps
     if field == 'OffenseMode' then

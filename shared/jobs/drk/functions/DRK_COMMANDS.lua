@@ -1,19 +1,18 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DRK Commands - Custom Command Handling
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles job-specific custom commands for Dark Knight job:
----   • Common commands (reload, checksets, waltz, jump, etc.)
----   • UI commands (toggle, update, reload UI)
----   • DRK-specific commands (to be added as needed)
+---   Handles custom commands for Dark Knight job (no DRK-specific command):
+---   • Dual-box, watchdog, common and UI commands
+---   • debugmidcast, cyclestate
 ---   • State change UI synchronization
 ---
 ---   Uses centralized command handlers for consistency across all jobs.
 ---
----   @file    DRK_COMMANDS.lua
+---   @file    shared/jobs/drk/functions/DRK_COMMANDS.lua
 ---   @author  Tetsouo
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-23
----   @requires utils/ui/UI_COMMANDS, utils/core/COMMON_COMMANDS
+---   @requires shared/utils/ui/UI_COMMANDS, shared/utils/core/COMMON_COMMANDS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -41,19 +40,8 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Handle job-specific self commands
----   Processes commands in order: Common >> UI >> DRK-specific
----
----   Common commands:
----   • reload         - Reload GearSwap
----   • checksets      - Validate equipment sets
----   • waltz <target> - Perform waltz on target
----   • jump           - Use DRG subjob Jump
----
----   UI commands:
----   • ui             - Toggle UI visibility
----
----   DRK-specific commands:
----   • (To be added as needed)
+---   Processes commands in order: dual-box >> watchdog >> common >> UI >>
+---   debugmidcast >> cyclestate. DRK has no command of its own.
 ---
 ---   @param cmdParams table Command parameters array (e.g., {"reload"})
 ---   @param eventArgs table Event arguments with handled flag
@@ -151,12 +139,6 @@ function job_self_command(cmdParams, eventArgs)
         eventArgs.handled = CycleHandler.handle_cyclestate(cmdParams, eventArgs)
         return
     end
-
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- DRK-SPECIFIC COMMANDS
-    -- ══════════════════════════════════════════════════════════════════════════
-
-    -- Add DRK-specific commands here as needed
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -173,7 +155,7 @@ job_state_change = LifecycleManager.state_change()
 ---   MODULE EXPORT
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Export globally for GearSwap
+-- Export to global scope (used by Mote-Include via include())
 _G.job_self_command = job_self_command
 _G.job_state_change = job_state_change
 

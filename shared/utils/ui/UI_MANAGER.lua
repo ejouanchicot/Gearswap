@@ -17,7 +17,7 @@
 ---   ui_update_orchestrator  - update/force_reinit/schedule_update/status
 ---   ui_settings_resolver    - position/font/background settings resolver
 ---
---- Public API exposed on KeybindUI (used by 15 jobs):
+--- Public API exposed on KeybindUI (used by the job entry files):
 ---   init, smart_init, safe_init, destroy
 ---   save_position, toggle, show, hide, is_visible, enable, disable
 ---   toggle_header, toggle_legend, toggle_column_headers, toggle_footer
@@ -27,10 +27,10 @@
 ---
 --- Commands: //gs c ui (toggle), //gs c uisave (save position manually)
 ---
---- @file ui/UI_MANAGER.lua
+--- @file shared/utils/ui/UI_MANAGER.lua
 --- @author Tetsouo
 --- @version 4.0 - Modular facade (refactored from monolithic 1085-line file)
---- @date 2025-09-28 (initial), 2026-05-09 (modular refactor)
+--- @date Created: 2025-09-28 (modular refactor: 2026-05-09)
 ---============================================================================
 
 ---============================================================================
@@ -39,7 +39,8 @@
 --- These globals must exist BEFORE the sub-modules load (they reference
 --- _G.UIConfig, _G.keybind_ui_display, _G.ui_display_config, _G.ui_manager_state).
 
--- UIConfig is loaded from the character main file - provide defaults if missing
+-- UIConfig is normally set by config_loader.lua before this module loads.
+-- Entries that require UI_MANAGER first (WAR, BST, PUP) get these defaults.
 local UIConfig = _G.UIConfig or {}
 _G.UIConfig = UIConfig
 
@@ -61,7 +62,10 @@ if UIConfig.show_column_headers == nil then UIConfig.show_column_headers = true 
 if UIConfig.show_footer         == nil then UIConfig.show_footer         = true end
 if UIConfig.enabled             == nil then UIConfig.enabled             = true end
 
--- Persist UI handle and visibility flag across module reloads
+-- Seed the visibility flag. _G is rebuilt on every file load, so this block
+-- runs on every load and resets the flag to true: it does not persist the
+-- previous visibility. ui_lifecycle init() overwrites it only when it creates
+-- the display; with the HUD disabled the flag stays true.
 if not _G.keybind_ui_display then
     _G.keybind_ui_display = nil
     _G.keybind_ui_visible = true
@@ -69,9 +73,9 @@ end
 
 -- _G.keybind_saved_settings is loaded lazily by Lifecycle.init via KeybindSettings.load()
 
--- Global UI display toggles (persistent across reloads).
--- This block typically does NOT execute because the character main file creates
--- _G.ui_display_config BEFORE loading UI_MANAGER. Kept as a safety net.
+-- Section/enabled toggles read from the persisted settings file.
+-- Usually already created by config_loader.lua; this fallback runs for
+-- entries that require UI_MANAGER before config_loader (WAR, BST, PUP).
 if not _G.ui_display_config then
     local UISettingsManager = require('shared/config/ui_settings')
     _G.ui_display_config = {

@@ -1,7 +1,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BRD Buffs Module - Buff Gain/Loss Handler
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles job-specific buff gain/loss events (Doom, Chainspell, etc.).
+---   Buff gain/loss hook, built by LifecycleManager (Doom handling).
 ---
 ---   @file    shared/jobs/brd/functions/BRD_BUFFS.lua
 ---   @author  Tetsouo

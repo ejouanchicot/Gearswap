@@ -1,8 +1,8 @@
 ---============================================================================
 --- BRD Macrobook Configuration
 ---============================================================================
---- Defines macrobook and page assignments for Bard job.
---- Macrobook varies by subjob for different spell/ability layouts.
+--- Defines macrobook and page assignments for Bard job, per subjob and
+--- per dual-box alt job.
 ---
 --- @file config/brd/BRD_MACROBOOK.lua
 --- @author Tetsouo
@@ -15,7 +15,7 @@ local BRDMacroConfig = {}
 -- Default macrobook (used if no subjob config)
 BRDMacroConfig.default = {book = 40, page = 1}
 
--- Macrobook per subjob
+-- Macrobook per subjob; unlisted subjobs use the default
 BRDMacroConfig.solo = {
     ['WHM'] = {book = 40, page = 1}, -- Bard/White Mage (cures + songs)
     ['RDM'] = {book = 36, page = 1}, -- Bard/Red Mage (enfeebles + songs)
@@ -25,10 +25,11 @@ BRDMacroConfig.solo = {
 
 ---============================================================================
 --- DUAL-BOXING CONFIGURATION (Playing BRD + Alt)
+--- Structure: dualbox[ALT_JOB][YOUR_SUBJOB] = {book, page}, used while the
+--- alt is online on ALT_JOB; otherwise the solo table applies.
 ---============================================================================
 
 BRDMacroConfig.dualbox = {
-    -- Uncomment to add dual-boxing configurations
     ['GEO'] = {
         ['SCH'] = {book = 32, page = 1},
         ['DNC'] = {book = 35, page = 1},

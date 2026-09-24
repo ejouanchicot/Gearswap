@@ -1,8 +1,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Lockstyle Manager - Centralized Lockstyle Management Factory
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Factory pattern that creates job-specific lockstyle modules.
----   Eliminates 293-line duplication across WAR/PLD/DNC (879 lines >> 293 lines).
+---   Factory pattern that creates job-specific lockstyle modules: every
+---   [JOB]_LOCKSTYLE.lua is a thin create() call on this file.
+---   Also owns the persistent DressUp toggle and apply_style() for one-off
+---   styles (craft/fish).
 ---
 ---   @file    shared/utils/lockstyle/lockstyle_manager.lua
 ---   @author  Tetsouo
@@ -44,7 +46,7 @@ local function save_dressup_disabled()
     end
 end
 
--- Initialize global state once (shared across all job instances)
+-- Read once per sandbox; the file is the persistent copy
 if _G.DRESSUP_MANAGEMENT_ENABLED == nil then
     _G.DRESSUP_MANAGEMENT_ENABLED = read_dressup_state()
 end
@@ -110,6 +112,7 @@ local MessageCore      = require('shared/utils/messages/message_core')
 ---     enabled, is_processing, current_coroutines, dressup_state,
 ---     last_dressup_command_time, operation_id
 
+--- @return boolean True when DressUp is cycled around each lockstyle
 local function get_manage_dressup()
     return _G.DRESSUP_MANAGEMENT_ENABLED == true
 end
@@ -246,12 +249,11 @@ end
 ---   FACTORY
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Names of globals set by the most recent create() call. Cleared at the top
--- of every new create() so PLD->RDM->... job changes don't accumulate stale
--- _G.cancel_pld_*, _G.set_pld_*, _G.get_pld_* etc. (slow leak: ~5 globals
--- per unique job played per session). Survives across job changes because
--- package.loaded is NOT cleared on FFXI job change (only on gs reload), so
--- this module-local table persists and remembers the previous job's exports.
+-- Names of globals set by the most recent create() call, cleared at the top
+-- of the next create() so a previous job's _G.cancel_<job>_*, _G.set_<job>_*
+-- etc. do not linger. Note: a job change or gs reload builds a new sandbox,
+-- with a fresh _G and a fresh copy of this file (ModuleCache lives on the
+-- sandbox _G), so this list only ever sees the create() calls of one load.
 local last_registered_globals = {}
 
 -- One ctx per job code, kept on the sandbox _G. A job's wrapper file runs
@@ -315,8 +317,7 @@ function LockstyleManager.create(job_code, config_path, default_lockstyle, defau
     -- The name every <JOB>_LOCKSTYLE.lua wrapper calls on this table.
     api['cancel_' .. jl .. '_lockstyle_operations'] = api.cancel_pending_operations
 
-    -- Clear globals registered by the previous create() (different job) so
-    -- old _G.cancel_pld_*, _G.set_pld_* etc. don't linger after PLD->RDM.
+    -- Clear globals registered by the previous create() call.
     -- Safe: callers (Mote-Include / commands) only ever look up the active
     -- job's suffixed names; nothing references a previous job's helpers.
     for _, name in ipairs(last_registered_globals) do

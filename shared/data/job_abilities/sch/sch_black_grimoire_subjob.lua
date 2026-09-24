@@ -10,7 +10,7 @@
 ---   - Manifestation (Lv40) - Next enfeebling >> AoE
 ---   - Ebullience (Lv55 - Master Job Only) - Next black magic +potency
 ---
---- @file sch_black_grimoire_subjob.lua
+--- @file shared/data/job_abilities/sch/sch_black_grimoire_subjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

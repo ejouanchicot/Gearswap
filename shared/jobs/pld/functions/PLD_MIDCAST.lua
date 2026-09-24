@@ -6,11 +6,12 @@
 ---   Features:
 ---   - Cure III/IV: Dynamic CureSelf/CureOther via CureSetBuilder
 ---   - Enmity spells: Flash, Enlight
----   - Phalanx: XP mode (SIRD vs Potency)
+---   - Phalanx: SIRD set when PhalanxSIRD or Xp is On, else Phalanx set
+---   - EnmityOverride: sets.EnmityMax in Sortie / Tanking
 ---   - Enhancing Magic: Database-driven spell_family routing
 ---   - Divine Magic, Blue Magic support (PLD/BLU subjob)
 ---
----   @file    PLD_MIDCAST.lua
+---   @file    shared/jobs/pld/functions/PLD_MIDCAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-03 | Updated: 2025-11-05
@@ -51,11 +52,10 @@ end
 
 ---   Pre-midcast hook (Cure III/IV dynamic target-based set selection)
 ---   @param spell table Spell information from GearSwap
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping from Mote-Include
 ---   @param eventArgs table Event arguments for cancellation/customization
 function job_midcast(spell, action, spellMap, eventArgs)
-    -- Lazy load modules on first midcast
     ensure_modules_loaded()
 
     -- ══════════════════════════════════════════════════════════════════════════
@@ -136,6 +136,7 @@ local function midcast_enhancing(spell)
     })
 end
 
+--- Divine Magic other than Flash/Enlight (caught earlier by name).
 local function midcast_divine(spell)
     MidcastManager.select_set({
         skill = 'Divine Magic',
@@ -154,7 +155,7 @@ end
 
 ---   Post-midcast hook (MidcastManager routing and gear selection)
 ---   @param spell table Spell information from GearSwap
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping from Mote-Include
 ---   @param eventArgs table Event arguments for cancellation/customization
 function job_post_midcast(spell, action, spellMap, eventArgs)

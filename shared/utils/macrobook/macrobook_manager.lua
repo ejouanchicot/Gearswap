@@ -1,8 +1,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Macrobook Manager - Centralized Macrobook Management Factory
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Factory pattern that creates job-specific macrobook modules.
----   Eliminates 124-line duplication across WAR/PLD/DNC (372 lines >> 124 lines).
+---   Factory pattern that creates job-specific macrobook modules: every
+---   [JOB]_MACROBOOK.lua is a thin create() call on this file. Picks the book
+---   from the subjob, or from the dual-box alt's job when one is online.
 ---
 ---   @file    shared/utils/macrobook/macrobook_manager.lua
 ---   @author  Tetsouo
@@ -18,12 +19,10 @@ local MacrobookManager = {}
 
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
--- Names of globals set by the most recent create() call. Cleared at the top
--- of every new create() so PLD->RDM->... job changes don't accumulate stale
--- _G.set_pld_macro_book / _G.get_pld_macro_info / _G.show_pld_macro_configs.
--- Persists across job changes because package.loaded is NOT cleared on FFXI
--- job change (only on gs reload), so this module-local table remembers what
--- the previous job exported.
+-- Names of globals set by the most recent create() call, cleared at the top
+-- of the next create(). A job change or gs reload builds a new sandbox with a
+-- fresh _G and a fresh copy of this file (ModuleCache lives on the sandbox
+-- _G), so this list only ever sees the create() calls of one load.
 local last_registered_globals = {}
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -32,6 +31,9 @@ local last_registered_globals = {}
 
 --- What a job falls back to when it has no config file at all: its own default
 --- book on every path.
+--- @param default_subjob string
+--- @param default_book number
+--- @param default_page number
 --- @return table MACROBOOKS
 local function fallback_macrobooks(default_subjob, default_book, default_page)
     return {
@@ -95,8 +97,9 @@ end
 local function set_macro_with_delay(ctx, book, page, delay)
     delay = delay or 1.5
 
-    -- Invalidation counter: prevents stale scheduled macros from firing after gs reload
-    -- Old coroutines survive gs reload but check this counter before executing
+    -- Invalidation counter: a newer call cancels a pending one. It lives on the
+    -- sandbox _G, which a gs reload replaces, so a coroutine scheduled before a
+    -- reload still compares against its own (old) _G and is not cancelled.
     _G._macrobook_schedule_id = (_G._macrobook_schedule_id or 0) + 1
     local my_id = _G._macrobook_schedule_id
 
@@ -239,9 +242,8 @@ function MacrobookManager.create(job_code, config_path, default_subjob, default_
         show_macro_configs        = bind(show_macro_configs),
     }
 
-    -- Clear globals registered by the previous create() (different job) so
-    -- old _G.set_pld_macro_book / _G.get_pld_macro_info / _G.show_pld_macro_configs
-    -- don't linger after PLD->RDM. Same rationale as LockstyleManager.
+    -- Clear globals registered by the previous create() call (same scheme as
+    -- LockstyleManager).
     for _, name in ipairs(last_registered_globals) do
         _G[name] = nil
     end

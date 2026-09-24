@@ -4,10 +4,11 @@
 ---   Handles job-specific custom commands for Samurai job:
 ---   • Common commands (reload, checksets, waltz, jump, etc.)
 ---   • UI commands (toggle, update, reload UI)
----   • SAM buff commands (hasso, seigan, thirdeye)
+---   • Watchdog, dual-box, debugmidcast and cyclestate commands
 ---   • State change UI synchronization
+---   SAM has no job-specific command.
 ---
----   @file    SAM_COMMANDS.lua
+---   @file    shared/jobs/sam/functions/SAM_COMMANDS.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-21
@@ -62,6 +63,7 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DUAL-BOXING: Handle job request from MAIN
     -- ══════════════════════════════════════════════════════════════════════════
     if command == 'requestjob' then
@@ -133,10 +135,6 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- SAM-SPECIFIC COMMANDS
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- Add SAM-specific commands here if needed
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

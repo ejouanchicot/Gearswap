@@ -165,7 +165,7 @@ function GlobalProbe.snapshot()
 end
 
 --- Globals that appeared since the snapshot and were not declared expected.
---- @return table Sorted list of names
+--- @return table|nil Sorted list of "name (type)" entries, nil before snapshot()
 function GlobalProbe.leaks()
     local baseline = rawget(_G, '__global_baseline')
     if not baseline then

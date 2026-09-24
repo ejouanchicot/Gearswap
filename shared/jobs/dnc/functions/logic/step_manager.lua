@@ -14,10 +14,11 @@
 ---
 ---   Usage:
 ---   • //gs c step - Execute step with Presto if available
----   • Alt+5 toggle UseAltStep - Enable/disable alternation
----   • Alt+3/4 cycle MainStep/AltStep - Change step abilities
+---   • Ctrl+Numpad5 cycles UseAltStep - Enable/disable alternation
+---   • Ctrl+Numpad3/4 cycle MainStep/AltStep - Change step abilities
+---     (keys from config/dnc/DNC_KEYBINDS.lua)
 ---
----   @file    jobs/dnc/functions/logic/step_manager.lua
+---   @file    shared/jobs/dnc/functions/logic/step_manager.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
@@ -37,22 +38,16 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 ---   Execute step with Presto integration and alternation support
 function StepManager.execute_step()
-    -- Check if alternating is enabled
     local use_alternation = state.UseAltStep and state.UseAltStep.value == 'On'
 
-    -- Determine which step to use
     local step_name
     if use_alternation then
-        -- Alternation enabled - use CurrentStep to track position
-        -- CurrentStep = 'Main' (default) >> use MainStep first
-        -- CurrentStep = 'Alt' >> use AltStep second
         if state.CurrentStep and state.CurrentStep.value == 'Alt' then
             step_name = state.AltStep.value
         else
             step_name = state.MainStep.value  -- Default: start with Main
         end
     else
-        -- Alternation disabled - always use MainStep
         step_name = state.MainStep.value
     end
 
@@ -60,11 +55,11 @@ function StepManager.execute_step()
     local ability_recasts = windower.ffxi.get_ability_recasts()
     local step_recast = ability_recasts[220] or 0
 
-    -- If step on cooldown, show recast and ABORT completely (don't launch anything)
+    -- Step on cooldown: abort before Presto so it is not wasted
     if is_on_cooldown(step_recast) then
         local job_tag = MessageFormatter.get_job_tag()
         MessageFormatter.show_ability_cooldown(step_name, step_recast, job_tag)
-        return -- EXIT - don't launch Presto or Step
+        return
     end
 
     -- Step is ready, check Presto availability (recast_id 236)

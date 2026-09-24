@@ -2,10 +2,11 @@
 --- INIT Message Data - Module Initialization Messages
 ---============================================================================
 --- Pure data file for module initialization and loading messages
---- Used by new message system (api/messages.lua)
+--- Loaded by the message engine when a formatter sends a key from it (api/messages.lua)
 ---
---- @file data/systems/init_messages.lua
+--- @file shared/utils/messages/data/systems/init_messages.lua
 --- @author Tetsouo
+--- @version 1.0
 --- @date Created: 2025-11-06
 ---============================================================================
 

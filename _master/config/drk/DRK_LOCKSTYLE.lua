@@ -31,7 +31,6 @@ DRKLockstyleConfig.default = 1
 --- Configure different lockstyles per subjob here.
 --- If a subjob is not in this table, the default lockstyle will be used.
 DRKLockstyleConfig.by_subjob = {
-    -- Examples:
     ['SAM'] = 1, -- DRK/SAM uses lockstyle 1
     ['WAR'] = 1, -- DRK/WAR uses lockstyle 1
     ['NIN'] = 2, -- DRK/NIN uses lockstyle 2
@@ -61,7 +60,7 @@ end
 --- BACKWARD COMPATIBILITY
 ---============================================================================
 
--- Legacy code may access .style directly instead of calling get_style()
+-- Legacy field: nothing under shared/ reads .style any more
 DRKLockstyleConfig.style = DRKLockstyleConfig.default
 
 ---============================================================================

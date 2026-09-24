@@ -5,10 +5,11 @@
 --- scenarios, weaponskills, job abilities, and treasure hunter optimization.
 ---
 --- Features:
----   • Weapon sets (Main: Vajra/Twashtar/Tauret/Naegling, Sub: Centovente/Gleti)
+---   • Weapon sets (Main: Twashtar/Mpu Gandring/Vajra/Tauret/Malevolence/Naegling,
+---     Sub: Tanmogayi/Twashtar/Jugo/Crepuscular/Centovente/Blurred/Gleti/Kraken)
 ---   • Abyssea proc sets (7 weapon types for /WAR subjob)
 ---   • Idle sets (Normal, Town, Regen, PDT, Weak)
----   • Engaged sets (Normal, Acc, PDT, PDTAFM3 with Aftermath Lv.3)
+---   • Engaged sets (Normal, PDT, PDTAFM3 with Aftermath Lv.3, TH)
 ---   • Job ability sets (SA/TA/Hide/Flee/Perfect Dodge/Conspirator)
 ---   • Weaponskills with SA/TA variants (Rudra's, Evisceration, Shark Bite, etc.)
 ---   • WS variant system (SATA > SA > TA > Base)
@@ -20,19 +21,19 @@
 ---
 --- Architecture:
 ---   • Cape augments (STP: Store TP+10/PDT-10%, WS1: Crit+10%, WS2: WSD+10%)
----   • Dual Chirich Rings (wardrobe 1/2 for haste/store TP)
----   • Moonshade Earring (TP Bonus +250 - dynamic via TPBonusCalculator)
+---   • Dual Chirich Rings (wardrobe 1/2)
+---   • Moonshade Earring (TP Bonus - dynamic via TPBonusCalculator)
 ---   • Aftermath Lv.3 support (PDTAFM3 set for Vajra)
 ---   • SA/TA variant priority (SATA > SA > TA > Base for all WS)
 ---   • Treasure Hunter integration (TH+4 on feet, combined with SA/TA sets)
 ---
 --- Dependencies:
 ---   • Mote-Include (set_combine for set inheritance)
----   • TPBonusCalculator (dynamic Moonshade at 1750-1999 TP)
+---   • TPBonusCalculator (Moonshade only when it reaches the next TP threshold)
 ---   • sa_ta_manager (buff-based WS set selection logic)
 ---   • set_builder (dynamic idle/engaged set construction)
 ---
---- @file    jobs/thf/sets/thf_sets.lua
+--- @file    sets/thf_sets.lua
 --- @author  Tetsouo
 --- @version 1.0
 --- @date    Created: 2025-10-06
@@ -646,7 +647,7 @@ sets.precast.WS['Savage Blade'].SATA = set_combine(sets.precast.WS['Savage Blade
     ring2 = "Ephramad's Ring"
 })
 
--- Shark Bite (DEX/MND WS) --
+-- Shark Bite (DEX/AGI WS) --
 
 sets.precast.WS['Shark Bite'] = {
     ammo = "Coiste Bodhar",

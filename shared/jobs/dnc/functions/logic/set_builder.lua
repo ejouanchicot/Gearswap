@@ -8,13 +8,11 @@
 ---   • Saber Dance variant selection (engaged only - optimized for -50% DW requirement)
 ---   • Fan Dance variant selection (engaged only - 30% gear + 20% buff = 50% cap)
 ---   • Town detection (idle only - Adoulin vs regular cities)
----   • Weapon set application (MainWeapon state >> equipment combo)
+---   • Weapon set application (MainWeapon set, then SubWeaponOverride sub)
 ---   • Movement gear application (idle only, never in combat)
----   • HybridMode integration (PDT/Normal/FanDance/SaberDance sets)
----   • Error handling with MessageFormatter
----   • Modular set augmentation (weapon >> movement >> final)
+---   • HybridMode integration (sets.engaged.PDT / sets.engaged[HybridMode])
 ---
----   @file    jobs/dnc/functions/logic/set_builder.lua
+---   @file    shared/jobs/dnc/functions/logic/set_builder.lua
 ---   @author  Tetsouo
 ---   @version 1.1 - Saber Dance Support
 ---   @date    Created: 2025-10-06
@@ -35,16 +33,13 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 ---   Select base engaged set based on HybridMode, Saber Dance, and Fan Dance buffs
 ---   NOTE: Saber Dance and Fan Dance are MUTUALLY EXCLUSIVE (one overwrites the other)
----   Saber Dance: -50% DW requirement, optimize for Haste/STP/Multi-Attack
----   Fan Dance: +20% DT, allowing lighter gear (30% + 20% = 50% cap)
+---   Saber Dance: sets.engaged.SaberDance (.PDT under HybridMode PDT)
+---   Fan Dance: sets.engaged.FanDance, used only under HybridMode PDT
 ---   @param base_set table Base engaged set from Mote
 ---   @return table Selected engaged set
 function SetBuilder.select_engaged_base(base_set)
     local has_saber_dance = buffactive and buffactive['Saber Dance']
     local has_fan_dance = buffactive and buffactive['Fan Dance']
-
-    -- Debug: uncomment to track buff states
-    -- Debug disabled (use debug logging if needed)
 
     -- Priority 1: Saber Dance active (mutually exclusive with Fan Dance)
     if has_saber_dance and sets.engaged.SaberDance then
@@ -60,7 +55,7 @@ function SetBuilder.select_engaged_base(base_set)
         return sets.engaged.SaberDance
     end
 
-    -- Priority 2: Fan Dance active (only if Saber Dance not active)
+    -- Priority 2: HybridMode (Fan Dance only changes the PDT choice)
     if state.HybridMode and state.HybridMode.current == 'PDT' then
         -- Fan Dance active: use FanDance set (30% equipment + 20% buff = 50% cap)
         if has_fan_dance and sets.engaged.FanDance then
@@ -82,6 +77,7 @@ function SetBuilder.select_engaged_base(base_set)
 end
 
 ---   Select base idle set with town/Adoulin detection (inherited from BaseSetBuilder)
+---   @return table set, boolean in_town
 SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -126,7 +122,6 @@ end
 
 ---   Apply movement speed gear to result (inherited from BaseSetBuilder)
 SetBuilder.apply_movement = BaseSetBuilder.apply_movement
-
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   COMPLETE SET BUILDERS

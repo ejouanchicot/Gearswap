@@ -1,21 +1,25 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PUP Midcast Module - Midcast Gear Selection
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles midcast for Puppetmaster with specialized Ready Move handling.
+---   Midcast for Puppetmaster:
+---   - Ready moves (job_midcast): 4 categories (Physical, PhysicalMulti,
+---     MagicAtk, MagicAcc), outside MidcastManager
+---   - Pet commands dressed at precast (Call Beast, Reward, Spur...) are left alone
+---   - Subjob spells (job_post_midcast): Healing/Enhancing/Enfeebling/
+---     Elemental/Blue Magic through MidcastManager
 ---
----   Features:
----   - Ready Moves: 4 categories (Physical, PhysicalMulti, MagicAtk, MagicAcc)
----   - Pet Abilities: Call Beast, Reward, Spur, etc.
----   - Subjob Spells: Healing/Enhancing/Enfeebling/Elemental/Blue Magic
+---   NOTE: the Ready move logic is BST's (beast pets). ready_move_categorizer
+---   does not exist and MessageFormatter.error_pup_module_not_loaded is not
+---   defined, so ensure_modules_loaded() raises on the first midcast.
 ---
----   Note: Ready Move logic is PUP-specific and NOT handled by MidcastManager.
----
----   @file    PUP_MIDCAST.lua
+---   @file    shared/jobs/pup/functions/PUP_MIDCAST.lua
 ---   @author  Tetsouo
 ---   @version 3.0 - Added spell_family database support
 ---   @date    Created: 2025-10-17 | Updated: 2025-11-05
 ---  ═══════════════════════════════════════════════════════════════════════════
----   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEPENDENCIES - LAZY LOADING
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local MidcastManager = nil
@@ -59,6 +63,7 @@ local PRECAST_ONLY = {
 }
 
 --- Which Ready move category this is, if any.
+--- @param spell table Spell information from GearSwap
 ---
 --- precast stores it on the spell because by midcast the name alone no longer
 --- says which kind of move it was. The categoriser is the fallback for paths
@@ -136,10 +141,11 @@ end
 ---  ─────────────────────────────────────────────────────────────────────────
 ---   PER-BRANCH HANDLERS
 ---  ─────────────────────────────────────────────────────────────────────────
----   Extracted from job_post_midcast, which dispatched on spell.skill.
----   Each returns true once it has handled the call. Bodies unchanged.
+---   One handler per subjob magic skill, dispatched on spell.skill.
+---   Each returns true once it has handled the call.
 
 --- Handle Healing Magic.
+--- @param spell table Spell information from GearSwap
 --- @return boolean True when this handler took the action
 local function job_post_midcast_healing_magic(spell)
     MidcastManager.select_set({
@@ -150,6 +156,7 @@ local function job_post_midcast_healing_magic(spell)
 end
 
 --- Handle Enhancing Magic.
+--- @param spell table Spell information from GearSwap
 --- @return boolean True when this handler took the action
 local function job_post_midcast_enhancing_magic(spell)
     MidcastManager.select_set({
@@ -162,6 +169,7 @@ local function job_post_midcast_enhancing_magic(spell)
 end
 
 --- Handle Enfeebling Magic.
+--- @param spell table Spell information from GearSwap
 --- @return boolean True when this handler took the action
 local function job_post_midcast_enfeebling_magic(spell)
     MidcastManager.select_set({
@@ -172,6 +180,7 @@ local function job_post_midcast_enfeebling_magic(spell)
 end
 
 --- Handle Elemental Magic.
+--- @param spell table Spell information from GearSwap
 --- @return boolean True when this handler took the action
 local function job_post_midcast_elemental_magic(spell)
     MidcastManager.select_set({
@@ -182,6 +191,7 @@ local function job_post_midcast_elemental_magic(spell)
 end
 
 --- Handle Blue Magic.
+--- @param spell table Spell information from GearSwap
 --- @return boolean True when this handler took the action
 local function job_post_midcast_blue_magic(spell)
     MidcastManager.select_set({
@@ -205,7 +215,6 @@ local JOB_POST_MIDCAST_HANDLERS = {
 ---   @param spellMap string Spell mapping from Mote-Include
 ---   @param eventArgs table Event arguments for cancellation/customization
 function job_post_midcast(spell, action, spellMap, eventArgs)
-    -- Watchdog: Track midcast start
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_midcast_start(spell)
     end
@@ -215,12 +224,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         return
     end
 
-    ---══════════════════════════════════════════════════════════════════════════
-    --- SUBJOB SPELLS (Handled by MidcastManager)
-    ---══════════════════════════════════════════════════════════════════════════
-
-    -- Healing Magic (Cure, Cura, etc.)
-
+    -- Subjob spells, routed through MidcastManager
     local handler = JOB_POST_MIDCAST_HANDLERS[spell.skill]
     if handler and handler(spell) then
         return

@@ -1,16 +1,15 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BLM Set Builder - Complete Equipment Set Construction Logic
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Provides comprehensive logic for building engaged and idle sets with:
----   - HybridMode detection (PDT/Normal)
----   - Town/Adoulin detection (idle only)
----   - Weapon set application (MainWeapon/SubWeapon)
----   - Movement gear application
----   - Dynamic MP-Based Sets (High/Low MP gear selection)
----   - Magic Burst Integration (specialized burst mode equipment)
----   - Manawall Support (emergency buff equipment)
+---   Builds the engaged and idle sets on top of the set Mote selected:
+---   - Engaged: MainWeapon / SubWeapon sets
+---   - Idle: town base (BaseSetBuilder), weapons, movement gear outside town,
+---     Mana Wall set while the buff is up
+---   Also holds an MP-based elemental set helper family (SaveMP,
+---   get_dynamic_elemental_set, ...) that reads the global blm_dynamic_sets;
+---   nothing defines that table and nothing calls these helpers.
 ---
----   @file    jobs/blm/functions/logic/set_builder.lua
+---   @file    shared/jobs/blm/functions/logic/set_builder.lua
 ---   @author  Tetsouo
 ---   @version 2.0 (Merged with SET_CUSTOMIZATION.lua)
 ---   @date    Created: 2025-10-15 | Migrated: 2025-10-15
@@ -150,11 +149,11 @@ SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 ---   COMPLETE SET BUILDERS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Build complete engaged set (base selection + HybridMode + weapons + movement)
+---   Build complete engaged set (Mote's base set + weapons)
 ---   @param base_set table Base engaged set from Mote
 ---   @return table Complete engaged set
 function SetBuilder.build_engaged_set(base_set)
-    -- Step 1: Use base set from Mote (already includes HybridMode)
+    -- Step 1: Use base set from Mote
     local result = base_set or sets.engaged.Normal or {}
 
     -- Step 2: Apply weapon sets from states
@@ -163,11 +162,11 @@ function SetBuilder.build_engaged_set(base_set)
     return result
 end
 
----   Build complete idle set (HybridMode + town detection + weapons + movement + buffs)
+---   Build complete idle set (town detection + weapons + movement + Mana Wall)
 ---   @param base_set table Base idle set from Mote
 ---   @return table Complete idle set
 function SetBuilder.build_idle_set(base_set)
-    -- Step 1: Use base set from Mote (already includes HybridMode)
+    -- Step 1: Use base set from Mote
     local result = base_set or sets.idle.Normal or {}
 
     -- Step 2: Town detection - use town set as base (inherited from BaseSetBuilder)
@@ -266,7 +265,7 @@ function SetBuilder.validate_dynamic_sets()
 end
 
 ---   Get current MP threshold status
----   @return string 'low' or 'high' based on current MP
+---   @return string 'low' or 'high' based on current MP, 'unknown' without player data
 function SetBuilder.get_mp_status()
     if not player or not player.mp then
         return 'unknown'
@@ -289,6 +288,7 @@ end
 
 ---   Update MP threshold configuration
 ---   @param newThreshold number New MP threshold value
+---   @return boolean True when the value was accepted
 function SetBuilder.update_mp_threshold(newThreshold)
     if type(newThreshold) == 'number' and newThreshold > 0 then
         BLM_CONSTANTS.LOW_MP_THRESHOLD = newThreshold

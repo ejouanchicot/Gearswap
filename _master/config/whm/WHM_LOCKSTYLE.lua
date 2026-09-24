@@ -26,7 +26,7 @@ local WHMLockstyleConfig = {}
 --- DEFAULT LOCKSTYLE
 ---============================================================================
 
---- Default lockstyle set number (from Timara WHM: set 3)
+--- Default lockstyle set number
 --- Used when subjob is not defined in by_subjob table
 WHMLockstyleConfig.default = 3
 

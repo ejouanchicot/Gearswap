@@ -1,11 +1,11 @@
 ---============================================================================
 --- Message Engine - Template compilation and formatting
 ---============================================================================
---- Design Pattern: Template Engine + Registry + Cache
---- Performance: Template compilation cached, O(1) lookup after first compile
---- Thread-safe: Yes (read-only cache after initialization)
+--- Loads a namespace's template file on first use (data/jobs/ for 3-letter
+--- all-caps namespaces, data/systems/ otherwise), compiles each template once
+--- and caches the compiled function.
 ---
---- @file core/message_engine.lua
+--- @file shared/utils/messages/core/message_engine.lua
 --- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2025-11-06
@@ -13,26 +13,28 @@
 
 local MessageEngine = {}
 
--- Import MessageColors for region-specific color detection
+-- Only used for the region-specific orange.
 local MessageColors = require('shared/utils/messages/message_colors')
 
--- Compiled template cache (performance)
--- IMPORTANT: This cache persists across GearSwap reloads unless module is fully unloaded
+-- Compiled templates, keyed by template string. Like every module local, this
+-- is rebuilt each time GearSwap loads a job: require is cached per sandbox.
 local _template_cache = {}
 
--- Loaded message data cache
+-- Loaded namespace tables, keyed by namespace
 local _message_data = {}
 
--- FORCE: Clear caches on module reload (prevents stale cached templates)
+-- The two tables above are always empty at this point, so this reset changes
+-- nothing; kept because _G.MESSAGE_ENGINE_LOADED is listed by global_probe.
 if _G.MESSAGE_ENGINE_LOADED then
     _template_cache = {}
     _message_data = {}
 end
 _G.MESSAGE_ENGINE_LOADED = true
 
--- Color name to FFXI code mapping (inline color codes)
--- Format: string.char(0x1F, color_code) where 0x1F = FFXI control character
--- Codes from message_colors.lua (all <= 255)
+-- Color tag -> inline FFXI color code (0x1F followed by the code byte).
+-- These codes are this engine's own: they do not all match MessageColors
+-- (e.g. cyan is 13 here, MessageColors.SPELL is 205). Only orange and
+-- warningcolor are read from MessageColors.
 local COLOR_CODES = {
     -- Main colors
     cyan = string.char(0x1F, 13),     -- Cyan (spells) - SPELL color
@@ -56,8 +58,8 @@ local COLOR_CODES = {
     blue = string.char(0x1F, 122),    -- Blue (info)
     purple = string.char(0x1F, 208),  -- Purple (debuffs)
 
-    -- Semantic color aliases (map to message_core COLORS)
-    -- Note: Use unique names that don't conflict with template parameters
+    -- Semantic aliases. Tag names must not collide with template parameter
+    -- names: a parameter named like a tag is rendered as that color.
     jobtag = string.char(0x1F, 207),  -- Same as lightblue (job tags)
     separatorcolor = string.char(0x1F, 160), -- Same as gray (separators) - renamed to avoid conflict
     spellcolor = string.char(0x1F, 13),    -- Same as cyan (spells) - renamed to avoid conflict
@@ -71,8 +73,9 @@ local COLOR_CODES = {
 
 --- Compile a template into an optimized function
 --- Parse once, reuse N times
---- Supports: {param} for parameters, {color}...{/} for inline colors
---- @param template string Template with {placeholders} and {color}...{/}
+--- Supports {param} for parameters and {color} for inline colors. A color
+--- runs until the next color tag; {/} is not recognized and is printed as is.
+--- @param template string Template with {placeholders} and {color} tags
 --- @return function Compiled template function
 local function compile_template(template)
     -- Cache check (hot path)
@@ -80,16 +83,13 @@ local function compile_template(template)
         return _template_cache[template]
     end
 
-    -- Parse le template en parties
+    -- Split the template into literal / color / param parts
     local parts = {}
     local placeholders = {}
     local pos = 1
 
     while pos <= #template do
-        -- Check for {/} (color end)
-        local close_start, close_end = template:find("{/}", pos, true)
-
-        -- Check for {color} or {param}
+        -- Next {color} or {param}
         local open_start, open_end, content = template:find("{([%w_]+)}", pos)
 
         -- Determine next token
@@ -148,8 +148,6 @@ local function compile_template(template)
                 local value = params[part.key]
 
                 if value == nil then
-
-                    -- Error: missing parameter
                     error(string.format(
                         "MessageEngine: Missing parameter '%s' in template",
                         part.key
@@ -308,7 +306,7 @@ function MessageEngine.get_stats()
 
     local namespace_count = 0
     local message_count = 0
-    for ns, data in pairs(_message_data) do
+    for _, data in pairs(_message_data) do
         namespace_count = namespace_count + 1
         for _ in pairs(data) do
             message_count = message_count + 1

@@ -6,7 +6,7 @@
 ---
 --- Note: Rolls Lv52-58 require Master Levels to access as subjob
 ---
---- @file cor_rolls.lua
+--- @file shared/data/job_abilities/cor/cor_rolls_subjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06

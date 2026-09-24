@@ -3,7 +3,7 @@
 ---============================================================================
 --- Dancer flourishes tier II - Accessible as subjob (2 flourishes, Lv40-50)
 ---
---- @file dnc_flourishes2_subjob.lua
+--- @file shared/data/job_abilities/dnc/dnc_flourishes2_subjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06

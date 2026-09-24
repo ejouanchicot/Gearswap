@@ -1,19 +1,18 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Equipment Checker - Universal equipment validation system
----  ═══════════════════════════════════════════════════════════════════════════
----   Scans job equipment sets and verifies item availability across all bags.
----   Uses optimized caching system for instant lookups (O(1) complexity).
----   Distinguishes between equippable bags (inventory, wardrobes) and storage.
+---============================================================================
+--- Equipment Checker - Universal equipment validation system (//gs c checksets)
+---============================================================================
+--- Scans job equipment sets and verifies item availability across all bags.
+--- Builds one name -> location cache per run for O(1) lookups.
+--- Distinguishes between equippable bags (inventory, wardrobes) and storage.
 ---
----   @file    shared/utils/equipment/equipment_checker.lua
----   @author  Tetsouo
----   @version 2.2 - Critical bug fixes: slip_number nil check + item_name type checks
----   @date    Created: 2025-01-02 | Updated: 2025-11-13
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/equipment/equipment_checker.lua
+--- @author Tetsouo
+--- @version 2.2
+--- @date Created: 2025-01-02
+---============================================================================
 
 local EquipmentChecker = {}
 
--- Load dependencies
 local MessageEquipment = require('shared/utils/messages/formatters/system/message_equipment')
 local res = require('resources')
 
@@ -23,13 +22,12 @@ if not slips_success then
     slips = nil
 end
 
--- DEBUG MODE (set to true to see cache performance logs)
-local DEBUG = false  -- Disabled - Alias tables detected as circular (normal behavior)
+-- Set to true for cache/scan trace messages (aliases then show as "detected")
+local DEBUG = false
 
--- MAX RECURSION DEPTH (prevent infinite loops and stack overflow)
 local MAX_RECURSION_DEPTH = 15
 
--- SAFETY: Track visited tables to detect circular references
+-- Tables already walked in this scan: stops aliases and cycles
 local visited_tables = {}
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -89,8 +87,6 @@ local function get_item_name(item_entry)
     return nil
 end
 
---- Build complete item cache (scan all bags once for fast lookups)
---- @return table Item cache {item_name_lower = {available, in_storage, bag_name}}
 -- A set may name an item in any client language, so every variant an item
 -- resource carries becomes a key.
 local NAME_FIELDS = {
@@ -137,6 +133,8 @@ end
 
 --- Equipped items, which outrank every other location.
 --- The `*_bag` keys say which bag a slot's item came from, not an item id.
+--- Known issue: the other values are bag slot indices, not item ids
+--- (docs/dev/systems/equipment-and-inventory.md, Known issues).
 local function add_equipped_items(add, items)
     if not items.equipment then return end
 
@@ -181,6 +179,8 @@ local function add_slip_items(add)
     end
 end
 
+--- Build complete item cache (scan all bags once for fast lookups)
+--- @return table Item cache {item_name_lower = {available, in_storage, bag_name}}
 local function build_item_cache()
     local cache = {}
     local items = windower.ffxi.get_items()
@@ -240,12 +240,6 @@ end
 ---   SET SCANNING FUNCTIONS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Recursively scan sets and validate equipment
---- @param sets_table table Sets table to scan
---- @param path string Current path in sets hierarchy
---- @param results table Results accumulator
---- @param item_cache table Pre-built item cache for fast lookups
---- @param depth number Current recursion depth (for safety)
 --- Whether this node must not be walked, marking it visited on the way.
 --- Marking happens before the naked check on purpose: a naked set is still a
 --- node that has been seen, and must not be re-entered through an alias.
@@ -338,6 +332,12 @@ local function record_set(results, path, issues)
     end
 end
 
+--- Recursively scan sets and validate equipment
+--- @param sets_table table Sets table to scan
+--- @param path string Current path in sets hierarchy
+--- @param results table Results accumulator
+--- @param item_cache table Pre-built item cache for fast lookups
+--- @param depth number Current recursion depth (for safety)
 local function scan_sets_recursive(sets_table, path, results, item_cache, depth)
     depth = depth or 0
 
@@ -452,10 +452,8 @@ function EquipmentChecker.check_job_equipment(job_name)
         return false
     end
 
-    -- Display header
     MessageEquipment.show_check_header(job_name)
 
-    -- Try to access global sets table
     if not sets or type(sets) ~= 'table' then
         MessageEquipment.show_no_sets_found(job_name)
         return false
@@ -471,7 +469,6 @@ function EquipmentChecker.check_job_equipment(job_name)
         return false
     end
 
-    -- Check if any sets were found
     if #results.sets == 0 then
         MessageEquipment.show_no_sets_found(job_name)
         return false
@@ -479,7 +476,6 @@ function EquipmentChecker.check_job_equipment(job_name)
 
     report_set_issues(results)
 
-    -- Display summary
     MessageEquipment.show_check_summary(
         #results.sets,
         results.valid_count,

@@ -3,7 +3,7 @@
 ---============================================================================
 --- Alexander summon spell and Blood Pact ability (main job only, Astral Flow).
 ---
---- @file alexander.lua
+--- @file shared/data/magic/summoning/alexander.lua
 --- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2026-06-08

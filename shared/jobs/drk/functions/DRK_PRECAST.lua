@@ -1,9 +1,11 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DRK Precast Module - Precast Action Handling & Fast Cast
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Debuff guard, cooldown check, WS handling, Fast Cast, Last Resort.
+---   Debuff guard, cooldown check, Dark Seal / Nether Void pending flags,
+---   WS handling, JA gear (Last Resort, Weapon Bash, Souleater, Arcane
+---   Circle), Fast Cast for magic, TP bonus gear.
 ---
----   @file    DRK_PRECAST.lua
+---   @file    shared/jobs/drk/functions/DRK_PRECAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-05
@@ -40,8 +42,8 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
+-- Spell/ability names that skip CooldownChecker (none today)
 local cooldown_exclusions = {
-    -- Add DRK-specific exclusions here if needed
 }
 
 ---   Handle precast actions

@@ -5,18 +5,20 @@
 ---   • Common commands (reload, checksets, waltz, jump, etc.)
 ---   • UI commands (ui toggle, reload UI)
 ---   • BLM element cycling (MainLight, MainDark, SubLight, SubDark)
----   • BLM spell cycling (Storm, Tier)
----   • BLM-specific commands (buff, storm, lightarts, darkarts, aoe sneak/invi)
+---   • BLM spell cycling (Storm, TierSpell)
+---   • BLM-specific commands (buff, storm, klima, dispel, lightarts, darkarts,
+---     aoe sneak/invi, light/dark/aoe nukes)
+---   • CombatMode weapon lock (job_state_change)
 ---   • State change UI synchronization with colored element messages
 ---
 ---   Uses centralized command handlers for consistency across all jobs.
 ---   Movement gear handled passively via customize_idle_set() like other jobs.
 ---
----   @file    jobs/blm/functions/BLM_COMMANDS.lua
+---   @file    shared/jobs/blm/functions/BLM_COMMANDS.lua
 ---   @author  Tetsouo
 ---   @version 2.3.0 - Added party Sneak/Invi commands (Accession automation)
 ---   @date    Created: 2025-10-15 | Updated: 2025-10-17
----   @requires utils/ui/UI_COMMANDS, utils/core/COMMON_COMMANDS
+---   @requires shared/utils/ui/UI_COMMANDS, shared/utils/core/COMMON_COMMANDS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -90,7 +92,7 @@ local function cast_from_states(element_state, tier_state, builder)
     return true
 end
 
----   Update UI after state change (DRY helper)
+---   Refresh the keybind UI after a state change
 local function update_ui()
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI then
@@ -228,6 +230,8 @@ end
 ---   • aoe sneak      - Party-wide Sneak (Light Arts + Accession + Sneak)
 ---   • invi           - Party-wide Invisible (Light Arts + Accession + Invisible)
 ---   • klima          - Dark Arts + Manifestation + Klimaform (charge-aware)
+---   • dispel         - Dispel via /RDM, or via Addendum: Black on /SCH
+---   • storm          - Current Storm state, with Klimaform (CastStorm)
 ---   • light/dark     - Main single-target nuke (element state + SpellTier)
 ---   • sublight/subdark   - Sub single-target nuke
 ---   • aoelight/aoedark   - Main AOE nuke (-ga state + AOETier)
@@ -258,6 +262,7 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DUAL-BOXING: Handle job request from MAIN
     -- ══════════════════════════════════════════════════════════════════════════
     if command == 'requestjob' then
@@ -337,7 +342,7 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     -- ══════════════════════════════════════════════════════════════════════════
-    -- BLM STANDARD CYCLE COMMANDS (cycle Aja, cycle Storm, etc.)
+    -- BLM STANDARD CYCLE COMMANDS (cycle Storm, cycle TierSpell)
     -- ══════════════════════════════════════════════════════════════════════════
     if handle_blm_standard_cycles(cmdParams, eventArgs) then
         return
@@ -430,7 +435,6 @@ function job_self_command(cmdParams, eventArgs)
         if sub == 'RDM' then
             send_command('input /ma "Dispel" <stnpc>')
         elseif sub == 'SCH' then
-            local ScholarActions = require('shared/utils/scholar/scholar_actions')
             ScholarActions.cast_under_black_addendum('Dispel', '<stnpc>')
         else
             local MessageCore = require('shared/utils/messages/message_core')
@@ -508,7 +512,8 @@ end
 ---   STATE CHANGE HOOK
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Update UI when state changes (MainWeapon, HybridMode, etc.)
+---   Update UI when state changes (MainWeapon, HybridMode, etc.) and apply
+---   or release the CombatMode weapon lock.
 ---   Called by Mote-Include after any state change.
 ---
 ---   @param stateField string State that changed (e.g., "MainWeapon")

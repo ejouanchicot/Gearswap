@@ -15,10 +15,10 @@
 ---
 --- Total: 18 weaponskills
 ---
---- @file DAGGER_WS_DATABASE.lua
+--- @file shared/data/weaponskills/DAGGER_WS_DATABASE.lua
 --- @author Tetsouo
 --- @version 1.0 - Improved formatting
---- @date 2025-10-29
+--- @date Created: 2025-10-29
 ---============================================================================
 
 local dagger_ws = {}

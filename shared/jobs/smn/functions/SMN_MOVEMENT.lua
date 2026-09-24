@@ -11,8 +11,11 @@
 ---   @date    Created: 2026-05-28
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- Mote hook called before gear is equipped. Empty: MoveSpeed is applied in
+--- customize_idle_set (SMN_IDLE).
+--- @param playerStatus string Current player status
+--- @param eventArgs table Event arguments
 function job_handle_equipping_gear(playerStatus, eventArgs)
-    -- MoveSpeed is applied in customize_idle_set (SMN_IDLE). No additional logic.
 end
 
 _G.job_handle_equipping_gear = job_handle_equipping_gear

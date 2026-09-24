@@ -3,10 +3,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Manages AOE Blue Magic spell casting for RUN/BLU subjob combination.
 ---   Provides intelligent automation for:
----   • Spell rotation management (Geist Wall, Stinking Gas, Sound Blast, etc.)
+---   • Spell rotation from _G.BluMagicConfig.get_rotation()
 ---   • Cooldown tracking and validation
 ---   • Anti-spam protection (prevents duplicate casts)
----   • Auto-targeting (<stnpc> fallback)
+---   • Casts on <stnpc>; targets <stnpc> when nothing can be cast
 ---
 ---   Features:
 ---   • First-available spell selection
@@ -14,7 +14,7 @@
 ---   • Unknown spell detection (wrong subjob)
 ---   • Recent cast tracking (5s threshold)
 ---
----   @file    jobs/run/functions/logic/aoe_manager.lua
+---   @file    shared/jobs/run/functions/logic/aoe_manager.lua
 ---   @author  Tetsouo
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-06
@@ -31,7 +31,9 @@ local MessageCooldowns = require('shared/utils/messages/formatters/combat/messag
 -- is_recast_ready / is_on_cooldown resolved as globals from RECAST_CONFIG.lua
 -- (loaded by entry point before job functions). Do not redeclare locally.
 
-local BluMagicConfig = _G.BluMagicConfig or {}  -- Loaded from character main file
+-- Captured once, when this module is first required: the entry sets
+-- _G.BluMagicConfig (RUN_BLU_MAGIC) before any //gs c aoe.
+local BluMagicConfig = _G.BluMagicConfig or {}
 
 -- Spell tracking to prevent spam when FFXI doesn't send cast confirmation
 local SpellTracker = {}

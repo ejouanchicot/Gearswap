@@ -9,14 +9,14 @@
 ---   • Step Management (MainStep, AltStep, UseAltStep, CurrentStep)
 ---   • Climactic Flourish buff tracking
 ---   • Auto-trigger systems (ClimacticAuto, JumpAuto)
----   • CombatWeaponMode (TP bonus optimization modes)
+---   • CombatWeaponMode (defined but not read by any code today)
 ---   • Keybind integration
----   • Validation function to verify state configuration
+---   • validate() helper (not called anywhere today)
 ---
 --- Usage:
 ---   • Loaded in user_setup() after Mote-Include initializes
 ---   • Call DNCStates.configure() to initialize all states
----   • Call DNCStates.validate() to verify configuration (optional)
+---   • DNCStates.validate() can verify the configuration (optional, unused)
 ---
 --- @file    config/dnc/DNC_STATES.lua
 --- @author  Tetsouo
@@ -34,7 +34,7 @@ local DNCStates = {}
 --- Must be called from user_setup() after Mote-Include is loaded.
 --- Defines all combat modes, weapon sets, step management, and auto-trigger states.
 ---
---- @return void
+--- @return nil
 function DNCStates.configure()
     -- ==========================================================================
     -- COMBAT MODES
@@ -44,7 +44,7 @@ function DNCStates.configure()
     --- Options:
     ---   • 'PDT'    - Physical Damage Taken -50% (safe mode)
     ---   • 'Normal' - Full offense (max DPS)
-    --- Keybind: Alt+2 to cycle
+    --- Keybind: Ctrl+Numpad9 to cycle
     state.HybridMode = M{['description']='Hybrid Mode', 'PDT', 'Normal'}
     state.HybridMode:set('PDT')  -- Default to PDT mode for safety
 
@@ -54,19 +54,19 @@ function DNCStates.configure()
 
     --- MainWeapon: Primary weapon selection
     --- Sub weapon automatically selected based on main weapon
-    --- Keybind: Alt+1 to cycle
+    --- Keybind: Ctrl+Numpad1 to cycle
     state.MainWeapon = M {
         ['description'] = 'Main Weapon',
-        'Twashtar',  -- Relic dagger (best for DPS)
-        'Mpu Gandring',  -- Relic dagger (best for DPS)
+        'Twashtar',      -- Empyrean dagger
+        'Mpu Gandring',  -- Dagger
         'Demersal'       -- Demersal Degen (alternative)
     }
-    state.MainWeapon:set('Mpu Gandring')  -- Default: No override
+    state.MainWeapon:set('Mpu Gandring')  -- Default: Mpu Gandring
 
     --- SubWeaponOverride: Override sub weapon selection
     --- When set to 'Off', uses sub weapon from weapon set
     --- When set to 'Blurred', forces Blurred Knife +1 regardless of main weapon
-    --- Keybind: Ctrl+1 to toggle
+    --- Keybind: Ctrl+Numpad2 to toggle
     state.SubWeaponOverride = M {
         ['description'] = 'Sub Override',
         'Off',      -- Use sub from weapon set (default behavior)
@@ -78,8 +78,8 @@ function DNCStates.configure()
     -- STEP MANAGEMENT SYSTEM
     -- ==========================================================================
 
-    --- MainStep: Primary step ability
-    --- Keybind: //gs c step (uses MainStep, then AltStep if UseAltStep=On)
+    --- MainStep: Primary step ability (Ctrl+Numpad3 to cycle)
+    --- Command: //gs c step (uses MainStep, then AltStep if UseAltStep=On)
     state.MainStep = M {
         ['description'] = 'Main Step',
         'Box Step',     -- Defense down (party benefit)
@@ -87,7 +87,7 @@ function DNCStates.configure()
         'Feather Step', -- Critical hit rate
     }
     
-    --- AltStep: Alternative step ability (for rotation)
+    --- AltStep: Alternative step ability (for rotation, Ctrl+Numpad4 to cycle)
     state.AltStep = M {
         ['description'] = 'Alt Step',
         'Quickstep',    -- Evasion down (alternative)
@@ -95,7 +95,7 @@ function DNCStates.configure()
         'Feather Step', -- Critical hit rate
     }
 
-    --- UseAltStep: Enable/disable alternate step rotation
+    --- UseAltStep: Enable/disable alternate step rotation (Ctrl+Numpad5)
     state.UseAltStep = M {
         ['description'] = 'Use Alt Step',
         'On',   -- Use both Main and Alt steps in rotation
@@ -122,7 +122,7 @@ function DNCStates.configure()
     -- ==========================================================================
 
     --- ClimacticAuto: Automatic Climactic Flourish trigger before WS
-    --- Keybind: Alt+6 to toggle
+    --- Keybind: Ctrl+Numpad6 to toggle
     state.ClimacticAuto = M {
         ['description'] = 'Climactic Auto',
         'On',   -- Auto-trigger Climactic Flourish before configured WS
@@ -131,7 +131,7 @@ function DNCStates.configure()
     state.ClimacticAuto:set('On')  -- Default: Auto-trigger enabled
 
     --- JumpAuto: Automatic Jump trigger before WS (DRG subjob)
-    --- Keybind: Alt+7 to toggle
+    --- Keybind: Ctrl+Numpad7 to toggle
     state.JumpAuto = M {
         ['description'] = 'Jump Auto',
         'On',   -- Auto-trigger Jump before WS if TP < 1000 (DRG subjob only)
@@ -144,8 +144,8 @@ function DNCStates.configure()
     -- ==========================================================================
 
     --- CombatWeaponMode: TP bonus optimization mode
-    --- Determines which gear variant to use for weaponskills
-    --- Auto-managed by WS system based on buffs/TP
+    --- Not read by any code today: WS variants are chosen by
+    --- shared/jobs/dnc/functions/logic/ws_variant_selector.lua from buffs.
     state.CombatWeaponMode = M {
         ['description'] = 'Combat Weapon Mode',
         'Normal',       -- No special buffs (standard WS gear)
@@ -160,7 +160,7 @@ function DNCStates.configure()
 
     --- Dance: Active dance selection
     --- Determines which dance to activate with //gs c dance command
-    --- Keybind: Alt+8 to cycle
+    --- Keybind: Ctrl+Numpad8 to cycle
     state.Dance = M {
         ['description'] = 'Dance',
         'Saber Dance',  -- Offensive dance (+accuracy, +attack speed)
@@ -174,7 +174,7 @@ function DNCStates.configure()
 
     --- Samba: Active samba selection
     --- Determines which samba //gs c smartbuff applies
-    --- Keybind: Alt+9 to cycle
+    --- Keybind: Ctrl+Numpad0 to cycle
     state.Samba = M {
         ['description'] = 'Samba',
         'Haste Samba',    -- Haste +5% (350 TP)

@@ -1,28 +1,33 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Wardrobe Organizer - In-Game Chat Messages
----  ═══════════════════════════════════════════════════════════════════════════
----   FFXI-chat helpers following the project's style conventions:
----     - 74-char width, ASCII pure
----     - Centered titles inside the separator (===== Title =====)
----     - --- sub-section dividers
----     - [Wardrobe] tag prefix on info lines
----     - Inline color codes via 0x1F
+---============================================================================
+--- Wardrobe Organizer - In-Game Chat Messages
+---============================================================================
+--- FFXI-chat helpers following the project's style conventions:
+---   - Config.SEP_LEN width, ASCII pure
+---   - Centered titles inside the separator (===== Title =====)
+---   - --- sub-section dividers
+---   - [Wardrobe] tag prefix on info lines
+---   - Inline color codes via 0x1F
+--- Diagnostic tool: direct add_to_chat is allowed here (CODE_QUALITY.md 6).
 ---
----   Public functions:
----     Chat.separator()                 - 74-char gray '=' rule
----     Chat.divider()                   - 74-char gray '-' rule (sub-section)
----     Chat.banner(title)               - sep + centered title + sep
----     Chat.section(name)               - "--- name ---" sub-section
----     Chat.info(message)               - cyan info line
----     Chat.success(message)            - green success line
----     Chat.error(message)              - red error line
----     Chat.warn(message)               - orange warning line
----     Chat.phase(num, label, info)     - phase progress arrow line
----     Chat.detail(label, value)        - "  label : value" aligned row
----     Chat.kv(label, value)            - alias for detail
+--- Public functions:
+---   Chat.separator()                 - full-width gray '=' rule
+---   Chat.divider()                   - full-width gray '-' rule (sub-section)
+---   Chat.banner(title)               - '=' rule with the title centered in it
+---   Chat.section(name)               - "--- name ---" sub-section
+---   Chat.info(message)               - tagged white info line
+---   Chat.success(message)            - green success line
+---   Chat.error(message)              - red error line ("Error:" prefix)
+---   Chat.warn(message)               - orange warning line
+---   Chat.alert(message)              - red line without the "Error:" prefix
+---   Chat.phase(num, label, info)     - phase progress arrow line
+---   Chat.detail(label, value)        - "  label ..... value" aligned row
+---   Chat.kv(label, value)            - alias for detail
 ---
----   @file shared/utils/wardrobe/lib/chat.lua
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/wardrobe/lib/chat.lua
+--- @author Tetsouo
+--- @version 1.0
+--- @date Created: 2026-05-01
+---============================================================================
 
 local Config = require('shared/utils/wardrobe/lib/config')
 
@@ -61,7 +66,8 @@ end
 
 --- Banner panel: a single line with the title centered between '=' chars
 --- (matches MessageKeybinds pattern: `===== Title =====`).
---- Total width is 74 chars. Title is wrapped in spaces for visual breathing.
+--- Total width is Config.SEP_LEN. Title is wrapped in spaces.
+--- @param title string Banner title
 function Chat.banner(title)
     local padded    = ' ' .. title .. ' '
     local total_pad = math.max(2, WIDTH - #padded)
@@ -74,6 +80,7 @@ function Chat.banner(title)
 end
 
 --- Sub-section: `--- name ---` left-aligned, dim gray.
+--- @param name string Section name
 function Chat.section(name)
     local padded = ' ' .. name .. ' '
     local right_pad = math.max(3, WIDTH - 3 - #padded)
@@ -89,24 +96,33 @@ local function tagged(color, message)
     return C.gray .. '[' .. C.cyan .. TAG .. C.gray .. ']' .. C.white .. ' ' .. color .. message
 end
 
+--- Tagged info line.
+--- @param message string Text
 function Chat.info(message)
     windower.add_to_chat(CHANNEL, tagged(C.white, message))
 end
 
+--- Tagged success line (green).
+--- @param message string Text
 function Chat.success(message)
     windower.add_to_chat(158, tagged(C.green, message))
 end
 
+--- Tagged error line (red, "Error:" prefix).
+--- @param message string Text
 function Chat.error(message)
     windower.add_to_chat(167, tagged(C.red, 'Error: ' .. C.white .. message))
 end
 
+--- Tagged warning line (orange).
+--- @param message string Text
 function Chat.warn(message)
     windower.add_to_chat(205, tagged(C.orange, message))
 end
 
 --- Like error, but WITHOUT the "Error:" prefix - used for blocking notices
 --- (e.g. "PROCESSING - do not move") that need maximum visual urgency.
+--- @param message string Text
 function Chat.alert(message)
     windower.add_to_chat(167, tagged(C.red, message))
 end
@@ -133,8 +149,10 @@ end
 ---   STRUCTURED ROWS  (panel content)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Detail row: "  label ........... value" (dot-leader, 24-char label column).
---- Tighter label-aligned format than the previous fixed-width approach.
+--- Detail row: "  label ........... value" (dot-leader, label + dots fill
+--- 26 chars, at least 3 dots).
+--- @param label any Row label
+--- @param value any Row value
 function Chat.detail(label, value)
     local label_str = tostring(label)
     local pad_count = math.max(3, 26 - #label_str)

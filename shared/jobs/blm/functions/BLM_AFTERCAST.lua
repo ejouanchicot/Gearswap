@@ -4,7 +4,7 @@
 ---   Handles aftercast logic for Black Mage job.
 ---   Returns to idle/engaged gear after spell completes.
 ---
----   @file    BLM_AFTERCAST.lua
+---   @file    shared/jobs/blm/functions/BLM_AFTERCAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-15
@@ -14,6 +14,11 @@
 ---   AFTERCAST HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- Aftercast hook: stop the midcast watchdog and release the Impact body lock.
+--- @param spell table Spell information from GearSwap
+--- @param action table Action information from GearSwap
+--- @param spellMap string Spell mapping from Mote-Include
+--- @param eventArgs table Event arguments
 function job_aftercast(spell, action, spellMap, eventArgs)
     -- Watchdog: Track aftercast
     if _G.MidcastWatchdog then
@@ -25,9 +30,6 @@ function job_aftercast(spell, action, spellMap, eventArgs)
         _G.casting_impact = nil
         _G.impact_body = nil
     end
-
-    -- BLM-SPECIFIC AFTERCAST LOGIC
-    -- Currently none - Mote handles return to idle/engaged automatically
 
     -- Gear refresh is handled by Mote (status_change) + MidcastWatchdog (packet
     -- loss). The forced 'gs c update' here was redundant (removed 2026-06-09,

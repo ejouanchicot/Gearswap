@@ -30,7 +30,7 @@
 ---   local spell_data = HealingSPELLS.spells["Cure IV"]
 ---   local cure_type = spell_data.type  -- "single"
 ---
---- @file HEALING_MAGIC_DATABASE.lua
+--- @file shared/data/magic/HEALING_MAGIC_DATABASE.lua
 --- @author Tetsouo
 --- @version 2.0 - Improved formatting - Improved alignment - Modular Architecture (4 files)
 --- @date Created: 2025-10-30 | Updated: 2025-11-06

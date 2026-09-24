@@ -6,16 +6,18 @@
 ---   • UI commands (toggle, update, reload UI)
 ---   • PLD-specific commands (aoe, rune)
 ---   • SCH subjob commands (lightarts, aoe sneak/invi/erase)
----   • State change UI synchronization
+---   • Weaponskill slots (ws, ws1, ws2)
+---   • State change hook (HybridMode profile, WS slots, Hoxne ammo lock)
 ---
 ---   Uses centralized command handlers for consistency across all jobs.
 ---
----   @file    jobs/pld/functions/PLD_COMMANDS.lua
+---   @file    shared/jobs/pld/functions/PLD_COMMANDS.lua
 ---   @author  Tetsouo
 ---   @version 3.0.0 - Logic Extracted to logic/
 ---   @date    Created: 2025-10-03 | Updated: 2025-10-06
----   @requires utils/ui/UI_COMMANDS, utils/core/COMMON_COMMANDS
+---   @requires shared/utils/ui/UI_COMMANDS, shared/utils/core/COMMON_COMMANDS
 ---  ═══════════════════════════════════════════════════════════════════════════
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -50,8 +52,9 @@ end
 ---   COMMAND HANDLER HOOK
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Handle job-specific self commands
----   Processes commands in order: Common >> UI >> PLD-specific
+---   Handle job-specific self commands (command router)
+---   Processes commands in order: Watchdog >> dual-box >> Common >> UI >>
+---   debugmidcast >> cyclestate >> PLD-specific >> SCH >> WS slots
 ---
 ---   Common commands:
 ---   • reload         - Reload GearSwap
@@ -72,15 +75,16 @@ end
 ---   • aoe invi       - Invisible (Light Arts + Accession when SneakInviAOE is On)
 ---   • aoe erase      - Erase (Light Arts + Accession whenever a charge is left)
 ---
+---   Weaponskill slots:
+---   • ws / ws1 / ws2 - Fire the weaponskill the weapon in hand put in that slot
+---
 ---   @param cmdParams table Command parameters array (e.g., {"aoe"})
 ---   @param eventArgs table Event arguments with handled flag
----   @return void
 function job_self_command(cmdParams, eventArgs)
     if not cmdParams[1] then
         return
     end
 
-    -- Lazy load command handlers on first command
     ensure_commands_loaded()
 
     local command = cmdParams[1]:lower()
@@ -105,6 +109,7 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DUAL-BOXING: Handle job request from MAIN
     -- ══════════════════════════════════════════════════════════════════════════
     if command == 'requestjob' then
@@ -223,7 +228,6 @@ end
 ---   Both the weapon choice and the stance can change it: under /SCH the
 ---   Tanking stance holds Burtgang whatever state.MainWeapon says, so a
 ---   HybridMode change moves the main hand as surely as Ctrl+Numpad1 does.
----   @return void
 local function rebuild_ws_slots()
     local ws_ok, WSSlots = pcall(require, 'shared/utils/weaponskill/ws_slots')
     local sb_ok, SetBuilder = pcall(require, 'shared/jobs/pld/functions/logic/set_builder')
@@ -255,7 +259,6 @@ local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 ---
 ---   @param stateField string State key or description of what changed
 ---   @param newValue string New value of that state
----   @return void
 local function on_state_change(stateField, newValue)
     if type(stateField) ~= 'string' then
         return

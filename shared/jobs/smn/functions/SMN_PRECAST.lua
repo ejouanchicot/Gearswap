@@ -1,10 +1,11 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SMN Precast Module - Precast Action Handling
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Pipeline: PrecastGuard >> CooldownChecker >> Fast Cast / JA gear >> WS
+---   Pipeline: PrecastGuard >> CooldownChecker >> WS
 ---
----   Blood Pacts are routed in MIDCAST (master casts BP, gear must be on at
----   midcast for damage/effect calculation). Precast just equips FC for them.
+---   Blood Pacts are geared in MIDCAST (SMN_MIDCAST / SMN_PET_MIDCAST).
+---   In precast Mote looks for sets.precast[spell.type] then sets.precast.JA
+---   by name; with neither defined, a Blood Pact gets no precast gear.
 ---
 ---   @file    shared/jobs/smn/functions/SMN_PRECAST.lua
 ---   @author  Tetsouo
@@ -41,8 +42,8 @@ local function ensure_modules_loaded()
 end
 
 --- True when the master fires a /pet Blood Pact command.
---- For BPs we want FC gear (or BP-cast gear if defined) in precast,
---- but the real damage gear is equipped during MIDCAST.
+--- @param spell table Spell/ability data
+--- @return boolean
 local function is_blood_pact(spell)
     return spell.type == 'BloodPactRage' or spell.type == 'BloodPactWard'
 end
@@ -83,15 +84,18 @@ function job_precast(spell, action, spellMap, eventArgs)
         end
     end
 
-    -- 4. Blood Pact precast: keep precast set generic (FC/Astral Conduit gear).
-    --    Real gear lives in job_post_midcast via blood_pact_classifier.
+    -- 4. Blood Pact: nothing to do here, the gear is equipped in midcast
+    --    via blood_pact_classifier.
     if is_blood_pact(spell) then
-        -- Nothing to equip here - Mote-Include applies sets.precast.FC by default.
         return
     end
 end
 
---- Apply final gear adjustments before equipping
+--- Apply TP gear for weaponskills (SMN passes no TP config)
+--- @param spell table Spell/ability data
+--- @param action string Action type
+--- @param spellMap string Spell mapping
+--- @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
     if WSPrecastHandler then

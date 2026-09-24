@@ -26,8 +26,8 @@ local WHMMacroConfig = {}
 --- DEFAULT MACROBOOK
 ---============================================================================
 
---- Default macrobook and page (from Timara WHM: book 11, page 1)
---- Used when subjob is not defined in macrobooks table
+--- Default macrobook and page
+--- Used when subjob is not defined in the solo table
 WHMMacroConfig.default = {
     book = 11,  -- Macrobook number
     page = 1    -- Page within macrobook
@@ -47,7 +47,6 @@ WHMMacroConfig.solo = {
     ['BLU'] = {book = 11, page = 4},  -- Blue Mage subjob (rare)
     ['GEO'] = {book = 11, page = 5},  -- Geomancer subjob
 }
-
 
 ---============================================================================
 --- DUAL-BOXING CONFIGURATION (Playing WHM + Alt)

@@ -9,11 +9,11 @@
 ---   • Subjob-specific macro book assignments
 ---   • Book and page customization per subjob
 ---   • Default fallback for unconfigured subjobs
----   • Automatic selection on subjob change
+---   • Automatic selection on job/subjob load (MacrobookManager)
 ---
 --- Usage:
 ---   • Modify the book numbers and pages below to match your FFXI macro setup
----   • Book numbers: 1-20 (FFXI macro book slots)
+---   • Book numbers: 1-40 (FFXI macro book slots)
 ---   • Page numbers: 1-10 (pages within each book)
 ---
 --- @file    config/drk/DRK_MACROBOOK.lua
@@ -37,7 +37,7 @@ DRKMacroConfig.solo = {
     ['WAR'] = {book = 1, page = 2}, -- DRK/WAR
     ['NIN'] = {book = 1, page = 3}, -- DRK/NIN
     ['DNC'] = {book = 1, page = 4}, -- DRK/DNC
-    -- Default fallback
+    -- Replaced by DRKMacroConfig.default when MacrobookManager loads this file
     ['default'] = {book = 1, page = 1}
 }
 
@@ -47,7 +47,7 @@ DRKMacroConfig.solo = {
 --- Structure: dualbox[ALT_JOB][SUBJOB] = {book, page}
 --- Example: dualbox['GEO']['SAM'] = DRK/SAM macros optimized for playing with GEO alt
 ---
---- Uncomment and customize sections below as needed:
+--- Used while the alt is online on ALT_JOB; otherwise the solo table applies.
 ---============================================================================
 
 DRKMacroConfig.dualbox = {

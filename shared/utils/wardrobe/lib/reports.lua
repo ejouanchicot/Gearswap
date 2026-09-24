@@ -1,15 +1,15 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Wardrobe Organizer - Read-only reports (scan, keep)
----  ═══════════════════════════════════════════════════════════════════════════
----   `//gs c wo scan` and `//gs c wo keep`. Neither moves an item nor touches
----   the organizer's run state, which is why they live apart from the
----   orchestrator: they can be read without following a run.
+---============================================================================
+--- Wardrobe Organizer - Read-only reports (scan, keep)
+---============================================================================
+--- `//gs c wo scan` and `//gs c wo keep`. Neither moves an item nor touches
+--- the organizer's run state, which is why they live apart from the
+--- orchestrator: they can be read without following a run.
 ---
----   @file    shared/utils/wardrobe/lib/reports.lua
----   @author  Tetsouo
----   @version 1.0
----   @date    Created: 2026-09-18
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/wardrobe/lib/reports.lua
+--- @author Tetsouo
+--- @version 1.0
+--- @date Created: 2026-09-18
+---============================================================================
 
 local Config = require('shared/utils/wardrobe/lib/config')
 local Chat = require('shared/utils/wardrobe/lib/chat')
@@ -19,6 +19,7 @@ local Reports = {}
 
 --- Four per line: sixty-five names one per line would push the rest of the
 --- chat window out of view, and the reader wants the set, not a column.
+--- @param names table Array of names (sorted in place)
 local function list_names(names)
     table.sort(names)
     for i = 1, #names, 4 do
@@ -165,6 +166,7 @@ end
 ---
 --- Without it the organizer works from all 65 the database knows, which is
 --- harmless for slots but tells you nothing about your own rings.
+--- Also writes data/wardrobe_scan_<char>.txt (bags, warp items, declared vs held).
 function Reports.scan_warp_items()
     local ok, WarpOwned = pcall(require, 'shared/utils/wardrobe/lib/warp_owned')
     if not ok or not WarpOwned then
@@ -206,7 +208,7 @@ end
 ---
 --- This exists because the rule is otherwise invisible: a player cannot tell
 --- whether their Warp Ring is safe without moving their whole wardrobe to find
---- out. Reads nothing, moves nothing.
+--- out. Moves nothing.
 function Reports.show_kept()
     Config.refresh()
 

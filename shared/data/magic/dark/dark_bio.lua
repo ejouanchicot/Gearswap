@@ -15,7 +15,7 @@
 ---   - Duration and potency scale with Dark Magic skill
 ---   - DoT damage ticks every 3 seconds
 ---
---- @file dark_bio.lua
+--- @file shared/data/magic/dark/dark_bio.lua
 --- @author Tetsouo
 --- @version 2.0 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

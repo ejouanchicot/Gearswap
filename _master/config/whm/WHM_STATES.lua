@@ -6,7 +6,8 @@
 --- Features:
 ---   • OffenseMode configuration (None/Melee ON) - weapon locking
 ---   • CastingMode configuration (Normal/Resistant) - spell accuracy
----   • IdleMode configuration (Normal/PDT) - defensive idle
+---   • IdleMode configuration (PDT/Refresh) - defensive idle
+---   • CureMode, AfflatusMode, CureAutoTier, CombatMode, FastCast, AutoMedicine
 ---   • Keybind integration (see WHM_KEYBINDS.lua)
 ---   • Validation function to verify state configuration
 ---
@@ -29,9 +30,7 @@ local WHMStates = {}
 
 --- Configure all WHM states
 --- Must be called from user_setup() after Mote-Include is loaded.
---- Defines OffenseMode, CastingMode, and IdleMode states.
----
---- @return void
+--- Defines OffenseMode, CastingMode, IdleMode and the WHM-specific states.
 function WHMStates.configure()
     -- ==========================================================================
     -- COMBAT MODES
@@ -41,7 +40,7 @@ function WHMStates.configure()
     --- Options:
     ---   • 'None' - No melee, focus on healing/casting (default)
     ---   • 'Melee ON' - Enable melee mode (locks weapons)
-    --- Keybind: = or Alt+K to cycle
+    --- Keybind: none in WHM_KEYBINDS.lua
     --- Note: When Melee ON, main/sub/range are locked to prevent accidental swaps
     state.OffenseMode:options('None', 'Melee ON')
     state.OffenseMode:set('None') -- Default: healing/casting focus
@@ -50,7 +49,7 @@ function WHMStates.configure()
     --- Options:
     ---   • 'Normal' - Standard casting gear (default, white in UI)
     ---   • 'Resistant' - Magic accuracy focused gear (for resistant enemies, green in UI)
-    --- Keybind: Alt+5 to cycle
+    --- Keybind: Ctrl+Numpad6 to cycle
     state.CastingMode:options('Normal', 'Resistant')
     state.CastingMode:set('Normal') -- Default: standard casting (white)
 
@@ -58,7 +57,7 @@ function WHMStates.configure()
     --- Options:
     ---   • 'PDT' - Physical Damage Taken reduction (defensive idle, default)
     ---   • 'Refresh' - MP recovery priority (for safe areas)
-    --- Keybind: Ctrl+= to cycle
+    --- Keybind: Ctrl+Numpad1 to cycle
     --- Default: PDT for safety
     state.IdleMode:options('PDT', 'Refresh')
     state.IdleMode:set('PDT') -- Default: defensive idle
@@ -71,7 +70,7 @@ function WHMStates.configure()
     --- Options:
     ---   • 'Potency' - Maximum cure potency (default, for safe casting)
     ---   • 'SIRD' - Spell Interruption Rate Down (for casting under attack)
-    --- Keybind: Alt+1 to cycle
+    --- Keybind: Ctrl+Numpad3 to cycle
     --- Note: UI updates handled by job_state_change in WHM_COMMANDS.lua
     state.CureMode = M('Potency', 'Cure Mode')
     state.CureMode:options('Potency', 'SIRD')
@@ -81,7 +80,7 @@ function WHMStates.configure()
     --- Options:
     ---   • 'Solace' - Cure focus (Stoneskin on Cure, Bar-spell MDB, Sacrifice 7 effects)
     ---   • 'Misery' - Damage focus (Cura boost, Banish boost, Esuna 2 effects, Auspice Enlight)
-    --- Keybind: Alt+3 to cycle
+    --- Keybind: Ctrl+Numpad5 to cycle
     --- Command: //gs c afflatus (auto-casts current stance)
     --- Note: Solace gear (Ebers Bliaut +3) equipped in midcast for Cure/Barspell bonuses
     state.AfflatusMode = M('Solace', 'Afflatus Mode')
@@ -92,7 +91,7 @@ function WHMStates.configure()
     --- Options:
     ---   • 'On' - Auto-downgrade Cure tier based on target HP missing (MP efficient, default)
     ---   • 'Off' - Always use the Cure tier you manually selected (for Stoneskin farming)
-    --- Keybind: Alt+4 to cycle
+    --- Keybind: Ctrl+Numpad4 to cycle
     --- Note: When Off, casting Cure VI on low HP target still gives small Stoneskin (HP healed based)
     state.CureAutoTier = M('On', 'Cure Auto-Tier')
     state.CureAutoTier:options('On', 'Off')
@@ -102,7 +101,7 @@ function WHMStates.configure()
     --- Options:
     ---   • 'Off' - Weapons can swap freely (default, for casting builds)
     ---   • 'On' - Weapons locked (main/sub/range/ammo stay equipped during combat)
-    --- Keybind: Alt+0 to cycle
+    --- Keybind: Ctrl+Numpad2 to cycle
     --- Note: When On, prevents accidental weapon swaps during melee combat
     state.CombatMode = M {
         ['description'] = 'Combat Mode',
@@ -139,8 +138,8 @@ end
 ---============================================================================
 
 --- Validate that all required states are configured correctly
---- Call this in user_setup() after configure() to ensure states are valid.
---- Prints warnings if states are missing or misconfigured.
+--- Optional: can be called after configure(); nothing calls it today.
+--- Prints an error for each missing state.
 ---
 --- @return boolean true if all states valid, false otherwise
 function WHMStates.validate()

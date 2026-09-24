@@ -8,11 +8,11 @@
 ---
 ---   Uses centralized AutoMove for position tracking (performance optimization).
 ---
----   @file    jobs/pld/functions/PLD_MOVEMENT.lua
+---   @file    shared/jobs/pld/functions/PLD_MOVEMENT.lua
 ---   @author  Tetsouo
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-03
----   @requires utils/movement/automove.lua
+---   @requires shared/utils/movement/automove.lua
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   AUTOMOVE INTEGRATION (PERFORMANCE OPTIMIZED - No Startup Cost)
@@ -23,7 +23,6 @@
 --   • Idle gear restoration when stopped
 --
 -- No explicit registration needed - AutoMove auto-detects job modules.
--- If AutoMove is not loaded, movement speed gear is simply not available.
 -- If AutoMove is not loaded, movement speed gear is simply not available.
 
 ---  ═══════════════════════════════════════════════════════════════════════════

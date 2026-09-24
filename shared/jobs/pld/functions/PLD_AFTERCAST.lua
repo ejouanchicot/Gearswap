@@ -1,3 +1,14 @@
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PLD Aftercast Module - Post-Action Handling
+---  ═══════════════════════════════════════════════════════════════════════════
+---   Aftercast hook for Paladin, built by the shared LifecycleManager.
+---
+---   @file    shared/jobs/pld/functions/PLD_AFTERCAST.lua
+---   @author  Tetsouo
+---   @version 1.0
+---   @date    Created: 2025-11-03
+---  ═══════════════════════════════════════════════════════════════════════════
+
 --- PLD adds nothing of its own: the shared handler is the whole
 --- behaviour. Pass a function to aftercast() to extend it.
 local LifecycleManager = require('shared/utils/core/lifecycle_manager')
@@ -13,9 +24,7 @@ job_aftercast = LifecycleManager.aftercast()
 ---   @param action    string Action type (not used)
 ---   @param spellMap  string Spell mapping (not used)
 ---   @param eventArgs table  Event arguments (not used)
----   @return void
 function job_post_aftercast(spell, action, spellMap, eventArgs)
-    -- PLD-specific post-aftercast adjustments
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

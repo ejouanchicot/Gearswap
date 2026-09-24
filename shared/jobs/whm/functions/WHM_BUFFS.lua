@@ -1,7 +1,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   WHM Buffs Module - Buff Gain/Loss Handler
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles job-specific buff gain/loss events (Doom, Chainspell, etc.).
+---   Buff gain/loss handler: the shared LifecycleManager one (Doom handling).
 ---
 ---   @file    shared/jobs/whm/functions/WHM_BUFFS.lua
 ---   @author  Tetsouo

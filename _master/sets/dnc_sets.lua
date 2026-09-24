@@ -1,40 +1,47 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   DNC Equipment Sets - Complete Dancer Gear Configuration
----  ═══════════════════════════════════════════════════════════════════════════
----   Comprehensive equipment configurations for Dancer job covering all combat
----   scenarios, weaponskills, job abilities, and defensive situations.
----   Features:
----     • Weapon sets (Mpu Gandring/Centovente, Demersal/Blurred)
----     • Idle sets (Normal, PDT, Town with movement speed)
----     • Engaged sets (Normal, PDT with 50% DT, FanDance with 30% DT, SaberDance variants)
----     • Step sets (Feather/Quick/Box with accuracy/macc optimization)
----     • Flourish sets (Violent, Animated, Desperate, Reverse)
----     • Waltz sets (healing potency optimization)
----     • Samba/Jig sets (duration and potency)
----     • Weaponskills with buff variants (Ruthless, Rudra's, Shark Bite)
----     • WS variant system (FanDance.Clim > FanDance > Clim > Base)
----     • Fast Cast sets (spell casting optimization)
----     • Jump sets (DRG subjob integration)
----     • Movement speed sets (Adoulin city-specific)
----     • Buff-specific sets (Saber Dance, Climactic Flourish)
----     • Treasure Hunter utility sets
----    Architecture:
----     • Cape augments (TP: DA+10/PDT-10%, WS: WSD+10%)
----     • Dual Chirich Rings (wardrobe 1/2 for haste/store TP)
----     • Dual Moonlight Rings (wardrobe 2/4 for HP/status resist)
----     • Fan Dance integration (20% buff + 30% gear = 50% DT cap)
----     • TP bonus automation (Moonshade handled by TPBonusCalculator)
----     • Set priority variants (4 tiers per major WS)
----    Dependencies:
----     • Mote-Include (set_combine for set inheritance)
----     • TPBonusCalculator (dynamic Moonshade at 1750-1999 TP)
----     • ws_variant_selector (buff-based WS set selection logic)
----     • set_builder (dynamic idle/engaged set construction)
----   @file    jobs/dnc/sets/dnc_sets.lua
----   @author  Tetsouo
----   @version 1.0
----   @date    Updated: 2025-11-10
----  ═════════════════════════════════════════════════════════════════════════
+---============================================================================
+--- DNC Equipment Sets - Complete Dancer Gear Configuration
+---============================================================================
+--- Comprehensive equipment configurations for Dancer job covering all combat
+--- scenarios, weaponskills, job abilities, and defensive situations.
+---
+--- Features:
+---   • Weapon sets (Mpu Gandring/Centovente, Twashtar/Gleti's Knife,
+---     Demersal/Blurred, Blurred sub override)
+---   • Idle sets (Normal, PDT, Town with movement speed)
+---   • Engaged sets (Normal, PDT with 50% DT, FanDance with 30% DT, SaberDance variants)
+---   • Step sets (Feather/Quick/Box with accuracy/macc optimization)
+---   • Flourish sets (Violent, Animated, Desperate, Reverse)
+---   • Waltz sets (healing potency optimization)
+---   • Samba/Jig sets (duration and potency)
+---   • Weaponskills with buff variants (Ruthless Stroke, Dancing Edge,
+---     Rudra's Storm, Shark Bite)
+---   • WS variant system (SaberDance.Clim > SaberDance > FanDance.Clim >
+---     FanDance > Clim > Base, see ws_variant_selector.lua)
+---   • Fast Cast sets (spell casting optimization)
+---   • Jump sets (DRG subjob integration)
+---   • Movement speed sets (Adoulin city-specific)
+---   • Buff-specific sets (Saber Dance, Climactic Flourish)
+---   • Treasure Hunter utility sets
+---
+--- Architecture:
+---   • Cape augments (TP: DA+10/PDT-10%, WS: WSD+10%)
+---   • Dual Chirich Rings (wardrobe 1/2)
+---   • Dual Moonlight Rings (wardrobe 1/2)
+---   • Fan Dance integration (20% buff + 30% gear = 50% DT cap)
+---   • TP bonus automation (Moonshade handled by TPBonusCalculator)
+---   • WS variants (6 per major WS)
+---
+--- Dependencies:
+---   • Mote-Include (set_combine for set inheritance)
+---   • TPBonusCalculator (Moonshade only when it reaches the next TP threshold)
+---   • ws_variant_selector (buff-based WS set selection logic)
+---   • set_builder (dynamic idle/engaged set construction)
+---
+--- @file    sets/dnc_sets.lua
+--- @author  Tetsouo
+--- @version 1.0
+--- @date    Created: 2025-11-03 | Updated: 2025-11-10
+---============================================================================
 sets = {}
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -86,7 +93,7 @@ sets['Mpu Gandring'] = {
     sub = 'Centovente'
 }
 
--- • Mpu Gandring >> Centovente
+-- • Twashtar >> Gleti's Knife
 sets['Twashtar'] = {
     main = 'Twashtar',
     sub = "Gleti's Knife"
@@ -444,7 +451,7 @@ sets.precast.FC.Utsusemi = sets.precast.FC
 
 -- • Base Weaponskill
 --   NOTE: Moonshade Earring is managed dynamically by TPBonusCalculator
---   It will equip automatically at 1750-1999 TP to reach 2000 TP threshold
+--   It is equipped only when it lets the WS reach the next TP threshold (2000/3000)
 sets.precast.WS = {
     ammo = "Oshasha's Treatise",
     head = {
@@ -467,7 +474,7 @@ sets.precast.WS = {
     back = Senuna.WS
 }
 
--- • Ruthless Stroke (4 variants: base, Clim, FanDance, FanDance.Clim, SaberDance, SaberDance.Clim)
+-- • Ruthless Stroke (6 variants: base, Clim, FanDance, FanDance.Clim, SaberDance, SaberDance.Clim)
 --   No Fan Dance (50 equipment DT)
 sets.precast.WS['Ruthless Stroke'] = {
     ammo = 'C. Palug Stone',

@@ -6,7 +6,7 @@
 ---   @file    shared/jobs/drk/functions/DRK_STATUS.lua
 ---   @author  Tetsouo
 ---   @version 1.2 - Added DoomManager safety unlock
----   @date    Updated: 2025-11-14
+---   @date    Created: 2025-10-23 | Updated: 2025-11-14
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -20,7 +20,6 @@ local DoomManager = nil
 ---   @param oldStatus string Previous status
 ---   @param eventArgs table Event arguments
 function job_status_change(newStatus, oldStatus, eventArgs)
-    -- Lazy load DoomManager on first status change
     if not DoomManager then
         local ok, mod = pcall(require, 'shared/utils/debuff/doom_manager')
         if ok then DoomManager = mod end
@@ -28,9 +27,7 @@ function job_status_change(newStatus, oldStatus, eventArgs)
 
     -- Safety: Unlock Doom slots after death (prevents stuck locks after raise)
     DoomManager.handle_status_change(newStatus, oldStatus)
-
-    -- DRK-specific status change logic can be added here
 end
 
--- Export to global scope
+-- Export to global scope (used by Mote-Include via include())
 _G.job_status_change = job_status_change

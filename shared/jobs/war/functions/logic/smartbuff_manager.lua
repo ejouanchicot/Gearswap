@@ -16,7 +16,7 @@
 ---   • Sequential casting with delays to avoid conflicts
 ---   • Subjob-specific logic routing
 ---
----   @file    jobs/war/functions/logic/smartbuff_manager.lua
+---   @file    shared/jobs/war/functions/logic/smartbuff_manager.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
@@ -37,20 +37,6 @@ local MessageBuffs = require('shared/utils/messages/formatters/magic/message_buf
 ---   WARRIOR ABILITY AUTOMATION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Buff the player with key WAR job abilities automatically
----   Handles mutual exclusion between Berserk and Defender.
----
----   Abilities managed:
----   • Berserk     (ID: 1) - Attack+, Defense- | Excludes Defender
----   • Defender    (ID: 3) - Defense+, Attack- | Excludes Berserk
----   • Aggressor   (ID: 4) - Accuracy+
----   • Retaliation (ID: 8) - Counter attacks
----   • Restraint   (ID: 9) - Weaponskill damage+
----   • Warcry      (ID: 2) - Attack boost (party)
----   • Blood Rage  (ID: 11) - Attack boost fallback (mutually exclusive with Warcry)
----
----   @param param string Optional mutual exclusion: 'Berserk' (exclude Defender) or 'Defender' (exclude Berserk)
----   @return void
 --- Main WAR abilities (Berserk/Defender/Aggressor/Retaliation/Restraint).
 --- Berserk and Defender are mutually exclusive via the `exclude` table.
 local MAIN_ABILITIES = {
@@ -148,7 +134,11 @@ end
 --- buffactive would always pick Hasso.
 --- Haste Samba is skipped silently below its 350 TP cost - it is a bonus on top
 --- of the WAR chain, and a warning on every macro press would be noise.
---- @param param string 'Berserk' or 'Defender'
+--- @param param   string 'Berserk' or 'Defender'
+--- @param recasts table get_ability_recasts() output
+--- @param buffs   table buffactive snapshot
+--- @param to_cast table abilities_to_cast (mutated)
+--- @param status  table status_data (mutated)
 local function collect_subjob_abilities(param, recasts, buffs, to_cast, status)
     local sub = player and player.sub_job
 
@@ -161,6 +151,7 @@ local function collect_subjob_abilities(param, recasts, buffs, to_cast, status)
 end
 
 --- Cast collected abilities sequentially with 2-second spacing.
+--- @param abilities_to_cast table List of { name, id } entries
 local function cast_sequentially(abilities_to_cast)
     for i, ability in ipairs(abilities_to_cast) do
         local command = 'input /ja "' .. ability.name .. '" <me>'
@@ -172,6 +163,21 @@ local function cast_sequentially(abilities_to_cast)
     end
 end
 
+---   Buff the player with key WAR job abilities automatically
+---   Handles mutual exclusion between Berserk and Defender, then appends the
+---   subjob abilities (see collect_subjob_abilities).
+---
+---   Abilities managed:
+---   • Berserk     (ID: 1) - Attack+, Defense- | Excludes Defender
+---   • Defender    (ID: 3) - Defense+, Attack- | Excludes Berserk
+---   • Aggressor   (ID: 4) - Accuracy+
+---   • Retaliation (ID: 8) - Counter attacks
+---   • Restraint   (ID: 9) - Weaponskill damage+
+---   • Warcry      (ID: 2) - Attack boost (party)
+---   • Blood Rage  (ID: 11) - Attack boost fallback (mutually exclusive with Warcry)
+---
+---   @param param string Optional mutual exclusion: 'Berserk' (exclude Defender) or 'Defender' (exclude Berserk)
+---   @return void
 function SmartbuffManager.buff_war(param)
     local recasts = windower.ffxi.get_ability_recasts()
     local buffs = buffactive

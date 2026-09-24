@@ -11,10 +11,10 @@
 --- and is intentionally NOT reused here — subjob /WAR doesn't have access to
 --- those higher-level abilities.
 ---
---- @file shared/utils/smartbuff/subjob_war_buffs.lua
---- @author Tetsouo
+--- @file    shared/utils/smartbuff/subjob_war_buffs.lua
+--- @author  Tetsouo
 --- @version 1.0
---- @date Created: 2026-05-18
+--- @date    Created: 2026-05-18
 ---============================================================================
 
 local SubjobWarBuffs = {}
@@ -31,6 +31,7 @@ local CAST_SPACING = 2
 
 --- Collect status_data + abilities_to_cast for subjob WAR buffs.
 --- Reads windower.ffxi.get_ability_recasts() and buffactive directly.
+--- is_recast_ready is the global published by RECAST_CONFIG.lua.
 --- @return table abilities_to_cast List of { name = string } ready to cast
 --- @return table status_data       List of { name, status, time? } for display
 function SubjobWarBuffs.collect()

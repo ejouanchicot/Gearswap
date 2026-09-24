@@ -74,6 +74,9 @@ local function build_name_index()
     return idx
 end
 
+--- Resolve an item name to its id (index built on first call).
+--- @param name string Item name
+--- @return number|nil Item id
 local function resolve_id(name)
     if not _name_to_id then _name_to_id = build_name_index() end
     return _name_to_id[name:lower()]
@@ -138,8 +141,8 @@ end
 
 --- Schedule a refill check after a completed ranged attack with this ammo.
 ---
---- A ranged attack is recognised by spell.action_type: GearSwap gives /ra the
---- type 'Misc'. The check only runs when the tracked ammo is the one equipped,
+--- A ranged attack is recognised by spell.action_type 'Ranged Attack' (its
+--- spell.type is 'Misc', statics.lua:134). The check only runs when the tracked ammo is the one equipped,
 --- so a ranged attack with other ammo does not warn about a stack that is not
 --- in use. It is delayed so FFXI has decremented the ammo count before it is
 --- read.

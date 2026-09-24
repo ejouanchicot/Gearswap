@@ -1,10 +1,12 @@
 ---============================================================================
 --- Message Renderer - Smart chat output with filtering and configuration
 ---============================================================================
---- Features: Color schemes, filtering, toggle, accessibility
---- Design Pattern: Strategy Pattern (color schemes)
+--- Last step of the template path: applies the toggle, filter level, color
+--- scheme and timestamp settings, splits multi-line messages and calls
+--- add_to_chat. No production caller changes any setting, so the defaults
+--- below are what the player always gets.
 ---
---- @file core/message_renderer.lua
+--- @file shared/utils/messages/core/message_renderer.lua
 --- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2025-11-06
@@ -22,7 +24,7 @@ local _config = {
     filter_level = 0,                -- 0=all, 1=important, 2=critical
     color_mode = "normal",           -- "normal", "colorblind", "monochrome"
     timestamp = false,               -- Add timestamps
-    prefix_style = "brackets"        -- "[BLM]" vs "BLM:" vs "BLM »"
+    prefix_style = "brackets"        -- Not read anywhere
 }
 
 -- Color scheme definitions (accessibility)
@@ -82,7 +84,7 @@ local _stats = {
 --- Send message to chat with rendering options
 --- @param message string The formatted message
 --- @param color number FFXI color code
---- @param options table? {level, namespace, category, timestamp}
+--- @param options table? {level = number (filter level), namespace = string (stats)}
 function MessageRenderer.send(message, color, options)
     options = options or {}
 
@@ -111,20 +113,18 @@ function MessageRenderer.send(message, color, options)
         message = string.format("[%s] %s", time, message)
     end
 
-    -- Check if message contains newlines (\n)
-    -- If yes: split into multiple add_to_chat() calls (fixes FFXI alignment issues)
+    -- One add_to_chat per line (fixes FFXI alignment issues with \n).
+    -- Empty lines are dropped: templates use "\n \n" for a blank line.
     if message:find("\n") then
         local lines = {}
         for line in message:gmatch("[^\n]+") do
             table.insert(lines, line)
         end
 
-        -- Send each line separately
         for _, line in ipairs(lines) do
             add_to_chat(color, line)
         end
     else
-        -- Single line: normal send
         add_to_chat(color, message)
     end
 
@@ -136,7 +136,6 @@ function MessageRenderer.send(message, color, options)
     end
 
     _stats.by_color[color] = (_stats.by_color[color] or 0) + 1
-
 end
 
 --- Transform color code based on current color scheme
@@ -264,7 +263,6 @@ function MessageRenderer.reset_stats()
     }
     add_to_chat(158, "[Messages] Statistics reset")
 end
-
 
 ---============================================================================
 --- ERROR HANDLING

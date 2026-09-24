@@ -1,7 +1,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   COR Buffs Module - Buff Gain/Loss Handler
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles job-specific buff gain/loss events (Doom, Chainspell, etc.).
+---   Buff gain/loss hook, built by LifecycleManager (Doom handling), plus the
+---   COR extension that retires a Phantom Roll from the tracker when its buff
+---   drops.
 ---
 ---   @file    shared/jobs/cor/functions/COR_BUFFS.lua
 ---   @author  Tetsouo

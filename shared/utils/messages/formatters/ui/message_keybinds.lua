@@ -1,10 +1,10 @@
 ---============================================================================
---- Message Keybinds - Keybind-specific formatting functions (NEW SYSTEM)
+--- Message Keybinds - Keybind-specific formatting functions
 ---============================================================================
---- Uses template-based messaging via MessageRenderer
---- Migrated from old system to new system: 2025-11-06
+--- Keybind list and keybind errors. Templates: data/systems/keybinds_messages.lua;
+--- the list lines themselves are built here and sent to MessageRenderer.
 ---
---- @file    messages/message_keybinds.lua
+--- @file    shared/utils/messages/formatters/ui/message_keybinds.lua
 --- @author  Tetsouo
 --- @version 2.0
 --- @date    Created: 2025-11-06
@@ -17,7 +17,7 @@ local MessageRenderer = require('shared/utils/messages/core/message_renderer')
 local Colors = MessageCore.COLORS
 
 ---============================================================================
---- HELPER FUNCTIONS (Keep as-is - pure logic, no display)
+--- HELPER FUNCTIONS (no display)
 ---============================================================================
 
 --- Format a single keybind line with colors
@@ -47,7 +47,7 @@ function MessageKeybinds.calculate_max_width(keybinds)
 end
 
 ---============================================================================
---- DISPLAY FUNCTIONS (Migrated to new system)
+--- DISPLAY FUNCTIONS
 ---============================================================================
 
 --- Display a complete keybind list with header
@@ -55,7 +55,7 @@ end
 --- @param keybinds table Array of keybind objects with 'key' and 'desc' fields
 function MessageKeybinds.show_keybind_list(title, keybinds)
     local max_width = MessageKeybinds.calculate_max_width(keybinds)
-    max_width = math.max(max_width + 4, string.len(title) + 8)
+    max_width = math.min(math.max(max_width + 4, string.len(title) + 8), MessageCore.SEPARATOR_WIDTH)
 
     -- Prepare separator
     local separator = string.rep("=", max_width)
@@ -78,7 +78,7 @@ function MessageKeybinds.show_keybind_list(title, keybinds)
         local desc_color = MessageCore.create_color_code(Colors.KEYBIND_DESC)
         local formatted_line = string.format("%s[%s]%s %s", key_color, display_key, desc_color, bind.desc)
 
-        -- Send directly via MessageRenderer (can't use template since colors vary)
+        -- Sent directly: the key text is built here, not by a template
         MessageRenderer.send(formatted_line, 1, {namespace = 'KEYBINDS', level = 0})
     end
 

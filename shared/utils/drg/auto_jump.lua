@@ -18,10 +18,10 @@
 ---   • Single Jump: ~2.0s (1.0s animation + 1.0s gear swap)
 ---   • Double Jump: ~3.0s
 ---
---- @file shared/utils/drg/auto_jump.lua
---- @author Tetsouo
+--- @file    shared/utils/drg/auto_jump.lua
+--- @author  Tetsouo
 --- @version 1.0
---- @date Created: 2026-07-29
+--- @date    Created: 2026-07-29
 ---============================================================================
 
 local AutoJump = {}
@@ -49,11 +49,13 @@ _G.AUTO_JUMP_SEQUENCE_ACTIVE = _G.AUTO_JUMP_SEQUENCE_ACTIVE or false
 --- AVAILABILITY
 ---============================================================================
 
+--- @return boolean True when Jump is off cooldown
 local function is_jump_ready()
     local recasts = windower.ffxi.get_ability_recasts()
     return is_recast_ready(recasts[JUMP_RECAST_ID] or 0)
 end
 
+--- @return boolean True when High Jump is off cooldown
 local function is_high_jump_ready()
     local recasts = windower.ffxi.get_ability_recasts()
     return is_recast_ready(recasts[HIGH_JUMP_RECAST_ID] or 0)

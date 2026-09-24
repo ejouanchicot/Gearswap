@@ -4,18 +4,19 @@
 --- Equipment configurations for Warrior job.
 ---
 --- Contains:
----   • Equipment definitions (Souverain set, Cichol capes)
+---   • Equipment definitions (Souveran set, Cichol capes)
 ---   • Weapon sets (Great Axes, Polearms, Swords, Axes, Maces)
 ---   • Idle sets (Base, PDT, Town)
----   • Engaged sets (Base, PDTTP, Normal, AM3)
+---   • Engaged sets (Base, PDTTP, PDT, Normal, PDTAFM3, PDTKC)
 ---   • Precast JA sets (Berserk, Warcry, Aggressor, etc.)
 ---   • Precast WS sets (Ukko's Fury, Upheaval, Savage Blade, etc.)
 ---   • Movement sets (Base speed, Adoulin)
 ---   • Buff sets (Doom resistance)
 ---
---- @file    jobs/war/sets/war_sets.lua
+--- @file    sets/war_sets.lua
 --- @author  Tetsouo
 --- @version 2.0
+--- @date    Created: 2026-02-17
 ---============================================================================
 -- ============================================================--
 --                  EQUIPMENT DEFINITIONS                     --

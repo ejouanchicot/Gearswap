@@ -115,9 +115,10 @@ end
 ---
 --- Reads `_G.AltJobState` directly instead of DualBoxManager.get_alt_job():
 --- that helper returns nil once the state is older than DualBoxConfig.timeout
---- (30s), but `last_update` is only written on a job CHANGE - so half a minute
---- later it reports the alt as offline forever. That freshness rule exists to
---- grey out the UI; gating commands on it killed them 30s in.
+--- (30s), but `last_update` is only refreshed when an altjobupdate arrives (a
+--- reload of either box, or a requestjob) - so half a minute later it reports
+--- the alt as offline until the next one. That freshness rule exists to grey
+--- out the UI; gating commands on it killed them 30s in.
 --- @return string|nil job, string|nil subjob, number main_level, number sub_level
 local function get_alt_jobs()
     local s = _G.AltJobState
@@ -279,7 +280,8 @@ local function load_config()
     return commands, job
 end
 
---- Drop the cached table so the next lookup re-reads the file.
+--- Drop the cached merged table so the next lookup rebuilds it (the config
+--- files themselves stay in the require cache). No caller today.
 function AltCommands.clear_cache()
     cache.key = nil
     cache.commands = nil

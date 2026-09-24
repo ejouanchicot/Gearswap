@@ -1,11 +1,11 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   RUN Idle Module - Idle State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all idle state logic for Rune Fencer job:
----   - Idle set selection based on IdleMode (DT, Refresh, Regain, Evasion)
----   - Movement speed optimization
----   - Town gear management
----   - Dynamic weapon application to idle sets
+---   customize_idle_set delegates to logic/set_builder.lua:
+---   - Town base set (sets.idle.Town / sets.Adoulin)
+---   - HybridMode idle set (PDT/MDT) outside town
+---   - Main weapon and grip
+---   - Movement speed gear outside town
 ---
 ---   @file    shared/jobs/run/functions/RUN_IDLE.lua
 ---   @author  Tetsouo

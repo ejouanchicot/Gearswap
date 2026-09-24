@@ -14,7 +14,7 @@
 ---   • MessageCooldowns (for recast display)
 ---   • BLMMessages (for status messages)
 ---
----   @file    jobs/blm/functions/logic/storm_manager.lua
+---   @file    shared/jobs/blm/functions/logic/storm_manager.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-15
@@ -154,7 +154,6 @@ local function cast_with_both_ready(storm_name, currentTime, klimaform_active)
     end
 end
 
---- Extracted from StormManager.cast_storm_with_klimaform: the `storm_recast == 0 and klimaform_recast > 0` branch.
 --- CASE 2: the Storm is up, Klimaform is not. Castable only if the buff is
 --- already running.
 --- @return boolean True when the Storm went out
@@ -165,7 +164,7 @@ local function cast_storm_klimaform_down(storm_name, currentTime, klimaform_acti
         updateLastCastTime(currentTime)
         return true
     else
-        -- Need Klimaform but it's on cooldown - show both recasts
+        -- Need Klimaform but it's on cooldown - show its recast
         local cooldowns = {
             {
                 type = "cooldown",

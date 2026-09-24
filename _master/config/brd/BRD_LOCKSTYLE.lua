@@ -1,8 +1,7 @@
 ---============================================================================
 --- BRD Lockstyle Configuration
 ---============================================================================
---- Defines lockstyle sets for Bard job (cosmetic appearance).
---- Lockstyle varies by subjob for visual variety.
+--- Defines the lockstyle set for Bard job (cosmetic appearance).
 ---
 --- @file config/brd/BRD_LOCKSTYLE.lua
 --- @author Tetsouo
@@ -12,10 +11,11 @@
 
 local BRDLockstyleConfig = {}
 
--- Default lockstyle (used if no subjob config)
+-- Lockstyle applied on BRD, whatever the subjob
 BRDLockstyleConfig.default = 7
 
--- Lockstyle per subjob (optional customization)
+-- Not read: LockstyleManager only uses .default and .get_style(subjob).
+-- This table would need a get_style() function (see BST_LOCKSTYLE.lua) to apply.
 BRDLockstyleConfig.by_subjob = {
     ['WHM'] = 7,  -- Bard/White Mage
     ['RDM'] = 7,  -- Bard/Red Mage

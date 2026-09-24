@@ -1,16 +1,15 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DRK Engaged Module - Combat State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all engaged state logic for Dark Knight job:
----   - Combat set selection based on EngagedMode (DT, Enspell, Refresh, TP)
----   - Dual wield detection and optimization (NIN subjob)
----   - Dynamic weapon application to engaged sets
----   - Combat state transitions
+---   Engaged set customization for Dark Knight, delegated to logic/set_builder:
+---   - Base set: sets.engaged.AM3 (Aftermath Lv.3 + Liberator), sets.engaged.PDT
+---     (HybridMode PDT) or sets.engaged
+---   - MainWeapon set, then Dark Seal / Nether Void variants
 ---
 ---   @file    shared/jobs/drk/functions/DRK_ENGAGED.lua
 ---   @author  Tetsouo
 ---   @version 2.1 - Removed dead code + refactored header
----   @date    Updated: 2025-11-12
+---   @date    Created: 2025-10-23 | Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -23,11 +22,11 @@ local SetBuilder = nil
 ---   ENGAGED HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Apply weapon sets, mode selection, and movement gear to all engaged configurations
----   @param meleeSet table The engaged set to customize
----   @return table Modified engaged set with current weapon, mode, and movement gear
+---   Build the engaged set. Mote's meleeSet is only checked for nil: the
+---   builder picks its own base from sets.engaged.
+---   @param meleeSet table The engaged set chosen by Mote
+---   @return table Engaged set to equip ({} when meleeSet is nil)
 function customize_melee_set(meleeSet)
-    -- Lazy load SetBuilder on first engage
     if not SetBuilder then
         local ok, mod = pcall(require, 'shared/jobs/drk/functions/logic/set_builder')
         if ok then SetBuilder = mod end
@@ -37,7 +36,6 @@ function customize_melee_set(meleeSet)
         return {}
     end
 
-    -- Get current weapon and hybrid mode
     local weapon_name = state.MainWeapon and state.MainWeapon.current
     local hybrid_mode = state.HybridMode and state.HybridMode.value
 

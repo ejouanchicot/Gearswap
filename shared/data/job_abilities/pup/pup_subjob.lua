@@ -7,7 +7,7 @@
 ---   - Activate (Lv1) - Summon automaton
 ---   - Repair (Lv15) - Restore automaton HP (oil required)
 ---
---- @file pup_subjob.lua
+--- @file shared/data/job_abilities/pup/pup_subjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

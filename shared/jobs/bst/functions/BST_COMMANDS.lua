@@ -2,17 +2,20 @@
 ---   BST Commands Module - Command Handling
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Handles job-specific commands for Beastmaster:
----   • ecosystem - Cycle through 7 ecosystems
+---   • ecosystem - Cycle state.Ecosystem (rebuilds species / ammoSet)
 ---   • species - Cycle through species for current ecosystem
 ---   • broth - Display broth counts in inventory
 ---   • pet engage - Manually engage pet
 ---   • pet disengage - Manually disengage pet
 ---   • rdylist - List all available Ready Moves with index numbers
----   • rdymove [1-6] - Execute Ready Move by index
+---   • rdymove [N] - Execute Ready Move by index (Fight first if the pet is idle)
+---   • debugprecast - Toggle BST precast debug (answers before the common
+---     command of the same name)
+---   • debugmidcast, cyclestate, dual-box, UI / watchdog / common commands
 ---
 ---   Uses centralized MessageFormatter for all messages (professional multi-color).
 ---
----   @file    jobs/bst/functions/BST_COMMANDS.lua
+---   @file    shared/jobs/bst/functions/BST_COMMANDS.lua
 ---   @author  Tetsouo
 ---   @version 2.0
 ---   @date    Created: 2025-10-17
@@ -160,8 +163,10 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- DUAL-BOXING: Handle job request from MAIN
-    -- ══════════════════════════════════════════════════════════════════════════
+    ---══════════════════════════════════════════════════════════════════════════
+    --- DUAL-BOXING: Handle job request from MAIN
+    ---══════════════════════════════════════════════════════════════════════════
+
     if command == 'requestjob' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         DualBoxManager.handle_job_request()
@@ -425,7 +430,8 @@ function job_self_command(cmdParams, eventArgs)
                 -- Player engaged + Pet idle >> Fight + Ready Move (NO Heel)
                 MessageFormatter.show_bst_ready_move_auto_engage(index, move_name)
 
-                -- BLOCK background auto-engage (prevents Fight spam)
+                -- Pauses the background auto-engage while the sequence runs
+                -- (read by the BST entry file's pet auto-engage loop)
                 _G.bst_rdymove_active = true
 
                 -- Step 1: Engage pet (0s delay)
@@ -436,7 +442,7 @@ function job_self_command(cmdParams, eventArgs)
                     send_command('input /pet "' .. move_name .. '" <me>')
                 end, 3.5)
 
-                -- Step 3: Re-enable background auto-engage (4.5s delay)
+                -- Step 3: Clear the flag (4.5s delay)
                 coroutine.schedule(function()
                     _G.bst_rdymove_active = false
                 end, 4.5)
@@ -446,7 +452,8 @@ function job_self_command(cmdParams, eventArgs)
                 -- Player idle + Pet idle >> Fight + Ready Move + Heel
                 MessageFormatter.show_bst_ready_move_auto_sequence(index, move_name)
 
-                -- BLOCK background auto-engage (prevents Fight spam)
+                -- Pauses the background auto-engage while the sequence runs
+                -- (read by the BST entry file's pet auto-engage loop)
                 _G.bst_rdymove_active = true
 
                 -- Step 1: Engage pet (0s delay)
@@ -462,7 +469,7 @@ function job_self_command(cmdParams, eventArgs)
                     send_command('input /pet "Heel" <me>')
                 end, 6)
 
-                -- Step 4: Re-enable background auto-engage (6.5s delay)
+                -- Step 4: Clear the flag (6.5s delay)
                 coroutine.schedule(function()
                     _G.bst_rdymove_active = false
                 end, 6.5)

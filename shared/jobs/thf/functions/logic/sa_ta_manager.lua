@@ -21,7 +21,7 @@
 ---   • sets.precast.WS (weaponskill sets with optional .SA/.TA/.SATA variants)
 ---   • _G.thf_sa_pending, _G.thf_ta_pending (pending flag globals)
 ---
----   @file    jobs/thf/functions/logic/sa_ta_manager.lua
+---   @file    shared/jobs/thf/functions/logic/sa_ta_manager.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-06

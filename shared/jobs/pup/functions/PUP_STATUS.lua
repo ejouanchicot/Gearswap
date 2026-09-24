@@ -1,7 +1,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PUP Status Module - Player Status Change Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles status changes (Idle, Engaged, Resting, Dead, etc.)
+---   Status change hook. Only the shared LifecycleManager handler runs
+---   (Doom slot unlock); PUP has no status logic of its own.
 ---
 ---   @file    shared/jobs/pup/functions/PUP_STATUS.lua
 ---   @author  Tetsouo

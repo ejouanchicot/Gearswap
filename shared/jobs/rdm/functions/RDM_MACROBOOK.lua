@@ -13,11 +13,11 @@
 ---   • Default subjob: NIN
 ---   • Automatic subjob-based selection
 ---
----   @file    jobs/rdm/functions/RDM_MACROBOOK.lua
+---   @file    shared/jobs/rdm/functions/RDM_MACROBOOK.lua
 ---   @author  Tetsouo
 ---   @version 2.1 - Lazy Loading for performance
 ---   @date    Created: 2025-10-13 | Updated: 2025-11-15
----   @requires utils/macrobook/macrobook_manager
+---   @requires shared/utils/macrobook/macrobook_manager
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Lazy loading: Module created on first use
@@ -40,7 +40,7 @@ local function get_macrobook_module()
     return macrobook_module
 end
 
--- Export select_default_macro_book() to global scope
+--- Select the macro book/page for the current subjob (see config/rdm/RDM_MACROBOOK.lua).
 function select_default_macro_book()
     return get_macrobook_module().select_default_macro_book()
 end

@@ -21,13 +21,13 @@
 ---   2. PRECAST: Set _G.drk_dark_seal_pending = true (INSTANT)
 ---   3. AFTERCAST: Confirm flag (if not interrupted)
 ---   4. ENGAGED: Check buffactive['Dark Seal'] OR _G.drk_dark_seal_pending
----   5. BUFFS: Clear flag when buff appears in buffactive
+---   5. BUFFS: Clear flag when the buff wears off (consumed) - DRK_BUFFS.lua
 ---
 ---   Dependencies:
 ---   • sets.engaged[weapon][mode] with optional buff variants
 ---   • _G.drk_dark_seal_pending, _G.drk_nether_void_pending global flags
 ---
----   @file    jobs/drk/functions/logic/drk_buff_anticipation.lua
+---   @file    shared/jobs/drk/functions/logic/drk_buff_anticipation.lua
 ---   @author  Tetsouo
 ---   @version 2.0 - Dark Seal/Nether Void Only
 ---   @date    Created: 2025-10-23 | Updated: 2025-10-23
@@ -56,7 +56,8 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Apply engaged set variant based on Dark Seal and Nether Void buffs
----   Called from customize_melee_set() to enhance engaged gear with buff bonuses.
+---   Called from SetBuilder.build_engaged_set() to enhance engaged gear with buff bonuses.
+---   Variants are read from sets.engaged[weapon_name][hybrid_mode] (Accu fallback).
 ---
 ---   Variant Priority:
 ---   1. Dark Seal + Nether Void (if .DarkSealNetherVoid exists)

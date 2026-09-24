@@ -12,7 +12,7 @@
 ---   • Automatic cooldown checking
 ---   • User-friendly error messages
 ---
----   @file    jobs/pld/functions/logic/rune_manager.lua
+---   @file    shared/jobs/pld/functions/logic/rune_manager.lua
 ---   @author  Tetsouo
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-06
@@ -33,6 +33,7 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Execute the currently selected rune from state.RuneMode
+---   Shows an error or the remaining recast instead when it cannot be used.
 function RuneManager.execute_rune()
     if not state or not state.RuneMode then
         MessageFormatter.show_error("RuneMode state not available")
@@ -45,7 +46,6 @@ function RuneManager.execute_rune()
         return
     end
 
-    -- Check if ability is available (not on cooldown)
     local res = require('resources')
     local ability_data = res.job_abilities:with('en', selected_rune)
 
@@ -54,21 +54,18 @@ function RuneManager.execute_rune()
         return
     end
 
-    -- Check recast
     local recasts = windower.ffxi.get_ability_recasts()
     local recast_id = ability_data.recast_id
     local recast = recasts[recast_id] or 0
 
     if is_on_cooldown(recast) then
-        -- Ability on cooldown - show cooldown message
         local job_tag = MessageFormatter.get_job_tag()
         MessageFormatter.show_ability_cooldown(selected_rune, recast, job_tag)
         return
     end
 
-    -- Ability ready - execute rune (message handled by ability_message_handler)
-    -- NOTE: Message display is handled by universal ability_message_handler system
-    --       which loads RUN_JA_DATABASE and shows description (e.g., "Ignis Fire rune, resist ice")
+    -- No message here: ability_message_handler shows the rune description
+    -- from RUN_JA_DATABASE when the JA goes out.
     send_command('@input /ja "' .. selected_rune .. '" <me>')
 end
 

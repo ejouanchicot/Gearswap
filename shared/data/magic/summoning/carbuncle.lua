@@ -3,10 +3,10 @@
 ---============================================================================
 --- Carbuncle summon spell and Blood Pact abilities
 ---
---- @file carbuncle.lua
+--- @file shared/data/magic/summoning/carbuncle.lua
 --- @author Tetsouo
 --- @version 2.0 - Improved alignment
---- @date Created: 2025-10-31 | Updated: 2025-11-06 | Updated: 2025-10-31
+--- @date Created: 2025-10-31 | Updated: 2025-11-06
 ---============================================================================
 
 local CARBUNCLE = {}

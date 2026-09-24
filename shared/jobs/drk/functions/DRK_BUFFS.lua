@@ -1,12 +1,13 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DRK Buffs Module - Buff Gain/Loss Handler
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles job-specific buff gain/loss events (Doom, Chainspell, etc.).
+---   Handles buff gain/loss events: Doom, Dark Seal / Nether Void pending
+---   flags, and an engaged gear refresh on Aftermath: Lv.3.
 ---
 ---   @file    shared/jobs/drk/functions/DRK_BUFFS.lua
 ---   @author  Tetsouo
 ---   @version 1.1 - Removed dead code + refactored header
----   @date    Updated: 2025-11-12
+---   @date    Created: 2025-10-23 | Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -24,11 +25,10 @@ end
 ---   Handle buff change events
 ---   @param buff string Buff name
 ---   @param gain boolean True if buff gained, false if lost
+---   @param eventArgs table Event arguments
 function job_buff_change(buff, gain, eventArgs)
-    -- Lazy load managers on first buff change
     ensure_managers_loaded()
 
-    -- Doom handling (centralized)
     if DoomManager.handle_buff_change(buff, gain) then
         return -- Doom handled, stop processing
     end

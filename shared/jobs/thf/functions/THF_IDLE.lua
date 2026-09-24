@@ -1,11 +1,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   THF Idle Module - Idle State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all idle state logic for Thief job:
----   - Idle set selection based on IdleMode (DT, Refresh, Regain, Evasion)
----   - Movement speed optimization
----   - Town gear management
----   - Dynamic weapon application to idle sets
+---   customize_idle_set delegates to logic/set_builder.lua:
+---   - Town base set (sets.idle.Town / sets.Adoulin)
+---   - Weapon sets (MainWeapon/SubWeapon, or AbyWeapon when AbyProc is on)
+---   - Movement speed gear outside town
 ---
 ---   @file    shared/jobs/thf/functions/THF_IDLE.lua
 ---   @author  Tetsouo
@@ -23,9 +22,9 @@ local SetBuilder = nil
 ---   IDLE HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Apply weapon sets, mode selection, and movement gear to all idle configurations
+---   Apply town base, weapons and movement gear to the idle set
 ---   @param idleSet table The idle set to customize
----   @return table Modified idle set with current weapon, mode, and movement gear
+---   @return table Modified idle set
 function customize_idle_set(idleSet)
     -- Lazy load SetBuilder on first idle
     if not SetBuilder then

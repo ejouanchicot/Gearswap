@@ -11,7 +11,7 @@
 ---   - Shadowbind (Lv40) - Root enemy (30s, breaks on damage)
 ---   - Unlimited Shot (Lv51 - Master Job Only) - Next ranged attack no ammo
 ---
---- @file rng_subjob.lua
+--- @file shared/data/job_abilities/rng/rng_subjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

@@ -1,16 +1,14 @@
 ---============================================================================
---- Warp IPC Listener Registration (Job-Level)
+--- Warp IPC Listener Registration
 ---============================================================================
---- This file registers the IPC listener at the job level (like MyHome does).
---- Must be included/executed in each job's main file to persist across reloads.
+--- Registers the live 'ipc message' listener: the receiver side of the warp
+--- `all` commands (sender: warp_ipc.lua). Runs as a script, not a module:
+--- WarpInit.init() include()s it on every job-file load.
 ---
---- Usage in job file (TETSOUO_WAR.lua, KAORIES_BRD.lua, etc.):
----   include('shared/utils/warp/warp_ipc_register')
----
---- @file warp_ipc_register.lua
+--- @file shared/utils/warp/warp_ipc_register.lua
 --- @author Tetsouo
---- @version 1.1 - Job-level registration (like MyHome)
---- @date 2025-10-28
+--- @version 1.1
+--- @date Created: 2025-10-28
 ---============================================================================
 
 -- WarpInit includes this file on every job load. GearSwap has already dropped
@@ -25,10 +23,9 @@ if windower._warp_ipc_register_event_id
 end
 windower._warp_ipc_register_event_id = nil
 
--- Load MessageWarp for formatted messages
 local MessageWarp = require('shared/utils/messages/formatters/system/message_warp')
 
--- IPC message prefix
+-- Same prefix as warp_ipc.lua (sender)
 local IPC_PREFIX = 'tetsouo_warp_'
 
 -- Whitelist of allowed commands. Single source of truth: warp_command_registry.
@@ -46,22 +43,20 @@ local last_ipc_time = 0
 local IPC_DEBOUNCE = Registry.IPC_DEBOUNCE
 
 ---============================================================================
---- IPC LISTENER (Registered at Job Level - Like MyHome)
+--- IPC LISTENER
 ---============================================================================
 
 windower._warp_ipc_register_event_id = windower.register_event('ipc message', function(msg)
-    -- Debug: Show ALL IPC messages
     if _G.WARP_DEBUG then
         MessageWarp.show_ipc_raw_received(msg)
     end
 
-    -- Only process our messages
     if not msg or not msg:find('^' .. IPC_PREFIX) then
         return
     end
 
-    -- Skip self-echo: if WE sent this broadcast, don't process it again
-    -- (we already execute locally in send_to_all via coroutine.schedule)
+    -- While this instance is broadcasting (2.5 s), drop every warp message:
+    -- send_to_all already runs the command locally.
     if _G.WARP_IPC_BROADCASTING then
         if _G.WARP_DEBUG then
             MessageWarp.show_ipc_message_debounced()
@@ -69,14 +64,12 @@ windower._warp_ipc_register_event_id = windower.register_event('ipc message', fu
         return
     end
 
-    -- TEST MESSAGE
     if msg:find('^tetsouo_warp_test_') then
         local sender = msg:gsub('^tetsouo_warp_test_', '')
         MessageWarp.show_ipc_test_received(sender)
         return
     end
 
-    -- Debounce
     local current_time = os.clock()
     if msg == last_ipc_message and (current_time - last_ipc_time) < IPC_DEBOUNCE then
         if _G.WARP_DEBUG then
@@ -93,13 +86,11 @@ windower._warp_ipc_register_event_id = windower.register_event('ipc message', fu
 
     MessageWarp.show_ipc_command_received(command)
 
-    -- Verify whitelist
     if not is_command_allowed(command) then
         MessageWarp.show_ipc_not_allowed(command)
         return
     end
 
-    -- Execute command
     MessageWarp.show_ipc_executing(command)
     coroutine.schedule(function()
         windower.chat.input('//gs c ' .. command)

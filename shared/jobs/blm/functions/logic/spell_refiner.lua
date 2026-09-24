@@ -19,9 +19,9 @@
 ---     refiner/special_handlers.lua  - magic burst announce / exec / Breakga
 ---
 ---   Public API: SpellRefiner.refine_various_spells(spell, eventArgs)
----     - Sole external caller: blm_functions.lua:191
+---     - Sole external caller: refine_various_spells() in blm_functions.lua
 ---
----   @file    jobs/blm/functions/logic/spell_refiner.lua
+---   @file    shared/jobs/blm/functions/logic/spell_refiner.lua
 ---   @author  Tetsouo
 ---   @version 3.0 - Modular refactor (826 lines -> 200 lines facade + 5 modules)
 ---   @date    Migrated: 2025-10-15, Refactored: 2026-05-09
@@ -95,7 +95,7 @@ end
 --- proceed with the spell, and dispatches all the side effects (announce,
 --- execute, display recasts, breakga fallback).
 ---
---- @param spell table     Spell being cast (from job_precast / job_midcast)
+--- @param spell table     Spell being cast (from job_precast)
 --- @param eventArgs table Event args (.cancel will be set to true if needed)
 function SpellRefiner.refine_various_spells(spell, eventArgs)
     if not spell or not eventArgs then

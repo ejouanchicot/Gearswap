@@ -39,14 +39,19 @@ local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'BST')
 --- GEARSWAP ENTRY POINT
 ---============================================================================
 
--- Load region configuration (must load before message system for color codes)
+-- Load region configuration. message_colors captures _G.RegionConfig once,
+-- when it is first required - ConfigLoader above already required it, so
+-- this assignment comes too late for the region warning color.
 local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig
 end
 
+--- GearSwap entry hook: loads the BST configs, Mote-Include, the shared systems
+--- and the BST modules. Called by GearSwap each time this job file is loaded.
+--- @return void
 function get_sets()
-    -- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+    -- PERFORMANCE PROFILING (enable with: //gs c perf start)
     local Profiler = require('shared/utils/debug/performance_profiler')
     Profiler.start('get_sets')
 
@@ -113,6 +118,10 @@ end
 --- USER SETUP (STATE DEFINITIONS + INITIALIZATION)
 ---============================================================================
 
+--- Configure states, ecosystem, keybinds, UI, BST HUD and pet monitoring.
+--- Called by Mote-Include from init_include() (inside include('Mote-Include.lua'),
+--- before init_gear_sets) and again on every subjob change, before job_sub_job_change().
+--- @return void
 function user_setup()
     -- ==========================================================================
     -- STATES CONFIGURATION
@@ -162,7 +171,9 @@ function user_setup()
     -- JOB CHANGE MANAGER INITIALIZATION
     -- ==========================================================================
     if jcm_success and JobChangeManager then
-        -- Check if functions are loaded (they should be after get_sets completes)
+        -- bst_functions.lua is not included yet when Mote runs user_setup();
+        -- these globals exist only because BSTKeybinds.bind_all() above
+        -- (KeybindManager show_intro) required BST_MACROBOOK / BST_LOCKSTYLE.
         if select_default_lockstyle and select_default_macro_book then
             JobChangeManager.initialize({
                 keybinds = BSTKeybinds,
@@ -231,8 +242,11 @@ end
 
 --- Called by Mote-Include after state changes
 --- Updates the UI to reflect current state values
+--- @param cmdParams table Parameters passed to Mote's handle_update
+--- @param eventArgs table Mote event arguments (unused)
+--- @return void
 function job_update(cmdParams, eventArgs)
-    -- Update UI when states change (F9, F10, etc.)
+    -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI and KeybindUI.update then
         KeybindUI.update()
@@ -243,6 +257,9 @@ end
 --- EQUIPMENT SETS LOADING
 ---============================================================================
 
+--- Load the BST equipment sets.
+--- Called by Mote-Include at the end of init_include(), after user_setup().
+--- @return void
 function init_gear_sets()
     include('sets/bst_sets.lua')
 end
@@ -251,6 +268,11 @@ end
 --- SUBJOB CHANGE HANDLER
 ---============================================================================
 
+--- Handle sub job change events (called by Mote-Include after user_setup())
+--- Hands the reload sequence to JobChangeManager, then notifies the dualbox partner.
+--- @param newSubjob string New subjob
+--- @param oldSubjob string Old subjob
+--- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
     -- Let JobChangeManager handle the full reload sequence
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
@@ -269,9 +291,10 @@ end
 ---============================================================================
 --- PET MONITORING (SMART BACKGROUND MONITORING)
 ---============================================================================
---- Lightweight background monitoring that only runs when pet exists
---- Checks every 3 seconds (vs 2.4s time change event)
---- Stops automatically when no pet (vs constant polling)
+--- Background loop re-scheduled every 1 second with coroutine.schedule.
+--- Runs with or without a pet: tracks pet engaged status (+ auto-engage)
+--- and idle movement, and sends 'gs c update' only when one of them changed.
+--- Stopped by stop_pet_monitoring() (file_unload).
 ---============================================================================
 
 local pet_monitor_active = false
@@ -280,7 +303,7 @@ local last_monitor_check = 0
 -- Movement tracking (lightweight - no distance calculation)
 local last_position = {x = 0, y = 0, z = 0}
 
--- Dirty flag tracking (Option 2: only update if states changed)
+-- Last values seen, so gear is refreshed only when a state changed
 local previous_states = {
     PetEngaged = 'false',
     moving = 'false'
@@ -378,7 +401,9 @@ local function smart_pet_monitor()
     coroutine.schedule(smart_pet_monitor, 1.0)
 end
 
---- Start pet monitoring (called when pet is summoned)
+--- Start the monitoring loop (no-op if already running).
+--- Called from user_setup() after 3s, and by BST_AFTERCAST.lua.
+--- @return void
 function start_pet_monitoring()
     if pet_monitor_active then
         return  -- Already running
@@ -388,7 +413,9 @@ function start_pet_monitoring()
     coroutine.schedule(smart_pet_monitor, 1.0)
 end
 
---- Stop pet monitoring (called on unload or pet release)
+--- Stop the monitoring loop; the pending coroutine exits on its next tick.
+--- Called from file_unload().
+--- @return void
 function stop_pet_monitoring()
     pet_monitor_active = false
 end
@@ -398,11 +425,13 @@ _G.start_pet_monitoring = start_pet_monitoring
 _G.stop_pet_monitoring = stop_pet_monitoring
 
 ---============================================================================
-
----============================================================================
 --- CLEANUP ON UNLOAD
 ---============================================================================
 
+--- Called by GearSwap when this job file is unloaded (job change, reload).
+--- Stops pet monitoring, unloads the BST HUD, cancels pending job-change
+--- operations, clears exported globals and unbinds the job keys.
+--- @return void
 function file_unload()
     -- Stop pet monitoring
     stop_pet_monitoring()

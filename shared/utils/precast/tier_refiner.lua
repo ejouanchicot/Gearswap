@@ -9,16 +9,16 @@
 ---
 --- The caller supplies the correspondence table, so the engine carries no
 --- knowledge of any particular job or spell family:
----   BLM  -> jobs/blm/functions/logic/refiner/correspondence.lua
----   RDM  -> data/spells/RDM_ENFEEBLE_TIERS.lua
+---   BLM  -> shared/jobs/blm/functions/logic/refiner/correspondence.lua
+---   RDM  -> shared/data/spells/RDM_ENFEEBLE_TIERS.lua
 ---
 --- Correspondence format: correspondence[tier].replace = next_lower_tier,
 --- where '' means the base tier (spell name without a roman numeral).
 ---
---- @file shared/utils/precast/tier_refiner.lua
---- @author Tetsouo
+--- @file    shared/utils/precast/tier_refiner.lua
+--- @author  Tetsouo
 --- @version 1.0
---- @date Created: 2026-07-28
+--- @date    Created: 2026-07-28
 ---============================================================================
 
 local TierRefiner = {}
@@ -37,6 +37,7 @@ local REPLACEMENT_COOLDOWN = 0.2
 local last_replacement_time = 0
 
 --- Resolve Windower resources across the several ways they may be exposed.
+--- @return table|nil Windower resources table
 local function get_res()
     return res or windower.res or require('resources')
 end

@@ -1,11 +1,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BST Idle Module - Idle State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all idle state logic for Beastmaster job:
----   - Idle set selection based on IdleMode (DT, Refresh, Regain, Evasion)
----   - Movement speed optimization
----   - Town gear management
----   - Dynamic weapon application to idle sets
+---   customize_idle_set (SetBuilder.build_idle_set): pet or master idle set
+---   (PetEngaged / PetIdleMode), PDT overlay when HybridMode is PDT, then
+---   weapon sets, MoveSpeed while moving and town feet in town.
 ---
 ---   @file    shared/jobs/bst/functions/BST_IDLE.lua
 ---   @author  Tetsouo

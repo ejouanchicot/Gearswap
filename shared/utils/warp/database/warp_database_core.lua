@@ -1,19 +1,15 @@
 ---============================================================================
---- Warp Database Core - Centralized Facade for Modular Database
+--- Warp Database Core - Facade over the modular warp item database
 ---============================================================================
---- Provides lazy-loading access to all warp item data organized by destination.
---- This facade coordinates between specialized database modules for optimal
---- performance and maintainability.
+--- Lazy-loading access to all warp item data, organized by destination.
+--- Each destination key routes to one of five category modules
+--- (home, teleports, nations, cities/chocobo/conquest,
+--- adoulin/special/mechanics), loaded on first use.
 ---
---- Architecture:
----   - Lazy-loading: Modules loaded only when needed
----   - Modular: 8 specialized modules by category
----   - Centralized: Single API for all database access
----
---- @file warp_database_core.lua
+--- @file shared/utils/warp/database/warp_database_core.lua
 --- @author Tetsouo
---- @version 4.0 - Modular Architecture
---- @date 2025-10-28
+--- @version 4.0
+--- @date Created: 2025-10-28
 ---============================================================================
 
 local WarpDatabase = {}
@@ -197,7 +193,7 @@ end
 --- @return table|nil Item data
 --- @return string|nil Destination key
 function WarpDatabase.get_item_by_id(item_id)
-    -- Search through all loaded modules first (fast path)
+    -- Already loaded modules first
     for _, module in pairs(_cached_modules) do
         if module.get_item_by_id then
             local item_data, destination = module.get_item_by_id(item_id)
@@ -207,7 +203,7 @@ function WarpDatabase.get_item_by_id(item_id)
         end
     end
 
-    -- If not found, load all modules and search (slow path)
+    -- Then load and search the modules not loaded yet
     for destination_key, module_name in pairs(MODULE_ROUTING) do
         if not _cached_modules[module_name] then
             local module = load_module(module_name)
@@ -223,8 +219,6 @@ function WarpDatabase.get_item_by_id(item_id)
     return nil, nil
 end
 
---- Count total items across all destinations
---- @return number Total item count
 --- Every item name the warp system can reach for, across all destinations.
 ---
 --- The wardrobe organizer needs this: no gear set names a Warp Ring, so
@@ -252,6 +246,8 @@ function WarpDatabase.get_all_item_names()
     return names
 end
 
+--- Count total items across all destinations
+--- @return number Total item count
 function WarpDatabase.count_total_items()
     local total = 0
     local counted_modules = {}
@@ -269,7 +265,7 @@ function WarpDatabase.count_total_items()
     return total
 end
 
---- Check if player race can use item (race restriction check)
+--- Check if player race can use item (race restriction check; no caller today)
 --- @param item_data table Item data with races field
 --- @return boolean True if player can use item
 function WarpDatabase.can_player_use_item(item_data)

@@ -1,7 +1,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BST Status Module - Player Status Change Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles status changes (Idle, Engaged, Resting, Dead, etc.)
+---   Status change hook, built by LifecycleManager (unlocks Doom slots so a
+---   raise does not leave them stuck).
 ---
 ---   @file    shared/jobs/bst/functions/BST_STATUS.lua
 ---   @author  Tetsouo

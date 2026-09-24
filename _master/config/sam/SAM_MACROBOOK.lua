@@ -2,7 +2,7 @@
 --- SAM Macrobook Configuration
 ---============================================================================
 --- Defines macro book and page settings for SAM by subjob.
---- @file SAM_MACROBOOK.lua
+--- @file config/sam/SAM_MACROBOOK.lua
 --- @author Tetsouo
 --- @version 2.0 - Dual-boxing support
 --- @date Created: 2025-10-21 | Updated: 2025-10-22
@@ -25,12 +25,11 @@ SAMMacroConfig.solo = {
     ['DNC'] = {book = 2, page = 1},  -- SAM/DNC
 }
 
-
 ---============================================================================
 --- DUAL-BOXING CONFIGURATION (Playing SAM + Alt)
 ---============================================================================
 --- Structure: dualbox[ALT_JOB][SUBJOB] = {book, page}
---- Example: dualbox['GEO']['SAM'] = SAM/SAM macros optimized for playing with GEO alt
+--- Example: dualbox['GEO']['WAR'] = SAM/WAR macros optimized for playing with GEO alt
 ---
 --- Uncomment and customize sections below as needed:
 ---============================================================================

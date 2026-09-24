@@ -1,11 +1,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PUP Idle Module - Idle State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all idle state logic for Puppetmaster job:
----   - Idle set selection based on IdleMode (DT, Refresh, Regain, Evasion)
----   - Movement speed optimization
----   - Town gear management
----   - Dynamic weapon application to idle sets
+---   Idle hook for Puppetmaster: delegates to logic/set_builder.lua.
+---   NOTE: logic/set_builder.lua does not exist yet (PUP is incomplete), so
+---   this require raises on the first idle rebuild.
 ---
 ---   @file    shared/jobs/pup/functions/PUP_IDLE.lua
 ---   @author  Tetsouo
@@ -23,11 +21,10 @@ local SetBuilder = nil
 ---   IDLE HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Apply weapon sets, mode selection, and movement gear to all idle configurations
+---   Build the idle set through SetBuilder.build_idle_set
 ---   @param idleSet table The idle set to customize
----   @return table Modified idle set with current weapon, mode, and movement gear
+---   @return table Customized idle set
 function customize_idle_set(idleSet)
-    -- Lazy load SetBuilder on first idle
     if not SetBuilder then
         SetBuilder = require('shared/jobs/pup/functions/logic/set_builder')
     end

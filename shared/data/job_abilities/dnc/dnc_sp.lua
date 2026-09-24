@@ -7,7 +7,7 @@
 ---   - Trance (SP1, Lv1) - Steps/Dances TP cost 0
 ---   - Grand Pas (SP2, Lv96) - Flourishes without FM cost
 ---
---- @file dnc_sp.lua
+--- @file shared/data/job_abilities/dnc/dnc_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06

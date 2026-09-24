@@ -1,12 +1,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   WHM Aftercast Module - Aftercast State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all aftercast logic for White Mage job:
----   • Return to idle/engaged state after spell completion
----   • Buff management and state updates
----   • Post-spell cleanup
+---   job_aftercast is the shared LifecycleManager handler (watchdog tick);
+---   Mote-Include returns to idle/engaged gear after the action.
 ---
----   @file    WHM_AFTERCAST.lua
+---   @file    shared/jobs/whm/functions/WHM_AFTERCAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-21

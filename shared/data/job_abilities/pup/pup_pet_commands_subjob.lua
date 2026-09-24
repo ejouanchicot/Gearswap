@@ -16,7 +16,7 @@
 ---   - Water Maneuver (Lv1) - Magic defense (MND+)
 ---   - Retrieve (Lv10) - Orders automaton to return
 ---
---- @file pup_pet_commands_subjob.lua
+--- @file shared/data/job_abilities/pup/pup_pet_commands_subjob.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

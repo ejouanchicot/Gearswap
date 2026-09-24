@@ -1,10 +1,12 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BST Pet Precast Module - Pet Ability Precast Handling
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles precast gear for pet abilities (Call Beast, Reward, Ready Moves, etc.)
----   This is a SPECIAL hook called ONLY for pet-related abilities.
+---   Precast gear for pet abilities (Reward, Killer Instinct, Spur, Ready Moves).
+---   NOTE: neither the GearSwap engine nor Mote-Include has a pet_precast
+---   event, so nothing calls job_pet_precast and this file never runs its
+---   hook. BST_PRECAST.job_precast equips the Sic set for Ready moves itself.
 ---
----   @file    jobs/bst/functions/BST_PET_PRECAST.lua
+---   @file    shared/jobs/bst/functions/BST_PET_PRECAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-18
@@ -20,8 +22,8 @@ local MessageFormatter = nil
 ---   PET PRECAST HOOK
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Called before pet abilities (Ready Moves, Reward, Spur, etc.)
----   This is the LAST precast hook (executes after Mote-Include)
+---   Intended to run before pet abilities (Ready Moves, Reward, Spur, etc.);
+---   never called (see file header)
 ---   @param spell table Spell/ability data
 ---   @return void
 function job_pet_precast(spell)

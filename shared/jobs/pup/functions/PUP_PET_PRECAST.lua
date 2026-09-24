@@ -1,10 +1,11 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PUP Pet Precast Module - Pet Ability Precast Handling
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles precast gear for pet abilities (Activate, Deploy, Repair, Maneuvers, etc.)
----   This is a SPECIAL hook called ONLY for pet-related abilities.
+---   Precast gear for BST-style pet abilities (Reward, Killer Instinct, Spur,
+---   Ready moves). NOTE: no engine or Mote code calls job_pet_precast, so this
+---   hook never runs.
 ---
----   @file    jobs/pup/functions/PUP_PET_PRECAST.lua
+---   @file    shared/jobs/pup/functions/PUP_PET_PRECAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-18
@@ -14,9 +15,8 @@
 ---   PET PRECAST HOOK
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Called before pet abilities (Call Beast, Reward, Ready Moves, etc.)
+---   Equip the precast set for a pet ability (Reward, Killer Instinct, Spur, Ready moves)
 ---   @param spell table Spell/ability data
----   @return void
 function job_pet_precast(spell)
     local name = spell.name
     local set

@@ -1,14 +1,14 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   COR Movement Module - Movement Tracking & Speed Gear
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles movement detection and automatic speed gear equipping for Corsair.
----   Integrates with AutoMove system for consistent movement gear management.
+---   Movement hooks for Corsair. AutoMove tracks movement; the speed gear is
+---   added by SetBuilder.build_idle_set (apply_movement).
 ---
----   @file    COR_MOVEMENT.lua
+---   @file    shared/jobs/cor/functions/COR_MOVEMENT.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-07
----   @requires utils/movement/automove.lua
+---   @requires shared/utils/movement/automove.lua
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -16,7 +16,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Get current movement status (delegates to AutoMove)
----   @return table movement_info
+---   @return table { is_moving, distance, position }
 function get_cor_movement_status()
     if not AutoMove then
         return {
@@ -37,14 +37,11 @@ end
 ---   MOVEMENT HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Handle gear equipping during movement
+---   Handle gear equipping during movement (empty: nothing COR-specific)
 ---   @param playerStatus string Current player status
 ---   @param eventArgs table Event arguments
 ---   @return void
 function job_handle_equipping_gear(playerStatus, eventArgs)
-    -- COR-specific movement gear handling
-    -- AutoMove system handles most movement gear automatically
-    -- This is for job-specific movement gear logic if needed
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

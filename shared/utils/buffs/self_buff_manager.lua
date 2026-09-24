@@ -223,8 +223,8 @@ function SelfBuffManager.create(config)
     --- Use every buff of the list that is missing and available
     --- @return boolean True when actions were queued or a status was displayed
     function manager.buff_self()
-        -- os.clock, not os.time: the anti-spam window is under a second, and
-        -- whole seconds would let a double press through.
+        -- os.clock, not os.time: os.time only counts whole seconds, too coarse
+        -- for the CAST_COOLDOWN anti-spam window.
         local now = os.clock()
         local recasts = {
             spells = windower.ffxi.get_spell_recasts(),

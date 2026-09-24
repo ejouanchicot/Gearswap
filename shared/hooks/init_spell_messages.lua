@@ -4,11 +4,11 @@
 --- Automatically wraps user_post_midcast to show spell messages for ALL jobs.
 --- Simply include this file in get_sets() and it works automatically.
 ---
---- Usage in TETSOUO_JOB.lua:
+--- Usage in the entry point (Tetsouo_[JOB].lua), after Mote-Include:
 ---   function get_sets()
 ---       include('Mote-Include.lua')
----       include('shared/hooks/init_spell_messages.lua')  -- ← Add this line
----       include('jobs/[job]/functions/[job]_functions.lua')
+---       include('../shared/hooks/init_spell_messages.lua')
+---       include('../shared/jobs/[job]/functions/[job]_functions.lua')
 ---   end
 ---
 --- Features:
@@ -24,7 +24,7 @@
 ---   @file    shared/hooks/init_spell_messages.lua
 ---   @author  Tetsouo
 ---   @version 1.2 - Lazy Loading for performance
----   @date    Updated: 2025-11-15
+---   @date    Created: 2025-11-03 | Updated: 2025-11-15
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════

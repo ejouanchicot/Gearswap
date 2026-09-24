@@ -21,7 +21,7 @@
 ---   - All are Darkness element
 ---   - Duration varies with Dark Magic skill
 ---
---- @file dark_absorb.lua
+--- @file shared/data/magic/dark/dark_absorb.lua
 --- @author Tetsouo
 --- @version 2.0 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06

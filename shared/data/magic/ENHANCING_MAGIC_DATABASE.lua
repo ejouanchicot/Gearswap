@@ -19,7 +19,7 @@
 ---   - Storm: Weather effects (SCH)
 ---   - nil: Generic enhancing (Protect/Shell/Haste/Teleport/etc.)
 ---
---- @file ENHANCING_MAGIC_DATABASE.lua
+--- @file shared/data/magic/ENHANCING_MAGIC_DATABASE.lua
 --- @author Tetsouo
 --- @version 2.0 - Improved formatting - Improved alignment - Unified database with spell_family support
 --- @date Created: 2025-11-05 | Updated: 2025-11-06

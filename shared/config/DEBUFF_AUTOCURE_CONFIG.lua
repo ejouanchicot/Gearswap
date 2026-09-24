@@ -6,16 +6,16 @@
 ---
 ---   Features:
 ---     • Auto-cure Silence (Echo Drops, Remedy)
----     • Auto-cure Paralysis (Remedy)
+---     • Auto-cure Paralysis (Remedy, Panacea)
 ---     • Test mode for development
 ---     • Debug logging support
 ---
 ---   Priority System:
 ---     • Silence: Echo Drops (Priority 1) → Remedy (Priority 2)
----     • Paralysis: Remedy (Priority 1) -> Panacea (Priority 2)
+---     • Paralysis: Remedy (Priority 1) → Panacea (Priority 2)
 ---
 ---   @file    shared/config/DEBUFF_AUTOCURE_CONFIG.lua
----   @author  Tetsouo GearSwap Project
+---   @author  Tetsouo
 ---   @version 1.3 - Panacea added as paralysis fallback
 ---   @date    Updated: 2026-08-18
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -52,7 +52,7 @@ DebuffAutoCureConfig.paralysis_cure_items = {
 }
 
 ---  ─────────────────────────────────────────────────────────────────────────
----   FUTURE DEBUFFS (Not Implemented)
+---   FUTURE DEBUFFS (Not Implemented - nothing reads these two flags)
 ---  ─────────────────────────────────────────────────────────────────────────
 DebuffAutoCureConfig.auto_cure_poison     = false
 DebuffAutoCureConfig.auto_cure_blind      = false

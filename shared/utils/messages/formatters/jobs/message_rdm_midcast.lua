@@ -1,12 +1,13 @@
 ---============================================================================
---- RDM Midcast Message Formatter - RDM Midcast Debug (NEW SYSTEM - HYBRID)
+--- RDM Midcast Message Formatter - RDM Midcast Debug
 ---============================================================================
 --- Provides formatted debug messages for the RDM Midcast system.
 --- Handles all debug output for Enfeebling/Enhancing/Elemental Magic routing.
---- Uses hybrid approach: Direct rendering for multi-line debug messages
---- Migrated from old system to new system: 2025-11-06
+--- Separators come from the RDM_MIDCAST templates; the debug lines are sent
+--- straight to MessageRenderer.send, with (color, text) swapped: GearSwap's
+--- add_to_chat recovers and prints them in color 8, whatever CHAT_* says.
 ---
---- @file    messages/message_rdm_midcast.lua
+--- @file    shared/utils/messages/formatters/jobs/message_rdm_midcast.lua
 --- @author  Tetsouo
 --- @version 2.0
 --- @date    Created: 2025-11-06
@@ -20,7 +21,6 @@ local MessageRenderer = require('shared/utils/messages/core/message_renderer')
 --- CONSTANTS
 ---============================================================================
 
-local CHAT_DEFAULT = 1
 local CHAT_HEADER  = 8    -- Dark gray
 local CHAT_SUCCESS = 158  -- Green
 local CHAT_ERROR   = 167  -- Red

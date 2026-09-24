@@ -3,22 +3,23 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Provides centralized set building for both engaged and idle states.
 ---   Handles complex PLD-specific gear logic:
----   • Main weapon selection (Burtgang, Naegling, Shining, Malevo)
+---   • Main weapon selection (MainWeapon state, /SCH stance override)
 ---   • Shield selection (Duban, Aegis, Blurred Shield +1; weapon-driven in
 ---     Sortie and under /SCH)
----   • Shining exception (Alber Strap grip requirement requirement)
+---   • Shining exception (Alber Strap grip requirement)
 ---   • HybridMode application (PDT/MDT/Sortie, or DPS/Tanking/Hoxne
 ---     under /SCH, with shield awareness)
 ---   • XP mode support (idleXp/meleeXp sets)
----   • Movement speed gear
----   • Town detection and town gear
+---   • Movement speed gear (idle only)
+---   • Town detection and town gear (idle only)
+---   • Hoxne Ampulla ammo in the Hoxne stance
 ---
 ---   Features:
 ---   • Shared logic for both idle and engaged
 ---   • Safe pcall for set_combine operations
 ---   • Modular functions for easy maintenance
 ---
----   @file    jobs/pld/functions/logic/set_builder.lua
+---   @file    shared/jobs/pld/functions/logic/set_builder.lua
 ---   @author  Tetsouo
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-06
@@ -29,11 +30,9 @@ local SetBuilder = {}
 ---   DEPENDENCIES
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load base set builder (universal functions)
 local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
-
--- Load message formatter for error display
-local MessageFormatter = require('shared/utils/messages/message_formatter')
+-- Unused here; kept so the module still loads MessageFormatter as it always did.
+require('shared/utils/messages/message_formatter')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   HYBRIDMODE → SET MAPPING
@@ -106,9 +105,10 @@ local function sch_weapon()
 end
 
 --- The Hoxne stance carries its Ampulla in every set, the way the stances
---- carry their shield. The ammo lock (shared/utils/equipment/ampulla_lock.lua) keeps the WS and
---- midcast sets off the slot; this is what puts the piece on in the first
---- place, so idling or engaging cannot land on a set's own ammo instead.
+--- carry their shield. The ammo lock (shared/utils/equipment/ampulla_lock.lua)
+--- keeps the WS and midcast sets off the slot; this is what puts the piece on
+--- in the first place, so idling or engaging cannot land on a set's own ammo
+--- instead.
 local SCH_AMMO_BY_MODE = {
     Hoxne = 'Hoxne Ampulla'
 }
@@ -179,7 +179,6 @@ function SetBuilder.apply_shield(result, in_town)
         return result
     end
 
-
     return result
 end
 
@@ -226,15 +225,12 @@ end
 ---   MOVEMENT SPEED (INHERITED FROM BASE)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Inherit universal movement function from BaseSetBuilder
 SetBuilder.apply_movement = BaseSetBuilder.apply_movement
-
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   TOWN DETECTION (INHERITED FROM BASE)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Inherit universal town detection function from BaseSetBuilder
 SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -245,8 +241,9 @@ SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town
 ---   BurtgangKC (Kraken Club) detection takes priority for specialized multi-attack set.
 ---
 ---   Priority order:
----   1. BurtgangKC weapon set      >> sets.engaged.BurtgangKC
----   2. HybridMode (PDT/MDT)       >> sets.engaged[HybridMode]
+---   1. BurtgangKC weapon set, or Kraken Club already in the sub slot
+---                                  >> sets.engaged.BurtgangKC
+---   2. HybridMode                  >> sets.engaged[ENGAGED_SET_BY_MODE[mode]]
 ---   3. Fallback                    >> base_set
 ---
 ---   @param base_set table Base engaged set from pld_sets.lua
@@ -265,7 +262,7 @@ function SetBuilder.select_engaged_base(base_set)
         end
     end
 
-    -- PRIORITY 3: Normal HybridMode logic (PDT, MDT or Sortie)
+    -- PRIORITY 3: HybridMode set (ENGAGED_SET_BY_MODE)
     local mode_set = hybrid_set(sets.engaged, ENGAGED_SET_BY_MODE)
     if mode_set then
         -- If Shining weapon, return HybridMode set WITHOUT sub (Alber will be applied after)
@@ -353,7 +350,7 @@ function SetBuilder.build_idle_set(base_set)
         return SetBuilder.apply_mode_ammo(SetBuilder.apply_mode_shield(result))
     end
 
-    -- Step 5: Apply HybridMode (PDT/MDT/Sortie) outside of town - SKIP sub if Shining or BurtgangKC
+    -- Step 5: Apply HybridMode set (IDLE_SET_BY_MODE) outside of town - SKIP sub if Shining or BurtgangKC
     local mode_set = hybrid_set(sets.idle, IDLE_SET_BY_MODE)
     if mode_set then
         if is_shining or is_burtgang_kc then

@@ -1,21 +1,21 @@
 ---============================================================================
 --- BRD Messages Module - Bard Song and Ability Message Formatting
 ---============================================================================
---- Uses NEW message system with inline colors
---- Delegates to api/messages.lua for all formatting
+--- Ability, instrument, song and error lines for BRD.
+--- Templates: data/jobs/brd_messages.lua, sent through M.job.
 ---
---- @file utils/messages/message_brd.lua
+--- @file shared/utils/messages/formatters/jobs/message_brd.lua
 --- @author Tetsouo
---- @version 2.0 (NEW SYSTEM)
+--- @version 2.0
 --- @date Created: 2025-10-13 | Migrated: 2025-11-06
 ---============================================================================
 
 local BRDMessages = {}
 
--- NEW message system
 local M = require('shared/utils/messages/api/messages')
 
--- Get job tag (for subjob support: BRD/WHM >> "BRD/WHM")
+-- Job tag with subjob ("BRD/WHM"). Same logic as MessageCore.get_job_tag,
+-- except the fallback is 'BRD' instead of 'JOB'.
 local function get_job_tag()
     local main_job = player and player.main_job or 'BRD'
     local sub_job = player and player.sub_job or ''
@@ -51,51 +51,59 @@ local function get_element_color(element)
 end
 
 ---============================================================================
---- ABILITY MESSAGES (NEW SYSTEM)
+--- ABILITY MESSAGES
 ---============================================================================
 
+--- Show the BRD.soul_voice_activated message
 function BRDMessages.show_soul_voice_activated()
     M.job('BRD', 'soul_voice_activated', {
         job = get_job_tag()
     })
 end
 
+--- Show the BRD.soul_voice_ended message
 function BRDMessages.show_soul_voice_ended()
     M.job('BRD', 'soul_voice_ended', {
         job = get_job_tag()
     })
 end
 
+--- Show the BRD.nightingale_activated message
 function BRDMessages.show_nightingale_activated()
     M.job('BRD', 'nightingale_activated', {
         job = get_job_tag()
     })
 end
 
+--- Show the BRD.nightingale_active message
 function BRDMessages.show_nightingale_active()
     M.job('BRD', 'nightingale_active', {
         job = get_job_tag()
     })
 end
 
+--- Show the BRD.troubadour_activated message
 function BRDMessages.show_troubadour_activated()
     M.job('BRD', 'troubadour_activated', {
         job = get_job_tag()
     })
 end
 
+--- Show the BRD.troubadour_active message
 function BRDMessages.show_troubadour_active()
     M.job('BRD', 'troubadour_active', {
         job = get_job_tag()
     })
 end
 
+--- Show the BRD.marcato_used message
 function BRDMessages.show_marcato_used()
     M.job('BRD', 'marcato_used', {
         job = get_job_tag()
     })
 end
 
+--- Disabled on purpose (too verbose): prints nothing.
 --- @param song_name string Optional song name (defaults to "Honor March")
 function BRDMessages.show_marcato_honor_march(song_name)
     -- DISABLED: Too verbose
@@ -106,18 +114,21 @@ function BRDMessages.show_marcato_honor_march(song_name)
     -- })
 end
 
+--- Show the BRD.marcato_skip_buffs message
 function BRDMessages.show_marcato_skip_buffs()
     M.job('BRD', 'marcato_skip_buffs', {
         job = get_job_tag()
     })
 end
 
+--- Show the BRD.marcato_skip_soul_voice message
 function BRDMessages.show_marcato_skip_soul_voice()
     M.job('BRD', 'marcato_skip_soul_voice', {
         job = get_job_tag()
     })
 end
 
+--- Show the BRD.pianissimo_used message
 function BRDMessages.show_pianissimo_used()
     M.job('BRD', 'pianissimo_used', {
         job = get_job_tag()
@@ -141,7 +152,7 @@ function BRDMessages.show_ability_command(ability_name)
 end
 
 ---============================================================================
---- INSTRUMENT LOCK PROTECTION MESSAGES (NEW SYSTEM)
+--- INSTRUMENT LOCK PROTECTION MESSAGES
 ---============================================================================
 
 --- Show instrument lock message (generic for any song+instrument)
@@ -166,17 +177,18 @@ function BRDMessages.show_instrument_released(song_name, instrument)
     })
 end
 
---- Legacy function names (for backward compatibility)
+--- Legacy shortcut: Honor March on Marsyas
 function BRDMessages.show_honor_march_locked()
     BRDMessages.show_instrument_locked('Honor March', 'Marsyas')
 end
 
+--- Legacy shortcut: Honor March on Marsyas
 function BRDMessages.show_honor_march_released()
     BRDMessages.show_instrument_released('Honor March', 'Marsyas')
 end
 
 ---============================================================================
---- INSTRUMENT SELECTION MESSAGES (NEW SYSTEM)
+--- INSTRUMENT SELECTION MESSAGES
 ---============================================================================
 
 --- Display dummy song instrument usage
@@ -191,10 +203,10 @@ function BRDMessages.show_daurdabla_dummy(song_name, instrument)
 end
 
 ---============================================================================
---- SONG CASTING MESSAGES (NEW SYSTEM)
+--- SONG CASTING MESSAGES
 ---============================================================================
 
---- @param song_count number Number of songs being cast
+--- @param song_count number Number of songs being cast (not shown)
 --- @param rotation_type string "4-Song" or "5-Song"
 function BRDMessages.show_songs_casting(song_count, rotation_type)
     M.job('BRD', 'songs_casting', {
@@ -229,6 +241,8 @@ function BRDMessages.show_dummy_casting(total_songs)
     })
 end
 
+--- Note: the 'dummy_cast' template is commented out in brd_messages.lua, so a
+--- call prints a format error. Its only callers are commented out too.
 --- @param dummy_name string Name of the dummy song
 function BRDMessages.show_dummy_cast(dummy_name)
     M.job('BRD', 'dummy_cast', {
@@ -270,9 +284,10 @@ function BRDMessages.show_healer_refresh(song_count)
 end
 
 ---============================================================================
---- INDIVIDUAL SONG MESSAGES (NEW SYSTEM)
+--- INDIVIDUAL SONG MESSAGES
 ---============================================================================
 
+--- Disabled on purpose (duplicate of the description line): prints nothing.
 --- @param slot number Song slot (1-5)
 --- @param song_name string Name of the song
 function BRDMessages.show_song_cast(slot, song_name)
@@ -297,7 +312,7 @@ function BRDMessages.show_song_guidance(slot, dummy_count)
 end
 
 ---============================================================================
---- DEBUFF SONG MESSAGES (NEW SYSTEM)
+--- DEBUFF SONG MESSAGES
 ---============================================================================
 
 --- @param lullaby_type string "Horde" or "Foe"
@@ -308,12 +323,14 @@ function BRDMessages.show_lullaby_cast(lullaby_type)
     })
 end
 
+--- Show the BRD.elegy_cast message
 function BRDMessages.show_elegy_cast()
     M.job('BRD', 'elegy_cast', {
         job = get_job_tag()
     })
 end
 
+--- Show the BRD.requiem_cast message
 function BRDMessages.show_requiem_cast()
     M.job('BRD', 'requiem_cast', {
         job = get_job_tag()
@@ -381,7 +398,7 @@ function BRDMessages.show_song_cast_generic(spell_name, spell_data)
 end
 
 ---============================================================================
---- BUFF SONG MESSAGES (NEW SYSTEM)
+--- BUFF SONG MESSAGES
 ---============================================================================
 
 --- @param element string Element name (Fire, Ice, Lightning, etc.)
@@ -407,7 +424,7 @@ function BRDMessages.show_etude_cast(stat)
 end
 
 ---============================================================================
---- SONG REFINEMENT MESSAGES (NEW SYSTEM)
+--- SONG REFINEMENT MESSAGES
 ---============================================================================
 
 --- @param original string Original song name
@@ -433,15 +450,17 @@ function BRDMessages.show_song_refinement_failed(song_name, recast_seconds)
 end
 
 ---============================================================================
---- BUFF STATUS MESSAGES (NEW SYSTEM)
+--- BUFF STATUS MESSAGES
 ---============================================================================
 
+--- Show the BRD.doom_gained message
 function BRDMessages.show_doom_gained()
     M.job('BRD', 'doom_gained', {
         job = get_job_tag()
     })
 end
 
+--- Show the BRD.doom_removed message
 function BRDMessages.show_doom_removed()
     M.job('BRD', 'doom_removed', {
         job = get_job_tag()
@@ -449,39 +468,45 @@ function BRDMessages.show_doom_removed()
 end
 
 ---============================================================================
---- ERROR MESSAGES (NEW SYSTEM)
+--- ERROR MESSAGES
 ---============================================================================
 
+--- Show the BRD.no_pack_configured message
 function BRDMessages.show_no_pack_configured()
     M.job('BRD', 'no_pack_configured', {
         job = get_job_tag()
     })
 end
 
+--- Show the BRD.tank_not_configured message
 function BRDMessages.show_tank_not_configured()
     M.job('BRD', 'tank_not_configured', {
         job = get_job_tag()
     })
 end
 
+--- Show the BRD.healer_not_configured message
 function BRDMessages.show_healer_not_configured()
     M.job('BRD', 'healer_not_configured', {
         job = get_job_tag()
     })
 end
 
+--- Show the BRD.no_element_selected message
 function BRDMessages.show_no_element_selected()
     M.job('BRD', 'no_element_selected', {
         job = get_job_tag()
     })
 end
 
+--- Show the BRD.no_carol_element message
 function BRDMessages.show_no_carol_element()
     M.job('BRD', 'no_carol_element', {
         job = get_job_tag()
     })
 end
 
+--- Show the BRD.no_etude_type message
 function BRDMessages.show_no_etude_type()
     M.job('BRD', 'no_etude_type', {
         job = get_job_tag()

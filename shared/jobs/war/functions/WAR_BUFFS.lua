@@ -5,17 +5,19 @@
 ---   Provides intelligent buff management with:
 ---   • Mutual exclusion handling (Berserk vs Defender)
 ---   • Sequential casting to avoid conflicts
----   • Subjob-specific buff automation (SAM)
+---   • Subjob-specific automation (SAM stance + Third Eye, TP building)
 ---   • Aftermath Lv.3 detection and gear updates
+---   • Doom handling (DoomManager)
 ---
 ---   Delegates business logic to SmartbuffManager (logic module).
 ---
----   @file    jobs/war/functions/WAR_BUFFS.lua
+---   @file    shared/jobs/war/functions/WAR_BUFFS.lua
 ---   @author  Tetsouo
 ---   @version 3.0 - Logic Extracted to logic/smartbuff_manager.lua
 ---   @date    Created: 2025-09-29 | Updated: 2025-10-06
----   @requires jobs/war/functions/logic/smartbuff_manager
+---   @requires shared/jobs/war/functions/logic/smartbuff_manager
 ---  ═══════════════════════════════════════════════════════════════════════════
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -93,6 +95,7 @@ end
 ---
 ---   @param buff string Buff name (e.g., "Aftermath: Lv.3")
 ---   @param gain boolean True if buff gained, false if lost
+---   @param eventArgs table Event arguments
 ---   @return void
 function job_buff_change(buff, gain, eventArgs)
     ensure_managers_loaded()

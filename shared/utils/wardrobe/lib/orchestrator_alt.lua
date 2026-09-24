@@ -1,26 +1,32 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Wardrobe Organizer - Alt-mode Orchestrator
----  ═══════════════════════════════════════════════════════════════════════════
----   Phase chain for 4-wardrobe characters (e.g. Kaories): scans every job
----   in data/<charname>/sets/, treats W1-W4 as primary, Sack/Case/Satchel as
----   overflow. Triggered by `//gs c wo alt`.
+---============================================================================
+--- Wardrobe Organizer - Alt-mode Orchestrator
+---============================================================================
+--- Phase chain for characters organised on every job at once (e.g. Kaories):
+--- scans every job in data/<charname>/sets/, treats Config.ALT_PRIMARY_BAGS
+--- (default W1-W4) as primary and Config.ALT_OVERFLOW_BAGS (default
+--- Sack/Case/Satchel) as overflow. Triggered by `//gs c wo alt`.
 ---
----   This module is created via `OrchestratorAlt.create(ctx)` so the main
----   wardrobe_organizer can inject mutable-state setters and shared helpers
----   without exposing them globally.
+--- This module is created via `OrchestratorAlt.create(ctx)` so the main
+--- wardrobe_organizer can inject mutable-state setters and shared helpers
+--- without exposing them globally.
 ---
----   ctx (required fields):
----     set_running(boolean)           - update IS_RUNNING flag
----     set_start_job_tag(string)      - record job at run start (job_changed guard)
----     active_job_tag() -> string     - current MAIN/SUB tag
----     job_changed() -> boolean       - true if main/sub changed since start
----     reset_module_state()           - reset outer-loop counters
----     clean_exit()                   - enable slots + reset + IS_RUNNING=false
----     abort_run(reason: string)      - chat warn + clean_exit
----     map_bag_names(list) -> list    - bag-id list to human labels
+--- ctx (required fields):
+---   set_running(boolean)           - update IS_RUNNING flag
+---   set_start_job_tag(string)      - record job at run start (job_changed guard)
+---   active_job_tag() -> string     - current MAIN/SUB tag
+---   job_changed() -> boolean       - true if main/sub changed since start
+---   reset_module_state()           - reset outer-loop counters
+---   clean_exit()                   - enable slots + reset + IS_RUNNING=false
+---   abort_run(reason: string)      - chat warn + clean_exit
+---   map_bag_names(list) -> list    - bag-id list to human labels
+--- ctx (optional):
+---   schedule_lockstyle()           - re-apply lockstyle after the run
 ---
----   @file shared/utils/wardrobe/lib/orchestrator_alt.lua
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/wardrobe/lib/orchestrator_alt.lua
+--- @author Tetsouo
+--- @version 1.0
+--- @date Created: 2026-05-01
+---============================================================================
 
 local Config = require('shared/utils/wardrobe/lib/config')
 local Log    = require('shared/utils/wardrobe/lib/log')
@@ -33,8 +39,10 @@ local OrchestratorAlt = {}
 
 local dlog = Log.dlog
 
---- Build a minimal alt-mode state object: scans W1-W4 + Sack/Case bag info,
---- gathers used_names from ALL jobs in the active char's sets folder.
+--- Build a minimal alt-mode state object: free space of Config.ALT_ALL_BAGS,
+--- used_names from ALL jobs in the active char's sets folder.
+--- @return table|nil State
+--- @return string|nil Error message
 local function build_alt_state()
     local Auditor_ok, Auditor = pcall(require, 'shared/utils/equipment/wardrobe_auditor')
     if not Auditor_ok or not Auditor.collect_all_used_names then

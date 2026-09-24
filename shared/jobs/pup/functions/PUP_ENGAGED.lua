@@ -1,11 +1,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PUP Engaged Module - Combat State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all engaged state logic for Puppetmaster job:
----   - Combat set selection based on EngagedMode (DT, Enspell, Refresh, TP)
----   - Dual wield detection and optimization (NIN subjob)
----   - Dynamic weapon application to engaged sets
----   - Combat state transitions
+---   Engaged hook for Puppetmaster: delegates to logic/set_builder.lua.
+---   NOTE: logic/set_builder.lua does not exist yet (PUP is incomplete), so
+---   this require raises on the first engaged rebuild.
 ---
 ---   @file    shared/jobs/pup/functions/PUP_ENGAGED.lua
 ---   @author  Tetsouo
@@ -23,11 +21,10 @@ local SetBuilder = nil
 ---   ENGAGED HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Apply weapon sets, mode selection, and movement gear to all engaged configurations
+---   Build the engaged set through SetBuilder.build_engaged_set
 ---   @param meleeSet table The engaged set to customize
----   @return table Modified engaged set with current weapon, mode, and movement gear
+---   @return table Customized engaged set
 function customize_melee_set(meleeSet)
-    -- Lazy load SetBuilder on first engage
     if not SetBuilder then
         SetBuilder = require('shared/jobs/pup/functions/logic/set_builder')
     end

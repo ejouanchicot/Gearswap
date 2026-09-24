@@ -4,17 +4,20 @@
 ---   Handles job-specific custom commands for Warrior job:
 ---   • Common commands (reload, checksets, waltz, jump, etc.)
 ---   • UI commands (toggle, update, reload UI)
----   • WAR buff commands (berserk, defender, thirdeye)
+---   • WAR buff commands (berserk, defender, thirdeye, tp)
+---   • Weaponskill slots (ws1..ws9)
+---   • Retaliation debug (debugretaliation, retalstatus)
 ---   • State change UI synchronization
 ---
 ---   Uses centralized command handlers for consistency across all jobs.
 ---
----   @file    jobs/war/functions/WAR_COMMANDS.lua
+---   @file    shared/jobs/war/functions/WAR_COMMANDS.lua
 ---   @author  Tetsouo
 ---   @version 2.0.0
 ---   @date    Created: 2025-09-29
----   @requires utils/ui/UI_COMMANDS, utils/core/COMMON_COMMANDS
+---   @requires shared/utils/ui/UI_COMMANDS, shared/utils/core/COMMON_COMMANDS
 ---  ═══════════════════════════════════════════════════════════════════════════
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -42,7 +45,8 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Handle job-specific self commands
----   Processes commands in order: Common >> UI >> WAR-specific buffs
+---   Processes commands in order: Watchdog >> Dual-box >> Common >> UI >>
+---   debug >> cyclestate >> perf >> WAR-specific
 ---
 ---   Common commands:
 ---   • reload         - Reload GearSwap
@@ -57,6 +61,8 @@ end
 ---   • berserk        - Buff with Berserk-focused abilities
 ---   • defender       - Buff with Defender-focused abilities
 ---   • thirdeye       - SAM subjob abilities (Hasso/Seigan + Third Eye)
+---   • tp             - TP building (/SAM Meditate, /DRG Jump rotation)
+---   • ws1..ws9       - Fire the weaponskill in that slot for the current weapon
 ---
 ---   @param cmdParams table Command parameters array (e.g., {"berserk"})
 ---   @param eventArgs table Event arguments with handled flag
@@ -91,6 +97,7 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    -- ══════════════════════════════════════════════════════════════════════════
     -- DUAL-BOXING: Handle job request from MAIN
     -- ══════════════════════════════════════════════════════════════════════════
     if command == 'requestjob' then
@@ -183,6 +190,7 @@ function job_self_command(cmdParams, eventArgs)
     -- ══════════════════════════════════════════════════════════════════════════
     -- PERFORMANCE PROFILING COMMANDS
     -- ══════════════════════════════════════════════════════════════════════════
+    -- Unreachable today: 'perf' is also a common command, caught above.
     if command == 'perf' then
         local Profiler = require('shared/utils/debug/performance_profiler')
         local M = require('shared/utils/messages/api/messages')

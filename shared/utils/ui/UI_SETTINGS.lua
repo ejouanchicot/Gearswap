@@ -1,15 +1,24 @@
 ---============================================================================
 --- Keybind UI Settings - Persistent Settings with ui_settings.lua
 ---============================================================================
+--- Adapter between the flat settings table used by the UI modules
+--- (_G.keybind_saved_settings) and the getters/setters of
+--- shared/config/ui_settings.lua, which writes the settings file.
+---
+--- @file shared/utils/ui/UI_SETTINGS.lua
+--- @author Tetsouo
+--- @version 1.0
+--- @date Created: 2025-11-03
+---============================================================================
 
 local MessageCore = require('shared/utils/messages/message_core')
 local UISettingsManager = require('shared/config/ui_settings')
 
 local KeybindSettings = {}
 
---- Load settings from ui_settings.lua (new system)
+--- Load the persisted settings into a flat table.
+--- @return table Settings: pos, visible, enabled, show_* flags, bg_*, font_size, font_name
 function KeybindSettings.load()
-    -- Load from new persistent settings system
     local pos = UISettingsManager.get_position()
     local bg = UISettingsManager.get_background()
     local font = UISettingsManager.get_font()
@@ -32,7 +41,10 @@ function KeybindSettings.load()
     }
 end
 
---- Save settings to ui_settings.lua (new system)
+--- Save settings through ui_settings.lua. Only fields that are present are
+--- written; each setter call may rewrite the settings file.
+--- @param settings table Flat settings table (same shape as load() returns)
+--- @return boolean Always true
 function KeybindSettings.save(settings)
     -- Save position
     if settings.pos then

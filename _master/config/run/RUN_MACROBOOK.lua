@@ -13,7 +13,7 @@
 ---
 --- Usage:
 ---   • Modify the book numbers and pages below to match your FFXI macro setup
----   • Book numbers: 1-20 (FFXI macro book slots)
+---   • Book numbers: 1-40 (FFXI macro book slots)
 ---   • Page numbers: 1-10 (pages within each book)
 ---
 --- @file    config/run/RUN_MACROBOOK.lua
@@ -24,9 +24,7 @@
 local RUNMacroConfig = {}
 
 ---============================================================================
----============================================================================
 --- SOLO CONFIGURATION (Playing RUN alone)
----============================================================================
 ---============================================================================
 
 --- Default macro book (used if subjob not configured)
@@ -37,7 +35,7 @@ RUNMacroConfig.default = {book = 15, page = 1}
 RUNMacroConfig.solo = {
     ['RUN'] = {book = 15, page = 1}, -- RUN/RUN
     ['BLU'] = {book = 18, page = 1}, -- RUN/BLU
-    ['RDM'] = {book = 20, page = 1}, -- RUN/WAR
+    ['RDM'] = {book = 20, page = 1}, -- RUN/RDM
     -- Default fallback
     ['default'] = {book = 15, page = 1}
 }
@@ -48,7 +46,7 @@ RUNMacroConfig.solo = {
 --- Structure: dualbox[ALT_JOB][SUBJOB] = {book, page}
 --- Example: dualbox['GEO']['SAM'] = RUN/SAM macros optimized for playing with GEO alt
 ---
---- Uncomment and customize sections below as needed:
+--- Add an alt job or a subjob below as needed.
 ---============================================================================
 
 RUNMacroConfig.dualbox = {

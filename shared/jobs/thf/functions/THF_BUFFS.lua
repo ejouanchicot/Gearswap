@@ -1,7 +1,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   THF Buffs Module - Buff Gain/Loss Handler
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles job-specific buff gain/loss events (Doom, Chainspell, etc.).
+---   Handles buff gain/loss events: Doom (DoomManager), then the SA/TA
+---   pending flags and the engaged refresh when SA/TA wears off.
 ---
 ---   @file    shared/jobs/thf/functions/THF_BUFFS.lua
 ---   @author  Tetsouo
@@ -24,6 +25,7 @@ end
 ---   Handle buff change events
 ---   @param buff string Buff name
 ---   @param gain boolean True if buff gained, false if lost
+---   @param eventArgs table Event arguments
 function job_buff_change(buff, gain, eventArgs)
     -- Lazy load managers on first buff change
     ensure_managers_loaded()

@@ -1,8 +1,10 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Message Display Modes - Auto-Generated Persistent Settings
+---   Message Display Modes - Unused Reference Copy
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Persistent message mode settings for all message types.
----   This file is automatically managed by message_settings.lua
+---   NOT read at runtime: message_settings.lua loads and writes
+---   [CharName]/config/message_modes.lua, never this shared copy (no require,
+---   include or dofile targets this path). Its ja_mode = 'full' also differs
+---   from the runtime default ('on') used when the per-character file is absent.
 ---
 ---   Modes:
 ---     • spell_mode: ALL spell types (Enhancing, Enfeebling, Healing, Elemental)

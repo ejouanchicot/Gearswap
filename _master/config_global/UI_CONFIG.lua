@@ -35,7 +35,8 @@ UIConfig.show_footer = false
 ---============================================================================
 
 -- Default position (X, Y)
--- Will be overridden by saved position if ui_position.lua exists
+-- Overridden by pos_x/pos_y from config/ui_settings.lua when that file exists
+-- (written by //gs c ui save and by every UI setting change)
 UIConfig.default_position = {
     x = 1857,
     y = -24
@@ -316,6 +317,8 @@ UIConfig.sections = {
 ---============================================================================
 
 -- Override default colors (nil = use system defaults)
+-- Note: no module reads UIConfig.colors at the moment; the UI colors come from
+-- UI_COLOR_CONFIG.lua.
 UIConfig.colors = {
     header_separator = nil, -- "\\cs(100,150,255)" format
     section_title = nil,
@@ -333,8 +336,11 @@ UIConfig.colors = {
 -- Recommended: 5.0 seconds
 UIConfig.init_delay = 5.0
 
--- Auto-save position on drag (requires prerender event)
--- Set to false for manual save only (//gs c uisave)
+-- The four settings below (auto_save_position, auto_save_delay, debug,
+-- update_throttle) are not read by any module at the moment.
+-- Manual position save: //gs c ui save
+
+-- Auto-save position on drag
 UIConfig.auto_save_position = false
 
 -- Auto-save delay in seconds (if auto_save enabled)

@@ -5,7 +5,7 @@
 ---   packets (0xDD/0xDF). Used by RollTracker to grant correct roll bonuses
 ---   based on party composition.
 ---
----   @module party_tracker
+---   @file    shared/jobs/cor/functions/logic/party_tracker.lua
 ---   @author  Tetsouo
 ---   @version 2.1.0
 ---   @date    Created: 2025-11-03 (extracted from Tetsouo_COR.lua)
@@ -50,11 +50,11 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Register the action event listener that detects Phantom Rolls and
----   forwards them to RollTracker.on_roll_cast. Was previously inlined in
----   both Tetsouo_COR.lua and Kaories_COR.lua (~50 identical lines each);
----   centralized here so there is one canonical roll-detection path.
+---   forwards them to RollTracker.on_roll_cast. This is the single
+---   roll-detection path (the COR entry files no longer carry their own).
 ---   Idempotent: unregisters any previous handler before registering a new
 ---   one, so calling init() repeatedly is safe.
+---   @return nil
 function PartyTracker.init_roll_listener()
     if _G.cor_action_event_id then
         windower.unregister_event(_G.cor_action_event_id)
@@ -109,8 +109,9 @@ function PartyTracker.init_roll_listener()
     end)
 end
 
----   Initialize party tracking event handlers
----   Must be called after RollTracker is loaded
+---   Initialize party tracking event handlers (roll listener + 0xDD/0xDF
+---   party job parser). Calls cleanup() first, so it is idempotent.
+---   @return nil
 function PartyTracker.init()
     -- CRITICAL: Cleanup existing handlers first to prevent duplicates
     -- This ensures init() is idempotent (safe to call multiple times)
@@ -247,7 +248,7 @@ end
 ---   Must be called in file_unload()
 function PartyTracker.cleanup()
     -- Unregister event handlers (CRITICAL for preventing duplicate handlers)
-    -- Legacy: cor_action_event_id was used for register_event('action') in v1.x
+    -- cor_action_event_id: roll listener (init_roll_listener)
     if _G.cor_action_event_id then
         windower.unregister_event(_G.cor_action_event_id)
         _G.cor_action_event_id = nil
@@ -258,7 +259,8 @@ function PartyTracker.cleanup()
         _G.cor_party_event_id = nil
     end
 
-    -- Clear pending roll detection state (prevents stale data after reload)
+    -- Clear pending roll detection state. Nothing in the project sets these
+    -- two globals any more; the clear is harmless.
     _G.cor_pending_roll_value = nil
     _G.cor_pending_roll_timestamp = nil
 end

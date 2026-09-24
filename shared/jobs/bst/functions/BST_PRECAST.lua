@@ -4,7 +4,7 @@
 ---   Debuff guard, cooldown check, WS handling, Call Beast/Bestial Loyalty,
 ---   Ready moves.
 ---
----   @file    BST_PRECAST.lua
+---   @file    shared/jobs/bst/functions/BST_PRECAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-05
@@ -16,7 +16,7 @@
 
 -- Initialize BST debug flag if not exists
 if _G.BST_DEBUG_PRECAST == nil then
-    _G.BST_DEBUG_PRECAST = false  -- Toggle: //gs c debugbst
+    _G.BST_DEBUG_PRECAST = false  -- Toggle: //gs c debugprecast (BST_COMMANDS)
 end
 
 local MessageFormatter = nil
@@ -125,6 +125,12 @@ local function prepare_ready_move(spell, category)
     end
 end
 
+--- Precast hook: guard, cooldown (not for Ready moves), WS, summon gear + broth,
+--- Ready move precast piece (Sic set).
+--- @param spell table Spell information from GearSwap
+--- @param action table Action information from GearSwap
+--- @param spellMap string Spell mapping from Mote-Include
+--- @param eventArgs table Event arguments (eventArgs.cancel for cancellation)
 function job_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
@@ -164,7 +170,7 @@ end
 
 ---   Apply final gear adjustments before equipping
 ---   @param spell table Spell/ability data
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping
 ---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)

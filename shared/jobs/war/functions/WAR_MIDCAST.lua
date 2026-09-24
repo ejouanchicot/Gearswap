@@ -2,11 +2,12 @@
 ---   WAR Midcast Module - Midcast Gear Selection
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Handles midcast for Warrior (primarily subjob spells).
+---   Does not notify MidcastWatchdog, unlike most jobs.
 ---
 ---   **PERFORMANCE OPTIMIZATION:**
 ---   • Lazy-loaded: Modules loaded on first spell cast
 ---
----   @file    WAR_MIDCAST.lua
+---   @file    shared/jobs/war/functions/WAR_MIDCAST.lua
 ---   @author  Tetsouo
 ---   @version 3.1 - Lazy Loading for performance
 ---   @date    Created: 2025-09-29 | Updated: 2025-11-15

@@ -1,13 +1,17 @@
 ---============================================================================
 --- Scholar Actions - /SCH utility chains shared across jobs
 ---============================================================================
---- Light Arts / Addendum: White toggling and the party Sneak/Invisible chain
---- (Light Arts + Accession + spell), for any job that subs Scholar.
+--- For any job that subs Scholar:
+---   * Light Arts / Addendum: White and Dark Arts / Addendum: Black toggles
+---   * the party Sneak / Invisible / Erase chain (Arts + stratagems + spell)
+---   * casting a spell that needs Addendum: Black
+---   * run_chain, a generic "each ability waits on its buff" chain
+--- Every step waits on the buff it raises instead of on a fixed delay.
 ---
---- @file shared/utils/scholar/scholar_actions.lua
---- @author Tetsouo
+--- @file    shared/utils/scholar/scholar_actions.lua
+--- @author  Tetsouo
 --- @version 1.0
---- @date Created: 2026-09-17
+--- @date    Created: 2026-09-17
 ---============================================================================
 
 local ScholarActions = {}
@@ -51,6 +55,7 @@ end
 --- Light Arts, then Addendum: White on the next press
 --- Addendum: White replaces the Light Arts buff in buffactive, so it has to be
 --- checked first or Light Arts would be recast over it.
+--- @return nil
 function ScholarActions.light_arts()
     if buffactive and buffactive['Addendum: White'] then
         get_formatter().show_arts_already_active('Light Arts + Addendum: White')
@@ -61,7 +66,9 @@ function ScholarActions.light_arts()
     end
 end
 
---- Dark Arts, then Addendum: Black on the next press
+--- Dark Arts, then Addendum: Black on the next press (Addendum checked first,
+--- for the same reason as light_arts)
+--- @return nil
 function ScholarActions.dark_arts()
     if buffactive and buffactive['Addendum: Black'] then
         get_formatter().show_arts_already_active('Dark Arts + Addendum: Black')
@@ -105,7 +112,6 @@ end
 --- @param required table Buff names that must be up first
 --- @param deadline number os.clock() value past which we give up
 --- @param my_seq number Generation this cast belongs to
---- @return void
 local cast_when_ready
 cast_when_ready = function(spell_name, target, required, deadline, my_seq)
     if my_seq ~= windower._sch_cast_seq or not player then
@@ -151,7 +157,6 @@ end
 --- @param my_seq number Generation this chain belongs to
 --- @param on_done function Runs once every step has landed
 --- @param finish_anyway boolean|nil Run on_done even when a step is given up on
---- @return void
 local run_steps
 run_steps = function(steps, index, deadline, my_seq, on_done, finish_anyway)
     if my_seq ~= windower._sch_cast_seq or not player then
@@ -196,7 +201,6 @@ end
 --- @param steps table List of {command = string, buff = string}
 --- @param on_done function Runs once every step has landed
 --- @param finish_anyway boolean|nil Run on_done even when a step is given up on
---- @return void
 function ScholarActions.run_chain(steps, on_done, finish_anyway)
     windower._sch_cast_seq = windower._sch_cast_seq + 1
     run_steps(steps, 1, os.clock() + POLL_GRACE, windower._sch_cast_seq,
@@ -215,7 +219,6 @@ end
 --- @param spell_name string Spell to cast
 --- @param aoe_state table|nil Mote On/Off state (missing counts as On)
 --- @param needs_addendum boolean|nil True when /SCH needs Addendum: White for it
---- @return void
 function ScholarActions.cast_with_stratagems(spell_name, aoe_state, needs_addendum)
     local target = ScholarActions.is_on(aoe_state) and '<me>' or '<stal>'
     local budget = StratagemCharges.available()
@@ -288,7 +291,6 @@ end
 ---
 --- @param spell_name string Spell to cast
 --- @param target string Target token
---- @return void
 function ScholarActions.cast_under_black_addendum(spell_name, target)
     local cast = 'input /ma "' .. spell_name .. '" ' .. target
 

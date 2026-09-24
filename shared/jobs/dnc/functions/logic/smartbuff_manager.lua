@@ -11,11 +11,11 @@
 ---   • NIN subjob buffs (Utsusemi: Ni >> Ichi fallback)
 ---   • SAM subjob buffs (Hasso)
 ---   • Any other subjob (DRG, THF, etc.) - dance only
----   • Intelligent recast checking (RECAST_CONFIG integration)
----   • Sequential casting (2s spacing to avoid conflicts)
+---   • Recast checking (is_recast_ready from RECAST_CONFIG)
+---   • Sequential casting (CAST_SPACING seconds apart)
 ---   • Status display (active/cooldown with time remaining)
 ---
----   @file    jobs/dnc/functions/logic/smartbuff_manager.lua
+---   @file    shared/jobs/dnc/functions/logic/smartbuff_manager.lua
 ---   @author  Tetsouo
 ---   @version 2.0 - Dance integrated into smartbuff
 ---   @date    Created: 2025-10-06

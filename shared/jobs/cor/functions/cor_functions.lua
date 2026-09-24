@@ -4,26 +4,26 @@
 ---   Loads all COR-specific function modules in correct order.
 ---
 ---   Features:
----   • Modular architecture (11 hooks + 3 logic modules)
+---   • Modular architecture (11 hook files + logic modules under logic/)
 ---   • Dependency-ordered loading (messages >> combat >> status >> utility)
 ---   • Separation of concerns (hooks = orchestration, logic = implementation)
 ---   • Clean integration with GearSwap event system
 ---
 ---   Architecture:
 ---   • Hook modules (11): GearSwap event handlers loaded via include()
----   • Logic modules (3): Business logic loaded via require() in hooks
----   • Separation: Hooks = 10-20% code, Logic = 80-90% code
+---   • Logic modules (4): Business logic loaded via require()
 ---
 ---   Logic Modules:
 ---   • set_builder.lua - Shared set construction (idle/engaged with COR specifics)
 ---   • roll_data.lua - Phantom Roll game data (lucky/unlucky numbers, bonuses)
 ---   • roll_tracker.lua - Roll tracking with party job detection
+---   • party_tracker.lua - Party job cache (required by the COR entry files)
 ---
 ---   Dependencies:
 ---   • message_buffs.lua (roll status display)
 ---   • All COR_*.lua hook modules (11 total)
 ---
----   @file    jobs/cor/functions/cor_functions.lua
+---   @file    shared/jobs/cor/functions/cor_functions.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-07
@@ -33,12 +33,9 @@
 ---   SECTION 1: MESSAGE SYSTEM
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- ═══════════════════════════════════════════════════════════════════
--- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
--- ═══════════════════════════════════════════════════════════════════
+-- TIMER() calls are no-ops unless //gs c perf start
 local Profiler = require('shared/utils/debug/performance_profiler')
 local TIMER = Profiler.create_timer('COR')
--- ═══════════════════════════════════════════════════════════════════
 
 include('../shared/utils/messages/formatters/magic/message_buffs.lua')
 TIMER('message_buffs')
@@ -100,13 +97,16 @@ TIMER('COR_MOVEMENT')
 ---   logic/set_builder.lua
 ---     • Shared set construction with COR-specific logic
 ---     • Idle/engaged gear assembly
+---
+---   logic/party_tracker.lua
+---     • Party member job cache (used by the roll job bonus)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SECTION 6: DUAL-BOXING SYSTEM
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Load dual-boxing manager (uses deferred init + lazy message loading)
+-- Load dual-boxing manager for its side effect (deferred auto-init)
 local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -117,6 +117,4 @@ local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 MessageFormatter.show_debug('COR', 'All functions loaded (11 hooks + 3 logic modules)')
 
--- ═══════════════════════════════════════════════════════════════════
 TIMER('TOTAL COR_functions', true)
--- ═══════════════════════════════════════════════════════════════════

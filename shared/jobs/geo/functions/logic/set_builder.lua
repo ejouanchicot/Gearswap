@@ -5,14 +5,14 @@
 ---   - Luopan detection (sets.me.* vs sets.luopan.*)
 ---   - HybridMode base without a luopan (sets.idle/engaged.PDT or .Normal)
 ---   - Town/Adoulin detection (idle only)
----   - Weapon set application (Idris)
----   - Movement gear application
+---   - Weapon set application (MainWeapon / SubWeapon states)
+---   - Movement gear application (idle only)
 ---
 ---   GEO has two distinct set configurations:
 ---   sets.me.*     - No Luopan active (focus: refresh, defense)
 ---   sets.luopan.* - Luopan active (focus: Pet DT-, Pet Regen)
 ---
----   @file    jobs/geo/functions/logic/set_builder.lua
+---   @file    shared/jobs/geo/functions/logic/set_builder.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-09
@@ -32,7 +32,8 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 ---   Apply weapon sets to result
 ---   GEO uses main weapon + sub weapon (shield)
----   Note: Combat Mode locking is handled via disable() in job_update()
+---   Note: CombatMode weapon locking is done via disable() in job_update()
+---   (entry file), not here
 ---   @param result table Current equipment set
 ---   @return table Modified set with weapons applied
 function SetBuilder.apply_weapon(result)
@@ -40,7 +41,6 @@ function SetBuilder.apply_weapon(result)
         return {}
     end
 
-    -- Apply main weapon (Idris)
     if state.MainWeapon and state.MainWeapon.current then
         local weapon_set = sets[state.MainWeapon.current]
         if weapon_set then
@@ -53,7 +53,6 @@ function SetBuilder.apply_weapon(result)
         end
     end
 
-    -- Apply sub weapon (Genmei Shield)
     if state.SubWeapon and state.SubWeapon.current then
         local sub_set = sets[state.SubWeapon.current]
         if sub_set then
@@ -87,12 +86,11 @@ local function select_hybrid_base(mode_sets, fallback)
     return fallback or {}
 end
 
-
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   COMPLETE SET BUILDERS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Build complete engaged set (base selection + LuopanMode + weapons + movement)
+---   Build complete engaged set (base selection + LuopanMode + weapons)
 ---   @param base_set table Base engaged set from Mote (ignored - we use sets.me/luopan)
 ---   @return table Complete engaged set
 function SetBuilder.build_engaged_set(base_set)
@@ -121,7 +119,7 @@ function SetBuilder.build_engaged_set(base_set)
         result = select_hybrid_base(sets.engaged, sets.me.engaged)
     end
 
-    -- Step 2: Apply weapon sets from states (Idris)
+    -- Step 2: Apply weapon sets from states
     result = SetBuilder.apply_weapon(result)
 
     return result
@@ -146,7 +144,7 @@ function SetBuilder.build_idle_set(base_set)
     local town_result, in_town = BaseSetBuilder.select_idle_base_town(result)
     result = town_result
 
-    -- Step 3: Apply weapon sets from states (Idris)
+    -- Step 3: Apply weapon sets from states
     result = SetBuilder.apply_weapon(result)
 
     -- Step 4: Apply movement speed (if not in town)

@@ -32,7 +32,6 @@ WARLockstyleConfig.default = 4
 --- Configure different lockstyles per subjob here.
 --- If a subjob is not in this table, the default lockstyle will be used.
 WARLockstyleConfig.by_subjob = {
-    -- Examples:
     ['SAM'] = 4, -- WAR/SAM uses lockstyle 4
     ['DRG'] = 4, -- WAR/DRG uses lockstyle 4
     ['DNC'] = 4, -- WAR/DNC uses lockstyle 4

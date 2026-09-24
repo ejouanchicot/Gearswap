@@ -4,16 +4,15 @@
 ---   Handles post-action cleanup and returns to appropriate idle/engaged gear.
 ---
 ---   Features:
----   • Return to idle/engaged gear after actions complete
----   • SA/TA pending flag tracking (before buff appears in buffactive)
----   • Clean transition from precast >> midcast >> aftercast
----   • Global state management (_G.thf_sa_pending, _G.thf_ta_pending)
+---   • MidcastWatchdog tick
+---   • SA/TA pending flag kept when the ability went off, lowered when refused
+---     (_G.thf_sa_pending, _G.thf_ta_pending)
+---   • Acid Bolt quiver auto-open after a ranged attack (QuiverManager)
 ---
 ---   Dependencies:
 ---   • Mote-Include (handles actual idle/engaged gear swap)
----   • set_builder logic (constructs dynamic idle/engaged sets)
 ---
----   @file    jobs/thf/functions/THF_AFTERCAST.lua
+---   @file    shared/jobs/thf/functions/THF_AFTERCAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-06

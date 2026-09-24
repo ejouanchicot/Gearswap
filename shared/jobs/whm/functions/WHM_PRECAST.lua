@@ -2,21 +2,19 @@
 ---   WHM Precast Module - Precast Action Handling & Cooldown Monitoring
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Handles all precast actions for White Mage job:
----   • Fast Cast optimization (all spell types)
----   • Job Abilities (Benediction, Devotion, Divine Seal, Asylum, etc.)
----   • Cure spell precast (fast cast + special gear)
----   • Enhancing magic precast (fast cast + duration gear preparation)
----   • Divine/Enfeebling magic precast
+---   • Cure re-tiering by the target's need (CureManager)
+---   • Paralyna on self while paralyzed: no gear swap
 ---   • Weaponskill validation and range checking
----   • Security layers (debuff guard >> cooldown check >> job logic)
+---   Fast Cast and job ability sets are left to Mote-Include.
 ---
----   Follows 4-layer PRECAST security architecture:
+---   Processing order:
 ---   1. PrecastGuard - Block casting under debuffs (Amnesia, Silence, Stun, etc.)
----   2. CooldownChecker - Universal ability/spell recast validation
----   3. WSValidator - Weaponskill range and validity checks
----   4. WHM-specific logic - Job-specific enhancements
+---   2. CureManager re-tier (before the cooldown check, see job_precast)
+---   3. CooldownChecker - Universal ability/spell recast validation
+---   4. Paralyna on self
+---   5. WSPrecastHandler - Weaponskill range, validity and TP checks
 ---
----   @file    WHM_PRECAST.lua
+---   @file    shared/jobs/whm/functions/WHM_PRECAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-21
@@ -73,6 +71,8 @@ end
 --- Casting Cure VI into a scratch wastes the MP and the cast time both. The
 --- replacement goes out as a fresh command rather than editing the spell,
 --- because by precast the tier is already fixed.
+--- @param spell table Spell data from GearSwap
+--- @param eventArgs table Event arguments (cancel is set when replaced)
 --- @return boolean True when the cast was replaced
 local function retier_cure(spell, eventArgs)
     if not (CureManager and spell.action_type == 'Magic') then
@@ -99,6 +99,8 @@ end
 --- about protecting the cast. It is about the blinking: a paralyzed Paralyna
 --- is retried until it lands, and each attempt would swap the set on and off
 --- again. (Timara WHM pattern.)
+--- @param spell table Spell data from GearSwap
+--- @param eventArgs table Event arguments (handled is set when it applies)
 --- @return boolean True when this case applies
 local function paralyna_on_self(spell, eventArgs)
     if spell.english == 'Paralyna' and buffactive['paralysis'] then
@@ -108,6 +110,11 @@ local function paralyna_on_self(spell, eventArgs)
     return false
 end
 
+--- Precast hook: guard, cure re-tier, cooldown, Paralyna on self, WS.
+--- @param spell table Spell/ability data
+--- @param action string Action type
+--- @param spellMap string Spell mapping
+--- @param eventArgs table Event arguments
 function job_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
@@ -142,7 +149,7 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----   Post-precast hook for additional customizations
+---   Post-precast hook: TP gear for weaponskills.
 ---   Called after main precast set selection but before gear is equipped.
 ---
 ---   @param spell table Spell/ability data

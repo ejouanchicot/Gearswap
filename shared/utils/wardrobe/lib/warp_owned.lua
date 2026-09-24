@@ -1,36 +1,40 @@
----  ═══════════════════════════════════════════════════════════════════════════
----   Wardrobe Organizer - Warp items this character actually owns
----  ═══════════════════════════════════════════════════════════════════════════
----   The warp database lists every ring and cape the warp system knows about -
----   65 of them. A character owns a handful. Keeping all 65 out of overflow
----   costs nothing in slots (the organizer only moves what it finds), but it
----   makes `//gs c wo keep` unreadable and hides which ones are really at
----   stake.
+---============================================================================
+--- Wardrobe Organizer - Warp items this character actually owns
+---============================================================================
+--- The warp database lists every ring and cape the warp system knows about -
+--- 65 of them. A character owns a handful. Keeping all 65 out of overflow
+--- costs nothing in slots (the organizer only moves what it finds), but it
+--- makes `//gs c wo keep` unreadable and hides which ones are really at
+--- stake.
 ---
----   `//gs c wo scan` walks every bag, keeps the intersection, and writes it to
----   data/<char>/config/WARP_ITEMS_OWNED.lua. The organizer prefers that list
----   when it exists and falls back to the full database when it does not, so a
----   character who never scans behaves exactly as before.
+--- `//gs c wo scan` walks every bag, keeps the intersection, and writes it to
+--- data/<char>/config/WARP_ITEMS_OWNED.lua. The organizer prefers that list
+--- when it exists and falls back to the full database when it does not, so a
+--- character who never scans behaves exactly as before.
 ---
----   Re-run it after acquiring or discarding a ring. Nothing else updates it:
----   guessing from an empty bag would silently drop an item that is merely in
----   a Mog Safe at the time.
+--- Re-run it after acquiring or discarding a ring. Nothing else updates it:
+--- guessing from an empty bag would silently drop an item that is merely in
+--- a Mog Safe at the time.
 ---
----   @file shared/utils/wardrobe/lib/warp_owned.lua
----   @author Tetsouo
----  ═══════════════════════════════════════════════════════════════════════════
+--- @file shared/utils/wardrobe/lib/warp_owned.lua
+--- @author Tetsouo
+--- @version 1.0
+--- @date Created: 2026-08-10
+---============================================================================
 
 local res = require('resources')
 
 local WarpOwned = {}
 
---- @return string|nil Absolute path of this character's owned-items file
+--- Path of this character's owned-items file.
+--- @return string|nil Absolute path, nil when the player is not loaded
 function WarpOwned.path()
     local p = windower.ffxi.get_player()
     if not p or not p.name then return nil end
     return windower.addon_path .. 'data/' .. p.name .. '/config/WARP_ITEMS_OWNED.lua'
 end
 
+--- Read the owned-items list written by save().
 --- @return table|nil Array of item names, nil when the file is absent/unreadable
 function WarpOwned.load()
     local path = WarpOwned.path()

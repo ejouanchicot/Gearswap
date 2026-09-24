@@ -1,11 +1,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BST Engaged Module - Combat State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all engaged state logic for Beastmaster job:
----   - Combat set selection based on EngagedMode (DT, Enspell, Refresh, TP)
----   - Dual wield detection and optimization (NIN subjob)
----   - Dynamic weapon application to engaged sets
----   - Combat state transitions
+---   customize_melee_set (SetBuilder.build_engaged_set): picks the master,
+---   pet or both-engaged set depending on who is fighting, PDT overlay when
+---   HybridMode is PDT, then the WeaponSet / SubSet sets.
 ---
 ---   @file    shared/jobs/bst/functions/BST_ENGAGED.lua
 ---   @author  Tetsouo

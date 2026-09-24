@@ -26,6 +26,7 @@
 ---   ├── functions/WAR_*.lua           [11 Hook Modules]
 ---   └── config/war/*.lua              [Configuration Files]
 ---============================================================================
+
 ---============================================================================
 --- INITIALIZATION & CONFIGURATION LOADING
 ---============================================================================
@@ -62,12 +63,11 @@ local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'WAR')
 ---============================================================================
 
 --- Initialize GearSwap and load all WAR modules
---- Called once when GearSwap loads this job file
+--- Called by GearSwap each time this job file is loaded
 --- @return void
-
 function get_sets()
     -- ═══════════════════════════════════════════════════════════════════
-    -- PERFORMANCE PROFILING (Toggle with: //gs c perf start)
+    -- PERFORMANCE PROFILING (enable with: //gs c perf start)
     -- ═══════════════════════════════════════════════════════════════════
     local Profiler = require('shared/utils/debug/performance_profiler')
     Profiler.start('get_sets')
@@ -140,7 +140,7 @@ function get_sets()
 end
 
 --- Load WAR equipment sets from external file
---- Called by Mote-Include during initialization
+--- Called by Mote-Include at the end of init_include(), after user_setup()
 --- @return void
 function init_gear_sets()
     include('sets/war_sets.lua')
@@ -204,7 +204,8 @@ end
 ---============================================================================
 
 --- Configure job-specific states, keybinds, UI, and initial setup
---- Called by Mote-Include after get_sets() completes
+--- Called by Mote-Include from init_include() (inside include('Mote-Include.lua'),
+--- before init_gear_sets) and again on every subjob change, before job_sub_job_change().
 --- @return void
 function user_setup()
     -- ==========================================================================
@@ -263,21 +264,24 @@ function user_setup()
 end
 
 ---============================================================================
---- GEARSWAP HOOKS - CLEANUP
+--- GEARSWAP HOOKS - STATE UPDATE & CLEANUP
 ---============================================================================
 
---- Cleanup function called when GearSwap unloads this job file
---- Cancels pending operations and unbinds resources
 --- Called by Mote-Include after state changes
 --- Updates the UI to reflect current state values
+--- @param cmdParams table Parameters passed to Mote's handle_update
+--- @param eventArgs table Mote event arguments (unused)
+--- @return void
 function job_update(cmdParams, eventArgs)
-    -- Update UI when states change (F9, F10, etc.)
+    -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI and KeybindUI.update then
         KeybindUI.update()
     end
 end
 
+--- Cleanup function called when GearSwap unloads this job file
+--- Releases the ammo lock, cancels pending operations and unbinds the job keys
 --- @return void
 function file_unload()
     -- Give the ammo slot back first: a GearSwap slot lock survives a job

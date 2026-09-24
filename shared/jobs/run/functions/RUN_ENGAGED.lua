@@ -1,11 +1,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   RUN Engaged Module - Combat State Management
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles all engaged state logic for Rune Fencer job:
----   - Combat set selection based on EngagedMode (DT, Enspell, Refresh, TP)
----   - Dual wield detection and optimization (NIN subjob)
----   - Dynamic weapon application to engaged sets
----   - Combat state transitions
+---   customize_melee_set delegates to logic/set_builder.lua:
+---   - HybridMode engaged set (PDT/MDT)
+---   - Main weapon and grip (grip skipped for Lycurgos)
 ---
 ---   @file    shared/jobs/run/functions/RUN_ENGAGED.lua
 ---   @author  Tetsouo
@@ -23,9 +21,9 @@ local SetBuilder = nil
 ---   ENGAGED HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Apply weapon sets, mode selection, and movement gear to all engaged configurations
+---   Apply HybridMode, weapon and grip to the engaged set
 ---   @param meleeSet table The engaged set to customize
----   @return table Modified engaged set with current weapon, mode, and movement gear
+---   @return table Modified engaged set with current mode, weapon and grip
 function customize_melee_set(meleeSet)
     -- Lazy load SetBuilder on first engage
     if not SetBuilder then

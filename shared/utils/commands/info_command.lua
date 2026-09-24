@@ -32,7 +32,7 @@ local MessageCore = require('shared/utils/messages/message_core')
 local MessageColors = require('shared/utils/messages/message_colors')
 local MessageInfo = require('shared/utils/messages/formatters/ui/message_info')
 
--- Data sources (lazy loaded)
+-- DataLoader loads each database (abilities, spells, WS) on first use
 local DataLoader = require('shared/utils/data/data_loader')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -45,13 +45,14 @@ local DataLoader = require('shared/utils/data/data_loader')
 local function sanitize_ascii(text)
     if not text then return "" end
 
-    -- Convert to string if not already
     text = tostring(text)
 
     -- Remove non-ASCII characters (keep only 32-126)
     text = text:gsub("[^\32-\126]", "")
 
-    -- Replace common Unicode chars with ASCII equivalents
+    -- Replace common Unicode chars with ASCII equivalents.
+    -- NOTE: these run after the strip above has already removed every
+    -- non-ASCII byte, so none of them can match any more.
     text = text:gsub("\226\128\153", "'")  -- Right single quote to regular quote
     text = text:gsub("\226\128\156", '"')  -- Left double quote
     text = text:gsub("\226\128\157", '"')  -- Right double quote
@@ -127,7 +128,7 @@ end
 --- Convert time value to readable format
 --- @param value number Time value
 --- @param is_centiseconds boolean True if value is in centiseconds (1/100th sec)
---- @return string Formatted time (e.g., "5m" or "30s" or "1.5s")
+--- @return string|nil Formatted time (e.g., "5m" or "30s" or "1.5s"), nil for 0/nil
 local function format_time(value, is_centiseconds)
     if not value or value == 0 then
         return nil
@@ -150,7 +151,7 @@ local function format_time(value, is_centiseconds)
             return string.format("%dm %ds", minutes, math.floor(remaining_seconds))
         end
     else
-        -- Show decimal for sub-second values from centiseconds
+        -- One decimal for centisecond values under 10 seconds
         if is_centiseconds and seconds < 10 then
             return string.format("%.1fs", seconds)
         else
@@ -165,7 +166,7 @@ end
 --- @param key_color number Color code for key
 --- @param value_color number Color code for value
 --- @param is_spell boolean True if this is spell data (uses centiseconds)
---- @return string Formatted line
+--- @return string|nil Formatted line, nil when the field is empty or zero
 local function format_field(key, value, key_color, value_color, is_spell)
     if not value or value == "" or value == 0 then
         return nil  -- Skip empty/zero fields
@@ -206,9 +207,9 @@ end
 ---   DATA DISPLAY FUNCTIONS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Generic entity display function (refactored to reduce duplication)
+--- Display one entity: header, name, every non-empty field, footer
 --- @param name string Entity name
---- @param data table Entity data
+--- @param data table Entity data (unused: the values are already in fields)
 --- @param header_text string Header title
 --- @param name_color number Color code for name
 --- @param fields table Array of field definitions

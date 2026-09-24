@@ -1,16 +1,17 @@
 ---============================================================================
---- Message Equipment - Equipment check formatting and display (NEW SYSTEM)
+--- Message Equipment - Equipment check formatting and display
 ---============================================================================
---- Uses template-based messaging via MessageRenderer
---- Migrated from old system to new system: 2025-11-06
+--- Output of //gs c checksets and its debug lines. Header and summary are
+--- built by hand (add_to_chat); the rest uses data/systems/equipment_messages.lua.
 ---
---- @file    messages/message_equipment.lua
+--- @file    shared/utils/messages/formatters/system/message_equipment.lua
 --- @author  Tetsouo
 --- @version 2.0
 --- @date    Created: 2025-11-06
 ---============================================================================
 
 local MessageEquipment = {}
+local MessageCore = require('shared/utils/messages/message_core')
 local M = require('shared/utils/messages/api/messages')
 
 ---============================================================================
@@ -22,7 +23,7 @@ local M = require('shared/utils/messages/api/messages')
 function MessageEquipment.show_check_header(job_name)
     local gray = string.char(0x1F, 160)
     local yellow = string.char(0x1F, 50)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
 
     add_to_chat(121, gray .. separator)
     add_to_chat(121, yellow .. "[EQUIPMENT CHECK] " .. job_name:upper())
@@ -71,7 +72,7 @@ function MessageEquipment.show_check_summary(total_sets, valid_sets, storage_cou
     local green = string.char(0x1F, 158)
     local yellow = string.char(0x1F, 50)
     local red = string.char(0x1F, 167)
-    local separator = string.rep("=", 74)
+    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
 
     add_to_chat(121, gray .. separator)
 

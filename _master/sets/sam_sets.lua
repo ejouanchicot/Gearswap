@@ -1,10 +1,21 @@
 ---============================================================================
 --- SAM Equipment Sets - Complete Gear Configuration
 ---============================================================================
---- @file sam_sets.lua
---- @author Tetsouo
+--- Equipment sets for Samurai job.
+---
+--- Contains:
+---   • Weapon sets (Masamune, Kusanagi, Shining One, Dojikiri, Malevolence,
+---     Soboro, Norifusa, Onion Sword III, Utu Grip)
+---   • Idle sets (Normal, Regen, Weak, PDT) and defense sets (PDT, MDT)
+---   • Engaged sets (Normal, Mid, Acc, PDT, Acc.PDT, MDT, SuBlow)
+---   • Precast sets (Job Abilities, Fast Cast, Weaponskills)
+---   • Midcast (Phalanx), buff sets (Sekkanoki, Sengikori, Meikyo Shisui),
+---     Third Eye, movement and Doom sets
+---
+--- @file    sets/sam_sets.lua
+--- @author  Tetsouo
 --- @version 1.0
---- @date Created: 2025-10-21
+--- @date    Created: 2025-10-21
 ---============================================================================
 
 ---============================================================================

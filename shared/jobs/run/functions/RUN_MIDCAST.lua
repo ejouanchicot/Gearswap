@@ -4,17 +4,19 @@
 ---   Handles midcast for Rune Fencer with specialized Cure and enmity optimization.
 ---
 ---   Features:
----   - Cure III/IV: Dynamic CureSelf/CureOther via CureSetBuilder
----   - Enmity spells: Flash, Enlight
----   - Phalanx: XP mode (SIRD vs Potency)
+---   - Cure III/IV: CureSelf/CureOther via CureSetBuilder (job_midcast)
+---   - Enmity spells: Flash, Enlight (matched by name before Divine Magic)
+---   - Phalanx: plain Enhancing Magic lookup (name set wins)
 ---   - Enhancing Magic: Database-driven spell_family routing
----   - Divine Magic, Blue Magic support (RUN/BLU subjob)
+---   - Healing Magic, Divine Magic, Blue Magic (RUN/BLU subjob)
 ---
----   @file    RUN_MIDCAST.lua
+---   @file    shared/jobs/run/functions/RUN_MIDCAST.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2025-10-03 | Updated: 2025-11-05
 ---   @requires shared/jobs/run/functions/logic/cure_set_builder
+---  ═══════════════════════════════════════════════════════════════════════════
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DEPENDENCIES - LAZY LOADING (Performance Optimization)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -54,8 +56,8 @@ function job_midcast(spell, action, spellMap, eventArgs)
     -- ══════════════════════════════════════════════════════════════════════════
     -- CURE III/IV: DYNAMIC TARGET-BASED SETS (CureSetBuilder)
     -- ══════════════════════════════════════════════════════════════════════════
-    -- These spells use CureSetBuilder logic module for optimal gear selection
-    -- Must be handled in job_midcast BEFORE MidcastManager
+    -- Handled here, before Mote's default midcast: eventArgs.handled skips it
+    -- and job_post_midcast returns early for these spells.
     if spell.name == 'Cure III' or spell.name == 'Cure IV' then
         local target_type = spell.target.type == 'SELF' and 'SELF' or 'OTHER'
         local cure_set = CureSetBuilder.generate(spell, target_type)
@@ -67,7 +69,8 @@ function job_midcast(spell, action, spellMap, eventArgs)
     end
 end
 
---- Extracted from job_post_midcast: the `spell.skill == 'Healing Magic'` branch.
+--- Healing Magic branch of job_post_midcast (Self/Other target variants).
+--- @param spell table Spell information from GearSwap
 local function job_post_midcast_healing_magic(spell)
     MidcastManager.select_set({
         skill = 'Healing Magic',
@@ -78,9 +81,11 @@ local function job_post_midcast_healing_magic(spell)
     })
 end
 
---- Extracted from job_post_midcast: the `spell.skill == 'Enhancing Magic'` branch.
+--- Enhancing Magic branch of job_post_midcast.
+--- @param spell table Spell information from GearSwap
 local function job_post_midcast_enhancing_magic(spell)
-    -- Phalanx: RUN always uses SIRD (tank priority: prevent interruption)
+    -- Phalanx: no target or spell-family routing, the name set
+    -- (sets.midcast.Phalanx) is picked by MidcastManager.
     if spell.name == 'Phalanx' then
         MidcastManager.select_set({
             skill = 'Enhancing Magic',
@@ -98,7 +103,8 @@ local function job_post_midcast_enhancing_magic(spell)
     })
 end
 
---- Extracted from job_post_midcast: the `spell.skill == 'Blue Magic'` branch.
+--- Blue Magic branch of job_post_midcast.
+--- @param spell table Spell information from GearSwap
 local function job_post_midcast_blue_magic(spell)
     -- All Blue Magic spells use the same set (no distinction)
     MidcastManager.select_set({

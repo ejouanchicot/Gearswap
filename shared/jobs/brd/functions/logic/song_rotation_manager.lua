@@ -97,8 +97,8 @@ function SongRotationManager.get_short_name(song_name)
     return BRDSongConfig.SHORT_NAMES[song_name] or song_name
 end
 
----   Update song slot states for UI display
----   Display songs from current pack configuration
+---   Update song slot states (BRDSong1..5) for UI display, with short names
+---   Also exported as _G.update_brd_song_slots (read by ui_display.lua)
 function SongRotationManager.update_song_slots()
     -- Get songs from current pack (with Victory March replacement if applicable)
     local songs = SongRotationManager.get_songs_with_replacement()
@@ -143,7 +143,8 @@ local function is_dummy_song(song_name)
     return false
 end
 
----   Get required instrument for specific song
+---   Get required instrument for specific song (read by
+---   MidcastManager.get_song_instrument through _G.SongRotationManager)
 ---   Only returns instruments for songs that are LOCKED (cannot be cast without them)
 ---   For dummy songs: instrument selected by sets.midcast.DummySong
 ---   For buff songs: state.MainInstrument, applied by midcast_router after the song set
@@ -210,7 +211,7 @@ local function cast_song_phase(songs, start_index, count, target, base_delay, so
 end
 
 ---   Cast songs using 3-phase rotation (Party >> Dummy >> Party)
----   @param use_marcato boolean Whether to use Marcato for first song (Honor March)
+---   @param use_marcato boolean Unused: Marcato is inserted by BRD_PRECAST (try_marcato)
 ---   @param target string Target for songs ("<me>" for party, "<stpc>" for pianissimo)
 ---   @return boolean Success status
 function SongRotationManager.cast_songs_with_phases(use_marcato, target)
@@ -218,13 +219,12 @@ function SongRotationManager.cast_songs_with_phases(use_marcato, target)
     local buff_songs = SongRotationManager.get_songs_with_replacement()
     local dummy_songs = SongRotationManager.get_dummy_songs()
     local delay = 0
-    local marcato_used = false
 
     -- Check for Clarion Call (allows 5 songs instead of 4)
     local has_clarion = buffactive['Clarion Call'] or false
     local total_songs = has_clarion and 5 or 4
 
-    -- Get dynamic song delay (Marcato handled in cast_song helper now)
+    -- Get dynamic song delay (Marcato is inserted by BRD_PRECAST, not here)
     local song_delay = get_song_delay(false)
 
     if total_songs >= 5 then

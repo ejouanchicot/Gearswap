@@ -14,10 +14,10 @@
 --- main. It is exact for a job subbing /SCH without those merits, which is the
 --- case this module exists for (BLM/SCH and friends).
 ---
---- @file shared/utils/scholar/stratagem_charges.lua
---- @author Tetsouo
+--- @file    shared/utils/scholar/stratagem_charges.lua
+--- @author  Tetsouo
 --- @version 1.0
---- @date Created: 2026-07-28
+--- @date    Created: 2026-07-28
 ---============================================================================
 
 local StratagemCharges = {}

@@ -13,7 +13,7 @@
 ---   • jobs - Job availability with level requirements
 ---   • special_notes - Quest requirements, aftermath effects, restrictions
 ---
---- @file GREATKATANA_WS_DATABASE.lua
+--- @file shared/data/weaponskills/GREATKATANA_WS_DATABASE.lua
 --- @author Tetsouo
 --- @version 1.0 - Improved formatting - Complete 300% Verified against BG-Wiki
 --- @date Created: 2025-10-30

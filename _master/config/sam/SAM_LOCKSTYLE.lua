@@ -2,7 +2,7 @@
 --- SAM Lockstyle Configuration
 ---============================================================================
 --- Defines lockstyle sets for SAM by subjob.
---- @file SAM_LOCKSTYLE.lua
+--- @file config/sam/SAM_LOCKSTYLE.lua
 --- @author Tetsouo
 --- @version 1.0
 --- @date Created: 2025-10-21

@@ -14,7 +14,7 @@ local BLMMacroConfig = {}
 -- Default macro book/page (used if no subjob config)
 BLMMacroConfig.default = {book = 8, page = 1}
 
--- Macro books per subjob (optional)
+-- Macro books per subjob (optional); unlisted subjobs use the default
 BLMMacroConfig.solo = {
     ['SCH'] = {book = 8, page = 1}, -- BLM/SCH
     ['RDM'] = {book = 8, page = 1}, -- BLM/RDM
@@ -23,10 +23,11 @@ BLMMacroConfig.solo = {
 
 ---============================================================================
 --- DUAL-BOXING CONFIGURATION (Playing BLM + Alt)
+--- Structure: dualbox[ALT_JOB][YOUR_SUBJOB] = {book, page}, used while the
+--- alt is online on ALT_JOB; otherwise the solo table applies.
 ---============================================================================
 
 BLMMacroConfig.dualbox = {
-    -- Uncomment to add dual-boxing configurations
     ['GEO'] = {
         ['SCH'] = {book = 9, page = 1},
         ['RDM'] = {book = 9, page = 1}

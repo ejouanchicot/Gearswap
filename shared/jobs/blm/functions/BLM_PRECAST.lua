@@ -1,18 +1,18 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BLM Precast Module - Precast Action Handling & Intelligent Spell Refinement
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles precast gear for Black Mage job:
----   • Fast Cast for all spells (cap 80%)
----   • Job Abilities (Manafont, Manawall, Elemental Seal)
----   • Intelligent Spell Refinement (automatic tier downgrading)
----     - Elemental Magic: Fire VI >> V >> IV >> III >> II >> I
----     - AOE Spells: Firaja >> Firaga III >> II >> I
----     - Enfeebling: Sleep III >> II >> I, Sleepga II >> I, etc.
----     - Dark Magic: Bio V >> IV >> III >> II >> I, Drain III >> II >> I, etc.
----   • Death spell handling (HP-based damage)
----   • Security layers (debuff guard, cooldown check for non-tiered spells)
+---   Precast pipeline for Black Mage (precast gear itself comes from the
+---   sets through Mote):
+---   • PrecastGuard first (debuffs that block the action)
+---   • Recast check, or tier refinement for the spells that have tiers
+---     (Elemental Magic except storms/Klimaform, plus the enfeebling and dark
+---     spells listed in BLM_SPELL_FILTERS.REFINEMENT_SPELLS)
+---   • Stratagem charge abilities skip the cooldown check
+---   • Dark Arts before a nuke on BLM/SCH (checkArts)
+---   • Twilight Cloak lock for Impact
+---   • WSPrecastHandler for weaponskills
 ---
----   @file    BLM_PRECAST.lua
+---   @file    shared/jobs/blm/functions/BLM_PRECAST.lua
 ---   @author  Tetsouo
 ---   @version 2.0 - Universal Refinement Integration
 ---   @date    Created: 2025-10-15 | Updated: 2025-10-15
@@ -129,6 +129,11 @@ local function lock_body_for_impact()
     _G.impact_body = 'Twilight Cloak'
 end
 
+--- Precast hook: guard, recast/refinement, Dark Arts, Impact lock, weaponskill.
+--- @param spell table Spell information from GearSwap
+--- @param action table Action information from GearSwap
+--- @param spellMap string Spell mapping from Mote-Include
+--- @param eventArgs table Event arguments (eventArgs.cancel for cancellation)
 function job_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
@@ -160,7 +165,7 @@ end
 
 ---   Apply final gear adjustments before equipping
 ---   @param spell table Spell/ability data
----   @param action string Action type
+---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping
 ---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)

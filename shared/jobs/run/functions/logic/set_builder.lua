@@ -11,12 +11,11 @@
 ---
 ---   Features:
 ---   • Shared logic for both idle and engaged
----   • Safe pcall for set_combine operations
 ---   • Modular functions for easy maintenance
 ---
----   @file    jobs/run/functions/logic/set_builder.lua
+---   @file    shared/jobs/run/functions/logic/set_builder.lua
 ---   @author  Tetsouo
----   @version 2.1.0 - Fixed Lycurgos Great Axe support (sub=empty)
+---   @version 2.1.0 - Lycurgos (Great Axe) skips the grip; the sub slot is not emptied
 ---   @date    Created: 2025-10-06 | Updated: 2025-11-11
 ---  ═══════════════════════════════════════════════════════════════════════════
 local SetBuilder = {}
@@ -32,7 +31,7 @@ local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   WEAPON/SHIELD APPLICATION
+---   WEAPON/GRIP APPLICATION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Apply main weapon to set
@@ -56,13 +55,13 @@ end
 ---   Apply sub weapon (grip) to set
 ---   Uses grip sets defined in run_sets.lua (sets.Utu, sets.Refined)
 ---   Great Swords are 2-handed but can use grips
----   NOTE: Great Axes (Lycurgos) cannot use grips - skip grip application
+---   NOTE: Lycurgos skips the grip set; the sub slot keeps whatever the other
+---   sets (or the currently equipped gear) put there
 ---   @param result table Current equipment set
 ---   @return table Set with grip applied
 function SetBuilder.apply_grip(result)
     -- Skip grip application for Great Axes (Lycurgos)
     if state.MainWeapon and state.MainWeapon.current == 'Lycurgos' then
-        -- DEBUG: Confirm Lycurgos is detected and grip is skipped
         if _G.DEBUG_RUN_WEAPONS then
             MessageFormatter.show_debug('RUN SetBuilder', 'Lycurgos detected - skipping grip application')
         end

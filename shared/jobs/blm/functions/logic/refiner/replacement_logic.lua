@@ -12,10 +12,7 @@
 ---     • find_ja_replacement(spell, recasts, mp, res) -> new_name
 ---     • should_cancel(new_name, replacement, mp, spell) -> bool
 ---
----   Naming choice: function names are snake_case to match project style;
----   they wrap the original camelCase handle_*/handle_ja_* internals.
----
----   @file    jobs/blm/functions/logic/refiner/replacement_logic.lua
+---   @file    shared/jobs/blm/functions/logic/refiner/replacement_logic.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2026-05-09 (extracted from spell_refiner.lua)
@@ -105,7 +102,7 @@ function ReplacementLogic.find_ja_replacement(spell, spell_recasts, player_mp, r
                 newSpell = baseElement .. 'ga III' -- Fallback to ga III
             end
         else
-            newSpell = string.gsub(spell.name, 'ja', 'ga') .. ' III' -- Original logic
+            newSpell = string.gsub(spell.name, 'ja', 'ga') .. ' III'
         end
     end
 

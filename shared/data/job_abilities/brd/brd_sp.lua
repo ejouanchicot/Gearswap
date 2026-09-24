@@ -7,7 +7,7 @@
 ---   - Soul Voice (SP1, Lv1) - Enhances song effects
 ---   - Clarion Call (SP2, Lv96) - +1 song slot for party
 ---
---- @file brd_sp.lua
+--- @file shared/data/job_abilities/brd/brd_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06

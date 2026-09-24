@@ -7,7 +7,7 @@
 ---   - Azure Lore (SP1, Lv1) - Blue magic enhanced
 ---   - Unbridled Wisdom (SP2, Lv96) - Cast Unbridled Learning spells
 ---
---- @file blu_sp.lua
+--- @file shared/data/job_abilities/blu/blu_sp.lua
 --- @author Tetsouo
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06
