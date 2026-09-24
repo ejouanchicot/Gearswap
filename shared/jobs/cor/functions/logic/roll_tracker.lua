@@ -180,25 +180,57 @@ local function crooked_applies(roll_name, is_new_roll)
     return (os.time() - _G.cor_crooked_timestamp) <= 60
 end
 
---- The bonus this roll grants, job bonus and Crooked included.
---- @return number bonus, boolean whether a job bonus applied
-local function compute_bonus(roll_name, roll_value, roll_data, is_crooked)
-    local phantom_roll_bonus = RollTracker.get_phantom_roll_bonus()
-    local player_job = player and player.main_job or 'COR'
+--- The active-roll record for a roll, or nil.
+--- @param roll_name string
+--- @return table|nil
+local function find_active_roll(roll_name)
+    for _, roll in ipairs(_G.cor_active_rolls or {}) do
+        if roll.name == roll_name then
+            return roll
+        end
+    end
+    return nil
+end
 
-    local has_job_bonus = false
-    if roll_data and roll_data.job_bonus then
-        has_job_bonus = roll_has_job_bonus(roll_data)
+--- "Phantom Roll +" gear and job bonus that apply to this cast.
+---
+--- Both are settled per roll, not per cast (BG-Wiki, Phantom Roll):
+--- gear counts from the cast it was worn on - the Phantom Roll or a Double-Up -
+--- and stays for the Double-Ups after it even once removed, so a Double-Up
+--- keeps the best value seen so far. The job bonus is decided by the initial
+--- Phantom Roll only; a job joining afterwards cannot add it with Double-Up.
+--- @param roll_name string
+--- @param roll_data table|nil Roll definition
+--- @param is_new_roll boolean False when this cast is a Double-Up
+--- @return number gear bonus, boolean job bonus
+local function roll_bonus_sources(roll_name, roll_data, is_new_roll)
+    local gear_now = RollTracker.get_phantom_roll_bonus()
+    local record = not is_new_roll and find_active_roll(roll_name) or nil
+
+    if record and record.gear_bonus ~= nil then
+        return math.max(record.gear_bonus, gear_now), record.job_bonus or false
     end
 
+    local has_job_bonus = roll_data and roll_data.job_bonus
+        and roll_has_job_bonus(roll_data) or false
+    return gear_now, has_job_bonus
+end
+
+--- The bonus this roll grants, job bonus and Crooked included.
+--- @param gear_bonus number "Phantom Roll +" value that applies
+--- @param has_job_bonus boolean Whether the job bonus applies
+--- @return number bonus
+local function compute_bonus(roll_name, roll_value, is_crooked, gear_bonus, has_job_bonus)
+    local player_job = player and player.main_job or 'COR'
+
     local bonus = RollData.calculate_bonus(roll_name, roll_value, player_job,
-                                           phantom_roll_bonus, has_job_bonus)
+                                           gear_bonus, has_job_bonus)
 
     if is_crooked then
         bonus = bonus * 1.2
     end
 
-    return bonus, has_job_bonus
+    return bonus
 end
 
 --- Record the roll as the one now in effect.
@@ -294,13 +326,15 @@ function RollTracker.on_roll_cast(roll_name, roll_value)
 
     local roll_data = RollData.get_roll(roll_name)
     local is_crooked = crooked_applies(roll_name, is_new_roll)
-    local final_bonus, has_job_bonus = compute_bonus(roll_name, roll_value,
-                                                     roll_data, is_crooked)
+    local gear_bonus, has_job_bonus = roll_bonus_sources(roll_name, roll_data, is_new_roll)
+    local final_bonus = compute_bonus(roll_name, roll_value, is_crooked,
+                                      gear_bonus, has_job_bonus)
     consume_crooked(is_crooked, is_new_roll)
 
     local is_natural_eleven = note_natural_eleven(roll_value)
 
-    RollTracker.track_active_roll(roll_name, roll_value, is_crooked, is_new_roll)
+    RollTracker.track_active_roll(roll_name, roll_value, is_crooked, is_new_roll,
+                                  gear_bonus, has_job_bonus)
     RollTracker.display_roll_result(roll_name, roll_value, final_bonus,
         roll_data and roll_data.effect_type or '',
         RollData.is_lucky(roll_name, roll_value),
@@ -316,7 +350,10 @@ end
 ---   @param roll_value number Value of the roll
 ---   @param has_crooked boolean If this roll has Crooked Cards attached
 ---   @param is_new_roll boolean|nil True for a fresh Phantom Roll, false for a Double-Up
-function RollTracker.track_active_roll(roll_name, roll_value, has_crooked, is_new_roll)
+---   @param gear_bonus number|nil "Phantom Roll +" value settled for this roll
+---   @param has_job_bonus boolean|nil Job bonus settled at the initial roll
+function RollTracker.track_active_roll(roll_name, roll_value, has_crooked, is_new_roll,
+                                       gear_bonus, has_job_bonus)
     -- Find existing roll or add new
     local found = false
     for i, roll in ipairs(_G.cor_active_rolls) do
@@ -332,6 +369,10 @@ function RollTracker.track_active_roll(roll_name, roll_value, has_crooked, is_ne
             elseif has_crooked then
                 roll.has_crooked = true
             end
+            if gear_bonus ~= nil then
+                roll.gear_bonus = gear_bonus
+                roll.job_bonus = has_job_bonus or false
+            end
             found = true
             break
         end
@@ -342,7 +383,9 @@ function RollTracker.track_active_roll(roll_name, roll_value, has_crooked, is_ne
             name = roll_name,
             value = roll_value,
             timestamp = os.time(),
-            has_crooked = has_crooked or false
+            has_crooked = has_crooked or false,
+            gear_bonus = gear_bonus,
+            job_bonus = has_job_bonus or false
         })
     end
 
