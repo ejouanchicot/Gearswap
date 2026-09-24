@@ -7,10 +7,11 @@
 ---   Follow    Tetsouo
 ---   Mirror    ?
 ---
---- Job and online come from the dual-box job exchange. Auto, Follow and
---- Mirror are the last orders sent from this box (//gs c alts, the common
---- keys, //gs c sortie): the automation addon keeps its real state to itself,
---- so "?" means nothing was sent since the game started.
+--- Job comes from the dual-box job exchange, online from the party list
+--- ("no party" when the alt is not in it). Auto, Follow and Mirror are the
+--- last orders sent from this box (//gs c alts, the common keys,
+--- //gs c sortie): the automation addon keeps its real state to itself, so
+--- "?" means nothing was sent since the game started.
 ---
 --- Shown on the main only, when the box group has other members.
 --- //gs c alts window shows / hides it; drag it with the mouse. Both are
@@ -79,9 +80,12 @@ local function group()
     return ok and AltGroup or nil
 end
 
-local function manager()
-    local ok, DualBoxManager = pcall(require, 'shared/utils/dualbox/dualbox_manager')
-    return ok and DualBoxManager or nil
+--- Game resources: not a global in a job file's sandbox.
+local function resources()
+    local r = rawget(_G, 'res')
+    if r then return r end
+    local ok, loaded = pcall(require, 'resources')
+    return ok and loaded or nil
 end
 
 local function on_off(value)
@@ -94,21 +98,46 @@ local function follow_text(value)
     return value and paint(WHITE, value) or paint(RED, 'OFF')
 end
 
---- One line per alt. The job exchange knows one partner: its job goes on
---- the first alt's line.
-local function alt_lines(alts)
-    local lines, dbm = {}, manager()
-    for i, name in ipairs(alts) do
-        local info = ''
-        if i == 1 and dbm then
-            if dbm.is_alt_online() then
-                local job, sub = dbm.get_alt_job(), dbm.get_alt_subjob()
-                info = paint(YELLOW, (job or '?') .. (sub and ('/' .. sub) or '')) .. '  ' .. paint(GREEN, 'online')
-            else
-                info = paint(RED, 'offline')
-            end
+--- The party / alliance entry of `name`, or nil.
+local function party_member(name)
+    local party = windower.ffxi.get_party() or {}
+    for key, member in pairs(party) do
+        if type(key) == 'string' and key:match('^[pa]%d') and type(member) == 'table'
+            and member.name and member.name:lower() == name:lower() then
+            return member, party
         end
-        lines[#lines + 1] = paint(WHITE, string.format('%-9s', name)) .. ' ' .. info
+    end
+    return nil, party
+end
+
+--- Presence from the party list: the job exchange only speaks at a load or
+--- a job change, so its 30 s "online" timeout reads a quiet alt as gone.
+local function presence(name)
+    local member, party = party_member(name)
+    if not member then
+        return paint(GRAY, 'no party')
+    end
+    local mine = party.p0 and party.p0.zone
+    if member.zone and mine and member.zone ~= mine then
+        local r = resources()
+        local zone = r and r.zones and r.zones[member.zone]
+        return paint(GREEN, 'online') .. ' ' .. paint(GRAY, zone and zone.en or ('zone ' .. member.zone))
+    end
+    return paint(GREEN, 'online')
+end
+
+--- One line per alt. The job exchange knows one partner: its last job goes
+--- on the first alt's line.
+local function alt_lines(alts)
+    local lines = {}
+    local job_state = _G.AltJobState
+    for i, name in ipairs(alts) do
+        local job = ''
+        if i == 1 and job_state and job_state.job then
+            local sub = job_state.subjob and job_state.subjob ~= 'NON' and ('/' .. job_state.subjob) or ''
+            job = paint(YELLOW, job_state.job .. sub) .. '  '
+        end
+        lines[#lines + 1] = paint(WHITE, string.format('%-9s', name)) .. ' ' .. job .. presence(name)
     end
     return lines
 end
