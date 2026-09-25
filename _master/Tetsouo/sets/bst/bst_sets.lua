@@ -419,7 +419,7 @@ sets.precast.WS['Primal Rend'] = {
     waist      = "Orpheus's Sash",
     left_ear   = Earrings.Sortiarius,
     right_ear  = Earrings.Friomisi,
-    left_ring  = BSTRings.Cornelia,
+    left_ring  = BSTRings.Ephramad,
     right_ring = BSTRings.Metamorph,
     back       = Artio.WS1,
 }
@@ -454,7 +454,7 @@ sets.precast.WS['Bora Axe'] = {
     ear1  = 'Odnowa Earring +1',
     ear2  = 'Nukumi Earring +1',
     ring1 = 'Murky Ring',
-    ring2 = "Cornelia's Ring",
+    ring2 = "Ephramad's Ring",
     back  = Artio.WS1,
 }
 
@@ -470,7 +470,7 @@ sets.precast.WS['Calamity'] = {
     waist      = 'Sailfi Belt +1',
     left_ear   = Earrings.Thrud,
     right_ear  = Earrings.Nukumi,
-    left_ring  = BSTRings.Cornelia,
+    left_ring  = BSTRings.Ephramad,
     right_ring = BSTRings.Murky,
     back       = Artio.WS1,
 }

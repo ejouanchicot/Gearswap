@@ -186,7 +186,7 @@ sets.precast.WS = {
     waist      = 'Fotia Belt',
     left_ear   = 'Moonshade Earring',
     right_ear  = 'Mache Earring +1',
-    left_ring  = "Cornelia's Ring",
+    left_ring  = "Ephramad's Ring",
     right_ring = 'Chirich Ring +1',
     back       = Taranus.plain
 }
