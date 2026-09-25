@@ -295,6 +295,15 @@ pcall(function()
     end
 end)
 
+-- Cast time of every spell from the precast set actually sent (watchdog, BRD
+-- song queue), and the game's "cast started" packets.
+pcall(function()
+    local ok_t, CastTime = pcall(require, 'shared/utils/precast/cast_time')
+    if ok_t and CastTime then CastTime.install_hook() end
+    local ok_c, CastTracker = pcall(require, 'shared/utils/core/cast_tracker')
+    if ok_c and CastTracker then CastTracker.start() end
+end)
+
 -- Combat Mode lock, every job. Laid after the custom hooks so it wraps them:
 -- the lock is set before any gear goes on.
 pcall(function()
