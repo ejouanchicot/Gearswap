@@ -28,7 +28,7 @@ BLU_HEALING.spells = {
         unbridled               = false,
         BLU                     = 1,
         mp_cost                 = 5,
-        notes                   = "HP restoration (self only). MP: 5. Level: 1. Trait: Resist Sleep (4 pts). Healing: ~36 HP (soft cap, scales with MND). Stats: CHR +1, HP +5. Recast: 5s. BLU only.",
+        notes                   = "HP restoration (self only). Level: 1. Trait: Resist Sleep. Healing: soft cap 36 HP, MND heavily influential. Stats: CHR +1, HP +5. Recast: 5s. BLU only.",
     },
 
     --============================================================
@@ -46,7 +46,7 @@ BLU_HEALING.spells = {
         unbridled               = false,
         BLU                     = 16,
         mp_cost                 = 55,
-        notes                   = "HP restoration (party AoE). MP: 55. Level: 16. Trait: Auto Regen (4 pts). Healing: ~180 HP (soft cap, scales with MND/VIT). Range: 10 yalms. Recast: 15s. BLU only.",
+        notes                   = "HP restoration (party AoE). MP: 55. Level: 16. Trait: Auto Regen. Healing: soft cap 180 HP, MND primary, VIT secondary. Enhanced by Cure Potency. Range: 10'. Recast: 15s. BLU only.",
     },
 
     --============================================================
@@ -64,7 +64,7 @@ BLU_HEALING.spells = {
         unbridled               = false,
         BLU                     = 30,
         mp_cost                 = 37,
-        notes                   = "HP restoration (single target). MP: 37. Level: 30. Trait: Resist Sleep (4 pts). Healing: ~180 HP (soft cap, scales with MND/VIT/Healing Magic Skill). Range: 20 yalms. Recast: 6s. BLU only.",
+        notes                   = "HP restoration (single target). MP: 37. Level: 30. Trait: Resist Sleep. Healing: soft cap 180 HP, scales with MND/VIT/Healing Magic Skill. Not affected by day/weather. Range: 20'. Recast: 6s. BLU only.",
     },
 
     --============================================================
@@ -82,7 +82,7 @@ BLU_HEALING.spells = {
         unbridled               = false,
         BLU                     = 58,
         mp_cost                 = 72,
-        notes                   = "HP restoration (single target). MP: 72. Level: 58. Trait: Resist Sleep (4 pts). Healing: ~550 HP (soft cap 550, hard cap 610, Cure IV equivalent, scales with MND/VIT/Healing Magic Skill). Range: 20 yalms. Recast: 6s. BLU only.",
+        notes                   = "HP restoration (single target). MP: 72. Level: 58. Trait: Resist Sleep. Healing: soft cap 550, hard cap 610 (roughly Cure IV), scales with MND/VIT/Healing Magic Skill. Not affected by day/weather. Range: 20'. Recast: 6s. BLU only.",
     },
 
     --============================================================
@@ -100,7 +100,7 @@ BLU_HEALING.spells = {
         unbridled               = false,
         BLU                     = 75,
         mp_cost                 = 40,
-        notes                   = "HP restoration + status removal (self only). MP: 40. Level: 75. Trait: Resist Sleep (4 pts). Effect: Restores HP + removes 1 detrimental magic effect (Erase equivalent). Recast: 60s. BLU only.",
+        notes                   = "HP restoration + status removal (self only). MP: 40. Level: 75. Trait: Resist Sleep. Effect: Restores HP (soft cap 85 HP) + removes 1 detrimental effect that Erase can remove. Recast: 60s. BLU only.",
     },
 
     --============================================================
@@ -118,7 +118,7 @@ BLU_HEALING.spells = {
         unbridled               = false,
         BLU                     = 76,
         mp_cost                 = 106,
-        notes                   = "HP restoration + ATK/MAB buffs (single target). MP: 106. Level: 76. Trait: None (0 pts). Healing: ~650 HP (soft cap 650, hard cap 710, Cure IV-V equivalent). Buffs: ATK +10-15%, MAB +1-15% (moon phase dependent). Cast: 4s. Recast: 10s. Range: 20 yalms. BLU only.",
+        notes                   = "HP restoration + Attack/Magic Attack boost (single target). MP: 106. Level: 76. Trait: None. Healing: soft cap 650, hard cap 710 (between Cure IV and Cure V). Buffs: Attack ~1-15% and Magic Attack ~1-15, inverted by moon phase. Duration: 90s. Range: 20'. BLU only.",
     },
 
     --============================================================
@@ -136,7 +136,7 @@ BLU_HEALING.spells = {
         unbridled               = false,
         BLU                     = 78,
         mp_cost                 = 36,
-        notes                   = "HP regeneration over time (self only). MP: 36. Level: 78. Trait: None (0 pts). Regen: 25 HP/tick for 30 ticks (750 HP total over 90s). Duration: 90s. Stacks with other regen effects. Recast: 60s. BLU only.",
+        notes                   = "HP regeneration over time (self only). MP: 36. Level: 78. Trait: None. Regen: 25 HP/tick for 30 ticks (750 HP total). Duration: 90s. Stacks with Mighty Guard regen. Recast: 60s. BLU only.",
     },
 
     --============================================================
@@ -154,7 +154,7 @@ BLU_HEALING.spells = {
         unbridled               = false,
         BLU                     = 94,
         mp_cost                 = 145,
-        notes                   = "HP restoration (party AoE). MP: 145. Level: 94. Trait: Auto Regen (4 pts). Healing: floor(MaxHP/7) × 2 (scales with caster's max HP, not current HP). Enhanced by Cure Potency. Range: 10 yalms. Cast: 7s. Recast: 20s. BLU only.",
+        notes                   = "HP restoration (party AoE). MP: 145. Level: 94. Trait: Auto Regen. Healing: floor(MaxHP/7) x 2 (max HP, not current HP). Enhanced by Cure Potency, obis and weather; not affected by Healing Magic Skill or MND. Range: ~10'. BLU only.",
     },
 
     --============================================================
@@ -172,7 +172,7 @@ BLU_HEALING.spells = {
         unbridled               = false,
         BLU                     = 99,
         mp_cost                 = 127,
-        notes                   = "HP restoration (self only, high potency). MP: 127. Level: 99. Trait: Max HP Boost (8 pts). Healing: ~640 HP base (soft cap 1040 HP, scales with Blue Magic Skill/MND/VIT). Recast: 10s. BLU only.",
+        notes                   = "HP restoration (self only, roughly Cure VI). MP: 127. Level: 99. Trait: Max HP Boost. Healing: base 640, soft cap 1040 HP; Blue Magic Skill replaces Healing Magic Skill (2 skill = 1 HP). Affected by day/weather. Recast: 10s. BLU only.",
     },
 
 }

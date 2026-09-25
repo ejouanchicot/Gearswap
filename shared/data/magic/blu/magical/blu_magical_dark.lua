@@ -23,7 +23,7 @@ BLU_MAGICAL_DARK.spells = {
         unbridled               = false,
         BLU                     = 20,
         mp_cost                 = 10,
-        notes                   = "Dark-based magical HP drain. MP: 10. Level: 20. Trait: None (0 pts). Absorbs HP from target. Ineffective against undead. Single target. BLU only.",
+        notes                   = "Dark-based magical HP drain. MP: 10. Level: 20. Trait: None. HP drained = Blue Magic Skill x 0.33, not modified by INT. Ineffective against undead. Single target. BLU only.",
     },
 
     ["Death Ray"] = {
@@ -36,7 +36,7 @@ BLU_MAGICAL_DARK.spells = {
         unbridled               = false,
         BLU                     = 34,
         mp_cost                 = 49,
-        notes                   = "Dark-based magical damage. MP: 49. Level: 34. Trait: None (0 pts). Recast: 30s. Single target. BLU only.",
+        notes                   = "Dark-based magical damage. MP: 49. Level: 34. Trait: None. Single target. BLU only.",
     },
 
     ["Digest"] = {
@@ -49,7 +49,7 @@ BLU_MAGICAL_DARK.spells = {
         unbridled               = false,
         BLU                     = 36,
         mp_cost                 = 20,
-        notes                   = "Dark-based magical HP drain. MP: 20. Level: 36. Trait: None (0 pts). HP drained = Blue Magic Skill × 0.55. Ineffective against undead. Recast: 90s. Single target. BLU only.",
+        notes                   = "Dark-based magical HP drain. MP: 20. Level: 36. Trait: None. HP drained = Blue Magic Skill x 0.55. Ineffective against undead. Single target. BLU only.",
     },
 
     ["MP Drainkiss"] = {
@@ -62,7 +62,7 @@ BLU_MAGICAL_DARK.spells = {
         unbridled               = false,
         BLU                     = 42,
         mp_cost                 = 20,
-        notes                   = "Dark-based magical MP drain. MP: 20. Level: 42. Trait: None (0 pts). Drains enemy MP (soft cap: 165 MP). Ineffective against undead. Recast: 90s. Single target. BLU only.",
+        notes                   = "Dark-based magical MP drain. MP: 20. Level: 42. Trait: None. Soft cap 165 MP before Magic Burst/day/weather/affinity; not enhanced by Magic Attack Bonus. Ineffective against undead. Single target. BLU only.",
     },
 
     ["Blood Saber"] = {
@@ -75,7 +75,7 @@ BLU_MAGICAL_DARK.spells = {
         unbridled               = false,
         BLU                     = 48,
         mp_cost                 = 48,
-        notes                   = "Dark-based magical HP drain (AoE). MP: 48. Level: 48. Trait: None (0 pts). HP recovered = (Blue Magic Skill × 0.11) × 3.5. Ineffective against undead. Recast: 90s. AoE range. BLU only.",
+        notes                   = "Dark-based magical HP drain (AoE). Level: 48. Trait: None. HP drained = (Blue Magic Skill x 0.11) x 3.5. Ineffective against undead. BLU only.",
     },
 
     ["Eyes On Me"] = {
@@ -88,7 +88,7 @@ BLU_MAGICAL_DARK.spells = {
         unbridled               = false,
         BLU                     = 61,
         mp_cost                 = 112,
-        notes                   = "Dark-based magical damage. MP: 112. Level: 61. Trait: Magic Attack Bonus (4 pts). Recast: 29.25s. Single target. BLU only.",
+        notes                   = "Dark-based magical damage. MP: 112. Level: 61. Trait: Magic Attack Bonus. Ignores Copy Image. Recast: 29.25s. Single target. BLU only.",
     },
 
     ["Osmosis"] = {
@@ -101,11 +101,11 @@ BLU_MAGICAL_DARK.spells = {
         unbridled               = false,
         BLU                     = 84,
         mp_cost                 = 47,
-        notes                   = "Dark-based magical drain + buff steal. MP: 47. Level: 84. Trait: Magic Defense Bonus (4 pts). Steals one beneficial status effect from target (cannot miss). Damage = (Blue Magic Skill × 0.11) × 7. Recast: 120s. Single target. BLU only.",
+        notes                   = "Dark-based magical HP drain + buff steal. MP: 47. Level: 84. Trait: Magic Defense Bonus. Steals one beneficial status effect (cannot miss). HP drained = (Blue Magic Skill x 0.11) x 7. Ineffective against undead. Recast: 120s. Single target. BLU only.",
     },
 
     ["Evryone. Grudge"] = {
-        description             = "Deals dark dmg (MND/INT).",
+        description             = "Deals dark dmg.",
         category                = "Magical",
         magic_type              = "Blue",
         element                 = "Dark",
@@ -114,7 +114,7 @@ BLU_MAGICAL_DARK.spells = {
         unbridled               = false,
         BLU                     = 90,
         mp_cost                 = 185,
-        notes                   = "Dark-based magical damage. MP: 185. Level: 90. Trait: Gilfinder/Treasure Hunter (6 pts). Damage scales with MND (40%) and INT (2.0 per dINT). Recast: 70s. Single target. BLU only.",
+        notes                   = "Dark-based magical damage. MP: 185. Level: 90. Trait: Gilfinder/Treasure Hunter. Single target. BLU only.",
     },
 
     ["Dark Orb"] = {
@@ -127,7 +127,7 @@ BLU_MAGICAL_DARK.spells = {
         unbridled               = false,
         BLU                     = 93,
         mp_cost                 = 124,
-        notes                   = "Dark-based magical damage. MP: 124. Level: 93. Trait: Counter (4 pts). Damage scales with INT (40% + 2.0 per dINT). Recast: 72s. Single target. BLU only.",
+        notes                   = "Dark-based magical damage. MP: 124. Level: 93. Trait: Counter. Single target. BLU only.",
     },
 
     ["Atra. Libations"] = {
@@ -140,7 +140,7 @@ BLU_MAGICAL_DARK.spells = {
         unbridled               = false,
         BLU                     = 99,
         mp_cost                 = 164,
-        notes                   = "Dark-based magical HP drain (AoE). MP: 164. Level: 99. Trait: Defense Bonus (8 pts). HP absorbed = (Blue Magic Skill × 0.11) × 9. Ineffective against undead. Recast: 180s. AoE range. BLU only.",
+        notes                   = "Dark-based magical HP drain (AoE). MP: 164. Level: 99. Trait: Defense Bonus. HP drained = (Blue Magic Skill x 0.11) x 9. Not enhanced by Drain Potency gear. Ineffective against undead. Recast: 180s. BLU only.",
     },
 
     ["Tenebral Crush"] = {
@@ -153,7 +153,7 @@ BLU_MAGICAL_DARK.spells = {
         unbridled               = false,
         BLU                     = 99,
         mp_cost                 = 116,
-        notes                   = "Dark-based magical damage + Defense Down. MP: 116. Level: 99. Trait: Magic Accuracy Bonus (8 pts). Additional effect: -20% defense (180s duration, 90s on NMs). Recast: 60s. AoE range (~10'). BLU only.",
+        notes                   = "Dark-based magical damage + Defense Down (AoE). MP: 116. Level: 99. Trait: Magic Accuracy Bonus. Additional effect: Defense -20% (180s, halved on NMs). Recast: 60s. Range: ~10'. BLU only.",
     },
 
     ["Palling Salvo"] = {
@@ -166,7 +166,7 @@ BLU_MAGICAL_DARK.spells = {
         unbridled               = false,
         BLU                     = 99,
         mp_cost                 = 175,
-        notes                   = "Dark-based magical damage + Bio. MP: 175. Level: 99. Trait: Tenacity (8 pts). Additional effect: Bio (-15 HP/tick, -10% attack, 60-90s duration). Recast: 45s. AoE range. BLU only.",
+        notes                   = "Dark-based magical damage + Bio (AoE). MP: 175. Level: 99. Trait: Tenacity. Additional effect: Bio (-15 HP/tick, -10% attack, 60-90s). Recast: 45s. BLU only.",
     },
 
     ["Cruel Joke"] = {
@@ -179,7 +179,7 @@ BLU_MAGICAL_DARK.spells = {
         unbridled               = true,
         BLU                     = 99,
         mp_cost                 = 187,
-        notes                   = "Dark-based magical doom (unbridled, AoE). MP: 187. Level: 99. Trait: None (0 pts). Requires: Unbridled Learning/Wisdom. Inflicts Doom (60s duration, KO after expiration). Doom removed if caster moves >10' away. Does not affect NMs. Recast: 30s. AoE range. BLU only.",
+        notes                   = "Dark-based magical doom (unbridled, AoE). MP: 187. Level: 99. Trait: None. Requires: Unbridled Learning/Wisdom. Inflicts Doom (KO after 60s). Wears off if caster moves more than 10' from the target. Does not affect NMs. Recast: 30s. BLU only.",
     },
 
 }

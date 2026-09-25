@@ -22,12 +22,12 @@ BLU_MAGICAL_EARTH.spells = {
         trait_points            = 0,
         unbridled               = false,
         BLU                     = 1,
-        mp_cost                 = 8,
-        notes                   = "Earth-based magical damage + Accuracy Down. MP: 8. Level: 1. Trait: None (0 pts). Single target. BLU only.",
+        mp_cost                 = 10,
+        notes                   = "Earth-based magical damage + Accuracy Down. MP: 10. Level: 1. Trait: None. Additional effect: Accuracy -25 (3min). Recast: 9.75s. Single target. BLU only.",
     },
 
     ["Embalming Earth"] = {
-        description             = "Deals earth dmg + slow.",
+        description             = "Deals earth dmg + slow (AoE).",
         category                = "Magical",
         magic_type              = "Blue",
         element                 = "Earth",
@@ -35,12 +35,12 @@ BLU_MAGICAL_EARTH.spells = {
         trait_points            = 8,
         unbridled               = false,
         BLU                     = 99,
-        mp_cost                 = 177,
-        notes                   = "Earth-based magical damage + Slow. MP: 177. Level: 99. Trait: Attack Bonus (8 pts). Single target. BLU only.",
+        mp_cost                 = 57,
+        notes                   = "Earth-based magical damage + Slow (AoE). MP: 57. Level: 99. Trait: Attack Bonus. Additional effect: Slow -25% (3min). Recast: 24s. Range: 13'. BLU only.",
     },
 
     ["Entomb"] = {
-        description             = "Deals earth dmg (AoE).",
+        description             = "Deals earth dmg + petrification (AoE).",
         category                = "Magical",
         magic_type              = "Blue",
         element                 = "Earth",
@@ -48,8 +48,8 @@ BLU_MAGICAL_EARTH.spells = {
         trait_points            = 8,
         unbridled               = false,
         BLU                     = 99,
-        mp_cost                 = 195,
-        notes                   = "Earth-based magical damage (AoE). MP: 195. Level: 99. Trait: Defense Bonus (8 pts). AoE range. BLU only.",
+        mp_cost                 = 116,
+        notes                   = "Earth-based magical damage + Petrification (AoE). MP: 116. Level: 99. Trait: Defense Bonus. Additional effect: Petrification (~60s, applied after damage). Recast: 60s. Range: ~10'. BLU only.",
     },
 
 }

@@ -29,10 +29,9 @@ helix.spells = {
         magic_type              = "Black",
         type                    = "single",
         tier                    = "I",
-        stat_down               = "INT",
         SCH                     = 24,
         main_job_only           = true,
-        notes                   = "Fire DoT. Lowers INT. Weather/day bonus. SCH-only.",
+        notes                   = "Fire DoT. Day/weather bonus always applies. SCH-only.",
     },
     ["Pyrohelix II"] = {
         description             = "Deals fire DoT (weather+).",
@@ -41,10 +40,9 @@ helix.spells = {
         magic_type              = "Black",
         type                    = "single",
         tier                    = "II",
-        stat_down               = "INT",
         SCH                     = 1200,
         main_job_only           = true,
-        notes                   = "Enhanced fire DoT. Lowers INT. Weather/day bonus. SCH-only.",
+        notes                   = "Stronger fire DoT. Day/weather bonus always applies. Requires 1200 SCH job points.",
     },
 
     -- Ice Helix
@@ -55,10 +53,9 @@ helix.spells = {
         magic_type              = "Black",
         type                    = "single",
         tier                    = "I",
-        stat_down               = "STR",
         SCH                     = 26,
         main_job_only           = true,
-        notes                   = "Ice DoT. Lowers STR. Weather/day bonus. SCH-only.",
+        notes                   = "Ice DoT. Day/weather bonus always applies. SCH-only.",
     },
     ["Cryohelix II"] = {
         description             = "Deals ice DoT (weather+).",
@@ -67,10 +64,9 @@ helix.spells = {
         magic_type              = "Black",
         type                    = "single",
         tier                    = "II",
-        stat_down               = "STR",
         SCH                     = 1200,
         main_job_only           = true,
-        notes                   = "Enhanced ice DoT. Lowers STR. Weather/day bonus. SCH-only.",
+        notes                   = "Stronger ice DoT. Day/weather bonus always applies. Requires 1200 SCH job points.",
     },
 
     -- Wind Helix
@@ -81,10 +77,9 @@ helix.spells = {
         magic_type              = "Black",
         type                    = "single",
         tier                    = "I",
-        stat_down               = "VIT",
         SCH                     = 22,
         main_job_only           = true,
-        notes                   = "Wind DoT. Lowers VIT. Weather/day bonus. SCH-only.",
+        notes                   = "Wind DoT. Day/weather bonus always applies. SCH-only.",
     },
     ["Anemohelix II"] = {
         description             = "Deals wind DoT (weather+).",
@@ -93,10 +88,9 @@ helix.spells = {
         magic_type              = "Black",
         type                    = "single",
         tier                    = "II",
-        stat_down               = "VIT",
         SCH                     = 1200,
         main_job_only           = true,
-        notes                   = "Enhanced wind DoT. Lowers VIT. Weather/day bonus. SCH-only.",
+        notes                   = "Stronger wind DoT. Day/weather bonus always applies. Requires 1200 SCH job points.",
     },
 
     -- Earth Helix
@@ -107,10 +101,9 @@ helix.spells = {
         magic_type              = "Black",
         type                    = "single",
         tier                    = "I",
-        stat_down               = "AGI",
         SCH                     = 18,
         main_job_only           = true,
-        notes                   = "Earth DoT. Lowers AGI. Weather/day bonus. SCH-only.",
+        notes                   = "Earth DoT. Day/weather bonus always applies. SCH-only.",
     },
     ["Geohelix II"] = {
         description             = "Deals earth DoT (weather+).",
@@ -119,10 +112,9 @@ helix.spells = {
         magic_type              = "Black",
         type                    = "single",
         tier                    = "II",
-        stat_down               = "AGI",
         SCH                     = 1200,
         main_job_only           = true,
-        notes                   = "Enhanced earth DoT. Lowers AGI. Weather/day bonus. SCH-only.",
+        notes                   = "Stronger earth DoT. Day/weather bonus always applies. Requires 1200 SCH job points.",
     },
 
     -- Thunder Helix
@@ -133,10 +125,9 @@ helix.spells = {
         magic_type              = "Black",
         type                    = "single",
         tier                    = "I",
-        stat_down               = "DEX",
         SCH                     = 28,
         main_job_only           = true,
-        notes                   = "Thunder DoT. Lowers DEX. Weather/day bonus. SCH-only.",
+        notes                   = "Thunder DoT. Day/weather bonus always applies. SCH-only.",
     },
     ["Ionohelix II"] = {
         description             = "Deals thunder DoT (weather+).",
@@ -145,10 +136,9 @@ helix.spells = {
         magic_type              = "Black",
         type                    = "single",
         tier                    = "II",
-        stat_down               = "DEX",
         SCH                     = 1200,
         main_job_only           = true,
-        notes                   = "Enhanced thunder DoT. Lowers DEX. Weather/day bonus. SCH-only.",
+        notes                   = "Stronger thunder DoT. Day/weather bonus always applies. Requires 1200 SCH job points.",
     },
 
     -- Water Helix
@@ -159,10 +149,9 @@ helix.spells = {
         magic_type              = "Black",
         type                    = "single",
         tier                    = "I",
-        stat_down               = "MND",
         SCH                     = 20,
         main_job_only           = true,
-        notes                   = "Water DoT. Lowers MND. Weather/day bonus. SCH-only.",
+        notes                   = "Water DoT. Day/weather bonus always applies. SCH-only.",
     },
     ["Hydrohelix II"] = {
         description             = "Deals water DoT (weather+).",
@@ -171,10 +160,9 @@ helix.spells = {
         magic_type              = "Black",
         type                    = "single",
         tier                    = "II",
-        stat_down               = "MND",
         SCH                     = 1200,
         main_job_only           = true,
-        notes                   = "Enhanced water DoT. Lowers MND. Weather/day bonus. SCH-only.",
+        notes                   = "Stronger water DoT. Day/weather bonus always applies. Requires 1200 SCH job points.",
     },
 
     -- Light Helix
@@ -185,10 +173,9 @@ helix.spells = {
         magic_type              = "Black",
         type                    = "single",
         tier                    = "I",
-        stat_down               = "CHR",
         SCH                     = 32,
         main_job_only           = true,
-        notes                   = "Light DoT. Lowers CHR. Weather/day bonus. SCH-only.",
+        notes                   = "Light DoT. Day/weather bonus always applies. SCH-only.",
     },
     ["Luminohelix II"] = {
         description             = "Deals light DoT (weather+).",
@@ -197,10 +184,9 @@ helix.spells = {
         magic_type              = "Black",
         type                    = "single",
         tier                    = "II",
-        stat_down               = "CHR",
         SCH                     = 1200,
         main_job_only           = true,
-        notes                   = "Enhanced light DoT. Lowers CHR. Weather/day bonus. SCH-only.",
+        notes                   = "Stronger light DoT. Day/weather bonus always applies. Requires 1200 SCH job points.",
     },
 
     -- Dark Helix
@@ -211,10 +197,9 @@ helix.spells = {
         magic_type              = "Black",
         type                    = "single",
         tier                    = "I",
-        stat_down               = "CHR",
         SCH                     = 30,
         main_job_only           = true,
-        notes                   = "Dark DoT. Lowers CHR. Weather/day bonus. SCH-only.",
+        notes                   = "Dark DoT. Day/weather bonus always applies. SCH-only.",
     },
     ["Noctohelix II"] = {
         description             = "Deals dark DoT (weather+).",
@@ -223,10 +208,9 @@ helix.spells = {
         magic_type              = "Black",
         type                    = "single",
         tier                    = "II",
-        stat_down               = "CHR",
         SCH                     = 1200,
         main_job_only           = true,
-        notes                   = "Enhanced dark DoT. Lowers CHR. Weather/day bonus. SCH-only.",
+        notes                   = "Stronger dark DoT. Day/weather bonus always applies. Requires 1200 SCH job points.",
     },
 }
 

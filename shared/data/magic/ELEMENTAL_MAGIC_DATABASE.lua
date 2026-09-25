@@ -20,7 +20,7 @@
 ---   • elemental/elemental_special.lua (3 spells): Comet, Meteor, Impact
 ---
 --- EXCLUDED FROM DATABASE:
----   • Helix spells (Pyrohelix, Cryohelix, etc.) - SCH-unique, remain in internal/sch/helix.lua
+---   • Helix spells (Pyrohelix, Cryohelix, etc.) - SCH-unique, in elemental/helix.lua (loaded by SCH_SPELL_DATABASE)
 ---
 --- USAGE:
 ---   local ElementalSpells = require('shared/data/magic/ELEMENTAL_MAGIC_DATABASE')

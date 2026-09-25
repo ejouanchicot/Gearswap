@@ -27,8 +27,8 @@ BLU_DEBUFFS_STATS.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 32,
-        mp_cost                 = 26,
-        notes                   = "INT down (AoE). MP: 26. Level: 32. Trait: Magic Attack Bonus (4 pts). Effect: INT -10%. Duration: 3min. AoE range. Recast: 60s. BLU only.",
+        mp_cost                 = 25,
+        notes                   = "INT down (AoE, centered on caster). MP: 25. Level: 32. Trait: Magic Attack Bonus. Duration: 30s. Recast: 30s. Range: 6'. BLU only.",
     },
 
     --============================================================
@@ -45,8 +45,8 @@ BLU_DEBUFFS_STATS.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 42,
-        mp_cost                 = 32,
-        notes                   = "Poison status (AoE). MP: 32. Level: 42. Trait: Clear Mind (4 pts). Effect: Poison (5 HP/tick, 90s duration). AoE range. Recast: 30s. BLU only.",
+        mp_cost                 = 86,
+        notes                   = "Poison status (AoE). MP: 86. Level: 42. Trait: Clear Mind. Effect: Poison 6 HP/tick. Duration: 45s. Recast: 45s. BLU only.",
     },
 
     --============================================================
@@ -64,7 +64,7 @@ BLU_DEBUFFS_STATS.spells = {
         unbridled               = false,
         BLU                     = 44,
         mp_cost                 = 37,
-        notes                   = "VIT down (AoE). MP: 37. Level: 44. Trait: Auto Refresh (1 pt). Effect: VIT -10%. Duration: 3min. AoE range. Recast: 60s. BLU only.",
+        notes                   = "VIT down (AoE, centered on caster). MP: 37. Level: 44. Trait: Auto Refresh. Duration: 60s. Recast: 60s. Range: 6'. BLU only.",
     },
 
     --============================================================
@@ -81,8 +81,8 @@ BLU_DEBUFFS_STATS.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 46,
-        mp_cost                 = 34,
-        notes                   = "STR down. MP: 34. Level: 46. Trait: Clear Mind (4 pts). Effect: STR -10%. Duration: 3min. Single target. Recast: 60s. BLU only.",
+        mp_cost                 = 32,
+        notes                   = "STR down (AoE conal). MP: 32. Level: 46. Trait: Clear Mind. Stats: MND +1. Effect: STR -30, decays over time. Duration: 30s. Recast: 60s. BLU only.",
     },
 
     --============================================================
@@ -100,7 +100,7 @@ BLU_DEBUFFS_STATS.spells = {
         unbridled               = false,
         BLU                     = 50,
         mp_cost                 = 32,
-        notes                   = "Defense down (AoE). MP: 32. Level: 50. Trait: Auto Refresh (2 pts). Effect: Defense -25%. Duration: 3min. AoE range. Recast: 60s. BLU only.",
+        notes                   = "Defense down (AoE around the caster). MP: 32. Level: 50. Trait: Auto Refresh. Stats: AGI +2. Effect: Defense -10% (26/256). Duration: 3min. Recast: 20s. BLU only.",
     },
 
     --============================================================
@@ -108,7 +108,7 @@ BLU_DEBUFFS_STATS.spells = {
     --============================================================
 
     ["Cold Wave"] = {
-        description             = "Inflicts INT down (AoE).",
+        description             = "Inflicts AGI down + Frost DoT (AoE).",
         category                = "Debuff",
         magic_type              = "Blue",
         element                 = "Ice",
@@ -118,7 +118,7 @@ BLU_DEBUFFS_STATS.spells = {
         unbridled               = false,
         BLU                     = 52,
         mp_cost                 = 37,
-        notes                   = "INT down (AoE). MP: 37. Level: 52. Trait: Auto Refresh (1 pt). Effect: INT -10%. Duration: 3min. AoE range. Recast: 60s. BLU only.",
+        notes                   = "AGI down + Frost (AoE). MP: 37. Level: 52. Trait: Auto Refresh. Effect: AGI -(level/2), cap -49, decays; Frost DoT; no initial damage. Duration: 30s. Recast: 60s. BLU only.",
     },
 
     --============================================================
@@ -126,7 +126,7 @@ BLU_DEBUFFS_STATS.spells = {
     --============================================================
 
     ["Light of Penance"] = {
-        description             = "Inflicts flash + defense down.",
+        description             = "Reduces TP + blind + bind.",
         category                = "Debuff",
         magic_type              = "Blue",
         element                 = "Light",
@@ -135,8 +135,8 @@ BLU_DEBUFFS_STATS.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 58,
-        mp_cost                 = 36,
-        notes                   = "Flash + Defense down (AoE). MP: 36. Level: 58. Trait: Auto Refresh (2 pts). Effect: Accuracy -20 (flash), Defense -25%. Duration: 3min. AoE range. Recast: 60s. BLU only.",
+        mp_cost                 = 53,
+        notes                   = "TP reduction + Blind + Bind (single target, gaze). MP: 53. Level: 58. Trait: Auto Refresh. Stats: CHR +1, HP +15. Effect: TP -100, Blind (-100 accuracy), Bind. Duration: 30s. Recast: 60s. BLU only.",
     },
 
     --============================================================
@@ -144,7 +144,7 @@ BLU_DEBUFFS_STATS.spells = {
     --============================================================
 
     ["Feather Tickle"] = {
-        description             = "Inflicts critical hit rate down.",
+        description             = "Reduces enemy TP.",
         category                = "Debuff",
         magic_type              = "Blue",
         element                 = "Wind",
@@ -153,8 +153,8 @@ BLU_DEBUFFS_STATS.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 64,
-        mp_cost                 = 32,
-        notes                   = "Critical Hit Rate down. MP: 32. Level: 64. Trait: Clear Mind (4 pts). Effect: Critical Hit Rate -25%. Duration: 3min. Single target. Recast: 60s. BLU only.",
+        mp_cost                 = 48,
+        notes                   = "TP reduction (single target). MP: 48. Level: 64. Trait: Clear Mind. Stats: AGI +1. Effect: Reduces TP by a random 0-1500. Recast: 90s. BLU only.",
     },
 
     --============================================================
@@ -162,7 +162,7 @@ BLU_DEBUFFS_STATS.spells = {
     --============================================================
 
     ["Sandspray"] = {
-        description             = "Inflicts accuracy down.",
+        description             = "Inflicts blind (conal).",
         category                = "Debuff",
         magic_type              = "Blue",
         element                 = "Dark",
@@ -171,8 +171,8 @@ BLU_DEBUFFS_STATS.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 66,
-        mp_cost                 = 37,
-        notes                   = "Accuracy down (AoE). MP: 37. Level: 66. Trait: Clear Mind (4 pts). Effect: Accuracy -40. Duration: 3min. AoE range. Recast: 60s. BLU only.",
+        mp_cost                 = 43,
+        notes                   = "Blind (AoE conal). MP: 43. Level: 66. Trait: Clear Mind. Stats: VIT +1. Effect: Accuracy -25; overwritten by Blind, Blind II and Kurayami. Recast: 60-120s. BLU only.",
     },
 
     --============================================================
@@ -180,7 +180,7 @@ BLU_DEBUFFS_STATS.spells = {
     --============================================================
 
     ["Enervation"] = {
-        description             = "Inflicts magic attack down.",
+        description             = "Inflicts defense + magic defense down (AoE).",
         category                = "Debuff",
         magic_type              = "Blue",
         element                 = "Dark",
@@ -189,8 +189,8 @@ BLU_DEBUFFS_STATS.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 67,
-        mp_cost                 = 36,
-        notes                   = "Magic Attack down. MP: 36. Level: 67. Trait: Counter (4 pts). Effect: Magic Attack -20%. Duration: 3min. Single target. Recast: 60s. BLU only.",
+        mp_cost                 = 48,
+        notes                   = "Defense + Magic Defense down (AoE). MP: 48. Level: 67. Trait: Counter. Stats: HP -5, MP +5. Effect: Defense -10% (26/256), Magic Defense Bonus -8. Duration: 30s. Recast: 60s. BLU only.",
     },
 
     --============================================================
@@ -198,7 +198,7 @@ BLU_DEBUFFS_STATS.spells = {
     --============================================================
 
     ["Lowing"] = {
-        description             = "Inflicts attack down.",
+        description             = "Inflicts plague (AoE).",
         category                = "Debuff",
         magic_type              = "Blue",
         element                 = "Fire",
@@ -207,8 +207,8 @@ BLU_DEBUFFS_STATS.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 71,
-        mp_cost                 = 38,
-        notes                   = "Attack down (AoE). MP: 38. Level: 71. Trait: Clear Mind (4 pts). Effect: Attack -25%. Duration: 3min. AoE range. Recast: 60s. BLU only.",
+        mp_cost                 = 66,
+        notes                   = "Plague (AoE). MP: 66. Level: 71. Trait: Clear Mind. Stats: HP -5. Effect: Plague (-50 TP/tick, -3 MP/tick). Duration: 40-60s. Recast: 120s. BLU only.",
     },
 
     --============================================================
@@ -216,7 +216,7 @@ BLU_DEBUFFS_STATS.spells = {
     --============================================================
 
     ["Cimicine Discharge"] = {
-        description             = "Inflicts magic evasion down.",
+        description             = "Inflicts slow (AoE).",
         category                = "Debuff",
         magic_type              = "Blue",
         element                 = "Earth",
@@ -225,8 +225,8 @@ BLU_DEBUFFS_STATS.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 78,
-        mp_cost                 = 45,
-        notes                   = "Magic Evasion down (AoE). MP: 45. Level: 78. Trait: Magic Burst Bonus (6 pts). Effect: Magic Evasion -50. Duration: 3min. AoE range. Recast: 60s. BLU only.",
+        mp_cost                 = 32,
+        notes                   = "Slow (AoE). MP: 32. Level: 78. Trait: Magic Burst Bonus. Stats: DEX +1, AGI +2. Effect: Slow (19.5%). Duration: 90s. Recast: 20s. BLU only.",
     },
 
     --============================================================
@@ -243,8 +243,8 @@ BLU_DEBUFFS_STATS.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 80,
-        mp_cost                 = 42,
-        notes                   = "Attack down (AoE). MP: 42. Level: 80. Trait: Double/Triple Attack (4 pts). Effect: Attack -30%. Duration: 3min. AoE range. Recast: 60s. BLU only.",
+        mp_cost                 = 46,
+        notes                   = "Attack down (AoE). MP: 46. Level: 80. Trait: Double Attack / Triple Attack. Stats: STR -2, VIT +3. Effect: Attack -20%. Duration: 30s. Recast: 20s. BLU only.",
     },
 
     --============================================================
@@ -252,7 +252,7 @@ BLU_DEBUFFS_STATS.spells = {
     --============================================================
 
     ["Reaving Wind"] = {
-        description             = "Inflicts defense down + dispel.",
+        description             = "Reduces enemy TP (AoE).",
         category                = "Debuff",
         magic_type              = "Blue",
         element                 = "Wind",
@@ -261,8 +261,8 @@ BLU_DEBUFFS_STATS.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 90,
-        mp_cost                 = 49,
-        notes                   = "Defense down + Dispel (AoE). MP: 49. Level: 90. Trait: Magic Burst Bonus (6 pts). Effect: Defense -30% + Dispels beneficial effects. Duration: 3min. AoE range. Recast: 60s. BLU only.",
+        mp_cost                 = 84,
+        notes                   = "TP reduction (AoE). MP: 84. Level: 90. Trait: Magic Burst Bonus. Stats: STR +2, AGI +2. Effect: TP -1000 (-750 vs Amorphs, -1250 vs Aquans). Recast: 90s. BLU only.",
     },
 
 }

@@ -14,7 +14,7 @@ local BLU_MAGICAL_LIGHT = {}
 BLU_MAGICAL_LIGHT.spells = {
 
     ["1000 Needles"] = {
-        description             = "Deals fixed 1000 dmg.",
+        description             = "Deals 1000 dmg split among targets (AoE).",
         category                = "Magical",
         magic_type              = "Blue",
         element                 = "Light",
@@ -22,8 +22,8 @@ BLU_MAGICAL_LIGHT.spells = {
         trait_points            = 4,
         unbridled               = false,
         BLU                     = 62,
-        mp_cost                 = 114,
-        notes                   = "Light-based magical damage (fixed 1000 HP). MP: 114. Level: 62. Trait: Beast Killer (4 pts). Damage: Always 1000 (not affected by MAB). Single target. BLU only.",
+        mp_cost                 = 350,
+        notes                   = "Light-based magical fixed damage (AoE). MP: 350. Level: 62. Trait: Beast Killer. Damage is divided equally among targets; cannot be partially resisted; Magic Burst raises accuracy only. Recast: 120s. BLU only.",
     },
 
     ["Magic Hammer"] = {
@@ -36,7 +36,7 @@ BLU_MAGICAL_LIGHT.spells = {
         unbridled               = false,
         BLU                     = 74,
         mp_cost                 = 40,
-        notes                   = "Light-based magical damage + MP drain. MP: 40. Level: 74. Trait: Magic Attack Bonus (4 pts). Drains enemy MP. Single target. BLU only.",
+        notes                   = "Light-based magical damage + MP drain equal to damage dealt. MP: 40. Level: 74. Trait: Magic Attack Bonus. Affected by Magic Attack Bonus. Ineffective against undead. Recast: 180s. Single target. BLU only.",
     },
 
     ["Retinal Glare"] = {
@@ -48,12 +48,12 @@ BLU_MAGICAL_LIGHT.spells = {
         trait_points            = 8,
         unbridled               = false,
         BLU                     = 99,
-        mp_cost                 = 113,
-        notes                   = "Light-based magical damage + Flash. MP: 113. Level: 99. Trait: Conserve MP (8 pts). Additional effect: Flash (accuracy down). Single target. BLU only.",
+        mp_cost                 = 26,
+        notes                   = "Light-based magical damage + Flash (conal AoE). MP: 26. Level: 99. Trait: Conserve MP. Additional effect: Flash (15s). Recast: 45s. BLU only.",
     },
 
     ["Diffusion Ray"] = {
-        description             = "Deals light dmg (AoE).",
+        description             = "Deals light dmg (conal AoE).",
         category                = "Magical",
         magic_type              = "Blue",
         element                 = "Light",
@@ -61,8 +61,8 @@ BLU_MAGICAL_LIGHT.spells = {
         trait_points            = 8,
         unbridled               = false,
         BLU                     = 99,
-        mp_cost                 = 182,
-        notes                   = "Light-based magical damage (AoE). MP: 182. Level: 99. Trait: Store TP (8 pts). AoE range. BLU only.",
+        mp_cost                 = 238,
+        notes                   = "Light-based magical damage (conal AoE). MP: 238. Level: 99. Trait: Store TP. Recast: 45s. BLU only.",
     },
 
     ["Rail Cannon"] = {
@@ -74,12 +74,12 @@ BLU_MAGICAL_LIGHT.spells = {
         trait_points            = 8,
         unbridled               = false,
         BLU                     = 99,
-        mp_cost                 = 195,
-        notes                   = "Light-based magical damage. MP: 195. Level: 99. Trait: Magic Burst Bonus (8 pts). High damage single target. BLU only.",
+        mp_cost                 = 200,
+        notes                   = "Light-based magical damage. MP: 200. Level: 99. Trait: Magic Burst Bonus. Recast: 180s. Single target. BLU only.",
     },
 
     ["Uproot"] = {
-        description             = "Deals light dmg (unbridled, AoE).",
+        description             = "Deals light dmg + erases caster debuffs (unbridled, AoE).",
         category                = "Magical",
         magic_type              = "Blue",
         element                 = "Light",
@@ -87,12 +87,12 @@ BLU_MAGICAL_LIGHT.spells = {
         trait_points            = 0,
         unbridled               = true,
         BLU                     = 99,
-        mp_cost                 = 218,
-        notes                   = "Light-based magical damage (unbridled, AoE). MP: 218. Level: 99. Trait: None (0 pts). Requires: Unbridled Learning/Wisdom. AoE range. BLU only.",
+        mp_cost                 = 88,
+        notes                   = "Light-based magical damage (unbridled, AoE). MP: 88. Level: 99. Trait: None. Requires: Unbridled Learning. Also removes all debuffs from the caster. Recast: 30s. BLU only.",
     },
 
     ["Blinding Fulgor"] = {
-        description             = "Deals light dmg + blind.",
+        description             = "Deals light dmg + flash (AoE).",
         category                = "Magical",
         magic_type              = "Blue",
         element                 = "Light",
@@ -100,8 +100,8 @@ BLU_MAGICAL_LIGHT.spells = {
         trait_points            = 8,
         unbridled               = false,
         BLU                     = 99,
-        mp_cost                 = 195,
-        notes                   = "Light-based magical damage + Blind. MP: 195. Level: 99. Trait: Magic Evasion Bonus (8 pts). AoE range. BLU only.",
+        mp_cost                 = 116,
+        notes                   = "Light-based magical damage + Flash (AoE). MP: 116. Level: 99. Trait: Magic Evasion Bonus. Recast: 60s. Range: ~10'. BLU only.",
     },
 
 }

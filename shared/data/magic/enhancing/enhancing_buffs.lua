@@ -51,7 +51,7 @@ ENHANCING_BUFFS.spells = {
     -- UTILITY BUFFS - No specific gear
     --============================================================
     ["Auspice"] = {
-        description             = "+Accuracy, add Light dmg to melee hits",
+        description             = "Party AoE: Subtle Blow +10",
         skill                   = "Enhancing Magic",
         spell_family            = nil,
         target_type             = "aoe",

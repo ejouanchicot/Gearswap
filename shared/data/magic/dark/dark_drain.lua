@@ -112,7 +112,7 @@ DARK_DRAIN.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         DRK                     = 62,
-        notes                   = "Enhanced HP drain; may raise max HP. DRK-only. Ineffective vs undead.",
+        notes                   = "Steals HP; HP drained beyond max grants a temporary Max HP boost (3 min). DRK-only. Ineffective vs undead.",
     },
 
     ["Drain III"] = {
@@ -125,7 +125,7 @@ DARK_DRAIN.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         DRK                     = "JP",
-        notes                   = "Maximum HP drain; may raise max HP. Requires Job Points (DRK). Ineffective vs undead.",
+        notes                   = "Steals HP; HP drained beyond max grants a temporary Max HP boost (3 min). Requires 550 Job Points (DRK). Ineffective vs undead.",
     },
 
 }

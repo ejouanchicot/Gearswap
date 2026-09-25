@@ -41,7 +41,7 @@ DARK_ABSORB.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         DRK                     = 61,
-        notes                   = "Lowers target's accuracy, raises caster's accuracy. Duration scales with Dark Magic skill. DRK-only.",
+        notes                   = "Lowers target's accuracy, raises caster's accuracy. Duration: 1.5 minutes. DRK-only.",
     },
 
     ["Absorb-AGI"] = {
@@ -53,7 +53,7 @@ DARK_ABSORB.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         DRK                     = 37,
-        notes                   = "Lowers target's AGI, raises caster's AGI. Duration scales with Dark Magic skill. DRK-only.",
+        notes                   = "Lowers target's AGI, raises caster's AGI. Duration: 1.5 minutes. DRK-only.",
     },
 
     ["Absorb-Attri"] = {
@@ -65,7 +65,7 @@ DARK_ABSORB.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         DRK                     = 91,
-        notes                   = "Steals beneficial buffs from target (NOT attributes/stats). Duration scales with Dark Magic skill. DRK-only.",
+        notes                   = "Absorbs one beneficial status effect from the target (two under Nether Void). Effective against undead. DRK-only.",
     },
 
     ["Absorb-CHR"] = {
@@ -77,7 +77,7 @@ DARK_ABSORB.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         DRK                     = 33,
-        notes                   = "Lowers target's CHR, raises caster's CHR. Duration scales with Dark Magic skill. DRK-only.",
+        notes                   = "Lowers target's CHR, raises caster's CHR. Duration: 1.5 minutes. DRK-only.",
     },
 
     ["Absorb-DEX"] = {
@@ -89,7 +89,7 @@ DARK_ABSORB.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         DRK                     = 41,
-        notes                   = "Lowers target's DEX, raises caster's DEX. Duration scales with Dark Magic skill. DRK-only.",
+        notes                   = "Lowers target's DEX, raises caster's DEX. Duration: 1.5 minutes. DRK-only.",
     },
 
     ["Absorb-INT"] = {
@@ -101,7 +101,7 @@ DARK_ABSORB.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         DRK                     = 39,
-        notes                   = "Lowers target's INT, raises caster's INT. Duration scales with Dark Magic skill. DRK-only.",
+        notes                   = "Lowers target's INT, raises caster's INT. Duration: 1.5 minutes. DRK-only.",
     },
 
     ["Absorb-MND"] = {
@@ -113,7 +113,7 @@ DARK_ABSORB.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         DRK                     = 31,
-        notes                   = "Lowers target's MND, raises caster's MND. Duration scales with Dark Magic skill. DRK-only.",
+        notes                   = "Lowers target's MND, raises caster's MND. Duration: 1.5 minutes. DRK-only.",
     },
 
     ["Absorb-STR"] = {
@@ -125,7 +125,7 @@ DARK_ABSORB.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         DRK                     = 43,
-        notes                   = "Lowers target's STR, raises caster's STR. Duration scales with Dark Magic skill. DRK-only.",
+        notes                   = "Lowers target's STR, raises caster's STR. Duration: 1.5 minutes. DRK-only.",
     },
 
     ["Absorb-TP"] = {
@@ -137,7 +137,7 @@ DARK_ABSORB.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         DRK                     = 45,
-        notes                   = "Drains TP from target, adds to caster's TP. Amount scales with Dark Magic skill. DRK-only.",
+        notes                   = "Drains TP from target, adds to caster's TP. Amount absorbed increased by equipment (e.g. Heathen's Gauntlets). DRK-only.",
     },
 
     ["Absorb-VIT"] = {
@@ -149,7 +149,7 @@ DARK_ABSORB.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         DRK                     = 35,
-        notes                   = "Lowers target's VIT, raises caster's VIT. Duration scales with Dark Magic skill. DRK-only.",
+        notes                   = "Lowers target's VIT, raises caster's VIT. Duration: 1.5 minutes. DRK-only.",
     },
 
 }

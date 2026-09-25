@@ -250,7 +250,7 @@ end
 ---   - DRK: All Absorbs, All Drains, Bio, Endark, Dread Spikes, Stun, Tractor
 ---   - GEO: Aspir, Drain
 ---   - RDM: Bio
----   - SCH: Aspir, Drain, Bio III, Kaustra
+---   - SCH: Aspir, Drain, Kaustra
 ---============================================================================
 
 return DARK_MAGIC_DATABASE

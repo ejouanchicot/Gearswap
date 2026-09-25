@@ -18,7 +18,7 @@
 ---   - enfeebling_type field for RDM MidcastManager nested sets
 ---
 --- Module Structure:
----   - enfeebling_dots.lua (10 spells): Dia/Bio/Poison (DoT effects)
+---   - enfeebling_dots.lua (7 spells): Dia/Poison (DoT effects; Bio is Dark Magic, see dark/dark_bio.lua)
 ---   - enfeebling_debuffs.lua (16 spells): Paralyze/Slow/Blind/Gravity + Red Magic
 ---   - enfeebling_control.lua (9 spells): Sleep/Bind/Silence/Break/Dispel (CC + utility)
 ---
@@ -49,7 +49,7 @@ local CONTROL = require('shared/data/magic/enfeebling/enfeebling_control')
 
 ENFEEBLING_MAGIC_DATABASE.spells = {}
 
--- Merge DoT spells (10 spells)
+-- Merge DoT spells (7 spells)
 for spell_name, spell_data in pairs(DOTS.spells) do
     ENFEEBLING_MAGIC_DATABASE.spells[spell_name] = spell_data
 end

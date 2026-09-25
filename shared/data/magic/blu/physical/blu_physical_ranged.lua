@@ -18,16 +18,16 @@ BLU_PHYSICAL_RANGED.spells = {
     --============================================================
 
     ["Queasyshroom"] = {
-        description             = "Deals ranged dmg + poison.",
+        description             = "Deals piercing dmg + poison.",
         category                = "Physical",
         magic_type              = "Blue",
-        damage_type             = "Ranged",
+        damage_type             = "Piercing",
         trait                   = nil,
         trait_points            = 0,
         property                = "Compression",
         unbridled               = false,
         BLU                     = 8,
-        notes                   = "Physical ranged damage + Poison. Level: 8. Trait: None (0 pts). Skillchain: Compression. Single target. Uses TP. BLU only.",
+        notes                   = "Physical piercing damage + Poison (3 HP/tick, 1.5-3 min; duration varies with TP). Removes all shadows on the target, hit or miss. Single target. Level: 8. Trait: None. Skillchain: Compression. BLU only.",
     },
 
     --============================================================
@@ -35,16 +35,16 @@ BLU_PHYSICAL_RANGED.spells = {
     --============================================================
 
     ["Feather Storm"] = {
-        description             = "Deals ranged dmg (AoE).",
+        description             = "Deals piercing dmg + poison.",
         category                = "Physical",
         magic_type              = "Blue",
-        damage_type             = "Ranged",
+        damage_type             = "Piercing",
         trait                   = "Rapid Shot",
         trait_points            = 4,
         property                = "Transfixion",
         unbridled               = false,
         BLU                     = 12,
-        notes                   = "Physical ranged damage (AoE). Level: 12. Trait: Rapid Shot (4 pts). Skillchain: Transfixion. AoE range. Uses TP. BLU only.",
+        notes                   = "Physical piercing damage. Single target. Additional effect: Poison; chance varies with TP. Level: 12. Trait: Rapid Shot (4 pts). Skillchain: Transfixion. BLU only.",
     },
 
     --============================================================
@@ -52,7 +52,7 @@ BLU_PHYSICAL_RANGED.spells = {
     --============================================================
 
     ["Pinecone Bomb"] = {
-        description             = "Deals ranged dmg.",
+        description             = "Deals ranged dmg + sleep.",
         category                = "Physical",
         magic_type              = "Blue",
         damage_type             = "Ranged",
@@ -61,7 +61,7 @@ BLU_PHYSICAL_RANGED.spells = {
         property                = "Liquefaction",
         unbridled               = false,
         BLU                     = 36,
-        notes                   = "Physical ranged damage. Level: 36. Trait: None (0 pts). Skillchain: Liquefaction. Single target. Uses TP. BLU only.",
+        notes                   = "Physical ranged (piercing) damage. Additional effect: Sleep (10-60 s; duration varies with TP). Single target. Level: 36. Trait: None. Skillchain: Liquefaction. BLU only.",
     },
 
 }

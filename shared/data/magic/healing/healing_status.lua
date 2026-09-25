@@ -24,7 +24,7 @@ HEALING_STATUS.spells = {
         magic_type              = "White",
         type                    = "single",
         WHM                     = 14, SCH                 = 17,
-        notes                   = "Removes blind status from target. Success rate: Healing Magic skill. WHM/SCH (SCH requires Addendum: White).",
+        notes                   = "Removes blindness from target. Target can be any player character. WHM/SCH (SCH requires Addendum: White).",
     },
 
     ["Cursna"] = {
@@ -44,7 +44,7 @@ HEALING_STATUS.spells = {
         magic_type              = "White",
         type                    = "single",
         WHM                     = 9, SCH                 = 12,
-        notes                   = "Removes paralysis status from target. Success rate: Healing Magic skill. WHM/SCH (SCH requires Addendum: White).",
+        notes                   = "Removes paralysis from target. Target can be any player character. WHM/SCH (SCH requires Addendum: White).",
     },
 
     ["Poisona"] = {
@@ -54,7 +54,7 @@ HEALING_STATUS.spells = {
         magic_type              = "White",
         type                    = "single",
         WHM                     = 6, SCH                 = 10,
-        notes                   = "Removes poison status from target. Success rate: Healing Magic skill. WHM/SCH (SCH requires Addendum: White).",
+        notes                   = "Removes poison from target. Target can be any player character. WHM/SCH (SCH requires Addendum: White).",
     },
 
     ["Silena"] = {
@@ -64,7 +64,7 @@ HEALING_STATUS.spells = {
         magic_type              = "White",
         type                    = "single",
         WHM                     = 19, SCH                 = 22,
-        notes                   = "Removes silence status from target. Cannot remove Mute status. Success rate: Healing Magic skill. WHM/SCH (SCH requires Addendum: White).",
+        notes                   = "Removes silence from target. Cannot remove Mute despite the description. Target can be any player character. WHM/SCH (SCH requires Addendum: White).",
     },
 
     ["Stona"] = {
@@ -74,7 +74,7 @@ HEALING_STATUS.spells = {
         magic_type              = "White",
         type                    = "single",
         WHM                     = 39, SCH                 = 50,
-        notes                   = "Removes petrification status from target. Success rate: Healing Magic skill. WHM/SCH (SCH requires Addendum: White).",
+        notes                   = "Removes petrification from target. Target can be any player character. WHM/SCH (SCH requires Addendum: White).",
     },
 
     ["Viruna"] = {
@@ -84,7 +84,7 @@ HEALING_STATUS.spells = {
         magic_type              = "White",
         type                    = "single",
         WHM                     = 34, SCH                 = 46,
-        notes                   = "Removes disease and plague status from target. Success rate: Healing Magic skill. WHM/SCH (SCH requires Addendum: White).",
+        notes                   = "Removes disease and plague from target. Target can be any player character. WHM/SCH (SCH requires Addendum: White).",
     },
 
     --============================================================

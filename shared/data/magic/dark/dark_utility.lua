@@ -9,7 +9,7 @@
 ---   - Dread Spikes (Lv71 DRK) - Absorbs physical damage as HP
 ---   - Endark (Lv85 DRK) - Adds darkness to melee attacks
 ---   - Endark II (Lv99 JP DRK) - Enhanced darkness to melee attacks
----   - Kaustra (Lv5 SCH SP) - Multi-target dark damage (Ebullience)
+---   - Kaustra (Lv5 SCH) - Single-target dark damage + DoT (Tabula Rasa only)
 ---   - Stun (Lv37-45) - LIGHTNING element! Stuns target
 ---   - Tractor (Lv25-32) - Pulls target player to caster
 ---
@@ -18,7 +18,7 @@
 ---   - Death can kill caster if it fails
 ---   - Dread Spikes is DRK-exclusive defensive buff
 ---   - Endark series are DRK-exclusive offensive buffs
----   - Kaustra requires Ebullience (Scholar SP ability) active
+---   - Kaustra is only castable under Tabula Rasa (Scholar 1-hour)
 ---
 --- @file shared/data/magic/dark/dark_utility.lua
 --- @author Tetsouo
@@ -52,7 +52,7 @@ DARK_UTILITY.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         DRK                     = 71,
-        notes                   = "Defensive buff. Absorbs physical damage as HP when hit. DRK-only. Ineffective vs undead.",
+        notes                   = "Self buff (3 min). Drains HP from enemies that hit you in melee, equal to the damage dealt; wears off after draining a cap of 50% of max HP at cast (60% with 1,200 Job Points). DRK-only. Ineffective vs undead.",
     },
 
     ["Endark"] = {
@@ -86,11 +86,11 @@ DARK_UTILITY.spells = {
         category                = "Dark",
         element                 = "Dark",
         magic_type              = "Black",
-        type                    = "aoe",
+        type                    = "single",
         main_job_only           = true,
         subjob_master_only      = false,
         SCH                     = 5,
-        notes                   = "Consumes 20% max MP. Dark damage-over-time effect. Requires Ebullience (SCH SP ability). SCH-only.",
+        notes                   = "Consumes 20% max MP. Dark damage plus damage-over-time. Only castable under Tabula Rasa (SCH 1-hour). SCH-only.",
     },
 
     ["Stun"] = {

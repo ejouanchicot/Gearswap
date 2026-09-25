@@ -101,7 +101,7 @@ healing_curaga.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         WHM                     = 40,
-        notes                   = "20 yalm radius. Casts on self. Enhanced by Afflatus Misery."
+        notes                   = "Casts on self; heals party members within the area. Potency enhanced by accumulated damage on Afflatus Misery."
     },
 
     ["Cura II"] = {
@@ -114,7 +114,7 @@ healing_curaga.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         WHM                     = 83,
-        notes                   = "20 yalm radius. Casts on self. Enhanced by Afflatus Misery."
+        notes                   = "Casts on self; heals party members within the area. Potency enhanced by accumulated damage on Afflatus Misery."
     },
 
     ["Cura III"] = {
@@ -127,7 +127,7 @@ healing_curaga.spells = {
         main_job_only           = true,
         subjob_master_only      = false,
         WHM                     = 96,
-        notes                   = "20 yalm radius. Casts on self. Enhanced by Afflatus Misery."
+        notes                   = "Casts on self; heals party members within the area. Potency enhanced by accumulated damage on Afflatus Misery."
     },
 }
 

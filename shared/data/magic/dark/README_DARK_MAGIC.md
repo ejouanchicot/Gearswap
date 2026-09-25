@@ -110,7 +110,7 @@ shared/data/magic/
 | Dread Spikes | DRK | 71 | Dark | Absorbs physical damage as HP |
 | Endark | DRK | 85 | Dark | Adds darkness to melee attacks |
 | Endark II | DRK | 99 (JP) | Dark | Enhanced darkness to melee |
-| Kaustra | SCH | 5 (SP) | Dark | AoE dark damage (Ebullience) |
+| Kaustra | SCH | 5 | Dark | Single-target dark damage + DoT (Tabula Rasa only) |
 | **Stun** | BLM, DRK | 37-45 | **Lightning** | Stuns target |
 | Tractor | BLM, DRK | 25-32 | Dark | Pulls player to caster |
 
@@ -118,20 +118,16 @@ shared/data/magic/
 
 - **Stun is the ONLY Dark Magic spell with Lightning element**
 - Death can kill caster if it fails
-- Kaustra requires Ebullience (Scholar SP ability) active
+- Kaustra is only castable under Tabula Rasa (Scholar 1-hour)
 
 ---
 
 ## ⚠️ IMPORTANT CORRECTIONS
 
-### ❌ **Klimaform is NOT Dark Magic**
+### Klimaform is filed under Enhancing Magic
 
-Your table listed Klimaform under Dark Magic, but this is **incorrect**:
-
-- **Klimaform** is **Enhancing Magic** (not Dark Magic)
-- Available to: GEO (Lv35), SCH (Lv68)
-- Already added to `ENHANCING_MAGIC_DATABASE.lua`
-- Description: "Enhances elemental magic potency during active weather"
+- In the game resources Klimaform is **Dark Magic** (`res/spells.lua`: `skill=37`), SCH Lv46 only.
+- This project files it in `enhancing/enhancing_utility.lua`, so it is **not** one of the 26 spells of this database.
 
 ---
 
@@ -139,11 +135,11 @@ Your table listed Klimaform under Dark Magic, but this is **incorrect**:
 
 | Job | Dark Magic Spells | Notable Access |
 |:--|:--:|:--|
-| **BLM** | 8 spells | Aspir, Drain, Bio, Death, Stun, Tractor |
-| **DRK** | 23 spells | ALL Absorbs, ALL Drains, Endark, Dread Spikes |
-| **GEO** | 3 spells | Aspir I-III, Drain |
+| **BLM** | 9 spells | Aspir, Drain, Bio, Death, Stun, Tractor |
+| **DRK** | 22 spells | ALL Absorbs, ALL Drains, Endark, Dread Spikes |
+| **GEO** | 4 spells | Aspir I-III, Drain |
 | **RDM** | 3 spells | Bio I-III |
-| **SCH** | 4 spells | Aspir, Drain, Kaustra |
+| **SCH** | 4 spells | Aspir I-II, Drain, Kaustra |
 
 ---
 
@@ -191,16 +187,9 @@ local bio = DarkDB.get_bio_spell("III", "RDM", 75)  -- "Bio III"
 
 ## 🛠️ Integration with Spell Message Handler
 
-The Dark Magic database is compatible with the spell message handler system:
+The spell message handler reads the `description` field of these records.
 
-```lua
--- Spell messages will automatically show descriptions
-[BLM/RDM] Aspir >> Drains MP from target.
-[DRK/SAM] Absorb-STR >> Absorbs target's strength.
-[RDM/WHM] Bio III >> Weakens attacks, drains HP.
-```
-
-Controlled by `DARK_MESSAGES_CONFIG.lua` (if created):
+How much is shown is set by `spell_mode` in `<Character>/config/message_modes.lua`:
 
 - `'full'` - Show spell name + description
 - `'on'` - Show spell name only
@@ -221,11 +210,11 @@ Controlled by `DARK_MESSAGES_CONFIG.lua` (if created):
 
 ## 🔗 Related Databases
 
-- **Enhancing Magic:** `ENHANCING_MAGIC_DATABASE.lua` (includes Klimaform)
+- **Enhancing Magic:** `ENHANCING_MAGIC_DATABASE.lua` (also holds Klimaform, see above)
 - **Enfeebling Magic:** `ENFEEBLING_MAGIC_DATABASE.lua`
-- **Elemental Magic:** (to be created)
+- **Elemental Magic:** `ELEMENTAL_MAGIC_DATABASE.lua`
 - **Healing Magic:** `HEALING_MAGIC_DATABASE.lua`
-- **Divine Magic:** (to be created)
+- **Divine Magic:** `DIVINE_MAGIC_DATABASE.lua`
 
 ---
 
