@@ -5,7 +5,7 @@
 ---   intelligent priority ordering.
 ---
 ---   Features:
----   • Saber Dance buff detection (-50% DW - allows different WS gear)
+---   • Saber Dance buff detection (allows different WS gear)
 ---   • Fan Dance buff detection (20% DT - allows different WS gear)
 ---   • Climactic Flourish buff detection (crit rate +15%)
 ---   • Climactic timestamp tracking (5s window for instant detection)

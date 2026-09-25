@@ -9,7 +9,7 @@
 ---       BPWard.Buff / Debuff / Heal)
 ---
 ---   2. Subjob magic (Cure, Stoneskin, Phalanx, Refresh, etc.):
----      Routed via MidcastManager with its 7-level fallback chain.
+---      Routed via MidcastManager and its fallback chain.
 ---
 ---   @file    shared/jobs/smn/functions/SMN_MIDCAST.lua
 ---   @author  Tetsouo

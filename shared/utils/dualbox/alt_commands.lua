@@ -181,6 +181,11 @@ local function load_job_config(job, level, source)
 
     local refine
     local ok_custom, custom = pcall(require, base .. '_ALT_CUSTOM')
+    if not ok_custom then
+        -- Same reason as above: a character promoted to main keeps the
+        -- templates' hand-written commands until it has its own.
+        ok_custom, custom = pcall(require, '_master/config/alt/' .. job:upper() .. '_ALT_CUSTOM')
+    end
     if ok_custom and type(custom) == 'table' then
         if type(custom.commands) == 'table' then
             for name, entry in pairs(custom.commands) do

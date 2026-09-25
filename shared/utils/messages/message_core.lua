@@ -91,11 +91,11 @@ function MessageCore.error(message)
     add_to_chat(167, string.format("[%s] %s", job_tag, message))
 end
 
---- Display warning message (yellow)
+--- Display warning message (region orange, like every other warning)
 --- @param message string Message to display
 function MessageCore.warning(message)
     local job_tag = MessageCore.get_job_tag()
-    add_to_chat(205, string.format("[%s] %s", job_tag, message))
+    add_to_chat(MessageColors.WARNING, string.format("[%s] %s", job_tag, message))
 end
 
 --- Send a pre-formatted message that already contains embedded color codes
@@ -112,12 +112,6 @@ end
 ---============================================================================
 --- UTILITY MESSAGES
 ---============================================================================
-
---- Show lockstyle status message
---- @param status_msg string Status message
-function MessageCore.show_lockstyle_status(status_msg)
-    add_to_chat(207, status_msg)
-end
 
 --- Show AutoMove callback error
 --- @param error_msg string Error message

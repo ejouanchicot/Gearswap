@@ -9,10 +9,10 @@
 ---
 --- Formula: floor(max - max * recast / FULL_RECHARGE)
 ---
---- Caveat: FULL_RECHARGE is the unmerited value. Scholar's "Stratagems" merits
---- shorten it, which makes this estimate slightly optimistic for a merited SCH
---- main. It is exact for a job subbing /SCH without those merits, which is the
---- case this module exists for (BLM/SCH and friends).
+--- Caveat: FULL_RECHARGE is the base value. The Scholar job-point gift (550 JP)
+--- shortens it, which makes this estimate slightly optimistic for a SCH main
+--- with that gift. It is exact for a job subbing /SCH, which never gets job
+--- point gifts - the case this module exists for (BLM/SCH and friends).
 ---
 --- @file    shared/utils/scholar/stratagem_charges.lua
 --- @author  Tetsouo

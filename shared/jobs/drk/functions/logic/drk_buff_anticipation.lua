@@ -12,9 +12,9 @@
 ---   • Automatic engaged set variant application
 ---
 ---   Why This System Exists:
----   FFXI has network lag between using a JA and the buff appearing in buffactive[].
----   If you use Dark Seal >> cast Dark Magic immediately, buffactive['Dark Seal']
----   may still be nil for 0.1-0.3 seconds. Pending flags detect the buff INSTANTLY.
+---   The buff reaches buffactive[] a moment after the JA goes out. The pending
+---   flags let the engaged set variant switch as soon as the JA is used. (The
+---   Dark Magic midcast reads buffactive only, not these flags.)
 ---
 ---   Processing Order:
 ---   1. Player uses JA (e.g., Dark Seal)

@@ -159,9 +159,8 @@ end
 --- are not part of the same chain.
 ---
 --- Every picker returns (set, path, debug_step) instead of writing into shared
---- locals. The debug trail is collected by the caller for the same reason the
---- set is: a function cannot append to a table it was handed a copy of, and
---- that mistake does not show up in any diff.
+--- locals, so each one stays a pure lookup and the caller collects the debug
+--- trail.
 
 --- Step 1: the song's own name, spaced or PascalCase.
 local function song_by_name(spell_name)

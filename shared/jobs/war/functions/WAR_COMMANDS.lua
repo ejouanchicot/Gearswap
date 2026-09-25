@@ -5,7 +5,7 @@
 ---   • Common commands (reload, checksets, waltz, jump, etc.)
 ---   • UI commands (toggle, update, reload UI)
 ---   • WAR buff commands (berserk, defender, thirdeye, tp)
----   • Weaponskill slots (ws1..ws9)
+---   • Weaponskill slots (ws1..ws5)
 ---   • Retaliation debug (debugretaliation, retalstatus)
 ---   • State change UI synchronization
 ---
@@ -62,7 +62,7 @@ end
 ---   • defender       - Buff with Defender-focused abilities
 ---   • thirdeye       - SAM subjob abilities (Hasso/Seigan + Third Eye)
 ---   • tp             - TP building (/SAM Meditate, /DRG Jump rotation)
----   • ws1..ws9       - Fire the weaponskill in that slot for the current weapon
+---   • ws1..ws5       - Fire the weaponskill in that slot for the current weapon
 ---
 ---   @param cmdParams table Command parameters array (e.g., {"berserk"})
 ---   @param eventArgs table Event arguments with handled flag
@@ -91,7 +91,7 @@ function job_self_command(cmdParams, eventArgs)
     if command == 'altjobupdate' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         if cmdParams[2] and cmdParams[3] then
-            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3], cmdParams[4], cmdParams[5])
+            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3], cmdParams[4], cmdParams[5], cmdParams[6])
         end
         eventArgs.handled = true
         return
@@ -252,7 +252,8 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- Weaponskill slots: ws1..ws5 fire whatever the current weapon put there
+    -- Weaponskill slots: ws1..ws5 fire whatever the current weapon put there;
+    -- ws6..ws9 have no slot and only warn.
     local slot = command:match('^ws([1-9])$')
     if slot then
         local ok, WSSlots = pcall(require, 'shared/utils/weaponskill/ws_slots')

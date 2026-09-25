@@ -126,6 +126,21 @@ local function dualbox_config(ctx, sub_job)
     return nil
 end
 
+--- The book for this subjob: the dual-box one when an alt asks for it, else
+--- the solo one, else the job default.
+--- @param ctx table Per-job context
+--- @param sub_job string Current subjob
+--- @return table { book, page }
+local function resolve_config(ctx, sub_job)
+    local config = dualbox_config(ctx, sub_job)
+
+    if not config and ctx.MACROBOOKS.solo then
+        config = ctx.MACROBOOKS.solo[sub_job] or ctx.MACROBOOKS.solo['default']
+    end
+
+    return config or { book = ctx.default_book, page = ctx.default_page }
+end
+
 --- Select default macro book based on current sub-job and dual-boxing status
 --- @param ctx table Per-job context
 local function select_default_macro_book(ctx)
@@ -134,17 +149,7 @@ local function select_default_macro_book(ctx)
         return
     end
 
-    local sub_job = player.sub_job or ctx.default_subjob
-    local config = dualbox_config(ctx, sub_job)
-
-    if not config and ctx.MACROBOOKS.solo then
-        config = ctx.MACROBOOKS.solo[sub_job] or ctx.MACROBOOKS.solo['default']
-    end
-
-    if not config then
-        config = { book = ctx.default_book, page = ctx.default_page }
-    end
-
+    local config = resolve_config(ctx, player.sub_job or ctx.default_subjob)
     set_macro_with_delay(ctx, config.book, config.page, 1.5)
 end
 
@@ -173,12 +178,7 @@ local function get_macro_info(ctx)
     if not player then return nil end
 
     local sub_job = player.sub_job or ctx.default_subjob
-    local config = ctx.MACROBOOKS.solo
-        and (ctx.MACROBOOKS.solo[sub_job] or ctx.MACROBOOKS.solo['default'])
-
-    if not config then
-        config = { book = ctx.default_book, page = ctx.default_page }
-    end
+    local config = resolve_config(ctx, sub_job)
 
     return {
         book = config.book,

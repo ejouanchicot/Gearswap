@@ -216,13 +216,12 @@ function PLDStates.configure()
         'Off'
     }
 
-    --- Regen: lay the Regen pair (Sacro Breastplate, Regal Gauntlets) over
-    --- the idle set the stance already chose. Idle only, so it never costs
-    --- anything in combat, and two slots only, so DPS, Tanking and Hoxne
-    --- each keep their own mitigation.
+    --- Regen: lay sets.idleRegen over the idle set the stance already chose.
+    --- Idle only, so it never costs anything in combat; the stance keeps every
+    --- slot the Regen set leaves out.
     --- No key: set by macro (//gs c set Regen On|Off), shown in the HUD under
-    --- /SCH alone - the other subjobs force it Off below rather than leave a
-    --- toggle they cannot reach.
+    --- /SCH alone - the other subjobs force it Off below rather than leave it
+    --- On where the HUD does not show it.
     state.Regen =
         M {
         ['description'] = 'Regen',
@@ -240,9 +239,9 @@ function PLDStates.configure()
     --- Cap: 80% maximum (FFXI mechanics)
     state.FastCast = M {
         ['description'] = 'Fast Cast %',
-        0, 10, 20, 30, 40, 50, 60, 70, 80
+        '0', '10', '20', '30', '40', '50', '60', '70', '80'
     }
-    state.FastCast:set(80)  -- Default: 80% (PLD needs FC for SIRD build)
+    state.FastCast:set('80')  -- Default: 80% (PLD needs FC for SIRD build)
 
     -- Rune list and Phalanx default follow the subjob and the combat mode, not
     -- the other way round. configure() runs again on every reload, so clearing
@@ -320,8 +319,7 @@ local function install_profile(profile)
     reshape(state.RuneMode, RUNE_OPTIONS)
     reshape(state.MainWeapon, WEAPON_OPTIONS)
     state.PhalanxSIRD:set('Off')
-    -- Its key is only bound under /SCH, so leaving it On here would strand
-    -- the Regen body in idle with no way to take it off.
+    -- Not shown in the HUD outside /SCH: turned Off rather than left On unseen.
     state.Regen:set('Off')
 end
 

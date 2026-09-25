@@ -16,6 +16,7 @@
 ---     smn assault             - /ja "Assault" <t>
 ---     smn retreat             - /ja "Retreat" <me>
 ---     smn bp <Name>           - Generic Blood Pact trigger (/pet "<Name>" <t> or <me>)
+---     skillup [start|stop|status|<seconds>] - Summoning Magic skillup loop
 ---
 ---   @file    shared/jobs/smn/functions/SMN_COMMANDS.lua
 ---   @author  Tetsouo
@@ -298,7 +299,7 @@ function job_self_command(cmdParams, eventArgs)
     if command == 'altjobupdate' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         if cmdParams[2] and cmdParams[3] then
-            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3], cmdParams[4], cmdParams[5])
+            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3], cmdParams[4], cmdParams[5], cmdParams[6])
         end
         eventArgs.handled = true
         return

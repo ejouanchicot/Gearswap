@@ -2,7 +2,10 @@
 --- UI Color Configuration - Character-Specific Color Customization
 ---============================================================================
 --- Character-specific color overrides for UI elements.
---- Colors defined here override the default colors in shared/utils/ui/COLOR_SYSTEM.lua
+--- Colors defined here override the default colors in shared/utils/ui/COLOR_SYSTEM.lua,
+--- which requires this file as <Char>/config/UI_COLOR_CONFIG and reads only the
+--- tables below (elements, stats, modes, bar_spells.ailment, special,
+--- spells.en/spikes/storms, jobs.quick_draw).
 ---
 --- Usage:
 ---   1. Modify RGB values in this file to customize colors for this character
@@ -125,9 +128,9 @@ UIColorConfig.jobs = {
         ["Dark Shot"] = {150, 100, 200} -- Dark (Dispel, Bio, Blind)
     },
 
-    -- RUN Runes: this table is not read. Rune colors (Ignis, Gelus, ...) are
-    -- defined in COLOR_SYSTEM.lua; to override one, add its Latin name to
-    -- UIColorConfig.elements above (e.g. Ignis = {255, 100, 100}).
+    -- RUN Runes - this table is not read. Rune colors (Ignis, Gelus, ...) are
+    -- defaults in COLOR_SYSTEM.lua; to override one, add it by its rune name
+    -- to UIColorConfig.elements above.
     runes = {
     }
 }
@@ -156,8 +159,8 @@ UIColorConfig.special = {
 ---============================================================================
 --- HELPER FUNCTIONS
 ---============================================================================
---- Not called by any module at the moment: COLOR_SYSTEM.lua reads the tables
---- above directly and converts them with its own rgb_to_code().
+--- None of the helpers below (nor validate) is called by any module at present:
+--- COLOR_SYSTEM.lua reads the tables directly.
 
 --- Convert RGB table to color code string
 --- @param rgb table { r, g, b }
@@ -192,6 +195,7 @@ function UIColorConfig.get_stat_color(stat)
 end
 
 --- Get bar element color code
+--- Would fail if called: bar_spells has no 'element' table.
 --- @param spell string Spell name (Barfira, Barblizzara, etc.)
 --- @return string Color code
 function UIColorConfig.get_bar_element_color(spell)
@@ -235,7 +239,8 @@ end
 ---============================================================================
 
 --- Validate all color definitions
---- @return boolean, table valid, issues
+--- @return boolean valid True when no issue was found
+--- @return table issues List of problem descriptions
 function UIColorConfig.validate()
     local issues = {}
 

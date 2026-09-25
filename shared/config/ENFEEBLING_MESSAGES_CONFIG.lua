@@ -26,81 +26,12 @@
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════
 
-local ENFEEBLING_MESSAGES_CONFIG = {}
+local MessageModeConfig = require('shared/config/message_mode_config')
 
----  ═══════════════════════════════════════════════════════════════════════════
----   PERSISTENT SETTINGS
----  ═══════════════════════════════════════════════════════════════════════════
-
--- Load persistent settings manager
-local MessageSettings = require('shared/config/message_settings')
-
---- Display mode loaded from persistent settings (survives reload/restart)
-ENFEEBLING_MESSAGES_CONFIG.display_mode = MessageSettings.get_enfeebling_mode()
-
---- Valid mode lookup (internal)
-ENFEEBLING_MESSAGES_CONFIG.VALID_MODES = {
-    -- Primary modes
-    full        = true,
-    on          = true,
-    off         = true,
-    -- Backward compatibility aliases
-    name_only   = true,
-    name        = true,
-    disabled    = true,
-    disable     = true
-}
-
----  ═══════════════════════════════════════════════════════════════════════════
----   HELPER FUNCTIONS - Display Mode Checks
----  ═══════════════════════════════════════════════════════════════════════════
-
---- Check if messages are enabled (not 'off')
---- @return boolean True unless the mode is off (or an off alias)
-function ENFEEBLING_MESSAGES_CONFIG.is_enabled()
-    -- Always read current mode from persistent settings
-    local mode = MessageSettings.get_enfeebling_mode()
-    return mode ~= 'off' and mode ~= 'disabled' and mode ~= 'disable'
-end
-
---- Check if descriptions should be shown (mode = 'full')
---- @return boolean True when the mode is full
-function ENFEEBLING_MESSAGES_CONFIG.show_description()
-    -- Always read current mode from persistent settings
-    return MessageSettings.get_enfeebling_mode() == 'full'
-end
-
---- Check if only name should be shown (mode = 'on')
---- @return boolean True when the mode is on (or a name-only alias)
-function ENFEEBLING_MESSAGES_CONFIG.is_name_only()
-    -- Always read current mode from persistent settings
-    local mode = MessageSettings.get_enfeebling_mode()
-    return mode == 'on' or mode == 'name_only' or mode == 'name'
-end
-
----  ═══════════════════════════════════════════════════════════════════════════
----   HELPER FUNCTIONS - Mode Validation
----  ═══════════════════════════════════════════════════════════════════════════
-
---- Validate and set display mode
---- @param mode string 'full' | 'on' | 'off' (legacy aliases accepted, see VALID_MODES)
---- @return boolean True if the mode was valid and saved
-function ENFEEBLING_MESSAGES_CONFIG.set_display_mode(mode)
-    if ENFEEBLING_MESSAGES_CONFIG.VALID_MODES[mode] then
-        -- Save to persistent settings file ([CharName]/config/message_modes.lua)
-        MessageSettings.set_enfeebling_mode(mode)
-        ENFEEBLING_MESSAGES_CONFIG.display_mode = mode
-        return true
-    else
-        local MessageFormatter = require('shared/utils/messages/message_formatter')
-        MessageFormatter.show_error('[ENFEEBLING_CONFIG] Invalid mode: ' .. tostring(mode))
-        MessageFormatter.show_error('[ENFEEBLING_CONFIG] Valid modes: full, on, off')
-        return false
-    end
-end
-
----  ═══════════════════════════════════════════════════════════════════════════
----   EXPORT
----  ═══════════════════════════════════════════════════════════════════════════
-
-return ENFEEBLING_MESSAGES_CONFIG
+return MessageModeConfig.create({
+    getter        = 'get_enfeebling_mode',
+    setter        = 'set_enfeebling_mode',
+    tag           = 'ENFEEBLING_CONFIG',
+    short_check   = 'is_name_only',
+    short_aliases = { 'name_only', 'name' },
+})

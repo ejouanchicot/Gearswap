@@ -1,12 +1,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PLD Movement Management Module - Movement Detection & Speed Gear
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles movement detection and automatic movement speed gear application:
----   • AutoMove utility integration
----   • Movement callback registration
----   • Automatic speed gear swapping
----
----   Uses centralized AutoMove for position tracking (performance optimization).
+---   Placeholder kept for the 12-module layout: movement is handled by the
+---   shared AutoMove system.
 ---
 ---   @file    shared/jobs/pld/functions/PLD_MOVEMENT.lua
 ---   @author  Tetsouo
@@ -17,12 +13,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   AUTOMOVE INTEGRATION (PERFORMANCE OPTIMIZED - No Startup Cost)
 ---  ═══════════════════════════════════════════════════════════════════════════
--- AutoMove (if available) automatically handles:
---   • Movement detection
---   • Speed gear swapping (sets.MoveSpeed from pld_sets.lua)
---   • Idle gear restoration when stopped
---
--- No explicit registration needed - AutoMove auto-detects job modules.
+-- This file defines nothing. AutoMove sets state.Moving and triggers a gear
+-- update; logic/set_builder.lua lays sets.MoveSpeed over the idle set.
 -- If AutoMove is not loaded, movement speed gear is simply not available.
 
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -5,7 +5,7 @@
 ---   selection based on buffs and conditions.
 ---
 ---   Features:
----   • Saber Dance variant selection (engaged only - optimized for -50% DW requirement)
+---   • Saber Dance variant selection (engaged only)
 ---   • Fan Dance variant selection (engaged only - 30% gear + 20% buff = 50% cap)
 ---   • Town detection (idle only - Adoulin vs regular cities)
 ---   • Weapon set application (MainWeapon set, then SubWeaponOverride sub)

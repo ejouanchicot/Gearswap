@@ -68,6 +68,23 @@ function MessageAltGroup.show_no_alts()
     M.send('ALTGROUP', 'no_alts', {})
 end
 
+--- The dual-box config is not loaded yet (the auto-init runs a couple of
+--- seconds after a load), so there is no alt list to act on.
+function MessageAltGroup.show_not_ready()
+    M.send('ALTGROUP', 'not_ready', {})
+end
+
+--- //gs c alts window typed on an alt: the window is drawn on the main only.
+function MessageAltGroup.show_window_main_only()
+    M.send('ALTGROUP', 'window_main_only', {})
+end
+
+--- Every alt is the leader itself, so no one was told to follow.
+--- @param leader string Character that was to be followed
+function MessageAltGroup.show_no_follower(leader)
+    M.send('ALTGROUP', 'no_follower', {leader = leader})
+end
+
 --- Subcommand list.
 function MessageAltGroup.show_usage()
     M.send('ALTGROUP', 'usage', {})

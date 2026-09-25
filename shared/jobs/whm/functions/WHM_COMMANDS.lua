@@ -67,7 +67,7 @@ function job_self_command(cmdParams, eventArgs)
     if command == 'altjobupdate' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         if cmdParams[2] and cmdParams[3] then
-            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3], cmdParams[4], cmdParams[5])
+            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3], cmdParams[4], cmdParams[5], cmdParams[6])
         end
         eventArgs.handled = true
         return
@@ -193,7 +193,7 @@ function job_state_change(stateField, newValue, oldValue)
     -- COMBAT MODE - WEAPON LOCK (RDM-style)
     -- ══════════════════════════════════════════════════════════════════════════
     -- When CombatMode = 'On', lock weapons to prevent accidental swaps.
-    -- WHM_STATES defines no CombatMode today, so this branch does not fire.
+    -- Released on unload by the entry's file_unload (the lock outlives the job).
     if field == 'CombatMode' then
         if newValue == 'On' then
             disable('main', 'sub', 'range', 'ammo')

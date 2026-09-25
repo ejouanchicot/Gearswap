@@ -411,8 +411,13 @@ CommonCommands.handle_spellmsg    = DebugCommands.handle_spellmsg
 CommonCommands.handle_wsmsg       = DebugCommands.handle_wsmsg
 CommonCommands.handle_info        = DebugCommands.handle_info
 CommonCommands.handle_debugstate  = DebugCommands.handle_debugstate
-
 CommonCommands.handle_memcheck    = DebugCommands.handle_memcheck
+CommonCommands.handle_debugwarp      = DebugCommands.handle_debugwarp
+CommonCommands.handle_debugprecast   = DebugCommands.handle_debugprecast
+CommonCommands.handle_automovedebug  = DebugCommands.handle_automovedebug
+CommonCommands.handle_debugjobchange = DebugCommands.handle_debugjobchange
+CommonCommands.handle_debugupdate    = DebugCommands.handle_debugupdate
+CommonCommands.handle_debugmsg       = DebugCommands.handle_debugmsg
 
 -- WARP COMMANDS (Universal Warp/Teleport System)
 
@@ -530,6 +535,9 @@ function CommonCommands.handle_command(command, job_name, ...)
         return CommonCommands.handle_naked()
     elseif cmd == 'equip' and args[1] and args[1]:lower() == 'naked' then
         return CommonCommands.handle_naked()
+    elseif cmd == 'equip' then
+        MessageFormatter.show_warning('Usage: //gs c equip naked')
+        return true
     elseif cmd == 'mount' then
         return CommonCommands.handle_mount()
     elseif cmd == 'reload' then
@@ -610,62 +618,17 @@ function CommonCommands.handle_command(command, job_name, ...)
     elseif cmd == 'debugsubjob' or cmd == 'dsj' then
         return CommonCommands.handle_debugsubjob()
     elseif cmd == 'debugwarp' then
-        -- Toggle warp debug mode. Kept on windower, which outlives the
-        -- sandbox: a flag only in _G is gone at the next job load.
-        windower._gs_debug = windower._gs_debug or {}
-        windower._gs_debug.WARP = not windower._gs_debug.WARP
-        _G.WARP_DEBUG = windower._gs_debug.WARP
-        MessageCommands.show_warp_debug_toggled(_G.WARP_DEBUG)
-        return true
+        return CommonCommands.handle_debugwarp()
     elseif cmd == 'debugprecast' then
-        windower._gs_debug = windower._gs_debug or {}
-        windower._gs_debug.PRECAST = not windower._gs_debug.PRECAST
-        _G.PrecastDebugState = windower._gs_debug.PRECAST
-        local MessagePrecast = require('shared/utils/messages/formatters/magic/message_precast')
-        if _G.PrecastDebugState then
-            MessagePrecast.show_debug_enabled()
-        else
-            MessagePrecast.show_debug_disabled()
-        end
-        return true
+        return CommonCommands.handle_debugprecast()
     elseif cmd == 'automovedebug' or cmd == 'amd' then
-        -- Toggle AutoMove timing debug mode. It needs its own persistent
-        -- field: writing only _G meant INIT_SYSTEMS overwrote it from
-        -- _gs_debug.UPDATE at the next load, so the toggle silently undid
-        -- itself on a subjob change.
-        windower._gs_debug = windower._gs_debug or {}
-        windower._gs_debug.AUTOMOVE = not windower._gs_debug.AUTOMOVE
-        _G.AUTOMOVE_DEBUG = windower._gs_debug.AUTOMOVE
-        MessageFormatter.show_debug('AutoMove', 'Debug mode: ' .. (_G.AUTOMOVE_DEBUG and 'ON' or 'OFF'))
-        return true
+        return CommonCommands.handle_automovedebug()
     elseif cmd == 'debugjobchange' or cmd == 'djc' then
-        -- Toggle job change debug mode. On windower so it survives the very
-        -- event it traces.
-        windower._gs_debug = windower._gs_debug or {}
-        windower._gs_debug.JOBCHANGE = not windower._gs_debug.JOBCHANGE
-        _G.JOBCHANGE_DEBUG = windower._gs_debug.JOBCHANGE
-        MessageFormatter.show_debug('JobChange', 'Debug mode: ' .. (_G.JOBCHANGE_DEBUG and 'ON' or 'OFF'))
-        if _G.JOBCHANGE_DEBUG and _G.JobChangeManagerSTATE then
-            local S = _G.JobChangeManagerSTATE
-            MessageFormatter.show_debug('JobChange', string.format('counter=%d, current=%s/%s, target=%s/%s',
-                S.debounce_counter or 0,
-                tostring(S.current_main_job), tostring(S.current_sub_job),
-                tostring(S.target_main_job), tostring(S.target_sub_job)))
-        end
-        return true
+        return CommonCommands.handle_debugjobchange()
     elseif cmd == 'debugstate' or cmd == 'ds' then
         return CommonCommands.handle_debugstate()
     elseif cmd == 'debugupdate' then
-        -- Traces the full gs c update flow. Kept on windower so it survives
-        -- job changes; also sets the AutoMove trace to the same value.
-        windower._gs_debug = windower._gs_debug or {}
-        windower._gs_debug.UPDATE = not windower._gs_debug.UPDATE
-        _G.UPDATE_DEBUG = windower._gs_debug.UPDATE
-        windower._gs_debug.AUTOMOVE = windower._gs_debug.UPDATE
-        _G.AUTOMOVE_DEBUG = windower._gs_debug.AUTOMOVE
-        MessageFormatter.show_debug('UPDATE', string.format('%s (traces: AutoMove > job_update > UI.update > customize_set)',
-            _G.UPDATE_DEBUG and 'ON' or 'OFF'))
-        return true
+        return CommonCommands.handle_debugupdate()
     elseif cmd == 'fulltest' or cmd == 'ft' then
         return CommonCommands.handle_fulltest(args[1])
     elseif cmd == 'syscheck' or cmd == 'sc' then
@@ -681,16 +644,7 @@ function CommonCommands.handle_command(command, job_name, ...)
     elseif cmd == 'info' then
         return CommonCommands.handle_info(args)
     elseif cmd == 'debugmsg' then
-        -- Dump the current message display modes
-        if _G.MESSAGE_SETTINGS then
-            MessageFormatter.show_debug('MSG', 'MESSAGE_SETTINGS:')
-            MessageFormatter.show_debug('MSG', '  spell_mode: ' .. tostring(_G.MESSAGE_SETTINGS.spell_mode or 'nil'))
-            MessageFormatter.show_debug('MSG', '  ja_mode: '    .. tostring(_G.MESSAGE_SETTINGS.ja_mode    or 'nil'))
-            MessageFormatter.show_debug('MSG', '  ws_mode: '    .. tostring(_G.MESSAGE_SETTINGS.ws_mode    or 'nil'))
-        else
-            MessageFormatter.show_error('MSG', 'MESSAGE_SETTINGS is nil!')
-        end
-        return true
+        return CommonCommands.handle_debugmsg()
     elseif cmd == 'testmsg' or cmd == 'msgtest' then
         -- Preview messages. Usage: //gs c testmsg [job]
         -- (e.g. //gs c testmsg, //gs c testmsg brd, //gs c testmsg system)

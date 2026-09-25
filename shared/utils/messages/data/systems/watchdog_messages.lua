@@ -36,11 +36,6 @@ return {
     },
 
     -- Status/Stats headers and lines
-    status_header = {
-        template = "{green}=== Midcast Watchdog Status ===",
-        color = 158
-    },
-
     stats_header = {
         template = "{green}=== Midcast Watchdog Stats ===",
         color = 158

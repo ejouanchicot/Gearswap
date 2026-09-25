@@ -133,6 +133,9 @@ function Lifecycle.attach(KeybindUI)
             if my_init_id ~= ui_state.smart_init_id then
                 return -- Newer smart_init called, abort this one
             end
+            if windower._ui_live_state ~= ui_state then
+                return -- Scheduled by a previous file load
+            end
 
             -- Check if states are now ready
             if are_states_ready() then

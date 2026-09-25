@@ -16,12 +16,12 @@ return {
     ---========================================================================
 
     doom_warning = {
-        template = "{lightblue}[{job}] {red}DOOM! Use Cursna or Holy Water!",
+        template = "{gray}[{lightblue}{job}{gray}] {red}DOOM! Use Cursna or Holy Water!",
         color = 1
     },
 
     doom_removed = {
-        template = "{lightblue}[{job}] {green}Doom removed",
+        template = "{gray}[{lightblue}{job}{gray}] {green}Doom removed",
         color = 1
     },
 
@@ -30,12 +30,12 @@ return {
     ---========================================================================
 
     spell_casting = {
-        template = "{lightblue}[{job}] {gray}Casting: {cyan}{spell}",
+        template = "{gray}[{lightblue}{job}{gray}] {gray}Casting: {cyan}{spell}",
         color = 1
     },
 
     element_list = {
-        template = "{lightblue}[{job}] {gray}Valid elements: fire, ice, wind, earth, thunder, water",
+        template = "{gray}[{lightblue}{job}{gray}] {gray}Valid elements: fire, ice, wind, earth, thunder, water",
         color = 1
     },
 
@@ -44,12 +44,12 @@ return {
     ---========================================================================
 
     enspell_current = {
-        template = "{lightblue}[{job}] {gray}Enspell: {cyan}{value}",
+        template = "{gray}[{lightblue}{job}{gray}] {gray}Enspell: {cyan}{value}",
         color = 1
     },
 
     storm_current = {
-        template = "{lightblue}[{job}] {gray}Storm: {cyan}{value}",
+        template = "{gray}[{lightblue}{job}{gray}] {gray}Storm: {cyan}{value}",
         color = 1
     },
 
@@ -58,32 +58,32 @@ return {
     ---========================================================================
 
     no_enspell_selected = {
-        template = "{lightblue}[{job}] {orange}No Enspell selected (cycle with Alt+8)",
+        template = "{gray}[{lightblue}{job}{gray}] {orange}No Enspell selected (cycle with Alt+8)",
         color = 1
     },
 
     gain_spell_not_configured = {
-        template = "{lightblue}[{job}] {orange}Gain spell state not configured",
+        template = "{gray}[{lightblue}{job}{gray}] {orange}Gain spell state not configured",
         color = 1
     },
 
     bar_element_not_configured = {
-        template = "{lightblue}[{job}] {orange}Bar Element state not configured",
+        template = "{gray}[{lightblue}{job}{gray}] {orange}Bar Element state not configured",
         color = 1
     },
 
     bar_ailment_not_configured = {
-        template = "{lightblue}[{job}] {orange}Bar Ailment state not configured",
+        template = "{gray}[{lightblue}{job}{gray}] {orange}Bar Ailment state not configured",
         color = 1
     },
 
     spike_not_configured = {
-        template = "{lightblue}[{job}] {orange}Spike state not configured",
+        template = "{gray}[{lightblue}{job}{gray}] {orange}Spike state not configured",
         color = 1
     },
 
     storm_requires_sch = {
-        template = "{lightblue}[{job}] {orange}Storm spells require SCH subjob",
+        template = "{gray}[{lightblue}{job}{gray}] {orange}Storm spells require SCH subjob",
         color = 1
     },
 

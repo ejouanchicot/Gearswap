@@ -2,7 +2,11 @@
 --- UI Configuration - Centralized UI Display Settings
 ---============================================================================
 --- User-configurable settings for the keybind UI display system.
---- Modify these settings to customize your UI experience.
+---
+--- The position, visibility, background, font and section values below are
+--- only defaults: once config/ui_settings.lua exists (it is rewritten on every
+--- UI setting change and by //gs c ui save), its values take precedence.
+--- init_delay, text.stroke, flags and background_presets are always read here.
 ---
 --- @file config/UI_CONFIG.lua
 --- @author Tetsouo
@@ -34,9 +38,7 @@ UIConfig.show_footer = false
 --- POSITION SETTINGS
 ---============================================================================
 
--- Default position (X, Y)
--- Overridden by pos_x/pos_y from config/ui_settings.lua when that file exists
--- (written by //gs c ui save and by every UI setting change)
+-- Default position (X, Y), used until config/ui_settings.lua saves one
 UIConfig.default_position = {
     x = 1857,
     y = -24
@@ -51,7 +53,7 @@ UIConfig.text = {
     size = 10, -- Font size
     font = 'Consolas', -- MONOSPACE font required for column alignment! (alternatives: 'Courier New', 'Lucida Console')
     stroke = {
-        width = 1, -- Outline width (reduced from 2 to prevent text clipping)
+        width = 1, -- Outline width
         alpha = 200, -- Outline opacity (0-255)
         red = 0, -- Outline color RGB
         green = 0,
@@ -316,9 +318,7 @@ UIConfig.sections = {
 --- COLOR CUSTOMIZATION (Optional)
 ---============================================================================
 
--- Override default colors (nil = use system defaults)
--- Note: no module reads UIConfig.colors at the moment; the UI colors come from
--- UI_COLOR_CONFIG.lua.
+-- Not read by any module at present (kept for a future color override)
 UIConfig.colors = {
     header_separator = nil, -- "\\cs(100,150,255)" format
     section_title = nil,
@@ -336,30 +336,20 @@ UIConfig.colors = {
 -- Recommended: 5.0 seconds
 UIConfig.init_delay = 5.0
 
--- The four settings below (auto_save_position, auto_save_delay, debug,
--- update_throttle) are not read by any module at the moment.
--- Manual position save: //gs c ui save
-
--- Auto-save position on drag
+-- The four settings below are not read by any module at present.
+-- The position is saved with //gs c ui save.
 UIConfig.auto_save_position = false
-
--- Auto-save delay in seconds (if auto_save enabled)
 UIConfig.auto_save_delay = 1.5
-
--- Show debug messages
 UIConfig.debug = false
-
--- Update frequency (lower = more responsive, higher = better performance)
--- 0 = update only on state change
--- 1-10 = update every N frames
 UIConfig.update_throttle = 0
 
 ---============================================================================
 --- HELPER FUNCTIONS
 ---============================================================================
 
---- Validate configuration
---- @return boolean, table valid, issues
+--- Validate configuration (no caller at present)
+--- @return boolean valid True when no issue was found
+--- @return table issues List of problem descriptions
 function UIConfig.validate()
     local issues = {}
 
@@ -380,17 +370,6 @@ function UIConfig.validate()
     end
 
     return #issues == 0, issues
-end
-
---- Print current configuration (for debugging)
-function UIConfig.print_config()
-    local DebugLogger = require('shared/utils/debug/debug_logger')
-    DebugLogger.log('UI_CONFIG', '=== UI Configuration ===')
-    DebugLogger.log('UI_CONFIG', 'Enabled: ' .. tostring(UIConfig.enabled))
-    DebugLogger.log('UI_CONFIG', 'Show Header: ' .. tostring(UIConfig.show_header))
-    DebugLogger.log('UI_CONFIG', 'Show Legend: ' .. tostring(UIConfig.show_legend))
-    DebugLogger.log('UI_CONFIG', 'Position: ' .. UIConfig.default_position.x .. ', ' .. UIConfig.default_position.y)
-    DebugLogger.log('UI_CONFIG', 'Font: ' .. UIConfig.text.font .. ' (' .. UIConfig.text.size .. ')')
 end
 
 return UIConfig

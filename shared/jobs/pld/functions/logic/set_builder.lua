@@ -373,9 +373,8 @@ function SetBuilder.build_idle_set(base_set)
         result = set_combine(result, sets.idleXp)
     end
 
-    -- Step 6b: Regen pair (/SCH only, idle only). Two slots laid over whatever
-    -- the stance chose, so DPS, Tanking and Hoxne each keep their own
-    -- mitigation and only the body and hands change.
+    -- Step 6b: Regen set (/SCH only, idle only), laid over whatever the stance
+    -- chose: DPS, Tanking and Hoxne keep every slot sets.idleRegen leaves out.
     if state.Regen and state.Regen.value == 'On' and sets.idleRegen then
         result = set_combine(result, sets.idleRegen)
     end

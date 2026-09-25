@@ -256,7 +256,7 @@ function job_self_command(cmdParams, eventArgs)
     if command == 'altjobupdate' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         if cmdParams[2] and cmdParams[3] then
-            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3], cmdParams[4], cmdParams[5])
+            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3], cmdParams[4], cmdParams[5], cmdParams[6])
         end
         eventArgs.handled = true
         return
@@ -379,10 +379,8 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- Sneak / Invi: Light Arts + Accession + the spell, party-wide.
-    -- They ride under 'aoe' because the alt-command configs claim their own
-    -- names, and CommonCommands answers before this block, so '//gs c sneak'
-    -- would cast on the dual-box partner rather than here.
+    -- Sneak / Invi: Light Arts + Accession + the spell, party-wide
+    -- ('//gs c aoe sneak', '//gs c aoe invi').
     if command == 'aoe' then
         if ScholarActions.try_aoe_subcommand(cmdParams[2], state.SneakInviAOE) then
             eventArgs.handled = true

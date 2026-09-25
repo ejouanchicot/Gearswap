@@ -58,7 +58,7 @@ local categorization_rules = {
         "SneakInvi",
         "Klimaform",
         "Favor",  -- SMN AvatarFavor toggle
-        "Regen"   -- PLD /SCH Regen pair over the idle set
+        "Regen"   -- PLD /SCH: sets.idleRegen laid over the idle set
     }
 }
 

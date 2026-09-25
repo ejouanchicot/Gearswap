@@ -16,52 +16,52 @@ return {
     ---========================================================================
 
     warp_casting = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}]{separatorcolor} Casting {spellcolor}{spell_name}{separatorcolor}...",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}]{separatorcolor} Casting {spellcolor}{spell_name}{separatorcolor}...",
         color = 1
     },
 
     warp_equipping = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}]{separatorcolor} Equipping {itemcolor}{ring_name}{separatorcolor}...",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}]{separatorcolor} Equipping {itemcolor}{ring_name}{separatorcolor}...",
         color = 1
     },
 
     warp_countdown = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}]{separatorcolor} Using in {green}{seconds}s{separatorcolor}...",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}]{separatorcolor} Using in {green}{seconds}s{separatorcolor}...",
         color = 1
     },
 
     warp_using = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}]{separatorcolor} Using {itemcolor}{ring_name}{separatorcolor}!",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}]{separatorcolor} Using {itemcolor}{ring_name}{separatorcolor}!",
         color = 1
     },
 
     warp_level_error = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}] {red}{spell_name} requires BLM level {separatorcolor}{required_level}{red} {gray}(current: {separatorcolor}{current_level}{red}{gray})",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}] {red}{spell_name} requires BLM level {separatorcolor}{required_level}{red} {gray}(current: {separatorcolor}{current_level}{red}{gray})",
         color = 1
     },
 
     warp_requires_blm = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}] {spellcolor}{spell_name} {warningcolor}requires BLM lvl {required_level}",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}] {spellcolor}{spell_name} {warningcolor}requires BLM lvl {required_level}",
         color = 1
     },
 
     warp_unavailable = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}] {red}Cannot warp - Requires BLM main/sub or {ring_text}",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}] {red}Cannot warp - Requires BLM main/sub or {ring_text}",
         color = 1
     },
 
     warp_no_charges = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}] {itemcolor}{ring_name} {red}- No charges remaining",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}] {itemcolor}{ring_name} {red}- No charges remaining",
         color = 1
     },
 
     warp_recast = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}] {itemcolor}{ring_name} {red}- Recast: {seconds}s",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}] {itemcolor}{ring_name} {red}- Recast: {seconds}s",
         color = 1
     },
 
     warp_charges_remaining = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}] {itemcolor}{ring_name} {separatorcolor}- Charges remaining: {charges}",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}] {itemcolor}{ring_name} {separatorcolor}- Charges remaining: {charges}",
         color = 1
     },
 
@@ -100,7 +100,7 @@ return {
     },
 
     spell_cannot_cast = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}] {warningcolor}Cannot cast: {error_reason}",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}] {warningcolor}Cannot cast: {error_reason}",
         color = 1
     },
 
@@ -129,12 +129,12 @@ return {
     ---========================================================================
 
     ipc_test_sent = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}]{separatorcolor} Sending IPC test message...",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}]{separatorcolor} Sending IPC test message...",
         color = 1
     },
 
     ipc_test_sent_confirm = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}]{separatorcolor} IPC test message sent!",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}]{separatorcolor} IPC test message sent!",
         color = 1
     },
 
@@ -149,7 +149,7 @@ return {
     },
 
     ipc_broadcasting = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}]{separatorcolor} Broadcasting {itemcolor}\"{command}\"{separatorcolor} to other characters...",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}]{separatorcolor} Broadcasting {itemcolor}\"{command}\"{separatorcolor} to other characters...",
         color = 1
     },
 
@@ -183,12 +183,12 @@ return {
     },
 
     equipment_lock_error = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}] {red}Failed to lock equipment: {error_msg}",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}] {red}Failed to lock equipment: {error_msg}",
         color = 1
     },
 
     equipment_unlock_error = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}] {red}Failed to unlock equipment: {error_msg}",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}] {red}Failed to unlock equipment: {error_msg}",
         color = 1
     },
 
@@ -197,32 +197,32 @@ return {
     ---========================================================================
 
     force_unlock = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}]{separatorcolor} Force unlocking equipment...",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}]{separatorcolor} Force unlocking equipment...",
         color = 1
     },
 
     fix_ring_start = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}]{separatorcolor} Fixing frozen ring slot...",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}]{separatorcolor} Fixing frozen ring slot...",
         color = 1
     },
 
     fix_ring_complete = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}]{green} Ring slot fixed!",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}]{green} Ring slot fixed!",
         color = 1
     },
 
     manual_lock = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}]{separatorcolor} Manually locking equipment for 10 seconds...",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}]{separatorcolor} Manually locking equipment for 10 seconds...",
         color = 1
     },
 
     debug_toggle = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}]{separatorcolor} Debug mode: {status_color}{status_text}",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}]{separatorcolor} Debug mode: {status_color}{status_text}",
         color = 1
     },
 
     using_destination = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}]{separatorcolor} Using {itemcolor}{item_name}{separatorcolor} >> {destination}",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}]{separatorcolor} Using {itemcolor}{item_name}{separatorcolor} >> {destination}",
         color = 1
     },
 
@@ -231,12 +231,12 @@ return {
     ---========================================================================
 
     precast_fc_warning = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}] {red}Warning: sets.precast.FC not found for {spellcolor}{spell_name}",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}] {red}Warning: sets.precast.FC not found for {spellcolor}{spell_name}",
         color = 1
     },
 
     force_fc = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}]{separatorcolor} Force FC for {spellcolor}{spell_name}",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}]{separatorcolor} Force FC for {spellcolor}{spell_name}",
         color = 1
     },
 
@@ -245,7 +245,7 @@ return {
     ---========================================================================
 
     all_items_cooldown = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}]{warningcolor} All items on cooldown",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}]{warningcolor} All items on cooldown",
         color = 1
     },
 
@@ -260,7 +260,7 @@ return {
     },
 
     next_available_item = {
-        template = "{jobtag}{gray}[{separatorcolor}WARP{gray}]{separatorcolor} Next available: {itemcolor}{item_name}{separatorcolor} in {time_msg}",
+        template = "{jobtag}{gray}[{lightblue}WARP{gray}]{separatorcolor} Next available: {itemcolor}{item_name}{separatorcolor} in {time_msg}",
         color = 1
     },
 

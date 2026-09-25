@@ -219,12 +219,19 @@ end
 
 --- //gs c alts window - show / hide, saved.
 function AltWindow.toggle()
+    local ok, m = pcall(require, 'shared/utils/messages/formatters/system/message_altgroup')
+    local cfg = _G.DualBoxConfig
+    if not cfg or cfg.role ~= 'main' then
+        -- alts_to_show() keeps the window hidden off the main: flipping the
+        -- saved flag here would announce "Window ON" with nothing drawn.
+        if ok and m then m.show_window_main_only() end
+        return
+    end
     save_if_moved()
     local p = prefs()
     p.visible = not p.visible
     save_prefs(p)
     AltWindow.refresh()
-    local ok, m = pcall(require, 'shared/utils/messages/formatters/system/message_altgroup')
     if ok and m then m.show_window(p.visible) end
 end
 

@@ -1,10 +1,13 @@
--- UI Settings (auto-generated)
--- Character: Tetsouo
--- File: D:\Windower Tetsouo\/addons/gearswap/data/Tetsouo/config/ui_settings.lua
+-- UI Settings - starting values for a new character.
+-- Rewritten in game on every UI setting change and by //gs c ui save; a
+-- re-clone keeps the character's own copy. The position is the one
+-- ui_settings_resolver falls back to when no file exists; the old value
+-- (x 1946) was past the right edge of a 1920-wide window. On a window 1600
+-- pixels wide or less, drag the HUD and //gs c ui save.
 return {
     -- Position
-    pos_x = 1946,
-    pos_y = -30,
+    pos_x = 1600,
+    pos_y = 300,
 
     -- Visibility
     enabled = true,

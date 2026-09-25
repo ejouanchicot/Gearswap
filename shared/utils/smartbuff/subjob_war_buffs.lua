@@ -8,8 +8,8 @@
 ---
 --- The full WAR main-job buff pipeline (Defender, Retaliation, Restraint,
 --- Blood Rage) lives in `shared/jobs/war/functions/logic/smartbuff_manager.lua`
---- and is intentionally NOT reused here — subjob /WAR doesn't have access to
---- those higher-level abilities.
+--- and is not reused here. Defender is left out on purpose (Attack -25%); the
+--- others are above subjob level.
 ---
 --- @file    shared/utils/smartbuff/subjob_war_buffs.lua
 --- @author  Tetsouo

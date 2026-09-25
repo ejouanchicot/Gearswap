@@ -40,8 +40,8 @@ local WALTZ_CONFIG = {
     },
     -- Divine Waltz (AOE) - Priority order II > I
     divine = {
-        { name = "Divine Waltz II", tp = 800, recast_id = 190, level = 78 }, -- ID 195
-        { name = "Divine Waltz",    tp = 400, recast_id = 225, level = 40 } -- ID 194
+        { name = "Divine Waltz II", tp = 800, recast_id = 190, level = 78 }, -- ID 262
+        { name = "Divine Waltz",    tp = 400, recast_id = 225, level = 40 } -- ID 195
     }
 }
 
@@ -57,7 +57,7 @@ local function get_missing_hp(target)
     end
 
     -- Party/alliance member: estimate from HPP
-    if target.isallymember then
+    if target.in_party or target.in_alliance then
         local party = windower.ffxi.get_party()
         if party then
             -- Search in party members (0-5)
@@ -106,7 +106,7 @@ local CURING_HP_BRACKET = {
 local function resolve_missing_hp()
     local cur_target = windower.ffxi.get_mob_by_target('t')
 
-    if cur_target and (cur_target.name == player.name or cur_target.isallymember) then
+    if cur_target and (cur_target.name == player.name or cur_target.in_party or cur_target.in_alliance) then
         local missing_hp = get_missing_hp(cur_target)
         if missing_hp then return missing_hp end
     end

@@ -26,13 +26,8 @@ local AutoMedicine = {}
 local ON  = 'On'
 local OFF = 'Off'
 
---- Mote's globals, handed in by the caller rather than read off _G.
----
---- This module is loaded with require(), and a required module does not
---- reliably see the job sandbox's globals - `state` and `M` can both read nil
---- here while being perfectly available to the file that includes us. That is
---- why AutoMove, which creates state.Moving the same way, is loaded with
---- include() instead. Taking them as arguments works either way.
+--- Mote's globals, handed in by the caller rather than read off _G, so this
+--- module does not depend on being loaded after Mote-Include has created them.
 local Mote = { state = nil, M = nil }
 
 --- The state table we were given, if any.

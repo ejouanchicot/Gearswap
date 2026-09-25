@@ -49,9 +49,9 @@ LockstyleConfig = LockstyleConfig or {
 local ConfigLoader = require('shared/utils/config/config_loader')
 local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'WHM')
 
--- Load region configuration. message_colors captures _G.RegionConfig once,
--- when it is first required - ConfigLoader above already required it, so
--- this assignment comes too late for the region warning color.
+-- Region configuration, set at file level: message_colors reads
+-- _G.RegionConfig once each time it is loaded, so this has to run before
+-- INIT_SYSTEMS loads it in get_sets().
 local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig
@@ -134,19 +134,8 @@ end
 --- @param oldSubjob string Old subjob code
 --- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
-    -- Re-initialize JobChangeManager with WHM-specific functions
     local success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if success and JobChangeManager then
-        local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-        if WHMKeybinds and ui_success and KeybindUI then
-            JobChangeManager.initialize({
-                keybinds = WHMKeybinds,
-                ui = KeybindUI,
-                lockstyle = select_default_lockstyle,
-                macrobook = select_default_macro_book
-            })
-        end
-
         -- Let JobChangeManager handle the full reload sequence
         local main_job = player and player.main_job or "WHM"
         JobChangeManager.on_job_change(main_job, newSubjob)
@@ -248,9 +237,23 @@ function init_gear_sets()
 end
 
 --- Called by GearSwap when this job file is unloaded (job change, reload).
---- Cancels pending job-change operations and unbinds the job keys.
+--- Releases the Melee ON weapon lock, cancels pending job-change operations
+--- and unbinds the job keys.
 --- @return void
 function file_unload()
+    -- disable() lives in GearSwap's own table, which survives the reload,
+    -- while OffenseMode and CombatMode come back at their defaults: release
+    -- their locks here. Not during a craft session, whose lock CraftManager
+    -- owns.
+    if not (_G.CraftManager and _G.CraftManager.is_active()) and state then
+        if state.OffenseMode and state.OffenseMode.value == 'Melee ON' then
+            enable('main', 'sub', 'range')
+        end
+        if state.CombatMode and state.CombatMode.value == 'On' then
+            enable('main', 'sub', 'range', 'ammo')
+        end
+    end
+
     -- Cancel pending job change operations (debounce timer + lockstyles)
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if jcm_success and JobChangeManager then

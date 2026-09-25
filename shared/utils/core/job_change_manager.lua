@@ -113,7 +113,8 @@ end
 --- subjob-only branch could never be true and every change waited the full
 --- main-job delay. Seeding only when unset keeps the value captured at load
 --- time, which is what the comparison actually needs.
---- @param config table Unused, kept for the call sites that pass job modules
+--- @param config table Ignored. Only the frozen clones (Hysoka, Gabvanstronger)
+---   still pass their job modules here.
 function JobChangeManager.initialize(config)
     if not player then
         return

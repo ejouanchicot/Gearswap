@@ -99,12 +99,6 @@ function CooldownChecker.check_ability_cooldown(spell, eventArgs)
         return
     end
 
-    -- Set by THF's FBC command while it chains abilities: skips the whole
-    -- check, not only the message.
-    if _G.suppress_cooldown_messages then
-        return
-    end
-
     local formatter = get_formatter()
     if not formatter then return end
 

@@ -77,7 +77,7 @@ function job_self_command(cmdParams, eventArgs)
     if command == 'altjobupdate' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         if cmdParams[2] and cmdParams[3] then
-            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3], cmdParams[4], cmdParams[5])
+            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3], cmdParams[4], cmdParams[5], cmdParams[6])
         end
         eventArgs.handled = true
         return
@@ -93,8 +93,6 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- Checked before the common commands: 'steal' is also a dual-box alt
-    -- command, which would otherwise send it to the alt when the alt is THF.
     if command == 'steal' then
         SmartbuffManager.apply_steal()
         eventArgs.handled = true

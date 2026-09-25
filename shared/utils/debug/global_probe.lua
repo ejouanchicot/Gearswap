@@ -92,8 +92,7 @@ local EXPECTED = {
     casting_locked_song = true, checkArts = true,
     cor_action_event_id = true, cor_active_rolls = true,
     cor_crooked_timestamp = true, cor_last_roll = true,
-    cor_last_roll_display = true, cor_lockstyle_watchdog = true,
-    cor_lockstyle_watchdog_active = true, cor_natural_eleven_active = true,
+    cor_last_roll_display = true, cor_natural_eleven_active = true,
     cor_party_event_id = true, cor_party_jobs = true,
     cor_party_state = true, cor_pending_roll_timestamp = true,
     cor_pending_roll_value = true, customize_idle_set = true,
@@ -120,12 +119,18 @@ local EXPECTED = {
     refine_various_spells = true, require = true,
     select_default_lockstyle = true, select_default_macro_book = true,
     start_pet_monitoring = true, stop_pet_monitoring = true,
-    suppress_cooldown_messages = true, temp_tp_bonus_gear = true,
+    temp_tp_bonus_gear = true,
     thf_sa_pending = true, thf_ta_pending = true,
     toggle_retaliation_debug = true, ui_display_config = true,
     ui_manager_state = true, update_brd_song_slots = true,
     user_post_midcast = true, user_post_precast = true,
-    warp_detector_callbacks = true, x = true,}
+    warp_detector_callbacks = true, x = true,
+    CustomStates = true, HPPriority = true, JobSyncWatchdog = true,
+    KeybindManager = true, MessageSortie = true, MessageTempBind = true,
+    SortieCommands = true, TempBinds = true, TraceLog = true,
+    _alt_window_display = true, _alt_window_prefs = true,
+    geo_escort_on_aftercast = true, thf_range_locked = true,
+    thf_treasure = true,}
 
 -- Names the factories build at run time, which no scan of `_G.x =` can find.
 -- LockstyleManager and MacrobookManager compose them from the job code, so the

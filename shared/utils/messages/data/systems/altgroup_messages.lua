@@ -4,8 +4,9 @@
 --- Pure data file, used through formatters/system/message_altgroup.lua.
 --- Names white, ON green / OFF red, problems red.
 ---
---- @file data/systems/altgroup_messages.lua
+--- @file shared/utils/messages/data/systems/altgroup_messages.lua
 --- @author Tetsouo
+--- @version 1.0
 --- @date Created: 2026-09-24
 ---============================================================================
 
@@ -21,5 +22,8 @@ return {
     window_on = { template = "{gray}[{lightblue}ALTS{gray}] Window {green}ON", color = 1 },
     window_off = { template = "{gray}[{lightblue}ALTS{gray}] Window {red}OFF", color = 1 },
     no_alts = { template = "{gray}[{lightblue}ALTS{gray}] {red}No alt set in config/DUALBOX_CONFIG.lua", color = 1 },
-    usage = { template = "{gray}[{lightblue}ALTS{gray}] {white}//gs c alts on | off | toggle | follow [name|off] | do <command> | mirror | window", color = 1 },
+    not_ready = { template = "{gray}[{lightblue}ALTS{gray}] {red}Dual-box not initialised yet{gray} - try again in a few seconds", color = 1 },
+    window_main_only = { template = "{gray}[{lightblue}ALTS{gray}] {red}The alt window only shows on the main", color = 1 },
+    no_follower = { template = "{gray}[{lightblue}ALTS{gray}] {red}Nobody left to follow {white}{leader}", color = 1 },
+    usage = { template = "{gray}[{lightblue}ALTS{gray}] {white}//gs c alts on | off | toggle | follow [name|off]\n{gray}[{lightblue}ALTS{gray}] {white}//gs c alts do <command> | mirror | window", color = 1 },
 }

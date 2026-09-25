@@ -7,7 +7,7 @@
 ---   If this file is missing, defaults (craft=19, fish=17) are used.
 ---   Each cloned character can override by editing their own CRAFT_CONFIG.lua.
 ---
----   @file    Tetsouo/config/CRAFT_CONFIG.lua
+---   @file    config/CRAFT_CONFIG.lua
 ---   @author  Tetsouo
 ---   @version 1.0
 ---   @date    Created: 2026-05-11

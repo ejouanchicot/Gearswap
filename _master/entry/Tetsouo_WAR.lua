@@ -182,16 +182,6 @@ function job_sub_job_change(newSubjob, oldSubjob)
         return
     end
 
-    -- Re-register WAR modules (ensures correct functions when switching back to WAR)
-    if WARKeybinds and ui_success and KeybindUI then
-        JobChangeManager.initialize({
-            keybinds = WARKeybinds,
-            ui = KeybindUI,
-            lockstyle = select_default_lockstyle,
-            macrobook = select_default_macro_book
-        })
-    end
-
     -- Let JobChangeManager handle the full reload sequence
     local main_job = player and player.main_job or "WAR"
     JobChangeManager.on_job_change(main_job, newSubjob)

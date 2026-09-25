@@ -73,6 +73,9 @@ function Orchestrator.attach(KeybindUI)
             -- Try to recover if too many failures
             if ui_state.consecutive_failures > 5 then
                 coroutine.schedule(function()
+                    if windower._ui_live_state ~= ui_state then
+                        return -- Scheduled by a previous file load
+                    end
                     KeybindUI.force_reinit(player.main_job, 5.0)
                 end, 2.0)
             end

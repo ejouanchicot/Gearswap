@@ -56,9 +56,10 @@ local function render_section(section_name, keys, keybinds, job, key_column_widt
     for _, bind in ipairs(keybinds) do
         for _, section_key in ipairs(keys) do
             if bind.key == section_key then
-                -- Filter by subjob if bind has subjob requirement
-                if bind.subjob and bind.subjob ~= current_subjob then
-                    -- Skip this bind if subjob requirement not met
+                -- A list of subjobs was already filtered by get_active_binds;
+                -- only the single-subjob form is left to test here, for bind
+                -- files that do not go through it.
+                if type(bind.subjob) == 'string' and bind.subjob ~= current_subjob then
                     break
                 end
 

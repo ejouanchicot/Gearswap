@@ -94,7 +94,7 @@ end
 local MessageInit = nil
 
 -- Never returns nil. Every caller below is `ensure_message_init().show_*(...)`
--- with no guard, and five of them sit inside a coroutine.schedule block: if the
+-- with no guard, and several of them sit inside a coroutine.schedule block: if the
 -- formatter failed to load, indexing nil would throw there and take the rest of
 -- that block's initialisations down with it. The one case where this reporter is
 -- needed most - the message chain itself being broken - was the one case where

@@ -57,9 +57,9 @@ end
 local ConfigLoader = require('shared/utils/config/config_loader')
 local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'BLM')
 
--- Load region configuration. message_colors captures _G.RegionConfig once,
--- when it is first required - ConfigLoader above already required it, so
--- this assignment comes too late for the region warning color.
+-- Region configuration, set at file level: message_colors reads
+-- _G.RegionConfig once each time it is loaded, so this has to run before
+-- INIT_SYSTEMS loads it in get_sets().
 local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig
@@ -133,22 +133,8 @@ end
 --- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
     -- Note: Mote-Include already called user_setup() before this
-
-    -- Re-initialize JobChangeManager with BLM-specific functions
-    -- This ensures correct functions are used when switching back to BLM
     local success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if success and JobChangeManager then
-        -- Re-register BLM modules to ensure they're used (not other job modules)
-        local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-        if BLMKeybinds and ui_success and KeybindUI then
-            JobChangeManager.initialize({
-                keybinds = BLMKeybinds,
-                ui = KeybindUI,
-                lockstyle = select_default_lockstyle,
-                macrobook = select_default_macro_book
-            })
-        end
-
         -- Trigger job change sequence (handles lockstyle, macros, keybinds, UI)
         local main_job = player and player.main_job or "BLM"
         JobChangeManager.on_job_change(main_job, newSubjob)
@@ -182,7 +168,7 @@ function user_setup()
     else
         local msg_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
         if msg_success and MessageFormatter then
-            MessageFormatter.show_error('[BLM] Failed to load keybinds')
+            MessageFormatter.show_error('[BLM] Keybinds failed to load: ' .. tostring(keybinds))
         end
     end
 
@@ -281,9 +267,18 @@ end
 ---============================================================================
 
 --- Called by GearSwap when this job file is unloaded (job change, reload).
---- Cancels pending job-change operations and unbinds the job keys.
+--- Releases the CombatMode weapon lock, cancels pending job-change operations
+--- and unbinds the job keys.
 --- @return void
 function file_unload()
+    -- disable() lives in GearSwap's own table, which survives the reload,
+    -- while CombatMode comes back as Off: release the lock here. Not during
+    -- a craft session, whose lock CraftManager owns.
+    if state and state.CombatMode and state.CombatMode.value == 'On'
+        and not (_G.CraftManager and _G.CraftManager.is_active()) then
+        enable('main', 'sub', 'range', 'ammo')
+    end
+
     -- Cancel pending job change operations (debounce timer + lockstyles)
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if jcm_success and JobChangeManager then

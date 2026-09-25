@@ -130,19 +130,6 @@ end
 ---   INSTRUMENT SELECTION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Check if song is a dummy song
----   @param song_name string Song name
----   @return boolean is_dummy
-local function is_dummy_song(song_name)
-    local dummy_songs = BRDSongConfig.DUMMY_SONGS.standard
-    for _, dummy in ipairs(dummy_songs) do
-        if song_name == dummy then
-            return true
-        end
-    end
-    return false
-end
-
 ---   Get required instrument for specific song (read by
 ---   MidcastManager.get_song_instrument through _G.SongRotationManager)
 ---   Only returns instruments for songs that are LOCKED (cannot be cast without them)
@@ -152,26 +139,7 @@ end
 ---   @param song_name string Song name
 ---   @return string|nil Instrument name or nil (uses sets/state)
 function SongRotationManager.get_required_instrument(song_name)
-    -- LOCKED SONGS (cannot be cast without specific instrument):
-
-    -- Honor March: Locked to Marsyas (song unavailable without Marsyas)
-    if song_name == 'Honor March' then
-        return 'Marsyas'
-    end
-
-    -- Aria of Passion: Locked to Loughnashade (song unavailable without Loughnashade)
-    if song_name == 'Aria of Passion' then
-        return 'Loughnashade'
-    end
-
-    -- Dummy songs: Let sets.midcast.DummySong decide instrument
-    -- Valid choices: Daurdabla (+2), Loughnashade (+2), Blurred Harp (+1), Blurred Harp +1 (+1)
-    if is_dummy_song(song_name) then
-        return nil  -- Use sets.midcast.DummySong (player's choice)
-    end
-
-    -- For all other songs: Use player's current instrument preference
-    return nil  -- state.MainInstrument (midcast_router.apply_main_instrument)
+    return require('shared/jobs/brd/functions/logic/instrument_lock_config').get_instrument(song_name)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

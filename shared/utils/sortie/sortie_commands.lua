@@ -126,11 +126,19 @@ local function set_states(settings)
         local state_var = field and get_state and get_state(field)
         if state_var then
             local old = state_var.value
-            state_var:set(value)
-            if job_state_change then
-                job_state_change(state_var.description or field, state_var.value, old)
+            -- Modes.set raises on a value the job does not list (a stance
+            -- only PLD/SCH has); skip that one and still brief the alt.
+            if pcall(state_var.set, state_var, value) then
+                if job_state_change then
+                    job_state_change(state_var.description or field, state_var.value, old)
+                end
+                changed = true
+            else
+                local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+                if ok and MessageFormatter then
+                    MessageFormatter.show_warning(('Sortie: %s has no %s value here'):format(field, value))
+                end
             end
-            changed = true
         else
             send_command('gs c set ' .. setting)
         end
