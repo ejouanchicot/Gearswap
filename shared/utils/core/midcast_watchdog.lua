@@ -3,10 +3,12 @@
 ---============================================================================
 --- Jobs report every midcast (on_midcast_start) and every aftercast
 --- (on_aftercast, directly or through LifecycleManager). A 0.5 s loop checks
---- the tracked action: when no aftercast has arrived within cast time (Fast
---- Cast from state.FastCast applied) + WATCHDOG_BUFFER, it clears the
---- tracking and sends `gs c update` so the idle/engaged set comes back. Only spells and items
---- are tracked; job abilities, waltzes, steps... are ignored.
+--- the tracked action: when no aftercast has arrived within cast time +
+--- WATCHDOG_BUFFER, it clears the tracking and sends `gs c update` so the
+--- idle/engaged set comes back. Only spells and items are tracked; job
+--- abilities, waltzes, steps... are ignored. The cast time
+--- is the one computed from the precast set (shared/utils/precast/cast_time.lua),
+--- or, when there is none, the base cast time minus state.FastCast.
 ---
 --- Started by INIT_SYSTEMS 2 s after a load, stopped by JobChangeManager's
 --- cleanup. Settings changed with //gs c watchdog live in module locals and
@@ -191,6 +193,15 @@ function MidcastWatchdog.on_midcast_start(spell)
 
     local timeout, base_cast_time, adjusted_cast_time = calculate_timeout(spell_id, item_id)
     local fc_percent = get_fast_cast_percent()
+
+    -- Better than state.FastCast: the cast time computed from the precast set
+    -- actually sent (shared/utils/precast/cast_time.lua)
+    local computed = rawget(_G, '_precast_cast_time')
+    if spell_id and computed and computed.id == spell_id then
+        adjusted_cast_time = computed.seconds
+        fc_percent = computed.percent
+        timeout = adjusted_cast_time + WATCHDOG_BUFFER
+    end
 
     current_midcast.active             = true
     current_midcast.spell_name         = spell_name
