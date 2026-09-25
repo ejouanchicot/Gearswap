@@ -104,9 +104,15 @@ comportement à l'identique (audit : 38 valeurs d'armes Tetsouo + Kaories).
 - [ ] Base de WS Marksmanship : déplacée à l'étape F (RNG), données à vérifier sur BG-Wiki.
 
 ### Étape D : jobs existants complétés
-- [ ] BRD : commande `buffs` (NT + Troubadour + Marcato + rotation selon le nombre
-  de chants, repli /WHM Pianissimo + Ballad III, report recast NT en /p) ;
-  Loughnashade au sommeil ; mode Daurdabla ; CastingMode Resistant ; Miracle Cheer.
+- [x] BRD (2026-09-25, testé en jeu sur Tetsouo avec l'overlay de Blody) : `buffs` remplacé par
+  `//gs c songs` + pack `Gab` ; rotation en file d'attente (fin de cast réelle + 3 s,
+  relances), places calculées depuis les instruments possédés et Clarion Call, chants
+  bidons seulement si nécessaires. Overlay `_master/Blodykiller/` BRD : sets, états, pack,
+  touches BindManager, macrobook 1/1, lockstyle 1.
+- [ ] BRD (reste) : Ballad III sous Pianissimo en /WHM dans la rotation ; annonce du recast NT
+  en /p ; Loughnashade au sommeil ; instrument propre à un chant par personnage (Blurred
+  Harp +1 pour la Ballad, Miracle Cheer pour l'Hymnus) ; contradictions de ses fichiers à
+  vérifier avec Gab (EMPY tête/pieds, capes, Brioso +3 vs AF +4, noms d'objets).
 - [x] COR : roll actif relancé = Double-Up (2026-09-25, pour tout le monde, décidé avec
   Tetsouo ; `logic/double_up.lua`).
 - [ ] COR : Flurry I/II (détection paquet) ;
@@ -187,3 +193,4 @@ Bugs existants chez eux (ne pas reproduire) : AugGear d'un autre perso effacé p
 | 2026-09-25 | C : Combat Mode commun, lock CP, Obi/Orpheus, Utsusemi | feat(common) | oui (Tetsouo) |
 | 2026-09-25 | C : 4 verrous Combat Mode en double retirés | refactor(combatmode) | oui (Tetsouo BLM, Kaories RDM/GEO) |
 | 2026-09-25 | D : COR Double-Up, options Hasso / Entrust / Full Circle | feat(cor,geo,sam) | Double-Up oui ; options hors jeu |
+| 2026-09-25 | Temps de cast depuis le stuff, file de chants, overlay BRD Blody | feat(cast), feat(brd), feat(blody) | oui (Tetsouo, sets Blody) |
