@@ -295,6 +295,15 @@ pcall(function()
     end
 end)
 
+-- Combat Mode lock, every job. Laid after the custom hooks so it wraps them:
+-- the lock is set before any gear goes on.
+pcall(function()
+    local ok, CombatMode = pcall(require, 'shared/utils/core/combat_mode')
+    if ok and CombatMode then
+        CombatMode.install_hook()
+    end
+end)
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PRECAST SAFETY MODULES - confirm they load, once per job load
 ---  ═══════════════════════════════════════════════════════════════════════════

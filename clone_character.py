@@ -315,6 +315,7 @@ KEPT_ON_RECLONE = [
     ('config', 'alt_window.lua'),
     ('config', 'alt_state.lua'),
     ('config', 'WARP_ITEMS_OWNED.lua'),
+    ('config', 'combat_mode.lua'),
     ('temp_binds.lua',),
 ]
 

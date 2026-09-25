@@ -405,6 +405,7 @@ local QUICK_HELP = {
             {'//gs c ui help', '', 'HUD and chat look'},
             {'//gs c warp help', '', 'Warp, teleports, destinations'},
             {'//gs c tb help', '', 'Temporary keys'},
+            {'//gs c combatmode help', '', 'Weapon lock, per job'},
             {'//gs c alts help', '', 'Orders to the other boxes'},
             {'//gs c altcmds help', '', "The alt's commands"},
             {'//gs c sortie help', '', 'Sortie targets'},
@@ -432,6 +433,7 @@ local COMMANDS_HELP = {
             {'//gs c naked | equip naked', '', 'Strip all equipment'},
             {'//gs c mount', '', 'Toggle mount (random owned)'},
             {'//gs c tb ', '<key> <what>', 'Temporary key (tb help)'},
+            {'//gs c combatmode ', 'show | hide', 'Weapon lock on this job'},
         }},
         {title = 'EQUIPMENT & INVENTORY', rows = {
             {'//gs c wardrobeaudit | wa', '', 'Audit wardrobe across jobs'},

@@ -129,8 +129,9 @@ down by the guard sends the same line.
   (for `visible` and `alt` entries). A key that stays with another command is only
   re-bound, never unbound first (since 2026-09-25). PLD calls it from its state-change
   hook (`PLD_COMMANDS.lua`, after a stance change: `/SCH` Tanking hides `MainWeapon`);
-  `KeybindManager.refresh_active()` calls it on the job loaded now (`KeybindManager.active`,
-  set by `create`) whenever `alt_states.lua` records a new job, subjob or weapon type
+  `KeybindManager.refresh_active()` calls it on the job loaded now (`_G._keybind_active`,
+  the first module `create` made in the sandbox: the HUD requires the keybind file again
+  and gets a second module that never laid a key) whenever `alt_states.lua` records a new job, subjob or weapon type
   for a box.
 - **`unbind_all()`** runs `clear_unwanted` with nothing wanted, so it also removes
   keys another job file of this manager left down, then prints
@@ -185,6 +186,29 @@ Kaories are identical):
 The `alts` commands order every other member of `DualBoxConfig.group` (see
 [dualbox.md](dualbox.md)), so both characters carry them.
 
+### Combat Mode (`shared/utils/core/combat_mode.lua`, 2026-09-25)
+
+`KeybindManager.create` calls `CombatMode.attach(job, binds)` for every job. It creates
+`state.CombatMode` (`Off`/`On`) when the job's STATES file has none, reuses the job's
+own bind entry when there is one (BLM `^numpad8`, GEO `^numpad0`, RDM `^numpad5`, WHM
+`^numpad2`) or appends `{key = '!numpad0', command = 'cyclestate CombatMode', state = 'CombatMode'}`
+(`!numpad0` is free on every job's file, and in Gab's BindManager binds),
+and wraps the entry's `visible` with `CombatMode.is_shown(job)`.
+
+- **Shown** when `<Character>/config/combat_mode.lua` says so (`shown`/`hidden` by job),
+  else when the job's STATES defined the state (`_G._combat_mode_native`, recorded on the
+  first `attach` of the sandbox). The file also holds a key per job (`keys`), which
+  replaces the entry's. `all` in any of the three tables stands for every job not
+  named (`shown = {all = true}, keys = {all = '~f9'}`: Gab's Shift+F9 on all his jobs). Written by `//gs c combatmode show | hide | key <key>|none`
+  (`combat_mode_commands.lua`), kept across a re-clone (`KEPT_ON_RECLONE`).
+- **Lock.** `CombatMode.install_hook()` (INIT_SYSTEMS, after the custom hooks, so it runs
+  first) wraps `handle_equipping_gear`: On and shown disables main, sub, range (and ammo
+  on BLM and WHM) before the gear; otherwise it enables what it locked, unless a craft
+  session is active. What it locked is kept in `windower._combat_mode_locked`, so the
+  next job's first update frees it.
+- The four jobs' own lock code (BLM/WHM `job_state_change`, RDM/GEO `job_update` in the
+  entries) still runs alongside; it locks the same slots.
+
 ### Player modes and gear rules (`<JOB>_CUSTOM.lua`)
 
 The file is `<addon>/data/<player.name>/config/<job>/<JOB>_CUSTOM.lua`, read with
@@ -202,6 +226,16 @@ list of entries of two kinds:
   whenever `when` holds.
 
 A value block is matched to the state's current value case-insensitively.
+
+**Locks** (`custom_locks.lua`, 2026-09-25). A value block may hold `lock = {slot, ...}`.
+The wrapped `handle_equipping_gear` collects the slots of the active value blocks,
+enables the ones it locked earlier that are no longer wanted (before the job's gear, so
+the job can dress them), equips, then disables the wanted ones (after the gear, so a CP
+cape can go on first). What it locked is kept in `windower._custom_locked`; the first
+`CustomStates.load` of a sandbox enables it, since GearSwap keeps a disabled slot across
+a job change. A weapon slot is not enabled while Combat Mode is on (`CombatMode.is_on()`). Only mode
+entries lock; a `lock` in a rule is ignored. Actions do not re-check locks: a value
+change goes through `handle_update`, which calls `handle_equipping_gear`.
 
 **Moments.** `idle`, `engaged`, `weaponskill`, `ability`, `precast`, `midcast`, `all`.
 A moment holds pieces `{slot = item}` or the name of an existing set (`'sets.engaged.Acc'`,
@@ -241,11 +275,15 @@ value holds if any item matches (OR). Names compare case-insensitively, and a tr
 | `day_weather = true/false` | the action's element matches the day, or the weather |
 | `target` | `self`, `other` (player or NPC), `enemy` |
 | `distance_below` | distance to the action's target |
+| `obi_better` / `orpheus_better` | Hachirin-no-Obi's bonus for the action's element (day ±10, weather ±10/±25, storms included) beats Orpheus's Sash's (+15 at 1 yalm, -1 per yalm, +1 from 15), or the reverse; ties go to Orpheus. `shared/utils/equipment/elemental_bonus.lua`, 2026-09-25 |
+| `obi_bonus_above` | the Obi's bonus is above this many percent (for a player without Orpheus) |
 | `town`, `moving`, `pet` | true / false |
 | `zone` | zone name |
 
 The action keys (`spell`, `skill`, `spell_type`, `element`, `day_weather`, `target`,
-`distance_below`) never hold at idle/engaged. An unknown key, or a test that errors,
+`distance_below`, `obi_better`, `orpheus_better`, `obi_bonus_above`) never hold at
+idle/engaged. An action with no element (most physical weaponskills) never passes the
+belt keys. An unknown key, or a test that errors,
 makes the whole `when` false.
 
 **Guards** (`custom_guards.lua`), applied automatically:
@@ -263,7 +301,8 @@ makes the whole `when` false.
 - **fatal, entry skipped** (` (skipped)` appended): not a `{...}` block; no `state` and no
   `when`; a state name that is not one word of letters/digits/`_`; a new state without
   `values`;
-- **warnings**: `values` on an existing state; unknown field; a block named after a value
+- **warnings**: `values` on an existing state; unknown field; a `lock` that is not a list,
+  or names an unknown slot; a block named after a value
   the state does not have; an unknown moment; an unknown slot; a weapon slot (main, sub,
   range) in `engaged`, `weaponskill`, `ability` or `all` ("changing <slot> in combat loses
   your TP"); a gear value that is neither a table nor a set name; an unknown condition or a

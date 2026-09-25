@@ -122,16 +122,53 @@ return {
 - Conditions (`when`): `buff`, `no_buff`, `weapon`, `sub`, `range`, `ammo`,
   `subjob`, `no_subjob`, `mode`, `hp_below/above`, `mp_below/above`,
   `tp_below/above`, `spell`, `skill`, `spell_type`, `element`, `day_weather`,
-  `target`, `distance_below`, `town`, `moving`, `pet`, `zone`.
+  `target`, `distance_below`, `obi_better`, `orpheus_better`, `obi_bonus_above`,
+  `town`, `moving`, `pet`, `zone`.
+- The better elemental belt, for nukes, elemental weaponskills and Quick Draw:
+
+  ```lua
+  { when = { obi_better = true }, midcast = { waist = "Hachirin-no-Obi" }, weaponskill = { waist = "Hachirin-no-Obi" } },
+  { when = { orpheus_better = true }, midcast = { waist = "Orpheus's Sash" }, weaponskill = { waist = "Orpheus's Sash" } },
+  ```
+
+  Add `skill = 'Elemental Magic'` or `spell = {...}` to the `when` to limit
+  which actions it applies to.
+- Latent refresh: `{ when = { mp_below = 51 }, idle = { waist = "Fucho-no-Obi" } }`.
 - Your pieces go on last, on top of the job's choice. Some slots are left
   alone on purpose (Doom, song instruments, Phantom Roll rings, Treasure Hunter
   pieces, locked slots...).
 - `state = 'HybridMode'` (a mode the job already has) with no `values`
   adds gear to one of its values.
+- `lock = {'main', 'sub'}` in a value keeps those slots locked while the value
+  is on. A Capacity Points cape:
+
+  ```lua
+  { state = 'CP', desc = 'CP Cape', key = '!numpad1', values = 'onoff',
+    On = { all = { back = "Mecisto. Mantle" }, lock = {'back'} } },
+  ```
+
+  For the weapons, use Combat Mode below.
 - Mistakes are reported in chat at load as `<JOB>_CUSTOM: ...`.
 
 Pick a key the job does not use (the job's page lists them), or the custom
 key replaces the job's.
+
+## Combat Mode (every job)
+
+Combat Mode On keeps your weapons where they are (main, sub, range; ammo too on
+BLM and WHM): no spell or set swaps them, the TP stays. It is on the HUD of BLM,
+GEO, RDM and WHM by default, with their usual key, hidden elsewhere. Shown on
+another job, its key is Alt+Numpad0 unless you pick one.
+
+| Command | Effect |
+|---|---|
+| `//gs c combatmode` | Status on this job |
+| `//gs c combatmode show` / `hide` | Use it on this job or not (HUD row, key, lock) |
+| `//gs c combatmode key <key>` / `key none` | Its key on this job |
+
+Saved per character in `config/combat_mode.lua`. To use it everywhere with
+one key, write the file by hand:
+`return { shown = {all = true}, hidden = {}, keys = {all = '~f9'} }`.
 
 ## Temporary keys (`//gs c tb`)
 
