@@ -16,8 +16,17 @@ local MessageCore = {}
 local MessageColors = require('shared/utils/messages/message_colors')
 MessageCore.COLORS = MessageColors
 
---- Width of every chat separator line, sized to the chat window.
-MessageCore.SEPARATOR_WIDTH = 69
+--- Standard width of every chat separator line, sized to the chat window.
+MessageCore.DEFAULT_SEPARATOR_WIDTH = 69
+
+--- MessageCore.SEPARATOR_WIDTH is read at each use: the player's chat.width
+--- (UI_CONFIG.lua, //gs c ui chatwidth) when set, else the standard 69.
+setmetatable(MessageCore, {__index = function(_, key)
+    if key ~= 'SEPARATOR_WIDTH' then return nil end
+    local ok, UIStyle = pcall(require, 'shared/utils/ui/ui_style')
+    local width = ok and UIStyle.get().chat.width
+    return width or MessageCore.DEFAULT_SEPARATOR_WIDTH
+end})
 
 --- Create FFXI color code string
 --- @param color_code number FFXI color code (1-255)
@@ -45,10 +54,24 @@ end
 --- Display a colored separator line (FIXED LENGTH)
 --- @param length number Ignored - separator is always SEPARATOR_WIDTH characters
 function MessageCore.show_separator(length)
-    local fixed_length = MessageCore.SEPARATOR_WIDTH
-    local colorGray = MessageCore.create_color_code(MessageCore.COLORS.SEPARATOR)
-    local separator = string.rep("=", fixed_length)
-    add_to_chat(1, colorGray .. separator)
+    -- Player's choice in UI_CONFIG.lua `chat` (on/off, character, color)
+    local ok, UIStyle = pcall(require, 'shared/utils/ui/ui_style')
+    local chat = ok and UIStyle.get().chat or {}
+    if chat.separators == false then return end
+
+    local char = chat.separator_char or "="
+    local color = MessageCore.create_color_code(chat.separator_color or MessageCore.COLORS.SEPARATOR)
+    local separator = string.rep(char, math.ceil(MessageCore.SEPARATOR_WIDTH / #char)):sub(1, MessageCore.SEPARATOR_WIDTH)
+    add_to_chat(1, color .. separator)
+end
+
+--- "[RDM/DRK] " in front of a message, or "" when the player turned the job
+--- tag off (UI_CONFIG.lua chat.job_tag = false, //gs c ui jobtag off).
+--- @return string
+function MessageCore.job_prefix()
+    local ok, ChatPalette = pcall(require, 'shared/utils/messages/chat_palette')
+    if ok and ChatPalette and not ChatPalette.show_job_tag() then return "" end
+    return "[" .. MessageCore.get_job_tag() .. "] "
 end
 
 --- Get dynamic job tag [MAIN/SUB] based on current player state
@@ -73,29 +96,25 @@ end
 --- Display info message (cyan)
 --- @param message string Message to display
 function MessageCore.info(message)
-    local job_tag = MessageCore.get_job_tag()
-    add_to_chat(121, string.format("[%s] %s", job_tag, message))
+    add_to_chat(121, MessageCore.job_prefix() .. message)
 end
 
 --- Display success message (green)
 --- @param message string Message to display
 function MessageCore.success(message)
-    local job_tag = MessageCore.get_job_tag()
-    add_to_chat(158, string.format("[%s] %s", job_tag, message))
+    add_to_chat(158, MessageCore.job_prefix() .. message)
 end
 
 --- Display error message (red)
 --- @param message string Message to display
 function MessageCore.error(message)
-    local job_tag = MessageCore.get_job_tag()
-    add_to_chat(167, string.format("[%s] %s", job_tag, message))
+    add_to_chat(167, MessageCore.job_prefix() .. message)
 end
 
 --- Display warning message (region orange, like every other warning)
 --- @param message string Message to display
 function MessageCore.warning(message)
-    local job_tag = MessageCore.get_job_tag()
-    add_to_chat(MessageColors.WARNING, string.format("[%s] %s", job_tag, message))
+    add_to_chat(MessageColors.WARNING, MessageCore.job_prefix() .. message)
 end
 
 --- Send a pre-formatted message that already contains embedded color codes

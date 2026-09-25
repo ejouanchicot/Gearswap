@@ -17,6 +17,17 @@
 local RollMessages = {}
 
 local MessageCore = require('shared/utils/messages/message_core')
+local ChatPalette = require('shared/utils/messages/chat_palette')
+
+--- "[COR/DNC]" in the job color then `after` (white + " "), or only the
+--- white color when the player turned the job tag off.
+--- @param job_color string
+--- @param white_color string
+--- @return string
+local function tag_prefix(job_color, white_color)
+    if MessageCore.job_prefix() == "" then return white_color end
+    return job_color .. "[" .. MessageCore.get_job_tag() .. "]" .. white_color .. " "
+end
 
 -- Windower chars for special characters (circled numbers ①②③④⑤⑥⑦⑧⑨⑩⑪)
 -- Embedded directly to avoid path issues with require('chat.chars')
@@ -189,10 +200,9 @@ end
 --- @param job_bonus_info string|nil Job code if job bonus active (e.g., "DNC")
 --- @param roll_range number|nil Roll range in yalms (8 without Luzaf, 16 with Luzaf)
 function RollMessages.show_roll_result(roll_name, value_display, bonus_display, is_crooked, affected_count, total_count, lucky_num, unlucky_num, missed_names, bust_rate, job_bonus_info, roll_range)
-    local job_tag = MessageCore.get_job_tag()
     local job_color = MessageCore.create_color_code(MessageCore.COLORS.JOB_TAG)
     local roll_color = MessageCore.create_color_code(MessageCore.COLORS.JA)
-    local white_color = MessageCore.create_color_code(001)
+    local white_color = ChatPalette.tag('white')
     local bonus_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS)
     local separator_color = MessageCore.create_color_code(MessageCore.COLORS.SEPARATOR)
 
@@ -222,7 +232,7 @@ function RollMessages.show_roll_result(roll_name, value_display, bonus_display, 
     -- Crooked Cards indicator
     local crooked_text = ""
     if is_crooked then
-        local crooked_color = MessageCore.create_color_code(207)  -- Magenta/Pink for visibility
+        local crooked_color = ChatPalette.tag('lightblue')  -- Magenta/Pink for visibility
         crooked_text = crooked_color .. " [CROOKED +20%]" .. white_color
     end
 
@@ -239,7 +249,7 @@ function RollMessages.show_roll_result(roll_name, value_display, bonus_display, 
         job_bonus_text = separator_slash .. bonus_color .. "[+" .. job_bonus_info .. "]"
     end
 
-    local line1 = job_color .. "[" .. job_tag .. "]" .. white_color .. " " ..
+    local line1 = tag_prefix(job_color, white_color) ..
                 roll_color .. roll_name .. " " ..
                 number_color .. circled_num ..
                 separator_slash ..
@@ -313,76 +323,19 @@ end
 --- Benefits only apply if NO Bust debuff is currently active
 --- Benefits persist as long as ANY 11 roll remains active
 function RollMessages.show_roll_natural_eleven()
-    local job_tag = MessageCore.get_job_tag()
     local job_color = MessageCore.create_color_code(MessageCore.COLORS.JOB_TAG)
     local success_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS)
-    local white_color = MessageCore.create_color_code(001)
+    local white_color = ChatPalette.tag('white')
 
     -- Simple one-line message: [COR/DNC] 11! Reset / 30s Recast / Bust Immunity
     local message = string.format(
-        "%s[%s]%s %s11!%s Reset / 30s Recast / Bust Immunity",
-        job_color, job_tag,
-        white_color,
+        "%s%s11!%s Reset / 30s Recast / Bust Immunity",
+        tag_prefix(job_color, white_color),
         success_color,
         white_color
     )
 
     MessageCore.raw(message)
-end
-
---- Display bust rate warning. No caller: show_roll_result prints the bust line
---- itself (through BUST_BANDS, which repeats the thresholds below).
---- @param bust_rate number Bust rate percentage
-function RollMessages.show_roll_bust_rate(bust_rate)
-    local white_color = MessageCore.create_color_code(001)
-    local separator_color = MessageCore.create_color_code(MessageCore.COLORS.SEPARATOR) -- Gray
-
-    -- Color code AND risk text based on level (adjusted for realistic danger)
-    local risk_color, risk_text
-    if bust_rate >= 100 then
-        -- 100% = 6/6 bust (impossible to not bust)
-        risk_color = MessageCore.create_color_code(MessageCore.COLORS.ERROR)
-        risk_text = "GUARANTEED BUST"
-    elseif bust_rate >= 83.3 then
-        -- 83.3% = 5/6 bust (only 1 safe number)
-        risk_color = MessageCore.create_color_code(MessageCore.COLORS.ERROR)
-        risk_text = "EXTREME DANGER"
-    elseif bust_rate >= 66.6 then
-        -- 66.7% = 4/6 bust (only 2 safe numbers)
-        risk_color = MessageCore.create_color_code(MessageCore.COLORS.ERROR)
-        risk_text = "HIGH RISK"
-    elseif bust_rate >= 50 then
-        -- 50% = 3/6 bust (half safe, half bust)
-        risk_color = MessageCore.create_color_code(MessageCore.COLORS.get_warning_color())
-        risk_text = "MODERATE RISK"
-    elseif bust_rate >= 33.3 then
-        -- 33.3% = 2/6 bust (4 safe numbers)
-        risk_color = MessageCore.create_color_code(MessageCore.COLORS.get_warning_color())
-        risk_text = "LOW RISK"
-    elseif bust_rate >= 16.6 then
-        -- 16.7% = 1/6 bust (5 safe numbers)
-        risk_color = MessageCore.create_color_code(MessageCore.COLORS.JOB_TAG)
-        risk_text = "VERY LOW RISK"
-    elseif bust_rate > 0 then
-        risk_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS)
-        risk_text = "SAFE"
-    else
-        -- 0% = 0/6 bust (no risk)
-        risk_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS)
-        risk_text = "NO RISK"
-    end
-
-    -- Display bust line
-    MessageCore.raw(string.format(
-        "%sBust: %s%.1f%% %s(%s)",
-        white_color,
-        risk_color, bust_rate,
-        white_color, risk_text
-    ))
-
-    -- Final separator (gray, matching opening separator)
-    local separator = string.rep("=", 48)
-    MessageCore.raw(separator_color .. separator)
 end
 
 ---============================================================================
@@ -394,11 +347,10 @@ end
 --- @param bust_effect string Bust effect value (e.g., "-4")
 --- @param effect_type string Type of effect (e.g., "% Double-Attack")
 function RollMessages.show_roll_bust(roll_name, bust_effect, effect_type)
-    local job_tag = MessageCore.get_job_tag()
     local job_color = MessageCore.create_color_code(MessageCore.COLORS.JOB_TAG)
     local error_color = MessageCore.create_color_code(MessageCore.COLORS.ERROR)
     local roll_color = MessageCore.create_color_code(MessageCore.COLORS.JA)
-    local white_color = MessageCore.create_color_code(001)
+    local white_color = ChatPalette.tag('white')
 
     -- Region-specific orange, read at call time (see message_colors.lua)
     local warning_code = MessageCore.COLORS.get_warning_color()
@@ -406,8 +358,7 @@ function RollMessages.show_roll_bust(roll_name, bust_effect, effect_type)
 
     -- Simple one-line message: [COR/DNC] BUST! Fighter's Roll / Penalty: -4 Regen
     -- Build message piece by piece with explicit color codes
-    local message = job_color .. "[" .. job_tag .. "]" ..
-                    white_color .. " " ..
+    local message = tag_prefix(job_color, white_color) ..
                     error_color .. "BUST!" ..
                     white_color .. " " ..
                     roll_color .. roll_name ..
@@ -452,32 +403,18 @@ function RollMessages.show_active_rolls(active_rolls)
         MessageCore.info("No active rolls")
         return
     end
-
-    local job_color = MessageCore.create_color_code(MessageCore.COLORS.JOB_TAG)
-    local header_color = MessageCore.create_color_code(MessageCore.COLORS.JA)
-    local white_color = MessageCore.create_color_code(001)
-    local number_color = MessageCore.create_color_code(MessageCore.COLORS.SUCCESS)
-    local gray_color = MessageCore.create_color_code(MessageCore.COLORS.SEPARATOR)
-
-    -- Header
-    local job_tag = MessageCore.get_job_tag()
-    MessageCore.raw(string.format("%s[%s]%s Active Rolls (%s%d%s):",
-        job_color, job_tag,
-        white_color,
-        number_color, #active_rolls, white_color))
-
-    -- List each roll
-    for i, roll in ipairs(active_rolls) do
-        local formatted_message = string.format(
-            "  %s[%d]%s %s%s%s = %s%d",
-            gray_color, i,
-            white_color,
-            header_color, roll.name,
-            white_color,
-            number_color, roll.value
-        )
-        MessageCore.raw(formatted_message)
+    local fields = {}
+    for _, roll in ipairs(active_rolls) do
+        -- nil after a reload when the value was not seen (see sync_with_buffs)
+        if roll.value then
+            fields[#fields + 1] = {roll.name, roll.value, 'good'}
+        else
+            fields[#fields + 1] = {roll.name, '? (cast before the reload)', 'dim'}
+        end
     end
+    require('shared/utils/messages/info_block').show({
+        tag = 'COR', title = ('Active rolls (%d)'):format(#active_rolls), fields = fields,
+    })
 end
 
 --- Display roll state cleared message

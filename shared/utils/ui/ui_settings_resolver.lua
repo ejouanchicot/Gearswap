@@ -72,7 +72,10 @@ function UISettingsResolver.create_ui_settings()
             padding = 0
         },
         bg = UISettingsResolver.get_background_settings(),
-        flags = UIConfig.flags or { draggable = true }
+        flags = UIConfig.flags or { draggable = true },
+        -- Pixels of background around the text (texts.pad). Top level: the
+        -- texts library ignores text.padding above.
+        padding = require('shared/utils/ui/ui_style').get().layout.spacing.padding
     }
 end
 

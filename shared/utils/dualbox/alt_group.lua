@@ -198,6 +198,11 @@ end
 --- @return boolean handled
 function AltGroup.handle(args)
     local sub = args[1] and args[1]:lower() or ''
+    if sub == 'help' then
+        -- Before the group check: the help is useful even with no alt set up
+        if messages() then messages().show_usage() end
+        return true
+    end
     local alts = AltGroup.get_alts()
 
     if sub ~= 'mirror' and sub ~= 'window' and #alts == 0 then

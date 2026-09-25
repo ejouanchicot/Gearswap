@@ -14,6 +14,7 @@ local UIFormatter = {}
 
 local UIConfig = _G.UIConfig or {}  -- Set by config_loader.lua (only read by get_statistics)
 local ColorSystem = require('shared/utils/ui/COLOR_SYSTEM')
+local UIStyle = require('shared/utils/ui/ui_style')
 
 ---============================================================================
 --- HEADER AND TITLE FORMATTING
@@ -43,12 +44,18 @@ local job_titles = {
 --- @return number Exact width for UI (separators, centering, everything)
 function UIFormatter.calculate_content_width(keybinds, key_column_width, function_column_width, get_all_values_func)
     local max_width = 0
+    local layout = UIStyle.get().layout
+    local sp = layout.spacing
+    local left, gap, gap_value = string.rep(" ", sp.left), string.rep(" ", sp.gap), string.rep(" ", sp.gap_value)
+    -- Standard layout: byte length, as it always was (a "●" counts 3, which
+    -- leaves 2 columns of slack on the right). Exact layouts count columns.
+    local measure = sp.exact and UIStyle.display_len or string.len
 
-    -- Measure header first (2 space left margin, 4 spaces between columns)
+    -- Measure header first (same margins and gaps as the rendered lines)
     local formatted_key = string.format("%-" .. key_column_width .. "s", "Key")
     local formatted_func = string.format("%-" .. function_column_width .. "s", "Function")
-    local header_line = string.format("  %s    %s    Current", formatted_key, formatted_func)
-    max_width = string.len(header_line)
+    local header_line = left .. formatted_key .. gap .. formatted_func .. gap_value .. "Current"
+    max_width = measure(header_line)
 
     -- Measure each keybind line with ALL possible values to find absolute maximum width
     if get_all_values_func then
@@ -56,20 +63,19 @@ function UIFormatter.calculate_content_width(keybinds, key_column_width, functio
             -- Get ALL possible values for this state
             local all_values = get_all_values_func(bind.state)
 
-            local formatted_key_line = string.format("%-" .. key_column_width .. "s", bind.key)
+            local formatted_key_line = string.format("%-" .. key_column_width .. "s", UIStyle.display_key(bind.key))
             local formatted_desc_line = string.format("%-" .. function_column_width .. "s", bind.desc)
+            local prefix = left .. formatted_key_line .. gap .. formatted_desc_line .. gap_value .. layout.bullet .. " "
 
             -- Test with each possible value to find the longest
             for _, value in ipairs(all_values) do
-                local line = string.format("  %s    %s    ● %s", formatted_key_line, formatted_desc_line, value)
-                local line_width = string.len(line)
-                max_width = math.max(max_width, line_width)
+                max_width = math.max(max_width, measure(prefix .. value))
             end
         end
     end
 
-    -- Add 2 space right margin for symmetry (padding added directly in format strings)
-    return max_width + 2
+    -- Right margin (padding added directly in format strings)
+    return max_width + sp.right
 end
 
 --- Calculate dynamic header/footer width based on content (no caller in the repository)
@@ -107,27 +113,43 @@ function UIFormatter.create_header(job, content_width)
     local centered_title = string.rep(" ", padding) .. title
 
     -- Title in bright color (right margin added via content_width calculation)
-    text = text .. "\\cs(255,255,255)" .. centered_title .. "  \\cr\n"
+    text = text .. UIStyle.color('title') .. centered_title .. "  \\cr\n"
 
     -- Separator line under title (with 2 space margins on both sides)
     if content_width then
-        text = text .. "  \\cs(100,180,255)" .. string.rep("=", content_width - 4) .. "  \\cr\n"
+        text = text .. "  " .. UIStyle.color('separator', "\\cs(100,180,255)") .. string.rep("=", content_width - 4) .. "  \\cr\n"
     end
 
-    -- Modern symbol legend (optional)
-    if _G.ui_display_config and _G.ui_display_config.show_legend then
-        -- Build ENTIRE lines first WITH 2 space left margin and 2 space right margin
-        local col1_width = 18
-
-        local line1 = string.format("  %-" .. col1_width .. "s● ! = Alt  ", "● ^ = Ctrl")
-        local line2 = string.format("  %-" .. col1_width .. "s● ~ = Shift  ", "● @ = Windows")
-
-        -- Apply gold/yellow color for the whole legend
-        text = text .. "\\cs(255,215,0)" .. line1 .. "\\cr\n"
-        text = text .. "\\cs(255,215,0)" .. line2 .. "\\cr\n"
+    -- Symbol legend (optional). Keys written out in words need no legend.
+    if _G.ui_display_config and _G.ui_display_config.show_legend
+        and UIStyle.get().layout.key_style ~= 'words' then
+        local legend_color = UIStyle.color('legend')
+        for _, line in ipairs(UIFormatter.legend_lines(UIStyle.get().layout.legend)) do
+            text = text .. legend_color .. line .. "\\cr\n"
+        end
     end
 
     return text
+end
+
+--- Legend lines, two items per line with 2 space margins on both sides.
+--- The first column is 18 wide (wider when an item needs it).
+--- @param items table Legend texts ("^ = Ctrl", ...)
+--- @return table Lines without color codes
+function UIFormatter.legend_lines(items)
+    local col1_width = 18
+    for i = 1, #items, 2 do
+        col1_width = math.max(col1_width, string.len("● " .. items[i]) + 3)
+    end
+    local lines = {}
+    for i = 1, #items, 2 do
+        if items[i + 1] then
+            lines[#lines + 1] = string.format("  %-" .. col1_width .. "s● %s  ", "● " .. items[i], items[i + 1])
+        else
+            lines[#lines + 1] = "  ● " .. items[i] .. "  "
+        end
+    end
+    return lines
 end
 
 --- Create column headers with dynamic alignment
@@ -152,10 +174,12 @@ function UIFormatter.create_column_headers(key_column_width, function_column_wid
     local formatted_key = string.format("%-" .. key_column_width .. "s", "Key")
     local formatted_func = string.format("%-" .. function_column_width .. "s", "Function")
 
-    -- Multiple colors for header columns (2 space margins on both sides, 4 spaces between columns)
-    text = text .. string.format("  \\cs(100,180,255)%s    \\cs(120,200,255)%s    \\cs(140,220,255)Current  \\cr\n",
-        formatted_key,
-        formatted_func)
+    -- Multiple colors for header columns (same margins and gaps as the rows)
+    local sp = UIStyle.get().layout.spacing
+    text = text .. string.rep(" ", sp.left)
+        .. UIStyle.color('column_key') .. formatted_key .. string.rep(" ", sp.gap)
+        .. UIStyle.color('column_function') .. formatted_func .. string.rep(" ", sp.gap_value)
+        .. UIStyle.color('column_current') .. "Current" .. string.rep(" ", sp.right) .. "\\cr\n"
 
     return text
 end
@@ -189,6 +213,10 @@ end
 --- @param category string The section category (spell, ja, weapon, mode, enhancing)
 --- @return string The section title
 function UIFormatter.get_section_title(job, category)
+    local custom = UIStyle.get().layout.section_titles[category]
+    if custom then
+        return custom
+    end
     if category == "spell" then
         if job == "BST" then
             return "Pet Abilities"
@@ -235,27 +263,28 @@ function UIFormatter.format_keybind_line(bind, key_column_width, function_column
     local value = get_state_value_func(bind.state, bind.key)
 
     -- Format with dynamic widths using %-Ns for left-align padding
-    local formatted_key = string.format("%-" .. key_column_width .. "s", bind.key)
+    local layout = UIStyle.get().layout
+    local sp = layout.spacing
+    local formatted_key = string.format("%-" .. key_column_width .. "s", UIStyle.display_key(bind.key))
     local formatted_desc = string.format("%-" .. function_column_width .. "s", bind.desc)
 
-    -- Get appropriate color for the value
-    local value_color = ColorSystem.get_value_color(value, bind.desc)
+    local desc_color = UIStyle.color('description')
+    local key_color = UIStyle.color('key', desc_color)
+    local value_color = UIStyle.color('value', ColorSystem.get_value_color(value, bind.desc))
 
     -- Pad value to fixed width (if value_column_width provided)
     local formatted_value = value
     if value_column_width then
-        -- Subtract 2 for "● " prefix
-        local value_padding = value_column_width - 2
+        local value_padding = value_column_width - (UIStyle.display_len(layout.bullet) + 1)
         formatted_value = string.format("%-" .. value_padding .. "s", value)
     end
 
-    -- Build line with colors (Consolas monospace = color codes don't break alignment!)
-    -- Format: "  key    desc    ● value  " (2 space margins on both sides, 4 spaces between columns)
-    return string.format("  \\cs(180,180,180)%s    %s    %s● %s  \\cr\n",
-        formatted_key,       -- Already padded to key_column_width
-        formatted_desc,      -- Already padded to function_column_width
-        value_color,         -- Color for the value
-        formatted_value)     -- Padded to value_column_width
+    -- Consolas is monospace: color codes don't break the alignment.
+    -- Layout: <left>key<gap>desc<gap_value><bullet> value<right>
+    local desc_prefix = key_color ~= desc_color and desc_color or ""
+    return string.rep(" ", sp.left) .. key_color .. formatted_key .. string.rep(" ", sp.gap)
+        .. desc_prefix .. formatted_desc .. string.rep(" ", sp.gap_value)
+        .. value_color .. layout.bullet .. " " .. formatted_value .. string.rep(" ", sp.right) .. "\\cr\n"
 end
 
 ---============================================================================
@@ -268,7 +297,7 @@ end
 function UIFormatter.calculate_key_column_width(keybinds)
     local width = 2 -- Minimum width
     for _, bind in ipairs(keybinds) do
-        width = math.max(width, string.len(bind.key))
+        width = math.max(width, string.len(UIStyle.display_key(bind.key)))
     end
     return width
 end
@@ -290,6 +319,7 @@ end
 --- @return number Maximum value width
 function UIFormatter.calculate_value_column_width(keybinds, get_all_values_func)
     local width = 7  -- "Current" header length
+    local prefix_width = UIStyle.display_len(UIStyle.get().layout.bullet) + 1
 
     if get_all_values_func then
         for _, bind in ipairs(keybinds) do
@@ -298,8 +328,7 @@ function UIFormatter.calculate_value_column_width(keybinds, get_all_values_func)
 
             -- Find the longest value
             for _, value in ipairs(all_values) do
-                -- Add 2 for "● " prefix
-                local value_width = string.len(value) + 2
+                local value_width = string.len(value) + prefix_width
                 width = math.max(width, value_width)
             end
         end
@@ -316,7 +345,7 @@ function UIFormatter.create_section_separator(width)
         width = 50  -- Default fallback
     end
     -- Add 2 space margins on both sides and adjust separator width accordingly
-    return "  \\cs(80,160,255)" .. string.rep("=", width - 4) .. "  \\cr\n"
+    return "  " .. UIStyle.color('separator', "\\cs(80,160,255)") .. string.rep("=", width - 4) .. "  \\cr\n"
 end
 
 --- Create colored section header
@@ -334,8 +363,10 @@ function UIFormatter.create_colored_section_header(title, content_width)
         spacing = "\n"
     end
 
-    -- Add fixed 2 space right margin (symmetrical with left margin in centered_title)
-    return spacing .. "\\cs(120,220,255)" .. centered_title .. "  \\cr\n\n"
+    -- Fixed 2 space right margin (symmetrical with left margin in centered_title);
+    -- the blank line under the title is dropped in the compact layout.
+    local after = UIStyle.get().layout.spacing.title_gap and "\n" or ""
+    return spacing .. UIStyle.color('section_title') .. centered_title .. "  \\cr\n" .. after
 end
 
 --- Format empty state message (no caller in the repository)

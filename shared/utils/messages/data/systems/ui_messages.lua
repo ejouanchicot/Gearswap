@@ -62,6 +62,20 @@ return {
     },
 
     ---========================================================================
+    --- LOOK OPTIONS (//gs c ui gap, compact, color...)
+    ---========================================================================
+
+    style_saved = {
+        template = "{cyan}[UI]{gray} {option} = {green}{value} {gray}(saved in UI_CONFIG.lua)",
+        color = 1
+    },
+
+    style_not_saved = {
+        template = "{cyan}[UI]{gray} {option} = {green}{value} {red}- not saved: {error_text}",
+        color = 1
+    },
+
+    ---========================================================================
     --- BACKGROUND MESSAGES
     ---========================================================================
 

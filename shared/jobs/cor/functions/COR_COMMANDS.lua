@@ -255,6 +255,8 @@ function job_self_command(cmdParams, eventArgs)
             return
         end
 
+        -- After a reload the list is empty although rolls may be up
+        if RollTracker.sync_with_buffs then RollTracker.sync_with_buffs() end
         if _G.cor_active_rolls and #_G.cor_active_rolls > 0 then
             MessageFormatter.show_active_rolls(_G.cor_active_rolls)
         else
@@ -288,7 +290,8 @@ function job_self_command(cmdParams, eventArgs)
         -- Display detected party members and their jobs
         eventArgs.handled = true
 
-        MessageFormatter.show_party_members(_G.cor_party_jobs)
+        local pt_ok, PartyTracker = pcall(require, 'shared/jobs/cor/functions/logic/party_tracker')
+        MessageFormatter.show_party_members(pt_ok and PartyTracker and PartyTracker.members_for_display() or {})
 
     elseif command == 'clearparty' then
         -- Clear party job cache (useful when members change jobs)

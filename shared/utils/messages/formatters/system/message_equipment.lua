@@ -2,7 +2,8 @@
 --- Message Equipment - Equipment check formatting and display
 ---============================================================================
 --- Output of //gs c checksets and its debug lines. Header and summary are
---- built by hand (add_to_chat); the rest uses data/systems/equipment_messages.lua.
+--- InfoBlock parts (the look of every data block); the set lines use
+--- data/systems/equipment_messages.lua.
 ---
 --- @file    shared/utils/messages/formatters/system/message_equipment.lua
 --- @author  Tetsouo
@@ -11,8 +12,8 @@
 ---============================================================================
 
 local MessageEquipment = {}
-local MessageCore = require('shared/utils/messages/message_core')
 local M = require('shared/utils/messages/api/messages')
+local InfoBlock = require('shared/utils/messages/info_block')
 
 ---============================================================================
 --- EQUIPMENT CHECK MESSAGES
@@ -21,13 +22,7 @@ local M = require('shared/utils/messages/api/messages')
 --- Display equipment check header
 --- @param job_name string Job name (WAR, RDM, etc.)
 function MessageEquipment.show_check_header(job_name)
-    local gray = string.char(0x1F, 160)
-    local yellow = string.char(0x1F, 50)
-    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
-
-    add_to_chat(121, gray .. separator)
-    add_to_chat(121, yellow .. "[EQUIPMENT CHECK] " .. job_name:upper())
-    add_to_chat(121, gray .. separator)
+    InfoBlock.header('CHECKSETS', job_name:upper())
 end
 
 --- Display a valid set (all items available)
@@ -68,28 +63,12 @@ end
 --- @param storage_count number Items found in storage
 --- @param missing_count number Items not found
 function MessageEquipment.show_check_summary(total_sets, valid_sets, storage_count, missing_count)
-    local gray = string.char(0x1F, 160)
-    local green = string.char(0x1F, 158)
-    local yellow = string.char(0x1F, 50)
-    local red = string.char(0x1F, 167)
-    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
-
-    add_to_chat(121, gray .. separator)
-
-    -- Valid sets
-    add_to_chat(121, green .. "Valid Sets: " .. yellow .. valid_sets .. gray .. "/" .. yellow .. total_sets)
-
-    -- Storage items
-    if storage_count > 0 then
-        add_to_chat(121, yellow .. "Items in Storage: " .. red .. storage_count)
-    end
-
-    -- Missing items
-    if missing_count > 0 then
-        add_to_chat(121, red .. "Missing Items: " .. red .. missing_count)
-    end
-
-    add_to_chat(121, gray .. separator)
+    local fields = {{'Valid sets', valid_sets .. '/' .. total_sets, valid_sets == total_sets and 'good' or 'warn'}}
+    if storage_count > 0 then fields[#fields + 1] = {'In storage', storage_count, 'warn'} end
+    if missing_count > 0 then fields[#fields + 1] = {'Missing', missing_count, 'bad'} end
+    InfoBlock.separator()
+    InfoBlock.fields(fields)
+    InfoBlock.footer()
 end
 
 --- Display error message when sets cannot be loaded

@@ -165,7 +165,7 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- One handler for the three commands; the MessageCommands function names are
--- built from `prefix` ('show_jamsg_status_header', ...).
+-- built from `prefix` ('show_jamsg_invalid_mode', ...).
 local MSG_CONFIG_MAP = {
     ja    = {path = 'shared/config/JA_MESSAGES_CONFIG',        prefix = 'jamsg'},
     spell = {path = 'shared/config/ENHANCING_MESSAGES_CONFIG', prefix = 'spellmsg'},
@@ -186,9 +186,8 @@ local function handle_message_config_generic(msg_type, mode_arg)
         return false
     end
 
-    if not mode_arg then
-        MessageCommands['show_' .. cfg.prefix .. '_status_header']()
-        MessageCommands['show_' .. cfg.prefix .. '_current_mode'](Config.display_mode)
+    if not mode_arg or mode_arg:lower() == 'help' then
+        MessageCommands.show_message_mode_help(msg_type, Config.display_mode)
         return true
     end
 

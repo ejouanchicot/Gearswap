@@ -15,6 +15,7 @@ local MessageCore = require('shared/utils/messages/message_core')
 local UICommands = {}
 
 local MessageUI = require('shared/utils/messages/formatters/ui/message_ui')
+local UIStyleCommands = require('shared/utils/ui/ui_style_commands')
 
 ---============================================================================
 --- MAIN UI COMMAND HANDLER
@@ -80,6 +81,8 @@ function UICommands.handle_ui_command(cmdParams)
                 end
             end
         end
+    elseif UIStyleCommands.handles(subcommand) then
+        UIStyleCommands.run(subcommand, cmdParams)
     elseif subcommand == 'help' or subcommand == '?' then
         MessageUI.show_help()
     else

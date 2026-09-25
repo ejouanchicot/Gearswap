@@ -328,10 +328,10 @@ passes the sender name, 5th argument, since 2026-09-25), `requestjob` (111),
 | Command | Effect | Lines |
 |---------|--------|-------|
 | `track_roll` / `trackroll <short> <value>` | Maps a short name (`chaos`, `sam`, `hunters`, ...) and feeds `RollTracker.on_roll_cast` | 174-248 |
-| `rolls` | `show_active_rolls(_G.cor_active_rolls)` | 249-263 |
+| `rolls` | `RollTracker.sync_with_buffs()` then `show_active_rolls(_G.cor_active_rolls)`: the list is rebuilt from the roll buffs worn (after a reload it starts empty); a value comes back from `windower._cor_roll_values` when that roll was seen less than 600 s ago, else it shows `?` | 249-265 |
 | `doubleup` / `du` | `display_double_up_status()` (45 s from the last roll or Double-Up) | 264-274 |
 | `clearrolls` | `RollTracker.clear_all()` | 275-286 |
-| `party` | `show_party_members(_G.cor_party_jobs)` (no cache validation first) | 287-292 |
+| `party` | `show_party_members(PartyTracker.members_for_display())`: the members of `windower.ffxi.get_party()` (p1-p5), each with its job from the packet cache (by id, else by name), else from the dual-box `AltJobState` for the alt, else "job unknown" | 287-293 |
 | `clearparty` | Empties the cache in place | 293-303 |
 | `shot` | `input /ja "<QuickDraw> Shot" <t>` | 304-308 |
 | `roll1` | `input /ja "<MainRoll>" <me>` | 304-308 |

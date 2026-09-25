@@ -16,7 +16,8 @@ local MessageSortie = {}
 local MessageCore = require('shared/utils/messages/message_core')
 local M = require('shared/utils/messages/api/messages')
 
-local SEPARATOR = string.rep('=', MessageCore.SEPARATOR_WIDTH)
+-- Built at each use: the width follows the player's chat.width
+local function separator_line() return string.rep('=', MessageCore.SEPARATOR_WIDTH) end
 local LABEL_WIDTH = 8
 
 -- Pre-coloured fragments inserted into templates (the engine does not nest
@@ -30,7 +31,7 @@ local LIGHTBLUE = string.char(0x1F, 207)
 ---============================================================================
 
 local function separator()
-    M.send('SORTIE', 'separator', {separator = SEPARATOR})
+    M.send('SORTIE', 'separator', {separator = separator_line()})
 end
 
 --- Separator, title, separator.
@@ -76,6 +77,35 @@ function MessageSortie.show_escort(alt, indi, player_name)
     field('field_spell', 'Indi', indi)
     field('field', 'Follow', player_name)
     separator()
+end
+
+--- //gs c sortie help: the commands, then the targets (HelpScreen, the look
+--- of every help screen).
+--- @param entries table Array of {name, aliases (string, may be empty), indi, summary}
+--- @param alt string Alt character name
+function MessageSortie.show_help(entries, alt)
+    local targets, aliases = {}, {}
+    for _, e in ipairs(entries) do
+        targets[#targets + 1] = {e.name, '', e.indi .. ', ' .. e.summary}
+        if e.aliases ~= '' then
+            aliases[#aliases + 1] = ('Same as %s: %s.'):format(e.name, e.aliases)
+        end
+    end
+    require('shared/utils/messages/help_screen').show({
+        title = 'SORTIE', subtitle = 'your stance + ' .. alt .. ' setup',
+        groups = {
+            {title = 'COMMANDS', rows = {
+                {'//gs c sortie ', '<target>', 'Stance + ' .. alt .. ' setup'},
+                {'//gs c sortie escort ', '[Indi-X]', alt .. ' follows, casts the Indi'},
+                {'//gs c sortie off', '', alt .. ' automation off'},
+                {'//gs c sortie judgment', '', alt .. ' WS on the battle target'},
+                {'//gs c sortie fullcircle', '', alt .. ' dismisses its luopan'},
+                {'//gs c sortie list', '', 'Targets as a table'},
+            }},
+            {title = 'TARGETS', note = 'Indi, then the setup', own_col = true, rows = targets},
+        },
+        notes = aliases,
+    })
 end
 
 --- Available targets, one line each.

@@ -25,5 +25,4 @@ return {
     not_ready = { template = "{gray}[{lightblue}ALTS{gray}] {red}Dual-box not initialised yet{gray} - try again in a few seconds", color = 1 },
     window_main_only = { template = "{gray}[{lightblue}ALTS{gray}] {red}The alt window only shows on the main", color = 1 },
     no_follower = { template = "{gray}[{lightblue}ALTS{gray}] {red}Nobody left to follow {white}{leader}", color = 1 },
-    usage = { template = "{gray}[{lightblue}ALTS{gray}] {white}//gs c alts on | off | toggle | follow [name|off]\n{gray}[{lightblue}ALTS{gray}] {white}//gs c alts do <command> | mirror | window", color = 1 },
 }

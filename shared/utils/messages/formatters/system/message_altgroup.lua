@@ -87,7 +87,19 @@ end
 
 --- Subcommand list.
 function MessageAltGroup.show_usage()
-    M.send('ALTGROUP', 'usage', {})
+    require('shared/utils/messages/help_screen').show({
+        title = 'ALTS', subtitle = 'Orders to the other boxes',
+        groups = {{title = 'COMMANDS', rows = {
+            {'//gs c alts ', 'on|off', 'Automation on / off'},
+            {'//gs c alts toggle', '', 'Flip the automation'},
+            {'//gs c alts follow', '', 'Follow me / stop (toggle)'},
+            {'//gs c alts follow ', '<name>|off', 'Follow that character / stop'},
+            {'//gs c alts do ', '<command>', 'Console command on every alt'},
+            {'//gs c alts mirror', '', 'Mirror request from here'},
+            {'//gs c alts window', '', 'Show / hide the alt window'},
+        }}},
+        notes = {'Alts: the group of config/DUALBOX_CONFIG.lua.'},
+    })
 end
 
 return MessageAltGroup

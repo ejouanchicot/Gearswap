@@ -35,25 +35,27 @@ local function command_status()
     local WarpEquipment = require('shared/utils/warp/warp_equipment')
     local WarpInit = require('shared/utils/warp/warp_init')
 
-    MessageWarp.show_status_header()
-    MessageWarp.show_status_line('Initialized', WarpInit.is_initialized())
-    MessageWarp.show_status_line('Equipment Locked', WarpEquipment.is_locked())
+    local initialized = WarpInit.is_initialized()
+    local locked = WarpEquipment.is_locked()
+    local fields = {
+        {'Initialized', initialized and 'Yes' or 'No', initialized and 'good' or 'bad'},
+        {'Equipment locked', locked and 'Yes' or 'No', locked and 'warn' or nil},
+    }
 
     local warp_type = WarpEquipment.get_warp_type()
     if warp_type then
-        MessageWarp.show_status_line('Current Warp Type', warp_type)
+        fields[#fields + 1] = {'Current warp type', warp_type}
     end
 
     if player then
         local has_blm = player.main_job == 'BLM' or player.sub_job == 'BLM'
         local has_whm = player.main_job == 'WHM' or player.sub_job == 'WHM'
         local job_text = has_blm and 'Yes (BLM)' or has_whm and 'Yes (WHM)' or 'No'
-        MessageWarp.show_status_line('Can cast warp spells', job_text)
+        fields[#fields + 1] = {'Can cast warp spells', job_text, (has_blm or has_whm) and 'good' or nil}
     end
 
-    -- Show total items
-    local total_items = WarpDatabase.count_total_items()
-    MessageWarp.show_status_line('Database Items', total_items)
+    fields[#fields + 1] = {'Database items', WarpDatabase.count_total_items()}
+    MessageWarp.show_status(fields)
 end
 
 local function command_unlock()
@@ -96,17 +98,11 @@ end
 
 local function command_test()
     local WarpDetector = require('shared/utils/warp/warp_detector')
-
-    MessageWarp.show_test_header()
-
-    local warp_spells = WarpDetector.get_warp_spells()
-    MessageWarp.show_test_line('Detected Warp Spells', #warp_spells)
-
-    local warp_items = WarpDetector.get_warp_items()
-    MessageWarp.show_test_line('Detected Warp Items', #warp_items)
-
-    local total_db_items = WarpDatabase.count_total_items()
-    MessageWarp.show_test_line('Database Total', total_db_items)
+    MessageWarp.show_test({
+        {'Detected warp spells', #WarpDetector.get_warp_spells()},
+        {'Detected warp items', #WarpDetector.get_warp_items()},
+        {'Database total', WarpDatabase.count_total_items()},
+    })
 end
 
 local function command_debugwarp()

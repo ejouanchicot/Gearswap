@@ -13,57 +13,32 @@
 local PartyMessages = {}
 
 local MessageCore = require('shared/utils/messages/message_core')
-local Colors = MessageCore.COLORS
 
 ---============================================================================
 --- PARTY TRACKING MESSAGES
 ---============================================================================
 
---- Display party members table with job information
---- @param party_jobs table Party jobs keyed by player id:
----   {player_id = {name, main_job, sub_job, main_job_level}}
-function PartyMessages.show_party_members(party_jobs)
-    if not party_jobs then
-        MessageCore.error("Party tracking not initialized")
+--- Display the party members and their jobs (//gs c party)
+--- @param members table Array of {name, main_job?, sub_job?, main_job_level?}
+---   from PartyTracker.members_for_display (no job = not known yet)
+function PartyMessages.show_party_members(members)
+    if not members or #members == 0 then
+        MessageCore.info("No party members")
         return
     end
-
-    local count = 0
-    for _ in pairs(party_jobs) do count = count + 1 end
-
-    if count == 0 then
-        MessageCore.info("No party members detected yet")
-        return
-    end
-
-    local job_tag = MessageCore.get_job_tag()
-    local job_color = MessageCore.create_color_code(Colors.JOB_TAG)
-    local separator_color = MessageCore.create_color_code(Colors.SEPARATOR)
-    local info_color = MessageCore.create_color_code(Colors.INFO)
-
-    local separator = '========================================'
-
-    add_to_chat(159, separator)
-    add_to_chat(159, string.format('%s[%s]%s Party Members Detected: %s%d',
-        job_color, job_tag,
-        separator_color,
-        info_color, count))
-    add_to_chat(159, separator)
-
-    for player_id, job_data in pairs(party_jobs) do
-        local job_display = job_data.main_job
-        if job_data.sub_job then
-            job_display = job_display .. '/' .. job_data.sub_job
+    local fields = {}
+    for _, m in ipairs(members) do
+        if m.main_job then
+            local jobs = m.main_job .. (m.sub_job and ('/' .. m.sub_job) or '')
+            local level = m.main_job_level and (' (Lv' .. m.main_job_level .. ')') or ''
+            fields[#fields + 1] = {m.name, jobs .. level}
+        else
+            fields[#fields + 1] = {m.name, 'job unknown (until it zones or changes job)', 'dim'}
         end
-        local player_name = job_data.name or "Unknown"
-
-        add_to_chat(159, string.format('%s  %s (ID:%d): %s (Lv%d)',
-            info_color,
-            player_name, player_id,
-            job_display, job_data.main_job_level))
     end
-
-    add_to_chat(159, separator)
+    require('shared/utils/messages/info_block').show({
+        tag = 'COR', title = ('Party (%d)'):format(#members), fields = fields,
+    })
 end
 
 ---============================================================================

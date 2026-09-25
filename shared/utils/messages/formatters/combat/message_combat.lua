@@ -13,6 +13,7 @@
 ---============================================================================
 
 local MessageCore = require('shared/utils/messages/message_core')
+local ChatPalette = require('shared/utils/messages/chat_palette')
 local M = require('shared/utils/messages/api/messages')
 local MessageCombat = {}
 
@@ -83,7 +84,7 @@ local function apply_element_color(spell_name, element)
         end
 
         if bar_element_color then
-            local gray_code = string.char(0x1F, 160)
+            local gray_code = ChatPalette.tag('gray')
             return string.char(0x1F, bar_element_color) .. spell_name .. gray_code
         end
     end
@@ -93,7 +94,7 @@ local function apply_element_color(spell_name, element)
         return spell_name
     end
 
-    local gray_code = string.char(0x1F, 160)
+    local gray_code = ChatPalette.tag('gray')
     return string.char(0x1F, color_code) .. spell_name .. gray_code
 end
 
@@ -133,7 +134,7 @@ local function apply_target_color(target_name, target_type)
     end
 
     local color_code = get_target_color(target_type)
-    local gray_code = string.char(0x1F, 160)
+    local gray_code = ChatPalette.tag('gray')
     return string.char(0x1F, color_code) .. target_name .. gray_code
 end
 

@@ -8,6 +8,9 @@ Scope of this page: everything under `shared/utils/ui/`, the settings store `sha
 
 | Path | Lines | Role |
 |---|---|---|
+| `shared/utils/ui/ui_style_commands.lua` | 255 | In-game look commands (`//gs c ui gap 3`, `compact`, `color`...): check, apply live, save |
+| `shared/utils/ui/ui_config_writer.lua` | 160 | Saves one look option into `UI_CONFIG.lua` by rewriting its line only |
+| `shared/utils/ui/ui_style.lua` | 350 | Player look options from `UI_CONFIG.lua` (`layout`, `colors`, `chat`): checked, cached per load, one warning per wrong value |
 | `shared/utils/ui/UI_MANAGER.lua` | 167 | Facade. Seeds the `_G` UI globals, records the live load in `windower._ui_live_state`, loads the sub-modules and builds the `KeybindUI` table that jobs call |
 | `shared/utils/ui/ui_lifecycle.lua` | 200 | `init`, `smart_init`, `safe_init`, `destroy`; creates and destroys the `texts` object |
 | `shared/utils/ui/ui_update_orchestrator.lua` | 277 | `update` (repaint only when states changed), `force_reinit`, plus `schedule_update`/`needs_reinit`/`get_status`/`handle_job_configuration_change`, which nothing calls |
@@ -275,6 +278,15 @@ All are `//gs c ui <sub> ...`, routed by each job's `job_self_command` to `UICom
 | `ui bg toggle` | Background on/off | `ui_appearance.lua` `toggle_background` |
 | `ui bg list` | Print preset names (`MessageUI.show_theme_list`) | `message_ui.lua` `show_theme_list` |
 | `ui help` / `?` | Print help. Anything else prints an error followed by the help | `message_ui.lua` `show_help` |
+| `ui compact [on\|off]`, `ui separators [on\|off]` | Look switches (no value = toggle) | `ui_style_commands.lua` |
+| `ui sepchar <chars>`, `ui sepcolor <1-255>` | Character and FFXI chat color of the chat separator line | `ui_style_commands.lua` |
+| `ui chatwidth <20-150>` | `chat.width`: characters per chat separator line, framed blocks included | `ui_style_commands.lua` |
+| `ui jobtag [on\|off]` | `chat.job_tag`: the `[RDM/DRK]` in front of chat messages | `ui_style_commands.lua` |
+| `ui chatcolor <name> <1-255>` / `<name> reset` | `chat.colors`: remap a palette color or a `MessageColors` constant; the whole table is rewritten on its one line (a table spread over several lines is refused, not rewritten) | `ui_style_commands.lua`, `ui_config_writer.lua` |
+| `ui gap <1-10>`, `ui valuegap <1-10>`, `ui margin <top> [bottom]`, `ui side <0-3>`, `ui padding <0-20>`, `ui keys symbols\|words`, `ui bullet <text>`, `ui order <sections...>`, `ui roworder <states...>`, `ui color <name> <r> <g> <b>` | Look options; `reset` as the value goes back to the standard value | `ui_style_commands.lua` |
+| `ui style` | List the current look values and the file they are saved in | `ui_style_commands.lua`, `message_ui.lua` `show_style_list` |
+
+The look commands check the value with `UIStyle.resolve` on a copy of the config (only problems the change adds count), change `_G.UIConfig` in place, call `UIStyle.invalidate`, re-pad the texts box and redraw through `ui_display.update_display`. They then save the value with `ui_config_writer.lua`, which rewrites only that option's line in `<char>/config/UI_CONFIG.lua` (uncommenting it, or commenting it out on `reset`), keeps the file's line endings and the column of a trailing comment, adds a missing line at the top of its block and a missing block before `return UIConfig`. A job change reloads `UI_CONFIG.lua`, so the saved value stays.
 
 There is no `//gs c uisave` command. The comments that named one now say `//gs c ui save` in `UI_MANAGER.lua` and in the template, overlay and Tetsouo/Kaories `UI_CONFIG.lua` (fixed 2026-09-25; the frozen Hysoka and Gabvanstronger copies still say `uisave`). The help text does not list `ui font`, and "dark" and "light" in its "dark/light/blue" preset example are not preset names (`blue` is).
 
@@ -292,8 +304,31 @@ There is no `//gs c uisave` command. The comments that named one now say `//gs c
 | `flags {draggable, bold}` | true, true | passed to `texts.new` (`ui_settings_resolver.lua:75`); the `texts` library applies both |
 | `sections {spells, enhancing, job_abilities, weapons, modes}` | all true | the `render_*_section` functions of `UI_SECTIONS.lua`, through a reference captured when the module loads (`UI_SECTIONS.lua:17`) |
 | `init_delay` | 5.0 | used as `smart_init`'s maximum wait (not a delay), and by BRD to schedule the song-slot refresh (`_master/entry/Tetsouo_BRD.lua` `user_setup`) |
-| `colors`, `auto_save_position`, `auto_save_delay`, `debug`, `update_throttle` | | **nothing reads them** |
+| `layout`, `colors`, `chat` | standard look | `shared/utils/ui/ui_style.lua`, see below |
+| `auto_save_position`, `auto_save_delay`, `debug`, `update_throttle` | | **nothing reads them** |
 | `validate()` | | **no callers** (`print_config()` was removed 2026-09-25) |
+
+#### Look options: `layout`, `colors`, `chat` (added 2026-09-25)
+
+`ui_style.lua` resolves the three tables into one checked table (`UIStyle.get()`), cached per `_G.UIConfig` table, so it is re-read on each job load. A wrong value prints one chat warning per load and falls back to the standard value. With the tables absent, or holding the values the template writes, the HUD text is byte-identical to the one rendered before these options existed (checked by rendering both trees).
+
+| Option | Effect | Applied in |
+|---|---|---|
+| `layout.section_order` | order of the five sections; missing ones are appended in the standard order | `UI_SECTIONS.render_complete_ui` (`SECTION_RENDERERS`) |
+| `layout.compact`, `layout.column_gap`, `layout.value_gap` | compact: margins 1/2/2/1 instead of 2/4/4/2, no blank line under section titles. `column_gap` (1-10) sets the key-to-label gap, `value_gap` (1-10) the label-to-value gap, which follows `column_gap` when only that one is set. The width calculation uses the same spacing | `UI_FORMATTER` (content width, column headers, rows, section header) |
+| `layout.margin_top`, `layout.margin_bottom`, `layout.margin_side`, `layout.padding` | blank lines above/below the rows (0-3; standard 1, compact 0), spaces left and right of the rows (`margin_side`, 0-3; standard 2, compact 1) and pixels of background around the text (0-20; standard 0, compact 4). The top margin is the blank line that opens the first section, replaced only when neither header nor column headers are shown. Compact, or a player-set `margin_bottom` or `margin_side`, switches the layout to exact geometry (`spacing.exact`): the final newline is dropped (the texts box draws it as an empty line, the fixed ~19 px `ui_section_toggles.lua` measured) and `calculate_content_width` counts displayed columns instead of bytes. The standard layout keeps its byte count, where the 3-byte `●` leaves 2 columns of slack on the right of the blank lines. `padding` goes to `texts.new` as the top-level `padding` (`texts.pad`), so it applies when the HUD is created | `UI_SECTIONS.render_complete_ui` (`top_margin`), `ui_settings_resolver.create_ui_settings` |
+| `layout.key_style` | `'words'` shows keys through `MessageCore.convert_key_display` (`CTRL+F1`) and hides the symbol legend and the separator under it | `UI_FORMATTER`, `UI_SECTIONS` |
+| `layout.bullet` | symbol before the value, or a name mapped to a WGL4 symbol (`dot` ●, `circle` ○, `square` ■, `smallsquare` ▪, `triangle` ►, `diamond` ◊, `arrow` →, `gt` >, `dash` -, `star` *, `none`). `ui bullet` accepts names only: a symbol typed in the FFXI chat line does not arrive in the HUD's encoding. The value column width counts one character per UTF-8 symbol | `UI_FORMATTER` |
+| `layout.move_to_section` | state name or key -> section; checked before the bind's own `section` field and the name patterns | `UI_DISPLAY_BUILDER.categorize_keybind` |
+| `layout.row_order` | state names or keys; within each section the named rows come first in that order, the rest keep the file order (stable sort on the whole list, so one list orders every section) | `UIStyle.ordered_rows`, called in `UI_SECTIONS.render_complete_ui` |
+| `layout.hide_rows` | rows removed before the widths are computed; the key stays bound | `UI_SECTIONS.render_complete_ui` |
+| `layout.section_titles` | replaces the title of a section for every job, BRD "Song Slots" included | `UI_FORMATTER.get_section_title` |
+| `colors.*` | `{r,g,b}`: `title`, `section_title`, `key`, `description`, `value`, `legend`, `separator`, `footer`. `key` unset = same as description; `value` unset = `COLOR_SYSTEM` per-value colors | `UI_FORMATTER`, `UI_SECTIONS` footer |
+| `chat.separators`, `chat.separator_char`, `chat.separator_color` | the line printed by `MessageCore.show_separator` (after spells, abilities, BST and PLD/RUN AoE messages). ASCII only: the FFXI chat does not render UTF-8 | `message_core.lua` |
+
+The framed chat blocks draw their own lines, so `separators`, `separator_char` and `separator_color` do not reach them; `chat.width` does, because `MessageCore.SEPARATOR_WIDTH` is now read through a metatable on every use (`chat.width` or the standard `DEFAULT_SEPARATOR_WIDTH` = 69). `message_system`, `message_sortie`, `message_tempbind` and the `api/messages.lua` test command used to capture it once at load and now build their line at each use. The diagnostic tools keep their own hard-coded 69 (`wardrobe_auditor.lua`, `refill_panels.lua`, `wardrobe/lib/config.lua`): they must not depend on the message chain.
+
+Column widths are measured on the rows a section actually draws (`shown_rows` in `UI_SECTIONS.lua`, 2026-09-25). Before, every bind of the job counted, including the stateless common keys (`config/COMMON_KEYBINDS.lua`, e.g. "Alts: follow me (toggle)") that no section shows, so the label column was as wide as a label never on screen.
 
 ### `data/<char>/config/ui_settings.lua` (auto-generated)
 
@@ -355,7 +390,7 @@ Open:
 - `handle_job_configuration_change`, `schedule_update`, `needs_reinit` and `get_status` have no callers (the header now says so, `shared/utils/ui/ui_update_orchestrator.lua:11-14`).
 - Several dead helpers, the RDM `enhancing_keys` that can never match, and the unreachable GEO/`result` branches (`shared/utils/ui/UI_DISPLAY_BUILDER.lua:203-204`, `shared/utils/ui/ui_state_value.lua:111-123`).
 - The `display_current_state` override prints `State: Unknown` on F12 while the HUD is disabled (`shared/utils/core/state_display_override.lua:29-39`).
-- `UI_CONFIG.lua` has keys nothing reads, and `validate` has no callers (`_master/config_global/UI_CONFIG.lua:322-375`).
+- `UI_CONFIG.lua` has keys nothing reads (`auto_save_position`, `auto_save_delay`, `debug`, `update_throttle`), and `validate` has no callers.
 - In `UI_COLOR_CONFIG.lua`, `bar_spells.ailment` and `special.default` have no effect (`shared/utils/ui/COLOR_SYSTEM.lua:175-179`).
 - The legend explains `^ ! @ ~` but not `#` (Apps), the modifier of the common `#numpad0` AutoMedicine bind (`shared/utils/ui/UI_FORMATTER.lua:122-123`).
 

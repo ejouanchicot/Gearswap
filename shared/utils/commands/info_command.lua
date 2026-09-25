@@ -12,13 +12,13 @@
 ---
 ---   Features:
 ---     - Searches JA, Spell, and WS databases
----     - Formatted output with color codes (ASCII-safe)
+---     - Shown as a data block, one colour per kind of field (ASCII-safe)
 ---     - Shows the fields the databases store (description, levels, ...)
 ---     - Works for any job/subjob combination
 ---
 ---   @file    shared/utils/commands/info_command.lua
 ---   @author  Tetsouo
----   @version 1.2 - Use centralized MessageCore.create_color_code()
+---   @version 1.3 - Card rendered as an InfoBlock (the look of every data block)
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════
 
@@ -28,8 +28,6 @@ local InfoCommand = {}
 ---   DEPENDENCIES
 ---  ═══════════════════════════════════════════════════════════════════════════
 
-local MessageCore = require('shared/utils/messages/message_core')
-local MessageColors = require('shared/utils/messages/message_colors')
 local MessageInfo = require('shared/utils/messages/formatters/ui/message_info')
 
 -- DataLoader loads each database (abilities, spells, WS) on first use
@@ -160,74 +158,48 @@ local function format_time(value, is_centiseconds)
     end
 end
 
---- Format a key-value pair with colors
---- @param key string Field name
+--- Text of a field value, or nil when it is empty or zero.
+--- @param key string Field name (Recast/Duration/Cast Time are times)
 --- @param value any Field value
---- @param key_color number Color code for key
---- @param value_color number Color code for value
 --- @param is_spell boolean True if this is spell data (uses centiseconds)
---- @return string|nil Formatted line, nil when the field is empty or zero
-local function format_field(key, value, key_color, value_color, is_spell)
+--- @return string|nil
+local function format_value(key, value, is_spell)
     if not value or value == "" or value == 0 then
         return nil  -- Skip empty/zero fields
     end
 
-    local c_key = MessageCore.create_color_code(key_color)
-    local c_value = MessageCore.create_color_code(value_color)
-    local c_reset = MessageCore.create_color_code(1)  -- White
-
-    -- Format value (handle tables specially, pass key for context)
     local value_str
     if type(value) == "table" then
         value_str = format_table_value(value, key)
     elseif key == "Recast" or key == "Duration" then
         -- JA: seconds, Spells: centiseconds
-        local is_centiseconds = (is_spell == true)
-        value_str = format_time(tonumber(value), is_centiseconds)
-        if not value_str then
-            return nil  -- Skip if conversion failed
-        end
+        value_str = format_time(tonumber(value), is_spell == true)
     elseif key == "Cast Time" then
         -- Cast time is always in centiseconds for spells
         value_str = format_time(tonumber(value), true)
-        if not value_str then
-            return nil  -- Skip if conversion failed
-        end
     else
         value_str = tostring(value)
     end
 
-    -- Sanitize value for ASCII
-    value_str = sanitize_ascii(value_str)
-
-    return string.format("%s  %s:%s %s%s", c_key, key, c_reset, c_value, value_str)
+    return value_str and sanitize_ascii(value_str) or nil
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DATA DISPLAY FUNCTIONS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Display one entity: header, name, every non-empty field, footer
+--- Display one entity: a data block of its non-empty fields
 --- @param name string Entity name
---- @param data table Entity data (unused: the values are already in fields)
---- @param header_text string Header title
---- @param name_color number Color code for name
---- @param fields table Array of field definitions
+--- @param kind string "Job ability", "Spell" or "Weapon skill"
+--- @param fields table Array of {label, value, kind}
 --- @param use_centiseconds boolean True if time fields are in centiseconds
-local function display_entity(name, data, header_text, name_color, fields, use_centiseconds)
-    -- Header
-    MessageInfo.show_entity_header(header_text)
-    MessageInfo.show_entity_name(sanitize_ascii(name), name_color)
-
-    -- Fields
+local function display_entity(name, kind, fields, use_centiseconds)
+    local shown = {}
     for _, field in ipairs(fields) do
-        local line = format_field(field[1], field[2], field[3], field[4], use_centiseconds)
-        if line then
-            MessageInfo.show_entity_field(line)
-        end
+        local text = format_value(field[1], field[2], use_centiseconds)
+        if text then shown[#shown + 1] = {field[1], text, field[3]} end
     end
-
-    MessageInfo.show_entity_footer()
+    MessageInfo.show_entity(sanitize_ascii(name), kind, shown)
 end
 
 --- Display Job Ability information
@@ -235,18 +207,18 @@ end
 --- @param ability_data table Ability data from database
 local function display_job_ability(ability_name, ability_data)
     local fields = {
-        {"Type",        ability_data.type,        MessageColors.GRAY, MessageColors.INFO},
-        {"Description", ability_data.description, MessageColors.GRAY, MessageColors.SPELL},
-        {"Recast",      ability_data.recast,      MessageColors.GRAY, MessageColors.COOLDOWN},
-        {"Duration",    ability_data.duration,    MessageColors.GRAY, MessageColors.SUCCESS},
-        {"Effect",      ability_data.effect,      MessageColors.GRAY, MessageColors.INFO},
-        {"Radius",      ability_data.radius,      MessageColors.GRAY, MessageColors.INFO},
-        {"Cost",        ability_data.cost,        MessageColors.GRAY, MessageColors.WARNING},
-        {"Level",       ability_data.level,       MessageColors.GRAY, MessageColors.INFO},
-        {"Category",    ability_data.category,    MessageColors.GRAY, MessageColors.GRAY},
+        {"Type",        ability_data.type},
+        {"Description", ability_data.description, 'spell'},
+        {"Recast",      ability_data.recast, 'bad'},
+        {"Duration",    ability_data.duration, 'good'},
+        {"Effect",      ability_data.effect},
+        {"Radius",      ability_data.radius},
+        {"Cost",        ability_data.cost, 'warn'},
+        {"Level",       ability_data.level},
+        {"Category",    ability_data.category, 'dim'},
     }
 
-    display_entity(ability_name, ability_data, "Job Ability Information", MessageColors.JA, fields, false)
+    display_entity(ability_name, "Job ability", fields, false)
 end
 
 local JOB_CODES = {
@@ -272,24 +244,24 @@ end
 --- @param spell_data table Spell data from database
 local function display_spell(spell_name, spell_data)
     local fields = {
-        {"Type",        spell_data.type,        MessageColors.GRAY, MessageColors.INFO},
-        {"Category",    spell_data.category,    MessageColors.GRAY, MessageColors.GRAY},
-        {"Description", spell_data.description, MessageColors.GRAY, MessageColors.SPELL},
-        {"Effect",      spell_data.effect,      MessageColors.GRAY, MessageColors.INFO},
-        {"Duration",    spell_data.duration,    MessageColors.GRAY, MessageColors.SUCCESS},
-        {"Recast",      spell_data.recast,      MessageColors.GRAY, MessageColors.COOLDOWN},
-        {"MP Cost",     spell_data.mp_cost,     MessageColors.GRAY, MessageColors.WARNING},
-        {"Target",      spell_data.target_type, MessageColors.GRAY, MessageColors.INFO},
-        {"Magic",       spell_data.magic_type,  MessageColors.GRAY, MessageColors.INFO},
-        {"Tier",        spell_data.tier,        MessageColors.GRAY, MessageColors.INFO},
-        {"Element",     spell_data.element,     MessageColors.GRAY, MessageColors.SPELL},
-        {"Skill",       spell_data.skill,       MessageColors.GRAY, MessageColors.GRAY},
-        {"Level",       spell_data.level,       MessageColors.GRAY, MessageColors.INFO},
-        {"Jobs",        job_levels(spell_data), MessageColors.GRAY, MessageColors.JOB_TAG},
-        {"Notes",       spell_data.notes,       MessageColors.GRAY, MessageColors.GRAY},
+        {"Type",        spell_data.type},
+        {"Category",    spell_data.category, 'dim'},
+        {"Description", spell_data.description, 'spell'},
+        {"Effect",      spell_data.effect},
+        {"Duration",    spell_data.duration, 'good'},
+        {"Recast",      spell_data.recast, 'bad'},
+        {"MP Cost",     spell_data.mp_cost, 'warn'},
+        {"Target",      spell_data.target_type},
+        {"Magic",       spell_data.magic_type},
+        {"Tier",        spell_data.tier},
+        {"Element",     spell_data.element, 'spell'},
+        {"Skill",       spell_data.skill, 'dim'},
+        {"Level",       spell_data.level},
+        {"Jobs",        job_levels(spell_data)},
+        {"Notes",       spell_data.notes, 'dim'},
     }
 
-    display_entity(spell_name, spell_data, "Spell Information", MessageColors.SPELL, fields, true)
+    display_entity(spell_name, "Spell", fields, true)
 end
 
 --- Display Weaponskill information
@@ -297,20 +269,20 @@ end
 --- @param ws_data table Weaponskill data from database
 local function display_weaponskill(ws_name, ws_data)
     local fields = {
-        {"Type",           ws_data.type,           MessageColors.GRAY, MessageColors.INFO},
-        {"Description",    ws_data.description,    MessageColors.GRAY, MessageColors.WS},
-        {"Skillchain",     ws_data.skillchain,     MessageColors.GRAY, MessageColors.SPELL},
-        {"Element",        ws_data.element,        MessageColors.GRAY, MessageColors.SPELL},
-        {"Mods",           ws_data.mods,           MessageColors.GRAY, MessageColors.INFO},
-        {"Hits",           ws_data.hits,           MessageColors.GRAY, MessageColors.INFO},
-        {"FTP",            ws_data.ftp,            MessageColors.GRAY, MessageColors.SUCCESS},
-        {"Skill Required", ws_data.skill_required, MessageColors.GRAY, MessageColors.INFO},
-        {"Jobs",           ws_data.jobs,           MessageColors.GRAY, MessageColors.JOB_TAG},
-        {"Weapon Type",    ws_data.weapon_type,    MessageColors.GRAY, MessageColors.GRAY},
-        {"Special Notes",  ws_data.special_notes,  MessageColors.GRAY, MessageColors.WARNING},
+        {"Type",           ws_data.type},
+        {"Description",    ws_data.description},
+        {"Skillchain",     ws_data.skillchain, 'spell'},
+        {"Element",        ws_data.element, 'spell'},
+        {"Mods",           ws_data.mods},
+        {"Hits",           ws_data.hits},
+        {"FTP",            ws_data.ftp, 'good'},
+        {"Skill Required", ws_data.skill_required},
+        {"Jobs",           ws_data.jobs},
+        {"Weapon Type",    ws_data.weapon_type, 'dim'},
+        {"Special Notes",  ws_data.special_notes, 'warn'},
     }
 
-    display_entity(ws_name, ws_data, "Weaponskill Information", MessageColors.WS, fields, false)
+    display_entity(ws_name, "Weapon skill", fields, false)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -386,7 +358,7 @@ end
 --- @param args table Command arguments (name parts)
 --- @return boolean True if command was handled
 function InfoCommand.handle(args)
-    if not args or #args == 0 then
+    if not args or #args == 0 or (#args == 1 and args[1]:lower() == 'help') then
         MessageInfo.show_usage()
         return true
     end

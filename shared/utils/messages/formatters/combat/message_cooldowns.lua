@@ -16,6 +16,12 @@ local MessageCore = require('shared/utils/messages/message_core')
 local MessageRenderer = require('shared/utils/messages/core/message_renderer')
 local Colors = MessageCore.COLORS  -- Centralized color configuration
 
+--- "[RDM/DRK] " in its colors, or "" when the player turned the job tag off.
+local function job_part(color_bracket, color_job, job_name)
+    if MessageCore.job_prefix() == "" then return "" end
+    return color_bracket .. '[' .. color_job .. job_name .. color_bracket .. '] '
+end
+
 --- Format recast duration for display (exported for use by other modules)
 --- @param recast number Recast time in seconds
 --- @return string Formatted duration string
@@ -111,7 +117,7 @@ function MessageCooldowns.show_cooldown_message(job_name, action_type, name, rem
     local message_parts = {}
 
     -- Job tag
-    table.insert(message_parts, colorGray .. '[' .. colorJob .. job_name .. colorGray .. '] ')
+    table.insert(message_parts, job_part(colorGray, colorJob, job_name))
 
     -- Action type if different from job
     if action_type ~= job_name then
@@ -224,7 +230,7 @@ function MessageCooldowns.show_multi_status(messages, job_name)
         local message_parts = {}
 
         -- Job tag
-        table.insert(message_parts, colorGray .. '[' .. colorJob .. job_name .. colorGray .. '] ')
+        table.insert(message_parts, job_part(colorGray, colorJob, job_name))
 
         -- Determine action type and color
         local action_type = msg.action_type or "Ability"
@@ -276,7 +282,7 @@ function MessageCooldowns.show_compact_status(cooldowns, job_name)
     local colorRed = MessageCore.create_color_code(Colors.COOLDOWN)   -- Dark red for cooldown time
 
     -- Start with job tag
-    local message_parts = { colorGray .. '[' .. colorJob .. job_name .. colorGray .. '] ' }
+    local message_parts = { job_part(colorGray, colorJob, job_name) }
 
     -- Process each cooldown
     for i, cooldown in ipairs(cooldowns) do

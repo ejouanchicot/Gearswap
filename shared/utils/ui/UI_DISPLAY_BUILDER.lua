@@ -14,6 +14,7 @@
 local UIDisplayBuilder = {}
 
 local KeybindLoader = require('shared/utils/ui/UI_LOADER')
+local UIStyle = require('shared/utils/ui/ui_style')
 
 ---============================================================================
 --- KEYBIND CATEGORIZATION SYSTEM
@@ -87,6 +88,12 @@ end
 --- @param bind table Keybind object with key, desc, state
 --- @return string Category name (spell, ja, weapon, mode, other)
 local function categorize_keybind(bind)
+    -- The player's own choice (UI_CONFIG layout.move_to_section) wins over all
+    local forced = UIStyle.forced_section(bind)
+    if forced then
+        return forced
+    end
+
     -- An explicit section (custom states, see custom_states.lua) wins over
     -- guessing from the state name.
     if SECTION_ALIASES[bind.section] then

@@ -3,9 +3,7 @@
 ---============================================================================
 --- Provides formatted messages for warp and teleport system:
 ---   - Templates for standard messages (M.send, data/systems/warp_messages.lua)
----   - MessageRenderer.send(1, text) for multi-line displays (help, status);
----     the arguments are swapped, GearSwap's add_to_chat recovers (color 8,
----     inline codes color each segment)
+---   - HelpScreen (warp help) and InfoBlock (status, test) for the blocks
 ---   - Direct add_to_chat() for debug/error lines with inline color codes
 ---
 --- @file shared/utils/messages/formatters/system/message_warp.lua
@@ -17,9 +15,6 @@
 local MessageWarp = {}
 
 local M = require('shared/utils/messages/api/messages')
-local MessageRenderer = require('shared/utils/messages/core/message_renderer')
-local MessageCore = require('shared/utils/messages/message_core')
-local COLORS = MessageCore.COLORS
 
 -- DEBUG chat channel constant (for direct add_to_chat calls)
 local CHAT_DEBUG = 8
@@ -205,59 +200,73 @@ end
 --- SYSTEM MESSAGES (HYBRID RENDERING - Multi-line complex displays)
 ---============================================================================
 
---- Show warp system status
---- @param initialized boolean System initialized
---- @param locked boolean Equipment locked
---- @param can_warp boolean Can cast warp spells
-function MessageWarp.show_status(initialized, locked, can_warp)
-    local header_color = MessageCore.create_color_code(COLORS.JOB_TAG)
-    local label_color = MessageCore.create_color_code(COLORS.SEPARATOR)
-    local success_color = MessageCore.create_color_code(COLORS.SUCCESS)
-    local error_color = MessageCore.create_color_code(COLORS.ERROR)
-
-    MessageRenderer.send(1, string.format("%s=== Warp System Status ===%s", header_color, label_color))
-
-    local init_color = initialized and success_color or error_color
-    local init_text = initialized and "Yes" or "No"
-    MessageRenderer.send(1, string.format("%sInitialized: %s%s", label_color, init_color, init_text))
-
-    local lock_color = locked and success_color or label_color
-    local lock_text = locked and "Yes" or "No"
-    MessageRenderer.send(1, string.format("%sEquipment Locked: %s%s", label_color, lock_color, lock_text))
-
-    if can_warp then
-        MessageRenderer.send(1, string.format("%sCan cast warp spells: %sYes (BLM)", label_color, success_color))
-    end
+--- //gs c warp status, as a data block (InfoBlock, the look of every block).
+--- @param fields table {{label, value, kind}, ...} built by warp_commands
+function MessageWarp.show_status(fields)
+    require('shared/utils/messages/info_block').show({tag = 'WARP', title = 'Status', fields = fields})
 end
 
---- Show warp system help
-function MessageWarp.show_help()
-    local header_color = MessageCore.create_color_code(COLORS.JOB_TAG)
-    local command_color = MessageCore.create_color_code(COLORS.ITEM_COLOR)
-    local desc_color = MessageCore.create_color_code(COLORS.SEPARATOR)
+--- //gs c warp test, as a data block.
+--- @param fields table {{label, value, kind}, ...}
+function MessageWarp.show_test(fields)
+    require('shared/utils/messages/info_block').show({tag = 'WARP', title = 'Detection test', fields = fields})
+end
 
-    MessageRenderer.send(1, string.format("%s=== Warp System Commands ===%s", header_color, desc_color))
-    MessageRenderer.send(1, string.format("%s--- System Commands ---%s", header_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c warp status%s  - Show system status", command_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c warp unlock%s  - Force unlock equipment (emergency)", command_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c warp lock%s    - Manually lock equipment (test)", command_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c warp test%s    - Test warp detection", command_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c warp debug%s   - Toggle debug messages (ON/OFF)", command_color, desc_color))
-    MessageRenderer.send(1, string.format("%s--- Cast Commands (BLM) ---%s", header_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c w, warp%s      - Cast Warp or use Warp Ring", command_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c w2, warp2%s    - Cast Warp II or use Warp Ring", command_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c ret, retrace%s - Cast Retrace", command_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c esc, escape%s  - Cast Escape", command_color, desc_color))
-    MessageRenderer.send(1, string.format("%s--- Cast Commands (WHM) ---%s", header_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c tph, tpholla%s - Teleport-Holla or use rings", command_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c tpd, tpdem%s   - Teleport-Dem or use rings", command_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c tpm, tpmea%s   - Teleport-Mea or use rings", command_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c tpa, tpaltep%s - Teleport-Altep or use ring", command_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c tpy, tpyhoat%s - Teleport-Yhoat or use ring", command_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c tpv, tpvahzl%s - Teleport-Vahzl or use ring", command_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c rj, recjugner%s - Recall-Jugner", command_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c rp, recpashh%s - Recall-Pashh", command_color, desc_color))
-    MessageRenderer.send(1, string.format("%s//gs c rm, recmeriph%s - Recall-Meriph", command_color, desc_color))
+--- //gs c warp help, rendered by HelpScreen in the look of //gs c commands.
+--- Commands and destinations are those of warp_commands.lua and
+--- warp_command_registry.lua.
+local HELP = {
+    title = 'WARP', subtitle = 'Spells, rings and teleport items',
+    groups = {
+        {title = 'SYSTEM', rows = {
+            {'//gs c warp status', '', 'Show system status'},
+            {'//gs c warp unlock', '', 'Force unlock (emergency)'},
+            {'//gs c warp fix', '', 'Re-enable ring1, re-equip'},
+            {'//gs c warp lock', '', 'Lock equipment 10 s (test)'},
+            {'//gs c warp test', '', 'Test warp detection'},
+            {'//gs c debugwarp', '', 'Toggle warp debug messages'},
+        }},
+        {title = 'BLM', note = 'else the Warp Ring', rows = {
+            {'//gs c w | warp', '', 'Warp'},
+            {'//gs c w2 | warp2', '', 'Warp II'},
+            {'//gs c ret | retrace', '', 'Retrace'},
+            {'//gs c esc | escape', '', 'Escape'},
+        }},
+        {title = 'WHM', note = 'else the ring', rows = {
+            {'//gs c tph | tpholla', '', 'Teleport-Holla'},
+            {'//gs c tpd | tpdem', '', 'Teleport-Dem'},
+            {'//gs c tpm | tpmea', '', 'Teleport-Mea'},
+            {'//gs c tpa | tpaltep', '', 'Teleport-Altep'},
+            {'//gs c tpy | tpyhoat', '', 'Teleport-Yhoat'},
+            {'//gs c tpv | tpvahzl', '', 'Teleport-Vahzl'},
+            {'//gs c rj | recjugner', '', 'Recall-Jugner'},
+            {'//gs c rp | recpashh', '', 'Recall-Pashh'},
+            {'//gs c rm | recmeriph', '', 'Recall-Meriph'},
+        }},
+        {title = 'DESTINATIONS', note = '//gs c <code>', rows = {
+            {'sd bt wd jn', '', "San d'Oria Bastok Windurst Jeuno"},
+            {'sb mh rb kz ng', '', 'Selbina Mhaura Rabao Kazham Norg'},
+            {'tv au ns ad', '', 'Tavnazia Whitegate Nashmau Adoulin'},
+            {'stsd stbt stwd stjn', '', 'Chocobo stables'},
+            {'op ld td', '', 'Outpost, party leader, Tidal'},
+            {'cz ys hn mm mj yc km', '', 'Adoulin frontier'},
+            {'wj ar pg', '', 'Wajaom Arrapago Purgonorgo'},
+            {'rl zv riv yo lf', '', "Ru'Lude Zvahl Riverne Yoran Leafallia"},
+            {'bh cc pt cg', '', 'Behemoth Circuit Parting Chocogirl'},
+        }},
+        {title = 'ALL BOXES', rows = {
+            {'//gs c ', '<command>all', 'Same on every box'},
+        }},
+    },
+    notes = {
+        'Long names work too: sandoria, whitegate, tpholla...',
+        'Examples of all: warpall, tphall, sdall.',
+    },
+}
+
+--- Show warp help (//gs c warp help).
+function MessageWarp.show_help()
+    require('shared/utils/messages/help_screen').show(HELP)
 end
 
 ---============================================================================
@@ -380,33 +389,6 @@ end
 --- COMMAND MESSAGES (Status, Unlock, Fix, Lock, Test, Debug)
 ---============================================================================
 
---- Show status header
-function MessageWarp.show_status_header()
-    local gray = string.char(0x1F, 160)
-    local yellow = string.char(0x1F, 50)
-    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
-    add_to_chat(121, gray .. separator)
-    add_to_chat(121, yellow .. "Warp System Status")
-    add_to_chat(121, gray .. separator)
-end
-
---- Show status line
---- @param label string Status label
---- @param value string|boolean Status value
-function MessageWarp.show_status_line(label, value)
-    local label_color = MessageCore.create_color_code(COLORS.SEPARATOR)
-    local success_color = MessageCore.create_color_code(COLORS.SUCCESS)
-    local error_color = MessageCore.create_color_code(COLORS.ERROR)
-
-    if type(value) == 'boolean' then
-        local value_color = value and success_color or error_color
-        local value_text = value and 'Yes' or 'No'
-        MessageRenderer.send(1, string.format('%s%s: %s%s', label_color, label, value_color, value_text))
-    else
-        MessageRenderer.send(1, string.format('%s%s: %s%s', label_color, label, success_color, tostring(value)))
-    end
-end
-
 --- Show force unlock start
 function MessageWarp.show_force_unlock()
     M.send('WARP', 'force_unlock', {})
@@ -425,25 +407,6 @@ end
 --- Show manual lock start
 function MessageWarp.show_manual_lock()
     M.send('WARP', 'manual_lock', {})
-end
-
---- Show test detection header
-function MessageWarp.show_test_header()
-    local gray = string.char(0x1F, 160)
-    local yellow = string.char(0x1F, 50)
-    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
-    add_to_chat(121, gray .. separator)
-    add_to_chat(121, yellow .. "Warp Detection Test")
-    add_to_chat(121, gray .. separator)
-end
-
---- Show test detection line
---- @param label string Test label
---- @param count number Count value
-function MessageWarp.show_test_line(label, count)
-    local label_color = MessageCore.create_color_code(COLORS.SEPARATOR)
-    local value_color = MessageCore.create_color_code(COLORS.SUCCESS)
-    MessageRenderer.send(1, string.format('%s%s: %s%d', label_color, label, value_color, count))
 end
 
 --- Show debug toggle

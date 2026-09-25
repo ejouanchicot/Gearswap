@@ -292,7 +292,7 @@ their line in the data file; they have no path from any caller (see Known issues
 
 ### `INFO`
 
-- File: `data/systems/info_messages.lua` - 6 templates, none reachable: `entity_header`:18, `entity_name`:23, `entity_field`:28, `entity_footer`:33, `usage`:42, `not_found`:47. `formatters/ui/message_info.lua:47-97` prints the same lines with `add_to_chat` and never calls `M.send`.
+- File: `data/systems/info_messages.lua` - 5 templates, none reachable: `entity_header`, `entity_name`, `entity_field`, `entity_footer`, `not_found` (`usage` deleted on 2026-09-25: the usage screen is a HelpScreen). `formatters/ui/message_info.lua:47-97` prints the same lines with `add_to_chat` and never calls `M.send`.
 
 ### `INIT`
 
@@ -366,7 +366,9 @@ their line in the data file; they have no path from any caller (see Known issues
 
 ### `TEMPBIND`
 
-- File: `data/systems/tempbind_messages.lua` - 12 templates, all reachable. Added by `7694dd3`. Sender: `formatters/system/message_tempbind.lua` (not in the facade). Caller: `shared/utils/keybinds/temp_binds.lua` (`//gs c tb ...`). `separator` has color 160, the others 1.
+- File: `data/systems/block_messages.lua` - 12 templates, namespace `BLOCK`. Sender: `shared/utils/messages/info_block.lua` only. Callers: every data block (see messages-formatters.md, Data blocks).
+- File: `data/systems/help_messages.lua` - 11 templates, namespace `HELP`, all `color = 121`. Sender: `shared/utils/messages/help_screen.lua` only. Callers: every help screen (see messages-formatters.md, Help screens).
+- File: `data/systems/tempbind_messages.lua` - 11 templates, all reachable (`help_line` deleted on 2026-09-25). Added by `7694dd3`. Sender: `formatters/system/message_tempbind.lua` (not in the facade). Caller: `shared/utils/keybinds/temp_binds.lua` (`//gs c tb ...`). `separator` has color 160, the others 1.
 - Keys: `separator` (separator); `title` (title); `row` (key, command); `help_line` (text: `show_help` builds its colored lines itself and sends each through this one template); `added` (key, command); `taken` (key, owner) followed by `taken_hint` (key_raw); `problem` (text); `unknown` (key); `not_found` (name); `removed` (key); `cleared` (count).
 
 ### `WEAPONSKILL`
