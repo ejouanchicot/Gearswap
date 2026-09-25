@@ -98,26 +98,6 @@ return {
         color = 1
     },
 
-    broth_count_header = {
-        template = "{gray}[{lightblue}{job}{gray}] {lightblue}=== Broth Inventory ==={gray}",
-        color = 1
-    },
-
-    broth_count_line = {
-        template = "{gray}[{lightblue}{job}{gray}]   {gray}*{gray} {yellow}{broth}{gray}: {green}{count}{gray}",
-        color = 1
-    },
-
-    no_broths = {
-        template = "{gray}[{lightblue}{job}{gray}] {orange}No broths in inventory{gray}",
-        color = 1
-    },
-
-    broth_count_footer = {
-        template = "{gray}[{lightblue}{job}{gray}] {gray}Use {yellow}//gs c broth{gray} to refresh",
-        color = 1
-    },
-
     ---========================================================================
     --- PET MANAGEMENT MESSAGES
     ---========================================================================
@@ -193,21 +173,6 @@ return {
 
     ready_move_tp_check = {
         template = "{gray}[{lightblue}{job}{gray}] {green}{pet}{gray} TP: {tp_color}{tp}{gray} {gray}(Ready Move requires TP{gray})",
-        color = 1
-    },
-
-    ready_moves_header = {
-        template = "{gray}[{lightblue}{job}{gray}] {lightblue}=== Ready Moves: {green}{pet}{lightblue} ==={gray}",
-        color = 1
-    },
-
-    ready_move_item = {
-        template = "{gray}[{lightblue}{job}{gray}]   {green}#{index}{gray} - {yellow}{move}{gray}",
-        color = 1
-    },
-
-    ready_moves_usage = {
-        template = "{gray}[{lightblue}{job}{gray}] {gray}Usage: {yellow}//gs c rdymove [1-{max}]{gray}",
         color = 1
     },
 

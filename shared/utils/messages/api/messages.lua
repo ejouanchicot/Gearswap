@@ -287,11 +287,6 @@ end
 --- DEBUGGING & UTILITIES
 ---============================================================================
 
---- Show system statistics
-function Messages.show_stats()
-    get_MessageRenderer().show_stats()
-end
-
 --- Reset statistics
 function Messages.reset_stats()
     get_MessageRenderer().reset_stats()
@@ -329,23 +324,6 @@ end
 --- HELP COMMAND
 ---============================================================================
 
---- Show help information
-function Messages.help()
-    add_to_chat(158, "=== Message System API ===")
-    add_to_chat(122, "Usage:")
-    add_to_chat(1, "  M.job('BLM', 'manawall_ready', {time = 30})")
-    add_to_chat(1, "  M.combat('ws_tp', {ws = 'Fudo', tp = 2500})")
-    add_to_chat(1, "  M.error('Something went wrong')")
-    add_to_chat(122, "Commands:")
-    add_to_chat(1, "  M.toggle() - Enable/disable messages")
-    add_to_chat(1, "  M.set_color_mode('colorblind')")
-    add_to_chat(1, "  M.show_stats() - Show statistics")
-    add_to_chat(1, "  M.list('BLM') - List all BLM messages")
-    add_to_chat(1, "  M.test() - Run all test suites")
-    add_to_chat(1, "  M.test('BRD') - Run BRD tests only")
-    add_to_chat(1, "  M.test('SYSTEM') - Run system tests only")
-end
-
 ---============================================================================
 --- INTEGRATED TEST SUITE
 ---============================================================================
@@ -373,7 +351,8 @@ local TEST_GRAY   = string.char(0x1F, 160)
 local TEST_YELLOW = string.char(0x1F, 50)
 local TEST_GREEN  = string.char(0x1F, 158)
 local TEST_RED    = string.char(0x1F, 167)
-local TEST_SEPARATOR = string.rep("=", MessageCore.SEPARATOR_WIDTH)
+-- Built at each use: the width follows the player's chat.width
+local function test_separator() return string.rep("=", MessageCore.SEPARATOR_WIDTH) end
 
 -- 21 jobs plus the general suite. Order is the order they run in.
 -- The suites were moved to _dev/message_api_tests/, outside the require path:
@@ -392,13 +371,13 @@ local function test_module_path(job)
 end
 
 local function show_test_header(job_filter)
-    add_to_chat(121, TEST_GRAY .. TEST_SEPARATOR)
+    add_to_chat(121, TEST_GRAY .. test_separator())
     if job_filter then
         add_to_chat(121, TEST_YELLOW .. "[Messages] Running " .. job_filter .. " Test Suite")
     else
         add_to_chat(121, TEST_YELLOW .. "[Messages] Running ALL Test Suites")
     end
-    add_to_chat(121, TEST_GRAY .. TEST_SEPARATOR)
+    add_to_chat(121, TEST_GRAY .. test_separator())
     add_to_chat(121, " ")
 end
 
@@ -411,7 +390,7 @@ local function show_missing_test_file(test_file)
     add_to_chat(167, TEST_RED .. "  Support: BRD, COR")
     add_to_chat(167, TEST_RED .. "  Melee: WAR, MNK, THF, PLD, DRK, BST")
     add_to_chat(167, TEST_RED .. "  Melee: RNG, SAM, NIN, DRG, PUP, DNC, RUN")
-    add_to_chat(121, TEST_GRAY .. TEST_SEPARATOR)
+    add_to_chat(121, TEST_GRAY .. test_separator())
 end
 
 --- Run one named suite, or every suite that exists.
@@ -441,7 +420,7 @@ end
 
 local function show_test_results(passed, total)
     add_to_chat(121, " ")
-    add_to_chat(121, TEST_GRAY .. TEST_SEPARATOR)
+    add_to_chat(121, TEST_GRAY .. test_separator())
 
     if passed == total then
         add_to_chat(121, TEST_GREEN .. string.format("[OK] Message System: %d/%d tests PASSED", passed, total))
@@ -449,7 +428,7 @@ local function show_test_results(passed, total)
         add_to_chat(121, TEST_RED .. string.format("[FAIL] Message System: %d/%d tests FAILED (%d passed)", total - passed, total, passed))
     end
 
-    add_to_chat(121, TEST_GRAY .. TEST_SEPARATOR)
+    add_to_chat(121, TEST_GRAY .. test_separator())
 end
 
 --- Run integrated test suite (all jobs or specific job)

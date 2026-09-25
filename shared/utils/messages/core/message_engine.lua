@@ -31,7 +31,12 @@ if _G.MESSAGE_ENGINE_LOADED then
 end
 _G.MESSAGE_ENGINE_LOADED = true
 
+local ChatPalette = require('shared/utils/messages/chat_palette')
+
 -- Color tag -> inline FFXI color code (0x1F followed by the code byte).
+-- These are the standard codes and the list of known tags; a message takes
+-- its codes from ChatPalette at each render, so the player's chat.colors
+-- (UI_CONFIG.lua) apply without a reload.
 -- These codes are this engine's own: they do not all match MessageColors
 -- (e.g. cyan is 13 here, MessageColors.SPELL is 205). Only orange and
 -- warningcolor are read from MessageColors.
@@ -58,6 +63,12 @@ local COLOR_CODES = {
     blue = string.char(0x1F, 122),    -- Blue (info)
     purple = string.char(0x1F, 208),  -- Purple (debuffs)
 
+    -- Help screens (//gs c help, tb help, ui help)
+    gold = string.char(0x1F, 220),    -- Help title
+    aqua = string.char(0x1F, 159),    -- Help commands
+    mustard = string.char(0x1F, 36),  -- Help separators and parameters
+    amber = string.char(0x1F, 68),    -- Help group headings
+
     -- Semantic aliases. Tag names must not collide with template parameter
     -- names: a parameter named like a tag is rendered as that color.
     jobtag = string.char(0x1F, 207),  -- Same as lightblue (job tags)
@@ -78,9 +89,14 @@ local COLOR_CODES = {
 --- @param template string Template with {placeholders} and {color} tags
 --- @return function Compiled template function
 local function compile_template(template)
-    -- Cache check (hot path)
-    if _template_cache[template] then
-        return _template_cache[template]
+    -- The job tag option changes the template itself: cache per setting
+    local show_tag = ChatPalette.show_job_tag()
+    local cache_key = (show_tag and '1' or '0') .. template
+    if _template_cache[cache_key] then
+        return _template_cache[cache_key]
+    end
+    if not show_tag then
+        template = ChatPalette.strip_job_tag(template)
     end
 
     -- Split the template into literal / color / param parts
@@ -139,10 +155,9 @@ local function compile_template(template)
             if part.type == "literal" then
                 table.insert(result_parts, part.value)
             elseif part.type == "color" then
-                -- Insert color code
-                local code = COLOR_CODES[part.color]
-                if code then
-                    table.insert(result_parts, code)
+                -- Insert color code (the player's palette, else standard)
+                if COLOR_CODES[part.color] then
+                    table.insert(result_parts, ChatPalette.tag(part.color))
                 end
             else -- param
                 local value = params[part.key]
@@ -161,7 +176,7 @@ local function compile_template(template)
     end
 
     -- Cache for performance
-    _template_cache[template] = compiled_fn
+    _template_cache[cache_key] = compiled_fn
 
     return compiled_fn
 end

@@ -34,7 +34,7 @@ local MessageCore = require('shared/utils/messages/message_core')
 --- COLOR DEFINITIONS
 ---============================================================================
 
-local COLORS = {
+local DEFAULT_COLORS = {
     -- Job tag
     job_tag = 200,        -- Green (WHM system)
 
@@ -66,16 +66,40 @@ local COLORS = {
     error = 123           -- Red
 }
 
+--- Palette color each entry follows when the player remaps it (chat.colors
+--- in UI_CONFIG.lua): only entries whose standard code is that color's.
+local FOLLOWS = {
+    cure_tier = 'darkgray', cursna = 'darkgray',
+    cure_potency = 'green', afflatus_solace = 'green', auto_tier_on = 'green',
+    separator = 'gray',
+    afflatus_misery = 'red', auto_tier_off = 'red', warning = 'red',
+    martyr = 'enhancing',
+}
+
+-- COLORS.x: the player's code for the palette color it follows, else standard.
+local COLORS = setmetatable({}, {__index = function(_, key)
+    local follows = FOLLOWS[key]
+    if follows then
+        local ok, ChatPalette = pcall(require, 'shared/utils/messages/chat_palette')
+        local code = ok and ChatPalette and ChatPalette.overrides()[follows]
+        if code then return code end
+    end
+    return DEFAULT_COLORS[key]
+end})
+
 ---============================================================================
 --- JOB TAG HELPER
 ---============================================================================
 
---- Get formatted job tag with color
---- @return string Formatted job tag [WHM/SAM] with color
+--- Formatted job tag with color and its trailing space ("[WHM/SAM] "),
+--- or "" when the player turned the job tag off (chat.job_tag = false).
+--- @return string
 local function get_job_tag()
+    local ok, ChatPalette = pcall(require, 'shared/utils/messages/chat_palette')
+    if ok and ChatPalette and not ChatPalette.show_job_tag() then return "" end
     local job_color = MessageCore.create_color_code(COLORS.job_tag)
     local tag = MessageCore.get_job_tag()  -- "WHM/SAM" or "WHM"
-    return string.format("%s[%s]", job_color, tag)
+    return string.format("%s[%s] ", job_color, tag)
 end
 
 ---============================================================================
@@ -106,7 +130,7 @@ function WHMMessageFormatter.show_cure_tier_change(original_spell, new_spell, hp
     end
 
     local msg = string.format(
-        "%s %s%s %s>> %s%s %s(%s%s)",
+        "%s%s%s %s>> %s%s %s(%s%s)",
         get_job_tag(),
         potency_color,
         original_spell,
@@ -132,7 +156,7 @@ function WHMMessageFormatter.show_cure_heal(spell_name, hp_healed, target_name)
     local target_str = target_name and (" >> " .. tier_color .. target_name) or ""
 
     local msg = string.format(
-        "%s %s%s: %s HP healed%s",
+        "%s%s%s: %s HP healed%s",
         get_job_tag(),
         tier_color,
         spell_name,
@@ -156,7 +180,7 @@ function WHMMessageFormatter.show_cure_stoneskin(spell_name, hp_healed, stoneski
     local target_str = target_name and (" >> " .. target_name) or ""
 
     local msg = string.format(
-        "%s %s%s: %s HP + %s Stoneskin%s",
+        "%s%s%s: %s HP + %s Stoneskin%s",
         get_job_tag(),
         tier_color,
         spell_name,
@@ -181,7 +205,7 @@ function WHMMessageFormatter.show_afflatus_change(stance)
     local description = stance == "Solace" and "Healing Focus" or "Damage Focus"
 
     local msg = string.format(
-        "%s Afflatus %s%s activated (%s%s)",
+        "%sAfflatus %s%s activated (%s%s)",
         get_job_tag(),
         stance_color,
         stance,
@@ -201,7 +225,7 @@ function WHMMessageFormatter.show_benediction()
     local bene_color = MessageCore.create_color_code(COLORS.benediction)
 
     local msg = string.format(
-        "%s %sBenediction activated! (Full party heal)",
+        "%s%sBenediction activated! (Full party heal)",
         get_job_tag(),
         bene_color
     )
@@ -218,7 +242,7 @@ function WHMMessageFormatter.show_devotion(mp_transferred, target_name)
     local target_color = MessageCore.create_color_code(COLORS.cure_tier)
 
     local msg = string.format(
-        "%s %sDevotion: %s MP >> %s%s",
+        "%s%sDevotion: %s MP >> %s%s",
         get_job_tag(),
         devotion_color,
         mp_color .. tostring(mp_transferred),
@@ -238,7 +262,7 @@ function WHMMessageFormatter.show_martyr(hp_sacrificed, hp_restored)
     local potency_color = MessageCore.create_color_code(COLORS.cure_potency)
 
     local msg = string.format(
-        "%s %sMartyr: %s HP >> %s HP to party",
+        "%s%sMartyr: %s HP >> %s HP to party",
         get_job_tag(),
         martyr_color,
         error_color .. "-" .. tostring(hp_sacrificed),
@@ -262,7 +286,7 @@ function WHMMessageFormatter.show_cursna(target_name, cursna_skill)
     local skill_str = cursna_skill and string.format(" (Skill: %d)", cursna_skill) or ""
 
     local msg = string.format(
-        "%s %sCursna >> %s%s%s",
+        "%s%sCursna >> %s%s%s",
         get_job_tag(),
         cursna_color,
         target_color,
@@ -284,7 +308,7 @@ function WHMMessageFormatter.show_status_removal(spell_name, target_name, status
     local status_str = status_removed and string.format(" [%s removed]", status_removed) or ""
 
     local msg = string.format(
-        "%s %s%s >> %s%s%s",
+        "%s%s%s >> %s%s%s",
         get_job_tag(),
         removal_color,
         spell_name,
@@ -310,7 +334,7 @@ function WHMMessageFormatter.show_auto_tier_toggle(enabled)
     local description = enabled and "Auto-downgrade Cure tier based on HP" or "Always use selected Cure tier"
 
     local msg = string.format(
-        "%s Cure Auto-Tier: %s%s (%s%s)",
+        "%sCure Auto-Tier: %s%s (%s%s)",
         get_job_tag(),
         status_color,
         status,
@@ -331,7 +355,7 @@ function WHMMessageFormatter.warning(message)
     local warning_color = MessageCore.create_color_code(COLORS.warning)
 
     local msg = string.format(
-        "%s %sWARNING: %s",
+        "%s%sWARNING: %s",
         get_job_tag(),
         warning_color,
         message
@@ -346,7 +370,7 @@ function WHMMessageFormatter.error(message)
     local error_color = MessageCore.create_color_code(COLORS.error)
 
     local msg = string.format(
-        "%s %sERROR: %s",
+        "%s%sERROR: %s",
         get_job_tag(),
         error_color,
         message

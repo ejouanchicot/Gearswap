@@ -28,6 +28,7 @@ if not UIConfig.sections then
 end
 
 local UIFormatter = require('shared/utils/ui/UI_FORMATTER')
+local UIStyle = require('shared/utils/ui/ui_style')
 
 ---============================================================================
 --- SECTION RENDERING ENGINE
@@ -175,7 +176,7 @@ function UISections.render_ja_section(display_structure, keybinds, job, key_colu
     -- Special handling for BRD song slots (display-only)
     if job == "BRD" then
         return render_display_only_section(display_structure.ja_keys, keybinds, job, key_column_width, function_column_width,
-            get_state_value_func, "Song Slots", content_width, value_column_width)
+            get_state_value_func, UIFormatter.get_section_title(job, "ja"), content_width, value_column_width)
     else
         return render_section("ja", display_structure.ja_keys, keybinds, job, key_column_width, function_column_width, get_state_value_func, content_width, value_column_width)
     end
@@ -219,6 +220,47 @@ end
 --- COMPLETE UI RENDERING
 ---============================================================================
 
+--- The rows a section will actually draw. Binds with no state (the common
+--- keys, "Alts: follow me (toggle)"...) are in the job's list but in no
+--- section: counting them sized the label column for a row never shown.
+--- @param display_structure table Section key lists from UIDisplayBuilder
+--- @param keybinds table All keybinds
+--- @return table The shown rows (all rows when no section lists a key)
+local function shown_rows(display_structure, keybinds)
+    local in_section = {}
+    for _, field in ipairs({"spell_keys", "ja_keys", "weapon_keys", "mode_keys", "enhancing_keys"}) do
+        for _, key in ipairs(display_structure[field] or {}) do in_section[key] = true end
+    end
+    local rows = {}
+    for _, bind in ipairs(keybinds) do
+        if bind.key and in_section[bind.key] then rows[#rows + 1] = bind end
+    end
+    return #rows > 0 and rows or keybinds
+end
+
+--- The first section opens with one blank line. With nothing above it (no
+--- header, no column headers) that line is the HUD's top margin: replace it
+--- with layout.margin_top blank lines.
+--- @param body string Rendered sections
+--- @param blank string One blank background line
+--- @param lines number Blank lines wanted on top
+--- @return string
+local function top_margin(body, blank, lines)
+    local cfg = _G.ui_display_config
+    if cfg and (cfg.show_header or cfg.show_column_headers) then return body end
+    if lines == 1 or body:sub(1, #blank) ~= blank then return body end
+    return string.rep(blank, lines) .. body:sub(#blank + 1)
+end
+
+--- HUD bucket -> section renderer (same arguments for all five).
+local SECTION_RENDERERS = {
+    spell = UISections.render_spells_section,
+    enhancing = UISections.render_enhancing_section,
+    ja = UISections.render_ja_section,
+    weapon = UISections.render_weapons_section,
+    mode = UISections.render_modes_section,
+}
+
 --- Render all sections for a complete UI display
 --- @param display_structure table Display structure from UIDisplayBuilder
 --- @param keybinds table All keybinds
@@ -227,11 +269,15 @@ end
 --- @param get_all_values_func function Function to get all possible state values (for width)
 --- @return string Complete rendered UI text
 function UISections.render_complete_ui(display_structure, keybinds, job, get_state_value_func, get_all_values_func)
+    -- Rows the player hid (layout.hide_rows) take no room in the widths either
+    keybinds = UIStyle.ordered_rows(UIStyle.visible_rows(keybinds))
+    local shown = shown_rows(display_structure, keybinds)
+
     -- Calculate optimal column widths and EXACT content width using ALL possible values
-    local key_column_width = UIFormatter.calculate_key_column_width(keybinds)
-    local function_column_width = UIFormatter.calculate_function_column_width(keybinds)
-    local value_column_width = UIFormatter.calculate_value_column_width(keybinds, get_all_values_func)
-    local content_width = UIFormatter.calculate_content_width(keybinds, key_column_width, function_column_width, get_all_values_func)
+    local key_column_width = UIFormatter.calculate_key_column_width(shown)
+    local function_column_width = UIFormatter.calculate_function_column_width(shown)
+    local value_column_width = UIFormatter.calculate_value_column_width(shown, get_all_values_func)
+    local content_width = UIFormatter.calculate_content_width(shown, key_column_width, function_column_width, get_all_values_func)
 
     local text = ""
 
@@ -241,7 +287,7 @@ function UISections.render_complete_ui(display_structure, keybinds, job, get_sta
     -- Separator only when both header and legend are shown
     if not _G.ui_display_config or not _G.ui_display_config.show_header then
         -- No separator needed
-    elseif _G.ui_display_config.show_legend then
+    elseif _G.ui_display_config.show_legend and UIStyle.get().layout.key_style ~= 'words' then
         -- Separator after legend
         text = text .. UIFormatter.create_section_separator(content_width)
     end
@@ -249,43 +295,27 @@ function UISections.render_complete_ui(display_structure, keybinds, job, get_sta
     -- Column headers (pass content_width for top margin)
     text = text .. UIFormatter.create_column_headers(key_column_width, function_column_width, content_width)
 
-    -- Render sections in order without separators between them (pass content_width for centering)
-    -- 1. Spells/Abilities
-    local spells = UISections.render_spells_section(display_structure, keybinds, job, key_column_width, function_column_width, get_state_value_func, content_width, value_column_width)
-    if spells ~= "" then
-        text = text .. spells
+    -- Sections in the player's order (layout.section_order), no separators between them
+    local layout = UIStyle.get().layout
+    local blank = "\\cs(0,0,0)" .. string.rep(" ", content_width) .. "\\cr\n"
+    local body = ""
+    for _, bucket in ipairs(layout.section_order) do
+        body = body .. SECTION_RENDERERS[bucket](display_structure, keybinds, job, key_column_width,
+            function_column_width, get_state_value_func, content_width, value_column_width)
     end
+    text = text .. top_margin(body, blank, layout.spacing.margin_top)
 
-    -- 2. Enhancing (RDM specific)
-    local enhancing = UISections.render_enhancing_section(display_structure, keybinds, job, key_column_width, function_column_width, get_state_value_func, content_width, value_column_width)
-    if enhancing ~= "" then
-        text = text .. enhancing
-    end
-
-    -- 3. Job Abilities / Song Slots
-    local ja = UISections.render_ja_section(display_structure, keybinds, job, key_column_width, function_column_width, get_state_value_func, content_width, value_column_width)
-    if ja ~= "" then
-        text = text .. ja
-    end
-
-    -- 4. Weapons
-    local weapons = UISections.render_weapons_section(display_structure, keybinds, job, key_column_width, function_column_width, get_state_value_func, content_width, value_column_width)
-    if weapons ~= "" then
-        text = text .. weapons
-    end
-
-    -- 5. Modes
-    local modes = UISections.render_modes_section(display_structure, keybinds, job, key_column_width, function_column_width, get_state_value_func, content_width, value_column_width)
-    if modes ~= "" then
-        text = text .. modes
-    end
-
-    -- 6. Universal Commands (footer)
+    -- Universal Commands (footer)
     text = text .. UISections.render_commands_footer(job, content_width)
 
-    -- Add bottom margin if NO footer (footer adds its own margin)
+    -- Bottom margin if NO footer (footer adds its own margin)
     if not _G.ui_display_config or not _G.ui_display_config.show_footer then
-        text = text .. "\\cs(0,0,0)" .. string.rep(" ", content_width) .. "\\cr\n"
+        text = text .. string.rep(blank, layout.spacing.margin_bottom)
+    end
+    if layout.spacing.exact then
+        -- The texts box draws a final newline as one more empty line (the
+        -- "fixed ~19 px of border" measured in ui_section_toggles.lua)
+        text = text:gsub("\n$", "")
     end
 
     return text
@@ -309,7 +339,7 @@ function UISections.render_commands_footer(job, content_width)
     local centered_command = string.rep(" ", padding) .. command_text
 
     -- Add fixed 2 space right margin (symmetrical with left padding)
-    local footer_text = UIFormatter.create_section_separator(content_width) .. "\\cs(128,128,128)" .. centered_command .. "  \\cr\n"
+    local footer_text = UIFormatter.create_section_separator(content_width) .. UIStyle.color('footer') .. centered_command .. "  \\cr\n"
 
     -- Add bottom margin (empty line with padding and color code for background)
     footer_text = footer_text .. "\\cs(0,0,0)" .. string.rep(" ", content_width) .. "\\cr\n"

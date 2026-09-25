@@ -119,17 +119,7 @@ local function display_broth_count()
         end
     end
 
-    -- Display header
-    MessageFormatter.show_bst_broth_count_header()
-
-    -- Display broth counts
-    if next(broth_counts) then
-        for broth_name, count in pairs(broth_counts) do
-            MessageFormatter.show_bst_broth_count_line(broth_name, count)
-        end
-    else
-        MessageFormatter.show_bst_no_broths()
-    end
+    MessageFormatter.show_bst_broth_list(broth_counts)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -347,15 +337,7 @@ function job_self_command(cmdParams, eventArgs)
             return
         end
 
-        -- Display header
-        MessageFormatter.show_bst_ready_moves_header(pet.name)
-
-        -- Display moves
-        for i, move in ipairs(ready_moves) do
-            MessageFormatter.show_bst_ready_move_item(i, move.name)
-        end
-
-        MessageFormatter.show_bst_ready_moves_usage(#ready_moves)
+        MessageFormatter.show_bst_ready_moves_list(pet.name, ready_moves)
         eventArgs.handled = true
         return
     end

@@ -175,42 +175,15 @@ function MessageBST.show_jug_equipped(pet_name, broth_name)
     })
 end
 
---- Display broth inventory header with separator
---- @return void
-function MessageBST.show_broth_count_header()
-    MessageCore.show_separator(50)
-
-    M.job('BST', 'broth_count_header', {
-        job = get_job_tag()
-    })
-end
-
---- Display broth count line with multi-color formatting
---- @param broth_name string Broth name
---- @param count number Broth count
---- @return void
-function MessageBST.show_broth_count_line(broth_name, count)
-    M.job('BST', 'broth_count_line', {
-        job = get_job_tag(),
-        broth = broth_name,
-        count = count
-    })
-end
-
---- Display broth inventory footer with separator
---- @return void
-function MessageBST.show_broth_count_footer()
-    M.job('BST', 'broth_count_footer', {
-        job = get_job_tag()
-    })
-    MessageCore.show_separator(50)
-end
-
---- Display no broths message
---- @return void
-function MessageBST.show_no_broths()
-    M.job('BST', 'no_broths', {
-        job = get_job_tag()
+--- //gs c broth: broths in the inventory, as a data block.
+--- @param broth_counts table broth name -> count
+function MessageBST.show_broth_list(broth_counts)
+    local fields = {}
+    for name, count in pairs(broth_counts) do fields[#fields + 1] = {name, count, 'good'} end
+    table.sort(fields, function(x, y) return x[1] < y[1] end)
+    require('shared/utils/messages/info_block').show({
+        tag = 'BST', title = 'Broth inventory', fields = fields,
+        lines = #fields == 0 and {{'No broth in inventory.', 'dim'}} or nil,
     })
 end
 
@@ -391,35 +364,15 @@ function MessageBST.show_ready_move_tp_check(pet_name, tp)
     })
 end
 
---- Display ready moves list header
---- @param pet_name string Pet name
---- @return void
-function MessageBST.show_ready_moves_header(pet_name)
-    M.job('BST', 'ready_moves_header', {
-        job = get_job_tag(),
-        pet = pet_name
-    })
-end
-
---- Display ready move list item
---- @param index number Move index
---- @param move_name string Move name
---- @return void
-function MessageBST.show_ready_move_item(index, move_name)
-    M.job('BST', 'ready_move_item', {
-        job = get_job_tag(),
-        index = index,
-        move = move_name
-    })
-end
-
---- Display ready moves usage hint
---- @param max_index number Maximum index
---- @return void
-function MessageBST.show_ready_moves_usage(max_index)
-    M.job('BST', 'ready_moves_usage', {
-        job = get_job_tag(),
-        max = max_index
+--- //gs c rdylist: the pet's ready moves, numbered for //gs c rdymove.
+--- @param pet_name string
+--- @param moves table Array of {name = ...}
+function MessageBST.show_ready_moves_list(pet_name, moves)
+    local fields = {}
+    for i, move in ipairs(moves) do fields[#fields + 1] = {'#' .. i, move.name} end
+    require('shared/utils/messages/info_block').show({
+        tag = 'BST', title = 'Ready moves: ' .. tostring(pet_name), fields = fields,
+        lines = {{('Use: //gs c rdymove <1-%d>'):format(#moves), 'dim'}},
     })
 end
 

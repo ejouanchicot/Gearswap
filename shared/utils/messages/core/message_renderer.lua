@@ -230,29 +230,6 @@ end
 --- STATISTICS & DEBUGGING
 ---============================================================================
 
---- Show message statistics
-function MessageRenderer.show_stats()
-    add_to_chat(160, "-----------------------------------------------------")
-    add_to_chat(158, "[Messages] System Statistics")
-    add_to_chat(160, "-----------------------------------------------------")
-    add_to_chat(122, string.format("Total messages: %d", _stats.total_sent))
-    add_to_chat(122, string.format("Errors: %d", _stats.errors))
-
-    -- By namespace
-    add_to_chat(122, "By namespace:")
-    local sorted_ns = {}
-    for ns, count in pairs(_stats.by_namespace) do
-        table.insert(sorted_ns, {ns = ns, count = count})
-    end
-    table.sort(sorted_ns, function(a, b) return a.count > b.count end)
-
-    for i = 1, math.min(5, #sorted_ns) do
-        local item = sorted_ns[i]
-        add_to_chat(1, string.format("  %s: %d", item.ns, item.count))
-    end
-    add_to_chat(160, "-----------------------------------------------------")
-end
-
 --- Reset statistics
 function MessageRenderer.reset_stats()
     _stats = {

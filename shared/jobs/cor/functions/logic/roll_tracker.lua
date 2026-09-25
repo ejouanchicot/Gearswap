@@ -66,6 +66,59 @@ end
 ---   ROLL DETECTION (Packet Parsing)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- Last value seen of each roll, kept on `windower`: it outlives a gs reload
+--- and a job change, where _G.cor_active_rolls does not (cleanup() empties
+--- it on purpose at every COR load). A //lua reload still loses it.
+--- @return table roll name -> {value, timestamp, has_crooked}
+local function saved_rolls()
+    windower._cor_roll_values = windower._cor_roll_values or {}
+    return windower._cor_roll_values
+end
+
+--- Longest a roll can last (5 min base, lengthened by gear), in seconds. A
+--- saved value older than this belongs to an earlier cast of that roll.
+local ROLL_MAX_DURATION = 600
+
+--- Names of the rolls the player wears now, from buffactive's buff ids.
+--- @return table roll name -> true
+local function worn_rolls()
+    local ok, res = pcall(require, 'resources')
+    local worn = {}
+    if not ok or not res or not res.buffs then return worn end
+    for key in pairs(buffactive or {}) do
+        local buff = type(key) == 'number' and res.buffs[key]
+        if buff and buff.en and buff.en:find(' Roll$') then worn[buff.en] = true end
+    end
+    return worn
+end
+
+--- Rebuild the active roll list from the roll buffs the player wears.
+---
+--- After a reload the list starts empty although rolls may still be up: the
+--- tracker only learns a roll when it sees it cast. The buffs say which rolls
+--- run; the value comes back from saved_rolls() when it is recent, else it is
+--- unknown (nil). Entries whose buff is gone are dropped.
+function RollTracker.sync_with_buffs()
+    local worn = worn_rolls()
+    local listed = {}
+    for i = #_G.cor_active_rolls, 1, -1 do
+        local name = _G.cor_active_rolls[i].name
+        if worn[name] then listed[name] = true else table.remove(_G.cor_active_rolls, i) end
+    end
+    for name in pairs(worn) do
+        if not listed[name] then
+            local saved = saved_rolls()[name]
+            local recent = saved and saved.timestamp and (os.time() - saved.timestamp) <= ROLL_MAX_DURATION
+            table.insert(_G.cor_active_rolls, {
+                name = name,
+                value = recent and saved.value or nil,
+                timestamp = recent and saved.timestamp or nil,
+                has_crooked = recent and saved.has_crooked or false,
+            })
+        end
+    end
+end
+
 ---   A roll's buff has dropped, so the roll is gone
 ---
 ---   Nothing else removes an entry: a bust discards its own roll, and a third
@@ -392,6 +445,13 @@ function RollTracker.track_active_roll(roll_name, roll_value, has_crooked, is_ne
     -- Limit to 2 rolls max (FFXI hard limit - Crooked Cards does NOT allow 3rd roll)
     if #_G.cor_active_rolls > 2 then
         table.remove(_G.cor_active_rolls, 1) -- Remove oldest
+    end
+
+    -- Remember the value past a reload (see sync_with_buffs)
+    for _, roll in ipairs(_G.cor_active_rolls) do
+        if roll.name == roll_name then
+            saved_rolls()[roll_name] = {value = roll.value, timestamp = roll.timestamp, has_crooked = roll.has_crooked}
+        end
     end
 end
 

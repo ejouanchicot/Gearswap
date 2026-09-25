@@ -315,16 +315,133 @@ UIConfig.sections = {
 }
 
 ---============================================================================
---- COLOR CUSTOMIZATION (Optional)
+--- HUD LAYOUT
+---============================================================================
+-- Every option below is optional: delete it or comment it out and the HUD
+-- keeps its standard look. A wrong value is reported in chat when the job
+-- loads, and the standard value is used instead - the HUD never breaks.
+-- The values written here ARE the standard ones.
+
+UIConfig.layout = {
+    -- Order of the HUD sections. Names: 'spells', 'enhancing', 'abilities',
+    -- 'weapons', 'modes'. A section missing from the list goes at the end
+    -- (to hide a section, use UIConfig.sections above).
+    section_order = {'spells', 'enhancing', 'abilities', 'weapons', 'modes'},
+
+    -- true = tighter HUD: no blank line under section titles, columns
+    -- closer together. The window width follows by itself.
+    compact = false,
+
+    -- Spaces between the key and the label. Leave it commented for the
+    -- standard gap (4, or 2 with compact).
+    -- column_gap = 3,
+
+    -- Spaces between the label and the value (same standard as above;
+    -- follows column_gap when only column_gap is set). The label column
+    -- is as wide as the longest label, so short labels keep extra room.
+    -- value_gap = 1,
+
+    -- Blank lines above and below the rows (0 to 3). Standard: 1, or 0 with
+    -- compact.
+    -- margin_top = 0,
+    -- margin_bottom = 0,
+
+    -- Spaces left and right of the rows (0 to 3). Standard: 2, or 1 with
+    -- compact.
+    -- margin_side = 0,
+
+    -- Pixels of background around the text (0 to 20), finer than a blank
+    -- line. Standard: 0, or 4 with compact. Applied when the HUD is created
+    -- (//lua reload gearswap).
+    -- padding = 4,
+
+    -- How keys are written: 'symbols' (^f1  !1  ~f9) or 'words'
+    -- (CTRL+F1  ALT+1  SHIFT+F9). With 'words' the symbol legend is hidden.
+    key_style = 'symbols',
+
+    -- Symbol in front of each current value: a name (dot, circle, square,
+    -- smallsquare, triangle, diamond, arrow, gt, dash, star, none) or the
+    -- symbol itself.
+    bullet = '●',
+
+    -- Show a row in another section. Left: the state name (as written in the
+    -- job's _KEYBINDS file) or the key. Right: the section name.
+    move_to_section = {
+        -- CombatMode = 'weapons',
+    },
+
+    -- Order of the rows inside each section: the rows named here come
+    -- first, in this order, the others after them as usual. State names
+    -- (as in the job's _KEYBINDS file) or keys. On ONE line (the in-game
+    -- //gs c ui roworder rewrites it).
+    -- row_order = {'MainWeapon', 'SubWeapon', 'CombatMode'},
+
+    -- Rows to hide from the HUD (the key still works). State name or key.
+    hide_rows = {
+        -- 'Storm', '^f8',
+    },
+
+    -- Legend texts (shown with the header), two per line, up to 8.
+    -- legend = {'^ = Ctrl', '! = Alt', '@ = Windows', '~ = Shift'},
+
+    -- Rename section titles, for every job.
+    section_titles = {
+        -- weapons = 'Armes', modes = 'Modes', spells = 'Sorts',
+    },
+}
+
+---============================================================================
+--- HUD COLORS
+---============================================================================
+-- {red, green, blue}, each 0-255. Uncomment a line to change that color;
+-- a commented line keeps the standard color shown.
+
+UIConfig.colors = {
+    -- title = {255, 255, 255},          -- job title (header)
+    -- section_title = {120, 220, 255},  -- section titles
+    -- key = {125, 125, 125},            -- the keys (standard: same as description)
+    -- description = {180, 180, 180},   -- row labels
+    -- value = {255, 255, 255},          -- current values (standard: automatic, Fire in red...)
+    -- legend = {255, 215, 0},           -- the "^ = Ctrl" legend
+    -- separator = {80, 160, 255},       -- ===== lines of the HUD
+    -- footer = {128, 128, 128},         -- //gs c ui footer
+    -- column_key = {100, 180, 255},     -- "Key" column header
+    -- column_function = {120, 200, 255},-- "Function" column header
+    -- column_current = {140, 220, 255}, -- "Current" column header
+}
+
+---============================================================================
+--- CHAT
 ---============================================================================
 
--- Not read by any module at present (kept for a future color override)
-UIConfig.colors = {
-    header_separator = nil, -- "\\cs(100,150,255)" format
-    section_title = nil,
-    key_text = nil,
-    description_text = nil,
-    value_text = nil
+UIConfig.chat = {
+    -- The ===== line printed in chat after spells and abilities.
+    separators = true,
+
+    -- Character of that line. Plain characters only (= - * ~ #): the FFXI
+    -- chat cannot show symbols such as a box-drawing line.
+    separator_char = '=',
+
+    -- Characters per ===== line, in the line above and in the framed chat
+    -- blocks (help, warp, lists...). 20 to 150, standard 69.
+    -- width = 69,
+
+    -- The [RDM/DRK] in front of chat messages.
+    job_tag = true,
+
+    -- Chat colors, as FFXI chat color numbers 1-255, on ONE line (the
+    -- in-game //gs c ui chatcolor rewrites this line). Two kinds of names:
+    --   colors: gray green red yellow cyan lightblue white blue purple pink
+    --           orange darkgray itemcolor healgreen enhancing enfeebling
+    --           divine dark bluemagic (+ jobtag separatorcolor spellcolor
+    --           warningcolor, which follow their color unless set)
+    --   uses:   success error warning info cooldown spell ja ws debuff
+    --           ready active blocked header job_tag ... (follow their color)
+    -- Example: colors = {green = 204, cooldown = 167},
+    -- colors = {},
+
+    -- FFXI chat color number, 1-255 (standard: 160, grey).
+    -- separator_color = 160,
 }
 
 ---============================================================================

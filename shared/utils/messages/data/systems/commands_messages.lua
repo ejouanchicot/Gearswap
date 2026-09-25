@@ -59,11 +59,6 @@ return {
         color = 1
     },
 
-    region_detected = {
-        template = "{green}Region Detected: {region}\n{blue}Detection Method: {method}\n{blue}Recommended Orange Code: {orange_code}",
-        color = 1
-    },
-
     region_detection_failed = {
         template = "{red}Region: AUTO-DETECTION FAILED\n \n{blue}MANUAL TEST:\n{blue}Look at the line below:\n{orange}Code 057 SAMPLE - Is this ORANGE or CYAN?\n \n{blue}If ORANGE = US (use code 057)\n{blue}If WHITE/NO COLOR = EU (use code 002 - Rose)\n \n{blue}To set manually:\n{blue}  //gs c setregion us\n{blue}  //gs c setregion eu",
         color = 1
@@ -74,44 +69,9 @@ return {
         color = 1
     },
 
-    region_saved = {
-        template = "{blue}Region saved to _G.DETECTED_FFXI_REGION",
-        color = 1
-    },
-
     ---========================================================================
     --- SETREGION COMMAND
     ---========================================================================
-
-    setregion_usage = {
-        template = "{red}Usage: //gs c setregion <eu|us>",
-        color = 167
-    },
-
-    region_set_us = {
-        template = "{green}Region set to: US\n{blue}Orange color code: 057",
-        color = 1
-    },
-
-    region_set_eu = {
-        template = "{green}Region set to: EU\n{blue}Warning color code: 002 (Rose - no orange on EU)",
-        color = 1
-    },
-
-    region_set_jp = {
-        template = "{green}Region set to: JP\n{blue}Orange color code: 057",
-        color = 1
-    },
-
-    invalid_region = {
-        template = "{red}Invalid region: {region}\n{blue}Valid options: us, eu, jp",
-        color = 1
-    },
-
-    region_reload_required = {
-        template = "{blue}Region saved to _G.DETECTED_FFXI_REGION\n{blue}Reload GearSwap to apply changes",
-        color = 1
-    },
 
     ---========================================================================
     --- LOCKSTYLE COMMAND
@@ -209,16 +169,6 @@ return {
         color = 167
     },
 
-    jamsg_status_header = {
-        template = "{purple}========================================\n{purple}[JA_MSG] Current Display Mode\n{purple}========================================",
-        color = 1
-    },
-
-    jamsg_current_mode = {
-        template = "{green}Mode: {mode}\n \n{cyan}Available modes:\n{yellow}  full   {gray}- Show name + description\n{yellow}  on     {gray}- Show name only\n{yellow}  off    {gray}- Disable all messages\n \n{cyan}Usage: {white}//gs c jamsg <full|on|off>\n{purple}========================================",
-        color = 1
-    },
-
     jamsg_invalid_mode = {
         template = "{red}[JA_MSG] Invalid mode: {mode}\n{blue}Valid modes: full, on, off",
         color = 1
@@ -253,16 +203,6 @@ return {
         color = 167
     },
 
-    spellmsg_status_header = {
-        template = "{purple}========================================\n{purple}[SPELL_MSG] Current Display Mode\n{purple}========================================",
-        color = 1
-    },
-
-    spellmsg_current_mode = {
-        template = "{green}Mode: {mode}\n \n{cyan}Available modes:\n{yellow}  full   {gray}- Show name + description\n{yellow}  on     {gray}- Show name only\n{yellow}  off    {gray}- Disable all messages\n \n{orange}Note: Controls ALL spell types (Enhancing,\n{orange}      Dark, Elemental, Healing, Divine, BRD,\n{orange}      GEO, BLU, SMN, etc.) EXCEPT Enfeebling\n \n{cyan}Usage: {white}//gs c spellmsg <full|on|off>\n{purple}========================================",
-        color = 1
-    },
-
     spellmsg_invalid_mode = {
         template = "{red}[SPELL_MSG] Invalid mode: {mode}\n{blue}Valid modes: full, on, off",
         color = 1
@@ -295,16 +235,6 @@ return {
     wsmsg_config_error = {
         template = "{red}[WS_MSG] ERROR: Config file not found\n{red}Path: shared/config/WS_MESSAGES_CONFIG.lua",
         color = 167
-    },
-
-    wsmsg_status_header = {
-        template = "{purple}========================================\n{purple}[WS_MSG] Current Display Mode\n{purple}========================================",
-        color = 1
-    },
-
-    wsmsg_current_mode = {
-        template = "{green}Mode: {mode}\n \n{cyan}Available modes:\n{yellow}  full   {gray}- Show name + description + TP\n{yellow}  on     {gray}- Show name + TP only\n{yellow}  off    {gray}- Disable all messages\n \n{cyan}Usage: {white}//gs c wsmsg <full|on|off>\n{purple}========================================",
-        color = 1
     },
 
     wsmsg_invalid_mode = {

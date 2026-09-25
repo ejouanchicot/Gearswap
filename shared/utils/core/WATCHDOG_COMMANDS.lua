@@ -44,6 +44,13 @@ function WatchdogCommands.handle_command(cmdParams, eventArgs)
         return false
     end
 
+    -- Help needs no watchdog: answer it even before INIT_SYSTEMS publishes one
+    if cmdParams[2] and cmdParams[2]:lower() == 'help' then
+        MessageWatchdog.show_help()
+        if eventArgs then eventArgs.handled = true end
+        return true
+    end
+
     -- Published by INIT_SYSTEMS 2 s after the load
     local MidcastWatchdog = _G.MidcastWatchdog
     if not MidcastWatchdog then

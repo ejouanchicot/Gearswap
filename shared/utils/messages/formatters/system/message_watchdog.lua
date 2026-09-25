@@ -11,7 +11,6 @@
 ---============================================================================
 
 local MessageWatchdog = {}
-local MessageCore = require('shared/utils/messages/message_core')
 local M = require('shared/utils/messages/api/messages')
 
 ---============================================================================
@@ -38,64 +37,41 @@ function MessageWatchdog.show_not_loaded()
     M.send('WATCHDOG', 'not_loaded')
 end
 
---- Show watchdog status
---- @param stats table Statistics from MidcastWatchdog.get_stats()
-function MessageWatchdog.show_status(stats)
-    local gray = string.char(0x1F, 160)
-    local yellow = string.char(0x1F, 50)
-    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
-    add_to_chat(121, gray .. separator)
-    add_to_chat(121, yellow .. "Midcast Watchdog Status")
-    add_to_chat(121, gray .. separator)
-
-    M.send('WATCHDOG', 'status_enabled', {enabled = tostring(stats.enabled)})
-    M.send('WATCHDOG', 'status_debug', {debug = tostring(stats.debug)})
-    M.send('WATCHDOG', 'status_buffer', {buffer = string.format("%.1f", stats.buffer)})
-    M.send('WATCHDOG', 'status_fallback', {fallback = string.format("%.1f", stats.fallback_timeout)})
-    M.send('WATCHDOG', 'status_active', {active = tostring(stats.active)})
-
+--- Fields of the watchdog block, from MidcastWatchdog.get_stats().
+--- @param stats table
+--- @return table {{label, value, kind}, ...}
+local function stats_fields(stats)
+    local fields = {
+        {'Enabled', stats.enabled == true},
+        {'Debug', stats.debug == true},
+        {'Buffer', ('%.1f s (added to cast time)'):format(stats.buffer)},
+        {'Fallback', ('%.1f s (unknown spells)'):format(stats.fallback_timeout)},
+        {'Midcast tracked', stats.active and 'Yes' or 'No', stats.active and 'warn' or nil},
+    }
     if stats.active then
-        local action_type_label = stats.action_type == 'item' and 'status_item' or 'status_spell'
-
-        M.send('WATCHDOG', action_type_label, {
-            spell_name = stats.spell_name,
-            spell_id = tostring(stats.spell_id or 0),
-            item_id = tostring(stats.item_id or 0)
-        })
-        M.send('WATCHDOG', 'status_cast_time', {cast_time = string.format("%.1f", stats.cast_time)})
-        M.send('WATCHDOG', 'status_timeout', {timeout = string.format("%.1f", stats.timeout)})
-        M.send('WATCHDOG', 'status_age', {age = string.format("%.2f", stats.age)})
+        local is_item = stats.action_type == 'item'
+        fields[#fields + 1] = {is_item and 'Item' or 'Spell',
+            ('%s (ID %s)'):format(stats.spell_name, tostring((is_item and stats.item_id or stats.spell_id) or 0)),
+            'spell'}
+        fields[#fields + 1] = {'Cast time', ('%.1f s'):format(stats.cast_time)}
+        fields[#fields + 1] = {'Timeout', ('%.1f s'):format(stats.timeout)}
+        fields[#fields + 1] = {'Age', ('%.2f s'):format(stats.age)}
     end
+    return fields
 end
 
---- Show detailed watchdog statistics
+--- Show watchdog status (//gs c watchdog), as a data block.
+--- @param stats table Statistics from MidcastWatchdog.get_stats()
+function MessageWatchdog.show_status(stats)
+    require('shared/utils/messages/info_block').show({tag = 'WATCHDOG', title = 'Status',
+        fields = stats_fields(stats)})
+end
+
+--- Show watchdog statistics (//gs c watchdog stats), as a data block.
 --- @param stats table Statistics from MidcastWatchdog.get_stats()
 function MessageWatchdog.show_stats(stats)
-    local gray = string.char(0x1F, 160)
-    local yellow = string.char(0x1F, 50)
-    local separator = string.rep("=", MessageCore.SEPARATOR_WIDTH)
-    add_to_chat(121, gray .. separator)
-    add_to_chat(121, yellow .. "Midcast Watchdog Statistics")
-    add_to_chat(121, gray .. separator)
-
-    M.send('WATCHDOG', 'status_enabled', {enabled = tostring(stats.enabled)})
-    M.send('WATCHDOG', 'status_debug', {debug = tostring(stats.debug)})
-    M.send('WATCHDOG', 'status_buffer', {buffer = string.format("%.1f", stats.buffer)})
-    M.send('WATCHDOG', 'status_fallback', {fallback = string.format("%.1f", stats.fallback_timeout)})
-    M.send('WATCHDOG', 'status_active_midcast', {active = tostring(stats.active)})
-
-    if stats.active then
-        local action_type_label = stats.action_type == 'item' and 'status_current_item' or 'status_current_spell'
-
-        M.send('WATCHDOG', action_type_label, {
-            spell_name = stats.spell_name,
-            spell_id = tostring(stats.spell_id or 0),
-            item_id = tostring(stats.item_id or 0)
-        })
-        M.send('WATCHDOG', 'status_cast_time', {cast_time = string.format("%.1f", stats.cast_time)})
-        M.send('WATCHDOG', 'status_timeout', {timeout = string.format("%.1f", stats.timeout)})
-        M.send('WATCHDOG', 'status_age', {age = string.format("%.2f", stats.age)})
-    end
+    require('shared/utils/messages/info_block').show({tag = 'WATCHDOG', title = 'Statistics',
+        fields = stats_fields(stats)})
 end
 
 ---============================================================================
@@ -290,7 +266,20 @@ end
 
 --- Show the WATCHDOG.help message
 function MessageWatchdog.show_help()
-    M.send('WATCHDOG', 'help')
+    require('shared/utils/messages/help_screen').show({
+        title = 'WATCHDOG', subtitle = 'Recovers a lost aftercast',
+        groups = {{title = 'COMMANDS', rows = {
+            {'//gs c watchdog', '', 'Status'},
+            {'//gs c watchdog ', 'on|off|toggle', 'Enable / disable'},
+            {'//gs c watchdog stats', '', 'Statistics'},
+            {'//gs c watchdog buffer ', '<0-10>', 'Seconds added to cast time'},
+            {'//gs c watchdog fallback ', '<1-30>', 'Timeout of unknown spells'},
+            {'//gs c watchdog clear', '', 'Clear tracking, re-equip'},
+            {'//gs c watchdog test ', '[spell] [id]', 'Simulate a stuck midcast'},
+            {'//gs c watchdog debug', '', 'Toggle debug messages'},
+        }}},
+        notes = {'Settings last until the next job load.'},
+    })
 end
 
 ---============================================================================

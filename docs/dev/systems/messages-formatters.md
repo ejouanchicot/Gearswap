@@ -122,12 +122,65 @@ timestamp option would print `[hh:mm:ss] 1`, and `_stats.by_color` is keyed by t
 `MessageColors.WARNING` (region orange) instead of 205 for `warning` (`message_core.lua:75-100`).
 Used by `roll_messages.lua`, `party_messages.lua` and `message_bst.lua` (separator only).
 
-**D. `add_to_chat` directly.** `message_commands.lua` (169 calls), `message_ui.lua` (41),
+**D. `add_to_chat` directly.** `message_commands.lua` (169 calls),
 `message_warp.lua` (38), `message_info.lua` (12), `message_equipment.lua` (8), `message_watchdog.lua`
 (6), `party_messages.lua` (5), `message_system.lua` and `roll_messages.lua` (1 each) (grep,
 2026-09-25). `.claude/CODE_QUALITY.md` section 6 now allows `add_to_chat` anywhere under
 `shared/utils/messages/` (updated 2026-09-25). Paths B and C also end in `add_to_chat`, but path D
 bypasses the renderer's toggle and filter as well.
+
+### Help screens: `help_screen.lua`
+
+Every multi-line help screen goes through `shared/utils/messages/help_screen.lua` (added 2026-09-25), so they
+all look like `//gs c commands`: blank line, separator (`mustard`, 36), gold title + gray subtitle, separator,
+then per group a blank line and `>> GROUP (note)` (`amber`, 68), rows `   command<params> .... description`
+(`aqua` 159, `mustard`, `darkgray` dot leader, `white`), gray notes, separator, blank line. Templates:
+`data/systems/help_messages.lua` (namespace `HELP`); the colour names are ChatPalette's, so
+`//gs c ui chatcolor` recolours every help screen at once.
+
+- Data screens call `HelpScreen.show{title, subtitle, col?, groups = {{title, note, rows}}, notes}`: `ui help`
+  (`message_ui.lua`), `tb help` (`message_tempbind.lua`, output unchanged except the base chat mode 1 -> 121),
+  `warp help` (`message_warp.lua`), `alts` usage (`message_altgroup.lua`), `watchdog` help
+  (`message_watchdog.lua`), `info` usage (`message_info.lua`), and `jamsg`/`spellmsg`/`wsmsg` with no argument
+  (`MessageCommands.show_message_mode_help`, one function in place of six copies).
+- Lists built at run time use the pieces: `header`, `group`, `rows` (+ `column`), `names` (wrapped to the
+  chat width), `notes`, `footer`: `//gs c altcmds` (`message_alt_commands.lua`).
+- `//gs c help` (the index of the per-system helps) and `//gs c commands` (every universal command, with
+  the commands added since: tb, sortie, watchdog, trace, altsync, altbuffs, altdebug) are HelpScreens too.
+- Not converted:
+  the Sortie list and `ui style` / `ui bg list` (data blocks, not help), `testmsg` (see Known issues) and the
+  keybind list (`show_keybind_list`, no caller). One-line `Usage:` hints stay one line.
+
+Every command with a help screen answers `help` (2026-09-25): `ui`, `tb`, `warp` already did; added to `alts` (before the group check, so it works with no alt set up), `watchdog` (before the not-loaded check), `info`, `jamsg`/`spellmsg`/`wsmsg`, `sortie` (= the target list) and `altcmds`/`altlist`/`alt` (= the overview, not a search for "help").
+
+Content fixed while converting: `warp help` listed `//gs c warp debug`, which does not exist (the command
+is `//gs c debugwarp`), and lacked `warp fix`, the `all` suffix and the destinations; `watchdog` help said
+`fallback <1-60>` while `set_fallback_timeout` accepts (0, 30].
+
+### Data blocks: `info_block.lua`
+
+Status, stats, detail cards and lists go through `shared/utils/messages/info_block.lua` (added 2026-09-25),
+in the look of the Sortie messages validated in game: gray separator, `  TAG :: title` (lightblue, gray,
+white), `Label : value` lines with the labels padded to the widest one, green ON / red OFF for booleans,
+gray separator. Templates: `data/systems/block_messages.lua` (namespace `BLOCK`). Field kinds: plain (white),
+`good` (green), `bad` (red), `warn` (orange), `spell`, `dim` (gray). A value too long for the chat line
+continues under its column.
+
+- `InfoBlock.show{tag, title, fields, lines, width}`: `ui style`, `ui bg list`, `warp status`, `warp test`,
+  `watchdog` status and `stats` (one field builder for both), `info <name>` (the card; `Kind` first, fields
+  coloured by kind), the job-load block (`WAR :: System loaded`, macrobook / lockstyle / keybinds / HUD),
+  COR `rolls` and `party`, BST `broth` and `rdylist`.
+- Pieces (`header`, `fields`, `text`, `separator`, `footer`) for blocks built in steps: `checksets` (header,
+  then the set lines, then the summary fields).
+- Not converted, on purpose: Sortie's own blocks (the model, same look, their own templates), in-game event
+  messages (roll result, recasts, debuff alerts, the line after each spell), and the diagnostic tools
+  (`debugstate`, `fulltest`, `syscheck`, `wa`, `rf`, `wo`, `perf`, `memcheck`, `testmsg`), which must keep
+  working when the message system does not.
+
+Removed with the conversions (2026-09-25): the dead region-detection screens (12 functions, 8 templates;
+`//gs c setregion` never existed), `RollMessages.show_roll_bust_rate`, `Messages.show_stats` and
+`MessageRenderer.show_stats` (no caller). Kept although nothing in `shared/` calls it:
+`MessageKeybinds.show_keybind_list`, used by the frozen Gabvanstronger keybind files.
 
 ### Namespaces used per module
 
@@ -398,7 +451,7 @@ Formatters handle no command themselves. These commands print through them:
 | `_G.LockstyleConfig.initial_load_delay` (default 8.0) | `message_system.lua:42` | delay shown in the intro lockstyle line; set by `_master/entry/*` |
 | `_G.ui_display_config.enabled` | `message_system.lua:64` | UI visible/hidden line in the intro |
 | `shared/data/magic/geomancy/geomancy_indi.lua`, `geomancy_geo.lua` | `message_geo.lua:18-21` at load | descriptions and elements for Indi/Geo lines |
-| UI theme names | hard-coded in `message_ui.lua` (theme list) | should match the `background_presets` of `_master/config_global/UI_CONFIG.lua`, `Tetsouo/config/UI_CONFIG.lua` and `Kaories/config/UI_CONFIG.lua` (36 on 2026-09-18; not re-counted) |
+| UI theme names | read from `_G.UIConfig.background_presets` by `message_ui.lua` `show_theme_list` (since 2026-09-25), grouped by prefix | nothing to keep in step: a theme added to `UI_CONFIG.lua` shows up in the list |
 
 Not read, but repeated as literal text: cure item names (`message_debuffs.lua:267-273, 343-347, 382`,
 see `shared/config/DEBUFF_AUTOCURE_CONFIG.lua:40-52`) and the command lists in the help screens.

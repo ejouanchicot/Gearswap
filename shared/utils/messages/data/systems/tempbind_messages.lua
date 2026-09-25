@@ -15,8 +15,6 @@ return {
     row = { template = "{lightblue}{key}{gray} : {white}{command}", color = 1 },
     -- Help screen: lines arrive pre-coloured with the //gs c help palette
     -- (message_commands.show_commands_list), which the engine tags lack.
-    help_line = { template = "{text}", color = 1 },
-
     added = { template = "{gray}[{lightblue}TB{gray}] {lightblue}{key}{gray} > {white}{command}", color = 1 },
     taken = { template = "{gray}[{lightblue}TB{gray}] {red}{key} is already used by {white}{owner}", color = 1 },
     taken_hint = { template = "{gray}     another key, or no key, or: tb force {key_raw} ...", color = 1 },

@@ -230,6 +230,48 @@ function PartyTracker.init()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
+---   DISPLAY
+---  ═══════════════════════════════════════════════════════════════════════════
+
+--- Job known for a party member: the packet cache (by id, else by name when
+--- the member is in another zone), else the dual-box alt's own report.
+--- @param member table windower.ffxi.get_party() entry
+--- @return table|nil {main_job, sub_job, main_job_level}
+local function known_job(member)
+    local jobs = _G.cor_party_jobs or {}
+    local id = member.mob and member.mob.id
+    if id and jobs[id] then return jobs[id] end
+    for _, entry in pairs(jobs) do
+        if entry.name == member.name then return entry end
+    end
+    local cfg, alt = _G.DualBoxConfig, _G.AltJobState
+    local alt_name = cfg and (cfg.alt_character or cfg.alt_name)
+    if alt and alt.job and alt_name and alt_name:lower() == tostring(member.name):lower() then
+        return {main_job = alt.job, sub_job = alt.subjob ~= 'NON' and alt.subjob or nil,
+            main_job_level = (alt.main_level or 0) > 0 and alt.main_level or nil}
+    end
+    return nil
+end
+
+--- The party as the game lists it (members 1-5, this character left out),
+--- each with the job known for it or none. The packet cache alone is empty
+--- after a //lua reload until each member zones or changes job.
+--- @return table Array of {name, main_job?, sub_job?, main_job_level?}
+function PartyTracker.members_for_display()
+    local party = windower.ffxi.get_party() or {}
+    local members = {}
+    for i = 1, 5 do
+        local member = party['p' .. i]
+        if member and member.name then
+            local job = known_job(member) or {}
+            members[#members + 1] = {name = member.name, main_job = job.main_job,
+                sub_job = job.sub_job, main_job_level = job.main_job_level}
+        end
+    end
+    return members
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
 ---   CLEANUP
 ---  ═══════════════════════════════════════════════════════════════════════════
 

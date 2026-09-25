@@ -214,6 +214,9 @@ function SortieCommands.handle(args)
     if sub == 'list' then
         if messages() then messages().show_target_list(list_entries()) end
         return true
+    elseif sub == 'help' then
+        if messages() then messages().show_help(list_entries(), ALT) end
+        return true
     elseif sub == 'escort' then
         return escort(rest)
     elseif SIMPLE[sub] then

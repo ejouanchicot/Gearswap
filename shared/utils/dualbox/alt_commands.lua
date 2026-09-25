@@ -492,12 +492,15 @@ end
 function AltCommands.handle(cmd, args, runs_locally)
     args = args or {}
 
+    -- `help` shows the overview (the help of the alt's commands), not a
+    -- search for "help"
+    local first = args[1] and args[1]:lower()
     if cmd == 'altcmds' or cmd == 'altlist' then
-        return AltCommands.list(args[1], runs_locally)
+        return AltCommands.list(first ~= 'help' and args[1] or nil, runs_locally)
     end
 
     if cmd == 'alt' then
-        if not args[1] then
+        if not args[1] or first == 'help' then
             return AltCommands.list(nil, runs_locally)
         end
         -- Lua's unpack: Windower's table.unpack(t, 2) returns t[2] alone.

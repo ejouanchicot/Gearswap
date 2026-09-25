@@ -79,43 +79,85 @@ end
 --- FLAT COLOR DEFINITIONS (all at root level for easy access)
 ---============================================================================
 
+-- Standard codes. MessageColors.X reads them through the metatable below,
+-- so the player's chat.colors (UI_CONFIG.lua) can replace any of them.
+local DEFAULTS = {}
+
 -- Action types
-MessageColors.SPELL = 205          -- Cyan - Magic spells
-MessageColors.JA = 50              -- Yellow - Job Abilities
-MessageColors.WS = 50              -- Yellow - Weapon Skills
-MessageColors.ITEM_COLOR = 211     -- Item color - All items
+DEFAULTS.SPELL = 205          -- Cyan - Magic spells
+DEFAULTS.JA = 50              -- Yellow - Job Abilities
+DEFAULTS.WS = 50              -- Yellow - Weapon Skills
+DEFAULTS.ITEM_COLOR = 211     -- Item color - All items
 
 -- UI Elements
-MessageColors.SEPARATOR = 160      -- Gray - Separators, info text
-MessageColors.GRAY = 160           -- Gray - Alias for SEPARATOR
-MessageColors.JOB_TAG = 207        -- Light Blue - Job tags [WAR]
-MessageColors.HEADER = 207         -- Light Blue - Headers
-MessageColors.INFO_HEADER = 207    -- Light Blue - Info headers (alias)
-MessageColors.INFO = 158           -- Green - Info text/counts
+DEFAULTS.SEPARATOR = 160      -- Gray - Separators, info text
+DEFAULTS.GRAY = 160           -- Gray - Alias for SEPARATOR
+DEFAULTS.JOB_TAG = 207        -- Light Blue - Job tags [WAR]
+DEFAULTS.HEADER = 207         -- Light Blue - Headers
+DEFAULTS.INFO_HEADER = 207    -- Light Blue - Info headers (alias)
+DEFAULTS.INFO = 158           -- Green - Info text/counts
 
 -- Status/States
-MessageColors.SUCCESS = 158        -- Green - Success, Ready, Active
-MessageColors.ERROR = 167          -- Red - Errors
-MessageColors.WARNING = get_region_orange()  -- Region-specific Orange - Warnings
-trace_region(MessageColors.WARNING)
-MessageColors.DEBUFF = 208         -- Purple - Debuffs
-MessageColors.READY = 158          -- Green - Ready state
-MessageColors.ACTIVE = 158         -- Green - Active state
-MessageColors.COOLDOWN = 125       -- Dark red - Cooldown timers
-MessageColors.BLOCKED = 167        -- Red - Blocked actions
-MessageColors.WS_BLOCKED = 200     -- Orange - WS blocked
-MessageColors.RANGE_ERROR = 167    -- Red - Range errors
+DEFAULTS.SUCCESS = 158        -- Green - Success, Ready, Active
+DEFAULTS.ERROR = 167          -- Red - Errors
+DEFAULTS.WARNING = get_region_orange()  -- Region-specific Orange - Warnings
+trace_region(DEFAULTS.WARNING)
+DEFAULTS.DEBUFF = 208         -- Purple - Debuffs
+DEFAULTS.READY = 158          -- Green - Ready state
+DEFAULTS.ACTIVE = 158         -- Green - Active state
+DEFAULTS.COOLDOWN = 125       -- Dark red - Cooldown timers
+DEFAULTS.BLOCKED = 167        -- Red - Blocked actions
+DEFAULTS.WS_BLOCKED = 200     -- Orange - WS blocked
+DEFAULTS.RANGE_ERROR = 167    -- Red - Range errors
 
 -- TP Colors
-MessageColors.TP_NORMAL = 1        -- White - 1000-1999 TP
-MessageColors.TP_ENHANCED = 207    -- Light Blue - 2000-2999 TP
-MessageColors.TP_ULTIMATE = 158    -- Green - 3000 TP
-MessageColors.TP_LABEL = 160       -- Gray - TP label
+DEFAULTS.TP_NORMAL = 1        -- White - 1000-1999 TP
+DEFAULTS.TP_ENHANCED = 207    -- Light Blue - 2000-2999 TP
+DEFAULTS.TP_ULTIMATE = 158    -- Green - 3000 TP
+DEFAULTS.TP_LABEL = 160       -- Gray - TP label
 
 -- System/Keybinds
-MessageColors.SYSTEM_LOADED = 207  -- Light Blue - System loaded messages
-MessageColors.KEYBIND_KEY = 158    -- Green - Keybind keys
-MessageColors.KEYBIND_DESC = 160   -- Gray - Keybind descriptions
+DEFAULTS.SYSTEM_LOADED = 207  -- Light Blue - System loaded messages
+DEFAULTS.KEYBIND_KEY = 158    -- Green - Keybind keys
+DEFAULTS.KEYBIND_DESC = 160   -- Gray - Keybind descriptions
+
+--- Palette color each constant follows when the player remaps that color
+--- (chat.colors.green = N also changes SUCCESS, READY...). Constants with no
+--- palette color of the same code (SPELL 205, ITEM_COLOR 211, COOLDOWN 125,
+--- WS_BLOCKED 200) only change when set by their own name.
+local FOLLOWS = {
+    JA = 'yellow', WS = 'yellow',
+    SEPARATOR = 'gray', GRAY = 'gray', TP_LABEL = 'gray', KEYBIND_DESC = 'gray',
+    JOB_TAG = 'lightblue', HEADER = 'lightblue', INFO_HEADER = 'lightblue',
+    TP_ENHANCED = 'lightblue', SYSTEM_LOADED = 'lightblue',
+    INFO = 'green', SUCCESS = 'green', READY = 'green', ACTIVE = 'green',
+    TP_ULTIMATE = 'green', KEYBIND_KEY = 'green',
+    ERROR = 'red', BLOCKED = 'red', RANGE_ERROR = 'red',
+    WARNING = 'orange', DEBUFF = 'purple', TP_NORMAL = 'white',
+}
+
+--- Constant names a player can set in chat.colors (lowercase: success...).
+MessageColors.SETTABLE = {}
+for name in pairs(DEFAULTS) do MessageColors.SETTABLE[name:lower()] = true end
+
+local function player_colors()
+    local ok, ChatPalette = pcall(require, 'shared/utils/messages/chat_palette')
+    return ok and ChatPalette and ChatPalette.overrides() or {}
+end
+
+-- MessageColors.SUCCESS etc.: the player's own code for that name, else the
+-- code of the palette color it follows when the player remapped it, else
+-- the standard code. Read at each use, like before (callers never cached).
+setmetatable(MessageColors, {__index = function(_, key)
+    local default = DEFAULTS[key]
+    if default == nil then return nil end
+    local colors = player_colors()
+    local own = colors[key:lower()]
+    if own then return own end
+    local follows = FOLLOWS[key]
+    if follows and colors[follows] then return colors[follows] end
+    return default
+end})
 
 ---============================================================================
 --- HELPER FUNCTIONS
@@ -160,6 +202,14 @@ end
 --- Get current orange/warning color dynamically (for runtime calls)
 --- @return number warning_code Current region-specific warning color
 function MessageColors.get_warning_color()
+    local colors = player_colors()
+    return colors.warning or colors.orange or get_region_orange()
+end
+
+--- The region's orange, ignoring the player's colors (standard for the
+--- palette's orange: reading WARNING there would loop back to the palette).
+--- @return number
+function MessageColors.region_orange()
     return get_region_orange()
 end
 
