@@ -194,3 +194,4 @@ Bugs existants chez eux (ne pas reproduire) : AugGear d'un autre perso effacé p
 | 2026-09-25 | C : 4 verrous Combat Mode en double retirés | refactor(combatmode) | oui (Tetsouo BLM, Kaories RDM/GEO) |
 | 2026-09-25 | D : COR Double-Up, options Hasso / Entrust / Full Circle | feat(cor,geo,sam) | Double-Up oui ; options hors jeu |
 | 2026-09-25 | Temps de cast depuis le stuff, file de chants, overlay BRD Blody | feat(cast), feat(brd), feat(blody) | oui (Tetsouo, sets Blody) |
+| 2026-09-25 | Overlay COR Blody, Luzaf par perso | fix(cor), feat(blody) | en cours sur Kaories |
