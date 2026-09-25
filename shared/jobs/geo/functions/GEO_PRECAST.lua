@@ -75,6 +75,13 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
+    -- THIRD: Entrust / Full Circle first, when the character turned them on
+    -- (config/AUTO_ABILITIES.lua)
+    require('shared/jobs/geo/functions/logic/geo_auto_abilities').apply(spell, eventArgs)
+    if eventArgs.cancel or eventArgs.handled then
+        return
+    end
+
     -- Raised optimistically: aftercast lowers it again if Entrust is interrupted
     if spell.type == 'JobAbility' and spell.name == 'Entrust' then
         _G.geo_entrust_pending = true
