@@ -189,22 +189,7 @@ function job_state_change(stateField, newValue, oldValue)
 
     local field = type(stateField) == 'string' and stateField:gsub(' ', '') or stateField
 
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- COMBAT MODE - WEAPON LOCK (RDM-style)
-    -- ══════════════════════════════════════════════════════════════════════════
-    -- When CombatMode = 'On', lock weapons to prevent accidental swaps.
-    -- Released on unload by the entry's file_unload (the lock outlives the job).
-    if field == 'CombatMode' then
-        if newValue == 'On' then
-            disable('main', 'sub', 'range', 'ammo')
-        else
-            -- Not during a craft session: CraftManager owns the lock until
-            -- //gs c uncraft, and enabling here would drop the synthesis gear.
-            if not (_G.CraftManager and _G.CraftManager.is_active()) then
-                enable('main', 'sub', 'range', 'ammo')
-            end
-        end
-    end
+    -- Combat Mode's weapon lock is shared/utils/core/combat_mode.lua's.
 
     -- ══════════════════════════════════════════════════════════════════════════
     -- OFFENSE MODE - WEAPON LOCK (the mode WHM_STATES defines: None / Melee ON)

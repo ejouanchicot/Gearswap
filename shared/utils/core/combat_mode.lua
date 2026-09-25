@@ -2,7 +2,7 @@
 --- Combat Mode - weapon lock available on every job
 ---============================================================================
 --- state.CombatMode (Off / On). On keeps the weapons where they are: main,
---- sub and range are disabled (plus ammo on BLM and WHM), so a spell or a
+--- sub and range are disabled (plus ammo on BLM, GEO and WHM), so a spell or a
 --- set never swaps them and the TP stays. Off gives them back to the job.
 ---
 --- Shown or hidden per job (row in the HUD, key, lock), saved per character
@@ -18,7 +18,7 @@
 --- The lock is laid by one wrapper of handle_equipping_gear (every update),
 --- and released while a craft session holds the gear. GearSwap keeps a
 --- disabled slot across a job change: what this module locked is recorded on
---- `windower` and freed by the next job if its CombatMode is not On.
+--- `windower` and freed when the next job loads (attach), before its gear.
 ---
 --- @file    shared/utils/core/combat_mode.lua
 --- @author  Tetsouo
@@ -35,6 +35,7 @@ local DEFAULT_SLOTS = {'main', 'sub', 'range'}
 local DEFAULT_KEY = '!numpad0'
 local SLOTS_BY_JOB = {
     BLM = {'main', 'sub', 'range', 'ammo'},
+    GEO = {'main', 'sub', 'range', 'ammo'},
     WHM = {'main', 'sub', 'range', 'ammo'},
 }
 
@@ -146,6 +147,11 @@ function CombatMode.attach(job, binds)
     end
     if not rawget(state, 'CombatMode') then
         state.CombatMode = M{['description'] = 'Combat Mode', 'Off', 'On'}
+    end
+    -- A job change keeps GearSwap's disabled slots; this job starts Off
+    if windower._combat_mode_locked and not craft_active() then
+        enable(unpack_list(windower._combat_mode_locked))
+        windower._combat_mode_locked = nil
     end
     local entry = nil
     for _, bind in ipairs(binds) do

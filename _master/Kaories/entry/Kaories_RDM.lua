@@ -171,17 +171,6 @@ function job_sub_job_change(newSubjob, oldSubjob)
         end
     end
 
-    -- Re-apply weapon locking after subjob change (CombatMode)
-    if state.CombatMode and state.CombatMode.current == "On" then
-        disable('main', 'sub', 'range')
-    else
-        -- Same guard as job_update below: a subjob change during a craft
-        -- session must not take the synthesis gear off.
-        if not (_G.CraftManager and _G.CraftManager.is_active()) then
-            enable('main', 'sub', 'range')
-        end
-    end
-
     -- Let JobChangeManager handle the full reload sequence
     -- DUALBOX IPC fires from user_setup() after the reload (covers main + subjob)
     local success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
@@ -195,7 +184,7 @@ end
 -- USER SETUP
 ---============================================================================
 
---- Configure states, CombatMode weapon lock, keybinds, UI and the initial
+--- Configure states, keybinds, UI and the initial
 --- macrobook/lockstyle.
 --- Called by Mote-Include from init_include() (inside include('Mote-Include.lua'),
 --- before init_gear_sets) and again on every subjob change, before job_sub_job_change().
@@ -210,18 +199,6 @@ function user_setup()
 
     -- Note: configure() also creates the Storm state when the subjob is SCH
     -- (configure_storm); job_sub_job_change() re-checks it.
-
-    -- ==========================================================================
-    -- WEAPON LOCK (Always executed after reload)
-    -- ==========================================================================
-    -- Apply weapon lock IMMEDIATELY if CombatMode is On at load
-    if state.CombatMode and state.CombatMode.current == "On" then
-        disable('main', 'sub', 'range')
-        local msg_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-        if msg_success and MessageFormatter then
-            MessageFormatter.show_info('[RDM] CombatMode: Weapons locked')
-        end
-    end
 
     -- ==========================================================================
     -- KEYBIND LOADING (Always executed after reload)
@@ -279,28 +256,11 @@ end
 ---============================================================================
 
 --- Called by Mote-Include after state changes
---- Applies the CombatMode weapon lock, then updates the UI
+--- Updates the UI. The Combat Mode lock is shared/utils/core/combat_mode.lua's.
 --- @param cmdParams table Parameters passed to Mote's handle_update
 --- @param eventArgs table Mote event arguments (unused)
 --- @return void
 function job_update(cmdParams, eventArgs)
-    -- Handle Combat Mode weapon locking
-    if state.CombatMode then
-        if state.CombatMode.current == "On" then
-            -- Lock weapon slots (main, sub, range only - ammo can still swap)
-            disable('main', 'sub', 'range')
-        else
-            -- Unlock weapon slots UNLESS a craft/fish session owns the disable.
-            -- job_update fires on every `gs c update` (aftercast/automove/state
-            -- change), so an unconditional enable() here would silently break
-            -- `//gs c craft`. CraftManager owns the disable until //gs c uncraft.
-            local craft_active = _G.CraftManager and _G.CraftManager.is_active()
-            if not craft_active then
-                enable('main', 'sub', 'range')
-            end
-        end
-    end
-
     -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI and KeybindUI.update then

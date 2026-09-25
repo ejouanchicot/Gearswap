@@ -24,7 +24,7 @@ What GEO adds on top of the shared pipeline:
 - **Nuke commands with tier fallback** (`lightspell`, `darkaoe`, ...) that walk
   down from the selected tier to the first learned, ready spell.
 - **Scholar subjob helpers** (Arts toggles, `aoe` Accession chains, `dispel`).
-- **CombatMode** weapon lock in `job_update`, the PetTP addon loaded while GEO
+- The shared **CombatMode** weapon lock, the PetTP addon loaded while GEO
   is the main job, and Entrust reporting to the dual-box main.
 
 Every file in scope was read in full except the gear content of the sets files
@@ -36,8 +36,8 @@ nothing, the function name is cited instead.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_GEO.lua` | 292 | Entry point (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (CombatMode), `init_gear_sets`, `file_unload` |
-| `_master/Kaories/entry/Kaories_GEO.lua` | 291 | Kaories overlay: same code, `Kaories/` paths, shorter dual-box comment (218-219) |
+| `_master/entry/Tetsouo_GEO.lua` | 276 | Entry point (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (UI only), `init_gear_sets`, `file_unload` |
+| `_master/Kaories/entry/Kaories_GEO.lua` | 275 | Kaories overlay: same code, `Kaories/` paths, shorter dual-box comment (218-219) |
 | `shared/jobs/geo/functions/geo_functions.lua` | 101 | Facade: `message_buffs.lua`, the 11 hook files, `dualbox_manager` |
 | `shared/jobs/geo/functions/GEO_PRECAST.lua` | 114 | `job_precast` (guard, cooldown, Entrust flag, WS) / `job_post_precast` |
 | `shared/jobs/geo/functions/GEO_MIDCAST.lua` | 135 | `job_midcast` (empty) / `job_post_midcast` (Geomancy + the other skills through `MidcastManager`) |
@@ -87,7 +87,7 @@ sequenceDiagram
     GS->>E: get_sets()
     E->>M: include Mote-Include (75)
     M->>E: user_setup() (states, lua load pettp, keybinds + show_intro, UI, JCM, macro/lockstyle, dualbox)
-    M->>E: init_gear_sets() -> include sets file (267)
+    M->>E: init_gear_sets() -> include sets file (251)
     E->>E: INIT_SYSTEMS (77), data_loader, message hooks (83-101)
     E->>E: _G.LockstyleConfig, RECAST_CONFIG, GEOTPConfig (104-108)
     E->>E: JobChangeManager.cancel_all() (111-114)
@@ -199,12 +199,13 @@ flowchart TD
   for the mode to change it; with a luopan out the mode is not read.
 - The luopan appearing or leaving re-equips through Mote's `pet_change`, which
   calls `handle_equipping_gear` (`Mote-Include.lua:1048-1061`).
-- CombatMode: `job_update` (`Tetsouo_GEO.lua:234-257`) calls
-  `disable('main','sub','range','ammo')` when On and `enable(...)` when Off
-  unless `_G.CraftManager.is_active()`. The lock is applied when `job_update`
-  runs: `gs c update` and every state cycle, HUD shown or not (the HUD-visible
-  `cyclestate` ends in Mote's `handle_update`, `CYCLE_HANDLER.lua:60-63`). The
-  `disable` survives `gs reload` and main job changes.
+- CombatMode: since 2026-09-25 the shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25)
+  hook on `handle_equipping_gear` disables main/sub/range/ammo when On and
+  enables them when Off unless a craft session is active; `job_update` only
+  refreshes the HUD. The lock follows every gear update: `gs c update` and every
+  state cycle, HUD shown or not (the HUD-visible `cyclestate` ends in Mote's
+  `handle_update`, `CYCLE_HANDLER.lua:60-63`). A lock left by a reload or job
+  change is freed at the next load.
 
 ### Aftercast, status, buffs
 
@@ -243,7 +244,7 @@ on every `user_setup()`. Keys from `_master/config/geo/GEO_KEYBINDS.lua:28-55`;
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
 | `HybridMode` | PDT, Normal | PDT | `^numpad9` | `set_builder.lua:81-87` (base without a luopan); both modes wear the same gear today (see Idle, engaged, pet) |
-| `CombatMode` | Off, On | Off | `^numpad0` | `job_update` (`Tetsouo_GEO.lua:236-250`) |
+| `CombatMode` | Off, On | Off | `^numpad0` | shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25) hook |
 | `LuopanMode` | DT, DPS | DT | `^numpad.` | `set_builder.lua:101-115` (engaged with a luopan only) |
 | `MainWeapon` | Idris | Idris | none | `set_builder.lua:44-54` |
 | `SubWeapon` | Genmei Shield | Genmei Shield | none | `set_builder.lua:56-66` |
@@ -285,7 +286,7 @@ tests `altjobupdate` (114; passes the sender name, 5th argument, since
 
 `job_state_change` is `LifecycleManager.state_change()` (399); it ignores
 the state name, so the key (CycleHandler) vs description (Mote) difference does
-not matter. CombatMode is handled in `job_update`, not here.
+not matter. CombatMode is the shared `combat_mode.lua` hook, not here.
 
 ## Set names the code looks up
 
@@ -341,7 +342,8 @@ code looks up is missing.
 - `windower.*`: nothing written by GEO code itself (`AbilityHelper` and the
   keybind manager keep their own `windower._*` records). No events registered.
 - Outside the sandbox: the PetTP addon (load/unload), the `disable_table` slot
-  locks of CombatMode (they survive `gs reload` and job change).
+  locks of CombatMode (they survive `gs reload` and job change; the shared
+  `combat_mode.lua` frees them at the next load).
 - Coroutines: the 8 s lockstyle, the `escort` cast and follow timers, and the
   polls behind `entrust` and `dispel`.
   Neither chains `wait N` any more: `entrust` uses
@@ -423,7 +425,7 @@ code looks up is missing.
   luopan is out.
 - `IndicolureMode` has no reader (`_master/config/geo/GEO_STATES.lua:98-103`).
 - PetTP is loaded on every `user_setup()`, including the old sandbox's run on a
-  subjob change, and unloaded on every `file_unload` (`Tetsouo_GEO.lua:171,285`).
+  subjob change, and unloaded on every `file_unload` (`Tetsouo_GEO.lua:171,269`).
 - No `sets.midcast['Healing Magic']` or `['Dark Magic']`: those
   `MidcastManager` routes return false and Cures keep Mote's
   `sets.midcast.Cure` (`_master/sets/geo_sets.lua:319`).

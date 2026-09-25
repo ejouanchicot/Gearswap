@@ -23,7 +23,7 @@ What RDM adds on top of the shared pipeline:
   Saboteur hands overlay and an Accession + Phalanx exception.
 - **Weapon states and dual-wield detection** for idle/engaged sets
   (`MainWeapon`, `SubWeapon`, `EngagedMode`, `.DW` variants, `sets.shields`),
-  and a `CombatMode` weapon lock.
+  and the shared `CombatMode` weapon lock.
 - **State-driven cast commands** (`castlight`, `castenspell`, `castgain`, ...)
   and a catch-all that turns any unknown command into `/ja`, `/ws` or `/ma`.
 
@@ -35,10 +35,10 @@ numbers were re-checked against the working tree on 2026-09-25.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_RDM.lua` | 342 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (CombatMode lock), `init_gear_sets`, `file_unload` |
-| `_master/Kaories/entry/Kaories_RDM.lua` | 340 | Kaories overlay entry: identical except `Kaories/...` paths and two comments (see below) |
+| `_master/entry/Tetsouo_RDM.lua` | 302 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (UI only), `init_gear_sets`, `file_unload` |
+| `_master/Kaories/entry/Kaories_RDM.lua` | 300 | Kaories overlay entry: identical except `Kaories/...` paths and two comments (see below) |
 | `shared/jobs/rdm/functions/rdm_functions.lua` | 85 | Facade: includes the 11 hook files, requires `dualbox_manager` (83) |
-| `shared/jobs/rdm/functions/RDM_PRECAST.lua` | 366 | `job_precast` as four stages (guard, cooldown/refine, Phalanx, Saboteur) + WS; `job_post_precast` (TP gear, spell FC set, `debugprecast` trace) |
+| `shared/jobs/rdm/functions/RDM_PRECAST.lua` | 364 | `job_precast` as four stages (guard, cooldown/refine, Phalanx, Saboteur) + WS; `job_post_precast` (TP gear, spell FC set, `debugprecast` trace) |
 | `shared/jobs/rdm/functions/RDM_MIDCAST.lua` | 369 | `job_midcast` (empty) / `job_post_midcast`: `SKILL_HANDLERS` table dispatch to `MidcastManager` |
 | `shared/jobs/rdm/functions/RDM_AFTERCAST.lua` | 24 | `job_aftercast = LifecycleManager.aftercast()` |
 | `shared/jobs/rdm/functions/RDM_IDLE.lua` | 43 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
@@ -73,7 +73,7 @@ the template. `Tetsouo/` has no RDM files; `Hysoka/` and `Gabvanstronger/` are
 frozen and out of scope.
 
 The overlay entry differs from the template only in the character name of every
-config path (`Kaories_RDM.lua:43,58,63,107,111,114,157,208,229`), the
+config path (`Kaories_RDM.lua:43,58,63,107,111,114,157,197,206`), the
 position of the "DUALBOX IPC" comment in `job_sub_job_change`, and the wording
 of the dual-box comment in `user_setup`.
 
@@ -95,8 +95,8 @@ sequenceDiagram
     GS->>E: run chunk (LOCKSTYLE_CONFIG 43-51, UIConfig 57-58, REGION_CONFIG 63-66)
     GS->>E: get_sets()
     E->>M: include Mote-Include (77)
-    M->>E: user_setup() (states, CombatMode lock, keybinds, UI, JCM, macrobook/lockstyle, dualbox)
-    M->>E: init_gear_sets() -> include sets/rdm_sets.lua (321)
+    M->>E: user_setup() (states, keybinds, UI, JCM, macrobook/lockstyle, dualbox)
+    M->>E: init_gear_sets() -> include sets/rdm_sets.lua (281)
     E->>E: INIT_SYSTEMS, data_loader, message hooks (79-104)
     E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, RDM_TP_CONFIG, _G.RDMSaboteurConfig (106-122)
     E->>E: JobChangeManager.cancel_all() (125-129)
@@ -105,13 +105,12 @@ sequenceDiagram
     E->>E: register_lockstyle_cancel("RDM", ...) (136-138)
 ```
 
-`user_setup()` (`Tetsouo_RDM.lua:204-280`):
+`user_setup()` (`Tetsouo_RDM.lua:193-254`):
 
 1. `RDMStates.configure()` creates every state (see [Mote states](#mote-states)),
-   including `Storm` when the subjob is SCH.
-2. If `CombatMode` is On, `disable('main','sub','range')` and an info line
-   (219-225). The template default is Off; the Kaories default is On.
-3. `require` of `RDM_KEYBINDS`, stored in the global `RDMKeybinds`, then
+   including `Storm` when the subjob is SCH. `CombatMode` defaults to Off
+   (Kaories: On); its lock is the shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25) hook.
+2. `require` of `RDM_KEYBINDS`, stored in the global `RDMKeybinds`, then
    `bind_all()` (`keybind_manager.lua` `bind_all`): keys of the file that no
    longer apply are unbound, the binds `get_active_binds()` keeps for the
    subjob are bound (the keys about to be bound are not unbound first), then
@@ -120,11 +119,11 @@ sequenceDiagram
    `show_system_intro`, but executing them defines the globals
    `select_default_macro_book` and `select_default_lockstyle` as a side effect.
    A failed `require` prints `[RDM] Keybinds failed to load: <error>`.
-4. `KeybindUI.smart_init("RDM", init_delay)`.
-5. `JobChangeManager.initialize()`; because of step 3 the gate at 264 passes on
+3. `KeybindUI.smart_init("RDM", init_delay)`.
+4. `JobChangeManager.initialize()`; because of step 2 the gate at 241 passes on
    a fresh load, so the macro book is set at once and the lockstyle is
    scheduled after `LockstyleConfig.initial_load_delay` (8 s).
-6. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`.
+5. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`.
 
 The facade (`rdm_functions.lua`) includes `RDM_LOCKSTYLE`, `RDM_MACROBOOK` (27,
 29), `RDM_PRECAST`, `RDM_MIDCAST`, `RDM_AFTERCAST` (36-40), `RDM_IDLE`,
@@ -136,13 +135,11 @@ before the facade include, so the captures are valid.
 
 ### Precast
 
-`job_precast` (`RDM_PRECAST.lua:251-284`):
+`job_precast` (`RDM_PRECAST.lua:251-281`):
 
 ```mermaid
 flowchart TD
-    A[job_precast] --> L{CombatMode On}
-    L -- yes --> D0[disable main/sub/range]
-    L -- no --> G
+    A[job_precast] --> D0[CombatMode.apply: lock if On, free if Off]
     D0 --> G{stage_guard: PrecastGuard}
     G -- blocked --> Z[return]
     G -- ok --> C{action_type}
@@ -160,7 +157,8 @@ flowchart TD
     S --> W[WSPrecastHandler.handle with RDMTPConfig]
 ```
 
-- The weapon lock at 256-258 runs before anything else, for every action.
+- `require('shared/utils/core/combat_mode').apply()` (256) runs before anything
+  else, for every action, so the lock holds before precast gear.
 - `get_enfeeble_tiers` (76-82) takes the first word of `spell.name`
   (`^(%a+)`) and looks it up with `RDM_ENFEEBLE_TIERS.get` in `TIERS`: Dia, Bio, Distract,
   Frazzle (III -> II -> base), Blind, Slow, Paralyze, Poison, Addle, Sleep,
@@ -193,13 +191,13 @@ flowchart TD
 - `WSPrecastHandler.handle` is called for every action (it returns true for
   non-WS). `RDMTPConfig` defines `pieces` and `get_weapon_bonus`, so the TP
   calculator works for RDM (compare BLM).
-- `job_post_precast` (331-351): `WSPrecastHandler.apply_tp_gear`, then
+- `job_post_precast` (329-350): `WSPrecastHandler.apply_tp_gear`, then
   `sets.precast.FC[spell.english]` when it exists (only `Stoneskin` in the sets).
   With `_G.PrecastDebugState` (`//gs c debugprecast`) it prints the set that
-  `describe_equipped_set` (292-322) believes Mote chose. That function reports
+  `describe_equipped_set` (290-321) believes Mote chose. That function reports
   "No FC (Chainspell active)" under Chainspell, but no code skips the FC set
   under Chainspell. A ranged attack, recognised by
-  `spell.action_type == 'Ranged Attack'` (318; `/ra` has `type` `'Misc'`), is
+  `spell.action_type == 'Ranged Attack'` (316; `/ra` has `type` `'Misc'`), is
   reported as `sets.precast.RA`.
 
 ### Midcast
@@ -280,7 +278,7 @@ Keybinds from `RDM_KEYBINDS.lua:18-44`; `^` = Ctrl, `#` = Apps.
 | `IdleMode` (replaced) | Refresh, DT | Refresh | `^numpad4` | Mote `get_idle_set`, `set_builder.lua` `select_idle_base` |
 | `MainWeapon` | Naegling, Colada, Daybreak (Kaories: Maxentius) | Naegling (Kaories: Maxentius) | `^numpad1` | `set_builder.lua:121-131` |
 | `SubWeapon` | Ammurapi, Genmei, Malevolence | Genmei | `^numpad2` | `set_builder.lua:65-66,134-144` |
-| `CombatMode` | Off, On | Off (Kaories: On) | `^numpad5` | entry `user_setup`/`job_sub_job_change`/`job_update`, `RDM_PRECAST.lua:256`, `set_builder.lua:116` |
+| `CombatMode` | Off, On | Off (Kaories: On) | `^numpad5` | shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25) hook, `RDM_PRECAST.lua:256`, `set_builder.lua:116` |
 | `EnfeebleMode` | Potency, Skill, Duration | Potency | `^numpad3` | `RDM_MIDCAST.lua:122` (no effect, see Known issues) |
 | `NukeMode` | FreeNuke, Magic Burst | FreeNuke | `^numpad7` | `RDM_MIDCAST.lua:262` |
 | `MainLightSpell` / `SubLightSpell` | Fire, Aero, Thunder | Fire / Thunder | none | `castlight` / `castsublight` |
@@ -344,9 +342,9 @@ job only).
 longer re-equips on `MainWeapon` / `SubWeapon` (removed 2026-09-25): a cycle
 (`cyclestate`, Mote's `cycle`/`set`) ends in Mote's `handle_update`
 (`Mote-SelfCommands.lua`), which rebuilds the idle/engaged set and so equips
-the new weapon. It does not handle `CombatMode`: that lock lives in the
-entry's `job_update` (288-311; enable is skipped while
-`_G.CraftManager.is_active()`) and in `job_precast`.
+the new weapon. It does not handle `CombatMode`: since 2026-09-25 that lock is
+the shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25) hook (craft-aware), also
+applied from `job_precast`.
 
 ## Set names the code looks up
 
@@ -410,17 +408,16 @@ T = `_master/sets/rdm_sets.lua`, K = `_master/Kaories/sets/rdm_sets.lua`
 - `_G` read: `MidcastManagerDebugState`, `MidcastWatchdog`,
   `CraftManager`, `UIConfig`.
 - `windower.*`: RDM code writes nothing and registers no events.
-- Keybinds: bound in `user_setup`, unbound in `file_unload` (339-341).
+- Keybinds: bound in `user_setup`, unbound in `file_unload` (299-301).
 - Slot locks: `disable('main','sub','range')` lives in GearSwap's
-  `disable_table` and survives `gs reload`, subjob and main job changes. RDM
-  re-applies or releases it from `user_setup` (On only), `job_sub_job_change`
-  and `job_update` (both ways, both craft-aware). `file_unload` does not
-  release it.
+  `disable_table` and survives `gs reload`, subjob and main job changes. Since
+  2026-09-25 the shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25) lock records
+  it in `windower._combat_mode_locked` and frees it at the next load, then
+  re-applies it on the first gear update if `CombatMode` is On.
 - Coroutines: the 8 s lockstyle from `user_setup`; `wait N` chains
   (Saboteur, refinement) sit in the Windower queue and survive a reload.
 - Subjob change: Mote calls `user_setup()` again (states reset), then
-  `job_sub_job_change` (155-192), which re-runs `configure_storm`, re-applies the
-  weapon lock and hands over to `JobChangeManager.on_job_change`, which schedules
+  `job_sub_job_change` (155-182), which re-runs `configure_storm` and hands over to `JobChangeManager.on_job_change`, which schedules
   a `gs reload` 0.5 s later ([job change lifecycle](../architecture/job-change-lifecycle.md)).
 
 ## Interactions
@@ -455,8 +452,8 @@ T = `_master/sets/rdm_sets.lua`, K = `_master/Kaories/sets/rdm_sets.lua`
 - The enfeebling base set carries `main`, `sub` and `range`; with `CombatMode`
   Off, every enfeeble swaps weapons (TP loss).
 - `CombatMode` cycled from its key applies or releases the weapon lock at once,
-  HUD shown or not: both cycle paths end in Mote's `handle_update`, which runs
-  the entry's `job_update` (`Tetsouo_RDM.lua:288-311`)
+  HUD shown or not: both cycle paths end in Mote's `handle_update`, whose
+  `handle_equipping_gear` is wrapped by the shared `combat_mode.lua` hook
   ([core lifecycle](../systems/core-lifecycle.md#cyclehandler-and-state-display)).
 - `SubWeapon` decides single vs dual wield; the subjob is not considered.
 - Command names `convert`, `chainspell`, `saboteur`, `composure` also exist in
@@ -501,8 +498,8 @@ T = `_master/sets/rdm_sets.lua`, K = `_master/Kaories/sets/rdm_sets.lua`
 - "Storm spells enabled/disabled" never prints: `user_setup()` has already
   updated `state.Storm` when `job_sub_job_change` compares
   (`Tetsouo_RDM.lua:157-171`, `Mote-Include.lua:981-988`).
-- Fixed in `34ba527`: `job_sub_job_change` now has the same craft check as
-  `job_update` (`Tetsouo_RDM.lua:176-183`).
+- Superseded 2026-09-25: `job_sub_job_change` and `job_update` no longer touch
+  the lock (fixed in `34ba527` before); the shared hook is craft-aware.
 - To check in game (change of 2026-09-25): changing weapon (`^numpad1` cycle
   and `//gs c set MainWeapon ...`) still equips the weapon now that
   `job_state_change` no longer calls `handle_equipping_gear`.
@@ -531,7 +528,7 @@ T = `_master/sets/rdm_sets.lua`, K = `_master/Kaories/sets/rdm_sets.lua`
   `message_rdm.lua` have no caller.
 - Stale text: `no_enspell_selected` ("Alt+8", `rdm_messages.lua:61`; the key is
   `^numpad.`), `describe_equipped_set` Chainspell line
-  (`RDM_PRECAST.lua:308-309`). The state header and the "Alt+NUMPAD" keybind
+  (`RDM_PRECAST.lua:306-307`). The state header and the "Alt+NUMPAD" keybind
   comments were fixed in `b6c7dc6` / `22e1816`.
 - Fixed in `f6f1683`: the live Kaories files and `_master/Kaories/` are
   identical again (Maxentius, CombatMode On, Black Halo are in the overlay).

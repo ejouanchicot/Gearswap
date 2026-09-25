@@ -253,9 +253,7 @@ function job_precast(spell, action, spellMap, eventArgs)
 
     -- Lock the weapon slots BEFORE any precast gear goes on, or midcast will
     -- happily equip a weapon out of a set.
-    if state.CombatMode and state.CombatMode.current == "On" then
-        disable('main', 'sub', 'range')
-    end
+    require('shared/utils/core/combat_mode').apply()
 
     local debug_enabled = is_precast_debug_enabled()
 

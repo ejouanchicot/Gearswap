@@ -510,8 +510,9 @@ end
 ---   STATE CHANGE HOOK
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Update UI when state changes (MainWeapon, HybridMode, etc.) and apply
----   or release the CombatMode weapon lock.
+---   Update UI when state changes (MainWeapon, HybridMode, etc.) and put the
+---   magic weapons on when Combat Mode turns On (the lock itself is
+---   shared/utils/core/combat_mode.lua's).
 ---   Called by Mote-Include after any state change.
 ---
 ---   @param stateField string State that changed (e.g., "MainWeapon")
@@ -534,24 +535,14 @@ function job_state_change(stateField, newValue, oldValue)
         return
     end
 
-    -- Combat Mode weapon lock (immediate: fires on the cycle itself, unlike
-    -- job_update which lags behind the UI-visible cycle path). Equip the magic
-    -- weapon set BEFORE disabling so the lock holds Bunzi/Ammurapi/Sroda -
-    -- equip() only diverts an item to not_sent_out_equip when the slot is
-    -- ALREADY disabled (GearSwap helper_functions.lua:321), so equip-then-disable
-    -- in the same frame works. Accept both stateField spellings: 'CombatMode'
-    -- (CycleHandler key) and 'Combat Mode' (Mote-SelfCommands description).
-    if stateField == 'CombatMode' or stateField == 'Combat Mode' then
-        if newValue == 'On' then
-            equip({ main = "Bunzi's Rod", sub = "Ammurapi Shield", ammo = "Sroda Tathlum" })
-            disable('main', 'sub', 'range', 'ammo')
-        else
-            -- Don't steal the disable from an active craft/fish session.
-            local craft_active = _G.CraftManager and _G.CraftManager.is_active()
-            if not craft_active then
-                enable('main', 'sub', 'range', 'ammo')
-            end
-        end
+    -- Combat Mode On: queue the magic weapons now. The update that follows
+    -- runs combat_mode.lua's lock before any gear, and equip() only diverts
+    -- an item when its slot is ALREADY disabled (GearSwap
+    -- helper_functions.lua:321), so these stay queued and the lock holds
+    -- them. Accept both stateField spellings: 'CombatMode' (CycleHandler key)
+    -- and 'Combat Mode' (Mote-SelfCommands description).
+    if (stateField == 'CombatMode' or stateField == 'Combat Mode') and newValue == 'On' then
+        equip({ main = "Bunzi's Rod", sub = "Ammurapi Shield", ammo = "Sroda Tathlum" })
     end
 
     update_ui()

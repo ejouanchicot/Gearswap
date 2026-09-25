@@ -228,7 +228,7 @@ function job_update(cmdParams, eventArgs)
         MessageFormatter.show_debug('BLM', string.format('[job_update] ENTER | dt from AutoMove=%.3fms', (debug_start - _G.AUTOMOVE_DEBUG_START) * 1000))
     end
 
-    -- Combat Mode weapon locking is handled in job_state_change (BLM_COMMANDS.lua)
+    -- Combat Mode weapon lock: shared/utils/core/combat_mode.lua
     -- so it applies immediately on the cycle instead of lagging to the next update.
 
     -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
@@ -267,18 +267,10 @@ end
 ---============================================================================
 
 --- Called by GearSwap when this job file is unloaded (job change, reload).
---- Releases the CombatMode weapon lock, cancels pending job-change operations
---- and unbinds the job keys.
+--- Cancels pending job-change operations and unbinds the job keys. The Combat
+--- Mode lock is freed by the next job (shared/utils/core/combat_mode.lua).
 --- @return void
 function file_unload()
-    -- disable() lives in GearSwap's own table, which survives the reload,
-    -- while CombatMode comes back as Off: release the lock here. Not during
-    -- a craft session, whose lock CraftManager owns.
-    if state and state.CombatMode and state.CombatMode.value == 'On'
-        and not (_G.CraftManager and _G.CraftManager.is_active()) then
-        enable('main', 'sub', 'range', 'ammo')
-    end
-
     -- Cancel pending job change operations (debounce timer + lockstyles)
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if jcm_success and JobChangeManager then

@@ -86,7 +86,8 @@ comportement à l'identique (audit : 38 valeurs d'armes Tetsouo + Kaories).
 ### Étape C : fonctions communes manquantes (options, off par défaut)
 - [x] WeaponLock = Combat Mode commun à tous les jobs (2026-09-25, testé en jeu, décidé
   avec Tetsouo) : `shared/utils/core/combat_mode.lua` + `//gs c combatmode show|hide|key`.
-  Reste : retirer les 4 verrous codés à la main (BLM, WHM, RDM, GEO) une fois validé.
+  Les 4 verrous codés à la main (BLM, WHM, RDM, GEO) retirés le 2026-09-25 (modèles,
+  overlays, live Tetsouo BLM et Kaories RDM/GEO ; Hysoka et Gab figés, non touchés).
 - [x] Mode CP : champ `lock` des états perso (`shared/utils/custom/custom_locks.lua`),
   exemple dans `docs/user/guides/keybinds.md`. AutoCP (Apex/Nostos/Locus < 50 %) non
   repris : demander à Gab s'il y tient (il faudrait des conditions sur la cible).
@@ -175,3 +176,4 @@ Bugs existants chez eux (ne pas reproduire) : AugGear d'un autre perso effacé p
 | 2026-09-25 | B : clone + character_db | 34481ae | hors jeu (comparaison de clones) |
 | 2026-09-25 | B : dual-box arme + multi-alts, touches `alt` | feat(dualbox) | oui (Tetsouo + Kaories) |
 | 2026-09-25 | C : Combat Mode commun, lock CP, Obi/Orpheus, Utsusemi | feat(common) | oui (Tetsouo) |
+| 2026-09-25 | C : 4 verrous Combat Mode en double retirés | refactor(combatmode) | oui (Tetsouo BLM, Kaories RDM/GEO) |
