@@ -1,37 +1,17 @@
-# PUP — Puppetmaster
+# PUP - not functional yet
 
-> **Status: scaffold only.** PUP has a working 12-module structure plus
-> the dedicated `PUP_PET_PRECAST.lua` and `PUP_PET_MIDCAST.lua` modules
-> for automaton command handling, but the set file
-> `_master/sets/pup_sets.lua` is a 20-line skeleton:
->
-> ```lua
-> --- PUP Equipment Sets - SKELETON
-> --- Skeleton file for PUP (job not currently played)
-> --- Allows Tetsouo_PUP.lua to load without errors
-> ```
->
-> If you actually play PUP, fork the project and fill the skeleton in.
-> No specialty logic ships in `shared/jobs/pup/functions/logic/` (the
-> folder doesn't exist).
+PUP does not load today. Its job modules exist
+(`shared/jobs/pup/functions/`), but the configuration folder they need,
+`_master/config/pup/`, does not exist. The entry file
+(`_master/entry/Tetsouo_PUP.lua`) requires `PUP_PET_DATA` and
+`PUP_TP_CONFIG` from that folder without a fallback, so GearSwap stops while
+loading the job file.
 
-## Modules
+- The clone script does not offer PUP.
+- `_master/sets/pup_sets.lua` declares no gear.
+- No character of the author plays PUP.
 
-14 modules: 12 standard (precast / midcast / aftercast / idle / engaged /
-status / buffs / commands / movement / lockstyle / macrobook + facade)
-plus `PUP_PET_PRECAST.lua` and `PUP_PET_MIDCAST.lua` for automaton gear.
-
-## Setup
-
-1. Copy `_master/entry/Tetsouo_PUP.lua` to `<Yourname>/<Yourname>_PUP.lua`
-2. Copy `_master/config/pup/` to `<Yourname>/config/pup/`
-3. Copy `_master/sets/pup_sets.lua` to `<Yourname>/sets/` and **rewrite
-   the skeleton** with real precast / midcast / engaged / pet sets.
-
-## Commands
-
-Standard universal commands only. See [commands reference](../../guides/commands.md).
-
-There are no PUP-specific commands wired in
-`shared/jobs/pup/functions/PUP_COMMANDS.lua` beyond the framework
-defaults.
+Making it work would need at least the missing `config/pup/` files (states,
+keybinds, pet data, TP config, lockstyle, macro book) and real sets. See the
+developer page [docs/dev/jobs/pup.md](../../../dev/jobs/pup.md) for what is
+missing.

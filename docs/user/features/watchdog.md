@@ -25,7 +25,7 @@ timeout = base_cast_time * (1 - FC%/100) + 1.5s buffer
 | Stoneskin | 7.0s | 0% | 8.5s |
 | Warp Ring | 10.0s | N/A | 11.5s |
 
-Scans every 0.5 seconds. Enabled automatically on job load.
+Scans every 0.5 seconds. Starts by itself 2 seconds after each job load.
 
 ---
 
@@ -56,16 +56,16 @@ Source: `shared/utils/core/midcast_watchdog.lua`
 | `WATCHDOG_FALLBACK_TIMEOUT` | 5.0s | Used when cast time is unknown |
 | `FAST_CAST_CAP` | 80% | Maximum FC reduction |
 
-Fast Cast percentage is read from `state.FastCast` (defined per job in `[JOB]_STATES.lua`).
+Fast Cast percentage is read from the job's `FastCast` mode (set its default in `<JOB>_STATES.lua`, or step it in game with `//gs c cycle FastCast`).
 
 ---
 
 ## Troubleshooting
 
-**False positives** (cleanup during long casts): Increase buffer with `//gs c watchdog buffer 2.5`. Verify `state.FastCast` matches your actual FC%.
+**False positives** (cleanup during long casts): Increase buffer with `//gs c watchdog buffer 2.5`. Check that the job's `FastCast` mode matches your real Fast Cast %.
 
 **Not detecting stuck casts**: Check `//gs c watchdog` shows enabled. Check buffer isn't too high. Use `//gs c watchdog clear` for immediate recovery.
 
-**Not loading**: Watchdog initializes via the framework's init sequence.
-Check the Windower console for Lua load errors and run `//gs c reload`.
-Use `//gs c info` to confirm the watchdog reports as initialized.
+**Not loading**: the watchdog starts 2 seconds after each job load. Run
+`//gs c watchdog` to see its status; if it is missing, look for a Lua error
+in the chat or console and run `//gs c reload`. `//gs c syscheck` also checks it.

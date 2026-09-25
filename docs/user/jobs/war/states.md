@@ -1,82 +1,65 @@
-# WAR - States & Modes
+# WAR — modes and keys
 
-States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
+Warrior: weapon and hybrid mode, five weaponskill slots that follow your
+weapon, an automatic Jump before weaponskills on /DRG, and one-key buff chains.
 
-**Config**: `Tetsouo/config/war/WAR_KEYBINDS.lua`
+Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each
+mode's current value; this page says what each value does. `#numpad0` (Auto
+Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
+[keybinds](../../guides/keybinds.md).
 
----
+## Keys
 
-## States
+| Key | Mode (state) | Values (default in **bold**) | What it does |
+|---|---|---|---|
+| `^numpad1` | Main Weapon (`MainWeapon`) | Ukonvasara, Naegling, NaeglingKC, Shining, Chango, Ikenga, Loxotic | Weapon set (`sets.<Weapon>`) in idle and engaged. No fixed default: after loading, the mode is set to the weapon you are holding (Ukonvasara if it matches no set). NaeglingKC = Naegling with Kraken Club. |
+| `^numpad9` | Hybrid Mode (`HybridMode`) | **PDT**, Normal | Idle and engaged base: `sets.idle.PDT` / `sets.engaged.PDT`, or the Normal ones. |
+| `^numpad2` | Jump Auto (`JumpAuto`) | **On**, Off | /DRG only. On: a weaponskill pressed under 1000 TP is held back, Jump / High Jump go out, then the weaponskill is sent again. |
+| `^numpad3` … `^numpad7` | WS Slot 1-5 (`WS1` … `WS5`) | The weaponskills of your current weapon | Each slot holds one weaponskill; the key picks which. `//gs c ws1` … `ws5` fires the slot on `<t>`. The slots are rebuilt when you change weapon. |
 
-### HybridMode
+The weaponskill list per weapon is in `WAR_WS_CONFIG.lua`. A slot past the
+end of the weapon's list shows `None`.
 
-Controls the balance between offense and defense during melee combat.
+## Other modes (no key)
 
-| Option | Description |
-|--------|-------------|
-| `PDT` | Physical Damage Taken reduction (defensive mode) |
-| `Normal` | Full offense, maximum DPS |
+| Mode | Values | What it does |
+|---|---|---|
+| `FastCast` | 0 to 80 in steps of 10, default **0** | Fast Cast %, read by the midcast watchdog. |
 
-**Default**: `PDT`
-**Keybind**: Alt+2
+## Commands
 
----
+| Command | What it does |
+|---|---|
+| `//gs c ws1` … `ws5` | Uses the weaponskill in that slot on `<t>`. |
+| `//gs c berserk` | Berserk, Aggressor, Retaliation, Restraint, Warcry (or Blood Rage when Warcry is down and on recast), the ready ones, 2 s apart. Defender is left out. /SAM adds Hasso and Third Eye; /DNC adds Haste Samba at 350 TP or more. |
+| `//gs c defender` | Same chain with Defender instead of Berserk; /SAM adds Seigan instead of Hasso. |
+| `//gs c thirdeye` | /SAM only: Hasso (or Seigan if Defender is up) and Third Eye. |
+| `//gs c tp` | /SAM: Meditate. /DRG: same as `//gs c jump` (Jump or High Jump, then the other one if TP is still under 1000). Other subjobs: a warning. |
+| `//gs c retalstatus` | Shows the Retaliation auto-cancel tracker. |
 
-### MainWeapon
+Abilities already up or on recast are listed in chat instead of being sent.
 
-Selects the primary weapon set. Sub weapon and ammo are automatically paired based on the selected main weapon.
+## Notes
 
-| Option | Description |
-|--------|-------------|
-| `Ukonvasara` | Relic Great Axe (Aftermath: TP reduction, best for AM3) |
-| `Naegling` | Savage Blade sword (1H with shield for Fencer TP bonus) |
-| `NaeglingKC` | Naegling + Kraken Club (multi-attack focus) |
-| `Shining` | Shining One (Great Sword) |
-| `Chango` | Empyrean Great Axe (Aftermath: Multi-Attack, +500 TP bonus) |
-| `Ikenga` | Ikenga's Axe (1H option) |
-| `Loxotic` | Loxotic Mace (1H option) |
+- **Engaged set order** (first match wins): `sets.engaged.PDTKC` with
+  NaeglingKC or Kraken Club in the off hand; `sets.engaged.PDTAFM3` under
+  Aftermath: Lv.3 with Ukonvasara; `sets.engaged.<Weapon>` if it exists;
+  then `sets.engaged.<HybridMode>`.
+- **Retaliation auto-cancel**: if Retaliation is up and you move for 5 s while
+  not engaged, it is cancelled (needs the Windower `Cancel` addon).
+- Idle: town / Adoulin sets in town, `sets.MoveSpeed` while moving outside town.
+- Weaponskill TP bonus gear (Moonshade, Chango, Warcry, Fencer): see
+  [TP bonus](tp-bonus.md).
+- Every mode goes back to its default on each job change, subjob change or
+  reload (the weapon is read again from your hands).
+- Tetsouo's own files differ: Hybrid Mode also has `SubtleBlow` and `Hoxne`
+  (Hoxne locks the ammo slot on the Hoxne Ampulla), and his `WAR_CUSTOM.lua`
+  adds a `FullEmpy` On/Off mode on `^numpad8`.
 
-**Default**: `Ukonvasara`
-**Keybind**: Alt+1
+## Files
 
----
-
-### FastCast
-
-Internal numeric state used by the midcast watchdog system. Represents your total Fast Cast percentage from gear and traits, used to calculate adjusted cast times. Not typically cycled manually.
-
-| Option | Description |
-|--------|-------------|
-| `0` through `80` | Fast Cast percentage (increments of 10) |
-
-**Default**: `0`
-
----
-
-## Quick Reference
-
-| State | Options | Default | Keybind |
-|-------|---------|---------|---------|
-| HybridMode | PDT / Normal | PDT | Alt+2 |
-| MainWeapon | Ukonvasara / Naegling / NaeglingKC / Shining / Chango / Ikenga / Loxotic | Ukonvasara | Alt+1 |
-| FastCast | 0 - 80 | 0 | -- |
-
----
-
-## Configuration
-
-**Config files**: `Tetsouo/config/war/`
-
-| File | Purpose |
-|------|---------|
-| `WAR_KEYBINDS.lua` | Keybind definitions |
-| `WAR_LOCKSTYLE.lua` | Lockstyle per subjob |
-| `WAR_MACROBOOK.lua` | Macrobook per subjob |
-| `WAR_STATES.lua` | State definitions |
-| `WAR_TP_CONFIG.lua` | TP and weaponskill settings |
-
-**Lockstyle**: #4 (all subjobs)
-
-**Macrobook**: Book 22, Page 1 (default). SAM=Book 22/Page 1, DRG=Book 25/Page 1, DNC=Book 28/Page 1
-
-See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.
+In `<Char>/config/war/`: `WAR_STATES.lua` (modes and defaults),
+`WAR_KEYBINDS.lua` (keys), `WAR_WS_CONFIG.lua` (weaponskills per weapon),
+`WAR_TP_CONFIG.lua` (TP bonus), `WAR_CUSTOM.lua` (your own modes and gear, see
+[keybinds](../../guides/keybinds.md)), `WAR_LOCKSTYLE.lua`, `WAR_MACROBOOK.lua`.
+See [configuration](../../guides/configuration.md).

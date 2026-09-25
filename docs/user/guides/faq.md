@@ -1,177 +1,112 @@
 # FAQ
 
-Quick answers to common questions. For detailed guides, see the links below.
+## Loading
 
----
+**Nothing loads when I log in.**
+GearSwap must be loaded (`//lua load gearswap`), and your folder must be
+`data/<YourName>/` with `<YourName>_<JOB>.lua` inside, with your exact
+in-game name. Create it with the clone script
+([installation](../getting-started/installation.md)).
 
-## Getting Started
+**Lua error at load.**
+The message names the file and line. Most often a set or config file you
+edited has a syntax error (a missing comma or brace).
 
-### Q: The system does not load when I log in
+**PUP does not load.** Known: see [PUP](../jobs/pup/README.md).
 
-See [Installation Guide](../getting-started/installation.md) for full setup steps.
+**I want SMN.** It ships only with the Tetsouo template; the clone script does
+not deploy it for another name.
 
-Short checklist: verify GearSwap is loaded (`//lua list`), check your character file is named exactly `YOURNAME_JOB.lua` (case-sensitive), and look for red error text in chat.
+**How do I update?**
+Download the new version and copy `shared/`, `_master/` and the scripts over
+the old ones. Your `<YourName>/` folder is not touched. New options in the
+templates are not added to your own config files: compare with `_master/` if
+you want them.
 
-### Q: I get Lua errors when loading
+## Gear
 
-Run `//gs c reload` first. If the error persists, check the file and line number mentioned in the error message. Verify that the `shared/` folder exists at `addons/GearSwap/data/shared/` and has not been modified.
+**Gear does not change on a spell.**
+`//gs c debugmidcast`, cast the spell, and read which set was picked. Then
+check that set's items with `//gs c checksets`.
 
-### Q: How do I update to the latest version?
+**An item I own is reported MISSING.**
+The name or the `augments` in the set file do not match the game exactly.
 
-Back up your character folder, extract the new version to `addons/GearSwap/data/` (overwrite `shared/`, keep your character folder), then `//lua reload gearswap`.
+**Gear stuck in midcast after a cast.**
+The [midcast watchdog](../features/watchdog.md) puts it back after a delay;
+`//gs c watchdog clear` does it now.
 
----
-
-## Equipment
-
-### Q: Gear not swapping after a spell or weaponskill
-
-The Watchdog auto-recovers stuck midcast on a dynamic timeout (the spell's
-cast time + 1.5s buffer). If it persists, run `//gs c update` to force a
-gear refresh, or `//gs c info` to see the watchdog state. Use
-`//gs c checksets` to verify your items are in inventory.
-
-See [Watchdog Guide](../features/watchdog.md) for details.
-
-### Q: How do I validate my equipment?
-
-Run `//gs c checksets`. Items marked `[STORAGE]` need to be retrieved from Mog House. Items marked `[MISSING]` must be acquired or removed from your sets file.
-
-### Q: Gear swaps too slowly or I see equipment flashing
-
-This is normal. The system swaps through precast (Fast Cast), midcast (potency), then aftercast (idle/engaged) in sequence. If your client FPS is below 30, address that first.
-
----
+**A slot stays locked.**
+`//gs c warp fix` (warp ring), `//gs c uncraft` (craft set),
+`//gs c wo recover` (wardrobe organizer). While Doomed, neck, rings and waist
+stay locked on purpose.
 
 ## Lockstyle
 
-### Q: Lockstyle not applying
+**No lockstyle.**
+It is sent 8 s after a load. Check the number in
+`config/<job>/<JOB>_LOCKSTYLE.lua` exists in game (`/lockstyleset <n>` by
+hand). `//gs c ls` sends it again.
 
-Verify DressUp is loaded (`//lua list`). The default delay is 2.0s after
-job load (configurable in `config/LOCKSTYLE_CONFIG.lua`); FFXI also
-enforces a 15s minimum between applies. To apply manually:
-`//gs c lockstyle`.
+**DressUp gets unloaded and loaded.**
+That is the default, around each lockstyle. `//gs c dressup` turns it off.
 
-See [Configuration Guide](configuration.md) for delay tuning.
+**The lockstyle ignores my subjob.**
+The job's `_LOCKSTYLE.lua` needs a `get_style` function for `by_subjob` to
+count ([configuration](configuration.md#lockstyle-job_lockstylelua)).
 
-### Q: Lockstyle changes on subjob change
+## Keys and HUD
 
-This is intentional. Per-subjob lockstyle is configured in `config/[job]/[JOB]_LOCKSTYLE.lua`. Set all subjob entries to the same number if you want one style for all.
+**Keys do nothing.**
+`//gs c reload`, then read the chat: a `<JOB> keybinds: ...` line names a bad
+entry. Mode keys need a modifier: Ctrl+Numpad, Apps+Numpad, Alt+Numpad.
 
----
+**What do `^ ! @ # ~` mean?**
+Ctrl, Alt, Windows, Apps (menu key), Shift.
 
-## Keybinds
+**A key does something else.**
+Two entries use the same key: the last one wins (your `_CUSTOM.lua` keys come
+after the job's). The chat warning at load says which.
 
-### Q: Keybinds not working
+**No HUD.** `//gs c ui on`.
 
-See [Keybinds Guide](keybinds.md) for full setup.
+**HUD position lost after a reload.** Drag it, then `//gs c ui save`.
 
-Quick checks: reload with `//gs c reload`, test the command manually (`//gs c cycle HybridMode`), and check for conflicts with other Windower addons.
+**A mode is missing from the HUD.** Only keys listed in the keybind file for
+your current subjob have a row. A key with `key = ""` gives a row without a
+key.
 
-### Q: What are the modifier key symbols?
+## Dual-box
 
-| Symbol | Key |
-|--------|-----|
-| `!` | Alt |
-| `^` | Ctrl |
-| `@` | Windows |
-| `#` | Shift |
+**How do I set it up?** [Dual-box guide](dualbox.md).
 
-Example: `!1` = Alt+1, `^f9` = Ctrl+F9.
+**Alt commands are unknown.** The alt must have sent its job (2 s after its
+load) and the `send` addon must be loaded on both characters.
 
-### Q: Keybind executes the wrong command
+## Jobs
 
-State names are case-sensitive. `cycle MainWeapon` works, `cycle mainweapon` does not. Verify the state is defined in your job file (`state.MainWeapon = M{...}`).
+**DNC: Waltz tier too high.** Target the party member before pressing, so
+their missing HP can be read ([auto-tier](../features/auto-tier-system.md)).
 
----
+**BST: Ready moves.** `//gs c rdylist` lists your pet's Ready moves with a
+number; `//gs c rdymove <n>` uses one (it sends Fight first if the pet is
+idle). See [BST](../jobs/bst/states.md).
 
-## UI
+**Why does my mode reset?** Every mode goes back to its default on each job
+or subjob change, except Auto Medicine. Change the default in
+`<JOB>_STATES.lua`.
 
-### Q: UI not displaying
+## Quick table
 
-Toggle with `//gs c ui` or Alt+F1. If the UI appears off-screen, delete
-`<Yourname>/config/ui_settings.lua` and reload — it will reset to defaults
-and rewrite when you next save with `//gs c ui save`.
+| Problem | Command |
+|---|---|
+| Reload the job | `//gs c reload` |
+| Reload everything | `//lua reload gearswap` |
+| Missing gear | `//gs c checksets` |
+| Wrong spell set | `//gs c debugmidcast` |
+| Stuck gear | `//gs c watchdog clear` |
+| Health check | `//gs c syscheck` |
+| Help | `//gs c help` |
 
-See [UI Guide](../features/ui.md) for customization.
-
-### Q: Keybinds not showing in UI
-
-Each keybind entry needs a valid `state` field that matches a defined `state.StateName` in your job file.
-
-### Q: UI position resets every login
-
-Run `//gs c ui save` after positioning. For automatic saving, set `UIConfig.auto_save_position = true` in `config/UI_CONFIG.lua`.
-
----
-
-## Watchdog
-
-### Q: What is the Watchdog?
-
-Automatic recovery for stuck midcast gear caused by network packet loss.
-It scans periodically and forces cleanup on a dynamic timeout (the
-spell's cast time + 1.5s buffer).
-
-See [Watchdog Guide](../features/watchdog.md).
-
-### Q: Watchdog cleaning up too early during long spells
-
-Override with `//gs c watchdog timeout <seconds>` (e.g. `4.5`). The
-default is dynamic based on the cast time of the actual spell.
-
----
-
-## DualBox
-
-### Q: How do I set up DualBox?
-
-See [DualBox Guide](dualbox.md).
-
----
-
-## Job-Specific
-
-### Q: DNC - Waltz not selecting the correct tier
-
-The system selects tier based on missing HP. To force a specific tier, use the macro directly: `/ja "Curing Waltz III" <stpc>`.
-
-### Q: BST - How does the Ready Move system work?
-
-Use `//gs c rdylist` to list available moves and `//gs c rdymove [1-6]` to execute by index. The system auto-sequences fight/move/heel based on pet and player engagement state.
-
-### Q: RDM - How do enhancement spell cycles work?
-
-Use `//gs c cyclestate GainSpell` (and similar for `Barspell`,
-`BarAilment`, `Spike`) to cycle through options. The UI shows the current
-selection; cast manually after cycling. `Storm` cycle is exposed only
-when subjob is /SCH.
-
----
-
-## Quick Troubleshooting
-
-| Step | Command |
-|------|---------|
-| Reload system | `//gs c reload` |
-| Validate equipment | `//gs c checksets` |
-| Force gear update | `//gs c update` |
-| Apply lockstyle | `//gs c lockstyle` |
-| Toggle UI | `//gs c ui` |
-| Test Watchdog | `//gs c watchdog test` |
-| Trace midcast set selection | `//gs c debugmidcast` |
-| Trace job-change debounce | `//gs c debugjobchange` (or `djc`) |
-| System health check | `//gs c syscheck` (or `sc`) |
-| Load GearSwap | `//lua load gearswap` |
-
----
-
-## Further Reading
-
-- [Installation Guide](../getting-started/installation.md) - Complete setup
-- [Quick Start](../getting-started/quick-start.md) - 5-minute guide
-- [Commands Reference](commands.md) - All commands
-- [Keybinds Guide](keybinds.md) - Customize shortcuts
-- [Configuration Guide](configuration.md) - Advanced settings
-
----
+More: [commands](commands.md), [configuration](configuration.md),
+[keybinds](keybinds.md).

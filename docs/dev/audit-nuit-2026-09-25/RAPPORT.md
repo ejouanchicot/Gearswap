@@ -17,8 +17,9 @@ Le détail, fichier par fichier, est dans les 10 rapports de zone. Attention : c
 
 ## Ce qui garantit que rien n'est cassé
 
-1. Avant de commencer, tout a été sauvegardé (11 Mo) dans
-   `C:\Users\g0dli\AppData\Local\Temp\claude\D--Windower-Tetsouo-addons-GearSwap-data\4e6aea22-3343-41eb-adda-edc1f1a76688\scratchpad\backup_2026-09-24_night\`.
+1. Avant de commencer, tout a été sauvegardé (11 Mo) dans un dossier temporaire
+   local, hors du dépôt. L'historique git en tient lieu : le nettoyage lui-même
+   est le commit `b6c7dc6`, l'état d'avant est son parent `a73afff`.
 2. Les **1 120 fichiers** se chargent sans erreur.
 3. Le **code compilé** de chaque fichier a été comparé à celui de la sauvegarde. **46 fichiers** diffèrent, et chaque différence a été relue :
    - **40 fichiers** : on a retiré des choses jamais utilisées (variables et fonctions locales, un `if` vide, un `else` vide). Quand une variable recevait un `require`, le `require` est resté, donc le module se charge comme avant.

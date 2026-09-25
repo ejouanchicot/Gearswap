@@ -1,166 +1,162 @@
 # Keybinds
 
-Keybinds are defined per-job in
-`<Yourname>/config/<job>/<JOB>_KEYBINDS.lua`. The framework binds on job
-load and unbinds on job change. The UI overlay shows them automatically.
+Three places give you keys, plus temporary keys made in game:
 
-> **There are no universal keybinds** other than `Alt+F1` (UI toggle).
-> Mote-Include's default F9-F12 binds are intentionally not registered.
+| File (in `<YourName>/config/`) | Keys |
+|---|---|
+| `<job>/<JOB>_KEYBINDS.lua` | The job's keys |
+| `<job>/<JOB>_CUSTOM.lua` | Your own modes, with their key (empty by default) |
+| `COMMON_KEYBINDS.lua` | Keys every job of this character gets |
+| `//gs c tb` (in game) | Temporary keys on Ctrl/Alt+F1-F8 |
 
----
+Keys are bound when the job loads and removed when you leave the job. The
+keybind HUD (`//gs c ui`) lists the keys of the current job.
 
-## File format
+## The layout
+
+| Keys | Use |
+|---|---|
+| `^numpad0`-`^numpad9`, `^numpad.`, `^numpad+`, `^numpad-`, `^numpad*`, `^numpad/` | The job's modes (Ctrl+Numpad) |
+| `#numpad1`-`#numpad9` | Extra modes on some jobs (Apps+Numpad) |
+| `#numpad0` | Auto Medicine on/off (common key) |
+| `!numpad7`, `!numpad8`, `!numpad9` | Alts follow / automation on-off / mirror (common keys, see [dual-box](dualbox.md)) |
+| F9-F12 with modifiers | Mote-Include's default keys (F9 Offense mode, Ctrl+F9 Hybrid mode, F12 gear refresh, Ctrl+F12 Idle mode...) |
+| Ctrl+F1-F8, Alt+F1-F8 | Free for `//gs c tb` |
+
+Modifiers: `^` Ctrl, `!` Alt, `@` Windows, `#` Apps (the menu key), `~` Shift.
+They combine: `^!numpad1` = Ctrl+Alt+Numpad1.
+
+Habits of the job files: Ctrl+Numpad9 is Hybrid Mode on every job that binds
+it; Ctrl+Numpad1 / 2 are the weapons when the job has weapon modes;
+Ctrl+Numpad3 is the job's most used mode. The bare keypad is never bound, so
+the game and other addons keep it.
+
+**Do not put a job key on `#numpad0` or `!numpad7-9`**: the job key wins and
+the common key disappears on that job.
+
+## The file format
+
+A job's keybind file (here WAR, shortened):
 
 ```lua
 local WARKeybinds = {}
 
 WARKeybinds.binds = {
-    { key = "!1", command = "cyclestate MainWeapon", desc = "Main Weapon", state = "MainWeapon" },
-    { key = "!2", command = "cyclestate HybridMode", desc = "Hybrid Mode", state = "HybridMode" },
+    { key = "^numpad1", command = "cyclestate MainWeapon", desc = "Main Weapon", state = "MainWeapon" },
+    { key = "^numpad9", command = "cyclestate HybridMode", desc = "Hybrid Mode", state = "HybridMode" },
 }
 
-return WARKeybinds
+return require('shared/utils/keybinds/keybind_manager').create('WAR', WARKeybinds)
 ```
 
-| Field | Required | Description |
-| --- | --- | --- |
-| `key` | yes | Windower key syntax. `!1` = Alt+1. |
-| `command` | yes | The GearSwap command to send (no leading `gs c`). |
-| `desc` | yes | Label shown in the UI overlay. |
-| `state` | no | Mote state name. The UI uses it to show the current value next to the binding. |
-| `subjob` | no | Restrict binding to a specific subjob (e.g. `subjob = "BLU"`). |
+Keep the last line as it is. Fields of an entry:
 
----
+| Field | Meaning |
+|---|---|
+| `key` | The key (`"^numpad1"`). `""` = a HUD line only, no key |
+| `command` | What the key runs (see below) |
+| `desc` | Label in the HUD and in chat |
+| `state` | Mode shown with its current value in the HUD (optional) |
+| `subjob` | Only with this subjob (`"RDM"` or a list) |
+| `exclude_subjob` | Never with this subjob |
+| `visible` | A function returning true / false, for keys that depend on a mode |
+| `raw` | `true` = send `command` exactly as written |
 
-## Key syntax
+What `command` sends:
 
-| Prefix | Modifier |
-| --- | --- |
-| `!` | Alt |
-| `^` | Ctrl |
-| `#` | Shift |
-| `@` | Win |
-| (none) | bare key |
+| `command` starts with | Sent as | Example |
+|---|---|---|
+| `//` | A console command of any addon | `"//sm mirror"` |
+| `/` | A game command | `"/p Ready!"` |
+| anything else | A GearSwap command (`gs c ...`) | `"cyclestate HybridMode"` |
 
-Combine prefixes freely: `^!1` = Ctrl+Alt+1, `!#a` = Alt+Shift+A.
+Useful GearSwap commands for a key:
 
-Valid bare keys: `0-9`, `a-z` (lowercase), `f1`-`f12`, `pageup`,
-`pagedown`, `home`, `end`, `insert`, `delete`, `space`, `tab`,
-`backspace`, `escape`, `numpad0`-`numpad9`, `numpadadd`, `numpadsubtract`.
+| Command | Effect |
+|---|---|
+| `cyclestate <Mode>` | Next value, HUD updated, no chat line while the HUD is shown |
+| `cyclestate <Mode> reverse` | Previous value |
+| `toggle <Mode>` | On/off modes (Mote-Include) |
+| `set <Mode> <Value>` | A given value (Mote-Include) |
+| any job or common command | e.g. `"rf"`, `"alts follow"` |
 
----
+The file is checked at load: an unknown key name, a missing command or a key
+used twice prints a `<JOB> keybinds: ...` line in chat. Edit, then
+`//gs c reload`.
 
-## Command types
+## Common keys
 
-The most common commands you'll bind:
-
-| Command | Example | Effect |
-| --- | --- | --- |
-| `cyclestate <Name>` | `cyclestate MainWeapon` | Rotate through state values forward |
-| `cyclebackstate <Name>` | `cyclebackstate MainWeapon` | Rotate backward |
-| `set <Name> <Value>` | `set HybridMode PDT` | Force a specific value |
-| `toggle <Name>` | `toggle Kiting` | On/Off toggle |
-| `<job-specific>` | `aoe`, `rune`, `step`, `fbc`, `rolls`, ... | See [commands reference](commands.md) |
-
-State names are **case-sensitive**: `cyclestate MainWeapon` works,
-`cyclestate mainweapon` does not. They must match the `state.<Name>`
-declared in your `<JOB>_STATES.lua`.
-
----
-
-## Subjob-restricted binds
-
-Some binds only make sense for specific subjobs. Use the `subjob` field:
+`COMMON_KEYBINDS.lua` uses the same entry format, in `CommonKeybinds.binds`.
+The template ships the four keys of the layout above and commented examples:
 
 ```lua
-{ key = "!4", command = "aoe",  desc = "AoE BLU rotation", subjob = "BLU" },
-{ key = "!5", command = "rune", desc = "Rune",             subjob = "RUN" },
+{ key = "!numpad4", command = "alts follow Tetsouo", desc = "Alts follow Tetsouo" },
+{ key = "!numpad6", command = "//sm mirror", desc = "Mirror" },
+{ key = "!numpad3", command = "/p Ready!", desc = "Party: ready" },
 ```
 
-The framework binds these only when the matching subjob is active.
+A common key whose key is already used by the job (or by your custom modes)
+is skipped on that job.
 
----
+## Your own modes (`<JOB>_CUSTOM.lua`)
 
-## Applying changes
+Add modes and gear rules without touching the job's code. The file ships
+empty, with the full instructions and examples in its header. Two kinds of
+block:
 
+```lua
+return {
+    -- A mode with a key: shown in the HUD, cycles its values
+    {
+        state  = 'TPMode', desc = 'TP Mode', key = '^numpad0',
+        values = {'Normal', 'Acc'},
+        Acc    = { engaged = { head = "Nyame Helm" } },
+    },
+    -- A rule: gear that goes on by itself when the conditions hold
+    { when = { hp_below = 50 }, idle = { ring1 = "Gelatinous Ring +1" } },
+}
 ```
-//gs c reload
-```
 
-The reload unbinds the previous job's keybinds, loads the new
-`<JOB>_KEYBINDS.lua`, and re-renders the UI overlay.
+- Moments: `idle`, `engaged`, `weaponskill`, `ability`, `precast`, `midcast`,
+  `all`.
+- Conditions (`when`): `buff`, `no_buff`, `weapon`, `sub`, `range`, `ammo`,
+  `subjob`, `no_subjob`, `mode`, `hp_below/above`, `mp_below/above`,
+  `tp_below/above`, `spell`, `skill`, `spell_type`, `element`, `day_weather`,
+  `target`, `distance_below`, `town`, `moving`, `pet`, `zone`.
+- Your pieces go on last, on top of the job's choice. Some slots are left
+  alone on purpose (Doom, song instruments, Phantom Roll rings, Treasure Hunter
+  pieces, locked slots...).
+- `state = 'HybridMode'` (a mode the job already has) with no `values`
+  adds gear to one of its values.
+- Mistakes are reported in chat at load as `<JOB>_CUSTOM: ...`.
 
----
+Pick a key the job does not use (the job's page lists them), or the custom
+key replaces the job's.
 
-## Per-job examples
+## Temporary keys (`//gs c tb`)
 
-Real keybinds shipped in `_master/config/<job>/<JOB>_KEYBINDS.lua`. Open
-yours for the full list — these are highlights only.
+For a repetitive task, bind a key from the chat line; it lasts until you
+remove it or restart the game.
 
-### WAR
+| Command | Effect |
+|---|---|
+| `//gs c tb <key> <action> [target]` | Bind a key, e.g. `//gs c tb cf1 dia2 t` |
+| `//gs c tb <action> [target]` | Same, on the first free key of Ctrl+F1-F8, then Alt+F1-F8 |
+| `//gs c tb force <key> ...` | Bind even a key already in use |
+| `//gs c tb list` / `del <key>` / `clear` | Show / remove one / remove all |
+| `//gs c tb help` | Full help |
 
-| Key | Command | Notes |
-| --- | --- | --- |
-| Alt+1 | `cyclestate MainWeapon` | Ukonvasara, Naegling, Chango, … |
-| Alt+2 | `cyclestate HybridMode` | Normal / PDT / SubtleBlow |
+- Keys: `^f1`, `ctrl+f1`, `cf1`, `caf1` (Ctrl+Alt+F1), `cn1` (Ctrl+Numpad1)...
+- Action: a spell, ability, weaponskill or item name, written loosely
+  (`dia2` = Dia II); `//command` for a console command; `/command` for a game
+  command. Anything else is sent to the console as typed (not to `gs c`).
+- Target: `t`, `st`, `stnpc`, `bt`, `me`... or a name, looked up at each press
+  (nearest match within 50 yalms).
+- F9-F12, `^-`, `^=` and `^v` are refused unless you use `force`.
 
-### DNC
+## After editing
 
-| Key | Command | Notes |
-| --- | --- | --- |
-| Alt+1 | `cyclestate MainWeapon` | |
-| Ctrl+1 | `cyclestate SubWeaponOverride` | |
-| Alt+2 | `cyclestate HybridMode` | |
-| Alt+3 | `cyclestate MainStep` | Main step rotation |
-| Alt+4 | `cyclestate AltStep` | Alt step rotation |
-| Alt+5 | `cyclestate UseAltStep` | Toggle |
-| Alt+6 | `cyclestate ClimacticAuto` | |
-| Alt+7 | `cyclestate JumpAuto` | |
-| Alt+8 | `cyclestate Dance` | |
-| Ctrl+8 | `dance` | Activate selected dance |
-
-### PLD
-
-| Key | Command | Notes |
-| --- | --- | --- |
-| Alt+1 | `cyclestate MainWeapon` | |
-| Alt+2 | `cyclestate HybridMode` | |
-| Alt+4 | `aoe` | BLU enmity rotation (subjob = BLU) |
-| Alt+5 | `rune` | (subjob = RUN) |
-
-### RDM
-
-| Key | Command | Notes |
-| --- | --- | --- |
-| F1 | `cyclestate GainSpell` | |
-| F2 | `cyclestate Barspell` | |
-| F3 | `cyclestate BarAilment` | |
-| F4 | `cyclestate Spike` | |
-| F5 | `cyclestate Storm` | (subjob = SCH) |
-| F6 | `cyclestate EnSpell` | |
-
-### COR
-
-| Key | Command | Notes |
-| --- | --- | --- |
-| Alt+3 | `rolls` | Show active rolls |
-| Alt+4 | `doubleup` | Double-Up status |
-
-> Open `_master/config/<job>/<JOB>_KEYBINDS.lua` for the canonical full
-> list; copy + edit your own at
-> `<Yourname>/config/<job>/<JOB>_KEYBINDS.lua`.
-
----
-
-## Notes & gotchas
-
-- **Reserved keys**: avoid F9-F12 if you also use other addons that bind
-  them; Ctrl+H is reserved by Windower for chat hiding.
-- **The `state` field is optional but recommended** — without it, the UI
-  shows the keybind but no current value.
-- **Commas required** after every entry except the last (Lua list rules).
-- **Case-sensitive everywhere**: `"!a"` (lowercase), `state = "MainWeapon"`
-  (CamelCase exactly as defined).
-- **Subjob field is exact**: `"BLU"`, not `"blu"`.
-- The whole `<JOB>_KEYBINDS.lua` file is hot-reloaded on every job change,
-  so you can iterate without restarting GearSwap.
+- `<JOB>_KEYBINDS.lua`, `COMMON_KEYBINDS.lua`, `<JOB>_CUSTOM.lua`: `//gs c reload`
+  (or change job).
+- The files in `<YourName>/config/` are your copies; the templates in
+  `_master/` are only read by the clone script.

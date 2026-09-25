@@ -1,81 +1,46 @@
-# Job Change Manager
+# Job and subjob changes
 
-Automatic background system that prevents conflicts when you change jobs or subjobs.
+What happens when you change job, and why you rarely need to do anything.
 
----
+## Main job change
 
-## What It Does
+GearSwap itself loads the new job's file (`<YourName>_<JOB>.lua`). The old
+file removes its keys; the new one sets its keys, HUD, macro book (about
+1.5 s later) and lockstyle (8 s later).
 
-Job Change Manager debounces rapid job and subjob changes so that only the final change takes effect. It cleans up the previous job's state (keybinds, UI, lockstyle, watchdog) before loading the new job, then triggers a GearSwap reload for a clean start.
+## Subjob change
 
-You never interact with it directly. It runs automatically on every job or subjob change.
+The job file stays loaded, but the setup reloads it 0.5 s later (a full
+`gs reload`) so every system starts clean for the new subjob. Before the
+reload it stops movement tracking, the midcast watchdog and the HUD.
 
----
+Several changes in quick succession give **one** reload, for the last one.
+A back-and-forth (WAR/SAM to WAR/DNC and back) still reloads. When the main
+job also differs, the wait is 3.0 s instead of 0.5 s.
 
-## Debounce Timing
+## Wrong job file
 
-| Change Type | Delay | Why |
-|-------------|-------|-----|
-| Main job change | 3.0 seconds | Full GearSwap reload needs time to initialize |
-| Subjob-only change | 0.5 seconds | Lighter reload, only subjob config changes |
+GearSwap picks the job file from your job-change request, not from the
+server's answer. If the two ever disagree (refused or reordered change), a
+check every 5 seconds notices the mismatch and reloads the right file after
+two confirmations.
 
-When you change jobs or subjobs multiple times in rapid succession, only the last change executes. All earlier pending changes are discarded.
+## What survives a load
 
-**Example**: You change WAR/SAM to WAR/NIN to WAR/DNC within 1 second. The system waits 0.5 seconds after the last change, then reloads once with WAR/DNC.
-
----
-
-## What You See
-
-Normal job change flow:
-
-1. Change job in-game.
-2. Old job unloads (brief message).
-3. New job loads with keybinds, UI, and macros.
-4. Lockstyle applies ~2 seconds later (configurable, throttled to a 15s minimum).
-
-If you change jobs or subjobs rapidly, you may see a brief pause before loading completes. This is the debounce working as intended.
-
----
+- Every mode goes back to its default, except Auto Medicine.
+- Your keys, the HUD position and the settings in `config/` are read again.
+- A slot locked by Doom, craft, the wardrobe organizer or a warp ring stays
+  locked across the load; the matching command releases it
+  (`//gs c uncraft`, `//gs c wo recover`, `//gs c warp fix`).
 
 ## Troubleshooting
 
-### Keybinds not working after job change
+| Symptom | Try |
+|---|---|
+| Keys dead after a change | Wait a few seconds (the job's keys are sent again 2 s after each load), then `//gs c reload` |
+| HUD shown twice or stale | `//gs c ui` twice, or `//gs c reload` |
+| Lockstyle applied several times | Harmless after quick changes |
+| Still wrong | `//lua reload gearswap` |
 
-Wait 3-5 seconds for the debounce and reload to finish. If they still do not work:
-
-```
-//lua reload gearswap
-```
-
-### Duplicate UI windows
-
-Toggle the UI off and on:
-
-```
-//gs c ui
-//gs c ui
-```
-
-If it persists, run `//lua reload gearswap`.
-
-### Lockstyle applies multiple times
-
-Normal when changing jobs rapidly. The system stabilizes after the debounce period. Extra applications are harmless.
-
-### Repeated "debouncing" messages
-
-You are changing jobs or subjobs too quickly. Stop and wait for the debounce to complete (0.5-3.0 seconds). The final change will execute automatically.
-
-If caused by a macro, add `/wait 1` between job change commands.
-
----
-
-## Best Practices
-
-- After changing jobs, wait for the load message before doing anything else.
-- Do not run `//lua reload gearswap` during a job change; the debounce handles it.
-- If something seems wrong, wait 3-5 seconds first. Most issues resolve on their own.
-- As a last resort: `//lua unload gearswap` then `//lua load gearswap`.
-
----
+`//gs c debugjobchange` prints what the job-change system does, for a bug
+report.

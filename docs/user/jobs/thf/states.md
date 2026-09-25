@@ -1,164 +1,63 @@
-# THF - States & Modes
+# THF — modes and keys
 
-States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
+Thief: weapons, Treasure Hunter, Sneak/Trick Attack gear, a ranged lock, and
+one-key ability chains (`smartbuff`, `fbc`, `steal`).
 
-**Config**: `Tetsouo/config/thf/THF_KEYBINDS.lua`
+Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each
+mode's current value; this page says what each value does. `#numpad0` (Auto
+Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
+[keybinds](../../guides/keybinds.md).
 
----
+## Keys
 
-## States
+| Key | Mode (state) | Values (default in **bold**) | What it does |
+|---|---|---|---|
+| `^numpad1` | Main Weapon (`MainWeapon`) | **Vajra**, TwashtarM, Mpu Gandring, Tauret, Naegling, Malevolence, Dagger | Main hand (`sets.<Weapon>` from your set file). |
+| `^numpad2` | Sub Weapon (`SubWeapon`) | **Centovente**, Tanmogayi, Kraken | Off hand. Tetsouo's own file adds Telop Knife. |
+| `^numpad9` | Hybrid Mode (`HybridMode`) | **PDT**, Normal | Engaged set: `sets.engaged.PDT` or `sets.engaged.Normal`. |
+| `^numpad3` | TH Mode (`TreasureMode`) | **Tag**, SATA, Full | See Treasure Hunter below. |
+| `^numpad4` | Aby Proc (`AbyProc`) | **Off**, On | /WAR only. On: the Aby Weapon set replaces your main and sub weapons (Abyssea weapon-type procs). |
+| `^numpad5` | Aby Weapon (`AbyWeapon`) | Dagger2, **Sword**, Club, Great Sword, Polearm, Staff, Scythe | /WAR only. The weapon pair used when Aby Proc is On (`sets.<Name>`). |
+| `^numpad6` | Range Lock (`RangeLock`) | **Off**, On | On locks the range and ammo slots so ranged gear stays on. |
 
-### HybridMode
+## Other modes (no key)
 
-Controls the balance between offense and defense during melee combat.
+| Mode | Values | What it does |
+|---|---|---|
+| `FastCast` | 0 to 80 in steps of 10, default **0** | Your Fast Cast %, used only by the midcast watchdog. Change the default in `THF_STATES.lua`, or step it with `//gs c cycle FastCast`. |
 
-| Option | Description |
-|--------|-------------|
-| `PDT` | Physical Damage Taken reduction (defensive mode) |
-| `Normal` | Full offense, maximum DPS |
+## Commands
 
-**Default**: `PDT`
-**Keybind**: Alt+3
+| Command | What it does |
+|---|---|
+| `//gs c smartbuff` | By subjob. /DNC: Haste Samba if it is down, ready and you have 350 TP. /WAR: Berserk, Aggressor, Warcry (the ready ones, 2 s apart). /NIN: Utsusemi: Ni, else Ichi. |
+| `//gs c fbc` | Feint, Bully, Conspirator: the ones that are ready (and whose buff is not already up), 1 s apart. |
+| `//gs c steal` | Steal, Mug, Despoil (the ready ones) on your target. Does nothing unless the target is a living monster. |
+| `//gs c range` | Equips Exalted Crossbow and Acid Bolt (names fixed in the code), locks range and ammo, then shoots `/ra <stnpc>`. |
 
----
+## Notes
 
-### MainWeapon
+- **Treasure Hunter.** Tag: `sets.TreasureHunter` goes on while engaged until
+  the current target has been hit once by you (tagged), then comes off. SATA:
+  same, and under Sneak/Trick Attack the `TreasureHunterSA` / `TA` / `SATA`
+  sets are used. Full: `sets.TreasureHunter` stays on all the time, with the
+  SATA sets. A tagged mob is forgotten when it dies, when you zone, or after
+  180 s with no action on it.
+- **Sneak Attack / Trick Attack.** While the buff is up and you are engaged,
+  `sets.buff['Sneak Attack']` / `['Trick Attack']` go on top; they come off
+  when the buff is used.
+- **Aftermath Lv.3 with Vajra**: the engaged set becomes `sets.engaged.PDTAFM3`.
+- **Range lock.** Any ranged attack turns Range Lock On by itself. A reload, a
+  job or subjob change, or `//gs c wo` releases the lock and sets it back to Off.
+- After a ranged attack with Acid Bolt equipped, an Ac. Bolt Quiver from your
+  inventory is opened when 5 bolts or fewer are left.
+- Idle: town and Adoulin sets in town, `sets.MoveSpeed` while moving outside town.
+- Weaponskill TP bonus gear: see [TP bonus](../war/tp-bonus.md).
+- Every mode goes back to its default on each job change, subjob change or reload.
 
-Selects the primary weapon.
+## Files
 
-| Option | Description |
-|--------|-------------|
-| `Vajra` | Relic dagger (best DPS) |
-| `TwashtarM` | Empyrean dagger (crit build) |
-| `Mpu Gandring` | REMA dagger (shared with DNC) |
-| `Tauret` | High accuracy dagger |
-| `Naegling` | Savage Blade sword |
-| `Malevolence` | Magic damage club |
-| `Dagger` | Generic dagger (for weapon sets) |
-
-**Default**: `Vajra`
-**Keybind**: Alt+1
-
----
-
-### SubWeapon
-
-Selects the offhand weapon.
-
-| Option | Description |
-|--------|-------------|
-| `Centovente` | REMA dagger offhand (best) |
-| `Tanmogayi` | High DPS sword offhand |
-| `Kraken` | High magic damage club offhand |
-
-**Default**: `Centovente`
-**Keybind**: Alt+2
-
----
-
-### TreasureMode
-
-Controls Treasure Hunter gear application strategy.
-
-| Option | Description |
-|--------|-------------|
-| `Tag` | Quick TH tag (minimal gear for speed) |
-| `SATA` | SA/TA combo with TH (balanced DPS + TH) |
-| `Full` | Maximum TH gear (full TH optimization) |
-
-**Default**: `Tag`
-**Keybind**: Alt+4
-
----
-
-### AbyProc
-
-Enables or disables Abyssea proc mode. When enabled, equips proc weapons instead of normal weapons. Boolean toggle state.
-
-| Option | Description |
-|--------|-------------|
-| `false` | Abyssea proc mode disabled (normal weapons) |
-| `true` | Abyssea proc mode enabled (proc weapons equipped) |
-
-**Default**: `false`
-**Keybind**: Alt+5 (WAR subjob only)
-
----
-
-### AbyWeapon
-
-Selects the weapon type for Abyssea procs. Only relevant when AbyProc is enabled.
-
-| Option | Description |
-|--------|-------------|
-| `Dagger2` | Dagger |
-| `Sword` | Sword |
-| `Club` | Club |
-| `Great Sword` | Great Sword |
-| `Polearm` | Polearm |
-| `Staff` | Staff |
-| `Scythe` | Scythe |
-
-**Default**: `Sword`
-**Keybind**: Alt+6 (WAR subjob only)
-
----
-
-### RangeLock
-
-Locks ranged weapon slot (Exalted Crossbow + Acid Bolt). Enabled via `//gs c range` command which auto-equips, locks, and fires. Boolean toggle state.
-
-| Option | Description |
-|--------|-------------|
-| `false` | Ranged weapons can be swapped freely |
-| `true` | Ranged weapons locked |
-
-**Default**: `false`
-**Keybind**: Alt+7
-
----
-
-### FastCast
-
-Internal numeric state used by the midcast watchdog system. Represents your total Fast Cast percentage from gear and traits, used to calculate adjusted cast times. Not typically cycled manually.
-
-| Option | Description |
-|--------|-------------|
-| `0` through `80` | Fast Cast percentage (increments of 10) |
-
-**Default**: `0`
-
----
-
-## Quick Reference
-
-| State | Options | Default | Keybind |
-|-------|---------|---------|---------|
-| HybridMode | PDT / Normal | PDT | Alt+3 |
-| MainWeapon | Vajra / TwashtarM / Mpu Gandring / Tauret / Naegling / Malevolence / Dagger | Vajra | Alt+1 |
-| SubWeapon | Centovente / Tanmogayi / Kraken | Centovente | Alt+2 |
-| TreasureMode | Tag / SATA / Full | Tag | Alt+4 |
-| AbyProc | false / true | false | Alt+5 |
-| AbyWeapon | Dagger2 / Sword / Club / Great Sword / Polearm / Staff / Scythe | Sword | Alt+6 |
-| RangeLock | false / true | false | Alt+7 |
-| FastCast | 0 - 80 | 0 | -- |
-
----
-
-## Configuration
-
-**Config files**: `Tetsouo/config/thf/`
-
-| File | Purpose |
-|------|---------|
-| `THF_KEYBINDS.lua` | Keybind definitions |
-| `THF_LOCKSTYLE.lua` | Lockstyle per subjob |
-| `THF_MACROBOOK.lua` | Macrobook per subjob |
-| `THF_STATES.lua` | State definitions |
-| `THF_TP_CONFIG.lua` | TP and weaponskill settings |
-
-**Lockstyle**: #1 (all subjobs)
-
-**Macrobook**: Book 1, Page 1 (all subjobs)
-
-See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.
+In `<Char>/config/thf/`: `THF_STATES.lua` (modes and defaults),
+`THF_KEYBINDS.lua` (keys), `THF_CUSTOM.lua` (your own modes and gear, see
+[keybinds](../../guides/keybinds.md)), `THF_LOCKSTYLE.lua`, `THF_MACROBOOK.lua`,
+`THF_TP_CONFIG.lua`. See [configuration](../../guides/configuration.md).

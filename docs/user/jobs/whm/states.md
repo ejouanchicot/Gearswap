@@ -1,152 +1,58 @@
-# WHM - States & Modes
+# WHM — modes and keys
 
-States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
+White Mage: cure potency or spell interruption, automatic cure tier, Afflatus
+choice, and a weapon lock.
 
-**Config**: `Tetsouo/config/whm/WHM_KEYBINDS.lua`
+Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each
+mode's current value; this page says what each value does. `#numpad0` (Auto
+Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
+[keybinds](../../guides/keybinds.md).
 
----
+## Keys
 
-## States
+| Key | Mode (state) | Values (default in **bold**) | What it does |
+|---|---|---|---|
+| `^numpad3` | Cure Mode (`CureMode`) | **Potency**, SIRD | Midcast set for Cure / Curaga: `sets.midcast.Cure` / `Curaga`, or `CureSIRD` / `CuragaSIRD` (spell interruption down) in SIRD, falling back to the normal set if the SIRD one is missing. |
+| `^numpad4` | Cure Auto-Tier (`CureAutoTier`) | **On**, Off | On: the Cure tier you press is replaced by the one that fits the target's missing HP (see Notes). Off: the tier you press is cast. |
+| `^numpad5` | Afflatus Mode (`AfflatusMode`) | **Solace**, Misery | Which stance `//gs c afflatus` uses. |
+| `^numpad1` | Idle Mode (`IdleMode`) | **PDT**, Refresh | Idle set: `sets.idle.PDT` or `sets.idle.Refresh`. |
+| `^numpad2` | Combat Mode (`CombatMode`) | **Off**, On | On locks main, sub, range and ammo so your weapons stay on. |
+| `^numpad6` | Casting Mode (`CastingMode`) | **Normal**, Resistant | Mote's casting mode: looks for `.Resistant` versions of the precast / midcast sets. The template set file has none. |
 
-### OffenseMode
+## Other modes (no key)
 
-Controls whether the character engages in melee combat. When set to Melee ON, weapons are locked to prevent accidental swaps.
+| Mode | Values | What it does |
+|---|---|---|
+| `OffenseMode` | **None**, Melee ON | Melee ON locks main, sub and range. Cycle it with F9 (Mote's key) or `//gs c cycle OffenseMode`. |
+| `FastCast` | 0 to 80 in steps of 10, default **80** | Fast Cast %, used by the midcast watchdog to time your casts. |
 
-| Option | Description |
-|--------|-------------|
-| `None` | No melee, focus on healing and casting |
-| `Melee ON` | Enable melee mode (locks weapons) |
+## Commands
 
-**Default**: `None`
+| Command | What it does |
+|---|---|
+| `//gs c afflatus` | Casts Afflatus Solace or Afflatus Misery, following Afflatus Mode. |
 
----
+## Notes
 
-### CastingMode
+- **Cure auto-tier** (Cure Auto-Tier On): the thresholds are in
+  `WHM_CURE_CONFIG.lua`. Your own missing HP is exact; a party member's is
+  estimated from their HP % (assuming 2000 max HP). A 50 HP safety margin is
+  added. If the chosen tier is on recast, the next lower one is used, then a
+  higher one. The Cure is cancelled and re-sent with the new tier.
+- **Engaged cures** use `sets.midcast.CureMelee` when that set has gear in it.
+- **Afflatus Solace up**: cures use `sets.midcast.CureSolace`, and the Solace
+  set is added to cures and Bar-spells.
+- Status removal spells use `sets.midcast.StatusRemoval` (Cursna its own set),
+  plus the Divine Caress set when that buff is up.
+- Paralyna while you are paralysed skips its precast gear.
+- A reload or job change releases the Combat Mode and Melee ON locks.
+- Weaponskill TP bonus gear: see [TP bonus](../war/tp-bonus.md).
+- Every mode goes back to its default on each job change, subjob change or reload.
 
-Controls spell accuracy gear selection. Use Resistant for enemies with high magic evasion.
+## Files
 
-| Option | Description |
-|--------|-------------|
-| `Normal` | Standard casting gear |
-| `Resistant` | Magic accuracy focused gear (for resistant enemies) |
-
-**Default**: `Normal`
-**Keybind**: Alt+5
-
----
-
-### IdleMode
-
-Controls gear worn when not engaged in combat or casting.
-
-| Option | Description |
-|--------|-------------|
-| `PDT` | Physical Damage Taken reduction (defensive idle) |
-| `Refresh` | MP recovery priority (for safe areas) |
-
-**Default**: `PDT`
-**Keybind**: Alt+2
-
----
-
-### CureMode
-
-Controls cure spell optimization. Switches between maximum potency and spell interruption resistance.
-
-| Option | Description |
-|--------|-------------|
-| `Potency` | Maximum cure potency (for safe casting) |
-| `SIRD` | Spell Interruption Rate Down (for casting under attack) |
-
-**Default**: `Potency`
-**Keybind**: Alt+1
-
----
-
-### AfflatusMode
-
-Selects the active Afflatus stance. The `//gs c afflatus` command auto-casts the current stance.
-
-| Option | Description |
-|--------|-------------|
-| `Solace` | Cure focus (Stoneskin on Cure, Bar-spell MDB, Sacrifice 7 effects) |
-| `Misery` | Damage focus (Cura boost, Banish boost, Esuna 2 effects, Auspice Enlight) |
-
-**Default**: `Solace`
-**Keybind**: Alt+3
-
----
-
-### CureAutoTier
-
-Controls automatic Cure tier downgrade based on target HP missing. When on, casting a high-tier cure on a nearly-full target will automatically downgrade to a lower tier to save MP.
-
-| Option | Description |
-|--------|-------------|
-| `On` | Auto-downgrade Cure tier based on target HP missing (MP efficient) |
-| `Off` | Always use the Cure tier you manually selected |
-
-**Default**: `On`
-**Keybind**: Alt+4
-
----
-
-### CombatMode
-
-Controls weapon locking during combat. When on, main/sub/range/ammo slots stay equipped and are not swapped by gear sets.
-
-| Option | Description |
-|--------|-------------|
-| `Off` | Weapons can swap freely (for casting builds) |
-| `On` | Weapons locked (prevents accidental swaps during melee) |
-
-**Default**: `Off`
-**Keybind**: Alt+0
-
----
-
-### FastCast
-
-Internal numeric state used by the midcast watchdog system. Represents your total Fast Cast percentage from gear and traits, used to calculate adjusted cast times. Not typically cycled manually.
-
-| Option | Description |
-|--------|-------------|
-| `0` through `80` | Fast Cast percentage (increments of 10) |
-
-**Default**: `80`
-
----
-
-## Quick Reference
-
-| State | Options | Default | Keybind |
-|-------|---------|---------|---------|
-| OffenseMode | None / Melee ON | None | -- |
-| CastingMode | Normal / Resistant | Normal | Alt+5 |
-| IdleMode | PDT / Refresh | PDT | Alt+2 |
-| CureMode | Potency / SIRD | Potency | Alt+1 |
-| AfflatusMode | Solace / Misery | Solace | Alt+3 |
-| CureAutoTier | On / Off | On | Alt+4 |
-| CombatMode | Off / On | Off | Alt+0 |
-| FastCast | 0 - 80 | 80 | -- |
-
----
-
-## Configuration
-
-**Config files**: `Tetsouo/config/whm/`
-
-| File | Purpose |
-|------|---------|
-| `WHM_KEYBINDS.lua` | Keybind definitions |
-| `WHM_LOCKSTYLE.lua` | Lockstyle per subjob |
-| `WHM_MACROBOOK.lua` | Macrobook per subjob |
-| `WHM_STATES.lua` | State definitions |
-| `WHM_TP_CONFIG.lua` | TP and weaponskill settings |
-| `WHM_CURE_CONFIG.lua` | Cure tier and potency settings |
-
-**Lockstyle**: #3 (all subjobs)
-
-**Macrobook**: Book 11, Page 1 (default). RDM=Book 11/Page 1, SCH=Book 11/Page 2, BLM=Book 11/Page 3, BLU=Book 11/Page 4, GEO=Book 11/Page 5
-
-See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.
+In `<Char>/config/whm/`: `WHM_STATES.lua` (modes and defaults),
+`WHM_KEYBINDS.lua` (keys), `WHM_CURE_CONFIG.lua` (cure tier thresholds),
+`WHM_CUSTOM.lua` (your own modes and gear, see
+[keybinds](../../guides/keybinds.md)), `WHM_LOCKSTYLE.lua`, `WHM_MACROBOOK.lua`,
+`WHM_TP_CONFIG.lua`. See [configuration](../../guides/configuration.md).

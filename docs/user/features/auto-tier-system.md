@@ -1,65 +1,70 @@
-# Auto-Tier System
+# Auto-tier: WHM Cures and DNC Waltzes
 
-Automatically downgrades healing spells and abilities to the optimal tier based on target's missing HP. Saves MP (WHM) and TP (DNC).
+Pick the heal tier from the HP the target is missing, so you can put one
+macro on the top tier and let the system spend less MP or TP.
 
----
+## WHM: Cure and Curaga
 
-## WHM Cure Auto-Tier
+Macro the tier you like (Cure VI, Curaga V...). Before it goes off:
 
-Macro Cure VI and the system downgrades to the right tier.
+- **Auto-tier** (mode `CureAutoTier`, key Ctrl+Numpad4, On / Off): the
+  smallest tier that covers the missing HP replaces it.
+- **Recast fallback** (always on, even with auto-tier Off): if the tier is on
+  recast, the next ready one is used, lower tiers first, then higher.
 
-**Toggle**: `//gs c cycle CureAutoTier` (On / Off)
+Missing HP: exact for yourself; for a party or alliance member it is estimated
+from their HP % as if they had 2000 max HP. 50 HP are added as a safety
+margin before the lookup.
 
-### Thresholds
+Tiers, from `<YourName>/config/whm/WHM_CURE_CONFIG.lua` (edit them there):
 
-Defined in `config/whm/WHM_CURE_CONFIG.lua`. A 50 HP safety margin is added to the target's missing HP before lookup.
+| Missing HP | Cure | | Missing HP | Curaga |
+|---|---|---|---|---|
+| 0-200 | Cure | | 0-300 | Curaga |
+| 200-400 | Cure II | | 300-600 | Curaga II |
+| 400-700 | Cure III | | 600-1000 | Curaga III |
+| 700-1100 | Cure IV | | 1000-1400 | Curaga IV |
+| 1100-1600 | Cure V | | 1400+ | Curaga V |
+| 1600+ | Cure VI | | | |
 
-| Tier | HP missing range | MP cost |
-|------|-----------------|---------|
-| Cure I | 0-200 | 8 |
-| Cure II | 200-400 | 24 |
-| Cure III | 400-700 | 46 |
-| Cure IV | 700-1100 | 88 |
-| Cure V | 1100-1600 | 135 |
-| Cure VI | 1600+ | 210 |
+The thresholds are fixed numbers; they do not follow your Cure Potency gear.
+The `auto_tier_enabled` line of that file is not what turns auto-tier on or
+off: the `CureAutoTier` mode is.
 
-Thresholds are fixed values from the config file. They do not adjust based on Cure Potency gear.
+## DNC: `//gs c waltz` and `//gs c aoewaltz`
 
-When auto-tier is Off, recast fallback still works: if the spell you macro'd is on recast, the system tries lower tiers then higher tiers.
+Both need DNC as main job or subjob, and cancel Saber Dance first.
 
----
+- `//gs c waltz` sends Curing Waltz on `<stpc>` (you pick the target with the
+  cursor). The tier is chosen from the missing HP of your **current target**
+  when it is you or a party / alliance member (exact for you, estimated from
+  HP % for others); with no target it is sized for you; with a monster
+  targeted, the HP cannot be known and the highest usable tier is tried first.
+  If that tier is on recast or you lack the TP, the other tiers you know are
+  tried.
+- `//gs c aoewaltz` sends Divine Waltz II, or Divine Waltz when II is not
+  available.
 
-## DNC Waltz Auto-Tier
+| Tier | TP | Missing HP | Level |
+|---|---|---|---|
+| Curing Waltz | 200 | under 200 | 15 |
+| Curing Waltz II | 350 | 200-599 | 35 |
+| Curing Waltz III | 500 | 600-1099 | 45 |
+| Curing Waltz IV | 650 | 1100-1499 | 70 |
+| Curing Waltz V | 800 | 1500+ | 87 |
+| Divine Waltz | 400 | | 40 |
+| Divine Waltz II | 800 | | 78 |
 
-Always active when using `//gs c waltz`. No toggle needed.
-
-**Commands**:
-- `//gs c waltz <target>` -- single-target heal (auto-selects tier I-V)
-- `//gs c aoewaltz` -- Divine Waltz (tries II first, falls back to I)
-
-### Thresholds
-
-Defined in `shared/utils/dnc/waltz_manager.lua`. Falls back to other tiers if the preferred one is on recast or TP is insufficient.
-
-| Tier | TP cost | HP missing range |
-|------|---------|-----------------|
-| Curing Waltz | 200 | 0-199 |
-| Curing Waltz II | 350 | 200-599 |
-| Curing Waltz III | 500 | 600-1099 |
-| Curing Waltz IV | 650 | 1100-1499 |
-| Curing Waltz V | 800 | 1500+ |
-
-| AOE tier | TP cost |
-|----------|---------|
-| Divine Waltz | 400 |
-| Divine Waltz II | 800 |
-
----
+Levels are your DNC level, main or sub. These values are in
+`shared/utils/dnc/waltz_manager.lua`.
 
 ## Troubleshooting
 
-**Cure always casts the spell you macro'd**: Check `//gs c state CureAutoTier` shows On. Toggle with `//gs c cycle CureAutoTier`.
-
-**Wrong tier selected**: The 50 HP safety margin shifts thresholds slightly upward. Party member HP is estimated from HPP percentage (exact for self). Recast to get a fresh calculation.
-
-**Waltz command does nothing**: Verify DNC is loaded (`//gs c reload`). Check TP (minimum 200 for Waltz I). Check syntax: `//gs c waltz <stpc>`.
+- **Cure always casts what you macro'd**: check `CureAutoTier` in the HUD
+  (Ctrl+Numpad4 to switch it On).
+- **A party member's Cure is too small or too big**: their HP is an estimate
+  (2000 max HP assumed). Raise or lower the thresholds in
+  `WHM_CURE_CONFIG.lua`.
+- **`//gs c waltz` says it needs DNC**: DNC must be your main job or subjob.
+- **Waltz tier too high**: target the party member (F2-F6, or click) before
+  pressing, so their missing HP can be read.

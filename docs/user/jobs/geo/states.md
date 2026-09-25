@@ -1,337 +1,72 @@
-# GEO - States & Modes
-
-States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
-
-**Config**: `Tetsouo/config/geo/GEO_KEYBINDS.lua`
-
----
-
-## States
-
-### HybridMode
-
-Controls the balance between damage and survivability when engaged.
-
-| Option | Description |
-|--------|-------------|
-| `PDT` | Physical Damage Taken -50% for survivability |
-| `Normal` | Maximum DPS output |
-
-**Default**: `PDT`
-**Keybind**: Alt+7
-
----
-
-### CombatMode
-
-Controls whether weapon slots are locked to prevent gear swaps.
-
-| Option | Description |
-|--------|-------------|
-| `Off` | Weapons can swap freely |
-| `On` | Main, sub, range, and ammo slots locked |
-
-**Default**: `Off`
-**Keybind**: Alt+8
-
----
-
-### LuopanMode
-
-Controls gear focus when a Luopan bubble is active.
-
-| Option | Description |
-|--------|-------------|
-| `DT` | Luopan survival (PDT/MDT gear to keep bubble alive) |
-| `DPS` | Damage optimization (less pet survival) |
-
-**Default**: `DT`
-**Keybind**: Alt+9
-
----
-
-### MainWeapon
-
-Selects the primary weapon (handbell).
-
-| Option | Description |
-|--------|-------------|
-| `Idris` | REMA handbell |
-
-**Default**: `Idris`
-**Keybind**: None
-
----
-
-### SubWeapon
-
-Selects the offhand shield.
-
-| Option | Description |
-|--------|-------------|
-| `Genmei Shield` | PDT shield |
-
-**Default**: `Genmei Shield`
-**Keybind**: None
-
----
-
-### IndicolureMode
-
-Controls whether Indi spells target self or a party member via Entrust.
-
-| Option | Description |
-|--------|-------------|
-| `Self` | Indi spell applied to self |
-| `Entrust` | Indi spell applied to party member (requires Entrust ability active) |
-
-**Default**: `Self`
-**Keybind**: Alt+0
-
----
-
-### MainIndi
-
-Selects the Indicolure spell to cast. Contains 29 spells covering buffs, stat boosts, and debuffs.
-
-**Buffs (first 10)**:
-
-| Option | Description |
-|--------|-------------|
-| `Indi-Haste` | Haste+ |
-| `Indi-Fury` | Attack+ |
-| `Indi-Precision` | Accuracy+ |
-| `Indi-Refresh` | Refresh+ |
-| `Indi-Barrier` | Defense+ |
-| `Indi-Acumen` | MAB+ |
-| `Indi-Focus` | MACC+ |
-| `Indi-Voidance` | Evasion+ |
-| `Indi-Attunement` | MDB+ |
-| `Indi-Regen` | Regen+ |
-
-**Stats (7)**:
-
-| Option | Description |
-|--------|-------------|
-| `Indi-STR` | STR+ |
-| `Indi-DEX` | DEX+ |
-| `Indi-VIT` | VIT+ |
-| `Indi-AGI` | AGI+ |
-| `Indi-INT` | INT+ |
-| `Indi-MND` | MND+ |
-| `Indi-CHR` | CHR+ |
-
-**Debuffs (12)**:
-
-| Option | Description |
-|--------|-------------|
-| `Indi-Frailty` | Attack- |
-| `Indi-Malaise` | MDB- |
-| `Indi-Torpor` | Evasion- |
-| `Indi-Slow` | Magic Haste- |
-| `Indi-Languor` | Magic Attack/Defense- |
-| `Indi-Paralysis` | Adds Paralysis |
-| `Indi-Vex` | Magic Evasion- |
-| `Indi-Wilt` | Magic Defense- |
-| `Indi-Slip` | Accuracy- |
-| `Indi-Fade` | Magic Accuracy- |
-| `Indi-Gravity` | Movement Speed- |
-| `Indi-Fend` | Physical Defense- |
-| `Indi-Poison` | Adds Poison |
-
-**Default**: `Indi-Haste`
-**Keybind**: Alt+1
-
----
-
-### MainGeo
-
-Selects the Geocolure spell for the Luopan bubble. Contains 26 spells, debuffs listed first.
-
-**Debuffs (13)**:
-
-| Option | Description |
-|--------|-------------|
-| `Geo-Frailty` | Attack- |
-| `Geo-Malaise` | MDB- |
-| `Geo-Torpor` | Evasion- |
-| `Geo-Slow` | Magic Haste- |
-| `Geo-Languor` | Magic Attack/Defense- |
-| `Geo-Paralysis` | Adds Paralysis |
-| `Geo-Vex` | Magic Evasion- |
-| `Geo-Wilt` | Physical Defense- |
-| `Geo-Slip` | Accuracy- |
-| `Geo-Fade` | Magic Accuracy- |
-| `Geo-Gravity` | Movement Speed- |
-| `Geo-Fend` | Physical Defense- |
-| `Geo-Poison` | Adds Poison |
-
-**Buffs (13)**:
-
-| Option | Description |
-|--------|-------------|
-| `Geo-Haste` | Haste+ |
-| `Geo-Fury` | Attack+ |
-| `Geo-Precision` | Accuracy+ |
-| `Geo-Barrier` | Defense+ |
-| `Geo-Acumen` | MAB+ |
-| `Geo-Focus` | MACC+ |
-| `Geo-Voidance` | Evasion+ |
-| `Geo-Attunement` | MDB+ |
-| `Geo-Regen` | Regen+ |
-| `Geo-STR` | STR+ |
-| `Geo-DEX` | DEX+ |
-| `Geo-VIT` | VIT+ |
-| `Geo-AGI` | AGI+ |
-| `Geo-INT` | INT+ |
-| `Geo-MND` | MND+ |
-
-**Default**: `Geo-Frailty`
-**Keybind**: Alt+2
-
----
-
-### MainLightSpell
-
-Selects the light-element nuke family.
-
-| Option | Description |
-|--------|-------------|
-| `Fire` | Fire-based nukes |
-| `Aero` | Wind-based nukes |
-| `Thunder` | Lightning-based nukes |
-
-**Default**: `Fire`
-**Keybind**: Alt+3
-
----
-
-### MainDarkSpell
-
-Selects the dark-element nuke family.
-
-| Option | Description |
-|--------|-------------|
-| `Blizzard` | Ice-based nukes |
-| `Stone` | Earth-based nukes |
-| `Water` | Water-based nukes |
-
-**Default**: `Blizzard`
-**Keybind**: Alt+4
-
----
-
-### SpellTier
-
-Selects the nuke tier. Tier "I" casts the base spell (e.g., "Fire" not "Fire I").
-
-| Option | Description |
-|--------|-------------|
-| `V` | Highest tier |
-| `IV` | Tier IV |
-| `III` | Tier III |
-| `II` | Tier II |
-| `I` | Base tier |
-
-**Default**: `V`
-**Keybind**: Alt+-
-
----
-
-### MainLightAOE
-
-Selects the light-element AOE nuke family.
-
-| Option | Description |
-|--------|-------------|
-| `Fira` | Fire AOE nukes |
-| `Aera` | Wind AOE nukes |
-| `Thundara` | Lightning AOE nukes |
-
-**Default**: `Fira`
-**Keybind**: Alt+5
-
----
-
-### MainDarkAOE
-
-Selects the dark-element AOE nuke family.
-
-| Option | Description |
-|--------|-------------|
-| `Blizzara` | Ice AOE nukes |
-| `Stonera` | Earth AOE nukes |
-| `Watera` | Water AOE nukes |
-
-**Default**: `Blizzara`
-**Keybind**: Alt+6
-
----
-
-### AOETier
-
-Selects the AOE nuke tier.
-
-| Option | Description |
-|--------|-------------|
-| `III` | Highest tier |
-| `II` | Mid tier |
-| `I` | Base tier |
-
-**Default**: `III`
-**Keybind**: Alt+=
-
----
-
-### FastCast
-
-Internal numeric state used by the watchdog system to calculate cast time timeouts. Set to your total Fast Cast percentage from gear and traits. Cap is 80%.
-
-| Option | Description |
-|--------|-------------|
-| `0` through `80` | Fast Cast percentage (increments of 10) |
-
-**Default**: `80`
-**Keybind**: None
-
----
-
-## Quick Reference
-
-| State | Options | Default | Keybind |
-|-------|---------|---------|---------|
-| MainIndi | 29 Indi spells | Indi-Haste | Alt+1 |
-| MainGeo | 26 Geo spells | Geo-Frailty | Alt+2 |
-| MainLightSpell | Fire / Aero / Thunder | Fire | Alt+3 |
-| MainDarkSpell | Blizzard / Stone / Water | Blizzard | Alt+4 |
-| MainLightAOE | Fira / Aera / Thundara | Fira | Alt+5 |
-| MainDarkAOE | Blizzara / Stonera / Watera | Blizzara | Alt+6 |
-| HybridMode | PDT / Normal | PDT | Alt+7 |
-| CombatMode | Off / On | Off | Alt+8 |
-| LuopanMode | DT / DPS | DT | Alt+9 |
-| IndicolureMode | Self / Entrust | Self | Alt+0 |
-| SpellTier | V / IV / III / II / I | V | Alt+- |
-| AOETier | III / II / I | III | Alt+= |
-| MainWeapon | Idris | Idris | -- |
-| SubWeapon | Genmei Shield | Genmei Shield | -- |
-| FastCast | 0-80 (by 10) | 80 | -- |
-
----
-
-## Configuration
-
-**Config files**: `Tetsouo/config/geo/`
-
-| File | Purpose |
-|------|---------|
-| `GEO_KEYBINDS.lua` | Keybind definitions |
-| `GEO_LOCKSTYLE.lua` | Lockstyle per subjob |
-| `GEO_MACROBOOK.lua` | Macrobook per subjob |
-| `GEO_STATES.lua` | State definitions |
-| `GEO_TP_CONFIG.lua` | TP and weaponskill settings |
-
-**Lockstyle**: #5 (all subjobs)
-
-**Macrobook**: Book 5, Page 1 (all subjobs)
-
-See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.
+# GEO — modes and keys
+
+Geomancer modes pick which Indi-, Geo- and elemental spells the cast commands use, and
+how you and your luopan are geared.
+
+Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each mode's
+current value; this page says what each value does. `#numpad0` (Auto Medicine) and
+Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybinds.md).
+
+## Keys
+
+| Key | Mode (state) | Values (default in **bold**) | What it does |
+|---|---|---|---|
+| `^numpad3` | `MainIndi` | **Indi-Haste** and 29 more | Spell cast by `//gs c indi` and `//gs c entrust` |
+| `^numpad4` | `MainGeo` | **Geo-Frailty** and 27 more | Spell cast by `//gs c geo` |
+| `^numpad5` | `MainLightSpell` | **Fire**, Aero, Thunder | Element of `//gs c lightspell` |
+| `^numpad6` | `MainDarkSpell` | **Blizzard**, Stone, Water | Element of `//gs c darkspell` |
+| `^numpad1` | `SpellTier` | **V**, IV, III, II, I | Tier of the single-target nukes (`I` = the base spell, e.g. `Fire`) |
+| `^numpad7` | `MainLightAOE` | **Fira**, Aera, Thundara | Spell of `//gs c lightaoe` |
+| `^numpad8` | `MainDarkAOE` | **Blizzara**, Stonera, Watera | Spell of `//gs c darkaoe` |
+| `^numpad2` | `AOETier` | **III**, II, I | Tier of the -ra nukes (`I` = `Fira`) |
+| `^numpad9` | `HybridMode` | **PDT**, Normal | Your idle/engaged base when no luopan is out |
+| `^numpad0` | `CombatMode` | **Off**, On | `On` locks main, sub, range and ammo so casting never swaps your weapon. `Off` unlocks them (unless a craft session holds them) |
+| `^numpad.` | `LuopanMode` | **DT**, DPS | Engaged gear while a luopan is out: `sets.luopan.engaged.DT` or `.DPS` |
+| `^numpad+` | `IndicolureMode` | **Self**, Entrust | Shown in the HUD only; no command reads it today |
+
+`MainIndi` holds the ten common buffs first (Haste, Fury, Precision, Refresh, Barrier,
+Acumen, Focus, Voidance, Attunement, Regen), then the seven stat spells, then the
+debuffs and Fend. `MainGeo` starts with the debuffs (Frailty, Malaise, Torpor, Slow,
+Languor, Paralysis, Vex, Wilt, Slip, Fade, Gravity, Fend, Poison), then the buffs.
+Reorder or trim the lists in `GEO_STATES.lua`.
+
+## Other modes (no key)
+
+| Mode | Values | Use |
+|---|---|---|
+| `MainWeapon`, `SubWeapon` | Idris / Genmei Shield | One value each; change them in `GEO_STATES.lua` |
+| `FastCast` | 0 to 80 by 10, default **80** | Your Fast Cast %, used only by the midcast watchdog |
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `//gs c indi` | Casts `MainIndi` on yourself |
+| `//gs c geo` | Casts `MainGeo`: on a party member (`<stpc>`) for a buff, on an enemy (`<stnpc>`) for a debuff |
+| `//gs c entrust` | Uses Entrust, then casts `MainIndi` on a party member (`<stal>`) once Entrust is up; gives up with a warning if Entrust was refused |
+| `//gs c escort [Indi-X] [leader]` | Full Circle if a luopan is out, then casts the Indi- on yourself (default Indi-Regen); with a leader name, sends `sm follow <leader>` once the cast is over |
+| `//gs c lightspell` / `darkspell` | Nukes your target with the chosen element and `SpellTier`, stepping down a tier when the higher one is not learned or is on recast |
+| `//gs c lightaoe` / `darkaoe` | Same with the -ra spells and `AOETier` |
+| `//gs c lightarts` / `darkarts` | /SCH: Light or Dark Arts, then the matching Addendum on the next press |
+| `//gs c aoe sneak` / `invi` / `erase` | /SCH: casts the spell on the party, with Light Arts and Accession as stratagem charges allow |
+| `//gs c dispel` | /RDM: Dispel on an enemy. /SCH: under Addendum: Black. Other subjobs: a warning |
+
+`escort` relies on an addon that answers `sm follow`; without it the follow does nothing.
+
+## Notes
+
+- All modes go back to their default on every job change, subjob change and reload.
+- Kaories's overlay (`_master/Kaories/config/geo/`) uses the same modes and keys.
+
+## Files
+
+In `<YourChar>/config/geo/`:
+
+| File | Content |
+|---|---|
+| `GEO_STATES.lua` | Modes, their values and defaults |
+| `GEO_KEYBINDS.lua` | The keys above |
+| `GEO_CUSTOM.lua` | Your own modes, keys and gear rules, without code (empty by default) |
+| `GEO_LOCKSTYLE.lua` | Lockstyle number (5 for every subjob in the template) |
+| `GEO_MACROBOOK.lua` | Macro book/page (book 5, page 1 in the template) |
+| `GEO_TP_CONFIG.lua` | TP-bonus pieces used for weaponskill gear |

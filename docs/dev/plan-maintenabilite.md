@@ -12,9 +12,11 @@ mesures sur l'arbre au commit `7015832`, et deux audits automatisés dont les
 affirmations ont été revérifiées une par une — cinq ne se reproduisent pas et
 sont listées en §6 pour qu'on ne les rechasse pas.
 
-> **Statuts : voir §7.** Les constats ci-dessous sont conservés tels qu'écrits,
-> avec les preuves telles qu'elles étaient au moment de la mesure ; c'est §7 qui
-> dit ce qui a été livré et sous quel commit. La plupart des points sont faits.
+> **Statuts : voir §7, puis §8 pour l'audit du 2026-09-25.** Les constats de §1
+> à §4 sont conservés tels qu'écrits, avec les preuves telles qu'elles étaient
+> au moment de la mesure (numéros de ligne compris : ils ont bougé depuis) ;
+> c'est §7 qui dit ce qui a été livré et sous quel commit. §5 et §6 sont tenus à
+> jour (dernière relecture : 2026-09-25). La plupart des points sont faits.
 
 ## Taille réelle du projet
 
@@ -448,30 +450,42 @@ plupart des défauts de §2 découlent de cette seule asymétrie.
 
 Utile à écrire noir sur blanc, pour ne pas « corriger » ce qui va bien :
 
-- **Le système de messages tient.** 176 `add_to_chat` directs, **100 %** sous
-  `shared/utils/messages/` ou dans la liste d'outils de diagnostic. **Zéro
-  fuite** dans `shared/jobs/`. L'invariant est réellement respecté.
+- **Le système de messages tient.** Les `add_to_chat` directs sont tous sous
+  `shared/utils/messages/` ou dans les exceptions de `CODE_QUALITY.md` §6
+  (outils de diagnostic, `whm_message_formatter.lua`, `trace_log.lua`, repli
+  d'`INIT_SYSTEMS`). **Zéro fuite** dans `shared/jobs/` (revérifié le
+  2026-09-25 : `grep -rn "add_to_chat(" shared/jobs` ne trouve rien). L'invariant
+  est réellement respecté.
 - **Aucun `pcall(require)` avec drapeau jeté** dans tout le dépôt (532 sites
   vérifiés) — le projet est discipliné là-dessus.
-- **`ampulla_lock.lua` et `range_lock.lua` sont les modèles à recopier** : ils
+- **`ampulla_lock.lua` (`shared/utils/equipment/`, partagé depuis `a810d92`) et
+  `range_lock.lua` (`shared/jobs/thf/functions/logic/`) sont les modèles à
+  recopier** : ils
   polent l'état réel du slot au lieu d'un délai, échouent du côté sûr (slot
   laissé ouvert), et leur `release()` est idempotente. Leur seule fragilité est
-  leur *position* dans `file_unload` — à déplacer en tête, avant
-  `cancel_all()` et `unbind_all()`, car un seul `pcall` entoure toute la
-  fonction (`flow.lua:339-348`) : la première erreur annule les nettoyages
-  suivants, dont le relâchement du slot.
+  leur *position* dans `file_unload` — déplacée en tête depuis `2ad2a0d`, car
+  un seul `pcall` entoure toute la fonction (`flow.lua:339-348`) : la première
+  erreur annule les nettoyages suivants, dont le relâchement du slot. Depuis le
+  2026-09-25, `//gs c wo` appelle aussi leur `release()` quand il déverrouille
+  tous les slots (`wardrobe_organizer.lua` `release_stance_locks`).
 - **Les compteurs de génération sur `windower.*` sont au bon endroit** et bien
   utilisés (6 modules).
 - **`shared/data/` est justifié** : comparé à `D:\Windower Tetsouo\res\`, il
   apporte les descriptions, les familles de sorts et les recasts lisibles dont
   `res/` est dépourvu. Ce n'est pas une duplication du jeu.
-- **`midcast_manager.lua` (753 l.) et `roll_tracker.lua` (787 l.) n'ont pas
+- **`midcast_manager.lua` (777 l.) et `roll_tracker.lua` (778 l.) n'ont pas
   besoin d'être découpés** : dispatchers courts, helpers bornés. Les vrais gros
-  morceaux sont `item_user.lua:570` (`_setup_auto_fix`, **191 lignes**, 3-4
-  closures imbriquées) et `phases.lua:460` (`cleanup_inv`, 135 lignes).
+  morceaux sont `item_user.lua` `ItemUser._setup_auto_fix` (3-4 closures
+  imbriquées) et `phases.lua` `Phases.cleanup_inv`. (Tailles de fichier
+  mesurées le 2026-09-25 avec `wc -l`.)
 - **La taille des `*_sets.lua` n'est pas un défaut** : données pures.
-- **Le système d'overlays fonctionne** : 8 jobs sur 9 identiques entre live et
-  `_master/Tetsouo/`.
+- **Le système d'overlays fonctionne** : `python scripts/check_overlay.py
+  Tetsouo` (2026-09-25) donne 147 fichiers identiques à leur overlay, 10 sur
+  le modèle générique (écart attendu), aucun divergent ; seuls
+  `config/alt_state.lua`, `alt_window.lua` et `dualbox_role.lua` n'ont pas de
+  modèle, et ce sont des fichiers écrits en jeu (un re-clone reprend les deux
+  premiers, voir `KEPT_ON_RECLONE` dans `clone_character.py` ;
+  `dualbox_role.lua` est exclu exprès).
 
 ---
 
@@ -482,7 +496,7 @@ vérification. Ils sont consignés pour éviter qu'on les reprenne :
 
 1. **« `is_recast_ready` dupliquée dans 7 fichiers »** (audit 2026-05-18, §P2-1)
    — périmé : c'est centralisé dans
-   `_master/config_global/RECAST_CONFIG.lua:77`.
+   `_master/config_global/RECAST_CONFIG.lua:79`.
 2. **« COR absent de `character_db`  »** (audit 2026-05-18, §P2-6) — corrigé :
    `character_db.lua:39` liste 9 jobs pour Tetsouo, COR et SMN compris, et une
    notion explicite d'`ARCHIVE_JOBS`.
@@ -490,7 +504,9 @@ vérification. Ils sont consignés pour éviter qu'on les reprenne :
    reste le trou côté *config* (§1.2).
 4. **« Chocobo/Raptor Mazurka définis deux fois »** — faux : ce sont deux
    chansons distinctes (`song_buffs.lua:865,875`). Scan complet de
-   `shared/data/` : **aucune** clé dupliquée.
+   `shared/data/` : **aucune** clé dupliquée dans un même fichier. (Les deux
+   Mazurkas existent aussi dans `song_special.lua`, qui l'emporte à la fusion ;
+   leurs champs `effect` ont été alignés le 2026-09-25.)
 5. **« `docs/dev/jobs/pld.md` a un travail non committé »** — périmé, committé
    en `7015832`.
 
@@ -514,12 +530,12 @@ une deuxième fois quand quelqu'un la reprend.
 | 8 | §4.4 Les petits mensonges | 30 min | ✅ `f5a0976` |
 | 9 | §4.3 Drapeaux de debug sur `windower.*` | 1 h | ✅ `11ff91e` |
 | 10 | §1.2 Contrôle de la chaîne d'overlays | 1 h | ✅ `fd34a2c` — `scripts/check_overlay.py`, Tetsouo couvert à 100 % |
-| 11 | §3.4 Harnais de vérification versionné | 3 h | ◐ `a7c8c34` — `check_syntax.py` livré (1 256 fichiers) ; harnais de stubs et réparation de `check.py` restants |
+| 11 | §3.4 Harnais de vérification versionné | 3 h | ◐ `a7c8c34` — `check_syntax.py` livré (1 344 fichiers sans erreur le 2026-09-25) ; restent : `check.py` plante toujours (`FileNotFoundError` sur `UNIVERSAL_JA_DATABASE.lua`, via `model.json`), `scripts/lib/gs_stub.lua` n'existe pas, les 50 `difftest_*.lua` sont toujours à la racine de `scripts/audit/` |
 | 12 | §2.4 Gardes PRECAST bavardes | 3 h | ◐ `d07265c` — l'échec est signalé et le rapporteur ne plante plus ; le verrou `modules_loaded` reste volontairement en place (le lever ferait réessayer un `require` cassé à chaque action) |
-| 13 | §2.2 Verrou de craft sur `windower.*` | 2 h | ☐ préparé : tous les appelants passent par `is_active()`, la migration ne touche plus qu'un fichier |
+| 13 | §2.2 Verrou de craft sur `windower.*` | 2 h | ☐ préparé : tous les appelants passent par `is_active()`, la migration ne touche plus qu'un fichier ; toujours ouvert le 2026-09-25 (`craft_manager.lua:59` `_G.__CraftManagerState`) |
 | 14 | §1.3 Suivre les standards et les audits dans git | 10 min | ☐ **décision à prendre** : le dépôt distant est public, et `.gitignore` s'ignore lui-même (ligne 79) donc la politique n'est pas versionnée non plus |
 | 15 | §3.5 `.gitattributes` | 5 min | ☐ dépend du 14 (le `.gitignore` non suivi) |
-| 16 | §4.2 Métriques de `CLAUDE.md` | 45 min | ◐ remesurées en v3.3.0 ; reste à décider si la table survit ou est générée |
+| 16 | §4.2 Métriques de `CLAUDE.md` | 45 min | ◐ remesurées le 2026-09-25, cette fois avec la commande de chaque mesure dans la table (`CLAUDE.md` §METRIQUES, `CODE_QUALITY.md` §16) ; `CLAUDE.md` renvoie à `docs/dev/README.md` ; `CODE_QUALITY.md` §6 énonce la règle générale au lieu d'une liste. Reste à décider si la table est générée par script |
 
 ### Corrigés en plus, hors plan initial
 
@@ -547,11 +563,13 @@ Trouvés en vérifiant les points ci-dessus :
 
 Trois points seulement, tous en attente d'un arbitrage plutôt que de travail :
 
-1. **Kaories a 4 fichiers divergents de son propre overlay**, dans les deux sens
-   (`sets/pld_sets.lua` et `sets/rdm_sets.lua` sont **en retard** sur le template,
-   `config/DUALBOX_CONFIG.lua` et `config/rdm/RDM_STATES.lua` en avance). Lancer
-   `python scripts/check_overlay.py Kaories` les liste. Copier dans le mauvais sens
-   perdrait du travail, donc rien n'a été touché.
+1. **Kaories diverge de son propre overlay sur 3 fichiers, par des commentaires
+   seulement.** `pld_sets`, `rdm_sets` et `RDM_STATES` ont été resynchronisés en
+   `f6f1683`. `python scripts/check_overlay.py Kaories` (2026-09-25) liste encore
+   `config/DUALBOX_CONFIG.lua`, `REGION_CONFIG.lua` et `WARDROBE_CONFIG.lua` ;
+   un `diff` sans les commentaires est vide : ce sont les en-têtes réécrits la
+   nuit du 2026-09-24 dans le live et pas dans l'overlay. Copier live → overlay,
+   sans risque de perte.
 2. **Suivre `CLAUDE.md`, `.claude/` et `scripts/audit/` dans git** (§1.3) revient à
    les publier sur un dépôt public. Et `.gitignore` s'ignore lui-même, donc la
    politique d'exclusion elle-même n'est pas sauvegardée : un clone ailleurs n'a
@@ -561,9 +579,100 @@ Trois points seulement, tous en attente d'un arbitrage plutôt que de travail :
    fait : plus aucun appelant ne lit le global interne, donc la migration se joue
    dans `craft_manager.lua` seul.
 
-**Règle transverse à ajouter à `.claude/CODE_QUALITY.md`**, dont découle la
+**Règle transverse à ajouter à `.claude/CODE_QUALITY.md`** (toujours absente
+comme règle générale le 2026-09-25 : seule la note sur l'état de debug midcast,
+§4.2, dit que `_G` est reconstruit à chaque chargement), dont découle la
 moitié de ce plan : *dans le sandbox GearSwap, `_G` est reconstruit à chaque
 chargement de job ; `windower.*` et `disable_table` survivent. Un état qui doit
 survivre va sur `windower.*`. Un verrou posé sur `disable_table` doit avoir un
 propriétaire qui survit aussi, sinon il devient orphelin. Et `pcall(require)`
 faux ne signifie jamais « fichier absent » : toujours afficher l'erreur réelle.*
+
+---
+
+## 8. Audit du 2026-09-25 — ce qui a été corrigé, ce qui reste
+
+Audit par zones (le prompt est `docs/dev/audit-prompt.md`), chaque trouvaille
+revérifiée avant correction. Les correctifs du jour **ne sont pas commités** au
+moment de cette relecture et **n'ont pas été testés en jeu** : ils sont passés
+`luac5.1 -p` et des tests `lua5.1` hors jeu (stubs), rien de plus. Les pages
+`docs/dev` les marquent « fixed 2026-09-25 ».
+
+### Corrigé le 2026-09-25 (résumé)
+
+- **Jobs** : COR ne compte plus un Quick Draw ou une Waltz comme un Phantom Roll
+  (`party_tracker.lua`, `ability.type == 'CorsairRoll'`) ; chien de garde DressUp
+  et « FORCE GEAR RE-EQUIP » COR retirés ; GEO `//gs c geo` ne vise plus un allié
+  avec Geo-Poison ; RUN/PLD `//gs c aoe` refuse sans /BLU ; WHM (`Melee ON`) et
+  BLM (`CombatMode On`) relâchent leur verrou d'armes dans `file_unload` (pas au
+  changement de sous-job) ; `JobChangeManager.initialize({...})` retiré de
+  `job_sub_job_change` ; message d'échec des binds avec l'erreur réelle (12
+  entrées) ; `REGION_CONFIG` posé avant `config_loader` (orange de Kaories COR) ;
+  commentaires faux corrigés (DRK, PLD, GEO, DNC, THF, SMN, WAR, BST, BLM).
+- **Cœur** : AbilityHelper ne boucle plus quand l'ability automatique ne peut
+  pas partir (marqueur `windower._ability_replay`, pas d'essai sous Amnesia /
+  Impairment) ; HUD « fantôme » d'un ancien chargement bloqué
+  (`windower._ui_live_state`) ; toggles de debug déplacés dans
+  `DEBUG_COMMANDS.lua` ; `//gs c equip` sans `naked` affiche l'usage ; fabrique
+  `shared/config/message_mode_config.lua` pour les 4 `*_MESSAGES_CONFIG.lua` ;
+  Waltz sur un membre du groupe dimensionnée ; séparateurs à 69, couleur des
+  avertissements unifiée, clés de message mortes retirées.
+- **Dual-box / clone** : `//gs c main` écrit aussi le rôle de l'alt (partenaire
+  hors ligne) ; `altjobupdate` porte l'expéditeur, filtré à la réception (16
+  COMMANDS) ; messages `not_ready`, `window_main_only`, `no_follower` ;
+  `alt_state.lua` d'avant un redémarrage ignoré ; `_ALT_CUSTOM` repris de
+  `_master` ; `//gs c sortie` ne plante plus sur une valeur de mode absente ;
+  écouteur warp sur `raw_register_event` ; `//gs c wo` relâche les verrous
+  Hoxne et THF ; le clone garde les fichiers écrits en jeu
+  (`KEPT_ON_RECLONE`), génère `DualBoxConfig.group`, n'offre plus PUP, avertit
+  pour un job sans entrée (SMN), affiche l'overlay à la confirmation.
+- **Données** : runes Gelus/Tellus/Unda, 15 recasts de JA, descriptions de sorts
+  relues sur BG-Wiki, Bio retiré de la copie Enfeebling, en-tête et compteurs de
+  `UNIVERSAL_WS_DATABASE.lua`.
+- **Règles et docs** : `.claude/rules/*`, `CLAUDE.md`, `CODE_QUALITY.md`,
+  `MIDCAST_STANDARD.md`, skills ; `docs/dev` recalé sur le code (nouvelle page
+  `systems/keybinds-and-custom.md`, section priorités HP, espaces de messages
+  `altgroup` / `sortie` / `tempbind`).
+
+### À tester en jeu (livré, non confirmé)
+
+1. PLD stance Hoxne puis `//gs c wo` : ligne d'avertissement, slot ammo libre,
+   Hoxne reverrouille ensuite. THF `//gs c range` puis `wo` : HUD RangeLock Off.
+2. `//gs c alts on` juste après `//lua r gearswap` : « not initialised yet ».
+   `//gs c alts window` sur l'alt : refusé. `//gs c main` avec l'autre boîte hors
+   ligne, puis à sa connexion : une seule fenêtre des alts.
+3. Changement de job d'une boîte : l'autre met bien à jour son job d'alt
+   (nouveau format à 5 arguments).
+4. BRD song1..5 et Marcato automatique : aucune erreur Lua.
+5. `//gs c sortie farm` sur WAR : avertissement, pas d'erreur, l'alt charge son
+   profil.
+6. Kaories COR avec `//gs c trace on` : `trace.log` doit montrer l'orange 2 ;
+   ensuite retirer la sonde `trace_region` de `message_colors.lua` et couper
+   `trace` sur Kaories.
+7. BLM `CombatMode On` puis `//gs reload` ou changement de job : armes libres.
+   RDM : changer d'arme (cycle et `gs c set MainWeapon …`) rééquipe l'arme.
+8. COR/DNC : un Phantom Roll suivi d'une Curing Waltz ou d'un Quick Draw, seul le
+   roll est rapporté. Waltz sur un membre du groupe : le palier choisi.
+9. Couleur des avertissements (orange EU) ; message de rune en PLD/RUN
+   (`ja_mode full`) ; `//gs c info` sur un recast corrigé ; l'échec des binds
+   BLM/BST/GEO affiche l'erreur.
+
+### Encore ouvert
+
+| Point | Pourquoi ouvert |
+|---|---|
+| L'intro de job n'affiche jamais le livre de macros ni le lockstyle (Z2-09) | décision : deux correctifs possibles, les deux changent l'affichage |
+| Ancre HUD RUN `RuneElement` au lieu de `RuneMode` (Z05-4, fix 3) | change le rythme du HUD RUN ; RUN n'est joué que par les clones figés |
+| `wo` Phase 0, `/equip <slot> empty` avec les noms de slot de l'API (Z07-P3-14) | vérifier en jeu si `/equip left_ear empty` marche |
+| Deux résolutions de « les autres membres du groupe » (z06 P3-9) | touche `//gs c main`, à refaire avec un test en jeu |
+| `temp_binds.lua` n'a pas l'horodatage ajouté à `alt_state.lua` | non traité ; effet réel non vérifié |
+| RUN : binds différés sans compteur de génération (z09 P3-5) | aucun personnage géré ne joue RUN |
+| Double rafraîchissement du HUD par changement d'état (Z2-13, transverse) | non traité |
+| Fonctions longues (rolls, cooldowns, handlers, cycle de vie : Z04-8f, Z05-10) | refactor sans urgence, demande un test en jeu |
+| `"JP"` contre valeur numérique pour les dons de Job Points (z08 P3-5) | change des helpers `can_learn` : à décider |
+| Passe BG-Wiki complète sur les 361 fiches de sorts (z08 P2-1) | décision du propriétaire |
+| Livre PLD/BLU, livres par défaut BRD/BLM/BST (z10 P3-1, P3-2) | données du joueur |
+| `ui_settings.lua` du modèle : x = 1600 reste hors écran sur une fenêtre de 1600 px ou moins | le commentaire du fichier le dit (déplacer puis `//gs c ui save`) |
+| `WardrobeOrganizer.reset()` ne relâche pas les verrous de posture | `//gs c wo reset` laisse un drapeau périmé ; la posture ou `//lua r gearswap` le remet |
+| Hygiène du dépôt (zone 11 F9-F16) : `.gitignore` non suivi, notes `.txt` du joueur non ignorées, `.bak`, captures jamais référencées, aucun lien public vers `docs/dev` | hors `docs/dev` ; voir aussi §7 points 14 et 15 |
+| Verrou de craft sur `windower.*` | §7 point 13 |

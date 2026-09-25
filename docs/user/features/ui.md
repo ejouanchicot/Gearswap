@@ -1,95 +1,68 @@
-# UI Overlay
+# Keybind HUD
 
-Visual overlay displaying current states, keybinds, and job settings.
-Works for all 14 implemented jobs.
-
----
+An on-screen box listing every key of the current job, what it changes and the
+mode's current value, for example `^numpad9  Hybrid Mode  PDT`. It is built
+when the job loads (it waits up to 5 s for the job's modes) and repainted when
+a mode changes. The rows come from the job's keybind file, your
+`<JOB>_CUSTOM.lua` modes and the common keys, filtered by your current subjob.
 
 ## Commands
 
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `ui` | | Toggle UI visibility |
-| `ui on` | `ui enable` | Enable UI |
-| `ui off` | `ui disable` | Disable UI (persists across reloads) |
-| `ui header` | `ui h` | Toggle header section |
-| `ui legend` | `ui l` | Toggle legend section |
-| `ui columns` | `ui c` | Toggle column headers |
-| `ui footer` | `ui f` | Toggle footer section |
-| `ui font <name>` | | Change font (`Consolas` or `Courier New`) |
-| `ui bg <preset>` | `ui theme` | Apply a background preset |
-| `ui bg toggle` | `ui theme toggle` | Toggle background visibility |
-| `ui bg list` | `ui theme list` | List available presets |
-| `ui bg <r> <g> <b> <a>` | | Custom background RGBA (0-255) |
-| `ui save` | `ui s` | Save position and settings |
-| `ui help` | `ui ?` | Show help |
+| Command | Alias | Effect |
+|---|---|---|
+| `ui` | | Show / hide (remembered) |
+| `ui on` / `ui off` | `enable` / `disable` | Show / hide (remembered) |
+| `ui header` | `ui h` | Title line |
+| `ui legend` | `ui l` | Modifier legend (`^` Ctrl, `!` Alt...) |
+| `ui columns` | `ui c` | Column headers |
+| `ui footer` | `ui f` | Command reminder line |
+| `ui font <name>` | | Font; keep a fixed-width one (`Consolas`, `Courier New`) |
+| `ui theme <preset>` | `ui bg`, `ui background` | Background preset (`dark_blue`, `black`, `neon_green`...) |
+| `ui theme list` | | List the presets |
+| `ui theme toggle` | | Background on / off |
+| `ui theme <r> <g> <b> <a>` | | Custom colour, 0-255 each |
+| `ui save` | `ui s` | Save the position |
+| `ui help` | `ui ?` | Help |
 
----
+## Position
 
-## Configuration
+Drag the box with the mouse, then `//gs c ui save`: a drag alone is not saved,
+and the next load puts the box back at the last saved position. Showing or
+hiding the header, legend or column headers moves the box so the key rows stay
+in place, and saves.
 
-**File**: `config/UI_CONFIG.lua`
+## Where the settings live
 
-### Position
+| File | Content |
+|---|---|
+| `<YourName>/config/ui_settings.lua` | What `//gs c ui ...` changes: position, shown parts, background, font. Written by the commands; it wins over `UI_CONFIG.lua`. Delete it to go back to the `UI_CONFIG.lua` values. Kept by a re-clone |
+| `<YourName>/config/UI_CONFIG.lua` | Defaults used when `ui_settings.lua` does not exist, plus the background presets, text outline, `flags` and `init_delay`, always read |
+| `<YourName>/config/UI_COLOR_CONFIG.lua` | Colours of the values (elements, modes...) |
 
-Drag the overlay to where you want it, then run `//gs c ui save`. Position persists across reloads. Delete `config/ui_settings.lua` to reset.
+Defaults in the template `UI_CONFIG.lua`:
 
-### Settings reference
+| Setting | Default |
+|---|---|
+| `enabled` | `true` |
+| `show_header` | `false` |
+| `show_legend` | `true` |
+| `show_column_headers` | `false` |
+| `show_footer` | `false` |
+| `text.size`, `text.font` | `10`, `'Consolas'` |
+| `background` | `r 15, g 15, b 35, a 180`, visible |
+| `flags.draggable`, `flags.bold` | `true`, `true` |
+| `sections` | `spells`, `enhancing`, `job_abilities`, `weapons`, `modes`: all `true` |
+| `init_delay` | `5.0` (seconds the HUD waits for the job's modes) |
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `enabled` | `true` | Show UI on startup |
-| `init_delay` | `5.0` | Seconds before UI loads after job change |
-| `show_header` | `true` | Title bar |
-| `show_legend` | `true` | Modifier key legend |
-| `show_column_headers` | `true` | Column header row |
-| `show_footer` | `true` | Command reference line |
-| `flags.draggable` | `true` | Allow mouse drag |
-| `text.size` | `10` | Font size |
-| `text.font` | `'Consolas'` | Font family |
-| `background.r/g/b` | `15/15/35` | Background color (0-255) |
-| `background.a` | `180` | Background opacity (0-255) |
-| `background.visible` | `true` | Show background |
-| `auto_save_position` | `false` | Auto-save on drag |
-| `update_throttle` | `0` | 0 = update on state change only |
-| `debug` | `false` | Debug messages |
-
-### Sections
-
-```lua
-UIConfig.sections = {
-    spells = true,
-    enhancing = true,
-    job_abilities = true,
-    weapons = true,
-    modes = true
-}
-```
-
-Empty sections are hidden automatically.
-
-### Custom colors
-
-```lua
-UIConfig.colors = {
-    header_separator = nil,   -- "\\cs(R,G,B)" format, nil = system default
-    section_title = nil,
-    key_text = nil,
-    description_text = nil,
-    value_text = nil
-}
-```
-
-### Background presets
-
-Switch at runtime with `//gs c ui theme <name>`. Use `//gs c ui theme list` to see all presets.
-
----
+`auto_save_position`, `auto_save_delay`, `debug`, `update_throttle` and
+`colors` are in the file but not used. A new character starts at position
+1600, 300 (from `ui_settings.lua`).
 
 ## Troubleshooting
 
-**UI not visible**: Check `UIConfig.enabled = true`. Try `//gs c ui`. If off-screen, delete `config/ui_settings.lua` and reload.
-
-**Position resets**: Run `//gs c ui save` after positioning.
-
-**Keybinds not showing**: The keybind entry must have a `state` field that matches a defined `state.X` in the job file. Toggle UI off/on to refresh.
+| Symptom | Try |
+|---|---|
+| No HUD | `//gs c ui on` |
+| A mode shows `N/A` or is missing | `//gs c reload`; a row appears only if the keybind file lists it for your subjob |
+| Columns misaligned | Use a fixed-width font: `//gs c ui font Consolas` |
+| Wrong place after a reload | Drag it, then `//gs c ui save` |

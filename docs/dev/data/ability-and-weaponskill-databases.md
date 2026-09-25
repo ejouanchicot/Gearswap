@@ -16,6 +16,9 @@ module-local or on the GearSwap sandbox `_G`, and is discarded every time GearSw
 
 Scope of reading: every file in `shared/data/job_abilities/` (84 module files, 21 wrappers, factory)
 and `shared/data/weaponskills/` (14 files) was read in full; in addition every entry was loaded with `lua5.1` for the integrity checks in [Integrity checks](#integrity-checks).
+Counts and lines were re-measured on 2026-09-25, after `45e28d9` (PUP/DRG pet commands loaded),
+`72e135d` (weaponskill query API removed), `18fc471` / `c9eb8f8` (data checked against `res` and
+BG-Wiki) and that day's fixes (15 JA recasts, rune texts, `_G.WS_DATABASE` root copies removed).
 
 ## Files
 
@@ -23,61 +26,63 @@ and `shared/data/weaponskills/` (14 files) was read in full; in addition every e
 
 | Path | Lines | Role |
 |------|-------|------|
-| `JA_DATABASE_FACTORY.lua` | 65 | `Factory.create(job, opts)`: loads `<job>/<job>_<suffix>` modules and merges their `.abilities` into one flat table. |
-| `<JOB>_JA_DATABASE.lua` (21 files: BLM BLU BRD BST COR DNC DRG DRK GEO MNK NIN PLD PUP RDM RNG RUN SAM SCH THF WAR WHM) | 13 each; BST 17, COR 21, SCH 25, DNC 26 | One `Factory.create` call per job. 17 use the default module list; BST, COR, DNC, SCH pass an explicit list. |
-| `<job>/<job>_subjob.lua`, `_mainjob.lua`, `_sp.lua` (17 standard jobs) | 33-145 | `M.abilities = { [name] = entry }`. Subjob file = usable as sub (`main_job_only = false`); mainjob and sp = main only. |
+| `JA_DATABASE_FACTORY.lua` | 67 | `Factory.create(job, opts)`: loads `<job>/<job>_<suffix>` modules and merges their `.abilities` into one flat table. |
+| `<JOB>_JA_DATABASE.lua` (21 files: BLM BLU BRD BST COR DNC DRG DRK GEO MNK NIN PLD PUP RDM RNG RUN SAM SCH THF WAR WHM) | 13 each; BST 17, DRG 20, PUP 20, COR 21, SCH 25, DNC 26 | One `Factory.create` call per job. 15 use the default module list; BST, COR, DNC, DRG, PUP, SCH pass an explicit list. |
+| `<job>/<job>_subjob.lua`, `<job>_mainjob.lua`, `<job>_sp.lua` (17 standard jobs) | 33-145 | `M.abilities = { [name] = entry }`. Subjob file = usable as sub (`main_job_only = false`); mainjob and sp = main only. |
 | `bst/` 5 files | 42-78 | Standard three + `bst_pet_commands_mainjob.lua` (Ready, Snarl, Spur, Run Wild), `bst_pet_commands_subjob.lua` (Fight, Heel, Stay, Sic, Leave). |
 | `cor/` 5 files | 44-174 | Standard three + `cor_rolls_subjob.lua` (18 rolls, Lv5-58) and `cor_rolls_mainjob.lua` (13 rolls, Lv61-97). Rolls also carry `lucky`/`unlucky`. |
 | `dnc/` 15 files | 30-62 | Standard three + waltzes, sambas, steps, jigs (sub/main each), `flourishes1_subjob`, `flourishes2_subjob/_mainjob`, `flourishes3_mainjob`. Flourishes carry `fm_cost`. |
 | `sch/` 7 files | 44-70 | Standard three + white and black grimoire stratagems (sub/main each). |
-| `drg/` 4 files | 44-83 | Standard three + `drg_pet_commands.lua` (Dismiss, Smiting Breath, Restoring Breath, Steady Wing), which no aggregator loads. |
-| `pup/` 4 files | 42-123 | Standard three + `pup_pet_commands_subjob.lua` (Deploy, Deactivate, Retrieve, 8 Maneuvers), which no aggregator loads. |
-| `nin/` 2 files | 44-69 | `nin_mainjob.lua`, `nin_sp.lua`. There is no `nin_subjob.lua`; the factory skips it silently. |
+| `drg/` 4 files | 44-82 | Standard three + `drg_pet_commands.lua` (Dismiss, Smiting Breath, Restoring Breath, Steady Wing), loaded by `DRG_JA_DATABASE` since `45e28d9`. |
+| `pup/` 4 files | 42-123 | Standard three + `pup_pet_commands_subjob.lua` (Deploy, Deactivate, Retrieve, 8 Maneuvers), loaded by `PUP_JA_DATABASE` since `45e28d9`. |
+| `nin/` 2 files | 44-69 | `nin_mainjob.lua`, `nin_sp.lua`. There is no `nin_subjob` module; the factory skips it silently. |
 
-There is no `smn/` folder and no `SMN_JA_DATABASE.lua` (see `_master/config/alt/SMN_ALT_CUSTOM.lua:24`).
+There is no `smn/` folder and no `SMN_JA_DATABASE` (see `_master/config/alt/SMN_ALT_CUSTOM.lua:23-26`).
 
 ### Weapon skills (`shared/data/weaponskills/`)
 
 | Path | Lines | Entries | Role |
 |------|-------|---------|------|
-| `UNIVERSAL_WS_DATABASE.lua` | 396 | - | Facade: `resolve()` merges the file of the WS's own skill into `_G.WS_DATABASE`; 14 other query helpers. |
-| `SWORD_WS_DATABASE.lua` | 503 | 24 | Standard schema. Also contains 6 non-sword WS (see [Known issues](#known-issues)). |
-| `DAGGER_WS_DATABASE.lua` | 333 | 18 | Alternate schema (see below). No helper functions. |
-| `H2H_WS_DATABASE.lua` | 392 | 17 | Standard schema. |
-| `GREATSWORD_WS_DATABASE.lua` | 353 | 15 | Standard schema. |
-| `GREATAXE_WS_DATABASE.lua` | 269 | 15 | Standard schema, no helper functions. Contains `Decimation` (an Axe WS). |
-| `AXE_WS_DATABASE.lua` | 347 | 15 | Standard schema. |
-| `SCYTHE_WS_DATABASE.lua` | 354 | 15 | Standard schema. |
-| `POLEARM_WS_DATABASE.lua` | 353 | 15 | Standard schema. |
-| `KATANA_WS_DATABASE.lua` | 341 | 15 | Standard schema. |
-| `GREATKATANA_WS_DATABASE.lua` | 346 | 15 | Standard schema. |
-| `STAFF_WS_DATABASE.lua` | 445 | 18 | Standard schema. |
-| `CLUB_WS_DATABASE.lua` | 444 | 17 | Standard schema. |
-| `ARCHERY_WS_DATABASE.lua` | 339 | 12 | Standard schema. |
+| `UNIVERSAL_WS_DATABASE.lua` | 140 | - | Facade: `resolve()` merges the file of the WS's own skill into `_G.WS_DATABASE`; `ensure_weapon_type()`. Nothing else since `72e135d`. |
+| `SWORD_WS_DATABASE.lua` | 302 | 18 | Standard schema. |
+| `DAGGER_WS_DATABASE.lua` | 297 | 18 | Alternate schema (see below). |
+| `H2H_WS_DATABASE.lua` | 293 | 17 | Standard schema. |
+| `GREATSWORD_WS_DATABASE.lua` | 254 | 15 | Standard schema. |
+| `GREATAXE_WS_DATABASE.lua` | 244 | 14 | Standard schema. |
+| `AXE_WS_DATABASE.lua` | 243 | 15 | Standard schema. |
+| `SCYTHE_WS_DATABASE.lua` | 255 | 15 | Standard schema. |
+| `POLEARM_WS_DATABASE.lua` | 254 | 15 | Standard schema. |
+| `KATANA_WS_DATABASE.lua` | 242 | 15 | Standard schema. |
+| `GREATKATANA_WS_DATABASE.lua` | 247 | 15 | Standard schema. |
+| `STAFF_WS_DATABASE.lua` | 340 | 18 | Standard schema. |
+| `CLUB_WS_DATABASE.lua` | 345 | 17 | Standard schema. |
+| `ARCHERY_WS_DATABASE.lua` | 240 | 12 | Standard schema. |
 
-There is no Marksmanship file.
+There is no Marksmanship file. The weapon files are pure data: the per-weapon helper functions
+were removed in `72e135d`, and each WS is now filed once, in the file of its own skill (`18fc471`
+moved the cross-filed copies out).
 
 ### Developer notes (`_dev/`, gitignored by `.gitignore:91`, local only)
 
 | Path | Lines | Status |
 |------|-------|--------|
 | `_dev/JOB_ABILITIES_DATABASE.md` | 215 | Describes a pre-factory design (string-valued entries, a 12-job merge loop, PRECAST modules reading `JA_DB[spell.english]`). None of this matches the code. |
-| `_dev/WS_DATABASE_SYSTEM.md` | 399 | Describes a `GREAT_AXE_WS_DATABASE.lua` file, the DAGGER-style schema as the standard, PRECAST integration through `WS_DB[spell.english]`, and "only Great Axe complete". None of this matches the code. |
-| `_dev/ATTACK_PDL_SYSTEM.md` | 258 | French design note on pDIF caps and a "count buff sources, switch to a `.PDL` WS set" rule. No `.lua` file in `shared/`, `_master/`, `Tetsouo/` or `Kaories/` implements it (the only `PDL` token in Lua is a comment at `Tetsouo/config/thf/THF_STATES.lua:70`). It does not touch the WS databases. |
+| `_dev/WS_DATABASE_SYSTEM.md` | 399 | Describes a `GREAT_AXE_WS_DATABASE` file, the DAGGER-style schema as the standard, PRECAST integration through `WS_DB[spell.english]`, and "only Great Axe complete". None of this matches the code. |
+| `_dev/ATTACK_PDL_SYSTEM.md` | 258 | French design note on pDIF caps and a "count buff sources, switch to a `.PDL` WS set" rule. No `.lua` file in `shared/`, `_master/`, `Tetsouo/` or `Kaories/` implements it (the only `PDL` token in Lua is a comment at `Tetsouo/config/thf/THF_STATES.lua:71`). It does not touch the WS databases. |
 
 ### Consumers (documented elsewhere, listed for navigation)
 
 | Path | Uses |
 |------|------|
 | `shared/hooks/init_ability_messages.lua` | Wraps `user_post_precast`, calls `AbilityMessageHandler.show_message` for `action_type == 'Ability'` (`:86-93`). |
-| `shared/utils/messages/handlers/ability_message_handler.lua` | Requires `<JOB>_JA_DATABASE` per job, reads `.description` (`:79-86`, `:150-186`, `:253`). |
+| `shared/utils/messages/handlers/ability_message_handler.lua` | Requires `<JOB>_JA_DATABASE` per job, reads `.description` (`load_ja_db` `:78-85`, `find_ability_in_databases` `:150-186`, `:253`). |
 | `shared/hooks/init_ws_messages.lua` | The only module that requires `UNIVERSAL_WS_DATABASE` (`:64`); calls `resolve(spell.english, spell.skill)` in `full` mode only and reads `.description` (`:122-129`). |
 | `shared/utils/data/data_loader.lua` + `shared/utils/commands/info_command.lua` | `//gs c info`: loads every module file directly into `_G.FFXI_DATA`. |
 
 `CooldownChecker`, `AbilityHelper`, `WSPrecastHandler` and `tp_bonus_handler`/`tp_bonus_calculator` do
 not read these databases: cooldowns come from `spell.recast_id`, `AbilityHelper` reads Windower
-`resources` (`ability_helper.lua:28`). RDM's `//gs c <name>` fallback resolves names from the game
-resources too (`RDM_COMMANDS.lua:40-61`, see [Commands](#commands)).
+`resources` and `windower.ffxi.get_abilities()` (`ability_helper.lua`). RDM's `//gs c <name>` fallback resolves names from the game
+resources too (`RDM_COMMANDS.lua:43-66`, see [Commands](#commands)).
 
 ## Data schemas
 
@@ -88,16 +93,16 @@ Every module file has the shape `local M = {} ; M.abilities = { ['Name'] = entry
 
 | Field | Type | Present on | Runtime reader |
 |-------|------|------------|----------------|
-| `description` | string | all 334 entries | `ability_message_handler.lua:253` (only in `ja_mode == 'full'`), `info_command.lua:238` |
-| `level` | number | all | `info_command.lua:246`; offline alt-commands generator |
-| `recast` | number, seconds (comments give the unit; SCH stratagems and rolls use `0`) | all | `info_command.lua:239` |
+| `description` | string | all 334 entries | `ability_message_handler.lua:253` (only in `ja_mode == 'full'`), `info_command.lua:239` |
+| `level` | number | all | `info_command.lua:245`; offline alt-commands generator |
+| `recast` | number, seconds (comments give the unit; SCH stratagems and rolls use `0`). 15 values were corrected against BG-Wiki on 2026-09-25 (MNK, WHM, DRK, SAM, DRG) | all | `info_command.lua:240` |
 | `main_job_only` | boolean | all | offline alt-commands generator only (`main_only` in `config/alt/*_ALT_COMMANDS.lua`) |
 | `cumulative_enmity`, `volatile_enmity` | number | all except the 31 rolls and `Assassin's Charge` (`thf_mainjob.lua:42-47`) | none |
 | `fm_cost` | number | DNC flourishes | none |
 | `lucky`, `unlucky` | number | COR rolls | none (COR roll logic uses its own `shared/jobs/cor/functions/logic/roll_data.lua`; the two copies agree for all 31 rolls) |
 
-`info_command.lua:235-249` also asks for `type`, `duration`, `effect`, `range`, `radius`, `cost`,
-`job`, `category`; no JA entry has them, so they are simply not printed.
+`display_job_ability` (`info_command.lua:236-250`) also asks for `type`, `duration`, `effect`,
+`radius`, `cost`, `category`; no JA entry has them, so they are simply not printed.
 
 ### Main job vs subjob
 
@@ -126,7 +131,7 @@ aggregators (`ability_message_handler.lua:163-171`).
 | `skill_required` | number | |
 | `jobs` | `{JOB = level}` | |
 | `special_notes` | string, optional | |
-| `weapon_type`, `weapon_file` | string | Not in the files: written into the entry by `merge_weapon_db` (`UNIVERSAL_WS_DATABASE.lua:105-106`). |
+| `weapon_type`, `weapon_file` | string | Not in the files: written into the entry by `merge_weapon_db` (`UNIVERSAL_WS_DATABASE.lua:102-103`). |
 
 ### Weapon skill entry, DAGGER schema
 
@@ -134,7 +139,7 @@ aggregators (`ability_message_handler.lua:163-171`).
 `stat_modifiers` (string such as `"100% DEX"`), `sc_properties`, `requires_quest`, `quest_name`,
 `requires_merit`, `merit_ranks`, `special_weapons` (array of `{weapon, level, type, bonus|aftermath}`),
 `element`, `notes`. It has no `type`, `mods`, `hits`, `ftp`, `skill_required`, `jobs` or `skillchain`.
-The announcement only needs `description`, so it works; the helper functions and `//gs c info` do not
+The announcement only needs `description`, so it works; `//gs c info` shows only the fields it knows
 (see [Known issues](#known-issues)).
 
 ## How it works
@@ -154,25 +159,25 @@ flowchart TD
 
 1. The wrapper calls `Factory.create('WAR')` (`WAR_JA_DATABASE.lua:13`) or passes `opts.modules`
    (`BST_JA_DATABASE.lua:15-17`, `COR_JA_DATABASE.lua:19-21`, `DNC_JA_DATABASE.lua:15-26`,
-   `SCH_JA_DATABASE.lua:19-25`).
-2. `create` lowercases the job (`JA_DATABASE_FACTORY.lua:35`), picks `opts.modules` or
-   `{'subjob','mainjob','sp'}` (`:36`) and `opts.source_field` or `'abilities'` (`:37`).
+   `DRG_JA_DATABASE.lua:18-20`, `PUP_JA_DATABASE.lua:18-20`, `SCH_JA_DATABASE.lua:19-25`).
+2. `create` lowercases the job (`JA_DATABASE_FACTORY.lua:37`), picks `opts.modules` or
+   `{'subjob','mainjob','sp'}` (`:38`) and `opts.source_field` or `'abilities'` (`:39`).
 3. For each suffix it builds `shared/data/job_abilities/<job>/<job>_<suffix>` and `pcall(require, ...)`
-   (`:43-44`). In the sandbox `require` is `include_user` (GearSwap `refresh.lua:132`), which raises
+   (`:45-46`). In the sandbox `require` is `include_user` (GearSwap `refresh.lua:132`), which raises
    `Cannot find the include file` for a missing file (`user_functions.lua:315-317`); the `pcall`
    swallows it, so a wrong suffix or a missing file (`nin_subjob`) is skipped without any message.
-4. Entries are copied with `DB[name] = data` (`:46-48`); on a name collision inside one job the later
+4. Entries are copied with `DB[name] = data` (`:48-50`); on a name collision inside one job the later
    module wins. There are no collisions today.
-5. `opts.extra` (`:56-60`) would run a second pass with another field name. No wrapper passes it.
+5. `opts.extra` (`:57-62`) would run a second pass with another field name. No wrapper passes it.
 
 ### Module caching and lifetime
 
 `include_user` never writes `package.loaded`, so without help every `require` re-executes the file.
-`INIT_SYSTEMS.lua:47-52` installs `ModuleCache` (`shared/utils/core/module_cache.lua:44-88`), which
+`INIT_SYSTEMS.lua:54-56` installs `ModuleCache` (`shared/utils/core/module_cache.lua:44-88`), which
 replaces the sandbox `require` with a caching one keyed by the lower-cased path. From then on each
 aggregator, each module file and the WS facade are executed once per sandbox. GearSwap builds a new
 sandbox (`user_env`) on every job-file load (`refresh.lua:83`, `:114`, `:149`), and `JobChangeManager`
-sends `gs reload` on main and sub job changes (`job_change_manager.lua:179`), so the cache, the
+sends `gs reload` on main and sub job changes (`job_change_manager.lua:189`), so the cache, the
 aggregators, `_G.WS_DATABASE` and `_G.FFXI_DATA` are all rebuilt after a job or subjob change.
 Because the cache hands the same table to every caller, the entry tables mutated by
 `merge_weapon_db` (`weapon_type`, `weapon_file`) are the same objects `data_loader` stores.
@@ -214,9 +219,10 @@ JA path (`ability_message_handler.lua`):
    `false` for a job without a database (`:79-86`).
 4. On a miss, and only when `spell.type` is one of the types the JA databases hold (`DATABASE_TYPES`,
    `:94-98`: JobAbility, Scholar, Rune, Ward, Effusion, Waltz, Samba, Step, Jig, Flourish1-3), it walks
-   all 21 codes in `JOBS` (`:67-71`, `:177-183`), loading every aggregator it has not loaded yet.
-   `Monster` (Ready moves), `CorsairShot` (Quick Draw) and `PetCommand` stop after main/sub: no JA
-   database holds them except BST's own pet commands, which are in the BST database.
+   all 21 codes in `JOBS` (`:66-70`, `:177-184`), loading every aggregator it has not loaded yet.
+   `Monster` (Ready moves), `CorsairShot` (Quick Draw) and `PetCommand` stop after main/sub: the BST,
+   PUP and DRG databases hold their own job's pet commands, and only that job (main or sub) can use
+   them, so the main/sub pass finds them; SMN's are in no database.
 5. A hit prints `show_ja_activated(name, description)` (`:271`), `description` only in `full` mode.
 
 GearSwap gives `action_type = 'Ability'` to `/ws`, `/pet`, `/bstpet` and `/ms`
@@ -238,39 +244,41 @@ flowchart TD
   H -->|no| NIL
 ```
 
-1. On first require the facade creates `_G.WS_DATABASE = {loaded=false, weaponskills={}, weapon_types={},
-   load_stats={}}` (`UNIVERSAL_WS_DATABASE.lua:45-52`).
+1. On first require the facade creates `_G.WS_DATABASE = {weaponskills={}, weapon_types={}}`
+   (`UNIVERSAL_WS_DATABASE.lua:45-50`). The `loaded`, `load_stats`, `count` and `expected` fields went
+   with the query API (`72e135d`, and the last ones on 2026-09-25).
 2. `init_ws_messages.lua:122-129` passes `spell.skill`, the weaponskill's own skill as GearSwap reports
    it (`res.skills[id].english`), not the main hand's: a ranged WS belongs to the range slot.
-3. `resolve` (`UNIVERSAL_WS_DATABASE.lua:136-143`) returns an already merged entry, else merges that
-   skill's file and returns whatever it holds. Every entry is present in the file of its own skill
-   (the 7 cross-filed ones also have their proper copy), so a miss means no file holds the name; nothing
-   else is merged. `weapon_type_configs` (`:65-79`) lists Sword, Dagger, Hand-to-Hand, Great Sword,
-   Great Axe, Axe, Scythe, Polearm, Katana, Great Katana, Staff, Club, Archery.
-4. `merge_weapon_db` (`:93-118`) is idempotent per type (`weapon_types[type]` guard, `:94`). It stores
-   each entry twice, at `_G.WS_DATABASE[name]` and `_G.WS_DATABASE.weaponskills[name]`, tagging it with
-   `weapon_type`/`weapon_file`. A later merge of a file that holds the same name overwrites the
-   earlier entry (see duplicates below). A file that fails to load is not marked, so it is retried on
-   the next miss.
+3. `resolve` (`UNIVERSAL_WS_DATABASE.lua:127-134`) returns an already merged entry, else merges that
+   skill's file and returns whatever it holds. Every WS is filed once, in the file of its own skill, so
+   a miss means no file holds the name; nothing else is merged. `weapon_type_configs` (`:63-77`) lists
+   Sword, Dagger, Hand-to-Hand, Great Sword, Great Axe, Axe, Scythe, Polearm, Katana, Great Katana,
+   Staff, Club, Archery.
+4. `merge_weapon_db` (`:91-109`) is idempotent per type: `weapon_types[type]` (set to the file name at
+   the end, `:108`) is the "already merged" flag checked at `:92`. It stores each entry once, in
+   `_G.WS_DATABASE.weaponskills[name]`, tagging it with `weapon_type`/`weapon_file` (the root copy
+   `_G.WS_DATABASE[name]` was removed on 2026-09-25: nothing read it). A file that fails to load is
+   not marked, so it is retried on the next miss.
 5. `init_ws_messages.lua:122-133`: in `ws_mode == 'full'` it calls `resolve` and prints
    `show_ws_activated(name, description, tp)` only when an entry was found; in `on` mode it prints
    `show_ws_tp(name, tp)` without calling `resolve`.
 
 ### `//gs c info` path
 
-`data_loader.lua` keeps its own copy in `_G.FFXI_DATA` (`:40-51`). `load_abilities` (`:152-215`)
-tries 21 jobs x (3 standard suffixes + 20 special suffixes) = 483 `pcall(require)` calls, keeping the
-first entry for each name. Its suffix list includes `pet_commands_subjob`, so PUP pet commands are
-visible to `info`; it has no bare `pet_commands`, so `drg_pet_commands.lua` is not.
-`load_weaponskills` (`:221-244`) loads the 13 files in its own order (Sword first) and also keeps the
-first entry for each name. `info_command.lua:307-363` looks up exact name, then case-insensitive.
+`data_loader.lua` keeps its own copy in `_G.FFXI_DATA` (`:40-51`). `load_abilities` (`:156-220`)
+tries 21 jobs x (3 standard suffixes + 21 special suffixes) = 504 `pcall(require)` calls, keeping the
+first entry for each name. Its suffix list includes `pet_commands_subjob` and, since 2026-09-25, the
+bare `pet_commands` (`:181`), so both PUP and DRG pet commands are visible to `info`.
+`load_weaponskills` (`:228-251`) loads the 13 files in its own order (Sword first) and also keeps the
+first entry for each name. `search_all_databases` (`info_command.lua:325-379`) looks up exact name,
+then case-insensitive.
 
 ## Public API
 
 ### `JA_DATABASE_FACTORY`
 
-`Factory.create(job_code, opts) -> table` (`JA_DATABASE_FACTORY.lua:33-63`)
-- `job_code`: 3-letter job code, any case (lowercased for paths). A nil `job_code` errors at `:35`.
+`Factory.create(job_code, opts) -> table` (`JA_DATABASE_FACTORY.lua:35-65`)
+- `job_code`: 3-letter job code, any case (lowercased for paths). A nil `job_code` errors at `:37`.
 - `opts.modules`: array of suffixes; default `{'subjob','mainjob','sp'}`.
 - `opts.source_field`: field read on each module; default `'abilities'`. No caller sets it.
 - `opts.extra`: array of `{modules=..., source_field=...}` merged after the main pass. No caller sets it.
@@ -279,25 +287,21 @@ first entry for each name. `info_command.lua:307-363` looks up exact name, then 
 
 ### `<JOB>_JA_DATABASE` (21 modules)
 
-Return the flat table built by the factory. Only caller: `ability_message_handler.lua:82` (one per
-job, lazily). Entry counts: BLM 7, BLU 8, BRD 7, BST 19,
-COR 40, DNC 37, DRG 14, DRK 12, GEO 14, MNK 13, NIN 7, PLD 13, PUP 10, RDM 6, RNG 15, RUN 23, SAM 14,
-SCH 24, THF 15, WAR 12, WHM 9 (319 total; the 15 pet commands in the two unloaded files make 334).
+Return the flat table built by the factory. Only caller: `ability_message_handler.lua:81` (one per
+job, lazily). Entry counts (2026-09-25): BLM 7, BLU 8, BRD 7, BST 19,
+COR 40, DNC 37, DRG 18, DRK 12, GEO 14, MNK 13, NIN 7, PLD 13, PUP 21, RDM 6, RNG 15, RUN 23, SAM 14,
+SCH 24, THF 15, WAR 12, WHM 9: **334**, every entry on disk.
 
 ### `UNIVERSAL_WS_DATABASE` (module `UniversalWS`)
 
 | Function | Line | Behaviour | Callers |
 |----------|------|-----------|---------|
-| `resolve(ws_name, weapon_type)` | 136 | Returns the entry or nil, merging at most the one file of `weapon_type`. | `init_ws_messages.lua:126` |
-| `ensure_weapon_type(weapon_type)` | 122 | Merges one file by its `res.skills` English name; ignores unknown names. | `resolve` only |
-| `load()` | 148 | Merges all 13 files, fills `load_stats` (`expected_total = 212` hard-coded, `:171`), sets `loaded = true`. | the 13 helpers below only |
-| `get_ws_data`, `can_use`, `get_jobs_for_ws`, `get_ws_type`, `get_ws_element`, `get_skillchain_properties`, `get_ftp`, `get_weapon_type`, `get_ws_by_weapon_type`, `get_ws_by_job`, `search_ws`, `get_load_stats`, `print_load_summary` | 188-390 | Each calls `load()` first, then reads the standard-schema fields. `print_load_summary` prints through `message_database`. | none (repo-wide, live folders included) |
+| `resolve(ws_name, weapon_type)` | 127 | Returns the entry or nil, merging at most the one file of `weapon_type`. | `init_ws_messages.lua:126` |
+| `ensure_weapon_type(weapon_type)` | 113 | Merges one file by its `res.skills` English name; ignores unknown names. | `resolve` only |
 
-Each standard-schema weapon file except GREATAXE also exports the same seven helpers on its own table
-(`get_ws_data`, `can_use`, `get_jobs_for_ws`, `get_ws_type`, `get_ws_element`,
-`get_skillchain_properties`, `get_ftp`; for example `SWORD_WS_DATABASE.lua:407-497`). The eleven
-blocks are identical apart from one `@param` comment. They have no caller: the facade and
-`data_loader` only read `.weaponskills`.
+`load()`, the 13 query helpers (`get_ws_data`, `can_use`, ..., `print_load_summary`) and the seven
+helpers each standard weapon file exported were removed in `72e135d`: none had a caller. The facade
+and `data_loader` only read `.weaponskills`.
 
 ## Commands
 
@@ -305,34 +309,33 @@ The data files register no command. Commands that reach them:
 
 | Command | Handler | Effect on this area |
 |---------|---------|---------------------|
-| `//gs c info <name>` | `COMMON_COMMANDS.lua:619` -> `DEBUG_COMMANDS.lua:215-218` -> `info_command.lua:370` | Loads all JA module files and/or all 13 WS files into `_G.FFXI_DATA` on first use, prints the entry. |
-| `//gs c jamsg <full\|on\|off>` | `DEBUG_COMMANDS.lua:197` | Chooses whether JA announcements print `description`. |
-| `//gs c wsmsg <full\|on\|off\|tp>` | `DEBUG_COMMANDS.lua:207` | `full` prints WS `description`, and prints nothing for a WS missing from the database. |
+| `//gs c info <name>` | `COMMON_COMMANDS.lua:644-645` -> `DebugCommands.handle_info` (`DEBUG_COMMANDS.lua:248`) -> `InfoCommand.handle` (`info_command.lua:388`) | Loads all JA module files and/or all 13 WS files into `_G.FFXI_DATA` on first use, prints the entry. |
+| `//gs c jamsg <full\|on\|off>` | `DebugCommands.handle_jamsg` (`DEBUG_COMMANDS.lua:222`) | Chooses whether JA announcements print `description`. |
+| `//gs c wsmsg <full\|on\|off\|tp>` | `DebugCommands.handle_wsmsg` (`DEBUG_COMMANDS.lua:237`) | `full` prints WS `description`, and prints nothing for a WS missing from the database. |
 
-RDM's `//gs c <ability, WS or spell name> [<target>]` fallback (`RDM_COMMANDS.lua:350-393`) does not
-reach these databases: `resolve_action_prefix` (`:49-61`) sends `/ja` when `res.job_abilities` has the
-name with prefix `/jobability` (pet moves, prefix `/pet`, are skipped because 51 of them share a
-spell's name), else `/ws` when `res.weapon_skills` has it, else `/ma` when `res.spells` has it
-(`ACTION_RESOURCES`, `:40-44`).
+RDM's `//gs c <ability, WS or spell name> [<target>]` fallback (the end of `job_self_command` in
+`RDM_COMMANDS.lua`) does not reach these databases: `resolve_action_prefix` (`:52-66`) sends `/ja` when
+`res.job_abilities` has the name with prefix `/jobability` (pet moves, prefix `/pet`, are skipped
+because 51 of them share a spell's name), else `/ws` when `res.weapon_skills` has it, else `/ma` when
+`res.spells` has it (`ACTION_RESOURCES`, `:43-47`).
 
 ## Configuration
 
 The data modules read no configuration file. The consumers read the message modes from
 `shared/config/message_settings.lua`, persisted per character in `<char>/config/message_modes.lua`;
-defaults are `ja_mode = 'on'`, `ws_mode = 'on'` (`message_settings.lua:104-105`). Tetsouo's live file
+defaults are `ja_mode = 'on'`, `ws_mode = 'on'` (`message_settings.lua:105-106`). Tetsouo's live file
 sets `ja_mode = 'full'`, `ws_mode = 'on'`.
 
 ## State & lifetime
 
-- `_G.WS_DATABASE` (sandbox global): created at `UNIVERSAL_WS_DATABASE.lua:45-52`, filled by
-  `merge_weapon_db` (`:108-117`), `load_stats`/`loaded` only by `load()` (`:169-177`). Besides the
-  four bookkeeping keys, its root holds one key per merged WS name (no reader).
-- `_G.FFXI_DATA` (sandbox global): `data_loader.lua:40-51`, flags at `:143`, `:212`, `:241`.
+- `_G.WS_DATABASE` (sandbox global): created at `UNIVERSAL_WS_DATABASE.lua:45-50`, filled by
+  `merge_weapon_db` (`:101-108`). It holds only `weaponskills` and `weapon_types`.
+- `_G.FFXI_DATA` (sandbox global): `data_loader.lua:40-51`, flags at `:145`, `:217`, `:248`.
 - Module-local: `JOB_DATABASES`, `JA_MESSAGES_CONFIG`, `recent_messages` in
   `ability_message_handler.lua:55`, `:64`, `:105`; `UniversalWS`/`modules_loaded` in
   `init_ws_messages.lua:40-43`.
 - Entry tables of the weapon modules are mutated in place (`weapon_type`, `weapon_file`).
-- Reads: `windower.ffxi.get_player()` (`ability_message_handler.lua:163`, `init_ws_messages.lua:114`).
+- Reads: `windower.ffxi.get_player()` (`ability_message_handler.lua:163`, `init_ws_messages.lua:113`).
 - All of the above die with the sandbox: gs reload, main job change, subjob change (through
   `JobChangeManager`'s debounced `gs reload`). Between a subjob change and that reload,
   `ability_message_handler` already looks in the new sub job's database, because it reads the jobs live
@@ -349,8 +352,9 @@ sets `ja_mode = 'full'`, `ws_mode = 'on'`.
   [job change lifecycle](../architecture/job-change-lifecycle.md).
 - Dual-box alt commands generated from the JA module files: [dual-box](../systems/dualbox.md).
 - Job pages that depend on specific entries: [PUP](../jobs/pup.md) (pet commands), [COR](../jobs/cor.md) (rolls, Quick Draw),
-  [PLD](../jobs/pld.md) and [RUN](../jobs/run.md) (rune messages come from `RUN_JA_DATABASE`,
-  `shared/jobs/run/functions/logic/rune_manager.lua:69-71`).
+  [PLD](../jobs/pld.md) and [RUN](../jobs/run.md) (rune announcements come from the ability handler
+  reading `RUN_JA_DATABASE`, since `Rune` is one of the `DATABASE_TYPES`; `rune_manager.lua` itself
+  reads `res` for the recast. The Gelus, Tellus and Unda texts were corrected on 2026-09-25).
 
 ## Integrity checks
 
@@ -359,18 +363,18 @@ Windower `res/job_abilities.lua`, `res/weapon_skills.lua` and `res/skills.lua`.
 
 | Check | Result |
 |-------|--------|
-| JA module files | 84; 82 reachable from an aggregator, `drg/drg_pet_commands.lua` and `pup/pup_pet_commands_subjob.lua` not. |
-| JA entries | 334 on disk, 319 through the aggregators. |
+| JA module files | 84, all reachable from an aggregator (since `45e28d9`). |
+| JA entries | 334 on disk, 334 through the aggregators (2026-09-25). |
 | Duplicate JA names (across all 84 files) | none, so the main-then-sub lookup order never changes the result. |
 | JA names present in `res/job_abilities.lua` | all 334. |
 | Suffix vs `main_job_only` | consistent in every file. |
 | Missing fields | `cumulative_enmity`/`volatile_enmity` absent on 31 rolls and `Assassin's Charge`; no reader, no effect. |
-| WS entries | 211 across 13 files, 204 distinct names. |
-| Cross-file WS duplicates | Aeolian Edge (SWORD, DAGGER), Black Halo, Judgment, True Strike, Shining Strike (SWORD, CLUB), Dimidiation (SWORD, GREATSWORD), Decimation (GREATAXE, AXE). `res` files them under Dagger, Club, Great Sword and Axe. |
+| WS entries | 204 across 13 files, 204 distinct names (2026-09-25). |
+| Cross-file WS duplicates | none since `18fc471` (the SWORD and GREATAXE copies of Aeolian Edge, Black Halo, Judgment, True Strike, Shining Strike, Dimidiation and Decimation were removed; `res` files them under Dagger, Club, Great Sword and Axe). |
 | WS names present in `res/weapon_skills.lua` | all. |
 | Player WS in `res` with no entry | Marksmanship (14, including Leaden Salute, Last Stand, Wildfire, Trueflight, Coronach), Sword (Atonement, Spirits Within, Glory Slash, Imperator, Knights of Rotund), Great Axe (Disaster), Hand-to-Hand (Final Paradise). |
 | Schema | 12 files standard, DAGGER alternate. |
-| Configured counts vs actual | SWORD 22 vs 24, GREATAXE 18 vs 15; `expected_total` 212 vs 204 distinct. |
+| Configured counts vs actual | no configured counts any more; the facade header lists the real per-file counts (SWORD 18, GREATAXE 14, 204 total). |
 
 ## Invariants & gotchas
 
@@ -379,15 +383,15 @@ Windower `res/job_abilities.lua`, `res/weapon_skills.lua` and `res/skills.lua`.
   before any lookup.
 - A player can only use abilities of the main or sub job, and there are no cross-job duplicates, so the
   21-job fallback in `find_ability_in_databases` can only miss. Blood Pacts never reach it: their type
-  sends them to the SMN database first (`:151-153`).
+  sends them to the SMN database first (`:151-153`). DRG and PUP pet commands are found by the
+  main/sub pass since their files are loaded.
 - A missing or misspelt module file is silent (step 3 of the build). Check new files by loading them
   with `lua5.1` as in [Integrity checks](#integrity-checks), or with `//gs c info <name>`.
-- Collision precedence differs by consumer: factory = later module wins; `ability_message_handler` =
-  main job before sub job; `resolve` = whichever file was merged first is returned until a later merge
-  overwrites; `data_loader` = first file in its own order wins.
+- Collision precedence differs by consumer (no collision exists today): factory = later module wins;
+  `ability_message_handler` = main job before sub job; `data_loader` = first file in its own order wins.
 - `resolve` is given the weapon skill's own skill (`spell.skill`), so it merges at most that one file. A
   WS missing from its skill's file (Atonement, every Marksmanship WS) returns nil and merges nothing
-  else (`UNIVERSAL_WS_DATABASE.lua:136-143`).
+  else (`UNIVERSAL_WS_DATABASE.lua:127-134`).
 - The JA handler looks up `spell.name`; the WS hook uses `spell.english`.
 - Files are found through GearSwap `pathsearch`, which checks `data/<player>/` before `data/`
   (GearSwap `refresh.lua:693-703`); a file at `data/<player>/shared/data/...` would shadow the shared
@@ -406,28 +410,35 @@ in the repository); add it to `<JOB>_ALT_CUSTOM.lua` if the alt should use it.
 
 **Add a module file to a job**: create `<job>/<job>_<suffix>.lua` with `.abilities`, then add the suffix
 to the wrapper's `modules` list (the default list only covers `subjob`, `mainjob`, `sp`). If the
-suffix is not one of the 23 in `data_loader.lua:90-94` and `:176-197`, add it there too, or `info`
+suffix is not one of the 24 in `data_loader.lua:90-94` and `:181-201`, add it there too, or `info`
 will not see it.
 
 **Add a job**: create the folder and `<JOB>_JA_DATABASE.lua`; add the code to `JOBS` in
-`ability_message_handler.lua:67-71` and `ABILITY_JOBS` in `data_loader.lua:84-88`. A job whose abilities
+`ability_message_handler.lua:66-70` and `ABILITY_JOBS` in `data_loader.lua:84-88`. A job whose abilities
 use a `res` type not yet in `DATABASE_TYPES` (`:94-98`) needs that type added there too.
 
 **Add a weapon skill**: use the standard schema, in the file matching the WS's skill in
 `res/weapon_skills.lua` (not the weapon that happens to unlock it).
 
 **Add a weapon type**: create `<TYPE>_WS_DATABASE.lua` with `.weaponskills`, add
-`{file=..., type=<res.skills English name>, count=...}` to `weapon_type_configs`
-(`UNIVERSAL_WS_DATABASE.lua:65-79`; `type` must equal `res.skills[id].en`, the `spell.skill` that `resolve` receives, or the file is never merged),
+`{file=..., type=<res.skills English name>}` to `weapon_type_configs`
+(`UNIVERSAL_WS_DATABASE.lua:63-77`; `type` must equal `res.skills[id].en`, the `spell.skill` that `resolve` receives, or the file is never merged),
 and add the path to `WEAPONSKILL_DATABASES` in `data_loader.lua:100-114`.
 
 ## Known issues
 
+Re-checked on 2026-09-25. Open:
+
 - Every SMN job ability (Apogee, Astral Conduit, Mana Cede, Elemental Siphon, Astral Flow) runs the ability handler's 21-database walk: SMN has no JA database and the type is `JobAbility`, so the first one after a job-file load loads every JA database (`ability_message_handler.lua:173-184`).
-- PUP and DRG pet command files are never loaded by their aggregators, so PUP maneuvers, Deploy, Retrieve and Deactivate never print a JA message (`PUP_JA_DATABASE.lua:13`, `DRG_JA_DATABASE.lua:13`).
-- No Marksmanship file and several missing Sword/Great Axe/H2H WS; in `ws_mode == 'full'` those WS print nothing (e.g. Atonement, Leaden Salute) (`UNIVERSAL_WS_DATABASE.lua:65-79`, `init_ws_messages.lua:122-129`).
-- Seven WS are filed in two weapon files; lookup result and `weapon_type` depend on merge order (Aeolian Edge, Judgment and Decimation have a different `description` in each copy, so the full-mode text changes too), and configured counts are wrong (`SWORD_WS_DATABASE.lua:250`, `GREATAXE_WS_DATABASE.lua:251`, `UNIVERSAL_WS_DATABASE.lua:66`).
-- DAGGER uses a different schema; `info` shows only the description (and element when set) and the facade helpers return false/nil for its 18 WS (`DAGGER_WS_DATABASE.lua:31-47`).
-- `UniversalWS.load` and 13 query helpers, the 77 per-weapon helpers and the `_G.WS_DATABASE[name]` root copies have no reader (`UNIVERSAL_WS_DATABASE.lua:108`, `:148-390`).
-- Stale headers: factory says COR rolls use `.rolls` and `extra` is used by COR; COR headers name a `cor_rolls.lua` (`JA_DATABASE_FACTORY.lua:13`, `:55`, `cor_subjob.lua:4-5`, `cor_rolls_subjob.lua:9`).
+- No Marksmanship file and several missing Sword/Great Axe/H2H WS; in `ws_mode == 'full'` those WS print nothing (e.g. Atonement, Leaden Salute) (`UNIVERSAL_WS_DATABASE.lua:63-77`, `init_ws_messages.lua:122-129`).
+- DAGGER uses a different schema; `info` shows only the description (and element when set) for its 18 WS (`DAGGER_WS_DATABASE.lua:31-43`).
 - `_dev/JOB_ABILITIES_DATABASE.md` and `_dev/WS_DATABASE_SYSTEM.md` describe a design that no longer exists.
+- The recast and rune-text corrections of 2026-09-25 are checked against BG-Wiki only; `//gs c info` on a corrected JA and a rune message with `ja_mode full` are not yet seen in game.
+
+Fixed:
+
+- PUP and DRG pet command files not loaded by their aggregators (no JA message for maneuvers, Deploy, Retrieve, Deactivate): loaded since `45e28d9`.
+- Seven WS filed in two weapon files, wrong configured counts: each WS filed once since `18fc471`; counts removed from the config and the facade header corrected (fixed 2026-09-25).
+- `UniversalWS.load`, its 13 query helpers and the 77 per-weapon helpers without reader: removed in `72e135d`. The `_G.WS_DATABASE[name]` root copies: removed (fixed 2026-09-25).
+- Stale factory and COR headers (`.rolls`, `extra` used by COR, a `cor_rolls` file): corrected (`b6c7dc6`).
+- `//gs c info` could not see the DRG pet commands (no bare `pet_commands` suffix): added (fixed 2026-09-25).
