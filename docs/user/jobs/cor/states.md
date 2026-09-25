@@ -17,7 +17,7 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 | Ctrl+Numpad9 `^numpad9` | `HybridMode` | **PDT**, Normal | Idle and engaged: PDT adds damage-taken gear |
 | Ctrl+Numpad4 `^numpad4` | `MainRoll` | **Chaos Roll** and 19 others | Roll used by `//gs c roll1` |
 | Ctrl+Numpad5 `^numpad5` | `SubRoll` | **Samurai Roll** and 19 others | Roll used by `//gs c roll2` |
-| Ctrl+Numpad6 `^numpad6` | `LuzafRing` | **ON**, OFF | On a Phantom Roll: ON wears Luzaf's Ring (16 yalm range), OFF wears Gurebu's Ring (8 yalms) |
+| Ctrl+Numpad6 `^numpad6` | `LuzafRing` | **ON**, OFF | On a Phantom Roll or Double-Up: ON wears Luzaf's Ring (16 yalm range, `sets.precast.LuzafRing` if your sets define it), OFF wears `sets.precast.LuzafRingOff` if defined (Gurebu's Ring in the provided sets), else your roll set's ring (8 yalms) |
 
 The 20 rolls: Chaos, Samurai, Hunter's, Tactician's, Allies', Wizard's, Warlock's,
 Corsair's, Caster's, Courser's, Blitzer's, Fighter's, Rogue's, Gallant's, Evoker's,
