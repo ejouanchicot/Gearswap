@@ -219,9 +219,10 @@ function PLDStates.configure()
     --- Regen: lay sets.idleRegen over the idle set the stance already chose.
     --- Idle only, so it never costs anything in combat; the stance keeps every
     --- slot the Regen set leaves out.
-    --- No key: set by macro (//gs c set Regen On|Off), shown in the HUD under
-    --- /SCH alone - the other subjobs force it Off below rather than leave it
-    --- On where the HUD does not show it.
+    --- Key ^numpad2 under /SCH (PLD_KEYBINDS.lua), or a macro with
+    --- //gs c set Regen On|Off. Shown in the HUD under /SCH alone - the other
+    --- subjobs force it Off below rather than leave it On where the HUD does
+    --- not show it.
     state.Regen =
         M {
         ['description'] = 'Regen',

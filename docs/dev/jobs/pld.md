@@ -56,7 +56,7 @@ number added nothing, the function name is cited instead.
 | `shared/jobs/pld/functions/logic/aoe_manager.lua` | 178 | `//gs c aoe` BLU rotation (same code as RUN's copy; only the headers and the error text differ) |
 | `shared/jobs/pld/functions/logic/rune_manager.lua` | 76 | `//gs c rune` (same code as RUN's copy) |
 | `_master/config/pld/PLD_STATES.lua` | 401 | States (incl. `WS1`/`WS2`), three option profiles (`standard`/`sortie`/`sch`), `apply_hybrid_profile`, unused `validate`, `_G.PLDStates` |
-| `_master/config/pld/PLD_KEYBINDS.lua` | 79 | 8 keyed binds + the `Regen` HUD row, `subjob` / `exclude_subjob` filters and a `visible` predicate; data only, `KeybindManager.create('PLD', ...)` does the binding, the delta-only `refresh()` and the loud failure (see [keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `_master/config/pld/PLD_KEYBINDS.lua` | 79 | 9 keyed binds (Regen on `^numpad2` under /SCH), `subjob` / `exclude_subjob` filters and a `visible` predicate; data only, `KeybindManager.create('PLD', ...)` does the binding, the delta-only `refresh()` and the loud failure (see [keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/pld/PLD_CUSTOM.lua` | 118 | Player modes and gear rules (all examples commented out), read through `KeybindManager` |
 | `_master/config/pld/PLD_WS_CONFIG.lua` | 64 | `_G.PLDWSConfig`: the two weaponskills each sword offers |
 | `_master/config/pld/PLD_LOCKSTYLE.lua` | 72 | Style 3 (`default`, `by_subjob`, `get_style`) |
@@ -500,7 +500,7 @@ on every `user_setup()`. Keybinds from `_master/config/pld/PLD_KEYBINDS.lua:28-7
 | `AutoMedicine` | shared On/Off | persisted | `#numpad0` (from `COMMON_KEYBINDS.lua`) | `AutoMedicine.init(state, M)` (`_master/config/pld/PLD_STATES.lua:271-273`), see [precast pipeline](../systems/precast-pipeline.md) |
 | `PhalanxSIRD` | Off, On | Off, **held On under /SCH** | `^numpad2`, excluded in /SCH | read by `PLD_MIDCAST.lua:110` and required by `apply_hybrid_profile`; `On` on entering Sortie or /SCH, `Off` on the standard profile |
 | `WS1`, `WS2` | that weapon's list (`PLD_WS_CONFIG.lua`) | entry 1 and 2 | `^numpad5`, `^numpad6` | `ws_slots.lua`; rebuilt from `SetBuilder.current_weapon()` on a `MainWeapon` **or** `HybridMode` change |
-| `Regen` | Off, On | Off, **forced Off outside /SCH** | none - macros only, `gs c set Regen On\|Off` | `set_builder.lua:376-380` (step 6b): lays `sets.idleRegen` over the idle set |
+| `Regen` | Off, On | Off, **forced Off outside /SCH** | `^numpad2` under /SCH, or a macro `gs c set Regen On\|Off` | `set_builder.lua:376-380` (step 6b): lays `sets.idleRegen` over the idle set |
 
 `Regen` is idle-only and seven slots wide - Sacro Breastplate, Regal Gauntlets,
 Bathy Choker +1, Infused Earring, Null Belt and a Chirich Ring +1 in each ring
@@ -515,12 +515,11 @@ ear, the one `sets.idle.MDT` fills with Eabani - both are evasion earrings, so
 Regen+1 costs five evasion there, where the left ear holds Tuisto and its
 ~150 HP.
 
-It has no key: it is driven by `gs c set Regen On` / `Off` from FFXI macros,
-which name the value instead of toggling. It is still listed in
-`PLD_KEYBINDS.lua` with an empty `key` (`:68`), the convention the BRD song slots use
-(`UI_LOADER.lua:104`), so the HUD shows the row and its current value with no
-key beside it - `KeybindManager` skips empty keys. `subjob = "SCH"`
-keeps the row out of the other subjobs, and `apply_hybrid_profile` forces the
+Key: `^numpad2` toggles it (`cyclestate Regen`, `PLD_KEYBINDS.lua`), under
+/SCH only - the same key is Phalanx SIRD on the other subjobs, which
+`exclude_subjob = "SCH"` turns off there. Macros can still name the value with
+`gs c set Regen On` / `Off` (added 2026-09-25; before that, macros were the
+only way). `subjob = "SCH"` keeps the row out of the other subjobs, and `apply_hybrid_profile` forces the
 state Off there for the same reason.
 
 Mote defaults also exist: `OffenseMode`, `IdleMode`, `CastingMode` (all
@@ -610,7 +609,7 @@ L = `Tetsouo/sets/pld/pld_sets.lua` (weapon sets come from
 |------------|---------|-------------------------|---------|
 | `<char>/config/pld/PLD_STATES.lua` | see states | file | entry `user_setup` (path hard-coded `Tetsouo/...`, rewritten by the clone script) |
 | `SORTIE_RUNE_OPTIONS`, `SORTIE_WEAPON_OPTIONS` | 5 runes, 2 weapons | `_master/config/pld/PLD_STATES.lua:43-65` | `apply_hybrid_profile` |
-| `<char>/config/pld/PLD_KEYBINDS.lua` | 8 keyed binds + `Regen` row | file | entry `user_setup`, `file_unload` |
+| `<char>/config/pld/PLD_KEYBINDS.lua` | 9 keyed binds | file | entry `user_setup`, `file_unload` |
 | `<char>/config/pld/PLD_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `<char>/config/pld/PLD_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 3 (Kaories overlay 4) | file; factory fallback 1 (`shared/jobs/pld/functions/PLD_LOCKSTYLE.lua:29`) | `LockstyleManager` |
 | `<char>/config/pld/PLD_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt][sub]` | book 15 page 1 | file; factory fallback book 1 page 1 | `MacrobookManager` |

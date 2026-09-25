@@ -42,7 +42,7 @@ Savage Blade / Chant du Cygne.
 
 | Mode | Values | Use |
 |---|---|---|
-| `Regen` (/SCH) | **Off**, On | Shown in the HUD under /SCH with no key. `On` lays `sets.idleRegen` over your idle set. Set it from a macro: `//gs c set Regen On` / `Off`. Forced Off outside /SCH |
+| `Regen` (/SCH) | **Off**, On | Ctrl+Numpad2 under /SCH (the key is Phalanx SIRD on the other subjobs). `On` lays `sets.idleRegen` over your idle set. A macro can also set it: `//gs c set Regen On` / `Off`. Forced Off outside /SCH |
 | `SneakInviAOE` | **On**, Off | Whether `aoe sneak` / `aoe invi` use Accession for the party. Held On under /SCH |
 | `FastCast` | 0 to 80 by 10, default **80** | Your Fast Cast %, used only by the midcast watchdog |
 

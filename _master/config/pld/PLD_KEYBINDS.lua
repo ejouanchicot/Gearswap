@@ -61,11 +61,10 @@ PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie, DPS/Tanking/Hoxne under /S
     subjob = "RUN"
 },
     { key = "^numpad2", command = "cyclestate PhalanxSIRD", desc = "Phalanx SIRD", state = "PhalanxSIRD", exclude_subjob = "SCH" },
-    -- Regen is driven by macros (`gs c set Regen On|Off`), not by a key: it
-    -- wants an explicit value, and a key can only toggle. Listed with an
-    -- empty key so the HUD still shows the row and its current value -
-    -- same convention as the BRD song slots (UI_LOADER.lua:104).
-    { key = "", desc = "Regen", state = "Regen", subjob = "SCH" },
+    -- Regen: ^numpad2 toggles it under /SCH, where Phalanx SIRD (the same
+    -- key on the other subjobs) is off. Macros can still set an explicit
+    -- value with `gs c set Regen On|Off`.
+    { key = "^numpad2", command = "cyclestate Regen", desc = "Regen", state = "Regen", subjob = "SCH" },
     { key = "^numpad5", command = "cyclestate WS1", desc = "WS Slot 1", state = "WS1" },
     { key = "^numpad6", command = "cyclestate WS2", desc = "WS Slot 2", state = "WS2" },
 }
