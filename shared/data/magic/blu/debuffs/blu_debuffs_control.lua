@@ -1,7 +1,7 @@
 ---============================================================================
 --- BLUE MAGIC DATABASE - Control Debuffs
 ---============================================================================
---- Sleep, Stun, Bind, Terror, Silence, Doom, and Dispel Blue Magic debuffs
+--- Sleep, Stun, Slow, Terror, Silence, Blind, Doom, and Dispel Blue Magic debuffs
 ---
 --- @file shared/data/magic/blu/debuffs/blu_debuffs_control.lua
 --- @author Tetsouo
@@ -27,8 +27,8 @@ BLU_DEBUFFS_CONTROL.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 16,
-        mp_cost                 = 33,
-        notes                   = "Sleep status (AoE). MP: 33. Level: 16. Trait: Auto Regen (4 pts). Effect: Sleep (90s duration). Range: 10 yalms. Recast: 60s. BLU only.",
+        mp_cost                 = 22,
+        notes                   = "Sleep (AoE around the caster). MP: 22. Level: 16. Trait: Auto Regen. Stats: CHR +1, HP +5. Effect: Sleep (40-60s). Recast: 60s. BLU only.",
     },
 
     --============================================================
@@ -36,7 +36,7 @@ BLU_DEBUFFS_CONTROL.spells = {
     --============================================================
 
     ["Soporific"] = {
-        description             = "Inflicts sleep (conal).",
+        description             = "Inflicts sleep (AoE).",
         category                = "Debuff",
         magic_type              = "Blue",
         element                 = "Dark",
@@ -46,7 +46,7 @@ BLU_DEBUFFS_CONTROL.spells = {
         unbridled               = false,
         BLU                     = 24,
         mp_cost                 = 38,
-        notes                   = "Sleep status (AoE conal). MP: 38. Level: 24. Trait: Clear Mind (4 pts). Effect: Sleep (90s duration). Fan-shaped area. Recast: 60s. BLU only.",
+        notes                   = "Sleep (AoE around the caster). MP: 38. Level: 24. Trait: Clear Mind. Stats: HP -5, MP +5. Effect: Sleep (90s). Recast: 90s. BLU only.",
     },
 
     --============================================================
@@ -63,8 +63,8 @@ BLU_DEBUFFS_CONTROL.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 32,
-        mp_cost                 = 25,
-        notes                   = "Silence status. MP: 25. Level: 32. Trait: Conserve MP (4 pts). Effect: Silence (prevents spellcasting, 60s duration). Single target. Recast: 30s. BLU only.",
+        mp_cost                 = 13,
+        notes                   = "Silence (single target, gaze). MP: 13. Level: 32. Trait: Conserve MP. Stats: AGI +1. Effect: Silence (5-120s); the enemy must be facing you; overwritten by Silence. Recast: 10s. BLU only.",
     },
 
     --============================================================
@@ -82,7 +82,7 @@ BLU_DEBUFFS_CONTROL.spells = {
         unbridled               = false,
         BLU                     = 38,
         mp_cost                 = 25,
-        notes                   = "Dispel (removes buffs). MP: 25. Level: 38. Trait: None (0 pts). Effect: Dispels 1 beneficial effect from enemy. Single target. Recast: 30s. BLU only.",
+        notes                   = "Dispel (single target, gaze). MP: 25. Level: 38. Trait: None. Effect: Removes 1 beneficial magic effect; the enemy must be facing you. Recast: 10s. BLU only.",
     },
 
     --============================================================
@@ -100,7 +100,7 @@ BLU_DEBUFFS_CONTROL.spells = {
         unbridled               = false,
         BLU                     = 46,
         mp_cost                 = 35,
-        notes                   = "Dispel (removes buffs, AoE). MP: 35. Level: 46. Trait: None (0 pts). Effect: Dispels 1 beneficial effect from enemies. AoE range. Recast: 30s. BLU only.",
+        notes                   = "Dispel (AoE around the caster). MP: 35. Level: 46. Trait: None. Effect: Removes 1 beneficial magic effect from enemies in range. Recast: 30s. BLU only.",
     },
 
     --============================================================
@@ -118,7 +118,7 @@ BLU_DEBUFFS_CONTROL.spells = {
         unbridled               = false,
         BLU                     = 48,
         mp_cost                 = 37,
-        notes                   = "Terror status. MP: 37. Level: 48. Trait: None (0 pts). Effect: Terror (prevents action, 15s duration). Single target. Recast: 30s. BLU only.",
+        notes                   = "Terror (AoE conal, gaze). MP: 37. Level: 48. Trait: None. Stats: MP +15. Effect: Terror (~2s); enmity is gained even if it does not land. Recast: 120s. BLU only.",
     },
 
     --============================================================
@@ -126,7 +126,7 @@ BLU_DEBUFFS_CONTROL.spells = {
     --============================================================
 
     ["Filamented Hold"] = {
-        description             = "Inflicts bind.",
+        description             = "Inflicts slow (conal).",
         category                = "Debuff",
         magic_type              = "Blue",
         element                 = "Earth",
@@ -135,8 +135,8 @@ BLU_DEBUFFS_CONTROL.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 52,
-        mp_cost                 = 32,
-        notes                   = "Bind status. MP: 32. Level: 52. Trait: Clear Mind (4 pts). Effect: Bind (prevents movement, 60s duration). Single target. Recast: 30s. BLU only.",
+        mp_cost                 = 38,
+        notes                   = "Slow status (AoE conal). MP: 38. Level: 52. Trait: Clear Mind. Effect: Slow (~25%). Duration: 90s. Recast: 20s. BLU only.",
     },
 
     --============================================================
@@ -144,7 +144,7 @@ BLU_DEBUFFS_CONTROL.spells = {
     --============================================================
 
     ["Yawn"] = {
-        description             = "Inflicts sleep (conal).",
+        description             = "Inflicts sleep (AoE, gaze).",
         category                = "Debuff",
         magic_type              = "Blue",
         element                 = "Light",
@@ -154,7 +154,7 @@ BLU_DEBUFFS_CONTROL.spells = {
         unbridled               = false,
         BLU                     = 64,
         mp_cost                 = 55,
-        notes                   = "Sleep status (AoE conal). MP: 55. Level: 64. Trait: Resist Sleep (4 pts). Effect: Sleep (90s duration). Fan-shaped area. Recast: 60s. BLU only.",
+        notes                   = "Sleep (AoE, gaze). MP: 55. Level: 64. Trait: Resist Sleep. Stats: CHR +1, HP +5. Effect: Sleep (70-90s); the enemy must be facing you. Recast: 60s. BLU only.",
     },
 
     --============================================================
@@ -172,7 +172,7 @@ BLU_DEBUFFS_CONTROL.spells = {
         unbridled               = false,
         BLU                     = 65,
         mp_cost                 = 42,
-        notes                   = "Evasion down (AoE). MP: 42. Level: 65. Trait: None (0 pts). Effect: Evasion -40. Duration: 3min. AoE range. Recast: 60s. BLU only.",
+        notes                   = "Evasion down (AoE conal). MP: 42. Level: 65. Trait: None. Effect: Evasion -20. Duration: 60s. Recast: 120s. BLU only.",
     },
 
     --============================================================
@@ -180,7 +180,7 @@ BLU_DEBUFFS_CONTROL.spells = {
     --============================================================
 
     ["Temporal Shift"] = {
-        description             = "Inflicts slow + gravity.",
+        description             = "Inflicts stun (AoE).",
         category                = "Debuff",
         magic_type              = "Blue",
         element                 = "Thunder",
@@ -190,7 +190,7 @@ BLU_DEBUFFS_CONTROL.spells = {
         unbridled               = false,
         BLU                     = 73,
         mp_cost                 = 48,
-        notes                   = "Slow + Gravity status. MP: 48. Level: 73. Trait: Attack Bonus (4 pts). Effect: Slow (haste down) + Gravity (movement speed down). Duration: 3min. Single target. Recast: 60s. BLU only.",
+        notes                   = "Stun (AoE centered on the caster). MP: 48. Level: 73. Trait: Attack Bonus. Effect: Stun. Recast: 120s. BLU only.",
     },
 
     --============================================================
@@ -198,7 +198,7 @@ BLU_DEBUFFS_CONTROL.spells = {
     --============================================================
 
     ["Actinic Burst"] = {
-        description             = "Inflicts stun + blind.",
+        description             = "Inflicts flash (AoE).",
         category                = "Debuff",
         magic_type              = "Blue",
         element                 = "Light",
@@ -207,8 +207,26 @@ BLU_DEBUFFS_CONTROL.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 74,
-        mp_cost                 = 33,
-        notes                   = "Stun + Blind status (AoE). MP: 33. Level: 74. Trait: Auto Refresh (4 pts). Effect: Stun (interrupts action) + Blind (accuracy down, 3min). AoE range. Recast: 60s. BLU only.",
+        mp_cost                 = 24,
+        notes                   = "Flash (AoE). MP: 24. Level: 74. Trait: Auto Refresh. Stats: CHR +2, HP +20. Effect: Flash (greatly lowers accuracy for a brief time). Recast: 60s. BLU only.",
+    },
+
+    --============================================================
+    -- LEVEL 84
+    --============================================================
+
+    ["Auroral Drape"] = {
+        description             = "Inflicts silence + blind (AoE).",
+        category                = "Debuff",
+        magic_type              = "Blue",
+        element                 = "Wind",
+        trait                   = "Fast Cast",
+        trait_points            = 4,
+        property                = nil,
+        unbridled               = false,
+        BLU                     = 84,
+        mp_cost                 = 51,
+        notes                   = "Silence + Blind (AoE). MP: 51. Level: 84. Trait: Fast Cast. Effect: Silence, Blind (-60 accuracy). Duration: 40-60s. Recast: 60s. BLU only.",
     },
 
     --============================================================
@@ -225,8 +243,8 @@ BLU_DEBUFFS_CONTROL.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 87,
-        mp_cost                 = 44,
-        notes                   = "Sleep status (AoE). MP: 44. Level: 87. Trait: Magic Attack Bonus (4 pts). Effect: Sleep (90s duration). AoE range. Recast: 60s. BLU only.",
+        mp_cost                 = 68,
+        notes                   = "Sleep (AoE around the caster). MP: 68. Level: 87. Trait: Magic Attack Bonus. Stats: HP +5, MP +5, CHR +2. Effect: Sleep (90s). Recast: 45s. BLU only.",
     },
 
     --============================================================
@@ -243,8 +261,8 @@ BLU_DEBUFFS_CONTROL.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 91,
-        mp_cost                 = 101,
-        notes                   = "Doom status. MP: 101. Level: 91. Trait: Dual Wield (4 pts). Effect: Doom (KO after countdown, 60s). Single target. Recast: 60s. BLU only.",
+        mp_cost                 = 267,
+        notes                   = "Doom (single target, gaze). MP: 267. Level: 91. Trait: Dual Wield. Stats: STR +2, MND +2. Effect: Doom (KO after 63s; wears off beyond 10' from the target); very low accuracy. Recast: 150s. BLU only.",
     },
 
     --============================================================
@@ -252,7 +270,7 @@ BLU_DEBUFFS_CONTROL.spells = {
     --============================================================
 
     ["Absolute Terror"] = {
-        description             = "Inflicts terror (AoE, unbridled).",
+        description             = "Inflicts terror (unbridled).",
         category                = "Debuff",
         magic_type              = "Blue",
         element                 = "Dark",
@@ -261,8 +279,8 @@ BLU_DEBUFFS_CONTROL.spells = {
         property                = nil,
         unbridled               = true,
         BLU                     = 96,
-        mp_cost                 = 73,
-        notes                   = "Terror status (AoE, unbridled). MP: 73. Level: 96. Trait: None (0 pts). Effect: Terror (prevents action, 20s duration). AoE range. Recast: 60s. Requires: Unbridled Learning/Wisdom. BLU only.",
+        mp_cost                 = 29,
+        notes                   = "Terror (single target, unbridled). MP: 29. Level: 96. Trait: None. Effect: Terror; success rate and duration improve with Blue Magic Skill and Magic Accuracy. Recast: 30s. Requires: Unbridled Learning. BLU only.",
     },
 
     --============================================================
@@ -270,7 +288,7 @@ BLU_DEBUFFS_CONTROL.spells = {
     --============================================================
 
     ["Blistering Roar"] = {
-        description             = "Inflicts attack/defense down (unbridled).",
+        description             = "Inflicts terror (AoE, unbridled).",
         category                = "Debuff",
         magic_type              = "Blue",
         element                 = "Dark",
@@ -279,8 +297,8 @@ BLU_DEBUFFS_CONTROL.spells = {
         property                = nil,
         unbridled               = true,
         BLU                     = 99,
-        mp_cost                 = 89,
-        notes                   = "Multi-debuff (AoE, unbridled). MP: 89. Level: 99. Trait: None (0 pts). Effect: Attack -50%, Defense -50%. Duration: 3min. AoE range. Recast: 60s. Requires: Unbridled Learning/Wisdom. BLU only.",
+        mp_cost                 = 43,
+        notes                   = "Terror (AoE, unbridled). MP: 43. Level: 99. Trait: None. Effect: Terror. Recast: 120s. Requires: Unbridled Learning. BLU only.",
     },
 
 }

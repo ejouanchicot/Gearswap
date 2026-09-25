@@ -7,7 +7,7 @@
 --- **PERFORMANCE OPTIMIZATION:**
 ---   • LAZY-LOADED: nothing loads at startup
 ---   • resolve() loads only the file of the weaponskill's own skill
----   • Cached in _G.WS_DATABASE for all jobs
+---   • Cached in _G.WS_DATABASE until the next job load (GearSwap rebuilds _G)
 ---
 --- Pattern:
 ---   1. Individual weapon databases maintained separately (easy editing)
@@ -15,11 +15,11 @@
 ---   3. Read by the WS messages (full mode only)
 ---
 --- Database Coverage:
----   • SWORD (24 WS, 6 of them non-sword copies)
+---   • SWORD (18 WS)
 ---   • DAGGER (18 WS)
 ---   • H2H (17 WS)
 ---   • GREATSWORD (15 WS)
----   • GREATAXE (15 WS)
+---   • GREATAXE (14 WS)
 ---   • AXE (15 WS)
 ---   • SCYTHE (15 WS)
 ---   • POLEARM (15 WS)
@@ -28,7 +28,7 @@
 ---   • STAFF (18 WS)
 ---   • CLUB (17 WS)
 ---   • ARCHERY (12 WS)
----   TOTAL: 211 file entries, 204 distinct names (7 WS are filed twice)
+---   TOTAL: 204 WS, each filed once, in the file of its own skill
 ---
 --- @file shared/data/weaponskills/UNIVERSAL_WS_DATABASE.lua
 --- @author Tetsouo
@@ -61,19 +61,19 @@ local UniversalWS = {}
 
 -- List of all weapon types with databases (in load order)
 local weapon_type_configs = {
-    {file = 'SWORD_WS_DATABASE',       type = 'Sword',        count = 22},
-    {file = 'DAGGER_WS_DATABASE',      type = 'Dagger',       count = 18},
-    {file = 'H2H_WS_DATABASE',         type = 'Hand-to-Hand', count = 17},
-    {file = 'GREATSWORD_WS_DATABASE',  type = 'Great Sword',  count = 15},
-    {file = 'GREATAXE_WS_DATABASE',    type = 'Great Axe',    count = 18},
-    {file = 'AXE_WS_DATABASE',         type = 'Axe',          count = 15},
-    {file = 'SCYTHE_WS_DATABASE',      type = 'Scythe',       count = 15},
-    {file = 'POLEARM_WS_DATABASE',     type = 'Polearm',      count = 15},
-    {file = 'KATANA_WS_DATABASE',      type = 'Katana',       count = 15},
-    {file = 'GREATKATANA_WS_DATABASE', type = 'Great Katana', count = 15},
-    {file = 'STAFF_WS_DATABASE',       type = 'Staff',        count = 18},
-    {file = 'CLUB_WS_DATABASE',        type = 'Club',         count = 17},
-    {file = 'ARCHERY_WS_DATABASE',     type = 'Archery',      count = 12}
+    {file = 'SWORD_WS_DATABASE',       type = 'Sword'},
+    {file = 'DAGGER_WS_DATABASE',      type = 'Dagger'},
+    {file = 'H2H_WS_DATABASE',         type = 'Hand-to-Hand'},
+    {file = 'GREATSWORD_WS_DATABASE',  type = 'Great Sword'},
+    {file = 'GREATAXE_WS_DATABASE',    type = 'Great Axe'},
+    {file = 'AXE_WS_DATABASE',         type = 'Axe'},
+    {file = 'SCYTHE_WS_DATABASE',      type = 'Scythe'},
+    {file = 'POLEARM_WS_DATABASE',     type = 'Polearm'},
+    {file = 'KATANA_WS_DATABASE',      type = 'Katana'},
+    {file = 'GREATKATANA_WS_DATABASE', type = 'Great Katana'},
+    {file = 'STAFF_WS_DATABASE',       type = 'Staff'},
+    {file = 'CLUB_WS_DATABASE',        type = 'Club'},
+    {file = 'ARCHERY_WS_DATABASE',     type = 'Archery'}
 }
 
 ---============================================================================
@@ -98,21 +98,14 @@ local function merge_weapon_db(config)
         return
     end
 
-    local ws_count = 0
     for ws_name, ws_data in pairs(weapon_db.weaponskills) do
         ws_data.weapon_type = config.type
         ws_data.weapon_file = config.file
-        -- Root-level copy has no reader in the repo; resolve() reads .weaponskills
-        _G.WS_DATABASE[ws_name] = ws_data
         _G.WS_DATABASE.weaponskills[ws_name] = ws_data
-        ws_count = ws_count + 1
     end
 
-    _G.WS_DATABASE.weapon_types[config.type] = {
-        file = config.file,
-        count = ws_count,
-        expected = config.count
-    }
+    -- Marks the type as merged; checked at the top of this function
+    _G.WS_DATABASE.weapon_types[config.type] = config.file
 end
 
 --- Load a single weapon type's database on demand.

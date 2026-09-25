@@ -75,7 +75,7 @@ NINJUTSU_BUFFS.spells = {
         subjob_master_only      = false,
         NIN                     = 37,
         tool                    = "Shihei",
-        notes                   = "Copy Image +4 (4 shadows main job, 3 as subjob). Fast cast. Overwrites Utsusemi: Ichi and itself.",
+        notes                   = "Copy Image: 4 shadows as NIN main job, 3 as subjob. 1.5 s cast. Overwrites Utsusemi: Ichi and itself.",
     },
 
     ["Utsusemi: San"] = {
@@ -89,7 +89,7 @@ NINJUTSU_BUFFS.spells = {
         subjob_master_only      = false,
         NIN                     = 100,
         tool                    = "Shihei",
-        notes                   = "Copy Image +5. Job Point Gift (NIN Lv.100). Overwrites Utsusemi: Ichi, Ni and itself.",
+        notes                   = "Copy Image: 5 shadows. Job Point spell (100 NIN Job Points). Overwrites Utsusemi: Ichi, Ni and itself.",
     },
 
     ["Monomi: Ichi"] = {

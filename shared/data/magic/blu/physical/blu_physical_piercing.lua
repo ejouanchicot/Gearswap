@@ -14,7 +14,7 @@ local BLU_PHYSICAL_PIERCING = {}
 BLU_PHYSICAL_PIERCING.spells = {
 
     ["Wild Oats"] = {
-        description             = "Deals piercing dmg.",
+        description             = "Deals piercing dmg + VIT down.",
         category                = "Physical",
         magic_type              = "Blue",
         damage_type             = "Piercing",
@@ -23,11 +23,11 @@ BLU_PHYSICAL_PIERCING.spells = {
         property                = "Transfixion",
         unbridled               = false,
         BLU                     = 4,
-        notes                   = "Physical piercing damage. Level: 4. Trait: Beast Killer (4 pts). Skillchain: Transfixion. Uses TP. BLU only.",
+        notes                   = "Physical piercing damage. Additional effect: VIT Down (decays over time); duration varies with TP. Level: 4. Trait: Beast Killer (4 pts). Skillchain: Transfixion. BLU only.",
     },
 
     ["Screwdriver"] = {
-        description             = "Deals piercing dmg.",
+        description             = "Deals piercing dmg (crit rate varies with TP).",
         category                = "Physical",
         magic_type              = "Blue",
         damage_type             = "Piercing",
@@ -36,11 +36,11 @@ BLU_PHYSICAL_PIERCING.spells = {
         property                = "Transfixion / Scission",
         unbridled               = false,
         BLU                     = 26,
-        notes                   = "Physical piercing damage. Level: 26. Trait: Evasion Bonus (4 pts). Skillchain: Transfixion/Scission. Uses TP. BLU only.",
+        notes                   = "Physical piercing damage. Critical hit chance varies with TP. Level: 26. Trait: Evasion Bonus (4 pts). Skillchain: Transfixion/Scission. BLU only.",
     },
 
     ["Disseverment"] = {
-        description             = "Deals piercing dmg.",
+        description             = "Deals piercing dmg (5-hit) + poison.",
         category                = "Physical",
         magic_type              = "Blue",
         damage_type             = "Piercing",
@@ -49,11 +49,11 @@ BLU_PHYSICAL_PIERCING.spells = {
         property                = "Distortion",
         unbridled               = false,
         BLU                     = 72,
-        notes                   = "Physical piercing damage. Level: 72. Trait: Accuracy Bonus (4 pts). Skillchain: Distortion. Uses TP. BLU only.",
+        notes                   = "Physical piercing damage, 5 hits. Additional effect: Poison (3 min). Accuracy varies with TP. Level: 72. Trait: Accuracy Bonus (4 pts). Skillchain: Distortion. BLU only.",
     },
 
     ["Sub-zero Smash"] = {
-        description             = "Deals piercing ice dmg.",
+        description             = "Deals piercing dmg (conal AoE) + paralysis.",
         category                = "Physical",
         magic_type              = "Blue",
         damage_type             = "Piercing",
@@ -62,11 +62,11 @@ BLU_PHYSICAL_PIERCING.spells = {
         property                = "Fragmentation",
         unbridled               = false,
         BLU                     = 72,
-        notes                   = "Physical piercing ice damage. Level: 72. Trait: Fast Cast (4 pts). Skillchain: Fragmentation. Uses TP. BLU only.",
+        notes                   = "Physical piercing damage (conal AoE). Additional effect: Paralysis (10%, 3 min). Damage varies with TP. Level: 72. Trait: Fast Cast (4 pts). Skillchain: Fragmentation. BLU only.",
     },
 
     ["Final Sting"] = {
-        description             = "Deals piercing dmg (sacrifices caster).",
+        description             = "Deals piercing dmg based on HP; HP drops to 1.",
         category                = "Physical",
         magic_type              = "Blue",
         damage_type             = "Piercing",
@@ -75,20 +75,20 @@ BLU_PHYSICAL_PIERCING.spells = {
         property                = "Fusion",
         unbridled               = false,
         BLU                     = 81,
-        notes                   = "Physical piercing damage (ultimate). Level: 81. Trait: Zanshin (4 pts). Skillchain: Fusion. Deals damage = current HP, caster KO'd. Uses TP. BLU only.",
+        notes                   = "Physical piercing damage proportional to the caster's HP; reduces HP to 1 after use (no HP lost if it misses). Ignores Utsusemi. Damage varies with TP. Level: 81. Trait: Zanshin (4 pts). Skillchain: Fusion. BLU only.",
     },
 
     ["Benthic Typhoon"] = {
-        description             = "Deals piercing dmg.",
+        description             = "Deals piercing dmg (conal AoE) + defense/magic defense down.",
         category                = "Physical",
         magic_type              = "Blue",
         damage_type             = "Piercing",
         trait                   = "Skillchain Bonus",
-        trait_points            = 4,
+        trait_points            = 6,
         property                = "Gravitation / Transfixion",
         unbridled               = false,
         BLU                     = 83,
-        notes                   = "Physical piercing damage. Level: 83. Trait: Skillchain Bonus (4 pts). Skillchain: Gravitation/Transfixion. Uses TP. BLU only.",
+        notes                   = "Physical piercing damage (conal AoE). Additional effect: Defense Down -10% and Magic Defense Down -10 (60 s). Damage varies with TP. Level: 83. Trait: Skillchain Bonus (6 pts). Skillchain: Gravitation/Transfixion. BLU only.",
     },
 
     ["Quad. Continuum"] = {
@@ -101,11 +101,11 @@ BLU_PHYSICAL_PIERCING.spells = {
         property                = "Distortion / Scission",
         unbridled               = false,
         BLU                     = 85,
-        notes                   = "Physical piercing damage (4-fold). Level: 85. Trait: Dual Wield (4 pts). Skillchain: Distortion/Scission. 4-hit attack. Uses TP. BLU only.",
+        notes                   = "Physical piercing damage, 4 hits. Damage varies with TP. Level: 85. Trait: Dual Wield (4 pts). Skillchain: Distortion/Scission. BLU only.",
     },
 
     ["Amorphic Spikes"] = {
-        description             = "Deals piercing dmg.",
+        description             = "Deals piercing dmg (5-hit).",
         category                = "Physical",
         magic_type              = "Blue",
         damage_type             = "Piercing",
@@ -114,11 +114,11 @@ BLU_PHYSICAL_PIERCING.spells = {
         property                = "Gravitation / Transfixion",
         unbridled               = false,
         BLU                     = 98,
-        notes                   = "Physical piercing damage. Level: 98. Trait: Gilfinder/Treasure Hunter (6 pts). Skillchain: Gravitation/Transfixion. Uses TP. BLU only.",
+        notes                   = "Physical piercing damage, 5 hits. Damage varies with TP. Level: 98. Trait: Gilfinder/Treasure Hunter (6 pts). Skillchain: Gravitation/Transfixion. BLU only.",
     },
 
     ["Glutinous Dart"] = {
-        description             = "Deals piercing dmg + slow.",
+        description             = "Deals piercing dmg.",
         category                = "Physical",
         magic_type              = "Blue",
         damage_type             = "Piercing",
@@ -127,11 +127,11 @@ BLU_PHYSICAL_PIERCING.spells = {
         property                = "Fragmentation",
         unbridled               = false,
         BLU                     = 99,
-        notes                   = "Physical piercing damage + Slow effect. Level: 99. Trait: Max HP Boost (4 pts). Skillchain: Fragmentation. Uses TP. BLU only.",
+        notes                   = "Physical piercing damage. Damage varies with TP. Level: 99. Trait: Max HP Boost (4 pts). Skillchain: Fragmentation. BLU only.",
     },
 
     ["Sinker Drill"] = {
-        description             = "Deals piercing dmg (critical bonus).",
+        description             = "Deals piercing dmg (5-hit).",
         category                = "Physical",
         magic_type              = "Blue",
         damage_type             = "Piercing",
@@ -140,7 +140,7 @@ BLU_PHYSICAL_PIERCING.spells = {
         property                = "Gravitation / Reverberation",
         unbridled               = false,
         BLU                     = 99,
-        notes                   = "Physical piercing damage (critical focus). Level: 99. Trait: Critical Attack Bonus (8 pts). Skillchain: Gravitation/Reverberation. High critical hit rate. Uses TP. BLU only.",
+        notes                   = "Physical piercing damage, 5 hits. Damage varies with TP. Level: 99. Trait: Critical Attack Bonus (8 pts). Skillchain: Gravitation/Reverberation. BLU only.",
     },
 
 }

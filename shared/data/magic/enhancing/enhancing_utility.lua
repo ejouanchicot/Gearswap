@@ -32,7 +32,7 @@ ENHANCING_UTILITY.spells = {
     --============================================================
 
     ["Adloquium"] = {
-        description             = "+Max HP, +MDEF, reduce interrupt",
+        description             = "Gradually increases target's TP.",
         skill                   = "Enhancing Magic",
         spell_family            = nil,
         target_type             = "single",
@@ -43,7 +43,7 @@ ENHANCING_UTILITY.spells = {
     },
 
     ["Animus Augeo"] = {
-        description             = "Increases pet's TP generation speed.",
+        description             = "Increases target party member's enmity gain.",
         skill                   = "Enhancing Magic",
         spell_family            = nil,
         target_type             = "single",
@@ -55,7 +55,7 @@ ENHANCING_UTILITY.spells = {
     },
 
     ["Animus Minuo"] = {
-        description             = "Reduces pet's enmity generation.",
+        description             = "Reduces target party member's enmity gain.",
         skill                   = "Enhancing Magic",
         spell_family            = nil,
         target_type             = "single",
@@ -113,7 +113,7 @@ ENHANCING_UTILITY.spells = {
     },
 
     ["Embrava"] = {
-        description             = "Increases magic accuracy and grants haste effect.",
+        description             = "Costs 20% max MP. Regen HP/MP + haste on target.",
         skill                   = "Enhancing Magic",
         spell_family            = nil,
         target_type             = "single",
@@ -137,7 +137,7 @@ ENHANCING_UTILITY.spells = {
     },
 
     ["Foil"] = {
-        description             = "Prevents one dispel effect when hit by physical attack.",
+        description             = "Enhances evasion against special attacks.",
         skill                   = "Enhancing Magic",
         spell_family            = nil,
         target_type             = "single",
@@ -173,13 +173,13 @@ ENHANCING_UTILITY.spells = {
     },
 
     ["Klimaform"] = {
-        description             = "+Elemental magic potency in weather",
-        skill                   = "Enhancing Magic",
+        description             = "+Magic accuracy for spells matching weather",
+        skill                   = "Dark Magic",
         spell_family            = nil,
         target_type             = "single",
         element                 = "Dark",
-        magic_type              = "White",
-        enhancing_skill_affects = true,
+        magic_type              = "Black",
+        enhancing_skill_affects = false,
         SCH                     = 46,
     },
 
@@ -416,7 +416,7 @@ ENHANCING_UTILITY.spells = {
     --============================================================
 
     ["Recall-Jugner"] = {
-        description             = "Warp party to Jugner [S] HP",
+        description             = "Warp party to Jugner Forest (S) telepoint",
         skill                   = "Enhancing Magic",
         spell_family            = nil,
         target_type             = "aoe",
@@ -428,7 +428,7 @@ ENHANCING_UTILITY.spells = {
     },
 
     ["Recall-Meriph"] = {
-        description             = "Warp party to Meriphataud HP",
+        description             = "Warp party to Meriphataud Mountains (S) telepoint",
         skill                   = "Enhancing Magic",
         spell_family            = nil,
         target_type             = "aoe",
@@ -440,7 +440,7 @@ ENHANCING_UTILITY.spells = {
     },
 
     ["Recall-Pashh"] = {
-        description             = "Warp party to Pashhow HP",
+        description             = "Warp party to Pashhow Marshlands (S) telepoint",
         skill                   = "Enhancing Magic",
         spell_family            = nil,
         target_type             = "aoe",
@@ -479,7 +479,7 @@ ENHANCING_UTILITY.spells = {
     },
 
     ["Teleport-Altep"] = {
-        description             = "Warp party to Crag of Holla",
+        description             = "Warp party to Eastern Altepa Desert",
         skill                   = "Enhancing Magic",
         spell_family            = nil,
         target_type             = "aoe",
@@ -526,7 +526,7 @@ ENHANCING_UTILITY.spells = {
     },
 
     ["Teleport-Vahzl"] = {
-        description             = "Warp party to Crag of Vahzl",
+        description             = "Warp party to Xarcabard telepoint",
         skill                   = "Enhancing Magic",
         spell_family            = nil,
         target_type             = "aoe",
@@ -538,7 +538,7 @@ ENHANCING_UTILITY.spells = {
     },
 
     ["Teleport-Yhoat"] = {
-        description             = "Warp party to Crag of Yhoat",
+        description             = "Warp party to Yhoator Jungle telepoint",
         skill                   = "Enhancing Magic",
         spell_family            = nil,
         target_type             = "aoe",

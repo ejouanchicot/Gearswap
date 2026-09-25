@@ -32,7 +32,7 @@ RUN_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Gelus'] = {
-        description             = 'Ice rune, resist fire',
+        description             = 'Ice rune, resist wind',
         level                   = 5,
         recast                  = 5,  -- 5s
         main_job_only           = false,
@@ -48,7 +48,7 @@ RUN_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Tellus'] = {
-        description             = 'Earth rune, resist wind',
+        description             = 'Earth rune, resist lightning',
         level                   = 5,
         recast                  = 5,  -- 5s
         main_job_only           = false,
@@ -64,7 +64,7 @@ RUN_SUBJOB.abilities = {
         volatile_enmity         = 80
     },
     ['Unda'] = {
-        description             = 'Water rune, resist thunder',
+        description             = 'Water rune, resist fire',
         level                   = 5,
         recast                  = 5,  -- 5s
         main_job_only           = false,

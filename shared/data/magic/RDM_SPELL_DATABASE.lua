@@ -167,7 +167,7 @@ end
 --- - "int_potency": INT + Enfeebling Potency (Blind II)
 --- - "skill_potency": Enfeebling Skill + Potency (Poison II)
 --- - "skill_mnd_potency": Skill + MND + Potency (Frazzle III, Distract III)
---- - "potency": Potency pure (Dia I-III, Bio I-III, Gravity II)
+--- - "potency": Potency pure (Dia I-III, Gravity II)
 --- - "duration": Duration focus (Sleep, Bind, Break, Silence)
 function RDMSpells.get_enfeebling_type(spell_name)
     local spell = RDMSpells.spells[spell_name]

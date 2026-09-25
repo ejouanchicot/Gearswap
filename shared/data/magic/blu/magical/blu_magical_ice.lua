@@ -14,7 +14,7 @@ local BLU_MAGICAL_ICE = {}
 BLU_MAGICAL_ICE.spells = {
 
     ["Ice Break"] = {
-        description             = "Deals ice dmg + paralyze.",
+        description             = "Deals ice dmg + bind (AoE).",
         category                = "Magical",
         magic_type              = "Blue",
         element                 = "Ice",
@@ -23,11 +23,11 @@ BLU_MAGICAL_ICE.spells = {
         unbridled               = false,
         BLU                     = 50,
         mp_cost                 = 142,
-        notes                   = "Ice-based magical damage + Paralysis. MP: 142. Level: 50. Trait: Magic Defense Bonus (4 pts). Single target. BLU only.",
+        notes                   = "Ice-based magical damage + Bind (AoE). MP: 142. Level: 50. Trait: Magic Defense Bonus. Recast: 33.75s. BLU only.",
     },
 
     ["Polar Roar"] = {
-        description             = "Deals ice dmg (unbridled, AoE).",
+        description             = "Deals ice dmg + bind (unbridled, AoE).",
         category                = "Magical",
         magic_type              = "Blue",
         element                 = "Ice",
@@ -35,12 +35,12 @@ BLU_MAGICAL_ICE.spells = {
         trait_points            = 0,
         unbridled               = true,
         BLU                     = 99,
-        mp_cost                 = 212,
-        notes                   = "Ice-based magical damage (unbridled, AoE). MP: 212. Level: 99. Trait: None (0 pts). Requires: Unbridled Learning/Wisdom. AoE range. BLU only.",
+        mp_cost                 = 126,
+        notes                   = "Ice-based magical damage + Bind (unbridled, AoE). MP: 126. Level: 99. Trait: None. Requires: Unbridled Learning. Recast: 30s. Range: 10'. BLU only.",
     },
 
     ["Spectral Floe"] = {
-        description             = "Deals ice dmg (AoE).",
+        description             = "Deals ice dmg + terror (AoE).",
         category                = "Magical",
         magic_type              = "Blue",
         element                 = "Ice",
@@ -48,8 +48,8 @@ BLU_MAGICAL_ICE.spells = {
         trait_points            = 8,
         unbridled               = false,
         BLU                     = 99,
-        mp_cost                 = 195,
-        notes                   = "Ice-based magical damage (AoE). MP: 195. Level: 99. Trait: Magic Attack Bonus (8 pts). AoE range. BLU only.",
+        mp_cost                 = 116,
+        notes                   = "Ice-based magical damage + Terror (AoE). MP: 116. Level: 99. Trait: Magic Attack Bonus. Recast: 60s. Range: ~10'. BLU only.",
     },
 
 }

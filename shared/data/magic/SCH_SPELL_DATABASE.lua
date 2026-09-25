@@ -15,7 +15,7 @@
 ---   • ENHANCING_MAGIC_DATABASE (skill-based): Protect, Shell, Regen, Bar, etc.
 ---   • ENFEEBLING_MAGIC_DATABASE (skill-based): All enfeebling spells
 ---   • ELEMENTAL_MAGIC_DATABASE (skill-based): Fire I-V, Blizzard I-V, etc.
----   • DARK_MAGIC_DATABASE (skill-based): Drain, Aspir, Bio, Stun
+---   • DARK_MAGIC_DATABASE (skill-based): Drain, Aspir I-II, Kaustra
 ---   • elemental/helix.lua: SCH-unique Helix spells (16 spells - DoT + stat down)
 ---   • enhancing/storm.lua: SCH-unique Storm spells (16 spells - weather effects)
 ---
@@ -88,7 +88,7 @@ for spell_name, spell_data in pairs(ElementalDB.spells) do
     end
 end
 
--- Merge SCH-accessible Dark Magic spells (Drain, Aspir, Bio, etc.)
+-- Merge SCH-accessible Dark Magic spells (Drain, Aspir, Kaustra)
 for spell_name, spell_data in pairs(DarkDB.spells) do
     if spell_data.SCH then  -- Only if SCH has access to this spell
         SCHSpells.spells[spell_name] = spell_data

@@ -27,8 +27,8 @@ BLU_BUFFS_OFFENSIVE.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 48,
-        mp_cost                 = 82,
-        notes                   = "Haste buff (self only). MP: 82. Level: 48. Trait: None (0 pts). Effect: Haste +10%. Duration: 3min. Recast: 120s. BLU only.",
+        mp_cost                 = 29,
+        notes                   = "Haste buff (self only). MP: 29. Level: 48. Trait: None. Stats: AGI +2. Effect: Haste 10%; overwritten by any other haste or slow. Duration: 5min. Recast: 30s. BLU only.",
     },
 
     --============================================================
@@ -45,8 +45,8 @@ BLU_BUFFS_OFFENSIVE.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 62,
-        mp_cost                 = 33,
-        notes                   = "Magic Attack buff (self only). MP: 33. Level: 62. Trait: Magic Attack Bonus (4 pts). Effect: Magic Attack +20. Additional effect: Max MP down. Duration: 3min. Recast: 90s. BLU only.",
+        mp_cost                 = 46,
+        notes                   = "Magic Attack buff (self only). MP: 46. Level: 62. Trait: Magic Attack Bonus. Stats: INT +1. Effect: Magic Attack Bonus +20. Duration: 60s. Recast: 120s. BLU only.",
     },
 
     --============================================================
@@ -64,7 +64,7 @@ BLU_BUFFS_OFFENSIVE.spells = {
         unbridled               = false,
         BLU                     = 68,
         mp_cost                 = 59,
-        notes                   = "Accuracy/Evasion buff (self only). MP: 59. Level: 68. Trait: Clear Mind (4 pts). Effect: Accuracy +10, Evasion +10. Duration: 3min. Recast: 120s. BLU only.",
+        notes                   = "Accuracy/Evasion buff (self only). MP: 59. Level: 68. Trait: Clear Mind. Effect: Accuracy +10, Evasion +10. Duration: 3min. Recast: 120s. BLU only.",
     },
 
     --============================================================
@@ -72,7 +72,7 @@ BLU_BUFFS_OFFENSIVE.spells = {
     --============================================================
 
     ["Amplification"] = {
-        description             = "Grants magic attack.",
+        description             = "Enhances magic attack + magic defense.",
         category                = "Buff",
         magic_type              = "Blue",
         element                 = "Water",
@@ -81,8 +81,8 @@ BLU_BUFFS_OFFENSIVE.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 70,
-        mp_cost                 = 30,
-        notes                   = "Magic Attack buff (self only). MP: 30. Level: 70. Trait: None (0 pts). Effect: Magic Attack +15%, Magic Accuracy +15. Duration: 90s. Recast: 60s. BLU only.",
+        mp_cost                 = 48,
+        notes                   = "Magic Attack/Magic Defense buff (self only). MP: 48. Level: 70. Trait: None. Stats: HP -5, MP +5. Effect: About +10 Magic Attack Bonus and +10 Magic Defense Bonus. Duration: 90s. Recast: 120s. BLU only.",
     },
 
     --============================================================
@@ -90,7 +90,7 @@ BLU_BUFFS_OFFENSIVE.spells = {
     --============================================================
 
     ["Triumphant Roar"] = {
-        description             = "Grants attack + accuracy.",
+        description             = "Enhances attack.",
         category                = "Buff",
         magic_type              = "Blue",
         element                 = "Fire",
@@ -99,8 +99,8 @@ BLU_BUFFS_OFFENSIVE.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 71,
-        mp_cost                 = 30,
-        notes                   = "Attack/Accuracy buff (self only). MP: 30. Level: 71. Trait: None (0 pts). Effect: Attack +15%, Accuracy +15. Duration: 90s. Recast: 60s. BLU only.",
+        mp_cost                 = 24,
+        notes                   = "Attack buff (self only). MP: 24. Level: 71. Trait: None. Stats: STR +3. Effect: Attack +15% (38/256); overwritten by Nat. Meditation. Duration: 60s. Recast: 90s. BLU only.",
     },
 
     --============================================================
@@ -108,7 +108,7 @@ BLU_BUFFS_OFFENSIVE.spells = {
     --============================================================
 
     ["Reactor Cool"] = {
-        description             = "Grants magic attack.",
+        description             = "Enhances defense + Ice Spikes.",
         category                = "Buff",
         magic_type              = "Blue",
         element                 = "Ice",
@@ -117,8 +117,8 @@ BLU_BUFFS_OFFENSIVE.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 74,
-        mp_cost                 = 30,
-        notes                   = "Magic Attack buff (self only). MP: 30. Level: 74. Trait: Magic Attack Bonus (4 pts). Effect: Magic Attack +25. Duration: 3min. Recast: 90s. BLU only.",
+        mp_cost                 = 28,
+        notes                   = "Defense + Ice Spikes (self only). MP: 28. Level: 74. Trait: Magic Attack Bonus. Effect: Defense +12%, Ice Spikes. Duration: 3min. Recast: 60s. BLU only.",
     },
 
     --============================================================
@@ -126,7 +126,7 @@ BLU_BUFFS_OFFENSIVE.spells = {
     --============================================================
 
     ["Plasma Charge"] = {
-        description             = "Grants enspell (thunder).",
+        description             = "Grants Shock Spikes.",
         category                = "Buff",
         magic_type              = "Blue",
         element                 = "Thunder",
@@ -135,8 +135,8 @@ BLU_BUFFS_OFFENSIVE.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 75,
-        mp_cost                 = 41,
-        notes                   = "Enspell buff (self only). MP: 41. Level: 75. Trait: Auto Refresh (4 pts). Effect: Enspell - Thunder (adds lightning damage to attacks). Duration: 3min. Recast: 60s. BLU only.",
+        mp_cost                 = 24,
+        notes                   = "Shock Spikes (self only). MP: 24. Level: 75. Trait: Auto Refresh. Effect: Shock Spikes. Duration: over 12min. Recast: 60s. BLU only.",
     },
 
     --============================================================
@@ -153,8 +153,8 @@ BLU_BUFFS_OFFENSIVE.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 79,
-        mp_cost                 = 52,
-        notes                   = "Haste buff (self only). MP: 52. Level: 79. Trait: Dual Wield (4 pts). Effect: Haste +10%. Duration: 3min. Recast: 120s. BLU only.",
+        mp_cost                 = 53,
+        notes                   = "Haste buff (self only). MP: 53. Level: 79. Trait: Dual Wield. Stats: HP +20. Effect: Haste 15%. Duration: 5min. Recast: 45s. BLU only.",
     },
 
     --============================================================
@@ -162,7 +162,7 @@ BLU_BUFFS_OFFENSIVE.spells = {
     --============================================================
 
     ["Fantod"] = {
-        description             = "Grants critical hit rate.",
+        description             = "Enhances attack + magic attack (next attack).",
         category                = "Buff",
         magic_type              = "Blue",
         element                 = "Fire",
@@ -171,8 +171,8 @@ BLU_BUFFS_OFFENSIVE.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 85,
-        mp_cost                 = 48,
-        notes                   = "Critical Hit buff (self only). MP: 48. Level: 85. Trait: Store TP (4 pts). Effect: Critical Hit Rate +25%. Duration: 90s. Recast: 60s. BLU only.",
+        mp_cost                 = 12,
+        notes                   = "Boost-type buff (self only). MP: 12. Level: 85. Trait: Store TP. Stats: HP -10, DEX +2, AGI +2. Effect: Attack +2.7% to +29.7% and Magic Attack +2 to +20 by number of casts (caps at 10); next attack only, not breath damage. Duration: 3min or next attack. Recast: 10s. BLU only.",
     },
 
     --============================================================
@@ -180,7 +180,7 @@ BLU_BUFFS_OFFENSIVE.spells = {
     --============================================================
 
     ["Nat. Meditation"] = {
-        description             = "Grants TP regen + attack.",
+        description             = "Enhances attack.",
         category                = "Buff",
         magic_type              = "Blue",
         element                 = "Fire",
@@ -189,8 +189,8 @@ BLU_BUFFS_OFFENSIVE.spells = {
         property                = nil,
         unbridled               = false,
         BLU                     = 99,
-        mp_cost                 = 62,
-        notes                   = "TP Regen/Attack buff (self only). MP: 62. Level: 99. Trait: Accuracy Bonus (8 pts). Effect: Regain +10/tick, Attack +10%. Duration: 3min. Recast: 120s. BLU only.",
+        mp_cost                 = 38,
+        notes                   = "Attack buff (self only). MP: 38. Level: 99. Trait: Accuracy Bonus. Stats: DEX +6. Effect: Attack +20% (52/256); overwrites the attack boosts of Plenilune Embrace, Triumphant Roar and Carcharian Verve. Duration: 90s. Recast: 60s. BLU only.",
     },
 
     ["Erratic Flutter"] = {
@@ -204,7 +204,7 @@ BLU_BUFFS_OFFENSIVE.spells = {
         unbridled               = false,
         BLU                     = 99,
         mp_cost                 = 92,
-        notes                   = "Haste buff tier II (self only). MP: 92. Level: 99. Trait: Fast Cast (8 pts). Effect: Haste II +29.98% (307/1024). Duration: 5min. Recast: 45s. BLU only.",
+        notes                   = "Haste buff tier II (self only). MP: 92. Level: 99. Trait: Fast Cast. Effect: Haste II +29.98% (307/1024). Duration: 5min. Recast: 45s. BLU only.",
     },
 
 }
