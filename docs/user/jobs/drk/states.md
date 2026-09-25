@@ -1,80 +1,47 @@
-# DRK - States & Modes
+# DRK — modes and keys
 
-States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
+Dark Knight has two modes of its own: the defensive stance and the weapon. Everything
+else (weaponskill gear, Dark Magic gear, Dark Seal / Nether Void pieces) is automatic.
 
-**Config**: `Tetsouo/config/drk/DRK_KEYBINDS.lua`
+Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each mode's
+current value; this page says what each value does. `#numpad0` (Auto Medicine) and
+Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybinds.md).
 
----
+## Keys
 
-## States
+| Key | Mode (state) | Values (default in **bold**) | What it does |
+|---|---|---|---|
+| `^numpad9` | `HybridMode` | **PDT**, Accu | Engaged gear. `PDT` = `sets.engaged.PDT`; `Accu` = the plain `sets.engaged` (accuracy). With Liberator and Aftermath Lv.3 up, `sets.engaged.AM3` wins over both |
+| `^numpad1` | `MainWeapon` | **Caladbolg**, Liberator, Redemption, Lycurgos, Loxotic | Weapon to wield (`sets.<Weapon>` in your set file). In the template the two-handers go with Utu Grip, Loxotic (club) with Blurred Shield +1 |
 
-### HybridMode
+Apocalypse, Foenaria and Naegling are listed in `DRK_STATES.lua` but commented out:
+remove the `--` in front of a line to add that weapon to the cycle.
 
-Controls the combat stance. Switches between damage reduction and high accuracy for evasive enemies.
+## Other modes (no key)
 
-| Option | Description |
-|--------|-------------|
-| `PDT` | Physical Damage Taken reduction (defensive mode) |
-| `Accu` | High Accuracy mode (for evasive enemies) |
+| Mode | Values | Use |
+|---|---|---|
+| `FastCast` | 0 to 80 by 10, default **0** | Your Fast Cast %. Only used by the midcast watchdog to know how long a cast should take. Set it once in `DRK_STATES.lua` |
 
-**Default**: `PDT`
-**Keybind**: Alt+1
+## Commands
 
----
+DRK has no job command of its own: the keys above run `//gs c cyclestate <Mode>`, and every
+[common command](../../guides/commands.md) works.
 
-### MainWeapon
+## Notes
 
-Selects the primary weapon set. Two-handed weapons pair with Utu Grip, one-handed weapons pair with Blurred Shield +1.
+- All modes go back to their default on every job change, subjob change and reload.
+- Dark Seal and Nether Void: see [abilities.md](abilities.md).
 
-| Option | Description |
-|--------|-------------|
-| `Caladbolg` | Caladbolg (Great Sword REMA) + Utu Grip |
-| `Liberator` | Liberator (Scythe Mythic) + Utu Grip |
-| `Redemption` | Redemption (Scythe Empyrean) + Utu Grip |
-| `Lycurgos` | Lycurgos (Great Axe) + Utu Grip |
-| `Loxotic` | Loxotic Mace +1 (Club) + Blurred Shield +1 |
+## Files
 
-**Default**: `Caladbolg`
-**Keybind**: Alt+2
+In `<YourChar>/config/drk/`:
 
----
-
-### FastCast
-
-Internal numeric state used by the midcast watchdog system. Represents your total Fast Cast percentage from gear and traits, used to calculate adjusted cast times. Not typically cycled manually.
-
-| Option | Description |
-|--------|-------------|
-| `0` through `80` | Fast Cast percentage (increments of 10) |
-
-**Default**: `0`
-
----
-
-## Quick Reference
-
-| State | Options | Default | Keybind |
-|-------|---------|---------|---------|
-| HybridMode | PDT / Accu | PDT | Alt+1 |
-| MainWeapon | Caladbolg / Liberator / Redemption / Lycurgos / Loxotic | Caladbolg | Alt+2 |
-| FastCast | 0 - 80 | 0 | -- |
-
----
-
-## Configuration
-
-**Config files**: `Tetsouo/config/drk/`
-
-| File | Purpose |
-|------|---------|
-| `DRK_KEYBINDS.lua` | Keybind definitions |
-| `DRK_LOCKSTYLE.lua` | Lockstyle per subjob |
-| `DRK_MACROBOOK.lua` | Macrobook per subjob |
-| `DRK_STATES.lua` | State definitions |
-| `DRK_TP_CONFIG.lua` | TP and weaponskill settings |
-
-**Lockstyle**: SAM=#1, WAR=#1, NIN=#2, DNC=#3
-
-**Macrobook**: Book 1, Page 1 (default). SAM=Book 1/Page 1, WAR=Book 1/Page 2, NIN=Book 1/Page 3, DNC=Book 1/Page 4
-
-See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.
+| File | Content |
+|---|---|
+| `DRK_STATES.lua` | Modes, their values and defaults |
+| `DRK_KEYBINDS.lua` | The keys above |
+| `DRK_CUSTOM.lua` | Your own modes, keys and gear rules, without code (empty by default) |
+| `DRK_LOCKSTYLE.lua` | Lockstyle number per subjob (default 1) |
+| `DRK_MACROBOOK.lua` | Macro book/page per subjob, and per dual-box alt job |
+| `DRK_TP_CONFIG.lua` | TP-bonus pieces used for weaponskill gear |

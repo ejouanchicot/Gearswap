@@ -1,81 +1,53 @@
-# SAM - States & Modes
+# SAM — modes and keys
 
-States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
+Samurai has two keyed modes (weapon and hybrid). Most of what SAM does
+happens on its own: Seigan before Third Eye, Third Eye before a weaponskill.
 
-**Config**: `Tetsouo/config/sam/SAM_KEYBINDS.lua`
+Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each
+mode's current value; this page says what each value does. `#numpad0` (Auto
+Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
+[keybinds](../../guides/keybinds.md).
 
----
+## Keys
 
-## States
+| Key | Mode (state) | Values (default in **bold**) | What it does |
+|---|---|---|---|
+| `^numpad1` | Main Weapon (`MainWeapon`) | **Masamune**, Kusanagi, Shining, Dojikiri, Soboro, Norifusa | Weapon equipped in idle and engaged sets (`sets.<Weapon>` from your set file). |
+| `^numpad9` | Hybrid Mode (`HybridMode`) | **PDT**, Normal | PDT: `sets.idle.PDT` on top of idle and `sets.engaged.PDT` when engaged. Normal: `sets.engaged.Normal`. |
 
-### HybridMode
+## Other modes (no key)
 
-Controls the balance between offense and defense during melee combat.
+| Mode | Values | What it does |
+|---|---|---|
+| `FastCast` | 0 to 80 in steps of 10, default **0** | Your Fast Cast %, used only by the midcast watchdog to know how long a cast takes. Change the default in `SAM_STATES.lua`, or step it with `//gs c cycle FastCast`. |
 
-| Option | Description |
-|--------|-------------|
-| `PDT` | Physical Damage Taken reduction (defensive mode) |
-| `Normal` | Full offense, maximum DPS |
+## Commands
 
-**Default**: `PDT`
-**Keybind**: Alt+2
+SAM has no job command of its own. The common commands work
+(see [commands](../../guides/commands.md)); two are useful with a subjob:
 
----
+| Command | What it does |
+|---|---|
+| `//gs c jump` | /DRG, under 1000 TP: Jump or High Jump (whichever is ready), then the other one 1 s later if TP is still under 1000. |
+| `//gs c waltz` | /DNC: Curing Waltz on `<stpc>`. |
 
-### MainWeapon
+## Notes
 
-Selects the primary weapon set.
+- **Third Eye with Seigan down**: the first Third Eye press is replaced by
+  Seigan, then Third Eye 1 s later. The next time, Third Eye goes out alone
+  (the behaviour alternates).
+- **Weaponskill with Third Eye ready**: the weaponskill is held back, Third Eye
+  goes out first, then the weaponskill is sent again.
+- **Seigan up while engaged**: `sets.thirdeye` in PDT, `sets.seigan` in Normal.
+- **Idle**: `sets.idle.Weak` below 50% HP, `sets.idle.Regen` below 80%.
+- Sekkanoki and Meikyo Shisui add `sets.buff.Sekkanoki` /
+  `sets.buff['Meikyo Shisui']` to the weaponskill when the buff is up.
+- Weaponskill TP bonus gear: see [TP bonus](../war/tp-bonus.md).
+- Every mode goes back to its default on each job change, subjob change or reload.
 
-| Option | Description |
-|--------|-------------|
-| `Masamune` | Empyrean Great Katana (Aftermath: 30-50% Triple Damage) |
-| `Kusanagi` | Prime Great Katana (Aftermath: Physical damage limit+, Double Attack+10%) |
-| `Shining` | Shining One (Polearm - Impulse Drive +40%, Crit rate varies with TP) |
-| `Dojikiri` | Dojikiri Yasutsuna (Aeonic - Store TP+10, TP Bonus+500, AM: SC/MB potency+) |
-| `Soboro` | Soboro Sukehiro (Great Katana - Multi-hit) |
-| `Norifusa` | Norifusa (Great Katana - Multi-hit) |
+## Files
 
-**Default**: `Masamune`
-**Keybind**: Alt+1
-
----
-
-### FastCast
-
-Internal numeric state used by the midcast watchdog system. Represents your total Fast Cast percentage from gear and traits, used to calculate adjusted cast times. Not typically cycled manually.
-
-| Option | Description |
-|--------|-------------|
-| `0` through `80` | Fast Cast percentage (increments of 10) |
-
-**Default**: `0`
-
----
-
-## Quick Reference
-
-| State | Options | Default | Keybind |
-|-------|---------|---------|---------|
-| HybridMode | PDT / Normal | PDT | Alt+2 |
-| MainWeapon | Masamune / Kusanagi / Shining / Dojikiri / Soboro / Norifusa | Masamune | Alt+1 |
-| FastCast | 0 - 80 | 0 | -- |
-
----
-
-## Configuration
-
-**Config files**: `Tetsouo/config/sam/`
-
-| File | Purpose |
-|------|---------|
-| `SAM_KEYBINDS.lua` | Keybind definitions |
-| `SAM_LOCKSTYLE.lua` | Lockstyle per subjob |
-| `SAM_MACROBOOK.lua` | Macrobook per subjob |
-| `SAM_STATES.lua` | State definitions |
-| `SAM_TP_CONFIG.lua` | TP and weaponskill settings |
-
-**Lockstyle**: #2 (all subjobs)
-
-**Macrobook**: Book 2, Page 1 (all subjobs)
-
-See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.
+In `<Char>/config/sam/`: `SAM_STATES.lua` (modes and defaults),
+`SAM_KEYBINDS.lua` (keys), `SAM_CUSTOM.lua` (your own modes and gear, see
+[keybinds](../../guides/keybinds.md)), `SAM_LOCKSTYLE.lua`, `SAM_MACROBOOK.lua`,
+`SAM_TP_CONFIG.lua`. See [configuration](../../guides/configuration.md).

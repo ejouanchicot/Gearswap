@@ -1,181 +1,50 @@
-# BST - States & Modes
+# BST — modes and keys
 
-States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
+Beastmaster modes pick your weapons, your pet's idle stance and which jug pet you call.
 
-**Config**: `Tetsouo/config/bst/BST_KEYBINDS.lua`
+Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each mode's
+current value; this page says what each value does. `#numpad0` (Auto Medicine) and
+Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybinds.md).
 
----
+## Keys
 
-## States
+| Key | Mode (state) | Values (default in **bold**) | What it does |
+|---|---|---|---|
+| Ctrl+Numpad1 `^numpad1` | `WeaponSet` | **Aymur**, Tauret | Main weapon |
+| Ctrl+Numpad2 `^numpad2` | `SubSet` | **Agwu's Axe**, Adapa Shield, Diamond Aspis, Kraken Club | Off-hand or shield |
+| Ctrl+Numpad9 `^numpad9` | `HybridMode` | **PDT**, Normal | Idle and engaged: PDT adds damage-taken gear |
+| Ctrl+Numpad4 `^numpad4` | `AutoPetEngage` | Off, **On** | On: while you are engaged, a pet that is not fighting is sent in (`/pet "Fight" <t>`) |
+| Ctrl+Numpad3 `^numpad3` | `PetIdleMode` | **MasterPDT**, PetPDT | Idle with a pet out: protect yourself or the pet |
+| Ctrl+Numpad5 `^numpad5` | `Ecosystem` | **Aquan**, Beast, Amorph, Bird, Lizard, Plantoid, Vermin | Runs `//gs c ecosystem`: next ecosystem, and rebuilds the species list |
+| Ctrl+Numpad6 `^numpad6` | `species` | species of the current ecosystem | Runs `//gs c species`: next species; the jug of that pet is equipped for Call Beast |
 
-### AutoPetEngage
+## Other modes (no key)
 
-Controls whether the pet automatically engages your target when you engage.
+| Mode | Values | Notes |
+|---|---|---|
+| `FastCast` | 0 to 80 by 10, default **0** | Your Fast Cast %, used by the midcast watchdog (`//gs c cycle FastCast`, or its default in `BST_STATES.lua`) |
+| `PetEngaged`, `Moving` | 'false' / 'true' | Kept up to date by the job itself and by AutoMove; not meant to be changed by hand |
 
-| Option | Description |
-|--------|-------------|
-| `Off` | Pet must be manually commanded to engage |
-| `On` | Pet auto-engages when conditions are met |
+## Commands
 
-**Default**: `On`
-**Keybind**: 6
+| Command | What it does |
+|---|---|
+| `//gs c ecosystem` / `species` | Same as the two keys above |
+| `//gs c pet engage` / `pet disengage` | `/pet "Fight" <t>` / `/pet "Heel" <me>` |
+| `//gs c rdylist` | Lists your pet's Ready moves, numbered |
+| `//gs c rdymove N` | Uses Ready move N. If the pet is idle it is sent to fight first, and when you are both idle it heels afterwards |
+| `//gs c broth` (`broths`) | Counts the items with "Broth" in their name in your inventory |
+| `//gs c debugprecast` | On BST: traces pet and summon precast (not the common precast debug) |
 
----
+## Notes
 
-### petIdleMode
+- AutoMove runs on BST like on every job: `Moving` adds `sets.MoveSpeed` while you move.
+- Tetsouo's own folder starts `Ecosystem` on Amorph.
 
-Controls the gear priority when idle with a pet out.
+## Files
 
-| Option | Description |
-|--------|-------------|
-| `MasterPDT` | Prioritize master's Physical Damage Taken reduction |
-| `PetPDT` | Prioritize pet's Physical Damage Taken reduction |
-
-**Default**: `MasterPDT`
-**Keybind**: 7
-
----
-
-### ecosystem
-
-Selects the ecosystem family for pet summoning (determines available species).
-
-| Option | Description |
-|--------|-------------|
-| `Aquan` | Aquan family |
-| `Beast` | Beast family |
-| `Amorph` | Amorph family |
-| `Bird` | Bird family |
-| `Lizard` | Lizard family |
-| `Plantoid` | Plantoid family |
-| `Vermin` | Vermin family |
-
-**Default**: `Aquan`
-**Keybind**: Alt+5
-
-Note: Cycling ecosystem dynamically rebuilds the species state with species from the selected family.
-
----
-
-### petEngaged
-
-Tracks whether the pet is currently engaged in combat. Managed automatically by the pet monitoring system; not typically cycled manually.
-
-| Option | Description |
-|--------|-------------|
-| `false` | Pet is idle |
-| `true` | Pet is engaged |
-
-**Default**: `false`
-**Keybind**: None
-
----
-
-### WeaponSet
-
-Selects the primary melee weapon.
-
-| Option | Description |
-|--------|-------------|
-| `Aymur` | REMA axe |
-| `Tauret` | Dagger |
-
-**Default**: `Aymur`
-**Keybind**: 1
-
----
-
-### SubSet
-
-Selects the offhand weapon or shield.
-
-| Option | Description |
-|--------|-------------|
-| `Agwu's Axe` | Offhand axe |
-| `Adapa Shield` | Shield option |
-| `Diamond Aspis` | Shield option |
-| `Kraken Club` | Multi-hit club |
-
-**Default**: `Agwu's Axe`
-**Keybind**: 4
-
----
-
-### HybridMode
-
-Controls the balance between damage and survivability when engaged.
-
-| Option | Description |
-|--------|-------------|
-| `PDT` | Physical Damage Taken reduction for survivability |
-| `Normal` | Maximum damage output |
-
-**Default**: `PDT`
-**Keybind**: 5
-
----
-
-### Moving
-
-Tracks whether the player is currently moving for movement speed gear. Managed automatically by the BST pet monitoring system's position tracking; can also be toggled manually with `//gs c toggle Moving`.
-
-| Option | Description |
-|--------|-------------|
-| `false` | Standing still |
-| `true` | Moving (equips movement speed gear) |
-
-**Default**: `false`
-**Keybind**: None
-
-Note: BST disables the global AutoMove system for performance. Movement detection is handled by the BST-specific position tracker instead.
-
----
-
-### FastCast
-
-Internal numeric state used by the watchdog system to calculate cast time timeouts. Set to your total Fast Cast percentage from gear and traits. Cap is 80%.
-
-| Option | Description |
-|--------|-------------|
-| `0` through `80` | Fast Cast percentage (increments of 10) |
-
-**Default**: `0`
-**Keybind**: None
-
----
-
-## Quick Reference
-
-| State | Options | Default | Keybind |
-|-------|---------|---------|---------|
-| WeaponSet | Aymur / Tauret | Aymur | 1 |
-| SubSet | Agwu's Axe / Adapa Shield / Diamond Aspis / Kraken Club | Agwu's Axe | 4 |
-| HybridMode | PDT / Normal | PDT | 5 |
-| AutoPetEngage | Off / On | On | 6 |
-| petIdleMode | MasterPDT / PetPDT | MasterPDT | 7 |
-| ecosystem | Aquan / Beast / Amorph / Bird / Lizard / Plantoid / Vermin | Aquan | Alt+5 |
-| petEngaged | false / true | false | -- |
-| Moving | false / true | false | -- |
-| FastCast | 0-80 (by 10) | 0 | -- |
-
----
-
-## Configuration
-
-**Config files**: `Tetsouo/config/bst/`
-
-| File | Purpose |
-|------|---------|
-| `BST_KEYBINDS.lua` | Keybind definitions |
-| `BST_LOCKSTYLE.lua` | Lockstyle per subjob |
-| `BST_MACROBOOK.lua` | Macrobook per subjob |
-| `BST_STATES.lua` | State definitions |
-| `BST_TP_CONFIG.lua` | TP and weaponskill settings |
-| `BST_ECOSYSTEM_DATA.lua` | Ecosystem family data |
-| `BST_PET_DATA.lua` | Pet species and ability data |
-
-**Lockstyle**: #6 (all subjobs)
-
-**Macrobook**: Book 12, Page 1 (all subjobs)
-
-See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.
+`<Char>/config/bst/`: `BST_STATES.lua`, `BST_KEYBINDS.lua`, `BST_CUSTOM.lua` (your own
+modes and keys, see [keybinds](../../guides/keybinds.md)), `BST_PET_DATA.lua` and
+`BST_ECOSYSTEM_DATA.lua` (pets, species, jugs), `BST_LOCKSTYLE.lua` (style 6),
+`BST_MACROBOOK.lua` (book 12 page 1 solo, other books per dual-box partner job),
+`BST_TP_CONFIG.lua`.

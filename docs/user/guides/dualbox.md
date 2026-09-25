@@ -1,121 +1,107 @@
-# DualBox Guide
+# Dual-box guide
 
-Setup guide for dual-box communication between two characters.
+Two characters on the same PC, both running this setup, one **main** and one
+(or more) **alt**. What you get:
 
----
+- **Job exchange**: each box tells the other its job and levels about 2
+  seconds after every load, and asks for the other's. The macro book can then
+  follow the partner's job, and the main knows which alt commands exist.
+- **Alt commands**: short `//gs c <spell>` commands typed on the main that the
+  alt casts on your target.
+- **Box group orders**: `//gs c alts ...` sends follow / automation / mirror
+  orders, or any console command, to every other character of the group.
+- **Role swap**: `//gs c main` makes the current character the main.
+- **Alt window** on the main: each alt's job and whether it is in your party.
+- `//gs c rf`, `//gs c ls` and the warp `...all` commands also run on the
+  other GearSwap instances of the PC.
 
-## Overview
+## Requirements
 
-The DualBox system provides automatic one-way communication from an ALT character to a MAIN character:
-
-- MAIN receives the ALT's current job and subjob.
-- ALT sends job updates automatically on every job/subjob change.
-- MAIN can display the ALT's job in the UI overlay.
-
-**Requirements**: Both characters logged in with Windower 4.2+ and GearSwap loaded.
-
----
+- The Windower **`send`** addon, loaded on both characters: every exchange
+  goes through `send <Name> ...`.
+- For `alts on / off / toggle / follow / mirror`: an automation addon that
+  answers the console commands `sm on`, `sm off`, `sm follow <name>`,
+  `sm follow off` and `sm mirror`. Without it those orders do nothing;
+  `alts do <command>` works with any addon.
+- Both characters created with the clone script, as main and alt.
 
 ## Setup
 
-### 1. Create the Alt Character Folder
+1. Clone the main: role `main`, and give the alt's name when asked.
+2. Clone the alt: role `alt`, and give the main's name.
+3. Load both characters. About 2 seconds after the load, each box sends its
+   job to the other.
 
-**Using the clone script** (recommended):
-
-```cmd
-cd "D:\Windower Tetsouo\addons\GearSwap\data"
-python clone_character.py
-```
-
-Enter the source name (e.g., `Tetsouo`) and the new name (e.g., `Kaories`). The script copies all job files, renames them, and updates config paths.
-
-Manual alternative: copy the character folder, rename all `Source_*.lua` files to `Alt_*.lua`, and find-replace config path references.
-
-### 2. Configure MAIN Character
-
-Edit `Tetsouo/config/DUALBOX_CONFIG.lua`:
+The script writes `<Name>/config/DUALBOX_CONFIG.lua`. On the main:
 
 ```lua
-local DualBoxConfig = {}
-
 DualBoxConfig.role = "main"
-DualBoxConfig.character_name = "Tetsouo"
-DualBoxConfig.alt_character = "Kaories"
-
+DualBoxConfig.character_name = "Bob"
+DualBoxConfig.alt_character = "Alice"
+DualBoxConfig.group = {"Bob", "Alice"}
 DualBoxConfig.enabled = true
 DualBoxConfig.timeout = 30
 DualBoxConfig.debug = false
-
-return DualBoxConfig
 ```
 
-### 3. Configure ALT Character
+On the alt, `role = "alt"` and `main_character = "Bob"` instead of
+`alt_character`.
 
-Edit `Kaories/config/DUALBOX_CONFIG.lua`:
+| Setting | Meaning |
+|---|---|
+| `role` | `"main"` or `"alt"` (overridden by `//gs c main`, see below) |
+| `alt_character` / `main_character` | The partner for the job exchange and the alt commands |
+| `group` | Every character of the box group: `alts` orders go to all of them but yourself. Add a third name here for a third box |
+| `enabled` | `false` turns dual-box off for this character |
+| `timeout` | Seconds without news from the partner before it counts as offline (for the macro book choice) |
+| `debug` | More chat output |
 
-```lua
-local DualBoxConfig = {}
+The job exchange and the alt commands work with one partner; the `alts`
+orders and the alt window work with every member of `group`.
 
-DualBoxConfig.role = "alt"
-DualBoxConfig.character_name = "Kaories"
-DualBoxConfig.main_character = "Tetsouo"
+Only the main gets `config/alt/` (the alt command files) from the clone
+script.
 
-DualBoxConfig.enabled = true
-DualBoxConfig.timeout = 30
-DualBoxConfig.debug = false
+## Box group orders (`//gs c alts`)
 
-return DualBoxConfig
-```
+Work from either box: they go to every other member of `group`.
 
-**Key difference**: MAIN sets `role = "main"` and `alt_character`. ALT sets `role = "alt"` and `main_character`.
+| Command | Default key | Effect |
+|---|---|---|
+| `alts follow` | Alt+Numpad7 | Alts follow you; again to stop |
+| `alts follow <name>` / `alts follow off` | | Follow that character / stop |
+| `alts toggle` | Alt+Numpad8 | Automation on / off |
+| `alts on` / `alts off` | | Automation on / off |
+| `alts mirror` | Alt+Numpad9 | Mirror request, sent from this character |
+| `alts do <console command>` | | Any console command, on every alt |
+| `alts window` | | Show / hide the alt window (main only) |
 
-### 4. Reload and Test
+The state shown (and used by `toggle` and `follow`) is the last order sent
+from this box; an order sent another way (a macro, the alt's own keys) is not
+seen, so a toggle can need one extra press. The keys are in
+`COMMON_KEYBINDS.lua` ([keybinds](keybinds.md#common-keys)).
 
-Reload GearSwap on both characters:
+## Swapping roles (`//gs c main`)
 
-```
-//gs c reload
-```
+Type `//gs c main` on the character that should lead. It becomes the main,
+the other members of the group become its alts (each is told with
+`gs c setalt <you>`), and the jobs are exchanged again. The role is saved in
+`<Name>/config/dualbox_role.lua` and wins over `DUALBOX_CONFIG.lua` until you
+delete that file or swap again.
 
-On the MAIN character, request the ALT's job:
+## The alt window
 
-```
-//gs c altjob
-```
+Shown on the main only. For each alt: its job (the last one it reported),
+whether it is in your party (and its zone when it differs), and the last
+Auto / Follow / Mirror order sent from this box (`?` until one is sent).
+While the window is on screen, those orders print nothing in chat.
+Drag it with the mouse; the position is saved a few seconds later.
+`//gs c alts window` shows or hides it.
 
-Expected output:
-
-```
-[DualBox] Requesting alt job info...
-[DualBox] Alt job received: GEO/RDM
-```
-
----
-
-## Daily Usage
-
-1. Log in both characters and load GearSwap.
-2. The system auto-connects. No manual commands needed.
-3. When the ALT changes jobs, MAIN is updated automatically.
-
----
-
-## Commands
-
-| Command | Run On | Description |
-|---------|--------|-------------|
-| `//gs c altjob` | MAIN | Request ALT's current job |
-| `//gs c requestjob` | ALT | Respond to MAIN's request (auto-triggered) |
-| `//gs c altjobupdate [job] [subjob]` | MAIN | Receive job update (auto-triggered) |
-
-In normal use, no manual commands are needed. Use `//gs c altjob` only if the connection seems stale.
-
----
-
-## Driving the ALT from the MAIN
+## Alt commands: drive the alt from the main
 
 Type a short command on the MAIN and the ALT performs it, on whatever you have
-targeted. `//gs c haste` becomes one line, sent immediately:
+selected. With a RDM alt, `//gs c haste` becomes one line, sent immediately:
 
 ```
 send Kaories input /ma "Haste II" <laststid>
@@ -154,59 +140,41 @@ one you confirm. The macro line is what makes the game wait.
 | `//gs c <name>` | Short form, e.g. `//gs c haste`, `//gs c chaos` |
 | `//gs c alt <name>` | Explicit form, use if a name collides with a built-in |
 
-The command set follows the ALT's job automatically: put the alt on RDM and
-`//gs c haste` casts Haste II; put it on COR and the roll commands appear
-instead. Nothing to reload.
+The command set follows the ALT's main job and subjob automatically, and each
+spell tier follows the level the ALT reported: put the alt on RDM and
+`//gs c haste` casts Haste II (Haste below level 96); put it on COR and the
+roll commands appear instead. Nothing to reload.
 
-Built-in commands always win a name conflict, so an entry called `dispel` would
-be shadowed on a job that already has `//gs c dispel`. `//gs c alt dispel`
-still reaches the alt.
+Local commands always win a name conflict: on a main whose job already has
+`//gs c dispel` (BLM, GEO), `//gs c dispel` runs on the main and
+`//gs c alt dispel` reaches the alt. `altcmds` lists apart the names that
+only work as `//gs c alt <name>`.
 
 ### Finding a command
 
-`//gs c altcmds` opens with the syntax, then the choices grouped by school:
-
-```
-=== Kaories (RDM/WHM) - 111 commands ===
-  //gs c <name> and Kaories casts it - the name IS the spell name.
-  enfeebling:     addle altdispel bind blind breakspell ... (16)
-  enhancing:      altsneak aquaveil auspice baraera baraero ... (70)
-  healing:        blindna cura curaga cure cursna ... (12)
-  //gs c altcmds <group> for the rest, or search: //gs c altcmds haste
-```
-
-A group or a search word gives the full set, split by what you have to do
-first rather than listed one per line:
-
-```
-//gs c altcmds healing
-
-  //gs c <name> and Kaories casts it.
-  needs a target: blindna curaga cure cursna paralyna poisona raise silena
-                  stona viruna
-  on Kaories:     cura reraise
-  pick it with /ta <stpc> for an ally, /ta <stnpc> for a mob
-```
-
-Searching matches the command name and the spell alike, so `//gs c altcmds
-haste` finds it wherever it lives.
+`//gs c altcmds` lists the alt's commands grouped by school
+(enfeebling, enhancing, healing...). `//gs c altcmds <group>` shows one group
+in full, and `//gs c altcmds <word>` searches command names and spell names
+alike.
 
 Most of the time you will not open the list at all: **the command name is the
 spell name**, lowercase, no spaces - `//gs c haste`, `//gs c dia`,
-`//gs c poisona`. Names that would clash with an existing command take an `alt`
-prefix (`altdispel`, `altsneak`).
+`//gs c poisona`.
 
 ### Changing the commands
 
+The command files are in the MAIN's folder, `<Main>/config/alt/`.
 `<JOB>_ALT_COMMANDS.lua` is **generated** from the game data and gets rebuilt
 whenever the spell list changes - anything you write in it is lost.
 
 Yours go in `<JOB>_ALT_CUSTOM.lua`, in the same folder. It is never
 regenerated, and it is merged on top of the generated file. A commented
-`.example` ships for every job: copy it without the `.example` and edit.
+`.example` ships for BLM, COR, GEO, RDM, SCH and WHM: copy it without the
+`.example` and edit. BLM, GEO, RDM, SCH and SMN already have a
+`_ALT_CUSTOM.lua` in use.
 
 ```
-Tetsouo/config/alt/RDM_ALT_CUSTOM.lua
+<Main>/config/alt/RDM_ALT_CUSTOM.lua
 ```
 
 Three things it can do:
@@ -231,7 +199,7 @@ Reload with `//lua reload gearswap` after editing - `require` caches the file.
 
 | Field | Values |
 |-------|--------|
-| `action` | `ma` `ja` `ws` `so` `item` `pet` `ra` `raw` |
+| `action` | `ma` `ja` `ws` `so` `item` `pet` `ra` `ninjutsu` `raw` |
 | `spell` | Name to use, or a function returning one |
 | `target` | `lastst` (default) or `me` |
 | `desc` | Shown by `//gs c altcmds` |
@@ -267,24 +235,22 @@ before firing:
 Both `Geo-` families use `lastst`; only the selection you make beforehand
 differs.
 
-**Entrust is detected automatically.** The main cannot read an alt's buffs, so
-the alt announces the ones that matter: gaining Entrust sends
-`gs c altbuff Entrust 1` to the main, losing it sends `0`. While that buff is
-up, every `//gs c indi*` command aims at your last subtarget instead of the
-alt — same macro either way:
+**Entrust is tracked.** While the main believes the alt has Entrust up, every
+`//gs c indi*` command aims at your last subtarget instead of the alt - same
+macro either way:
 
 ```
 /target <stal>
 /console gs c indihaste
 ```
 
-Without Entrust the selection is simply ignored and the spell lands on the alt.
+Without Entrust the selection is ignored and the spell lands on the alt.
 
-If the alt never reports (older code on its side, module not loaded), the main
-falls back to assuming Entrust right after `//gs c altentrust`, with a 60s
-expiry. As soon as one real report arrives, that guess is dropped for good and
-the alt's own buffs are authoritative — which matters, because an Entrust that
-failed (paralysed, mid-cast, on recast) must *not* be assumed to have landed.
+How the main knows: `//gs c altentrust` marks Entrust as up at once (for at
+most 60 s) and asks the alt for its buffs 3 s later, because the game signals
+Entrust only when it wears off, not when it is gained. The alt then reports
+its tracked buffs, and reports losing Entrust. Once the alt has reported for
+real, the main stops guessing.
 
 Two diagnostics:
 
@@ -326,66 +292,22 @@ entrusthaste = {
 },
 ```
 
----
-
-## Configuration Reference
-
-| Setting | MAIN | ALT |
-|---------|------|-----|
-| `role` | `"main"` | `"alt"` |
-| `character_name` | Your main name | Your alt name |
-| `alt_character` | Alt name | (not used) |
-| `main_character` | (not used) | Main name |
-| `enabled` | `true` | `true` |
-| `timeout` | `30` | `30` |
-| `debug` | `false` | `false` |
-
-### Disabling DualBox
-
-Set `DualBoxConfig.enabled = false` in the config file and reload (`//gs c reload`).
-
-### Multiple Alts
-
-The system supports 1 MAIN + 1 ALT. Multiple alts require custom modification.
-
-### UI Position
-
-The ALT job display is part of the main UI. Drag to position, then save with `//gs c ui save`.
-
----
-
 ## Troubleshooting
 
-### ALT job not updating
+| Symptom | Check |
+|---|---|
+| "Dual-box not initialised yet" | Wait: the first 2 seconds after a load, nothing dual-box works |
+| "No alt set" / nothing sent | `enabled = true` and the names in `DUALBOX_CONFIG.lua` (or `dualbox_role.lua`) match the characters exactly |
+| Alt commands unknown on the main | The alt must have reported its job: reload the alt (`//gs c reload`) so it sends it; check the `send` addon is loaded on both |
+| An alt command runs on the main | A local command has that name: use `//gs c alt <name>` |
+| `alts follow` does nothing | Your automation addon must answer `sm follow <name>` |
+| Wrong character leads after a swap | `//gs c main` on the right one, or delete `<Name>/config/dualbox_role.lua` |
 
-1. Verify `DualBoxConfig.enabled = true` on both characters.
-2. Check that character names match exactly (case-sensitive).
-3. Reload both characters: `//gs c reload`.
-4. Test manually: `//gs c altjob` on MAIN.
+Tracing: `//gs c altdebug` (alt buff reports, on both characters), and
+`DualBoxConfig.debug = true` for more messages.
 
-### UI not showing ALT job
+## Further reading
 
-1. Confirm MAIN config has `role = "main"` and `enabled = true`.
-2. Toggle the UI: `//gs c ui` twice.
-3. Reload: `//gs c reload`.
-
-### Commands not working
-
-1. Verify GearSwap is loaded on both characters (`//lua list`).
-2. You should see `[DualBox] System initialized` on load.
-3. Enable trace output (`//gs c debugjobchange` or its alias `djc`) and retry `//gs c altjob` to see error details.
-
-### Updates delayed (more than 5 seconds)
-
-Network delay of 1-3 seconds is normal. If consistently slow, force a manual update with `//gs c altjob`.
-
----
-
-## Further Reading
-
-- [Configuration Guide](configuration.md) - Advanced config options
-- [Commands Reference](commands.md) - All available commands
-- [UI Guide](../features/ui.md) - Customize UI appearance
-- [FAQ](faq.md) - Common issues
-
----
+- [Commands](commands.md#dual-box)
+- [Keybinds](keybinds.md)
+- Developer page: [dualbox.md](../../dev/systems/dualbox.md)

@@ -1,218 +1,121 @@
 # Installation
 
-This guide walks you through installing the Tetsouo GearSwap framework
-end-to-end. It targets a fresh Windower 4 install. Allow ~5 minutes.
+From a fresh Windower to your first job loaded.
 
-> Looking for a one-page overview? See the project [README](../../../README.md).
+## 1. Requirements
 
----
+- [Windower 4](https://www.windower.net/) with the GearSwap addon.
+- Python 3, to run the clone script (once per character).
+- Dual-box only: the `send` addon loaded on both characters. See the
+  [dual-box guide](../guides/dualbox.md).
 
-## 1. Prerequisites
+## 2. Copy the files
 
-| Requirement | Why |
-| --- | --- |
-| **Windower 4** | Required runtime. https://www.windower.net/ |
-| **GearSwap addon** | Core dependency loaded with `//lua load gearswap` |
-| **Python 3.8+** | Used by `clone_character.py` to generate your character files. |
-
-Optional but recommended Windower addons:
-
-- **DressUp** — needed for the lockstyle hot-swap feature (`//gs c lockstyle`)
-- **ConsoleBG** / **InfoBar** — quality-of-life UI
-
----
-
-## 2. Drop the framework into Windower
-
-```bash
-cd "<Windower>/addons/GearSwap/data/"
-git clone https://github.com/ejouanchicot/Gearswap.git temp
-xcopy /E /Y temp\* .\
-rmdir /S /Q temp
-```
-
-The end result should look like this:
+Download the repository ([github.com/ejouanchicot/Gearswap](https://github.com/ejouanchicot/Gearswap),
+**Code** > **Download ZIP**) and copy its content into:
 
 ```
 <Windower>/addons/GearSwap/data/
-├── _master/                Templates (entry, sets, config) + per-char overlays
-├── shared/                 Core systems — never edit
-│   ├── jobs/<job>/         12-module job structures
-│   ├── utils/              9 mandatory systems + extras
-│   ├── data/               Spell / ability / WS databases
-│   └── hooks/              Auto-message handlers
-├── docs/                   This documentation
-├── clone_character.py      Smart character bootstrap
-├── CLONE_CHARACTER.bat     Windows double-click launcher
-└── README.md
 ```
 
-If you already had a `GearSwap/data/` setup, **back it up first** — drop your
-old `<Yourname>/` folder somewhere safe before running the copy.
+Or clone it with git (`git clone https://github.com/ejouanchicot/Gearswap.git`)
+and copy the content the same way.
 
----
+Check that `data/` now contains `_master/`, `shared/`, `docs/`,
+`clone_character.py` and `CLONE_CHARACTER.bat`.
 
-## 3. Generate your character
+## 3. Create your character
 
-You don't write entry files by hand. The generator reads the `_master/`
-templates and produces a full per-character folder.
-
-### Option A — Windows double-click
-
-```
-CLONE_CHARACTER.bat
-```
-
-### Option B — Command line
-
-```bash
-python clone_character.py
-```
+Double-click `CLONE_CHARACTER.bat`. The prompts are in French by default;
+from a command prompt in `data/`, `CLONE_CHARACTER.bat en` (or
+`python clone_character.py --lang en`) gives English prompts.
 
 The script asks:
 
-```
-Enter character name: Bob
-Select jobs (comma-separated, or 'all'): WAR,RDM,BLM
-Role (main/alt): main
+1. **Character name** (letters and digits, 2-15 characters). If
+   `data/<Name>/` already exists, it asks whether to replace it.
+2. **Jobs**, comma-separated, among BLM, BRD, BST, COR, DNC, DRK, GEO, PLD,
+   RDM, RUN, SAM, THF, WAR, WHM. (SMN is only deployed for the character named
+   Tetsouo; PUP is not offered, it does not load.)
+3. **Role**: `main` or `alt`. A main is asked for its alt's name (empty = no
+   dual-box); an alt must give its main's name.
+4. **Region**: US, EU or JP.
+5. A summary and a **final confirmation**. Nothing is written before it.
 
-[OK] Generated Bob/Bob_WAR.lua
-[OK] Generated Bob/Bob_RDM.lua
-[OK] Generated Bob/Bob_BLM.lua
-[OK] Copied 7 global configs
-[OK] Wrote DUALBOX_CONFIG (role=main)
-```
-
-What it does:
-
-- Copies the entry-points from `_master/entry/Tetsouo_<JOB>.lua` and renames
-  them for your character.
-- Copies set files from `_master/sets/<job>_sets.lua` (or pulls a Tetsouo
-  overlay from `_master/Tetsouo/sets/` if you ran `--source Tetsouo`).
-- Copies per-job configs from `_master/config/<job>/`.
-- Writes `<Yourname>/config/DUALBOX_CONFIG.lua` for the role/partner.
-
-> **Re-running the script** is safe — it skips files that already exist
-> unless you pass `--force`.
-
-### Option C — Manual copy (advanced)
-
-If you don't want Python, you can copy by hand for a single job. Replace
-`WAR` with the job you want.
-
-1. `_master/entry/Tetsouo_WAR.lua` → `<Yourname>/<Yourname>_WAR.lua`
-2. `_master/config/war/` → `<Yourname>/config/war/`
-3. `_master/sets/war_sets.lua` → `<Yourname>/sets/war_sets.lua`
-4. Edit step 1's file and replace every `Tetsouo` with `<Yourname>`.
-
----
-
-## 4. Fill in your gear
-
-Open `<Yourname>/sets/<job>_sets.lua` and replace the template item names
-with **the items you actually own**. Things to know:
-
-- Item names are **case-sensitive and exact**: `"Souveran Schaller +1"`,
-  not `"souveran schaller +1"`.
-- For augmented items, the `augments = {...}` table must match exactly,
-  or GearSwap silently equips nothing.
-- For multi-instance items (rings, neck), use `bag = 'wardrobe 2'` to
-  pin a specific copy.
-- The `_master/sets/` files are working baselines, not "ideal BiS" lists.
-  Adjust freely.
-
-After editing sets, validate them in-game with:
+It creates:
 
 ```
-//gs c checksets
+data/<Name>/
+├── <Name>_<JOB>.lua      one entry file per job
+├── sets/<job>_sets.lua   one set file per job
+└── config/
+    ├── <job>/            keys, modes, lockstyle, macro book... per job
+    ├── alt/              alt commands (main only)
+    ├── COMMON_KEYBINDS.lua, UI_CONFIG.lua, LOCKSTYLE_CONFIG.lua, ...
+    ├── DUALBOX_CONFIG.lua   written from your answers
+    └── REGION_CONFIG.lua    written from your answers
 ```
 
-This reads every `sets.*` table and reports anything missing/in-storage.
+Every `Tetsouo` inside the copied `.lua` files is replaced with your name.
 
----
+**Running it again** for the same name: after the confirmation, the old
+folder is moved to `addons/GearSwap/clone_backups/<Name>_<date>/` (never
+deleted), a fresh one is built, and these files, written in game, are copied
+back from the backup: `config/ui_settings.lua` (HUD), `config/message_modes.lua`,
+`config/alt_window.lua`, `config/alt_state.lua`, `config/WARP_ITEMS_OWNED.lua`
+and `temp_binds.lua`. Anything else you edited (sets, keybinds, modes) is only
+in the backup: copy it back yourself.
 
-## 5. Load and verify in-game
+## 4. Put in your gear
 
-```
-//lua load gearswap
-//console gs load <Yourname>_WAR
-```
+Open `data/<Name>/sets/<job>_sets.lua`. It holds the author's gear; replace it
+with yours.
 
-Expected console output (specifics vary per job):
+- Item names must match the game exactly.
+- Augmented items need their exact `augments = {...}` list.
+- Two copies of the same item: pin each one to its wardrobe with
+  `bag = 'wardrobe 2'` and so on.
 
-```
-[WAR] System loaded
-[WAR] Keybinds loaded successfully
-[WAR] Macrobook set: Book 1, Page 1
-[Watchdog] Initialized
-[Lockstyle] queued (2.0s delay)
-```
+## 5. Load it in game
 
-Quick sanity checks:
+With GearSwap loaded (`//lua load gearswap`), log in or change job: GearSwap
+loads `data/<Name>/<Name>_<JOB>.lua` for your current job by itself.
 
-```
-//gs c              # show keybind UI overlay
-//gs c checksets    # validate all sets, list missing items
-//gs c info         # framework version + loaded modules
-```
+On load you get a `<JOB> SYSTEM LOADED` block in chat listing the job's keys,
+the keybind HUD appears after a few seconds, the job's macro book is selected,
+and 8 seconds after the load the lockstyle is applied.
 
----
-
-## 6. Optional: install DressUp for lockstyle
+Then check:
 
 ```
-//lua load dressup
-//gs c lockstyle
+//gs c checksets     lists set items you do not have in inventory or wardrobes
+//gs c ui            shows / hides the HUD
+//gs c syscheck      health check of the loaded systems
 ```
 
-The framework runs `lockstyle_manager` which throttles dress-up calls and
-applies your per-job/per-subjob lockstyle from
-`<Yourname>/config/<job>/<JOB>_LOCKSTYLE.lua`. If DressUp isn't loaded
-the lockstyle command no-ops silently.
+## Lockstyle and DressUp
 
----
+The lockstyle is sent as `/lockstyleset <number>`, using the number in
+`config/<job>/<JOB>_LOCKSTYLE.lua`. DressUp is not needed. By default the
+setup unloads DressUp just before `/lockstyleset` and loads it again 3 seconds
+later. If you do not use DressUp,
+turn that off once with `//gs c dressup` (the choice is kept, for every
+character).
 
 ## Troubleshooting
 
-### "module 'shared/...' not found"
+**A job does not load, or chat shows a Lua error.** Check that the entry file
+is `data/<Name>/<Name>_<JOB>.lua` with your exact in-game name, and that
+`data/shared/` exists. `//lua reload gearswap` reloads everything.
 
-`shared/` is missing or got corrupted on copy. Re-run the `xcopy` step;
-verify `shared/utils/core/COMMON_COMMANDS.lua` exists.
+**Keys do nothing.** A warning `<JOB> keybinds: ...` in chat at load names the
+bad entry. `//gs c reload` reloads the job file. See
+[keybinds](../guides/keybinds.md).
 
-### "attempt to index a nil value (global 'sets')"
+**PUP does not load.** Expected: see [PUP](../jobs/pup/README.md).
 
-Your entry-point can't find the set file. Two common causes:
+## Next
 
-1. The character name in the file (`<Yourname>` literal) doesn't match the
-   character's in-game name. GearSwap is case-sensitive.
-2. The set file path doesn't follow the convention
-   `<Yourname>/sets/<job>_sets.lua`.
-
-### Lockstyle silently does nothing
-
-`//lua list` to confirm `dressup` is loaded. The framework logs nothing
-when DressUp isn't present — this is intentional, since lockstyle is
-optional.
-
-### Keybinds not firing
-
-`//lua reload gearswap`. If the issue persists, your job's
-`<Yourname>/config/<job>/<JOB>_KEYBINDS.lua` is probably missing or has
-a syntax error. Compare against the corresponding `_master/config/<job>/`
-file.
-
----
-
-## Next steps
-
-- [Quick Start](quick-start.md) — first 5 minutes after install
-- [Commands](../guides/commands.md) — full `//gs c …` reference
-- [Configuration](../guides/configuration.md) — refill, wardrobe, dualbox
-- [Keybinds](../guides/keybinds.md) — per-job shortcut reference
-
----
-
-**14 jobs are fully implemented**: BLM, BRD, BST, COR, DNC, DRK, GEO, PLD,
-RDM, RUN, SAM, THF, WAR, WHM. PUP exists as a 12-module scaffold but ships
-a 20-line skeleton set file (`_master/sets/pup_sets.lua`) and is not an
-actively-maintained job.
+- [Quick start](quick-start.md)
+- [Commands](../guides/commands.md)
+- [Configuration](../guides/configuration.md)

@@ -1,281 +1,154 @@
 # Configuration
 
-All your customizations live under **`<Yourname>/config/`**. Reload with
-`//gs c reload` or `//lua reload gearswap` after edits.
+Everything you can change lives in `<YourName>/` (created by the clone script,
+see [installation](../getting-started/installation.md)). After an edit,
+`//gs c reload` (or `//lua reload gearswap`) applies it.
 
-> Replace `<Yourname>` with your in-game character name throughout.
+## What is in `<YourName>/config/`
 
----
+| File | What it sets |
+|---|---|
+| `COMMON_KEYBINDS.lua` | Keys every job gets ([keybinds](keybinds.md)) |
+| `UI_CONFIG.lua` | HUD defaults, background presets ([HUD](../features/ui.md)) |
+| `UI_COLOR_CONFIG.lua` | HUD colours of values (elements, modes...) |
+| `ui_settings.lua` | HUD position and toggles, written by `//gs c ui ...` |
+| `LOCKSTYLE_CONFIG.lua` | `initial_load_delay` = 8.0 s between a load and the lockstyle |
+| `RECAST_CONFIG.lua` | `tolerance` = 2.0 s: an ability or spell whose recast is at or under this counts as ready |
+| `message_modes.lua` | Chat detail for spells / abilities / weaponskills, written by `jamsg`, `spellmsg`, `wsmsg` |
+| `CRAFT_CONFIG.lua` | Lockstyle numbers for `craft` (19) and `fish` (17) |
+| `DUALBOX_CONFIG.lua` | Role, partner, group ([dual-box](dualbox.md)) |
+| `REGION_CONFIG.lua` | Your region (US / EU / JP): some chat colour codes differ by region |
+| `WARDROBE_CONFIG.lua` | Optional: bags used by `//gs c wo` |
+| `alt/` | Alt commands, main character only ([dual-box](dualbox.md)) |
+| `<job>/` | One folder per job, below |
 
-## Directory layout
+Per job, `<YourName>/config/<job>/`:
 
+| File | What it sets |
+|---|---|
+| `<JOB>_STATES.lua` | The job's modes: values and defaults |
+| `<JOB>_KEYBINDS.lua` | The job's keys |
+| `<JOB>_CUSTOM.lua` | Your own modes and gear rules (empty by default) |
+| `<JOB>_LOCKSTYLE.lua` | Lockstyle number |
+| `<JOB>_MACROBOOK.lua` | Macro book and page |
+| `<JOB>_TP_CONFIG.lua` | TP bonus pieces for weaponskills ([tp-bonus](../jobs/war/tp-bonus.md)) |
+| `<JOB>_REFILL.lua` | Consumables for `//gs c rf` (you create it, see below) |
+| others | Job-specific: `BLM_MP_CONFIG`, `BRD_SONG_CONFIG`, `WHM_CURE_CONFIG`, `RDM_SABOTEUR_CONFIG`... (see the job's page) |
+
+## Modes (`<JOB>_STATES.lua`)
+
+Each mode is a Mote-Include state. To change the default value, change the
+`:set(...)` line of that mode; to add or remove values, edit its list:
+
+```lua
+state.MainWeapon = M {
+    ['description'] = 'Main Weapon',
+    'Naegling', 'Ukonvasara',
+}
+state.MainWeapon:set('Naegling')
 ```
-<Yourname>/
-├── <Yourname>_<JOB>.lua            Entry-point per job (one per played job)
-├── sets/
-│   └── <job>_sets.lua              Equipment sets per job
-└── config/
-    ├── DUALBOX_CONFIG.lua          DualBox role + partner
-    ├── REGION_CONFIG.lua           EU/NA region preferences
-    ├── WARDROBE_CONFIG.lua         primary/overflow bag layout
-    ├── LOCKSTYLE_CONFIG.lua        global lockstyle timing/throttle
-    ├── RECAST_CONFIG.lua           cooldown tolerances
-    ├── UI_CONFIG.lua               keybind UI behavior
-    ├── ui_settings.lua             UI position + toggles
-    ├── message_modes.lua           per-namespace verbosity
-    ├── craft/
-    │   └── CRAFT_REFILL.lua        consumables to keep while crafting
-    └── <job>/                      Per-job configs (one folder per played job)
-        ├── <JOB>_KEYBINDS.lua      Your keybinds for the job
-        ├── <JOB>_STATES.lua        State definitions (Mote-Include M{})
-        ├── <JOB>_LOCKSTYLE.lua     Per-subjob lockstyle ID
-        ├── <JOB>_MACROBOOK.lua     Per-subjob macrobook page
-        ├── <JOB>_REFILL.lua        Consumables wanted in inv
-        └── <JOB>_TP_CONFIG.lua     (WAR/SAM/DRK) TP-bonus thresholds
-```
 
-The clone script (`clone_character.py`) generates the standard layout
-from `_master/` templates. Add files yourself only when you want to
-extend it.
+Every mode goes back to its default on each load (job change, subjob change,
+reload), except Auto Medicine. To add a mode of your own, prefer
+`<JOB>_CUSTOM.lua` ([keybinds](keybinds.md#your-own-modes-job_customlua)):
+it needs no code and keeps your changes apart from the job's files.
 
----
-
-## Lockstyle
-
-### Per-job — `<Yourname>/config/<job>/<JOB>_LOCKSTYLE.lua`
+## Lockstyle (`<JOB>_LOCKSTYLE.lua`)
 
 ```lua
 local WARLockstyleConfig = {}
-
-WARLockstyleConfig.default = 1            -- fallback lockstyle ID
-
-WARLockstyleConfig.by_subjob = {           -- per-subjob overrides
-    ['SAM'] = 1,
-    ['NIN'] = 2,
-    ['DNC'] = 3,
-}
-
+WARLockstyleConfig.default = 4
+WARLockstyleConfig.by_subjob = { ['SAM'] = 4, ['DRG'] = 4 }
+function WARLockstyleConfig.get_style(subjob)
+    return WARLockstyleConfig.by_subjob[subjob] or WARLockstyleConfig.default
+end
 return WARLockstyleConfig
 ```
 
-Lockstyle IDs are 1-200 (FFXI maximum). Look them up in DressUp.
+`default` is always used. `by_subjob` counts only when the file also has the
+`get_style` function: BST, COR, DNC, DRK, GEO, PLD, RUN and WAR have it; on
+the other jobs `by_subjob` is ignored until you add one (copy it from
+`WAR_LOCKSTYLE.lua`). The lockstyle is sent 8 s after each load, and again with
+`//gs c ls`.
 
-### Global timing — `<Yourname>/config/LOCKSTYLE_CONFIG.lua`
-
-| Setting | Default | Notes |
-| --- | --- | --- |
-| `delay_after_load` | 2.0s | Delay before first apply on job load |
-| `cooldown` | 15.0s | FFXI-enforced minimum between applies |
-
-If lockstyle silently fails right after a job change, increase
-`delay_after_load`. The 15s cooldown is a hard floor — the manager
-throttles automatically.
-
----
-
-## Macrobook
-
-`<Yourname>/config/<job>/<JOB>_MACROBOOK.lua`:
+## Macro book (`<JOB>_MACROBOOK.lua`)
 
 ```lua
-local WARMacroConfig = {}
-
-WARMacroConfig.default = { book = 22, page = 1 }
-
-WARMacroConfig.macrobooks = {
+WARMacroConfig.solo = {
     ['SAM'] = { book = 22, page = 1 },
-    ['DRG'] = { book = 25, page = 1 },
-    ['DNC'] = { book = 28, page = 1 },
+    ['default'] = { book = 22, page = 1 },
 }
-
-return WARMacroConfig
-```
-
-The framework calls `set_macro_book(book, page)` automatically through
-`MacrobookManager`. Don't write manual `send_command` calls.
-
----
-
-## Keybinds
-
-`<Yourname>/config/<job>/<JOB>_KEYBINDS.lua`:
-
-```lua
-local WARKeybinds = {}
-
-WARKeybinds.binds = {
-    { key = "!1", command = "cyclestate MainWeapon", desc = "Main Weapon", state = "MainWeapon" },
-    { key = "!2", command = "cyclestate HybridMode", desc = "Hybrid Mode", state = "HybridMode" },
-    -- Add more as needed
+WARMacroConfig.dualbox = {
+    ['GEO'] = {                              -- partner's main job
+        ['SAM'] = { book = 23, page = 1 },   -- your subjob
+    },
 }
-
-return WARKeybinds
+WARMacroConfig.default = { book = 22, page = 1 }
 ```
 
-`key` uses Windower's syntax:
+With dual-box on and the partner online (it reported its job in the last
+30 s), `dualbox[partner job][your
+subjob]` is used; otherwise `solo[your subjob]`, then `solo.default`, then
+`default`.
 
-| Prefix | Modifier |
-| --- | --- |
-| `!` | Alt |
-| `^` | Ctrl |
-| `@` | Win |
-| (none) | bare key |
+## Refill (`<JOB>_REFILL.lua`)
 
-Examples: `!1` = Alt+1, `^!2` = Ctrl+Alt+2, `!#9` = Alt+Shift+9.
-
-The framework calls `windower.send_command('bind ' .. key .. ' gs c <command>')`
-on load and unbinds on unload.
-
-> Mote-Include's universal F9-F12 binds are **not** registered — every
-> shortcut is per-job by design.
-
----
-
-## States
-
-`<Yourname>/config/<job>/<JOB>_STATES.lua`:
-
-```lua
-local WARStates = {}
-
-function WARStates.setup()
-    state.MainWeapon = M{ ['description'] = 'Main Weapon',
-        'Ukonvasara', 'Naegling', 'Chango', 'Loxotic Mace' }
-
-    state.HybridMode:options('Normal', 'PDT', 'SubtleBlow')
-
-    state.OffenseMode:options('Normal', 'Acc')
-end
-
-return WARStates
-```
-
-States are Mote-Include `M{}` collections. They auto-cycle via
-`//gs c cyclestate <Name>` and surface in the UI overlay.
-
----
-
-## DualBox
-
-`<Yourname>/config/DUALBOX_CONFIG.lua`:
-
-```lua
-return {
-    role = 'main',                 -- 'main' or 'alt'
-    character_name = 'Tetsouo',    -- this character
-    alt_character = 'Kaories',     -- partner (only set on main)
-    main_character = nil,          -- partner (only set on alt)
-    enabled = true,
-    timeout = 30,                  -- IPC ack timeout (seconds)
-    debug = false,
-}
-```
-
-See [DualBox guide](dualbox.md) for the IPC handshake flow and
-broadcasting commands.
-
----
-
-## Refill (consumables)
-
-`<Yourname>/config/<job>/<JOB>_REFILL.lua`:
+`//gs c rf` tops up the consumables in your inventory from the Mog Case and
+Mog Sack, and puts the surplus back. The lists are per character and per job,
+and only the author's characters ship with them: **create
+`<YourName>/config/<job>/<JOB>_REFILL.lua` yourself**. Without it, `rf` uses a
+short built-in list (Panacea, Antacid, Holy Water, Remedy, Prism Powder, Silent
+Oil, 12 each). Format (model: `_master/Tetsouo/config/war/WAR_REFILL.lua`):
 
 ```lua
 local M = {}
-
-M.store_bag = 'case'    -- 'case' | 'sack' | 'satchel'
-
+M.store_bag = 'case'            -- where the surplus goes: 'case', 'sack' or 'satchel'
 M.default = {
-    { name = 'Sublime Sushi +1', target = 12 },
-    { name = { 'Red Curry Bun +1', 'Sublime Sushi +1' }, target = 12 },  -- alternates
-    { name = 'Panacea',          target = 12 },
-    { name = 'Holy Water',       target = 12 },
+    { name = 'Panacea', target = 12 },
+    { name = {'Sublime Sushi +1', 'Sublime Sushi'}, target = 12 },  -- +1 first, then the other
 }
-
-M.subjobs = {
-    SAM = { { name = 'Hi-Reraiser', target = 1 } },
+M.subjobs = {                   -- a different list for a subjob (optional)
+    DNC = { { name = 'Panacea', target = 12 } },
 }
-
 return M
 ```
 
-How it works:
+Consumables named only in another job's list are put back too. While a craft
+set is on, `config/craft/CRAFT_REFILL.lua` is used instead (Tetsouo template
+only).
 
-- The refill manager reads the active job/subjob config, compares against
-  current inventory, and pulls from `store_bag` to top up.
-- Surplus (more than `target`) gets pushed back to `store_bag`.
-- Items in your inventory but not in the active config are also pushed to
-  `store_bag` — keeps the inv lean for the active job.
-- When a craft set is active (`_G.__CraftManagerState.active`), the
-  manager swaps to `<Yourname>/config/craft/CRAFT_REFILL.lua` and shoves
-  everything else to Case.
+## Wardrobes (`WARDROBE_CONFIG.lua`, optional)
 
-Trigger with `//gs c rf` or `//gs c refill`.
-
----
-
-## Wardrobe layout
-
-`<Yourname>/config/WARDROBE_CONFIG.lua`:
+Without it, `//gs c wo` keeps the loaded job's gear in wardrobes 1-2 and pushes
+the rest to wardrobes 8, 6, 5, 4, 3 (in that order); wardrobe 7 is left alone.
+The file changes that with bag numbers (8 = wardrobe 1, 10 = 2, 11 = 3, 12 = 4,
+13 = 5, 14 = 6, 15 = 7, 16 = 8; 5 = satchel, 6 = sack, 7 = case):
 
 ```lua
 return {
-    PRIMARY_BAGS  = { 'wardrobe', 'wardrobe 2' },                    -- W1-W2 hold the active job's gear
-    OVERFLOW_BAGS = { 'wardrobe 3', 'wardrobe 4', 'wardrobe 5',
-                      'wardrobe 6', 'wardrobe 8' },                  -- W3-W6, W8
-    PROTECTED     = { 'wardrobe 7' },                                -- W7 reserved (e.g. craft gear)
+    SCOPE = 'active_job',                -- or 'all_jobs': every job's sets count
+    PRIMARY_BAGS  = {8, 10},
+    OVERFLOW_BAGS = {16, 14, 13, 12, 11},
+    KEEP_ITEMS    = {},                  -- items to keep in the main bags although no set names them
 }
 ```
 
-Used by `//gs c wo`. Per-character overrides let mains use 8 wardrobes
-and alts share fewer.
+The author's files are in `_master/Tetsouo/config_global/WARDROBE_CONFIG.lua`
+and `_master/Kaories/config_global/WARDROBE_CONFIG.lua`.
 
----
+## Sets (`<YourName>/sets/`)
 
-## UI overlay
-
-`<Yourname>/config/UI_CONFIG.lua` controls behavior; `<Yourname>/config/ui_settings.lua`
-holds position + toggles (auto-written by `//gs c ui save`).
-
-See [UI feature doc](../features/ui.md) for the full settings surface.
-
----
-
-## Custom states (extending a job)
-
-In your entry-point or in `<JOB>_STATES.lua`:
-
-```lua
-function user_setup()
-    state.MyCustomState = M{ 'Option1', 'Option2', 'Option3' }
-end
-```
-
-Then bind it in `<JOB>_KEYBINDS.lua`:
-
-```lua
-{ key = "!9", command = "cyclestate MyCustomState", desc = "My Custom", state = "MyCustomState" },
-```
-
-The UI overlay picks it up automatically because it iterates `state.*`.
-
----
-
-## Equipment sets
-
-`<Yourname>/sets/<job>_sets.lua` — see the
-[sets-editing rules](../../../.claude/rules/sets-editing.md) (private)
-for naming conventions, or read [the README's sets section](../../../README.md).
-Validate with `//gs c checksets`.
-
----
+`<job>_sets.lua` holds your gear. Item names must match the game exactly,
+augmented items need their exact `augments`, and a second copy of an item is
+told apart with `bag = 'wardrobe 2'` and so on. Check with `//gs c checksets`.
+The set names each job looks for are in the developer page of the job
+(section "Set names the code looks up", [docs/dev/jobs/](../../dev/README.md#jobs)).
 
 ## Troubleshooting
 
 | Symptom | Try |
-| --- | --- |
-| Edit doesn't apply | `//gs c reload`. If still nothing, check Windower console for Lua syntax errors and confirm the file path matches. |
-| Lockstyle silently fails | Increase `delay_after_load`. Verify DressUp is loaded. Check `by_subjob` key matches FFXI subjob spelling. |
-| Macrobook not changing | Verify the book/page exists in FFXI. Check subjob spelling. |
-| `//gs c rf` says "Need N more free slots" | The pre-check refuses to run if there isn't room to gather slips. Free 33 slots, then retry. |
-| `//gs c wo` stalls | `//gs c wo recover` re-enables every slot. |
+|---|---|
+| An edit does nothing | `//gs c reload`; look for a Lua error in the chat or console; check you edited `<YourName>/config/...`, not `_master/` |
+| Lockstyle ignores the subjob | The job's `_LOCKSTYLE.lua` has no `get_style` (see above) |
+| Macro book does not change | Check the book and page exist in game, and the subjob spelling (`'SAM'`) |
+| `//gs c wo` interrupted, slots locked | `//gs c wo recover` |

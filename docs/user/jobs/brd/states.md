@@ -1,259 +1,73 @@
-# BRD - States & Modes
-
-States control gear set selection and behavior toggles. Cycle them with keybinds or `//gs c cycle [StateName]`.
-
-**Config**: `Tetsouo/config/brd/BRD_KEYBINDS.lua`
-
----
-
-## States
-
-### IdleMode
-
-Controls idle gear focus when not engaged.
-
-| Option | Description |
-|--------|-------------|
-| `Refresh` | MP Refresh gear (Fili +3) |
-| `DT` | Damage Taken reduction (Nyame) |
-| `Regen` | HP Regen gear (Nyame) |
-
-**Default**: `DT`
-**Keybind**: Alt+1
-
----
-
-### EngagedMode
-
-Controls melee combat gear focus when engaged.
-
-| Option | Description |
-|--------|-------------|
-| `STP` | Store TP focus |
-| `Acc` | Accuracy for high evasion targets |
-| `DT` | Damage Taken reduction |
-| `SB` | Subtle Blow (reduce enemy TP gain) |
-
-**Default**: `STP`
-**Keybind**: Alt+2
-
----
-
-### SongMode
-
-Selects a pre-configured song rotation pack. Each pack defines which songs to cast automatically.
-
-| Option | Description |
-|--------|-------------|
-| `Dirge` | Honor + Min5/4 + Dirge |
-| `March` | Honor + Min5/4 + Victory + Scherzo |
-| `Madrigal` | Honor + Min5/4 + Madrigal + Victory |
-| `Minne` | Honor + Min5/4 + Minne + Victory |
-| `Etude` | Honor + Min5/4 + Etude + Victory |
-| `Tank` | Victory + Minne + Ballad rotation (for tanks) |
-| `Healer` | Victory + Minne + Ballad rotation (for healers) |
-| `Carol` | Honor + Min5/4 + Carol + Victory |
-| `Scherzo` | Honor + Min5/4 + Scherzo + Victory |
-| `Arebati` | Honor + Min5/4 + Scherzo + Victory |
-| `Ngai` | Honor + Minuet 5 + Water Carol II + Minne 5 + Scherzo |
-
-**Default**: `Ngai`
-**Keybind**: Alt+3
-
----
-
-### MainInstrument
-
-Selects which instrument to use for songs.
-
-| Option | Description |
-|--------|-------------|
-| `Gjallarhorn` | REMA horn (best song potency) |
-| `Daurdabla` | Dummy songs instrument |
-| `Marsyas` | Alternative horn |
-
-**Default**: `Gjallarhorn`
-**Keybind**: Alt+4
-
----
-
-### VictoryMarch
-
-Controls what replaces Victory March when Haste or Haste II is active.
-
-| Option | Description |
-|--------|-------------|
-| `Madrigal` | Replace with Blade Madrigal |
-| `Minuet` | Replace with Valor Minuet III |
-| `Etude` | Replace with the Etude matching EtudeType (Alt+8) |
-| `None` | Keep Victory March |
-
-**Default**: `Madrigal`
-**Keybind**: Alt+5
-
----
-
-### MainWeapon
-
-Selects the primary melee weapon.
-
-| Option | Description |
-|--------|-------------|
-| `Naegling` | Savage Blade sword |
-| `Twashtar` | Dagger |
-| `Carnwenhan` | REMA dagger |
-| `Mpu Gandring` | Dagger |
-
-**Default**: `Mpu Gandring`
-**Keybind**: Alt+6
-
----
-
-### SubWeapon
-
-Selects the offhand weapon or shield.
-
-| Option | Description |
-|--------|-------------|
-| `Kraken` | Kraken Club |
-| `Demersal` | Demersal Degen |
-| `Genmei` | Genmei Shield |
-| `Centovente` | Centovente |
-
-**Default**: `Genmei`
-**Keybind**: Alt+7
-
----
-
-### EtudeType
-
-Selects which stat buff Etude provides.
-
-| Option | Description |
-|--------|-------------|
-| `STR` | Strength |
-| `DEX` | Dexterity |
-| `VIT` | Vitality |
-| `AGI` | Agility |
-| `INT` | Intelligence |
-| `MND` | Mind |
-| `CHR` | Charisma |
-
-**Default**: `STR`
-**Keybind**: Alt+8
-
----
-
-### CarolElement
-
-Selects which element Carol provides resistance to.
-
-| Option | Description |
-|--------|-------------|
-| `Fire` | Fire resistance |
-| `Ice` | Ice resistance |
-| `Wind` | Wind resistance |
-| `Earth` | Earth resistance |
-| `Thunder` | Thunder resistance |
-| `Water` | Water resistance |
-
-**Default**: `Fire`
-**Keybind**: Alt+9
-
----
-
-### ThrenodyElement
-
-Selects which element Threnody debuffs resistance for.
-
-| Option | Description |
-|--------|-------------|
-| `Fire` | Fire resistance down |
-| `Ice` | Ice resistance down |
-| `Wind` | Wind resistance down |
-| `Earth` | Earth resistance down |
-| `Lightning` | Lightning resistance down |
-| `Water` | Water resistance down |
-| `Light` | Light resistance down |
-| `Dark` | Dark resistance down |
-
-**Default**: `Fire`
-**Keybind**: Alt+-
-
----
-
-### MarcatoSong
-
-Controls automatic Marcato usage before specific songs.
-
-| Option | Description |
-|--------|-------------|
-| `HonorMarch` | Auto-Marcato for Honor March with Nitro |
-| `AriaPassion` | Auto-Marcato for Aria of Passion with Nitro |
-| `Off` | Disable auto-Marcato |
-
-**Default**: `HonorMarch`
-**Keybind**: Alt+=
-
----
-
-### BRDSong1 through BRDSong5
-
-Display-only states showing the current song rotation slots. Automatically updated when SongMode changes. Not user-cyclable.
-
-**Default**: `Empty`
-**Keybind**: None
-
----
-
-### FastCast
-
-Internal numeric state used by the watchdog system to calculate cast time timeouts. Set to your total Fast Cast percentage from gear and traits. Cap is 80%.
-
-| Option | Description |
-|--------|-------------|
-| `0` through `80` | Fast Cast percentage (increments of 10) |
-
-**Default**: `80`
-**Keybind**: None
-
----
-
-## Quick Reference
-
-| State | Options | Default | Keybind |
-|-------|---------|---------|---------|
-| IdleMode | Refresh / DT / Regen | DT | Alt+1 |
-| EngagedMode | STP / Acc / DT / SB | STP | Alt+2 |
-| SongMode | Dirge / March / Madrigal / Minne / Etude / Tank / Healer / Carol / Scherzo / Arebati / Ngai | Ngai | Alt+3 |
-| MainInstrument | Gjallarhorn / Daurdabla / Marsyas | Gjallarhorn | Alt+4 |
-| VictoryMarch | Madrigal / Minuet / Etude / None | Madrigal | Alt+5 |
-| MainWeapon | Naegling / Twashtar / Carnwenhan / Mpu Gandring | Mpu Gandring | Alt+6 |
-| SubWeapon | Kraken / Demersal / Genmei / Centovente | Genmei | Alt+7 |
-| EtudeType | STR / DEX / VIT / AGI / INT / MND / CHR | STR | Alt+8 |
-| CarolElement | Fire / Ice / Wind / Earth / Thunder / Water | Fire | Alt+9 |
-| ThrenodyElement | Fire / Ice / Wind / Earth / Lightning / Water / Light / Dark | Fire | Alt+- |
-| MarcatoSong | HonorMarch / AriaPassion / Off | HonorMarch | Alt+= |
-| FastCast | 0-80 (by 10) | 80 | -- |
-
----
-
-## Configuration
-
-**Config files**: `Tetsouo/config/brd/`
-
-| File | Purpose |
-|------|---------|
-| `BRD_KEYBINDS.lua` | Keybind definitions |
-| `BRD_LOCKSTYLE.lua` | Lockstyle per subjob |
-| `BRD_MACROBOOK.lua` | Macrobook per subjob |
-| `BRD_STATES.lua` | State definitions |
-| `BRD_TP_CONFIG.lua` | TP and weaponskill settings |
-| `BRD_SONG_CONFIG.lua` | Song rotation configuration |
-| `BRD_TIMING_CONFIG.lua` | Song timing settings |
-
-**Lockstyle**: #7 (all subjobs)
-
-**Macrobook**: Book 40, Page 1 (default). WHM=Book 40/Page 1, RDM=Book 36/Page 1, NIN=Book 36/Page 1, DNC=Book 36/Page 1
-
-See [Configuration Guide](../../guides/configuration.md) for details on customizing lockstyle, macrobook, and keybinds.
+# BRD — modes and keys
+
+Bard sings a whole song pack with one command. The modes pick the pack, the instrument,
+what replaces Victory March, and the element of Carol and Threnody.
+
+Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each mode's
+current value; this page says what each value does. `#numpad0` (Auto Medicine) and
+Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybinds.md).
+
+## Keys
+
+| Key | Mode (state) | Values (default in **bold**) | What it does |
+|---|---|---|---|
+| Ctrl+Numpad4 `^numpad4` | `IdleMode` | Refresh, **DT**, Regen | Idle set |
+| Ctrl+Numpad5 `^numpad5` | `EngagedMode` | **STP**, Acc, DT, SB | Engaged set (Store TP, accuracy, damage taken, Subtle Blow) |
+| Ctrl+Numpad6 `^numpad6` | `SongMode` | Dirge, March, Madrigal, Minne, Etude, Tank, Healer, Carol, Scherzo, Arebati, **Ngai** | Song pack sung by `//gs c songs` (list below) |
+| Ctrl+Numpad3 `^numpad3` | `MainInstrument` | **Gjallarhorn**, Daurdabla, Marsyas | Instrument for buff songs that do not need a specific one |
+| Ctrl+Numpad7 `^numpad7` | `VictoryMarch` | **Madrigal**, Minuet, Etude, None | When you already have Haste, Victory March in the pack is replaced by Blade Madrigal, Valor Minuet III or the Etude of `EtudeType`. None keeps it |
+| Ctrl+Numpad1 `^numpad1` | `MainWeapon` | Naegling, Twashtar, Carnwenhan, **Mpu Gandring** | Main weapon |
+| Ctrl+Numpad2 `^numpad2` | `SubWeapon` | Kraken, Demersal, **Genmei**, Centovente | Off-hand |
+| Apps+Numpad1 `#numpad1` | `EtudeType` | **STR**, DEX, VIT, AGI, INT, MND, CHR | Etude sung by `//gs c etude` and by the Etude replacement |
+| Ctrl+Numpad0 `^numpad0` | `CarolElement` | **Fire**, Ice, Wind, Earth, Lightning, Water, Light, Dark | `//gs c carol` sings `<Element> Carol II` |
+| Ctrl+Numpad. `^numpad.` | `ThrenodyElement` | same eight, **Fire** | `//gs c threnody` casts `<Element> Threnody II` on `<stnpc>` |
+| Ctrl+Numpad8 `^numpad8` | `MarcatoSong` | **HonorMarch**, AriaPassion, Off | Marcato is used automatically before that song, only under Nightingale + Troubadour, without Soul Voice, and when Marcato is ready |
+
+BRD has no `HybridMode` key: Ctrl+Numpad9 is left free.
+
+## Song packs
+
+Defined in `BRD_SONG_CONFIG.lua` (edit it to change a pack):
+
+| Pack | Songs |
+|---|---|
+| Dirge | Honor March, Valor Minuet V, Valor Minuet IV, Adventurer's Dirge, Victory March |
+| March | Honor March, Valor Minuet V, Valor Minuet IV, Victory March, Sentinel's Scherzo |
+| Madrigal | Honor March, Valor Minuet V, Valor Minuet IV, Blade Madrigal, Victory March |
+| Minne | Honor March, Valor Minuet V, Valor Minuet IV, Knight's Minne V, Victory March |
+| Etude | Honor March, Valor Minuet V, Valor Minuet IV, Herculean Etude, Victory March |
+| Tank / Healer | Victory March, Knight's Minne V, Mage's Ballad III, Mage's Ballad II, Sentinel's Scherzo |
+| Carol | Honor March, Valor Minuet V, Valor Minuet IV, Fire Carol II, Victory March |
+| Scherzo | Honor March, Valor Minuet V, Valor Minuet IV, Sentinel's Scherzo, Victory March |
+| Arebati | Adventurer's Dirge, Honor March, Valor Minuet V, Valor Minuet IV, Knight's Minne V |
+| Ngai | Honor March, Valor Minuet V, Water Carol II, Knight's Minne V, Sentinel's Scherzo |
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `//gs c songs` (`melee`, `meleesong`, `allsongs`) | Sings the pack on yourself: real songs, two dummy songs, then the last real songs over the dummies. 4 songs, or 5 under Clarion Call |
+| `//gs c song1` … `song5` | Sings one song of the pack (after the Victory March replacement) |
+| `//gs c dummy` (`dummysongs`), `dummy1`, `dummy2` | Dummy songs only |
+| `//gs c carol` / `etude` / `threnody` | Carol / Etude / Threnody from the modes above |
+| `//gs c lullaby`, `lullaby2` (`foe`), `elegy`, `requiem` | Horde Lullaby, Foe Lullaby II, Carnage Elegy, Foe Requiem VII on `<stnpc>` |
+| `//gs c nt` | Nightingale, then Troubadour |
+| `//gs c sv` / `ni` / `tr` / `ma` / `pi` | Soul Voice / Nightingale / Troubadour / Marcato / Pianissimo (`soul_voice`, `nightingale`, `troubadour`, `marcato`, `pianissimo` work too) |
+| `//gs c forceidle` | Re-enables ring1 and puts the idle set's left ring back on |
+
+## Notes
+
+- A song aimed at another player gets Pianissimo automatically.
+- The HUD shows your five current songs (`BRDSong1`-`5`, display only).
+- `FastCast` (default 80, no key) is your Fast Cast %, used by the midcast watchdog (`//gs c cycle FastCast`, or its default in `BRD_STATES.lua`).
+- Tetsouo's own folder changes the defaults: SongMode Madrigal, VictoryMarch Etude,
+  MainWeapon list Mpu Gandring / Naegling, SubWeapon list Kraken / Centovente / Genmei
+  (default Kraken).
+
+## Files
+
+`<Char>/config/brd/`: `BRD_STATES.lua`, `BRD_KEYBINDS.lua`, `BRD_CUSTOM.lua` (your own
+modes and keys, see [keybinds](../../guides/keybinds.md)), `BRD_SONG_CONFIG.lua` (packs,
+dummy songs), `BRD_TIMING_CONFIG.lua`, `BRD_LOCKSTYLE.lua` (style 7), `BRD_MACROBOOK.lua`
+(book 40 page 1 by default, other books per subjob and per dual-box partner job),
+`BRD_TP_CONFIG.lua`.

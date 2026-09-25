@@ -1,7 +1,7 @@
 # BRD (Bard) job
 
 The BRD job area is 11 hook modules plus 5 logic modules under
-`shared/jobs/brd/functions/` (2 384 lines), one entry point, seven config
+`shared/jobs/brd/functions/` (2 379 lines), one entry point, eight config
 files, one sets file and a song database. GearSwap loads it when the main job
 becomes BRD (`Tetsouo_BRD.lua`). From then on Mote-Include calls its hooks on
 every action (precast, midcast, aftercast), on status and buff changes, on
@@ -28,53 +28,59 @@ What BRD adds on top of the shared pipeline:
 
 Every file in scope was read in full except the gear content of the sets files
 and the song databases (structure and names only; gear choice is out of scope).
-All line numbers refer to the working tree on 2026-09-19.
+Line numbers were rechecked against the working tree on 2026-09-25; where a
+line number added nothing, the function name is cited instead.
 
 ## Files
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_BRD.lua` | 261 | Entry point (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
-| `shared/jobs/brd/functions/brd_functions.lua` | 88 | Facade: includes the 11 hook files, requires `dualbox_manager` |
-| `shared/jobs/brd/functions/BRD_PRECAST.lua` | 296 | `job_precast` (guard, refinement, cooldown, Pianissimo, Marcato, WS, instrument lock) / `job_post_precast` (TP gear, precast debug) |
-| `shared/jobs/brd/functions/BRD_MIDCAST.lua` | 134 | `job_midcast` (empty), `job_customize_midcast_set` (passthrough), `job_post_midcast` (context + skill dispatch) |
+| `_master/entry/Tetsouo_BRD.lua` | 291 | Entry point (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
+| `shared/jobs/brd/functions/brd_functions.lua` | 85 | Facade: includes the 11 hook files, requires `dualbox_manager` |
+| `shared/jobs/brd/functions/BRD_PRECAST.lua` | 313 | `job_precast` (guard, refinement, cooldown, Pianissimo, Marcato, WS, instrument lock) / `job_post_precast` (TP gear, precast debug) |
+| `shared/jobs/brd/functions/BRD_MIDCAST.lua` | 145 | `job_midcast` (empty), `job_customize_midcast_set` (passthrough), `job_post_midcast` (context + skill dispatch) |
 | `shared/jobs/brd/functions/BRD_AFTERCAST.lua` | 69 | `job_aftercast`: watchdog, clears the Pianissimo flag and the instrument lock |
-| `shared/jobs/brd/functions/BRD_IDLE.lua` | 43 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
-| `shared/jobs/brd/functions/BRD_ENGAGED.lua` | 43 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
-| `shared/jobs/brd/functions/BRD_STATUS.lua` | 19 | `job_status_change = LifecycleManager.status_change()` |
+| `shared/jobs/brd/functions/BRD_IDLE.lua` | 42 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
+| `shared/jobs/brd/functions/BRD_ENGAGED.lua` | 42 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
+| `shared/jobs/brd/functions/BRD_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/brd/functions/BRD_BUFFS.lua` | 19 | `job_buff_change = LifecycleManager.buff_change()` |
-| `shared/jobs/brd/functions/BRD_COMMANDS.lua` | 543 | `job_self_command` router, `job_state_change = LifecycleManager.state_change()` |
-| `shared/jobs/brd/functions/BRD_MOVEMENT.lua` | 59 | `get_brd_movement_status`, `job_handle_equipping_gear` (instrument lock) |
-| `shared/jobs/brd/functions/BRD_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('BRD', ..., 1, 'WHM')` wrappers |
-| `shared/jobs/brd/functions/BRD_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('BRD', ..., 'WHM', 1, 1)` wrapper |
-| `shared/jobs/brd/functions/logic/midcast_router.lua` | 261 | Per-skill midcast handlers (Singing, Healing, Enhancing, Enfeebling, Elemental), locked instrument and `MainInstrument` |
-| `shared/jobs/brd/functions/logic/song_rotation_manager.lua` | 301 | Pack lookup, Victory March replacement, HUD slots, rotations, required instrument |
-| `shared/jobs/brd/functions/logic/song_refinement.lua` | 113 | `refine_song(spell, eventArgs)` |
+| `shared/jobs/brd/functions/BRD_COMMANDS.lua` | 540 | `job_self_command` router, `job_state_change = LifecycleManager.state_change()` |
+| `shared/jobs/brd/functions/BRD_MOVEMENT.lua` | 57 | `get_brd_movement_status`, `job_handle_equipping_gear` (instrument lock) |
+| `shared/jobs/brd/functions/BRD_LOCKSTYLE.lua` | 55 | Lazy `LockstyleManager.create('BRD', ..., 1, 'WHM')` wrappers |
+| `shared/jobs/brd/functions/BRD_MACROBOOK.lua` | 49 | Lazy `MacrobookManager.create('BRD', ..., 'WHM', 1, 1)` wrapper |
+| `shared/jobs/brd/functions/logic/midcast_router.lua` | 271 | Per-skill midcast handlers (Singing, Healing, Enhancing, Enfeebling, Elemental), locked instrument and `MainInstrument` |
+| `shared/jobs/brd/functions/logic/song_rotation_manager.lua` | 269 | Pack lookup, Victory March replacement, HUD slots, rotations; `get_required_instrument` delegates to `InstrumentLockConfig.get_instrument` (since 2026-09-25 there is one song-to-instrument table) |
+| `shared/jobs/brd/functions/logic/song_refinement.lua` | 115 | `refine_song(spell, eventArgs)` |
 | `shared/jobs/brd/functions/logic/instrument_lock_config.lua` | 70 | `LOCKED_SONGS` (Honor March, Aria of Passion) |
-| `shared/jobs/brd/functions/logic/set_builder.lua` | 217 | Idle/engaged construction (town, IdleMode, EngagedMode, Kraken Club, weapons, movement) |
-| `_master/config/brd/BRD_STATES.lua` | 246 | All states (`BRDStates.configure()`), unused `validate()` |
-| `_master/config/brd/BRD_KEYBINDS.lua` | 137 | 12 numpad binds, `bind_all` / `unbind_all` / `show_intro` |
-| `_master/config/brd/BRD_SONG_CONFIG.lua` | 292 | Packs, dummy songs, Etudes, Victory March replacement, short names, refinement tiers |
-| `_master/config/brd/BRD_TIMING_CONFIG.lua` | 159 | Song and ability delays, `get_song_delay` |
+| `shared/jobs/brd/functions/logic/set_builder.lua` | 218 | Idle/engaged construction (town, IdleMode, EngagedMode, Kraken Club, weapons, movement) |
+| `_master/config/brd/BRD_STATES.lua` | 257 | All states (`BRDStates.configure()`), unused `validate()` |
+| `_master/config/brd/BRD_KEYBINDS.lua` | 59 | 12 numpad binds, data only; `KeybindManager.create('BRD', ...)` adds `bind_all` / `unbind_all` / `show_intro` (see [keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `_master/config/brd/BRD_CUSTOM.lua` | 118 | Player modes and gear rules (all examples commented out), read through `KeybindManager` |
+| `_master/config/brd/BRD_SONG_CONFIG.lua` | 293 | Packs, dummy songs, Etudes, Victory March replacement, short names, refinement tiers |
+| `_master/config/brd/BRD_TIMING_CONFIG.lua` | 160 | Song and ability delays, `get_song_delay` |
 | `_master/config/brd/BRD_TP_CONFIG.lua` | 70 | `_G.BRDTPConfig` (Moonshade, Aeneas, Centovente) |
 | `_master/config/brd/BRD_LOCKSTYLE.lua` | 26 | `default = 7`, `by_subjob` |
-| `_master/config/brd/BRD_MACROBOOK.lua` | 45 | Book/page per subjob and per dual-box partner job |
+| `_master/config/brd/BRD_MACROBOOK.lua` | 46 | Book/page per subjob and per dual-box partner job |
 | `_master/Tetsouo/config/brd/BRD_REFILL.lua` | 35 | Refill template (Tetsouo) |
-| `_master/sets/brd_sets.lua` | 501 | Template sets (flat) |
-| `shared/utils/messages/formatters/jobs/message_brd.lua` + `data/jobs/brd_messages.lua` | 511 + 292 | BRD chat messages (JA, instrument lock, packs, refinement, errors) |
-| `shared/utils/messages/formatters/magic/message_precast.lua` | 133 | `debugprecast` output used by `job_post_precast` |
+| `_master/sets/brd_sets.lua` | 505 | Template sets (flat) |
+| `shared/utils/messages/formatters/jobs/message_brd.lua` + `data/jobs/brd_messages.lua` | 513 + 269 | BRD chat messages (JA, instrument lock, packs, refinement, errors) |
+| `shared/utils/messages/formatters/magic/message_precast.lua` | 135 | `debugprecast` output used by `job_post_precast` |
 | `shared/data/magic/BRD_SPELL_DATABASE.lua` (+ `song/song_buffs`, `song_debuffs`, `song_special`) | 181 (+ 893, 426, 49) | Song descriptions and elements for the midcast "Spell Activated" line |
 | `shared/data/job_abilities/BRD_JA_DATABASE.lua` | 13 | `JA_DATABASE_FACTORY.create('BRD')` for ability messages |
 
 Live copies (gitignored): `Tetsouo/Tetsouo_BRD.lua` (identical to the template
-except line 261 includes `sets/brd/brd_sets.lua`), `Tetsouo/config/brd/*`
-(identical except `BRD_MACROBOOK.lua`, whose books are 7/8 instead of 31-40, and
+except `@file` and line 270, which includes `sets/brd/brd_sets.lua`),
+`Tetsouo/config/brd/*` (identical except `BRD_MACROBOOK.lua`, whose books are
+7/8 instead of 31-40, and
 `BRD_STATES.lua`: `SongMode` default `Madrigal`, `VictoryMarch` default `Etude`,
 `MainWeapon` = Mpu Gandring/Naegling, `SubWeapon` = Kraken/Centovente/Genmei with
 default `Kraken`), `Tetsouo/config/brd/BRD_REFILL.lua` (identical to its
 template), `Tetsouo/sets/brd/{brd_sets,armor,capes,instruments,weapons}.lua`
-(modular, 417 + 89 + 54 + 37 + 41 lines). `Kaories/` and `_master/Kaories/`
-contain no BRD files.
+(modular, 415 + 89 + 54 + 38 + 41 lines). The Tetsouo overlay
+(`_master/Tetsouo/entry/Tetsouo_BRD.lua`,
+`_master/Tetsouo/config/brd/{BRD_MACROBOOK,BRD_REFILL,BRD_STATES}.lua`,
+`_master/Tetsouo/sets/brd/`) holds the same live versions. `Kaories/` and
+`_master/Kaories/` contain no BRD files.
 
 ## How it works
 
@@ -86,58 +92,62 @@ sequenceDiagram
     participant E as Tetsouo_BRD.lua
     participant M as Mote-Include
     participant F as brd_functions.lua
-    GS->>E: run chunk (LOCKSTYLE_CONFIG, UIConfig, REGION_CONFIG, lines 42-63)
+    GS->>E: run chunk (LOCKSTYLE_CONFIG, UIConfig, REGION_CONFIG, lines 42-65)
     GS->>E: get_sets()
-    E->>E: _G.LockstyleConfig, RECAST_CONFIG, BRDTPConfig, BRDSongConfig, BRDTimingConfig (73-77)
-    E->>E: require song_rotation_manager (81) - defines _G.update_brd_song_slots
-    E->>M: include Mote-Include (84)
+    E->>E: _G.LockstyleConfig, RECAST_CONFIG, BRDTPConfig, BRDSongConfig, BRDTimingConfig (78-82)
+    E->>E: require song_rotation_manager (86) - defines _G.update_brd_song_slots
+    E->>M: include Mote-Include (89)
     M->>E: user_setup() (states, keybinds, UI, JCM, 0.2 s macro/lockstyle, song slots, dualbox)
-    M->>E: init_gear_sets() -> include sets file (261)
-    E->>E: INIT_SYSTEMS (87), data_loader, message hooks (93-111)
-    E->>E: JobChangeManager.cancel_all() (115-118)
-    E->>F: include brd_functions.lua (121)
-    F->>F: include 11 hook files, require dualbox_manager (81)
-    E->>E: register_lockstyle_cancel("BRD", ...) (125-127)
+    M->>E: init_gear_sets() -> include sets file (270)
+    E->>E: INIT_SYSTEMS (92), data_loader, message hooks (98-116)
+    E->>E: JobChangeManager.cancel_all() (120-123)
+    E->>F: include brd_functions.lua (126)
+    F->>F: include 11 hook files, require dualbox_manager (80)
+    E->>E: register_lockstyle_cancel("BRD", ...) (130-132)
 ```
 
 BRD is the only one of BRD/GEO/COR that publishes its configs **before**
-`include('Mote-Include.lua')` (`Tetsouo_BRD.lua:72-77`, comment: "BEFORE
+`include('Mote-Include.lua')` (`Tetsouo_BRD.lua:77-82`, comment: "BEFORE
 Mote-Include so they're available in user_setup"). The eager `require` of the
-rotation manager (81) runs before `INIT_SYSTEMS` installs the module cache, so
+rotation manager (86) runs before `INIT_SYSTEMS` installs the module cache, so
 that instance is not cached; the command and midcast modules later load a second
 instance, which re-points `_G.update_brd_song_slots`
-(`song_rotation_manager.lua:299`). Both instances are stateless apart from the
+(`song_rotation_manager.lua:267`). Both instances are stateless apart from the
 config tables they captured at load (`:16-17`), so the duplication is harmless.
 
-`user_setup()` (`Tetsouo_BRD.lua:158-217`):
+`user_setup()` (`Tetsouo_BRD.lua:168-238`):
 
-1. `BRDStates.configure()` (163-164) creates every state (see
+1. `BRDStates.configure()` (173-174) creates every state (see
    [Mote states](#mote-states)).
-2. `require('Tetsouo/config/brd/BRD_KEYBINDS')`, stored in the global
-   `BRDKeybinds`, then `bind_all()` (12 binds). Unlike BLM/GEO/COR, BRD's
-   `show_intro()` does not require the macrobook/lockstyle wrappers
-   (`BRD_KEYBINDS.lua:126-130`).
-3. `KeybindUI.smart_init("BRD", init_delay)` (178-182).
+2. `require('Tetsouo/config/brd/BRD_KEYBINDS')`, which returns
+   `KeybindManager.create('BRD', ...)` (the player's `BRD_CUSTOM.lua` keys and
+   the character's `config/COMMON_KEYBINDS.lua` keys are appended there),
+   stored in the global `BRDKeybinds`, then `bind_all()` (12 BRD binds plus
+   the common ones), which also calls `show_intro()`. Since 2026-09-24 every
+   job's `show_intro` is `KeybindManager`'s, which `require`s the macrobook and
+   lockstyle wrappers like BLM/GEO/COR did before. A failed require prints
+   the Lua error (`'[BRD] Keybinds failed to load: ' .. tostring(keybinds)`).
+3. `KeybindUI.smart_init("BRD", init_delay)` (198-202).
 4. `JobChangeManager.initialize()`, then a 0.2 s coroutine that calls
    `select_default_macro_book()` and schedules `select_default_lockstyle` after
-   `LockstyleConfig.initial_load_delay` (187-200). Because the check runs 0.2 s
+   `LockstyleConfig.initial_load_delay` (207-220). Because the check runs 0.2 s
    later, after `get_sets()` has finished and the facade has defined both
-   globals, this block works on a fresh load (the synchronous version in 11
-   other templates does not, see
+   globals, this block does not depend on the side effect of `show_intro`
+   that the synchronous version in the other templates relies on (see
    [core lifecycle](../systems/core-lifecycle.md)).
-5. `_G.update_brd_song_slots()` after `UIConfig.init_delay + 0.5` s (205-209),
+5. `_G.update_brd_song_slots()` after `UIConfig.init_delay + 0.5` s (225-229),
    so the HUD song rows show the pack.
-6. `pcall(require, 'shared/utils/dualbox/dualbox_manager')` (216).
+6. `pcall(require, 'shared/utils/dualbox/dualbox_manager')` (237).
 
-`brd_functions.lua` includes `BRD_LOCKSTYLE`, `BRD_MACROBOOK` (35-36),
-`BRD_PRECAST`, `BRD_MIDCAST`, `BRD_AFTERCAST` (42-46), `BRD_IDLE`, `BRD_ENGAGED`
-(53-55), `BRD_STATUS`, `BRD_BUFFS` (62-64), `BRD_COMMANDS`, `BRD_MOVEMENT`
-(71-73), requires `dualbox_manager` (81) and prints a debug line (83-84). BRD
+`brd_functions.lua` includes `BRD_LOCKSTYLE`, `BRD_MACROBOOK` (34-35),
+`BRD_PRECAST`, `BRD_MIDCAST`, `BRD_AFTERCAST` (41-45), `BRD_IDLE`, `BRD_ENGAGED`
+(52-54), `BRD_STATUS`, `BRD_BUFFS` (61-63), `BRD_COMMANDS`, `BRD_MOVEMENT`
+(70-72), requires `dualbox_manager` (80) and prints a debug line (82-83). BRD
 does not include `message_buffs.lua` (BLM, GEO and COR do).
 
 ### Precast
 
-`job_precast` (`BRD_PRECAST.lua:183-230`):
+`job_precast` (`BRD_PRECAST.lua:205-252`):
 
 ```mermaid
 flowchart TD
@@ -162,32 +172,32 @@ flowchart TD
     L -- yes --> K[equip instrument, set lock globals, message]
 ```
 
-- Refinement runs first on purpose; the comment at `BRD_PRECAST.lua:190-194`
+- Refinement runs first on purpose; the comment at `BRD_PRECAST.lua:212-216`
   records why (checking the cooldown first would cancel the song before it can
   be downgraded).
-- `CooldownChecker` (199-205) and the cancel check (207) come next, then the
-  Pianissimo and Marcato insertions (211-219): both spend a job ability and
+- `CooldownChecker` (221-227) and the cancel check (229) come next, then the
+  Pianissimo and Marcato insertions (236-241): both spend a job ability and
   re-send the song, so a song on recast is refused before either is sent
   (until 2026-09-19 they ran before the cooldown check and wasted the
   ability).
 - `WSPrecastHandler.handle` is called for every action; it returns true at once
-  for anything that is not a weaponskill (`ws_precast_handler.lua:35-38`).
-- `job_post_precast` (237-282) applies the stored TP gear. With
+  for anything that is not a weaponskill (`ws_precast_handler.lua:48-49`).
+- `job_post_precast` (259-299) applies the stored TP gear. With
   `_G.PrecastDebugState` (`//gs c debugprecast`) and a spell it prints which
   precast set it believes Mote chose. It tests `sets.precast.BardSong` first,
   but Mote itself never reads that key (it reads `sets.precast.FC[...]`,
-  `Mote-Include.lua:643-673`). Lines 243-246 are an empty `if`.
+  `Mote-Include.lua:643-673`).
 - Mote's default precast for a song is `sets.precast.FC` refined by name, spell
   map, skill `Singing` or type `BardSong` inside `FC` (`Mote-Include.lua:929-951`).
 
 ### Song refinement
 
-`SongRefinement.refine_song` (`song_refinement.lua:41-94`) applies only to
-`BardSong` whose name contains Lullaby, Elegy, Requiem or Threnody (28-35) and
+`SongRefinement.refine_song` (`song_refinement.lua:43-96`) applies only to
+`BardSong` whose name contains Lullaby, Elegy, Requiem or Threnody (30-37) and
 only while `BRDSongConfig.SONG_REFINE.enabled`. When the spell's recast is above
 0 it cancels the cast and either sends the mapped spell with
-`input /ma "<tier>" <target id>` (73-76; the raw id keeps the sub-target the
-player picked, comment 70-72) and prints `song_refinement`, or, with no mapping,
+`input /ma "<tier>" <target id>` (75-78; the raw id keeps the sub-target the
+player picked, comment 72-74) and prints `song_refinement`, or, with no mapping,
 cancels and prints `song_refinement_failed`. The mapping is
 `BRD_SONG_CONFIG.lua:269-289`: Horde Lullaby -> Horde Lullaby II (an upgrade),
 Foe Lullaby II -> Foe Lullaby, Carnage Elegy -> Battlefield Elegy, Foe Requiem
@@ -196,7 +206,7 @@ pair is `Ltng. Threnody II` -> `Ltng. Threnody`, the resource names).
 
 ### Pianissimo and Marcato
 
-- **Pianissimo** (`job_precast_bardsong`, 79-109): when the song's target is
+- **Pianissimo** (`job_precast_bardsong`, 85-125): when the song's target is
   another character that is a PC (`spawn_type == 13`), in party or in alliance,
   and not charmed, and Pianissimo is not active, it sets
   `_G.pianissimo_in_progress`, cancels the cast, sends
@@ -210,14 +220,16 @@ pair is `Ltng. Threnody II` -> `Ltng. Threnody`, the resource names).
   `on_abort` callback clears it, since a refused song produces no aftercast
   and the flag would otherwise make every later ally-targeted song skip
   Pianissimo until one was sung on self.
-- **Marcato** (`try_marcato`, 151-181): only for the song named by
+- **Marcato** (`try_marcato`, 169-198): only for the song named by
   `state.MarcatoSong` (`HonorMarch` -> Honor March, `AriaPassion` -> Aria of
   Passion), not on another player, only with Nightingale **and** Troubadour, not
   under Soul Voice or an active Marcato, and only when Marcato's recast (id 48)
   is 0. It cancels, sends `input /ja "Marcato" <me>` then
-  `wait 2; input /ma "<song>" <me>`. `show_marcato_honor_march` is a no-op
-  (`message_brd.lua:100-107`, "DISABLED: Too verbose").
-- Commands do not send Marcato themselves: `cast_song` (`BRD_COMMANDS.lua:115-118`)
+  `wait 2; input /ma "<song>" <me>`. It prints nothing of its own: the empty
+  `show_marcato_honor_march` / `show_song_cast` wrappers and their calls in
+  `BRD_PRECAST` / `BRD_COMMANDS` were removed on 2026-09-25 (not yet run in
+  game).
+- Commands do not send Marcato themselves: `cast_song` (`BRD_COMMANDS.lua:114-117`)
   only picks the target, and the song reaches `try_marcato` in precast like any
   other cast. The command-side copy (`try_marcato_auto_cast`) was removed on
   2026-09-19 because it sent Marcato before the song's recast was checked.
@@ -226,7 +238,7 @@ pair is `Ltng. Threnody II` -> `Ltng. Threnody`, the resource names).
 
 `InstrumentLockConfig.LOCKED_SONGS` (`instrument_lock_config.lua:33-36`) maps
 Honor March to Marsyas and Aria of Passion to Loughnashade. At the end of
-precast (`BRD_PRECAST.lua:227-229`, `job_precast_bardsong_2` 112-125) the
+precast (`BRD_PRECAST.lua:249-251`, `job_precast_bardsong_2` 130-143) the
 instrument is equipped in `range` and `_G.casting_locked_song`,
 `_G.locked_song_name`, `_G.locked_instrument` are set. Midcast re-applies it
 after `MidcastManager` (`midcast_router.lua:189-195`). Aftercast clears the
@@ -240,7 +252,7 @@ not set `eventArgs.handled`, so Mote equips the full status set right after it
 
 `state.MainInstrument` (`^numpad3`: Gjallarhorn, Daurdabla, Marsyas) picks the
 instrument of every normal song that has no required instrument.
-`apply_main_instrument` (`midcast_router.lua:160-176`) runs at the end of
+`apply_main_instrument` (`midcast_router.lua:160-178`) runs at the end of
 `equip_normal_song`, after `MidcastManager` and only when the locked-instrument
 override did not apply, and equips `{range = sets.midcast.Songs[<value>].range}`:
 
@@ -262,30 +274,30 @@ precast keeps the Fast Cast set's instrument.
 - `get_current_pack()` (`song_rotation_manager.lua:28-42`) returns
   `SONG_PACKS[state.SongMode.current]`, or the `March` pack with a
   `pack_not_found` message.
-- `get_songs_with_replacement()` (60-87) copies the pack and, when
+- `get_songs_with_replacement()` (`song_rotation_manager.lua:60-87`) copies the pack and, when
   `VICTORY_MARCH_REPLACE.enabled` and Haste or Haste II is active, replaces the
   first Victory March by `replacements[state.VictoryMarch]` (Blade Madrigal,
   Valor Minuet III), or by the Etude of `state.EtudeType` for `Etude`; `None`
   has no entry and keeps Victory March (comment `BRD_SONG_CONFIG.lua:178-180`).
-- `cast_songs_with_phases(false, '<me>')` (216-267): 4 songs without Clarion
+- `cast_songs_with_phases(false, '<me>')` (185-235): 4 songs without Clarion
   Call (songs 1-2, dummies 1-2, songs 3-4), 5 with it (songs 1-3, dummies 1-2,
   songs 4-5). Each cast is a `send_command('wait <t>; input /ma ...')` spaced by
   `BRDTimingConfig.get_song_delay(NI, TR, false)`: 6.0 s normally, 2.5 s under
-  Nightingale + Troubadour (`BRD_TIMING_CONFIG.lua:20-29,93-106`). The
-  `marcato_used` argument is always `false` (228).
-- `cast_dummy_songs()` (271-292) casts 4 or 5 dummies from
+  Nightingale + Troubadour (`BRD_TIMING_CONFIG.lua:23-28,99-112`). The
+  `marcato_used` argument is always `false` (196).
+- `cast_dummy_songs()` (239-260) casts 4 or 5 dummies from
   `DUMMY_SONGS.standard`.
 - `update_song_slots()` (102-117) writes short names into `state.BRDSong1..5`
   by assigning `.value` and `.current` directly (Mote's `M{}` has no
   `__newindex`, `Modes.lua:187-218`, so these become raw fields). It runs from
-  `job_update` (`Tetsouo_BRD.lua:227-229`) and once after load (205-209).
+  `job_update` (`Tetsouo_BRD.lua:251-253`) and once after load (225-229).
   `UI_LOADER.lua:100-110` appends the five display rows.
 
 ### Midcast
 
 Mote first equips its default midcast set (spell name, spell map, skill,
 type `BardSong`, `CastingMode`), then calls `job_post_midcast`
-(`BRD_MIDCAST.lua:76-119`), which notifies `MidcastWatchdog`, builds a context
+(`BRD_MIDCAST.lua:87-130`), which notifies `MidcastWatchdog`, builds a context
 (`debug_enabled`, formatter, `BRD_SPELL_DATABASE`, `ENHANCING_MAGIC_DATABASE.get_spell_family`)
 and dispatches on `spell.skill`:
 
@@ -308,26 +320,26 @@ flowchart TD
   instrument layer calls `_G.SongRotationManager.get_required_instrument`,
   published by `BRD_MIDCAST.lua:48-50` on first midcast.
 - Dummy detection reads `BRDSongConfig.DUMMY_SONGS.standard`
-  (`midcast_router.lua:59-71`); debuff detection uses `match` on the names at
-  44-51 and on Lullaby/Threnody (74-88).
+  (`midcast_router.lua` `is_dummy_song`); debuff detection uses `match` on
+  the names in `DEBUFF_SONGS` and on Lullaby/Threnody (`is_no_weapon_song`).
 - Enhancing passes `get_enhancing_target` (Composure) and the enhancing family
-  database (211-219); Healing, Enfeebling and Elemental pass only the skill.
-  `select_set` returns false when `sets.midcast[skill]` is missing
-  (`midcast_manager.lua:620-629`), which is the case for Healing, Enfeebling and
+  database (`Router.handle_enhancing`); Healing, Enfeebling and Elemental pass
+  only the skill. `select_set` returns false when `sets.midcast[skill]` is
+  missing (`midcast_manager.lua:637-640`), which is the case for Healing, Enfeebling and
   Elemental in both BRD set files (see [Set names](#set-names-the-code-looks-up)).
-- `job_customize_midcast_set` (`BRD_MIDCAST.lua:71-73`) is exported but Mote
+- `job_customize_midcast_set` (`BRD_MIDCAST.lua:78-80`) is exported but Mote
   never calls a hook of that name (no match in `libs/Mote-*.lua`).
 
 ### Aftercast, idle, engaged, status, buffs
 
 - `job_aftercast` (`BRD_AFTERCAST.lua:24-61`): watchdog, Pianissimo flag,
   instrument lock (above). Mote then re-equips idle/engaged gear.
-- `customize_idle_set` -> `SetBuilder.build_idle_set` (`set_builder.lua:191-211`):
+- `customize_idle_set` -> `SetBuilder.build_idle_set` (`set_builder.lua:192-212`):
   town (`sets.Adoulin` in Adoulin, `sets.idle.Town` in other cities, Dynamis
-  excluded, `base_set_builder.lua:62-82`) else `sets.idle[state.IdleMode]`
-  (34-51) -> `sets[MainWeapon]` and `sets[SubWeapon]` (97-146) -> `sets.MoveSpeed`
+  excluded, `base_set_builder.lua` `select_idle_base_town`) else `sets.idle[state.IdleMode]`
+  (35-52) -> `sets[MainWeapon]` and `sets[SubWeapon]` (98-147) -> `sets.MoveSpeed`
   when moving outside town.
-- `customize_melee_set` -> `build_engaged_set` (162-177): `sets.engaged.PDTKC`
+- `customize_melee_set` -> `build_engaged_set` (163-178): `sets.engaged.PDTKC`
   when the **currently worn** sub is Kraken Club (69-74), else
   `sets.engaged[state.EngagedMode]`, else Mote's base -> weapons -> movement
   (BRD is the only job of the three that adds movement gear while engaged).
@@ -336,38 +348,42 @@ flowchart TD
 
 ## Mote states
 
-Created by `BRDStates.configure()` (`_master/config/brd/BRD_STATES.lua:39-211`)
-on every `user_setup()`. Keys from `BRD_KEYBINDS.lua:26-57`; `^` = Ctrl, `#` =
-Apps.
+Created by `BRDStates.configure()` (`_master/config/brd/BRD_STATES.lua:45-218`)
+on every `user_setup()`. Keys from `BRD_KEYBINDS.lua:24-54`; `^` = Ctrl, `#` =
+Apps. `#numpad0` (AutoMedicine) comes from the character's
+`config/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
-| `IdleMode` | Refresh, DT, Regen | DT | `^numpad4` | Mote `get_idle_set` (`sets.idle[IdleMode]`), `set_builder.lua:42-47` |
-| `EngagedMode` | STP, Acc, DT, SB | STP | `^numpad5` | `set_builder.lua:77-84` |
-| `SongMode` | Dirge, March, Madrigal, Minne, Etude, Tank, Healer, Carol, Scherzo, Arebati, Ngai | Ngai (live Madrigal) | `^numpad6` | `song_rotation_manager.lua:29-41,256` |
-| `MainInstrument` | Gjallarhorn, Daurdabla, Marsyas | Gjallarhorn | `^numpad3` | `midcast_router.lua:160-176` (range of normal songs with no required instrument) |
+| `IdleMode` | Refresh, DT, Regen | DT | `^numpad4` | Mote `get_idle_set` (`sets.idle[IdleMode]`), `set_builder.lua:43-48` |
+| `EngagedMode` | STP, Acc, DT, SB | STP | `^numpad5` | `set_builder.lua:78-85` |
+| `SongMode` | Dirge, March, Madrigal, Minne, Etude, Tank, Healer, Carol, Scherzo, Arebati, Ngai | Ngai (live Madrigal) | `^numpad6` | `song_rotation_manager.lua` `get_current_pack` |
+| `MainInstrument` | Gjallarhorn, Daurdabla, Marsyas | Gjallarhorn | `^numpad3` | `midcast_router.lua:160-178` (range of normal songs with no required instrument) |
 | `VictoryMarch` | Madrigal, Minuet, Etude, None | Madrigal (live Etude) | `^numpad7` | `song_rotation_manager.lua:46-56` |
 | `EtudeType` | STR, DEX, VIT, AGI, INT, MND, CHR | STR | `#numpad1` | `etude` command, `VictoryMarch = Etude` |
-| `CarolElement` | Fire, Ice, Wind, Earth, Lightning, Water, Light, Dark | Fire | `^numpad0` | `carol` (`BRD_COMMANDS.lua:133-135`) |
+| `CarolElement` | Fire, Ice, Wind, Earth, Lightning, Water, Light, Dark | Fire | `^numpad0` | `carol` (`BRD_COMMANDS.lua:134-136`) |
 | `ThrenodyElement` | Fire, Ice, Wind, Earth, Lightning, Water, Light, Dark | Fire | `^numpad.` | `threnody` (128-130) |
-| `MarcatoSong` | HonorMarch, AriaPassion, Off | HonorMarch | `^numpad8` | `BRD_PRECAST.lua:129-139` |
-| `MainWeapon` | Naegling, Twashtar, Carnwenhan, Mpu Gandring | Mpu Gandring | `^numpad1` | `set_builder.lua:97-114` |
-| `SubWeapon` | Kraken, Demersal, Genmei, Centovente | Genmei (live Kraken) | `^numpad2` | `set_builder.lua:120-137` |
+| `MarcatoSong` | HonorMarch, AriaPassion, Off | HonorMarch | `^numpad8` | `BRD_PRECAST.lua:147-157` (`marcato_target_song`) |
+| `MainWeapon` | Naegling, Twashtar, Carnwenhan, Mpu Gandring | Mpu Gandring | `^numpad1` | `set_builder.lua:98-115` |
+| `SubWeapon` | Kraken, Demersal, Genmei, Centovente | Genmei (live Kraken) | `^numpad2` | `set_builder.lua:121-138` |
 | `BRDSong1`..`BRDSong5` | Empty (overwritten with short names) | Empty | none | HUD rows only |
 | `FastCast` | 0..80 step 10 | 80 | none | `MidcastWatchdog` |
-| `AutoMedicine` | shared On/Off | persisted | `#numpad0` | `AutoMedicine.init(state, M)` (`BRD_STATES.lua:207-210`) |
+| `AutoMedicine` | shared On/Off | persisted | `#numpad0` (from `COMMON_KEYBINDS.lua`) | `AutoMedicine.init(state, M)` (`_master/config/brd/BRD_STATES.lua:213-215`) |
 
 Mote defaults also exist: `OffenseMode`, `HybridMode`, `CastingMode` (all
 `'Normal'`, nothing binds them). `^numpad9` (the `HybridMode` anchor) is left
-empty, as `.claude/rules/keybinds.md` prescribes for a job without
-`HybridMode`. `state.Moving` comes from AutoMove.
+empty, as the project key layout prescribes for a job without `HybridMode`
+(Ctrl 9 is reserved for it; see
+[keybinds and custom states](../systems/keybinds-and-custom.md)).
+`state.Moving` comes from AutoMove.
 
 ## Commands
 
-`job_self_command` (`BRD_COMMANDS.lua:152-528`) lowercases the first word and
-tests, in order: `altjobupdate` (165), `requestjob` (176), `ui` (184),
-`forceidle` (193), `debugmidcast` (246), `cyclestate` (265), watchdog (271),
-**CommonCommands** (279, built-in names and warp aliases only), then the BRD
+`job_self_command` (`BRD_COMMANDS.lua:154-525`) lowercases the first word and
+tests, in order: `altjobupdate` (167; passes the sender name, 5th argument,
+since 2026-09-25), `requestjob` (179), `ui` (187),
+`forceidle` (196), `debugmidcast` (248), `cyclestate` (267), watchdog (273),
+**CommonCommands** (281, built-in names and warp aliases only), then the BRD
 commands. A name none of them answers goes to Mote, whose last lookup is the
 dual-box partner's alt config
 ([commands and debug](../systems/commands-and-debug.md#4-alt-commands-and-name-shadowing)),
@@ -376,31 +392,30 @@ partner plays BRD.
 
 | Command | Effect | Lines |
 |---------|--------|-------|
-| `forceidle` | `gs enable ring1`, then 1 s later `/equip ring1` with the idle set's `left_ring` | 193-241 |
-| `soul_voice` / `sv`, `nightingale` / `ni`, `troubadour` / `tr` | `/ja <name> <me>` + `ability_command` message | 296-315 |
-| `nt` | Nightingale, then Troubadour after `ABILITY_DELAYS.nt_combo_delay` (2.0; fallback 1.5) | 317-331 |
-| `marcato` / `ma`, `pianissimo` / `pi` | `/ja` + message | 333-345 |
-| `lullaby` | `/ma "Horde Lullaby" <stnpc>` (refinement may upgrade to II) | 351-356 |
-| `lullaby2` / `foe` | `/ma "Foe Lullaby II" <stnpc>` | 358-363 |
-| `elegy`, `requiem` | Carnage Elegy / Foe Requiem VII on `<stnpc>` | 365-377 |
-| `songs` / `meleesong` / `melee` / `allsongs` | `cast_songs_with_phases(false, '<me>')` | 383-388 |
-| `dummy` / `dummysongs` | `cast_dummy_songs()` | 390-395 |
-| `dummy1`, `dummy2` | `cast_song(<dummy n>)` | 397-417 |
-| `threnody` | `<ThrenodyElement> Threnody II` on `<stnpc>` | 419-432 |
-| `carol` | `cast_song("<CarolElement> Carol II")` | 434-447 |
-| `etude` | `cast_song(ETUDES[EtudeType])` | 449-462 |
-| `song1`..`song5` | `cast_song(<slot n of the current pack, after Victory March replacement>)` | 468-527 |
+| `forceidle` | `gs enable ring1`, then 1 s later `/equip ring1` with the idle set's `left_ring` | 196-243 |
+| `soul_voice` / `sv`, `nightingale` / `ni`, `troubadour` / `tr` | `/ja <name> <me>` + `ability_command` message | 298-317 |
+| `nt` | Nightingale, then Troubadour after `ABILITY_DELAYS.nt_combo_delay` (2.0; fallback 1.5) | 319-333 |
+| `marcato` / `ma`, `pianissimo` / `pi` | `/ja` + message | 335-347 |
+| `lullaby` | `/ma "Horde Lullaby" <stnpc>` (refinement may upgrade to II) | 353-358 |
+| `lullaby2` / `foe` | `/ma "Foe Lullaby II" <stnpc>` | 360-365 |
+| `elegy`, `requiem` | Carnage Elegy / Foe Requiem VII on `<stnpc>` | 367-379 |
+| `songs` / `meleesong` / `melee` / `allsongs` | `cast_songs_with_phases(false, '<me>')` | 385-390 |
+| `dummy` / `dummysongs` | `cast_dummy_songs()` | 392-397 |
+| `dummy1`, `dummy2` | `cast_song(<dummy n>)` | 399-419 |
+| `threnody` | `<ThrenodyElement> Threnody II` on `<stnpc>` | 421-434 |
+| `carol` | `cast_song("<CarolElement> Carol II")` | 436-449 |
+| `etude` | `cast_song(ETUDES[EtudeType])` | 451-464 |
+| `song1`..`song5` | `cast_song(<slot n of the current pack, after Victory March replacement>)` | 470-524 |
 | `cycle <State>` (Mote) | Mote cycle with chat message; used by `cyclestate` when the HUD is hidden | Mote |
 
-`cast_song` (115-118) hands the song to `cast_song_to_target` (95-108): `<me>`
+`cast_song` (114-117) hands the song to `cast_song_to_target` (95-108): `<me>`
 when targeting yourself, the target's name when it is a PC (precast then
 inserts Pianissimo), `<stpc>` otherwise. Marcato is added by precast, after the
 recast check (see [Pianissimo and Marcato](#pianissimo-and-marcato)).
-The header block (6-43) also lists `refresh`, `meleerefresh`, `tanksong`,
-`tank`, `tankrefresh`, `healersong`, `healer`, `healerrefresh`; none of them
-exists in the router.
+The header block (1-42) lists exactly the commands of the router (the eight
+non-existent `refresh` / `tank*` / `healer*` names were removed in `b6c7dc6`).
 
-`job_state_change` is `LifecycleManager.state_change()` (532-534): a HUD
+`job_state_change` is `LifecycleManager.state_change()` (531): a HUD
 refresh for any state except `Moving`. The only name it reads is `Moving`, a
 state with no description, so it acts the same whether it receives a state's
 key (`SongMode`) or its description (`Song Pack`, what Mote passes,
@@ -410,32 +425,32 @@ not here.
 ## Set names the code looks up
 
 T = `_master/sets/brd_sets.lua`, L = `Tetsouo/sets/brd/brd_sets.lua` (weapon
-sets in L come from `weapons.lua:22-39`, copied by the loop at 47-49).
+sets in L come from `Tetsouo/sets/brd/weapons.lua:22-39`, copied by the loop at 47-49).
 
 | Set | Looked up by | T | L |
 |-----|--------------|---|---|
-| `sets.idle`, `.Refresh`, `.DT`, `.Regen` | Mote `get_idle_set`, `set_builder.lua:44-46` | 94, 110, 113, 129 | 56, 72, 75, 91 |
-| `sets.idle.Town`, `sets.Adoulin`, `sets.MoveSpeed` | `BaseSetBuilder`, Mote Town scope, `apply_movement` | 488 (`= sets.MoveSpeed`, 1 slot), 491, 485 | 402 (`set_combine(idle.DT, MoveSpeed)`), 405, 399 |
-| `sets.engaged`, `.STP`, `.Acc`, `.SB` | `set_builder.lua:81-83` | 142, 159, 162, 165 | 104, 120-122 |
-| `sets.engaged.DT` (EngagedMode `DT`) | `set_builder.lua:81` | **absent** | **absent** |
-| `sets.engaged.PDTKC` | `set_builder.lua:71` | 171 | 123 |
-| `sets[MainWeapon]`, `sets[SubWeapon]` (Naegling, Twashtar, Carnwenhan, Mpu Gandring, Kraken, Demersal, Genmei, Centovente) | `set_builder.lua:103,126` | 74-87 | loop 47-49 |
-| `sets.precast.FC`, `sets.precast.JA.Nightingale/Troubadour/['Soul Voice']`, `sets.precast.WS[...]` | Mote default precast | 181, 206-212, 220-307 | 133, 155-157, 164-253 |
-| `sets.precast.BardSong`, `sets.precast['Honor March']`, `['Aria of Passion']` | not read by Mote (root of `sets.precast`, Mote reads `FC[...]`); `BardSong` only by the debug display (256) | 196, 199, 202 | 148, 151, 152 |
-| `sets.midcast.BardSong` | Singing base, Mote type fallback | 331 | 277 |
-| `sets.midcast.Songs.Gjallarhorn/.Marsyas/.Daurdabla` | Singing instrument layer; their `range` by `apply_main_instrument` (`MainInstrument`) | 351-353 | 297-299 |
+| `sets.idle`, `.Refresh`, `.DT`, `.Regen` | Mote `get_idle_set`, `set_builder.lua:45-46` | 98, 114, 117, 133 | 56, 72, 75, 91 |
+| `sets.idle.Town`, `sets.Adoulin`, `sets.MoveSpeed` | `BaseSetBuilder`, Mote Town scope, `apply_movement` | 492 (`= sets.MoveSpeed`, 1 slot), 495, 489 | 402 (`set_combine(idle.DT, MoveSpeed)`), 405, 399 |
+| `sets.engaged`, `.STP`, `.Acc`, `.SB` | `set_builder.lua:82-83` | 146, 163, 166, 169 | 104, 120-122 |
+| `sets.engaged.DT` (EngagedMode `DT`) | `set_builder.lua:82` | **absent** | **absent** |
+| `sets.engaged.PDTKC` | `set_builder.lua:72` | 175 | 123 |
+| `sets[MainWeapon]`, `sets[SubWeapon]` (Naegling, Twashtar, Carnwenhan, Mpu Gandring, Kraken, Demersal, Genmei, Centovente) | `set_builder.lua:104,127` | 78-91 | loop 47-49 |
+| `sets.precast.FC`, `sets.precast.JA.Nightingale/Troubadour/['Soul Voice']`, `sets.precast.WS[...]` | Mote default precast | 185, 210-216, 224-325 | 133, 155-157, 164-267 |
+| `sets.precast.BardSong`, `sets.precast['Honor March']`, `['Aria of Passion']` | not read by Mote (root of `sets.precast`, Mote reads `FC[...]`); `BardSong` only by the debug display (`BRD_PRECAST.lua:275`) | 200, 203, 206 | 148, 151, 152 |
+| `sets.midcast.BardSong` | Singing base, Mote type fallback | 335 | 277 |
+| `sets.midcast.Songs.Gjallarhorn/.Marsyas/.Daurdabla` | Singing instrument layer; their `range` by `apply_main_instrument` (`MainInstrument`) | 355-357 | 297-299 |
 | `sets.midcast.Songs.Loughnashade`, `.Songs.Duration` | Singing layers | **absent** | **absent** |
-| `sets.midcast.HonorMarch` | Singing step 1.5 | 358 | 302 |
-| `sets.midcast.AriaPassion` | nothing (step 1.5 builds `AriaofPassion`) | 361 | 303 |
-| Family sets `Ballad`, `Madrigal`, `Minuet`, `Minne`, `Etude`, `March`, `Dirge`, `Paeon`, `Scherzo`, `Carol`, `Mambo`, `["Army's Paeon"]`, `["Sentinel's Scherzo"]` | Singing steps 3/3.5, Mote spell map | 366-396 | 306-321 |
-| `sets.midcast.DummySong` (+ 4 name aliases) | `midcast_router.lua:142-150`, Mote by name | 399, 415-418 | 324, 340-343 |
-| `sets.midcast.Lullaby` (+ 4 aliases), `DebuffSong`, Nocturne, Finale, Elegies, `['Foe Requiem VII']`, Virelai, `Threnody` | Mote default for debuff songs | 423-478 | 348-392 |
+| `sets.midcast.HonorMarch` | Singing step 1.5 | 362 | 302 |
+| `sets.midcast.AriaPassion` | nothing (step 1.5 builds `AriaofPassion`) | 365 | 303 |
+| Family sets `Ballad`, `Madrigal`, `Minuet`, `Minne`, `Etude`, `March`, `Dirge`, `Paeon`, `Scherzo`, `Carol`, `Mambo`, `["Army's Paeon"]`, `["Sentinel's Scherzo"]` | Singing steps 3/3.5, Mote spell map | 370-400 | 306-321 |
+| `sets.midcast.DummySong` (+ 4 name aliases) | `midcast_router.lua:142-150`, Mote by name | 403, 419-422 | 324, 340-343 |
+| `sets.midcast.Lullaby` (+ 4 aliases), `DebuffSong`, Nocturne, Finale, Elegies, `['Foe Requiem VII']`, Virelai, `Threnody` | Mote default for debuff songs | 427-482 | 348-392 |
 | `sets.midcast.Requiem` or `['Foe Requiem VI']` (refinement target) | Mote default | **absent** (falls to `BardSong`) | **absent** |
-| `sets.midcast['Enhancing Magic']` | `midcast_router.lua:241` | 328 (empty table) | 274 (empty table) |
-| `sets.midcast['Healing Magic']`, `['Enfeebling Magic']`, `['Elemental Magic']` | `midcast_router.lua:235,252,258` | **absent** | **absent** |
-| `sets.buff.Doom` | shared `DoomManager` | 497 | 411 |
+| `sets.midcast['Enhancing Magic']` | `midcast_router.lua:248` | 332 (empty table) | 274 (empty table) |
+| `sets.midcast['Healing Magic']`, `['Enfeebling Magic']`, `['Elemental Magic']` | `midcast_router.lua:239,260,268` | **absent** | **absent** |
+| `sets.buff.Doom` | shared `DoomManager` | 501 | 411 |
 
-The template engaged set uses the `ranged` key for Linos (T 143, L 105), which
+The template engaged set uses the `ranged` key for Linos (T 147, L 105), which
 `//gs c checksets` does not read (see
 [equipment and inventory](../systems/equipment-and-inventory.md)).
 
@@ -445,11 +460,12 @@ The template engaged set uses the `ranged` key for Linos (T 143, L 105), which
 |------------|---------|-------------------------|---------|
 | `<char>/config/brd/BRD_STATES.lua` | see states | file | entry `user_setup` |
 | `<char>/config/brd/BRD_KEYBINDS.lua` | 12 binds | file | entry `user_setup`, `file_unload` |
-| `<char>/config/brd/BRD_LOCKSTYLE.lua` `default`, `by_subjob` | 7 | file; factory fallback 1 (`BRD_LOCKSTYLE.lua:32-37`) | `LockstyleManager` uses `default`; no `get_style`, so `by_subjob` is never read |
-| `<char>/config/brd/BRD_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt_job][sub]` | template book 40 page 1; live books 7/8 | file; factory fallback book 1 page 1 (`BRD_MACROBOOK.lua:32-38`) | `MacrobookManager` |
+| `<char>/config/brd/BRD_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `<char>/config/brd/BRD_LOCKSTYLE.lua` `default`, `by_subjob` | 7 | file; factory fallback 1 (`shared/jobs/brd/functions/BRD_LOCKSTYLE.lua:32-37`) | `LockstyleManager` uses `default`; no `get_style`, so `by_subjob` is never read |
+| `<char>/config/brd/BRD_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt_job][sub]` | template book 40 page 1; live books 7/8 | file; factory fallback book 1 page 1 (`shared/jobs/brd/functions/BRD_MACROBOOK.lua:32-38`) | `MacrobookManager` |
 | `<char>/config/brd/BRD_SONG_CONFIG.lua` -> `_G.BRDSongConfig` | 11 packs, 5 dummies, Etudes, `VICTORY_MARCH_REPLACE`, `SHORT_NAMES`, `SONG_REFINE` | file | rotation manager, refinement, router (`is_dummy_song`), commands (`ETUDES`) |
 | `<char>/config/brd/BRD_TIMING_CONFIG.lua` -> `_G.BRDTimingConfig` | normal 6.0, nitro 2.5, `nt_combo_delay` 2.0 | file | only `get_song_delay` and `ABILITY_DELAYS.nt_combo_delay`; `nitro_marcato`, the other `ABILITY_DELAYS`, `ROTATION_DELAYS`, `ADJUSTMENTS`, `get_initial_delay`, `apply_adjustments` have no reader |
-| `<char>/config/brd/BRD_TP_CONFIG.lua` -> `_G.BRDTPConfig` | Moonshade 250; Aeneas 500, Centovente 1000 | file | `WSPrecastHandler` -> `TPBonusCalculator`, which passes the **main** weapon (`tp_bonus_handler.lua:61`) |
+| `<char>/config/brd/BRD_TP_CONFIG.lua` -> `_G.BRDTPConfig` | Moonshade 250; Aeneas 500, Centovente 1000 | file | `WSPrecastHandler` -> `TPBonusCalculator`, which receives the main **and** sub weapon (`tp_bonus_handler.lua:71-74`), so Centovente in the sub slot counts |
 | `<char>/config/brd/BRD_REFILL.lua` (template `_master/Tetsouo/config/brd/`) | Panacea, Antacid, ..., food | file | refill system |
 | `Tetsouo/config/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG`, `RECAST_CONFIG`, UI config | - | entry fallback 42-50 | entry |
 
@@ -474,10 +490,10 @@ The template engaged set uses the `ranged` key for Linos (T 143, L 105), which
   slot refresh, `nt`, `forceidle`, and every rotation step (`wait N` inside
   `send_command`) survive a reload; nothing cancels them.
 - Keybinds: bound in `user_setup`, unbound in `file_unload`
-  (`Tetsouo_BRD.lua:258-260`).
+  (`Tetsouo_BRD.lua:288-290`).
 - Subjob change: Mote re-runs `user_setup()` (states reset, keys rebound, the
   0.2 s block and song-slot refresh scheduled again), then
-  `job_sub_job_change` (143-152) hands over to `JobChangeManager`, which
+  `job_sub_job_change` (149-158) hands over to `JobChangeManager`, which
   schedules `gs reload`. See
   [job change lifecycle](../architecture/job-change-lifecycle.md).
 
@@ -534,8 +550,8 @@ The template engaged set uses the `ranged` key for Linos (T 143, L 105), which
 - New refinement: add `[<song>] = <replacement>` to `SONG_REFINE.tiers` and make
   sure `needs_refinement` (`song_refinement.lua:28-35`) matches the family.
   Use resource names.
-- New locked song: add it to `LOCKED_SONGS` and to
-  `get_required_instrument` (`song_rotation_manager.lua:153-174`), and define
+- New locked song: add it to `LOCKED_SONGS` (`instrument_lock_config.lua:33-36`;
+  `get_required_instrument` reads the same table since 2026-09-25) and define
   `sets.midcast.Songs.<instrument>`. `MainInstrument` then leaves it alone.
 - New `MainInstrument` value: add it to the state in `BRD_STATES.lua` (both
   copies) and define `sets.midcast.Songs.<value>` with its `range`.
@@ -549,31 +565,34 @@ The template engaged set uses the `ranged` key for Linos (T 143, L 105), which
 
 - A `songs` rotation under Nightingale + Troubadour does not leave room for the
   Marcato that precast inserts in front of Honor March (2 s wait vs 2.5 s song
-  spacing; `nitro_marcato` is never used) (`song_rotation_manager.lua:228`,
-  `BRD_PRECAST.lua:175-177`).
-- `job_handle_equipping_gear` is registered although the comment says it must
-  not be: `function name()` in an included file defines a sandbox global
-  (`BRD_MOVEMENT.lua:39,55-57`; `refresh.lua:149`, `user_functions.lua:327`).
-- `job_customize_midcast_set` is never called (`BRD_MIDCAST.lua:71-73`).
-- Three different "other player" tests: Marcato (`BRD_PRECAST.lua:158`),
-  Pianissimo (`BRD_PRECAST.lua:83-90`) and the command target choice
+  spacing; `nitro_marcato` is never used) (`song_rotation_manager.lua:196`,
+  `BRD_PRECAST.lua:194-195`).
+- `job_handle_equipping_gear` is registered although the export is commented
+  out: `function name()` in an included file defines a sandbox global
+  (`BRD_MOVEMENT.lua:39,50-56`, whose comment now says so; `refresh.lua:149`,
+  `user_functions.lua:327`).
+- `job_customize_midcast_set` is never called (`BRD_MIDCAST.lua:78-80`).
+- Three different "other player" tests: Marcato (`BRD_PRECAST.lua:176`),
+  Pianissimo (`BRD_PRECAST.lua:91`) and the command target choice
   (`BRD_COMMANDS.lua:95-108`).
 - `lullaby` prints "Casting Horde Lullaby II" while casting Horde Lullaby
-  (`brd_messages.lua:187-190`, `BRD_COMMANDS.lua:352-353`).
-- The command header lists eight commands that do not exist
-  (`BRD_COMMANDS.lua:20-26`); the keybind comments still say `Alt+1..=` and
-  list an empty Ctrl section (`BRD_KEYBINDS.lua:25-83`).
-- `forceidle` has no sender (`BRD_COMMANDS.lua:193`).
+  (`brd_messages.lua:164-167`, `BRD_COMMANDS.lua:353-355`).
+- `forceidle` has no sender (`grep -r forceidle` finds only `BRD_COMMANDS.lua:196`).
 - `BRD_LOCKSTYLE.by_subjob` is never read (`_master/config/brd/BRD_LOCKSTYLE.lua:19-24`).
 - Template `sets.idle.Town` is the 1-slot `MoveSpeed` set used as a full idle
-  base (`_master/sets/brd_sets.lua:488`); the live file fixed it.
+  base (`_master/sets/brd_sets.lua:492`); the live file fixed it.
 - The refined Foe Requiem VI falls to `sets.midcast.BardSong`
   (`BRD_SONG_CONFIG.lua:278`, no Requiem set in T or L).
 - Dead code: `BRDStates.validate`, `SongRefinement.get_downgrade` /
   `is_enabled`, `InstrumentLockConfig.get_all_locked_songs`,
-  `get_brd_movement_status`, most of `BRD_TIMING_CONFIG`, the empty `if` at
-  `BRD_PRECAST.lua:243-246`, and the `honor_march_*`, `songs_refresh`,
-  `tank_*`, `healer_*`, `song_guidance`, `marcato_skip_*`, `doom_*`,
-  `no_pack_configured` BRD messages (see the
+  `get_brd_movement_status`, most of `BRD_TIMING_CONFIG`, and the
+  `songs_refresh`, `tank_*`, `healer_*`, `song_guidance`, `marcato_skip_*`,
+  `doom_*`, `no_pack_configured` BRD messages (see the
   [catalog](../systems/messages-catalog.md)).
 - User docs list `Alt+N` keys (`docs/user/jobs/brd/states.md:228-235`).
+- Fixed, no longer issues: the eight non-existent commands in the
+  `BRD_COMMANDS` header (`b6c7dc6`) and the `Alt+1..=` keybind comments
+  (`22e1816`); the empty `if` in `job_post_precast` (`b6c7dc6`); the
+  `honor_march_*` / `marcato_honor_march` / `song_cast` message keys and
+  their empty wrappers (removed 2026-09-25); the second song-to-instrument
+  table in `song_rotation_manager.lua` (2026-09-25).
