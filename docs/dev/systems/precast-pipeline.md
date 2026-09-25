@@ -124,6 +124,11 @@ flowchart TD
   tier on recast included) goes on to the cooldown check (132-137), cancel
   check (139), self-Paralyna under paralysis (143), WS handler (147). See
   [factories and helpers](factories-and-helpers.md#whm-curemanager).
+- COR (`COR_PRECAST.lua`): guard, then `DoubleUp.redirect`
+  (`cor/functions/logic/double_up.lua`, 2026-09-25) **before** the cooldown check: a
+  Phantom Roll already up is cancelled and sent as Double-Up when Double-Up Chance is up
+  and it is the last roll; otherwise cancelled with a warning. The Phantom Roll recast
+  would otherwise cancel it first.
 
 The five-line `action_type` dispatch in front of `CooldownChecker` is repeated in
 all 16 `[JOB]_PRECAST.lua` files; `CooldownChecker` itself has no dispatcher.
