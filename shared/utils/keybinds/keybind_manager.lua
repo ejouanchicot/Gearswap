@@ -15,6 +15,11 @@
 ---   subjob         Only bound under this subjob (string or list)
 ---   exclude_subjob Never bound under this subjob (string or list)
 ---   visible        function() -> boolean, asked again on every refresh()
+---   alt            Only bound while another box of the group plays this:
+---                  {name =, job =, subjob =, weapon =}, each optional, a
+---                  string or a list; no name = the tracked partner. Checked
+---                  again whenever a box reports a new job or weapon type
+---                  (shared/utils/dualbox/alt_states.lua)
 ---
 --- Keys that must be cleared on load although no entry names them any more
 --- go in <module>.retired_keys. Keys this manager bound itself are cleared
@@ -64,6 +69,10 @@ local function applies(bind)
     local subjob = player and player.sub_job or nil
     if bind.subjob and not names_subjob(bind.subjob, subjob) then return false end
     if bind.exclude_subjob and names_subjob(bind.exclude_subjob, subjob) then return false end
+    if type(bind.alt) == 'table' then
+        local ok, AltStates = pcall(require, 'shared/utils/dualbox/alt_states')
+        if not ok or not AltStates.matches(bind.alt) then return false end
+    end
     if type(bind.visible) == 'function' then
         local ok, shown = pcall(bind.visible)
         return ok and shown ~= false and shown ~= nil
@@ -198,8 +207,10 @@ end
 local function refresh(ctx)
     local desired = key_map(get_active_binds(ctx))
     local sent = 0
-    for key, command in pairs(ctx.applied) do
-        if desired[key] ~= command then
+    for key in pairs(ctx.applied) do
+        -- A key that stays, with another command, is only re-bound below:
+        -- unbinding first leaves it dead in between (see clear_unwanted)
+        if desired[key] == nil then
             send_unbind(key)
             bound_keys()[key] = nil
             sent = sent + 1
@@ -282,6 +293,7 @@ end
 ---   appended to .binds
 function KeybindManager.create(job, module)
     local ctx = {job = job, module = module, applied = {}, api = module}
+    KeybindManager.active = module
     local function bind(fn) return function(...) return fn(ctx, ...) end end
     module.get_active_binds = bind(get_active_binds)
     module.bind_all = bind(bind_all)
@@ -295,6 +307,15 @@ function KeybindManager.create(job, module)
         CommonKeybinds.merge_into(module.binds)
     end
     return module
+end
+
+--- Refresh the keys of the job loaded now (see the `alt` field): what
+--- another box plays changes without this job's own state changing.
+--- @return number Commands sent (0 when no job module is loaded)
+function KeybindManager.refresh_active()
+    local module = KeybindManager.active
+    if module and module.refresh then return module.refresh() end
+    return 0
 end
 
 _G.KeybindManager = KeybindManager

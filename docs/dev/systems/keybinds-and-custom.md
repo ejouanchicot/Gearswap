@@ -87,13 +87,14 @@ Fields, as listed in the `keybind_manager.lua` header:
 | `state` | Mote state the HUD row displays |
 | `subjob` / `exclude_subjob` | Only / never under this subjob (string or list) |
 | `visible` | `function() -> boolean`, asked again on every `refresh()` |
+| `alt` | `{name, job, subjob, weapon}`, each optional, a string or a list: only bound while that box of the group plays it (no `name` = the tracked partner). `weapon` is the main hand's skill (`'Sword'`, `'Great Katana'`), compared without spaces or case. Nothing known about the box yet = not bound. Added 2026-09-25 for Gab's alt keys |
 | `raw` | Send `command` exactly as written |
 
 `<module>.retired_keys` lists keys an older version of the file bound: they are
 unbound on every load (PLD keeps `^numpad7`).
 
-`get_active_binds()` keeps the entries whose `subjob`, `exclude_subjob` and
-`visible` allow them now. A `visible` function that errors counts as hidden.
+`get_active_binds()` keeps the entries whose `subjob`, `exclude_subjob`,
+`visible` and `alt` allow them now. A `visible` function that errors counts as hidden.
 
 ### What a key sends (`bind_line`)
 
@@ -125,8 +126,12 @@ down by the guard sends the same line.
   6. shows the intro when at least one key went down. When none did while some should
      have, prints `<JOB> keybinds: none applied - keys will not respond`.
 - **`refresh()`** sends only the difference since the last `bind_all`/`refresh`
-  (for `visible` entries). Only PLD calls it, from its state-change hook
-  (`PLD_COMMANDS.lua`, after a stance change: `/SCH` Tanking hides `MainWeapon`).
+  (for `visible` and `alt` entries). A key that stays with another command is only
+  re-bound, never unbound first (since 2026-09-25). PLD calls it from its state-change
+  hook (`PLD_COMMANDS.lua`, after a stance change: `/SCH` Tanking hides `MainWeapon`);
+  `KeybindManager.refresh_active()` calls it on the job loaded now (`KeybindManager.active`,
+  set by `create`) whenever `alt_states.lua` records a new job, subjob or weapon type
+  for a box.
 - **`unbind_all()`** runs `clear_unwanted` with nothing wanted, so it also removes
   keys another job file of this manager left down, then prints
   `<JOB> keybinds unloaded.`. Every entry file calls it from `file_unload()`.
