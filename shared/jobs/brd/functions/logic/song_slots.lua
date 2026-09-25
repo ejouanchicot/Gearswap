@@ -11,8 +11,14 @@
 --- song holds yet: a slot a song holds is open, and a new song overwrites the
 --- one with the least time left.
 ---
---- Songs up are read from the game (buffactive lags, see
---- AbilityHelper.is_buff_active); another bard's songs would count too.
+--- Slots are per bard: another bard's songs on this character hold none of
+--- ours. The game does not say who cast a buff, so this module keeps its own
+--- ledger of the songs this character finished on itself (record, called
+--- from BRD_AFTERCAST) and counts those only, capped per song family by the
+--- buffs actually up (read from the game: buffactive lags, see
+--- AbilityHelper.is_buff_active). Not seen: another bard overwriting one of
+--- ours with the same song (the buff stays, only its caster changes);
+--- //gs c songs full sings every dummy whatever is up.
 ---
 --- @file    shared/jobs/brd/functions/logic/song_slots.lua
 --- @author  Tetsouo
@@ -38,17 +44,72 @@ local function resources()
     return ok and res or {}
 end
 
---- How many songs are on this character now.
---- @return number
-function SongSlots.songs_up()
+-- An entry older than any song can last is dropped
+local LEDGER_MAX_AGE = 1200
+
+--- Song buffs up on this character now, per family (lower-cased buff name).
+--- @return table family -> count, number total
+local function buffs_up()
     local me = windower.ffxi.get_player()
     local buffs = resources().buffs or {}
-    local count = 0
+    local by_family, total = {}, 0
     for _, id in ipairs(me and me.buffs or {}) do
         local buff = buffs[id]
-        if buff and buff.en and SONG_BUFFS[buff.en:lower()] then count = count + 1 end
+        local family = buff and buff.en and buff.en:lower()
+        if family and SONG_BUFFS[family] then
+            by_family[family] = (by_family[family] or 0) + 1
+            total = total + 1
+        end
     end
-    return count
+    return by_family, total
+end
+
+--- Buff family of a song ('Valor Minuet V' -> 'minuet'), nil for a debuff song.
+--- @param song string
+--- @return string|nil
+local function family_of(song)
+    local name = song:lower()
+    if name:find('honor march') then return 'honor march' end
+    if name:find('aria of passion') then return 'aria of passion' end
+    for family in pairs(SONG_BUFFS) do
+        if not family:find(' ') and name:find(family, 1, true) then return family end
+    end
+    return nil
+end
+
+local function ledger()
+    windower._brd_own_songs = windower._brd_own_songs or {}
+    return windower._brd_own_songs
+end
+
+--- Note a song this character finished on itself (BRD_AFTERCAST).
+--- @param spell table Spell object from GearSwap
+function SongSlots.record(spell)
+    if not spell or spell.interrupted or spell.type ~= 'BardSong' then return end
+    local target = spell.target
+    local me = windower.ffxi.get_player()
+    if not target or not (target.type == 'SELF' or (me and target.id == me.id)) then return end
+    local family = family_of(spell.english or '')
+    if family then table.insert(ledger(), {family = family, at = os.clock()}) end
+end
+
+--- Songs of this character up on itself: its ledger, per family no more than
+--- the buffs of that family actually up. Stale entries are dropped.
+--- @return number own, number all (every song buff up, any bard)
+function SongSlots.songs_up()
+    local by_family, total = buffs_up()
+    local now, kept, per_family = os.clock(), {}, {}
+    local entries = ledger()
+    for i = #entries, 1, -1 do                   -- newest first
+        local e = entries[i]
+        local seen = per_family[e.family] or 0
+        if now - e.at < LEDGER_MAX_AGE and seen < (by_family[e.family] or 0) then
+            per_family[e.family] = seen + 1
+            table.insert(kept, 1, e)
+        end
+    end
+    windower._brd_own_songs = kept
+    return #kept, total
 end
 
 --- Extra songs an instrument grants, from the version this character owns.
@@ -80,6 +141,7 @@ end
 --- What plan() reads, for //gs c songplan.
 --- @return table {clarion, main, main_extra, dummy, dummy_extra, up}
 function SongSlots.inputs()
+    local own, all = SongSlots.songs_up()
     local main = state and state.MainInstrument and state.MainInstrument.current
     local dummy_set = sets and sets.midcast and sets.midcast.DummySong
     local dummy = dummy_set and piece_name(dummy_set.range)
@@ -87,19 +149,21 @@ function SongSlots.inputs()
         clarion = buffactive['Clarion Call'] and true or false,
         main = main, main_extra = SongSlots.instrument_extra(main),
         dummy = dummy, dummy_extra = SongSlots.instrument_extra(dummy),
-        up = SongSlots.songs_up(),
+        up = own, up_all = all,
     }
 end
 
 --- Plan of a rotation: songs it holds and dummies it needs.
 --- @param pack_size number Songs in the pack
+--- @param full boolean|nil Every dummy, whatever songs are up
 --- @return number songs, number dummies, number base (slots the main instrument opens)
-function SongSlots.plan(pack_size)
+function SongSlots.plan(pack_size, full)
     local i = SongSlots.inputs()
     local clarion = i.clarion and 1 or 0
     local base = BASE_SLOTS + i.main_extra + clarion
     local total = math.min(pack_size, BASE_SLOTS + math.max(i.main_extra, i.dummy_extra) + clarion)
-    local dummies = math.max(0, total - math.max(i.up, base))
+    local held = full and 0 or i.up
+    local dummies = math.max(0, total - math.max(held, base))
     return total, dummies, math.min(base, total)
 end
 

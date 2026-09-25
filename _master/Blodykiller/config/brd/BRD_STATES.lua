@@ -165,6 +165,11 @@ function BRDStates.configure()
     }
     state.MarcatoSong:set('HonorMarch')
 
+    -- AutoNitro: //gs c songs opens with Nightingale + Troubadour when both
+    -- are ready (song_rotation_manager.lua)
+    state.AutoNitro = M {['description'] = 'Auto Nitro', 'On', 'Off'}
+    state.AutoNitro:set('On')
+
     -- ========================================
     -- WEAPON SELECTION
     -- ========================================

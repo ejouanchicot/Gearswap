@@ -31,6 +31,8 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     -- This allows next Pianissimo to trigger immediately
     if spell.type == 'BardSong' then
         _G.pianissimo_in_progress = false
+        -- Our own songs on ourselves, for the slot count (song_slots.lua)
+        require('shared/jobs/brd/functions/logic/song_slots').record(spell)
         -- A running //gs c songs rotation sends its next song from here
         require('shared/jobs/brd/functions/logic/song_queue').on_aftercast(spell)
     end
