@@ -57,7 +57,9 @@ line number added nothing, the function name is cited instead.
 | `_master/config/brd/BRD_KEYBINDS.lua` | 59 | 12 numpad binds, data only; `KeybindManager.create('BRD', ...)` adds `bind_all` / `unbind_all` / `show_intro` (see [keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/brd/BRD_CUSTOM.lua` | 118 | Player modes and gear rules (all examples commented out), read through `KeybindManager` |
 | `_master/config/brd/BRD_SONG_CONFIG.lua` | 293 | Packs, dummy songs, Etudes, Victory March replacement, short names, refinement tiers |
-| `_master/config/brd/BRD_TIMING_CONFIG.lua` | 160 | Song and ability delays, `get_song_delay` |
+| `_master/config/brd/BRD_TIMING_CONFIG.lua` | 27 | `ROTATION_DELAYS.after_song` (song queue), `ABILITY_DELAYS.nt_combo_delay` (`//gs c nt`) |
+| `shared/jobs/brd/functions/logic/song_slots.lua` | 95 | Songs a rotation holds and dummies it needs, from the instruments owned, Clarion Call and the songs up (2026-09-25) |
+| `shared/jobs/brd/functions/logic/song_queue.lua` | 118 | Sings a list of songs one after the other, each once the previous is over (2026-09-25) |
 | `_master/config/brd/BRD_TP_CONFIG.lua` | 70 | `_G.BRDTPConfig` (Moonshade, Aeneas, Centovente) |
 | `_master/config/brd/BRD_LOCKSTYLE.lua` | 26 | `default = 7`, `by_subjob` |
 | `_master/config/brd/BRD_MACROBOOK.lua` | 46 | Book/page per subjob and per dual-box partner job |
@@ -279,14 +281,32 @@ precast keeps the Fast Cast set's instrument.
   first Victory March by `replacements[state.VictoryMarch]` (Blade Madrigal,
   Valor Minuet III), or by the Etude of `state.EtudeType` for `Etude`; `None`
   has no entry and keeps Victory March (comment `BRD_SONG_CONFIG.lua:178-180`).
-- `cast_songs_with_phases(false, '<me>')` (185-235): 4 songs without Clarion
-  Call (songs 1-2, dummies 1-2, songs 3-4), 5 with it (songs 1-3, dummies 1-2,
-  songs 4-5). Each cast is a `send_command('wait <t>; input /ma ...')` spaced by
-  `BRDTimingConfig.get_song_delay(NI, TR, false)`: 6.0 s normally, 2.5 s under
-  Nightingale + Troubadour (`BRD_TIMING_CONFIG.lua:23-28,99-112`). The
-  `marcato_used` argument is always `false` (196).
-- `cast_dummy_songs()` (239-260) casts 4 or 5 dummies from
-  `DUMMY_SONGS.standard`.
+- `cast_songs_with_phases(false, '<me>')`: how many songs and dummies comes from
+  `logic/song_slots.lua` (2026-09-25): 2 slots, plus the extra songs the instrument
+  grants ("Grants one / an / two additional song effect(s)" in the description of the
+  version this character owns: Blurred Harp +1 and Terpander 1, Daurdabla and
+  Loughnashade 1 or 2), plus 1 under Clarion Call. The main instrument
+  (`state.MainInstrument`) opens `base` slots; the dummy instrument
+  (`sets.midcast.DummySong.range`) the rest; songs = min(pack size, 2 + best extra +
+  Clarion), dummies = songs - max(songs up, base). Songs up are counted from
+  `windower.ffxi.get_player().buffs` (a slot a song holds is open, a new song
+  overwrites the one with the least time left). Order: `base` pack songs, the
+  dummies, the rest; handed to `SongQueue.start(list, target)`. `//gs c dummy` casts
+  `songs - base` dummies. The `marcato_used` argument is unused.
+- `cast_dummy_songs()` queues 4 or 5 dummies from `DUMMY_SONGS.standard`.
+- **Song queue** (`logic/song_queue.lua`, 2026-09-25, replacing the fixed
+  `wait <t>` schedule that lost a song whenever one took longer than the delay).
+  The next song goes out `ROTATION_DELAYS.after_song` (3.0 s default, plus `after_locked_song` 1.0 s after Honor March and Aria of Passion) after the
+  previous one's aftercast, fed by `BRD_AFTERCAST.lua` for any BardSong (a Marcato
+  or a SongRefinement tier re-sends it under the same or another name; a precast
+  cancel has no aftercast, `GearSwap/flow.lua:384`). Interrupted: sung again, twice
+  at most, then skipped with a warning. No "cast started" packet within 2.5 s
+  (`shared/utils/core/cast_tracker.lua`), nor any other action (a Marcato goes first:
+  3 s more): refused, same retry. Started but no aftercast within the cast time
+  computed from the precast set (`shared/utils/precast/cast_time.lua`) + 3 s, or 12 s
+  when unknown: same retry. State on
+  `windower._brd_song_queue` with a sequence number every timer checks; a new
+  rotation or `//gs c songstop` drops the running one.
 - `update_song_slots()` (102-117) writes short names into `state.BRDSong1..5`
   by assigning `.value` and `.current` directly (Mote's `M{}` has no
   `__newindex`, `Modes.lua:187-218`, so these become raw fields). It runs from
@@ -401,6 +421,7 @@ partner plays BRD.
 | `elegy`, `requiem` | Carnage Elegy / Foe Requiem VII on `<stnpc>` | 367-379 |
 | `songs` / `meleesong` / `melee` / `allsongs` | `cast_songs_with_phases(false, '<me>')` | 385-390 |
 | `dummy` / `dummysongs` | `cast_dummy_songs()` | 392-397 |
+| `songstop` | `SongQueue.stop()` | before `dummy` |
 | `dummy1`, `dummy2` | `cast_song(<dummy n>)` | 399-419 |
 | `threnody` | `<ThrenodyElement> Threnody II` on `<stnpc>` | 421-434 |
 | `carol` | `cast_song("<CarolElement> Carol II")` | 436-449 |
@@ -464,7 +485,7 @@ The template engaged set uses the `ranged` key for Linos (T 147, L 105), which
 | `<char>/config/brd/BRD_LOCKSTYLE.lua` `default`, `by_subjob` | 7 | file; factory fallback 1 (`shared/jobs/brd/functions/BRD_LOCKSTYLE.lua:32-37`) | `LockstyleManager` uses `default`; no `get_style`, so `by_subjob` is never read |
 | `<char>/config/brd/BRD_MACROBOOK.lua` `default`, `solo[sub]`, `dualbox[alt_job][sub]` | template book 40 page 1; live books 7/8 | file; factory fallback book 1 page 1 (`shared/jobs/brd/functions/BRD_MACROBOOK.lua:32-38`) | `MacrobookManager` |
 | `<char>/config/brd/BRD_SONG_CONFIG.lua` -> `_G.BRDSongConfig` | 11 packs, 5 dummies, Etudes, `VICTORY_MARCH_REPLACE`, `SHORT_NAMES`, `SONG_REFINE` | file | rotation manager, refinement, router (`is_dummy_song`), commands (`ETUDES`) |
-| `<char>/config/brd/BRD_TIMING_CONFIG.lua` -> `_G.BRDTimingConfig` | normal 6.0, nitro 2.5, `nt_combo_delay` 2.0 | file | only `get_song_delay` and `ABILITY_DELAYS.nt_combo_delay`; `nitro_marcato`, the other `ABILITY_DELAYS`, `ROTATION_DELAYS`, `ADJUSTMENTS`, `get_initial_delay`, `apply_adjustments` have no reader |
+| `<char>/config/brd/BRD_TIMING_CONFIG.lua` -> `_G.BRDTimingConfig` | `after_song` 3.0, `after_locked_song` 1.0, `nt_combo_delay` 2.0 | file | both read (song queue, `//gs c nt`); the old fixed song delays were removed on 2026-09-25 |
 | `<char>/config/brd/BRD_TP_CONFIG.lua` -> `_G.BRDTPConfig` | Moonshade 250; Aeneas 500, Centovente 1000 | file | `WSPrecastHandler` -> `TPBonusCalculator`, which receives the main **and** sub weapon (`tp_bonus_handler.lua:71-74`), so Centovente in the sub slot counts |
 | `<char>/config/brd/BRD_REFILL.lua` (template `_master/Tetsouo/config/brd/`) | Panacea, Antacid, ..., food | file | refill system |
 | `Tetsouo/config/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG`, `RECAST_CONFIG`, UI config | - | entry fallback 42-50 | entry |
@@ -585,7 +606,7 @@ The template engaged set uses the `ranged` key for Linos (T 147, L 105), which
   (`BRD_SONG_CONFIG.lua:278`, no Requiem set in T or L).
 - Dead code: `BRDStates.validate`, `SongRefinement.get_downgrade` /
   `is_enabled`, `InstrumentLockConfig.get_all_locked_songs`,
-  `get_brd_movement_status`, most of `BRD_TIMING_CONFIG`, and the
+  `get_brd_movement_status`, and the
   `songs_refresh`, `tank_*`, `healer_*`, `song_guidance`, `marcato_skip_*`,
   `doom_*`, `no_pack_configured` BRD messages (see the
   [catalog](../systems/messages-catalog.md)).
