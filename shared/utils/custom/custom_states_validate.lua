@@ -42,6 +42,7 @@ local WHEN_TYPES = {
     mode = 'table', hp_below = 'number', hp_above = 'number', mp_below = 'number',
     mp_above = 'number', tp_below = 'number', tp_above = 'number',
     distance_below = 'number', day_weather = 'boolean', town = 'boolean',
+    obi_better = 'boolean', orpheus_better = 'boolean', obi_bonus_above = 'number',
     moving = 'boolean', pet = 'boolean',
 }
 
@@ -75,6 +76,21 @@ local function check_when(where, when, problems)
     end
 end
 
+--- Check a `lock` list ({'main', 'sub'}).
+--- @param where string
+--- @param lock any
+--- @param problems table
+local function check_lock(where, lock, problems)
+    if type(lock) ~= 'table' then
+        return add(problems, "%s: lock expects a list of slots {'main', 'sub'}", where)
+    end
+    for _, slot in ipairs(lock) do
+        if SLOT_IDS[tostring(slot)] == nil then
+            add(problems, '%s lock: "%s" is not a gear slot', where, tostring(slot))
+        end
+    end
+end
+
 --- Check one gear block ({engaged = {...}, idle = 'sets.x', when = {...}}).
 --- @param where string
 --- @param block table
@@ -83,6 +99,8 @@ local function check_block(where, block, problems)
     for moment, gear in pairs(block) do
         if moment == 'when' then
             check_when(where, gear, problems)
+        elseif moment == 'lock' then
+            check_lock(where, gear, problems)
         elseif not MOMENTS[moment] then
             add(problems, '%s: "%s" is not a moment (%s)', where, tostring(moment), MOMENT_LIST)
         elseif type(gear) == 'table' then

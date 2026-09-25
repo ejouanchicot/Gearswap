@@ -84,15 +84,23 @@ comportement à l'identique (audit : 38 valeurs d'armes Tetsouo + Kaories).
 - [x] Testé en jeu Tetsouo + Kaories (2026-09-25) : rien n'a changé pour eux.
 
 ### Étape C : fonctions communes manquantes (options, off par défaut)
-- [ ] WeaponLock (bascule, verrouille main/sub/range).
-- [ ] Mode CP (cape de capacité).
-- [ ] Obi / Orpheus automatique (WS élémentaires, Quick Draw, nukes) — généraliser
-  `blm/logic/elemental_matcher.lua`.
-- [ ] Utsusemi : annulation des ombres (généraliser DNC_MIDCAST).
-- [ ] Refresh latent < 51 % MP (existe WHM/COR : factoriser).
-- [ ] Timers (chants, Indi, Sleep) via le plugin Timers.
-- [ ] AutoMove : pieds jour/nuit, corps Adoulin, déplacement engagé.
-- [ ] Base de WS Marksmanship (manque ; RNG + COR).
+- [x] WeaponLock = Combat Mode commun à tous les jobs (2026-09-25, testé en jeu, décidé
+  avec Tetsouo) : `shared/utils/core/combat_mode.lua` + `//gs c combatmode show|hide|key`.
+  Reste : retirer les 4 verrous codés à la main (BLM, WHM, RDM, GEO) une fois validé.
+- [x] Mode CP : champ `lock` des états perso (`shared/utils/custom/custom_locks.lua`),
+  exemple dans `docs/user/guides/keybinds.md`. AutoCP (Apex/Nostos/Locus < 50 %) non
+  repris : demander à Gab s'il y tient (il faudrait des conditions sur la cible).
+- [x] Obi / Orpheus (2026-09-25, test hors jeu) : conditions `obi_better`, `orpheus_better`,
+  `obi_bonus_above` des règles perso (`shared/utils/equipment/elemental_bonus.lua`).
+  Le BLM garde son `elemental_matcher` (non touché).
+- [x] Utsusemi (2026-09-25) : annulation des ombres avant Ichi pour tous les jobs
+  (`shared/utils/midcast/utsusemi_shadows.lua`, appelée par le hook universel des sorts ;
+  retirée de DNC_MIDCAST). Changement de comportement pour les jobs non-DNC sous /NIN.
+- [x] Refresh latent : déjà possible, règle perso `mp_below = 51` (exemple dans le guide).
+- [ ] Timers (chants, Indi) : déplacé à l'étape D (BRD, GEO).
+- [x] AutoMove, corps Adoulin : règle perso `moving` + `zone`. Pas de gear de vitesse
+  en combat (décidé 2026-09-25) : l'EngagedMoving de Gab n'est pas repris.
+- [ ] Base de WS Marksmanship : déplacée à l'étape F (RNG), données à vérifier sur BG-Wiki.
 
 ### Étape D : jobs existants complétés
 - [ ] BRD : commande `buffs` (NT + Troubadour + Marcato + rotation selon le nombre
@@ -129,6 +137,8 @@ Données déjà présentes : JA, BLU spells, ninjutsu, SCH spells, alt commands.
   (`alt-binds.lua` : groupes `all`, par job d'alt, par sous-job, par arme).
 - [ ] Macrobooks et lockstyles (tables de BindManager).
 - [ ] Sets : conversion job par job avec les tables AF/RELIC/EMPY.
+- [ ] `combat_mode.lua` de Gab : `shown = {all = true}, keys = {all = '~f9'}` (son WeaponLock
+  sur Shift+F9, BindManager `login.all`).
 - [ ] UI_CONFIG de Gab : Weapons + Modes en premier, compact, CombatMode dans Weapons,
   touches en gris 125, pas de séparateurs chat.
 
@@ -155,6 +165,7 @@ Bugs existants chez eux (ne pas reproduire) : AugGear d'un autre perso effacé p
 5. Équipement réel de Blody en BLM, GEO, PUP, WHM.
 6. Automatique ou sur commande (Entrust, Full Circle, Afflatus, Double-Up) ?
 7. Binds pour Thyrsa et Sephiroph aussi ?
+8. AutoCP (cape CP auto sur Apex/Nostos/Locus < 50 %) : il y tient ?
 
 ## 6. Journal
 
@@ -163,3 +174,4 @@ Bugs existants chez eux (ne pas reproduire) : AugGear d'un autre perso effacé p
 | 2026-09-25 | A : armes sans set | feat(equipment): weapon states resolved in one place | oui (Tetsouo, BLM inchangé) |
 | 2026-09-25 | B : clone + character_db | 34481ae | hors jeu (comparaison de clones) |
 | 2026-09-25 | B : dual-box arme + multi-alts, touches `alt` | feat(dualbox) | oui (Tetsouo + Kaories) |
+| 2026-09-25 | C : Combat Mode commun, lock CP, Obi/Orpheus, Utsusemi | feat(common) | oui (Tetsouo) |

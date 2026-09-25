@@ -160,6 +160,26 @@ function TESTS.distance_below(v, spell)
     return t ~= nil and t.distance ~= nil and t.distance < v
 end
 
+--- Waist choice for elemental damage (equipment/elemental_bonus.lua):
+--- Hachirin-no-Obi when its bonus beats Orpheus's Sash, and the reverse.
+local function belt_bonuses(spell)
+    local ok, Bonus = pcall(require, 'shared/utils/equipment/elemental_bonus')
+    if not ok then return 0, 0 end
+    return Bonus.for_action(spell)
+end
+function TESTS.obi_better(v, spell)
+    local obi, orpheus = belt_bonuses(spell)
+    return (obi > 0 and obi > orpheus) == (v == true)
+end
+function TESTS.orpheus_better(v, spell)
+    local obi, orpheus = belt_bonuses(spell)
+    return (orpheus > 0 and orpheus >= obi) == (v == true)
+end
+function TESTS.obi_bonus_above(v, spell)
+    local obi = belt_bonuses(spell)
+    return obi > v
+end
+
 function TESTS.town(v) return in_town() == (v == true) end
 function TESTS.moving(v) return is_moving() == (v == true) end
 function TESTS.pet(v) return ((pet ~= nil and pet.isvalid) == true) == (v == true) end

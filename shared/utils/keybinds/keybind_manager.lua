@@ -288,12 +288,15 @@ end
 --- @param job string Job code ("PLD")
 --- @param module table Holds .binds and optionally .retired_keys
 --- @return table The same module, with get_active_binds, bind_all, refresh,
----   unbind_all, show_intro and show_binds attached, and the player's custom
+---   unbind_all, show_intro and show_binds attached, its Combat Mode row
+---   (shared/utils/core/combat_mode.lua), and the player's custom
 ---   keys, then the character's common keys (config/COMMON_KEYBINDS.lua),
 ---   appended to .binds
 function KeybindManager.create(job, module)
     local ctx = {job = job, module = module, applied = {}, api = module}
-    KeybindManager.active = module
+    -- The HUD requires the keybind file again, making a second module: the
+    -- first one is the job's, the one bind_all lays the keys with.
+    if rawget(_G, '_keybind_active') == nil then _G._keybind_active = module end
     local function bind(fn) return function(...) return fn(ctx, ...) end end
     module.get_active_binds = bind(get_active_binds)
     module.bind_all = bind(bind_all)
@@ -301,6 +304,10 @@ function KeybindManager.create(job, module)
     module.unbind_all = bind(unbind_all)
     module.show_intro = bind(show_intro)
     module.show_binds = bind(show_binds)
+    if type(module.binds) == 'table' then
+        local ok_c, CombatMode = pcall(require, 'shared/utils/core/combat_mode')
+        if ok_c and CombatMode then CombatMode.attach(job, module.binds) end
+    end
     add_custom_states(job, module)
     local ok, CommonKeybinds = pcall(require, 'shared/utils/keybinds/common_keybinds')
     if ok and CommonKeybinds then
@@ -309,11 +316,12 @@ function KeybindManager.create(job, module)
     return module
 end
 
---- Refresh the keys of the job loaded now (see the `alt` field): what
---- another box plays changes without this job's own state changing.
+--- Refresh the keys of the job loaded now (see the `alt` field, Combat
+--- Mode): what another box plays changes without this job's own state
+--- changing.
 --- @return number Commands sent (0 when no job module is loaded)
 function KeybindManager.refresh_active()
-    local module = KeybindManager.active
+    local module = rawget(_G, '_keybind_active')
     if module and module.refresh then return module.refresh() end
     return 0
 end

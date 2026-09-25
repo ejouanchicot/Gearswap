@@ -24,6 +24,9 @@
 --- An entry without `state` is a rule: its gear applies whenever its `when`
 --- holds (see custom_conditions.lua, custom_states_validate.lua).
 ---
+--- A value block may also hold `lock = {'main', 'sub'}`: those slots stay
+--- disabled while the value is current (custom_locks.lua).
+---
 --- The gear goes on last - after the job's own logic - through two Mote
 --- hooks that run after everything else: handle_equipping_gear (idle,
 --- engaged) and cleanup_precast/cleanup_midcast (actions). Slot locks
@@ -43,6 +46,7 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 local Validate = require('shared/utils/custom/custom_states_validate')
 local Conditions = require('shared/utils/custom/custom_conditions')
 local Guards = require('shared/utils/custom/custom_guards')
+local Locks = require('shared/utils/custom/custom_locks')
 
 ---============================================================================
 --- LOADING
@@ -180,6 +184,17 @@ local function action_moments(spell, action)
     return {'all'}
 end
 
+--- Slots the active value blocks lock (idle / engaged context).
+--- @return table Set of slot names
+local function wanted_locks()
+    local wanted = {}
+    for _, entry in ipairs(_G._custom_state_entries or {}) do
+        local block = entry.state and active_block(entry, nil)
+        if block then Locks.collect(block, wanted) end
+    end
+    return wanted
+end
+
 ---============================================================================
 --- HOOKS
 ---============================================================================
@@ -212,9 +227,13 @@ function CustomStates.install_hooks()
     local orig_buff = rawget(_G, 'user_buff_change')
     local hooks = {}
     hooks.gear = function(status, pet_status)
+        local locks = wanted_locks()
+        Locks.release(locks)
         if orig_gear then orig_gear(status, pet_status) end
-        if Guards.hands_off(nil, nil) then return end
-        equip_moments({'all', (status or player.status) == 'Engaged' and 'engaged' or 'idle'}, nil)
+        if not Guards.hands_off(nil, nil) then
+            equip_moments({'all', (status or player.status) == 'Engaged' and 'engaged' or 'idle'}, nil)
+        end
+        Locks.apply(locks)
     end
     local function action_hook(orig, action)
         return function(spell, spellMap, eventArgs)
@@ -257,6 +276,10 @@ function CustomStates.load(job, binds)
     -- The HUD requires the keybind file a second time: reuse this load's
     -- result instead of reading the file and warning twice.
     local cache = _G._custom_state_cache
+    if not cache then
+        -- First load in this sandbox: free what a previous job's modes locked
+        Locks.release(nil)
+    end
     if cache and cache.job == job then
         for _, b in ipairs(cache.binds) do binds[#binds + 1] = b end
         return #cache.entries
