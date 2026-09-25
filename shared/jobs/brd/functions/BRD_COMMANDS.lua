@@ -384,7 +384,8 @@ function job_self_command(cmdParams, eventArgs)
 
     if command == 'songs' or command == 'meleesong' or command == 'melee' or command == 'allsongs' then
         -- Cast current song pack using 3-phase rotation
-        SongRotationManager.cast_songs_with_phases(false, '<me>')
+        -- 'full': every dummy, whatever songs are up (another bard around)
+        SongRotationManager.cast_songs_with_phases(false, '<me>', cmdParams[2] == 'full')
         eventArgs.handled = true
         return
     end
@@ -401,7 +402,7 @@ function job_self_command(cmdParams, eventArgs)
                 {'Clarion Call', i.clarion},
                 {'Main instrument', ('%s (+%d)'):format(tostring(i.main), i.main_extra)},
                 {'Dummy instrument', ('%s (+%d)'):format(tostring(i.dummy), i.dummy_extra)},
-                {'Songs up', tostring(i.up)},
+                {'Songs up', ('%d mine, %d in all'):format(i.up, i.up_all)},
                 {'Plan', ('%d songs, %d dummies (main opens %d)'):format(total, dummies, base)},
             },
         })

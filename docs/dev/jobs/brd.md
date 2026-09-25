@@ -288,9 +288,22 @@ precast keeps the Fast Cast set's instrument.
   Loughnashade 1 or 2), plus 1 under Clarion Call. The main instrument
   (`state.MainInstrument`) opens `base` slots; the dummy instrument
   (`sets.midcast.DummySong.range`) the rest; songs = min(pack size, 2 + best extra +
-  Clarion), dummies = songs - max(songs up, base). Songs up are counted from
+  Clarion), dummies = songs - max(songs up, base). Slots are per bard, so "songs up" are
+  this character's own: `SongSlots.record` (called from `BRD_AFTERCAST.lua`) keeps a
+  ledger on `windower._brd_own_songs` of the buff songs it finished on itself, and
+  `songs_up()` counts them, per song family no more than the buffs of that family in
   `windower.ffxi.get_player().buffs` (a slot a song holds is open, a new song
-  overwrites the one with the least time left). Order: `base` pack songs, the
+  overwrites the one with the least time left). Another bard's songs never count; an
+  empty ledger (after a `lua reload`) means every dummy. Not seen: another bard
+  overwriting one of ours with the same song, or which of two same-family songs expired.
+  `//gs c songs full` sings every dummy whatever is up. **AutoNitro** (state, Apps+Numpad2,
+  default On, 2026-09-25): when Nightingale and Troubadour are both ready and
+  Nightingale is not up, `start_with_nitro` fires Nightingale, waits for its buff
+  (`AbilityHelper.follow_up`), then Troubadour likewise, then starts the queue 1 s
+  later; a refused ability does not hold the rotation (follow_up's soft deadline).
+  Marcato is unchanged: `try_marcato` still adds it before the MarcatoSong song only
+  under Nightingale + Troubadour, never under Soul Voice, when its recast is ready; `//gs c songplan` shows the
+  inputs (mine / all songs up) and the plan. Order: `base` pack songs, the
   dummies, the rest; handed to `SongQueue.start(list, target)`. `//gs c dummy` casts
   `songs - base` dummies. The `marcato_used` argument is unused.
 - `cast_dummy_songs()` queues 4 or 5 dummies from `DUMMY_SONGS.standard`.
