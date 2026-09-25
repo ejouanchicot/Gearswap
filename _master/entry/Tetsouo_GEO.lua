@@ -227,28 +227,12 @@ end
 ---============================================================================
 
 --- Called by Mote-Include after state changes (e.g., cycling MainIndi, MainGeo)
---- Applies the CombatMode weapon lock, then updates the UI to reflect current state values
+--- Updates the UI to reflect current state values. The Combat Mode lock is
+--- shared/utils/core/combat_mode.lua's.
 --- @param cmdParams table Parameters passed to Mote's handle_update
 --- @param eventArgs table Mote event arguments (unused)
 --- @return void
 function job_update(cmdParams, eventArgs)
-    -- Handle Combat Mode weapon locking
-    if state.CombatMode then
-        if state.CombatMode.current == "On" then
-            -- Lock all weapon slots
-            disable('main', 'sub', 'range', 'ammo')
-        else
-            -- Unlock weapon slots UNLESS a craft/fish session owns the disable.
-            -- job_update fires on every `gs c update` (aftercast/automove/state
-            -- change), so an unconditional enable() here would silently break
-            -- `//gs c craft`. CraftManager owns the disable until //gs c uncraft.
-            local craft_active = _G.CraftManager and _G.CraftManager.is_active()
-            if not craft_active then
-                enable('main', 'sub', 'range', 'ammo')
-            end
-        end
-    end
-
     -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI and KeybindUI.update then

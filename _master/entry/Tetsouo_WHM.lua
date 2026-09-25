@@ -242,15 +242,12 @@ end
 --- @return void
 function file_unload()
     -- disable() lives in GearSwap's own table, which survives the reload,
-    -- while OffenseMode and CombatMode come back at their defaults: release
-    -- their locks here. Not during a craft session, whose lock CraftManager
-    -- owns.
+    -- while OffenseMode comes back at its default: release its lock here.
+    -- Not during a craft session, whose lock CraftManager owns. The Combat
+    -- Mode lock is freed by the next job (shared/utils/core/combat_mode.lua).
     if not (_G.CraftManager and _G.CraftManager.is_active()) and state then
         if state.OffenseMode and state.OffenseMode.value == 'Melee ON' then
             enable('main', 'sub', 'range')
-        end
-        if state.CombatMode and state.CombatMode.value == 'On' then
-            enable('main', 'sub', 'range', 'ammo')
         end
     end
 

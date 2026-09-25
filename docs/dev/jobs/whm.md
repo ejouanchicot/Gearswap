@@ -31,7 +31,7 @@ numbers were re-checked against the working tree on 2026-09-25.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_WHM.lua` | 262 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (UI only), `init_gear_sets`, `file_unload` (releases the `Melee ON` weapon lock) |
+| `_master/entry/Tetsouo_WHM.lua` | 264 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (UI only), `init_gear_sets`, `file_unload` (releases the `Melee ON` weapon lock) |
 | `shared/jobs/whm/functions/whm_functions.lua` | 51 | Facade: includes the 11 hook files, requires `dualbox_manager` (44), debug line (46-47) |
 | `shared/jobs/whm/functions/WHM_PRECAST.lua` | 179 | `job_precast`: guard, `retier_cure`, cooldown, Paralyna guard, WS; `job_post_precast` (TP gear) |
 | `shared/jobs/whm/functions/WHM_MIDCAST.lua` | 258 | `job_midcast` (Cure/Curaga sets by mode), `job_post_midcast` (overlays + `MidcastManager`), `job_get_spell_map` |
@@ -40,7 +40,7 @@ numbers were re-checked against the working tree on 2026-09-25.
 | `shared/jobs/whm/functions/WHM_ENGAGED.lua` | 40 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/whm/functions/WHM_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/whm/functions/WHM_BUFFS.lua` | 19 | `job_buff_change = LifecycleManager.buff_change()` |
-| `shared/jobs/whm/functions/WHM_COMMANDS.lua` | 239 | `job_self_command` router, `job_state_change` (weapon locks on key or description, UI) |
+| `shared/jobs/whm/functions/WHM_COMMANDS.lua` | 224 | `job_self_command` router, `job_state_change` (`Melee ON` weapon lock on key or description, UI) |
 | `shared/jobs/whm/functions/WHM_MOVEMENT.lua` | 39 | Empty `job_handle_equipping_gear` |
 | `shared/jobs/whm/functions/WHM_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('WHM', 'config/whm/WHM_LOCKSTYLE', 1, 'SAM')` |
 | `shared/jobs/whm/functions/WHM_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('WHM', ..., 'SAM', 1, 1)` |
@@ -245,7 +245,7 @@ on every `user_setup()`. Keybinds from `WHM_KEYBINDS.lua:22-76`.
 | `CureMode` | Potency, SIRD | Potency | `^numpad3` | `WHM_MIDCAST.lua:43,64` |
 | `AfflatusMode` | Solace, Misery | Solace | `^numpad5` | `afflatus` command (151) |
 | `CureAutoTier` | On, Off | On | `^numpad4` | `cure_manager.lua:318` |
-| `CombatMode` | Off, On | Off | `^numpad2` | `job_state_change` 197-207 (key or description) |
+| `CombatMode` | Off, On | Off | `^numpad2` | shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25) lock (main/sub/range/ammo) |
 | `FastCast` | 0..80 | 80 | none | `midcast_watchdog.lua` (reads `state.FastCast`) |
 | `AutoMedicine` | shared | persisted | `#numpad0` (from `config/COMMON_KEYBINDS.lua`) | `AutoMedicine.init` (130-133) |
 
@@ -274,15 +274,14 @@ UI (113-117), `debugmidcast` (122-132), `cyclestate` (141-144), `afflatus`
 | `cyclestate <State>` | `CycleHandler.handle_cyclestate` (every keybind) |
 | `afflatus` | `input /ja "Afflatus Solace|Misery" <me>` from `AfflatusMode`, plus `show_afflatus_change` |
 
-`job_state_change(stateField, new, old)` (184-232): skips `Moving`; strips the
-spaces from the field (190) so the description (`Combat Mode`, which Mote's
-cycle and the UI-aware `cyclestate` both pass) and the key (`CombatMode`) both
-match; on `CombatMode` disables or
-enables main/sub/range/ammo (197-207); on `OffenseMode` disables or enables
-main/sub/range (213-223); always refreshes the UI
+`job_state_change(stateField, new, old)` (184-217): skips `Moving`; strips the
+spaces from the field (190) so the description (`Offense Mode`, which Mote's
+cycle and the UI-aware `cyclestate` both pass) and the key (`OffenseMode`) both
+match; on `OffenseMode` disables or enables main/sub/range (198-208); always
+refreshes the UI
 ([core lifecycle](../systems/core-lifecycle.md#cyclehandler-and-state-display)).
-The comment at 196 says WHM_STATES defines no `CombatMode`; it does
-(`WHM_STATES.lua:106`), so the branch does fire (Known issues).
+Since 2026-09-25 the `CombatMode` lock is no longer here: it is the shared
+[Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25) hook.
 
 ## Set names the code looks up
 
@@ -342,11 +341,11 @@ T = `_master/sets/whm_sets.lua` (no live copy).
 - `windower.*`: none. No events registered.
 - Slot locks: since 2026-09-25 the entry's `file_unload` releases the
   `Melee ON` lock (main/sub/range) unless a craft session owns it
-  (`Tetsouo_WHM.lua:247-250`), so a reload or job change no longer leaves the
+  (`Tetsouo_WHM.lua:248-252`), so a reload or job change no longer leaves the
   weapons locked while `OffenseMode` comes back as `None`. It does not cover a
-  subjob change (no `file_unload` there), and the `CombatMode` lock
-  (main/sub/range/ammo) is not released: it survives `gs reload` and job
-  changes while `CombatMode` resets to Off.
+  subjob change (no `file_unload` there). The `CombatMode` lock
+  (main/sub/range/ammo) is the shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25) one,
+  freed by the next load, so it no longer survives a reload or job change.
 - Subjob change: `user_setup()` re-runs, then `job_sub_job_change` (136-145)
   calls `on_job_change`, which reloads 0.5 s later. (The
   `JobChangeManager.initialize({...})` call it also made was removed on
@@ -374,7 +373,7 @@ T = `_master/sets/whm_sets.lua` (no live copy).
 - `sets.X or sets.Y` fallbacks treat an empty table as a real set.
 - Cures reach CureManager before `CooldownChecker`; a cure CureManager leaves
   unchanged still gets the recast check afterwards.
-- `job_state_change` receives the state's description (`Combat Mode`) from both
+- `job_state_change` receives the state's description (`Offense Mode`) from both
   cycle paths; it strips spaces, so a caller passing the key also works.
 - Adding a `.Resistant` set is the only way `CastingMode` can matter, and only
   for spells that reach Mote's default midcast (not Cures).
@@ -404,12 +403,9 @@ T = `_master/sets/whm_sets.lua` (no live copy).
   (`WHM_MIDCAST.lua:140`) and the Divine Caress branch inside the handled path
   (85-87) are unreachable.
 - Fixed 2026-09-25: `file_unload` releases the `Melee ON` weapon lock (see
-  State & lifetime). Still open: the `CombatMode` lock is not released on
-  unload. To check in game: `Melee ON`, then `//gs reload` or a job change,
+  State & lifetime). The `CombatMode` lock is freed at the next load by the
+  shared `combat_mode.lua` (resolved 2026-09-25). To check in game: `Melee ON`, then `//gs reload` or a job change,
   weapons free.
-- `WHM_COMMANDS.lua:196` says "WHM_STATES defines no CombatMode today, so this
-  branch does not fire"; `WHM_STATES.lua:106` does define it and
-  `WHM_KEYBINDS` binds it on `^numpad2`, so the comment is false.
 - `MessageWHM` is loaded and never used (`WHM_PRECAST.lua:54-56`);
   `show_curemanager_not_loaded` has no caller; 10 of the 12 non-debug
   `whm_message_formatter` functions have no caller (`show_cure_heal`,

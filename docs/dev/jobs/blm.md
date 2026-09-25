@@ -29,7 +29,7 @@ number added nothing, the function name is cited instead.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_BLM.lua` | 292 | Entry point (template): config preload, `get_sets`, `user_setup`, `job_sub_job_change`, `job_update`, `init_gear_sets`, `file_unload` |
+| `_master/entry/Tetsouo_BLM.lua` | 284 | Entry point (template): config preload, `get_sets`, `user_setup`, `job_sub_job_change`, `job_update`, `init_gear_sets`, `file_unload` |
 | `shared/jobs/blm/functions/blm_functions.lua` | 332 | Facade: includes the 11 hook files, lazy logic loaders, global exports (`BuffSelf`, `SaveMP`, `refine_various_spells`, `checkArts`, `CastStorm`) |
 | `shared/jobs/blm/functions/BLM_PRECAST.lua` | 191 | `job_precast` / `job_post_precast`: guard, recast-or-refine, Dark Arts, Impact lock, WS |
 | `shared/jobs/blm/functions/BLM_MIDCAST.lua` | 192 | `job_midcast` (empty) / `job_post_midcast`: builds a context and dispatches to the router |
@@ -38,7 +38,7 @@ number added nothing, the function name is cited instead.
 | `shared/jobs/blm/functions/BLM_ENGAGED.lua` | 40 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/blm/functions/BLM_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/blm/functions/BLM_BUFFS.lua` | 19 | `job_buff_change = LifecycleManager.buff_change()` |
-| `shared/jobs/blm/functions/BLM_COMMANDS.lua` | 567 | `job_self_command` router and `job_state_change` (CombatMode weapon lock, UI refresh) |
+| `shared/jobs/blm/functions/BLM_COMMANDS.lua` | 558 | `job_self_command` router and `job_state_change` (CombatMode On equips the magic weapons, UI refresh) |
 | `shared/jobs/blm/functions/BLM_MOVEMENT.lua` | 53 | `job_handle_equipping_gear` (Impact body lock attempt), `get_blm_movement_status` |
 | `shared/jobs/blm/functions/BLM_LOCKSTYLE.lua` | 51 | Lazy `LockstyleManager.create('BLM', ...)` wrappers |
 | `shared/jobs/blm/functions/BLM_MACROBOOK.lua` | 45 | Lazy `MacrobookManager.create('BLM', ...)` wrapper |
@@ -318,7 +318,7 @@ character's `config/COMMON_KEYBINDS.lua`.
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
 | `HybridMode` (Mote) | PDT, Normal | Normal | `^numpad9` | Mote `get_melee_set` only as `sets.engaged.Normal.PDT` (absent), UI |
-| `CombatMode` | Off, On | Off | `^numpad8` | `job_state_change` (`BLM_COMMANDS.lua:544-555`), `file_unload` |
+| `CombatMode` | Off, On | Off | `^numpad8` | lock: shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25); weapons: `job_state_change` (`BLM_COMMANDS.lua:544-546`) |
 | `MagicBurstMode` | Off, On, Acc | On | `^numpad0` | `midcast_router.lua:106,149`; `special_handlers.lua:37` (On only) |
 | `DeathMode` | Off, On | Off | `#numpad7` | nothing (no reader in the repo) |
 | `MainWeapon` | Hvergelmir | Hvergelmir | none | `set_builder.lua:117` (`sets.Hvergelmir`, absent) |
@@ -373,10 +373,10 @@ config has the same key.
 | `aoelight` / `aoedark` / `subaoelight` / `subaoedark` | Same with the -ga state and `AOETier` | 471-489 |
 | `storm` | `CastStorm(state.Storm.current)` | 492-506 |
 
-`job_state_change(field, new, old)` (521-558): skips `Moving`; for
-`CombatMode` / `Combat Mode` On it equips Bunzi's Rod, Ammurapi Shield, Sroda
-Tathlum and `disable('main','sub','range','ammo')`; Off enables them unless
-`_G.CraftManager.is_active()`. Always refreshes the UI.
+`job_state_change(field, new, old)` (522-549): skips `Moving`; for
+`CombatMode` / `Combat Mode` On it equips Bunzi's Rod, Ammurapi Shield and Sroda
+Tathlum. The lock itself (main/sub/range/ammo) is the shared
+[Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25) hook, which runs before the gear. Always refreshes the UI.
 
 `CastStorm` (`storm_manager.lua:184-226`): 2 s anti-spam; both Klimaform and
 the storm ready -> Klimaform (if not active) then storm 4.5 s later; storm ready
@@ -461,24 +461,25 @@ they are self-assignments; no code path reads them.
   by `KeybindManager` in `windower._keybind_manager_bound`). It registers no
   Windower events.
 - Keybinds: bound in `user_setup`, unbound in `file_unload`
-  (`Tetsouo_BLM.lua:289-291`).
+  (`Tetsouo_BLM.lua:281-283`).
 - Coroutines: the 8 s lockstyle in `user_setup` (not registered anywhere, so
   nothing cancels it; `LockstyleManager.select_default_lockstyle` returns if the
   main job is no longer BLM). Chained actions (`wait N` in `send_command`) sit in
   the Windower command queue and survive a reload.
 - `disable()` of main/sub/range/ammo by CombatMode lives in GearSwap's
   `disable_table` (`statics.lua:194`), which a `gs reload` or job change does
-  not reset. Since 2026-09-25 `file_unload` (`Tetsouo_BLM.lua:277-280`)
-  releases it when `CombatMode` is On and no craft session is active, so a
-  reload or main job change no longer leaves it behind. A subjob change runs
-  no `file_unload` before `user_setup` resets the state.
+  not reset. Since 2026-09-25 it is the shared
+  [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25) lock: it records what it
+  locked in `windower._combat_mode_locked` and frees a lock left by the
+  previous job or reload at load, so reload, subjob and main job changes no
+  longer leave it behind.
 - Subjob change: Mote calls `user_setup()` again in the same environment
   (states reset, keybinds rebound), then `job_sub_job_change`
   (`Tetsouo_BLM.lua:134-144`) hands over to `JobChangeManager.on_job_change`,
   which schedules a `gs reload`. See
   [job change lifecycle](../architecture/job-change-lifecycle.md).
-- Main job change: `file_unload` releases the CombatMode lock, cancels
-  `JobChangeManager` timers and unbinds.
+- Main job change: `file_unload` cancels `JobChangeManager` timers and
+  unbinds.
 
 ## Interactions
 
@@ -517,7 +518,7 @@ they are self-assignments; no code path reads them.
   test both.
 - `klima`, `storm` and `aoe` do not check that the subjob is SCH; the game
   refuses the actions, and `StratagemCharges` reports no charges.
-- `CombatMode` equips a hard-coded weapon trio (`BLM_COMMANDS.lua:546`), not a
+- `CombatMode` equips a hard-coded weapon trio (`BLM_COMMANDS.lua:545`), not a
   set.
 
 ## Extending
@@ -549,9 +550,9 @@ they are self-assignments; no code path reads them.
   `midcast_manager.lua:639`).
 - Comet ignores Magic Burst mode because of its root alias
   (`_master/sets/blm_sets.lua:547`).
-- CombatMode's weapon lock still survives a **subjob change** while the state
-  resets to Off (`BLM_COMMANDS.lua:544-555`). Reload and main job change:
-  fixed 2026-09-25 (`file_unload` releases it), not yet tested in game.
+- Resolved 2026-09-25: CombatMode's weapon lock no longer survives a subjob
+  change, reload or main job change (shared `combat_mode.lua` frees it at load);
+  not yet tested in game.
 - `checkArts` re-casts the nuke on `<t>` (`blm_functions.lua:285`).
 - The Impact body lock in `job_handle_equipping_gear` is overwritten by Mote
   (`BLM_MOVEMENT.lua:39-49`).

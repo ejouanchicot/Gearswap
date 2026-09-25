@@ -203,11 +203,13 @@ and wraps the entry's `visible` with `CombatMode.is_shown(job)`.
   (`combat_mode_commands.lua`), kept across a re-clone (`KEPT_ON_RECLONE`).
 - **Lock.** `CombatMode.install_hook()` (INIT_SYSTEMS, after the custom hooks, so it runs
   first) wraps `handle_equipping_gear`: On and shown disables main, sub, range (and ammo
-  on BLM and WHM) before the gear; otherwise it enables what it locked, unless a craft
-  session is active. What it locked is kept in `windower._combat_mode_locked`, so the
-  next job's first update frees it.
-- The four jobs' own lock code (BLM/WHM `job_state_change`, RDM/GEO `job_update` in the
-  entries) still runs alongside; it locks the same slots.
+  on BLM, GEO and WHM) before the gear; otherwise it enables what it locked, unless a craft
+  session is active. What it locked is kept in `windower._combat_mode_locked` and freed by
+  the next load's `attach` (job change, subjob change, reload: the state comes back Off).
+- The only lock. BLM, WHM, RDM and GEO had their own (job_state_change, entry job_update,
+  file_unload), removed on 2026-09-25. Left in the jobs: BLM equips Bunzi's Rod, Ammurapi
+  Shield and Sroda Tathlum when it turns On; RDM's set_builder skips the weapon states and
+  RDM's precast calls `CombatMode.apply()` first.
 
 ### Player modes and gear rules (`<JOB>_CUSTOM.lua`)
 
