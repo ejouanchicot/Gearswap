@@ -47,6 +47,21 @@ local CHARACTERS = {
         jobs = { 'RDM', 'COR', 'GEO', 'PLD' },
         role = 'alt',
     },
+
+    ---------------------------------------------------------------------------
+    -- GAB'S BOXES (a friend's setup, built from overlays _master/<Name>/)
+    ---------------------------------------------------------------------------
+    -- Only the jobs this system supports today. Still to build, then to add:
+    -- Gabvanstronger BLU MNK NIN PUP RNG SCH, Blodykiller MNK PUP.
+    Gabvanstronger = {
+        jobs = { 'RDM', 'BRD', 'COR', 'GEO', 'SAM', 'THF' },
+        role = 'main',
+    },
+
+    Blodykiller = {
+        jobs = { 'BLM', 'BRD', 'COR', 'GEO', 'THF', 'WHM' },
+        role = 'alt',
+    },
 }
 
 ---============================================================================
@@ -55,7 +70,7 @@ local CHARACTERS = {
 --- These are preserved but not cloned to any active character.
 --- Move a job from _archive to a character entry above to re-activate it.
 
-local ARCHIVE_JOBS = { 'DRK', 'PUP', 'RUN', 'SAM', 'WHM' }
+local ARCHIVE_JOBS = { 'DRK', 'PUP', 'RUN' }
 
 ---============================================================================
 --- MASTER DATA PATHS (relative to data/ directory)

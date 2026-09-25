@@ -360,6 +360,7 @@ class SmartCharacterCloner:
         self.count_entry = 0
         self.count_sets = 0
         self.count_configs = 0
+        self._generic_files = set()
 
     def banner(self, key):
         """Print a section banner."""
@@ -577,10 +578,14 @@ class SmartCharacterCloner:
         wardrobe layout and refill lists, his SMN). A new character must not
         inherit them just because Tetsouo is the default source, so the
         overlay applies only when the target is that character or when
-        --source asked for it.
+        --source asked for it. Otherwise a target with its own overlay
+        (_master/<target>/) gets that one.
         """
         if self.source_explicit or target_name.lower() == self.TEMPLATE_NAME.lower():
             return self.master_dir / self.TEMPLATE_NAME
+        own = self.master_dir / target_name
+        if own.is_dir():
+            return own
         return None
 
     # ------------------------------------------------------------------
@@ -622,9 +627,10 @@ class SmartCharacterCloner:
         def find_entry_src(job_upper):
             # Try overlay with TEMPLATE_NAME prefix
             if self.override_dir is not None:
-                cand = self.override_dir / 'entry' / f'{self.TEMPLATE_NAME}_{job_upper}.lua'
+                owner = self.override_dir.name
+                cand = self.override_dir / 'entry' / f'{owner}_{job_upper}.lua'
                 if cand.exists():
-                    return cand, f'{self.TEMPLATE_NAME}_{job_upper}.lua'
+                    return cand, f'{owner}_{job_upper}.lua'
             # Try master with Tetsouo prefix (the canonical generic template)
             cand = self.master_dir / 'entry' / f'{self.DEFAULT_SOURCE}_{job_upper}.lua'
             if cand.exists():
@@ -639,7 +645,7 @@ class SmartCharacterCloner:
             src, src_label = find_entry_src(job_upper)
             dst = target_dir / f'{target_name}_{job_upper}.lua'
             if src and src.exists():
-                shutil.copy2(src, dst)
+                self._copy(src, dst)
                 print(self.t['copy_ok'].format(f"{target_name}_{job_upper}.lua"))
                 self.count_entry += 1
             else:
@@ -664,7 +670,7 @@ class SmartCharacterCloner:
                 print(self.t['copy_ok'].format(f"sets/{job_lower}/"))
                 self.count_sets += 1
             elif src.exists():
-                shutil.copy2(src, dst)
+                self._copy(src, dst)
                 print(self.t['copy_ok'].format(f"sets/{job_lower}_sets.lua"))
                 self.count_sets += 1
             else:
@@ -679,7 +685,7 @@ class SmartCharacterCloner:
                 shutil.copytree(overlay_sets / 'common', target_dir / 'sets' / 'common', dirs_exist_ok=True)
                 print(self.t['copy_ok'].format("sets/common/"))
             for loose in sorted(overlay_sets.glob('*.lua')):
-                shutil.copy2(loose, target_dir / 'sets' / loose.name)
+                self._copy(loose, target_dir / 'sets' / loose.name)
                 print(self.t['copy_ok'].format(f"sets/{loose.name}"))
 
         # ── Step 4: Copy configs (job-specific + global) ──────────────
@@ -706,7 +712,7 @@ class SmartCharacterCloner:
             for fname in sorted(seen):
                 src = self._resolve_src(('config', job_lower, fname))
                 if src.exists():
-                    shutil.copy2(src, dst_dir / fname)
+                    self._copy(src, dst_dir / fname)
                     file_count += 1
             self.count_configs += file_count
             print(self.t['copy_ok'].format(f"config/{job_lower}/ ({file_count} files)"))
@@ -732,7 +738,7 @@ class SmartCharacterCloner:
             for fname in sorted(names):
                 src = self._resolve_src(('config', shared_dir, fname))
                 if src.exists():
-                    shutil.copy2(src, dst_dir / fname)
+                    self._copy(src, dst_dir / fname)
             self.count_configs += len(names)
             print(self.t['copy_ok'].format(f"config/{shared_dir}/ ({len(names)} files)"))
 
@@ -752,7 +758,7 @@ class SmartCharacterCloner:
             src = self._resolve_src(('config_global', fname))
             if src.exists():
                 dst = target_dir / 'config' / fname
-                shutil.copy2(src, dst)
+                self._copy(src, dst)
                 self.count_configs += 1
                 print(self.t['copy_ok'].format(f"config/{fname} (global)"))
 
@@ -796,14 +802,38 @@ class SmartCharacterCloner:
     # INTERNAL HELPERS
     # ------------------------------------------------------------------
 
+    def _copy(self, src, dst):
+        """shutil.copy2, remembering which files come from the generic
+        _master/ rather than from an overlay (see _replace_references)."""
+        shutil.copy2(src, dst)
+        if self.override_dir is None or self.override_dir not in Path(src).parents:
+            self._generic_files.add(Path(dst))
+
     def _replace_references(self, target_dir, target_name):
-        """Replace the source name (TEMPLATE_NAME) with target_name in .lua files."""
+        """Replace the source name (TEMPLATE_NAME) with target_name in .lua files.
+
+        Files from the generic _master/ are written for Tetsouo
+        (require('Tetsouo/config/...')), whatever --source says: in those,
+        DEFAULT_SOURCE is replaced too, except on @author lines. Without it a
+        job with no overlay entry would load another character's configs.
+        Files from the target's own overlay are already written for it and
+        may name its partner (Tetsouo in Kaories' files): left as they are.
+        """
         modified = 0
+        own_overlay = (self.override_dir is not None and
+                       self.override_dir.name.lower() == target_name.lower())
         for lua_file in target_dir.rglob('*.lua'):
             try:
                 content = lua_file.read_text(encoding='utf-8')
-                if self.TEMPLATE_NAME in content:
-                    new_content = content.replace(self.TEMPLATE_NAME, target_name)
+                generic = lua_file in self._generic_files
+                if own_overlay and not generic:
+                    continue
+                new_content = content.replace(self.TEMPLATE_NAME, target_name)
+                if generic and self.DEFAULT_SOURCE != self.TEMPLATE_NAME:
+                    new_content = ''.join(
+                        line if '@author' in line else line.replace(self.DEFAULT_SOURCE, target_name)
+                        for line in new_content.splitlines(keepends=True))
+                if new_content != content:
                     lua_file.write_text(new_content, encoding='utf-8')
                     modified += 1
             except Exception:

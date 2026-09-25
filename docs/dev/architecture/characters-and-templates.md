@@ -29,7 +29,7 @@ Scope read for this page (re-read on 2026-09-25, after `f6f1683` "clone modular 
 A character exists in up to four places:
 
 1. **Generic templates**: `_master/entry`, `_master/sets`, `_master/config/<job>`, `_master/config/alt`, `_master/config_global`. The entry templates are written for a character named `Tetsouo`. They load their configs through paths that contain the name, such as `pcall(require, 'Tetsouo/config/LOCKSTYLE_CONFIG')` (`_master/entry/Tetsouo_PLD.lua:37`), `require('Tetsouo/config/pld/PLD_STATES')` (`:171`) and `ConfigLoader.load_ui_config('Tetsouo', 'PLD')` (`:50`).
-2. **Overlay** `_master/<Name>/`: files with the same relative path as a generic file replace it during a clone, and files with no generic counterpart are added. An overlay is used only to build the character it belongs to, or when `--source <Name>` names it (see [Source selection](#source-selection)). The overlay can also hold a modular set tree `sets/<job>/`, which then replaces the generic flat `sets/<job>_sets.lua`, plus `sets/common/` and loose set files.
+2. **Overlay** `_master/<Name>/`: files with the same relative path as a generic file replace it during a clone, and files with no generic counterpart are added. An overlay is used to build the character it belongs to (since 2026-09-25 with or without `--source`), or for any target when `--source <Name>` names it (see [Source selection](#source-selection)). The overlay can also hold a modular set tree `sets/<job>/`, which then replaces the generic flat `sets/<job>_sets.lua`, plus `sets/common/` and loose set files.
 3. **Live folder** `data/<Name>/`: what GearSwap loads. Gitignored (`.gitignore:50-56`).
 4. **Runtime-written files** inside the live folder, written by in-game commands, with no template: `config/ui_settings.lua` (HUD position), `config/message_modes.lua`, `config/WARP_ITEMS_OWNED.lua`, `config/dualbox_role.lua`, `config/alt_state.lua`, `config/alt_window.lua`, `temp_binds.lua`, and the trace files (`trace.log`, `trace.on`).
 
@@ -88,17 +88,17 @@ Nothing is deleted before the final confirmation. Answering `y`/`o` to "Replace 
 
 ### The six clone steps
 
-`S` is `TEMPLATE_NAME` (`--source` or `Tetsouo`). `T` is the target name. The overlay `_master/S/` is selected at the start of `clone()` (`_select_overlay`, `:573-588`, called at `:604`) only when `T` is `S` (case-insensitive) or `--source` was given; otherwise every `_master/S/` source in the table below is skipped. "Overlay-first" means `_resolve_src()` (`:559-571`): `_master/S/<rel>` if an overlay is selected and that file exists, else `_master/<rel>`.
+`S` is `TEMPLATE_NAME` (`--source` or `Tetsouo`). `T` is the target name. The overlay `_master/S/` is selected at the start of `clone()` (`_select_overlay`, `:573-588`, called at `:604`) when `T` is `S` (case-insensitive) or `--source` was given; otherwise, since 2026-09-25, `_master/T/` when that folder exists, else none, and every overlay source in the table below is skipped. Below, `_master/S/` stands for the overlay selected, and its owner `O` is the overlay folder's name. "Overlay-first" means `_resolve_src()` (`:559-571`): `_master/S/<rel>` if an overlay is selected and that file exists, else `_master/<rel>`.
 
 | Step | Output | Source | Code |
 |---|---|---|---|
 | 1 | `<T>/sets/`, `<T>/config/` directories | - | `:606-611` |
-| 2 | `<T>/T_<JOB>.lua` per selected job | `_master/S/entry/S_<JOB>.lua`, else `_master/entry/Tetsouo_<JOB>.lua`, else `[SKIP]` and, since 2026-09-25, a final `[WARN] No entry file for: <jobs> - these jobs will not load` | `find_entry_src` `:622-633`, loop `:634-649` |
+| 2 | `<T>/T_<JOB>.lua` per selected job | `_master/S/entry/O_<JOB>.lua`, else `_master/entry/Tetsouo_<JOB>.lua`, else `[SKIP]` and, since 2026-09-25, a final `[WARN] No entry file for: <jobs> - these jobs will not load` | `find_entry_src` `:622-633`, loop `:634-649` |
 | 3 | `<T>/sets/<job>/` tree or `<T>/sets/<job>_sets.lua` per selected job | the overlay's `sets/<job>/` tree when it exists ("the modular tree wins over the generic flat file"), else overlay-first on `sets/<job>_sets.lua`, else `[SKIP]`. Then, whatever the jobs, the overlay's `sets/common/` and every loose `sets/*.lua` (`bonecraft_sets.lua`, `fishing_sets.lua`) | `:651-684` |
 | 4a | `<T>/config/<job>/*.lua` per selected job | union of `*.lua` names in `_master/config/<job>/` and `_master/S/config/<job>/`, each overlay-first | `:685-713` |
 | 4b | `<T>/config/craft/`, and `<T>/config/alt/` for a MAIN | same per-file rule over `config/craft` and `config/alt` (`shared_dirs`); `alt` only when the role answered is `main` | `:714-738` |
 | 4c | `<T>/config/<file>.lua` | union of `*.lua` names in `_master/config_global/` and `_master/S/config_global/`, each overlay-first, flattened into `config/` | `:742-758` |
-| 5 | in place | every `*.lua` under `<T>/`: `content.replace(S, T)` | `_replace_references` `:799-811` |
+| 5 | in place | every `*.lua` under `<T>/`: `content.replace(S, T)`; in files copied from the generic layer also `Tetsouo` -> `T` outside `@author` lines; files from `T`'s own overlay untouched | `_replace_references` `:799-811` |
 | 6 | `<T>/config/DUALBOX_CONFIG.lua`, `<T>/config/REGION_CONFIG.lua` | generated from the answers, overwriting whatever step 4c copied | `:765-770`, `_create_dualbox_config` `:813`, `_create_region_config` `:862` |
 | 7 | the files listed in `KEPT_ON_RECLONE` | copied back from the backup folder of a re-clone (after step 5, so they keep their own names) | `KEPT_ON_RECLONE` `:312-319`, `_restore_kept_files` `:432-442`, call `:774` |
 
@@ -109,7 +109,8 @@ Files are copied with `shutil.copy2` / `shutil.copytree`. Step 5 rewrites a file
 ### Name substitution (step 5)
 
 - Plain substring replacement of `S` by `T` in every `.lua` file. This covers the require paths and `load_ui_config('Tetsouo', ...)` in entries, which is the part that matters. It also rewrites `@file` headers, comments, and every `@author Tetsouo`.
-- Only `S` is replaced. With `--source Kaories`, a file taken from the generic layer keeps its `'Tetsouo/config/...'` paths. For an entry, this happens whenever the overlay has no `Kaories_<JOB>.lua`, because `find_entry_src` falls back to the generic `Tetsouo_<JOB>.lua`. The four `_master/Kaories/entry/` files exist so that Kaories does not hit this.
+- Files copied from the generic layer (`_copy` records them) also get `Tetsouo` replaced, whatever `S` is, except on `@author` lines. Before 2026-09-25 only `S` was replaced, so with `--source Kaories` a generic file kept its `'Tetsouo/config/...'` paths: an entry taken from the generic `Tetsouo_<JOB>.lua` loaded Tetsouo's configs. Checked against the old script on a scratch copy: Tetsouo and a new character with the default source give identical folders, Kaories with `--source Kaories` differs by two comment lines.
+- Files from the target's own overlay (`_master/T/`) are left as written: they may name the partner (`Tetsouo` in Kaories' `PLD_MACROBOOK.lua`).
 - The progress message always prints `Tetsouo >> T` (`replace_count`, `:113`), whatever `S` is.
 
 ### Generated files (step 6)
@@ -134,11 +135,12 @@ Without `--source`, `S = 'Tetsouo'`. `_select_overlay(T)` keeps the overlay `_ma
 | Invocation | Target | Overlay used |
 |---|---|---|
 | default source | `Tetsouo` | `_master/Tetsouo/` (his entries with modular sets, refill lists, wardrobe config, SMN, craft files) |
-| default source | any other name, `Kaories` included | none: generic `_master/` files only |
+| default source | a name with its own `_master/<Name>/` (`Kaories`, later `Gabvanstronger`, `Blodykiller`) | that folder (since 2026-09-25) |
+| default source | any other name | none: generic `_master/` files only |
 | `--source Kaories` | any name | `_master/Kaories/` |
 
 - A new character cloned with the default source gets no `WARDROBE_CONFIG.lua` and no `<JOB>_REFILL.lua` files, because `_master/config_global/` and `_master/config/<job>/` have none (`a14df3f`). The wardrobe organizer then runs on its defaults (`shared/utils/wardrobe/lib/config.lua`) and refill uses its fallback list.
-- Running the tool for `Kaories` without `--source Kaories` never consults `_master/Kaories/`: she is rebuilt from the generic files only. The confirmation screen now shows which overlay applies, so this is visible before anything is written.
+- Running the tool for `Kaories` without `--source Kaories` used to skip `_master/Kaories/`; it now uses it. The result differs from `--source Kaories` only on the `@author` lines of generic files, which name the target. The confirmation screen shows which overlay applies before anything is written.
 
 ## character_db.lua
 
@@ -146,12 +148,12 @@ Data (`character_db.lua:34-60`):
 
 | Table | Content |
 |---|---|
-| `CHARACTERS` | `Tetsouo = { jobs = {BLM, BRD, BST, COR, DNC, PLD, SMN, THF, WAR}, role = 'main' }`, `Kaories = { jobs = {RDM, COR, GEO, PLD}, role = 'alt' }` |
-| `ARCHIVE_JOBS` | DRK, PUP, RUN, SAM, WHM: no active owner. Their templates remain under `_master/` |
+| `CHARACTERS` | `Tetsouo = { jobs = {BLM, BRD, BST, COR, DNC, PLD, SMN, THF, WAR}, role = 'main' }`, `Kaories = { jobs = {RDM, COR, GEO, PLD}, role = 'alt' }`, and since 2026-09-25 Gab's boxes: `Gabvanstronger = { jobs = {RDM, BRD, COR, GEO, SAM, THF}, role = 'main' }`, `Blodykiller = { jobs = {BLM, BRD, COR, GEO, THF, WHM}, role = 'alt' }` (only the jobs the system supports; see `docs/dev/gab-blody/ROADMAP.md`) |
+| `ARCHIVE_JOBS` | DRK, PUP, RUN: no active owner. Their templates remain under `_master/` |
 | `MASTER` | `sets_dir = '_master/sets'`, `config_dir = '_master/config'` |
 | `ALL_JOBS` | 16 codes including SMN |
 
-COR and PLD have two owners; Kaories's COR and PLD are served by her overlay.
+Several jobs have more than one owner (COR, BRD, GEO, THF...); each character's own copy comes from its overlay.
 
 Public API. Every function has **zero callers** in `shared/`, `_master/`, `Tetsouo/`, `Kaories/`, the root scripts and the docs. The Python script does not load the module. It regex-parses the file.
 

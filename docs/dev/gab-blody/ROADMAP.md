@@ -61,11 +61,17 @@ comportement à l'identique (audit : 38 valeurs d'armes Tetsouo + Kaories).
 - [x] fait, testé en jeu (Tetsouo) — commit : voir journal
 
 ### Étape B : fondations
-- [ ] `clone_character.py` : remplacer aussi `Tetsouo` (DEFAULT_SOURCE) par le nom
-  cible pour les fichiers venant du `_master/` générique ; ajouter BLU MNK NIN RNG SCH
-  (+ PUP réparé) à `ALL_VALID_JOBS`. Vérifier : re-clone de Tetsouo et Kaories
-  = fichiers identiques à l'actuel.
-- [ ] `character_db.lua` : Gabvanstronger (main), Blodykiller (alt) ; `ALL_JOBS`.
+- [x] `clone_character.py` (2026-09-25) : `Tetsouo` remplacé aussi dans les fichiers
+  venant du `_master/` générique (hors lignes `@author`) ; l'overlay du perso cible
+  `_master/<Nom>/` est pris même sans `--source`, et ses fichiers ne sont pas renommés.
+  Vérifié contre l'ancien script : Tetsouo et un nouveau perso identiques, Kaories
+  2 commentaires. BLU MNK NIN RNG SCH (+ PUP) iront dans `ALL_VALID_JOBS` quand ils
+  existeront (étapes E/F), sinon le clone n'aurait rien à copier.
+- [x] `character_db.lua` (2026-09-25) : Gabvanstronger (main : RDM BRD COR GEO SAM THF),
+  Blodykiller (alt : BLM BRD COR GEO THF WHM) ; le reste s'ajoute job par job.
+- [x] `.gitignore` (local, il s'ignore lui-même ; fait 2026-09-25) : ajouter `!_master/Gabvanstronger/`,
+  `!_master/Gabvanstronger/**` (le motif `Gabvanstronger/` masquerait l'overlay) et
+  `Blodykiller/` + ses négations, avant de créer les overlays.
 - [ ] Overlays `_master/Gabvanstronger/`, `_master/Blodykiller/` (sets, configs,
   `0_AugGear_*`, UI_CONFIG, COMMON_KEYBINDS).
 - [ ] Dual-box : l'alt envoie aussi le **type d'arme** ; `AltJobState` par nom
