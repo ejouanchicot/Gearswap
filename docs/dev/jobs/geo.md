@@ -416,6 +416,19 @@ code looks up is missing.
 - New state: `GEO_STATES.lua` and `GEO_KEYBINDS.lua`, in `_master/config/geo/`,
   `_master/Kaories/config/geo/` and the live `Kaories/config/geo/`.
 
+## Auto abilities (2026-09-25)
+
+Off unless `<Character>/config/AUTO_ABILITIES.lua` turns them on (template
+`_master/config_global/AUTO_ABILITIES.lua`, reader `shared/utils/core/auto_options.lua`).
+`GEO_PRECAST.lua` calls `logic/geo_auto_abilities.lua` right after the cooldown check:
+
+- `geo_entrust`: an `Indi-` aimed at a party member (PLAYER or trust in party, not self)
+  goes through `AbilityHelper.try_ability(spell, eventArgs, 'Entrust', 1.5)`: cancelled,
+  Entrust fired, recast on the same target once Entrust is up.
+- `geo_full_circle`: a `Geo-` cast while `pet.isvalid` and Full Circle is ready is
+  cancelled; Full Circle goes out and the Geo- is sent again 2 s later (the ability delay,
+  as `//gs c escort`). `windower._geo_full_circle_replay` (5 s) lets that recast through.
+
 ## Known issues
 
 - `HybridMode` (the `^numpad9` anchor, default PDT) is read by the set builder

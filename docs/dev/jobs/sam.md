@@ -332,6 +332,13 @@ T = `_master/sets/sam_sets.lua` (no live copy).
   `meditate`, ...) then runs here; the alt's version stays reachable as
   `//gs c alt <name>`.
 
+## Auto Hasso (2026-09-25)
+
+`sam_hasso = true` in `<Character>/config/AUTO_ABILITIES.lua` (reader
+`shared/utils/core/auto_options.lua`): `SAM_STATUS.lua` passes `auto_hasso` to
+`LifecycleManager.status_change`; on Engaged, with neither Hasso nor Seigan up and Hasso's
+recast ready, it sends `input /ja "Hasso" <me>`. Off by default.
+
 ## Known issues
 
 - Fixed 2026-09-25: `REGION_CONFIG` is now loaded in the file chunk, before

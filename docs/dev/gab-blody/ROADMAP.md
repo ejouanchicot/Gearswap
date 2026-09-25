@@ -107,12 +107,17 @@ comportement à l'identique (audit : 38 valeurs d'armes Tetsouo + Kaories).
 - [ ] BRD : commande `buffs` (NT + Troubadour + Marcato + rotation selon le nombre
   de chants, repli /WHM Pianissimo + Ballad III, report recast NT en /p) ;
   Loughnashade au sommeil ; mode Daurdabla ; CastingMode Resistant ; Miracle Cheer.
-- [ ] COR : roll actif relancé = Double-Up ; Flurry I/II (détection paquet) ;
+- [x] COR : roll actif relancé = Double-Up (2026-09-25, pour tout le monde, décidé avec
+  Tetsouo ; `logic/double_up.lua`).
+- [ ] COR : Flurry I/II (détection paquet) ;
   QDMode STP/Enhance/Potency/TH ; Fold double bust ; Triple Shot / AM3 ;
   RangedMode ; garde munitions spéciales ; Compensator seulement hors combat (option).
-- [ ] GEO : Entrust auto sur Indi allié (option) ; Full Circle auto avant Geo- (option) ;
+- [x] GEO : Entrust auto sur Indi allié, Full Circle auto avant Geo- (2026-09-25, options
+  `geo_entrust`, `geo_full_circle` de `config/AUTO_ABILITIES.lua`, off par défaut).
+- [ ] GEO :
   MagicBurst ; repli de tier Cure/Aspir/Sleep.
-- [ ] SAM : Hasso auto à l'engage ; SubSet (grip) / RangedSet.
+- [x] SAM : Hasso auto à l'engage (2026-09-25, option `sam_hasso`).
+- [ ] SAM : SubSet (grip) / RangedSet.
 - [ ] THF : TreasureMode None/Fulltime ; TH sur Aeolian et au tir ; set Feint.
 - [ ] WHM : Cure sous Aurorastorm ; bottes Sandstorm ; Afflatus auto (option).
 - [ ] BLM : CastingMode Proc.
@@ -140,6 +145,7 @@ Données déjà présentes : JA, BLU spells, ninjutsu, SCH spells, alt commands.
 - [ ] Sets : conversion job par job avec les tables AF/RELIC/EMPY.
 - [ ] `combat_mode.lua` de Gab : `shown = {all = true}, keys = {all = '~f9'}` (son WeaponLock
   sur Shift+F9, BindManager `login.all`).
+- [ ] `AUTO_ABILITIES.lua` de Gab (et Blody) : `sam_hasso`, `geo_entrust`, `geo_full_circle` à true.
 - [ ] UI_CONFIG de Gab : Weapons + Modes en premier, compact, CombatMode dans Weapons,
   touches en gris 125, pas de séparateurs chat.
 
@@ -157,16 +163,19 @@ Bugs existants chez eux (ne pas reproduire) : AugGear d'un autre perso effacé p
 `0_AugGear_shared_dats`, THF de Blody qui ne charge pas, `sub_cheatsheet` /
 `unbind_mainjob` / `handle_nuking` inexistants, `check_cpmode` cassé.
 
-## 5. Questions ouvertes (à Gab)
+## 5. Réponses de Gab (2026-09-25, `data/Gab_reponse.txt`)
 
-1. Jobs prioritaires.
-2. Que doit faire `blody gs c buffs2` (inexistant chez Blody) ?
-3. Scripts/alias Windower manquants, ou remplacement par nos commandes d'alt ?
-4. `PUP_Lib.lua`.
-5. Équipement réel de Blody en BLM, GEO, PUP, WHM.
-6. Automatique ou sur commande (Entrust, Full Circle, Afflatus, Double-Up) ?
-7. Binds pour Thyrsa et Sephiroph aussi ?
-8. AutoCP (cape CP auto sur Apex/Nostos/Locus < 50 %) : il y tient ?
+1. Raccourcis de sorts : addon Shortcuts, son `aliases.xml` reçu (`F:\Telechargement Diversliases.xml`).
+   `march3` Honor March, `minuet3/4/5` Valor Minuet III/IV/V, `str2` Herculean Etude,
+   `ballad3` Mage's Ballad III, `paeon` Army's Paeon, `minne` Knight's Minne. Ses binds
+   gardent ces raccourcis (Shortcuts reste installé chez lui) ; notre code écrit les vrais noms.
+2. Scripts BRD (`odybuffs`, `odybuffs2`, `fakes`) : abandonnés, il utilisera nos packs de chants.
+3. `PUP_Lib.lua` reçu (`F:\Telechargement Divers\PUP_Lib.lua`, 1320 lignes).
+4. Sets de Blody BLM/GEO/PUP/WHM : à jour.
+5. Priorités : Blody BRD, COR, THF. Gab, nouveaux jobs : BLU et PUP.
+6. Thyrsa / Sephiroph : pas maintenant.
+7. AutoCP : rarement, on ne le fait pas (le mode CP à touche suffit).
+8. `buffs2` : abandonné.
 
 ## 6. Journal
 
@@ -177,3 +186,4 @@ Bugs existants chez eux (ne pas reproduire) : AugGear d'un autre perso effacé p
 | 2026-09-25 | B : dual-box arme + multi-alts, touches `alt` | feat(dualbox) | oui (Tetsouo + Kaories) |
 | 2026-09-25 | C : Combat Mode commun, lock CP, Obi/Orpheus, Utsusemi | feat(common) | oui (Tetsouo) |
 | 2026-09-25 | C : 4 verrous Combat Mode en double retirés | refactor(combatmode) | oui (Tetsouo BLM, Kaories RDM/GEO) |
+| 2026-09-25 | D : COR Double-Up, options Hasso / Entrust / Full Circle | feat(cor,geo,sam) | Double-Up oui ; options hors jeu |
