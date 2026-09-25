@@ -82,10 +82,25 @@ function AbilityHelper.is_ability_ready(ability_name)
     return is_recast_ready(cooldown)
 end
 
+--- Whether the buff is on, reading the game when buffactive has not caught up.
+---
+--- GearSwap rebuilds buffactive only when one of its events fires, and on a
+--- buff gain it refreshes BEFORE storing the new buff list. A follow-up
+--- polling from a coroutine therefore never saw the ability's buff and waited
+--- for its deadline: Majesty then Cure went out 5 s late.
 --- @param buff_name string Buff name
 --- @return boolean True if the buff is active
 function AbilityHelper.is_buff_active(buff_name)
-    return buffactive[buff_name] or false
+    if buffactive[buff_name] then return true end
+    local me = windower.ffxi.get_player()
+    local ok, res = pcall(require, 'resources')
+    if not me or not me.buffs or not ok or not res then return false end
+    local wanted = buff_name:lower()
+    for _, id in ipairs(me.buffs) do
+        local buff = res.buffs[id]
+        if buff and buff.en and buff.en:lower() == wanted then return true end
+    end
+    return false
 end
 
 --- How often the pending follow-up re-reads the game state.
