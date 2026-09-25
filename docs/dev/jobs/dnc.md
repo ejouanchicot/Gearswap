@@ -37,7 +37,7 @@ number added nothing, the function name is cited instead.
 | `_master/entry/Tetsouo_DNC.lua` | 294 | Entry point (template): config preload, `get_sets` (with the `cancel_conflicting_buffs` override), `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
 | `shared/jobs/dnc/functions/dnc_functions.lua` | 107 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/dnc/functions/DNC_PRECAST.lua` | 220 | `refine_waltz` override, `job_precast` (guard, cooldown, Samba TP, Climactic timestamp, Jump/Climactic triggers, WS handler), `job_post_precast` (WS variant, TP gear) |
-| `shared/jobs/dnc/functions/DNC_MIDCAST.lua` | 95 | `job_midcast` (Utsusemi: Ichi shadow cancel) / `job_post_midcast` (MidcastManager for Ninjutsu, Healing, Enhancing) |
+| `shared/jobs/dnc/functions/DNC_MIDCAST.lua` | 95 | `job_midcast` (empty since 2026-09-25) / `job_post_midcast` (MidcastManager for Ninjutsu, Healing, Enhancing) |
 | `shared/jobs/dnc/functions/DNC_AFTERCAST.lua` | 38 | `job_aftercast`: watchdog tick only |
 | `shared/jobs/dnc/functions/DNC_IDLE.lua` | 41 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/dnc/functions/DNC_ENGAGED.lua` | 40 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
@@ -305,9 +305,10 @@ name/map/skill), then `job_post_midcast` (`DNC_MIDCAST.lua:45-81`) notifies the
 watchdog and calls `MidcastManager.select_set` for Ninjutsu, Healing and
 Enhancing. None of the three base sets exists in template or live sets, so each
 call returns at `midcast_manager.lua:639` and `sets.midcast.Utsusemi` from Mote
-stands. `job_midcast` (30-38) schedules `cancel 66/444/445/446` (every Copy
-Image buff) 2.3 s after an Utsusemi: Ichi midcast starts, whatever happens to
-the cast.
+stands. The shadow cancel for Utsusemi: Ichi (`cancel 66/444/445/446`, every
+Copy Image buff, 2.3 s after the midcast starts, whatever happens to the cast)
+moved on 2026-09-25 to `shared/utils/midcast/utsusemi_shadows.lua`, called for
+every job from `shared/hooks/init_spell_messages.lua`; `job_midcast` is empty.
 
 ### Aftercast, idle, engaged, status, buffs
 
