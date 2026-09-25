@@ -286,6 +286,12 @@ function job_self_command(cmdParams, eventArgs)
         RollTracker.clear_all()
         MessageFormatter.show_rolls_cleared()
 
+    elseif command == 'rolldebug' then
+        -- Compare the roll gear sent with the gear worn when the roll goes off
+        eventArgs.handled = true
+        local on = require('shared/jobs/cor/functions/logic/roll_debug').toggle()
+        MessageFormatter.show_info('Roll debug: ' .. (on and 'ON' or 'OFF'))
+
     elseif command == 'party' then
         -- Display detected party members and their jobs
         eventArgs.handled = true

@@ -173,6 +173,8 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     end
 
     apply_luzaf(spell)
+    -- //gs c rolldebug: note the gear this roll is sent in
+    require('shared/jobs/cor/functions/logic/roll_debug').note_precast(spell)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

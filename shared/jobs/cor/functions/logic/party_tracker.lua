@@ -81,6 +81,9 @@ function PartyTracker.init_roll_listener()
         end)
         if not roll_name then return end
 
+        -- //gs c rolldebug: the gear actually worn as the roll went off
+        pcall(function() require('shared/jobs/cor/functions/logic/roll_debug').on_roll_action(roll_name) end)
+
         local roll_value = act.targets and act.targets[1] and act.targets[1].actions
             and act.targets[1].actions[1] and act.targets[1].actions[1].param
         if not roll_value or roll_value < 1 or roll_value > 12 then return end
