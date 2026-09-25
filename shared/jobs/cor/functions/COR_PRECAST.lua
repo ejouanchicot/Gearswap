@@ -8,7 +8,8 @@
 ---     becomes a Double-Up (logic/double_up.lua)
 ---   • Quick Draw: CorsairShot class
 ---   • Crooked Cards: timestamp read by the roll tracker
----   • Luzaf's Ring / Gurebu's Ring on Phantom Roll (LuzafRing state)
+---   • Luzaf's Ring on Phantom Roll and Double-Up (LuzafRing state, sets
+---     precast.LuzafRing / LuzafRingOff of each character)
 ---
 ---   Processing Order (CRITICAL):
 ---   1. Debuff guard (PrecastGuard) - blocks if silenced/amnesia/stunned
@@ -144,6 +145,21 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 end
 
+--- Luzaf's Ring on a Phantom Roll or Double-Up (16 yalms instead of 8). Each
+--- character's sets say where it goes and what replaces it:
+---   ON   sets.precast.LuzafRing, else {left_ring = "Luzaf's Ring"}
+---   OFF  sets.precast.LuzafRingOff, else nothing: the roll set's own ring
+--- @param spell table Spell information from GearSwap
+local function apply_luzaf(spell)
+    if not (spell.type == 'CorsairRoll' or spell.english == 'Double-Up') then return end
+    if not (state and state.LuzafRing) then return end
+    if state.LuzafRing.value == 'ON' then
+        equip(sets.precast.LuzafRing or {left_ring = "Luzaf's Ring"})
+    elseif sets.precast.LuzafRingOff then
+        equip(sets.precast.LuzafRingOff)
+    end
+end
+
 ---   Called after precast gear is equipped
 ---   @param spell table Spell/ability data
 ---   @param action table Action information from GearSwap
@@ -156,18 +172,7 @@ function job_post_precast(spell, action, spellMap, eventArgs)
         WSPrecastHandler.apply_tp_gear(spell)
     end
 
-    -- Phantom Roll: Adjust ring based on Luzaf Ring state
-    if spell.type == 'CorsairRoll' then
-        if state and state.LuzafRing then
-            if state.LuzafRing.value == 'ON' then
-                -- Keep Luzaf's Ring (16y range)
-                equip({left_ring = "Luzaf's Ring"})
-            elseif state.LuzafRing.value == 'OFF' then
-                -- Use Gurebu's Ring instead (8y range)
-                equip({left_ring = "Gurebu's Ring"})
-            end
-        end
-    end
+    apply_luzaf(spell)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

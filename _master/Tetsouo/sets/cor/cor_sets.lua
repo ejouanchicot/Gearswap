@@ -170,6 +170,9 @@ sets.precast.CorsairRoll = {
     back       = Camulus.plain
 }
 
+-- LuzafRing OFF (8 yalms): Gurebu's Ring replaces Luzaf's on the left ring
+sets.precast.LuzafRingOff = {left_ring = "Gurebu's Ring"}
+
 -- • Double-Up (handled dynamically in COR_PRECAST.lua)
 --   Equips the same set as the last roll used (including specific roll gear)
 

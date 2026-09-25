@@ -167,9 +167,13 @@ comment (86-89) states the checks must not stop the precast.
   `triggers.lua:128-129`) and Mote reaches `sets.precast.RA` through
   `action_type` (`Mote-Include.lua:645-646`); `CorsairShot` reaches
   `sets.precast.CorsairShot` from its type.
-- `job_post_precast` (146-164): TP gear, then for `type == 'CorsairRoll'` only,
-  `left_ring = "Luzaf's Ring"` when `LuzafRing` is `ON` or `Gurebu's Ring` when
-  `OFF`. Double-Up (`type == 'JobAbility'`) keeps the ring of the roll set.
+- `job_post_precast`: TP gear, then Luzaf's Ring (`apply_luzaf`, on a Phantom Roll
+  and, since 2026-09-25, on Double-Up): `ON` equips `sets.precast.LuzafRing`, else
+  `{left_ring = "Luzaf's Ring"}`; `OFF` equips `sets.precast.LuzafRingOff` when the
+  character's sets define it, else nothing (the roll set's own ring stays). No ring
+  name is written in the code: Tetsouo and Kaories define `LuzafRingOff = Gurebu's
+  Ring` on the left (their roll sets hold Luzaf there); Blodykiller `LuzafRing` on the
+  right, over his Warden's Ring.
 
 ### Roll detection and tracking
 
