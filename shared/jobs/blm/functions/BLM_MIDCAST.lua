@@ -24,8 +24,6 @@
 local MessageFormatter = nil
 local MessageBLMMidcast = nil
 local MidcastRouter = nil
-local EnhancingSPELLS = nil
-local EnhancingSPELLS_success = false
 local BLMMPConfig = nil
 local BLMElementalConfig = nil
 
@@ -98,10 +96,6 @@ local function ensure_modules_loaded()
     MessageBLMMidcast = mbm
     mark('MessageBLMMidcast')
 
-    -- Enfeebling routes on spell_family, which lives in the enhancing database.
-    EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
-    mark('ENHANCING_DB')
-
     local char_name = (player and player.name) or 'Tetsouo'
 
     BLMMPConfig = load_blm_config(char_name, 'BLM_MP_CONFIG',
@@ -154,8 +148,6 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         messages            = MessageBLMMidcast,
         mp_config           = BLMMPConfig,
         elemental_config    = BLMElementalConfig,
-        enfeebling_database = EnhancingSPELLS_success and EnhancingSPELLS
-                              and EnhancingSPELLS.get_spell_family or nil,
     }
 
     -- Impact: special handling (Twilight Cloak body lock) - checked BEFORE skill

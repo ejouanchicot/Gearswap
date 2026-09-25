@@ -50,11 +50,6 @@ return {
         color = 1
     },
 
-    marcato_honor_march = {
-        template = "{gray}[{lightblue}{job}{gray}]{gray} Using {yellow}Marcato{gray} for {cyan}{song}{gray} {gray}({green}Nightingale + Troubadour active{gray})",
-        color = 1
-    },
-
     marcato_skip_buffs = {
         template = "{gray}[{lightblue}{job}{gray}] {yellow}Marcato{gray} skipped: {orange}Requires Nightingale + Troubadour",
         color = 1
@@ -91,20 +86,6 @@ return {
 
     instrument_released = {
         template = "{gray}[{lightblue}{job}{gray}] {cyan}{song}{gray} >> {green}{instrument} released",
-        color = 1
-    },
-
-    ---========================================================================
-    --- LEGACY HONOR MARCH MESSAGES (BACKWARD COMPATIBILITY)
-    ---========================================================================
-
-    honor_march_locked = {
-        template = "{gray}[{lightblue}{job}{gray}] {cyan}Honor March{gray} Protection: {green}Marsyas locked",
-        color = 1
-    },
-
-    honor_march_released = {
-        template = "{gray}[{lightblue}{job}{gray}] {cyan}Honor March{gray} Protection: {green}Released",
         color = 1
     },
 
@@ -170,11 +151,6 @@ return {
     ---========================================================================
     --- INDIVIDUAL SONG MESSAGES
     ---========================================================================
-
-    song_cast = {
-        template = "{gray}[{lightblue}{job}{gray}]{gray} Casting {green}Song {slot}{gray}: {cyan}{song}",
-        color = 1
-    },
 
     song_guidance = {
         template = "{gray}[{lightblue}{job}{gray}]{gray} Note: {green}Song {slot}{gray} requires songs 1-2 + {orange}{dummy_count} {dummy_text}{gray} to be active",

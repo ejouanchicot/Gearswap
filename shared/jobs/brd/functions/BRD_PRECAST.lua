@@ -193,7 +193,6 @@ local function try_marcato(spell, eventArgs)
     cancel_spell()
     send_command('input /ja "Marcato" <me>')
     send_command('wait 2; input /ma "' .. target_song .. '" <me>')
-    MessageFormatter.show_marcato_honor_march(target_song)
     eventArgs.cancel = true
     return true
 end

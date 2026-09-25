@@ -5,7 +5,7 @@
 --- Handles job change notifications and online status tracking.
 ---
 --- Communication Flow (both roles; "alt" = the other box):
----   auto-init >> send_job_update() >> send <other> gs c altjobupdate JOB SUB MLVL SLVL
+---   auto-init >> send_job_update() >> send <other> gs c altjobupdate JOB SUB MLVL SLVL NAME
 ---   auto-init >> request_alt_job() >> send <other> gs c requestjob
 ---   requestjob >> handle_job_request() >> send_job_update(true)
 ---   altjobupdate >> receive_alt_job() >> stores in _G.AltJobState, reloads macrobook
@@ -194,8 +194,10 @@ function DualBoxManager.send_job_update(force)
         return
     end
 
-    local command = string.format('send %s gs c altjobupdate %s %s %d %d',
-        target_name, main_job, sub_job, main_level, sub_level)
+    -- The sender's name comes last so a receiver that ignores it still reads
+    -- the four fields it knows.
+    local command = string.format('send %s gs c altjobupdate %s %s %d %d %s',
+        target_name, main_job, sub_job, main_level, sub_level, player.name or '')
     send_command(command)
 
     -- Record for de-dup (after we actually sent, so a failed get_target_character
@@ -255,8 +257,16 @@ end
 --- @param sub_job string|nil Other box's subjob (e.g., "RDM")
 --- @param main_level string|number|nil Main job level (0 when not sent)
 --- @param sub_level string|number|nil Subjob level (0 when not sent)
-function DualBoxManager.receive_alt_job(main_job, sub_job, main_level, sub_level)
+--- @param sender string|nil Name of the box that sent it (nil from an older box)
+function DualBoxManager.receive_alt_job(main_job, sub_job, main_level, sub_level, sender)
     if not _G.DualBoxConfig or not _G.DualBoxConfig.enabled then
+        return
+    end
+
+    -- _G.AltJobState holds one box: with three or more in the group, only
+    -- the tracked partner's update may write it.
+    local tracked = get_target_character()
+    if sender and sender ~= '' and tracked and sender:lower() ~= tracked:lower() then
         return
     end
 

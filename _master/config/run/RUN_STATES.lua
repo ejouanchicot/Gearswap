@@ -99,9 +99,9 @@ function RUNStates.configure()
     --- Cap: 80% maximum (FFXI mechanics)
     state.FastCast = M {
         ['description'] = 'Fast Cast %',
-        0, 10, 20, 30, 40, 50, 60, 70, 80
+        '0', '10', '20', '30', '40', '50', '60', '70', '80'
     }
-    state.FastCast:set(30)  -- Default: 30% (RUN has moderate FC)
+    state.FastCast:set('30')  -- Default: 30% (RUN has moderate FC)
 
     -- Universal toggle, created here rather than centrally: the keybind HUD
     -- renders from user_setup() and caches what it reads, so a state added

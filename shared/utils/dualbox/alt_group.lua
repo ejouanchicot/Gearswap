@@ -1,5 +1,5 @@
 ---============================================================================
---- Alt Group - //gs c alts : orders to every alt attached to this main
+--- Alt Group - //gs c alts : orders to the other members of the box group
 ---============================================================================
 --- Drives the alts' automation addon (console "sm ...") through the send
 --- addon, one alt at a time, so it reaches only the characters named in
@@ -48,12 +48,14 @@ local function state_file()
     return name and (windower.addon_path .. 'data/' .. name .. '/config/alt_state.lua')
 end
 
---- The orders saved by the last session of this game. Stamped with os.clock
---- (time since the game process started), like //gs c tb: a stamp later than
---- now means the game restarted, and the alts start in an unknown state.
+--- The orders saved by the last session of this game. Stamped with the wall
+--- clock: a stamp older than this game process (os.clock counts the seconds
+--- since it started) was written before a restart, and the alts start in an
+--- unknown state. A stamp without a time counts as old.
 local function load_state()
     local ok, data = pcall(dofile, state_file() or '')
-    if not ok or type(data) ~= 'table' or (tonumber(data.clock) or math.huge) > os.clock() then
+    if not ok or type(data) ~= 'table'
+        or os.time() - (tonumber(data.time) or 0) > os.clock() + 1 then
         return {}
     end
     return {on = data.on, follow = data.follow, mirror = data.mirror}
@@ -65,8 +67,8 @@ local function save_state(state)
     if not file then return end
     local function lua(v) return type(v) == 'string' and string.format('%q', v) or tostring(v) end
     file:write('-- Last //gs c alts orders (alt window). Ignored after a game restart.\n')
-    file:write(string.format('return {clock = %s, on = %s, follow = %s, mirror = %s}\n',
-        os.clock(), lua(state.on), lua(state.follow), lua(state.mirror)))
+    file:write(string.format('return {time = %d, on = %s, follow = %s, mirror = %s}\n',
+        os.time(), lua(state.on), lua(state.follow), lua(state.mirror)))
     file:close()
 end
 
@@ -147,12 +149,18 @@ local function set_auto(alts, on)
 end
 
 --- Alts follow `leader`, or stop when leader is nil. The leader itself is
---- left out: it cannot follow itself.
+--- left out: it cannot follow itself. When that leaves no one (a box group
+--- of two, told to follow the other box), nothing is sent and the saved
+--- state is left alone, so the window does not claim a follow that never went out.
 local function set_follow(alts, leader)
     if leader then
         local followers = {}
         for _, name in ipairs(alts) do
             if name:lower() ~= leader:lower() then followers[#followers + 1] = name end
+        end
+        if #followers == 0 then
+            if messages() then messages().show_no_follower(leader) end
+            return
         end
         alts = followers
         to_alts(alts, 'sm follow ' .. leader)
@@ -193,7 +201,13 @@ function AltGroup.handle(args)
     local alts = AltGroup.get_alts()
 
     if sub ~= 'mirror' and sub ~= 'window' and #alts == 0 then
-        if messages() then messages().show_no_alts() end
+        if messages() then
+            if _G.DualBoxConfig == nil then
+                messages().show_not_ready()
+            else
+                messages().show_no_alts()
+            end
+        end
         return true
     end
 

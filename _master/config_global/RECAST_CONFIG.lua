@@ -10,6 +10,9 @@
 --- Solution: Allow abilities/spells to be used when recast <= tolerance threshold
 --- instead of strictly checking recast == 0.
 ---
+--- Required by every job entry file; also exposes the global helpers
+--- is_recast_ready() and is_on_cooldown() used by the shared job modules.
+---
 --- @file config/RECAST_CONFIG.lua
 --- @author Tetsouo
 --- @version 1.0
@@ -26,8 +29,8 @@ local RECAST_CONFIG = {}
 ---
 --- Recommended values:
 --- - 1.0s: Conservative, safe for most scenarios
---- - 1.5s: Balanced, covers most lag situations (RECOMMENDED)
---- - 2.0s: Aggressive, rarely blocks but may trigger too early
+--- - 1.5s: Balanced, covers most lag situations
+--- - 2.0s: Aggressive, rarely blocks but may trigger too early (value in use)
 RECAST_CONFIG.tolerance = 2.0
 
 --- Enable/disable tolerance globally
@@ -70,17 +73,15 @@ end
 --- BACKWARD COMPATIBILITY HELPERS
 ---============================================================================
 
---- Convert existing "recast == 0" checks to tolerance-aware checks
---- Usage: Replace "if recast == 0" with "if is_recast_ready(recast)"
---- @param recast number The recast time
+--- Tolerance-aware replacement for "recast == 0"
+--- @param recast number The recast time in seconds
 --- @return boolean True if ready
 function is_recast_ready(recast)
     return RECAST_CONFIG.is_ready(recast)
 end
 
---- Convert existing "recast > 0" checks to tolerance-aware checks
---- Usage: Replace "if recast > 0" with "if is_on_cooldown(recast)"
---- @param recast number The recast time
+--- Tolerance-aware replacement for "recast > 0"
+--- @param recast number The recast time in seconds
 --- @return boolean True if on cooldown
 function is_on_cooldown(recast)
     return RECAST_CONFIG.on_cooldown(recast)

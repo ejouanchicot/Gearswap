@@ -614,7 +614,7 @@ function MessageCommands.show_commands_list()
     add_to_chat(121, cyan .. "   //gs c checksets" .. gray .. " ........ " .. white .. "Validate equipment sets")
     add_to_chat(121, cyan .. "   //gs c lockstyle" .. gray .. " (or " .. cyan .. "ls" .. gray .. ") " .. white .. "Reapply lockstyle")
     add_to_chat(121, cyan .. "   //gs c dressup" .. gray .. " .......... " .. white .. "Toggle DressUp management")
-    add_to_chat(121, cyan .. "   //gs c naked" .. gray .. " (or " .. cyan .. "equip" .. gray .. ") .. " .. white .. "Strip all equipment")
+    add_to_chat(121, cyan .. "   //gs c naked" .. gray .. " (or " .. cyan .. "equip naked" .. gray .. ") " .. white .. "Strip all equipment")
     add_to_chat(121, cyan .. "   //gs c mount" .. gray .. " ............ " .. white .. "Toggle mount " .. dgray .. "(random owned)")
 
     -- Equipment & Inventory

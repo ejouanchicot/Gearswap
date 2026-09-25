@@ -413,5 +413,3 @@ sets.buff.Doom = {
     ring1 = 'Purity Ring',
     waist = 'Gishdubar Sash'
 }
-
-print('[BRD] Equipment sets loaded successfully (modular v4.0)')

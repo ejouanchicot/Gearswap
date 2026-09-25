@@ -39,10 +39,11 @@ DualBoxConfig.alt_character = "Kaories"
 --- COMMUNICATION SETTINGS
 ---============================================================================
 
--- Enable/disable dual-boxing system
 -- Characters of this box group. //gs c alts sends its orders to every one
 -- but the character pressing the key, whichever of them is main today.
 DualBoxConfig.group = {"Tetsouo", "Kaories"}
+
+-- Enable/disable dual-boxing system
 DualBoxConfig.enabled = true
 
 -- Timeout in seconds - if no update received within this time, assume alt offline

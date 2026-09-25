@@ -164,28 +164,23 @@ local FBC_ABILITIES = {
     {name = 'Conspirator', recast_id = 40,  buff = 'Conspirator', target = '<me>'},
 }
 
--- Despoil is learned at THF 77, out of reach of a THF subjob.
 local STEAL_ABILITIES = {
     {name = 'Steal',   recast_id = 60, target = '<t>'},
     {name = 'Mug',     recast_id = 65, target = '<t>'},
-    {name = 'Despoil', recast_id = 61, target = '<t>', main_only = true},
+    {name = 'Despoil', recast_id = 61, target = '<t>'},
 }
 
 --- Sort a sequence into what can be used and what has to be reported.
---- Main-job-only abilities are dropped silently when THF is the subjob.
 --- @param abilities table Sequence (FBC_ABILITIES or STEAL_ABILITIES)
 --- @param ability_recasts table windower.ffxi.get_ability_recasts()
 --- @return table to cast, table status lines for the ones that cannot
 local function triage(abilities, ability_recasts)
     local to_cast, status = {}, {}
-    local is_main = player and player.main_job == 'THF'
 
     for _, ability in ipairs(abilities) do
         local recast = ability_recasts[ability.recast_id] or 0
 
-        if ability.main_only and not is_main then
-            -- not available, nothing to report
-        elseif ability.buff and buffactive[ability.buff] then
+        if ability.buff and buffactive[ability.buff] then
             table.insert(status, {name = ability.name, status = 'active'})
         elseif is_on_cooldown(recast) then
             table.insert(status, {name = ability.name, status = 'cooldown',
@@ -230,22 +225,9 @@ local function run_sequence(abilities)
         MessageBuffs.show_buff_status(status_data)
     end
 
-    -- The abilities about to go out are knowingly on the way; CooldownChecker
-    -- would otherwise report each one as blocked.
-    _G.suppress_cooldown_messages = true
-
+    -- Only ready abilities are sent, so CooldownChecker lets them through; a
+    -- second press before they land is caught by it like any other repeat.
     cast_sequence(to_cast)
-
-    -- Deferred inside GearSwap on purpose. `lua i _G.X = ...` writes to the
-    -- Windower scope, not this sandbox, so the flag would never come back and
-    -- cooldown messages would stay suppressed for the rest of the session.
-    if #to_cast > 0 then
-        coroutine.schedule(function()
-            _G.suppress_cooldown_messages = false
-        end, 3.0)
-    else
-        _G.suppress_cooldown_messages = false
-    end
 
     return true
 end

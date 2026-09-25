@@ -97,21 +97,12 @@ end
 ---============================================================================
 
 --- Handle sub job change events (called by Mote-Include after user_setup())
---- Re-registers the SMN modules and hands the reload to JobChangeManager.
+--- Hands the reload to JobChangeManager.
 --- @param newSubjob string New subjob
 --- @param oldSubjob string Old subjob
 --- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
     if not jcm_success or not JobChangeManager then return end
-
-    if SMNKeybinds and ui_success and KeybindUI then
-        JobChangeManager.initialize({
-            keybinds = SMNKeybinds,
-            ui = KeybindUI,
-            lockstyle = select_default_lockstyle,
-            macrobook = select_default_macro_book
-        })
-    end
 
     local main_job = player and player.main_job or "SMN"
     JobChangeManager.on_job_change(main_job, newSubjob)
@@ -136,7 +127,7 @@ function user_setup()
     else
         local msg_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
         if msg_success and MessageFormatter then
-            MessageFormatter.show_error("[SMN] Failed to load keybinds")
+            MessageFormatter.show_error('[SMN] Keybinds failed to load: ' .. tostring(keybinds))
         end
     end
 

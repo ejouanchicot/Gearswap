@@ -55,12 +55,12 @@ end
 
 -- PartyTracker is brought up from get_sets(), see init_party_tracking() below
 
--- Lockstyle watchdog state (detects when DressUp is reloaded)
-if not _G.cor_lockstyle_watchdog then
-    _G.cor_lockstyle_watchdog = {
-        lockstyle_applied = false,
-        dressup_was_loaded = nil  -- nil = unknown, true = loaded, false = not loaded
-    }
+-- Region configuration, set before anything loads message_colors: that
+-- module reads _G.RegionConfig once each time it is loaded, to pick the
+-- region's warning orange.
+local region_success, RegionConfig = pcall(require, 'Kaories/config/REGION_CONFIG')
+if region_success and RegionConfig then
+    _G.RegionConfig = RegionConfig
 end
 
 -- ============================================
@@ -180,14 +180,6 @@ function get_sets()
     _G.LockstyleConfig = LockstyleConfig
     _G.RECAST_CONFIG = require('Kaories/config/RECAST_CONFIG')
 
-    -- Load region configuration. Too late for the region warning color:
-    -- message_colors captured _G.RegionConfig when ConfigLoader (module
-    -- level, above) first required it.
-    local region_success, RegionConfig = pcall(require, 'Kaories/config/REGION_CONFIG')
-    if region_success and RegionConfig then
-        _G.RegionConfig = RegionConfig
-    end
-
     -- COR-specific configs
     _G.CORTPConfig = require('Kaories/config/cor/COR_TP_CONFIG')
 
@@ -243,7 +235,7 @@ end
 -- USER SETUP
 ---============================================================================
 
---- Configure states, keybinds, UI, macrobook/lockstyle and the DressUp watchdog.
+--- Configure states, keybinds, UI and macrobook/lockstyle.
 --- Called by Mote-Include from init_include() (inside include('Mote-Include.lua'),
 --- before init_gear_sets) and again on every subjob change, before job_sub_job_change().
 --- @return void
@@ -305,9 +297,8 @@ function user_setup()
     pcall(require, 'shared/utils/dualbox/dualbox_manager')
 
     -- ==========================================================================
-    -- LOCKSTYLE WATCHDOG (Always executed after reload)
+    -- MACROBOOK / LOCKSTYLE (Always executed after reload)
     -- ==========================================================================
-    -- This ensures lockstyle reapplies after //gs reload or dressup reload
     if player then
         -- Guarded: these globals come from the COR_MACROBOOK / COR_LOCKSTYLE
         -- wrappers, which exist only once something has required them. Today
@@ -323,65 +314,8 @@ function user_setup()
             if select_default_lockstyle then
                 select_default_lockstyle()
             end
-            _G.cor_lockstyle_watchdog.lockstyle_applied = true
         end, LockstyleConfig.initial_load_delay)
-
-        -- Start lockstyle watchdog (detects DressUp reload and auto-reapplies lockstyle)
-        if not _G.cor_lockstyle_watchdog_active then
-            _G.cor_lockstyle_watchdog_active = true
-
-            local function lockstyle_watchdog_check()
-                if not _G.cor_lockstyle_watchdog_active then
-                    return
-                end
-
-                if player and player.main_job == 'COR' and _G.cor_lockstyle_watchdog.lockstyle_applied then
-                    -- Check if DressUp addon is loaded
-                    local dressup_loaded = false
-                    if windower and windower.ffxi and windower.ffxi.get_addons then
-                        local addons = windower.ffxi.get_addons()
-                        for _, addon in ipairs(addons) do
-                            if addon.name and addon.name:lower() == 'dressup' then
-                                dressup_loaded = true
-                                break
-                            end
-                        end
-                    end
-
-                    -- Detect state change: DressUp was reloaded
-                    if _G.cor_lockstyle_watchdog.dressup_was_loaded == false and dressup_loaded == true then
-                        local msg_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-                        if msg_success and MessageFormatter then
-                            MessageFormatter.show_info('[COR] DressUp reloaded - reapplying lockstyle')
-                        end
-                        if select_default_lockstyle then
-                            coroutine.schedule(function()
-                                select_default_lockstyle()
-                            end, 2)
-                        end
-                    end
-
-                    _G.cor_lockstyle_watchdog.dressup_was_loaded = dressup_loaded
-                end
-
-                coroutine.schedule(lockstyle_watchdog_check, 10)
-            end
-
-            coroutine.schedule(lockstyle_watchdog_check, 15)
-        end
     end
-
-    -- ==========================================================================
-    -- FORCE GEAR RE-EQUIP (Always executed after reload)
-    -- ==========================================================================
-    -- COR weapon behavior changes based on subjob:
-    --   COR/DNC or COR/NIN: Dual wield (main+sub)
-    --   COR/SCH or other: Single weapon (main only)
-    coroutine.schedule(function()
-        if player and player.status then
-            status_change(player.status, player.status)
-        end
-    end, 0.5)
 end
 
 ---============================================================================
@@ -417,19 +351,14 @@ end
 ---============================================================================
 
 --- Called by GearSwap when this job file is unloaded (job change, reload).
---- Removes roll/party tracking, stops the lockstyle watchdog, reloads the
---- rolltracker addon, cancels pending job-change operations and unbinds keys.
+--- Removes roll/party tracking, reloads the rolltracker addon, cancels
+--- pending job-change operations and unbinds keys.
 --- @return void
 function file_unload()
     -- Cleanup roll detection handler (registered by PartyTracker.init() from get_sets)
     if _G.cor_action_event_id then
         windower.unregister_event(_G.cor_action_event_id)
         _G.cor_action_event_id = nil
-    end
-
-    -- Stop lockstyle watchdog
-    if _G.cor_lockstyle_watchdog_active then
-        _G.cor_lockstyle_watchdog_active = false
     end
 
     -- Cleanup RollTracker (clear all roll state and globals)

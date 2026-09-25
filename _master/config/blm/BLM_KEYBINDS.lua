@@ -36,8 +36,8 @@ local BLMKeybinds = {}
 ---   Ctrl+6 Main Dark AOE       Apps+6 Sub Dark AOE
 ---
 --- The same digit is always the same spell family; the modifier picks Main or
---- Sub. Ctrl 7-8 and 0 hold Storm, Combat and MB modes; Apps 7-9 and 0 the
---- remaining toggles.
+--- Sub. Ctrl 1-2 hold the tiers; Ctrl 7-9 and 0 hold Storm, Combat, Hybrid and
+--- MB modes; Apps 7-9 the remaining toggles.
 BLMKeybinds.binds = {
     -- Main / Sub Elemental Spells (same digit, Ctrl = Main, Apps = Sub)
     { key = "^numpad3", command = "cyclestate MainLightSpell", desc = "Main Light", state = "MainLightSpell" },

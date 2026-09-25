@@ -48,9 +48,9 @@ LockstyleConfig = LockstyleConfig or {
 local ConfigLoader = require('shared/utils/config/config_loader')
 local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'RUN')
 
--- Load region configuration. message_colors captures _G.RegionConfig once,
--- when it is first required - ConfigLoader above already required it, so
--- this assignment comes too late for the region warning color.
+-- Region configuration, set at file level: message_colors reads
+-- _G.RegionConfig once each time it is loaded, so this has to run before
+-- INIT_SYSTEMS loads it in get_sets().
 local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig
@@ -136,19 +136,8 @@ end
 --- @param oldSubjob string Old subjob code
 --- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
-    -- Re-initialize JobChangeManager with RUN-specific functions
     local success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if success and JobChangeManager then
-        local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-        if RUNKeybinds and ui_success and KeybindUI then
-            JobChangeManager.initialize({
-                keybinds = RUNKeybinds,
-                ui = KeybindUI,
-                lockstyle = select_default_lockstyle,
-                macrobook = select_default_macro_book
-            })
-        end
-
         -- Let JobChangeManager handle the full reload sequence
         local main_job = player and player.main_job or "RUN"
         JobChangeManager.on_job_change(main_job, newSubjob)

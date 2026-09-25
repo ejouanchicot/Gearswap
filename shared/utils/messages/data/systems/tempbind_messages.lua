@@ -4,7 +4,7 @@
 --- Pure data file, used through formatters/system/message_tempbind.lua.
 --- Keys light blue, commands white, problems red, separators gray.
 ---
---- @file data/systems/tempbind_messages.lua
+--- @file shared/utils/messages/data/systems/tempbind_messages.lua
 --- @author Tetsouo
 --- @date Created: 2026-09-24
 ---============================================================================

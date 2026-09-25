@@ -5,8 +5,8 @@
 ---   can be combined with engaged / WS sets via the GearSwap engine.
 ---
 ---   Main weapons (two-handed):
----     • Ukonvasara = Relic Great Axe (AM3 TP reduction)
----     • Chango    = Empyrean Great Axe (+500 TP bonus)
+---     • Ukonvasara = Empyrean Great Axe
+---     • Chango    = Aeonic Great Axe (+500 TP bonus)
 ---     • Lycurgos  = Mythic Great Axe
 ---     • Shining   = Polearm (Shining One)
 ---     • Ikenga    = Ikenga's Axe (Fencer w/ shield)
@@ -35,8 +35,8 @@
 local Weapons = {}
 
 -- • Great Axes (two-handed)
-Weapons['Ukonvasara'] = {main = 'Ukonvasara', sub = 'Telopanos Grip'}  -- Relic (AM3 TP reduction)
-Weapons['Chango']     = {main = 'Chango',     sub = 'Telopanos Grip'}  -- Empyrean (+500 TP bonus)
+Weapons['Ukonvasara'] = {main = 'Ukonvasara', sub = 'Telopanos Grip'}  -- Empyrean
+Weapons['Chango']     = {main = 'Chango',     sub = 'Telopanos Grip'}  -- Aeonic (+500 TP bonus)
 Weapons['Lycurgos']   = {main = 'Lycurgos',   sub = 'Telopanos Grip'}  -- Mythic
 
 -- • Polearms (two-handed)

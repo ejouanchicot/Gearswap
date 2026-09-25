@@ -322,5 +322,3 @@ sets.buff.Doom = {
     -- ring2 = "Blenmot's Ring +1",
     -- waist = "Gishdubar Sash",
 }
-
-print('[COR] Equipment sets loaded successfully (modular v4.0)')

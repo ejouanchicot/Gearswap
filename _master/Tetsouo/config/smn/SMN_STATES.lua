@@ -34,9 +34,9 @@ function SMNStates.configure()
     -- Fast Cast % for watchdog timeout calculation
     state.FastCast = M{
         ['description'] = 'Fast Cast %',
-        0, 10, 20, 30, 40, 50, 60, 70, 80
+        '0', '10', '20', '30', '40', '50', '60', '70', '80'
     }
-    state.FastCast:set(0)
+    state.FastCast:set('0')
 
     -- Universal toggle, created here rather than centrally: the keybind HUD
     -- renders from user_setup() and caches what it reads, so a state added

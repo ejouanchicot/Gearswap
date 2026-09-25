@@ -11,7 +11,7 @@
 --- Colours: titles and labels light blue, names white, spells cyan, job
 --- abilities yellow, ON green / OFF red, separators gray.
 ---
---- @file data/systems/sortie_messages.lua
+--- @file shared/utils/messages/data/systems/sortie_messages.lua
 --- @author Tetsouo
 --- @date Created: 2026-09-24
 ---============================================================================

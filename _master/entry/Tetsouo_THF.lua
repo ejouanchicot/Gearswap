@@ -60,9 +60,9 @@ end
 local ConfigLoader = require('shared/utils/config/config_loader')
 local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'THF')
 
--- Load region configuration. message_colors captures _G.RegionConfig once,
--- when it is first required - ConfigLoader above already required it, so
--- this assignment comes too late for the region warning color.
+-- Region configuration, set at file level: message_colors reads
+-- _G.RegionConfig once each time it is loaded, so this has to run before
+-- INIT_SYSTEMS loads it in get_sets().
 local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig

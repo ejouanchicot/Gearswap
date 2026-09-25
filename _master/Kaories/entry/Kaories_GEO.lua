@@ -55,9 +55,9 @@ end
 local ConfigLoader = require('shared/utils/config/config_loader')
 local UIConfig = ConfigLoader.load_ui_config('Kaories', 'GEO')
 
--- Load region configuration. message_colors captures _G.RegionConfig once,
--- when it is first required - ConfigLoader above already required it, so
--- this assignment comes too late for the region warning color.
+-- Region configuration, set at file level: message_colors reads
+-- _G.RegionConfig once each time it is loaded, so this has to run before
+-- INIT_SYSTEMS loads it in get_sets().
 local region_success, RegionConfig = pcall(require, 'Kaories/config/REGION_CONFIG')
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig
@@ -139,22 +139,8 @@ end
 --- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
     -- Note: Mote-Include already called user_setup() before this
-
-    -- Re-initialize JobChangeManager with GEO-specific functions
-    -- This ensures correct functions are used when switching back to GEO
     local success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if success and JobChangeManager then
-        -- Re-register GEO modules to ensure they're used (not WAR/PLD/other job modules)
-        local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-        if GEOKeybinds and ui_success and KeybindUI then
-            JobChangeManager.initialize({
-                keybinds = GEOKeybinds,
-                ui = KeybindUI,
-                lockstyle = select_default_lockstyle,
-                macrobook = select_default_macro_book
-            })
-        end
-
         -- Trigger job change sequence (handles lockstyle, macros, keybinds, UI)
         local main_job = player and player.main_job or "GEO"
         JobChangeManager.on_job_change(main_job, newSubjob)
@@ -195,7 +181,7 @@ function user_setup()
     else
         local msg_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
         if msg_success and MessageFormatter then
-            MessageFormatter.show_error('[GEO] Failed to load keybinds')
+            MessageFormatter.show_error('[GEO] Keybinds failed to load: ' .. tostring(keybinds))
         end
     end
 

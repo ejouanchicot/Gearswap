@@ -8,6 +8,8 @@
 --- The choice is saved in <Character>/config/dualbox_role.lua and applied
 --- over DUALBOX_CONFIG.lua at every load, so it holds through a reload and a
 --- game restart. Delete that file to go back to DUALBOX_CONFIG.lua.
+--- The main also writes the alts' files, so an alt that was offline picks
+--- up its role at its next load.
 ---
 --- Group: DualBoxConfig.group, else this character plus the one named in
 --- DUALBOX_CONFIG.lua.
@@ -71,8 +73,13 @@ local function set_config(role, names)
     end
 end
 
-local function save(role, names)
-    local file = io.open(role_file(my_name()), 'w')
+--- Write a character's saved role.
+--- @param role string 'main' or 'alt'
+--- @param names table Alts (role main) or {main} (role alt)
+--- @param who string|nil Character whose file it is (default: this one)
+local function save(role, names, who)
+    who = who or my_name()
+    local file = who and io.open(role_file(who), 'w')
     if not file then return end
     local quoted = {}
     for i, n in ipairs(names) do quoted[i] = string.format('%q', n) end
@@ -99,7 +106,11 @@ end
 --- //gs c main - this character becomes main, the others its alts.
 --- @return boolean handled
 function DualBoxRole.become_main()
-    if not _G.DualBoxConfig or _G.DualBoxConfig.enabled == false then
+    if not _G.DualBoxConfig then
+        if messages() then messages().show_not_ready() end
+        return true
+    end
+    if _G.DualBoxConfig.enabled == false then
         if messages() then messages().show_no_alts() end
         return true
     end
@@ -111,6 +122,11 @@ function DualBoxRole.become_main()
     set_config('main', alts)
     save('main', alts)
     for _, name in ipairs(alts) do
+        -- The partner's own file too: an alt that is offline or still
+        -- loading misses the send below, and would otherwise come back
+        -- as a second main. Both boxes share this data folder; on another
+        -- PC the folder is missing and io.open simply fails.
+        save('alt', {me}, name)
         send_command('send ' .. name .. ' gs c setalt ' .. me)
     end
     resync('main')
@@ -123,9 +139,12 @@ end
 --- @return boolean handled
 function DualBoxRole.become_alt(args)
     local main = args and args[1]
-    if not main or not _G.DualBoxConfig then return true end
-    set_config('alt', {main})
+    if not main then return true end
     save('alt', {main})
+    -- Before DualBoxManager.initialize (2 s after a load) there is no live
+    -- config yet; initialize applies the file just written.
+    if not _G.DualBoxConfig then return true end
+    set_config('alt', {main})
     resync('alt')
     if messages() then messages().show_role_alt(my_name(), main) end
     return true

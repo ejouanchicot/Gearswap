@@ -44,9 +44,9 @@ local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'PUP')
 --- GEARSWAP ENTRY POINT
 ---============================================================================
 
--- Load region configuration. message_colors captures _G.RegionConfig once,
--- when it is first required - ConfigLoader above already required it, so
--- this assignment comes too late for the region warning color.
+-- Region configuration, set at file level: message_colors reads
+-- _G.RegionConfig once each time it is loaded, so this has to run before
+-- INIT_SYSTEMS loads it in get_sets().
 local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig
@@ -155,7 +155,7 @@ function user_setup()
     else
         local msg_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
         if msg_success and MessageFormatter then
-            MessageFormatter.show_error('[PUP] Failed to load keybinds')
+            MessageFormatter.show_error('[PUP] Keybinds failed to load: ' .. tostring(keybinds))
         end
     end
 
@@ -177,12 +177,7 @@ function user_setup()
         -- these globals exist only if PUPKeybinds.bind_all() above
         -- (KeybindManager show_intro) required PUP_MACROBOOK / PUP_LOCKSTYLE.
         if select_default_lockstyle and select_default_macro_book then
-            JobChangeManager.initialize({
-                keybinds = PUPKeybinds,
-                ui = KeybindUI,
-                lockstyle = select_default_lockstyle,
-                macrobook = select_default_macro_book
-            })
+            JobChangeManager.initialize()
 
             -- Trigger initial macrobook/lockstyle with delay
             if player then
@@ -193,12 +188,7 @@ function user_setup()
             -- Functions not loaded yet, schedule for later
             coroutine.schedule(function()
                 if select_default_lockstyle and select_default_macro_book then
-                    JobChangeManager.initialize({
-                        keybinds = PUPKeybinds,
-                        ui = KeybindUI,
-                        lockstyle = select_default_lockstyle,
-                        macrobook = select_default_macro_book
-                    })
+                    JobChangeManager.initialize()
                     if player then
                         select_default_macro_book()
                         coroutine.schedule(select_default_lockstyle, LockstyleConfig.initial_load_delay)

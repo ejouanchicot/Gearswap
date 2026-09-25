@@ -112,6 +112,14 @@ end
 ---   Handle AOE command - cast first available BLU AOE spell
 ---   Shows recasts and targets <stnpc> when none can be cast.
 function AOEManager.execute_aoe()
+    -- res.spells knows every spell in the game, learned or not, so the
+    -- per-spell check cannot tell a missing /BLU: without this the first spell
+    -- goes out as /ma and the game refuses it.
+    if not player or player.sub_job ~= 'BLU' then
+        MessageFormatter.show_error('AOE needs the BLU subjob (PLD/BLU)')
+        return
+    end
+
     cleanup_spell_tracking()
     local spells_on_cooldown = {}
     local AOE_SPELLS = BluMagicConfig.get_rotation()

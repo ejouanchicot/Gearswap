@@ -43,10 +43,6 @@ BSTKeybinds.binds = {
     ---==========================================================================
     { key = "^numpad5", command = "ecosystem", desc = "Cycle Ecosystem", state = "Ecosystem" },
     { key = "^numpad6", command = "species", desc = "Cycle Species", state = "species" },
-
-    ---==========================================================================
-    --- UNIVERSAL TOGGLES (Apps+Numpad)
-    ---==========================================================================
 }
 
 return require('shared/utils/keybinds/keybind_manager').create('BST', BSTKeybinds)

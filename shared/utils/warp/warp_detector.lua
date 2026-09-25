@@ -169,14 +169,16 @@ function WarpDetector.init_action_listener()
     -- one WarpEquipment.init() registers just before calling this function.
     WarpDetector.clear_callbacks()
 
-    if not windower or not windower.register_event then return end
+    if not windower or not windower.raw_register_event then return end
 
     if windower._warp_detector_event_id
        and windower._warp_detector_event_load == windower._gs_reload_count then
         pcall(windower.unregister_event, windower._warp_detector_event_id)
     end
 
-    windower._warp_detector_event_id = windower.register_event('action', function(act)
+    -- raw_: the plain register_event wrapper refreshes the globals and runs
+    -- a full equip cycle on every action in range; only player.id is read.
+    windower._warp_detector_event_id = windower.raw_register_event('action', function(act)
         if not act then return end
 
         -- Category 9 = Item usage

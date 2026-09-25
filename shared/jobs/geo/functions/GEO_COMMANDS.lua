@@ -66,17 +66,16 @@ end
 local GEO_BUFFS = {
     ['Geo-Acumen'] = true,      -- Boosts magic atk.
     ['Geo-AGI'] = true,          -- Boosts agility.
-    ['Geo-Attunement'] = true,   -- Boosts magic acc.
+    ['Geo-Attunement'] = true,   -- Boosts magic evasion.
     ['Geo-Barrier'] = true,      -- Boosts defense.
     ['Geo-CHR'] = true,          -- Boosts charisma.
     ['Geo-DEX'] = true,          -- Boosts dexterity.
-    ['Geo-Fend'] = true,         -- Boosts defense.
+    ['Geo-Fend'] = true,         -- Boosts magic def.
     ['Geo-Focus'] = true,        -- Boosts magic acc.
     ['Geo-Fury'] = true,         -- Boosts attack.
     ['Geo-Haste'] = true,        -- Boosts attack speed.
     ['Geo-INT'] = true,          -- Boosts intelligence.
     ['Geo-MND'] = true,          -- Boosts mind.
-    ['Geo-Poison'] = true,       -- Boosts poison dmg.
     ['Geo-Precision'] = true,    -- Boosts accuracy.
     ['Geo-Refresh'] = true,      -- Restores MP.
     ['Geo-Regen'] = true,        -- Restores HP.
@@ -115,7 +114,7 @@ function job_self_command(cmdParams, eventArgs)
     if command == 'altjobupdate' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         if cmdParams[2] and cmdParams[3] then
-            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3], cmdParams[4], cmdParams[5])
+            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3], cmdParams[4], cmdParams[5], cmdParams[6])
         end
         eventArgs.handled = true
         return
@@ -362,10 +361,8 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
-    -- Sneak / Invi: Light Arts + Accession + the spell, party-wide.
-    -- They ride under 'aoe' because the alt-command configs claim their own
-    -- names, and CommonCommands answers before this block, so '//gs c sneak'
-    -- would cast on the dual-box partner rather than here.
+    -- Sneak / Invi: Light Arts + Accession + the spell, party-wide
+    -- ('//gs c aoe sneak', '//gs c aoe invi').
     if command == 'aoe' then
         local ScholarActions = require('shared/utils/scholar/scholar_actions')
         if ScholarActions.try_aoe_subcommand(cmdParams[2], nil) then

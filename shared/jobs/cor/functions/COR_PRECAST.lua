@@ -61,13 +61,10 @@ end
 ---   PRECAST HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Phantom Roll: point Mote at sets.precast.CorsairRoll and remember the roll
---- name so a following Double-Up can wear the same set.
+--- Phantom Roll: remember the roll name so a following Double-Up can wear the
+--- same set. Mote finds sets.precast.CorsairRoll[<roll>] by itself.
 --- @param spell table Spell information from GearSwap
 local function job_precast_corsairroll(spell)
-    -- Set custom class so Mote looks in sets.precast.CorsairRoll
-    classes.CustomClass = 'CorsairRoll'
-
     -- Track roll name for Double-Up to use same gear (using table structure)
     if not _G.cor_last_roll then
         _G.cor_last_roll = {}
@@ -86,22 +83,10 @@ local function job_precast_double_up()
     end
 end
 
--- Spell type to the class name Mote looks the precast set up under.
--- Ranged attacks need no entry: Mote reaches sets.precast.RA through
--- spell.action_type.
-local CUSTOM_CLASS_BY_TYPE = {
-    ['CorsairShot']   = 'CorsairShot',
-}
-
 --- COR's own precast handling.
 ---
---- Written as independent checks, not a chain, and it has to stay that way.
---- These are not alternatives: Double-Up is matched by name while the roll
---- sets are matched by type, and a spell can satisfy both. An `elseif` here
---- would silently drop one of them.
----
---- Nothing in here stops the precast either - the weaponskill handling still
---- runs afterwards, so none of these checks may return early.
+--- Nothing in here stops the precast - the weaponskill handling still runs
+--- afterwards, so none of these checks may return early.
 --- @param spell table Spell information from GearSwap
 local function apply_cor_precast(spell)
     -- Crooked Cards is recorded rather than acted on: the buff is consumed the
@@ -119,11 +104,6 @@ local function apply_cor_precast(spell)
     -- last roll on record to know which that was.
     if spell.english == 'Double-Up' and _G.cor_last_roll and _G.cor_last_roll.name then
         job_precast_double_up()
-    end
-
-    local custom_class = CUSTOM_CLASS_BY_TYPE[spell.type]
-    if custom_class then
-        classes.CustomClass = custom_class
     end
 end
 

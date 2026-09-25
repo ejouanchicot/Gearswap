@@ -163,8 +163,8 @@ function DNCStates.configure()
     --- Keybind: Ctrl+Numpad8 to cycle
     state.Dance = M {
         ['description'] = 'Dance',
-        'Saber Dance',  -- Offensive dance (+accuracy, +attack speed)
-        'Fan Dance'     -- Defensive dance (+evasion)
+        'Saber Dance',  -- Offensive dance (Double Attack, blocks Waltzes)
+        'Fan Dance'     -- Defensive dance (damage taken down)
     }
     state.Dance:set('Saber Dance')  -- Default: Saber Dance for DPS
 
@@ -193,9 +193,9 @@ function DNCStates.configure()
     --- Cap: 80% maximum (FFXI mechanics)
     state.FastCast = M {
         ['description'] = 'Fast Cast %',
-        0, 10, 20, 30, 40, 50, 60, 70, 80
+        '0', '10', '20', '30', '40', '50', '60', '70', '80'
     }
-    state.FastCast:set(0)  -- Default: 0% (adjust based on your gear)
+    state.FastCast:set('0')  -- Default: 0% (adjust based on your gear)
 
     -- Universal toggle, created here rather than centrally: the keybind HUD
     -- renders from user_setup() and caches what it reads, so a state added

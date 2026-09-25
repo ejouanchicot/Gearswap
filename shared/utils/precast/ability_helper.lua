@@ -4,7 +4,7 @@
 --- Fires a job ability before a spell or weaponskill, then sends the action
 --- once the ability has taken effect.
 ---   try_ability / try_ability_smart / try_ability_ws - precast auto-trigger
----       (PLD Divine Emblem / Majesty, DNC Climactic Flourish)
+---       (PLD Divine Emblem / Majesty, RDM Saboteur, DNC Climactic Flourish)
 ---   follow_up / follow_up_or_abort - "ability, then action" chains used by
 ---       BLM, BRD, DNC, GEO, SAM and the Scholar helpers
 ---
@@ -48,35 +48,25 @@ local function get_ability_data(ability_name)
     return data
 end
 
---- Check whether the player's main job, at its current level, has the ability.
+--- Check whether the player currently has access to the ability.
+--- Reads the same list GearSwap filters outgoing /ja commands against, so it
+--- follows job, subjob, level sync and job points.
 --- @param ability_name string Ability name (English)
---- @return boolean True if usable (also true when res has no level table for it)
+--- @return boolean True if the ability is in the player's current ability list
 function AbilityHelper.can_use_ability(ability_name)
-    local player = windower.ffxi.get_player()
-    if not player then return false end
-
     local ability_data = get_ability_data(ability_name)
     if not ability_data then return false end
 
-    -- For abilities without levels table (merit/quest abilities like Climactic Flourish),
-    -- we can't validate directly - assume player has it if they try to use it
-    if not ability_data.levels then
-        return true
+    local abilities = windower.ffxi.get_abilities()
+    local known = abilities and abilities.job_abilities
+    if not known then return false end
+
+    for key, value in pairs(known) do
+        if value == ability_data.id or (key == ability_data.id and value == true) then
+            return true
+        end
     end
-
-    local main_job_id = player.main_job_id
-    local main_job_level = player.main_job_level
-
-    local required_level = ability_data.levels[main_job_id]
-    if not required_level then
-        return false
-    end
-
-    if main_job_level < required_level then
-        return false
-    end
-
-    return true
+    return false
 end
 
 --- Check whether the ability's recast is ready (RECAST_CONFIG tolerance).
@@ -287,26 +277,84 @@ function AbilityHelper.follow_up_or_abort(ability_name, follow_command, wait_tim
     poll()
 end
 
+--- Extra time the replay marker outlives the follow-up's own deadline, so the
+--- last poll step (POLL_INTERVAL) cannot land after the marker has expired.
+local REPLAY_MARGIN = 1.0
+
+--- Whether this action is the one follow_up is re-sending after an ability
+--- attempt. Consumes the marker when it matches.
+---
+--- A refused ability leaves its recast ready and its buff absent, so without
+--- this the re-sent action would try the ability again, be cancelled again,
+--- and loop for as long as the refusal lasts. The marker lives on `windower`
+--- because the follow-up coroutine outlives a gs reload, and so must the
+--- memory of what it is re-sending.
+--- @param spell table Spell or weaponskill object from GearSwap
+--- @return boolean True when the ability must not be tried for this action
+local function is_replay(spell)
+    local marker = windower._ability_replay
+    if not marker then return false end
+    if os.clock() >= marker.expires then
+        windower._ability_replay = nil
+        return false
+    end
+    if marker.action ~= spell.name then return false end
+    windower._ability_replay = nil
+    return true
+end
+
+--- Whether job abilities are blocked by a debuff PrecastGuard cannot cure.
+--- Paralysis is left out: the guard answers it on the ability itself with a
+--- Remedy or Panacea, so the ability still gets its one attempt.
+--- @return boolean True under Amnesia, Impairment or a debuff blocking everything
+local function ja_blocked_without_cure()
+    local ok, DebuffChecker = pcall(require, 'shared/utils/debuff/debuff_checker')
+    if not ok or not DebuffChecker then return false end
+    local blocked, _, message = DebuffChecker.check_ja_blocked()
+    return blocked and message ~= 'Paralyzed'
+end
+
+--- @param spell table Spell or weaponskill object from GearSwap
+--- @param ability_name string Ability to fire first
+--- @return boolean True when the ability may be attempted for this action
+local function may_try(spell, ability_name)
+    if is_replay(spell) then return false end
+    if ja_blocked_without_cure() then return false end
+    return AbilityHelper.can_use_ability(ability_name)
+end
+
+--- Cancel the action, fire the ability, and hand the action to follow_up.
+--- @param spell table Spell or weaponskill object from GearSwap
+--- @param eventArgs table Event args (handled is set)
+--- @param ability_name string Ability to fire first
+--- @param wait_time number Soft delay before the action
+--- @param replay_command string Command that re-sends the action
+local function fire_then_replay(spell, eventArgs, ability_name, wait_time, replay_command)
+    eventArgs.handled = true
+    cancel_spell()
+    send_command(string.format('input /ja "%s" <me>', ability_name))
+    windower._ability_replay = {
+        action = spell.name,
+        expires = os.clock() + wait_time + FOLLOW_UP_GRACE + REPLAY_MARGIN,
+    }
+    AbilityHelper.follow_up(ability_name, replay_command, wait_time)
+end
+
 --- Cancel the spell, fire the ability, then recast the spell once the
 --- ability's buff is up (see follow_up). No-op when the ability is not
---- available, on cooldown, or its buff is already active.
+--- available, on cooldown, or its buff is already active. The ability is
+--- tried at most once per spell: the recast sent by follow_up goes out as is.
 --- @param spell table Spell object from GearSwap
 --- @param eventArgs table Event args (handled is set when the ability fires)
 --- @param ability_name string Ability to fire first
 --- @param wait_time number|nil Soft delay before the spell (default 2)
 function AbilityHelper.try_ability(spell, eventArgs, ability_name, wait_time)
     wait_time = wait_time or 2
-
-    if not AbilityHelper.can_use_ability(ability_name) then
-        return
-    end
+    if not may_try(spell, ability_name) then return end
 
     if AbilityHelper.is_ability_ready(ability_name) and not AbilityHelper.is_buff_active(ability_name) then
-        eventArgs.handled = true
-        cancel_spell()
-        send_command(string.format('input /ja "%s" <me>', ability_name))
-        AbilityHelper.follow_up(ability_name,
-            string.format('input /ma "%s" %s', spell.name, spell.target.id), wait_time)
+        fire_then_replay(spell, eventArgs, ability_name, wait_time,
+            string.format('input /ma "%s" %s', spell.name, spell.target.id))
     end
 end
 
@@ -317,21 +365,12 @@ end
 --- @param wait_time number|nil Soft delay before the spell (default 2)
 function AbilityHelper.try_ability_smart(spell, eventArgs, ability_name, wait_time)
     wait_time = wait_time or 2
-
-    if not AbilityHelper.can_use_ability(ability_name) then
-        return
-    end
-
-    if AbilityHelper.is_buff_active(ability_name) then
-        return
-    end
+    if not may_try(spell, ability_name) then return end
+    if AbilityHelper.is_buff_active(ability_name) then return end
 
     if AbilityHelper.is_ability_ready(ability_name) then
-        eventArgs.handled = true
-        cancel_spell()
-        send_command(string.format('input /ja "%s" <me>', ability_name))
-        AbilityHelper.follow_up(ability_name,
-            string.format('input /ma "%s" %s', spell.name, spell.target.id), wait_time)
+        fire_then_replay(spell, eventArgs, ability_name, wait_time,
+            string.format('input /ma "%s" %s', spell.name, spell.target.id))
     end
 end
 
@@ -343,18 +382,12 @@ end
 --- @param wait_time number|nil Soft delay before the WS (default 2)
 function AbilityHelper.try_ability_ws(spell, eventArgs, ability_name, wait_time)
     wait_time = wait_time or 2
-
-    if not AbilityHelper.can_use_ability(ability_name) then
-        return
-    end
+    if not may_try(spell, ability_name) then return end
 
     if AbilityHelper.is_ability_ready(ability_name) and not AbilityHelper.is_buff_active(ability_name) then
-        eventArgs.handled = true
         eventArgs.cancel = true  -- the WS is resent by follow_up after the ability
-        cancel_spell()
-        send_command(string.format('input /ja "%s" <me>', ability_name))
-        AbilityHelper.follow_up(ability_name,
-            string.format('input /ws "%s" <t>', spell.name), wait_time)
+        fire_then_replay(spell, eventArgs, ability_name, wait_time,
+            string.format('input /ws "%s" <t>', spell.name))
     end
 end
 

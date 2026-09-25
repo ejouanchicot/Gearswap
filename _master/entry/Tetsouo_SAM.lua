@@ -21,6 +21,14 @@ if not lockstyle_config_success or not LockstyleConfig then
     }
 end
 
+-- Region configuration, set before anything loads message_colors: that
+-- module reads _G.RegionConfig once each time it is loaded, to pick the
+-- region's warning orange.
+local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
+if region_success and RegionConfig then
+    _G.RegionConfig = RegionConfig
+end
+
 -- ============================================
 -- LOAD UICONFIG AT MODULE LEVEL (executed on EVERY reload)
 -- ============================================
@@ -73,14 +81,6 @@ function get_sets()
     _G.UIConfig = UIConfig
     _G.RECAST_CONFIG = require('Tetsouo/config/RECAST_CONFIG')
 
-    -- Load region configuration. Too late for the region warning color:
-    -- message_colors captured _G.RegionConfig when ConfigLoader (module
-    -- level, above) first required it.
-    local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
-    if region_success and RegionConfig then
-        _G.RegionConfig = RegionConfig
-    end
-
     -- SAM-specific configs
     _G.SAMTPConfig = require('Tetsouo/config/sam/SAM_TP_CONFIG')
 
@@ -103,25 +103,13 @@ function get_sets()
 end
 
 --- Handle sub job change events (called by Mote-Include after user_setup())
---- Re-registers the SAM modules and hands the reload to JobChangeManager.
+--- Hands the reload to JobChangeManager.
 --- @param newSubjob string New subjob
 --- @param oldSubjob string Old subjob
 --- @return void
 function job_sub_job_change(newSubjob, oldSubjob)
     local success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if success and JobChangeManager then
-        local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-        if SAMKeybinds and ui_success and KeybindUI then
-            JobChangeManager.initialize(
-                {
-                    keybinds = SAMKeybinds,
-                    ui = KeybindUI,
-                    lockstyle = select_default_lockstyle,
-                    macrobook = select_default_macro_book
-                }
-            )
-        end
-
         local main_job = player and player.main_job or 'SAM'
         JobChangeManager.on_job_change(main_job, newSubjob)
     end

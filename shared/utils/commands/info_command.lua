@@ -13,7 +13,7 @@
 ---   Features:
 ---     - Searches JA, Spell, and WS databases
 ---     - Formatted output with color codes (ASCII-safe)
----     - Shows all available data fields
+---     - Shows the fields the databases store (description, levels, ...)
 ---     - Works for any job/subjob combination
 ---
 ---   @file    shared/utils/commands/info_command.lua
@@ -47,18 +47,18 @@ local function sanitize_ascii(text)
 
     text = tostring(text)
 
-    -- Remove non-ASCII characters (keep only 32-126)
-    text = text:gsub("[^\32-\126]", "")
-
-    -- Replace common Unicode chars with ASCII equivalents.
-    -- NOTE: these run after the strip above has already removed every
-    -- non-ASCII byte, so none of them can match any more.
+    -- Convert the common Unicode punctuation first: the strip below removes
+    -- every non-ASCII byte.
     text = text:gsub("\226\128\153", "'")  -- Right single quote to regular quote
     text = text:gsub("\226\128\156", '"')  -- Left double quote
     text = text:gsub("\226\128\157", '"')  -- Right double quote
     text = text:gsub("\226\128\148", "-")  -- Em dash to hyphen
     text = text:gsub("\226\128\147", "-")  -- En dash to hyphen
     text = text:gsub("\226\128\166", "...") -- Ellipsis to three dots
+    text = text:gsub("\195\151", "x")        -- Multiplication sign
+
+    -- Remove non-ASCII characters (keep only 32-126)
+    text = text:gsub("[^\32-\126]", "")
 
     return text
 end
@@ -240,15 +240,31 @@ local function display_job_ability(ability_name, ability_data)
         {"Recast",      ability_data.recast,      MessageColors.GRAY, MessageColors.COOLDOWN},
         {"Duration",    ability_data.duration,    MessageColors.GRAY, MessageColors.SUCCESS},
         {"Effect",      ability_data.effect,      MessageColors.GRAY, MessageColors.INFO},
-        {"Range",       ability_data.range,       MessageColors.GRAY, MessageColors.INFO},
         {"Radius",      ability_data.radius,      MessageColors.GRAY, MessageColors.INFO},
         {"Cost",        ability_data.cost,        MessageColors.GRAY, MessageColors.WARNING},
-        {"Job",         ability_data.job,         MessageColors.GRAY, MessageColors.JOB_TAG},
         {"Level",       ability_data.level,       MessageColors.GRAY, MessageColors.INFO},
         {"Category",    ability_data.category,    MessageColors.GRAY, MessageColors.GRAY},
     }
 
     display_entity(ability_name, ability_data, "Job Ability Information", MessageColors.JA, fields, false)
+end
+
+local JOB_CODES = {
+    'WAR', 'MNK', 'WHM', 'BLM', 'RDM', 'THF', 'PLD', 'DRK', 'BST', 'BRD', 'RNG',
+    'SAM', 'NIN', 'DRG', 'SMN', 'BLU', 'COR', 'PUP', 'DNC', 'SCH', 'GEO', 'RUN',
+}
+
+--- Spell data stores each job's learn level under the job code (WHM = 21).
+--- @param spell_data table Spell data from database
+--- @return string|nil "WHM 21, RDM 26", or nil when no job level is stored
+local function job_levels(spell_data)
+    local parts = {}
+    for _, code in ipairs(JOB_CODES) do
+        if type(spell_data[code]) == 'number' then
+            parts[#parts + 1] = code .. ' ' .. spell_data[code]
+        end
+    end
+    return #parts > 0 and table.concat(parts, ', ') or nil
 end
 
 --- Display Spell information
@@ -261,15 +277,16 @@ local function display_spell(spell_name, spell_data)
         {"Description", spell_data.description, MessageColors.GRAY, MessageColors.SPELL},
         {"Effect",      spell_data.effect,      MessageColors.GRAY, MessageColors.INFO},
         {"Duration",    spell_data.duration,    MessageColors.GRAY, MessageColors.SUCCESS},
-        {"Cast Time",   spell_data.cast_time,   MessageColors.GRAY, MessageColors.INFO},
         {"Recast",      spell_data.recast,      MessageColors.GRAY, MessageColors.COOLDOWN},
         {"MP Cost",     spell_data.mp_cost,     MessageColors.GRAY, MessageColors.WARNING},
-        {"Range",       spell_data.range,       MessageColors.GRAY, MessageColors.INFO},
-        {"Target",      spell_data.target,      MessageColors.GRAY, MessageColors.INFO},
+        {"Target",      spell_data.target_type, MessageColors.GRAY, MessageColors.INFO},
+        {"Magic",       spell_data.magic_type,  MessageColors.GRAY, MessageColors.INFO},
+        {"Tier",        spell_data.tier,        MessageColors.GRAY, MessageColors.INFO},
         {"Element",     spell_data.element,     MessageColors.GRAY, MessageColors.SPELL},
         {"Skill",       spell_data.skill,       MessageColors.GRAY, MessageColors.GRAY},
-        {"Job",         spell_data.job,         MessageColors.GRAY, MessageColors.JOB_TAG},
         {"Level",       spell_data.level,       MessageColors.GRAY, MessageColors.INFO},
+        {"Jobs",        job_levels(spell_data), MessageColors.GRAY, MessageColors.JOB_TAG},
+        {"Notes",       spell_data.notes,       MessageColors.GRAY, MessageColors.GRAY},
     }
 
     display_entity(spell_name, spell_data, "Spell Information", MessageColors.SPELL, fields, true)

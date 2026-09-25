@@ -167,7 +167,7 @@ function job_self_command(cmdParams, eventArgs)
     if command == 'altjobupdate' then
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         if cmdParams[2] and cmdParams[3] then
-            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3], cmdParams[4], cmdParams[5])
+            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3], cmdParams[4], cmdParams[5], cmdParams[6])
         end
         eventArgs.handled = true
         return
@@ -471,7 +471,6 @@ function job_self_command(cmdParams, eventArgs)
         local songs = SongRotationManager.get_songs_with_replacement()
         if songs and songs[1] then
             cast_song(songs[1])
-            MessageFormatter.show_song_cast(1, songs[1])
         else
             MessageFormatter.show_no_song_in_slot(1)
         end
@@ -483,7 +482,6 @@ function job_self_command(cmdParams, eventArgs)
         local songs = SongRotationManager.get_songs_with_replacement()
         if songs and songs[2] then
             cast_song(songs[2])
-            MessageFormatter.show_song_cast(2, songs[2])
         else
             MessageFormatter.show_no_song_in_slot(2)
         end
@@ -495,7 +493,6 @@ function job_self_command(cmdParams, eventArgs)
         local songs = SongRotationManager.get_songs_with_replacement()
         if songs and songs[3] then
             cast_song(songs[3])
-            MessageFormatter.show_song_cast(3, songs[3])
         else
             MessageFormatter.show_no_song_in_slot(3)
         end
@@ -507,7 +504,6 @@ function job_self_command(cmdParams, eventArgs)
         local songs = SongRotationManager.get_songs_with_replacement()
         if songs and songs[4] then
             cast_song(songs[4])
-            MessageFormatter.show_song_cast(4, songs[4])
         else
             MessageFormatter.show_no_song_in_slot(4)
         end
@@ -520,7 +516,6 @@ function job_self_command(cmdParams, eventArgs)
         local songs = SongRotationManager.get_songs_with_replacement()
         if songs and songs[5] then
             cast_song(songs[5])
-            MessageFormatter.show_song_cast(5, songs[5])
         else
             MessageFormatter.show_no_song_in_slot(5)
         end

@@ -507,5 +507,3 @@ sets.buff.Doom = {
     ring2 = BSTRings.Blenmot,
     waist = 'Gishdubar Sash',
 }
-
-print('[BST] Equipment sets loaded successfully (modular v3.0)')

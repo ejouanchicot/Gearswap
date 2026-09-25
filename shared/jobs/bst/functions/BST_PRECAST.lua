@@ -114,9 +114,8 @@ end
 
 --- Mark the move for midcast and put the precast piece on.
 ---
---- The category is carried on the spell because midcast cannot work it out
---- again: by then the ability has resolved and the name alone does not say
---- which kind of move it was.
+--- The category is carried on the spell (the same object reaches midcast) so
+--- midcast does not have to work it out again from the name.
 local function prepare_ready_move(spell, category)
     spell.ready_move_category = category
     spell.bst_is_ready_move = true

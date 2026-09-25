@@ -86,10 +86,11 @@ end
 
 -- Ability types (res.job_abilities `type`) that have records in the job
 -- ability databases. GearSwap also reports Ready moves (Monster), Quick Draw
--- shots (CorsairShot) and the SMN/PUP/DRG pet commands with action_type
--- 'Ability'; none of them is in any database, so they must not trigger the
--- walk over all 21. BST's own pet commands are in the BST database, which the
--- main/sub pass already covers for a BST.
+-- shots (CorsairShot) and pet commands with action_type 'Ability'; they must
+-- not trigger the walk over all 21. The BST, PUP and DRG databases do hold
+-- their own job's pet commands, but only that job (main or sub) can use
+-- them, so the main/sub pass above already finds them; SMN's are in no
+-- database.
 local DATABASE_TYPES = {
     JobAbility = true, Scholar = true, Rune = true, Ward = true, Effusion = true,
     Waltz = true, Samba = true, Step = true, Jig = true,

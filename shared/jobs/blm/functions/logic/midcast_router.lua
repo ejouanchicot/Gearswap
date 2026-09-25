@@ -17,7 +17,6 @@
 ---     • messages (MessageBLMMidcast module)
 ---     • mp_config (BLMMPConfig: { mp_threshold = number })
 ---     • elemental_config (BLMElementalConfig: { auto_hachirin, check_storm/day/weather })
----     • enfeebling_database (function|nil: spell_name -> spell_family)
 ---
 ---   @file    shared/jobs/blm/functions/logic/midcast_router.lua
 ---   @author  Tetsouo
@@ -202,7 +201,7 @@ function Router.handle_dark(spell, ctx)
     end
 end
 
---- Enfeebling Magic: MidcastManager with optional spell_family database router.
+--- Enfeebling Magic: MidcastManager standard selection.
 --- @param spell table Spell information from GearSwap
 --- @param ctx table Context built by BLM_MIDCAST (see file header)
 function Router.handle_enfeebling(spell, ctx)
@@ -215,7 +214,6 @@ function Router.handle_enfeebling(spell, ctx)
     MidcastManager.select_set({
         skill = 'Enfeebling Magic',
         spell = spell,
-        database_func = ctx.enfeebling_database,
     })
 
     if ctx.debug_enabled then

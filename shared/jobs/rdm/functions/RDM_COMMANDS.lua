@@ -166,7 +166,7 @@ function job_self_command(cmdParams, eventArgs)
         -- Receive alt job update
         local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
         if cmdParams[2] and cmdParams[3] then
-            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3], cmdParams[4], cmdParams[5])
+            DualBoxManager.receive_alt_job(cmdParams[2], cmdParams[3], cmdParams[4], cmdParams[5], cmdParams[6])
         end
         eventArgs.handled = true
         return
@@ -405,10 +405,8 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---   Update UI when state changes
----   Called after state changes to update UI display
----
----   The UI-aware cycle passes the state key ('MainWeapon'), Mote passes the
----   description ('Main Weapon'); stripping spaces accepts both.
+---   Called after state changes to update UI display. On cycle/set/toggle
+---   commands the gear follows through handle_update, which Mote runs next.
 ---   @param stateField string The state key or description that changed
 ---   @param newValue any The new value
 ---   @param oldValue any The old value
@@ -422,16 +420,6 @@ function job_state_change(stateField, newValue, oldValue)
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI then
         KeybindUI.update()
-    end
-
-    local field = type(stateField) == 'string' and stateField:gsub(' ', '') or stateField
-
-    -- Force equipment refresh when weapon states change
-    if field == 'MainWeapon' or field == 'SubWeapon' then
-        -- Re-equip gear with new weapons
-        if player and player.status then
-            handle_equipping_gear(player.status)
-        end
     end
 end
 

@@ -176,9 +176,9 @@ function PLDStates.configure()
     --- Cap: 80% maximum (FFXI mechanics)
     state.FastCast = M {
         ['description'] = 'Fast Cast %',
-        0, 10, 20, 30, 40, 50, 60, 70, 80
+        '0', '10', '20', '30', '40', '50', '60', '70', '80'
     }
-    state.FastCast:set(80)  -- Default: 80% (PLD needs FC for SIRD build)
+    state.FastCast:set('80')  -- Default: 80% (PLD needs FC for SIRD build)
 
     -- Rune list and Phalanx default follow the combat mode, not the other way
     -- round: cold load starts on PDT, so this installs the standard profile.

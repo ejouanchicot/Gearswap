@@ -929,5 +929,3 @@ sets.buff.Doom = {
     left_ring = {name = 'Purity Ring'}, -- Additional Doom resistance
     waist = {name = 'Gishdubar Sash'} -- Enhances Doom recovery effects
 }
-
-print('[PLD] Equipment sets loaded successfully (modular v4.0)')

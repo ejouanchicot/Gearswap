@@ -118,8 +118,9 @@ local function resolve(file_name, variant)
         return cfg
     end
 
-    return nil, ('%s/%s.lua: invalid format (no .gear or .variants)'):format(
-        'config/craft', file_name)
+    local p = windower.ffxi.get_player()
+    return nil, ('%s/sets/%s_sets.lua: invalid format (no .gear or .variants)'):format(
+        (p and p.name) or '?', file_name:lower())
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

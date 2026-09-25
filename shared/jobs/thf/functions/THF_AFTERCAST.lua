@@ -18,15 +18,6 @@
 ---   @date    Created: 2025-10-06
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Track recent SA/TA usage (persist until buff detected or consumed)
-if not _G.thf_sa_pending then
-    _G.thf_sa_pending = false
-end
-
-if not _G.thf_ta_pending then
-    _G.thf_ta_pending = false
-end
-
 local SATA_PENDING_FLAGS = {
     ['Sneak Attack'] = 'thf_sa_pending',
     ['Trick Attack'] = 'thf_ta_pending',

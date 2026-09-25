@@ -19,6 +19,9 @@
 ---     DebugCommands.handle_info(args)          - info command (JA/Spell/WS detail)
 ---     DebugCommands.handle_debugstate()        - lifecycle counters dump
 ---     DebugCommands.handle_memcheck()          - _G / package.loaded export
+---     DebugCommands.handle_debugwarp/debugprecast/automovedebug/
+---         debugjobchange/debugupdate()          - debug flag toggles
+---     DebugCommands.handle_debugmsg()          - message display modes dump
 ---
 ---   @file    shared/utils/core/DEBUG_COMMANDS.lua
 ---   @author  Tetsouo
@@ -482,6 +485,96 @@ function DebugCommands.handle_memcheck(arg)
     end
 
     announce_summary(by_type, total_g, top_tables, packages, file_path, sep)
+    return true
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   DEBUG TOGGLES
+---  ═══════════════════════════════════════════════════════════════════════════
+
+--- Flip one debug flag kept on windower, which outlives the sandbox: a flag
+--- only in _G is gone at the next job load. INIT_SYSTEMS copies these fields
+--- back into _G on every load.
+--- @param key string Field of windower._gs_debug
+--- @return boolean The new value
+local function flip_debug(key)
+    windower._gs_debug = windower._gs_debug or {}
+    windower._gs_debug[key] = not windower._gs_debug[key]
+    return windower._gs_debug[key]
+end
+
+--- //gs c debugwarp - toggle warp debug output.
+--- @return boolean Always true
+function DebugCommands.handle_debugwarp()
+    _G.WARP_DEBUG = flip_debug('WARP')
+    MessageCommands.show_warp_debug_toggled(_G.WARP_DEBUG)
+    return true
+end
+
+--- //gs c debugprecast - toggle precast debug output.
+--- @return boolean Always true
+function DebugCommands.handle_debugprecast()
+    _G.PrecastDebugState = flip_debug('PRECAST')
+    local MessagePrecast = require('shared/utils/messages/formatters/magic/message_precast')
+    if _G.PrecastDebugState then
+        MessagePrecast.show_debug_enabled()
+    else
+        MessagePrecast.show_debug_disabled()
+    end
+    return true
+end
+
+--- //gs c automovedebug - toggle AutoMove timing debug. It needs its own
+--- persistent field: writing only _G meant INIT_SYSTEMS overwrote it from
+--- _gs_debug.UPDATE at the next load, so the toggle silently undid itself on
+--- a subjob change.
+--- @return boolean Always true
+function DebugCommands.handle_automovedebug()
+    _G.AUTOMOVE_DEBUG = flip_debug('AUTOMOVE')
+    MessageFormatter.show_debug('AutoMove', 'Debug mode: ' .. (_G.AUTOMOVE_DEBUG and 'ON' or 'OFF'))
+    return true
+end
+
+--- //gs c debugjobchange - toggle job change tracing, then dump the
+--- JobChangeManager state when turning it on.
+--- @return boolean Always true
+function DebugCommands.handle_debugjobchange()
+    _G.JOBCHANGE_DEBUG = flip_debug('JOBCHANGE')
+    MessageFormatter.show_debug('JobChange', 'Debug mode: ' .. (_G.JOBCHANGE_DEBUG and 'ON' or 'OFF'))
+    if _G.JOBCHANGE_DEBUG and _G.JobChangeManagerSTATE then
+        local S = _G.JobChangeManagerSTATE
+        MessageFormatter.show_debug('JobChange', string.format('counter=%d, current=%s/%s, target=%s/%s',
+            S.debounce_counter or 0,
+            tostring(S.current_main_job), tostring(S.current_sub_job),
+            tostring(S.target_main_job), tostring(S.target_sub_job)))
+    end
+    return true
+end
+
+--- //gs c debugupdate - trace the full gs c update flow; also sets the
+--- AutoMove trace to the same value.
+--- @return boolean Always true
+function DebugCommands.handle_debugupdate()
+    _G.UPDATE_DEBUG = flip_debug('UPDATE')
+    windower._gs_debug.AUTOMOVE = windower._gs_debug.UPDATE
+    _G.AUTOMOVE_DEBUG = windower._gs_debug.AUTOMOVE
+    MessageFormatter.show_debug('UPDATE', string.format('%s (traces: AutoMove > job_update > UI.update > customize_set)',
+        _G.UPDATE_DEBUG and 'ON' or 'OFF'))
+    return true
+end
+
+--- //gs c debugmsg - dump the current message display modes.
+--- @return boolean Always true
+function DebugCommands.handle_debugmsg()
+    local settings = _G.MESSAGE_SETTINGS
+    if not settings then
+        MessageFormatter.show_error('MSG', 'MESSAGE_SETTINGS is nil!')
+        return true
+    end
+    MessageFormatter.show_debug('MSG', 'MESSAGE_SETTINGS:')
+    MessageFormatter.show_debug('MSG', '  spell_mode: ' .. tostring(settings.spell_mode or 'nil'))
+    MessageFormatter.show_debug('MSG', '  ja_mode: '    .. tostring(settings.ja_mode    or 'nil'))
+    MessageFormatter.show_debug('MSG', '  ws_mode: '    .. tostring(settings.ws_mode    or 'nil'))
     return true
 end
 

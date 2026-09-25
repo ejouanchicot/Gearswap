@@ -67,34 +67,23 @@ function PartyTracker.init_roll_listener()
         if player.main_job ~= 'COR' then return end
         if act.category ~= 6 then return end
         if act.actor_id ~= player.id then return end
-        if act.param == 195 then return end  -- Exclude Fold
 
-        local is_phantom_roll = false
+        -- Category 6 also carries Quick Draw, Waltzes and every other JA:
+        -- only a CorsairRoll entry in res is a roll (Double-Up comes in
+        -- under the id of the roll it doubles).
+        local roll_name = nil
         pcall(function()
             local r = require('resources')
-            if r and r.job_abilities and r.job_abilities[act.param] then
-                if r.job_abilities[act.param].type == 'CorsairRoll' then
-                    is_phantom_roll = true
-                end
+            local ability = r and r.job_abilities and r.job_abilities[act.param]
+            if ability and ability.type == 'CorsairRoll' then
+                roll_name = ability.en
             end
         end)
-        if not is_phantom_roll and act.param >= 98 and act.param <= 192 then
-            is_phantom_roll = true
-        end
-        if not is_phantom_roll then return end
+        if not roll_name then return end
 
         local roll_value = act.targets and act.targets[1] and act.targets[1].actions
             and act.targets[1].actions[1] and act.targets[1].actions[1].param
         if not roll_value or roll_value < 1 or roll_value > 12 then return end
-
-        local roll_name = nil
-        pcall(function()
-            local r = require('resources')
-            if r and r.job_abilities and r.job_abilities[act.param] then
-                roll_name = r.job_abilities[act.param].en
-            end
-        end)
-        if not roll_name then return end
 
         local rt_ok, RollTracker = pcall(require, 'shared/jobs/cor/functions/logic/roll_tracker')
         if rt_ok and RollTracker and RollTracker.on_roll_cast then

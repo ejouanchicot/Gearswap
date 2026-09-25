@@ -178,6 +178,7 @@ function DataLoader.load_abilities()
 
         -- Special cases: Pet commands, Rolls, Steps, etc.
         local special_patterns = {
+            string.format('shared/data/job_abilities/%s/%s_pet_commands', job, job),
             string.format('shared/data/job_abilities/%s/%s_pet_commands_mainjob', job, job),
             string.format('shared/data/job_abilities/%s/%s_pet_commands_subjob', job, job),
             string.format('shared/data/job_abilities/%s/%s_rolls_mainjob', job, job),

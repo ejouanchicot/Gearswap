@@ -129,12 +129,12 @@ function GEOStates.configure()
         "Indi-Malaise",      -- MDB-
         "Indi-Torpor",       -- Evasion-
         "Indi-Slow",         -- Slow (attack speed-)
-        "Indi-Languor",      -- Magic Attack/Defense-
+        "Indi-Languor",      -- Magic Evasion-
         "Indi-Paralysis",    -- Adds Paralysis
-        "Indi-Vex",          -- Magic Evasion-
+        "Indi-Vex",          -- Magic Accuracy-
         "Indi-Wilt",         -- Attack-
         "Indi-Slip",         -- Accuracy-
-        "Indi-Fade",         -- Magic Accuracy-
+        "Indi-Fade",         -- Magic Attack-
         "Indi-Gravity",      -- Movement Speed-
         "Indi-Fend",         -- Magic Defense+ (buff)
         "Indi-Poison"        -- Adds Poison
@@ -153,12 +153,12 @@ function GEOStates.configure()
         "Geo-Malaise",       -- MDB-
         "Geo-Torpor",        -- Evasion-
         "Geo-Slow",          -- Slow (attack speed-)
-        "Geo-Languor",       -- Magic Attack/Defense-
+        "Geo-Languor",       -- Magic Evasion-
         "Geo-Paralysis",     -- Adds Paralysis
-        "Geo-Vex",           -- Magic Evasion-
+        "Geo-Vex",           -- Magic Accuracy-
         "Geo-Wilt",          -- Attack-
         "Geo-Slip",          -- Accuracy-
-        "Geo-Fade",          -- Magic Accuracy-
+        "Geo-Fade",          -- Magic Attack-
         "Geo-Gravity",       -- Movement Speed-
         "Geo-Fend",          -- Magic Defense+ (buff)
         "Geo-Poison",        -- Adds Poison
@@ -254,9 +254,9 @@ function GEOStates.configure()
     --- Cap: 80% maximum (FFXI mechanics)
     state.FastCast = M {
         ['description'] = 'Fast Cast %',
-        0, 10, 20, 30, 40, 50, 60, 70, 80
+        '0', '10', '20', '30', '40', '50', '60', '70', '80'
     }
-    state.FastCast:set(80)  -- Default: 80% (GEO has high FC)
+    state.FastCast:set('80')  -- Default: 80% (GEO has high FC)
 
     -- Universal toggle, created here rather than centrally: the keybind HUD
     -- renders from user_setup() and caches what it reads, so a state added

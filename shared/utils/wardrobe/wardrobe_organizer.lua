@@ -108,10 +108,40 @@ end
 ---   Cleanup helpers shared by all exit paths
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- Drop the records of the stance locks that `gs enable all` just opened.
+--- PLD's Hoxne ammo lock and THF's range lock each keep a flag of the slots
+--- they closed, and release them only through that flag. Left set after the
+--- run unlocked everything, the flag says "locked" over an open slot, and a
+--- pending Ampulla lock could still close the ammo slot on the naked set.
+--- Both modules are optional here: RangeLock only exists for THF, and either
+--- may be absent in a clone.
+local function release_stance_locks()
+    local released = false
+    if _G.ampulla_ammo_locked then released = true end
+    local ok_a, AmpullaLock = pcall(require, 'shared/utils/equipment/ampulla_lock')
+    if ok_a and type(AmpullaLock) == 'table' and AmpullaLock.release then
+        pcall(AmpullaLock.release)
+    end
+    if _G.thf_range_locked then
+        released = true
+        local ok_r, RangeLock = pcall(require, 'shared/jobs/thf/functions/logic/range_lock')
+        if ok_r and type(RangeLock) == 'table' and RangeLock.release then
+            pcall(RangeLock.release)
+        end
+        if state and state.RangeLock and state.RangeLock.value == true then
+            pcall(state.RangeLock.set, state.RangeLock, false)
+        end
+    end
+    if released then
+        Chat.warn('Stance slot locks released (Hoxne ammo / THF range): re-select the stance to lock again.')
+    end
+end
+
 --- Re-enable slots, reset module state, and clear IS_RUNNING flag.
 --- pcall'd so a stale state never prevents enable_slots from firing.
 local function clean_exit()
     pcall(Phases.enable_slots)
+    pcall(release_stance_locks)
     reset_module_state()
     IS_RUNNING = false
 end
@@ -268,7 +298,9 @@ local function finish_run()
         -- Split inventory into "real misplaced" (unused-by-job) vs
         -- "OK in inventory" (used-by-job, will be equipped via gear swap).
         local inv_unused, inv_used, inv_items = count_inv_gear(final.used_names)
+        -- Phase 3.5 can stop early (cycle, STUCK): an unpacked W2 is still work.
         local misplaced = #final.w1w2_unused + #final.w3w6_used + inv_unused
+            + Phases.count_unpacked(final)
         if inv_unused > 0 or inv_used > 0 then
             dlog(('  inv: %d unused (misplaced) + %d used (ok, will be equipped)'):format(
                 inv_unused, inv_used))
@@ -276,8 +308,9 @@ local function finish_run()
 
         local retry, truly_stuck = should_retry(misplaced)
         if retry then
-            Chat.warn(string.format('Iter %d done: %d items still off (was %s). Re-running...',
-                outer_iteration, misplaced, tostring(last_misplaced)))
+            local was = last_misplaced ~= math.huge and (' (was %d)'):format(last_misplaced) or ''
+            Chat.warn(string.format('Iter %d done: %d items still off%s. Re-running...',
+                outer_iteration, misplaced, was))
             dlog(('AUTO-RETRY: iter %d -> %d misplaced (was %s)'):format(
                 outer_iteration, misplaced, tostring(last_misplaced)))
             last_misplaced = misplaced
@@ -297,6 +330,7 @@ local function finish_run()
                 if verify then
                     local inv_unused2, _, inv_items2 = count_inv_gear(verify.used_names)
                     local misplaced2 = #verify.w1w2_unused + #verify.w3w6_used + inv_unused2
+                        + Phases.count_unpacked(verify)
                     dlog(('LAST-CHANCE VERIFY result: misplaced=%d (was %d)'):format(
                         misplaced2, misplaced))
                     if misplaced2 == 0 then
@@ -668,6 +702,7 @@ local AltOrchestrator = require('shared/utils/wardrobe/lib/orchestrator_alt').cr
     job_changed        = job_changed,
     reset_module_state = reset_module_state,
     clean_exit         = clean_exit,
+    release_locks      = release_stance_locks,
     abort_run          = abort_run,
     map_bag_names      = map_bag_names,
     schedule_lockstyle = schedule_lockstyle,

@@ -32,10 +32,6 @@ local function ensure_calculator_loaded()
     return _G.TPBonusCalculator
 end
 
---- Compute the TP bonus gear for a weaponskill and store it in
---- _G.temp_tp_bonus_gear, where WSPrecastHandler.apply_tp_gear picks it up.
---- @param spell table Spell object from GearSwap
---- @param tp_config table Job TP config (e.g. WARTPConfig)
 --- TP read straight from the game's memory.
 --- player.vitals.tp is GearSwap's copy, re-read from the game only when the
 --- last read is over 0.5 s old (refresh.lua refresh_player), so it can trail
@@ -50,6 +46,10 @@ function TPBonusHandler.live_tp()
     return player and player.vitals and player.vitals.tp or 0
 end
 
+--- Compute the TP bonus gear for a weaponskill and store it in
+--- _G.temp_tp_bonus_gear, where WSPrecastHandler.apply_tp_gear picks it up.
+--- @param spell table Spell object from GearSwap
+--- @param tp_config table Job TP config (e.g. WARTPConfig)
 function TPBonusHandler.calculate_tp_gear(spell, tp_config)
     if spell.type ~= 'WeaponSkill' then
         return

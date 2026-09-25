@@ -91,7 +91,7 @@ MessageColors.GRAY = 160           -- Gray - Alias for SEPARATOR
 MessageColors.JOB_TAG = 207        -- Light Blue - Job tags [WAR]
 MessageColors.HEADER = 207         -- Light Blue - Headers
 MessageColors.INFO_HEADER = 207    -- Light Blue - Info headers (alias)
-MessageColors.INFO = 158           -- Light Cyan - Info text/counts
+MessageColors.INFO = 158           -- Green - Info text/counts
 
 -- Status/States
 MessageColors.SUCCESS = 158        -- Green - Success, Ready, Active
@@ -108,7 +108,7 @@ MessageColors.RANGE_ERROR = 167    -- Red - Range errors
 
 -- TP Colors
 MessageColors.TP_NORMAL = 1        -- White - 1000-1999 TP
-MessageColors.TP_ENHANCED = 207    -- Cyan - 2000-2999 TP
+MessageColors.TP_ENHANCED = 207    -- Light Blue - 2000-2999 TP
 MessageColors.TP_ULTIMATE = 158    -- Green - 3000 TP
 MessageColors.TP_LABEL = 160       -- Gray - TP label
 

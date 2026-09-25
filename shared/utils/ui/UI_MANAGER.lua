@@ -25,7 +25,7 @@
 ---   update, force_reinit, schedule_update, needs_reinit, get_status,
 ---   handle_job_configuration_change
 ---
---- Commands: //gs c ui (toggle), //gs c uisave (save position manually)
+--- Commands: //gs c ui (toggle), //gs c ui save (save position manually)
 ---
 --- @file shared/utils/ui/UI_MANAGER.lua
 --- @author Tetsouo
@@ -116,6 +116,12 @@ if not _G.ui_manager_state then
         cached_states = {}
     }
 end
+
+-- Scheduled coroutines outlive the file load that created them, while the
+-- texts objects that load owns are destroyed by the next one. Recording which
+-- state table belongs to the live load lets a delayed init from a previous
+-- load see it is stale, instead of creating a HUD nothing will ever destroy.
+windower._ui_live_state = _G.ui_manager_state
 
 ---============================================================================
 --- SUB-MODULE LOADING

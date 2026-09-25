@@ -34,11 +34,10 @@ function job_buff_change(buff, gain, eventArgs)
     end
 
     -- Dark Seal and Nether Void are single-charge buffs, consumed by the next
-    -- dark spell. Precast raises a pending flag so the gear is right before
-    -- buffactive catches up; the buff going away is what consumption looks
-    -- like, and is the only moment the flag can be lowered. Without this it
-    -- stayed raised for the rest of the session and every later Absorb, Drain
-    -- and Aspir kept applying the variant set.
+    -- dark spell. Precast raises a pending flag that the engaged set variants
+    -- read before buffactive catches up; the buff going away is what
+    -- consumption looks like, and is the only moment the flag can be lowered.
+    -- Without this it would stay raised for the rest of the session.
     if not gain then
         if buff == 'Dark Seal' then
             _G.drk_dark_seal_pending = false

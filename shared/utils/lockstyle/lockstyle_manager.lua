@@ -95,7 +95,6 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local MessageFormatter = require('shared/utils/messages/message_formatter')
-local MessageCore      = require('shared/utils/messages/message_core')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PER-INSTANCE OPERATIONS
@@ -216,11 +215,7 @@ local function show_lockstyle_config(ctx)
         info.manage_dressup and "Managed" or "Manual",
         info.style
     )
-    if MessageFormatter then
-        MessageFormatter.show_info(msg)
-    else
-        MessageCore.show_lockstyle_status(msg)
-    end
+    MessageFormatter.show_info(msg)
 end
 
 local function set_lockstyle_enabled(ctx, enabled)

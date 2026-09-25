@@ -737,9 +737,3 @@ sets.AeolianTH = set_combine(sets.precast.WS['Aeolian Edge'], {feet = Skulker.fe
 
 -- • Engaged with TH
 sets.engaged.TH = set_combine(sets.engaged, sets.TreasureHunter)
-
----============================================================================
---- INITIALIZATION MESSAGE
----============================================================================
-
-print('[THF] Equipment sets loaded successfully')

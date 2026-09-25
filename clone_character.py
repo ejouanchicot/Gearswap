@@ -18,8 +18,8 @@ Usage:
     python clone_character.py --lang en    (English)
 
 Author: Tetsouo GearSwap Project
-Version: 4.0.0 - Smart clone with character_db
-Date: 2026-02-16
+Version: 4.1.0 - Keeps the files written in game across a re-clone
+Date: 2026-09-25
 """
 
 import os
@@ -60,6 +60,8 @@ TRANSLATIONS = {
         'jobs_manual_error': "ERREUR: Aucun job valide trouvé. Jobs disponibles: {}",
         'jobs_selected': "   Jobs sélectionnés: {}",
         'jobs_no_config': "   [INFO] Pas de config trouvée pour: {} (normal pour certains jobs)",
+        'jobs_no_entry': "   [WARN] Pas de fichier d'entrée pour: {} - ces jobs ne chargeront pas",
+        'restored': "   [OK] {} (repris de la sauvegarde)",
         'jobs_no_entry': "   [INFO] Pas de fichier entry pour: {} (sera ignoré)",
 
         # Validation
@@ -132,6 +134,7 @@ TRANSLATIONS = {
         # Config
         'conf_summary': "\n[CONFIGURATION DU CLONE]",
         'conf_source': "   Source:  _master/",
+        'conf_overlay': "   Overlay: {}",
         'conf_target': "   Cible:   {}",
         'conf_jobs': "   Jobs:    {}",
         'conf_role': "   Rôle:    {}",
@@ -166,6 +169,8 @@ TRANSLATIONS = {
         'jobs_manual_error': "ERROR: No valid jobs found. Available: {}",
         'jobs_selected': "   Selected jobs: {}",
         'jobs_no_config': "   [INFO] No config found for: {} (normal for some jobs)",
+        'jobs_no_entry': "   [WARN] No entry file for: {} - these jobs will not load",
+        'restored': "   [OK] {} (kept from the backup)",
         'jobs_no_entry': "   [INFO] No entry file for: {} (will be skipped)",
 
         'master_not_found': "ERROR: _master/ directory not found!",
@@ -231,6 +236,7 @@ TRANSLATIONS = {
 
         'conf_summary': "\n[CLONE CONFIGURATION]",
         'conf_source': "   Source:  _master/",
+        'conf_overlay': "   Overlay: {}",
         'conf_target': "   Target:  {}",
         'conf_jobs': "   Jobs:    {}",
         'conf_role': "   Role:    {}",
@@ -244,9 +250,11 @@ TRANSLATIONS = {
 }
 
 # All valid FFXI job abbreviations for this system
+# PUP is left out while _master/config/pup/ does not exist: its entry file
+# requires a config from there without pcall, so a cloned PUP never loads.
 ALL_VALID_JOBS = [
     'BLM', 'BRD', 'BST', 'COR', 'DNC', 'DRK', 'GEO',
-    'PLD', 'PUP', 'RDM', 'RUN', 'SAM', 'THF', 'WAR', 'WHM'
+    'PLD', 'RDM', 'RUN', 'SAM', 'THF', 'WAR', 'WHM'
 ]
 
 
@@ -295,12 +303,28 @@ def parse_character_db(db_path):
 # CHARACTER CLONER
 # ============================================================================
 
+# Files the game session writes into a character folder (HUD position, message
+# modes, alt window and alt orders, owned warp items, temporary binds). A
+# re-clone moves the old folder aside; these are copied back from it so the
+# player does not lose them. dualbox_role.lua is left out on purpose: the
+# re-clone writes DUALBOX_CONFIG.lua from the role asked for, and an old role
+# file would silently override it.
+KEPT_ON_RECLONE = [
+    ('config', 'ui_settings.lua'),
+    ('config', 'message_modes.lua'),
+    ('config', 'alt_window.lua'),
+    ('config', 'alt_state.lua'),
+    ('config', 'WARP_ITEMS_OWNED.lua'),
+    ('temp_binds.lua',),
+]
+
+
 class SmartCharacterCloner:
     """Smart character cloner using _master/<source>/ and character_db.
 
     The _master/ folder now contains per-character template subfolders:
         _master/Tetsouo/   <- default source (8-wardrobe MAIN setup)
-        _master/Kaories/   <- ALT setup (4 wardrobes, COR/GEO/RDM)
+        _master/Kaories/   <- ALT setup (4 wardrobes, COR/GEO/PLD/RDM)
 
     The cloner picks one as the source via `source_name` (default: Tetsouo).
     Use `--source Kaories` (CLI) to clone from the Kaories template instead.
@@ -392,6 +416,7 @@ class SmartCharacterCloner:
         The backup goes next to data/, not inside it: GearSwap only searches
         data/<name>/, data/common/ and data/ for job files, and the wardrobe
         and refill scanners only walk data/, so a backup is never loaded.
+        Returns the backup folder, or None when the move failed.
         """
         stamp = datetime.now().strftime('%Y%m%d-%H%M%S')
         backup_dir = self.base_dir.parent / 'clone_backups' / f'{target_name}_{stamp}'
@@ -400,9 +425,19 @@ class SmartCharacterCloner:
             shutil.move(str(target_dir), str(backup_dir))
         except Exception as e:
             print(self.t['backup_failed'].format(e))
-            return False
+            return None
         print(self.t['backup_ok'].format(backup_dir))
-        return True
+        return backup_dir
+
+    def _restore_kept_files(self, backup_dir, target_dir):
+        """Copy the files written in game back from the backup."""
+        for parts in KEPT_ON_RECLONE:
+            src = backup_dir.joinpath(*parts)
+            if src.is_file():
+                dst = target_dir.joinpath(*parts)
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dst)
+                print(self.t['restored'].format('/'.join(parts)))
 
     # ------------------------------------------------------------------
     # DATABASE LOOKUP + JOB SELECTION
@@ -560,8 +595,11 @@ class SmartCharacterCloner:
         jobs_lower = [j.lower() for j in jobs]
         jobs_upper = [j.upper() for j in jobs]
 
-        if target_dir.exists() and not self._backup_existing(target_dir, target_name):
-            return False
+        backup_dir = None
+        if target_dir.exists():
+            backup_dir = self._backup_existing(target_dir, target_name)
+            if backup_dir is None:
+                return False
 
         self.override_dir = self._select_overlay(target_name)
 
@@ -596,6 +634,7 @@ class SmartCharacterCloner:
         # ── Step 2: Copy entry files (only selected jobs) ─────────────
         print(self.t['step_entry'].format(len(jobs)))
         self.count_entry = 0
+        no_entry_jobs = []
         for job_upper, job_lower in zip(jobs_upper, jobs_lower):
             src, src_label = find_entry_src(job_upper)
             dst = target_dir / f'{target_name}_{job_upper}.lua'
@@ -605,6 +644,9 @@ class SmartCharacterCloner:
                 self.count_entry += 1
             else:
                 print(self.t['copy_skip'].format(f"entry/{src_label or job_upper}"))
+                no_entry_jobs.append(job_upper)
+        if no_entry_jobs:
+            print(self.t['jobs_no_entry'].format(', '.join(no_entry_jobs)))
 
         # ── Step 3: Copy set files (only selected jobs) ───────────────
         print(self.t['step_sets'].format(len(jobs)))
@@ -719,14 +761,17 @@ class SmartCharacterCloner:
         modified = self._replace_references(target_dir, target_name)
         print(self.t['replace_count'].format(modified, target_name))
 
-        # Rename entry files content (already copied with Tetsouo_ prefix name in content)
-        # The file names were already set correctly in step 2
 
         # ── Step 6: Generate character-specific configs ───────────────
         print(self.t['step_generate'])
         self._create_dualbox_config(target_dir, dualbox_config)
         self._create_region_config(target_dir, target_name, region)
         self.count_configs += 2  # DUALBOX + REGION
+
+        # After the rename: these already carry the right names, including
+        # the other characters' (an alt_state follow leader, for instance).
+        if backup_dir is not None:
+            self._restore_kept_files(backup_dir, target_dir)
 
         # ── Summary ───────────────────────────────────────────────────
         self.banner('banner_complete')
@@ -752,7 +797,7 @@ class SmartCharacterCloner:
     # ------------------------------------------------------------------
 
     def _replace_references(self, target_dir, target_name):
-        """Replace all 'Tetsouo' references with target_name in .lua files."""
+        """Replace the source name (TEMPLATE_NAME) with target_name in .lua files."""
         modified = 0
         for lua_file in target_dir.rglob('*.lua'):
             try:
@@ -777,11 +822,14 @@ class SmartCharacterCloner:
 
         partner_block = ""
         if role == 'main':
-            alt = config.get('alt_character') or 'Unknown'
-            partner_block = f'DualBoxConfig.alt_character = "{alt}"'
+            partner = config.get('alt_character') or 'Unknown'
+            partner_block = f'DualBoxConfig.alt_character = "{partner}"'
         else:
-            main = config.get('main_character') or 'Unknown'
-            partner_block = f'DualBoxConfig.main_character = "{main}"'
+            partner = config.get('main_character') or 'Unknown'
+            partner_block = f'DualBoxConfig.main_character = "{partner}"'
+        # //gs c main and //gs c alts find the other boxes through the group.
+        if config.get('enabled'):
+            partner_block += f'\nDualBoxConfig.group = {{"{char_name}", "{partner}"}}'
 
         lua = f"""---============================================================================
 --- Dual-Boxing Configuration - {char_name}
@@ -920,6 +968,9 @@ def main():
         cloner.banner('banner_confirmation')
         print(t['conf_summary'])
         print(t['conf_source'])
+        overlay = cloner._select_overlay(target_name)
+        if overlay is not None:
+            print(t['conf_overlay'].format(f"_master/{overlay.name}/"))
         print(t['conf_target'].format(target_name))
         print(t['conf_jobs'].format(', '.join(jobs)))
         print(t['conf_role'].format(dualbox_config['role'].upper()))

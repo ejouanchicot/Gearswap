@@ -21,7 +21,7 @@ return {
     },
 
     ws_validation_error_status = {
-        template = "{lightblue}[{job}] {yellow}[{ws_name}]{red} {reason} {purple}{status}",
+        template = "{gray}[{lightblue}{job}{gray}] {yellow}[{ws_name}]{red} {reason} {purple}{status}",
         color = 1
     },
 
@@ -31,7 +31,7 @@ return {
     },
 
     ws_validation_error = {
-        template = "{lightblue}[{job}] {yellow}[{ws_name}]{red} {reason}",
+        template = "{gray}[{lightblue}{job}{gray}] {yellow}[{ws_name}]{red} {reason}",
         color = 1
     },
 
@@ -46,7 +46,7 @@ return {
     },
 
     ability_tp_error = {
-        template = "{gray}==================================================\n{lightblue}[{job}] {gray}Ability: {yellow}{ability}{red} Not enough TP {gray}({current_tp}/{required_tp} TP)\n{gray}==================================================",
+        template = "{gray}=====================================================================\n{gray}[{lightblue}{job}{gray}] {gray}Ability: {yellow}{ability}{red} Not enough TP {gray}({current_tp}/{required_tp} TP)\n{gray}=====================================================================",
         color = 1
     },
 
@@ -94,12 +94,12 @@ return {
     ---========================================================================
 
     spell_cast = {
-        template = "{lightblue}[{job}]{gray} Casting {cyan}{spell_name}",
+        template = "{gray}[{lightblue}{job}{gray}]{gray} Casting {cyan}{spell_name}",
         color = 1
     },
 
     ability_use = {
-        template = "{lightblue}[{job}]{gray} Using {yellow}{ability_name}",
+        template = "{gray}[{lightblue}{job}{gray}]{gray} Using {yellow}{ability_name}",
         color = 1
     },
 
@@ -108,22 +108,22 @@ return {
     ---========================================================================
 
     waltz_heal_single = {
-        template = "{gray}==================================================\n{lightblue}[{job}]{gray} Curing {green}{hp} HP{gray} using {yellow}{waltz_name}\n{gray}==================================================",
+        template = "{gray}=====================================================================\n{gray}[{lightblue}{job}{gray}]{gray} Curing {green}{hp} HP{gray} using {yellow}{waltz_name}\n{gray}=====================================================================",
         color = 1
     },
 
     waltz_heal_single_extra = {
-        template = "{gray}==================================================\n{lightblue}[{job}]{gray} Curing {green}{hp} HP{gray} using {yellow}{waltz_name}{gray} + {green}{extra}\n{gray}==================================================",
+        template = "{gray}=====================================================================\n{gray}[{lightblue}{job}{gray}]{gray} Curing {green}{hp} HP{gray} using {yellow}{waltz_name}{gray} + {green}{extra}\n{gray}=====================================================================",
         color = 1
     },
 
     waltz_heal_aoe = {
-        template = "{gray}==================================================\n{lightblue}[{job}]{gray} AoE Healing using {yellow}{waltz_name}\n{gray}==================================================",
+        template = "{gray}=====================================================================\n{gray}[{lightblue}{job}{gray}]{gray} AoE Healing using {yellow}{waltz_name}\n{gray}=====================================================================",
         color = 1
     },
 
     waltz_heal_aoe_extra = {
-        template = "{gray}==================================================\n{lightblue}[{job}]{gray} AoE Healing using {yellow}{waltz_name}{gray} + {green}{extra}\n{gray}==================================================",
+        template = "{gray}=====================================================================\n{gray}[{lightblue}{job}{gray}]{gray} AoE Healing using {yellow}{waltz_name}{gray} + {green}{extra}\n{gray}=====================================================================",
         color = 1
     },
 
@@ -132,27 +132,27 @@ return {
     ---========================================================================
 
     jump_activated = {
-        template = "{lightblue}[{job}] {yellow}[{jump_ability}] {gray}>> {gray}{description}",
+        template = "{gray}[{lightblue}{job}{gray}] {yellow}[{jump_ability}] {gray}>> {gray}{description}",
         color = 1
     },
 
     jump_chaining_desc = {
-        template = "{lightblue}[{job}]{gray} Chaining {yellow}[{second_jump}] {gray}>> {gray}{description}",
+        template = "{gray}[{lightblue}{job}{gray}]{gray} Chaining {yellow}[{second_jump}] {gray}>> {gray}{description}",
         color = 1
     },
 
     jump_chaining = {
-        template = "{lightblue}[{job}]{gray} Chaining {yellow}[{second_jump}]",
+        template = "{gray}[{lightblue}{job}{gray}]{gray} Chaining {yellow}[{second_jump}]",
         color = 1
     },
 
     jump_complete = {
-        template = "{lightblue}[{job}]{gray} Jump sequence complete",
+        template = "{gray}[{lightblue}{job}{gray}]{gray} Jump sequence complete",
         color = 1
     },
 
     jump_relaunch = {
-        template = "{lightblue}[{job}]{gray} Re-launch {yellow}{ws_name}{gray} manually",
+        template = "{gray}[{lightblue}{job}{gray}]{gray} Re-launch {yellow}{ws_name}{gray} manually",
         color = 1
     },
 }

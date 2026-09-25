@@ -103,17 +103,6 @@ function BRDMessages.show_marcato_used()
     })
 end
 
---- Disabled on purpose (too verbose): prints nothing.
---- @param song_name string Optional song name (defaults to "Honor March")
-function BRDMessages.show_marcato_honor_march(song_name)
-    -- DISABLED: Too verbose
-    -- song_name = song_name or "Honor March"
-    -- M.job('BRD', 'marcato_honor_march', {
-    --     job = get_job_tag(),
-    --     song = song_name
-    -- })
-end
-
 --- Show the BRD.marcato_skip_buffs message
 function BRDMessages.show_marcato_skip_buffs()
     M.job('BRD', 'marcato_skip_buffs', {
@@ -286,18 +275,6 @@ end
 ---============================================================================
 --- INDIVIDUAL SONG MESSAGES
 ---============================================================================
-
---- Disabled on purpose (duplicate of the description line): prints nothing.
---- @param slot number Song slot (1-5)
---- @param song_name string Name of the song
-function BRDMessages.show_song_cast(slot, song_name)
-    -- DISABLED: Duplicate message (keep only the one with description)
-    -- M.job('BRD', 'song_cast', {
-    --     job = get_job_tag(),
-    --     slot = slot,
-    --     song = song_name
-    -- })
-end
 
 --- @param slot number Song slot (3, 4, or 5)
 --- @param dummy_count number Number of dummies required

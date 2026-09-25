@@ -21,6 +21,7 @@
 ---   map_bag_names(list) -> list    - bag-id list to human labels
 --- ctx (optional):
 ---   schedule_lockstyle()           - re-apply lockstyle after the run
+---   release_locks()                - forget stance locks `gs enable all` opened
 ---
 --- @file shared/utils/wardrobe/lib/orchestrator_alt.lua
 --- @author Tetsouo
@@ -81,6 +82,7 @@ function OrchestratorAlt.create(ctx)
         coroutine.schedule(function()
             local final = build_alt_state()
             Phases.enable_slots()
+            if ctx.release_locks then pcall(ctx.release_locks) end
             Chat.banner('Wardrobe Organize Alt - Complete')
             if final then
                 Chat.detail('Inventory free', final.inv_free)

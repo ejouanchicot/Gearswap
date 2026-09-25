@@ -5,7 +5,7 @@
 ---
 --- The position, visibility, background, font and section values below are
 --- only defaults: once config/ui_settings.lua exists (it is rewritten on every
---- UI setting change and by //gs c uisave), its values take precedence.
+--- UI setting change and by //gs c ui save), its values take precedence.
 --- init_delay, text.stroke, flags and background_presets are always read here.
 ---
 --- @file Tetsouo/config/UI_CONFIG.lua
@@ -337,7 +337,7 @@ UIConfig.colors = {
 UIConfig.init_delay = 5.0
 
 -- The four settings below are not read by any module at present.
--- The position is saved with //gs c uisave.
+-- The position is saved with //gs c ui save.
 UIConfig.auto_save_position = false
 UIConfig.auto_save_delay = 1.5
 UIConfig.debug = false

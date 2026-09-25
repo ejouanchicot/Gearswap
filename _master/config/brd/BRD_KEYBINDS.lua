@@ -53,8 +53,6 @@ BRDKeybinds.binds = {
     -- Ctrl+Numpad8: Auto-Marcato Song (HonorMarch/AriaPassion/Off)
     { key = "^numpad8", command = "cyclestate MarcatoSong", desc = "Auto-Marcato Song", state = "MarcatoSong" },
 
-    -- Apps+Numpad0: Auto Medicine (universal toggle)
-
     -- No action keys (abilities, song casts) are bound in this file.
 }
 

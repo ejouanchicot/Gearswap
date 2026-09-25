@@ -946,5 +946,3 @@ sets.TreasureHunter = {
     head = Misc.HerculeanHelmTH,
     legs = Misc.HerculeanTrousersTH
 }
-
-print('[DNC] Equipment sets loaded successfully (modular v2.0)')
