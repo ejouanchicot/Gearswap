@@ -30,12 +30,14 @@ local SongSlots = {}
 
 local BASE_SLOTS = 2
 
---- Buff names of the songs a BRD puts on the party (one buff per song up).
+--- Buff names of the songs a BRD puts on the party (one buff per song up),
+--- as res/buffs.lua names them: Honor March gives "March", Aria of Passion
+--- "Aria". The family of a song is the one of these its name contains.
 local SONG_BUFFS = {}
-for _, name in ipairs({'Minuet', 'March', 'Honor March', 'Madrigal', 'Minne', 'Paeon',
+for _, name in ipairs({'Minuet', 'March', 'Madrigal', 'Minne', 'Paeon',
         'Ballad', 'Etude', 'Carol', 'Mambo', 'Prelude', 'Aubade', 'Pastoral', 'Fantasia',
         'Operetta', 'Capriccio', 'Round', 'Gavotte', 'Hymnus', 'Mazurka', 'Sirvente',
-        'Dirge', 'Scherzo', 'Aria of Passion'}) do
+        'Dirge', 'Scherzo', 'Aria'}) do
     SONG_BUFFS[name:lower()] = true
 end
 
@@ -69,10 +71,8 @@ end
 --- @return string|nil
 local function family_of(song)
     local name = song:lower()
-    if name:find('honor march') then return 'honor march' end
-    if name:find('aria of passion') then return 'aria of passion' end
     for family in pairs(SONG_BUFFS) do
-        if not family:find(' ') and name:find(family, 1, true) then return family end
+        if name:find(family, 1, true) then return family end
     end
     return nil
 end
