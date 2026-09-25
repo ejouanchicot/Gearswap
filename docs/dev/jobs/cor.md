@@ -154,6 +154,11 @@ comment (86-89) states the checks must not stop the precast.
   then the roll's own sub-set by name (`Mote-Include.lua:929-951`). The
   `classes.CustomClass = 'CorsairRoll'` line and the `CUSTOM_CLASS_BY_TYPE`
   table were removed on 2026-09-25: Mote already finds both sets from the type.
+- **Roll already up** (2026-09-25, `logic/double_up.lua`, called right after the guard,
+  before the cooldown check): the roll is cancelled; with Double-Up Chance up and the roll
+  being the last one rolled, `input /ja "Double-Up" <me>` goes out instead. Otherwise a
+  warning says why (no chance; Double-Up would go to the last roll, another one). The game
+  refuses to re-roll an active roll anyway.
 - **Double-Up**: equips `sets.precast.CorsairRoll[<last roll>]`, else the base
   roll set (`job_precast_double_up`, 76-84, called at 105-107). Mote's own
   choice for Double-Up is the `sets.precast.JA` table, which holds no slot of

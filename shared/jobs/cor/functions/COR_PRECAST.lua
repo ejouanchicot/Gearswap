@@ -4,7 +4,8 @@
 ---   Handles all precast actions for Corsair job (precast gear itself comes
 ---   from the sets through Mote):
 ---   • Phantom Roll: CorsairRoll class + last roll name for Double-Up
----   • Double-Up: wears the set of the roll it doubles
+---   • Double-Up: wears the set of the roll it doubles; a roll already up
+---     becomes a Double-Up (logic/double_up.lua)
 ---   • Quick Draw: CorsairShot class
 ---   • Crooked Cards: timestamp read by the roll tracker
 ---   • Luzaf's Ring / Gurebu's Ring on Phantom Roll (LuzafRing state)
@@ -107,7 +108,7 @@ local function apply_cor_precast(spell)
     end
 end
 
---- Precast hook: guard, cooldown, COR logic, weaponskill.
+--- Precast hook: guard, Double-Up redirect, cooldown, COR logic, weaponskill.
 --- @param spell table Spell information from GearSwap
 --- @param action table Action information from GearSwap
 --- @param spellMap string Spell mapping from Mote-Include
@@ -116,6 +117,12 @@ function job_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
     if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
+        return
+    end
+
+    -- Before the cooldown check: a roll already up becomes a Double-Up,
+    -- which the Phantom Roll recast must not cancel first
+    if require('shared/jobs/cor/functions/logic/double_up').redirect(spell, eventArgs) then
         return
     end
 
