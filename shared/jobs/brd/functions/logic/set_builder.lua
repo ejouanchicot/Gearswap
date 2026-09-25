@@ -15,6 +15,7 @@ local SetBuilder = {}
 
 -- Load base set builder (universal functions)
 local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
+local WeaponResolver = require('shared/utils/equipment/weapon_resolver')
 
 -- Load dependencies
 local MessageFormatter = require('shared/utils/messages/message_formatter')
@@ -101,7 +102,7 @@ function SetBuilder.apply_main_weapon(result)
     end
 
     -- Try to use weapon set from brd_sets.lua (sets.Naegling, sets.Twashtar, etc.)
-    local weapon_set = sets[state.MainWeapon.current]
+    local weapon_set = WeaponResolver.set_for('main', state.MainWeapon.current)
     if weapon_set then
         local success, combined = pcall(set_combine, result, weapon_set)
         if success then
@@ -124,7 +125,7 @@ function SetBuilder.apply_sub_weapon(result)
     end
 
     -- Try to use weapon set from brd_sets.lua (sets.Demersal, sets.Genmei, sets.Centovente)
-    local weapon_set = sets[state.SubWeapon.current]
+    local weapon_set = WeaponResolver.set_for('sub', state.SubWeapon.current)
     if weapon_set then
         local success, combined = pcall(set_combine, result, weapon_set)
         if success then

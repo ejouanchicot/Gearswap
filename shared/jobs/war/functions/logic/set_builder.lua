@@ -17,6 +17,7 @@
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
 ---  ═══════════════════════════════════════════════════════════════════════════
+local WeaponResolver = require('shared/utils/equipment/weapon_resolver')
 local SetBuilder = {}
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -143,7 +144,7 @@ function SetBuilder.apply_weapon(result)
     end
 
     -- Try to use weapon set from war_sets.lua (sets.Ukonvasara, sets.Naegling, etc.)
-    local weapon_set = sets[state.MainWeapon.current]
+    local weapon_set = WeaponResolver.set_for('main', state.MainWeapon.current)
     if weapon_set then
         local success, combined = pcall(set_combine, result, weapon_set)
         if success then

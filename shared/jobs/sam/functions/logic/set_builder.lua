@@ -17,6 +17,7 @@
 ---   @version 1.0
 ---   @date    Created: 2025-10-21
 ---  ═══════════════════════════════════════════════════════════════════════════
+local WeaponResolver = require('shared/utils/equipment/weapon_resolver')
 local SetBuilder = {}
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -57,8 +58,8 @@ function SetBuilder.build_idle_set(base_set)
     end
 
     -- Priority 4: Apply main weapon (includes sub weapon in set)
-    if state and state.MainWeapon and sets[state.MainWeapon.value] then
-        result = set_combine(result, sets[state.MainWeapon.value])
+    if state and state.MainWeapon and WeaponResolver.set_for('main', state.MainWeapon.value) then
+        result = set_combine(result, WeaponResolver.set_for('main', state.MainWeapon.value))
     end
 
     return result
@@ -104,8 +105,8 @@ function SetBuilder.build_engaged_set(base_set)
     end
 
     -- Priority 2: Apply current main weapon (includes sub weapon in set)
-    if state and state.MainWeapon and sets[state.MainWeapon.value] then
-        result = set_combine(result, sets[state.MainWeapon.value])
+    if state and state.MainWeapon and WeaponResolver.set_for('main', state.MainWeapon.value) then
+        result = set_combine(result, WeaponResolver.set_for('main', state.MainWeapon.value))
     end
 
     -- Priority 3: Bow equipped handling (Yoichinoyumi)

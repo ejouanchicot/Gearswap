@@ -158,6 +158,20 @@ Report row kinds (`refill_panels.lua:165-209`): foreign (`foreign (n) -> Case`),
 
 The quiver has to be in the inventory for `/item`; the refill lists keep it there (`THF_REFILL.lua` `Ac. Bolt Quiver` 12, Kaories `COR_REFILL.lua` `Brz. Bull. Pouch` 2). Because of the foreign sweep, a character whose own list for the current job does not name the quiver has it pushed back to the store bag on every refill.
 
+### Weapon states: `weapon_resolver.lua`
+
+Every `set_builder` that applies `state.MainWeapon` / `state.SubWeapon` (BLM, BRD, COR, DNC, GEO, RDM, RUN,
+SAM, THF, WAR; PLD and DRK use their own weapon logic) asks `WeaponResolver.set_for(slot, value)` instead of
+reading `sets[value]` itself (2026-09-25).
+
+- Default: returns `sets[value]`, exactly the old lookup. Tetsouo and Kaories have no `WEAPON_CONFIG.lua`, so
+  nothing changed for them (38 weapon values audited; Tetsouo's BLM relies on `Hvergelmir` having no set, so
+  its idle and engaged sets keep their own staves).
+- `<Char>/config/WEAPON_CONFIG.lua` with `equip_without_set = true` (template in `_master/config_global/`):
+  `sets[value]` only when it names that slot, an off-hand pick never moves the main hand, otherwise
+  `{main|sub = value}` when `value` is a weapon in `res.items` (category `Weapon`, grips included), else nothing.
+  Asked by Gab: plain weapons without sets, the same weapon in main or sub.
+
 ### HP priority
 
 `INIT_SYSTEMS.lua:64-70` calls `HPPriority.apply()` once per job load, under `pcall`, right after the `ModuleCache` install: by then `get_sets()` has returned from `include('Mote-Include.lua')`, so Mote has run `init_gear_sets()` and `_G.sets` holds the job's sets.

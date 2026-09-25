@@ -26,6 +26,7 @@ local SetBuilder = {}
 
 -- Load base set builder (universal functions)
 local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
+local WeaponResolver = require('shared/utils/equipment/weapon_resolver')
 
 -- Load message formatter for error display
 local MessageFormatter = require('shared/utils/messages/message_formatter')
@@ -44,7 +45,7 @@ function SetBuilder.apply_weapon(result)
     end
 
     -- Use sets.* directly (defined in run_sets.lua)
-    local weapon_set = sets[state.MainWeapon.current]
+    local weapon_set = WeaponResolver.set_for('main', state.MainWeapon.current)
     if weapon_set then
         result = set_combine(result, weapon_set)
     end
@@ -70,7 +71,7 @@ function SetBuilder.apply_grip(result)
 
     -- Use SubWeapon state (sets.Utu, sets.Refined)
     if state.SubWeapon and state.SubWeapon.current then
-        local grip_set = sets[state.SubWeapon.current]
+        local grip_set = WeaponResolver.set_for('sub', state.SubWeapon.current)
         if grip_set then
             if _G.DEBUG_RUN_WEAPONS then
                 MessageFormatter.show_debug('RUN SetBuilder', 'Applying grip: ' .. state.SubWeapon.current)
