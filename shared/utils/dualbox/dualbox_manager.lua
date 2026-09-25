@@ -5,16 +5,20 @@
 --- Handles job change notifications and online status tracking.
 ---
 --- Communication Flow (both roles; "alt" = the other box):
----   auto-init >> send_job_update() >> send <other> gs c altjobupdate JOB SUB MLVL SLVL NAME
----   auto-init >> request_alt_job() >> send <other> gs c requestjob
+---   auto-init >> send_job_update() >> send <other> gs c altjobupdate JOB SUB MLVL SLVL NAME WEAPON
+---   auto-init >> request_alt_job() >> send <each other box> gs c requestjob
 ---   requestjob >> handle_job_request() >> send_job_update(true)
----   altjobupdate >> receive_alt_job() >> stores in _G.AltJobState, reloads macrobook
+---   main hand changes weapon type >> send_job_update() (alt_states.lua)
+---   altjobupdate >> receive_alt_job() >> stores in _G.AltJobState (tracked
+---     partner) and alt_states.lua (every sender), reloads macrobook
 ---
 --- @file shared/utils/dualbox/dualbox_manager.lua
 --- @author Tetsouo
 --- @version 1.1
 --- @date Created: 2025-10-22
 ---============================================================================
+
+local AltStates = require('shared/utils/dualbox/alt_states')
 
 -- MessageDualbox lazy-loaded (only when showing messages)
 local MessageDualbox = nil
@@ -173,7 +177,10 @@ function DualBoxManager.send_job_update(force)
     local main_level = player.main_job_level or 0
     local sub_level  = player.sub_job_level or 0
 
-    local payload = main_job .. '/' .. sub_job .. '/' .. main_level .. '/' .. sub_level
+    local weapon_ok, weapon = pcall(AltStates.weapon_skill)
+    if not weapon_ok then weapon = 'None' end
+
+    local payload = main_job .. '/' .. sub_job .. '/' .. main_level .. '/' .. sub_level .. '/' .. weapon
 
     -- Drop if we just sent the same payload within SEND_DEDUP_WINDOW seconds.
     -- Different payload = real job change, always send through.
@@ -194,10 +201,10 @@ function DualBoxManager.send_job_update(force)
         return
     end
 
-    -- The sender's name comes last so a receiver that ignores it still reads
-    -- the four fields it knows.
-    local command = string.format('send %s gs c altjobupdate %s %s %d %d %s',
-        target_name, main_job, sub_job, main_level, sub_level, player.name or '')
+    -- New fields go last so a receiver that ignores them still reads the
+    -- ones it knows.
+    local command = string.format('send %s gs c altjobupdate %s %s %d %d %s %s',
+        target_name, main_job, sub_job, main_level, sub_level, player.name or '', weapon)
     send_command(command)
 
     -- Record for de-dup (after we actually sent, so a failed get_target_character
@@ -237,16 +244,17 @@ function DualBoxManager.request_alt_job()
         return
     end
 
-    local target_name = get_target_character()
-    if not target_name then
-        return
-    end
+    -- Every other box of the group: a main with several alts keys some
+    -- binds on each one's job (alt_states.lua).
+    local group_ok, AltGroup = pcall(require, 'shared/utils/dualbox/alt_group')
+    local targets = group_ok and AltGroup and AltGroup.get_alts() or {}
+    if #targets == 0 then targets = {get_target_character()} end
 
-    local command = string.format('send %s gs c requestjob', target_name)
-    send_command(command)
-
-    if _G.DualBoxConfig.debug then
-        get_MessageDualbox().show_requesting_job(target_name)
+    for _, target_name in ipairs(targets) do
+        send_command(string.format('send %s gs c requestjob', target_name))
+        if _G.DualBoxConfig.debug then
+            get_MessageDualbox().show_requesting_job(target_name)
+        end
     end
 end
 
@@ -258,15 +266,22 @@ end
 --- @param main_level string|number|nil Main job level (0 when not sent)
 --- @param sub_level string|number|nil Subjob level (0 when not sent)
 --- @param sender string|nil Name of the box that sent it (nil from an older box)
-function DualBoxManager.receive_alt_job(main_job, sub_job, main_level, sub_level, sender)
+--- @param weapon string|nil Its main hand's weapon type (nil from an older box)
+function DualBoxManager.receive_alt_job(main_job, sub_job, main_level, sub_level, sender, weapon)
     if not _G.DualBoxConfig or not _G.DualBoxConfig.enabled then
         return
     end
+    if not main_job or main_job == "" then
+        return
+    end
+    if weapon == "" then weapon = nil end
 
     -- _G.AltJobState holds one box: with three or more in the group, only
-    -- the tracked partner's update may write it.
+    -- the tracked partner's update may write it. Every sender is recorded
+    -- in alt_states.lua.
     local tracked = get_target_character()
     if sender and sender ~= '' and tracked and sender:lower() ~= tracked:lower() then
+        AltStates.record(sender, main_job, sub_job or "NON", weapon)
         return
     end
 
@@ -274,10 +289,6 @@ function DualBoxManager.receive_alt_job(main_job, sub_job, main_level, sub_level
     -- box's job" on either character - the alt's job when read on the main,
     -- the main's job when read on the alt. Rejecting it here left the alt
     -- with nothing, which made the symmetric send added alongside inert.
-
-    if not main_job or main_job == "" then
-        return
-    end
 
     -- Both boxes send at every reload, so most updates repeat what this box
     -- already holds: only a new job is announced and re-selects the macro book.
@@ -292,9 +303,12 @@ function DualBoxManager.receive_alt_job(main_job, sub_job, main_level, sub_level
         -- 0 as "unknown" and fall back to the main-job tier.
         main_level = tonumber(main_level) or 0,
         sub_level = tonumber(sub_level) or 0,
+        weapon = weapon,
         last_update = os.time(),
         online = true
     }
+    -- After _G.AltJobState: the keys it refreshes read that too
+    AltStates.record((sender ~= '' and sender) or tracked, main_job, sub_job or "NON", weapon)
 
     local win_ok, AltWindow = pcall(require, 'shared/utils/dualbox/alt_window')
     if win_ok and AltWindow then AltWindow.refresh() end
@@ -500,6 +514,7 @@ local function run_auto_init(attempt)
     -- a send that lands before the receiver's own init is dropped.
     DualBoxManager.send_job_update()
     DualBoxManager.request_alt_job()
+    AltStates.watch_weapon(function() DualBoxManager.send_job_update() end)
 
     if role == "alt" then
         -- Also announce which tracked buffs are already up, otherwise the main

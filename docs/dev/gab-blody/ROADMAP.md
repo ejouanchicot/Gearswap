@@ -74,11 +74,14 @@ comportement à l'identique (audit : 38 valeurs d'armes Tetsouo + Kaories).
   `Blodykiller/` + ses négations, avant de créer les overlays.
 - [ ] Overlays `_master/Gabvanstronger/`, `_master/Blodykiller/` (sets, configs,
   `0_AugGear_*`, UI_CONFIG, COMMON_KEYBINDS).
-- [ ] Dual-box : l'alt envoie aussi le **type d'arme** ; `AltJobState` par nom
-  (plusieurs alts : Blody, Thyrsa, Sephiroph) ; l'ancien champ unique reste pour
-  COR/macrobook (compatibilité).
-- [ ] KeybindManager : conditions `alt = {name, job, subjob, weapon}` ; `refresh()`
-  appelé quand un alt change de job/sous-job/arme. Sans condition = comportement actuel.
+- [x] Dual-box (2026-09-25, code + test hors jeu) : `altjobupdate` porte le type d'arme
+  (7e argument, renvoyé quand la main change de type d'arme, paquet 0x050) ;
+  `shared/utils/dualbox/alt_states.lua` garde chaque boîte par nom ; `requestjob` part
+  vers toute la boîte du groupe ; `_G.AltJobState` inchangé pour COR/macrobook.
+- [x] KeybindManager (2026-09-25) : champ `alt = {name, job, subjob, weapon}` ;
+  `refresh_active()` à chaque changement d'une boîte ; `refresh()` ne retire plus une
+  touche qu'il repose. Sans `alt` = comportement actuel.
+- [x] Testé en jeu Tetsouo + Kaories (2026-09-25) : rien n'a changé pour eux.
 
 ### Étape C : fonctions communes manquantes (options, off par défaut)
 - [ ] WeaponLock (bascule, verrouille main/sub/range).
@@ -158,3 +161,5 @@ Bugs existants chez eux (ne pas reproduire) : AugGear d'un autre perso effacé p
 | Date | Étape | Commit | Testé en jeu |
 |---|---|---|---|
 | 2026-09-25 | A : armes sans set | feat(equipment): weapon states resolved in one place | oui (Tetsouo, BLM inchangé) |
+| 2026-09-25 | B : clone + character_db | 34481ae | hors jeu (comparaison de clones) |
+| 2026-09-25 | B : dual-box arme + multi-alts, touches `alt` | feat(dualbox) | oui (Tetsouo + Kaories) |

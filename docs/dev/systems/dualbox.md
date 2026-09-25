@@ -32,7 +32,8 @@ function is named.
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/utils/dualbox/dualbox_manager.lua` | 524 | Config load, job exchange protocol, `_G.AltJobState`, auto-init on every body execution |
+| `shared/utils/dualbox/dualbox_manager.lua` | 539 | Config load, job exchange protocol, `_G.AltJobState`, auto-init on every body execution |
+| `shared/utils/dualbox/alt_states.lua` | 147 | Job, subjob and weapon type of every box of the group by name (`_G.AltStates`); `matches()` for keybind `alt` conditions; `watch_weapon()` reports a main-hand weapon type change |
 | `shared/utils/dualbox/alt_commands.lua` | 570 | Loads the alt's command configs, resolves tier/target, builds and sends `send <alt> input ...`; installs the `selfCommandMaps` fallback |
 | `shared/utils/dualbox/alt_buff_reporter.lua` | 336 | ALT: report tracked buffs. MAIN: store them, guess/expire, trace log |
 | `shared/utils/dualbox/dualbox_sync_ipc.lua` | 159 | Windower IPC broadcast/hook registry for `ls`/`rf` mirroring |
@@ -113,7 +114,7 @@ Until step 4 runs, `_G.DualBoxConfig` is nil. This window lasts 2 s at minimum a
 
 | Wire command (sent via `send`) | Sender | When | Handler on receiver |
 |---|---|---|---|
-| `send <other> gs c altjobupdate <JOB> <SUB> <mlvl> <slvl> <sender>` | either box, `send_job_update` (`:149-211`) | Auto-init of either box. Reply to `requestjob` (forced past the de-dup). Also any role on subjob change in the `_master/entry/Tetsouo_BST.lua:274-278` / `Tetsouo_PUP.lua:247-251` templates | Every job COMMANDS file, e.g. `WAR_COMMANDS.lua:91-101`, calls `receive_alt_job(cmdParams[2..6])` (`:261-337`) |
+| `send <other> gs c altjobupdate <JOB> <SUB> <mlvl> <slvl> <sender> <weapon>` | either box, `send_job_update` | Auto-init of either box. Reply to `requestjob` (forced past the de-dup). Since 2026-09-25 also when the main hand changes weapon type (`AltStates.watch_weapon`, packet 0x050 slot 0, read 0.5 s later); `<weapon>` is the skill name without spaces (`Sword`, `GreatKatana`, `None`), part of the de-dup payload. Also any role on subjob change in the `_master/entry/Tetsouo_BST.lua:274-278` / `Tetsouo_PUP.lua:247-251` templates | Every job COMMANDS file, e.g. `WAR_COMMANDS.lua:91-101`, calls `receive_alt_job(cmdParams[2..7])` |
 | `send <other> gs c requestjob` | either box, `request_alt_job` (`:235-251`) | Auto-init of either box | Every job COMMANDS file, e.g. `WAR_COMMANDS.lua:103-108`, calls `handle_job_request` (`:215-226`), which answers on either role with `send_job_update(true)` |
 | `send <main> gs c altbuff <Buff Name> <0\|1>` | ALT, `AltBuffReporter.report` | GEO `job_buff_change`. `report_all` at ALT auto-init and on `altbuffsync` | `COMMON_COMMANDS.lua:557-563` calls `AltBuffReporter.receive` |
 | `send <alt> gs c altbuffsync` | MAIN, `request_sync` | `//gs c altsync`, or `sync_after` seconds after an alt command that declares it | `COMMON_COMMANDS.lua:564-570` calls `report_all` (sends only on the ALT) |
@@ -335,6 +336,16 @@ states that FFXI fires `buff_change` for Entrust only on loss. The 3 s resync is
 - **Scope.** Windower IPC reaches every other instance of the GearSwap addon on the machine, whatever
   `DUALBOX_CONFIG` says.
 
+### Every box's job and weapon (`alt_states.lua`, 2026-09-25)
+
+`_G.AltJobState` holds the tracked partner only. `alt_states.lua` keeps what every
+box of the group last reported, by name, so a main with several alts (Gab: Blody,
+Thyrsa, Sephiroph) can key binds on each (`alt` field, see
+[keybinds-and-custom.md](keybinds-and-custom.md)). A new job, subjob or weapon type
+calls `KeybindManager.refresh_active()`. Recorded after `_G.AltJobState`, so a
+condition without a name sees the new value. Lost on reload like `_G.AltJobState`,
+refilled by the `requestjob` sent to every box at auto-init.
+
 ### Box group and role switch (`alt_group.lua`, `dualbox_role.lua`)
 
 - **Group.** `DualBoxConfig.group = {"Tetsouo", "Kaories"}` in both configs; `clone_character.py`
@@ -393,8 +404,8 @@ states that FFXI fires `buff_change` for Entrust only on loss. The 3 s resync is
 | `initialize(config?)` (`:69-129`) | Loads `_G.DualBoxConfig` once per env, applies `dualbox_role.lua`. Optional table overrides keys. Creates `_G.AltJobState` | `run_auto_init` only (no caller passes `config`) |
 | `send_job_update(force?)` (`:149-211`) | Sends `altjobupdate` (with the sender's name) to the other box, de-duplicated 1.5 s unless `force` | `run_auto_init` (both roles), `handle_job_request` (forced), `DualBoxRole` resync, `_master/entry/Tetsouo_BST.lua:277`, `Tetsouo_PUP.lua:250` |
 | `handle_job_request()` (`:215-226`) | Either role: calls `send_job_update(true)` | 16 job COMMANDS on `requestjob` |
-| `request_alt_job()` (`:235-251`) | Either role: sends `requestjob` to the other box | `run_auto_init` (both roles), `DualBoxRole` resync |
-| `receive_alt_job(job, sub, mlvl, slvl, sender)` (`:261-337`) | Drops a stranger's update; stores `_G.AltJobState`, patches `_G.cor_party_jobs`, redraws the window; for a new job or subjob only, prints and reselects macrobook | 16 job COMMANDS on `altjobupdate` |
+| `request_alt_job()` | Either role: sends `requestjob` to every other box of `AltGroup.get_alts()` (the partner alone when there is no group; Tetsouo and Kaories: the partner) | `run_auto_init` (both roles), `DualBoxRole` resync |
+| `receive_alt_job(job, sub, mlvl, slvl, sender, weapon)` | Records every sender in `alt_states.lua` (`_G.AltStates[name]`: job, subjob, weapon); a box other than the tracked partner goes no further. Stores `_G.AltJobState` (with `weapon`), patches `_G.cor_party_jobs`, redraws the window; for a new job or subjob only, prints and reselects macrobook | 16 job COMMANDS on `altjobupdate` |
 | `is_alt_online()` (`:346-360`) | True if `AltJobState.online` and last update within `DualBoxConfig.timeout` (default 30 s). Sets `online=false` once expired | `macrobook_manager.lua` `dualbox_config`, `get_alt_job`, `show_status` |
 | `get_alt_job()` (`:364-370`) | Alt job or nil when offline | `macrobook_manager.lua` `dualbox_config` |
 | `get_alt_subjob()` (`:374-380`) | Alt subjob or nil | none |
