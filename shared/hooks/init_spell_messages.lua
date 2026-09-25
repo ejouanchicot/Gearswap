@@ -3,6 +3,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 --- Automatically wraps user_post_midcast to show spell messages for ALL jobs.
 --- Simply include this file in get_sets() and it works automatically.
+--- Being the one midcast hook every job runs, it also lets Utsusemi: Ichi
+--- replace existing shadows (shared/utils/midcast/utsusemi_shadows.lua).
 ---
 --- Usage in the entry point (Tetsouo_[JOB].lua), after Mote-Include:
 ---   function get_sets()
@@ -79,6 +81,9 @@ function user_post_midcast(spell, action, spellMap, eventArgs)
 
     -- Lazy load handler on first spell cast
     if spell and spell.action_type == 'Magic' then
+        if spell.english == 'Utsusemi: Ichi' then
+            require('shared/utils/midcast/utsusemi_shadows').on_midcast(spell)
+        end
         ensure_handler_loaded()
 
         -- Show universal spell message

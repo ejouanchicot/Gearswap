@@ -22,19 +22,13 @@ local MidcastDeps = require('shared/utils/midcast/midcast_deps')
 local MidcastManager = nil
 local EnhancingSPELLS = nil
 
----   Pre-midcast hook (Utsusemi shadow management)
+---   Pre-midcast hook. Utsusemi: Ichi's shadow cancel runs for every job
+---   from shared/hooks/init_spell_messages.lua (utsusemi_shadows.lua).
 ---   @param spell table Spell information from GearSwap
 ---   @param action string Action type
 ---   @param spellMap string Spell mapping from Mote-Include
 ---   @param eventArgs table Event arguments for cancellation/customization
 function job_midcast(spell, action, spellMap, eventArgs)
-    -- Ichi cannot overwrite existing shadows: cancel them 2.3 s into the cast
-    if spell.english == 'Utsusemi: Ichi' then
-        send_command('wait 2.3; cancel 66')   -- Copy Image
-        send_command('wait 2.3; cancel 444')  -- Copy Image (2)
-        send_command('wait 2.3; cancel 445')  -- Copy Image (3)
-        send_command('wait 2.3; cancel 446')  -- Copy Image (4+)
-    end
 end
 
 ---   Post-midcast hook (MidcastManager routing and gear selection)
