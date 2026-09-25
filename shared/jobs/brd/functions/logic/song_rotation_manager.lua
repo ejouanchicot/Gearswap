@@ -14,7 +14,6 @@ local SongRotationManager = {}
 
 -- Load configuration
 local BRDSongConfig = _G.BRDSongConfig or {}  -- Loaded from character main file
-local BRDTimingConfig = _G.BRDTimingConfig or {}  -- Loaded from character main file
 
 -- Load message formatter for BRD messages
 local MessageFormatter = require('shared/utils/messages/message_formatter')
@@ -143,39 +142,18 @@ function SongRotationManager.get_required_instrument(song_name)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   3-PHASE DUMMY SONG CASTING WITH DYNAMIC TIMING
+---   3-PHASE DUMMY SONG CASTING (queued: song_queue.lua)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Get appropriate song delay based on active buffs and Marcato state
----   @param marcato_used boolean Whether Marcato was used for this rotation
----   @return number Delay in seconds
-local function get_song_delay(marcato_used)
-    local has_nightingale = buffactive['Nightingale'] or false
-    local has_troubadour = buffactive['Troubadour'] or false
-
-    -- Use dynamic timing config
-    return BRDTimingConfig.get_song_delay(has_nightingale, has_troubadour, marcato_used)
-end
-
----   Cast a phase of songs with proper delays
----   @param songs table Array of songs to cast
----   @param start_index number Starting song index (1-based)
----   @param count number Number of songs to cast
----   @param target string Target for songs ("<me>" or "<stnpc>")
----   @param base_delay number Starting delay
----   @param song_delay number Delay between songs
----   @return number Updated delay for next phase
-local function cast_song_phase(songs, start_index, count, target, base_delay, song_delay)
-    local delay = base_delay
-
+---   Append songs[start_index .. start_index + count - 1] to `into`.
+---   @param into table Song list being built
+---   @param songs table Songs to take from
+---   @param start_index number First index (1-based)
+---   @param count number How many
+local function add_phase(into, songs, start_index, count)
     for i = start_index, start_index + count - 1 do
-        if songs[i] then
-            send_command('wait ' .. delay .. '; input /ma "' .. songs[i] .. '" ' .. target)
-            delay = delay + song_delay
-        end
+        if songs[i] then into[#into + 1] = songs[i] end
     end
-
-    return delay
 end
 
 ---   Cast songs using 3-phase rotation (Party >> Dummy >> Party)
@@ -186,40 +164,20 @@ function SongRotationManager.cast_songs_with_phases(use_marcato, target)
     target = target or '<me>'
     local buff_songs = SongRotationManager.get_songs_with_replacement()
     local dummy_songs = SongRotationManager.get_dummy_songs()
-    local delay = 0
+    local order = {}
 
-    -- Check for Clarion Call (allows 5 songs instead of 4)
-    local has_clarion = buffactive['Clarion Call'] or false
-    local total_songs = has_clarion and 5 or 4
-
-    -- Get dynamic song delay (Marcato is inserted by BRD_PRECAST, not here)
-    local song_delay = get_song_delay(false)
-
-    if total_songs >= 5 then
-        -- 5-song rotation (Clarion Call active)
-        MessageFormatter.show_songs_casting(total_songs, '5-Song')
-
-        -- Phase 1: First 3 real songs
-        delay = cast_song_phase(buff_songs, 1, 3, target, delay, song_delay)
-
-        -- Phase 2: 2 dummy songs
-        delay = cast_song_phase(dummy_songs, 1, 2, target, delay, song_delay)
-
-        -- Phase 3: Last 2 real songs (replace dummies)
-        delay = cast_song_phase(buff_songs, 4, 2, target, delay, song_delay)
-    else
-        -- 4-song rotation (standard)
-        MessageFormatter.show_songs_casting(total_songs, '4-Song')
-
-        -- Phase 1: First 2 real songs
-        delay = cast_song_phase(buff_songs, 1, 2, target, delay, song_delay)
-
-        -- Phase 2: 2 dummy songs
-        delay = cast_song_phase(dummy_songs, 1, 2, target, delay, song_delay)
-
-        -- Phase 3: Last 2 real songs (replace dummies)
-        delay = cast_song_phase(buff_songs, 3, 2, target, delay, song_delay)
-    end
+    -- Songs the instruments and Clarion Call can hold, dummies still needed
+    -- (song_slots.lua). One song after the other, each once the previous is
+    -- over (song_queue.lua); Marcato is inserted by BRD_PRECAST, not here.
+    -- The slots the main instrument opens, then the dummies, then the rest of
+    -- the real songs over them.
+    local total_songs, dummies, base = require('shared/jobs/brd/functions/logic/song_slots').plan(#buff_songs)
+    dummies = math.min(dummies, #dummy_songs)
+    MessageFormatter.show_songs_casting(total_songs, ('%d-Song, %d dummy'):format(total_songs, dummies))
+    add_phase(order, buff_songs, 1, base)
+    add_phase(order, dummy_songs, 1, dummies)
+    add_phase(order, buff_songs, base + 1, total_songs - base)
+    require('shared/jobs/brd/functions/logic/song_queue').start(order, target)
 
     -- Display song list
     local pack_name = state.SongMode and state.SongMode.current or 'Unknown'
@@ -234,27 +192,21 @@ function SongRotationManager.cast_songs_with_phases(use_marcato, target)
     return true
 end
 
----   Cast dummy songs to fill slots (4 or 5 depending on Clarion Call)
+---   Cast the dummy songs that open slots beyond the main instrument's
 ---   @return boolean Success status
 function SongRotationManager.cast_dummy_songs()
     local dummy_songs = SongRotationManager.get_dummy_songs()
 
-    -- Dummy songs never use Marcato, so marcato_used = false
-    local song_delay = get_song_delay(false)
+    -- The slots the dummy instrument opens beyond the main one (song_slots.lua)
+    local total_songs, _, base = require('shared/jobs/brd/functions/logic/song_slots').plan(99)
+    local count = math.min(#dummy_songs, total_songs - base)
 
-    -- Check for Clarion Call
-    local has_clarion = buffactive['Clarion Call'] or false
-    local total_songs = has_clarion and 5 or 4
+    MessageFormatter.show_dummy_casting(count)
 
-    MessageFormatter.show_dummy_casting(total_songs)
-
-    -- Cast dummies sequentially
-    for i = 1, total_songs do
-        if dummy_songs[i] then
-            local delay = (i - 1) * song_delay
-            send_command('wait ' .. delay .. '; input /ma "' .. dummy_songs[i] .. '" <me>')
-        end
-    end
+    -- One after the other, each once the previous is over (song_queue.lua)
+    local order = {}
+    add_phase(order, dummy_songs, 1, count)
+    require('shared/jobs/brd/functions/logic/song_queue').start(order, '<me>')
 
     return true
 end

@@ -389,6 +389,35 @@ function job_self_command(cmdParams, eventArgs)
         return
     end
 
+    if command == 'songplan' then
+        -- What //gs c songs would do now, and why (song_slots.lua)
+        local SongSlots = require('shared/jobs/brd/functions/logic/song_slots')
+        local songs = SongRotationManager.get_songs_with_replacement()
+        local total, dummies, base = SongSlots.plan(#songs)
+        local i = SongSlots.inputs()
+        require('shared/utils/messages/info_block').show({
+            tag = 'BRD', title = 'Song plan',
+            fields = {
+                {'Clarion Call', i.clarion},
+                {'Main instrument', ('%s (+%d)'):format(tostring(i.main), i.main_extra)},
+                {'Dummy instrument', ('%s (+%d)'):format(tostring(i.dummy), i.dummy_extra)},
+                {'Songs up', tostring(i.up)},
+                {'Plan', ('%d songs, %d dummies (main opens %d)'):format(total, dummies, base)},
+            },
+        })
+        eventArgs.handled = true
+        return
+    end
+
+    if command == 'songstop' then
+        -- Drop a running rotation (song_queue.lua)
+        local stopped = require('shared/jobs/brd/functions/logic/song_queue').stop()
+        require('shared/utils/messages/message_formatter').show_info(
+            stopped and 'Songs: rotation stopped.' or 'Songs: no rotation running.')
+        eventArgs.handled = true
+        return
+    end
+
     if command == 'dummy' or command == 'dummysongs' then
         -- Cast dummy songs (4 or 5 depending on Clarion Call)
         SongRotationManager.cast_dummy_songs()
