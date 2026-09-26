@@ -280,6 +280,7 @@ value holds if any item matches (OR). Names compare case-insensitively, and a tr
 | `obi_better` / `orpheus_better` | Hachirin-no-Obi's bonus for the action's element (day ±10, weather ±10/±25, storms included) beats Orpheus's Sash's (+15 at 1 yalm, -1 per yalm, +1 from 15), or the reverse; ties go to Orpheus. `shared/utils/equipment/elemental_bonus.lua`, 2026-09-25 |
 | `obi_bonus_above` | the Obi's bonus is above this many percent (for a player without Orpheus) |
 | `town`, `moving`, `pet` | true / false |
+| `engaged` | true = the player's status is `Engaged`, false = any other status. With `engaged = false`, a weapon slot at a combat moment is not reported (2026-09-26, for Blody's Compensator on Phantom Roll) |
 | `zone` | zone name |
 
 The action keys (`spell`, `skill`, `spell_type`, `element`, `day_weather`, `target`,
@@ -307,7 +308,7 @@ makes the whole `when` false.
   or names an unknown slot; a block named after a value
   the state does not have; an unknown moment; an unknown slot; a weapon slot (main, sub,
   range) in `engaged`, `weaponskill`, `ability` or `all` ("changing <slot> in combat loses
-  your TP"); a gear value that is neither a table nor a set name; an unknown condition or a
+  your TP"), unless the block's `when` has `engaged = false`; a gear value that is neither a table nor a set name; an unknown condition or a
   condition value of the wrong type; a `section` other than mode, spell, ability, weapon.
 
 Keys of custom entries are not checked here: they go through the key validator with the

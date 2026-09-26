@@ -123,7 +123,7 @@ return {
   `subjob`, `no_subjob`, `mode`, `hp_below/above`, `mp_below/above`,
   `tp_below/above`, `spell`, `skill`, `spell_type`, `element`, `day_weather`,
   `target`, `distance_below`, `obi_better`, `orpheus_better`, `obi_bonus_above`,
-  `town`, `moving`, `pet`, `zone`.
+  `town`, `moving`, `pet`, `engaged`, `zone`.
 - The better elemental belt, for nukes, elemental weaponskills and Quick Draw:
 
   ```lua

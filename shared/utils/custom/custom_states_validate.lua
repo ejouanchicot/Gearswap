@@ -43,7 +43,7 @@ local WHEN_TYPES = {
     mp_above = 'number', tp_below = 'number', tp_above = 'number',
     distance_below = 'number', day_weather = 'boolean', town = 'boolean',
     obi_better = 'boolean', orpheus_better = 'boolean', obi_bonus_above = 'number',
-    moving = 'boolean', pet = 'boolean',
+    moving = 'boolean', pet = 'boolean', engaged = 'boolean',
 }
 
 --- Weapon slots: swapping them in combat throws the TP away.
@@ -96,6 +96,8 @@ end
 --- @param block table
 --- @param problems table
 local function check_block(where, block, problems)
+    -- A rule held to engaged = false never swaps a weapon while fighting
+    local out_of_combat = type(block.when) == 'table' and block.when.engaged == false
     for moment, gear in pairs(block) do
         if moment == 'when' then
             check_when(where, gear, problems)
@@ -108,7 +110,7 @@ local function check_block(where, block, problems)
                 local id = SLOT_IDS[tostring(slot)]
                 if id == nil then
                     add(problems, '%s %s: "%s" is not a gear slot', where, moment, tostring(slot))
-                elseif WEAPON_SLOTS[id] and COMBAT_MOMENTS[moment] then
+                elseif WEAPON_SLOTS[id] and COMBAT_MOMENTS[moment] and not out_of_combat then
                     add(problems, '%s %s: changing %s in combat loses your TP', where, moment, slot)
                 end
             end

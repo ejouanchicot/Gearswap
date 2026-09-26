@@ -21,6 +21,7 @@
 ---   target                 'self', 'other' (another player), 'enemy'
 ---   distance_below         yalms to the action's target
 ---   town / moving / pet    true or false
+---   engaged                true = fighting, false = not (Engaged status)
 ---   zone                   zone name
 ---
 --- Spell keys never hold at idle/engaged (no action then).
@@ -182,6 +183,7 @@ end
 
 function TESTS.town(v) return in_town() == (v == true) end
 function TESTS.moving(v) return is_moving() == (v == true) end
+function TESTS.engaged(v) return ((player ~= nil and player.status == 'Engaged') == true) == (v == true) end
 function TESTS.pet(v) return ((pet ~= nil and pet.isvalid) == true) == (v == true) end
 function TESTS.zone(v) return world ~= nil and any_matches(world.area, v) end
 
