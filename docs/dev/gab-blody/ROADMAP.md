@@ -150,7 +150,9 @@ comportement à l'identique (audit : 38 valeurs d'armes Tetsouo + Kaories).
 Données déjà présentes : JA, BLU spells, ninjutsu, SCH spells, alt commands.
 
 ### Étape G : réglages de Gab et Blody
-- [ ] Binds BindManager -> `<JOB>_KEYBINDS` / `COMMON_KEYBINDS` / binds d'alt
+- [x] Binds BindManager (2026-09-26, `90a36fd`) : tout ce qui ne dépend pas d'un job -> `COMMON_KEYBINDS`
+  de Gab et Blody (startup, login.all, login.characters, sub_jobs, alt-binds) ; job par job ->
+  `<JOB>_KEYBINDS` au fil des conversions (faits : Gab RDM, Blody BRD COR). Pas testé en jeu.
   (`alt-binds.lua` : groupes `all`, par job d'alt, par sous-job, par arme).
 - [ ] Macrobooks et lockstyles (tables de BindManager).
 - [ ] Sets : conversion job par job avec les tables AF/RELIC/EMPY.
