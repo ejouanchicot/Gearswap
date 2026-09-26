@@ -243,6 +243,15 @@ sets.precast.RA = {
     left_ring   =   "Crepuscular Ring",     -- Snapshot+ 3
 }
 
+-- Under Flurry / Flurry II (his sets, read through classes.CustomRangedGroups:
+-- shared/utils/precast/flurry_tracker.lua)
+sets.precast.RA.Flurry1 = set_combine(sets.precast.RA, {
+    body        =   AF.Body,
+})                                          -- Snapshot+46
+sets.precast.RA.Flurry2 = set_combine(sets.precast.RA.Flurry1, {
+    head        =   EMPY.Head,
+})
+
 -- ═══════════════════════════════════════════════════════════════════════════
 -- PRECAST: WEAPONSKILLS
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -337,6 +346,31 @@ sets.midcast.RA = {
     right_ring  =   "Crepuscular Ring",
     back        =   CORCape.TP,
 }
+
+-- RangedMode variants (his sets; his old RangedMode only had 'Normal', so
+-- they were never used before). ring1 / ring2 of his file written as
+-- left_ring / right_ring for readability only (set_combine already maps
+-- ring1 / ring2 onto left_ring / right_ring).
+sets.midcast.RA.Acc = set_combine(sets.midcast.RA, {
+    ammo        =   "Chrono Bullet",        -- his gear.RAccbullet
+    body        =   "Malignance Tabard",
+    left_ear    =   "Volley Earring",
+    left_ring   =   "Cacoethic Ring +1",
+    right_ring  =   "Longshot Ring",
+})
+sets.midcast.RA.HighAcc = set_combine(sets.midcast.RA.Acc, {
+    legs        =   AF.Legs,
+    left_ring   =   "Regal Ring",
+})
+sets.midcast.RA.Critical = set_combine(sets.midcast.RA, {
+    head        =   MEGH.Head,
+    legs        =   "Mummu Kecks +2",       -- his MUMM.Legs (0_AugGear_Blodykiller.lua line 62)
+    left_ring   =   "Begrudging Ring",
+    right_ring  =   "Mummu Ring",
+})
+sets.midcast.RA.STP = set_combine(sets.midcast.RA, {})
+-- Under Triple Shot, on top of the set above: empty in his file ("--27")
+sets.midcast.RA.TripleShot = {}
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- MOVEMENT & BUFF SETS

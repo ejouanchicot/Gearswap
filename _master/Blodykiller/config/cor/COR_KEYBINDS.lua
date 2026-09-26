@@ -33,6 +33,9 @@ CORKeybinds.binds = {
     -- Luzaf Ring Toggle (affects roll range: ON=16y, OFF=8y)
     { key = "^numpad6", command = "cyclestate LuzafRing", desc = "Luzaf Ring",  state = "LuzafRing" },
 
+    -- Alt+F9: Ranged Mode (his BindManager login key, Mote's default)
+    { key = "!f9", command = "cyclestate RangedMode", desc = "Ranged Mode", state = "RangedMode" },
+
     -- Blody's own key (BindManager jobs.main_jobs.COR: "boltersroll")
     { key = "!`", command = [[/ja "Bolter's Roll" <me>]], desc = "Bolter's Roll" },
 }

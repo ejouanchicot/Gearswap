@@ -83,6 +83,10 @@ function CORStates.configure()
     }
     state.RangeWeapon:set('Anarchy +2')
 
+    -- RangedMode: sets.midcast.RA.<mode> (Mote's state, his values)
+    state.RangedMode:options('Normal', 'Acc', 'HighAcc', 'Critical', 'STP')
+    state.RangedMode:set('Normal')
+
     -- ========================================
     -- QUICK DRAW ELEMENT SELECTION
     -- ========================================

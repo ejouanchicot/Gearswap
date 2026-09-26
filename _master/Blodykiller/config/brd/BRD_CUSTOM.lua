@@ -1,5 +1,5 @@
 ---============================================================================
---- COR (Corsair) - your own modes and gear rules - Blodykiller
+--- BRD (Bard) - your own modes and gear rules - Blodykiller
 ---============================================================================
 --- Everything here is optional. Save, then //gs reload: mistakes are
 --- reported in the chat, with what to fix.
@@ -14,7 +14,7 @@
 ---    {
 ---        state   = 'TPMode',               one word: letters, digits, _
 ---        desc    = 'TP Mode',              label in the HUD
----        key     = '^numpad0',            ^ Ctrl  ! Alt  @ Win  # Apps  ~ Shift
+---        key     = '^numpad9',            ^ Ctrl  ! Alt  @ Win  # Apps  ~ Shift
 ---        values  = {'Normal', 'Acc'},      the first value is the default
 ---               -- or 'onoff'              a simple on/off switch
 ---        section = 'mode',                 HUD section: mode, spell, ability, weapon
@@ -85,60 +85,8 @@
 
 return {
 
-    -- Blody's old COR put Hachirin-no-Obi or Orpheus's Sash on by itself for
-    -- his elemental weaponskills and his Quick Draws (not Light / Dark Shot).
-    -- He compared day, weather and distance by hand (Orpheus under 8 yalms);
-    -- obi_better / orpheus_better compute both bonuses and keep the larger.
-    -- When neither applies, the set's own waist stays.
-
-    -- Elemental weaponskills
-    {
-        when = { spell = {'Leaden Salute', 'Wildfire', 'Aeolian Edge'}, obi_better = true },
-        weaponskill = { waist = "Hachirin-no-Obi" },
-    },
-    {
-        when = { spell = {'Leaden Salute', 'Wildfire', 'Aeolian Edge'}, orpheus_better = true, distance_below = 8 },
-        weaponskill = { waist = "Orpheus's Sash" },
-    },
-
-    -- Quick Draw (damage shots only)
-    {
-        when = { spell = {'Fire Shot', 'Ice Shot', 'Wind Shot', 'Earth Shot', 'Thunder Shot', 'Water Shot'}, obi_better = true },
-        ability = { waist = "Hachirin-no-Obi" },
-    },
-    {
-        when = { spell = {'Fire Shot', 'Ice Shot', 'Wind Shot', 'Earth Shot', 'Thunder Shot', 'Water Shot'}, orpheus_better = true, distance_below = 8 },
-        ability = { waist = "Orpheus's Sash" },
-    },
-
-    -- Compensator for Phantom Roll and Double-Up, only out of combat (his
-    -- sets.precast.CorsairRoll.Duration). Combat Mode (Shift+F9, his old
-    -- WeaponLock) locks the range slot, so it also keeps the gun then.
-    {
-        when = { spell_type = 'CorsairRoll', engaged = false },
-        ability = { range = "Compensator" },
-    },
-    {
-        when = { spell = 'Double-Up', engaged = false },
-        ability = { range = "Compensator" },
-    },
-
-    -- His QDMode. STP (default) is his Quick Draw set as it is; Enhance adds
-    -- Mirke Wardecors on the damage shots (not Light / Dark Shot). His
-    -- Potency and TH values put on the very same pieces as STP (his
-    -- sets.TreasureHunter was empty), so they are left out.
-    -- No key in his binds for it; Ctrl+Numpad7 was free (a mode shows in the
-    -- HUD only through its key).
-    {
-        state   = 'QDMode',
-        desc    = 'Quick Draw',
-        key     = '^numpad7',
-        values  = {'STP', 'Enhance'},
-        section = 'ability',
-        Enhance = {
-            when    = { spell = {'Fire Shot', 'Ice Shot', 'Wind Shot', 'Earth Shot', 'Thunder Shot', 'Water Shot'} },
-            ability = { body = "Mirke Wardecors" },
-        },
-    },
+    -- His sets.latent_refresh (customize_idle_set): Fucho-no-Obi while idle
+    -- and under 51% MP. His normal idle already wears it; this is for idle DT.
+    { when = { mp_below = 51 }, idle = { waist = "Fucho-no-Obi" } },
 
 }
