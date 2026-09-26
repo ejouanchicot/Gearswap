@@ -73,7 +73,9 @@ comportement à l'identique (audit : 38 valeurs d'armes Tetsouo + Kaories).
   `!_master/Gabvanstronger/**` (le motif `Gabvanstronger/` masquerait l'overlay) et
   `Blodykiller/` + ses négations, avant de créer les overlays.
 - [ ] Overlays `_master/Gabvanstronger/`, `_master/Blodykiller/` (sets, configs,
-  `0_AugGear_*`, UI_CONFIG, COMMON_KEYBINDS).
+  `0_AugGear_*`, UI_CONFIG, COMMON_KEYBINDS). En cours (2026-09-26) : Gab RDM ;
+  Blody BRD, COR. Restent Gab BRD COR GEO SAM THF, Blody BLM GEO THF WHM ;
+  UI_CONFIG et COMMON_KEYBINDS pas faits.
 - [x] Dual-box (2026-09-25, code + test hors jeu) : `altjobupdate` porte le type d'arme
   (7e argument, renvoyé quand la main change de type d'arme, paquet 0x050) ;
   `shared/utils/dualbox/alt_states.lua` garde chaque boîte par nom ; `requestjob` part
@@ -115,9 +117,12 @@ comportement à l'identique (audit : 38 valeurs d'armes Tetsouo + Kaories).
   vérifier avec Gab (EMPY tête/pieds, capes, Brioso +3 vs AF +4, noms d'objets).
 - [x] COR : roll actif relancé = Double-Up (2026-09-25, pour tout le monde, décidé avec
   Tetsouo ; `logic/double_up.lua`).
-- [ ] COR : Flurry I/II (détection paquet) ;
-  QDMode STP/Enhance/Potency/TH ; Fold double bust ; Triple Shot / AM3 ;
-  RangedMode ; garde munitions spéciales ; Compensator seulement hors combat (option).
+- [x] COR (2026-09-26, testé en jeu sur Kaories) : Flurry I/II (`flurry_tracker.lua`) ;
+  RangedMode ; Triple Shot ; Fold seulement avec deux Bust (tout le monde) ;
+  Compensator hors combat (Blody, condition `engaged = false`) ; QDMode STP/Enhance
+  (Blody ; Potency et TH posaient les mêmes pièces). Pas repris : AM3 / Triple Shot
+  Critical (jamais déclenché chez Blody, `player.equipment.ranged`).
+- [ ] COR : garde munitions spéciales.
 - [x] GEO : Entrust auto sur Indi allié, Full Circle auto avant Geo- (2026-09-25, options
   `geo_entrust`, `geo_full_circle` de `config/AUTO_ABILITIES.lua`, off par défaut).
 - [ ] GEO :
@@ -149,9 +154,9 @@ Données déjà présentes : JA, BLU spells, ninjutsu, SCH spells, alt commands.
   (`alt-binds.lua` : groupes `all`, par job d'alt, par sous-job, par arme).
 - [ ] Macrobooks et lockstyles (tables de BindManager).
 - [ ] Sets : conversion job par job avec les tables AF/RELIC/EMPY.
-- [ ] `combat_mode.lua` de Gab : `shown = {all = true}, keys = {all = '~f9'}` (son WeaponLock
-  sur Shift+F9, BindManager `login.all`).
-- [ ] `AUTO_ABILITIES.lua` de Gab (et Blody) : `sam_hasso`, `geo_entrust`, `geo_full_circle` à true.
+- [x] `combat_mode.lua` de Gab et Blody : `shown = {all = true}, keys = {all = '~f9'}` (son WeaponLock
+  sur Shift+F9, BindManager `login.all`) — dans leurs `config_global/`.
+- [x] `AUTO_ABILITIES.lua` de Gab : `sam_hasso`, `geo_entrust`, `geo_full_circle` à true (Blody : fichier présent dans son `config_global/`).
 - [ ] UI_CONFIG de Gab : Weapons + Modes en premier, compact, CombatMode dans Weapons,
   touches en gris 125, pas de séparateurs chat.
 
