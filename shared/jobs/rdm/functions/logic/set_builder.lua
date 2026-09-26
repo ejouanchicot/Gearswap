@@ -60,7 +60,11 @@ function SetBuilder.select_engaged_base(base_set)
     if state.EngagedMode and state.EngagedMode.current then
         local mode = state.EngagedMode.current
 
-        local has_shield = SetBuilder.has_shield_equipped(SetBuilder.offhand_item())
+        local offhand = SetBuilder.offhand_item()
+        local has_shield = SetBuilder.has_shield_equipped(offhand)
+        local dw_set = not has_shield and sets.engaged and sets.engaged[mode] and sets.engaged[mode].DW
+        require('shared/utils/debug/trace_log').log('ENGAGED', 'off hand %s -> %s -> sets.engaged.%s%s',
+            tostring(offhand), has_shield and 'single wield' or 'dual wield', tostring(mode), dw_set and '.DW' or '')
 
         if has_shield then
             -- Shield OR single wield >> use normal sets
