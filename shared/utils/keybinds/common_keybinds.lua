@@ -25,6 +25,9 @@ function CommonKeybinds.load()
 end
 
 --- Append the common binds to a job's list, skipping keys the job uses.
+--- Common entries never block each other: several may share a key under
+--- different conditions (one per subjob, per partner job or weapon), and the
+--- last one that applies wins when the keys are laid, in file order.
 --- Runs once per list: a second call finds the marker and does nothing.
 --- @param binds table The job's bind list (modified in place)
 --- @return number Common binds added
@@ -42,8 +45,8 @@ function CommonKeybinds.merge_into(binds)
     local added = 0
     for _, bind in ipairs(CommonKeybinds.load()) do
         if bind.key and bind.command and not taken[bind.key] then
+            bind._common = true
             binds[#binds + 1] = bind
-            taken[bind.key] = true
             added = added + 1
         end
     end

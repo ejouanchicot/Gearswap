@@ -52,17 +52,20 @@ end
 
 --- Keys bound twice among the binds that apply right now. Checked on the
 --- active list only: a file may reuse a key under two different subjobs.
+--- Two common keys sharing a key are layers on purpose (the later one wins,
+--- config/COMMON_KEYBINDS.lua): not reported.
 --- @param active table Active bind entries
 --- @param problems table Array appended to
 local function check_duplicates(active, problems)
-    local seen = {}
+    local seen, seen_common = {}, {}
     for _, bind in ipairs(active or {}) do
         local key = bind.key
         if type(key) == 'string' and key ~= '' then
-            if seen[key] then
+            if seen[key] and not (bind._common and seen_common[key]) then
                 problems[#problems + 1] = ('%s used twice ("%s" and "%s")'):format(key, seen[key], tostring(bind.desc))
             end
             seen[key] = tostring(bind.desc)
+            seen_common[key] = bind._common == true
         end
     end
 end

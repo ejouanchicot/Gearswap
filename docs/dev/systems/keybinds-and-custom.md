@@ -169,11 +169,19 @@ before the facade is loaded.
 
 `CommonKeybinds.load()` does `pcall(require, 'config/COMMON_KEYBINDS')`, so it reads
 the file of the character whose folder GearSwap loaded. No file, no common keys.
-`merge_into(binds)` appends each common entry whose key is not already in the list,
-and marks the list (`binds._common_merged`) so a second call does nothing.
+`merge_into(binds)` appends each common entry whose key is not taken by a job or
+custom key, flags it `_common`, and marks the list (`binds._common_merged`) so a
+second call does nothing.
 
 Order in the final list: job keys, then `_CUSTOM` keys, then common keys. A common key
-never replaces a job or custom key: it is skipped. Current common keys (Tetsouo and
+never replaces a job or custom key: it is skipped. Common entries do not block each
+other (2026-09-26): several may share a key under different `subjob` / `alt` /
+`visible` conditions, and when two apply at once the later one in the file wins
+(`key_map` keeps the last). The key validator does not report two `_common` entries
+sharing a key. Gab's and Blody's files (`_master/Gabvanstronger|Blodykiller/config_global/
+COMMON_KEYBINDS.lua`, converted from BindManager with `raw = true`) rely on it: file
+order follows BindManager's priority (startup, login.all, login.characters, sub_jobs,
+alt-binds). Current common keys (Tetsouo and
 Kaories are identical):
 
 | Key | Command |
