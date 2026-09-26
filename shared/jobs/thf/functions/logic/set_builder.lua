@@ -197,6 +197,12 @@ function SetBuilder.build_engaged_set(base_set)
     -- Step 4: Treasure Hunter gear per TreasureMode
     result = TreasureHunter.apply_engaged(result)
 
+    local sa = (buffactive and buffactive['Sneak Attack']) or _G.thf_sa_pending
+    local ta = (buffactive and buffactive['Trick Attack']) or _G.thf_ta_pending
+    require('shared/utils/debug/trace_log').log('ENGAGED', 'hybrid %s, TH mode %s -> TH gear %s, SA %s TA %s',
+        tostring(state.HybridMode and state.HybridMode.value), tostring(state.TreasureMode and state.TreasureMode.value),
+        TreasureHunter.wants_engaged_th() and 'on' or 'off', sa and 'on' or 'off', ta and 'on' or 'off')
+
     return result
 end
 
