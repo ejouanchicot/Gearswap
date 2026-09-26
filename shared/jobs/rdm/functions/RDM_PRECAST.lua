@@ -84,8 +84,10 @@ local function get_spell_tiers(spell)
     end
 
     local family = spell.name:match('^(%a+)')
-    return (RDMEnfeebleTiers and RDMEnfeebleTiers.get(family))
-        or (NukeTiers and NukeTiers.get(family))
+    -- EnfeebleTier Off: the enfeeble keeps its tier (plain cooldown check)
+    local enfeeble_off = state and state.EnfeebleTier and state.EnfeebleTier.value == 'Off'
+    local enfeeble = not enfeeble_off and RDMEnfeebleTiers and RDMEnfeebleTiers.get(family)
+    return enfeeble or (NukeTiers and NukeTiers.get(family))
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
