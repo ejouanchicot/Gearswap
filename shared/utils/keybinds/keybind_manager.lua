@@ -20,6 +20,14 @@
 ---                  string or a list; no name = the tracked partner. Checked
 ---                  again whenever a box reports a new job or weapon type
 ---                  (shared/utils/dualbox/alt_states.lua)
+---   weapon         Only bound while THIS character's main hand is of this
+---                  weapon skill: 'Club', 'Sword', 'Great Katana' (string or
+---                  list; spaces and case ignored, as for `alt`). An empty
+---                  main hand is 'None'. Checked again when the main hand
+---                  changes weapon type: the keys refresh by themselves
+---                  (BindManager's per-weapon layers). An entry without the
+---                  field is not affected, and no listener is laid unless
+---                  one entry of the job uses it.
 ---
 --- Keys that must be cleared on load although no entry names them any more
 --- go in <module>.retired_keys. Keys this manager bound itself are cleared
@@ -28,8 +36,8 @@
 ---
 --- @file    shared/utils/keybinds/keybind_manager.lua
 --- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2026-09-24
+--- @version 1.1
+--- @date    Created: 2026-09-24 | Updated: 2026-09-26 (weapon field)
 ---============================================================================
 
 local KeybindManager = {}
@@ -62,13 +70,30 @@ local function names_subjob(rule, subjob)
     return rule ~= nil and rule == subjob
 end
 
---- Whether a bind applies with the current subjob and state.
---- @param bind table
+--- Whether a `weapon` rule names the main hand now. The main hand is read
+--- once per pass (memo): reading it lists the inventory.
+--- @param rule string|table
+--- @param memo table Per-pass cache ({weapon = skill})
 --- @return boolean
-local function applies(bind)
+local function wields(rule, memo)
+    local ok, AltStates = pcall(require, 'shared/utils/dualbox/alt_states')
+    if not ok or type(AltStates) ~= 'table' or not AltStates.own_weapon_matches then return false end
+    if memo.weapon == nil then
+        local read, skill = pcall(AltStates.weapon_skill)
+        memo.weapon = read and skill or 'None'
+    end
+    return AltStates.own_weapon_matches(rule, memo.weapon)
+end
+
+--- Whether a bind applies with the current subjob, weapon and state.
+--- @param bind table
+--- @param memo table Per-pass cache shared by the binds of one pass
+--- @return boolean
+local function applies(bind, memo)
     local subjob = player and player.sub_job or nil
     if bind.subjob and not names_subjob(bind.subjob, subjob) then return false end
     if bind.exclude_subjob and names_subjob(bind.exclude_subjob, subjob) then return false end
+    if bind.weapon ~= nil and not wields(bind.weapon, memo) then return false end
     if type(bind.alt) == 'table' then
         local ok, AltStates = pcall(require, 'shared/utils/dualbox/alt_states')
         if not ok or not AltStates.matches(bind.alt) then return false end
@@ -127,9 +152,9 @@ end
 ---============================================================================
 
 local function get_active_binds(ctx)
-    local active = {}
+    local active, memo = {}, {}
     for _, bind in ipairs(ctx.module.binds or {}) do
-        if applies(bind) then active[#active + 1] = bind end
+        if applies(bind, memo) then active[#active + 1] = bind end
     end
     return active
 end
@@ -284,6 +309,21 @@ local function add_custom_states(job, module)
     end
 end
 
+--- Refresh the job's keys when the main hand changes weapon type, when one
+--- of its entries has a `weapon` field. Nothing is laid otherwise.
+--- @param binds table|nil The job's bind list, common keys included
+local function watch_own_weapon(binds)
+    local wanted = false
+    for _, bind in ipairs(binds or {}) do
+        if bind.weapon ~= nil then wanted = true break end
+    end
+    if not wanted then return end
+    local ok, AltStates = pcall(require, 'shared/utils/dualbox/alt_states')
+    if ok and type(AltStates) == 'table' and AltStates.on_weapon_change then
+        AltStates.on_weapon_change('keybinds', function() KeybindManager.refresh_active() end)
+    end
+end
+
 --- Give a job's keybind module its functions.
 --- @param job string Job code ("PLD")
 --- @param module table Holds .binds and optionally .retired_keys
@@ -313,6 +353,7 @@ function KeybindManager.create(job, module)
     if ok and CommonKeybinds then
         CommonKeybinds.merge_into(module.binds)
     end
+    watch_own_weapon(module.binds)
     return module
 end
 

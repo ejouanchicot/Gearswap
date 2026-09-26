@@ -33,7 +33,7 @@ function is named.
 | Path | Lines | Role |
 |------|------:|------|
 | `shared/utils/dualbox/dualbox_manager.lua` | 539 | Config load, job exchange protocol, `_G.AltJobState`, auto-init on every body execution |
-| `shared/utils/dualbox/alt_states.lua` | 147 | Job, subjob and weapon type of every box of the group by name (`_G.AltStates`); `matches()` for keybind `alt` conditions; `watch_weapon()` reports a main-hand weapon type change |
+| `shared/utils/dualbox/alt_states.lua` | 147 | Job, subjob and weapon type of every box of the group by name (`_G.AltStates`); `matches()` for keybind `alt` conditions; `watch_weapon()` reports a main-hand weapon type change; `on_weapon_change(key, fn)` is the shared listener behind it, also used by keybind entries with `weapon` (one packet hook per load, listeners on `_G._own_weapon_watch`) |
 | `shared/utils/dualbox/alt_commands.lua` | 570 | Loads the alt's command configs, resolves tier/target, builds and sends `send <alt> input ...`; installs the `selfCommandMaps` fallback |
 | `shared/utils/dualbox/alt_buff_reporter.lua` | 336 | ALT: report tracked buffs. MAIN: store them, guess/expire, trace log |
 | `shared/utils/dualbox/dualbox_sync_ipc.lua` | 159 | Windower IPC broadcast/hook registry for `ls`/`rf` mirroring |

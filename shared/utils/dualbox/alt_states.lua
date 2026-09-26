@@ -13,12 +13,14 @@
 ---
 --- Sending side: watch_weapon() listens for the main hand changing (packet
 --- 0x050) and reports it, so the main learns of a weapon swap without a job
---- change.
+--- change. The same listener serves this character's own keys: a keybind
+--- entry with a `weapon` field (keybind_manager.lua) is refreshed through
+--- on_weapon_change() when the main hand changes weapon type.
 ---
 --- @file shared/utils/dualbox/alt_states.lua
 --- @author Tetsouo
---- @version 1.0
---- @date Created: 2026-09-25
+--- @version 1.1
+--- @date Created: 2026-09-25 | Updated: 2026-09-26 (own weapon listeners)
 ---============================================================================
 
 local AltStates = {}
@@ -74,13 +76,37 @@ function AltStates.weapon_skill()
     return (skill.en:gsub('%s', ''))
 end
 
---- Call `report` when the main hand changes weapon type. Registered once per
---- load; the sandbox drops the listener on the next load.
---- @param report function Called with no argument
-function AltStates.watch_weapon(report)
-    if AltStates._watching or not windower.raw_register_event then return end
-    AltStates._watching = true
-    local last = AltStates.weapon_skill()
+--- The listeners and the one packet hook of this load. Kept on the sandbox
+--- _G, not in this module: user_setup can require the module before the
+--- module cache exists, and two copies must still share one hook.
+--- @return table {listeners = {key -> function}, registered = boolean}
+local function weapon_watch()
+    local watch = rawget(_G, '_own_weapon_watch')
+    if not watch then
+        watch = {listeners = {}, registered = false}
+        _G._own_weapon_watch = watch
+    end
+    return watch
+end
+
+--- Call every listener, each under pcall: one failing never stops the others.
+local function notify(watch)
+    for _, listener in pairs(watch.listeners) do
+        pcall(listener)
+    end
+end
+
+--- Call `listener` when this character's main hand changes weapon type.
+--- One packet hook per load (the sandbox drops it on the next load); a
+--- second call with the same key replaces that listener.
+--- @param key string Who listens ('dualbox', 'keybinds')
+--- @param listener function Called with no argument
+function AltStates.on_weapon_change(key, listener)
+    local watch = weapon_watch()
+    watch.listeners[key] = listener
+    if watch.registered or not windower.raw_register_event then return end
+    watch.registered = true
+    watch.last = AltStates.weapon_skill()
     local pending = 0
     windower.raw_register_event('incoming chunk', function(id, original)
         if id ~= EQUIP_PACKET or original:byte(6) ~= MAIN_SLOT then return end
@@ -90,12 +116,27 @@ function AltStates.watch_weapon(report)
         coroutine.schedule(function()
             if mine ~= pending then return end
             local now = AltStates.weapon_skill()
-            if now ~= last then
-                last = now
-                report()
+            if now ~= watch.last then
+                watch.last = now
+                notify(watch)
             end
         end, WEAPON_SETTLE_DELAY)
     end)
+end
+
+--- Call `report` when the main hand changes weapon type (dual-box report).
+--- @param report function Called with no argument
+function AltStates.watch_weapon(report)
+    AltStates.on_weapon_change('dualbox', report)
+end
+
+--- Whether a keybind `weapon` rule (string or list) names a weapon skill.
+--- Compared without spaces or case: 'Great Katana' matches "GreatKatana".
+--- @param rule string|table
+--- @param skill string|nil Skill to test; nil = this character's main hand now
+--- @return boolean
+function AltStates.own_weapon_matches(rule, skill)
+    return names(rule, skill or AltStates.weapon_skill())
 end
 
 ---============================================================================
