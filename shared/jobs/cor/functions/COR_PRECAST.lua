@@ -4,6 +4,8 @@
 ---   Handles all precast actions for Corsair job (precast gear itself comes
 ---   from the sets through Mote):
 ---   • Phantom Roll: CorsairRoll class + last roll name for Double-Up
+---   • Ranged attack: sets.precast.RA.Flurry1 / Flurry2 under Flurry
+---     (shared/utils/precast/flurry_tracker.lua)
 ---   • Double-Up: wears the set of the roll it doubles; a roll already up
 ---     becomes a Double-Up (logic/double_up.lua)
 ---   • Quick Draw: CorsairShot class
@@ -102,6 +104,12 @@ local function apply_cor_precast(spell)
         job_precast_corsairroll(spell)
     end
 
+    -- Ranged attack: Mote picks sets.precast.RA.Flurry1 / Flurry2 through
+    -- classes.CustomRangedGroups while that Flurry is up
+    if spell.action_type == 'Ranged Attack' then
+        require('shared/utils/precast/flurry_tracker').apply_ranged_groups()
+    end
+
     -- Double-Up wears the gear of the roll it is doubling, so it needs the
     -- last roll on record to know which that was.
     if spell.english == 'Double-Up' and _G.cor_last_roll and _G.cor_last_roll.name then
@@ -180,6 +188,9 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT
 ---  ═══════════════════════════════════════════════════════════════════════════
+
+-- Flurry I / II landing on this character (flurry_tracker.lua), once per load
+require('shared/utils/precast/flurry_tracker').start()
 
 -- Export global for GearSwap (Mote-Include)
 _G.job_precast = job_precast
