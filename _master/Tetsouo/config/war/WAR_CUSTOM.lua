@@ -64,6 +64,7 @@
 ---    target = 'self' / 'other' / 'enemy'  who the action is on
 ---    distance_below = 5                   yalms to the target (Orpheus)
 ---    town = true / moving = true / pet = true
+---    engaged = true / false               fighting or not (Phantom Roll out of combat...)
 ---    zone = 'Walk of Echoes [P1]'
 ---    Spell conditions only hold during an action, never idle/engaged.
 ---
