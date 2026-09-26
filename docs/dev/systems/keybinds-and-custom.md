@@ -177,8 +177,9 @@ Order in the final list: job keys, then `_CUSTOM` keys, then common keys. A comm
 never replaces a job or custom key: it is skipped. Common entries do not block each
 other (2026-09-26): several may share a key under different `subjob` / `alt` /
 `visible` conditions, and when two apply at once the later one in the file wins
-(`key_map` keeps the last). The key validator does not report two `_common` entries
-sharing a key. Gab's and Blody's files (`_master/Gabvanstronger|Blodykiller/config_global/
+(`key_map` keeps the last). An entry with `override = true` is added even over a job or
+custom key and wins over it while it applies. The key validator reports neither two
+`_common` entries sharing a key nor an override laid over a job key. Gab's and Blody's files (`_master/Gabvanstronger|Blodykiller/config_global/
 COMMON_KEYBINDS.lua`, converted from BindManager with `raw = true`) rely on it: file
 order follows BindManager's priority (startup, login.all, login.characters, sub_jobs,
 alt-binds). Current common keys (Tetsouo and

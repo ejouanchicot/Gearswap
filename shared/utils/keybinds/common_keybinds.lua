@@ -28,6 +28,9 @@ end
 --- Common entries never block each other: several may share a key under
 --- different conditions (one per subjob, per partner job or weapon), and the
 --- last one that applies wins when the keys are laid, in file order.
+--- An entry with override = true is added even over a job key, and wins
+--- over it while it applies (it comes later in the list): BindManager's
+--- subjob and alt layers ranked above the main job's.
 --- Runs once per list: a second call finds the marker and does nothing.
 --- @param binds table The job's bind list (modified in place)
 --- @return number Common binds added
@@ -44,7 +47,7 @@ function CommonKeybinds.merge_into(binds)
 
     local added = 0
     for _, bind in ipairs(CommonKeybinds.load()) do
-        if bind.key and bind.command and not taken[bind.key] then
+        if bind.key and bind.command and (bind.override or not taken[bind.key]) then
             bind._common = true
             binds[#binds + 1] = bind
             added = added + 1
