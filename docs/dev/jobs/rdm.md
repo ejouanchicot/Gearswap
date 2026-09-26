@@ -10,10 +10,11 @@ on status and buff changes, on `//gs c` commands and on state cycles.
 
 What RDM adds on top of the shared pipeline:
 
-- **Enfeeble tier refinement** in precast: Dia III, Distract III, Slow II and
-  the other families listed in `RDM_ENFEEBLE_TIERS.lua` go through the shared
-  `TierRefiner` instead of `CooldownChecker`, so a spell on recast is replaced
-  by the next castable lower tier.
+- **Tier refinement** in precast: Dia III, Distract III, Slow II and the other
+  families listed in `RDM_ENFEEBLE_TIERS.lua`, and the elemental nukes of
+  `shared/data/spells/NUKE_TIERS.lua` (Fire V -> IV -> ... since 2026-09-26),
+  go through the shared `TierRefiner` instead of `CooldownChecker`, so a spell
+  on recast or short on MP is replaced by the next learned, castable lower tier.
 - **Phalanx tier by target**: Phalanx II on yourself becomes Phalanx, Phalanx on
   someone else becomes Phalanx II.
 - **Auto-Saboteur** before the enfeebles listed in `RDM_SABOTEUR_CONFIG.lua`
@@ -50,7 +51,8 @@ numbers were re-checked against the working tree on 2026-09-25.
 | `shared/jobs/rdm/functions/RDM_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('RDM', 'config/rdm/RDM_LOCKSTYLE', 1, 'NIN')` wrappers |
 | `shared/jobs/rdm/functions/RDM_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('RDM', ..., 'NIN', 1, 1)` wrapper |
 | `shared/jobs/rdm/functions/logic/set_builder.lua` | 254 | Idle/engaged construction: mode sets, shield/DW detection, weapons, town, movement |
-| `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | Tier correspondence for 11 enfeeble families, read by `RDM_PRECAST.lua` `get_enfeeble_tiers` |
+| `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | Tier correspondence for 11 enfeeble families, read by `RDM_PRECAST.lua` `get_spell_tiers` |
+| `shared/data/spells/NUKE_TIERS.lua` | 56 | Nuke / -ra / Aspir tiers, read by `RDM_PRECAST.lua` `get_spell_tiers` and `GEO_PRECAST.lua` |
 | `shared/data/magic/ENFEEBLING_MAGIC_DATABASE.lua` (+ `enfeebling/*.lua`) | - | `get_enfeebling_type` (macc, mnd_potency, int_potency, skill_potency, skill_mnd_potency, potency, duration) |
 | `shared/data/magic/ENHANCING_MAGIC_DATABASE.lua` (+ `enhancing/*.lua`) | - | `get_spell_family` (Enspell, Gain, BarElement, BarAilment, Refresh, Regen, Phalanx, Stoneskin, Aquaveil, Spikes, Boost, Storm) |
 | `_master/config/rdm/RDM_STATES.lua` | 384 | All states (`configure`), `configure_storm`, unused `validate` |
@@ -144,7 +146,7 @@ flowchart TD
     G -- blocked --> Z[return]
     G -- ok --> C{action_type}
     C -- Ability --> CA[CooldownChecker.check_ability_cooldown]
-    C -- Magic --> T{family in RDM_ENFEEBLE_TIERS}
+    C -- Magic --> T{family in RDM_ENFEEBLE_TIERS or NUKE_TIERS}
     T -- yes --> TR[TierRefiner.refine]
     T -- no --> CS[CooldownChecker.check_spell_cooldown]
     CA --> X{eventArgs.cancel}

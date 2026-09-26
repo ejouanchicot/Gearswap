@@ -47,7 +47,9 @@ end
 ---============================================================================
 
 --- Walk the correspondence table and return the first castable tier
---- A tier is castable when its recast is 0 and the player can pay its MP.
+--- A tier is castable when the character has learned it, its recast is 0 and
+--- the player can pay its MP. (A lower tier can be missing: a scroll never
+--- learned, or a Job Points gift on a higher one.)
 --- @param spell_name string       Requested spell name (returned when nothing else fits)
 --- @param correspondence table    Tier mapping for the family
 --- @param category string         Family prefix (e.g. 'Blind', 'Dia')
@@ -64,6 +66,7 @@ function TierRefiner.find_available_tier(spell_name, correspondence, category, t
     if not resources then return spell_name end
 
     local res_spells = resources.spells
+    local learned = windower.ffxi.get_spells and windower.ffxi.get_spells() or nil
     local current = tier
 
     for _ = 1, MAX_STEPS do
@@ -72,7 +75,8 @@ function TierRefiner.find_available_tier(spell_name, correspondence, category, t
         local test_name = (current == '') and category or (category .. ' ' .. current)
         local test_spell = res_spells:with('en', test_name)
 
-        if test_spell and spell_recasts[test_spell.recast_id] == 0
+        if test_spell and (not learned or learned[test_spell.id])
+            and spell_recasts[test_spell.recast_id] == 0
             and player_mp >= (test_spell.mp_cost or 999) then
             return test_name
         end

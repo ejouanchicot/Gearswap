@@ -3,7 +3,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Precast hook for Geomancer. Precast gear itself (Fast Cast, JA sets) is
 ---   chosen by Mote from sets.precast; this module adds:
----   • PrecastGuard (debuffs) then CooldownChecker (abilities and spells)
+---   • PrecastGuard (debuffs) then CooldownChecker (abilities and spells);
+---     nukes, -ra and Aspir cast from a macro drop to the highest ready tier
+---     instead (TierRefiner, shared/data/spells/NUKE_TIERS.lua)
 ---   • Entrust pending flag (read by GEO_MIDCAST before the buff appears)
 ---   • WSPrecastHandler for weaponskills and TP bonus gear
 ---
@@ -22,6 +24,8 @@ local CooldownChecker = nil
 local PrecastGuard = nil
 local WSPrecastHandler = nil
 local GEOTPConfig = nil
+local TierRefiner = nil
+local NukeTiers = nil
 
 local modules_loaded = false
 
@@ -41,6 +45,11 @@ local function ensure_modules_loaded()
     WSPrecastHandler = wph
 
     GEOTPConfig = _G.GEOTPConfig or {}
+
+    local tr_ok, tr = pcall(require, 'shared/utils/precast/tier_refiner')
+    TierRefiner = tr_ok and tr or nil
+    local nuke_ok, nukes = pcall(require, 'shared/data/spells/NUKE_TIERS')
+    NukeTiers = nuke_ok and nukes or nil
 
     modules_loaded = true
 end
@@ -62,8 +71,13 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- SECOND: Cooldown check
-    if CooldownChecker then
+    -- SECOND: Cooldown check. Tiered nukes go through the refiner instead:
+    -- the checker would cancel the cast before any downgrade could happen.
+    local tiers = spell.action_type == 'Magic' and TierRefiner and NukeTiers
+        and NukeTiers.get(spell.name and spell.name:match('^(%a+)'))
+    if tiers then
+        TierRefiner.refine(spell, eventArgs, tiers)
+    elseif CooldownChecker then
         if spell.action_type == 'Ability' then
             CooldownChecker.check_ability_cooldown(spell, eventArgs)
         elseif spell.action_type == 'Magic' then
