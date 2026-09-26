@@ -51,15 +51,17 @@ local CHARACTERS = {
     ---------------------------------------------------------------------------
     -- GAB'S BOXES (a friend's setup, built from overlays _master/<Name>/)
     ---------------------------------------------------------------------------
-    -- Only the jobs this system supports today. Still to build, then to add:
-    -- Gabvanstronger MNK NIN PUP RNG SCH, Blodykiller MNK PUP.
+    -- Only the jobs converted from their own files (overlay _master/<Name>/):
+    -- a job listed here without its overlay would get the template's gear
+    -- (Tetsouo's pieces). Still to convert, then to add: Gabvanstronger BRD
+    -- COR GEO SAM MNK NIN PUP RNG SCH, Blodykiller BLM GEO THF WHM MNK PUP.
     Gabvanstronger = {
-        jobs = { 'RDM', 'BRD', 'COR', 'GEO', 'SAM', 'THF', 'BLU' },
+        jobs = { 'RDM', 'THF', 'BLU' },
         role = 'main',
     },
 
     Blodykiller = {
-        jobs = { 'BLM', 'BRD', 'COR', 'GEO', 'THF', 'WHM' },
+        jobs = { 'BRD', 'COR' },
         role = 'alt',
     },
 }
