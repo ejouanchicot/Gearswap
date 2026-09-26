@@ -88,13 +88,14 @@ Fields, as listed in the `keybind_manager.lua` header:
 | `subjob` / `exclude_subjob` | Only / never under this subjob (string or list) |
 | `visible` | `function() -> boolean`, asked again on every `refresh()` |
 | `alt` | `{name, job, subjob, weapon}`, each optional, a string or a list: only bound while that box of the group plays it (no `name` = the tracked partner). `weapon` is the main hand's skill (`'Sword'`, `'Great Katana'`), compared without spaces or case. Nothing known about the box yet = not bound. Added 2026-09-25 for Gab's alt keys |
+| `weapon` | Skill of **this** character's main hand (`'Club'`, `'Sword'`, `'Great Katana'`, `'None'` for an empty hand), string or list, compared without spaces or case (`alt_states.lua` `own_weapon_matches`). Only bound while the main hand is of that skill: BindManager's per-weapon layers (Gab's BLU WS keys, numpad1/3/7/9). The main hand is read once per `get_active_binds()` pass. When at least one entry of the job has the field, `create()` registers `AltStates.on_weapon_change('keybinds', ...)`, and a change of weapon type (packet 0x050, main slot, read 0.5 s later) calls `refresh_active()`. No entry with the field = no listener, no read: other jobs are unchanged. Added 2026-09-26 |
 | `raw` | Send `command` exactly as written |
 
 `<module>.retired_keys` lists keys an older version of the file bound: they are
 unbound on every load (PLD keeps `^numpad7`).
 
 `get_active_binds()` keeps the entries whose `subjob`, `exclude_subjob`,
-`visible` and `alt` allow them now. A `visible` function that errors counts as hidden.
+`weapon`, `visible` and `alt` allow them now. A `visible` function that errors counts as hidden.
 
 ### What a key sends (`bind_line`)
 
@@ -132,7 +133,7 @@ down by the guard sends the same line.
   `KeybindManager.refresh_active()` calls it on the job loaded now (`_G._keybind_active`,
   the first module `create` made in the sandbox: the HUD requires the keybind file again
   and gets a second module that never laid a key) whenever `alt_states.lua` records a new job, subjob or weapon type
-  for a box.
+  for a box, and when this character's own main hand changes weapon type (entries with `weapon`).
 - **`unbind_all()`** runs `clear_unwanted` with nothing wanted, so it also removes
   keys another job file of this manager left down, then prints
   `<JOB> keybinds unloaded.`. Every entry file calls it from `file_unload()`.
