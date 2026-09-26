@@ -6,6 +6,10 @@
 ---   sam_hasso        SAM: Hasso when engaging, unless Hasso or Seigan is up
 ---   geo_entrust      GEO: an Indi- aimed at a party member gets Entrust first
 ---   geo_full_circle  GEO: a Geo- cast while a luopan is out gets Full Circle first
+---   blu_unbridled    BLU: Unbridled Learning before an unbridled spell
+---                    (shared/jobs/blu/functions/logic/unbridled.lua)
+---   blu_expiacion_window  BLU: Expiacion held once under 3000 TP without
+---                    Aftermath: Lv.3 (logic/expiacion_guard.lua)
 ---
 --- @file    shared/utils/core/auto_options.lua
 --- @author  Tetsouo

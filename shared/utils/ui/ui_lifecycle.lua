@@ -59,6 +59,8 @@ local function are_states_ready()
         return _G.state.RuneElement ~= nil
     elseif job == "GEO" then
         return _G.state.MainIndi ~= nil
+    elseif job == "BLU" then
+        return _G.state.MainWeapon ~= nil
     end
 
     return true

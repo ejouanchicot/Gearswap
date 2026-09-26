@@ -14,8 +14,8 @@
 ---   Parsed via regex from CHARACTERS table below.
 ---
 --- Master data location:
----   _master/sets/[job]_sets.lua    - Equipment sets (15 jobs)
----   _master/config/[job]/          - Job configs (14 jobs, PUP has no config)
+---   _master/sets/[job]_sets.lua    - Equipment sets (16 jobs)
+---   _master/config/[job]/          - Job configs (15 jobs, PUP has no config)
 ---
 --- @file    character_db.lua
 --- @author  Tetsouo
@@ -52,9 +52,9 @@ local CHARACTERS = {
     -- GAB'S BOXES (a friend's setup, built from overlays _master/<Name>/)
     ---------------------------------------------------------------------------
     -- Only the jobs this system supports today. Still to build, then to add:
-    -- Gabvanstronger BLU MNK NIN PUP RNG SCH, Blodykiller MNK PUP.
+    -- Gabvanstronger MNK NIN PUP RNG SCH, Blodykiller MNK PUP.
     Gabvanstronger = {
-        jobs = { 'RDM', 'BRD', 'COR', 'GEO', 'SAM', 'THF' },
+        jobs = { 'RDM', 'BRD', 'COR', 'GEO', 'SAM', 'THF', 'BLU' },
         role = 'main',
     },
 
@@ -88,7 +88,7 @@ local MASTER = {
 ---============================================================================
 
 local ALL_JOBS = {
-    'BLM', 'BRD', 'BST', 'COR', 'DNC', 'DRK', 'GEO',
+    'BLM', 'BLU', 'BRD', 'BST', 'COR', 'DNC', 'DRK', 'GEO',
     'PLD', 'PUP', 'RDM', 'RUN', 'SAM', 'SMN', 'THF', 'WAR', 'WHM',
 }
 
