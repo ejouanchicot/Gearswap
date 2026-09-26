@@ -10,6 +10,7 @@
 ---     becomes a Double-Up (logic/double_up.lua)
 ---   • Quick Draw: CorsairShot class
 ---   • Crooked Cards: timestamp read by the roll tracker
+---   • Fold: its gear only with two Busts up
 ---   • Luzaf's Ring on Phantom Roll and Double-Up (LuzafRing state, sets
 ---     precast.LuzafRing / LuzafRingOff of each character)
 ---
@@ -18,7 +19,7 @@
 ---   2. Cooldown check (CooldownChecker) - validates ability/spell ready
 ---   3. COR-specific logic (Rolls, Double-Up, Quick Draw, Crooked Cards)
 ---   4. WS handling (WSPrecastHandler)
----   5. job_post_precast: WS TP gear, roll ring
+---   5. job_post_precast: WS TP gear, roll ring, Fold gear
 ---
 ---   @file    shared/jobs/cor/functions/COR_PRECAST.lua
 ---   @author  Tetsouo
@@ -168,6 +169,23 @@ local function apply_luzaf(spell)
     end
 end
 
+--- Fold's gear (sets.precast.JA.Fold, the Lanun gloves) is worth wearing only
+--- with two Busts up: they let Fold remove both. With fewer, the slots the
+--- Fold set names stay as they are worn.
+--- @param spell table Spell information from GearSwap
+local function hold_fold_gear(spell)
+    if spell.english ~= 'Fold' then return end
+    local fold = sets.precast.JA and sets.precast.JA['Fold']
+    local busts = buffactive and tonumber(buffactive['Bust']) or 0
+    if type(fold) ~= 'table' or busts >= 2 then return end
+    local worn = {}
+    for slot in pairs(fold) do
+        local item = player.equipment and player.equipment[slot]
+        worn[slot] = (item == nil or item == 'empty') and empty or item
+    end
+    equip(worn)
+end
+
 ---   Called after precast gear is equipped
 ---   @param spell table Spell/ability data
 ---   @param action table Action information from GearSwap
@@ -181,6 +199,7 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     end
 
     apply_luzaf(spell)
+    hold_fold_gear(spell)
     -- //gs c rolldebug: note the gear this roll is sent in
     require('shared/jobs/cor/functions/logic/roll_debug').note_precast(spell)
 end
