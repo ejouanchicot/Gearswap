@@ -37,8 +37,8 @@ function is named.
 | `shared/utils/dualbox/alt_commands.lua` | 570 | Loads the alt's command configs, resolves tier/target, builds and sends `send <alt> input ...`; installs the `selfCommandMaps` fallback |
 | `shared/utils/dualbox/alt_buff_reporter.lua` | 336 | ALT: report tracked buffs. MAIN: store them, guess/expire, trace log |
 | `shared/utils/dualbox/dualbox_sync_ipc.lua` | 159 | Windower IPC broadcast/hook registry for `ls`/`rf` mirroring |
-| `shared/utils/dualbox/alt_group.lua` | 252 | `//gs c alts`: orders to every other member of the box group (`sm on/off`, follow, `do <command>`, mirror, window); `route()` also dispatches `main`/`setalt` |
-| `shared/utils/dualbox/alt_window.lua` | 254 | Small overlay on the main: each alt (job, online) and the Auto / Follow / Mirror state: the real one reported by the addon's local `lib/StateReport.lua` addition (`//gs c altreport`, `AltGroup.receive_report`, asked again at each load by `AltGroup.request_report`), else the last orders sent; `//gs c alts window` shows/hides it |
+| `shared/utils/dualbox/alt_group.lua` | 424 | `//gs c alts`: orders to every other member of the box group (`sm on/off`, follow, `do <command>`, mirror, window); `route()` also dispatches `main`/`setalt` |
+| `shared/utils/dualbox/alt_window.lua` | 337 | Fixed-size overlay on the main: each alt (job, party, zone) and the Auto / Follow / Mirror / Step state: the real one reported by the addon's local `lib/StateReport.lua` addition (`//gs c altreport` / `altmirror`, `AltGroup.receive_report` / `receive_mirror`, asked again at each load by `AltGroup.request_report`), else the last orders sent; `//gs c alts window` shows/hides it |
 | `shared/utils/dualbox/dualbox_role.lua` | 165 | `//gs c main` / `setalt`: switches the roles at runtime and saves them in `<Character>/config/dualbox_role.lua` |
 | `shared/utils/messages/formatters/system/message_altgroup.lua` + `data/systems/altgroup_messages.lua` | - | `[ALTS]` / `[DUALBOX]` lines of the three modules above (including `not_ready`, `window_main_only`, `no_follower`, added 2026-09-25) |
 | `shared/utils/messages/formatters/ui/message_dualbox.lua` | 190 | Chat output for the job exchange (via `M.send('DUALBOX', ...)`) |
@@ -358,9 +358,10 @@ refilled by the `requestjob` sent to every box at auto-init.
   not depend on the role. `follow <name>` leaves that character out (it cannot follow itself); when that leaves nobody
   (two boxes, told to follow the other one) it prints `no_follower`, sends nothing and keeps the
   saved state (fixed 2026-09-25).
-  `mirror` runs `sm mirror` locally. The on/follow state is the last order sent, kept on
-  `windower._alt_group` and saved in `alt_state.lua`; orders sent another way (a macro) are not seen,
-  `//gs c sortie` records its own through `AltGroup.note`. `alts window` toggles the alt window.
+  `mirror` runs `sm mirror` locally. The on/follow/mirror state starts as the last order sent, kept on
+  `windower._alt_group` and saved in `alt_state.lua`; `//gs c sortie` records its own through
+  `AltGroup.note`. When the addon reports its real state (next point), the reports overwrite it, so an
+  order sent another way shows too. `alts window` toggles the alt window.
   With no other member it prints `no_alts`, or `not_ready` while `_G.DualBoxConfig` is still nil.
 - **`//gs c main`** on the character that becomes main (`DualBoxRole.become_main`, `shared/utils/dualbox/dualbox_role.lua:108-135`):
   `not_ready` while the config is nil, `no_alts` when disabled or alone; otherwise sets `role='main'`,
@@ -375,17 +376,40 @@ refilled by the `requestjob` sent to every box at auto-init.
 - **Persistence.** `<Character>/config/dualbox_role.lua` (`{role = ..., names = {...}}`) is applied
   over `DUALBOX_CONFIG.lua` by `DualBoxManager.initialize` right after the require, so it survives a
   reload and a game restart. Deleting the file restores the config file's role.
-- **Alt window** (`alt_window.lua`): drawn on the main only. Job comes from
-  `_G.AltJobState` (last one received), online from the party list (`get_party`, `presence`, `shared/utils/dualbox/alt_window.lua:115`, with the
-  alt's zone when it differs; `no party` when absent) - not `is_alt_online()`, whose 30 s
-  timeout reads a quiet alt as offline because the job exchange only speaks at a load or
-  a job change; Auto / Follow / Mirror are the last orders sent from this box
-  (`AltGroup.state()`, `?` until one is sent; saved in `<Character>/config/alt_state.lua`
+- **Real state from the automation addon** (2026-09-26). GearSwap cannot read another addon's
+  variables, and the addon broadcasts nothing about its state. A local addition to the addon,
+  `addons/Silmaril/lib/StateReport.lua` plus one `require 'lib./StateReport'` line at the end of
+  `Silmaril.lua` (outside this repository; put back after an addon update), polls every 0.5 s the
+  addon's getters (`get_enabled`, `get_following` / `get_fast_follow_target`, `get_mirror_on`) and on
+  a change sends `send @all gs c altreport <name> <on|off> <leader|off> <on|off>`. Polling, not
+  wrapped setters: `Mirror.lua` turns `mirror_on` off after a single mirror by writing the local
+  directly. Every frame (`prerender`) it compares `get_mirroring()` / `get_injecting()`,
+  `get_mirroring_state()` and `get_mirror_target()` and sends `altmirror <name> phase <step> <npc>`
+  (`-` when idle, spaces as `_`); it wraps the global `mirror_results` (looked up at each call by
+  `Connection.lua`) to send `altmirror <name> results <Name,Status|...>`. It also replaces the
+  addon's three text boxes with a table that draws nothing (`set_sm_window` / `set_npc_window` /
+  `set_result_window`, `HIDE_ADDON_BOXES`). `//sm report` resends the state.
+  On the GearSwap side, `AltGroup.receive_report` (`alt_group.lua:248`) keeps each box's report in
+  `windower._alt_reports` and ignores boxes outside the group: Auto ON if any alt is on, Follow =
+  the first alt's leader, Mirror ON if any box, this one included, has it (a mirror request starts
+  on the box that sends it). `receive_mirror` (`:306`) keeps steps and results in
+  `windower._alt_mirror` (results shown 8 s, a step never cleared dropped after 120 s).
+  `request_report` (`:343`) sends `sm report` here and to each alt at every load
+  (`dualbox_manager.lua:534`), since reports sent during a reload are lost. Each report writes an
+  `ALTS` line to `trace.log`. Tested offline with stubs; in game, Auto/Follow/Mirror reports were
+  seen in the trace on 2026-09-26.
+- **Alt window** (`alt_window.lua`): drawn on the main only, at a fixed size: every line is
+  `LABEL_WIDTH + 1 + VALUE_WIDTH` characters (`:105`), padded with spaces and cut when longer, and
+  the rows never change (`-` when empty), so the box does not resize. Per alt: its name as the title,
+  Job (from `_G.AltJobState`, last one received), Party and Zone from the party list (`get_party`,
+  `presence`, `:156`; `no party` when absent) - not `is_alt_online()`, whose 30 s timeout reads a
+  quiet alt as offline because the job exchange only speaks at a load or a job change. Then Auto,
+  Follow, Mirror (with the NPC of a running mirror) and Step (the latest mirror step, packet codes
+  dropped, then the results, `OK` in green) from `AltGroup.state()` / `mirror_progress()`
+  (`?` until known; saved in `<Character>/config/alt_state.lua`
   with `time = os.time()`; `load_state` ignores a file older than the game process (`os.time() - time >
-  os.clock() + 1`) and a file without `time`, so the orders survive a GearSwap reload but not a game
-  restart - fixed 2026-09-25, the old file had no stamp), because the automation addon's real state
-  is not readable from GearSwap. `//gs c sortie` records its orders through
-  `AltGroup.note`. While it is on screen (`AltWindow.is_shown`), the Auto / Follow / Mirror
+  os.clock() + 1`) and a file without `time`, so the state survives a GearSwap reload but not a game
+  restart - fixed 2026-09-25, the old file had no stamp). While it is on screen (`AltWindow.is_shown`), the Auto / Follow / Mirror
   orders print nothing in chat. Redrawn on every order, job update and role switch, and every 5 s
   (loop stopped by `windower._alt_window_gen` when a newer load starts). Position and
   visibility in `<Character>/config/alt_window.lua` (default `x = 1600, y = 120`, `:32`).
@@ -452,12 +476,15 @@ refilled by the `requestjob` sent to every box at auto-init.
 
 | Function | Effect | Callers |
 |---|---|---|
-| `AltGroup.route(cmd, args)` (`alt_group.lua:241`) | `alts` -> `handle`, `main` -> `become_main`, `setalt` -> `become_alt` | `CommonCommands.handle_command` |
-| `AltGroup.handle(args)` (`:199`) | `on`/`off`/`toggle`/`follow`/`do`/`mirror`/`window` | `route` |
-| `AltGroup.get_alts()` (`:110`) | Other members of the group | `handle`, `alt_window.lua` |
-| `AltGroup.state()` / `note(changes)` (`:92`, `:98`) | Last orders / record orders sent elsewhere | `alt_window.lua`, `sortie_commands.lua` |
+| `AltGroup.route(cmd, args)` (`alt_group.lua:407`) | `alts` -> `handle`, `altreport` / `altmirror` -> `receive_report` / `receive_mirror`, `main` -> `become_main`, `setalt` -> `become_alt` | `CommonCommands.handle_command` |
+| `AltGroup.handle(args)` (`:360`) | `on`/`off`/`toggle`/`follow`/`do`/`mirror`/`window` | `route` |
+| `AltGroup.get_alts()` (`:117`) | Other members of the group | `handle`, `alt_window.lua` |
+| `AltGroup.state()` / `note(changes)` (`:99`, `:105`) | Auto / Follow / Mirror shown / record orders sent elsewhere | `alt_window.lua`, `sortie_commands.lua` |
+| `AltGroup.receive_report(args)` / `receive_mirror(args)` (`:248`, `:306`) | Real state and mirror progress reported by the addon addition | `route` (`altreport`, `altmirror`) |
+| `AltGroup.mirror_progress()` (`:328`) | Steps per box and results of the mirror in progress | `alt_window.lua` |
+| `AltGroup.request_report()` (`:343`) | `sm report` here and to each alt | `run_auto_init` (`dualbox_manager.lua:534`) |
 | `DualBoxRole.become_main()` / `become_alt(args)` / `apply_saved()` (`shared/utils/dualbox/dualbox_role.lua:108`, `:140`, `:155`) | Role switch and persistence | `route`, `DualBoxManager.initialize` |
-| `AltWindow.start()` / `refresh()` / `toggle()` / `is_shown()` (`shared/utils/dualbox/alt_window.lua:242`, `:184`, `:221`, `:198`) | Window loop, redraw, show/hide, quiet chat while shown | `run_auto_init`, `receive_alt_job`, `alt_group.lua`, `dualbox_role.lua` |
+| `AltWindow.start()` / `refresh()` / `toggle()` / `is_shown()` (`shared/utils/dualbox/alt_window.lua:325`, `:267`, `:304`, `:281`) | Window loop, redraw, show/hide, quiet chat while shown | `run_auto_init`, `receive_alt_job`, `alt_group.lua`, `dualbox_role.lua` |
 
 ## Commands
 

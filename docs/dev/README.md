@@ -16,7 +16,7 @@ swaps equipment around every action (spell, ability, weaponskill, item) and on
 status changes. This project layers a framework on top of GearSwap and
 Mote-Include:
 
-- **16 job areas** under `shared/jobs/`: BLM BRD BST COR DNC DRK GEO PLD PUP RDM
+- **17 job areas** under `shared/jobs/`: BLM BLU BRD BST COR DNC DRK GEO PLD PUP RDM
   RUN SAM SMN THF WAR WHM. SMN has shared modules but no generic `_master`
   template: its entry, configs and sets live in the Tetsouo overlay
   (`_master/Tetsouo/`) and the live `Tetsouo/` folder, so only a clone of
@@ -302,7 +302,7 @@ One page per job area, same layout (Files, How it works, Mote states,
 Commands, Set names the code looks up, Configuration, State & lifetime,
 Interactions, Invariants & gotchas, Extending, Known issues):
 
-[blm](jobs/blm.md) · [brd](jobs/brd.md) · [bst](jobs/bst.md) ·
+[blm](jobs/blm.md) · [blu](jobs/blu.md) · [brd](jobs/brd.md) · [bst](jobs/bst.md) ·
 [cor](jobs/cor.md) · [dnc](jobs/dnc.md) · [drk](jobs/drk.md) ·
 [geo](jobs/geo.md) · [pld](jobs/pld.md) · [pup](jobs/pup.md) ·
 [rdm](jobs/rdm.md) · [run](jobs/run.md) · [sam](jobs/sam.md) ·

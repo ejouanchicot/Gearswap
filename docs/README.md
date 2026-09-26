@@ -1,6 +1,6 @@
 # Documentation
 
-16 jobs (PUP does not load yet; SMN ships only with the Tetsouo template).
+17 jobs (PUP does not load yet; SMN ships only with the Tetsouo template).
 Pages checked against the code on 2026-09-25.
 
 Start with the [project README](../README.md) for the overview. The player
@@ -30,7 +30,7 @@ how the code works.
 - [Keybind HUD](user/features/ui.md) - `//gs c ui` and its settings
 - [Equipment validation](user/features/equipment-validation.md) -
   `//gs c checksets` and the other inventory tools
-- [Auto-tier](user/features/auto-tier-system.md) - WHM Cure and DNC Waltz tier
+- [Auto-tier](user/features/auto-tier-system.md) - WHM Cure and DNC Waltz tier, RDM and GEO spells stepping down a tier
   choice
 - [Job changes](user/features/job-change-manager.md) - what happens when you
   change job or subjob
@@ -43,7 +43,7 @@ Modes, keys and commands of each job: [user/jobs/](user/jobs/README.md).
 
 | Role | Jobs |
 |---|---|
-| Mage | [BLM](user/jobs/blm/states.md) · [GEO](user/jobs/geo/states.md) · [RDM](user/jobs/rdm/states.md) · [WHM](user/jobs/whm/states.md) |
+| Mage | [BLM](user/jobs/blm/states.md) · [BLU](user/jobs/blu/states.md) · [GEO](user/jobs/geo/states.md) · [RDM](user/jobs/rdm/states.md) · [WHM](user/jobs/whm/states.md) |
 | Support | [BRD](user/jobs/brd/states.md) · [COR](user/jobs/cor/states.md) |
 | Tank | [PLD](user/jobs/pld/states.md) · [RUN](user/jobs/run/README.md) |
 | Melee | [DNC](user/jobs/dnc/states.md) · [DRK](user/jobs/drk/states.md) · [SAM](user/jobs/sam/states.md) · [THF](user/jobs/thf/states.md) · [WAR](user/jobs/war/states.md) |

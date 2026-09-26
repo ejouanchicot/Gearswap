@@ -381,7 +381,8 @@ Timing constants: JCM 0.5 s / 3.0 s (`job_change_manager.lua:162-165`); JobSyncW
 | `_dualbox_last_send_payload`, `_dualbox_last_send_time` | `dualbox_manager.lua:180-186`, `:205-206` | 1.5 s de-dup of `altjobupdate`; a reply to `requestjob` skips it |
 | `_sync_ipc_event_id`, `_sync_ipc_event_load`, `_sync_ipc_last_sent`, `_sync_ipc_last_sent_time` | `dualbox_sync_ipc.lua` (`broadcast`, `init_listener`) | IPC listener token and the load it belongs to, self-echo |
 | `_alt_buff_reporting`, `_alt_buff_debug` | `alt_buff_reporter.lua:89`, `:231` | alt has reported at least once; tracing |
-| `_alt_group`, `_alt_window_gen` | `alt_group.lua`, `alt_window.lua` | last `alts` orders; alt window loop generation |
+| `_alt_group`, `_alt_window_gen` | `alt_group.lua`, `alt_window.lua` | Auto / Follow / Mirror shown by the alt window (last `alts` orders, or the reported state); alt window loop generation |
+| `_alt_reports`, `_alt_mirror` | `alt_group.lua` (`receive_report`, `receive_mirror`) | last state reported by each box's automation addon; mirror steps and results in progress |
 | `_warp_init_done`, `_warp_ipc_event_id`, `_warp_ipc_register_event_id` + `_load`, `_warp_detector_event_id` + `_load`, `_warp_autofix_*` + `_warp_autofix_load` | `warp_init.lua:111`; `warp_ipc_register.lua:20-24`, `:99`; `init_action_listener` in `warp_detector.lua`; `_setup_auto_fix` in `item_user.lua` | once-per-session init messages; listener tokens, each stamped with its load so an id from an earlier load is never unregistered |
 | `_hook_wraps` | `shared/hooks/init_*_messages.lua` | counters for the message hook chain |
 | `_auto_medicine` | `auto_medicine.lua` | AutoMedicine choice |

@@ -1,4 +1,4 @@
-# Auto-tier: WHM Cures and DNC Waltzes
+# Auto-tier: WHM Cures, DNC Waltzes, RDM and GEO spells
 
 Pick the heal tier from the HP the target is missing, so you can put one
 macro on the top tier and let the system spend less MP or TP.
@@ -57,6 +57,21 @@ Both need DNC as main job or subjob, and cancel Saber Dance first.
 
 Levels are your DNC level, main or sub. These values are in
 `shared/utils/dnc/waltz_manager.lua`.
+
+## RDM and GEO: nukes, enfeebles, Aspir
+
+Macro the tier you want. If it is on recast or you lack the MP, the next
+lower tier that can go is cast instead (Fire V -> Fire IV -> ... -> Fire).
+A tier you have not learned is skipped. When none can go, the cast is
+cancelled and the recast of every tier is shown.
+
+| Job | Spells |
+|---|---|
+| RDM | Nukes (Fire to Water, V down to base). Dia, Bio, Distract, Frazzle, Blind, Slow, Paralyze, Poison, Addle, Sleep, Gravity, only while `EnfeebleTier` is On (Ctrl+Numpad9) |
+| GEO | Nukes, -ra nukes (III down to base), Aspir (III down to Aspir) |
+
+Enhancing spells never step down. The tier lists are in
+`shared/data/spells/NUKE_TIERS.lua` and `RDM_ENFEEBLE_TIERS.lua`.
 
 ## Troubleshooting
 

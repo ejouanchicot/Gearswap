@@ -24,6 +24,7 @@ differs in two values: Maxentius replaces Daybreak (and is the default weapon), 
 | `^numpad7` | `NukeMode` | **FreeNuke**, Magic Burst | Elemental midcast: `sets.midcast['Elemental Magic']` or its `['Magic Burst']` variant |
 | `^numpad0` | `SaboteurMode` | **Off**, On | `On` = the spells listed in `RDM_SABOTEUR_CONFIG.lua` (template: Distract III, Gravity II) use Saboteur first when it is ready, then go out once it is up |
 | `^numpad8` | `NukeTier` | **V**, IV, III, II, I | Tier of the `cast*` nuke commands (`I` = base spell) |
+| `^numpad9` | `EnfeebleTier` | **On**, Off | `On`: an enfeeble with tiers (Gravity II, Distract III...) that is on recast or short of MP drops to the next tier that can go. `Off`: it is cancelled and its recast shown, so you keep control of the tier. Nukes step down either way |
 | `^numpad.` | `EnSpell` | **Enfire**, Enblizzard, Enaero, Enstone, Enthunder, Enwater | Spell of `//gs c castenspell` |
 | `^numpad+` | `GainSpell` | **Gain-STR** … Gain-CHR | Spell of `//gs c castgain` |
 | `^numpad-` | `Barspell` | **Barfire**, Barblizzard, Baraero, Barstone, Barthunder, Barwater | Spell of `//gs c castbar` |

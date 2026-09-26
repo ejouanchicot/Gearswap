@@ -14,6 +14,7 @@ Medicine) and Alt+Numpad7-9 (dual-box alts). See the
 | Job | Page | Notes |
 |---|---|---|
 | BLM | [blm/states.md](blm/states.md) | |
+| BLU | [blu/states.md](blu/states.md) | Added 2026-09-26; played by a friend's character (Gabvanstronger overlay) |
 | BRD | [brd/states.md](brd/states.md) | |
 | BST | [bst/states.md](bst/states.md) | |
 | COR | [cor/states.md](cor/states.md) | |

@@ -32,12 +32,13 @@ lockstyle, macro book) is common to all jobs.
 
 | Job | Status |
 |---|---|
-| BLM, BRD, BST, COR, DNC, DRK, GEO, PLD, RDM, RUN, SAM, THF, WAR, WHM | Template shipped in `_master/`, offered by the clone script |
+| BLM, BLU, BRD, BST, COR, DNC, DRK, GEO, PLD, RDM, RUN, SAM, THF, WAR, WHM | Template shipped in `_master/`, offered by the clone script |
 | SMN | Only in the Tetsouo template (`_master/Tetsouo/`): the clone script deploys it only when you rebuild the character named Tetsouo |
 | PUP | **Does not load yet**: its configuration folder is missing, so the job file stops during loading. The clone script does not offer it |
 
 The author plays BLM, BRD, BST, COR, DNC, PLD, SMN, THF and WAR on Tetsouo, and
-COR, GEO, PLD and RDM on the dual-boxed alt. DRK, RUN, SAM and WHM exist as
+COR, GEO, PLD and RDM on the dual-boxed alt. BLU (added 2026-09-26) is played
+by a friend's character, from his own overlay. DRK, RUN, SAM and WHM exist as
 templates but no maintained character plays them.
 
 Per-job pages (modes, keys, commands): [docs/user/jobs/](docs/user/jobs/README.md).
@@ -194,9 +195,12 @@ With two characters on the same PC, each running this setup:
   the group (Alt+Numpad7-9 by default). Follow, automation and mirror expect
   an automation addon that answers `sm` console commands.
 - **Swap roles**: `//gs c main` on the character that should lead.
-- **Alt window** on the main: each alt's job, whether it is in your party, and
-  the last follow / automation / mirror order. `//gs c alts window` shows or
-  hides it.
+- **Alt window** on the main, always the same size: each alt's job, whether it
+  is in your party, its zone, and the follow / automation / mirror state with
+  the steps of a mirror in progress. The state is the real one when the
+  automation addon carries the small local addition described in the
+  dual-box guide; otherwise it is the last order sent from this box.
+  `//gs c alts window` shows or hides it.
 
 Setup and details: [dual-box guide](docs/user/guides/dualbox.md).
 

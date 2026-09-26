@@ -47,6 +47,8 @@ Reorder or trim the lists in `GEO_STATES.lua`.
 | `//gs c escort [Indi-X] [leader]` | Full Circle if a luopan is out, then casts the Indi- on yourself (default Indi-Regen); with a leader name, sends `sm follow <leader>` once the cast is over |
 | `//gs c lightspell` / `darkspell` | Nukes your target with the chosen element and `SpellTier`, stepping down a tier when the higher one is not learned or is on recast |
 | `//gs c lightaoe` / `darkaoe` | Same with the -ra spells and `AOETier` |
+
+A nuke, -ra or Aspir you cast from a macro steps down the same way: if the tier is on recast or you lack the MP, the next lower tier you know goes out instead (see [auto-tier](../../features/auto-tier-system.md)).
 | `//gs c lightarts` / `darkarts` | /SCH: Light or Dark Arts, then the matching Addendum on the next press |
 | `//gs c aoe sneak` / `invi` / `erase` | /SCH: casts the spell on the party, with Light Arts and Accession as stratagem charges allow |
 | `//gs c dispel` | /RDM: Dispel on an enemy. /SCH: under Addendum: Black. Other subjobs: a warning |
