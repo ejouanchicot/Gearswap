@@ -154,7 +154,7 @@ sets.precast.JA = {}
 sets.precast.JA['Snake Eye']    = {legs = RELIC.Legs}
 sets.precast.JA['Wild Card']    = {feet = RELIC.Feet}
 sets.precast.JA['Random Deal']  = {body = RELIC.Body}
--- His FoldDoubleBust: he wore it only with two Busts up; here on every Fold.
+-- His FoldDoubleBust: our COR puts it on only with two Busts up, as he did.
 sets.precast.JA['Fold']         = {hands = RELIC.Hands}
 
 -- • Phantom Roll (duration / DT)

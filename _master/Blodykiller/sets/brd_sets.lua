@@ -272,7 +272,7 @@ sets.midcast['Shining Fantasia'] = sets.midcast.DummySong
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- His SongDebuff (ResistantSongDebuff was identical).
--- His back slot was BRDCape.Mid, which he never defined: it equipped nothing.
+-- back: his BRDCape.Mid was never defined; he asked for BRDCape.Macc.
 sets.midcast.DebuffSong = {
     range       =   "Gjallarhorn",
     head        =   AF.Head,
@@ -286,6 +286,7 @@ sets.midcast.DebuffSong = {
     right_ear   =   "Gwati Earring",
     left_ring   =   "Murky Ring",
     right_ring  =   "Crepuscular Ring",
+    back        =   BRDCape.Macc,
 }
 
 sets.midcast['Magic Finale']        = set_combine(sets.midcast.DebuffSong, {legs = EMPY.Legs})

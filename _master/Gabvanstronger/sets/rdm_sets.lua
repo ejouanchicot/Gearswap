@@ -158,8 +158,8 @@ sets.engaged.DT = {
 }
 
 -- TP Engaged (maximize Store TP, TP gain)
--- (his base, engaged.DT, was defined after this set, so set_combine skipped it; every slot is listed anyway)
-sets.engaged['Store TP'] = set_combine(sets.engaged.DT, {
+-- Built on sets.engaged (empty) as he asked; every slot is listed anyway.
+sets.engaged['Store TP'] = set_combine(sets.engaged, {
 	ammo		=	"Coiste Bodhar",		--		DA+ 3	STP+ 3								Aurgelmir+1	STP+ 5
 	head		=	"Malignance Chapeau",	-- 				STP+ 8			 DT- 6%	DmgL+3%
 	body		=	"Malignance Tabard",	--				STP+11			 DT- 9%	DmgL+6%
@@ -592,8 +592,9 @@ sets.midcast['Enhancing Magic'] = {
 }
 
 -- For Potency spells like Temper, Enspells, Gain(cap@500)| Skill+
--- His "sets.midcast['Enhancing Magic'].Potency": no code looks it up, kept as a base
-local EnhancingPotency = {
+-- No code looks this one up by itself: it is the base of Gain, Enspell,
+-- BarElement, BarAilment, Temper, Protect, Shell and Aquaveil below.
+sets.midcast['Enhancing Magic'].Potency = {
 	main		=	"Pukulatmuj +1",		-- Skill+11
 	sub			=	"Forfend +1",			-- Skill+10
 	head		=	"Befouled Crown",		-- Skill+16
@@ -620,17 +621,17 @@ sets.midcast['Enhancing Magic'].Composure = set_combine(sets.midcast['Enhancing 
 })
 
 -- Spell families (enhancing database), under the skill
-sets.midcast['Enhancing Magic'].Gain = EnhancingPotency
-sets.midcast['Enhancing Magic'].Enspell = EnhancingPotency
-sets.midcast['Enhancing Magic'].BarElement = EnhancingPotency
-sets.midcast['Enhancing Magic'].BarAilment =  set_combine(EnhancingPotency, {
+sets.midcast['Enhancing Magic'].Gain = sets.midcast['Enhancing Magic'].Potency
+sets.midcast['Enhancing Magic'].Enspell = sets.midcast['Enhancing Magic'].Potency
+sets.midcast['Enhancing Magic'].BarElement = sets.midcast['Enhancing Magic'].Potency
+sets.midcast['Enhancing Magic'].BarAilment =  set_combine(sets.midcast['Enhancing Magic'].Potency, {
 	neck		=	"Sroda Necklace",	--			Duration-50%
 })
-sets.midcast.Temper = EnhancingPotency
-sets.midcast.Protect = set_combine(EnhancingPotency, {
+sets.midcast.Temper = sets.midcast['Enhancing Magic'].Potency
+sets.midcast.Protect = set_combine(sets.midcast['Enhancing Magic'].Potency, {
 	right_ring = "Sheltered Ring"
 })
-sets.midcast.Shell = set_combine(EnhancingPotency, {
+sets.midcast.Shell = set_combine(sets.midcast['Enhancing Magic'].Potency, {
 	right_ring = "Sheltered Ring"
 })
 -- Refresh
@@ -673,7 +674,7 @@ sets.midcast.Stoneskin = set_combine(sets.midcast['Enhancing Magic'], {
     neck = 'Nodens Gorget',
     waist = 'Siegel Sash'
 })
-sets.midcast.Aquaveil = set_combine(EnhancingPotency, {
+sets.midcast.Aquaveil = set_combine(sets.midcast['Enhancing Magic'].Potency, {
 -- 	--								   Merits Sird+10%
 	main		=	"Sakpata's Sword",		--			DT-10%
 	sub			=	"Sacro Bulwark",		--Sird+ 7%	DT-10%

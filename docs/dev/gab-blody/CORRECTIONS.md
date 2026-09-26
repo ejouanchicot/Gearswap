@@ -85,8 +85,15 @@ bugs**. On les a juste réécrites plus proprement, les pièces portées sont le
 | Ton fichier | Pourquoi ça marchait quand même |
 |---|---|
 | Ligne 704, `Regen.Composure = set_combine(sets.midcast['Enhancing Magic'].others, sets.midcast.Regen)` : `.others` n'existe pas | `set_combine` saute un set absent : c'était ton set Regen, il fonctionnait |
-| Ligne 187, `engaged['Store TP']` construit sur `engaged.DT`, défini seulement ligne 204 | `engaged.DT` était sauté, mais ton set Store TP remplit tous les slots : même résultat |
+| Ligne 187, `engaged['Store TP']` construit sur `engaged.DT`, défini seulement ligne 204 | `engaged.DT` était sauté, mais ton set Store TP remplit tous les slots : même résultat. Construit maintenant sur `sets.engaged`, comme tu l'as demandé |
 | Lignes 243 et 244, `body` écrit deux fois dans Subtle Blow | Lua garde la dernière (Volte Harness), c'est celle qu'on a gardée |
+
+### Gardé sous ton nom (ta réponse)
+
+`sets.midcast['Enhancing Magic'].Potency` (ligne 595) : on l'avait renommé en variable locale,
+sans rien casser (Gain, Temper, Enspell, BarSpell, BarAilment, Protect, Shell et Aquaveil en
+héritaient avec les mêmes pièces). Il a retrouvé son nom pour que tu puisses le modifier comme
+avant ; la comparaison le donne identique à ton fichier.
 
 ### Retiré (ne servait déjà pas chez toi)
 
@@ -96,7 +103,7 @@ bugs**. On les a juste réécrites plus proprement, les pièces portées sont le
 | `idle.Vagary` | « Vagary » n'est pas un de tes modes idle |
 | `midcast['Enfeebling Magic'].Mixed` | « Mixed » n'est pas une valeur de ton EnfeebleMode |
 | `precast['Ranged']` (ligne 380) | ce nom n'est lu par rien |
-| `midcast.casting` et `midcast['Enhancing Magic'].Potency` | aucun code ne les cherchait ; gardés comme base des sets qui en héritent, sous un nom local |
+| `midcast.casting` | aucun code ne le cherchait ; gardé comme base des sets qui en héritent, sous un nom local |
 | Tes 15 sets d'arme simples (Naegling, Excalibur…) | remplacés par « armes sans set », ta demande |
 | `sets.Usable` et les alias `warp`, `dem`, `holla`… (`0_AugGear.lua` ligne 185) | remplacés par `//gs c warp`, `//gs c dem`, `//gs c holla`… |
 
@@ -121,7 +128,7 @@ Idle : Terpander au slot range, comme ton `check_rangedset` le posait.
 |---|---|---|---|
 | 1 | `Blodykiller/Blodykiller_BRD.lua` 385 | `ammo = LINOS.WS` : un Linos est un instrument (slot range), pas une munition | `range = LINOS.WS` |
 | 2 | `Blodykiller/Blodykiller_BRD.lua` 406 | Aeolian Edge : `body = RELIC.Head` (une tête dans le slot du corps) | ligne retirée, le corps reste celui du set de WS |
-| 3 | `Blodykiller/Blodykiller_BRD.lua` 476 | `back = BRDCape.Mid` : cette cape n'est définie nulle part, ce set ne changeait pas la cape | slot laissé vide, comme en jeu |
+| 3 | `Blodykiller/Blodykiller_BRD.lua` 476 | `back = BRDCape.Mid` : cette cape n'est définie nulle part, ce set ne changeait pas la cape | `BRDCape.Macc`, ta réponse |
 
 **Ta règle reprise** (`config/brd/BRD_CUSTOM.lua`) : `sets.latent_refresh` (ligne 672),
 Fucho-no-Obi en idle quand tes MP passent sous 51 %. En idle normal, ta ceinture est déjà
@@ -159,7 +166,7 @@ de WS, sauf les points ci-dessous. Nusku Shield en sub : ton `SubSet` par défau
 | 1 | `Blodykiller/Blodykiller_COR.lua` 203 et 252 | `CORCape.RA` et `CORCape.PreRA` : définies seulement pour Gabvanstronger (`0_AugGear.lua`, bloc `player.name == 'Gabvanstronger'`), donc vides pour Blody | pas de cape sur les rolls ni en precast de tir (comme en jeu) |
 | 2 | `Blodykiller/Blodykiller_COR.lua` 290 et 304 | `back = CORCape.WS` : c'est la table des capes, pas une cape, rien n'était équipé | `CORCape.WS.STR`, ta seule cape WSD (**supposition** d'après ton commentaire « WSD+10 », à confirmer) |
 | 3 | `Blodykiller/Blodykiller_COR.lua` 315 | `CORCape.WS.AGI` : même cas que le 1 | rien |
-| 4 | `Blodykiller/Blodykiller_COR.lua` 135 | `state.RangedMode:options('Normal')` : tes sets de tir Acc, HighAcc, Critical, STP n'étaient **jamais** utilisés | RangedMode Normal / Acc / HighAcc / Critical / STP, sur **Alt+F9** |
+| 4 | `Blodykiller/Blodykiller_COR.lua` 135 | `state.RangedMode:options('Normal')` : tes sets de tir Acc, HighAcc, Critical, STP n'étaient **jamais** utilisés | RangedMode Normal / Acc / HighAcc / Critical / STP, sur **Alt+F9**, Normal par défaut. Tu nous as dit que ces sets ne sont pas finis : ils restent tels que dans ton fichier, à compléter quand tu veux |
 | 5 | `Blodykiller/Blodykiller_COR.lua` 424 | `sets.TripleShot = {}` : vide | gardé vide (`midcast.RA.TripleShot`), à remplir si tu veux |
 
 **Écrit autrement, sans effet en jeu** : lignes 411 et 419-420, `ring1` / `ring2` dans des sets
@@ -193,5 +200,5 @@ d'armes.
   Notre COR n'a pas de choix de sub comme ton `SubSet`.
 - **Luzaf's Ring** reste sur l'anneau droit (par-dessus Warden's Ring), comme ton
   `sets.precast.LuzafRing` ligne 214.
-- **Fold** : tes gants Lanun vont sur chaque Fold, plus seulement avec deux Bust (ils ne
-  servent qu'à Fold).
+- **Fold** : tes gants Lanun seulement avec deux Bust, comme chez toi (ta réponse). C'est
+  maintenant la règle de notre COR pour tout le monde.
