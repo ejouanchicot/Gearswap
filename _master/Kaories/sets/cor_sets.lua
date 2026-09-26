@@ -361,13 +361,18 @@ sets.precast.WS['Savage Blade'] = {
     }
 }
 
--- • Last Stand (gun WS, AGI): the generic set with her ranged and WSD pieces
-sets.precast.WS['Last Stand'] = set_combine(sets.precast.WS, {
+-- • Gun weaponskills (physical): the generic set with her ranged and WSD
+--   pieces in place of the melee ones (Sailfi Belt, Chirich Ring)
+local GunWS = set_combine(sets.precast.WS, {
     feet = "Lanun Bottes +4",       -- WSD +12
-    waist = "Null Belt",            -- R.Acc +30 (Sailfi Belt is melee)
+    waist = "Null Belt",            -- R.Acc +30
     left_ring = "Epaminondas's Ring",   -- WSD +5
     right_ring = "Crepuscular Ring",    -- R.Acc +10
 })
+for _, ws in ipairs({'Hot Shot', 'Split Shot', 'Sniper Shot', 'Slug Shot', 'Blast Shot',
+        'Heavy Shot', 'Detonator', 'Numbing Shot', 'Last Stand'}) do
+    sets.precast.WS[ws] = GunWS
+end
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- MIDCAST SETS

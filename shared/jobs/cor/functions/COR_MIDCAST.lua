@@ -66,6 +66,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         MidcastManager.select_set({skill = 'RA', spell = spell, mode_state = state.RangedMode})
         if buffactive['Triple Shot'] and sets.midcast.RA and sets.midcast.RA.TripleShot then
             equip(sets.midcast.RA.TripleShot)
+            require('shared/utils/debug/trace_log').log('MIDCAST', 'Ranged under Triple Shot -> sets.midcast.RA.TripleShot on top')
         end
         return
     end
