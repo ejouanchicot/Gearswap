@@ -29,6 +29,7 @@ local job_titles = {
     DNC = "Dancer Settings",
     BST = "Beastmaster Settings",
     BLM = "Black Mage Settings",
+    BLU = "Blue Mage Settings",
     DRG = "Dragoon Settings",
     RDM = "Red Mage Settings",
     COR = "Corsair Settings",

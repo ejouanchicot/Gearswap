@@ -253,7 +253,7 @@ TRANSLATIONS = {
 # PUP is left out while _master/config/pup/ does not exist: its entry file
 # requires a config from there without pcall, so a cloned PUP never loads.
 ALL_VALID_JOBS = [
-    'BLM', 'BRD', 'BST', 'COR', 'DNC', 'DRK', 'GEO',
+    'BLM', 'BLU', 'BRD', 'BST', 'COR', 'DNC', 'DRK', 'GEO',
     'PLD', 'RDM', 'RUN', 'SAM', 'THF', 'WAR', 'WHM'
 ]
 

@@ -4,6 +4,11 @@
 --- sam_hasso        SAM: Hasso when you engage, unless Hasso or Seigan is up
 --- geo_entrust      GEO: an Indi- cast on a party member gets Entrust first
 --- geo_full_circle  GEO: a Geo- cast while a luopan is out gets Full Circle first
+--- blu_unbridled    BLU: an unbridled spell cast without Unbridled Learning /
+---                  Wisdom gets Unbridled Learning first, then goes again
+--- blu_expiacion_window  BLU: with Tizona, no Aftermath: Lv.3 and under 3000
+---                  TP, Expiacion is cancelled once; pressed again within 3 s,
+---                  it goes
 ---
 --- @file config/AUTO_ABILITIES.lua
 --- @author Tetsouo
@@ -15,4 +20,6 @@ return {
     sam_hasso = false,
     geo_entrust = false,
     geo_full_circle = false,
+    blu_unbridled = false,
+    blu_expiacion_window = false,
 }
