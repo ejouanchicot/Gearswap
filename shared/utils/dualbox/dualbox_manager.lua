@@ -528,6 +528,10 @@ local function run_auto_init(attempt)
     -- The alts' state window (main only; hides itself elsewhere)
     local win_ok, AltWindow = pcall(require, 'shared/utils/dualbox/alt_window')
     if win_ok and AltWindow then AltWindow.start() end
+
+    -- Real automation state of every box (reports sent during the reload are lost)
+    local grp_ok, AltGroup = pcall(require, 'shared/utils/dualbox/alt_group')
+    if grp_ok and AltGroup then AltGroup.request_report() end
 end
 
 coroutine.schedule(function() run_auto_init(1) end, INIT_FIRST_DELAY)

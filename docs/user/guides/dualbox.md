@@ -92,8 +92,22 @@ delete that file or swap again.
 ## The alt window
 
 Shown on the main only. For each alt: its job (the last one it reported),
-whether it is in your party (and its zone when it differs), and the last
-Auto / Follow / Mirror order sent from this box (`?` until one is sent).
+whether it is in your party (and its zone when it differs), and its
+Auto / Follow / Mirror state (`?` until known).
+
+That state is the real one when the automation addon carries the
+`lib/StateReport.lua` addition (a local change, to put back after an addon
+update: the file plus one `require` line at the end of the addon's main
+file). Every box then reports each change itself, so an order typed by hand
+(`//sm on`, `//sm follow ...`), a macro or the desktop program shows too.
+Without it, the window shows the last order sent from this box.
+With it, a mirror in progress also shows under Mirror: each box's step
+(`Recording` on the one that records, `Injecting ... (2 of 5)` / `Trading...`
+on the ones that replay) and the NPC, then the result per character for a
+few seconds (`OK` in green once completed).
+The addition also hides the addon's own boxes (status, Mirroring Actions,
+Mirroring Results): `HIDE_ADDON_BOXES = false` in `lib/StateReport.lua`
+brings them back.
 While the window is on screen, those orders print nothing in chat.
 Drag it with the mouse; the position is saved a few seconds later.
 `//gs c alts window` shows or hides it.

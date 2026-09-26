@@ -38,7 +38,7 @@ function is named.
 | `shared/utils/dualbox/alt_buff_reporter.lua` | 336 | ALT: report tracked buffs. MAIN: store them, guess/expire, trace log |
 | `shared/utils/dualbox/dualbox_sync_ipc.lua` | 159 | Windower IPC broadcast/hook registry for `ls`/`rf` mirroring |
 | `shared/utils/dualbox/alt_group.lua` | 252 | `//gs c alts`: orders to every other member of the box group (`sm on/off`, follow, `do <command>`, mirror, window); `route()` also dispatches `main`/`setalt` |
-| `shared/utils/dualbox/alt_window.lua` | 254 | Small overlay on the main: each alt (job, online) and the last Auto / Follow / Mirror orders; `//gs c alts window` shows/hides it |
+| `shared/utils/dualbox/alt_window.lua` | 254 | Small overlay on the main: each alt (job, online) and the Auto / Follow / Mirror state: the real one reported by the addon's local `lib/StateReport.lua` addition (`//gs c altreport`, `AltGroup.receive_report`, asked again at each load by `AltGroup.request_report`), else the last orders sent; `//gs c alts window` shows/hides it |
 | `shared/utils/dualbox/dualbox_role.lua` | 165 | `//gs c main` / `setalt`: switches the roles at runtime and saves them in `<Character>/config/dualbox_role.lua` |
 | `shared/utils/messages/formatters/system/message_altgroup.lua` + `data/systems/altgroup_messages.lua` | - | `[ALTS]` / `[DUALBOX]` lines of the three modules above (including `not_ready`, `window_main_only`, `no_follower`, added 2026-09-25) |
 | `shared/utils/messages/formatters/ui/message_dualbox.lua` | 190 | Chat output for the job exchange (via `M.send('DUALBOX', ...)`) |

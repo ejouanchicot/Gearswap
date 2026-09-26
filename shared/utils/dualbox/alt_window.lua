@@ -1,17 +1,22 @@
 ---============================================================================
 --- Alt Window - small overlay with the alts' state, on the main
 ---============================================================================
----   ALTS
----   Kaories   GEO/RDM  online
----   Auto      ON
----   Follow    Tetsouo
----   Mirror    ?
+---   Kaories
+---   Job    GEO/RDM
+---   Party  online
+---   Zone   Ru'Lude Gardens
+---   Auto   ON
+---   Follow Tetsouo
+---   Mirror ON  Home Point #1
+---   Step   Kaories Injecting 2/5
 ---
---- Job comes from the dual-box job exchange, online from the party list
---- ("no party" when the alt is not in it). Auto, Follow and Mirror are the
---- last orders sent from this box (//gs c alts, the common keys,
---- //gs c sortie): the automation addon keeps its real state to itself, so
---- "?" means nothing was sent since the game started.
+--- Same size whatever it shows (FIXED LAYOUT below). Job comes from the
+--- dual-box job exchange, online and zone from the party list ("no party"
+--- when the alt is not in it). Step follows a mirror in progress. Auto, Follow and Mirror are the
+--- real state reported by each box when the automation addon carries the
+--- StateReport addition (AltGroup.receive_report); otherwise the last orders
+--- sent from this box (//gs c alts, the common keys, //gs c sortie). "?"
+--- means nothing is known yet since the game started.
 ---
 --- Shown on the main only, when the box group has other members.
 --- //gs c alts window shows / hides it; drag it with the mouse. Both are
@@ -88,14 +93,48 @@ local function resources()
     return ok and loaded or nil
 end
 
-local function on_off(value)
-    if value == nil then return paint(GRAY, '?') end
-    return value and paint(GREEN, 'ON') or paint(RED, 'OFF')
+---============================================================================
+--- FIXED LAYOUT
+---============================================================================
+--- The window keeps one size whatever it shows: every line is exactly
+--- LABEL_WIDTH + 1 + VALUE_WIDTH characters (padded with spaces, cut when
+--- longer) in the HUD's monospace font, and the rows are always the same
+--- ones, "-" when there is nothing to show. A value is a list of
+--- {text, color} pieces, so its visible length can be counted.
+
+local LABEL_WIDTH = 6      -- "Follow", "Mirror"
+local VALUE_WIDTH = 24
+local DASH = {{'-', GRAY}}
+
+--- Pieces cut to `width` visible characters, then padded to it.
+local function fit(pieces, width)
+    local out, used = {}, 0
+    for _, piece in ipairs(pieces) do
+        local text = piece[1]:sub(1, width - used)
+        if #text > 0 then
+            out[#out + 1] = paint(piece[2], text)
+            used = used + #text
+        end
+    end
+    return table.concat(out) .. string.rep(' ', width - used)
 end
 
-local function follow_text(value)
-    if value == nil then return paint(GRAY, '?') end
-    return value and paint(WHITE, value) or paint(RED, 'OFF')
+local function row(label, pieces)
+    return paint(GRAY, string.format('%-' .. LABEL_WIDTH .. 's', label)) .. ' ' .. fit(pieces, VALUE_WIDTH)
+end
+
+local function title(name)
+    return fit({{name, BLUE}}, LABEL_WIDTH + 1 + VALUE_WIDTH)
+end
+
+local function on_off(value)
+    if value == nil then return {{'?', GRAY}} end
+    return value and {{'ON', GREEN}} or {{'OFF', RED}}
+end
+
+local function follow_value(value)
+    if value == nil then return {{'?', GRAY}} end
+    return value and {{value, WHITE}} or {{'OFF', RED}}
 end
 
 --- The party / alliance entry of `name`, or nil.
@@ -104,51 +143,95 @@ local function party_member(name)
     for key, member in pairs(party) do
         if type(key) == 'string' and key:match('^[pa]%d') and type(member) == 'table'
             and member.name and member.name:lower() == name:lower() then
-            return member, party
+            return member
         end
     end
-    return nil, party
+    return nil
 end
 
---- Presence from the party list: the job exchange only speaks at a load or
---- a job change, so its 30 s "online" timeout reads a quiet alt as gone.
+--- Presence from the party list (the job exchange only speaks at a load or
+--- a job change, so its 30 s "online" timeout reads a quiet alt as gone),
+--- and the alt's zone.
+--- @return table party value, table zone value
 local function presence(name)
-    local member, party = party_member(name)
-    if not member then
-        return paint(GRAY, 'no party')
-    end
-    local mine = party.p0 and party.p0.zone
-    if member.zone and mine and member.zone ~= mine then
-        local r = resources()
-        local zone = r and r.zones and r.zones[member.zone]
-        return paint(GREEN, 'online') .. ' ' .. paint(GRAY, zone and zone.en or ('zone ' .. member.zone))
-    end
-    return paint(GREEN, 'online')
+    local member = party_member(name)
+    if not member then return {{'no party', GRAY}}, DASH end
+    local r = resources()
+    local zone = member.zone and r and r.zones and r.zones[member.zone]
+    return {{'online', GREEN}}, zone and {{zone.en, WHITE}} or DASH
 end
 
---- One line per alt. The job exchange knows one partner: its last job goes
---- on the first alt's line.
+--- One block per alt: its name as the title, its job, whether it is in the
+--- party, its zone. The job exchange knows one partner: its last job goes
+--- on the first alt.
 local function alt_lines(alts)
     local lines = {}
     local job_state = _G.AltJobState
     for i, name in ipairs(alts) do
-        local job = ''
+        local job = DASH
         if i == 1 and job_state and job_state.job then
             local sub = job_state.subjob and job_state.subjob ~= 'NON' and ('/' .. job_state.subjob) or ''
-            job = paint(YELLOW, job_state.job .. sub) .. '  '
+            job = {{job_state.job .. sub, YELLOW}}
         end
-        lines[#lines + 1] = paint(WHITE, string.format('%-9s', name)) .. ' ' .. job .. presence(name)
+        local here, zone = presence(name)
+        lines[#lines + 1] = title(name)
+        lines[#lines + 1] = row('Job', job)
+        lines[#lines + 1] = row('Party', here)
+        lines[#lines + 1] = row('Zone', zone)
     end
     return lines
 end
 
+--- The addon's step, short: packet codes dropped and "(2 of 5)" -> "2/5".
+--- "Injecting [0x01A] - Retry [2]" -> "Injecting - Retry 2".
+local function step_text(step)
+    local text = step:gsub('%[?0x%x+%]?', ''):gsub('%((%d+) of (%d+)%)', '%1/%2')
+    text = text:gsub('[%[%]]', ''):gsub('%s+', ' ')
+    return (text:gsub('^%s+', ''):gsub('%s+$', ''))
+end
+
+--- The mirror line: ON/OFF, then the NPC while one runs.
+local function mirror_value(state, phases)
+    local pieces = on_off(state.mirror)
+    for _, phase in pairs(phases) do
+        if phase.npc then
+            pieces[#pieces + 1] = {'  ' .. phase.npc, GRAY}
+            break
+        end
+    end
+    return pieces
+end
+
+--- The Step line: the latest step of a running mirror (Recording on the box
+--- that records, Injecting / Trading on the ones that replay), else the
+--- program's results for a few seconds (OK in green once completed), else "-".
+local function step_value(phases, results)
+    local latest, latest_name
+    for name, phase in pairs(phases) do
+        if not latest or phase.time > latest.time then latest, latest_name = phase, name end
+    end
+    if latest then
+        return {{latest_name .. ' ', WHITE}, {step_text(latest.step), YELLOW}}
+    end
+    local pieces = {}
+    for i, result in ipairs(results or {}) do
+        local done = result.status == 'Completed'
+        pieces[#pieces + 1] = {(i > 1 and ', ' or '') .. result.name .. ' ', WHITE}
+        pieces[#pieces + 1] = done and {'OK', GREEN} or {result.status, YELLOW}
+    end
+    return #pieces > 0 and pieces or DASH
+end
+
 local function build_text(alts)
-    local state = group().state()
-    local lines = {paint(BLUE, 'ALTS')}
-    for _, line in ipairs(alt_lines(alts)) do lines[#lines + 1] = line end
-    lines[#lines + 1] = paint(GRAY, 'Auto     ') .. ' ' .. on_off(state.on)
-    lines[#lines + 1] = paint(GRAY, 'Follow   ') .. ' ' .. follow_text(state.follow)
-    lines[#lines + 1] = paint(GRAY, 'Mirror   ') .. ' ' .. on_off(state.mirror)
+    local g = group()
+    local state = g.state()
+    local phases, results = {}, nil
+    if g.mirror_progress then phases, results = g.mirror_progress() end
+    local lines = alt_lines(alts)
+    lines[#lines + 1] = row('Auto', on_off(state.on))
+    lines[#lines + 1] = row('Follow', follow_value(state.follow))
+    lines[#lines + 1] = row('Mirror', mirror_value(state, phases))
+    lines[#lines + 1] = row('Step', step_value(phases, results))
     return table.concat(lines, '\n')
 end
 

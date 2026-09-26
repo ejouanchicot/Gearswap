@@ -16,11 +16,18 @@
 --- Who receives the orders: see AltGroup.get_alts (DualBoxConfig.group,
 --- or the main/alt names already in DUALBOX_CONFIG.lua).
 ---
---- The on/follow/mirror states are the last orders sent (//gs c sortie
---- reports its own through AltGroup.note), saved in alt_state.lua. Orders
---- sent another way (a macro, the alt's own keys) are not seen, so a toggle
---- can take one press to catch up. While the alt window is on screen, those
---- orders print nothing in chat: the window shows them.
+--- The on/follow/mirror states start as the last orders sent (//gs c sortie
+--- reports its own through AltGroup.note), saved in alt_state.lua. When the
+--- automation addon carries the local StateReport addition, every box also
+--- reports its real state on each change (//gs c altreport, see
+--- AltGroup.receive_report), so an order sent another way (a macro, a //sm
+--- typed by hand, the alt's own keys) shows too. Without it, such an order
+--- is not seen and a toggle can take one press to catch up. While the alt
+--- window is on screen, those orders print nothing in chat: the window
+--- shows them.
+---
+---   //gs c altreport <name> <on|off> <leader|off> <on|off>   (sent by the addon)
+---   //gs c altmirror <name> phase <step> <npc> | results <...>  (same, mirror progress)
 ---
 --- @file shared/utils/dualbox/alt_group.lua
 --- @author Tetsouo
@@ -186,6 +193,160 @@ local function follow(alts, target)
     end
 end
 
+---============================================================================
+--- REAL STATE REPORTED BY THE AUTOMATION ADDON
+---============================================================================
+
+--- One trace line per report received (//gs c trace on).
+local function trace(fmt, ...)
+    local ok, Trace = pcall(require, 'shared/utils/debug/trace_log')
+    if ok and Trace then Trace.log('ALTS', fmt, ...) end
+end
+
+--- Whether `name` is one of this box's alts.
+local function is_alt(name)
+    for _, alt in ipairs(AltGroup.get_alts()) do
+        if alt:lower() == name:lower() then return true end
+    end
+    return false
+end
+
+--- Last report of each box, on `windower` so a GearSwap reload keeps them.
+local function reports()
+    windower._alt_reports = windower._alt_reports or {}
+    return windower._alt_reports
+end
+
+--- Group state from the reports: Auto ON if any alt is on, Follow = the
+--- first alt's leader, Mirror ON if any box (this one included: a mirror
+--- request starts on the box that sends it) has it on. A field no report
+--- speaks for keeps its current value.
+local function state_from_reports()
+    local all = reports()
+    local on, follow, mirror
+    local me = player and player.name
+    local names = AltGroup.get_alts()
+    if me then names[#names + 1] = me end
+    for _, name in ipairs(names) do
+        local r = all[name:lower()]
+        if r then
+            if name ~= me then
+                on = on or r.on
+                if follow == nil or (not follow and r.follow) then follow = r.follow end
+            end
+            mirror = mirror or r.mirror
+        end
+    end
+    return on, follow, mirror
+end
+
+--- //gs c altreport <name> <on|off> <leader|off> <on|off>, sent by every
+--- box's automation addon when its state changes. Reports from a box
+--- outside this group are ignored.
+--- @param args table Words after "altreport"
+--- @return boolean handled
+function AltGroup.receive_report(args)
+    local name, on, leader, mirror = args[1], args[2], args[3], args[4]
+    trace('altreport %s on=%s follow=%s mirror=%s', name, on, leader, mirror)
+    if not name or not on then return true end
+    local me = player and player.name
+    if not (me and name:lower() == me:lower()) and not is_alt(name) then return true end
+    reports()[name:lower()] = {
+        on = on == 'on',
+        follow = (leader and leader ~= 'off') and leader or false,
+        mirror = mirror == 'on',
+    }
+    local new_on, new_follow, new_mirror = state_from_reports()
+    local state = group_state()
+    if new_on ~= nil then state.on = new_on end
+    if new_follow ~= nil then state.follow = new_follow end
+    if new_mirror ~= nil then state.mirror = new_mirror end
+    changed()
+    return true
+end
+
+---============================================================================
+--- MIRROR PROGRESS REPORTED BY THE AUTOMATION ADDON
+---============================================================================
+
+local RESULTS_SHOWN = 8   -- seconds, as long as the addon's own results box
+local PHASE_STALE = 120   -- seconds: a step never cleared (lost report) goes
+
+--- Progress of the current mirror, on `windower` so a reload keeps it.
+local function mirror_data()
+    windower._alt_mirror = windower._alt_mirror or {phases = {}, results = nil}
+    return windower._alt_mirror
+end
+
+local function unword(text)
+    return (text or ''):gsub('_', ' ')
+end
+
+--- Whether `name` is this box or one of its alts.
+local function in_group(name)
+    local me = player and player.name
+    return (me and name:lower() == me:lower()) or is_alt(name)
+end
+
+--- "Name,Status|Name,Status" -> list of {name, status}
+local function parse_results(text)
+    local list = {}
+    for item in unword(text):gmatch('[^|]+') do
+        local name, status = item:match('^%s*([^,]+),%s*(.-)%s*$')
+        if name then list[#list + 1] = {name = name, status = status} end
+    end
+    return list
+end
+
+--- //gs c altmirror <name> phase <step|-> [npc]
+--- //gs c altmirror <name> results <Name,Status|...>
+--- Sent by every box's automation addon (StateReport addition).
+--- @param args table Words after "altmirror"
+--- @return boolean handled
+function AltGroup.receive_mirror(args)
+    local name, kind = args[1], args[2] and args[2]:lower()
+    trace('altmirror %s %s %s %s', name, kind, args[3], args[4])
+    if not name or not kind or not in_group(name) then return true end
+    local data = mirror_data()
+    if kind == 'phase' then
+        if not args[3] or args[3] == '-' then
+            data.phases[name] = nil
+        else
+            data.phases[name] = {step = unword(args[3]), npc = args[4] ~= '-' and unword(args[4]) or nil,
+                                 time = os.clock()}
+        end
+    elseif kind == 'results' then
+        data.results = {list = parse_results(args[3]), time = os.clock()}
+    end
+    local ok, AltWindow = pcall(require, 'shared/utils/dualbox/alt_window')
+    if ok and AltWindow then AltWindow.refresh() end
+    return true
+end
+
+--- The mirror in progress, for the alt window.
+--- @return table phases {name -> {step, npc}}, table|nil results list of {name, status}
+function AltGroup.mirror_progress()
+    local data, now = mirror_data(), os.clock()
+    for name, phase in pairs(data.phases) do
+        if now - phase.time > PHASE_STALE then data.phases[name] = nil end
+    end
+    local results = data.results
+    if results and now - results.time > RESULTS_SHOWN then
+        data.results, results = nil, nil
+    end
+    return data.phases, results and results.list or nil
+end
+
+--- Ask every box of the group (this one too) for its state: called at each
+--- load, since reports sent while GearSwap was reloading are lost. Does
+--- nothing visible when the addon lacks the StateReport addition.
+function AltGroup.request_report()
+    local alts = AltGroup.get_alts()
+    if #alts == 0 then return end
+    send_command('sm report')
+    to_alts(alts, 'sm report')
+end
+
 --- Words after `do`, joined back into one console command.
 local function rest_of(args)
     local words = {}
@@ -239,13 +400,19 @@ function AltGroup.handle(args)
     return true
 end
 
---- Entry point for the box-group words of //gs c: alts, main, setalt.
+--- Entry point for the box-group words of //gs c: alts, altreport, main, setalt.
 --- @param cmd string Command word (lowercase)
 --- @param args table Words after it
 --- @return boolean handled
 function AltGroup.route(cmd, args)
     if cmd == 'alts' then
         return AltGroup.handle(args)
+    end
+    if cmd == 'altreport' then
+        return AltGroup.receive_report(args)
+    end
+    if cmd == 'altmirror' then
+        return AltGroup.receive_mirror(args)
     end
     local DualBoxRole = require('shared/utils/dualbox/dualbox_role')
     if cmd == 'main' then

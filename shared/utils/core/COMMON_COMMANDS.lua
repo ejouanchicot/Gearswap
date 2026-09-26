@@ -494,8 +494,9 @@ function CommonCommands.handle_command(command, job_name, ...)
         return require('shared/utils/sortie/sortie_commands').handle(args)
     end
 
-    -- Box group: orders to the alts (alts), role switch (main / setalt)
-    if cmd == 'alts' or cmd == 'main' or cmd == 'setalt' then
+    -- Box group: orders to the alts (alts), role switch (main / setalt),
+    -- real state reported by the automation addon (altreport, altmirror)
+    if cmd == 'alts' or cmd == 'main' or cmd == 'setalt' or cmd == 'altreport' or cmd == 'altmirror' then
         return require('shared/utils/dualbox/alt_group').route(cmd, args)
     end
 
@@ -707,7 +708,7 @@ function CommonCommands.is_common_command(command)
         cmd == 'lagdebug' or cmd == 'ldb' or
         cmd == 'jamsg' or cmd == 'spellmsg' or cmd == 'wsmsg' or cmd == 'info' or cmd == 'debugmsg' or
         cmd == 'testmsg' or cmd == 'msgtest' or cmd == 'msgtests' or
-        cmd == 'memcheck' or cmd == 'mem' or cmd == 'sortie' or cmd == 'alts' or cmd == 'main' or cmd == 'setalt' or cmd == 'tb' or cmd == 'trace' or
+        cmd == 'memcheck' or cmd == 'mem' or cmd == 'sortie' or cmd == 'alts' or cmd == 'main' or cmd == 'setalt' or cmd == 'altreport' or cmd == 'altmirror' or cmd == 'tb' or cmd == 'trace' or
         cmd == 'combatmode' or cmd == 'commands' or cmd == 'cmds' or cmd == 'help' or cmd == '?' then
         return true
     end
