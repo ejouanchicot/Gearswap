@@ -210,7 +210,7 @@ watchdog notify (331-333), then `SKILL_HANDLERS[spell.skill]` (316-322).
 |-------|---------|------------------------------------|-----------------|
 | Enfeebling Magic | `midcast_enfeebling` (86-139) | `mode_state = EnfeebleMode`, `database_func = get_enfeebling_type` | `sets.midcast['Enfeebling Magic'].Saboteur` while `buffactive['Saboteur']` (130-136) |
 | Enhancing Magic | `midcast_enhancing` (183-227) | `mode_state = state.EnhancingMode` (never defined, always nil), `target_func = get_enhancing_target`, `database_func = get_spell_family` | Accession + `^Phalanx` short-circuits to `equip(sets.midcast['Enhancing Magic'])` before the manager (196-203) |
-| Healing Magic | `midcast_healing` (232-248) | skill + spell | - |
+| Healing Magic | `midcast_healing` | skill + spell; a Cure (not a Curaga) on oneself then gets `sets.midcast.CureSelf` on top when the character's sets define it (2026-09-25, Gab's sets) | - |
 | Elemental Magic | `midcast_elemental` (253-270) | `mode_state = NukeMode` | - |
 | Dark Magic | `midcast_dark` (275-291) | skill + spell | - |
 | other | `midcast_subjob` (296-312) | never reached (`spell.type == 'Magic'` at 347 is never true) | - |
@@ -371,7 +371,7 @@ T = `_master/sets/rdm_sets.lua`, K = `_master/Kaories/sets/rdm_sets.lua`
 | `sets.midcast['Enhancing Magic']`, `.Composure` | MidcastManager P9/P5, Accession Phalanx | 351, 372 | 402, 424 |
 | `sets.midcast.Refresh/Regen/Phalanx` (+ `.Composure`), `.Stoneskin`, `.Temper` | P0/P1 | 391-421, 439 | 443-481, 503 |
 | `sets.midcast.Enspell/Gain/BarElement/BarAilment/Spikes/Aquaveil` | P6 family | 429-434 | 493-498 |
-| `sets.midcast['Healing Magic']`, `.Cure`, `.Curaga` | MidcastManager | 261-283 | 271-293 |
+| `sets.midcast['Healing Magic']`, `.Cure`, `.Curaga` (+ optional `.CureSelf`, on top for a Cure on oneself; precast `FC.Cure` / `FC.Curaga` found by Mote through the spell map) | MidcastManager | 261-283 | 271-293 |
 | `sets.midcast.CureSelf` | nothing | 286 | 296 |
 | `sets.midcast['Elemental Magic']`, `.FreeNuke`, `['Magic Burst']` | NukeMode P8 | 232-255 | 242-265 |
 | `sets.midcast['Dark Magic']`, `.Impact`, `.Stun`, `.Drain`, `.Aspir` | MidcastManager / Mote | 446-459 | 510-523 |
