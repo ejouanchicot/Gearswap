@@ -582,7 +582,7 @@ sets.precast.WS['Black Halo'] = {
     neck = 'Rep. Plat. Medal',
     waist = {name = 'Sailfi Belt +1', augments = {'Path: A'}},
     left_ear = 'Regal Earring',
-    right_ear = 'Odnowa Earring +1',
+    right_ear = 'Sherida Earring',
     left_ring = 'Defending Ring',
     right_ring = "Epaminondas's Ring",
     back = {
