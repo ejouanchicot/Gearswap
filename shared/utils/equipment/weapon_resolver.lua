@@ -74,4 +74,31 @@ function WeaponResolver.set_for(slot, value)
     return nil
 end
 
+local offhand_kinds = nil
+
+--- Whether an off-hand item makes the player dual wield, from the game's
+--- item list: a weapon with a combat skill does; a shield (shield_size) or a
+--- grip (skill 0) does not. Short and long item names, any case.
+--- @param name string|nil Item name
+--- @return boolean|nil nil when the name is not a known item
+function WeaponResolver.is_offhand_weapon(name)
+    if type(name) ~= 'string' or name == '' then return nil end
+    if not offhand_kinds then
+        offhand_kinds = {}
+        local ok, res = pcall(require, 'resources')
+        if ok and res and res.items then
+            for _, item in pairs(res.items) do
+                local dual = item.category == 'Weapon' and (item.skill or 0) > 0
+                for _, n in ipairs({item.en, item.enl}) do
+                    if type(n) == 'string' then
+                        local key = n:lower()
+                        offhand_kinds[key] = offhand_kinds[key] or dual
+                    end
+                end
+            end
+        end
+    end
+    return offhand_kinds[name:lower()]
+end
+
 return WeaponResolver

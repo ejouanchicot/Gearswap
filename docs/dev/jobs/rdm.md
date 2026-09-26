@@ -253,10 +253,15 @@ while Saboteur is up it replaces whatever type set the manager chose.
   outside town when `state.Moving.value == 'true'`.
 - `customize_melee_set` -> `build_engaged_set` (206-218):
   `select_engaged_base` (57-99) picks `sets.engaged[EngagedMode]`, or its `.DW`
-  child when the sub weapon is not a shield. The sub weapon comes from
-  `state.SubWeapon` whenever it is not `'None'` (it never is), so the equipped
-  item is never consulted. `has_shield_equipped` (160-182) treats nil, `""`,
-  `'empty'` and any name in `sets.shields` as single-wield.
+  child when the off hand holds a weapon. `offhand_item` names the off hand:
+  the worn item while `CombatMode` is On (the state can change then without the
+  gear following), otherwise the item of the set `state.SubWeapon` names
+  (`sets['Genmei'].sub`), or the value itself. `has_shield_equipped` asks
+  `WeaponResolver.is_offhand_weapon` (game item list): a weapon with a combat
+  skill means `.DW`; a shield (`shield_size`), a grip (skill 0), nil, `""` or
+  `'empty'` means the normal set. Only a name the game does not know falls back
+  to `sets.shields` (2026-09-26; before, that list alone decided, and a shield
+  missing from it picked the `.DW` sets).
 - `apply_weapon` (110-147) combines `sets[state.MainWeapon.current]` and
   `sets[state.SubWeapon.current]` unless `CombatMode` is On. With
   `SubWeapon = Malevolence` (a dagger) the `.DW` set is chosen and the dagger is
@@ -355,7 +360,7 @@ T = `_master/sets/rdm_sets.lua`, K = `_master/Kaories/sets/rdm_sets.lua`
 |-----|--------------|---|---|
 | `sets['Naegling']`, `['Daybreak']`, `['Colada']` (K adds `['Maxentius']`) | `apply_weapon` via `MainWeapon` | 45-47 | 43-46 |
 | `sets['Ammurapi']`, `['Genmei']`, `['Malevolence']` | `apply_weapon` via `SubWeapon` | 50-52 | 49-51 |
-| `sets.shields` (list) | `has_shield_equipped` | 55 | 54 |
+| `sets.shields` (list) | `has_shield_equipped`, only for a name the game's item list does not know | 55 | 54 |
 | `sets.idle.DT`, `sets.idle.Refresh` | `select_idle_base`, Mote | 73, 96 | 72, 95 |
 | `sets.idle.PDT`, `sets.engaged.PDT` | HybridMode fallback | **absent** | **absent** |
 | `sets.idle.Town`, `sets.Adoulin`, `sets.MoveSpeed` | `BaseSetBuilder` | 522, 517, 512 | 612, 603, 598 |
@@ -455,7 +460,7 @@ T = `_master/sets/rdm_sets.lua`, K = `_master/Kaories/sets/rdm_sets.lua`
   HUD shown or not: both cycle paths end in Mote's `handle_update`, whose
   `handle_equipping_gear` is wrapped by the shared `combat_mode.lua` hook
   ([core lifecycle](../systems/core-lifecycle.md#cyclehandler-and-state-display)).
-- `SubWeapon` decides single vs dual wield; the subjob is not considered.
+- The off-hand item decides single vs dual wield (item list, see above); the subjob is not considered.
 - Command names `convert`, `chainspell`, `saboteur`, `composure` also exist in
   `Tetsouo/config/alt/RDM_ALT_COMMANDS.lua`. RDM's own commands answer first, so
   they run on this character; the alt's version is reachable only as
@@ -473,7 +478,8 @@ T = `_master/sets/rdm_sets.lua`, K = `_master/Kaories/sets/rdm_sets.lua`
 - New midcast behaviour: add a handler to `SKILL_HANDLERS` (316-322) and make
   sure `sets.midcast['<Skill>']` exists (the manager returns false without it).
 - New weapon: add the value to `MainWeapon`/`SubWeapon` in `RDM_STATES.lua` and
-  `sets['<Name>'] = {main = ...}` in the sets; shields go in `sets.shields`.
+  `sets['<Name>'] = {main = ...}` in the sets; a shield needs nothing more (the
+  game's item list says it is one).
 - New command: add a branch before the catch-all at 351. A name that is also an
   alt config key then runs here; the alt's version stays reachable as
   `//gs c alt <name>`.
