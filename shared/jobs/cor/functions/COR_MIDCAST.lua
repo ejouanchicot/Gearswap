@@ -59,9 +59,14 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     end
 
     -- Ranged attacks are matched on action_type (GearSwap gives /ra the type
-    -- 'Misc' and no skill) and want the RA set, sets.midcast.RA.
+    -- 'Misc' and no skill): sets.midcast.RA[RangedMode] (Acc, HighAcc,
+    -- Critical, STP...), else sets.midcast.RA; under Triple Shot,
+    -- sets.midcast.RA.TripleShot goes on top.
     if spell.action_type == 'Ranged Attack' then
-        MidcastManager.select_set({skill = 'RA', spell = spell})
+        MidcastManager.select_set({skill = 'RA', spell = spell, mode_state = state.RangedMode})
+        if buffactive['Triple Shot'] and sets.midcast.RA and sets.midcast.RA.TripleShot then
+            equip(sets.midcast.RA.TripleShot)
+        end
         return
     end
 

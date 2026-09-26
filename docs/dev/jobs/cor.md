@@ -253,10 +253,15 @@ timestamp}` per member, skipping the player. On either dual-box character,
 `job_post_midcast` (`COR_MIDCAST.lua:54-83`) loads the manager through
 `MidcastDeps.load()` (55), notifies `MidcastWatchdog` (57-59), then:
 
-- `spell.action_type == 'Ranged Attack'` -> `select_set({skill = 'RA'})`
-  (63-66). `sets.midcast.RA` is a flat set, so MidcastManager equips it as
-  its base, the same set Mote's default already chose through `action_type`
-  (`Mote-Include.lua:721-751`); `//gs c debugmidcast` now shows `/ra`.
+- `spell.action_type == 'Ranged Attack'` -> `select_set({skill = 'RA', mode_state =
+  state.RangedMode})` (2026-09-25): `sets.midcast.RA[RangedMode]` (Acc, HighAcc, Critical,
+  STP... whatever the character's sets hold; Mote's RangedMode has no value unless the
+  character's COR_STATES gives some), else `sets.midcast.RA`; under Triple Shot,
+  `sets.midcast.RA.TripleShot` on top when defined. Precast: `apply_cor_precast` puts
+  `Flurry1` / `Flurry2` in `classes.CustomRangedGroups` while that Flurry is up
+  (`shared/utils/precast/flurry_tracker.lua`: level from the spell packet, 845 / 846, on
+  this character; either "Flurry" buff, 265 or 581, means up), so Mote's
+  `get_ranged_set` picks `sets.precast.RA.Flurry1 / Flurry2` when they exist.
 - Enhancing Magic with `get_enhancing_target` and the enhancing family database
   (70-78).
 - Healing, Elemental and Enfeebling Magic by skill name (`PASSTHROUGH_SKILLS`,
