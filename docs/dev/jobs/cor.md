@@ -381,7 +381,7 @@ identical), L = `Tetsouo/sets/cor/cor_sets.lua` (weapon sets from
 | `sets.engaged.DW`, `.DW.PDT` | nothing | - | 132, 138 |
 | `sets.precast.CorsairRoll` + `["Caster's Roll"]`, `["Courser's Roll"]`, `["Blitzer's Roll"]`, `["Tactician's Roll"]`, `["Allies' Roll"]` | Mote by type/name, `COR_PRECAST.lua:78-83` | 163, 193-209 | 156, 177-193 |
 | `sets.precast.CorsairShot` | Mote by type | 215 | 200 |
-| `sets.precast.JA['Snake Eye'/'Fold'/'Wild Card'/'Random Deal']` | Mote default | 230-245 | 214-223 |
+| `sets.precast.JA['Snake Eye'/'Fold'/'Wild Card'/'Random Deal']` | Mote default; Fold's pieces are held back by `hold_fold_gear` (`COR_PRECAST.lua`) unless two Busts are up | 230-245 | 214-223 |
 | `sets.precast.RA`, `sets.midcast.RA` | Mote by `action_type` | 250, 362 | 226, 284 |
 | `sets.precast.WS`, `WS['Savage Blade']` | Mote default | 282 (after `= {}` at 279), 319 | 246, 262 |
 | `sets.midcast['Enhancing Magic']`, `['Healing Magic']`, `['Elemental Magic']`, `['Enfeebling Magic']` | `COR_MIDCAST.lua:71,81` | **absent** | **absent** |
