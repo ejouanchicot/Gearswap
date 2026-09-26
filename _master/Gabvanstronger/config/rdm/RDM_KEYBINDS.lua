@@ -9,15 +9,11 @@
 ---
 --- Converted from BindManager:
 ---   * 'gs c cycle <State>'  -> cyclestate <State> (the HUD shows the value)
----   * 'gs c <command>'      -> <command>
----   * 'input /ma ...'       -> /ma ... (sent with input)
----   * the 'input /recast "X";' sent first is dropped: a spell or ability
----     on recast is already reported by CooldownChecker
----   * 'sneak stpc' / 'invi stpc' were Shortcuts shorthands: the real
----     spells, Sneak and Invisible, are sent here
+---   * every other command is sent exactly as BindManager sent it
+---     (raw = true: '/recast' first, his 'sneak stpc' / 'invi stpc' aliases)
 --- F9-F12 keys (f9, ^f11, !f11, ^!f11, ^f12) take over Mote-Include's own
---- binds of those keys, as BindManager did.
---- AutoMedicine is not here: it comes from config/COMMON_KEYBINDS.lua.
+--- binds of those keys, as BindManager did. Storm / caststorm are bound
+--- whatever the subjob, as he had them.
 ---
 --- @file    config/rdm/RDM_KEYBINDS.lua
 --- @author  Tetsouo
@@ -42,6 +38,7 @@ RDMKeybinds.binds = {
     { key = "f9",    command = "cyclestate EngagedMode",    desc = "Engaged Mode",    state = "EngagedMode" },
     { key = "!f11",  command = "cyclestate EnfeebleMode",   desc = "Enfeebling Mode", state = "EnfeebleMode" },
     { key = "^~f1",  command = "cyclestate SaboteurMode",   desc = "Auto Saboteur",   state = "SaboteurMode" },
+    { key = "^~f8", command = "cyclestate AutoMedicine", desc = "Auto Medicine", state = "AutoMedicine" },
     { key = "^f3", command = "cyclestate EnfeebleTier", desc = "Enfeeble Tier", state = "EnfeebleTier" },
     { key = "^f11",  command = "cyclestate NukeMode",       desc = "Nuke Mode",       state = "NukeMode" },
     -- Spells (Shift+F to cycle)
@@ -50,7 +47,7 @@ RDMKeybinds.binds = {
     { key = "~f5",   command = "cyclestate Barspell",       desc = "Barelement",      state = "Barspell" },
     { key = "~f6",   command = "cyclestate BarAilment",     desc = "Barailment",      state = "BarAilment" },
     { key = "~f7",   command = "cyclestate Spike",          desc = "Spikes",          state = "Spike" },
-    { key = "~f8",   command = "cyclestate Storm",          desc = "Storms",          state = "Storm",    subjob = "SCH" },
+    { key = "~f8",   command = "cyclestate Storm",          desc = "Storms",          state = "Storm" },
     { key = "^!f11", command = "cyclestate NukeTier",       desc = "Nuke Tier",       state = "NukeTier" },
     { key = "^f5",   command = "cyclestate MainLightSpell", desc = "Main Light",      state = "MainLightSpell" },
     { key = "^f6",   command = "cyclestate SubLightSpell",  desc = "Sub Light",       state = "SubLightSpell" },
@@ -62,61 +59,61 @@ RDMKeybinds.binds = {
     ---========================================================================
 
     -- Sneak / Invisible
-    { key = "!z", command = [[/ma "Sneak" <stpc>]],     desc = "Sneak" },
-    { key = "!x", command = [[/ma "Invisible" <stpc>]], desc = "Invisible" },
+    { key = "!z", command = "sneak stpc", raw = true,     desc = "Sneak" },
+    { key = "!x", command = "invi stpc", raw = true, desc = "Invisible" },
 
     -- Elemental nukes (state spell + NukeTier)
-    { key = "~numpad7", command = "castlight",    desc = "Cast Main Light" },
-    { key = "~numpad8", command = "castdark",     desc = "Cast Main Dark" },
-    { key = "~numpad4", command = "castsublight", desc = "Cast Sub Light" },
-    { key = "~numpad5", command = "castsubdark",  desc = "Cast Sub Dark" },
+    { key = "~numpad7", command = "gs c castlight", raw = true,    desc = "Cast Main Light" },
+    { key = "~numpad8", command = "gs c castdark", raw = true,     desc = "Cast Main Dark" },
+    { key = "~numpad4", command = "gs c castsublight", raw = true, desc = "Cast Sub Light" },
+    { key = "~numpad5", command = "gs c castsubdark", raw = true,  desc = "Cast Sub Dark" },
 
     -- Ctrl / Alt + F1-F8
-    { key = "^f1", command = [[/ja "Saboteur" <me>]],    desc = "Saboteur" },
-    { key = "^f2", command = [[/ja "Spontaneity" <me>]], desc = "Spontaneity" },
-    { key = "!f1", command = [[/ja "Composure" <me>]],   desc = "Composure" },
-    { key = "!f2", command = [[/ma "Protect V" <stpc>]], desc = "Protect V" },
-    { key = "!f3", command = [[/ma "Shell V" <stpc>]],   desc = "Shell V" },
-    { key = "!f4", command = [[/ma "Regen II" <stpc>]],  desc = "Regen II" },
-    { key = "!f5", command = "castbar",                  desc = "Cast Barelement" },
-    { key = "!f6", command = "castbarailment",           desc = "Cast Barailment" },
-    { key = "!f7", command = "castspike",                desc = "Cast Spikes" },
-    { key = "!f8", command = "caststorm",                desc = "Cast Storm",  subjob = "SCH" },
+    { key = "^f1", command = "input /recast \"Saboteur\"; input /ja \"Saboteur\" <me>", raw = true,    desc = "Saboteur" },
+    { key = "^f2", command = "input /recast \"Spontaneity\"; input /ja \"Spontaneity\" <me>", raw = true, desc = "Spontaneity" },
+    { key = "!f1", command = "input /recast \"Composure\"; input /ja \"Composure\" <me>", raw = true,   desc = "Composure" },
+    { key = "!f2", command = "input /recast \"Protect V\"; input /ma \"Protect V\" <stpc>", raw = true, desc = "Protect V" },
+    { key = "!f3", command = "input /recast \"Shell V\"; input /ma \"Shell V\" <stpc>", raw = true,   desc = "Shell V" },
+    { key = "!f4", command = "input /recast \"Regen II\"; input /ma \"Regen II\" <stpc>", raw = true,  desc = "Regen II" },
+    { key = "!f5", command = "gs c castbar", raw = true,                  desc = "Cast Barelement" },
+    { key = "!f6", command = "gs c castbarailment", raw = true,           desc = "Cast Barailment" },
+    { key = "!f7", command = "gs c castspike", raw = true,                desc = "Cast Spikes" },
+    { key = "!f8", command = "gs c caststorm", raw = true,                desc = "Cast Storm" },
 
     -- Alt + number
-    { key = "!1", command = [[/ma "Haste II" <stpc>]],    desc = "Haste II" },
-    { key = "!2", command = [[/ma "Refresh III" <stpc>]], desc = "Refresh III" },
-    { key = "!3", command = [[/ma "Phalanx II" <stpc>]],  desc = "Phalanx II" },
-    { key = "!4", command = [[/ma "Stoneskin" <me>]],     desc = "Stoneskin" },
-    { key = "!5", command = [[/ma "Blink" <me>]],         desc = "Blink" },
-    { key = "!6", command = [[/ma "Aquaveil" <me>]],      desc = "Aquaveil" },
+    { key = "!1", command = "input /recast \"Haste II\"; input /ma \"Haste II\" <stpc>", raw = true,    desc = "Haste II" },
+    { key = "!2", command = "input /recast \"Refresh III\"; input /ma \"Refresh III\" <stpc>", raw = true, desc = "Refresh III" },
+    { key = "!3", command = "input /recast \"Phalanx II\"; input /ma \"Phalanx II\" <stpc>", raw = true,  desc = "Phalanx II" },
+    { key = "!4", command = "input /ma \"Stoneskin\" <me>", raw = true,     desc = "Stoneskin" },
+    { key = "!5", command = "input /ma \"Blink\" <me>", raw = true,         desc = "Blink" },
+    { key = "!6", command = "input /ma \"Aquaveil\" <me>", raw = true,      desc = "Aquaveil" },
 
     -- Windows + number
-    { key = "@1", command = "castgain",                   desc = "Cast Gain" },
-    { key = "@2", command = "castenspell",                desc = "Cast Enspell" },
-    { key = "@3", command = [[/ma "Temper II" <me>]],     desc = "Temper II" },
-    { key = "@6", command = [[/ma "Flurry II" <stpc>]],   desc = "Flurry II" },
+    { key = "@1", command = "gs c castgain", raw = true,                   desc = "Cast Gain" },
+    { key = "@2", command = "gs c castenspell", raw = true,                desc = "Cast Enspell" },
+    { key = "@3", command = "input /ma \"Temper II\" <me>", raw = true,     desc = "Temper II" },
+    { key = "@6", command = "input /recast \"Flurry II\"; input /ma \"Flurry II\" <stpc>", raw = true,   desc = "Flurry II" },
 
     -- Windows + letters (enfeebles)
-    { key = "@q",  command = [[/ma "Sleep" <stnpc>]],        desc = "Sleep" },
-    { key = "^@q", command = [[/ma "Sleepga" <stnpc>]],      desc = "Sleepga" },
-    { key = "@w",  command = [[/ma "Sleep II" <stnpc>]],     desc = "Sleep II" },
-    { key = "^@w", command = [[/ma "Sleepga II" <stnpc>]],   desc = "Sleepga II" },
-    { key = "@e",  command = [[/ma "Slow II" <stnpc>]],      desc = "Slow II" },
-    { key = "@r",  command = [[/ma "Paralyze II" <stnpc>]],  desc = "Paralyze II" },
-    { key = "@t",  command = [[/ma "Blind II" <stnpc>]],     desc = "Blind II" },
-    { key = "@a",  command = [[/ma "Addle II" <stnpc>]],     desc = "Addle II" },
-    { key = "@s",  command = [[/ma "Silence" <stnpc>]],      desc = "Silence" },
-    { key = "@d",  command = [[/ma "Distract III" <stnpc>]], desc = "Distract III" },
-    { key = "^@d", command = [[/ma "Dia III" <stnpc>]],      desc = "Dia III" },
-    { key = "@f",  command = [[/ma "Frazzle III" <stnpc>]],  desc = "Frazzle III" },
-    { key = "@z",  command = [[/ma "Gravity II" <stnpc>]],   desc = "Gravity II" },
-    { key = "^@z", command = [[/ma "Gravity" <stnpc>]],      desc = "Gravity" },
-    { key = "@x",  command = [[/ma "Dispel" <stnpc>]],       desc = "Dispel" },
-    { key = "^@x", command = [[/ma "Dispelga" <stnpc>]],     desc = "Dispelga" },
-    { key = "@c",  command = [[/ma "Inundation" <stnpc>]],   desc = "Inundation" },
-    { key = "@v",  command = [[/ma "Break" <stnpc>]],        desc = "Break" },
-    { key = "@b",  command = [[/ma "Bind" <stnpc>]],         desc = "Bind" },
+    { key = "@q",  command = "input /recast \"Sleep\"; input /ma \"Sleep\" <stnpc>", raw = true,        desc = "Sleep" },
+    { key = "^@q", command = "input /recast \"Sleepga\"; input /ma \"Sleepga\" <stnpc>", raw = true,      desc = "Sleepga" },
+    { key = "@w",  command = "input /recast \"Sleep II\"; input /ma \"Sleep II\" <stnpc>", raw = true,     desc = "Sleep II" },
+    { key = "^@w", command = "input /recast \"Sleepga II\"; input /ma \"Sleepga II\" <stnpc>", raw = true,   desc = "Sleepga II" },
+    { key = "@e",  command = "input /recast \"Slow II\"; input /ma \"Slow II\" <stnpc>", raw = true,      desc = "Slow II" },
+    { key = "@r",  command = "input /recast \"Paralyze II\"; input /ma \"Paralyze II\" <stnpc>", raw = true,  desc = "Paralyze II" },
+    { key = "@t",  command = "input /recast \"Blind II\"; input /ma \"Blind II\" <stnpc>", raw = true,     desc = "Blind II" },
+    { key = "@a",  command = "input /recast \"Addle II\"; input /ma \"Addle II\" <stnpc>", raw = true,     desc = "Addle II" },
+    { key = "@s",  command = "input /recast \"Silence\"; input /ma \"Silence\" <stnpc>", raw = true,      desc = "Silence" },
+    { key = "@d",  command = "input /recast \"Distract III\"; input /ma \"Distract III\" <stnpc>", raw = true, desc = "Distract III" },
+    { key = "^@d", command = "input /recast \"Dia III\"; input /ma \"Dia III\" <stnpc>", raw = true,      desc = "Dia III" },
+    { key = "@f",  command = "input /recast \"Frazzle III\"; input /ma \"Frazzle III\" <stnpc>", raw = true,  desc = "Frazzle III" },
+    { key = "@z",  command = "input /recast \"Gravity II\"; input /ma \"Gravity II\" <stnpc>", raw = true,   desc = "Gravity II" },
+    { key = "^@z", command = "input /recast \"Gravity\"; input /ma \"Gravity\" <stnpc>", raw = true,      desc = "Gravity" },
+    { key = "@x",  command = "input /recast \"Dispel\"; input /ma \"Dispel\" <stnpc>", raw = true,       desc = "Dispel" },
+    { key = "^@x", command = "input /recast \"Dispelga\"; input /ma \"Dispelga\" <stnpc>", raw = true,     desc = "Dispelga" },
+    { key = "@c",  command = "input /recast \"Inundation\"; input /ma \"Inundation\" <stnpc>", raw = true,   desc = "Inundation" },
+    { key = "@v",  command = "input /recast \"Break\"; input /ma \"Break\" <stnpc>", raw = true,        desc = "Break" },
+    { key = "@b",  command = "input /recast \"Bind\"; input /ma \"Bind\" <stnpc>", raw = true,         desc = "Bind" },
 }
 
 return require('shared/utils/keybinds/keybind_manager').create('RDM', RDMKeybinds)

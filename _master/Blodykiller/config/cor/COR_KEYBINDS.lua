@@ -37,7 +37,7 @@ CORKeybinds.binds = {
     { key = "!f9", command = "cyclestate RangedMode", desc = "Ranged Mode", state = "RangedMode" },
 
     -- Blody's own key (BindManager jobs.main_jobs.COR: "boltersroll")
-    { key = "!`", command = [[/ja "Bolter's Roll" <me>]], desc = "Bolter's Roll" },
+    { key = "!`", command = "boltersroll", raw = true, desc = "Bolter's Roll" },
 }
 
 return require('shared/utils/keybinds/keybind_manager').create('COR', CORKeybinds)

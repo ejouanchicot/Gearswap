@@ -207,25 +207,30 @@ d'armes.
 
 ## Vos touches BindManager (Gab et Blody)
 
-Toutes les touches de `BindManager/data/binds.lua` et `alt-binds.lua` qui ne dépendent pas
-d'un job principal sont dans `config/COMMON_KEYBINDS.lua` de chacun (Gab 143, Blody 106), en
-envoyant **exactement** la même commande qu'avant (vos alias `blody`, `gab`, `sa`, `they`,
-`sneak`, `invi`, `curaga3`… doivent rester dans vos alias Windower / Shortcuts). Les touches
-propres à un job (RDM de Gab, BRD et COR de Blody) sont dans les fichiers de ces jobs ; celles
-des jobs pas encore convertis viendront avec eux.
+Vérifié contre le code de `BindManager.lua` (`build_desired_binds`, `merge_alt_bind_layers`), pas
+seulement contre vos fichiers de données.
 
-- **startup** : toutes, sauf `^scrolllock` (`bindmanager apply`, inutile sans BindManager).
-- **login.all** : `^``/`^~``/`@`` choisissent maintenant l'arme principale / la sub / l'arme de
-  tir de nos jobs (seulement sur un job qui a ce choix). F9 à F12 : Mote pose déjà les mêmes
-  commandes. `~f9` : Combat Mode. `numpad0` (`gs c info`) : pas repris, le HUD montre les modes.
-- **login.characters** (Gab) : Alt+Q/W/E (Panacea, Remedy, Holy Water) ; Alt+Z/X (Silent Oil,
-  Prism Powder) sauf sur un job qui utilise ces touches (RDM : Sneak / Invisible, ta réponse).
-- **sub_jobs** : toutes, selon ton sub.
-- **alt-binds** : selon le job, le sub et le type d'arme de l'autre (Blody en BRD avec une Club :
-  True Strike, etc.). Thyrsa et Sephiroph : pas repris (ta réponse).
+**Même priorité** : startup < login.all < login.characters < job principal < sub < alt-binds.
+Dans une section d'alt : `all` < `all.<sub de l'alt>` < `<job de l'alt>.default` <
+`<job>.<sub de l'alt>` < `<job>.<type d'arme de l'alt>`. Les touches d'alt `all` ne sont posées
+que si un alt est connecté, comme chez toi.
 
-**Une différence** : chez BindManager, une touche de sub passait avant une touche du job
-principal. Chez nous, **le fichier du job passe en premier**. Exemple : RDM en /WHM, Alt+Z lance
-Sneak par ton RDM au lieu de ton alias `sneak stpc` (même sort).
+**Mêmes commandes** : chaque touche envoie exactement la commande de BindManager (`/recast` avant
+le sort, `[Fake #n]` des fausses chansons, tes alias `blody`, `gab`, `sa`, `they`, `sneak stpc`,
+`invi stpc`, `boltersroll`, `curaga3`…). Comparaison touche par touche : RDM 45 identiques,
+BRD 28, COR 1, et toutes les touches de sub et d'alt.
 
-**À faire de votre côté** : désactiver BindManager, sinon les deux posent les mêmes touches.
+**Seules différences, voulues** :
+- `gs c cycle <Mode>` devient `gs c cyclestate <Mode>` : même défilement, mais notre HUD se met à
+  jour (20 touches du RDM).
+- `^``, `^~``, `@`` (WeaponSet, SubSet, RangedSet) font défiler nos choix d'arme principale, de
+  sub et d'arme de tir : ces modes n'existent pas sous leur ancien nom chez nous.
+- F9 à F12 : c'est Mote qui pose les mêmes commandes. `~f9` WeaponLock = notre Combat Mode.
+- Pas repris : `numpad0` (`gs c info`, le HUD montre les modes), `^scrolllock`
+  (`bindmanager apply`), Thyrsa et Sephiroph (ta réponse).
+- Nos touches en plus (numpad du modèle sur BRD et COR, Enfeeble Tier sur Ctrl+F3 en RDM) : aucune
+  n'utilise une de tes touches.
+- Les touches de démarrage ne sont posées qu'une fois GearSwap chargé (pas à l'écran titre).
+
+**À faire de votre côté** : désactiver BindManager (sinon les deux posent les mêmes touches) et
+garder vos alias Windower / Shortcuts.

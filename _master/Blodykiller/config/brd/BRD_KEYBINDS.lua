@@ -3,8 +3,8 @@
 ---============================================================================
 --- Our BRD keys (numpad, same as the template) plus the ones Blody had in
 --- BindManager (jobs.main_jobs.BRD): abilities on Alt+F1-F3, songs on Alt+1-6,
---- dummy songs and debuffs on Win+keys. The "/recast" they sent first is not
---- kept: a song on recast is already reported by CooldownChecker.
+--- dummy songs and debuffs on Win+keys. Sent exactly as BindManager sent them
+--- (raw = true: "/recast" first, the "[Fake #n]" echo of the dummy songs).
 ---
 --- @file    config/brd/BRD_KEYBINDS.lua
 --- @author  Tetsouo
@@ -61,41 +61,41 @@ BRDKeybinds.binds = {
     ---========================================================================
     --- BLODY'S OWN KEYS (from BindManager)
     ---========================================================================
-    { key = "!f1", command = [[/ja "Nightingale" <me>]], desc = "Nightingale" },
-    { key = "!f2", command = [[/ja "Troubadour" <me>]], desc = "Troubadour" },
-    { key = "!f3", command = [[/ja "Marcato" <me>]], desc = "Marcato" },
-    { key = "!`", command = [[/ma "Chocobo Mazurka" <me>]], desc = "Chocobo Mazurka" },
+    { key = "!f1", command = "input /ja \"Nightingale\" <me>", raw = true, desc = "Nightingale" },
+    { key = "!f2", command = "input /ja \"Troubadour\" <me>", raw = true, desc = "Troubadour" },
+    { key = "!f3", command = "input /ja \"Marcato\" <me>", raw = true, desc = "Marcato" },
+    { key = "!`", command = "input /ma \"Chocobo Mazurka\" <me>", raw = true, desc = "Chocobo Mazurka" },
 
-    { key = "!1", command = [[/ma "Honor March" <stpc>]], desc = "Honor March" },
-    { key = "!2", command = [[/ma "Victory March" <stpc>]], desc = "Victory March" },
-    { key = "!3", command = [[/ma "Valor Minuet V" <stpc>]], desc = "Valor Minuet V" },
-    { key = "!4", command = [[/ma "Valor Minuet IV" <stpc>]], desc = "Valor Minuet IV" },
-    { key = "!5", command = [[/ma "Valor Minuet III" <stpc>]], desc = "Valor Minuet III" },
-    { key = "!6", command = [[/ma "Valor Minuet II" <stpc>]], desc = "Valor Minuet II" },
+    { key = "!1", command = "input /recast \"Honor March\"; input /ma \"Honor March\" <stpc>", raw = true, desc = "Honor March" },
+    { key = "!2", command = "input /recast \"Victory March\"; input /ma \"Victory March\" <stpc>", raw = true, desc = "Victory March" },
+    { key = "!3", command = "input /recast \"Valor Minuet V\"; input /ma \"Valor Minuet V\" <stpc>", raw = true, desc = "Valor Minuet V" },
+    { key = "!4", command = "input /recast \"Valor Minuet IV\"; input /ma \"Valor Minuet IV\" <stpc>", raw = true, desc = "Valor Minuet IV" },
+    { key = "!5", command = "input /recast \"Valor Minuet III\"; input /ma \"Valor Minuet III\" <stpc>", raw = true, desc = "Valor Minuet III" },
+    { key = "!6", command = "input /recast \"Valor Minuet II\"; input /ma \"Valor Minuet II\" <stpc>", raw = true, desc = "Valor Minuet II" },
 
     -- Dummy songs
-    { key = "@1", command = [[/ma "Fowl Aubade" <stpc>]], desc = "Dummy: Fowl Aubade" },
-    { key = "@2", command = [[/ma "Army's Paeon" <stpc>]], desc = "Dummy: Army's Paeon" },
-    { key = "@3", command = [[/ma "Knight's Minne" <stpc>]], desc = "Dummy: Knight's Minne" },
-    { key = "@4", command = [[/ma "Enchanting Etude" <stpc>]], desc = "Dummy: Enchanting Etude" },
-    { key = "@5", command = [[/ma "Shining Fantasia" <stpc>]], desc = "Dummy: Shining Fantasia" },
-    { key = "@6", command = [[/ma "Blade Madrigal" <stpc>]], desc = "Blade Madrigal" },
-    { key = "@7", command = [[/ma "Sword Madrigal" <stpc>]], desc = "Sword Madrigal" },
+    { key = "@1", command = "input /echo [Fake #1]; input /recast \"Fowl Aubade\"; input /ma \"Fowl Aubade\" <stpc>", raw = true, desc = "Dummy: Fowl Aubade" },
+    { key = "@2", command = "input /echo [Fake #2]; input /recast \"Army's Paeon\"; input /ma \"Army's Paeon\" <stpc>", raw = true, desc = "Dummy: Army's Paeon" },
+    { key = "@3", command = "input /echo [Fake #3]; input /recast \"Knight's Minne\"; input /ma \"Knight's Minne\" <stpc>", raw = true, desc = "Dummy: Knight's Minne" },
+    { key = "@4", command = "input /echo [Fake #4]; input /recast \"Enchanting Etude\"; input /ma \"Enchanting Etude\" <stpc>", raw = true, desc = "Dummy: Enchanting Etude" },
+    { key = "@5", command = "input /echo [Fake #5]; input /recast \"Shining Fantasia\"; input /ma \"Shining Fantasia\" <stpc>", raw = true, desc = "Dummy: Shining Fantasia" },
+    { key = "@6", command = "input /recast \"Blade Madrigal\"; input /ma \"Blade Madrigal\" <stpc>", raw = true, desc = "Blade Madrigal" },
+    { key = "@7", command = "input /recast \"Sword Madrigal\"; input /ma \"Sword Madrigal\" <stpc>", raw = true, desc = "Sword Madrigal" },
 
     -- Debuffs
-    { key = "@q", command = [[/ma "Horde Lullaby" <stnpc>]], desc = "Horde Lullaby" },
-    { key = "@w", command = [[/ma "Horde Lullaby II" <stnpc>]], desc = "Horde Lullaby II" },
-    { key = "@e", command = [[/ma "Carnage Elegy" <stnpc>]], desc = "Carnage Elegy" },
-    { key = "@r", command = [[/ma "Foe Lullaby" <stnpc>]], desc = "Foe Lullaby" },
-    { key = "@t", command = [[/ma "Foe Lullaby II" <stnpc>]], desc = "Foe Lullaby II" },
-    { key = "@a", command = [[/ma "Pining Nocturne" <stnpc>]], desc = "Pining Nocturne" },
-    { key = "@f", command = [[/ma "Foe Requiem VII" <stnpc>]], desc = "Foe Requiem VII" },
-    { key = "@x", command = [[/ma "Magic Finale" <stnpc>]], desc = "Magic Finale" },
+    { key = "@q", command = "input /recast \"Horde Lullaby\"; input /ma \"Horde Lullaby\" <stnpc>", raw = true, desc = "Horde Lullaby" },
+    { key = "@w", command = "input /recast \"Horde Lullaby II\"; input /ma \"Horde Lullaby II\" <stnpc>", raw = true, desc = "Horde Lullaby II" },
+    { key = "@e", command = "input /recast \"Carnage Elegy\"; input /ma \"Carnage Elegy\" <stnpc>", raw = true, desc = "Carnage Elegy" },
+    { key = "@r", command = "input /recast \"Foe Lullaby\"; input /ma \"Foe Lullaby\" <stnpc>", raw = true, desc = "Foe Lullaby" },
+    { key = "@t", command = "input /recast \"Foe Lullaby II\"; input /ma \"Foe Lullaby II\" <stnpc>", raw = true, desc = "Foe Lullaby II" },
+    { key = "@a", command = "input /recast \"Pining Nocturne\"; input /ma \"Pining Nocturne\" <stnpc>", raw = true, desc = "Pining Nocturne" },
+    { key = "@f", command = "input /recast \"Foe Requiem VII\"; input /ma \"Foe Requiem VII\" <stnpc>", raw = true, desc = "Foe Requiem VII" },
+    { key = "@x", command = "input /recast \"Magic Finale\"; input /ma \"Magic Finale\" <stnpc>", raw = true, desc = "Magic Finale" },
 
     -- Ballads
-    { key = "@c", command = [[/ma "Mage's Ballad III" <stpc>]], desc = "Mage's Ballad III" },
-    { key = "@v", command = [[/ma "Mage's Ballad II" <stpc>]], desc = "Mage's Ballad II" },
-    { key = "@b", command = [[/ma "Mage's Ballad" <stpc>]], desc = "Mage's Ballad" },
+    { key = "@c", command = "input /recast \"Mage's Ballad III\"; input /ma \"Mage's Ballad III\" <stpc>", raw = true, desc = "Mage's Ballad III" },
+    { key = "@v", command = "input /recast \"Mage's Ballad II\"; input /ma \"Mage's Ballad II\" <stpc>", raw = true, desc = "Mage's Ballad II" },
+    { key = "@b", command = "input /recast \"Mage's Ballad\"; input /ma \"Mage's Ballad\" <stpc>", raw = true, desc = "Mage's Ballad" },
 }
 
 return require('shared/utils/keybinds/keybind_manager').create('BRD', BRDKeybinds)
