@@ -15,7 +15,7 @@ What RDM adds on top of the shared pipeline:
   `shared/data/spells/NUKE_TIERS.lua` (Fire V -> IV -> ... since 2026-09-26),
   go through the shared `TierRefiner` instead of `CooldownChecker`, so a spell
   on recast or short on MP is replaced by the next learned, castable lower tier.
-  `state.EnfeebleTier` (On by default; Ctrl+Numpad9, Gab Ctrl+F9) turns the
+  `state.EnfeebleTier` (On by default; Ctrl+Numpad9, Gab Ctrl+F3) turns the
   enfeeble part off: a tiered enfeeble on recast is then cancelled with its
   recast shown, so the player keeps the tier (Gravity II a second from ready
   must not become Gravity). Nukes drop either way; enhancing never drops a
