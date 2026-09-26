@@ -60,16 +60,7 @@ function SetBuilder.select_engaged_base(base_set)
     if state.EngagedMode and state.EngagedMode.current then
         local mode = state.EngagedMode.current
 
-        -- Detect shield/single wield vs dual wield
-        -- Priority: SubWeapon state > player.equipment (handles gear changes correctly)
-        local sub_weapon = nil
-        if state.SubWeapon and state.SubWeapon.current and state.SubWeapon.current ~= 'None' then
-            sub_weapon = state.SubWeapon.current
-        else
-            sub_weapon = player.equipment and player.equipment.sub or nil
-        end
-
-        local has_shield = SetBuilder.has_shield_equipped(sub_weapon)
+        local has_shield = SetBuilder.has_shield_equipped(SetBuilder.offhand_item())
 
         if has_shield then
             -- Shield OR single wield >> use normal sets
@@ -151,25 +142,39 @@ end
 ---   SHIELD DETECTION (WAR Fencer Model)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+---   Item name of the off hand the engaged set is for. While Combat Mode
+---   locks the weapons, the SubWeapon state can change without the gear
+---   following it: the worn item is the truth then. Otherwise the state's
+---   value, through the set it names (sets['Genmei'] = {sub = 'Genmei Shield'}).
+---   @return string|nil
+function SetBuilder.offhand_item()
+    local worn = player and player.equipment and player.equipment.sub or nil
+    local value = state.SubWeapon and state.SubWeapon.current
+    if (state.CombatMode and state.CombatMode.current == 'On') or not value or value == 'None' then
+        return worn
+    end
+    local set = WeaponResolver.set_for('sub', value)
+    local item = type(set) == 'table' and set.sub or nil
+    if type(item) == 'table' then item = item.name end
+    return type(item) == 'string' and item or value
+end
+
 ---   Detect if sub weapon is a shield OR single wield
----   Uses sets.shields table to determine if player is using:
----   - Shield (1 weapon + shield) >> use normal sets
----   - Single wield (1 weapon + empty) >> use normal sets
----   - Dual wield (2 weapons) >> use .DW sets
----   @param sub_weapon string Current sub weapon name from state.SubWeapon or player.equipment.sub
+---   - Nothing in the off hand >> normal sets
+---   - A weapon with a combat skill (game item list) >> .DW sets
+---   - A shield or a grip >> normal sets
+---   - A name the game does not know: sets.shields decides (old behaviour)
+---   @param sub_weapon string|nil Off-hand item name
 ---   @return boolean True if shield OR single wield (use normal sets)
 function SetBuilder.has_shield_equipped(sub_weapon)
-    -- Safety checks: nil or empty string = error >> default to single wield
-    if not sub_weapon or sub_weapon == "" then
-        return true  -- Normal sets (fallback single wield)
+    if not sub_weapon or sub_weapon == "" or sub_weapon == "empty" then
+        return true
     end
 
-    -- Empty = single wield (1 weapon) >> normal sets
-    if sub_weapon == "empty" then
-        return true  -- Normal sets (not dual wield)
-    end
+    local dual = WeaponResolver.is_offhand_weapon(sub_weapon)
+    if dual ~= nil then return not dual end
 
-    -- Iterate through shields table
+    -- Unknown name: the character's own shield list
     if sets.shields then
         for _, shield in ipairs(sets.shields) do
             if sub_weapon == shield then
