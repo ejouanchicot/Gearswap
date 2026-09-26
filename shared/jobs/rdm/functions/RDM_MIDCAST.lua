@@ -7,7 +7,8 @@
 ---       Saboteur set while Saboteur is up
 ---     - Enhancing: spell family from the enhancing database + target (self /
 ---       others under Composure); Phalanx under Accession uses the base set
----     - Healing / Dark: spell name, then the skill's base set
+---     - Healing / Dark: spell name, then the skill's base set; a Cure on
+---       oneself gets sets.midcast.CureSelf on top when the sets define it
 ---     - Elemental: NukeMode
 ---   Other skills keep Mote's default set (see midcast_subjob below).
 ---
@@ -239,6 +240,17 @@ local function midcast_healing(spell, debug_enabled)
         skill = 'Healing Magic',
         spell = spell
     })
+
+    -- A Cure (not a Curaga: it heals the others too) on this character:
+    -- sets.midcast.CureSelf on top, when the character's sets have one
+    if sets.midcast.CureSelf and spell.english:find('^Cure') and spell.target
+        and (spell.target.type == 'SELF' or spell.target.name == player.name) then
+        equip(sets.midcast.CureSelf)
+        local ok_t, Trace = pcall(require, 'shared/utils/debug/trace_log')
+        if ok_t and Trace and Trace.enabled and Trace.enabled() then
+            Trace.log('MIDCAST', '%s -> sets.midcast.CureSelf (on self, on top)', spell.english)
+        end
+    end
 
     if debug_enabled then
         MessageFormatter.show_debug('RDM Midcast', 'Healing Magic result: ' .. tostring(success))
