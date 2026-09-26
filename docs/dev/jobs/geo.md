@@ -136,7 +136,10 @@ on cancel (74-76), then the GEO step: `spell.type == 'JobAbility'` and
 `WSPrecastHandler.handle(spell, eventArgs, GEOTPConfig)` (84-86).
 `job_post_precast` (94-99) applies the stored TP gear. Mote's default precast
 picks `sets.precast.FC`, `sets.precast.JA[...]` or `sets.precast.WS`. There is
-no tier refinement of hand-typed spells; only the nuke commands refine.
+nuke commands refine through `geo_spell_refiner`; since 2026-09-26 a nuke, -ra or
+Aspir cast from a macro also drops to the highest learned, ready tier
+(`TierRefiner` with `shared/data/spells/NUKE_TIERS.lua`, in place of
+`CooldownChecker` in `job_precast`).
 
 ### Midcast
 

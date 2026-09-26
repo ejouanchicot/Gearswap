@@ -3,7 +3,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Precast pipeline for Red Mage (the gear itself comes from Mote's sets):
 ---     • PrecastGuard (blocking debuffs)
----     • Cooldown check, or tier downgrade for tiered enfeebles (TierRefiner)
+---     • Cooldown check, or tier downgrade for tiered enfeebles and nukes (TierRefiner)
 ---     • Phalanx / Phalanx II swap depending on the target
 ---     • Auto-Saboteur before the configured enfeebles
 ---     • WSPrecastHandler (weaponskill validation, TP gear)
@@ -28,6 +28,7 @@ local PrecastGuard = nil
 local WSPrecastHandler = nil
 local TierRefiner = nil
 local RDMEnfeebleTiers = nil
+local NukeTiers = nil
 
 local modules_loaded = false
 
@@ -67,18 +68,24 @@ local function ensure_modules_loaded()
     if not tiers_ok then tiers = nil end
     RDMEnfeebleTiers = tiers
 
+    local nuke_ok, nukes = pcall(require, 'shared/data/spells/NUKE_TIERS')
+    NukeTiers = nuke_ok and nukes or nil
+
     modules_loaded = true
 end
 
 --- Resolve the tier mapping for a spell whose family has several tiers on RDM
+--- (enfeebles, elemental nukes)
 --- @param spell table Spell from job_precast
 --- @return table|nil Tier mapping, nil when the family has no tiers
-local function get_enfeeble_tiers(spell)
-    if not (TierRefiner and RDMEnfeebleTiers and spell and spell.name) then
+local function get_spell_tiers(spell)
+    if not (TierRefiner and spell and spell.name) then
         return nil
     end
 
-    return RDMEnfeebleTiers.get(spell.name:match('^(%a+)'))
+    local family = spell.name:match('^(%a+)')
+    return (RDMEnfeebleTiers and RDMEnfeebleTiers.get(family))
+        or (NukeTiers and NukeTiers.get(family))
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -141,14 +148,14 @@ local function stage_cooldown(spell, eventArgs, debug_enabled)
         MessagePrecast.show_debug_step(2, 'Cooldown', 'info', 'Checking cooldown...')
     end
 
-    -- Tiered enfeebles go through the refiner instead of the cooldown check:
+    -- Tiered enfeebles and nukes go through the refiner instead of the cooldown check:
     -- the checker would cancel the cast before any downgrade could happen.
     if spell.action_type == 'Ability' then
         if CooldownChecker then
             CooldownChecker.check_ability_cooldown(spell, eventArgs)
         end
     elseif spell.action_type == 'Magic' then
-        local correspondence = get_enfeeble_tiers(spell)
+        local correspondence = get_spell_tiers(spell)
 
         if correspondence then
             TierRefiner.refine(spell, eventArgs, correspondence)
