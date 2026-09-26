@@ -202,3 +202,30 @@ d'armes.
   `sets.precast.LuzafRing` ligne 214.
 - **Fold** : tes gants Lanun seulement avec deux Bust, comme chez toi (ta réponse). C'est
   maintenant la règle de notre COR pour tout le monde.
+
+---
+
+## Vos touches BindManager (Gab et Blody)
+
+Toutes les touches de `BindManager/data/binds.lua` et `alt-binds.lua` qui ne dépendent pas
+d'un job principal sont dans `config/COMMON_KEYBINDS.lua` de chacun (Gab 143, Blody 106), en
+envoyant **exactement** la même commande qu'avant (vos alias `blody`, `gab`, `sa`, `they`,
+`sneak`, `invi`, `curaga3`… doivent rester dans vos alias Windower / Shortcuts). Les touches
+propres à un job (RDM de Gab, BRD et COR de Blody) sont dans les fichiers de ces jobs ; celles
+des jobs pas encore convertis viendront avec eux.
+
+- **startup** : toutes, sauf `^scrolllock` (`bindmanager apply`, inutile sans BindManager).
+- **login.all** : `^``/`^~``/`@`` choisissent maintenant l'arme principale / la sub / l'arme de
+  tir de nos jobs (seulement sur un job qui a ce choix). F9 à F12 : Mote pose déjà les mêmes
+  commandes. `~f9` : Combat Mode. `numpad0` (`gs c info`) : pas repris, le HUD montre les modes.
+- **login.characters** (Gab) : Alt+Q/W/E (Panacea, Remedy, Holy Water) ; Alt+Z/X (Silent Oil,
+  Prism Powder) sauf sur un job qui utilise ces touches (RDM : Sneak / Invisible, ta réponse).
+- **sub_jobs** : toutes, selon ton sub.
+- **alt-binds** : selon le job, le sub et le type d'arme de l'autre (Blody en BRD avec une Club :
+  True Strike, etc.). Thyrsa et Sephiroph : pas repris (ta réponse).
+
+**Une différence** : chez BindManager, une touche de sub passait avant une touche du job
+principal. Chez nous, **le fichier du job passe en premier**. Exemple : RDM en /WHM, Alt+Z lance
+Sneak par ton RDM au lieu de ton alias `sneak stpc` (même sort).
+
+**À faire de votre côté** : désactiver BindManager, sinon les deux posent les mêmes touches.
