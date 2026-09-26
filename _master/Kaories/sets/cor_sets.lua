@@ -224,10 +224,17 @@ sets.precast.CorsairShot = {
     feet = "Malignance Boots"
 }
 
--- • Quick Draw element variants (optional - enhance specific shots)
---   sets.precast.CorsairShot['Fire Shot'] = set_combine(sets.precast.CorsairShot, {})
---   sets.precast.CorsairShot['Ice Shot'] = set_combine(sets.precast.CorsairShot, {})
---   etc.
+-- • Damage shots: magic attack. Light / Dark Shot keep the accuracy set above.
+local QuickDrawDamage = {
+    head = "Nyame Helm",            -- MAB +30
+    body = "Lanun Frac +4",         -- MAB +64
+    hands = "Nyame Gauntlets",      -- MAB +30
+    legs = "Nyame Flanchard",       -- MAB +30
+    feet = "Chass. Bottes +1",      -- Quick Draw +25
+}
+for _, shot in ipairs({'Fire Shot', 'Ice Shot', 'Wind Shot', 'Earth Shot', 'Thunder Shot', 'Water Shot'}) do
+    sets.precast.CorsairShot[shot] = set_combine(sets.precast.CorsairShot, QuickDrawDamage)
+end
 
 -- • Snake Eye (guarantees lucky number on next roll)
 sets.precast.JA['Snake Eye'] = {
@@ -250,15 +257,14 @@ sets.precast.JA['Random Deal'] = {
 }
 
 -- • Ranged Attack Precast (Snapshot/Rapid Shot)
+-- Only wardrobe pieces: her Ikenga set (Snapshot on every piece) sits in the
+-- sack / storage / locker, out of GearSwap's reach.
 sets.precast.RA = {
     -- Snapshot + Rapid Shot gear
-    head = "Malignance Chapeau",
-    body = "Laksa. frac +4",
-    hands = "Chasseur's Gants +3",
-    legs = {
-        name = "Carmine Cuisses +1",
-        augments = {'MP+80', 'INT+12', 'MND+12'}
-    },
+    head = "Chass. Tricorne +2",    -- Rapid Shot +16
+    body = "Laksa. frac +4",        -- Rapid Shot +20
+    hands = "Lanun Gants +4",       -- Snapshot +13
+    legs = "Lanun Trews +3",        -- Snapshot +10
     feet = "Malignance Boots",
     neck = "Iskur Gorget",
     waist = {
@@ -271,7 +277,7 @@ sets.precast.RA = {
         augments = {'System: 1 ID: 1676 Val: 0', 'Accuracy+15', 'Mag. Acc.+15', 'Crit.hit rate+5'}
     },
     left_ring = "Murky Ring",
-    right_ring = "Chirich Ring +1",
+    right_ring = "Crepuscular Ring",    -- Snapshot +3
     back = "Camulus's Mantle"
 }
 
@@ -355,6 +361,14 @@ sets.precast.WS['Savage Blade'] = {
     }
 }
 
+-- • Last Stand (gun WS, AGI): the generic set with her ranged and WSD pieces
+sets.precast.WS['Last Stand'] = set_combine(sets.precast.WS, {
+    feet = "Lanun Bottes +4",       -- WSD +12
+    waist = "Null Belt",            -- R.Acc +30 (Sailfi Belt is melee)
+    left_ring = "Epaminondas's Ring",   -- WSD +5
+    right_ring = "Crepuscular Ring",    -- R.Acc +10
+})
+
 -- ═══════════════════════════════════════════════════════════════════════════
 -- MIDCAST SETS
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -382,6 +396,24 @@ sets.midcast.RA = {
     left_ring = "Murky Ring",
     right_ring = "Chirich Ring +1",
     back = "Camulus's Mantle"
+}
+
+-- • RangedMode Acc (Ctrl+Numpad7): her highest ranged accuracy pieces
+sets.midcast.RA.Acc = set_combine(sets.midcast.RA, {
+    body = "Laksa. frac +4",        -- R.Acc +67
+    hands = "Chasseur's Gants +3",  -- R.Acc +62
+    legs = "Chas. Culottes +3",     -- R.Acc +63, Store TP +12
+    neck = "Null Loop",             -- R.Acc +50
+    waist = "Null Belt",            -- R.Acc +30
+    left_ear = "Crep. Earring",     -- R.Acc +10 (Dedition is -10)
+    right_ring = "Crepuscular Ring",    -- R.Acc +10
+    back = "Null Shawl",            -- R.Acc +50
+})
+
+-- • Under Triple Shot, on top of the set above
+sets.midcast.RA.TripleShot = {
+    body = "Chasseur's Frac +2",    -- Triple Shot +13%
+    hands = "Lanun Gants +4",       -- Triple Shot: occasional Quad Shot
 }
 
 -- • Note: Phantom Rolls and Quick Draw are JA (instantaneous)

@@ -67,6 +67,10 @@ function CORStates.configure()
     }
     state.RangeWeapon:set('Anarchy')  -- Default to Anarchy (best DPS)
 
+    -- RangedMode: sets.midcast.RA.<mode> (Mote's state)
+    state.RangedMode:options('Normal', 'Acc')
+    state.RangedMode:set('Normal')
+
     -- ========================================
     -- QUICK DRAW ELEMENT SELECTION
     -- ========================================

@@ -22,6 +22,7 @@ CORKeybinds.binds = {
 
     -- Quick Draw Element
     { key = "^numpad3", command = "cyclestate QuickDraw", desc = "Quick Draw Element",  state = "QuickDraw" },
+    { key = "^numpad7", command = "cyclestate RangedMode", desc = "Ranged Mode", state = "RangedMode" },
 
     -- Combat Mode Control
     { key = "^numpad9", command = "cyclestate HybridMode", desc = "Hybrid Mode",  state = "HybridMode" },
