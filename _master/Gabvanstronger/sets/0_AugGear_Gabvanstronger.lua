@@ -2,17 +2,19 @@
 --- AugGear - Gabvanstronger: gear tables used by his sets
 ---============================================================================
 --- Gab's gear lookup tables (AF / RELIC / EMPY, capes, augmented weapons,
---- Chironic, Telchine, Amalric, Kaykaus, Vanya, Stikini / Chirich rings,
---- Ambuscade pieces) for RDM, kept under HIS names and conventions so his
---- sets read the same as in his own files.
+--- Chironic, Herculean, Telchine, Amalric, Kaykaus, Vanya, Pursuer,
+--- Stikini / Chirich rings, CP cape, Ambuscade pieces) for RDM and THF, kept
+--- under HIS names and conventions so his sets read the same as in his own
+--- files.
 ---
 --- Sources (his old setup, values copied as they were):
----   * 0_AugGear_Gabvanstronger.lua - RDM block (AF/RELIC/EMPY, EMPY.Ear,
----     RDMCape), Colada, Grioavolr, CHIR (Refresh, Phalanx, Macc, rings),
----     TELC, STIK, AYAN, JHAK
+---   * 0_AugGear_Gabvanstronger.lua - RDM and THF blocks (AF/RELIC/EMPY,
+---     EMPY.Ear, RDMCape, THFCape), Colada, Grioavolr, CHIR (Refresh,
+---     Phalanx, Macc, rings), HERC (FC, Refresh), TELC, CAPACITY.Cape, STIK,
+---     AYAN, JHAK, MEGH, MUMM
 ---   * 0_AugGear_shared.lua - AMAL.Head.HQ.D, KAYK.Body/Hands.HQ.D,
----     VANY.Cure, VANY.Legs.C, VANY.Feet.D
---- Only the entries his RDM sets use are here.
+---     VANY.Cure, VANY.Legs.C, VANY.Feet.D, PURS.Hands.A
+--- Only the entries his RDM and THF sets use are here.
 ---
 --- Pure data: every table is built here in one pass. His
 --- 0_AugGear_shared_dats.lua re-created every global table (AF = {}, ...)
@@ -20,8 +22,8 @@
 ---
 --- @file    sets/0_AugGear_Gabvanstronger.lua
 --- @author  Tetsouo
---- @version 1.0
---- @date    Created: 2026-09-25
+--- @version 1.1
+--- @date    Created: 2026-09-25 | Updated: 2026-09-26 (THF)
 ---============================================================================
 
 ---============================================================================
@@ -43,6 +45,17 @@ if player and player.main_job == 'RDM' then
     EMPY.Ear = { name="Leth. Earring +1", augments={'System: 1 ID: 1676 Val: 0','Accuracy+13','Mag. Acc.+13','"Dbl.Atk."+4',}}
 end
 
+if player and player.main_job == 'THF' then
+    -- Pillager's / Plunderer's / Skulker's
+    AF.Set   = "Pillager's"             RELIC.Set   = "Plunderer's"             EMPY.Set   = "Skulker's"
+    AF.Head  = "Pill. Bonnet +2"        RELIC.Head  = "Plun. Bonnet +2"         EMPY.Head  = "Skulker's Bonnet +1"
+    AF.Body  = "Pillager's Vest +3"     RELIC.Body  = "Plunderer's Vest +3"     EMPY.Body  = "Skulker's Vest +1"
+    AF.Hands = "Pill. Armlets +2"       RELIC.Hands = "Plun. Armlets +1"        EMPY.Hands = "Skulk. Armlets +1"
+    AF.Legs  = "Pill. Culottes +1"      RELIC.Legs  = "Plun. Culottes +3"       EMPY.Legs  = "Skulk. Culottes +1"
+    AF.Feet  = "Pill. Poulaines +1"     RELIC.Feet  = "Plun. Poulaines +2"      EMPY.Feet  = "Skulk. Poulaines +3"
+    EMPY.Ear = "Skulker's Earring +1"
+end
+
 ---============================================================================
 --- AMBUSCADE CAPES
 ---============================================================================
@@ -57,6 +70,10 @@ RDMCape.WS.MND   = { name="Sucellos's Cape", augments={'MND+20','Accuracy+20 Att
 RDMCape.WS.MNDma = { name="Sucellos's Cape", augments={'MND+20','Mag. Acc+20 /Mag. Dmg.+20','MND+10','Weapon skill damage +10%',}}
 RDMCape.INT      = { name="Sucellos's Cape", augments={'INT+20','Mag. Acc+20 /Mag. Dmg.+20','INT+10','"Mag.Atk.Bns."+10',}}
 RDMCape.Ens      = { name="Ghostfyre Cape", augments={'Enfb.mag. skill +10','Enha.mag. skill +10','Enh. Mag. eff. dur. +20',}}
+
+THFCape = {}
+THFCape.TP = { name="Toutatis's Cape", augments={'DEX+20','Accuracy+20 Attack+20','Accuracy+10','"Store TP"+10','Damage taken -5%',}}
+THFCape.WS = { name="Toutatis's Cape", augments={'DEX+20','Accuracy+20 Attack+20','DEX+10','Weapon skill damage +10%',}}
 
 ---============================================================================
 --- AUGMENTED WEAPONS
@@ -85,6 +102,12 @@ TELC = {Head = {}, Body = {}, Hands = {}, Legs = {}, Feet = {}}
 TELC.Head.Enh = { name="Telchine Cap", augments={'Mag. Evasion+23','"Fast Cast"+5','Enh. Mag. eff. dur. +10',}}
 TELC.Legs.Enh = { name="Telchine Braconi", augments={'"Cure" potency +8%','Enh. Mag. eff. dur. +10',}}
 
+HERC = {Head = {}, Body = {}, Hands = {}, Legs = {}, Feet = {}}
+HERC.Head.Refresh = { name="Herculean Helm", augments={'MND+6','INT+11','"Refresh"+2',}}
+HERC.Hands.Refresh = { name="Herculean Gloves", augments={'Attack+25','Weapon skill damage +2%','"Refresh"+2','Accuracy+3 Attack+3',}}
+HERC.Head.FC = { name="Herculean Helm", augments={'"Mag.Atk.Bns."+14','"Fast Cast"+6','Mag. Acc.+1',}}
+HERC.Feet.FC = { name="Herculean Boots", augments={'"Mag.Atk.Bns."+16','"Fast Cast"+5','INT+6',}}
+
 ---============================================================================
 --- ESCHA / REISENJIMA ARMOR
 ---============================================================================
@@ -100,6 +123,16 @@ VANY = {Legs = {}, Feet = {}}
 VANY.Cure   = { name="Vanya Hood", augments={'MP+50','"Cure" potency +7%','Enmity-6',}}
 VANY.Legs.C = { name="Vanya Slops", augments={'MND+10','Spell interruption rate down +15%','"Conserve MP"+6',}}
 VANY.Feet.D = { name="Vanya Clogs", augments={'"Cure" potency +5%','"Cure" spellcasting time -15%','"Conserve MP"+6',}}
+
+PURS = {Hands = {}}
+PURS.Hands.A = { name="Pursuer's Cuffs", augments={'AGI+7','"Rapid Shot"+8','"Subtle Blow"+5',}}
+
+---============================================================================
+--- CAPACITY POINT CAPE
+---============================================================================
+
+CAPACITY = {}
+CAPACITY.Cape = { name="Mecisto. Mantle", augments={'Cap. Point+50%','STR+2','"Mag.Atk.Bns."+4','DEF+2',}}
 
 ---============================================================================
 --- RINGS (one per wardrobe: GearSwap cannot tell two copies apart)
@@ -117,3 +150,5 @@ CHIR.Two = {name = "Chirich Ring +1", bag = "wardrobe 2"}
 
 AYAN = {Set = "Ayanmo", Head = "Aya. Zucchetto +2", Body = "Ayanmo Corazza +2", Hands = "Aya. Manopolas +2", Legs = "Aya. Cosciales +2", Feet = "Aya. Gambieras +2", Ring = "Ayanmo Ring"}
 JHAK = {Set = "Jhakri", Head = "Jhakri Coronal +2", Body = "Jhakri Robe +2", Hands = "Jhakri Cuffs +2", Legs = "Jhakri Slops +2", Feet = "Jhakri Pigaches +2", Ring = "Jhakri Ring"}
+MEGH = {Set = "Meghanada", Head = "Meghanada Visor +2", Body = "Meg. Cuirie +2", Hands = "Meg. Gloves +2", Legs = "Meg. Chausses +2", Feet = "Meg. Jam. +2", Ring = "Meghanada Ring"}
+MUMM = {Set = "Mummu", Head = "Mummu Bonnet +2", Body = "Mummu Jacket +2", Hands = "Mummu Wrists +2", Legs = "Mummu Kecks +2", Feet = "Mummu Gamash. +2", Ring = "Mummu Ring"}

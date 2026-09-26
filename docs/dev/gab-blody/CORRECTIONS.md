@@ -115,6 +115,60 @@ avant ; la comparaison le donne identique à ton fichier.
 
 ---
 
+## Gabvanstronger – THF
+
+Converti depuis `Gabvanstronger/THF.lua` (celui que ton GearSwap charge ; `sets/thf_sets.lua` est un
+reste de l'ancien clone avec les pièces de Tetsouo, ignoré). Comparaison slot par slot : **tous tes
+sets sont identiques** (engaged Normal/DT/Acc/Crit/Evasion/DT TH, idle Normal/Refresh/Regain/Town/Weak,
+WS et leurs variantes SA/TA, TH, SA/TA, JA, FC, tir, et tes paires d'armes Abyssea), sauf le point 1.
+
+### Bugs dans tes fichiers
+
+1. **`THF.lua` ligne 375** (idle Regain) : `hands = "Gleti's Gloves"` n'existe pas (le vrai nom est
+   Gleti's Gauntlets, comme dans ton `BLU.lua` lignes 675 et 752) : ces gants n'étaient jamais
+   équipés. **Maintenant** : Gleti's Gauntlets.
+2. **`THF.lua` ligne 598** : `job_state_change` appelle `job_handle_equipping_gear` sans `eventArgs` ;
+   avec Sneak ou Trick Attack actif, changer un mode faisait une erreur Lua et le gear ne suivait pas.
+   Chez nous : pas ce code.
+3. **`THF.lua` lignes 524-525** : `return` puis `send_command(...)` à la ligne se lit
+   `return send_command(...)` en Lua : sous silence, sommeil, stun, charme, pétrification ou terreur,
+   il lançait une Remedy sans annuler le sort. Chez nous : le sort est bloqué (PrecastGuard), Remedy
+   seulement si AutoMedicine est actif.
+4. **`THF.lua` lignes 606-613** : SA + TA donnait le mode WS `SATA`, set qui n'existe pas : tu avais
+   le set de base, sans la Yetshila +1 prévue (ligne 235). Chez nous : repli sur `.SA`, Yetshila mise.
+5. **`0_Shared.lua` ligne 1674** : `equip({range = 'Ammo'})` n'équipe rien (`Ammo` n'est pas une pièce).
+   Sans effet réel : tes sets portent déjà la munition.
+6. **`0_AutoMove.lua` ligne 22** : `sets.Adoulin` est construit avant `sets.MoveSpeed`, donc sans tes
+   Skadi's Jambeaux.
+7. **`0_AugGear_shared.lua` ligne 37** : `(player.main_job or player.sub_job) == 'NIN'` ne teste que le
+   job principal : en THF/NIN, tes paires Katana d'Abyssea n'existaient pas.
+
+### Tes modes chez nous
+
+- F9 : engaged Normal / DT ; ^F12 : idle Normal / Refresh / Regain ; !F9 : tir Normal / Acc.
+- Abyssea : plus dans F9, c'est la bascule `AbyProc` + `AbyWeapon` (tes paires d'armes) sur Ctrl+Numpad4/5.
+  Tes alias `ws1` / `ws2` ne sont pas repris.
+- Armes : tes WeaponSet / SubSet (Aeneas, Kartika, Tauret, Naegling, Norgish Dagger / Fusetto +2,
+  Gleti's Knife, Tanmogayi +1, Ternion Dagger +1, Qutrub Knife, Free).
+- RangedSet Ammo / Pull (Win+`) : mode perso, Pull = Antitail +1 avec range/ammo verrouillés.
+- CP : mode perso (cape + dos verrouillé), comme ton RDM. Sur ton THF il ne faisait rien
+  (`check_cpmode` jamais appelé).
+- TH : None / Tag / SATA / Full (!`). Le TH sur Aeolian Edge, sur les WS et sur SA/TA en SATA/Full est
+  repris par des règles dans `config/thf/THF_CUSTOM.lua`.
+- Macrobook livre 6 (page 2 /DNC, 3 /WAR, 4 /NIN), lockstyle 7 : de ton BindManager.
+
+### Pas encore repris (notre THF ne sait pas le faire)
+
+- TH sur les attaques à distance ; marquage TH par le tir, Aeolian, Provoke, Steps, Flourishes (chez
+  nous seule la mêlée marque) ; en Tag, TH gardé sur la première WS.
+- Recouvrement SA/TA en idle (chez nous seulement en engaged).
+- `sets.Adoulin` (chez nous il remplacerait tout l'idle à Adoulin).
+
+### À vérifier par toi
+
+- Moonshade : notre calcul de TP la met en oreille gauche ; sur Aeolian Edge ta Moonshade est à droite.
+  À tester en jeu.
+
 ## Blodykiller – BRD
 
 Comparaison slot par slot faite en chargeant ton fichier comme Mote (`job_setup`, `user_setup`,

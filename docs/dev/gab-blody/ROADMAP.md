@@ -74,8 +74,8 @@ comportement à l'identique (audit : 38 valeurs d'armes Tetsouo + Kaories).
   `Blodykiller/` + ses négations, avant de créer les overlays.
 - [ ] Overlays `_master/Gabvanstronger/`, `_master/Blodykiller/` (sets, configs,
   `0_AugGear_*`, UI_CONFIG, COMMON_KEYBINDS). En cours (2026-09-26) : Gab RDM ;
-  Blody BRD, COR. Restent Gab BRD COR GEO SAM THF, Blody BLM GEO THF WHM ;
-  UI_CONFIG et COMMON_KEYBINDS pas faits.
+  Blody BRD, COR. Restent Gab BRD COR GEO SAM, Blody BLM GEO THF WHM ;
+  THF de Gab fait le 2026-09-26 (testé en jeu sur Tetsouo). UI_CONFIG pas fait.
 - [x] Dual-box (2026-09-25, code + test hors jeu) : `altjobupdate` porte le type d'arme
   (7e argument, renvoyé quand la main change de type d'arme, paquet 0x050) ;
   `shared/utils/dualbox/alt_states.lua` garde chaque boîte par nom ; `requestjob` part
