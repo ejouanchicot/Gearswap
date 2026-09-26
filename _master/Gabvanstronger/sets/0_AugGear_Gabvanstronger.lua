@@ -3,18 +3,22 @@
 ---============================================================================
 --- Gab's gear lookup tables (AF / RELIC / EMPY, capes, augmented weapons,
 --- Chironic, Herculean, Telchine, Amalric, Kaykaus, Vanya, Pursuer,
---- Stikini / Chirich rings, CP cape, Ambuscade pieces) for RDM and THF, kept
+--- Stikini / Chirich rings, CP cape, Ambuscade pieces) for RDM, THF and BLU, kept
 --- under HIS names and conventions so his sets read the same as in his own
 --- files.
 ---
 --- Sources (his old setup, values copied as they were):
----   * 0_AugGear_Gabvanstronger.lua - RDM and THF blocks (AF/RELIC/EMPY,
----     EMPY.Ear, RDMCape, THFCape), Colada, Grioavolr, CHIR (Refresh,
----     Phalanx, Macc, rings), HERC (FC, Refresh), TELC, CAPACITY.Cape, STIK,
----     AYAN, JHAK, MEGH, MUMM
+---   * 0_AugGear_Gabvanstronger.lua - RDM, THF and BLU blocks (AF/RELIC/EMPY,
+---     EMPY.Ear, RDMCape, THFCape, BLUCape), Colada, Grioavolr, CHIR
+---     (Refresh, Phalanx, Macc, rings), HERC (FC, Refresh, Phalanx), TELC,
+---     CAPACITY.Cape, STIK, AYAN, JHAK, MEGH, MUMM
 ---   * 0_AugGear_shared.lua - AMAL.Head.HQ.D, KAYK.Body/Hands.HQ.D,
----     VANY.Cure, VANY.Legs.C, VANY.Feet.D, PURS.Hands.A
---- Only the entries his RDM and THF sets use are here.
+---     VANY.Cure, VANY.Legs.C, VANY.Feet.D, PURS.Hands.A, CARM.Feet.HQ.B,
+---     CARM.Legs.HQ.D, ADHE.Head.HQ.B, ADHE.Hands.A
+--- Only the entries his RDM, THF and BLU sets use are here.
+--- Not here on purpose: HERC.Feet.TA (his BLU Chant du Cygne feet). It only
+--- exists in 0_AugGear.lua, which his GearSwap never loaded: the value was
+--- nil and that WS kept the feet of sets.precast.WS.
 ---
 --- Pure data: every table is built here in one pass. His
 --- 0_AugGear_shared_dats.lua re-created every global table (AF = {}, ...)
@@ -22,8 +26,8 @@
 ---
 --- @file    sets/0_AugGear_Gabvanstronger.lua
 --- @author  Tetsouo
---- @version 1.1
---- @date    Created: 2026-09-25 | Updated: 2026-09-26 (THF)
+--- @version 1.2
+--- @date    Created: 2026-09-25 | Updated: 2026-09-26 (THF, BLU)
 ---============================================================================
 
 ---============================================================================
@@ -56,6 +60,17 @@ if player and player.main_job == 'THF' then
     EMPY.Ear = "Skulker's Earring +1"
 end
 
+if player and player.main_job == 'BLU' then
+    -- Assimilator's / Luhlaza / Hashishin
+    AF.Set   = "Assimilator's"          RELIC.Set   = "Luhlaza"                 EMPY.Set   = "Hashishin"
+    AF.Head  = "Assim. Keffiyeh +4"     RELIC.Head  = "Luhlaza Keffiyeh +4"     EMPY.Head  = "Hashishin Kavuk +3"
+    AF.Body  = "Assim. Jubbah +4"       RELIC.Body  = "Luhlaza Jubbah +3"       EMPY.Body  = "Hashishin Mintan +3"
+    AF.Hands = "Assim. Bazu. +3"        RELIC.Hands = "Luh. Bazubands +3"       EMPY.Hands = "Hashi. Bazu. +3"
+    AF.Legs  = "Assim. Shalwar +3"      RELIC.Legs  = "Luh. Shalwar +4"         EMPY.Legs  = "Hashishin Tayt +3"
+    AF.Feet  = "Assim. Charuqs +4"      RELIC.Feet  = "Luhlaza Ch. +4"          EMPY.Feet  = "Hashi. Basmak +3"
+    EMPY.Ear = { name="Hashi. Earring +1", augments={'System: 1 ID: 1676 Val: 0','Accuracy+11','Mag. Acc.+11','"Dbl.Atk."+3',}}
+end
+
 ---============================================================================
 --- AMBUSCADE CAPES
 ---============================================================================
@@ -74,6 +89,13 @@ RDMCape.Ens      = { name="Ghostfyre Cape", augments={'Enfb.mag. skill +10','Enh
 THFCape = {}
 THFCape.TP = { name="Toutatis's Cape", augments={'DEX+20','Accuracy+20 Attack+20','Accuracy+10','"Store TP"+10','Damage taken -5%',}}
 THFCape.WS = { name="Toutatis's Cape", augments={'DEX+20','Accuracy+20 Attack+20','DEX+10','Weapon skill damage +10%',}}
+
+BLUCape = {}
+BLUCape.WS = {}
+BLUCape.TP     = { name="Rosmerta's Cape", augments={'DEX+20','Accuracy+20 Attack+20','Accuracy +10','"Store TP"+10','Phys. dmg. taken-10%',}}
+BLUCape.Eva    = { name="Rosmerta's Cape", augments={'AGI+20','Eva.+20 /Mag. Eva.+20','Evasion+10','"Fast Cast"+10','Evasion+15',}}
+BLUCape.WS.STR = { name="Rosmerta's Cape", augments={'STR+20','Accuracy+20 Attack+20','STR+10','Weapon skill damage +10%','Phys. dmg. taken-10%',}}
+BLUCape.WS.DEX = { name="Rosmerta's Cape", augments={'DEX+20','Accuracy+20 Attack+20','DEX+10','Crit.hit rate+10',}}
 
 ---============================================================================
 --- AUGMENTED WEAPONS
@@ -101,12 +123,22 @@ CHIR.Legs.Macc     = { name="Chironic Hose", augments={'Mag. Acc.+23','"Drain" a
 TELC = {Head = {}, Body = {}, Hands = {}, Legs = {}, Feet = {}}
 TELC.Head.Enh = { name="Telchine Cap", augments={'Mag. Evasion+23','"Fast Cast"+5','Enh. Mag. eff. dur. +10',}}
 TELC.Legs.Enh = { name="Telchine Braconi", augments={'"Cure" potency +8%','Enh. Mag. eff. dur. +10',}}
+TELC.Body.Enh = { name="Telchine Chas.", augments={'"Cure" potency +7%','Enh. Mag. eff. dur. +9',}}
+TELC.Feet.Enh = { name="Telchine Pigaches", augments={'"Cure" potency +8%','Enh. Mag. eff. dur. +9',}}
+TELC.Hands.Cure = { name="Telchine Gloves", augments={'"Cure" potency +8%','Enh. Mag. eff. dur. +8',}}
 
 HERC = {Head = {}, Body = {}, Hands = {}, Legs = {}, Feet = {}}
 HERC.Head.Refresh = { name="Herculean Helm", augments={'MND+6','INT+11','"Refresh"+2',}}
 HERC.Hands.Refresh = { name="Herculean Gloves", augments={'Attack+25','Weapon skill damage +2%','"Refresh"+2','Accuracy+3 Attack+3',}}
 HERC.Head.FC = { name="Herculean Helm", augments={'"Mag.Atk.Bns."+14','"Fast Cast"+6','Mag. Acc.+1',}}
 HERC.Feet.FC = { name="Herculean Boots", augments={'"Mag.Atk.Bns."+16','"Fast Cast"+5','INT+6',}}
+HERC.Legs.Refresh = { name="Herculean Trousers", augments={'INT+1','Magic dmg. taken -1%','"Refresh"+2',}}
+HERC.Feet.Refresh = { name="Herculean Boots", augments={'INT+5','DEX+10','"Refresh"+2',}}
+HERC.Head.Phalanx = { name="Herculean Helm", augments={'"Fast Cast"+1','Pet: STR+5','Phalanx +4','Accuracy+15 Attack+15',}}
+HERC.Body.Phalanx = { name="Herculean Vest", augments={'Pet: DEX+11','STR+3','Phalanx +5','Accuracy+10 Attack+10','Mag. Acc.+6 "Mag.Atk.Bns."+6',}}
+HERC.Hands.Phalanx = { name="Herculean Gloves", augments={'Mag. Acc.+23 "Mag.Atk.Bns."+23','"Dual Wield"+1','Phalanx +4','Accuracy+16 Attack+16',}}
+HERC.Legs.Phalanx = { name="Herculean Trousers", augments={'Mag. Acc.+20','Rng.Atk.+23','Phalanx +5','Accuracy+19 Attack+19','Mag. Acc.+18 "Mag.Atk.Bns."+18',}}
+HERC.Feet.Phalanx = { name="Herculean Boots", augments={'VIT+6','CHR+5','Phalanx +5','Mag. Acc.+4 "Mag.Atk.Bns."+4',}}
 
 ---============================================================================
 --- ESCHA / REISENJIMA ARMOR
@@ -126,6 +158,14 @@ VANY.Feet.D = { name="Vanya Clogs", augments={'"Cure" potency +5%','"Cure" spell
 
 PURS = {Hands = {}}
 PURS.Hands.A = { name="Pursuer's Cuffs", augments={'AGI+7','"Rapid Shot"+8','"Subtle Blow"+5',}}
+
+CARM = {Legs = {HQ = {}}, Feet = {HQ = {}}}
+CARM.Legs.HQ.D = { name="Carmine Cuisses +1", augments={'Accuracy+20','Attack+12','"Dual Wield"+6',}}
+CARM.Feet.HQ.B = { name="Carmine Greaves +1", augments={'Accuracy+12','DEX+12','MND+20',}}
+
+ADHE = {Head = {HQ = {}}, Hands = {}}
+ADHE.Head.HQ.B = { name="Adhemar Bonnet +1", augments={'STR+12','DEX+12','Attack+20',}}
+ADHE.Hands.A   = { name="Adhemar Wristbands", augments={'DEX+10','AGI+10','Accuracy+15',}}
 
 ---============================================================================
 --- CAPACITY POINT CAPE

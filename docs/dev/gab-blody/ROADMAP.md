@@ -141,8 +141,11 @@ comportement à l'identique (audit : 38 valeurs d'armes Tetsouo + Kaories).
 - Attendre `PUP_Lib.lua` si Gab l'a.
 
 ### Étape F : nouveaux jobs (skill `/new-job`, 12 modules chacun)
-- [ ] BLU : catégories de sorts (17 maps), Unbridled Learning auto, Chain/Burst
-  Affinity, garde Expiacion (option).
+- [x] BLU (2026-09-26, non commité, pas testé en jeu) : `shared/jobs/blu/` (12 modules +
+  logic/), template `_master/{entry,config/blu,sets}`, overlay Gab (sets à l'identique,
+  touches BindManager dont les couches Club/Sword via le nouveau champ `weapon`).
+  Catégories : `config/blu/BLU_SPELL_MAP.lua` (24). Options `blu_unbridled`,
+  `blu_expiacion_window` (AUTO_ABILITIES, ON pour Gab). AzureSets chargé sur BLU.
 - [ ] NIN : Migawari/Doom, Utsusemi, ninjutsu élémentaire, outils.
 - [ ] RNG : Flurry, Barrage, Double Shot, munitions (`quiver_manager`), garde AM.
 - [ ] SCH : Arts/Addendum, stratagèmes (`utils/scholar/`), Helix, Sublimation, Obi.

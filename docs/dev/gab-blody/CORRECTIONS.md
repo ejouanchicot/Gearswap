@@ -169,6 +169,53 @@ WS et leurs variantes SA/TA, TH, SA/TA, JA, FC, tir, et tes paires d'armes Abyss
 - Moonshade : notre calcul de TP la met en oreille gauche ; sur Aeolian Edge ta Moonshade est à droite.
   À tester en jeu.
 
+## Gabvanstronger – BLU
+
+Nouveau job chez nous, construit sur ton `Gabvanstronger/BLU.lua`. Comparaison slot par slot : **71 sets
+identiques**, sauf les corrections ci-dessous. Tes 18 touches BLU de BindManager sont identiques, et tes
+WS du numpad suivent l'arme que tu tiens (épée : Requiescat, Expiacion, Chant du Cygne, Savage Blade ;
+Club : True Strike, Black Halo, Judgment), comme BindManager.
+
+### Bugs dans ton fichier
+
+1. **Ligne 794** : Unbridled Learning automatique sur une cible autre que toi : tu envoyais
+   `/ja "Pianissimo"` (JA de BRD) au lieu d'Unbridled Learning (la bonne ligne est commentée ligne 793).
+   **Maintenant** : Unbridled Learning, puis le sort sur la même cible.
+2. **Ligne 885** : `set_combine(idleSet, sets.latent_refresh)` sans garder le résultat : ta Fucho-no-Obi
+   sous 51 % de MP n'a jamais été mise. Gardé tel quel (règle en commentaire dans `BLU_CUSTOM.lua`).
+3. **Ligne 499** (set Enmity) : « Sapiens Orb » n'existe pas : **Sapience Orb** (comme tes sets Fast Cast).
+4. **Ligne 389** : `sets.precast.WS.acc` en minuscule, jamais lu par le mode WS Acc : renommé `.Acc`.
+5. **Lignes 212 et 229** : « Tail slap » (vrai nom Tail Slap) et « Winds of Promyvion » (vrai nom
+   Winds of Promy.) ne tombaient jamais dans leur catégorie ; maintenant Stun et Buff.
+   « Orcish Counterstance » (ligne 228) n'existe dans aucune ressource du jeu : retiré.
+6. **Sorts dans deux catégories** (l'ordre de Lua décidait) : Mind Blast -> MagicalMnd,
+   Sub-zero Smash -> PhysicalVit, Hecatomb Wave -> Breath, Exuviation -> Enmity.
+7. **Ligne 285** : `sets.buff.Enchainment` : aucun buff ni JA de ce nom dans le jeu, ce set ne se pose jamais.
+8. **Ligne 382** (Chant du Cygne) : `HERC.Feet.TA` n'est défini que dans `0_AugGear.lua`, qui n'est pas
+   chargé : tes pieds étaient les Nyame Sollerets du set WS de base. Gardé ainsi.
+9. **Lignes 782-784** : même bug que ton THF (Remedy lancée au lieu d'annuler le sort) ; chez nous le
+   sort est bloqué.
+
+### Tes fonctions chez nous
+
+- Classement de tes sorts : `config/blu/BLU_SPELL_MAP.lua` (tes 24 catégories, noms corrigés).
+- Sets de buff par-dessus les sorts bleus (Burst / Chain Affinity, Convergence, Diffusion, Efflux),
+  `self_healing` sur toi, Magical Resistant (CastingMode).
+- Unbridled Learning automatique : option `blu_unbridled` (active pour toi). Aussi pour **Cesspool** et
+  **Tearing Gust** : comme tes 16 sorts, ils n'ont pas de points de sort (ressources du jeu) et ne se
+  lancent que sous Unbridled Learning. UL en recast : le sort part tel quel (il échouait déjà chez toi).
+- Fenêtre Expiacion (Tizona, sans Aftermath 3, sous 3000 TP : premier appui annulé, 3 s) : option
+  `blu_expiacion_window` (active pour toi), messages comme les tiens.
+- Une seule arme (Genbu's Shield ou rien en sub) : sets `.SW` ; tes modes, armes, Pull, CP ; AzureSets
+  chargé en BLU.
+
+### À tester par toi
+
+Une catégorie de chaque (physique, magique en Resistant, Enmity) ; Chain Affinity puis un sort physique ;
+un soin sur toi ; Bilgestorm sans UL (sur un mob, puis Harden Shell sur toi) ; Expiacion avec Tizona à
+2000 TP ; passer de Tizona à Maxentius (le numpad change) ; Genbu's Shield (sets SW) ; Pull ;
+`//gs c trace on` écrit tout dans `Gabvanstronger/trace.log`.
+
 ## Blodykiller – BRD
 
 Comparaison slot par slot faite en chargeant ton fichier comme Mote (`job_setup`, `user_setup`,
