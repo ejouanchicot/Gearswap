@@ -31,6 +31,7 @@ RDMKeybinds.binds = {
     { key = "^numpad3", command = "cyclestate EnfeebleMode",   desc = "Enfeeble Mode",   state = "EnfeebleMode" },
     { key = "^numpad7", command = "cyclestate NukeMode",       desc = "Nuke Mode",       state = "NukeMode" },
     { key = "^numpad0", command = "cyclestate SaboteurMode",   desc = "Saboteur Mode",   state = "SaboteurMode" },
+    { key = "^numpad9", command = "cyclestate EnfeebleTier", desc = "Enfeeble Tier", state = "EnfeebleTier" },
     { key = "^numpad8", command = "cyclestate NukeTier",       desc = "Nuke Tier",       state = "NukeTier" },
     { key = "#numpad1", command = "cyclestate Storm",          desc = "Storm (SCH)",     state = "Storm",    subjob = "SCH" },
 

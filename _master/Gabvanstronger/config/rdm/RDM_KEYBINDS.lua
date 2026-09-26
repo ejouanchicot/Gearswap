@@ -42,6 +42,7 @@ RDMKeybinds.binds = {
     { key = "f9",    command = "cyclestate EngagedMode",    desc = "Engaged Mode",    state = "EngagedMode" },
     { key = "!f11",  command = "cyclestate EnfeebleMode",   desc = "Enfeebling Mode", state = "EnfeebleMode" },
     { key = "^~f1",  command = "cyclestate SaboteurMode",   desc = "Auto Saboteur",   state = "SaboteurMode" },
+    { key = "^f9", command = "cyclestate EnfeebleTier", desc = "Enfeeble Tier", state = "EnfeebleTier" },
     { key = "^f11",  command = "cyclestate NukeMode",       desc = "Nuke Mode",       state = "NukeMode" },
     -- Spells (Shift+F to cycle)
     { key = "~f1",   command = "cyclestate GainSpell",      desc = "Gain-STAT",       state = "GainSpell" },

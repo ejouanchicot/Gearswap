@@ -35,6 +35,7 @@
 ---   • BarAilment: Baramnesia/Barparalyze/etc. (ailment resist buff)
 ---   • Spike: Blaze/Ice/Shock Spikes (damage reflection)
 ---   • SaboteurMode: On/Off (auto-Saboteur before enfeebles)
+---   • EnfeebleTier: On/Off (tiered enfeeble on recast drops a tier, or is cancelled)
 ---   • Storm: Firestorm/Hailstorm/etc. (SCH subjob only - conditional)
 ---
 --- Dependencies:
@@ -253,6 +254,12 @@ function RDMStates.configure()
         'On' -- Auto-Saboteur before enfeebles
     }
     state.SaboteurMode:set('Off')
+
+    -- EnfeebleTier: On = a tiered enfeeble on recast drops to the next ready
+    -- tier (Gravity II -> Gravity); Off = it is cancelled and the recast shown,
+    -- so the tier stays the player's choice. Nukes drop either way.
+    state.EnfeebleTier = M {['description'] = 'Enfeeble Tier', 'On', 'Off'}
+    state.EnfeebleTier:set('On')
 
     -- ========================================
     -- CONDITIONAL STORM (SCH Subjob Only)
