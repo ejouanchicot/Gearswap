@@ -186,6 +186,36 @@ local function precast_gear()
     return gear
 end
 
+--- The set path Mote chose for this action (its breadcrumbs), e.g.
+--- "sets.precast.FC.Cure".
+local function mote_set_path()
+    local crumbs = rawget(_G, 'mote_vars') and mote_vars.set_breadcrumbs
+    if not crumbs then return '?' end
+    local parts = {}
+    for i = 1, (crumbs.n or #crumbs) do
+        if crumbs[i] ~= nil then parts[#parts + 1] = tostring(crumbs[i]) end
+    end
+    return #parts > 0 and table.concat(parts, '.') or '?'
+end
+
+--- One line per precast to <Character>/trace.log while //gs c trace is on:
+--- the action, its target, Mote's set path, the computed cast time and the
+--- pieces sent (owned only).
+local function trace_precast(spell, seconds, percent)
+    local ok, Trace = pcall(require, 'shared/utils/debug/trace_log')
+    if not (ok and Trace and Trace.enabled and Trace.enabled()) then return end
+    local target = spell.target and (spell.target.type == 'SELF' and 'self' or spell.target.name) or '?'
+    local pieces = {}
+    for _, slot in ipairs(SLOTS) do
+        local piece = gearswap and gearswap.equip_list and gearswap.equip_list[slot]
+        local name = type(piece) == 'table' and piece.name or piece
+        if type(name) == 'string' then pieces[#pieces + 1] = slot .. '=' .. name end
+    end
+    local timing = seconds and (' | FC %d%% %.1fs'):format(percent or 0, seconds) or ''
+    Trace.log('PRECAST', '%s on %s -> %s%s | %s', spell.english or spell.name or '?', target,
+        mote_set_path(), timing, table.concat(pieces, ', '))
+end
+
 --- Wrap cleanup_precast once per load: every spell's estimate goes to
 --- _G._precast_cast_time. Called from INIT_SYSTEMS, after Mote.
 function CastTime.install_hook()
@@ -193,12 +223,16 @@ function CastTime.install_hook()
     if not orig or rawget(_G, '_cast_time_hook') == orig then return end
     local hook = function(spell, spellMap, eventArgs)
         orig(spell, spellMap, eventArgs)
-        if spell and spell.action_type == 'Magic' and not (eventArgs and eventArgs.cancel) then
-            local ok, seconds, percent = pcall(CastTime.estimate, spell, precast_gear())
+        if not spell or (eventArgs and eventArgs.cancel) then return end
+        local seconds, percent = nil, nil
+        if spell.action_type == 'Magic' then
+            local ok, s, p = pcall(CastTime.estimate, spell, precast_gear())
             if ok then
-                _G._precast_cast_time = {id = spell.id, name = spell.english, seconds = seconds, percent = percent}
+                seconds, percent = s, p
+                _G._precast_cast_time = {id = spell.id, name = spell.english, seconds = s, percent = p}
             end
         end
+        pcall(trace_precast, spell, seconds, percent)
     end
     _G.cleanup_precast = hook
     _G._cast_time_hook = hook

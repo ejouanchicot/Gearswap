@@ -122,6 +122,7 @@ end
 --- @param is_fallback boolean Whether this is the base/fallback set
 local function equip_with_debug(selected_set, selected_set_path, is_fallback)
     equip(selected_set)
+    require('shared/utils/midcast/midcast_trace').selection(selected_set, selected_set_path, SLOT_ORDER)
 
     if not is_debug_enabled() then
         return
@@ -130,15 +131,11 @@ local function equip_with_debug(selected_set, selected_set_path, is_fallback)
     MessageMidcast.show_result_header()
     MessageMidcast.show_result(selected_set_path or 'Combined', is_fallback)
 
+    local MidcastTrace = require('shared/utils/midcast/midcast_trace')
     for _, slot in ipairs(SLOT_ORDER) do
-        if selected_set[slot] then
-            local item = selected_set[slot]
-            local item_name = (type(item) == 'table' and item.name)
-                or (type(item) == 'string' and item)
-                or nil
-            if item_name then
-                MessageMidcast.show_equipment_line(slot, item_name)
-            end
+        local item_name = MidcastTrace.item_name(selected_set, slot)
+        if item_name then
+            MessageMidcast.show_equipment_line(slot, item_name)
         end
     end
 
@@ -622,6 +619,7 @@ function MidcastManager.select_set(config)
     if not config or not config.skill then
         return false
     end
+    require('shared/utils/midcast/midcast_trace').begin(config.spell)
 
     if not sets or not sets.midcast then
         return false
@@ -636,6 +634,7 @@ function MidcastManager.select_set(config)
     end
 
     if not base_set then
+        require('shared/utils/midcast/midcast_trace').no_set(config.skill)
         return false
     end
 
