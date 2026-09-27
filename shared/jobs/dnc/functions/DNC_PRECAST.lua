@@ -170,6 +170,11 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- DNC-SPECIFIC: Auto-triggers for WS
     if spell.type == 'WeaponSkill' then
         job_precast_weaponskill(spell, eventArgs)
+        -- Jump or Climactic took over: the WS comes back once it has landed,
+        -- and checking its TP now would print a false "Not enough TP"
+        if eventArgs.cancel then
+            return
+        end
     end
 
     -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)

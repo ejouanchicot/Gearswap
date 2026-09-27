@@ -6,7 +6,7 @@
 ---
 --- Features:
 ---   • Climactic Flourish automation for configured weaponskills
----   • Minimum TP threshold for auto-trigger (900 TP, see min_tp)
+---   • Minimum TP threshold for auto-trigger (1000 TP, see min_tp)
 ---   • Minimum target HP% threshold (25% default - prevents waste on dying mobs)
 ---   • WS whitelist system (Rudra's Storm, Ruthless Stroke, Shark Bite)
 ---   • Helper function to check if WS should trigger Climactic
@@ -35,10 +35,11 @@ DNCWSConfig.climactic_ws = {
 --- CONDITIONS FOR AUTO-TRIGGER
 ---============================================================================
 
---- Minimum TP required to auto-trigger Climactic Flourish
---- Note: Lag causes GearSwap to see 800-950 TP when user launches at 1000 TP
---- Set to 900 to compensate for lag (ensures trigger even with network delay)
-DNCWSConfig.min_tp = 900
+--- Minimum TP required to auto-trigger Climactic Flourish. The TP is read
+--- live from the game; below 1000 the weaponskill itself cannot go, so a
+--- lower value counts as 1000. Raise it (e.g. 2000) to keep Climactic for
+--- bigger weaponskills.
+DNCWSConfig.min_tp = 1000
 
 --- Minimum target HP% to auto-trigger Climactic Flourish
 --- Prevents wasting Climactic Flourish on nearly dead mobs

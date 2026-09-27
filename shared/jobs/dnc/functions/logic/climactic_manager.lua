@@ -47,6 +47,21 @@ local function has_three_finishing_moves()
     return false
 end
 
+-- The weaponskill itself needs 1000 TP (WSPrecastHandler): a flourish used
+-- below that is spent on a WS that is then cancelled.
+local WS_MIN_TP = 1000
+
+--- TP the game shows now. GearSwap's player.tp can trail it by a moment,
+--- which is what the old 900 TP threshold tried to cover.
+--- @return number
+local function current_tp()
+    local ok, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
+    if ok and TPBonusHandler and TPBonusHandler.live_tp then
+        return TPBonusHandler.live_tp()
+    end
+    return player.tp or 0
+end
+
 ---   Auto-trigger Climactic Flourish before configured weaponskills
 ---   @param spell table Weaponskill spell object
 ---   @param eventArgs table Event arguments for cancellation
@@ -59,7 +74,8 @@ function ClimaticManager.auto_trigger(spell, eventArgs)
         return
     end
 
-    if player.tp >= DNCWSConfig.min_tp and
+    local min_tp = math.max(DNCWSConfig.min_tp or WS_MIN_TP, WS_MIN_TP)
+    if current_tp() >= min_tp and
         player.target and player.target.hpp and player.target.hpp > DNCWSConfig.min_target_hpp and
         has_three_finishing_moves() then
         if DNCWSConfig.should_use_climactic(spell.name) then

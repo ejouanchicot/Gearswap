@@ -62,7 +62,7 @@ number added nothing, the function name is cited instead.
 | `_master/config/dnc/DNC_LOCKSTYLE.lua` | 62 | Lockstyle 2, `by_subjob`, `get_style` |
 | `_master/config/dnc/DNC_MACROBOOK.lua` | 78 | Book/page per subjob and per dual-box partner job |
 | `_master/config/dnc/DNC_TP_CONFIG.lua` | 68 | Moonshade piece, weapon TP bonus table, `_G.DNCTPConfig` |
-| `_master/config/dnc/DNC_WS_CONFIG.lua` | 70 | Climactic whitelist, `min_tp` 900, `min_target_hpp` 25 |
+| `_master/config/dnc/DNC_WS_CONFIG.lua` | 70 | Climactic whitelist, `min_tp` 1000, `min_target_hpp` 25 |
 | `_master/Tetsouo/config/dnc/DNC_REFILL.lua` | 22 | Refill list (Tetsouo overlay) |
 | `_master/sets/dnc_sets.lua` | 1021 | Template sets (flat) |
 | `shared/data/job_abilities/DNC_JA_DATABASE.lua` + `dnc/*.lua` (15) | 26 + 650 | Ability data for chat messages (`ability_message_handler.lua:77-83`); not read by DNC logic |
@@ -154,17 +154,19 @@ flowchart TD
     J --> K{WeaponSkill}
     K -- yes --> L["AutoJump.auto_trigger_jump, then ClimaticManager.auto_trigger"]
     K -- no --> M
-    L --> M[WSPrecastHandler.handle - runs even after a helper cancelled]
+    L --> LC{cancelled by a helper}
+    LC -- yes --> Z2[return: the WS is replayed later]
+    LC -- no --> M[WSPrecastHandler.handle]
 ```
 
 - `job_precast_samba` (99-110) cancels a samba when TP is below its own
   `spell.tp_cost` (`res/job_abilities.lua`: Drain Samba 100, II 250, III 400,
   Aspir Samba 100, II 250, Haste Samba 350), and lets every samba through under
   Trance. Before commit `5530584` it used a flat 350 for all of them.
-- `job_precast_weaponskill` (116-132) returns early after a helper cancels, but
-  `job_precast` does not check `eventArgs.cancel` before line 176, so
-  `WSPrecastHandler.handle` still runs: after an AutoJump takeover it prints
-  "Not enough TP" for the cancelled WS.
+- `job_precast_weaponskill` returns early after a helper cancels, and
+  `job_precast` returns too (since 2026-09-27), so `WSPrecastHandler.handle`
+  no longer prints a false "Not enough TP" for a WS that AutoJump or Climactic
+  took over.
 - The 5-line guard/cooldown contract is shared
   ([precast pipeline](../systems/precast-pipeline.md#the-job_precast-contract)).
   Utsusemi Ichi/Ni skip the spell cooldown check (151).
@@ -189,9 +191,8 @@ sequenceDiagram
     participant H as AbilityHelper
     U->>P: /ws Rudra's Storm (TP 700, /DRG)
     P->>J: auto_trigger_jump: cancel, /ja Jump <t>, replay WS at +2 s
-    P->>P: WSPrecastHandler: "Not enough TP" (cosmetic)
     U->>P: replayed /ws (TP now >= 1000)
-    P->>C: auto_trigger: ClimacticAuto On, TP >= 900, target HP > 25%, FM buff, whitelisted WS
+    P->>C: auto_trigger: ClimacticAuto On, live TP >= max(min_tp, 1000), target HP > 25%, FM buff, whitelisted WS
     C->>H: try_ability_ws(spell, eventArgs, 'Climactic Flourish', 1)
     H->>H: ready and buff down -> cancel, /ja Climactic Flourish <me>
     H->>H: follow_up polls for the buff, then replays /ws <t>
@@ -408,14 +409,15 @@ T = `_master/sets/dnc_sets.lua`, L = `Tetsouo/sets/dnc/dnc_sets.lua`.
 | `<char>/config/dnc/DNC_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 2 | file; factory fallback 1 (`shared/jobs/dnc/functions/DNC_LOCKSTYLE.lua:29`) | `LockstyleManager` through `get_style` |
 | `<char>/config/dnc/DNC_MACROBOOK.lua` `default`, `solo`, `dualbox` | template book 4 (WAR 5); live book 6 | file; factory 1/1 | `MacrobookManager` |
 | `Tetsouo/config/dnc/DNC_TP_CONFIG.lua` -> `_G.DNCTPConfig` | Moonshade ear1 +250; Aeneas 500, Centovente 1000 | file | `TPBonusCalculator`, which receives the main and sub weapons (`tp_bonus_handler.lua:71-74`) |
-| `Tetsouo/config/dnc/DNC_WS_CONFIG.lua` -> `_G.DNCWSConfig` | Rudra's Storm, Ruthless Stroke, Shark Bite; `min_tp` 900; `min_target_hpp` 25 | file | `climactic_manager.lua:25,62-65` |
+| `Tetsouo/config/dnc/DNC_WS_CONFIG.lua` -> `_G.DNCWSConfig` | Rudra's Storm, Ruthless Stroke, Shark Bite; `min_tp` 1000 (lower counts as 1000); `min_target_hpp` 25 | file | `climactic_manager.lua:25,62-65` |
 | `Tetsouo/config/dnc/DNC_REFILL.lua` | 7 items | overlay | refill system |
 | Hard-coded | step recast 220, Presto 236 and level 77 (`step_manager.lua:56,66-69`), samba costs (`smartbuff_manager.lua:45-49`), Utsusemi cancel delay 2.3 s, auto-jump 1000 TP | code | - |
 
-`DNC_WS_CONFIG.min_tp` (900) is lower than the 1000 TP `WSPrecastHandler`
-requires. When TP really is between 900 and 999, Climactic Flourish is used and
-the replayed WS is then cancelled by the TP check. The config comment (38-40)
-says the 900 compensates for GearSwap reading a stale TP value.
+`ClimaticManager` reads the live TP (`TPBonusHandler.live_tp`, like
+`WSPrecastHandler`) and never fires below 1000: `DNC_WS_CONFIG.min_tp` can only
+raise that. Until 2026-09-27 it compared GearSwap's copy with 900 (to cover a
+stale TP), so at 900-999 real TP the flourish was spent on a WS the TP check
+then cancelled.
 
 ## State & lifetime
 
