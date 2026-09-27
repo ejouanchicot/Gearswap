@@ -47,16 +47,17 @@ if RegionConfig then
     _G.RegionConfig = RegionConfig
 end
 
--- Load core modules (cached for all functions)
-local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
-local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-
 -- ============================================
 -- LOAD UICONFIG AT MODULE LEVEL (executed on EVERY reload)
 -- ============================================
 -- Centralized loading via config_loader to eliminate duplication
 local ConfigLoader = require('shared/utils/config/config_loader')
 local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'WAR')
+
+-- Core modules, after config_loader: it installs the require cache, and
+-- UI_MANAGER reads _G.UIConfig when it loads.
+local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
+local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
 
 ---============================================================================
 --- GEARSWAP HOOKS - INITIALIZATION

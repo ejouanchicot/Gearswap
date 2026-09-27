@@ -11,6 +11,15 @@
 ---   @date    Created: 2025-11-03 | Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+-- Every entry file requires this module at file level, before Mote runs
+-- user_setup(). Installing the require cache here instead of waiting for
+-- INIT_SYSTEMS keeps user_setup() from re-running the same modules dozens of
+-- times (message_core, ui_style... about 230 extra loads per job load).
+local cache_ok, ModuleCache = pcall(require, 'shared/utils/core/module_cache')
+if cache_ok and ModuleCache then
+    ModuleCache.install()
+end
+
 local MessageCore = require('shared/utils/messages/message_core')
 
 local ConfigLoader = {}

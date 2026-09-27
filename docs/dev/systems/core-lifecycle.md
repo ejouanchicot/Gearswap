@@ -261,7 +261,7 @@ With Mote's `state.EquipStop` set to `midcast`, `filter_aftercast` cancels the a
 
 Inside the sandbox `require` is `include_user` (`refresh.lua:132`). It returns `package.loaded[str]` when that is a table (Windower's own libs) and otherwise loads and executes the file every time (`user_functions.lua:300-327`); it never writes `package.loaded`.
 
-`ModuleCache.install()` (`module_cache.lua:44-88`), called once per sandbox from `INIT_SYSTEMS.lua:53-58`:
+`ModuleCache.install()` (`module_cache.lua:44-88`), called once per sandbox. Since 2026-09-27 the first call comes from the top of `shared/utils/config/config_loader.lua`, which every entry file requires at file level, before `get_sets()` and Mote's `user_setup()`; the call in `INIT_SYSTEMS.lua:53-58` stays as a fallback for entry files that do not load `config_loader`. Before that change the cache arrived after `user_setup()`, and a job load ran about 356 file loads for 123 distinct files (offline profile, `message_core` 25 times, `ui_style` 40 times); it now runs about 124:
 
 - Guard: `rawget(_G, '__require_cache_installed')`, so a second call in the same sandbox returns false.
 - Wraps the original `require`. Calls with a second argument (include-into-table form) or a non-string path pass straight through (`:64-66`).
@@ -272,7 +272,7 @@ Lifetime: the cache lives on the sandbox `_G` and dies with it. The header (`:18
 
 `include()` is not cached: set files and `automove.lua` are meant to re-execute.
 
-`package.loaded` never holds a project module. The comments that used to describe it being cleared on reload, or persisting across a job change (in `lockstyle_manager`, `macrobook_manager`, `craft_manager`, `lag_debugger`, `warp_init`, `dualbox_sync_ipc`, `dualbox_manager`), have been rewritten: `grep -rn "package.loaded" shared` now finds only `INIT_SYSTEMS.lua`, `module_cache.lua` and `DEBUG_COMMANDS.lua` (memcheck). What those modules actually get is one instance per sandbox from `_G.__require_cache` (plus a pre-cache instance if they were required before INIT_SYSTEMS), and a new sandbox on every main job change.
+`package.loaded` never holds a project module. The comments that used to describe it being cleared on reload, or persisting across a job change (in `lockstyle_manager`, `macrobook_manager`, `craft_manager`, `lag_debugger`, `warp_init`, `dualbox_sync_ipc`, `dualbox_manager`), have been rewritten: `grep -rn "package.loaded" shared` now finds only `INIT_SYSTEMS.lua`, `module_cache.lua` and `DEBUG_COMMANDS.lua` (memcheck). What those modules actually get is one instance per sandbox from `_G.__require_cache` (plus a pre-cache instance for anything an entry file requires before `config_loader`: only `LOCKSTYLE_CONFIG` and `REGION_CONFIG` today), and a new sandbox on every main job change.
 
 Gotcha: everything required before `INIT_SYSTEMS.lua:53` (entry top level, anything `user_setup()` requires, set files) is loaded uncached, and the first `require` after installation loads it again. For those modules there are two instances in the same sandbox. Module state that must be shared between them has to live on `_G` or `windower.*`. `JobChangeManager` does exactly that (`_G.JobChangeManagerSTATE`, `job_change_manager.lua:32-55`): the entry keeps the pre-cache instance as an upvalue while `COMMON_COMMANDS.handle_reload` gets the cached one.
 

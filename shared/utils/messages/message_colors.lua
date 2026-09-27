@@ -20,15 +20,18 @@
 ---
 --- @file shared/utils/messages/message_colors.lua
 --- @author ejouanchicot
---- @version 1.3
+--- @version 1.4
 --- @date Created: 2025-10-02 | Updated: 2025-10-12 - Added config-based region detection
 ---============================================================================
 
 local MessageColors = {}
 
--- Read once at require time: _G.RegionConfig must already be set when this
--- module is first required.
-local RegionConfig = _G.RegionConfig or {}
+-- _G.RegionConfig is read at each use, not at require time: entry files set it
+-- after config_loader, which already pulls this module in, and require is
+-- cached from that point on.
+local function region_config()
+    return rawget(_G, 'RegionConfig') or {}
+end
 
 ---============================================================================
 --- REGION DETECTION
@@ -52,7 +55,8 @@ local function get_region_orange()
     end
 
     -- Priority 3: <Char>/config/REGION_CONFIG.lua
-    if RegionConfig and RegionConfig.get_region and player and player.name then
+    local RegionConfig = region_config()
+    if RegionConfig.get_region and player and player.name then
         local region = RegionConfig.get_region(player.name)
         if RegionConfig.get_orange_code then
             return RegionConfig.get_orange_code(region)
@@ -63,15 +67,19 @@ local function get_region_orange()
     return 057
 end
 
---- Record which orange this load ended up with (//gs c trace).
+local region_traced = false
+
+--- Record which orange this load ended up with (//gs c trace), once the
+--- region config is there.
 --- @param code number
 local function trace_region(code)
+    local RegionConfig = region_config()
+    if region_traced or not RegionConfig.get_region then return end
+    region_traced = true
     local ok, Trace = pcall(require, 'shared/utils/debug/trace_log')
     if ok and Trace then
-        local region = RegionConfig and RegionConfig.get_region and player and player.name
-            and RegionConfig.get_region(player.name)
-        Trace.log('REGION', 'orange %s (RegionConfig loaded at require: %s, region %s, _G.RegionConfig now %s)',
-            code, RegionConfig.get_region ~= nil, region, rawget(_G, 'RegionConfig') ~= nil)
+        local region = player and player.name and RegionConfig.get_region(player.name)
+        Trace.log('REGION', 'orange %s (region %s)', code, region)
     end
 end
 
@@ -100,8 +108,7 @@ DEFAULTS.INFO = 158           -- Green - Info text/counts
 -- Status/States
 DEFAULTS.SUCCESS = 158        -- Green - Success, Ready, Active
 DEFAULTS.ERROR = 167          -- Red - Errors
-DEFAULTS.WARNING = get_region_orange()  -- Region-specific Orange - Warnings
-trace_region(DEFAULTS.WARNING)
+DEFAULTS.WARNING = 057        -- Region-specific Orange - Warnings (resolved at use)
 DEFAULTS.DEBUFF = 208         -- Purple - Debuffs
 DEFAULTS.READY = 158          -- Green - Ready state
 DEFAULTS.ACTIVE = 158         -- Green - Active state
@@ -151,6 +158,10 @@ end
 setmetatable(MessageColors, {__index = function(_, key)
     local default = DEFAULTS[key]
     if default == nil then return nil end
+    if key == 'WARNING' then
+        default = get_region_orange()
+        trace_region(default)
+    end
     local colors = player_colors()
     local own = colors[key:lower()]
     if own then return own end
