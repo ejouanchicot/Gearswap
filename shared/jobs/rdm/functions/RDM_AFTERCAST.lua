@@ -14,7 +14,10 @@
 --- behaviour. Pass a function to aftercast() to extend it.
 local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 
-job_aftercast = LifecycleManager.aftercast()
+-- A spell that needed a piece (Dispelga: Daybreak) gives the weapon back
+job_aftercast = LifecycleManager.aftercast(function()
+    require('shared/utils/equipment/spell_gear_lock').release()
+end)
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT

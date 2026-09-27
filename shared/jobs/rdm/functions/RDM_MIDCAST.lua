@@ -333,12 +333,9 @@ local SKILL_HANDLERS = {
     ['Dark Magic'] = midcast_dark,
 }
 
----   Post-midcast customization using MidcastManager
----   @param spell table Spell information from GearSwap
----   @param action table Action information from GearSwap
----   @param spellMap string Spell mapping from Mote-Include
----   @param eventArgs table Event arguments for cancellation/customization
-function job_post_midcast(spell, action, spellMap, eventArgs)
+--- Midcast gear by skill, through MidcastManager.
+--- @param spell table Spell information from GearSwap
+local function route_midcast(spell)
     ensure_modules_loaded()
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_midcast_start(spell)
@@ -363,6 +360,17 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     if debug_enabled then
         MessageRDMMidcast.show_skill_not_handled(spell.skill or 'Unknown')
     end
+end
+
+--- Post-midcast hook: route by skill, then keep a spell's required piece on
+--- (spell_gear_lock.lua: Dispelga keeps Daybreak over any set).
+--- @param spell table Spell information from GearSwap
+--- @param action table Action information from GearSwap
+--- @param spellMap string Spell mapping from Mote-Include
+--- @param eventArgs table Event arguments
+function job_post_midcast(spell, action, spellMap, eventArgs)
+    route_midcast(spell)
+    require('shared/utils/equipment/spell_gear_lock').hold()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

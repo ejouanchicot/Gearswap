@@ -158,12 +158,11 @@ flowchart TD
     TR --> X
     CS --> X
     X -- yes --> Z
-    X -- no --> D{Dispelga, Combat Mode On, main not Daybreak}
-    D -- yes --> DZ[cancel, warning]
-    D -- no --> P{Phalanx / Phalanx II needs swap}
+    X -- no --> P{Phalanx / Phalanx II needs swap}
     P -- yes --> PS[cancel, input /ma other tier target.raw]
     P -- no --> S[stage_saboteur]
     S --> W[WSPrecastHandler.handle with RDMTPConfig]
+    W --> L[SpellGearLock.begin]
 ```
 
 - `require('shared/utils/core/combat_mode').apply()` (256) runs before anything
@@ -180,11 +179,14 @@ flowchart TD
   castable tier (recast exactly 0 and enough MP), replacement through
   `wait 0.1; @input /ma "<new>" <target.raw>`, 0.2 s re-entry guard. Its return
   value is ignored at 154 (Known issues).
-- `stage_dispelga`: Dispelga is only castable with Daybreak in the main hand.
-  `sets.precast.FC.Dispelga` and `sets.midcast.Dispelga` (the `.macc` Dispel
-  set) put it on; with Combat Mode On the weapon slots are locked, so when the
-  main hand is not already Daybreak the spell is cancelled with a warning
-  instead of being refused by the game.
+- `SpellGearLock` (`shared/utils/equipment/spell_gear_lock.lua`), last in
+  `job_precast`: a spell that needs a piece worn (Dispelga: Daybreak in the
+  main hand) gets it, the slot opened first when Combat Mode locks it;
+  `job_post_precast` and `job_post_midcast` wear it again last, and
+  `job_aftercast` releases it (Combat Mode On: previous weapon back, lock laid
+  again). Same shape as BRD's instrument lock. `sets.precast.FC.Dispelga` and
+  `sets.midcast.Dispelga` (the `.macc` Dispel set + Daybreak) hold the rest of
+  the gear.
 - `stage_phalanx`: only Enhancing Magic named Phalanx / Phalanx II;
   `is_self` compares `spell.target.name` with `player.name`. A swap cancels and
   sends `input /ma "<other>" <target.raw>` (no guard: the re-sent cast already

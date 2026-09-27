@@ -198,8 +198,9 @@ sets.precast.FC = {
 }
 
 -- • Dispelga: castable only with Daybreak in the main hand, from the
---   precast on (RDM_PRECAST refuses it when Combat Mode locks another
---   weapon). Magic accuracy like Dispel.
+--   precast on. spell_gear_lock.lua keeps it on for the whole cast, even
+--   with Combat Mode On, then puts the previous weapon back. Magic accuracy
+--   like Dispel.
 sets.precast.FC['Dispelga'] = set_combine(sets.precast.FC, {main = 'Daybreak'})
 
 -- • Stoneskin Fast Cast (Stoneskin Casting Time-, add if casting Stoneskin often)

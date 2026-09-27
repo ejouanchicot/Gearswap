@@ -26,6 +26,7 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `shared/utils/dnc/waltz_manager.lua` | 261 | Curing / Divine Waltz tier selection |
 | `shared/utils/whm/cure_manager.lua` | 392 | Cure / Curaga tier selection with recast fallback |
 | `shared/utils/whm/whm_message_formatter.lua` | 414 | Cure tier-change and debug messages (read for the calls only) |
+| `shared/utils/equipment/spell_gear_lock.lua` | 103 | A piece a spell cannot be cast without (Dispelga: Daybreak), worn through Combat Mode for the cast |
 
 The two craft set files are identical to their live copies in `Tetsouo/sets/`. `CRAFT_CONFIG.lua` now has a tracked template, `_master/config_global/CRAFT_CONFIG.lua` (added in `fd34a2c`).
 
@@ -294,6 +295,26 @@ The replayed WS goes through precast again while the flag is set, so it cannot s
 `cast_divine_waltz()` (`:219-259`) tries Divine Waltz II then I on `<me>` with the same readiness rules and an inline copy of the blocker loop.
 
 `WALTZ_CONFIG` (`:32-46`): TP 800/650/500/350/200 for Curing V-I, 800/400 for Divine II/I; recast ids match `res/job_abilities.lua`; levels 87/70/45/35/15 and 78/40 (the project's own `shared/data/job_abilities/dnc/dnc_waltzes_subjob.lua` lists Curing Waltz II at 30 and Divine Waltz at 25).
+
+---
+
+## SpellGearLock
+
+Some spells only exist while a piece is worn: Dispelga needs Daybreak in the
+main hand. `REQUIRED` (spell -> `{slot = item}`) lists them; the shape is BRD's
+instrument lock (`instrument_lock_config.lua`), shared.
+
+- `begin(spell)`, last in `job_precast`: records what the slots hold, opens
+  them when Combat Mode locks them (`equip()` on a disabled slot is dropped),
+  equips the piece and stores the lock on the sandbox `_G._spell_gear_lock`.
+- `hold()`, last in `job_post_precast` and `job_post_midcast`: wears the piece
+  again over any set.
+- `release()`, in `job_aftercast`: Combat Mode On puts the previous weapon back
+  and calls `CombatMode.apply()` to lay the lock again; Off, the job's sets
+  bring the weapon back. The swap costs the TP either way.
+
+Wired on RDM (2026-09-27). Another job that casts Dispelga needs the same four
+calls.
 
 ---
 

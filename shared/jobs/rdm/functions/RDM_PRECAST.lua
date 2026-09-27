@@ -179,24 +179,6 @@ local function stage_cooldown(spell, eventArgs, debug_enabled)
     return false
 end
 
----   Dispelga is only castable with Daybreak in the main hand. The Dispelga
----   sets put it on, but with Combat Mode On the weapon slots are locked:
----   the swap cannot happen and the game would refuse the spell, so it is
----   stopped here with the reason instead.
----   @return boolean True when the cast was cancelled
-local function stage_dispelga(spell, eventArgs)
-    if spell.english ~= 'Dispelga' then return false end
-    local main = player and player.equipment and player.equipment.main
-    if main == 'Daybreak' or not require('shared/utils/core/combat_mode').is_on() then
-        return false
-    end
-    eventArgs.cancel = true
-    if MessageFormatter then
-        MessageFormatter.show_warning('Dispelga needs Daybreak in hand: turn Combat Mode Off to let it swap')
-    end
-    return true
-end
-
 ---   Stage 3 - Phalanx picks its own tier by target.
 ---   Phalanx II on yourself is worse than Phalanx; on anyone else it is better.
 ---   @return boolean True when the cast was swapped for the other tier
@@ -294,7 +276,6 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- a line here changes behaviour even though nothing looks broken.
     if stage_guard(spell, eventArgs, debug_enabled) then return end
     if stage_cooldown(spell, eventArgs, debug_enabled) then return end
-    if stage_dispelga(spell, eventArgs) then return end
     if stage_phalanx(spell, eventArgs) then return end
 
     stage_saboteur(spell, eventArgs, debug_enabled)
@@ -302,6 +283,10 @@ function job_precast(spell, action, spellMap, eventArgs)
     if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, RDMTPConfig) then
         return
     end
+
+    -- Last: a spell that needs a piece worn (Dispelga: Daybreak) gets it,
+    -- through Combat Mode, for the whole cast
+    require('shared/utils/equipment/spell_gear_lock').begin(spell)
 
     if debug_enabled then
         MessagePrecast.show_completion()
@@ -367,6 +352,7 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     if spell.action_type == 'Magic' and sets.precast.FC and sets.precast.FC[spell.english] then
         equip(sets.precast.FC[spell.english])
     end
+    require('shared/utils/equipment/spell_gear_lock').hold()
 
     if debug_enabled then
         local set_name, gear_set = describe_equipped_set(spell)
