@@ -1,6 +1,6 @@
 # Documentation
 
-17 jobs (PUP does not load yet; SMN ships only with the author's personal template).
+17 jobs (PUP does not load yet; SMN's files are only in the author's personal template (not in the public repository)).
 Pages checked against the code on 2026-09-25.
 
 Start with the [project README](../README.md) for the overview. The player

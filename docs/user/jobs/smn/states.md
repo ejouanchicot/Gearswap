@@ -1,6 +1,6 @@
 # SMN — modes and keys
 
-> SMN ships only with the author's personal template (an overlay in `_master/`): a clone of
+> SMN's entry, configs and sets are only in the author's personal template (not in the public repository): a clone of
 > another character does not get SMN files (`clone_character.py` prints
 > `No entry file for: SMN`).
 
@@ -50,7 +50,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 
 ## Files
 
-In `<YourChar>/config/smn/` (from the author's overlay):
+In `<YourChar>/config/smn/`, if you write them (not in the public repository):
 `SMN_STATES.lua` (modes and defaults), `SMN_KEYBINDS.lua` (keys),
 `SMN_CUSTOM.lua` (your own modes and gear, see
 [keybinds](../../guides/keybinds.md)), `SMN_LOCKSTYLE.lua`, `SMN_MACROBOOK.lua`.

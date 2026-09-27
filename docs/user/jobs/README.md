@@ -25,7 +25,7 @@ Medicine) and Alt+Numpad7-9 (dual-box alts). See the
 | RDM | [rdm/states.md](rdm/states.md) | |
 | RUN | [run/README.md](run/README.md) | Not played by a maintained character |
 | SAM | [sam/states.md](sam/states.md) | Not played by a maintained character |
-| SMN | [smn/states.md](smn/states.md) | Ships only with the author's personal template |
+| SMN | [smn/states.md](smn/states.md) | Files only in the author's personal template (not in the public repository) |
 | THF | [thf/states.md](thf/states.md) | |
 | WAR | [war/states.md](war/states.md) | |
 | WHM | [whm/states.md](whm/states.md) | Not played by a maintained character |

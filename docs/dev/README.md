@@ -315,6 +315,11 @@ Interactions, Invariants & gotchas, Extending, Known issues):
 
 ### Elsewhere
 
+- The per-character overlays `_master/<Name>/` (Tetsouo, Kaories, Gabvanstronger,
+  Blodykiller) are not in the public repository since 2026-09-27: they stay on
+  the author's disk for `clone_character.py`. Paths to them in these pages
+  describe that local layout.
+
 - `docs/user/` (tracked, public): user guides. Several pages are stale (key
   layout, job count, commands).
 - `.claude/CODE_QUALITY.md`: coding standard (private). `.claude/audits/`:

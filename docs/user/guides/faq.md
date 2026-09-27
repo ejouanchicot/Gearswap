@@ -14,8 +14,8 @@ edited has a syntax error (a missing comma or brace).
 
 **PUP does not load.** Known: see [PUP](../jobs/pup/README.md).
 
-**I want SMN.** It ships only with the author's personal template; the clone script does
-not deploy it for another name.
+**I want SMN.** Its entry, configs and sets are only in the author's personal template (not in the public repository); the
+clone script has nothing to deploy for SMN.
 
 **How do I update?**
 Download the new version and copy `shared/`, `_master/` and the scripts over

@@ -99,7 +99,7 @@ Mog Sack, and puts the surplus back. The lists are per character and per job,
 and only the author's characters ship with them: **create
 `<YourName>/config/<job>/<JOB>_REFILL.lua` yourself**. Without it, `rf` uses a
 short built-in list (Panacea, Antacid, Holy Water, Remedy, Prism Powder, Silent
-Oil, 12 each). Format (the author's `WAR_REFILL.lua`, in its overlay under `_master/`, is a model):
+Oil, 12 each). Format:
 
 ```lua
 local M = {}
@@ -115,8 +115,8 @@ return M
 ```
 
 Consumables named only in another job's list are put back too. While a craft
-set is on, `config/craft/CRAFT_REFILL.lua` is used instead (the author's personal template
-only).
+set is on, `config/craft/CRAFT_REFILL.lua` is used instead (write it yourself:
+it is not in the public repository).
 
 ## Wardrobes (`WARDROBE_CONFIG.lua`, optional)
 
@@ -134,7 +134,7 @@ return {
 }
 ```
 
-The author's own files are in its overlays under `_master/` (`config_global/WARDROBE_CONFIG.lua`).
+The author's own files are not published.
 
 ## Sets (`<YourName>/sets/`)
 

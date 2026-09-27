@@ -35,7 +35,7 @@ The script asks:
 1. **Character name** (letters and digits, 2-15 characters). If
    `data/<Name>/` already exists, it asks whether to replace it.
 2. **Jobs**, comma-separated, among BLM, BRD, BST, COR, DNC, DRK, GEO, PLD,
-   RDM, RUN, SAM, THF, WAR, WHM. (SMN is only deployed from the author's personal template;
+   RDM, RUN, SAM, THF, WAR, WHM. (SMN's files are only in the author's personal template (not in the public repository);
    PUP is not offered, it does not load.)
 3. **Role**: `main` or `alt`. A main is asked for its alt's name (empty = no
    dual-box); an alt must give its main's name.

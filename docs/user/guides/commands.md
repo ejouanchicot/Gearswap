@@ -50,7 +50,7 @@ below, then the job's commands, then Mote-Include's (`cycle`, `set`,
 | `reload` | Reload the job file |
 | `ls` (`lockstyle`) | Apply the lockstyle again; also sent to your other boxes |
 | `dressup` | Stop / resume unloading DressUp around the lockstyle (kept for next time) |
-| `craft [variant]`, `craft off` | Crafting set from `sets/bonecraft_sets.lua` (only the author's personal template has one) |
+| `craft [variant]`, `craft off` | Crafting set from `sets/bonecraft_sets.lua` (not in the public repository: write your own) |
 | `fish` (`fishing`) | Fishing set from `sets/fishing_sets.lua` (same) |
 | `uncraft` | Leave the craft / fishing set |
 

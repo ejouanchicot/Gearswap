@@ -33,7 +33,7 @@ lockstyle, macro book) is common to all jobs.
 | Job | Status |
 |---|---|
 | BLM, BLU, BRD, BST, COR, DNC, DRK, GEO, PLD, RDM, RUN, SAM, THF, WAR, WHM | Template shipped in `_master/`, offered by the clone script |
-| SMN | Only in the author's personal template (an overlay in `_master/`): the clone script does not deploy it for another character |
+| SMN | Its shared modules are here, but its entry, configs and sets exist only in the author's personal template (not in the public repository): a clone gets no SMN files |
 | PUP | **Does not load yet**: its configuration folder is missing, so the job file stops during loading. The clone script does not offer it |
 
 The author plays BLM, BRD, BST, COR, DNC, PLD, SMN, THF and WAR on the main,
@@ -218,9 +218,8 @@ Setup and details: [dual-box guide](docs/user/guides/dualbox.md).
 `//gs c craft [variant]` and `//gs c fish` equip a set from
 `data/<YourName>/sets/bonecraft_sets.lua` and `fishing_sets.lua`, lock it and
 apply a craft lockstyle; `//gs c uncraft` (or `craft off`) gives your job gear
-back. Those two set files ship **only with the author's personal template**: another
-character gets "No set file" until you write them; the author's
-`bonecraft_sets.lua` (in its overlay under `_master/`) is a model.
+back. Those two set files are **not in the public repository**: a character
+gets "No set file" until you write them.
 
 ## Documentation
 
