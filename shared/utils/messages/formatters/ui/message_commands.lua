@@ -409,6 +409,7 @@ local QUICK_HELP = {
             {'//gs c alts help', '', 'Orders to the other boxes'},
             {'//gs c altcmds help', '', "The alt's commands"},
             {'//gs c sortie help', '', 'Sortie targets'},
+            {'//gs c stealth help', '', 'Sneak / Invisible, you + alts'},
             {'//gs c watchdog help', '', 'Stuck midcast recovery'},
             {'//gs c info help', '', 'Spell / ability / WS details'},
         }},
@@ -452,6 +453,8 @@ local COMMANDS_HELP = {
             {'//gs c altsync', '', 'Ask the alt to resend its buffs'},
             {'//gs c altbuffs', '', "What the main knows of alt buffs"},
             {'//gs c sortie ', '<target>', 'Sortie setup (sortie help)'},
+            {'//gs c stealth ', 'sneak | invi | both', 'You + alts, best method each'},
+            {'//gs c stealth check', '', 'What stealth would do now'},
         }},
         {title = 'CRAFT & FISH', rows = {
             {'//gs c craft', '', 'Craft mode (locks weapon slots)'},

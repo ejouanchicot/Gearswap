@@ -92,7 +92,7 @@ function MessageAltGroup.show_usage()
         groups = {{title = 'COMMANDS', rows = {
             {'//gs c alts ', 'on|off', 'Automation on / off'},
             {'//gs c alts toggle', '', 'Flip the automation'},
-            {'//gs c alts follow', '', 'Follow me / stop (toggle)'},
+            {'//gs c alts follow', '', 'I lead, everyone follows me (again: stop)'},
             {'//gs c alts follow ', '<name>|off', 'Follow that character / stop'},
             {'//gs c alts do ', '<command>', 'Console command on every alt'},
             {'//gs c alts mirror', '', 'Mirror request from here'},
