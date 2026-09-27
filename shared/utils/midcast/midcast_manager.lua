@@ -619,6 +619,8 @@ function MidcastManager.select_set(config)
     if not config or not config.skill then
         return false
     end
+    -- Seen by midcast_fallback.lua: this spell was routed
+    _G._midcast_routed = config.spell
     require('shared/utils/midcast/midcast_trace').begin(config.spell)
 
     if not sets or not sets.midcast then
@@ -635,6 +637,12 @@ function MidcastManager.select_set(config)
 
     if not base_set then
         require('shared/utils/midcast/midcast_trace').no_set(config.skill)
+        if is_debug_enabled() and config.spell then
+            local target = config.spell.target and config.spell.target.name or (player and player.name)
+            MessageMidcast.show_debug_header(config.spell.english or 'Unknown', config.skill, target)
+            MessageMidcast.show_debug_step(1, 'Skill set', 'warn',
+                ("sets.midcast['%s'] missing - Mote's set stays (spell name / map)"):format(config.skill))
+        end
         return false
     end
 

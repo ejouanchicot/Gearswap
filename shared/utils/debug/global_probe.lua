@@ -128,7 +128,7 @@ local EXPECTED = {
     CustomStates = true, HPPriority = true, JobSyncWatchdog = true,
     KeybindManager = true, MessageSortie = true, MessageTempBind = true,
     SortieCommands = true, TempBinds = true, TraceLog = true,
-    _alt_window_display = true, _alt_window_prefs = true, _alt_window_dead = true,
+    _alt_window_display = true, _alt_window_prefs = true, _alt_window_dead = true, _midcast_routed = true, _midcast_fallback_installed = true,
     geo_escort_on_aftercast = true, thf_range_locked = true,
     thf_treasure = true,}
 

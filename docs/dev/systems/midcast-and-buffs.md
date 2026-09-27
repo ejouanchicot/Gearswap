@@ -9,6 +9,7 @@ None of these modules registers a Windower event. `MidcastManager` keeps its deb
 | Path | Lines | Role |
 |---|---|---|
 | `shared/utils/midcast/midcast_manager.lua` | 777 | `select_set()` with the 10-level standard chain (P0-P9) and the Singing chain, persistent debug toggle, Composure target helper, song helpers, unused preset configs |
+| `shared/utils/midcast/midcast_fallback.lua` | 53 | Routes a spell no job midcast handed to `select_set` (a subjob's magic), on Mote's `cleanup_midcast` |
 | `shared/utils/midcast/midcast_deps.lua` | 44 | Loads `MidcastManager` and `ENHANCING_MAGIC_DATABASE` once per instance, for the 7 subjob-magic jobs |
 | `shared/utils/messages/formatters/magic/message_midcast.lua` | 156 | Debug output used by `MidcastManager` (templates in `shared/utils/messages/data/systems/midcast_messages.lua`) |
 | `shared/utils/set_building/base_set_builder.lua` | 104 | `apply_movement`, `select_idle_base_town`, `is_in_town` |
@@ -47,6 +48,7 @@ Consequences:
 - When `select_set` returns `false` nothing more is equipped, so Mote's default choice stands.
 - `job_post_midcast` runs even when `job_midcast` set `eventArgs.handled` (`Mote-Include.lua:274`). PLD relies on that and returns early itself (`shared/jobs/pld/functions/PLD_MIDCAST.lua:167`); that early return also skips `EnmityOverride.apply_midcast` for Cure III/IV.
 - `user_post_midcast` (the spell-message hook, `shared/hooks/init_spell_messages.lua`) runs between `default_midcast` and `job_post_midcast` (`Mote-Include.lua:269-270`). A cancelled precast never reaches midcast, so no message is printed for it.
+- **Spells a job does not route** (2026-09-27, `shared/utils/midcast/midcast_fallback.lua`): each `job_post_midcast` hands `select_set` only the skills it knows, so a subjob's magic (COR/DRK Drain, WAR/NIN Utsusemi) used to get Mote's set with no debug output. `MidcastFallback.install()` (INIT_SYSTEMS, before the custom states hook) wraps Mote's `cleanup_midcast`, which runs after `job_post_midcast`: a spell with `action_type == 'Magic'` that `select_set` did not see (`_G._midcast_routed`, written at the top of `select_set`) is routed with its own skill. Left alone: a cancelled action, `eventArgs.handled` (PLD / RUN / WHM cures equipped by the job), anything but magic. No change of gear when `sets.midcast[skill]` does not exist (select_set returns false).
 
 ## MidcastManager.select_set
 
@@ -176,6 +178,7 @@ Data facts that shape the result today (`_master/sets/brd_sets.lua`, same in `Te
 - `//gs c debugmidcast` is handled in each job's COMMANDS file (16 files: BLM `:313`, BRD `:248`, BST `:190`, COR `:128`, DNC `:121`, DRK `:119`, GEO `:143`, PLD `:150`, PUP `:181`, RDM `:232`, RUN `:139`, SAM `:114`, SMN `:327`, THF `:133`, WAR `:138`, WHM `:122`). Each requires the manager, calls `MidcastManager.toggle_debug()` (`midcast_manager.lua:53-59`), then prints `MessageCommands.show_debugmidcast_toggled(job, _G.MidcastManagerDebugState)`.
 - **The flag lives on `windower._midcast_debug`** and is copied into `_G.MidcastManagerDebugState` every time the module loads (`:30-31`); `enable_debug` / `disable_debug` (`:39-50`) write both. It therefore survives `gs reload`, main job changes and subjob changes, and is reset only by `//lua reload gearswap` (since `11ff91e`). Job routers read the `_G` mirror to gate their own traces (`RDM_MIDCAST.lua:334`, `BRD_MIDCAST.lua:97`, `BLM_MIDCAST.lua:147`, `SMN_MIDCAST.lua:186,190`).
 - Output: header (`:642-647`), mode/type/target steps (`resolve_metadata`), one line per priority checked (P1 prints only its first failing path), then the chosen path and every equipped slot (`equip_with_debug`).
+- A skill with no `sets.midcast[skill]` prints the header and `STEP 1: Skill set >> WARN: sets.midcast['<skill>'] missing - Mote's set stays (spell name / map)` (2026-09-27; it printed nothing before). With the fallback above, every spell cast on any main / sub is reported.
 - Trace log (`//gs c trace on`, independent of `debugmidcast`): `shared/utils/midcast/midcast_trace.lua` writes one `MIDCAST` line per midcast to `<Character>/trace.log`: `begin` (`midcast_manager.lua:622`), then the chosen path and its pieces (`selection`, `:125`), or, when `sets.midcast[skill]` does not exist, `<spell> -> no sets.midcast['<skill>']: Mote's own set (spell name / map) stays` (`no_set`, `midcast_trace.lua:73-79`, called `midcast_manager.lua:637`). That line is not "no gear": MidcastManager adds nothing, and the set Mote picked by spell name or spell map (`sets.midcast.Cure`, `sets.midcast['Banishga']`) stays on.
 
 ### Helpers and presets

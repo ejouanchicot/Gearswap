@@ -295,6 +295,16 @@ end
 ---   CUSTOM STATES - hook the player's own gear (<JOB>_CUSTOM.lua)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+-- Spells a job's midcast does not route (a subjob's magic) go through
+-- MidcastManager anyway. Laid before the custom states hook below, which
+-- wraps it, so the player's custom gear still goes on last.
+pcall(function()
+    local ok, MidcastFallback = pcall(require, 'shared/utils/midcast/midcast_fallback')
+    if ok and MidcastFallback then
+        MidcastFallback.install()
+    end
+end)
+
 -- Not from user_setup(): Mote calls it from the middle of Mote-Include, before
 -- defining handle_equipping_gear and cleanup_precast/midcast, and those
 -- definitions then replace any hook laid on them. By now they all exist.
