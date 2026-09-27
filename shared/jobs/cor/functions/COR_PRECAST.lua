@@ -202,6 +202,8 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     hold_fold_gear(spell)
     -- //gs c rolldebug: note the gear this roll is sent in
     require('shared/jobs/cor/functions/logic/roll_debug').note_precast(spell)
+    -- Keep the roll set on until the roll lands (roll_hold.lua)
+    require('shared/jobs/cor/functions/logic/roll_hold').start(spell)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -15,11 +15,14 @@
 ---   MOVEMENT HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Handle gear equipping during movement (empty: nothing COR-specific)
+---   Gear update (AutoMove, status change, gs c update): held while a
+---   Phantom Roll or Double-Up is under way, so the roll set stays on until
+---   the roll lands (roll_hold.lua)
 ---   @param playerStatus string Current player status
 ---   @param eventArgs table Event arguments
 ---   @return void
 function job_handle_equipping_gear(playerStatus, eventArgs)
+    require('shared/jobs/cor/functions/logic/roll_hold').hold_update(eventArgs)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

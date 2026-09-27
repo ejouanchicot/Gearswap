@@ -22,6 +22,10 @@
 ---   @param eventArgs table Event arguments
 ---   @return void
 function job_aftercast(spell, action, spellMap, eventArgs)
+    -- The roll landed (or failed): gear updates go through again, starting
+    -- with Mote's own aftercast right after this hook
+    require('shared/jobs/cor/functions/logic/roll_hold').stop(spell)
+
     -- Watchdog: Track aftercast
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_aftercast()

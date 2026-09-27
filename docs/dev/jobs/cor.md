@@ -46,12 +46,13 @@ instead.
 | `shared/jobs/cor/functions/COR_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/cor/functions/COR_BUFFS.lua` | 40 | `job_buff_change = LifecycleManager.buff_change(retire_lost_roll)` |
 | `shared/jobs/cor/functions/COR_COMMANDS.lua` | 361 | `job_self_command` router (incl. `shot`, `roll1`, `roll2`), `job_state_change` via `LifecycleManager.state_change` |
-| `shared/jobs/cor/functions/COR_MOVEMENT.lua` | 31 | Empty `job_handle_equipping_gear` |
+| `shared/jobs/cor/functions/COR_MOVEMENT.lua` | 34 | `job_handle_equipping_gear`: holds gear updates during a roll (`RollHold`) |
 | `shared/jobs/cor/functions/COR_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('COR', ..., 1, 'SAM')` wrappers |
 | `shared/jobs/cor/functions/COR_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('COR', ..., 'SAM', 1, 1)` wrapper |
 | `shared/jobs/cor/functions/logic/party_tracker.lua` | 257 | Roll `action` listener, `0xDD`/`0xDF` party job listener, cleanup |
 | `shared/jobs/cor/functions/logic/roll_tracker.lua` | 834 | Roll state, Crooked, bonus, party cache validation, coverage, display, cleanup |
 | `shared/jobs/cor/functions/logic/roll_gear.lua` | 70 | `+Phantom Roll` gear worn, read from the game |
+| `shared/jobs/cor/functions/logic/roll_hold.lua` | 67 | Keeps the roll set on from precast to aftercast |
 | `shared/jobs/cor/functions/logic/roll_data.lua` | 439 | 31 rolls: values 1-11, lucky/unlucky, bust effect, `+Phantom Roll` step, job bonus |
 | `shared/jobs/cor/functions/logic/set_builder.lua` | 201 | Town, weapons (DW-aware), PDT, Refresh, movement; unused `apply_buff_gear` |
 | `_master/config/cor/COR_STATES.lua` | 184 | All states (`CORStates.configure()`) |
@@ -317,7 +318,13 @@ Phantom Rolls and Quick Draw are instant and have no midcast.
   while it goes out. `job_buff_change` is the shared
   handler with `retire_lost_roll` as its extra (skipped when Doom handled the
   buff).
-- `job_handle_equipping_gear` (`COR_MOVEMENT.lua:22-23`) is empty.
+- Roll hold (`logic/roll_hold.lua`, since 2026-09-28): `job_post_precast`
+  opens it for a Phantom Roll or Double-Up, `job_handle_equipping_gear` marks
+  every gear update handled while it is open (Mote swaps nothing: an AutoMove
+  `gs c update` or a status change after a kill used to re-equip the idle set
+  before the roll landed, so the roll went out without Regal Necklace), and
+  `job_aftercast` closes it before Mote's own aftercast. 5 s safety limit.
+  Each held update writes `ROLL gear update held during <roll>` to the trace.
 
 ### External addon
 
