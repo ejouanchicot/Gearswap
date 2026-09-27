@@ -51,8 +51,9 @@ instead.
 | `shared/jobs/cor/functions/COR_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('COR', ..., 'SAM', 1, 1)` wrapper |
 | `shared/jobs/cor/functions/logic/party_tracker.lua` | 257 | Roll `action` listener, `0xDD`/`0xDF` party job listener, cleanup |
 | `shared/jobs/cor/functions/logic/roll_tracker.lua` | 834 | Roll state, Crooked, bonus, party cache validation, coverage, display, cleanup |
-| `shared/jobs/cor/functions/logic/roll_gear.lua` | 70 | `+Phantom Roll` gear worn, read from the game |
-| `shared/jobs/cor/functions/logic/roll_hold.lua` | 67 | Keeps the roll set on from precast to aftercast |
+| `shared/jobs/cor/functions/logic/roll_gear.lua` | 73 | `+Phantom Roll` gear worn, read from the game |
+| `shared/jobs/cor/functions/logic/roll_hold.lua` | 68 | Keeps the roll set on from precast to aftercast |
+| `shared/jobs/cor/functions/logic/roll_debug.lua` | 261 | `//gs c rolldebug`: gear sent vs worn at landing, held updates, pieces out of reach, locked slots, status / movement, Phantom Roll +; summary on switch-off; `<Char>/rolldebug.log` |
 | `shared/jobs/cor/functions/logic/roll_data.lua` | 439 | 31 rolls: values 1-11, lucky/unlucky, bust effect, `+Phantom Roll` step, job bonus |
 | `shared/jobs/cor/functions/logic/set_builder.lua` | 201 | Town, weapons (DW-aware), PDT, Refresh, movement; unused `apply_buff_gear` |
 | `_master/config/cor/COR_STATES.lua` | 184 | All states (`CORStates.configure()`) |

@@ -23,6 +23,9 @@ local PHANTOM_ROLL_GEAR = {
     {slots = {'left_ring', 'right_ring'}, pattern = 'Merirosvo Ring', value = 3},
 }
 
+-- Read by roll_debug.lua (//gs c rolldebug) for the value worn at landing
+RollGear.PIECES = PHANTOM_ROLL_GEAR
+
 --- Name of the item in `slot`, read from the game. The roll result comes
 --- through PartyTracker's raw 'action' listener, outside GearSwap's events:
 --- player.equipment there is GearSwap's copy from before the roll's precast,

@@ -57,6 +57,7 @@ function RollHold.hold_update(eventArgs)
         return false
     end
     eventArgs.handled = true
+    pcall(function() require('shared/jobs/cor/functions/logic/roll_debug').note_held() end)
     local ok, Trace = pcall(require, 'shared/utils/debug/trace_log')
     if ok and Trace then
         Trace.log('ROLL', 'gear update held during %s (roll set kept on)', hold.name)
