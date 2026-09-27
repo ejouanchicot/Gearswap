@@ -7,7 +7,7 @@
 ---   apply_tp_gear() - equips the stored TP bonus gear in job_post_precast
 ---
 --- @file    shared/utils/precast/ws_precast_handler.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2025-11-29
 ---============================================================================

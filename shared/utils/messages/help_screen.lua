@@ -25,7 +25,7 @@
 --- header, group, rows, names, notes, footer.
 ---
 --- @file shared/utils/messages/help_screen.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.1
 --- @date Created: 2026-09-25
 ---============================================================================

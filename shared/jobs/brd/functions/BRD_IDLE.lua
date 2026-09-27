@@ -7,7 +7,7 @@
 ---   - Movement gear outside town
 ---
 ---   @file    shared/jobs/brd/functions/BRD_IDLE.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.1 - Removed dead code + refactored header
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

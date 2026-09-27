@@ -6,7 +6,7 @@
 ---   based on party composition.
 ---
 ---   @file    shared/jobs/cor/functions/logic/party_tracker.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.1.0
 ---   @date    Created: 2025-11-03 (extracted from Tetsouo_COR.lua)
 ---   @date    Updated: 2026-05-08 - Single canonical roll-detection path:

@@ -19,7 +19,7 @@
 ---   • Double Jump: ~3.0s
 ---
 --- @file    shared/utils/drg/auto_jump.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-07-29
 ---============================================================================

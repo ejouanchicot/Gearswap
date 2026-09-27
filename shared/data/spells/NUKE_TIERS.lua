@@ -13,7 +13,7 @@
 --- never cast: the refiner skips a spell the character has not learned.
 ---
 --- @file shared/data/spells/NUKE_TIERS.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-26
 ---============================================================================

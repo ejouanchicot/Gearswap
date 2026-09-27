@@ -25,7 +25,7 @@
 --- the live HUD and saved into UI_CONFIG.lua, so a reload keeps it.
 ---
 --- @file shared/utils/ui/ui_style_commands.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-25
 ---============================================================================

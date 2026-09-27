@@ -5,7 +5,7 @@
 ---   Ensures all hooks are registered with GearSwap/Mote-Include system.
 ---
 ---   @file    shared/jobs/whm/functions/whm_functions.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-21
 ---  ═══════════════════════════════════════════════════════════════════════════

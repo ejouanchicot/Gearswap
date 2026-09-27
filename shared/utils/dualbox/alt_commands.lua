@@ -20,7 +20,7 @@
 ---   COR to RDM and the command set follows automatically.
 ---
 ---   @file    shared/utils/dualbox/alt_commands.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-08-07
 ---  ═══════════════════════════════════════════════════════════════════════════

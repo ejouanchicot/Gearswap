@@ -8,7 +8,7 @@
 ---   - Conquest Outpost: Current outpost (1)
 ---
 --- @file shared/utils/warp/database/warp_database_cities_chocobo_conquest.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 4.0
 --- @date Created: 2025-10-28
 ---============================================================================

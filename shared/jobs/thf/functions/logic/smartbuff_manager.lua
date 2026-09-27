@@ -20,7 +20,7 @@
 ---   • MessageBuffs (buff status display module)
 ---
 ---   @file    shared/jobs/thf/functions/logic/smartbuff_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
 ---  ═══════════════════════════════════════════════════════════════════════════

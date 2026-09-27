@@ -6,7 +6,7 @@
 ---   (Sortie / Tanking).
 ---
 ---   @file    shared/jobs/pld/functions/PLD_PRECAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-05
 ---  ═══════════════════════════════════════════════════════════════════════════

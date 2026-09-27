@@ -17,7 +17,7 @@
 --- so it keeps working when the message system is what is being traced.
 ---
 --- @file    shared/utils/debug/trace_log.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-25
 ---============================================================================

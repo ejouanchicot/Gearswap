@@ -10,7 +10,7 @@
 ---   • Logic modules (logic/*.lua) contain business logic, loaded via require()
 ---
 ---   @file    shared/jobs/pld/functions/pld_functions.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0 - Logic Extracted to logic/
 ---   @date    Created: 2025-10-03 | Updated: 2025-10-06
 ---   @requires All PLD_*.lua modules in functions directory

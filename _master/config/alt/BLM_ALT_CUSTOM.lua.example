@@ -30,7 +30,7 @@
 ---   which differs between a main job and a subjob.
 ---
 --- @file    config/alt/BLM_ALT_CUSTOM.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-08-09
 ---============================================================================

@@ -5,7 +5,7 @@
 ---   Business logic for BRD song casting sequences.
 ---
 ---   @file    shared/jobs/brd/functions/logic/song_rotation_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Fix: Remove hardcoded instruments (only Marsyas/Loughnashade locked)
 ---   @date    Created: 2025-10-13 | Updated: 2025-11-13
 ---  ═══════════════════════════════════════════════════════════════════════════

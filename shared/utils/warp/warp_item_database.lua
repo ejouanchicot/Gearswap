@@ -5,7 +5,7 @@
 --- The actual data is split across 6 specialized modules in database/ folder.
 ---
 --- @file warp_item_database.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 4.0 - Modular Architecture (WRAPPER)
 --- @date 2025-10-28
 ---============================================================================

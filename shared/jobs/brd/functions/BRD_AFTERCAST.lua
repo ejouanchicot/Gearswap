@@ -5,7 +5,7 @@
 ---   Pianissimo flag after a song, and releases the instrument lock.
 ---
 ---   @file    shared/jobs/brd/functions/BRD_AFTERCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-13
 ---  ═══════════════════════════════════════════════════════════════════════════

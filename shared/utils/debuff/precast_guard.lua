@@ -5,7 +5,7 @@
 ---   unnecessary equipment swaps and providing clear feedback to the player.
 ---
 ---   @file    shared/utils/debuff/precast_guard.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.4 - Cure lock remembers its item, so a second debuff is not
 ---                  silently swallowed while a cure for the first is in flight
 ---   @date    Created: 2025-10-02 | Updated: 2026-09-18

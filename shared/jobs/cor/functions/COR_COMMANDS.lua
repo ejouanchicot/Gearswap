@@ -13,7 +13,7 @@
 ---   job_state_change re-equips gear when MainWeapon / RangeWeapon changes.
 ---
 ---   @file    shared/jobs/cor/functions/COR_COMMANDS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Added UICommands integration
 ---   @date    Created: 2025-10-07
 ---   @date    Updated: 2025-10-10

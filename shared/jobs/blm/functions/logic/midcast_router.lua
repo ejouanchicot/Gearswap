@@ -19,7 +19,7 @@
 ---     • elemental_config (BLMElementalConfig: { auto_hachirin, check_storm/day/weather })
 ---
 ---   @file    shared/jobs/blm/functions/logic/midcast_router.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-09
 ---  ═══════════════════════════════════════════════════════════════════════════

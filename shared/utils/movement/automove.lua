@@ -5,7 +5,7 @@
 --- Provides centralized position tracking for all movement-based systems.
 ---
 --- @file    shared/utils/movement/automove.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.2.0 - Discontinuity guard + self-heal + adaptive/engaged polling
 --- @date    Created: 2025-09-30 | Updated: 2026-06-08
 ---

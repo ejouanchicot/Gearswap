@@ -24,7 +24,7 @@
 ---   release_locks()                - forget stance locks `gs enable all` opened
 ---
 --- @file shared/utils/wardrobe/lib/orchestrator_alt.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-01
 ---============================================================================

@@ -17,7 +17,7 @@
 ---   This allows jobs to override if needed while keeping 99% shared.
 ---
 --- @file    shared/utils/set_building/base_set_builder.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2025-10-17
 ---============================================================================

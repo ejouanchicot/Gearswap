@@ -15,7 +15,7 @@
 ---   5. WSPrecastHandler - Weaponskill range, validity and TP checks
 ---
 ---   @file    shared/jobs/whm/functions/WHM_PRECAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-21
 ---   @requires shared/utils/messages/message_formatter, shared/utils/precast/cooldown_checker

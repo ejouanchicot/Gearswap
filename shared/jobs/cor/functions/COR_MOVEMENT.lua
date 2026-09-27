@@ -5,7 +5,7 @@
 ---   added by SetBuilder.build_idle_set (apply_movement).
 ---
 ---   @file    shared/jobs/cor/functions/COR_MOVEMENT.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-07
 ---   @requires shared/utils/movement/automove.lua

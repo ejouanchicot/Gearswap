@@ -21,7 +21,7 @@
 ---     • [CharName]/config/message_modes.lua (written by message_settings.lua)
 ---
 ---   @file    shared/config/ENFEEBLING_MESSAGES_CONFIG.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.3 - Refactored with new header style
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

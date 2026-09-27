@@ -22,7 +22,7 @@
 ---   • _G.thf_sa_pending, _G.thf_ta_pending (pending flag globals)
 ---
 ---   @file    shared/jobs/thf/functions/logic/sa_ta_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
 ---  ═══════════════════════════════════════════════════════════════════════════

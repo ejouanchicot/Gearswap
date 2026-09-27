@@ -6,7 +6,7 @@
 ---   jump is considered 1.0s after the first, once its TP has landed.
 ---
 ---   @file    shared/utils/drg/DRG_JUMP_MANAGER.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.4 - Use centralized MessageCooldowns system (proper colors)
 ---   @date    Created: 2025-10-04 | Updated: 2025-11-13
 ---  ═══════════════════════════════════════════════════════════════════════════

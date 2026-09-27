@@ -6,7 +6,7 @@
 ---   - MainWeapon set and SubWeaponOverride
 ---
 ---   @file    shared/jobs/dnc/functions/DNC_ENGAGED.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.1 - Removed dead code + refactored header
 ---   @date    Created: 2025-10-04 | Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -13,7 +13,7 @@
 ---     Third Eye, movement and Doom sets
 ---
 --- @file    sets/sam_sets.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2025-10-21
 ---============================================================================

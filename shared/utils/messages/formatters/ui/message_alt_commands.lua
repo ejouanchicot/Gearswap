@@ -8,7 +8,7 @@
 --- every help screen (//gs c commands).
 ---
 --- @file    shared/utils/messages/formatters/ui/message_alt_commands.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0
 --- @date    Created: 2026-08-07 | Updated: 2026-08-09
 ---============================================================================

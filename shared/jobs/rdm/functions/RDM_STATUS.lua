@@ -5,7 +5,7 @@
 ---   (Doom slot unlock); RDM has no status logic of its own.
 ---
 ---   @file    shared/jobs/rdm/functions/RDM_STATUS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.2 - Added DoomManager safety unlock
 ---   @date    Updated: 2025-11-14
 ---  ═══════════════════════════════════════════════════════════════════════════

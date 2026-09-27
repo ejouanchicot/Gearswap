@@ -20,7 +20,7 @@
 --- ever cross, the first name in alphabetical order counts as the caster.
 ---
 --- @file shared/utils/stealth/stealth_aoe.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-26
 ---============================================================================

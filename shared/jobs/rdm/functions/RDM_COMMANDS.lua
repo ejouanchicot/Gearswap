@@ -8,7 +8,7 @@
 ---   Also defines job_state_change (HUD refresh, weapon re-equip).
 ---
 ---   @file    shared/jobs/rdm/functions/RDM_COMMANDS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Refactored: removed code duplication + dead code
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

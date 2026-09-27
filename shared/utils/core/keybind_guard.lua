@@ -19,7 +19,7 @@
 ---   nothing.
 ---
 ---   @file    shared/utils/core/keybind_guard.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-22
 ---  ═══════════════════════════════════════════════════════════════════════════

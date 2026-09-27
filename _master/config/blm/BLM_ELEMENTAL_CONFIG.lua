@@ -6,7 +6,7 @@
 --- (normally Hachirin-no-Obi) is equipped on top of the midcast set.
 ---
 --- @file config/blm/BLM_ELEMENTAL_CONFIG.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-25
 ---============================================================================

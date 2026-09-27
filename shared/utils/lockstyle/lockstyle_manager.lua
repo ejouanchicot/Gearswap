@@ -7,7 +7,7 @@
 ---   styles (craft/fish).
 ---
 ---   @file    shared/utils/lockstyle/lockstyle_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.2 - Add persistent DressUp toggle (//gs c dressup)
 ---   @date    Created: 2025-10-05 | Updated: 2025-11-26
 ---  ═══════════════════════════════════════════════════════════════════════════

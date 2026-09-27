@@ -9,7 +9,7 @@
 ---   • State change monitoring (updates UI when states change)
 ---
 ---   @file    shared/jobs/whm/functions/WHM_COMMANDS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-21
 ---  ═══════════════════════════════════════════════════════════════════════════

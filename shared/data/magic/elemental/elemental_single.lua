@@ -4,7 +4,7 @@
 --- Single-target elemental spells (tier I-VI)
 ---
 --- @file shared/data/magic/elemental/elemental_single.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @verified bg-wiki.com (2025-10-30) - ALL 36 spells individually verified

@@ -4,7 +4,7 @@
 --- Attack, Defense, Magic Attack, and Stat reduction Blue Magic debuffs
 ---
 --- @file shared/data/magic/blu/debuffs/blu_debuffs_stats.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0 - Improved alignment
 --- @date Created: 2025-11-01 | Updated: 2025-11-06
 ---============================================================================

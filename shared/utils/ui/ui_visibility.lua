@@ -10,7 +10,7 @@
 ---   save_position, toggle, show, hide, is_visible, enable, disable
 ---
 --- @file shared/utils/ui/ui_visibility.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-09
 ---============================================================================

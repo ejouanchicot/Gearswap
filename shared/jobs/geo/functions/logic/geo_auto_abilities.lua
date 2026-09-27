@@ -11,7 +11,7 @@
 ---                    gives no buff to wait on; a spell sent sooner is refused.
 ---
 --- @file    shared/jobs/geo/functions/logic/geo_auto_abilities.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-25
 ---============================================================================

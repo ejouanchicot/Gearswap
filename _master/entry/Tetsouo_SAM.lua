@@ -5,7 +5,7 @@
 --- shared systems and the SAM modules (shared/jobs/sam/functions/sam_functions.lua).
 ---
 --- @file Tetsouo_SAM.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0.0 - Initial Release
 --- @date Created: 2025-10-21
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+

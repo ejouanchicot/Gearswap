@@ -6,7 +6,7 @@
 --- when dual-boxing.
 ---
 --- @file config/geo/GEO_MACROBOOK.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0 - Dual-boxing support
 --- @date Created: 2025-10-09 | Updated: 2025-10-22
 ---============================================================================

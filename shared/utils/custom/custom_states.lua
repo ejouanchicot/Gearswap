@@ -35,7 +35,7 @@
 --- The file is read with dofile, so `gs reload` picks up an edit.
 ---
 --- @file    shared/utils/custom/custom_states.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-24
 ---============================================================================

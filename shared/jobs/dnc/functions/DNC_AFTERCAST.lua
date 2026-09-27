@@ -5,7 +5,7 @@
 ---   idle/engaged gear is left to Mote's default aftercast.
 ---
 ---   @file    shared/jobs/dnc/functions/DNC_AFTERCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-04
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -5,7 +5,7 @@
 --- Keys light blue, commands white, problems red, separators gray.
 ---
 --- @file shared/utils/messages/data/systems/tempbind_messages.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @date Created: 2026-09-24
 ---============================================================================
 

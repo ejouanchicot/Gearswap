@@ -5,7 +5,7 @@
 --- BLM. Templates: data/jobs/blm_messages.lua, sent through M.job.
 ---
 --- @file shared/utils/messages/formatters/jobs/message_blm.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0
 --- @date Created: 2025-10-15 | Migrated: 2025-11-06
 ---============================================================================

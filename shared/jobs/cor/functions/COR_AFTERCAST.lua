@@ -6,7 +6,7 @@
 ---   idle/engaged gear by itself.
 ---
 ---   @file    shared/jobs/cor/functions/COR_AFTERCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-07
 ---  ═══════════════════════════════════════════════════════════════════════════

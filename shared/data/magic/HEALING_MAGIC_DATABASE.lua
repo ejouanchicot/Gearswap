@@ -31,7 +31,7 @@
 ---   local cure_type = spell_data.type  -- "single"
 ---
 --- @file shared/data/magic/HEALING_MAGIC_DATABASE.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0 - Improved formatting - Improved alignment - Modular Architecture (4 files)
 --- @date Created: 2025-10-30 | Updated: 2025-11-06
 ---============================================================================

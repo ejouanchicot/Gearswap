@@ -8,7 +8,7 @@
 ---   Uses centralized AutoMove for position tracking (performance optimization).
 ---
 ---   @file    shared/jobs/war/functions/WAR_MOVEMENT.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 3.0.0
 ---   @date    Created: 2025-09-29
 ---   @requires shared/utils/movement/automove.lua

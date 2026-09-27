@@ -15,7 +15,7 @@
 ---   more than the two lines it costs.
 ---
 ---   @file    shared/utils/core/lifecycle_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-08-09
 ---  ═══════════════════════════════════════════════════════════════════════════

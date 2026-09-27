@@ -9,7 +9,7 @@
 ---   put_item / get_item calls.
 ---
 ---   @file    shared/utils/inventory/refill/bag_scanner.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-09 (extracted from refill_manager.lua)
 ---  ═══════════════════════════════════════════════════════════════════════════

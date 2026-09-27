@@ -28,7 +28,7 @@
 ---       [spell type] ('WhiteMagic' for a WHM/RDM spell with no skill set).
 ---
 --- @file    sets/blu_sets.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-26
 ---============================================================================

@@ -6,7 +6,7 @@
 --- a color test (called from COR_COMMANDS). Templates: data/systems/system_messages.lua.
 ---
 --- @file    shared/utils/messages/formatters/system/message_system.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 3.0
 --- @date    Created: 2025-11-06
 ---============================================================================

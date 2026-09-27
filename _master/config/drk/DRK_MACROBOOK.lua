@@ -17,7 +17,7 @@
 ---   • Page numbers: 1-10 (pages within each book)
 ---
 --- @file    config/drk/DRK_MACROBOOK.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0.0
 --- @date    Created: 2025-10-23
 ---============================================================================

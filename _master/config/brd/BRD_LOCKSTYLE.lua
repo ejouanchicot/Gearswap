@@ -4,7 +4,7 @@
 --- Defines the lockstyle set for Bard job (cosmetic appearance).
 ---
 --- @file config/brd/BRD_LOCKSTYLE.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-13
 ---============================================================================

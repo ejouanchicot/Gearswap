@@ -5,7 +5,7 @@
 --- CRITICAL: Uses dynamic state recreation for species and ammoSet.
 ---
 --- @file Tetsouo_BST.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0.0 - Initial Release
 --- @date Created: 2025-10-17
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+

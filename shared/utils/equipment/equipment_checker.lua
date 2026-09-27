@@ -6,7 +6,7 @@
 --- Distinguishes between equippable bags (inventory, wardrobes) and storage.
 ---
 --- @file shared/utils/equipment/equipment_checker.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.2
 --- @date Created: 2025-01-02
 ---============================================================================

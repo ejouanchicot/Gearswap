@@ -14,7 +14,7 @@
 ---   • special_notes - Quest requirements, aftermath effects, restrictions
 ---
 --- @file shared/data/weaponskills/GREATKATANA_WS_DATABASE.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0 - Improved formatting - Complete 300% Verified against BG-Wiki
 --- @date Created: 2025-10-30
 --- @source https://www.bg-wiki.com/ffxi/Category:Weapon_Skills

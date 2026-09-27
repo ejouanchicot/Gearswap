@@ -28,7 +28,7 @@
 --- newer load drops an older queue).
 ---
 --- @file shared/utils/stealth/stealth.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-26
 ---============================================================================

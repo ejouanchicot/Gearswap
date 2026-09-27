@@ -9,7 +9,7 @@
 ---   `cor_rolls_mainjob.lua`. The factory load now wires them in correctly.
 ---
 ---   @file    shared/data/job_abilities/COR_JA_DATABASE.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0 - Factory-based + rolls path fix
 ---   @date    Created: 2025-11-03 | Updated: 2026-05-06
 ---  ═══════════════════════════════════════════════════════════════════════════

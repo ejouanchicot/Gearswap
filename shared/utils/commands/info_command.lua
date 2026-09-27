@@ -17,7 +17,7 @@
 ---     - Works for any job/subjob combination
 ---
 ---   @file    shared/utils/commands/info_command.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.3 - Card rendered as an InfoBlock (the look of every data block)
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -22,7 +22,7 @@
 --- database (shared/data/magic/BLU_SPELL_DATABASE.lua).
 ---
 --- @file    config/blu/BLU_SPELL_MAP.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-26
 ---============================================================================

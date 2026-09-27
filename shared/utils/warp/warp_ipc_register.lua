@@ -6,7 +6,7 @@
 --- WarpInit.init() include()s it on every job-file load.
 ---
 --- @file shared/utils/warp/warp_ipc_register.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.1
 --- @date Created: 2025-10-28
 ---============================================================================

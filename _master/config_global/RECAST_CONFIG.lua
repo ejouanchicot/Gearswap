@@ -14,7 +14,7 @@
 --- is_recast_ready() and is_on_cooldown() used by the shared job modules.
 ---
 --- @file config/RECAST_CONFIG.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-06
 ---============================================================================

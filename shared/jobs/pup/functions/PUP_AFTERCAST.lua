@@ -5,7 +5,7 @@
 ---   LifecycleManager handler only ticks the watchdog.
 ---
 ---   @file    shared/jobs/pup/functions/PUP_AFTERCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-17
 ---  ═══════════════════════════════════════════════════════════════════════════

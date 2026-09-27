@@ -9,7 +9,7 @@
 ---   (Altruism, Tranquility, Perpetuance, etc.). They are now wired in.
 ---
 ---   @file    shared/data/job_abilities/SCH_JA_DATABASE.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0 - Factory-based + mainjob grimoires fix
 ---   @date    Created: 2025-11-03 | Updated: 2026-05-06
 ---  ═══════════════════════════════════════════════════════════════════════════

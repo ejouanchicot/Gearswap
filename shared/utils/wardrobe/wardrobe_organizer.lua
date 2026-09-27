@@ -29,7 +29,7 @@
 ---   ----       Re-enable all slots, snapshot final state, auto-retry if needed
 ---
 --- @file shared/utils/wardrobe/wardrobe_organizer.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 3.0
 --- @date Created: 2026-04-30
 ---============================================================================

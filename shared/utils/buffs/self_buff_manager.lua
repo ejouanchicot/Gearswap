@@ -11,7 +11,7 @@
 ---   correctly across subjob changes.
 ---
 ---   @file    shared/utils/buffs/self_buff_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Job abilities alongside spells
 ---   @date    Created: 2026-09-17
 ---  ═══════════════════════════════════════════════════════════════════════════

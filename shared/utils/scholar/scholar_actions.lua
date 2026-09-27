@@ -9,7 +9,7 @@
 --- Every step waits on the buff it raises instead of on a fixed delay.
 ---
 --- @file    shared/utils/scholar/scholar_actions.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-17
 ---============================================================================

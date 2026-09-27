@@ -7,7 +7,7 @@
 ---   BRDSongConfig.SONG_REFINE table (enabled flag + tiers map).
 ---
 ---   @file    shared/jobs/brd/functions/logic/song_refinement.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-13
 ---  ═══════════════════════════════════════════════════════════════════════════

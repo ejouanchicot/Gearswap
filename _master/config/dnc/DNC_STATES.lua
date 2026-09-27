@@ -19,7 +19,7 @@
 ---   • DNCStates.validate() can verify the configuration (optional, unused)
 ---
 --- @file    config/dnc/DNC_STATES.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2025-10-14
 --- @requires Mote-Include (state, M objects)

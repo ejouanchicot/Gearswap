@@ -12,7 +12,7 @@
 --- (DualBoxConfig.group in config/DUALBOX_CONFIG.lua), whoever is main.
 ---
 --- @file config/COMMON_KEYBINDS.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-24
 ---============================================================================

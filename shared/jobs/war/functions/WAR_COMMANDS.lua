@@ -12,7 +12,7 @@
 ---   Uses centralized command handlers for consistency across all jobs.
 ---
 ---   @file    shared/jobs/war/functions/WAR_COMMANDS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0.0
 ---   @date    Created: 2025-09-29
 ---   @requires shared/utils/ui/UI_COMMANDS, shared/utils/core/COMMON_COMMANDS

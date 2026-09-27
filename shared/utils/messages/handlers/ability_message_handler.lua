@@ -32,7 +32,7 @@
 ---   - PLD using Sentinel >> Shows message from PLD database
 ---
 --- @file shared/utils/messages/handlers/ability_message_handler.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.2 - PERFORMANCE: Lazy loading for 21 job databases
 --- @date Created: 2025-11-01 | Updated: 2025-11-15
 ---============================================================================

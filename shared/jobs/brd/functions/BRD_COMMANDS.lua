@@ -42,7 +42,7 @@
 ---   dual-box (altjobupdate, requestjob), UI / watchdog / common commands.
 ---
 ---   @file    shared/jobs/brd/functions/BRD_COMMANDS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 3.0 - Complete migration from old system
 ---   @date    Created: 2025-10-13
 ---  ═══════════════════════════════════════════════════════════════════════════

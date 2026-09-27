@@ -28,7 +28,7 @@
 --- Commands: //gs c ui (toggle), //gs c ui save (save position manually)
 ---
 --- @file shared/utils/ui/UI_MANAGER.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 4.0 - Modular facade (refactored from monolithic 1085-line file)
 --- @date Created: 2025-09-28 (modular refactor: 2026-05-09)
 ---============================================================================

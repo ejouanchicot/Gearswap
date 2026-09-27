@@ -13,7 +13,7 @@
 ---   • WSPrecastHandler for weaponskills
 ---
 ---   @file    shared/jobs/blm/functions/BLM_PRECAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0 - Universal Refinement Integration
 ---   @date    Created: 2025-10-15 | Updated: 2025-10-15
 ---   @requires Tetsouo architecture, MessageFormatter, CooldownChecker, spell_refiner

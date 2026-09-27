@@ -5,7 +5,7 @@
 --- Templates: data/systems/watchdog_messages.lua.
 ---
 --- @file    shared/utils/messages/formatters/system/message_watchdog.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0
 --- @date    Created: 2025-11-06
 ---============================================================================

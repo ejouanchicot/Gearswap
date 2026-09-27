@@ -9,7 +9,7 @@
 ---   The logic lives in logic/set_builder.lua.
 ---
 ---   @file    shared/jobs/rdm/functions/RDM_IDLE.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.1 - Removed dead code + refactored header
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

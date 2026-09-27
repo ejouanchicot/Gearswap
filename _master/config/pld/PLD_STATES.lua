@@ -19,7 +19,7 @@
 ---   • Call PLDStates.validate() to verify configuration (optional)
 ---
 --- @file    config/pld/PLD_STATES.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2025-10-14
 --- @requires Mote-Include (state, M objects)

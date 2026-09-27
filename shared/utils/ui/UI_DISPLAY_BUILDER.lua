@@ -6,7 +6,7 @@
 --- matched against the state name. Shared by every job.
 ---
 --- @file shared/utils/ui/UI_DISPLAY_BUILDER.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-09-26
 ---============================================================================

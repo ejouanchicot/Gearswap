@@ -9,7 +9,7 @@
 --- (shared/hooks/init_spell_messages.lua). DNC did it on its own before.
 ---
 --- @file    shared/utils/midcast/utsusemi_shadows.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-25
 ---============================================================================

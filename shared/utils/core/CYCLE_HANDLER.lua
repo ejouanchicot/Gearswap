@@ -10,7 +10,7 @@
 ---   handle_update, so a job hook behaves the same whether the HUD is shown.
 ---
 ---   @file    shared/utils/core/CYCLE_HANDLER.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.2 - Same job_state_change arguments and update path as Mote's cycle
 ---   @date    Created: 2025-11-10 | Updated: 2026-09-19
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -16,7 +16,7 @@
 ---   4. AFTERCAST (BRD_AFTERCAST): Clear lock flag + release instrument
 ---
 ---   @file    shared/jobs/brd/functions/logic/instrument_lock_config.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-11-07
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -7,7 +7,7 @@
 ---   hook. BST_PRECAST.job_precast equips the Sic set for Ready moves itself.
 ---
 ---   @file    shared/jobs/bst/functions/BST_PET_PRECAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-18
 ---  ═══════════════════════════════════════════════════════════════════════════

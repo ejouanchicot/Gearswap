@@ -15,7 +15,7 @@
 ---   • Lockstyle numbers correspond to /lockstyleset 1-200 in-game
 ---
 --- @file    config/run/RUN_LOCKSTYLE.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0.0
 --- @date    Created: 2025-10-03 | Updated: 2025-11-04
 ---============================================================================

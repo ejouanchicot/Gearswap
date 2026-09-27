@@ -11,7 +11,7 @@
 ---                  it goes
 ---
 --- @file config/AUTO_ABILITIES.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-25
 ---============================================================================

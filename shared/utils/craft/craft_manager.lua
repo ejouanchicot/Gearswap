@@ -31,7 +31,7 @@
 ---     //gs c uncraft         -> unlock slots, normal gear resumes
 ---
 ---   @file    shared/utils/craft/craft_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-01
 ---  ═══════════════════════════════════════════════════════════════════════════

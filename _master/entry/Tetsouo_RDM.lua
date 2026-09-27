@@ -6,7 +6,7 @@
 --- to dedicated modules for maximum maintainability and scalability.
 ---
 --- @file Tetsouo_RDM.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0.0 - Initial Release
 --- @date Created: 2025-10-12
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+

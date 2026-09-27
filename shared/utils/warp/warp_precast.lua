@@ -6,7 +6,7 @@
 --- before Mote's own precast.
 ---
 --- @file shared/utils/warp/warp_precast.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-26
 ---============================================================================

@@ -12,7 +12,7 @@
 ---                              -> SongRotationManager (instrument detection)
 ---
 ---   @file    shared/jobs/brd/functions/BRD_MIDCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 4.0 - Extracted handlers to logic/midcast_router.lua
 ---   @date    Created: 2025-10-13 | Refactored: 2026-05-09
 ---  ═══════════════════════════════════════════════════════════════════════════

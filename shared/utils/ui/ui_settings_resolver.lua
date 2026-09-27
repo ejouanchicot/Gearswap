@@ -6,7 +6,7 @@
 --- table in the shape that the `texts` Windower library expects.
 ---
 --- @file shared/utils/ui/ui_settings_resolver.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-08
 ---============================================================================

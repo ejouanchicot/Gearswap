@@ -6,7 +6,7 @@
 ---   from the subjob, or from the dual-box alt's job when one is online.
 ---
 ---   @file    shared/utils/macrobook/macrobook_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.2 - create() split into ctx-taking operations (parity with LockstyleManager)
 ---   @date    Created: 2025-10-05 | Updated: 2026-08-10
 ---  ═══════════════════════════════════════════════════════════════════════════

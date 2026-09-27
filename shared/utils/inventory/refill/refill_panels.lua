@@ -13,7 +13,7 @@
 --- Item names are color-coded: brown=food, pink=ammo, healgreen=medicine.
 ---
 --- @file shared/utils/inventory/refill/refill_panels.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-09
 ---============================================================================

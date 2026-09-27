@@ -5,7 +5,7 @@
 ---   flags, and an engaged gear refresh on Aftermath: Lv.3.
 ---
 ---   @file    shared/jobs/drk/functions/DRK_BUFFS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Removed dead code + refactored header
 ---   @date    Created: 2025-10-23 | Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

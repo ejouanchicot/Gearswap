@@ -24,7 +24,7 @@
 --- number, so a stale one does nothing.
 ---
 --- @file    shared/jobs/brd/functions/logic/song_queue.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-25
 ---============================================================================

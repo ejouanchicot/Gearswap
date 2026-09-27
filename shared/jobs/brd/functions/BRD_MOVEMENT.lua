@@ -5,7 +5,7 @@
 ---   Uses centralized AutoMove position tracking for performance.
 ---
 ---   @file    shared/jobs/brd/functions/BRD_MOVEMENT.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-13
 ---   @requires shared/utils/movement/automove.lua

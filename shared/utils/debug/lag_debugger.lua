@@ -14,7 +14,7 @@
 ---   //gs c lagdebug status   - Show recording status
 ---
 --- @file    shared/utils/debug/lag_debugger.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.2 - Module-load, stall and action probes
 --- @date    Created: 2026-03-03
 ---============================================================================

@@ -28,7 +28,7 @@
 ---   but it is used for set files, which are meant to re-execute.
 ---
 ---   @file    shared/utils/core/module_cache.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-08-09
 ---  ═══════════════════════════════════════════════════════════════════════════

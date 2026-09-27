@@ -5,7 +5,7 @@
 ---   raise does not leave them stuck).
 ---
 ---   @file    shared/jobs/brd/functions/BRD_STATUS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.2 - Added DoomManager safety unlock
 ---   @date    Updated: 2025-11-14
 ---  ═══════════════════════════════════════════════════════════════════════════

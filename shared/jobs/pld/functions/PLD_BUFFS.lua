@@ -5,7 +5,7 @@
 ---   (Doom handling).
 ---
 ---   @file    shared/jobs/pld/functions/PLD_BUFFS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Removed dead code + refactored header
 ---   @date    Created: 2025-11-03 | Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

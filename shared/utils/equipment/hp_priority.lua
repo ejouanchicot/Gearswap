@@ -22,7 +22,7 @@
 ---     • only CHARACTERS are processed; frozen clones stay as they are
 ---
 ---   @file    shared/utils/equipment/hp_priority.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-23
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -5,7 +5,7 @@
 --- define_pup_sets(); no gear is declared.
 ---
 --- @file    sets/pup_sets.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2025-11-22
 ---============================================================================

@@ -6,7 +6,7 @@
 ---   Circle), Fast Cast for magic, TP bonus gear.
 ---
 ---   @file    shared/jobs/drk/functions/DRK_PRECAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-05
 ---  ═══════════════════════════════════════════════════════════════════════════

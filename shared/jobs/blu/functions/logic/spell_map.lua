@@ -14,7 +14,7 @@
 ---   Blue Magic database (shared/data/magic/BLU_SPELL_DATABASE.lua).
 ---
 ---   @file    shared/jobs/blu/functions/logic/spell_map.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-26
 ---  ═══════════════════════════════════════════════════════════════════════════

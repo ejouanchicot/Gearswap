@@ -6,7 +6,7 @@
 --- to dedicated modules for maximum maintainability and scalability.
 ---
 --- @file Tetsouo_THF.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0.0 - Initial Release (Architecture v2.4)
 --- @date Created: 2025-10-06
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+

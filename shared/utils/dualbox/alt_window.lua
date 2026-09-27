@@ -25,7 +25,7 @@
 --- the HUD.
 ---
 --- @file shared/utils/dualbox/alt_window.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-25
 ---============================================================================

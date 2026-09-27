@@ -7,7 +7,7 @@
 --- read once when this module loads.
 ---
 --- @file shared/utils/ui/COLOR_SYSTEM.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 4.0
 --- @date Created: 2025-11-03 (updated 2025-11-10)
 ---============================================================================

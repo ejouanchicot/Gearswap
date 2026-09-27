@@ -7,7 +7,7 @@
 --- recast does not mean no charge is left.
 ---
 --- @file    shared/utils/precast/cooldown_checker.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.3
 --- @date    Created: 2025-10-05
 ---============================================================================

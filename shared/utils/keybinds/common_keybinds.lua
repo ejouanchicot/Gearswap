@@ -7,7 +7,7 @@
 --- common keys.
 ---
 --- @file shared/utils/keybinds/common_keybinds.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-24
 ---============================================================================

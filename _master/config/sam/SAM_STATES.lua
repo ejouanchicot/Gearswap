@@ -16,7 +16,7 @@
 ---   • Call SAMStates.validate() to verify configuration (optional)
 ---
 --- @file    config/sam/SAM_STATES.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2025-10-21
 --- @requires Mote-Include (state, M objects)

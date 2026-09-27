@@ -10,7 +10,7 @@
 ---   - Enfeebling Magic and Elemental Magic support
 ---
 ---   @file    shared/jobs/drk/functions/DRK_MIDCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 3.0 - Added spell_family database support
 ---   @date    Created: 2025-10-23 | Updated: 2025-11-05
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -23,7 +23,7 @@
 ---   • Movement sets (Base speed, Adoulin)
 ---
 --- @file    sets/rdm_sets.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 3.1
 --- @date    Created: 2025-11-03 | Updated: 2025-11-10
 ---============================================================================

@@ -22,7 +22,7 @@
 --- midcast watchdog and the BRD song queue.
 ---
 --- @file    shared/utils/precast/cast_time.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-25
 ---============================================================================

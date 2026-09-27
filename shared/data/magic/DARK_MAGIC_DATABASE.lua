@@ -29,7 +29,7 @@
 ---   - Job Points (JP) spells: Death, Aspir III, Drain III, Endark II
 ---
 --- @file shared/data/magic/DARK_MAGIC_DATABASE.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0 - Improved formatting - Improved alignment - Modular Architecture (4 files)
 --- @date Created: 2025-10-31 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Category:Dark_Magic

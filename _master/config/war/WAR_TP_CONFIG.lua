@@ -14,7 +14,7 @@
 ---
 --- @file    config/war/WAR_TP_CONFIG.lua
 --- @module  WAR_TP_CONFIG
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0.0
 --- @date    Created: 2025-01-02
 ---============================================================================

@@ -4,7 +4,7 @@
 ---   MacrobookManager factory, built on first call.
 ---
 ---   @file    shared/jobs/blu/functions/BLU_MACROBOOK.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-26
 ---   @requires shared/utils/macrobook/macrobook_manager

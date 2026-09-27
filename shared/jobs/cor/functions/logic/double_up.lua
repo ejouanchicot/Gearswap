@@ -13,7 +13,7 @@
 --- cancel the roll before it could become a Double-Up, which has its own.
 ---
 --- @file    shared/jobs/cor/functions/logic/double_up.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-25
 ---============================================================================

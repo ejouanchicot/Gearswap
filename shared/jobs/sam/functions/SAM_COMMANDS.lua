@@ -9,7 +9,7 @@
 ---   SAM has no job-specific command.
 ---
 ---   @file    shared/jobs/sam/functions/SAM_COMMANDS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-21
 ---  ═══════════════════════════════════════════════════════════════════════════

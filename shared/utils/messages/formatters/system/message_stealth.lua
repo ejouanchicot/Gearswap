@@ -4,7 +4,7 @@
 --- Templates live in data/systems/stealth_messages.lua.
 ---
 --- @file shared/utils/messages/formatters/system/message_stealth.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-26
 ---============================================================================

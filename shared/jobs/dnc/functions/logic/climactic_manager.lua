@@ -12,7 +12,7 @@
 ---     replays the WS once the buff shows (1 s soft deadline + grace)
 ---
 ---   @file    shared/jobs/dnc/functions/logic/climactic_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Optimized Timing
 ---   @date    Created: 2025-10-06
 ---   @date    Updated: 2025-10-10 (Optimized delay: 2s>>1s)

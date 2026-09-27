@@ -5,7 +5,7 @@
 --- next 1000 TP step (TPBonusCalculator, via WSPrecastHandler).
 ---
 --- @file    config/blu/BLU_TP_CONFIG.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-26
 ---============================================================================

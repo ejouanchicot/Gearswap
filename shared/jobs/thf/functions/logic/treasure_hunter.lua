@@ -22,7 +22,7 @@
 ---   tagged again.
 ---
 ---   @file    shared/jobs/thf/functions/logic/treasure_hunter.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-19
 ---  ═══════════════════════════════════════════════════════════════════════════

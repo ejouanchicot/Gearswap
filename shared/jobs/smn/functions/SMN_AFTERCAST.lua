@@ -6,7 +6,7 @@
 ---   watchdog (same body as LifecycleManager.aftercast()).
 ---
 ---   @file    shared/jobs/smn/functions/SMN_AFTERCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-28
 ---  ═══════════════════════════════════════════════════════════════════════════

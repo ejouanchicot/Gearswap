@@ -6,7 +6,7 @@
 ---   No SMN-specific logic required here.
 ---
 ---   @file    shared/jobs/smn/functions/SMN_MOVEMENT.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-28
 ---  ═══════════════════════════════════════════════════════════════════════════

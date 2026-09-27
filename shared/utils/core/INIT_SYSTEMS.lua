@@ -20,7 +20,7 @@
 ---     +5.0 s     GlobalProbe baseline snapshot
 ---
 ---   @file    shared/utils/core/INIT_SYSTEMS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.4
 ---   @date    Created: 2025-10-28 | Updated: 2026-09-25
 ---  ═══════════════════════════════════════════════════════════════════════════

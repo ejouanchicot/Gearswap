@@ -12,7 +12,7 @@
 --- this list does not.
 ---
 --- @file    shared/utils/keybinds/key_validator.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-24
 ---============================================================================

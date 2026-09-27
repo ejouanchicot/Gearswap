@@ -21,7 +21,7 @@
 ---     • [CharName]/config/message_modes.lua (one file per character)
 ---
 ---   @file    shared/config/message_settings.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.1 - Refactored with new header style
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

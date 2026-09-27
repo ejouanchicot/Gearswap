@@ -15,7 +15,7 @@
 --- DUALBOX_CONFIG.lua.
 ---
 --- @file shared/utils/dualbox/dualbox_role.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-25
 ---============================================================================

@@ -11,7 +11,7 @@ Examples:
 Unity/... bonuses are listed with the item but never counted).
 
 @file    scripts/item_db/find_items.py
-@author  Tetsouo
+@author  ejouanchicot
 @version 1.0
 @date    Created: 2026-09-23
 """

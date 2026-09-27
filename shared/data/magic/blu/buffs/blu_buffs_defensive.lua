@@ -4,7 +4,7 @@
 --- Defense, Evasion, Stoneskin, Shadows, and Protection Blue Magic buffs
 ---
 --- @file shared/data/magic/blu/buffs/blu_buffs_defensive.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0 - Improved alignment
 --- @date Created: 2025-11-01 | Updated: 2025-11-06
 ---============================================================================

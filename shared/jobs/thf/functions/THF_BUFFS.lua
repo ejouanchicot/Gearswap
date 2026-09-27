@@ -5,7 +5,7 @@
 ---   pending flags and the engaged refresh when SA/TA wears off.
 ---
 ---   @file    shared/jobs/thf/functions/THF_BUFFS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Removed dead code + refactored header
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

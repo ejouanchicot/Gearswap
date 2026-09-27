@@ -5,7 +5,7 @@
 ---   shared LifecycleManager handler, which unlocks Doom slots after a raise.
 ---
 ---   @file    shared/jobs/pld/functions/PLD_STATUS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.2 - Added DoomManager safety unlock
 ---   @date    Created: 2025-11-03 | Updated: 2025-11-14
 ---  ═══════════════════════════════════════════════════════════════════════════

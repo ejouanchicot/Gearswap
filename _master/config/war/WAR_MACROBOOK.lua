@@ -21,7 +21,7 @@
 ---   • Book range: 1-40 | Page range: 1-10
 ---
 --- @file    config/war/WAR_MACROBOOK.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0 - Dual-boxing support
 --- @date    Created: 2025-10-02 | Updated: 2025-10-22
 ---============================================================================

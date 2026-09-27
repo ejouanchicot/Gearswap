@@ -8,7 +8,7 @@
 ---   is laid over the result while moving.
 ---
 ---   @file    shared/jobs/smn/functions/SMN_IDLE.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Town and movement steps from BaseSetBuilder
 ---   @date    Created: 2026-05-28 | Updated: 2026-09-19
 ---  ═══════════════════════════════════════════════════════════════════════════

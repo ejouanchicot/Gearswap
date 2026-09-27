@@ -16,7 +16,7 @@
 ---   Uses centralized MessageFormatter for all messages (professional multi-color).
 ---
 ---   @file    shared/jobs/bst/functions/BST_COMMANDS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0
 ---   @date    Created: 2025-10-17
 ---   @date    Updated: 2025-10-18 - Standardized all messages with MessageFormatter

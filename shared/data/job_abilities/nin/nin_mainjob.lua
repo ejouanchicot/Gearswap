@@ -11,7 +11,7 @@
 ---   - Issekigan (Lv95) - Parry rate+, enmity on parry
 ---
 --- @file shared/data/job_abilities/nin/nin_mainjob.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Ninja

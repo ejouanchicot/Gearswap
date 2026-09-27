@@ -7,7 +7,7 @@
 ---   Integrates with UICommands for UI management.
 ---
 ---   @file    shared/jobs/geo/functions/GEO_COMMANDS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Added UICommands integration
 ---   @date    Created: 2025-10-09 | Updated: 2025-10-10
 ---  ═══════════════════════════════════════════════════════════════════════════

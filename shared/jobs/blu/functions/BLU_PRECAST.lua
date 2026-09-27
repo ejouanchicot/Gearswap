@@ -14,7 +14,7 @@
 ---   (sets.precast.FC['Blue Magic'], sets.precast.WS[name][WeaponskillMode]).
 ---
 ---   @file    shared/jobs/blu/functions/BLU_PRECAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-26
 ---   @requires PrecastGuard, CooldownChecker, WSPrecastHandler

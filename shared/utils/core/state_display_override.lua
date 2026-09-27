@@ -10,7 +10,7 @@
 ---       docs/dev/systems/ui-overlay.md, Known issues).
 ---
 ---   @file    shared/utils/core/state_display_override.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.2 - Robustness improvements (nil protection + unused parameter convention)
 ---   @date    Created: 2025-11-10 | Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

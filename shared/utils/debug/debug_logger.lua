@@ -25,7 +25,7 @@
 ---   command output (which should call MessageFormatter directly).
 ---
 ---   @file    shared/utils/debug/debug_logger.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-09
 ---  ═══════════════════════════════════════════════════════════════════════════

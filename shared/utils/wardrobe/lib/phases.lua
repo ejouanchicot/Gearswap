@@ -18,7 +18,7 @@
 --- only supplies its own discover_pending() and discover_drainable() closures.
 ---
 --- @file shared/utils/wardrobe/lib/phases.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-01
 ---============================================================================

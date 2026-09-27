@@ -17,7 +17,7 @@
 ---   Used by: DRK_ENGAGED.lua, DRK_IDLE.lua
 ---
 ---   @file    shared/jobs/drk/functions/logic/set_builder.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.2
 ---   @date    Created: 2025-11-10 | Updated: 2025-11-10
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -5,7 +5,7 @@
 --- hook modules and this character's configs and sets.
 ---
 --- @file Tetsouo_BLU.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-26
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+

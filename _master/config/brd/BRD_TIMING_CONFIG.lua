@@ -11,7 +11,7 @@
 ---   ABILITY_DELAYS.nt_combo_delay   Nightingale -> Troubadour (//gs c nt)
 ---
 --- @file config/brd/BRD_TIMING_CONFIG.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0
 --- @date Created: 2025-10-13 | Updated: 2026-09-25 (queued rotation)
 ---============================================================================

@@ -17,7 +17,7 @@
 ---   5. WSPrecastHandler.handle
 ---
 ---   @file    shared/jobs/dnc/functions/DNC_PRECAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 3.2
 ---   @date    Created: 2025-10-04 | Updated: 2025-10-10
 ---  ═══════════════════════════════════════════════════════════════════════════

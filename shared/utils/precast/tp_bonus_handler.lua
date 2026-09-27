@@ -10,7 +10,7 @@
 ---   Don't require this file directly.
 ---
 ---   @file    shared/utils/precast/tp_bonus_handler.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-17
 ---  ═══════════════════════════════════════════════════════════════════════════

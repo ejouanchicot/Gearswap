@@ -6,7 +6,7 @@
 --- orchestrator: they can be read without following a run.
 ---
 --- @file shared/utils/wardrobe/lib/reports.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-18
 ---============================================================================

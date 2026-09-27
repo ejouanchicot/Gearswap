@@ -6,7 +6,7 @@
 --- layer WSPrecastHandler calls; published as the global WeaponSkillManager.
 ---
 --- @file    shared/utils/weaponskill/weaponskill_manager.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0.0
 --- @date    Created: 2025-01-02
 ---============================================================================

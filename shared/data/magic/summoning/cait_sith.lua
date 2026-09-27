@@ -4,7 +4,7 @@
 --- Cait Sith summon spell and Blood Pact abilities
 ---
 --- @file shared/data/magic/summoning/cait_sith.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06
 ---============================================================================

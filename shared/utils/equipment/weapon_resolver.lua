@@ -19,7 +19,7 @@
 --- hold other staves.
 ---
 --- @file shared/utils/equipment/weapon_resolver.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-25
 ---============================================================================

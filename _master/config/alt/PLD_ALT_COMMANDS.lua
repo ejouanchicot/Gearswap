@@ -17,7 +17,7 @@
 --- `main_only` entries disappear entirely when the job is the subjob.
 ---
 --- @file    config/alt/PLD_ALT_COMMANDS.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-08-09
 ---============================================================================

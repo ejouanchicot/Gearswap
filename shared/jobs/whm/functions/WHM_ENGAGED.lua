@@ -5,7 +5,7 @@
 ---   Mote's engaged set unchanged (WHM rarely melees).
 ---
 ---   @file    shared/jobs/whm/functions/WHM_ENGAGED.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.1 - Removed dead code + refactored header
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

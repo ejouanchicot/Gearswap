@@ -12,7 +12,7 @@
 ---   - Charge abilities: Bypass cooldown check (FFXI handles blocking)
 ---
 --- @file    shared/data/spells/BLM_SPELL_FILTERS.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0 - Extracted from BLM_PRECAST for performance
 --- @date    Created: 2025-11-19
 ---============================================================================

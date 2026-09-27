@@ -16,7 +16,7 @@
 --- where '' means the base tier (spell name without a roman numeral).
 ---
 --- @file    shared/utils/precast/tier_refiner.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-07-28
 ---============================================================================

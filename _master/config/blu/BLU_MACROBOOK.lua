@@ -5,7 +5,7 @@
 --- dual-boxing (by the alt's job, then this character's subjob).
 ---
 --- @file    config/blu/BLU_MACROBOOK.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-26
 ---============================================================================

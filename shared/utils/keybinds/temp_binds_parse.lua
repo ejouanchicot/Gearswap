@@ -26,7 +26,7 @@
 ---           field is SQUARED). Nothing = the game's default target.
 ---
 --- @file    shared/utils/keybinds/temp_binds_parse.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.1
 --- @date    Created: 2026-09-24
 ---============================================================================

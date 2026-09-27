@@ -5,7 +5,7 @@
 ---   Integrates with AutoMove system for universal movement handling.
 ---
 ---   @file    shared/jobs/rdm/functions/RDM_MOVEMENT.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0.0
 ---   @date    Created: 2026-02-16
 ---   @requires shared/utils/movement/automove.lua

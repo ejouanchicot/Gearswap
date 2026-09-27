@@ -4,7 +4,7 @@
 ---   Handles midcast for Samurai (primarily subjob spells).
 ---
 ---   @file    shared/jobs/sam/functions/SAM_MIDCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 3.0 - Added spell_family database support
 ---   @date    Updated: 2025-11-05
 ---  ═══════════════════════════════════════════════════════════════════════════

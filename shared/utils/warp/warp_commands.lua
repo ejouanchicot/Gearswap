@@ -8,7 +8,7 @@
 ---   - database/warp_database_core.lua - Item database
 ---
 --- @file shared/utils/warp/warp_commands.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 4.0
 --- @date Created: 2025-10-28
 ---============================================================================

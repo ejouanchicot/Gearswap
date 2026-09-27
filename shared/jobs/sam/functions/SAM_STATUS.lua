@@ -6,7 +6,7 @@
 ---   the character turned it on (config/AUTO_ABILITIES.lua).
 ---
 ---   @file    shared/jobs/sam/functions/SAM_STATUS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.2 - Added DoomManager safety unlock
 ---   @date    Updated: 2025-11-14
 ---  ═══════════════════════════════════════════════════════════════════════════

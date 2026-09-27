@@ -35,7 +35,7 @@
 --- sandbox, so a key removed from the file is unbound on the next load.
 ---
 --- @file    shared/utils/keybinds/keybind_manager.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.1
 --- @date    Created: 2026-09-24 | Updated: 2026-09-26 (weapon field)
 ---============================================================================

@@ -8,7 +8,7 @@
 ---   - Widened Compass (SP2, Lv96) - Double geomancy range
 ---
 --- @file shared/data/job_abilities/geo/geo_sp.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Geomancer

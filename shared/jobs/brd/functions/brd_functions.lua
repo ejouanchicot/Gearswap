@@ -17,7 +17,7 @@
 ---   • instrument_lock_config.lua - Songs that lock a specific instrument
 ---
 ---   @file    shared/jobs/brd/functions/brd_functions.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-13
 ---  ═══════════════════════════════════════════════════════════════════════════

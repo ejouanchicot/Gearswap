@@ -11,7 +11,7 @@
 ---
 --- @file    config/bst/BST_TP_CONFIG.lua
 --- @module  BST_TP_CONFIG
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0.0
 --- @date    Created: 2025-10-22
 ---============================================================================

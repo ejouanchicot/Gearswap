@@ -6,7 +6,7 @@
 --- releases ring1 on every exit (success, interruption, timeout, failure).
 ---
 --- @file shared/utils/warp/casting/item_user.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 4.0
 --- @date Created: 2025-10-28
 ---============================================================================

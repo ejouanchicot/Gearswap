@@ -5,7 +5,7 @@
 --- Templates: data/jobs/brd_messages.lua, sent through M.job.
 ---
 --- @file shared/utils/messages/formatters/jobs/message_brd.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0
 --- @date Created: 2025-10-13 | Migrated: 2025-11-06
 ---============================================================================

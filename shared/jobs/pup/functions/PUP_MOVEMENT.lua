@@ -5,7 +5,7 @@
 ---   INIT_SYSTEMS) handles movement detection and speed gear.
 ---
 ---   @file    shared/jobs/pup/functions/PUP_MOVEMENT.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-17
 ---  ═══════════════════════════════════════════════════════════════════════════

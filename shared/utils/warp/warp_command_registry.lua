@@ -12,7 +12,7 @@
 ---   3. Define the destination in database/* (if a destination cmd)
 ---
 --- @file shared/utils/warp/warp_command_registry.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-01
 ---============================================================================

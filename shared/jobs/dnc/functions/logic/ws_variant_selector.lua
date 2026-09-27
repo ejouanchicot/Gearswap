@@ -22,7 +22,7 @@
 ---   6. Base set - No buffs (standard WS gear)
 ---
 ---   @file    shared/jobs/dnc/functions/logic/ws_variant_selector.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Saber Dance Support
 ---   @date    Created: 2025-10-06
 ---   @date    Updated: 2025-10-19

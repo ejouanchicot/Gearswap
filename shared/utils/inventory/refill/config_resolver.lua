@@ -22,7 +22,7 @@
 ---     • build_foreign_items_set(char_name, current_list) -> foreign_set
 ---
 ---   @file    shared/utils/inventory/refill/config_resolver.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-09 (extracted from refill_manager.lua)
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -75,7 +75,7 @@ Live copies (gitignored): `Kaories/Kaories_COR.lua`, `Kaories/config/cor/*` and
 (`sets/cor/cor_sets.lua`); `_master/Tetsouo/entry/Tetsouo_COR.lua` is identical
 to it. `Tetsouo/config/cor/*` equal the templates except `@file` and two
 comments (`COR_STATES.lua:65`, `COR_TP_CONFIG.lua:35`); every header now says
-`@author Tetsouo`. `COR_REFILL.lua` equals its template.
+`@author ejouanchicot`. `COR_REFILL.lua` equals its template.
 `Tetsouo/sets/cor/{cor_sets,armor,capes,weapons}.lua` are modular
 (324 + 79 + 34 + 44 lines), mirrored in `_master/Tetsouo/sets/cor/`.
 
@@ -552,7 +552,7 @@ identical), L = `Tetsouo/sets/cor/cor_sets.lua` (weapon sets from
   warning colour (2026-09-25); `has_job_bonus_proc_gear` removed and roll gear
   kept in a table (`1b9249d`); roll gear and job bonus settled per roll
   (`818d5dd`); `@author Kaories` in the live Tetsouo configs (now
-  `@author Tetsouo`).
+  `@author ejouanchicot`).
 - User docs list `Alt+N` keys (`docs/user/jobs/cor/states.md:169-171`) and do not
   mention `//gs c shot`, `roll1` or `roll2`, which use the `QuickDraw`,
   `MainRoll` and `SubRoll` states they describe.

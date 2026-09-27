@@ -12,7 +12,7 @@
 ---   • Helper function to check if WS should trigger Climactic
 ---
 --- @file    config/dnc/DNC_WS_CONFIG.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2025-10-06
 ---============================================================================

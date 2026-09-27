@@ -10,7 +10,7 @@
 ---   • Logic modules (logic/*.lua) contain business logic, loaded via require()
 ---
 ---   @file    shared/jobs/geo/functions/geo_functions.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0 - Logic Extracted to logic/
 ---   @date    Created: 2025-10-09 | Updated: 2025-10-14
 ---   @requires All GEO_*.lua modules in functions directory

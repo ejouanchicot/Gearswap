@@ -6,7 +6,7 @@
 --- Format: { key = "key", command = "gs_command", desc = "description", state = "state_name" }
 ---
 --- @file config/geo/GEO_KEYBINDS.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0
 --- @date Created: 2025-10-09 | Updated: 2026-09-24 (KeybindManager)
 ---============================================================================

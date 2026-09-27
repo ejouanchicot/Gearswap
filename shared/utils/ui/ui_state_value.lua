@@ -9,7 +9,7 @@
 --- Handles BRD song slots (BRDSong1..N) and Mote M{} tables specially.
 ---
 --- @file shared/utils/ui/ui_state_value.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-09
 ---============================================================================

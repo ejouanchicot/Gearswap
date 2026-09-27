@@ -6,7 +6,7 @@
 --- ENFEEBLING_MAGIC_DATABASE, and SCH-specific spells (Helix, Storm, Dark).
 ---
 --- @file shared/data/magic/SCH_SPELL_DATABASE.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 3.0 - Improved formatting - Skill-Based Architecture Migration
 --- @date Created: 2025-10-12 | Updated: 2025-10-31
 ---

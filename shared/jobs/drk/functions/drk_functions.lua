@@ -10,7 +10,7 @@
 ---   • Logic modules (logic/*.lua) contain business logic, loaded via require()
 ---
 ---   @file    shared/jobs/drk/functions/drk_functions.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0 - Initial DRK Implementation
 ---   @date    Created: 2025-10-23
 ---   @requires All DRK_*.lua modules in functions directory

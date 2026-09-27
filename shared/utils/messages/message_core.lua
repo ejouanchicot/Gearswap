@@ -6,7 +6,7 @@
 --- rendering level, like the formatters (CODE_QUALITY §6).
 ---
 --- @file shared/utils/messages/message_core.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0
 --- @date Created: 2025-10-02 | Updated: 2025-10-02 - Centralized color configuration
 ---============================================================================

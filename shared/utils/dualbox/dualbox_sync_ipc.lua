@@ -22,7 +22,7 @@
 ---   DualBoxSyncIPC.register_hook('mycmd', function() ... end)
 ---
 --- @file shared/utils/dualbox/dualbox_sync_ipc.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-17
 ---============================================================================

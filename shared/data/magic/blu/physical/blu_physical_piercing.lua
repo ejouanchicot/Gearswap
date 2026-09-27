@@ -4,7 +4,7 @@
 --- Piercing physical damage Blue Magic spells
 ---
 --- @file shared/data/magic/blu/physical/blu_physical_piercing.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0 - Improved alignment
 --- @date Created: 2025-11-01 | Updated: 2025-11-06
 ---============================================================================

@@ -12,7 +12,7 @@
 --- (FlurryTracker.apply_ranged_groups).
 ---
 --- @file    shared/utils/precast/flurry_tracker.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-25
 ---============================================================================

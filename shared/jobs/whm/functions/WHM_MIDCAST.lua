@@ -12,7 +12,7 @@
 ---   - Enfeebling Magic: MND-based vs INT-based
 ---
 ---   @file    shared/jobs/whm/functions/WHM_MIDCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 3.0 - Added spell_family database support
 ---   @date    Created: 2025-10-21 | Updated: 2025-11-05
 ---  ═══════════════════════════════════════════════════════════════════════════

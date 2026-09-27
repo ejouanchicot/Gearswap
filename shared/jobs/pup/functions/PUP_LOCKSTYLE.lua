@@ -8,7 +8,7 @@
 ---   • Lazy-loaded: Module created on first function call
 ---
 ---   @file    shared/jobs/pup/functions/PUP_LOCKSTYLE.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.1 - Lazy Loading for performance
 ---   @date    Created: 2025-10-13 | Updated: 2025-11-15
 ---   @requires shared/utils/lockstyle/lockstyle_manager

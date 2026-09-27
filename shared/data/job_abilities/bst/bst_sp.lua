@@ -8,7 +8,7 @@
 ---   - Unleash (SP2, Lv96) - Charm 95% success, no recast Sic/Ready
 ---
 --- @file shared/data/job_abilities/bst/bst_sp.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Beastmaster

@@ -12,7 +12,7 @@
 ---                              -> ElementalMatcher (Hachirin-no-Obi detection)
 ---
 ---   @file    shared/jobs/blm/functions/BLM_MIDCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0 - Extracted handlers to logic/midcast_router.lua
 ---   @date    Created: 2025-10-05 | Refactored: 2026-05-09
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -22,7 +22,7 @@
 --- them with //gs c ui chatcolor).
 ---
 --- @file shared/utils/messages/data/systems/help_messages.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @date Created: 2026-09-25
 ---============================================================================
 

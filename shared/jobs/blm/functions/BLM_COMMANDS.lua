@@ -15,7 +15,7 @@
 ---   Movement gear handled passively via customize_idle_set() like other jobs.
 ---
 ---   @file    shared/jobs/blm/functions/BLM_COMMANDS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.3.0 - Added party Sneak/Invi commands (Accession automation)
 ---   @date    Created: 2025-10-15 | Updated: 2025-10-17
 ---   @requires shared/utils/ui/UI_COMMANDS, shared/utils/core/COMMON_COMMANDS

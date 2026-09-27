@@ -5,7 +5,7 @@
 --- per buff (MessageCooldowns) between two BUFFS separators.
 ---
 --- @file    shared/utils/messages/formatters/magic/message_buffs.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0
 --- @date    Created: 2025-11-06
 ---============================================================================

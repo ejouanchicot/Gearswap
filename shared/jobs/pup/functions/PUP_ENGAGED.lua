@@ -6,7 +6,7 @@
 ---   this require raises on the first engaged rebuild.
 ---
 ---   @file    shared/jobs/pup/functions/PUP_ENGAGED.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.1 - Removed dead code + refactored header
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

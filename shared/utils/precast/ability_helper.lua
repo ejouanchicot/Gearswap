@@ -9,7 +9,7 @@
 ---       BLM, BRD, DNC, GEO, SAM and the Scholar helpers
 ---
 --- @file    shared/utils/precast/ability_helper.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2025-10-05
 ---============================================================================

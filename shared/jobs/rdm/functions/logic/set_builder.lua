@@ -7,7 +7,7 @@
 ---   town detection, and movement speed.
 ---
 ---   @file    shared/jobs/rdm/functions/logic/set_builder.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Refactored with new header style
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

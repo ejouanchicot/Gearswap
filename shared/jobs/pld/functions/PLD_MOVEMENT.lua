@@ -5,7 +5,7 @@
 ---   shared AutoMove system.
 ---
 ---   @file    shared/jobs/pld/functions/PLD_MOVEMENT.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-03
 ---   @requires shared/utils/movement/automove.lua

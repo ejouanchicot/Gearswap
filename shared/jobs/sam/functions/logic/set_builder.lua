@@ -13,7 +13,7 @@
 ---   Used by: SAM_IDLE.lua and SAM_ENGAGED.lua
 ---
 ---   @file    shared/jobs/sam/functions/logic/set_builder.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-21
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -9,7 +9,7 @@
 ---     Elemental, Dark: MidcastManager on sets.midcast[skill]
 ---
 ---   @file    shared/jobs/geo/functions/GEO_MIDCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 3.1 - Added spell_family database support
 ---   @date    Created: 2025-10-09 | Updated: 2025-11-05
 ---  ═══════════════════════════════════════════════════════════════════════════

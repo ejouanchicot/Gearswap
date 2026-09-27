@@ -20,7 +20,7 @@
 --- which are also the options of state.MainWeapon.
 ---
 --- @file config/pld/PLD_WS_CONFIG.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-21
 ---============================================================================

@@ -11,7 +11,7 @@
 --- craft/craft_commands.lua; both are re-exposed as CommonCommands.handle_*.
 ---
 --- @file    shared/utils/core/COMMON_COMMANDS.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 3.3
 --- @date    Created: 2025-11-03
 ---============================================================================

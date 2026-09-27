@@ -31,7 +31,7 @@
 ---   TOTAL: 204 WS, each filed once, in the file of its own skill
 ---
 --- @file shared/data/weaponskills/UNIVERSAL_WS_DATABASE.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.3 - PERFORMANCE: Lazy loading to reduce job load time
 --- @date Created: 2025-10-29
 --- @date Updated: 2025-11-15 - Lazy loading implementation

@@ -21,7 +21,7 @@
 ---     - any slot the job has locked (disable)
 ---
 --- @file    shared/utils/custom/custom_guards.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-24
 ---============================================================================

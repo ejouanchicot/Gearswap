@@ -5,7 +5,7 @@
 ---   This is a SPECIAL hook called ONLY for pet abilities during midcast.
 ---
 ---   @file    shared/jobs/pup/functions/PUP_PET_MIDCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-18
 ---  ═══════════════════════════════════════════════════════════════════════════

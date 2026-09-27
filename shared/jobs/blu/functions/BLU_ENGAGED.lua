@@ -5,7 +5,7 @@
 ---   .SW when single wielding, [OffenseMode], then the weapons.
 ---
 ---   @file    shared/jobs/blu/functions/BLU_ENGAGED.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-26
 ---  ═══════════════════════════════════════════════════════════════════════════

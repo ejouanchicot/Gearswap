@@ -5,7 +5,7 @@
 ---   last distance, position). SAM's set builder applies no movement gear.
 ---
 ---   @file    shared/jobs/sam/functions/SAM_MOVEMENT.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-21
 ---  ═══════════════════════════════════════════════════════════════════════════

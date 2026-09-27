@@ -25,7 +25,7 @@
 ---   • Movement & Buff sets (Speed, Doom, Adoulin)
 ---
 --- @file    sets/run_sets.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 3.2
 --- @date    Created: 2025-11-03 | Updated: 2025-11-11
 ---============================================================================

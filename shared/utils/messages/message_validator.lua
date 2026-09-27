@@ -14,7 +14,7 @@
 ---   //gs c msgtests
 ---
 --- @file shared/utils/messages/message_validator.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-11-07
 ---============================================================================

@@ -19,7 +19,7 @@
 --- overrides, but nothing sets them: //gs c setregion is not implemented.
 ---
 --- @file shared/utils/messages/message_colors.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.3
 --- @date Created: 2025-10-02 | Updated: 2025-10-12 - Added config-based region detection
 ---============================================================================

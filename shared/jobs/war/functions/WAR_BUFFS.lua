@@ -12,7 +12,7 @@
 ---   Delegates business logic to SmartbuffManager (logic module).
 ---
 ---   @file    shared/jobs/war/functions/WAR_BUFFS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 3.0 - Logic Extracted to logic/smartbuff_manager.lua
 ---   @date    Created: 2025-09-29 | Updated: 2025-10-06
 ---   @requires shared/jobs/war/functions/logic/smartbuff_manager

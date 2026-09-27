@@ -28,7 +28,7 @@
 ---   - [Tachi: Fudo] Five-hit attack. (1850 TP)
 ---
 ---   @file    shared/hooks/init_ws_messages.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.2 - Lazy Loading for performance
 ---   @date    Created: 2025-11-07 | Updated: 2025-11-15
 ---  ═══════════════════════════════════════════════════════════════════════════

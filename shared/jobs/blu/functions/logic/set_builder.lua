@@ -17,7 +17,7 @@
 ---   the chosen base: Mote laid them on its own pick, which is replaced here.
 ---
 ---   @file    shared/jobs/blu/functions/logic/set_builder.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-26
 ---  ═══════════════════════════════════════════════════════════════════════════

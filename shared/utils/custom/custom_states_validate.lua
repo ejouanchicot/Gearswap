@@ -12,7 +12,7 @@
 --- values, rule without `when`. Everything else is a warning.
 ---
 --- @file    shared/utils/custom/custom_states_validate.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.1
 --- @date    Created: 2026-09-24
 ---============================================================================

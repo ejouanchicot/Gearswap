@@ -5,7 +5,7 @@
 ---   LifecycleManager handler only ticks the watchdog.
 ---
 ---   @file    shared/jobs/rdm/functions/RDM_AFTERCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Refactored with new header style
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

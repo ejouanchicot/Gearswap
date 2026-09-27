@@ -13,7 +13,7 @@
 ---   • User-friendly error messages
 ---
 ---   @file    shared/jobs/pld/functions/logic/rune_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-06
 ---  ═══════════════════════════════════════════════════════════════════════════

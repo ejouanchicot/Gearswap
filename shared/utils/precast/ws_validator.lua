@@ -5,7 +5,7 @@
 --- WeaponSkillManager and sets eventArgs.cancel when either fails.
 ---
 --- @file    shared/utils/precast/ws_validator.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2025-10-17
 ---============================================================================

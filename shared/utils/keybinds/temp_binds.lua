@@ -22,7 +22,7 @@
 --- emptied.
 ---
 --- @file    shared/utils/keybinds/temp_binds.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-24
 ---============================================================================

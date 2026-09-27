@@ -5,7 +5,7 @@
 ---   and the escort follow-up. Gear return is left to Mote.
 ---
 ---   @file    shared/jobs/geo/functions/GEO_AFTERCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-09
 ---  ═══════════════════════════════════════════════════════════════════════════

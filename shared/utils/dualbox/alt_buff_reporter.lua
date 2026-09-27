@@ -21,7 +21,7 @@
 ---   (_G.AltBuffState or {})['Entrust']
 ---
 --- @file shared/utils/dualbox/alt_buff_reporter.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-08-08
 ---============================================================================

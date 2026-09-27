@@ -4,7 +4,7 @@
 --- Defines macro book and page settings for Black Mage job per subjob.
 ---
 --- @file config/blm/BLM_MACROBOOK.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0 - Dual-boxing support
 --- @date Created: 2025-10-15 | Updated: 2025-10-22
 ---============================================================================

@@ -15,7 +15,7 @@
 ---   • Call DRKStates.validate() to verify configuration (optional)
 ---
 --- @file    config/drk/DRK_STATES.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0.0
 --- @date    Created: 2025-10-23
 --- @requires Mote-Include (state, M objects)

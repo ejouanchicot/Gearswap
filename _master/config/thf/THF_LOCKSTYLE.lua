@@ -19,7 +19,7 @@
 ---   • DressUp addon (FFXI lockstyle support)
 ---
 --- @file    config/thf/THF_LOCKSTYLE.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2025-10-06
 ---============================================================================

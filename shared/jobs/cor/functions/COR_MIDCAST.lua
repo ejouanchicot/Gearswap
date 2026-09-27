@@ -14,7 +14,7 @@
 ---   - Phantom Rolls/Quick Draw are instantaneous (PRECAST only, no midcast)
 ---
 ---   @file    shared/jobs/cor/functions/COR_MIDCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 3.1 - Added spell_family database support
 ---   @date    Created: 2025-10-07 | Updated: 2025-11-05
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -5,7 +5,7 @@
 --- Names white, ON green / OFF red, problems red.
 ---
 --- @file shared/utils/messages/data/systems/altgroup_messages.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-24
 ---============================================================================

@@ -6,7 +6,7 @@
 --- shared/config/ui_settings.lua, which writes the settings file.
 ---
 --- @file shared/utils/ui/UI_SETTINGS.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-11-03
 ---============================================================================

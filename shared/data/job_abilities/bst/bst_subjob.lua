@@ -12,7 +12,7 @@
 ---   - Tame (Lv30) - Lower enemy resistance to charm
 ---
 --- @file shared/data/job_abilities/bst/bst_subjob.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Beastmaster

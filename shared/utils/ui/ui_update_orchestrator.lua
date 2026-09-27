@@ -14,7 +14,7 @@
 --- no caller in the repository.
 ---
 --- @file shared/utils/ui/ui_update_orchestrator.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-09
 ---============================================================================

@@ -5,7 +5,7 @@
 --- Loaded by user_setup() in Tetsouo_BST.lua
 ---
 --- @file config/bst/BST_STATES.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-17
 ---============================================================================

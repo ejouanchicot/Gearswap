@@ -6,7 +6,7 @@
 --- data/systems/sortie_messages.lua.
 ---
 --- @file shared/utils/messages/formatters/system/message_sortie.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.1
 --- @date Created: 2026-09-24
 ---============================================================================

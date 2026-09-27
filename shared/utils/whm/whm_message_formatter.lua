@@ -17,7 +17,7 @@
 --- are the documented exception (CODE_QUALITY.md section 6, point 3).
 ---
 --- @file    shared/utils/whm/whm_message_formatter.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0.0
 --- @date    Created: 2025-10-21
 ---============================================================================

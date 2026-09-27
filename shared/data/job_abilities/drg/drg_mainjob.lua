@@ -13,7 +13,7 @@
 ---   - Dragon Breaker (Lv87) - Debuff dragons
 ---
 --- @file shared/data/job_abilities/drg/drg_mainjob.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06
 ---============================================================================

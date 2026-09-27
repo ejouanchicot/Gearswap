@@ -6,7 +6,7 @@
 --- to dedicated modules for maximum maintainability and scalability.
 ---
 --- @file Tetsouo_COR.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.2.0
 --- @date Created: 2025-10-07
 --- @date Updated: 2025-10-09 - Party job detection via packet parsing

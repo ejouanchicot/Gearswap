@@ -9,7 +9,7 @@
 ---   Uses centralized AutoMove for position tracking (performance optimization).
 ---
 ---   @file    shared/jobs/run/functions/RUN_MOVEMENT.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-03
 ---   @requires shared/utils/movement/automove.lua

@@ -24,7 +24,7 @@
 ---   • All COR_*.lua hook modules (11 total)
 ---
 ---   @file    shared/jobs/cor/functions/cor_functions.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-07
 ---  ═══════════════════════════════════════════════════════════════════════════

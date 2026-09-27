@@ -5,7 +5,7 @@
 --- Universal module usable by any job (COR, BRD, etc.) that needs party info.
 ---
 --- @file shared/utils/messages/utilities/party_messages.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-29
 ---============================================================================

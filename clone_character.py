@@ -17,7 +17,7 @@ Usage:
     python clone_character.py              (French - default)
     python clone_character.py --lang en    (English)
 
-Author: Tetsouo GearSwap Project
+Author: ejouanchicot
 Version: 4.1.0 - Keeps the files written in game across a re-clone
 Date: 2026-09-25
 """

@@ -13,7 +13,7 @@
 ---   • HybridMode integration (sets.engaged.PDT / sets.engaged[HybridMode])
 ---
 ---   @file    shared/jobs/dnc/functions/logic/set_builder.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Saber Dance Support
 ---   @date    Created: 2025-10-06
 ---   @date    Updated: 2025-10-19

@@ -13,7 +13,7 @@
 ---   defined, so ensure_modules_loaded() raises on the first midcast.
 ---
 ---   @file    shared/jobs/pup/functions/PUP_MIDCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 3.0 - Added spell_family database support
 ---   @date    Created: 2025-10-17 | Updated: 2025-11-05
 ---  ═══════════════════════════════════════════════════════════════════════════

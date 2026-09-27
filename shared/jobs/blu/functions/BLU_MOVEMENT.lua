@@ -6,7 +6,7 @@
 ---   idle only. This module exposes the movement status.
 ---
 ---   @file    shared/jobs/blu/functions/BLU_MOVEMENT.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-26
 ---   @requires shared/utils/movement/automove.lua

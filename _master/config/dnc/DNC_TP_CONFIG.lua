@@ -17,7 +17,7 @@
 ---   • get_weapon_bonus(weapon_name) - Get TP bonus from equipped weapon
 ---
 --- @file    config/dnc/DNC_TP_CONFIG.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0.0
 --- @date    Created: 2025-10-08
 ---============================================================================

@@ -15,7 +15,7 @@
 ---   • BLMMessages (for status messages)
 ---
 ---   @file    shared/jobs/blm/functions/logic/storm_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-15
 ---  ═══════════════════════════════════════════════════════════════════════════

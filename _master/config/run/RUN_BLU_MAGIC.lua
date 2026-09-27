@@ -18,7 +18,7 @@
 ---   • get_info() - Get rotation info for debugging
 ---
 --- @file    config/run/RUN_BLU_MAGIC.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0 - Dynamic spell detection
 --- @date    Created: 2025-10-04
 ---============================================================================

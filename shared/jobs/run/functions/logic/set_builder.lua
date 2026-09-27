@@ -14,7 +14,7 @@
 ---   • Modular functions for easy maintenance
 ---
 ---   @file    shared/jobs/run/functions/logic/set_builder.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.1.0 - Lycurgos (Great Axe) skips the grip; the sub slot is not emptied
 ---   @date    Created: 2025-10-06 | Updated: 2025-11-11
 ---  ═══════════════════════════════════════════════════════════════════════════

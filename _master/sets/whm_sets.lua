@@ -21,7 +21,7 @@
 ---   • Buff sets (Divine Caress, Afflatus Solace, Doom)
 ---
 --- @file    sets/whm_sets.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0
 --- @date    Updated: 2025-10-21 (creation date not recorded)
 --- @source  Timara WHM.lua (equipment data)

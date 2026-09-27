@@ -21,7 +21,7 @@
 ---   - Drain III is DRK Job Points ability
 ---
 --- @file shared/data/magic/dark/dark_drain.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Aspir

@@ -9,7 +9,7 @@
 ---   15=wardrobe7 (craft), 16=wardrobe8.
 ---
 --- @file shared/utils/wardrobe/lib/config.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-01
 ---============================================================================

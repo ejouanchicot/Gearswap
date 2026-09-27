@@ -4,7 +4,7 @@
 --- Light-based Divine Magic (Banish I–III, Banishga I–II; Banish IV commented out)
 ---
 --- @file shared/data/magic/divine/divine_banish.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @verified bg-wiki.com (2025-10-31)

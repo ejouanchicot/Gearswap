@@ -38,7 +38,7 @@
 ---   file_unload and on the way back up in user_setup.
 ---
 ---   @file    shared/utils/equipment/ampulla_lock.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Shared by PLD and WAR
 ---   @date    Created: 2026-09-20 | Updated: 2026-09-23
 ---  ═══════════════════════════════════════════════════════════════════════════

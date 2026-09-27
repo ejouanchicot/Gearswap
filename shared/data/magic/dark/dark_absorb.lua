@@ -22,7 +22,7 @@
 ---   - Duration varies with Dark Magic skill
 ---
 --- @file shared/data/magic/dark/dark_absorb.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Category:Dark_Magic

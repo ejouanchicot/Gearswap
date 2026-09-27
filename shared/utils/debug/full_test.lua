@@ -8,7 +8,7 @@
 ---   Usage: //gs c fulltest [export]  (alias: ft)
 ---
 ---   @file    shared/utils/debug/full_test.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-03-04
 ---  ═══════════════════════════════════════════════════════════════════════════

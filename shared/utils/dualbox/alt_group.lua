@@ -30,7 +30,7 @@
 ---   //gs c altmirror <name> phase <step> <npc> | results <...>  (same, mirror progress)
 ---
 --- @file shared/utils/dualbox/alt_group.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-24
 ---============================================================================

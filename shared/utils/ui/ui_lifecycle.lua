@@ -11,7 +11,7 @@
 --- max_wait_time it initializes anyway.
 ---
 --- @file shared/utils/ui/ui_lifecycle.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-09
 ---============================================================================

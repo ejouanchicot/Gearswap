@@ -5,7 +5,7 @@
 ---   All hook modules must be loaded via include() for _G availability.
 ---
 ---   @file    shared/jobs/smn/functions/smn_functions.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-28
 ---  ═══════════════════════════════════════════════════════════════════════════

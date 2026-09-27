@@ -6,7 +6,7 @@
 --- and WHM-specific support spells (Divine, Enfeebling).
 ---
 --- @file shared/data/magic/WHM_SPELL_DATABASE.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 3.0 - Improved formatting - Skill-Based Architecture Migration
 --- @date Created: 2025-10-12 | Updated: 2025-10-31
 ---

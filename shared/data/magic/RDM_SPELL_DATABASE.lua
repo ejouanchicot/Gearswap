@@ -6,7 +6,7 @@
 --- ENFEEBLING_MAGIC_DATABASE, and RDM-specific elemental spells.
 ---
 --- @file shared/data/magic/RDM_SPELL_DATABASE.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 3.0 - Improved formatting - Skill-Based Architecture Migration
 --- @date Created: 2025-10-12 | Updated: 2025-10-31
 ---

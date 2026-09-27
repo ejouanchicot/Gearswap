@@ -18,7 +18,7 @@
 ---     • Centralized for all jobs with DNC main/sub
 ---
 ---   @file    shared/utils/dnc/waltz_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.2 - Critical fixes: division/0 + sub_job nil + Divine Waltz hardcode
 ---   @date    Created: 2025-10-05 | Updated: 2025-11-13
 ---  ═══════════════════════════════════════════════════════════════════════════

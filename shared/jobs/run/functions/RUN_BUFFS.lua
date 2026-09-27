@@ -4,7 +4,7 @@
 ---   Buff gain/loss handler: the shared LifecycleManager one (Doom handling).
 ---
 ---   @file    shared/jobs/run/functions/RUN_BUFFS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Removed dead code + refactored header
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

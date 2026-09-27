@@ -12,7 +12,7 @@
 ---      Routed via MidcastManager and its fallback chain.
 ---
 ---   @file    shared/jobs/smn/functions/SMN_MIDCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-28
 ---  ═══════════════════════════════════════════════════════════════════════════

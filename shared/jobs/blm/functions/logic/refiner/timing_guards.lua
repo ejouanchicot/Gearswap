@@ -19,7 +19,7 @@
 ---     • update_announce_time(now)
 ---
 ---   @file    shared/jobs/blm/functions/logic/refiner/timing_guards.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-09 (extracted from spell_refiner.lua)
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -5,7 +5,7 @@
 ---   Lazy-loaded: module created on first function call.
 ---
 ---   @file    shared/jobs/smn/functions/SMN_LOCKSTYLE.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-28
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -18,7 +18,7 @@
 ---         - dump state summary to debug log
 ---
 --- @file shared/utils/wardrobe/lib/state.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-01
 ---============================================================================

@@ -4,7 +4,7 @@
 ---   Delegates to DoomManager so Doom-locked slots are unlocked on death/raise.
 ---
 ---   @file    shared/jobs/smn/functions/SMN_STATUS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-28
 ---  ═══════════════════════════════════════════════════════════════════════════

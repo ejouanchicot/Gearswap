@@ -15,7 +15,7 @@
 ---   • Lockstyle numbers correspond to /lockstyleset 1-200 in-game
 ---
 --- @file    config/war/WAR_LOCKSTYLE.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0
 --- @date    Created: 2025-10-02 | Updated: 2025-10-02 - Subjob support
 ---============================================================================

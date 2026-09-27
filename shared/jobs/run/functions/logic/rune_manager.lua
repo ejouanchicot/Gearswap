@@ -11,7 +11,7 @@
 ---   • Cooldown message instead of a cast when on recast
 ---
 ---   @file    shared/jobs/run/functions/logic/rune_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-06
 ---  ═══════════════════════════════════════════════════════════════════════════

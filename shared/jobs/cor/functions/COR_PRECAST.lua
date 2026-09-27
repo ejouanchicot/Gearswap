@@ -22,7 +22,7 @@
 ---   5. job_post_precast: WS TP gear, roll ring, Fold gear
 ---
 ---   @file    shared/jobs/cor/functions/COR_PRECAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0
 ---   @date    Created: 2025-10-07
 ---   @requires Tetsouo architecture, MessageFormatter, CooldownChecker

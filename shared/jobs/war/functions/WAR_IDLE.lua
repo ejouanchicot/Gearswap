@@ -12,7 +12,7 @@
 ---   Delegates to SetBuilder (logic module) for shared construction logic.
 ---
 ---   @file    shared/jobs/war/functions/WAR_IDLE.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.1 - Lazy Loading for performance
 ---   @date    Created: 2025-09-29 | Updated: 2025-11-15
 ---   @requires shared/jobs/war/functions/logic/set_builder

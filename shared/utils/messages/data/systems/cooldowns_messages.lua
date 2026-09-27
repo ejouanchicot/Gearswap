@@ -9,7 +9,7 @@
 ---       simple separator patterns.
 ---
 --- @file shared/utils/messages/data/systems/cooldowns_messages.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-11-06
 ---============================================================================

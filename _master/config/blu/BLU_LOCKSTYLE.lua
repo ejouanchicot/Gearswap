@@ -5,7 +5,7 @@
 --- Numbers are the in-game /lockstyle set numbers.
 ---
 --- @file    config/blu/BLU_LOCKSTYLE.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-26
 ---============================================================================

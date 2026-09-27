@@ -12,7 +12,7 @@
 --- abilities yellow, ON green / OFF red, separators gray.
 ---
 --- @file shared/utils/messages/data/systems/sortie_messages.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @date Created: 2026-09-24
 ---============================================================================
 

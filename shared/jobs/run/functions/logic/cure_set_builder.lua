@@ -10,7 +10,7 @@
 ---   sets file. When the chosen one is missing, generate() returns nil.
 ---
 ---   @file    shared/jobs/run/functions/logic/cure_set_builder.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0.0 - Sets moved to the job sets file
 ---   @date    Created: 2025-10-06 | Updated: 2025-10-06
 ---  ═══════════════════════════════════════════════════════════════════════════

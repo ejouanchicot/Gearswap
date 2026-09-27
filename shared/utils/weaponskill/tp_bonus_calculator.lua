@@ -16,7 +16,7 @@
 ---   Equipment strategy: Equip the MINIMUM necessary pieces to reach threshold
 ---
 ---   @file    shared/utils/weaponskill/tp_bonus_calculator.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.3 - Lazy loading for MessageWeaponskill
 ---   @date    Created: 2025-01-02 | Updated: 2025-11-27
 ---  ═══════════════════════════════════════════════════════════════════════════

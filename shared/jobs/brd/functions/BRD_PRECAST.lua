@@ -13,7 +13,7 @@
 ---   • Precast set debug display (job_post_precast)
 ---
 ---   @file    shared/jobs/brd/functions/BRD_PRECAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0
 ---   @date    Created: 2025-10-13
 ---   @requires Tetsouo architecture, MessageFormatter, CooldownChecker

@@ -16,7 +16,7 @@
 --- a long line. The colour names are ChatPalette's.
 ---
 --- @file shared/utils/messages/data/systems/block_messages.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @date Created: 2026-09-25
 ---============================================================================
 

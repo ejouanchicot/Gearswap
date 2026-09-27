@@ -15,7 +15,7 @@
 ---   • Recent cast tracking (5s threshold)
 ---
 ---   @file    shared/jobs/run/functions/logic/aoe_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-06
 ---  ═══════════════════════════════════════════════════════════════════════════

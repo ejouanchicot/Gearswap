@@ -11,7 +11,7 @@
 ---   Note: Ready Move logic is BST-specific and NOT handled by MidcastManager.
 ---
 ---   @file    shared/jobs/bst/functions/BST_MIDCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 3.0 - Added spell_family database support
 ---   @date    Created: 2025-10-17 | Updated: 2025-11-05
 ---  ═══════════════════════════════════════════════════════════════════════════

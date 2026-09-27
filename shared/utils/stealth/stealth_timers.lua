@@ -13,7 +13,7 @@
 --- alert_before) and redraws the alt window while a timer runs.
 ---
 --- @file shared/utils/stealth/stealth_timers.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-26
 ---============================================================================

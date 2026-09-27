@@ -8,7 +8,7 @@
 ---   Each cloned character can override by editing their own CRAFT_CONFIG.lua.
 ---
 ---   @file    config/CRAFT_CONFIG.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-11
 ---  ═══════════════════════════════════════════════════════════════════════════

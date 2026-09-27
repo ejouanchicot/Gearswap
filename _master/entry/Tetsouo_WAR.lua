@@ -6,7 +6,7 @@
 --- to dedicated modules for maximum maintainability and scalability.
 ---
 --- @file    Tetsouo_WAR.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.1.0 - States Externalized
 --- @date    Created: 2025-09-29 | Updated: 2025-10-14
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+

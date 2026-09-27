@@ -12,7 +12,7 @@
 ---                    Aftermath: Lv.3 (logic/expiacion_guard.lua)
 ---
 --- @file    shared/utils/core/auto_options.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-25
 ---============================================================================

@@ -9,7 +9,7 @@
 ---   Delegates to SetBuilder (logic module) for shared construction logic.
 ---
 ---   @file    shared/jobs/war/functions/WAR_ENGAGED.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0 - Logic Extracted to logic/set_builder.lua
 ---   @date    Created: 2025-09-29 | Updated: 2025-10-06
 ---   @requires shared/jobs/war/functions/logic/set_builder

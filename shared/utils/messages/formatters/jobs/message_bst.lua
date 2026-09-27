@@ -5,7 +5,7 @@
 --- Templates: data/jobs/bst_messages.lua, sent through M.job.
 ---
 --- @file shared/utils/messages/formatters/jobs/message_bst.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 3.0
 --- @date Created: 2025-10-17 | Rebuilt: 2025-11-17
 ---============================================================================

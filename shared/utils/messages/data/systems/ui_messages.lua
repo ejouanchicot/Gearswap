@@ -8,7 +8,7 @@
 ---       This template file contains simple UI status messages only
 ---
 --- @file shared/utils/messages/data/systems/ui_messages.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-11-06
 ---============================================================================

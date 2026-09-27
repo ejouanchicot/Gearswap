@@ -5,7 +5,7 @@
 --- filters, refreshes and unbinds them.
 ---
 --- @file    config/pld/PLD_KEYBINDS.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0.0
 --- @date    Created: 2025-10-03 | Updated: 2026-09-24 (KeybindManager)
 ---============================================================================

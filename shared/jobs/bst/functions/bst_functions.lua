@@ -5,7 +5,7 @@
 ---   CRITICAL: All 11 hook modules must be loaded via include() for _G availability.
 ---
 ---   @file    shared/jobs/bst/functions/bst_functions.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-17
 ---  ═══════════════════════════════════════════════════════════════════════════

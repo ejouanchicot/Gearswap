@@ -8,7 +8,7 @@
 --- a second or two instead of waiting for a timeout.
 ---
 --- @file    shared/utils/core/cast_tracker.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-25
 ---============================================================================

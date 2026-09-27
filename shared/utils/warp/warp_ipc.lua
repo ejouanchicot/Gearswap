@@ -16,7 +16,7 @@
 ---   3. The other instances' warp_ipc_register listener runs //gs c warp
 ---
 --- @file shared/utils/warp/warp_ipc.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-28
 ---============================================================================

@@ -10,7 +10,7 @@
 --- (shared/jobs/pup/functions/logic/) that do not exist.
 ---
 --- @file Tetsouo_PUP.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0.0 - Initial Release
 --- @date Created: 2025-10-17
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+

@@ -6,7 +6,7 @@
 --- character gets its own file without any detection here.
 ---
 --- @file shared/utils/ui/UI_LOADER.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-01-26
 ---============================================================================

@@ -18,7 +18,7 @@
 ---   //gs c sortie list              list the targets
 ---
 --- @file    shared/utils/sortie/sortie_commands.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-24
 ---============================================================================

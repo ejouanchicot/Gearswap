@@ -8,7 +8,7 @@
 --- Saved in <Character>/config/combat_mode.lua (combat_mode.lua reads it).
 ---
 --- @file    shared/utils/core/combat_mode_commands.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-25
 ---============================================================================

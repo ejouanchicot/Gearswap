@@ -18,7 +18,7 @@
 ---       logic/azure_sets.lua      AzureSets addon loaded while on BLU
 ---
 ---   @file    shared/jobs/blu/functions/blu_functions.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-26
 ---  ═══════════════════════════════════════════════════════════════════════════

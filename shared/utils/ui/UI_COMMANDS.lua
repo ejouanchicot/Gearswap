@@ -5,7 +5,7 @@
 --- of UI command logic across job-specific COMMANDS.lua files.
 ---
 --- @file shared/utils/ui/UI_COMMANDS.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-04
 ---============================================================================

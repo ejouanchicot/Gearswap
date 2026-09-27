@@ -2,7 +2,7 @@
 
 **Version:** 1.0
 **Date:** 2025-10-31
-**Author:** Tetsouo
+**Author:** ejouanchicot
 **Source:** bg-wiki.com
 
 ---

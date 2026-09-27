@@ -10,7 +10,7 @@
 ---     • Post-precast: spell-specific FC sets and the debugprecast trace
 ---
 ---   @file    shared/jobs/rdm/functions/RDM_PRECAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.1 - Refactored header style
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

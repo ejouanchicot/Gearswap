@@ -5,7 +5,7 @@
 ---   Uses multiple cache layers for performance (1.0s, 0.5s, 30s).
 ---
 ---   @file    shared/jobs/bst/functions/logic/pet_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-17
 ---  ═══════════════════════════════════════════════════════════════════════════

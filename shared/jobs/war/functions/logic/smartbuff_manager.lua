@@ -17,7 +17,7 @@
 ---   • Subjob-specific logic routing
 ---
 ---   @file    shared/jobs/war/functions/logic/smartbuff_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -19,7 +19,7 @@
 ---                                      - pins without a copy first
 ---
 --- @file shared/utils/wardrobe/lib/moves.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-01
 ---============================================================================

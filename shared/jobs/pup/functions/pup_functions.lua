@@ -6,7 +6,7 @@
 ---   configs do not exist, so the job does not load today.
 ---
 ---   @file    shared/jobs/pup/functions/pup_functions.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-17
 ---  ═══════════════════════════════════════════════════════════════════════════

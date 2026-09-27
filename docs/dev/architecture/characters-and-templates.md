@@ -108,7 +108,7 @@ Files are copied with `shutil.copy2` / `shutil.copytree`. Step 5 rewrites a file
 
 ### Name substitution (step 5)
 
-- Plain substring replacement of `S` by `T` in every `.lua` file. This covers the require paths and `load_ui_config('Tetsouo', ...)` in entries, which is the part that matters. It also rewrites `@file` headers, comments, and every `@author Tetsouo`.
+- Plain substring replacement of `S` by `T` in every `.lua` file. This covers the require paths and `load_ui_config('Tetsouo', ...)` in entries, which is the part that matters. It also rewrites `@file` headers, comments, and every `@author ejouanchicot`.
 - Files copied from the generic layer (`_copy` records them) also get `Tetsouo` replaced, whatever `S` is, except on `@author` lines. Before 2026-09-25 only `S` was replaced, so with `--source Kaories` a generic file kept its `'Tetsouo/config/...'` paths: an entry taken from the generic `Tetsouo_<JOB>.lua` loaded Tetsouo's configs. Checked against the old script on a scratch copy: Tetsouo and a new character with the default source give identical folders, Kaories with `--source Kaories` differs by two comment lines.
 - Files from the target's own overlay (`_master/T/`) are left as written: they may name the partner (`Tetsouo` in Kaories' `PLD_MACROBOOK.lua`).
 - The progress message always prints `Tetsouo >> T` (`replace_count`, `:113`), whatever `S` is.

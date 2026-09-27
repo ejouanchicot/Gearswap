@@ -6,7 +6,7 @@
 ---   and sets up global variables required by the UI system.
 ---
 ---   @file    shared/utils/config/config_loader.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0 - Eliminated duplication (use UISettingsManager)
 ---   @date    Created: 2025-11-03 | Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

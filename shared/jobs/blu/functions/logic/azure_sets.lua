@@ -10,7 +10,7 @@
 ---   module already loaded it (`windower` outlives the job sandbox).
 ---
 ---   @file    shared/jobs/blu/functions/logic/azure_sets.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-26
 ---  ═══════════════════════════════════════════════════════════════════════════

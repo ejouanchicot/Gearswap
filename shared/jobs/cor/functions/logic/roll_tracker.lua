@@ -14,7 +14,7 @@
 ---     main job (a Tricorne proc is not counted, see roll_has_job_bonus)
 ---
 ---   @file    shared/jobs/cor/functions/logic/roll_tracker.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.2
 ---   @date    Created: 2025-10-08
 ---   @date    Updated: 2025-10-09 - Added automatic party job detection

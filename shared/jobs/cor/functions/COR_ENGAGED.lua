@@ -6,7 +6,7 @@
 ---   or /DNC, main only otherwise, plus RangeWeapon).
 ---
 ---   @file    shared/jobs/cor/functions/COR_ENGAGED.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.1 - Removed dead code + refactored header
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

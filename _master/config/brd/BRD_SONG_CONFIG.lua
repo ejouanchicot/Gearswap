@@ -5,7 +5,7 @@
 --- Pack names must match the values of state.SongMode (BRD_STATES.lua).
 ---
 --- @file config/brd/BRD_SONG_CONFIG.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-13
 ---============================================================================

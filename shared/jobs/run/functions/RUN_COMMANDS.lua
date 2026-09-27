@@ -10,7 +10,7 @@
 ---   Uses centralized command handlers for consistency across all jobs.
 ---
 ---   @file    shared/jobs/run/functions/RUN_COMMANDS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 3.0.0 - Logic Extracted to logic/
 ---   @date    Created: 2025-10-03 | Updated: 2025-10-06
 ---   @requires shared/utils/ui/UI_COMMANDS, shared/utils/core/COMMON_COMMANDS

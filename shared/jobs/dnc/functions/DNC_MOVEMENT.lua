@@ -6,7 +6,7 @@
 ---   nothing in the project calls get_dnc_movement_status today.
 ---
 ---   @file    shared/jobs/dnc/functions/DNC_MOVEMENT.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-04
 ---  ═══════════════════════════════════════════════════════════════════════════

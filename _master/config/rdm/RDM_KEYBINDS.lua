@@ -6,7 +6,7 @@
 --- keybind_manager.lua.
 ---
 --- @file    config/rdm/RDM_KEYBINDS.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0
 --- @date    Created: 2025-10-12 | Updated: 2026-09-24 (KeybindManager)
 ---============================================================================

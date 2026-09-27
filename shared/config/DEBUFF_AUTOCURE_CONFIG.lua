@@ -15,7 +15,7 @@
 ---     • Paralysis: Remedy (Priority 1) → Panacea (Priority 2)
 ---
 ---   @file    shared/config/DEBUFF_AUTOCURE_CONFIG.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.3 - Panacea added as paralysis fallback
 ---   @date    Updated: 2026-08-18
 ---  ═══════════════════════════════════════════════════════════════════════════

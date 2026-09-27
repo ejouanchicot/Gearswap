@@ -24,7 +24,7 @@
 ---     DebugCommands.handle_debugmsg()          - message display modes dump
 ---
 ---   @file    shared/utils/core/DEBUG_COMMANDS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-01
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -16,7 +16,7 @@
 ---   • get_weapon_bonus(weapon_name) - Get TP bonus from equipped weapon
 ---
 --- @file    config/run/RUN_TP_CONFIG.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0.0 - Updated for RUN weapons
 --- @date    Created: 2025-10-08 | Updated: 2025-11-04
 ---============================================================================

@@ -35,7 +35,7 @@
 ---   • Mote-Include (M state creator, state:options(), state:set())
 ---
 --- @file    config/blm/BLM_STATES.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2025-10-15
 ---============================================================================

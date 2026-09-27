@@ -11,7 +11,7 @@
 ---       by RDM_IDLE / RDM_ENGAGED
 ---
 ---   @file    shared/jobs/rdm/functions/rdm_functions.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Refactored header style
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

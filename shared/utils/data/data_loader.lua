@@ -23,7 +23,7 @@
 ---     - UI can display all available data without job restrictions
 ---
 ---   @file    shared/utils/data/data_loader.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Style standardization (BRD headers)
 ---   @date    Created: 2025-11-01 | Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

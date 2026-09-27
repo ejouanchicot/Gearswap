@@ -6,7 +6,7 @@
 --- to dedicated modules for maximum maintainability and scalability.
 ---
 --- @file    Tetsouo_DNC.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0.0 - Initial Release
 --- @date    Created: 2025-10-04
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+

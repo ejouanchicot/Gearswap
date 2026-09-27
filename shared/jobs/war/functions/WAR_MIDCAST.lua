@@ -8,7 +8,7 @@
 ---   • Lazy-loaded: Modules loaded on first spell cast
 ---
 ---   @file    shared/jobs/war/functions/WAR_MIDCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 3.1 - Lazy Loading for performance
 ---   @date    Created: 2025-09-29 | Updated: 2025-11-15
 ---  ═══════════════════════════════════════════════════════════════════════════

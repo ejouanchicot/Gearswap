@@ -20,7 +20,7 @@
 ---   - No specific gear for potency
 ---
 --- @file shared/data/magic/enhancing/enhancing_combat.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.1 - Improved alignment - Standardized with spell_family
 --- @date Created: 2025-10-30 | Updated: 2025-11-06
 ---============================================================================

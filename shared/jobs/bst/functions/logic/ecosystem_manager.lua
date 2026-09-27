@@ -5,7 +5,7 @@
 ---   counting. Pet data comes from _G.BSTBeastPetData (set by the entry file).
 ---
 ---   @file    shared/jobs/bst/functions/logic/ecosystem_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-18
 ---  ═══════════════════════════════════════════════════════════════════════════

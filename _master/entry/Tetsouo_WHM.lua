@@ -23,7 +23,7 @@
 ---   • Shared: shared/utils/whm/cure_manager.lua (Cure tier, WHM_CURE_CONFIG)
 ---
 --- @file    Tetsouo_WHM.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0.0
 --- @date    Created: 2025-10-21
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+

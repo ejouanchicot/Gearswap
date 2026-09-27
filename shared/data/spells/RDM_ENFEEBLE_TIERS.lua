@@ -14,7 +14,7 @@
 --- standard cooldown check.
 ---
 --- @file shared/data/spells/RDM_ENFEEBLE_TIERS.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-07-28
 ---============================================================================

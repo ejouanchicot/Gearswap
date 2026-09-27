@@ -28,7 +28,7 @@
 ---   • _G.drk_dark_seal_pending, _G.drk_nether_void_pending global flags
 ---
 ---   @file    shared/jobs/drk/functions/logic/drk_buff_anticipation.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0 - Dark Seal/Nether Void Only
 ---   @date    Created: 2025-10-23 | Updated: 2025-10-23
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -13,7 +13,7 @@
 --- message is byte-identical to the fixed codes it replaces.
 ---
 --- @file shared/utils/messages/chat_palette.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-25
 ---============================================================================

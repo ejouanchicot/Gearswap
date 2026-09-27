@@ -15,7 +15,7 @@
 ---     • resolve_variants(name) -> list of {name, id}
 ---
 ---   @file    shared/utils/inventory/refill/item_resolver.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-09 (extracted from refill_manager.lua)
 ---  ═══════════════════════════════════════════════════════════════════════════

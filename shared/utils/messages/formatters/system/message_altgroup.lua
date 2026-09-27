@@ -4,7 +4,7 @@
 --- Templates live in data/systems/altgroup_messages.lua.
 ---
 --- @file shared/utils/messages/formatters/system/message_altgroup.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-24
 ---============================================================================

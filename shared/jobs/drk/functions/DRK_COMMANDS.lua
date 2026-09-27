@@ -9,7 +9,7 @@
 ---   Uses centralized command handlers for consistency across all jobs.
 ---
 ---   @file    shared/jobs/drk/functions/DRK_COMMANDS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-23
 ---   @requires shared/utils/ui/UI_COMMANDS, shared/utils/core/COMMON_COMMANDS

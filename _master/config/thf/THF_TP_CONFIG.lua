@@ -20,7 +20,7 @@
 ---   • TPBonusCalculator (uses this configuration for dynamic gear selection)
 ---
 --- @file    config/thf/THF_TP_CONFIG.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2025-10-08
 ---============================================================================

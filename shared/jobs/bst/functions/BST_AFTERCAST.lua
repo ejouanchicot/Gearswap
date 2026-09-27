@@ -7,7 +7,7 @@
 ---   Mote-Include returns to idle/engaged gear otherwise.
 ---
 ---   @file    shared/jobs/bst/functions/BST_AFTERCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-17
 ---  ═══════════════════════════════════════════════════════════════════════════

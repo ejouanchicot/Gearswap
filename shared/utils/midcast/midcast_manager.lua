@@ -13,7 +13,7 @@
 --- word, then instrument and Troubadour layers, then sets.midcast.BardSong.
 ---
 --- @file    shared/utils/midcast/midcast_manager.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0
 --- @date    Created: 2025-10-24
 ---============================================================================

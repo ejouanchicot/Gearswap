@@ -18,7 +18,7 @@
 ---   _master/config/[job]/          - Job configs (15 jobs, PUP has no config)
 ---
 --- @file    character_db.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    2026-02-16
 ---============================================================================

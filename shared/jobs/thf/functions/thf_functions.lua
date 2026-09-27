@@ -32,7 +32,7 @@
 ---   • shared/utils/messages/formatters/magic/message_buffs.lua
 ---
 ---   @file    shared/jobs/thf/functions/thf_functions.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
 ---  ═══════════════════════════════════════════════════════════════════════════

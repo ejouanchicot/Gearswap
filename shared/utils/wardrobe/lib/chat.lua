@@ -24,7 +24,7 @@
 ---   Chat.kv(label, value)            - alias for detail
 ---
 --- @file shared/utils/wardrobe/lib/chat.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-01
 ---============================================================================

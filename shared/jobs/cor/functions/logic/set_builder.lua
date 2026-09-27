@@ -9,7 +9,7 @@
 ---   - sets.idle.Refresh under 50% MP (idle, outside town)
 ---
 ---   @file    shared/jobs/cor/functions/logic/set_builder.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0
 ---   @date    Updated: 2025-10-08 (Refactored to modular architecture)
 ---  ═══════════════════════════════════════════════════════════════════════════

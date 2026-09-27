@@ -5,7 +5,7 @@
 --- state display and TP lines. Templates: data/systems/status_messages.lua.
 ---
 --- @file    shared/utils/messages/formatters/ui/message_status.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0
 --- @date    Created: 2025-11-06
 ---============================================================================

@@ -9,7 +9,7 @@
 --- init_delay, text.stroke, flags and background_presets are always read here.
 ---
 --- @file config/UI_CONFIG.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-01
 ---============================================================================

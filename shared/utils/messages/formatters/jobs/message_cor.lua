@@ -4,7 +4,7 @@
 --- Templates: data/jobs/cor_messages.lua, sent through M.job.
 ---
 --- @file    shared/utils/messages/formatters/jobs/message_cor.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0
 --- @date    Created: 2025-11-06
 ---============================================================================

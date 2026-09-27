@@ -15,7 +15,7 @@
 --- are lost at the next job file load.
 ---
 --- @file    shared/utils/core/midcast_watchdog.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0
 --- @date    Created: 2025-11-03
 ---============================================================================

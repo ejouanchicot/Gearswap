@@ -6,7 +6,7 @@
 --- Verified: 2025-10-30
 ---
 --- @file shared/data/weaponskills/GREATAXE_WS_DATABASE.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0 - Improved formatting
 --- @date Created: 2025-10-30
 ---============================================================================

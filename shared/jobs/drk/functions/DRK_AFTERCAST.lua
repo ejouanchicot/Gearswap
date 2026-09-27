@@ -7,7 +7,7 @@
 ---   Returning to idle/engaged gear is left to Mote's default aftercast.
 ---
 ---   @file    shared/jobs/drk/functions/DRK_AFTERCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0.0
 ---   @date    Created: 2025-10-23
 ---  ═══════════════════════════════════════════════════════════════════════════

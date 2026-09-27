@@ -6,7 +6,7 @@
 ---   spells still on recast, then sends the rest as one queue.
 ---
 ---   @file    shared/jobs/blm/functions/logic/buff_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 3.0 - Casting engine extracted to utils/buffs/self_buff_manager
 ---   @date    Created: 2025-10-15 | Updated: 2026-09-17
 ---  ═══════════════════════════════════════════════════════════════════════════

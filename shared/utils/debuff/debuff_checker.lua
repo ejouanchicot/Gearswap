@@ -12,7 +12,7 @@
 ---     - Defender  >> Paralysis (blocks JA/WS)
 ---
 ---   @file    shared/utils/debuff/debuff_checker.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.3 - DRY refactor: Helper function for check_X_blocked() (-30 lines)
 ---   @date    Created: 2025-10-02 | Updated: 2025-11-13
 ---  ═══════════════════════════════════════════════════════════════════════════

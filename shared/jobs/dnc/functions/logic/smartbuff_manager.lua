@@ -16,7 +16,7 @@
 ---   • Status display (active/cooldown with time remaining)
 ---
 ---   @file    shared/jobs/dnc/functions/logic/smartbuff_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0 - Dance integrated into smartbuff
 ---   @date    Created: 2025-10-06
 ---   @date    Updated: 2026-07-28

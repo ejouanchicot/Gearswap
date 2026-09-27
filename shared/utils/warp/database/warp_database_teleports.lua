@@ -5,7 +5,7 @@
 --- Destinations: Holla, Dem, Mea, Vahzl, Yhoat, Altep
 ---
 --- @file shared/utils/warp/database/warp_database_teleports.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 4.0
 --- @date Created: 2025-10-28
 ---============================================================================

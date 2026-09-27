@@ -16,7 +16,7 @@
 ---   state added afterwards displays as N/A until something forces a redraw.
 ---
 ---   @file    shared/utils/debuff/auto_medicine.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1
 ---   @date    Created: 2026-08-07 | Updated: 2026-08-18
 ---  ═══════════════════════════════════════════════════════════════════════════

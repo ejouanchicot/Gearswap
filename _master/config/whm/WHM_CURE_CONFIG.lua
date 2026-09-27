@@ -17,7 +17,7 @@
 ---     safety_margin and debug_messages
 ---
 --- @file    config/whm/WHM_CURE_CONFIG.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0.0
 --- @date    Created: 2025-10-21
 ---============================================================================

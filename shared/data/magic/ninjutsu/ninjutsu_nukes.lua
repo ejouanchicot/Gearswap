@@ -17,7 +17,7 @@
 ---   - Hyoton (Ice,       weakens Fire)
 ---
 --- @file shared/data/magic/ninjutsu/ninjutsu_nukes.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-06-07
 --- @source https://www.bg-wiki.com/ffxi/Category:Ninjutsu

@@ -8,7 +8,7 @@
 ---   • MagicAcc (magical accuracy/debuff moves)
 ---
 ---   @file    shared/jobs/bst/functions/logic/ready_move_categorizer.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-17
 ---  ═══════════════════════════════════════════════════════════════════════════

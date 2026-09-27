@@ -5,7 +5,7 @@
 --- Used by performance_profiler.lua via new message system
 ---
 --- @file shared/utils/messages/data/systems/profiler_messages.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-11-15
 ---============================================================================

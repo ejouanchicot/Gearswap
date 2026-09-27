@@ -21,7 +21,7 @@
 --- //gs c songs full sings every dummy whatever is up.
 ---
 --- @file    shared/jobs/brd/functions/logic/song_slots.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-25
 ---============================================================================

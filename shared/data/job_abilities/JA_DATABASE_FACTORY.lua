@@ -18,7 +18,7 @@
 ---     - shared/utils/messages/handlers/ability_message_handler.lua (per-job)
 ---
 ---   @file    shared/data/job_abilities/JA_DATABASE_FACTORY.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-06
 ---  ═══════════════════════════════════════════════════════════════════════════

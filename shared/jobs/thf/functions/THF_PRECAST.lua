@@ -21,7 +21,7 @@
 ---   7. TP bonus gear applied last (post-precast), over the variant
 ---
 ---   @file    shared/jobs/thf/functions/THF_PRECAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
 ---   @requires shared/jobs/thf/functions/logic/sa_ta_manager, WSPrecastHandler

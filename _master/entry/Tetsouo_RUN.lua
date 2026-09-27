@@ -22,7 +22,7 @@
 ---   • 4 Logic: aoe_manager, cure_set_builder, rune_manager, set_builder
 ---
 --- @file    Tetsouo_RUN.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0.0
 --- @date    Created: 2025-11-02
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+

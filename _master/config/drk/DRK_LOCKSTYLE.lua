@@ -14,7 +14,7 @@
 ---   • Lockstyle numbers correspond to /lockstyleset 1-200 in-game
 ---
 --- @file    config/drk/DRK_LOCKSTYLE.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0.0
 --- @date    Created: 2025-10-23
 ---============================================================================

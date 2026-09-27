@@ -22,7 +22,7 @@
 ---   Profiler.finish()
 ---
 --- @file    shared/utils/debug/performance_profiler.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2025-11-15
 ---============================================================================

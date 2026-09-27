@@ -6,7 +6,7 @@
 ---   - Main weapon and grip (grip skipped for Lycurgos)
 ---
 ---   @file    shared/jobs/run/functions/RUN_ENGAGED.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.1 - Removed dead code + refactored header
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

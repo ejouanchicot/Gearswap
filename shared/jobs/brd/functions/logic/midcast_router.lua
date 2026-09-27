@@ -20,7 +20,7 @@
 ---     • enhancing_database (function|nil: spell_name -> spell_family)
 ---
 ---   @file    shared/jobs/brd/functions/logic/midcast_router.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-09
 ---  ═══════════════════════════════════════════════════════════════════════════

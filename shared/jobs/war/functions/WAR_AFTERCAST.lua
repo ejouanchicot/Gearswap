@@ -4,7 +4,7 @@
 ---   job_aftercast is empty: Mote-Include returns to idle/engaged gear.
 ---
 ---   @file    shared/jobs/war/functions/WAR_AFTERCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-09-29
 ---  ═══════════════════════════════════════════════════════════════════════════

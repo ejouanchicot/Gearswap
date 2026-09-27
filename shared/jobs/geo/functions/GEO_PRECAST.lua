@@ -10,7 +10,7 @@
 ---   • WSPrecastHandler for weaponskills and TP bonus gear
 ---
 ---   @file    shared/jobs/geo/functions/GEO_PRECAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0
 ---   @date    Created: 2025-10-09
 ---   @requires Tetsouo architecture, MessageFormatter, CooldownChecker

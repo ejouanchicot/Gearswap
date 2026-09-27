@@ -14,7 +14,7 @@
 ---   • Buff sets (Doom resistance)
 ---
 --- @file    sets/war_sets.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0
 --- @date    Created: 2026-02-17
 ---============================================================================

@@ -15,7 +15,7 @@
 ---     set: the weapon worn stays.
 ---
 --- @file    config/blu/BLU_STATES.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-26
 ---============================================================================

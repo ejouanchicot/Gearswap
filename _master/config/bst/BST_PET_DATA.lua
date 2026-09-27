@@ -19,7 +19,7 @@
 --- and job specialization for intelligent pet selection algorithms.
 ---
 --- @file config/bst/BST_PET_DATA.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0
 --- @date Created: 2023-07-10 | Modified: 2025-10-17
 --- Loaded by the BST entry file into _G.BSTBeastPetData.

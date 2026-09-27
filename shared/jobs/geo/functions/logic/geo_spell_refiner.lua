@@ -6,7 +6,7 @@
 ---   Fire II >> Fire. Used by the GEO nuke commands (GEO_COMMANDS.lua).
 ---
 ---   @file    shared/jobs/geo/functions/logic/geo_spell_refiner.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-12
 ---  ═══════════════════════════════════════════════════════════════════════════

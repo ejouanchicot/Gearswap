@@ -13,7 +13,7 @@
 ---     partner) and alt_states.lua (every sender), reloads macrobook
 ---
 --- @file shared/utils/dualbox/dualbox_manager.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.1
 --- @date Created: 2025-10-22
 ---============================================================================

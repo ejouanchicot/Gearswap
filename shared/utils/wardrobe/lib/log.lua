@@ -7,7 +7,7 @@
 --- Also provides bag_name(bag_id) used for human-readable log lines.
 ---
 --- @file shared/utils/wardrobe/lib/log.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-01
 ---============================================================================

@@ -12,7 +12,7 @@
 --- Orpheus's Sash: +15 at 1 yalm or closer, one less per yalm, +1 from 15.
 ---
 --- @file    shared/utils/equipment/elemental_bonus.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-25
 ---============================================================================

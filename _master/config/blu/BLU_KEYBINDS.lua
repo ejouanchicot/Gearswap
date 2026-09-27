@@ -7,7 +7,7 @@
 --- hand is a sword, for per-weapon weaponskill keys).
 ---
 --- @file    config/blu/BLU_KEYBINDS.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-26
 ---============================================================================

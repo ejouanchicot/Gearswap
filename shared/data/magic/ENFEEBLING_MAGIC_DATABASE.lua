@@ -28,7 +28,7 @@
 ---   local enfeebling_type = spell_data.enfeebling_type  -- "mnd_potency"
 ---
 --- @file shared/data/magic/ENFEEBLING_MAGIC_DATABASE.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.1 - Improved formatting - Improved alignment - Modular Architecture (3 files)
 --- @date Created: 2025-10-30 | Updated: 2025-11-06
 ---============================================================================

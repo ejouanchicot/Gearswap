@@ -7,7 +7,7 @@
 --- Templates: data/systems/blm_midcast_messages.lua.
 ---
 --- @file    shared/utils/messages/formatters/jobs/message_blm_midcast.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0
 --- @date    Created: 2025-11-06
 ---============================================================================

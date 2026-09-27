@@ -11,7 +11,7 @@
 --- Usage: //gs c wardrobeaudit  (or //gs c wa)
 ---
 --- @file shared/utils/equipment/wardrobe_auditor.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.1
 --- @date Created: 2026-02-13
 ---============================================================================

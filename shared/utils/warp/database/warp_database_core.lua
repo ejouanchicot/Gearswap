@@ -7,7 +7,7 @@
 --- adoulin/special/mechanics), loaded on first use.
 ---
 --- @file shared/utils/warp/database/warp_database_core.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 4.0
 --- @date Created: 2025-10-28
 ---============================================================================

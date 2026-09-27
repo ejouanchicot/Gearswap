@@ -13,7 +13,7 @@
 ---   Items.collect_used_names()          - walks _G.sets, returns {[name_lower]=true}
 ---
 --- @file shared/utils/wardrobe/lib/items.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-01
 ---============================================================================

@@ -8,7 +8,7 @@
 ---   • update_display()           - render and push text to keybind_ui_display
 ---
 --- @file shared/utils/ui/ui_display.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-09
 ---============================================================================

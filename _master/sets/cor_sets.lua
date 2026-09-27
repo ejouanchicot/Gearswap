@@ -25,7 +25,7 @@
 ---   • Buff sets (Doom resistance)
 ---
 --- @file    sets/cor_sets.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 3.0
 --- @date    Created: 2025-11-03 | Updated: 2025-11-10
 ---============================================================================

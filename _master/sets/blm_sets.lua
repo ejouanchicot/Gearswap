@@ -21,7 +21,7 @@
 ---   • Special sets (Movement speed, Buffs, Doom resistance)
 ---
 --- @file    sets/blm_sets.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 3.2
 --- @date    Created: 2025-11-03 | Updated: 2025-11-10
 ---============================================================================

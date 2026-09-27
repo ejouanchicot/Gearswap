@@ -11,7 +11,7 @@
 ---   file's file_unload, before the next job file loads.
 ---
 ---   @file    shared/jobs/thf/functions/logic/range_lock.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-19
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -11,7 +11,7 @@
 ---   - Healing Magic, Divine Magic, Blue Magic (RUN/BLU subjob)
 ---
 ---   @file    shared/jobs/run/functions/RUN_MIDCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-03 | Updated: 2025-11-05
 ---   @requires shared/jobs/run/functions/logic/cure_set_builder

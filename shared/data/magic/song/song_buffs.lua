@@ -4,7 +4,7 @@
 --- Party support songs (73 total)
 ---
 --- @file shared/data/magic/song/song_buffs.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06
 ---============================================================================

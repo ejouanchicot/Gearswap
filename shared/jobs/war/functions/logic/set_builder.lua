@@ -13,7 +13,7 @@
 ---   Used by: WAR_IDLE.lua and WAR_ENGAGED.lua
 ---
 ---   @file    shared/jobs/war/functions/logic/set_builder.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
 ---  ═══════════════════════════════════════════════════════════════════════════

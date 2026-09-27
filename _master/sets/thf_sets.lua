@@ -34,7 +34,7 @@
 ---   • set_builder (dynamic idle/engaged set construction)
 ---
 --- @file    sets/thf_sets.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2025-10-06
 ---============================================================================

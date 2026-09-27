@@ -13,7 +13,7 @@
 ---   sets.luopan.* - Luopan active (focus: Pet DT-, Pet Regen)
 ---
 ---   @file    shared/jobs/geo/functions/logic/set_builder.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-09
 ---  ═══════════════════════════════════════════════════════════════════════════

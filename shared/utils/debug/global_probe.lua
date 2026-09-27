@@ -17,7 +17,7 @@
 ---   EXPECTED is something nobody meant to create.
 ---
 ---   @file    shared/utils/debug/global_probe.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-08-09
 ---  ═══════════════════════════════════════════════════════════════════════════

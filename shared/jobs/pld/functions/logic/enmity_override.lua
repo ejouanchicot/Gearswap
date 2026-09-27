@@ -19,7 +19,7 @@
 ---   • Spells         -> those whose midcast set IS sets.FullEnmity
 ---
 ---   @file    shared/jobs/pld/functions/logic/enmity_override.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0.0
 ---   @date    Created: 2026-09-07
 ---  ═══════════════════════════════════════════════════════════════════════════

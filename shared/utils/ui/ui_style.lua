@@ -10,7 +10,7 @@
 --- and replaced by its default: a typo must never cost the player the HUD.
 ---
 --- @file shared/utils/ui/ui_style.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-25
 ---============================================================================

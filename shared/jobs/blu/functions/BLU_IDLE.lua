@@ -5,7 +5,7 @@
 ---   weapons, movement speed.
 ---
 ---   @file    shared/jobs/blu/functions/BLU_IDLE.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-26
 ---  ═══════════════════════════════════════════════════════════════════════════

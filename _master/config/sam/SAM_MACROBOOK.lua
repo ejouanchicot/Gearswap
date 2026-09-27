@@ -3,7 +3,7 @@
 ---============================================================================
 --- Defines macro book and page settings for SAM by subjob.
 --- @file config/sam/SAM_MACROBOOK.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0 - Dual-boxing support
 --- @date Created: 2025-10-21 | Updated: 2025-10-22
 ---============================================================================

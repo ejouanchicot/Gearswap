@@ -10,7 +10,7 @@
 ---   nothing defines that table and nothing calls these helpers.
 ---
 ---   @file    shared/jobs/blm/functions/logic/set_builder.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0 (Merged with SET_CUSTOMIZATION.lua)
 ---   @date    Created: 2025-10-15 | Migrated: 2025-10-15
 ---  ═══════════════════════════════════════════════════════════════════════════

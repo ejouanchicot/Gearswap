@@ -11,7 +11,7 @@
 ---   - Scarlet Delirium (Lv95) - Damage to ATK/MATT
 ---
 --- @file shared/data/job_abilities/drk/drk_mainjob.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Dark_Knight

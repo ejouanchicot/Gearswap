@@ -5,7 +5,7 @@
 ---   Fast Cast set is chosen by Mote-Include (spell > skill > sets.precast.FC).
 ---
 ---   @file    shared/jobs/run/functions/RUN_PRECAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-05
 ---  ═══════════════════════════════════════════════════════════════════════════

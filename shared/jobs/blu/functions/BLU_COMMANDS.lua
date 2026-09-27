@@ -8,7 +8,7 @@
 ---   (reload, checksets, warp...) >> UI >> debugmidcast >> cyclestate.
 ---
 ---   @file    shared/jobs/blu/functions/BLU_COMMANDS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-26
 ---  ═══════════════════════════════════════════════════════════════════════════

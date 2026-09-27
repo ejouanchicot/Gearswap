@@ -11,7 +11,7 @@
 ---   weaponskill check refuses the WS with its own message.
 ---
 ---   @file    shared/jobs/blu/functions/logic/expiacion_guard.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-26
 ---  ═══════════════════════════════════════════════════════════════════════════

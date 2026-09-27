@@ -18,7 +18,7 @@
 ---   • SmartbuffManager (logic) - Dance + subjob buff automation
 ---
 ---   @file    shared/jobs/dnc/functions/DNC_COMMANDS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0 - Logic Extracted to logic/
 ---   @date    Created: 2025-10-04
 ---   @date    Updated: 2025-10-06

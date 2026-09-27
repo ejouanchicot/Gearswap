@@ -14,7 +14,7 @@
 --- lines to <Character>/rolldebug.log, readable outside the game.
 ---
 --- @file    shared/jobs/cor/functions/logic/roll_debug.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-25
 ---============================================================================

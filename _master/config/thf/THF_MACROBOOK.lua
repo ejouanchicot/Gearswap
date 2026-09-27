@@ -21,7 +21,7 @@
 ---   • MacrobookManager (factory that uses this configuration)
 ---
 --- @file    config/thf/THF_MACROBOOK.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0 - Dual-boxing support
 --- @date    Created: 2025-10-06 | Updated: 2025-10-22
 ---============================================================================

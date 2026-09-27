@@ -6,7 +6,7 @@
 --- is equipped on top of the base elemental magic set.
 ---
 --- @file config/blm/BLM_MP_CONFIG.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-25
 ---============================================================================

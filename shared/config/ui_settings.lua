@@ -28,7 +28,7 @@
 ---     • [CharName]/config/ui_settings.lua (one file per character)
 ---
 ---   @file    shared/config/ui_settings.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.1 - Refactored with new header style
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -7,7 +7,7 @@
 --- magic_messages.lua, sent through the Messages API.
 ---
 --- @file shared/utils/messages/formatters/combat/message_combat.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0
 --- @date Created: 2025-11-06
 ---============================================================================

@@ -15,7 +15,7 @@
 ---   • No manual coding required in this file
 ---
 --- @file    config/whm/WHM_MACROBOOK.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0 - Dual-boxing support
 --- @date    Created: 2025-10-21 | Updated: 2025-10-22
 ---============================================================================

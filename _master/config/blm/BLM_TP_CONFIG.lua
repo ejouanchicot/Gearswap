@@ -5,7 +5,7 @@
 --- BLM rarely uses weaponskills, but configuration provided for completeness.
 ---
 --- @file config/blm/BLM_TP_CONFIG.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-15
 --- @requires shared/utils/weaponskill/tp_bonus_calculator

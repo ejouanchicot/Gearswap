@@ -5,7 +5,7 @@
 ---   movement (state.Moving) and SetBuilder.build_idle_set adds sets.MoveSpeed.
 ---
 ---   @file    shared/jobs/bst/functions/BST_MOVEMENT.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-17
 ---  ═══════════════════════════════════════════════════════════════════════════

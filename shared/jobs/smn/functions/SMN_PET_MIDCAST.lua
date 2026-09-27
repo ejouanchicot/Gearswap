@@ -7,7 +7,7 @@
 ---   master's aftercast did in between.
 ---
 ---   @file    shared/jobs/smn/functions/SMN_PET_MIDCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-28
 ---  ═══════════════════════════════════════════════════════════════════════════

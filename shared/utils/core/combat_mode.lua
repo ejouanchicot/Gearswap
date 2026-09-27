@@ -21,7 +21,7 @@
 --- `windower` and freed when the next job loads (attach), before its gear.
 ---
 --- @file    shared/utils/core/combat_mode.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-25
 ---============================================================================

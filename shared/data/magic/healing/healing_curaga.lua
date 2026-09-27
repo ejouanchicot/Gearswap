@@ -4,7 +4,7 @@
 --- Area-of-effect healing spells (Curaga I-V + Cura I-III)
 ---
 --- @file shared/data/magic/healing/healing_curaga.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06
 ---

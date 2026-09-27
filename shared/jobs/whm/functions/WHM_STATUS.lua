@@ -5,7 +5,7 @@
 ---   slots so a raise does not leave them stuck).
 ---
 ---   @file    shared/jobs/whm/functions/WHM_STATUS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.2 - Added DoomManager safety unlock
 ---   @date    Updated: 2025-11-14
 ---  ═══════════════════════════════════════════════════════════════════════════

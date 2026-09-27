@@ -24,7 +24,7 @@ Usage:
     python build_item_db.py [--res "D:/Windower Tetsouo/res"]
 
 @file    scripts/item_db/build_item_db.py
-@author  Tetsouo
+@author  ejouanchicot
 @version 1.0
 @date    Created: 2026-09-23
 """

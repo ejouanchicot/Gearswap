@@ -13,7 +13,7 @@
 ---     • should_cancel(new_name, replacement, mp, spell) -> bool
 ---
 ---   @file    shared/jobs/blm/functions/logic/refiner/replacement_logic.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-09 (extracted from spell_refiner.lua)
 ---  ═══════════════════════════════════════════════════════════════════════════

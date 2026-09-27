@@ -21,7 +21,7 @@
 ---     • BPWard.Heal        - Healing Ruby, Whispering Wind, Soothing Current, etc.
 ---
 ---   @file    shared/jobs/smn/functions/logic/blood_pact_classifier.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-28
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -11,7 +11,7 @@
 --- use to callbacks (see WarpEquipment.init).
 ---
 --- @file shared/utils/warp/warp_detector.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.1
 --- @date Created: 2025-10-27
 ---============================================================================

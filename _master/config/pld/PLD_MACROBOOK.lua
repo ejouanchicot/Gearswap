@@ -17,7 +17,7 @@
 ---   • Page numbers: 1-10 (pages within each book)
 ---
 --- @file    config/pld/PLD_MACROBOOK.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0 - Dual-boxing support
 --- @date    Created: 2025-10-03 | Updated: 2025-10-22
 ---============================================================================

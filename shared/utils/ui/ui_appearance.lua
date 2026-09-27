@@ -10,7 +10,7 @@
 --- (set by config_loader.lua from the character's config/UI_CONFIG.lua).
 ---
 --- @file shared/utils/ui/ui_appearance.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-09
 ---============================================================================

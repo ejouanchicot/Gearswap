@@ -7,7 +7,7 @@
 --- which prevents per-frame redraw spam (e.g. AutoMove triggering 1-2 Hz).
 ---
 --- @file shared/utils/ui/ui_state_tracker.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-09
 ---============================================================================

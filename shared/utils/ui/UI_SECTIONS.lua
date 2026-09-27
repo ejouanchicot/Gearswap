@@ -5,7 +5,7 @@
 --- from the key lists built by UI_DISPLAY_BUILDER, with consistent formatting.
 ---
 --- @file shared/utils/ui/UI_SECTIONS.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-09-26
 ---============================================================================

@@ -4,7 +4,7 @@
 --- Dancer steps accessible as subjob (3 steps, Lv20-40)
 ---
 --- @file shared/data/job_abilities/dnc/dnc_steps_subjob.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Dancer

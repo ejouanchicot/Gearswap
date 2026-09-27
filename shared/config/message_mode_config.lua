@@ -12,7 +12,7 @@
 ---     set_display_mode(m) - validate, persist, update display_mode
 ---
 ---   @file    shared/config/message_mode_config.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-25
 ---  ═══════════════════════════════════════════════════════════════════════════

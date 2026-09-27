@@ -23,7 +23,7 @@
 ---   interval keeps a normal change from ever tripping it.
 ---
 ---   @file    shared/utils/core/job_sync_watchdog.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-09
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -6,7 +6,7 @@
 ---   - sets.MoveSpeed while AutoMove reports movement
 ---
 ---   @file    shared/jobs/drk/functions/DRK_IDLE.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.1 - Removed dead code + refactored header
 ---   @date    Created: 2025-10-23 | Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

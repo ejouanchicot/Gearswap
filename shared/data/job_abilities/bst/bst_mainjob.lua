@@ -8,7 +8,7 @@
 ---   - Killer Instinct (Lv75 Merit) - Grant pet's killer trait to party
 ---
 --- @file shared/data/job_abilities/bst/bst_mainjob.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-31 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Beastmaster

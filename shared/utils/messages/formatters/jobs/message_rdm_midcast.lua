@@ -8,7 +8,7 @@
 --- add_to_chat recovers and prints them in color 8, whatever CHAT_* says.
 ---
 --- @file    shared/utils/messages/formatters/jobs/message_rdm_midcast.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0
 --- @date    Created: 2025-11-06
 ---============================================================================

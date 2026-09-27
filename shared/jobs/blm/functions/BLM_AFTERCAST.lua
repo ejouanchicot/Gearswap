@@ -5,7 +5,7 @@
 ---   Returns to idle/engaged gear after spell completes.
 ---
 ---   @file    shared/jobs/blm/functions/BLM_AFTERCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-15
 ---  ═══════════════════════════════════════════════════════════════════════════

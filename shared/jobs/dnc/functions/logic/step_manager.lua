@@ -19,7 +19,7 @@
 ---     (keys from config/dnc/DNC_KEYBINDS.lua)
 ---
 ---   @file    shared/jobs/dnc/functions/logic/step_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
 ---  ═══════════════════════════════════════════════════════════════════════════

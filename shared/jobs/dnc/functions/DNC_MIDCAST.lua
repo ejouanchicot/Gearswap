@@ -8,7 +8,7 @@
 ---   - MidcastManager routing for Ninjutsu, Healing and Enhancing Magic
 ---
 ---   @file    shared/jobs/dnc/functions/DNC_MIDCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 3.0 - Added spell_family database support
 ---   @date    Created: 2025-10-04 | Updated: 2025-11-05
 ---  ═══════════════════════════════════════════════════════════════════════════

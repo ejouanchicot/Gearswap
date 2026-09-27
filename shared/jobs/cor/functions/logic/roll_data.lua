@@ -13,7 +13,7 @@
 ---   game data changes (e.g., version update).
 ---
 ---   @file    shared/jobs/cor/functions/logic/roll_data.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-08
 ---   @date    Updated: 2025-10-09 - Moved from config/ to logic/ (game data)

@@ -22,7 +22,7 @@
 ---   • Logic: drk_buff_anticipation, set_builder
 ---
 --- @file    Tetsouo_DRK.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0.0
 --- @date    Created: 2025-10-23
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+

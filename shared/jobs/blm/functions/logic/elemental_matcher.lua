@@ -7,7 +7,7 @@
 ---   - Active weather (Heat waves, Blizzards, etc.)
 ---
 ---   @file    shared/jobs/blm/functions/logic/elemental_matcher.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-25
 ---  ═══════════════════════════════════════════════════════════════════════════

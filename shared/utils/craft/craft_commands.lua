@@ -12,7 +12,7 @@
 ---                                             lockstyle resume
 ---
 ---   @file    shared/utils/craft/craft_commands.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-10
 ---  ═══════════════════════════════════════════════════════════════════════════

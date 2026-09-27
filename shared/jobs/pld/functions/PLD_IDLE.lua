@@ -6,7 +6,7 @@
 ---   mode shield and ammo).
 ---
 ---   @file    shared/jobs/pld/functions/PLD_IDLE.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-05
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -15,7 +15,7 @@
 ---       and FFXI updating the inventory count, which would otherwise re-fire.
 ---
 ---   @file    shared/utils/inventory/quiver_manager.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-03
 ---  ═══════════════════════════════════════════════════════════════════════════

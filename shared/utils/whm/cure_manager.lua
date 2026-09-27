@@ -17,7 +17,7 @@
 ---   -- nil = keep the spell as cast; otherwise recast with new_spell
 ---
 --- @file    shared/utils/whm/cure_manager.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0.0
 --- @date    Created: 2025-10-21
 ---============================================================================

@@ -7,7 +7,7 @@
 --- comments and line endings.
 ---
 --- @file shared/utils/stealth/stealth_config.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-26
 ---============================================================================

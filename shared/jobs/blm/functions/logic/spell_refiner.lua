@@ -22,7 +22,7 @@
 ---     - Sole external caller: refine_various_spells() in blm_functions.lua
 ---
 ---   @file    shared/jobs/blm/functions/logic/spell_refiner.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 3.0 - Modular refactor (826 lines -> 200 lines facade + 5 modules)
 ---   @date    Migrated: 2025-10-15, Refactored: 2026-05-09
 ---  ═══════════════════════════════════════════════════════════════════════════

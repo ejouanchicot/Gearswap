@@ -12,7 +12,7 @@
 --- others are above subjob level.
 ---
 --- @file    shared/utils/smartbuff/subjob_war_buffs.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-05-18
 ---============================================================================

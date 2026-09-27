@@ -5,7 +5,7 @@
 ---   Import this module in job *_COMMANDS.lua files.
 ---
 ---   @file    shared/utils/core/WATCHDOG_COMMANDS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 3.2 - Style standardization (BRD headers) + remove dead code
 ---   @date    Created: 2025-10-25 | Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

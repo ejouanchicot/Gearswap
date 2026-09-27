@@ -13,7 +13,7 @@
 ---   • AutoMove (centralized movement tracking system)
 ---
 ---   @file    shared/jobs/thf/functions/THF_MOVEMENT.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
 ---  ═══════════════════════════════════════════════════════════════════════════

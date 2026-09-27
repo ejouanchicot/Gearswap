@@ -8,7 +8,7 @@
 ---   Sets are defined in pld_sets.lua.
 ---
 ---   @file    shared/jobs/pld/functions/logic/cure_set_builder.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0.0 - Sets moved to pld_sets.lua
 ---   @date    Created: 2025-10-06 | Updated: 2025-10-06
 ---  ═══════════════════════════════════════════════════════════════════════════

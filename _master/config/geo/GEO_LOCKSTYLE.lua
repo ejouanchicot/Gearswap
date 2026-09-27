@@ -5,7 +5,7 @@
 --- Configure a default lockstyle and optional per-subjob overrides.
 ---
 --- @file config/geo/GEO_LOCKSTYLE.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-09
 ---============================================================================

@@ -35,7 +35,7 @@
 ---   ```
 ---
 --- @file    shared/utils/debuff/doom_manager.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0.0
 --- @date    Created: 2025-11-14
 --- @requires MessageFormatter

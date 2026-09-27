@@ -15,7 +15,7 @@
 ---   error_pup_* / show_pup_* formatter functions are not defined.
 ---
 ---   @file    shared/jobs/pup/functions/PUP_COMMANDS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0
 ---   @date    Created: 2025-10-17 | Updated: 2025-10-18
 ---  ═══════════════════════════════════════════════════════════════════════════

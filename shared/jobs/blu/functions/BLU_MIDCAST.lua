@@ -22,7 +22,7 @@
 ---   precast / midcast picks (sets.precast.FC['Blue Magic']...) agree.
 ---
 ---   @file    shared/jobs/blu/functions/BLU_MIDCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-09-26
 ---  ═══════════════════════════════════════════════════════════════════════════

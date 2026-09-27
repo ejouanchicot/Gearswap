@@ -4,7 +4,7 @@
 --- Dancer sambas restricted to main job (2 sambas, Lv60-65)
 ---
 --- @file shared/data/job_abilities/dnc/dnc_sambas_mainjob.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.1 - Improved alignment
 --- @date Created: 2025-10-30 | Updated: 2025-11-06
 --- @source https://www.bg-wiki.com/ffxi/Dancer

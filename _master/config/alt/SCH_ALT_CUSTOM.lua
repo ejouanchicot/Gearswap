@@ -11,7 +11,7 @@
 --- See SCH_ALT_CUSTOM.lua.example for the full format.
 ---
 --- @file    config/alt/SCH_ALT_CUSTOM.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-08-09
 ---============================================================================

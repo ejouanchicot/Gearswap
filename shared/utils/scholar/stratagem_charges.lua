@@ -15,7 +15,7 @@
 --- point gifts - the case this module exists for (BLM/SCH and friends).
 ---
 --- @file    shared/utils/scholar/stratagem_charges.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-07-28
 ---============================================================================

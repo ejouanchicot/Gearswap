@@ -26,7 +26,7 @@
 ---   - WHM casting Banish >> Shows message from DIVINE_MAGIC_DATABASE
 ---
 --- @file shared/utils/messages/handlers/spell_message_handler.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.3 - Lazy Loading (performance optimization)
 --- @date Created: 2025-10-30 | Updated: 2025-11-04
 ---============================================================================

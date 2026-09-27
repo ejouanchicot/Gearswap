@@ -4,7 +4,7 @@
 ---   Handles status changes (Idle, Engaged, Resting, Dead, etc.)
 ---
 ---   @file    shared/jobs/dnc/functions/DNC_STATUS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.2 - Added DoomManager safety unlock
 ---   @date    Created: 2025-10-04 | Updated: 2025-11-14
 ---  ═══════════════════════════════════════════════════════════════════════════

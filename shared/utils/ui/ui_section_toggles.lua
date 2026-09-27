@@ -13,7 +13,7 @@
 --- The footer is at the bottom and needs no Y adjustment.
 ---
 --- @file shared/utils/ui/ui_section_toggles.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-05-09
 ---============================================================================

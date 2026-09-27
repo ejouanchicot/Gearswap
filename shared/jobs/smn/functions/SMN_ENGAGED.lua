@@ -5,7 +5,7 @@
 ---   requirement (12-module mandate) and returns the base engaged set.
 ---
 ---   @file    shared/jobs/smn/functions/SMN_ENGAGED.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-28
 ---  ═══════════════════════════════════════════════════════════════════════════

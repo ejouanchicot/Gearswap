@@ -5,7 +5,7 @@
 ---   Ready moves.
 ---
 ---   @file    shared/jobs/bst/functions/BST_PRECAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-05
 ---  ═══════════════════════════════════════════════════════════════════════════

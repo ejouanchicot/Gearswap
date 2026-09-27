@@ -19,7 +19,7 @@
 ---     skillup [start|stop|status|<seconds>] - Summoning Magic skillup loop
 ---
 ---   @file    shared/jobs/smn/functions/SMN_COMMANDS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-28
 ---  ═══════════════════════════════════════════════════════════════════════════

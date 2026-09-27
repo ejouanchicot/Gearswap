@@ -5,7 +5,7 @@
 --- used by item_user.lua.
 ---
 --- @file shared/utils/warp/casting/cast_helpers.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 4.0
 --- @date Created: 2025-10-28
 ---============================================================================

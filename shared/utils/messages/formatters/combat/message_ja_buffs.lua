@@ -13,7 +13,7 @@
 ---   JABuffs.show_with_description("Troubadour", "Song duration extended") -- [BRD/WHM] Troubadour: Song duration extended
 ---
 --- @file    shared/utils/messages/formatters/combat/message_ja_buffs.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 2.0
 --- @date    Created: 2025-11-06
 ---============================================================================

@@ -29,7 +29,7 @@
 ---   - Nukes carry v (base value) and m (dINT multiplier) + `weakens` element
 ---
 --- @file shared/data/magic/NINJUTSU_DATABASE.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0 - Modular Architecture (3 files)
 --- @date Created: 2026-06-07
 --- @source https://www.bg-wiki.com/ffxi/Category:Ninjutsu

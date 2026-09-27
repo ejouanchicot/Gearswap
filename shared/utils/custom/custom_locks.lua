@@ -17,7 +17,7 @@
 --- shared/utils/core/combat_mode.lua's.
 ---
 --- @file    shared/utils/custom/custom_locks.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-25
 ---============================================================================

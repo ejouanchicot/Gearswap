@@ -12,7 +12,7 @@
 ---   augments cannot be told apart by name).
 ---
 --- @file config/WEAPON_CONFIG.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-25
 ---============================================================================

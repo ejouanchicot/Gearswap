@@ -8,7 +8,7 @@
 ---   by name; with neither defined, a Blood Pact gets no precast gear.
 ---
 ---   @file    shared/jobs/smn/functions/SMN_PRECAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-05-28
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -5,7 +5,7 @@
 ---   Fan Dance starts or ends, since the engaged set is chosen from them.
 ---
 ---   @file    shared/jobs/dnc/functions/DNC_BUFFS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.2 - Refresh engaged gear on dance gain/loss
 ---   @date    Created: 2025-10-04 | Updated: 2026-09-19
 ---  ═══════════════════════════════════════════════════════════════════════════

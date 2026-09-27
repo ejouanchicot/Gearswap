@@ -18,7 +18,7 @@
 --- on_weapon_change() when the main hand changes weapon type.
 ---
 --- @file shared/utils/dualbox/alt_states.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.1
 --- @date Created: 2026-09-25 | Updated: 2026-09-26 (own weapon listeners)
 ---============================================================================

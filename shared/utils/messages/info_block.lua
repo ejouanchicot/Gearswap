@@ -22,7 +22,7 @@
 --- Help screens have their own look: shared/utils/messages/help_screen.lua.
 ---
 --- @file shared/utils/messages/info_block.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-25
 ---============================================================================

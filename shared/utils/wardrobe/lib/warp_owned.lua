@@ -17,7 +17,7 @@
 --- a Mog Safe at the time.
 ---
 --- @file shared/utils/wardrobe/lib/warp_owned.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-08-10
 ---============================================================================

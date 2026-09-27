@@ -5,7 +5,7 @@
 ---   is applied by the shared AutoMove system and the GEO set builder.
 ---
 ---   @file    shared/jobs/geo/functions/GEO_MOVEMENT.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-09
 ---   @requires shared/utils/movement/automove.lua

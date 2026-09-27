@@ -9,7 +9,7 @@
 --- - Double-Up window status
 ---
 --- @file shared/utils/messages/utilities/roll_messages.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-08
 ---============================================================================

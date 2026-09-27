@@ -10,7 +10,7 @@
 ---   without casting anything that reads it.
 ---
 ---   @file    shared/utils/midcast/midcast_deps.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-08-09
 ---  ═══════════════════════════════════════════════════════════════════════════

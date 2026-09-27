@@ -24,7 +24,7 @@
 ---   • Movement and buff sets (Base speed, Doom, Dark Seal, Nether Void)
 ---
 --- @file    sets/drk_sets.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 3.0
 --- @date    Created: 2025-11-03 | Updated: 2025-11-10
 ---============================================================================

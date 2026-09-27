@@ -4,7 +4,7 @@
 ---   Handles status changes (Idle, Engaged, Resting, Dead, etc.)
 ---
 ---   @file    shared/jobs/drk/functions/DRK_STATUS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.2 - Added DoomManager safety unlock
 ---   @date    Created: 2025-10-23 | Updated: 2025-11-14
 ---  ═══════════════════════════════════════════════════════════════════════════

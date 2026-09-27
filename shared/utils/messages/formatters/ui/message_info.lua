@@ -6,7 +6,7 @@
 --- The card is an InfoBlock, the usage a HelpScreen, not found a template.
 ---
 --- @file    shared/utils/messages/formatters/ui/message_info.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2025-11-06
 ---============================================================================

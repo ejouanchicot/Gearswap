@@ -13,7 +13,7 @@
 --- added before `return UIConfig`.
 ---
 --- @file shared/utils/ui/ui_config_writer.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-09-25
 ---============================================================================

@@ -7,7 +7,7 @@
 ---   - MainWeapon / SubWeapon sets, then movement gear
 ---
 ---   @file    shared/jobs/brd/functions/BRD_ENGAGED.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.1 - Removed dead code + refactored header
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

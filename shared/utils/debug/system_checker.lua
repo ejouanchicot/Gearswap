@@ -9,7 +9,7 @@
 ---   Usage: //gs c syscheck [export]
 ---
 ---   @file    shared/utils/debug/system_checker.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2026-03-04
 ---  ═══════════════════════════════════════════════════════════════════════════

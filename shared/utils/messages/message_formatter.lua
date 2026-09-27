@@ -10,7 +10,7 @@
 --- job formatter function to be exported here under its own name.
 ---
 --- @file shared/utils/messages/message_formatter.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0
 --- @date Created: 2025-11-03
 ---============================================================================

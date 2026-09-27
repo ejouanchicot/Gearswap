@@ -8,7 +8,7 @@
 ---   • Lazy-loaded: DoomManager loaded on first status change
 ---
 ---   @file    shared/jobs/war/functions/WAR_STATUS.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.2 - Lazy Loading for performance
 ---   @date    Updated: 2025-11-15
 ---  ═══════════════════════════════════════════════════════════════════════════

@@ -18,7 +18,7 @@
 ---   • Global exports allow direct function calls in hooks (old system compatibility)
 ---
 ---   @file    shared/jobs/blm/functions/blm_functions.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0 (Added facade pattern + global exports)
 ---   @date    Created: 2025-10-15 | Updated: 2025-10-15
 ---   @requires All BLM_*.lua modules in functions directory

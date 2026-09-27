@@ -17,7 +17,7 @@
 ---     • 'off'  - Silent (no messages)
 ---
 ---   @file    shared/config/message_modes.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.0 - Per-character persistence
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

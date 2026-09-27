@@ -12,7 +12,7 @@
 ---   • Lazy-loaded: All modules loaded on first action
 ---
 ---   @file    shared/jobs/war/functions/WAR_PRECAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.1 - Lazy Loading for performance
 ---   @date    Created: 2025-09-29 | Updated: 2025-11-15
 ---   @requires PrecastGuard, CooldownChecker, WSPrecastHandler, AutoJump

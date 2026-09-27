@@ -18,7 +18,7 @@
 --- Public API: RefillManager.refill() - single entry point.
 ---
 --- @file shared/utils/inventory/refill_manager.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 2.0
 --- @date Created: 2026-02-14
 ---============================================================================

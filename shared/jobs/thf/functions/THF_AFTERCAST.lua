@@ -13,7 +13,7 @@
 ---   • Mote-Include (handles actual idle/engaged gear swap)
 ---
 ---   @file    shared/jobs/thf/functions/THF_AFTERCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
 ---  ═══════════════════════════════════════════════════════════════════════════

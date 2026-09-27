@@ -6,7 +6,7 @@
 ---   HybridMode is PDT, then the WeaponSet / SubSet sets.
 ---
 ---   @file    shared/jobs/bst/functions/BST_ENGAGED.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 2.1 - Removed dead code + refactored header
 ---   @date    Updated: 2025-11-12
 ---  ═══════════════════════════════════════════════════════════════════════════

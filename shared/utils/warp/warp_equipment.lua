@@ -6,7 +6,7 @@
 ---   - Main weapon being swapped off during warp >> warp cancels
 ---
 --- @file shared/utils/warp/warp_equipment.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2025-10-26
 ---============================================================================

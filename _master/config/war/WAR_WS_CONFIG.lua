@@ -17,7 +17,7 @@
 --- Keys MUST match the options of state.MainWeapon in WAR_STATES.lua.
 ---
 --- @file config/war/WAR_WS_CONFIG.lua
---- @author Tetsouo
+--- @author ejouanchicot
 --- @version 1.0
 --- @date Created: 2026-07-29
 ---============================================================================

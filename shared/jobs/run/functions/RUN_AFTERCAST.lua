@@ -5,7 +5,7 @@
 ---   Mote-Include re-equips idle/engaged gear afterwards.
 ---
 ---   @file    shared/jobs/run/functions/RUN_AFTERCAST.lua
----   @author  Tetsouo
+---   @author  ejouanchicot
 ---   @version 1.0
 ---   @date    Created: 2025-10-03
 ---  ═══════════════════════════════════════════════════════════════════════════

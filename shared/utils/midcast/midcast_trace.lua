@@ -6,7 +6,7 @@
 --- or that the skill had no set at all. A no-op while the trace is off.
 ---
 --- @file    shared/utils/midcast/midcast_trace.lua
---- @author  Tetsouo
+--- @author  ejouanchicot
 --- @version 1.0
 --- @date    Created: 2026-09-25
 ---============================================================================
