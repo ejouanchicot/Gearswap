@@ -40,10 +40,11 @@ RECAST_CONFIG.enabled = true
 --- Party message when an ability or spell is refused on recast. Key = its
 --- name, or the name of a recast several share ('Phantom Roll' covers every
 --- roll). Value = the text sent with /p, where the game replaces
---- <recast=Name> with the time left; true = "<key> ready in <recast=<key>>".
+--- <recast=Name> with the time left, and {action} becomes the action tried
+--- ("Bolter's Roll"); true = "<key> ready in <recast=<key>>".
 --- Examples:
 ---   ['Phantom Roll'] = true,
----   ['Phantom Roll'] = 'Roll ready in <recast=Phantom Roll>',
+---   ['Phantom Roll'] = '{action} : roll ready in <recast=Phantom Roll>',
 ---   ['Provoke'] = 'Provoke in <recast=Provoke>',
 RECAST_CONFIG.party_announce = {
 }

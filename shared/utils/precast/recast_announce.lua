@@ -13,7 +13,9 @@
 ---
 --- The key is the ability or spell name, or the name of a recast several
 --- abilities share (every roll is on the "Phantom Roll" recast). The text is
---- sent with /p; the game itself replaces <recast=Name> with the time left.
+--- sent with /p; the game itself replaces <recast=Name> with the time left,
+--- and {action} becomes the action tried ("Bolter's Roll"):
+---   ['Phantom Roll'] = '{action} : roll ready in <recast=Phantom Roll>',
 --- true sends "<key> ready in <recast=<key>>". Nothing is sent for a key not
 --- listed, or again for the same key within party_announce_every seconds.
 ---
@@ -49,7 +51,9 @@ end
 local function entry_for(spell, recast_id)
     local list = config().party_announce
     if type(list) ~= 'table' then return nil end
-    for _, key in ipairs({spell.english, spell.name, recast_name(recast_id)}) do
+    local keys = {spell.english, spell.name, recast_name(recast_id)}
+    for i = 1, 3 do
+        local key = keys[i]
         local value = key and list[key]
         if value == true then
             return key, ('%s ready in <recast=%s>'):format(key, key)
@@ -72,7 +76,8 @@ function RecastAnnounce.on_refused(spell, recast_id)
     windower._recast_announce_last = last
     if last[key] and os.clock() - last[key] < every then return end
     last[key] = os.clock()
-    send_command('input /p ' .. text)
+    local action = spell.english or spell.name or key
+    send_command('input /p ' .. text:gsub('{action}', function() return action end))
 end
 
 return RecastAnnounce
