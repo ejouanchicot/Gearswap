@@ -124,17 +124,28 @@ function StealthMethods.can_cast(name)
     return false
 end
 
+--- Whether Spectral Jig is one of the current jobs' abilities (DNC main or
+--- sub), ready or not.
+--- @return boolean
+function StealthMethods.has_jig()
+    local abilities = windower.ffxi.get_abilities() or {}
+    for _, id in ipairs(abilities.job_abilities or {}) do
+        if id == SPECTRAL_JIG then return true end
+    end
+    return false
+end
+
+--- Seconds before Spectral Jig is ready (0 = ready now).
+--- @return number
+function StealthMethods.jig_recast()
+    local recasts = windower.ffxi.get_ability_recasts() or {}
+    return recasts[SPECTRAL_JIG_RECAST] or 0
+end
+
 --- Whether Spectral Jig can be used now.
 --- @return boolean
 function StealthMethods.can_jig()
-    local abilities = windower.ffxi.get_abilities() or {}
-    local known = false
-    for _, id in ipairs(abilities.job_abilities or {}) do
-        if id == SPECTRAL_JIG then known = true break end
-    end
-    if not known then return false end
-    local recasts = windower.ffxi.get_ability_recasts() or {}
-    return (recasts[SPECTRAL_JIG_RECAST] or 0) == 0
+    return StealthMethods.has_jig() and StealthMethods.jig_recast() == 0
 end
 
 --- This character's own best way for `kind` after Spectral Jig: its spell,

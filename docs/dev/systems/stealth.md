@@ -9,7 +9,7 @@ Written on 2026-09-27 from the code as it stands on disk (added 2026-09-26). Lin
 | Path | Lines | Role |
 |---|---:|---|
 | `shared/utils/stealth/stealth.lua` | 468 | Command router, action queue, per-box decision (`handle_self`), claim handling (`request` / `decide`), `status`, `check` |
-| `shared/utils/stealth/stealth_methods.lua` | 170 | Which ways this character has now: `can_jig`, `can_cast`, `best_own`, `has_spell`, `item_count`, `cast_time`; fixed ids table |
+| `shared/utils/stealth/stealth_methods.lua` | 170 | Which ways this character has now: `has_jig`, `jig_recast`, `can_jig`, `can_cast`, `best_own`, `has_spell`, `item_count`, `cast_time`; fixed ids table |
 | `shared/utils/stealth/stealth_aoe.lua` | 148 | One Scholar for the group: `coverable`, claims (`record` / `winner` / `clear`), `status`, flat `distance`, `chain_time` |
 | `shared/utils/stealth/stealth_timers.lua` | 177 | Packet 0x063 order 9 listener, end-time store, `stealth time` broadcast and receive, wear-off alerts, alt window refresh loop |
 | `shared/utils/stealth/stealth_config.lua` | 79 | Reads `<Character>/config/STEALTH_CONFIG.lua` once per load, rewrites one line on an in-game change |
@@ -77,7 +77,7 @@ sequenceDiagram
 ### One box's own way (`handle_self`, `stealth.lua:201-236`)
 
 1. `wanted` = the kinds that `needs()` (`:168-175`): false while a request of that kind is pending (`PENDING_FOR` = 12 s, `:43`, `mark_pending`); true with `overwrite`; else, when an end time is known, true below `refresh_below`; else true when the buff is not up. `is_up` (`:152-158`) reads buff ids 71 / 69 from `windower.ffxi.get_player().buffs`, because `buffactive` can lag in a scheduled function. A kind not wanted prints `show_skipped` (time left, or "up (time unknown)") and a trace line.
-2. `Methods.can_jig()` -> cancel both buffs if up, `/ja "Spectral Jig" <me>`, both pending. Jig is used as soon as one of the asked kinds is wanted.
+2. `Methods.has_jig()` and Jig on recast -> nothing is used (no spell, item or partner), `show_jig_recast` gives the time left (since 2026-09-27; it used to fall back to oils and powders). `Methods.can_jig()` -> cancel both buffs if up, `/ja "Spectral Jig" <me>`, both pending. Jig is used as soon as one of the asked kinds is wanted.
 3. Otherwise, per kind: `use_own(kind)` (`:185-197`) takes `Methods.best_own(kind)`, cancels the buff if up (both when the way gives both), sends `/ma "<name>" <me>` or `/item "<name>" <me>`, marks pending (both for Evanessence). A kind already covered by an earlier item that gives both is skipped (`needs` false).
 4. No way of its own: with `alone` (the `self` flag) print `show_no_way` and stop. Otherwise cancel its own buff if up, send `stealth cast <kind> <me>` to every other member, `show_asked`. Each receiver with the spell learned and the level (`has_spell`, whatever its MP or recast) queues `/ma "<spell>" <name>` (`cast_for`).
 
@@ -89,7 +89,7 @@ Before any of this, `Stealth.handle` passes the kinds through `keep_invisible` (
 
 `best_own(kind)` (`:145-157`) after Jig: the spell (`can_cast`), then the ninjutsu list, then the items in order (`BY_BUFF`, `:26-39`: Sneak -> Monomi: Ichi, Silent Oil, Evanessence; Invisible -> Tonko: Ni, Tonko: Ichi, Prism Powder, Evanessence). `check` uses the same function, so it shows what the key will do.
 
-`can_cast(name)` (`:111-125`): learned (`get_spells`), main or sub level reaches the spell (`level_ok`, job ids 3 WHM, 5 RDM, 20 SCH, 13 NIN), MP, spell recast 0, and for ninjutsu one of its tools in the inventory (`TOOLS`, `:58-62`). `can_jig()` (`:129-138`): ability 196 among `get_abilities().job_abilities` and recast id 218 at 0.
+`can_cast(name)` (`:111-125`): learned (`get_spells`), main or sub level reaches the spell (`level_ok`, job ids 3 WHM, 5 RDM, 20 SCH, 13 NIN), MP, spell recast 0, and for ninjutsu one of its tools in the inventory (`TOOLS`, `:58-62`). `has_jig()`: ability 196 among `get_abilities().job_abilities`; `jig_recast()`: recast id 218 in seconds; `can_jig()` = both, recast 0.
 
 **Fixed ids, no `res` lookups** (`:41-56`): the five spells (id, MP, cast time, levels per job id) and six items are copied from `res/spells.lua` and `res/items.lua`. Looking them up by name walked 976 spells and 23 555 items several times per key press and could load the item list on the first one. Re-checked on 2026-09-27 against Windower `res/`: Sneak 137, Invisible 136, Monomi: Ichi 318, Tonko: Ichi 353, Tonko: Ni 354, Silent Oil 4165, Prism Powder 4164, Evanessence 6699, Sanjaku-Tenugui 2553, Shinobi-Tabi 1194, Shikanofuda 2972, Spectral Jig 196 (recast 218), buffs Sneak 71 / Invisible 69. Inventory counts (bag 0 only, items are used from there) are cached for one second (`counts`, `:66-80`).
 
@@ -129,11 +129,11 @@ Flat: `sqrt(dx^2 + dy^2)` from `get_mob_by_name(name)` and `get_mob_by_target('m
 
 ### `check` (`stealth.lua:374-423`)
 
-InfoBlock `STEALTH :: Check (nothing is cast)`: jobs; per kind the buff state (`m:ss`, `up (time unknown)`, `not up`) and `key would` (`planned`, `:374-384`: `nothing, <left> left`, `Accession for the group`, `Spectral Jig`, the `best_own` name, or `none of its own: asks the others`); `Accession` (`accession_text`, `:387-392`: `no (no Scholar)`, `no (SneakInviAOE Off)`, `no (no stratagem charge)`, `yes (<n> charges)`); each other member's flat distance and timers; the settings line.
+InfoBlock `STEALTH :: Check (nothing is cast)`: jobs; per kind the buff state (`m:ss`, `up (time unknown)`, `not up`) and `key would` (`planned`, `:374-384`: `nothing, <left> left`, `Accession for the group`, `Spectral Jig`, `Spectral Jig in m:ss (nothing else)`, the `best_own` name, or `none of its own: asks the others`); `Accession` (`accession_text`, `:387-392`: `no (no Scholar)`, `no (SneakInviAOE Off)`, `no (no stratagem charge)`, `yes (<n> charges)`); each other member's flat distance and timers; the settings line.
 
 ### Trace
 
-With `//gs c trace on`, `trace()` (`stealth.lua:178-181`) and `Aoe.trace_distances` write `STEALTH` lines to `<Character>/trace.log`, one per decision: `<kind>: skipped, <m:ss> left` (or `up, time unknown`), `<kind>: own <name>`, `sneak+invi: Spectral Jig`, `<kind>: no way of its own, asked the others`, `<kind>: Accession for the group`, `Accession: <name> at <d> yalms` (or `not in zone`), `<kind>: covered by <name>`.
+With `//gs c trace on`, `trace()` (`stealth.lua:178-181`) and `Aoe.trace_distances` write `STEALTH` lines to `<Character>/trace.log`, one per decision: `<kind>: skipped, <m:ss> left` (or `up, time unknown`), `<kind>: own <name>`, `sneak+invi: Spectral Jig`, `sneak+invi: Spectral Jig on recast, <n>s`, `<kind>: no way of its own, asked the others`, `<kind>: Accession for the group`, `Accession: <name> at <d> yalms` (or `not in zone`), `<kind>: covered by <name>`.
 
 ## Public API
 

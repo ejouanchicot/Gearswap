@@ -268,6 +268,13 @@ local function handle_self(kinds, alone)
         end
     end
     if #wanted == 0 then return end
+    -- A dancer only ever uses Spectral Jig: on recast, nothing else (no
+    -- oil, powder or spell), it is used again on the next press once ready
+    if Methods.has_jig() and not Methods.can_jig() then
+        trace('%s: Spectral Jig on recast, %ds', table.concat(wanted, '+'), Methods.jig_recast())
+        if msg() then msg().show_jig_recast(Timers.format(Methods.jig_recast())) end
+        return
+    end
     if Methods.can_jig() then
         cancel_if_up('sneak')
         cancel_if_up('invi')
@@ -437,7 +444,11 @@ local function planned(kind, covering)
         return left and ('nothing, %s left'):format(Timers.format(left)) or 'nothing, up (time unknown)', 'dim'
     end
     if covering[kind] then return 'Accession for the group', 'good' end
-    if Methods.can_jig() then return 'Spectral Jig', 'good' end
+    if Methods.has_jig() then
+        local wait = Methods.jig_recast()
+        if wait > 0 then return ('Spectral Jig in %s (nothing else)'):format(Timers.format(wait)), 'warn' end
+        return 'Spectral Jig', 'good'
+    end
     local way = Methods.best_own(kind)
     if way then return way.name, 'good' end
     return 'none of its own: asks the others', 'warn'

@@ -14,6 +14,7 @@ return {
     skipped = { template = "{gray}[{lightblue}STEALTH{gray}] {white}{buff}{gray} : {green}{left}{gray} left, not cast again", color = 1 },
     covered = { template = "{gray}[{lightblue}STEALTH{gray}] {white}{buff}{gray} : Accession from {white}{name}", color = 1 },
     no_way = { template = "{gray}[{lightblue}STEALTH{gray}] {white}{buff}{gray} : {red}no way of your own{gray} (spell, jig, ninjutsu or item)", color = 1 },
+    jig_recast = { template = "{gray}[{lightblue}STEALTH{gray}] {white}Spectral Jig{gray} : ready in {orange}{left}{gray}, press again then", color = 1 },
     asked = { template = "{gray}[{lightblue}STEALTH{gray}] {white}{buff}{gray} : no way of your own, asked the others", color = 1 },
     wearing_off = { template = "{gray}[{lightblue}STEALTH{gray}] {yellow}{buff}{gray} wears off in {yellow}{left}", color = 1 },
     wearing_off_other = { template = "{gray}[{lightblue}STEALTH{gray}] {white}{name}{gray} : {yellow}{buff}{gray} wears off in {yellow}{left}", color = 1 },

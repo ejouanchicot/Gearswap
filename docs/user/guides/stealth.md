@@ -45,7 +45,10 @@ When you press the key, each character looks at what it can do right now
 (abilities known, spells learned and off recast, level, MP, items in the
 inventory) and uses the first that works:
 
-1. **Spectral Jig** (DNC main or sub, recast ready): gives both buffs.
+1. **Spectral Jig** (DNC main or sub): gives both buffs. A character that has
+   Spectral Jig uses nothing else: when it is on recast, the key says
+   `Spectral Jig : ready in m:ss, press again then` and uses no oil, powder or
+   spell.
 2. **The spell** on itself: Sneak or Invisible (WHM, RDM, SCH, main or sub,
    with the level).
 3. **Ninjutsu** (NIN): Monomi: Ichi for Sneak, Tonko: Ni then Tonko: Ichi for

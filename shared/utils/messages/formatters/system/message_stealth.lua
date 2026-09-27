@@ -38,6 +38,12 @@ function MessageStealth.show_no_way(buff)
     M.send('STEALTH', 'no_way', {buff = buff})
 end
 
+--- Spectral Jig is this character's way and is on recast: nothing is used.
+--- @param left string Recast left, "1:05"
+function MessageStealth.show_jig_recast(left)
+    M.send('STEALTH', 'jig_recast', {left = left})
+end
+
 --- This character had no way of its own: the other boxes were asked.
 --- @param buff string 'Sneak' or 'Invisible'
 function MessageStealth.show_asked(buff)
