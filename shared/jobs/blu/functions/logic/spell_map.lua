@@ -10,13 +10,17 @@
 ---   order of category, and a warning names it: a Lua table has no order, so
 ---   without that rule the winner would change from one load to the next.
 ---
----   Unbridled spells (need Unbridled Learning or Wisdom) come from the
----   Blue Magic database (shared/data/magic/BLU_SPELL_DATABASE.lua).
+---   A spell the map does not list takes the broad category of the Blue
+---   Magic database (shared/data/magic/BLU_SPELL_DATABASE.lua): Physical,
+---   Magical, Buff, Breath, Healing, and Debuff as MagicAccuracy. The map
+---   stays the source for the stat (PhysicalStr, MagicalMnd...), which the
+---   database does not hold. The database also says which spells need
+---   Unbridled Learning or Wisdom.
 ---
 ---   @file    shared/jobs/blu/functions/logic/spell_map.lua
 ---   @author  ejouanchicot
----   @version 1.0
----   @date    Created: 2026-09-26
+---   @version 1.1
+---   @date    Created: 2026-09-26 | Updated: 2026-09-27
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local BLUSpellMap = {}
@@ -73,24 +77,40 @@ local function build()
     warn_duplicates(duplicates)
 end
 
---- Gear category of a Blue Magic spell.
+-- Database categories that are not map category names
+local DATABASE_CATEGORY = {
+    Debuff = 'MagicAccuracy',
+}
+
+--- The database entry of a spell, or nil (database loaded once).
 --- @param spell_name string English spell name
---- @return string|nil Category ('PhysicalDex', 'Magical', ...), nil when unlisted
+--- @return table|nil
+local function database_entry(spell_name)
+    if blu_database == nil then
+        local ok, db = pcall(require, 'shared/data/magic/BLU_SPELL_DATABASE')
+        blu_database = ok and db or false
+    end
+    if not blu_database or not spell_name then return nil end
+    return blu_database.get_spell_data(spell_name)
+end
+
+--- Gear category of a Blue Magic spell: the map's, else the database's.
+--- @param spell_name string English spell name
+--- @return string|nil Category ('PhysicalDex', 'Magical', ...), nil when unknown
 function BLUSpellMap.category(spell_name)
     if not by_spell then build() end
-    return spell_name and by_spell[spell_name] or nil
+    if not spell_name then return nil end
+    if by_spell[spell_name] then return by_spell[spell_name] end
+    local data = database_entry(spell_name)
+    local category = data and data.category
+    return category and (DATABASE_CATEGORY[category] or category) or nil
 end
 
 --- Whether a spell needs Unbridled Learning (or Wisdom) to be cast.
 --- @param spell_name string English spell name
 --- @return boolean
 function BLUSpellMap.is_unbridled(spell_name)
-    if blu_database == nil then
-        local ok, db = pcall(require, 'shared/data/magic/BLU_SPELL_DATABASE')
-        blu_database = ok and db or false
-    end
-    if not blu_database or not spell_name then return false end
-    local data = blu_database.get_spell_data(spell_name)
+    local data = database_entry(spell_name)
     return data ~= nil and data.unbridled == true
 end
 

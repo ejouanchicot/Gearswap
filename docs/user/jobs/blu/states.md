@@ -45,13 +45,14 @@ your own in `BLU_CUSTOM.lua`.
 
 Each Blue Magic spell belongs to a category in your `BLU_SPELL_MAP.lua`
 (`PhysicalDex`, `Magical`, `MagicAccuracy`, `Healing`, `Buff`... 24 in the
-template). The spell then wears, the first that exists:
+template, every spell of the game listed). A spell missing from your file
+takes a broad category (`Physical`, `Magical`, `Buff`...) instead. The spell then wears, the first that exists:
 
 1. a set with the spell's own name: `sets.midcast['Sound Blast']` (the template
    has Sound Blast, Restoral, White Wind);
 2. `sets.midcast['Blue Magic'].<Category>.Resistant` with Casting Mode Resistant;
 3. `sets.midcast['Blue Magic'].<Category>`;
-4. `sets.midcast['Blue Magic']` (a spell in no category).
+4. `sets.midcast['Blue Magic']` (when the category has no set).
 
 Then, on top: `sets.buff['Chain Affinity']` (and Burst Affinity, Convergence,
 Diffusion, Efflux) while that buff is up, and `sets.self_healing` for a Healing

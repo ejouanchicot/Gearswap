@@ -14,7 +14,8 @@ What BLU adds on top of the shared pipeline:
 
 - **Blue Magic by category**: each Blue Magic spell is given a gear category
   (`PhysicalDex`, `Magical`, `MagicAccuracy`, ... 24 categories) by the
-  character's `config/blu/BLU_SPELL_MAP.lua`, and `MidcastManager` picks
+  character's `config/blu/BLU_SPELL_MAP.lua` (else the broad category of the
+  Blue Magic database), and `MidcastManager` picks
   `sets.midcast['Blue Magic'][category][CastingMode]` and its fallbacks. The
   same category is handed to Mote as the spell map, so Mote's own precast and
   midcast picks agree.
@@ -51,18 +52,18 @@ numbers are those of the working tree on 2026-09-26.
 | `shared/jobs/blu/functions/BLU_MOVEMENT.lua` | 30 | `get_blu_movement_status` (AutoMove read-out, no caller in the BLU files) |
 | `shared/jobs/blu/functions/BLU_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('BLU', 'config/blu/BLU_LOCKSTYLE', 1, 'WAR')` wrappers |
 | `shared/jobs/blu/functions/BLU_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('BLU', 'config/blu/BLU_MACROBOOK', 'WAR', 1, 1)` wrapper |
-| `shared/jobs/blu/functions/logic/spell_map.lua` | 97 | `category(name)` from the character's `BLU_SPELL_MAP.lua`; `is_unbridled(name)` from the Blue Magic database |
+| `shared/jobs/blu/functions/logic/spell_map.lua` | 117 | `category(name)` from the character's `BLU_SPELL_MAP.lua`, else the database category; `is_unbridled(name)` from the Blue Magic database |
 | `shared/jobs/blu/functions/logic/set_builder.lua` | 156 | Idle and engaged construction: `.SW` detection, `[OffenseMode]`, Mote defense/Kiting layers, weapons, town, movement |
 | `shared/jobs/blu/functions/logic/unbridled.lua` | 41 | Option `blu_unbridled`: Unbridled Learning first, through `AbilityHelper.try_ability` |
 | `shared/jobs/blu/functions/logic/expiacion_guard.lua` | 87 | Option `blu_expiacion_window`: first Expiacion press cancelled under 3000 TP (Tizona, no Aftermath: Lv.3), 3 s window |
 | `shared/jobs/blu/functions/logic/azure_sets.lua` | 49 | `lua load` / `lua unload` of the AzureSets addon, state on `windower._blu_azuresets_loaded` |
-| `shared/data/magic/BLU_SPELL_DATABASE.lua` (+ `blu/**/*.lua`, 19 files) | 325 + 3 344 | Blue Magic spell data; BLU code reads only `get_spell_data(name).unbridled` (18 spells carry `unbridled = true`) |
+| `shared/data/magic/BLU_SPELL_DATABASE.lua` (+ `blu/**/*.lua`, 19 files) | 325 + 3 344 | Blue Magic spell data (196 spells); BLU code reads `get_spell_data(name).unbridled` (18 spells carry `unbridled = true`) and `.category` for a spell the map does not list |
 | `shared/data/job_abilities/BLU_JA_DATABASE.lua` + `blu/*.lua` | 13 + 146 | JA data for the messages (existed before the job) |
 | `shared/utils/core/auto_options.lua` | 35 | `AutoOptions.on(name)`: reads `config/AUTO_ABILITIES.lua` once per load into `_G._auto_options` |
 | `_master/config/blu/BLU_STATES.lua` | 82 | Mote mode options, `MainWeapon` / `SubWeapon`, `FastCast`, `AutoMedicine`; unused `validate` |
 | `_master/config/blu/BLU_KEYBINDS.lua` | 34 | Data only: 6 binds (+ 2 commented per-weapon examples), handed to `KeybindManager.create('BLU', ...)` |
 | `_master/config/blu/BLU_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
-| `_master/config/blu/BLU_SPELL_MAP.lua` | 133 | 24 categories -> spell names |
+| `_master/config/blu/BLU_SPELL_MAP.lua` | 143 | 24 categories -> spell names, all 196 database spells |
 | `_master/config/blu/BLU_LOCKSTYLE.lua` | 23 | `default = 1`, empty `by_subjob` |
 | `_master/config/blu/BLU_MACROBOOK.lua` | 26 | `default` book 1 page 1, empty `solo` and `dualbox` |
 | `_master/config/blu/BLU_TP_CONFIG.lua` | 39 | `pieces` (Moonshade 250), empty `weapons`, `get_weapon_bonus`, sets `_G.BLUTPConfig` (37) |
@@ -240,13 +241,17 @@ use the same name.
 #### The spell map
 
 `logic/spell_map.lua` builds `spell name -> category` once per load, on the
-first call (`category`, 79-82), from `require('config/blu/BLU_SPELL_MAP')`
+first call (`category`), from `require('config/blu/BLU_SPELL_MAP')`
 (54). GearSwap's `require` searches `data/<player name>/` before `data/`
 (`GearSwap/refresh.lua:693-703`), so the character's own file is read.
 
+- A spell the map does not list takes the database's broad category
+  (`Physical`, `Magical`, `Buff`, `Breath`, `Healing`; `Debuff` becomes
+  `MagicAccuracy`), and `sets.midcast['Blue Magic']` when that set is missing.
+  The stat categories (`PhysicalStr`, `MagicalMnd`...) only come from the map:
+  the database has no stat modifier.
 - If the file does not load, a warning says Blue Magic uses its base set
-  (56-60) and every spell has no category: P0/P1 names still work, the rest
-  wears `sets.midcast['Blue Magic']`.
+  and every spell falls back to the database category.
 - **Duplicates**: categories are sorted alphabetically (`sorted_categories`,
   30-39) and a spell keeps the first category it appears in; the others are
   listed in one warning `BLU_SPELL_MAP: listed twice, first kept: <name>
@@ -257,9 +262,10 @@ first call (`category`, 79-82), from `require('config/blu/BLU_SPELL_MAP')`
   `'Quad. Continuum'`, `'Evryone. Grudge'`, `'Tem. Upheaval'`,
   `'Nat. Meditation'`. A misspelt name is silently never matched.
 
-The template map (`_master/config/blu/BLU_SPELL_MAP.lua:30-133`) has 24
+The template map (`_master/config/blu/BLU_SPELL_MAP.lua`) has 24
 categories, Mote-Include's Blue Mage categories as Gabvanstronger's file
-listed them, with his spelling fixes and his duplicates resolved (14-19):
+listed them, with his spelling fixes and his duplicates resolved, plus the 13
+spells added 2026-09-27 from BG-Wiki's stat modifiers (header of the file):
 
 | Group | Categories |
 |-------|-----------|
@@ -267,10 +273,11 @@ listed them, with his spelling fixes and his duplicates resolved (14-19):
 | Magical (6) | `Magical`, `MagicalEarth`, `MagicalMnd`, `MagicalChr`, `MagicalVit`, `MagicalDex` |
 | Other (8) | `MagicAccuracy`, `TPRemoval`, `Enmity`, `Breath`, `Stun`, `Healing`, `SkillBasedBuff`, `Buff` |
 
-Sound Blast, Restoral and White Wind are in no category; they wear their own
-set (P0). Of the 18 unbridled spells in the database, Mighty Guard, Polar
-Roar, Uproot, Crashing Thunder, Cesspool and Tearing Gust are in no category
-either, so they wear `sets.midcast['Blue Magic']` unless given a named set.
+Every spell of the database is in the map since 2026-09-27 (until then
+Uproot, Crashing Thunder, Polar Roar, Tearing Gust, Cesspool, Sweeping Gouge,
+Saurian Slide, Atra. Libations, Mighty Guard, O. Counterstance, Restoral,
+White Wind and Sound Blast wore the base set unless given a named set). A set
+with the spell's name (P0) still wins over its category.
 
 ### Idle and engaged
 
@@ -609,12 +616,6 @@ for Tetsouo.
 
 ## Known issues
 
-- `BLU_SPELL_MAP.lua:21-22` says "Unbridled spells are not listed here", but
-  12 of the 18 unbridled spells are in the map for their category (Bilgestorm,
-  Bloodrake, Harden Shell, Pyric Bulwark, Carcharian Verve, Absolute Terror,
-  Blistering Roar, Cruel Joke, Tourbillion, Gates of Hades, Thunderbolt,
-  Droning Whirlwind). What the map does not hold is the unbridled flag, which
-  comes from the database (`spell_map.lua:13-14`).
 - `BLU_LOCKSTYLE.lua` describes "optional per-subjob overrides" (4, 18-21),
   but `by_subjob` is never read (no `get_style`), as on the other jobs.
 - `get_blu_movement_status` and `BLUStates.validate` have no caller in the
