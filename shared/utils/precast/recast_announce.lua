@@ -9,7 +9,7 @@
 ---       ['Phantom Roll'] = true,                          -- default text
 ---       ['Provoke'] = 'Provoke in <recast=Provoke>',     -- own text
 ---   }
----   RECAST_CONFIG.party_announce_every = 10              -- anti-spam, seconds
+---   RECAST_CONFIG.party_announce_every = 1               -- anti-spam, seconds
 ---
 --- The key is the ability or spell name, or the name of a recast several
 --- abilities share (every roll is on the "Phantom Roll" recast). The text is
@@ -27,7 +27,7 @@
 
 local RecastAnnounce = {}
 
-local DEFAULT_EVERY = 10
+local DEFAULT_EVERY = 1
 
 local function config()
     return rawget(_G, 'RECAST_CONFIG') or {}

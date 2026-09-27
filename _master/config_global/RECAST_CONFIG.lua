@@ -49,8 +49,9 @@ RECAST_CONFIG.enabled = true
 RECAST_CONFIG.party_announce = {
 }
 
---- Seconds before the same message can be sent again (anti-spam)
-RECAST_CONFIG.party_announce_every = 10
+--- Seconds before the same message can be sent again (the game already
+--- limits chat spam; this only drops a double press)
+RECAST_CONFIG.party_announce_every = 1
 
 ---============================================================================
 --- HELPER FUNCTIONS

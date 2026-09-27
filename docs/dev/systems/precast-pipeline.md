@@ -211,7 +211,7 @@ sends a party message for a refused action when the character's
 the shared recast's name from `res.ability_recasts` (every roll is recast 193,
 "Phantom Roll"); `true` sends `<key> ready in <recast=<key>>`, a string is sent
 as is with `{action}` replaced by the action tried (`input /p`, the game expands `<recast=...>`). One message per key per
-`party_announce_every` seconds (10 by default), timed in
+`party_announce_every` seconds (1 by default), timed in
 `windower._recast_announce_last`.
 
 The tolerance comes from `local RECAST_CONFIG = _G.RECAST_CONFIG or {}`, captured
