@@ -13,7 +13,6 @@
 --- Usage:
 ---   • Loaded in user_setup() after Mote-Include initializes
 ---   • Call WARStates.configure() to initialize all states
----   • Call WARStates.validate() to verify configuration (optional)
 ---
 --- @file    config/war/WAR_STATES.lua
 --- @author  ejouanchicot
@@ -108,34 +107,6 @@ function WARStates.configure()
     if ok and AutoMedicine then
         AutoMedicine.init(state, M)
     end
-end
-
----============================================================================
---- VALIDATION
----============================================================================
-
---- Validate that states were configured correctly
---- Checks that HybridMode, MainWeapon and JumpAuto exist.
----
---- @return boolean success True if validation passed, false otherwise
---- @return string  message Validation message (success or error description)
-function WARStates.validate()
-    -- Check HybridMode exists
-    if not state.HybridMode then
-        return false, "HybridMode state not configured"
-    end
-
-    -- Check MainWeapon exists
-    if not state.MainWeapon then
-        return false, "MainWeapon state not configured"
-    end
-
-    -- Check JumpAuto exists
-    if not state.JumpAuto then
-        return false, "JumpAuto state not configured"
-    end
-
-    return true, "All WAR states configured successfully"
 end
 
 ---============================================================================

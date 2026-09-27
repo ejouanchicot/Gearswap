@@ -137,14 +137,7 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- PLD-SPECIFIC PRECAST GEAR
-    if spell.skill == 'Healing Magic' and sets.precast and sets.precast['Cure'] then
-        equip(sets.precast['Cure'])
-    end
-
-    if spell.name == 'Flash' and sets.precast and sets.precast['Flash'] then
-        equip(sets.precast['Flash'])
-    end
+    -- Fast Cast by spell name: Mote's default precast (sets.precast.FC[name])
 end
 
 ---   Swap in the /SCH variant of a weaponskill set, where one exists

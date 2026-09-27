@@ -84,21 +84,21 @@ local MoonlightRing2 = {
 sets['Ukonvasara'] = {
     main = 'Ukonvasara',
     sub = 'Telopanos Grip'
-} -- Relic (AM3 TP reduction)
+} -- Empyrean
 sets['Chango'] = {
     main = 'Chango',
     sub = 'Telopanos Grip'
-} -- Empyrean (+500 TP bonus)
+} -- Aeonic (+500 TP bonus)
 sets['Lycurgos'] = {
     main = 'Lycurgos',
     sub = 'Telopanos Grip'
-} -- Mythic
+} -- Ergon (Steel Cyclone, TP bonus from current HP)
 
 --- Polearms (Two-Handed)
 sets['Shining'] = {
     main = 'Shining One',
     sub = 'Telopanos Grip'
-} -- Great Sword
+} -- Polearm
 
 --- Axes (One-Handed, Fencer-compatible with shield)
 sets['Ikenga'] = {

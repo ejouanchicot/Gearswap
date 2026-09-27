@@ -9,7 +9,6 @@
 ---   • Instrument selection (MainInstrument: Gjallarhorn/Daurdabla/etc.)
 ---   • Song customization (VictoryMarch replacement, Etude, Carol, Threnody)
 ---   • Default state values for optimal gameplay
----   • validate() helper (not called anywhere today)
 ---
 --- State Purposes:
 ---   • EngagedMode: STP = TP gain, Acc = accuracy, DT = damage reduction, SB = subtle blow
@@ -219,44 +218,6 @@ function BRDStates.configure()
     if ok and AutoMedicine then
         AutoMedicine.init(state, M)
     end
-end
-
----============================================================================
---- VALIDATION
----============================================================================
-
---- Check that the main BRD states exist
---- @return boolean success True if all checked states exist
---- @return string message Validation result message
-function BRDStates.validate()
-    if not state.EngagedMode then
-        return false, 'EngagedMode not configured'
-    end
-    if not state.IdleMode then
-        return false, 'IdleMode not configured'
-    end
-    if not state.SongMode then
-        return false, 'SongMode not configured'
-    end
-    if not state.MainInstrument then
-        return false, 'MainInstrument not configured'
-    end
-    if not state.VictoryMarch then
-        return false, 'VictoryMarch not configured'
-    end
-    if not state.EtudeType then
-        return false, 'EtudeType not configured'
-    end
-    if not state.CarolElement then
-        return false, 'CarolElement not configured'
-    end
-    if not state.ThrenodyElement then
-        return false, 'ThrenodyElement not configured'
-    end
-    if not state.MarcatoSong then
-        return false, 'MarcatoSong not configured'
-    end
-    return true, 'All BRD states configured successfully'
 end
 
 return BRDStates

@@ -80,17 +80,6 @@ end
 --- SPELL CYCLE MESSAGES
 ---============================================================================
 
---- Display Aja spell cycle message
---- @param aja_name string Name of the Aja spell
-function BLMMessages.show_aja_cycle(aja_name)
-    local element_color = ELEMENT_COLORS[aja_name] or string.char(0x1F, 13)  -- Cyan fallback
-    M.job('BLM', 'aja_cycle', {
-        job = get_job_tag(),
-        element_color = element_color,
-        aja = aja_name
-    })
-end
-
 --- Display Storm spell cycle message
 --- @param storm_name string Name of the Storm spell
 function BLMMessages.show_storm_cycle(storm_name)
@@ -99,60 +88,6 @@ function BLMMessages.show_storm_cycle(storm_name)
         job = get_job_tag(),
         element_color = element_color,
         storm = storm_name
-    })
-end
-
---- Display tier cycle message
---- @param tier_value string Tier value (6, 5, 4, 3, 2, or base)
-function BLMMessages.show_tier_cycle(tier_value)
-    M.job('BLM', 'tier_cycle', {
-        job = get_job_tag(),
-        tier = tier_value
-    })
-end
-
----============================================================================
---- BUFF MESSAGES
----============================================================================
-
---- Display self-buff activation message
-function BLMMessages.show_buff_activated()
-    M.job('BLM', 'buff_activated', {
-        job = get_job_tag()
-    })
-end
-
---- Display individual buff cast message
---- @param buff_name string Name of the buff spell
-function BLMMessages.show_buff_cast(buff_name)
-    M.job('BLM', 'buff_cast', {
-        job = get_job_tag(),
-        buff = buff_name
-    })
-end
-
----============================================================================
---- CASTING MODE MESSAGES
----============================================================================
-
---- Display Magic Burst mode activation
-function BLMMessages.show_magic_burst_on()
-    M.job('BLM', 'magic_burst_on', {
-        job = get_job_tag()
-    })
-end
-
---- Display Magic Burst mode deactivation
-function BLMMessages.show_magic_burst_off()
-    M.job('BLM', 'magic_burst_off', {
-        job = get_job_tag()
-    })
-end
-
---- Display Free Nuke mode activation
-function BLMMessages.show_free_nuke_on()
-    M.job('BLM', 'free_nuke_on', {
-        job = get_job_tag()
     })
 end
 
@@ -169,17 +104,6 @@ function BLMMessages.show_spell_refinement(original, downgrade, recast_seconds)
         job = get_job_tag(),
         original = original,
         downgrade = downgrade,
-        recast = string.format("%.1f", recast_seconds)
-    })
-end
-
---- Display spell refinement failed (no downgrade available)
---- @param spell_name string Spell name
---- @param recast_seconds number Recast time remaining
-function BLMMessages.show_spell_refinement_failed(spell_name, recast_seconds)
-    M.job('BLM', 'spell_refinement_failed', {
-        job = get_job_tag(),
-        spell = spell_name,
         recast = string.format("%.1f", recast_seconds)
     })
 end
@@ -207,15 +131,6 @@ end
 ---============================================================================
 --- DARK ARTS MESSAGES (SCH SUBJOB)
 ---============================================================================
-
---- Display Dark Arts activation message
---- @param spell_name string Name of the spell being cast
-function BLMMessages.show_dark_arts_activated(spell_name)
-    M.job('BLM', 'dark_arts_activated', {
-        job = get_job_tag(),
-        spell = spell_name
-    })
-end
 
 --- Display Arts already active message
 --- @param arts_status string Status description (e.g., "Light Arts + Addendum: White")
@@ -285,16 +200,6 @@ function BLMMessages.show_breakga_blocked()
     })
 end
 
---- Display buff casting message
---- @param spell_name string Name of the buff spell
---- @param delay number Delay in seconds before casting (unused, kept for compatibility)
-function BLMMessages.show_buff_casting(spell_name, delay)
-    M.job('BLM', 'buff_casting', {
-        job = get_job_tag(),
-        spell = spell_name
-    })
-end
-
 --- Display buff status (active or recast)
 --- @param status_string string Complete status string with all buffs
 function BLMMessages.show_buff_status(status_string)
@@ -303,9 +208,5 @@ function BLMMessages.show_buff_status(status_string)
         status = status_string
     })
 end
-
----============================================================================
---- MODULE EXPORT
----============================================================================
 
 return BLMMessages

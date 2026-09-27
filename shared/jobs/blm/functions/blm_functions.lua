@@ -7,7 +7,6 @@
 ---
 ---   ADDITIONALLY: Exports key functions globally
 ---   • BuffSelf() - Automated self-buffing
----   • SaveMP() - MP-based elemental set switch (no caller, see below)
 ---   • refine_various_spells() - Spell tier downgrading
 ---   • checkArts() - Scholar subjob Dark Arts automation
 ---   • CastStorm() - Storm casting with Klimaform
@@ -55,7 +54,6 @@ end
 
 -- Logic modules loaded on demand (performance optimization)
 local BuffManager = nil
-local SetBuilder = nil
 local SpellRefiner = nil
 local StormManager = nil
 
@@ -63,13 +61,6 @@ local StormManager = nil
 local function ensure_buff_manager()
     if not BuffManager then
         BuffManager = require('shared/jobs/blm/functions/logic/buff_manager')
-    end
-end
-
----   Ensure SetBuilder is loaded
-local function ensure_set_builder()
-    if not SetBuilder then
-        SetBuilder = require('shared/jobs/blm/functions/logic/set_builder')
     end
 end
 
@@ -136,7 +127,7 @@ TIMER('BLM_MOVEMENT')
 ---   logic/buff_manager.lua (loaded on first BuffSelf() call)
 ---     • Automated self-buffing (Stoneskin, Blink, Aquaveil, Ice Spikes)
 ---   logic/set_builder.lua (required by BLM_IDLE / BLM_ENGAGED for the idle and
----     engaged builders; loaded here only by SaveMP())
+---     engaged builders)
 ---     • Engaged set construction (weapons)
 ---     • Idle set construction (town, weapons, movement, Mana Wall)
 ---   logic/spell_refiner.lua (loaded on first spell cast with refinement)
@@ -162,19 +153,6 @@ TIMER('BLM_MOVEMENT')
 function BuffSelf()
     ensure_buff_manager()
     return BuffManager.BuffSelf()
-end
-
----  ═══════════════════════════════════════════════════════════════════════════
----   SaveMP - MP Conservation Gear Switching
----  ═══════════════════════════════════════════════════════════════════════════
----   Writes an MP-based set (global blm_dynamic_sets, threshold 1000 MP) into
----   sets.midcast['Elemental Magic'] or its .MagicBurst entry. No sets file
----   defines blm_dynamic_sets, so the current set is written back onto itself,
----   and nothing in the project calls SaveMP().
----   @usage SaveMP()
-function SaveMP()
-    ensure_set_builder()
-    return SetBuilder.SaveMP()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -308,7 +286,6 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 _G.BuffSelf = BuffSelf
-_G.SaveMP = SaveMP
 _G.refine_various_spells = refine_various_spells
 _G.checkArts = checkArts
 _G.CastStorm = CastStorm

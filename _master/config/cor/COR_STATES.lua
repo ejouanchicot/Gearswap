@@ -11,7 +11,6 @@
 ---   • Phantom Roll configuration (MainRoll/SubRoll: 20 different rolls each)
 ---   • Luzaf's Ring mode (ON = 16y range, OFF = 8y range)
 ---   • Default state values for optimal gameplay
----   • validate() helper (not called anywhere today)
 ---
 --- State Purposes:
 ---   • HybridMode: PDT = 50% damage reduction, Normal = maximum DPS
@@ -176,40 +175,6 @@ function CORStates.configure()
     if ok and AutoMedicine then
         AutoMedicine.init(state, M)
     end
-end
-
----============================================================================
---- VALIDATION
----============================================================================
-
---- Validate all COR states are configured correctly
---- @return boolean success True if all states valid
---- @return string message Validation result message
-function CORStates.validate()
-    -- Check required states exist
-    if not state.HybridMode then
-        return false, "HybridMode state not configured"
-    end
-    if not state.MainWeapon then
-        return false, "MainWeapon state not configured"
-    end
-    if not state.RangeWeapon then
-        return false, "RangeWeapon state not configured"
-    end
-    if not state.QuickDraw then
-        return false, "QuickDraw state not configured"
-    end
-    if not state.LuzafRing then
-        return false, "LuzafRing state not configured"
-    end
-    if not state.MainRoll then
-        return false, "MainRoll state not configured"
-    end
-    if not state.SubRoll then
-        return false, "SubRoll state not configured"
-    end
-
-    return true, "All COR states configured successfully"
 end
 
 ---============================================================================

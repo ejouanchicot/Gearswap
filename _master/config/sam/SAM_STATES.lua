@@ -6,14 +6,13 @@
 --- Features:
 ---   • HybridMode configuration (PDT/Normal)
 ---   • MainWeapon state with multiple weapon options
----   • Buff tracking table (state.Buff), FastCast, AutoMedicine
+---   • FastCast, AutoMedicine
 ---   • Keys are bound in SAM_KEYBINDS.lua (Ctrl+Numpad1 weapon, Ctrl+Numpad9 HybridMode)
 ---   • Validation function to verify state configuration
 ---
 --- Usage:
 ---   • Loaded in user_setup() after Mote-Include initializes
 ---   • Call SAMStates.configure() to initialize all states
----   • Call SAMStates.validate() to verify configuration (optional)
 ---
 --- @file    config/sam/SAM_STATES.lua
 --- @author  ejouanchicot
@@ -29,7 +28,8 @@ local SAMStates = {}
 
 --- Configure all SAM states
 --- Must be called from user_setup() after Mote-Include is loaded.
---- Defines HybridMode, MainWeapon, Stance, state.Buff, FastCast and AutoMedicine.
+--- Defines HybridMode, OffenseMode, WeaponskillMode, MainWeapon, Stance,
+--- FastCast and AutoMedicine.
 function SAMStates.configure()
     -- ==========================================================================
     -- COMBAT MODES
@@ -89,20 +89,6 @@ function SAMStates.configure()
     state.Stance:set('Hasso')
 
     -- ==========================================================================
-    -- BUFF TRACKING
-    -- ==========================================================================
-    -- Note: Buff tracking states are initialized here for consistency
-    -- Mote-Include flips a listed state.Buff entry on JA use and on buff_change
-
-    state.Buff = {}
-    state.Buff.Hasso = false
-    state.Buff.Seigan = false
-    state.Buff['Third Eye'] = false
-    state.Buff.Sekkanoki = false
-    state.Buff['Meikyo Shisui'] = false
-    state.Buff.Sengikori = false
-
-    -- ==========================================================================
     -- FAST CAST (WATCHDOG SYSTEM)
     -- ==========================================================================
 
@@ -123,34 +109,6 @@ function SAMStates.configure()
     if ok and AutoMedicine then
         AutoMedicine.init(state, M)
     end
-end
-
----============================================================================
---- VALIDATION
----============================================================================
-
---- Validate that states were configured correctly
---- Checks that HybridMode, MainWeapon and state.Buff exist.
----
---- @return boolean success True if validation passed, false otherwise
---- @return string  message Validation message (success or error description)
-function SAMStates.validate()
-    -- Check HybridMode exists
-    if not state.HybridMode then
-        return false, 'HybridMode state not configured'
-    end
-
-    -- Check MainWeapon exists
-    if not state.MainWeapon then
-        return false, 'MainWeapon state not configured'
-    end
-
-    -- Check Buff tracking table exists
-    if not state.Buff then
-        return false, 'Buff tracking state not configured'
-    end
-
-    return true, 'All states configured successfully'
 end
 
 ---============================================================================

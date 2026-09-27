@@ -3,7 +3,6 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Handles movement-based buff cancellation for Warrior:
 ---   • Retaliation auto-cancel after 5s continuous movement
----   • Movement status API for external queries
 ---
 ---   Uses centralized AutoMove for position tracking (performance optimization).
 ---
@@ -126,35 +125,8 @@ coroutine.schedule(function()
 end, 0.6)  -- Wait 0.6s for AutoMove to load (it loads at 0.5s in INIT_SYSTEMS)
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   MOVEMENT STATUS API
+---   RETALIATION DEBUG
 ---  ═══════════════════════════════════════════════════════════════════════════
-
----   Get current movement status
----   Delegates to AutoMove for centralized movement tracking.
----
----   @return table Movement info with fields:
----   • is_moving (boolean): True if player is moving
----   • distance  (number):  Distance traveled in last tick
----   • position  (table):   Current position {x, y, z}
-function get_war_movement_status()
-    if not AutoMove then
-        return {
-            is_moving = false,
-            distance = 0,
-            position = {
-                x = 0,
-                y = 0,
-                z = 0
-            }
-        }
-    end
-
-    return {
-        is_moving = AutoMove.is_moving(),
-        distance = AutoMove.get_last_distance(),
-        position = AutoMove.get_position()
-    }
-end
 
 ---   Toggle Retaliation debug mode
 ---   @return boolean New debug mode state
@@ -189,7 +161,6 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Export globally for GearSwap
-_G.get_war_movement_status = get_war_movement_status
 _G.toggle_retaliation_debug = toggle_retaliation_debug
 _G.get_retaliation_status = get_retaliation_status
 

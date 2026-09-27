@@ -14,7 +14,6 @@
 --- Usage:
 ---   • Loaded in user_setup() after Mote-Include initializes
 ---   • Call RUNStates.configure() to initialize all states
----   • Call RUNStates.validate() to verify configuration (optional)
 ---
 --- @file    config/run/RUN_STATES.lua
 --- @author  ejouanchicot
@@ -110,39 +109,6 @@ function RUNStates.configure()
     if ok and AutoMedicine then
         AutoMedicine.init(state, M)
     end
-end
-
----============================================================================
---- VALIDATION
----============================================================================
-
---- Validate that states were configured correctly
---- Checks that HybridMode, MainWeapon, SubWeapon and RuneMode exist.
----
---- @return boolean success True if validation passed, false otherwise
---- @return string  message Validation message (success or error description)
-function RUNStates.validate()
-    -- Check HybridMode exists
-    if not state.HybridMode then
-        return false, 'HybridMode state not configured'
-    end
-
-    -- Check MainWeapon exists
-    if not state.MainWeapon then
-        return false, 'MainWeapon state not configured'
-    end
-
-    -- Check SubWeapon exists
-    if not state.SubWeapon then
-        return false, 'SubWeapon state not configured'
-    end
-
-    -- Check RuneMode exists
-    if not state.RuneMode then
-        return false, 'RuneMode state not configured'
-    end
-
-    return true, 'All RUN states configured successfully'
 end
 
 ---============================================================================

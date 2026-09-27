@@ -7,12 +7,10 @@
 ---   • HybridMode configuration (PDT/Accu)
 ---   • MainWeapon state with multiple weapon options
 ---   • Keybind integration (Ctrl+Numpad9 HybridMode, Ctrl+Numpad1 MainWeapon)
----   • validate() helper (not called anywhere today)
 ---
 --- Usage:
 ---   • Loaded in user_setup() after Mote-Include initializes
 ---   • Call DRKStates.configure() to initialize all states
----   • Call DRKStates.validate() to verify configuration (optional)
 ---
 --- @file    config/drk/DRK_STATES.lua
 --- @author  ejouanchicot
@@ -93,29 +91,6 @@ function DRKStates.configure()
     if ok and AutoMedicine then
         AutoMedicine.init(state, M)
     end
-end
-
----============================================================================
---- VALIDATION
----============================================================================
-
---- Validate that states were configured correctly
---- Checks that all required states exist and have proper structure.
----
---- @return boolean success True if validation passed, false otherwise
---- @return string  message Validation message (success or error description)
-function DRKStates.validate()
-    -- Check HybridMode exists and has correct options
-    if not state.HybridMode then
-        return false, 'HybridMode state not configured'
-    end
-
-    -- Check MainWeapon exists
-    if not state.MainWeapon then
-        return false, 'MainWeapon state not configured'
-    end
-
-    return true, 'All DRK states configured successfully'
 end
 
 ---============================================================================

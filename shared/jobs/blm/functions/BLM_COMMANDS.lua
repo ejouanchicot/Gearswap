@@ -5,7 +5,7 @@
 ---   • Common commands (reload, checksets, waltz, jump, etc.)
 ---   • UI commands (ui toggle, reload UI)
 ---   • BLM element cycling (MainLight, MainDark, SubLight, SubDark)
----   • BLM spell cycling (Storm, TierSpell)
+---   • BLM spell cycling (Storm)
 ---   • BLM-specific commands (buff, storm, klima, dispel, lightarts, darkarts,
 ---     aoe sneak/invi, light/dark/aoe nukes)
 ---   • CombatMode weapon lock (job_state_change)
@@ -164,7 +164,7 @@ local function handle_blm_cycle_commands(command, eventArgs)
     return false
 end
 
----   Handle standard cycle commands with colored messages (Storm, TierSpell)
+---   Handle standard cycle commands with colored messages (Storm)
 ---   @param cmdParams table Command parameters array
 ---   @param eventArgs table Event arguments with handled flag
 ---   @return boolean true if command was handled
@@ -181,16 +181,6 @@ local function handle_blm_standard_cycles(cmdParams, eventArgs)
             state.Storm:cycle()
             BLMMessages.show_storm_cycle(state.Storm.value)
             update_ui()
-            eventArgs.handled = true
-            return true
-        end
-    end
-
-    -- TierSpell: 6/5/4/3/2/base
-    if stateName == 'TierSpell' then
-        if state and state.TierSpell then
-            state.TierSpell:cycle()
-            BLMMessages.show_tier_cycle(state.TierSpell.value)
             eventArgs.handled = true
             return true
         end
@@ -221,7 +211,6 @@ end
 ---   • cyclesublight   - Cycle SubLight
 ---   • cyclesubdark    - Cycle SubDark
 ---   • cycle Storm     - Cycle Storm spells
----   • cycle TierSpell - Cycle spell tiers
 ---
 ---   BLM-specific commands:
 ---   • buff           - Automated self-buffing (Stoneskin, Blink, Aquaveil, Ice Spikes)
@@ -342,7 +331,7 @@ function job_self_command(cmdParams, eventArgs)
     end
 
     -- ══════════════════════════════════════════════════════════════════════════
-    -- BLM STANDARD CYCLE COMMANDS (cycle Storm, cycle TierSpell)
+    -- BLM STANDARD CYCLE COMMANDS (cycle Storm)
     -- ══════════════════════════════════════════════════════════════════════════
     if handle_blm_standard_cycles(cmdParams, eventArgs) then
         return

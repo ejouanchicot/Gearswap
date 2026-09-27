@@ -224,38 +224,6 @@ function StormManager.cast_storm_with_klimaform(storm_name)
     return false
 end
 
----   Cast Storm only (without Klimaform check)
----   Used for manual Storm casting
----   @param storm_name string Name of the storm spell
----   @return boolean true if casting was initiated, false if on cooldown
-function StormManager.cast_storm_only(storm_name)
-    local currentTime = os.clock()
-
-    -- Anti-spam check
-    if not isSafeToCast(currentTime) then
-        return false
-    end
-
-    -- Get recast time
-    local storm_recast = get_spell_recast(storm_name)
-
-    if not storm_recast then
-        BLMMessages.show_spell_recasts_error()
-        return false
-    end
-
-    if storm_recast == 0 then
-        -- Cast Storm
-        send_command('input /ma "' .. storm_name .. '" <me>')
-        updateLastCastTime(currentTime)
-        return true
-    else
-        -- Storm on cooldown - show recast
-        MessageCooldowns.show_spell_cooldown(storm_name, storm_recast * 100)  -- Convert to centiseconds
-        return false
-    end
-end
-
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT
 ---  ═══════════════════════════════════════════════════════════════════════════

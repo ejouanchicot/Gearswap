@@ -14,7 +14,6 @@
 --- Usage:
 ---   • Loaded in user_setup() after Mote-Include initializes
 ---   • Call WHMStates.configure() to initialize all states
----   • Call WHMStates.validate() to verify configuration (optional)
 ---
 --- @file    config/whm/WHM_STATES.lua
 --- @author  ejouanchicot
@@ -131,51 +130,6 @@ function WHMStates.configure()
     if ok and AutoMedicine then
         AutoMedicine.init(state, M)
     end
-end
-
----============================================================================
---- STATE VALIDATION
----============================================================================
-
---- Validate that all required states are configured correctly
---- Optional: can be called after configure(); nothing calls it today.
---- Prints an error for each missing state.
----
---- @return boolean true if all states valid, false otherwise
-function WHMStates.validate()
-    local MessageFormatter = require('shared/utils/messages/message_formatter')
-    local valid = true
-
-    if not state.OffenseMode then
-        MessageFormatter.show_error('[WHM] WARNING: OffenseMode not configured')
-        valid = false
-    end
-
-    if not state.CastingMode then
-        MessageFormatter.show_error('[WHM] WARNING: CastingMode not configured')
-        valid = false
-    end
-
-    if not state.IdleMode then
-        MessageFormatter.show_error('[WHM] WARNING: IdleMode not configured')
-        valid = false
-    end
-
-    if not state.CureMode then
-        MessageFormatter.show_error('[WHM] WARNING: CureMode not configured')
-        valid = false
-    end
-
-    if not state.CombatMode then
-        MessageFormatter.show_error('[WHM] WARNING: CombatMode not configured')
-        valid = false
-    end
-
-    if valid then
-        MessageFormatter.show_debug('WHM', 'All states configured correctly')
-    end
-
-    return valid
 end
 
 ---============================================================================

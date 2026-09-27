@@ -63,20 +63,4 @@ function BLUStates.configure()
     end
 end
 
----============================================================================
---- VALIDATION
----============================================================================
-
---- Validate the BLU states
---- @return boolean success True if all states are configured
---- @return string message Validation result message
-function BLUStates.validate()
-    for _, name in ipairs({'OffenseMode', 'WeaponskillMode', 'CastingMode', 'IdleMode', 'MainWeapon', 'SubWeapon'}) do
-        if not state[name] then
-            return false, name .. ' state not configured'
-        end
-    end
-    return true, 'All BLU states configured successfully'
-end
-
 return BLUStates

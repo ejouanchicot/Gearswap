@@ -1,8 +1,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   BLM Movement Management Module
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles movement-based gear management for Black Mage.
----   Uses centralized AutoMove position tracking for performance.
+---   Keeps Twilight Cloak on through an Impact cast (job_handle_equipping_gear).
+---   AutoMove tracks movement for every job (INIT_SYSTEMS).
 ---
 ---   @file    shared/jobs/blm/functions/BLM_MOVEMENT.lua
 ---   @author  ejouanchicot
@@ -12,26 +12,8 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   MOVEMENT STATUS API
+---   GEAR HOOK
 ---  ═══════════════════════════════════════════════════════════════════════════
-
----   Get current movement status (delegates to AutoMove)
----   @return table { is_moving, distance, position }
-function get_blm_movement_status()
-    if not AutoMove then
-        return {
-            is_moving = false,
-            distance = 0,
-            position = { x = 0, y = 0, z = 0 }
-        }
-    end
-
-    return {
-        is_moving = AutoMove.is_moving(),
-        distance = AutoMove.get_last_distance(),
-        position = AutoMove.get_position()
-    }
-end
 
 ---   Handle equipping gear during movement
 ---   @param playerStatus string Current player status

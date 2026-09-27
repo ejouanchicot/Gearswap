@@ -337,18 +337,9 @@ MessageFormatter.show_spell_refined = function(...) return get_GEOMessages().sho
 MessageFormatter.show_no_tier_available = function(...) return get_GEOMessages().show_no_tier_available(...) end
 
 -- BLM functions (Black Mage) - LAZY LOADED
-MessageFormatter.show_dark_arts_activated = function(...) return get_BLMMessages().show_dark_arts_activated(...) end
 MessageFormatter.show_element_cycle = function(...) return get_BLMMessages().show_element_cycle(...) end
-MessageFormatter.show_aja_cycle = function(...) return get_BLMMessages().show_aja_cycle(...) end
 MessageFormatter.show_storm_cycle = function(...) return get_BLMMessages().show_storm_cycle(...) end
-MessageFormatter.show_tier_cycle = function(...) return get_BLMMessages().show_tier_cycle(...) end
-MessageFormatter.show_buff_activated = function(...) return get_BLMMessages().show_buff_activated(...) end
-MessageFormatter.show_buff_cast = function(...) return get_BLMMessages().show_buff_cast(...) end
-MessageFormatter.show_magic_burst_on = function(...) return get_BLMMessages().show_magic_burst_on(...) end
-MessageFormatter.show_magic_burst_off = function(...) return get_BLMMessages().show_magic_burst_off(...) end
-MessageFormatter.show_free_nuke_on = function(...) return get_BLMMessages().show_free_nuke_on(...) end
 MessageFormatter.show_spell_refinement = function(...) return get_BLMMessages().show_spell_refinement(...) end
-MessageFormatter.show_spell_refinement_failed = function(...) return get_BLMMessages().show_spell_refinement_failed(...) end
 MessageFormatter.show_mp_conservation = function(...) return get_BLMMessages().show_mp_conservation(...) end
 MessageFormatter.show_arts_already_active = function(...) return get_BLMMessages().show_arts_already_active(...) end
 MessageFormatter.show_stratagem_no_charges = function(...) return get_BLMMessages().show_stratagem_no_charges(...) end
@@ -358,7 +349,6 @@ MessageFormatter.show_spell_refinement_error = function(...) return get_BLMMessa
 MessageFormatter.show_spell_recasts_error = function(...) return get_BLMMessages().show_spell_recasts_error(...) end
 MessageFormatter.show_insufficient_mp_error = function(...) return get_BLMMessages().show_insufficient_mp_error(...) end
 MessageFormatter.show_breakga_blocked = function(...) return get_BLMMessages().show_breakga_blocked(...) end
-MessageFormatter.show_buff_casting = function(...) return get_BLMMessages().show_buff_casting(...) end
 
 -- BST functions (Beastmaster) - LAZY LOADED
 -- Legacy names with show_bst_ prefix (backward compatibility)

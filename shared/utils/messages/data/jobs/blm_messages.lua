@@ -24,51 +24,8 @@ return {
     --- SPELL CYCLE MESSAGES
     ---========================================================================
 
-    aja_cycle = {
-        template = "{gray}[{lightblue}{job}{gray}]{gray} Current Aja: {element_color}{aja}",
-        color = 1
-    },
-
     storm_cycle = {
         template = "{gray}[{lightblue}{job}{gray}]{gray} Current Storm: {element_color}{storm}",
-        color = 1
-    },
-
-    tier_cycle = {
-        template = "{gray}[{lightblue}{job}{gray}]{gray} Current Tier: {yellow}{tier}",
-        color = 1
-    },
-
-    ---========================================================================
-    --- BUFF MESSAGES
-    ---========================================================================
-
-    buff_activated = {
-        template = "{gray}[{lightblue}{job}{gray}]{gray} Self-buffing: {green}Stoneskin > Blink > Aquaveil > Ice Spikes",
-        color = 1
-    },
-
-    buff_cast = {
-        template = "{gray}[{lightblue}{job}{gray}]{gray} Casting {cyan}{buff}",
-        color = 1
-    },
-
-    ---========================================================================
-    --- CASTING MODE MESSAGES
-    ---========================================================================
-
-    magic_burst_on = {
-        template = "{gray}[{lightblue}{job}{gray}] {green}Magic Burst Mode{gray}: {yellow}ON",
-        color = 1
-    },
-
-    magic_burst_off = {
-        template = "{gray}[{lightblue}{job}{gray}] {orange}Magic Burst Mode{gray}: {gray}OFF",
-        color = 1
-    },
-
-    free_nuke_on = {
-        template = "{gray}[{lightblue}{job}{gray}] {green}Free Nuke Mode{gray}: {yellow}ON",
         color = 1
     },
 
@@ -78,11 +35,6 @@ return {
 
     spell_refinement = {
         template = "{gray}[{lightblue}{job}{gray}] {cyan}{original}{gray} on cooldown {gray}({orange}{recast}s{gray}) > Downgrading to {cyan}{downgrade}",
-        color = 1
-    },
-
-    spell_refinement_failed = {
-        template = "{gray}[{lightblue}{job}{gray}] {cyan}{spell}{gray} on cooldown {gray}({orange}{recast}s{gray}) - {red}No downgrade available",
         color = 1
     },
 
@@ -98,11 +50,6 @@ return {
     ---========================================================================
     --- DARK ARTS MESSAGES (SCH SUBJOB)
     ---========================================================================
-
-    dark_arts_activated = {
-        template = "{gray}[{lightblue}{job}{gray}] {yellow}Dark Arts{gray} activated for {cyan}{spell}",
-        color = 1
-    },
 
     arts_already_active = {
         template = "{gray}[{lightblue}{job}{gray}]{gray} {green}{arts}{gray} already active",
@@ -151,11 +98,6 @@ return {
     ---========================================================================
     --- BUFF MANAGEMENT MESSAGES
     ---========================================================================
-
-    buff_casting = {
-        template = "{gray}[{lightblue}{job}{gray}]{gray} Casting {cyan}{spell}",
-        color = 1
-    },
 
     buff_status = {
         template = "{gray}[{lightblue}{job}{gray}]{gray} Buff Status: {status}",

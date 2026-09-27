@@ -16,7 +16,6 @@
 --- Usage:
 ---   • Loaded in user_setup() after Mote-Include initializes
 ---   • Call PLDStates.configure() to initialize all states
----   • Call PLDStates.validate() to verify configuration (optional)
 ---
 --- @file    config/pld/PLD_STATES.lua
 --- @author  ejouanchicot
@@ -352,43 +351,6 @@ function PLDStates.apply_hybrid_profile(mode)
         active_profile = profile
         install_profile(profile)
     end
-end
-
----============================================================================
---- VALIDATION
----============================================================================
-
---- Validate that states were configured correctly
---- Checks that HybridMode, MainWeapon, Xp, RuneMode and SneakInviAOE exist.
----
---- @return boolean success True if validation passed, false otherwise
---- @return string  message Validation message (success or error description)
-function PLDStates.validate()
-    -- Check HybridMode exists
-    if not state.HybridMode then
-        return false, 'HybridMode state not configured'
-    end
-
-    -- Check MainWeapon exists
-    if not state.MainWeapon then
-        return false, 'MainWeapon state not configured'
-    end
-
-    -- Check XP mode exists
-    if not state.Xp then
-        return false, 'Xp state not configured'
-    end
-
-    -- Check RuneMode exists
-    if not state.RuneMode then
-        return false, 'RuneMode state not configured'
-    end
-
-    if not state.SneakInviAOE then
-        return false, 'SneakInviAOE state not configured'
-    end
-
-    return true, 'All PLD states configured successfully'
 end
 
 ---============================================================================

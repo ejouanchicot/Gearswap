@@ -18,19 +18,6 @@ local ElementalMatcher = {}
 ---   ELEMENT MAPPINGS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Convert element IDs to element names
----   @type table<number, string>
-local ELEMENT_NAMES = {
-    [0] = 'Fire',
-    [1] = 'Ice',
-    [2] = 'Wind',
-    [3] = 'Earth',
-    [4] = 'Lightning', -- the game's name (res.elements); spells say Thunder
-    [5] = 'Water',
-    [6] = 'Light',
-    [7] = 'Dark'
-}
-
 ---   Map storm buffs to element IDs
 ---   @type table<string, number>
 local STORM_TO_ELEMENT = {
@@ -78,13 +65,6 @@ local function normalize_element(element_value)
 
     -- Invalid type
     return nil
-end
-
----   Convert spell element ID to element name
----   @param element_id number Element ID (0-7)
----   @return string|nil Element name or nil
-local function get_element_name(element_id)
-    return ELEMENT_NAMES[element_id]
 end
 
 ---   Check if any storm buff is active and matches spell element
@@ -176,17 +156,6 @@ function ElementalMatcher.has_elemental_match(spell, config)
     local reason = has_match and table.concat(reasons, ', ') or nil
 
     return has_match, reason
-end
-
----   Get element name from spell
----   @param spell table Spell object from GearSwap
----   @return string|nil Element name
-function ElementalMatcher.get_spell_element_name(spell)
-    if not spell or not spell.element then
-        return nil
-    end
-    local element_id = normalize_element(spell.element)
-    return get_element_name(element_id)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

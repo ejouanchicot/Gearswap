@@ -113,16 +113,6 @@ function StateValue.get_state_value(state_name, keybind_key)
         return ""
     end
 
-    -- NOTE: 'result' below is an undeclared global (nil), so these branches
-    -- never trigger. Kept as-is for behavior parity.
-    if state_name == "TierSpell" and (result == "" or result == "Unknown") then
-        return ""
-    end
-
-    if state_name == "AjaTier" and result == "Ga" then
-        return ""
-    end
-
     return tostring(state_obj or "Unknown")
 end
 

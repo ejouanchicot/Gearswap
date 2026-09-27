@@ -12,7 +12,6 @@
 ---   • Geocolure system (28 Geo spells for Luopan bubble)
 ---   • Elemental nuke system (Light/Dark + Single/AOE + Tier selection)
 ---   • Default state values for optimal gameplay
----   • validate() helper (not called anywhere today)
 ---
 --- State Purposes:
 ---   • HybridMode: PDT = 50% damage reduction, Normal = maximum DPS
@@ -265,61 +264,6 @@ function GEOStates.configure()
     if ok and AutoMedicine then
         AutoMedicine.init(state, M)
     end
-end
-
----============================================================================
---- VALIDATION
----============================================================================
-
---- Validate all GEO states are configured correctly
---- @return boolean success True if all states valid
---- @return string message Validation result message
-function GEOStates.validate()
-    -- Check required states exist
-    if not state.HybridMode then
-        return false, "HybridMode state not configured"
-    end
-    if not state.CombatMode then
-        return false, "CombatMode state not configured"
-    end
-    if not state.LuopanMode then
-        return false, "LuopanMode state not configured"
-    end
-    if not state.MainWeapon then
-        return false, "MainWeapon state not configured"
-    end
-    if not state.SubWeapon then
-        return false, "SubWeapon state not configured"
-    end
-    if not state.IndicolureMode then
-        return false, "IndicolureMode state not configured"
-    end
-    if not state.MainIndi then
-        return false, "MainIndi state not configured"
-    end
-    if not state.MainGeo then
-        return false, "MainGeo state not configured"
-    end
-    if not state.MainLightSpell then
-        return false, "MainLightSpell state not configured"
-    end
-    if not state.MainDarkSpell then
-        return false, "MainDarkSpell state not configured"
-    end
-    if not state.SpellTier then
-        return false, "SpellTier state not configured"
-    end
-    if not state.MainLightAOE then
-        return false, "MainLightAOE state not configured"
-    end
-    if not state.MainDarkAOE then
-        return false, "MainDarkAOE state not configured"
-    end
-    if not state.AOETier then
-        return false, "AOETier state not configured"
-    end
-
-    return true, "All GEO states configured successfully"
 end
 
 ---============================================================================
