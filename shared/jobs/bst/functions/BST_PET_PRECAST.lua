@@ -33,9 +33,9 @@ function job_pet_precast(spell)
             if not mod_ok then mod = nil end
             MessageFormatter = mod
         end
-        MessageFormatter.show_debug('PET_PRECAST', '========================================')
+        MessageFormatter.show_separator()
         MessageFormatter.show_debug('PET_PRECAST', 'Called for: ' .. (spell.name or 'unknown'))
-        MessageFormatter.show_debug('PET_PRECAST', '========================================')
+        MessageFormatter.show_separator()
     end
 
     local set = nil

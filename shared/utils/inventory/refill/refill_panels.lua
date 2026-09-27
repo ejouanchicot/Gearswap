@@ -58,7 +58,7 @@ local AMMO_KEYWORDS = {'bolt', 'arrow', 'bullet', 'shuriken', 'quiver', 'cartrid
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local function send(line)
-    windower.add_to_chat(CHANNEL, line)
+    add_to_chat(CHANNEL, line)
 end
 
 local function separator()

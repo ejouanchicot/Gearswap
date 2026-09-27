@@ -167,4 +167,30 @@ end
 --- MODULE EXPORT
 ---============================================================================
 
+---============================================================================
+--- CHAT OPTIONS ON EVERY LINE
+---============================================================================
+
+-- The player's separator options (on/off, character, color, width) apply to
+-- every chat line of this job file, whoever writes it: templates, InfoBlock,
+-- formatters that build their own lines, diagnostic tools, Mote. The sandbox
+-- add_to_chat is the one place they all share (chat_separators.lua). Once
+-- per sandbox: a job load gets a fresh _G and a fresh add_to_chat.
+if not rawget(_G, '__chat_separators_installed') and type(rawget(_G, 'add_to_chat')) == 'function' then
+    _G.__chat_separators_installed = true
+    local raw_add_to_chat = rawget(_G, 'add_to_chat')
+    local Separators = nil
+    _G.add_to_chat = function(color, text, ...)
+        if not Separators then
+            local ok, mod = pcall(require, 'shared/utils/messages/chat_separators')
+            if ok and mod then Separators = mod end
+        end
+        if Separators then
+            text = Separators.apply(text)
+            if text == nil then return end
+        end
+        return raw_add_to_chat(color, text, ...)
+    end
+end
+
 return MessageCore

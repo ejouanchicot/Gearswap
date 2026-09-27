@@ -56,12 +56,12 @@ local SEP     = string.rep('=', WIDTH)
 
 --- Full-width gray '=' separator.
 function Chat.separator()
-    windower.add_to_chat(CHANNEL, C.gray .. SEP)
+    add_to_chat(CHANNEL, C.gray .. SEP)
 end
 
 --- Full-width gray '-' divider for sub-sections.
 function Chat.divider()
-    windower.add_to_chat(CHANNEL, C.gray .. string.rep('-', WIDTH))
+    add_to_chat(CHANNEL, C.gray .. string.rep('-', WIDTH))
 end
 
 --- Banner panel: a single line with the title centered between '=' chars
@@ -73,7 +73,7 @@ function Chat.banner(title)
     local total_pad = math.max(2, WIDTH - #padded)
     local left      = math.floor(total_pad / 2)
     local right     = total_pad - left
-    windower.add_to_chat(CHANNEL,
+    add_to_chat(CHANNEL,
         C.gray   .. string.rep('=', left) ..
         C.yellow .. padded ..
         C.gray   .. string.rep('=', right))
@@ -84,7 +84,7 @@ end
 function Chat.section(name)
     local padded = ' ' .. name .. ' '
     local right_pad = math.max(3, WIDTH - 3 - #padded)
-    windower.add_to_chat(CHANNEL,
+    add_to_chat(CHANNEL,
         C.gray .. '--- ' .. C.cyan .. name .. C.gray .. ' ' .. string.rep('-', right_pad))
 end
 
@@ -99,32 +99,32 @@ end
 --- Tagged info line.
 --- @param message string Text
 function Chat.info(message)
-    windower.add_to_chat(CHANNEL, tagged(C.white, message))
+    add_to_chat(CHANNEL, tagged(C.white, message))
 end
 
 --- Tagged success line (green).
 --- @param message string Text
 function Chat.success(message)
-    windower.add_to_chat(158, tagged(C.green, message))
+    add_to_chat(158, tagged(C.green, message))
 end
 
 --- Tagged error line (red, "Error:" prefix).
 --- @param message string Text
 function Chat.error(message)
-    windower.add_to_chat(167, tagged(C.red, 'Error: ' .. C.white .. message))
+    add_to_chat(167, tagged(C.red, 'Error: ' .. C.white .. message))
 end
 
 --- Tagged warning line (orange).
 --- @param message string Text
 function Chat.warn(message)
-    windower.add_to_chat(205, tagged(C.orange, message))
+    add_to_chat(205, tagged(C.orange, message))
 end
 
 --- Like error, but WITHOUT the "Error:" prefix - used for blocking notices
 --- (e.g. "PROCESSING - do not move") that need maximum visual urgency.
 --- @param message string Text
 function Chat.alert(message)
-    windower.add_to_chat(167, tagged(C.red, message))
+    add_to_chat(167, tagged(C.red, message))
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -140,7 +140,7 @@ function Chat.phase(phase_num, label, info)
     local pnum  = C.yellow .. ('Phase %d'):format(phase_num)
     local lbl   = C.white .. label
     local extra = info and (C.gray .. '  (' .. C.green .. info .. C.gray .. ')') or ''
-    windower.add_to_chat(CHANNEL,
+    add_to_chat(CHANNEL,
         C.gray .. '[' .. C.cyan .. TAG .. C.gray .. '] ' ..
         arrow .. ' ' .. pnum .. C.gray .. '  ' .. lbl .. extra)
 end
@@ -157,7 +157,7 @@ function Chat.detail(label, value)
     local label_str = tostring(label)
     local pad_count = math.max(3, 26 - #label_str)
     local pad = string.rep('.', pad_count)
-    windower.add_to_chat(CHANNEL,
+    add_to_chat(CHANNEL,
         '  ' .. C.cyan .. label_str .. ' ' ..
         C.gray .. pad .. ' ' ..
         C.green .. tostring(value))
