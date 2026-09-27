@@ -14,7 +14,9 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 | Key | Mode (state) | Values (default in **bold**) | What it does |
 |---|---|---|---|
 | `^numpad1` | Main Weapon (`MainWeapon`) | **Masamune**, Kusanagi, Shining, Dojikiri, Soboro, Norifusa | Weapon equipped in idle and engaged sets (`sets.<Weapon>` from your set file). |
-| `^numpad9` | Hybrid Mode (`HybridMode`) | **PDT**, Normal | PDT: `sets.idle.PDT` on top of idle and `sets.engaged.PDT` when engaged. Normal: `sets.engaged.Normal`. |
+| `^numpad2` | Offense Mode (`OffenseMode`) | **Normal**, Mid, Acc, SuBlow | Engaged accuracy: `sets.engaged.<value>`, then `.<value>.<HybridMode>` when it exists (`sets.engaged.Acc.PDT`). A defensive HybridMode wins when the accuracy set has no variant for it (Mid + PDT = `sets.engaged.PDT`). |
+| `^numpad3` | WS Mode (`WeaponskillMode`) | **Normal**, Mid, Acc | `sets.precast.WS['<name>'].<value>` when it exists (the template has Tachi: Shoha and Tachi: Rana .Mid / .Acc), else the WS set. |
+| `^numpad9` | Hybrid Mode (`HybridMode`) | **PDT**, Normal, MDT | PDT: `sets.idle.PDT` on top of idle and `sets.engaged.PDT` when engaged. Normal: the Offense Mode set. MDT: `sets.engaged.MDT`. |
 
 ## Other modes (no key)
 
@@ -48,7 +50,10 @@ are useful with a subjob:
   goes out first, then the weaponskill is sent again once Third Eye is up (or
   refused). Each action has its own precast: Third Eye gear, then weaponskill
   gear.
-- **Seigan up while engaged**: `sets.thirdeye` in PDT, `sets.seigan` in Normal.
+- **Seigan up while engaged**: `sets.thirdeye` in PDT, `sets.seigan` otherwise
+  (empty in the template until you fill it). `sets.bow` goes on with
+  Yoichinoyumi (empty too). `sets.engaged.AM3` replaces the engaged set under
+  Aftermath: Lv.3 with Masamune when you define it (not in the template).
 - **Idle**: `sets.idle.Weak` below 50% HP, `sets.idle.Regen` below 80%.
 - Sekkanoki and Meikyo Shisui add `sets.buff.Sekkanoki` /
   `sets.buff['Meikyo Shisui']` to the weaponskill when the buff is up.

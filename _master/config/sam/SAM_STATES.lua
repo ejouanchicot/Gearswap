@@ -39,9 +39,26 @@ function SAMStates.configure()
     --- Options:
     ---   • 'PDT'    - Physical Damage Taken -50% (safe mode, default)
     ---   • 'Normal' - Full offense (max DPS)
+    ---   • 'MDT'    - Magic damage taken down (sets.engaged.MDT)
     --- Keybind: Ctrl+Numpad9 to cycle
-    state.HybridMode:options('PDT', 'Normal')
+    state.HybridMode:options('PDT', 'Normal', 'MDT')
     state.HybridMode:set('PDT') -- Default to PDT for safety
+
+    --- OffenseMode: accuracy level of the engaged set (sets.engaged.<value>,
+    --- then .<value>.<HybridMode> when it exists, e.g. sets.engaged.Acc.PDT)
+    ---   • 'Normal' / 'Mid' / 'Acc' - more accuracy at each step
+    ---   • 'SuBlow' - Subtle Blow set (sets.engaged.SuBlow)
+    --- A HybridMode other than Normal wins when the accuracy set has no
+    --- variant for it (Mid + PDT -> sets.engaged.PDT).
+    --- Keybind: Ctrl+Numpad2 to cycle
+    state.OffenseMode:options('Normal', 'Mid', 'Acc', 'SuBlow')
+    state.OffenseMode:set('Normal')
+
+    --- WeaponskillMode: sets.precast.WS['<name>'].<value> when it exists
+    --- (Tachi: Shoha .Mid / .Acc...), else the WS set itself.
+    --- Keybind: Ctrl+Numpad3 to cycle
+    state.WeaponskillMode:options('Normal', 'Mid', 'Acc')
+    state.WeaponskillMode:set('Normal')
 
     -- ==========================================================================
     -- WEAPON SETS

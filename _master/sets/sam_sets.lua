@@ -489,6 +489,19 @@ sets.thirdeye = {
     legs = 'Sakonji Haidate'
 }
 
+-- Seigan up in HybridMode Normal (sets.thirdeye covers PDT): worn over the
+-- engaged set. Empty until your Seigan / counter pieces go here.
+sets.seigan = {}
+
+-- Yoichinoyumi in the range slot: worn over the engaged set. Empty until
+-- your bow pieces go here.
+sets.bow = {}
+
+-- Aftermath: Lv.3 with Masamune: SetBuilder uses sets.engaged.AM3 INSTEAD
+-- of the engaged set when it exists, so it is left undefined (an empty set
+-- would drop your PDT set). To use it, write a full set, e.g.:
+--   sets.engaged.AM3 = set_combine(sets.engaged.Normal, { --[[ AM3 pieces ]] })
+
 ---============================================================================
 --- MOVEMENT
 ---============================================================================

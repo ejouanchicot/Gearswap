@@ -25,6 +25,22 @@ SAMKeybinds.binds = {
         state = "MainWeapon"
     },
 
+    -- OffenseMode cycling (Ctrl+Numpad2): engaged accuracy
+    {
+        key = "^numpad2",
+        command = "cyclestate OffenseMode",
+        desc = "Offense Mode",
+        state = "OffenseMode"
+    },
+
+    -- WeaponskillMode cycling (Ctrl+Numpad3): weaponskill accuracy
+    {
+        key = "^numpad3",
+        command = "cyclestate WeaponskillMode",
+        desc = "WS Mode",
+        state = "WeaponskillMode"
+    },
+
     -- HybridMode cycling (Ctrl+Numpad9)
     {
         key = "^numpad9",

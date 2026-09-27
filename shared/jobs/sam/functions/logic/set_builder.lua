@@ -71,7 +71,7 @@ end
 
 ---   Build engaged set with Seigan/Third Eye buff handling
 ---   Priority:
----   0. Base: AM3 set, else sets.engaged[HybridMode], else Mote's base
+---   0. Base: AM3 set, else the OffenseMode / HybridMode set, else Mote's base
 ---   1. Seigan buff >> thirdeye set (PDT) or seigan set (Normal)
 ---   2. Apply weapon
 ---   3. Bow equipped (Yoichinoyumi) >> bow set
@@ -128,7 +128,7 @@ end
 ---
 ---   Priority order:
 ---   1. Aftermath Lv.3 + Masamune/Kogarasumaru >> sets.engaged.AM3
----   2. HybridMode (PDT/Normal) >> sets.engaged[HybridMode]
+---   2. OffenseMode node >> its HybridMode variant, else sets.engaged[HybridMode]
 ---   3. Fallback >> base_set
 ---
 ---   @param base_set table Base engaged set from sam_sets.lua
@@ -148,15 +148,15 @@ function SetBuilder.select_engaged_base(base_set)
         end
     end
 
-    -- Normal HybridMode logic (PDT or Normal)
-    if state.HybridMode and state.HybridMode.current then
-        local hybrid_set = sets.engaged[state.HybridMode.current]
-        if hybrid_set then
-            return hybrid_set
-        end
+    -- OffenseMode picks the accuracy node, HybridMode its variant: a defensive
+    -- HybridMode wins when the node has no variant for it (Mid + PDT -> PDT)
+    local offense = state.OffenseMode and state.OffenseMode.current or 'Normal'
+    local hybrid = state.HybridMode and state.HybridMode.current or 'Normal'
+    local node = sets.engaged[offense] or sets.engaged.Normal
+    if hybrid ~= 'Normal' then
+        return (node and node[hybrid]) or sets.engaged[hybrid] or node or base_set
     end
-
-    return base_set
+    return node or base_set
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

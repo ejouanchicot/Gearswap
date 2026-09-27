@@ -207,7 +207,8 @@ none, so the flags have no visible effect today.
   calls `build_engaged_set(MainWeapon, HybridMode)` (`set_builder.lua:158-169`):
   `select_engaged_base` (52-67) -> `sets.engaged.AM3` when `buffactive[272]` and
   the weapon is Liberator, `sets.engaged.PDT` when `HybridMode == 'PDT'`, else
-  the `sets.engaged` root (Accu); then the weapon set; then
+  `sets.engaged.Accu` when `HybridMode == 'Accu'` and it exists, else the
+  `sets.engaged` root; then the weapon set; then
   `DRKBuffAnticipation.apply_buff_variants` (`drk_buff_anticipation.lua:72-123`), which looks up
   `sets.engaged[weapon][hybrid]` (falling back to `.Accu`) and its
   `DarkSealNetherVoid` / `DarkSeal` / `NetherVoid` children.
@@ -234,8 +235,10 @@ on every load. Keybinds from `_master/config/drk/DRK_KEYBINDS.lua:19-33`;
 | `FastCast` | 0..80 step 10 | 0 | none | `midcast_watchdog.lua` |
 | `AutoMedicine` | shared On/Off | persisted | `#numpad0` (from `COMMON_KEYBINDS.lua`) | `AutoMedicine.init` (`_master/config/drk/DRK_STATES.lua:86-89`) |
 
-`Accu` has no set of its own: it selects the `sets.engaged` root. Mote's
-`OffenseMode`, `IdleMode`, `WeaponskillMode` stay `'Normal'`.
+`Accu` selects `sets.engaged.Accu` (a copy of the root in the template,
+since 2026-09-27). `WeaponskillMode` is Normal / Acc (`^numpad2`), read by
+Mote's default precast (`sets.precast.WS[name].Acc`, else `sets.precast.WS.Acc`).
+Mote's `OffenseMode` and `IdleMode` stay `'Normal'`.
 
 ## Commands
 
@@ -263,7 +266,7 @@ T = `_master/sets/drk_sets.lua` (no live copy).
 | `sets.precast.JA` Jump, High Jump, Diabolic Eye, Arcane Circle, Nether Void, Souleater, Last Resort, Weapon Bash, Blood Weapon, Dark Seal | Mote default precast (+ `DRK_PRECAST.lua:90-99` for four) | 221-235 |
 | `sets.precast.FC` | `DRK_PRECAST.lua:103-105`, Mote | 238 |
 | `sets.precast.WS` base (the default VIT gear) | Mote default precast for any WS without a named set | 367 |
-| `sets.precast.WS.Acc` | nothing: `WeaponskillMode` is `Normal` | 393 |
+| `sets.precast.WS.Acc` | Mote, `WeaponskillMode` Acc (`^numpad2`) | 393 |
 | `sets.precast.WS` Entropy, Origin, Resolution, Torcleaver, Quietus, Judgment, Savage Blade | Mote default precast | 396-530 |
 | `sets.midcast['Dark Magic']`, `['Dread Spikes']`, `.Absorb` (+ 10 aliases), `.Drain`, `['Drain III']`, `.Aspir` | `DRK_MIDCAST.lua:46-60` | 267, 294, 324-343, 346-359 |
 | `sets.midcast['Enfeebling Magic']` | `DRK_MIDCAST.lua:103-110` | 284 |
@@ -366,7 +369,6 @@ which Mote never reads, and the base table was empty.
 - `sets.idle.PDT` unreachable (`set_builder.lua:124-143`).
 - `sets.idle.Town = sets.MoveSpeed` is used as the whole town idle
   (`_master/sets/drk_sets.lua:565`).
-- `sets.precast.WS.Acc` unreachable (`_master/sets/drk_sets.lua:393`).
 - Nether Void legs applied to Absorb-TP against the set comment
   (`DRK_MIDCAST.lua:85`, `_master/sets/drk_sets.lua:592`).
 - Redundant JA/FC equips in `job_precast` (`DRK_PRECAST.lua:90-105`); empty

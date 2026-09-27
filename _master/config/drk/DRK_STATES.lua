@@ -39,10 +39,16 @@ function DRKStates.configure()
     --- HybridMode: Combat stance configuration
     --- Options:
     ---   • 'PDT' - Physical Damage Taken -50% (defensive mode) [DEFAULT]
-    ---   • 'Accu' - High Accuracy mode (for evasive enemies)
+    ---   • 'Accu' - High Accuracy mode (sets.engaged.Accu, for evasive enemies)
     --- Keybind: Ctrl+Numpad9 to cycle
     state.HybridMode:options('PDT', 'Accu')
     state.HybridMode:set('PDT') -- Default to PDT for safety
+
+    --- WeaponskillMode: sets.precast.WS['<name>'].Acc when it exists, else
+    --- sets.precast.WS.Acc for a weaponskill without its own set.
+    --- Keybind: Ctrl+Numpad2 to cycle
+    state.WeaponskillMode:options('Normal', 'Acc')
+    state.WeaponskillMode:set('Normal')
 
     -- ==========================================================================
     -- WEAPON SETS

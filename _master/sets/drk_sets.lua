@@ -188,6 +188,10 @@ sets.engaged.PDT = set_combine(sets.engaged, {
     right_ring = ChirichRing2
 })
 
+-- • Accu mode (HybridMode Accu): the base engaged set until accuracy pieces
+--   go in the {}
+sets.engaged.Accu = set_combine(sets.engaged, {})
+
 -- • Aftermath Lv.3 (Liberator mythic) - auto-selected by set_builder.lua
 -- when buff 272 (AM3) is active AND main weapon is Liberator.
 -- See: shared/jobs/drk/functions/logic/set_builder.lua select_engaged_base()
@@ -389,7 +393,9 @@ sets.precast.WS = {
     back = Ankou.WS_VIT
 }
 
--- • Accuracy WS
+-- • Accuracy WS (WeaponskillMode Acc, Ctrl+Numpad2): for a weaponskill with
+--   no set of its own; a named one uses sets.precast.WS['<name>'].Acc if you
+--   add it. Empty until accuracy pieces go in the {}.
 sets.precast.WS.Acc = set_combine(sets.precast.WS, {})
 
 -- • Entropy (STR 80% VIT 80%)

@@ -46,7 +46,7 @@ numbers were re-checked against the working tree on 2026-09-25.
 | `shared/jobs/sam/functions/SAM_MOVEMENT.lua` | 47 | `get_sam_movement_status` (no caller), empty `job_handle_equipping_gear` |
 | `shared/jobs/sam/functions/SAM_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('SAM', ..., 1, 'SAM')` wrappers |
 | `shared/jobs/sam/functions/SAM_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('SAM', ..., 'SAM', 1, 1)` wrapper |
-| `shared/jobs/sam/functions/logic/set_builder.lua` | 165 | Idle (HP, PDT, weapon) and engaged (base from `select_engaged_base`: AM3 or `sets.engaged[HybridMode]`; Seigan, weapon, bow) builders |
+| `shared/jobs/sam/functions/logic/set_builder.lua` | 165 | Idle (HP, PDT, weapon) and engaged (base from `select_engaged_base`: AM3 or the OffenseMode / HybridMode set; Seigan, weapon, bow) builders |
 | `_master/config/sam/SAM_STATES.lua` | 132 | `SAMStates.configure()` (HybridMode, MainWeapon, `state.Buff`, FastCast, AutoMedicine), unused `validate()` |
 | `_master/config/sam/SAM_KEYBINDS.lua` | 37 | Data only: 2 binds handed to `KeybindManager.create('SAM', ...)`, which adds `bind_all` / `show_intro` / `unbind_all` and the character's `COMMON_KEYBINDS.lua` keys |
 | `_master/config/sam/SAM_CUSTOM.lua` | 118 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
@@ -186,8 +186,11 @@ applies through Mote's name lookup.
   No town set, no movement layer: `sets.MoveSpeed` is never used.
 - `customize_melee_set` -> `build_engaged_set` (84-119): the base is
   re-selected by `select_engaged_base` (135-159): `sets.engaged.AM3` under
-  Aftermath: Lv.3 with Masamune or Kogarasumaru (no such set today), else
-  `sets.engaged[HybridMode]` (`PDT` or `Normal`), else Mote's base. Then, with
+  Aftermath: Lv.3 with Masamune or Kogarasumaru (no such set today; the
+  template shows how to write one), else the `OffenseMode` node
+  (`sets.engaged.Normal/Mid/Acc/SuBlow`) and its `HybridMode` child
+  (`sets.engaged.Acc.PDT`), else `sets.engaged[HybridMode]` (`PDT`, `MDT`) when
+  the node has no such child, else the node, else Mote's base. Then, with
   Seigan up, `sets.thirdeye` when `HybridMode == 'PDT'`, `sets.seigan`
   otherwise; then the weapon set; then `sets.bow` when the range slot holds
   Yoichinoyumi. The re-selection is needed because Mote's base is
@@ -214,8 +217,10 @@ on every load. Keybinds from `SAM_KEYBINDS.lua:19-35`.
 | `FastCast` | 0..80 step 10 | 0 | none | `midcast_watchdog.lua` |
 | `AutoMedicine` | shared On/Off | persisted | `#numpad0` (from `config/COMMON_KEYBINDS.lua`) | `AutoMedicine.init` (`SAM_STATES.lua:94-97`) |
 
-`SAMStates.configure()` replaces the whole `state.Buff` table (69). Mote defaults
-`OffenseMode`, `IdleMode`, `WeaponskillMode` stay `'Normal'`.
+`SAMStates.configure()` replaces the whole `state.Buff` table (69). Since
+2026-09-27 it sets `OffenseMode` Normal / Mid / Acc / SuBlow (`^numpad2`),
+`WeaponskillMode` Normal / Mid / Acc (`^numpad3`, read by Mote's default
+precast) and adds `MDT` to `HybridMode`; `IdleMode` stays `'Normal'`.
 
 ## Commands
 
@@ -242,9 +247,9 @@ T = `_master/sets/sam_sets.lua` (no live copy).
 | `sets.idle.Weak`, `.Regen`, `.PDT` | `set_builder.lua:44-55` | 94, 81, 99 |
 | `sets.engaged.Normal` | Mote base, `select_engaged_base` (HybridMode Normal) | 148 |
 | `sets.engaged.PDT` | `select_engaged_base` (HybridMode PDT, `set_builder.lua:151-156`) | 176 |
-| `sets.engaged.Mid`, `.Acc`, `.Acc.PDT`, `.MDT`, `.SuBlow` | nothing (OffenseMode only `Normal`) | 165-214 |
+| `sets.engaged.Mid`, `.Acc`, `.Acc.PDT`, `.MDT`, `.SuBlow` | `select_engaged_base` (OffenseMode, HybridMode MDT) | 165-214 |
 | `sets.thirdeye` | `set_builder.lua:95` | 487 |
-| `sets.seigan`, `sets.bow` | `set_builder.lua:100,113` | **absent** |
+| `sets.seigan`, `sets.bow` | `set_builder.lua` Seigan and bow layers | empty in the template |
 | `sets.engaged.AM3` | `select_engaged_base` (Aftermath: Lv.3, `set_builder.lua:137-148`) | **absent** (falls through to the HybridMode set) |
 | `sets.buff.Sekkanoki`, `['Meikyo Shisui']` | `SAM_PRECAST.lua:186-194` (by `buffactive`) | 483, 485 |
 | `sets.buff.Sengikori` | nothing | 484 |
@@ -254,7 +259,7 @@ T = `_master/sets/sam_sets.lua` (no live copy).
 | `sets.precast.JA` Meditate, Hasso, Seigan, Warding Circle, Third Eye, Blade Bash | Mote default precast | 238-260 |
 | `sets.precast.FC`, `.Utsusemi` | Mote default precast | 268, 284 |
 | `sets.precast.WS` base + Tachi: Fudo, Shoha, Mumei, Jinpu, Goten, Kagero, Koki, Rana, Ageha, Impulse Drive, Aeolian Edge | Mote default precast | 307-447 |
-| `.Mid` / `.Acc` WS variants (Shoha, Rana) | nothing (`WeaponskillMode` `Normal`) | 350-423 |
+| `.Mid` / `.Acc` WS variants (Shoha, Rana) | Mote, `WeaponskillMode` (`^numpad3`) | 350-423 |
 | `sets.midcast['Healing Magic']`, `['Enhancing Magic']` | `SAM_MIDCAST.lua:44,53` | **absent** |
 | `sets.midcast.Phalanx` | Mote default midcast by name | 469 |
 

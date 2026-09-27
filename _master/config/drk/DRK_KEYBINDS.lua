@@ -23,6 +23,13 @@ DRKKeybinds.binds = {
         desc = "Hybrid Mode",
         state = "HybridMode"
     },
+    -- Weaponskill accuracy (Normal/Acc)
+    {
+        key = "^numpad2",
+        command = "cyclestate WeaponskillMode",
+        desc = "WS Mode",
+        state = "WeaponskillMode"
+    },
     -- Weapon Management
     {
         key = "^numpad1",

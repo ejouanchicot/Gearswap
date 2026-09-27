@@ -44,7 +44,7 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 ---   Priority order:
 ---   1. Aftermath Lv.3 + Liberator      >> sets.engaged.AM3
 ---   2. HybridMode = 'PDT'              >> sets.engaged.PDT
----   3. Base fallback (Accu/default)    >> sets.engaged
+---   3. HybridMode = 'Accu'             >> sets.engaged.Accu, else sets.engaged
 ---
 ---   @param weapon_name string Current main weapon name
 ---   @param hybrid_mode string Current HybridMode ('PDT' or 'Accu')
@@ -62,7 +62,10 @@ function DRKSetBuilder.select_engaged_base(weapon_name, hybrid_mode)
         return sets.engaged.PDT
     end
 
-    -- PRIORITY 3: Base engaged set (used for Accu mode and default)
+    -- PRIORITY 3: the Accu set when it exists, else the base engaged set
+    if hybrid_mode == 'Accu' and sets.engaged.Accu then
+        return sets.engaged.Accu
+    end
     return sets.engaged
 end
 
