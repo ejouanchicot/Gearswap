@@ -74,6 +74,47 @@ end
 -- character's action ended (see on_action) plus `delay` seconds, or after
 -- the step's longest wait, whichever comes first.
 local run_next
+
+local START_CHECK = 1.5  -- seconds for the game to start a spell / item once sent
+local MAX_TRIES = 3      -- sends of one step before giving up on it
+
+--- Whether the game can refuse the command without a word: a spell or an
+--- item sent too soon after the previous action ("unable to cast spells at
+--- this time") simply never starts.
+local function refusable(command)
+    return type(command) == 'string' and (command:find('^input /ma') or command:find('^input /item')) ~= nil
+end
+
+--- Arm the step's longest wait and, for a spell or an item, a check that it
+--- really started (cast_tracker.lua). Not started after START_CHECK: the
+--- game refused it, it is sent again with a fresh token and a fresh longest
+--- wait, up to MAX_TRIES sends.
+local function arm(q, step, gen, tries)
+    q.token = (q.token or 0) + 1
+    local token = q.token
+    q.waiting = type(step.command) ~= 'function' and {gen = gen, token = token} or nil
+    local sent_at = os.clock()
+    coroutine.schedule(function()
+        if q.token == token then run_next(gen) end
+    end, step.wait)
+    if not refusable(step.command) or tries >= MAX_TRIES then return end
+    coroutine.schedule(function()
+        if q.token ~= token or gen ~= windower._stealth_gen_queue then return end
+        local ok, CastTracker = pcall(require, 'shared/utils/core/cast_tracker')
+        if not (ok and CastTracker) then return end
+        local started
+        if step.command:find('^input /ma') then
+            started = CastTracker.started_since(sent_at)
+        else
+            started = CastTracker.acted_since(sent_at)
+        end
+        if started then return end
+        pcall(function() require('shared/utils/debug/trace_log').log('STEALTH', 'not started, sent again: %s', step.command) end)
+        send_command(step.command)
+        arm(q, step, gen, tries + 1)
+    end, START_CHECK)
+end
+
 run_next = function(gen)
     local q = queue()
     if gen ~= windower._stealth_gen_queue then return end
@@ -83,19 +124,14 @@ run_next = function(gen)
         q.waiting = nil
         return
     end
-    q.token = (q.token or 0) + 1
-    local token = q.token
     -- A function step (the Scholar chain) sends several actions of its own:
     -- only its longest wait ends it.
-    q.waiting = type(step.command) ~= 'function' and {gen = gen, token = token} or nil
     if type(step.command) == 'function' then
         pcall(step.command)
     else
         send_command(step.command)
     end
-    coroutine.schedule(function()
-        if q.token == token then run_next(gen) end
-    end, step.wait)
+    arm(q, step, gen, 1)
 end
 
 -- Action categories that end this character's action: 3 weapon skill,

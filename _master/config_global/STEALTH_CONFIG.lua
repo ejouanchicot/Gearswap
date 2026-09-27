@@ -33,5 +33,5 @@ return {
 
     -- Seconds after an action ends before the next one (the game refuses an
     -- action sent too soon after the previous one).
-    delay = 2.5,
+    delay = 3.0,
 }

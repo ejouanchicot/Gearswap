@@ -33,7 +33,7 @@ alone.
 | `//gs c stealth alert <s>` | Warn `<s>` seconds before a buff wears off (default 60, 0 = never) |
 | `//gs c stealth overwrite on` / `off` | `on`: cast again whatever time is left (default off) |
 | `//gs c stealth alerts on` / `off` | Wear-off warnings in chat (default on) |
-| `//gs c stealth delay <s>` | Pause after each action before the next one (default 2.5) |
+| `//gs c stealth delay <s>` | Pause after each action before the next one (default 3.0) |
 
 The keys are in `config/COMMON_KEYBINDS.lua`, so every job gets them (see
 [keybinds](keybinds.md#common-keys)). The five settings are saved in
@@ -58,7 +58,9 @@ inventory) and uses the first that works:
 
 Its actions go out one after the other: the next one leaves once the game
 says the previous one ended, plus the `delay` setting. If the game never says
-so, the next one leaves after the cast time plus `delay`.
+so, the next one leaves after the cast time plus `delay`. A spell or an item the game
+refused anyway (sent too soon) never starts: it is noticed 1.5 s later and sent
+again, up to three times.
 
 ## One Scholar for the whole group
 
@@ -127,7 +129,7 @@ return {
     alert_before = 60,     -- warn this many seconds before it wears off (0 = never)
     overwrite = false,     -- true: cast again whatever time is left
     alerts = true,         -- false: no wear-off warning
-    delay = 2.5,           -- seconds after an action ends before the next one
+    delay = 3.0,           -- seconds after an action ends before the next one
 }
 ```
 
@@ -142,6 +144,6 @@ character keeps this file.
 | Nothing happens on the other characters | The `send` addon must be loaded on every character, and they must be in your box group ([dual-box](dualbox.md)) |
 | Second press does nothing | A buff asked for less than 12 s ago counts as coming, even with `overwrite on`; press again after that |
 | The new cast does nothing while the old buff is up | Load the `Cancel` addon |
-| Actions are refused as too early | Raise `//gs c stealth delay` (3 or 3.5) |
+| Actions are refused as too early | They are sent again on their own; if it still happens, raise `//gs c stealth delay` (3.5 or 4) |
 | `no way of your own` with `self` | That character has no Jig, spell, ninjutsu or item right now; drop `self` to let a partner cast it |
 | Want to see every decision | `//gs c trace on`, press the key, then read the `STEALTH` lines of `<YourName>/trace.log` |

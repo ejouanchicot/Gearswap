@@ -19,7 +19,7 @@ StealthConfig.DEFAULTS = {
     alert_before = 60,
     overwrite = false,
     alerts = true,
-    delay = 2.5,
+    delay = 3.0,
 }
 
 --- Path of the character's settings file.

@@ -112,6 +112,8 @@ flowchart TD
 - A function step (the Scholar chain) sends several actions of its own, so it leaves `waiting` nil and ends only on its longest wait (`:87-89`).
 - `listen()` (`:118-121`) registers the `action` listener with `raw_register_event` once per load (`_G._stealth_action_listener`): a plain `register_event` from a job file runs GearSwap's `refresh_globals` and `equip_sets` on every action packet.
 
+
+Refused actions (2026-09-27): after a step that is a spell (`input /ma`) or an item (`input /item`), `arm()` checks `START_CHECK` (1.5 s) later that it started (`CastTracker.started_since` for a spell, `acted_since` for an item, `shared/utils/core/cast_tracker.lua`). Not started: the game refused it (sent too soon after the previous action), so it is sent again with a fresh token and a fresh longest wait, up to `MAX_TRIES` (3) sends; each resend writes a `STEALTH` trace line.
 ### Timers (`stealth_timers.lua`)
 
 - `start()` (`:162-175`), once per load: a raw `incoming chunk` listener for 0x063 with byte 5 = 9 (`_G._stealth_listener`), and a one-second loop stopped by `windower._stealth_gen` when a newer load starts.
@@ -168,7 +170,7 @@ None is exported to `_G`; every caller `require`s the module (inside `pcall` for
 | `alert_before` | 60 | Warn this many seconds before a buff wears off (0 = never) |
 | `overwrite` | false | Cast again whatever time is left |
 | `alerts` | true | Wear-off warnings in chat |
-| `delay` | 2.5 | Seconds after an action ends before the next one |
+| `delay` | 3.0 | Seconds after an action ends before the next one (2.5 until 2026-09-27: a RDM/WHM Invisible right after Sneak was refused) |
 
 `get()` (`:34-44`) reads the file once per load with `pcall(dofile, ...)` into `_G._stealth_settings`; a missing file or key, or a value of another type, keeps the default. `set()` (`:74-77`) changes the value in memory, then `save` (`:49-68`) rewrites only that key's `key = value,` line (or adds it before the closing brace), keeping comments and the file's line endings; a missing file gives `setting_unsaved` ("not saved (config/STEALTH_CONFIG.lua missing)").
 
