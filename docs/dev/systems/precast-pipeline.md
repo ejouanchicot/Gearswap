@@ -26,7 +26,7 @@ page names the function instead.
 | `shared/utils/debuff/doom_manager.lua` | 157 | Equips `sets.buff.Doom`, locks neck/ring1/ring2/waist, unlocks on removal or death |
 | `shared/config/DEBUFF_AUTOCURE_CONFIG.lua` | 70 | Auto-cure switches, cure item lists, test mode |
 | `shared/utils/precast/cooldown_checker.lua` | 143 | CooldownChecker: ability and spell recast checks with tolerance |
-| `_master/config_global/RECAST_CONFIG.lua` | 99 | Recast tolerance (2.0 s) and global `is_recast_ready` / `is_on_cooldown` |
+| `_master/config_global/RECAST_CONFIG.lua` | 113 | Recast tolerance (2.0 s) and global `is_recast_ready` / `is_on_cooldown` |
 | `shared/utils/precast/ability_helper.lua` | 394 | AbilityHelper: fire a JA, then re-send the spell/WS once it has landed (or abort, via `follow_up_or_abort`); at most one attempt per action |
 | `shared/utils/precast/ws_precast_handler.lua` | 103 | WSPrecastHandler: validation, TP gear, TP >= 1000 check on the game's own TP, TP gear application |
 | `shared/utils/precast/ws_validator.lua` | 46 | Thin wrapper over WeaponSkillManager (range + Amnesia) |
@@ -198,11 +198,21 @@ flowchart TD
 3. Reads seconds via `MessageFormatter.get_ability_recast_seconds`
    (`message_cooldowns.lua:68`, `windower.ffxi.get_ability_recasts()`),
    applies `RECAST_CONFIG.on_cooldown` (tolerance) and, if on cooldown, prints
-   `show_ability_cooldown` and sets `eventArgs.cancel`.
+   `show_ability_cooldown`, sets `eventArgs.cancel` and calls
+   `RecastAnnounce.on_refused` (`recast_announce.lua`, below).
 
 `check_spell_cooldown` (117-136) reads `windower.ffxi.get_spell_recasts()`
 (centiseconds), divides by 100 for the tolerance test and passes centiseconds to
-`show_spell_cooldown`.
+`show_spell_cooldown` (then `RecastAnnounce.on_refused` too).
+
+`RecastAnnounce` (`shared/utils/precast/recast_announce.lua`, since 2026-09-28)
+sends a party message for a refused action when the character's
+`RECAST_CONFIG.party_announce` lists it: the key is the spell / ability name or
+the shared recast's name from `res.ability_recasts` (every roll is recast 193,
+"Phantom Roll"); `true` sends `<key> ready in <recast=<key>>`, a string is sent
+as is (`input /p`, the game expands `<recast=...>`). One message per key per
+`party_announce_every` seconds (10 by default), timed in
+`windower._recast_announce_last`.
 
 The tolerance comes from `local RECAST_CONFIG = _G.RECAST_CONFIG or {}`, captured
 once when the module is first executed (28). With `ModuleCache` installed

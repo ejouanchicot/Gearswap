@@ -37,6 +37,20 @@ RECAST_CONFIG.tolerance = 2.0
 --- If false, reverts to strict recast == 0 checks
 RECAST_CONFIG.enabled = true
 
+--- Party message when an ability or spell is refused on recast. Key = its
+--- name, or the name of a recast several share ('Phantom Roll' covers every
+--- roll). Value = the text sent with /p, where the game replaces
+--- <recast=Name> with the time left; true = "<key> ready in <recast=<key>>".
+--- Examples:
+---   ['Phantom Roll'] = true,
+---   ['Phantom Roll'] = 'Roll ready in <recast=Phantom Roll>',
+---   ['Provoke'] = 'Provoke in <recast=Provoke>',
+RECAST_CONFIG.party_announce = {
+}
+
+--- Seconds before the same message can be sent again (anti-spam)
+RECAST_CONFIG.party_announce_every = 10
+
 ---============================================================================
 --- HELPER FUNCTIONS
 ---============================================================================

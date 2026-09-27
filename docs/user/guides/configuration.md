@@ -13,7 +13,7 @@ see [installation](../getting-started/installation.md)). After an edit,
 | `UI_COLOR_CONFIG.lua` | HUD colours of values (elements, modes...) |
 | `ui_settings.lua` | HUD position and toggles, written by `//gs c ui ...` |
 | `LOCKSTYLE_CONFIG.lua` | `initial_load_delay` = 8.0 s between a load and the lockstyle |
-| `RECAST_CONFIG.lua` | `tolerance` = 2.0 s: an ability or spell whose recast is at or under this counts as ready |
+| `RECAST_CONFIG.lua` | `tolerance` = 2.0 s: an ability or spell whose recast is at or under this counts as ready. `party_announce`: a party message when an action is refused on recast, e.g. `['Phantom Roll'] = true` sends `/p Phantom Roll ready in <recast=Phantom Roll>` (the game shows the time left); a text of your own works too. One message per 10 s at most (`party_announce_every`) |
 | `message_modes.lua` | Chat detail for spells / abilities / weaponskills, written by `jamsg`, `spellmsg`, `wsmsg` |
 | `CRAFT_CONFIG.lua` | Lockstyle numbers for `craft` (19) and `fish` (17) |
 | `DUALBOX_CONFIG.lua` | Role, partner, group ([dual-box](dualbox.md)) |

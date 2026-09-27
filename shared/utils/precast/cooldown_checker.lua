@@ -81,6 +81,13 @@ local MULTI_CHARGE_ABILITIES = {
     ["Tabula Rasa"] = true,
 }
 
+--- Party message for a refused action, when the character's RECAST_CONFIG
+--- asks for one (recast_announce.lua).
+local function announce(spell, recast_id)
+    local ok, RecastAnnounce = pcall(require, 'shared/utils/precast/recast_announce')
+    if ok and RecastAnnounce then pcall(RecastAnnounce.on_refused, spell, recast_id) end
+end
+
 -- Manual recast_id overrides (GearSwap data sometimes incorrect; currently none needed)
 local MANUAL_RECAST_IDS = {}
 
@@ -108,6 +115,7 @@ function CooldownChecker.check_ability_cooldown(spell, eventArgs)
         local job_tag = formatter.get_job_tag()
         formatter.show_ability_cooldown(spell.name, remaining_seconds, job_tag)
         eventArgs.cancel = true
+        announce(spell, recast_id)
     end
 end
 
@@ -131,6 +139,7 @@ function CooldownChecker.check_spell_cooldown(spell, eventArgs)
             local job_tag = formatter.get_job_tag()
             formatter.show_spell_cooldown(spell.name, remaining_centiseconds, job_tag)
             eventArgs.cancel = true
+            announce(spell, nil)
         end
     end
 end
