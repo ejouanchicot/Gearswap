@@ -48,9 +48,12 @@ local function hold_during_action(newStatus, eventArgs)
     if newStatus ~= 'Idle' and newStatus ~= 'Engaged' then return end
     if not (type(midaction) == 'function' and midaction()) then return end
     eventArgs.handled = true
+    -- `gs c update` rather than handle_equipping_gear: equip() only fills
+    -- GearSwap's list, sent at the end of an event, and a scheduled function
+    -- runs outside one (the next event would empty the list unsent).
     coroutine.schedule(function()
         if midaction() or not player or player.status ~= newStatus then return end
-        if handle_equipping_gear then handle_equipping_gear(player.status) end
+        send_command('gs c update')
     end, STATUS_FALLBACK)
 end
 
