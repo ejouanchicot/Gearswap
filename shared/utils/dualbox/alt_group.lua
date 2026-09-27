@@ -174,6 +174,9 @@ local function set_follow(alts, leader)
     else
         to_alts(alts, 'sm follow off')
     end
+    -- Every other box learns the new leader: without the automation
+    -- addon's reports, its own record would still name the old one
+    to_alts(AltGroup.get_alts(), 'gs c altlead ' .. (leader or 'off'))
     group_state().follow = leader or false
     changed()
     if state_messages() then state_messages().show_follow(table.concat(alts, ', '), leader) end
@@ -223,6 +226,18 @@ local function follow(alts, target)
     else
         take_lead(alts)
     end
+end
+
+--- //gs c altlead <leader|off>, sent by the box that changed the follow: the
+--- record this box keeps (group_state().follow) names the new leader.
+--- @param args table Words after "altlead"
+--- @return boolean handled
+function AltGroup.receive_lead(args)
+    local leader = args[1]
+    if not leader then return true end
+    group_state().follow = leader:lower() ~= 'off' and leader or false
+    changed()
+    return true
 end
 
 ---============================================================================
@@ -445,6 +460,9 @@ function AltGroup.route(cmd, args)
     end
     if cmd == 'altmirror' then
         return AltGroup.receive_mirror(args)
+    end
+    if cmd == 'altlead' then
+        return AltGroup.receive_lead(args)
     end
     local DualBoxRole = require('shared/utils/dualbox/dualbox_role')
     if cmd == 'main' then

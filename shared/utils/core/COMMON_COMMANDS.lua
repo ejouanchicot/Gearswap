@@ -496,7 +496,7 @@ function CommonCommands.handle_command(command, job_name, ...)
 
     -- Box group: orders to the alts (alts), role switch (main / setalt),
     -- real state reported by the automation addon (altreport, altmirror)
-    if cmd == 'alts' or cmd == 'main' or cmd == 'setalt' or cmd == 'altreport' or cmd == 'altmirror' then
+    if cmd == 'alts' or cmd == 'main' or cmd == 'setalt' or cmd == 'altreport' or cmd == 'altmirror' or cmd == 'altlead' then
         return require('shared/utils/dualbox/alt_group').route(cmd, args)
     end
 
@@ -723,7 +723,7 @@ function CommonCommands.is_common_command(command)
         cmd == 'lagdebug' or cmd == 'ldb' or
         cmd == 'jamsg' or cmd == 'spellmsg' or cmd == 'wsmsg' or cmd == 'info' or cmd == 'debugmsg' or
         cmd == 'testmsg' or cmd == 'msgtest' or cmd == 'msgtests' or
-        cmd == 'memcheck' or cmd == 'mem' or cmd == 'sortie' or cmd == 'alts' or cmd == 'main' or cmd == 'setalt' or cmd == 'altreport' or cmd == 'altmirror' or cmd == 'rollshow' or cmd == 'stealth' or cmd == 'tb' or cmd == 'trace' or
+        cmd == 'memcheck' or cmd == 'mem' or cmd == 'sortie' or cmd == 'alts' or cmd == 'main' or cmd == 'setalt' or cmd == 'altreport' or cmd == 'altmirror' or cmd == 'altlead' or cmd == 'rollshow' or cmd == 'stealth' or cmd == 'tb' or cmd == 'trace' or
         cmd == 'combatmode' or cmd == 'keyconflicts' or cmd == 'kc' or cmd == 'commands' or cmd == 'cmds' or cmd == 'help' or cmd == '?' then
         return true
     end
