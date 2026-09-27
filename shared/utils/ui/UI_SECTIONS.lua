@@ -220,6 +220,35 @@ end
 --- COMPLETE UI RENDERING
 ---============================================================================
 
+--- Rows as the HUD draws them. A common entry with no state (console
+--- command, partner roll) never gets a row, even when it shares a key with a
+--- job state. A row whose key is in conflict right now (two entries apply on
+--- it, KeybindManager / key_conflicts.lua) is a copy flagged `conflict`: the
+--- formatter draws its key in the conflict color. The keys themselves are
+--- left as configured; the chat names the entry that is bound.
+--- @param keybinds table Active keybinds, in bind order
+--- @return table The same list when nothing changes, else a new list
+local function hud_rows(keybinds)
+    local conflict = {}
+    local ok, KeybindManager = pcall(require, 'shared/utils/keybinds/keybind_manager')
+    if ok and KeybindManager and KeybindManager.conflict_keys then conflict = KeybindManager.conflict_keys() end
+    local rows, changed = {}, false
+    for _, bind in ipairs(keybinds) do
+        if bind._common and not bind.state and not bind.section then
+            changed = true
+        elseif bind.key and conflict[bind.key] then
+            local copy = {}
+            for k, v in pairs(bind) do copy[k] = v end
+            copy.conflict = true
+            rows[#rows + 1] = copy
+            changed = true
+        else
+            rows[#rows + 1] = bind
+        end
+    end
+    return changed and rows or keybinds
+end
+
 --- The rows a section will actually draw. Binds with no state (the common
 --- keys, "Alts: follow me (toggle)"...) are in the job's list but in no
 --- section: counting them sized the label column for a row never shown.
@@ -270,7 +299,7 @@ local SECTION_RENDERERS = {
 --- @return string Complete rendered UI text
 function UISections.render_complete_ui(display_structure, keybinds, job, get_state_value_func, get_all_values_func)
     -- Rows the player hid (layout.hide_rows) take no room in the widths either
-    keybinds = UIStyle.ordered_rows(UIStyle.visible_rows(keybinds))
+    keybinds = UIStyle.ordered_rows(UIStyle.visible_rows(hud_rows(keybinds)))
     local shown = shown_rows(display_structure, keybinds)
 
     -- Calculate optimal column widths and EXACT content width using ALL possible values

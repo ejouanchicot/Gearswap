@@ -270,7 +270,9 @@ function UIFormatter.format_keybind_line(bind, key_column_width, function_column
     local formatted_desc = string.format("%-" .. function_column_width .. "s", bind.desc)
 
     local desc_color = UIStyle.color('description')
-    local key_color = UIStyle.color('key', desc_color)
+    -- A key a partner or subjob key covers right now (UI_SECTIONS hud_rows)
+    local key_color = bind.conflict and UIStyle.color('conflict')
+        or UIStyle.color('key', desc_color)
     local value_color = UIStyle.color('value', ColorSystem.get_value_color(value, bind.desc))
 
     -- Pad value to fixed width (if value_column_width provided)

@@ -51,12 +51,14 @@ local DEFAULT_COLORS = {
     column_key = {100, 180, 255},
     column_function = {120, 200, 255},
     column_current = {140, 220, 255},
+    conflict = {255, 80, 80},  -- key a partner / subjob key covers right now
 }
 
 local COLOR_NAMES = {
     title = true, section_title = true, key = true, description = true,
     value = true, legend = true, separator = true, footer = true,
     column_key = true, column_function = true, column_current = true,
+    conflict = true,
 }
 
 --- Historical legend: the four key modifiers.

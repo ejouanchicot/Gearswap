@@ -434,6 +434,7 @@ local COMMANDS_HELP = {
             {'//gs c mount', '', 'Toggle mount (random owned)'},
             {'//gs c tb ', '<key> <what>', 'Temporary key (tb help)'},
             {'//gs c combatmode ', 'show | hide', 'Weapon lock on this job'},
+            {'//gs c keyconflicts | kc', '', 'Keys two actions can share'},
         }},
         {title = 'EQUIPMENT & INVENTORY', rows = {
             {'//gs c wardrobeaudit | wa', '', 'Audit wardrobe across jobs'},

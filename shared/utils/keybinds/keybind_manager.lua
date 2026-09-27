@@ -36,14 +36,15 @@
 ---
 --- @file    shared/utils/keybinds/keybind_manager.lua
 --- @author  ejouanchicot
---- @version 1.1
---- @date    Created: 2026-09-24 | Updated: 2026-09-26 (weapon field)
+--- @version 1.2
+--- @date    Created: 2026-09-24 | Updated: 2026-09-27 (key conflicts)
 ---============================================================================
 
 local KeybindManager = {}
 
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 local KeyValidator = require('shared/utils/keybinds/key_validator')
+local KeyConflicts = require('shared/utils/keybinds/key_conflicts')
 
 --- Keys laid down by this manager, key -> command. Kept on `windower`: a
 --- job file's own memory dies with its sandbox, the Windower binds do not.
@@ -151,12 +152,54 @@ end
 --- OPERATIONS (ctx = {job, module, applied, api})
 ---============================================================================
 
+--- The entries that apply now, minus the common ones that give way to a
+--- job or custom key applying on the same key.
+--- @return table active, table yielded
 local function get_active_binds(ctx)
-    local active, memo = {}, {}
+    local applying, memo, own_keys = {}, {}, {}
     for _, bind in ipairs(ctx.module.binds or {}) do
-        if applies(bind, memo) then active[#active + 1] = bind end
+        if applies(bind, memo) then
+            applying[#applying + 1] = bind
+            if not bind._common and bind.key then own_keys[bind.key] = true end
+        end
     end
-    return active
+    local active, yielded = {}, {}
+    for _, bind in ipairs(applying) do
+        if KeyConflicts.yields(bind) and own_keys[bind.key] then
+            yielded[#yielded + 1] = bind
+        else
+            active[#active + 1] = bind
+        end
+    end
+    return active, yielded
+end
+
+--- Tell the conflicts of this pass (once per load each) and keep their keys
+--- for the HUD, which draws them in the conflict color.
+--- @return boolean True when the set of keys in conflict changed
+local function note_conflicts(ctx, active, yielded)
+    local list = KeyConflicts.live(active, yielded)
+    ctx.conflicts_told = ctx.conflicts_told or {}
+    KeyConflicts.report(ctx.job, list, ctx.conflicts_told)
+    local keys, before, changed = {}, ctx.module._conflict_keys or {}, false
+    for _, c in ipairs(list) do
+        keys[c.key] = true
+        if not before[c.key] then changed = true end
+    end
+    for key in pairs(before) do
+        if not keys[key] then changed = true end
+    end
+    ctx.module._conflict_keys = keys
+    return changed
+end
+
+--- Redraw the HUD now. KeybindUI.update() redraws only when a Mote state
+--- changed, and a key conflict is not a state: without this the red key
+--- appeared at the next state change.
+local function redraw_hud()
+    if not rawget(_G, 'keybind_ui_display') then return end
+    local ok, Display = pcall(require, 'shared/utils/ui/ui_display')
+    if ok and Display and Display.update_display then pcall(Display.update_display) end
 end
 
 --- Unbind what is down but no longer wanted. The keys about to be bound are
@@ -204,12 +247,13 @@ local function bind_all(ctx, silent)
         MessageFormatter.show_no_binds_error(ctx.job)
         return false
     end
-    local active = get_active_binds(ctx)
+    local active, yielded = get_active_binds(ctx)
     if not silent then
-        for _, problem in ipairs(KeyValidator.check(ctx.module.binds, active)) do
+        for _, problem in ipairs(KeyValidator.check(ctx.module.binds)) do
             MessageFormatter.show_warning(ctx.job .. ' keybinds: ' .. problem)
         end
     end
+    if note_conflicts(ctx, active, yielded) then redraw_hud() end
     local desired = key_map(active)
     clear_unwanted(ctx, desired)
     local bound = lay_down(active, desired)
@@ -230,7 +274,9 @@ end
 --- can come and go while the job stays the same.
 --- @return number Commands sent
 local function refresh(ctx)
-    local desired = key_map(get_active_binds(ctx))
+    local active, yielded = get_active_binds(ctx)
+    local conflicts_moved = note_conflicts(ctx, active, yielded)
+    local desired = key_map(active)
     local sent = 0
     for key in pairs(ctx.applied) do
         -- A key that stays, with another command, is only re-bound below:
@@ -249,6 +295,9 @@ local function refresh(ctx)
         end
     end
     ctx.applied = desired
+    -- A partner's job or a Combat Mode change moved keys or conflicts: the
+    -- HUD rows and their red keys follow at once
+    if sent > 0 or conflicts_moved then redraw_hud() end
     return sent
 end
 
@@ -355,6 +404,24 @@ function KeybindManager.create(job, module)
     end
     watch_own_weapon(module.binds)
     return module
+end
+
+--- Keys in conflict at the last bind_all / refresh of the job loaded now
+--- (shared/utils/keybinds/key_conflicts.lua), for the HUD.
+--- @return table Set: key -> true
+function KeybindManager.conflict_keys()
+    local module = rawget(_G, '_keybind_active')
+    return module and module._conflict_keys or {}
+end
+
+--- //gs c keyconflicts: every conflict the loaded job's keys can run into,
+--- over all subjobs and partner jobs.
+--- @return boolean False when no job keys are loaded
+function KeybindManager.show_possible_conflicts()
+    local module = rawget(_G, '_keybind_active')
+    if not (module and module.binds) then return false end
+    KeyConflicts.show_possible(player and player.main_job or '?', module.binds)
+    return true
 end
 
 --- Refresh the keys of the job loaded now (see the `alt` field, Combat

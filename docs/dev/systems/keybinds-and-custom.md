@@ -174,13 +174,30 @@ the file of the character whose folder GearSwap loaded. No file, no common keys.
 custom key, flags it `_common`, and marks the list (`binds._common_merged`) so a
 second call does nothing.
 
-Order in the final list: job keys, then `_CUSTOM` keys, then common keys. A common key
-never replaces a job or custom key: it is skipped. Common entries do not block each
-other (2026-09-26): several may share a key under different `subjob` / `alt` /
-`visible` conditions, and when two apply at once the later one in the file wins
-(`key_map` keeps the last). An entry with `override = true` is added even over a job or
-custom key and wins over it while it applies. The key validator reports neither two
-`_common` entries sharing a key nor an override laid over a job key. Gab's and Blody's files (`_master/Gabvanstronger|Blodykiller/config_global/
+Order in the final list: job keys, then `_CUSTOM` keys, then common keys. Since
+2026-09-27 every common entry is appended (`merge_into` no longer skips a key the job
+uses); `get_active_binds` decides at each pass: a common entry without `override` gives
+way to a job or custom entry that applies on the same key now (so a common key only
+shadowed by a `/WAR` job key is still bound under `/DRK`), an entry with `override =
+true` wins over it while it applies. Among entries that apply at once, the later one in
+the list is bound (`key_map` keeps the last).
+
+Conflicts are reported, never resolved (`shared/utils/keybinds/key_conflicts.lua`). Kinds:
+job (job file, `_CUSTOM`, Combat Mode), own (common key without `alt`), partner (common
+key with `alt`). job/job, job/own, job/partner and own/partner count; own/own (a common
+key and its subjob version) and partner/partner (layers of one partner's keys) are
+layers on purpose, and two entries with the same command lose nothing. `bind_all` and
+`refresh` print one warning per conflict per load (`<JOB> keybinds: key conflict on
+CTRL+NUMPAD4 - "<bound>" is bound, "<lost>" does nothing`) and keep the keys in
+`module._conflict_keys` (`KeybindManager.conflict_keys()`); the HUD draws those keys in
+`colors.conflict` (`hud_rows` in `UI_SECTIONS.lua`). `bind_all` and `refresh` redraw the HUD
+through `Display.update_display()` when the keys in conflict change or keys moved (a
+partner reporting a new job): `KeybindUI.update()` would skip it, it redraws only when a
+Mote state changed. `//gs c keyconflicts` (`kc`) lists every
+conflict the loaded job can meet, over all subjobs and partner jobs (`possible()`: pairs
+on one key whose subjob, weapon and partner conditions can hold together; `visible`
+conditions are assumed true and shown as "when shown"). The key validator no longer
+checks duplicates. Gab's and Blody's files (`_master/Gabvanstronger|Blodykiller/config_global/
 COMMON_KEYBINDS.lua`, converted from BindManager with `raw = true`) rely on it: file
 order follows BindManager's priority (startup, login.all, login.characters, sub_jobs,
 alt-binds). Current common keys (Tetsouo and
