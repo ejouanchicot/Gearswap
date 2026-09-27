@@ -24,6 +24,55 @@ a mode changes. The rows come from the job's keybind file, your
 | `ui save` | `ui s` | Save the position |
 | `ui help` | `ui ?` | Help |
 
+## Order of the sections and rows
+
+Each row sits in a section (spells, enhancing, abilities, weapons, modes). The
+order of the sections, and of the rows inside each section, can be set for
+every job and, on top of that, per job:
+
+| Where | What |
+|---|---|
+| `UI_CONFIG.lua`, `layout.section_order` / `layout.row_order` | The default of every job |
+| `config/<job>/<JOB>_HUD.lua`, `section_order` / `row_order` | That job only: a list that is not empty replaces the default on that job |
+
+Each `<JOB>_HUD.lua` explains itself at the top and lists the states of its
+job (the names to use). Row names are the states as in the `_KEYBINDS` file,
+or keys; case does not matter (`abyproc` = `AbyProc`). The rows named come
+first in their section; the others follow in the keybind file's order.
+
+| Command | Writes |
+|---|---|
+| `ui order weapons modes spells` | Section order of the job played now (its `_HUD.lua`) |
+| `ui roworder TreasureMode HybridMode` | Row order of the job played now |
+| `ui order all ...` / `ui roworder all ...` | The default of every job (`UI_CONFIG.lua`) |
+| `ui order THF ...` / `ui roworder THF ...` | That job, from any job |
+| `ui order reset` / `ui roworder reset` (`all reset`, `THF reset`) | Empties that list: back to the default |
+| `ui style` | Shows the orders in force (this job and `all`) |
+
+A command puts the names typed first and keeps the other names of the list
+after them, in their order: `ui roworder AbyProc` moves AbyProc to the top
+without losing the rest.
+
+## Key conflicts
+
+When two actions can sit on one key at the same time (a job key and a
+partner's roll, two job keys...), the keys are not changed but:
+
+- a `KEYS` block in chat says which one is bound and which one does nothing,
+  when the job loads and when the partner changes job;
+- the key of that row turns red in the HUD (`ui color conflict <r> <g> <b>`);
+- `//gs c kc` (`keyconflicts`) lists every conflict the job can meet, on
+  every subjob and partner job.
+
+## Look of the HUD and the chat
+
+`//gs c ui help` lists every look option (compact layout, gaps, margins,
+colours, bullet, key style...) and `//gs c ui style` shows the current
+values. They are saved in `UI_CONFIG.lua`. The chat options
+(`ui separators on|off`, `ui sepchar`, `ui sepcolor`, `ui chatwidth`,
+`ui jobtag`) apply to every chat message: with `separators off`, no `=====`
+line is left anywhere, and every block follows the chat width.
+
 ## Position
 
 Drag the box with the mouse, then `//gs c ui save`: a drag alone is not saved,

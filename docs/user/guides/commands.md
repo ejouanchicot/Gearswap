@@ -22,6 +22,9 @@ below, then the job's commands, then Mote-Include's (`cycle`, `set`,
 | `ui header` / `legend` / `columns` / `footer` (`h` `l` `c` `f`) | Show / hide that part |
 | `ui font <name>` | Font, e.g. `Consolas` |
 | `ui theme <preset>` / `ui theme list` / `ui theme toggle` / `ui theme <r> <g> <b> <a>` | Background (`bg` and `background` work too) |
+| `ui order [all\|JOB] <sections>` / `ui roworder [all\|JOB] <states>` | Section / row order, this job by default ([HUD](../features/ui.md#order-of-the-sections-and-rows)) |
+| `ui style` | Current look, orders included |
+| `ui rollstyle` / `rollorder` / `rollremote` / `roll...` | COR roll messages ([COR](../jobs/cor/states.md#roll-messages)) |
 | `ui help` | These options |
 
 ## Modes
@@ -123,6 +126,9 @@ See [Sneak and Invisible](stealth.md).
 [keybinds](keybinds.md#temporary-keys-gs-c-tb).
 
 ## Information and diagnostics
+
+`keyconflicts` (`kc`): every key conflict this job can meet, on every subjob
+and partner job ([HUD](../features/ui.md#key-conflicts)).
 
 | Command | Effect |
 |---|---|

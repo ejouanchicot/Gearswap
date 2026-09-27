@@ -22,6 +22,7 @@ Two helpers sit beside them: `key_validator.lua` names keys that cannot work, an
 
 | Path | Role |
 |---|---|
+| `shared/utils/keybinds/key_conflicts.lua` | Two actions on one key: live conflicts (chat block, red key in the HUD) and every possible one over subjobs and partner jobs (`//gs c kc`) |
 | `shared/utils/keybinds/keybind_manager.lua` | Factory `KeybindManager.create(job, module)`, `KeybindManager.bind_line(bind)` |
 | `shared/utils/keybinds/key_validator.lua` | `KeyValidator.check(binds, active)`, `KeyValidator.is_valid_key(key)` |
 | `shared/utils/keybinds/common_keybinds.lua` | `CommonKeybinds.load()`, `CommonKeybinds.merge_into(binds)` |

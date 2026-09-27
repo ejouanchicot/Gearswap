@@ -20,6 +20,7 @@ see [installation](../getting-started/installation.md)). After an edit,
 | `REGION_CONFIG.lua` | Your region (US / EU / JP): some chat colour codes differ by region |
 | `WARDROBE_CONFIG.lua` | Optional: bags used by `//gs c wo` |
 | `STEALTH_CONFIG.lua` | Sneak / Invisible settings (`refresh_below` 180 s, `alert_before` 60 s, `overwrite`, `alerts`, `delay` 2.5 s), also written by `//gs c stealth refresh / alert / ...` and kept on a re-clone ([Sneak and Invisible](stealth.md)) |
+| `combat_mode.lua` | Optional: on which jobs Combat Mode shows and its key; written by `//gs c combatmode` ([keybinds](keybinds.md#combat-mode-every-job)) |
 | `alt/` | Alt commands, main character only ([dual-box](dualbox.md)) |
 | `<job>/` | One folder per job, below |
 
@@ -34,6 +35,7 @@ Per job, `<YourName>/config/<job>/`:
 | `<JOB>_MACROBOOK.lua` | Macro book and page |
 | `<JOB>_TP_CONFIG.lua` | TP bonus pieces for weaponskills ([tp-bonus](../jobs/war/tp-bonus.md)) |
 | `<JOB>_REFILL.lua` | Consumables for `//gs c rf` (you create it, see below) |
+| `<JOB>_HUD.lua` | This job's HUD section and row order, empty by default; written by `//gs c ui order` / `roworder` ([HUD](../features/ui.md#order-of-the-sections-and-rows)) |
 | others | Job-specific: `BLM_MP_CONFIG`, `BRD_SONG_CONFIG`, `WHM_CURE_CONFIG`, `RDM_SABOTEUR_CONFIG`... (see the job's page) |
 
 ## Modes (`<JOB>_STATES.lua`)

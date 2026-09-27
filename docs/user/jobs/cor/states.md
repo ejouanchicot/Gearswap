@@ -50,6 +50,27 @@ macro (debuffs, recast, roll gear, Luzaf ring).
   the next Double-Up. The job bonus counts your party's main jobs and the dual-box
   partner's job.
 
+## Roll messages
+
+The roll result can be shown in three styles, each detail on or off and in
+your order (saved in `UI_CONFIG.lua`, `//gs c ui help`):
+
+| Command | Effect |
+|---|---|
+| `//gs c ui rollstyle full\|compact\|line` | Framed block, two lines, or one line |
+| `//gs c ui rollorder bust party lucky 11` | Order of the details (those left out follow) |
+| `//gs c ui rolllucky` / `rollparty` / `rollbust` / `roll11` `[on\|off]` | Each detail |
+| `//gs c ui rollremote same\|full\|compact\|line\|off` | A roll your COR alt sends to this box |
+
+`L4 U8` = lucky / unlucky numbers (green / red), `PT 3/4` = party members hit
+out of the party, `Bust 12.5%` in the colour of its risk, `[CC]` = Crooked
+Cards. The one-line style leaves the bust risk out. Every line follows the chat
+width.
+
+When your COR is the alt, each roll result and bust is also shown on the main,
+tagged with the COR's name (`[Kaories COR]`), as long as the main runs this
+GearSwap.
+
 ## Files
 
 `<Char>/config/cor/`: `COR_STATES.lua`, `COR_KEYBINDS.lua`, `COR_CUSTOM.lua` (your own

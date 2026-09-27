@@ -97,8 +97,13 @@ The template ships the six keys of the layout above (`#numpad0`, `!numpad7-9`,
 { key = "!numpad3", command = "/p Ready!", desc = "Party: ready" },
 ```
 
-A common key whose key is already used by the job (or by your custom modes)
-is skipped on that job.
+A common key gives way to a job key (or one of your custom modes) on the same
+key, but only while that job key applies: a job key limited to `/WAR` leaves
+the common key working under `/DRK`. An entry with `override = true` (subjob
+and partner layers) wins over the job key instead. Either way nothing is lost
+silently: a `KEYS` block in chat names the key that works and the one that
+does nothing, the key turns red in the HUD, and `//gs c kc` lists every
+conflict the job can meet on every subjob ([HUD](../features/ui.md#key-conflicts)).
 
 ## Your own modes (`<JOB>_CUSTOM.lua`)
 

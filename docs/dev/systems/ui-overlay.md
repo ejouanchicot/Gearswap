@@ -8,6 +8,7 @@ Scope of this page: everything under `shared/utils/ui/`, the settings store `sha
 
 | Path | Lines | Role |
 |---|---|---|
+| `shared/utils/ui/hud_job_config.lua` | 208 | A job's own HUD settings, `<Character>/config/<job>/<JOB>_HUD.lua`: section and row order that replace the UI_CONFIG defaults on that job; `render()` writes the file (explanation, the job's states, both lists) |
 | `shared/utils/ui/ui_style_commands.lua` | 255 | In-game look commands (`//gs c ui gap 3`, `compact`, `color`...): check, apply live, save |
 | `shared/utils/ui/ui_config_writer.lua` | 160 | Saves one look option into `UI_CONFIG.lua` by rewriting its line only |
 | `shared/utils/ui/ui_style.lua` | 350 | Player look options from `UI_CONFIG.lua` (`layout`, `colors`, `chat`): checked, cached per load, one warning per wrong value |

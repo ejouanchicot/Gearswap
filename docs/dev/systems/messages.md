@@ -20,6 +20,7 @@ Line counts and figures on this page were re-measured on 2026-09-25.
 
 | Path | Lines | Role |
 |---|---|---|
+| `shared/utils/messages/chat_separators.lua` | 145 | The player's separator options (on/off, character, colour, width) on every chat line; wraps the sandbox `add_to_chat` from `message_core.lua` |
 | `shared/utils/messages/message_formatter.lua` | 503 | Facade: 294 lazy wrappers `MessageFormatter.show_x -> <module>.show_y`, the `COLORS` proxy, plus `show_debug` |
 | `shared/utils/messages/message_core.lua` | 151 | Colour-code builder, job tag, fixed separator of `SEPARATOR_WIDTH` = 69 characters, direct-output helpers (`info/success/error/warning/raw/...`) |
 | `shared/utils/messages/message_colors.lua` | 166 | Named FFXI chat colour codes (`SPELL`, `JA`, `ERROR`, ...), region-dependent orange, and a `//gs c trace` probe of the orange picked |

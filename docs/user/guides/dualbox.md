@@ -69,7 +69,7 @@ Work from either box: they go to every other member of `group`.
 
 | Command | Default key | Effect |
 |---|---|---|
-| `alts follow` | Alt+Numpad7 | Alts follow you; again to stop |
+| `alts follow` | Alt+Numpad7 | You lead: you stop following anyone and every alt follows you; again (all already follow you) to stop |
 | `alts follow <name>` / `alts follow off` | | Follow that character / stop |
 | `alts toggle` | Alt+Numpad8 | Automation on / off |
 | `alts on` / `alts off` | | Automation on / off |
@@ -77,10 +77,14 @@ Work from either box: they go to every other member of `group`.
 | `alts do <console command>` | | Any console command, on every alt |
 | `alts window` | | Show / hide the alt window (main only) |
 
-The state shown (and used by `toggle` and `follow`) is the last order sent
-from this box; an order sent another way (a macro, the alt's own keys) is not
-seen, so a toggle can need one extra press. The keys are in
-`COMMON_KEYBINDS.lua` ([keybinds](keybinds.md#common-keys)).
+Pressing follow on another box than the leader turns the follow around in one
+press: that box stops following and the others follow it. The boxes know who
+follows whom from the automation addon's reports when its StateReport
+addition is installed (it also shows the real state in the alt window);
+without it, every box tells the others the new leader, which is enough as long
+as the follow goes through these keys or `//gs c alts`. An order typed
+straight to the addon (`//sm follow ...`) is only seen with the addition. The
+keys are in `COMMON_KEYBINDS.lua` ([keybinds](keybinds.md#common-keys)).
 
 ## Swapping roles (`//gs c main`)
 
