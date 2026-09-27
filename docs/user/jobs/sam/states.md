@@ -1,7 +1,8 @@
 # SAM — modes and keys
 
 Samurai has two keyed modes (weapon and hybrid). Most of what SAM does
-happens on its own: Seigan before Third Eye, Third Eye before a weaponskill.
+happens on its own: Third Eye before a weaponskill, and Seigan before Third Eye
+when Seigan is your chosen stance.
 
 Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each
 mode's current value; this page says what each value does. `#numpad0` (Auto
@@ -19,12 +20,18 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 
 | Mode | Values | What it does |
 |---|---|---|
+| `Stance` | **Hasso**, Seigan | The stance the automation keeps. Set by `//gs c hasso` / `//gs c seigan` and by any Hasso or Seigan you use. Hasso: Third Eye goes out alone, Hasso is never replaced. Seigan: Seigan goes out before Third Eye when it is down. |
 | `FastCast` | 0 to 80 in steps of 10, default **0** | Your Fast Cast %, used only by the midcast watchdog to know how long a cast takes. Change the default in `SAM_STATES.lua`, or step it with `//gs c cycle FastCast`. |
 
 ## Commands
 
-SAM has no job command of its own. The common commands work
-(see [commands](../../guides/commands.md)); two are useful with a subjob:
+| Command | What it does |
+|---|---|
+| `//gs c hasso` | Uses Hasso and makes it the chosen stance (put it in a macro). |
+| `//gs c seigan` | Uses Seigan and makes it the chosen stance. |
+
+The common commands work too (see [commands](../../guides/commands.md)); two
+are useful with a subjob:
 
 | Command | What it does |
 |---|---|
@@ -33,11 +40,14 @@ SAM has no job command of its own. The common commands work
 
 ## Notes
 
-- **Third Eye with Seigan down**: the first Third Eye press is replaced by
-  Seigan, then Third Eye 1 s later. The next time, Third Eye goes out alone
-  (the behaviour alternates).
+- **Third Eye, Seigan stance, Seigan down**: the first Third Eye press is
+  replaced by Seigan, then Third Eye 1 s later. The next time, Third Eye goes
+  out alone (the behaviour alternates). With the Hasso stance, Third Eye always
+  goes out alone.
 - **Weaponskill with Third Eye ready**: the weaponskill is held back, Third Eye
-  goes out first, then the weaponskill is sent again.
+  goes out first, then the weaponskill is sent again once Third Eye is up (or
+  refused). Each action has its own precast: Third Eye gear, then weaponskill
+  gear.
 - **Seigan up while engaged**: `sets.thirdeye` in PDT, `sets.seigan` in Normal.
 - **Idle**: `sets.idle.Weak` below 50% HP, `sets.idle.Regen` below 80%.
 - Sekkanoki and Meikyo Shisui add `sets.buff.Sekkanoki` /

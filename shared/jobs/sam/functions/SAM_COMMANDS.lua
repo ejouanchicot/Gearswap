@@ -6,7 +6,7 @@
 ---   • UI commands (toggle, update, reload UI)
 ---   • Watchdog, dual-box, debugmidcast and cyclestate commands
 ---   • State change UI synchronization
----   SAM has no job-specific command.
+---   • Stance commands: hasso, seigan (the stance the automation keeps)
 ---
 ---   @file    shared/jobs/sam/functions/SAM_COMMANDS.lua
 ---   @author  ejouanchicot
@@ -119,6 +119,17 @@ function job_self_command(cmdParams, eventArgs)
         -- Confirmation message
         MessageCommands.show_debugmidcast_toggled('SAM', _G.MidcastManagerDebugState)
 
+        eventArgs.handled = true
+        return
+    end
+
+    -- ══════════════════════════════════════════════════════════════════════════
+    -- STANCE (hasso / seigan): choose the stance the automation keeps, use it
+    -- ══════════════════════════════════════════════════════════════════════════
+    if command == 'hasso' or command == 'seigan' then
+        local stance = command == 'hasso' and 'Hasso' or 'Seigan'
+        if state.Stance then state.Stance:set(stance) end
+        send_command('input /ja ' .. stance .. ' <me>')
         eventArgs.handled = true
         return
     end

@@ -1,7 +1,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SAM Precast Module - Precast Action Handling & Cooldown Monitoring
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Guard >> Cooldown >> auto-Seigan before Third Eye >> auto-Third Eye
+---   Guard >> Cooldown >> auto-Seigan before Third Eye (Seigan stance) >> auto-Third Eye
 ---   before a weaponskill >> WSPrecastHandler. Post-precast adds TP gear and
 ---   the Sekkanoki / Meikyo Shisui WS layers.
 ---
@@ -50,16 +50,35 @@ end
 -- arrives, let it through instead of queueing Seigan again.
 local seigan_cast_attempted = false
 
----   Auto-cast Seigan before Third Eye if Seigan not active
+--- The stance the player chose (state.Stance, set by //gs c hasso / seigan
+--- and by any Hasso or Seigan used). A config without the state follows the
+--- stance up: Hasso when Hasso is active, Seigan otherwise.
+--- @return string 'Hasso' or 'Seigan'
+local function chosen_stance()
+    if state.Stance and state.Stance.value then
+        return state.Stance.value
+    end
+    return buffactive.Hasso and 'Hasso' or 'Seigan'
+end
+
+--- Remember a Hasso or Seigan the player uses as the chosen stance.
+--- @param spell table Spell data
+local function remember_stance(spell)
+    if state.Stance and (spell.english == 'Hasso' or spell.english == 'Seigan') then
+        state.Stance:set(spell.english)
+    end
+end
+
+---   Auto-cast Seigan before Third Eye when Seigan is the chosen stance and down.
+---   Hasso chosen: Third Eye goes out alone (Seigan would replace Hasso).
 ---   @param spell table Spell data
 ---   @param eventArgs table Event arguments
 ---   @return boolean True when Third Eye was cancelled and re-queued after Seigan
 local function try_seigan_before_third_eye(spell, eventArgs)
-    if spell.english ~= 'Third Eye' then
+    if spell.english ~= 'Third Eye' or chosen_stance() ~= 'Seigan' then
         return false
     end
 
-    -- If Seigan not active, cast it first
     if not buffactive.Seigan then
         if not seigan_cast_attempted then
             eventArgs.cancel = true
@@ -149,7 +168,9 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- SAM-SPECIFIC: Auto-cast Seigan before Third Eye
+    remember_stance(spell)
+
+    -- SAM-SPECIFIC: Auto-cast Seigan before Third Eye (Seigan stance only)
     if try_seigan_before_third_eye(spell, eventArgs) then
         return
     end

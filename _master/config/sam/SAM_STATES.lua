@@ -29,7 +29,7 @@ local SAMStates = {}
 
 --- Configure all SAM states
 --- Must be called from user_setup() after Mote-Include is loaded.
---- Defines HybridMode, MainWeapon, state.Buff, FastCast and AutoMedicine.
+--- Defines HybridMode, MainWeapon, Stance, state.Buff, FastCast and AutoMedicine.
 function SAMStates.configure()
     -- ==========================================================================
     -- COMBAT MODES
@@ -59,6 +59,17 @@ function SAMStates.configure()
         'Norifusa'   -- Norifusa (Great Katana - Multi-hit)
     }
     state.MainWeapon:set('Masamune') -- Default weapon
+
+    -- ==========================================================================
+    -- STANCE
+    -- ==========================================================================
+
+    --- Stance: the stance the automation keeps up (Hasso and Seigan cancel
+    --- each other). Set by //gs c hasso / //gs c seigan and by any Hasso or
+    --- Seigan used. Seigan: Third Eye is preceded by Seigan when it is down.
+    --- Hasso: Third Eye goes out alone, Hasso is never replaced.
+    state.Stance = M { ['description'] = 'Stance', 'Hasso', 'Seigan' }
+    state.Stance:set('Hasso')
 
     -- ==========================================================================
     -- BUFF TRACKING
