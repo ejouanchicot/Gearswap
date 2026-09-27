@@ -221,7 +221,55 @@ local function save_order(scope, field, list)
     return saved
 end
 
+--- The names typed first, in that order, then the names of `previous` not
+--- typed, in their order: typing one name moves it to the top without
+--- losing the rest. Names compared without case.
+--- @param typed table
+--- @param previous table|nil
+--- @return table
+local function merged(typed, previous)
+    local out, seen = {}, {}
+    for _, name in ipairs(typed) do
+        if not seen[name:lower()] then
+            seen[name:lower()] = true
+            out[#out + 1] = name
+        end
+    end
+    for _, name in ipairs(previous or {}) do
+        if not seen[tostring(name):lower()] then
+            seen[tostring(name):lower()] = true
+            out[#out + 1] = name
+        end
+    end
+    return out
+end
+
+--- Section name typed / stored -> the word written in the files.
+local SECTION_WORD = {spell = 'spells', spells = 'spells', enhancing = 'enhancing', ja = 'abilities',
+    ability = 'abilities', abilities = 'abilities', weapon = 'weapons', weapons = 'weapons',
+    mode = 'modes', modes = 'modes'}
+
+--- The section order in force for a target, as words: the job's own list
+--- (else the default) for a job, the default for 'all'.
+local function current_sections(scope)
+    local buckets = scope == 'all' and UIStyle.get().layout.section_order or UIStyle.section_order(scope)
+    local words = {}
+    for i, bucket in ipairs(buckets) do words[i] = SECTION_WORD[bucket] or bucket end
+    return words
+end
+
+--- The row order in force for a target: the job's own list (else the
+--- default) for a job, the default for 'all'.
+local function current_rows(scope)
+    local raw = (config().layout or {}).row_order
+    local default = type(raw) == 'table' and (#raw > 0 and raw or raw.all) or nil
+    if scope == 'all' then return default end
+    local ok, HudJobConfig = pcall(require, 'shared/utils/ui/hud_job_config')
+    return (ok and HudJobConfig.row_order(scope)) or default
+end
+
 --- //gs c ui order [all|<JOB>] weapons modes spells ... | [all|<JOB>] reset
+--- The sections typed come first; the others keep their current order.
 local function run_order(args)
     local scope = take_scope(args)
     if #args == 0 then
@@ -229,14 +277,14 @@ local function run_order(args)
         return false
     end
     if args[1]:lower() == 'reset' then return save_order(scope, 'section_order', nil) end
-    local order = {}
-    for i, name in ipairs(args) do order[i] = name:lower() end
-    local problem = new_problems('layout', 'section_order', order)
+    local typed = {}
+    for i, name in ipairs(args) do typed[i] = SECTION_WORD[name:lower()] or name:lower() end
+    local problem = new_problems('layout', 'section_order', typed)
     if problem then
         MessageUI.show_error(problem)
         return false
     end
-    return save_order(scope, 'section_order', order)
+    return save_order(scope, 'section_order', merged(typed, current_sections(scope)))
 end
 
 --- //gs c ui rollorder bust party lucky 11 | reset
@@ -263,6 +311,7 @@ end
 --- //gs c ui roworder [all|<JOB>] <state> <state> ... | [all|<JOB>] reset
 --- The job played now by default; `all` = the default of every job
 --- (UI_CONFIG.lua); a job code = that job's config/<job>/<JOB>_HUD.lua.
+--- The names typed come first; the others of the list in force follow.
 local function run_row_order(args)
     local scope = take_scope(args)
     if #args == 0 then
@@ -270,9 +319,9 @@ local function run_row_order(args)
         return false
     end
     if args[1]:lower() == 'reset' then return save_order(scope, 'row_order', nil) end
-    local list = {}
-    for i, name in ipairs(args) do list[i] = name end
-    return save_order(scope, 'row_order', list)
+    local typed = {}
+    for i, name in ipairs(args) do typed[i] = name end
+    return save_order(scope, 'row_order', merged(typed, current_rows(scope)))
 end
 
 local function run_color(args)

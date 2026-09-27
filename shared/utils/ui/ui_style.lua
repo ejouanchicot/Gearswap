@@ -138,19 +138,28 @@ local function resolve_moves(raw, problems)
         if not bucket or bucket == 'enhancing' then
             warn(problems, ('layout.move_to_section.%s: unknown section "%s"'):format(tostring(name), tostring(section)))
         else
-            moves[name] = bucket
+            moves[tostring(name):lower()] = bucket
         end
     end
     return moves
 end
 
 --- A list of state names or keys -> position (1 = first).
+--- A list of state names or keys -> position (1 = first). Names are kept
+--- in lower case: a row is found whatever the case typed (abyproc = AbyProc).
 local function rank_of(list)
     local rank = {}
     for i, name in ipairs(list) do
-        if rank[name] == nil then rank[name] = i end
+        local key = tostring(name):lower()
+        if rank[key] == nil then rank[key] = i end
     end
     return rank
+end
+
+--- The value a {name = value} table (names in lower case) gives a row, by
+--- its state first, else its key.
+local function by_row(map, bind)
+    return (bind.state and map[bind.state:lower()]) or (bind.key and map[bind.key:lower()]) or nil
 end
 
 --- layout.row_order: a list for every job, or {all = {...}, THF = {...}}
@@ -187,7 +196,7 @@ local function resolve_set(raw, label, problems)
         warn(problems, label .. ' must be a list')
         return set
     end
-    for _, name in ipairs(raw) do set[name] = true end
+    for _, name in ipairs(raw) do set[tostring(name):lower()] = true end
     return set
 end
 
@@ -502,7 +511,7 @@ function UIStyle.visible_rows(keybinds)
     if next(hidden) == nil then return keybinds end
     local shown = {}
     for _, bind in ipairs(keybinds) do
-        if not (bind.state and hidden[bind.state]) and not (bind.key and hidden[bind.key]) then
+        if not by_row(hidden, bind) then
             shown[#shown + 1] = bind
         end
     end
@@ -536,7 +545,7 @@ function UIStyle.ordered_rows(keybinds)
     if next(rank) == nil then return keybinds end
     local indexed = {}
     for i, bind in ipairs(keybinds) do
-        local r = (bind.state and rank[bind.state]) or (bind.key and rank[bind.key]) or math.huge
+        local r = by_row(rank, bind) or math.huge
         indexed[i] = {bind = bind, rank = r, pos = i}
     end
     table.sort(indexed, function(a, b)
@@ -553,7 +562,7 @@ end
 --- @return string|nil spell/ja/weapon/mode
 function UIStyle.forced_section(bind)
     local moves = UIStyle.get().layout.move_to_section
-    return (bind.state and moves[bind.state]) or (bind.key and moves[bind.key]) or nil
+    return by_row(moves, bind)
 end
 
 --- Display width of a text (UTF-8 multi-byte symbols count as one).

@@ -332,6 +332,8 @@ UIConfig.layout = {
     --   //gs c ui order weapons modes spells       the job played now
     --   //gs c ui order THF weapons modes          a named job
     --   //gs c ui order reset / all reset          back to the default / standard
+    -- A command puts the names typed first and keeps the others after them,
+    -- in their order (typing one name moves it to the top).
     section_order = {'spells', 'enhancing', 'abilities', 'weapons', 'modes'},
 
     -- true = tighter HUD: no blank line under section titles, columns
@@ -388,6 +390,7 @@ UIConfig.layout = {
     --   //gs c ui roworder TreasureMode HybridMode    the job played now
     --   //gs c ui roworder THF TreasureMode           a named job
     --   //gs c ui roworder reset / all reset          remove one or the other
+    -- Same as order: the names typed go first, the others stay after them.
     -- row_order = {'MainWeapon', 'SubWeapon', 'CombatMode'},
 
     -- Rows to hide from the HUD (the key still works). State name or key.

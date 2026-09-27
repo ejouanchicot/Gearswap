@@ -45,6 +45,8 @@ local HEADER = [[
 --   //gs c ui roworder TreasureMode HybridMode    this job's row order
 --   //gs c ui order reset / roworder reset        back to the default
 --   //gs c ui order all ... / roworder all ...    the default of every job
+-- A command puts the names typed first and keeps the others after them, in
+-- their order (a job without its own list starts from the default one).
 -- The commands rewrite this file; editing it by hand works too (//gs reload).
 ]]
 
