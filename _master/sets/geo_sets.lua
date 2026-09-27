@@ -345,8 +345,16 @@ sets.midcast.Cure = {
     }
 }
 
+-- • Curaga (Curaga to Curaga V, WHM sub): the Cure set until its own pieces
+--   go in the {} (without it, Curaga wore no midcast set at all)
+sets.midcast.Curaga = set_combine(sets.midcast.Cure, {})
+
 -- • Enhancing Magic
 sets.midcast['Enhancing Magic'] = {}
+
+-- • Auspice (WHM sub): empty until your pieces go in the {} (Enhancing
+--   Magic skill / duration); worn instead of the Enhancing set above
+sets.midcast.Auspice = set_combine(sets.midcast['Enhancing Magic'], {})
 
 -- • Enfeebling Magic
 sets.midcast['Enfeebling Magic'] = {}
