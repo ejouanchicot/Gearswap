@@ -106,8 +106,13 @@ local function on_buffs(data)
     local found = read_packet(data)
     local entry = store()[name:lower()] or {name = name, sneak = 0, invi = 0}
     if entry.sneak == found.sneak and entry.invi == found.invi then return end
+    local old = {sneak = entry.sneak, invi = entry.invi}
     entry.sneak, entry.invi = found.sneak, found.invi
     store()[name:lower()] = entry
+    -- //gs c trace: the buff really gained / lost (stealth_trace.lua)
+    pcall(function()
+        require('shared/utils/stealth/stealth_trace').buff_change(old, entry, StealthTimers.left)
+    end)
     broadcast(entry)
 end
 
@@ -161,6 +166,8 @@ end
 --- load stops when a newer one starts (generation on `windower`).
 function StealthTimers.start()
     if rawget(_G, '_stealth_listener') then return end
+    -- //gs c trace: who a Sneak / Invisible really reached (stealth_trace.lua)
+    pcall(function() require('shared/utils/stealth/stealth_trace').start() end)
     _G._stealth_listener = windower.raw_register_event('incoming chunk', function(id, data)
         if id == 0x063 and data:byte(5) == 9 then pcall(on_buffs, data) end
     end)

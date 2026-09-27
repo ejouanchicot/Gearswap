@@ -12,6 +12,7 @@ Written on 2026-09-27 from the code as it stands on disk (added 2026-09-26). Lin
 | `shared/utils/stealth/stealth_methods.lua` | 170 | Which ways this character has now: `has_jig`, `jig_recast`, `can_jig`, `can_cast`, `best_own`, `has_spell`, `item_count`, `cast_time`; fixed ids table |
 | `shared/utils/stealth/stealth_aoe.lua` | 148 | One Scholar for the group: `coverable`, claims (`record` / `winner` / `clear`), `status`, flat `distance`, `chain_time` |
 | `shared/utils/stealth/stealth_timers.lua` | 177 | Packet 0x063 order 9 listener, end-time store, `stealth time` broadcast and receive, wear-off alerts, alt window refresh loop |
+| `shared/utils/stealth/stealth_trace.lua` | 103 | Trace only: own Sneak / Invisible gained / lost, and who each Sneak / Invisible cast reached |
 | `shared/utils/stealth/stealth_config.lua` | 79 | Reads `<Character>/config/STEALTH_CONFIG.lua` once per load, rewrites one line on an in-game change |
 | `shared/utils/messages/formatters/system/message_stealth.lua` | 74 | `show_skipped`, `show_covered`, `show_no_way`, `show_asked`, `show_wearing_off`, `show_setting`, `show_usage` |
 | `shared/utils/messages/data/systems/stealth_messages.lua` | 23 | `STEALTH` namespace, 10 templates |
@@ -134,6 +135,8 @@ InfoBlock `STEALTH :: Check (nothing is cast)`: jobs; per kind the buff state (`
 ### Trace
 
 With `//gs c trace on`, `trace()` (`stealth.lua:178-181`) and `Aoe.trace_distances` write `STEALTH` lines to `<Character>/trace.log`, one per decision: `<kind>: skipped, <m:ss> left` (or `up, time unknown`), `<kind>: own <name>`, `sneak+invi: Spectral Jig`, `sneak+invi: Spectral Jig on recast, <n>s`, `<kind>: no way of its own, asked the others`, `<kind>: Accession for the group`, `Accession: <name> at <d> yalms` (or `not in zone`), `<kind>: covered by <name>`.
+
+What the game did afterwards (`stealth_trace.lua`, since 2026-09-28, trace on only), on every box: `buff Sneak gained, <n> s left` / `refreshed` / `lost` (own buff end times from packet 0x063, via `StealthTimers`), and, when this character finishes casting Sneak or Invisible (raw `action`, category 4, spell 137 / 136), `<spell> landed: <member> at <d> y` for each group member and `<spell> landed[ with Accession]: reached <names>; missed <names (d y)>` from the targets of the action packet. The `Accession: ... yalms` line above is measured at the key press, several seconds before the cast.
 
 ## Public API
 
