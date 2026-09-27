@@ -266,6 +266,61 @@ local function chat_separator_char(raw, problems)
     return '='
 end
 
+local ROLL_STYLES = {full = true, compact = true, line = true}
+
+--- Roll details in their standard order, and the names the player may type.
+local ROLL_PARTS = {'party', 'lucky', 'eleven', 'bust'}
+local ROLL_PART_NAMES = {party = 'party', pt = 'party', lucky = 'lucky', luck = 'lucky',
+    eleven = 'eleven', ['11'] = 'eleven', bust = 'bust'}
+
+--- rolls.order: the details the player named first, in that order, then
+--- the others in the standard order.
+local function resolve_roll_order(raw, problems)
+    local order, seen = {}, {}
+    if raw ~= nil and type(raw) ~= 'table' then
+        warn(problems, 'rolls.order must be a list')
+        raw = nil
+    end
+    for _, name in ipairs(raw or {}) do
+        local part = ROLL_PART_NAMES[tostring(name):lower()]
+        if not part then
+            warn(problems, ('rolls.order: unknown detail "%s" (party, lucky, eleven, bust)'):format(tostring(name)))
+        elseif not seen[part] then
+            order[#order + 1] = part
+            seen[part] = true
+        end
+    end
+    for _, part in ipairs(ROLL_PARTS) do
+        if not seen[part] then order[#order + 1] = part end
+    end
+    return order
+end
+
+--- rolls: how a COR roll result is shown (roll_messages.lua). style =
+--- full / compact / line; remote_style = the same choices plus 'same' and
+--- 'off', for a roll another box sends here (roll_share.lua); lucky, party,
+--- bust, eleven = each detail on or off; order = the details' order.
+local function resolve_rolls(raw, problems)
+    if raw ~= nil and type(raw) ~= 'table' then
+        warn(problems, 'rolls must be a table')
+        raw = nil
+    end
+    raw = raw or {}
+    local style = raw.style or 'full'
+    if not ROLL_STYLES[style] then
+        warn(problems, ('rolls.style "%s": use full, compact or line'):format(tostring(style)))
+        style = 'full'
+    end
+    local remote = raw.remote_style or 'same'
+    if remote ~= 'same' and remote ~= 'off' and not ROLL_STYLES[remote] then
+        warn(problems, ('rolls.remote_style "%s": use same, full, compact, line or off'):format(tostring(remote)))
+        remote = 'same'
+    end
+    return {style = style, remote_style = remote, lucky = raw.lucky ~= false, party = raw.party ~= false,
+            bust = raw.bust ~= false, eleven = raw.eleven ~= false,
+            order = resolve_roll_order(raw.order, problems)}
+end
+
 local function resolve_chat(raw, problems)
     if raw ~= nil and type(raw) ~= 'table' then
         warn(problems, 'chat must be a table')
@@ -384,6 +439,7 @@ function UIStyle.resolve(source)
         layout = resolve_layout(source.layout, problems),
         colors = resolve_colors(source.colors, problems),
         chat = resolve_chat(source.chat, problems),
+        rolls = resolve_rolls(source.rolls, problems),
     }
     return style, problems
 end

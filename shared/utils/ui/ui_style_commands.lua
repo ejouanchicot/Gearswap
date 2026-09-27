@@ -82,6 +82,8 @@ local OPTIONS = {
     chatwidth = {block = 'chat', name = 'width', parse = parse_int},
     keys = {block = 'layout', name = 'key_style', parse = parse_word},
     bullet = {block = 'layout', name = 'bullet', parse = parse_bullet},
+    rollstyle = {block = 'rolls', name = 'style', parse = parse_word},
+    rollremote = {block = 'rolls', name = 'remote_style', parse = parse_word},
 }
 
 --- On/off options: no value toggles.
@@ -89,6 +91,10 @@ local SWITCHES = {
     compact = {block = 'layout', name = 'compact', default = false},
     separators = {block = 'chat', name = 'separators', default = true},
     jobtag = {block = 'chat', name = 'job_tag', default = true},
+    rolllucky = {block = 'rolls', name = 'lucky', default = true},
+    rollparty = {block = 'rolls', name = 'party', default = true},
+    rollbust = {block = 'rolls', name = 'bust', default = true},
+    roll11 = {block = 'rolls', name = 'eleven', default = true},
 }
 
 ---============================================================================
@@ -195,6 +201,18 @@ local function run_order(args)
     return apply('layout', 'section_order', order)
 end
 
+--- //gs c ui rollorder bust party lucky 11 | reset
+local function run_roll_order(args)
+    if args[1] == 'reset' then return apply('rolls', 'order', nil) end
+    if #args == 0 then
+        MessageUI.show_error('use: //gs c ui rollorder bust party lucky 11')
+        return false
+    end
+    local order = {}
+    for i, name in ipairs(args) do order[i] = name:lower() end
+    return apply('rolls', 'order', order)
+end
+
 --- //gs c ui roworder MainWeapon CombatMode ... | reset
 local function run_row_order(args)
     if args[1] and args[1]:lower() == 'reset' then return apply('layout', 'row_order', nil) end
@@ -249,6 +267,8 @@ local function show_style()
     local layout = UIStyle.get().layout
     local sp = layout.spacing
     local chat = UIStyle.get().chat
+    local rolls = UIStyle.get().rolls
+    local function onoff(v) return v and 'on' or 'off' end
     MessageUI.show_style_list({
         {'Compact', (config().layout or {}).compact == true},
         {'Gaps', ('key %d / value %d'):format(sp.gap, sp.gap_value)},
@@ -264,6 +284,10 @@ local function show_style()
             tostring(chat.separator_color or 160), tostring(separator_width()))},
         {'Job tag', chat.job_tag},
         {'Chat colors', chat_colors_text(chat.colors)},
+        {'Rolls', ('%s / from an alt: %s'):format(rolls.style, rolls.remote_style)},
+        {'Roll details', ('lucky %s / party %s / bust %s / 11 %s'):format(onoff(rolls.lucky),
+            onoff(rolls.party), onoff(rolls.bust), onoff(rolls.eleven))},
+        {'Roll order', table.concat(rolls.order, ' ')},
     })
 end
 
@@ -293,6 +317,7 @@ local SPECIAL = {
     margin = run_margin,
     order = run_order,
     roworder = run_row_order,
+    rollorder = run_roll_order,
     color = run_color,
     colour = run_color,
 }

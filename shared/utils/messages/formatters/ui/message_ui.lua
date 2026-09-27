@@ -168,6 +168,15 @@ local HELP = {
             {'//gs c ui jobtag ', '[on|off]', '[RDM/DRK] before messages'},
             {'//gs c ui chatcolor ', '<name> <1-255>', 'green success error...'},
         }},
+        {title = 'COR ROLLS', note = 'saved in UI_CONFIG.lua', rows = {
+            {'//gs c ui rollstyle ', 'full|compact|line', 'How a roll is shown'},
+            {'//gs c ui rollremote ', 'same|full|compact|line|off', "An alt's roll here"},
+            {'//gs c ui rolllucky ', '[on|off]', 'Lucky / Unlucky numbers'},
+            {'//gs c ui rollparty ', '[on|off]', 'Players hit and missed'},
+            {'//gs c ui rollbust ', '[on|off]', 'Bust risk'},
+            {'//gs c ui roll11 ', '[on|off]', 'The 11! line'},
+            {'//gs c ui rollorder ', 'bust party lucky 11', 'Order of the details'},
+        }},
     },
     notes = {'<option> reset = back to the standard value.'},
 }

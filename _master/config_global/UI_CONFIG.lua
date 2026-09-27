@@ -489,4 +489,28 @@ function UIConfig.validate()
     return #issues == 0, issues
 end
 
+---============================================================================
+--- COR ROLLS
+---============================================================================
+-- How a Phantom Roll result is shown in chat (//gs c ui roll* saves here).
+
+UIConfig.rolls = {
+    -- full = framed block, compact = two lines, line = one line.
+    -- style = 'full',
+
+    -- A roll your COR alt sends to this box: same, full, compact, line, off.
+    -- remote_style = 'same',
+
+    -- Details, each on or off: lucky/unlucky numbers, players hit and
+    -- missed, bust risk, the 11! line.
+    -- lucky = true,
+    -- party = true,
+    -- bust = true,
+    -- eleven = true,
+
+    -- Order of those details (lines in full, items in compact and line).
+    -- Names: party, lucky, eleven, bust. Those left out follow in this order.
+    -- order = {'party', 'lucky', 'eleven', 'bust'},
+}
+
 return UIConfig
