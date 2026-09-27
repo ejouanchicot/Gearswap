@@ -181,7 +181,7 @@ function PLDStates.configure()
     --- Options:
     ---   • 'Off' - Use normal Phalanx routing (Potency or XP-based)
     ---   • 'On'  - Force SIRD Phalanx set (Spell Interruption Rate Down)
-    --- Keybind: Ctrl+Numpad2 to cycle (held On, and unbound, under /SCH)
+    --- Keybind: Ctrl+Numpad2 to cycle (Ctrl+Numpad3 under /SCH, where it starts On)
     state.PhalanxSIRD =
         M {
         ['description'] = 'Phalanx SIRD',

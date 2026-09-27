@@ -42,6 +42,8 @@ local STANCES = {
 
 --- Target -> Silmaril profile of the alt, its Indi- (must match the one set
 --- in that profile), this character's stance, and the summary shown.
+--- `phalanx_sird = false` turns Phalanx SIRD Off for that target (PLD); every
+--- other target turns it On.
 --- The Indi- is cast on load because Silmaril only recasts one when the new
 --- profile's Indi- differs from the previous profile's, not from the one
 --- actually up: Farm -> escort (Indi-Regen) -> Farm left Indi-Regen running
@@ -54,8 +56,8 @@ local TARGETS = {
     leshonn    = {profile = 'Leshonn',    indi = 'Indi-Frailty', stance = 'tank', summary = 'Geo-Gravity + BoG, Entrust Fury'},
     gartell    = {profile = 'Gartell',    indi = 'Indi-Frailty', stance = 'tank', summary = 'Geo-Gravity + BoG, Entrust Precision'},
     aita       = {profile = 'Aita',       indi = 'Indi-Frailty', stance = 'tank', summary = 'Geo-Gravity + BoG, Entrust Fury'},
-    aminon     = {profile = 'Aminon',     indi = 'Indi-Fury',    stance = 'tank', summary = 'Geo-Frailty + BoG behind (Hysoka engaged), Judgment'},
-    aminontest = {profile = 'AminonTest', indi = 'Indi-Fury',    stance = 'tank', summary = 'test on Vampire Leech (Tetsouo engaged)'},
+    aminon     = {profile = 'Aminon',     indi = 'Indi-Fury',    stance = 'tank', summary = 'Geo-Frailty + BoG behind (Hysoka engaged), Judgment', phalanx_sird = false},
+    aminontest = {profile = 'AminonTest', indi = 'Indi-Fury',    stance = 'tank', summary = 'test on Vampire Leech (Tetsouo engaged)', phalanx_sird = false},
 }
 
 --- Bosses fought exactly the same way share one profile.
@@ -161,6 +163,11 @@ local function engage_target(name)
         return true
     end
     set_states(STANCES[target.stance])
+    -- Only on a job that has the mode: set_states would otherwise send
+    -- `gs c set` and print Mote's unknown-state error.
+    if state and rawget(state, 'PhalanxSIRD') then
+        set_states({'PhalanxSIRD ' .. (target.phalanx_sird == false and 'Off' or 'On')})
+    end
     to_alt('sm load ' .. PROFILE_ROOT .. target.profile)
     to_alt('sm follow off')
     to_alt('sm on')

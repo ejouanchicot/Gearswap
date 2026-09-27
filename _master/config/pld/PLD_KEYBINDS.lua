@@ -22,8 +22,8 @@ local PLDKeybinds = {}
 --- again on every HUD refresh, for a bind whose usefulness depends on a state
 --- rather than on the job.
 ---
---- Under /SCH Phalanx SIRD is held on, so its bind is excluded rather than
---- left cycling a state nothing reads any more; Ctrl+Numpad2 is free there.
+--- Under /SCH Phalanx SIRD starts On and moves to Ctrl+Numpad3 (Rune Mode's
+--- key, which only /RUN uses): Ctrl+Numpad2 holds Regen there.
 --- The weapon stays cyclable: the /SCH stances pick the set, not the sword.
 PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie, DPS/Tanking/Hoxne under /SCH)
 {
@@ -65,6 +65,9 @@ PLDKeybinds.binds = { -- Hybrid Mode (PDT/MDT/Sortie, DPS/Tanking/Hoxne under /S
     -- key on the other subjobs) is off. Macros can still set an explicit
     -- value with `gs c set Regen On|Off`.
     { key = "^numpad2", command = "cyclestate Regen", desc = "Regen", state = "Regen", subjob = "SCH" },
+    -- Phalanx SIRD under /SCH: On by default, Off for a fight where the
+    -- Phalanx potency matters more than not being interrupted (Sortie Aminon).
+    { key = "^numpad3", command = "cyclestate PhalanxSIRD", desc = "Phalanx SIRD", state = "PhalanxSIRD", subjob = "SCH" },
     { key = "^numpad5", command = "cyclestate WS1", desc = "WS Slot 1", state = "WS1" },
     { key = "^numpad6", command = "cyclestate WS2", desc = "WS Slot 2", state = "WS2" },
 }
