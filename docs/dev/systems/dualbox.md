@@ -426,6 +426,10 @@ refilled by the `requestjob` sent to every box at auto-init.
   `equip_sets` on every call, which made dragging lag.
 - **Not role-aware:** `//gs c sortie` targets `ALT = 'Kaories'` and her Silmaril profiles by design.
 
+### COR rolls on the main (`roll_share.lua`, 2026-09-27)
+
+When the box is an alt (`DualBoxConfig.role == 'alt'`) playing COR, `RollTracker.display_roll_result` and the bust display call `RollShare.result` / `RollShare.bust` (`roll_tracker.lua`, one line each, in a pcall) after showing the message locally. They send `send <main_character> gs c rollshow <result|bust> <caster> <fields...>`, each field hex-encoded (roll names hold spaces and apostrophes; an empty field is `-`). Nothing is sent when the box is not an alt or when the main has not reported its job through `alt_states.lua` (a main on another GearSwap would get an unknown command). The main's common command `rollshow` (`COMMON_COMMANDS.lua`) decodes the fields and calls `RollMessages.show_roll_result` / `show_roll_bust` with a last `source` argument ("Kaories COR"), which replaces the job tag: same lines, same colors, the caster in brackets, shown even with the job tag off. Double-Ups are roll results and are sent too; the party coverage and missed names are the COR's own count.
+
 ## Public API
 
 ### `DualBoxManager` (`require('shared/utils/dualbox/dualbox_manager')`, not exported to `_G`)

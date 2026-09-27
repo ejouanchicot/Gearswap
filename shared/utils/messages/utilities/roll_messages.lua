@@ -20,11 +20,14 @@ local MessageCore = require('shared/utils/messages/message_core')
 local ChatPalette = require('shared/utils/messages/chat_palette')
 
 --- "[COR/DNC]" in the job color then `after` (white + " "), or only the
---- white color when the player turned the job tag off.
+--- white color when the player turned the job tag off. A roll shown for
+--- another box (roll_share.lua) always carries its caster: "[Kaories COR]".
 --- @param job_color string
 --- @param white_color string
+--- @param source string|nil Caster of a roll made on another box
 --- @return string
-local function tag_prefix(job_color, white_color)
+local function tag_prefix(job_color, white_color, source)
+    if source and source ~= "" then return job_color .. "[" .. source .. "]" .. white_color .. " " end
     if MessageCore.job_prefix() == "" then return white_color end
     return job_color .. "[" .. MessageCore.get_job_tag() .. "]" .. white_color .. " "
 end
@@ -199,7 +202,8 @@ end
 --- @param bust_rate number Bust rate percentage for next Double-Up
 --- @param job_bonus_info string|nil Job code if job bonus active (e.g., "DNC")
 --- @param roll_range number|nil Roll range in yalms (8 without Luzaf, 16 with Luzaf)
-function RollMessages.show_roll_result(roll_name, value_display, bonus_display, is_crooked, affected_count, total_count, lucky_num, unlucky_num, missed_names, bust_rate, job_bonus_info, roll_range)
+--- @param source string|nil Caster when the roll was made on another box ("Kaories COR")
+function RollMessages.show_roll_result(roll_name, value_display, bonus_display, is_crooked, affected_count, total_count, lucky_num, unlucky_num, missed_names, bust_rate, job_bonus_info, roll_range, source)
     local job_color = MessageCore.create_color_code(MessageCore.COLORS.JOB_TAG)
     local roll_color = MessageCore.create_color_code(MessageCore.COLORS.JA)
     local white_color = ChatPalette.tag('white')
@@ -249,7 +253,7 @@ function RollMessages.show_roll_result(roll_name, value_display, bonus_display, 
         job_bonus_text = separator_slash .. bonus_color .. "[+" .. job_bonus_info .. "]"
     end
 
-    local line1 = tag_prefix(job_color, white_color) ..
+    local line1 = tag_prefix(job_color, white_color, source) ..
                 roll_color .. roll_name .. " " ..
                 number_color .. circled_num ..
                 separator_slash ..
@@ -346,7 +350,8 @@ end
 --- @param roll_name string Name of the roll that busted
 --- @param bust_effect string Bust effect value (e.g., "-4")
 --- @param effect_type string Type of effect (e.g., "% Double-Attack")
-function RollMessages.show_roll_bust(roll_name, bust_effect, effect_type)
+--- @param source string|nil Caster when the roll was made on another box
+function RollMessages.show_roll_bust(roll_name, bust_effect, effect_type, source)
     local job_color = MessageCore.create_color_code(MessageCore.COLORS.JOB_TAG)
     local error_color = MessageCore.create_color_code(MessageCore.COLORS.ERROR)
     local roll_color = MessageCore.create_color_code(MessageCore.COLORS.JA)
@@ -358,7 +363,7 @@ function RollMessages.show_roll_bust(roll_name, bust_effect, effect_type)
 
     -- Simple one-line message: [COR/DNC] BUST! Fighter's Roll / Penalty: -4 Regen
     -- Build message piece by piece with explicit color codes
-    local message = tag_prefix(job_color, white_color) ..
+    local message = tag_prefix(job_color, white_color, source) ..
                     error_color .. "BUST!" ..
                     white_color .. " " ..
                     roll_color .. roll_name ..

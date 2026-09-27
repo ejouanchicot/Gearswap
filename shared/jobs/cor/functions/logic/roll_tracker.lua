@@ -483,6 +483,7 @@ function RollTracker.handle_bust(roll_name)
 
     -- Display bust message
     MessageFormatter.show_roll_bust(roll_name, roll_data.bust_effect, roll_data.effect_type)
+    pcall(function() require('shared/utils/dualbox/roll_share').bust(roll_name, roll_data.bust_effect, roll_data.effect_type) end)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -763,6 +764,8 @@ function RollTracker.display_roll_result(roll_name, roll_value, final_bonus, eff
 
     -- Main roll message with bust rate integrated (Natural 11 message now integrated inside)
     MessageFormatter.show_roll_result(roll_name, value_display, bonus_display, is_crooked, affected_count, total_count, lucky_num, unlucky_num, missed_names, bust_rate, job_bonus_info, roll_range)
+    -- Same message on the main when this box is an alt (dualbox/roll_share.lua)
+    pcall(function() require('shared/utils/dualbox/roll_share').result(roll_name, value_display, bonus_display, is_crooked, affected_count, total_count, lucky_num, unlucky_num, missed_names, bust_rate, job_bonus_info, roll_range) end)
 end
 
 ---   Display Double-Up window status
