@@ -364,6 +364,10 @@ refilled by the `requestjob` sent to every box at auto-init.
   `sm follow <me>` to the others. Pressing it on the follower of the last leader therefore turns the
   follow around instead of leaving two boxes following each other. Who follows whom is read from the
   addon's reports (`leader_of`), the saved state standing in for an alt no report speaks for.
+  Every follow change also sends `gs c altlead <leader|off>` to the other boxes (`receive_lead`), which
+  set their saved state to it: without the addon's reports (a box without the StateReport patch) the old
+  leader's record would still say its alts follow it, and its next press would stop the follow instead of
+  taking the lead.
   `mirror` runs `sm mirror` locally. The on/follow/mirror state starts as the last order sent, kept on
   `windower._alt_group` and saved in `alt_state.lua`; `//gs c sortie` records its own through
   `AltGroup.note`. When the addon reports its real state (next point), the reports overwrite it, so an
@@ -408,6 +412,12 @@ refilled by the `requestjob` sent to every box at auto-init.
   (`dualbox_manager.lua:534`), since reports sent during a reload are lost. Each report writes an
   `ALTS` line to `trace.log`. Tested offline with stubs; in game, Auto/Follow/Mirror reports were
   seen in the trace on 2026-09-26.
+- **Alt window after a reload** (2026-09-27): GearSwap destroys the old load's texts while that load's
+  5 s refresh loop (and the stealth loop that redraws the window) can still run until the new load
+  bumps the generation. Every access goes through `live_display()`: a destroyed object (its `visible`
+  raises, the "libs/texts.lua:353 attempt to index field '?'" a player saw on reload) marks the load
+  dead (`_G._alt_window_dead`), and from then on `refresh`, `is_shown`, the drag check and the loop do
+  nothing, so no stray window is created by the dead load either.
 - **Alt window** (`alt_window.lua`): drawn on the main only, at a fixed size: every line is
   `LABEL_WIDTH + 1 + VALUE_WIDTH` characters (`:105`), padded with spaces and cut when longer, and
   the rows never change (`-` when empty), so the box does not resize. Per alt: its name as the title,

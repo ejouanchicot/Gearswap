@@ -260,6 +260,23 @@ local function alts_to_show()
     return #alts > 0 and alts or nil
 end
 
+--- The window's text object, or nil. A reload destroys every text of the
+--- old load while that load's refresh loop can still run for a few seconds
+--- (coroutines are never cancelled): touching the destroyed object raised
+--- "texts.lua:353 attempt to index field '?'". Found destroyed, this load is
+--- over: it is marked dead and never draws again, so it cannot leave a
+--- stray window behind either.
+--- @return table|nil
+local function live_display()
+    if rawget(_G, '_alt_window_dead') then return nil end
+    local display = rawget(_G, '_alt_window_display')
+    if display == nil then return nil end
+    if pcall(display.visible, display) then return display end
+    _G._alt_window_display = nil
+    _G._alt_window_dead = true
+    return nil
+end
+
 local function create()
     local p = prefs()
     local ok, UISettingsResolver = pcall(require, 'shared/utils/ui/ui_settings_resolver')
@@ -279,7 +296,8 @@ end
 --- Redraw the window, or hide it when it should not be up.
 function AltWindow.refresh()
     local alts = alts_to_show()
-    local display = _G._alt_window_display
+    local display = live_display()
+    if rawget(_G, '_alt_window_dead') then return end
     if not alts or not prefs().visible then
         if display then display:hide() end
         return
@@ -292,7 +310,7 @@ end
 --- Whether the window is on screen now (its orders need no chat line then).
 --- @return boolean
 function AltWindow.is_shown()
-    local display = _G._alt_window_display
+    local display = live_display()
     return display ~= nil and display:visible() == true
 end
 
@@ -303,7 +321,7 @@ end
 --- runs refresh_globals and a full equip_sets on every call - on every mouse
 --- move, that made dragging the window lag badly.
 local function save_if_moved()
-    local display = _G._alt_window_display
+    local display = live_display()
     if not display or not display:visible() then return end
     local x, y = display:pos()
     local p = prefs()
@@ -339,7 +357,7 @@ function AltWindow.start()
     windower._alt_window_gen = (windower._alt_window_gen or 0) + 1
     local gen = windower._alt_window_gen
     local function tick()
-        if gen ~= windower._alt_window_gen then return end
+        if gen ~= windower._alt_window_gen or rawget(_G, '_alt_window_dead') then return end
         save_if_moved()
         AltWindow.refresh()
         coroutine.schedule(tick, REFRESH_EVERY)
