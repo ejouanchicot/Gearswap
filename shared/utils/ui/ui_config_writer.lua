@@ -29,11 +29,12 @@ local function quote(text)
 end
 
 local function item_lua(item)
+    if type(item) == 'table' then return UIConfigWriter.to_lua(item) end
     return type(item) == 'string' and quote(item) or tostring(item)
 end
 
 --- Lua source for a value: number, boolean, text, a list, or a table of
---- name = number/text (written sorted, on one line).
+--- name = number/text/list (written sorted, on one line).
 --- @param value any
 --- @return string
 function UIConfigWriter.to_lua(value)

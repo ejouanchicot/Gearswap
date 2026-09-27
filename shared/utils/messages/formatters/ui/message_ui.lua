@@ -156,8 +156,8 @@ local HELP = {
             {'//gs c ui padding ', '<0-20>', 'Pixels around the text'},
             {'//gs c ui keys ', 'symbols|words', '^f1 or CTRL+F1'},
             {'//gs c ui bullet ', '<name>', 'dot arrow square gt none'},
-            {'//gs c ui order ', '<sections>', 'Section order'},
-            {'//gs c ui roworder ', '<states>', 'Row order in sections'},
+            {'//gs c ui order ', '[all|JOB] <sections>', 'Section order'},
+            {'//gs c ui roworder ', '[all|JOB] <states>', 'Row order in sections'},
             {'//gs c ui color ', '<name> <r> <g> <b>', 'key value section_title'},
         }},
         {title = 'CHAT', note = 'saved in UI_CONFIG.lua', rows = {
@@ -178,7 +178,8 @@ local HELP = {
             {'//gs c ui rollorder ', 'bust party lucky 11', 'Order of the details'},
         }},
     },
-    notes = {'<option> reset = back to the standard value.'},
+    notes = {'<option> reset = back to the standard value.',
+             'order / roworder: this job, all = every job, or a job code (THF).'},
 }
 
 --- Display UI help menu.

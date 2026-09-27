@@ -324,11 +324,12 @@ function UISections.render_complete_ui(display_structure, keybinds, job, get_sta
     -- Column headers (pass content_width for top margin)
     text = text .. UIFormatter.create_column_headers(key_column_width, function_column_width, content_width)
 
-    -- Sections in the player's order (layout.section_order), no separators between them
+    -- Sections in the player's order (the job's <JOB>_HUD.lua, else
+    -- layout.section_order), no separators between them
     local layout = UIStyle.get().layout
     local blank = "\\cs(0,0,0)" .. string.rep(" ", content_width) .. "\\cr\n"
     local body = ""
-    for _, bucket in ipairs(layout.section_order) do
+    for _, bucket in ipairs(UIStyle.section_order(job)) do
         body = body .. SECTION_RENDERERS[bucket](display_structure, keybinds, job, key_column_width,
             function_column_width, get_state_value_func, content_width, value_column_width)
     end

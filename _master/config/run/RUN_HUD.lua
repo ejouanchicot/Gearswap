@@ -1,0 +1,29 @@
+-- HUD settings of this job only. UI_CONFIG.lua holds the defaults of every
+-- job (layout.section_order, layout.row_order); a list here that is not
+-- empty replaces the default on this job. Empty or missing = the default.
+--
+-- section_order: order of the HUD sections on this job. Names: spells,
+--   enhancing, abilities, weapons, modes. Those left out follow in the
+--   standard order.
+-- row_order: order of the rows inside each section on this job. The rows
+--   named come first in their section, in this order; the others follow in
+--   the order of the job's _KEYBINDS file. Names = the states as written in
+--   the _KEYBINDS file (capitals included), or keys.
+--
+-- Example:
+--   section_order = {'weapons', 'modes', 'spells'},
+--   row_order = {'MainWeapon', 'SubWeapon', 'TreasureMode', 'HybridMode'},
+--
+-- In game (this job, or name one: //gs c ui order THF weapons modes):
+--   //gs c ui order weapons modes spells          this job's section order
+--   //gs c ui roworder TreasureMode HybridMode    this job's row order
+--   //gs c ui order reset / roworder reset        back to the default
+--   //gs c ui order all ... / roworder all ...    the default of every job
+-- The commands rewrite this file; editing it by hand works too (//gs reload).
+-- States of this job (RUN_KEYBINDS.lua): HybridMode, MainWeapon, SubWeapon,
+--   RuneMode
+-- Also on every job: CombatMode, AutoMedicine and the common keys.
+return {
+    -- section_order = {},
+    -- row_order = {},
+}

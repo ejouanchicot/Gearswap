@@ -190,15 +190,53 @@ local function run_margin(args)
         and apply('layout', 'margin_bottom', math.floor(bottom))
 end
 
+local JOB_CODES = {}
+for _, code in ipairs({'WAR', 'MNK', 'WHM', 'BLM', 'RDM', 'THF', 'PLD', 'DRK', 'BST', 'BRD', 'RNG', 'SAM',
+                       'NIN', 'DRG', 'SMN', 'BLU', 'COR', 'PUP', 'DNC', 'SCH', 'GEO', 'RUN'}) do
+    JOB_CODES[code] = true
+end
+
+--- Who an order command is for, taken off the front of `args`: 'all' (the
+--- default of every job, UI_CONFIG.lua), a job code typed first (that job),
+--- else the job played now.
+--- @param args table Modified in place
+--- @return string 'all' or a job code
+local function take_scope(args)
+    local first = args[1] and args[1]:upper()
+    if first == 'ALL' or (first and JOB_CODES[first]) then
+        table.remove(args, 1)
+        return first == 'ALL' and 'all' or first
+    end
+    return player and player.main_job or 'all'
+end
+
+--- Save an order: the default in UI_CONFIG.lua layout.<field> for 'all', else
+--- the job's config/<job>/<JOB>_HUD.lua (list nil = back to the default).
+local function save_order(scope, field, list)
+    if scope == 'all' then return apply('layout', field, list) end
+    local saved, err = require('shared/utils/ui/hud_job_config').set_list(scope, field, list)
+    refresh()
+    MessageUI.show_style_set(scope .. '_HUD.lua ' .. field, list and Writer.to_lua(list) or 'default',
+        saved and nil or err)
+    return saved
+end
+
+--- //gs c ui order [all|<JOB>] weapons modes spells ... | [all|<JOB>] reset
 local function run_order(args)
-    if args[1] == 'reset' then return apply('layout', 'section_order', nil) end
+    local scope = take_scope(args)
     if #args == 0 then
-        MessageUI.show_error('use: //gs c ui order weapons modes spells ...')
+        MessageUI.show_error('use: //gs c ui order [all|<JOB>] weapons modes spells ...')
         return false
     end
+    if args[1]:lower() == 'reset' then return save_order(scope, 'section_order', nil) end
     local order = {}
     for i, name in ipairs(args) do order[i] = name:lower() end
-    return apply('layout', 'section_order', order)
+    local problem = new_problems('layout', 'section_order', order)
+    if problem then
+        MessageUI.show_error(problem)
+        return false
+    end
+    return save_order(scope, 'section_order', order)
 end
 
 --- //gs c ui rollorder bust party lucky 11 | reset
@@ -213,16 +251,28 @@ local function run_roll_order(args)
     return apply('rolls', 'order', order)
 end
 
---- //gs c ui roworder MainWeapon CombatMode ... | reset
+--- The default row order of every job (UI_CONFIG layout.row_order) as a
+--- list, or nil.
+local function default_row_order()
+    local raw = (config().layout or {}).row_order
+    if type(raw) ~= 'table' then return nil end
+    if #raw > 0 then return raw end
+    return type(raw.all) == 'table' and raw.all or nil
+end
+
+--- //gs c ui roworder [all|<JOB>] <state> <state> ... | [all|<JOB>] reset
+--- The job played now by default; `all` = the default of every job
+--- (UI_CONFIG.lua); a job code = that job's config/<job>/<JOB>_HUD.lua.
 local function run_row_order(args)
-    if args[1] and args[1]:lower() == 'reset' then return apply('layout', 'row_order', nil) end
+    local scope = take_scope(args)
     if #args == 0 then
-        MessageUI.show_error('use: //gs c ui roworder <state> <state> ... (names as in the HUD file, or keys)')
+        MessageUI.show_error('use: //gs c ui roworder [all|<JOB>] <state> <state> ... (names as in the _KEYBINDS file, or keys)')
         return false
     end
-    local order = {}
-    for i, name in ipairs(args) do order[i] = name end
-    return apply('layout', 'row_order', order)
+    if args[1]:lower() == 'reset' then return save_order(scope, 'row_order', nil) end
+    local list = {}
+    for i, name in ipairs(args) do list[i] = name end
+    return save_order(scope, 'row_order', list)
 end
 
 local function run_color(args)
@@ -250,9 +300,26 @@ local function section_words(order)
 end
 
 --- Current values, one line each.
---- "MainWeapon CombatMode", or "standard".
-local function row_order_text(list)
-    return type(list) == 'table' and #list > 0 and table.concat(list, ' ') or 'standard'
+--- "THF: weapons modes... / all: spells ..." for the section order.
+local function section_order_text()
+    local job = player and player.main_job
+    local ok, HudJobConfig = pcall(require, 'shared/utils/ui/hud_job_config')
+    local own = ok and job and HudJobConfig.section_order(job)
+    local default = section_words(UIStyle.get().layout.section_order)
+    if own then return job .. ': ' .. section_words(UIStyle.section_order(job)) .. ' / all: ' .. default end
+    return default
+end
+
+--- "THF: TreasureMode HybridMode / all: MainWeapon", or "standard".
+local function row_order_text()
+    local job = player and player.main_job
+    local ok, HudJobConfig = pcall(require, 'shared/utils/ui/hud_job_config')
+    local own = ok and job and HudJobConfig.row_order(job)
+    local default = default_row_order()
+    local parts = {}
+    if own then parts[#parts + 1] = job .. ': ' .. table.concat(own, ' ') end
+    if default then parts[#parts + 1] = 'all: ' .. table.concat(default, ' ') end
+    return #parts > 0 and table.concat(parts, ' / ') or 'standard'
 end
 
 --- "success 99, green 204", or "standard".
@@ -277,8 +344,8 @@ local function show_style()
         {'Keys', layout.key_style},
         -- The name, not the symbol: the FFXI chat cannot print "●"
         {'Bullet', UIStyle.bullet_name((config().layout or {}).bullet)},
-        {'Order', section_words(layout.section_order)},
-        {'Row order', row_order_text((config().layout or {}).row_order)},
+        {'Order', section_order_text()},
+        {'Row order', row_order_text()},
         {'Separators', chat.separators},
         {'Separator', ('%s / color %s / width %s'):format(chat.separator_char,
             tostring(chat.separator_color or 160), tostring(separator_width()))},

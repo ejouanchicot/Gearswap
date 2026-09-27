@@ -323,9 +323,15 @@ UIConfig.sections = {
 -- The values written here ARE the standard ones.
 
 UIConfig.layout = {
-    -- Order of the HUD sections. Names: 'spells', 'enhancing', 'abilities',
-    -- 'weapons', 'modes'. A section missing from the list goes at the end
-    -- (to hide a section, use UIConfig.sections above).
+    -- Default order of the HUD sections, for every job. Names: 'spells',
+    -- 'enhancing', 'abilities', 'weapons', 'modes'. A section missing from
+    -- the list goes at the end (to hide a section, use UIConfig.sections
+    -- above). A job can have its own order in config/<job>/<JOB>_HUD.lua
+    -- (e.g. config/thf/THF_HUD.lua), which replaces this one on that job.
+    --   //gs c ui order all weapons modes spells   this default line
+    --   //gs c ui order weapons modes spells       the job played now
+    --   //gs c ui order THF weapons modes          a named job
+    --   //gs c ui order reset / all reset          back to the default / standard
     section_order = {'spells', 'enhancing', 'abilities', 'weapons', 'modes'},
 
     -- true = tighter HUD: no blank line under section titles, columns
@@ -370,10 +376,18 @@ UIConfig.layout = {
         -- CombatMode = 'weapons',
     },
 
-    -- Order of the rows inside each section: the rows named here come
-    -- first, in this order, the others after them as usual. State names
-    -- (as in the job's _KEYBINDS file) or keys. On ONE line (the in-game
-    -- //gs c ui roworder rewrites it).
+    -- Default order of the rows inside each section, for every job: the
+    -- rows named here come first in their section, in this order; the
+    -- others follow in the order of the job's _KEYBINDS file. Names = the
+    -- states as written in the _KEYBINDS file (capitals included), or keys;
+    -- a name the job does not have is skipped. On ONE line.
+    -- A job can have its own order in config/<job>/<JOB>_HUD.lua (e.g.
+    -- config/thf/THF_HUD.lua): when that list is not empty it replaces this
+    -- one on that job.
+    --   //gs c ui roworder all MainWeapon SubWeapon   this default line
+    --   //gs c ui roworder TreasureMode HybridMode    the job played now
+    --   //gs c ui roworder THF TreasureMode           a named job
+    --   //gs c ui roworder reset / all reset          remove one or the other
     -- row_order = {'MainWeapon', 'SubWeapon', 'CombatMode'},
 
     -- Rows to hide from the HUD (the key still works). State name or key.

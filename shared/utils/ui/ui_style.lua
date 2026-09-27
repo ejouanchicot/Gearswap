@@ -144,18 +144,40 @@ local function resolve_moves(raw, problems)
     return moves
 end
 
---- layout.row_order: state names or keys -> position (1 = first).
-local function resolve_row_order(raw, problems)
+--- A list of state names or keys -> position (1 = first).
+local function rank_of(list)
     local rank = {}
-    if raw == nil then return rank end
-    if type(raw) ~= 'table' then
-        warn(problems, 'layout.row_order must be a list')
-        return rank
-    end
-    for i, name in ipairs(raw) do
+    for i, name in ipairs(list) do
         if rank[name] == nil then rank[name] = i end
     end
     return rank
+end
+
+--- layout.row_order: a list for every job, or {all = {...}, THF = {...}}
+--- (`all` is the default; a job's own list, when not empty, replaces it on
+--- that job; job codes in any case).
+--- @return table {all = rank, jobs = {JOB = rank}}
+local function resolve_row_order(raw, problems)
+    local order = {all = {}, jobs = {}}
+    if raw == nil then return order end
+    if type(raw) ~= 'table' then
+        warn(problems, 'layout.row_order must be a list, or {all = {...}, THF = {...}}')
+        return order
+    end
+    order.all = rank_of(raw)
+    for name, list in pairs(raw) do
+        if type(name) == 'string' then
+            if type(list) ~= 'table' then
+                warn(problems, ('layout.row_order.%s must be a list'):format(name))
+            elseif name:lower() == 'all' then
+                order.all = rank_of(list)
+            elseif #list > 0 then
+                -- An empty list leaves the job on `all`
+                order.jobs[name:upper()] = rank_of(list)
+            end
+        end
+    end
+    return order
 end
 
 local function resolve_set(raw, label, problems)
@@ -487,13 +509,30 @@ function UIStyle.visible_rows(keybinds)
     return shown
 end
 
+--- The section order of `job` (default: the job played now): its own list
+--- in config/<job>/<JOB>_HUD.lua when not empty, else layout.section_order.
+--- @param job string|nil
+--- @return table Section buckets in order
+function UIStyle.section_order(job)
+    job = job or (player and player.main_job)
+    local ok, HudJobConfig = pcall(require, 'shared/utils/ui/hud_job_config')
+    local own = ok and HudJobConfig and job and HudJobConfig.section_order(job)
+    if own then return resolve_order(own, {}) end
+    return UIStyle.get().layout.section_order
+end
+
 --- Rows in the player's order (layout.row_order): the rows it names come
 --- first, in its order; the others keep the file order after them. Each
 --- section keeps only its own rows, so this orders every section at once.
 --- @param keybinds table List of bind entries
 --- @return table The same list when no order is set, else a sorted copy
 function UIStyle.ordered_rows(keybinds)
-    local rank = UIStyle.get().layout.row_order
+    local order = UIStyle.get().layout.row_order
+    local job = player and player.main_job
+    -- The job's own list (config/<job>/<JOB>_HUD.lua) replaces the default
+    local ok, HudJobConfig = pcall(require, 'shared/utils/ui/hud_job_config')
+    local own = ok and HudJobConfig and job and HudJobConfig.row_order(job)
+    local rank = own and rank_of(own) or (job and order.jobs[job]) or order.all
     if next(rank) == nil then return keybinds end
     local indexed = {}
     for i, bind in ipairs(keybinds) do

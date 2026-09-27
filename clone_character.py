@@ -304,7 +304,8 @@ def parse_character_db(db_path):
 # ============================================================================
 
 # Files the game session writes into a character folder (HUD position, message
-# modes, alt window and alt orders, owned warp items, temporary binds). A
+# modes, alt window and alt orders, owned warp items, temporary binds, per-job
+# HUD files; a part may be a * pattern). A
 # re-clone moves the old folder aside; these are copied back from it so the
 # player does not lose them. dualbox_role.lua is left out on purpose: the
 # re-clone writes DUALBOX_CONFIG.lua from the role asked for, and an old role
@@ -317,6 +318,7 @@ KEPT_ON_RECLONE = [
     ('config', 'WARP_ITEMS_OWNED.lua'),
     ('config', 'combat_mode.lua'),
     ('config', 'STEALTH_CONFIG.lua'),
+    ('config', '*', '*_HUD.lua'),   # per-job HUD row order (//gs c ui roworder)
     ('temp_binds.lua',),
 ]
 
@@ -435,12 +437,13 @@ class SmartCharacterCloner:
     def _restore_kept_files(self, backup_dir, target_dir):
         """Copy the files written in game back from the backup."""
         for parts in KEPT_ON_RECLONE:
-            src = backup_dir.joinpath(*parts)
-            if src.is_file():
-                dst = target_dir.joinpath(*parts)
-                dst.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(src, dst)
-                print(self.t['restored'].format('/'.join(parts)))
+            for src in backup_dir.glob('/'.join(parts)):
+                if src.is_file():
+                    rel = src.relative_to(backup_dir)
+                    dst = target_dir / rel
+                    dst.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(src, dst)
+                    print(self.t['restored'].format(rel.as_posix()))
 
     # ------------------------------------------------------------------
     # DATABASE LOOKUP + JOB SELECTION
