@@ -66,9 +66,27 @@ function MessageStealth.show_setting(key, value, saved)
     M.send('STEALTH', saved and 'setting' or 'setting_unsaved', {key = key, value = text})
 end
 
---- The command's usage.
+--- The command's usage (//gs c stealth help).
 function MessageStealth.show_usage()
-    M.send('STEALTH', 'usage', {})
+    require('shared/utils/messages/help_screen').show({
+        title = 'STEALTH', subtitle = 'Sneak / Invisible on you and your alts',
+        groups = {
+            {title = 'CAST', rows = {
+                {'//gs c stealth ', 'sneak | invi | both', 'You + alts, best method each'},
+                {'//gs c stealth ', 'sneak | invi self', 'Only you, no alt check (fast)'},
+                {'//gs c stealth check', '', 'What it would do now'},
+                {'//gs c stealth status', '', 'Time left, you and alts'},
+            }},
+            {title = 'SETTINGS', note = 'saved in config/STEALTH_CONFIG.lua', rows = {
+                {'//gs c stealth refresh ', '<seconds>', 'Recast when less is left'},
+                {'//gs c stealth alert ', '<seconds>', 'Warning before it wears off'},
+                {'//gs c stealth alerts ', 'on|off', 'Those warnings'},
+                {'//gs c stealth overwrite ', 'on|off', 'Recast even with time left'},
+                {'//gs c stealth delay ', '<seconds>', 'Pause between two casts'},
+            }},
+        },
+        notes = {'Keys: Alt+Z = sneak, Alt+X = invisible (config/COMMON_KEYBINDS.lua).'},
+    })
 end
 
 return MessageStealth

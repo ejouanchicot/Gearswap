@@ -166,8 +166,12 @@ end
 
 --- Whether `kind` should be cast: overwrite, or nothing up, or less than
 --- refresh_below left; a buff asked for a moment ago counts as up.
+--- Buffs to recast although still up, until os.clock() (see keep_invisible).
+local forced = {}
+
 local function needs(kind)
     if (pending()[kind] or 0) > os.clock() then return false end
+    if (forced[kind] or 0) > os.clock() then return true end
     local settings = Config.get()
     if settings.overwrite then return true end
     local left = Timers.left(kind)
@@ -176,9 +180,28 @@ local function needs(kind)
 end
 
 --- One line per decision in the trace (//gs c trace on).
+local FORCE_WINDOW = 10   -- seconds the "recast Invisible anyway" lasts
+
 local function trace(fmt, ...)
     local ok, Trace = pcall(require, 'shared/utils/debug/trace_log')
     if ok and Trace then Trace.log('STEALTH', fmt, ...) end
+end
+
+--- Any action a character makes (spell, item, ability) breaks its own
+--- Invisible. Asked for Sneak while Invisible is up, this box would lose it
+--- right after: ask for both, Sneak first, and recast Invisible even though
+--- it still has time left.
+--- @param kinds table 'sneak' / 'invi', in order
+--- @return table kinds
+local function keep_invisible(kinds)
+    local wants_sneak = false
+    for _, kind in ipairs(kinds) do
+        if kind == 'sneak' then wants_sneak = true end
+    end
+    if not (wants_sneak and needs('sneak') and is_up('invi')) then return kinds end
+    forced.invi = os.clock() + FORCE_WINDOW
+    trace('invi: up, recast after sneak (an action breaks it)')
+    return {'sneak', 'invi'}
 end
 
 --- This character's own best way for one buff (Methods.best_own). Returns
@@ -436,7 +459,7 @@ local SETTINGS = {refresh = 'refresh_below', alert = 'alert_before', overwrite =
 function Stealth.handle(args)
     local sub = args[1] and args[1]:lower() or 'status'
     if sub == 'sneak' or sub == 'invi' or sub == 'both' then
-        local kinds = sub == 'both' and {'sneak', 'invi'} or {sub}
+        local kinds = keep_invisible(sub == 'both' and {'sneak', 'invi'} or {sub})
         local flag = args[2] and args[2]:lower()
         if flag == 'self' then
             handle_self(kinds, true)

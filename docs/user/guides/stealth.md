@@ -86,6 +86,10 @@ A buff you just asked for counts as up for a few seconds, so pressing the key
 twice does not cast twice. `overwrite on` casts again whatever time is left
 (the few seconds after a press still count).
 
+Any action you make (spell, item, ability) takes Invisible off you. So when
+you ask for Sneak while Invisible is up, you get both: Sneak first, then
+Invisible again, even if Invisible still had time left.
+
 ## Timers and warnings
 
 Each character reads the end time of its own Sneak and Invisible from the

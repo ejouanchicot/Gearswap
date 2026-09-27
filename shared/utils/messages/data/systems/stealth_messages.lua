@@ -19,5 +19,4 @@ return {
     wearing_off_other = { template = "{gray}[{lightblue}STEALTH{gray}] {white}{name}{gray} : {yellow}{buff}{gray} wears off in {yellow}{left}", color = 1 },
     setting = { template = "{gray}[{lightblue}STEALTH{gray}] {white}{key}{gray} : {green}{value}", color = 1 },
     setting_unsaved = { template = "{gray}[{lightblue}STEALTH{gray}] {white}{key}{gray} : {green}{value}{gray} - {red}not saved{gray} (config/STEALTH_CONFIG.lua missing)", color = 1 },
-    usage = { template = "{gray}[{lightblue}STEALTH{gray}] {white}//gs c stealth{gray} sneak | invi | both [self] | status | check | refresh <s> | alert <s> | overwrite on|off | alerts on|off | delay <s>", color = 1 },
 }

@@ -83,6 +83,8 @@ sequenceDiagram
 
 `self` mode never claims, never waits and never asks anyone.
 
+Before any of this, `Stealth.handle` passes the kinds through `keep_invisible` (2026-09-27): when Sneak is asked, still `needs()`ed and Invisible is up on this box, the request becomes `{'sneak', 'invi'}` and `forced.invi` makes `needs('invi')` true for `FORCE_WINDOW` (10 s), because the Sneak cast (any action) breaks this box's own Invisible. The rule runs on each box for its own buffs: the alts get `stealth sneak local` and apply it themselves.
+
 ### Which ways exist (`stealth_methods.lua`)
 
 `best_own(kind)` (`:145-157`) after Jig: the spell (`can_cast`), then the ninjutsu list, then the items in order (`BY_BUFF`, `:26-39`: Sneak -> Monomi: Ichi, Silent Oil, Evanessence; Invisible -> Tonko: Ni, Tonko: Ichi, Prism Powder, Evanessence). `check` uses the same function, so it shows what the key will do.
