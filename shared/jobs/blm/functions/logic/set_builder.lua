@@ -150,12 +150,31 @@ SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 ---   COMPLETE SET BUILDERS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+---   The mode's own set in a group, when it has one: DeathMode On ->
+---   <group>.Death (idle only: Death hits for MP x 3, so the idle keeps the
+---   MP up), HybridMode PDT -> <group>.PDT. Mote picks by IdleMode /
+---   OffenseMode only, so neither mode would change anything otherwise.
+---   @param group table sets.idle or sets.engaged
+---   @param base_set table Set Mote selected
+---   @param allow_death boolean Whether DeathMode applies to this group
+---   @return table
+local function mode_base(group, base_set, allow_death)
+    if not group then return base_set end
+    if allow_death and state.DeathMode and state.DeathMode.value == 'On' and group.Death then
+        return group.Death
+    end
+    if state.HybridMode and state.HybridMode.value == 'PDT' and group.PDT then
+        return group.PDT
+    end
+    return base_set
+end
+
 ---   Build complete engaged set (Mote's base set + weapons)
 ---   @param base_set table Base engaged set from Mote
 ---   @return table Complete engaged set
 function SetBuilder.build_engaged_set(base_set)
-    -- Step 1: Use base set from Mote
-    local result = base_set or sets.engaged.Normal or {}
+    -- Step 1: Mote's base set, or the HybridMode PDT set
+    local result = mode_base(sets.engaged, base_set or sets.engaged.Normal or {}, false)
 
     -- Step 2: Apply weapon sets from states
     result = SetBuilder.apply_weapon(result)
@@ -167,8 +186,8 @@ end
 ---   @param base_set table Base idle set from Mote
 ---   @return table Complete idle set
 function SetBuilder.build_idle_set(base_set)
-    -- Step 1: Use base set from Mote
-    local result = base_set or sets.idle.Normal or {}
+    -- Step 1: Mote's base set, or the DeathMode / HybridMode PDT set
+    local result = mode_base(sets.idle, base_set or sets.idle.Normal or {}, true)
 
     -- Step 2: Town detection - use town set as base (inherited from BaseSetBuilder)
     local town_result, in_town = BaseSetBuilder.select_idle_base_town(result)

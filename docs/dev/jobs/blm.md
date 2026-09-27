@@ -300,7 +300,10 @@ flowchart TD
 - Mote's own selection is `sets.idle[IdleMode]` and
   `sets.engaged[OffenseMode][HybridMode]`; `IdleMode` and `OffenseMode` are the
   Mote default `'Normal'` (`Modes.lua:154-158`), so `sets.idle.Normal` and
-  `sets.engaged.Normal` are always the base, whatever `HybridMode` says.
+  `sets.engaged.Normal` are Mote's base. `mode_base` in `set_builder.lua` then
+  swaps it: `DeathMode` On -> `sets.idle.Death` (idle only; Death hits for
+  current MP x 3), `HybridMode` PDT -> `sets.idle.PDT` / `sets.engaged.PDT`,
+  each only when the set exists (since 2026-09-27).
 - `job_status_change` / `job_buff_change` are the shared `LifecycleManager`
   handlers (Doom handling etc.), see [core lifecycle](../systems/core-lifecycle.md).
 - `job_handle_equipping_gear` (`BLM_MOVEMENT.lua:39-49`) equips the Impact body
@@ -317,10 +320,10 @@ character's `config/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
-| `HybridMode` (Mote) | PDT, Normal | Normal | `^numpad9` | Mote `get_melee_set` only as `sets.engaged.Normal.PDT` (absent), UI |
+| `HybridMode` (Mote) | PDT, Normal | Normal | `^numpad9` | `set_builder.lua` `mode_base`: `sets.idle.PDT`, `sets.engaged.PDT` |
 | `CombatMode` | Off, On | Off | `^numpad8` | lock: shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25); weapons: `job_state_change` (`BLM_COMMANDS.lua:544-546`) |
 | `MagicBurstMode` | Off, On, Acc | On | `^numpad0` | `midcast_router.lua:106,149`; `special_handlers.lua:37` (On only) |
-| `DeathMode` | Off, On | Off | `#numpad7` | nothing (no reader in the repo) |
+| `DeathMode` | Off, On | Off | `#numpad7` | `set_builder.lua` `mode_base`: `sets.idle.Death` |
 | `MainWeapon` | Hvergelmir | Hvergelmir | none | `set_builder.lua:117` (`sets.Hvergelmir`, absent) |
 | `SubWeapon` | Alber Strap | Alber Strap | none | `set_builder.lua:130` (`sets['Alber Strap']`, absent) |
 | `MainLightSpell` | Fire, Aero, Thunder | Fire | `^numpad3` | `light`, `cyclemainlight`; UI readiness anchor (`ui_lifecycle.lua:42-43`); `spell_from_state` example in dual-box docs |
@@ -391,7 +394,7 @@ T = `_master/sets/blm_sets.lua`, L = `Tetsouo/sets/blm/blm_sets.lua`.
 | Set | Looked up by | T | L |
 |-----|--------------|---|---|
 | `sets.idle.Normal`, `sets.engaged.Normal` | Mote base (Normal modes) | 146, 172 | 56, 82 |
-| `sets.idle.PDT`, `sets.engaged.PDT` | nothing reaches them (HybridMode) | 165, 191 | 75, 101 |
+| `sets.idle.PDT`, `sets.engaged.PDT`, `sets.idle.Death` | `mode_base` (HybridMode PDT, DeathMode On); copies of Normal until filled | 165, 191 | 75, 101 |
 | `sets.idle.Town`, `sets.Adoulin`, `sets.MoveSpeed` | `BaseSetBuilder`, Mote Town scope | 585 (`= sets.MoveSpeed`), 588, 580 | 475 (`set_combine(idle.PDT, MoveSpeed)`), 478, 470 |
 | `sets[state.MainWeapon]`, `sets[state.SubWeapon]` | `set_builder.lua:118,131` | absent | absent |
 | `sets.buff['Mana Wall']` | `set_builder.lua:186` | 600 | 486 |
@@ -563,7 +566,6 @@ they are self-assignments; no code path reads them.
   (`BLM_MOVEMENT.lua:39-49`).
 - Initial macrobook/lockstyle depend on a side effect of `KeybindManager`'s
   `show_intro` (`Tetsouo_BLM.lua:197-200`).
-- `HybridMode = PDT` never selects the PDT sets (`set_builder.lua:155-163`).
 - The Magic Burst `/p` call is sent even when the cast is then cancelled or
   cannot be paid (`spell_refiner.lua:144`).
 - `should_cancel` can never be true (`replacement_logic.lua:126`).
@@ -577,6 +579,6 @@ they are self-assignments; no code path reads them.
   bases (`_master/sets/blm_sets.lua:585,588`).
 - Dead code: `SetBuilder.SaveMP` family, `cast_storm_only`,
   `get_spell_element_name`, `get_blm_movement_status`, `BLMStates.validate`,
-  `cycle TierSpell`, `DeathMode`, weapon states, 11 BLM message functions.
+  `cycle TierSpell`, weapon states, 11 BLM message functions.
 - User docs out of date (`docs/user/jobs/blm/states.md`,
   `docs/user/guides/commands.md:233-240`).

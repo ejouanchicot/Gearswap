@@ -29,7 +29,7 @@
 ---   • MainLightAOE: Fira/Aera/Thundara (Light AOE spells)
 ---   • MainDarkAOE: Blizzara/Stonera/Watera (Dark AOE spells)
 ---   • AOETier: Aja/III/II/I (AOE spell tier)
----   • DeathMode: On = optimize for Death spell, Off = normal nukes
+---   • DeathMode: On = idle in sets.idle.Death (max MP for Death), Off = normal idle
 ---
 --- Dependencies:
 ---   • Mote-Include (M state creator, state:options(), state:set())
@@ -78,7 +78,7 @@ function BLMStates.configure()
     state.DeathMode = M {
         ['description'] = 'Death Mode',
         'Off',  -- Normal nukes
-        'On'    -- Optimize for Death spell (HP-based damage)
+        'On'    -- Idle in sets.idle.Death (Death hits for MP x 3)
     }
     state.DeathMode:set('Off')  -- Default to Off
 

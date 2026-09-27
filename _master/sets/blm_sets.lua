@@ -14,7 +14,7 @@
 ---
 --- Architecture:
 ---   • Equipment definitions (Merlinic sets, Telchine duration, Taranus cape)
----   • Idle sets (Normal, PDT, Town)
+---   • Idle sets (Normal, PDT, Death, Town)
 ---   • Engaged sets (Normal, PDT)
 ---   • Precast sets (Fast Cast, Job Abilities, Weaponskills)
 ---   • Midcast sets (Cure, Enhancing, Enfeebling, Dark Magic, Elemental Magic)
@@ -161,8 +161,14 @@ sets.idle.Normal = {
     back = 'Solemnity Cape'
 }
 
--- • PDT MODE (placeholder: currently identical to Normal)
+-- • PDT MODE (HybridMode PDT, Ctrl+Numpad9): worn instead of the Normal idle.
+--   Identical to Normal until damage taken pieces go in the {}.
 sets.idle.PDT = set_combine(sets.idle.Normal, {})
+
+-- • DEATH MODE (DeathMode On): worn instead of the idle sets. Death hits for
+--   current MP x 3 and consumes all MP, so this set keeps the MP at its max.
+--   Identical to Normal until max MP pieces go in the {}.
+sets.idle.Death = set_combine(sets.idle.Normal, {})
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- ENGAGED SETS
@@ -187,7 +193,7 @@ sets.engaged.Normal = {
     back = "Taranus's Cape"
 }
 
--- • PDT MODE (placeholder: currently identical to Normal)
+-- • PDT MODE (HybridMode PDT): identical to Normal until damage taken pieces go in the {}
 sets.engaged.PDT = set_combine(sets.engaged.Normal, {})
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -536,7 +542,8 @@ sets.midcast['Impact'] = {
 
 sets.midcast['Impact'].MagicBurst = sets.midcast['Impact']
 
--- • Death (HP-Based Damage)
+-- • Death: current MP x 3 + magic attack, all MP consumed. The nuke set
+--   until a max MP + magic attack set replaces it (precast: sets.precast.FC.Death).
 sets.midcast['Death'] = sets.midcast['Elemental Magic']
 sets.midcast['Death'].MagicBurst = sets.midcast['Elemental Magic'].MagicBurst
 
