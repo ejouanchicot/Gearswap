@@ -227,7 +227,9 @@ and wraps the entry's `visible` with `CombatMode.is_shown(job)`.
   first `attach` of the sandbox). The file also holds a key per job (`keys`), which
   replaces the entry's. `all` in any of the three tables stands for every job not
   named (`shown = {all = true}, keys = {all = '~f9'}`: Gab's Shift+F9 on all his jobs). Written by `//gs c combatmode show | hide | key <key>|none`
-  (`combat_mode_commands.lua`), kept across a re-clone (`KEPT_ON_RECLONE`).
+  (`combat_mode_commands.lua`), kept across a re-clone (`KEPT_ON_RECLONE`). The commands rewrite the file whole, so
+  it starts with `HEADER` (`combat_mode_commands.lua`): what the file is, the three tables, examples, the commands
+  (2026-09-27; it used to be one line). Job codes are read in any case (`by_job`: `thf` counts as `THF`, `ALL` as `all`).
 - **Lock.** `CombatMode.install_hook()` (INIT_SYSTEMS, after the custom hooks, so it runs
   first) wraps `handle_equipping_gear`: On and shown disables main, sub, range (and ammo
   on BLM, GEO and WHM) before the gear; otherwise it enables what it locked, unless a craft

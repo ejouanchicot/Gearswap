@@ -168,9 +168,23 @@ another job, its key is Alt+Numpad0 unless you pick one.
 | `//gs c combatmode show` / `hide` | Use it on this job or not (HUD row, key, lock) |
 | `//gs c combatmode key <key>` / `key none` | Its key on this job |
 
-Saved per character in `config/combat_mode.lua`. To use it everywhere with
-one key, write the file by hand:
-`return { shown = {all = true}, hidden = {}, keys = {all = '~f9'} }`.
+Saved per character in `config/combat_mode.lua`; the file explains itself at
+the top. The GearSwap adds Combat Mode by itself: no job file defines it, so
+this file is the place to look. Examples:
+
+```lua
+-- Every job, Shift+F9 everywhere:
+return { shown = {all = true}, hidden = {}, keys = {all = '~f9'} }
+
+-- Every job except THF and BLU:
+return { shown = {all = true}, hidden = {BLU = true, THF = true}, keys = {all = '~f9'} }
+
+-- Shift+F9 everywhere, Alt+F10 on THF:
+return { shown = {all = true}, hidden = {}, keys = {THF = '!f10', all = '~f9'} }
+```
+
+A job is its code in capitals followed by `= true`. After editing by hand:
+`//gs reload`. The commands above do the same without opening the file.
 
 ## Temporary keys (`//gs c tb`)
 

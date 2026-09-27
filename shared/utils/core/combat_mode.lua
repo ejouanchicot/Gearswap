@@ -56,6 +56,17 @@ function CombatMode.settings_path()
     return ('%sdata/%s/config/combat_mode.lua'):format(windower.addon_path, player.name)
 end
 
+--- A {JOB = value} table with its job codes in capitals ("thf" -> THF,
+--- "ALL" -> all): a job typed in lower case by hand still counts.
+local function by_job(t)
+    local out = {}
+    for job, value in pairs(type(t) == 'table' and t or {}) do
+        local name = tostring(job)
+        out[name:lower() == 'all' and 'all' or name:upper()] = value
+    end
+    return out
+end
+
 --- The character's settings, read once per load.
 --- @return table {shown, hidden, keys}
 function CombatMode.settings()
@@ -69,7 +80,7 @@ function CombatMode.settings()
         if ok and type(data) == 'table' then loaded = data end
     end
     loaded = loaded or {}
-    _G._combat_mode_settings = {shown = loaded.shown or {}, hidden = loaded.hidden or {}, keys = loaded.keys or {}}
+    _G._combat_mode_settings = {shown = by_job(loaded.shown), hidden = by_job(loaded.hidden), keys = by_job(loaded.keys)}
     return _G._combat_mode_settings
 end
 

@@ -30,6 +30,40 @@ local function job_table(t)
     return '{' .. table.concat(parts, ', ') .. '}'
 end
 
+--- Written at the top of the settings file: the file is rewritten whole by
+--- every command, so its explanation has to come from here.
+local HEADER = [[
+-- Combat Mode: locks the weapons (main, sub, range) so a spell or a set
+-- never swaps them and the TP stays. The GearSwap adds it by itself: no job
+-- file defines it. This file decides on which jobs it appears (HUD row, key
+-- and lock) and its key. The //gs c combatmode commands rewrite it; editing
+-- it by hand works too (reload after: //gs reload).
+--
+-- shown  = jobs where it appears. all = true means every job.
+-- hidden = jobs where it never appears, even with all = true.
+-- keys   = its key per job; all = the key of every job not listed.
+--          ^ Ctrl, ! Alt, ~ Shift, @ Win, # Apps (e.g. '~f9' = Shift+F9).
+-- A job is written in capitals, followed by = true: THF = true.
+--
+-- Examples:
+--   Every job except THF and BLU:
+--     shown = {all = true},
+--     hidden = {BLU = true, THF = true},
+--   Only on WAR and SAM:
+--     shown = {SAM = true, WAR = true},
+--     hidden = {},
+--   Shift+F9 everywhere, Alt+F10 on THF:
+--     keys = {THF = '!f10', all = '~f9'},
+--
+-- In game, on the job concerned:
+--   //gs c combatmode             what it does on this job
+--   //gs c combatmode hide        not on this job any more (hidden)
+--   //gs c combatmode show        back on this job
+--   //gs c combatmode key !f10    its key on this job (none = no key)
+-- Delete this file to go back to the defaults: only BLM, GEO, RDM and WHM
+-- have it, with their own key.
+]]
+
 --- Write the settings file.
 --- @return boolean
 local function save()
@@ -40,7 +74,7 @@ local function save()
         return false
     end
     local s = CombatMode.settings()
-    file:write('-- Written by //gs c combatmode. Delete it to go back to the defaults.\n')
+    file:write(HEADER)
     file:write(('return {\n    shown = %s,\n    hidden = %s,\n    keys = %s,\n}\n'):format(
         job_table(s.shown), job_table(s.hidden), job_table(s.keys)))
     file:close()
