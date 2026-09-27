@@ -93,9 +93,29 @@ local POLL_GRACE = 6.0
 --- generations of pending casts believing they are both current.
 windower._sch_cast_seq = windower._sch_cast_seq or 0
 
+--- Ids of the buffs the chains wait on (res/buffs.lua).
+local BUFF_IDS = {
+    ['Light Arts'] = 358, ['Dark Arts'] = 359, ['Addendum: White'] = 401,
+    ['Addendum: Black'] = 402, ['Accession'] = 366, ['Manifestation'] = 367,
+}
+
+--- Whether a buff is up, read from the game for the buffs above.
+---
+--- The chains poll from scheduled functions, where GearSwap's buffactive
+--- can lag behind the buff just gained: a chain then saw no Light Arts and
+--- gave up ("Light Arts never came up") although it was on. Other names
+--- fall back to buffactive.
 --- @param name string Buff name as it appears in buffactive
 --- @return boolean
 local function buff_up(name)
+    local id = BUFF_IDS[name]
+    if id then
+        local p = windower.ffxi.get_player()
+        for _, buff in ipairs(p and p.buffs or {}) do
+            if buff == id then return true end
+        end
+        return false
+    end
     return (buffactive and buffactive[name]) and true or false
 end
 
