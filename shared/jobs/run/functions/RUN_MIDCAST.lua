@@ -4,7 +4,7 @@
 ---   Handles midcast for Rune Fencer with specialized Cure and enmity optimization.
 ---
 ---   Features:
----   - Cure III/IV: CureSelf/CureOther via CureSetBuilder (job_midcast)
+---   - Cure to Cure IV (subjob): CureSelf/CureOther via CureSetBuilder (job_midcast)
 ---   - Enmity spells: Flash, Enlight (matched by name before Divine Magic)
 ---   - Phalanx: plain Enhancing Magic lookup (name set wins)
 ---   - Enhancing Magic: Database-driven spell_family routing
@@ -44,7 +44,7 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
----   Pre-midcast hook (Cure III/IV dynamic target-based set selection)
+---   Pre-midcast hook (Cure to Cure IV, set chosen by target)
 ---   @param spell table Spell information from GearSwap
 ---   @param action string Action type
 ---   @param spellMap string Spell mapping from Mote-Include
@@ -54,18 +54,16 @@ function job_midcast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
     -- ══════════════════════════════════════════════════════════════════════════
-    -- CURE III/IV: DYNAMIC TARGET-BASED SETS (CureSetBuilder)
+    -- CURE TO CURE IV (subjob): CureSelf / CureOther by target (CureSetBuilder)
     -- ══════════════════════════════════════════════════════════════════════════
     -- Handled here, before Mote's default midcast: eventArgs.handled skips it
-    -- and job_post_midcast returns early for these spells.
-    if spell.name == 'Cure III' or spell.name == 'Cure IV' then
-        local target_type = spell.target.type == 'SELF' and 'SELF' or 'OTHER'
-        local cure_set = CureSetBuilder.generate(spell, target_type)
-        if cure_set then
-            equip(cure_set)
-        end
+    -- and job_post_midcast returns early. Without the set, the cure is left
+    -- to the Healing Magic routing instead of keeping its precast gear.
+    local target_type = spell.target.type == 'SELF' and 'SELF' or 'OTHER'
+    local cure_set = CureSetBuilder and CureSetBuilder.generate(spell, target_type)
+    if cure_set then
+        equip(cure_set)
         eventArgs.handled = true
-        return
     end
 end
 

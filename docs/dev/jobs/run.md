@@ -15,7 +15,7 @@ of the shared pipeline:
   `SubWeapon` (Utu, Refined grip), grip skipped for Lycurgos, HybridMode
   PDT/MDT sets.
 - **Name-before-skill midcast**: Flash and Enlight caught before the Divine
-  skill, target-aware Cure III/IV, Phalanx by name, Enhancing by spell family,
+  skill, target-aware Cure to Cure IV (subjob), Phalanx by name, Enhancing by spell family,
   Blue Magic under one set.
 - **Rune command** (`//gs c rune`) from `state.RuneMode`, and a BLU AOE rotation
   (`//gs c aoe`) with the BLU config loaded by the entry.
@@ -34,7 +34,7 @@ Line numbers were re-checked against the working tree on 2026-09-25.
 | `_master/entry/Tetsouo_RUN.lua` | 271 | Entry point (template): same shape as PLD, BLU config preloaded (no TP config), keybinds deferred 0.5 s, initial macro book / lockstyle deferred 0.2 s |
 | `shared/jobs/run/functions/run_functions.lua` | 113 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/run/functions/RUN_PRECAST.lua` | 163 | `job_precast` (guard, cooldown, WS) / `job_post_precast` (TP gear, precast debug display) |
-| `shared/jobs/run/functions/RUN_MIDCAST.lua` | 159 | `job_midcast` (Cure III/IV) / `job_post_midcast` (dispatch) |
+| `shared/jobs/run/functions/RUN_MIDCAST.lua` | 157 | `job_midcast` (Cure to Cure IV) / `job_post_midcast` (dispatch) |
 | `shared/jobs/run/functions/RUN_AFTERCAST.lua` | 38 | `LifecycleManager.aftercast()`, empty `job_post_aftercast` |
 | `shared/jobs/run/functions/RUN_IDLE.lua` | 43 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/run/functions/RUN_ENGAGED.lua` | 41 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
@@ -46,14 +46,14 @@ Line numbers were re-checked against the working tree on 2026-09-25.
 | `shared/jobs/run/functions/RUN_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('RUN', ..., 'SAM', 1, 1)` |
 | `shared/jobs/run/functions/logic/set_builder.lua` | 187 | Idle/engaged: HybridMode, weapon, grip, town, movement |
 | `shared/jobs/run/functions/logic/aoe_manager.lua` | 182 | BLU rotation (same code as PLD's except strings; refuses without /BLU since 2026-09-25) |
-| `shared/jobs/run/functions/logic/cure_set_builder.lua` | 51 | CureSelf / CureOther for Cure III/IV (identical to PLD's) |
+| `shared/jobs/run/functions/logic/cure_set_builder.lua` | 57 | CureSelf / CureOther for Cure to Cure IV (subjob), `is_cure` |
 | `shared/jobs/run/functions/logic/rune_manager.lua` | 76 | `//gs c rune` (identical to PLD's) |
 | `_master/config/run/RUN_STATES.lua` | 152 | States, unused `validate` |
 | `_master/config/run/RUN_KEYBINDS.lua` | 45 | Data only: 4 binds handed to `KeybindManager.create('RUN', ...)`, plus the character's `COMMON_KEYBINDS.lua` keys |
 | `_master/config/run/RUN_LOCKSTYLE.lua` | 72 | Style 3 (`default`, `by_subjob`, `get_style`) |
 | `_master/config/run/RUN_MACROBOOK.lua` | 76 |
 | `_master/config/run/RUN_CUSTOM.lua` | 118 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) | Books 15-20 (same numbers as PLD) |
-| `_master/config/run/RUN_TP_CONFIG.lua` | 74 | `_G.RUNTPConfig` - **never loaded** |
+| `_master/config/run/RUN_TP_CONFIG.lua` | 74 | `_G.RUNTPConfig`, loaded by the entry |
 | `_master/config/run/RUN_BLU_MAGIC.lua` | 203 | Copy of `PLD_BLU_MAGIC`; loaded by the entry as `_G.BluMagicConfig` |
 | `_master/sets/run_sets.lua` | 401 | Template sets (flat) |
 | `shared/data/job_abilities/RUN_JA_DATABASE.lua` + `run/*.lua` | 13 + 276 | JA descriptions (runes, wards, SP) for `ability_message_handler` |
@@ -128,16 +128,15 @@ flowchart TD
     D --> E{eventArgs.cancel}
     E -- yes --> Z
     E -- no --> G
-    C -- yes --> G[WSPrecastHandler.handle with RUNTPConfig = empty]
+    C -- yes --> G[WSPrecastHandler.handle with RUNTPConfig]
     G --> H[Mote default_precast]
-    H --> I[job_post_precast: apply_tp_gear, debug display if PrecastDebugState]
+    H --> I[job_post_precast: apply_tp_gear, FC.CureSelf on a self cure, debug display if PrecastDebugState]
 ```
 
 - `cooldown_exclusions` (50-75) is the same Scholar list as PLD's, redundant
   with `CooldownChecker` ([precast pipeline](../systems/precast-pipeline.md)).
-- `RUNTPConfig = _G.RUNTPConfig or {}` (44): the entry never loads
-  `RUN_TP_CONFIG.lua` (the line is commented out and spells the global
-  `RUNTPCONFIG`, `Tetsouo_RUN.lua:107`), so no TP-bonus gear is computed.
+- `RUNTPConfig = _G.RUNTPConfig or {}` (44): the entry requires
+  `RUN_TP_CONFIG.lua`, which sets `_G.RUNTPConfig` (loaded since 2026-09-27).
 - Mote's default precast: `sets.precast.FC` for magic (no name/skill variants
   defined), `sets.precast.JA[name]` for JAs, `sets.precast.WS[name]` for WS.
   `sets.precast.JA` is `{}` (`run_sets.lua:139`): runes and any JA without a
@@ -159,8 +158,8 @@ Same Mote order as PLD: `job_midcast`, `default_midcast` unless handled,
 
 ```mermaid
 flowchart TD
-    A[job_midcast] --> B{Cure III or IV}
-    B -- yes --> C[CureSetBuilder.generate: nil on RUN, equip nothing, handled]
+    A[job_midcast] --> B{Cure to Cure IV and its set exists}
+    B -- yes --> C[equip CureSelf or CureOther, handled]
     B -- no --> D[Mote default_midcast]
     C --> E[job_post_midcast]
     D --> E
@@ -177,12 +176,16 @@ flowchart TD
     H -- Blue Magic --> H7[select_set Blue Magic]
 ```
 
-- `CureSetBuilder` needs `sets.midcast.CureSelf` / `CureOther`
-  (`cure_set_builder.lua:34`), which `run_sets.lua` does not define: it returns
-  nil, and `handled` still suppresses Mote's default, so Cure III/IV wear the
-  precast set through the cast.
-- `sets.midcast['Healing Magic']` and `['Divine Magic']` are absent, so those
-  routes are no-ops (`midcast_manager.lua` `select_set` returns when
+- RUN has no Cure of its own: Cure to Cure IV come from /WHM /RDM (I-IV) or
+  /PLD /SCH (I-III). `CureSetBuilder` returns `sets.midcast.CureSelf` on
+  yourself, `CureOther` otherwise, and never rewrites `sets.midcast.Cure`.
+  When the set is missing, `handled` stays false and the cure goes through
+  Mote and the Healing Magic route instead of keeping its precast gear.
+- Self cure HP gap, as on PLD: `job_post_precast` equips
+  `sets.precast.FC.CureSelf` (Fast Cast low on max HP), the midcast CureSelf
+  puts the HP back, the cure lands on a bigger gap.
+- `sets.midcast['Divine Magic']` is absent, so that
+  route is a no-op (`midcast_manager.lua` `select_set` returns when
   `sets.midcast[skill]` is missing). Enlight is a PLD spell;
   the branch only matters for a /PLD subjob that cannot learn it.
 - Flash, Foil and Crusade alias `sets.midcast.SIRDEnmity`
@@ -211,9 +214,9 @@ The two jobs were cloned from the same files; this is what diverged.
 
 | Area | PLD | RUN |
 |------|-----|-----|
-| Entry configs | `PLD_TP_CONFIG` and `PLD_BLU_MAGIC` loaded | `RUN_BLU_MAGIC` loaded (`Tetsouo_RUN.lua:102`), TP config commented out (107) |
+| Entry configs | `PLD_TP_CONFIG` and `PLD_BLU_MAGIC` loaded | `RUN_BLU_MAGIC` loaded (`Tetsouo_RUN.lua:102`), `RUN_TP_CONFIG` loaded too |
 | Keybinds | loaded synchronously; the `KeybindManager` intro requires the factory wrappers | deferred 0.5 s (same intro, too late for the gate); initial macro book / lockstyle gate deferred 0.2 s instead |
-| Precast | Divine Emblem / Majesty auto-abilities, Cure/Flash precast equips, CureSelf FC, Sortie override | none of these; precast debug display instead |
+| Precast | Divine Emblem / Majesty auto-abilities, Cure/Flash precast equips, CureSelf FC, Sortie override | CureSelf FC only (every Cure tier); precast debug display |
 | Midcast order | Healing checked before Flash | Flash and Enlight checked first |
 | Phalanx | SIRD override (`Xp`, `PhalanxSIRD`) or pseudo-skill `Phalanx` | plain Enhancing, name set wins |
 | Blue Magic | `Cocoon` pseudo-skill, else `Blue Magic` (no base set) | `Blue Magic` with a base set |
@@ -282,8 +285,9 @@ T = `_master/sets/run_sets.lua` (the only sets file in scope).
 | `sets.midcast['Flash']`, `['Foil']`, `['Crusade']` | skill `Flash`; P0 | 348-350 |
 | `sets.midcast['Enhancing Magic']`, `['Regen']`, `['Phalanx']` | skill base, P0/P1 | 314, 331, 354 |
 | `sets.midcast['Blue Magic']` | skill base | 372 |
-| `sets.midcast.CureSelf`, `.CureOther` | `cure_set_builder.lua:34` | **absent** |
-| `sets.midcast['Healing Magic']`, `['Divine Magic']` | `select_set` base | **absent** |
+| `sets.precast.FC.CureSelf`, `sets.Cure`, `sets.midcast.CureSelf`, `.CureOther` | `RUN_PRECAST` / `cure_set_builder.lua` | defined (base: SIRD + enmity) |
+| `sets.midcast['Healing Magic']` | `select_set` base | `sets.Cure` |
+| `sets.midcast['Divine Magic']` | `select_set` base | **absent** |
 | `sets.buff.Doom` | DoomManager | 396 |
 
 ## Configuration
@@ -343,8 +347,6 @@ T = `_master/sets/run_sets.lua` (the only sets file in scope).
 
 ## Extending
 
-- Load the TP config in the entry next to the BLU one:
-  `require('Tetsouo/config/run/RUN_TP_CONFIG')` (sets `_G.RUNTPConfig`).
 - New weapon: add it to `state.MainWeapon` and `sets.<Name>`; if it takes no
   grip, extend the Lycurgos test in `apply_grip` (`set_builder.lua:64`).
 - New midcast route: add a branch in `job_post_midcast` (`RUN_MIDCAST.lua:133-144`)
@@ -355,10 +357,7 @@ T = `_master/sets/run_sets.lua` (the only sets file in scope).
 
 ## Known issues
 
-- No TP-bonus gear: `RUN_TP_CONFIG` is never loaded (`Tetsouo_RUN.lua:107`,
-  `RUN_PRECAST.lua:44`).
-- Cure III/IV get no midcast set (no CureSelf/CureOther) and Healing/Divine
-  routes are no-ops (`RUN_MIDCAST.lua:61-68`, `cure_set_builder.lua:34`).
+- Divine route is a no-op (no `sets.midcast['Divine Magic']`).
 - UI readiness anchor `RuneElement` does not exist (`ui_lifecycle.lua:58-59`).
 - `//gs c aoe` without /BLU: fixed 2026-09-25, `execute_aoe` now refuses with
   "AOE needs the BLU subjob (RUN/BLU)" instead of sending `/ma` the game

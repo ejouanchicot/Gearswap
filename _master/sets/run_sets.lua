@@ -21,7 +21,7 @@
 ---   • Engaged sets (Base, PDT, MDT)
 ---   • Precast sets (Job Abilities, Fast Cast)
 ---   • Weaponskill sets (Great Sword WS on generic gear, Armor Break)
----   • Midcast sets (Enmity, SIRD, Enhancing Magic, Phalanx, Blue Magic)
+---   • Midcast sets (Enmity, SIRD, Enhancing Magic, Phalanx, Cures, Blue Magic)
 ---   • Movement & Buff sets (Speed, Doom, Adoulin)
 ---
 --- @file    sets/run_sets.lua
@@ -234,6 +234,14 @@ sets.precast.FC = {
     back = Ogma.FCSIRD,
 }
 
+-- • SELF CURE FAST CAST (Cure to Cure IV on yourself, from /WHM /RDM /PLD /SCH)
+--   Worn instead of sets.precast.FC for a self cure. Put here the Fast Cast
+--   pieces with the LEAST max HP: the midcast set sets.midcast.CureSelf puts
+--   the HP back, so the cure lands on a bigger HP gap (more HP healed, more
+--   enmity). Gap = max HP in CureSelf - max HP in this set.
+--   Example: sets.precast.FC.CureSelf = set_combine(sets.precast.FC, {body="<low-HP FC body>"})
+sets.precast.FC.CureSelf = set_combine(sets.precast.FC, {})
+
 -- ═══════════════════════════════════════════════════════════════════════════
 -- WEAPONSKILL SETS
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -366,6 +374,26 @@ sets.midcast['Phalanx'] = {
     right_ring = Moonlight1,
     back = Ogma.tank,
 }
+
+-- • CURES (subjob only: /WHM /RDM Cure to Cure IV, /PLD /SCH Cure to Cure III)
+--   RUN cures for enmity: the base keeps SIRD + enmity. The set is chosen by
+--   target (RUN_MIDCAST): CureSelf on yourself, CureOther on someone else.
+--   Add "Cure potency" / "Cure potency received" pieces where you have them.
+sets.Cure = set_combine(sets.midcast.SIRDEnmity, {})
+
+-- • CURE SELF: max HP back on (see sets.precast.FC.CureSelf) + damage taken
+sets.midcast.CureSelf = set_combine(sets.Cure, {
+    left_ear="Tuisto Earring",
+    right_ear="Odnowa Earring +1",
+    right_ring = Moonlight1,
+    back = Ogma.tank,
+})
+
+-- • CURE OTHER: enmity + SIRD (add Cure potency here)
+sets.midcast.CureOther = set_combine(sets.Cure, {})
+
+-- • OTHER HEALING MAGIC (Curaga, -na spells from /WHM)
+sets.midcast['Healing Magic'] = sets.Cure
 
 -- • BLUE MAGIC (RUN/BLU subjob - ALL spells use this set)
 --   Includes: Cocoon, Sudden Lunge, Head Butt, etc.

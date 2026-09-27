@@ -101,11 +101,8 @@ function get_sets()
     -- aoe_manager reads _G.BluMagicConfig when first required (//gs c aoe)
     _G.BluMagicConfig = require('Tetsouo/config/run/RUN_BLU_MAGIC')
 
-    -- Disabled: RUN_PRECAST therefore gets an empty RUNTPConfig. Note the
-    -- global name below does not match the one RUN_PRECAST reads (RUNTPConfig);
-    -- RUN_TP_CONFIG.lua sets _G.RUNTPConfig itself when required.
-    --_G.RUNTPCONFIG = require('Tetsouo/config/run/RUN_TP_CONFIG')
-    --_G.WardConfig = require('Tetsouo/config/run/RUN_WARD_CONFIG')
+    -- Note: RUN_TP_CONFIG.lua exports _G.RUNTPConfig automatically
+    require('Tetsouo/config/run/RUN_TP_CONFIG')
 
     -- Cancel any pending operations from previous job (including ALL job lockstyles)
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')

@@ -36,8 +36,11 @@ Every [common command](../../guides/commands.md) works too.
 
 ## Notes
 
-- Cure III and Cure IV use `sets.midcast.CureSelf` when cast on yourself and
-  `sets.midcast.CureOther` on someone else, if those sets exist.
+- Cures come from the subjob (/WHM /RDM: Cure to Cure IV, /PLD /SCH: Cure to
+  Cure III). On yourself: `sets.precast.FC.CureSelf` (Fast Cast with little
+  max HP) then `sets.midcast.CureSelf` (HP back on), so the cure lands on a
+  bigger HP gap: more healed, more enmity. On someone else:
+  `sets.midcast.CureOther`.
 - All modes go back to their default on every job change, subjob change and reload.
 - To set RUN up for a character, pick it in the clone script (see
   [installation](../../getting-started/installation.md)), then fill in

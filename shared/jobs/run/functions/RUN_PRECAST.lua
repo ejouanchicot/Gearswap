@@ -105,7 +105,23 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- Fast Cast handled automatically by Mote-Include (sets.precast.FC)
 end
 
----   Apply TP-bonus gear for weaponskills, then the optional precast debug display
+---   Self cure (Cure to Cure IV from the subjob): sets.precast.FC.CureSelf, a
+---   Fast Cast set low on max HP. The midcast CureSelf set puts the HP back,
+---   so the cure lands on a bigger HP gap (more healed, more enmity) - the
+---   PLD setup. Runs in post_precast to replace Mote's FC set.
+---   @param spell table Spell data
+local function apply_cure_self_fc(spell)
+    if not (spell.target and spell.target.type == 'SELF') then return end
+    local fc = sets.precast and sets.precast.FC and sets.precast.FC.CureSelf
+    if not fc then return end
+    local ok, CureSetBuilder = pcall(require, 'shared/jobs/run/functions/logic/cure_set_builder')
+    if ok and CureSetBuilder and CureSetBuilder.is_cure(spell) then
+        equip(fc)
+    end
+end
+
+---   Apply TP-bonus gear for weaponskills and the self-cure Fast Cast set,
+---   then the optional precast debug display
 ---   @param spell table Spell/ability data
 ---   @param action string Action type
 ---   @param spellMap string Spell mapping
@@ -115,6 +131,7 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     if WSPrecastHandler then
         WSPrecastHandler.apply_tp_gear(spell)
     end
+    apply_cure_self_fc(spell)
 
     -- ══════════════════════════════════════════════════════════════════════════
     -- DEBUG: PRECAST SET DISPLAY (Universal System)
