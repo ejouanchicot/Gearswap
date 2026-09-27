@@ -9,6 +9,7 @@
 ---   Follow Tetsouo
 ---   Mirror ON  Home Point #1
 ---   Step   Kaories Injecting 2/5
+---   (plus Sneak / Invi rows per alt)
 ---
 --- Same size whatever it shows (FIXED LAYOUT below). Job comes from the
 --- dual-box job exchange, online and zone from the party list ("no party"
@@ -161,6 +162,17 @@ local function presence(name)
     return {{'online', GREEN}}, zone and {{zone.en, WHITE}} or DASH
 end
 
+--- Time left on Sneak and Invisible (//gs c stealth timers): yellow under
+--- a minute, "-" when not up or not known.
+local function stealth_lines(lines, name)
+    local ok, Timers = pcall(require, 'shared/utils/stealth/stealth_timers')
+    for _, kind in ipairs({'sneak', 'invi'}) do
+        local left = ok and Timers and Timers.left(kind, name) or nil
+        local value = left and {{Timers.format(left), left < 60 and YELLOW or GREEN}} or DASH
+        lines[#lines + 1] = row(kind == 'sneak' and 'Sneak' or 'Invi', value)
+    end
+end
+
 --- One block per alt: its name as the title, its job, whether it is in the
 --- party, its zone. The job exchange knows one partner: its last job goes
 --- on the first alt.
@@ -178,6 +190,7 @@ local function alt_lines(alts)
         lines[#lines + 1] = row('Job', job)
         lines[#lines + 1] = row('Party', here)
         lines[#lines + 1] = row('Zone', zone)
+        stealth_lines(lines, name)
     end
     return lines
 end

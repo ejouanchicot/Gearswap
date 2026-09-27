@@ -11,8 +11,8 @@
 ---   Order of what it starts:
 ---     immediate  debug flags restored from windower._gs_debug, reload counter,
 ---                ModuleCache, HP priority, LagDebugger, AutoMedicine,
----                JobSyncWatchdog, DualBox sync IPC, KeybindGuard, custom
----                states hooks
+---                JobSyncWatchdog, DualBox sync IPC, KeybindGuard, Stealth
+---                timers, custom states hooks
 ---     +0.5 s     WarpInit, AutoMove, StateDisplayOverride
 ---     +2.0 s     MidcastWatchdog
 ---     +3.0 s     load check of the PrecastGuard / CooldownChecker /
@@ -279,6 +279,15 @@ if kg_ok and KeybindGuard then
     KeybindGuard.schedule()
 else
     ensure_message_init().show_module_load_failed('Keybind Guard', KeybindGuard)
+end
+
+-- Sneak / Invisible timers: this character's end times (packet 0x063), sent
+-- to the box group, wear-off warnings (//gs c stealth)
+local st_ok, StealthTimers = pcall(require, 'shared/utils/stealth/stealth_timers')
+if st_ok and StealthTimers then
+    StealthTimers.start()
+else
+    ensure_message_init().show_module_load_failed('Stealth Timers', StealthTimers)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

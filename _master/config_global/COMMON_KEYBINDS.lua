@@ -24,6 +24,11 @@ CommonKeybinds.binds = {
     { key = "!numpad7", command = "alts follow", desc = "Alts: follow me (toggle)" },
     { key = "!numpad8", command = "alts toggle", desc = "Alts: automation on/off" },
     { key = "!numpad9", command = "alts mirror", desc = "Alts: mirror" },
+    -- Sneak / Invisible on you and every alt, each with its own best way
+    -- (config/STEALTH_CONFIG.lua, //gs c stealth). Not numpad: the key the
+    -- players already had for it.
+    { key = "!z", command = "stealth sneak", desc = "Sneak (you + alts)" },
+    { key = "!x", command = "stealth invi", desc = "Invisible (you + alts)" },
     -- Your own keys. Any command works:
     --   "//<command>"  console command of any addon, as typed in chat
     --   "/<command>"   game command (/p, /follow, /ma ...)

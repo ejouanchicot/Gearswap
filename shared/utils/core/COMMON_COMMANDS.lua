@@ -500,6 +500,11 @@ function CommonCommands.handle_command(command, job_name, ...)
         return require('shared/utils/dualbox/alt_group').route(cmd, args)
     end
 
+    -- Sneak / Invisible on every character of the box group
+    if cmd == 'stealth' then
+        return require('shared/utils/stealth/stealth').handle(args)
+    end
+
     -- Combat Mode: weapon lock, shown or hidden per job
     if cmd == 'combatmode' then
         return require('shared/utils/core/combat_mode_commands').handle(args)
@@ -708,7 +713,7 @@ function CommonCommands.is_common_command(command)
         cmd == 'lagdebug' or cmd == 'ldb' or
         cmd == 'jamsg' or cmd == 'spellmsg' or cmd == 'wsmsg' or cmd == 'info' or cmd == 'debugmsg' or
         cmd == 'testmsg' or cmd == 'msgtest' or cmd == 'msgtests' or
-        cmd == 'memcheck' or cmd == 'mem' or cmd == 'sortie' or cmd == 'alts' or cmd == 'main' or cmd == 'setalt' or cmd == 'altreport' or cmd == 'altmirror' or cmd == 'tb' or cmd == 'trace' or
+        cmd == 'memcheck' or cmd == 'mem' or cmd == 'sortie' or cmd == 'alts' or cmd == 'main' or cmd == 'setalt' or cmd == 'altreport' or cmd == 'altmirror' or cmd == 'stealth' or cmd == 'tb' or cmd == 'trace' or
         cmd == 'combatmode' or cmd == 'commands' or cmd == 'cmds' or cmd == 'help' or cmd == '?' then
         return true
     end
