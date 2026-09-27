@@ -17,7 +17,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 | `^numpad5` | Afflatus Mode (`AfflatusMode`) | **Solace**, Misery | Which stance `//gs c afflatus` uses. |
 | `^numpad1` | Idle Mode (`IdleMode`) | **PDT**, Refresh | Idle set: `sets.idle.PDT` or `sets.idle.Refresh`. |
 | `^numpad2` | Combat Mode (`CombatMode`) | **Off**, On | On locks main, sub, range and ammo so your weapons stay on. |
-| `^numpad6` | Casting Mode (`CastingMode`) | **Normal**, Resistant | Mote's casting mode: looks for `.Resistant` versions of the precast / midcast sets. The template set file has none. |
+| `^numpad6` | Casting Mode (`CastingMode`) | **Normal**, Resistant | Resistant: enfeebles and Divine Magic wear their `.Resistant` set (`sets.midcast.MndEnfeebles.Resistant`, `['Divine Magic'].Resistant`...). In the template these are copies of the normal sets until you add magic accuracy pieces. |
 
 ## Other modes (no key)
 

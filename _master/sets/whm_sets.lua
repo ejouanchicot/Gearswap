@@ -699,6 +699,10 @@ sets.midcast['Divine Magic'] = {
     back = 'Refraction Cape'
 }
 
+-- CastingMode Resistant: worn instead of the Divine set (Banish, Flash...;
+-- Holy and Holy II keep their own sets). A copy until pieces go in the {}.
+sets.midcast['Divine Magic'].Resistant = set_combine(sets.midcast['Divine Magic'], {})
+
 -- Holy (WHM nuke - enhanced by Afflatus Solace)
 -- Piety Duckbills +3 gives +MAB per merit when Afflatus Solace is active
 sets.midcast['Holy'] =
@@ -753,6 +757,12 @@ sets.midcast.MndEnfeebles = set_combine(sets.midcast['Repose'], {})
 -- INT-based enfeebles (rare for WHM)
 sets.midcast.IntEnfeebles = set_combine(sets.midcast['Repose'], {})
 
+-- CastingMode Resistant (Ctrl+Numpad6): worn instead of the sets above.
+-- Copies until magic accuracy pieces go in the {}.
+sets.midcast['Repose'].Resistant = set_combine(sets.midcast['Repose'], {})
+sets.midcast.MndEnfeebles.Resistant = set_combine(sets.midcast.MndEnfeebles, {})
+sets.midcast.IntEnfeebles.Resistant = set_combine(sets.midcast.IntEnfeebles, {})
+
 --============================================================--
 
 --                     MOVEMENT SETS                          --
@@ -777,7 +787,8 @@ sets.buff = {}
 
 -- Divine Caress buff (enhances status removal)
 -- Gear must be worn during MIDCAST of status removal spell (Paralyna, Silena, etc.)
--- NOT during JA activation
+-- NOT during JA activation. Worn over the status removal set while the buff
+-- is up: empty until your Divine Caress pieces go here (e.g. hands = 'Ebers Mitts +3').
 sets.buff['Divine Caress'] = {}
 
 -- Afflatus Solace buff (enhances Cure/Barspell when active)

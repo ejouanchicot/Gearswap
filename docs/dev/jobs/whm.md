@@ -214,7 +214,9 @@ flowchart TD
   it reaches `sets.midcast['Repose']` through the Divine branch (P0);
   `enfeeble_skill_for`'s Repose case (139-148) is never used; its comment
   says so since `b6c7dc6`.
-- `CastingMode` is not passed to the manager.
+- `CastingMode` is passed as `mode_state` for Enfeebling and Divine Magic (since
+  2026-09-27): Resistant picks `<set>.Resistant` (`Repose`, `MndEnfeebles`,
+  `IntEnfeebles`, `['Divine Magic']`; copies of their base in the template).
 
 ### Aftercast, idle, engaged, status, buffs
 
@@ -240,7 +242,7 @@ on every `user_setup()`. Keybinds from `WHM_KEYBINDS.lua:22-76`.
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
 | `OffenseMode` (Mote) | None, Melee ON | None | none | Mote `get_melee_set` (no matching set), `job_state_change` 213-223, entry `file_unload` |
-| `CastingMode` (Mote) | Normal, Resistant | Normal | `^numpad6` | Mote default precast/midcast (`.Resistant` sets absent) |
+| `CastingMode` (Mote) | Normal, Resistant | Normal | `^numpad6` | `mode_state` of the Enfeebling and Divine routes (`.Resistant` copies in the template); Mote default precast |
 | `IdleMode` (Mote) | PDT, Refresh | PDT | `^numpad1` | Mote `get_idle_set` |
 | `CureMode` | Potency, SIRD | Potency | `^numpad3` | `WHM_MIDCAST.lua:43,64` |
 | `AfflatusMode` | Solace, Misery | Solace | `^numpad5` | `afflatus` command (151) |
@@ -310,7 +312,7 @@ T = `_master/sets/whm_sets.lua` (no live copy).
 | `sets.midcast['Enfeebling Magic']` | only when the spell map is neither (never) | absent |
 | `sets.midcast['Dark Magic']`, `['Elemental Magic']` | MidcastManager | 722, 725 |
 | `sets.midcast.FastRecast` | nothing | 334 |
-| `sets.buff['Divine Caress']`, `['Afflatus Solace']` | `job_post_midcast` overlays | 781 (empty), 788 |
+| `sets.buff['Divine Caress']`, `['Afflatus Solace']` | `job_post_midcast` overlays | empty until filled (comment names Ebers Mitts), Afflatus Solace filled |
 | `sets.resting`, `sets.buff.Doom` | Mote resting, DoomManager | 797, 804 |
 
 ## Configuration
@@ -375,8 +377,8 @@ T = `_master/sets/whm_sets.lua` (no live copy).
   unchanged still gets the recast check afterwards.
 - `job_state_change` receives the state's description (`Offense Mode`) from both
   cycle paths; it strips spaces, so a caller passing the key also works.
-- Adding a `.Resistant` set is the only way `CastingMode` can matter, and only
-  for spells that reach Mote's default midcast (not Cures).
+- `CastingMode` reaches the Enfeebling and Divine routes through `mode_state`;
+  a name set (Holy, Holy II) still wins over `.Resistant`. Cures ignore it.
 - `retier_cure` matches "Cure" anywhere in the name, which includes Full Cure.
 
 ## Extending
@@ -398,7 +400,7 @@ T = `_master/sets/whm_sets.lua` (no live copy).
   `cure_manager.lua:134,147-150`), Full Cure re-tiered, fallback config raises
   on every Cure, exact-zero recast vs 2.0 s tolerance.
 - `cure_manager.lua:36` uses `print`.
-- `CastingMode` has no effect (no `.Resistant` set); `sets.engaged.PDT`,
+- `CastingMode` changes no gear until the `.Resistant` copies get pieces; `sets.engaged.PDT`,
   `sets.midcast.FastRecast`, the Repose branch of `enfeeble_skill_for`
   (`WHM_MIDCAST.lua:140`) and the Divine Caress branch inside the handled path
   (85-87) are unreachable.

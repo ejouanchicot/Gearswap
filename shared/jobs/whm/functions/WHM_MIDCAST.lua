@@ -147,10 +147,13 @@ local function enfeeble_skill_for(spell, spellMap)
     return 'Enfeebling Magic'
 end
 
+--- CastingMode Resistant picks <set>.Resistant when it exists (else the set
+--- itself): sets.midcast.MndEnfeebles.Resistant, ['Divine Magic'].Resistant...
 local function midcast_enfeebling(spell, spellMap)
     MidcastManager.select_set({
         skill = enfeeble_skill_for(spell, spellMap),
-        spell = spell
+        spell = spell,
+        mode_state = state.CastingMode,
     })
 end
 
@@ -186,7 +189,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
     elseif spell.skill == 'Enhancing Magic' then
         job_post_midcast_enhancing_magic(spell)
     elseif spell.skill == 'Divine Magic' then
-        MidcastManager.select_set({skill = 'Divine Magic', spell = spell})
+        MidcastManager.select_set({skill = 'Divine Magic', spell = spell, mode_state = state.CastingMode})
     elseif spell.skill == 'Enfeebling Magic' then
         midcast_enfeebling(spell, spellMap)
     elseif spell.skill == 'Dark Magic' then
