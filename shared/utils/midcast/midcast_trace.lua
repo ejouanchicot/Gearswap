@@ -66,11 +66,16 @@ function MidcastTrace.selection(selected_set, path, slots)
     Trace.log('MIDCAST', '%s -> %s | %s', tostring(current), tostring(path or 'Combined'), table.concat(pieces, ', '))
 end
 
---- The skill had no set at all.
+--- No sets.midcast[skill]: MidcastManager adds nothing. Not "no gear": the
+--- set Mote picked before it (by spell name or spell map, e.g.
+--- sets.midcast.Cure or sets.midcast['Banishga']) stays on.
 --- @param skill string
 function MidcastTrace.no_set(skill)
     local Trace = trace()
-    if Trace then Trace.log('MIDCAST', '%s -> no set for skill %s', tostring(current), tostring(skill)) end
+    if Trace then
+        Trace.log('MIDCAST', "%s -> no sets.midcast['%s']: Mote's own set (spell name / map) stays",
+            tostring(current), tostring(skill))
+    end
 end
 
 return MidcastTrace
