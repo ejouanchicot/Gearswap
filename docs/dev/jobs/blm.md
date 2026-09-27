@@ -30,7 +30,7 @@ number added nothing, the function name is cited instead.
 | Path | Lines | Role |
 |------|------:|------|
 | `_master/entry/Tetsouo_BLM.lua` | 284 | Entry point (template): config preload, `get_sets`, `user_setup`, `job_sub_job_change`, `job_update`, `init_gear_sets`, `file_unload` |
-| `shared/jobs/blm/functions/blm_functions.lua` | 332 | Facade: includes the 11 hook files, lazy logic loaders, global exports (`BuffSelf`, `SaveMP`, `refine_various_spells`, `checkArts`, `CastStorm`) |
+| `shared/jobs/blm/functions/blm_functions.lua` | 309 | Facade: includes the 11 hook files, lazy logic loaders, global exports (`BuffSelf`, `refine_various_spells`, `checkArts`, `CastStorm`) |
 | `shared/jobs/blm/functions/BLM_PRECAST.lua` | 191 | `job_precast` / `job_post_precast`: guard, recast-or-refine, Dark Arts, Impact lock, WS |
 | `shared/jobs/blm/functions/BLM_MIDCAST.lua` | 192 | `job_midcast` (empty) / `job_post_midcast`: builds a context and dispatches to the router |
 | `shared/jobs/blm/functions/BLM_AFTERCAST.lua` | 45 | `job_aftercast`: watchdog notify, clears the Impact lock |
@@ -39,14 +39,14 @@ number added nothing, the function name is cited instead.
 | `shared/jobs/blm/functions/BLM_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/blm/functions/BLM_BUFFS.lua` | 19 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/blm/functions/BLM_COMMANDS.lua` | 558 | `job_self_command` router and `job_state_change` (CombatMode On equips the magic weapons, UI refresh) |
-| `shared/jobs/blm/functions/BLM_MOVEMENT.lua` | 53 | `job_handle_equipping_gear` (Impact body lock attempt), `get_blm_movement_status` |
+| `shared/jobs/blm/functions/BLM_MOVEMENT.lua` | 35 | `job_handle_equipping_gear` (Impact body lock attempt) |
 | `shared/jobs/blm/functions/BLM_LOCKSTYLE.lua` | 51 | Lazy `LockstyleManager.create('BLM', ...)` wrappers |
 | `shared/jobs/blm/functions/BLM_MACROBOOK.lua` | 45 | Lazy `MacrobookManager.create('BLM', ...)` wrapper |
 | `shared/jobs/blm/functions/logic/midcast_router.lua` | 225 | Per-skill midcast handlers (Impact, Elemental, Dark, Enfeebling) and BLM overrides |
-| `shared/jobs/blm/functions/logic/elemental_matcher.lua` | 195 | Storm (all 8) / day / weather element match, by element id, for Hachirin-no-Obi |
-| `shared/jobs/blm/functions/logic/set_builder.lua` | 310 | Idle/engaged set construction (town, weapons, movement, Mana Wall); unused SaveMP API |
+| `shared/jobs/blm/functions/logic/elemental_matcher.lua` | 165 | Storm (all 8) / day / weather element match, by element id, for Hachirin-no-Obi |
+| `shared/jobs/blm/functions/logic/set_builder.lua` | 140 | Idle/engaged set construction (town, weapons, movement, Mana Wall) |
 | `shared/jobs/blm/functions/logic/buff_manager.lua` | 35 | `//gs c buff` list for the shared `SelfBuffManager` |
-| `shared/jobs/blm/functions/logic/storm_manager.lua` | 263 | Klimaform + storm casting with recast display |
+| `shared/jobs/blm/functions/logic/storm_manager.lua` | 231 | Klimaform + storm casting with recast display |
 | `shared/jobs/blm/functions/logic/spell_refiner.lua` | 159 | Refinement facade `refine_various_spells(spell, eventArgs)` |
 | `shared/jobs/blm/functions/logic/refiner/correspondence.lua` | 122 | Tier downgrade table (Fire VI..base, -ga III..base, Sleep, Bio, ...) |
 | `shared/jobs/blm/functions/logic/refiner/replacement_logic.lua` | 134 | Tier walk (delegates to `TierRefiner`), -ja fallback, MP cancel rule |
@@ -54,7 +54,7 @@ number added nothing, the function name is cited instead.
 | `shared/jobs/blm/functions/logic/refiner/special_handlers.lua` | 155 | Magic Burst `/p` call, replacement execution, Breakga -> Break |
 | `shared/jobs/blm/functions/logic/refiner/timing_guards.lua` | 95 | Module-local anti-spam timers |
 | `shared/data/spells/BLM_SPELL_FILTERS.lua` | 126 | Which spells refine, which elemental spells do not, charge abilities |
-| `_master/config/blm/BLM_STATES.lua` | 338 | All Mote states (`BLMStates.configure()`), unused `BLMStates.validate()` |
+| `_master/config/blm/BLM_STATES.lua` | 273 | All Mote states (`BLMStates.configure()`) |
 | `_master/config/blm/BLM_KEYBINDS.lua` | 74 | 18 numpad binds, data only; `KeybindManager.create('BLM', ...)` adds `bind_all` / `unbind_all` / `show_intro` (see [keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/blm/BLM_CUSTOM.lua` | 118 | Player modes and gear rules (all examples commented out), read through `KeybindManager` |
 | `_master/config/blm/BLM_LOCKSTYLE.lua` | 25 | Lockstyle 5 (`default`, `by_subjob`) |
@@ -63,7 +63,7 @@ number added nothing, the function name is cited instead.
 | `_master/config/blm/BLM_ELEMENTAL_CONFIG.lua` | 64 | `auto_hachirin`, `check_storm`, `check_day`, `check_weather` |
 | `_master/config/blm/BLM_TP_CONFIG.lua` | 35 | `_G.BLMTPConfig` (Moonshade entry, see Known issues) |
 | `_master/sets/blm_sets.lua` | 610 | Template sets (flat) |
-| `shared/utils/messages/formatters/jobs/message_blm.lua` + `data/jobs/blm_messages.lua` | 311 + 164 | BLM chat messages (cycles, refinement, errors) |
+| `shared/utils/messages/formatters/jobs/message_blm.lua` + `data/jobs/blm_messages.lua` | 212 + 106 | BLM chat messages (cycles, refinement, errors) |
 | `shared/utils/messages/formatters/jobs/message_blm_midcast.lua` + `data/systems/blm_midcast_messages.lua` | 108 + 89 | `debugmidcast` trace lines for the BLM router |
 | `shared/data/job_abilities/BLM_JA_DATABASE.lua` | 13 | `JA_DATABASE_FACTORY.create('BLM')`, read by `ability_message_handler.lua:81` |
 | `shared/data/magic/BLM_SPELL_DATABASE.lua` | 165 | Merged BLM spell data, read by `data_loader.lua:67` and `spell_message_handler.lua:92` (messages only, not by BLM logic) |
@@ -131,12 +131,12 @@ sequenceDiagram
 5. `pcall(require, 'shared/utils/dualbox/dualbox_manager')` (auto-init guarded
    by `windower._dualbox_init_counter`).
 
-`blm_functions.lua` includes, in order: `message_buffs.lua` (39), `BLM_PRECAST`,
-`BLM_MIDCAST`, `BLM_AFTERCAST` (94-98), `BLM_IDLE`, `BLM_ENGAGED` (105-107),
-`BLM_STATUS`, `BLM_BUFFS` (114-116), `BLM_LOCKSTYLE`, `BLM_MACROBOOK`,
-`BLM_COMMANDS`, `BLM_MOVEMENT` (124-128). Logic modules are loaded on first use
-by `ensure_*` closures (46-90). It then exports five globals (310-314) and
-requires `dualbox_manager` (322). `TIMER(...)` calls are no-ops unless
+`blm_functions.lua` includes, in order: `message_buffs.lua` (38), `BLM_PRECAST`,
+`BLM_MIDCAST`, `BLM_AFTERCAST` (85-89), `BLM_IDLE`, `BLM_ENGAGED` (96-98),
+`BLM_STATUS`, `BLM_BUFFS` (105-107), `BLM_LOCKSTYLE`, `BLM_MACROBOOK`,
+`BLM_COMMANDS`, `BLM_MOVEMENT` (115-119). Logic modules are loaded on first use
+by `ensure_*` closures (45-79). It then exports four globals (288-291) and
+requires `dualbox_manager` (299). `TIMER(...)` calls are no-ops unless
 `//gs c perf start`.
 
 ### Precast
@@ -179,7 +179,7 @@ flowchart TD
 - `has_charges` (71-73) skips the ability check for Addendum: White/Black,
   Accession, Manifestation. `CooldownChecker` already skips all stratagems
   itself (`cooldown_checker.lua:42-66`), so this list only duplicates it.
-- `checkArts` (`blm_functions.lua:258-287`): only for Elemental Magic, only
+- `checkArts` (`blm_functions.lua:236-265`): only for Elemental Magic, only
   when `player.sub_job == 'SCH'`, `sub_job_level ~= 0` (Odyssey subjob lock),
   Dark Arts recast (id from `res.job_abilities`, fallback 232) is 0, and
   neither Dark Arts nor Addendum: Black is active. It calls `cancel_spell()`
@@ -280,8 +280,8 @@ flowchart TD
   Healing (/WHM cures) and Ninjutsu are not routed: only Mote's default set
   applies (`sets.midcast.Stoneskin`, `sets.midcast['Enhancing Magic']`,
   `sets.midcast.Cure` via spell map, ...).
-- `ElementalMatcher.has_elemental_match` (`elemental_matcher.lua:139-178`)
-  compares the spell element with active storm buffs (6 names, `STORM_TO_ELEMENT`, lines 36-42),
+- `ElementalMatcher.has_elemental_match` (`elemental_matcher.lua:120-159`)
+  compares the spell element with active storm buffs (8 names, `STORM_TO_ELEMENT`, lines 22-31),
   `world.day_element` and `world.real_weather_element` (intensity > 0).
 
 ### Aftercast, idle, engaged, status, buffs
@@ -289,7 +289,7 @@ flowchart TD
 - `job_aftercast` (`BLM_AFTERCAST.lua:22-33`) notifies `MidcastWatchdog` and
   clears `_G.casting_impact` / `_G.impact_body` after Impact. Mote returns to
   idle/engaged gear.
-- `customize_idle_set` -> `SetBuilder.build_idle_set` (`set_builder.lua:168-193`):
+- `customize_idle_set` -> `SetBuilder.build_idle_set` (`set_builder.lua:109-134`):
   Mote base set -> `sets.Adoulin` in Adoulin or `sets.idle.Town` in other cities
   (Dynamis excluded, `base_set_builder.lua` `select_idle_base_town`) -> `sets[state.MainWeapon]`
   and `sets[state.SubWeapon]` if they exist -> `sets.MoveSpeed` when
@@ -306,13 +306,13 @@ flowchart TD
   each only when the set exists (since 2026-09-27).
 - `job_status_change` / `job_buff_change` are the shared `LifecycleManager`
   handlers (Doom handling etc.), see [core lifecycle](../systems/core-lifecycle.md).
-- `job_handle_equipping_gear` (`BLM_MOVEMENT.lua:39-49`) equips the Impact body
+- `job_handle_equipping_gear` (`BLM_MOVEMENT.lua:21-28`) equips the Impact body
   while the lock is set, but Mote equips the full status set right after it
   (`Mote-Include.lua:443-450`), so this does not hold (Known issues).
 
 ## Mote states
 
-Created by `BLMStates.configure()` (`_master/config/blm/BLM_STATES.lua:51-268`)
+Created by `BLMStates.configure()` (`_master/config/blm/BLM_STATES.lua:50-267`)
 on every `user_setup()` (every load and every subjob change, so all values reset
 to their defaults). Keybinds from `BLM_KEYBINDS.lua:43-71`; `^` = Ctrl, `#` =
 Apps. `#numpad0` (AutoMedicine) is not in the BLM file: it comes from the
@@ -321,11 +321,11 @@ character's `config/COMMON_KEYBINDS.lua`.
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
 | `HybridMode` (Mote) | PDT, Normal | Normal | `^numpad9` | `set_builder.lua` `mode_base`: `sets.idle.PDT`, `sets.engaged.PDT` |
-| `CombatMode` | Off, On | Off | `^numpad8` | lock: shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25); weapons: `job_state_change` (`BLM_COMMANDS.lua:544-546`) |
+| `CombatMode` | Off, On | Off | `^numpad8` | lock: shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25); weapons: `job_state_change` (`BLM_COMMANDS.lua:533-535`) |
 | `MagicBurstMode` | Off, On, Acc | On | `^numpad0` | `midcast_router.lua:106,149`; `special_handlers.lua:37` (On only) |
 | `DeathMode` | Off, On | Off | `#numpad7` | `set_builder.lua` `mode_base`: `sets.idle.Death` |
-| `MainWeapon` | Hvergelmir | Hvergelmir | none | `set_builder.lua:117` (`sets.Hvergelmir`, absent) |
-| `SubWeapon` | Alber Strap | Alber Strap | none | `set_builder.lua:130` (`sets['Alber Strap']`, absent) |
+| `MainWeapon` | Hvergelmir | Hvergelmir | none | `set_builder.lua:40` (`sets.Hvergelmir`, absent) |
+| `SubWeapon` | Alber Strap | Alber Strap | none | `set_builder.lua:53` (`sets['Alber Strap']`, absent) |
 | `MainLightSpell` | Fire, Aero, Thunder | Fire | `^numpad3` | `light`, `cyclemainlight`; UI readiness anchor (`ui_lifecycle.lua:42-43`); `spell_from_state` example in dual-box docs |
 | `MainDarkSpell` | Blizzard, Stone, Water | Stone | `^numpad4` | `dark`, `cyclemaindark` |
 | `SubLightSpell` | Thunder, Fire, Aero | Thunder | `#numpad3` | `sublight`, `cyclesublight` |
@@ -340,15 +340,15 @@ character's `config/COMMON_KEYBINDS.lua`.
 | `SneakInviAOE` | On, Off | On | `#numpad8` | `aoe sneak` / `aoe invi` (Accession on `<me>` vs single `<stal>`); `//gs c stealth` (`Off` = no Accession for the box group, `stealth_aoe.lua:47-50`, see [stealth](../systems/stealth.md)) |
 | `KlimaformAOE` | On, Off | On | `#numpad9` | `klima` (Manifestation step) |
 | `FastCast` | 0..80 step 10 | 80 | none | `midcast_watchdog.lua` `get_fast_cast_percent` |
-| `AutoMedicine` | shared On/Off | persisted | `#numpad0` (from `COMMON_KEYBINDS.lua`) | created by `AutoMedicine.init(state, M)` (`BLM_STATES.lua:264-266`), see [precast pipeline](../systems/precast-pipeline.md) |
+| `AutoMedicine` | shared On/Off | persisted | `#numpad0` (from `COMMON_KEYBINDS.lua`) | created by `AutoMedicine.init(state, M)` (`BLM_STATES.lua:263-265`), see [precast pipeline](../systems/precast-pipeline.md) |
 
 Mote defaults also exist: `OffenseMode`, `IdleMode`, `CastingMode` (all
-`'Normal'`); `state.CastingMode` is only read by the unused `SetBuilder.SaveMP`.
+`'Normal'`); no BLM code reads `state.CastingMode`.
 `state.Moving` comes from AutoMove.
 
 ## Commands
 
-`job_self_command` (`BLM_COMMANDS.lua:243-507`) lowercases the first word and
+`job_self_command` (`BLM_COMMANDS.lua:232-496`) lowercases the first word and
 tests, in order: dual-box internals, `watchdog`, **CommonCommands** (built-in
 names and warp aliases only), `ui`, `debugmidcast`, `cyclestate`, BLM cycles,
 then BLM commands. A name none of them answers goes to Mote's
@@ -358,7 +358,7 @@ config has the same key.
 
 | Command | Effect | Handler |
 |---------|--------|---------|
-| `altjobupdate <job> <sub> <ml> <sl> <sender>` | Dual-box: receive the alt's job. Since 2026-09-25 the 5th argument (sender name) is passed on and `DualBoxManager.receive_alt_job` ignores an update from anyone but the partner (an empty sender, the old format, is still accepted) | `BLM_COMMANDS.lua:256-263` |
+| `altjobupdate <job> <sub> <ml> <sl> <sender>` | Dual-box: receive the alt's job. Since 2026-09-25 the 5th argument (sender name) is passed on and `DualBoxManager.receive_alt_job` ignores an update from anyone but the partner (an empty sender, the old format, is still accepted) | `BLM_COMMANDS.lua:245-252` |
 | `requestjob` | Dual-box: answer the main's request | 268-273 |
 | `watchdog ...` | MidcastWatchdog commands | 278-283 |
 | common commands | `reload`, `checksets`, `wa`, `wo`, `refill`, `craft`, `am`, `alt*`, `lockstyle`, `jump`, `waltz`, debug/perf..., warp commands | 288-299 -> `CommonCommands.handle_command(command, 'BLM', table.unpack(args))` |
@@ -396,8 +396,8 @@ T = `_master/sets/blm_sets.lua`, L = `Tetsouo/sets/blm/blm_sets.lua`.
 | `sets.idle.Normal`, `sets.engaged.Normal` | Mote base (Normal modes) | 146, 172 | 56, 82 |
 | `sets.idle.PDT`, `sets.engaged.PDT`, `sets.idle.Death` | `mode_base` (HybridMode PDT, DeathMode On); copies of Normal until filled | 165, 191 | 75, 101 |
 | `sets.idle.Town`, `sets.Adoulin`, `sets.MoveSpeed` | `BaseSetBuilder`, Mote Town scope | 585 (`= sets.MoveSpeed`), 588, 580 | 475 (`set_combine(idle.PDT, MoveSpeed)`), 478, 470 |
-| `sets[state.MainWeapon]`, `sets[state.SubWeapon]` | `set_builder.lua:118,131` | absent | absent |
-| `sets.buff['Mana Wall']` | `set_builder.lua:186` | 600 | 486 |
+| `sets[state.MainWeapon]`, `sets[state.SubWeapon]` | `set_builder.lua:40,53` | absent | absent |
+| `sets.buff['Mana Wall']` | `set_builder.lua:126` | 600 | 486 |
 | `sets.buff.Doom` | shared DoomManager | 606 | 492 |
 | `sets.precast.FC` (+ `['Enhancing Magic']`, `['Elemental Magic']`, `Cure`, `Curaga`, `Impact`, `Stoneskin`) | Mote default precast | 201-247 | 111-150 |
 | `sets.precast.JA['Mana Wall']`, `.Manafont`, `['Elemental Seal']` | Mote default precast | 256-267 | 158-169 |
@@ -415,7 +415,6 @@ T = `_master/sets/blm_sets.lua`, L = `Tetsouo/sets/blm/blm_sets.lua`.
 | `sets.midcast.MndEnfeebles` | nothing (no alias, no spell map) | 373 | 270 |
 | `sets.midcast['Enhancing Magic']`, `.Stoneskin`, `.Phalanx`, `.Aquaveil`, `.Refresh`, `.Haste` | Mote default | 324-370 | 229-267 |
 | `sets.midcast.Cure`, `.Curaga`, `.Raise` | Mote default (spell map) | 299-321 | 201-226 |
-| `blm_dynamic_sets` (global) | unused `SetBuilder.get_dynamic_elemental_set` | absent | absent |
 
 `sets.midcast['Death'].MagicBurst` and `sets.midcast['Comet'].MagicBurst`
 assign to the shared Elemental base table (the two keys are the same table), so
@@ -448,7 +447,7 @@ they are self-assignments; no code path reads them.
 - `_G` written: the Mote hooks (`job_precast`, `job_post_precast`, `job_midcast`,
   `job_post_midcast`, `job_aftercast`, `job_status_change`, `job_buff_change`,
   `customize_idle_set`, `customize_melee_set`, `job_self_command`,
-  `job_state_change`, `job_handle_equipping_gear`), `BuffSelf`, `SaveMP`,
+  `job_state_change`, `job_handle_equipping_gear`), `BuffSelf`,
   `refine_various_spells`, `checkArts`, `CastStorm`, `BLM_ARTS_LAST_CAST`,
   `casting_impact`, `impact_body`, `BLMTPConfig`, `BLMKeybinds`,
   `LockstyleConfig`, `RECAST_CONFIG`, `RegionConfig`,
@@ -456,7 +455,7 @@ they are self-assignments; no code path reads them.
   `select_default_macro_book`, plus the factory exports
   (`set_blm_lockstyle_enabled`, `get_blm_lockstyle_info`,
   `show_blm_lockstyle_config`, `set_blm_dressup_management`,
-  `get_blm_macro_info`, ...), `get_blm_movement_status`.
+  `get_blm_macro_info`, ...).
 - `_G` read: `MidcastManagerDebugState`, `MidcastWatchdog`,
   `PERFORMANCE_PROFILING`, `AUTOMOVE_DEBUG`, `AUTOMOVE_DEBUG_START`,
   `CraftManager`, `is_recast_ready` (from `RECAST_CONFIG.lua:96`).
@@ -530,7 +529,7 @@ they are self-assignments; no code path reads them.
   test both.
 - `klima`, `storm` and `aoe` do not check that the subjob is SCH; the game
   refuses the actions, and `StratagemCharges` reports no charges.
-- `CombatMode` equips a hard-coded weapon trio (`BLM_COMMANDS.lua:545`), not a
+- `CombatMode` equips a hard-coded weapon trio (`BLM_COMMANDS.lua:534`), not a
   set.
 
 ## Extending
@@ -561,9 +560,9 @@ they are self-assignments; no code path reads them.
 - Resolved 2026-09-25: CombatMode's weapon lock no longer survives a subjob
   change, reload or main job change (shared `combat_mode.lua` frees it at load);
   not yet tested in game.
-- `checkArts` re-casts the nuke on `<t>` (`blm_functions.lua:285`).
+- `checkArts` re-casts the nuke on `<t>` (`blm_functions.lua:263`).
 - The Impact body lock in `job_handle_equipping_gear` is overwritten by Mote
-  (`BLM_MOVEMENT.lua:39-49`).
+  (`BLM_MOVEMENT.lua:21-28`).
 - Initial macrobook/lockstyle depend on a side effect of `KeybindManager`'s
   `show_intro` (`Tetsouo_BLM.lua:197-200`).
 - The Magic Burst `/p` call is sent even when the cast is then cancelled or
@@ -577,8 +576,9 @@ they are self-assignments; no code path reads them.
 - `BLM_LOCKSTYLE.by_subjob` is never read (`_master/config/blm/BLM_LOCKSTYLE.lua:19`).
 - Template `sets.idle.Town` / `sets.Adoulin` are 1-2 slot sets used as full idle
   bases (`_master/sets/blm_sets.lua:585,588`).
-- Dead code: `SetBuilder.SaveMP` family, `cast_storm_only`,
-  `get_spell_element_name`, `get_blm_movement_status`, `BLMStates.validate`,
-  `cycle TierSpell`, weapon states, 11 BLM message functions.
+- Dead code: `show_mp_conservation` and `show_buff_status` in `message_blm`
+  (no caller). The other unused BLM helpers and message functions were removed
+  2026-09-27. The weapon states are not dead: `SetBuilder.apply_weapon` reads
+  `MainWeapon` / `SubWeapon` (`set_builder.lua:39-59`).
 - User docs out of date (`docs/user/jobs/blm/states.md`,
   `docs/user/guides/commands.md:233-240`).

@@ -199,7 +199,7 @@ flowchart TD
 ```
 
 - Every job `job_self_command` checks `CommonCommands.is_common_command(command)` **before** its
-  job-specific branches (e.g. `WAR_COMMANDS.lua:113`, `BLM_COMMANDS.lua:288`, before the job's own branches).
+  job-specific branches (e.g. `WAR_COMMANDS.lua:113`, `BLM_COMMANDS.lua:277`, before the job's own branches).
   `is_common_command` (`COMMON_COMMANDS.lua:679-727`) knows only built-in names and warp aliases; it does
   not look at the alt's config.
 - The alt's keys are Mote's last lookup. When `COMMON_COMMANDS` is loaded (once per job-file load, on the

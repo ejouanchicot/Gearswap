@@ -46,14 +46,14 @@ instead.
 | `shared/jobs/cor/functions/COR_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/cor/functions/COR_BUFFS.lua` | 40 | `job_buff_change = LifecycleManager.buff_change(retire_lost_roll)` |
 | `shared/jobs/cor/functions/COR_COMMANDS.lua` | 361 | `job_self_command` router (incl. `shot`, `roll1`, `roll2`), `job_state_change` via `LifecycleManager.state_change` |
-| `shared/jobs/cor/functions/COR_MOVEMENT.lua` | 53 | `get_cor_movement_status`, empty `job_handle_equipping_gear` |
+| `shared/jobs/cor/functions/COR_MOVEMENT.lua` | 31 | Empty `job_handle_equipping_gear` |
 | `shared/jobs/cor/functions/COR_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('COR', ..., 1, 'SAM')` wrappers |
 | `shared/jobs/cor/functions/COR_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('COR', ..., 'SAM', 1, 1)` wrapper |
 | `shared/jobs/cor/functions/logic/party_tracker.lua` | 257 | Roll `action` listener, `0xDD`/`0xDF` party job listener, cleanup |
 | `shared/jobs/cor/functions/logic/roll_tracker.lua` | 778 | Roll state, Crooked, bonus, party cache validation, coverage, display, cleanup |
 | `shared/jobs/cor/functions/logic/roll_data.lua` | 439 | 31 rolls: values 1-11, lucky/unlucky, bust effect, `+Phantom Roll` step, job bonus |
 | `shared/jobs/cor/functions/logic/set_builder.lua` | 201 | Town, weapons (DW-aware), PDT, Refresh, movement; unused `apply_buff_gear` |
-| `_master/config/cor/COR_STATES.lua` | 219 | All states (`CORStates.configure()`), unused `validate()` |
+| `_master/config/cor/COR_STATES.lua` | 184 | All states (`CORStates.configure()`) |
 | `_master/config/cor/COR_KEYBINDS.lua` | 37 | 8 binds, data only; `KeybindManager.create('COR', ...)` adds `bind_all` / `unbind_all` / `show_intro` (see [keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/cor/COR_CUSTOM.lua` | 118 | Player modes and gear rules (all examples commented out), read through `KeybindManager` |
 | `_master/config/cor/COR_LOCKSTYLE.lua` | 51 | `default = 3`, `by_subjob`, `get_style` |
@@ -311,7 +311,7 @@ Phantom Rolls and Quick Draw are instant and have no midcast.
   while it goes out. `job_buff_change` is the shared
   handler with `retire_lost_roll` as its extra (skipped when Doom handled the
   buff).
-- `job_handle_equipping_gear` (`COR_MOVEMENT.lua:44-45`) is empty.
+- `job_handle_equipping_gear` (`COR_MOVEMENT.lua:22-23`) is empty.
 
 ### External addon
 
@@ -428,8 +428,7 @@ identical), L = `Tetsouo/sets/cor/cor_sets.lua` (weapon sets from
   `job_handle_equipping_gear`), the roll state above, `cor_crooked_timestamp`,
   `cor_action_event_id`, `cor_party_event_id`, `cor_party_jobs`,
   `cor_party_state`, `CORTPConfig`, `CORKeybinds`, `LockstyleConfig`, `RECAST_CONFIG`,
-  `RegionConfig`, the lockstyle/macrobook wrappers and factory exports,
-  `get_cor_movement_status`.
+  `RegionConfig`, the lockstyle/macrobook wrappers and factory exports.
 - `_G` read: `AltJobState` (roll job bonus), `MidcastWatchdog`,
   `MidcastManagerDebugState`.
 - `windower.*`: `_cor_party_jobs`, `_cor_party_state` (persist across
@@ -542,8 +541,8 @@ identical), L = `Tetsouo/sets/cor/cor_sets.lua` (weapon sets from
 - Dead code: `_G.cor_natural_eleven_active` (written, never read),
   `RollData.get_roll_names`, `clear_natural_eleven` / `clear_last_roll`
   outside `clear_all`, `_G.cor_pending_roll_*`, `job_post_aftercast`,
-  `job_handle_equipping_gear`, `get_cor_movement_status`,
-  `SetBuilder.apply_buff_gear`, `CORStates.validate`, `COR_MACROBOOK.get_macrobook`,
+  `job_handle_equipping_gear`,
+  `SetBuilder.apply_buff_gear`, `COR_MACROBOOK.get_macrobook`,
   `show_roll_natural_eleven` / `show_roll_bust_rate` / `show_roll_not_found`,
   live `sets.engaged.DW`.
 - Fixed, no longer issues: the roll listener's 98-192 id fallback and Fold

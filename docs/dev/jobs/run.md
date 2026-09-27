@@ -48,7 +48,7 @@ Line numbers were re-checked against the working tree on 2026-09-25.
 | `shared/jobs/run/functions/logic/aoe_manager.lua` | 182 | BLU rotation (same code as PLD's except strings; refuses without /BLU since 2026-09-25) |
 | `shared/jobs/run/functions/logic/cure_set_builder.lua` | 57 | CureSelf / CureOther for Cure to Cure IV (subjob), `is_cure` |
 | `shared/jobs/run/functions/logic/rune_manager.lua` | 76 | `//gs c rune` (identical to PLD's) |
-| `_master/config/run/RUN_STATES.lua` | 152 | States, unused `validate` |
+| `_master/config/run/RUN_STATES.lua` | 118 | States |
 | `_master/config/run/RUN_KEYBINDS.lua` | 45 | Data only: 4 binds handed to `KeybindManager.create('RUN', ...)`, plus the character's `COMMON_KEYBINDS.lua` keys |
 | `_master/config/run/RUN_LOCKSTYLE.lua` | 72 | Style 3 (`default`, `by_subjob`, `get_style`) |
 | `_master/config/run/RUN_MACROBOOK.lua` | 76 |
@@ -216,7 +216,7 @@ The two jobs were cloned from the same files; this is what diverged.
 |------|-----|-----|
 | Entry configs | `PLD_TP_CONFIG` and `PLD_BLU_MAGIC` loaded | `RUN_BLU_MAGIC` loaded (`Tetsouo_RUN.lua:102`), `RUN_TP_CONFIG` loaded too |
 | Keybinds | loaded synchronously; the `KeybindManager` intro requires the factory wrappers | deferred 0.5 s (same intro, too late for the gate); initial macro book / lockstyle gate deferred 0.2 s instead |
-| Precast | Divine Emblem / Majesty auto-abilities, Cure/Flash precast equips, CureSelf FC, Sortie override | CureSelf FC only (every Cure tier); precast debug display |
+| Precast | Divine Emblem / Majesty auto-abilities, CureSelf FC, Sortie override | CureSelf FC only (every Cure tier); precast debug display |
 | Midcast order | Healing checked before Flash | Flash and Enlight checked first |
 | Phalanx | SIRD override (`Xp`, `PhalanxSIRD`) or pseudo-skill `Phalanx` | plain Enhancing, name set wins |
 | Blue Magic | `Cocoon` pseudo-skill, else `Blue Magic` (no base set) | `Blue Magic` with a base set |
@@ -377,7 +377,7 @@ T = `_master/sets/run_sets.lua` (the only sets file in scope).
 - Duplicated with PLD: `aoe_manager`, `cure_set_builder`, `rune_manager`,
   `RUN_BLU_MAGIC`, `cooldown_exclusions`, the `job_midcast` skeleton
   (`RUN_MIDCAST.lua:52-70`).
-- Dead: `RUNStates.validate`, `run_messages.lua` (no caller), commented
+- Dead: `run_messages.lua` (no caller), commented
   WarpInit block (`Tetsouo_RUN.lua:220-230`).
 - User docs: `docs/user/jobs/run/README.md` calls `cure_set_builder`
   "priority-based cure target selection", omits `SubWeapon`/`AutoMedicine`,

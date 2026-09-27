@@ -48,7 +48,7 @@ number added nothing, the function name is cited instead.
 | `shared/jobs/drk/functions/DRK_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('DRK', ..., 'SAM', 1, 1)` wrapper |
 | `shared/jobs/drk/functions/logic/set_builder.lua` | 175 | Engaged base (AM3, PDT), weapon layer, buff variants, idle weapon + movement |
 | `shared/jobs/drk/functions/logic/drk_buff_anticipation.lua` | 129 | `has_dark_seal`, `has_nether_void`, engaged buff variants |
-| `_master/config/drk/DRK_STATES.lua` | 119 | `DRKStates.configure()` (HybridMode, MainWeapon, FastCast, AutoMedicine), unused `validate()` |
+| `_master/config/drk/DRK_STATES.lua` | 100 | `DRKStates.configure()` (HybridMode, MainWeapon, FastCast, AutoMedicine) |
 | `_master/config/drk/DRK_KEYBINDS.lua` | 35 | 2 binds (HybridMode, MainWeapon), data only; `KeybindManager.create('DRK', ...)` adds `get_active_binds`, `bind_all`, `unbind_all`, `show_intro`, `show_binds` (see [keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/drk/DRK_CUSTOM.lua` | 118 | Player modes and gear rules (all examples commented out), read through `KeybindManager` |
 | `_master/config/drk/DRK_TP_CONFIG.lua` | 77 | `_G.DRKTPConfig`: Moonshade +250, Anguta +500, `get_weapon_bonus` |
@@ -378,7 +378,7 @@ which Mote never reads, and the base table was empty.
 - Movement layer inline instead of `BaseSetBuilder.apply_movement`
   (`set_builder.lua:138-139`, already listed in
   [midcast and buffs](../systems/midcast-and-buffs.md#known-issues)).
-- Dead code: `job_post_aftercast`, `DRKStates.validate`, `message_buffs` include,
+- Dead code: `job_post_aftercast`, `message_buffs` include,
   `DRK_MOVEMENT.lua` (comments only).
 - Fixed, no longer issues: pending flags never cleared (`89ea984`); the stale
   comments of `DRK_MOVEMENT`, `DRK_IDLE`, `DRK_ENGAGED`, `DRK_BUFFS`, the entry

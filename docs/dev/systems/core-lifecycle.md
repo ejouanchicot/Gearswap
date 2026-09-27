@@ -253,7 +253,7 @@ Purpose: when the aftercast packet is lost, GearSwap stays in midcast gear. The 
 
 `shared/utils/core/cast_tracker.lua` (same date, started by INIT_SYSTEMS) listens to this character's action packets: `started_since(t)` (category 8, param 24931) and `acted_since(t)`. Used by the BRD song queue to tell a refused `/ma` in 2.5 s.
 
-Before this, timeouts were only as good as `state.FastCast`, still the fallback when no estimate matches. It is a user setting (`_master/config/blm/BLM_STATES.lua:251-258` defaults to 80, BST/COR/DNC to 0). With 80 configured and 50 % real Fast Cast, Teleport-Holla (cast time 20) gets 20 x 0.2 + 1.5 = 5.5 s against a real 10 s cast, and the watchdog would send `gs c update` mid-cast. Nothing stops that update from swapping gear during the cast: GearSwap's `equip_sets()` has no midaction check (`flow.lua:113-172`) and no project code calls `midaction()`, so idle/engaged gear goes on before the spell lands.
+Before this, timeouts were only as good as `state.FastCast`, still the fallback when no estimate matches. It is a user setting (`_master/config/blm/BLM_STATES.lua:250-258` defaults to 80, BST/COR/DNC to 0). With 80 configured and 50 % real Fast Cast, Teleport-Holla (cast time 20) gets 20 x 0.2 + 1.5 = 5.5 s against a real 10 s cast, and the watchdog would send `gs c update` mid-cast. Nothing stops that update from swapping gear during the cast: GearSwap's `equip_sets()` has no midaction check (`flow.lua:113-172`) and no project code calls `midaction()`, so idle/engaged gear goes on before the spell lands.
 
 With Mote's `state.EquipStop` set to `midcast`, `filter_aftercast` cancels the aftercast (`Mote-Include.lua:362-368`), `job_aftercast` never runs, and the watchdog re-equips gear after the timeout.
 
@@ -425,7 +425,7 @@ Runtime changes made with `watchdog buffer/fallback/on/off/debug` live in module
 | `JobChangeManagerSTATE` | `job_change_manager.lua:36-53` | JCM, `DEBUG_COMMANDS.lua` `handle_debugjobchange` / `handle_debugstate`, `system_checker.lua:121` |
 | `MidcastWatchdog` | `INIT_SYSTEMS.lua:131` | jobs, `LifecycleManager`, JCM cleanup, `WATCHDOG_COMMANDS`, `system_checker` |
 | `MIDCAST_WATCHDOG_TIMER` | `midcast_watchdog.lua:467` (set), `:475` (cleared) | `stop()` only (clears the tracked midcast when set, `:474-477`); `global_probe.lua:57` lists it as expected. It does not control the loop |
-| `JobSyncWatchdog`, `LifecycleManager`, `ModuleCache` | module exports | no reader. All three are in the GlobalProbe expected list (`global_probe.lua:55,58,128`) |
+| `JobSyncWatchdog`, `LifecycleManager`, `ModuleCache` | module exports | no reader. All three are in the GlobalProbe expected list (`global_probe.lua:55,58,126`) |
 | `require` (replaced), `__require_cache`, `__require_cache_installed`, `__require_cache_stats` | `module_cache.lua:55-57` and the wrapper assignment after it | every `require` |
 | `display_current_state` | `state_display_override.lua:29` | Mote `handle_update` |
 | `UPDATE_DEBUG`, `AUTOMOVE_DEBUG`, `WARP_DEBUG`, `PrecastDebugState`, `JOBCHANGE_DEBUG` | `INIT_SYSTEMS.lua:35-41` | Mirrors of `windower._gs_debug.*`, re-seeded on every load; DebugLogger users |

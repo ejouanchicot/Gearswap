@@ -32,7 +32,7 @@ re-read on 2026-09-25.
 
 | Path | Lines | Role |
 |---|---|---|
-| `shared/utils/messages/data/jobs/blm_messages.lua` | 164 | `BLM` - element/tier cycles, refinement, MP conservation, arts, errors |
+| `shared/utils/messages/data/jobs/blm_messages.lua` | 106 | `BLM` - element/storm cycles, refinement, MP conservation, arts, errors |
 | `shared/utils/messages/data/jobs/brd_messages.lua` | 269 | `BRD` - JA, instrument lock, song packs, song refinement, errors |
 | `shared/utils/messages/data/jobs/bst_messages.lua` | 306 | `BST` - ecosystem/species, broths, pet engage, Ready moves, errors |
 | `shared/utils/messages/data/jobs/cor_messages.lua` | 32 | `COR` - PartyTracker load failures |
@@ -227,9 +227,9 @@ their line in the data file; they have no path from any caller (see Known issues
 
 ### `BLM`
 
-- File: `data/jobs/blm_messages.lua` - 23 templates, 12 reachable. Sender: `formatters/jobs/message_blm.lua`. Callers: `BLM_COMMANDS.lua`, `shared/utils/scholar/scholar_actions.lua`, `blm/functions/logic/spell_refiner.lua`, `storm_manager.lua`, `shared/utils/precast/tier_refiner.lua`. All `color = 1`.
-- Reachable: `element_cycle` (job, state_type, element_color, element); `storm_cycle` (job, element_color, storm); `tier_cycle` (job, tier); `spell_refinement` (job, original, recast, downgrade); `arts_already_active` (job, arts); `stratagem_no_charges` (job, stratagem, recast); `buffself_error`, `spell_replacement_error`, `spell_refinement_error`, `spell_recasts_error`, `breakga_blocked` (job); `insufficient_mp_error` (job, mp).
-- Unreachable: `mp_conservation`:93 (the BLM midcast router calls `MessageBLMMidcast.show_mp_conservation`, which sends `BLM_MIDCAST.mp_conservation`), `aja_cycle`:27, `buff_activated`:46, `buff_cast`:51, `magic_burst_on`:60, `magic_burst_off`:65, `free_nuke_on`:70, `spell_refinement_failed`:84, `dark_arts_activated`:102, `buff_casting`:155, `buff_status`:160. Five further keys were deleted in `78e3186` (`buffself_recasts_error`, `buffself_resources_error`, `unknown_buff_error`, `buff_already_active`, `manual_buff_cast`).
+- File: `data/jobs/blm_messages.lua` - 13 templates, 11 reachable. Sender: `formatters/jobs/message_blm.lua`. Callers: `BLM_COMMANDS.lua`, `shared/utils/scholar/scholar_actions.lua`, `blm/functions/logic/spell_refiner.lua`, `storm_manager.lua`, `shared/utils/precast/tier_refiner.lua`. All `color = 1`.
+- Reachable: `element_cycle` (job, state_type, element_color, element); `storm_cycle` (job, element_color, storm); `spell_refinement` (job, original, recast, downgrade); `arts_already_active` (job, arts); `stratagem_no_charges` (job, stratagem, recast); `buffself_error`, `spell_replacement_error`, `spell_refinement_error`, `spell_recasts_error`, `breakga_blocked` (job); `insufficient_mp_error` (job, mp).
+- Unreachable: `mp_conservation`:45 (the BLM midcast router calls `MessageBLMMidcast.show_mp_conservation`, which sends `BLM_MIDCAST.mp_conservation`), `buff_status`:102. Five further keys were deleted in `78e3186` (`buffself_recasts_error`, `buffself_resources_error`, `unknown_buff_error`, `buff_already_active`, `manual_buff_cast`).
 
 ### `BLM_MIDCAST`
 

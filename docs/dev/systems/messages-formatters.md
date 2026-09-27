@@ -36,7 +36,7 @@ functions in the Files table were re-measured on 2026-09-25.
 | `formatters/combat/message_cooldowns.lua` | 334 | 12 (+2 exported helpers) | Cooldown lines, multi-line cooldown/TP blocks, recast helpers |
 | `formatters/combat/message_ja_buffs.lua` | 220 | 13 | Generic JA activation line honouring `JA_MESSAGES_CONFIG` |
 | `formatters/combat/message_weaponskill.lua` | 148 | 15 | WeaponSkillManager and TP bonus calculator debug/error lines |
-| `formatters/jobs/message_blm.lua` | 311 | 23 | BLM cycles, refinement, Arts/stratagem, BLM errors |
+| `formatters/jobs/message_blm.lua` | 212 | 13 | BLM cycles, refinement, Arts/stratagem, BLM errors |
 | `formatters/jobs/message_blm_midcast.lua` | 108 | 11 | BLM midcast debug trace |
 | `formatters/jobs/message_brd.lua` | 513 | 46 | BRD songs, instruments, refinement, BRD errors |
 | `formatters/jobs/message_bst.lua` | 593 | 53 | BST ecosystem/broth, pet engage, ready moves, BST errors |
@@ -353,7 +353,7 @@ Not in the facade. `show_ws_manager_initialized`, `show_invalid_spell_parameter`
 
 | Module | Live (callers) | Dead |
 |---|---|---|
-| message_blm | `show_element_cycle`, `show_storm_cycle`, `show_tier_cycle`, `show_buffself_error` (`BLM_COMMANDS.lua`); `show_spell_refinement` (`refiner/special_handlers.lua`, `precast/tier_refiner.lua`); `show_arts_already_active`, `show_stratagem_no_charges` (`scholar/scholar_actions.lua`); `show_spell_replacement_error`, `show_spell_refinement_error`, `show_spell_recasts_error`, `show_insufficient_mp_error`, `show_breakga_blocked` (BLM refiner files) | `show_aja_cycle`, `show_buff_activated`, `show_buff_cast`, `show_magic_burst_on/off`, `show_free_nuke_on`, `show_spell_refinement_failed`, `show_mp_conservation`, `show_dark_arts_activated`, `show_buff_casting`, `show_buff_status` |
+| message_blm | `show_element_cycle`, `show_storm_cycle`, `show_buffself_error` (`BLM_COMMANDS.lua`); `show_spell_refinement` (`refiner/special_handlers.lua`, `precast/tier_refiner.lua`); `show_arts_already_active`, `show_stratagem_no_charges` (`scholar/scholar_actions.lua`); `show_spell_replacement_error`, `show_spell_refinement_error`, `show_spell_recasts_error`, `show_insufficient_mp_error`, `show_breakga_blocked` (BLM refiner files) | `show_mp_conservation`, `show_buff_status` |
 | message_blm_midcast | all 11, from `BLM_MIDCAST.lua` (as `MessageBLMMidcast`) and BLM `functions/logic/midcast_router.lua` (as `ctx.messages`) | none |
 | message_brd | `show_marcato_used`, `show_pianissimo_used`, `show_ability_command`, lullaby/elegy/requiem/threnody/carol/etude casts, `show_no_*` errors (`BRD_COMMANDS.lua`); `show_pianissimo_target`, `show_instrument_locked` (`BRD_PRECAST.lua`); `show_instrument_released` (`BRD_AFTERCAST.lua`); `show_songs_casting`, `show_song_pack`, `show_dummy_casting`, `show_pack_not_found` (`song_rotation_manager.lua`); `show_daurdabla_dummy` (BRD `midcast_router.lua`); `show_song_refinement[_failed]` (`song_refinement.lua`) | 23: Soul Voice/Nightingale/Troubadour lines, `show_marcato_skip_*`, `show_honor_march_locked/released`, `show_songs_refresh`, `show_dummy_cast`, tank/healer casting/refresh and not-configured, `show_song_guidance`, `show_song_cast_generic`, `show_doom_gained/removed`, `show_no_pack_configured` |
 | message_bst | ecosystem/species/broth equip (BST `functions/logic/ecosystem_manager.lua`), broth count header/line, no broths, ready-move list/use/auto lines, `show_error_*` for pet, moves, index, module (`BST_COMMANDS.lua`), pet engage/disengage (`pet_manager.lua`) | 34: all JA lines, `show_jug_equipped`, `show_broth_count_footer`, pet summoned/dismissed/charm/died/despawned, auto-engage lines, pet TP/HP status, ready-move precast/physical/magical/breath/tp_check/recast, `show_error_no_target/pet_too_far/no_jug_equipped/insufficient_hp` |
@@ -537,7 +537,7 @@ Re-checked on 2026-09-25. Open:
 - `message_songs.lua` has no caller; neither do the `show_song_*` and `*_new` facade keys (`message_formatter.lua:151-166`).
 - Region detection functions left after the `setregion`/`detectregion` handlers were removed (`message_commands.lua:134-243`); they still print `//gs c setregion us/eu` as advice (the `message_colors.lua` header now says `setregion` is not implemented).
 - About 159 formatter functions had no caller on 2026-09-18 (tables above; not re-measured).
-- Colour tokens passed as parameters print literally (`message_warp.lua:454`, `message_blm.lua:196`, `message_bst.lua:282, 297, 314`); all on paths without callers today, and each function's comment now says so.
+- Colour tokens passed as parameters print literally (`message_warp.lua:454`, `message_blm.lua:120`, `message_bst.lua:282, 297, 314`); all on paths without callers today, and each function's comment now says so.
 - "No cure" and AutoMedicine lines name fixed items and omit Panacea (`message_debuffs.lua:267-273, 343-347, 382`).
 - The BST broth listing opens a separator block it never closes (`BST_COMMANDS.lua:123-129`).
 - `MessageFormatter.show_error` called with two arguments drops the reason (`DEBUG_COMMANDS.lua:483`, `:571`).

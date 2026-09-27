@@ -55,7 +55,7 @@ number added nothing, the function name is cited instead.
 | `shared/jobs/pld/functions/logic/cure_set_builder.lua` | 55 | CureSelf / CureOther choice for Cure to Cure IV, `is_cure` |
 | `shared/jobs/pld/functions/logic/aoe_manager.lua` | 178 | `//gs c aoe` BLU rotation (same code as RUN's copy; only the headers and the error text differ) |
 | `shared/jobs/pld/functions/logic/rune_manager.lua` | 76 | `//gs c rune` (same code as RUN's copy) |
-| `_master/config/pld/PLD_STATES.lua` | 402 | States (incl. `WS1`/`WS2`), three option profiles (`standard`/`sortie`/`sch`), `apply_hybrid_profile`, unused `validate`, `_G.PLDStates` |
+| `_master/config/pld/PLD_STATES.lua` | 364 | States (incl. `WS1`/`WS2`), three option profiles (`standard`/`sortie`/`sch`), `apply_hybrid_profile`, `_G.PLDStates` |
 | `_master/config/pld/PLD_KEYBINDS.lua` | 81 | 10 keyed binds (Regen on `^numpad2` and Phalanx SIRD on `^numpad3` under /SCH), `subjob` / `exclude_subjob` filters and a `visible` predicate; data only, `KeybindManager.create('PLD', ...)` does the binding, the delta-only `refresh()` and the loud failure (see [keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/pld/PLD_CUSTOM.lua` | 118 | Player modes and gear rules (all examples commented out), read through `KeybindManager` |
 | `_master/config/pld/PLD_WS_CONFIG.lua` | 64 | `_G.PLDWSConfig`: the two weaponskills each sword offers |
@@ -148,8 +148,8 @@ first idle/engage).
 
 ### Precast
 
-`job_precast` (`PLD_PRECAST.lua:109-148`), then Mote's `default_precast`
-(unless `handled`), then `job_post_precast` (`:173-194`):
+`job_precast` (`PLD_PRECAST.lua:109-141`), then Mote's `default_precast`
+(unless `handled`), then `job_post_precast` (`:166-187`):
 
 ```mermaid
 flowchart TD
@@ -190,9 +190,10 @@ flowchart TD
 - `WSPrecastHandler.handle` returns true at once for anything that is not a
   weaponskill (`ws_precast_handler.lua:48-49`); for a WS it validates range,
   computes TP-bonus gear from `_G.PLDTPConfig` and refuses below 1000 TP.
-- Lines 141-147 equip `sets.precast['Cure']` / `['Flash']`, which no PLD sets
-  file defines; even if they existed, Mote's `default_precast` runs after
-  `job_precast` (`Mote-Include.lua:254-264`) and would replace them.
+- Until 2026-09-27 `job_precast` equipped `sets.precast['Cure']` / `['Flash']`,
+  which no PLD sets file defines and Mote's `default_precast` (run after it)
+  would have replaced anyway; removed. Precast gear by spell goes in
+  `sets.precast.FC[name]`.
 - Mote's default picks `sets.precast.FC[name|map|skill]`, `sets.precast.JA[name]`
   (JA base is FullEnmity), or `sets.precast.WS[name]`.
 - `job_post_precast`: `apply_tp_gear`, then `sets.precast.FC.CureSelf` for Cure
@@ -586,8 +587,7 @@ L = `Tetsouo/sets/pld/pld_sets.lua` (weapon sets come from
 | `sets.EnmityMax` | `enmity_override.lua:50,95,143` | 389 | **absent** | 406 |
 | `sets.precast.JA` + 16 named JAs | Mote default precast | 392-407 | 299-314 | 409-436 |
 | `sets.precast.FC` (+ 17 name/skill aliases) | Mote default precast | 413-445 | 320-352 | 442-485 |
-| `sets.precast.FC.CureSelf` | `PLD_PRECAST.lua:184-187` | **absent** | **absent** | 460 |
-| `sets.precast.Cure`, `sets.precast.Flash` | `PLD_PRECAST.lua:141-147` | absent | absent | absent |
+| `sets.precast.FC.CureSelf` | `PLD_PRECAST.lua:177-180` | **absent** | **absent** | 460 |
 | `sets.precast.WS` + named WS, `['Atonement'] = FullEnmity` | Mote default precast | 476-551, 484 | 363-453, 386 | 519-613, 527 |
 | `sets.precast.WS.TPBonus`, `['<WS>'].TPBonus` | nothing (TP gear comes from `PLD_TP_CONFIG`) | 576-584 | 478-486 | 638-646 |
 | `sets.midcast.Enmity` (= FullEnmity) | skill `Enmity` (Enlight) | 597 | 499 | 683 |
@@ -742,8 +742,6 @@ L = `Tetsouo/sets/pld/pld_sets.lua` (weapon sets come from
   flickers for a spell that is not cast (`ability_helper.lua` `fire_then_replay`).
 - The Healing route (Curaga, -na from the sub) is a no-op without
   `sets.midcast['Healing Magic']` (`PLD_MIDCAST.lua` `midcast_healing`).
-- `sets.precast['Cure']` / `['Flash']` equips are dead: no such sets, and Mote
-  overwrites them (`PLD_PRECAST.lua:141-147`).
 - BLU dynamic rotation reads the main job's data, so on PLD/BLU it always falls
   back to the manual list, including unset spells
   (`_master/config/pld/PLD_BLU_MAGIC.lua:104`).
@@ -759,7 +757,7 @@ L = `Tetsouo/sets/pld/pld_sets.lua` (weapon sets come from
   (`set_builder.lua:257-262`).
 - Template `sets.idle.Town` is the one-slot MoveSpeed set used as a full idle
   base (`_master/sets/pld_sets.lua:829`).
-- Dead or unread: `PLDStates.validate`, `sets.precast.WS.TPBonus` family,
+- Dead or unread: `sets.precast.WS.TPBonus` family,
   `sets.Duban/Aegis/['Blurred Shield +1']`, `cooldown_exclusions` (duplicates
   CooldownChecker).
 - Pending in-game checks (2026-09-25 fixes): PLD/SCH `//gs c aoe` shows the

@@ -12,7 +12,7 @@ Every `//gs c <words>` typed by the player, sent by a keybind, a macro, `send_co
 | `shared/utils/config/config_loader.lua` | 82 | `ConfigLoader.load_ui_config(char, job)`: loads `<char>/config/UI_CONFIG.lua`, sets `_G.UIConfig` and `_G.ui_display_config` |
 | `shared/utils/debug/debug_logger.lua` | 87 | `DebugLogger`: one-line flag-gated debug output through `MessageFormatter.show_debug` |
 | `shared/utils/debug/full_test.lua` | 305 | `FullTest`: syscheck + module loads + `_G` hooks + `sets` structure, scored, optional file export |
-| `shared/utils/debug/global_probe.lua` | 220 | `GlobalProbe`: snapshots `_G`, reports globals created afterwards, reports missing Mote hooks |
+| `shared/utils/debug/global_probe.lua` | 218 | `GlobalProbe`: snapshots `_G`, reports globals created afterwards, reports missing Mote hooks |
 | `shared/utils/debug/lag_debugger.lua` | 523 | `LagDebugger`: event journal (frames, stalls, module loads, actions, job changes) kept on `windower._lagdebug`, exported to a file |
 | `shared/utils/debug/performance_profiler.lua` | 357 | `Profiler`: load-time checkpoints for `get_sets()` and the job facades, persistent on/off switch file |
 | `shared/utils/debug/system_checker.lua` | 334 | `SystemChecker`: 10 runtime health checks, scored, optional per-character export |
@@ -321,7 +321,7 @@ Switch persisted as the existence of `data/.profiler_enabled` (`STATE_FILE`, 42;
 
 ### GlobalProbe
 
-`snapshot()` stores the set of `_G` keys in `_G.__global_baseline`; `leaks()` returns every string key not in the baseline, not in `EXPECTED` (37-133), not starting with `__`, `job_` or `user_`, and not matching the factory patterns in `GENERATED` (139-143). `missing_hooks()` checks the seven names of `REQUIRED_HOOKS` (197-200): `job_precast`, `job_midcast`, `job_post_midcast`, `job_aftercast`, `job_status_change`, `job_buff_change`, `job_self_command`; all 16 job folders define the 7. On 2026-09-25 `EXPECTED` gained the globals created by `tb`, `trace`, `sortie`, custom states, HP priority, KeybindManager and the alt window, which syscheck used to report as leaks.
+`snapshot()` stores the set of `_G` keys in `_G.__global_baseline`; `leaks()` returns every string key not in the baseline, not in `EXPECTED` (37-131), not starting with `__`, `job_` or `user_`, and not matching the factory patterns in `GENERATED` (137-141). `missing_hooks()` checks the seven names of `REQUIRED_HOOKS` (195-198): `job_precast`, `job_midcast`, `job_post_midcast`, `job_aftercast`, `job_status_change`, `job_buff_change`, `job_self_command`; all 16 job folders define the 7. On 2026-09-25 `EXPECTED` gained the globals created by `tb`, `trace`, `sortie`, custom states, HP priority, KeybindManager and the alt window, which syscheck used to report as leaks.
 
 ### Trace (`//gs c trace`)
 
@@ -402,7 +402,7 @@ Open:
 - `show_error` called with two arguments drops the message (`DEBUG_COMMANDS.lua:483`, `:571`; `MessageStatus.show_error(message)` takes one).
 - Warp load-failure diagnostic probes a moved module path, `shared/utils/messages/message_warp` (now `formatters/system/message_warp.lua`) (`COMMON_COMMANDS.lua:442`).
 - Unreachable job branches shadowed by common names: WAR `perf` (`WAR_COMMANDS.lua:193-194`, now commented as unreachable), COR `testcolors`/`colors` (`COR_COMMANDS.lua:309`).
-- `GlobalProbe.EXPECTED` whitelists `name` and `x` (`global_probe.lua:115,127`); nothing shows they are real globals.
+- `GlobalProbe.EXPECTED` whitelists `name` and `x` (`global_probe.lua:113,125`); nothing shows they are real globals.
 - syscheck WarpInit check trusts a flag that outlives the environment (`system_checker.lua:69`).
 - fulltest_report.txt and `debug_lag.txt` are shared by all characters (`full_test.lua:251`, `lag_debugger.lua:482`).
 - `altcmds` cannot tell that a job command shares an alt key, so on WAR with a WAR alt it lists `berserk` in the bare form although `//gs c berserk` runs on the main (`alt_commands.lua:549-553`).

@@ -44,7 +44,7 @@ number added nothing, the function name is cited instead.
 | `shared/jobs/dnc/functions/DNC_STATUS.lua` | 19 | `LifecycleManager.status_change()` |
 | `shared/jobs/dnc/functions/DNC_BUFFS.lua` | 43 | `LifecycleManager.buff_change(on_dance_change)`: Doom, then a gear refresh on Saber/Fan Dance gain or loss |
 | `shared/jobs/dnc/functions/DNC_COMMANDS.lua` | 187 | `job_self_command` router; `job_state_change = LifecycleManager.state_change()` |
-| `shared/jobs/dnc/functions/DNC_MOVEMENT.lua` | 40 | Unused `get_dnc_movement_status` |
+| `shared/jobs/dnc/functions/DNC_MOVEMENT.lua` | 13 | Header only, kept for the 12-module layout |
 | `shared/jobs/dnc/functions/DNC_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('DNC', ...)` wrappers |
 | `shared/jobs/dnc/functions/DNC_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('DNC', ...)` wrapper |
 | `shared/jobs/dnc/functions/logic/climactic_manager.lua` | 75 | Climactic Flourish auto-trigger conditions |
@@ -56,7 +56,7 @@ number added nothing, the function name is cited instead.
 | `shared/utils/drg/auto_jump.lua` | 224 | Jump before WS on /DRG (shared with WAR) |
 | `shared/utils/precast/ability_helper.lua` | 394 | `try_ability_ws` used for Climactic Flourish, `follow_up` used by `step` |
 | `shared/utils/smartbuff/subjob_war_buffs.lua` | 74 | /WAR buffs (shared with THF) |
-| `_master/config/dnc/DNC_STATES.lua` | 278 | All Mote states, unused `DNCStates.validate()` |
+| `_master/config/dnc/DNC_STATES.lua` | 211 | All Mote states |
 | `_master/config/dnc/DNC_KEYBINDS.lua` | 42 | 11 numpad binds, data only; `KeybindManager.create('DNC', ...)` adds `bind_all` / `unbind_all` / `show_intro` (see [keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/dnc/DNC_CUSTOM.lua` | 118 | Player modes and gear rules (all examples commented out), read through `KeybindManager` |
 | `_master/config/dnc/DNC_LOCKSTYLE.lua` | 62 | Lockstyle 2, `by_subjob`, `get_style` |
@@ -425,8 +425,8 @@ then cancelled.
   `AUTO_JUMP_SEQUENCE_ACTIVE`, `temp_tp_bonus_gear`, `DNCTPConfig`,
   `DNCWSConfig`, `UIConfig`, `LockstyleConfig`, `RECAST_CONFIG`,
   `is_recast_ready`, `is_on_cooldown`, `cancel_conflicting_buffs` (replaced),
-  `refine_waltz` (replaced), `DNCKeybinds`, the Mote hooks, factory exports,
-  `get_dnc_movement_status`. All reset on `gs reload`.
+  `refine_waltz` (replaced), `DNCKeybinds`, the Mote hooks, factory exports.
+  All reset on `gs reload`.
 - Module locals: lazy-loaded modules, `ClimaticManager`'s captured
   `DNCWSConfig`, AbilityHelper's resource cache.
 - `windower.*`: nothing written by DNC code itself; `AbilityHelper` keeps its
@@ -504,7 +504,6 @@ then cancelled.
 - Template `sets.idle.Town` is a 2-slot set used as a full idle base:
   `_master/sets/dnc_sets.lua:974`.
 - Dead code and states: `CombatWeaponMode`, `Buff['Climactic Flourish']`,
-  `get_dnc_movement_status`, `DNCStates.validate`,
   `sets.buff['Saber Dance' / 'Climactic Flourish']`, `sets.TreasureHunter`;
   the entry header claims subjob-filtered keybinds (`Tetsouo_DNC.lua:24`).
 - Pending in-game checks for 2026-09-25 fixes: `//gs c waltz` on a party

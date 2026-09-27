@@ -43,11 +43,11 @@ numbers were re-checked against the working tree on 2026-09-25.
 | `shared/jobs/sam/functions/SAM_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/sam/functions/SAM_BUFFS.lua` | 19 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/sam/functions/SAM_COMMANDS.lua` | 155 | `job_self_command` router (shared commands only), `job_state_change = LifecycleManager.state_change()` |
-| `shared/jobs/sam/functions/SAM_MOVEMENT.lua` | 47 | `get_sam_movement_status` (no caller), empty `job_handle_equipping_gear` |
+| `shared/jobs/sam/functions/SAM_MOVEMENT.lua` | 28 | Empty `job_handle_equipping_gear` |
 | `shared/jobs/sam/functions/SAM_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('SAM', ..., 1, 'SAM')` wrappers |
 | `shared/jobs/sam/functions/SAM_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('SAM', ..., 'SAM', 1, 1)` wrapper |
 | `shared/jobs/sam/functions/logic/set_builder.lua` | 165 | Idle (HP, PDT, weapon) and engaged (base from `select_engaged_base`: AM3 or the OffenseMode / HybridMode set; Seigan, weapon, bow) builders |
-| `_master/config/sam/SAM_STATES.lua` | 132 | `SAMStates.configure()` (HybridMode, MainWeapon, `state.Buff`, FastCast, AutoMedicine), unused `validate()` |
+| `_master/config/sam/SAM_STATES.lua` | 118 | `SAMStates.configure()` (HybridMode, MainWeapon, FastCast, AutoMedicine) |
 | `_master/config/sam/SAM_KEYBINDS.lua` | 37 | Data only: 2 binds handed to `KeybindManager.create('SAM', ...)`, which adds `bind_all` / `show_intro` / `unbind_all` and the character's `COMMON_KEYBINDS.lua` keys |
 | `_master/config/sam/SAM_CUSTOM.lua` | 118 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/sam/SAM_TP_CONFIG.lua` | 110 | `_G.SAMTPConfig`: Hagakure JP, pieces, weapons, `get_weapon_bonus`, `get_hagakure_bonus` |
@@ -156,11 +156,10 @@ flowchart TD
 - `job_post_precast` (173-196): TP bonus gear, then for a weaponskill
   `sets.buff.Sekkanoki` if `buffactive['Sekkanoki']` and
   `sets.buff['Meikyo Shisui']` if `buffactive['Meikyo Shisui']` (186-194). It
-  reads the buffs, not `state.Buff`: Mote sets `state.Buff[spell.english] = true`
-  in its own `precast()` **before** `job_precast` (`Mote-Include.lua:294-297`),
-  and only `buff_change` sets it back to false, so a Sekkanoki press cancelled
-  by `CooldownChecker` would leave the flag true; and the flags start `false`
-  on every load (`SAM_STATES.lua:69-75`) even when the buff is up.
+  reads the buffs. SAM declares no `state.Buff` entry, so Mote's default
+  `state.Buff` stays empty (`Mote-Include.lua:66`): Mote's `precast()` and
+  `buff_change` only update keys that already exist (`Mote-Include.lua:295-297`,
+  `:1027-1029`).
 
 ### Midcast
 
@@ -200,25 +199,22 @@ applies through Mote's name lookup.
   `sets.engaged.PDT`.
 - `job_status_change` / `job_buff_change` are the shared `LifecycleManager`
   handlers (Doom), see [core lifecycle](../systems/core-lifecycle.md#lifecyclemanager).
-  Mote's `buff_change` keeps `state.Buff[...]` in step for the six names SAM
-  registers (`Mote-Include.lua:1027-1029`).
-- `job_handle_equipping_gear` (`SAM_MOVEMENT.lua:38-39`) is empty.
+- `job_handle_equipping_gear` (`SAM_MOVEMENT.lua:20-21`) is empty.
 
 ## Mote states
 
-Created by `SAMStates.configure()` (`_master/config/sam/SAM_STATES.lua:33-98`)
+Created by `SAMStates.configure()` (`_master/config/sam/SAM_STATES.lua:33-112`)
 on every load. Keybinds from `SAM_KEYBINDS.lua:19-35`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
 | `HybridMode` (Mote's, options replaced) | PDT, Normal | PDT | `^numpad9` | idle PDT layer, engaged base `sets.engaged[HybridMode]`, Seigan branch (`set_builder.lua:53,93,151-156`) |
 | `MainWeapon` | Masamune, Kusanagi, Shining, Dojikiri, Soboro, Norifusa | Masamune | `^numpad1` | `set_builder.lua:60,107,143` |
-| `state.Buff.*` | Hasso, Seigan, Third Eye, Sekkanoki, Meikyo Shisui, Sengikori (booleans) | false | none | no reader (`job_post_precast` reads `buffactive`) |
 | `FastCast` | 0..80 step 10 | 0 | none | `midcast_watchdog.lua` |
-| `AutoMedicine` | shared On/Off | persisted | `#numpad0` (from `config/COMMON_KEYBINDS.lua`) | `AutoMedicine.init` (`SAM_STATES.lua:94-97`) |
+| `AutoMedicine` | shared On/Off | persisted | `#numpad0` (from `config/COMMON_KEYBINDS.lua`) | `AutoMedicine.init` (`SAM_STATES.lua:108-111`) |
 
-`SAMStates.configure()` replaces the whole `state.Buff` table (69). Since
-2026-09-27 it sets `OffenseMode` Normal / Mid / Acc / SuBlow (`^numpad2`),
+`SAMStates.configure()` declares no `state.Buff` entry (Mote's default empty
+table remains). Since 2026-09-27 it sets `OffenseMode` Normal / Mid / Acc / SuBlow (`^numpad2`),
 `WeaponskillMode` Normal / Mid / Acc (`^numpad3`, read by Mote's default
 precast) and adds `MDT` to `HybridMode`; `IdleMode` stays `'Normal'`.
 
@@ -287,7 +283,7 @@ T = `_master/sets/sam_sets.lua` (no live copy).
   `job_midcast`, `job_post_midcast`, `job_aftercast`, `customize_idle_set`,
   `customize_melee_set`, `job_status_change`, `job_buff_change`,
   `job_self_command`, `job_state_change`, `job_handle_equipping_gear`),
-  `get_sam_movement_status`, `select_default_lockstyle`,
+  `select_default_lockstyle`,
   `cancel_sam_lockstyle_operations`, `select_default_macro_book`,
   `SAMKeybinds`, `SAMTPConfig`, `LockstyleConfig`, `UIConfig`, `RegionConfig`,
   `RECAST_CONFIG`, `is_recast_ready`, `is_on_cooldown`,
@@ -315,8 +311,9 @@ T = `_master/sets/sam_sets.lua` (no live copy).
 
 - `get_ability_recasts()` is keyed by recast id, `get_abilities().job_abilities`
   by ability id; they are different numbers for every JA.
-- `state.Buff[name]` is set true by Mote in precast, before the job can cancel
-  the action; gear that must follow a buff reads `buffactive`.
+- Mote sets an existing `state.Buff[name]` true in precast, before the job can
+  cancel the action (SAM declares no entry); gear that must follow a buff reads
+  `buffactive`.
 - Mote nests `HybridMode` under the `OffenseMode` node; a `sets.engaged.PDT`
   sibling of `sets.engaged.Normal` is invisible to Mote, which is why
   `build_engaged_set` re-selects its base.
@@ -355,9 +352,7 @@ recast ready, it sends `input /ja "Hasso" <me>`. Off by default.
 - `recast == 0` strict test in the auto-Third Eye path (`SAM_PRECAST.lua:101`).
 - `SAM_LOCKSTYLE.by_subjob` is never read (no `get_style`,
   `_master/config/sam/SAM_LOCKSTYLE.lua:21`).
-- Dead code: `get_sam_movement_status`, `job_handle_equipping_gear`,
-  `SAMStates.validate`, the six unread `state.Buff` entries,
-  `sets.buff.Sengikori`.
+- Dead code: `job_handle_equipping_gear`, `sets.buff.Sengikori`.
 - Fixed in `b6c7dc6`: the comments copied from other jobs (`SAM_IDLE`,
   `SAM_ENGAGED`, `SAM_BUFFS`, `SAM_STATES` WHM_BUFFS and Alt keys).
 - `SAM_COMMANDS` duplicates `DRK_COMMANDS` (open finding).

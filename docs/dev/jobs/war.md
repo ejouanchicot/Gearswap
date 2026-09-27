@@ -49,7 +49,7 @@ numbers were re-checked against the working tree on 2026-09-25.
 | `shared/jobs/war/functions/WAR_STATUS.lua` | 47 | `job_status_change`: `DoomManager.handle_status_change` |
 | `shared/jobs/war/functions/WAR_BUFFS.lua` | 122 | `job_buff_change` (Doom, Aftermath Lv.3 refresh) and the globals `buff_war`, `buff_sam_sub`, `build_tp` |
 | `shared/jobs/war/functions/WAR_COMMANDS.lua` | 320 | `job_self_command` router and `job_state_change` (WS slot rebuild, `AmpullaLock.apply` on `HybridMode`, UI refresh) |
-| `shared/jobs/war/functions/WAR_MOVEMENT.lua` | 195 | Retaliation auto-cancel (AutoMove callback), `get_war_movement_status`, Retaliation debug helpers |
+| `shared/jobs/war/functions/WAR_MOVEMENT.lua` | 166 | Retaliation auto-cancel (AutoMove callback), Retaliation debug helpers |
 | `shared/jobs/war/functions/WAR_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('WAR', ..., 4, 'SAM')` wrappers |
 | `shared/jobs/war/functions/WAR_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('WAR', ..., 'SAM', 22, 1)` wrapper |
 | `shared/jobs/war/functions/logic/set_builder.lua` | 262 | Engaged base selection (KC, stance, AM3, weapon set, HybridMode), weapon layer, town/movement idle |
@@ -58,7 +58,7 @@ numbers were re-checked against the working tree on 2026-09-25.
 | `shared/utils/drg/auto_jump.lua` | 224 | Auto-Jump before a WS on /DRG (shared with DNC) |
 | `shared/utils/drg/DRG_JUMP_MANAGER.lua` | 86 | Manual Jump rotation (`//gs c jump`, WAR `tp` on /DRG) |
 | `shared/utils/weaponskill/tp_bonus_calculator.lua` | 275 | TP bonus piece selection (shared) |
-| `_master/config/war/WAR_STATES.lua` | 145 | All WAR states (`WARStates.configure()`), unused `WARStates.validate()` |
+| `_master/config/war/WAR_STATES.lua` | 116 | All WAR states (`WARStates.configure()`) |
 | `_master/config/war/WAR_KEYBINDS.lua` | 68 | Data only: 8 binds handed to `KeybindManager.create('WAR', ...)` (`bind_all` calls `show_intro`, `unbind_all`, `show_binds`), plus the character's `COMMON_KEYBINDS.lua` keys |
 | `shared/utils/equipment/ampulla_lock.lua` | - | Hoxne Ampulla ammo lock (shared with PLD) |
 | `_master/config/war/WAR_CUSTOM.lua` | 118 | Player modes and gear rules, commented examples only; the Tetsouo overlay (135) defines a `FullEmpy` on/off mode on `^numpad8` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
@@ -337,7 +337,7 @@ not call `on_aftercast` (see [core lifecycle](../systems/core-lifecycle.md#midca
 
 ### Retaliation auto-cancel
 
-`WAR_MOVEMENT.lua:47-126` schedules, 0.6 s after the facade runs, the
+`WAR_MOVEMENT.lua:46-125` schedules, 0.6 s after the facade runs, the
 registration of an `AutoMove` callback (AutoMove is included by `INIT_SYSTEMS`'
 0.5 s deferred block, scheduled earlier in the same `get_sets`). The callback
 receives `(is_moving, distance, player_status)` on every moving tick and on the
@@ -445,13 +445,13 @@ the overlay `_master/Tetsouo/sets/war/war_sets.lua`; weapon sets come from
 
 ## State & lifetime
 
-- Module state: `retaliation_config` (`WAR_MOVEMENT.lua:28-33`), lazy module
+- Module state: `retaliation_config` (`WAR_MOVEMENT.lua:27-31`), lazy module
   locals in every hook file, `MidcastDeps` cache. All die on `gs reload`.
 - `_G` written: the Mote hooks (`job_precast`, `job_post_precast`,
   `job_midcast`, `job_post_midcast`, `job_aftercast`, `customize_idle_set`,
   `customize_melee_set`, `job_status_change`, `job_buff_change`,
   `job_self_command`, `job_state_change`), `buff_war`, `buff_sam_sub`,
-  `build_tp`, `get_war_movement_status`, `toggle_retaliation_debug`,
+  `build_tp`, `toggle_retaliation_debug`,
   `get_retaliation_status`, `select_default_lockstyle`,
   `cancel_war_lockstyle_operations`, `select_default_macro_book`,
   `WARKeybinds`, `WARWSConfig`, `WARTPConfig`, `LockstyleConfig`, `UIConfig`,
@@ -552,13 +552,11 @@ the overlay `_master/Tetsouo/sets/war/war_sets.lua`; weapon sets come from
 - `WAR_STATUS` / `WAR_BUFFS` repeat `LifecycleManager` bodies (open
   duplication finding; `WAR_STATUS.lua:33-43` pcall-requires `DoomManager` and
   then calls it without a nil check).
-- Dead code: `get_war_movement_status`, `WARStates.validate`, the `grips` list
+- Dead code: the `grips` list
   (used only to return 0 for Fencer, like any non-shield sub).
-- Comments: the template `WAR_STATES.lua` now calls Ukonvasara the Empyrean
-  and Chango the Aeonic (fixed in `b6c7dc6`, with the Alt keys and the
-  macrobook "Book range" line); the Tetsouo overlay/live `WAR_STATES.lua` and
-  `sets/war/weapons.lua` still say "Relic" for Ukonvasara and "Empyrean" for
-  Chango.
+- Weapon comments: Ukonvasara is the Empyrean, Chango the Aeonic, Lycurgos an
+  Ergon (not a Mythic), Shining One a Polearm, in the template sets and
+  states and the Tetsouo overlay / live files (all fixed by 2026-09-27).
 - To check in game (2026-09-25): Hoxne stance then `//gs c wo`: a warning
   line, the ammo slot free after the run, and choosing Hoxne again locks it.
 - `tp_bonus_calculator.lua` `ranked_pieces` (104-117) re-sorts the pieces on

@@ -24,7 +24,7 @@ Scope of this page: everything under `shared/utils/ui/`, the settings store `sha
 | `shared/utils/ui/UI_SECTIONS.lua` | 368 | Renders the full text in order: header, column headers, sections, footer |
 | `shared/utils/ui/UI_FORMATTER.lua` | 391 | Line formatting, column widths, header/legend text, section titles |
 | `shared/utils/ui/COLOR_SYSTEM.lua` | 533 | Picks the colour code for each value, with per-character overrides |
-| `shared/utils/ui/ui_state_value.lua` | 129 | Reads a state's current value and all its possible values (the latter sizes the columns) |
+| `shared/utils/ui/ui_state_value.lua` | 119 | Reads a state's current value and all its possible values (the latter sizes the columns) |
 | `shared/utils/ui/ui_state_tracker.lua` | 90 | Snapshots every state value and diffs it against the previous snapshot |
 | `shared/utils/ui/ui_settings_resolver.lua` | 109 | Builds the settings table passed to `texts.new` |
 | `shared/utils/ui/UI_SETTINGS.lua` | 98 | Adapter between the flat `ui_settings` store and the `keybind_saved_settings` table shape |
@@ -390,7 +390,7 @@ Open:
 - `toggle_background` flips `UIConfig.background.visible`, not the persisted `bg_visible` (`shared/utils/ui/ui_appearance.lua:100`).
 - `KeybindSettings.save` rewrites the settings file up to nine times per command (`shared/utils/ui/UI_SETTINGS.lua:48-95`).
 - `handle_job_configuration_change`, `schedule_update`, `needs_reinit` and `get_status` have no callers (the header now says so, `shared/utils/ui/ui_update_orchestrator.lua:11-14`).
-- Several dead helpers, the RDM `enhancing_keys` that can never match, and the unreachable GEO/`result` branches (`shared/utils/ui/UI_DISPLAY_BUILDER.lua:203-204`, `shared/utils/ui/ui_state_value.lua:111-123`).
+- Several dead helpers, the RDM `enhancing_keys` that can never match, and the unreachable GEO branches (`shared/utils/ui/UI_DISPLAY_BUILDER.lua:203-204`, `shared/utils/ui/ui_state_value.lua:111-114`). The `ui_state_value.lua` branches that tested an undeclared `result` were removed 2026-09-27.
 - The `display_current_state` override prints `State: Unknown` on F12 while the HUD is disabled (`shared/utils/core/state_display_override.lua:29-39`).
 - `UI_CONFIG.lua` has keys nothing reads (`auto_save_position`, `auto_save_delay`, `debug`, `update_throttle`), and `validate` has no callers.
 - In `UI_COLOR_CONFIG.lua`, `bar_spells.ailment` and `special.default` have no effect (`shared/utils/ui/COLOR_SYSTEM.lua:175-179`).

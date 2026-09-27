@@ -47,7 +47,7 @@ numbers were re-checked against the working tree on 2026-09-25.
 | `shared/jobs/thf/functions/THF_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/thf/functions/THF_BUFFS.lua` | 68 | `job_buff_change`: DoomManager, SA/TA pending reset, `gs c update` on SA/TA loss |
 | `shared/jobs/thf/functions/THF_COMMANDS.lua` | 224 | `job_self_command` router, `job_state_change` (`LifecycleManager.state_change` + RangeLock lock/unlock) |
-| `shared/jobs/thf/functions/THF_MOVEMENT.lua` | 59 | Empty AutoMove callback, unused `get_thf_movement_status` |
+| `shared/jobs/thf/functions/THF_MOVEMENT.lua` | 18 | Header only, kept for the 12-module layout |
 | `shared/jobs/thf/functions/THF_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('THF', ...)` wrappers |
 | `shared/jobs/thf/functions/THF_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('THF', ...)` wrapper |
 | `shared/jobs/thf/functions/logic/sa_ta_manager.lua` | 95 | WS variant (`SATA` > `SA` > `TA`) from buffs or pending flags; consumes the flags |
@@ -56,7 +56,7 @@ numbers were re-checked against the working tree on 2026-09-25.
 | `shared/jobs/thf/functions/logic/range_lock.lua` | 63 | Range/ammo lock in step with `RangeLock`; `_G.thf_range_locked`; release at unload |
 | `shared/jobs/thf/functions/logic/treasure_hunter.lua` | 236 | `TreasureMode`: TH engaged overlay, TH SA/TA overlay, tagged-mob tracking (4 raw events) |
 | `shared/utils/smartbuff/subjob_war_buffs.lua` | 74 | Berserk / Aggressor / Warcry collection and casting (shared with DNC) |
-| `_master/config/thf/THF_STATES.lua` | 179 | All Mote states (`THFStates.configure()`), unused `THFStates.validate()` |
+| `_master/config/thf/THF_STATES.lua` | 145 | All Mote states (`THFStates.configure()`) |
 | `_master/config/thf/THF_KEYBINDS.lua` | 37 | Data only: 7 numpad binds (2 only on /WAR), handed to `KeybindManager.create('THF', ...)`, which adds `get_active_binds` / `bind_all` / `unbind_all` / `show_intro` / `show_binds` and the character's `COMMON_KEYBINDS.lua` keys |
 | `_master/config/thf/THF_CUSTOM.lua` | 118 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/thf/THF_LOCKSTYLE.lua` | 40 | Lockstyle 1 (`default`, `by_subjob`, no `get_style`) |
@@ -472,7 +472,7 @@ ignores non-slot keys when equipping.
   `temp_tp_bonus_gear`, `THFTPConfig`, `THFKeybinds`, `LockstyleConfig`,
   `RECAST_CONFIG`, `is_recast_ready`, `is_on_cooldown`, the Mote hooks,
   `select_default_lockstyle`, `cancel_thf_lockstyle_operations`,
-  `select_default_macro_book`, factory exports, `get_thf_movement_status`,
+  `select_default_macro_book`, factory exports,
   `thf_range_locked` (range/ammo lock held), `thf_treasure` (tagged mobs,
   `overlay_on`, `listening`).
 - `windower.*`: THF code writes nothing there.
@@ -574,11 +574,8 @@ ignores non-slot keys when equipping.
   `sets.midcast.EnhancingMagic` uses a key nothing reads (`THF_MIDCAST.lua:54-80`).
 - Initial macrobook/lockstyle depend on the `show_intro` side effect
   (`keybind_manager.lua` `show_intro`).
-- AutoMove callback is registered at include time, when `AutoMove` may not
-  exist yet, and is empty anyway (`THF_MOVEMENT.lua:26-29`).
 - `job_post_midcast` skeleton is duplicated with DNC (`THF_MIDCAST.lua:45-81`).
 - `job_buff_change` re-implements `LifecycleManager.buff_change`
   (`THF_BUFFS.lua:29-65`).
-- Dead code: `get_thf_movement_status`, `THFStates.validate`.
 - User doc out of date (`docs/user/jobs/thf/states.md`: Alt keys, no
   AutoMedicine, TreasureMode behaviour not described, macrobook values).

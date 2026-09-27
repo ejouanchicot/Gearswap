@@ -48,7 +48,7 @@ numbers were re-checked against the working tree on 2026-09-25.
 | `shared/utils/whm/cure_manager.lua` | 392 | `CureManager.select_cure_tier` (auto-tier + recast fallback) |
 | `shared/utils/whm/whm_message_formatter.lua` | 414 | Cure tier / Afflatus messages and CureManager debug lines (direct `add_to_chat`, a documented exception) |
 | `shared/utils/messages/formatters/jobs/message_whm.lua` + `data/jobs/whm_messages.lua` | 29 + 22 | One message (`show_curemanager_not_loaded`), never called |
-| `_master/config/whm/WHM_STATES.lua` | 185 | States (`configure`), unused `validate` |
+| `_master/config/whm/WHM_STATES.lua` | 139 | States (`configure`) |
 | `_master/config/whm/WHM_KEYBINDS.lua` | 78 | Data only: 6 binds handed to `KeybindManager.create('WHM', ...)` (`show_intro` / `bind_all` / `unbind_all`), plus the character's `COMMON_KEYBINDS.lua` keys |
 | `_master/config/whm/WHM_CUSTOM.lua` | 118 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/whm/WHM_CURE_CONFIG.lua` | 102 | `cure_tiers`, `curaga_tiers`, `safety_margin`, `debug_messages` |

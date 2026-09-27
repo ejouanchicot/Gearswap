@@ -175,8 +175,8 @@ flowchart TD
 |---|---|---|
 | `AutoMove.start()` | 312 | `INIT_SYSTEMS.lua:237-239` only |
 | `AutoMove.stop()` | 104 | `job_change_manager.lua:71-73` (`cleanup_all_systems`, subjob path only) |
-| `AutoMove.register_callback(fn(is_moving, distance, status))` | 93 | `WAR_MOVEMENT.lua:47-54` (Retaliation cancel, registered 0.6 s after load); `THF_MOVEMENT.lua:26-29` (empty placeholder, see Known issues) |
-| `AutoMove.is_moving()`, `get_last_distance()`, `get_position()` | 169-181 | the `get_<job>_movement_status()` helpers in BLM/BRD/COR/DNC/GEO/SAM/THF/WAR `<JOB>_MOVEMENT.lua` |
+| `AutoMove.register_callback(fn(is_moving, distance, status))` | 93 | `WAR_MOVEMENT.lua:46-53` (Retaliation cancel, registered 0.6 s after load) |
+| `AutoMove.is_moving()`, `get_last_distance()`, `get_position()` | 169-181 | none |
 | `AutoMove.clear_callbacks()`, `AutoMove.reinit_position()` | 98, 187 | none |
 
 Callback errors are caught and printed with `MessageCore.show_automove_error` (`trigger_callbacks`, `:116-123`).
@@ -454,7 +454,6 @@ Open:
 - Curing Waltz II and Divine Waltz learn levels (35, 40) disagree with the project's DNC ability database (30, 25) - `shared/utils/dnc/waltz_manager.lua:38`
 - DNC prints "Not enough TP" for a weaponskill that AutoJump has just taken over (`job_precast_weaponskill` returns, `job_precast` still calls `WSPrecastHandler.handle`) - `shared/jobs/dnc/functions/DNC_PRECAST.lua:171-179`
 - AutoMove assigns `state.Moving.value` directly, desynchronising the Mote mode - `shared/utils/movement/automove.lua:267`
-- THF registers an empty placeholder AutoMove callback, and only if `AutoMove` already exists when the facade loads, which it does not (AutoMove loads 0.5 s later) - `shared/jobs/thf/functions/THF_MOVEMENT.lua:25-29`
 - The job intro never shows macro/lockstyle info: `KeybindManager`'s `show_intro` looks for `get_<job>_macro_info` / `get_info` on the wrapper modules, which return nothing (owner decision pending, 2026-09-25 audit Z2-09) - `shared/utils/keybinds/keybind_manager.lua` `show_intro`
 - Unused factory/AutoMove exports - `shared/utils/lockstyle/lockstyle_manager.lua:324-335`
 - LOCKSTYLE_CONFIG keys `job_change_delay`/`cooldown` are unread (the file's comments now say so) - `_master/config_global/LOCKSTYLE_CONFIG.lua:34-41`

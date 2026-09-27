@@ -49,7 +49,7 @@ numbers are those of the working tree on 2026-09-26.
 | `shared/jobs/blu/functions/BLU_STATUS.lua` | 21 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/blu/functions/BLU_BUFFS.lua` | 22 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/blu/functions/BLU_COMMANDS.lua` | 115 | `job_self_command` router (shared commands only), `job_state_change = LifecycleManager.state_change()` |
-| `shared/jobs/blu/functions/BLU_MOVEMENT.lua` | 30 | `get_blu_movement_status` (AutoMove read-out, no caller in the BLU files) |
+| `shared/jobs/blu/functions/BLU_MOVEMENT.lua` | 16 | Header only (returns an empty table), kept for the 12-module layout |
 | `shared/jobs/blu/functions/BLU_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('BLU', 'config/blu/BLU_LOCKSTYLE', 1, 'WAR')` wrappers |
 | `shared/jobs/blu/functions/BLU_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('BLU', 'config/blu/BLU_MACROBOOK', 'WAR', 1, 1)` wrapper |
 | `shared/jobs/blu/functions/logic/spell_map.lua` | 117 | `category(name)` from the character's `BLU_SPELL_MAP.lua`, else the database category; `is_unbridled(name)` from the Blue Magic database |
@@ -60,7 +60,7 @@ numbers are those of the working tree on 2026-09-26.
 | `shared/data/magic/BLU_SPELL_DATABASE.lua` (+ `blu/**/*.lua`, 19 files) | 325 + 3 344 | Blue Magic spell data (196 spells); BLU code reads `get_spell_data(name).unbridled` (18 spells carry `unbridled = true`) and `.category` for a spell the map does not list |
 | `shared/data/job_abilities/BLU_JA_DATABASE.lua` + `blu/*.lua` | 13 + 146 | JA data for the messages (existed before the job) |
 | `shared/utils/core/auto_options.lua` | 35 | `AutoOptions.on(name)`: reads `config/AUTO_ABILITIES.lua` once per load into `_G._auto_options` |
-| `_master/config/blu/BLU_STATES.lua` | 82 | Mote mode options, `MainWeapon` / `SubWeapon`, `FastCast`, `AutoMedicine`; unused `validate` |
+| `_master/config/blu/BLU_STATES.lua` | 66 | Mote mode options, `MainWeapon` / `SubWeapon`, `FastCast`, `AutoMedicine` |
 | `_master/config/blu/BLU_KEYBINDS.lua` | 34 | Data only: 6 binds (+ 2 commented per-weapon examples), handed to `KeybindManager.create('BLU', ...)` |
 | `_master/config/blu/BLU_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/blu/BLU_SPELL_MAP.lua` | 143 | 24 categories -> spell names, all 196 database spells |
@@ -533,7 +533,7 @@ the clone script.
   `BLUKeybinds`, `BLUTPConfig`, `LockstyleConfig`, `RECAST_CONFIG`,
   `RegionConfig`, `_auto_options`, `select_default_lockstyle`,
   `cancel_blu_lockstyle_operations`, `select_default_macro_book`,
-  `get_blu_movement_status`, `temp_tp_bonus_gear`.
+  `temp_tp_bonus_gear`.
 - Module locals, lost on reload: the spell map (`by_spell`), the Expiacion
   window (`window_until`).
 - `windower.*`: `_blu_azuresets_loaded` (AzureSets), `_ability_replay`
@@ -618,8 +618,6 @@ for Tetsouo.
 
 - `BLU_LOCKSTYLE.lua` describes "optional per-subjob overrides" (4, 18-21),
   but `by_subjob` is never read (no `get_style`), as on the other jobs.
-- `get_blu_movement_status` and `BLUStates.validate` have no caller in the
-  tracked files.
 - Two factory instances each for lockstyle and macrobook (intro `require` +
   facade `include`), as on THF.
 - Gab's `@f` key sends `input /echo <recast="Fantod"> "Boost"; input /ma

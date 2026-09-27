@@ -47,12 +47,12 @@ nothing, the function name is cited instead.
 | `shared/jobs/geo/functions/GEO_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/geo/functions/GEO_BUFFS.lua` | 51 | Own `job_buff_change`: `AltBuffReporter.report`, then Doom |
 | `shared/jobs/geo/functions/GEO_COMMANDS.lua` | 408 | `job_self_command` router (incl. `escort`), `geo_escort_on_aftercast`, `job_state_change = LifecycleManager.state_change()` |
-| `shared/jobs/geo/functions/GEO_MOVEMENT.lua` | 40 | `get_geo_movement_status` only |
+| `shared/jobs/geo/functions/GEO_MOVEMENT.lua` | 14 | Header only, kept for the 12-module layout |
 | `shared/jobs/geo/functions/GEO_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('GEO', ..., 1, 'SAM')` wrappers |
 | `shared/jobs/geo/functions/GEO_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('GEO', ..., 'SAM', 1, 1)` wrapper |
 | `shared/jobs/geo/functions/logic/geo_spell_refiner.lua` | 158 | `refine_spell` / `refine_and_cast` tier fallback |
 | `shared/jobs/geo/functions/logic/set_builder.lua` | 183 | HybridMode / `sets.luopan` selection, town, weapons, movement; unused `apply_buff_gear` |
-| `_master/config/geo/GEO_STATES.lua` | 329 | All states (`GEOStates.configure()`), unused `validate()` |
+| `_master/config/geo/GEO_STATES.lua` | 273 | All states (`GEOStates.configure()`) |
 | `_master/config/geo/GEO_KEYBINDS.lua` | 58 | 12 binds, data only; `KeybindManager.create('GEO', ...)` adds `bind_all` / `unbind_all` / `show_intro` (see [keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/geo/GEO_CUSTOM.lua` | 118 | Player modes and gear rules (all examples commented out), read through `KeybindManager`; no Kaories overlay copy (the live `Kaories/config/geo/GEO_CUSTOM.lua` is the player's own) |
 | `_master/config/geo/GEO_LOCKSTYLE.lua` | 51 | `default = 5`, `by_subjob`, `get_style` |
@@ -338,7 +338,7 @@ code looks up is missing.
   `job_self_command`, `job_state_change`), `geo_entrust_pending`,
   `GEOTPConfig`, `GEOKeybinds`, `LockstyleConfig`, `RECAST_CONFIG`,
   `RegionConfig`, `select_default_lockstyle`, `cancel_geo_lockstyle_operations`,
-  `select_default_macro_book`, the factory exports, `get_geo_movement_status`.
+  `select_default_macro_book`, the factory exports.
 - `_G` read: `MidcastManagerDebugState`, `MidcastWatchdog`,
   `CraftManager`, `AltBuffState` / `AltJobState` (through the dual-box
   modules), `geo_escort_on_aftercast`.
@@ -455,10 +455,8 @@ Off unless `<Character>/config/AUTO_ABILITIES.lua` turns them on (template
   would put the generic template over the live one.
 - Pending in-game check (2026-09-25): `//gs c geo` with `MainGeo = Geo-Poison`
   opens the enemy target cursor (`<stnpc>`).
-- Dead code: `SetBuilder.apply_buff_gear`, `get_geo_movement_status`,
-  `GEOStates.validate`, `GEO_LOCKSTYLE.style` (`GEO_MOVEMENT.lua:20-40`,
-  `_master/config/geo/GEO_STATES.lua:277-322`,
-  `_master/config/geo/GEO_LOCKSTYLE.lua:49`).
+- Dead code: `SetBuilder.apply_buff_gear`, `GEO_LOCKSTYLE.style`
+  (`_master/config/geo/GEO_LOCKSTYLE.lua:49`).
 - Fixed, no longer issues: `entrust` casting the Indi although Entrust was
   refused (`033846e`, `follow_up_or_abort`); `dispel` duplicating BLM's (both
   use `ScholarActions.cast_under_black_addendum`); the live `Sybil Scarf`

@@ -298,7 +298,7 @@ a `gs reload` an orphaned poll would otherwise still believe it is current.
 | `PLD_PRECAST.lua:88-100` | Majesty (`try_ability_smart`) | Protect III/IV/V, Cure III/IV |
 | `RDM_PRECAST.lua:239` | Saboteur (`try_ability_smart`) | enfeebles in `RDMSaboteurConfig.auto_trigger_spells` when `state.SaboteurMode` is On |
 | `dnc/functions/logic/climactic_manager.lua:66` | Climactic Flourish (`try_ability_ws`, 1 s) | configured WS, live TP >= max(`min_tp`, 1000), target HP above `min_target_hpp`, and 3 or more Finishing Moves: any of the buffs `Finishing Move 3`, `4`, `5`, `(6+)` (`FINISHING_MOVES_3_PLUS`, `:28-33`) |
-| `blm_functions.lua:285` | Dark Arts (`follow_up`) | a Dark Magic spell cast without Dark Arts up |
+| `blm_functions.lua:263` | Dark Arts (`follow_up`) | a Dark Magic spell cast without Dark Arts up |
 | `dnc/functions/logic/step_manager.lua:77` | Presto (`follow_up`) | a step, to guarantee the extra Finishing Move |
 | `SAM_PRECAST.lua:110` | Third Eye (`follow_up`) | before Third Eye-gated actions |
 | `BRD_PRECAST.lua:116` | Pianissimo (`follow_up_or_abort`) | a song aimed at another party member |

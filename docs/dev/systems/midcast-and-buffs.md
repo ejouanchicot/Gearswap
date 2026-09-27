@@ -227,7 +227,7 @@ Who uses what:
 
 | Job builder | Town | Movement |
 |---|---|---|
-| BLM, GEO | `BaseSetBuilder.select_idle_base_town` called directly | `apply_movement` outside town (`shared/jobs/blm/functions/logic/set_builder.lua:180-181`) |
+| BLM, GEO | `BaseSetBuilder.select_idle_base_town` called directly | `apply_movement` outside town (`shared/jobs/blm/functions/logic/set_builder.lua:121-122`) |
 | WHM | `BaseSetBuilder.select_idle_base_town` called directly (`shared/jobs/whm/functions/logic/set_builder.lua:49`) | `BaseSetBuilder.apply_movement` always, in town too (`:64`) |
 | COR, DNC, PLD, RUN, THF | `SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town` | `apply_movement` (DNC and PLD return before it in town: `shared/jobs/dnc/functions/logic/set_builder.lua:147`, `shared/jobs/pld/functions/logic/set_builder.lua:349`) |
 | WAR, BRD | own `select_idle_base` wrapping `select_idle_base_town` | `apply_movement` outside town (`shared/jobs/war/functions/logic/set_builder.lua:248-253`); BRD also applies it to the engaged set (`shared/jobs/brd/functions/logic/set_builder.lua:175`) |
@@ -253,7 +253,7 @@ Typical order (PLD `build_idle_set`, `shared/jobs/pld/functions/logic/set_builde
 5. `send_queue` (`:170`) sends every action at once as `wait N; input /ma "X" <me>` (or `/ja`) and stamps the anti-spam time.
 6. With nothing to send, `show_active` (`:182`) lists the buffs already up with `MessageBuffs.show_buff_status`. If none is up (everything missing is on recast) nothing is printed and `false` is returned.
 
-Only caller: `shared/jobs/blm/functions/logic/buff_manager.lua:25` (Stoneskin with `delay = 8`, Blink, Aquaveil, Ice Spikes), reached by `//gs c buff|buffs|buffself|selfbuff` (`BLM_COMMANDS.lua:357-366` -> global `BuffSelf()` in `blm_functions.lua:162`). The anti-spam table is per manager instance, created when `buff_manager.lua` loads.
+Only caller: `shared/jobs/blm/functions/logic/buff_manager.lua:25` (Stoneskin with `delay = 8`, Blink, Aquaveil, Ice Spikes), reached by `//gs c buff|buffs|buffself|selfbuff` (`BLM_COMMANDS.lua:346-355` -> global `BuffSelf()` in `blm_functions.lua:153`). The anti-spam table is per manager instance, created when `buff_manager.lua` loads.
 
 ## SubjobWarBuffs
 
@@ -273,11 +273,11 @@ It does not check the subjob. Callers: THF `SmartbuffManager.apply_war_buffs()` 
 `ScholarActions` (`scholar_actions.lua`):
 
 - `buff_up(name)` (`:110-120`, 2026-09-27): Light Arts, Dark Arts, Addendum: White / Black, Accession and Manifestation are read from `windower.ffxi.get_player().buffs` by id (`BUFF_IDS`, `:97-100`: 358, 359, 401, 402, 366, 367, checked against `res/buffs.lua`); any other name falls back to `buffactive`. The chains poll from scheduled functions, where GearSwap's `buffactive` can lag behind a buff just gained: a chain then saw no Light Arts and gave up with "Light Arts never came up" although it was on. Every wait below (`run_steps`, `cast_when_ready`, the skips in `cast_with_stratagems` and `cast_under_black_addendum`) goes through it.
-- `run_chain(steps, on_done, finish_anyway)` (`:224-228`): sends each step only once the previous one's buff is actually up (poll every `POLL_INTERVAL` 0.5 s, give up after `POLL_GRACE` 6 s per step, `:83`, `:89`), then runs `on_done`. `finish_anyway` decides what a step that never lands means: Klimaform is worth casting without Manifestation, a lone Sneak instead of a party one is not. BLM `klima` uses it (`BLM_COMMANDS.lua:416`).
+- `run_chain(steps, on_done, finish_anyway)` (`:224-228`): sends each step only once the previous one's buff is actually up (poll every `POLL_INTERVAL` 0.5 s, give up after `POLL_GRACE` 6 s per step, `:83`, `:89`), then runs `on_done`. `finish_anyway` decides what a step that never lands means: Klimaform is worth casting without Manifestation, a lone Sneak instead of a party one is not. BLM `klima` uses it (`BLM_COMMANDS.lua:405`).
 - `chain(steps)` (`:38-40`): joins steps with `; wait 2; ` (`STEP_SPACING`, `:22`). A blind Windower chain; kept only as the spacing hint passed to `AbilityHelper.follow_up`, no chain is built with it any more.
 - `light_arts()` / `dark_arts()` (`:59-67`, `:72-80`): Addendum already up -> message; Arts up -> Addendum; otherwise Arts. Addendum is tested first because it replaces the Arts buff in `buffactive`.
 - `cast_with_stratagems(spell, aoe_state, needs_addendum)` (`:242-299`, replaces the old `build_accession_chain`): target `<me>` when the state is missing or On, else `<stal>`. With `needs_addendum` and Addendum: White not up, Addendum takes the first charge (without it the cast is refused); Accession takes the next when the target is `<me>` and Accession is not up. A stratagem that cannot be paid shows `warn_no_charge` (`:44-46`) and is dropped. With nothing to wait for the spell goes out at once; otherwise Light Arts (only if neither Light Arts nor Addendum: White is up) and the stratagems run through `run_steps`, then `cast_when_ready` waits until every required buff is up and casts, or warns "`<spell>` cancelled: `<buff>` never came up" at the deadline.
-- `cast_under_black_addendum(spell, target)` (`:314-335`): Dark Arts, then Addendum: Black, then the spell, skipping what is already up, each step through `AbilityHelper.follow_up` (Addendum shares recast 231, so the helper watches the buff). Used for Dispel by BLM (`BLM_COMMANDS.lua:436`) and GEO (`GEO_COMMANDS.lua:385`).
+- `cast_under_black_addendum(spell, target)` (`:314-335`): Dark Arts, then Addendum: Black, then the spell, skipping what is already up, each step through `AbilityHelper.follow_up` (Addendum shares recast 231, so the helper watches the buff). Used for Dispel by BLM (`BLM_COMMANDS.lua:425`) and GEO (`GEO_COMMANDS.lua:385`).
 - `try_aoe_subcommand(word, aoe_state)` (`:357-364`) maps `sneak`, `invi`, `invisible` (use the state) and `erase` (ignores the state, needs Addendum) through `AOE_SPELLS` (`:346-351`). `//gs c stealth` also calls `cast_with_stratagems(spell, nil)` for a Scholar covering the box group ([stealth.md](stealth.md)).
 - Every new cast bumps `windower._sch_cast_seq` (`:94`, `:225`, `:277`); a pending chain from an older cast (or an older sandbox) sees the mismatch and stops.
 - Messages go through `MessageFormatter.show_stratagem_no_charges` / `show_arts_already_active` / `show_warning`; the first two forward to the BLM message templates, so PLD and GEO print them with the BLM templates and a dynamic job tag.
@@ -287,7 +287,7 @@ It does not check the subjob. Callers: THF `SmartbuffManager.apply_war_buffs()` 
 | Command | Handler | Effect |
 |---|---|---|
 | `//gs c debugmidcast` | 16 job COMMANDS files (see Debug mode) | Toggle `windower._midcast_debug` / `_G.MidcastManagerDebugState` |
-| `//gs c buff` / `buffs` / `buffself` / `selfbuff` (BLM) | `BLM_COMMANDS.lua:357-366` | `SelfBuffManager` queue |
+| `//gs c buff` / `buffs` / `buffself` / `selfbuff` (BLM) | `BLM_COMMANDS.lua:346-355` | `SelfBuffManager` queue |
 | `//gs c lightarts` | BLM `:370`, PLD `PLD_COMMANDS.lua:205` -> `ScholarActions.light_arts()`; GEO `GEO_COMMANDS.lua:337-349` (own copy) | Light Arts, then Addendum: White |
 | `//gs c darkarts` | BLM `:376` -> `ScholarActions.dark_arts()`; GEO `:351-363` (own copy) | Dark Arts, then Addendum: Black |
 | `//gs c aoe sneak\|invi\|invisible\|erase` | BLM `:384-387` (`state.SneakInviAOE`), PLD `:180-190` (same state; bare `aoe` runs the PLD Blue Magic rotation, which since 2026-09-25 refuses without /BLU), GEO `:366-370` (no state, always AoE) | `cast_with_stratagems` |

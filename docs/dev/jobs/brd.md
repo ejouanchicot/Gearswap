@@ -45,7 +45,7 @@ line number added nothing, the function name is cited instead.
 | `shared/jobs/brd/functions/BRD_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/brd/functions/BRD_BUFFS.lua` | 19 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/brd/functions/BRD_COMMANDS.lua` | 540 | `job_self_command` router, `job_state_change = LifecycleManager.state_change()` |
-| `shared/jobs/brd/functions/BRD_MOVEMENT.lua` | 57 | `get_brd_movement_status`, `job_handle_equipping_gear` (instrument lock) |
+| `shared/jobs/brd/functions/BRD_MOVEMENT.lua` | 39 | `job_handle_equipping_gear` (instrument lock) |
 | `shared/jobs/brd/functions/BRD_LOCKSTYLE.lua` | 55 | Lazy `LockstyleManager.create('BRD', ..., 1, 'WHM')` wrappers |
 | `shared/jobs/brd/functions/BRD_MACROBOOK.lua` | 49 | Lazy `MacrobookManager.create('BRD', ..., 'WHM', 1, 1)` wrapper |
 | `shared/jobs/brd/functions/logic/midcast_router.lua` | 271 | Per-skill midcast handlers (Singing, Healing, Enhancing, Enfeebling, Elemental), locked instrument and `MainInstrument` |
@@ -53,7 +53,7 @@ line number added nothing, the function name is cited instead.
 | `shared/jobs/brd/functions/logic/song_refinement.lua` | 115 | `refine_song(spell, eventArgs)` |
 | `shared/jobs/brd/functions/logic/instrument_lock_config.lua` | 70 | `LOCKED_SONGS` (Honor March, Aria of Passion) |
 | `shared/jobs/brd/functions/logic/set_builder.lua` | 218 | Idle/engaged construction (town, IdleMode, EngagedMode, Kraken Club, weapons, movement) |
-| `_master/config/brd/BRD_STATES.lua` | 257 | All states (`BRDStates.configure()`), unused `validate()` |
+| `_master/config/brd/BRD_STATES.lua` | 223 | All states (`BRDStates.configure()`) |
 | `_master/config/brd/BRD_KEYBINDS.lua` | 59 | 12 numpad binds, data only; `KeybindManager.create('BRD', ...)` adds `bind_all` / `unbind_all` / `show_intro` (see [keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/brd/BRD_CUSTOM.lua` | 118 | Player modes and gear rules (all examples commented out), read through `KeybindManager` |
 | `_master/config/brd/BRD_SONG_CONFIG.lua` | 293 | Packs, dummy songs, Etudes, Victory March replacement, short names, refinement tiers |
@@ -246,7 +246,7 @@ instrument is equipped in `range` and `_G.casting_locked_song`,
 after `MidcastManager` (`midcast_router.lua:189-195`). Aftercast clears the
 three globals after **any** action and prints `instrument_released` when the
 same song completed uninterrupted (`BRD_AFTERCAST.lua:38-56`).
-`job_handle_equipping_gear` (`BRD_MOVEMENT.lua:39-49`) also equips it, but does
+`job_handle_equipping_gear` (`BRD_MOVEMENT.lua:21-28`) also equips it, but does
 not set `eventArgs.handled`, so Mote equips the full status set right after it
 (`Mote-Include.lua:443-450`).
 
@@ -515,7 +515,7 @@ The template engaged set uses the `ranged` key for Linos (T 147, L 105), which
   `update_brd_song_slots`, `SongRotationManager`, `BRDKeybinds`,
   `LockstyleConfig`, `RECAST_CONFIG`, `RegionConfig`,
   `select_default_lockstyle`, `cancel_brd_lockstyle_operations`,
-  `select_default_macro_book`, the factory exports, `get_brd_movement_status`.
+  `select_default_macro_book`, the factory exports.
   All die with the sandbox on `gs reload` and job change.
 - `_G` read: `MidcastManagerDebugState`, `PrecastDebugState`,
   `MidcastWatchdog`, `UIConfig`.
@@ -603,7 +603,7 @@ The template engaged set uses the `ranged` key for Linos (T 147, L 105), which
   `BRD_PRECAST.lua:194-195`).
 - `job_handle_equipping_gear` is registered although the export is commented
   out: `function name()` in an included file defines a sandbox global
-  (`BRD_MOVEMENT.lua:39,50-56`, whose comment now says so; `refresh.lua:149`,
+  (`BRD_MOVEMENT.lua:21,34-39`, whose comment now says so; `refresh.lua:149`,
   `user_functions.lua:327`).
 - `job_customize_midcast_set` is never called (`BRD_MIDCAST.lua:78-80`).
 - Three different "other player" tests: Marcato (`BRD_PRECAST.lua:176`),
@@ -617,9 +617,8 @@ The template engaged set uses the `ranged` key for Linos (T 147, L 105), which
   base (`_master/sets/brd_sets.lua:492`); the live file fixed it.
 - The refined Foe Requiem VI falls to `sets.midcast.BardSong`
   (`BRD_SONG_CONFIG.lua:278`, no Requiem set in T or L).
-- Dead code: `BRDStates.validate`, `SongRefinement.get_downgrade` /
-  `is_enabled`, `InstrumentLockConfig.get_all_locked_songs`,
-  `get_brd_movement_status`, and the
+- Dead code: `SongRefinement.get_downgrade` /
+  `is_enabled`, `InstrumentLockConfig.get_all_locked_songs`, and the
   `songs_refresh`, `tank_*`, `healer_*`, `song_guidance`, `marcato_skip_*`,
   `doom_*`, `no_pack_configured` BRD messages (see the
   [catalog](../systems/messages-catalog.md)).

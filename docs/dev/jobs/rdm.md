@@ -60,7 +60,7 @@ numbers were re-checked against the working tree on 2026-09-25.
 | `shared/data/spells/NUKE_TIERS.lua` | 56 | Nuke / -ra / Aspir tiers, read by `RDM_PRECAST.lua` `get_spell_tiers` and `GEO_PRECAST.lua` |
 | `shared/data/magic/ENFEEBLING_MAGIC_DATABASE.lua` (+ `enfeebling/*.lua`) | - | `get_enfeebling_type` (macc, mnd_potency, int_potency, skill_potency, skill_mnd_potency, potency, duration) |
 | `shared/data/magic/ENHANCING_MAGIC_DATABASE.lua` (+ `enhancing/*.lua`) | - | `get_spell_family` (Enspell, Gain, BarElement, BarAilment, Refresh, Regen, Phalanx, Stoneskin, Aquaveil, Spikes, Boost, Storm) |
-| `_master/config/rdm/RDM_STATES.lua` | 384 | All states (`configure`), `configure_storm`, unused `validate` |
+| `_master/config/rdm/RDM_STATES.lua` | 323 | All states (`configure`), `configure_storm` |
 | `_master/config/rdm/RDM_KEYBINDS.lua` | 49 | Data only: 15 binds (Storm only on /SCH), handed to `KeybindManager.create('RDM', ...)`, which adds `get_active_binds` / `bind_all` / `refresh` / `unbind_all` / `show_intro` and appends the character's `COMMON_KEYBINDS.lua` keys (AutoMedicine `#numpad0`, the alts keys) |
 | `_master/config/rdm/RDM_CUSTOM.lua` | 118 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/rdm/RDM_LOCKSTYLE.lua` | 26 | `default = 1`, `by_subjob` |
@@ -538,8 +538,8 @@ T = `_master/sets/rdm_sets.lua`, K = `_master/Kaories/sets/rdm_sets.lua`
   (`_master/sets/rdm_sets.lua:517`). The comment above `SetBuilder.check_town`
   now says so (fixed in `b6c7dc6`).
 - `HybridMode`, `sets.engaged.Refresh`, `sets.midcast.CureSelf`, the
-  `check_off` path of `castenspell` (no `EnSpell` value is `Off`) and
-  `RDMStates.validate` are dead; `show_doom_warning`, `show_doom_removed`,
+  `check_off` path of `castenspell` (no `EnSpell` value is `Off`) are
+  dead; `show_doom_warning`, `show_doom_removed`,
   `show_spell_casting`, `show_enspell_current`, `show_phalanx_detected` in
   `message_rdm.lua` have no caller.
 - Stale text: `no_enspell_selected` ("Alt+8", `rdm_messages.lua:61`; the key is
