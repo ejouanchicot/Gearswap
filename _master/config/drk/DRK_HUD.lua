@@ -22,7 +22,7 @@
 -- A command puts the names typed first and keeps the others after them, in
 -- their order (a job without its own list starts from the default one).
 -- The commands rewrite this file; editing it by hand works too (//gs reload).
--- States of this job (DRK_KEYBINDS.lua): HybridMode, MainWeapon
+-- States of this job (DRK_KEYBINDS.lua): HybridMode, WeaponskillMode, MainWeapon
 -- Also on every job: CombatMode, AutoMedicine and the common keys.
 return {
     -- section_order = {},
