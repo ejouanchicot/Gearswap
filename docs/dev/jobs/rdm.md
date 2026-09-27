@@ -158,7 +158,9 @@ flowchart TD
     TR --> X
     CS --> X
     X -- yes --> Z
-    X -- no --> P{Phalanx / Phalanx II needs swap}
+    X -- no --> D{Dispelga, Combat Mode On, main not Daybreak}
+    D -- yes --> DZ[cancel, warning]
+    D -- no --> P{Phalanx / Phalanx II needs swap}
     P -- yes --> PS[cancel, input /ma other tier target.raw]
     P -- no --> S[stage_saboteur]
     S --> W[WSPrecastHandler.handle with RDMTPConfig]
@@ -178,7 +180,12 @@ flowchart TD
   castable tier (recast exactly 0 and enough MP), replacement through
   `wait 0.1; @input /ma "<new>" <target.raw>`, 0.2 s re-entry guard. Its return
   value is ignored at 154 (Known issues).
-- `stage_phalanx` (176-205): only Enhancing Magic named Phalanx / Phalanx II;
+- `stage_dispelga`: Dispelga is only castable with Daybreak in the main hand.
+  `sets.precast.FC.Dispelga` and `sets.midcast.Dispelga` (the `.macc` Dispel
+  set) put it on; with Combat Mode On the weapon slots are locked, so when the
+  main hand is not already Daybreak the spell is cancelled with a warning
+  instead of being refused by the game.
+- `stage_phalanx`: only Enhancing Magic named Phalanx / Phalanx II;
   `is_self` compares `spell.target.name` with `player.name`. A swap cancels and
   sends `input /ma "<other>" <target.raw>` (no guard: the re-sent cast already
   has the right tier, so it passes).
@@ -291,7 +298,7 @@ Keybinds from `RDM_KEYBINDS.lua:18-44`; `^` = Ctrl, `#` = Apps.
 | `MainWeapon` | Naegling, Colada, Daybreak (Kaories: Maxentius) | Naegling (Kaories: Maxentius) | `^numpad1` | `set_builder.lua:121-131` |
 | `SubWeapon` | Ammurapi, Genmei, Malevolence | Genmei | `^numpad2` | `set_builder.lua:65-66,134-144` |
 | `CombatMode` | Off, On | Off (Kaories: On) | `^numpad5` | shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25) hook, `RDM_PRECAST.lua:256`, `set_builder.lua:116` |
-| `EnfeebleMode` | Potency, Skill, Duration | Potency | `^numpad3` | `RDM_MIDCAST.lua:122` (no effect, see Known issues) |
+| `EnfeebleMode` | Potency, Skill, Duration | Potency | `^numpad3` | `RDM_MIDCAST.lua:122`, only through `.<type>.<mode>` sets (see Known issues) |
 | `NukeMode` | FreeNuke, Magic Burst | FreeNuke | `^numpad7` | `RDM_MIDCAST.lua:262` |
 | `MainLightSpell` / `SubLightSpell` | Fire, Aero, Thunder | Fire / Thunder | none | `castlight` / `castsublight` |
 | `MainDarkSpell` / `SubDarkSpell` | Blizzard, Stone, Water | Blizzard / Stone | none | `castdark` / `castsubdark` |
@@ -493,17 +500,11 @@ T = `_master/sets/rdm_sets.lua`, K = `_master/Kaories/sets/rdm_sets.lua`
 
 ## Known issues
 
-- `EnfeebleMode` changes no gear: every enfeeble has a type set, so the mode sets
-  are never reached, and `Skill`/`Duration` have no set at all
-  (`RDM_MIDCAST.lua:118-123`, `_master/sets/rdm_sets.lua:312-340`). Left open on
-  purpose: in the template, the overlay and the live Kaories file the mode sets
-  (`.Potency`, `.Mixed`, `.Acc`) are `set_combine(base, {})` with no gear of
-  their own, and `.Mixed`/`.Acc` do not match any `EnfeebleMode` value
-  (Potency, Skill, Duration), so no combination of existing sets gives the
-  mode an effect. Whether Skill/Duration should replace the spell's type set
-  (for example use `.skill_potency` / `.duration` for every enfeeble) or add
-  pieces on top of it is a gear decision to make first; then either
-  `base[type][mode]` entries (P3) or a mode-aware `database_func`.
+- `EnfeebleMode` works through `sets.midcast['Enfeebling Magic'].<type>.<mode>`
+  (P3, for example `.mnd_potency.Skill`), which comes before `.<type>`; the
+  root `.<mode>` sets are only reached by a spell without a type set, and every
+  enfeeble has one. None of these sets exists yet, so the mode changes no gear
+  until they are made. Kept as is on purpose (player's choice, 2026-09-27).
 - The `TierRefiner.refine` return value is ignored; a spell arriving within
   0.2 s of a replacement gets no recast check (`RDM_PRECAST.lua:154`).
 - `midcast_subjob` is unreachable (`spell.type == 'Magic'` is never true);
@@ -528,8 +529,6 @@ T = `_master/sets/rdm_sets.lua`, K = `_master/Kaories/sets/rdm_sets.lua`
   swaps them back (`GearSwap/user_functions.lua:385-388`), so the trace prints
   but every line is in colour 8. The trace also uses emoji (69, 76, 83, 93) and
   describes priority orders that differ from the real chain (83-97, 145-170).
-- PLAUSIBLE: Dispelga (Daybreak) with `CombatMode` Off equips `main = "Bunzi's
-  Rod"` from the enfeebling base at midcast (`_master/sets/rdm_sets.lua:293`).
 - `by_subjob` in `RDM_LOCKSTYLE.lua` is never read (no `get_style`).
 - `sets.Adoulin` is a 2-slot set used as a full idle base in Adoulin
   (`_master/sets/rdm_sets.lua:517`). The comment above `SetBuilder.check_town`

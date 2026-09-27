@@ -1,12 +1,12 @@
 ---============================================================================
 --- ENFEEBLING MAGIC DATABASE - Crowd Control & Utility Module
 ---============================================================================
---- Crowd control and utility enfeebling spells (9 total)
+--- Crowd control and utility enfeebling spells (10 total)
 ---
 --- Contents:
 ---   - Sleep family (4): Sleep I/II, Sleepga I/II (Put target to sleep)
 ---   - Break family (2): Break, Breakga (Petrify)
----   - Utility (3): Bind (Immobilize), Silence (Prevent spellcasting), Dispel (Remove buffs)
+---   - Utility (4): Bind (Immobilize), Silence (Prevent spellcasting), Dispel, Dispelga (Remove buffs)
 ---
 --- @file shared/data/magic/enfeebling/enfeebling_control.lua
 --- @author ejouanchicot
@@ -149,6 +149,23 @@ ENFEEBLING_CONTROL.spells = {
         RDM                     = 32,
         SCH                     = 32,
         notes                   = "Removes one beneficial status effect. Success rate: Magic Accuracy. RDM/SCH.",
+    },
+
+    ["Dispelga"] = {
+        description             = "Removes 1 buff (AoE).",
+        element                 = "Dark",
+        category                = "Enfeebling",
+        magic_type              = "Black",
+        type                    = "aoe",
+        enfeebling_type         = "macc",
+        WHM                     = 99,
+        BLM                     = 99,
+        RDM                     = 99,
+        BRD                     = 99,
+        SMN                     = 99,
+        SCH                     = 99,
+        GEO                     = 99,
+        notes                   = "Removes one beneficial status effect from each target in range. Only castable with Daybreak in the main hand. Success rate: Magic Accuracy.",
     },
 
 }

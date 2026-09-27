@@ -197,6 +197,11 @@ sets.precast.FC = {
     }
 }
 
+-- • Dispelga: castable only with Daybreak in the main hand, from the
+--   precast on (RDM_PRECAST refuses it when Combat Mode locks another
+--   weapon). Magic accuracy like Dispel.
+sets.precast.FC['Dispelga'] = set_combine(sets.precast.FC, {main = 'Daybreak'})
+
 -- • Stoneskin Fast Cast (Stoneskin Casting Time-, add if casting Stoneskin often)
 sets.precast.FC["Stoneskin"] = set_combine(sets.precast.FC, {
     head = "Umuthi Hat",       -- Stoneskin Casting Time-
@@ -338,6 +343,9 @@ sets.midcast['Enfeebling Magic'].Mixed = set_combine(sets.midcast['Enfeebling Ma
 
 -- Accuracy mode (maximize magic accuracy for resistant targets)
 sets.midcast['Enfeebling Magic'].Acc = set_combine(sets.midcast['Enfeebling Magic'], {})
+
+-- Dispelga: the Dispel set (magic accuracy) with Daybreak in the main hand
+sets.midcast.Dispelga = set_combine(sets.midcast['Enfeebling Magic'].macc, {main = 'Daybreak'})
 
 -- Enfeebling with Saboteur active (2x duration - can swap to potency gear)
 sets.midcast['Enfeebling Magic'].Saboteur = set_combine(sets.midcast['Enfeebling Magic'], {
