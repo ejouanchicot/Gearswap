@@ -84,10 +84,12 @@ sets.idle = {
     right_ring = Moonlight1,
     back = Ogma.tank,}
 
--- • PDT MODE (Physical Damage Taken -50%)
+-- • PDT MODE (HybridMode PDT): the base idle, which is the DT idle today.
+--   Put physical damage taken pieces in the {} to make it differ.
 sets.idle.PDT = set_combine(sets.idle, {})
 
--- • MDT MODE (Magic Damage Taken -50%)
+-- • MDT MODE (HybridMode MDT): the base idle for now. Put magic damage taken
+--   / magic evasion pieces in the {} (sets.engaged.MDT lists some).
 sets.idle.MDT = set_combine(sets.idle, {})
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -111,7 +113,8 @@ sets.engaged = {
     back = Ogma.tank,
 }
 
--- • PDT MODE (Physical Damage Taken -50%)
+-- • PDT MODE (HybridMode PDT): the base engaged set, already a tank set.
+--   Put physical damage taken pieces in the {} to make it differ.
 sets.engaged.PDT = set_combine(sets.engaged, {})
 
 -- • MDT MODE (Magic Damage Taken -50%)
