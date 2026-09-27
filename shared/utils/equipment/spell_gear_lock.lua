@@ -12,6 +12,13 @@
 ---   weapon that was there back, then lays the lock again. The swap still
 ---   costs the TP: that is the price of the spell, as with a Phantom Roll.
 ---
+---   GearSwap only lets such a spell through while one of its slots is free
+---   (GearSwap/helper_functions.lua check_spell: Dispelga needs main or sub
+---   enabled); otherwise it hands the raw /ma to the game, which does not know
+---   the spell and refuses it. Combat Mode locks main, sub and range, so with
+---   it On the spell goes through cast(): //gs c dispelga frees the slots,
+---   then sends the /ma, and the lock below takes over.
+---
 ---   Wiring, per job that casts one of these spells:
 ---     • job_precast, last          -> SpellGearLock.begin(spell)
 ---     • job_post_precast, last     -> SpellGearLock.hold()
@@ -54,6 +61,31 @@ end
 --- @return table|nil slot -> item name
 function SpellGearLock.required(spell)
     return spell and REQUIRED[spell.english] or nil
+end
+
+--- The configured spell whose name matches (any case), or nil.
+--- @param name string|nil Spell name as typed
+--- @return string|nil Spell name as the game writes it
+local function known_spell(name)
+    if not name then return nil end
+    for spell_name in pairs(REQUIRED) do
+        if spell_name:lower() == name:lower() then return spell_name end
+    end
+    return nil
+end
+
+--- Cast one of these spells whatever Combat Mode says: free its slots so
+--- GearSwap accepts it, then send it. Nothing more to undo if it never
+--- starts: the next gear update lays Combat Mode's lock again.
+--- @param name string Spell name, any case ('dispelga')
+--- @param target string|nil Target token, '<t>' by default
+--- @return boolean True when the spell is one of these
+function SpellGearLock.cast(name, target)
+    local spell_name = known_spell(name)
+    if not spell_name then return false end
+    enable(unpack_list(slot_list(REQUIRED[spell_name])))
+    send_command(('input /ma "%s" %s'):format(spell_name, target or '<t>'))
+    return true
 end
 
 --- Put the spell's pieces on and hold them for the cast.

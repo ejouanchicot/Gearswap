@@ -257,6 +257,13 @@ function job_self_command(cmdParams, eventArgs)
     ---   RDM-SPECIFIC COMMANDS
     ---  ─────────────────────────────────────────────────────────────────────────
 
+    -- //gs c dispelga [target]: a spell that needs a piece in hand (Daybreak),
+    -- cast through Combat Mode (spell_gear_lock.lua)
+    if require('shared/utils/equipment/spell_gear_lock').cast(command, cmdParams[2]) then
+        eventArgs.handled = true
+        return
+    end
+
     if command == 'enspell' then
         -- Cycle through enspells or cast specific enspell
         -- Example: //gs c enspell fire

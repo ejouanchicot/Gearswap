@@ -52,6 +52,7 @@ them in `RDM_CUSTOM.lua`.
 | `//gs c enspell <element>` | Casts that enspell (fire, ice/blizzard, wind/aero, earth/stone, thunder, water). Without an element: cycles `EnSpell` |
 | `//gs c cyclestorm` | Cycles `Storm` (says so if you are not /SCH) |
 | `//gs c convert` / `chainspell` / `saboteur` / `composure` | Uses that ability on yourself |
+| `//gs c dispelga [<target>]` | Dispelga on your target (`<t>` by default), macro: `/console gs c dispelga`. Daybreak goes in hand for the cast, even with Combat Mode On, and your weapon comes back after it (the TP is lost). Typed as `/ma "Dispelga"` it only works with Combat Mode Off or Daybreak already in hand |
 | `//gs c <Action Name> [<target>]` | Any job ability, weaponskill or spell, by its exact English name, e.g. `//gs c Dia III <t>` (default target `<me>`) |
 
 ## Notes

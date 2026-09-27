@@ -26,7 +26,7 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `shared/utils/dnc/waltz_manager.lua` | 261 | Curing / Divine Waltz tier selection |
 | `shared/utils/whm/cure_manager.lua` | 392 | Cure / Curaga tier selection with recast fallback |
 | `shared/utils/whm/whm_message_formatter.lua` | 414 | Cure tier-change and debug messages (read for the calls only) |
-| `shared/utils/equipment/spell_gear_lock.lua` | 103 | A piece a spell cannot be cast without (Dispelga: Daybreak), worn through Combat Mode for the cast |
+| `shared/utils/equipment/spell_gear_lock.lua` | 135 | A piece a spell cannot be cast without (Dispelga: Daybreak), worn through Combat Mode for the cast |
 
 The two craft set files are identical to their live copies in `Tetsouo/sets/`. `CRAFT_CONFIG.lua` now has a tracked template, `_master/config_global/CRAFT_CONFIG.lua` (added in `fd34a2c`).
 
@@ -307,6 +307,12 @@ instrument lock (`instrument_lock_config.lua`), shared.
 - `begin(spell)`, last in `job_precast`: records what the slots hold, opens
   them when Combat Mode locks them (`equip()` on a disabled slot is dropped),
   equips the piece and stores the lock on the sandbox `_G._spell_gear_lock`.
+- `cast(name, target)`, from `//gs c dispelga [target]` (RDM_COMMANDS):
+  GearSwap only accepts Dispelga while main or sub is free
+  (`GearSwap/helper_functions.lua` `check_spell`), and hands a refused `/ma`
+  to the game, which does not know the spell without Daybreak. Combat Mode
+  locks both, so `cast` enables the spell's slots, then sends the `/ma`; the
+  next gear update re-locks if the cast never starts.
 - `hold()`, last in `job_post_precast` and `job_post_midcast`: wears the piece
   again over any set.
 - `release()`, in `job_aftercast`: Combat Mode On puts the previous weapon back

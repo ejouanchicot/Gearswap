@@ -186,7 +186,9 @@ flowchart TD
   `job_aftercast` releases it (Combat Mode On: previous weapon back, lock laid
   again). Same shape as BRD's instrument lock. `sets.precast.FC.Dispelga` and
   `sets.midcast.Dispelga` (the `.macc` Dispel set + Daybreak) hold the rest of
-  the gear.
+  the gear. With Combat Mode On, GearSwap refuses a typed `/ma "Dispelga"`
+  before any precast (main and sub locked, `check_spell`); `//gs c dispelga
+  [target]` frees the main hand first, then casts.
 - `stage_phalanx`: only Enhancing Magic named Phalanx / Phalanx II;
   `is_self` compares `spell.target.name` with `player.name`. A swap cancels and
   sends `input /ma "<other>" <target.raw>` (no guard: the re-sent cast already
