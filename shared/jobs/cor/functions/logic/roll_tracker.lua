@@ -620,30 +620,10 @@ function RollTracker.is_job_in_party_zone(job_code)
     return false
 end
 
---- "Phantom Roll +" potency pieces. Only the highest one counts: they do not
---- add up (Compensator, Camulus's Mantle... give duration, not potency).
-local PHANTOM_ROLL_GEAR = {
-    {slots = {'main'}, pattern = 'Rostam', value = 8},
-    {slots = {'main'}, pattern = 'Lanun Knife', value = 7},
-    {slots = {'main'}, pattern = "Commodore'?s? Knife", value = 6},
-    {slots = {'neck'}, pattern = 'Regal Necklace', value = 7},
-    {slots = {'left_ring', 'right_ring'}, pattern = 'Barataria Ring', value = 5},
-    {slots = {'left_ring', 'right_ring'}, pattern = 'Merirosvo Ring', value = 3},
-}
-
----   Highest "Phantom Roll +" value in the gear worn right now
----   @return number
+--- Highest "Phantom Roll +" value in the gear worn right now (roll_gear.lua)
+--- @return number
 function RollTracker.get_phantom_roll_bonus()
-    local gear = player and player.equipment
-    local best = 0
-    for _, piece in ipairs(gear and PHANTOM_ROLL_GEAR or {}) do
-        for _, slot in ipairs(piece.slots) do
-            if type(gear[slot]) == 'string' and gear[slot]:match(piece.pattern) then
-                best = math.max(best, piece.value)
-            end
-        end
-    end
-    return best
+    return require('shared/jobs/cor/functions/logic/roll_gear').bonus()
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
