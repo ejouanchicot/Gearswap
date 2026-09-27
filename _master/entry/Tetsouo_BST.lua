@@ -218,13 +218,22 @@ function user_setup()
     end, 2.0)
 
     -- ==========================================================================
-    -- START SMART MONITORING (pet status + movement)
+    -- START PET MONITORING (pet engaged status + auto-engage)
     -- ==========================================================================
-    -- Start monitoring immediately on load (doesn't require pet)
-    -- Will check pet status if pet exists, skip if no pet
+    -- Runs with or without a pet; the monitor skips the pet checks when none.
     coroutine.schedule(function()
+        if player and player.main_job ~= 'BST' then return end
+        if not _G.start_pet_monitoring then return end
         start_pet_monitoring()
     end, 3.0)  -- Start after 3s delay (let UI/keybinds load first)
+
+    -- ==========================================================================
+    -- DUALBOX IPC (covers main job change - job_sub_job_change is subjob-only)
+    -- The require() triggers dualbox_manager auto-init which schedules the
+    -- correct IPC call once per gs reload (request_alt_job for MAIN role,
+    -- send_job_update for ALT role). Do NOT call them explicitly here.
+    -- ==========================================================================
+    pcall(require, 'shared/utils/dualbox/dualbox_manager')
 end
 
 ---============================================================================
@@ -260,7 +269,7 @@ end
 ---============================================================================
 
 --- Handle sub job change events (called by Mote-Include after user_setup())
---- Hands the reload sequence to JobChangeManager, then notifies the dualbox partner.
+--- Hands the reload sequence to JobChangeManager.
 --- @param newSubjob string New subjob
 --- @param oldSubjob string Old subjob
 --- @return void
@@ -272,146 +281,87 @@ function job_sub_job_change(newSubjob, oldSubjob)
         JobChangeManager.on_job_change(main_job, newSubjob)
     end
 
-    -- DUALBOX: Send job update to MAIN character after subjob change
-    local db_success, DualBoxManager = pcall(require, 'shared/utils/dualbox/dualbox_manager')
-    if db_success and DualBoxManager then
-        DualBoxManager.send_job_update()
-    end
+    -- DUALBOX IPC fires from user_setup() after the reload (covers main + subjob)
 end
 
 ---============================================================================
---- PET MONITORING (SMART BACKGROUND MONITORING)
+--- PET MONITORING (prerender event - 1s throttle)
 ---============================================================================
---- Background loop re-scheduled every 1 second with coroutine.schedule.
---- Runs with or without a pet: tracks pet engaged status (+ auto-engage)
---- and idle movement, and sends 'gs c update' only when one of them changed.
---- Stopped by stop_pet_monitoring() (file_unload).
+--- Uses windower prerender event (fires every frame, throttled to 1s).
+--- Tracks: pet engaged status + auto-engage only.
+--- Movement gear handled by AutoMove (shared system, 0.12s polling).
+--- Prerender events cannot die like coroutine.schedule chains.
 ---============================================================================
 
-local pet_monitor_active = false
-local last_monitor_check = 0
+local monitor_event_id = nil
+local last_check = 0
+local prev_pet_eng = 'false'
 
--- Movement tracking (lightweight - no distance calculation)
-local last_position = {x = 0, y = 0, z = 0}
+-- Upvalues for hot path (prerender fires ~60fps)
+local os_clock = os.clock
+local get_mob = windower.ffxi.get_mob_by_target
+local get_player = windower.ffxi.get_player
 
--- Last values seen, so gear is refreshed only when a state changed
-local previous_states = {
-    PetEngaged = 'false',
-    moving = 'false'
-}
+--- Register the prerender monitor (no-op if already registered).
+--- Called through _G.start_pet_monitoring from user_setup() (after 3s)
+--- and from BST_AFTERCAST.lua.
+--- @return void
+local function start_pet_monitoring()
+    if monitor_event_id then return end
 
---- Smart pet monitoring loop - monitors pet status + movement
---- Always active (checks every 1 second), works with or without pet
-local function smart_pet_monitor()
-    if not pet_monitor_active then
-        return  -- Monitoring stopped
-    end
+    monitor_event_id = windower.raw_register_event('prerender', function()
+        local now = os_clock()
+        if now - last_check < 1.0 then return end
+        last_check = now
 
-    -- DEBOUNCING: Prevent multiple simultaneous loops (strict 1 second minimum)
-    local current_time = os.clock()
-    if current_time - last_monitor_check < 1.0 then
-        return  -- Too soon, skip this call
-    end
-    last_monitor_check = current_time
+        local ok, err = pcall(function()
+            local pet = get_mob('pet')
+            local pet_eng_val = 'false'
 
-    -- ==========================================================================
-    -- CHECK 1: Pet Status (Idle/Engaged) + Auto-Engage
-    -- ==========================================================================
-    local pet = _G.pet
-    if pet and pet.id and pet.id ~= 0 then
-        -- Pet exists - check status
-        local success, PetManager = pcall(require, 'shared/jobs/bst/functions/logic/pet_manager')
-        if success and PetManager then
-            PetManager.monitor_pet_status()
+            if pet and pet.id and pet.id ~= 0 then
+                local pet_fighting = (pet.status == 1)
+                pet_eng_val = pet_fighting and 'true' or 'false'
 
-            -- Auto-engage pet if conditions met (UNLESS rdymove sequence active)
-            if not _G.bst_rdymove_active then
-                PetManager.check_and_engage_pet(pet)
+                -- Auto-engage: player fighting + pet idle + auto on
+                if not pet_fighting
+                    and not _G.bst_rdymove_active
+                    and state.AutoPetEngage
+                    and state.AutoPetEngage.value == 'On'
+                then
+                    local lp = get_player()
+                    if lp and lp.status == 1 then
+                        windower.send_command('input /pet "Fight" <t>')
+                    end
+                end
             end
+
+            -- Update petEngaged state + gear refresh (only on change)
+            if state.PetEngaged and state.PetEngaged.value ~= pet_eng_val then
+                state.PetEngaged:set(pet_eng_val)
+            end
+            local sent_update = pet_eng_val ~= prev_pet_eng
+            if sent_update then
+                if _G.LagDebugger then _G.LagDebugger.on_prerender_check(pet_eng_val, prev_pet_eng, true) end
+                windower.send_command('gs c update')
+                prev_pet_eng = pet_eng_val
+            end
+        end)
+
+        if not ok then
+            print('[BST] Monitor error: ' .. tostring(err))
         end
-    else
-        -- No pet - ensure PetEngaged is false
-        if state and state.PetEngaged and state.PetEngaged.value ~= "false" then
-            state.PetEngaged:set('false')
-        end
-    end
-
-    -- ==========================================================================
-    -- CHECK 2: Movement Detection (position tracking - checks every 1s)
-    -- ==========================================================================
-    if player and player.status == 'Idle' then
-        -- Get REAL-TIME position from windower API (not cached player global)
-        local player_mob = windower.ffxi.get_mob_by_target('me')
-        local current_x = player_mob and player_mob.x or 0
-        local current_y = player_mob and player_mob.y or 0
-        local current_z = player_mob and player_mob.z or 0
-
-        -- Check if position changed since last check
-        local moved = (current_x ~= last_position.x or
-                      current_y ~= last_position.y or
-                      current_z ~= last_position.z)
-
-        -- Update state.Moving if changed (silent)
-        if moved and state.Moving and state.Moving.value ~= "true" then
-            state.Moving:set('true')
-        elseif not moved and state.Moving and state.Moving.value ~= "false" then
-            state.Moving:set('false')
-        end
-
-        -- Save current position for next check
-        last_position.x = current_x
-        last_position.y = current_y
-        last_position.z = current_z
-    else
-        -- Not idle - ensure Moving is false
-        if state.Moving and state.Moving.value ~= "false" then
-            state.Moving:set('false')
-        end
-    end
-
-    -- ==========================================================================
-    -- REFRESH GEAR (ONLY if states changed - dirty flag optimization)
-    -- ==========================================================================
-    local current_PetEngaged = state.PetEngaged and state.PetEngaged.value or 'false'
-    local current_moving = state.Moving and state.Moving.value or 'false'
-
-    -- Check if any state changed
-    local states_changed = (current_PetEngaged ~= previous_states.PetEngaged or
-                           current_moving ~= previous_states.moving)
-
-    if states_changed then
-        -- States changed - force gear refresh (silent)
-        windower.send_command('gs c update')
-
-        -- Update previous states
-        previous_states.PetEngaged = current_PetEngaged
-        previous_states.moving = current_moving
-    end
-
-    -- Schedule next check (1 second - balanced performance)
-    coroutine.schedule(smart_pet_monitor, 1.0)
+    end)
 end
 
---- Start the monitoring loop (no-op if already running).
---- Called from user_setup() after 3s, and by BST_AFTERCAST.lua.
+--- Unregister the prerender monitor. Called from file_unload().
 --- @return void
-function start_pet_monitoring()
-    if pet_monitor_active then
-        return  -- Already running
+local function stop_pet_monitoring()
+    if monitor_event_id then
+        windower.unregister_event(monitor_event_id)
+        monitor_event_id = nil
     end
-
-    pet_monitor_active = true
-    coroutine.schedule(smart_pet_monitor, 1.0)
 end
 
---- Stop the monitoring loop; the pending coroutine exits on its next tick.
---- Called from file_unload().
---- @return void
-function stop_pet_monitoring()
-    pet_monitor_active = false
-end
-
--- Export for use in other modules
 _G.start_pet_monitoring = start_pet_monitoring
 _G.stop_pet_monitoring = stop_pet_monitoring
 

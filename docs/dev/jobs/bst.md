@@ -21,8 +21,7 @@ What BST adds on top of the shared pipeline:
   sets or a "both fighting" set from pet presence, `PetEngaged`,
   `PetIdleMode` and `HybridMode`.
 - **A pet monitor** in the entry file that keeps `PetEngaged` in step with the
-  pet and sends `/pet "Fight"` when auto-engage is on. The template and the live
-  copy implement it differently (see [Pet monitor](#pet-monitor)).
+  pet and sends `/pet "Fight"` when auto-engage is on (see [Pet monitor](#pet-monitor)).
 - **Commands**: ecosystem/species cycling, broth count, `pet engage|disengage`,
   `rdylist` and `rdymove N` (numbered Ready moves with an automatic
   Fight/Heel sequence).
@@ -39,7 +38,7 @@ line numbers refer to `D:\Windower Tetsouo\addons\GearSwap\` (outside the repo).
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_BST.lua` | 450 | Entry point (template): config preload, `get_sets`, `user_setup`, `job_update`, `init_gear_sets`, `job_sub_job_change`, coroutine pet monitor, `file_unload` |
+| `_master/entry/Tetsouo_BST.lua` | 401 | Entry point (template): config preload, `get_sets`, `user_setup`, `job_update`, `init_gear_sets`, `job_sub_job_change`, `prerender` pet monitor, `file_unload` |
 | `shared/jobs/bst/functions/bst_functions.lua` | 110 | Facade: includes the 13 hook files, requires `dualbox_manager` (100) |
 | `shared/jobs/bst/functions/BST_PRECAST.lua` | 194 | `job_precast` / `job_post_precast`: guard, cooldown (skipped for Ready moves), WS, summon broth, Ready-move marking |
 | `shared/jobs/bst/functions/BST_MIDCAST.lua` | 201 | `job_midcast` (no-op returns) / `job_post_midcast`: subjob magic through `MidcastManager` |
@@ -71,13 +70,10 @@ line numbers refer to `D:\Windower Tetsouo\addons\GearSwap\` (outside the repo).
 | `shared/utils/messages/formatters/jobs/message_bst.lua` + `data/jobs/bst_messages.lua` | 593 + 306 | BST chat messages; many facade wrappers have no caller (see the [catalog](../systems/messages-catalog.md)) |
 | `shared/data/job_abilities/BST_JA_DATABASE.lua` + `bst/*.lua` (5 files) | 17 + 293 | `JA_DATABASE_FACTORY.create('BST', {modules = {subjob, mainjob, pet_commands_mainjob, pet_commands_subjob, sp}})`, read by `ability_message_handler.lua:81` |
 
-Live copies (gitignored): `Tetsouo/Tetsouo_BST.lua` (401 lines) differs from
-the template in about 210 lines: a `prerender` pet monitor replaces the
-coroutine loop (`:293-365`), the delayed monitor start has a job guard and a
-`_G.start_pet_monitoring` guard (`:223-227`), `user_setup` requires
-`dualbox_manager` (`:235`), `job_sub_job_change` no longer calls
-`send_job_update` (`:276-285`), `job_update` calls `_G.LagDebugger`
-(`:248`) and `init_gear_sets` includes `sets/bst/bst_sets.lua` (`:264`).
+Live copies (gitignored): `Tetsouo/Tetsouo_BST.lua` is the template since
+2026-09-27 (pet monitor and dual-box ported from it), apart from the header,
+the `_G.LagDebugger` call in `job_update` and `init_gear_sets` including
+`sets/bst/bst_sets.lua`.
 The Tetsouo overlay `_master/Tetsouo/entry/Tetsouo_BST.lua` is identical to
 the live entry, so a clone to Tetsouo keeps the live version.
 `Tetsouo/config/bst/*` is identical to the template except
@@ -142,7 +138,7 @@ sequenceDiagram
 6. BST-HUD (202-220): bumps `_G.bst_hud_load_id`, then after 2 s sends
    `lua unload bst-hud` and after 1.5 s more `lua load bst-hud`, each step
    guarded by the counter and `player.main_job == 'BST'`.
-7. Pet monitor start after 3 s (224-226, live 223-227).
+7. Pet monitor start after 3 s, guarded by the main job and `_G.start_pet_monitoring`.
 
 The facade includes, in order: `message_buffs.lua` (21), `BST_PRECAST`,
 `BST_MIDCAST`, `BST_AFTERCAST` (28-32), `BST_PET_PRECAST`, `BST_PET_MIDCAST`
@@ -291,7 +287,7 @@ sequenceDiagram
 
 ### Pet monitor
 
-**Live** (`Tetsouo/Tetsouo_BST.lua:293-365`): a `prerender` listener registered
+Template and live (`start_pet_monitoring` in the entry): a `prerender` listener registered
 through `windower.raw_register_event` (the sandbox's `user_windower`, so the
 engine records it and unregisters it at the next load, `user_functions.lua:265-273`,
 `refresh.lua:69-71`; `file_unload` also unregisters it). Throttled to once per
@@ -310,26 +306,12 @@ schedules it after 3 s; the closure returns if the main job is no longer BST or
 environment (subjob change reloads after 0.5 s) is stopped. A second
 `user_setup` in the same environment is harmless (`monitor_event_id` guard).
 
-**Template** (`_master/entry/Tetsouo_BST.lua:284-414`): a
-`coroutine.schedule` chain every 1 s (`smart_pet_monitor`, 304-392):
-
-1. With a pet (`_G.pet.id`), `PetManager.monitor_pet_status()` then, unless a
-   `rdymove` sequence is active, `PetManager.check_and_engage_pet(pet)`.
-2. Without a pet, `PetEngaged` forced to `'false'`.
-3. Movement: compares the player's position with the previous second and
-   writes `state.Moving` (while idle), or forces it `'false'` (not idle), on
-   top of AutoMove.
-4. `gs c update` when `PetEngaged` or `Moving` changed, then reschedules.
-
-The template monitor has three defects the live copy does not (see Known
-issues): the chain stops for good when a tick arrives less than 1.0 s after the
-previous check (310-313 return without rescheduling, and
-`start_pet_monitoring` then refuses to restart because `pet_monitor_active` is
-still true); `monitor_pet_status` tests `pet.isvalid` on a raw Windower mob
-table, which never has that field, so it always resets `PetEngaged` to
-`'false'` and `check_and_engage_pet` re-sends Fight every second while engaged;
-and the delayed start in `user_setup` calls a global that `file_unload` has
-already cleared.
+Until 2026-09-27 the template ran an older `coroutine.schedule` chain that
+went through `PetManager.monitor_pet_status`, which tested `pet.isvalid` on a
+raw Windower mob (never set), so `PetEngaged` went back to `'false'` every
+second and Fight was re-sent while engaged. The template now has the live
+monitor, and `monitor_pet_status` tests `pet.id` (it is still called by the
+PUP template and by older copied entries).
 
 ### Midcast
 
@@ -406,7 +388,7 @@ old "Alt+Numbers" comments are gone (`22e1816`).
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
-| `AutoPetEngage` | Off, On | On | `^numpad4` | live monitor (`Tetsouo/Tetsouo_BST.lua` `start_pet_monitoring`); template via `check_and_engage_pet` (`pet_manager.lua:137-170`) |
+| `AutoPetEngage` | Off, On | On | `^numpad4` | the entry's `start_pet_monitoring` (template and live) |
 | `PetIdleMode` | MasterPDT, PetPDT | MasterPDT | `^numpad3` | `set_builder.lua:77` (`idle_with_pet`) |
 | `Ecosystem` | Aquan, Beast, Amorph, Bird, Lizard, Plantoid, Vermin | Aquan (live: Amorph) | `^numpad5` (`gs c ecosystem`) | `ecosystem_manager`; HUD readiness anchor (`ui_lifecycle.lua:44-45`, `are_states_ready`) |
 | `species` (dynamic) | species of the ecosystem | first in `pairs` order | `^numpad6` (`gs c species`) | `ecosystem_manager`, HUD |
@@ -415,7 +397,7 @@ old "Alt+Numbers" comments are gone (`22e1816`).
 | `WeaponSet` | Aymur, Tauret | Aymur | `^numpad1` | `set_builder.lua:98` (`sets[value]`) |
 | `SubSet` | Agwu's Axe, Adapa Shield, Diamond Aspis, Kraken Club | Agwu's Axe | `^numpad2` | `set_builder.lua:102` |
 | `HybridMode` | PDT, Normal | PDT | `^numpad9` | `set_builder.lua:30-32` (`wants_pdt`, idle and engaged) |
-| `Moving` | 'false', 'true' | 'false' | none | AutoMove (reuses this state, `automove.lua:129-130`), `set_builder.lua:114`; the template monitor also writes it |
+| `Moving` | 'false', 'true' | 'false' | none | AutoMove (reuses this state, `automove.lua:129-130`), `set_builder.lua:114` |
 | `FastCast` | 0..80 step 10 | 0 | none | `MidcastWatchdog` |
 | `AutoMedicine` | shared On/Off | persisted | `#numpad0` (from `COMMON_KEYBINDS.lua`) | `AutoMedicine.init(state, M)` (`_master/config/bst/BST_STATES.lua:71-74`) |
 
@@ -517,8 +499,7 @@ shield keeps Fencer active.
 
 - Module state (sandbox, dies on every load): PetManager caches (pet mode 1 s,
   pet status 0.5 s, Ready moves 30 s), `last_monitor_time`; lazy-load locals;
-  the live monitor's `monitor_event_id`, `last_check`, `prev_pet_eng`; the
-  template monitor's `pet_monitor_active`, `last_position`, `previous_states`.
+  the monitor's `monitor_event_id`, `last_check`, `prev_pet_eng`.
 - `_G` written: the Mote hooks (`job_precast`, `job_post_precast`,
   `job_midcast`, `job_post_midcast`, `job_aftercast`, `job_pet_precast`,
   `job_pet_midcast`, `job_status_change`, `job_buff_change`,
@@ -530,12 +511,12 @@ shield keeps Fencer active.
   `petPhysicalMoves` (and the three other lists), `select_default_lockstyle`,
   `cancel_bst_lockstyle_operations`, `select_default_macro_book` plus the
   factory exports.
-- Events: live only, one `prerender` listener, removed by `file_unload` and by
-  the engine at the next load. The template registers none.
+- Events: one `prerender` listener, removed by `file_unload` and by
+  the engine at the next load.
 - Coroutines (never cancelled by the engine): 0.2 s JCM gate, 8 s lockstyle,
   2 s + 1.5 s HUD reload (counter-guarded), 3 s monitor start, 0.1-0.2 s broth
   equips, 2 s monitor start from aftercast, the `rdymove` steps (3.5 s, 4.5 s,
-  6 s, 6.5 s), the template's 1 s monitor chain.
+  6 s, 6.5 s).
 - `windower.*`: BST writes nothing. External addon `BST-HUD` stays loaded
   across `gs reload` and is unloaded by `file_unload`.
 - Keybinds: bound in `user_setup`, unbound in `file_unload`.
@@ -556,11 +537,9 @@ shield keeps Fencer active.
   other `show_error_*` wrappers are also referenced by PUP.
 - Lockstyle / macrobook factories, `JobChangeManager`, `LifecycleManager`, HUD
   ([UI overlay](../systems/ui-overlay.md)), `CommonCommands`, `CycleHandler`,
-  dual-box ([dualbox](../systems/dualbox.md)). The template's
-  `job_sub_job_change` still sends `DualBoxManager.send_job_update()`
-  (`_master/entry/Tetsouo_BST.lua:274-278`); commit ba783ae says it removed
-  that call from 10 templates, but its BST hunk only renamed `petEngaged`. The
-  live entry has the new pattern.
+  dual-box ([dualbox](../systems/dualbox.md)): `user_setup` requires
+  `dualbox_manager`, whose auto-init sends the job (main and subjob changes),
+  like the other templates since 2026-09-27.
 - `PetManager` (`engage_pet`, `disengage_pet`, `get_ready_moves`) is also
   required, under a PUP path, by `PUP_COMMANDS.lua`.
 
@@ -600,28 +579,11 @@ shield keeps Fencer active.
   `Mote-Include.lua:1068-1076`) instead of polling.
 - New command: add a branch after the CommonCommands block. A name that is also an alt config key then runs here; the alt's
   version stays reachable as `//gs c alt <name>`.
-- Any change to the entry: the live `Tetsouo/Tetsouo_BST.lua` has diverged;
-  port it both ways.
+- Any change to the entry: make it in the template and the live
+  `Tetsouo/Tetsouo_BST.lua` (same code apart from the lines listed in [Files](#files)).
 
 ## Known issues
 
-- **Template pet monitor sends Fight every second while engaged** (P2,
-  template only; P1 if deployed): `monitor_pet_status` tests `pet.isvalid` on a
-  raw mob (`pet_manager.lua:285-287`), resets `PetEngaged` to `'false'`, then
-  `check_and_engage_pet` sends `/pet "Fight" <t>` and a chat line
-  (`pet_manager.lua:158-164`, `_master/entry/Tetsouo_BST.lua:324-328`). The same
-  reset hides a fighting pet from the idle builder.
-- **Template monitor chain can stop for good** (P2, template only, plausible):
-  `smart_pet_monitor` returns without rescheduling when called < 1.0 s
-  (`os.clock`) after the last check (`_master/entry/Tetsouo_BST.lua:310-313`),
-  and `start_pet_monitoring` then refuses to restart (398-400).
-- **Template delayed monitor start errors after every subjob change** (P3):
-  the 3 s closure calls `start_pet_monitoring()` (224-226) after the 0.5 s
-  reload's `file_unload` set it to nil (443).
-- **Template monitor writes `state.Moving`** alongside AutoMove (`smart_pet_monitor`).
-- **Live and template entries diverged** (about 210 lines, see [Files](#files)).
-  The live version is kept in the Tetsouo overlay; only a clone to another
-  character would get the generic template.
 - **Categories of some Ready moves are unverified** (P3): `Fantod`,
   `Crossthrash`, `??? Needles` and `Needleshot` are Physical, `Aqua Breath`
   MagicAtk, `Geist Wall`, `Nihility Song`, `Digest`, `Rhino Guard`,
@@ -644,8 +606,8 @@ shield keeps Fencer active.
   load, and `modules_loaded` is then never set.
 - `debugprecast` shadows the common command (`BST_COMMANDS.lua:202`).
 - `broth` counts only items named "...Broth" in inventory (`BST_COMMANDS.lua:110-116`).
-- The live pet monitor still reports its errors with `print()`
-  (`Tetsouo/Tetsouo_BST.lua:351`), not `MessageFormatter`.
+- The pet monitor reports its errors with `print()` (console only), not
+  `MessageFormatter`.
 - Stale comments: `BST_PRECAST.lua:82-86` (summon set ammo),
   `BST_MIDCAST.lua:66,83-84` (midcast skip).
 - Fixed, no longer issues: the first Ready move after a load no longer loads

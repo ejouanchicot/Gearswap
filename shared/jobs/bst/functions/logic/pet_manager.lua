@@ -284,7 +284,8 @@ function PetManager.monitor_pet_status()
     -- LIVE API call - _G.pet is stale between GearSwap events
     local pet = windower.ffxi.get_mob_by_target('pet')
 
-    if not pet or not pet.isvalid then
+    -- A raw Windower mob has no isvalid (only GearSwap's pet table does)
+    if not pet or not pet.id or pet.id == 0 then
         -- No pet - ensure PetEngaged is "false" (STRING!)
         if state and state.PetEngaged and state.PetEngaged.value ~= "false" then
             state.PetEngaged:set('false')
