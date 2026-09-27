@@ -347,7 +347,9 @@ end
 ---   Handle a roll landing: record it, work out the bonus, and report it
 ---   @param roll_name string Name of the roll
 ---   @param roll_value number Value rolled, 1-12
-function RollTracker.on_roll_cast(roll_name, roll_value)
+---   @param target_ids table|nil Set of the ids the roll reached (its action
+---          packet); nil when unknown (//gs c roll typed by hand)
+function RollTracker.on_roll_cast(roll_name, roll_value, target_ids)
     local current_time = os.clock()
     if is_duplicate_report(roll_name, roll_value, current_time) then
         return
@@ -374,7 +376,7 @@ function RollTracker.on_roll_cast(roll_name, roll_value)
 
     -- Recounted every cast: members move in and out of range between rolls.
     local affected_count, total_count, missed_names =
-        RollTracker.count_party_members_with_buff(roll_name)
+        RollTracker.count_party_members_with_buff(roll_name, target_ids)
     record_last_roll(roll_name, roll_value, affected_count, total_count, missed_names)
 
     local roll_data = RollData.get_roll(roll_name)
@@ -647,12 +649,17 @@ end
 ---   PARTY TRACKING
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Count party members affected by a specific roll buff
+---   Count party members affected by a specific roll buff.
+---   The roll's action packet lists exactly who it reached: with it, a member
+---   missed the roll when its id is not in the list. Without it, the member's
+---   distance is compared to the roll range, an estimate: Windower's distance
+---   counts the height, and the LuzafRing mode may not match the ring worn.
 ---   @param roll_name string Name of the roll buff (e.g., "Fighter's Roll")
+---   @param target_ids table|nil Set of the ids the roll reached
 ---   @return number affected_count Number of members with the buff
 ---   @return number total_count Total party members
 ---   @return table missed_names Array of player names who missed the roll
-function RollTracker.count_party_members_with_buff(roll_name)
+function RollTracker.count_party_members_with_buff(roll_name, target_ids)
     local party = windower.ffxi.get_party()
     if not party then
         return 0, 0, {}
@@ -676,6 +683,12 @@ function RollTracker.count_party_members_with_buff(roll_name)
                 -- Player (COR) - ALWAYS affected by own rolls
                 -- Cannot miss your own Phantom Roll in FFXI
                 affected_count = affected_count + 1
+            elseif target_ids then
+                if target_ids[member.mob.id] then
+                    affected_count = affected_count + 1
+                else
+                    table.insert(missed_names, member_name)
+                end
             else
                 -- Party members - assume affected if in range from COR
                 -- Phantom Roll range depends on Luzaf's Ring:

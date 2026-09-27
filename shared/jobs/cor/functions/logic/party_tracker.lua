@@ -89,8 +89,15 @@ function PartyTracker.init_roll_listener()
         if not roll_value or roll_value < 1 or roll_value > 12 then return end
 
         local rt_ok, RollTracker = pcall(require, 'shared/jobs/cor/functions/logic/roll_tracker')
+        -- The packet lists every member the roll reached: the missed ones
+        -- come from it rather than from a distance estimate.
+        local target_ids = {}
+        for _, target in ipairs(act.targets or {}) do
+            if target.id then target_ids[target.id] = true end
+        end
+
         if rt_ok and RollTracker and RollTracker.on_roll_cast then
-            local call_ok, call_err = pcall(RollTracker.on_roll_cast, roll_name, roll_value)
+            local call_ok, call_err = pcall(RollTracker.on_roll_cast, roll_name, roll_value, target_ids)
             if not call_ok then
                 local mf_ok, MF = pcall(require, 'shared/utils/messages/message_formatter')
                 if mf_ok and MF then
