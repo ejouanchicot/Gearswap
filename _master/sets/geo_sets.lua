@@ -118,7 +118,10 @@ sets.luopan.idle = {
 -- • Legacy idle sets for compatibility (point to new structure)
 sets.idle = {}
 sets.idle.Normal = sets.me.idle
-sets.idle.PDT = sets.me.idle -- GEO uses same for now
+-- HybridMode PDT without a luopan: a copy of the Normal idle until damage
+-- taken pieces go in the {} (a copy, not sets.me.idle itself: editing an
+-- alias would change the Normal idle too)
+sets.idle.PDT = set_combine(sets.me.idle, {})
 sets.idle.Pet = sets.luopan.idle
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -188,7 +191,9 @@ sets.luopan.engaged.DPS = {
 -- • Legacy engaged sets for compatibility (point to new structure)
 sets.engaged = {}
 sets.engaged.Normal = sets.me.engaged
-sets.engaged.PDT = sets.me.engaged -- GEO uses same for now
+-- HybridMode PDT without a luopan: a copy of the Normal engaged set until
+-- damage taken pieces go in the {}
+sets.engaged.PDT = set_combine(sets.me.engaged, {})
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- PRECAST: FAST CAST

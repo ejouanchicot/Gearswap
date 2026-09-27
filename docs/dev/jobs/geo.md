@@ -194,12 +194,12 @@ flowchart TD
   `sets.luopan.engaged.DT` or `.DPS` from `LuopanMode` (fallback DT, then
   `sets.me.engaged`); without, `sets.engaged[HybridMode]` falling back to
   `sets.me.engaged`; then weapons. No movement layer.
-- `HybridMode` has no gear effect yet: in the template, the Kaories overlay and
-  the live Kaories file, `sets.idle.PDT`, `.Normal`, `sets.engaged.PDT` and
-  `.Normal` are all aliases of `sets.me.idle` / `sets.me.engaged`
-  (`_master/sets/geo_sets.lua:120-121,190-191`, "GEO uses same for now"). Giving
-  `sets.idle.PDT` / `sets.engaged.PDT` (or `.Normal`) their own gear is enough
-  for the mode to change it; with a luopan out the mode is not read.
+- `HybridMode` has no gear effect yet: `sets.idle.Normal` / `sets.engaged.Normal`
+  alias `sets.me.idle` / `sets.me.engaged`, and `sets.idle.PDT` /
+  `sets.engaged.PDT` are `set_combine` copies of them (since 2026-09-27; aliases
+  before, so editing one changed Normal too), in the template, the Kaories
+  overlay and the live Kaories file. Putting pieces in the PDT copies is enough
+  for the mode to change gear; with a luopan out the mode is not read.
 - The luopan appearing or leaving re-equips through Mote's `pet_change`, which
   calls `handle_equipping_gear` (`Mote-Include.lua:1048-1061`).
 - CombatMode: since 2026-09-25 the shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25)
@@ -299,7 +299,7 @@ line numbers.
 | Set | Looked up by | T |
 |-----|--------------|---|
 | `sets['Idris']`, `sets['Genmei Shield']` | `set_builder.lua:45,57` | 54, 60 |
-| `sets.idle.PDT`, `.Normal`, `sets.engaged.PDT`, `.Normal` (aliases of `sets.me.*`) | `select_hybrid_base` by `HybridMode` (`set_builder.lua:81-87,119,139`) | 120-121, 190-191 |
+| `sets.idle.PDT`, `.Normal`, `sets.engaged.PDT`, `.Normal` (Normal: aliases of `sets.me.*`; PDT: copies) | `select_hybrid_base` by `HybridMode` (`set_builder.lua:81-87,119,139`) | 120-121, 190-191 |
 | `sets.me.idle`, `sets.me.engaged` (fallback), `sets.luopan.idle` | `set_builder.lua:119,136,139` | 71, 129, 91 |
 | `sets.luopan.engaged.DT`, `.DPS` | `set_builder.lua:105-115` | 148, 173 |
 | `sets.idle.Town` (= `sets.me.idle.Town`), `sets.Adoulin`, `sets.MoveSpeed` | `BaseSetBuilder` | 428 (424), 431 (2 slots), 419 |
@@ -409,10 +409,9 @@ code looks up is missing.
 - Route another skill through `MidcastManager`: add it to `PLAIN_SKILLS`
   (`GEO_MIDCAST.lua:87-92`), or give it a branch when it needs a mode, type or
   target; make sure `sets.midcast[skill]` exists.
-- Make `HybridMode` change gear: replace the alias lines
-  `sets.idle.PDT = sets.me.idle` / `sets.engaged.PDT = sets.me.engaged` (or the
-  `.Normal` ones) with their own sets, in the template, the Kaories overlay and
-  the live Kaories file.
+- Make `HybridMode` change gear: put damage taken pieces in the `{}` of
+  `sets.idle.PDT` / `sets.engaged.PDT` (copies of `sets.me.*`), in the template,
+  the Kaories overlay and the live Kaories file.
 - New Geo- buff: add it to `GEO_BUFFS` (`GEO_COMMANDS.lua:66-85`) so `geo`
   targets `<stpc>`, and to `MainGeo`. Only real buffs belong there: the target
   follows `targets` in `res/spells.lua`.
@@ -436,8 +435,7 @@ Off unless `<Character>/config/AUTO_ABILITIES.lua` turns them on (template
 
 - `HybridMode` (the `^numpad9` anchor, default PDT) is read by the set builder
   but changes no gear yet: no set file has PDT gear, `sets.idle.PDT` /
-  `sets.engaged.PDT` alias the Normal sets (`_master/sets/geo_sets.lua:120-121,190-191`,
-  same lines in the overlay and live file). The mode is not read while a
+  `sets.engaged.PDT` are still empty copies of the Normal sets. The mode is not read while a
   luopan is out.
 - `IndicolureMode` has no reader (`_master/config/geo/GEO_STATES.lua:98-103`).
 - PetTP is loaded on every `user_setup()`, including the old sandbox's run on a
