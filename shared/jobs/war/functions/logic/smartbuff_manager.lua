@@ -145,7 +145,7 @@ local function collect_subjob_abilities(param, recasts, buffs, to_cast, status)
     if sub == 'SAM' then
         collect_ability(SAM_STANCE[param] or SAM_STANCE.Berserk, recasts, buffs, to_cast, status)
         collect_ability(THIRD_EYE, recasts, buffs, to_cast, status)
-    elseif sub == 'DNC' and (player.tp or 0) >= HASTE_SAMBA.tp_cost then
+    elseif sub == 'DNC' and require('shared/utils/core/live_tp')() >= HASTE_SAMBA.tp_cost then
         collect_ability(HASTE_SAMBA, recasts, buffs, to_cast, status)
     end
 end

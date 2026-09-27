@@ -159,7 +159,7 @@ function SmartbuffManager.collect_samba()
         return abilities_to_cast, status_data
     end
 
-    if player.tp < samba.tp_cost then
+    if require('shared/utils/core/live_tp')() < samba.tp_cost then
         return abilities_to_cast, status_data
     end
 

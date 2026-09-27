@@ -191,7 +191,7 @@ function WaltzManager.cast_curing_waltz(target_type)
 
     local MessageFormatter = require('shared/utils/messages/message_formatter')
     local ability_recasts = windower.ffxi.get_ability_recasts()
-    local current_tp = player.tp
+    local current_tp = require('shared/utils/core/live_tp')()
     local job_tag = MessageFormatter.get_job_tag()
 
     local effective_level = player.main_job == 'DNC' and player.main_job_level or (player.sub_job_level or 0)
@@ -219,7 +219,7 @@ end
 function WaltzManager.cast_divine_waltz()
     local MessageFormatter = require('shared/utils/messages/message_formatter')
     local ability_recasts = windower.ffxi.get_ability_recasts()
-    local current_tp = player.tp
+    local current_tp = require('shared/utils/core/live_tp')()
     local job_tag = MessageFormatter.get_job_tag()
 
     local effective_level = player.main_job == 'DNC' and player.main_job_level or (player.sub_job_level or 0)

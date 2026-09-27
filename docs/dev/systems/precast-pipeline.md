@@ -297,7 +297,7 @@ a `gs reload` an orphaned poll would otherwise still believe it is current.
 | `PLD_PRECAST.lua:85` | Divine Emblem (`try_ability`) | Flash |
 | `PLD_PRECAST.lua:88-100` | Majesty (`try_ability_smart`) | Protect III/IV/V, Cure III/IV |
 | `RDM_PRECAST.lua:239` | Saboteur (`try_ability_smart`) | enfeebles in `RDMSaboteurConfig.auto_trigger_spells` when `state.SaboteurMode` is On |
-| `dnc/functions/logic/climactic_manager.lua:66` | Climactic Flourish (`try_ability_ws`, 1 s) | configured WS, `player.tp >= min_tp`, target HP above `min_target_hpp`, and 3 or more Finishing Moves: any of the buffs `Finishing Move 3`, `4`, `5`, `(6+)` (`FINISHING_MOVES_3_PLUS`, `:28-33`) |
+| `dnc/functions/logic/climactic_manager.lua:66` | Climactic Flourish (`try_ability_ws`, 1 s) | configured WS, live TP >= max(`min_tp`, 1000), target HP above `min_target_hpp`, and 3 or more Finishing Moves: any of the buffs `Finishing Move 3`, `4`, `5`, `(6+)` (`FINISHING_MOVES_3_PLUS`, `:28-33`) |
 | `blm_functions.lua:285` | Dark Arts (`follow_up`) | a Dark Magic spell cast without Dark Arts up |
 | `dnc/functions/logic/step_manager.lua:77` | Presto (`follow_up`) | a step, to guarantee the extra Finishing Move |
 | `SAM_PRECAST.lua:110` | Third Eye (`follow_up`) | before Third Eye-gated actions |
@@ -351,7 +351,7 @@ sequenceDiagram
   comment (110-112) says the TP check lives in WSPrecastHandler.
 - **TP is read from the game, not from GearSwap's copy.** `WSPrecastHandler.handle`
   (`ws_precast_handler.lua:47-86`) cancels below 1000 TP using
-  `TPBonusHandler.live_tp()` (`tp_bonus_handler.lua:41-47`), which reads
+  `TPBonusHandler.live_tp()` (= `shared/utils/core/live_tp.lua`), which reads
   `windower.ffxi.get_player().vitals.tp` and falls back to `player.vitals.tp`
   only when that read fails. GearSwap re-reads its own `player.vitals.tp` only
   when the last read is over 0.5 s old, so it can trail the real value; checking
@@ -663,7 +663,11 @@ AbilityHelper poll (`coroutine.schedule`, invalidated by
   not get that protection.
 - The 1000 TP check reads the game's TP (`live_tp`), not `player.vitals.tp`. Do
   not "simplify" it back to the GearSwap copy: that copy lags and refused
-  weaponskills the game accepts.
+  weaponskills the game accepts. Every other TP test in `shared/` uses the same
+  `shared/utils/core/live_tp.lua` since 2026-09-27 (AutoJump and the `//gs c
+  jump` chain, DNC Climactic / samba cost / waltzes, WAR and THF Haste Samba,
+  BLU Expiacion guard, CUSTOM `tp_below` / `tp_above`): the copy is also never
+  refreshed inside a `coroutine.schedule` callback.
 - The DNC Climactic auto-trigger runs before `WSPrecastHandler` (range, TP), so
   a WS pressed out of range still fires Climactic Flourish first.
 - `WSValidator` calls `validate_weaponskill` twice on the success path, and

@@ -102,7 +102,7 @@ local function job_precast_samba(spell, eventArgs)
     end
 
     local cost = spell.tp_cost or 0
-    local current_tp = player and player.tp or 0
+    local current_tp = require('shared/utils/core/live_tp')()
     if current_tp < cost then
         MessageFormatter.show_ability_tp_error(spell.name, current_tp, cost)
         eventArgs.cancel = true

@@ -132,8 +132,8 @@ function TESTS.hp_below(v) return player ~= nil and (player.hpp or 100) < v end
 function TESTS.hp_above(v) return player ~= nil and (player.hpp or 0) > v end
 function TESTS.mp_below(v) return player ~= nil and (player.mpp or 100) < v end
 function TESTS.mp_above(v) return player ~= nil and (player.mpp or 0) > v end
-function TESTS.tp_below(v) return player ~= nil and (player.tp or 0) < v end
-function TESTS.tp_above(v) return player ~= nil and (player.tp or 0) > v end
+function TESTS.tp_below(v) return require('shared/utils/core/live_tp')() < v end
+function TESTS.tp_above(v) return require('shared/utils/core/live_tp')() > v end
 
 function TESTS.spell(v, spell) return spell ~= nil and any_matches(spell.english, v) end
 function TESTS.skill(v, spell) return spell ~= nil and any_matches(spell.skill, v) end

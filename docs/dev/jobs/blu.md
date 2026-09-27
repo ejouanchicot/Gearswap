@@ -344,8 +344,8 @@ are off for him.
 weaponskills only:
 
 - Only for Expiacion with the option on (60). TP is read from the game
-  (`TPBonusHandler.live_tp`, 32-38; the header says GearSwap's copy can trail
-  by up to 0.5 s, 9-10).
+  (`shared/utils/core/live_tp.lua`; the header says GearSwap's copy can trail
+  by up to 0.5 s).
 - At 3000 TP or more, with Tizona in the main hand and no Aftermath: Lv.3, it
   goes with an info line `Expiacion at <tp> TP (no Aftermath: Lv.3)` (65-70).
 - It is held only when `should_hold` (49-53): main hand `Tizona`, no

@@ -21,7 +21,7 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `_master/config_global/CRAFT_CONFIG.lua` | 24 | Craft/fish lockstyle numbers (19 / 17), deployed as `<char>/config/CRAFT_CONFIG.lua` |
 | `_master/Tetsouo/sets/bonecraft_sets.lua` | 117 | Multi-variant craft set (6 variants) |
 | `_master/Tetsouo/sets/fishing_sets.lua` | 38 | Single fishing set |
-| `shared/utils/drg/auto_jump.lua` | 224 | Jump/High Jump before a WS when TP < 1000 (WAR, DNC) |
+| `shared/utils/drg/auto_jump.lua` | 228 | Jump/High Jump before a WS when TP < 1000 (WAR, DNC) |
 | `shared/utils/drg/DRG_JUMP_MANAGER.lua` | 86 | `//gs c jump` (manual Jump chain) |
 | `shared/utils/dnc/waltz_manager.lua` | 261 | Curing / Divine Waltz tier selection |
 | `shared/utils/whm/cure_manager.lua` | 392 | Cure / Curaga tier selection with recast fallback |
@@ -272,7 +272,7 @@ sequenceDiagram
     Note over J: "+0.5 s: _G.AUTO_JUMP_SEQUENCE_ACTIVE = false"
 ```
 
-The replayed WS goes through precast again while the flag is set, so it cannot start a second sequence (`auto_jump.lua:150`). Readiness uses the global `is_recast_ready` from `RECAST_CONFIG.lua` (tolerance 2.0 s). Diagnostics: `get_tp_threshold()`, `get_animation_delay()`, `get_status()`, `is_drg_subjob()` (no callers outside the module except `should_auto_jump`).
+TP is read from the game (`shared/utils/core/live_tp.lua`), in the WS test and in the coroutine that decides the second jump, where GearSwap's `player.tp` is never refreshed. The replayed WS goes through precast again while the flag is set, so it cannot start a second sequence (`auto_jump.lua:150`). Readiness uses the global `is_recast_ready` from `RECAST_CONFIG.lua` (tolerance 2.0 s). Diagnostics: `get_tp_threshold()`, `get_animation_delay()`, `get_status()`, `is_drg_subjob()` (no callers outside the module except `should_auto_jump`).
 
 ### DRGJumpManager (`shared/utils/drg/DRG_JUMP_MANAGER.lua`)
 

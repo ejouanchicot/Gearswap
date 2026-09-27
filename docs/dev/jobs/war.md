@@ -235,7 +235,7 @@ weaponskill of the weapon.
    on cooldown.
 4. `collect_subjob_abilities` (142-151): /SAM queues the stance paired with
    `param` (Hasso for Berserk, Seigan for Defender, `SAM_STANCE` 104-107) and
-   Third Eye (133); /DNC queues Haste Samba (216) only when `player.tp >= 350`,
+   Third Eye (133); /DNC queues Haste Samba (216) only when the live TP is at least 350,
    silently skipped otherwise (comment 135-136). The stance follows `param`, not
    `buffactive`, because the Berserk/Defender cast is still queued at that point
    (comment 131-134, commit 63187a0).

@@ -44,7 +44,7 @@ local SubjobWarBuffs   = require('shared/utils/smartbuff/subjob_war_buffs')
 function SmartbuffManager.apply_dnc_buffs()
     local ability_recasts = windower.ffxi.get_ability_recasts()
     local status_data = {}
-    local current_tp = player.tp or 0
+    local current_tp = require('shared/utils/core/live_tp')()
     local required_tp = 350  -- Haste Samba TP cost
     local job_tag = MessageFormatter.get_job_tag()
 

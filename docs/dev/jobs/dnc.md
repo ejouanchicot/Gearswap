@@ -413,7 +413,7 @@ T = `_master/sets/dnc_sets.lua`, L = `Tetsouo/sets/dnc/dnc_sets.lua`.
 | `Tetsouo/config/dnc/DNC_REFILL.lua` | 7 items | overlay | refill system |
 | Hard-coded | step recast 220, Presto 236 and level 77 (`step_manager.lua:56,66-69`), samba costs (`smartbuff_manager.lua:45-49`), Utsusemi cancel delay 2.3 s, auto-jump 1000 TP | code | - |
 
-`ClimaticManager` reads the live TP (`TPBonusHandler.live_tp`, like
+`ClimaticManager` reads the live TP (`shared/utils/core/live_tp.lua`, like
 `WSPrecastHandler`) and never fires below 1000: `DNC_WS_CONFIG.min_tp` can only
 raise that. Until 2026-09-27 it compared GearSwap's copy with 900 (to cover a
 stale TP), so at 900-999 real TP the flourish was spent on a WS the TP check

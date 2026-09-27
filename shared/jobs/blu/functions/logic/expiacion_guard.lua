@@ -6,7 +6,7 @@
 ---   main hand, no Aftermath: Lv.3 up and less than 3000 TP, the first press
 ---   is cancelled and opens a 3 s window: a second press within it goes.
 ---
----   TP is read from the game (TPBonusHandler.live_tp): GearSwap's own copy
+---   TP is read from the game (shared/utils/core/live_tp.lua): GearSwap's own copy
 ---   can trail by up to 0.5 s. Under 1000 TP nothing is done here, the
 ---   weaponskill check refuses the WS with its own message.
 ---
@@ -27,15 +27,8 @@ local MIN_TP = 1000
 -- Closing time of the open window (os.clock), nil when closed
 local window_until = nil
 
---- TP read from the game, GearSwap's copy as a fallback.
---- @return number
-local function live_tp()
-    local ok, TPBonusHandler = pcall(require, 'shared/utils/precast/tp_bonus_handler')
-    if ok and TPBonusHandler and TPBonusHandler.live_tp then
-        return TPBonusHandler.live_tp()
-    end
-    return player and player.vitals and player.vitals.tp or 0
-end
+-- TP read from the game, GearSwap's copy as a fallback
+local live_tp = require('shared/utils/core/live_tp')
 
 --- Whether the window from an earlier press is still open.
 --- @return boolean

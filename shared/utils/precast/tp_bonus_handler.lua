@@ -38,13 +38,7 @@ end
 --- the real value; get_player() reads the game directly.
 --- Falls back to the copy if the direct read fails.
 --- @return number
-function TPBonusHandler.live_tp()
-    local ok, me = pcall(windower.ffxi.get_player)
-    if ok and me and me.vitals and me.vitals.tp then
-        return me.vitals.tp
-    end
-    return player and player.vitals and player.vitals.tp or 0
-end
+TPBonusHandler.live_tp = require('shared/utils/core/live_tp')
 
 --- Compute the TP bonus gear for a weaponskill and store it in
 --- _G.temp_tp_bonus_gear, where WSPrecastHandler.apply_tp_gear picks it up.

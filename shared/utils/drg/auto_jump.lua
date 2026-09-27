@@ -35,6 +35,10 @@ local HIGH_JUMP_RECAST_ID = 159
 --- Auto-jump only fires below this TP value.
 local TP_THRESHOLD = 1000
 
+-- TP read from the game: GearSwap's player.tp trails it, and is never
+-- refreshed inside the coroutines that chain the second jump
+local live_tp = require('shared/utils/core/live_tp')
+
 --- Wait after a Jump so FFXI has credited the TP before it is read again.
 local JUMP_ANIMATION_DELAY = 1.0
 
@@ -89,7 +93,7 @@ end
 local function should_auto_jump(spell)
     if not spell or spell.type ~= 'WeaponSkill' then return false end
     if not AutoJump.is_drg_subjob() then return false end
-    if not player.tp or player.tp >= TP_THRESHOLD then return false end
+    if live_tp() >= TP_THRESHOLD then return false end
 
     return get_available_jump() ~= nil
 end
@@ -115,7 +119,7 @@ end
 --- @param ws_name string
 --- @param ws_target string
 local function chain_second_jump(first_jump, ws_name, ws_target)
-    if not player or player.tp >= TP_THRESHOLD then
+    if live_tp() >= TP_THRESHOLD then
         replay_ws(ws_name, ws_target)
         return
     end
@@ -198,7 +202,7 @@ function AutoJump.get_status()
     local status = {
         active = false,
         subjob = player.sub_job,
-        tp = player.tp,
+        tp = live_tp(),
         tp_threshold = TP_THRESHOLD,
         jump_ready = is_jump_ready(),
         high_jump_ready = is_high_jump_ready(),
@@ -209,7 +213,7 @@ function AutoJump.get_status()
         status.reason = 'Not /DRG'
     elseif (player.sub_job_level or 0) == 0 then
         status.reason = 'Subjob disabled (Odyssey/level 0)'
-    elseif player.tp >= TP_THRESHOLD then
+    elseif status.tp >= TP_THRESHOLD then
         status.reason = 'TP >= ' .. TP_THRESHOLD
     elseif not status.available_jump then
         status.reason = 'No Jump available (cooldown)'

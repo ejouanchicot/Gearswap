@@ -13,6 +13,8 @@
 
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 local MessageCooldowns = require('shared/utils/messages/formatters/combat/message_cooldowns')
+-- TP read from the game: GearSwap's copy is stale inside the coroutine below
+local live_tp = require('shared/utils/core/live_tp')
 
 local DRGJumpManager = {}
 
@@ -35,7 +37,7 @@ function DRGJumpManager.execute_jump()
         return
     end
 
-    if player.tp >= 1000 then
+    if live_tp() >= 1000 then
         local job_tag = MessageFormatter.get_job_tag()
         MessageFormatter.show_tp_ready(job_tag, 1000)
         return
@@ -69,7 +71,7 @@ function DRGJumpManager.execute_jump()
 
     -- 1.0s lets the first jump's animation finish and its TP register
     coroutine.schedule(function()
-        if player and player.tp < 1000 then
+        if live_tp() < 1000 then
             local recasts = windower.ffxi.get_ability_recasts()
             if not recasts then return end
 
