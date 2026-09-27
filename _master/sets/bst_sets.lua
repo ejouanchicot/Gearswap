@@ -687,7 +687,9 @@ sets.midcast.pet_magicAtk_moves = {
     back = Artio.PETMB
 }
 
--- Magical accuracy Ready moves (debuffs, buffs)
+-- Magical accuracy Ready moves (debuffs, buffs): the magic attack set on
+-- purpose (no Pet: Magic Accuracy set yet). Put Pet: Mag. Acc. pieces in the
+-- {} to make the debuffs land more often.
 sets.midcast.pet_magicAcc_moves = set_combine(sets.midcast.pet_magicAtk_moves, {})
 
 -- Set for when wielding a weapon (weapon-wielding variants)
