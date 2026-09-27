@@ -32,7 +32,30 @@ local function doom()
     return DoomManager
 end
 
---- Status handler: unlocks Doom slots so a raise does not leave them stuck.
+-- Seconds after an engage / disengage held back during an action before the
+-- status gear goes on anyway, in case the action never reported its end.
+local STATUS_FALLBACK = 3
+
+--- An engage or disengage that lands during an action (a Phantom Roll, a
+--- spell): Mote would put the engaged / idle set on at once, over the
+--- action's gear, and the roll would go out with the wrong neck. Hold it
+--- back: aftercast equips the set of the status in force by then. If the
+--- action never reports its end, the status set goes on a few seconds later.
+--- @param newStatus string
+--- @param eventArgs table Mote event args
+local function hold_during_action(newStatus, eventArgs)
+    if eventArgs.handled then return end
+    if newStatus ~= 'Idle' and newStatus ~= 'Engaged' then return end
+    if not (type(midaction) == 'function' and midaction()) then return end
+    eventArgs.handled = true
+    coroutine.schedule(function()
+        if midaction() or not player or player.status ~= newStatus then return end
+        if handle_equipping_gear then handle_equipping_gear(player.status) end
+    end, STATUS_FALLBACK)
+end
+
+--- Status handler: unlocks Doom slots so a raise does not leave them stuck,
+--- and holds the engaged / idle set back while an action is under way.
 --- @param extra function|nil Job-specific logic, run after the shared part
 --- @return function Handler for _G.job_status_change
 function LifecycleManager.status_change(extra)
@@ -41,6 +64,7 @@ function LifecycleManager.status_change(extra)
         if extra then
             extra(newStatus, oldStatus, eventArgs)
         end
+        hold_during_action(newStatus, eventArgs)
     end
 end
 
