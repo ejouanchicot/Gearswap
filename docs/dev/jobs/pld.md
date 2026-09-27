@@ -12,9 +12,9 @@ What PLD adds on top of the shared pipeline:
 
 - **Auto-abilities** in precast through `AbilityHelper`: Divine Emblem before
   Flash, Majesty before Protect III-V and Cure III/IV.
-- **Target-aware cures**: Cure III/IV pick `sets.midcast.CureSelf` or
-  `CureOther` in the pre-midcast hook, and a low-HP fast-cast set for self
-  cures in post-precast.
+- **Target-aware cures**: Cure to Cure IV pick `sets.midcast.CureSelf` or
+  `CureOther` in the pre-midcast hook; Cure III/IV only get a low-HP fast-cast
+  set for self cures in post-precast.
 - **Enmity routing** in midcast: Flash and Enlight are caught by name before the
   Divine skill, Phalanx has a SIRD override (`Xp`, and `PhalanxSIRD` where the
   character defines it).
@@ -39,7 +39,7 @@ number added nothing, the function name is cited instead.
 | `_master/Kaories/entry/Kaories_PLD.lua` | 271 | Kaories overlay: `Kaories/...` paths, and an older body: no `PLD_WS_CONFIG` / `pld_rebuild_ws_slots` (no weaponskill slots) and no `AmpullaLock` in `user_setup` / `file_unload` (a decision left to the player, not a bug) |
 | `shared/jobs/pld/functions/pld_functions.lua` | 121 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/pld/functions/PLD_PRECAST.lua` | 207 | `job_precast` (guard, cooldown, auto-abilities, WS) / `job_post_precast` (/SCH weaponskill variants, TP gear, CureSelf FC, enmity override) |
-| `shared/jobs/pld/functions/PLD_MIDCAST.lua` | 204 | `job_midcast` (Cure III/IV) / `job_post_midcast` (name-before-skill dispatch, enmity override) |
+| `shared/jobs/pld/functions/PLD_MIDCAST.lua` | 204 | `job_midcast` (Cure to Cure IV) / `job_post_midcast` (name-before-skill dispatch, enmity override) |
 | `shared/jobs/pld/functions/PLD_AFTERCAST.lua` | 36 | `LifecycleManager.aftercast()`, empty `job_post_aftercast` |
 | `shared/jobs/pld/functions/PLD_IDLE.lua` | 51 | `customize_idle_set` -> `SetBuilder.build_idle_set` (+ `UPDATE_DEBUG` trace) |
 | `shared/jobs/pld/functions/PLD_ENGAGED.lua` | 51 | `customize_melee_set` -> `SetBuilder.build_engaged_set` (+ trace) |
@@ -52,7 +52,7 @@ number added nothing, the function name is cited instead.
 | `shared/jobs/pld/functions/logic/set_builder.lua` | 396 | Idle/engaged construction: weapon, shield, ammo, HybridMode map, XP, movement, town; `current_weapon()` is the authority on what is in hand |
 | `shared/jobs/pld/functions/logic/enmity_override.lua` | 151 | Sortie and /SCH Tanking: FullEnmity spells wear `sets.EnmityMax`; JAs keep their set and gain what EnmityMax adds |
 | `shared/utils/equipment/ampulla_lock.lua` | 172 | Hoxne stance: closes the ammo slot on Hoxne Ampulla once it is worn, or leaves it open and says so. Moved out of `shared/jobs/pld/functions/logic/` by `a810d92` and shared with WAR |
-| `shared/jobs/pld/functions/logic/cure_set_builder.lua` | 49 | CureSelf / CureOther choice for Cure III/IV |
+| `shared/jobs/pld/functions/logic/cure_set_builder.lua` | 55 | CureSelf / CureOther choice for Cure to Cure IV, `is_cure` |
 | `shared/jobs/pld/functions/logic/aoe_manager.lua` | 178 | `//gs c aoe` BLU rotation (same code as RUN's copy; only the headers and the error text differ) |
 | `shared/jobs/pld/functions/logic/rune_manager.lua` | 76 | `//gs c rune` (same code as RUN's copy) |
 | `_master/config/pld/PLD_STATES.lua` | 402 | States (incl. `WS1`/`WS2`), three option profiles (`standard`/`sortie`/`sch`), `apply_hybrid_profile`, unused `validate`, `_G.PLDStates` |
@@ -322,7 +322,7 @@ their shield mid-fight is a cost the stance was chosen to avoid.
   JA-specific pieces of `sets.precast.JA['Sentinel']`, `['Rampart']`,
   `['Invincible']`, `['Fealty']`, `['Shield Bash']`, `['Holy Circle']`
   (`:398-407`) stay; spells still swap to the whole set.
-- Cure III/IV never reach the override: `job_post_midcast` returns early for
+- Cure to Cure IV never reach the override: `job_post_midcast` returns early for
   them (`PLD_MIDCAST.lua:167-169`). They do not wear FullEnmity, so nothing is
   lost today, but any future override added after the dispatch has the same
   blind spot.
@@ -433,11 +433,11 @@ flowchart TD
   `sets.midcast.Enmity` and P0/P1 find `sets.midcast.Enlight` for Enlight and
   Enlight II (tier stripped, `midcast_manager.lua` `resolve_base_name`); `Phalanx` uses
   `sets.midcast.Phalanx` (= `PhalanxPotency`).
-- `CureSetBuilder.generate` (`cure_set_builder.lua:25-43`) only answers for Cure
-  III/IV and writes the chosen set into `sets.midcast.Cure` (`:40`) before
-  returning it. Mote maps every Cure tier to spell map `Cure`
-  (`Mote-Mappings.lua:149`), so Cure and Cure II later wear the CureSelf or
-  CureOther set of the last Cure III/IV, and nothing before the first one.
+- `CureSetBuilder.generate` answers for Cure to Cure IV by target and never
+  writes `sets.midcast.Cure` (until 2026-09-27 it answered for III/IV only and
+  wrote the chosen set there, so Cure and Cure II wore the set of the last
+  Cure III/IV). A missing set leaves `handled` false: the cure goes through
+  Mote and the Healing route instead of keeping its precast gear.
 - Enhancing uses `ENHANCING_MAGIC_DATABASE.get_spell_family` (Refresh, Phalanx,
   Stoneskin, BarElement, ...) and the P1 base-name rule, so Protect V finds
   `sets.midcast.Protect`. Stoneskin has its own HP-ordered set since commit
@@ -718,7 +718,7 @@ L = `Tetsouo/sets/pld/pld_sets.lua` (weapon sets come from
 
 ## Known issues
 
-- `job_post_midcast` returns before `EnmityOverride` for Cure III/IV
+- `job_post_midcast` returns before `EnmityOverride` for Cure to Cure IV
   (`PLD_MIDCAST.lua:167-169`).
 - The Kaories sets have no `sets.engaged.DPS` / `.Hoxne` / `.TP`, so the /SCH
   stances fall back to `sets.engaged` there; the template has them, and only
@@ -740,9 +740,8 @@ L = `Tetsouo/sets/pld/pld_sets.lua` (weapon sets come from
 - AbilityHelper sets only `handled`: the cancelled Cure/Protect/Flash still goes
   through the rest of `job_precast` and `job_post_precast`, so precast gear
   flickers for a spell that is not cast (`ability_helper.lua` `fire_then_replay`).
-- Cure and Cure II wear the set of the last Cure III/IV target, or none
-  (`cure_set_builder.lua:40`); the Healing route is a no-op without
-  `sets.midcast['Healing Magic']` (`PLD_MIDCAST.lua:79-87`).
+- The Healing route (Curaga, -na from the sub) is a no-op without
+  `sets.midcast['Healing Magic']` (`PLD_MIDCAST.lua` `midcast_healing`).
 - `sets.precast['Cure']` / `['Flash']` equips are dead: no such sets, and Mote
   overwrites them (`PLD_PRECAST.lua:141-147`).
 - BLU dynamic rotation reads the main job's data, so on PLD/BLU it always falls

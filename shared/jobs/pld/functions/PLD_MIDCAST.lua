@@ -4,7 +4,7 @@
 ---   Handles midcast for Paladin with specialized Cure and enmity optimization.
 ---
 ---   Features:
----   - Cure III/IV: Dynamic CureSelf/CureOther via CureSetBuilder
+---   - Cure to Cure IV: CureSelf/CureOther by target via CureSetBuilder
 ---   - Enmity spells: Flash, Enlight
 ---   - Phalanx: SIRD set when PhalanxSIRD or Xp is On, else Phalanx set
 ---   - EnmityOverride: sets.EnmityMax in Sortie / Tanking
@@ -50,7 +50,7 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
----   Pre-midcast hook (Cure III/IV dynamic target-based set selection)
+---   Pre-midcast hook (Cure to Cure IV, set chosen by target)
 ---   @param spell table Spell information from GearSwap
 ---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping from Mote-Include
@@ -59,18 +59,16 @@ function job_midcast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
     -- ══════════════════════════════════════════════════════════════════════════
-    -- CURE III/IV: DYNAMIC TARGET-BASED SETS (CureSetBuilder)
+    -- CURE TO CURE IV: CureSelf / CureOther by target (CureSetBuilder)
     -- ══════════════════════════════════════════════════════════════════════════
-    -- These spells use CureSetBuilder logic module for optimal gear selection
-    -- Must be handled in job_midcast BEFORE MidcastManager
-    if spell.name == 'Cure III' or spell.name == 'Cure IV' then
-        local target_type = spell.target.type == 'SELF' and 'SELF' or 'OTHER'
-        local cure_set = CureSetBuilder.generate(spell, target_type)
-        if cure_set then
-            equip(cure_set)
-        end
+    -- Handled here, before Mote's default midcast: eventArgs.handled skips it
+    -- and job_post_midcast returns early. Without the set, the cure is left
+    -- to the Healing Magic routing instead of keeping its precast gear.
+    local target_type = spell.target.type == 'SELF' and 'SELF' or 'OTHER'
+    local cure_set = CureSetBuilder and CureSetBuilder.generate(spell, target_type)
+    if cure_set then
+        equip(cure_set)
         eventArgs.handled = true
-        return
     end
 end
 
@@ -163,7 +161,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         _G.MidcastWatchdog.on_midcast_start(spell)
     end
 
-    -- Cure III and IV are already dressed by job_midcast above.
+    -- Cure to Cure IV are already dressed by job_midcast above.
     if eventArgs.handled then
         return
     end

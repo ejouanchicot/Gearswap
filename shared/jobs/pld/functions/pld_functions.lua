@@ -86,7 +86,7 @@ TIMER('PLD_MOVEMENT')
 ---     • Anti-spam (5s) and recast display when every spell is down
 ---
 ---   logic/cure_set_builder.lua
----     • Cure III/IV: sets.midcast.CureSelf vs CureOther by target
+---     • Cure to Cure IV: sets.midcast.CureSelf vs CureOther by target
 ---
 ---   logic/enmity_override.lua
 ---     • Sortie and /SCH Tanking: spells that wore sets.FullEnmity wear
