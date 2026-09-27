@@ -179,17 +179,49 @@ local function set_follow(alts, leader)
     if state_messages() then state_messages().show_follow(table.concat(alts, ', '), leader) end
 end
 
---- `follow` alone toggles following this character; `follow off` stops;
---- `follow <name>` follows that character.
+--- Who `name` follows now: its automation addon's last report (see
+--- receive_report), else this box's saved state for an alt; false = nobody,
+--- nil = unknown.
+local function leader_of(name)
+    local r = windower._alt_reports and windower._alt_reports[name:lower()]
+    if r then return r.follow end
+    return nil
+end
+
+--- Whether every alt follows `leader` now.
+local function all_follow(alts, leader)
+    for _, name in ipairs(alts) do
+        local current = leader_of(name)
+        if current == nil then current = group_state().follow end
+        if not current or current:lower() ~= leader:lower() then return false end
+    end
+    return true
+end
+
+--- This box takes the lead: it stops following anyone itself, then every
+--- alt follows it. Pressed on another box than the last leader, this turns
+--- the old follow around instead of making two boxes follow each other.
+local function take_lead(alts)
+    if leader_of(player.name) ~= false then
+        send_command('sm follow off')
+    end
+    set_follow(alts, player.name)
+end
+
+--- `follow` alone: this box leads (see take_lead), or, when every alt
+--- already follows it, the follow stops. `follow off` stops; `follow <name>`
+--- follows that character.
 local function follow(alts, target)
     if target and target:lower() == 'off' then
         set_follow(alts, nil)
     elseif target then
         set_follow(alts, target:sub(1, 1):upper() .. target:sub(2):lower())
-    elseif group_state().follow or not (player and player.name) then
+    elseif not (player and player.name) then
+        set_follow(alts, nil)
+    elseif all_follow(alts, player.name) then
         set_follow(alts, nil)
     else
-        set_follow(alts, player.name)
+        take_lead(alts)
     end
 end
 

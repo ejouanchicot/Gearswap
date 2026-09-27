@@ -358,6 +358,12 @@ refilled by the `requestjob` sent to every box at auto-init.
   not depend on the role. `follow <name>` leaves that character out (it cannot follow itself); when that leaves nobody
   (two boxes, told to follow the other one) it prints `no_follower`, sends nothing and keeps the
   saved state (fixed 2026-09-25).
+  `follow` alone (Alt+Numpad7) makes the box that sends it the leader (2026-09-27): unless every
+  other member already follows it (then the follow stops), it sends `sm follow off` to its own
+  addon when its last `altreport` shows it following someone (or when no report is known), then
+  `sm follow <me>` to the others. Pressing it on the follower of the last leader therefore turns the
+  follow around instead of leaving two boxes following each other. Who follows whom is read from the
+  addon's reports (`leader_of`), the saved state standing in for an alt no report speaks for.
   `mirror` runs `sm mirror` locally. The on/follow/mirror state starts as the last order sent, kept on
   `windower._alt_group` and saved in `alt_state.lua`; `//gs c sortie` records its own through
   `AltGroup.note`. When the addon reports its real state (next point), the reports overwrite it, so an
