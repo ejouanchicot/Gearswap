@@ -38,7 +38,7 @@ function is named.
 | `shared/utils/dualbox/alt_buff_reporter.lua` | 336 | ALT: report tracked buffs. MAIN: store them, guess/expire, trace log |
 | `shared/utils/dualbox/dualbox_sync_ipc.lua` | 159 | Windower IPC broadcast/hook registry for `ls`/`rf` mirroring |
 | `shared/utils/dualbox/alt_group.lua` | 424 | `//gs c alts`: orders to every other member of the box group (`sm on/off`, follow, `do <command>`, mirror, window); `route()` also dispatches `main`/`setalt` |
-| `shared/utils/dualbox/alt_window.lua` | 337 | Fixed-size overlay on the main: each alt (job, party, zone) and the Auto / Follow / Mirror / Step state: the real one reported by the addon's local `lib/StateReport.lua` addition (`//gs c altreport` / `altmirror`, `AltGroup.receive_report` / `receive_mirror`, asked again at each load by `AltGroup.request_report`), else the last orders sent; `//gs c alts window` shows/hides it |
+| `shared/utils/dualbox/alt_window.lua` | 350 | Fixed-size overlay on the main: each alt (job, party, zone, Sneak / Invi time left from `StealthTimers`) and the Auto / Follow / Mirror / Step state: the real one reported by the addon's local `lib/StateReport.lua` addition (`//gs c altreport` / `altmirror`, `AltGroup.receive_report` / `receive_mirror`, asked again at each load by `AltGroup.request_report`), else the last orders sent; `//gs c alts window` shows/hides it |
 | `shared/utils/dualbox/dualbox_role.lua` | 165 | `//gs c main` / `setalt`: switches the roles at runtime and saves them in `<Character>/config/dualbox_role.lua` |
 | `shared/utils/messages/formatters/system/message_altgroup.lua` + `data/systems/altgroup_messages.lua` | - | `[ALTS]` / `[DUALBOX]` lines of the three modules above (including `not_ready`, `window_main_only`, `no_follower`, added 2026-09-25) |
 | `shared/utils/messages/formatters/ui/message_dualbox.lua` | 190 | Chat output for the job exchange (via `M.send('DUALBOX', ...)`) |
@@ -389,6 +389,10 @@ refilled by the `requestjob` sent to every box at auto-init.
   `Connection.lua`) to send `altmirror <name> results <Name,Status|...>`. It also replaces the
   addon's three text boxes with a table that draws nothing (`set_sm_window` / `set_npc_window` /
   `set_result_window`, `HIDE_ADDON_BOXES`). `//sm report` resends the state.
+  The character's name is read once through `get_player()` and kept in a local, cleared by the
+  `login` / `logout` events (`StateReport.lua:30-41`, 2026-09-27): `get_player()` builds a large table
+  and the mirror check runs every frame. A copy of the patched file and its README live in this
+  repository under `scripts/addon_patches/silmaril/`, so an addon update can be patched again from it.
   On the GearSwap side, `AltGroup.receive_report` (`alt_group.lua:248`) keeps each box's report in
   `windower._alt_reports` and ignores boxes outside the group: Auto ON if any alt is on, Follow =
   the first alt's leader, Mirror ON if any box, this one included, has it (a mirror request starts
@@ -403,7 +407,10 @@ refilled by the `requestjob` sent to every box at auto-init.
   the rows never change (`-` when empty), so the box does not resize. Per alt: its name as the title,
   Job (from `_G.AltJobState`, last one received), Party and Zone from the party list (`get_party`,
   `presence`, `:156`; `no party` when absent) - not `is_alt_online()`, whose 30 s timeout reads a
-  quiet alt as offline because the job exchange only speaks at a load or a job change. Then Auto,
+  quiet alt as offline because the job exchange only speaks at a load or a job change. Since
+  2026-09-26 each alt block ends with a Sneak and an Invi row (`stealth_lines`, `alt_window.lua:165-174`,
+  called `:193`: `StealthTimers.left`, `m:ss` green, yellow under 60 s, `-` when unknown; the stealth
+  loop redraws the window every second while a timer runs, see [stealth.md](stealth.md)). Then Auto,
   Follow, Mirror (with the NPC of a running mirror) and Step (the latest mirror step, packet codes
   dropped, then the results, `OK` in green) from `AltGroup.state()` / `mirror_progress()`
   (`?` until known; saved in `<Character>/config/alt_state.lua`

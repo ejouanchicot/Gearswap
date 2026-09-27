@@ -8,12 +8,12 @@ Everything here runs inside the GearSwap sandbox. The single most important fact
 
 | Path | Lines | Role |
 |---|---|---|
-| `shared/utils/core/INIT_SYSTEMS.lua` | 344 | Included by every entry point's `get_sets()`. Installs the module cache, applies HP priorities, starts the universal systems (some synchronously, some on 0.5 s / 2 s / 3 s / 5 s timers) |
+| `shared/utils/core/INIT_SYSTEMS.lua` | 371 | Included by every entry point's `get_sets()`. Installs the module cache, applies HP priorities, starts the universal systems (some synchronously, some on 0.5 s / 2 s / 3 s / 5 s timers) |
 | `shared/utils/core/job_change_manager.lua` | 235 | Debounced `gs reload` on subjob change, cleanup before it, lockstyle-cancel registry |
 | `shared/utils/core/job_sync_watchdog.lua` | 165 | Compares the job the file was loaded for with the client's job every 5 s, forces `gs reload` after two mismatches |
 | `shared/utils/core/midcast_watchdog.lua` | 479 | Tracks the spell/item in midcast; if no aftercast arrives within cast time + buffer, sends `gs c update` |
 | `shared/utils/core/module_cache.lua` | 106 | Replaces the sandbox `require` with a caching wrapper, once per sandbox |
-| `shared/utils/core/lifecycle_manager.lua` | 108 | Factory for the four Mote hooks every job used to copy |
+| `shared/utils/core/lifecycle_manager.lua` | 132 | Factory for the four Mote hooks every job used to copy |
 | `shared/utils/core/state_display_override.lua` | 46 | Replaces Mote's `display_current_state` (silent while the HUD is enabled; see Known issues) |
 | `shared/utils/core/keybind_guard.lua` | 98 | Re-sends the job's binds 2 s after a load |
 | `shared/utils/core/WATCHDOG_COMMANDS.lua` | 106 | `//gs c watchdog ...` handler, called from each job's `<JOB>_COMMANDS.lua` |
@@ -109,7 +109,8 @@ Step by step, with the WAR template:
 | 184-202 | sync | DualBox sync IPC: hooks `ls`, `lockstyle`, `rf`, `refill`, then `init_listener()` | see dualbox page |
 | 208-257 | +0.5 s | `WarpInit.init()`; AutoMove `include` + `start()` unless `_G.DISABLE_AUTOMOVE == true`; `StateDisplayOverride.init()` | `_G.AutoMove`, `_G.display_current_state` |
 | 277-282 | sync (fires +2.0 s) | `KeybindGuard.schedule()` re-sends the job's binds once the console is quiet | `windower._keybind_guard_seq` |
-| 291-296 | sync | `CustomStates.install_hooks()`: hooks the player's `<JOB>_CUSTOM.lua` gear rules on Mote's functions. Here and not in `user_setup()` because Mote defines `handle_equipping_gear` and `cleanup_precast/midcast` after `user_setup()` runs, and those definitions would replace the hook; see [keybinds-and-custom.md](keybinds-and-custom.md) | Mote globals |
+| 284-291 | sync | `StealthTimers.start()`: raw `incoming chunk` listener for this character's Sneak / Invisible end times (0x063 order 9), sent to the box group, and a one-second wear-off / alt-window loop, see [stealth.md](stealth.md) | `_G._stealth_listener`, `windower._stealth_gen`, `windower._stealth_timers` |
+| 300-305 | sync | `CustomStates.install_hooks()`: hooks the player's `<JOB>_CUSTOM.lua` gear rules on Mote's functions. Here and not in `user_setup()` because Mote defines `handle_equipping_gear` and `cleanup_precast/midcast` after `user_setup()` runs, and those definitions would replace the hook; see [keybinds-and-custom.md](keybinds-and-custom.md) | Mote globals |
 | 315-327 | +3.0 s | Confirm `PrecastGuard`, `CooldownChecker` and `WSPrecastHandler` load; report the ones that do not | none |
 | 339-344 | +5.0 s | `GlobalProbe.snapshot()` (baseline for `//gs c syscheck` leak report) | `_G.__global_baseline` |
 
@@ -281,12 +282,14 @@ Four builders, each returning a handler; the caller assigns the Mote global (`jo
 
 | Builder | Shared behaviour | `extra` | Used by |
 |---|---|---|---|
-| `status_change(extra)` (`:38-45`) | `DoomManager.handle_status_change(new, old)` (unlocks Doom slots after death) | always run after | BLM BRD BST COR DNC GEO PLD PUP RDM RUN SAM THF WHM |
-| `buff_change(extra)` (`:50-59`) | `DoomManager.handle_buff_change(buff, gain)`; if it returns true the chain stops | skipped when Doom handled it | BLM BRD BST COR DNC PLD PUP RDM RUN SAM WHM (COR passes `retire_lost_roll`) |
-| `aftercast(extra)` (`:68-77`) | `_G.MidcastWatchdog.on_aftercast()` if the watchdog is loaded. No `gs c update` (removed 2026-06, comment `:63-65`) | always run after | PLD PUP RDM RUN SAM SMN WHM |
-| `state_change(extra)` (`:85-100`) | Returns immediately for `stateField == 'Moving'`; otherwise `KeybindUI.update()` | run after the UI update | BRD BST COR DNC DRK GEO PLD PUP RUN SAM SMN THF (COR, PLD and THF pass `on_state_change`) |
+| `status_change(extra)` (`:61-69`) | `DoomManager.handle_status_change(new, old)` (unlocks Doom slots after death); after `extra`, `hold_during_action` (below) | always run between the two | BLM BRD BST COR DNC GEO PLD PUP RDM RUN SAM THF WHM |
+| `buff_change(extra)` (`:74-83`) | `DoomManager.handle_buff_change(buff, gain)`; if it returns true the chain stops | skipped when Doom handled it | BLM BRD BST COR DNC PLD PUP RDM RUN SAM WHM (COR passes `retire_lost_roll`) |
+| `aftercast(extra)` (`:92-101`) | `_G.MidcastWatchdog.on_aftercast()` if the watchdog is loaded. No `gs c update` (removed 2026-06, comment `:87-89`) | always run after | PLD PUP RDM RUN SAM SMN WHM |
+| `state_change(extra)` (`:109-124`) | Returns immediately for `stateField == 'Moving'`; otherwise `KeybindUI.update()` | run after the UI update | BRD BST COR DNC DRK GEO PLD PUP RUN SAM SMN THF (COR, PLD and THF pass `on_state_change`) |
 
 `DoomManager` is required on first use, not at file load (`:28-33`), without `pcall`.
+
+**Engage / disengage during an action** (`hold_during_action`, `lifecycle_manager.lua:46-55`, 2026-09-27). Mote's `status_change` equips the new status set at once unless `eventArgs.handled` (`Mote-Include.lua:995-1017`), which, during an action, lands over the action's gear: a Phantom Roll went out with the engaged neck. The shared handler now returns early when `extra` already handled the event or the new status is not `Idle` / `Engaged`; otherwise, when `midaction()` is true, it sets `eventArgs.handled` and lets `default_aftercast` (`Mote-Include.lua:336-340`, `handle_equipping_gear(player.status)`) put on the set of the status in force when the action ends. A fallback is scheduled `STATUS_FALLBACK` = 3 s later (`:37`): if no action is running and the status is still the new one, it calls `handle_equipping_gear(player.status)` (see Known issues).
 
 ## CycleHandler and state display
 
@@ -513,9 +516,10 @@ Open:
 - Dead code: `ModuleCache.stats()`, `MidcastWatchdog.is_enabled/get_buffer/get_fallback_timeout/is_debug_enabled`.
 - The job intro never shows the macro book or the lockstyle: `KeybindManager`'s `show_intro` looks for `get_<job>_macro_info` and `get_info` on the `<JOB>_MACROBOOK` / `<JOB>_LOCKSTYLE` modules, and the 32 wrappers return nothing, so `show_system_intro_complete` is never reached (`keybind_manager.lua` `show_intro`). Owner decision pending (2026-09-25 audit Z2-09).
 - `docs/user/features/job-change-manager.md` and `docs/user/features/watchdog.md` are out of date (see the 2026-09-25 audit).
-
-Fixed:
-
+- The 3 s fallback of `hold_during_action` sends `gs c update` (`lifecycle_manager.lua`): a
+  scheduled function runs outside an event, where `equip()` would only fill `equip_list`
+  (`flow.lua:60`, `user_functions.lua:127-129`). Fixed 2026-09-27 (it called
+  `handle_equipping_gear` directly before). Not tested in game.
 - `JOBCHANGE_DEBUG` lost on every reload: it lives on `windower._gs_debug.JOBCHANGE` and INIT restores it (`INIT_SYSTEMS.lua:35-41`).
 - Out-of-date headers of `INIT_SYSTEMS.lua` and `job_change_manager.lua`: rewritten.
 - `JobChangeManager.initialize({...})` called from `job_sub_job_change` with job modules nothing read: the call is gone from every maintained entry (fixed 2026-09-25).

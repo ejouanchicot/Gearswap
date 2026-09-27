@@ -14,7 +14,7 @@ edited has a syntax error (a missing comma or brace).
 
 **PUP does not load.** Known: see [PUP](../jobs/pup/README.md).
 
-**I want SMN.** It ships only with the Tetsouo template; the clone script does
+**I want SMN.** It ships only with the author's personal template; the clone script does
 not deploy it for another name.
 
 **How do I update?**

@@ -63,6 +63,7 @@ re-read on 2026-09-25.
 | `shared/utils/messages/data/systems/sortie_messages.lua` | 102 | `SORTIE` - `//gs c sortie` target box, target list, alt orders, GEO escort |
 | `shared/utils/messages/data/systems/status_messages.lua` | 60 | `STATUS` - generic error/warning/success/info, Mote state line, TP banner |
 | `shared/utils/messages/data/systems/system_messages.lua` | 86 | `SYSTEM` - job-load intro box, COR color test |
+| `shared/utils/messages/data/systems/stealth_messages.lua` | 23 | `STEALTH` - `//gs c stealth` (Sneak / Invisible): skipped, covered, no way, asked, wear-off, settings, usage |
 | `shared/utils/messages/data/systems/tempbind_messages.lua` | 28 | `TEMPBIND` - `//gs c tb` temporary keybinds: added, taken, list, help |
 | `shared/utils/messages/data/systems/ui_messages.lua` | 77 | `UI` - HUD toggles, position save, background |
 | `shared/utils/messages/data/systems/warp_messages.lua` | 275 | `WARP` - warp/teleport casting, rings, IPC, equipment lock |
@@ -195,6 +196,7 @@ with chat mode 1 (`message_core.lua:108-110`).
 | `//gs c testcolors`, `debugsubjob`, `checksets`, `info`, `perf`, `debugmidcast`, watchdog, warp, dualbox commands | see [messages.md](messages.md) and the owning system pages | Produce `COMMANDS`, `EQUIPMENT`, `PROFILER`, `MIDCAST`, `WATCHDOG`, `WARP`, `DUALBOX` lines. |
 | `//gs c alts ...`, `//gs c main`, `//gs c setalt` | [dualbox.md](dualbox.md) | `ALTGROUP` lines. |
 | `//gs c sortie ...` (main), `//gs c escort` (GEO alt) | `shared/utils/sortie/sortie_commands.lua`, `GEO_COMMANDS.lua` | `SORTIE` lines. |
+| `//gs c stealth ...` | `shared/utils/stealth/stealth.lua`, `stealth_timers.lua` | `STEALTH` lines. |
 | `//gs c tb ...` | `shared/utils/keybinds/temp_binds.lua` | `TEMPBIND` lines. |
 
 ## Configuration
@@ -363,6 +365,11 @@ their line in the data file; they have no path from any caller (see Known issues
 
 - File: `data/systems/sortie_messages.lua` - 12 templates, all reachable. Added by `7a833d4`. Sender: `formatters/system/message_sortie.lua` (not in the facade). Callers: `shared/utils/sortie/sortie_commands.lua` (`//gs c sortie ...` on the main) and `GEO_COMMANDS.lua` (`//gs c escort` on the GEO alt), both through `pcall(require, ...)`. `separator` has color 160, the others 1.
 - Keys: `separator` (separator); `title` (title); `field` (label, value), `field_spell` (label, value), `field_on` (label), `field_stopped` (label) - chosen by the caller of the local `field(key, label, value)` helper; `list_entry` (name, aliases, indi, summary); `list_orders`; `alt_off` (alt); `alt_action` (alt, action); `unknown_target` (name); `alt_escort` (full_circle, indi, follow).
+
+### `STEALTH`
+
+- File: `data/systems/stealth_messages.lua` - 10 templates, all reachable, all `color = 1`. Added 2026-09-26 (not in the counts above). Sender: `formatters/system/message_stealth.lua` (not in the facade). Callers: `shared/utils/stealth/stealth.lua`, `stealth_timers.lua` (see [stealth.md](stealth.md)).
+- Keys: `skipped_unknown` (buff); `skipped` (buff, left); `covered` (buff, name); `no_way` (buff); `asked` (buff); `wearing_off` (buff, left); `wearing_off_other` (name, buff, left); `setting` / `setting_unsaved` (key, value); `usage`.
 
 ### `TEMPBIND`
 

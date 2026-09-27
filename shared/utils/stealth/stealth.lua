@@ -11,7 +11,8 @@
 ---
 --- A Scholar able to cover the whole group with Accession does it at once
 --- for everyone and tells the others (stealth_aoe.lua); a box that cannot
---- waits one second for such a claim before going its own way.
+--- waits half a second for such a claim (none when no other box has
+--- Scholar) before going its own way.
 --- Otherwise each box handles itself: the key sends `stealth <kind> local`
 --- to the other boxes, and each picks its own best way (stealth_methods.lua):
 ---   Spectral Jig > spell on itself > ninjutsu > Silent Oil / Prism Powder >

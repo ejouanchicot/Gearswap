@@ -14,7 +14,7 @@ Medicine) and Alt+Numpad7-9 (dual-box alts). See the
 | Job | Page | Notes |
 |---|---|---|
 | BLM | [blm/states.md](blm/states.md) | |
-| BLU | [blu/states.md](blu/states.md) | Added 2026-09-26; played by a friend's character (Gabvanstronger overlay) |
+| BLU | [blu/states.md](blu/states.md) | Added 2026-09-26 |
 | BRD | [brd/states.md](brd/states.md) | |
 | BST | [bst/states.md](bst/states.md) | |
 | COR | [cor/states.md](cor/states.md) | |
@@ -25,7 +25,7 @@ Medicine) and Alt+Numpad7-9 (dual-box alts). See the
 | RDM | [rdm/states.md](rdm/states.md) | |
 | RUN | [run/README.md](run/README.md) | Not played by a maintained character |
 | SAM | [sam/states.md](sam/states.md) | Not played by a maintained character |
-| SMN | [smn/states.md](smn/states.md) | Ships only with the Tetsouo template |
+| SMN | [smn/states.md](smn/states.md) | Ships only with the author's personal template |
 | THF | [thf/states.md](thf/states.md) | |
 | WAR | [war/states.md](war/states.md) | |
 | WHM | [whm/states.md](whm/states.md) | Not played by a maintained character |

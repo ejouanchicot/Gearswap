@@ -52,8 +52,8 @@ Abilities already up or on recast are listed in chat instead of being sent.
   [TP bonus](tp-bonus.md).
 - Every mode goes back to its default on each job change, subjob change or
   reload (the weapon is read again from your hands).
-- Tetsouo's own files differ: Hybrid Mode also has `SubtleBlow` and `Hoxne`
-  (Hoxne locks the ammo slot on the Hoxne Ampulla), and his `WAR_CUSTOM.lua`
+- The author's own files differ: Hybrid Mode also has `SubtleBlow` and `Hoxne`
+  (Hoxne locks the ammo slot on the Hoxne Ampulla), and its `WAR_CUSTOM.lua`
   adds a `FullEmpy` On/Off mode on `^numpad8`.
 
 ## Files

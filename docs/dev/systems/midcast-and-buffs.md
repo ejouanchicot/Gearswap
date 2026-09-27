@@ -14,7 +14,7 @@ None of these modules registers a Windower event. `MidcastManager` keeps its deb
 | `shared/utils/set_building/base_set_builder.lua` | 104 | `apply_movement`, `select_idle_base_town`, `is_in_town` |
 | `shared/utils/buffs/self_buff_manager.lua` | 259 | Factory: resolves a list of spells/abilities and queues the missing ones (only BLM uses it) |
 | `shared/utils/smartbuff/subjob_war_buffs.lua` | 74 | Berserk / Aggressor / Warcry collection and casting for DNC and THF subbing /WAR |
-| `shared/utils/scholar/scholar_actions.lua` | 346 | Light/Dark Arts toggles, the `aoe sneak/invi/erase` Accession casts, buff-gated stratagem chains, Addendum: Black casts (BLM, PLD, GEO) |
+| `shared/utils/scholar/scholar_actions.lua` | 366 | Light/Dark Arts toggles, the `aoe sneak/invi/erase` Accession casts, buff-gated stratagem chains, Addendum: Black casts (BLM, PLD, GEO) |
 | `shared/utils/scholar/stratagem_charges.lua` | 104 | Stratagem charge count derived from recast id 231 |
 
 `shared/utils/midcast/midcast_manager.lua.preref.bak` also sits on disk. It is ignored by `.gitignore` (`*.bak`) and nothing loads it.
@@ -176,6 +176,7 @@ Data facts that shape the result today (`_master/sets/brd_sets.lua`, same in `Te
 - `//gs c debugmidcast` is handled in each job's COMMANDS file (16 files: BLM `:313`, BRD `:248`, BST `:190`, COR `:128`, DNC `:121`, DRK `:119`, GEO `:143`, PLD `:150`, PUP `:181`, RDM `:232`, RUN `:139`, SAM `:114`, SMN `:327`, THF `:133`, WAR `:138`, WHM `:122`). Each requires the manager, calls `MidcastManager.toggle_debug()` (`midcast_manager.lua:53-59`), then prints `MessageCommands.show_debugmidcast_toggled(job, _G.MidcastManagerDebugState)`.
 - **The flag lives on `windower._midcast_debug`** and is copied into `_G.MidcastManagerDebugState` every time the module loads (`:30-31`); `enable_debug` / `disable_debug` (`:39-50`) write both. It therefore survives `gs reload`, main job changes and subjob changes, and is reset only by `//lua reload gearswap` (since `11ff91e`). Job routers read the `_G` mirror to gate their own traces (`RDM_MIDCAST.lua:334`, `BRD_MIDCAST.lua:97`, `BLM_MIDCAST.lua:147`, `SMN_MIDCAST.lua:186,190`).
 - Output: header (`:642-647`), mode/type/target steps (`resolve_metadata`), one line per priority checked (P1 prints only its first failing path), then the chosen path and every equipped slot (`equip_with_debug`).
+- Trace log (`//gs c trace on`, independent of `debugmidcast`): `shared/utils/midcast/midcast_trace.lua` writes one `MIDCAST` line per midcast to `<Character>/trace.log`: `begin` (`midcast_manager.lua:622`), then the chosen path and its pieces (`selection`, `:125`), or, when `sets.midcast[skill]` does not exist, `<spell> -> no sets.midcast['<skill>']: Mote's own set (spell name / map) stays` (`no_set`, `midcast_trace.lua:73-79`, called `midcast_manager.lua:637`). That line is not "no gear": MidcastManager adds nothing, and the set Mote picked by spell name or spell map (`sets.midcast.Cure`, `sets.midcast['Banishga']`) stays on.
 
 ### Helpers and presets
 
@@ -268,13 +269,14 @@ It does not check the subjob. Callers: THF `SmartbuffManager.apply_war_buffs()` 
 
 `ScholarActions` (`scholar_actions.lua`):
 
-- `run_chain(steps, on_done, finish_anyway)` (`:204`): sends each step only once the previous one's buff is actually up (poll every `POLL_INTERVAL` 0.5 s, give up after `POLL_GRACE` 6 s per step, `:83`, `:89`), then runs `on_done`. `finish_anyway` decides what a step that never lands means: Klimaform is worth casting without Manifestation, a lone Sneak instead of a party one is not. BLM `klima` uses it (`BLM_COMMANDS.lua:416`).
-- `chain(steps)` (`:38-40`): joins steps with `; wait 2; ` (`STEP_SPACING`, `:21`). A blind Windower chain; kept only as the spacing hint passed to `AbilityHelper.follow_up`, no chain is built with it any more.
+- `buff_up(name)` (`:110-120`, 2026-09-27): Light Arts, Dark Arts, Addendum: White / Black, Accession and Manifestation are read from `windower.ffxi.get_player().buffs` by id (`BUFF_IDS`, `:97-100`: 358, 359, 401, 402, 366, 367, checked against `res/buffs.lua`); any other name falls back to `buffactive`. The chains poll from scheduled functions, where GearSwap's `buffactive` can lag behind a buff just gained: a chain then saw no Light Arts and gave up with "Light Arts never came up" although it was on. Every wait below (`run_steps`, `cast_when_ready`, the skips in `cast_with_stratagems` and `cast_under_black_addendum`) goes through it.
+- `run_chain(steps, on_done, finish_anyway)` (`:224-228`): sends each step only once the previous one's buff is actually up (poll every `POLL_INTERVAL` 0.5 s, give up after `POLL_GRACE` 6 s per step, `:83`, `:89`), then runs `on_done`. `finish_anyway` decides what a step that never lands means: Klimaform is worth casting without Manifestation, a lone Sneak instead of a party one is not. BLM `klima` uses it (`BLM_COMMANDS.lua:416`).
+- `chain(steps)` (`:38-40`): joins steps with `; wait 2; ` (`STEP_SPACING`, `:22`). A blind Windower chain; kept only as the spacing hint passed to `AbilityHelper.follow_up`, no chain is built with it any more.
 - `light_arts()` / `dark_arts()` (`:59-67`, `:72-80`): Addendum already up -> message; Arts up -> Addendum; otherwise Arts. Addendum is tested first because it replaces the Arts buff in `buffactive`.
-- `cast_with_stratagems(spell, aoe_state, needs_addendum)` (`:222-279`, replaces the old `build_accession_chain`): target `<me>` when the state is missing or On, else `<stal>`. With `needs_addendum` and Addendum: White not up, Addendum takes the first charge (without it the cast is refused); Accession takes the next when the target is `<me>` and Accession is not up. A stratagem that cannot be paid shows `warn_no_charge` (`:44-46`) and is dropped. With nothing to wait for the spell goes out at once; otherwise Light Arts (only if neither Light Arts nor Addendum: White is up) and the stratagems run through `run_steps`, then `cast_when_ready` waits until every required buff is up and casts, or warns "`<spell>` cancelled: `<buff>` never came up" at the deadline.
-- `cast_under_black_addendum(spell, target)` (`:294-315`): Dark Arts, then Addendum: Black, then the spell, skipping what is already up, each step through `AbilityHelper.follow_up` (Addendum shares recast 231, so the helper watches the buff). Used for Dispel by BLM (`BLM_COMMANDS.lua:436`) and GEO (`GEO_COMMANDS.lua:385`).
-- `try_aoe_subcommand(word, aoe_state)` (`:337-344`) maps `sneak`, `invi`, `invisible` (use the state) and `erase` (ignores the state, needs Addendum) through `AOE_SPELLS` (`:326-331`).
-- Every new cast bumps `windower._sch_cast_seq` (`:94`, `:205`, `:257`); a pending chain from an older cast (or an older sandbox) sees the mismatch and stops.
+- `cast_with_stratagems(spell, aoe_state, needs_addendum)` (`:242-299`, replaces the old `build_accession_chain`): target `<me>` when the state is missing or On, else `<stal>`. With `needs_addendum` and Addendum: White not up, Addendum takes the first charge (without it the cast is refused); Accession takes the next when the target is `<me>` and Accession is not up. A stratagem that cannot be paid shows `warn_no_charge` (`:44-46`) and is dropped. With nothing to wait for the spell goes out at once; otherwise Light Arts (only if neither Light Arts nor Addendum: White is up) and the stratagems run through `run_steps`, then `cast_when_ready` waits until every required buff is up and casts, or warns "`<spell>` cancelled: `<buff>` never came up" at the deadline.
+- `cast_under_black_addendum(spell, target)` (`:314-335`): Dark Arts, then Addendum: Black, then the spell, skipping what is already up, each step through `AbilityHelper.follow_up` (Addendum shares recast 231, so the helper watches the buff). Used for Dispel by BLM (`BLM_COMMANDS.lua:436`) and GEO (`GEO_COMMANDS.lua:385`).
+- `try_aoe_subcommand(word, aoe_state)` (`:357-364`) maps `sneak`, `invi`, `invisible` (use the state) and `erase` (ignores the state, needs Addendum) through `AOE_SPELLS` (`:346-351`). `//gs c stealth` also calls `cast_with_stratagems(spell, nil)` for a Scholar covering the box group ([stealth.md](stealth.md)).
+- Every new cast bumps `windower._sch_cast_seq` (`:94`, `:225`, `:277`); a pending chain from an older cast (or an older sandbox) sees the mismatch and stops.
 - Messages go through `MessageFormatter.show_stratagem_no_charges` / `show_arts_already_active` / `show_warning`; the first two forward to the BLM message templates, so PLD and GEO print them with the BLM templates and a dynamic job tag.
 
 ## Commands
@@ -338,7 +340,7 @@ No config file is read by these modules. Inputs are:
 - **New target key**: write a `target_func` returning the key, then define `base[key]` (P5) or `base[type][key]` / `base[type][key][mode]` (P2).
 - **New song set**: name it exactly like the spell, the tier-less spell, the family word, or the first word; for a multi-word name without spaces use the name with every space removed.
 - **New self-buff list for another job**: `SelfBuffManager.create({buffs = {...}})` in the job's logic folder and a `buff` command that calls `buff_self()`.
-- **New /SCH cast**: add an entry to `AOE_SPELLS` (`scholar_actions.lua:326-331`) with `toggle` and `addendum` flags, or call `cast_with_stratagems` / `cast_under_black_addendum` / `run_chain` from the job command.
+- **New /SCH cast**: add an entry to `AOE_SPELLS` (`scholar_actions.lua:346-351`) with `toggle` and `addendum` flags, or call `cast_with_stratagems` / `cast_under_black_addendum` / `run_chain` from the job command.
 
 ## Known issues
 
@@ -356,7 +358,7 @@ Open:
 - BST and DRK repeat `apply_movement` inline (`shared/jobs/bst/functions/logic/set_builder.lua:114-115`, `shared/jobs/drk/functions/logic/set_builder.lua:138-139`).
 - RDM's subjob-magic fallback is gated on `spell.type == 'Magic'` and never runs (`shared/jobs/rdm/functions/RDM_MIDCAST.lua:347`).
 - DRK passes the Enhancing database's `get_spell_family` as `database_func` for Enfeebling Magic (`shared/jobs/drk/functions/DRK_MIDCAST.lua:107`).
-- The `AOE_SPELLS` comment says `CommonCommands` answers `sneak`/`invi`/`erase` before the job block and sends them to the partner; since `b55f8e9` alt keys are Mote's last lookup, so that reason no longer holds (`scholar_actions.lua:317-319`).
+- The `AOE_SPELLS` comment says `CommonCommands` answers `sneak`/`invi`/`erase` before the job block and sends them to the partner; since `b55f8e9` alt keys are Mote's last lookup, so that reason no longer holds (`scholar_actions.lua:337-339`).
 
 Fixed:
 

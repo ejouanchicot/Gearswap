@@ -9,8 +9,7 @@ The HUD (`//gs c ui`) shows each mode's current value; this page says what each
 value does. `#numpad0` (Auto Medicine) and Alt+Numpad7-9 (alts) are common to
 every job, see [keybinds](../../guides/keybinds.md).
 
-This page describes the generic template (`_master/config/blu/`). Gabvanstronger's
-own setup is at the end.
+This page describes the generic template (`_master/config/blu/`).
 
 ## Keys
 
@@ -95,27 +94,6 @@ BLU has no command of its own. The common commands work (`//gs c reload`,
 - Weaponskill TP bonus: `BLU_TP_CONFIG.lua` (Moonshade Earring +250).
 - Every mode goes back to its default on each job change, subjob change or reload.
 
-## Gabvanstronger
-
-His overlay (`_master/Gabvanstronger/`) keeps his own setup:
-
-- Modes: Offense Mode adds `Capped` (no set of its own); WS Mode is Normal, Capped,
-  Acc. Main Weapon: **Tizona**, Naegling, Maxentius, Sequence, Extinction, Free. Sub
-  Weapon: **Sakpata's Sword**, Zantetsuken, Thibron, Tanmogayi +1, Nihility, Free.
-  Weapons are plain items (no set needed).
-- Mode keys: `` ^` `` Main Weapon, `` ^~` `` Sub Weapon, `f9` Offense Mode, `@f9` WS Mode,
-  `^f11` Casting Mode, `^f12` Idle Mode; `~f9` Combat Mode.
-- His spell and ability keys: `` !` `` Temporal Shift, `!1`-`!6` Erratic Flutter,
-  Battery Charge, Cocoon, Diamondhide, Occultation, Aquaveil; `@q` Sheep Song, `@w`
-  Dream Flower, `@a` Actinic Burst, `@f` Fantod, `@x` Osmosis, `@v` Entomb; `@1`-`@5`
-  Chain Affinity, Burst Affinity, Efflux, Diffusion, Unbridled Learning.
-- Weaponskills by weapon: with a sword, `numpad1` Requiescat, `numpad3` Expiacion,
-  `numpad7` Chant du Cygne, `numpad9` Savage Blade; with a club, `numpad1` True
-  Strike, `numpad3` Black Halo, `numpad9` Judgment.
-- Own modes (`BLU_CUSTOM.lua`): Ranged Weapon (`` @` ``: Normal / Pull, Pull equips
-  `sets.Pull` and locks range and ammo) and CP Cape (no key:
-  `//gs c cyclestate CP`).
-- Both automatic abilities are on. Lockstyle 2, macro book 8 page 1.
 
 ## Files
 

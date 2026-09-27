@@ -6,7 +6,7 @@ every job shares. Each job's own commands are on its page:
 [jobs](../jobs/README.md).
 
 `//gs c help` prints the built-in help and `//gs c commands` the built-in list
-(it does not show `tb`, `trace` and `sortie`).
+(it does not show `tb`, `trace`, `sortie` and `stealth`).
 
 When two commands share a name, the order is: warp shortcuts and the commands
 below, then the job's commands, then Mote-Include's (`cycle`, `set`,
@@ -50,7 +50,7 @@ below, then the job's commands, then Mote-Include's (`cycle`, `set`,
 | `reload` | Reload the job file |
 | `ls` (`lockstyle`) | Apply the lockstyle again; also sent to your other boxes |
 | `dressup` | Stop / resume unloading DressUp around the lockstyle (kept for next time) |
-| `craft [variant]`, `craft off` | Crafting set from `sets/bonecraft_sets.lua` (only the Tetsouo template has one) |
+| `craft [variant]`, `craft off` | Crafting set from `sets/bonecraft_sets.lua` (only the author's personal template has one) |
 | `fish` (`fishing`) | Fishing set from `sets/fishing_sets.lua` (same) |
 | `uncraft` | Leave the craft / fishing set |
 
@@ -99,9 +99,22 @@ main bags and 3-6 and 8 the overflow (wardrobe 7 is never touched).
 | `alt <name> [args]` | Run an alt command even when a local command has the same name |
 | `<name>` | An alt command, when no local command has that name |
 | `altsync`, `altbuffs`, `altdebug` | Alt buff reports: ask again / show / trace |
-| `sortie ...` | The author's Sortie orders, written for his own pair of characters |
+| `sortie ...` | The author's Sortie orders, written for his own pair of characters. On PLD it also sets Phalanx SIRD: Off for `aminon` / `aminontest`, On for every other target |
 
 See the [dual-box guide](dualbox.md).
+
+## Sneak and Invisible
+
+| Command | Effect |
+|---|---|
+| `stealth sneak` / `invi` / `both` | Sneak / Invisible on you and on every other character of the group, each with its best way (Alt+Z / Alt+X) |
+| `stealth sneak self` (`invi self`, `both self`) | You only, at once |
+| `stealth check` | What the key would do now, and why; nothing is cast |
+| `stealth status` | Settings and time left on each character |
+| `stealth refresh <s>` / `alert <s>` / `delay <s>` | Recast below `<s>` seconds left / warn `<s>` seconds before it wears off / pause after each action |
+| `stealth overwrite on` / `off`, `stealth alerts on` / `off` | Cast again whatever time is left / wear-off warnings |
+
+See [Sneak and Invisible](stealth.md).
 
 ## Temporary keys
 

@@ -58,7 +58,8 @@ A nuke, -ra or Aspir you cast from a macro steps down the same way: if the tier 
 ## Notes
 
 - All modes go back to their default on every job change, subjob change and reload.
-- Kaories's overlay (`_master/Kaories/config/geo/`) uses the same modes and keys.
+- The author's alt overlay uses the same modes and keys, with one
+  different default: `CombatMode` starts **On** there (weapons locked, TP kept).
 
 ## Files
 

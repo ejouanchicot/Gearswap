@@ -36,7 +36,7 @@ Verified on 2026-09-25:
 |-------|-----------------|---------|
 | Shared modules (`shared/jobs/smn/`, 14 files) | repo | yes |
 | Blood Pact data (`shared/data/magic/SMN_SPELL_DATABASE.lua` + 15 `summoning/*.lua` files) | repo | yes |
-| Reference notes (`docs/SMN_BLOOD_PACTS_REFERENCE.md`, `docs/CLAUDE_CODE_PROMPT_SMN.md`) | repo | yes |
+| Reference notes (`docs/SMN_BLOOD_PACTS_REFERENCE.md`) | repo | yes |
 | `character_db.lua:39` (Tetsouo roster), `:77` (all jobs) | repo | yes |
 | Entry `Tetsouo_SMN.lua` | `Tetsouo/` (live) and `_master/Tetsouo/entry/` (overlay), identical | overlay yes (`da68606`) |
 | Configs `SMN_KEYBINDS`, `SMN_LOCKSTYLE`, `SMN_MACROBOOK`, `SMN_STATES`, `SMN_CUSTOM` | `Tetsouo/config/smn/` and `_master/Tetsouo/config/smn/`, identical | overlay yes |

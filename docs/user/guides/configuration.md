@@ -19,6 +19,7 @@ see [installation](../getting-started/installation.md)). After an edit,
 | `DUALBOX_CONFIG.lua` | Role, partner, group ([dual-box](dualbox.md)) |
 | `REGION_CONFIG.lua` | Your region (US / EU / JP): some chat colour codes differ by region |
 | `WARDROBE_CONFIG.lua` | Optional: bags used by `//gs c wo` |
+| `STEALTH_CONFIG.lua` | Sneak / Invisible settings (`refresh_below` 180 s, `alert_before` 60 s, `overwrite`, `alerts`, `delay` 2.5 s), also written by `//gs c stealth refresh / alert / ...` and kept on a re-clone ([Sneak and Invisible](stealth.md)) |
 | `alt/` | Alt commands, main character only ([dual-box](dualbox.md)) |
 | `<job>/` | One folder per job, below |
 
@@ -98,7 +99,7 @@ Mog Sack, and puts the surplus back. The lists are per character and per job,
 and only the author's characters ship with them: **create
 `<YourName>/config/<job>/<JOB>_REFILL.lua` yourself**. Without it, `rf` uses a
 short built-in list (Panacea, Antacid, Holy Water, Remedy, Prism Powder, Silent
-Oil, 12 each). Format (model: `_master/Tetsouo/config/war/WAR_REFILL.lua`):
+Oil, 12 each). Format (the author's `WAR_REFILL.lua`, in its overlay under `_master/`, is a model):
 
 ```lua
 local M = {}
@@ -114,7 +115,7 @@ return M
 ```
 
 Consumables named only in another job's list are put back too. While a craft
-set is on, `config/craft/CRAFT_REFILL.lua` is used instead (Tetsouo template
+set is on, `config/craft/CRAFT_REFILL.lua` is used instead (the author's personal template
 only).
 
 ## Wardrobes (`WARDROBE_CONFIG.lua`, optional)
@@ -133,8 +134,7 @@ return {
 }
 ```
 
-The author's files are in `_master/Tetsouo/config_global/WARDROBE_CONFIG.lua`
-and `_master/Kaories/config_global/WARDROBE_CONFIG.lua`.
+The author's own files are in its overlays under `_master/` (`config_global/WARDROBE_CONFIG.lua`).
 
 ## Sets (`<YourName>/sets/`)
 

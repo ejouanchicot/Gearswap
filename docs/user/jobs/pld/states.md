@@ -13,7 +13,7 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 |---|---|---|---|
 | `^numpad9` | `HybridMode` | **PDT**, MDT, Sortie. Under /SCH: DPS, **Tanking**, Hoxne | Your stance (see below) |
 | `^numpad1` | `MainWeapon` | **Excalibur**, Burtgang, KC, BurtgangKC, Naegling, Shining, Malevo | Weapon set to wield. The list shrinks in Sortie and under /SCH (see below). Hidden under /SCH Tanking |
-| `^numpad2` | `PhalanxSIRD` | **Off**, On | `On` = Phalanx always uses `sets.midcast.SIRDPhalanx` (spell interruption down) instead of potency. Not bound under /SCH, where it is held On |
+| `^numpad2` | `PhalanxSIRD` | **Off**, On. Under /SCH: Off, **On** | `On` = Phalanx always uses `sets.midcast.SIRDPhalanx` (spell interruption down) instead of potency. Under /SCH the key is `^numpad3` (`^numpad2` is Regen there) |
 | `^numpad5` | `WS1` | depends on the weapon | Weaponskill of `//gs c ws1` (or `ws`) |
 | `^numpad6` | `WS2` | depends on the weapon | Weaponskill of `//gs c ws2` |
 | `^numpad3` (/RUN) | `RuneMode` | **Ignis**, Gelus, Flabra, Tellus, Sulpor, Unda, Lux, Tenebrae | Rune used by `//gs c rune` |
@@ -30,9 +30,12 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 | Tanking (/SCH) | `sets.engaged.MDT` | `sets.idle.MDT` | Always Burtgang + Aegis, whatever `MainWeapon` says |
 | Hoxne (/SCH) | `sets.engaged.Hoxne` | `sets.idle.MDT` | Swings `MainWeapon`, wears the Hoxne Ampulla and locks the ammo slot |
 
-Under /SCH the weapon list is Naegling and Excalibur (both with Duban), and the weapon
-opens on Naegling. Going back to PDT or MDT restores the full lists and turns
-`PhalanxSIRD` Off.
+Under /SCH the weapon list is Naegling and Excalibur (both with Duban), the weapon
+opens on Naegling and `PhalanxSIRD` starts On (Ctrl+Numpad3 turns it Off). Going back
+to PDT or MDT restores the full lists and turns `PhalanxSIRD` Off.
+
+`//gs c sortie <target>` also sets `PhalanxSIRD`: Off for `aminon` and `aminontest`
+(Phalanx potency matters more there), On for every other target.
 
 The weaponskill slots follow the weapon in hand (`PLD_WS_CONFIG.lua`): Excalibur =
 Savage Blade / Knights of Round, Burtgang = Savage Blade / Atonement, Naegling =
@@ -43,7 +46,7 @@ Savage Blade / Chant du Cygne.
 | Mode | Values | Use |
 |---|---|---|
 | `Regen` (/SCH) | **Off**, On | Ctrl+Numpad2 under /SCH (the key is Phalanx SIRD on the other subjobs). `On` lays `sets.idleRegen` over your idle set. A macro can also set it: `//gs c set Regen On` / `Off`. Forced Off outside /SCH |
-| `SneakInviAOE` | **On**, Off | Whether `aoe sneak` / `aoe invi` use Accession for the party. Held On under /SCH |
+| `SneakInviAOE` | **On**, Off | Whether `aoe sneak` / `aoe invi` use Accession for the party, and whether `//gs c stealth` may cover your group with Accession ([Sneak and Invisible](../../guides/stealth.md)). Held On under /SCH |
 | `FastCast` | 0 to 80 by 10, default **80** | Your Fast Cast %, used only by the midcast watchdog |
 
 ## Commands
@@ -59,7 +62,7 @@ Savage Blade / Chant du Cygne.
 ## Notes
 
 - All modes go back to their default on every job change, subjob change and reload.
-- The Kaories overlay (`_master/Kaories/config/pld/`) keeps PDT/MDT/Sortie only and has
+- The author's alt overlay keeps PDT/MDT/Sortie only and has
   no Excalibur.
 
 ## Files

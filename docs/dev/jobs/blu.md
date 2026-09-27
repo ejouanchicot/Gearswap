@@ -81,7 +81,7 @@ HUD waits for `state.MainWeapon`), `clone_character.py:256` and
 
 Live copies (gitignored): none in the working tree. `Tetsouo/` has no BLU file
 and `character_db.lua:38` does not list BLU for Tetsouo; `Gabvanstronger/` is
-frozen until its migration is delivered (see `docs/dev/gab-blody/ROADMAP.md`).
+frozen until its migration is delivered.
 
 ## How it works
 
@@ -484,8 +484,7 @@ G also has `sets['Pull']` (45) and `sets.CP` (47), used by its
 ## Gabvanstronger overlay
 
 `_master/Gabvanstronger/` holds his BLU converted from his own `BLU.lua` and
-BindManager files (`f687ded`; fixes listed in
-`docs/dev/gab-blody/CORRECTIONS.md`). The entry is the template, renamed by
+BindManager files (`f687ded`). The entry is the template, renamed by
 the clone script.
 
 - **States** (`BLU_STATES.lua:39-55`): OffenseMode adds `Capped` (Normal,

@@ -1,6 +1,6 @@
 # Documentation
 
-17 jobs (PUP does not load yet; SMN ships only with the Tetsouo template).
+17 jobs (PUP does not load yet; SMN ships only with the author's personal template).
 Pages checked against the code on 2026-09-25.
 
 Start with the [project README](../README.md) for the overview. The player
@@ -23,6 +23,8 @@ how the code works.
   `<YourName>/config/` does
 - [Dual-box](user/guides/dualbox.md) - main and alt, alt commands, box group
   orders, alt window
+- [Sneak and Invisible](user/guides/stealth.md) - Alt+Z / Alt+X on you and
+  your other characters, timers and wear-off warnings (`//gs c stealth`)
 - [FAQ](user/guides/faq.md) - common problems
 
 ## Features
@@ -59,7 +61,7 @@ TP bonus gear, for every job: [tp-bonus.md](user/jobs/war/tp-bonus.md).
 ├── sets/<job>_sets.lua      your gear
 └── config/
     ├── COMMON_KEYBINDS.lua, UI_CONFIG.lua, LOCKSTYLE_CONFIG.lua,
-    │   DUALBOX_CONFIG.lua, REGION_CONFIG.lua, ...
+    │   DUALBOX_CONFIG.lua, REGION_CONFIG.lua, STEALTH_CONFIG.lua, ...
     ├── alt/                 alt commands (main character only)
     └── <job>/               KEYBINDS, STATES, CUSTOM, LOCKSTYLE,
                              MACROBOOK, TP_CONFIG, ...

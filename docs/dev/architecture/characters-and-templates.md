@@ -148,7 +148,7 @@ Data (`character_db.lua:34-60`):
 
 | Table | Content |
 |---|---|
-| `CHARACTERS` | `Tetsouo = { jobs = {BLM, BRD, BST, COR, DNC, PLD, SMN, THF, WAR}, role = 'main' }`, `Kaories = { jobs = {RDM, COR, GEO, PLD}, role = 'alt' }`, and since 2026-09-25 Gab's boxes: `Gabvanstronger = { jobs = {RDM, BRD, COR, GEO, SAM, THF}, role = 'main' }`, `Blodykiller = { jobs = {BLM, BRD, COR, GEO, THF, WHM}, role = 'alt' }` (only the jobs the system supports; see `docs/dev/gab-blody/ROADMAP.md`) |
+| `CHARACTERS` | `Tetsouo = { jobs = {BLM, BRD, BST, COR, DNC, PLD, SMN, THF, WAR}, role = 'main' }`, `Kaories = { jobs = {RDM, COR, GEO, PLD}, role = 'alt' }`, and since 2026-09-25 Gab's boxes: `Gabvanstronger = { jobs = {RDM, BRD, COR, GEO, SAM, THF}, role = 'main' }`, `Blodykiller = { jobs = {BLM, BRD, COR, GEO, THF, WHM}, role = 'alt' }` (only the jobs the system supports) |
 | `ARCHIVE_JOBS` | DRK, PUP, RUN: no active owner. Their templates remain under `_master/` |
 | `MASTER` | `sets_dir = '_master/sets'`, `config_dir = '_master/config'` |
 | `ALL_JOBS` | 16 codes including SMN |

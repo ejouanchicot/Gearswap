@@ -26,7 +26,7 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 | Ctrl+Numpad8 `^numpad8` | `CombatMode` | **Off**, On | On equips Bunzi's Rod, Ammurapi Shield, Sroda Tathlum and locks main/sub/range/ammo. Off unlocks them (unless a craft set is active) |
 | Ctrl+Numpad0 `^numpad0` | `MagicBurstMode` | Off, **On**, Acc | Elemental midcast: Off = normal nuke set, On = Magic Burst set, Acc = Magic Burst accuracy set |
 | Apps+Numpad7 `#numpad7` | `DeathMode` | **Off**, On | Shown in the HUD; no code reads it today |
-| Apps+Numpad8 `#numpad8` | `SneakInviAOE` | **On**, Off | `//gs c aoe sneak/invi`: On = Accession and cast on yourself (whole party), Off = single target |
+| Apps+Numpad8 `#numpad8` | `SneakInviAOE` | **On**, Off | `//gs c aoe sneak/invi`: On = Accession and cast on yourself (whole party), Off = single target. Off also keeps `//gs c stealth` from spending a stratagem on your group ([Sneak and Invisible](../../guides/stealth.md)) |
 | Apps+Numpad9 `#numpad9` | `KlimaformAOE` | **On**, Off | `//gs c klima`: On = Manifestation first (if a stratagem charge is left) |
 
 ## Other modes (no key)

@@ -39,7 +39,7 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 ## Notes
 
 - AutoMove runs on BST like on every job: `Moving` adds `sets.MoveSpeed` while you move.
-- Tetsouo's own folder starts `Ecosystem` on Amorph.
+- The author's own files start `Ecosystem` on Amorph.
 
 ## Files
 

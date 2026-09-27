@@ -275,8 +275,10 @@ at the deadline. Used by GEO's `entrust` (`GEO_COMMANDS.lua:268-269`), where an
 Indi- aimed at an ally does nothing without Entrust and Entrust carries a five
 minute recast, and by BRD's Pianissimo (`BRD_PRECAST.lua:116`): BRD has cancelled the song, but a song aimed at another player is refused without Pianissimo, so re-sending it anyway gains nothing, and the `on_abort` callback lowers `_G.pianissimo_in_progress`.
 `ScholarActions.run_chain` / `cast_with_stratagems`
-(`shared/utils/scholar/scholar_actions.lua:204-279`) implement the same idea for
-several buffs at once.
+(`shared/utils/scholar/scholar_actions.lua:224-299`) implement the same idea for
+several buffs at once; they read the Arts, Addendum, Accession and Manifestation
+buffs from `windower.ffxi.get_player().buffs` (`buff_up`, `:110-120`), since
+`buffactive` can lag in a scheduled poll (see [midcast-and-buffs.md](midcast-and-buffs.md)).
 
 Choosing between them is the whole decision at a new call site: **did the
 caller already cancel the player's action?** If yes, `follow_up`. If no,
@@ -301,7 +303,7 @@ a `gs reload` an orphaned poll would otherwise still believe it is current.
 | `SAM_PRECAST.lua:110` | Third Eye (`follow_up`) | before Third Eye-gated actions |
 | `BRD_PRECAST.lua:116` | Pianissimo (`follow_up_or_abort`) | a song aimed at another party member |
 | `GEO_COMMANDS.lua:268` | Entrust (`follow_up_or_abort`) | `//gs c entrust` |
-| `scholar_actions.lua:306-313` | Dark Arts, Addendum: Black (`follow_up`) | `cast_under_black_addendum`, e.g. Dispel on BLM/GEO |
+| `scholar_actions.lua:314-335` | Dark Arts, Addendum: Black (`follow_up`) | `cast_under_black_addendum`, e.g. Dispel on BLM/GEO |
 
 `try_ability` and `try_ability_smart` set `eventArgs.handled` but not
 `eventArgs.cancel`, so the job's `job_precast` keeps running after them and Mote

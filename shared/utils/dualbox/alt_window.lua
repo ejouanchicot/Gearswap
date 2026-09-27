@@ -162,7 +162,7 @@ local function presence(name)
     return {{'online', GREEN}}, zone and {{zone.en, WHITE}} or DASH
 end
 
---- Time left on Sneak and Invisible (//gs c stealth timers): yellow under
+--- Time left on Sneak and Invisible (stealth_timers.lua): yellow under
 --- a minute, "-" when not up or not known.
 local function stealth_lines(lines, name)
     local ok, Timers = pcall(require, 'shared/utils/stealth/stealth_timers')

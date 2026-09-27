@@ -20,6 +20,7 @@ keybind HUD (`//gs c ui`) lists the keys of the current job.
 | `#numpad1`-`#numpad9` | Extra modes on some jobs (Apps+Numpad) |
 | `#numpad0` | Auto Medicine on/off (common key) |
 | `!numpad7`, `!numpad8`, `!numpad9` | Alts follow / automation on-off / mirror (common keys, see [dual-box](dualbox.md)) |
+| `!z`, `!x` | Sneak / Invisible on you and your other characters (common keys, see [Sneak and Invisible](stealth.md)) |
 | F9-F12 with modifiers | Mote-Include's default keys (F9 Offense mode, Ctrl+F9 Hybrid mode, F12 gear refresh, Ctrl+F12 Idle mode...) |
 | Ctrl+F1-F8, Alt+F1-F8 | Free for `//gs c tb` |
 
@@ -31,7 +32,7 @@ it; Ctrl+Numpad1 / 2 are the weapons when the job has weapon modes;
 Ctrl+Numpad3 is the job's most used mode. The bare keypad is never bound, so
 the game and other addons keep it.
 
-**Do not put a job key on `#numpad0` or `!numpad7-9`**: the job key wins and
+**Do not put a job key on `#numpad0`, `!numpad7-9`, `!z` or `!x`**: the job key wins and
 the common key disappears on that job.
 
 ## The file format
@@ -87,10 +88,11 @@ used twice prints a `<JOB> keybinds: ...` line in chat. Edit, then
 ## Common keys
 
 `COMMON_KEYBINDS.lua` uses the same entry format, in `CommonKeybinds.binds`.
-The template ships the four keys of the layout above and commented examples:
+The template ships the six keys of the layout above (`#numpad0`, `!numpad7-9`,
+`!z`, `!x`) and commented examples:
 
 ```lua
-{ key = "!numpad4", command = "alts follow Tetsouo", desc = "Alts follow Tetsouo" },
+{ key = "!numpad4", command = "alts follow <Main>", desc = "Alts follow <Main>" },
 { key = "!numpad6", command = "//sm mirror", desc = "Mirror" },
 { key = "!numpad3", command = "/p Ready!", desc = "Party: ready" },
 ```

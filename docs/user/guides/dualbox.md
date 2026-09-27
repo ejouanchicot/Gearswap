@@ -11,7 +11,8 @@ Two characters on the same PC, both running this setup, one **main** and one
 - **Box group orders**: `//gs c alts ...` sends follow / automation / mirror
   orders, or any console command, to every other character of the group.
 - **Role swap**: `//gs c main` makes the current character the main.
-- **Alt window** on the main: each alt's job and whether it is in your party.
+- **Alt window** on the main: each alt's job and whether it is in your party,
+  and the time left on its Sneak and Invisible.
 - `//gs c rf`, `//gs c ls` and the warp `...all` commands also run on the
   other GearSwap instances of the PC.
 
@@ -92,13 +93,17 @@ delete that file or swap again.
 ## The alt window
 
 Shown on the main only. For each alt: its job (the last one it reported),
-whether it is in your party (and its zone when it differs), and its
-Auto / Follow / Mirror state (`?` until known).
+whether it is in your party (and its zone when it differs), the time left on
+its Sneak and Invisible (yellow under a minute, `-` when not up or not known,
+see [Sneak and Invisible](stealth.md)), and its Auto / Follow / Mirror state
+(`?` until known).
 
 That state is the real one when the automation addon carries the
 `lib/StateReport.lua` addition (a local change, to put back after an addon
 update: the file plus one `require` line at the end of the addon's main
-file). Every box then reports each change itself, so an order typed by hand
+file). A copy of that file, with its own README, is kept in this repository
+under `scripts/addon_patches/` (the automation addon's folder there). Every
+box then reports each change itself, so an order typed by hand
 (`//sm on`, `//sm follow ...`), a macro or the desktop program shows too.
 Without it, the window shows the last order sent from this box.
 With it, a mirror in progress also shows under Mirror: each box's step
@@ -107,7 +112,8 @@ on the ones that replay) and the NPC, then the result per character for a
 few seconds (`OK` in green once completed).
 The addition also hides the addon's own boxes (status, Mirroring Actions,
 Mirroring Results): `HIDE_ADDON_BOXES = false` in `lib/StateReport.lua`
-brings them back.
+brings them back. It reads the character's name once and keeps it (read
+again at login and logout) instead of asking the game on every frame.
 While the window is on screen, those orders print nothing in chat.
 Drag it with the mouse; the position is saved a few seconds later.
 `//gs c alts window` shows or hides it.
@@ -118,7 +124,7 @@ Type a short command on the MAIN and the ALT performs it, on whatever you have
 selected. With a RDM alt, `//gs c haste` becomes one line, sent immediately:
 
 ```
-send Kaories input /ma "Haste II" <laststid>
+send <Alt> input /ma "Haste II" <laststid>
 ```
 
 The `send` addon rewrites `<...id>` into a numeric mob id **on your client**

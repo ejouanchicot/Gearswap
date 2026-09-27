@@ -15,7 +15,7 @@
 --- The box that qualifies announces it (`stealth claim <kind> <name>` to the
 --- others) and casts at once, unless a claim from another box is already
 --- in. The key's own box claims before relaying the key, so the others
---- see its claim first and stand back. A box that cannot cover waits one
+--- see its claim first and stand back. A box that cannot cover waits half a
 --- second for a claim, then goes its own way (stealth.lua). If two claims
 --- ever cross, the first name in alphabetical order counts as the caster.
 ---

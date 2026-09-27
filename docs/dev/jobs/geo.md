@@ -65,7 +65,7 @@ nothing, the function name is cited instead.
 | `shared/data/magic/geomancy/geomancy_indi.lua`, `geomancy_geo.lua` | 349, 364 | 30 Indi- / 30 Geo- entries (description, element) read by `message_geo` at load |
 | `shared/data/magic/GEO_SPELL_DATABASE.lua` | 191 | Read by `data_loader` and the spell message handler (messages only) |
 | `shared/data/job_abilities/GEO_JA_DATABASE.lua` | 13 | `JA_DATABASE_FACTORY.create('GEO')` for ability messages |
-| `shared/utils/scholar/scholar_actions.lua` | 346 | `aoe` Accession chains (shared with BLM, PLD) |
+| `shared/utils/scholar/scholar_actions.lua` | 366 | `aoe` Accession chains (shared with BLM, PLD and `//gs c stealth`); buffs read from `get_player().buffs` (`buff_up`) |
 
 Live copies (gitignored): `Kaories/Kaories_GEO.lua` and `Kaories/config/geo/*`
 are identical to the overlay (plus the live-only `GEO_CUSTOM.lua`).
@@ -450,7 +450,7 @@ Off unless `<Character>/config/AUTO_ABILITIES.lua` turns them on (template
 - Initial macrobook/lockstyle depend on `KeybindManager`'s `show_intro`
   requiring the wrappers (`keybind_manager.lua` `show_intro`).
 - `lightarts`/`darkarts` duplicate `ScholarActions.light_arts`/`dark_arts`
-  (`GEO_COMMANDS.lua:337-362`, `scholar_actions.lua:59-84`).
+  (`GEO_COMMANDS.lua:337-362`, `scholar_actions.lua:59-80`).
 - Template/overlay `sets.Adoulin` is a 2-slot set used as the full idle base in
   Adoulin (`_master/sets/geo_sets.lua:431`).
 - `_master/Kaories/config/geo/` has no `GEO_CUSTOM.lua`: a re-clone of Kaories

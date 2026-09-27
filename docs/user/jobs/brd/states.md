@@ -60,7 +60,7 @@ Defined in `BRD_SONG_CONFIG.lua` (edit it to change a pack):
 - A song aimed at another player gets Pianissimo automatically.
 - The HUD shows your five current songs (`BRDSong1`-`5`, display only).
 - `FastCast` (default 80, no key) is your Fast Cast %, used by the midcast watchdog (`//gs c cycle FastCast`, or its default in `BRD_STATES.lua`).
-- Tetsouo's own folder changes the defaults: SongMode Madrigal, VictoryMarch Etude,
+- The author's own files change the defaults: SongMode Madrigal, VictoryMarch Etude,
   MainWeapon list Mpu Gandring / Naegling, SubWeapon list Kraken / Centovente / Genmei
   (default Kraken).
 

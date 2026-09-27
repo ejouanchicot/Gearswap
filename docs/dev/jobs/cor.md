@@ -185,19 +185,19 @@ sequenceDiagram
     participant MF as RollMessages
     S->>L: action category 6, actor = player
     L->>L: COR main, res type CorsairRoll, value 1-12
-    L->>RT: on_roll_cast(name, value)
+    L->>RT: on_roll_cast(name, value, target_ids)
     RT->>RT: drop repeats within 0.5 s
     RT->>RT: is_new_roll = not (listed in cor_active_rolls and buff up)
     alt value 12
         RT->>MF: show_roll_bust (roll removed, Crooked spent if new)
     else
-        RT->>RT: count members in 8 / 16 yalms, record cor_last_roll
+        RT->>RT: count members reached (packet targets), record cor_last_roll
         RT->>RT: crooked_applies, compute_bonus, track_active_roll (max 2)
         RT->>MF: show_roll_result
     end
 ```
 
-- Listener: `PartyTracker.init_roll_listener()` (`party_tracker.lua:58-99`),
+- Listener: `PartyTracker.init_roll_listener()` (`party_tracker.lua:58-109`),
   one `raw_register_event('action')` stored in `_G.cor_action_event_id`.
   Since 2026-09-25 a category-6 action counts as a roll only when
   `res.job_abilities[act.param].type == 'CorsairRoll'` (Double-Up arrives
@@ -205,7 +205,11 @@ sequenceDiagram
   the Fold exclusion (195) are gone: they let a Curing Waltz or a Quick Draw
   be reported as a roll. Not yet tested in game (a roll plus a Waltz or a
   Quick Draw: only the roll should be reported).
-- `RollTracker.on_roll_cast` (`roll_tracker.lua:297-346`). The Double-Up test
+- Since 2026-09-27 the listener also builds `target_ids`, the set of every
+  `act.targets[i].id` of the roll's action packet (`party_tracker.lua:92-97`),
+  and passes it to `RollTracker.on_roll_cast(roll_name, roll_value, target_ids)`
+  (`:100`), which hands it to `count_party_members_with_buff` (`roll_tracker.lua:379`).
+- `RollTracker.on_roll_cast` (`roll_tracker.lua:352`). The Double-Up test
   `roll_is_active` (142-149) needs both the entry in `_G.cor_active_rolls` and
   `buffactive[roll]`; the comment (130-141) records why (a roll cannot be
   re-cast while it is up).
@@ -227,8 +231,15 @@ sequenceDiagram
   `_G.AltJobState.job` (the dual-box partner), then the packet cache (main job
   only). `validate_party_cache` (480) clears the cache on a zone or
   party-size change and drops departed or 600 s-old entries.
-- Coverage (`count_party_members_with_buff`, 595): the COR always counts;
-  other members count when within 8 yalms, or 16 with `LuzafRing = ON`.
+- Coverage (`count_party_members_with_buff(roll_name, target_ids)`,
+  `roll_tracker.lua:662-719`): the COR always counts. With `target_ids` (every
+  roll the listener sees), a member counts when its `mob.id` is in the packet
+  and is listed as missed otherwise (`:686-691`): the packet says exactly who
+  the roll reached. Without it (`//gs c track_roll <short> <value>` typed by
+  hand, `COR_COMMANDS.lua:247`, which passes no ids), the old estimate stays as
+  the fallback: within 8 yalms, or 16 with `LuzafRing = ON`, from
+  `sqrt(mob.distance)`. That estimate counts the height and trusts the
+  `LuzafRing` mode, not the ring worn (comment `:652-656`).
 - Expiry: `COR_BUFFS.lua:24-35` (`retire_lost_roll`) removes the roll from the
   active list when a buff ending in `" Roll"` is lost (`on_roll_buff_lost`,
   81-89).
@@ -290,7 +301,14 @@ Phantom Rolls and Quick Draw are instant and have no midcast.
 - The entry no longer schedules `status_change(player.status, player.status)`
   after `user_setup()` (the "FORCE GEAR RE-EQUIP" block was removed on
   2026-09-25: from a bare coroutine its `equip()` calls were dropped).
-- `job_status_change` is the shared handler; `job_buff_change` is the shared
+- `job_status_change` is the shared handler. Since 2026-09-27 it holds back an
+  engage or disengage that lands during an action (`midaction()`, a Phantom
+  Roll for instance): it sets `eventArgs.handled`, so Mote does not put the
+  engaged / idle set on over the roll's gear, and aftercast equips the set of
+  the status in force by then (`lifecycle_manager.lua:46-55`, see
+  [core lifecycle](../systems/core-lifecycle.md#lifecyclemanager)). A roll
+  therefore keeps its own gear (the code comment names the neck) when you engage or disengage
+  while it goes out. `job_buff_change` is the shared
   handler with `retire_lost_roll` as its extra (skipped when Doom handled the
   buff).
 - `job_handle_equipping_gear` (`COR_MOVEMENT.lua:44-45`) is empty.
@@ -505,6 +523,12 @@ identical), L = `Tetsouo/sets/cor/cor_sets.lua` (weapon sets from
 - `LuzafRing = OFF` is not applied to Double-Up (`COR_PRECAST.lua:153`, a
   `CorsairRoll`-only test).
 - `party` lists the cache without validating it (`COR_COMMANDS.lua:291`).
+- The `on_roll_cast` docstring says `target_ids` is nil for "//gs c roll typed
+  by hand" (`roll_tracker.lua:350-351`); the manual command is `track_roll` /
+  `trackroll` (`COR_COMMANDS.lua:174`).
+- Pending in-game checks for the 2026-09-27 changes: a member out of reach
+  must be listed as missed from the packet; engaging or disengaging while a
+  roll goes out must keep the roll's gear.
 - Pending in-game checks for today's COR fixes (2026-09-25): a Curing Waltz,
   a Divine Waltz or a Quick Draw right after a roll must not be reported as a
   roll; on Kaories, the region warning colour must be right on COR.

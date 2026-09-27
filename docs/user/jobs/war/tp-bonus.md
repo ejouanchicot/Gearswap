@@ -47,8 +47,8 @@ the job's TP config.
 ## Which jobs have it
 
 14 of the 16 jobs ship a `<JOB>_TP_CONFIG.lua` in `_master/config/<job>/`.
-SMN and PUP have none (PUP does not load yet; SMN's files only exist in the
-Tetsouo template).
+SMN and PUP have none (PUP does not load yet; SMN's files only exist in
+the author's personal template).
 
 ## Files
 

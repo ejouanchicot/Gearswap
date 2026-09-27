@@ -1,6 +1,6 @@
 # SMN — modes and keys
 
-> SMN ships only with the Tetsouo template (`_master/Tetsouo/`): a clone of
+> SMN ships only with the author's personal template (an overlay in `_master/`): a clone of
 > another character does not get SMN files (`clone_character.py` prints
 > `No entry file for: SMN`).
 
@@ -50,7 +50,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 
 ## Files
 
-In `Tetsouo/config/smn/` (template `_master/Tetsouo/config/smn/`):
+In `<YourChar>/config/smn/` (from the author's overlay):
 `SMN_STATES.lua` (modes and defaults), `SMN_KEYBINDS.lua` (keys),
 `SMN_CUSTOM.lua` (your own modes and gear, see
 [keybinds](../../guides/keybinds.md)), `SMN_LOCKSTYLE.lua`, `SMN_MACROBOOK.lua`.

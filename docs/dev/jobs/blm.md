@@ -334,7 +334,7 @@ character's `config/COMMON_KEYBINDS.lua`.
 | `SubDarkAOE` | Blizzaga, Stonega, Waterga | Blizzaga | `#numpad6` | `subaoedark` |
 | `AOETier` | Aja, III, II, I | Aja | `^numpad2` | `aoe*` commands (`Aja` -> `<El>ja`, `I` -> base -ga) |
 | `Storm` | Firestorm, Sandstorm, Thunderstorm, Hailstorm, Rainstorm, Windstorm, Voidstorm, Aurorastorm | Firestorm | `^numpad7` | `storm`, `cycle Storm` |
-| `SneakInviAOE` | On, Off | On | `#numpad8` | `aoe sneak` / `aoe invi` (Accession on `<me>` vs single `<stal>`) |
+| `SneakInviAOE` | On, Off | On | `#numpad8` | `aoe sneak` / `aoe invi` (Accession on `<me>` vs single `<stal>`); `//gs c stealth` (`Off` = no Accession for the box group, `stealth_aoe.lua:47-50`, see [stealth](../systems/stealth.md)) |
 | `KlimaformAOE` | On, Off | On | `#numpad9` | `klima` (Manifestation step) |
 | `FastCast` | 0..80 step 10 | 80 | none | `midcast_watchdog.lua` `get_fast_cast_percent` |
 | `AutoMedicine` | shared On/Off | persisted | `#numpad0` (from `COMMON_KEYBINDS.lua`) | created by `AutoMedicine.init(state, M)` (`BLM_STATES.lua:264-266`), see [precast pipeline](../systems/precast-pipeline.md) |
@@ -494,7 +494,12 @@ they are self-assignments; no code path reads them.
   and `show_stratagem_no_charges` in `message_blm` are also used by
   `scholar_actions.lua` for every job that subs Scholar.
 - Scholar helpers: `shared/utils/scholar/scholar_actions.lua`,
-  `stratagem_charges.lua` (also used by [PLD](pld.md)).
+  `stratagem_charges.lua` (also used by [PLD](pld.md) and `//gs c stealth`).
+  Since 2026-09-27 the chains read the Arts, Addendum, Accession and
+  Manifestation buffs from `windower.ffxi.get_player().buffs` (`buff_up`,
+  `scholar_actions.lua:110-120`): `buffactive` lagged in the scheduled polls
+  and a chain could give up with "Light Arts never came up" although it was on.
+  See [midcast and buffs](../systems/midcast-and-buffs.md).
 - Lockstyle / macrobook factories, `JobChangeManager`, `LifecycleManager`, UI
   ([UI overlay](../systems/ui-overlay.md)), `CommonCommands` and `CycleHandler`
   ([commands and debug](../systems/commands-and-debug.md)), dual-box

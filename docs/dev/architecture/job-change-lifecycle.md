@@ -20,7 +20,7 @@ Engine paths below are relative to `D:\Windower Tetsouo\addons\GearSwap\` and ma
 | `shared/utils/core/INIT_SYSTEMS.lua` | 344 | Per-load bootstrap of the universal systems (sync and deferred) |
 | `shared/utils/core/keybind_guard.lua` | - | Re-sends the job's binds 2 s after a load, sequence-guarded on `windower._keybind_guard_seq` |
 | `shared/utils/core/module_cache.lua` | 106 | Makes `require` cache per environment |
-| `shared/utils/core/lifecycle_manager.lua` | 108 | Shared builders for `job_status_change`/`job_buff_change`/`job_aftercast`/`job_state_change` |
+| `shared/utils/core/lifecycle_manager.lua` | 132 | Shared builders for `job_status_change`/`job_buff_change`/`job_aftercast`/`job_state_change` |
 | `shared/utils/core/midcast_watchdog.lua` | 479 | 0.5 s polling loop that clears stuck midcasts, generation-guarded on `windower._midcast_wd_seq` |
 | `shared/utils/movement/automove.lua` | 383 | Movement polling loop, sequence-guarded on `windower._automove_seq` |
 | `shared/utils/lockstyle/lockstyle_manager.lua` | 340 | Lockstyle factory (per-job ctx on `_G.__lockstyle_contexts`, DressUp handling) |
@@ -305,7 +305,7 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 
 ### LifecycleManager (`shared/utils/core/lifecycle_manager.lua`)
 
-`status_change(extra)`, `buff_change(extra)`, `aftercast(extra)`, `state_change(extra)` each return a handler for the matching Mote hook (`:38-100`); callers assign `_G.job_*` themselves. `buff_change` stops the chain when `DoomManager` handled the buff. `aftercast` calls `_G.MidcastWatchdog.on_aftercast()`. `state_change` skips `Moving` and calls `KeybindUI.update()`.
+`status_change(extra)`, `buff_change(extra)`, `aftercast(extra)`, `state_change(extra)` each return a handler for the matching Mote hook (`:61-124`); callers assign `_G.job_*` themselves. `status_change`, after `extra`, holds back an engage / disengage that lands during an action (`hold_during_action`, `:46-55`, 2026-09-27): with `midaction()` true it sets `eventArgs.handled`, so Mote does not equip the engaged / idle set over the action's gear, and aftercast equips the set of the status in force by then; a 3 s fallback (`STATUS_FALLBACK`, `:37`) calls `handle_equipping_gear` if no action is running and the status still holds, from a coroutine, where `equip()` is not sent (see Known issues). `buff_change` stops the chain when `DoomManager` handled the buff. `aftercast` calls `_G.MidcastWatchdog.on_aftercast()`. `state_change` skips `Moving` and calls `KeybindUI.update()`.
 
 ### ModuleCache (`shared/utils/core/module_cache.lua`)
 
@@ -479,4 +479,5 @@ Still open:
 - A job change during `//gs c wo` leaves the old run moving items until the next phase boundary while the new environment allows a second run - `shared/utils/wardrobe/wardrobe_organizer.lua:52`
 - After a reload of the main, alt buff state is empty and never re-requested - `run_auto_init`, `shared/utils/dualbox/dualbox_manager.lua:501-511`
 - COR selects the macro book and schedules the lockstyle twice per `user_setup` (the JCM block and the guarded block) - `_master/entry/Tetsouo_COR.lua:287-320`
+- The 3 s fallback of `LifecycleManager.status_change` (an engage / disengage held during an action) sends `gs c update`, since `equip()` from a scheduled function is never sent (`flow.lua:60`); fixed 2026-09-27. Normally the aftercast path equips the new status set first. Not yet tested in game - `hold_during_action`, `shared/utils/core/lifecycle_manager.lua`
 - The intro of a job never shows the macro book or the lockstyle (Z2-09, a decision for the owner: return a value from the 32 wrappers, or drop the branch in `show_intro`) - `shared/utils/keybinds/keybind_manager.lua:232`

@@ -7,7 +7,7 @@ Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each mo
 current value; this page says what each value does. `#numpad0` (Auto Medicine) and
 Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybinds.md).
 
-This page describes the generic template (`_master/config/rdm/`). Kaories's overlay
+This page describes the generic template (`_master/config/rdm/`). The author's alt overlay
 differs in two values: Maxentius replaces Daybreak (and is the default weapon), and
 `CombatMode` starts On.
 

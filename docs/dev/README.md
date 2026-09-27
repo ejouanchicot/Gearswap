@@ -28,7 +28,8 @@ Mote-Include:
   weaponskill handling, midcast set resolution, messages, keybinds (one
   `KeybindManager`, per-character common keys, `//gs c tb`) and the keybind
   HUD, player modes from `<JOB>_CUSTOM.lua`, HP equip priority, dual-box (job
-  exchange, alt commands, `alts` / `main`, alt window), Sortie commands, warp,
+  exchange, alt commands, `alts` / `main`, alt window), Sneak / Invisible on
+  the box group (`//gs c stealth`), Sortie commands, warp,
   wardrobe organizer, refill, watchdogs, factories for lockstyle and macrobook.
 - **Data** under `shared/data/`: spell, job ability and weaponskill databases,
   and the generated equipment HP/MP table (`shared/data/equipment/ITEM_HP_MP.lua`).
@@ -144,7 +145,7 @@ For a template entry such as `_master/entry/Tetsouo_WAR.lua`:
 | sync | `ModuleCache.install()` — makes `require` cache per sandbox | `:54-56` |
 | sync | `HPPriority.apply()` — HP pieces get `priority` = HP (the sets exist: Mote ran `init_gear_sets` first) | `:65-70` |
 | sync | LagDebugger, `AutoMedicine.ensure()`, `JobSyncWatchdog.start()`, dual-box sync IPC listener and its `ls` / `rf` hooks | `:78-201` |
-| sync | `KeybindGuard.schedule()` (re-asserts the job's binds once the console is quiet), `CustomStates.install_hooks()` (`<JOB>_CUSTOM.lua` gear rules) | `:277-296` |
+| sync | `KeybindGuard.schedule()` (re-asserts the job's binds once the console is quiet), `StealthTimers.start()` (Sneak / Invisible end times, [stealth.md](systems/stealth.md)), `CustomStates.install_hooks()` (`<JOB>_CUSTOM.lua` gear rules) | `:277-305` |
 | +0.5 s | WarpInit, AutoMove (unless `_G.DISABLE_AUTOMOVE`), StateDisplayOverride | `:208-257` |
 | +2 s | MidcastWatchdog | `:126-136` |
 | +3 s | load check of PrecastGuard / CooldownChecker / WSPrecastHandler (message on failure) | `:315-327` |
@@ -192,7 +193,8 @@ no midcast, no aftercast.
   print through `MessageFormatter`. See [messages.md](systems/messages.md).
 - **Aftercast / status / buffs** — `LifecycleManager`
   (`shared/utils/core/lifecycle_manager.lua`) builds the shared handlers:
-  Doom slot handling, watchdog tick, HUD repaint on state change. The
+  Doom slot handling, an engage / disengage during an action held until
+  aftercast, watchdog tick, HUD repaint on state change. The
   `MidcastWatchdog` forces `gs c update` when a cast is never confirmed.
 
 ## Job and subjob changes
@@ -218,7 +220,7 @@ Full scenario-by-scenario trace:
 | Where it lives | Lifetime | Examples |
 |---|---|---|
 | Sandbox `_G`, module locals, `ModuleCache`, Mote states | Until the next load (job, subjob, `gs reload`) | `state.*` (all modes reset to defaults on every load), `_G.AltJobState`, `_G.DualBoxConfig`, `_G.UI_SETTINGS`, `_G.MidcastManagerDebugState` |
-| `windower.*` written from the sandbox (a module-level proxy table, `user_functions.lua:418-419`) | Survives every load; reset by `//lua reload gearswap` | `_gs_reload_count`, `_gs_debug`, `_job_sync_*`, `_automove_seq`, `_dualbox_*`, `_sync_ipc_*`, `_warp_*`, `_auto_medicine`, `_hook_wraps`, `_lagdebug` |
+| `windower.*` written from the sandbox (a module-level proxy table, `user_functions.lua:418-419`) | Survives every load; reset by `//lua reload gearswap` | `_gs_reload_count`, `_gs_debug`, `_job_sync_*`, `_automove_seq`, `_dualbox_*`, `_sync_ipc_*`, `_warp_*`, `_stealth_*`, `_auto_medicine`, `_hook_wraps`, `_lagdebug` |
 | Engine state | Survives every load, including a **main job change** | `disable_table` (slot locks from Doom, craft, organizer, warp ring), `command_registry`, Windower keybinds, loaded addons |
 | Scheduled coroutines and `send_command('wait …')` chains | Never cancelled; keep running against the dead sandbox | AutoMove and watchdog loops (guarded by `windower._x_seq` counters where it matters), lockstyle timers, organizer phases |
 | Removed by the engine at each load | — | Events registered through the sandbox `windower.register_event`, `windower.text` / `prim` objects |
@@ -249,7 +251,8 @@ Consequences worth remembering:
   only to its own character or with `--source`. An existing folder is moved to
   `addons/GearSwap/clone_backups/` after the final confirmation, never deleted,
   and the files written in game (`KEPT_ON_RECLONE`: HUD position, message
-  modes, alt window and alt state, owned warp items, `temp_binds.lua`) are
+  modes, alt window and alt state, owned warp items, `combat_mode.lua`,
+  `STEALTH_CONFIG.lua`, `temp_binds.lua`) are
   copied back from that backup.
 - Live Tetsouo uses **modular sets** (`sets/<job>/{armor,capes,weapons}.lua` +
   `sets/common/rings.lua`); the generic templates are flat. The modular trees
@@ -286,6 +289,7 @@ including what a re-clone would overwrite today.
 | [systems/commands-and-debug.md](systems/commands-and-debug.md) | `//gs c` routing, command inventory (incl. `trace`, `tb`, `alts`, `main`, `sortie`, `info`), diagnostic tools |
 | [systems/dualbox.md](systems/dualbox.md) | Main/alt job exchange, alt commands, `alts` / `main` / `setalt`, alt window, alt buff reporting, sync IPC |
 | [systems/warp.md](systems/warp.md) | Warp commands, spells, rings, items, IPC "warp all" |
+| [systems/stealth.md](systems/stealth.md) | `//gs c stealth` (Alt+Z / Alt+X): Sneak / Invisible on the box group, Accession claims, action queue, 0x063 timers, wear-off alerts |
 | [systems/equipment-and-inventory.md](systems/equipment-and-inventory.md) | `checksets`, wardrobe audit, refill, quiver, HP equip priority and how `ITEM_HP_MP.lua` is regenerated |
 | [systems/wardrobe-organizer.md](systems/wardrobe-organizer.md) | `//gs c wo`: phases, pins, alt flow |
 
@@ -311,17 +315,6 @@ Interactions, Invariants & gotchas, Extending, Known issues):
 
 ### Elsewhere
 
-- [plan-maintenabilite.md](plan-maintenabilite.md) (French): the working
-  register of what to improve and in what order, each item with its measured
-  evidence. Also records what was verified healthy, and the audit claims that
-  did not reproduce — read it before re-chasing an old finding.
-- [audit-prompt.md](audit-prompt.md) (French): the prompt given to each audit
-  agent (one zone per agent): sandbox pitfalls, conventions, rules of proof,
-  what to look at, report format. Extend it when an audit finds a new trap.
-- [audit-nuit-2026-09-25/RAPPORT.md](audit-nuit-2026-09-25/RAPPORT.md)
-  (French): the re-verified night audit of 2026-09-25; `audit-prompt.md`
-  treats it as "already settled". Its zone reports next to it are the raw,
-  unverified agent output: `RAPPORT.md` is the one that counts.
 - `docs/user/` (tracked, public): user guides. Several pages are stale (key
   layout, job count, commands).
 - `.claude/CODE_QUALITY.md`: coding standard (private). `.claude/audits/`:

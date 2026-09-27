@@ -1,6 +1,6 @@
 <div align="center">
 
-# Tetsouo GearSwap
+# FFXI GearSwap
 
 ### A modular GearSwap setup for Final Fantasy XI (Windower 4)
 
@@ -33,13 +33,13 @@ lockstyle, macro book) is common to all jobs.
 | Job | Status |
 |---|---|
 | BLM, BLU, BRD, BST, COR, DNC, DRK, GEO, PLD, RDM, RUN, SAM, THF, WAR, WHM | Template shipped in `_master/`, offered by the clone script |
-| SMN | Only in the Tetsouo template (`_master/Tetsouo/`): the clone script deploys it only when you rebuild the character named Tetsouo |
+| SMN | Only in the author's personal template (an overlay in `_master/`): the clone script does not deploy it for another character |
 | PUP | **Does not load yet**: its configuration folder is missing, so the job file stops during loading. The clone script does not offer it |
 
-The author plays BLM, BRD, BST, COR, DNC, PLD, SMN, THF and WAR on Tetsouo, and
-COR, GEO, PLD and RDM on the dual-boxed alt. BLU (added 2026-09-26) is played
-by a friend's character, from his own overlay. DRK, RUN, SAM and WHM exist as
-templates but no maintained character plays them.
+The author plays BLM, BRD, BST, COR, DNC, PLD, SMN, THF and WAR on the main,
+and COR, GEO, PLD and RDM on the dual-boxed alt. BLU (added 2026-09-26) is played
+by a friend's character. DRK, RUN, SAM and WHM exist as templates but no
+maintained character plays them.
 
 Per-job pages (modes, keys, commands): [docs/user/jobs/](docs/user/jobs/README.md).
 
@@ -80,8 +80,8 @@ It then creates `data/<YourName>/` with one entry file per job
 (`<YourName>_<JOB>.lua`), the set files under `sets/`, and the settings under
 `config/`. If the folder already exists, it asks before replacing it and moves
 the old one to `addons/GearSwap/clone_backups/` rather than deleting it; the
-HUD position, message modes, alt window, alt state, owned warp items and
-temporary keys you had are copied back.
+HUD position, message modes, alt window, alt state, owned warp items,
+Sneak / Invisible settings and temporary keys you had are copied back.
 
 ### 3. Put in your gear
 
@@ -109,6 +109,7 @@ keypad stays free for the game.
 | Apps+Numpad (`#numpad1`...) | Extra modes on some jobs (BLM second spell set, BRD Etude, RDM storm) |
 | Apps+Numpad0 (`#numpad0`) | Auto Medicine on/off, every job |
 | Alt+Numpad7 / 8 / 9 (`!numpad7-9`) | Dual-box: alts follow you / automation on-off / mirror, every job |
+| Alt+Z / Alt+X (`!z`, `!x`) | Sneak / Invisible on you and your other characters, every job |
 | F9-F12 (with modifiers) | Mote-Include's own default keys |
 | Ctrl/Alt+F1-F8 | Free for your temporary keys (`//gs c tb`) |
 
@@ -135,6 +136,7 @@ built-in help. Full list: [commands guide](docs/user/guides/commands.md).
 | `reload` | Reload the job file |
 | `warp`, `ret`, `esc`, `tph`, `sd`... | Warp, Retrace, Escape, teleports and destination items; add `all` (`warpall`) to send it to your other boxes |
 | `mount` | Mount a random mount you own, or dismount |
+| `stealth sneak` / `invi` / `both` | Sneak / Invisible on you and your other characters (`stealth check` shows what it would do, `stealth status` the timers) |
 | `naked` | Remove all gear |
 | `am` | Auto Medicine on/off |
 | `tb <key> <action>` | Temporary key on Ctrl/Alt+F1-F8 (`tb help`) |
@@ -179,6 +181,12 @@ built-in help. Full list: [commands guide](docs/user/guides/commands.md).
   `tpm`, `tpa`, `tpy`, `tpv` cast the spell when your job can and otherwise use
   a ring; destination commands (`sd`, `bt`, `wd`, `jn`, `ad`, `op`...) use the
   matching item. `warp help` lists the system commands.
+- **Sneak and Invisible in one key.** Alt+Z / Alt+X put the buff on you and on
+  every character of your box group, each with the best way it has (Spectral
+  Jig, the spell, ninjutsu, an item, or a partner casting it); a Scholar with a
+  stratagem covers the whole group with Accession. Time left per character in
+  the alt window, a warning before it wears off.
+  See [Sneak and Invisible](docs/user/guides/stealth.md).
 - **Your own modes without code.** `<JOB>_CUSTOM.lua` adds a mode with a key
   and gear rules ("with this weapon, wear this") on top of the job's choice.
 
@@ -196,7 +204,8 @@ With two characters on the same PC, each running this setup:
   an automation addon that answers `sm` console commands.
 - **Swap roles**: `//gs c main` on the character that should lead.
 - **Alt window** on the main, always the same size: each alt's job, whether it
-  is in your party, its zone, and the follow / automation / mirror state with
+  is in your party, its zone, the time left on its Sneak and Invisible, and the
+  follow / automation / mirror state with
   the steps of a mirror in progress. The state is the real one when the
   automation addon carries the small local addition described in the
   dual-box guide; otherwise it is the last order sent from this box.
@@ -209,9 +218,9 @@ Setup and details: [dual-box guide](docs/user/guides/dualbox.md).
 `//gs c craft [variant]` and `//gs c fish` equip a set from
 `data/<YourName>/sets/bonecraft_sets.lua` and `fishing_sets.lua`, lock it and
 apply a craft lockstyle; `//gs c uncraft` (or `craft off`) gives your job gear
-back. Those two set files ship **only with the Tetsouo template**: another
-character gets "No set file" until you write them. Use
-`_master/Tetsouo/sets/bonecraft_sets.lua` as the model.
+back. Those two set files ship **only with the author's personal template**: another
+character gets "No set file" until you write them; the author's
+`bonecraft_sets.lua` (in its overlay under `_master/`) is a model.
 
 ## Documentation
 
@@ -223,7 +232,7 @@ character gets "No set file" until you write them. Use
 
 ## License
 
-[MIT](LICENSE) - Copyright (c) 2026 Tetsouo.
+[MIT](LICENSE).
 
-Made by Tetsouo - [github.com/ejouanchicot/Gearswap](https://github.com/ejouanchicot/Gearswap)
+[github.com/ejouanchicot/Gearswap](https://github.com/ejouanchicot/Gearswap)
 · [Issues](https://github.com/ejouanchicot/Gearswap/issues)

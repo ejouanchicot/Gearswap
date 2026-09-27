@@ -1,6 +1,6 @@
 # Message formatters and utilities
 
-The formatter layer turns "something happened" into coloured chat lines. It is the 34 modules under
+The formatter layer turns "something happened" into coloured chat lines. It is the 35 modules under
 `shared/utils/messages/formatters/` (split into `combat/`, `jobs/`, `magic/`, `system/`, `ui/`) plus the
 two helpers under `shared/utils/messages/utilities/`: `roll_messages.lua` and `party_messages.lua`.
 Game code reaches a formatter in one of two ways: through the facade
@@ -21,7 +21,8 @@ and the root `*.lua` files on 2026-09-18, with commented-out calls excluded and 
 functions then, about 159 had no reachable caller. Since then `message_database` (13 functions)
 was deleted (`72e135d`), BRD's two empty-bodied functions and the duplicate
 `MessageWarp.show_item_equip_delay` were removed, and three modules were added
-(`message_altgroup.lua`, `message_sortie.lua`, `message_tempbind.lua`, 28 functions, all with callers).
+(`message_altgroup.lua`, `message_sortie.lua`, `message_tempbind.lua`, 28 functions, all with callers),
+and on 2026-09-26 `message_stealth.lua` (7 functions, all with callers; not in the counts below).
 Counted again on 2026-09-25 (`grep -cE "^function [A-Za-z_]+[.:]"` over `formatters/` and
 `utilities/`): **565** public functions in 36 files. The per-module "dead" lists below were not
 re-resolved, only corrected where a caller or function was added or removed. File lines and
@@ -54,6 +55,7 @@ functions in the Files table were re-measured on 2026-09-25.
 | `formatters/system/message_equipment.lua` | 179 | 16 | `//gs c checksets` report and checker debug |
 | `formatters/system/message_init.lua` | 50 | 4 | INIT_SYSTEMS module load failures |
 | `formatters/system/message_sortie.lua` | 135 | 7 | `SORTIE` lines: target box, target list, alt orders, GEO escort |
+| `formatters/system/message_stealth.lua` | 74 | 7 | `STEALTH` lines of `//gs c stealth`: skipped, covered, no way / asked, wear-off warnings, settings, usage ([stealth.md](stealth.md)) |
 | `formatters/system/message_system.lua` | 165 | 6 | Job "SYSTEM LOADED" intro box, colour test (SYSTEM namespace) |
 | `formatters/system/message_tempbind.lua` | 170 | 9 | `TEMPBIND` lines: `//gs c tb` added / taken / list / help |
 | `formatters/system/message_warp.lua` | 748 | 84 | Warp/teleport system: templates, status/help screens, item_user debug |
@@ -198,7 +200,7 @@ Removed with the conversions (2026-09-25): the dead region-detection screens (12
 | message_buffs / debuffs | `BUFFS` / `DEBUFFS` (separators) | debuffs: B |
 | message_midcast / precast | `MIDCAST` / `PRECAST` | none |
 | message_songs | `SONGS` | none |
-| message_altgroup / sortie / tempbind | `ALTGROUP` / `SORTIE` / `TEMPBIND` | none |
+| message_altgroup / sortie / stealth / tempbind | `ALTGROUP` / `SORTIE` / `STEALTH` / `TEMPBIND` | none |
 | message_equipment / init | `EQUIPMENT` / `INIT` | equipment: D |
 | message_system | `SYSTEM` | D (colour sample) |
 | message_warp | `WARP` | B, D |
@@ -303,7 +305,7 @@ search for the function name does not give). `(dead)` means no reachable caller 
   `show_song_*` keys go to `message_songs.lua`; BST functions are exported twice, as `show_bst_x` and
   `show_x` (`message_formatter.lua:364-478`).
 - Not in the facade at all: `message_weaponskill`, `message_alt_commands`, `message_dualbox`,
-  `message_altgroup`, `message_sortie`, `message_tempbind` (their callers `require` them directly).
+  `message_altgroup`, `message_sortie`, `message_stealth`, `message_tempbind` (their callers `require` them directly).
 
 ### combat/message_combat.lua
 
@@ -383,6 +385,7 @@ facade lines and their calls in `BRD_COMMANDS.lua` / `BRD_PRECAST.lua` were remo
 | message_equipment | `show_check_header/summary/error`, `show_missing_item`, `show_storage_item`, `show_no_sets_found`, checker debug lines (`equipment/equipment_checker.lua`) | `show_set_valid` |
 | message_init | `show_module_load_failed(module_name, error_msg)` (`INIT_SYSTEMS.lua` and others) | `show_watchdog_load_failed`, `show_module_loaded`, `show_init_complete` |
 | message_sortie | all 7: `show_target_loaded`, `show_escort`, `show_target_list`, `show_alt_off`, `show_alt_action`, `show_unknown_target` (`sortie/sortie_commands.lua`); `show_alt_escort` (`GEO_COMMANDS.lua`, `//gs c escort`) | none |
+| message_stealth | all 7: `show_skipped`, `show_covered`, `show_no_way`, `show_asked`, `show_setting`, `show_usage` (`stealth/stealth.lua`); `show_wearing_off` (`stealth/stealth_timers.lua`) | none |
 | message_system | `show_system_intro(title, keybinds, job_name)` and `show_system_intro_complete(title, keybinds, macro_info, lockstyle_info, job_name)` from `keybinds/keybind_manager.lua`, which every job's keybinds go through | `show_system_intro_with_macros`; `show_color_test_header/sample/footer` are called only from `COR_COMMANDS.lua`, which is unreachable because `testcolors` returns through `CommonCommands` first (`COR_COMMANDS.lua:161-167`) |
 | message_tempbind | all 9 (`keybinds/temp_binds.lua`, `//gs c tb`) | none |
 | message_warp | casting/equipping/using, level/job errors, IPC, equipment lock, status/test screens, precast FC, item cooldown lines, item_user and IPC debug (`shared/utils/warp/*`) | `show_warp_countdown`, `show_warp_unavailable`, `show_warp_no_charges`, `show_warp_recast`, `show_warp_charges_remaining`, the five `show_tele_*` equivalents, `show_status`, `show_debug_toggle` (`debugwarp` is answered by `DebugCommands.handle_debugwarp` through `COMMON_COMMANDS.lua:620-621`; the `debugwarp` branch of `WarpCommands.handle_command`, `warp_commands.lua:270`, is marked unreachable) |
@@ -436,6 +439,7 @@ Formatters handle no command themselves. These commands print through them:
 | `//gs c altcmds [filter]` | `COMMON_COMMANDS.lua:555` -> `AltCommands.list` (`alt_commands.lua:540`) | `message_alt_commands.show_list` |
 | `//gs c alts ...`, `main`, `setalt` | `dualbox/alt_group.lua`, `dualbox_role.lua`, `alt_window.lua` (see [dualbox.md](dualbox.md)) | `message_altgroup` |
 | `//gs c sortie ...`; `//gs c escort` (GEO) | `sortie/sortie_commands.lua`; `GEO_COMMANDS.lua` | `message_sortie` |
+| `//gs c stealth ...` | `stealth/stealth.lua`, `stealth_timers.lua` (see [stealth.md](stealth.md)) | `message_stealth` |
 | `//gs c tb ...` | `keybinds/temp_binds.lua` | `message_tempbind` |
 | `//gs c ui ...` | `ui/UI_COMMANDS.lua` `UICommands.handle_ui_command` | `message_ui` |
 | `//gs c warp status\|test\|help\|unlock\|fix\|lock\|ipctest` | `warpcommands_handle_command_warp` (`warp/warp_commands.lua:198`) | `message_warp` |

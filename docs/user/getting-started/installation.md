@@ -35,8 +35,8 @@ The script asks:
 1. **Character name** (letters and digits, 2-15 characters). If
    `data/<Name>/` already exists, it asks whether to replace it.
 2. **Jobs**, comma-separated, among BLM, BRD, BST, COR, DNC, DRK, GEO, PLD,
-   RDM, RUN, SAM, THF, WAR, WHM. (SMN is only deployed for the character named
-   Tetsouo; PUP is not offered, it does not load.)
+   RDM, RUN, SAM, THF, WAR, WHM. (SMN is only deployed from the author's personal template;
+   PUP is not offered, it does not load.)
 3. **Role**: `main` or `alt`. A main is asked for its alt's name (empty = no
    dual-box); an alt must give its main's name.
 4. **Region**: US, EU or JP.
@@ -56,7 +56,7 @@ data/<Name>/
     └── REGION_CONFIG.lua    written from your answers
 ```
 
-Every `Tetsouo` inside the copied `.lua` files is replaced with your name.
+The template's character name inside the copied `.lua` files is replaced with yours.
 
 **Running it again** for the same name: after the confirmation, the old
 folder is moved to `addons/GearSwap/clone_backups/<Name>_<date>/` (never
