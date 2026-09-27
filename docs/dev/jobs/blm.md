@@ -43,7 +43,7 @@ number added nothing, the function name is cited instead.
 | `shared/jobs/blm/functions/BLM_LOCKSTYLE.lua` | 51 | Lazy `LockstyleManager.create('BLM', ...)` wrappers |
 | `shared/jobs/blm/functions/BLM_MACROBOOK.lua` | 45 | Lazy `MacrobookManager.create('BLM', ...)` wrapper |
 | `shared/jobs/blm/functions/logic/midcast_router.lua` | 225 | Per-skill midcast handlers (Impact, Elemental, Dark, Enfeebling) and BLM overrides |
-| `shared/jobs/blm/functions/logic/elemental_matcher.lua` | 195 | Storm / day / weather element match for Hachirin-no-Obi |
+| `shared/jobs/blm/functions/logic/elemental_matcher.lua` | 195 | Storm (all 8) / day / weather element match, by element id, for Hachirin-no-Obi |
 | `shared/jobs/blm/functions/logic/set_builder.lua` | 310 | Idle/engaged set construction (town, weapons, movement, Mana Wall); unused SaveMP API |
 | `shared/jobs/blm/functions/logic/buff_manager.lua` | 35 | `//gs c buff` list for the shared `SelfBuffManager` |
 | `shared/jobs/blm/functions/logic/storm_manager.lua` | 263 | Klimaform + storm casting with recast display |
@@ -519,6 +519,10 @@ they are self-assignments; no code path reads them.
   missing.
 - `GearSwap spell.element`, `world.day_element` and `world.real_weather_element`
   all use resource names (`Lightning`, not `Thunder`).
+- `elemental_matcher.lua` compares the day and weather to the spell by element
+  id, not by name (the name `Thunder` never matched `Lightning` until
+  2026-09-27), and knows the eight storms, Aurorastorm and Voidstorm included
+  (Storm II buffs share the Storm I names).
 - `Addendum: Black` replaces `Dark Arts` in `buffactive`; `checkArts` and `klima`
   test both.
 - `klima`, `storm` and `aoe` do not check that the subjob is SCH; the game
@@ -546,10 +550,6 @@ they are self-assignments; no code path reads them.
 
 ## Known issues
 
-- Hachirin-no-Obi never triggers for Thunder spells on Lightningsday or in
-  thunder weather, nor under Aurorastorm/Voidstorm (`elemental_matcher.lua:23-42`:
-  `ELEMENT_NAMES[4]` is `'Thunder'` while the day and weather names say
-  `Lightning`, and `STORM_TO_ELEMENT` has no Aurorastorm/Voidstorm).
 - `sets.midcast['Enfeebling Magic']` is missing, so the Enfeebling route equips
   nothing; `MndEnfeebles` is unreachable (`midcast_router.lua:207`,
   `midcast_manager.lua:639`).

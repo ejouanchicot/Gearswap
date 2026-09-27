@@ -8,7 +8,7 @@
 ---
 ---   @file    shared/jobs/blm/functions/logic/elemental_matcher.lua
 ---   @author  ejouanchicot
----   @version 1.0
+---   @version 1.1 - Elements compared by id (Lightning), Aurora/Voidstorm
 ---   @date    Created: 2025-10-25
 ---  ═══════════════════════════════════════════════════════════════════════════
 
@@ -25,7 +25,7 @@ local ELEMENT_NAMES = {
     [1] = 'Ice',
     [2] = 'Wind',
     [3] = 'Earth',
-    [4] = 'Thunder',
+    [4] = 'Lightning', -- the game's name (res.elements); spells say Thunder
     [5] = 'Water',
     [6] = 'Light',
     [7] = 'Dark'
@@ -38,8 +38,10 @@ local STORM_TO_ELEMENT = {
     ['Hailstorm'] = 1,    -- Ice
     ['Windstorm'] = 2,    -- Wind
     ['Sandstorm'] = 3,    -- Earth
-    ['Thunderstorm'] = 4, -- Thunder
-    ['Rainstorm'] = 5     -- Water
+    ['Thunderstorm'] = 4, -- Lightning
+    ['Rainstorm'] = 5,    -- Water
+    ['Aurorastorm'] = 6,  -- Light
+    ['Voidstorm'] = 7     -- Dark (Comet, Impact, Death)
 }
 
 ---   Reverse mapping: element names to element IDs
@@ -105,8 +107,8 @@ local function has_matching_day(spell_element_id)
         return false
     end
 
-    local spell_element_name = get_element_name(spell_element_id)
-    return spell_element_name == world.day_element
+    -- Compared by id: the game names the element Lightning, spells Thunder
+    return normalize_element(world.day_element) == spell_element_id
 end
 
 ---   Check if weather element matches spell element (with intensity > 0)
@@ -123,8 +125,7 @@ local function has_matching_weather(spell_element_id)
         return false
     end
 
-    local spell_element_name = get_element_name(spell_element_id)
-    return spell_element_name == world.real_weather_element
+    return normalize_element(world.real_weather_element) == spell_element_id
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
