@@ -211,7 +211,7 @@ local Gleti_Boots_mab = MabGear.feet
 sets['Aymur'] = {main = 'Aymur'}
 sets["Agwu's Axe"] = {sub = "Agwu's Axe"}
 sets['Tauret'] = {main = 'Tauret'}
-sets['Blur Knife'] = {sub = 'Blurred Knife +1'}
+sets['Blur Knife'] = {sub = 'Blurred Knife +1'} -- worn once 'Blur Knife' is a SubSet value (BST_STATES.lua)
 sets['Adapa Shield'] = {sub = 'Adapa Shield'}
 sets['Diamond Aspis'] = {sub = 'Diamond Aspis'}
 sets['Kraken Club'] = {sub = 'Kraken Club'}
@@ -243,142 +243,9 @@ sets['Left-Handed Yoko (Mosquito)'] = {ammo = 'Heavenly Broth'}
 sets['Cursed Annabelle (Antlion)'] = {ammo = 'Creepy Broth'}
 sets['Weevil Familiar (Weevil)'] = {ammo = 'T. Pristine Sap'}
 
---============================================================--
---                PET READY MOVE CATEGORY TABLES              --
---============================================================--
-
--- Single-hit physical moves
-petPhysicalMoves =
-    S {
-    'Foot Kick',
-    'Whirl Claws',
-    'Sheep Charge',
-    'Lamb Chop',
-    'Head Butt',
-    'Leaf Dagger',
-    'Claw Cyclone',
-    'Razor Fang',
-    'Nimble Snap',
-    'Cyclotail',
-    'Rhino Attack',
-    'Power Attack',
-    'Mandibular Bite',
-    'Big Scissors',
-    'Grapple',
-    'Spinning Top',
-    'Double Claw',
-    'Frogkick',
-    'Blockhead',
-    'Brain Crush',
-    'Tail Blow',
-    '??? Needles',
-    'Needleshot',
-    'Scythe Tail',
-    'Ripper Fang',
-    'Recoil Dive',
-    'Sudden Lunge',
-    'Spiral Spin',
-    'Beak Lunge',
-    'Suction',
-    'Back Heel',
-    'Choke Breath',
-    'Fantod',
-    'Tortoise Stomp',
-    'Sensilla Blades',
-    'Tegmina Buffet',
-    'Swooping Frenzy',
-    'Zealous Snort',
-    'Somersault',
-    'Sickle Slash',
-    'Crossthrash'
-}
-
--- Multi-hit physical moves
-petPhysicalMultiMoves =
-    S {
-    'Sweeping Gouge',
-    'Tickling Tendrils',
-    'Chomp Rush',
-    'Pentapeck',
-    'Wing Slap',
-    'Pecking Flurry'
-}
-
--- Magical nukes / damage-based spells
-petMagicAtkMoves =
-    S {
-    'Cursed Sphere',
-    'Venom',
-    'Toxic Spit',
-    'Bubble Shower',
-    'Drainkiss',
-    'Fireball',
-    'Snow Cloud',
-    'Charged Whisker',
-    'Purulent Ooze',
-    'Corrosive Ooze',
-    'Aqua Breath',
-    'Choke Breath',
-    'Stink Bomb',
-    'Nectarous Deluge',
-    'Nepenthic Plunge',
-    'Pestilent Plume',
-    'Foul Waters',
-    'Acid Spray'
-}
-
--- Magical accuracy-based moves (debuffs, status effects, buffs)
-petMagicAccMoves =
-    S {
-    -- Debuffs
-    'Sheep Song',
-    'Scream',
-    'Dream Flower',
-    'Roar',
-    'Gloeosuccus',
-    'Palsy Pollen',
-    'Soporific',
-    'Geist Wall',
-    'Numbing Noise',
-    'Spoil',
-    'Hi-Freq Field',
-    'Sandpit',
-    'Sandblast',
-    'Venom Spray',
-    'Filamented Hold',
-    'Queasyshroom',
-    'Numbshroom',
-    'Spore',
-    'Shakeshroom',
-    'Infrasonics',
-    'Chaotic Eye',
-    'Blaster',
-    'Intimidate',
-    'Noisome Powder',
-    'Acid Mist',
-    'TP Drainkiss',
-    'Jettatura',
-    'Nihility Song',
-    'Molting Plumage',
-    'Spider Web',
-    'Digest',
-    'Silence Gas',
-    'Dark Spore',
-    'Predatory Glare',
-    -- Healing/regen moves
-    'Wild Carrot',
-    'Wild Oats',
-    -- Defensive buffs
-    'Bubble Curtain',
-    'Scissor Guard',
-    'Metallic Body',
-    'Rhino Guard',
-    'Water Wall',
-    'Harden Shell',
-    -- Status enhancement
-    'Secretion',
-    'Rage'
-}
+-- Ready move categories (which sets.midcast.pet_*_moves set a move uses) are
+-- in shared/jobs/bst/functions/logic/ready_move_categorizer.lua: lists written
+-- here would be replaced by those at load.
 
 --============================================================--
 --                   BASE GEARSETS & TEMPLATES                --
@@ -632,12 +499,8 @@ sets.precast.JA['Spur'] = {
     back = Artio.PETSTP
 }
 
--- Default/fallback precast sets
-sets.precast.JA['Misc Idle'] = {
-    hands = 'Ankusa Gloves +3',
-    legs = "Gleti's Breeches"
-}
-sets.precast.JA['Default'] = sets.precast.JA['Misc Idle']
+-- An ability without a set of its own keeps the gear you wear: Mote has no
+-- default ability set (a 'Default' / 'Misc Idle' name is never read).
 
 --============================================================--
 --                  PET READY MOVE GEAR SETS                  --
@@ -786,20 +649,8 @@ sets.precast.WS['Calamity'] = {
     back = Artio.WS1
 }
 
---============================================================--
---                     TPBonus Sets (Moonshade)               --
---============================================================--
-
--- Default TPBonus Set (Moonshade Earring for TP scaling)
-sets.precast.WS.TPBonus = {
-    left_ear = 'Moonshade Earring' -- TP Bonus +250
-}
-
--- TPBonus variants for weapon skills
-sets.precast.WS['Primal Rend'].TPBonus = set_combine(sets.precast.WS['Primal Rend'], sets.precast.WS.TPBonus)
-sets.precast.WS['Decimation'].TPBonus = set_combine(sets.precast.WS['Decimation'], sets.precast.WS.TPBonus)
-sets.precast.WS['Bora Axe'].TPBonus = set_combine(sets.precast.WS['Bora Axe'], sets.precast.WS.TPBonus)
-sets.precast.WS['Calamity'].TPBonus = set_combine(sets.precast.WS['Calamity'], sets.precast.WS.TPBonus)
+-- Moonshade Earring (TP bonus) goes on by itself when it reaches the next TP
+-- step: BST_TP_CONFIG.lua, not a .TPBonus set (never read).
 
 --============================================================--
 --                     UTILITY GEARSETS                       --

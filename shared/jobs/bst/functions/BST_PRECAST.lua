@@ -79,12 +79,10 @@ local function ready_move_info(spell)
     return true, category
 end
 
---- Summon gear, then the broth on top.
----
---- The broth decides which pet appears. This does not mark the precast
---- handled, so Mote's default_precast equips the Call Beast / Bestial Loyalty
---- set again afterwards: the broth only survives because that set has no
---- ammo. Ammo added to it would win and summon the wrong pet.
+--- Summon gear. The broth goes on in job_post_precast (equip_broth), after
+--- Mote's default_precast has equipped the Call Beast / Bestial Loyalty set
+--- again: an ammo in that set would otherwise replace the broth and summon
+--- the wrong pet (or none).
 local function equip_for_summon(spell)
     if _G.BST_DEBUG_PRECAST then
         MessagePrecast.show_debug_header(spell.name, 'Pet Summon')
@@ -97,7 +95,11 @@ local function equip_for_summon(spell)
             MessagePrecast.show_equipment(sets.precast.JA['Call Beast'])
         end
     end
+end
 
+--- The broth of the pet chosen (state.ammoSet), last: it decides which pet
+--- appears, so it wins over any ammo of the summon set.
+local function equip_broth()
     if state.ammoSet and state.ammoSet.value and sets[state.ammoSet.value] then
         local broth_set = sets[state.ammoSet.value]
         if broth_set and broth_set.ammo then
@@ -168,13 +170,18 @@ function job_precast(spell, action, spellMap, eventArgs)
     end
 end
 
----   Apply final gear adjustments before equipping
+---   Apply final gear adjustments before equipping: the broth on Call Beast /
+---   Bestial Loyalty (after Mote's summon set), the TP piece on a weaponskill
 ---   @param spell table Spell/ability data
 ---   @param action table Action information from GearSwap
 ---   @param spellMap string Spell mapping
 ---   @param eventArgs table Event arguments
 function job_post_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
+    if spell.name == 'Call Beast' or spell.name == 'Bestial Loyalty' then
+        equip_broth()
+        return
+    end
     if WSPrecastHandler then
         WSPrecastHandler.apply_tp_gear(spell)
     end

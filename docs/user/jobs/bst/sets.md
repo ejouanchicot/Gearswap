@@ -99,9 +99,8 @@ Cursed Annabelle (Antlion), Weevil Familiar (Weevil).
 A pet you add to `BST_PET_DATA.lua` needs its own set here, or no jug is put on
 (and changing species prints "No equipment set found").
 
-**Never put an `ammo` in the Call Beast or Bestial Loyalty set.** Those sets are
-put on again after the jug, so their ammo would replace it and call the wrong
-pet (or none). The provided sets have no ammo.
+The jug goes on last, after the Call Beast / Bestial Loyalty set: an `ammo` in that
+set is replaced by the jug of the pet you chose, so it can never call the wrong pet.
 
 ## Ready moves
 
@@ -244,13 +243,10 @@ you want (see the common page).
 
 - `sets['Blur Knife']`: not a value of the off-hand mode. Add `Blur Knife` to
   `SubSet` in `BST_STATES.lua` to use it.
-- `sets.precast.JA['Misc Idle']` and `sets.precast.JA['Default']`.
-- `sets.precast.WS.TPBonus` and the four `sets.precast.WS['<name>'].TPBonus`:
-  the TP bonus earring is put on by itself (see Weaponskills), these sets are
-  never picked.
-- The four Ready move lists at the top of the file (`petPhysicalMoves`,
-  `petPhysicalMultiMoves`, `petMagicAtkMoves`, `petMagicAccMoves`): the job uses
-  its own lists (above). Editing them changes nothing.
+- Not in the file any more (removed 2026-09-28, they were never read): a default
+  ability set (`sets.precast.JA['Misc Idle']` / `['Default']`: an ability without
+  its own set keeps your gear), `.TPBonus` weaponskill sets (the TP bonus earring
+  goes on by itself) and Ready move lists (the job's own lists, above, decide).
 - `sets.me.idle.Town`: every slot except the feet.
 
 ## Names the code reads that the provided file lacks

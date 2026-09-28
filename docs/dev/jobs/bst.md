@@ -45,7 +45,7 @@ and Mote-Include files are in `addons/GearSwap/` and `addons/GearSwap/libs/`
 |------|------:|------|
 | `_master/entry/Tetsouo_BST.lua` | 401 | Entry point (template): config preload, `get_sets`, `user_setup`, `job_update`, `init_gear_sets`, `job_sub_job_change`, `prerender` pet monitor (`start_pet_monitoring` / `stop_pet_monitoring`), `file_unload` |
 | `shared/jobs/bst/functions/bst_functions.lua` | 110 | Facade: includes `message_buffs.lua` and the 13 hook files, requires `dualbox_manager` for its auto-init |
-| `shared/jobs/bst/functions/BST_PRECAST.lua` | 194 | `job_precast` / `job_post_precast`; locals `ready_move_info`, `equip_for_summon`, `prepare_ready_move` |
+| `shared/jobs/bst/functions/BST_PRECAST.lua` | 202 | `job_precast` / `job_post_precast`; locals `ready_move_info`, `equip_for_summon`, `equip_broth`, `prepare_ready_move` |
 | `shared/jobs/bst/functions/BST_MIDCAST.lua` | 201 | `job_midcast` (early returns, no `handled`) / `job_post_midcast` (subjob magic through `MidcastManager`, table `JOB_POST_MIDCAST_HANDLERS`) |
 | `shared/jobs/bst/functions/BST_AFTERCAST.lua` | 111 | `job_aftercast`: pet damage set for Ready moves that were not interrupted, delayed `start_pet_monitoring` |
 | `shared/jobs/bst/functions/BST_PET_PRECAST.lua` | 105 | `job_pet_precast`: never called (no such hook in Mote or GearSwap; the file header says so) |
@@ -170,7 +170,7 @@ flowchart TD
     G -- no --> H[WSPrecastHandler.handle with BSTTPConfig]
     H -- false --> Z
     H -- true --> I{Call Beast / Bestial Loyalty}
-    I -- yes --> J[equip_for_summon: Call Beast set, then ammo of sets ammoSet]
+    I -- yes --> J[equip_for_summon: Call Beast set; job_post_precast: equip_broth]
     I -- no --> K{Ready move}
     K -- yes --> L[prepare_ready_move: category on spell, equip JA Sic]
 ```
@@ -182,13 +182,12 @@ flowchart TD
   "not a Ready move" for the Sic set and the category.
 - `WSPrecastHandler.handle` returns true for anything that is not a
   weaponskill, so it is called for every action.
-- `equip_for_summon` equips `sets.precast.JA['Call Beast']`, then only the
-  `ammo` of `sets[state.ammoSet.value]`. Its comment ("the broth goes on last
-  ... the Call Beast set has its own ammo that would otherwise win") is wrong
-  on both counts: `job_precast` never sets `handled`, so Mote's
-  `default_precast` runs **after** it (`Mote-Include.lua` `handle_actions`) and
-  re-equips `sets.precast.JA['Call Beast']`; the broth survives only because
-  `summonSet` has **no** ammo. The same holds for Bestial Loyalty (same set).
+- `equip_for_summon` equips `sets.precast.JA['Call Beast']`. `job_precast`
+  never sets `handled`, so Mote's `default_precast` runs after it and
+  re-equips the Call Beast / Bestial Loyalty set; `job_post_precast` then
+  calls `equip_broth` (the `ammo` of `sets[state.ammoSet.value]`), so the
+  broth wins over any ammo of the summon set. Before 2026-09-28 the broth
+  went on in `job_precast` and survived only because `summonSet` had no ammo.
 - `prepare_ready_move` stores the category on the spell table. The same table
   reaches midcast (engine `flow.lua` `send_action` passes the registry's
   spell), but aftercast receives a new table built from the action packet
@@ -458,13 +457,12 @@ plus `weapons.lua`, `pets.lua` merged into `sets`). Player-facing version:
 | `sets['Aymur']`, `['Tauret']`, `["Agwu's Axe"]`, `['Adapa Shield']`, `['Diamond Aspis']`, `['Kraken Club']` | `apply_weapon_sets` | yes | `weapons.lua` |
 | `sets['Blur Knife']` | nothing (not a `SubSet` value) | yes | `weapons.lua` |
 | `sets['<pet name>']` x 25 (ammo only) | `equip_for_summon`, `equip_pet_broth` | yes, all 25 match `BST_PET_DATA` | `pets.lua` |
-| `sets.precast.JA['Call Beast']`, `['Bestial Loyalty']` (`summonSet`, **no ammo**) | `equip_for_summon`, Mote default | yes | yes |
+| `sets.precast.JA['Call Beast']`, `['Bestial Loyalty']` (`summonSet`) | `equip_for_summon`, Mote default; the broth goes on after (`equip_broth`) | yes | yes |
 | `sets.precast.JA['Sic']`, `['Ready']` (alias) | `prepare_ready_move`, Mote default | yes | yes |
 | `sets.precast.JA['Reward']`, `['Killer Instinct']`, `['Spur']` | Mote default precast | yes | yes |
-| `sets.precast.JA['Misc Idle']`, `['Default']` | nothing in BST (only `PUP_PET_PRECAST`) | yes | yes |
 | `sets.midcast.pet_{physical,physicalMulti,magicAtk,magicAcc}_moves` and `_ww` aliases | `job_aftercast` | yes | yes |
 | `sets.midcast.Pet` | Mote `default_pet_midcast` | absent (Mote `{}`) | absent |
-| `sets.precast.WS`, `['Primal Rend']`, `['Decimation']`, `['Bora Axe']`, `['Calamity']`, `.TPBonus` variants | Mote default precast (the `.TPBonus` sets are never picked) | yes | yes |
+| `sets.precast.WS`, `['Primal Rend']`, `['Decimation']`, `['Bora Axe']`, `['Calamity']` | Mote default precast | yes | yes |
 | `sets.MoveSpeed` | `apply_common_overlays` | yes | yes |
 | `sets.buff.Doom` | shared DoomManager | yes | yes |
 | `sets.DW.*` | `DualWield` | commented example | - |
@@ -472,11 +470,8 @@ plus `weapons.lua`, `pets.lua` merged into `sets`). Player-facing version:
 | `sets.midcast['Healing Magic']` / Enhancing / Enfeebling / Elemental / Blue | `MidcastManager` base set | **absent** | **absent** |
 | `sets.precast.FC` | Mote default precast (magic) | absent (Mote `{}`) | absent |
 
-Both sets files also assign the globals `petPhysicalMoves`,
-`petPhysicalMultiMoves`, `petMagicAtkMoves`, `petMagicAccMoves`. The
-categoriser overwrites them when it loads (after the sets, through
-`BST_AFTERCAST`) and nothing reads the globals. The two sources still disagree
-on several moves; the categoriser is the one used.
+The Ready move lists live only in the categoriser (the copies the sets files
+carried, overwritten at load and read by nothing, were removed on 2026-09-28).
 
 ## Configuration
 
@@ -511,7 +506,7 @@ or /DNC, shields included (its comment now says so).
   `BSTTPConfig`, `BSTKeybinds`, `KeybindUI`, `LockstyleConfig`, `UIConfig`,
   `RECAST_CONFIG`, `RegionConfig`, `BST_DEBUG_PRECAST`, `bst_rdymove_active`,
   `bst_hud_load_id`, `start_pet_monitoring`, `stop_pet_monitoring`,
-  `petPhysicalMoves` (and the three other lists), `select_default_lockstyle`,
+  `petPhysicalMoves` (and the three other lists, from the categoriser), `select_default_lockstyle`,
   `cancel_bst_lockstyle_operations`, `select_default_macro_book` plus the
   factory exports.
 - Events: one `prerender` listener (raw), removed by `file_unload` and by the
@@ -599,10 +594,9 @@ or /DNC, shields included (its comment now says so).
   `CooldownChecker` -> `if eventArgs.cancel then return end` ->
   `WSPrecastHandler.handle` -> summon / Ready logic. Never cooldown-check a
   `Monster` action.
-- `summonSet` (Call Beast / Bestial Loyalty) must have no `ammo`: Mote
-  re-equips that set after `job_precast`, so any ammo there beats the broth.
-  If you ever need ammo in it, set `eventArgs.handled = true` in
-  `equip_for_summon`'s branch so Mote's default precast does not run.
+- The broth must stay in `job_post_precast` (`equip_broth`): Mote re-equips
+  the summon set after `job_precast`, so a broth equipped there loses to any
+  ammo of that set.
 - Apart from `pet engage` / `pet disengage`, the monitor is the only writer of
   `state.PetEngaged`. Do not add another (for example a `job_pet_status_change`) without
   removing the monitor's write, or they will fight.
@@ -673,9 +667,7 @@ or /DNC, shields included (its comment now says so).
 - `broth` counts only items named "...Broth", in inventory only.
 - The pet monitor reports its errors with `print()` (console only), not
   `MessageFormatter`.
-- Wrong or stale comments: `BST_PRECAST.lua` `equip_for_summon` (says the
-  broth goes on last and that the Call Beast set has its own ammo; Mote
-  re-equips the set after, and it has no ammo); `BST_MIDCAST.lua`
+- Wrong or stale comments: `BST_MIDCAST.lua`
   `job_midcast` ("Don't override precast set", "handled in precast ONLY": the
   return does not stop Mote's default midcast); `BST_PET_MIDCAST.lua` (says
   it keeps the precast set "during the ENTIRE cast"; the player's aftercast has
@@ -688,9 +680,8 @@ or /DNC, shields included (its comment now says so).
   `SetBuilder.should_use_pet_sets` / `is_pet_engaged` / `get_current_mode`,
   `EcosystemManager.cycle_ammo`, `ReadyMoveCategorizer.is_physical` /
   `is_magical` / `get_midcast_set_name` / `get_category_counts` and the
-  `_G.pet*Moves` exports, `BST_ECOSYSTEM_DATA.lua`, the sets-file move lists,
-  `sets.precast.JA['Misc Idle']` / `['Default']`, the `.TPBonus` WS sets, BST
-  message wrappers with no caller.
+  `_G.pet*Moves` exports, `BST_ECOSYSTEM_DATA.lua`, BST message wrappers with
+  no caller.
 - Fixed, no longer issues: the template's pet monitor re-sending Fight every
   second (`302e3f2`, 2026-09-27); the user states page (lowercase state names,
   AutoMove, missing states) rewritten 2026-09-28.
