@@ -138,6 +138,7 @@ and partner job ([HUD](../features/ui.md#key-conflicts)).
 | `fulltest` (`ft`) `[export]` | Longer check (systems, modules, hooks, sets) |
 | `debugsubjob` (`dsj`) | Main / sub job, levels and zone |
 | `debugstate` (`ds`) | Internal counters |
+| `dw` [`auto` \| `none` \| `haste` \| `haste2` \| `max`] | Dual Wield tier: estimated magic haste and its sources, tier, `sets.DW.<tier>` used; a word forces a tier, `auto` goes back to the estimate (`config/DW_CONFIG.lua`) |
 | `belt` | Obi / Orpheus: automatic on or off, belts found, today's day and weather, what each belt adds now (`config/ELEMENTAL_BELT.lua`) |
 | `trace on` / `off` / `clear` | Record what the game returns to `<YourName>/trace.log` (keeps recording across restarts until `trace off`) |
 | `testcolors` (`colors`) | Chat colour codes |

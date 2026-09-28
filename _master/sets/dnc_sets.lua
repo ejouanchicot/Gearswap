@@ -1019,3 +1019,17 @@ sets.TreasureHunter = {
         augments = {'Rng.Acc.+13', 'Attack+9', '"Treasure Hunter"+2', 'Mag. Acc.+6 "Mag.Atk.Bns."+6'}
     }
 }
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- DUAL WIELD TIERS (optional, see config/DW_CONFIG.lua and //gs c dw)
+-- ═══════════════════════════════════════════════════════════════════════════
+-- While two weapons are held and engaged, the pieces of one tier go on top of
+-- the engaged set, chosen by your magic haste. Only the Dual Wield pieces you
+-- still need at that haste; a tier left out uses the one below. Uncomment and
+-- fill with your own gear:
+--
+-- sets.DW = {}
+-- sets.DW.NoHaste  = { left_ear = "Suppanomimi", right_ear = "Eabani Earring", waist = "Reiki Yotai" }  -- no haste
+-- sets.DW.Haste    = { left_ear = "Suppanomimi", waist = "Reiki Yotai" }                               -- 15 %
+-- sets.DW.HasteII  = { waist = "Reiki Yotai" }                                                         -- 30 %
+-- sets.DW.MaxHaste = {}                                                                                -- cap

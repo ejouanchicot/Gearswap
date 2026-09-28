@@ -305,6 +305,16 @@ pcall(function()
     end
 end)
 
+-- Dual Wield tier pieces by magic haste on the engaged set (dual_wield.lua).
+-- Wraps handle_equipping_gear before the custom states do, so the player's
+-- custom gear still goes on last.
+pcall(function()
+    local ok, DualWield = pcall(require, 'shared/utils/equipment/dual_wield')
+    if ok and DualWield then
+        DualWield.install()
+    end
+end)
+
 -- Spells a job's midcast does not route (a subjob's magic) go through
 -- MidcastManager anyway. Laid before the custom states hook below, which
 -- wraps it, so the player's custom gear still goes on last.

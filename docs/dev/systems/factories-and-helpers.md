@@ -28,6 +28,7 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `shared/utils/whm/whm_message_formatter.lua` | 414 | Cure tier-change and debug messages (read for the calls only) |
 | `shared/utils/equipment/spell_gear_lock.lua` | 135 | A piece a spell cannot be cast without (Dispelga: Daybreak), worn through Combat Mode for the cast |
 | `shared/utils/equipment/elemental_belt.lua` | 213 | Hachirin-no-Obi / Orpheus's Sash on elemental damage, every job |
+| `shared/utils/equipment/dual_wield.lua` | 248 | Dual Wield tier pieces by magic haste on the engaged set, every job |
 
 The two craft set files are identical to their live copies in `Tetsouo/sets/`. `CRAFT_CONFIG.lua` now has a tracked template, `_master/config_global/CRAFT_CONFIG.lua` (added in `fd34a2c`).
 
@@ -322,6 +323,35 @@ then the belt, then the player's CUSTOM gear.
   (`BELT` tag).
 - BLM's own `ElementalMatcher` steps aside while it is enabled. Belts written in
   sets stay as they are when no belt reaches `min_bonus`.
+
+---
+
+## DualWield
+
+`shared/utils/equipment/dual_wield.lua` (since 2026-09-28): Dual Wield pieces by
+magic haste tier, on top of the engaged set, for every job. Installed by
+`INIT_SYSTEMS` on `handle_equipping_gear` (after Mote and the job equip,
+before the custom states: the player's custom gear still wins).
+
+- Applies when the status is Engaged, `enabled`, and the sub slot holds a weapon
+  with a combat skill (read from the game by item id in `gearswap.res`: a shield
+  is Armor, a grip has skill 0). Skipped while a COR roll hold is open.
+- Tiers `sets.DW.NoHaste` / `Haste` (15 %) / `HasteII` (30 %) / `MaxHaste`
+  (43.75 %); a missing tier falls back to the one below (more DW). No `sets.DW`:
+  nothing.
+- Magic haste estimate: buffs from `get_player().buffs` (33 Haste, 580
+  Geo-Haste, 604 Mighty Guard, 228 Embrava, 214 March up to 2), the value of
+  each from `<Character>/config/DW_CONFIG.lua` (template
+  `_master/config_global/DW_CONFIG.lua`, low on purpose). Haste vs Haste II
+  (same buff) and which March come from a raw `action` listener (spells 57 /
+  511 / 710 Erratic Flutter, 417 / 419 / 420 landing on this character),
+  kept on `windower._dw_tracked`. Slow and JA haste are not counted.
+- `gain buff` / `lose buff` on those buffs: after 0.3 s, `gs c update` when the
+  tier changed and the player is engaged.
+- `//gs c dw` (not `haste`: that is the alt command casting Haste) shows the
+  estimate; `none|haste|haste2|max` forces a tier (`windower._dw_forced`),
+  `auto` clears it.
+- Templates of DNC, THF, COR, BLU, RDM, BRD, BST end with a commented example.
 
 ---
 

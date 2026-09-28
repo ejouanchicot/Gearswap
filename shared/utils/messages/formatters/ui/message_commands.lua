@@ -439,6 +439,7 @@ local COMMANDS_HELP = {
         }},
         {title = 'EQUIPMENT & INVENTORY', rows = {
             {'//gs c belt', '', 'Obi / Orpheus auto: state, bonuses'},
+            {'//gs c dw ', 'auto|none|haste|haste2|max', 'Dual Wield tier by haste'},
             {'//gs c wardrobeaudit | wa', '', 'Audit wardrobe across jobs'},
             {'//gs c worganize | wo', '', 'Organize wardrobes by job'},
             {'//gs c worganize alt', '', 'Alt mode (4 wardrobes)'},
