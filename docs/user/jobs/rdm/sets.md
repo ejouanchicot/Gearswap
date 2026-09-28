@@ -99,17 +99,16 @@ Types and their spells:
 | `potency` | Dia, Dia II, Dia III, Diaga, Gravity II |
 | `duration` | Sleep, Sleep II, Sleepga, Sleepga II, Break, Breakga, Bind, Silence |
 
-**Enfeeble Mode changes no gear today**: every listed enfeeble has a type set in
-the provided file, and a type set comes before the mode. To make the mode count,
-add sets under the type: `sets.midcast['Enfeebling Magic'].mnd_potency.Potency`,
-`.macc.Skill`, `.duration.Duration`...
+**Enfeeble Mode** picks a set under the type: `sets.midcast['Enfeebling Magic'].mnd_potency.Skill`,
+`.macc.Duration`, `.duration.Potency`... (the provided file shows an example in a
+comment). The plain `.Potency` / `.Skill` / `.Duration` sets are only for an enfeeble
+with no type (Slowga, Diaga II, Inundation and the other -ga). With the provided file
+the mode changes no gear until you add such sets.
 
 **Saboteur up**: after the set above, `sets.midcast['Enfeebling Magic'].Saboteur`
-goes on top of every enfeeble. In the provided file it is the whole enfeebling
-base set plus hands, so while Saboteur is up it replaces the type, mode and
-spell-name sets entirely (Dispelga keeps its Daybreak, see below). To keep your
-type sets under Saboteur, give the Saboteur set only the pieces that should
-change (Lethargy hands).
+goes on top of every enfeeble. Put only the pieces that should change in it (the
+provided file: Lethargy hands): every other slot keeps the type, mode or spell-name
+set. A full set there would replace them all.
 
 ### Dispelga
 
@@ -166,10 +165,10 @@ Order, first found wins:
 5. `sets.midcast['Enhancing Magic']`
 
 Because the name comes first, Refresh, Regen, Phalanx, Stoneskin and Aquaveil
-always use their name set. In the provided file `sets.midcast.Refresh` and
-`sets.midcast.Regen` hold only two slots: the other slots keep the Fast Cast
-gear during the cast. Build them with `set_combine(sets.midcast['Enhancing Magic'], {...})`
-to avoid that.
+always use their name set. Build such a set on the Enhancing set
+(`set_combine(sets.midcast['Enhancing Magic'], {...})`, as the provided file does for
+Refresh and Regen): a set with only a few slots leaves the Fast Cast gear in the
+others during the cast.
 
 **Accession + Phalanx** (/SCH): Phalanx under Accession wears
 `sets.midcast['Enhancing Magic']` itself, never the Phalanx or Composure set.
@@ -242,10 +241,6 @@ provided file), and by the same rule `sets.precast.JA['Saboteur']`,
 
 ## Sets in the provided file that nothing reads
 
-- `sets.engaged.Refresh` and `sets.engaged.Refresh.DW`: Engaged Mode has no
-  `Refresh` value (add one in `RDM_STATES.lua` to use them).
-- `sets.midcast['Enfeebling Magic'].Potency`: only for an enfeeble outside the
-  type list above. `.Mixed` and `.Acc`: no mode has those names.
 - `sets.precast.JA['Convert']`: read, but empty.
 
 ## Names the code reads that the provided file lacks

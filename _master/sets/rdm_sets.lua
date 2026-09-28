@@ -133,9 +133,6 @@ sets.engaged.Enspell = set_combine(sets.engaged.DT, {
     back = 'Ghostfyre Cape'
 })
 
--- • Refresh Engaged (MP refresh while engaged - add Refresh+ gear if needed)
-sets.engaged.Refresh = set_combine(sets.engaged.DT, {})
-
 -- • TP Engaged (maximize Store TP, TP gain - add extra Store TP gear if needed)
 sets.engaged.TP = set_combine(sets.engaged.DT, {})
 
@@ -158,9 +155,6 @@ sets.engaged.Enspell.DW = set_combine(sets.engaged.Enspell, {
     -- left_ear = 'Suppanomimi',
     -- right_ear = 'Eabani Earring'
 })
-
--- • Refresh Dual Wield (MP refresh while dual wielding - add Refresh+ gear if needed)
-sets.engaged.Refresh.DW = set_combine(sets.engaged.DT.DW, {})
 
 -- • TP Dual Wield (TP gain with dual wield - maximize Store TP)
 sets.engaged.TP.DW = set_combine(sets.engaged.DT.DW, {})
@@ -335,23 +329,25 @@ sets.midcast['Enfeebling Magic'].potency = set_combine(sets.midcast['Enfeebling 
 -- Duration focus (maximize duration - composure, relic, etc.)
 sets.midcast['Enfeebling Magic'].duration = set_combine(sets.midcast['Enfeebling Magic'], {})
 
--- Enfeebling Mode Sets (selected via EnfeebleMode state)
--- Potency mode (maximize enfeeble potency over landing rate)
+-- EnfeebleMode (Potency / Skill / Duration). The mode set is looked up UNDER
+-- the spell's type first: sets.midcast['Enfeebling Magic'].mnd_potency.Skill,
+-- .macc.Duration... (the type comes from the enfeebling database). Example:
+--   sets.midcast['Enfeebling Magic'].mnd_potency.Skill =
+--       set_combine(sets.midcast['Enfeebling Magic'].mnd_potency, {hands = '...'})
+-- The three below are only used by a spell with no type (Slowga, Diaga II,
+-- Inundation and the other -ga).
 sets.midcast['Enfeebling Magic'].Potency = set_combine(sets.midcast['Enfeebling Magic'], {})
-
--- Mixed mode (balance between potency and magic accuracy)
-sets.midcast['Enfeebling Magic'].Mixed = set_combine(sets.midcast['Enfeebling Magic'], {})
-
--- Accuracy mode (maximize magic accuracy for resistant targets)
-sets.midcast['Enfeebling Magic'].Acc = set_combine(sets.midcast['Enfeebling Magic'], {})
+sets.midcast['Enfeebling Magic'].Skill = set_combine(sets.midcast['Enfeebling Magic'], {})
+sets.midcast['Enfeebling Magic'].Duration = set_combine(sets.midcast['Enfeebling Magic'], {})
 
 -- Dispelga: the Dispel set (magic accuracy) with Daybreak in the main hand
 sets.midcast.Dispelga = set_combine(sets.midcast['Enfeebling Magic'].macc, {main = 'Daybreak'})
 
--- Enfeebling with Saboteur active (2x duration - can swap to potency gear)
-sets.midcast['Enfeebling Magic'].Saboteur = set_combine(sets.midcast['Enfeebling Magic'], {
-    hands = "Leth. Ganth. +3",
-})
+-- Enfeebling with Saboteur active: laid ON TOP of the set chosen for the spell
+-- (type / mode / name), so list only the Saboteur pieces
+sets.midcast['Enfeebling Magic'].Saboteur = {
+    hands = 'Leth. Ganth. +3'
+}
 
 --╭──────────────────────────────────────────────────────────────────────────────╮
 --│ ENHANCING MAGIC (BUFFS)                                                      │
@@ -396,11 +392,11 @@ sets.midcast['Enhancing Magic'].Composure = {
     back = 'Ghostfyre Cape'
 }
 
--- Refresh (base - potency)
-sets.midcast.Refresh = {
+-- Refresh (base - potency): the Enhancing set (duration) with the Refresh pieces
+sets.midcast.Refresh = set_combine(sets.midcast['Enhancing Magic'], {
     body = 'Atrophy Tabard +4',
     legs = 'Leth. Fuseau +3'
-}
+})
 
 -- Refresh with Composure (on others - Empyrean bonus)
 sets.midcast.Refresh.Composure = set_combine(sets.midcast['Enhancing Magic'].Composure, {
@@ -408,11 +404,11 @@ sets.midcast.Refresh.Composure = set_combine(sets.midcast['Enhancing Magic'].Com
     legs = 'Leth. Fuseau +3'
 })
 
--- Regen (base - HP regen potency)
-sets.midcast.Regen = {
+-- Regen (base - HP regen potency): the Enhancing set (duration) with the Regen pieces
+sets.midcast.Regen = set_combine(sets.midcast['Enhancing Magic'], {
     main = 'Bolelabunga',
     body = {name = 'Telchine Chas.', augments = {'"Conserve MP"+5', '"Regen" potency+3'}}
-}
+})
 
 -- Regen with Composure (on others - duration + potency)
 sets.midcast.Regen.Composure = set_combine(sets.midcast['Enhancing Magic'].Composure, {

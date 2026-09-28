@@ -224,9 +224,11 @@ with the template sets:
 - **Enfeebles**: every spell in the database has a type, and every type has a
   set under `sets.midcast['Enfeebling Magic']` (`macc`, `mnd_potency`,
   `int_potency`, `skill_potency`, `skill_mnd_potency`, `potency`, `duration`).
-  `.<type>.<mode>` (P3) exists for none, so `.<type>` (P7) wins and the mode
-  sets (`.Potency`, `.Mixed`, `.Acc`) are never reached. `Dispelga` has its
-  own name set (P0).
+  `.<type>.<mode>` (P3) exists for none, so `.<type>` (P7) wins. The mode sets
+  `.Potency` / `.Skill` / `.Duration` (P8) serve the 8 RDM enfeebles missing
+  from the database (Bindga, Blindga, Diaga II/III, Inundation, Paralyga,
+  Silencega, Slowga). `Dispelga` has its own name set (P0). Until 2026-09-28
+  the template named its mode sets `.Mixed` / `.Acc`, which no mode value has.
 - **Refresh / Regen / Phalanx**: P1 (tier-less name) finds
   `sets.midcast.Refresh` (etc.) on self and on others without Composure;
   `sets.midcast.Refresh.Composure` on others under Composure
@@ -241,8 +243,10 @@ with the template sets:
 - **Elemental**: `NukeMode` values are `FreeNuke` and `Magic Burst` (with a
   space); P8 finds `base.FreeNuke` / `base['Magic Burst']`.
 
-The Saboteur overlay is a full set (the base plus hands), so while Saboteur is
-up it replaces whatever type set the manager chose.
+The Saboteur overlay holds only its own pieces (Lethargy hands), laid on the
+set the manager chose. Until 2026-09-28 it was the whole base set plus hands,
+so under Saboteur it replaced the type, mode and name sets (Slow II lost its
+`mnd_potency` ring).
 
 ### Aftercast, idle, engaged, status, buffs
 
@@ -372,13 +376,12 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 | `sets.idle.PDT`, `sets.engaged.PDT` | `HybridMode` fallback | no |
 | `sets.idle.Town`, `sets.Adoulin`, `sets.MoveSpeed` | `BaseSetBuilder` | yes |
 | `sets.engaged.DT/Acc/TP/Enspell` + `.DW` | `select_engaged_base` | yes |
-| `sets.engaged.Refresh` (+ `.DW`) | nothing (`EngagedMode` has no Refresh) | yes |
 | `sets.precast.FC`, `.FC['Stoneskin']`, `.FC['Dispelga']` | Mote default precast, `job_post_precast` | yes |
 | `sets.precast.JA['Chainspell']`, `['Convert']` | Mote default precast | yes |
 | `sets.precast.WS` + Savage Blade, Sanguine Blade, Seraph Blade, Chant du Cygne, Requiescat | Mote default precast | yes |
 | `sets.midcast.FastRecast` | Mote-Globals `user_midcast`, first for every spell | no |
 | `sets.midcast['Enfeebling Magic']` + 7 type sets | MidcastManager P7 / P9 | yes |
-| `sets.midcast['Enfeebling Magic'].Potency`, `.Mixed`, `.Acc` | `EnfeebleMode` P8, never reached (every enfeeble has a type set) | yes |
+| `sets.midcast['Enfeebling Magic'].Potency`, `.Skill`, `.Duration` | `EnfeebleMode` P8, for an enfeeble with no type (the -ga, Inundation) | yes |
 | `sets.midcast['Enfeebling Magic'].<type>.<Mode>` | `EnfeebleMode` P3 | no |
 | `sets.midcast.Dispelga` | MidcastManager P0 | yes |
 | `sets.midcast['Enfeebling Magic'].Saboteur` | `midcast_enfeebling` overlay | yes |
@@ -463,7 +466,6 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
   no type set).
 - `state.EnhancingMode` does not exist; the Composure target is the only
   enhancing variant.
-- The Saboteur overlay is a full set and replaces the type set.
 - The template's enfeebling base set carries `main`, `sub` and `range`: with
   Combat Mode Off every enfeeble swaps weapons (TP lost).
 - Combat Mode applies or releases at once when cycled, HUD shown or not: both
@@ -559,7 +561,7 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
   from the real chain.
 - `by_subjob` in `RDM_LOCKSTYLE.lua` is never read (no `get_style`).
 - `sets.Adoulin` is a 2-slot set used as a full idle base in Adoulin.
-- Dead: `HybridMode` (in practice), `sets.engaged.Refresh`, the `check_off` path
+- Dead: `HybridMode` (in practice), the `check_off` path
   of `castenspell` (no `EnSpell` value is `Off`), `show_doom_warning`,
   `show_doom_removed`, `show_spell_casting`, `show_enspell_current`,
   `show_phalanx_detected` in `message_rdm.lua`.
