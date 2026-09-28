@@ -87,16 +87,6 @@ function ModuleCache.install()
     return true
 end
 
---- How the cache is doing, for //gs c syscheck and friends.
---- @return number hits, number loads, number cached_modules
-function ModuleCache.stats()
-    local stats = rawget(_G, '__require_cache_stats') or { hits = 0, loads = 0 }
-    local cache = rawget(_G, '__require_cache') or {}
-    local n = 0
-    for _ in pairs(cache) do n = n + 1 end
-    return stats.hits, stats.loads, n
-end
-
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT
 ---  ═══════════════════════════════════════════════════════════════════════════

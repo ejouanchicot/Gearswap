@@ -299,11 +299,6 @@ function MidcastWatchdog.toggle()
     end
 end
 
---- @return boolean True when the watchdog is enabled
-function MidcastWatchdog.is_enabled()
-    return watchdog_enabled
-end
-
 --- Set the buffer added to the cast time (0..10 s, else an error message).
 --- @param seconds number|nil New buffer
 function MidcastWatchdog.set_buffer(seconds)
@@ -315,11 +310,6 @@ function MidcastWatchdog.set_buffer(seconds)
     end
 end
 
---- @return number Current buffer in seconds
-function MidcastWatchdog.get_buffer()
-    return WATCHDOG_BUFFER
-end
-
 --- Set the timeout used for unknown spells ((0..30] s, else an error message).
 --- @param seconds number|nil New fallback timeout
 function MidcastWatchdog.set_fallback_timeout(seconds)
@@ -329,11 +319,6 @@ function MidcastWatchdog.set_fallback_timeout(seconds)
     else
         MessageWatchdog.show_invalid_fallback()
     end
-end
-
---- @return number Current fallback timeout in seconds
-function MidcastWatchdog.get_fallback_timeout()
-    return WATCHDOG_FALLBACK_TIMEOUT
 end
 
 --- Enable debug mode
@@ -355,11 +340,6 @@ function MidcastWatchdog.toggle_debug()
     else
         MidcastWatchdog.enable_debug()
     end
-end
-
---- @return boolean True when debug output is on
-function MidcastWatchdog.is_debug_enabled()
-    return debug_enabled
 end
 
 --- Snapshot of the tracked action and the settings, for the status displays.
