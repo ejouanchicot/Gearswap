@@ -4,6 +4,9 @@ Every page of the documentation, for players, developers and maintainers.
 The code is the reference: pages are checked against it, and a page that
 disagrees with the code is a bug in the page.
 
+The same pages as one searchable site: open `docs/wiki/index.html` in a
+browser (rebuild it with `python docs/tools/build_wiki.py` after editing a page).
+
 17 jobs. PUP does not load yet. SMN's entry, configs and sets are not in the
 public repository (its shared code is).
 
