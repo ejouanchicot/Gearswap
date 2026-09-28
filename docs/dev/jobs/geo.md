@@ -309,7 +309,7 @@ line numbers.
 | `sets.midcast.Indi.Entrust` | `GEO_MIDCAST.lua:70-71` | 297 |
 | `sets.midcast.Indi`, `sets.midcast.Geo` | nothing | 293, 316 |
 | `sets.midcast.Cure` | Mote default (spell map); no `['Healing Magic']` base, so `MidcastManager` returns false | 319 |
-| `sets.midcast.Curaga` (copy of `Cure`), `sets.midcast.Auspice` (empty copy of the Enhancing set) | Mote default (spell map `Curaga`); Auspice by name (P0). Added 2026-09-28: Curaga wore no midcast set before | 348, 355 |
+| `sets.midcast.Curaga` (copy of `Cure`), `sets.midcast.Auspice` (empty copy of the Enhancing set) | Mote default (spell map `Curaga`); Auspice by name (P0). Added 2026-09-28: Curaga wore no midcast set before | 350, 357 |
 | `sets.midcast['Enhancing Magic']` (empty), `['Enfeebling Magic']` (empty), `['Elemental Magic']` | Mote default, then `MidcastManager` base (`GEO_MIDCAST.lua:108-119`) | 344, 347, 350 |
 | `sets.midcast['Healing Magic']`, `['Dark Magic']` | `MidcastManager` base | **absent** (routes are no-ops) |
 | `sets.buff.Doom` | shared `DoomManager` | 442 |
