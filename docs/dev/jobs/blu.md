@@ -202,7 +202,11 @@ Then `lay_blue_overlays` equips, in the order of `BLUE_MAGIC_BUFFS` (Burst
 Affinity, Chain Affinity, Convergence, Diffusion, Efflux; a later one wins a
 shared slot), `sets.buff[<buff>]` for each buff in `buffactive` that has a
 set, then `sets.self_healing` when the category is `Healing` and
-`spell.target.type == 'SELF'`. The buffs are read when the spell goes off. A
+`spell.target.type == 'SELF'`. It covers a P0 name set too, which is why the
+map keeps White Wind (`HealingHP`) and Restoral (`HealingSkill`) out of
+`Healing`, as Gabvanstronger's file did; unlisted, the database would make them
+`Healing` again (they were in `Healing` from 2026-09-27 to 2026-09-29, and White
+Wind wore the Healing set). The buffs are read when the spell goes off. A
 trace line `MIDCAST <spell> -> category ..., casting ..., on top: ...` goes to
 `trace_log` (`//gs c trace on`).
 

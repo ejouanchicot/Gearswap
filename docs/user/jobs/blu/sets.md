@@ -129,7 +129,9 @@ Do not name a set at the root of `sets.midcast` after a category
 | `Enmity` | Actinic Burst, Temporal Shift, Fantod, Exuviation |
 | `Breath` | Bad Breath, Flying Hip Press, Frost Breath, Heat Breath, Hecatomb Wave, Magnetite Cloud, Poison Breath, Radiant Breath, Self-Destruct, Thunder Breath, Vapor Spray, Wind Breath |
 | `Stun` | Blitzstrahl, Frypan, Head Butt, Sudden Lunge, Tail Slap, Thunderbolt, Whirl of Rage |
-| `Healing` | Healing Breeze, Magic Fruit, Plenilune Embrace, Pollen, Wild Carrot, White Wind, Restoral |
+| `Healing` | Healing Breeze, Magic Fruit, Plenilune Embrace, Pollen, Wild Carrot |
+| `HealingHP` | White Wind (scales with max HP) |
+| `HealingSkill` | Restoral (scales with Blue Magic skill) |
 | `SkillBasedBuff` | Barrier Tusk, Diamondhide, Magic Barrier, Metallic Body, Occultation, Plasma Charge, Pyric Bulwark, Reactor Cool |
 | `Buff` | Amplification, Animating Wail, Battery Charge, Carcharian Verve, Cocoon, Erratic Flutter, Feather Barrier, Harden Shell, Memento Mori, Nat. Meditation, Refueling, Regeneration, Saline Coat, Triumphant Roar, Warm-Up, Winds of Promy., Zephyr Mantle, Mighty Guard, O. Counterstance |
 
@@ -142,7 +144,7 @@ names, a spell listed twice, reload after editing): [states.md](states.md#how-bl
 | Set | Worn when |
 |---|---|
 | `sets.buff['Burst Affinity']`, `sets.buff['Chain Affinity']`, `sets.buff.Convergence`, `sets.buff.Diffusion`, `sets.buff.Efflux` | That buff is up, on **every** Blue Magic spell (not only the ones the buff affects). Several up: put on in this order, the later wins a shared slot |
-| `sets.self_healing` | A `Healing` category spell cast on yourself |
+| `sets.self_healing` | A `Healing` category spell cast on yourself. It goes on top of everything, the spell's own set included: White Wind and Restoral are kept out of `Healing` (categories `HealingHP` / `HealingSkill`) so their own set stays. Built on the Healing set, it replaces it entirely |
 
 ## Subjob magic
 

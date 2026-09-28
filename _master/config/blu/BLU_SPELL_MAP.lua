@@ -127,7 +127,18 @@ return {
     },
     Healing = {
         'Healing Breeze', 'Magic Fruit', 'Plenilune Embrace', 'Pollen',
-        'Wild Carrot', 'White Wind', 'Restoral',
+        'Wild Carrot',
+    },
+    -- Not Healing, as Gabvanstronger's file had it: White Wind scales with
+    -- max HP, Restoral with Blue Magic skill, each wears its own set
+    -- (sets.midcast['White Wind']...). A Healing spell cast on oneself also
+    -- gets sets.self_healing on top, which would cover that set. Unlisted,
+    -- the database would make them Healing again.
+    HealingHP = {
+        'White Wind',
+    },
+    HealingSkill = {
+        'Restoral',
     },
     SkillBasedBuff = {
         'Barrier Tusk', 'Diamondhide', 'Magic Barrier', 'Metallic Body',
