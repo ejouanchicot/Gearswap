@@ -596,7 +596,6 @@ folders (`grep -r`, not ripgrep) and string dispatch.
 Re-checked on 2026-09-28. Open:
 
 - PUP commands call nonexistent `MessageFormatter.error_pup_*` / `show_pup_*` functions; `PUP_MIDCAST.lua` `job_midcast` makes the same undefined call - `shared/jobs/pup/functions/PUP_COMMANDS.lua:43`.
-- BST midcast calls the nonexistent `MessageFormatter.error_bst_module_not_loaded` when the Ready move categorizer fails to load - `shared/jobs/bst/functions/BST_MIDCAST.lua:48`.
 - `BRDMessages.show_dummy_cast` sends `BRD.dummy_cast`, which is commented out of the data file (no caller today) - `shared/utils/messages/formatters/jobs/message_brd.lua` `show_dummy_cast`.
 - WHM swallows a CureManager load failure; `WHM.curemanager_not_loaded` is never shown - `shared/jobs/whm/functions/WHM_PRECAST.lua` `ensure_modules_loaded`.
 - `SONGS` namespace and `message_songs.lua` are unreachable duplicates of `BRD` - `shared/utils/messages/data/systems/songs_messages.lua`.

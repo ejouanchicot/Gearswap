@@ -93,7 +93,8 @@ function job_aftercast(spell, action, spellMap, eventArgs)
         -- Pet summon detected - start smart background monitoring
         if _G.start_pet_monitoring then
             coroutine.schedule(function()
-                _G.start_pet_monitoring()
+                -- A reload inside the 2 s wait clears it (file_unload)
+                if _G.start_pet_monitoring then _G.start_pet_monitoring() end
             end, 2.0)  -- Wait 2s for pet to fully spawn
         end
     end

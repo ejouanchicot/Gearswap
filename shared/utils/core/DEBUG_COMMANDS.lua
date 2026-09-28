@@ -316,8 +316,12 @@ end
 --- @return table Sorted names of every loaded module
 local function loaded_package_names()
     local names = {}
-    if package and package.loaded then
-        for name in pairs(package.loaded) do
+    -- `package` is not in GearSwap's sandbox: the modules loaded through
+    -- require are the keys of the project's cache (module_cache.lua).
+    local pkg = rawget(_G, 'package')
+    local loaded = pkg and pkg.loaded or rawget(_G, '__require_cache')
+    if type(loaded) == 'table' then
+        for name in pairs(loaded) do
             table.insert(names, tostring(name))
         end
         table.sort(names)

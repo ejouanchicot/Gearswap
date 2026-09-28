@@ -378,7 +378,7 @@ alt's version stays reachable as `//gs c alt <name>`).
 
 | Command | Effect |
 |---------|--------|
-| `forceidle` | `gs enable ring1`, then 1 s later `/equip ring1` with the `left_ring` of `sets.idle[IdleMode]` or `sets.idle` |
+| `forceidle` | `gs enable ring1`, then 1 s later `/equip ring1` with the left ring (`left_ring`, `ring1` or `lring`) of `sets.idle[IdleMode]` or `sets.idle` (until 2026-09-28 it read `left_ring` only, which the template never uses) |
 | `soul_voice` / `sv`, `nightingale` / `ni`, `troubadour` / `tr`, `marcato` / `ma`, `pianissimo` / `pi` | `/ja <name> <me>` + `ability_command` message |
 | `nt` | Nightingale, then Troubadour after `ABILITY_DELAYS.nt_combo_delay` (2.0; fallback 1.5) |
 | `lullaby` | `/ma "Horde Lullaby" <stnpc>` |

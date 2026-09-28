@@ -470,7 +470,7 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
 
 ### memcheck, debugstate, debugsubjob
 
-- **`memcheck`**. Walks `_G`, groups entries by type, counts each table's direct children and sorts tables by that count. It lists `package.loaded` when `package` is visible, which shows Windower's libs only: GearSwap's `require` never writes there, so project modules show up under `_G.__require_cache` (`module_cache.lua`). It writes `data/memcheck_<char>_<job>.txt` (`export_report`) and prints three numbers plus the path.
+- **`memcheck`**. Walks `_G`, groups entries by type, counts each table's direct children and sorts tables by that count. It lists the loaded modules from `package.loaded` when the environment has `package`, else (GearSwap's sandbox, where `package` is absent) from the keys of `_G.__require_cache` (`module_cache.lua`). Until 2026-09-28 it read `package.loaded` only and listed 0 modules in game. It writes `data/memcheck_<char>_<job>.txt` (`export_report`) and prints three numbers plus the path.
 - **`debugstate`**. Prints `_G.AUTOMOVE_RUNNING`, `windower._automove_seq`, `_G._automove_sequence`, the JobChangeManager counter and lockstyle-registry size, and the UI manager ids and failure count.
 - **`debugsubjob`**. Prints `player.main_job/_level`, `player.sub_job/_level`, `windower.ffxi.get_info().zone` and its `res.zones` name. Written to check that `sub_job_level` reads 0 in Odyssey Sheol Gaol.
 

@@ -622,9 +622,9 @@ or /DNC, shields included (its comment now says so).
 - `PetManager.get_pet_status`, `is_pet_valid`, `SetBuilder.should_use_pet_sets`
   and `get_current_mode` test `isvalid` on raw mobs (always false) but have no
   caller; do not revive them without switching to `id`.
-- `BST_MIDCAST`'s fallback branch calls the undefined
-  `MessageFormatter.error_bst_module_not_loaded`: if the categoriser ever fails
-  to load, every midcast raises until the next load.
+- `BST_MIDCAST` reports a categoriser that failed to load with
+  `MessageFormatter.show_error` (until 2026-09-28 it called the undefined
+  `error_bst_module_not_loaded` and raised).
 - `BST_AFTERCAST`, `BST_COMMANDS`, `BST_IDLE`, `BST_ENGAGED`, `BST_STATUS`,
   `BST_BUFFS`, `BST_MOVEMENT`, `BST_LOCKSTYLE`, `BST_MACROBOOK` export only
   through `_G` (no `return`), unlike the dual-export rule.
@@ -662,16 +662,13 @@ or /DNC, shields included (its comment now says so).
   anyway.
 - **Pet-valid cache can be stale on pet change** (P3, plausible): the 1 s cache
   of `update_pet_mode` is used by the rebuild that `pet_change` triggers.
-- **Aftercast monitor start can error after a reload** (P3): the 2 s closure in
-  `job_aftercast` calls `_G.start_pet_monitoring()` without re-checking it;
-  `file_unload` sets it to nil.
-- **`Sic` can be refused while charges remain** (P3, plausible, not tested in
-  game): `Sic` is type `PetCommand` with recast id 102, the Ready charge timer,
-  so it is cooldown-checked like any ability, and `CooldownChecker`'s
-  `MULTI_CHARGE_ABILITIES` does not list it.
-- `BST_MIDCAST.lua` `ensure_modules_loaded` calls the undefined
-  `MessageFormatter.error_bst_module_not_loaded` if the categoriser fails to
-  load, and `modules_loaded` is then never set.
+- Fixed 2026-09-28: the 2 s closure in `job_aftercast` re-checks
+  `_G.start_pet_monitoring` (a reload inside the wait cleared it and the call
+  raised); `BST_MIDCAST` no longer calls the undefined
+  `error_bst_module_not_loaded`.
+- Not a bug (checked 2026-09-28 on BG-Wiki): `Sic` has its own 1:30 recast and
+  no charges; Ready is the charge-based command, and with a jug pet Sic becomes
+  Ready. The cooldown check on Sic is right.
 - `debugprecast` shadows the common command.
 - `broth` counts only items named "...Broth", in inventory only.
 - The pet monitor reports its errors with `print()` (console only), not

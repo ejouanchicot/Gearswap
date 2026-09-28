@@ -205,22 +205,19 @@ function job_self_command(cmdParams, eventArgs)
         -- Step 2: Single /equip attempt 1 second later
         coroutine.schedule(function()
             -- Get the target ring from idle set
+            -- GearSwap accepts left_ring, ring1 and lring for the same slot
+            local function left_ring_of(set)
+                return type(set) == 'table' and (set.left_ring or set.ring1 or set.lring) or nil
+            end
             local ring_data = nil
             if sets and sets.idle then
-                local target_set = sets.idle
-
                 -- Check IdleMode
                 if state and state.IdleMode and state.IdleMode.current then
-                    local mode = state.IdleMode.current
-                    if sets.idle[mode] and sets.idle[mode].left_ring then
-                        ring_data = sets.idle[mode].left_ring
-                    end
+                    ring_data = left_ring_of(sets.idle[state.IdleMode.current])
                 end
 
                 -- Fallback to base idle set
-                if not ring_data and target_set.left_ring then
-                    ring_data = target_set.left_ring
-                end
+                ring_data = ring_data or left_ring_of(sets.idle)
             end
 
             -- Extract ring name (handle both string and table format)

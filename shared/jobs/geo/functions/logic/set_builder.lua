@@ -98,22 +98,26 @@ function SetBuilder.build_engaged_set(base_set)
     -- Step 1: Select base set based on Luopan status
     local result
     if pet and pet.isvalid then
+        -- A character's set file may leave out sets.luopan.engaged or sets.me:
+        -- read them through locals rather than raise while a luopan is out.
+        local luopan_engaged = sets.luopan and sets.luopan.engaged or {}
+        local me_engaged = sets.me and sets.me.engaged
         -- Luopan active - check LuopanMode state
         if state.LuopanMode and state.LuopanMode.current then
             local mode = state.LuopanMode.current
 
             -- Select set based on LuopanMode (DT or DPS)
-            if mode == 'DT' and sets.luopan.engaged.DT then
-                result = sets.luopan.engaged.DT
-            elseif mode == 'DPS' and sets.luopan.engaged.DPS then
-                result = sets.luopan.engaged.DPS
+            if mode == 'DT' and luopan_engaged.DT then
+                result = luopan_engaged.DT
+            elseif mode == 'DPS' and luopan_engaged.DPS then
+                result = luopan_engaged.DPS
             else
                 -- Fallback to DT if state invalid
-                result = sets.luopan.engaged.DT or sets.me.engaged or {}
+                result = luopan_engaged.DT or me_engaged or {}
             end
         else
             -- No LuopanMode state - fallback to DT
-            result = sets.luopan.engaged.DT or sets.me.engaged or {}
+            result = luopan_engaged.DT or me_engaged or {}
         end
     else
         -- No Luopan - use standard engaged set

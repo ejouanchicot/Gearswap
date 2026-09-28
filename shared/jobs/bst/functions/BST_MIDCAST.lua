@@ -45,7 +45,7 @@ local function ensure_modules_loaded()
     local success_rmc
     success_rmc, ReadyMoveCategorizer = pcall(require, 'shared/jobs/bst/functions/logic/ready_move_categorizer')
     if not success_rmc then
-        MessageFormatter.error_bst_module_not_loaded('ReadyMoveCategorizer')
+        MessageFormatter.show_error('BST: ReadyMoveCategorizer not loaded')
         ReadyMoveCategorizer = nil
     end
 
