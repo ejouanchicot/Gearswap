@@ -9,6 +9,8 @@
 ---
 --- Commands:
 ---   //gs c sortie <target>          stance + alt profile (see TARGETS)
+---   //gs c sortie gab               alt assists Gabvanstronger (Kaories/Gab):
+---                                   no stance change for this character
 ---   //gs c sortie escort [Indi-X]   alt stops Silmaril, dismisses its luopan
 ---                                   if any, casts the Indi (default
 ---                                   Indi-Regen) and follows this character
@@ -44,6 +46,8 @@ local STANCES = {
 
 --- Target -> Silmaril profile of the alt, its Indi- (must match the one set
 --- in that profile), this character's stance, and the summary shown.
+--- `path` loads a profile outside PROFILE_ROOT; a target without `stance`
+--- leaves this character's modes (stance, Phalanx SIRD) alone.
 --- `phalanx_sird = false` turns Phalanx SIRD Off for that target (PLD); every
 --- other target turns it On.
 --- The Indi- is cast on load because Silmaril only recasts one when the new
@@ -60,6 +64,7 @@ local TARGETS = {
     aita       = {profile = 'Aita',       indi = 'Indi-Frailty', stance = 'tank', summary = 'Geo-Gravity + BoG, Entrust Fury'},
     aminon     = {profile = 'Aminon',     indi = 'Indi-Fury',    stance = 'tank', summary = 'Geo-Frailty + BoG behind (Hysoka engaged), Judgment; /DRK: Absorb-TP, Last Resort', phalanx_sird = false},
     aminontest = {profile = 'AminonTest', indi = 'Indi-Fury',    stance = 'tank', summary = 'test on Vampire Leech (Tetsouo engaged)', phalanx_sird = false},
+    gab        = {path = 'Kaories/Gab',   indi = 'Indi-Acumen',  summary = 'assists Gabvanstronger: Geo-Malaise, magic bursts, no JA, no melee'},
 }
 
 --- Bosses fought exactly the same way share one profile.
@@ -164,21 +169,24 @@ local function engage_target(name)
         if messages() then messages().show_unknown_target(name) end
         return true
     end
-    set_states(STANCES[target.stance])
-    -- Only on a job that has the mode: set_states would otherwise send
-    -- `gs c set` and print Mote's unknown-state error.
-    if state and rawget(state, 'PhalanxSIRD') then
-        set_states({'PhalanxSIRD ' .. (target.phalanx_sird == false and 'Off' or 'On')})
+    if target.stance then
+        set_states(STANCES[target.stance])
+        -- Only on a job that has the mode: set_states would otherwise send
+        -- `gs c set` and print Mote's unknown-state error.
+        if state and rawget(state, 'PhalanxSIRD') then
+            set_states({'PhalanxSIRD ' .. (target.phalanx_sird == false and 'Off' or 'On')})
+        end
     end
-    to_alt('sm load ' .. PROFILE_ROOT .. target.profile)
+    to_alt('sm load ' .. (target.path or (PROFILE_ROOT .. target.profile)))
     to_alt('sm follow off')
     to_alt('sm on')
     note({on = true, follow = false})
     to_alt('/ma "' .. target.indi .. '" <me>')
     if messages() then
+        local profile = target.profile or target.path
         local shown = key ~= name
-            and (name:sub(1, 1):upper() .. name:sub(2) .. ' (' .. target.profile .. ')')
-            or target.profile
+            and (name:sub(1, 1):upper() .. name:sub(2) .. ' (' .. profile .. ')')
+            or profile
         messages().show_target_loaded(shown, ALT, target.indi, target.summary)
     end
     return true
