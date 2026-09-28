@@ -163,10 +163,19 @@ end
 
 --- Waist choice for elemental damage (equipment/elemental_bonus.lua):
 --- Hachirin-no-Obi when its bonus beats Orpheus's Sash, and the reverse.
+--- A belt not in the inventory / wardrobes counts as 0, so a rule never asks
+--- for a belt the character does not have (ElementalBelt.owned).
 local function belt_bonuses(spell)
     local ok, Bonus = pcall(require, 'shared/utils/equipment/elemental_bonus')
     if not ok then return 0, 0 end
-    return Bonus.for_action(spell)
+    local obi, orpheus = Bonus.for_action(spell)
+    local ok_belt, ElementalBelt = pcall(require, 'shared/utils/equipment/elemental_belt')
+    if ok_belt and ElementalBelt then
+        local owned = ElementalBelt.owned()
+        if not owned['Hachirin-no-Obi'] then obi = 0 end
+        if not owned["Orpheus's Sash"] then orpheus = 0 end
+    end
+    return obi, orpheus
 end
 function TESTS.obi_better(v, spell)
     local obi, orpheus = belt_bonuses(spell)
