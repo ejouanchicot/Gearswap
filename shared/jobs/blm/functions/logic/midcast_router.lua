@@ -114,6 +114,7 @@ function Router.handle_impact(spell, ctx)
     end
 
     equip(impact_set)
+    require('shared/utils/midcast/midcast_fallback').skip(spell)
 
     -- CRITICAL: Force Twilight Cloak protection (like Marsyas for BRD)
     -- Body MUST stay equipped - other gear changes during cast must not strip it.

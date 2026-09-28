@@ -240,7 +240,7 @@ Treasure Hunter and the player's CUSTOM gear go on.
 flowchart TD
     A[job_post_midcast] --> B[MidcastWatchdog.on_midcast_start]
     B --> C{spell}
-    C -- Impact --> I[Router.handle_impact: Impact set or .MagicBurst, body re-equip; no select_set]
+    C -- Impact --> I[Router.handle_impact: Impact set or .MagicBurst, body re-equip; no select_set, MidcastFallback.skip]
     C -- Elemental Magic --> EM[select_set Elemental Magic, mode_value MagicBurst if On or Acc]
     EM --> O1[MPConservation if MP below threshold]
     O1 --> O2[ElementalMatch, only when the shared belt is off]
@@ -263,13 +263,9 @@ flowchart TD
   `spell.english == 'Death'` branch inside `Router.handle_elemental` never
   runs: it is dead code, and so is the idea of a "skill `Death`" set.
 - **Impact** is Elemental Magic. `Router.handle_impact` equips the Impact set
-  (or `.MagicBurst` when `MagicBurstMode` is On) and re-equips the cloak, but
-  it does not call `select_set`, so `MidcastFallback` then routes Impact as
-  Elemental Magic and P0 equips `sets.midcast['Impact']` over it. The
-  `.MagicBurst` choice and the body re-equip are therefore lost; without a
-  `sets.midcast['Impact']`, the Elemental Magic base (without the cloak) ends
-  the midcast. Verified offline with a stubbed harness (see For maintainers),
-  not in game. The template's `Impact.MagicBurst` is the Impact set itself,
+  (or `.MagicBurst` when `MagicBurstMode` is On) and re-equips the cloak
+  without `select_set`, then calls `MidcastFallback.skip(spell)` (2026-09-28)
+  so the fallback does not route Impact again as Elemental Magic. The template's `Impact.MagicBurst` is the Impact set itself,
   so the template gear is unchanged.
 - The context built in `job_post_midcast` carries `debug_enabled`
   (`_G.MidcastManagerDebugState`), the midcast message module,

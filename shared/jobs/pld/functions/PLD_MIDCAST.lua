@@ -110,6 +110,7 @@ local function midcast_phalanx(spell)
 
     if use_sird and sets.midcast.SIRDPhalanx then
         equip(sets.midcast.SIRDPhalanx)
+        require('shared/utils/midcast/midcast_fallback').skip(spell)
         return
     end
 

@@ -212,11 +212,9 @@ flowchart TD
   line creating `sets.midcast.Indi.Entrust` writes the Entrust sub-table
   **into** `sets.luopan.idle`. GearSwap ignores non-slot keys when equipping,
   so this has no gear effect by itself.
-- **The Entrust set is undone.** The Entrust branch equips
-  `sets.midcast.Indi.Entrust` and returns without `select_set`, so
-  `MidcastFallback` routes the spell again as Geomancy and P9 equips
-  `sets.midcast.Geomancy` over it. Verified offline with the harness below,
-  not in game.
+- The Entrust branch equips `sets.midcast.Indi.Entrust` without
+  `select_set` and calls `MidcastFallback.skip(spell)`. Until 2026-09-28 it did
+  not, and the fallback put `sets.midcast.Geomancy` back over the Entrust set.
 - The other skills go through `MidcastManager` (`PLAIN_SKILLS` and the
   Enhancing branch), so `//gs c debugmidcast` traces them. With the template
   sets: no `sets.midcast['Healing Magic']` or `['Dark Magic']`, so those calls
@@ -419,8 +417,8 @@ T = in `_master/sets/geo_sets.lua`.
 - In town the town set wins over the luopan set.
 - `sets.midcast.Geomancy`, `sets.midcast.Indi` and `sets.luopan.idle` are one
   table: assigning a key on one writes it on all three.
-- A midcast branch that equips without `select_set` is undone by
-  `MidcastFallback` (the Entrust branch today).
+- A midcast branch that equips without `select_set` must call
+  `MidcastFallback.skip(spell)`, or the fallback lays the Geomancy chain over it.
 - Commands that depend on the subjob (`lightarts`, `aoe`, `dispel`) do not
   check it; the game refuses the actions.
 - `lightarts`, `darkarts`, `dispel`, `entrust` run here even when the dual-box

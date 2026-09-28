@@ -35,6 +35,15 @@ function MidcastFallback.route(spell, eventArgs)
     end
 end
 
+--- Leave `spell` alone: the job dressed it itself on purpose, without
+--- select_set (RDM Phalanx under Accession, BLM Impact, GEO Entrust, PLD
+--- Phalanx SIRD, BRD dummy and debuff songs). Without this, route() would
+--- see no routing and lay the skill chain's set over the job's choice.
+--- @param spell table
+function MidcastFallback.skip(spell)
+    _G._midcast_routed = spell
+end
+
 --- Hook route() on Mote's cleanup_midcast, which runs after job_post_midcast
 --- on every midcast. Once per sandbox; INIT_SYSTEMS calls it after Mote
 --- defined cleanup_midcast and before the custom states wrap it, so the

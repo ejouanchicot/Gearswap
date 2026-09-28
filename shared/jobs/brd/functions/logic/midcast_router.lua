@@ -218,12 +218,14 @@ function Router.handle_singing(spell, ctx)
     -- Dummy songs: equip DummySong set + special daurdabla message, then exit
     if is_dummy then
         handle_dummy_song(spell, ctx)
+        require('shared/utils/midcast/midcast_fallback').skip(spell)
         return
     end
 
     -- Debuff songs (Lullaby, Threnody, Elegy, Requiem, Virelai, Nocturne, Finale):
     -- NO weapon swap - let Mote-Include equip the matching dedicated set.
     if is_no_weapon_song(spell.english) then
+        require('shared/utils/midcast/midcast_fallback').skip(spell)
         return
     end
 

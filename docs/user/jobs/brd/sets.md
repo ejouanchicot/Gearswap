@@ -126,7 +126,7 @@ Capriccio, Goblin Gavotte, Fowl Aubade, Herb Pastoral, Shining Fantasia.
 | Set | Worn when |
 |---|---|
 | `sets.midcast.DummySong` | Singing any song of that list |
-| `sets.midcast['Gold Capriccio']`, `['Goblin Gavotte']`, `['Fowl Aubade']`, `['Herb Pastoral']`, `['Shining Fantasia']` | Same songs, checked right after: give each one `sets.midcast.DummySong` too (see [bug note](#names-the-code-reads-that-the-provided-file-lacks)) |
+| `sets.midcast['Gold Capriccio']`, `['Goblin Gavotte']`, `['Fowl Aubade']`, `['Herb Pastoral']`, `['Shining Fantasia']` | Not needed: `sets.midcast.DummySong` stays for the whole dummy song (the provided file keeps these copies; they are harmless) |
 
 The `range` of `sets.midcast.DummySong` is also what `//gs c songs` and `//gs c dummy`
 use to count slots: if that instrument, in the version you own, grants extra songs,
@@ -142,11 +142,12 @@ and `sub` out of these sets, so your weapons (and TP) stay where they are.
 | Set | Worn when |
 |---|---|
 | `sets.midcast['Foe Lullaby II']`, `['Horde Lullaby']`... | That song by exact name |
-| `sets.midcast['Foe Requiem']`... | The name without its tier (Foe Requiem I to VII) |
-| `sets.midcast.Lullaby`, `.Threnody`, `.Elegy`, `.Requiem`, `.Virelai`, `.Nocturne`, `.Finale` | Its family, the last word (Ltng. Threnody II is a Threnody) |
-| the first word (`sets.midcast.Foe`...), then `sets.midcast.BardSong` | Nothing above exists. BardSong holds your song weapons: avoid landing here |
+| `sets.midcast.Lullaby`, `.Threnody`, `.Elegy`, `.Requiem`... | Its family as the GearSwap library names it (Foe Requiem I to VII are `Requiem`, Ltng. Threnody II is a `Threnody`) |
+| `sets.midcast.BardSong` | Nothing above exists. BardSong holds your song weapons: avoid landing here |
 
-`sets.midcast.Songs.Duration` is added on top under Troubadour here too.
+These songs keep that first choice for the whole cast: no instrument and no
+`sets.midcast.Songs.Duration` layer on top, even under Troubadour (until
+2026-09-28 a shared step re-picked them and added the Duration layer).
 
 The provided file builds `sets.midcast.DebuffSong` as a base and copies it into
 `Pining Nocturne`, `Magic Finale`, both Elegies, `Foe Requiem VII`, `Maiden's
@@ -225,7 +226,6 @@ Magic']` as an empty set and none of the other three.
 | `sets.midcast.Songs.Loughnashade` | Added on top of Aria of Passion |
 | `sets.midcast.Songs.Duration` | Duration gear on every song under Troubadour |
 | `sets.midcast.Requiem` (or `['Foe Requiem VI']`) | The Foe Requiem VI sung when VII is on cooldown: today it falls to `sets.midcast.BardSong`, weapons included |
-| `sets.midcast['Shining Fantasia']` | The fifth dummy song: without it, it is sung in `sets.midcast.BardSong` with its instrument instead of the dummy harp. Add `sets.midcast['Shining Fantasia'] = sets.midcast.DummySong` |
 | `sets.midcast.Prelude`, `.Mazurka`, `.Hymnus`, `.Sirvente`... | Families with no set of their own (they use `BardSong`) |
 | `sets.precast.FC.BardSong` | Fast Cast for songs only |
 | `sets.precast.JA.Marcato`, `.Pianissimo`, `['Clarion Call']`, `.Tenuto` | Those abilities |

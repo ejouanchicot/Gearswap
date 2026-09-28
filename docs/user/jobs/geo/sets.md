@@ -68,10 +68,8 @@ The Entrust set in the provided file starts from the luopan idle set and puts
 Gada in the main hand. With `CombatMode` On, main and sub are locked and Gada
 does not go on.
 
-**Known issue (found 2026-09-28, from the code, not tested in game):** a shared
-step that runs at the end of every midcast puts `sets.midcast.Geomancy` back on
-after the Entrust set, so the Indi- on a party member ends up in your Geomancy
-set.
+Until 2026-09-28 a shared step put `sets.midcast.Geomancy` back on after the
+Entrust set; fixed, the Entrust set now stays for the whole cast.
 
 ### Healing, Enhancing, Enfeebling, Elemental, Dark
 

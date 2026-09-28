@@ -197,6 +197,7 @@ local function midcast_enhancing(spell, debug_enabled)
     if buffactive and buffactive['Accession'] and spell.english
        and spell.english:match("^Phalanx") then
         equip(sets.midcast['Enhancing Magic'])
+        require('shared/utils/midcast/midcast_fallback').skip(spell)
         if debug_enabled then
             MessageFormatter.show_debug('RDM Midcast', 'Phalanx + Accession detected → Base Enhancing set')
         end

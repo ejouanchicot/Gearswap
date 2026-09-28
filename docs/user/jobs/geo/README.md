@@ -157,7 +157,7 @@ What the project's shared systems do on GEO, checked in the code.
 | Obi / Orpheus | The shared automatic belt (`ELEMENTAL_BELT.lua`, `//gs c belt`) goes on after your nuke set when it helps. GEO has no belt rule of its own |
 | Tier step-down | A nuke (Fire V...), -ra or Aspir cast from a macro that is on recast or short of MP goes out as the highest lower tier you know that can; nothing castable: stopped, recasts shown ([auto-tier](../../features/auto-tier-system.md)) |
 | Automatic abilities | Off by default, in `<YourName>/config/AUTO_ABILITIES.lua`: `geo_entrust = true` (an Indi- cast on a party member waits for Entrust first, when it is ready), `geo_full_circle = true` (a Geo- cast while a luopan is out uses Full Circle first, then the Geo- 2 s later) |
-| Entrust set | An Indi- on a party member while Entrust is up (or just used) is meant to wear `sets.midcast.Indi.Entrust`. See Known issues |
+| Entrust set | An Indi- on a party member while Entrust is up (or just used) wears `sets.midcast.Indi.Entrust` for the whole cast |
 | Recast announce | `party_announce` in `RECAST_CONFIG.lua` works for abilities and for spells that do not step down |
 | Doom | `sets.buff.Doom` while Doomed; its slots stay locked until Doom is gone |
 | Dual Wield tiers | Only when you hold two weapons (with /NIN or /DNC): nothing with a club and shield |
@@ -183,9 +183,6 @@ Found in the code on 2026-09-28, not yet tested in game:
   game-data table that is not available to the job, so they answer "no tier
   available" and cast nothing. Cast nukes from a macro meanwhile: the macro
   path steps down correctly.
-- The Entrust set: after GEO equips `sets.midcast.Indi.Entrust`, the shared
-  midcast step that routes "unhandled" spells equips `sets.midcast.Geomancy`
-  over it, so the Indi- on a party member ends up in your Geomancy set.
 
 ## Configuration files for this job
 

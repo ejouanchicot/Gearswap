@@ -205,7 +205,7 @@ midcast (spell name, spell map, skill, `CastingMode`), then
 | Skill | Handler | `MidcastManager.select_set` config | After the manager |
 |-------|---------|------------------------------------|-------------------|
 | Enfeebling Magic | `midcast_enfeebling` | `mode_state = EnfeebleMode`, `database_func = get_enfeebling_type` | `sets.midcast['Enfeebling Magic'].Saboteur` while `buffactive['Saboteur']` |
-| Enhancing Magic | `midcast_enhancing` | `mode_state = state.EnhancingMode` (never defined, nil), `target_func = get_enhancing_target`, `database_func = get_spell_family` | Before the manager: Accession + `^Phalanx` equips `sets.midcast['Enhancing Magic']` and returns (see Known issues: the fallback then overrides it) |
+| Enhancing Magic | `midcast_enhancing` | `mode_state = state.EnhancingMode` (never defined, nil), `target_func = get_enhancing_target`, `database_func = get_spell_family` | Before the manager: Accession + `^Phalanx` equips `sets.midcast['Enhancing Magic']` and returns and calls `MidcastFallback.skip(spell)` so the fallback leaves it alone |
 | Healing Magic | `midcast_healing` | skill + spell | `sets.midcast.CureSelf` for a Cure (not a Curaga: `^Cure`) on oneself, when the set exists |
 | Elemental Magic | `midcast_elemental` | `mode_state = NukeMode` | - |
 | Dark Magic | `midcast_dark` | skill + spell | - |
@@ -532,12 +532,9 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 
 ## Known issues
 
-- **Accession + Phalanx is overridden** (new with `MidcastFallback`, confirmed
-  offline with `lua5.1` against `midcast_manager.lua` and `midcast_fallback.lua`): `midcast_enhancing` equips `sets.midcast['Enhancing Magic']`
-  and returns without calling `select_set`, so `_G._midcast_routed` is not set;
-  `MidcastFallback.route` then calls `select_set({skill = 'Enhancing Magic'})`,
-  which finds `sets.midcast.Phalanx` by name (P0) and equips it over the
-  intended base set.
+- Fixed 2026-09-28: Accession + Phalanx was overridden by `MidcastFallback`
+  (`sets.midcast.Phalanx` over the plain Enhancing set); the branch now calls
+  `MidcastFallback.skip(spell)`.
 - `EnfeebleMode` changes no gear with the template (no `.<type>.<mode>` set).
   Kept on purpose (player's choice, 2026-09-27).
 - `stage_cooldown` ignores `TierRefiner.refine`'s return value: a spell arriving

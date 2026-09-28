@@ -69,6 +69,7 @@ local function midcast_geomancy(spell)
         if has_entrust and target_is_other then
             if sets.midcast.Indi and sets.midcast.Indi.Entrust then
                 equip(sets.midcast.Indi.Entrust)
+                require('shared/utils/midcast/midcast_fallback').skip(spell)
                 return
             end
         end

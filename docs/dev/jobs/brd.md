@@ -298,12 +298,12 @@ flowchart TD
   2026-09-27) wraps `cleanup_midcast`: a magic spell that no
   `MidcastManager.select_set` saw during this midcast (`_G._midcast_routed`)
   and that is not cancelled or `handled` is routed with its own skill. Dummy
-  songs and debuff songs never call `select_set` in the router, so both are
-  **re-picked through the Singing chain** after the router. With the template
-  sets this gives the same set (each dummy and debuff song has a set by name,
-  and `Threnody` is found as the family), except the fifth dummy song,
-  Shining Fantasia, which has no set of its own and falls to
-  `sets.midcast.BardSong` (see Known issues).
+  songs and debuff songs do not call `select_set` in the router: both branches
+  call `MidcastFallback.skip(spell)` (2026-09-28), so the dummy song keeps
+  `sets.midcast.DummySong` and the debuff song keeps Mote's pick. Before that,
+  both were re-picked through the Singing chain: the fifth dummy song
+  (Shining Fantasia) was sung in `sets.midcast.BardSong` with Gjallarhorn, and
+  debuff songs got `sets.midcast.Songs.Duration` under Troubadour.
 - Dummy detection reads `BRDSongConfig.DUMMY_SONGS.standard`
   (`is_dummy_song`); debuff detection uses `match` on `DEBUFF_SONGS` and on
   Lullaby / Threnody (`is_no_weapon_song`).
@@ -568,12 +568,9 @@ In game: `//gs c songplan`, `//gs c debugmidcast` (Singing chain steps),
   Aria of Passion ("You do not know that spell") unless Marsyas / Loughnashade
   is already worn. `spell_gear_lock.lua` only opens the lock for Dispelga.
   Combat Mode is hidden on BRD by default.
-- **Shining Fantasia is sung in `sets.midcast.BardSong`** (confirmed in code,
-  template sets). The router equips `sets.midcast.DummySong`, then
-  `MidcastFallback` re-routes it through the Singing chain, where the template
-  has no `sets.midcast['Shining Fantasia']`: the base `BardSong` set (with its
-  instrument and weapons) wins. Only reached with 5 dummies. Fix in data: add
-  the alias line; or have `handle_dummy_song` mark the spell routed.
+- Fixed 2026-09-28: Shining Fantasia (fifth dummy song) was sung in
+  `sets.midcast.BardSong` because `MidcastFallback` re-routed dummy songs; the
+  router now calls `MidcastFallback.skip(spell)`.
 - **Movement gear can stick on the engaged set** (plausible, code path
   confirmed, not seen in game). `build_engaged_set` calls `apply_movement`;
   when you engage while running, `state.Moving` is still `true` at that moment,
