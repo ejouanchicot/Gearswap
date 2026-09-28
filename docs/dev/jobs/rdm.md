@@ -1,88 +1,88 @@
 # RDM (Red Mage) job
 
 The RDM job is a caster/melee hybrid built mostly from shared systems: 12 hook
-modules plus one logic module under `shared/jobs/rdm/functions/` (1 798 lines),
-an entry point per character (template + Kaories overlay), seven config files and
-one sets file. GearSwap loads it when the main job becomes RDM
-(`Tetsouo_RDM.lua`, or `Kaories_RDM.lua` for Kaories, who is the only character
-that plays RDM live). From then on Mote-Include calls its hooks on every action,
-on status and buff changes, on `//gs c` commands and on state cycles.
+modules plus one logic module under `shared/jobs/rdm/functions/` (about 1 850
+lines), a template entry point (plus character overlays), eight config files and
+one sets file. GearSwap loads it when the main job becomes RDM (the entry file
+`<Character>_RDM.lua`, made from `_master/entry/Tetsouo_RDM.lua` by the clone
+script). From then on Mote-Include calls its hooks on every action, on status
+and buff changes, on `//gs c` commands and on state cycles.
+
+Player-facing pages: [hub](../../user/jobs/rdm/README.md),
+[modes](../../user/jobs/rdm/states.md), [sets](../../user/jobs/rdm/sets.md).
 
 What RDM adds on top of the shared pipeline:
 
-- **Tier refinement** in precast: Dia III, Distract III, Slow II and the other
-  families listed in `RDM_ENFEEBLE_TIERS.lua`, and the elemental nukes of
-  `shared/data/spells/NUKE_TIERS.lua` (Fire V -> IV -> ... since 2026-09-26),
-  go through the shared `TierRefiner` instead of `CooldownChecker`, so a spell
-  on recast or short on MP is replaced by the next learned, castable lower tier.
-  `state.EnfeebleTier` (On by default; Ctrl+Numpad9, Gab Ctrl+F3) turns the
-  enfeeble part off: a tiered enfeeble on recast is then cancelled with its
-  recast shown, so the player keeps the tier (Gravity II a second from ready
-  must not become Gravity). Nukes drop either way; enhancing never drops a
-  tier on recast (Phalanx only swaps by target).
+- **Tier refinement** in precast: the enfeeble families of
+  `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` (Dia, Bio, Distract, Frazzle,
+  Blind, Slow, Paralyze, Poison, Addle, Sleep, Gravity) and the nukes of
+  `shared/data/spells/NUKE_TIERS.lua` (Fire..Water I-V, the -ra III-I, Aspir
+  III-I) go through the shared `TierRefiner` instead of `CooldownChecker`: a
+  spell on recast or short of MP is replaced by the next learned, castable
+  lower tier. `state.EnfeebleTier` (On by default) switches the enfeeble part
+  off: a tiered enfeeble on recast is then cancelled with its recast shown, so
+  the player keeps the tier. Nukes step down either way; enhancing spells never
+  do (Phalanx only swaps by target).
 - **Phalanx tier by target**: Phalanx II on yourself becomes Phalanx, Phalanx on
   someone else becomes Phalanx II.
 - **Auto-Saboteur** before the enfeebles listed in `RDM_SABOTEUR_CONFIG.lua`
-  when `SaboteurMode` is On (through the shared `AbilityHelper`).
-- **Skill-routed midcast** through `MidcastManager` with the enfeebling type
-  database, the enhancing family database and the Composure target, plus a
-  Saboteur hands overlay and an Accession + Phalanx exception.
-- **Weapon states and dual-wield detection** for idle/engaged sets
-  (`MainWeapon`, `SubWeapon`, `EngagedMode`, `.DW` variants, `sets.shields`),
-  and the shared `CombatMode` weapon lock.
+  when `SaboteurMode` is On (shared `AbilityHelper`).
+- **Skill-routed midcast** through `MidcastManager`, with the enfeebling type
+  database, the enhancing family database and the Composure target, a Saboteur
+  overlay, a `CureSelf` overlay and an Accession + Phalanx exception.
+- **Weapon states and single/dual-wield detection** for idle and engaged sets
+  (`MainWeapon`, `SubWeapon`, `EngagedMode`, `.DW` variants), and the shared
+  Combat Mode weapon lock (native on RDM).
+- **Dispelga** through the shared `SpellGearLock` (Daybreak held for the cast,
+  even through Combat Mode).
 - **State-driven cast commands** (`castlight`, `castenspell`, `castgain`, ...)
-  and a catch-all that turns any unknown command into `/ja`, `/ws` or `/ma`.
+  and a cast-by-name catch-all that turns any action name into `/ja`, `/ws` or
+  `/ma`.
 
-Every file in scope was read in full except the gear content of the sets files
-(only structure and set names were read, as gear choice is out of scope). Line
-numbers were re-checked against the working tree on 2026-09-25.
+Every file in scope was read in full on 2026-09-28, except the gear content of
+the sets files (structure and set names only).
 
 ## Files
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_RDM.lua` | 302 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (UI only), `init_gear_sets`, `file_unload` |
-| `_master/Kaories/entry/Kaories_RDM.lua` | 300 | Kaories overlay entry: identical except `Kaories/...` paths and two comments (see below) |
-| `shared/jobs/rdm/functions/rdm_functions.lua` | 85 | Facade: includes the 11 hook files, requires `dualbox_manager` (83) |
-| `shared/jobs/rdm/functions/RDM_PRECAST.lua` | 364 | `job_precast` as four stages (guard, cooldown/refine, Phalanx, Saboteur) + WS; `job_post_precast` (TP gear, spell FC set, `debugprecast` trace) |
-| `shared/jobs/rdm/functions/RDM_MIDCAST.lua` | 369 | `job_midcast` (empty) / `job_post_midcast`: `SKILL_HANDLERS` table dispatch to `MidcastManager` |
-| `shared/jobs/rdm/functions/RDM_AFTERCAST.lua` | 24 | `job_aftercast = LifecycleManager.aftercast()` |
+| `_master/entry/Tetsouo_RDM.lua` | 302 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD only), `init_gear_sets`, `file_unload` |
+| `_master/Kaories/entry/Kaories_RDM.lua` | - | Overlay entry: the template with the character name in every config path |
+| `shared/jobs/rdm/functions/rdm_functions.lua` | 85 | Facade: includes the 11 hook files, then requires `dualbox_manager` |
+| `shared/jobs/rdm/functions/RDM_PRECAST.lua` | 378 | `job_precast` as stages (guard, cooldown/refine, Phalanx, Saboteur) + WS + `SpellGearLock.begin`; `job_post_precast` (TP gear, spell FC set, lock hold, `debugprecast` trace) |
+| `shared/jobs/rdm/functions/RDM_MIDCAST.lua` | 389 | `job_midcast` (empty), `job_post_midcast` -> `route_midcast` (`SKILL_HANDLERS` table) + `SpellGearLock.hold` |
+| `shared/jobs/rdm/functions/RDM_AFTERCAST.lua` | 27 | `job_aftercast = LifecycleManager.aftercast(...)` with `SpellGearLock.release` as the extra step |
 | `shared/jobs/rdm/functions/RDM_IDLE.lua` | 43 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/rdm/functions/RDM_ENGAGED.lua` | 42 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/rdm/functions/RDM_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/rdm/functions/RDM_BUFFS.lua` | 20 | `job_buff_change = LifecycleManager.buff_change()` |
-| `shared/jobs/rdm/functions/RDM_COMMANDS.lua` | 432 | `job_self_command` router (cast-by-name fallback resolved from `res`) and `job_state_change` (UI refresh) |
+| `shared/jobs/rdm/functions/RDM_COMMANDS.lua` | 439 | `job_self_command` router (cast-by-name resolved from `res`), `job_state_change` (HUD refresh) |
 | `shared/jobs/rdm/functions/RDM_MOVEMENT.lua` | 42 | Empty `job_handle_equipping_gear` |
 | `shared/jobs/rdm/functions/RDM_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('RDM', 'config/rdm/RDM_LOCKSTYLE', 1, 'NIN')` wrappers |
-| `shared/jobs/rdm/functions/RDM_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('RDM', ..., 'NIN', 1, 1)` wrapper |
-| `shared/jobs/rdm/functions/logic/set_builder.lua` | 254 | Idle/engaged construction: mode sets, shield/DW detection, weapons, town, movement |
-| `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | Tier correspondence for 11 enfeeble families, read by `RDM_PRECAST.lua` `get_spell_tiers` |
-| `shared/data/spells/NUKE_TIERS.lua` | 56 | Nuke / -ra / Aspir tiers, read by `RDM_PRECAST.lua` `get_spell_tiers` and `GEO_PRECAST.lua` |
+| `shared/jobs/rdm/functions/RDM_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('RDM', 'config/rdm/RDM_MACROBOOK', 'NIN', 1, 1)` wrapper |
+| `shared/jobs/rdm/functions/logic/set_builder.lua` | 264 | Idle / engaged construction: mode sets, single vs dual wield, weapons, town, movement |
+| `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | Tier table of 11 enfeeble families (`RDM_ENFEEBLE_TIERS.get`) |
+| `shared/data/spells/NUKE_TIERS.lua` | 56 | Nuke / -ra / Aspir tier table (`NUKE_TIERS.get`), shared with GEO |
+| `shared/utils/precast/tier_refiner.lua` | - | `TierRefiner.refine` (shared with BLM and GEO) |
+| `shared/utils/equipment/spell_gear_lock.lua` | 135 | `SpellGearLock.cast/begin/hold/release`, `REQUIRED = {Dispelga = {main = 'Daybreak'}}`; RDM is its only caller |
 | `shared/data/magic/ENFEEBLING_MAGIC_DATABASE.lua` (+ `enfeebling/*.lua`) | - | `get_enfeebling_type` (macc, mnd_potency, int_potency, skill_potency, skill_mnd_potency, potency, duration) |
-| `shared/data/magic/ENHANCING_MAGIC_DATABASE.lua` (+ `enhancing/*.lua`) | - | `get_spell_family` (Enspell, Gain, BarElement, BarAilment, Refresh, Regen, Phalanx, Stoneskin, Aquaveil, Spikes, Boost, Storm) |
-| `_master/config/rdm/RDM_STATES.lua` | 323 | All states (`configure`), `configure_storm` |
-| `_master/config/rdm/RDM_KEYBINDS.lua` | 49 | Data only: 15 binds (Storm only on /SCH), handed to `KeybindManager.create('RDM', ...)`, which adds `get_active_binds` / `bind_all` / `refresh` / `unbind_all` / `show_intro` and appends the character's `COMMON_KEYBINDS.lua` keys (AutoMedicine `#numpad0`, the alts keys) |
-| `_master/config/rdm/RDM_CUSTOM.lua` | 118 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
-| `_master/config/rdm/RDM_LOCKSTYLE.lua` | 26 | `default = 1`, `by_subjob` |
+| `shared/data/magic/ENHANCING_MAGIC_DATABASE.lua` (+ `enhancing/*.lua`) | - | `get_spell_family` (Enspell, Gain, BarElement, BarAilment, Refresh, Regen, Phalanx, Stoneskin, Aquaveil, Spikes, Boost, Storm...) |
+| `_master/config/rdm/RDM_STATES.lua` | 323 | `RDMStates.configure`, `RDMStates.configure_storm` |
+| `_master/config/rdm/RDM_KEYBINDS.lua` | 50 | Data only: 16 entries (Storm only on /SCH) handed to `KeybindManager.create('RDM', ...)` |
+| `_master/config/rdm/RDM_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `_master/config/rdm/RDM_HUD.lua` | 33 | HUD section / row order for this job (empty lists = default) |
+| `_master/config/rdm/RDM_LOCKSTYLE.lua` | 26 | `default = 1`, `by_subjob` (never read, see Known issues) |
 | `_master/config/rdm/RDM_MACROBOOK.lua` | 42 | `default` book 2 page 1, `solo[sub]`, empty `dualbox` |
 | `_master/config/rdm/RDM_SABOTEUR_CONFIG.lua` | 41 | `auto_trigger_spells` (Distract III, Gravity II), `wait_time = 2` |
-| `_master/config/rdm/RDM_TP_CONFIG.lua` | 75 | `pieces` (Moonshade 250), `get_weapon_bonus`, sets `_G.RDMTPConfig` (73) |
-| `_master/sets/rdm_sets.lua` | 539 | Template sets (flat) |
-| `_master/Kaories/sets/rdm_sets.lua` | 634 | Overlay sets (Kaories' gear; adds `sets['Maxentius']` at 45 and `sets.precast.WS['Black Halo']` at 574) |
-| `_master/Kaories/config/rdm/*` | 7 files | The template configs with Kaories' values (`RDM_STATES.lua:92-95,112`: `Maxentius` replaces `Daybreak`, default `MainWeapon` is `Maxentius`, default `CombatMode` is `On`), plus `RDM_REFILL.lua` (22). No `RDM_CUSTOM.lua` overlay: a clone gets the template one |
+| `_master/config/rdm/RDM_TP_CONFIG.lua` | 75 | `pieces` (Moonshade 250), `get_weapon_bonus`; sets `_G.RDMTPConfig` itself |
+| `_master/sets/rdm_sets.lua` | 562 | Template sets (flat) |
+| `_master/Kaories/config/rdm/*`, `_master/Kaories/sets/rdm_sets.lua` | 7 files, 634 | Overlay: `Maxentius` replaces `Daybreak` and is the default `MainWeapon`, `CombatMode` starts On; adds `RDM_REFILL.lua`; no `RDM_CUSTOM.lua` / `RDM_HUD.lua` (a clone gets the template's) |
+| `_master/Gabvanstronger/config/rdm/*`, `_master/Gabvanstronger/sets/rdm_sets.lua` | 5 files, 930 | Overlay: its own `EngagedMode` / `IdleMode` / weapon values, keys, custom modes, lockstyle and macro book |
 | `shared/utils/messages/formatters/jobs/message_rdm.lua` + `data/jobs/rdm_messages.lua` | 169 + 108 | RDM chat messages (errors, Phalanx swap, storm) |
 | `shared/utils/messages/formatters/jobs/message_rdm_midcast.lua` + `data/systems/rdm_midcast_messages.lua` | 203 + 25 | `debugmidcast` trace lines |
 
-Live copies (gitignored): `Kaories/Kaories_RDM.lua`, `Kaories/config/rdm/*`
-and `Kaories/sets/rdm_sets.lua` are identical to the overlay since the resync
-of `f6f1683` (2026-09-24); live Kaories also has `RDM_CUSTOM.lua`, identical to
-the template. `Tetsouo/` has no RDM files; `Hysoka/` and `Gabvanstronger/` are
-frozen and out of scope.
-
-The overlay entry differs from the template only in the character name of every
-config path (`Kaories_RDM.lua:43,58,63,107,111,114,157,197,206`), the
-position of the "DUALBOX IPC" comment in `job_sub_job_change`, and the wording
-of the dual-box comment in `user_setup`.
+Live copies are gitignored (`<Character>/...`); a live copy can differ from
+its overlay until it is re-cloned.
 
 ## How it works
 
@@ -96,53 +96,48 @@ before `INIT_SYSTEMS` and before the RDM hook files exist (see
 ```mermaid
 sequenceDiagram
     participant GS as GearSwap
-    participant E as Tetsouo_RDM.lua
+    participant E as <Character>_RDM.lua
     participant M as Mote-Include
     participant F as rdm_functions.lua
-    GS->>E: run chunk (LOCKSTYLE_CONFIG 43-51, UIConfig 57-58, REGION_CONFIG 63-66)
+    GS->>E: run chunk (LOCKSTYLE_CONFIG, UI config, REGION_CONFIG)
     GS->>E: get_sets()
-    E->>M: include Mote-Include (77)
-    M->>E: user_setup() (states, keybinds, UI, JCM, macrobook/lockstyle, dualbox)
-    M->>E: init_gear_sets() -> include sets/rdm_sets.lua (281)
-    E->>E: INIT_SYSTEMS, data_loader, message hooks (79-104)
-    E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, RDM_TP_CONFIG, _G.RDMSaboteurConfig (106-122)
-    E->>E: JobChangeManager.cancel_all() (125-129)
-    E->>F: include rdm_functions.lua (132)
-    F->>F: include 11 hook files, require dualbox_manager (83)
-    E->>E: register_lockstyle_cancel("RDM", ...) (136-138)
+    E->>M: include Mote-Include
+    M->>E: user_setup() (states, keybinds, HUD, JCM, macrobook/lockstyle, dualbox)
+    M->>E: init_gear_sets() -> include sets/rdm_sets.lua
+    E->>E: INIT_SYSTEMS, data_loader, message hooks
+    E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, RDM_TP_CONFIG, _G.RDMSaboteurConfig
+    E->>E: JobChangeManager.cancel_all()
+    E->>F: include rdm_functions.lua
+    F->>F: include 11 hook files, require dualbox_manager
+    E->>E: register_lockstyle_cancel("RDM", ...)
 ```
 
-`user_setup()` (`Tetsouo_RDM.lua:193-254`):
+`user_setup()`:
 
 1. `RDMStates.configure()` creates every state (see [Mote states](#mote-states)),
-   including `Storm` when the subjob is SCH. `CombatMode` defaults to Off
-   (Kaories: On); its lock is the shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25) hook.
-2. `require` of `RDM_KEYBINDS`, stored in the global `RDMKeybinds`, then
-   `bind_all()` (`keybind_manager.lua` `bind_all`): keys of the file that no
-   longer apply are unbound, the binds `get_active_binds()` keeps for the
-   subjob are bound (the keys about to be bound are not unbound first), then
-   `show_intro()`. `show_intro` `require`s `RDM_MACROBOOK.lua` and
-   `RDM_LOCKSTYLE.lua`; both files return nothing, so the intro falls back to
-   `show_system_intro`, but executing them defines the globals
-   `select_default_macro_book` and `select_default_lockstyle` as a side effect.
-   A failed `require` prints `[RDM] Keybinds failed to load: <error>`.
+   including `Storm` when the subjob is SCH.
+2. `pcall(require, '<Character>/config/rdm/RDM_KEYBINDS')`, stored in the
+   global `RDMKeybinds`, then `bind_all()`: keys of the file that no longer
+   apply are unbound, the entries `get_active_binds()` keeps are bound, then
+   `show_intro()`. `show_intro` requires `RDM_MACROBOOK.lua` and
+   `RDM_LOCKSTYLE.lua`; neither returns the info table it looks for, so the
+   intro never shows the book or the style, but running them defines
+   `select_default_macro_book` and `select_default_lockstyle`, which step 4
+   needs. A failed require prints `[RDM] Keybinds failed to load: <error>`.
 3. `KeybindUI.smart_init("RDM", init_delay)`.
-4. `JobChangeManager.initialize()`; because of step 2 the gate at 241 passes on
-   a fresh load, so the macro book is set at once and the lockstyle is
-   scheduled after `LockstyleConfig.initial_load_delay` (8 s).
-5. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`.
+4. `JobChangeManager.initialize()`; the macro book is set at once and the
+   lockstyle scheduled after `LockstyleConfig.initial_load_delay` (8 s).
+5. `pcall(require, 'shared/utils/dualbox/dualbox_manager')` (its auto-init does
+   the job exchange once per load).
 
-The facade (`rdm_functions.lua`) includes `RDM_LOCKSTYLE`, `RDM_MACROBOOK` (27,
-29), `RDM_PRECAST`, `RDM_MIDCAST`, `RDM_AFTERCAST` (36-40), `RDM_IDLE`,
-`RDM_ENGAGED` (47-49), `RDM_STATUS`, `RDM_BUFFS` (56-58), `RDM_MOVEMENT` (65),
-`RDM_COMMANDS` (72), then requires `dualbox_manager` (83). Every hook file
-lazy-loads its dependencies on first use. `RDM_PRECAST.lua:89,91` capture
-`_G.RDMTPConfig` and `_G.RDMSaboteurConfig` at include time; the entry sets both
-before the facade include, so the captures are valid.
+`get_sets()` then sets `_G.RDMSaboteurConfig` (fallback
+`{auto_trigger_spells = {}, wait_time = 2}`) and requires `RDM_TP_CONFIG`
+(which writes `_G.RDMTPConfig`) **before** including the facade:
+`RDM_PRECAST.lua` captures both into file locals when it is included.
 
 ### Precast
 
-`job_precast` (`RDM_PRECAST.lua:251-281`):
+`job_precast` (`RDM_PRECAST.lua`):
 
 ```mermaid
 flowchart TD
@@ -151,400 +146,423 @@ flowchart TD
     G -- blocked --> Z[return]
     G -- ok --> C{action_type}
     C -- Ability --> CA[CooldownChecker.check_ability_cooldown]
-    C -- Magic --> T{family in RDM_ENFEEBLE_TIERS or NUKE_TIERS}
-    T -- yes --> TR[TierRefiner.refine]
-    T -- no --> CS[CooldownChecker.check_spell_cooldown]
+    C -- Magic --> T{get_spell_tiers: enfeeble family if EnfeebleTier On, else nuke family}
+    T -- found --> TR[TierRefiner.refine]
+    T -- none --> CS[CooldownChecker.check_spell_cooldown]
     CA --> X{eventArgs.cancel}
     TR --> X
     CS --> X
     X -- yes --> Z
-    X -- no --> P{Phalanx / Phalanx II needs swap}
+    X -- no --> P{stage_phalanx: swap needed}
     P -- yes --> PS[cancel, input /ma other tier target.raw]
     P -- no --> S[stage_saboteur]
     S --> W[WSPrecastHandler.handle with RDMTPConfig]
     W --> L[SpellGearLock.begin]
 ```
 
-- `require('shared/utils/core/combat_mode').apply()` (256) runs before anything
-  else, for every action, so the lock holds before precast gear.
-- `get_enfeeble_tiers` (76-82) takes the first word of `spell.name`
-  (`^(%a+)`) and looks it up with `RDM_ENFEEBLE_TIERS.get` in `TIERS`: Dia, Bio, Distract,
-  Frazzle (III -> II -> base), Blind, Slow, Paralyze, Poison, Addle, Sleep,
-  Gravity (II -> base). The lookup runs for every spell, not only enfeebles,
-  so Bio (Dark Magic) is refined too. Base-tier spells of these families (Dia,
-  Slow, ...) also go through `TierRefiner`, which lets them through when their
-  recast is 0 and cancels with a multi-line recast display otherwise.
-- `TierRefiner.refine` is described in
-  [precast pipeline](../systems/precast-pipeline.md#tier-refinement): first
-  castable tier (recast exactly 0 and enough MP), replacement through
-  `wait 0.1; @input /ma "<new>" <target.raw>`, 0.2 s re-entry guard. Its return
-  value is ignored at 154 (Known issues).
-- `SpellGearLock` (`shared/utils/equipment/spell_gear_lock.lua`), last in
-  `job_precast`: a spell that needs a piece worn (Dispelga: Daybreak in the
-  main hand) gets it, the slot opened first when Combat Mode locks it;
-  `job_post_precast` and `job_post_midcast` wear it again last, and
-  `job_aftercast` releases it (Combat Mode On: previous weapon back, lock laid
-  again). Same shape as BRD's instrument lock. `sets.precast.FC.Dispelga` and
-  `sets.midcast.Dispelga` (the `.macc` Dispel set + Daybreak) hold the rest of
-  the gear. With Combat Mode On, GearSwap refuses a typed `/ma "Dispelga"`
-  before any precast (main and sub locked, `check_spell`); `//gs c dispelga
-  [target]` frees the main hand first, then casts.
-- `stage_phalanx`: only Enhancing Magic named Phalanx / Phalanx II;
-  `is_self` compares `spell.target.name` with `player.name`. A swap cancels and
-  sends `input /ma "<other>" <target.raw>` (no guard: the re-sent cast already
-  has the right tier, so it passes).
-- `stage_saboteur` (209-240): Enfeebling Magic only, `SaboteurMode` On, and the
-  spell's English name listed in `auto_trigger_spells`. It calls
-  `AbilityHelper.try_ability_smart(spell, eventArgs, 'Saboteur', wait_time)`,
-  which, when Saboteur is ready and not up, calls `cancel_spell()`, sets
-  `eventArgs.handled`, sends `input /ja "Saboteur" <me>` and replays the
-  spell through `follow_up` once Saboteur registers, rather than after a
-  fixed `wait 2` (`ability_helper.lua` `follow_up`). Since 2026-09-25 the
-  replay carries a marker (`windower._ability_replay`, `fire_then_replay`):
-  the re-sent spell goes out without a second Saboteur attempt, so a refused
-  Saboteur (Amnesia, level sync) no longer loops; under a JA-blocking debuff
-  other than Paralysis no attempt is made at all (`may_try`). Because only
-  `handled` is set, Mote skips the default precast but still runs
-  `job_post_precast`.
-- `WSPrecastHandler.handle` is called for every action (it returns true for
-  non-WS). `RDMTPConfig` defines `pieces` and `get_weapon_bonus`, so the TP
-  calculator works for RDM (compare BLM).
-- `job_post_precast` (329-350): `WSPrecastHandler.apply_tp_gear`, then
-  `sets.precast.FC[spell.english]` when it exists (only `Stoneskin` in the sets).
-  With `_G.PrecastDebugState` (`//gs c debugprecast`) it prints the set that
-  `describe_equipped_set` (290-321) believes Mote chose. That function reports
-  "No FC (Chainspell active)" under Chainspell, but no code skips the FC set
-  under Chainspell. A ranged attack, recognised by
-  `spell.action_type == 'Ranged Attack'` (316; `/ra` has `type` `'Misc'`), is
-  reported as `sets.precast.RA`.
+- `require('shared/utils/core/combat_mode').apply()` runs first for every
+  action, so the lock holds before any precast gear.
+- `get_spell_tiers` takes the first word of `spell.name` (`^(%a+)`). With
+  `EnfeebleTier` On it tries `RDM_ENFEEBLE_TIERS.get(family)`, then
+  `NUKE_TIERS.get(family)`; with Off only the nuke table. The lookup runs for
+  every spell, not only enfeebles, so Bio (Dark Magic) is refined too, and a
+  base-tier spell of a listed family (Dia, Fire) also goes through the refiner.
+- `TierRefiner.refine` ([precast pipeline](../systems/precast-pipeline.md)):
+  first castable tier (learned, recast exactly 0, enough MP), replacement sent
+  as `wait 0.1; @input /ma "<new>" <target.raw>`, a 0.2 s re-entry guard; no
+  castable tier -> cancel with a multi-line recast display. Its boolean return
+  is ignored by `stage_cooldown` (Known issues).
+- `stage_phalanx`: Enhancing Magic named Phalanx / Phalanx II only; `is_self`
+  compares `spell.target.name` with `player.name`. A swap cancels and sends
+  `input /ma "<other>" <target.raw>`; the re-sent cast already has the right
+  tier and passes.
+- `stage_saboteur`: Enfeebling Magic, `SaboteurMode` On, English name listed in
+  `auto_trigger_spells`. `AbilityHelper.try_ability_smart(spell, eventArgs,
+  'Saboteur', wait_time)` does nothing when Saboteur is already up or not
+  ready; otherwise it sets `eventArgs.handled`, cancels the spell, sends
+  `input /ja "Saboteur" <me>` and replays the spell (`follow_up`) once the
+  buff registers. The replay carries `windower._ability_replay`, so it is not
+  tried twice (a refused Saboteur does not loop); under a JA-blocking debuff
+  other than Paralysis nothing is tried (`may_try`).
+- `WSPrecastHandler.handle` is called for every action (true for non-WS).
+- `SpellGearLock.begin(spell)` last: a spell in `REQUIRED` (Dispelga) gets its
+  piece (Daybreak), the slot opened first when Combat Mode locks it.
+- `job_post_precast`: `WSPrecastHandler.apply_tp_gear`, then
+  `sets.precast.FC[spell.english]` when it exists (`Stoneskin`, `Dispelga` in
+  the template), then `SpellGearLock.hold()`. With `//gs c debugprecast` it
+  prints the set `describe_equipped_set` believes Mote chose; that function is
+  a description, not a measurement (its Chainspell line claims "No FC", but no
+  code skips the FC set under Chainspell).
 
 ### Midcast
 
-Mote equips its default midcast set first (spell name, spell map, skill,
-`CastingMode`), then calls `job_post_midcast` (`RDM_MIDCAST.lua:329-354`):
-watchdog notify (331-333), then `SKILL_HANDLERS[spell.skill]` (316-322).
+Mote-Globals' `user_midcast` equips `sets.midcast.FastRecast` first for every
+magic spell (on every job; RDM's template has none), then Mote's default
+midcast (spell name, spell map, skill, `CastingMode`), then
+`job_post_midcast` -> `route_midcast`: watchdog notify, then
+`SKILL_HANDLERS[spell.skill]`; finally `SpellGearLock.hold()`.
 
-| Skill | Handler | `MidcastManager.select_set` config | Overrides after |
-|-------|---------|------------------------------------|-----------------|
-| Enfeebling Magic | `midcast_enfeebling` (86-139) | `mode_state = EnfeebleMode`, `database_func = get_enfeebling_type` | `sets.midcast['Enfeebling Magic'].Saboteur` while `buffactive['Saboteur']` (130-136) |
-| Enhancing Magic | `midcast_enhancing` (183-227) | `mode_state = state.EnhancingMode` (never defined, always nil), `target_func = get_enhancing_target`, `database_func = get_spell_family` | Accession + `^Phalanx` short-circuits to `equip(sets.midcast['Enhancing Magic'])` before the manager (196-203) |
-| Healing Magic | `midcast_healing` | skill + spell; a Cure (not a Curaga) on oneself then gets `sets.midcast.CureSelf` on top when the character's sets define it (2026-09-25, Gab's sets) | - |
-| Elemental Magic | `midcast_elemental` (253-270) | `mode_state = NukeMode` | - |
-| Dark Magic | `midcast_dark` (275-291) | skill + spell | - |
-| other | `midcast_subjob` (296-312) | never reached (`spell.type == 'Magic'` at 347 is never true) | - |
+| Skill | Handler | `MidcastManager.select_set` config | After the manager |
+|-------|---------|------------------------------------|-------------------|
+| Enfeebling Magic | `midcast_enfeebling` | `mode_state = EnfeebleMode`, `database_func = get_enfeebling_type` | `sets.midcast['Enfeebling Magic'].Saboteur` while `buffactive['Saboteur']` |
+| Enhancing Magic | `midcast_enhancing` | `mode_state = state.EnhancingMode` (never defined, nil), `target_func = get_enhancing_target`, `database_func = get_spell_family` | Before the manager: Accession + `^Phalanx` equips `sets.midcast['Enhancing Magic']` and returns (see Known issues: the fallback then overrides it) |
+| Healing Magic | `midcast_healing` | skill + spell | `sets.midcast.CureSelf` for a Cure (not a Curaga: `^Cure`) on oneself, when the set exists |
+| Elemental Magic | `midcast_elemental` | `mode_state = NukeMode` | - |
+| Dark Magic | `midcast_dark` | skill + spell | - |
+| any other skill | none in RDM | - | `midcast_subjob` is unreachable (`spell.type == 'Magic'` is never true); the shared `MidcastFallback` routes the spell with its own skill from `cleanup_midcast` |
 
-How the [standard chain](../systems/midcast-and-buffs.md#standard-chain-every-skill-except-singing)
-resolves RDM casts with the template sets:
+`MidcastFallback` (`shared/utils/midcast/midcast_fallback.lua`, installed by
+`INIT_SYSTEMS` on Mote's `cleanup_midcast`) runs after `job_post_midcast` for
+any magic that no `select_set` call saw during this midcast
+(`_G._midcast_routed`), unless the action was cancelled or `eventArgs.handled`.
+On RDM that is subjob magic (Utsusemi, Divine...) and the Accession Phalanx
+branch. A skill with no `sets.midcast[skill]` keeps Mote's pick.
 
-- Enfeebles: every spell in the enfeebling database has a type, and every type
-  has a set under `sets.midcast['Enfeebling Magic']` (`macc`, `mnd_potency`,
+How the [standard chain](../systems/midcast-and-buffs.md) resolves RDM casts
+with the template sets:
+
+- **Enfeebles**: every spell in the database has a type, and every type has a
+  set under `sets.midcast['Enfeebling Magic']` (`macc`, `mnd_potency`,
   `int_potency`, `skill_potency`, `skill_mnd_potency`, `potency`, `duration`).
-  P3 (`base[type][mode]`) never exists, so P7 `base[type]` wins and the
-  `EnfeebleMode` sets (`.Potency`, `.Mixed`, `.Acc`) are never reached. See
-  Known issues.
-- Refresh / Regen / Phalanx: P1 finds `sets.midcast.Refresh` (etc.) on self,
-  `sets.midcast.Refresh.Composure` on others under Composure (`target_func`
-  returns `'Composure'` only when the target is not the player).
-- Enspells, Gains, Bar-spells, Spikes, Aquaveil: P6 `sets.midcast[family]`
-  (root sets at `_master/sets/rdm_sets.lua:429-434`). `BarAilment` family set
-  exists; Boost and Storm fall to the base.
-- Temper, Stoneskin, Impact, Stun, Drain, Aspir: P0/P1 by name.
-- Haste II on others with Composure: P5 `base.Composure`.
-- Cures: P1 `sets.midcast.Cure` / `Curaga` (tier stripped); `CureSelf` is never
-  looked up.
-- Elemental: `NukeMode` values are `FreeNuke` and `Magic Burst` (with a space);
-  P8 finds `base.FreeNuke` / `base['Magic Burst']`.
+  `.<type>.<mode>` (P3) exists for none, so `.<type>` (P7) wins and the mode
+  sets (`.Potency`, `.Mixed`, `.Acc`) are never reached. `Dispelga` has its
+  own name set (P0).
+- **Refresh / Regen / Phalanx**: P1 (tier-less name) finds
+  `sets.midcast.Refresh` (etc.) on self and on others without Composure;
+  `sets.midcast.Refresh.Composure` on others under Composure
+  (`get_enhancing_target` returns `'Composure'` only when Composure is up and
+  the target is not the player).
+- **Enspells, Gains, Bar-spells, Spikes, Aquaveil**: P6 `sets.midcast[family]`
+  (root family sets). Boost and Storm fall to the base.
+- **Temper, Stoneskin, Impact, Stun, Drain, Aspir**: P0/P1 by name.
+- **Haste II on others with Composure**: P5 `base.Composure`.
+- **Cures**: P1 `sets.midcast.Cure` / `Curaga` (tier stripped), then
+  `sets.midcast.CureSelf` on top for a Cure on oneself.
+- **Elemental**: `NukeMode` values are `FreeNuke` and `Magic Burst` (with a
+  space); P8 finds `base.FreeNuke` / `base['Magic Burst']`.
 
-The Saboteur overlay is a full set (`set_combine` of the base plus hands), so
-while Saboteur is up it replaces whatever type set the manager chose.
+The Saboteur overlay is a full set (the base plus hands), so while Saboteur is
+up it replaces whatever type set the manager chose.
 
 ### Aftercast, idle, engaged, status, buffs
 
-- `job_aftercast`, `job_status_change`, `job_buff_change` are the shared
-  `LifecycleManager` handlers (watchdog notify, Doom handling), see
+- `job_aftercast`: shared `LifecycleManager.aftercast` (watchdog) plus
+  `SpellGearLock.release()` (the weapon worn before Dispelga comes back, and the
+  lock is laid again if Combat Mode was On). `job_status_change`,
+  `job_buff_change`: shared handlers (Doom). See
   [core lifecycle](../systems/core-lifecycle.md#lifecyclemanager).
-- `customize_idle_set` -> `SetBuilder.build_idle_set` (`shared/jobs/rdm/functions/logic/set_builder.lua:227-248`):
-  `sets.idle[IdleMode]` (30-48; falls back to `sets.idle.PDT` when
-  `HybridMode = PDT`, unreachable because `IdleMode` always has a set) ->
-  `BaseSetBuilder.select_idle_base_town` (197: `sets.Adoulin` in Adoulin,
-  `sets.idle.Town` in other cities, Dynamis excluded) -> weapons -> `sets.MoveSpeed`
-  outside town when `state.Moving.value == 'true'`.
-- `customize_melee_set` -> `build_engaged_set` (206-218):
-  `select_engaged_base` (57-99) picks `sets.engaged[EngagedMode]`, or its `.DW`
-  child when the off hand holds a weapon. `offhand_item` names the off hand:
-  the worn item while `CombatMode` is On (the state can change then without the
-  gear following), otherwise the item of the set `state.SubWeapon` names
-  (`sets['Genmei'].sub`), or the value itself. `has_shield_equipped` asks
+- `customize_idle_set` -> `SetBuilder.build_idle_set`: `select_idle_base`
+  (`sets.idle[IdleMode]`; `sets.idle.PDT` under `HybridMode = PDT` only when
+  that set is missing) -> `SetBuilder.check_town` =
+  `BaseSetBuilder.select_idle_base_town` (`sets.Adoulin` in the Adoulin
+  cities, `sets.idle.Town` in other cities, Dynamis excluded) ->
+  `apply_weapon` -> `sets.MoveSpeed` outside town while `state.Moving.value ==
+  'true'`.
+- `customize_melee_set` -> `SetBuilder.build_engaged_set`:
+  `select_engaged_base` picks `sets.engaged[EngagedMode]`, or its `.DW` child
+  when the off hand is a weapon, then `apply_weapon`. No town or movement layer.
+- `SetBuilder.offhand_item`: the worn off hand while Combat Mode is On (the
+  state can change then without the gear following), otherwise the `sub` of
+  the set `SubWeapon` names, or the value itself. `has_shield_equipped` asks
   `WeaponResolver.is_offhand_weapon` (game item list): a weapon with a combat
-  skill means `.DW`; a shield (`shield_size`), a grip (skill 0), nil, `""` or
-  `'empty'` means the normal set. Only a name the game does not know falls back
-  to `sets.shields` (2026-09-26; before, that list alone decided, and a shield
-  missing from it picked the `.DW` sets).
-- `apply_weapon` (110-147) combines `sets[state.MainWeapon.current]` and
-  `sets[state.SubWeapon.current]` unless `CombatMode` is On. With
-  `SubWeapon = Malevolence` (a dagger) the `.DW` set is chosen and the dagger is
-  equipped whatever the subjob, so it only works on /NIN or /DNC.
+  skill -> `.DW`; a shield, a grip, nil, `""` or `'empty'` -> normal set; only a
+  name the game does not know falls back to the `sets.shields` list.
+- `apply_weapon` lays `WeaponResolver.set_for('main' / 'sub', value)` unless
+  Combat Mode is On. With `SubWeapon = Malevolence` (a dagger) the `.DW` set is
+  chosen whatever the subjob, so it only works on /NIN or /DNC.
 - Mote's own base (`sets.idle[scope][IdleMode]`, `sets.engaged` + OffenseMode
-  `Normal`) is discarded by the builders.
-- `job_handle_equipping_gear` is empty (`RDM_MOVEMENT.lua:33-34`).
+  `Normal`) is discarded by both builders, and with it Mote's defense and
+  Kiting layers: F10, F11 and Alt+F10 change nothing on RDM.
+- `job_handle_equipping_gear` is empty.
 
 ## Mote states
 
-Created by `RDMStates.configure()` (`_master/config/rdm/RDM_STATES.lua:57-285`)
-on every `user_setup()` (every load and every subjob change, so values reset).
-Keybinds from `RDM_KEYBINDS.lua:18-44`; `^` = Ctrl, `#` = Apps.
+Created by `RDMStates.configure()` on every `user_setup()` (every load and
+every subjob change, so values reset). Keys from `RDM_KEYBINDS.lua`;
+`^` = Ctrl, `#` = Apps.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
-| `HybridMode` (Mote) | PDT, Normal | Normal | none | `set_builder.lua:41,92` fallback only (unreachable) |
-| `EngagedMode` | DT, Acc, TP, Enspell | DT | `^numpad6` | `set_builder.lua` `select_engaged_base` |
-| `IdleMode` (replaced) | Refresh, DT | Refresh | `^numpad4` | Mote `get_idle_set`, `set_builder.lua` `select_idle_base` |
-| `MainWeapon` | Naegling, Colada, Daybreak (Kaories: Maxentius) | Naegling (Kaories: Maxentius) | `^numpad1` | `set_builder.lua:121-131` |
-| `SubWeapon` | Ammurapi, Genmei, Malevolence | Genmei | `^numpad2` | `set_builder.lua:65-66,134-144` |
-| `CombatMode` | Off, On | Off (Kaories: On) | `^numpad5` | shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25) hook, `RDM_PRECAST.lua:256`, `set_builder.lua:116` |
-| `EnfeebleMode` | Potency, Skill, Duration | Potency | `^numpad3` | `RDM_MIDCAST.lua:122`, only through `.<type>.<mode>` sets (see Known issues) |
-| `NukeMode` | FreeNuke, Magic Burst | FreeNuke | `^numpad7` | `RDM_MIDCAST.lua:262` |
+| `HybridMode` (Mote) | PDT, Normal | Normal | Mote's `^f9` only | `set_builder.lua` fallback only (unreachable while the mode sets exist) |
+| `EngagedMode` | DT, Acc, TP, Enspell | DT | `^numpad6` | `SetBuilder.select_engaged_base` |
+| `IdleMode` (replaced) | Refresh, DT | Refresh | `^numpad4`, Mote's `^f12` | Mote `get_idle_set`, `SetBuilder.select_idle_base` |
+| `MainWeapon` | Naegling, Colada, Daybreak | Naegling | `^numpad1` | `SetBuilder.apply_weapon` |
+| `SubWeapon` | Ammurapi, Genmei, Malevolence | Genmei | `^numpad2` | `SetBuilder.offhand_item`, `apply_weapon` |
+| `CombatMode` | Off, On | Off | `^numpad5` | shared Combat Mode hook, `job_precast`, `SetBuilder` |
+| `EnfeebleMode` | Potency, Skill, Duration | Potency | `^numpad3` | `midcast_enfeebling` (`mode_state`), only through `.<type>.<mode>` sets |
+| `NukeMode` | FreeNuke, Magic Burst | FreeNuke | `^numpad7` | `midcast_elemental` |
 | `MainLightSpell` / `SubLightSpell` | Fire, Aero, Thunder | Fire / Thunder | none | `castlight` / `castsublight` |
 | `MainDarkSpell` / `SubDarkSpell` | Blizzard, Stone, Water | Blizzard / Stone | none | `castdark` / `castsubdark` |
-| `NukeTier` | V, IV, III, II, I | V | `^numpad8` | `cast*` nuke commands (`I` = base spell) |
-| `EnSpell` | Enfire..Enwater (6) | Enfire | `^numpad.` | `castenspell`, `enspell` (no arg) |
+| `NukeTier` | V, IV, III, II, I | V | `^numpad8` | the four nuke commands (`I` = base spell) |
+| `EnfeebleTier` | On, Off | On | `^numpad9` | `get_spell_tiers` |
+| `EnSpell` | Enfire..Enwater (6) | Enfire | `^numpad.` | `castenspell`, `enspell` (no argument) |
 | `GainSpell` | Gain-STR..Gain-CHR (7) | Gain-STR | `^numpad+` | `castgain` |
 | `Barspell` | Barfire..Barwater (6) | Barfire | `^numpad-` | `castbar` |
 | `BarAilment` | 8 ailments | Baramnesia | `^numpad*` | `castbarailment` |
-| `Spike` | Blaze/Ice/Shock Spikes | Blaze Spikes | `^numpad/` | `castspike` |
-| `SaboteurMode` | Off, On | Off | `^numpad0` | `RDM_PRECAST.lua` `stage_saboteur` |
-| `Storm` (only with /SCH) | 8 storms | Firestorm | `#numpad1` (bound on /SCH only) | `caststorm`, `cyclestorm` |
-| `FastCast` | 0..80 | 80 | none | `midcast_watchdog.lua` (reads `state.FastCast`, capped at 80) |
-| `AutoMedicine` | shared | persisted | `#numpad0` (from `config/COMMON_KEYBINDS.lua`) | `AutoMedicine.init` (`RDM_STATES.lua:281-284`), see [precast pipeline](../systems/precast-pipeline.md) |
+| `Spike` | Blaze / Ice / Shock Spikes | Blaze Spikes | `^numpad/` | `castspike` |
+| `SaboteurMode` | Off, On | Off | `^numpad0` | `stage_saboteur` |
+| `Storm` (/SCH only) | 8 storms | Firestorm | `#numpad1` (entry has `subjob = "SCH"`) | `caststorm`, `cyclestorm` |
+| `FastCast` | 0..80 by 10 | 80 | none | midcast watchdog fallback estimate |
+| `AutoMedicine` | ON, OFF | persisted | `#numpad0` (common key) | `AutoMedicine.init` at the end of `configure` |
+| `TreasureMode` (optional state) | Off, Tag, Full | Off | `!numpad.` once shown | shared Treasure Hunter |
 
-`configure_storm` (293-314) creates `state.Storm` when the subjob is SCH and it
-does not exist yet, and sets it to nil otherwise. The `#numpad1` bind carries
-`subjob = "SCH"`: `get_active_binds` (`keybind_manager.lua`) leaves it out on
-any other subjob, and `bind_all` unbinds a key of the file that no longer
-applies, so the key is freed after leaving /SCH. The HUD shows the same
-filtered list (`UI_LOADER` calls `get_active_binds`). Mote's `OffenseMode` and `CastingMode`
-keep their `'Normal'` defaults and are read only by Mote.
+`configure_storm` creates `state.Storm` when the subjob is SCH and it does not
+exist yet, and sets it to nil otherwise. The `#numpad1` entry carries
+`subjob = "SCH"`, so `get_active_binds` leaves it out on any other subjob and
+`bind_all` unbinds it. Mote's `OffenseMode`, `RangedMode`, `WeaponskillMode`
+and `CastingMode` keep their single `Normal` value.
 
 ## Commands
 
-`job_self_command` (`RDM_COMMANDS.lua:151-401`) lowercases the first word and
-tests, in order: dual-box internals, UI, watchdog, **CommonCommands**, Mote's
-own commands (any key of `selfCommandMaps`, read with `rawget` so the alt's
-commands do not count; returned unhandled so Mote runs them, 223-226),
-`debugmidcast`, `cyclestate`, RDM commands, and finally a catch-all.
+`job_self_command` (`RDM_COMMANDS.lua`) lowercases the first word and tests,
+in order: dual-box internals, UI, watchdog, `CommonCommands`, Mote's own
+commands (a `rawget` on `selfCommandMaps`, so the alt's command names do not
+count; returned unhandled so Mote runs them), `debugmidcast`, `cyclestate`,
+`SpellGearLock.cast` (`dispelga`), the RDM commands, and last the catch-all.
 
-| Command | Effect | Handler |
-|---------|--------|---------|
-| `altjobupdate` / `requestjob` | Dual-box job exchange (`altjobupdate` forwards the sender name, 5th argument, since 2026-09-25) | 164-180 |
-| `ui ...` | UI toggles | 188-192 |
-| `watchdog ...` | MidcastWatchdog commands | 195-200 |
-| common commands | `reload`, `checksets`, `wa`, `wo`, `refill`, `craft`, `naked`, `help`, `lockstyle`, warp... | 203-213 -> `CommonCommands.handle_command(command, 'RDM', table.unpack(args))` |
-| `update`, `cycle`, `set`, `unset`, `showtp`, ... (Mote) | Left unhandled for Mote | 223-226 |
-| `debugmidcast` | Toggle `MidcastManager` debug | 232-242 |
-| `cyclestate <State>` | `CycleHandler.handle_cyclestate` (every keybind) | 251-254 |
-| `enspell <element>` | `input /ma "En<element>" <me>` (fire, ice/blizzard, wind/aero, earth/stone, thunder, water) | 260-285 |
-| `enspell` | Cycle `EnSpell` silently, call `job_update()` | 286-295 |
-| `convert` / `chainspell` / `saboteur` / `composure` | `input /ja "<Name>" <me>` | 297-300 |
-| `castlight` / `castsublight` / `castdark` / `castsubdark` | `input /ma "<Element> <NukeTier>" <t>` | 302-322 |
-| `castenspell` / `castgain` / `castbar` / `castbarailment` / `castspike` / `caststorm` | `input /ma "<state value>" <me>` | 323-340 |
-| `cyclestorm` | Cycle `Storm` with a message, or "requires SCH" | 341-350 |
-| anything else | Catch-all: the words are a JA, WS or spell name (optional last word `<target>`, default `<me>`), resolved by `resolve_action_prefix` (52-66) from the game resources in the order `res.job_abilities` (only prefix `/jobability`: the 51 pet moves that share a spell's name, such as Fire II or Hastega, are skipped), `res.weapon_skills`, `res.spells`; a name that is no action but that `selfCommandMaps` answers (the dual-box alt's commands) is left unhandled for Mote; anything else -> "Command not recognized" | 351-399 |
+| Command | Effect |
+|---------|--------|
+| `altjobupdate` / `requestjob` | Dual-box job exchange (`DualBoxManager`) |
+| `ui ...` | HUD (`UICommands`) |
+| `watchdog ...` | Midcast watchdog (`WatchdogCommands`) |
+| common commands | `CommonCommands.handle_command(command, 'RDM', table.unpack(args))` |
+| `update`, `cycle`, `set`, `toggle`, `reset`, ... (Mote) | Left unhandled for Mote |
+| `debugmidcast` | `MidcastManager.toggle_debug()` + confirmation |
+| `cyclestate <State> [reverse]` | `CycleHandler.handle_cyclestate` (every key) |
+| `dispelga [target]` | `SpellGearLock.cast`: `enable` Daybreak's slot, `input /ma "Dispelga" <target or <t>>` |
+| `enspell <element>` | `input /ma "En<element>" <me>` (fire, ice/blizzard, wind/aero, earth/stone, thunder, water); unknown element -> error + element list |
+| `enspell` | `state.EnSpell:cycle()` then `job_update()` (HUD only, no chat line) |
+| `convert` / `chainspell` / `saboteur` / `composure` | `input /ja "<Name>" <me>` (`quick_ja_commands`) |
+| `castlight` / `castsublight` / `castdark` / `castsubdark` | `input /ma "<Element>[ <NukeTier>]" <t>` (`nuke_commands`) |
+| `castenspell` / `castgain` / `castbar` / `castbarailment` / `castspike` / `caststorm` | `input /ma "<state value>" <me>` (`spell_state_commands`); missing state -> its error message |
+| `cyclestorm` | Cycle `Storm` with a message, or "requires SCH" |
+| anything else | Catch-all, below |
 
-The catch-all sets `eventArgs.handled` only when it sends an action or prints
-the error (388, 395). A name that is no action but that `selfCommandMaps`
-answers is returned unhandled (390-393): Mote then runs it, and for a name Mote
-lacks, the `__index` that `AltCommands.install_fallback` puts on the table sends
-it to the alt ([dualbox](../systems/dualbox.md#alt-command-routing)).
-`ensure_commands_loaded` (27-36) loads only the command modules; no action
-database is loaded by `//gs c`. A name is accepted when the game knows it, not
-only when the player's jobs can use it: another job's ability goes out as `/ja`
-and the game refuses it (the old universal JA database held the main and sub
-job only).
+The catch-all joins the words (an optional last word `<...>` is the target,
+default `<me>`) and resolves the name with `resolve_action_prefix` from the game
+resources, in the order `res.job_abilities` (only prefix `/jobability`: 51 pet
+moves share a spell's name), `res.weapon_skills`, `res.spells`. A found name is
+sent as `/ja`, `/ws` or `/ma`. A name that is no action but that
+`selfCommandMaps` answers (through the `__index` that
+`AltCommands.install_fallback` adds: the alt's commands) is left unhandled for
+Mote. Anything else prints "Command not recognized". A name is accepted when
+the game knows it, not only when the player's jobs can use it. Every step is
+logged by `trace_log` (`RDM` tag).
 
-`job_state_change` (413-424): skips `Moving` and refreshes the UI. It no
-longer re-equips on `MainWeapon` / `SubWeapon` (removed 2026-09-25): a cycle
-(`cyclestate`, Mote's `cycle`/`set`) ends in Mote's `handle_update`
-(`Mote-SelfCommands.lua`), which rebuilds the idle/engaged set and so equips
-the new weapon. It does not handle `CombatMode`: since 2026-09-25 that lock is
-the shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25) hook (craft-aware), also
-applied from `job_precast`.
+`job_state_change` skips `Moving` and refreshes the HUD. It does not equip:
+every cycle path ends in Mote's `handle_update`, which rebuilds the idle /
+engaged set (new weapon included) through `handle_equipping_gear`, which the
+Combat Mode hook wraps.
 
 ## Set names the code looks up
 
-T = `_master/sets/rdm_sets.lua`, K = `_master/Kaories/sets/rdm_sets.lua`
-(overlay, identical to the live `Kaories/sets/rdm_sets.lua`).
+T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/sets.md).
 
-| Set | Looked up by | T | K |
-|-----|--------------|---|---|
-| `sets['Naegling']`, `['Daybreak']`, `['Colada']` (K adds `['Maxentius']`) | `apply_weapon` via `MainWeapon` | 45-47 | 43-46 |
-| `sets['Ammurapi']`, `['Genmei']`, `['Malevolence']` | `apply_weapon` via `SubWeapon` | 50-52 | 49-51 |
-| `sets.shields` (list) | `has_shield_equipped`, only for a name the game's item list does not know | 55 | 54 |
-| `sets.idle.DT`, `sets.idle.Refresh` | `select_idle_base`, Mote | 73, 96 | 72, 95 |
-| `sets.idle.PDT`, `sets.engaged.PDT` | HybridMode fallback | **absent** | **absent** |
-| `sets.idle.Town`, `sets.Adoulin`, `sets.MoveSpeed` | `BaseSetBuilder` | 522, 517, 512 | 612, 603, 598 |
-| `sets.engaged.DT/Acc/TP/Enspell` + `.DW` | `select_engaged_base` | 110-169 | 113-177 |
-| `sets.engaged.Refresh` (+ `.DW`) | nothing (`EngagedMode` has no Refresh) | 137, 163 | 144, 171 |
-| `sets.precast.FC`, `.FC['Stoneskin']` | Mote default precast, `job_post_precast` | 181, 201 | 189, 209 |
-| `sets.precast.JA['Chainspell']`, `['Convert']` | Mote default precast | 213, 219 | 225, 231 |
-| `sets.precast.WS` + Savage Blade, Sanguine, Seraph, Chant du Cygne, Requiescat (K adds Black Halo) | Mote default precast | 466-506 | 530-574 |
-| `sets.midcast['Enfeebling Magic']` + 7 type sets | MidcastManager P7/P9 | 292-330 | 302-377 |
-| `sets.midcast['Enfeebling Magic'].Potency`, `.Mixed`, `.Acc` | EnfeebleMode (never reached) | 334-340 | 381-387 |
-| `sets.midcast['Enfeebling Magic'].Skill`, `.Duration` | EnfeebleMode Skill/Duration | **absent** | **absent** |
-| `sets.midcast['Enfeebling Magic'].Saboteur` | `RDM_MIDCAST.lua:131-135` | 343 | 390 |
-| `sets.midcast['Enhancing Magic']`, `.Composure` | MidcastManager P9/P5, Accession Phalanx | 351, 372 | 402, 424 |
-| `sets.midcast.Refresh/Regen/Phalanx` (+ `.Composure`), `.Stoneskin`, `.Temper` | P0/P1 | 391-421, 439 | 443-481, 503 |
-| `sets.midcast.Enspell/Gain/BarElement/BarAilment/Spikes/Aquaveil` | P6 family | 429-434 | 493-498 |
-| `sets.midcast['Healing Magic']`, `.Cure`, `.Curaga` (+ optional `.CureSelf`, on top for a Cure on oneself; precast `FC.Cure` / `FC.Curaga` found by Mote through the spell map) | MidcastManager | 261-283 | 271-293 |
-| `sets.midcast.CureSelf` | nothing | 286 | 296 |
-| `sets.midcast['Elemental Magic']`, `.FreeNuke`, `['Magic Burst']` | NukeMode P8 | 232-255 | 242-265 |
-| `sets.midcast['Dark Magic']`, `.Impact`, `.Stun`, `.Drain`, `.Aspir` | MidcastManager / Mote | 446-459 | 510-523 |
-| `sets.buff.Doom` | shared DoomManager | 534 | 629 |
+| Set | Looked up by | In T |
+|-----|--------------|------|
+| `sets['Naegling']`, `['Colada']`, `['Daybreak']` | `apply_weapon` via `MainWeapon` | yes |
+| `sets['Ammurapi']`, `['Genmei']`, `['Malevolence']` | `apply_weapon`, `offhand_item` via `SubWeapon` | yes |
+| `sets.shields` (list of names) | `has_shield_equipped`, only for a name the item list does not know | yes |
+| `sets.idle.DT`, `sets.idle.Refresh` | `select_idle_base`, Mote | yes |
+| `sets.idle.PDT`, `sets.engaged.PDT` | `HybridMode` fallback | no |
+| `sets.idle.Town`, `sets.Adoulin`, `sets.MoveSpeed` | `BaseSetBuilder` | yes |
+| `sets.engaged.DT/Acc/TP/Enspell` + `.DW` | `select_engaged_base` | yes |
+| `sets.engaged.Refresh` (+ `.DW`) | nothing (`EngagedMode` has no Refresh) | yes |
+| `sets.precast.FC`, `.FC['Stoneskin']`, `.FC['Dispelga']` | Mote default precast, `job_post_precast` | yes |
+| `sets.precast.JA['Chainspell']`, `['Convert']` | Mote default precast | yes |
+| `sets.precast.WS` + Savage Blade, Sanguine Blade, Seraph Blade, Chant du Cygne, Requiescat | Mote default precast | yes |
+| `sets.midcast.FastRecast` | Mote-Globals `user_midcast`, first for every spell | no |
+| `sets.midcast['Enfeebling Magic']` + 7 type sets | MidcastManager P7 / P9 | yes |
+| `sets.midcast['Enfeebling Magic'].Potency`, `.Mixed`, `.Acc` | `EnfeebleMode` P8, never reached (every enfeeble has a type set) | yes |
+| `sets.midcast['Enfeebling Magic'].<type>.<Mode>` | `EnfeebleMode` P3 | no |
+| `sets.midcast.Dispelga` | MidcastManager P0 | yes |
+| `sets.midcast['Enfeebling Magic'].Saboteur` | `midcast_enfeebling` overlay | yes |
+| `sets.midcast['Enhancing Magic']`, `.Composure` | MidcastManager P9 / P5, Accession Phalanx | yes |
+| `sets.midcast.Refresh/Regen/Phalanx` (+ `.Composure`), `.Stoneskin`, `.Temper` | P0 / P1 | yes |
+| `sets.midcast.Enspell/Gain/BarElement/BarAilment/Spikes/Aquaveil` | P6 family | yes |
+| `sets.midcast['Healing Magic']`, `.Cure`, `.Curaga` | MidcastManager | yes |
+| `sets.midcast.CureSelf` | `midcast_healing` overlay (Cure on oneself) | yes |
+| `sets.midcast['Elemental Magic']`, `.FreeNuke`, `['Magic Burst']` | `NukeMode` P8 | yes |
+| `sets.midcast['Dark Magic']`, `.Impact`, `.Stun`, `.Drain`, `.Aspir` | MidcastManager | yes |
+| `sets.buff.Doom` | shared DoomManager | yes |
+| `sets.DW.<tier>` | shared DualWield | commented example |
+| `sets.TreasureHunter` | shared Treasure Hunter | no |
 
 ## Configuration
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/config/rdm/RDM_STATES.lua` | see states | file | entry `user_setup`, `job_sub_job_change` (hard-coded `Tetsouo/` or `Kaories/`) |
-| `<char>/config/rdm/RDM_KEYBINDS.lua` | 15 binds (+ the character's `COMMON_KEYBINDS.lua`) | file | entry `user_setup`, `file_unload` |
-| `<char>/config/rdm/RDM_CUSTOM.lua` | examples only | file | `KeybindManager` via `custom_states` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
-| `<char>/config/rdm/RDM_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory argument 1 | `LockstyleManager` reads `default`; there is no `get_style`, so `by_subjob` is never read ([factories](../systems/factories-and-helpers.md#configuration)) |
-| `<char>/config/rdm/RDM_MACROBOOK.lua` | book 2 page 1 for every subjob | file; factory fallback 1/1 | `MacrobookManager` |
-| `<char>/config/rdm/RDM_SABOTEUR_CONFIG.lua` `auto_trigger_spells`, `wait_time` | Distract III, Gravity II; 2 | file; entry fallback `{}` / 2 (`Tetsouo_RDM.lua:114-122`) | `stage_saboteur` |
-| `<char>/config/rdm/RDM_TP_CONFIG.lua` -> `_G.RDMTPConfig` | Moonshade 250 | file | `WSPrecastHandler` / `TPBonusCalculator` |
-| `<char>/config/rdm/RDM_REFILL.lua` (overlay + live only) | Panacea, Antacid, Holy Water, Remedy, Echo Drops, Vile Elixirs, Tropical Crepe; `store_bag = 'case'` | file | `refill/config_resolver.lua` |
-| `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 11 families | file | `RDM_PRECAST.lua` `get_enfeeble_tiers` |
-| `<char>/config/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, `RECAST_CONFIG.lua`, UI config | shared | entry fallbacks 44-51 | entry |
+| `<char>/config/rdm/RDM_STATES.lua` | see states | file | entry `user_setup`, `job_sub_job_change` (path substituted by the clone script) |
+| `<char>/config/rdm/RDM_KEYBINDS.lua` | 16 entries (+ `COMMON_KEYBINDS.lua`) | file | entry `user_setup`, `file_unload` |
+| `<char>/config/rdm/RDM_CUSTOM.lua` | examples only | file | custom states ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `<char>/config/rdm/RDM_HUD.lua` | empty lists | file | HUD layout |
+| `<char>/config/rdm/RDM_LOCKSTYLE.lua` `default`, `by_subjob` | 1 | file; factory argument 1 | `LockstyleManager` reads `default` (and `get_style`, absent); `by_subjob` is never read |
+| `<char>/config/rdm/RDM_MACROBOOK.lua` | book 2 page 1 for every subjob | file; factory fallback 1/1 | `MacrobookManager` (`solo[sub]`, `dualbox[alt job][sub]`) |
+| `<char>/config/rdm/RDM_SABOTEUR_CONFIG.lua` | Distract III, Gravity II; 2 s | file; entry fallback `{}` / 2 | `stage_saboteur` |
+| `<char>/config/rdm/RDM_TP_CONFIG.lua` -> `_G.RDMTPConfig` | Moonshade 250 | file | `WSPrecastHandler` / TP bonus calculator |
+| `<char>/config/rdm/RDM_REFILL.lua` | none in the template | overlay / player | `//gs c rf` |
+| `<char>/config/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver.set_for` |
+| `<char>/config/combat_mode.lua`, `treasure_mode.lua` | absent (native / hidden) | `OptionalState` | Combat Mode, Treasure Mode |
+| `shared/data/spells/RDM_ENFEEBLE_TIERS.lua`, `NUKE_TIERS.lua` | 11 families, nukes | file | `get_spell_tiers` |
 
 ## State & lifetime
 
-- Module state: lazy-load locals, `TierRefiner.last_replacement_time`
-  (module-local in the shared refiner). All die on `gs reload`.
+- Module state: lazy-load locals of each hook file,
+  `TierRefiner`'s `last_replacement_time`, `_G._spell_gear_lock` (Dispelga's
+  held piece). All die on `gs reload`.
 - `_G` written: the Mote hooks (`job_precast`, `job_post_precast`,
   `job_midcast`, `job_post_midcast`, `job_aftercast`, `job_status_change`,
   `job_buff_change`, `customize_idle_set`, `customize_melee_set`,
   `job_self_command`, `job_state_change`, `job_handle_equipping_gear`,
   `job_update`), `RDMKeybinds`, `RDMTPConfig`, `RDMSaboteurConfig`,
-  `LockstyleConfig`, `RECAST_CONFIG`, `RegionConfig`, `PrecastDebugState`
-  (initialised to false, `RDM_PRECAST.lua:102-103`), `select_default_lockstyle`,
-  `cancel_rdm_lockstyle_operations`, `select_default_macro_book`, plus the
-  factory exports.
-- `_G` read: `MidcastManagerDebugState`, `MidcastWatchdog`,
-  `CraftManager`, `UIConfig`.
-- `windower.*`: RDM code writes nothing and registers no events.
-- Keybinds: bound in `user_setup`, unbound in `file_unload` (299-301).
-- Slot locks: `disable('main','sub','range')` lives in GearSwap's
-  `disable_table` and survives `gs reload`, subjob and main job changes. Since
-  2026-09-25 the shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25) lock records
-  it in `windower._combat_mode_locked` and frees it at the next load, then
-  re-applies it on the first gear update if `CombatMode` is On.
-- Coroutines: the 8 s lockstyle from `user_setup`; `wait N` chains
-  (Saboteur, refinement) sit in the Windower queue and survive a reload.
-- Subjob change: Mote calls `user_setup()` again (states reset), then
-  `job_sub_job_change` (155-182), which re-runs `configure_storm` and hands over to `JobChangeManager.on_job_change`, which schedules
-  a `gs reload` 0.5 s later ([job change lifecycle](../architecture/job-change-lifecycle.md)).
+  `LockstyleConfig`, `RECAST_CONFIG`, `RegionConfig`, `PrecastDebugState`,
+  `select_default_lockstyle`, `cancel_rdm_lockstyle_operations`,
+  `select_default_macro_book`, plus the factory exports.
+- `windower.*`: `_ability_replay` (Saboteur replay marker, shared helper);
+  RDM registers no event.
+- Keybinds: bound in `user_setup`, unbound in `file_unload`.
+- Slot locks: `disable('main', 'sub', 'range')` lives in GearSwap's
+  `disable_table` and survives `gs reload`. The shared Combat Mode records it in
+  `windower._combat_mode_locked`, frees it on the next load's `attach` and lays
+  it again on the first gear update if the mode is On.
+- Coroutines: the 8 s lockstyle from `user_setup`; the Saboteur `follow_up`
+  poll; `wait` chains from the refiner sit in the Windower queue and survive a
+  reload.
+- Subjob change: Mote calls `user_setup()` (states reset, Storm created or
+  dropped), then `job_sub_job_change` (re-runs `configure_storm`, then
+  `JobChangeManager.on_job_change`, which reloads 0.5 s later,
+  [job change lifecycle](../architecture/job-change-lifecycle.md)).
 
 ## Interactions
 
-- Precast: `PrecastGuard`, `CooldownChecker`, `TierRefiner` (shared with
-  [BLM](blm.md)), `AbilityHelper` (shared with [PLD](pld.md) and DNC),
-  `WSPrecastHandler` ([precast pipeline](../systems/precast-pipeline.md)).
-- Midcast: `MidcastManager`, `MidcastWatchdog`, the enfeebling and enhancing
-  databases ([midcast and buffs](../systems/midcast-and-buffs.md),
+- Precast: `PrecastGuard`, `CooldownChecker`, `TierRefiner` (with BLM and GEO),
+  `AbilityHelper`, `WSPrecastHandler`, `SpellGearLock`
+  ([precast pipeline](../systems/precast-pipeline.md)).
+- Midcast: `MidcastManager`, `MidcastFallback`, `MidcastWatchdog`, the
+  enfeebling and enhancing databases
+  ([midcast and buffs](../systems/midcast-and-buffs.md),
   [spell databases](../data/spell-databases.md)).
-- Messages: `message_rdm` (lazy through `MessageFormatter`), `message_rdm_midcast`,
-  `message_precast`, `message_commands` ([messages](../systems/messages.md)).
-- `BaseSetBuilder`, lockstyle/macrobook factories, `JobChangeManager`,
-  `LifecycleManager`, `CycleHandler`, `CommonCommands`, UI, dual-box.
-- The cast-by-name fallback reads the game resources (`res.job_abilities`,
-  `res.weapon_skills`, `res.spells`) instead of the universal databases, which
-  RDM no longer loads.
+- Common features (Obi / Orpheus, DualWield, Treasure Mode, AutoMove, Doom,
+  HP priority): [factories and helpers](../systems/factories-and-helpers.md#common-features-per-job).
+- Keys, Combat Mode, custom states: [keybinds and custom states](../systems/keybinds-and-custom.md).
+- Messages: `message_rdm`, `message_rdm_midcast`, `message_precast`,
+  `message_commands` ([messages](../systems/messages.md)).
 
 ## Invariants & gotchas
 
-- A spell whose family is in `RDM_ENFEEBLE_TIERS` is never checked by
+- A spell whose family is in a tier table is never checked by
   `CooldownChecker`; `TierRefiner` uses recast exactly 0, without the
   `RECAST_CONFIG` tolerance.
-- The tier lookup is keyed on the first word of the name, for every spell: a new
-  family name that matches a non-enfeeble (like Bio, Dark Magic) is refined too.
-- `EnfeebleMode` can only matter for a spell with no database type or no type
-  set; add mode sets under the type (`base.mnd_potency.Potency`) if the mode
-  should count.
+- The tier lookup is keyed on the first word of the name, for every spell.
+- `EnfeebleMode` only matters through `.<type>.<mode>` sets (or for a spell with
+  no type set).
 - `state.EnhancingMode` does not exist; the Composure target is the only
   enhancing variant.
 - The Saboteur overlay is a full set and replaces the type set.
-- The enfeebling base set carries `main`, `sub` and `range`; with `CombatMode`
-  Off, every enfeeble swaps weapons (TP loss).
-- `CombatMode` cycled from its key applies or releases the weapon lock at once,
-  HUD shown or not: both cycle paths end in Mote's `handle_update`, whose
-  `handle_equipping_gear` is wrapped by the shared `combat_mode.lua` hook
-  ([core lifecycle](../systems/core-lifecycle.md#cyclehandler-and-state-display)).
-- The off-hand item decides single vs dual wield (item list, see above); the subjob is not considered.
-- Command names `convert`, `chainspell`, `saboteur`, `composure` also exist in
-  `Tetsouo/config/alt/RDM_ALT_COMMANDS.lua`. RDM's own commands answer first, so
-  they run on this character; the alt's version is reachable only as
-  `//gs c alt <name>`.
+- The template's enfeebling base set carries `main`, `sub` and `range`: with
+  Combat Mode Off every enfeeble swaps weapons (TP lost).
+- Combat Mode applies or releases at once when cycled, HUD shown or not: both
+  cycle paths end in `handle_update`, whose `handle_equipping_gear` is wrapped
+  by the shared hook.
+- The off-hand item decides single vs dual wield; the subjob is not considered.
+- `convert`, `chainspell`, `saboteur`, `composure` are also names in the alt
+  command files; RDM's own commands answer first, the alt's version stays
+  reachable as `//gs c alt <name>`.
 - A weapon change must go through a path that ends in `handle_update`
-  (`cyclestate`, Mote's `cycle` / `set`): `job_state_change` no longer equips.
+  (`cyclestate`, Mote's `cycle` / `set`): `job_state_change` does not equip.
+
+## For maintainers / AI
+
+**Invariants to keep**
+
+- Precast order is a contract: Combat Mode apply, guard, cooldown **or**
+  refiner, Phalanx, Saboteur, WS, SpellGearLock. The refiner must stay before
+  (instead of) `CooldownChecker` for tiered spells, or the checker cancels them
+  before a step-down can happen (CODE_QUALITY section 4.1).
+- Anything that equips in `job_post_midcast` without calling
+  `MidcastManager.select_set` for that spell will be overridden by
+  `MidcastFallback` in `cleanup_midcast`. Either call `select_set` (even with a
+  one-off skill) or set `eventArgs.handled` in `job_midcast`.
+- `SpellGearLock.hold()` must stay last in `job_post_precast` and
+  `job_post_midcast`, and `release()` in `job_aftercast`.
+- `_G.RDMTPConfig` and `_G.RDMSaboteurConfig` must be set by the entry before
+  the facade include (captured at include time).
+- Keybind files are data only; add a key in the template and in the live copy.
+
+**Traps**
+
+- `midcast_subjob` looks alive but is dead: `spell.type` is `WhiteMagic`,
+  `BlackMagic`, `Ninjutsu`..., never `Magic`. Subjob magic is handled by
+  `MidcastFallback`.
+- The cast-by-name catch-all only sees words no earlier branch answered: a
+  spell whose first word is a common command (`warp`, `jump`, `escape`...)
+  never reaches it.
+- `describe_equipped_set` mirrors Mote's lookup; when it disagrees with the
+  worn gear, trust `//gs c debugmidcast` / the trace.
+- Grep does not see the gitignored live folders: check `<Character>/` with
+  `grep -r` before calling something unused.
+
+**Offline testing** (no game needed)
+
+- Syntax of every Lua file, live folders included: `python scripts/check_syntax.py`
+  (runs `lua5.1`), or one file: `luac5.1 -p shared/jobs/rdm/functions/RDM_PRECAST.lua`.
+- Logic: `lua5.1` with stubs. The modules only need a few globals: stub
+  `player`, `state`, `buffactive`, `sets`, `equip`, `send_command`,
+  `windower.ffxi.get_spell_recasts` / `get_spells`, and pre-fill
+  `package.loaded[...]` for the message modules, then `dofile` the module
+  and call it (for example `TierRefiner.find_available_tier` with a fake
+  recast table, or `MidcastManager.select_set` with a fake `sets.midcast`).
+  Run from `data/` so relative paths resolve.
+- In game: `//gs c debugprecast`, `//gs c debugmidcast`, `//gs c trace on`
+  (writes `<Character>/trace.log`), `//gs c checksets`.
 
 ## Extending
 
 - New tiered enfeeble family: add `Family = { [tier] = { replace = next } }` to
   `RDM_ENFEEBLE_TIERS.TIERS` (`''` = base).
-- New auto-Saboteur spell: add its English name to
-  `RDM_SABOTEUR_CONFIG.auto_trigger_spells` in the template, the overlay and the
-  live Kaories copy.
-- New midcast behaviour: add a handler to `SKILL_HANDLERS` (316-322) and make
-  sure `sets.midcast['<Skill>']` exists (the manager returns false without it).
-- New weapon: add the value to `MainWeapon`/`SubWeapon` in `RDM_STATES.lua` and
-  `sets['<Name>'] = {main = ...}` in the sets; a shield needs nothing more (the
-  game's item list says it is one).
-- New command: add a branch before the catch-all at 351. A name that is also an
-  alt config key then runs here; the alt's version stays reachable as
-  `//gs c alt <name>`.
+- New auto-Saboteur spell: add its English name to `auto_trigger_spells` in the
+  template, the overlays and the live copies.
+- New midcast behaviour: add a handler to `SKILL_HANDLERS` and make sure
+  `sets.midcast['<Skill>']` exists (the manager returns false without it).
+- New weapon: add the value to `MainWeapon` / `SubWeapon` in `RDM_STATES.lua`
+  and `sets['<Name>'] = {main = ...}`; with `equip_without_set` a real weapon
+  name needs no set. A shield needs nothing more (the item list says so).
+- New command: add a branch before the catch-all. A name that is also an alt
+  command then runs here; the alt's stays reachable as `//gs c alt <name>`.
 
 ## Known issues
 
-- `EnfeebleMode` works through `sets.midcast['Enfeebling Magic'].<type>.<mode>`
-  (P3, for example `.mnd_potency.Skill`), which comes before `.<type>`; the
-  root `.<mode>` sets are only reached by a spell without a type set, and every
-  enfeeble has one. None of these sets exists yet, so the mode changes no gear
-  until they are made. Kept as is on purpose (player's choice, 2026-09-27).
-- The `TierRefiner.refine` return value is ignored; a spell arriving within
-  0.2 s of a replacement gets no recast check (`RDM_PRECAST.lua:154`).
-- `midcast_subjob` is unreachable (`spell.type == 'Magic'` is never true);
-  subjob magic only gets Mote's default set (`RDM_MIDCAST.lua:347`).
-- "Storm spells enabled/disabled" never prints: `user_setup()` has already
-  updated `state.Storm` when `job_sub_job_change` compares
-  (`Tetsouo_RDM.lua:157-171`, `Mote-Include.lua:981-988`).
-- Superseded 2026-09-25: `job_sub_job_change` and `job_update` no longer touch
-  the lock (fixed in `34ba527` before); the shared hook is craft-aware.
-- To check in game (change of 2026-09-25): changing weapon (`^numpad1` cycle
-  and `//gs c set MainWeapon ...`) still equips the weapon now that
-  `job_state_change` no longer calls `handle_equipping_gear`.
-- To check in game (change of 2026-09-25): a Saboteur refused by the game
-  (Amnesia, level sync) sends the enfeeble once, without a loop.
+- **Accession + Phalanx is overridden** (new with `MidcastFallback`, confirmed
+  offline with `lua5.1` against `midcast_manager.lua` and `midcast_fallback.lua`): `midcast_enhancing` equips `sets.midcast['Enhancing Magic']`
+  and returns without calling `select_set`, so `_G._midcast_routed` is not set;
+  `MidcastFallback.route` then calls `select_set({skill = 'Enhancing Magic'})`,
+  which finds `sets.midcast.Phalanx` by name (P0) and equips it over the
+  intended base set.
+- `EnfeebleMode` changes no gear with the template (no `.<type>.<mode>` set).
+  Kept on purpose (player's choice, 2026-09-27).
+- `stage_cooldown` ignores `TierRefiner.refine`'s return value: a spell arriving
+  within 0.2 s of a replacement gets no recast check.
+- `midcast_subjob` is unreachable (see Traps).
+- "Storm spells enabled/disabled" never prints: Mote's `sub_job_change` runs
+  `user_setup()` (which already updated `state.Storm`) before
+  `job_sub_job_change` compares.
 - Six `MessageFormatter` entries point at functions `message_rdm.lua` does not
   define (`show_convert_activated`, `show_convert_used`,
   `show_chainspell_activated`, `show_chainspell_ended`,
-  `show_composure_activated`, `show_composure_active`;
-  `message_formatter.lua:312-317`); none has a caller.
-- `message_rdm_midcast.lua` passes `(color, text)` to
-  `MessageRenderer.send(message, color)` in 48 calls; GearSwap's `add_to_chat`
-  swaps them back (`GearSwap/user_functions.lua:385-388`), so the trace prints
-  but every line is in colour 8. The trace also uses emoji (69, 76, 83, 93) and
-  describes priority orders that differ from the real chain (83-97, 145-170).
+  `show_composure_activated`, `show_composure_active`); none has a caller.
+- `message_rdm_midcast.lua` calls `MessageRenderer.send(color, text)` (48
+  calls) while the signature is `send(message, color)`; the trace still prints,
+  in one colour. It also uses emoji and describes priority orders that differ
+  from the real chain.
 - `by_subjob` in `RDM_LOCKSTYLE.lua` is never read (no `get_style`).
-- `sets.Adoulin` is a 2-slot set used as a full idle base in Adoulin
-  (`_master/sets/rdm_sets.lua:517`). The comment above `SetBuilder.check_town`
-  now says so (fixed in `b6c7dc6`).
-- `HybridMode`, `sets.engaged.Refresh`, `sets.midcast.CureSelf`, the
-  `check_off` path of `castenspell` (no `EnSpell` value is `Off`) are
-  dead; `show_doom_warning`, `show_doom_removed`,
-  `show_spell_casting`, `show_enspell_current`, `show_phalanx_detected` in
-  `message_rdm.lua` have no caller.
-- Stale text: `no_enspell_selected` ("Alt+8", `rdm_messages.lua:61`; the key is
-  `^numpad.`), `describe_equipped_set` Chainspell line
-  (`RDM_PRECAST.lua:306-307`). The state header and the "Alt+NUMPAD" keybind
-  comments were fixed in `b6c7dc6` / `22e1816`.
-- Fixed in `f6f1683`: the live Kaories files and `_master/Kaories/` are
-  identical again (Maxentius, CombatMode On, Black Halo are in the overlay).
+- `sets.Adoulin` is a 2-slot set used as a full idle base in Adoulin.
+- Dead: `HybridMode` (in practice), `sets.engaged.Refresh`, the `check_off` path
+  of `castenspell` (no `EnSpell` value is `Off`), `show_doom_warning`,
+  `show_doom_removed`, `show_spell_casting`, `show_enspell_current`,
+  `show_phalanx_detected` in `message_rdm.lua`.
+- Stale text: `no_enspell_selected` says "Alt+8" (`rdm_messages.lua`; the key
+  is `^numpad.`); the `RDM_STATES.lua` header describes `HybridMode` as "PDT =
+  50% damage reduction"; the `RDM_COMMANDS.lua` header says
+  `job_state_change` re-equips weapons (it does not).
+- To check in game (2026-09-25 changes): a weapon cycle still equips the weapon;
+  a Saboteur refused by the game sends the enfeeble once, without a loop.

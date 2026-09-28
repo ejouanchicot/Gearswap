@@ -9,9 +9,11 @@ Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each mo
 current value; this page says what each value does. `#numpad0` (Auto Medicine) and
 Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybinds.md).
 
-This page describes the generic template (`_master/config/rdm/`). The author's alt overlay
-differs in two values: Maxentius replaces Daybreak (and is the default weapon), and
-`CombatMode` starts On.
+This page describes the provided template (`_master/config/rdm/`). A character
+overlay used by the clone script can change values and defaults (another weapon
+list, Combat Mode starting On...): if yours came from one, trust your own
+`RDM_STATES.lua`. Every key and command of the job, on one page:
+[README.md](README.md).
 
 ## Keys
 
@@ -22,7 +24,7 @@ differs in two values: Maxentius replaces Daybreak (and is the default weapon), 
 | `^numpad6` | `EngagedMode` | **DT**, Acc, TP, Enspell | Engaged gear: `sets.engaged.DT`, `.Acc`, `.TP` or `.Enspell` |
 | `^numpad4` | `IdleMode` | **Refresh**, DT | Idle gear: `sets.idle.Refresh` or `sets.idle.DT` |
 | `^numpad5` | `CombatMode` | **Off**, On | `On` locks main, sub and range so casting never swaps your weapons (TP kept). `Off` frees them, unless a craft session holds them |
-| `^numpad3` | `EnfeebleMode` | **Potency**, Skill, Duration | Meant to pick the enfeebling set. Today it changes no gear: every enfeeble already uses its own type set |
+| `^numpad3` | `EnfeebleMode` | **Potency**, Skill, Duration | Picks `sets.midcast['Enfeebling Magic'].<type>.<Mode>` (for example `.mnd_potency.Skill`) when you add such a set. Every enfeeble has a type set, which wins over the plain `.Potency` / `.Skill` / `.Duration` sets, and the template has no `.<type>.<Mode>` set: with the template it changes no gear |
 | `^numpad7` | `NukeMode` | **FreeNuke**, Magic Burst | Elemental midcast: `sets.midcast['Elemental Magic']` or its `['Magic Burst']` variant |
 | `^numpad0` | `SaboteurMode` | **Off**, On | `On` = the spells listed in `RDM_SABOTEUR_CONFIG.lua` (template: Distract III, Gravity II) use Saboteur first when it is ready, then go out once it is up |
 | `^numpad8` | `NukeTier` | **V**, IV, III, II, I | Tier of the `cast*` nuke commands (`I` = base spell) |
@@ -40,7 +42,8 @@ differs in two values: Maxentius replaces Daybreak (and is the default weapon), 
 |---|---|---|
 | `MainLightSpell` / `SubLightSpell` | Fire, Aero, Thunder (defaults **Fire** / **Thunder**) | Elements of `castlight` / `castsublight` |
 | `MainDarkSpell` / `SubDarkSpell` | Blizzard, Stone, Water (defaults **Blizzard** / **Stone**) | Elements of `castdark` / `castsubdark` |
-| `FastCast` | 0 to 80 by 10, default **80** | Your Fast Cast %, used only by the midcast watchdog |
+| `FastCast` | 0 to 80 by 10, default **80** | Your Fast Cast %, used only by the midcast watchdog when it cannot read the Fast Cast of your precast set |
+| `HybridMode` | PDT, **Normal** | Mote's mode, cycled by Ctrl+F9. No gear effect: it is read only when `sets.idle.<IdleMode>` or `sets.engaged.<EngagedMode>` is missing, and then only `sets.idle.PDT` / `sets.engaged.PDT` |
 
 Change them with Mote's `//gs c cycle <Mode>` or `//gs c set <Mode> <Value>`, or bind
 them in `RDM_CUSTOM.lua`.
@@ -60,6 +63,8 @@ them in `RDM_CUSTOM.lua`.
 ## Notes
 
 - All modes go back to their default on every job change, subjob change and reload.
+- `Storm` exists only while your subjob is SCH: its key and HUD row appear and
+  disappear with the subjob.
 - The last command answers only names the game knows; anything else prints
   "Command not recognized" (a dual-box alt command of that name still reaches the alt).
 

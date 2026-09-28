@@ -11,7 +11,8 @@ The HUD (`//gs c ui`) shows each mode's current value; this page says what each
 value does. `#numpad0` (Auto Medicine) and Alt+Numpad7-9 (alts) are common to
 every job, see [keybinds](../../guides/keybinds.md).
 
-This page describes the generic template (`_master/config/blu/`).
+This page describes the provided template (`_master/config/blu/`). Every key and
+command of the job, on one page: [README.md](README.md).
 
 ## Keys
 
@@ -21,11 +22,15 @@ This page describes the generic template (`_master/config/blu/`).
 | `^numpad2` | Sub Weapon (`SubWeapon`) | **Free** | Off hand, same rules. It also decides single wield (see below). |
 | `^numpad3` | Offense Mode (`OffenseMode`) | **Normal**, Acc, DT, Subtle Blow, Refresh | Engaged gear: `sets.engaged`, or `sets.engaged.<Mode>` when your set file has it. |
 | `^numpad4` | Idle Mode (`IdleMode`) | **Normal**, Evasion, DT, Regain | Idle gear: `sets.idle` (Normal) or `sets.idle.<Mode>`. |
-| `^numpad5` | Casting Mode (`CastingMode`) | **Normal**, Resistant | Blue Magic: `Resistant` uses the `.Resistant` version of a spell's set when it exists (the template has one, for the `Magical` spells). |
+| `^numpad5` | Casting Mode (`CastingMode`) | **Normal**, Resistant | Blue Magic: `Resistant` uses the `.Resistant` version of a spell's set when it exists (the template has one, for the `Magical` category only: `MagicalMnd` and the other `Magical...` sets copy the gear, not the `.Resistant`). Subjob enfeebles use it too (`sets.midcast['Enfeebling Magic'].Resistant` if you add it). |
 | `^numpad6` | WS Mode (`WeaponskillMode`) | **Normal**, Acc | Weaponskill gear: the `.Acc` version of the weaponskill's set when it exists. The template has only `sets.precast.WS.Acc`, so Acc changes only weaponskills without a set of their own. In `Normal`, an Offense Mode that is also a WS mode (Acc) is used instead. |
 
 Combat Mode (lock your weapons so nothing swaps them) exists on BLU but is hidden:
 `//gs c combatmode show` shows it, then `!numpad0` cycles it.
+
+Mote-Include's F-keys reach the same modes: F9 Offense Mode, Win+F9 WS Mode,
+Ctrl+F11 Casting Mode, Ctrl+F12 Idle Mode. Ctrl+F9 (Hybrid Mode) has only
+`Normal` on BLU and changes nothing.
 
 ### Weaponskill keys per weapon
 
@@ -38,7 +43,7 @@ change by themselves when you switch weapon type.
 
 | Mode | Values | What it does |
 |---|---|---|
-| `FastCast` | 0 to 80 in steps of 10, default **0** | Your Fast Cast %, used only by the midcast watchdog. |
+| `FastCast` | 0 to 80 in steps of 10, default **0** | Your Fast Cast %, used only by the midcast watchdog when it cannot read the Fast Cast of your precast set. |
 
 Change modes with Mote's `//gs c cycle <Mode>` or `//gs c set <Mode> <Value>`, or add
 your own in `BLU_CUSTOM.lua`.
@@ -54,7 +59,9 @@ takes a broad category (`Physical`, `Magical`, `Buff`...) instead. The spell the
    has Sound Blast, Restoral, White Wind);
 2. `sets.midcast['Blue Magic'].<Category>.Resistant` with Casting Mode Resistant;
 3. `sets.midcast['Blue Magic'].<Category>`;
-4. `sets.midcast['Blue Magic']` (when the category has no set).
+4. with Casting Mode Resistant, `sets.midcast['Blue Magic'].Resistant` if you
+   add it (none in the template);
+5. `sets.midcast['Blue Magic']` (when the category has no set).
 
 Then, on top: `sets.buff['Chain Affinity']` (and Burst Affinity, Convergence,
 Diffusion, Efflux) while that buff is up, and `sets.self_healing` for a Healing
@@ -80,7 +87,8 @@ In `<YourChar>/config/AUTO_ABILITIES.lua`, both off unless set to `true`:
 ## Commands
 
 BLU has no command of its own. The common commands work (`//gs c reload`,
-`checksets`, `wa`, `wo`, `refill`, `debugmidcast`, `ui`, ...), see
+`checksets`, `wa`, `wo`, `refill`, `debugmidcast`, `ui`, ...): the full list is
+in [README.md](README.md#all-commands-on-this-job), details in
 [commands](../../guides/commands.md).
 
 ## Notes
