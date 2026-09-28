@@ -91,6 +91,7 @@ end
 
 --- //gs c rollshow <kind> <source> <fields...>, from the COR box.
 --- @param args table Words after "rollshow"
+--- @return boolean true (handled)
 function RollShare.receive(args)
     local kind, source = args[1], unhex(args[2])
     local f = {}
@@ -103,6 +104,7 @@ function RollShare.receive(args)
     elseif kind == 'bust' and #f >= 3 then
         RollMessages.show_roll_bust(f[1], f[2], f[3], source)
     end
+    return true
 end
 
 return RollShare

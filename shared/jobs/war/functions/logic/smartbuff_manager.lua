@@ -215,6 +215,9 @@ end
 ---   @return void
 function SmartbuffManager.buff_sam_sub()
     if not player or player.sub_job ~= 'SAM' then
+        -- //gs c thirdeye on another subjob used to do nothing, silently
+        local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+        if ok and MessageFormatter then MessageFormatter.show_warning('thirdeye: needs /SAM') end
         return
     end
 

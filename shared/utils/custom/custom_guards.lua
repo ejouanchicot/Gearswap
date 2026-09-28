@@ -89,7 +89,7 @@ function Guards.blocked_slots(moment, spell)
         blocked[SLOT_IDS.ammo] = true
     end
     if moment == 'engaged' and sets and sets.TreasureHunter and state and state.TreasureMode then
-        local ok, TH = pcall(require, 'shared/jobs/thf/functions/logic/treasure_hunter')
+        local ok, TH = pcall(require, 'shared/utils/equipment/treasure_hunter')
         if ok and type(TH) == 'table' and TH.wants_engaged_th and TH.wants_engaged_th() then
             for slot in pairs(sets.TreasureHunter) do add_slots(blocked, {slot}) end
         end
