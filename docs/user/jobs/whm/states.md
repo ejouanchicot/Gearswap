@@ -44,9 +44,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
   higher one; if every tier is on recast, the Cure is cancelled with its recast
   time. The Cure is cancelled and re-sent with the new tier, and a chat line
   says why.
-- **Full Cure** is also caught by the auto-tier (its name contains "Cure"): with
-  Cure Auto-Tier On it is replaced by a Cure tier. Turn Cure Auto-Tier Off
-  before casting Full Cure (known issue).
+- **Full Cure** is never touched by the auto-tier: it always goes as Full Cure.
 - **Engaged cures** use `sets.midcast.CureMelee` when that set has gear in it.
 - **Afflatus Solace up**: a Cure (not a Curaga) uses `sets.midcast.CureSolace`,
   and `sets.buff['Afflatus Solace']` goes on top of Cures, Curagas and
@@ -54,10 +52,8 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 - Status removal spells use `sets.midcast.StatusRemoval` (Cursna its own set),
   plus the Divine Caress set when that buff is up.
 - Paralyna while you are paralysed skips its precast gear.
-- A reload or main job change releases the Combat Mode and Melee ON locks.
-  After a **subjob** change with Melee ON, main, sub and range can stay locked
-  while Offense Mode shows None (known issue): `//gs enable main sub range`
-  frees them.
+- A reload, a main job change or a subjob change releases the Combat Mode and
+  Melee ON locks (Offense Mode comes back at None).
 - Idle: `sets.latent_refresh` goes on top while your MP is under 51 %, and
   `sets.MoveSpeed` while you move (in town too).
 - Weaponskill TP bonus gear: see [TP bonus](../war/tp-bonus.md).

@@ -117,8 +117,8 @@ flowchart TD
 - `retier_cure` runs **before** the recast check, the way RDM, BLM and GEO send
   tiered spells to their refiners (CODE_QUALITY section 4.1): otherwise
   `CooldownChecker` would cancel a requested tier on recast before CureManager
-  could swap it. It takes Magic whose name contains `Cure` or `Curaga` (so
-  Full Cure too; not Cura), resolves the target with
+  could swap it. It takes Magic whose name starts with `Cure` or `Curaga`
+  (`CureManager.is_tiered_cure`: not Full Cure, not Cura), resolves the target with
   `windower.ffxi.get_mob_by_id(spell.target.id)` and calls
   `CureManager.select_cure_tier`. A different name cancels the cast and sends
   `input /ma "<new>" <spell.target.raw>`. The re-sent cast goes through precast
@@ -347,12 +347,15 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
   `customize_melee_set`, `job_self_command`, `job_state_change`,
   `job_handle_equipping_gear`, `job_update`), `WHMKeybinds`, `WHMTPConfig`,
   `LockstyleConfig`, `RECAST_CONFIG`, `RegionConfig`, the factory globals.
-- `windower.*`: none. No events registered.
+- `windower._whm_melee_lock`: true while the `Melee ON` lock is on (set and
+  cleared by `WHM_COMMANDS.lua` `job_state_change`). No events registered.
 - Slot locks: `disable()` lives in GearSwap's `disable_table` and survives
   reloads and job changes. The entry's `file_unload` releases the `Melee ON`
-  lock (main / sub / range) when `state.OffenseMode.value` is still
-  `'Melee ON'`, unless a craft session owns it. That covers `gs reload`,
-  `//gs c reload` and a main job change, not a subjob change (Known issues).
+  lock (main / sub / range) when `windower._whm_melee_lock` is set (or the
+  mode still reads `Melee ON`), unless a craft session owns it. The flag is
+  what covers a subjob change: Mote's `sub_job_change` runs `user_setup()`
+  first, which resets `OffenseMode` to `None` without `job_state_change`
+  (until 2026-09-28 the lock then stayed on in the new load).
   The Combat Mode lock (main / sub / range / ammo) is recorded and freed by the
   shared `combat_mode.lua` at the next load.
 - Subjob change: Mote's `sub_job_change` runs `user_setup()` (states reset),
@@ -446,15 +449,10 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
 
 ## Known issues
 
-- **Full Cure is re-tiered** (confirmed offline with `lua5.1`): with
-  `CureAutoTier` On, `select_cure_tier({name = 'Full Cure'})` returns `Cure`
-  (full HP) or the tier for the missing HP, because the name contains "Cure"
-  and the `cure_tiers` table is used. With Auto-Tier Off it is left alone.
-- **`Melee ON` lock survives a subjob change** (confirmed by reading): Mote's
-  `sub_job_change` runs `user_setup()` first, which resets `OffenseMode` to
-  `None` without calling `job_state_change`; the reload's `file_unload` then
-  sees `None` and does not `enable` main / sub / range. The slots stay disabled
-  in the new load until `//gs enable` or a new `Melee ON` / `None` cycle.
+- Fixed 2026-09-28 (checked with `scripts/audit/difftest_whm_fullcure_melee.lua`,
+  not yet in game): Full Cure re-tiered into a Cure with Auto-Tier On (the
+  name test was `find('Cure')`), and the `Melee ON` lock surviving a subjob
+  change.
 - Fallback config: if `WHM_CURE_CONFIG` fails to load, the fallback table has no
   `cure_tiers`, and `select_cure_tier` raises on the first Cure
   (`ipairs(nil)`); the failure is announced with `print`.

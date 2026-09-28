@@ -304,13 +304,23 @@ end
 --- @param spell table Original spell data
 --- @param target table Target entity (or nil for <me>)
 --- @return string|nil new_spell_name (nil if no change needed)
+--- Whether the spell is one of the tiered cures this module re-tiers:
+--- a name that starts with Cure or Curaga. Full Cure (all MP, all HP) is a
+--- spell of its own and is never replaced.
+--- @param spell_name string|nil
+--- @return boolean
+function CureManager.is_tiered_cure(spell_name)
+    return type(spell_name) == 'string'
+        and (spell_name:find('^Cure') ~= nil or spell_name:find('^Curaga') ~= nil)
+end
+
 function CureManager.select_cure_tier(spell, target)
     if not spell or not spell.name then
         return nil
     end
 
     local spell_name = spell.name
-    if not (spell_name:find('Cure') or spell_name:find('Curaga')) then
+    if not CureManager.is_tiered_cure(spell_name) then
         return nil
     end
 

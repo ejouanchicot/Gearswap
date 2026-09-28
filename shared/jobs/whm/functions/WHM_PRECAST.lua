@@ -78,7 +78,7 @@ local function retier_cure(spell, eventArgs)
     if not (CureManager and spell.action_type == 'Magic') then
         return false
     end
-    if not (spell.name:find('Cure') or spell.name:find('Curaga')) then
+    if not CureManager.is_tiered_cure(spell.name) then
         return false
     end
 

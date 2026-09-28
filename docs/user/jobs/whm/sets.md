@@ -190,8 +190,7 @@ provided file), and any other ability by its name (`['Divine Caress']`,
   target's missing HP (`WHM_CURE_CONFIG.lua`). Full HP: the lowest tier.
 - **Cure tier on recast** (always, even with Auto-Tier Off): if the tier is on
   recast, the next lower ready tier goes, else a higher one.
-- **Full Cure** is treated as a Cure: with Auto-Tier On it is replaced by a Cure
-  tier sized to the missing HP.
+- **Full Cure** is never replaced: the auto-tier only handles Cure and Curaga.
 - **CureMelee** on engaged cures, once that set has gear. Leave it empty to
   keep the normal cure sets while engaged.
 - **Afflatus Solace set** on cures and Bar-spells while the buff is up;

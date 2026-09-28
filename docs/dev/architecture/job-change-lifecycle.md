@@ -248,7 +248,7 @@ All templates define `file_unload` at chunk level, so Mote's default (which woul
 | BLU | yes | yes | `AzureSets.unload()` first |
 | PLD, WAR | yes | yes | `AmpullaLock.release()` first (the Hoxne ammo lock), so the lock does not leak into the next job |
 | THF | yes | yes | `RangeLock.release()` |
-| WHM | yes | yes | releases `main/sub/range` when `OffenseMode` is `Melee ON` and no craft session is active (added 2026-09-25) |
+| WHM | yes | yes | releases `main/sub/range` when `windower._whm_melee_lock` is set (or `OffenseMode` still reads `Melee ON`) and no craft session is active (2026-09-25; the flag, which also covers a subjob change, 2026-09-28) |
 | GEO | yes | yes | `lua unload pettp` |
 | COR | yes | yes | unregisters `_G.cor_action_event_id`, `RollTracker.cleanup()`, `PartyTracker.cleanup()`, `lua load rolltracker` (the DressUp watchdog stop is gone with the watchdog, 2026-09-25) |
 | BST | yes | yes | `stop_pet_monitoring()`, bumps `_G.bst_hud_load_id`, `lua unload bst-hud`, nils `_G.KeybindUI/start_pet_monitoring/stop_pet_monitoring` |

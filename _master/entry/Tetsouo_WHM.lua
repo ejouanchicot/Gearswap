@@ -243,11 +243,15 @@ end
 function file_unload()
     -- disable() lives in GearSwap's own table, which survives the reload,
     -- while OffenseMode comes back at its default: release its lock here.
-    -- Not during a craft session, whose lock CraftManager owns. The Combat
-    -- Mode lock is freed by the next job (shared/utils/core/combat_mode.lua).
-    if not (_G.CraftManager and _G.CraftManager.is_active()) and state then
-        if state.OffenseMode and state.OffenseMode.value == 'Melee ON' then
+    -- Read from windower._whm_melee_lock (set by WHM_COMMANDS), not from the
+    -- mode: on a subjob change Mote's user_setup() has already reset
+    -- OffenseMode to None. Not during a craft session, whose lock
+    -- CraftManager owns. The Combat Mode lock is freed by the next job
+    -- (shared/utils/core/combat_mode.lua).
+    if not (_G.CraftManager and _G.CraftManager.is_active()) then
+        if windower._whm_melee_lock or (state and state.OffenseMode and state.OffenseMode.value == 'Melee ON') then
             enable('main', 'sub', 'range')
+            windower._whm_melee_lock = nil
         end
     end
 

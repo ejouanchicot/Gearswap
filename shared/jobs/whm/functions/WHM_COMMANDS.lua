@@ -194,15 +194,21 @@ function job_state_change(stateField, newValue, oldValue)
     -- ══════════════════════════════════════════════════════════════════════════
     -- OFFENSE MODE - WEAPON LOCK (the mode WHM_STATES defines: None / Melee ON)
     -- ══════════════════════════════════════════════════════════════════════════
-    -- When switching to Melee ON, lock weapons to prevent accidental swaps
+    -- When switching to Melee ON, lock weapons to prevent accidental swaps.
+    -- The lock is remembered on windower (it outlives a reload, like the
+    -- lock itself): a subjob change resets OffenseMode to None through Mote's
+    -- user_setup() before file_unload runs, so file_unload cannot read it
+    -- from the mode.
     if field == 'OffenseMode' then
         if newValue == 'Melee ON' then
             disable('main', 'sub', 'range')
+            windower._whm_melee_lock = true
         else
             -- Not during a craft session: CraftManager owns the lock until
             -- //gs c uncraft, and enabling here would drop the synthesis gear.
             if not (_G.CraftManager and _G.CraftManager.is_active()) then
                 enable('main', 'sub', 'range')
+                windower._whm_melee_lock = nil
             end
         end
     end

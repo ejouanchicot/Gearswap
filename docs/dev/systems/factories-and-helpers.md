@@ -766,7 +766,6 @@ Open:
 
 - `by_subjob` is ignored when a lockstyle config has no `get_style`: the BLM, BLU, BRD, RDM, SAM, THF and WHM templates, and the overlays copied from them (`lockstyle_manager.lua` `resolve_style`).
 - Craft slot locks outlive the session flag (after a reload, or an uncraft within 2 s of craft), and `//gs c uncraft` then refuses to unlock (`craft_manager.lua` `CraftManager.unequip`).
-- Full Cure is re-tiered into a Cure tier when CureAutoTier is On, because the name test is `find('Cure')` (`cure_manager.lua` `CureManager.select_cure_tier`).
 - CureManager's fallback config has no tier tables, so every Cure / Curaga then raises an error in precast (`cure_manager.lua`, module load).
 - `//gs c waltz` / `aoewaltz` cancel Saber Dance before knowing whether any waltz can be used (`COMMON_COMMANDS.lua` `handle_waltz_generic`).
 - CureManager treats a spell with any recast left as unavailable, unlike CooldownChecker's 2.0 s tolerance (`cure_manager.lua` `is_spell_available`).
