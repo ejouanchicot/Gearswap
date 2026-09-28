@@ -155,9 +155,9 @@ flowchart TD
 - `WSPrecastHandler.handle` is called for every action; it returns true at
   once for anything that is not a weaponskill.
 - `job_post_precast` applies the stored TP gear. With `_G.PrecastDebugState`
-  (`//gs c debugprecast`) and a spell it prints which precast set it believes
-  Mote chose. It tests `sets.precast.BardSong` first, but Mote itself never
-  reads that key (it reads `sets.precast.FC[...]`).
+  (`//gs c debugprecast`) and a spell it prints the precast set Mote chose,
+  following Mote's own lookup under `sets.precast.FC` (name, map, skill,
+  type, then `FC`).
 - Mote's default precast for a song is `sets.precast.FC` refined by name,
   spell map, skill `Singing` or type `BardSong` inside `FC`.
 
@@ -409,12 +409,11 @@ Full player-facing list: [sets.md](../../user/jobs/brd/sets.md).
 | Set | Looked up by |
 |-----|--------------|
 | `sets.idle`, `.Refresh`, `.DT`, `.Regen` | Mote `get_idle_set`, `select_idle_base` |
-| `sets.idle.Town` (template: `= sets.MoveSpeed`, 1 slot), `sets.Adoulin`, `sets.MoveSpeed` | `BaseSetBuilder`, `apply_movement` |
-| `sets.engaged`, `.STP`, `.Acc`, `.SB`, `.DT` (absent in T) | `select_engaged_base` |
+| `sets.idle.Town`, `sets.Adoulin` (both full idle sets plus `MoveSpeed`), `sets.MoveSpeed` | `BaseSetBuilder`, `apply_movement` |
+| `sets.engaged`, `.STP`, `.Acc`, `.SB`, `.DT` | `select_engaged_base` |
 | `sets.engaged.PDTKC` | `select_engaged_base` |
 | `sets[MainWeapon]`, `sets[SubWeapon]` | `apply_main_weapon` / `apply_sub_weapon` through `WeaponResolver` |
 | `sets.precast.FC`, `sets.precast.JA[...]`, `sets.precast.WS[...]` | Mote default precast |
-| `sets.precast.BardSong`, `sets.precast['Honor March']`, `['Aria of Passion']` | not read by Mote; `BardSong` only by the debug display |
 | `sets.midcast.BardSong` | Singing base, Mote type fallback |
 | `sets.midcast.Songs.<instrument>` | Singing instrument layer (locked songs); `range` by `apply_main_instrument` |
 | `sets.midcast.Songs.Loughnashade`, `.Songs.Duration` (absent in T) | Singing layers |
@@ -595,8 +594,6 @@ In game: `//gs c songplan`, `//gs c debugmidcast` (Singing chain steps),
   (`cast_song_to_target`, `spawn_type == 13`).
 - `forceidle` has no sender (manual use only).
 - `BRD_LOCKSTYLE.by_subjob` is never read.
-- Template `sets.idle.Town` is the 1-slot `MoveSpeed` set used as a full idle
-  base.
 - `song1`..`song5` are five copies of the same branch in `BRD_COMMANDS.lua`
   (duplication); the header does not list `songplan`, `songstop`,
   `songs full`.

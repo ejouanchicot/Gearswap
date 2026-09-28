@@ -34,8 +34,8 @@ in town too.
 |---|---|
 | `sets.idle.Refresh`, `sets.idle.DT`, `sets.idle.Regen` | `IdleMode` has that value, outside town |
 | `sets.idle` | The set of the current `IdleMode` does not exist |
-| `sets.idle.Town` | Idle in a town (Dynamis excluded). It **replaces** the idle set: the slots it leaves out keep what you wore before |
-| `sets.Adoulin` | Idle in Western / Eastern Adoulin, checked before `sets.idle.Town`. Same rule: it replaces the idle set |
+| `sets.idle.Town` | Idle in a town (Dynamis excluded). It **replaces** the idle set: the slots it leaves out keep what you wore before. The provided file builds it from `sets.idle.DT` plus `sets.MoveSpeed`, so every slot is set |
+| `sets.Adoulin` | Idle in Western / Eastern Adoulin, checked before `sets.idle.Town`. Same rule: it replaces the idle set. The provided file builds it from `sets.idle`, `sets.MoveSpeed` and Councilor's Garb |
 | `sets.MoveSpeed` | Running, outside town |
 
 Then the weapon sets.
@@ -150,7 +150,7 @@ These songs keep that first choice for the whole cast: no instrument and no
 2026-09-28 a shared step re-picked them and added the Duration layer).
 
 The provided file builds `sets.midcast.DebuffSong` as a base and copies it into
-`Pining Nocturne`, `Magic Finale`, both Elegies, `Foe Requiem VII`, `Maiden's
+`Pining Nocturne`, `Magic Finale`, both Elegies, `Foe Requiem VII`, `Requiem` (every tier), `Maiden's
 Virelai` and `Threnody`: the name `DebuffSong` itself is never picked.
 
 ### Other magic (subjob)
@@ -187,7 +187,8 @@ Magic']` as an empty set and none of the other three.
   (Foe Lullaby II to Foe Lullaby, Carnage Elegy to Battlefield Elegy, Foe Requiem VII
   to VI, Threnody II to Threnody; Horde Lullaby goes **up** to Horde Lullaby II). The
   new song takes its own set: give the family names (`sets.midcast.Requiem`...) so it
-  does not fall to `BardSong`. The list is `SONG_REFINE` in `BRD_SONG_CONFIG.lua`
+  does not fall to `BardSong`. The provided file has `sets.midcast.Requiem` (the debuff
+  set, no weapons) for every Foe Requiem tier. The list is `SONG_REFINE` in `BRD_SONG_CONFIG.lua`
   (`enabled = false` turns it off).
 - **Kraken Club.** While the off-hand you wear is Kraken Club, the engaged set is
   `sets.engaged.PDTKC`, even in `EngagedMode` DT. It is read from what you wear, so
@@ -207,10 +208,6 @@ Magic']` as an empty set and none of the other three.
 
 ## Sets in the provided file that nothing reads
 
-- `sets.precast.BardSong`, `sets.precast['Honor March']`, `sets.precast['Aria of
-  Passion']`: precast looks under `sets.precast.FC` (use `sets.precast.FC.BardSong`,
-  `sets.precast.FC['Honor March']`...). `sets.precast.BardSong` only appears in the
-  `//gs c debugprecast` display.
 - `sets.midcast.AriaPassion`: the name tried for Aria of Passion is
   `sets.midcast.AriaofPassion` (name without spaces), then `sets.midcast.Aria`.
 - `sets.midcast.DebuffSong` as a name (see [Debuff songs](#debuff-songs)).
@@ -222,12 +219,10 @@ Magic']` as an empty set and none of the other three.
 
 | Set | What it would do |
 |---|---|
-| `sets.engaged.DT` | `EngagedMode` DT: today it falls back to `sets.engaged` |
 | `sets.midcast.Songs.Loughnashade` | Added on top of Aria of Passion |
 | `sets.midcast.Songs.Duration` | Duration gear on every song under Troubadour |
-| `sets.midcast.Requiem` (or `['Foe Requiem VI']`) | The Foe Requiem VI sung when VII is on cooldown: today it falls to `sets.midcast.BardSong`, weapons included |
 | `sets.midcast.Prelude`, `.Mazurka`, `.Hymnus`, `.Sirvente`... | Families with no set of their own (they use `BardSong`) |
-| `sets.precast.FC.BardSong` | Fast Cast for songs only |
+| `sets.precast.FC.BardSong` | Fast Cast for songs only (precast reads under `sets.precast.FC`, never `sets.precast.BardSong`) |
 | `sets.precast.JA.Marcato`, `.Pianissimo`, `['Clarion Call']`, `.Tenuto` | Those abilities |
 
 Check which set a song picked: `//gs c debugmidcast`, then sing.

@@ -168,6 +168,9 @@ sets.engaged.Acc = set_combine(sets.engaged, {})
 -- • SUBTLE BLOW MODE (Reduce Enemy TP Gain)
 sets.engaged.SB = set_combine(sets.engaged, {})
 
+-- • DAMAGE TAKEN MODE (EngagedMode DT) - placeholder, add DT pieces here
+sets.engaged.DT = set_combine(sets.engaged, {})
+
 -- • KRAKEN CLUB SPECIALIZED (Multi-Attack Focus)
 --   Automatically selected when Kraken Club is equipped in sub-weapon slot
 --   Placeholder: currently identical to base engaged
@@ -196,14 +199,6 @@ sets.precast.FC = {
     ring2 = 'Murky Ring',
     back = Intarabus.fc
 }
-
-sets.precast.BardSong = sets.precast.FC
-
--- • Honor March precast (CRITICAL - MUST have Marsyas)
-sets.precast['Honor March'] = set_combine(sets.precast.FC, {range = 'Marsyas'})
-
--- • Aria of Passion precast (CRITICAL - MUST have Loughnashade)
-sets.precast['Aria of Passion'] = set_combine(sets.precast.FC, {range = 'Loughnashade'})
 
 -- • JOB ABILITIES
 -- • Nightingale (Extend song duration) - Bihu Slippers +3
@@ -474,6 +469,8 @@ sets.midcast['Carnage Elegy'] = sets.midcast.DebuffSong
 
 -- • Requiem (DoT)
 sets.midcast['Foe Requiem VII'] = sets.midcast.DebuffSong
+-- Every Foe Requiem tier (Requiem map): no weapons, like tier VII
+sets.midcast.Requiem = sets.midcast.DebuffSong
 
 -- • Other Debuffs
 sets.midcast["Maiden's Virelai"] = sets.midcast.DebuffSong
@@ -489,10 +486,10 @@ sets.midcast.Threnody = set_combine(sets.midcast.DebuffSong, {body = 'Mousai Man
 sets.MoveSpeed = {feet = 'Fili Cothurnes +3'}
 
 -- • TOWN IDLE (Movement Speed Priority)
-sets.idle.Town = sets.MoveSpeed
+sets.idle.Town = set_combine(sets.idle.DT, sets.MoveSpeed)
 
 -- • ADOULIN MOVEMENT (City-Specific Speed Boost)
-sets.Adoulin = set_combine(sets.MoveSpeed, {body = "Councilor's Garb"})
+sets.Adoulin = set_combine(sets.idle, sets.MoveSpeed, {body = "Councilor's Garb"})
 
 -- • BUFF SETS
 sets.buff = {}
