@@ -558,8 +558,7 @@ Build it the way `treasure_hunter.lua` does:
 
 - **The intro never shows the macro book or the lockstyle** (all jobs). No wrapper returns `get_<job>_macro_info` / `get_info`, so `show_intro` always takes the short branch. Open: either the wrappers return their info, or the dead branch goes; the side effect of the require must stay.
 - **`temp_binds.lua` restart detection is partial.** The file is dropped only when the saved `os.clock()` is larger than the current one. If the new game session has already run longer than the old one had when it saved, the stale list is kept: `tb list` shows keys that are no longer bound, and the free-key search skips them. Not verified in game.
-- **KeybindGuard re-sends HUD-only rows.** `desired_binds` returns every active entry, and the loop only tests `bind.key and bind.command`, so an entry with `key = ''` (a HUD row, or an optional state set to `key none`) is sent as `bind  gs c ...` with no key. `KeybindManager` filters `''` in `key_map`; `keybind_guard.lua` does not.
-- **Stale comment in `keybind_guard.lua`** (`desired_binds`): it says only PLD and THF filter by subjob and the others bind their whole list. Every job now goes through `get_active_binds`.
+- Fixed 2026-09-28: `KeybindGuard` re-sent rows with an empty key (HUD only, or `combatmode` / `th key none`) as `bind  gs c ...`; it now skips them like KeybindManager, and its header comment no longer says only PLD and THF filter their binds.
 - **`eventArgs.no_overlay`** is tested in `Guards.hands_off`, but nothing sets it.
 - **`custom_guards.lua` requires the THF module** `shared/jobs/thf/functions/logic/treasure_hunter` for the TH guard on every job. It works, because that module proxies the shared one, but the shared `shared/utils/equipment/treasure_hunter` is the direct source.
 - **RDM binds `^numpad9` to `EnfeebleTier`.** This breaks the "`^numpad9` = HybridMode or empty" convention of `.claude/rules/keybinds.md`.

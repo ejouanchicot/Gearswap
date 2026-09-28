@@ -36,10 +36,10 @@ local REASSERT_DELAY = 2.0
 --- down the previous job's keys over the new ones.
 windower._keybind_guard_seq = windower._keybind_guard_seq or 0
 
---- The binds the job wants down right now.
---- PLD and THF filter theirs by subjob through get_active_binds(); the others
---- bind their whole list. Asking in that order gives each job the same answer
---- its own bind_all() would.
+--- The binds the job wants down right now: get_active_binds() when the job's
+--- keybind module has it (every job built on KeybindManager: subjob filters,
+--- key conflicts), else the whole list. Either way the same answer its own
+--- bind_all() would give.
 --- @param keybinds table The job's keybind module
 --- @return table|nil List of {key, command} entries
 local function desired_binds(keybinds)
@@ -84,7 +84,9 @@ function KeybindGuard.schedule()
         end
 
         for _, bind in ipairs(list) do
-            if bind.key and bind.command then
+            -- A row with no key (HUD only, or `combatmode / th key none`) is
+            -- skipped, as KeybindManager does: it would send `bind  gs c ...`.
+            if bind.key and bind.key ~= '' and bind.command then
                 local KM = rawget(_G, 'KeybindManager')
                 local line = KM and KM.bind_line(bind) or ('gs c ' .. bind.command)
                 pcall(send_command, 'bind ' .. bind.key .. ' ' .. line)
