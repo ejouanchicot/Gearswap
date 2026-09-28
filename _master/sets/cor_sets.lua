@@ -105,9 +105,10 @@ sets.idle.PDT = set_combine(sets.idle.Normal, {
 })
 
 -- • Refresh Idle (MP recovery)
-sets.idle.Refresh = set_combine(sets.idle.Normal, {
-    -- Refresh gear
-})
+-- Goes ON TOP of the idle set (PDT included) under 50% MP, when the subjob
+-- gives MP: put only the Refresh pieces here, every slot listed replaces
+-- the idle / PDT piece.
+sets.idle.Refresh = {}
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- ENGAGED SETS
@@ -397,7 +398,7 @@ sets.MoveSpeed = {
 }
 
 -- • Adoulin Movement (City-specific speed boost)
-sets.Adoulin = set_combine(sets.MoveSpeed, {
+sets.Adoulin = set_combine(sets.idle.Normal, sets.MoveSpeed, {
     body = "Councilor's Garb"
 })
 

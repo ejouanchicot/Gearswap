@@ -32,22 +32,20 @@ after the mode's value is laid on top of idle and engaged.
 |---|---|
 | `sets.idle.Normal` | Standing, not fighting (the base) |
 | `sets.idle.PDT` | `HybridMode` is PDT (the default). Laid on top of `sets.idle.Normal` |
-| `sets.idle.Refresh` | Your MP is under 50 %. Laid on top of everything above, **PDT included** |
+| `sets.idle.Refresh` | Your MP is under 50 % and your subjob gives MP (not with /NIN, /DNC, /WAR...). Laid on top of everything above, **PDT included** |
 | `sets.idle.Town` | In a town other than Adoulin (not in the provided file). Replaces the idle set: no PDT, no Refresh, no `sets.MoveSpeed` there, only your weapons on top |
 | `sets.Adoulin` | In Western / Eastern Adoulin. Replaces the idle set the same way |
 
 Order outside town: `sets.idle.Normal` → weapons → `sets.idle.PDT` → `sets.idle.Refresh`
 → `sets.MoveSpeed` (while running).
 
-Two traps in the provided file:
+In the provided file:
 
-- `sets.idle.Refresh` is a full copy of `sets.idle.Normal` with no Refresh piece. Since it
-  goes on top of PDT, below 50 % MP it puts every Normal piece back over your PDT gear.
-  Put only the Refresh pieces in it (`sets.idle.Refresh = { body = "..." }`), or leave it
-  out.
-- `sets.Adoulin` holds only two pieces (legs and body). In Adoulin it replaces the whole
-  idle set, so every other slot keeps whatever you wore before. Build it on your idle
-  set: `sets.Adoulin = set_combine(sets.idle.Normal, { body = "Councilor's Garb", legs = "Carmine Cuisses +1" })`.
+- `sets.idle.Refresh` is empty. Put only the Refresh pieces in it
+  (`sets.idle.Refresh = { body = "..." }`): it goes on top of PDT, so every slot you list
+  replaces your PDT piece while your MP is under 50 %.
+- `sets.Adoulin` starts from `sets.idle.Normal` plus `sets.MoveSpeed` and Councilor's Garb:
+  in Adoulin it replaces the whole idle set, so it must fill every slot.
 
 ## Engaged
 
@@ -168,8 +166,8 @@ midcast keeps whatever was on.
   you wear.
 - **Sub weapon only with /NIN or /DNC.** With another subjob only the main hand of the
   weapon set is equipped.
-- **Refresh under 50 % MP** when idle outside town (`sets.idle.Refresh`, see the trap
-  above).
+- **Refresh under 50 % MP** when idle outside town and your subjob gives MP
+  (`sets.idle.Refresh`, see above).
 - **Flurry noticed.** Flurry or Flurry II cast on you is recognised, and your shots use
   `sets.precast.RA.Flurry1` / `Flurry2` when you have them.
 - **Triple Shot**: `sets.midcast.RA.TripleShot` on top of the ranged midcast set while

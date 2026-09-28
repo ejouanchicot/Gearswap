@@ -30,7 +30,7 @@ What COR adds on top of the shared pipeline:
   `sets.midcast.RA[RangedMode]` through `MidcastManager`, a Triple Shot layer,
   and a bullet-pouch refill after `/ra`.
 - **Weapon handling**: main weapon (its off hand only on /NIN or /DNC) and the
-  gun from states, `HybridMode` PDT overlay, Refresh overlay under 50 % MP.
+  gun from states, `HybridMode` PDT overlay, Refresh overlay under 50 % MP (subjob with MP only).
 - **External addon swap**: the `rolltracker` addon is unloaded while COR is
   loaded and loaded again by `file_unload`.
 
@@ -327,7 +327,7 @@ end of precast by `ElementalBelt` ([factories and helpers](../systems/factories-
 - `customize_idle_set` -> `build_idle_set`: town (`sets.Adoulin` in Adoulin,
   `sets.idle.Town` elsewhere; the template has no `sets.idle.Town`, so other
   cities count as field) -> weapons -> (outside town) `sets.idle.PDT` when
-  `HybridMode = PDT` -> `sets.idle.Refresh` when MP < 50 % -> `sets.MoveSpeed`
+  `HybridMode = PDT` -> `sets.idle.Refresh` when `max_mp > 0` and MP < 50 % -> `sets.MoveSpeed`
   when `state.Moving`.
 - `customize_melee_set` -> `build_engaged_set`: Mote's base (keeps Mote's
   defense and kiting layers) + `sets.engaged.PDT` when `PDT` + weapons. No
@@ -569,8 +569,7 @@ In game: `//gs c rolldebug` (per-roll gear report and `rolldebug.log`),
   `return` (the dual-export rule of `CODE_QUALITY.md` §5.2).
 - The `COR_TP_CONFIG.lua` comment says the handler passes the main weapon
   only; it passes main and sub.
-- Template `sets.Adoulin` is a 2-slot set used as the full idle base; no
-  `sets.idle.Town` exists.
+- No `sets.idle.Town` in the template: other cities count as field.
 - Dead code: `_G.cor_natural_eleven_active` (written, never read),
   `RollData.get_roll_names`, `clear_natural_eleven` / `clear_last_roll` outside
   `clear_all`, `_G.cor_pending_roll_*` (cleared, never set),

@@ -158,8 +158,9 @@ function SetBuilder.build_idle_set(base_set)
         end
     end
 
-    -- Step 5: Apply Refresh gear if MP low
-    if player and player.mpp and player.mpp < 50 then
+    -- Step 5: Apply Refresh gear if MP low. max_mp > 0: a subjob without MP
+    -- (NIN, DNC, WAR) must not read as "MP low".
+    if player and (player.max_mp or 0) > 0 and player.mpp and player.mpp < 50 then
         if sets.idle.Refresh then
             local success, combined = pcall(set_combine, result, sets.idle.Refresh)
             if success then
