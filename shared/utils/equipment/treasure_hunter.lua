@@ -26,7 +26,9 @@
 --- Dual Wield tiers, the action overlay wraps cleanup_precast /
 --- cleanup_midcast after the Obi / Orpheus belt: TH wins over both (it is
 --- worn once per mob), the player's CUSTOM gear still goes on last. THF
---- builds its engaged TH itself (SATA), so the engaged wrapper skips it.
+--- builds its engaged TH itself (SATA): _G._treasure_engaged_by_job is then
+--- a function giving the job's SA/TA + TH layer, which the engaged wrapper
+--- lays after the Dual Wield pieces instead of sets.TreasureHunter.
 ---
 --- @file    shared/utils/equipment/treasure_hunter.lua
 --- @author  ejouanchicot
@@ -215,6 +217,22 @@ function TreasureHunter.init()
     windower.raw_register_event('zone change', function() pcall(on_zone_change) end)
 end
 
+--- Engaged overlay, laid after the Dual Wield pieces: the job's own layer
+--- when it builds its engaged TH itself (THF: SA/TA + TH), else
+--- sets.TreasureHunter when the mode wants it.
+function TreasureHunter.lay_engaged()
+    local by_job = rawget(_G, '_treasure_engaged_by_job')
+    if type(by_job) == 'function' then
+        local layer = by_job()
+        if layer and next(layer) then equip(layer) end
+        return
+    end
+    if by_job then return end
+    local on = TreasureHunter.wants_engaged_th()
+    data().overlay_on = on
+    if on then equip(sets.TreasureHunter) end
+end
+
 --- Wrap handle_equipping_gear (engaged overlay) and cleanup_precast /
 --- cleanup_midcast (action overlay), once per sandbox, and start tracking.
 --- Called from INIT_SYSTEMS after the Dual Wield and Obi / Orpheus hooks.
@@ -226,15 +244,10 @@ function TreasureHunter.install()
     TreasureHunter.init()
     _G.handle_equipping_gear = function(status, pet_status)
         local result = gear(status, pet_status)
-        -- THF builds its engaged TH itself, with its SA/TA versions; a COR roll
-        -- holds the gear until it lands (gear_hold.lua)
-        if (status or (player and player.status)) == 'Engaged' and not rawget(_G, '_treasure_engaged_by_job')
+        -- A COR roll holds the gear until it lands (gear_hold.lua)
+        if (status or (player and player.status)) == 'Engaged'
            and not require('shared/utils/core/gear_hold').active() then
-            pcall(function()
-                local on = TreasureHunter.wants_engaged_th()
-                data().overlay_on = on
-                if on then equip(sets.TreasureHunter) end
-            end)
+            pcall(TreasureHunter.lay_engaged)
         end
         return result
     end

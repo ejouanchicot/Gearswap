@@ -55,11 +55,11 @@ function; line numbers are deliberately not used.
 | `shared/jobs/thf/functions/THF_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('THF', ...)` wrappers |
 | `shared/jobs/thf/functions/THF_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('THF', ...)` wrapper |
 | `shared/jobs/thf/functions/logic/sa_ta_manager.lua` | 95 | `apply_variant`: WS variant (`SATA` > `SA` > `TA`) from buffs or pending flags; consumes the flags |
-| `shared/jobs/thf/functions/logic/set_builder.lua` | 242 | Engaged base (Aftermath / HybridMode), weapons or Aby weapons, SA/TA overlay, TH overlay, town, movement |
+| `shared/jobs/thf/functions/logic/set_builder.lua` | 250 | Engaged base (Aftermath / HybridMode), weapons or Aby weapons, SA/TA overlay, TH overlay, `sata_th_layer` (laid again after Dual Wield), town, movement |
 | `shared/jobs/thf/functions/logic/smartbuff_manager.lua` | 263 | `apply` per subjob, `apply_fbc`, `apply_steal` |
 | `shared/jobs/thf/functions/logic/range_lock.lua` | 63 | Range/ammo lock in step with `RangeLock`; `_G.thf_range_locked`; `release` at unload |
-| `shared/jobs/thf/functions/logic/treasure_hunter.lua` | 48 | THF layer over the shared module: `sata_overlay`, and `init` flags the engaged TH as built by the job |
-| `shared/utils/equipment/treasure_hunter.lua` | 277 | Shared Treasure Hunter: optional state, tagging, engaged / action overlays, 4 raw events, `//gs c th` fields |
+| `shared/jobs/thf/functions/logic/treasure_hunter.lua` | 52 | THF layer over the shared module: `sata_overlay`, and `init` hands the shared wrapper the SA/TA + TH layer |
+| `shared/utils/equipment/treasure_hunter.lua` | 290 | Shared Treasure Hunter: optional state, tagging, engaged / action overlays, 4 raw events, `//gs c th` fields |
 | `shared/utils/equipment/weapon_resolver.lua` | 104 | `set_for(slot, value)`: `sets[value]`, or the plain weapon when `equip_without_set` is on |
 | `shared/utils/smartbuff/subjob_war_buffs.lua` | 74 | Berserk / Aggressor / Warcry collection and casting (shared with DNC) |
 | `_master/config/thf/THF_STATES.lua` | 145 | All Mote states (`THFStates.configure()`) |
@@ -135,8 +135,8 @@ sequenceDiagram
 The facade includes `message_buffs.lua`, `THF_PRECAST`, `THF_MIDCAST`,
 `THF_AFTERCAST`, `THF_IDLE`, `THF_ENGAGED`, `THF_STATUS`, `THF_BUFFS`,
 `THF_LOCKSTYLE`, `THF_MACROBOOK`, `THF_COMMANDS`, `THF_MOVEMENT`, then calls
-the THF `TreasureHunter.init()` (sets `_G._treasure_engaged_by_job`, then the
-shared `init`), requires `dualbox_manager` and prints a debug line. The other
+the THF `TreasureHunter.init()` (sets `_G._treasure_engaged_by_job` to the
+`SetBuilder.sata_th_layer` provider, then the shared `init`), requires `dualbox_manager` and prints a debug line. The other
 logic modules are required lazily by the hooks.
 
 ### Precast
@@ -298,9 +298,11 @@ Two layers:
   ranged attack), 4 raw events, and the `//gs c th` fields.
 - **THF** (`shared/jobs/thf/functions/logic/treasure_hunter.lua`): a table with
   the shared module as `__index`, plus `sata_overlay(has_sa, has_ta)` and an
-  `init()` that sets `_G._treasure_engaged_by_job` so the shared
-  `handle_equipping_gear` wrapper skips THF (its builder already did the
-  engaged TH, with the SATA versions).
+  `init()` that sets `_G._treasure_engaged_by_job` to a function returning
+  `SetBuilder.sata_th_layer()` (SA/TA overlay + TH, alone). The shared
+  `handle_equipping_gear` wrapper equips that layer again after the Dual
+  Wield pieces, instead of `sets.TreasureHunter`: SA/TA and TH win over DW on
+  THF as TH does on every job (before 2026-09-28 DW went on last on THF).
 
 THF's own STATES file defines `TreasureMode` as `Tag`, `SATA`, `Full` (default
 `Tag`, no `Off`). `OptionalState.attach` records it as native, so it is shown
@@ -330,9 +332,9 @@ unless `hidden.THF` is set in the character's `config/treasure_mode.lua`.
   including every subjob change.
 - `//gs c th hide` on THF: `hidden.THF = true`, `value()` returns nil, so no
   TH gear at all and the `^numpad3` entry becomes invisible (not bound).
-- `sets.TreasureHunterRA`, `sets.precast.RATH`, `sets.midcast.RA.TH`,
-  `sets.AeolianTH` and `sets.engaged.TH` of the template are read by nothing:
-  the action overlay uses `sets.TreasureHunter` for every action.
+- The action overlay uses `sets.TreasureHunter` for every action; the per-action
+  TH sets the files used to carry (`TreasureHunterRA`, `precast.RATH`,
+  `midcast.RA.TH`, `AeolianTH`, `engaged.TH`) were removed on 2026-09-28.
 
 ### Smartbuff, FBC and Steal
 
@@ -467,13 +469,10 @@ overlay has the same names (weapon sets in its `weapons.lua`).
 | `sets.midcast.EnhancingMagic` | nothing (the skill key is `'Enhancing Magic'`) | yes |
 | `sets.TreasureHunter` | shared `wants_engaged_th` / `apply_engaged`, action overlay | yes |
 | `sets.TreasureHunterSA`, `TA`, `SATA` | `TreasureHunter.sata_overlay` (SATA / Full) | yes |
-| `sets.TreasureHunterRA`, `sets.precast.RATH`, `sets.midcast.RA.TH`, `sets.AeolianTH`, `sets.engaged.TH` | nothing | yes |
 | `sets.DW.*` | `DualWield` | commented example |
 
-`sets.midcast.RA = sets.precast.RA` in T makes `sets.midcast.RA.Acc` and
-`.TH` fields of `sets.precast.RA` itself; `RA.Acc` is a self-reference.
-GearSwap ignores non-slot keys when equipping, but a tool that walks sets
-recursively must guard against the cycle.
+`sets.midcast.RA = sets.precast.RA` in T: both names are one table, so a
+sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
 
 ## Configuration
 
@@ -549,11 +548,11 @@ recursively must guard against the cycle.
 - `job_buff_change` must keep the Doom call first; it is THF's own copy, not
   `LifecycleManager.buff_change`.
 - `set_builder` replaces Mote's engaged base, so a Mote-side feature (defense
-  modes, `CustomMeleeGroups`, `sets.engaged.TH`) has no effect on THF engaged
-  gear.
-- `_G._treasure_engaged_by_job` must be set on THF (THF `TreasureHunter.init`),
-  or the shared engaged wrapper would equip `sets.TreasureHunter` a second
-  time, over the SATA overlay.
+  modes, `CustomMeleeGroups`) has no effect on THF engaged gear.
+- `_G._treasure_engaged_by_job` must be the THF layer function (THF
+  `TreasureHunter.init`): without it the shared engaged wrapper would equip
+  plain `sets.TreasureHunter` over the SATA overlay, and a Dual Wield piece
+  would win over the SA/TA gear.
 - Never lock slots without a release in `file_unload`, placed first there:
   `disable_table` outlives the job file. A new lock should also be released by
   `//gs c wo` (`wardrobe_organizer.lua` `release_stance_locks`).
@@ -619,9 +618,6 @@ recursively must guard against the cycle.
   equipped after the SA/TA variant and the TP piece: TH pieces win their slots
   over the weaponskill gear for that one action (by design of the shared
   action overlay; worth knowing when a TH piece shares a slot with WS gear).
-- Five TH sets of the template are unused: `sets.TreasureHunterRA`,
-  `sets.precast.RATH`, `sets.midcast.RA.TH`, `sets.AeolianTH`,
-  `sets.engaged.TH`.
 - Not an issue: `PDTAFM3` tests Aftermath Lv.3 (buff 272) with Vajra, which is
   right. Vajra is a Mythic weapon (BG-Wiki), Mythic aftermath has three levels,
   `Aftermath: Lv.1/2/3` = buffs 270-272 (`res/buffs.lua`); buff 273 is the

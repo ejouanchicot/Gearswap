@@ -38,10 +38,14 @@ function TreasureHunter.sata_overlay(has_sa, has_ta)
     return nil
 end
 
---- THF builds its engaged TH itself (set_builder.lua, with SATA): tell the
---- shared engaged wrapper to step aside, and start the tag tracking.
+--- THF builds its engaged TH itself (set_builder.lua, with SATA): hand the
+--- shared engaged wrapper the SA/TA + TH layer, which it lays again after
+--- the Dual Wield pieces (they must not replace the Sneak Attack or TH
+--- gear), and start the tag tracking.
 function TreasureHunter.init()
-    _G._treasure_engaged_by_job = true
+    _G._treasure_engaged_by_job = function()
+        return require('shared/jobs/thf/functions/logic/set_builder').sata_th_layer()
+    end
     Shared.init()
 end
 

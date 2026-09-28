@@ -483,7 +483,7 @@ Tagging (raw events, registered once per sandbox by `init()`):
 
 Overlays (`install()`, once per sandbox, after DualWield and ElementalBelt):
 
-- **Engaged**: wraps `handle_equipping_gear`. When Engaged, `_G._treasure_engaged_by_job` is not set and no COR roll holds the gear (`GearHold.active()`, since 2026-09-28), it equips `sets.TreasureHunter` if `wants_engaged_th()`. THF sets that flag in its `init` and builds its engaged TH itself (`shared/jobs/thf/functions/logic/treasure_hunter.lua`, which proxies this module and adds `sata_overlay`).
+- **Engaged**: wraps `handle_equipping_gear` (after Dual Wield). When Engaged and no COR roll holds the gear (`GearHold.active()`), `lay_engaged()` equips `sets.TreasureHunter` if `wants_engaged_th()`, or, when `_G._treasure_engaged_by_job` is a function, the layer it returns. THF sets it in its `init` to `SetBuilder.sata_th_layer` (SA/TA + TH) and builds its engaged TH itself (`shared/jobs/thf/functions/logic/treasure_hunter.lua`, which proxies this module and adds `sata_overlay`): the layer goes on again after the Dual Wield pieces, so SA/TA and TH win over them.
 - **Action**: wraps `cleanup_precast` (weaponskills, abilities) and `cleanup_midcast` (spells, ranged): `sets.TreasureHunter` when the target is a MONSTER not tagged yet and a mode is on.
 
 | Function | Behaviour |

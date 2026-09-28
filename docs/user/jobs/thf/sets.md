@@ -32,11 +32,12 @@ The engaged set is chosen in this order, the first that exists wins:
 Then, on top, in this order (a later layer wins a slot):
 
 1. Your weapons (Main Weapon + Sub Weapon, or the Abyssea pair).
-2. Sneak Attack / Trick Attack gear while the buff is up (see below).
-3. `sets.TreasureHunter` while Treasure Hunter wants it (see below).
-4. The Dual Wield tier pieces (`sets.DW.*`, [set names](../../guides/sets.md)).
-   On THF they go on **after** the SA/TA and Treasure Hunter gear, so a Dual
-   Wield piece in the same slot wins over them.
+2. The Dual Wield tier pieces (`sets.DW.*`, [set names](../../guides/sets.md)).
+3. Sneak Attack / Trick Attack gear while the buff is up (see below).
+4. `sets.TreasureHunter` while Treasure Hunter wants it (see below).
+
+So a Sneak Attack, Trick Attack or Treasure Hunter piece always wins its slot over a
+Dual Wield piece, as Treasure Hunter does on every job.
 
 ## Sneak Attack and Trick Attack
 
@@ -174,9 +175,10 @@ Subjob /DNC: `sets.precast.Waltz`, `sets.precast.Step` and
 - `sets.idle.PDT`, `sets.idle.Regen`: THF has no idle mode.
 - `sets.precast.JA['Animated Flourish']`: `sets.precast.Flourish1` is found first.
 - `sets.midcast.EnhancingMagic` (the name read is `sets.midcast['Enhancing Magic']`).
-- `sets.precast.RATH`, `sets.TreasureHunterRA`, `sets.midcast.RA.TH`,
-  `sets.AeolianTH`, `sets.engaged.TH`, `sets.midcast.RA.Acc`: Treasure Hunter
-  on ranged attacks and Aeolian Edge now comes from `sets.TreasureHunter`.
+- Treasure Hunter has one set, `sets.TreasureHunter`, for every case: ranged attacks,
+  Aeolian Edge and other weaponskills, and the engaged set. Names like
+  `sets.AeolianTH`, `sets.TreasureHunterRA`, `sets.precast.RATH`, `sets.midcast.RA.TH`
+  or `sets.engaged.TH` are not read (the provided file no longer has them).
 
 ## Names the code reads that the provided file lacks
 

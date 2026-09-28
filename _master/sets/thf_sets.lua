@@ -809,10 +809,6 @@ sets.precast.RA = {
     back = 'Sacro Mantle'
 }
 
-sets.precast.RATH = set_combine(sets.precast.RA, {
-    feet = "Skulker's Poulaines +3"
-})
-
 -- ============================================================--
 
 --                      MIDCAST SETS                          --
@@ -822,7 +818,6 @@ sets.midcast = {}
 
 -- Ranged Midcast
 sets.midcast.RA = sets.precast.RA
-sets.midcast.RA.Acc = sets.midcast.RA
 
 -- Cure Midcast (for /WHM subjob)
 sets.midcast.Cure = {}
@@ -897,22 +892,9 @@ sets.TreasureHunterTA = set_combine(sets.TreasureHunter, sets.precast.JA['Trick 
 sets.TreasureHunterSATA = set_combine(sets.TreasureHunter, sets.precast.JA['Sneak Attack'],
     sets.precast.JA['Trick Attack'])
 
--- TH Ranged
-sets.TreasureHunterRA = set_combine(sets.precast.RA, {
-    feet = "Skulker's Poulaines +3"
-})
-
-sets.midcast.RA.TH = set_combine(sets.precast.RA, {
-    feet = "Skulker's Poulaines +3"
-})
-
--- Aeolian Edge TH
-sets.AeolianTH = set_combine(sets.precast.WS['Aeolian Edge'], {
-    feet = "Skulker's Poulaines +3"
-})
-
--- Engaged with TH
-sets.engaged.TH = set_combine(sets.engaged, sets.TreasureHunter)
+-- Treasure Hunter on ranged attacks, weaponskills (Aeolian Edge...) and the
+--   engaged set: sets.TreasureHunter goes on top while the mob is not tagged
+--   yet (TreasureMode). There is no separate TH set per action.
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- DUAL WIELD TIERS (optional, see config/DW_CONFIG.lua and //gs c dw)

@@ -173,6 +173,14 @@ function SetBuilder.apply_sata_buff(result)
     return result
 end
 
+---   The SA/TA and TH pieces alone, as build_engaged_set lays them. The shared
+---   TH wrapper equips this again after the Dual Wield pieces, so SA/TA and TH
+---   win over Dual Wield like TH does on every other job.
+---   @return table SA/TA + TH overlay (empty when neither applies)
+function SetBuilder.sata_th_layer()
+    return TreasureHunter.apply_engaged(SetBuilder.apply_sata_buff({}))
+end
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   ENGAGED SET BUILDER
 ---  ═══════════════════════════════════════════════════════════════════════════
