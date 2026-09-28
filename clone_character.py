@@ -254,7 +254,7 @@ TRANSLATIONS = {
 # requires a config from there without pcall, so a cloned PUP never loads.
 ALL_VALID_JOBS = [
     'BLM', 'BLU', 'BRD', 'BST', 'COR', 'DNC', 'DRK', 'GEO',
-    'PLD', 'RDM', 'RUN', 'SAM', 'THF', 'WAR', 'WHM'
+    'PLD', 'RDM', 'RUN', 'SAM', 'SMN', 'THF', 'WAR', 'WHM'
 ]
 
 
