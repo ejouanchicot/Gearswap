@@ -307,7 +307,7 @@ value holds if any item matches (OR). Names compare case-insensitively, and a tr
 | `day_weather = true/false` | the action's element matches the day, or the weather |
 | `target` | `self`, `other` (player or NPC), `enemy` |
 | `distance_below` | distance to the action's target |
-| `obi_better` / `orpheus_better` | Hachirin-no-Obi's bonus for the action's element (day ±10, weather ±10/±25, storms included) beats Orpheus's Sash's (+15 at 1 yalm, -1 per yalm, +1 from 15), or the reverse; ties go to Orpheus. `shared/utils/equipment/elemental_bonus.lua`, 2026-09-25 |
+| `obi_better` / `orpheus_better` | Hachirin-no-Obi's bonus for the action's element (day ±10, weather ±10/±25, storms included) beats Orpheus's Sash's (+15 up to 1.93 yalms, +1 from 13, linear in between: BG-Wiki, corrected 2026-09-28), or the reverse; ties go to Orpheus. `shared/utils/equipment/elemental_bonus.lua`, 2026-09-25. Since 2026-09-28 `ElementalBelt` makes this choice for every job by itself; a CUSTOM rule still runs after it and wins |
 | `obi_bonus_above` | the Obi's bonus is above this many percent (for a player without Orpheus) |
 | `town`, `moving`, `pet` | true / false |
 | `engaged` | true = the player's status is `Engaged`, false = any other status. With `engaged = false`, a weapon slot at a combat moment is not reported (2026-09-26, for Blody's Compensator on Phantom Roll) |

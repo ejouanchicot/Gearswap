@@ -145,7 +145,7 @@ For a template entry such as `_master/entry/Tetsouo_WAR.lua`:
 | sync | `ModuleCache.install()` — makes `require` cache per sandbox | `:54-56` |
 | sync | `HPPriority.apply()` — HP pieces get `priority` = HP (the sets exist: Mote ran `init_gear_sets` first) | `:65-70` |
 | sync | LagDebugger, `AutoMedicine.ensure()`, `JobSyncWatchdog.start()`, dual-box sync IPC listener and its `ls` / `rf` hooks | `:78-201` |
-| sync | `KeybindGuard.schedule()` (re-asserts the job's binds once the console is quiet), `StealthTimers.start()` (Sneak / Invisible end times, [stealth.md](systems/stealth.md)), `CustomStates.install_hooks()` (`<JOB>_CUSTOM.lua` gear rules) | `:277-305` |
+| sync | `KeybindGuard.schedule()` (re-asserts the job's binds once the console is quiet), `StealthTimers.start()` (Sneak / Invisible end times, [stealth.md](systems/stealth.md)), `ElementalBelt.install()` (Obi / Orpheus on elemental damage), `MidcastFallback.install()` (subjob magic through MidcastManager), `CustomStates.install_hooks()` (`<JOB>_CUSTOM.lua` gear rules), in that order: each wraps Mote's `cleanup_precast` / `cleanup_midcast` around the previous one, so the set goes on, then the belt, then the custom gear | `:277-305` |
 | +0.5 s | WarpInit, AutoMove (unless `_G.DISABLE_AUTOMOVE`), StateDisplayOverride | `:208-257` |
 | +2 s | MidcastWatchdog | `:126-136` |
 | +3 s | load check of PrecastGuard / CooldownChecker / WSPrecastHandler (message on failure) | `:315-327` |
@@ -187,7 +187,11 @@ no midcast, no aftercast.
   mode state. There is no spellMap level and no idle fallback, and a missing
   `sets.midcast[skill]` returns before any lookup. `CODE_QUALITY.md` §4.2 now
   names it the P0-P9 chain and points to the file header (the old "7-level"
-  wording is gone since 2026-09-25). Job overrides run after. See [midcast-and-buffs.md](systems/midcast-and-buffs.md).
+  wording is gone since 2026-09-25). Job overrides run after. Then Mote's
+  `cleanup_midcast`, wrapped by the midcast fallback (a spell the job did not
+  route), ElementalBelt (Hachirin-no-Obi / Orpheus's Sash on elemental damage)
+  and the custom states. See [midcast-and-buffs.md](systems/midcast-and-buffs.md)
+  and [factories-and-helpers.md](systems/factories-and-helpers.md#elementalbelt).
 - **Messages** — the hooks wrap `user_post_precast` (abilities, weaponskills)
   and `user_post_midcast` (spells), look the action up in the databases and
   print through `MessageFormatter`. See [messages.md](systems/messages.md).
@@ -280,7 +284,7 @@ including what a re-clone would overwrite today.
 | [systems/core-lifecycle.md](systems/core-lifecycle.md) | Engine sandbox, boot order, INIT_SYSTEMS, JobChangeManager, JobSyncWatchdog, MidcastWatchdog, ModuleCache, LifecycleManager, CycleHandler |
 | [systems/precast-pipeline.md](systems/precast-pipeline.md) | PrecastGuard, DebuffChecker, AutoMedicine, DoomManager, CooldownChecker, AbilityHelper, WS chain, TP bonus, TierRefiner, WS slots |
 | [systems/midcast-and-buffs.md](systems/midcast-and-buffs.md) | MidcastManager resolution, set builders, SelfBuffManager, subjob WAR buffs, Scholar stratagems |
-| [systems/factories-and-helpers.md](systems/factories-and-helpers.md) | LockstyleManager, MacrobookManager, AutoMove, craft/fishing mode, /DRG jumps, WaltzManager, CureManager |
+| [systems/factories-and-helpers.md](systems/factories-and-helpers.md) | LockstyleManager, MacrobookManager, AutoMove, craft/fishing mode, /DRG jumps, WaltzManager, CureManager, ElementalBelt (Obi / Orpheus), SpellGearLock (Dispelga) |
 | [systems/messages.md](systems/messages.md) | Message architecture: facade, engine, renderer, hooks and handlers, modes |
 | [systems/messages-formatters.md](systems/messages-formatters.md) | The 34 formatter modules under `formatters/` (plus 2 in `utilities/`) and their public functions, incl. `altgroup`, `sortie`, `tempbind` |
 | [systems/messages-catalog.md](systems/messages-catalog.md) | Every template namespace and key (incl. `ALTGROUP`, `SORTIE`, `TEMPBIND`), reachable or not; the `message_mode_config` factory is in messages.md |
