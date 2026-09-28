@@ -3,7 +3,8 @@
 ---============================================================================
 --- Read from <Character>/config/AUTO_ABILITIES.lua (template in
 --- _master/config_global/). Every option is off unless the file sets it true:
----   sam_hasso        SAM: Hasso when engaging, unless Hasso or Seigan is up
+---   sam_hasso        SAM: the chosen stance (state.Stance) when engaging,
+---                    unless Hasso or Seigan is up
 ---   geo_entrust      GEO: an Indi- aimed at a party member gets Entrust first
 ---   geo_full_circle  GEO: a Geo- cast while a luopan is out gets Full Circle first
 ---   blu_unbridled    BLU: Unbridled Learning before an unbridled spell

@@ -13,15 +13,19 @@
 
 local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 
---- Hasso on engaging, when config/AUTO_ABILITIES.lua sets sam_hasso: not
---- over Hasso or Seigan, and only once its recast is ready.
+--- The chosen stance on engaging, when config/AUTO_ABILITIES.lua sets
+--- sam_hasso (the name predates the Stance mode): state.Stance, Hasso or
+--- Seigan, not over a stance already up, and only once its recast is ready.
+--- Sending the other stance would also switch state.Stance (SAM_PRECAST
+--- remembers any stance used).
 --- @param newStatus string
 local function auto_hasso(newStatus)
     if newStatus ~= 'Engaged' then return end
     if not require('shared/utils/core/auto_options').on('sam_hasso') then return end
     if buffactive['Hasso'] or buffactive['Seigan'] then return end
-    if require('shared/utils/precast/ability_helper').is_ability_ready('Hasso') then
-        send_command('input /ja "Hasso" <me>')
+    local stance = state.Stance and state.Stance.value == 'Seigan' and 'Seigan' or 'Hasso'
+    if require('shared/utils/precast/ability_helper').is_ability_ready(stance) then
+        send_command('input /ja "' .. stance .. '" <me>')
     end
 end
 

@@ -98,23 +98,23 @@ Hasso, Seigan, Warding Circle, Third Eye and Blade Bash.
 - **Third Eye before a weaponskill.** When Third Eye is not up and is ready,
   your weaponskill is held back, Third Eye goes out (with
   `sets.precast.JA['Third Eye']`), then the weaponskill is sent again as soon
-  as Third Eye is up, or refused. This cannot be turned off.
+  as Third Eye is up, or refused. Only for a weaponskill that can go (in range,
+  1000 TP): a refused one does not use Third Eye. This cannot be turned off.
 - **The stance is remembered.** Any Hasso or Seigan you use (or
   `//gs c hasso` / `//gs c seigan`) becomes the chosen stance. Default: Hasso.
   - Hasso stance: Third Eye always goes out alone, Hasso is never replaced.
-  - Seigan stance: when Seigan is down, the first Third Eye (yours or the one
-    before a weaponskill) is replaced by Seigan, then Third Eye 1 s later.
-    The next time Seigan is down, Third Eye goes out alone (it alternates).
+  - Seigan stance: when Seigan is down, your Third Eye is replaced by Seigan,
+    then Third Eye 1 s later, every time.
 - **Seigan gear.** While Seigan is up and you are engaged: `sets.thirdeye`
   (PDT) or `sets.seigan` (Normal, MDT).
 - **Sekkanoki / Meikyo Shisui pieces** on the weaponskill while the buff is up.
 - **Aftermath Lv.3** with Masamune: `sets.engaged.AM3` when you write it.
 - **Yoichinoyumi** in the range slot adds `sets.bow` while engaged.
 - **HP-based idle**: `sets.idle.Weak` below 50 % HP, `sets.idle.Regen` below 80 %.
-- **Hasso when you engage** (optional): `sam_hasso = true` in
+- **Your stance when you engage** (optional): `sam_hasso = true` in
   `<YourName>/config/AUTO_ABILITIES.lua`. On engaging with neither Hasso nor
-  Seigan up and Hasso ready, Hasso goes out. Off by default. Because it is a
-  Hasso like any other, it makes Hasso the chosen stance.
+  Seigan up, your chosen stance goes out (Hasso, or Seigan after
+  `//gs c seigan`) once it is ready. Off by default.
 
 ## Sets in the provided file that nothing reads
 

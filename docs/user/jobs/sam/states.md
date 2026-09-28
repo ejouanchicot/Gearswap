@@ -47,21 +47,19 @@ are useful with a subjob:
 ## Notes
 
 - **Third Eye, Seigan stance, Seigan down**: the Third Eye press is
-  replaced by Seigan, then Third Eye 1 s later. After that, the next time
-  Seigan is down, one Third Eye press goes out alone before the Seigan step
-  works again (the behaviour alternates; reported as a bug). With the Hasso
-  stance, Third Eye always goes out alone.
+  replaced by Seigan, then Third Eye 1 s later, every time (if Seigan is
+  refused, the second Third Eye goes out alone). With the Hasso stance,
+  Third Eye always goes out alone.
 - **Weaponskill with Third Eye ready**: in either stance, a weaponskill pressed
   while Third Eye is ready and not up is held back, Third Eye goes out first,
   then the weaponskill is sent again once Third Eye is up (or refused; at the
   latest 4.5 s later). Each action has its own precast: Third Eye
-  gear, then weaponskill gear. This happens before the range and 1000 TP
-  checks, so a weaponskill pressed out of range or without enough TP still
-  uses Third Eye, and the replayed weaponskill is then refused.
-- **Auto Hasso** (off by default): `sam_hasso = true` in
-  `<YourName>/config/AUTO_ABILITIES.lua` uses Hasso when you engage, if
-  neither Hasso nor Seigan is up and Hasso is ready. Like any Hasso you use,
-  it makes Hasso your chosen stance, even when you had chosen Seigan.
+  gear, then weaponskill gear. Only a weaponskill in range and with 1000 TP
+  does this: a refused one does not use Third Eye.
+- **Auto stance** (off by default): `sam_hasso = true` in
+  `<YourName>/config/AUTO_ABILITIES.lua` uses your chosen stance (Hasso, or
+  Seigan after `//gs c seigan`) when you engage, if neither Hasso nor Seigan
+  is up and it is ready.
 - **Seigan up while engaged**: `sets.thirdeye` in PDT, `sets.seigan` otherwise
   (empty in the template until you fill it). `sets.bow` goes on with
   Yoichinoyumi (empty too). `sets.engaged.AM3` replaces the engaged set under

@@ -17,7 +17,8 @@ Samurai with the provided template gives you:
 - **Four keyed modes**: weapon, engaged accuracy (Offense Mode), weaponskill
   accuracy (WS Mode) and the defensive Hybrid Mode.
 - **Third Eye before a weaponskill**: a weaponskill pressed while Third Eye is
-  ready and not up is held back, Third Eye goes out, then the weaponskill.
+  ready and not up is held back, Third Eye goes out, then the weaponskill. A
+  weaponskill out of range or without 1000 TP is refused without using Third Eye.
 - **A stance you choose** (Hasso or Seigan, `//gs c hasso` / `seigan`): in
   Seigan stance, Third Eye is preceded by Seigan when Seigan is down; in Hasso
   stance, Hasso is never replaced.
@@ -112,7 +113,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Feature | On SAM |
 |---|---|
 | Third Eye / Seigan automation | SAM's own, see [states.md](states.md#notes) |
-| Auto Hasso (off by default) | With `sam_hasso = true` in `config/AUTO_ABILITIES.lua`: Hasso when you engage, unless Hasso or Seigan is up and only when it is ready. It also makes Hasso your chosen stance |
+| Auto stance (off by default) | With `sam_hasso = true` in `config/AUTO_ABILITIES.lua`: your chosen stance (Hasso, or Seigan after `//gs c seigan`) when you engage, unless Hasso or Seigan is up and only when it is ready |
 | Weaponskill check | A weaponskill out of range or under 1000 TP is cancelled with a message; TP bonus gear from `SAM_TP_CONFIG.lua` is added (Hagakure counted while it is up) |
 | Recast check | An ability or spell still on recast is cancelled with the time left (`RECAST_CONFIG.lua`) |
 | Debuff guard | An action you cannot do is stopped; with Auto Medicine on, Echo Drops / Remedy / Panacea are used |

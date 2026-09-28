@@ -1,7 +1,8 @@
 ---============================================================================
 --- Auto Abilities - job abilities used for you (all off by default)
 ---============================================================================
---- sam_hasso        SAM: Hasso when you engage, unless Hasso or Seigan is up
+--- sam_hasso        SAM: your chosen stance (Hasso, or Seigan after //gs c seigan)
+---                  when you engage, unless Hasso or Seigan is up
 --- geo_entrust      GEO: an Indi- cast on a party member gets Entrust first
 --- geo_full_circle  GEO: a Geo- cast while a luopan is out gets Full Circle first
 --- blu_unbridled    BLU: an unbridled spell cast without Unbridled Learning /

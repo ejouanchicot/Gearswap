@@ -14,9 +14,11 @@ What SAM adds on top of the shared pipeline:
   with Seigan down is cancelled, Seigan goes out, then Third Eye 1 s later.
   In Hasso stance Third Eye always goes out alone.
 - **Auto-Third Eye before a weaponskill**, in either stance: a weaponskill
-  pressed while Third Eye is ready and not up is cancelled, Third Eye goes
-  out and `AbilityHelper.follow_up` replays the weaponskill.
-- **Auto Hasso on engage** (opt-in, `sam_hasso` in `AUTO_ABILITIES.lua`).
+  that `WSPrecastHandler` accepted (range, 1000 TP), pressed while Third Eye
+  is known, ready (RECAST_CONFIG tolerance) and not up, is cancelled, Third
+  Eye goes out and `AbilityHelper.follow_up` replays the weaponskill.
+- **Chosen stance on engage** (opt-in, `sam_hasso` in `AUTO_ABILITIES.lua`):
+  Hasso, or Seigan when `state.Stance` is Seigan.
 - **WS buff layers** in `job_post_precast`: `sets.buff.Sekkanoki` and
   `sets.buff['Meikyo Shisui']` while `buffactive` says those buffs are up.
 - **Set building**: engaged base re-selected from `OffenseMode` x
@@ -133,24 +135,23 @@ flowchart TD
 - `remember_stance` runs on every accepted Hasso or Seigan precast, including
   the ones sent by `//gs c hasso`, by auto Hasso and by the auto-Seigan path.
 - `try_seigan_before_third_eye` uses the module flag `seigan_cast_attempted`
-  as its anti-loop guard. It is only cleared when a Third Eye goes through with
-  Seigan still down, never when Seigan came up. So after a successful
-  Seigan + Third Eye, the next time Seigan is down the first Third Eye press
-  goes out without Seigan (alternation; reproduced offline, see
-  [Known issues](#known-issues)).
-- `try_third_eye_ws` walks `windower.ffxi.get_abilities().job_abilities`
-  (ability ids), finds `Third Eye` in `res.job_abilities` and reads
-  `ability_recasts[res_ability.recast_id]`. `get_ability_recasts()` is indexed
-  by **recast id** (Third Eye's is 133; slot 62 is Flee's). It reads `res`
-  through `rawget(_G, 'res') or windower.res or require('resources')`, because
-  `res` is not a global in every job sandbox.
+  as its anti-loop guard: set when Seigan is queued, cleared as soon as a
+  Third Eye press finds Seigan up, or when the replayed Third Eye finds Seigan
+  still down (then that Third Eye goes out alone instead of looping). Until
+  2026-09-28 it was not cleared when Seigan came up, so every other
+  Seigan-down Third Eye went out without Seigan.
+- `try_third_eye_ws` uses `AbilityHelper.can_use_ability('Third Eye')` (the
+  player's ability list) and `AbilityHelper.is_ability_ready('Third Eye')`
+  (recast by recast id, RECAST_CONFIG tolerance, 2.0 s by default). Until
+  2026-09-28 it walked the ability list itself and required a recast of
+  exactly 0.
 - The replay goes through `AbilityHelper.follow_up('Third Eye', '/ws ...', 1.5)`:
   the weaponskill is sent as soon as Third Eye is up, or as soon as Third Eye
   is provably refused, and at the latest 1.5 + 3.0 s later. A newer
   `follow_up` invalidates a pending one (`windower._ability_follow_seq`).
-- Both automations run **before** `WSPrecastHandler.handle`, so a weaponskill
-  pressed out of range or under 1000 TP still triggers Third Eye (see Known
-  issues).
+- Auto-Seigan runs before `WSPrecastHandler.handle` (it only concerns the
+  Third Eye press); auto-Third Eye runs **after** it (2026-09-28), so a
+  weaponskill refused for range or TP no longer spends Third Eye.
 - Neither path prints its own message: the ability message hook announces
   Seigan and Third Eye when they go out.
 - `job_post_precast`: TP bonus gear, then for a weaponskill
@@ -206,10 +207,11 @@ no midcast set in the template).
 
 `SAM_STATUS.lua` `auto_hasso(newStatus)`: on `Engaged`, when
 `AutoOptions.on('sam_hasso')` is true (the character's
-`config/AUTO_ABILITIES.lua`), neither Hasso nor Seigan is up and
-`AbilityHelper.is_ability_ready('Hasso')`, it sends `input /ja "Hasso" <me>`.
-It does not read `state.Stance`; the Hasso it sends then goes through
-`remember_stance`, which sets the stance to Hasso. Off by default.
+`config/AUTO_ABILITIES.lua`) and neither Hasso nor Seigan is up, it sends the
+chosen stance (`state.Stance`: Seigan when Seigan, else Hasso) once
+`AbilityHelper.is_ability_ready` says it is ready. The option keeps its old
+name. Until 2026-09-28 it always sent Hasso, which then switched a Seigan
+stance to Hasso through `remember_stance`. Off by default.
 
 ## Mote states
 
@@ -357,8 +359,9 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
 - The automations cancel the original action and rely on a replay; a replay
   path that can itself be cancelled needs a loop guard (as
   `seigan_cast_attempted` is meant to be).
-- A check added after `WSPrecastHandler.handle` runs after Third Eye has
-  already been sent: put range/TP-dependent decisions before the automations.
+- An automation that spends an ability before a weaponskill belongs after
+  `WSPrecastHandler.handle`, never before: a refused weaponskill must not
+  cost the ability.
 - The template keeps `Tetsouo/...` require paths; the clone script rewrites
   them.
 
@@ -390,18 +393,9 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
 
 ## Known issues
 
-- Auto-Seigan alternates after a successful Seigan: `seigan_cast_attempted` is
-  left `true` when the replayed Third Eye finds Seigan up, so the next Seigan-down
-  Third Eye goes out alone (`SAM_PRECAST.lua` `try_seigan_before_third_eye`).
-  Confirmed offline.
-- Auto-Third Eye runs before `WSPrecastHandler.handle`: a weaponskill pressed
-  out of range or under 1000 TP still spends Third Eye, then the replayed
-  weaponskill is refused (`SAM_PRECAST.lua` `job_precast`).
-- Auto Hasso ignores `state.Stance`: with Seigan chosen, engaging with no
-  stance up sends Hasso and `remember_stance` switches the stance to Hasso
-  (`SAM_STATUS.lua` `auto_hasso`).
-- `recast == 0` strict test in the auto-Third Eye path, while the rest of the
-  project uses the 2.0 s tolerance (`try_third_eye_ws`).
+- Fixed 2026-09-28 (checked with `scripts/audit/difftest_sam_precast.lua`, not
+  yet in game): auto-Seigan alternating, auto-Third Eye spent on a refused
+  weaponskill, auto stance ignoring `state.Stance`, strict `recast == 0`.
 - No movement speed layer; `sets.MoveSpeed` unreachable (`set_builder.lua`
   `build_idle_set`).
 - `SAM_LOCKSTYLE.by_subjob` is never read (no `get_style`).

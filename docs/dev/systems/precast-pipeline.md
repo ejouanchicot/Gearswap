@@ -876,7 +876,9 @@ cure item, TierRefiner's replacement), which cannot be cancelled and outlive a
   uses `shared/utils/core/live_tp.lua` too; GearSwap's copy is never refreshed inside
   a `coroutine.schedule` callback.
 - The DNC Climactic and WAR/DNC Jump auto-triggers run before `WSPrecastHandler`
-  (range, TP), so a WS pressed out of range still fires the ability first.
+  (range, TP), so a WS pressed out of range still fires the ability first. SAM's
+  auto-Third Eye had the same order until 2026-09-28; it now runs after the
+  handler accepted the WS.
 - `WSValidator` calls `validate_weaponskill` twice on the success path, and
   PrecastGuard has already blocked Amnesia before it runs.
 - TierRefiner requires recast exactly 0 while CooldownChecker tolerates 2.0 s; a tier

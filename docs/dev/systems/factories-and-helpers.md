@@ -595,7 +595,7 @@ The module returns a function: `local live_tp = require('shared/utils/core/live_
 
 | Option | Job | Effect | Reader |
 |---|---|---|---|
-| `sam_hasso` | SAM | Hasso on engage unless Hasso or Seigan is up | `SAM_STATUS.lua` |
+| `sam_hasso` | SAM | the chosen stance (`state.Stance`: Hasso or Seigan) on engage unless Hasso or Seigan is up | `SAM_STATUS.lua` |
 | `geo_entrust` | GEO | Entrust before an Indi- aimed at a party member | `geo/functions/logic/geo_auto_abilities.lua` |
 | `geo_full_circle` | GEO | Full Circle before a Geo- while a luopan is out | same |
 | `blu_unbridled` | BLU | Unbridled Learning before an unbridled spell | `blu/functions/logic/unbridled.lua` |

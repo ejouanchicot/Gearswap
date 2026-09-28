@@ -1,9 +1,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SAM Precast Module - Precast Action Handling & Cooldown Monitoring
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Guard >> Cooldown >> auto-Seigan before Third Eye (Seigan stance) >> auto-Third Eye
----   before a weaponskill >> WSPrecastHandler. Post-precast adds TP gear and
----   the Sekkanoki / Meikyo Shisui WS layers.
+---   Guard >> Cooldown >> auto-Seigan before Third Eye (Seigan stance) >>
+---   WSPrecastHandler >> auto-Third Eye before an accepted weaponskill.
+---   Post-precast adds TP gear and the Sekkanoki / Meikyo Shisui WS layers.
 ---
 ---   @file    shared/jobs/sam/functions/SAM_PRECAST.lua
 ---   @author  ejouanchicot
@@ -47,7 +47,8 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 -- Anti-loop guard: if Seigan is still down when the replayed Third Eye
--- arrives, let it through instead of queueing Seigan again.
+-- arrives, let it through instead of queueing Seigan again. Cleared as soon
+-- as Seigan is seen up, so the next Third Eye gets Seigan again.
 local seigan_cast_attempted = false
 
 --- The stance the player chose (state.Stance, set by //gs c hasso / seigan
@@ -79,63 +80,46 @@ local function try_seigan_before_third_eye(spell, eventArgs)
         return false
     end
 
-    if not buffactive.Seigan then
-        if not seigan_cast_attempted then
-            eventArgs.cancel = true
-            seigan_cast_attempted = true
-            send_command('input /ja Seigan <me>')
-            send_command('@wait 1;input /ja "Third Eye" <me>')
-            return true
-        else
-            seigan_cast_attempted = false
-        end
+    if buffactive.Seigan then
+        seigan_cast_attempted = false
+        return false
     end
 
+    if not seigan_cast_attempted then
+        eventArgs.cancel = true
+        seigan_cast_attempted = true
+        send_command('input /ja Seigan <me>')
+        send_command('@wait 1;input /ja "Third Eye" <me>')
+        return true
+    end
+
+    seigan_cast_attempted = false
     return false
 end
 
----   Auto-cast Third Eye before weaponskills if available
+---   Auto-cast Third Eye before a weaponskill, when Third Eye is known, ready
+---   (RECAST_CONFIG tolerance, like every other recast check) and not up.
+---   Called only once WSPrecastHandler accepted the weaponskill: a weaponskill
+---   out of range or under 1000 TP must not spend Third Eye.
 ---   @param spell table Spell data
 ---   @param eventArgs table Event arguments
----   @return boolean|nil True when the WS was cancelled to cast Third Eye first
+---   @return boolean True when the WS was cancelled to cast Third Eye first
 local function try_third_eye_ws(spell, eventArgs)
-    if spell.type ~= 'WeaponSkill' then
-        return
+    if spell.type ~= 'WeaponSkill' or buffactive['Third Eye'] then
+        return false
     end
-
-    -- Check if Third Eye is available
-    if not buffactive['Third Eye'] then
-        local abilities = windower.ffxi.get_abilities()
-        local ability_recasts = windower.ffxi.get_ability_recasts()
-
-        -- `res` is not a global in every job sandbox (GEO's escort crashed on it).
-        local resources = rawget(_G, 'res') or windower.res or require('resources')
-        if abilities and abilities.job_abilities and resources then
-            for _, ability_id in ipairs(abilities.job_abilities) do
-                local res_ability = resources.job_abilities[ability_id]
-                if res_ability and res_ability.en == 'Third Eye' then
-                    -- Recasts are indexed by recast id, not ability id: Third
-                    -- Eye is ability 62 but recast 133, and slot 62 is Flee's.
-                    local recast = ability_recasts[res_ability.recast_id] or 0
-                    if recast == 0 then
-                        -- Third Eye ready, cast it before WS
-                        eventArgs.cancel = true
-                        -- The weaponskill is cancelled above, so the follow-up
-                        -- is the only thing left that will fire it: it goes out
-                        -- whether Third Eye lands or not, just sooner when the
-                        -- game refuses the ability outright.
-                        local AbilityHelper = require('shared/utils/precast/ability_helper')
-                        send_command('input /ja "Third Eye" <me>')
-                        AbilityHelper.follow_up('Third Eye',
-                            'input /ws "' .. spell.name .. '" ' .. spell.target.raw, 1.5)
-                        return true
-                    end
-                end
-            end
-        end
+    local AbilityHelper = require('shared/utils/precast/ability_helper')
+    if not (AbilityHelper.can_use_ability('Third Eye') and AbilityHelper.is_ability_ready('Third Eye')) then
+        return false
     end
-
-    return false
+    eventArgs.cancel = true
+    -- The weaponskill is cancelled above, so the follow-up is the only thing
+    -- left that will fire it: it goes out whether Third Eye lands or not,
+    -- just sooner when the game refuses the ability outright.
+    send_command('input /ja "Third Eye" <me>')
+    AbilityHelper.follow_up('Third Eye',
+        'input /ws "' .. spell.name .. '" ' .. spell.target.raw, 1.5)
+    return true
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -175,13 +159,13 @@ function job_precast(spell, action, spellMap, eventArgs)
         return
     end
 
-    -- SAM-SPECIFIC: Third Eye auto-cast before WS
-    if try_third_eye_ws(spell, eventArgs) then
+    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
+    if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, SAMTPConfig) then
         return
     end
 
-    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
-    if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, SAMTPConfig) then
+    -- SAM-SPECIFIC: Third Eye before the WS, only for a WS the handler accepted
+    if try_third_eye_ws(spell, eventArgs) then
         return
     end
 end
