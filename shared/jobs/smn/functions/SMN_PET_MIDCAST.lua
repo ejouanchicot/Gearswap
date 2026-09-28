@@ -21,15 +21,21 @@ local function ensure_loaded()
     BloodPactClassifier = bpc
 end
 
---- Called during pet ability midcast
+--- Called during pet ability midcast. The Blood Pact set wins: the event is
+--- marked handled so Mote's default_pet_midcast (sets.midcast.Pet...) does not
+--- replace it.
 --- @param spell table Spell/ability data (pet's perspective)
-function job_pet_midcast(spell)
+--- @param action string|nil
+--- @param spellMap string|nil
+--- @param eventArgs table|nil Mote event args
+function job_pet_midcast(spell, action, spellMap, eventArgs)
     ensure_loaded()
     if not BloodPactClassifier then return end
 
     local bp_set = BloodPactClassifier.resolve(spell.english or spell.name)
     if bp_set then
         equip(bp_set)
+        if eventArgs then eventArgs.handled = true end
     end
 end
 
