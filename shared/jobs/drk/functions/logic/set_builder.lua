@@ -12,7 +12,7 @@
 ---   • sets.engaged        - Base DPS set (all weapons)
 ---   • sets.engaged.PDT    - Physical defense mode (all weapons)
 ---   • sets.engaged.AM3    - Aftermath Lv.3 (Liberator mythic)
----   • Weapons applied separately via sets[weapon_name]
+---   • Weapons applied separately via WeaponResolver.set_for (sets[weapon_name])
 ---
 ---   Used by: DRK_ENGAGED.lua, DRK_IDLE.lua
 ---
@@ -85,8 +85,10 @@ function DRKSetBuilder.apply_weapon(result, weapon_name)
         return result
     end
 
-    -- Try to use weapon set from drk_sets.lua (sets.Liberator, sets.Caladbolg, etc.)
-    local weapon_set = sets[weapon_name]
+    -- sets[weapon_name] (sets.Liberator, sets.Caladbolg...), through the shared
+    -- resolver: with equip_without_set on (config/WEAPON_CONFIG.lua) a weapon
+    -- with no set of its own is equipped by name, as on the other jobs.
+    local weapon_set = require('shared/utils/equipment/weapon_resolver').set_for('main', weapon_name)
     if weapon_set then
         local success, combined = pcall(set_combine, result, weapon_set)
         if success then
