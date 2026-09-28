@@ -63,12 +63,16 @@ All commands: [commands](../guides/commands.md).
    paralysis on a job ability, amnesia, recast not ready...). With Auto
    Medicine on, an Echo Drops, Remedy or Panacea is used when it helps.
    Weaponskills are checked for range and 1000 TP, and TP bonus gear is added.
+   Then the precast set goes on (Fast Cast, the ability's or weaponskill's set).
 2. **Midcast**: the set is chosen from your set file, from the most precise
    name (the exact spell) to the most general (the magic skill).
    `//gs c debugmidcast` prints which set was used.
 3. **After the action**: your idle or engaged set comes back. If the game
    never confirms the end of a cast, the [midcast watchdog](../features/watchdog.md)
    puts it back after a delay.
+
+The full picture, with the gear that changes by itself: [how it works](../guides/how-it-works.md).
+Unknown word: [glossary](../guides/glossary.md).
 
 ## Changing job or subjob
 

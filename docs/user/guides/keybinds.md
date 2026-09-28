@@ -21,11 +21,37 @@ keybind HUD (`//gs c ui`) lists the keys of the current job.
 | `#numpad0` | Auto Medicine on/off (common key) |
 | `!numpad7`, `!numpad8`, `!numpad9` | Alts follow / automation on-off / mirror (common keys, see [dual-box](dualbox.md)) |
 | `!z`, `!x` | Sneak / Invisible on you and your other characters (common keys, see [Sneak and Invisible](stealth.md)) |
-| F9-F12 with modifiers | Mote-Include's default keys (F9 Offense mode, Ctrl+F9 Hybrid mode, F12 gear refresh, Ctrl+F12 Idle mode...) |
+| `!numpad0` | Combat Mode, on a job where you showed it and gave it no other key (BLM, GEO, RDM and WHM keep their own key) |
+| `!numpad.` | Treasure Mode, on a job where you showed it (THF has its own key) |
+| F9-F12 with modifiers, `^-`, `^=` | Mote-Include's default keys, on every job (table below) |
 | Ctrl+F1-F8, Alt+F1-F8 | Free for `//gs c tb` |
 
 Modifiers: `^` Ctrl, `!` Alt, `@` Windows, `#` Apps (the menu key), `~` Shift.
 They combine: `^!numpad1` = Ctrl+Alt+Numpad1.
+
+### Mote-Include's keys
+
+Mote-Include (the library every job file is built on) binds these on every
+job. They are not in the HUD. They act on Mote-Include's own modes, which many
+jobs of this setup replace with their own (the job's page says which): on such
+a job the key changes a mode nothing reads.
+
+| Key | Sends | Effect |
+|---|---|---|
+| F9 | `cycle OffenseMode` | Next Offense Mode |
+| Ctrl+F9 | `cycle HybridMode` | Next Hybrid Mode |
+| Alt+F9 | `cycle RangedMode` | Next Ranged Mode |
+| Win+F9 | `cycle WeaponskillMode` | Next Weaponskill Mode |
+| F10 | `set DefenseMode Physical` | Physical defense: `sets.defense.PDT` on top ([set names](sets.md#mote-includes-layers-defense-kiting-weakness)) |
+| Ctrl+F10 | `cycle PhysicalDefenseMode` | Next physical defense set |
+| Alt+F10 | `toggle Kiting` | `sets.Kiting` on top |
+| F11 | `set DefenseMode Magical` | Magical defense: `sets.defense.MDT` on top |
+| Ctrl+F11 | `cycle CastingMode` | Next Casting Mode (`.Resistant` sets) |
+| F12 | `update user` | Put the current gear back on and print the modes |
+| Ctrl+F12 | `cycle IdleMode` | Next Idle Mode |
+| Alt+F12 | `reset DefenseMode` | Defense off |
+| Ctrl+- | `toggle selectnpctargets` | Mote-Include's NPC target option |
+| Ctrl+= | `cycle pctargetmode` | Mote-Include's PC target option |
 
 Habits of the job files: Ctrl+Numpad9 is Hybrid Mode on every job that binds
 it; Ctrl+Numpad1 / 2 are the weapons when the job has weapon modes;
@@ -166,7 +192,7 @@ key replaces the job's.
 ## Combat Mode (every job)
 
 Combat Mode On keeps your weapons where they are (main, sub, range; ammo too on
-BLM and WHM): no spell or set swaps them, the TP stays. It is on the HUD of BLM,
+BLM, GEO and WHM): no spell or set swaps them, the TP stays. It is on the HUD of BLM,
 GEO, RDM and WHM by default, with their usual key, hidden elsewhere. Shown on
 another job, its key is Alt+Numpad0 unless you pick one.
 
@@ -194,10 +220,32 @@ return { shown = {all = true}, hidden = {}, keys = {THF = '!f10', all = '~f9'} }
 A job is its code in capitals followed by `= true`. After editing by hand:
 `//gs reload`. The commands above do the same without opening the file.
 
+## Treasure Mode (every job)
+
+Treasure Mode puts `sets.TreasureHunter` (from the job's set file) on until
+one of your actions has landed on the mob, then your normal gear comes back.
+Values: `Off`, `Tag` (until the mob is tagged), `Full` (on the engaged set all
+the time); THF also has `SATA`. THF shows it by itself with its own key; on
+every other job it is Off and hidden until you show it. Shown on another job,
+its key is Alt+Numpad. (`!numpad.`) unless you pick one. A job without
+`sets.TreasureHunter` gets no TH gear whatever the mode.
+
+| Command | Effect |
+|---|---|
+| `//gs c th` | Mode, TH set found, mobs tagged |
+| `//gs c th show` / `hide` | Use it on this job or not |
+| `//gs c th key <key>` / `key none` | Its key on this job |
+| `//gs c th clear` | Forget the mobs already tagged |
+
+Saved per character in `config/treasure_mode.lua`, same format as
+`combat_mode.lua`. A tag is forgotten when the mob dies, when you zone, or
+after 3 minutes without any action from or on it.
+
 ## Temporary keys (`//gs c tb`)
 
 For a repetitive task, bind a key from the chat line; it lasts until you
-remove it or restart the game.
+remove it or close the game (`//lua reload gearswap` keeps it: the list is kept
+in `<YourName>/temp_binds.lua`).
 
 | Command | Effect |
 |---|---|

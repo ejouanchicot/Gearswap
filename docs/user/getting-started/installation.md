@@ -34,9 +34,12 @@ The script asks:
 
 1. **Character name** (letters and digits, 2-15 characters). If
    `data/<Name>/` already exists, it asks whether to replace it.
-2. **Jobs**, comma-separated, among BLM, BRD, BST, COR, DNC, DRK, GEO, PLD,
-   RDM, RUN, SAM, THF, WAR, WHM. (SMN's files are only in the author's personal template (not in the public repository);
-   PUP is not offered, it does not load.)
+2. **Jobs**, comma-separated (any case), among BLM, BLU, BRD, BST, COR, DNC,
+   DRK, GEO, PLD, RDM, RUN, SAM, THF, WAR, WHM. A name that is not in this
+   list is dropped without a message. If your character is already listed in
+   `character_db.lua`, its jobs are taken from there and this question is
+   skipped. SMN and PUP are not offered: SMN's entry, configs and sets are
+   not in the public repository, and PUP does not load yet.
 3. **Role**: `main` or `alt`. A main is asked for its alt's name (empty = no
    dual-box); an alt must give its main's name.
 4. **Region**: US, EU or JP.
@@ -62,9 +65,11 @@ The template's character name inside the copied `.lua` files is replaced with yo
 folder is moved to `addons/GearSwap/clone_backups/<Name>_<date>/` (never
 deleted), a fresh one is built, and these files, written in game, are copied
 back from the backup: `config/ui_settings.lua` (HUD), `config/message_modes.lua`,
-`config/alt_window.lua`, `config/alt_state.lua`, `config/WARP_ITEMS_OWNED.lua`
-and `temp_binds.lua`. Anything else you edited (sets, keybinds, modes) is only
-in the backup: copy it back yourself.
+`config/alt_window.lua`, `config/alt_state.lua`, `config/WARP_ITEMS_OWNED.lua`,
+`config/combat_mode.lua`, `config/treasure_mode.lua`,
+`config/STEALTH_CONFIG.lua`, every `config/<job>/<JOB>_HUD.lua` and
+`temp_binds.lua`. Anything else you edited (sets, keybinds, modes, custom
+files) is only in the backup: copy it back yourself.
 
 ## 4. Put in your gear
 

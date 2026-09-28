@@ -50,6 +50,7 @@ the loaded job's gear in wardrobes 1-2, the rest pushed to wardrobes 8, 6, 5,
 | `wo keep` | Items kept in the main bags although no set names them (warp rings and `KEEP_ITEMS`) |
 | `wo scan` | Record which warp items you own |
 | `wo recover` | Release the slots after an interrupted run |
+| `wo reset` | Clear a run left stuck after a crash, and release the slots |
 
 Type the words in lowercase: anything it does not recognise (even `Preview`)
 runs a full organize. The bags are set in `config/WARDROBE_CONFIG.lua`, see

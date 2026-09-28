@@ -7,7 +7,7 @@
 [![Lua](https://img.shields.io/badge/Lua-5.1-blue?logo=lua&logoColor=white)](https://www.lua.org/)
 [![Windower](https://img.shields.io/badge/Windower-4-purple)](https://www.windower.net/)
 [![FFXI](https://img.shields.io/badge/FFXI-Retail-red)](https://www.playonline.com/ff11/)
-[![Jobs](https://img.shields.io/badge/Jobs-16-green)](#jobs)
+[![Jobs](https://img.shields.io/badge/Jobs-17-green)](#jobs)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
 [Quick start](#quick-start) · [Keys](#keys) · [Commands](#commands) · [Dual-box](#dual-box) · [Documentation](#documentation)
@@ -80,8 +80,9 @@ It then creates `data/<YourName>/` with one entry file per job
 (`<YourName>_<JOB>.lua`), the set files under `sets/`, and the settings under
 `config/`. If the folder already exists, it asks before replacing it and moves
 the old one to `addons/GearSwap/clone_backups/` rather than deleting it; the
-HUD position, message modes, alt window, alt state, owned warp items,
-Sneak / Invisible settings and temporary keys you had are copied back.
+HUD position and per-job HUD order, message modes, alt window, alt state,
+owned warp items, Combat Mode and Treasure Mode choices, Sneak / Invisible
+settings and temporary keys you had are copied back.
 
 ### 3. Put in your gear
 
@@ -156,9 +157,10 @@ built-in help. Full list: [commands guide](docs/user/guides/commands.md).
 - **Midcast set choice.** One lookup order for every job, from the exact spell
   name down to the skill's base set. `//gs c debugmidcast` shows which set was
   picked.
-- **Tier handling.** BLM nukes and RDM tiered enfeebles step down to the
-  highest tier whose recast is ready and whose MP you have; GEO's nuke
-  commands fall back to a lower tier that is learned and off recast. WHM picks the Cure tier from the target's missing HP,
+- **Tier handling.** BLM, RDM and GEO nukes, RDM tiered enfeebles, BLM
+  enfeebles and GEO Aspir step down to the highest tier that is learned, off
+  recast and affordable
+  ([auto-tier](docs/user/features/auto-tier-system.md)). WHM picks the Cure tier from the target's missing HP,
   and `//gs c waltz` does the same for Curing Waltz.
 - **Midcast watchdog.** If the game never confirms the end of a cast (packet
   loss), your normal gear comes back after the cast time plus a margin.
@@ -225,9 +227,13 @@ gets "No set file" until you write them.
 
 | Page | For |
 |---|---|
-| [docs/README.md](docs/README.md) | Index of the player guides |
-| [docs/user/jobs/](docs/user/jobs/README.md) | Modes, keys and commands of each job |
+| [docs/README.md](docs/README.md) | Index of every documentation page |
+| [How it works](docs/user/guides/how-it-works.md) | Players: what happens when you press an action, when gear changes by itself, which files are yours |
+| [Commands](docs/user/guides/commands.md), [keybinds](docs/user/guides/keybinds.md), [set names](docs/user/guides/sets.md), [configuration](docs/user/guides/configuration.md) | Players: the reference pages |
+| [Glossary](docs/user/guides/glossary.md) | FFXI and GearSwap words used in the docs |
+| [docs/user/jobs/](docs/user/jobs/README.md) | Modes, keys, commands and set names of each job |
 | [docs/dev/README.md](docs/dev/README.md) | Developer documentation: how the code works, written from the code |
+| [Maintainer guide](docs/dev/maintainer-guide.md) | How to change the project safely |
 
 ## License
 

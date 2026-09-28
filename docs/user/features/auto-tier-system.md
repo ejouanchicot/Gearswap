@@ -1,7 +1,11 @@
-# Auto-tier: WHM Cures, DNC Waltzes, RDM and GEO spells
+# Auto-tier: WHM Cures, DNC Waltzes, BLM, RDM and GEO spells
 
-Pick the heal tier from the HP the target is missing, so you can put one
-macro on the top tier and let the system spend less MP or TP.
+Two kinds of automatic tier choice:
+
+- **Heals** (WHM Cure, DNC Waltz): the tier is picked from the HP the target
+  is missing, so you can put one macro on the top tier and spend less MP or TP.
+- **Step-down** (BLM, RDM, GEO): a spell on recast or too expensive is
+  replaced by the next lower tier that can go.
 
 ## WHM: Cure and Curaga
 
@@ -58,7 +62,7 @@ Both need DNC as main job or subjob, and cancel Saber Dance first.
 Levels are your DNC level, main or sub. These values are in
 `shared/utils/dnc/waltz_manager.lua`.
 
-## RDM and GEO: nukes, enfeebles, Aspir
+## BLM, RDM and GEO: nukes, enfeebles, Aspir
 
 Macro the tier you want. If it is on recast or you lack the MP, the next
 lower tier that can go is cast instead (Fire V -> Fire IV -> ... -> Fire).
@@ -67,11 +71,13 @@ cancelled and the recast of every tier is shown.
 
 | Job | Spells |
 |---|---|
+| BLM | Nukes (Fire VI down to Fire), -ga III down to base, a -ja falls back to -ga III, Sleep, Sleepga, Bind, Bio, Poison, Drain, Aspir, Breakga to Break |
 | RDM | Nukes (Fire to Water, V down to base). Dia, Bio, Distract, Frazzle, Blind, Slow, Paralyze, Poison, Addle, Sleep, Gravity, only while `EnfeebleTier` is On (Ctrl+Numpad9) |
 | GEO | Nukes, -ra nukes (III down to base), Aspir (III down to Aspir) |
 
 Enhancing spells never step down. The tier lists are in
-`shared/data/spells/NUKE_TIERS.lua` and `RDM_ENFEEBLE_TIERS.lua`.
+`shared/data/spells/NUKE_TIERS.lua` and `RDM_ENFEEBLE_TIERS.lua` (RDM, GEO)
+and `shared/jobs/blm/functions/logic/refiner/correspondence.lua` (BLM).
 
 ## Troubleshooting
 

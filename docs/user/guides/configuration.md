@@ -6,25 +6,61 @@ see [installation](../getting-started/installation.md)). After an edit,
 
 ## What is in `<YourName>/config/`
 
+The clone script copies every file of `_master/config_global/` here, writes
+`DUALBOX_CONFIG.lua` and `REGION_CONFIG.lua` from your answers, and copies one
+folder per job. Some files are written by the game session (by a command, or
+when you drag a window): they are marked "written in game" below, and a
+re-clone copies them back from the old folder (see
+[installation](../getting-started/installation.md#3-create-your-character)).
+
+**Copied from the template, you edit them:**
+
 | File | What it sets |
 |---|---|
-| `COMMON_KEYBINDS.lua` | Keys every job gets ([keybinds](keybinds.md)) |
-| `UI_CONFIG.lua` | HUD defaults, background presets ([HUD](../features/ui.md)) |
+| `COMMON_KEYBINDS.lua` | Keys every job gets ([keybinds](keybinds.md#common-keys)) |
+| `UI_CONFIG.lua` | HUD defaults, background presets, look of the chat blocks ([HUD](../features/ui.md)) |
 | `UI_COLOR_CONFIG.lua` | HUD colours of values (elements, modes...) |
-| `ui_settings.lua` | HUD position and toggles, written by `//gs c ui ...` |
-| `LOCKSTYLE_CONFIG.lua` | `initial_load_delay` = 8.0 s between a load and the lockstyle |
+| `LOCKSTYLE_CONFIG.lua` | `initial_load_delay` = 8.0 s between a load and the lockstyle. `job_change_delay` and `cooldown` are in the file but nothing reads them |
 | `RECAST_CONFIG.lua` | `tolerance` = 2.0 s: an ability or spell whose recast is at or under this counts as ready. `party_announce`: a party message when an action is refused on recast, e.g. `['Phantom Roll'] = true` sends `/p Phantom Roll ready in <recast=Phantom Roll>` (the game shows the time left); a text of your own works too, where `{action}` becomes what you tried (`'{action} : roll ready in <recast=Phantom Roll>'` sends `Bolter's Roll : roll ready in ...`). One message per second at most (`party_announce_every` = 1) |
-| `message_modes.lua` | Chat detail for spells / abilities / weaponskills, written by `jamsg`, `spellmsg`, `wsmsg` |
+| `AUTO_ABILITIES.lua` | Job abilities used for you, all `false` (off) by default: `sam_hasso` (SAM: Hasso when you engage, unless Hasso or Seigan is up), `geo_entrust` (an Indi- spell cast on a party member gets Entrust first), `geo_full_circle` (a Geo- spell cast while a luopan is out gets Full Circle first), `blu_unbridled` (an unbridled spell gets Unbridled Learning first), `blu_expiacion_window` (see [BLU](../jobs/blu/states.md)) |
+| `WEAPON_CONFIG.lua` | `equip_without_set` (default `false`): with `true`, a weapon mode value that has no set of that name equips the weapon of that name directly, so a plain weapon needs no set. Keep a set for an augmented weapon |
 | `CRAFT_CONFIG.lua` | Lockstyle numbers for `craft` (19) and `fish` (17) |
-| `DUALBOX_CONFIG.lua` | Role, partner, group ([dual-box](dualbox.md)) |
-| `REGION_CONFIG.lua` | Your region (US / EU / JP): some chat colour codes differ by region |
-| `WARDROBE_CONFIG.lua` | Optional: bags used by `//gs c wo` |
 | `DW_CONFIG.lua` | Dual Wield tiers: while you hold two weapons and are engaged, the pieces of `sets.DW.NoHaste` / `Haste` / `HasteII` / `MaxHaste` (in your job's set file) go on top of your engaged set, chosen by your magic haste (estimated from your buffs). `enabled`, and the % each buff counts for. No `sets.DW` in a job file: nothing changes. `//gs c dw` shows the estimate, `//gs c dw none\|haste\|haste2\|max` forces a tier, `//gs c dw auto` goes back. Slow / Elegy on you are not counted: while slowed, `//gs c dw none` |
 | `ELEMENTAL_BELT.lua` | Hachirin-no-Obi / Orpheus's Sash put on by themselves on elemental damage (nukes, elemental weaponskills, Quick Draw...): Orpheus close to the target, the Obi when the day or weather matches, neither far away with nothing matching. `enabled`, `min_bonus` (5 %: below it, your set's belt stays). Only a belt in your inventory / wardrobes is used. `//gs c belt` shows today's values |
 | `STEALTH_CONFIG.lua` | Sneak / Invisible settings (`refresh_below` 180 s, `alert_before` 60 s, `overwrite`, `alerts`, `delay` 3.0 s), also written by `//gs c stealth refresh / alert / ...` and kept on a re-clone ([Sneak and Invisible](stealth.md)) |
-| `combat_mode.lua` | Optional: on which jobs Combat Mode shows and its key; written by `//gs c combatmode` ([keybinds](keybinds.md#combat-mode-every-job)) |
-| `treasure_mode.lua` | Optional: on which jobs Treasure Mode shows and its key; written by `//gs c th` ([set names](sets.md#put-on-by-themselves)) |
-| `alt/` | Alt commands, main character only ([dual-box](dualbox.md)) |
+| `WARDROBE_CONFIG.lua` | Optional, not in the generic template: bags used by `//gs c wo` (below) |
+
+**Written from your clone answers:**
+
+| File | What it sets |
+|---|---|
+| `DUALBOX_CONFIG.lua` | Role, partner, group ([dual-box](dualbox.md)) |
+| `REGION_CONFIG.lua` | Your region (US / EU / JP): some chat colour codes differ by region |
+
+**Written in game (kept on a re-clone):**
+
+| File | Written by |
+|---|---|
+| `ui_settings.lua` | `//gs c ui ...`: HUD position, shown parts, background, font. Wins over `UI_CONFIG.lua`; delete it to go back to those values |
+| `message_modes.lua` | `//gs c jamsg` / `spellmsg` / `wsmsg`: chat detail for abilities / spells / weaponskills |
+| `combat_mode.lua` | `//gs c combatmode`: on which jobs Combat Mode shows, and its key ([keybinds](keybinds.md#combat-mode-every-job)) |
+| `treasure_mode.lua` | `//gs c th`: on which jobs Treasure Mode shows, and its key ([keybinds](keybinds.md#treasure-mode-every-job)) |
+| `alt_window.lua` | Dragging the alt window (main only) |
+| `alt_state.lua` | The `alts` orders: who follows whom, automation on / off, kept across GearSwap reloads |
+| `WARP_ITEMS_OWNED.lua` | `//gs c wo scan`: the warp items you own |
+| `<job>/<JOB>_HUD.lua` | `//gs c ui order` / `roworder` (see the per-job table below) |
+| `../temp_binds.lua` | `//gs c tb` (in `<YourName>/`, not in `config/`) |
+
+`dualbox_role.lua` is written by `//gs c main` and `setalt`: it wins over the
+role in `DUALBOX_CONFIG.lua`. A re-clone does **not** keep it, on purpose: the
+role you give the script applies.
+
+**Folders:**
+
+| Folder | Content |
+|---|---|
+| `alt/` | Alt commands, main character only ([dual-box](dualbox.md#alt-commands-drive-the-alt-from-the-main)) |
+| `craft/` | `CRAFT_REFILL.lua`, the `rf` list while a craft set is on (you write it, see below) |
 | `<job>/` | One folder per job, below |
 
 Per job, `<YourName>/config/<job>/`:
@@ -37,9 +73,9 @@ Per job, `<YourName>/config/<job>/`:
 | `<JOB>_LOCKSTYLE.lua` | Lockstyle number |
 | `<JOB>_MACROBOOK.lua` | Macro book and page |
 | `<JOB>_TP_CONFIG.lua` | TP bonus pieces for weaponskills ([tp-bonus](../jobs/war/tp-bonus.md)) |
-| `<JOB>_REFILL.lua` | Consumables for `//gs c rf` (you create it, see below) |
 | `<JOB>_HUD.lua` | This job's HUD section and row order, empty by default; written by `//gs c ui order` / `roworder` ([HUD](../features/ui.md#order-of-the-sections-and-rows)) |
-| others | Job-specific: `BLM_MP_CONFIG`, `BRD_SONG_CONFIG`, `WHM_CURE_CONFIG`, `RDM_SABOTEUR_CONFIG`... (see the job's page) |
+| `<JOB>_REFILL.lua` | Consumables for `//gs c rf` (you create it, see below) |
+| others | Job-specific: `BLM_ELEMENTAL_CONFIG`, `BLM_MP_CONFIG`, `BLU_SPELL_MAP`, `BRD_SONG_CONFIG`, `BRD_TIMING_CONFIG`, `BST_ECOSYSTEM_DATA`, `BST_PET_DATA`, `DNC_WS_CONFIG`, `PLD_BLU_MAGIC`, `PLD_WS_CONFIG`, `RDM_SABOTEUR_CONFIG`, `RUN_BLU_MAGIC`, `WAR_WS_CONFIG`, `WHM_CURE_CONFIG` (see the job's page) |
 
 ## Modes (`<JOB>_STATES.lua`)
 
@@ -119,7 +155,7 @@ M.subjobs = {                   -- a different list for a subjob (optional)
 return M
 ```
 
-Consumables named only in another job's list are put back too. While a craft
+Consumables named only in another job's list (of any character folder in `data/`) are put back too. While a craft
 set is on, `config/craft/CRAFT_REFILL.lua` is used instead (write it yourself:
 it is not in the public repository).
 
@@ -146,8 +182,8 @@ The author's own files are not published.
 `<job>_sets.lua` holds your gear. Item names must match the game exactly,
 augmented items need their exact `augments`, and a second copy of an item is
 told apart with `bag = 'wardrobe 2'` and so on. Check with `//gs c checksets`.
-The set names each job looks for are in the developer page of the job
-(section "Set names the code looks up", [docs/dev/jobs/](../../dev/README.md#jobs)).
+The names every job understands are on [set names](sets.md); each job's own
+names are on its `sets.md` page ([jobs](../jobs/README.md)).
 
 ## Troubleshooting
 

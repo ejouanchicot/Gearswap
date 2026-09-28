@@ -17,6 +17,10 @@ edited has a syntax error (a missing comma or brace).
 **I want SMN.** Its entry, configs and sets are only in the author's personal template (not in the public repository); the
 clone script has nothing to deploy for SMN.
 
+**Where do I start reading?**
+[How it works](how-it-works.md) explains the whole flow in plain words; the
+[glossary](glossary.md) explains the terms.
+
 **How do I update?**
 Download the new version and copy `shared/`, `_master/` and the scripts over
 the old ones. Your `<YourName>/` folder is not touched. New options in the
@@ -38,8 +42,18 @@ The [midcast watchdog](../features/watchdog.md) puts it back after a delay;
 
 **A slot stays locked.**
 `//gs c warp fix` (warp ring), `//gs c uncraft` (craft set),
-`//gs c wo recover` (wardrobe organizer). While Doomed, neck, rings and waist
-stay locked on purpose.
+`//gs c wo recover` (wardrobe organizer). Weapons that never change: Combat
+Mode is On (HUD row, or `//gs c combatmode`). While Doomed, neck, rings and
+waist stay locked on purpose.
+
+**My town set leaves odd pieces on.**
+`sets.idle.Town` and `sets.Adoulin` replace the idle set: a slot they leave
+out keeps what you wore. Build them with `set_combine(sets.idle, {...})`
+([set names](sets.md#put-on-by-themselves)).
+
+**Treasure Hunter gear never goes on.**
+Treasure Mode is Off and hidden on every job but THF: `//gs c th show`, then
+pick `Tag` or `Full`. The job's set file needs a `sets.TreasureHunter`.
 
 ## Lockstyle
 
@@ -60,6 +74,11 @@ count ([configuration](configuration.md#lockstyle-job_lockstylelua)).
 **Keys do nothing.**
 `//gs c reload`, then read the chat: a `<JOB> keybinds: ...` line names a bad
 entry. Mode keys need a modifier: Ctrl+Numpad, Apps+Numpad, Alt+Numpad.
+
+**F9 / F10 / F11 change nothing I can see.**
+They are Mote-Include's keys, bound on every job but not shown in the HUD.
+They cycle Mote-Include's own modes, which many jobs replace with their own:
+see [keybinds](keybinds.md#mote-includes-keys) and your job's page.
 
 **What do `^ ! @ # ~` mean?**
 Ctrl, Alt, Windows, Apps (menu key), Shift.

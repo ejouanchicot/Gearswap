@@ -53,10 +53,40 @@ while the weaponskill mode is Acc): the job's page says which modes it has.
 | `sets.precast.RA` / `sets.midcast.RA` | Ranged attack: when you shoot / while the shot flies |
 | `sets.midcast['Skill']` | Any spell of that skill (list below) |
 | `sets.midcast['Name']` | That spell |
+| `sets.midcast.FastRecast` | Put on **first** at the start of every spell's midcast, before the spell's own set. A spell set that leaves a slot out keeps the FastRecast piece there (Mote-Include's global midcast layer) |
+| `sets.resting` | Resting (`/heal`). `sets.resting.<RestingMode>` when the job has a Resting Mode |
 
 Magic skills: `Healing Magic`, `Enhancing Magic`, `Enfeebling Magic`,
 `Elemental Magic`, `Dark Magic`, `Divine Magic`, `Ninjutsu`, `Blue Magic`,
 `Singing`, `Geomancy`, `Summoning Magic`.
+
+### Casting Mode `.Resistant` children
+
+On a job with a Casting Mode (the key is on the job's page), the value
+`Resistant` picks a `.Resistant` child of the set that was chosen, when you
+define one: `sets.precast.FC.Resistant`, `sets.midcast['Elemental Magic'].Resistant`,
+`sets.midcast['Enfeebling Magic'].Resistant`. No child: the set itself is
+used. Some jobs look for more `.Resistant` names in their own order (BLU,
+WHM, SMN): see the job's page.
+
+### Mote-Include's layers: defense, Kiting, weakness
+
+Mote-Include (the library under every job file) has three more names. They
+work only on jobs that keep the idle / engaged set Mote-Include builds and add
+to it. A job that builds its idle or engaged set from its own modes ignores
+them. The job's set page says which case applies; when it says nothing about
+them, do not count on them.
+
+| Set | Worn when | Default key (Mote-Include) |
+|---|---|---|
+| `sets.defense.PDT` | Defense Mode Physical: on top of the idle and engaged set | F10 on, Alt+F12 off |
+| `sets.defense.MDT` | Defense Mode Magical: same | F11 on, Alt+F12 off |
+| `sets.Kiting` | Kiting on: on top of the idle and engaged set | Alt+F10 (toggle) |
+| `sets.idle.Weak` | Weakened after a Raise (the `Weakness` status), in place of `sets.idle` | - |
+
+Documented today: they work on BLU and WHM (outside a city), DRK and THF read
+`sets.idle.Weak`, RDM ignores all of them. SAM wears `sets.idle.Weak` also
+below 50 % HP (see [SAM](../jobs/sam/sets.md)).
 
 ## Your subjob's actions
 
@@ -92,12 +122,24 @@ These sets are worn without any action from you, when they exist:
 
 | Set | When | Notes |
 |---|---|---|
-| `sets.MoveSpeed` | You are running and not fighting | Movement speed gear |
-| `sets.idle.Town` | Idle in a town (Dynamis excluded) | Replaces the idle set |
-| `sets.Adoulin` | Idle in Western / Eastern Adoulin | Adoulin movement speed pieces; checked before `sets.idle.Town` |
+| `sets.MoveSpeed` | You are running and not fighting, outside a town | Movement speed gear, on top of the idle set. Movement is not tracked while you are engaged, so it never goes on the engaged set. Exceptions below |
+| `sets.idle.Town` | Idle in a town (Dynamis excluded) | **Replaces** the whole idle set: slots it leaves out are not emptied, they keep what you wore before. A 1-2 piece town set therefore leaves your last gear in the other slots; build it with `set_combine(sets.idle, {...})` for a full look |
+| `sets.Adoulin` | Idle in Western / Eastern Adoulin | Checked before `sets.idle.Town`, and replaces the idle set the same way |
 | `sets.buff.Doom` | You are Doomed | Doom removal gear (Nicander's Necklace, Purity Ring...). Neck, both rings and belt stay locked until Doom is gone |
 | `sets.DW.NoHaste`, `.Haste`, `.HasteII`, `.MaxHaste` | Two weapons held, fighting | Dual Wield pieces by your magic haste ([configuration](configuration.md), `DW_CONFIG.lua`, `//gs c dw`) |
 | `sets.TreasureHunter` | Treasure Mode on, against a mob not tagged yet | [commands](commands.md) `//gs c th`. Off on every job but THF until `//gs c th show` |
+
+Jobs that differ from the table above (details on each job's set page):
+
+| Job | Difference |
+|---|---|
+| SAM | `sets.MoveSpeed` is never worn; `sets.Adoulin` is never read (Adoulin uses `sets.idle.Town`) |
+| DRK | `sets.MoveSpeed` goes on in town too; `sets.Adoulin` is never read |
+| WHM | `sets.MoveSpeed` goes on in town too |
+| BST | `sets.idle.Town` and `sets.Adoulin` are not used: in a town only the **feet** of `sets.me.idle.Town` go on. `sets.MoveSpeed` is never added while engaged |
+| GEO | In the provided file `sets.idle.Town` is the same set as `sets.me.idle.Town` |
+| SMN | The town set is not used while Avatar's Favor is On |
+| PLD, RUN, WAR, COR | In town: the town set plus your weapon, nothing else (no mode set, no `sets.MoveSpeed`) |
 
 Hachirin-no-Obi and Orpheus's Sash need no set: they go on by themselves on
 elemental damage when they help ([configuration](configuration.md),

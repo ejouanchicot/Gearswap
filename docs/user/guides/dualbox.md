@@ -270,7 +270,8 @@ macro either way:
 
 Without Entrust the selection is ignored and the spell lands on the alt.
 
-How the main knows: `//gs c altentrust` marks Entrust as up at once (for at
+How the main knows: `//gs c altentrust` (a command of the GEO alt's
+`GEO_ALT_CUSTOM.lua`: it uses Entrust on the alt) marks Entrust as up at once (for at
 most 60 s) and asks the alt for its buffs 3 s later, because the game signals
 Entrust only when it wears off, not when it is gained. The alt then reports
 its tracked buffs, and reports losing Entrust. Once the alt has reported for
