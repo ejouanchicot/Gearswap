@@ -116,7 +116,7 @@ No states file in `_master/`, `Tetsouo/`, `Kaories/` or `shared/` defines `state
 
 | Level | Resolver | Runs when | Paths tried, in order |
 |---|---|---|---|
-| P0 | `resolve_exact_spell` | `spell.english` set | `sets.midcast[spell.english]` |
+| P0 | `resolve_exact_spell` | `spell.english` set | `sets.midcast[spell.english]`, or its `[mode]` child when it has one (`sets.midcast['Repose'].Resistant`), as Mote picks it (since 2026-09-29; before, P0 laid the plain set back over Mote's mode variant) |
 | P1 | `resolve_base_name` | `spell.english` set | `name` = `spell.english` with a trailing space-separated word made only of the letters I, V, X removed (pattern `%s+[IVX]+$`). If a target exists: `sets.midcast[name][target]`, `sets.midcast[target][name]`, `base[name][target]`, `base[target][name]`. Then, unless target is `'others'`: `sets.midcast[name]`, `base[name]` |
 | P2 | `resolve_type_target_mode` | type, target and mode all set | `base[type][target][mode]` |
 | P3 | `resolve_type_mode` | type and mode | `base[type][mode]` |

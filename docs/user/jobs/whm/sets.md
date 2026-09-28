@@ -140,8 +140,8 @@ There is no self / others split on WHM and no mode for enhancing.
 4. `sets.midcast.Banish` again for Banishga and Banishga II (their family)
 5. `sets.midcast['Divine Magic']` (Flash...)
 
-A spell's own set wins over `.Resistant`: `sets.midcast['Repose'].Resistant` is
-never worn (Repose is Divine Magic and `sets.midcast['Repose']` is found first).
+A spell with its own set uses that set's `.Resistant` version in Resistant:
+`sets.midcast['Repose'].Resistant` (a copy of the Repose set in the provided file).
 
 ### Enfeebling Magic
 
@@ -204,7 +204,6 @@ provided file), and any other ability by its name (`['Divine Caress']`,
 ## Sets in the provided file that nothing reads
 
 - `sets.engaged.PDT`: Mote's hybrid mode has no `PDT` value on WHM.
-- `sets.midcast['Repose'].Resistant`: `sets.midcast['Repose']` always wins.
 - `sets.midcast.CureMelee`, `sets.latent_refresh`, `sets.midcast.FastRecast`,
   `sets.buff['Divine Caress']`, `sets.resting`, `sets.precast.JA['Afflatus Solace']`
   / `['Afflatus Misery']`: read, but empty until you fill them.

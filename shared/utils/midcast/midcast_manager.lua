@@ -382,12 +382,18 @@ end
 --- The order of RESOLVERS below IS the priority. Moving an entry changes which
 --- set wins.
 
---- P0: the exact spell name at the root - sets.midcast["Refresh III"]
+--- P0: the exact spell name at the root - sets.midcast["Refresh III"], or
+--- its variant for the current mode when it has one
+--- (sets.midcast["Repose"].Resistant), as Mote picks it: without that, this
+--- step laid the plain set back over Mote's mode variant.
 local function resolve_exact_spell(ctx)
     if not (ctx.config.spell and ctx.config.spell.english) then
         return nil
     end
     local found_set, found_path, success = try_path(ctx.config.spell.english)
+    if success and ctx.mode and type(found_set[ctx.mode]) == 'table' then
+        found_set, found_path = found_set[ctx.mode], found_path .. '.' .. tostring(ctx.mode)
+    end
     if success then
         if is_debug_enabled() then
             MessageMidcast.show_priority_check(0, '"' .. ctx.config.spell.english .. '"', true)

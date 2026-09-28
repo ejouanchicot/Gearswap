@@ -20,7 +20,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 | `^numpad5` | Afflatus Mode (`AfflatusMode`) | **Solace**, Misery | Which stance `//gs c afflatus` uses. |
 | `^numpad1` | Idle Mode (`IdleMode`) | **PDT**, Refresh | Idle set: `sets.idle.PDT` or `sets.idle.Refresh`. |
 | `^numpad2` | Combat Mode (`CombatMode`) | **Off**, On | On locks main, sub, range and ammo so your weapons stay on. |
-| `^numpad6` | Casting Mode (`CastingMode`) | **Normal**, Resistant | Resistant: enfeebles and Divine Magic wear the `.Resistant` version of their set (`sets.midcast.MndEnfeebles.Resistant`, `.IntEnfeebles.Resistant`, `['Divine Magic'].Resistant`). A spell with a set of its own name keeps it: Repose, Holy and Holy II never wear a `.Resistant` set (so `sets.midcast.Repose.Resistant` is never used). Cures ignore it. In the template the `.Resistant` sets are copies of the normal ones until you add magic accuracy pieces. |
+| `^numpad6` | Casting Mode (`CastingMode`) | **Normal**, Resistant | Resistant: enfeebles and Divine Magic wear the `.Resistant` version of their set (`sets.midcast.MndEnfeebles.Resistant`, `.IntEnfeebles.Resistant`, `['Divine Magic'].Resistant`). A spell with a set of its own name uses that set's `.Resistant` version when it has one (`sets.midcast.Repose.Resistant`), else keeps its own set (Holy, Holy II). Cures ignore it. In the template the `.Resistant` sets are copies of the normal ones until you add magic accuracy pieces. |
 
 ## Other modes (no key)
 

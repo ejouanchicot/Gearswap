@@ -214,8 +214,9 @@ flowchart TD
   `sets.buff['Afflatus Solace']` on any `^Bar` spell (elemental and ailment)
   while Solace is up.
 - **Divine**: `CastingMode` is `mode_state`. Repose, Holy and Holy II have name
-  sets (P0), which win before any mode level: `sets.midcast.Repose.Resistant`
-  is never reached (Mote's default does pick it, then the manager replaces it
+  sets (P0), which win before any mode level; P0 takes the name set's mode
+  child when there is one, so `sets.midcast.Repose.Resistant` is worn in
+  Resistant (never reached before 2026-09-29: the manager replaced Mote's pick
   with `sets.midcast.Repose`). Banish, Flash and the rest reach
   `sets.midcast['Divine Magic'].Resistant` through P8.
 - **Enfeebling**: pseudo-skill `MndEnfeebles` / `IntEnfeebles` with
@@ -314,7 +315,7 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
 | `sets.midcast['Reraise']`, `['Arise']`, `['Raise']` | Mote default by name | yes |
 | `sets.midcast['Healing Magic']` | MidcastFallback (Raise, Esuna...) | no |
 | `sets.midcast['Divine Magic']` (+ `.Resistant`), `['Holy']`, `['Holy II']`, `['Repose']` | MidcastManager Divine | yes |
-| `sets.midcast['Repose'].Resistant` | nothing reaches it (P0 `Repose` wins) | yes |
+| `sets.midcast['Repose'].Resistant` | MidcastManager P0 (name set's mode child), CastingMode Resistant | yes |
 | `sets.midcast.MndEnfeebles`, `.IntEnfeebles` (+ `.Resistant`) | MidcastManager pseudo-skills | yes |
 | `sets.midcast['Enfeebling Magic']` | only when the spell map is neither (never) | no |
 | `sets.midcast['Dark Magic']`, `['Elemental Magic']` | MidcastManager | yes |
@@ -459,7 +460,7 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
 - CureManager tests recast `== 0` while the rest of the project uses the 2.0 s
   tolerance.
 - `CastingMode` changes no gear until the `.Resistant` copies get pieces;
-  `sets.engaged.PDT`, `sets.midcast.Repose.Resistant`, the Repose branch of
+  `sets.engaged.PDT`, the Repose branch of
   `enfeeble_skill_for` and the Divine Caress branch inside the handled path of
   `job_post_midcast` are unreachable.
 - `MessageWHM` is loaded by `WHM_PRECAST` and never used;
