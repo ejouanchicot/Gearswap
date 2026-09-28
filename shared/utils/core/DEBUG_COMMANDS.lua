@@ -483,7 +483,7 @@ function DebugCommands.handle_memcheck(arg)
     local report = build_report(char, job, by_type, total_g, top_tables, packages)
     local file_path, err = export_report(char, job, report)
     if not file_path then
-        MessageFormatter.show_error('MEMCHECK', 'Failed to open output file: ' .. tostring(err))
+        MessageFormatter.show_error('MEMCHECK: failed to open output file: ' .. tostring(err))
         return true
     end
 
@@ -571,7 +571,7 @@ end
 function DebugCommands.handle_debugmsg()
     local settings = _G.MESSAGE_SETTINGS
     if not settings then
-        MessageFormatter.show_error('MSG', 'MESSAGE_SETTINGS is nil!')
+        MessageFormatter.show_error('MSG: MESSAGE_SETTINGS is nil')
         return true
     end
     MessageFormatter.show_debug('MSG', 'MESSAGE_SETTINGS:')
