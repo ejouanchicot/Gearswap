@@ -72,7 +72,7 @@ local CHARACTERS = {
 --- These are preserved but not cloned to any active character.
 --- Move a job from _archive to a character entry above to re-activate it.
 
-local ARCHIVE_JOBS = { 'DRK', 'PUP', 'RUN' }
+local ARCHIVE_JOBS = { 'DRK', 'PUP', 'RUN', 'SAM', 'WHM' }
 
 ---============================================================================
 --- MASTER DATA PATHS (relative to data/ directory)
@@ -220,7 +220,7 @@ function CharDB.validate()
         end
     end
 
-    return true, 'OK - all 16 jobs assigned'
+    return true, ('OK - all %d jobs assigned'):format(#ALL_JOBS)
 end
 
 return CharDB

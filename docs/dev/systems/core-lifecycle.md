@@ -485,7 +485,7 @@ Only the lifecycle part is here; the feature, its settings file and its commands
 | `//gs c watchdog buffer <s>` | same | `set_buffer` (non-numeric argument is ignored silently) |
 | `//gs c watchdog fallback <s>` | same | `set_fallback_timeout` |
 | `//gs c watchdog clear` | same | `clear_all()` |
-| `//gs c watchdog test [name] [id]` | same | `simulate_stuck(name or 'Teleport-Holla', id or 262)` (262 is Warp II, see Known issues) |
+| `//gs c watchdog test [name] [id]` | same | `simulate_stuck(name or 'Warp II', id or 262)` |
 | `//gs c watchdog stats` | same | Detailed stats |
 | `//gs c watchdog help` / `<other>` | same | Help |
 | `//gs c cyclestate <State> [reverse]` | `CycleHandler.handle_cyclestate` via each job's `<JOB>_COMMANDS.lua` | UI-aware cycle |
@@ -665,7 +665,7 @@ Open:
 - `StateDisplayOverride` does not silence cycle messages and turns `//gs c update user` into "State: Unknown" or nothing (Mote calls it with no arguments; its header says so).
 - JobSyncWatchdog keeps running after a change to a job with no file and forces one misleading reload (`JobSyncWatchdog.start`).
 - `JobChangeManager.cancel_all()` in `get_sets()` is a no-op in a fresh sandbox (every entry, e.g. `_master/entry/Tetsouo_WAR.lua` `get_sets`).
-- `watchdog test` defaults to spell id 262 (Warp II, 5 s) while labelling it Teleport-Holla (id 122, 20 s); the comment in `WATCHDOG_COMMANDS.lua` says so, the defaults are unchanged.
+- Fixed 2026-09-28: `watchdog test` labelled its default spell Teleport-Holla while using Warp II's id (262); the label is now Warp II. The first word of `//gs c watchdog ...` is read in any case (`Watchdog On` used to show the help).
 - `watchdog clear` during a test leaves test mode on; the next real cast is reported stuck (`MidcastWatchdog.clear_all`).
 - Dead code: `ModuleCache.stats()`, `MidcastWatchdog.is_enabled/get_buffer/get_fallback_timeout/is_debug_enabled`.
 - The job intro never shows the macro book or the lockstyle: `KeybindManager`'s `show_intro` looks for `get_<job>_macro_info` and `get_info` on the `<JOB>_MACROBOOK` / `<JOB>_LOCKSTYLE` modules, and the wrappers return nothing (owner decision pending).

@@ -502,7 +502,7 @@ Binds whose `desc` contains `←` are dropped.
 Open:
 
 - A keybind without `desc` makes the first render throw inside `user_setup()` and aborts the job load (`ui_lifecycle.lua` `init`, `UI_DISPLAY_BUILDER.lua` `filter_reverse_keybinds`).
-- RUN's readiness anchor `RuneElement` does not exist, so the RUN HUD waits the full `init_delay` (`ui_lifecycle.lua` `are_states_ready`).
+- Fixed 2026-09-28: RUN's HUD readiness anchor was `RuneElement` (no such state, the HUD waited 5 s); it is `RuneMode`.
 - `//gs c combatmode key` / `//gs c th key` update the entry of the last `attach` (the HUD's module), while the keys are laid from the first module (`_G._keybind_active`); the new key may be drawn in the HUD but bound only after a reload (`optional_state.lua` `attach`, `optional_state_commands.lua` `set_key`; not checked in game).
 - `section_*` settings are persisted but never read, and `UIConfig.sections` is captured when `UI_SECTIONS.lua` loads (`shared/config/ui_settings.lua` `get_sections` / `set_section`).
 - `toggle_background` flips `UIConfig.background.visible`, not the persisted `bg_visible` (`ui_appearance.lua` `toggle_background`).

@@ -453,9 +453,9 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
   not yet in game): Full Cure re-tiered into a Cure with Auto-Tier On (the
   name test was `find('Cure')`), and the `Melee ON` lock surviving a subjob
   change.
-- Fallback config: if `WHM_CURE_CONFIG` fails to load, the fallback table has no
-  `cure_tiers`, and `select_cure_tier` raises on the first Cure
-  (`ipairs(nil)`); the failure is announced with `print`.
+- Fixed 2026-09-28: when `WHM_CURE_CONFIG` fails to load, the fallback now holds the
+  template's `cure_tiers` / `curaga_tiers` / `safety_margin` (it had none and the first
+  Cure raised `ipairs(nil)`), and the failure goes through `MessageFormatter.show_error`.
 - CureManager tests recast `== 0` while the rest of the project uses the 2.0 s
   tolerance.
 - `CastingMode` changes no gear until the `.Resistant` copies get pieces;

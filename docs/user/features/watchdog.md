@@ -46,7 +46,7 @@ The watchdog starts by itself 2 s after each job load.
 | `//gs c watchdog buffer <s>` | Safety buffer, 0 to 10 s (default 1.5) |
 | `//gs c watchdog fallback <s>` | Limit for an unknown action, above 0 and up to 30 s (default 5.0) |
 | `//gs c watchdog stats` | Detailed statistics |
-| `//gs c watchdog test [name] [spell id]` | Simulate a stuck cast: the aftercast is ignored so you can watch the recovery. Without arguments the timing is Warp II's (id 262) under the label Teleport-Holla |
+| `//gs c watchdog test [name] [spell id]` | Simulate a stuck cast: the aftercast is ignored so you can watch the recovery. Without arguments it simulates Warp II (id 262, a 5 s cast) |
 | `//gs c watchdog debug` | Verbose output (turn it off after testing) |
 | `//gs c watchdog help` | Help (any word it does not know shows it too). Words are lowercase only |
 

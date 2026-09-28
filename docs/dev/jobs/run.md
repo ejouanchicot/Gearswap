@@ -247,12 +247,9 @@ Optional states added to every job: `CombatMode` (hidden, `!numpad0`) and
 `TreasureMode` (hidden, `!numpad.`), see
 [keybinds and custom states](../systems/keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode).
 
-The UI readiness anchor for RUN is `state.RuneElement` (`ui_lifecycle.lua`
-`are_states_ready`), a state RUN never creates: `smart_init` always polls until its
-`max_wait_time` (`UIConfig.init_delay`, 5 s by default) and then initialises
-anyway, so the HUD appears about 5 s late on every RUN load. A pending HUD init from
-an older load does not create a second HUD (`windower._ui_live_state` identity
-check, see [UI overlay](../systems/ui-overlay.md)); the anchor itself is still wrong.
+The UI readiness anchor for RUN is `state.RuneMode` (`ui_lifecycle.lua`
+`are_states_ready`). Until 2026-09-28 it was `state.RuneElement`, a state RUN never
+creates, so the HUD always waited the full 5 s `init_delay`.
 
 ## Commands
 
@@ -407,8 +404,7 @@ RUN weaponskills. There is no RUN-specific differential test.
 ## Known issues
 
 - Divine route is a no-op (no `sets.midcast['Divine Magic']`).
-- UI readiness anchor `RuneElement` does not exist (`ui_lifecycle.lua`
-  `are_states_ready`): the HUD appears after the 5 s timeout on every RUN load.
+- Fixed 2026-09-28: the UI readiness anchor was `RuneElement` (no such state); it is `RuneMode`.
 - Stale comment in `RUN_PRECAST.lua` `ensure_modules_loaded`: it says the entry
   does not load `RUN_TP_CONFIG`; the entry does, since 2026-09-27.
 - `RUN_MACROBOOK.lua` keys its `solo` and `dualbox` tables by subjob with a `RUN`

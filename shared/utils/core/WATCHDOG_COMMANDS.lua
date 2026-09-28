@@ -62,6 +62,8 @@ function WatchdogCommands.handle_command(cmdParams, eventArgs)
     for i = 2, #cmdParams do
         table.insert(cmd_args, cmdParams[i])
     end
+    -- `Watchdog On` works like `watchdog on`; a spell name keeps its case
+    if cmd_args[1] then cmd_args[1] = cmd_args[1]:lower() end
 
     if #cmd_args == 0 then
         local stats = MidcastWatchdog.get_stats()
@@ -87,10 +89,9 @@ function WatchdogCommands.handle_command(cmdParams, eventArgs)
     elseif cmd_args[1] == 'clear' then
         MidcastWatchdog.clear_all()
     elseif cmd_args[1] == 'test' then
-        -- Test mode: simulate a stuck midcast. The default id 262 is Warp II
-        -- (5 s cast), not Teleport-Holla (122, 20 s): the label and the timing
-        -- used do not match.
-        local spell_name = cmd_args[2] or 'Teleport-Holla'
+        -- Test mode: simulate a stuck midcast. Default: Warp II (id 262, 5 s
+        -- cast), a short test.
+        local spell_name = cmd_args[2] or 'Warp II'
         local spell_id = tonumber(cmd_args[3]) or 262
         MidcastWatchdog.simulate_stuck(spell_name, spell_id)
     elseif cmd_args[1] == 'stats' then

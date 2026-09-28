@@ -563,4 +563,4 @@ Build it the way `treasure_hunter.lua` does:
 - **`custom_guards.lua` requires the THF module** `shared/jobs/thf/functions/logic/treasure_hunter` for the TH guard on every job. It works, because that module proxies the shared one, but the shared `shared/utils/equipment/treasure_hunter` is the direct source.
 - **RDM binds `^numpad9` to `EnfeebleTier`.** This breaks the "`^numpad9` = HybridMode or empty" convention of `.claude/rules/keybinds.md`.
 - **Common keys differ between overlays.** One tracked character overlay of `COMMON_KEYBINDS.lua` has no `!z` / `!x` stealth keys.
-- The RUN HUD anchor `RuneElement` (no such state) keeps the HUD init polling for 5 s after each RUN load; see [ui-overlay.md](ui-overlay.md).
+- Fixed 2026-09-28: RUN's HUD readiness anchor was `RuneElement` (no such state, the HUD waited 5 s); it is `RuneMode`.

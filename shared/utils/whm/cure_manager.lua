@@ -32,12 +32,31 @@ local CureManager = {}
 -- Module is lazy-required from WHM_PRECAST.lua, so `player` is defined at load time.
 local char_name = (player and player.name) or 'Tetsouo'
 local config_success, WHMCureConfig = pcall(require, char_name .. '/config/whm/WHM_CURE_CONFIG')
-if not config_success then
-    print('[CureManager] ERROR: Could not load WHM_CURE_CONFIG')
+if not config_success or type(WHMCureConfig) ~= 'table' then
+    -- The template's tiers (_master/config/whm/WHM_CURE_CONFIG.lua): without
+    -- them the first Cure raised in select_cure_tier (ipairs(nil)).
+    local ok_mf, MF = pcall(require, 'shared/utils/messages/message_formatter')
+    if ok_mf and MF and MF.show_error then
+        MF.show_error('CureManager: WHM_CURE_CONFIG not loaded, default cure tiers used')
+    end
     WHMCureConfig = {
-        auto_tier_enabled = false,
-        force_max_cure = false,
-        debug_messages = false
+        debug_messages = false,
+        safety_margin = 50,
+        cure_tiers = {
+            {min = 0, max = 200, spell = 'Cure'},
+            {min = 200, max = 400, spell = 'Cure II'},
+            {min = 400, max = 700, spell = 'Cure III'},
+            {min = 700, max = 1100, spell = 'Cure IV'},
+            {min = 1100, max = 1600, spell = 'Cure V'},
+            {min = 1600, max = 99999, spell = 'Cure VI'},
+        },
+        curaga_tiers = {
+            {min = 0, max = 300, spell = 'Curaga'},
+            {min = 300, max = 600, spell = 'Curaga II'},
+            {min = 600, max = 1000, spell = 'Curaga III'},
+            {min = 1000, max = 1400, spell = 'Curaga IV'},
+            {min = 1400, max = 99999, spell = 'Curaga V'},
+        },
     }
 end
 

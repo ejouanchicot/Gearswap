@@ -173,7 +173,7 @@ Public API. Every function has **zero callers** in `shared/`, `_master/` and the
 | `has_job(name, job)` | boolean | |
 | `get_owner(job)` | first owner found, `'_archive'`, or nil | for a job with several owners (COR, BRD, PLD, RDM, THF) the result depends on `pairs()` order (`get_owner('COR')` returns `Blodykiller` under lua5.1 today) |
 | `get_archive_jobs()`, `get_character_names()`, `get_all()`, `get_all_jobs()`, `get_master_paths()` | raw tables / list of names | |
-| `validate()` | `true, 'OK - all 16 jobs assigned'` or `false, msg` | Checks that no archived job has an owner and that every job in `ALL_JOBS` is owned or archived. **Fails today**: `false, 'SAM is not assigned to any character or _archive'` (SAM and WHM have no owner). Nothing runs it. Its doc says a second owner needs an overlay, but it does not check for one; its success message still says 16 |
+| `validate()` | `true, 'OK - all 17 jobs assigned'` (count from `ALL_JOBS`) or `false, msg` | Checks that no archived job has an owner and that every job in `ALL_JOBS` is owned or archived. **Fails today**: `false, 'SAM is not assigned to any character or _archive'` (SAM and WHM have no owner). Nothing runs it. Its doc says a second owner needs an overlay, but it does not check for one; its success message still says 16 |
 
 What `clone_character.py` actually reads (`parse_character_db`):
 
@@ -303,7 +303,7 @@ Full redeploy (`clone_character.py` on an existing character):
 
 Open:
 
-- `CharDB.validate()` returns `false` (SAM and WHM are neither owned nor archived) and its success message still says 16 jobs: `character_db.lua` `validate`. Nothing runs it.
+- Fixed 2026-09-28: `CharDB.validate()` returned `false` (SAM and WHM were neither owned nor archived; they are now in `ARCHIVE_JOBS`) and its message said 16 jobs (now counted). Nothing runs it.
 - The `character_db.lua` Lua API has no callers, and `validate()` does not check what its doc claims.
 - The overlays are untracked since 2026-09-27: no history.
 - The overlay `DUALBOX_CONFIG`/`REGION_CONFIG` are always overwritten, contrary to the comment above the global-config copy in `clone`.
