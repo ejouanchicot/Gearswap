@@ -14,7 +14,7 @@
 ---   Sub-modules:
 ---     refiner/correspondence.lua    - tier downgrade lookup table (data)
 ---     refiner/timing_guards.lua     - anti-spam timers (replacement + per-spell)
----     refiner/replacement_logic.lua - find_available_tier / ja replacement / cancel
+---     refiner/replacement_logic.lua - find_available_tier / ja replacement
 ---     refiner/recast_display.lua    - grouped cooldown display for unavailable spells
 ---     refiner/special_handlers.lua  - magic burst announce / exec / Breakga
 ---
@@ -129,16 +129,9 @@ function SpellRefiner.refine_various_spells(spell, eventArgs)
     local correspondence = Correspondence.get(spellCategory)
 
     -- Find an available tier to actually cast
-    local newSpell, replacement = ReplacementLogic.find_available_tier(
+    local newSpell = ReplacementLogic.find_available_tier(
         spell, spell_recasts, player_mp, correspondence, spellCategory, spellLevel
     )
-
-    -- Cancel if the player is too low on MP for any tier
-    if ReplacementLogic.should_cancel(newSpell, replacement, player_mp, spell) then
-        eventArgs.cancel = true
-        BLMMessages.show_insufficient_mp_error(player_mp)
-        return
-    end
 
     -- Magic Burst announcement uses the refined spell name
     SpecialHandlers.announce_magic_burst(spell, newSpell)

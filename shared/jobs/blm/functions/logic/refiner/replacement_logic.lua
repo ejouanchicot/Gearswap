@@ -10,7 +10,6 @@
 ---     • find_available_tier(spell, recasts, mp, correspondence,
 ---                            category, level) -> (new_name, replacement?)
 ---     • find_ja_replacement(spell, recasts, mp, res) -> new_name
----     • should_cancel(new_name, replacement, mp, spell) -> bool
 ---
 ---   @file    shared/jobs/blm/functions/logic/refiner/replacement_logic.lua
 ---   @author  ejouanchicot
@@ -107,28 +106,6 @@ function ReplacementLogic.find_ja_replacement(spell, spell_recasts, player_mp, r
     end
 
     return newSpell
-end
-
---- Decide if a spell should be cancelled outright (no replacement found AND
---- player is too low on MP for even the base tier).
----
---- @param newSpell string       Final spell name after replacement
---- @param replacement string?   Replacement spell name (nil if unchanged)
---- @param player_mp number      Current MP
---- @param spell table           Original spell object
---- @return boolean              True if the spell should be cancelled
-function ReplacementLogic.should_cancel(newSpell, replacement, player_mp, spell)
-    if not newSpell or not player_mp or not spell then
-        return false
-    end
-
-    -- Cancel if downgrade hit base tier ('') AND not Aspir AND MP below threshold
-    if replacement == '' and newSpell ~= 'Aspir' and player_mp < (newSpell == 'Aspir' and 10 or 9) then
-        cancel_spell()
-        return true
-    end
-
-    return false
 end
 
 return ReplacementLogic
