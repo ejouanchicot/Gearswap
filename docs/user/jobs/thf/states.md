@@ -1,5 +1,7 @@
 # THF — modes and keys
 
+Set names and automatic gear: [sets.md](sets.md).
+
 Thief: weapons, Treasure Hunter, Sneak/Trick Attack gear, a ranged lock, and
 one-key ability chains (`smartbuff`, `fbc`, `steal`).
 

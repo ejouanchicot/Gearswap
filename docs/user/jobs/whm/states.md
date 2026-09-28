@@ -3,6 +3,8 @@
 White Mage: cure potency or spell interruption, automatic cure tier, Afflatus
 choice, and a weapon lock.
 
+Set names and automatic gear: [sets.md](sets.md).
+
 Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each
 mode's current value; this page says what each value does. `#numpad0` (Auto
 Medicine) and Alt+Numpad7-9 (alts) are common to every job, see

@@ -3,6 +3,8 @@
 Black Mage picks its nukes from modes: an element per "slot" (main/sub, light/dark,
 single/AOE) plus a tier, then one command casts the result on your target.
 
+Set names and automatic gear: [sets.md](sets.md).
+
 Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each mode's
 current value; this page says what each value does. `#numpad0` (Auto Medicine) and
 Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybinds.md).

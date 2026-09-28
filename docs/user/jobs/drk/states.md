@@ -1,5 +1,7 @@
 # DRK — modes and keys
 
+Set names and automatic gear: [sets.md](sets.md).
+
 Dark Knight has two modes of its own: the defensive stance and the weapon. Everything
 else (weaponskill gear, Dark Magic gear, Dark Seal / Nether Void pieces) is automatic.
 

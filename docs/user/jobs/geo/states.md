@@ -3,6 +3,8 @@
 Geomancer modes pick which Indi-, Geo- and elemental spells the cast commands use, and
 how you and your luopan are geared.
 
+Set names and automatic gear: [sets.md](sets.md).
+
 Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each mode's
 current value; this page says what each value does. `#numpad0` (Auto Medicine) and
 Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybinds.md).

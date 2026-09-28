@@ -4,6 +4,8 @@ Blue Mage: your weapons, your engaged / idle / casting / weaponskill modes, Blue
 Magic gear chosen by what each spell scales with, and two optional automatic
 abilities (Unbridled Learning, the Expiacion window).
 
+Set names and automatic gear: [sets.md](sets.md).
+
 Keys: Ctrl = `^`, Alt = `!`, Apps = `#` (the menu key), Shift = `~`, Win = `@`.
 The HUD (`//gs c ui`) shows each mode's current value; this page says what each
 value does. `#numpad0` (Auto Medicine) and Alt+Numpad7-9 (alts) are common to

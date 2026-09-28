@@ -8,6 +8,8 @@ Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each mo
 current value; this page says what each value does. `#numpad0` (Auto Medicine) and
 Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybinds.md).
 
+Set names and automatic gear: [sets.md](sets.md).
+
 ## Keys
 
 | Key | Mode (state) | Values (default in **bold**) | What it does |

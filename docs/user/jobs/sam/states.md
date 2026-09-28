@@ -1,5 +1,7 @@
 # SAM — modes and keys
 
+Set names and automatic gear: [sets.md](sets.md).
+
 Samurai has two keyed modes (weapon and hybrid). Most of what SAM does
 happens on its own: Third Eye before a weaponskill, and Seigan before Third Eye
 when Seigan is your chosen stance.
