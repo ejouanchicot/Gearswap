@@ -406,6 +406,14 @@ function KeybindManager.create(job, module)
         CommonKeybinds.merge_into(module.binds)
     end
     watch_own_weapon(module.binds)
+    -- A row without desc (a hand-written keybind or CUSTOM file) made the
+    -- HUD's first render raise and abort the job load: name it after its
+    -- state, else its command.
+    for _, b in ipairs(type(module.binds) == 'table' and module.binds or {}) do
+        if type(b) == 'table' and type(b.desc) ~= 'string' then
+            b.desc = tostring(b.state or b.command or b.key or '?')
+        end
+    end
     return module
 end
 

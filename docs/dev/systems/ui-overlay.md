@@ -490,7 +490,7 @@ Binds whose `desc` contains `←` are dropped.
 **Add an optional state like Combat Mode**: `OptionalState.create{id, state, description, values, file, default_key, on_attach?}`, attach it in `KeybindManager.create` next to the two existing ones, build its commands with `OptionalStateCommands.create{optional, command, label, tag, header, status, subtitle, notes, extra?, extra_rows?}`, route the command in `COMMON_COMMANDS.lua` (dispatch and `is_common_command`), add its settings file to `clone_character.py` `KEPT_ON_RECLONE`, and its globals to `global_probe.lua` `EXPECTED`.
 
 **Traps**
-- The first render is unprotected (see Invariants): a keybind without `desc` breaks the job load.
+- The first render is unprotected (see Invariants): a bind row that raises there breaks the job load. `KeybindManager.create` gives every row without `desc` its state or command as `desc` (2026-09-28), which removes the known case.
 - Lifetimes: sandbox `_G` is rebuilt on every load; only `windower.*` persists. Coroutines are never cancelled by GearSwap: every scheduled UI callback must check `windower._ui_live_state` or a cancel id.
 - Two module tables per keybind file (two require paths): code that mutates a bind entry after load changes only one of them.
 - `toggle` persists; `show` / `hide` do not.
@@ -501,7 +501,7 @@ Binds whose `desc` contains `←` are dropped.
 
 Open:
 
-- A keybind without `desc` makes the first render throw inside `user_setup()` and aborts the job load (`ui_lifecycle.lua` `init`, `UI_DISPLAY_BUILDER.lua` `filter_reverse_keybinds`).
+- Fixed 2026-09-28: a keybind without `desc` made the first render throw inside `user_setup()` and aborted the job load; `KeybindManager.create` now fills `desc` from the state or the command.
 - Fixed 2026-09-28: RUN's HUD readiness anchor was `RuneElement` (no such state, the HUD waited 5 s); it is `RuneMode`.
 - `//gs c combatmode key` / `//gs c th key` update the entry of the last `attach` (the HUD's module), while the keys are laid from the first module (`_G._keybind_active`); the new key may be drawn in the HUD but bound only after a reload (`optional_state.lua` `attach`, `optional_state_commands.lua` `set_key`; not checked in game).
 - `section_*` settings are persisted but never read, and `UIConfig.sections` is captured when `UI_SECTIONS.lua` loads (`shared/config/ui_settings.lua` `get_sections` / `set_section`).
