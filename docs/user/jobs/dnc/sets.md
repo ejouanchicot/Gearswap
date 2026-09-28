@@ -54,8 +54,9 @@ matches wins:
 | `sets.engaged.Normal` | `HybridMode` Normal (Fan Dance changes nothing in Normal) |
 | `sets.engaged` | None of the above exists |
 
-Then the weapon set, then the Dual Wield tier pieces (common, they also go on during
-Saber Dance), then Treasure Hunter.
+Then `sets.buff['Saber Dance']` while Saber Dance is up (only the pieces that enhance
+the dance, e.g. Horos Tights), then the weapon set, then the Dual Wield tier pieces
+(common, they also go on during Saber Dance), then Treasure Hunter.
 
 ## Weaponskills
 
@@ -81,6 +82,10 @@ buff shows). That 5-second window is used by one weaponskill only.
 The provided file has all six for Ruthless Stroke, Dancing Edge, Rudra's Storm and
 Shark Bite, and a plain set for Pyrrhic Kleos, Evisceration, Exenterator and Aeolian
 Edge.
+
+Under Climactic Flourish, `sets.buff['Climactic Flourish']` then goes on top of the
+weaponskill set, on every weaponskill (only the pieces that enhance Climactic, e.g.
+Maculele Tiara).
 
 **Moonshade Earring**: after the weaponskill set, the code puts Moonshade Earring in
 the left ear only when its +250 TP lifts you to the next step (2000 or 3000 TP). The
@@ -164,8 +169,6 @@ is worn on spells without a set of their own.
 | Set | Why |
 |---|---|
 | `sets.idle.PDT` | No idle mode picks it; `HybridMode` does not change idle |
-| `sets.buff['Saber Dance']` | Not read. Put Saber Dance pieces in `sets.engaged.SaberDance` or in `sets.precast.Waltz` |
-| `sets.buff['Climactic Flourish']` | Not read. Put Climactic pieces in the `.Clim` weaponskill sets |
 
 ## Names the code reads that the provided file lacks
 

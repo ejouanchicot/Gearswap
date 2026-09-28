@@ -133,6 +133,11 @@ SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 ---   @return table Complete engaged set
 function SetBuilder.build_engaged_set(base_set)
     local result = SetBuilder.select_engaged_base(base_set)
+    -- The pieces that enhance Saber Dance (e.g. Horos Tights), on top of the
+    -- Saber Dance set while the dance is up
+    if buffactive and buffactive['Saber Dance'] and sets.buff and sets.buff['Saber Dance'] then
+        result = set_combine(result, sets.buff['Saber Dance'])
+    end
     result = SetBuilder.apply_weapon(result)
     return result
 end

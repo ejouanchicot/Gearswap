@@ -984,10 +984,19 @@ sets.Adoulin = set_combine(sets.MoveSpeed, {
 
 sets.buff = {}
 
+-- Saber Dance up and engaged: laid on top of the engaged set (after
+-- sets.engaged.SaberDance). Only the pieces that enhance the dance.
 sets.buff['Saber Dance'] = {
     legs = 'Horos Tights +4'
 }
 
+-- Weaponskill under Climactic Flourish: laid on top of the weaponskill set
+-- (after its .Clim variant). Only the pieces that enhance Climactic.
+-- A set for the Climactic Flourish ability itself goes in
+-- sets.precast.Flourish3['Climactic Flourish'], not sets.precast.JA: the
+-- game types it Flourish3. Careful: once sets.precast.Flourish3 exists,
+-- Striking and Ternary Flourish (also Flourish3) are looked up there too,
+-- no longer in sets.precast.JA.
 sets.buff['Climactic Flourish'] = {
     head = 'Maculele Tiara +3'
 }

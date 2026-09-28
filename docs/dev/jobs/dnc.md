@@ -217,7 +217,9 @@ sequenceDiagram
 
 `dance` is `SaberDance` if `buffactive['Saber Dance']`, else `FanDance` if
 `buffactive['Fan Dance']`. Climactic is the buff, or the precast timestamp
-younger than 5 s, consumed on first use (`climactic_active`).
+younger than 5 s, consumed on first use (`climactic_active`, now read first,
+for every weaponskill). Under Climactic, `sets.buff['Climactic Flourish']` is
+equipped after the variant, on any weaponskill (since 2026-09-29).
 
 `SetBuilder.select_engaged_base`:
 
@@ -228,7 +230,8 @@ younger than 5 s, consumed on first use (`climactic_active`).
 3. Other HybridMode -> `sets.engaged[mode]` (`Normal`).
 4. Otherwise Mote's set.
 
-Then `apply_weapon`: `WeaponResolver.set_for('main', MainWeapon)` (the weapon
+Then, with Saber Dance up, `sets.buff['Saber Dance']` is combined on top
+(since 2026-09-29), then `apply_weapon`: `WeaponResolver.set_for('main', MainWeapon)` (the weapon
 set, main + sub; with `equip_without_set` in `config/WEAPON_CONFIG.lua`, a
 value with no set but a weapon name gives `{main = value}`), then, when
 `SubWeaponOverride` is not `Off`, `result.sub = sets[override].sub`. That field
@@ -363,7 +366,8 @@ Full player-facing list: [sets.md](../../user/jobs/dnc/sets.md).
 | `sets.TreasureHunter` | shared `TreasureHunter` once Treasure Mode is shown (`//gs c th show`) |
 | `sets.DW.*` (commented in T) | `DualWield` |
 | `sets.buff.Doom` | `DoomManager` |
-| `sets.buff['Saber Dance']`, `['Climactic Flourish']` | nothing |
+| `sets.buff['Saber Dance']` | `SetBuilder.build_engaged_set`, Saber Dance up |
+| `sets.buff['Climactic Flourish']` | `WSVariantSelector.apply_variant`, weaponskill under Climactic |
 
 ## Configuration
 

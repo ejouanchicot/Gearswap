@@ -94,24 +94,27 @@ local function best_variant(ws_sets, dance, climactic)
     return nil
 end
 
----   Equip the weaponskill variant matching the buffs that are up.
+---   Equip the weaponskill variant matching the buffs that are up, then,
+---   under Climactic Flourish, sets.buff['Climactic Flourish'] on top (the
+---   pieces that enhance it, e.g. Maculele Tiara, worn for the weaponskill).
 ---   @param spell table Spell information from GearSwap
 function WSVariantSelector.apply_variant(spell)
-    local ws_sets = sets.precast.WS[spell.name]
-    if not ws_sets then
-        return
-    end
-
-    -- Read before branching: the Climactic check consumes its timestamp, and
-    -- it has to be consumed whichever branch ends up being taken.
+    -- Read first: the Climactic check consumes its timestamp, and it has to
+    -- be consumed whichever branch ends up being taken.
     local climactic = climactic_active()
-    local dance = active_dance()
 
-    local variant = best_variant(ws_sets, dance, climactic)
-    if variant then
-        equip(variant)
+    local ws_sets = sets.precast.WS[spell.name]
+    if ws_sets then
+        local variant = best_variant(ws_sets, active_dance(), climactic)
+        if variant then
+            equip(variant)
+        end
+        -- Nothing matched: Mote has already equipped the base set.
     end
-    -- Nothing matched: Mote has already equipped the base set.
+
+    if climactic and sets.buff and sets.buff['Climactic Flourish'] then
+        equip(sets.buff['Climactic Flourish'])
+    end
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
