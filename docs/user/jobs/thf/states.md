@@ -1,6 +1,7 @@
 # THF — modes and keys
 
-Set names and automatic gear: [sets.md](sets.md).
+Start page for THF (every key, command and automatic feature):
+[README.md](README.md). Set names and automatic gear: [sets.md](sets.md).
 
 Thief: weapons, Treasure Hunter, Sneak/Trick Attack gear, a ranged lock, and
 one-key ability chains (`smartbuff`, `fbc`, `steal`).
@@ -15,7 +16,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 | Key | Mode (state) | Values (default in **bold**) | What it does |
 |---|---|---|---|
 | `^numpad1` | Main Weapon (`MainWeapon`) | **Vajra**, TwashtarM, Mpu Gandring, Tauret, Naegling, Malevolence, Dagger | Main hand (`sets.<Weapon>` from your set file). |
-| `^numpad2` | Sub Weapon (`SubWeapon`) | **Centovente**, Tanmogayi, Kraken | Off hand. The author's own file adds Telop Knife. |
+| `^numpad2` | Sub Weapon (`SubWeapon`) | **Centovente**, Tanmogayi, Kraken | Off hand. The author's personal template adds Telop Knife. |
 | `^numpad9` | Hybrid Mode (`HybridMode`) | **PDT**, Normal | Engaged set: `sets.engaged.PDT` or `sets.engaged.Normal`. |
 | `^numpad3` | TH Mode (`TreasureMode`) | **Tag**, SATA, Full | See Treasure Hunter below. |
 | `^numpad4` | Aby Proc (`AbyProc`) | **Off**, On | /WAR only. On: the Aby Weapon set replaces your main and sub weapons (Abyssea weapon-type procs). |
@@ -39,12 +40,22 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 
 ## Notes
 
-- **Treasure Hunter** (shared with every job since 2026-09-28: any of your actions tags a mob, melee, ranged, weaponskill, spell or job ability, and the first action against a mob not tagged yet wears `sets.TreasureHunter` too). Tag: `sets.TreasureHunter` goes on while engaged until
-  the current target has been hit once by you (tagged), then comes off. SATA:
+- **Treasure Hunter** (the same system every job can use; THF has it on by
+  default). Any of your actions tags a mob: melee, ranged, weaponskill, spell
+  or job ability. Tag: `sets.TreasureHunter` goes on while engaged until one
+  of your actions lands on the current target (tagged), then comes off. SATA:
   same, and under Sneak/Trick Attack the `TreasureHunterSA` / `TA` / `SATA`
-  sets are used. Full: `sets.TreasureHunter` stays on all the time, with the
-  SATA sets. A tagged mob is forgotten when it dies, when you zone, or after
-  180 s with no action on it.
+  sets replace `sets.buff['Sneak Attack']` / `['Trick Attack']`. Full:
+  `sets.TreasureHunter` stays on the engaged set all the time, with the SATA
+  sets. In every mode, your first weaponskill, job ability, spell or ranged
+  attack against a mob not tagged yet wears `sets.TreasureHunter` too. A
+  tagged mob is forgotten when it dies, when you zone, after 180 s with no
+  action on it, on a reload or subjob change, or with `//gs c th clear`.
+  `//gs c th` shows the status; `//gs c th hide` turns Treasure Hunter off on
+  THF and removes its key, `//gs c th show` brings it back.
+- **Weapons without a set**: with `equip_without_set = true` in
+  `config/WEAPON_CONFIG.lua`, a Main or Sub Weapon value that has no
+  `sets.<Weapon>` equips the weapon of that name directly.
 - **Sneak Attack / Trick Attack.** While the buff is up and you are engaged,
   `sets.buff['Sneak Attack']` / `['Trick Attack']` go on top; they come off
   when the buff is used.

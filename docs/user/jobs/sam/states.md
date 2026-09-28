@@ -1,10 +1,12 @@
 # SAM — modes and keys
 
-Set names and automatic gear: [sets.md](sets.md).
+Start page for SAM (every key, command and automatic feature):
+[README.md](README.md). Set names and automatic gear: [sets.md](sets.md).
 
-Samurai has two keyed modes (weapon and hybrid). Most of what SAM does
-happens on its own: Third Eye before a weaponskill, and Seigan before Third Eye
-when Seigan is your chosen stance.
+Samurai has four keyed modes (weapon, Offense Mode, WS Mode, Hybrid Mode)
+and one without a key (Stance). Most of what SAM does happens on its own:
+Third Eye before a weaponskill, and Seigan before Third Eye when Seigan is
+your chosen stance.
 
 Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each
 mode's current value; this page says what each value does. `#numpad0` (Auto
@@ -18,7 +20,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 | `^numpad1` | Main Weapon (`MainWeapon`) | **Masamune**, Kusanagi, Shining, Dojikiri, Soboro, Norifusa | Weapon equipped in idle and engaged sets (`sets.<Weapon>` from your set file). |
 | `^numpad2` | Offense Mode (`OffenseMode`) | **Normal**, Mid, Acc, SuBlow | Engaged accuracy: `sets.engaged.<value>`, then `.<value>.<HybridMode>` when it exists (`sets.engaged.Acc.PDT`). A defensive HybridMode wins when the accuracy set has no variant for it (Mid + PDT = `sets.engaged.PDT`). |
 | `^numpad3` | WS Mode (`WeaponskillMode`) | **Normal**, Mid, Acc | `sets.precast.WS['<name>'].<value>` when it exists (the template has Tachi: Shoha and Tachi: Rana .Mid / .Acc), else the WS set. |
-| `^numpad9` | Hybrid Mode (`HybridMode`) | **PDT**, Normal, MDT | PDT: `sets.idle.PDT` on top of idle and `sets.engaged.PDT` when engaged. Normal: the Offense Mode set. MDT: `sets.engaged.MDT`. |
+| `^numpad9` | Hybrid Mode (`HybridMode`) | **PDT**, Normal, MDT | PDT: `sets.idle.PDT` on top of idle, and `sets.engaged.<Offense>.PDT` (else `sets.engaged.PDT`) when engaged. Normal: the Offense Mode set. MDT: `sets.engaged.<Offense>.MDT`, else `sets.engaged.MDT`, engaged only (idle is unchanged). |
 
 ## Other modes (no key)
 
@@ -44,19 +46,32 @@ are useful with a subjob:
 
 ## Notes
 
-- **Third Eye, Seigan stance, Seigan down**: the first Third Eye press is
-  replaced by Seigan, then Third Eye 1 s later. The next time, Third Eye goes
-  out alone (the behaviour alternates). With the Hasso stance, Third Eye always
-  goes out alone.
-- **Weaponskill with Third Eye ready**: the weaponskill is held back, Third Eye
-  goes out first, then the weaponskill is sent again once Third Eye is up (or
-  refused). Each action has its own precast: Third Eye gear, then weaponskill
-  gear.
+- **Third Eye, Seigan stance, Seigan down**: the Third Eye press is
+  replaced by Seigan, then Third Eye 1 s later. After that, the next time
+  Seigan is down, one Third Eye press goes out alone before the Seigan step
+  works again (the behaviour alternates; reported as a bug). With the Hasso
+  stance, Third Eye always goes out alone.
+- **Weaponskill with Third Eye ready**: in either stance, a weaponskill pressed
+  while Third Eye is ready and not up is held back, Third Eye goes out first,
+  then the weaponskill is sent again once Third Eye is up (or refused; at the
+  latest 4.5 s later). Each action has its own precast: Third Eye
+  gear, then weaponskill gear. This happens before the range and 1000 TP
+  checks, so a weaponskill pressed out of range or without enough TP still
+  uses Third Eye, and the replayed weaponskill is then refused.
+- **Auto Hasso** (off by default): `sam_hasso = true` in
+  `<YourName>/config/AUTO_ABILITIES.lua` uses Hasso when you engage, if
+  neither Hasso nor Seigan is up and Hasso is ready. Like any Hasso you use,
+  it makes Hasso your chosen stance, even when you had chosen Seigan.
 - **Seigan up while engaged**: `sets.thirdeye` in PDT, `sets.seigan` otherwise
   (empty in the template until you fill it). `sets.bow` goes on with
   Yoichinoyumi (empty too). `sets.engaged.AM3` replaces the engaged set under
   Aftermath: Lv.3 with Masamune when you define it (not in the template).
 - **Idle**: `sets.idle.Weak` below 50% HP, `sets.idle.Regen` below 80%.
+  No town set and no movement speed gear: `sets.MoveSpeed` is never used on
+  SAM.
+- **Weapons without a set**: with `equip_without_set = true` in
+  `config/WEAPON_CONFIG.lua`, a Main Weapon value with no `sets.<Weapon>`
+  equips the weapon of that name directly.
 - Sekkanoki and Meikyo Shisui add `sets.buff.Sekkanoki` /
   `sets.buff['Meikyo Shisui']` to the weaponskill when the buff is up.
 - Weaponskill TP bonus gear: see [TP bonus](../war/tp-bonus.md).

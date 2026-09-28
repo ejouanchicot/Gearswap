@@ -3,6 +3,7 @@
 Which DRK abilities get their own gear, and how Dark Seal and Nether Void change the
 gear that follows them. Set names below are the ones in the template set file
 (`_master/sets/drk_sets.lua`); the items are the template's, put your own.
+Start page for DRK: [README.md](README.md).
 
 ## Ability gear (precast)
 
@@ -18,7 +19,7 @@ Worn for the instant the ability goes off (`sets.precast.JA['<Name>']`):
 | Dark Seal | head: Fallen's Burgeonet +3 |
 | Diabolic Eye | hands: Fall. Fin. Gaunt. +3 |
 | Nether Void | legs: Heath. Flanchard +3 |
-| Jump, High Jump (/DRG) | your engaged set |
+| Jump, High Jump (/DRG) | a copy of the base `sets.engaged` (not the PDT or Accu version) |
 
 An ability with no `sets.precast.JA` entry simply keeps your current gear.
 
@@ -35,8 +36,10 @@ Both buffs are used up by the next dark spell, so the project follows them close
   at once. The flag is confirmed when the ability completes, dropped if it was
   interrupted, and cleared when the buff wears off. While the buff or its flag is on,
   pieces from `sets.engaged.<Weapon>.<PDT|Accu>.DarkSealNetherVoid` (both buffs),
-  `.DarkSeal` or `.NetherVoid` are added on top of your engaged set, if you defined them.
-  Without these variants nothing changes.
+  `.DarkSeal` or `.NetherVoid` are added on top of your engaged set, if you defined them
+  (when the weapon has no table for the current Hybrid Mode, its `.Accu` table is
+  used). The provided template defines none of these variants, so out of the box
+  nothing changes on the engaged set.
 
 ## Where it lives
 

@@ -1,8 +1,10 @@
 # DRK — modes and keys
 
-Set names and automatic gear: [sets.md](sets.md).
+Start page for DRK (every key, command and automatic feature):
+[README.md](README.md). Set names and automatic gear: [sets.md](sets.md).
 
-Dark Knight has two modes of its own: the defensive stance and the weapon. Everything
+Dark Knight has three modes of its own: the weapon, the weaponskill accuracy
+and the engaged stance. Everything
 else (weaponskill gear, Dark Magic gear, Dark Seal / Nether Void pieces) is automatic.
 
 Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each mode's
@@ -35,6 +37,14 @@ DRK has no job command of its own: the keys above run `//gs c cyclestate <Mode>`
 
 - All modes go back to their default on every job change, subjob change and reload.
 - Dark Seal and Nether Void: see [abilities.md](abilities.md).
+- `HybridMode` changes engaged gear only; `sets.idle.PDT` in the template is
+  never used.
+- Idle: your weapon set, plus `sets.MoveSpeed` whenever you move (in town
+  too). In town Mote starts from `sets.idle.Town`.
+- A weapon needs its `sets.<Weapon>`: on DRK, `equip_without_set` in
+  `config/WEAPON_CONFIG.lua` has no effect. The template also has
+  `sets.Tokko` (Tokko Chopper), with no Main Weapon value to reach it: add
+  `'Tokko'` to the list in `DRK_STATES.lua` to use it.
 
 ## Files
 
