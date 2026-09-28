@@ -193,9 +193,6 @@ auto-tier (WHM).
   target), not on the target you first picked.
 - The Magic Burst party call goes out even when the nuke is then stopped
   (recast, MP).
-- Comet and Meteor always use the plain nuke set: in the provided file they
-  are the same table as `sets.midcast['Elemental Magic']`, so Magic Burst mode
-  does not change them.
 
 ## Configuration files for this job
 

@@ -10,7 +10,7 @@
 ---     • handle_impact(spell, ctx)        - Twilight Cloak lock
 ---     • handle_elemental(spell, ctx)     - MagicBurst + MP cons + ElementalMatch + Quanpur
 ---     • handle_dark(spell, ctx)          - Dark Magic (Drain/Aspir/Bio/...)
----     • handle_enfeebling(spell, ctx)    - Enfeebling Magic (Sleep/Bind/...)
+---     • handle_enfeebling(spell, ctx)    - Enfeebling Magic: MndEnfeebles / IntEnfeebles
 ---
 ---   ctx (context) table fields used by handlers:
 ---     • debug_enabled (boolean)
@@ -198,7 +198,19 @@ function Router.handle_dark(spell, ctx)
     end
 end
 
---- Enfeebling Magic: MidcastManager standard selection.
+--- The enfeeble set a spell wears: White Magic scales with MND, Black Magic
+--- with INT (the game's spell type, which covers every spell, the -ga
+--- included). 'Enfeebling Magic' when the set is missing.
+--- @param spell table Spell information from GearSwap
+--- @return string Set name under sets.midcast, used as MidcastManager's skill
+local function enfeeble_set_for(spell)
+    local name = spell.type == 'WhiteMagic' and 'MndEnfeebles' or 'IntEnfeebles'
+    return sets.midcast[name] and name or 'Enfeebling Magic'
+end
+
+--- Enfeebling Magic: sets.midcast.MndEnfeebles / .IntEnfeebles, refined by the
+--- enfeebling database's type when such a set exists (.IntEnfeebles.duration,
+--- .MndEnfeebles.macc...). A spell with its own set (Sleep, Break...) keeps it.
 --- @param spell table Spell information from GearSwap
 --- @param ctx table Context built by BLM_MIDCAST (see file header)
 function Router.handle_enfeebling(spell, ctx)
@@ -208,9 +220,11 @@ function Router.handle_enfeebling(spell, ctx)
         ctx.messages.show_enfeebling_routing()
     end
 
+    local db_ok, EnfeeblingDB = pcall(require, 'shared/data/magic/ENFEEBLING_MAGIC_DATABASE')
     MidcastManager.select_set({
-        skill = 'Enfeebling Magic',
+        skill = enfeeble_set_for(spell),
         spell = spell,
+        database_func = db_ok and EnfeeblingDB and EnfeeblingDB.get_enfeebling_type or nil,
     })
 
     if ctx.debug_enabled then

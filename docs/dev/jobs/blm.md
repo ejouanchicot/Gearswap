@@ -285,10 +285,13 @@ flowchart TD
   `sets.midcast.Stoneskin` etc. by exact name, `sets.midcast['Enhancing
   Magic']` otherwise. The template has no `sets.midcast['Healing Magic']`, so
   cures keep Mote's `sets.midcast.Cure` (spell map).
-- Enfeebling: the template has no `sets.midcast['Enfeebling Magic']`, so
-  `select_set` returns false and Mote's choice stays: the `IntEnfeebles`
-  aliases by spell name (Break, Sleep, Blind...). `MndEnfeebles` is reached by
-  nothing.
+- Enfeebling (`handle_enfeebling`, since 2026-09-29): `select_set` with
+  `skill = 'MndEnfeebles'` for `spell.type == 'WhiteMagic'`, else
+  `'IntEnfeebles'` (`'Enfeebling Magic'` when that set is missing), and
+  `database_func = ENFEEBLING_MAGIC_DATABASE.get_enfeebling_type` (P7:
+  `sets.midcast.IntEnfeebles.duration`...). P0 keeps the name aliases (Break,
+  Sleep, Blind...). Before, the missing `sets.midcast['Enfeebling Magic']` made
+  `select_set` return false: Bind, Poison, Slow... kept the precast gear.
 
 ### Aftercast, idle, engaged, status, buffs
 
@@ -412,15 +415,15 @@ T = in `_master/sets/blm_sets.lua`.
 | `sets.midcast.Burn` and Rasp / Shock / Drown / Choke / Frost aliases | P0 exact name | yes |
 | `sets.midcast['Dark Magic']`, `.Drain`, `.Aspir` | Dark route | yes |
 | `sets.midcast['Enfeebling Magic']` | Enfeebling route base | **no** (Mote's choice stays) |
-| `sets.midcast.IntEnfeebles` via Break / Breakga / Sleep / Sleep II / Sleepga / Sleepga II / Blind aliases | Mote default by name | yes |
-| `sets.midcast.MndEnfeebles` | nothing | yes (unused) |
+| `sets.midcast.IntEnfeebles`, `.MndEnfeebles` (+ `.<database type>`) | `handle_enfeebling` (Black / White Magic); the Break / Sleep / Blind aliases by P0 | yes |
 | `sets.midcast['Enhancing Magic']`, `.Stoneskin`, `.Phalanx`, `.Aquaveil`, `.Refresh`, `.Haste` | Mote default, then `MidcastFallback` | yes |
 | `sets.midcast.Cure`, `.Curaga`, `.Raise` | Mote default (spell map) | yes |
 
 `sets.midcast['Death']`, `['Comet']` and `['Meteor']` **are** the
 `sets.midcast['Elemental Magic']` table, so `sets.midcast['Death'].MagicBurst
-= ...` and `['Comet'].MagicBurst = ...` are self-assignments, and P0 on Comet
-or Meteor always equips the non-burst base.
+= ...` and `['Comet'].MagicBurst = ...` are self-assignments. P0 takes the name
+set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
+(before 2026-09-29, P0 equipped the non-burst base).
 
 ## Configuration
 
@@ -621,9 +624,6 @@ or Meteor always equips the non-burst base.
   `ReplacementLogic.should_cancel` (it compared `replacement` with `''`, but
   `replacement` is a spell name or nil). A spell too expensive for the MP left
   still goes out and the game refuses it, as before.
-- `sets.midcast['Enfeebling Magic']` is missing from the template, so the
-  Enfeebling route leaves Mote's choice; `MndEnfeebles` is unreachable.
-- Comet and Meteor ignore Magic Burst mode because of their root aliases.
 - `checkArts` re-sends the nuke on `<t>`, whatever target the original cast
   had.
 - The Impact body lock in `job_handle_equipping_gear` is overwritten by Mote.

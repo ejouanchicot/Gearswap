@@ -73,8 +73,8 @@ provided file names several:
 
 | Set | Worn for |
 |---|---|
-| `sets.midcast['Comet']` | Comet. A copy of the nuke set: with it, Comet never gets the Magic Burst set. Delete the line to let Comet use `MagicBurst` |
-| `sets.midcast['Meteor']` | Meteor (copy of the nuke set) |
+| `sets.midcast['Comet']` | Comet. In the provided file the nuke set itself; in Magic Burst mode it wears `sets.midcast['Comet'].MagicBurst` (the nuke's Magic Burst set) |
+| `sets.midcast['Meteor']` | Meteor (the nuke set itself, so Magic Burst mode also works) |
 | `sets.midcast['Burn']` | Burn, and through copies Rasp, Shock, Drown, Choke, Frost (INT and magic accuracy). Acc mode still lays `MagicBurst.acc` over it |
 
 ### Impact
@@ -106,21 +106,20 @@ file does). Keep the cloak in `sets.midcast['Impact']`.
 
 ### Enfeebling Magic
 
-The provided file has **no** `sets.midcast['Enfeebling Magic']`. Without it,
-each spell only gets a set with its exact name. The provided file gives
-these a copy of `sets.midcast.IntEnfeebles`:
+An enfeeble wears, in this order:
 
-`sets.midcast.Sleep`, `['Sleep II']`, `.Sleepga`, `['Sleepga II']`,
-`.Break`, `.Breakga`, `.Blind`.
+1. A set with its exact name (the provided file: `sets.midcast.Sleep`,
+   `['Sleep II']`, `.Sleepga`, `['Sleepga II']`, `.Break`, `.Breakga`, `.Blind`,
+   copies of `IntEnfeebles`).
+2. Its type in the enfeebling database under the stat set, when you add one:
+   `sets.midcast.IntEnfeebles.duration` (Bind, Break, Sleep...),
+   `.MndEnfeebles.macc`, `.MndEnfeebles.mnd_potency`...
+3. `sets.midcast.MndEnfeebles` for White Magic (Slow, Paralyze, Silence, Dia...
+   from the subjob), `sets.midcast.IntEnfeebles` for Black Magic (Bind, Poison,
+   Blindga, Dispelga, Virus...).
 
-Any other enfeeble (Bind, Poison, Slow, Paralyze...) gets nothing until you add
-`sets.midcast['Enfeebling Magic']` or a set with its name. Once the skill set
-exists, the same order as nukes applies (exact name, then tier-less name, then
-the skill set).
-
-`sets.midcast.MndEnfeebles` is in the provided file but no spell reaches it:
-write `sets.midcast.Slow = sets.midcast.MndEnfeebles` (and the same for
-Paralyze, Silence...) to use it.
+Before 2026-09-29 only the step 1 sets were worn: every other enfeeble kept the
+Fast Cast gear of the precast.
 
 ### Enhancing and healing
 
@@ -189,10 +188,9 @@ Any other ability by name under `sets.precast.JA`.
 
 ## Sets in the provided file that nothing reads
 
-- `sets.midcast.MndEnfeebles`: no spell reaches it (see Enfeebling Magic).
-- `sets.midcast['Death'].MagicBurst` and `sets.midcast['Comet'].MagicBurst`:
-  both lines write into the nuke set itself (Death and Comet are copies of
-  it), and no code looks for a Magic Burst set under Death or Comet.
+- `sets.midcast['Death'].MagicBurst` and `sets.midcast['Comet'].MagicBurst`
+  write into the nuke set itself (Death and Comet are that table), which
+  already has its `MagicBurst`: the lines change nothing.
 
 ## Names the code reads that the provided file lacks
 
