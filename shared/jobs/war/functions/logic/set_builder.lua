@@ -92,8 +92,12 @@ function SetBuilder.select_engaged_base(base_set)
         return sets.engaged.PDTKC
     end
 
-    -- Also check if Kraken Club is already equipped (manual equip or other weapon set)
-    if player and player.equipment and player.equipment.sub then
+    -- Kraken Club already in the off hand (manual equip), when the chosen
+    -- weapon does not set a sub of its own: right after leaving NaeglingKC the
+    -- club is still in hand for one rebuild, and the new weapon's sub is about
+    -- to replace it.
+    local chosen = state.MainWeapon and sets[state.MainWeapon.current]
+    if not (type(chosen) == 'table' and chosen.sub) and player and player.equipment and player.equipment.sub then
         local sub_weapon = player.equipment.sub
         if sub_weapon == 'Kraken Club' and sets.engaged.PDTKC then
             return sets.engaged.PDTKC
