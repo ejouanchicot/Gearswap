@@ -352,10 +352,6 @@ sets.midcast.Curaga = set_combine(sets.midcast.Cure, {})
 -- • Enhancing Magic
 sets.midcast['Enhancing Magic'] = {}
 
--- • Auspice (WHM sub): empty until your pieces go in the {} (Enhancing
---   Magic skill / duration); worn instead of the Enhancing set above
-sets.midcast.Auspice = set_combine(sets.midcast['Enhancing Magic'], {})
-
 -- • Enfeebling Magic
 sets.midcast['Enfeebling Magic'] = {}
 
