@@ -85,7 +85,7 @@ Because `ui`, `watchdog`, `cyclestate`, `debugmidcast`, `altjobupdate` and `requ
 `COMMON_COMMANDS.lua:462-673`.
 
 1. Normalises its input (`466-490`): a string `command` is lower-cased and rebuilt into `cmdParams = {command, ...}`; a table is taken as `cmdParams` directly (no caller passes a table today). `args = cmdParams[2..n]`.
-2. Module commands first, each handed to its own module (`492-521`): `sortie` (`SortieCommands.handle`), `alts` / `main` / `setalt` / `altreport` / `altmirror` (`AltGroup.route`), `stealth` (`Stealth.handle`, `503-506`), `combatmode` (`combat_mode_commands`), `tb` (`TempBinds.handle`), `trace` (`TraceLog.handle`).
+2. Module commands first, each handed to its own module (`492-521`): `sortie` (`SortieCommands.handle`), `alts` / `main` / `setalt` / `altreport` / `altmirror` (`AltGroup.route`), `stealth` (`Stealth.handle`, `503-506`), `combatmode` (`combat_mode_commands`), `th` (`treasure_commands`), `dw` (`DualWield.command`), `belt` (`ElementalBelt.show_status`), `tb` (`TempBinds.handle`), `trace` (`TraceLog.handle`).
 3. Warp (`513-531`): exact match against `warp_command_registry.COMMANDS` (105 aliases), then any name ending in `all` whose base is a warp alias (`warpall`, `sdall`...). Both go to `handle_warp_commands(cmdParams)` (`428-452`), which requires `shared/utils/warp/warp_commands` and returns `WarpCommands.handle_command(cmdParams)`; on load failure it prints a module-by-module diagnostic.
 4. One `if/elseif` chain for the named commands (`534-668`, table below).
 5. Returns false otherwise. It never sends anything to the alt.

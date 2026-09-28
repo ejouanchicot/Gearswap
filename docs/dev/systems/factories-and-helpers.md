@@ -29,6 +29,8 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `shared/utils/equipment/spell_gear_lock.lua` | 135 | A piece a spell cannot be cast without (Dispelga: Daybreak), worn through Combat Mode for the cast |
 | `shared/utils/equipment/elemental_belt.lua` | 213 | Hachirin-no-Obi / Orpheus's Sash on elemental damage, every job |
 | `shared/utils/equipment/dual_wield.lua` | 248 | Dual Wield tier pieces by magic haste on the engaged set, every job |
+| `shared/utils/equipment/treasure_hunter.lua` | 275 | TreasureMode on every job (optional state), tagging by any action, engaged and action overlays |
+| `shared/utils/core/optional_state.lua` + `optional_state_commands.lua` | 142 + 147 | Base of Combat Mode and Treasure Mode: shown / hidden / key per job, commands |
 
 The two craft set files are identical to their live copies in `Tetsouo/sets/`. `CRAFT_CONFIG.lua` now has a tracked template, `_master/config_global/CRAFT_CONFIG.lua` (added in `fd34a2c`).
 
@@ -323,6 +325,29 @@ then the belt, then the player's CUSTOM gear.
   (`BELT` tag).
 - BLM's own `ElementalMatcher` steps aside while it is enabled. Belts written in
   sets stay as they are when no belt reaches `min_bonus`.
+
+---
+
+## TreasureHunter
+
+`shared/utils/equipment/treasure_hunter.lua` (from THF, shared since
+2026-09-28). `TreasureMode` is an optional state (`optional_state.lua`, file
+`config/treasure_mode.lua`, default key `!numpad.`): THF defines it (Tag /
+SATA / Full, shown), every other job gets it Off and hidden until
+`//gs c th show` (`treasure_commands.lua`). No `sets.TreasureHunter`: no TH gear.
+
+- Tagging: raw `action` of our own with categories 1, 2, 3, 4, 6, 14, 15 tags
+  every NPC target; `0x029` death messages, zoning and 180 s without activity
+  forget them.
+- Engaged overlay: `handle_equipping_gear` wrapper (after the Dual Wield
+  tiers): `sets.TreasureHunter` in Full, or in Tag while the current target is
+  not tagged; skipped when `_G._treasure_engaged_by_job` (THF builds it with
+  its SA/TA versions).
+- Action overlay: `cleanup_precast` (weaponskills, abilities) and
+  `cleanup_midcast` (spells, ranged) wrappers (after the Obi / Orpheus belt):
+  `sets.TreasureHunter` when the target is a MONSTER not tagged yet and a mode
+  is on.
+- Order at the end of an action: set, belt, TH, then the player's CUSTOM gear.
 
 ---
 

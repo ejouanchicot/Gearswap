@@ -396,6 +396,9 @@ function KeybindManager.create(job, module)
     if type(module.binds) == 'table' then
         local ok_c, CombatMode = pcall(require, 'shared/utils/core/combat_mode')
         if ok_c and CombatMode then CombatMode.attach(job, module.binds) end
+        -- Treasure Mode: THF's own, Off and hidden on the other jobs
+        local ok_t, TreasureHunter = pcall(require, 'shared/utils/equipment/treasure_hunter')
+        if ok_t and TreasureHunter then TreasureHunter.optional.attach(job, module.binds) end
     end
     add_custom_states(job, module)
     local ok, CommonKeybinds = pcall(require, 'shared/utils/keybinds/common_keybinds')

@@ -520,6 +520,11 @@ function CommonCommands.handle_command(command, job_name, ...)
         return require('shared/utils/keybinds/keybind_manager').show_possible_conflicts()
     end
 
+    -- Treasure Mode on this job: status, show / hide, key, clear the tags
+    if cmd == 'th' then
+        return require('shared/utils/equipment/treasure_commands').handle(args)
+    end
+
     -- Dual Wield tier by magic haste: estimate, or force a tier
     if cmd == 'dw' then
         return require('shared/utils/equipment/dual_wield').command(args)
@@ -734,7 +739,7 @@ function CommonCommands.is_common_command(command)
         cmd == 'jamsg' or cmd == 'spellmsg' or cmd == 'wsmsg' or cmd == 'info' or cmd == 'debugmsg' or
         cmd == 'testmsg' or cmd == 'msgtest' or cmd == 'msgtests' or
         cmd == 'memcheck' or cmd == 'mem' or cmd == 'sortie' or cmd == 'alts' or cmd == 'main' or cmd == 'setalt' or cmd == 'altreport' or cmd == 'altmirror' or cmd == 'altlead' or cmd == 'rollshow' or cmd == 'stealth' or cmd == 'tb' or cmd == 'trace' or
-        cmd == 'combatmode' or cmd == 'keyconflicts' or cmd == 'kc' or cmd == 'belt' or cmd == 'dw' or cmd == 'commands' or cmd == 'cmds' or cmd == 'help' or cmd == '?' then
+        cmd == 'combatmode' or cmd == 'keyconflicts' or cmd == 'kc' or cmd == 'belt' or cmd == 'dw' or cmd == 'th' or cmd == 'commands' or cmd == 'cmds' or cmd == 'help' or cmd == '?' then
         return true
     end
 

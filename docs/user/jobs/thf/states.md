@@ -37,7 +37,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 
 ## Notes
 
-- **Treasure Hunter.** Tag: `sets.TreasureHunter` goes on while engaged until
+- **Treasure Hunter** (shared with every job since 2026-09-28: any of your actions tags a mob, melee, ranged, weaponskill, spell or job ability, and the first action against a mob not tagged yet wears `sets.TreasureHunter` too). Tag: `sets.TreasureHunter` goes on while engaged until
   the current target has been hit once by you (tagged), then comes off. SATA:
   same, and under Sneak/Trick Attack the `TreasureHunterSA` / `TA` / `SATA`
   sets are used. Full: `sets.TreasureHunter` stays on all the time, with the

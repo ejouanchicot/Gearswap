@@ -22,7 +22,7 @@
 ---
 --- @file    shared/utils/core/combat_mode.lua
 --- @author  ejouanchicot
---- @version 1.0
+--- @version 1.1 - shown / hidden / keys on optional_state.lua
 --- @date    Created: 2026-09-25
 ---============================================================================
 
@@ -41,66 +41,37 @@ local SLOTS_BY_JOB = {
 
 local unpack_list = table.unpack or unpack
 
--- Settings, native flag and entry live on the sandbox _G, not in locals:
--- user_setup requires this module before the module cache exists, so two
--- requires can give two copies.
 
 ---============================================================================
---- SETTINGS
+--- SETTINGS (shown / hidden / keys per job: optional_state.lua)
 ---============================================================================
 
---- Path of the character's settings file.
---- @return string|nil
-function CombatMode.settings_path()
-    if not (player and player.name and windower and windower.addon_path) then return nil end
-    return ('%sdata/%s/config/combat_mode.lua'):format(windower.addon_path, player.name)
+local function craft_active()
+    local craft = rawget(_G, 'CraftManager')
+    return craft and craft.is_active and craft.is_active() or false
 end
 
---- A {JOB = value} table with its job codes in capitals ("thf" -> THF,
---- "ALL" -> all): a job typed in lower case by hand still counts.
-local function by_job(t)
-    local out = {}
-    for job, value in pairs(type(t) == 'table' and t or {}) do
-        local name = tostring(job)
-        out[name:lower() == 'all' and 'all' or name:upper()] = value
-    end
-    return out
-end
+local Optional = require('shared/utils/core/optional_state').create({
+    id = 'combat_mode', state = 'CombatMode', description = 'Combat Mode',
+    values = {'Off', 'On'}, file = 'combat_mode.lua', default_key = DEFAULT_KEY,
+    -- A job change keeps GearSwap's disabled slots; this job starts Off
+    on_attach = function()
+        if windower._combat_mode_locked and not craft_active() then
+            enable(unpack_list(windower._combat_mode_locked))
+            windower._combat_mode_locked = nil
+        end
+    end,
+})
 
---- The character's settings, read once per load.
---- @return table {shown, hidden, keys}
-function CombatMode.settings()
-    if rawget(_G, '_combat_mode_settings') then return _G._combat_mode_settings end
-    local loaded = nil
-    local path = CombatMode.settings_path()
-    local file = path and io.open(path, 'r')
-    if file then
-        file:close()
-        local ok, data = pcall(dofile, path)
-        if ok and type(data) == 'table' then loaded = data end
-    end
-    loaded = loaded or {}
-    _G._combat_mode_settings = {shown = by_job(loaded.shown), hidden = by_job(loaded.hidden), keys = by_job(loaded.keys)}
-    return _G._combat_mode_settings
-end
-
---- Whether the job shows Combat Mode.
---- @param job string|nil Job code (default: current main job)
---- @return boolean
-function CombatMode.is_shown(job)
-    job = job or (player and player.main_job)
-    local s = CombatMode.settings()
-    if s.hidden[job] then return false end
-    if s.shown[job] or (s.shown.all and not s.hidden.all) then return true end
-    if s.hidden.all then return false end
-    return rawget(_G, '_combat_mode_native') == true
-end
+CombatMode._optional = Optional
+CombatMode.settings_path = Optional.settings_path
+CombatMode.settings = Optional.settings
+CombatMode.is_shown = Optional.is_shown
 
 --- Whether the weapons are locked now.
 --- @return boolean
 function CombatMode.is_on()
-    local mode = state and rawget(state, 'CombatMode')
-    return mode ~= nil and tostring(mode.value) == 'On' and CombatMode.is_shown()
+    return Optional.value() == 'On'
 end
 
 ---============================================================================
@@ -109,11 +80,6 @@ end
 
 local function slots()
     return SLOTS_BY_JOB[player and player.main_job] or DEFAULT_SLOTS
-end
-
-local function craft_active()
-    local craft = rawget(_G, 'CraftManager')
-    return craft and craft.is_active and craft.is_active() or false
 end
 
 --- Lock or free the weapon slots to match the state.
@@ -145,42 +111,8 @@ end
 --- KEYBINDS
 ---============================================================================
 
---- Give the job its Combat Mode row: the job's own entry when it has one,
---- else a new one. Creates the state when the job has none. Called by
+--- Give the job its Combat Mode row (optional_state.lua). Called by
 --- KeybindManager.create.
---- @param job string Job code
---- @param binds table The job's bind list
-function CombatMode.attach(job, binds)
-    -- The HUD requires the keybind file a second time: by then the state
-    -- below exists, so the first answer is the one kept.
-    if rawget(_G, '_combat_mode_native') == nil then
-        _G._combat_mode_native = rawget(state, 'CombatMode') ~= nil
-    end
-    if not rawget(state, 'CombatMode') then
-        state.CombatMode = M{['description'] = 'Combat Mode', 'Off', 'On'}
-    end
-    -- A job change keeps GearSwap's disabled slots; this job starts Off
-    if windower._combat_mode_locked and not craft_active() then
-        enable(unpack_list(windower._combat_mode_locked))
-        windower._combat_mode_locked = nil
-    end
-    local entry = nil
-    for _, bind in ipairs(binds) do
-        if bind.state == 'CombatMode' then entry = bind break end
-    end
-    if not entry then
-        entry = {key = DEFAULT_KEY, command = 'cyclestate CombatMode', desc = 'Combat Mode', state = 'CombatMode'}
-        binds[#binds + 1] = entry
-    end
-    local keys = CombatMode.settings().keys
-    local key = keys[job] or keys.all
-    if key then entry.key = key end
-    local own_visible = entry.visible
-    entry.visible = function()
-        if not CombatMode.is_shown(job) then return false end
-        return own_visible == nil or own_visible()
-    end
-    _G._combat_mode_entry = entry
-end
+CombatMode.attach = Optional.attach
 
 return CombatMode

@@ -54,7 +54,7 @@ numbers were re-checked against the working tree on 2026-09-25.
 | `shared/jobs/thf/functions/logic/set_builder.lua` | 235 | Engaged base (Aftermath / HybridMode), weapons or Aby weapons, SA/TA overlay, TH overlay, town, movement |
 | `shared/jobs/thf/functions/logic/smartbuff_manager.lua` | 276 | `smartbuff` per subjob, the FBC opener and the Steal chain |
 | `shared/jobs/thf/functions/logic/range_lock.lua` | 63 | Range/ammo lock in step with `RangeLock`; `_G.thf_range_locked`; release at unload |
-| `shared/jobs/thf/functions/logic/treasure_hunter.lua` | 236 | `TreasureMode`: TH engaged overlay, TH SA/TA overlay, tagged-mob tracking (4 raw events) |
+| `shared/jobs/thf/functions/logic/treasure_hunter.lua` | 48 | THF layer on the shared `shared/utils/equipment/treasure_hunter.lua` (275 lines: modes, tagging, engaged / action overlays, 4 raw events): the SATA overlay, and `init` marks the engaged TH as built by the THF set builder |
 | `shared/utils/smartbuff/subjob_war_buffs.lua` | 74 | Berserk / Aggressor / Warcry collection and casting (shared with DNC) |
 | `_master/config/thf/THF_STATES.lua` | 145 | All Mote states (`THFStates.configure()`) |
 | `_master/config/thf/THF_KEYBINDS.lua` | 37 | Data only: 7 numpad binds (2 only on /WAR), handed to `KeybindManager.create('THF', ...)`, which adds `get_active_binds` / `bind_all` / `unbind_all` / `show_intro` / `show_binds` and the character's `COMMON_KEYBINDS.lua` keys |
@@ -284,7 +284,7 @@ Mote-TreasureHunter (`libs/Mote-TreasureHunter.lua`), without its slot locks
 
 - `apply_engaged` (88-95) runs last in `build_engaged_set`, so it wins over
   HybridMode, Aftermath and the SA/TA overlay; it records `overlay_on`.
-- Tagging (`on_action`, 175-189): one of our melee rounds (action category 1)
+- Tagging (shared `on_action`): since 2026-09-28 any of our actions that hits an NPC (categories 1, 2, 3, 4, 6, 14, 15: melee, ranged, weaponskill, spell, job ability); before, only melee rounds (category 1)
   tags its targets. When the current target becomes tagged while the TH overlay
   is on (Tag/SATA), it sends `gs c update` unless an action is in progress
   (the aftercast rebuilds the set anyway).

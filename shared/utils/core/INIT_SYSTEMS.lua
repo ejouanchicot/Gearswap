@@ -315,6 +315,16 @@ pcall(function()
     end
 end)
 
+-- Treasure Hunter on the engaged set and on the first action against a
+-- mob not tagged yet (treasure_hunter.lua). After the Dual Wield and belt
+-- hooks (TH wins, once per mob), before the custom states.
+pcall(function()
+    local ok, TreasureHunter = pcall(require, 'shared/utils/equipment/treasure_hunter')
+    if ok and TreasureHunter then
+        TreasureHunter.install()
+    end
+end)
+
 -- Spells a job's midcast does not route (a subjob's magic) go through
 -- MidcastManager anyway. Laid before the custom states hook below, which
 -- wraps it, so the player's custom gear still goes on last.

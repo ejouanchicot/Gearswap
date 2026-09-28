@@ -214,6 +214,21 @@ Kaories are identical):
 The `alts` commands order every other member of `DualBoxConfig.group` (see
 [dualbox.md](dualbox.md)), so both characters carry them.
 
+### Optional states (`shared/utils/core/optional_state.lua`, 2026-09-28)
+
+A mode the project adds to jobs, shown or hidden per job: `OptionalState.create{id,
+state, description, values, file, default_key, on_attach}` gives `settings_path`,
+`settings` (`{shown, hidden, keys}` read once from `<Character>/config/<file>`,
+job codes in capitals, `all`), `is_shown(job)` (hidden > shown > all > "native",
+i.e. the job's own STATES file defines the state), `value()` (nil when hidden),
+`entry()` and `attach(job, binds)` (creates the state with `values`, the first one
+the default, finds or adds the keybind entry, applies the key, wraps `visible`).
+`optional_state_commands.lua` builds `//gs c <cmd>` (status, `show`, `hide`,
+`key`, `help`, an `extra` hook), rewriting the whole file with the mode's
+`header`. Combat Mode and Treasure Mode are built on it (Combat Mode was
+refactored onto it on 2026-09-28, same file, same `_G._combat_mode_*` fields,
+checked by a differential test).
+
 ### Combat Mode (`shared/utils/core/combat_mode.lua`, 2026-09-25)
 
 `KeybindManager.create` calls `CombatMode.attach(job, binds)` for every job. It creates

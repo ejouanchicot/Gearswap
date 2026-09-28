@@ -317,6 +317,7 @@ KEPT_ON_RECLONE = [
     ('config', 'alt_state.lua'),
     ('config', 'WARP_ITEMS_OWNED.lua'),
     ('config', 'combat_mode.lua'),
+    ('config', 'treasure_mode.lua'),  # //gs c th show | hide | key
     ('config', 'STEALTH_CONFIG.lua'),
     ('config', '*', '*_HUD.lua'),   # per-job HUD row order (//gs c ui roworder)
     ('temp_binds.lua',),

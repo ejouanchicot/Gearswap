@@ -138,6 +138,7 @@ and partner job ([HUD](../features/ui.md#key-conflicts)).
 | `fulltest` (`ft`) `[export]` | Longer check (systems, modules, hooks, sets) |
 | `debugsubjob` (`dsj`) | Main / sub job, levels and zone |
 | `debugstate` (`ds`) | Internal counters |
+| `th` [`show` \| `hide` \| `key <key>` \| `clear` \| `help`] | Treasure Mode on this job: status (mode, TH set found, mobs tagged), show / hide its HUD row and key (THF has it by itself; other jobs start Off and hidden), its key, forget the tags. Needs `sets.TreasureHunter` in the job set file |
 | `dw` [`auto` \| `none` \| `haste` \| `haste2` \| `max`] | Dual Wield tier: estimated magic haste and its sources, tier, `sets.DW.<tier>` used; a word forces a tier, `auto` goes back to the estimate (`config/DW_CONFIG.lua`) |
 | `belt` | Obi / Orpheus: automatic on or off, belts found, today's day and weather, what each belt adds now (`config/ELEMENTAL_BELT.lua`) |
 | `trace on` / `off` / `clear` | Record what the game returns to `<YourName>/trace.log` (keeps recording across restarts until `trace off`) |

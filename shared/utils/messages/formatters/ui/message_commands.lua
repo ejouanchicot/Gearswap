@@ -436,6 +436,7 @@ local COMMANDS_HELP = {
             {'//gs c tb ', '<key> <what>', 'Temporary key (tb help)'},
             {'//gs c combatmode ', 'show | hide', 'Weapon lock on this job'},
             {'//gs c keyconflicts | kc', '', 'Keys two actions can share'},
+            {'//gs c th ', 'show | hide | clear', 'Treasure Mode on this job'},
         }},
         {title = 'EQUIPMENT & INVENTORY', rows = {
             {'//gs c belt', '', 'Obi / Orpheus auto: state, bonuses'},
