@@ -108,7 +108,7 @@ return WARLockstyleConfig
 ```
 
 `default` is always used. `by_subjob` counts only when the file also has the
-`get_style` function: BST, COR, DNC, DRK, GEO, PLD, RUN and WAR have it; on
+`get_style` function: BST, COR, DNC, DRK, GEO, PLD, RUN, WAR and SMN have it; on
 the other jobs `by_subjob` is ignored until you add one (copy it from
 `WAR_LOCKSTYLE.lua`). The lockstyle is sent 8 s after each load, and again with
 `//gs c ls`.

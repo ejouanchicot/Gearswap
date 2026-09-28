@@ -698,7 +698,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 | Job | MoveSpeed applied | Combat Mode | Treasure Mode | `sets.TreasureHunter` in template | `sets.DW` example in template | AbilityHelper | AutoJump (`JumpAuto`) | SmartBuff | AUTO_ABILITIES options | Other job-specific shared use |
 |---|---|---|---|---|---|---|---|---|---|---|
 | BLM | yes (base builder) | native (`^numpad8`) | optional | | | yes (`follow_up` Dark Arts) | | | | ElementalMatcher defers to ElementalBelt |
-| BLU | yes | optional | optional | | commented | yes (Unbridled Learning) | | | `blu_unbridled`, `blu_expiacion_window` | set builder keeps the worn off hand while Combat Mode is On |
+| BLU | yes | optional | optional | | commented | yes (Unbridled Learning) | | | `blu_unbridled`, `blu_expiacion_window` | Combat Mode On keeps the worn weapons because their slots are locked (`apply_weapon` itself does not test the mode) |
 | BRD | yes | optional | optional | | commented | yes (Pianissimo, Nightingale / Troubadour) | | | | |
 | BST | yes | optional | optional | | commented | | | | | |
 | COR | yes | optional | optional | | commented | | | | | DualWield skips during a roll hold |
