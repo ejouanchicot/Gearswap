@@ -267,7 +267,7 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
 | `sets.idle.Weak`, `.Regen`, `.PDT` | `build_idle_set` | yes |
 | `sets.engaged.Normal` | Mote base, `select_engaged_base` | yes |
 | `sets.engaged.PDT`, `.MDT` | `select_engaged_base` (HybridMode) | yes |
-| `sets.engaged.Mid`, `.Acc`, `.Acc.PDT`, `.SuBlow` | `select_engaged_base` (OffenseMode) | yes |
+| `sets.engaged.Mid`, `.Acc`, `.Acc.PDT`, `.SuBlow`, `.Mid.PDT`, `.SuBlow.PDT` (copies of `.PDT` since 2026-09-29) | `select_engaged_base` (OffenseMode) | yes |
 | `sets.engaged.AM3` | `select_engaged_base` (Aftermath: Lv.3) | **no** (commented example) |
 | `sets.thirdeye` | `build_engaged_set` (Seigan, PDT) | yes |
 | `sets.seigan`, `sets.bow` | `build_engaged_set` Seigan (not PDT) and bow layers | yes, empty |

@@ -40,9 +40,11 @@ The base is the first of these that exists:
 | `sets.engaged.<Offense>` | Hybrid Mode Normal: `sets.engaged.Normal`, `.Mid`, `.Acc`, `.SuBlow` |
 | `sets.engaged.Normal` | An Offense Mode with no set |
 
-With the default Hybrid Mode (PDT), the Offense Mode changes nothing unless you
-write its PDT version: the provided file only has `sets.engaged.Acc.PDT`, so
-Mid, SuBlow and Normal all wear `sets.engaged.PDT`.
+With the default Hybrid Mode (PDT), each Offense Mode wears its PDT version:
+`sets.engaged.Acc.PDT`, `.Mid.PDT`, `.SuBlow.PDT` (the last two are copies of
+`sets.engaged.PDT` in the provided file: give them their pieces, SuBlow's Subtle
+Blow above all). Normal wears `sets.engaged.PDT`. A mode without its variant wears
+the Hybrid Mode's set.
 
 Then, on top, in this order (a later layer wins a slot):
 
@@ -129,8 +131,8 @@ Hasso, Seigan, Warding Circle, Third Eye and Blade Bash.
 ## Names the code reads that the provided file lacks
 
 - `sets.engaged.AM3`.
-- `sets.engaged.Normal.PDT`, `.Mid.PDT`, `.SuBlow.PDT`, and any `.<Offense>.MDT`
-  (only `sets.engaged.Acc.PDT` exists).
+- Any `sets.engaged.<Offense>.MDT` (MDT wears `sets.engaged.MDT` whatever the
+  Offense Mode).
 - `sets.idle.Town`.
 - `.Mid` / `.Acc` versions for the weaponskills other than Shoha and Rana.
 - `sets.midcast['Healing Magic']`, `sets.midcast['Enhancing Magic']`.

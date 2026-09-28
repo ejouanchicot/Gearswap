@@ -228,6 +228,15 @@ sets.engaged.SuBlow = {
     back = Smertrios.ACC
 }
 
+-- • OffenseMode variants for HybridMode PDT. With a HybridMode other than
+--   Normal, the engaged set is sets.engaged.<OffenseMode>.<HybridMode>, else
+--   sets.engaged.<HybridMode>: without these two, Mid and SuBlow in PDT (the
+--   default) wear sets.engaged.PDT, and SuBlow loses its Subtle Blow. Copies
+--   of the PDT set until you give them their pieces. Same rule for MDT
+--   (sets.engaged.Acc.MDT, .SuBlow.MDT...).
+sets.engaged.Mid.PDT = set_combine(sets.engaged.PDT, {})
+sets.engaged.SuBlow.PDT = set_combine(sets.engaged.PDT, {})
+
 ---============================================================================
 --- PRECAST - JOB ABILITIES
 ---============================================================================
