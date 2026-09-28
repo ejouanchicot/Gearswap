@@ -58,6 +58,24 @@ end
 --- Each option names an equipment set (sets[key] = {main = ..., sub = ...}), so
 --- the equipped main/sub pair identifies which option is really in hand.
 --- Options sharing a main are told apart by the sub (Naegling vs NaeglingKC).
+--- Whether a set's slot names the item in hand. A set may write the item as
+--- a string or as a table {name = ..., augments = ...}, in either case and
+--- with its short or long name; GearSwap's player.equipment holds the short
+--- name. nil (slot not in the set) only matches nil, as before.
+--- @param set_item string|table|nil
+--- @param equipped string|nil
+--- @return boolean
+local function same_item(set_item, equipped)
+    if set_item == nil or equipped == nil then return set_item == equipped end
+    local name = type(set_item) == 'table' and set_item.name or set_item
+    if type(name) ~= 'string' or type(equipped) ~= 'string' then return false end
+    if name:lower() == equipped:lower() then return true end
+    local ok, Items = pcall(require, 'shared/utils/equipment/item_index')
+    if not ok then return false end
+    local id = Items.id(name)
+    return id ~= nil and id == Items.id(equipped)
+end
+
 --- @param weapon_state table Mote state listing the weapon keys
 --- @return string|nil Matching option, nil when nothing matches
 function WSSlots.detect_weapon(weapon_state)
@@ -73,8 +91,8 @@ function WSSlots.detect_weapon(weapon_state)
         local key = weapon_state[i]
         local weapon_set = sets[key]
 
-        if type(weapon_set) == 'table' and weapon_set.main == equipped_main then
-            if weapon_set.sub == equipped_sub then
+        if type(weapon_set) == 'table' and same_item(weapon_set.main, equipped_main) then
+            if same_item(weapon_set.sub, equipped_sub) then
                 return key
             end
             same_main_only = same_main_only or key
