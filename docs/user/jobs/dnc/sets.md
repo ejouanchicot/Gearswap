@@ -131,10 +131,12 @@ is worn on spells without a set of their own.
   held, Climactic Flourish is used, and the weaponskill is sent again on `<t>` once the
   flourish lands. Tried once per weaponskill; if the flourish is refused the
   weaponskill still goes. The list, the minimum TP (can only be raised above 1000) and
-  the target HP are in `DNC_WS_CONFIG.lua`. Off: Ctrl+Numpad6.
+  the target HP are in `DNC_WS_CONFIG.lua`. A weaponskill out of range is refused
+  without using the flourish. Off: Ctrl+Numpad6.
 - **Jump before a weaponskill** (/DRG only, `JumpAuto` On). Under 1000 TP with Jump or
   High Jump ready, the weaponskill is held, the jump (then High Jump if still short) is
-  used on `<t>`, and the weaponskill follows. Off: Ctrl+Numpad7.
+  used on `<t>`, and the weaponskill follows. A weaponskill out of range is refused
+  without using a jump. Off: Ctrl+Numpad7.
 - **Weaponskill variant by buff**: see Weaponskills. Always on; leave the variant sets
   out to disable.
 - **Moonshade Earring** added only when it reaches the next TP step (Weaponskills).

@@ -13,8 +13,9 @@
 ---   1. Debuff guard (PrecastGuard)
 ---   2. Cooldown check (CooldownChecker; Utsusemi excluded)
 ---   3. Samba TP cost, Climactic timestamp
----   4. Auto-Jump, then Auto-Climactic (WS only; each may cancel and replay)
----   5. WSPrecastHandler.handle
+---   4. WS only: WSPrecastHandler.validate (range), Auto-Jump (builds TP, so
+---      before the TP check), WSPrecastHandler.handle (TP), Auto-Climactic
+---      (needs 1000 TP). Jump and Climactic may cancel and replay the WS.
 ---
 ---   @file    shared/jobs/dnc/functions/DNC_PRECAST.lua
 ---   @author  ejouanchicot
@@ -109,12 +110,19 @@ local function job_precast_samba(spell, eventArgs)
     end
 end
 
---- Weaponskill auto-triggers: Jump (/DRG), then Climactic Flourish.
---- Either one may cancel the WS and replay it once the ability has landed.
+--- Weaponskill: range check, Jump (/DRG), full check (TP), Climactic.
+--- Jump sits between the range check and the TP check (it builds the TP the
+--- WS lacks); Climactic needs 1000 TP anyway and runs once the WS is
+--- accepted. A WS out of range spends neither. Either ability may cancel the
+--- WS and replay it once it has landed; a WS taken over that way is not
+--- TP-checked now (the check would print a false "Not enough TP").
 --- @param spell table Spell information from GearSwap
 --- @param eventArgs table Event args (eventArgs.cancel for cancellation)
 local function job_precast_weaponskill(spell, eventArgs)
-    -- Auto-trigger Jump before WS (DRG subjob)
+    if WSPrecastHandler and not WSPrecastHandler.validate(spell, eventArgs) then
+        return
+    end
+
     if JumpManager then
         JumpManager.auto_trigger_jump(spell, eventArgs)
         if eventArgs.cancel then
@@ -122,12 +130,12 @@ local function job_precast_weaponskill(spell, eventArgs)
         end
     end
 
-    -- Auto-trigger Climactic Flourish
+    if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, DNCTPConfig) then
+        return
+    end
+
     if ClimaticManager then
         ClimaticManager.auto_trigger(spell, eventArgs)
-        if eventArgs.cancel then
-            return
-        end
     end
 end
 
@@ -167,19 +175,9 @@ function job_precast(spell, action, spellMap, eventArgs)
         _G.dnc_climactic_timestamp = os.time()
     end
 
-    -- DNC-SPECIFIC: Auto-triggers for WS
+    -- WEAPONSKILL: checks and auto-triggers (Jump, Climactic)
     if spell.type == 'WeaponSkill' then
         job_precast_weaponskill(spell, eventArgs)
-        -- Jump or Climactic took over: the WS comes back once it has landed,
-        -- and checking its TP now would print a false "Not enough TP"
-        if eventArgs.cancel then
-            return
-        end
-    end
-
-    -- WEAPONSKILL HANDLING (Unified via WSPrecastHandler)
-    if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, DNCTPConfig) then
-        return
     end
 end
 

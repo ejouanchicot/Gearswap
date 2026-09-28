@@ -199,8 +199,8 @@ The `action_type` dispatch in front of `CooldownChecker` is repeated in all 17
 
 | Job | Deviation (function) |
 |---|---|
-| WAR | `AutoJump.auto_trigger_jump` (`shared/utils/drg/auto_jump.lua`, /DRG) after the cancel check and **before** `WSPrecastHandler`: it cancels a WS short on TP, Jumps, and replays the WS |
-| DNC | Utsusemi: Ichi/Ni excluded from the spell cooldown check; `job_precast_samba` checks `spell.tp_cost` against `live_tp()` (skipped under Trance); Climactic timestamp; `job_precast_weaponskill` runs `JumpManager.auto_trigger_jump` then `ClimaticManager.auto_trigger` (`AbilityHelper.try_ability_ws`, gated by `state.ClimacticAuto`) before `WSPrecastHandler`. `job_post_precast` applies `WSVariantSelector.apply_variant` **then** the TP gear. `refine_waltz` is overridden with a no-op |
+| WAR | `WSPrecastHandler.validate` (range) then `AutoJump.auto_trigger_jump` (`shared/utils/drg/auto_jump.lua`, /DRG) **before** `WSPrecastHandler.handle` (TP): it cancels a WS short on TP, Jumps, and replays the WS |
+| DNC | Utsusemi: Ichi/Ni excluded from the spell cooldown check; `job_precast_samba` checks `spell.tp_cost` against `live_tp()` (skipped under Trance); Climactic timestamp; `job_precast_weaponskill` runs `WSPrecastHandler.validate` (range), `JumpManager.auto_trigger_jump`, `WSPrecastHandler.handle` (TP), then `ClimaticManager.auto_trigger` (`AbilityHelper.try_ability_ws`, gated by `state.ClimacticAuto`). `job_post_precast` applies `WSVariantSelector.apply_variant` **then** the TP gear. `refine_waltz` is overridden with a no-op |
 | BLM | `check_recast_or_refine`: abilities in `BLM_SPELL_FILTERS.CHARGE_ABILITIES` skip the cooldown check; tiered spells go to BLM's own `refine_various_spells` (`logic/refiner/`, which calls `TierRefiner.find_available_tier`); others take the plain spell check |
 | BRD | `SongRefinement.refine_song` **before** the cooldown check; after the cancel check `job_precast_bardsong` (Pianissimo through `AbilityHelper.follow_up_or_abort`) and `try_marcato`; `WSPrecastHandler`; instrument lock for Honor March / Aria of Passion (`InstrumentLockConfig.requires_lock`) |
 | WHM | `retier_cure` **before** the cooldown check: a Cure/Curaga that `CureManager.select_cure_tier` swaps is cancelled and re-sent under the new name; a cure left as it is goes on to the cooldown check. `paralyna_on_self` sets `handled` (no swap) for Paralyna while paralyzed. See [factories and helpers](factories-and-helpers.md#whm-curemanager) |
@@ -607,9 +607,10 @@ skipped -> `user_post_midcast`: spell message -> `job_post_midcast`: watchdog, s
 custom -> action completes -> aftercast -> idle/engaged set rebuilt.
 
 **Weaponskill: Savage Blade, WAR main with /DRG, 900 TP.**
-guard -> `check_ability_cooldown` (WS has no `recast_id`, returns) -> `AutoJump`
-cancels the WS, Jumps, replays it (`eventArgs.cancel`, return) -> cleanup only. The
-replayed WS: guard -> cooldown -> AutoJump (TP now enough) -> `WSPrecastHandler.handle`:
+guard -> `check_ability_cooldown` (WS has no `recast_id`, returns) ->
+`WSPrecastHandler.validate` (range) -> `AutoJump` cancels the WS, Jumps, replays it
+(`eventArgs.cancel`, return) -> cleanup only. The replayed WS: guard -> cooldown ->
+validate -> AutoJump (TP now enough) -> `WSPrecastHandler.handle`:
 range, Amnesia, TP gear computed, `live_tp() >= 1000` -> `default_precast`:
 `sets.precast.WS['Savage Blade'][ws_mode]` -> `user_post_precast`: WS message (TP from
 the game) -> `job_post_precast`: TP gear equipped over the WS set -> cleanup chain ->
@@ -724,10 +725,13 @@ Ability lookups are memoised in `ability_cache`, shared-recast answers in
 
 ### Weaponskill modules
 
+- `WSPrecastHandler.validate(spell, eventArgs) -> boolean` (2026-09-28): range and
+  weapon only (`WSValidator`), no TP check, no TP gear. Callers: DNC and WAR, before
+  AutoJump.
 - `WSPrecastHandler.handle(spell, eventArgs, tp_config) -> boolean`: `true` for non-WS
   or a WS that may proceed; `tp_config = nil` skips the TP gear. `apply_tp_gear(spell)`.
   Callers: all 17 `[JOB]_PRECAST.lua` (`job_precast` / `job_post_precast`).
-- `WSValidator.validate(spell, eventArgs) -> boolean`. Caller: WSPrecastHandler only.
+- `WSValidator.validate(spell, eventArgs) -> boolean`. Callers: `WSPrecastHandler.handle` and `.validate`.
 - `WeaponSkillManager.check_weaponskill_range(spell)`, `validate_weaponskill(ws_name)`,
   `initialize()` (no caller), `config` (`distance_check_enabled` is never read).
 - `TPBonusHandler.live_tp()`, `TPBonusHandler.calculate_tp_gear(spell, tp_config)`,
@@ -875,10 +879,10 @@ cure item, TierRefiner's replacement), which cannot be cancelled and outlive a
 - The 1000 TP check reads the game's TP (`live_tp`). Every other TP test in `shared/`
   uses `shared/utils/core/live_tp.lua` too; GearSwap's copy is never refreshed inside
   a `coroutine.schedule` callback.
-- The DNC Climactic and WAR/DNC Jump auto-triggers run before `WSPrecastHandler`
-  (range, TP), so a WS pressed out of range still fires the ability first. SAM's
-  auto-Third Eye had the same order until 2026-09-28; it now runs after the
-  handler accepted the WS.
+- An ability fired before a weaponskill belongs after the checks: SAM's Third Eye
+  and DNC's Climactic run after `WSPrecastHandler.handle`, WAR/DNC Jump after
+  `WSPrecastHandler.validate` (range) but before the TP check it exists to satisfy.
+  Until 2026-09-28 all three ran first, so a WS out of range spent the ability.
 - `WSValidator` calls `validate_weaponskill` twice on the success path, and
   PrecastGuard has already blocked Amnesia before it runs.
 - TierRefiner requires recast exactly 0 while CooldownChecker tolerates 2.0 s; a tier

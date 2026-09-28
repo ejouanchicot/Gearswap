@@ -119,7 +119,7 @@ and arguments: [commands guide](../../guides/commands.md).
 
 | Feature | On DNC |
 |---|---|
-| Weaponskill check | A weaponskill out of range or under 1000 TP is cancelled with a message (not when Jump or Climactic Flourish took it over); TP bonus gear (Moonshade...) from `DNC_TP_CONFIG.lua` is added after the dance / Climactic version, counting Aeneas / Centovente in either hand |
+| Weaponskill check | A weaponskill out of range or under 1000 TP is cancelled with a message (not when Jump took it over to build the TP); a weaponskill out of range uses neither Jump nor Climactic Flourish; TP bonus gear (Moonshade...) from `DNC_TP_CONFIG.lua` is added after the dance / Climactic version, counting Aeneas / Centovente in either hand |
 | Automatic abilities | Climactic Flourish before the weaponskills of `DNC_WS_CONFIG.lua` (Climactic Auto: 1000 TP or more, target above 25 % HP, 3+ Finishing Moves, tried once per weaponskill); Presto before `step` |
 | Auto Jump (/DRG) | Below 1000 TP, a weaponskill is replaced by Jump (then High Jump if still short) and sent again (Jump Auto) |
 | Recast check | An ability or spell still on recast is cancelled with the time left (Utsusemi is left to the game). A samba you cannot pay for (TP below its cost, not under Trance) is cancelled with a message |

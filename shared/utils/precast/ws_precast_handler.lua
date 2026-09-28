@@ -2,9 +2,15 @@
 --- WS Precast Handler - Unified WeaponSkill Processing
 ---============================================================================
 --- Single weaponskill entry point for every [JOB]_PRECAST.lua:
+---   validate()      - range/validity check only (WSValidator), no TP check:
+---                     for an automation that builds TP before the WS (Jump)
 ---   handle()        - range/validity check (WSValidator), TP bonus gear
 ---                     calculation (TPBonusHandler), 1000 TP minimum check
 ---   apply_tp_gear() - equips the stored TP bonus gear in job_post_precast
+---
+--- An automation that spends an ability before the weaponskill (Third Eye,
+--- Climactic Flourish, Jump) must run after these checks, or a weaponskill
+--- out of range spends the ability and is then refused.
 ---
 --- @file    shared/utils/precast/ws_precast_handler.lua
 --- @author  ejouanchicot
@@ -37,6 +43,18 @@ local function ensure_modules_loaded()
     TPBonusHandler = tph
 
     modules_loaded = true
+end
+
+--- Range and validity only (no TP check, no TP gear).
+--- @param spell table Spell object from GearSwap
+--- @param eventArgs table Event args (cancel is set when the WS is refused)
+--- @return boolean True if the WS may proceed (always true for non-WS)
+function WSPrecastHandler.validate(spell, eventArgs)
+    if spell.type ~= 'WeaponSkill' then
+        return true
+    end
+    ensure_modules_loaded()
+    return not (WSValidator and not WSValidator.validate(spell, eventArgs))
 end
 
 --- Run the weaponskill precast checks.

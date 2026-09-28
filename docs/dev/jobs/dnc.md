@@ -15,9 +15,10 @@ Player-facing pages: [start page](../../user/jobs/dnc/README.md),
 What DNC adds on top of the shared pipeline:
 
 - **Weaponskill auto-triggers**: Jump / High Jump when TP is short on /DRG
-  (`AutoJump`), then Climactic Flourish before configured weaponskills
-  (`ClimaticManager` -> `AbilityHelper.try_ability_ws`), each cancelling the WS
-  and replaying it.
+  (`AutoJump`, after the range check), then Climactic Flourish before
+  configured weaponskills (`ClimaticManager` -> `AbilityHelper.try_ability_ws`,
+  after the full check), each cancelling the WS and replaying it. A WS out of
+  range spends neither (2026-09-28).
 - **Buff-driven set selection**: engaged base from Saber Dance / Fan Dance /
   HybridMode (refreshed on the dance's buff change), and weaponskill variants
   `.SaberDance`, `.FanDance`, `.Clim` and their combinations, applied before the
@@ -144,20 +145,20 @@ flowchart TD
     I -- yes --> J[_G.dnc_climactic_timestamp = os.time]
     I -- no --> K
     J --> K{WeaponSkill}
-    K -- yes --> L["job_precast_weaponskill: AutoJump, then ClimaticManager"]
-    K -- no --> M
-    L --> LC{cancelled by a helper}
-    LC -- yes --> Z2[return: the WS is replayed later]
-    LC -- no --> M[WSPrecastHandler.handle]
+    K -- yes --> L["job_precast_weaponskill: WSPrecastHandler.validate (range), AutoJump, WSPrecastHandler.handle (TP), ClimaticManager"]
+    K -- no --> Z3[done]
 ```
 
 - `job_precast_samba` cancels a samba when the live TP
   (`shared/utils/core/live_tp.lua`) is below its own `spell.tp_cost`
   (resources: Drain Samba 100, II 250, III 400, Aspir Samba 100, II 250, Haste
   Samba 350), and lets every samba through under Trance.
-- `job_precast_weaponskill` returns after a helper cancels, and `job_precast`
-  returns too, so `WSPrecastHandler.handle` never prints a false "Not enough
-  TP" for a WS that AutoJump or Climactic took over.
+- `job_precast_weaponskill`: `WSPrecastHandler.validate` (range and weapon,
+  no TP) first, so a WS out of range spends no Jump; then AutoJump (it builds
+  the TP the WS lacks, so it must come before the TP check); a WS AutoJump
+  took over returns before `WSPrecastHandler.handle` (no false "Not enough
+  TP"); then `handle`; then Climactic, which needs 1000 TP anyway. Until
+  2026-09-28 both helpers ran before any check.
 - Utsusemi Ichi / Ni skip the spell cooldown check.
 - `job_post_precast`: `WSVariantSelector.apply_variant` first, then
   `WSPrecastHandler.apply_tp_gear`, so the Moonshade Earring survives the

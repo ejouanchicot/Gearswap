@@ -131,7 +131,7 @@ with the same name; `//gs c alt berserk` sends the alt's.
 | Feature | On WAR |
 |---|---|
 | Buff chains | `berserk` / `defender` send only the abilities that are ready and not already up, and list the others in chat |
-| Automatic Jump (/DRG) | With `JumpAuto` On, a weaponskill under 1000 TP is cancelled, Jump (then High Jump) goes out, and the weaponskill is sent again. If TP is still short, the weaponskill is refused as usual |
+| Automatic Jump (/DRG) | With `JumpAuto` On, a weaponskill under 1000 TP is cancelled, Jump (then High Jump) goes out, and the weaponskill is sent again. If TP is still short, the weaponskill is refused as usual. A weaponskill out of range is refused without using a jump |
 | Retaliation auto-cancel | Retaliation up, not engaged, and 5 s of continuous running: `cancel Retaliation` is sent (needs the Windower `Cancel` addon) |
 | Engaged set choice | Kraken Club, Aftermath: Lv.3 on Ukonvasara and weapon-named engaged sets win over the stance ([states.md](states.md#notes)); Aftermath: Lv.3 gained or lost re-dresses you at once |
 | Hoxne stance | Not in the template. If you add `Hoxne` to `HybridMode` (and its sets), the ammo slot stays on the Hoxne Ampulla while it is selected, as on PLD |

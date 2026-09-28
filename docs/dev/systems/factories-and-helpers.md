@@ -771,7 +771,6 @@ Open:
 - `//gs c waltz` / `aoewaltz` cancel Saber Dance before knowing whether any waltz can be used (`COMMON_COMMANDS.lua` `handle_waltz_generic`).
 - CureManager treats a spell with any recast left as unavailable, unlike CooldownChecker's 2.0 s tolerance (`cure_manager.lua` `is_spell_available`).
 - The learn levels of Curing Waltz II and Divine Waltz (35, 40) disagree with the project's DNC ability database (30, 25) (`waltz_manager.lua` `WALTZ_CONFIG`).
-- DNC prints "Not enough TP" for a weaponskill that AutoJump has just taken over: `job_precast_weaponskill` returns, but `job_precast` still calls `WSPrecastHandler.handle` (`DNC_PRECAST.lua`).
 - AutoMove assigns `state.Moving.value` directly, desynchronising the Mote mode (`automove.lua` `handle_moving`).
 - The job intro never shows macro or lockstyle info: `KeybindManager`'s `show_intro` looks for `get_<job>_macro_info` / `get_info` on the wrapper modules, and no wrapper returns them (`keybind_manager.lua` `show_intro`).
 - Four of the six lockstyle globals and the macrobook `set_/get_/show_` globals have no reader (`lockstyle_manager.lua` `create`).

@@ -163,7 +163,9 @@ flowchart TD
     E --> F
     F -- yes --> Z
     F -- no --> G{WeaponSkill}
-    G -- yes --> H[AutoJump.auto_trigger_jump]
+    G -- yes --> G2{WSPrecastHandler.validate: range}
+    G2 -- refused --> Z
+    G2 -- ok --> H[AutoJump.auto_trigger_jump]
     H --> I{eventArgs.cancel}
     I -- yes --> Z
     I -- no --> J[WSPrecastHandler.handle with WARTPConfig]
@@ -172,8 +174,10 @@ flowchart TD
 
 - All modules are loaded lazily on the first action (`ensure_modules_loaded`);
   `WARTPConfig` is captured from `_G.WARTPConfig` at that moment.
-- AutoJump runs **before** `WSPrecastHandler`: the handler would reject the
-  weaponskill below 1000 TP before the jump could build it.
+- AutoJump runs between `WSPrecastHandler.validate` (range, weapon) and
+  `WSPrecastHandler.handle` (TP): the TP check would reject the weaponskill
+  below 1000 TP before the jump could build it, while a weaponskill out of
+  range must not spend a Jump.
 - `WSPrecastHandler.handle` returns `true` at once for non-weaponskills; for a
   weaponskill it validates range and Amnesia (`ws_validator`), computes the TP
   bonus gear and cancels below 1000 TP read from the game. See
@@ -516,8 +520,6 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 - The /SAM stance is queued whatever the weapon; Hasso and Seigan need a two-handed
   weapon, so with Naegling, Ikenga or Loxotic the game refuses them and their 2 s
   slot in the chain is wasted.
-- A weaponskill pressed out of range below 1000 TP on /DRG still fires Jump first
-  (AutoJump runs before the range check).
 - `buff_war(nil)` (only reachable by calling the global) excludes neither Berserk nor
   Defender; the second cancels the first in game.
 - `select_engaged_base` ignores Mote's `meleeSet` whenever a hybrid set exists.

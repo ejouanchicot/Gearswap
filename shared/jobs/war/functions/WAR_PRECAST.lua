@@ -70,8 +70,10 @@ end
 ---   Processing order:
 ---   1. PrecastGuard     >> Block if Amnesia/Silence/Stun/etc.
 ---   2. CooldownChecker  >> Block if ability/spell on cooldown
----   3. AutoJump (/DRG)  >> Cancel the WS, Jump for TP, replay it
----   4. WSPrecastHandler >> Range/validity, TP check, TP bonus calculation
+---   3. WSPrecastHandler.validate >> Range/validity only (a WS out of range
+---                                   must not spend a Jump)
+---   4. AutoJump (/DRG)  >> Cancel the WS, Jump for TP, replay it
+---   5. WSPrecastHandler >> Range/validity, TP check, TP bonus calculation
 ---
 ---   @param spell     table  Spell/ability data from GearSwap
 ---   @param action    string Action type (not used)
@@ -107,8 +109,13 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- ══════════════════════════════════════════════════════════════════════════
     -- AUTO-JUMP (WAR/DRG) - build TP before the WS when short
     -- ══════════════════════════════════════════════════════════════════════════
-    -- Runs BEFORE WSPrecastHandler: it cancels the WS and replays it once the
-    -- Jump sequence has built the TP, so validation must not reject it first.
+    -- Between the range check and the TP check: Jump is there to build the
+    -- TP the WS lacks, so the 1000 TP check must not reject it first, but a WS
+    -- out of range must not spend a Jump either.
+    if spell.type == 'WeaponSkill' and WSPrecastHandler
+       and not WSPrecastHandler.validate(spell, eventArgs) then
+        return
+    end
     if spell.type == 'WeaponSkill' and AutoJump then
         AutoJump.auto_trigger_jump(spell, eventArgs)
         if eventArgs.cancel then
