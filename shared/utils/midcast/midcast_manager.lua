@@ -6,8 +6,8 @@
 --- Standard skills walk the P0-P9 chain declared by RESOLVERS below (the
 --- order of that table IS the priority): exact spell name, tier-less name
 --- crossed with target/skill, type.target.mode, type.mode, target.mode,
---- target, type at root, type under skill, mode under skill, and finally the
---- skill's own set (P9).
+--- target, type at root, type under skill, mode under skill, the spell's
+--- Mote map (P8b), and finally the skill's own set (P9).
 ---
 --- Singing (BRD) has its own chain: exact name, base song, song type, first
 --- word, then instrument and Troubadour layers, then sets.midcast.BardSong.
@@ -555,6 +555,33 @@ local function resolve_mode(ctx)
            'sets.midcast["' .. ctx.config.skill .. '"].' .. ctx.mode
 end
 
+--- P8b: the spell's Mote map (Utsusemi for "Utsusemi: Ni", BarElement for
+--- Barfire...), at the root then under the skill. Mote already wore that set;
+--- without this step the skill's own set (P9) replaced it.
+local function resolve_spell_map(ctx)
+    local get_map = rawget(_G, 'get_spell_map')
+    if not (ctx.config.spell and type(get_map) == 'function') then
+        return nil
+    end
+    local ok, map = pcall(get_map, ctx.config.spell)
+    if not ok or type(map) ~= 'string' then
+        return nil
+    end
+    local found = sets.midcast[map]
+    local path = 'sets.midcast.' .. map
+    if type(found) ~= 'table' then
+        found = ctx.base_set[map]
+        path = 'sets.midcast["' .. ctx.config.skill .. '"].' .. map
+    end
+    if type(found) ~= 'table' then
+        return nil
+    end
+    if is_debug_enabled() then
+        MessageMidcast.show_priority_check(8, 'Map (' .. map .. ')', true)
+    end
+    return found, path
+end
+
 -- Order is priority. P9, the base set itself, is the fallback below.
 local RESOLVERS = {
     resolve_exact_spell,
@@ -566,6 +593,7 @@ local RESOLVERS = {
     resolve_type_root,
     resolve_type_under_skill,
     resolve_mode,
+    resolve_spell_map,
 }
 
 local function select_standard_set(config, base_set)
@@ -681,16 +709,6 @@ function MidcastManager.get_enhancing_target(spell)
     end
 end
 
---- Determine element for Elemental Magic (optional filter)
---- @param spell table Spell object from GearSwap
---- @return string|nil spell.element
-function MidcastManager.get_element(spell)
-    if not spell or not spell.element then
-        return nil
-    end
-    return spell.element
-end
-
 ---============================================================================
 --- BARD SONG HELPERS
 ---============================================================================
@@ -728,57 +746,6 @@ function MidcastManager.get_song_instrument(spell_name)
     end
 
     return nil
-end
-
----============================================================================
---- PRESET CONFIGS (common job patterns)
----============================================================================
-
---- RDM Enfeebling Magic configuration
---- @param spell table Spell object
---- @param database_func function|nil Spell -> type lookup
---- @return table select_set config
-function MidcastManager.rdm_enfeebling(spell, database_func)
-    return {
-        skill = 'Enfeebling Magic',
-        spell = spell,
-        mode_state = state.EnfeebleMode,
-        database_func = database_func
-    }
-end
-
---- RDM/WHM/GEO Enhancing Magic configuration
---- @param spell table Spell object
---- @return table select_set config
-function MidcastManager.enhancing(spell)
-    return {
-        skill = 'Enhancing Magic',
-        spell = spell,
-        mode_state = state.EnhancingMode,
-        target_func = MidcastManager.get_enhancing_target
-    }
-end
-
---- BLM/RDM/GEO Elemental Magic configuration
---- @param spell table Spell object
---- @return table select_set config
-function MidcastManager.elemental(spell)
-    return {
-        skill = 'Elemental Magic',
-        spell = spell,
-        mode_state = state.NukeMode
-    }
-end
-
---- WHM/RDM/PLD Cure Magic configuration
---- @param spell table Spell object
---- @return table select_set config
-function MidcastManager.cure(spell)
-    return {
-        skill = 'Healing Magic',
-        spell = spell,
-        mode_state = state.CureMode
-    }
 end
 
 return MidcastManager

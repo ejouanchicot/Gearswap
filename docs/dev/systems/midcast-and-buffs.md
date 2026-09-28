@@ -8,7 +8,7 @@ None of these modules registers a Windower event. `MidcastManager` keeps its deb
 
 | Path | Lines | Role |
 |---|---|---|
-| `shared/utils/midcast/midcast_manager.lua` | 777 | `select_set()` with the 10-level standard chain (P0-P9) and the Singing chain, persistent debug toggle, Composure target helper, song helpers, unused preset configs |
+| `shared/utils/midcast/midcast_manager.lua` | 751 | `select_set()` with the standard chain (P0-P9, plus P8b) and the Singing chain, persistent debug toggle, Composure target helper, song helpers |
 | `shared/utils/midcast/midcast_fallback.lua` | 53 | Routes a spell no job midcast handed to `select_set` (a subjob's magic), on Mote's `cleanup_midcast` |
 | `shared/utils/midcast/midcast_deps.lua` | 44 | Loads `MidcastManager` and `ENHANCING_MAGIC_DATABASE` once per instance, for the 7 subjob-magic jobs |
 | `shared/utils/messages/formatters/magic/message_midcast.lua` | 156 | Debug output used by `MidcastManager` (templates in `shared/utils/messages/data/systems/midcast_messages.lua`) |
@@ -73,7 +73,7 @@ Consequences:
 
 Any other key is ignored. The Singing branch reads only `spell`.
 
-`mode_state` values passed today: `state.EnfeebleMode` and `state.NukeMode` (RDM, `RDM_MIDCAST.lua:122,262`; defined in `_master/config/rdm/RDM_STATES.lua:117,126`), `state.EnhancingMode` (RDM only, `RDM_MIDCAST.lua:217`), and `state.CastingMode` (SMN, `SMN_MIDCAST.lua:135,148`; Mote creates it, the Tetsouo overlay `_master/Tetsouo/config/smn/SMN_STATES.lua:24` gives Normal/Resistant). No states file in `_master/`, `Tetsouo/`, `Kaories/` or `shared/` defines `state.EnhancingMode`, so that value is always `nil`. `state.CureMode` (`_master/config/whm/WHM_STATES.lua:75`) is read by `WHM_MIDCAST.lua` itself and never passed to `select_set`; only the unused `MidcastManager.cure` preset names it.
+`mode_state` values passed today: `state.EnfeebleMode` and `state.NukeMode` (RDM, `RDM_MIDCAST.lua:122,262`; defined in `_master/config/rdm/RDM_STATES.lua:117,126`), `state.EnhancingMode` (RDM only, `RDM_MIDCAST.lua:217`), and `state.CastingMode` (SMN, `SMN_MIDCAST.lua:135,148`; Mote creates it, the Tetsouo overlay `_master/Tetsouo/config/smn/SMN_STATES.lua:24` gives Normal/Resistant). No states file in `_master/`, `Tetsouo/`, `Kaories/` or `shared/` defines `state.EnhancingMode`, so that value is always `nil`. `state.CureMode` (`_master/config/whm/WHM_STATES.lua:75`) is read by `WHM_MIDCAST.lua` itself and never passed to `select_set`; nothing else names it.
 
 ### Standard chain (every skill except Singing)
 
@@ -89,10 +89,11 @@ Any other key is ignored. The Singing branch reads only `spell`.
 | P5 | `resolve_target` (`:497-518`) | target | `base[target]`, then `sets.midcast[target]` |
 | P6 | `resolve_type_root` (`:521-535`) | type | `sets.midcast[type]` |
 | P7 | `resolve_type_under_skill` (`:538-547`) | type | `base[type]` |
-| P8 | `resolve_mode` (`:550-559`) | mode | `base[mode]` |
-| P9 | fallback (`:597-601`) | nothing above matched | `base` |
+| P8 | `resolve_mode` (`:547-556`) | mode | `base[mode]` |
+| P8b | `resolve_spell_map` (`:561-583`, 2026-09-28) | Mote's `get_spell_map(spell)` gives a map (`Utsusemi`, `BarElement`, `Storm`, a job's `job_get_spell_map`...) | `sets.midcast[map]`, then `base[map]` |
+| P9 | fallback (`:622-626`) | nothing above matched | `base` |
 
-P0 and P1 go through `try_path` (`:88-116`): missing intermediate tables are fine and only the last node has to be a table. P2-P8 index tables directly and accept any non-nil value. After choosing a set, `equip_with_debug` (`:123-146`) calls `equip()` and, with debug on, prints every slot in `SLOT_ORDER` (`:77`). `is_fallback` is `selected_set == base` (`:607`). A named set that is literally the same table as the base (for example `sets.midcast['Comet'] = sets.midcast['Elemental Magic']` in the BLM sets) is therefore reported as a fallback.
+P0 and P1 go through `try_path` (`:88-116`): missing intermediate tables are fine and only the last node has to be a table. P2-P8 index tables directly and accept any non-nil value. After choosing a set, `equip_with_debug` (`:123-146`) calls `equip()` and, with debug on, prints every slot in `SLOT_ORDER` (`:77`). `is_fallback` is `selected_set == base` (`:632`). A named set that is literally the same table as the base (for example `sets.midcast['Comet'] = sets.midcast['Elemental Magic']` in the BLM sets) is therefore reported as a fallback.
 
 The header of `midcast_manager.lua` (lines 4-13) describes this P0-P9 chain and is accurate; `.claude/CODE_QUALITY.md` §4.2 and `.claude/rules/midcast-pattern.md` were rewritten to the same chain on 2026-09-25.
 
@@ -114,7 +115,8 @@ flowchart TD
     P5 -- miss --> P6["P6 sets.midcast[type]"]
     P6 -- miss --> P7["P7 base[type]"]
     P7 -- miss --> P8["P8 base[mode]"]
-    P8 -- miss --> P9["P9 base"]
+    P8 -- miss --> P8b["P8b sets.midcast[map], base[map]"]
+    P8b -- miss --> P9["P9 base"]
     P0 -- hit --> E["equip_with_debug, return true"]
     P1 -- hit --> E
     P2 -- hit --> E
@@ -124,6 +126,7 @@ flowchart TD
     P6 -- hit --> E
     P7 -- hit --> E
     P8 -- hit --> E
+    P8b -- hit --> E
     P9 --> E
 ```
 
@@ -185,11 +188,9 @@ Data facts that shape the result today (`_master/sets/brd_sets.lua`, same in `Te
 
 | Function | Lines | Callers |
 |---|---|---|
-| `get_enhancing_target(spell)` | `:663-675` | `target_func` in BRD router, BST, COR, DNC, GEO, PLD, PUP, RDM, RUN, SAM, SMN, THF, WAR, WHM midcast files. Returns `'Composure'` when `buffactive['Composure']` and the target is not the player, else `nil` |
-| `get_song_type(name)` | `:695-702` | only `song_by_type` |
-| `get_song_instrument(name)` | `:708-724` | `layer_instrument`, BRD router `apply_main_instrument` |
-| `get_element(spell)` | `:680-685` | none |
-| `rdm_enfeebling`, `enhancing`, `elemental`, `cure` | `:734-775` | none (preset config builders) |
+| `get_enhancing_target(spell)` | `:698-710` | `target_func` in BRD router, BST, COR, DNC, GEO, PLD, PUP, RDM, RUN, SAM, SMN, THF, WAR, WHM midcast files. Returns `'Composure'` when `buffactive['Composure']` and the target is not the player, else `nil` |
+| `get_song_type(name)` | `:720-727` | only `song_by_type` |
+| `get_song_instrument(name)` | `:733-749` | `layer_instrument`, BRD router `apply_main_instrument` |
 | `MidcastManager.debug.enabled` | `:64-70` | none |
 | `enable_debug`, `disable_debug`, `toggle_debug` | `:39-59` | `toggle_debug` from the 16 COMMANDS files |
 
@@ -354,7 +355,8 @@ Open:
 - `sets.midcast.AriaPassion` is unreachable by name (`midcast_manager.lua:173`, `_master/sets/brd_sets.lua:365`).
 - The Marsyas instrument layer overwrites a customised `HonorMarch` set (`midcast_manager.lua:224-233`, `_master/sets/brd_sets.lua:356`).
 - PLD/RUN Healing `select_set` calls always return `false`; Cure I/II gear depends on the last Cure III/IV target (`PLD_MIDCAST.lua:79`, `cure_set_builder.lua:40`).
-- Unused public API: `get_element`, the four preset builders, `MidcastManager.debug` (`midcast_manager.lua:64-70,680-685,734-775`).
+- Unused public API: `MidcastManager.debug` (`midcast_manager.lua:64-70`). `get_element` and the four preset builders (`rdm_enfeebling`, `enhancing`, `elemental`, `cure`) were removed on 2026-09-28 (no caller in any folder).
+- Before 2026-09-28 a spell whose Mote map differs from its tier-less name (`Utsusemi: Ni` -> `Utsusemi`, `Barfire` -> `BarElement`) lost its map set as soon as the skill set existed: Mote wore `sets.midcast.Utsusemi`, then P9 replaced it with `sets.midcast.Ninjutsu`. P8b keeps the map set; it only runs when P0-P8 found nothing, so no set chosen before changes.
 - Dead `ctx.target ~= 'others'` guard (`midcast_manager.lua:423`).
 - Scholar chains warn "No charges (0.0m)" when /SCH is absent (`scholar_actions.lua:44-46`).
 - GEO keeps its own Light/Dark Arts toggles (`GEO_COMMANDS.lua:337-363`).

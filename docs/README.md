@@ -19,6 +19,7 @@ how the code works.
 - [Commands](user/guides/commands.md) - every `//gs c` command shared by all jobs
 - [Keybinds](user/guides/keybinds.md) - the key layout, the keybind files,
   your own modes (`<JOB>_CUSTOM.lua`) and temporary keys (`//gs c tb`)
+- [Set names](user/guides/sets.md) - every set name GearSwap understands: any action, your subjob's actions, the sets put on by themselves
 - [Configuration](user/guides/configuration.md) - what each file in
   `<YourName>/config/` does
 - [Dual-box](user/guides/dualbox.md) - main and alt, alt commands, box group

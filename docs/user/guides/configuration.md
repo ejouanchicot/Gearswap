@@ -23,6 +23,7 @@ see [installation](../getting-started/installation.md)). After an edit,
 | `ELEMENTAL_BELT.lua` | Hachirin-no-Obi / Orpheus's Sash put on by themselves on elemental damage (nukes, elemental weaponskills, Quick Draw...): Orpheus close to the target, the Obi when the day or weather matches, neither far away with nothing matching. `enabled`, `min_bonus` (5 %: below it, your set's belt stays). Only a belt in your inventory / wardrobes is used. `//gs c belt` shows today's values |
 | `STEALTH_CONFIG.lua` | Sneak / Invisible settings (`refresh_below` 180 s, `alert_before` 60 s, `overwrite`, `alerts`, `delay` 3.0 s), also written by `//gs c stealth refresh / alert / ...` and kept on a re-clone ([Sneak and Invisible](stealth.md)) |
 | `combat_mode.lua` | Optional: on which jobs Combat Mode shows and its key; written by `//gs c combatmode` ([keybinds](keybinds.md#combat-mode-every-job)) |
+| `treasure_mode.lua` | Optional: on which jobs Treasure Mode shows and its key; written by `//gs c th` ([set names](sets.md#put-on-by-themselves)) |
 | `alt/` | Alt commands, main character only ([dual-box](dualbox.md)) |
 | `<job>/` | One folder per job, below |
 
