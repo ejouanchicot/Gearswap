@@ -7,12 +7,9 @@ gear or your actions, then points to the details:
 - [states.md](states.md): what each mode value does;
 - [sets.md](sets.md): every set name the SMN code reads, and what goes on by itself.
 
-> **Availability.** SMN's entry file, configs and sets exist only in the
-> author's personal template, not in the public repository. A character
-> cloned from the generic template gets no SMN files (the clone script prints
-> `No entry file for: SMN`), and SMN then does not load. What follows
-> describes the author's personal template; its set file is an empty skeleton
-> except for the Fast Cast set.
+> **Getting SMN.** Pick SMN in the job list of the clone script. The
+> provided set file is an empty skeleton except for the Fast Cast set: fill
+> it with your gear.
 
 ## Overview
 
@@ -142,13 +139,13 @@ What the project's shared systems do on SMN, checked in the code.
 | Avatar's Favor | The `AvatarFavor` mode follows the buff: gained, `sets.idle.Avatar` goes on; lost, your `IdleMode` set comes back |
 | Carbuncle | About 10 s after each load or subjob change, if you are alive and no avatar is out, Carbuncle is summoned |
 | Movement speed | `sets.MoveSpeed` goes on while you run, outside town, when idle (over `sets.idle.Avatar` too) |
-| Town | In a city (Dynamis excluded) `sets.idle.Town` replaces the `IdleMode` set, unless `AvatarFavor` is On; no `sets.Adoulin` in the author's file, so Adoulin uses the town set |
+| Town | In a city (Dynamis excluded) `sets.idle.Town` replaces the `IdleMode` set, unless `AvatarFavor` is On; no `sets.Adoulin` in the provided file, so Adoulin uses the town set |
 | Combat Mode | Not native: off and hidden. `//gs c combatmode show` gives it Alt+Numpad0; On locks main, sub and range |
 | Treasure Mode | Off and hidden. `//gs c th show` gives it Alt+Numpad.; it needs a `sets.TreasureHunter` in your SMN set file |
 | Obi / Orpheus | The shared automatic belt acts on your own elemental spells (a subjob nuke), not on Blood Pacts |
 | Tier step-down | None on SMN |
 | Recast announce | `party_announce` in `RECAST_CONFIG.lua` works for your abilities (Blood Pacts included) and spells refused on recast |
-| Doom | Doom slots are handled, but the author's file has no `sets.buff.Doom`: add one |
+| Doom | Doom slots are handled, but the provided file has no `sets.buff.Doom`: add one |
 | Dual Wield tiers | Only when you hold two weapons (with /NIN or /DNC) |
 | Auto Medicine | Echo Drops / Remedy / Panacea when a debuff blocks your action (Apps+Numpad0) |
 | Sneak / Invisible | `//gs c stealth` (Alt+Z / Alt+X). With /SCH, SMN may cover your whole group with Accession when a charge is left |
@@ -163,7 +160,7 @@ No TP bonus config on SMN.
 
 ## Known issues
 
-- **Empty `""` slots.** Every set of the author's file except the Fast Cast set
+- **Empty `""` slots.** Every set of the provided file except the Fast Cast set
   writes all slots as `""`, which wipes the pieces queued before it in the
   same action: today only the Fast Cast set ever goes on. When you fill a set,
   delete the slots you do not use (see [sets.md](sets.md)).
@@ -177,7 +174,7 @@ No TP bonus config on SMN.
 
 ## Configuration files for this job
 
-In `<YourName>/config/smn/` (author's personal template only):
+In `<YourName>/config/smn/`:
 
 | File | What you set there |
 |---|---|

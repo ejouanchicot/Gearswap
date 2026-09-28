@@ -19,11 +19,8 @@ status changes. This project layers a framework on top of GearSwap and
 Mote-Include:
 
 - **17 job areas** under `shared/jobs/`: BLM BLU BRD BST COR DNC DRK GEO PLD PUP RDM
-  RUN SAM SMN THF WAR WHM. SMN has shared modules but no generic `_master`
-  template: its entry, configs and sets live in the Tetsouo overlay
-  (`_master/Tetsouo/`) and the live `Tetsouo/` folder, so only a clone of
-  Tetsouo (or one run with `--source Tetsouo`) receives it; any other clone
-  prints `[WARN] No entry file for: SMN`. PUP is a scaffold that does not load
+  RUN SAM SMN THF WAR WHM. Every job but PUP has a generic `_master`
+  template (SMN since 2026-09-28). PUP is a scaffold that does not load
   (see [jobs/pup.md](jobs/pup.md)) and `clone_character.py` no longer offers it
   (`ALL_VALID_JOBS`).
 - **Shared systems** under `shared/utils/`: precast guard and cooldown checks,
@@ -119,7 +116,7 @@ For a template entry such as `_master/entry/Tetsouo_WAR.lua`:
 
 1. **File chunk**: loads `LOCKSTYLE_CONFIG` and `REGION_CONFIG` under pcall,
    `ConfigLoader.load_ui_config` (`dofile` of `UI_CONFIG`), defines the hook
-   functions. Some entries (WAR, BST, PUP, live SMN) also require
+   functions. Some entries (WAR, BST, PUP, SMN) also require
    `JobChangeManager` and `UI_MANAGER` here.
 2. **`get_sets()`**:
    1. Job globals that states need before Mote (WAR `_G.WARWSConfig`, BRD, BST).

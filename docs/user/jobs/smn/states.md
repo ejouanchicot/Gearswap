@@ -1,9 +1,5 @@
 # SMN — modes and keys
 
-> SMN's entry, configs and sets are only in the author's personal template (not in the public repository): a clone of
-> another character does not get SMN files (`clone_character.py` prints
-> `No entry file for: SMN`).
-
 Summoner: Blood Pact gear picked by pact type, an Avatar's Favor idle, command
 shortcuts for avatars and abilities, and a Summoning Magic skill-up loop.
 

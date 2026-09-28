@@ -126,7 +126,7 @@ The per-job config is `<char>/config/<job>/<JOB>_LOCKSTYLE.lua`. GearSwap's `pat
 | Key | Read by the factory | Notes |
 |---|---|---|
 | `default` | yes | wins over the `default_lockstyle` argument |
-| `get_style(subjob)` | yes, if present | defined by 8 of the 15 generic templates: BST, COR, DNC, DRK, GEO, PLD, RUN, WAR (and the SMN overlay). It reads `by_subjob` |
+| `get_style(subjob)` | yes, if present | defined by 9 of the 16 generic templates: BST, COR, DNC, DRK, GEO, PLD, RUN, SMN, WAR. It reads `by_subjob` |
 | `by_subjob` | **no** | only read through the config's own `get_style`. The BLM, BLU, BRD, RDM, SAM, THF and WHM templates have no `get_style`, so their `by_subjob` does nothing (BLM's file says so in a comment) |
 | `style` | no | "backward compatibility" field, no reader |
 
@@ -146,7 +146,7 @@ Each wrapper holds a module-local `lockstyle_module` / `macrobook_module` and de
 | BLU | 1 / WAR | WAR / 1 / 1 |
 | BLM, BST, COR, DNC, DRK, GEO, PLD, PUP, RUN, SAM, THF, WHM | 1 / SAM | SAM / 1 / 1 |
 
-The config's `default` overrides the lockstyle argument (e.g. the PLD config's default 3 vs the argument 1). `_master/config/` has no `pup/` folder, so a deployed PUP would run both factories on their fallbacks (style 1, book 1 page 1). SMN configs exist only in the overlay `_master/Tetsouo/config/smn/` and its live copy.
+The config's `default` overrides the lockstyle argument (e.g. the PLD config's default 3 vs the argument 1). `_master/config/` has no `pup/` folder, so a deployed PUP would run both factories on their fallbacks (style 1, book 1 page 1).
 
 Each wrapper file is executed twice per sandbox:
 
@@ -670,7 +670,7 @@ Transitions:
 
 ## Common features per job
 
-Which shared system applies to which job, checked in the code and the `_master` templates (SMN: `_master/Tetsouo/`).
+Which shared system applies to which job, checked in the code and the `_master` templates.
 
 **Every job.** These apply to all 17 jobs, installed by `INIT_SYSTEMS.lua` or routed through `CommonCommands`. A job that does not load (PUP) gets none of them in practice.
 

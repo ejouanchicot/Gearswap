@@ -32,8 +32,7 @@ lockstyle, macro book) is common to all jobs.
 
 | Job | Status |
 |---|---|
-| BLM, BLU, BRD, BST, COR, DNC, DRK, GEO, PLD, RDM, RUN, SAM, THF, WAR, WHM | Template shipped in `_master/`, offered by the clone script |
-| SMN | Its shared modules are here, but its entry, configs and sets exist only in the author's personal template (not in the public repository): a clone gets no SMN files |
+| BLM, BLU, BRD, BST, COR, DNC, DRK, GEO, PLD, RDM, RUN, SAM, SMN, THF, WAR, WHM | Template shipped in `_master/`, offered by the clone script |
 | PUP | **Does not load yet**: its configuration folder is missing, so the job file stops during loading. The clone script does not offer it |
 
 The author plays BLM, BRD, BST, COR, DNC, PLD, SMN, THF and WAR on the main,

@@ -2,12 +2,12 @@
 
 SMN is the 16th job area, added on 2026-07-29: the facade plus 12 hook
 modules and one logic module under `shared/jobs/smn/functions/` (about 1 300
-lines). Unlike every other job it has **no generic template**: the entry,
-configs and sets exist only in the author's live character folder and in the
-author's overlay `_master/Tetsouo/`, and **both are gitignored** (the
-`.gitignore` pattern `Tetsouo/` matches `_master/Tetsouo/` as well). Nothing
-but the shared modules, the Blood Pact data and this documentation is under
-version control. GearSwap loads SMN when that character's main job becomes
+lines). Like every other job it has a generic template in `_master/`
+(entry, `config/smn/`, flat `sets/smn_sets.lua`), offered by the clone script
+since 2026-09-28. Until then the entry, configs and sets existed only in the
+author's gitignored live folder and overlay `_master/Tetsouo/`; the overlay
+still keeps its own copy (modular set path), which wins for that character.
+GearSwap loads SMN when that character's main job becomes
 SMN. From then on Mote-Include calls its hooks on every action (including the
 avatar's actions through the pet hooks), on status and buff changes, on
 `//gs c` commands and on state cycles.
@@ -44,26 +44,27 @@ Verified on 2026-09-28:
 | Reference notes (`docs/SMN_BLOOD_PACTS_REFERENCE.md`) | repo | yes |
 | Alt command configs (`_master/config/alt/SMN_ALT_COMMANDS.lua`, `SMN_ALT_CUSTOM.lua`) | repo | yes |
 | `character_db.lua`: SMN in the author's roster and in the all-jobs list | repo | yes |
-| Entry `Tetsouo_SMN.lua` | live folder and `_master/Tetsouo/entry/` | **no** (gitignored) |
-| Configs `SMN_STATES`, `SMN_KEYBINDS`, `SMN_CUSTOM`, `SMN_HUD`, `SMN_LOCKSTYLE`, `SMN_MACROBOOK` | live `config/smn/` and `_master/Tetsouo/config/smn/` | **no** |
-| Sets `smn_sets.lua` | live `sets/smn/` and `_master/Tetsouo/sets/smn/` | **no** |
-| `_master/entry/Tetsouo_SMN.lua`, `_master/config/smn/`, `_master/sets/smn_sets.lua` | nowhere | - |
+| Generic entry `_master/entry/Tetsouo_SMN.lua` | repo | yes |
+| Generic configs `SMN_STATES`, `SMN_KEYBINDS`, `SMN_CUSTOM`, `SMN_HUD`, `SMN_LOCKSTYLE`, `SMN_MACROBOOK` in `_master/config/smn/` | repo | yes |
+| Generic flat sets `_master/sets/smn_sets.lua` | repo | yes |
+| Author's copies: entry, `config/smn/`, modular `sets/smn/smn_sets.lua` | live folder and `_master/Tetsouo/` | **no** (gitignored) |
 | `SMN_REFILL.lua`, `SMN_TP_CONFIG.lua`, `SMN_JA_DATABASE.lua`, SMN message formatter | nowhere | - |
-| `clone_character.py` `ALL_VALID_JOBS` | 15 jobs, no SMN (and no PUP) | yes |
+| `clone_character.py` `ALL_VALID_JOBS` | 16 jobs, SMN included (no PUP) | yes |
 
-Consequence: the only copies of SMN's entry, configs and sets are on the
-author's disk. A clone to the author's character, or any clone with
-`--source Tetsouo`, copies them from the overlay (the overlay's
-`sets/<job>/` tree wins over the generic flat file). Any other clone that
-lists SMN gets no SMN entry and prints
-`[WARN] No entry file for: SMN - these jobs will not load`; manual job
-selection cannot pick SMN.
+Consequence: any clone can get SMN, from the generic template (manual job
+selection offers it). A clone to the author's character, or any clone with
+`--source Tetsouo`, takes the overlay's copies instead (the overlay's
+`sets/<job>/` tree wins over the generic flat file). The generic files are
+the overlay's with `@author ejouanchicot` and the flat set include
+`include('sets/smn_sets.lua')`; the gear is the same. Until 2026-09-28 a
+clone of any other character printed
+`[WARN] No entry file for: SMN - these jobs will not load`.
 
 ## Files
 
 | Path | Role |
 |------|------|
-| `_master/Tetsouo/entry/Tetsouo_SMN.lua` (gitignored; same file in the live folder) | Entry: config preload, `get_sets`, `init_gear_sets`, `job_sub_job_change`, `user_setup` (Carbuncle auto-summon), `job_update` (HUD only), `file_unload` (stops the skill-up loop) |
+| `_master/entry/Tetsouo_SMN.lua` (generic; the overlay `_master/Tetsouo/entry/` and the live folder hold the author's copy) | Entry: config preload, `get_sets`, `init_gear_sets`, `job_sub_job_change`, `user_setup` (Carbuncle auto-summon), `job_update` (HUD only), `file_unload` (stops the skill-up loop) |
 | `shared/jobs/smn/functions/smn_functions.lua` | Facade: `message_buffs.lua`, the 12 hook files, `dualbox_manager`, a debug line |
 | `shared/jobs/smn/functions/SMN_PRECAST.lua` | Guard, cooldown, WS; empty Blood Pact branch; `job_post_precast` (TP gear) |
 | `shared/jobs/smn/functions/SMN_MIDCAST.lua` | `job_post_midcast`: Blood Pact set via the classifier, else `JOB_POST_MIDCAST_HANDLERS` by skill |
@@ -84,11 +85,11 @@ selection cannot pick SMN.
 | `config/smn/SMN_HUD.lua` | Per-job HUD section / row order (empty = defaults) |
 | `config/smn/SMN_LOCKSTYLE.lua` | `default = 1`, `by_subjob` (all 1), `get_style` |
 | `config/smn/SMN_MACROBOOK.lua` | Book 1; page per subjob (WHM 1, SCH 2, RDM 3, BLM 4); empty `dualbox` |
-| `sets/smn/smn_sets.lua` | Skeleton sets (`empty_set()`), real gear only in `sets.precast.FC` |
+| `sets/smn_sets.lua` (generic, flat; `sets/smn/smn_sets.lua` in the author's overlay) | Skeleton sets (`empty_set()`), real gear only in `sets.precast.FC` |
 | `shared/data/magic/SMN_SPELL_DATABASE.lua` + `summoning/*.lua` | Avatar / pact data for messages and `//gs c info` (SMN logic does not read it) |
 
-The `config/` and `sets/` rows are relative to the character folder and to
-`_master/Tetsouo/`. There is no SMN message formatter or message data file;
+The `config/` and `sets/` rows are relative to a character folder; their
+templates are `_master/config/smn/` and `_master/sets/`. There is no SMN message formatter or message data file;
 SMN prints through `MessageFormatter.show_info/show_success/show_error/show_debug`.
 
 ## How it works
@@ -349,10 +350,10 @@ worn, and it stays on after the first cast.
 
 ## Invariants & gotchas
 
-- SMN has no generic template and no versioned copy: a change to the entry,
-  configs or sets made in the live folder must be copied into
-  `_master/Tetsouo/` (entry under `entry/`, configs under `config/smn/`, sets
-  under `sets/smn/`) to reach a re-clone, and neither copy is in git.
+- SMN has two template copies: the generic one in `_master/` (versioned)
+  and the author's overlay in `_master/Tetsouo/` (gitignored, modular sets).
+  A template change goes into the generic files and, if the author's
+  character should get it, into the overlay too.
 - Blood Pact gear depends on the exact English pact name being in one of the
   classifier lists; keep them in sync with
   `docs/SMN_BLOOD_PACTS_REFERENCE.md`.
@@ -365,10 +366,8 @@ worn, and it stays on after the first cast.
 
 ## Extending
 
-- Make SMN a templated job: copy the entry to `_master/entry/Tetsouo_SMN.lua`,
-  the configs to `_master/config/smn/`, flatten the sets to
-  `_master/sets/smn_sets.lua`, add `SMN` to `ALL_VALID_JOBS` in
-  `clone_character.py`, add `SMN_REFILL.lua`, and version the result.
+- Templating SMN is done (2026-09-28): generic entry, `config/smn/`, flat
+  sets and `ALL_VALID_JOBS`. Still missing: an `SMN_REFILL.lua` list.
 - New Blood Pact: add the name to the right list in
   `blood_pact_classifier.lua` and to the reference doc.
 - New Blood Pact category: a list and a branch in `classify`, and the set
@@ -393,7 +392,7 @@ worn, and it stays on after the first cast.
 ### Traps
 
 - `Tetsouo/` in `.gitignore` also hides `_master/Tetsouo/`: `git status`
-  never shows SMN config or set edits.
+  never shows edits to the author's SMN copy (the generic files are tracked).
 - Mote's `select_specific_set` checks `spell.skill` before `spell.type`; a
   Blood Pact has no skill, so `sets.midcast.BloodPactRage` is reachable by
   type.
@@ -411,7 +410,7 @@ worn, and it stays on after the first cast.
 ### Offline testing (lua5.1)
 
 - Syntax: from `data/`,
-  `for f in shared/jobs/smn/functions/*.lua shared/jobs/smn/functions/logic/*.lua _master/Tetsouo/entry/Tetsouo_SMN.lua _master/Tetsouo/config/smn/*.lua _master/Tetsouo/sets/smn/smn_sets.lua; do luac5.1 -p "$f"; done`.
+  `for f in shared/jobs/smn/functions/*.lua shared/jobs/smn/functions/logic/*.lua _master/entry/Tetsouo_SMN.lua _master/config/smn/*.lua _master/sets/smn_sets.lua; do luac5.1 -p "$f"; done`.
 - Classifier: `lua5.1 -e "package.path='./?.lua;'..package.path; S=function(t) local s={} for _,v in ipairs(t) do s[v]=true end return setmetatable(s,{__index={contains=function(self,k) return rawget(self,k)==true end}}) end; local C=require('shared/jobs/smn/functions/logic/blood_pact_classifier'); print(C.classify('Flaming Crush'), C.classify('healing ruby'))"`
   prints `BPRage.Hybrid nil`, which shows the case sensitivity of `smn bp`.
 - Pet midcast order: stub `equip` to record slots, call `job_pet_midcast`,
@@ -428,8 +427,6 @@ worn, and it stays on after the first cast.
 - The Carbuncle auto-summon is scheduled from both the old and the new
   sandbox on a subjob change and re-summons after every reload when no pet is
   out. PLAUSIBLE for the double cast.
-- SMN has no generic template, and its only copies are gitignored (see
-  Deployment status).
 - Skeleton sets blank every slot queued before them, so the Fast Cast set
   stays on. This includes `sets.MoveSpeed` and `sets.idle.Town`: once the
   idle sets hold gear, a still-skeleton `sets.MoveSpeed` blanks the whole idle
@@ -454,8 +451,8 @@ worn, and it stays on after the first cast.
 - Standards: `SMN_STATUS`, `SMN_BUFFS`, `SMN_AFTERCAST` re-implement
   `LifecycleManager`, and `SMN_STATUS` misses its `hold_during_action` step;
   `SMN_SPELL_DATABASE.can_use_pact` is broken and dead (known).
-- The overlay's `SMN_STATES.lua` and `SMN_KEYBINDS.lua` carry
-  `@author Tetsouo` (convention: `ejouanchicot`).
+- The overlay's SMN configs and entry carry `@author Tetsouo`
+  (convention: `ejouanchicot`); the generic copies are fixed.
 - Not an issue: `Cacodemonia` (id 663, `mp_cost` 0) is not classified and
   should not be: it is not one of Diabolos' player pacts (BG-Wiki, Diabolos
   page, checked 2026-09-25).

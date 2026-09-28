@@ -14,8 +14,9 @@ edited has a syntax error (a missing comma or brace).
 
 **PUP does not load.** Known: see [PUP](../jobs/pup/README.md).
 
-**I want SMN.** Its entry, configs and sets are only in the author's personal template (not in the public repository); the
-clone script has nothing to deploy for SMN.
+**I want SMN.** Pick SMN in the job list when you run the clone script (or
+re-run it to add SMN to an existing character). Its set file is mostly empty:
+fill it with your gear ([SMN sets](../jobs/smn/sets.md)).
 
 **Where do I start reading?**
 [How it works](how-it-works.md) explains the whole flow in plain words; the

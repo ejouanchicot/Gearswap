@@ -154,7 +154,7 @@ The HUD each template produces (running the real classifier over `_master/config
 | WAR | | WS1-WS5 ("Weapon Skills") | MainWeapon | HybridMode, JumpAuto, AutoMedicine |
 | WHM | | | | CureMode, IdleMode, AfflatusMode, CureAutoTier, CombatMode, CastingMode, AutoMedicine |
 | PUP | no `config/pup/` in `_master`, so the loader returns nothing and the HUD has no rows | | | |
-| SMN (Tetsouo overlay and live only) | | | | IdleMode, CastingMode, AvatarFavor, AutoMedicine |
+| SMN | | | | IdleMode, CastingMode, AvatarFavor, AutoMedicine |
 
 ### Optional states: Combat Mode and Treasure Mode
 

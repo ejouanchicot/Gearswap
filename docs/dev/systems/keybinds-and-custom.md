@@ -34,8 +34,8 @@ Two helpers sit beside them: `key_validator.lua` names keys that cannot work, an
 | `shared/utils/custom/custom_locks.lua` | `lock = {...}` slots of a custom value |
 | `shared/utils/custom/custom_states_validate.lua` | Plain-language checks of each `_CUSTOM` entry |
 | `shared/utils/messages/formatters/system/message_tempbind.lua` | `tb` messages (`TEMPBIND` namespace) |
-| `_master/config/<job>/<JOB>_KEYBINDS.lua` | Job key templates for 15 jobs. SMN's is in `_master/Tetsouo/config/smn/`; character overlays under `_master/<Character>/config/<job>/` may replace some |
-| `_master/config/<job>/<JOB>_CUSTOM.lua` | Commented, empty `_CUSTOM` templates (15 jobs; SMN's and a WAR copy are in `_master/Tetsouo/config/`) |
+| `_master/config/<job>/<JOB>_KEYBINDS.lua` | Job key templates for 16 jobs (every job but PUP); character overlays under `_master/<Character>/config/<job>/` may replace some |
+| `_master/config/<job>/<JOB>_CUSTOM.lua` | Commented, empty `_CUSTOM` templates (16 jobs, every job but PUP; the Tetsouo overlay has its own SMN and WAR copies) |
 | `_master/config_global/COMMON_KEYBINDS.lua` | Common keys template; character overlays in `_master/<Character>/config_global/` |
 
 PUP has no `_KEYBINDS` file: `_master/config/pup/` does not exist and the job does not load (see [jobs/pup.md](../jobs/pup.md)). Without a keybind file, PUP would get no common keys, no Combat Mode row and no Treasure Mode row either.
@@ -369,7 +369,7 @@ The key itself is bound to `gs c tb run <key>`. The stored command is resolved w
 
 ## Keys per job
 
-What each job's key list binds, read from the `_master` templates (SMN from `_master/Tetsouo/config/smn/`). `cyclestate X` is written as the state name `X`; any other command is in backquotes. A character overlay can replace a job file. Keys are Windower notation: `^` Ctrl, `!` Alt, `#` Apps, `~` Shift, `@` Win.
+What each job's key list binds, read from the `_master` templates. `cyclestate X` is written as the state name `X`; any other command is in backquotes. A character overlay can replace a job file. Keys are Windower notation: `^` Ctrl, `!` Alt, `#` Apps, `~` Shift, `@` Win.
 
 ### Job files (`<JOB>_KEYBINDS.lua`)
 

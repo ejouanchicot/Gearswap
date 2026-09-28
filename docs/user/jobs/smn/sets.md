@@ -6,9 +6,8 @@ its own. Modes and keys: [states.md](states.md). Names every job shares
 `sets.buff.Doom`, Treasure Hunter, the automatic Obi / Orpheus belt):
 [set names guide](../../guides/sets.md).
 
-SMN's files (entry, configs, sets) come only with the author's personal
-template, not the public repository. The "provided file" below is that set
-file: every set in it except `sets.precast.FC` is an empty skeleton.
+The "provided file" below is the SMN set file the clone script gives you:
+every set in it except `sets.precast.FC` is an empty skeleton.
 
 To see which set a spell or pact picked: `//gs c debugmidcast`, then cast.
 

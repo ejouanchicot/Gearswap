@@ -16,9 +16,9 @@ This page covers how a live folder is built, how it drifts from its templates, a
 | `scripts/check_overlay.py` | yes | Lists the differences between a live folder and its overlay |
 | `scripts/check_syntax.py` | yes | `luac`-parses every Lua file, live folders included |
 | `.gitignore` | no (ignores itself, line 78) | Ignores the live folders and, through the same patterns, the overlays |
-| `_master/entry/Tetsouo_<JOB>.lua` | yes, 16 files | Generic entry templates: BLM BLU BRD BST COR DNC DRK GEO PLD PUP RDM RUN SAM THF WAR WHM (no SMN) |
-| `_master/sets/<job>_sets.lua` | yes, 16 files | Generic flat set files, same 16 jobs (`pup_sets.lua` is a skeleton) |
-| `_master/config/<job>/` | yes, 15 dirs | Per-job configs (KEYBINDS, STATES, LOCKSTYLE, MACROBOOK, TP_CONFIG, `<JOB>_CUSTOM.lua`, job extras). No `pup/` |
+| `_master/entry/Tetsouo_<JOB>.lua` | yes, 17 files | Generic entry templates: BLM BLU BRD BST COR DNC DRK GEO PLD PUP RDM RUN SAM SMN THF WAR WHM (SMN since 2026-09-28) |
+| `_master/sets/<job>_sets.lua` | yes, 17 files | Generic flat set files, same 17 jobs (`pup_sets.lua` is a skeleton) |
+| `_master/config/<job>/` | yes, 16 dirs | Per-job configs (KEYBINDS, STATES, LOCKSTYLE, MACROBOOK, TP_CONFIG, `<JOB>_CUSTOM.lua`, job extras). No `pup/` |
 | `_master/config/alt/` | yes, 33 files | Dual-box alt command tables (22 `_ALT_COMMANDS`, 5 `_ALT_CUSTOM`, 6 `.lua.example`). Deployed only to a character cloned as MAIN |
 | `_master/config_global/` | yes, 13 files | `AUTO_ABILITIES`, `COMMON_KEYBINDS`, `CRAFT_CONFIG`, `DW_CONFIG`, `ELEMENTAL_BELT`, `LOCKSTYLE_CONFIG`, `message_modes`, `RECAST_CONFIG`, `STEALTH_CONFIG`, `UI_COLOR_CONFIG`, `UI_CONFIG`, `ui_settings`, `WEAPON_CONFIG` |
 | `_master/Tetsouo/` | no, 78 files | Tetsouo overlay: 9 entries (BLM BRD BST COR DNC PLD SMN THF WAR, with the modular set include), `config/<job>/` for those jobs plus `config/craft/`, `config_global/{DUALBOX_CONFIG,REGION_CONFIG,UI_CONFIG,WARDROBE_CONFIG}.lua`, the modular sets `sets/<job>/`, `sets/common/`, `sets/{bonecraft,fishing}_sets.lua` |
@@ -40,7 +40,7 @@ A character exists in up to four places:
 3. **Live folder** `data/<Name>/`: what GearSwap loads. Gitignored.
 4. **Runtime-written files** inside the live folder, written by in-game commands: `config/ui_settings.lua` (HUD position), `config/message_modes.lua`, `config/WARP_ITEMS_OWNED.lua`, `config/dualbox_role.lua`, `config/alt_state.lua`, `config/alt_window.lua`, `config/combat_mode.lua`, `config/treasure_mode.lua`, `config/STEALTH_CONFIG.lua`, `config/<job>/<JOB>_HUD.lua` (HUD row order), `temp_binds.lua`, and the trace files (`trace.log`, `trace.on`).
 
-Since 2026-09-27 the overlays are no longer published: the `.gitignore` patterns for the live folders (`Tetsouo/`, `Kaories/`, `Gabvanstronger/`, `Blodykiller/`, no leading slash) also match `_master/<Name>/`, and the negations that used to re-include them are gone (comment at `.gitignore:59-62`). Consequences: overlays have no version history (a mistake there is recovered only from a live folder or a `clone_backups/` copy), a fresh clone of the repository has no SMN entry at all (its only copy is in the Tetsouo overlay), and `git status` never shows an overlay change.
+Since 2026-09-27 the overlays are no longer published: the `.gitignore` patterns for the live folders (`Tetsouo/`, `Kaories/`, `Gabvanstronger/`, `Blodykiller/`, no leading slash) also match `_master/<Name>/`, and the negations that used to re-include them are gone (comment at `.gitignore:59-62`). Consequences: overlays have no version history (a mistake there is recovered only from a live folder or a `clone_backups/` copy), and `git status` never shows an overlay change. Until 2026-09-28 this also left a fresh clone of the repository with no SMN entry at all; SMN now has a generic template.
 
 ### How GearSwap finds a live folder
 
@@ -137,7 +137,7 @@ Because step 6 runs after step 4c, an overlay's `config_global/DUALBOX_CONFIG.lu
 - Anything under an overlay that `_select_overlay` did not choose.
 - `_master/config/alt/` for a character cloned as ALT (on purpose: an alt given the folder would send its own command names to the main).
 - `*.lua.example` files (every glob is `*.lua`); the live `Tetsouo/config/alt/*.lua.example` were copied by hand.
-- Any job with no entry in the generic layer or the chosen overlay: SMN outside the Tetsouo overlay, and PUP, which is not in `ALL_VALID_JOBS` because its entry `require`s `_master/config/pup/` files that do not exist (`_master/entry/Tetsouo_PUP.lua:70-71`, `:131`). A DB job with no entry gets the `[WARN] No entry file` line.
+- Any job with no entry in the generic layer or the chosen overlay: today only PUP, which is not in `ALL_VALID_JOBS` because its entry `require`s `_master/config/pup/` files that do not exist (`_master/entry/Tetsouo_PUP.lua:70-71`, `:131`). A DB job with no entry gets the `[WARN] No entry file` line. (SMN was in this case outside the Tetsouo overlay until it got a generic template on 2026-09-28.)
 
 ### Source selection
 
@@ -145,7 +145,7 @@ Without `--source`, `S = 'Tetsouo'`. `_select_overlay(T)`:
 
 | Invocation | Target | Overlay used |
 |---|---|---|
-| default source | `Tetsouo` | `_master/Tetsouo/` (his entries with modular sets, refill lists, wardrobe config, SMN, craft files) |
+| default source | `Tetsouo` | `_master/Tetsouo/` (his entries with modular sets, including his own SMN copy, refill lists, wardrobe config, craft files) |
 | default source | a name with its own `_master/<Name>/` (`Kaories`, `Gabvanstronger`, `Blodykiller`) | that folder |
 | default source | any other name | none: generic `_master/` files only |
 | `--source Kaories` | any name | `_master/Kaories/` |
@@ -178,7 +178,7 @@ Public API. Every function has **zero callers** in `shared/`, `_master/` and the
 What `clone_character.py` actually reads (`parse_character_db`):
 
 - The regex `([A-Z][a-z]\w*)\s*=\s*\{[^}]*jobs\s*=\s*\{([^}]*)\}[^}]*role\s*=\s*['"](\w+)['"]` (DOTALL). A block is recognised only if its name starts with one uppercase letter followed by a lowercase one, `jobs` comes before `role`, and no `}` appears between `jobs = {...}` and `role`. `ARCHIVE_JOBS`, `ALL_JOBS` and `MASTER` are ignored.
-- DB jobs are used as-is (`lookup_character`). Manual entry is filtered by the script's own `ALL_VALID_JOBS`: 15 codes (BLM BLU BRD BST COR DNC DRK GEO PLD RDM RUN SAM THF WAR WHM), no SMN, no PUP.
+- DB jobs are used as-is (`lookup_character`). Manual entry is filtered by the script's own `ALL_VALID_JOBS`: 16 codes (BLM BLU BRD BST COR DNC DRK GEO PLD RDM RUN SAM SMN THF WAR WHM), no PUP. SMN was added on 2026-09-28.
 - The header example at `character_db.lua:9` (`{'RDM','COR','GEO'}`) predates PLD being added to Kaories, and the header's "16 jobs" counts predate BLU.
 
 ## Per-character files read at runtime
@@ -286,7 +286,7 @@ Full redeploy (`clone_character.py` on an existing character):
 - A hard-coded character name in a `require` path resolves through `data/` for any logged-in character. Wrong names fail silently on the author's machine and loudly elsewhere.
 - Answering `y` or `o` to "Replace it?" deletes nothing. The folder is moved to `addons/GearSwap/clone_backups/` only after the final confirmation. There is still no dry run.
 - Step 6 always overwrites `DUALBOX_CONFIG.lua` and `REGION_CONFIG.lua`. A copy of them in an overlay has no effect.
-- `ALL_VALID_JOBS` (Python, 15) and `ALL_JOBS` (Lua, 17) are separate lists. DB jobs skip the Python list.
+- `ALL_VALID_JOBS` (Python, 16) and `ALL_JOBS` (Lua, 17) are separate lists. DB jobs skip the Python list.
 - Overlays are untracked: back them up yourself before editing, and remember that `git diff` never shows them.
 - The refill foreign-item scan loads `*_REFILL.lua` from every top-level `data/` entry whose name starts with an uppercase letter. A new character, or a backup folder inside `data/`, joins it.
 - `.gitignore` ignores itself, so a fresh clone of the public repository has no ignore rules for live folders (by design, per its comment).
@@ -305,10 +305,9 @@ Open:
 
 - `CharDB.validate()` returns `false` (SAM and WHM are neither owned nor archived) and its success message still says 16 jobs: `character_db.lua` `validate`. Nothing runs it.
 - The `character_db.lua` Lua API has no callers, and `validate()` does not check what its doc claims.
-- The overlays are untracked since 2026-09-27: no history, and SMN has no copy in the repository.
+- The overlays are untracked since 2026-09-27: no history.
 - The overlay `DUALBOX_CONFIG`/`REGION_CONFIG` are always overwritten, contrary to the comment above the global-config copy in `clone`.
 - The PUP entry template requires config files that `_master` never shipped: `_master/entry/Tetsouo_PUP.lua:70`.
-- SMN has no generic template: a clone to any other character without `--source Tetsouo` prints `[WARN] No entry file for: SMN`.
 - The PUP template still sends the job from `job_sub_job_change` (the BST template no longer does).
 - Kaories live lacks `config/CRAFT_CONFIG.lua`, `config/pld/PLD_CUSTOM.lua`, `PLD_WS_CONFIG.lua` and the newer `config_global` files that a re-clone would add.
 - The Kaories overlay duplicates the generic templates line for line: `_master/Kaories/config/`.
@@ -325,4 +324,5 @@ Fixed:
 - A clone never generated `DualBoxConfig.group`.
 - PUP was offered by the manual job list although it cannot load; a DB job with no entry was skipped silently: PUP out of `ALL_VALID_JOBS`, `[WARN] No entry file`.
 - The overlay in use was invisible at the confirmation.
+- SMN had no generic template (a clone to any other character without `--source Tetsouo` printed `[WARN] No entry file for: SMN`) and no copy in the repository: `_master/entry/Tetsouo_SMN.lua`, `_master/config/smn/`, `_master/sets/smn_sets.lua` and SMN in `ALL_VALID_JOBS` (2026-09-28). The Tetsouo overlay keeps its own copy with the modular set include.
 - The generic BST entry ran a coroutine pet monitor that also wrote `state.Moving`: aligned on the Tetsouo overlay (raw `prerender` listener).

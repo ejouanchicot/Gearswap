@@ -366,7 +366,7 @@ Probes called by other systems, each a no-op unless recording:
 | `on_gs_reload` | `job_change_manager.lua` |
 | `on_reload_complete` | `INIT_SYSTEMS.lua` |
 | `on_prerender_check` | the BST entries (`_master/entry/Tetsouo_BST.lua`, `_master/Tetsouo/entry/Tetsouo_BST.lua`) |
-| `on_job_update` | the overlay entries `_master/Tetsouo/entry/Tetsouo_{WAR,BST,SMN}.lua` only |
+| `on_job_update` | the SMN entry (`_master/entry/Tetsouo_SMN.lua`) and the overlay entries `_master/Tetsouo/entry/Tetsouo_{WAR,BST,SMN}.lua` |
 
 ### SystemChecker, FullTest, GlobalProbe, TraceLog
 
@@ -594,7 +594,7 @@ Open:
 - `automedicine` and `lagdebug` treat any unrecognised argument as "toggle" (`AutoMedicine.handle_command`, `DebugCommands.handle_lagdebug`).
 - PUP's first command per load errors, for two reasons: it calls a formatter function that does not exist, `MessageFormatter.error_pup_module_not_loaded`, and it requires modules under a `shared/jobs/pup/functions/logic/` folder that does not exist (`PUP_COMMANDS.lua` `ensure_commands_loaded`).
 - `Profiler.profile_call`, `Profiler.measure`, `LagDebugger.log` and `DebugLogger.log` have no caller.
-- `LagDebugger.on_job_update` is wired only in the overlay entries `_master/Tetsouo/entry/Tetsouo_{WAR,BST,SMN}.lua`, not in any generic `_master/entry` template.
+- `LagDebugger.on_job_update` is wired only in the overlay entries `_master/Tetsouo/entry/Tetsouo_{WAR,BST,SMN}.lua` and, of the generic templates, only in `_master/entry/Tetsouo_SMN.lua` (copied from the overlay).
 - A `trace.on` marker left on a character keeps `trace.log` growing across restarts; nothing caps the file.
 - `RollShare.receive` returns nothing, so `rollshow` leaves `eventArgs.handled` false (no visible effect: `runs_locally` stops the alt fallback).
 - `COMMON_COMMANDS.lua` is 786 lines, past the 600-line soft limit (under the 800 hard limit).

@@ -35,11 +35,10 @@ The script asks:
 1. **Character name** (letters and digits, 2-15 characters). If
    `data/<Name>/` already exists, it asks whether to replace it.
 2. **Jobs**, comma-separated (any case), among BLM, BLU, BRD, BST, COR, DNC,
-   DRK, GEO, PLD, RDM, RUN, SAM, THF, WAR, WHM. A name that is not in this
+   DRK, GEO, PLD, RDM, RUN, SAM, SMN, THF, WAR, WHM. A name that is not in this
    list is dropped without a message. If your character is already listed in
    `character_db.lua`, its jobs are taken from there and this question is
-   skipped. SMN and PUP are not offered: SMN's entry, configs and sets are
-   not in the public repository, and PUP does not load yet.
+   skipped. PUP is not offered: it does not load yet.
 3. **Role**: `main` or `alt`. A main is asked for its alt's name (empty = no
    dual-box); an alt must give its main's name.
 4. **Region**: US, EU or JP.
