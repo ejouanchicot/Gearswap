@@ -47,9 +47,11 @@ function job_buff_change(buff, gain, eventArgs)
     end
 
     -- Aftermath Lv.3: Refresh engaged set to apply/remove AM3 gear (Liberator)
-    -- BUT: If Doom is active, don't change gear (Doom priority)
+    -- BUT: If Doom is active, don't change gear (Doom priority). During an
+    -- action, leave it to the action's aftercast, which rebuilds the set with
+    -- the new buff state instead of replacing the action's gear now.
     if buff == "Aftermath: Lv.3" then
-        if not buffactive['doom'] then
+        if not buffactive['doom'] and not (type(midaction) == 'function' and midaction()) then
             handle_equipping_gear(player.status)
         end
     end

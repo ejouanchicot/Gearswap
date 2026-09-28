@@ -2,7 +2,7 @@
 ---   SAM Movement Module - Movement Handling
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Movement hook for Samurai (empty). AutoMove tracks movement for every
----   job (INIT_SYSTEMS); SAM's set builder applies no movement gear.
+---   job (INIT_SYSTEMS); SAM's set builder adds sets.MoveSpeed to the idle set.
 ---
 ---   @file    shared/jobs/sam/functions/SAM_MOVEMENT.lua
 ---   @author  ejouanchicot

@@ -18,6 +18,7 @@
 ---   @date    Created: 2025-10-21
 ---  ═══════════════════════════════════════════════════════════════════════════
 local WeaponResolver = require('shared/utils/equipment/weapon_resolver')
+local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 local SetBuilder = {}
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -30,6 +31,7 @@ local SetBuilder = {}
 ---   2. Regen (HP < 80%) >> sets.idle.Regen
 ---   3. HybridMode (PDT) >> sets.idle.PDT
 ---   4. Apply weapon
+---   5. sets.MoveSpeed while running
 ---
 ---   @param base_set table Base idle set from sam_sets.lua
 ---   @return table Complete idle set with all modifications
@@ -62,7 +64,9 @@ function SetBuilder.build_idle_set(base_set)
         result = set_combine(result, WeaponResolver.set_for('main', state.MainWeapon.value))
     end
 
-    return result
+    -- Movement speed while running (AutoMove sets state.Moving), as on the
+    -- other jobs: sam_sets.lua defines sets.MoveSpeed
+    return BaseSetBuilder.apply_movement(result)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
