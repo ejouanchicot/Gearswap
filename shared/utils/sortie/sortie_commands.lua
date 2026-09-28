@@ -30,7 +30,9 @@ local SortieCommands = {}
 ---============================================================================
 
 --- The GEO alt driven by Silmaril, and where its Sortie profiles live
---- (relative to Windower/Settings, the path `sm load` expects).
+--- (relative to Windower/Settings, the path `sm load` expects). `sm load` names
+--- a folder: Silmaril picks the file of the alt's current job and subjob in it
+--- (GEO_WHM_Kaories.xml or GEO_DRK_Kaories.xml), so one target serves both.
 local ALT = 'Kaories'
 local PROFILE_ROOT = 'Kaories/Sortie/GEO/'
 
@@ -50,13 +52,13 @@ local STANCES = {
 --- until it was 30 s from expiring.
 local TARGETS = {
     farm       = {profile = 'Farm',       indi = 'Indi-Acumen',  stance = 'dps',  summary = 'Geo-Malaise'},
-    umbril     = {profile = 'Umbril',     indi = 'Indi-Fury',    stance = 'dps',  summary = 'Geo-Frailty, no JA'},
+    umbril     = {profile = 'Umbril',     indi = 'Indi-Fury',    stance = 'dps',  summary = 'Geo-Frailty, melee'},
     melee      = {profile = 'Melee',      indi = 'Indi-Fury',    stance = 'dps',  summary = 'Geo-Frailty'},
     triboulex  = {profile = 'Triboulex',  indi = 'Indi-Fury',    stance = 'dps',  summary = 'Geo-Frailty + BoG'},
     leshonn    = {profile = 'Leshonn',    indi = 'Indi-Frailty', stance = 'tank', summary = 'Geo-Gravity + BoG, Entrust Fury'},
     gartell    = {profile = 'Gartell',    indi = 'Indi-Frailty', stance = 'tank', summary = 'Geo-Gravity + BoG, Entrust Precision'},
     aita       = {profile = 'Aita',       indi = 'Indi-Frailty', stance = 'tank', summary = 'Geo-Gravity + BoG, Entrust Fury'},
-    aminon     = {profile = 'Aminon',     indi = 'Indi-Fury',    stance = 'tank', summary = 'Geo-Frailty + BoG behind (Hysoka engaged), Judgment', phalanx_sird = false},
+    aminon     = {profile = 'Aminon',     indi = 'Indi-Fury',    stance = 'tank', summary = 'Geo-Frailty + BoG behind (Hysoka engaged), Judgment; /DRK: Absorb-TP, Last Resort', phalanx_sird = false},
     aminontest = {profile = 'AminonTest', indi = 'Indi-Fury',    stance = 'tank', summary = 'test on Vampire Leech (Tetsouo engaged)', phalanx_sird = false},
 }
 
