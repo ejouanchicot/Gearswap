@@ -139,7 +139,10 @@ return {
   ```
 
   Add `skill = 'Elemental Magic'` or `spell = {...}` to the `when` to limit
-  which actions it applies to.
+  which actions it applies to. A belt you do not have (not in the inventory
+  or wardrobes) never triggers its rule. You rarely need these rules now:
+  the automatic belt (`config/ELEMENTAL_BELT.lua`, `//gs c belt`) makes the
+  same choice on every job; a rule of yours still goes on after it.
 - Latent refresh: `{ when = { mp_below = 51 }, idle = { waist = "Fucho-no-Obi" } }`.
 - Your pieces go on last, on top of the job's choice. Some slots are left
   alone on purpose (Doom, song instruments, Phantom Roll rings, Treasure Hunter
