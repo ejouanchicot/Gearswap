@@ -1,10 +1,10 @@
 # Wardrobe organizer (`//gs c wo`)
 
-The wardrobe organizer moves gear between the character's bags so that what the game reads first (W1, then W2) holds the gear the character needs, and everything else sits in "overflow" bags. It runs only on demand, from `//gs c wo` (alias `worganize`), dispatched by `CommonCommands.handle_wardrobeorganize` (`shared/utils/core/COMMON_COMMANDS.lua:183-226`, routed from `:549-550`). A run strips the character naked, locks every slot with `gs disable all`, walks through up to six phases that issue raw item-move packets (`windower.ffxi.get_item` / `put_item`), snapshots the result, retries the whole chain up to 12 times while it keeps making progress, and finally unlocks the slots, releases the stance locks the unlock broke (PLD Hoxne ammo, THF range; since 2026-09-25) and fires `gs c ls` (lockstyle) and `gs c rf` (refill). Two flows exist: the **active-job flow** (default: only the gear named by the currently loaded job's `sets` is "used") and the **all-jobs / alt flow** (every set file under `data/<char>/sets/` counts, primary/overflow come from the `ALT_*` lists). Which one `//gs c wo` runs is decided by the character's `WARDROBE_CONFIG.lua` (`SCOPE`), `//gs c wo alt` forces the second. Two read-only reports (`wo scan`, `wo keep`) and two recovery commands (`wo reset`, `wo recover`) complete the area.
+The wardrobe organizer moves gear between the character's bags so that what the game reads first (W1, then W2) holds the gear the character needs, and everything else sits in "overflow" bags. It runs only on demand, from `//gs c wo` (alias `worganize`), dispatched by `CommonCommands.handle_wardrobeorganize` (`shared/utils/core/COMMON_COMMANDS.lua:183-226`, routed from the `wo` / `worganize` branch of `CommonCommands.handle_command`). A run strips the character naked, locks every slot with `gs disable all`, walks through up to six phases that issue raw item-move packets (`windower.ffxi.get_item` / `put_item`), snapshots the result, retries the whole chain up to 12 times while it keeps making progress, and finally unlocks the slots, releases the stance locks the unlock broke (PLD Hoxne ammo, THF range; since 2026-09-25) and fires `gs c ls` (lockstyle) and `gs c rf` (refill). Two flows exist: the **active-job flow** (default: only the gear named by the currently loaded job's `sets` is "used") and the **all-jobs / alt flow** (every set file under `data/<char>/sets/` counts, primary/overflow come from the `ALT_*` lists). Which one `//gs c wo` runs is decided by the character's `WARDROBE_CONFIG.lua` (`SCOPE`), `//gs c wo alt` forces the second. Two read-only reports (`wo scan`, `wo keep`) and two recovery commands (`wo reset`, `wo recover`) complete the area.
 
 Nothing in the organizer is loaded at job load: `handle_wardrobeorganize` requires it lazily the first time a `wo` command is typed.
 
-Line numbers were re-read on 2026-09-25 (after the uncommitted fixes of that day in `wardrobe_organizer.lua` and `orchestrator_alt.lua`); most citations name the function instead.
+Re-checked against the code on 2026-09-28. No file under `shared/utils/wardrobe/` changed since 2026-09-25 except `lib/chat.lua` (output now goes through the sandbox `add_to_chat`, see Files), so the line numbers below, re-read on 2026-09-28, still hold; most citations also name the function.
 
 ## Files
 
@@ -19,7 +19,7 @@ Line numbers were re-read on 2026-09-25 (after the uncommitted fixes of that day
 | `shared/utils/wardrobe/lib/orchestrator_alt.lua` | 171 | Alt / all-jobs phase chain, built by a factory that receives the organizer's state setters |
 | `shared/utils/wardrobe/lib/reports.lua` | 267 | `wo scan` and `wo keep` |
 | `shared/utils/wardrobe/lib/warp_owned.lua` | 118 | Scan / load / save of the warp items the character owns (`WARP_ITEMS_OWNED.lua`) |
-| `shared/utils/wardrobe/lib/chat.lua` | 169 | Chat panel helpers (direct `windower.add_to_chat`; listed as an allowed exception in `.claude/CODE_QUALITY.md` section 6) |
+| `shared/utils/wardrobe/lib/chat.lua` | 169 | Chat panel helpers. They call the sandbox `add_to_chat` directly (no `MessageFormatter`; listed as an allowed exception in `.claude/CODE_QUALITY.md` section 6). Since 2026-09-27 (`64a0c20`) that `add_to_chat` is the one `message_core.lua` wraps with `ChatSeparators.apply`, so the `=` rules follow the player's separator options; before, the helpers called `windower.add_to_chat` and bypassed them |
 | `shared/utils/wardrobe/lib/log.lua` | 48 | `wardrobe_debug.log` writer, `bag_name()` |
 | `_master/Tetsouo/config_global/WARDROBE_CONFIG.lua` | 59 | Tetsouo template, deployed as `Tetsouo/config/WARDROBE_CONFIG.lua` (identical on disk) |
 | `_master/Kaories/config_global/WARDROBE_CONFIG.lua` | 60 | Kaories template, deployed as `Kaories/config/WARDROBE_CONFIG.lua` (same values; the live copy has newer header and comments only) |
@@ -123,7 +123,7 @@ It pushes one item every `MOVE_DELAY` (0.35 s), re-checking that the slot still 
 
 `clean_exit()` (`:142-148`) runs `Phases.enable_slots()`, then `release_stance_locks()` (`:118-138`, added 2026-09-25, game test pending): `AmpullaLock.release()` is always called (it also bumps the lock sequence, so a pending Hoxne lock cannot close the ammo slot on the naked set), `RangeLock.release()` and `state.RangeLock = false` only when `_G.thf_range_locked`; when a lock was actually in place it prints one warning ("Stance slot locks released ... re-select the stance to lock again"). It does not re-apply the Hoxne lock, because the character is naked. `wo reset` and the two "crashed" paths still call `Phases.enable_slots()` directly, so they leave a stale stance flag.
 
-`schedule_lockstyle` (`:159-167`) runs on every successful or "with leftovers" exit, never on abort, crash, preview, verify or the "snapshot failed" exit of `finish_run`: `gs c ls` after 1.5 s, `gs c rf` after 3.5 s. `gs c rf` also broadcasts `rf` to the dual-box partner through `DualBoxSyncIPC` (`CommonCommands.handle_refill`, hook registered at `INIT_SYSTEMS.lua:193-198`), so the partner refills its consumables too. No re-equip is requested: the character stays naked until the next GearSwap event, except for equip requests GearSwap queued while the slots were disabled, which `gs enable` flushes (`GearSwap/user_functions.lua:145-183`).
+`schedule_lockstyle` (`:159-167`) runs on every successful or "with leftovers" exit, never on abort, crash, preview, verify or the "snapshot failed" exit of `finish_run`: `gs c ls` after 1.5 s, `gs c rf` after 3.5 s. `gs c rf` also broadcasts `rf` to the dual-box partner through `DualBoxSyncIPC` (`CommonCommands.handle_refill`; the partner runs `refill_hook`, registered for `rf` / `refill` in the dual-box block of `INIT_SYSTEMS.lua`), so the partner refills its consumables too. No re-equip is requested: the character stays naked until the next GearSwap event, except for equip requests GearSwap queued while the slots were disabled, which `gs enable` flushes (`GearSwap/user_functions.lua:145-183`).
 
 ### The burst loop (Phases 2, 3, 3.5, A2, A3)
 
@@ -176,7 +176,7 @@ All moves go through the inventory; there is no direct bag-to-bag move. Neither 
 4. Else, if the entry already sits in one of its pins, return that bag (no move).
 5. Else `nil` (pinned, but not in any pin and no free pin) - it then follows the used/unused rules.
 
-`Moves.unclaimed_pins_first` (`moves.lua:170`) orders the same pins for the drainers: pins holding no copy first, pins holding a copy last. Steps 3 and 4 of `pin_target_for` were aligned with that ordering by commits `44e7f66` and `3d8cb28` so the snapshot never asks for a move the drainer then undoes.
+`Moves.unclaimed_pins_first` (`moves.lua:170`) orders the same pins for the drainers: pins holding no copy first, pins holding a copy last. Steps 3 and 4 of `pin_target_for` were aligned with that ordering by commits `22df295` and `ea818c8` (2026-09-18) so the snapshot never asks for a move the drainer then undoes.
 
 Phase 2 and Phase 3 re-run `pin_target_for` with a fresh `claim_pool` over only their own source bags (their `discover_pending`), so their claims can differ from the snapshot's when copies are spread over primary and overflow; the drainer's ordering is what finally decides the destination.
 
@@ -305,7 +305,7 @@ Commands the organizer itself sends (through the sandbox `windower.send_command`
 
 Keys are only ever overwritten, never reset: removing a key from the file keeps its previous value until the sandbox is rebuilt (`gs reload` or job change). A missing file only clears `LOADED_CHAR_CONFIG`.
 
-The shared `Config` table is seen by all libs only because `require` is cached per sandbox by `ModuleCache` (`shared/utils/core/module_cache.lua` `install`, called near the top of `INIT_SYSTEMS.lua`). Without the cache, each lib would get its own default `Config` table and `refresh()` would only affect `wardrobe_organizer.lua`'s copy.
+The shared `Config` table is seen by all libs only because `require` is cached per sandbox by `ModuleCache` (`shared/utils/core/module_cache.lua` `install`, called by `shared/utils/config/config_loader.lua`, which every entry file requires at file level, and again, as a no-op, near the top of `INIT_SYSTEMS.lua`). Without the cache, each lib would get its own default `Config` table and `refresh()` would only affect `wardrobe_organizer.lua`'s copy.
 
 ### Current character configs
 
@@ -376,11 +376,49 @@ Adding a phase to the active-job chain:
 
 Adding a configuration key: default in `lib/config.lua`, an override line in `Config.refresh()`, and a commented entry in both `_master/*/config_global/WARDROBE_CONFIG.lua` templates (then redeploy or copy to the live folders).
 
+## For maintainers / AI
+
+Invariants to keep:
+
+- Every move is a single packet from a live re-read of the bags. Never cache slot indices across a
+  burst step or a phase: the server moves items asynchronously and indices shift.
+- Every phase's pending filter and drain destinations must agree with `State.pin_target_for` and with
+  `Moves.unclaimed_pins_first`; a phase that files an item where another phase will pick it up again
+  makes the outer loop ping-pong until `TRULY_STUCK_THRESHOLD`.
+- A Phase 1 counter (`count_unpacked`, `count_inv_gear`) must use exactly the filter of the phase it
+  predicts, or the run retries to `MAX_OUTER_ITERATIONS`.
+- A run always ends with the slots enabled and every stance lock released: any new exit path goes
+  through `clean_exit` (or calls `Phases.enable_slots()` plus `release_stance_locks()`), and any new
+  module that calls `disable()` adds its release to `release_stance_locks`.
+- The organizer is lazy (`handle_wardrobeorganize` requires it); do not load it from an entry file or
+  `INIT_SYSTEMS`.
+- `wardrobe_organizer.lua` returns its table and exports nothing to `_G`; keep it that way, the router
+  is its only caller.
+
+Traps:
+
+- `lib/phases.lua` is 798 lines, at the 800-line hard cap of `.claude/CODE_QUALITY.md`: a new phase
+  goes in a new `lib/` module, not in `phases.lua`.
+- Item names: look items up by id (`res.items[id]`, as `lib/items.lua` does), never by scanning
+  `res.items` with `pairs`; bag loops iterate `res.bags` (a dozen entries), which is cheap.
+- `Chat.phase` formats with `%d`, so a fractional phase number is truncated (3.5 prints as 3).
+- Coroutines scheduled by a run are never cancelled; a change that must stop a run has to be checked
+  inside every callback (`job_changed()` is the existing pattern) or guarded by a run identifier.
+- Set files are parsed as text by `wardrobe_auditor.lua`, not loaded: a new set-file syntax (list
+  form without `=`, names built by concatenation) is invisible to pins and to the alt flow.
+
+Offline testing with Lua 5.1 (`C:/ProgramData/chocolatey/bin/lua5.1.exe`): the libraries only need
+`windower.ffxi.get_items` / `get_bag_info` / `get_item` / `put_item`, `windower.send_command`,
+`coroutine.schedule`, `res.items` / `res.bags` and `player`. A fake bag table plus a synchronous
+`coroutine.schedule = function(f) f() end` and recording `get_item` / `put_item` stubs that mutate the
+fake bags lets `State.build_state()` and a whole phase chain run on a desktop; stub `add_to_chat = print`
+for `lib/chat.lua`. Compare the recorded moves with what `preview()` logs to `wardrobe_debug.log`.
+
 ## Known issues
 
 Fixed since the page was first written:
 
-- Unused locals in `phases.lua` and `wardrobe_organizer.lua`, the "keep slots locked through the retry" comment (night cleanup `b6c7dc6`).
+- Unused locals in `phases.lua` and `wardrobe_organizer.lua`, the "keep slots locked through the retry" comment (night cleanup `85ad22b`, 2026-09-24).
 - "Layout OK" while Phase 3.5 had stopped early: `finish_run` and the last-chance verify now add `Phases.count_unpacked` (fixed 2026-09-25).
 - Retry warning printed "(was inf)" on the first retry (fixed 2026-09-25).
 - `wo` left PLD's Hoxne ammo lock and THF's range lock flagged over an open slot: `clean_exit` / `alt_finish` now release them (fixed 2026-09-25; game test pending: PLD Hoxne then `wo` -> warning, ammo free, Hoxne locks again when re-selected; THF `range` then `wo` -> HUD RangeLock Off).
