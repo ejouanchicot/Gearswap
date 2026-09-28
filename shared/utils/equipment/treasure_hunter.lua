@@ -226,8 +226,10 @@ function TreasureHunter.install()
     TreasureHunter.init()
     _G.handle_equipping_gear = function(status, pet_status)
         local result = gear(status, pet_status)
-        -- THF builds its engaged TH itself, with its SA/TA versions
-        if (status or (player and player.status)) == 'Engaged' and not rawget(_G, '_treasure_engaged_by_job') then
+        -- THF builds its engaged TH itself, with its SA/TA versions; a COR roll
+        -- holds the gear until it lands (gear_hold.lua)
+        if (status or (player and player.status)) == 'Engaged' and not rawget(_G, '_treasure_engaged_by_job')
+           and not require('shared/utils/core/gear_hold').active() then
             pcall(function()
                 local on = TreasureHunter.wants_engaged_th()
                 data().overlay_on = on

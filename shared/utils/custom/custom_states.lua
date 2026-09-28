@@ -230,7 +230,8 @@ function CustomStates.install_hooks()
         local locks = wanted_locks()
         Locks.release(locks)
         if orig_gear then orig_gear(status, pet_status) end
-        if not Guards.hands_off(nil, nil) then
+        -- A COR roll holds the gear until it lands (gear_hold.lua)
+        if not Guards.hands_off(nil, nil) and not require('shared/utils/core/gear_hold').active() then
             equip_moments({'all', (status or player.status) == 'Engaged' and 'engaged' or 'idle'}, nil)
         end
         Locks.apply(locks)

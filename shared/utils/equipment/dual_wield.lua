@@ -157,8 +157,7 @@ function DualWield.apply(status)
     if (status or (player and player.status)) ~= 'Engaged' then return end
     if not DualWield.settings().enabled or not dual_wielding() then return end
     -- A COR roll holds the gear until it lands (roll_hold.lua): leave it be
-    local hold = rawget(_G, 'cor_roll_hold')
-    if hold and os.clock() < (hold.until_time or 0) then return end
+    if require('shared/utils/core/gear_hold').active() then return end
     local set, name = tier_set((DualWield.tier()))
     if set then
         equip(set)
