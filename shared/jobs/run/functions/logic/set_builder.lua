@@ -28,8 +28,6 @@ local SetBuilder = {}
 local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 local WeaponResolver = require('shared/utils/equipment/weapon_resolver')
 
--- Load message formatter for error display
-local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   WEAPON/GRIP APPLICATION
@@ -63,9 +61,6 @@ end
 function SetBuilder.apply_grip(result)
     -- Skip grip application for Great Axes (Lycurgos)
     if state.MainWeapon and state.MainWeapon.current == 'Lycurgos' then
-        if _G.DEBUG_RUN_WEAPONS then
-            MessageFormatter.show_debug('RUN SetBuilder', 'Lycurgos detected - skipping grip application')
-        end
         return result
     end
 
@@ -73,9 +68,6 @@ function SetBuilder.apply_grip(result)
     if state.SubWeapon and state.SubWeapon.current then
         local grip_set = WeaponResolver.set_for('sub', state.SubWeapon.current)
         if grip_set then
-            if _G.DEBUG_RUN_WEAPONS then
-                MessageFormatter.show_debug('RUN SetBuilder', 'Applying grip: ' .. state.SubWeapon.current)
-            end
             result = set_combine(result, grip_set)
         end
     end
