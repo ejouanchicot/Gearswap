@@ -159,7 +159,8 @@ function SmartbuffManager.collect_samba()
         return abilities_to_cast, status_data
     end
 
-    if require('shared/utils/core/live_tp')() < samba.tp_cost then
+    -- Trance makes dances free (the precast samba check skips it too)
+    if not buffactive['Trance'] and require('shared/utils/core/live_tp')() < samba.tp_cost then
         return abilities_to_cast, status_data
     end
 
