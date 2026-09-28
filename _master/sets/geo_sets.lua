@@ -291,11 +291,12 @@ sets.precast.JA['Radial Arcana'] = {
 
 sets.midcast = {}
 
--- • Geomancy (Indi + Geo spells)
-sets.midcast.Geomancy = sets.luopan.idle
+-- • Geomancy (Indi + Geo spells): a copy, so changing it does not change
+--   sets.luopan.idle (and the other way round)
+sets.midcast.Geomancy = set_combine(sets.luopan.idle, {})
 
--- • Indi spells (self bubble)
-sets.midcast.Indi = sets.luopan.idle
+-- • Indi spells (self bubble): worn on every Indi-, Geomancy when absent
+sets.midcast.Indi = set_combine(sets.midcast.Geomancy, {})
 
 -- • Indi via Entrust (on party member - max duration/potency)
 -- When using Entrust + Indi on someone else, prioritize effect duration
@@ -317,7 +318,7 @@ sets.midcast.Indi.Entrust = set_combine(sets.midcast.Indi, {
     back = "Lifestream Cape",
 })
 
--- • Geo spells (Luopan bubble)
+-- • Geo spells (Luopan bubble): worn on every Geo-, Geomancy when absent
 sets.midcast.Geo = set_combine(sets.midcast.Geomancy, {})
 
 -- • Cure spells

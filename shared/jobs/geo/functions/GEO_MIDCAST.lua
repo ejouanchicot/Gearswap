@@ -41,6 +41,14 @@ local function ensure_modules_loaded()
     modules_loaded = true
 end
 
+--- The Geomancy family of a spell: 'Indi' or 'Geo' (MidcastManager then tries
+--- sets.midcast.Indi / .Geo before sets.midcast.Geomancy).
+--- @param spell_name string
+--- @return string|nil
+local function geomancy_family(spell_name)
+    return spell_name:match('^(Indi)%-') or spell_name:match('^(Geo)%-')
+end
+
 ---   Pre-midcast hook (job-specific logic before set selection)
 ---   @param spell table Spell information from GearSwap
 ---   @param action table Action information from GearSwap
@@ -75,10 +83,11 @@ local function midcast_geomancy(spell)
         end
     end
 
-    -- Standard Geomancy gear (self Indi or Geo spells)
+    -- Standard Geomancy gear: sets.midcast.Indi / .Geo, else .Geomancy
     MidcastManager.select_set({
         skill = 'Geomancy',
-        spell = spell
+        spell = spell,
+        database_func = geomancy_family
     })
 end
 

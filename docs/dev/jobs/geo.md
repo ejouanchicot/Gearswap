@@ -44,7 +44,7 @@ function, not a line number.
 | `_master/entry/Tetsouo_GEO.lua` | Entry point (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (loads PetTP), `job_update` (HUD only), `init_gear_sets`, `file_unload` (unloads PetTP) |
 | `shared/jobs/geo/functions/geo_functions.lua` | Facade: `message_buffs.lua`, the 11 hook files, `dualbox_manager` |
 | `shared/jobs/geo/functions/GEO_PRECAST.lua` | `job_precast` (guard, tier refine or cooldown, auto abilities, Entrust flag, WS) / `job_post_precast` |
-| `shared/jobs/geo/functions/GEO_MIDCAST.lua` | `job_midcast` (empty) / `job_post_midcast` (`midcast_geomancy`, Enhancing branch, `PLAIN_SKILLS`) |
+| `shared/jobs/geo/functions/GEO_MIDCAST.lua` | `job_midcast` (empty) / `job_post_midcast` (`midcast_geomancy` with `geomancy_family`, Enhancing branch, `PLAIN_SKILLS`) |
 | `shared/jobs/geo/functions/GEO_AFTERCAST.lua` | `job_aftercast`: watchdog, Entrust flag, `geo_escort_on_aftercast` |
 | `shared/jobs/geo/functions/GEO_IDLE.lua` | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/geo/functions/GEO_ENGAGED.lua` | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
@@ -204,14 +204,14 @@ flowchart TD
 - The cast line comes from `message_geo.lua` `show_indi_cast` /
   `show_geo_cast`, which require both geomancy databases at load and print an
   error for a spell missing from them.
-- `select_set({skill = 'Geomancy'})` resolves to `sets.midcast.Geomancy` (P9),
-  because no set is named after an Indi- / Geo- spell. In the template
-  `sets.midcast.Geomancy` **is** `sets.luopan.idle`, so every Indi- and Geo-
-  cast wears the luopan idle set. `sets.midcast.Geo` is looked up by nothing.
-- `sets.midcast.Indi = sets.luopan.idle` is the same table, so the template
-  line creating `sets.midcast.Indi.Entrust` writes the Entrust sub-table
-  **into** `sets.luopan.idle`. GearSwap ignores non-slot keys when equipping,
-  so this has no gear effect by itself.
+- `select_set({skill = 'Geomancy', database_func = geomancy_family})`: the
+  family ('Indi' / 'Geo', from the name prefix) makes P6 pick
+  `sets.midcast.Indi` / `sets.midcast.Geo` (P7: `sets.midcast.Geomancy.Indi` /
+  `.Geo`), else `sets.midcast.Geomancy` (P9). Before 2026-09-28 there was no
+  family, so `.Indi` / `.Geo` were never worn.
+- The set files build `sets.midcast.Geomancy` as a copy of `sets.luopan.idle`
+  and `.Indi` / `.Geo` as copies of it (before 2026-09-28 `Geomancy` and `Indi`
+  were `sets.luopan.idle` itself, one table under three names).
 - The Entrust branch equips `sets.midcast.Indi.Entrust` without
   `select_set` and calls `MidcastFallback.skip(spell)`. Until 2026-09-28 it did
   not, and the fallback put `sets.midcast.Geomancy` back over the Entrust set.
@@ -298,7 +298,7 @@ Created by `GEOStates.configure()` on every `user_setup()`. Keys from
 | `SubWeapon` | Genmei Shield | Genmei Shield | none | `SetBuilder.apply_weapon` |
 | `IndicolureMode` | Self, Entrust | Self | `^numpad+` | nothing (HUD only) |
 | `MainIndi` | 30 Indi- spells | Indi-Haste | `^numpad3` | `indi`, `entrust` |
-| `MainGeo` | 28 Geo- spells (no Geo-CHR) | Geo-Frailty | `^numpad4` | `geo` |
+| `MainGeo` | the 30 Geo- spells | Geo-Frailty | `^numpad4` | `geo` |
 | `MainLightSpell` | Fire, Aero, Thunder | Fire | `^numpad5` | `lightspell` |
 | `MainDarkSpell` | Blizzard, Stone, Water | Blizzard | `^numpad6` | `darkspell` |
 | `SpellTier` | V, IV, III, II, I | V | `^numpad1` | `lightspell`, `darkspell` |
@@ -343,9 +343,9 @@ T = in `_master/sets/geo_sets.lua`.
 | `sets.idle.Town` (= `sets.me.idle.Town`), `sets.Adoulin`, `sets.MoveSpeed` | `BaseSetBuilder` | yes (`sets.Adoulin` is a 2-slot set) |
 | `sets.idle.Pet` | Mote's base only, which the builder discards | yes (unused) |
 | `sets.precast.FC`, `.FC.Cure`, `sets.precast.JA[...]` (Bolster, Life Cycle, Blaze of Glory, Dematerialization, Entrust, Ecliptic Attrition, Radial Arcana), `sets.precast.WS`, `WS['Exudation']` | Mote default precast | yes |
-| `sets.midcast.Geomancy` (= `sets.luopan.idle`) | `MidcastManager` base | yes |
+| `sets.midcast.Indi`, `sets.midcast.Geo` | `MidcastManager` P6 (`geomancy_family`) | yes |
+| `sets.midcast.Geomancy` (copy of `sets.luopan.idle`) | `MidcastManager` base | yes |
 | `sets.midcast.Indi.Entrust` | `midcast_geomancy` (then undone, see Midcast) | yes |
-| `sets.midcast.Indi`, `sets.midcast.Geo` | nothing | yes (unused) |
 | `sets.midcast.Cure`, `.Curaga` | Mote default (spell map) | yes |
 | `sets.midcast['Enhancing Magic']` (empty), `['Enfeebling Magic']` (empty), `['Elemental Magic']` | Mote default, then `MidcastManager` base | yes |
 | `sets.midcast['Healing Magic']`, `['Dark Magic']` | `MidcastManager` base | **no** (routes are no-ops) |
@@ -420,8 +420,8 @@ T = in `_master/sets/geo_sets.lua`.
   `sets.engaged[HybridMode]` (else `sets.me`) without a luopan, and from
   `sets.luopan` with one; Mote's own selection is discarded.
 - In town the town set wins over the luopan set.
-- `sets.midcast.Geomancy`, `sets.midcast.Indi` and `sets.luopan.idle` are one
-  table: assigning a key on one writes it on all three.
+- Build `sets.midcast.Geomancy` / `.Indi` with `set_combine`, never `=` another
+  set: `=` makes one table under two names, and editing one edits both.
 - A midcast branch that equips without `select_set` must call
   `MidcastFallback.skip(spell)`, or the fallback lays the Geomancy chain over it.
 - Commands that depend on the subjob (`lightarts`, `aoe`, `dispel`) do not

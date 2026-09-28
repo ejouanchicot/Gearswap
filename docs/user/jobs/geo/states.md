@@ -31,7 +31,7 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 Acumen, Focus, Voidance, Attunement, Regen), then the seven stat spells, then the
 debuffs, Fend and Poison. `MainGeo` starts with the debuffs (Frailty, Malaise, Torpor, Slow,
 Languor, Paralysis, Vex, Wilt, Slip, Fade, Gravity, Fend, Poison), then the buffs
-(Geo-CHR is not in the list; add it if you want it).
+(Regen and Refresh among them), then the seven stat spells: every Geo- spell of the game.
 Reorder or trim the lists in `GEO_STATES.lua`.
 
 ## Other modes (no key)

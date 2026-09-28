@@ -57,16 +57,19 @@ spells if you want a different Fast Cast set for them.
 | Set | Worn for |
 |---|---|
 | `sets.midcast['Indi-Haste']`, `sets.midcast['Geo-Frailty']`... | That one spell (exact name), when you add it |
-| `sets.midcast.Geomancy` | Every Indi- and Geo- spell without its own set |
+| `sets.midcast.Indi` | Every Indi- spell without its own set (Indi- duration gear) |
+| `sets.midcast.Geo` | Every Geo- spell without its own set |
+| `sets.midcast.Geomancy` | An Indi- or Geo- spell when the set above is missing |
 | `sets.midcast.Indi.Entrust` | An Indi- cast on a party member (not yourself) while Entrust is up, or right after you used Entrust. Replaces everything above for that cast |
 
-In the provided file `sets.midcast.Geomancy` **is** `sets.luopan.idle` (the
-same table): editing one edits the other. Give it its own content if your
-Geomancy skill / Indi- duration gear differs from your luopan idle set.
+In the provided file `sets.midcast.Geomancy` is a copy of `sets.luopan.idle`,
+and `sets.midcast.Indi` / `sets.midcast.Geo` are copies of `sets.midcast.Geomancy`:
+each can be changed without changing the others.
 
-The Entrust set in the provided file starts from the luopan idle set and puts
-Gada in the main hand. With `CombatMode` On, main and sub are locked and Gada
-does not go on.
+The Entrust set in the provided file starts from the Indi set and puts Gada in
+the main hand. With `CombatMode` On, main and sub are locked: Gada does not go on,
+the rest of the Entrust set does. With `CombatMode` Off, Gada replaces your main
+weapon for the cast, so the TP you had is lost. Pick the mode that suits you.
 
 Until 2026-09-28 a shared step put `sets.midcast.Geomancy` back on after the
 Entrust set; fixed, the Entrust set now stays for the whole cast.
@@ -144,15 +147,8 @@ The provided file has `sets.precast.JA['Bolster']`, `['Life Cycle']`,
 
 ## Sets in the provided file that nothing reads
 
-- `sets.midcast.Indi` (only its `.Entrust` part is read) and
-  `sets.midcast.Geo`: an Indi- or Geo- spell never looks for these names.
-  Put the gear in `sets.midcast.Geomancy` or name the spell exactly.
 - `sets.idle.Pet`: GEO chooses `sets.luopan.idle` itself.
 - `sets.me.idle.Town`: only through `sets.idle.Town`, which is the same set.
-
-Also note: `sets.midcast.Indi` is the same table as `sets.luopan.idle`, so the
-line that creates `sets.midcast.Indi.Entrust` stores the Entrust set inside
-`sets.luopan.idle`. It changes no gear.
 
 ## Names the code reads that the provided file lacks
 

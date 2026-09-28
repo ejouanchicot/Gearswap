@@ -171,13 +171,15 @@ function GEOStates.configure()
         "Geo-Voidance",      -- Evasion+
         "Geo-Attunement",    -- Magic Evasion+
         "Geo-Regen",         -- Regen+
+        "Geo-Refresh",       -- Refresh+
         -- Stats buffs
         "Geo-STR",           -- STR+
         "Geo-DEX",           -- DEX+
         "Geo-VIT",           -- VIT+
         "Geo-AGI",           -- AGI+
         "Geo-INT",           -- INT+
-        "Geo-MND"            -- MND+
+        "Geo-MND",           -- MND+
+        "Geo-CHR"            -- CHR+
     }
     state.MainGeo:set("Geo-Frailty")  -- Default to Frailty (Defense- debuff)
 
