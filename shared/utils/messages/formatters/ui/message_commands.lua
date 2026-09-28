@@ -438,6 +438,7 @@ local COMMANDS_HELP = {
             {'//gs c keyconflicts | kc', '', 'Keys two actions can share'},
         }},
         {title = 'EQUIPMENT & INVENTORY', rows = {
+            {'//gs c belt', '', 'Obi / Orpheus auto: state, bonuses'},
             {'//gs c wardrobeaudit | wa', '', 'Audit wardrobe across jobs'},
             {'//gs c worganize | wo', '', 'Organize wardrobes by job'},
             {'//gs c worganize alt', '', 'Alt mode (4 wardrobes)'},
