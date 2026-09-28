@@ -25,7 +25,9 @@
 ---
 --- Settings below: enabled, and the % each buff counts for. They are
 --- estimates, a little low on purpose (a March depends on the Bard's gear;
---- counting less keeps a little more Dual Wield).
+--- counting less keeps a little more Dual Wield). Slow and Elegy on you are
+--- not counted (their strength cannot be known): while slowed, force more
+--- Dual Wield with //gs c dw none, then //gs c dw auto.
 ---
 --- In game:
 ---   //gs c dw                          estimated haste, tier, set used

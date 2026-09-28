@@ -345,7 +345,7 @@ before the custom states: the player's custom gear still wins).
   `_master/config_global/DW_CONFIG.lua`, low on purpose). Haste vs Haste II
   (same buff) and which March come from a raw `action` listener (spells 57 /
   511 / 710 Erratic Flutter, 417 / 419 / 420 landing on this character),
-  kept on `windower._dw_tracked`. Slow and JA haste are not counted.
+  kept on `windower._dw_tracked`. JA haste is not counted, nor Slow (buff 13, 7-29 % by the caster's MND) or Elegy (194, a separate slow up to 25 / 50 %): their strength is unknown and they are rare and short on a player, so they were left out on purpose (2026-09-28); the config header tells the player to force `//gs c dw none` while slowed.
 - `gain buff` / `lose buff` on those buffs: after 0.3 s, `gs c update` when the
   tier changed and the player is engaged.
 - `//gs c dw` (not `haste`: that is the alt command casting Haste) shows the
