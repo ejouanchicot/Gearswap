@@ -3,6 +3,9 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Watches a paired (ammo / quiver) item and auto-uses the quiver to
 ---   replenish the ammo stack when the count drops at or below a threshold.
+---   With no names given, the pair is the ammo worn and its own pouch /
+---   quiver (ItemIndex.ammo_container), so any bullet, arrow, bolt or
+---   shuriken works.
 ---
 ---   Typical use: QuiverManager.after_ranged_attack() from job_aftercast.
 ---
@@ -16,8 +19,8 @@
 ---
 ---   @file    shared/utils/inventory/quiver_manager.lua
 ---   @author  ejouanchicot
----   @version 1.0
----   @date    Created: 2026-05-03
+---   @version 1.1
+---   @date    Created: 2026-05-03 | Updated: 2026-09-28
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local QuiverManager = {}
@@ -127,8 +130,8 @@ end
 --- in use. It is delayed so FFXI has decremented the ammo count before it is
 --- read.
 --- @param spell table Spell from job_aftercast
---- @param ammo_name string e.g. 'Acid Bolt'
---- @param quiver_name string e.g. 'Ac. Bolt Quiver'
+--- @param ammo_name string|nil e.g. 'Acid Bolt'; nil = the ammo worn, whatever it is
+--- @param quiver_name string|nil e.g. 'Ac. Bolt Quiver'; nil = the ammo's own container
 --- @param threshold number Open when the ammo total is at or below this
 --- @return boolean True when a check was scheduled
 function QuiverManager.after_ranged_attack(spell, ammo_name, quiver_name, threshold)
@@ -137,7 +140,15 @@ function QuiverManager.after_ranged_attack(spell, ammo_name, quiver_name, thresh
     end
 
     local equipped = player and player.equipment and player.equipment.ammo
+    if type(equipped) ~= 'string' or equipped == '' or equipped == 'empty' then
+        return false
+    end
+    ammo_name = ammo_name or equipped
     if equipped ~= ammo_name then
+        return false
+    end
+    quiver_name = quiver_name or require('shared/utils/equipment/item_index').ammo_container(ammo_name)
+    if not quiver_name then
         return false
     end
 

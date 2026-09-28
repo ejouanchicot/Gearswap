@@ -110,7 +110,8 @@ get the automatic Obi / Orpheus belt when it helps.
 |---|---|
 | `sets.precast.WS` | Any weaponskill without its own set |
 | `sets.precast.WS['Savage Blade']` | Savage Blade (the provided file's melee weaponskill) |
-| `sets.precast.WS['Name']` | Any other: `['Leaden Salute']`, `['Last Stand']`, `['Wildfire']`, `['Hot Shot']`, `['Evisceration']`... none is in the provided file, so today they all use `sets.precast.WS`, a melee (STR) set |
+| `sets.precast.WS.Marksmanship` | Any gun weaponskill without its own set (Leaden Salute, Last Stand, Wildfire, Hot Shot...). Empty in the provided file, so it is `sets.precast.WS` until you fill it |
+| `sets.precast.WS['Name']` | One weaponskill: `['Leaden Salute']`, `['Last Stand']`, `['Evisceration']`... Checked first: a named set wins over `.Marksmanship` and `sets.precast.WS` |
 
 - Moonshade Earring (TP bonus +250) goes on by itself in the left ear when it lifts your
   TP to the next step (2000 or 3000); the list is in `config/cor/COR_TP_CONFIG.lua`. It
@@ -173,10 +174,11 @@ midcast keeps whatever was on.
 - **Triple Shot**: `sets.midcast.RA.TripleShot` on top of the ranged midcast set while
   it is up.
 - **Moonshade by TP** on weaponskills (see Weaponskills).
-- **Bullet pouches opened for you.** After a ranged attack with Bronze Bullet equipped,
-  when 15 or fewer Bronze Bullets are left (inventory and wardrobes), a Bronze Bullet
-  Pouch (`Brz. Bull. Pouch`) in your inventory is used. No pouch in the inventory: a
-  warning. Only Bronze Bullet is watched; other bullets are not.
+- **Bullet pouches opened for you.** After a ranged attack, when 15 or fewer of the
+  bullets you wear are left (inventory and wardrobes), their pouch in your inventory is
+  used (Bronze Bullet -> `Brz. Bull. Pouch`, Eminent Bullet -> `Em. Bul. Pouch`...). No
+  pouch in the inventory: a warning. Chrono, Living and Devastating Bullet pouches are
+  waist equipment, not items you use from the inventory: they are not opened for you.
 - **Gear rules of `COR_CUSTOM.lua`** leave ranged attacks alone (a rule never changes
   your gear during a shot).
 
@@ -195,7 +197,6 @@ is read but equal to the base roll set, see above.)
 | `sets.precast.CorsairShot['<Element> Shot']` | One Quick Draw element |
 | `sets.precast.RA.Flurry1`, `sets.precast.RA.Flurry2` | Shooting under Flurry / Flurry II |
 | `sets.midcast.RA.TripleShot` | Ranged midcast under Triple Shot |
-| `sets.precast.WS['Leaden Salute']`, `['Last Stand']`, `['Wildfire']`, `['Hot Shot']` | The ranged and magic weaponskills (today they use the melee `sets.precast.WS`) |
 | `sets.precast.JA['Triple Shot']`, `['Crooked Cards']`, `['Cutting Cards']` | Those abilities |
 | `sets.DW.NoHaste` ... `sets.DW.MaxHaste` | Dual Wield pieces with /NIN or /DNC (commented example at the end of the file) |
 | `sets.midcast.Cure`, `sets.midcast['Enhancing Magic']`... | Subjob spells ([guide](../../guides/sets.md)) |

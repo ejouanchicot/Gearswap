@@ -62,8 +62,8 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 - **Aftermath Lv.3 with Vajra**: the engaged set becomes `sets.engaged.PDTAFM3`.
 - **Range lock.** Any ranged attack turns Range Lock On by itself. A reload, a
   job or subjob change, or `//gs c wo` releases the lock and sets it back to Off.
-- After a ranged attack with Acid Bolt equipped, an Ac. Bolt Quiver from your
-  inventory is opened when 5 bolts or fewer are left.
+- After a ranged attack, the quiver of the bolts you wear is opened from your
+  inventory when 5 or fewer are left.
 - Idle: town and Adoulin sets in town, `sets.MoveSpeed` while moving outside town.
 - Weaponskill TP bonus gear: see [TP bonus](../war/tp-bonus.md).
 - Every mode goes back to its default on each job change, subjob change or reload.

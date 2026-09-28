@@ -319,6 +319,11 @@ sets.precast.WS = {
     }
 }
 
+-- • Gun weaponskills without a set of their own (Last Stand, Wildfire, Hot Shot...):
+--   Mote tries sets.precast.WS[<name>], then the WS skill (Marksmanship), then
+--   sets.precast.WS. Put the ranged pieces here; empty, they use the generic set.
+sets.precast.WS.Marksmanship = set_combine(sets.precast.WS, {})
+
 -- • Savage Blade (Melee WS)
 sets.precast.WS['Savage Blade'] = {
     head = {

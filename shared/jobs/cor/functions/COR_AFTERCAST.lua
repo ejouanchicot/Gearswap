@@ -31,10 +31,11 @@ function job_aftercast(spell, action, spellMap, eventArgs)
         _G.MidcastWatchdog.on_aftercast()
     end
 
-    -- Auto-open a bullet pouch when the stack runs low after a ranged attack.
+    -- Auto-open the pouch of the bullet worn when its stack runs low after a
+    -- ranged attack.
     local ok, QuiverManager = pcall(require, 'shared/utils/inventory/quiver_manager')
     if ok and QuiverManager then
-        QuiverManager.after_ranged_attack(spell, 'Bronze Bullet', 'Brz. Bull. Pouch', 15)
+        QuiverManager.after_ranged_attack(spell, nil, nil, 15)
     end
 
     -- Gear refresh is handled by Mote (status_change) + MidcastWatchdog (packet

@@ -124,7 +124,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Lockstyle, macro book | Set on load and on each subjob change |
 | Dual-box | Job exchange with your alt, `alts` orders, macro book per alt job |
 | Messages | Ability, spell and weaponskill lines in chat (`jamsg` / `spellmsg` / `wsmsg`) |
-| Quiver | After a ranged attack with Acid Bolt, an Ac. Bolt Quiver in your inventory is opened when 5 bolts or fewer are left |
+| Quiver | After a ranged attack, the quiver of the bolts you wear (Acid Bolt -> Ac. Bolt Quiver) in your inventory is opened when 5 or fewer are left |
 
 ### Treasure Hunter
 

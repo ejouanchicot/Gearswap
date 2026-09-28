@@ -45,7 +45,7 @@ function; line numbers are deliberately not used.
 | `shared/jobs/thf/functions/thf_functions.lua` | 117 | Facade: includes `message_buffs` and the 11 hook files, calls `TreasureHunter.init()` (THF layer), requires `dualbox_manager` |
 | `shared/jobs/thf/functions/THF_PRECAST.lua` | 147 | `job_precast` / `job_post_precast`: guard, cooldown, SA/TA pending flags, WS handler; post: SA/TA WS variant, then TP gear |
 | `shared/jobs/thf/functions/THF_MIDCAST.lua` | 94 | `job_midcast` (ranged lock via `RangeLock.engage`) / `job_post_midcast` (watchdog, MidcastManager for Ninjutsu, Healing, Enhancing) |
-| `shared/jobs/thf/functions/THF_AFTERCAST.lua` | 64 | `job_aftercast`: watchdog, SA/TA pending flags (lowered when refused), quiver auto-open |
+| `shared/jobs/thf/functions/THF_AFTERCAST.lua` | 65 | `job_aftercast`: watchdog, SA/TA pending flags (lowered when refused), quiver auto-open |
 | `shared/jobs/thf/functions/THF_IDLE.lua` | 42 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/thf/functions/THF_ENGAGED.lua` | 42 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/thf/functions/THF_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
@@ -278,8 +278,9 @@ All locking goes through `logic/range_lock.lua`, which records the lock in
   (`wardrobe_organizer.lua` `release_stance_locks`) and sets `RangeLock` back
   to Off, with a warning line.
 - Quiver auto-open (`THF_AFTERCAST.lua`):
-  `QuiverManager.after_ranged_attack(spell, 'Acid Bolt', 'Ac. Bolt Quiver', 5)`
-  runs only for a non-interrupted `Ranged Attack` with `Acid Bolt` equipped,
+  `QuiverManager.after_ranged_attack(spell, nil, nil, 5)` runs for a
+  non-interrupted `Ranged Attack`, with the ammo worn and its quiver
+  (`ItemIndex.ammo_container`),
   then 1 s later opens the quiver when 5 bolts or fewer are left (inventory +
   wardrobes).
 - The shared TH wrapper on `cleanup_midcast` equips `sets.TreasureHunter` on a
@@ -489,7 +490,7 @@ recursively must guard against the cycle.
 | `<char>/config/treasure_mode.lua` | absent (THF shown natively) | written by `//gs c th` | `OptionalState.settings` |
 | `<char>/config/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver` |
 | `<char>/config/LOCKSTYLE_CONFIG.lua`, `RECAST_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | shared | entry |
-| Hard-coded | crossbow/bolt names (`range`), quiver names and threshold (`job_aftercast`), FBC and Steal tables (`smartbuff_manager.lua`), TH forget delay 180 s (shared `FORGET_AFTER`) | code | - |
+| Hard-coded | crossbow/bolt names (`range`), quiver threshold (`job_aftercast`), FBC and Steal tables (`smartbuff_manager.lua`), TH forget delay 180 s (shared `FORGET_AFTER`) | code | - |
 
 ## State & lifetime
 

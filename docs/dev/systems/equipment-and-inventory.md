@@ -38,7 +38,7 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/utils/equipment/wardrobe_auditor.lua` | 695 | `//gs c wa` report; text parser of set files; `build_pinned_bags` / `build_frequency_map` / `collect_all_used_names` for the organizer | `CommonCommands.handle_wardrobeaudit`; `wardrobe/lib/state.lua`, `reports.lua`, `orchestrator_alt.lua` | this page |
 | `shared/utils/equipment/hp_priority.lua` | 196 | Load-time pass: `priority = HP` (HP*1000+MP on BLM/RDM/GEO) on every HP piece of `_G.sets` | `INIT_SYSTEMS.lua`, HP PRIORITY block, every load | this page |
 | `shared/utils/equipment/weapon_resolver.lua` | 104 | `set_for(slot, value)`: the set a `MainWeapon` / `SubWeapon` value equips; `is_offhand_weapon(name)` | 12 job set builders (see below) | this page |
-| `shared/utils/equipment/item_index.lua` | 93 | Name lookups over `res.items` built in one walk per session (`windower._item_index`): `id(name)`, `is_weapon(name)`, `dual_wields(name)` | `weapon_resolver.lua`, `quiver_manager.lua`, `refill/item_resolver.lua`, `weaponskill/ws_slots.lua` (`same_item`, WAR / PLD weapon detection) | this page |
+| `shared/utils/equipment/item_index.lua` | 140 | Name lookups over `res.items` built in one walk per session (`windower._item_index`): `id(name)`, `is_weapon(name)`, `dual_wields(name)`, `ammo_container(name)` (pouch / quiver of an ammo) | `weapon_resolver.lua`, `quiver_manager.lua`, `refill/item_resolver.lua`, `weaponskill/ws_slots.lua` (`same_item`, WAR / PLD weapon detection) | this page |
 | `shared/utils/equipment/elemental_bonus.lua` | 75 | Pure arithmetic: what Hachirin-no-Obi and Orpheus's Sash add for an action | `elemental_belt.lua`, `custom/custom_conditions.lua` (`obi_better` / `orpheus_better`) | this page; [keybinds-and-custom.md](keybinds-and-custom.md) |
 | `shared/utils/equipment/elemental_belt.lua` | 213 | Obi or Orpheus chosen for every job on `cleanup_precast` / `cleanup_midcast`; `//gs c belt` | `INIT_SYSTEMS.lua` (`ElementalBelt.install`) | [factories-and-helpers.md](factories-and-helpers.md#elementalbelt) |
 | `shared/utils/equipment/dual_wield.lua` | 247 | Dual Wield tier sets (`sets.DW.*`) laid on the engaged set by magic haste; `//gs c dw` | `INIT_SYSTEMS.lua` (`DualWield.install`) | [factories-and-helpers.md](factories-and-helpers.md#dualwield) |
@@ -52,7 +52,7 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/utils/inventory/refill/item_resolver.lua` | 75 | Lazy name -> item id index over `res.items` | `refill_manager.lua`, `config_resolver.lua` | this page |
 | `shared/utils/inventory/refill/bag_scanner.lua` | 45 | Counts one item id in one bag and returns its slots | `refill_manager.lua` | this page |
 | `shared/utils/inventory/refill/refill_panels.lua` | 227 | Chat output of the refill (banner, progress, report) | `refill_manager.lua` | this page |
-| `shared/utils/inventory/quiver_manager.lua` | 170 | After a ranged attack with the tracked ammo, uses a quiver/pouch with `/item` when the ammo count drops to a threshold | `THF_AFTERCAST.lua`, `COR_AFTERCAST.lua` | this page |
+| `shared/utils/inventory/quiver_manager.lua` | 161 | After a ranged attack with the ammo worn (or a named one), uses a quiver/pouch with `/item` when the ammo count drops to a threshold | `THF_AFTERCAST.lua`, `COR_AFTERCAST.lua` | this page |
 
 ### Data, generator and configs
 
@@ -308,17 +308,22 @@ complete`. Item names are coloured by keyword: food, ammo/quiver, everything els
 ### Quiver auto-open
 
 `THF_AFTERCAST.lua` (`job_aftercast`) and `COR_AFTERCAST.lua` (`job_aftercast`) require `QuiverManager`
-on every aftercast and call `QuiverManager.after_ranged_attack(spell, 'Acid Bolt', 'Ac. Bolt Quiver', 5)`
-and `after_ranged_attack(spell, 'Bronze Bullet', 'Brz. Bull. Pouch', 15)`. The names are hardcoded in
-the shared job modules, so they apply to every character playing THF or COR.
+on every aftercast and call `QuiverManager.after_ranged_attack(spell, nil, nil, 5)` (THF) and
+`after_ranged_attack(spell, nil, nil, 15)` (COR). With no names, the ammo is the one worn and the
+container is `ItemIndex.ammo_container(ammo)`: the `Usable` item whose log name is the ammo's plus
+` pouch` / ` quiver` (`'s` dropped, ` arrow` -> ` quiver`), and only when that name is unique (the
+`Old Quiver` quest items are not a match). 95 ammo have one. Chrono / Living / Devastating Bullet
+pouches and the Chrono Quiver are waist `Armor`: `/item` cannot use them from the inventory, so
+they are left out. Explicit names still work (`after_ranged_attack(spell, 'Acid Bolt',
+'Ac. Bolt Quiver', 5)`).
 
-`after_ranged_attack` (`quiver_manager.lua:154`) returns `false` unless
+`after_ranged_attack` (`quiver_manager.lua:137`) returns `false` unless
 `spell.action_type == 'Ranged Attack'` (GearSwap gives `/ra` the `type` `'Misc'`) and the shot was not
-interrupted, and unless `player.equipment.ammo` is the tracked ammo, so a shot with other ammo does not
-warn about a stack that is not in use. Otherwise it schedules `check_and_refill(ammo, quiver,
+interrupted, and unless ammo is worn, is the tracked ammo (when one is named) and has a container, so a
+shot with other ammo does not warn about a stack that is not in use. Otherwise it schedules `check_and_refill(ammo, quiver,
 threshold)` 1.0 s later, so FFXI has decremented the ammo count first, and returns `true`.
 
-`check_and_refill` (`quiver_manager.lua:90`):
+`check_and_refill` (`quiver_manager.lua:73`):
 1. Returns if the same quiver was used less than `OPEN_COOLDOWN = 8.0` s ago (`os.clock`, per-name
    table `last_open`, `:36`).
 2. Resolves both names through `resolve_id`, which reads the session-wide item index
@@ -523,8 +528,8 @@ why the entry file releases it in `file_unload` and re-applies it in `user_setup
 
 | Function | Returns | Callers |
 |---|---|---|
-| `after_ranged_attack(spell, ammo_name, quiver_name, threshold)` `quiver_manager.lua:154` | `true` when a check was scheduled | `THF_AFTERCAST.lua`, `COR_AFTERCAST.lua` (`job_aftercast`) |
-| `check_and_refill(ammo_name, quiver_name, threshold)` `quiver_manager.lua:90` | `true` when a use-item command was sent | `after_ranged_attack` |
+| `after_ranged_attack(spell, ammo_name, quiver_name, threshold)` `quiver_manager.lua:137` | `true` when a check was scheduled | `THF_AFTERCAST.lua`, `COR_AFTERCAST.lua` (`job_aftercast`) |
+| `check_and_refill(ammo_name, quiver_name, threshold)` `quiver_manager.lua:73` | `true` when a use-item command was sent | `after_ranged_attack` |
 
 ### Modules documented on other pages
 
@@ -575,7 +580,7 @@ return M
 - Craft list: `<Char>/config/craft/CRAFT_REFILL.lua`, only `.default` and `.store_bag` are read.
 - Weapon resolver: `<Char>/config/WEAPON_CONFIG.lua`, `return { equip_without_set = true }`.
 - Defaults in code: `FALLBACK_LIST` (`config_resolver.lua:39`), `DEFAULT_STORE_BAG = 'case'` (`:57`),
-  `MOVE_DELAY = 0.6` (`refill_manager.lua:46`), `OPEN_COOLDOWN = 8.0` (`quiver_manager.lua:36`), quiver
+  `MOVE_DELAY = 0.6` (`refill_manager.lua:46`), `OPEN_COOLDOWN = 8.0` (`quiver_manager.lua:39`), quiver
   thresholds in the aftercast callers, `IGNORED_WARDROBES` (`wardrobe_auditor.lua:137`),
   `MAX_RECURSION_DEPTH = 15` (`equipment_checker.lua:28`), and in `hp_priority.lua` `CHARACTERS`,
   `MP_JOBS`, `MP_WEIGHT`, `SKIP_JOBS`. None of them is read from a config file.
@@ -777,12 +782,7 @@ Still open:
 - `build_pinned_bags` truncates names containing an apostrophe - `wardrobe_auditor.lua:619`
 - `wa` chat summary counts wardrobe 7 items as used while the text report does not -
   `show_ingame_summary`, `wardrobe_auditor.lua:448`
-- Duplicated code: `build_frequency_map` and `collect_all_used_names` identical (`:590`, `:686`);
-  QuiverManager duplicates ItemResolver's index (`quiver_manager.lua:60-86`); `WeaponResolver` builds
-  two more full indexes of `res.items` (`is_weapon`, `is_offhand_weapon`)
-- `WeaponResolver.is_offhand_weapon` scans every item of `res.items` on the first RDM/BLU engaged-set
-  build that has an off-hand, i.e. during a status change or `gs c update`; not measured in game -
-  `shared/utils/equipment/weapon_resolver.lua`
+- Duplicated code: `build_frequency_map` and `collect_all_used_names` identical (`:590`, `:686`)
 - HP priority processes only the characters listed in `CHARACTERS` (Tetsouo, Kaories); a new clone gets
   no automatic priorities until it is added - `hp_priority.lua`
 - User docs contradict the code: `docs/user/features/equipment-validation.md`,

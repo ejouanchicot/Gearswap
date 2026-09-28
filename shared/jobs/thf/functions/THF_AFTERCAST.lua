@@ -7,7 +7,7 @@
 ---   • MidcastWatchdog tick
 ---   • SA/TA pending flag kept when the ability went off, lowered when refused
 ---     (_G.thf_sa_pending, _G.thf_ta_pending)
----   • Acid Bolt quiver auto-open after a ranged attack (QuiverManager)
+---   • Quiver of the ammo worn auto-opened after a ranged attack (QuiverManager)
 ---
 ---   Dependencies:
 ---   • Mote-Include (handles actual idle/engaged gear swap)
@@ -46,10 +46,11 @@ function job_aftercast(spell, action, spellMap, eventArgs)
         _G[pending_flag] = not spell.interrupted
     end
 
-    -- Auto-open Acid Bolt quiver when stack runs low after a ranged attack.
+    -- Auto-open the quiver of the ammo worn when its stack runs low after a
+    -- ranged attack.
     local ok, QuiverManager = pcall(require, 'shared/utils/inventory/quiver_manager')
     if ok and QuiverManager then
-        QuiverManager.after_ranged_attack(spell, 'Acid Bolt', 'Ac. Bolt Quiver', 5)
+        QuiverManager.after_ranged_attack(spell, nil, nil, 5)
     end
 
     -- Gear refresh is handled by Mote (status_change) + MidcastWatchdog (packet

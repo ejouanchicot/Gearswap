@@ -45,7 +45,7 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/cor/functions/cor_functions.lua` | 120 | Facade: `message_buffs.lua`, the 11 hook files, `dualbox_manager` (its header still says "Logic modules (4)") |
 | `shared/jobs/cor/functions/COR_PRECAST.lua` | 225 | `job_precast` (guard, `DoubleUp.redirect`, cooldown, `apply_cor_precast`, WS) / `job_post_precast` (TP gear, `apply_luzaf`, `hold_fold_gear`, `RollDebug.note_precast`, `RollHold.start`); starts `flurry_tracker` at load |
 | `shared/jobs/cor/functions/COR_MIDCAST.lua` | 103 | `job_midcast` (empty) / `job_post_midcast` (RA with `RangedMode` + Triple Shot, Enhancing, `PASSTHROUGH_SKILLS`) |
-| `shared/jobs/cor/functions/COR_AFTERCAST.lua` | 61 | `job_aftercast` (`RollHold.stop`, watchdog, bullet pouch), empty `job_post_aftercast` |
+| `shared/jobs/cor/functions/COR_AFTERCAST.lua` | 62 | `job_aftercast` (`RollHold.stop`, watchdog, bullet pouch), empty `job_post_aftercast` |
 | `shared/jobs/cor/functions/COR_IDLE.lua` | 41 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/cor/functions/COR_ENGAGED.lua` | 41 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/cor/functions/COR_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
@@ -62,7 +62,7 @@ function; line numbers are given only where no function name fits.
 | `shared/utils/core/gear_hold.lua` | 25 | `GearHold.active()`: the roll hold as seen by the shared layers (Dual Wield tiers, TH engaged overlay, CUSTOM idle / engaged gear) |
 | `shared/jobs/cor/functions/logic/roll_debug.lua` | 261 | `//gs c rolldebug`: gear sent vs worn at landing, held updates, pieces out of reach, locked slots; summary; `<Char>/rolldebug.log` |
 | `shared/jobs/cor/functions/logic/double_up.lua` | 45 | `DoubleUp.redirect(spell, eventArgs)` |
-| `shared/jobs/cor/functions/logic/set_builder.lua` | 202 | Town, weapons (DW-aware), PDT, Refresh, movement; unused `apply_buff_gear` |
+| `shared/jobs/cor/functions/logic/set_builder.lua` | 203 | Town, weapons (DW-aware), PDT, Refresh, movement; unused `apply_buff_gear` |
 | `_master/config/cor/COR_STATES.lua` | 184 | All states (`CORStates.configure()`) |
 | `_master/config/cor/COR_KEYBINDS.lua` | 37 | 7 binds, data only; `KeybindManager.create('COR', ...)` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/cor/COR_CUSTOM.lua` | 119 | Player modes and gear rules (all examples commented out) |
@@ -76,7 +76,7 @@ function; line numbers are given only where no function name fits.
 | `shared/utils/messages/formatters/jobs/message_cor.lua` + `data/jobs/cor_messages.lua` | 39 + 32 | PartyTracker load failures |
 | `shared/utils/dualbox/roll_share.lua` | 110 | A COR alt's roll result re-printed on the main (`rollshow`) |
 | `shared/utils/precast/flurry_tracker.lua` | 73 | Flurry I / II on this character -> `classes.CustomRangedGroups` |
-| `shared/utils/inventory/quiver_manager.lua` | 170 | `after_ranged_attack` -> `check_and_refill` |
+| `shared/utils/inventory/quiver_manager.lua` | 161 | `after_ranged_attack` -> `check_and_refill` |
 | `shared/data/job_abilities/COR_JA_DATABASE.lua` | 21 | Factory with the roll modules |
 
 Character overlays: `_master/<Character>/config/cor/COR_REFILL.lua` for the
@@ -320,8 +320,9 @@ end of precast by `ElementalBelt` ([factories and helpers](../systems/factories-
 ### Aftercast, idle, engaged, status, buffs
 
 - `job_aftercast` (`COR_AFTERCAST.lua`): `RollHold.stop`, watchdog, then
-  `QuiverManager.after_ranged_attack(spell, 'Bronze Bullet', 'Brz. Bull. Pouch', 15)`:
-  after a non-interrupted ranged attack with `Bronze Bullet` equipped, it runs
+  `QuiverManager.after_ranged_attack(spell, nil, nil, 15)`: after a
+  non-interrupted ranged attack, with the ammo worn and its pouch
+  (`ItemIndex.ammo_container`), it runs
   `check_and_refill` 1 s later (inventory + wardrobes count, pouch used from the
   inventory when 15 or fewer are left). `job_post_aftercast` is empty.
 - `customize_idle_set` -> `build_idle_set`: town (`sets.Adoulin` in Adoulin,
@@ -405,7 +406,7 @@ Full player-facing list: [sets.md](../../user/jobs/cor/sets.md).
 | `sets.precast.CorsairShot` (+ `[<shot>]`) | Mote by type / name |
 | `sets.precast.JA[...]`, `.JA.Fold` | Mote; `hold_fold_gear` |
 | `sets.precast.RA` (+ `.Flurry1/.Flurry2`), `sets.midcast.RA` (+ `[<RangedMode>]`, `.TripleShot`) | Mote `get_ranged_set`; `COR_MIDCAST` |
-| `sets.precast.WS` + `[<ws>]` | Mote default |
+| `sets.precast.WS` + `[<ws>]`, then `.Marksmanship` (WS skill) for gun WSs without a named set | Mote default (`select_specific_set`: name, map, then `spell.skill`) |
 | `sets.midcast['Enhancing Magic' / 'Healing Magic' / 'Elemental Magic' / 'Enfeebling Magic']` (absent) | `COR_MIDCAST` |
 | `sets.DW.NoHaste/Haste/HasteII/MaxHaste` (commented in T) | `DualWield` |
 | `sets.TreasureHunter` (absent in T) | `TreasureHunter` once shown |

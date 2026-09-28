@@ -124,8 +124,8 @@ Subjob /DNC: `sets.precast.Waltz`, `sets.precast.Step` and
   `//gs c wo` frees them too.
 - `//gs c range` puts on Exalted Crossbow and Acid Bolt (names written in the
   code, not a set), locks them and shoots at a target you pick.
-- After a shot with Acid Bolt, an Ac. Bolt Quiver from your inventory is
-  opened when 5 bolts or fewer are left.
+- After a shot, the quiver of the bolts you wear (Acid Bolt -> Ac. Bolt Quiver)
+  is opened from your inventory when 5 or fewer are left.
 
 ## Spells
 
@@ -161,7 +161,7 @@ Subjob /DNC: `sets.precast.Waltz`, `sets.precast.Step` and
   on the first action against a mob. Off: `//gs c th hide`.
 - **Aftermath Lv.3 with Vajra** swaps the engaged base to `sets.engaged.PDTAFM3`,
   whatever the Hybrid Mode. Remove that set to stop it.
-- **Range lock** after every ranged attack; **quiver opening** for Acid Bolt.
+- **Range lock** after every ranged attack; **quiver opening** for the bolts you wear.
 - **Weapons** re-equipped on every idle and engaged set.
 - The chains `//gs c smartbuff`, `fbc` and `steal` send abilities only; their
   gear comes from `sets.precast.JA` as usual ([states.md](states.md)).

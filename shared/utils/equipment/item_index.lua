@@ -20,6 +20,9 @@
 ---                               for any other known item (shield, grip...),
 ---                               nil for an unknown name; short or log form,
 ---                               any case
+---   ItemIndex.ammo_container(name)  short name of the pouch / quiver that
+---                               holds this ammo ('Bronze Bullet' ->
+---                               'Brz. Bull. Pouch'), nil when none
 ---
 --- @file    shared/utils/equipment/item_index.lua
 --- @author  ejouanchicot
@@ -31,11 +34,38 @@ local ItemIndex = {}
 
 local NAME_FIELDS = {'en', 'enl', 'name', 'name_log'}
 
+--- Log name without "'s" / "'", lower case: 'Oberon's bullet' and the
+--- pouch's 'Oberon bullet pouch' then share their stem.
+local function stem(enl)
+    return (enl:lower():gsub("'s", ''):gsub("'", ''))
+end
+
+--- Pouch / quiver per ammo. The game names a container after its ammo
+--- (log names 'bronze bullet' / 'bronze bullet pouch', 'scorpion arrow' /
+--- 'scorpion quiver'). A container name shared by several items (the
+--- 'Old Quiver' quest items) is not a match.
+--- @param containers table stem -> short name, false when shared
+--- @param ammo table List of ammo items
+--- @return table Lower-case ammo short name -> container short name
+local function pair_containers(containers, ammo)
+    local by_ammo = {}
+    for _, item in ipairs(ammo) do
+        local e = stem(item.enl)
+        for _, c in ipairs({e .. ' pouch', e .. ' quiver', (e:gsub(' arrow$', '')) .. ' quiver'}) do
+            if containers[c] then
+                by_ammo[item.en:lower()] = containers[c]
+                break
+            end
+        end
+    end
+    return by_ammo
+end
+
 --- One walk over the item list, or nil when the list is not available.
 local function build()
     local ok, res = pcall(require, 'resources')
     if not (ok and res and res.items) then return nil end
-    local ids, weapons, dual = {}, {}, {}
+    local ids, weapons, dual, containers, ammo = {}, {}, {}, {}, {}
     for id, item in pairs(res.items) do
         if item then
             for _, field in ipairs(NAME_FIELDS) do
@@ -46,6 +76,14 @@ local function build()
                 end
             end
             if item.category == 'Weapon' and item.en then weapons[item.en] = true end
+            if type(item.enl) == 'string' and type(item.en) == 'string' then
+                if item.category == 'Usable' and (item.enl:find(' pouch$') or item.enl:find(' quiver$')) then
+                    local key = stem(item.enl)
+                    containers[key] = containers[key] == nil and item.en or false
+                elseif item.category == 'Weapon' and item.slots == 8 then
+                    ammo[#ammo + 1] = item
+                end
+            end
             local wields = item.category == 'Weapon' and (item.skill or 0) > 0
             for _, n in ipairs({item.en, item.enl}) do
                 if type(n) == 'string' then
@@ -55,13 +93,14 @@ local function build()
             end
         end
     end
-    return {ids = ids, weapons = weapons, dual = dual}
+    return {ids = ids, weapons = weapons, dual = dual, containers = pair_containers(containers, ammo)}
 end
 
 --- The lookups, built on first use and kept for the session.
 local function index()
     local cached = windower._item_index
-    if cached then return cached end
+    -- An index kept from before `containers` existed is rebuilt once.
+    if cached and cached.containers then return cached end
     cached = build()
     if cached then windower._item_index = cached end
     return cached
@@ -88,6 +127,14 @@ function ItemIndex.dual_wields(name)
     if type(name) ~= 'string' or name == '' then return nil end
     local idx = index()
     return idx and idx.dual[name:lower()]
+end
+
+--- @param name string|nil Ammo short name
+--- @return string|nil Short name of its pouch / quiver
+function ItemIndex.ammo_container(name)
+    if type(name) ~= 'string' then return nil end
+    local idx = index()
+    return idx and idx.containers[name:lower()]
 end
 
 return ItemIndex
