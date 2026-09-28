@@ -19,6 +19,10 @@ local cache_ok, ModuleCache = pcall(require, 'shared/utils/core/module_cache')
 if cache_ok and ModuleCache then
     ModuleCache.install()
 end
+-- First shared file of every load (the entry requires it at file level)
+pcall(function()
+    require('shared/utils/debug/trace_log').log('LOAD', 'entry file %s/%s', player and player.main_job, player and player.sub_job)
+end)
 
 local MessageCore = require('shared/utils/messages/message_core')
 

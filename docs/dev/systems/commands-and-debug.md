@@ -458,6 +458,8 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
   | `ALTS` | alt group reports |
   | `CYCLE` | `cyclestate` decisions |
   | `CUSTOM` | CUSTOM pieces applied |
+  | `LOAD` | every load's steps: entry file (`config_loader`), keys bound / unbind all (`KeybindManager`, so a job file unloading shows), HUD and alt window text objects created / destroyed, `INIT_SYSTEMS` start and end, lockstyle sent, job change seen, pending job-change work cancelled. Added 2026-09-29 to find where a client crash happens |
+  | `ALIVE` | every 5 s while tracing (`TraceLog.start_heartbeat`, from `INIT_SYSTEMS` and `trace on`; the latest load's loop only, generation counter `windower._trace_heartbeat_gen`). After a crash the last line tells a crash during a load from one in play |
   | `BELT` | each Obi / Orpheus decision |
   | `TB` | temporary binds file load (restart detection) |
   | `TAG` | Treasure Hunter tagging |
@@ -502,7 +504,7 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
   | `windower._gs_debug` | the five toggles |
   | `windower._lagdebug` | journal, probe event ids |
   | `windower._alt_buff_debug` | `altdebug` |
-  | `windower._trace_log_on` | trace |
+  | `windower._trace_log_on`, `windower._trace_heartbeat_gen` | trace, its ALIVE loop |
   | `windower._gs_reload_count` | incremented by `INIT_SYSTEMS.lua`, read by syscheck / fulltest |
   | `windower._dw_forced` | `dw` force |
 

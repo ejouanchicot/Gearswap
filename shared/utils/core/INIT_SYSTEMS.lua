@@ -25,6 +25,8 @@
 ---   @date    Created: 2025-10-28 | Updated: 2026-09-25
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+pcall(function() require('shared/utils/debug/trace_log').log('LOAD', 'INIT_SYSTEMS start (Mote and user_setup done)') end)
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   RESTORE PERSISTENT DEBUG FLAGS (survives job changes)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -404,6 +406,13 @@ end, 3.0)
 -- On a delay: the deferred blocks above run at 0.5s and 2s, and job modules
 -- load later still. Snapshotting synchronously here caught none of them and
 -- reported every one as a leak.
+-- //gs c trace: end of the synchronous part, and ALIVE lines from now on
+pcall(function()
+    local TraceLog = require('shared/utils/debug/trace_log')
+    TraceLog.log('LOAD', 'INIT_SYSTEMS end')
+    if TraceLog.enabled() then TraceLog.start_heartbeat() end
+end)
+
 coroutine.schedule(function()
     local ok, GlobalProbe = pcall(require, 'shared/utils/debug/global_probe')
     if ok and GlobalProbe then

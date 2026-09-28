@@ -13,18 +13,24 @@
 --- Callers: TraceLog.log('TAG', 'format %s', ...) - a no-op while off, so the
 --- calls can stay in the code.
 ---
+--- While on, every load also writes its steps (tag LOAD: entry file, systems,
+--- keys, HUD, alt window, lockstyle, unload) and an ALIVE line every
+--- HEARTBEAT seconds. After a client crash, the last line tells whether it
+--- came during a load (and at which step) or in the middle of play.
+---
 --- A diagnostic tool: it prints with add_to_chat directly (CODE_QUALITY §6),
 --- so it keeps working when the message system is what is being traced.
 ---
 --- @file    shared/utils/debug/trace_log.lua
 --- @author  ejouanchicot
---- @version 1.0
---- @date    Created: 2026-09-25
+--- @version 1.1
+--- @date    Created: 2026-09-25 | Updated: 2026-09-29 (load steps, heartbeat)
 ---============================================================================
 
 local TraceLog = {}
 
 local CHAT = 207
+local HEARTBEAT = 5    -- seconds between two ALIVE lines
 
 local function file_path(name)
     if not (player and player.name and windower and windower.addon_path) then return nil end
@@ -94,6 +100,20 @@ function TraceLog.log(tag, fmt, ...)
     file:close()
 end
 
+--- ALIVE every HEARTBEAT seconds while tracing, from the latest load only:
+--- the generation counter lives on `windower` because the coroutine of an
+--- older load keeps running after a reload.
+function TraceLog.start_heartbeat()
+    windower._trace_heartbeat_gen = (windower._trace_heartbeat_gen or 0) + 1
+    local gen = windower._trace_heartbeat_gen
+    local function beat()
+        if gen ~= windower._trace_heartbeat_gen or not is_on() then return end
+        TraceLog.log('ALIVE', 'sub %s', tostring(player and player.sub_job))
+        coroutine.schedule(beat, HEARTBEAT)
+    end
+    coroutine.schedule(beat, HEARTBEAT)
+end
+
 --- True while recording (for callers that would compute something costly).
 --- @return boolean
 function TraceLog.enabled()
@@ -110,6 +130,7 @@ function TraceLog.handle(args)
         windower._trace_log_on = true
         set_marker(true)
         TraceLog.log('TRACE', 'started')
+        TraceLog.start_heartbeat()
     elseif sub == 'off' then
         TraceLog.log('TRACE', 'stopped')
         windower._trace_log_on = false

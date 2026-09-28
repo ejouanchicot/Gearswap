@@ -130,6 +130,7 @@ local function apply_lockstyle_immediate(ctx, style, operation_id)
     if not STATE.enabled then return end
     if operation_id ~= STATE.operation_id then return end
 
+    require('shared/utils/debug/trace_log').log('LOAD', 'lockstyle %s', style)
     if not get_manage_dressup() then
         send_command('input /lockstyleset ' .. style)
         STATE.is_processing = false

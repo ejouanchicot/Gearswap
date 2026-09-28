@@ -258,6 +258,7 @@ local function bind_all(ctx, silent)
     clear_unwanted(ctx, desired)
     local bound = lay_down(active, desired)
     ctx.applied = desired
+    require('shared/utils/debug/trace_log').log('LOAD', 'keys %s: %d bound', ctx.job, bound)
     if bound > 0 then
         if not silent then ctx.api.show_intro() end
         return true
@@ -305,6 +306,7 @@ end
 --- @return boolean
 local function unbind_all(ctx)
     if not ctx.module.binds then return false end
+    require('shared/utils/debug/trace_log').log('LOAD', 'keys %s: unbind all', ctx.job)
     clear_unwanted(ctx, {})
     ctx.applied = {}
     MessageFormatter.show_success(ctx.job .. ' keybinds unloaded.')

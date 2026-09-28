@@ -97,6 +97,7 @@ function Lifecycle.attach(KeybindUI)
         -- Create ui_settings dynamically to pick up latest saved position
         local current_ui_settings = create_ui_settings()
 
+        require('shared/utils/debug/trace_log').log('LOAD', 'HUD text object created')
         _G.keybind_ui_display = texts.new(current_ui_settings)
         _G.keybind_ui_visible = _G.ui_display_config.enabled
 
@@ -184,6 +185,7 @@ function Lifecycle.attach(KeybindUI)
 
         -- Destroy texts element with error protection
         -- Destroy failures are ignored: the reference is cleared regardless
+        require('shared/utils/debug/trace_log').log('LOAD', 'HUD text object destroyed')
         pcall(function()
             _G.keybind_ui_display:destroy()
         end)

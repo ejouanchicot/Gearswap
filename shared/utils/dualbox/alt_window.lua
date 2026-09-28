@@ -282,6 +282,7 @@ local function create()
     local ok, UISettingsResolver = pcall(require, 'shared/utils/ui/ui_settings_resolver')
     local font_ok, UISettings = pcall(require, 'shared/config/ui_settings')
     local font = font_ok and UISettings.get_font() or {}
+    require('shared/utils/debug/trace_log').log('LOAD', 'alt window text object created')
     _G._alt_window_display = texts.new({
         pos = {x = p.x, y = p.y},
         text = {size = font.size or 10, font = font.name or 'Consolas',

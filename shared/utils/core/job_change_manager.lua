@@ -135,6 +135,7 @@ function JobChangeManager.on_job_change(main_job, sub_job)
     if not main_job or not sub_job then
         return
     end
+    require('shared/utils/debug/trace_log').log('LOAD', 'job change seen: %s/%s', main_job, sub_job)
 
     DebugLogger.logf_if('JOBCHANGE_DEBUG', 'JCM',
         'on_job_change called: %s/%s -> %s/%s | counter=%d',
@@ -217,6 +218,7 @@ end
 --- Cancel the pending reload and every registered lockstyle operation
 --- (called from each entry point's file_unload).
 function JobChangeManager.cancel_all()
+    require('shared/utils/debug/trace_log').log('LOAD', 'pending job-change work cancelled')
     cancel_all_pending()
 
     for _, cancel_func in pairs(STATE.lockstyle_cancel_registry) do
