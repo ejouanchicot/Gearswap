@@ -188,7 +188,11 @@ end
 --- @return boolean handled
 local function escort(args)
     local indi = args[1] or 'Indi-Regen'
-    set_states({'Regen on'})
+    -- PLD's Regen mode (sets.idleRegen) is a /SCH mode, hidden on the other
+    -- subjobs: turned On there it would dress the idle set out of sight.
+    if player and player.sub_job == 'SCH' then
+        set_states({'Regen on'})
+    end
     to_alt('sm off')
     note({on = false, follow = me()})
     -- The alt starts following only once its Indi- is cast: moving would
