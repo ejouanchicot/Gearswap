@@ -3,9 +3,8 @@
 ---============================================================================
 --- Displays messages when actions are blocked by debuffs (Silence, Amnesia, etc.)
 --- Separators come from the DEBUFFS templates; the lines are built by hand
---- with inline colors and sent with MessageRenderer.send(1, text), arguments
---- swapped: GearSwap's add_to_chat recovers (base color 8, every segment
---- carries its own inline color).
+--- with inline colors and sent with MessageRenderer.send(text, 1) (base
+--- color 1; every segment carries its own inline color).
 ---
 --- @file    shared/utils/messages/formatters/magic/message_debuffs.lua
 --- @author  ejouanchicot
@@ -45,7 +44,7 @@ function MessageDebuffs.show_spell_blocked(spell_name, debuff_name)
         separator_color
     )
 
-    MessageRenderer.send(1, formatted_message)
+    MessageRenderer.send(formatted_message, 1)
 
     -- Bottom separator
     M.send('DEBUFFS', 'separator')
@@ -73,7 +72,7 @@ function MessageDebuffs.show_ja_blocked(ja_name, debuff_name)
         separator_color
     )
 
-    MessageRenderer.send(1, formatted_message)
+    MessageRenderer.send(formatted_message, 1)
 
     -- Bottom separator
     M.send('DEBUFFS', 'separator')
@@ -101,7 +100,7 @@ function MessageDebuffs.show_ws_blocked(ws_name, debuff_name)
         separator_color
     )
 
-    MessageRenderer.send(1, formatted_message)
+    MessageRenderer.send(formatted_message, 1)
 
     -- Bottom separator
     M.send('DEBUFFS', 'separator')
@@ -129,7 +128,7 @@ function MessageDebuffs.show_item_blocked(item_name, debuff_name)
         separator_color
     )
 
-    MessageRenderer.send(1, formatted_message)
+    MessageRenderer.send(formatted_message, 1)
 
     -- Bottom separator
     M.send('DEBUFFS', 'separator')
@@ -168,7 +167,7 @@ function MessageDebuffs.show_action_blocked(action_name, action_type, debuff_nam
             separator_color
         )
 
-        MessageRenderer.send(1, formatted_message)
+        MessageRenderer.send(formatted_message, 1)
 
         -- Bottom separator
         M.send('DEBUFFS', 'separator')
@@ -197,7 +196,7 @@ function MessageDebuffs.show_incapacitated(debuff_name)
         separator_color
     )
 
-    MessageRenderer.send(1, formatted_message)
+    MessageRenderer.send(formatted_message, 1)
 
     -- Bottom separator
     M.send('DEBUFFS', 'separator')
@@ -236,7 +235,7 @@ function MessageDebuffs.show_silence_cure_success(item_name, spell_name, debuff_
         separator_color
     )
 
-    MessageRenderer.send(1, message)
+    MessageRenderer.send(message, 1)
     M.send('DEBUFFS', 'separator')
 end
 
@@ -274,8 +273,8 @@ function MessageDebuffs.show_no_silence_cure(spell_name, debuff_message)
         error_color
     )
 
-    MessageRenderer.send(1, line1)
-    MessageRenderer.send(1, line2)
+    MessageRenderer.send(line1, 1)
+    MessageRenderer.send(line2, 1)
     M.send('DEBUFFS', 'separator')
 end
 
@@ -312,7 +311,7 @@ function MessageDebuffs.show_paralysis_cure_success(item_name, action_name, debu
         separator_color
     )
 
-    MessageRenderer.send(1, message)
+    MessageRenderer.send(message, 1)
     M.send('DEBUFFS', 'separator')
 end
 
@@ -348,8 +347,8 @@ function MessageDebuffs.show_no_paralysis_cure(action_name, debuff_message)
         error_color
     )
 
-    MessageRenderer.send(1, line1)
-    MessageRenderer.send(1, line2)
+    MessageRenderer.send(line1, 1)
+    MessageRenderer.send(line2, 1)
     M.send('DEBUFFS', 'separator')
 end
 
@@ -374,14 +373,14 @@ function MessageDebuffs.show_auto_medicine_toggled(enabled)
         status_color, enabled and "ON" or "OFF"
     )
 
-    MessageRenderer.send(1, message)
+    MessageRenderer.send(message, 1)
 
     if not enabled then
         local hint_color = MessageCore.create_color_code(Colors.ERROR)
-        MessageRenderer.send(1, string.format(
+        MessageRenderer.send(string.format(
             "%sNo Echo Drops / Remedy will be used automatically",
             hint_color
-        ))
+        ), 1)
     end
 
     M.send('DEBUFFS', 'separator')

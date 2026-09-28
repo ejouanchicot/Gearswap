@@ -135,7 +135,7 @@ codes), `message_commands.lua` (14: colour test, craft, dressup, debugsubjob fra
 anywhere under `shared/utils/messages/`. Paths C and D also end in `add_to_chat`, but path E bypasses the
 renderer's toggle and filter as well. Every path goes through the sandbox `add_to_chat` that
 `message_core.lua` wraps once per load, so the player's separator options (`chat_separators.lua`) apply
-to all of them, except path C's swapped calls as explained above.
+to all of them.
 
 ### Help screens and data blocks: who uses them
 
@@ -162,15 +162,15 @@ each spell), and the diagnostic tools (`debugstate`, `fulltest`, `syscheck`, `wa
 | Module | Namespace(s) | Other paths |
 |---|---|---|
 | message_combat | `COMBAT`, `MAGIC` | none |
-| message_cooldowns | `COOLDOWNS` (separator only) | C (3, swapped) |
+| message_cooldowns | `COOLDOWNS` (separator only) | C (3) |
 | message_ja_buffs | `JA_BUFFS` | none |
 | message_weaponskill | `WEAPONSKILL` | none |
 | message_blm / _blm_midcast | `BLM` / `BLM_MIDCAST` | none |
 | message_brd | `BRD`, `MAGIC` (`show_song_cast_generic`) | none |
 | message_bst | `BST` | B (broth list, ready move list) |
 | message_cor / drg / geo / rdm / whm | `COR` / `DRG` / `GEO` / `RDM` / `WHM` | geo: `M.error` |
-| message_rdm_midcast | `RDM_MIDCAST` (separator only) | C (48, swapped) |
-| message_buffs / debuffs | `BUFFS` / `DEBUFFS` (separators) | debuffs: C (14, swapped) |
+| message_rdm_midcast | `RDM_MIDCAST` (separator only) | C (48) |
+| message_buffs / debuffs | `BUFFS` / `DEBUFFS` (separators) | debuffs: C (14) |
 | message_midcast / precast | `MIDCAST` / `PRECAST` | none |
 | message_songs | `SONGS` | none |
 | message_altgroup / stealth / tempbind | `ALTGROUP` / `STEALTH` / `TEMPBIND` | B (usage / help) |
@@ -563,8 +563,8 @@ booleans print ON/OFF, kinds are `good`, `bad`, `warn`, `spell`, `dim`. Use the 
   `message_commands.lua` still do).
 - Width: use `MessageCore.SEPARATOR_WIDTH` (the player's `chat.width`), never a literal 69, and do not
   cache it at module load.
-- `MessageRenderer.send(message, color)`: text first. The 65 swapped calls in cooldowns / debuffs /
-  RDM midcast only work through a GearSwap fallback and escape the separator options; do not copy them.
+- `MessageRenderer.send(message, color)`: text first. A swapped call still prints, through a GearSwap
+  fallback that forces colour 8, so the mistake is easy to miss (65 of them were fixed on 2026-09-28).
 - `MessageFormatter.show_error/show_warning/show_success/show_info` and `MessageCore.raw` take one
   argument; a second is silently dropped.
 - Direct `add_to_chat` is allowed only in the cases of `.claude/CODE_QUALITY.md` section 6 (the message
@@ -579,7 +579,6 @@ booleans print ON/OFF, kinds are `good`, `bad`, `warn`, `spell`, `dim`. Use the 
 
 Re-checked on 2026-09-28. Open:
 
-- 65 `MessageRenderer.send` calls pass colour and text in the wrong order (`message_cooldowns.lua` `show_cooldown_message`, `show_multi_status`; `message_debuffs.lua`; `message_rdm_midcast.lua`, every function); RDM midcast debug lines lose their colours and none of these lines follows the separator options.
 - Six facade entries point to RDM functions that do not exist (`message_formatter.lua`, RDM block).
 - `MessageBST.show_broth_list` and `show_ready_moves_list` are exported only as `show_bst_*`, so `//gs c msgtests` reports them as not exported (`message_formatter.lua`, BST block).
 - `message_brd.show_dummy_cast` uses the key `BRD.dummy_cast`, commented out of the data file; its two callers in `BRD_COMMANDS.lua` are commented out.

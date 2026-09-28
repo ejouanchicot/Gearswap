@@ -144,7 +144,7 @@ function MessageCooldowns.show_cooldown_message(job_name, action_type, name, rem
     -- Arguments are swapped (send takes message, color). GearSwap's add_to_chat
     -- recovers: the text is printed with base color 8, and the inline codes
     -- color every visible segment.
-    MessageRenderer.send(1, final_message)
+    MessageRenderer.send(final_message, 1)
 
     -- Separator at the bottom (skip if in block mode)
     if not no_separators then
@@ -254,7 +254,7 @@ function MessageCooldowns.show_multi_status(messages, job_name)
             table.insert(message_parts, ' (' .. colorTP .. msg.value .. colorGray .. '/' .. msg.extra .. ' TP' .. colorGray .. ')')
         end
 
-        MessageRenderer.send(1, table.concat(message_parts))
+        MessageRenderer.send(table.concat(message_parts), 1)
     end
 
     -- Bottom separator
@@ -308,7 +308,7 @@ function MessageCooldowns.show_compact_status(cooldowns, job_name)
     end
 
     local full_message = table.concat(message_parts)
-    MessageRenderer.send(1, full_message)
+    MessageRenderer.send(full_message, 1)
 end
 
 ---============================================================================

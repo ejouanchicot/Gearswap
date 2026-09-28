@@ -190,9 +190,11 @@ are required directly by their callers; `info_block.lua` and `help_screen.lua` t
 | C. MessageCore helpers | `MessageCore.raw(text)`, `info/error/warning/success(text)`, `show_separator()` | no | no | yes |
 | D. Direct | `add_to_chat(color, text)` in the files allowed by `.claude/CODE_QUALITY.md` section 6 | no | no | yes (it is the sandbox `add_to_chat`) |
 
-Per-module counts are in [messages-formatters.md](messages-formatters.md). 65 path-B call sites pass
-the arguments as `(color, message)` although the signature is `(message, color, options)`:
-`message_rdm_midcast.lua` 48, `message_debuffs.lua` 14, `message_cooldowns.lua` 3 (Known issues).
+Per-module counts are in [messages-formatters.md](messages-formatters.md). Until 2026-09-28, 65
+path-B call sites passed `(color, message)` (`message_rdm_midcast.lua` 48, `message_debuffs.lua` 14,
+`message_cooldowns.lua` 3): GearSwap's fallback printed them in colour 8. They now pass
+`(message, color)`; checked with `scripts/audit/difftest_renderer_argorder.lua` (same text on every
+line, only the colour changes).
 
 ### Messages API: `Messages.send` (`api/messages.lua`)
 
@@ -902,10 +904,6 @@ Re-checked on 2026-09-28. Open:
   II/III, Banishga III, Banish IV, Meteor II, the -ga enfeebles, Chocobo Hum, Cactuar Fugue, some
   Ninjutsu) loads all 15 magic databases, and a first Helix loads 13
   (`spell_message_handler.lua` `find_spell_in_databases`).
-- 65 `MessageRenderer.send(color, message)` calls with swapped arguments (colour forced to 8, no
-  newline split, the chat-line filter and the timestamp see the number): `message_rdm_midcast.lua`
-  (48, RDM midcast debug lines lose their colours), `message_debuffs.lua` (14),
-  `message_cooldowns.lua` (3).
 - `show_error(prefix, message)` calls lose the message: `DEBUG_COMMANDS.lua` `handle_memcheck` and
   `handle_debugmsg`.
 - 147 of 271 facade wrappers have no caller by name, 6 of them pointing at undefined RDM functions
