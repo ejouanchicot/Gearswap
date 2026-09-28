@@ -9,11 +9,12 @@
 --- Fire, Light <> Dark):
 ---   day       +10 same element, -10 the element that beats it
 ---   weather   +10 / +25 (single / double, SCH storms included), same minus
---- Orpheus's Sash: +15 at 1 yalm or closer, one less per yalm, +1 from 15.
+--- Orpheus's Sash: +15 at 1.93 yalms or closer, down to +1 at 13 yalms and
+--- beyond, linear in between (BG-Wiki, Orpheus's Sash).
 ---
 --- @file    shared/utils/equipment/elemental_bonus.lua
 --- @author  ejouanchicot
---- @version 1.0
+--- @version 1.1 - Orpheus curve per BG-Wiki (15 up to 1.93 y, 1 from 13 y)
 --- @date    Created: 2026-09-25
 ---============================================================================
 
@@ -58,7 +59,9 @@ end
 --- @return number
 function ElementalBonus.orpheus(distance)
     if type(distance) ~= 'number' then return 0 end
-    return math.max(1, math.min(15, math.floor(16 - distance)))
+    if distance <= 1.93 then return 15 end
+    if distance >= 13 then return 1 end
+    return math.floor(15 - (distance - 1.93) * 14 / (13 - 1.93))
 end
 
 --- Both bonuses for an action.

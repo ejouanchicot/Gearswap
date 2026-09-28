@@ -138,6 +138,7 @@ and partner job ([HUD](../features/ui.md#key-conflicts)).
 | `fulltest` (`ft`) `[export]` | Longer check (systems, modules, hooks, sets) |
 | `debugsubjob` (`dsj`) | Main / sub job, levels and zone |
 | `debugstate` (`ds`) | Internal counters |
+| `belt` | Obi / Orpheus: automatic on or off, belts found, today's day and weather, what each belt adds now (`config/ELEMENTAL_BELT.lua`) |
 | `trace on` / `off` / `clear` | Record what the game returns to `<YourName>/trace.log` (keeps recording across restarts until `trace off`) |
 | `testcolors` (`colors`) | Chat colour codes |
 | `perf`, `lagdebug`, `memcheck`, `debugprecast`, `debugjobchange`, `debugupdate`, `automovedebug`, `debugwarp`, `debugmsg`, `testmsg`, `msgtests` | Developer tools, see [commands-and-debug](../../dev/systems/commands-and-debug.md) |

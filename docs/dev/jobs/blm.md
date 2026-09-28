@@ -283,6 +283,9 @@ flowchart TD
 - `ElementalMatcher.has_elemental_match` (`elemental_matcher.lua:120-159`)
   compares the spell element with active storm buffs (8 names, `STORM_TO_ELEMENT`, lines 22-31),
   `world.day_element` and `world.real_weather_element` (intensity > 0).
+  `apply_elemental_match` returns at once while the shared `ElementalBelt` is
+  enabled (since 2026-09-28): the shared module weighs Orpheus's Sash and the
+  opposing-element penalty, which this match ignores.
 
 ### Aftercast, idle, engaged, status, buffs
 

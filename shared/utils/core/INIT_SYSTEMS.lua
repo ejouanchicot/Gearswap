@@ -295,6 +295,16 @@ end
 ---   CUSTOM STATES - hook the player's own gear (<JOB>_CUSTOM.lua)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+-- Hachirin-no-Obi / Orpheus's Sash on elemental damage (elemental_belt.lua).
+-- Laid first, so the midcast fallback below (its set) and the custom states
+-- (the player's own gear) wrap it: set, then belt, then custom gear.
+pcall(function()
+    local ok, ElementalBelt = pcall(require, 'shared/utils/equipment/elemental_belt')
+    if ok and ElementalBelt then
+        ElementalBelt.install()
+    end
+end)
+
 -- Spells a job's midcast does not route (a subjob's magic) go through
 -- MidcastManager anyway. Laid before the custom states hook below, which
 -- wraps it, so the player's custom gear still goes on last.

@@ -27,6 +27,7 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `shared/utils/whm/cure_manager.lua` | 392 | Cure / Curaga tier selection with recast fallback |
 | `shared/utils/whm/whm_message_formatter.lua` | 414 | Cure tier-change and debug messages (read for the calls only) |
 | `shared/utils/equipment/spell_gear_lock.lua` | 135 | A piece a spell cannot be cast without (Dispelga: Daybreak), worn through Combat Mode for the cast |
+| `shared/utils/equipment/elemental_belt.lua` | 213 | Hachirin-no-Obi / Orpheus's Sash on elemental damage, every job |
 
 The two craft set files are identical to their live copies in `Tetsouo/sets/`. `CRAFT_CONFIG.lua` now has a tracked template, `_master/config_global/CRAFT_CONFIG.lua` (added in `fd34a2c`).
 
@@ -295,6 +296,32 @@ TP is read from the game (`shared/utils/core/live_tp.lua`), in the WS test and i
 `cast_divine_waltz()` (`:219-259`) tries Divine Waltz II then I on `<me>` with the same readiness rules and an inline copy of the blocker loop.
 
 `WALTZ_CONFIG` (`:32-46`): TP 800/650/500/350/200 for Curing V-I, 800/400 for Divine II/I; recast ids match `res/job_abilities.lua`; levels 87/70/45/35/15 and 78/40 (the project's own `shared/data/job_abilities/dnc/dnc_waltzes_subjob.lua` lists Curing Waltz II at 30 and Divine Waltz at 25).
+
+---
+
+## ElementalBelt
+
+`shared/utils/equipment/elemental_belt.lua` (since 2026-09-28) puts
+Hachirin-no-Obi or Orpheus's Sash on an elemental damage action, for every job.
+Installed by `INIT_SYSTEMS` on Mote's `cleanup_precast` / `cleanup_midcast`,
+before the midcast fallback and the custom states wrap them: the set goes on,
+then the belt, then the player's CUSTOM gear.
+
+- `applies(spell, phase)`: precast = weaponskills of its `WEAPONSKILLS` list
+  (magical and hybrid) and Quick Draw but Light / Dark Shot (a spell's precast
+  is its Fast Cast set, left alone); midcast = Elemental Magic but the DoTs,
+  Banish / Holy, `<X>ton: Ichi|Ni|San`, Blue Magic of a `Magical*` category.
+- `choose(spell)`: `ElementalBonus.for_action` (Obi by day / weather, SCH
+  storms and the opposing-element penalty included; Orpheus 15 up to 1.93
+  yalms, 1 from 13), a belt only when this character has it (inventory,
+  wardrobes 1-8, read every 60 s via `gearswap.res`) and when its bonus reaches
+  `min_bonus`; below that the set's belt stays.
+- Settings `<Character>/config/ELEMENTAL_BELT.lua` (`enabled`, `min_bonus` 5),
+  template `_master/config_global/ELEMENTAL_BELT.lua`; `//gs c belt` shows them
+  with the belts found and the current bonuses. Each decision is traced
+  (`BELT` tag).
+- BLM's own `ElementalMatcher` steps aside while it is enabled. Belts written in
+  sets stay as they are when no belt reaches `min_bonus`.
 
 ---
 

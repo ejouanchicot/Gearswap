@@ -72,8 +72,12 @@ local function apply_mp_conservation(ctx)
 end
 
 --- Apply Hachirin-no-Obi gear if day/weather/storm matches spell element.
+--- Left to the shared ElementalBelt when it is on: it also weighs Orpheus's
+--- Sash and the opposing-element penalty, which this match ignores.
 local function apply_elemental_match(spell, ctx)
     if not ctx.elemental_config.auto_hachirin then return end
+    local ok, ElementalBelt = pcall(require, 'shared/utils/equipment/elemental_belt')
+    if ok and ElementalBelt and ElementalBelt.settings().enabled then return end
 
     local has_match, reason = ElementalMatcher.has_elemental_match(spell, ctx.elemental_config)
     if has_match and sets.midcast.ElementalMatch then
