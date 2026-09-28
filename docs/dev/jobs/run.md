@@ -1,66 +1,72 @@
 # RUN (Rune Fencer) job
 
 The RUN job area is 12 hook files plus 4 logic modules under
-`shared/jobs/run/functions/` (1 407 lines), one entry template, seven config
-files and one sets file. No live character plays it: `character_db.lua` lists
-RUN in `ARCHIVE_JOBS`, there is no `Tetsouo_RUN.lua`, and the only deployed copy
-is the frozen `Hysoka/` clone (not analysed here). GearSwap would load it when
-the main job becomes RUN; from then on Mote-Include calls its hooks on every
+`shared/jobs/run/functions/` (1 429 lines on 2026-09-28), one entry template, eight
+config files and one sets file. No live character plays it: `character_db.lua` lists
+RUN in `ARCHIVE_JOBS`, there is no `Tetsouo_RUN.lua` under `Tetsouo/`, and the only
+deployed copy is the frozen `Hysoka/` clone (not analysed here). GearSwap would load
+it when the main job becomes RUN; from then on Mote-Include calls its hooks on every
 action, on status and buff changes, on `//gs c` commands and on state cycles.
 
-RUN is structurally a copy of [PLD](pld.md) with less in it. What it adds on top
-of the shared pipeline:
+RUN is structurally a copy of [PLD](pld.md) with less in it. What it adds on top of
+the shared pipeline:
 
-- **Weapon + grip set builder**: `MainWeapon` (Epeolatry, Lycurgos) and
-  `SubWeapon` (Utu, Refined grip), grip skipped for Lycurgos, HybridMode
-  PDT/MDT sets.
-- **Name-before-skill midcast**: Flash and Enlight caught before the Divine
-  skill, target-aware Cure to Cure IV (subjob), Phalanx by name, Enhancing by spell family,
+- **Weapon + grip set builder**: `MainWeapon` (Epeolatry, Lycurgos) and `SubWeapon`
+  (Utu, Refined grip), grip skipped for Lycurgos, HybridMode PDT/MDT sets.
+- **Name-before-skill midcast**: Flash and Enlight caught before the Divine skill,
+  target-aware Cure to Cure IV (subjob), Phalanx by name, Enhancing by spell family,
   Blue Magic under one set.
+- **Self-cure HP gap**: `sets.precast.FC.CureSelf` on a self cure, as on PLD.
 - **Rune command** (`//gs c rune`) from `state.RuneMode`, and a BLU AOE rotation
   (`//gs c aoe`) with the BLU config loaded by the entry.
 - **No gear swap for runes**: `sets.precast.JA` is empty on purpose.
+- **TP bonus**: `RUN_TP_CONFIG.lua` (Moonshade, Lionheart) is loaded by the entry.
 
-It has no ward/rune tracking, no Gambit/Rayke logic and no Dark Magic routing
-(the entry header no longer claims any since `b6c7dc6`).
+It has no ward / rune tracking, no Gambit / Rayke logic, no AbilityHelper call and
+no Dark Magic routing.
 
-Every file in scope was read in full except the gear content of the sets file.
-Line numbers were re-checked against the working tree on 2026-09-25.
+Player-facing pages: [RUN hub](../../user/jobs/run/README.md),
+[modes](../../user/jobs/run/states.md), [sets](../../user/jobs/run/sets.md).
+
+Every file in scope was read in full on 2026-09-28 except the gear content of the
+sets file. References are `file` + function; line numbers are avoided because they
+drift.
 
 ## Files
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_RUN.lua` | 271 | Entry point (template): same shape as PLD, BLU config preloaded (no TP config), keybinds deferred 0.5 s, initial macro book / lockstyle deferred 0.2 s |
+| `_master/entry/Tetsouo_RUN.lua` | 268 | Entry point (template): same shape as PLD; BLU and TP configs loaded in `get_sets`; keybinds deferred 0.5 s; initial macro book / lockstyle deferred 0.2 s |
 | `shared/jobs/run/functions/run_functions.lua` | 113 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager` |
-| `shared/jobs/run/functions/RUN_PRECAST.lua` | 163 | `job_precast` (guard, cooldown, WS) / `job_post_precast` (TP gear, precast debug display) |
+| `shared/jobs/run/functions/RUN_PRECAST.lua` | 180 | `job_precast` (guard, cooldown, WS) / `job_post_precast` (TP gear, self-cure FC, precast debug display) |
 | `shared/jobs/run/functions/RUN_MIDCAST.lua` | 157 | `job_midcast` (Cure to Cure IV) / `job_post_midcast` (dispatch) |
 | `shared/jobs/run/functions/RUN_AFTERCAST.lua` | 38 | `LifecycleManager.aftercast()`, empty `job_post_aftercast` |
 | `shared/jobs/run/functions/RUN_IDLE.lua` | 43 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/run/functions/RUN_ENGAGED.lua` | 41 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/run/functions/RUN_STATUS.lua` | 20 | `LifecycleManager.status_change()` |
 | `shared/jobs/run/functions/RUN_BUFFS.lua` | 19 | `LifecycleManager.buff_change()` |
-| `shared/jobs/run/functions/RUN_COMMANDS.lua` | 202 | `job_self_command` router, `job_state_change` (UI refresh only) |
+| `shared/jobs/run/functions/RUN_COMMANDS.lua` | 202 | `job_self_command` router, `job_state_change = LifecycleManager.state_change()` (HUD refresh only) |
 | `shared/jobs/run/functions/RUN_MOVEMENT.lua` | 24 | Comments only |
 | `shared/jobs/run/functions/RUN_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('RUN', 'config/run/RUN_LOCKSTYLE', 1, 'SAM')` |
 | `shared/jobs/run/functions/RUN_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('RUN', ..., 'SAM', 1, 1)` |
-| `shared/jobs/run/functions/logic/set_builder.lua` | 187 | Idle/engaged: HybridMode, weapon, grip, town, movement |
-| `shared/jobs/run/functions/logic/aoe_manager.lua` | 182 | BLU rotation (same code as PLD's except strings; refuses without /BLU since 2026-09-25) |
+| `shared/jobs/run/functions/logic/set_builder.lua` | 188 | Idle/engaged: HybridMode, weapon, grip, town, movement |
+| `shared/jobs/run/functions/logic/aoe_manager.lua` | 182 | BLU rotation (same code as PLD's except strings; refuses without /BLU) |
 | `shared/jobs/run/functions/logic/cure_set_builder.lua` | 57 | CureSelf / CureOther for Cure to Cure IV (subjob), `is_cure` |
-| `shared/jobs/run/functions/logic/rune_manager.lua` | 76 | `//gs c rune` (identical to PLD's) |
+| `shared/jobs/run/functions/logic/rune_manager.lua` | 76 | `//gs c rune` (same code as PLD's) |
 | `_master/config/run/RUN_STATES.lua` | 118 | States |
-| `_master/config/run/RUN_KEYBINDS.lua` | 45 | Data only: 4 binds handed to `KeybindManager.create('RUN', ...)`, plus the character's `COMMON_KEYBINDS.lua` keys |
+| `_master/config/run/RUN_KEYBINDS.lua` | 45 | Data only: 4 bind entries handed to `KeybindManager.create('RUN', ...)`, plus the character's `COMMON_KEYBINDS.lua` keys |
+| `_master/config/run/RUN_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `_master/config/run/RUN_HUD.lua` | 31 | HUD section / row order for RUN (empty lists = the default) |
 | `_master/config/run/RUN_LOCKSTYLE.lua` | 72 | Style 3 (`default`, `by_subjob`, `get_style`) |
-| `_master/config/run/RUN_MACROBOOK.lua` | 76 |
-| `_master/config/run/RUN_CUSTOM.lua` | 118 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) | Books 15-20 (same numbers as PLD) |
-| `_master/config/run/RUN_TP_CONFIG.lua` | 74 | `_G.RUNTPConfig`, loaded by the entry |
+| `_master/config/run/RUN_MACROBOOK.lua` | 76 | Books 15-20 (same numbers as PLD) |
+| `_master/config/run/RUN_TP_CONFIG.lua` | 74 | `_G.RUNTPConfig` (Moonshade piece, Lionheart weapon), loaded by the entry |
 | `_master/config/run/RUN_BLU_MAGIC.lua` | 203 | Copy of `PLD_BLU_MAGIC`; loaded by the entry as `_G.BluMagicConfig` |
-| `_master/sets/run_sets.lua` | 401 | Template sets (flat) |
+| `_master/sets/run_sets.lua` | 432 | Template sets (flat) |
 | `shared/data/job_abilities/RUN_JA_DATABASE.lua` + `run/*.lua` | 13 + 276 | JA descriptions (runes, wards, SP) for `ability_message_handler` |
-| `shared/utils/messages/data/jobs/run_messages.lua` | 29 | Valiance/Vallation expiry templates - no caller |
+| `shared/utils/messages/data/jobs/run_messages.lua` | 29 | Valiance / Vallation expiry templates (`RUN` namespace); nothing sends them |
 
-Live copies: none under `Tetsouo/` or `Kaories/`. `Hysoka/` has RUN and is a
-frozen clone; it was not read.
+Live copies: none under `Tetsouo/` or `Kaories/`, and no RUN overlay under
+`_master/<Character>/`. `Hysoka/` has RUN and is a frozen clone; it was not read.
 
 ## How it works
 
@@ -72,52 +78,51 @@ sequenceDiagram
     participant E as Tetsouo_RUN.lua
     participant M as Mote-Include
     participant F as run_functions.lua
-    GS->>E: run chunk (LOCKSTYLE_CONFIG, UIConfig, REGION_CONFIG)
+    GS->>E: run chunk (LOCKSTYLE_CONFIG, UIConfig via ConfigLoader, REGION_CONFIG)
     GS->>E: get_sets()
-    E->>M: include Mote-Include (line 68)
+    E->>M: include Mote-Include
     M->>E: user_setup(): states, schedule keybinds +0.5 s, UI, JCM, schedule macro/lockstyle gate +0.2 s, dualbox
-    M->>E: init_gear_sets() -> include sets/run_sets.lua (254)
-    E->>E: INIT_SYSTEMS, data_loader, message hooks (70-94)
-    E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG (96-97); _G.BluMagicConfig (102); TP / ward configs commented out (107-108)
-    E->>E: JobChangeManager.cancel_all() (111-114)
-    E->>F: include run_functions.lua (117)
-    E->>E: register_lockstyle_cancel("RUN", ...) (121-123)
-    Note over E: +0.2 s: select_default_macro_book(), lockstyle after 8 s (204-209)
-    Note over E: +0.5 s: RUNKeybinds.bind_all() (165-181)
+    M->>E: init_gear_sets() -> include sets/run_sets.lua
+    E->>E: INIT_SYSTEMS, data_loader, message hooks
+    E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, _G.BluMagicConfig = RUN_BLU_MAGIC, require RUN_TP_CONFIG (sets _G.RUNTPConfig)
+    E->>E: JobChangeManager.cancel_all()
+    E->>F: include run_functions.lua
+    E->>E: register_lockstyle_cancel("RUN", ...)
+    Note over E: +0.2 s: select_default_macro_book(), lockstyle after 8 s
+    Note over E: +0.5 s: RUNKeybinds.bind_all()
 ```
 
-`user_setup()` (`Tetsouo_RUN.lua:157-231`):
+`user_setup()` (`Tetsouo_RUN.lua`):
 
-1. `RUNStates.configure()` (159-160).
-2. Keybinds in a `coroutine.schedule(..., 0.5)` (165-181): `require` into the
-   global `RUNKeybinds`, `bind_all()`; a failed `require` prints
-   `[RUN] Keybinds failed to load: <error>`. Why they are deferred is not
-   recorded.
-3. `KeybindUI.smart_init("RUN", UIConfig.init_delay)` (186-189).
-4. `JobChangeManager.initialize()`, then the macrobook/lockstyle gate is
-   scheduled 0.2 s later (204-209), the same pattern as BRD. The gate needs
-   `select_default_macro_book` and `select_default_lockstyle`; at `user_setup`
-   time nothing defines them on RUN (the keybinds, whose
-   `KeybindManager` intro `require`s the wrapper files, are not loaded until
-   0.5 s later). The facade defines them during the rest of
-   `get_sets()` (`run_functions.lua:66-67`), so 0.2 s later the gate passes:
-   macro book at once, lockstyle after `initial_load_delay` (8 s). Before
-   2026-09-19 the gate ran synchronously and a fresh load or main job change
-   applied neither.
-5. `pcall(require, 'shared/utils/dualbox/dualbox_manager')` (218); a dual-box
-   alt job update that brings a new job or subjob later calls
-   `select_default_macro_book()` (`dualbox_manager.lua` `receive_alt_job`).
-6. A commented-out WarpInit block (220-230).
+1. `RUNStates.configure()`.
+2. Keybinds in a `coroutine.schedule(..., 0.5)`: `require` into the global
+   `RUNKeybinds`, `bind_all()`; a failed `require` prints
+   `[RUN] Keybinds failed to load: <error>`. Why they are deferred is not recorded.
+3. `KeybindUI.smart_init("RUN", UIConfig.init_delay)`.
+4. `JobChangeManager.initialize()`, then the macrobook / lockstyle gate is scheduled
+   0.2 s later, the same pattern as BRD. At `user_setup` time nothing defines
+   `select_default_macro_book` / `select_default_lockstyle` on RUN (the keybinds,
+   whose `KeybindManager` intro requires the wrapper files, come 0.5 s later). The
+   facade defines them during the rest of `get_sets()`, so 0.2 s later the gate
+   passes: macro book at once, lockstyle after `initial_load_delay` (8 s).
+5. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`; a dual-box alt job
+   update that brings a new job or subjob later calls `select_default_macro_book()`
+   (`dualbox_manager.lua` `receive_alt_job`).
+6. A commented-out WarpInit block (`WarpInit.init()` runs for every job from
+   `INIT_SYSTEMS`).
 
-`run_functions.lua` includes `message_buffs.lua` (29), `RUN_PRECAST`,
-`RUN_MIDCAST`, `RUN_AFTERCAST` (36-40), `RUN_IDLE`, `RUN_ENGAGED` (47-49),
-`RUN_STATUS`, `RUN_BUFFS` (56-58), `RUN_LOCKSTYLE`, `RUN_MACROBOOK`,
-`RUN_COMMANDS`, `RUN_MOVEMENT` (66-70), then `dualbox_manager` (101).
+`file_unload` cancels pending JobChangeManager operations and calls
+`RUNKeybinds.unbind_all()` when the global exists. RUN has no ammo lock to release.
+
+`run_functions.lua` includes `message_buffs.lua`, `RUN_PRECAST`, `RUN_MIDCAST`,
+`RUN_AFTERCAST`, `RUN_IDLE`, `RUN_ENGAGED`, `RUN_STATUS`, `RUN_BUFFS`,
+`RUN_LOCKSTYLE`, `RUN_MACROBOOK`, `RUN_COMMANDS`, `RUN_MOVEMENT`, then requires
+`dualbox_manager`.
 
 ### Precast
 
-`job_precast` (`RUN_PRECAST.lua:82-106`) then Mote's `default_precast`, then
-`job_post_precast` (`:113-150`):
+`job_precast` (`RUN_PRECAST.lua`), then Mote's `default_precast`, then
+`job_post_precast`:
 
 ```mermaid
 flowchart TD
@@ -130,31 +135,34 @@ flowchart TD
     E -- no --> G
     C -- yes --> G[WSPrecastHandler.handle with RUNTPConfig]
     G --> H[Mote default_precast]
-    H --> I[job_post_precast: apply_tp_gear, FC.CureSelf on a self cure, debug display if PrecastDebugState]
+    H --> I[job_post_precast: apply_tp_gear, apply_cure_self_fc, debug display if PrecastDebugState]
 ```
 
-- `cooldown_exclusions` (50-75) is the same Scholar list as PLD's, redundant
-  with `CooldownChecker` ([precast pipeline](../systems/precast-pipeline.md)).
-- `RUNTPConfig = _G.RUNTPConfig or {}` (44): the entry requires
-  `RUN_TP_CONFIG.lua`, which sets `_G.RUNTPConfig` (loaded since 2026-09-27).
-- Mote's default precast: `sets.precast.FC` for magic (no name/skill variants
+- `cooldown_exclusions` is the same 22-name Scholar list as PLD's, redundant with
+  `CooldownChecker` ([precast pipeline](../systems/precast-pipeline.md#recast-check)).
+- `RUNTPConfig = _G.RUNTPConfig or {}` is captured on the first action. The entry
+  requires `RUN_TP_CONFIG.lua` in `get_sets`, and that file sets `_G.RUNTPConfig`,
+  so the TP bonus is computed (Moonshade +250, Lionheart +500). The comment above
+  that line in `ensure_modules_loaded` ("The entry does not load RUN_TP_CONFIG, so
+  this is normally {}") is stale.
+- Mote's default precast: `sets.precast.FC` for magic (no name / skill variants
   defined), `sets.precast.JA[name]` for JAs, `sets.precast.WS[name]` for WS.
-  `sets.precast.JA` is `{}` (`run_sets.lua:139`): runes and any JA without a
-  named set swap nothing, by design ("No set defined = no equipment change",
-  `run_sets.lua:158-160`).
-- `sets.precast.WS['Resolution'|'Dimidiation'|'Herculean Slash'|'Spinning
-  Slash'|'Ground Strike']` are `set_combine(sets.precast.WS, {})`
-  (`run_sets.lua:260-264`): the generic gear until each gets its own. Mote's
-  `get_named_set` returns the named table when it exists
-  (`Mote-Include.lua:963-965`), so an empty `{}` there (as before 2026-09-19)
-  equipped nothing and hid the generic set.
-- `job_post_precast` debug block (124-149): when `_G.PrecastDebugState`
-  (`//gs c debugprecast`), prints which FC set Mote picked.
+  `sets.precast.JA` is `{}`: runes and any JA without a named set swap nothing, by
+  design. The 15 named JAs (Vallation ... Odyllic Subterfuge) are built on
+  `sets.FullEnmity`.
+- `sets.precast.WS['Resolution'|'Dimidiation'|'Herculean Slash'|'Spinning Slash'|'Ground Strike']`
+  are `set_combine(sets.precast.WS, {})`: the generic gear until each gets its own.
+  Mote's `get_named_set` returns the named table when it exists, so an empty `{}`
+  there would equip nothing and hide the generic set.
+- `apply_cure_self_fc` (local): on a self-targeted Cure to Cure IV
+  (`CureSetBuilder.is_cure`), equips `sets.precast.FC.CureSelf` over Mote's FC set.
+- Debug block: when `_G.PrecastDebugState` is on (`//gs c debugprecast`), prints which
+  FC set Mote picked (name, then skill, then base) through `MessagePrecast`.
 
 ### Midcast
 
 Same Mote order as PLD: `job_midcast`, `default_midcast` unless handled,
-`job_post_midcast` (`Mote-Include.lua:254-276`).
+`job_post_midcast`, then `midcast_fallback.lua` for unrouted spells.
 
 ```mermaid
 flowchart TD
@@ -171,151 +179,154 @@ flowchart TD
     H -- Enlight, Enlight II --> H2[select_set skill Enmity]
     H -- Healing Magic --> H3[select_set Healing Magic, Self/Other]
     H -- Enhancing: Phalanx --> H4[select_set Enhancing, P0 sets.midcast.Phalanx]
-    H -- Enhancing: other --> H5[select_set Enhancing, Composure target, spell family]
+    H -- Enhancing: other --> H5[select_set Enhancing, enhancing target, spell family]
     H -- Divine Magic --> H6[select_set Divine Magic]
     H -- Blue Magic --> H7[select_set Blue Magic]
 ```
 
 - RUN has no Cure of its own: Cure to Cure IV come from /WHM /RDM (I-IV) or
-  /PLD /SCH (I-III). `CureSetBuilder` returns `sets.midcast.CureSelf` on
-  yourself, `CureOther` otherwise, and never rewrites `sets.midcast.Cure`.
-  When the set is missing, `handled` stays false and the cure goes through
-  Mote and the Healing Magic route instead of keeping its precast gear.
-- Self cure HP gap, as on PLD: `job_post_precast` equips
-  `sets.precast.FC.CureSelf` (Fast Cast low on max HP), the midcast CureSelf
-  puts the HP back, the cure lands on a bigger gap.
-- `sets.midcast['Divine Magic']` is absent, so that
-  route is a no-op (`midcast_manager.lua` `select_set` returns when
-  `sets.midcast[skill]` is missing). Enlight is a PLD spell;
-  the branch only matters for a /PLD subjob that cannot learn it.
-- Flash, Foil and Crusade alias `sets.midcast.SIRDEnmity`
-  (`run_sets.lua:348-350`); Phalanx and Regen have named sets (`:331,354`,
-  Regen IV reaches `Regen` through the P1 tier strip); every Blue spell wears
-  `sets.midcast['Blue Magic']` (`:372`).
+  /PLD /SCH (I-III). `CureSetBuilder.generate` returns `sets.midcast.CureSelf` on
+  yourself, `CureOther` otherwise, and writes nothing. When the set is missing,
+  `handled` stays false and the cure goes through Mote and the Healing Magic route.
+- Self cure HP gap, as on PLD: `sets.precast.FC.CureSelf` (Fast Cast low on max HP),
+  the midcast CureSelf puts the HP back, the cure lands on a bigger gap.
+- `sets.midcast['Divine Magic']` is absent, so that route is a no-op
+  (`MidcastManager.select_set` returns when `sets.midcast[skill]` is missing).
+  Enlight is a PLD spell RUN cannot learn; the branch is inherited.
+- Flash, Foil and Crusade alias `sets.midcast.SIRDEnmity`; Phalanx and Regen have
+  named sets (Regen IV reaches `Regen` through the P1 tier strip); every Blue spell
+  wears `sets.midcast['Blue Magic']`; `sets.midcast['Healing Magic'] = sets.Cure`.
 
 ### Aftercast, idle, engaged, status, buffs
 
-- `job_aftercast` = MidcastWatchdog tick; status and buff changes are the
-  shared Doom handlers ([core lifecycle](../systems/core-lifecycle.md)).
-- `build_engaged_set` (`shared/jobs/run/functions/logic/set_builder.lua:107-135`): Mote base
-  (`sets.engaged.PDT`/`.MDT` through `HybridMode`) -> the HybridMode set again
-  (`set_combine`, 114-126) -> `sets[MainWeapon]` -> `sets[SubWeapon]` unless
-  MainWeapon is Lycurgos (`apply_grip`, 62-83).
-- `build_idle_set` (144-181): town base (`sets.Adoulin` / `sets.idle.Town`) or
+- `job_aftercast` = MidcastWatchdog tick; status and buff changes are the shared
+  Doom handlers, plus the status hold during an action
+  ([core lifecycle](../systems/core-lifecycle.md#lifecyclemanager)).
+- `SetBuilder.build_engaged_set`: Mote base (`sets.engaged.PDT` / `.MDT` through
+  `HybridMode`) -> the HybridMode set again (`set_combine`) -> weapon
+  (`apply_weapon`, `WeaponResolver.set_for('main', ...)`) -> grip (`apply_grip`)
+  unless MainWeapon is Lycurgos.
+- `SetBuilder.build_idle_set`: town base (`sets.Adoulin` / `sets.idle.Town`) or
   Mote's idle -> HybridMode idle set (field only) -> weapon -> grip -> return in
   town, else `sets.MoveSpeed` when moving.
-- For Lycurgos the grip is skipped, not removed: whatever grip was in the sub
-  slot stays there. The header says so since `b6c7dc6`
-  (`set_builder.lua:18`).
+- For Lycurgos the grip is skipped, not removed: whatever grip was in the sub slot
+  stays there. `_G.DEBUG_RUN_WEAPONS` (no command sets it) prints the grip decisions.
 
 ### Differences from PLD
 
-The two jobs were cloned from the same files; this is what diverged.
-
 | Area | PLD | RUN |
 |------|-----|-----|
-| Entry configs | `PLD_TP_CONFIG` and `PLD_BLU_MAGIC` loaded | `RUN_BLU_MAGIC` loaded (`Tetsouo_RUN.lua:102`), `RUN_TP_CONFIG` loaded too |
-| Keybinds | loaded synchronously; the `KeybindManager` intro requires the factory wrappers | deferred 0.5 s (same intro, too late for the gate); initial macro book / lockstyle gate deferred 0.2 s instead |
-| Precast | Divine Emblem / Majesty auto-abilities, CureSelf FC, Sortie override | CureSelf FC only (every Cure tier); precast debug display |
+| Entry configs | `PLD_TP_CONFIG`, `PLD_BLU_MAGIC`, `PLD_WS_CONFIG` | `RUN_TP_CONFIG`, `RUN_BLU_MAGIC` |
+| Keybinds | loaded synchronously; the `KeybindManager` intro requires the factory wrappers | deferred 0.5 s; initial macro book / lockstyle gate deferred 0.2 s instead |
+| Precast | Divine Emblem / Majesty auto-abilities, CureSelf FC for Cure III/IV, Sortie override, /SCH WS variants | CureSelf FC for every Cure tier; precast debug display |
 | Midcast order | Healing checked before Flash | Flash and Enlight checked first |
 | Phalanx | SIRD override (`Xp`, `PhalanxSIRD`) or pseudo-skill `Phalanx` | plain Enhancing, name set wins |
 | Blue Magic | `Cocoon` pseudo-skill, else `Blue Magic` (no base set) | `Blue Magic` with a base set |
 | Enmity override | `EnmityOverride` after dispatch | none |
-| Set builder | weapon + shield, BurtgangKC, Shining grip, XP, Sortie map | weapon + grip, Lycurgos skip |
-| HybridMode | PDT, MDT, Sortie; profile hook in `job_state_change` | PDT, MDT; UI refresh only |
-| Subjob-filtered binds | Xp (/RDM), RuneMode (/RUN), SneakInviAOE (/SCH) | none |
+| Set builder | weapon + shield, BurtgangKC, Shining grip, XP, Regen, Sortie / /SCH maps | weapon + grip, Lycurgos skip |
+| HybridMode | PDT, MDT, Sortie (/SCH: DPS, Tanking, Hoxne); profile hook in `job_state_change` | PDT, MDT; HUD refresh only |
+| Subjob-filtered binds | Xp (/RDM), RuneMode (/RUN), Regen / Phalanx SIRD (/SCH) | none |
+| WS slots | `WS1`, `WS2` | none |
 | /SCH helpers | `aoe sneak` / `invi` / `erase`, `lightarts` | none |
 
 ## Mote states
 
-Created by `RUNStates.configure()` (`_master/config/run/RUN_STATES.lua:34-113`).
-Keybinds from `RUN_KEYBINDS.lua:18-43`; none of them has a `subjob` filter.
+Created by `RUNStates.configure()` on every `user_setup()`. Keys from
+`RUN_KEYBINDS.lua`; none of them has a `subjob` filter.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
-| `HybridMode` (Mote) | PDT, MDT | PDT | `^numpad9` | Mote `get_melee_set`; `set_builder.lua:115-120,153-159` |
-| `MainWeapon` | Epeolatry, Lycurgos | Epeolatry | `^numpad1` | `set_builder.lua:47,64` |
-| `SubWeapon` | Utu, Refined | Refined | `^numpad2` | `set_builder.lua:72-73` |
-| `RuneMode` | Ignis .. Tenebrae (8) | Ignis | `^numpad3` | `rune_manager.lua:35-40` |
-| `FastCast` | 0..80 step 10 | 30 | none | `midcast_watchdog.lua` |
-| `AutoMedicine` | shared On/Off | persisted | `#numpad0` (from `config/COMMON_KEYBINDS.lua`) | `AutoMedicine.init` (`RUN_STATES.lua:109-112`) |
+| `HybridMode` (Mote's, options replaced) | PDT, MDT | PDT | `^numpad9` | Mote `get_melee_set`; `set_builder.lua` `build_engaged_set`, `build_idle_set` |
+| `MainWeapon` | Epeolatry, Lycurgos (Loxotic, Lionheart, Aettir commented out) | Epeolatry | `^numpad1` | `set_builder.lua` `apply_weapon`, `apply_grip` |
+| `SubWeapon` | Utu, Refined | Refined | `^numpad2` | `set_builder.lua` `apply_grip` |
+| `RuneMode` | Ignis .. Tenebrae (8) | Ignis | `^numpad3` | `rune_manager.lua` `execute_rune` |
+| `FastCast` | 0..80 step 10 | 30 | none | `midcast_watchdog.lua` (fallback cast time) |
+| `AutoMedicine` | On, Off | On on a cold start, then kept across loads | `#numpad0` (from `config/COMMON_KEYBINDS.lua`) | `AutoMedicine.init` at the end of `configure()` |
 
-The UI readiness anchor for RUN is `state.RuneElement`
-(`ui_lifecycle.lua:58-59`), a state RUN never creates: `smart_init` always
-polls to its timeout. Since 2026-09-25 a pending HUD init from an older load
-no longer creates a second HUD (`windower._ui_live_state` identity check, see
-[UI overlay](../systems/ui-overlay.md)); the anchor itself is still wrong
-(changing it to `RuneMode` was left for later: it changes RUN HUD timing).
+Optional states added to every job: `CombatMode` (hidden, `!numpad0`) and
+`TreasureMode` (hidden, `!numpad.`), see
+[keybinds and custom states](../systems/keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode).
+
+The UI readiness anchor for RUN is `state.RuneElement` (`ui_lifecycle.lua`
+`are_states_ready`), a state RUN never creates: `smart_init` always polls until its
+`max_wait_time` (`UIConfig.init_delay`, 5 s by default) and then initialises
+anyway, so the HUD appears about 5 s late on every RUN load. A pending HUD init from
+an older load does not create a second HUD (`windower._ui_live_state` identity
+check, see [UI overlay](../systems/ui-overlay.md)); the anchor itself is still wrong.
 
 ## Commands
 
-`job_self_command` (`RUN_COMMANDS.lua:71-184`): watchdog, dual-box internals,
+`job_self_command` (`RUN_COMMANDS.lua`): watchdog, dual-box internals,
 CommonCommands, `ui`, `debugmidcast`, `cyclestate`, then RUN commands.
 
 | Command | Effect | Handler |
 |---------|--------|---------|
-| `watchdog ...` | MidcastWatchdog | 84-87 |
-| `altjobupdate` / `requestjob` | Dual-box job exchange (sender name forwarded since 2026-09-25) | 92-109 |
-| common commands | as on every job | 114-125 |
-| `ui ...` | UI toggles | 130-134 |
-| `debugmidcast` | MidcastManager debug toggle | 139-149 |
-| `cyclestate <State>` | `CycleHandler` | 158-161 |
-| `aoe` | BLU rotation (`_G.BluMagicConfig` from `RUN_BLU_MAGIC`); without /BLU it prints "AOE needs the BLU subjob (RUN/BLU)" and casts nothing | 168-174 -> `aoe_manager.lua` `execute_aoe` |
-| `rune` | `/ja "<RuneMode>" <me>` unless on recast | 177-183 -> `rune_manager.lua` `execute_rune` |
+| `watchdog ...` | MidcastWatchdog | `WatchdogCommands.handle_command` |
+| `altjobupdate` / `requestjob` | Dual-box job exchange (sender name forwarded) | `DualBoxManager` |
+| common commands | as on every job | `CommonCommands.handle_command(command, 'RUN', table.unpack(args))` |
+| `ui ...` | HUD | `UICommands.handle_ui_command` |
+| `debugmidcast` | MidcastManager debug toggle | `MidcastManager.toggle_debug` |
+| `cyclestate <State>` | UI-aware cycle | `CycleHandler.handle_cyclestate` |
+| `aoe` | BLU rotation (`_G.BluMagicConfig` from `RUN_BLU_MAGIC`); without /BLU it prints "AOE needs the BLU subjob (RUN/BLU)" and casts nothing | `aoe_manager.lua` `execute_aoe` |
+| `rune` | `/ja "<RuneMode>" <me>` unless on recast (then `show_ability_cooldown`) | `rune_manager.lua` `execute_rune` |
 
-`job_state_change = LifecycleManager.state_change()` (194): HUD refresh only. It tests no state name except `Moving` (which has no description, so Mote and the UI-aware `cyclestate` both pass `Moving`), so it accepts the state key and the description alike.
-No RUN command name is claimed by any alt-command config.
+`job_state_change = LifecycleManager.state_change()`: HUD refresh only, nothing for
+`Moving`. No RUN command name is claimed by any alt-command config. `debugprecast`
+(common) has an effect on RUN: it is one of the three jobs that read
+`_G.PrecastDebugState`.
 
 ## Set names the code looks up
 
-T = `_master/sets/run_sets.lua` (the only sets file in scope).
+T = `_master/sets/run_sets.lua` (the only sets file in scope). The player-facing list
+is [run/sets.md](../../user/jobs/run/sets.md), which also covers Mote's optional
+`sets.precast.Rune` / `Ward` / `Effusion` groups.
 
 | Set | Looked up by | T |
 |-----|--------------|---|
-| `sets.Epeolatry`, `sets.Lycurgos` | `set_builder.lua:47` | 58, 61 |
-| `sets.Utu`, `sets.Refined` | `set_builder.lua:73` | 64, 65 |
-| `sets.idle`, `.PDT`, `.MDT` | Mote base, `set_builder.lua:155-158` | 72, 88, 91 |
-| `sets.engaged`, `.PDT`, `.MDT` | Mote base, `set_builder.lua:117-120` | 98, 115, 118 |
-| `sets.idle.Town`, `sets.Adoulin`, `sets.MoveSpeed` | BaseSetBuilder, movement | 384 (`= MoveSpeed`), 387, 379 |
-| `sets.precast.JA` (empty) + 15 named JAs on `sets.FullEnmity` | Mote default precast | 139, 142, 163-200 |
-| `sets.precast.FC` | Mote default precast | 221 |
-| `sets.precast.WS`, `['Armor Break']` | Mote default precast | 242, 267 |
-| `sets.precast.WS['Resolution']` and 4 other GS WS | Mote default precast | 260-264 (`set_combine(sets.precast.WS, {})`) |
-| `sets.midcast.Enmity`, `.SIRDEnmity` | skill `Enmity`; aliases | 293, 296 |
-| `sets.midcast['Flash']`, `['Foil']`, `['Crusade']` | skill `Flash`; P0 | 348-350 |
-| `sets.midcast['Enhancing Magic']`, `['Regen']`, `['Phalanx']` | skill base, P0/P1 | 314, 331, 354 |
-| `sets.midcast['Blue Magic']` | skill base | 372 |
-| `sets.precast.FC.CureSelf`, `sets.Cure`, `sets.midcast.CureSelf`, `.CureOther` | `RUN_PRECAST` / `cure_set_builder.lua` | defined (base: SIRD + enmity) |
-| `sets.midcast['Healing Magic']` | `select_set` base | `sets.Cure` |
+| `sets.Epeolatry`, `sets.Lycurgos` | `apply_weapon` (`WeaponResolver.set_for('main', ...)`) | yes |
+| `sets.Utu`, `sets.Refined` | `apply_grip` (`WeaponResolver.set_for('sub', ...)`) | yes |
+| `sets.idle`, `.PDT`, `.MDT` | Mote base, `build_idle_set` | yes |
+| `sets.engaged`, `.PDT`, `.MDT` | Mote base, `build_engaged_set` | yes |
+| `sets.idle.Town`, `sets.Adoulin`, `sets.MoveSpeed` | BaseSetBuilder, movement | Town = `sets.MoveSpeed`; Adoulin = MoveSpeed + body |
+| `sets.precast.JA` (empty) + 15 named JAs on `sets.FullEnmity` | Mote default precast | yes |
+| `sets.precast.FC`, `sets.precast.FC.CureSelf` | Mote default precast, `apply_cure_self_fc` | yes |
+| `sets.precast.WS`, `['Armor Break']` | Mote default precast | yes |
+| `sets.precast.WS['Resolution']` and 4 other Great Sword WS | Mote default precast | `set_combine(sets.precast.WS, {})` |
+| `sets.midcast.Enmity`, `.SIRDEnmity` | skill `Enmity` (Enlight); aliases | yes |
+| `sets.midcast['Flash']`, `['Foil']`, `['Crusade']` | skill `Flash`; P0 | `= SIRDEnmity` |
+| `sets.midcast['Enhancing Magic']`, `['Regen']`, `['Phalanx']` | skill base, P0/P1 | yes |
+| `sets.midcast['Blue Magic']` | skill base | yes |
+| `sets.Cure`, `sets.midcast.CureSelf`, `.CureOther` | `cure_set_builder.lua` `generate` (`sets.Cure` only as their base) | yes |
+| `sets.midcast['Healing Magic']` | `select_set` base | `= sets.Cure` |
 | `sets.midcast['Divine Magic']` | `select_set` base | **absent** |
-| `sets.buff.Doom` | DoomManager | 396 |
+| `sets.buff.Doom` | DoomManager | yes |
 
 ## Configuration
 
 | File / key | Default | Where the default lives | Read by |
 |------------|---------|-------------------------|---------|
-| `<char>/config/run/RUN_STATES.lua` | see states | file | entry `user_setup` (hard-coded `Tetsouo/...`) |
-| `<char>/config/run/RUN_KEYBINDS.lua` | 4 binds (+ `COMMON_KEYBINDS.lua`) | file | entry (deferred), `file_unload` |
+| `<char>/config/run/RUN_STATES.lua` | see states | file | entry `user_setup` (hard-coded `Tetsouo/...`, rewritten by the clone script) |
+| `<char>/config/run/RUN_KEYBINDS.lua` | 4 entries (+ `COMMON_KEYBINDS.lua`) | file | entry (deferred), `file_unload`, HUD |
 | `<char>/config/run/RUN_CUSTOM.lua` | examples only | file | `KeybindManager` via `custom_states` |
-| `<char>/config/run/RUN_LOCKSTYLE.lua` | 3 | file; factory fallback 1 | `LockstyleManager` (8 s after load, see above) |
+| `<char>/config/run/RUN_HUD.lua` | empty lists | file | HUD; rewritten by `//gs c ui order` / `roworder` |
+| `<char>/config/run/RUN_LOCKSTYLE.lua` | 3 | file; factory fallback 1 | `LockstyleManager` (8 s after load) |
 | `<char>/config/run/RUN_MACROBOOK.lua` | book 15 page 1 | file; fallback book 1 page 1 | `MacrobookManager` (0.2 s after load, dual-box update) |
-| `<char>/config/run/RUN_TP_CONFIG.lua` | Moonshade | file | nothing (entry line 107 commented) |
-| `<char>/config/run/RUN_BLU_MAGIC.lua` | 5 AOE spells | file | entry `_G.BluMagicConfig` (102) -> `aoe_manager` |
-| `RUN_WARD_CONFIG` | - | does not exist | commented reference, `Tetsouo_RUN.lua:108` |
+| `<char>/config/run/RUN_TP_CONFIG.lua` -> `_G.RUNTPConfig` | Moonshade 250, Lionheart 500 | file | entry `get_sets` (`require`), `RUN_PRECAST.lua` (captured on first action) -> `TPBonusHandler` |
+| `<char>/config/run/RUN_BLU_MAGIC.lua` -> `_G.BluMagicConfig` | 5 AOE spells | file | entry `get_sets` -> `aoe_manager` (captured on first require) |
+| `<char>/config/run/RUN_REFILL.lua` | not in the template | player-created | refill system (fallback list without it) |
 | `RECAST_CONFIG`, `LOCKSTYLE_CONFIG`, `REGION_CONFIG`, UI config | - | shared | entry, `is_on_cooldown` |
 
 ## State & lifetime
 
-- Module state: `aoe_manager` `SpellTracker`, lazy-load locals; all
-  sandbox-local.
-- `_G` written: the Mote hooks, `RUNKeybinds` (0.5 s after load),
-  `LockstyleConfig`, `RECAST_CONFIG`, `RegionConfig`, the factory wrappers and
-  exports. Nothing on `windower.*`, no events.
-- Keybinds: bound 0.5 s after `user_setup`, unbound in `file_unload`
-  (`Tetsouo_RUN.lua:268-270`). `bind_all` unbinds only keys that no longer
-  apply, then binds.
-- Coroutines: the 0.5 s keybind load; the scheduled keybind coroutine has no
-  generation guard and is not cancelled by a reload, so a reload inside those
+- Module state: `aoe_manager` `SpellTracker`, lazy-load locals; all sandbox-local.
+- `_G` written: the Mote hooks, `RUNKeybinds` (0.5 s after load), `LockstyleConfig`,
+  `RECAST_CONFIG`, `RegionConfig`, `BluMagicConfig`, `RUNTPConfig`, the factory
+  wrappers and exports, `temp_tp_bonus_gear` (WS only). Nothing on `windower.*`, no
+  events.
+- Keybinds: bound 0.5 s after `user_setup`, unbound in `file_unload`. `bind_all`
+  unbinds only keys that no longer apply, then binds.
+- Coroutines: the 0.5 s keybind load and the 0.2 s macro/lockstyle gate have no
+  generation guard and are not cancelled by a reload, so a reload inside those
   0.5 s binds from the old sandbox (still open; no managed character plays RUN).
 - Every subjob change ends in a `gs reload`; states reset to defaults. See
   [job change lifecycle](../architecture/job-change-lifecycle.md).
@@ -324,62 +335,94 @@ T = `_master/sets/run_sets.lua` (the only sets file in scope).
 
 - Precast: `PrecastGuard`, `CooldownChecker`, `WSPrecastHandler`
   ([precast pipeline](../systems/precast-pipeline.md)); no `AbilityHelper`.
-- Midcast: `MidcastManager`, `MidcastWatchdog`, `ENHANCING_MAGIC_DATABASE`
-  ([midcast and buffs](../systems/midcast-and-buffs.md)).
-- Commands: `CommonCommands`, `UICommands`, `WatchdogCommands`,
-  `CycleHandler`, `LifecycleManager`
-  ([commands and debug](../systems/commands-and-debug.md)).
+- Midcast: `MidcastManager`, `MidcastWatchdog`, `midcast_fallback`,
+  `ENHANCING_MAGIC_DATABASE` ([midcast and buffs](../systems/midcast-and-buffs.md)).
+- Commands: `CommonCommands`, `UICommands`, `WatchdogCommands`, `CycleHandler`,
+  `LifecycleManager` ([commands and debug](../systems/commands-and-debug.md)).
+- Shared hooks from `INIT_SYSTEMS` (ElementalBelt, DualWield, TreasureHunter,
+  CombatMode, CustomStates) apply as on every job
+  ([factories and helpers](../systems/factories-and-helpers.md#common-features-per-job)).
+  ElementalBelt covers Herculean Slash, not the Lunge / Swipe job abilities.
 - Factories, JobChangeManager, UI ([UI overlay](../systems/ui-overlay.md)),
   dual-box ([dualbox](../systems/dualbox.md)).
 - [PLD](pld.md): the three shared-by-copy logic modules and the BLU config.
 
 ## Invariants & gotchas
 
-- `RUNKeybinds` is nil during the first 0.5 s of every sandbox; anything that
-  reads it (`file_unload`) must guard it, and does.
+- `RUNKeybinds` is nil during the first 0.5 s of every sandbox; anything that reads
+  it (`file_unload`, KeybindGuard at 2 s) must guard it, and does.
 - The initial macrobook and lockstyle rely on the 0.2 s deferred gate in
-  `user_setup` (see Load sequence), not on a `show_intro` side effect: moving
-  that gate back to a synchronous call would make it fail again.
+  `user_setup`, not on a `show_intro` side effect: moving that gate back to a
+  synchronous call would make it fail again.
 - An empty named set is not a fallback: `sets.precast.WS['X'] = {}` hides
   `sets.precast.WS`. Use `set_combine(sets.precast.WS, {})`.
 - `sets.precast.JA = {}` is intentional: runes keep the tank set.
-- `aoe_manager` captures `_G.BluMagicConfig` when first required.
+- `aoe_manager` captures `_G.BluMagicConfig` when first required; `RUN_PRECAST`
+  captures `_G.RUNTPConfig` on the first action.
 
-## Extending
+## For maintainers / AI
 
-- New weapon: add it to `state.MainWeapon` and `sets.<Name>`; if it takes no
-  grip, extend the Lycurgos test in `apply_grip` (`set_builder.lua:64`).
-- New midcast route: add a branch in `job_post_midcast` (`RUN_MIDCAST.lua:133-144`)
-  and define `sets.midcast['<Skill>']`, or the route is a no-op.
-- New state/bind: `RUN_STATES.lua` + `RUN_KEYBINDS.lua`, keeping `^numpad9` =
+### Change recipes
+
+- **New weapon**: add it to `state.MainWeapon` and define `sets.<Name>`; if it takes
+  no grip, extend the Lycurgos test in `apply_grip`. A weapon that gives TP bonus
+  goes in `RUN_TP_CONFIG.weapons`.
+- **New midcast route**: add a branch in `job_post_midcast` (`RUN_MIDCAST.lua`) and
+  define `sets.midcast['<Skill>']`, or the route is a no-op.
+- **New state / key**: `RUN_STATES.lua` + `RUN_KEYBINDS.lua`, keeping `^numpad9` =
   HybridMode and `^numpad3` = RuneMode (see
-  [keybinds and custom states](../systems/keybinds-and-custom.md)).
+  [keybinds and custom states](../systems/keybinds-and-custom.md#key-layout-project-convention));
+  update `docs/user/jobs/run/README.md` and `states.md`.
+- **Fixing the HUD anchor**: change the `RUN` branch of `ui_lifecycle.lua`
+  `are_states_ready` to `state.RuneMode`; it changes RUN HUD timing (5 s -> at once),
+  so check the first render in game.
+- **Sharing code with PLD**: `aoe_manager`, `cure_set_builder`, `rune_manager` and
+  the BLU config are copies. A fix in one belongs in the other; a merge into
+  `shared/utils/` would remove the duplication.
+
+### Traps
+
+- RUN is untested in game in its current form: any change here has no player to
+  confirm it. Prefer the offline checks below, and say so in the commit.
+- The entry's paths are hard-coded to `Tetsouo/config/run/...` in the template; the
+  clone script rewrites them. Do not "fix" them in `_master/entry/`.
+- Ripgrep skips the gitignored live folders (`Hysoka/` has RUN): confirm "no caller"
+  claims with `grep -r`.
+
+### Testing offline
+
+`lua5.1` and `luac5.1` are installed (Chocolatey, `C:\ProgramData\chocolatey\bin`).
+
+```bash
+for f in shared/jobs/run/functions/*.lua shared/jobs/run/functions/logic/*.lua \
+         _master/config/run/*.lua _master/entry/Tetsouo_RUN.lua _master/sets/run_sets.lua; do
+    luac5.1 -p "$f" || echo "FAIL $f"
+done
+python scripts/check_syntax.py        # whole project, live folders included (local, gitignored)
+```
+
+`scripts/audit/difftest_tp.lua <old> <new>` sweeps the TP bonus calculator used by
+RUN weaponskills. There is no RUN-specific differential test.
 
 ## Known issues
 
 - Divine route is a no-op (no `sets.midcast['Divine Magic']`).
-- UI readiness anchor `RuneElement` does not exist (`ui_lifecycle.lua:58-59`).
-- `//gs c aoe` without /BLU: fixed 2026-09-25, `execute_aoe` now refuses with
-  "AOE needs the BLU subjob (RUN/BLU)" instead of sending `/ma` the game
-  refuses. The `unknown_spell` counter is left and only catches a misspelled
-  name in the rotation config. To check in game.
-- Fixed: the empty `auto_abilities` table and loop are gone from
-  `RUN_PRECAST.lua`; the stale headers (entry, `run_functions.lua`,
-  `RUN_IDLE`/`RUN_ENGAGED`, `RUN_KEYBINDS`, `RUN_STATES` Alt keys,
-  `RUN_MIDCAST` XP mode, set builder "sub=empty") were rewritten by `b6c7dc6`.
-- BLU dynamic rotation reads the main job's data
-  (`_master/config/run/RUN_BLU_MAGIC.lua:104`), as on PLD.
-- Fixed 2026-09-25: rune descriptions for Gelus, Tellus and Unda in
-  `shared/data/job_abilities/run/run_subjob.lua` now match the state comments
-  (`RUN_STATES.lua:82-87`) and BG-Wiki.
-- Fixed by `22e1816` (KeybindManager): the old unbind-all loop of `bind_all` is
-  gone.
+- UI readiness anchor `RuneElement` does not exist (`ui_lifecycle.lua`
+  `are_states_ready`): the HUD appears after the 5 s timeout on every RUN load.
+- Stale comment in `RUN_PRECAST.lua` `ensure_modules_loaded`: it says the entry
+  does not load `RUN_TP_CONFIG`; the entry does, since 2026-09-27.
+- `RUN_MACROBOOK.lua` keys its `solo` and `dualbox` tables by subjob with a `RUN`
+  entry (RUN/RUN cannot exist) and no /SCH, /WAR or /DRK entry: copied from PLD's
+  layout; the `default` (book 15) covers the rest.
+- The 0.5 s keybind coroutine and the 0.2 s gate have no generation guard.
+- `//gs c aoe` without /BLU refuses with "AOE needs the BLU subjob (RUN/BLU)". The
+  `unknown_spell` counter only catches a misspelled name in the rotation config.
+  Not checked in game.
+- BLU dynamic rotation reads the main job's data (`RUN_BLU_MAGIC.lua`
+  `get_equipped_blu_spells`), as on PLD, so it always uses the manual list.
 - Duplicated with PLD: `aoe_manager`, `cure_set_builder`, `rune_manager`,
-  `RUN_BLU_MAGIC`, `cooldown_exclusions`, the `job_midcast` skeleton
-  (`RUN_MIDCAST.lua:52-70`).
-- Dead: `run_messages.lua` (no caller), commented
-  WarpInit block (`Tetsouo_RUN.lua:220-230`).
-- User docs: `docs/user/jobs/run/README.md` calls `cure_set_builder`
-  "priority-based cure target selection", omits `SubWeapon`/`AutoMedicine`,
-  and its setup steps do not mention the `Tetsouo/...` paths hard-coded in the
-  entry; `docs/user/guides/commands.md:209-214` lists `aoe` as working.
+  `RUN_BLU_MAGIC`, `cooldown_exclusions`, the `job_midcast` skeleton.
+- Dead: `run_messages.lua` (nothing sends its keys), the commented WarpInit block in
+  the entry, `_G.DEBUG_RUN_WEAPONS` (no command sets it).
+- ElementalBelt does not treat Lunge / Swipe (magic-damage job abilities): only
+  weaponskills of its list and spells are covered.

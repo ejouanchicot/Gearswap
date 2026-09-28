@@ -1,34 +1,36 @@
 # DNC (Dancer) job
 
-The DNC job area has 11 hook modules plus 5 logic modules under
-`shared/jobs/dnc/functions/` (1 643 lines with the facade), an entry point per
-character, seven config files, one refill overlay and one sets file. It also owns,
-or is the main user of, three shared helpers: `shared/utils/dnc/waltz_manager.lua`,
-`shared/utils/drg/auto_jump.lua` and `shared/utils/precast/ability_helper.lua`.
-GearSwap loads it when the main job becomes DNC (`Tetsouo_DNC.lua`). From then on
-Mote-Include calls its hooks on every action, on status and buff changes, on
-`//gs c` commands and on state cycles.
+The DNC job area has 11 hook modules, the facade and 5 logic modules under
+`shared/jobs/dnc/functions/` (1 625 lines), one entry point per character,
+eight config files and one sets file. It also owns, or is the main user of,
+four shared helpers: `shared/utils/dnc/waltz_manager.lua`,
+`shared/utils/drg/auto_jump.lua`, `shared/utils/precast/ability_helper.lua` and
+`shared/utils/smartbuff/subjob_war_buffs.lua`. GearSwap loads it when the main
+job becomes DNC. From then on Mote-Include calls its hooks on every action, on
+status and buff changes, on `//gs c` commands and on state cycles.
+
+Player-facing pages: [start page](../../user/jobs/dnc/README.md),
+[modes](../../user/jobs/dnc/states.md), [sets](../../user/jobs/dnc/sets.md).
 
 What DNC adds on top of the shared pipeline:
 
 - **Weaponskill auto-triggers**: Jump / High Jump when TP is short on /DRG
   (`AutoJump`), then Climactic Flourish before configured weaponskills
-  (`AbilityHelper.try_ability_ws`), each cancelling the WS and replaying it.
+  (`ClimaticManager` -> `AbilityHelper.try_ability_ws`), each cancelling the WS
+  and replaying it.
 - **Buff-driven set selection**: engaged base from Saber Dance / Fan Dance /
-  HybridMode, and weaponskill variants `.SaberDance`, `.FanDance`, `.Clim` and
-  their combinations, applied before the TP-bonus earring.
+  HybridMode (refreshed on the dance's buff change), and weaponskill variants
+  `.SaberDance`, `.FanDance`, `.Clim` and their combinations, applied before the
+  TP-bonus earring.
 - **Dancer commands**: `step` (Presto + MainStep/AltStep rotation), `dance`,
   `smartbuff` (dance + samba + subjob buffs), plus the shared `waltz` /
   `aoewaltz` (WaltzManager).
-- **Mote overrides**: `refine_waltz` becomes a no-op (waltz on full-HP targets,
-  wake-up utility) and `cancel_conflicting_buffs` keeps only the Sneak /
-  Spectral Jig / Stoneskin cancels, which also removes Mote's recast abort
-  message on DNC.
+- **Mote overrides**: `refine_waltz` becomes a no-op and
+  `cancel_conflicting_buffs` keeps only the Sneak / Spectral Jig / Stoneskin
+  cancels, which also removes Mote's recast abort message on DNC.
 
-Every file in scope was read in full except the gear content of the sets files
-(only structure and set names were read, as gear choice is out of scope). Line
-numbers were rechecked against the working tree on 2026-09-25; where a line
-number added nothing, the function name is cited instead.
+Checked against the working tree on 2026-09-28. Code is cited by file and
+function; line numbers are given only where no function name fits.
 
 ## Files
 
@@ -36,9 +38,9 @@ number added nothing, the function name is cited instead.
 |------|------:|------|
 | `_master/entry/Tetsouo_DNC.lua` | 294 | Entry point (template): config preload, `get_sets` (with the `cancel_conflicting_buffs` override), `job_sub_job_change`, `user_setup`, `job_update`, `init_gear_sets`, `file_unload` |
 | `shared/jobs/dnc/functions/dnc_functions.lua` | 107 | Facade: includes `message_buffs` and the 11 hook files, requires `dualbox_manager` |
-| `shared/jobs/dnc/functions/DNC_PRECAST.lua` | 220 | `refine_waltz` override, `job_precast` (guard, cooldown, Samba TP, Climactic timestamp, Jump/Climactic triggers, WS handler), `job_post_precast` (WS variant, TP gear) |
-| `shared/jobs/dnc/functions/DNC_MIDCAST.lua` | 95 | `job_midcast` (empty since 2026-09-25) / `job_post_midcast` (MidcastManager for Ninjutsu, Healing, Enhancing) |
-| `shared/jobs/dnc/functions/DNC_AFTERCAST.lua` | 38 | `job_aftercast`: watchdog tick only |
+| `shared/jobs/dnc/functions/DNC_PRECAST.lua` | 225 | `refine_waltz` override, `job_precast` (guard, cooldown, `job_precast_samba`, Climactic timestamp, `job_precast_weaponskill`, WS handler), `job_post_precast` (WS variant, TP gear) |
+| `shared/jobs/dnc/functions/DNC_MIDCAST.lua` | 89 | `job_midcast` (empty) / `job_post_midcast` (MidcastManager for Ninjutsu, Healing, Enhancing) |
+| `shared/jobs/dnc/functions/DNC_AFTERCAST.lua` | 38 | `job_aftercast`: watchdog tick only (exported to `_G` only) |
 | `shared/jobs/dnc/functions/DNC_IDLE.lua` | 41 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/dnc/functions/DNC_ENGAGED.lua` | 40 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/dnc/functions/DNC_STATUS.lua` | 19 | `LifecycleManager.status_change()` |
@@ -47,92 +49,82 @@ number added nothing, the function name is cited instead.
 | `shared/jobs/dnc/functions/DNC_MOVEMENT.lua` | 13 | Header only, kept for the 12-module layout |
 | `shared/jobs/dnc/functions/DNC_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('DNC', ...)` wrappers |
 | `shared/jobs/dnc/functions/DNC_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('DNC', ...)` wrapper |
-| `shared/jobs/dnc/functions/logic/climactic_manager.lua` | 75 | Climactic Flourish auto-trigger conditions |
-| `shared/jobs/dnc/functions/logic/ws_variant_selector.lua` | 121 | WS variant from dance buff + Climactic (buff or 5 s timestamp) |
-| `shared/jobs/dnc/functions/logic/step_manager.lua` | 96 | `step`: recast check, Presto, Main/Alt rotation |
-| `shared/jobs/dnc/functions/logic/smartbuff_manager.lua` | 272 | `smartbuff` (dance, samba, subjob buffs) and `dance` |
-| `shared/jobs/dnc/functions/logic/set_builder.lua` | 160 | Engaged base (Saber/Fan Dance, HybridMode), weapon + sub override, town, movement |
+| `shared/jobs/dnc/functions/logic/climactic_manager.lua` | 84 | `ClimaticManager.auto_trigger`, `has_three_finishing_moves`, `WS_MIN_TP` 1000 |
+| `shared/jobs/dnc/functions/logic/ws_variant_selector.lua` | 121 | `apply_variant`: WS variant from dance buff + Climactic (buff or 5 s timestamp) |
+| `shared/jobs/dnc/functions/logic/step_manager.lua` | 96 | `execute_step`: recast check, Presto, Main/Alt rotation |
+| `shared/jobs/dnc/functions/logic/smartbuff_manager.lua` | 272 | `apply` (dance, samba, subjob buffs), `apply_dance` |
+| `shared/jobs/dnc/functions/logic/set_builder.lua` | 161 | `select_engaged_base` (Saber/Fan Dance, HybridMode), `apply_weapon` (+ sub override), town, movement |
 | `shared/utils/dnc/waltz_manager.lua` | 261 | `//gs c waltz` / `aoewaltz` tier selection (any job with DNC main or sub) |
-| `shared/utils/drg/auto_jump.lua` | 224 | Jump before WS on /DRG (shared with WAR) |
-| `shared/utils/precast/ability_helper.lua` | 394 | `try_ability_ws` used for Climactic Flourish, `follow_up` used by `step` |
+| `shared/utils/drg/auto_jump.lua` | 228 | Jump before WS on /DRG (shared with WAR) |
+| `shared/utils/precast/ability_helper.lua` | 409 | `try_ability_ws` (Climactic Flourish), `follow_up` (`step`) |
 | `shared/utils/smartbuff/subjob_war_buffs.lua` | 74 | /WAR buffs (shared with THF) |
 | `_master/config/dnc/DNC_STATES.lua` | 211 | All Mote states |
-| `_master/config/dnc/DNC_KEYBINDS.lua` | 42 | 11 numpad binds, data only; `KeybindManager.create('DNC', ...)` adds `bind_all` / `unbind_all` / `show_intro` (see [keybinds and custom states](../systems/keybinds-and-custom.md)) |
-| `_master/config/dnc/DNC_CUSTOM.lua` | 118 | Player modes and gear rules (all examples commented out), read through `KeybindManager` |
+| `_master/config/dnc/DNC_KEYBINDS.lua` | 42 | 10 binds, data only; `KeybindManager.create('DNC', ...)` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `_master/config/dnc/DNC_CUSTOM.lua` | 119 | Player modes and gear rules (all examples commented out) |
+| `_master/config/dnc/DNC_HUD.lua` | 32 | Per-job HUD `section_order` / `row_order` (empty) |
 | `_master/config/dnc/DNC_LOCKSTYLE.lua` | 62 | Lockstyle 2, `by_subjob`, `get_style` |
 | `_master/config/dnc/DNC_MACROBOOK.lua` | 78 | Book/page per subjob and per dual-box partner job |
-| `_master/config/dnc/DNC_TP_CONFIG.lua` | 68 | Moonshade piece, weapon TP bonus table, `_G.DNCTPConfig` |
-| `_master/config/dnc/DNC_WS_CONFIG.lua` | 70 | Climactic whitelist, `min_tp` 1000, `min_target_hpp` 25 |
-| `_master/Tetsouo/config/dnc/DNC_REFILL.lua` | 22 | Refill list (Tetsouo overlay) |
-| `_master/sets/dnc_sets.lua` | 1021 | Template sets (flat) |
-| `shared/data/job_abilities/DNC_JA_DATABASE.lua` + `dnc/*.lua` (15) | 26 + 650 | Ability data for chat messages (`ability_message_handler.lua:77-83`); not read by DNC logic |
+| `_master/config/dnc/DNC_TP_CONFIG.lua` | 68 | Moonshade piece, weapon TP bonus table (Aeneas, Centovente), `_G.DNCTPConfig` |
+| `_master/config/dnc/DNC_WS_CONFIG.lua` | 71 | Climactic whitelist, `min_tp` 1000, `min_target_hpp` 25, `should_use_climactic` |
+| `_master/sets/dnc_sets.lua` | 1035 | Template sets (flat; data, size not a defect) |
+| `shared/data/job_abilities/DNC_JA_DATABASE.lua` + `dnc/*.lua` | 26 + ... | Ability data for chat messages; not read by DNC logic |
 
-Live copies (gitignored): `Tetsouo/Tetsouo_DNC.lua` (identical to the template
-except `@file`, the header line 33 and line 277, which includes
-`sets/dnc/dnc_sets.lua`; `_master/Tetsouo/entry/Tetsouo_DNC.lua` is identical
-to it), `Tetsouo/config/dnc/*` (identical except `DNC_MACROBOOK.lua`: default
-book 6, solo only `DRG` book 6, dual-box entries only for `DRG`; the same file
-is the overlay `_master/Tetsouo/config/dnc/DNC_MACROBOOK.lua`),
-`DNC_REFILL.lua` identical to the overlay, and
-`Tetsouo/sets/dnc/{dnc_sets,armor,capes,weapons}.lua` (modular, 948 + 119 + 52
-+ 44 lines, mirrored in `_master/Tetsouo/sets/dnc/`; weapon sets copied by the
-loop at `Tetsouo/sets/dnc/dnc_sets.lua:62-64`).
-`Kaories/` and `_master/Kaories/` contain no DNC files.
+Character overlay: `_master/<Character>/config/dnc/` holds `DNC_MACROBOOK.lua`
+and `DNC_REFILL.lua`; the author's live DNC uses the modular
+`sets/dnc/{dnc_sets,armor,capes,weapons}.lua`.
 
 ## How it works
 
 ### Load sequence
 
-Same shape as [BLM](blm.md#load-sequence) and every job
-([core lifecycle](../systems/core-lifecycle.md)): `user_setup()` and
-`init_gear_sets()` run inside `include('Mote-Include.lua')`, before
-`INIT_SYSTEMS` (included on the next line of `get_sets`) and before the DNC hook
-files exist.
+Same shape as every job ([core lifecycle](../systems/core-lifecycle.md)):
+`user_setup()` and `init_gear_sets()` run inside `include('Mote-Include.lua')`,
+before `INIT_SYSTEMS` and before the DNC hook files exist.
 
 ```mermaid
 sequenceDiagram
     participant GS as GearSwap
-    participant E as Tetsouo_DNC.lua
+    participant E as Char_DNC.lua
     participant M as Mote-Include
     participant F as dnc_functions.lua
-    GS->>E: run chunk (LOCKSTYLE_CONFIG, UIConfig, REGION_CONFIG, lines 51-72)
+    GS->>E: run chunk (LOCKSTYLE_CONFIG, config_loader + UIConfig, REGION_CONFIG)
     GS->>E: get_sets()
-    E->>M: include Mote-Include (line 84)
+    E->>M: include Mote-Include
     M->>E: user_setup() (states, keybinds + intro, UI, JCM, dualbox)
-    M->>E: init_gear_sets() -> include sets file (line 277)
-    E->>E: INIT_SYSTEMS, data_loader, message hooks (lines 86-110)
-    E->>E: _G.LockstyleConfig, UIConfig, RECAST_CONFIG, DNCTPConfig, DNCWSConfig (119-128)
-    E->>E: replace _G.cancel_conflicting_buffs (135-144)
-    E->>E: JobChangeManager.cancel_all() (149)
-    E->>F: include dnc_functions.lua (153) -> 11 hooks, refine_waltz override
-    E->>E: register_lockstyle_cancel("DNC", ...) (159)
+    M->>E: init_gear_sets() -> include sets file
+    E->>E: INIT_SYSTEMS, data_loader, message hooks
+    E->>E: _G.LockstyleConfig, UIConfig, RECAST_CONFIG, DNCTPConfig, DNCWSConfig
+    E->>E: replace _G.cancel_conflicting_buffs
+    E->>E: JobChangeManager.cancel_all()
+    E->>F: include dnc_functions.lua -> 11 hooks, refine_waltz override
+    E->>E: register_lockstyle_cancel("DNC", ...)
 ```
 
-`user_setup()` (`Tetsouo_DNC.lua:196-254`): `DNCStates.configure()` (201-202);
-`DNCKeybinds.bind_all()` (210; the module is `KeybindManager.create('DNC', ...)`,
-whose `show_intro()`, through its `require`s of `DNC_MACROBOOK` /
-`DNC_LOCKSTYLE`, defines `select_default_macro_book` and
-`select_default_lockstyle` as on BLM); `KeybindUI.smart_init("DNC", ...)` (the UI
-waits for `state.MainStep`, `ui_lifecycle.lua` `are_states_ready`);
+`user_setup()`: `DNCStates.configure()`; `DNCKeybinds.bind_all()` (the module
+is `KeybindManager.create('DNC', ...)`, whose `show_intro()`, through its
+`require`s of `DNC_MACROBOOK` / `DNC_LOCKSTYLE`, defines
+`select_default_macro_book` and `select_default_lockstyle`);
+`KeybindUI.smart_init("DNC", ...)` (the UI waits for `state.MainStep`);
 `JobChangeManager.initialize()` plus immediate macro book and lockstyle after
-8 s; `dualbox_manager`. The two dead states `CancelAbilityRecasts` /
-`CancelSpellRecasts` were removed on 2026-09-25.
+8 s; `dualbox_manager`.
 
 The two Mote overrides:
 
-- `refine_waltz` (`DNC_PRECAST.lua:86-87`) is a global no-op defined when the
-  facade includes `DNC_PRECAST`. Mote's `user_precast` calls it on every action
-  (`Mote-Globals.lua:90-93`), so a waltz typed or macroed by hand is never
-  re-tiered, never downgraded for TP and never blocked on full HP.
-- `_G.cancel_conflicting_buffs` (`Tetsouo_DNC.lua:135-144`) keeps Spectral Jig
-  / Sneak / Stoneskin. It drops Mote's recast abort for Waltz/Samba, the
-  Monomi and Utsusemi: Ichi cancels, and the Saber Dance (waltz, Trance) / Fan
-  Dance (samba) cancels (`Mote-Utility.lua:15-50`). The comment (130-134) says
-  the dance cancels are skipped to keep the dance set variants.
+- `refine_waltz` (`DNC_PRECAST.lua`) is a global no-op defined when the facade
+  includes `DNC_PRECAST`. Mote's `user_precast` calls it on every action
+  (`Mote-Globals.lua`), so a waltz typed or macroed by hand is never re-tiered,
+  never downgraded for TP and never blocked on full HP. On other jobs with
+  /DNC, Mote's own `refine_waltz` stays (it re-tiers a waltz on self).
+- `_G.cancel_conflicting_buffs` (entry, `get_sets`) keeps Spectral Jig / Sneak
+  / Stoneskin. It drops Mote's recast abort for Waltz / Samba, the Monomi and
+  Utsusemi: Ichi cancels, and the Saber Dance (waltz, Trance) / Fan Dance
+  (samba) cancels (`Mote-Utility.lua` `cancel_conflicting_buffs`). The
+  Utsusemi: Ichi shadow cancel now comes from `utsusemi_shadows.lua` for every
+  job; the entry comment still says "Utsusemi handled by DNC_MIDCAST".
 
 ### Precast
 
-`job_precast` (`DNC_PRECAST.lua:139-179`):
+`job_precast` (`DNC_PRECAST.lua`):
 
 ```mermaid
 flowchart TD
@@ -146,39 +138,35 @@ flowchart TD
     C -- other --> F
     F -- yes --> Z
     F -- no --> G{type Samba}
-    G -- yes --> H["no Trance and TP below spell.tp_cost: show_ability_tp_error + cancel"]
+    G -- yes --> H["job_precast_samba: no Trance and live TP below spell.tp_cost -> cancel"]
     G -- no --> I
     H --> I{Climactic Flourish}
     I -- yes --> J[_G.dnc_climactic_timestamp = os.time]
     I -- no --> K
     J --> K{WeaponSkill}
-    K -- yes --> L["AutoJump.auto_trigger_jump, then ClimaticManager.auto_trigger"]
+    K -- yes --> L["job_precast_weaponskill: AutoJump, then ClimaticManager"]
     K -- no --> M
     L --> LC{cancelled by a helper}
     LC -- yes --> Z2[return: the WS is replayed later]
     LC -- no --> M[WSPrecastHandler.handle]
 ```
 
-- `job_precast_samba` (99-110) cancels a samba when TP is below its own
-  `spell.tp_cost` (`res/job_abilities.lua`: Drain Samba 100, II 250, III 400,
-  Aspir Samba 100, II 250, Haste Samba 350), and lets every samba through under
-  Trance. Before commit `5530584` it used a flat 350 for all of them.
-- `job_precast_weaponskill` returns early after a helper cancels, and
-  `job_precast` returns too (since 2026-09-27), so `WSPrecastHandler.handle`
-  no longer prints a false "Not enough TP" for a WS that AutoJump or Climactic
-  took over.
-- The 5-line guard/cooldown contract is shared
-  ([precast pipeline](../systems/precast-pipeline.md#the-job_precast-contract)).
-  Utsusemi Ichi/Ni skip the spell cooldown check (151).
-- `job_post_precast` (190-205): `WSVariantSelector.apply_variant` first, then
+- `job_precast_samba` cancels a samba when the live TP
+  (`shared/utils/core/live_tp.lua`) is below its own `spell.tp_cost`
+  (resources: Drain Samba 100, II 250, III 400, Aspir Samba 100, II 250, Haste
+  Samba 350), and lets every samba through under Trance.
+- `job_precast_weaponskill` returns after a helper cancels, and `job_precast`
+  returns too, so `WSPrecastHandler.handle` never prints a false "Not enough
+  TP" for a WS that AutoJump or Climactic took over.
+- Utsusemi Ichi / Ni skip the spell cooldown check.
+- `job_post_precast`: `WSVariantSelector.apply_variant` first, then
   `WSPrecastHandler.apply_tp_gear`, so the Moonshade Earring survives the
-  variant (the order THF gets wrong, see [THF](thf.md#known-issues)).
-- Mote's default precast uses the resource type as category
-  (`Mote-Include.lua:647-655`): `sets.precast.Step[name]`, `.Flourish1[name]`,
-  `.Flourish2[name]`, `.Waltz[name]`, `.Samba`, `.Jig`, `.JA[name]` for
-  `JobAbility` (Saber/Fan Dance, Trance, Presto, No Foot Rise, Jump). Climactic
-  Flourish is `Flourish3`; there is no `sets.precast.Flourish3`, so it falls back
-  to `sets.precast.JA`.
+  variant.
+- Mote's default precast uses the resource type as category:
+  `sets.precast.Step[name]`, `.Flourish1[name]`, `.Flourish2[name]`,
+  `.Waltz[name]`, `.Samba`, `.Jig`, `.JA[name]` for `JobAbility`. Climactic
+  Flourish is `Flourish3`; there is no `sets.precast.Flourish3`, so it falls
+  back to `sets.precast.JA`.
 
 ### Weaponskill auto-triggers
 
@@ -190,38 +178,34 @@ sequenceDiagram
     participant C as ClimaticManager
     participant H as AbilityHelper
     U->>P: /ws Rudra's Storm (TP 700, /DRG)
-    P->>J: auto_trigger_jump: cancel, /ja Jump <t>, replay WS at +2 s
+    P->>J: auto_trigger_jump: cancel, /ja Jump <t>, replay WS
     U->>P: replayed /ws (TP now >= 1000)
-    P->>C: auto_trigger: ClimacticAuto On, live TP >= max(min_tp, 1000), target HP > 25%, FM buff, whitelisted WS
+    P->>C: auto_trigger: ClimacticAuto On, live TP >= max(min_tp, 1000), target HP > 25%, 3+ Finishing Moves, whitelisted WS
     C->>H: try_ability_ws(spell, eventArgs, 'Climactic Flourish', 1)
     H->>H: ready and buff down -> cancel, /ja Climactic Flourish <me>
     H->>H: follow_up polls for the buff, then replays /ws <t>
-    U->>P: replayed /ws -> Climactic now on recast -> WS proceeds
+    U->>P: replayed /ws (marker: no second try) -> WS proceeds
 ```
 
-- AutoJump is documented in [factories and helpers](../systems/factories-and-helpers.md#autojump-sharedutilsdrgauto_jumplua)
-  (Jump 158 / High Jump 159, below 1000 TP, `state.JumpAuto`, re-entrancy flag
-  `_G.AUTO_JUMP_SEQUENCE_ACTIVE`, replay on `spell.target.raw`).
-- `ClimaticManager.auto_trigger` (`climactic_manager.lua:53-69`) requires at
-  least 3 Finishing Moves: `has_three_finishing_moves` (41-48) looks for any of
-  `Finishing Move 3`, `4`, `5` or `Finishing Move (6+)` (`FINISHING_MOVES_3_PLUS`,
-  28-33). The game shows one buff per count up to 5, then the single `(6+)` buff
-  (`res/buffs.lua:376-380,580`). Before 2026-09-19 it tested
-  `Finishing Move (3+)`, which is not a buff name, so only 6+ moves triggered it.
-- `DNCWSConfig` is captured when the module is first required (25), at the first
-  DNC precast, after the entry has set `_G.DNCWSConfig`.
-- `try_ability_ws` (`ability_helper.lua:383-392`) replays on `<t>`, not on the
-  original target. Since 2026-09-25 (`may_try`, `fire_then_replay`) the
-  ability is tried at most once per WS: the replayed WS carries a marker on
-  `windower._ability_replay` and goes out without a second attempt, nothing is
-  tried under Amnesia or Impairment, and `can_use_ability` reads
-  `windower.ffxi.get_abilities().job_abilities` (before, a refused Climactic
-  Flourish could loop, and `can_use_ability` was always true). Not yet tested in
-  game ([precast pipeline](../systems/precast-pipeline.md#abilityhelper)).
+- AutoJump: [factories and helpers](../systems/factories-and-helpers.md#autojump-sharedutilsdrgauto_jumplua)
+  (Jump 158 / High Jump 159, below 1000 live TP, `state.JumpAuto`, re-entrancy
+  flag `_G.AUTO_JUMP_SEQUENCE_ACTIVE`).
+- `ClimaticManager.auto_trigger` needs at least 3 Finishing Moves:
+  `has_three_finishing_moves` looks for `Finishing Move 3`, `4`, `5` or
+  `Finishing Move (6+)` (the game shows one buff per count up to 5, then the
+  single `(6+)` buff). It reads the live TP and never fires below 1000:
+  `DNC_WS_CONFIG.min_tp` can only raise that.
+- `DNCWSConfig` is captured when `climactic_manager.lua` is first required, at
+  the first DNC precast, after the entry has set `_G.DNCWSConfig`.
+- `try_ability_ws` replays on `<t>`, not on the original target. The ability is
+  tried at most once per WS (the replayed WS carries a marker on
+  `windower._ability_replay`); nothing is tried under Amnesia or Impairment;
+  `can_use_ability` reads `windower.ffxi.get_abilities().job_abilities`
+  ([precast pipeline](../systems/precast-pipeline.md)).
 
 ### Weaponskill variants and engaged sets
 
-`WSVariantSelector.apply_variant` (`ws_variant_selector.lua:99-115`, unchanged):
+`WSVariantSelector.apply_variant`:
 
 | Buffs | Set equipped (first that exists) |
 |-------|----------------------------------|
@@ -231,10 +215,10 @@ sequenceDiagram
 | none | Mote's base WS set stays |
 
 `dance` is `SaberDance` if `buffactive['Saber Dance']`, else `FanDance` if
-`buffactive['Fan Dance']` (63-73). Climactic is the buff, or the precast
-timestamp younger than 5 s, consumed on first use (44-56).
+`buffactive['Fan Dance']`. Climactic is the buff, or the precast timestamp
+younger than 5 s, consumed on first use (`climactic_active`).
 
-`SetBuilder.select_engaged_base` (`set_builder.lua:40-77`):
+`SetBuilder.select_engaged_base`:
 
 1. Saber Dance up and `sets.engaged.SaberDance` exists -> `.SaberDance.PDT` in
    PDT mode if defined, else `.SaberDance`.
@@ -243,279 +227,282 @@ timestamp younger than 5 s, consumed on first use (44-56).
 3. Other HybridMode -> `sets.engaged[mode]` (`Normal`).
 4. Otherwise Mote's set.
 
-Then `apply_weapon` (92-121): `sets[MainWeapon]` (main + sub pair) and, when
-`SubWeaponOverride` is not `Off`, `result.sub = sets[override].sub`. The field is
-written into `result`, which is a fresh table only when the weapon set was
-combined; with a missing weapon set it is the sets table itself.
+Then `apply_weapon`: `WeaponResolver.set_for('main', MainWeapon)` (the weapon
+set, main + sub; with `equip_without_set` in `config/WEAPON_CONFIG.lua`, a
+value with no set but a weapon name gives `{main = value}`), then, when
+`SubWeaponOverride` is not `Off`, `result.sub = sets[override].sub`. That field
+is written into `result`, which is a fresh table only when the weapon set was
+combined; with no weapon set it is the engaged set table itself.
 
-Mote's `buff_change` does not re-equip (`Mote-Include.lua:1023-1043`), so
-`DNC_BUFFS.lua` passes `on_dance_change` (25-38) to `LifecycleManager.buff_change`:
-when `Saber Dance` or `Fan Dance` (the exact resource names, 16-19) is gained or
-lost while engaged, it calls `handle_equipping_gear(player.status)` inside the
-buff event, so the engaged base follows at once. It skips the refresh while
-`midaction()` is true (the aftercast re-equips anyway) and when idle (the idle
-builder does not read the dances). A Doom event is handled by `DoomManager`
-and never reaches it.
+Because the engaged base is a sets table, not Mote's result, Mote's defense
+and kiting layers never reach DNC's engaged gear. `HybridMode` does not affect
+idle: `build_idle_set` is town / Adoulin base (`select_idle_base_town`), weapon,
+then `sets.MoveSpeed` outside town while moving.
 
-`build_idle_set` (142-154): town / Adoulin base (`base_set_builder.lua` `select_idle_base_town`),
-weapon, then `sets.MoveSpeed` outside town while moving.
+Mote's `buff_change` does not re-equip, so `DNC_BUFFS.lua` passes
+`on_dance_change` to `LifecycleManager.buff_change`: when `Saber Dance` or
+`Fan Dance` is gained or lost while engaged, it calls
+`handle_equipping_gear(player.status)` inside the buff event. It skips the
+refresh while `midaction()` is true (the aftercast re-equips anyway) and when
+idle. A Doom event is handled by `DoomManager` and never reaches it.
 
 ### Steps, dances, smartbuff
 
-`StepManager.execute_step` (`step_manager.lua:40-90`): picks `MainStep`, or
-`AltStep` when `UseAltStep` is On and `CurrentStep` is `Alt`; aborts with a
-cooldown message if the shared step recast (id 220) is on cooldown; sends
-`input /ja "Presto" <me>` and hands the step to `AbilityHelper.follow_up`,
-which replays it once Presto registers rather than after a fixed second, when
-Presto (236) is ready, not active and level >= 77, else `input /ja "<step>" <t>` (76-79); flips
-`CurrentStep`. Steps are job abilities (`prefix="/jobability"`), so they go out
-as `/ja`, the prefix GearSwap intercepts for them (`statics.lua:51-59`,
-`triggers.lua:74-82`); until 2026-09-19 they were sent as `/ma`.
+`StepManager.execute_step`: picks `MainStep`, or `AltStep` when `UseAltStep`
+is On and `CurrentStep` is `Alt`; aborts with a cooldown message if the shared
+step recast (id 220) is running; when Presto (236) is ready, not active and
+`player.main_job_level >= 77`, sends `input /ja "Presto" <me>` and hands the
+step to `AbilityHelper.follow_up` (replayed once Presto registers, soft
+deadline), else `input /ja "<step>" <t>`; flips `CurrentStep` when alternating.
 
-`SmartbuffManager.apply()` (`smartbuff_manager.lua:242-266`) builds one queue,
-cast 2 s apart (`cast_queue`, 72-82):
+`SmartbuffManager.apply()` builds one queue, sent 2 s apart (`cast_queue`,
+`wait` chains):
 
 1. The dance from `state.Dance` (Saber 219 / Fan 224) unless already active.
 2. The samba from `state.Samba` (shared recast 216) unless Fan Dance is the
    selected dance, the samba buff is up (`Drain Samba II` grants
-   `Drain Samba`), or TP is below its own cost (45-49, 147-174). The queued
+   `Drain Samba`), or the live TP is below its cost (`SAMBAS`). The queued
    samba then passes `job_precast_samba`, which checks the same cost.
-3. Subjob: /WAR `SubjobWarBuffs`, /NIN Utsusemi Ni then Ichi, /SAM Hasso (138);
-   others nothing (223-234).
+3. Subjob (`collect_subjob_buffs`): /WAR `SubjobWarBuffs` (Berserk, Aggressor,
+   Warcry), /NIN Utsusemi Ni then Ichi, /SAM Hasso (138); others nothing.
 
-`dance` / `fandance` (`apply_dance`, 127-136) casts `state.Dance` even when
-active.
+`dance` / `fandance` (`apply_dance`) casts `state.Dance` even when active.
 
 ### Waltzes
 
 `//gs c waltz` / `aoewaltz` are common commands (`COMMON_COMMANDS.lua`
-`handle_waltz_generic`, 80-105): DNC main or sub only, `cancel Saber Dance`
-first, then `WaltzManager.cast_curing_waltz('<stpc>')` or
-`cast_divine_waltz()`. Tier choice from the missing HP of the current target
-(self exact; a party or alliance member estimated from its HP%,
-`waltz_manager.lua:60,109`; until 2026-09-25 the test read `isallymember`,
-which a `windower.ffxi.get_mob_by_target` table never carries, so a party
-member was never sized), falling back through every tier by recast and TP.
-TP comparisons ignore Trance. Full description in
+`handle_waltz_generic`): DNC main or sub only, `cancel Saber Dance` first, then
+`WaltzManager.cast_curing_waltz('<stpc>')` or `cast_divine_waltz()`. Tier from
+the missing HP of the current target (self exact; a party or alliance member
+estimated from its HP %), falling back through every tier by recast and TP.
+Full description in
 [factories and helpers](../systems/factories-and-helpers.md#dnc-waltzmanager).
 
 ### Midcast
 
 Mote equips its default (`sets.midcast.FastRecast`, empty on DNC, then
-name/map/skill), then `job_post_midcast` (`DNC_MIDCAST.lua:45-81`) notifies the
-watchdog and calls `MidcastManager.select_set` for Ninjutsu, Healing and
-Enhancing. None of the three base sets exists in template or live sets, so each
-call returns at `midcast_manager.lua:639` and `sets.midcast.Utsusemi` from Mote
-stands. The shadow cancel for Utsusemi: Ichi (`cancel 66/444/445/446`, every
-Copy Image buff, 2.3 s after the midcast starts, whatever happens to the cast)
-moved on 2026-09-25 to `shared/utils/midcast/utsusemi_shadows.lua`, called for
-every job from `shared/hooks/init_spell_messages.lua`; `job_midcast` is empty.
+name / map / skill), then `job_post_midcast` notifies the watchdog and calls
+`MidcastManager.select_set` for Ninjutsu, Healing and Enhancing. None of the
+three base sets exists in the template, so each call returns false and Mote's
+choice (`sets.midcast.Utsusemi`...) stands. Any other magic skill (from a
+subjob) is routed afterwards by `MidcastFallback`. The Utsusemi: Ichi shadow
+cancel (every Copy Image buff, 2.3 s into the cast, needs the Cancel addon)
+lives in `shared/utils/midcast/utsusemi_shadows.lua`, called for every job
+from `shared/hooks/init_spell_messages.lua`.
 
-### Aftercast, idle, engaged, status, buffs
+### Aftercast, status
 
-- `job_aftercast` (`DNC_AFTERCAST.lua:22-30`): watchdog tick. It is a local
-  function exported only to `_G` (no module return).
-- Idle/engaged: `SetBuilder` above. Mote's own base is `sets.idle` /
-  `sets.idle.Town` and `sets.engaged.Normal` (OffenseMode `Normal` exists,
-  `Mote-Include.lua:569-577`); `set_builder` replaces it.
-- Status: shared `LifecycleManager` handler (Doom). Buffs: the shared handler
-  plus the dance refresh above. See
-  [core lifecycle](../systems/core-lifecycle.md).
+- `job_aftercast`: watchdog tick.
+- Status: shared `LifecycleManager` handler (Doom, hold during an action).
 
 ## Mote states
 
-Created by `DNCStates.configure()` (`_master/config/dnc/DNC_STATES.lua:38-207`)
-on every `user_setup()`. Keybinds from `_master/config/dnc/DNC_KEYBINDS.lua:20-39`,
-all `cyclestate`; `^` = Ctrl, `#` = Apps; `#numpad0` (AutoMedicine) comes from
-the character's `config/COMMON_KEYBINDS.lua`. No bind is filtered by subjob.
+Created by `DNCStates.configure()` on every `user_setup()`. Keybinds from
+`_master/config/dnc/DNC_KEYBINDS.lua`, all `cyclestate`; `#numpad0`
+(AutoMedicine) comes from the character's `config/COMMON_KEYBINDS.lua`. No bind
+is filtered by subjob.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
-| `HybridMode` (Mote) | PDT, Normal | PDT | `^numpad9` | `set_builder.lua:47,59-72` |
-| `MainWeapon` | Twashtar, Mpu Gandring, Demersal | Mpu Gandring | `^numpad1` | `set_builder.lua:94-95` |
-| `SubWeaponOverride` | Off, Blurred | Off | `^numpad2` | `set_builder.lua:108-117` |
-| `MainStep` | Box Step, Quickstep, Feather Step | Box Step | `^numpad3` | `step_manager.lua:48,51`; UI readiness |
-| `AltStep` | Quickstep, Box Step, Feather Step | Quickstep | `^numpad4` | `step_manager.lua:46` |
-| `UseAltStep` | On, Off | On | `^numpad5` | `step_manager.lua:41` |
-| `CurrentStep` | Main, Alt | Main | none | `step_manager.lua:45,83-89` |
-| `ClimacticAuto` | On, Off | On | `^numpad6` | `climactic_manager.lua` `auto_trigger` |
+| `HybridMode` (Mote) | PDT, Normal | PDT | `^numpad9` (Mote `^f9` too) | `select_engaged_base` |
+| `MainWeapon` | Twashtar, Mpu Gandring, Demersal | Mpu Gandring | `^numpad1` | `apply_weapon` |
+| `SubWeaponOverride` | Off, Blurred | Off | `^numpad2` | `apply_weapon` |
+| `MainStep` | Box Step, Quickstep, Feather Step | Box Step | `^numpad3` | `execute_step`; UI readiness |
+| `AltStep` | Quickstep, Box Step, Feather Step | Quickstep | `^numpad4` | `execute_step` |
+| `UseAltStep` | On, Off | On | `^numpad5` | `execute_step` |
+| `CurrentStep` | Main, Alt | Main | none | `execute_step` |
+| `ClimacticAuto` | On, Off | On | `^numpad6` | `ClimaticManager.auto_trigger` |
 | `JumpAuto` | On, Off | On | `^numpad7` | `auto_jump.lua` |
-| `Dance` | Saber Dance, Fan Dance | Saber Dance | `^numpad8` | `smartbuff_manager.lua:105,150` |
-| `Samba` | Haste Samba, Drain Samba II, Aspir Samba | Haste Samba | `^numpad0` | `smartbuff_manager.lua:153` |
+| `Dance` | Saber Dance, Fan Dance | Saber Dance | `^numpad8` | `collect_dance`, `collect_samba` |
+| `Samba` | Haste Samba, Drain Samba II, Aspir Samba | Haste Samba | `^numpad0` | `collect_samba` |
 | `CombatWeaponMode` | Normal, TPBonus, Clim, ClimTPBonus | Normal | none | nothing |
-| `FastCast` | 0..80 step 10 | 0 | none | `midcast_watchdog.lua` `get_fast_cast_percent` |
-| `AutoMedicine` | shared On/Off | persisted | `#numpad0` (from `COMMON_KEYBINDS.lua`) | `_master/config/dnc/DNC_STATES.lua:203-206` |
+| `FastCast` | 0..80 step 10 | 0 | none | `MidcastWatchdog` |
+| `AutoMedicine` | shared On/Off | persisted | `#numpad0` (common key) | `PrecastGuard` |
 | `Buff['Climactic Flourish']` (Mote) | boolean | from `buffactive` | none | nothing (Mote keeps it updated) |
+| `CombatMode`, `TreasureMode` (optional states) | Off/On, Off/Tag/Full | Off, hidden | `!numpad0`, `!numpad.` once shown | `combat_mode.lua`, `treasure_hunter.lua` |
 
-Step values are the resource names (`Quickstep`, `res/job_abilities.lua` id
-201, as in `shared/data/job_abilities/dnc/dnc_steps_subjob.lua:16`); they were
-`Quick Step` until 2026-09-19, a name no ability has.
+Step values are the resource names (`Quickstep`, not `Quick Step`).
 
 ## Commands
 
-`job_self_command` (`DNC_COMMANDS.lua:60-168`): `altjobupdate` (passes the
-sender name, 5th argument, since 2026-09-25), `requestjob`,
-`watchdog`, CommonCommands (99-110, `table.unpack(args)`), `ui`,
-`debugmidcast`, `cyclestate`, then DNC commands. `fandance` is also a key of
-`Tetsouo/config/alt/DNC_ALT_COMMANDS.lua:47`; the DNC command answers first, so it
-runs here even when the dual-box partner plays DNC (`//gs c alt fandance` sends
-the partner's).
+`job_self_command` (`DNC_COMMANDS.lua`): `altjobupdate`, `requestjob`,
+watchdog, CommonCommands (`table.unpack(args)`), `ui`, `debugmidcast`,
+`cyclestate`, then DNC commands. `fandance` is also a key of the DNC alt
+command config; the DNC command answers first, so it runs here even when the
+dual-box partner plays DNC (`//gs c alt fandance` sends the partner's).
 
-| Command | Effect | Handler |
-|---------|--------|---------|
-| dual-box, `watchdog`, common, `ui`, `debugmidcast`, `cyclestate` | shared | 71-144 |
-| `waltz` / `aoewaltz` | WaltzManager (common command) | `COMMON_COMMANDS.lua:80-105` |
-| `jump` | `DRGJumpManager.execute_jump` (common command, no WS replay) | `COMMON_COMMANDS.lua:62-72` |
-| `smartbuff` / `buffself` | `SmartbuffManager.apply()` | 146-151 |
-| `step` | `StepManager.execute_step()` | 153-158 |
-| `dance` / `fandance` | `SmartbuffManager.apply_dance()` (uses `state.Dance`) | 160-165 |
+| Command | Effect |
+|---------|--------|
+| `waltz` / `aoewaltz` | WaltzManager (common command) |
+| `jump` | `DRGJumpManager.execute_jump` (common command, no WS replay) |
+| `smartbuff` / `buffself` | `SmartbuffManager.apply()` |
+| `step` | `StepManager.execute_step()` |
+| `dance` / `fandance` | `SmartbuffManager.apply_dance()` |
 
-`job_state_change` is `LifecycleManager.state_change()` (178): UI refresh
-except for `Moving`. `CycleHandler` re-equips after a cycle, so weapon and
-HybridMode changes apply at once. The only name it reads is `Moving`, a state
-with no description, so it acts the same whether it receives a state's key
-(`HybridMode`) or its description (`Hybrid Mode`, what Mote passes).
+`job_state_change` is `LifecycleManager.state_change()`: HUD refresh except
+for `Moving`. `CycleHandler` re-equips after a cycle, so weapon and HybridMode
+changes apply at once.
 
 ## Set names the code looks up
 
-T = `_master/sets/dnc_sets.lua`, L = `Tetsouo/sets/dnc/dnc_sets.lua`.
+Full player-facing list: [sets.md](../../user/jobs/dnc/sets.md).
 
-| Set | Looked up by | T | L |
-|-----|--------------|---|---|
-| `sets.idle`, `sets.idle.Town`, `sets.Adoulin`, `sets.MoveSpeed` | Mote, `BaseSetBuilder` | 118, 974 (`= sets.MoveSpeed`, 2 slots), 977, 968 | 71, 907 (full), 910, 901 |
-| `sets.idle.PDT` | nothing (IdleMode `Normal`) | 135 | 88 |
-| `sets.engaged`, `.Normal`, `.PDT` | Mote, `select_engaged_base` | 151, 154, 171 | 99, 102, 119 |
-| `sets.engaged.FanDance`, `.SaberDance`, `.SaberDance.PDT` | `set_builder.lua:45-62` | 188, 205, 222 | 136, 153, 170 |
-| `sets['Mpu Gandring']`, `['Twashtar']`, `['Demersal']`, `['Blurred']` (needs `.sub`) | `set_builder.lua:95,110` | 91, 97, 103, 109 | `Tetsouo/sets/dnc/weapons.lua:22-42` |
-| `sets.precast.WS[ws].Clim/.FanDance/.FanDance.Clim/.SaberDance/.SaberDance.Clim` for Ruthless Stroke, Dancing Edge, Rudra's Storm, Shark Bite | `ws_variant_selector.lua:85-95` | 479-887 | 412-820 |
-| `sets.precast.WS`, Pyrrhic Kleos, Evisceration, Exenterator, Aeolian Edge | Mote default precast | 455, 890-938 | 394, 823-871 |
-| `sets.precast.Step` + `['Feather Step']`, `['Quickstep']`, `['Box Step']` | Mote (type `Step`) | 246, 262, 266, 270 | 194, 210, 214, 218 |
-| `sets.precast.Flourish1` + Violent/Animated/Desperate, `.Flourish2` + Reverse | Mote | 275-320 | 223-268 |
-| `sets.precast.Waltz` (+ `['Healing Waltz']`), `.Samba`, `.Jig` | Mote | 326-350 | 274-298 |
-| `sets.precast.JA['No Foot Rise' / 'Trance' / 'Provoke' / 'Fan Dance' / 'Jump' / 'High Jump']` | Mote | 356-401 | 304-346 |
-| `sets.precast.FC`, `.FC.Utsusemi` | Mote | 427, 446 | 369, 385 |
-| `sets.midcast.FastRecast` (empty), `.Utsusemi` | Mote | 960, 961 | 893, 894 |
-| `sets.midcast['Ninjutsu' / 'Healing Magic' / 'Enhancing Magic']` | MidcastManager base | **absent** | **absent** |
-| `sets.buff.Doom` | DoomManager | 995 | 928 |
-| `sets.buff['Saber Dance']`, `['Climactic Flourish']`, `sets.TreasureHunter` | nothing | 987, 991, 1012 | 920, 924, 945 |
+| Set | Looked up by |
+|-----|--------------|
+| `sets.idle`, `sets.idle.Town` (template: 2 slots), `sets.Adoulin`, `sets.MoveSpeed` | Mote, `BaseSetBuilder` |
+| `sets.idle.PDT` | nothing (IdleMode `Normal`; HybridMode does not reach idle) |
+| `sets.engaged`, `.Normal`, `.PDT`, `.FanDance`, `.SaberDance`, `.SaberDance.PDT` | Mote, `select_engaged_base` |
+| `sets['Mpu Gandring']`, `['Twashtar']`, `['Demersal']`, `['Blurred']` (needs `.sub`) | `apply_weapon` |
+| `sets.precast.WS[ws].Clim/.FanDance/.FanDance.Clim/.SaberDance/.SaberDance.Clim` | `ws_variant_selector.lua` |
+| `sets.precast.WS` + `[ws]` | Mote default precast |
+| `sets.precast.Step` + `[step]`, `.Flourish1`, `.Flourish2`, `.Waltz`, `.Samba`, `.Jig`, `.JA[...]` | Mote (type) |
+| `sets.precast.FC`, `.FC.Utsusemi`, `sets.midcast.FastRecast`, `.Utsusemi` | Mote |
+| `sets.midcast['Ninjutsu' / 'Healing Magic' / 'Enhancing Magic']` (absent) | MidcastManager base |
+| `sets.TreasureHunter` | shared `TreasureHunter` once Treasure Mode is shown (`//gs c th show`) |
+| `sets.DW.*` (commented in T) | `DualWield` |
+| `sets.buff.Doom` | `DoomManager` |
+| `sets.buff['Saber Dance']`, `['Climactic Flourish']` | nothing |
 
 ## Configuration
 
-| File / key | Default | Where the default lives | Read by |
-|------------|---------|-------------------------|---------|
-| `<char>/config/dnc/DNC_STATES.lua` | see states | file | entry `user_setup` |
-| `<char>/config/dnc/DNC_KEYBINDS.lua` | 11 binds | file | entry `user_setup`, `file_unload` |
-| `<char>/config/dnc/DNC_CUSTOM.lua` | nothing active | file | `KeybindManager` / `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
-| `<char>/config/dnc/DNC_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 2 | file; factory fallback 1 (`shared/jobs/dnc/functions/DNC_LOCKSTYLE.lua:29`) | `LockstyleManager` through `get_style` |
-| `<char>/config/dnc/DNC_MACROBOOK.lua` `default`, `solo`, `dualbox` | template book 4 (WAR 5); live book 6 | file; factory 1/1 | `MacrobookManager` |
-| `Tetsouo/config/dnc/DNC_TP_CONFIG.lua` -> `_G.DNCTPConfig` | Moonshade ear1 +250; Aeneas 500, Centovente 1000 | file | `TPBonusCalculator`, which receives the main and sub weapons (`tp_bonus_handler.lua:71-74`) |
-| `Tetsouo/config/dnc/DNC_WS_CONFIG.lua` -> `_G.DNCWSConfig` | Rudra's Storm, Ruthless Stroke, Shark Bite; `min_tp` 1000 (lower counts as 1000); `min_target_hpp` 25 | file | `climactic_manager.lua:25,62-65` |
-| `Tetsouo/config/dnc/DNC_REFILL.lua` | 7 items | overlay | refill system |
-| Hard-coded | step recast 220, Presto 236 and level 77 (`step_manager.lua:56,66-69`), samba costs (`smartbuff_manager.lua:45-49`), Utsusemi cancel delay 2.3 s, auto-jump 1000 TP | code | - |
-
-`ClimaticManager` reads the live TP (`shared/utils/core/live_tp.lua`, like
-`WSPrecastHandler`) and never fires below 1000: `DNC_WS_CONFIG.min_tp` can only
-raise that. Until 2026-09-27 it compared GearSwap's copy with 900 (to cover a
-stale TP), so at 900-999 real TP the flourish was spent on a WS the TP check
-then cancelled.
+| File / key | Default | Read by |
+|------------|---------|---------|
+| `<char>/config/dnc/DNC_STATES.lua` | see states | entry `user_setup` |
+| `<char>/config/dnc/DNC_KEYBINDS.lua` | 10 binds | entry `user_setup`, `file_unload`, KeybindGuard |
+| `<char>/config/dnc/DNC_CUSTOM.lua` | nothing active | `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
+| `<char>/config/dnc/DNC_HUD.lua` | empty lists | HUD section / row order |
+| `<char>/config/dnc/DNC_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 2 (factory fallback 1) | `LockstyleManager` through `get_style` |
+| `<char>/config/dnc/DNC_MACROBOOK.lua` `default`, `solo`, `dualbox` | book 4 (WAR 5) (factory 1/1) | `MacrobookManager` |
+| `<char>/config/dnc/DNC_TP_CONFIG.lua` -> `_G.DNCTPConfig` | Moonshade ear1 +250; Aeneas 500, Centovente 1000 | `TPBonusCalculator` (main and sub weapons) |
+| `<char>/config/dnc/DNC_WS_CONFIG.lua` -> `_G.DNCWSConfig` | Rudra's Storm, Ruthless Stroke, Shark Bite; `min_tp` 1000 (lower counts as 1000); `min_target_hpp` 25 | `ClimaticManager` |
+| `<char>/config/dnc/DNC_REFILL.lua` | none in the template | refill system |
+| Hard-coded | step recast 220, Presto 236 and level 77 (`execute_step`), samba costs (`SAMBAS`), `CAST_SPACING` 2 s, Climactic window 5 s, `WS_MIN_TP` 1000, auto-jump 1000 TP | code |
 
 ## State & lifetime
 
-- Sandbox `_G`: `dnc_climactic_timestamp`,
-  `AUTO_JUMP_SEQUENCE_ACTIVE`, `temp_tp_bonus_gear`, `DNCTPConfig`,
-  `DNCWSConfig`, `UIConfig`, `LockstyleConfig`, `RECAST_CONFIG`,
-  `is_recast_ready`, `is_on_cooldown`, `cancel_conflicting_buffs` (replaced),
-  `refine_waltz` (replaced), `DNCKeybinds`, the Mote hooks, factory exports.
-  All reset on `gs reload`.
+- Sandbox `_G`: `dnc_climactic_timestamp`, `AUTO_JUMP_SEQUENCE_ACTIVE`,
+  `temp_tp_bonus_gear`, `DNCTPConfig`, `DNCWSConfig`, `UIConfig`,
+  `LockstyleConfig`, `RECAST_CONFIG`, `is_recast_ready`, `is_on_cooldown`,
+  `cancel_conflicting_buffs` (replaced), `refine_waltz` (replaced),
+  `DNCKeybinds`, the Mote hooks, factory exports. All reset on `gs reload`.
 - Module locals: lazy-loaded modules, `ClimaticManager`'s captured
   `DNCWSConfig`, AbilityHelper's resource cache.
 - `windower.*`: nothing written by DNC code itself; `AbilityHelper` keeps its
-  replay marker in `windower._ability_replay` (since 2026-09-25). No Windower
-  events.
+  replay marker in `windower._ability_replay`. No Windower events.
 - Coroutines and command queue: 8 s lockstyle; AutoJump chain (1-3 s);
-  `wait` chains of `smartbuff`, `step`, Climactic replay and the Utsusemi
-  cancels (Windower command queue, they survive a reload).
-- Subjob change: `job_sub_job_change` (`Tetsouo_DNC.lua:177-186`) ->
-  `JobChangeManager.on_job_change` -> `gs reload`.
+  `wait` chains of `smartbuff`; `step` and Climactic follow-ups; the Utsusemi
+  cancel. They survive a reload.
+- Subjob change: `job_sub_job_change` -> `JobChangeManager.on_job_change` ->
+  reload.
 
 ## Interactions
 
 - Precast: `PrecastGuard`, `CooldownChecker`, `WSPrecastHandler`,
   `AbilityHelper`, `AutoJump` ([precast pipeline](../systems/precast-pipeline.md),
   [factories and helpers](../systems/factories-and-helpers.md#drg-jumps)).
-  AutoJump is shared with WAR.
-- Midcast: `MidcastManager`, `MidcastDeps`, `MidcastWatchdog`
+- Midcast: `MidcastManager`, `MidcastDeps`, `MidcastFallback`,
+  `MidcastWatchdog`, `UtsusemiShadows`
   ([midcast and buffs](../systems/midcast-and-buffs.md)).
+- Equipment hooks: `ElementalBelt` (Aeolian Edge and other magical WS),
+  `DualWield`, `TreasureHunter` (uses the template's `sets.TreasureHunter` once
+  shown), `CombatMode`, `CustomStates`
+  ([factories and helpers](../systems/factories-and-helpers.md#common-features-per-job)).
 - `WaltzManager` and `DRGJumpManager` serve every job with DNC or DRG as
   subjob; `SubjobWarBuffs` is shared with [THF](thf.md).
 - Messages: `message_buffs`, `show_ability_tp_error`, `show_ability_cooldown`,
   `show_waltz_heal`, `show_multi_status` ([messages](../systems/messages.md)).
-- Lockstyle/macrobook factories, `LifecycleManager`, `CommonCommands`,
-  `CycleHandler`, UI, dual-box ([dualbox](../systems/dualbox.md)).
 
 ## Invariants & gotchas
 
 - `user_setup()` runs before the DNC hook files; the Mote overrides are
   installed in `get_sets` after it.
-- A helper that cancels a WS (`AutoJump`, `try_ability_ws`) does not stop
-  `job_precast`: code added after line 173 runs for a cancelled WS unless it
-  checks `eventArgs.cancel`.
-- The WS variant must be equipped before the TP piece (`DNC_PRECAST.lua:193-204`).
+- A helper that cancels a WS (`AutoJump`, `try_ability_ws`) stops
+  `job_precast` through the `eventArgs.cancel` checks in
+  `job_precast_weaponskill` and `job_precast`; code added there must keep
+  them.
+- The WS variant must be equipped before the TP piece (`job_post_precast`).
 - Saber Dance blocks waltzes and Fan Dance blocks sambas in game; DNC does not
   cancel them for manual macros (only `//gs c waltz` cancels Saber Dance).
 - The Climactic timestamp is written for any Climactic precast, even one the
   server then refuses; the next WS within 5 s uses `.Clim`.
 - `set_builder` returns set tables directly (`sets.engaged.PDT`, ...); any
   in-place write to `result` without a prior `set_combine` edits the sets.
-- The suppression of Mote's recast abort is the `cancel_conflicting_buffs`
-  override (the two `Cancel*Recasts` states that looked like it were removed on
-  2026-09-25).
 
-## Extending
+## For maintainers / AI
+
+### Testing offline
+
+Lua 5.1 is installed (`lua5.1`, `luac5.1`):
+
+```bash
+for f in $(git ls-files 'shared/jobs/dnc/*.lua' '_master/config/dnc/*.lua' _master/entry/Tetsouo_DNC.lua _master/sets/dnc_sets.lua); do luac5.1 -p "$f"; done
+```
+
+Pure logic to exercise with stubs (`package.path` set to the `data/` folder):
+`ws_variant_selector.lua` (stub `sets`, `buffactive`, `equip`),
+`set_builder.lua` (stub `sets`, `state`, `buffactive`, `set_combine`,
+`package.loaded['shared/utils/equipment/weapon_resolver']`),
+`climactic_manager.lua` (set `_G.DNCWSConfig` and stub `live_tp` and
+`AbilityHelper` **before** the first require), `smartbuff_manager.lua` (stub
+`windower.ffxi.get_ability_recasts`, `is_recast_ready`, `send_command`). The
+gitignored `scripts/audit/` holds differential tests (`difftest_*.lua`) to
+copy from.
+
+In game: `//gs c trace on` (`TP` lines for the weaponskill TP piece),
+`//gs c debugmidcast`, `//gs c debugprecast`.
+
+### Traps
+
+- `ClimaticManager` captures `_G.DNCWSConfig` at its first require: editing the
+  file needs a `gs reload`.
+- Step, samba and dance names must be the resource names; steps are job
+  abilities (`/ja`, the prefix GearSwap intercepts).
+- `Drain Samba II` grants the buff `Drain Samba`: test the buff name, not the
+  ability name.
+- A new command name must be checked against the common commands and the alt
+  command configs.
+
+### Extending
 
 - New Climactic weaponskill: add its name to `DNCWSConfig.climactic_ws` and
-  `.Clim` (and dance) variants to both set files.
+  `.Clim` (and dance) variants to the set files.
 - New WS variant key: extend `best_variant` in `ws_variant_selector.lua`; keep
   the call before `apply_tp_gear`.
 - New samba: add it to `SAMBAS` with its real TP cost and buff name, and to
-  `state.Samba`. `job_precast_samba` already reads the cost from `spell.tp_cost`.
-- New step: add the **resource** name (`Quickstep`, `Stutter Step`) to
-  `MainStep` / `AltStep` and a `sets.precast.Step['<name>']`.
-- New smartbuff subjob: add a `collect_<sub>_buffs` returning
+  `state.Samba`.
+- New step: add the resource name to `MainStep` / `AltStep` and a
+  `sets.precast.Step['<name>']`.
+- New smartbuff subjob: a `collect_<sub>_buffs` returning
   `(abilities, status)` and a branch in `collect_subjob_buffs`.
-- New command: add it after the CommonCommands block. A name that is also an alt config key then runs here; the alt's
-  version stays reachable as `//gs c alt <name>`.
 
 ## Known issues
 
-- DNC prints "Not enough TP" for a WS that AutoJump has just taken over:
-  `DNC_PRECAST.lua:176`.
-- `DNC_WS_CONFIG.min_tp` 900 lets Climactic fire for a WS that the 1000 TP
-  check then cancels: `DNC_WS_CONFIG.lua:41`.
-- Utsusemi: Ichi cancels every Copy Image buff 2.3 s after midcast starts; a
-  cast shorter than that loses its new shadows: `DNC_MIDCAST.lua:32-37`.
-- The override drops Mote's Monomi Sneak cancel: `Tetsouo_DNC.lua:135-144`.
-- /SAM smartbuff queues Hasso, which needs a two-handed weapon:
-  `smartbuff_manager.lua:202-215`.
-- Midcast routing is a no-op (base sets absent) and duplicates THF's skeleton:
-  `DNC_MIDCAST.lua:45-81`.
-- Initial macrobook/lockstyle depend on the `show_intro` side effect
-  (`keybind_manager.lua` `show_intro`).
-- Template `sets.idle.Town` is a 2-slot set used as a full idle base:
-  `_master/sets/dnc_sets.lua:974`.
+- The override drops Mote's Monomi Sneak cancel (entry,
+  `cancel_conflicting_buffs`).
+- /SAM smartbuff queues Hasso, which needs a two-handed weapon
+  (`collect_sam_buffs`); a DNC holds daggers.
+- `collect_samba` ignores Trance: under Trance with TP below the samba's cost,
+  smartbuff skips a samba the game would allow for free.
+- Midcast routing is a no-op (base sets absent) and duplicates THF's skeleton.
+- Utsusemi: Ichi (shared `utsusemi_shadows.lua`, every job) cancels every Copy
+  Image buff 2.3 s after the midcast starts, whatever happens to the cast: a
+  cast shorter than that (high Fast Cast) loses its new shadows, and an
+  interrupted cast loses the old ones.
+- Initial macrobook / lockstyle depend on the `show_intro` side effect.
+- Template `sets.idle.Town` is a 2-slot set used as a full idle base.
+- Stale comments: the entry header claims subjob-filtered keybinds and says
+  "Utsusemi handled by DNC_MIDCAST"; the facade calls `DNC_MOVEMENT` a
+  "movement status accessor" (it is empty).
 - Dead code and states: `CombatWeaponMode`, `Buff['Climactic Flourish']`,
-  `sets.buff['Saber Dance' / 'Climactic Flourish']`, `sets.TreasureHunter`;
-  the entry header claims subjob-filtered keybinds (`Tetsouo_DNC.lua:24`).
-- Pending in-game checks for 2026-09-25 fixes: `//gs c waltz` on a party
-  member picks a tier sized to its missing HP (it may come out one tier lower
-  while the party HP list lags); a refused Climactic Flourish no longer loops.
-- Fixed, no longer issues: waltz tier never sized for a party member
-  (2026-09-25); `Centovente` in the TP config (the handler passes the sub
-  weapon now); `CancelAbilityRecasts` / `CancelSpellRecasts` removed
-  (2026-09-25); dance effects in the `DNC_STATES` / `set_builder` /
-  `ws_variant_selector` comments corrected (2026-09-25); `_G.DNC_AUTO_WS_RECAST`
-  gone; `jump_manager` no longer listed in the headers; live `DNC_MACROBOOK`
-  default book 6.
-- User doc out of date (`docs/user/jobs/dnc/states.md`: Alt keys, missing
-  `Samba` and `AutoMedicine`, `CombatWeaponMode` described as auto-managed,
-  `Quick Step`).
+  `sets.buff['Saber Dance' / 'Climactic Flourish']`.
+- `DNC_AFTERCAST.lua` exports to `_G` only, with no module `return`.
+- Pending in-game checks: `//gs c waltz` on a party member picks a tier sized
+  to its missing HP; a refused Climactic Flourish does not loop.
+- Fixed, no longer issues: "Not enough TP" printed after an automatic Jump or
+  Climactic (both `job_precast` returns, 2026-09-27); Climactic below 1000 TP
+  (`WS_MIN_TP` 1000 on the live TP, `min_tp` 1000 in the template,
+  2026-09-27); `sets.TreasureHunter` unused (the shared Treasure Hunter reads it,
+  2026-09-28); weapon lookup through `WeaponResolver`; waltz tier never sized
+  for a party member; `Centovente` in the TP config; `CancelAbilityRecasts` /
+  `CancelSpellRecasts` removed; the user doc now lists `Samba`,
+  `AutoMedicine`, `Quickstep`, and no longer says HybridMode changes idle.

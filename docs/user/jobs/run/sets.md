@@ -1,7 +1,8 @@
 # RUN — set names and automatic gear
 
-Every set name Rune Fencer reads, and everything it puts on by itself. Modes and keys
-are on [README.md](README.md); names shared by every job (movement, town, Doom, Dual
+Every set name Rune Fencer reads, and everything it puts on by itself. Modes are on
+[states.md](states.md), every key and command on the [RUN page](README.md); names
+shared by every job (movement, town, Doom, Dual
 Wield, Treasure Hunter, subjob actions, how a name is chosen) are on
 [the sets guide](../../guides/sets.md).
 

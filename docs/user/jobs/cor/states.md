@@ -3,6 +3,7 @@
 Corsair modes pick your weapons, the Quick Draw element and the two Phantom Rolls, which
 the `shot`, `roll1` and `roll2` commands then use.
 
+Start page for this job (every key, command and automatic feature): [README.md](README.md).
 Set names and automatic gear: [sets.md](sets.md).
 
 Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each mode's
@@ -16,10 +17,10 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 | Ctrl+Numpad1 `^numpad1` | `MainWeapon` | **Naegling** | Main weapon, equipped as soon as you change it |
 | Ctrl+Numpad2 `^numpad2` | `RangeWeapon` | **Anarchy**, Compensator | Gun, equipped as soon as you change it |
 | Ctrl+Numpad3 `^numpad3` | `QuickDraw` | **Light**, Fire, Ice, Wind, Earth, Thunder, Water, Dark | Element fired by `//gs c shot` |
-| Ctrl+Numpad9 `^numpad9` | `HybridMode` | **PDT**, Normal | Idle and engaged: PDT adds damage-taken gear |
+| Ctrl+Numpad9 `^numpad9` | `HybridMode` | **PDT**, Normal | PDT lays `sets.engaged.PDT` on your engaged set and `sets.idle.PDT` on your idle set outside town. Normal: neither |
 | Ctrl+Numpad4 `^numpad4` | `MainRoll` | **Chaos Roll** and 19 others | Roll used by `//gs c roll1` |
 | Ctrl+Numpad5 `^numpad5` | `SubRoll` | **Samurai Roll** and 19 others | Roll used by `//gs c roll2` |
-| Ctrl+Numpad6 `^numpad6` | `LuzafRing` | **ON**, OFF | On a Phantom Roll or Double-Up: ON wears Luzaf's Ring (16 yalm range, `sets.precast.LuzafRing` if your sets define it), OFF wears `sets.precast.LuzafRingOff` if defined (Gurebu's Ring in the provided sets), else your roll set's ring (8 yalms) |
+| Ctrl+Numpad6 `^numpad6` | `LuzafRing` | **ON**, OFF | On a Phantom Roll or Double-Up: ON wears Luzaf's Ring (16 yalm range): `sets.precast.LuzafRing` if your sets define it, else Luzaf's Ring in the left ring. OFF wears `sets.precast.LuzafRingOff` if defined (Gurebu's Ring in the provided sets), else your roll set's ring stays (8 yalms) |
 
 The 20 rolls: Chaos, Samurai, Hunter's, Tactician's, Allies', Wizard's, Warlock's,
 Corsair's, Caster's, Courser's, Blitzer's, Fighter's, Rogue's, Gallant's, Evoker's,
@@ -30,6 +31,7 @@ Bolter's, Miser's, Companion's, Avenger's, Naturalist's.
 | Mode | Values | Notes |
 |---|---|---|
 | `FastCast` | 0 to 80 by 10, default **0** | Your Fast Cast %, used by the midcast watchdog (`//gs c cycle FastCast`, or its default in `COR_STATES.lua`) |
+| `RangedMode` (Mote) | Normal only | Picks `sets.midcast.RA.<value>` for ranged attacks once you give it more values in `COR_STATES.lua` (Mote's `Alt+F9` cycles it) |
 
 ## Commands
 
@@ -45,6 +47,11 @@ Bolter's, Miser's, Companion's, Avenger's, Naturalist's.
 
 `shot`, `roll1` and `roll2` send a normal `/ja`, so they go through the same checks as a
 macro (debuffs, recast, roll gear, Luzaf ring).
+
+A roll pressed while it is already up (key, macro or `roll1` / `roll2`) is turned into
+a Double-Up when Double-Up Chance is up and that roll is the last one you rolled.
+Otherwise it is cancelled with a message: no Double-Up chance, or Double-Up would go to
+the other roll (the game always doubles the last roll).
 
 ## Notes
 
@@ -78,11 +85,12 @@ Cards. The one-line style leaves the bust risk out. Every line follows the chat
 width.
 
 When your COR is the alt, each roll result and bust is also shown on the main,
-tagged with the COR's name (`[Kaories COR]`), as long as the main runs this
+tagged with the COR's name (for example `[Alt COR]`), as long as the main runs this
 GearSwap.
 
 ## Files
 
 `<Char>/config/cor/`: `COR_STATES.lua`, `COR_KEYBINDS.lua`, `COR_CUSTOM.lua` (your own
-modes and keys, see [keybinds](../../guides/keybinds.md)), `COR_LOCKSTYLE.lua` (style 3),
-`COR_MACROBOOK.lua` (book 3 page 1), `COR_TP_CONFIG.lua`.
+modes and keys, see [keybinds](../../guides/keybinds.md)), `COR_HUD.lua` (HUD order),
+`COR_LOCKSTYLE.lua` (style 3), `COR_MACROBOOK.lua` (book 3 page 1), `COR_TP_CONFIG.lua`,
+and `COR_REFILL.lua` if you create one. What each file holds: [README.md](README.md#configuration-files-for-this-job).

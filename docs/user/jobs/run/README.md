@@ -1,63 +1,163 @@
-# RUN — modes and keys
+# RUN (Rune Fencer)
 
-Rune Fencer: a tank with a stance mode, a weapon and grip choice, and a rune selector.
-The template exists in `_master/`, but no maintained character plays RUN today (only a
-frozen one-off clone does), so it is untested in game in its current form.
+The page to open first when you play Rune Fencer. It lists every key, every command
+and every shared feature that works on RUN, and the files you can edit.
 
-Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each mode's
-current value; this page says what each value does. `#numpad0` (Auto Medicine) and
-Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybinds.md).
+- What each mode does: [states.md](states.md)
+- Every set name RUN reads, and what it puts on by itself: [sets.md](sets.md)
 
-Set names and automatic gear: [sets.md](sets.md).
+## Overview
 
-## Keys
+RUN is set up as a tank. You pick a stance (PDT or MDT), a weapon (Epeolatry or
+Lycurgos) and a grip (Utu or Refined); GearSwap rebuilds your idle and engaged gear from
+those three choices. A rune selector feeds `//gs c rune`, and `//gs c aoe` casts a Blue
+Magic enmity spell on /BLU. Cures from the subjob pick their set by target (yourself or
+someone else). Runes swap no gear with the provided sets, so your tank gear stays on.
 
-| Key | Mode (state) | Values (default in **bold**) | What it does |
-|---|---|---|---|
-| `^numpad9` | `HybridMode` | **PDT**, MDT | Stance: `sets.engaged.PDT` or `sets.engaged.MDT` laid over your engaged set |
-| `^numpad1` | `MainWeapon` | **Epeolatry**, Lycurgos | Weapon set to wield (`sets.Epeolatry`, `sets.Lycurgos`) |
-| `^numpad2` | `SubWeapon` | Utu, **Refined** | Grip (`sets.Utu`, `sets.Refined`). Not applied with Lycurgos |
-| `^numpad3` | `RuneMode` | **Ignis**, Gelus, Flabra, Tellus, Sulpor, Unda, Lux, Tenebrae | Rune used by `//gs c rune` |
+RUN ships in the provided template, but no maintained character plays it today: it is
+untested in game in its current form.
 
-Loxotic, Lionheart and Aettir are listed in `RUN_STATES.lua` but commented out.
+## All keys on this job
 
-## Other modes (no key)
+Keys: `^` Ctrl, `!` Alt, `#` Apps (the menu key), `@` Win. The HUD (`//gs c ui`) shows
+the keys that are bound now, with the current value of each mode.
 
-| Mode | Values | Use |
+| Key | Does | Condition / default |
 |---|---|---|
-| `FastCast` | 0 to 80 by 10, default **30** | Your Fast Cast %, used only by the midcast watchdog |
+| `^numpad9` | Cycle `HybridMode` (PDT, MDT) | Default PDT |
+| `^numpad1` | Cycle `MainWeapon` (Epeolatry, Lycurgos) | Default Epeolatry |
+| `^numpad2` | Cycle `SubWeapon` grip (Utu, Refined) | Default Refined; not worn with Lycurgos |
+| `^numpad3` | Cycle `RuneMode` (Ignis ... Tenebrae) | Default Ignis; used by `//gs c rune` |
+| `#numpad0` | Auto Medicine on / off | Common key, every job |
+| `!numpad7` | Your other characters follow you (toggle) | Common key; needs a box group ([dual-box](../../guides/dualbox.md)) |
+| `!numpad8` | Other characters' automation on / off | Common key; box group |
+| `!numpad9` | Other characters mirror you | Common key; box group |
+| `!z` | Sneak on you and every other character of the group | Common key |
+| `!x` | Invisible on you and every other character of the group | Common key |
+| `!numpad0` | Cycle Combat Mode (weapon lock) | **Hidden and unbound by default**: `//gs c combatmode show` |
+| `!numpad.` | Cycle Treasure Mode (Off, Tag, Full) | **Hidden and unbound by default**: `//gs c th show` |
+| `f9` | Mote: cycle `OffenseMode` | No effect: RUN has only `Normal` |
+| `^f9` | Mote: cycle `HybridMode` | Same as `^numpad9`, with a chat line |
+| `!f9` / `@f9` | Mote: cycle `RangedMode` / `WeaponskillMode` | No effect: only `Normal` |
+| `f10` / `f11` | Mote: physical / magical defense mode | Lays `sets.defense.PDT` / `sets.defense.MDT` over your idle and engaged gear; the template has neither, so nothing changes |
+| `^f10` | Mote: cycle `PhysicalDefenseMode` | Only `PDT` |
+| `!f10` | Mote: Kiting on / off | Lays `sets.Kiting` if you define it |
+| `^f11` | Mote: cycle `CastingMode` | No effect: only `Normal` |
+| `f12` | Mote: re-equip your gear and print the modes | |
+| `^f12` | Mote: cycle `IdleMode` | No effect: only `Normal` |
+| `!f12` | Mote: defense mode off | |
+| `^-` / `^=` | Mote: `<stnpc>` targeting on / off, PC target mode | |
+| `^f1`-`^f8`, `!f1`-`!f8` | Temporary keys you make with `//gs c tb` | Free until you bind one |
 
-## Commands
+None of the RUN keys depends on the subjob. Your own modes from `RUN_CUSTOM.lua` add
+their keys to this list. Two actions on one key are reported in chat and turn the key
+red in the HUD; `//gs c kc` lists every possible conflict on every subjob.
 
-| Command | What it does |
+## All commands on this job
+
+Type them as `//gs c <command>`, or bind them to a macro (`/console gs c <command>`).
+Details of the shared ones: [commands guide](../../guides/commands.md).
+
+**RUN commands**
+
+| Command | Does |
 |---|---|
-| `//gs c rune` | Uses the `RuneMode` rune on yourself unless it is on recast |
-| `//gs c aoe` | /BLU: casts the first ready spell of the Blue Magic enmity rotation (`RUN_BLU_MAGIC.lua`); without /BLU it says so and casts nothing |
+| `rune` | Uses the `RuneMode` rune on yourself, or prints its recast |
+| `aoe` | /BLU: first ready Blue Magic enmity spell on `<stnpc>` (rotation in `RUN_BLU_MAGIC.lua`); none ready: shows the recasts and targets `<stnpc>`; without /BLU: an error, nothing cast |
 
-Every [common command](../../guides/commands.md) works too.
+**Modes and HUD**
 
-## Notes
+| Command | Does |
+|---|---|
+| `cyclestate <Mode> [reverse]` | Next (or previous) value of a mode; what the keys send |
+| `cycle` / `cycleback` / `set <Mode> <Value>` / `toggle` / `reset` | Mote's mode commands (print a chat line) |
+| `ui` (+ `on`, `off`, `save`, `font`, `theme`, `order`, `roworder`, `help`...) | The keybind HUD |
+| `am` (`automedicine`) `[on/off]` | Auto Medicine |
+| `combatmode` (+ `show`, `hide`, `key <key>`, `help`) | Combat Mode on RUN |
+| `th` (+ `show`, `hide`, `key <key>`, `clear`, `help`) | Treasure Mode on RUN |
+| `dw` (+ `auto`, `none`, `haste`, `haste2`, `max`) | Dual Wield tier (needs `sets.DW`) |
+| `belt` | Obi / Orpheus status |
 
-- Cures come from the subjob (/WHM /RDM: Cure to Cure IV, /PLD /SCH: Cure to
-  Cure III). On yourself: `sets.precast.FC.CureSelf` (Fast Cast with little
-  max HP) then `sets.midcast.CureSelf` (HP back on), so the cure lands on a
-  bigger HP gap: more healed, more enmity. On someone else:
-  `sets.midcast.CureOther`.
-- All modes go back to their default on every job change, subjob change and reload.
-- To set RUN up for a character, pick it in the clone script (see
-  [installation](../../getting-started/installation.md)), then fill in
-  `<YourChar>/sets/run_sets.lua`.
+**Gear, inventory and travel**
 
-## Files
+| Command | Does |
+|---|---|
+| `checksets` | Set items you do not have |
+| `wa`, `wo` (+ `preview`, `scan`, `keep`, `alt`, `recover`...) | Wardrobe audit / organizer |
+| `rf` (`refill`) | Restock consumables |
+| `naked`, `reload`, `ls` (`lockstyle`), `dressup` | Remove all gear / reload the job / apply the lockstyle again / DressUp handling |
+| `craft [variant]`, `craft off`, `fish`, `uncraft` | Crafting and fishing sets |
+| `warp`, `w2`, `ret`, `esc`, `tph`..., `sd`, `bt`..., `<command>all`, `warp fix`, `warp help` | Warp spells, rings and destination items |
+| `mount` | A random mount, or dismount |
 
-In `<YourChar>/config/run/`:
+**Combat helpers**
 
-| File | Content |
+| Command | Does |
+|---|---|
+| `waltz`, `aoewaltz` | Curing Waltz / Divine Waltz (needs /DNC) |
+| `jump` | Jump, then High Jump (needs /DRG) |
+| `stealth sneak` / `invi` / `both` (+ `self`, `check`, `status`...) | Sneak / Invisible on the whole group (Alt+Z / Alt+X) |
+| `watchdog` (+ `on`, `off`, `buffer`, `stats`...) | Midcast watchdog |
+| `debugmidcast` | Print the midcast set each spell uses |
+| `debugprecast` | Print the Fast Cast set each spell uses (RUN is one of the three jobs that read it) |
+
+**Dual-box, keys and information**
+
+| Command | Does |
+|---|---|
+| `alts on` / `off` / `toggle` / `follow` / `mirror` / `do <cmd>` / `window`, `main` | Box group orders |
+| `altcmds`, `alt <name>`, `altsync`, `altbuffs` | The alt's commands and buff reports |
+| `tb <key> <action> [target]`, `tb list` / `del` / `clear` / `help` | Temporary keys |
+| `kc` (`keyconflicts`) | Every key conflict RUN can meet |
+| `info <name>` | Ability, spell or weaponskill details |
+| `jamsg` / `spellmsg` / `wsmsg` `[full / on / off]` | How much chat each action prints |
+| `help`, `commands` | Built-in help and command list |
+| `syscheck`, `fulltest`, `debugsubjob`, `debugstate`, `trace on/off`, `testcolors` | Diagnostics |
+
+## Shared features on this job
+
+| Feature | On RUN |
+|---|---|
+| Movement speed | `sets.MoveSpeed` is added to your idle gear while you run outside town; in town you wear `sets.idle.Town` (Adoulin: `sets.Adoulin`) with your weapon and grip |
+| Sneak / Invisible | Alt+Z / Alt+X cover you and the group; RUN itself uses oils and powders, or its subjob's spell or Spectral Jig ([guide](../../guides/stealth.md)) |
+| Warp | Every warp command; RUN has no warp spell, so rings and items are used |
+| Waltz / Jump | `waltz`, `aoewaltz` on /DNC; `jump` on /DRG (no automatic Jump on RUN) |
+| Combat Mode | Hidden by default. Shown, On keeps main, sub and range where they are (no TP loss from a set swap) |
+| Treasure Mode | Hidden by default, and the template has no `sets.TreasureHunter`: add the set, then `//gs c th show` |
+| Dual Wield tiers | Only with two one-handed weapons and a `sets.DW` family, which the template does not have |
+| Obi / Orpheus | Automatic on elemental weaponskills (Herculean Slash) and damaging spells. Not on Lunge / Swipe, which are job abilities |
+| Your own modes (`RUN_CUSTOM.lua`) | Modes with a key and gear rules, without code; empty by default ([keybinds guide](../../guides/keybinds.md#your-own-modes-job_customlua)) |
+| Refill | `//gs c rf` restocks from the list in `RUN_REFILL.lua`, a file you create; without it a default list is used ([configuration](../../guides/configuration.md#refill-job_refilllua)) |
+| Doom | `sets.buff.Doom` goes on and neck, rings and waist stay locked until Doom is gone |
+| Auto Medicine | Echo Drops / Remedy when a debuff blocks your action (Apps+Numpad0) |
+| Recast announce | An action refused on recast can tell the party, per action, from `config/RECAST_CONFIG.lua` |
+| TP bonus | Moonshade Earring added to a weaponskill only when it reaches the next TP step; Lionheart counts +500 ([TP bonus](../war/tp-bonus.md)) |
+| Automatic abilities | None on RUN (no ability fired before a spell or weaponskill) |
+
+## Configuration files for this job
+
+In `<YourName>/config/run/`:
+
+| File | What you change there |
 |---|---|
 | `RUN_STATES.lua` | Modes, their values and defaults |
-| `RUN_KEYBINDS.lua` | The keys above |
-| `RUN_CUSTOM.lua` | Your own modes, keys and gear rules, without code (empty by default) |
-| `RUN_BLU_MAGIC.lua` | Blue Magic enmity rotation for `//gs c aoe` |
-| `RUN_LOCKSTYLE.lua` | Lockstyle number per subjob |
-| `RUN_MACROBOOK.lua` | Macro book/page per subjob, and per dual-box alt job |
-| `RUN_TP_CONFIG.lua` | TP-bonus pieces used for weaponskill gear |
+| `RUN_KEYBINDS.lua` | The RUN keys |
+| `RUN_CUSTOM.lua` | Your own modes, keys and gear rules (empty by default) |
+| `RUN_HUD.lua` | Order of the HUD sections and rows on RUN (also written by `//gs c ui order` / `roworder`) |
+| `RUN_BLU_MAGIC.lua` | Blue Magic rotation for `//gs c aoe` |
+| `RUN_LOCKSTYLE.lua` | Lockstyle number, per subjob if you want (3 in the template) |
+| `RUN_MACROBOOK.lua` | Macro book and page per subjob, and per dual-box alt job |
+| `RUN_TP_CONFIG.lua` | TP bonus pieces and weapons |
+| `RUN_REFILL.lua` | Not provided: create it for `//gs c rf` |
+
+Files shared by every job are in `<YourName>/config/`: `COMMON_KEYBINDS.lua`,
+`combat_mode.lua`, `treasure_mode.lua`, `RECAST_CONFIG.lua`, `STEALTH_CONFIG.lua`,
+`DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`, `UI_CONFIG.lua` ([configuration](../../guides/configuration.md)).
+Your sets are in `<YourName>/sets/run_sets.lua`.
+
+## See also
+
+- [states.md](states.md): what each mode does
+- [sets.md](sets.md): set names and automatic gear
+- [Commands](../../guides/commands.md), [keybinds](../../guides/keybinds.md),
+  [set names for every job](../../guides/sets.md), [all jobs](../README.md)

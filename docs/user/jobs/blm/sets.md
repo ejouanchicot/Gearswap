@@ -87,6 +87,12 @@ provided file names several:
 Twilight Cloak is put on the body whatever the set says, from the start of the
 cast to the end. No MP, belt-match or Quanpur set is added to Impact.
 
+**Known issue (found 2026-09-28, from the code, not tested in game):** a shared
+step that runs at the end of every midcast puts `sets.midcast['Impact']` back on
+after BLM's choice, so `.MagicBurst` is not worn and the cloak is only kept if
+`sets.midcast['Impact']` itself holds `body = 'Twilight Cloak'` (the provided
+file does). Keep the cloak in `sets.midcast['Impact']`.
+
 ### Dark Magic
 
 `sets.midcast['Dark Magic']`, with a name per spell when you want one:

@@ -3,6 +3,7 @@
 Geomancer modes pick which Indi-, Geo- and elemental spells the cast commands use, and
 how you and your luopan are geared.
 
+Start page for GEO (every key, command and shared feature): [README.md](README.md).
 Set names and automatic gear: [sets.md](sets.md).
 
 Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each mode's
@@ -21,15 +22,16 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 | `^numpad7` | `MainLightAOE` | **Fira**, Aera, Thundara | Spell of `//gs c lightaoe` |
 | `^numpad8` | `MainDarkAOE` | **Blizzara**, Stonera, Watera | Spell of `//gs c darkaoe` |
 | `^numpad2` | `AOETier` | **III**, II, I | Tier of the -ra nukes (`I` = `Fira`) |
-| `^numpad9` | `HybridMode` | **PDT**, Normal | Your idle/engaged base when no luopan is out |
+| `^numpad9` | `HybridMode` | **PDT**, Normal | Your idle/engaged base when no luopan is out. In the provided sets the PDT sets are still copies of Normal: fill them for the mode to change anything |
 | `^numpad0` | `CombatMode` | **Off**, On | `On` locks main, sub, range and ammo so casting never swaps your weapon. `Off` unlocks them (unless a craft session holds them) |
 | `^numpad.` | `LuopanMode` | **DT**, DPS | Engaged gear while a luopan is out: `sets.luopan.engaged.DT` or `.DPS` |
 | `^numpad+` | `IndicolureMode` | **Self**, Entrust | Shown in the HUD only; no command reads it today |
 
 `MainIndi` holds the ten common buffs first (Haste, Fury, Precision, Refresh, Barrier,
 Acumen, Focus, Voidance, Attunement, Regen), then the seven stat spells, then the
-debuffs and Fend. `MainGeo` starts with the debuffs (Frailty, Malaise, Torpor, Slow,
-Languor, Paralysis, Vex, Wilt, Slip, Fade, Gravity, Fend, Poison), then the buffs.
+debuffs, Fend and Poison. `MainGeo` starts with the debuffs (Frailty, Malaise, Torpor, Slow,
+Languor, Paralysis, Vex, Wilt, Slip, Fade, Gravity, Fend, Poison), then the buffs
+(Geo-CHR is not in the list; add it if you want it).
 Reorder or trim the lists in `GEO_STATES.lua`.
 
 ## Other modes (no key)
@@ -37,7 +39,7 @@ Reorder or trim the lists in `GEO_STATES.lua`.
 | Mode | Values | Use |
 |---|---|---|
 | `MainWeapon`, `SubWeapon` | Idris / Genmei Shield | One value each; change them in `GEO_STATES.lua` |
-| `FastCast` | 0 to 80 by 10, default **80** | Your Fast Cast %, used only by the midcast watchdog |
+| `FastCast` | 0 to 80 by 10, default **80** | Your Fast Cast %, used only by the midcast watchdog, and only when it could not compute the cast time from your precast set |
 
 ## Commands
 
@@ -49,17 +51,28 @@ Reorder or trim the lists in `GEO_STATES.lua`.
 | `//gs c escort [Indi-X] [leader]` | Full Circle if a luopan is out, then casts the Indi- on yourself (default Indi-Regen); with a leader name, sends `sm follow <leader>` once the cast is over |
 | `//gs c lightspell` / `darkspell` | Nukes your target with the chosen element and `SpellTier`, stepping down a tier when the higher one is not learned or is on recast |
 | `//gs c lightaoe` / `darkaoe` | Same with the -ra spells and `AOETier` |
-
-A nuke, -ra or Aspir you cast from a macro steps down the same way: if the tier is on recast or you lack the MP, the next lower tier you know goes out instead (see [auto-tier](../../features/auto-tier-system.md)).
 | `//gs c lightarts` / `darkarts` | /SCH: Light or Dark Arts, then the matching Addendum on the next press |
 | `//gs c aoe sneak` / `invi` / `erase` | /SCH: casts the spell on the party, with Light Arts and Accession as stratagem charges allow |
 | `//gs c dispel` | /RDM: Dispel on an enemy. /SCH: under Addendum: Black. Other subjobs: a warning |
 
 `escort` relies on an addon that answers `sm follow`; without it the follow does nothing.
 
+A nuke, -ra or Aspir you cast from a macro steps down too: if the tier is on recast or
+you lack the MP, the highest lower tier you know that can go out is cast instead (see
+[auto-tier](../../features/auto-tier-system.md)).
+
+**Known issue (found 2026-09-28, from the code):** `lightspell`, `darkspell`, `lightaoe`
+and `darkaoe` look the spells up through a game-data table that is not available in the
+job's environment, so they answer "no tier available" and cast nothing. Until it is
+fixed, cast the nuke from a macro (`/ma "Fire V" <t>`): the macro path above steps down
+correctly.
+
 ## Notes
 
 - All modes go back to their default on every job change, subjob change and reload.
+- Two automatic abilities are available, off by default, in `<YourName>/config/AUTO_ABILITIES.lua`:
+  `geo_entrust = true` puts Entrust up before an Indi- you cast on a party member, and
+  `geo_full_circle = true` uses Full Circle before a Geo- cast while a luopan is out.
 - The author's alt overlay uses the same modes and keys, with one
   different default: `CombatMode` starts **On** there (weapons locked, TP kept).
 
@@ -75,3 +88,4 @@ In `<YourChar>/config/geo/`:
 | `GEO_LOCKSTYLE.lua` | Lockstyle number (5 for every subjob in the template) |
 | `GEO_MACROBOOK.lua` | Macro book/page (book 5, page 1 in the template) |
 | `GEO_TP_CONFIG.lua` | TP-bonus pieces used for weaponskill gear |
+| `GEO_HUD.lua` | Order of the HUD sections and rows on GEO (also written by `//gs c ui order`) |

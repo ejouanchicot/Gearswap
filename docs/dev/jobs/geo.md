@@ -1,77 +1,85 @@
 # GEO (Geomancer) job
 
-The GEO job area is 11 hook modules plus 2 logic modules under
-`shared/jobs/geo/functions/` (1 452 lines), an entry point per character (the
-Tetsouo template and a Kaories overlay), six config files and one sets file.
-GearSwap loads it when the main job becomes GEO. From then on Mote-Include calls
-its hooks on every action, on status, buff and pet changes, on `//gs c`
-commands and on state cycles. Only Kaories plays GEO today (no live
-`Tetsouo_GEO.lua`).
+The GEO job area is the facade plus 11 hook modules and 3 logic modules under
+`shared/jobs/geo/functions/` (about 1 500 lines), an entry point per
+character, seven config files and one sets file. GearSwap loads it when the
+main job becomes GEO. From then on Mote-Include calls its hooks on every
+action, on status, buff and pet changes, on `//gs c` commands and on state
+cycles. Today GEO is played through a character overlay only (the author's
+alt), not through the author's main overlay.
 
 What GEO adds on top of the shared pipeline:
 
-- **Luopan-aware gear**: idle and engaged sets are built from the `HybridMode`
-  set (`sets.idle.PDT`/`.Normal`, `sets.engaged.PDT`/`.Normal`, falling back to
-  `sets.me.*`) without a luopan and `sets.luopan.*` with one (`LuopanMode`
-  DT/DPS while engaged); Mote's own base set is ignored.
-- **Midcast through `MidcastManager`**: Geomancy with an Entrust override for an
-  Indi- spell cast on a party member; Healing, Enhancing (spell family +
-  Composure target), Enfeebling, Elemental and Dark Magic on
-  `sets.midcast[skill]`.
-- **Indi/Geo commands** built from states (`indi`, `geo`, `entrust`), with the
-  Geo- target chosen from a buff list, and `escort` (Full Circle, Indi- on self,
-  then follow a leader; added with the Sortie commands in `7a833d4`).
-- **Nuke commands with tier fallback** (`lightspell`, `darkaoe`, ...) that walk
-  down from the selected tier to the first learned, ready spell.
+- **Luopan-aware gear**: idle and engaged sets are built from the
+  `HybridMode` set (`sets.idle.PDT` / `.Normal`, `sets.engaged.PDT` /
+  `.Normal`, falling back to `sets.me.*`) without a luopan and from
+  `sets.luopan.*` with one (`LuopanMode` DT / DPS while engaged); Mote's own
+  base set is ignored.
+- **Midcast through `MidcastManager`**: Geomancy (with an Entrust override for
+  an Indi- on a party member), Healing, Enhancing (spell family + Composure
+  target), Enfeebling, Elemental and Dark Magic on `sets.midcast[skill]`.
+- **Tier step-down in precast** for nukes, -ra and Aspir (`TierRefiner` with
+  `NUKE_TIERS`), in place of the cooldown check.
+- **Automatic abilities** (opt-in): Entrust before an Indi- on a party member,
+  Full Circle before a Geo- while a luopan is out (`geo_auto_abilities.lua`).
+- **Indi / Geo commands** built from states (`indi`, `geo`, `entrust`), the
+  Geo- target chosen from a buff list, and `escort` (Full Circle, Indi- on
+  self, then follow a leader).
+- **Nuke commands with tier fallback** (`lightspell`, `darkaoe`, ...), broken
+  today (see Known issues).
 - **Scholar subjob helpers** (Arts toggles, `aoe` Accession chains, `dispel`).
-- The shared **CombatMode** weapon lock, the PetTP addon loaded while GEO
-  is the main job, and Entrust reporting to the dual-box main.
+- The PetTP addon loaded while GEO is the main job, and Entrust reporting to
+  the dual-box main.
 
-Every file in scope was read in full except the gear content of the sets files
-and the geomancy databases (structure and names only). Line numbers were
-rechecked against the working tree on 2026-09-25; where a line number added
-nothing, the function name is cited instead.
+Player pages: [start page](../../user/jobs/geo/README.md),
+[modes](../../user/jobs/geo/states.md), [sets](../../user/jobs/geo/sets.md).
+
+Re-verified against the code on 2026-09-28. References name a file and a
+function, not a line number.
 
 ## Files
 
-| Path | Lines | Role |
-|------|------:|------|
-| `_master/entry/Tetsouo_GEO.lua` | 276 | Entry point (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (UI only), `init_gear_sets`, `file_unload` |
-| `_master/Kaories/entry/Kaories_GEO.lua` | 275 | Kaories overlay: same code, `Kaories/` paths, shorter dual-box comment (218-219) |
-| `shared/jobs/geo/functions/geo_functions.lua` | 101 | Facade: `message_buffs.lua`, the 11 hook files, `dualbox_manager` |
-| `shared/jobs/geo/functions/GEO_PRECAST.lua` | 114 | `job_precast` (guard, cooldown, Entrust flag, WS) / `job_post_precast` |
-| `shared/jobs/geo/functions/GEO_MIDCAST.lua` | 135 | `job_midcast` (empty) / `job_post_midcast` (Geomancy + the other skills through `MidcastManager`) |
-| `shared/jobs/geo/functions/GEO_AFTERCAST.lua` | 66 | `job_aftercast`: watchdog, Entrust flag set/clear |
-| `shared/jobs/geo/functions/GEO_IDLE.lua` | 42 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
-| `shared/jobs/geo/functions/GEO_ENGAGED.lua` | 42 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
-| `shared/jobs/geo/functions/GEO_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
-| `shared/jobs/geo/functions/GEO_BUFFS.lua` | 51 | Own `job_buff_change`: `AltBuffReporter.report`, then Doom |
-| `shared/jobs/geo/functions/GEO_COMMANDS.lua` | 408 | `job_self_command` router (incl. `escort`), `geo_escort_on_aftercast`, `job_state_change = LifecycleManager.state_change()` |
-| `shared/jobs/geo/functions/GEO_MOVEMENT.lua` | 14 | Header only, kept for the 12-module layout |
-| `shared/jobs/geo/functions/GEO_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('GEO', ..., 1, 'SAM')` wrappers |
-| `shared/jobs/geo/functions/GEO_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('GEO', ..., 'SAM', 1, 1)` wrapper |
-| `shared/jobs/geo/functions/logic/geo_spell_refiner.lua` | 158 | `refine_spell` / `refine_and_cast` tier fallback |
-| `shared/jobs/geo/functions/logic/set_builder.lua` | 183 | HybridMode / `sets.luopan` selection, town, weapons, movement; unused `apply_buff_gear` |
-| `_master/config/geo/GEO_STATES.lua` | 273 | All states (`GEOStates.configure()`) |
-| `_master/config/geo/GEO_KEYBINDS.lua` | 58 | 12 binds, data only; `KeybindManager.create('GEO', ...)` adds `bind_all` / `unbind_all` / `show_intro` (see [keybinds and custom states](../systems/keybinds-and-custom.md)) |
-| `_master/config/geo/GEO_CUSTOM.lua` | 118 | Player modes and gear rules (all examples commented out), read through `KeybindManager`; no Kaories overlay copy (the live `Kaories/config/geo/GEO_CUSTOM.lua` is the player's own) |
-| `_master/config/geo/GEO_LOCKSTYLE.lua` | 51 | `default = 5`, `by_subjob`, `get_style` |
-| `_master/config/geo/GEO_MACROBOOK.lua` | 68 | Book 5 page 1 for every subjob; dual-box block all commented |
-| `_master/config/geo/GEO_TP_CONFIG.lua` | 62 | `_G.GEOTPConfig` (Moonshade; no weapon bonus) |
-| `_master/Kaories/config/geo/*.lua` | 58, 51, 68, 329, 62 + `GEO_REFILL.lua` 22 | Overlay: identical to the templates except line endings; plus the refill list |
-| `_master/sets/geo_sets.lua` | 447 | Template sets (flat) |
-| `_master/Kaories/sets/geo_sets.lua` | 447 | Overlay sets: identical except the Exudation WS neck/waist (405-406) |
-| `shared/utils/messages/formatters/jobs/message_geo.lua` + `data/jobs/geo_messages.lua` | 183 + 41 | Indi/Geo cast line with element colour, tier refinement messages |
-| `shared/data/magic/geomancy/geomancy_indi.lua`, `geomancy_geo.lua` | 349, 364 | 30 Indi- / 30 Geo- entries (description, element) read by `message_geo` at load |
-| `shared/data/magic/GEO_SPELL_DATABASE.lua` | 191 | Read by `data_loader` and the spell message handler (messages only) |
-| `shared/data/job_abilities/GEO_JA_DATABASE.lua` | 13 | `JA_DATABASE_FACTORY.create('GEO')` for ability messages |
-| `shared/utils/scholar/scholar_actions.lua` | 366 | `aoe` Accession chains (shared with BLM, PLD and `//gs c stealth`); buffs read from `get_player().buffs` (`buff_up`) |
+| Path | Role |
+|------|------|
+| `_master/entry/Tetsouo_GEO.lua` | Entry point (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (loads PetTP), `job_update` (HUD only), `init_gear_sets`, `file_unload` (unloads PetTP) |
+| `shared/jobs/geo/functions/geo_functions.lua` | Facade: `message_buffs.lua`, the 11 hook files, `dualbox_manager` |
+| `shared/jobs/geo/functions/GEO_PRECAST.lua` | `job_precast` (guard, tier refine or cooldown, auto abilities, Entrust flag, WS) / `job_post_precast` |
+| `shared/jobs/geo/functions/GEO_MIDCAST.lua` | `job_midcast` (empty) / `job_post_midcast` (`midcast_geomancy`, Enhancing branch, `PLAIN_SKILLS`) |
+| `shared/jobs/geo/functions/GEO_AFTERCAST.lua` | `job_aftercast`: watchdog, Entrust flag, `geo_escort_on_aftercast` |
+| `shared/jobs/geo/functions/GEO_IDLE.lua` | `customize_idle_set` -> `SetBuilder.build_idle_set` |
+| `shared/jobs/geo/functions/GEO_ENGAGED.lua` | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
+| `shared/jobs/geo/functions/GEO_STATUS.lua` | `job_status_change = LifecycleManager.status_change()` |
+| `shared/jobs/geo/functions/GEO_BUFFS.lua` | Own `job_buff_change`: `AltBuffReporter.report`, Doom, Entrust expiry |
+| `shared/jobs/geo/functions/GEO_COMMANDS.lua` | `job_self_command` router, `geo_escort_on_aftercast`, `job_state_change = LifecycleManager.state_change()` |
+| `shared/jobs/geo/functions/GEO_MOVEMENT.lua` | Header only, kept for the 12-module layout |
+| `shared/jobs/geo/functions/GEO_LOCKSTYLE.lua` | Lazy `LockstyleManager.create('GEO', ..., 1, 'SAM')` wrappers |
+| `shared/jobs/geo/functions/GEO_MACROBOOK.lua` | Lazy `MacrobookManager.create('GEO', ..., 'SAM', 1, 1)` wrapper |
+| `shared/jobs/geo/functions/logic/geo_auto_abilities.lua` | `GeoAutoAbilities.apply`: `geo_entrust`, `geo_full_circle` options |
+| `shared/jobs/geo/functions/logic/geo_spell_refiner.lua` | `refine_spell` / `refine_and_cast` for the nuke commands |
+| `shared/jobs/geo/functions/logic/set_builder.lua` | HybridMode / `sets.luopan` selection, town, weapons, movement; unused `apply_buff_gear` |
+| `shared/data/spells/NUKE_TIERS.lua` | Tier table for Fire..Water (V-base), the -ra (III-base) and Aspir (III-base), shared with RDM |
+| `shared/utils/core/auto_options.lua` | Reads `<Character>/config/AUTO_ABILITIES.lua` |
+| `_master/config/geo/GEO_STATES.lua` | All states (`GEOStates.configure()`) |
+| `_master/config/geo/GEO_KEYBINDS.lua` | 12 binds, data only; `KeybindManager.create('GEO', ...)` ([keybinds](../systems/keybinds-and-custom.md)) |
+| `_master/config/geo/GEO_CUSTOM.lua` | Player modes and gear rules (all examples commented out) |
+| `_master/config/geo/GEO_HUD.lua` | Per-job HUD section / row order (empty = defaults) |
+| `_master/config/geo/GEO_LOCKSTYLE.lua` | `default = 5`, `by_subjob`, `get_style`, dead `style` field |
+| `_master/config/geo/GEO_MACROBOOK.lua` | Book 5 page 1 for every subjob; dual-box block empty |
+| `_master/config/geo/GEO_TP_CONFIG.lua` | `_G.GEOTPConfig`: `pieces` (Moonshade 250), `weapons = {}` |
+| `_master/config_global/AUTO_ABILITIES.lua` | Template of the option file (`geo_entrust`, `geo_full_circle` false) |
+| `_master/sets/geo_sets.lua` | Template sets (flat) |
+| `shared/utils/messages/formatters/jobs/message_geo.lua` + `data/jobs/geo_messages.lua` | Indi / Geo cast line with element colour, nuke refinement messages |
+| `shared/data/magic/geomancy/geomancy_indi.lua`, `geomancy_geo.lua` | Indi- / Geo- entries (description, element) read by `message_geo` |
+| `shared/data/magic/GEO_SPELL_DATABASE.lua` | Spell data for messages and `//gs c info` |
+| `shared/data/job_abilities/GEO_JA_DATABASE.lua` | `JA_DATABASE_FACTORY.create('GEO')` for ability messages |
+| `shared/utils/scholar/scholar_actions.lua` | `aoe` Accession chains and `cast_under_black_addendum` (shared with BLM, PLD and `//gs c stealth`) |
 
-Live copies (gitignored): `Kaories/Kaories_GEO.lua` and `Kaories/config/geo/*`
-are identical to the overlay (plus the live-only `GEO_CUSTOM.lua`).
-`Kaories/sets/geo_sets.lua` equals the overlay (the old `'Sybil Scarf'` typo is
-gone; the item is `Sibyl Scarf`, `res/items.lua:20450`). `Tetsouo/` has no GEO
-files; `_master/Tetsouo/` has no GEO overlay.
+Character copies are gitignored. The alt's overlay (`_master/<Alt>/`) holds
+`entry/<Alt>_GEO.lua` (same code, its own paths),
+`config/geo/{GEO_CUSTOM,GEO_KEYBINDS,GEO_LOCKSTYLE,GEO_MACROBOOK,GEO_REFILL,GEO_STATES,GEO_TP_CONFIG}.lua`
+(`GEO_STATES` differs by `CombatMode` defaulting to On) and `sets/geo_sets.lua`
+(differs only in the Exudation weaponskill neck / waist). The author's main
+overlay has no GEO files.
 
 ## How it works
 
@@ -83,253 +91,278 @@ sequenceDiagram
     participant E as Tetsouo_GEO.lua
     participant M as Mote-Include
     participant F as geo_functions.lua
-    GS->>E: run chunk (LOCKSTYLE_CONFIG, UIConfig, REGION_CONFIG, 41-64)
+    GS->>E: file chunk: LOCKSTYLE_CONFIG, UIConfig (ConfigLoader), REGION_CONFIG
     GS->>E: get_sets()
-    E->>M: include Mote-Include (75)
-    M->>E: user_setup() (states, lua load pettp, keybinds + show_intro, UI, JCM, macro/lockstyle, dualbox)
-    M->>E: init_gear_sets() -> include sets file (251)
-    E->>E: INIT_SYSTEMS (77), data_loader, message hooks (83-101)
-    E->>E: _G.LockstyleConfig, RECAST_CONFIG, GEOTPConfig (104-108)
-    E->>E: JobChangeManager.cancel_all() (111-114)
-    E->>F: include geo_functions.lua (117)
-    E->>E: register_lockstyle_cancel("GEO", ...) (121-123)
+    E->>M: include('Mote-Include.lua')
+    M->>E: user_setup(): states, lua load pettp, keybinds (+ show_intro), HUD, JobChangeManager, macro book, lockstyle in 8 s, dualbox_manager
+    M->>E: init_gear_sets(): include('sets/geo_sets.lua')
+    E->>E: INIT_SYSTEMS, data_loader, message hooks
+    E->>E: _G.LockstyleConfig, _G.RECAST_CONFIG, _G.GEOTPConfig
+    E->>E: JobChangeManager.cancel_all()
+    E->>F: include geo_functions.lua
+    E->>E: register_lockstyle_cancel("GEO", ...)
 ```
 
-`user_setup()` (`Tetsouo_GEO.lua:160-223`):
+`user_setup()`:
 
-1. `GEOStates.configure()` (165-166).
-2. `send_command('lua load pettp')` (171): the PetTP addon, unloaded again in
-   `file_unload` (285). This runs on every `user_setup()`, so a subjob change
-   loads it in the old sandbox, unloads it in that sandbox's `file_unload`, and
+1. `GEOStates.configure()`.
+2. `send_command('lua load pettp')`: the PetTP addon, unloaded again in
+   `file_unload`. This runs on every `user_setup()`, so a subjob change loads
+   it in the old sandbox, unloads it in that sandbox's `file_unload`, and
    loads it again in the new one.
 3. `GEO_KEYBINDS` (which returns `KeybindManager.create('GEO', ...)`) ->
-   global `GEOKeybinds`, `bind_all()` (180). `KeybindManager`'s `show_intro`
-   (`keybind_manager.lua` `show_intro`) `require`s `GEO_MACROBOOK.lua` and
-   `GEO_LOCKSTYLE.lua`. Both return nothing, so `show_intro` always falls back
-   to `show_system_intro`, but executing them defines
-   `select_default_macro_book` / `select_default_lockstyle` as a side effect.
-   A failed require prints the Lua error (`'[GEO] Keybinds failed to load: '
-   .. tostring(keybinds)`, since 2026-09-25).
-4. `KeybindUI.smart_init("GEO", UIConfig.init_delay)` (193).
-5. `JobChangeManager.initialize()`, then, only because of the side effect in
-   step 3, `select_default_macro_book()` and `select_default_lockstyle` after
-   8 s (207-213). The facade later includes the two wrapper files again, which
-   creates a second, independent factory instance for each (same situation as
-   [BLM](blm.md)).
-6. `pcall(require, 'shared/utils/dualbox/dualbox_manager')` (222).
+   global `GEOKeybinds`, `bind_all()`. `show_intro` `require`s
+   `GEO_MACROBOOK.lua` and `GEO_LOCKSTYLE.lua`; both return nothing, but
+   executing them defines `select_default_macro_book` /
+   `select_default_lockstyle` as a side effect. A failed require prints the
+   Lua error.
+4. `KeybindUI.smart_init("GEO", UIConfig.init_delay)`.
+5. `JobChangeManager.initialize()`, then (thanks to step 3)
+   `select_default_macro_book()` and `select_default_lockstyle` after 8 s. The
+   facade later includes the two wrapper files again, creating a second,
+   independent factory instance of each (same as [BLM](blm.md)).
+6. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`.
 
-`geo_functions.lua` includes `message_buffs.lua` (28), `GEO_PRECAST`,
-`GEO_MIDCAST`, `GEO_AFTERCAST` (35-39), `GEO_IDLE`, `GEO_ENGAGED` (46-48),
-`GEO_STATUS`, `GEO_BUFFS` (55-57), `GEO_LOCKSTYLE`, `GEO_MACROBOOK`,
-`GEO_COMMANDS`, `GEO_MOVEMENT` (65-69), requires `dualbox_manager` (90) and
-prints a debug line (96-97).
-
-The Kaories overlay differs only in the character name in paths and in the
-dual-box comment (`_master/Kaories/entry/Kaories_GEO.lua:218-219`).
+`geo_functions.lua` includes `message_buffs.lua`, then `GEO_PRECAST`,
+`GEO_MIDCAST`, `GEO_AFTERCAST`, `GEO_IDLE`, `GEO_ENGAGED`, `GEO_STATUS`,
+`GEO_BUFFS`, `GEO_LOCKSTYLE`, `GEO_MACROBOOK`, `GEO_COMMANDS`, `GEO_MOVEMENT`,
+requires `dualbox_manager` and prints a debug line.
 
 ### Precast
 
-`job_precast` (`GEO_PRECAST.lua:57-87`) follows the standard order:
-`PrecastGuard` (61), `CooldownChecker` for abilities or spells (66-72), return
-on cancel (74-76), then the GEO step: `spell.type == 'JobAbility'` and
-`Entrust` sets `_G.geo_entrust_pending = true` (79-81), then
-`WSPrecastHandler.handle(spell, eventArgs, GEOTPConfig)` (84-86).
-`job_post_precast` (94-99) applies the stored TP gear. Mote's default precast
-picks `sets.precast.FC`, `sets.precast.JA[...]` or `sets.precast.WS`. There is
-nuke commands refine through `geo_spell_refiner`; since 2026-09-26 a nuke, -ra or
-Aspir cast from a macro also drops to the highest learned, ready tier
-(`TierRefiner` with `shared/data/spells/NUKE_TIERS.lua`, in place of
-`CooldownChecker` in `job_precast`).
+```mermaid
+flowchart TD
+    A[job_precast] --> B{PrecastGuard.guard_precast}
+    B -- blocked --> Z[return]
+    B -- ok --> C{Magic and NUKE_TIERS family}
+    C -- yes --> T[TierRefiner.refine]
+    C -- no --> CC[CooldownChecker: ability or spell]
+    T --> D{eventArgs.cancel}
+    CC --> D
+    D -- yes --> Z
+    D -- no --> AA[GeoAutoAbilities.apply]
+    AA --> E{cancel or handled}
+    E -- yes --> Z
+    E -- no --> F{JobAbility Entrust}
+    F -- yes --> FF[_G.geo_entrust_pending = true]
+    F -- no --> W
+    FF --> W[WSPrecastHandler.handle: returns true at once for non-WS]
+```
+
+- **Tier step-down.** `NukeTiers.get(spell.name:match('^(%a+)'))` finds the
+  family (Fire, Blizzard, Aero, Stone, Thunder, Water, the six -ra, Aspir).
+  For those, `TierRefiner.refine` runs **in place of** `CooldownChecker`: the
+  checker would cancel the cast before any downgrade could happen. The
+  refiner casts the highest lower tier that is learned, off recast and
+  affordable (`wait 0.1; @input /ma "<tier>" <target.raw>`, cancelling the
+  original), or cancels with every tier's recast shown. A replacement's own
+  precast arrives inside the refiner's 0.2 s guard and skips it. This is the
+  path a macro takes; the `lightspell` family of commands has its own refiner
+  (below).
+- **Automatic abilities** (`geo_auto_abilities.lua`, only for
+  `spell.skill == 'Geomancy'`, each gated by `AutoOptions.on(...)`):
+  - `geo_entrust`: an `Indi-` whose target is a party member other than self
+    (PLAYER, or an NPC trust in party) goes through
+    `AbilityHelper.try_ability(spell, eventArgs, 'Entrust', 1.5)`: when Entrust
+    is ready and not up, the cast is cancelled (`cancel_spell`,
+    `eventArgs.handled`), Entrust is sent, and the Indi- is re-sent on the
+    same target id once the Entrust buff registers.
+  - `geo_full_circle`: a `Geo-` while `pet.isvalid` and Full Circle is ready
+    is cancelled (`eventArgs.cancel`), Full Circle goes out, and the Geo- is
+    re-sent on the same target id 2 s later. `windower._geo_full_circle_replay`
+    (5 s) lets that re-send through without a second Full Circle.
+- `_G.geo_entrust_pending` is raised optimistically on the Entrust ability;
+  aftercast lowers it again when Entrust was interrupted.
+- `job_post_precast` applies the stored TP gear. Mote's default precast picks
+  `sets.precast.FC`, `sets.precast.JA[...]` or `sets.precast.WS`.
 
 ### Midcast
 
-Mote first equips its default midcast set, then `job_post_midcast`
-(`GEO_MIDCAST.lua:99-121`) notifies `MidcastWatchdog` (102-104) and routes by
-skill:
+Mote first equips its default midcast set, then `job_post_midcast` notifies
+`MidcastWatchdog` and routes by skill. Mote's `cleanup_midcast` then runs,
+wrapped by `MidcastFallback`, the shared Obi / Orpheus belt, Treasure Hunter
+and the CUSTOM gear ([midcast and buffs](../systems/midcast-and-buffs.md#midcastfallback)).
 
 ```mermaid
 flowchart TD
     A[job_post_midcast] --> G{spell.skill}
     G -- Geomancy --> M[midcast_geomancy: show_indi_cast / show_geo_cast]
-    M --> E{Indi- and Entrust buff or pending flag and target not SELF}
-    E -- yes, set exists --> S[equip sets.midcast.Indi.Entrust, return]
-    E -- no --> MM[MidcastManager.select_set skill Geomancy]
+    M --> E{Indi-, Entrust buff or pending flag, target not SELF}
+    E -- yes, set exists --> S[equip sets.midcast.Indi.Entrust, return: no select_set]
+    E -- no --> MM[select_set skill Geomancy]
     G -- Enhancing Magic --> EN[select_set: get_enhancing_target, get_spell_family]
     G -- Healing / Enfeebling / Elemental / Dark --> PL[select_set skill = spell.skill]
     G -- other --> Z[Mote default set stands]
+    S --> FB[cleanup_midcast: MidcastFallback]
+    MM --> FB
+    EN --> FB
+    PL --> FB
+    Z --> FB
+    FB -- Entrust path and unrouted skills --> R2[select_set with the spell's own skill]
 ```
 
-- The message line comes from `message_geo.lua` `show_indi_cast` /
-  `show_geo_cast` (93-162), which require both geomancy databases at load
-  (18-19) and print an error for a spell missing from them.
+- The cast line comes from `message_geo.lua` `show_indi_cast` /
+  `show_geo_cast`, which require both geomancy databases at load and print an
+  error for a spell missing from them.
 - `select_set({skill = 'Geomancy'})` resolves to `sets.midcast.Geomancy` (P9),
-  because no set is named after an Indi-/Geo- spell. In both set files
-  `sets.midcast.Geomancy` **is** `sets.luopan.idle` (`_master/sets/geo_sets.lua:290`), so
-  every Indi- and Geo- cast wears the luopan idle set. `sets.midcast.Geo` (316)
-  is looked up by nothing.
-- `sets.midcast.Indi = sets.luopan.idle` (293) is the same table, so line 297
-  writes the `Entrust` sub-table **into** `sets.luopan.idle`. GearSwap ignores
-  non-slot keys when equipping (`helper_functions.lua:313-315`), so this has no
-  gear effect.
-- The other skills go through `MidcastManager` (`PLAIN_SKILLS`, 87-92, and the
-  Enhancing branch, 108-114), so `//gs c debugmidcast` traces them. With the
-  current set files the gear is the same as Mote's default: there is no
-  `sets.midcast['Healing Magic']` or `['Dark Magic']`, so those calls return
-  false and Mote's choice (`sets.midcast.Cure` by spell map) stands;
-  `['Enhancing Magic']` and `['Enfeebling Magic']` are empty tables, so they
-  equip nothing; `['Elemental Magic']` is the set Mote already picked. A set
-  named after a spell, its tier-less name or an enhancing family
-  (`sets.midcast.Refresh`, ...) now takes effect through the manager.
+  because no set is named after an Indi- / Geo- spell. In the template
+  `sets.midcast.Geomancy` **is** `sets.luopan.idle`, so every Indi- and Geo-
+  cast wears the luopan idle set. `sets.midcast.Geo` is looked up by nothing.
+- `sets.midcast.Indi = sets.luopan.idle` is the same table, so the template
+  line creating `sets.midcast.Indi.Entrust` writes the Entrust sub-table
+  **into** `sets.luopan.idle`. GearSwap ignores non-slot keys when equipping,
+  so this has no gear effect by itself.
+- **The Entrust set is undone.** The Entrust branch equips
+  `sets.midcast.Indi.Entrust` and returns without `select_set`, so
+  `MidcastFallback` routes the spell again as Geomancy and P9 equips
+  `sets.midcast.Geomancy` over it. Verified offline with the harness below,
+  not in game.
+- The other skills go through `MidcastManager` (`PLAIN_SKILLS` and the
+  Enhancing branch), so `//gs c debugmidcast` traces them. With the template
+  sets: no `sets.midcast['Healing Magic']` or `['Dark Magic']`, so those calls
+  return false and Mote's choice (`sets.midcast.Cure` / `.Curaga` by spell
+  map) stands; `['Enhancing Magic']` and `['Enfeebling Magic']` are empty
+  tables, so they equip nothing; `['Elemental Magic']` is the set Mote already
+  picked. A set named after a spell, its tier-less name or an enhancing family
+  (`sets.midcast.Refresh`, ...) takes effect through the manager.
 
 ### Idle, engaged, pet
 
-- `customize_idle_set` -> `SetBuilder.build_idle_set` (`set_builder.lua:131-156`):
-  `sets.luopan.idle` when `pet.isvalid`, else `sets.idle[HybridMode]` falling
-  back to `sets.me.idle` (`select_hybrid_base`, 81-87; Mote's base is
-  ignored); then town (`sets.Adoulin` in Adoulin, `sets.idle.Town` in other
-  cities, Dynamis excluded, which overrides the luopan set: 142-145); then
-  `sets[state.MainWeapon]` and `sets[state.SubWeapon]` (`apply_weapon`, 39-69); then
-  `sets.MoveSpeed` when moving outside town.
-- `customize_melee_set` -> `build_engaged_set` (96-126): with a luopan,
+- `customize_idle_set` -> `SetBuilder.build_idle_set`: `sets.luopan.idle` when
+  `pet.isvalid`, else `sets.idle[HybridMode]` falling back to `sets.me.idle`
+  (`select_hybrid_base`; Mote's base is ignored); then town (`sets.Adoulin`
+  in Adoulin, `sets.idle.Town` in other cities, Dynamis excluded), which
+  overrides the luopan set; then `apply_weapon` (`WeaponResolver.set_for`);
+  then `sets.MoveSpeed` when moving outside town.
+- `customize_melee_set` -> `build_engaged_set`: with a luopan,
   `sets.luopan.engaged.DT` or `.DPS` from `LuopanMode` (fallback DT, then
   `sets.me.engaged`); without, `sets.engaged[HybridMode]` falling back to
   `sets.me.engaged`; then weapons. No movement layer.
-- `HybridMode` has no gear effect yet: `sets.idle.Normal` / `sets.engaged.Normal`
-  alias `sets.me.idle` / `sets.me.engaged`, and `sets.idle.PDT` /
-  `sets.engaged.PDT` are `set_combine` copies of them (since 2026-09-27; aliases
-  before, so editing one changed Normal too), in the template, the Kaories
-  overlay and the live Kaories file. Putting pieces in the PDT copies is enough
-  for the mode to change gear; with a luopan out the mode is not read.
-- The luopan appearing or leaving re-equips through Mote's `pet_change`, which
-  calls `handle_equipping_gear` (`Mote-Include.lua:1048-1061`).
-- CombatMode: since 2026-09-25 the shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25)
-  hook on `handle_equipping_gear` disables main/sub/range/ammo when On and
-  enables them when Off unless a craft session is active; `job_update` only
-  refreshes the HUD. The lock follows every gear update: `gs c update` and every
-  state cycle, HUD shown or not (the HUD-visible `cyclestate` ends in Mote's
-  `handle_update`, `CYCLE_HANDLER.lua:60-63`). A lock left by a reload or job
-  change is freed at the next load.
+- `HybridMode` has no gear effect yet: `sets.idle.Normal` /
+  `sets.engaged.Normal` alias `sets.me.idle` / `sets.me.engaged`, and
+  `sets.idle.PDT` / `sets.engaged.PDT` are empty `set_combine` copies of
+  them. With a luopan out the mode is not read.
+- Because the builder ignores Mote's base, Mote's defense and Kiting layers
+  (F10 / F11 / Alt+F10) and `sets.idle.Pet` have no effect on GEO.
+- The luopan appearing or leaving re-equips through Mote's `pet_change`,
+  which calls `handle_equipping_gear`.
+- Combat Mode: the shared hook on `handle_equipping_gear` disables main, sub,
+  range and ammo when On and enables them when Off unless a craft session is
+  active ([keybinds](../systems/keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode)).
+  `job_update` only refreshes the HUD.
 
 ### Aftercast, status, buffs
 
-- `job_aftercast` (`GEO_AFTERCAST.lua:30-58`): watchdog; sets
-  `_G.geo_entrust_pending` to `not spell.interrupted` after Entrust (41-43),
-  so an interrupted Entrust lowers the flag precast raised; calls
-  `_G.geo_escort_on_aftercast` (46-48, the `escort` follow); clears the flag
-  after an uninterrupted Indi- spell (51-53). The flag is initialised when the
-  file loads (17-19). Precast sets it (`GEO_PRECAST.lua:79-81`); an Entrust
-  refused before any aftercast still leaves it set until the next completed
-  Indi-.
+- `job_aftercast`: watchdog; after Entrust, `_G.geo_entrust_pending = not
+  spell.interrupted`; calls `_G.geo_escort_on_aftercast` (the `escort`
+  follow); clears the flag after an uninterrupted Indi-. The flag is
+  initialised when `GEO_AFTERCAST.lua` loads.
 - `job_status_change` is the shared `LifecycleManager` handler.
-- `job_buff_change` (`GEO_BUFFS.lua:31-48`) is GEO's own: it calls
-  `AltBuffReporter.report(buff, gain)` (36), which only sends when this
-  character is the dual-box ALT (GEO is the only job that calls it), then
-  `DoomManager.handle_buff_change` (38). See
-  [dualbox](../systems/dualbox.md#alt-buff-reporter).
+- `job_buff_change` is GEO's own: `AltBuffReporter.report(buff, gain)` (sends
+  only when this character is the dual-box ALT), then
+  `DoomManager.handle_buff_change`, then, when Entrust is **lost**,
+  `_G.geo_entrust_pending = false` (an unspent Entrust expiring used to leave
+  the flag up). See [dualbox](../systems/dualbox.md#alt-buff-reporter).
 
-### Nuke tier fallback
+### Nuke commands (`geo_spell_refiner.lua`)
 
-`GeoSpellRefiner.refine_and_cast(base, tier, is_aoe, target)`
-(`geo_spell_refiner.lua:134-152`) walks `V, IV, III, II, I` (or `III, II, I` for
--ra spells, `refine_spell` 89-126) from the requested tier down and casts the
-first spell that is learned (`has_spell`, 27-44) and off recast
-(`is_spell_ready`, 49-72),
-printing `spell_refined` when it differs from the request, or
-`no_tier_available` when none qualifies. Tier `I` means the bare name. Both
-helpers scan `res.spells` linearly (known, not repeated here).
+`GeoSpellRefiner.refine_and_cast(base, tier, is_aoe, target)` walks `V, IV,
+III, II, I` (or `III, II, I` for -ra) from the requested tier down and casts
+the first spell that `has_spell` (learned) and `is_spell_ready` (off recast)
+accept, printing `spell_refined` when it differs, or `no_tier_available` when
+none qualifies. Tier `I` means the bare name.
+
+Both helpers start with `if not res or not res.spells then return false end`
+and read the **global** `res`. GearSwap's job sandbox (`refresh.lua`
+`user_env`) has no `res`, and no project file defines one (an in-game trace
+from RDM logs `res global false`). So `has_spell` always returns false and
+every `lightspell` / `darkspell` / `lightaoe` / `darkaoe` prints "no tier
+available" and casts nothing. The macro path (`TierRefiner` in precast) is not
+affected: it resolves `resources` through `require`.
 
 ## Mote states
 
-Created by `GEOStates.configure()` (`_master/config/geo/GEO_STATES.lua:50-268`)
-on every `user_setup()`. Keys from `_master/config/geo/GEO_KEYBINDS.lua:28-55`;
-`#numpad0` (AutoMedicine) comes from the character's `config/COMMON_KEYBINDS.lua`.
+Created by `GEOStates.configure()` on every `user_setup()`. Keys from
+`GEO_KEYBINDS.lua`; `#numpad0` (AutoMedicine) comes from the character's
+`config/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
-| `HybridMode` | PDT, Normal | PDT | `^numpad9` | `set_builder.lua:81-87` (base without a luopan); both modes wear the same gear today (see Idle, engaged, pet) |
-| `CombatMode` | Off, On | Off | `^numpad0` | shared [Combat Mode](../systems/keybinds-and-custom.md#combat-mode-sharedutilscorecombat_modelua-2026-09-25) hook |
-| `LuopanMode` | DT, DPS | DT | `^numpad.` | `set_builder.lua:101-115` (engaged with a luopan only) |
-| `MainWeapon` | Idris | Idris | none | `set_builder.lua:44-54` |
-| `SubWeapon` | Genmei Shield | Genmei Shield | none | `set_builder.lua:56-66` |
+| `HybridMode` | PDT, Normal | PDT | `^numpad9` | `set_builder.lua` `select_hybrid_base` (no gear difference today) |
+| `CombatMode` | Off, On | Off (On in the alt overlay) | `^numpad0` | shared Combat Mode hook |
+| `LuopanMode` | DT, DPS | DT | `^numpad.` | `SetBuilder.build_engaged_set` (luopan out only) |
+| `MainWeapon` | Idris | Idris | none | `SetBuilder.apply_weapon` |
+| `SubWeapon` | Genmei Shield | Genmei Shield | none | `SetBuilder.apply_weapon` |
 | `IndicolureMode` | Self, Entrust | Self | `^numpad+` | nothing (HUD only) |
 | `MainIndi` | 30 Indi- spells | Indi-Haste | `^numpad3` | `indi`, `entrust` |
-| `MainGeo` | 28 Geo- spells | Geo-Frailty | `^numpad4` | `geo` |
+| `MainGeo` | 28 Geo- spells (no Geo-CHR) | Geo-Frailty | `^numpad4` | `geo` |
 | `MainLightSpell` | Fire, Aero, Thunder | Fire | `^numpad5` | `lightspell` |
 | `MainDarkSpell` | Blizzard, Stone, Water | Blizzard | `^numpad6` | `darkspell` |
 | `SpellTier` | V, IV, III, II, I | V | `^numpad1` | `lightspell`, `darkspell` |
 | `MainLightAOE` | Fira, Aera, Thundara | Fira | `^numpad7` | `lightaoe` |
 | `MainDarkAOE` | Blizzara, Stonera, Watera | Blizzara | `^numpad8` | `darkaoe` |
 | `AOETier` | III, II, I | III | `^numpad2` | `lightaoe`, `darkaoe` |
-| `FastCast` | 0..80 step 10 | 80 | none | `MidcastWatchdog` |
-| `AutoMedicine` | shared On/Off | persisted | `#numpad0` (from `COMMON_KEYBINDS.lua`) | `AutoMedicine.init` (264-266) |
-
-The state comments now call Indi-/Geo-Fend "Magic Defense+ (buff)"
-(`_master/config/geo/GEO_STATES.lua:139,163`), matching the command buff list
-and the geomancy database (`GEO_COMMANDS.lua:73`, `geomancy_geo.lua:87-95`);
-Languor / Vex / Fade were corrected on 2026-09-25 as well.
+| `FastCast` | 0..80 step 10 | 80 | none | `MidcastWatchdog` fallback estimate |
+| `AutoMedicine` | shared On/Off | persisted | `#numpad0` | `AutoMedicine.init` |
 
 ## Commands
 
-`job_self_command` (`GEO_COMMANDS.lua:101-393`) lowercases the first word and
-tests `altjobupdate` (114; passes the sender name, 5th argument, since
-2026-09-25), `requestjob` (126), `ui` (134), `debugmidcast` (143),
-`cyclestate` (162), watchdog (168), **CommonCommands** (176), then:
+`job_self_command` lowercases the first word and tests, in order:
+`altjobupdate` (forwards the sender name), `requestjob`, `ui`, `debugmidcast`,
+`cyclestate`, `watchdog`, **CommonCommands**, then:
 
-| Command | Effect | Lines |
-|---------|--------|-------|
-| `indi` | `/ma "<MainIndi>" <me>` | 191-197 |
-| `geo` | `/ma "<MainGeo>" <stpc>` for the 18 names in `GEO_BUFFS` (66-85), `<stnpc>` otherwise. Geo-Poison left the list on 2026-09-25: it is a debuff (`targets` 32 in `res/spells.lua`), so it now goes to `<stnpc>` | 202-211 |
-| `escort [Indi-X] [leader]` | Full Circle if a luopan is out, `/ma "<Indi-X>" <me>` (default Indi-Regen) 2 s later (at once without a luopan), then `sm follow <leader>` when the Indi- aftercast arrives (`geo_escort_on_aftercast`), with a timer as a safety net; `MessageSortie.show_alt_escort` | 218-256 |
-| `entrust` | `/ja "Entrust" <me>`, then `AbilityHelper.follow_up_or_abort('Entrust', '/ma "<MainIndi>" <stal>', 1.5)`: the Indi goes out once Entrust registers, and is abandoned with a warning if Entrust was refused | 259-273 |
-| `lightspell` / `darkspell` | `refine_and_cast(<Main*Spell>, SpellTier, false, '<t>')` | 276-299 |
-| `lightaoe` / `darkaoe` | `refine_and_cast(<Main*AOE>, AOETier, true, '<t>')` | 302-325 |
-| `lightarts` / `darkarts` | Arts, then Addendum on the next press; own copy of `ScholarActions.light_arts`/`dark_arts` using `MessageCore.info` | 337-362 |
-| `aoe sneak` / `invi` / `invisible` / `erase` | `ScholarActions.try_aoe_subcommand(cmdParams[2], nil)` (always AoE, no state) | 366-372 |
-| `dispel` | /RDM: Dispel `<stnpc>`; /SCH: `ScholarActions.cast_under_black_addendum('Dispel', '<stnpc>')`, shared with BLM; else warning | 379-392 |
+| Command | Effect |
+|---------|--------|
+| `indi` | `/ma "<MainIndi>" <me>` |
+| `geo` | `/ma "<MainGeo>" <stpc>` for the 18 names in `GEO_BUFFS`, `<stnpc>` otherwise (`is_geo_buff`) |
+| `escort [Indi-X] [leader]` | Full Circle if a luopan is out and `/ma "<Indi-X>" <me>` 2 s later (at once without a luopan; default Indi-Regen); with a leader, `sm follow <leader>` when the Indi- aftercast arrives (`geo_escort_on_aftercast`), with a timer (`cast_start + cast_time + 3` s) as a safety net; `MessageSortie.show_alt_escort` |
+| `entrust` | `/ja "Entrust" <me>`, then `AbilityHelper.follow_up_or_abort('Entrust', '/ma "<MainIndi>" <stal>', 1.5)`: the Indi- goes out once Entrust registers, abandoned with a warning if Entrust was refused |
+| `lightspell` / `darkspell` | `refine_and_cast(<Main*Spell>, SpellTier, false, '<t>')` (broken, see above) |
+| `lightaoe` / `darkaoe` | `refine_and_cast(<Main*AOE>, AOETier, true, '<t>')` (broken) |
+| `lightarts` / `darkarts` | Arts, then Addendum on the next press; GEO's own copy of `ScholarActions.light_arts` / `dark_arts`, using `buffactive` and `MessageCore.info` |
+| `aoe sneak` / `invi` / `invisible` / `erase` | `ScholarActions.try_aoe_subcommand(cmdParams[2], nil)` (no state: always the Accession version) |
+| `dispel` | /RDM: `/ma "Dispel" <stnpc>`; /SCH: `ScholarActions.cast_under_black_addendum('Dispel', '<stnpc>')`; else a warning |
 
-`job_state_change` is `LifecycleManager.state_change()` (399); it ignores
-the state name, so the key (CycleHandler) vs description (Mote) difference does
-not matter. CombatMode is the shared `combat_mode.lua` hook, not here.
+`job_state_change` is `LifecycleManager.state_change()`: it ignores the state
+name, so the key (CycleHandler) vs description (Mote) difference does not
+matter.
 
 ## Set names the code looks up
 
-T = `_master/sets/geo_sets.lua`; the Kaories overlay and live file have the same
-line numbers.
+T = in `_master/sets/geo_sets.lua`.
 
 | Set | Looked up by | T |
 |-----|--------------|---|
-| `sets['Idris']`, `sets['Genmei Shield']` | `set_builder.lua:45,57` | 54, 60 |
-| `sets.idle.PDT`, `.Normal`, `sets.engaged.PDT`, `.Normal` (Normal: aliases of `sets.me.*`; PDT: copies) | `select_hybrid_base` by `HybridMode` (`set_builder.lua:81-87,119,139`) | 120-121, 190-191 |
-| `sets.me.idle`, `sets.me.engaged` (fallback), `sets.luopan.idle` | `set_builder.lua:119,136,139` | 71, 129, 91 |
-| `sets.luopan.engaged.DT`, `.DPS` | `set_builder.lua:105-115` | 148, 173 |
-| `sets.idle.Town` (= `sets.me.idle.Town`), `sets.Adoulin`, `sets.MoveSpeed` | `BaseSetBuilder` | 428 (424), 431 (2 slots), 419 |
-| `sets.idle.Pet` | only Mote's base, which the builder discards | 122 |
-| `sets.precast.FC`, `.FC.Cure`, `sets.precast.JA[...]` (Bolster, Life Cycle, Blaze of Glory, Dematerialization, Entrust, Ecliptic Attrition, Radial Arcana), `sets.precast.WS`, `WS['Exudation']` | Mote default precast | 200, 239, 248-279, 379, 398 |
-| `sets.midcast.Geomancy` (= `sets.luopan.idle`) | `MidcastManager` base | 290 |
-| `sets.midcast.Indi.Entrust` | `GEO_MIDCAST.lua:70-71` | 297 |
-| `sets.midcast.Indi`, `sets.midcast.Geo` | nothing | 293, 316 |
-| `sets.midcast.Cure` | Mote default (spell map); no `['Healing Magic']` base, so `MidcastManager` returns false | 319 |
-| `sets.midcast.Curaga` (copy of `Cure`) | Mote default (spell map `Curaga`). Added 2026-09-28: Curaga wore no midcast set before | 350 |
-| `sets.midcast['Enhancing Magic']` (empty), `['Enfeebling Magic']` (empty), `['Elemental Magic']` | Mote default, then `MidcastManager` base (`GEO_MIDCAST.lua:108-119`) | 344, 347, 350 |
-| `sets.midcast['Healing Magic']`, `['Dark Magic']` | `MidcastManager` base | **absent** (routes are no-ops) |
-| `sets.buff.Doom` | shared `DoomManager` | 442 |
-
-The two absent sets make their `MidcastManager` routes no-ops; nothing else the
-code looks up is missing.
+| `sets['Idris']`, `sets['Genmei Shield']` | `apply_weapon` | yes |
+| `sets.idle.PDT`, `.Normal`, `sets.engaged.PDT`, `.Normal` (Normal = `sets.me.*`; PDT = empty copies) | `select_hybrid_base` | yes |
+| `sets.me.idle`, `sets.me.engaged` (fallback), `sets.luopan.idle` | `set_builder.lua` | yes |
+| `sets.luopan.engaged.DT`, `.DPS` | `build_engaged_set` | yes |
+| `sets.idle.Town` (= `sets.me.idle.Town`), `sets.Adoulin`, `sets.MoveSpeed` | `BaseSetBuilder` | yes (`sets.Adoulin` is a 2-slot set) |
+| `sets.idle.Pet` | Mote's base only, which the builder discards | yes (unused) |
+| `sets.precast.FC`, `.FC.Cure`, `sets.precast.JA[...]` (Bolster, Life Cycle, Blaze of Glory, Dematerialization, Entrust, Ecliptic Attrition, Radial Arcana), `sets.precast.WS`, `WS['Exudation']` | Mote default precast | yes |
+| `sets.midcast.Geomancy` (= `sets.luopan.idle`) | `MidcastManager` base | yes |
+| `sets.midcast.Indi.Entrust` | `midcast_geomancy` (then undone, see Midcast) | yes |
+| `sets.midcast.Indi`, `sets.midcast.Geo` | nothing | yes (unused) |
+| `sets.midcast.Cure`, `.Curaga` | Mote default (spell map) | yes |
+| `sets.midcast['Enhancing Magic']` (empty), `['Enfeebling Magic']` (empty), `['Elemental Magic']` | Mote default, then `MidcastManager` base | yes |
+| `sets.midcast['Healing Magic']`, `['Dark Magic']` | `MidcastManager` base | **no** (routes are no-ops) |
+| `sets.buff.Doom` | `DoomManager` | yes |
 
 ## Configuration
 
-| File / key | Default | Where the default lives | Read by |
-|------------|---------|-------------------------|---------|
-| `<char>/config/geo/GEO_STATES.lua` | see states | file | entry `user_setup` |
-| `<char>/config/geo/GEO_KEYBINDS.lua` | 12 binds (laid down in file order by `KeybindManager`) | file | entry `user_setup`, `file_unload` |
-| `<char>/config/geo/GEO_CUSTOM.lua` | nothing active (template) | file | `KeybindManager` / `CustomStates` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
-| `<char>/config/geo/GEO_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 5 | file; factory fallback 1 (`shared/jobs/geo/functions/GEO_LOCKSTYLE.lua:26-31`) | `LockstyleManager` via `get_style` |
-| `<char>/config/geo/GEO_MACROBOOK.lua` `default`, `solo`, `dualbox` | book 5 page 1 everywhere; `dualbox` empty | file; factory fallback book 1 (`shared/jobs/geo/functions/GEO_MACROBOOK.lua:26-32`) | `MacrobookManager` |
-| `<char>/config/geo/GEO_TP_CONFIG.lua` -> `_G.GEOTPConfig` | Moonshade 250 (37), `weapons = {}` (46), `get_weapon_bonus` returns 0 (54-57) | file | `TPBonusCalculator` |
-| `Kaories/config/geo/GEO_REFILL.lua` (template `_master/Kaories/config/geo/`) | Panacea, ..., Echo Drops, Vile Elixir(+1), Tropical Crepe | file | refill system |
-| `Tetsouo/config/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG`, `RECAST_CONFIG`, UI config | - | entry fallback 42-48 | entry |
-| PetTP addon | - | Windower addon | loaded by `user_setup`, unloaded by `file_unload` |
+| File / key | Default | Read by |
+|------------|---------|---------|
+| `<char>/config/geo/GEO_STATES.lua` | see states | entry `user_setup` |
+| `<char>/config/geo/GEO_KEYBINDS.lua` | 12 binds | entry `user_setup`, `file_unload` |
+| `<char>/config/geo/GEO_CUSTOM.lua` | nothing active | `KeybindManager` / `CustomStates` |
+| `<char>/config/geo/GEO_HUD.lua` | empty | HUD section / row order |
+| `<char>/config/geo/GEO_LOCKSTYLE.lua` `default`, `by_subjob`, `get_style` | 5 | `LockstyleManager` via `get_style` (factory fallback 1) |
+| `<char>/config/geo/GEO_MACROBOOK.lua` `default`, `solo`, `dualbox` | book 5 page 1; `dualbox` empty | `MacrobookManager` (factory fallback book 1) |
+| `<char>/config/geo/GEO_TP_CONFIG.lua` -> `_G.GEOTPConfig` | Moonshade 250 in `pieces` | TP bonus calculator |
+| `<char>/config/AUTO_ABILITIES.lua` `geo_entrust`, `geo_full_circle` | false, false | `AutoOptions.on` from `GeoAutoAbilities.apply` |
+| `<char>/config/geo/GEO_REFILL.lua` | none in the template (the alt overlay has one) | refill system (`FALLBACK_LIST` without it) |
+| `<char>/config/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG`, `RECAST_CONFIG`, UI config | - | entry |
+| PetTP addon | - | loaded by `user_setup`, unloaded by `file_unload` |
 
 ## State & lifetime
 
@@ -337,132 +370,161 @@ code looks up is missing.
   `job_midcast`, `job_post_midcast`, `job_aftercast`, `job_status_change`,
   `job_buff_change`, `customize_idle_set`, `customize_melee_set`,
   `job_self_command`, `job_state_change`), `geo_entrust_pending`,
-  `GEOTPConfig`, `GEOKeybinds`, `LockstyleConfig`, `RECAST_CONFIG`,
-  `RegionConfig`, `select_default_lockstyle`, `cancel_geo_lockstyle_operations`,
-  `select_default_macro_book`, the factory exports.
-- `_G` read: `MidcastManagerDebugState`, `MidcastWatchdog`,
-  `CraftManager`, `AltBuffState` / `AltJobState` (through the dual-box
-  modules), `geo_escort_on_aftercast`.
-- `windower.*`: nothing written by GEO code itself (`AbilityHelper` and the
-  keybind manager keep their own `windower._*` records). No events registered.
-- Outside the sandbox: the PetTP addon (load/unload), the `disable_table` slot
-  locks of CombatMode (they survive `gs reload` and job change; the shared
-  `combat_mode.lua` frees them at the next load).
-- Coroutines: the 8 s lockstyle, the `escort` cast and follow timers, and the
-  polls behind `entrust` and `dispel`.
-  Neither chains `wait N` any more: `entrust` uses
-  `AbilityHelper.follow_up_or_abort`, `dispel` goes through
-  `ScholarActions.cast_under_black_addendum`. Both wait for the buff and
-  abort with a warning instead of casting without it. The lockstyle is not
-  cancelled on reload; the polls carry a generation counter and are.
+  `geo_escort_on_aftercast`, `GEOTPConfig`, `GEOKeybinds`, `LockstyleConfig`,
+  `RECAST_CONFIG`, `RegionConfig`, `select_default_lockstyle`,
+  `cancel_geo_lockstyle_operations`, `select_default_macro_book`, the factory
+  exports.
+- `_G` read: `MidcastManagerDebugState`, `MidcastWatchdog`, `CraftManager`,
+  `AltBuffState` / `AltJobState` (through the dual-box modules).
+- `windower.*`: `_geo_full_circle_replay` (auto Full Circle), plus the
+  records kept by `AbilityHelper`, `ScholarActions`, `KeybindManager` and
+  `CombatMode`. No events registered.
+- Outside the sandbox: the PetTP addon (load / unload) and the Combat Mode
+  slot locks in GearSwap's `disable_table` (freed at the next load by
+  `combat_mode.lua`).
+- Coroutines: the 8 s lockstyle, the `escort` cast and follow timers, the
+  Full Circle re-send (2 s), and the `AbilityHelper` / `ScholarActions` polls
+  behind `entrust`, auto Entrust and `dispel`. The polls carry a generation
+  counter; the lockstyle and the escort timers are not cancelled by a reload.
+- Module-local `escort_pending` / `escort_seq` die with the sandbox: an escort
+  follow pending at a reload is only kept by its timer, which the old sandbox
+  still runs.
 - Subjob change: Mote re-runs `user_setup()` (PetTP load, states reset, keys
-  rebound, macrobook/lockstyle again), then `job_sub_job_change`
-  (`Tetsouo_GEO.lua:140-150`) calls `JobChangeManager.on_job_change`, which
-  schedules `gs reload` (the `initialize({...})` call whose argument was
-  ignored was removed on 2026-09-25).
+  rebound, macrobook / lockstyle again), then `job_sub_job_change` calls
+  `JobChangeManager.on_job_change`, which schedules `gs reload`.
 
 ## Interactions
 
-- Precast: `PrecastGuard`, `CooldownChecker`, `WSPrecastHandler`
-  ([precast pipeline](../systems/precast-pipeline.md)).
-- Midcast: `MidcastManager` (every magic skill GEO casts), `MidcastWatchdog`
-  ([midcast and buffs](../systems/midcast-and-buffs.md)).
-- Scholar: `scholar_actions.lua` for `aoe`; the Arts toggles are GEO's own
-  copy ([midcast and buffs](../systems/midcast-and-buffs.md#scholaractions-and-stratagemcharges)).
+- Precast: `PrecastGuard`, `CooldownChecker`, `TierRefiner`, `AbilityHelper`,
+  `WSPrecastHandler` ([precast pipeline](../systems/precast-pipeline.md)).
+- Midcast: `MidcastManager`, `MidcastFallback`, `MidcastWatchdog`
+  ([midcast and buffs](../systems/midcast-and-buffs.md)); `ElementalBelt`
+  on nukes ([factories and helpers](../systems/factories-and-helpers.md)).
+- Scholar: `scholar_actions.lua` for `aoe` and `dispel`; the Arts toggles are
+  GEO's own copy.
 - Messages: `message_geo` (hard-codes `GEO` in the refinement templates),
-  `message_buffs` ([messages](../systems/messages.md)).
-- Dual-box: `GEO_BUFFS.lua:36` reports Entrust; on the MAIN,
-  `GEO_ALT_CUSTOM.lua` retargets Indi- alt commands while the ALT's Entrust is
-  up ([dualbox](../systems/dualbox.md)).
+  `message_buffs`, `message_sortie` ([messages](../systems/messages.md)).
+- Dual-box: `GEO_BUFFS.lua` reports Entrust; on the MAIN, the GEO alt
+  command config retargets Indi- alt commands while the ALT's Entrust is up
+  ([dualbox](../systems/dualbox.md)); `sortie escort` drives a GEO alt.
 - Factories, `JobChangeManager`, `LifecycleManager`, `CommonCommands`,
-  `CycleHandler`, UI ([UI overlay](../systems/ui-overlay.md); `UI_LOADER.lua:67-76`
-  has a GEO fallback bind list used only when the keybind file is missing).
-- COR: Naturalist's Roll lists GEO as its job bonus (`roll_data.lua:335`).
+  `CycleHandler`, UI ([UI overlay](../systems/ui-overlay.md)).
+- COR: Naturalist's Roll lists GEO as its job bonus (`roll_data.lua`).
 
 ## Invariants & gotchas
 
-- The idle/engaged base comes from `sets.idle[HybridMode]` /
+- The idle / engaged base comes from `sets.idle[HybridMode]` /
   `sets.engaged[HybridMode]` (else `sets.me`) without a luopan, and from
-  `sets.luopan` with one; Mote's own selection (`IdleMode`, `sets.idle.Pet`,
-  ...) is discarded.
+  `sets.luopan` with one; Mote's own selection is discarded.
 - In town the town set wins over the luopan set.
 - `sets.midcast.Geomancy`, `sets.midcast.Indi` and `sets.luopan.idle` are one
-  table: a `set_combine` into one of them is not needed, but assigning a key on
-  one writes it on all three.
-- Every skill except Geomancy and Enhancing goes through `MidcastManager` with
-  no mode, type or target: a skill-specific rule needs its own branch in
-  `job_post_midcast`.
-- Commands that depend on the subjob (`lightarts`, `aoe`, `dispel`) do not check
-  it; the game refuses the actions.
-- `lightarts`, `darkarts`, `dispel`, `entrust`, `escort` run here even when the dual-box
-  partner's alt config has those names; `//gs c alt <name>` sends the partner's
-  (see [commands and debug](../systems/commands-and-debug.md#4-alt-commands-and-name-shadowing)).
-- The `aoe` form was introduced because the alt configs have `sneak`/`invi` keys,
-  which CommonCommands used to answer first; that reason no longer holds, and
-  the comment above the branch (`GEO_COMMANDS.lua:364-365`) no longer gives
-  it (rewritten 2026-09-25).
+  table: assigning a key on one writes it on all three.
+- A midcast branch that equips without `select_set` is undone by
+  `MidcastFallback` (the Entrust branch today).
+- Commands that depend on the subjob (`lightarts`, `aoe`, `dispel`) do not
+  check it; the game refuses the actions.
+- `lightarts`, `darkarts`, `dispel`, `entrust` run here even when the dual-box
+  alt's config has those names; `//gs c alt <name>` sends the alt's
+  ([commands and debug](../systems/commands-and-debug.md#4-alt-commands-and-name-shadowing)).
+- The `aoe <spell>` form exists because the alt configs claim `sneak` /
+  `invi` / `erase`.
 
 ## Extending
 
-- New Geomancy override: add it in `GEO_MIDCAST.lua` after the Entrust block,
-  before `select_set`; give it its own set (not a key on `sets.midcast.Indi`,
-  which is the luopan idle set).
-- Route another skill through `MidcastManager`: add it to `PLAIN_SKILLS`
-  (`GEO_MIDCAST.lua:87-92`), or give it a branch when it needs a mode, type or
-  target; make sure `sets.midcast[skill]` exists.
-- Make `HybridMode` change gear: put damage taken pieces in the `{}` of
-  `sets.idle.PDT` / `sets.engaged.PDT` (copies of `sets.me.*`), in the template,
-  the Kaories overlay and the live Kaories file.
-- New Geo- buff: add it to `GEO_BUFFS` (`GEO_COMMANDS.lua:66-85`) so `geo`
-  targets `<stpc>`, and to `MainGeo`. Only real buffs belong there: the target
-  follows `targets` in `res/spells.lua`.
-- New state: `GEO_STATES.lua` and `GEO_KEYBINDS.lua`, in `_master/config/geo/`,
-  `_master/Kaories/config/geo/` and the live `Kaories/config/geo/`.
+- New Geomancy override: add it in `midcast_geomancy` and **call
+  `select_set`** (or set `eventArgs.handled`, passed down from
+  `job_post_midcast`); give it its own set, not a key on `sets.midcast.Indi`.
+- Route another skill through `MidcastManager`: add it to `PLAIN_SKILLS`, or
+  give it a branch when it needs a mode, type or target; make sure
+  `sets.midcast[skill]` exists.
+- Make `HybridMode` change gear: fill `sets.idle.PDT` / `sets.engaged.PDT`.
+- New Geo- buff: add it to `GEO_BUFFS` in `GEO_COMMANDS.lua` so `geo` targets
+  `<stpc>`, and to `MainGeo`. Only real buffs belong there (the target
+  follows `targets` in `res/spells.lua`).
+- New auto ability: an option key in `_master/config_global/AUTO_ABILITIES.lua`
+  (with its header line) and a branch in `GeoAutoAbilities.apply`.
+- New state: `GEO_STATES.lua` and `GEO_KEYBINDS.lua`, in `_master/config/geo/`
+  and in every character copy.
 
-## Auto abilities (2026-09-25)
+## For maintainers / AI
 
-Off unless `<Character>/config/AUTO_ABILITIES.lua` turns them on (template
-`_master/config_global/AUTO_ABILITIES.lua`, reader `shared/utils/core/auto_options.lua`).
-`GEO_PRECAST.lua` calls `logic/geo_auto_abilities.lua` right after the cooldown check:
+### Invariants to keep
 
-- `geo_entrust`: an `Indi-` aimed at a party member (PLAYER or trust in party, not self)
-  goes through `AbilityHelper.try_ability(spell, eventArgs, 'Entrust', 1.5)`: cancelled,
-  Entrust fired, recast on the same target once Entrust is up.
-- `geo_full_circle`: a `Geo-` cast while `pet.isvalid` and Full Circle is ready is
-  cancelled; Full Circle goes out and the Geo- is sent again 2 s later (the ability delay,
-  as `//gs c escort`). `windower._geo_full_circle_replay` (5 s) lets that recast through.
+- Precast order: `PrecastGuard`, then tier refine **or** `CooldownChecker`,
+  then the auto abilities, then the Entrust flag and WS. Moving the checker
+  before the refiner kills the step-down; moving the auto abilities before
+  the cooldown check would fire Entrust / Full Circle for a spell that is
+  on recast.
+- `GeoAutoAbilities.apply` must return early for anything but Geomancy and
+  must stay opt-in (`AutoOptions.on`).
+- `_G.geo_entrust_pending` has three writers (precast raise, aftercast,
+  buff loss); a new one must keep "raised only between Entrust and the next
+  Indi-".
+- Target ids sent in `/ma` re-sends are raw mob ids without angle brackets.
+
+### Traps
+
+- `res` is not a sandbox global: use
+  `rawget(_G, 'res') or windower.res or require('resources')` (as `escort`
+  does), never bare `res`.
+- `geo_spell_refiner.lua` scans `res.spells` linearly twice per tier; fixing
+  the `res` lookup will expose that cost on every command.
+- `sets.midcast.Indi.Entrust = set_combine(sets.midcast.Indi, {...})` stores a
+  sub-table inside `sets.luopan.idle`.
+- A subjob change runs `user_setup()` twice (old and new sandbox), so PetTP
+  is loaded, unloaded and loaded again.
+
+### How to debug
+
+- `//gs c debugmidcast`: Geomancy walk, including `MidcastFallback`'s second
+  pass that replaces the Entrust set.
+- `//gs c trace on`: `select_set` choices and the RDM-style `res global` line
+  if you add one.
+- `//gs c belt` for the nuke belt.
+
+### Offline testing (lua5.1)
+
+- Syntax: from `data/`,
+  `for f in shared/jobs/geo/functions/*.lua shared/jobs/geo/functions/logic/*.lua _master/entry/Tetsouo_GEO.lua _master/config/geo/*.lua _master/sets/geo_sets.lua; do luac5.1 -p "$f"; done`,
+  or `python scripts/check_syntax.py`.
+- Entrust midcast: the harness described in [BLM](blm.md#offline-testing-lua51)
+  (stubbed `message_midcast` and `midcast_trace`, recording `equip`,
+  `MidcastFallback.install()` over an empty `cleanup_midcast`). Build
+  `sets.luopan.idle`, alias `sets.midcast.Geomancy` and `sets.midcast.Indi`
+  to it, add `.Entrust`, equip the Entrust set, then call
+  `cleanup_midcast({english = 'Indi-Haste', skill = 'Geomancy', action_type = 'Magic'}, nil, {})`:
+  the luopan set's pieces win.
+- Nuke commands: loading `geo_spell_refiner.lua` with `res = nil` shows
+  `refine_spell` returning nil for every tier.
 
 ## Known issues
 
-- `HybridMode` (the `^numpad9` anchor, default PDT) is read by the set builder
-  but changes no gear yet: no set file has PDT gear, `sets.idle.PDT` /
-  `sets.engaged.PDT` are still empty copies of the Normal sets. The mode is not read while a
-  luopan is out.
-- `IndicolureMode` has no reader (`_master/config/geo/GEO_STATES.lua:98-103`).
-- PetTP is loaded on every `user_setup()`, including the old sandbox's run on a
-  subjob change, and unloaded on every `file_unload` (`Tetsouo_GEO.lua:171,269`).
-- No `sets.midcast['Healing Magic']` or `['Dark Magic']`: those
-  `MidcastManager` routes return false and Cures keep Mote's
-  `sets.midcast.Cure` (`_master/sets/geo_sets.lua:319`).
+- **Nuke commands cast nothing**: `geo_spell_refiner.lua` reads the global
+  `res`, which the sandbox does not have, so `lightspell`, `darkspell`,
+  `lightaoe` and `darkaoe` always print "no tier available". Confirmed by
+  code reading (sandbox `user_env`) and by an in-game RDM trace showing
+  `res global false`; the GEO commands themselves not re-tested in game.
+- **Entrust set undone** by `MidcastFallback` (the Entrust branch skips
+  `select_set`). Offline harness; not tested in game.
+- `HybridMode` (default PDT) changes no gear yet: `sets.idle.PDT` /
+  `sets.engaged.PDT` are empty copies of Normal; not read while a luopan is
+  out.
+- `IndicolureMode` has no reader.
+- `MainGeo` lacks Geo-CHR although `GEO_BUFFS` knows it.
+- PetTP is loaded on every `user_setup()`, including the old sandbox's run on
+  a subjob change, and unloaded on every `file_unload`.
+- No `sets.midcast['Healing Magic']` or `['Dark Magic']` in the template:
+  those `MidcastManager` routes return false.
 - `sets.midcast.Geo` is unreachable and the Entrust set is stored inside
-  `sets.luopan.idle` (`_master/sets/geo_sets.lua:290-316`).
-- Initial macrobook/lockstyle depend on `KeybindManager`'s `show_intro`
-  requiring the wrappers (`keybind_manager.lua` `show_intro`).
-- `lightarts`/`darkarts` duplicate `ScholarActions.light_arts`/`dark_arts`
-  (`GEO_COMMANDS.lua:337-362`, `scholar_actions.lua:59-80`).
-- Template/overlay `sets.Adoulin` is a 2-slot set used as the full idle base in
-  Adoulin (`_master/sets/geo_sets.lua:431`).
-- `_master/Kaories/config/geo/` has no `GEO_CUSTOM.lua`: a re-clone of Kaories
-  would put the generic template over the live one.
-- Pending in-game check (2026-09-25): `//gs c geo` with `MainGeo = Geo-Poison`
-  opens the enemy target cursor (`<stnpc>`).
-- Dead code: `SetBuilder.apply_buff_gear`, `GEO_LOCKSTYLE.style`
-  (`_master/config/geo/GEO_LOCKSTYLE.lua:49`).
-- Fixed, no longer issues: `entrust` casting the Indi although Entrust was
-  refused (`033846e`, `follow_up_or_abort`); `dispel` duplicating BLM's (both
-  use `ScholarActions.cast_under_black_addendum`); the live `Sybil Scarf`
-  typo; Geo-Poison sent to `<stpc>` (2026-09-25); the Fend / Languor / Vex /
-  Fade state comments (2026-09-25); the `initialize({...})` call in
-  `job_sub_job_change` (removed 2026-09-25); the keybind load error printed
-  without its cause (2026-09-25).
-- User docs list `Alt+N` keys (`docs/user/jobs/geo/states.md:305-312`).
+  `sets.luopan.idle`.
+- Initial macrobook / lockstyle depend on `KeybindManager.show_intro`
+  requiring the wrappers.
+- `lightarts` / `darkarts` duplicate `ScholarActions.light_arts` / `dark_arts`
+  and read `buffactive` (the shared version reads the game's buff list).
+- Template `sets.Adoulin` is a 2-slot set used as the full idle base in
+  Adoulin.
+- Stale comment: `set_builder.lua` `apply_weapon` says Combat Mode locks
+  through `disable()` in `job_update()`; the lock is `combat_mode.lua`'s.
+- Dead code: `SetBuilder.apply_buff_gear`, `GEO_LOCKSTYLE.style`.
+- The alt overlay's `GEO_STATES.lua`, `GEO_KEYBINDS.lua`, entry and sets
+  carry `@author Tetsouo` (convention: `ejouanchicot`).

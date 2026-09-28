@@ -50,7 +50,7 @@ The first line that matches wins:
 | `sets.engaged.STP`, `.Acc`, `.DT`, `.SB` | `EngagedMode` has that value |
 | `sets.engaged` | The set of the current mode does not exist |
 
-Then the weapon sets, then `sets.MoveSpeed` while you run (see
+Then the weapon sets (`sets.MoveSpeed` is asked for too, but in practice not added: see
 [What the job does by itself](#what-the-job-does-by-itself)), then the common Dual Wield
 tier pieces when your off-hand is a weapon.
 
@@ -191,9 +191,11 @@ Magic']` as an empty set and none of the other three.
 - **Kraken Club.** While the off-hand you wear is Kraken Club, the engaged set is
   `sets.engaged.PDTKC`, even in `EngagedMode` DT. It is read from what you wear, so
   the first rebuild after choosing `Kraken` still uses the mode's set.
-- **Movement speed while fighting.** Unlike the common rule, BRD adds `sets.MoveSpeed`
-  to the engaged set too when you run with your weapon out. In town it is not added
-  (the town set is used as it is).
+- **Movement speed while fighting: in practice no.** BRD's engaged builder does ask for
+  `sets.MoveSpeed` when you are moving, but movement is not tracked while you are
+  engaged (the running flag is cleared), so it is not added. One exception: if you
+  engage while running, the engaged set built at that moment can keep `sets.MoveSpeed`
+  until the next gear change (your next action).
 - **Weapon sets on idle.** The weapon sets go on idle as well, town included.
 - **TP bonus earring.** Moonshade Earring in `ear1` on weaponskills when it reaches the
   next TP step ([Weaponskills](#weaponskills)).

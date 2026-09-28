@@ -3,6 +3,7 @@
 Black Mage picks its nukes from modes: an element per "slot" (main/sub, light/dark,
 single/AOE) plus a tier, then one command casts the result on your target.
 
+Start page for BLM (every key, command and shared feature): [README.md](README.md).
 Set names and automatic gear: [sets.md](sets.md).
 
 Keys: Ctrl = `^`, Apps = `#` (the menu key). The HUD (`//gs c ui`) shows each mode's
@@ -35,7 +36,7 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 
 | Mode | Values | Notes |
 |---|---|---|
-| `FastCast` | 0 to 80 by 10, default **80** | Your total Fast Cast %, used by the midcast watchdog to know how long a cast lasts. Change it with `//gs c cycle FastCast` or its default in `BLM_STATES.lua` |
+| `FastCast` | 0 to 80 by 10, default **80** | Your total Fast Cast %. The midcast watchdog uses it only when it could not compute the cast time from your precast set. Change it with `//gs c cycle FastCast` or its default in `BLM_STATES.lua` |
 | `MainWeapon` / `SubWeapon` | Hvergelmir / Alber Strap | One value each |
 
 ## Commands
@@ -54,10 +55,11 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 
 ## Notes
 
-- A tiered nuke steps down to the next lower tier that is off recast and affordable
-  (a -ja falls back to -ga III, II, then the base -ga).
+- A tiered nuke steps down to the highest lower tier you know that is off recast and
+  affordable (a -ja falls back to -ga III, II, then the base -ga; if none of them can
+  go, -ga III is sent anyway). This works from a macro too, not only from the commands.
 - With `MagicBurstMode` On, an elemental nuke also posts `Casting: [<spell>] => Nuke` in
-  party chat (at most once every 2.5 s).
+  party chat (at most once every 2.5 s), even when the cast is then stopped (recast, MP).
 - Every mode goes back to its default on each job change, subjob change or reload.
 
 ## Files
@@ -65,4 +67,6 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 `<Char>/config/blm/`: `BLM_STATES.lua` (modes), `BLM_KEYBINDS.lua` (keys), `BLM_CUSTOM.lua`
 (your own modes and keys, see [keybinds](../../guides/keybinds.md)), `BLM_LOCKSTYLE.lua`
 (style 5), `BLM_MACROBOOK.lua` (book 8 page 1 by default, other books per subjob and per
-dual-box partner job), `BLM_TP_CONFIG.lua`, `BLM_MP_CONFIG.lua`, `BLM_ELEMENTAL_CONFIG.lua`.
+dual-box partner job), `BLM_TP_CONFIG.lua`, `BLM_MP_CONFIG.lua`, `BLM_ELEMENTAL_CONFIG.lua` (BLM's own Obi rule, used only when the
+shared automatic belt is off), `BLM_HUD.lua` (HUD row order). `BLM_TP_CONFIG.lua` is not
+read by the weaponskill code today.
