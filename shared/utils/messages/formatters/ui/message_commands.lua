@@ -197,7 +197,7 @@ end
 --- @param success boolean Whether it loaded
 --- @param error_msg any Error when it did not
 function MessageCommands.show_warp_module_test(module_name, success, error_msg)
-    local status = success and '✓ OK' or ('✗ ' .. tostring(error_msg))
+    local status = success and 'OK' or ('FAILED: ' .. tostring(error_msg))
     M.send('COMMANDS', 'warp_module_test', {
         module = module_name,
         status = status

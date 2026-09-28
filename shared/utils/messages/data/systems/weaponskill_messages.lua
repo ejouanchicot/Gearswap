@@ -90,7 +90,7 @@ return {
     },
 
     equipping_piece = {
-        template = "{green}[TP_DEBUG] ✓ EQUIPPING: {slot}={piece_name} (bonus={bonus} >= gap={gap})",
+        template = "{green}[TP_DEBUG] EQUIPPING: {slot}={piece_name} (bonus={bonus} >= gap={gap})",
         color = 158
     },
 }

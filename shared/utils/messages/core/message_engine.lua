@@ -335,4 +335,7 @@ function MessageEngine.get_stats()
     }
 end
 
+-- Read-only view of the colour tags, for message_validator.lua
+MessageEngine.COLOR_CODES = COLOR_CODES
+
 return MessageEngine

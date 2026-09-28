@@ -144,7 +144,7 @@ return {
     },
 
     ipc_test_received_confirm = {
-        template = "{jobtag}{gray}[{separatorcolor}Warp IPC{gray}] {green}✓ IPC system is working!",
+        template = "{jobtag}{gray}[{separatorcolor}Warp IPC{gray}] {green}OK: IPC system is working!",
         color = 1
     },
 

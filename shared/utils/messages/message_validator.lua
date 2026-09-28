@@ -37,6 +37,14 @@ local VALID_COLORS = {
     blue = true,
     white = true
 }
+-- Every tag the engine knows (purple, gold, aqua, jobtag...), not only the
+-- first nine: read from the engine rather than kept here by hand.
+do
+    local ok, Engine = pcall(require, 'shared/utils/messages/core/message_engine')
+    if ok and type(Engine) == 'table' and type(Engine.COLOR_CODES) == 'table' then
+        for tag in pairs(Engine.COLOR_CODES) do VALID_COLORS[tag] = true end
+    end
+end
 
 -- Jobs to validate
 local JOBS_TO_VALIDATE = {
