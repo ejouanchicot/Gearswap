@@ -265,25 +265,28 @@ function job_post_precast(spell, action, spellMap, eventArgs)
     -- ══════════════════════════════════════════════════════════════════════════
     -- DEBUG: PRECAST SET DISPLAY (Universal System)
     -- ══════════════════════════════════════════════════════════════════════════
-    -- Mote-Include already handles FC fallback: spell.name > spell.skill > base
-    -- We just add debug display to show which set was selected
+    -- Show the set Mote-Include picked: under sets.precast.FC, the spell's
+    -- name, else its map, else its skill (then name / map under it), else its
+    -- type, else FC itself (Mote-Include get_precast_set). Not
+    -- sets.precast.BardSong or sets.precast['<song>']: Mote never reads them.
     if _G.PrecastDebugState and spell.action_type == 'Magic' then
-        local selected_set = nil
-        local set_name = 'sets.precast.FC'
-
-        -- Detect which set Mote-Include selected
-        if spell.type == 'BardSong' and sets.precast.BardSong then
-            selected_set = sets.precast.BardSong
-            set_name = 'sets.precast.BardSong'
-        elseif sets.precast.FC and sets.precast.FC[spell.name] then
-            selected_set = sets.precast.FC[spell.name]
-            set_name = 'sets.precast.FC.' .. spell.name
-        elseif spell.skill and sets.precast.FC and sets.precast.FC[spell.skill] then
-            selected_set = sets.precast.FC[spell.skill]
-            set_name = 'sets.precast.FC[\'' .. spell.skill .. '\']'
-        else
-            selected_set = sets.precast.FC
-            set_name = 'sets.precast.FC'
+        local fc = sets.precast.FC or {}
+        local selected_set, set_name = fc, 'sets.precast.FC'
+        local function named(t, path)
+            if t[spell.english] then return t[spell.english], path .. "['" .. spell.english .. "']" end
+            if spellMap and t[spellMap] then return t[spellMap], path .. "['" .. spellMap .. "']" end
+            return nil
+        end
+        local found, found_name = named(fc, 'sets.precast.FC')
+        if found then
+            selected_set, set_name = found, found_name
+        elseif spell.skill and fc[spell.skill] then
+            local path = "sets.precast.FC['" .. spell.skill .. "']"
+            selected_set, set_name = fc[spell.skill], path
+            found, found_name = named(fc[spell.skill], path)
+            if found then selected_set, set_name = found, found_name end
+        elseif spell.type and fc[spell.type] then
+            selected_set, set_name = fc[spell.type], "sets.precast.FC['" .. spell.type .. "']"
         end
 
         -- Show debug info
