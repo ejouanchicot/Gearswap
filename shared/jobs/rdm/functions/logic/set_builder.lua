@@ -165,6 +165,7 @@ end
 
 ---   Detect if sub weapon is a shield OR single wield
 ---   - Nothing in the off hand >> normal sets
+---   - A subjob other than NIN / DNC (RDM has no Dual Wield trait) >> normal sets
 ---   - A weapon with a combat skill (game item list) >> .DW sets
 ---   - A shield or a grip >> normal sets
 ---   - A name the game does not know: sets.shields decides (old behaviour)
@@ -172,6 +173,14 @@ end
 ---   @return boolean True if shield OR single wield (use normal sets)
 function SetBuilder.has_shield_equipped(sub_weapon)
     if not sub_weapon or sub_weapon == "" or sub_weapon == "empty" then
+        return true
+    end
+
+    -- RDM has no Dual Wield trait: only /NIN and /DNC let it hold a weapon in
+    -- the off hand (the game refuses it otherwise), so the .DW sets would
+    -- dress a hand that stays single.
+    local sub_job = player and player.sub_job
+    if sub_job ~= 'NIN' and sub_job ~= 'DNC' then
         return true
     end
 
