@@ -441,7 +441,7 @@ function CommonCommands.handle_warp_commands(cmdParams)
         local test1, res1 = pcall(require, 'shared/utils/warp/warp_item_database')
         MessageCommands.show_warp_module_test('WarpItemDB', test1, res1)
 
-        local test2, res2 = pcall(require, 'shared/utils/messages/message_warp')
+        local test2, res2 = pcall(require, 'shared/utils/messages/formatters/system/message_warp')
         MessageCommands.show_warp_module_test('MessageWarp', test2, res2)
 
         local test3, res3 = pcall(require, 'shared/utils/warp/warp_equipment')
