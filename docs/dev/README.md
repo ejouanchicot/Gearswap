@@ -9,6 +9,8 @@ where a line number would add nothing but drift. Engine paths are relative to `D
 and marked *(engine)*; everything else is relative to the repo root
 (`addons/GearSwap/data`).
 
+**Before changing anything, read the [maintainer guide](maintainer-guide.md)**: engine traps, the gear wrapper chain, change checklists, testing and verification rules.
+
 ## What the project is
 
 A set of GearSwap user files for Final Fantasy XI (Windower 4, Lua 5.1). GearSwap
