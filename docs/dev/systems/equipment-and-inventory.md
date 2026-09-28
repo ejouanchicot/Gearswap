@@ -38,6 +38,7 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/utils/equipment/wardrobe_auditor.lua` | 695 | `//gs c wa` report; text parser of set files; `build_pinned_bags` / `build_frequency_map` / `collect_all_used_names` for the organizer | `CommonCommands.handle_wardrobeaudit`; `wardrobe/lib/state.lua`, `reports.lua`, `orchestrator_alt.lua` | this page |
 | `shared/utils/equipment/hp_priority.lua` | 196 | Load-time pass: `priority = HP` (HP*1000+MP on BLM/RDM/GEO) on every HP piece of `_G.sets` | `INIT_SYSTEMS.lua`, HP PRIORITY block, every load | this page |
 | `shared/utils/equipment/weapon_resolver.lua` | 104 | `set_for(slot, value)`: the set a `MainWeapon` / `SubWeapon` value equips; `is_offhand_weapon(name)` | 11 job set builders (see below) | this page |
+| `shared/utils/equipment/item_index.lua` | 95 | Name lookups over `res.items` built in one walk per session (`windower._item_index`): `id(name)`, `is_weapon(name)`, `dual_wields(name)` | `weapon_resolver.lua`, `quiver_manager.lua`, `refill/item_resolver.lua` | this page |
 | `shared/utils/equipment/elemental_bonus.lua` | 75 | Pure arithmetic: what Hachirin-no-Obi and Orpheus's Sash add for an action | `elemental_belt.lua`, `custom/custom_conditions.lua` (`obi_better` / `orpheus_better`) | this page; [keybinds-and-custom.md](keybinds-and-custom.md) |
 | `shared/utils/equipment/elemental_belt.lua` | 213 | Obi or Orpheus chosen for every job on `cleanup_precast` / `cleanup_midcast`; `//gs c belt` | `INIT_SYSTEMS.lua` (`ElementalBelt.install`) | [factories-and-helpers.md](factories-and-helpers.md#elementalbelt) |
 | `shared/utils/equipment/dual_wield.lua` | 248 | Dual Wield tier sets (`sets.DW.*`) laid on the engaged set by magic haste; `//gs c dw` | `INIT_SYSTEMS.lua` (`DualWield.install`) | [factories-and-helpers.md](factories-and-helpers.md#dualwield) |
@@ -249,7 +250,7 @@ sequenceDiagram
      (`SOURCE_BAGS`, `refill_manager.lua:38`).
 4. Planning (`plan_item`, `refill_manager.lua:153`), for each list entry:
    - `ItemResolver.resolve_variants(name)` keeps the variants whose name resolves in `res.items`
-     through `en`/`enl`/`name`/`name_log` (`build_name_index`, `item_resolver.lua:30`). If none
+     through `en`/`enl`/`name`/`name_log` (`ItemIndex.id`, `shared/utils/equipment/item_index.lua`). If none
      resolves, the row is reported with `current = 0` and `short = target` (printed as "Out of stock").
    - Held count = sum of all variants in the inventory (`count_held`, `:60`). Target: the number, or for
      `target = 'all'` the held count plus everything of every variant in Case and Sack
@@ -320,8 +321,8 @@ threshold)` 1.0 s later, so FFXI has decremented the ammo count first, and retur
 `check_and_refill` (`quiver_manager.lua:90`):
 1. Returns if the same quiver was used less than `OPEN_COOLDOWN = 8.0` s ago (`os.clock`, per-name
    table `last_open`, `:36`).
-2. Resolves both names through its own lazy `res.items` index (`build_name_index` / `resolve_id`,
-   `:60-86`, same fields and logic as `ItemResolver`).
+2. Resolves both names through `resolve_id`, which reads the session-wide item index
+   (`ItemIndex.id`, same fields and logic as `ItemResolver`).
 3. Counts the ammo in the inventory and wardrobes 1-8 (`AMMO_BAGS`, `:27`); returns if the total is
    above the threshold.
 4. If no quiver is in the inventory it prints a warning (`<ammo>: n left, no <quiver> in inventory!`)
@@ -511,7 +512,7 @@ why the entry file releases it in `file_unload` and re-applies it in `user_setup
 | `RefillManager.refill()` `refill_manager.lua:249` | `boolean` (true once the queue is started) | `CommonCommands.handle_refill`, `refill_hook` in `INIT_SYSTEMS.lua` |
 | `ConfigResolver.resolve_list_for_player()` `config_resolver.lua:192` | `list, source_label, store_info {id, display}` | `RefillManager.refill` |
 | `ConfigResolver.build_foreign_items_set(char_name, current_list)` `:152` | `{[item_id] = config_name}` (`char_name` unused) | `sweep_foreign_items` |
-| `ItemResolver.resolve_item_id(name)` `item_resolver.lua:52` | `number or nil`; builds the index on first call | `config_resolver.lua`, `resolve_variants` |
+| `ItemResolver.resolve_item_id(name)` | `number or nil`, through `ItemIndex.id` (index built once per session) | `config_resolver.lua`, `resolve_variants` |
 | `ItemResolver.resolve_variants(name)` `:63` | `{ {name, id}, ... }` resolved only, in list order | `plan_item` |
 | `BagScanner.count_item_in_bag(items, bag_key, id)` `bag_scanner.lua:25` | `total, { {slot, count}, ... }` | `refill_manager.lua` (`count_held`, `effective_target`, `queue_surplus`, `queue_deficit`) |
 | `RefillPanels.show_error(msg)` / `show_start(label, store, n)` / `show_progress(n)` / `show_report(results)` `refill_panels.lua:134-158` | - | `refill_manager.lua` only |

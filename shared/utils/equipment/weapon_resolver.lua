@@ -27,7 +27,6 @@
 local WeaponResolver = {}
 
 local config_loaded, plain_enabled = false, false
-local weapon_names = nil
 
 --- The character's choice, read once per load (config/WEAPON_CONFIG.lua).
 --- @return boolean
@@ -44,16 +43,7 @@ end
 --- @param name string
 --- @return boolean
 local function is_weapon(name)
-    if not weapon_names then
-        weapon_names = {}
-        local ok, res = pcall(require, 'resources')
-        if ok and res and res.items then
-            for _, item in pairs(res.items) do
-                if item.category == 'Weapon' and item.en then weapon_names[item.en] = true end
-            end
-        end
-    end
-    return weapon_names[name] == true
+    return require('shared/utils/equipment/item_index').is_weapon(name)
 end
 
 --- The set to lay for a weapon state's value.
@@ -74,31 +64,14 @@ function WeaponResolver.set_for(slot, value)
     return nil
 end
 
-local offhand_kinds = nil
-
 --- Whether an off-hand item makes the player dual wield, from the game's
 --- item list: a weapon with a combat skill does; a shield (shield_size) or a
---- grip (skill 0) does not. Short and long item names, any case.
+--- grip (skill 0) does not. Short and long item names, any case. The lookup
+--- is built once per session (item_index.lua).
 --- @param name string|nil Item name
 --- @return boolean|nil nil when the name is not a known item
 function WeaponResolver.is_offhand_weapon(name)
-    if type(name) ~= 'string' or name == '' then return nil end
-    if not offhand_kinds then
-        offhand_kinds = {}
-        local ok, res = pcall(require, 'resources')
-        if ok and res and res.items then
-            for _, item in pairs(res.items) do
-                local dual = item.category == 'Weapon' and (item.skill or 0) > 0
-                for _, n in ipairs({item.en, item.enl}) do
-                    if type(n) == 'string' then
-                        local key = n:lower()
-                        offhand_kinds[key] = offhand_kinds[key] or dual
-                    end
-                end
-            end
-        end
-    end
-    return offhand_kinds[name:lower()]
+    return require('shared/utils/equipment/item_index').dual_wields(name)
 end
 
 return WeaponResolver

@@ -54,32 +54,12 @@ local function count_in_bag(bag, target_id)
     return total
 end
 
---- Lazy-built name->id index over res.items (covers en/enl/log forms).
-local _name_to_id = nil
-
-local function build_name_index()
-    local res = require('resources')
-    local idx = {}
-    for id, data in pairs(res.items) do
-        if data then
-            for _, field in ipairs({'en', 'enl', 'name', 'name_log'}) do
-                local v = data[field]
-                if type(v) == 'string' then
-                    local key = v:lower()
-                    if not idx[key] then idx[key] = id end
-                end
-            end
-        end
-    end
-    return idx
-end
-
---- Resolve an item name to its id (index built on first call).
+--- Resolve an item name to its id (short or log form, any case), through
+--- the session-wide index (item_index.lua).
 --- @param name string Item name
 --- @return number|nil Item id
 local function resolve_id(name)
-    if not _name_to_id then _name_to_id = build_name_index() end
-    return _name_to_id[name:lower()]
+    return require('shared/utils/equipment/item_index').id(name)
 end
 
 --- Check if a quiver should be opened, and open it if so.
