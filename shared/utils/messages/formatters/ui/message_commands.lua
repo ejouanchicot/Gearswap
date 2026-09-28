@@ -509,7 +509,7 @@ local COMMANDS_HELP = {
             {'//gs c fulltest | ft', '', 'Full in-game test suite'},
             {'//gs c syscheck | sc', '', 'System health check'},
             {'//gs c lagdebug | ldb', '', 'Lag debugger'},
-            {'//gs c memcheck | mem ', '[gc]', 'GearSwap Lua RAM usage'},
+            {'//gs c memcheck | mem', '', 'GearSwap Lua RAM usage'},
             {'//gs c msgtests', '', 'Validate message system'},
         }},
     },

@@ -68,7 +68,7 @@ end
 --- MODULE EXPORT
 ---============================================================================
 
--- Global export: the entry file also assigns it, RUN_PRECAST reads _G.RUNTPConfig
+-- Global export: the entry file only requires this file, RUN_PRECAST reads _G.RUNTPConfig
 _G.RUNTPConfig = RUNTPConfig
 
 return RUNTPConfig

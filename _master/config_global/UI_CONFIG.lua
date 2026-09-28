@@ -450,7 +450,8 @@ UIConfig.chat = {
     -- in-game //gs c ui chatcolor rewrites this line). Two kinds of names:
     --   colors: gray green red yellow cyan lightblue white blue purple pink
     --           orange darkgray itemcolor healgreen enhancing enfeebling
-    --           divine dark bluemagic (+ jobtag separatorcolor spellcolor
+    --           divine dark bluemagic, gold aqua mustard amber (help
+    --           screens) (+ jobtag separatorcolor spellcolor
     --           warningcolor, which follow their color unless set)
     --   uses:   success error warning info cooldown spell ja ws debuff
     --           ready active blocked header job_tag ... (follow their color)

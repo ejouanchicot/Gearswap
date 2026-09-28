@@ -4,7 +4,7 @@
 --- Centralizes all RDM state definitions for consistency and maintainability.
 ---
 --- Features:
----   • Combat modes (HybridMode: PDT/Normal, CombatMode: weapon locking)
+---   • Combat modes (HybridMode: legacy PDT/Normal, CombatMode: weapon locking)
 ---   • Engaged modes (EngagedMode: DT/Acc/TP/Enspell - melee focus)
 ---   • Idle modes (IdleMode: Refresh/DT)
 ---   • Weapon selection (MainWeapon: Naegling/Colada/Daybreak, SubWeapon: Ammurapi/Genmei/Malevolence)
@@ -18,7 +18,8 @@
 ---   • Validation API for state verification
 ---
 --- State Purposes:
----   • HybridMode: PDT = 50% damage reduction, Normal = maximum DPS
+---   • HybridMode: legacy. PDT is only read when the current IdleMode /
+---     EngagedMode has no set: sets.idle.PDT / sets.engaged.PDT are used then
 ---   • EngagedMode: DT/Acc/TP/Enspell (melee focus when engaged)
 ---   • IdleMode: Refresh/DT (idle gear focus)
 ---   • CombatMode: Off = free swapping, On = weapon slots locked
@@ -107,7 +108,7 @@ function RDMStates.configure()
         M {
         ['description'] = 'Combat Mode',
         'Off', -- Weapons can swap freely
-        'On' -- Weapons locked (main/sub/range/ammo)
+        'On' -- Weapons locked (main/sub/range)
     }
     state.CombatMode:set('Off')
 

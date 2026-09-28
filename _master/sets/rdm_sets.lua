@@ -313,7 +313,7 @@ sets.midcast['Enfeebling Magic'] = {
     back = "Aurist's Cape +1"
 }
 
--- Enfeebling Type Sets (Auto-selected based on spell from RDM_SPELL_DATABASE)
+-- Enfeebling Type Sets (Auto-selected based on spell from ENFEEBLING_MAGIC_DATABASE)
 -- Magic Accuracy focus (Dia, Paralyze, Slow, etc.)
 sets.midcast['Enfeebling Magic'].macc = set_combine(sets.midcast['Enfeebling Magic'], {})
 

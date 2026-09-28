@@ -39,8 +39,8 @@
 --- These globals must exist BEFORE the sub-modules load (they reference
 --- _G.UIConfig, _G.keybind_ui_display, _G.ui_display_config, _G.ui_manager_state).
 
--- UIConfig is normally set by config_loader.lua before this module loads.
--- Entries that require UI_MANAGER first (WAR, BST, PUP) get these defaults.
+-- UIConfig is set by config_loader.lua, which every entry requires before
+-- this module. These defaults only cover a load without it.
 local UIConfig = _G.UIConfig or {}
 _G.UIConfig = UIConfig
 
@@ -74,8 +74,8 @@ end
 -- _G.keybind_saved_settings is loaded lazily by Lifecycle.init via KeybindSettings.load()
 
 -- Section/enabled toggles read from the persisted settings file.
--- Usually already created by config_loader.lua; this fallback runs for
--- entries that require UI_MANAGER before config_loader (WAR, BST, PUP).
+-- Usually already created by config_loader.lua; this fallback only runs
+-- when this module is loaded without it.
 if not _G.ui_display_config then
     local UISettingsManager = require('shared/config/ui_settings')
     _G.ui_display_config = {

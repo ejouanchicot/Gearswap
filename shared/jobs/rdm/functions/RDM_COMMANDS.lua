@@ -5,7 +5,7 @@
 ---   dual-box, UI, watchdog and common commands first, then the RDM commands
 ---   (enspell, quick JAs, nukes and spells from states), then a cast-by-name
 ---   fallback for any JA / WS / spell name.
----   Also defines job_state_change (HUD refresh, weapon re-equip).
+---   Also defines job_state_change (HUD refresh).
 ---
 ---   @file    shared/jobs/rdm/functions/RDM_COMMANDS.lua
 ---   @author  ejouanchicot

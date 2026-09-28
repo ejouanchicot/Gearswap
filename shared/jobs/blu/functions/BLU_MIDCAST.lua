@@ -3,7 +3,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Blue Magic: MidcastManager with the spell's category as its type
 ---   (logic/spell_map.lua, config/blu/BLU_SPELL_MAP.lua) and CastingMode as
----   its mode. For Gab's sets that resolves as Mote did:
+---   its mode. For the reference BLU sets that resolves as Mote did:
 ---     sets.midcast[spell]                    Sound Blast, Restoral, White Wind
 ---     sets.midcast['Blue Magic'][cat][mode]  Magical.Resistant
 ---     sets.midcast['Blue Magic'][cat]        Physical, PhysicalDex, Breath...

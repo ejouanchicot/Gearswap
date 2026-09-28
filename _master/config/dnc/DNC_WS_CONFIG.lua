@@ -24,7 +24,7 @@ local DNCWSConfig = {}
 ---============================================================================
 
 --- List of weaponskills that should auto-trigger Climactic Flourish
---- when conditions are met (TP >= 900, target HP > 25%, 3+ Finishing Moves)
+--- when conditions are met (TP >= min_tp, target HP > 25%, 3+ Finishing Moves)
 DNCWSConfig.climactic_ws = {
     "Rudra's Storm",
     "Ruthless Stroke",

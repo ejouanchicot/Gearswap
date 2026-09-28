@@ -41,8 +41,8 @@ local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
 ---============================================================================
 
 -- Region configuration, set at file level: message_colors reads
--- _G.RegionConfig once each time it is loaded, so this has to run before
--- INIT_SYSTEMS loads it in get_sets().
+-- _G.RegionConfig at each use, so it only has to be set before the first
+-- message that uses the region colour.
 local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig

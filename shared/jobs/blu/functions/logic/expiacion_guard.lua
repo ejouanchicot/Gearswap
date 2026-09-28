@@ -54,7 +54,7 @@ function BLUExpiacionGuard.check(spell, eventArgs)
     local tp = live_tp()
     local MessageFormatter = require('shared/utils/messages/message_formatter')
     local Trace = require('shared/utils/debug/trace_log')
-    -- Gab's file said so at 3000 TP too (Tizona, no Aftermath: Lv.3): it goes
+    -- The original BLU file let it go at 3000 TP too (Tizona, no Aftermath: Lv.3)
     if tp >= FULL_TP and player and player.equipment and player.equipment.main == 'Tizona'
         and not (buffactive and buffactive['Aftermath: Lv.3']) then
         Trace.log('EXPIACION', 'tp %s, no AM3 -> goes (full TP)', tp)

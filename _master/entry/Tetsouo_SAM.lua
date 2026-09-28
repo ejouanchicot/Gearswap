@@ -21,9 +21,9 @@ if not lockstyle_config_success or not LockstyleConfig then
     }
 end
 
--- Region configuration, set before anything loads message_colors: that
--- module reads _G.RegionConfig once each time it is loaded, to pick the
--- region's warning orange.
+-- Region configuration: message_colors reads _G.RegionConfig at each use
+-- to pick the region's warning orange, so it only has to be set before the
+-- first message that uses it.
 local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig

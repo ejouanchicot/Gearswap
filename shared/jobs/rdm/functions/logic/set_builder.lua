@@ -100,7 +100,7 @@ end
 
 ---   Apply main weapon and sub weapon to set (separately)
 ---   Uses the weapon sets of rdm_sets.lua, keyed by state value (sets['Naegling'], sets['Genmei'], etc.)
----   Note: CombatMode weapon locking is handled by disable()/enable() in job_update()
+---   Note: CombatMode weapon locking is done by shared/utils/core/combat_mode.lua
 ---   @param result table Current equipment set
 ---   @return table Set with weapons applied
 function SetBuilder.apply_weapon(result)

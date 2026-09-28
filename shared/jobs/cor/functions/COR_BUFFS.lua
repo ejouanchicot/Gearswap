@@ -22,8 +22,8 @@ local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 --- @param buff string Buff name from res.buffs
 --- @param gain boolean True on gain, false on loss
 local function retire_lost_roll(buff, gain)
-    -- Plain sub rather than :endswith - that one comes from Windower's strings
-    -- library, which GearSwap does not load.
+    -- Plain sub rather than :endswith, which comes from Windower's strings
+    -- library: gearswap.lua requires it, but this test does not depend on it.
     if gain or buff:sub(-5) ~= ' Roll' then
         return
     end

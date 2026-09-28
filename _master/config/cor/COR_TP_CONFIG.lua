@@ -28,8 +28,9 @@ local CORTPConfig = {
     --- Ranged Weapons with automatic TP bonus
     ---============================================================================
     -- COR uses RANGED weapons (guns) for TP bonus, not main weapons.
-    -- Caveat: TPBonusHandler passes the MAIN weapon name to get_weapon_bonus(),
-    -- so this list does not match anything today.
+    -- Caveat: TPBonusHandler passes the main and sub names to
+    -- get_weapon_bonus(), never the range, so this list does not match
+    -- anything today.
 
     ranged_weapons = {
         { name = "Anarchy +2", bonus = 1000 },

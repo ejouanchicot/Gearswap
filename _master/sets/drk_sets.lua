@@ -593,9 +593,10 @@ sets.buff['Dark Seal'] = {
 }
 
 -- • Nether Void (Buff ID 439)
---   Equip during Absorb/Drain midcast when Nether Void buff is active
+--   Equip during Absorb/Drain/Aspir midcast when Nether Void buff is active
 --   Effect: Nether Void bonus +45% (total 95% absorption potency)
---   Affects: Absorb spells, Drain spells (not Absorb-TP)
+--   DRK_MIDCAST applies it to every spell whose name contains Absorb, Drain
+--   or Aspir (Absorb-TP included)
 sets.buff['Nether Void'] = {
     legs = "Heathen's Flanchard +3"
 }

@@ -39,8 +39,8 @@ local function ensure_modules_loaded()
     success, result = pcall(require, 'shared/utils/precast/ws_precast_handler')
     if success then WSPrecastHandler = result end
 
-    -- The entry does not load RUN_TP_CONFIG, so this is normally {}
-    -- and no TP-bonus gear is computed for RUN weaponskills.
+    -- The entry requires RUN_TP_CONFIG, which sets _G.RUNTPConfig. {} is the
+    -- fallback when it did not load: no TP-bonus gear is computed then.
     RUNTPConfig = _G.RUNTPConfig or {}
 
     modules_loaded = true

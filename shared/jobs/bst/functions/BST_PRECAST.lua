@@ -81,9 +81,10 @@ end
 
 --- Summon gear, then the broth on top.
 ---
---- The broth goes on last and by itself: it decides which pet appears, and the
---- Call Beast set has its own ammo that would otherwise win and summon the
---- wrong one.
+--- The broth decides which pet appears. This does not mark the precast
+--- handled, so Mote's default_precast equips the Call Beast / Bestial Loyalty
+--- set again afterwards: the broth only survives because that set has no
+--- ammo. Ammo added to it would win and summon the wrong pet.
 local function equip_for_summon(spell)
     if _G.BST_DEBUG_PRECAST then
         MessagePrecast.show_debug_header(spell.name, 'Pet Summon')

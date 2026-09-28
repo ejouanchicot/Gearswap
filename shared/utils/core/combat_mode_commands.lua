@@ -54,5 +54,5 @@ return require('shared/utils/core/optional_state_commands').create({
     command = 'combatmode', label = 'Combat Mode', tag = 'COMBAT', header = HEADER,
     status = function() return {{'Weapons locked', CombatMode.is_on()}} end,
     subtitle = 'Weapon lock, per job',
-    notes = {'On: main, sub and range stay where they are (ammo too on BLM, WHM).'},
+    notes = {'On: main, sub and range stay where they are (ammo too on BLM, GEO, WHM).'},
 })

@@ -65,8 +65,8 @@ local ConfigLoader = require('shared/utils/config/config_loader')
 local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'DNC')
 
 -- Region configuration, set at file level: message_colors reads
--- _G.RegionConfig once each time it is loaded, so this has to run before
--- INIT_SYSTEMS loads it in get_sets().
+-- _G.RegionConfig at each use, so it only has to be set before the first
+-- message that uses the region colour.
 local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig
@@ -130,7 +130,8 @@ function get_sets()
     -- Override Mote's cancel_conflicting_buffs to disable native cooldown/recast checks
     -- (CooldownChecker handles recast messages with better formatting)
     -- BUT keep buff cancellation for Spectral Jig/Sneak/Stoneskin
-    -- NOTE: Utsusemi handled by DNC_MIDCAST, Waltz/Samba dance cancels skipped
+    -- NOTE: Utsusemi shadows handled by utsusemi_shadows.lua (every job,
+    --       via init_spell_messages), Waltz/Samba dance cancels skipped
     --       to preserve DNC set variants (SaberDance/FanDance gear sets)
     _G.cancel_conflicting_buffs = function(spell, action, spellMap, eventArgs)
         if spell.english == 'Spectral Jig' and buffactive.sneak then

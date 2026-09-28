@@ -33,8 +33,8 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 ---   Apply weapon sets to result
 ---   GEO uses main weapon + sub weapon (shield)
----   Note: CombatMode weapon locking is done via disable() in job_update()
----   (entry file), not here
+---   Note: CombatMode weapon locking is done by
+---   shared/utils/core/combat_mode.lua, not here
 ---   @param result table Current equipment set
 ---   @return table Modified set with weapons applied
 function SetBuilder.apply_weapon(result)

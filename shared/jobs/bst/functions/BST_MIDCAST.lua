@@ -64,7 +64,8 @@ function job_midcast(spell, action, spellMap, eventArgs)
     ---══════════════════════════════════════════════════════════════════════════
     --- SKIP NON-READY MOVES (Call Beast, Fight, Heel, etc.)
     ---══════════════════════════════════════════════════════════════════════════
-    -- These are handled in precast ONLY (no midcast override needed)
+    -- Nothing to add at midcast: for a job ability GearSwap sends the action
+    -- packet before the midcast gear, so the precast set is what counts.
     if
         spell.name == 'Call Beast' or spell.name == 'Bestial Loyalty' or spell.name == 'Reward' or
         spell.name == 'Killer Instinct' or
@@ -73,15 +74,17 @@ function job_midcast(spell, action, spellMap, eventArgs)
         spell.name == 'Heel' or
         spell.name == 'Stay'
     then
-        return -- Don't override precast set
+        -- handled is not set: Mote's default_midcast (sets.midcast lookup,
+        -- usually nothing for these) and job_post_midcast still run.
+        return
     end
 
     ---══════════════════════════════════════════════════════════════════════════
     --- READY MOVES - Sic set already equipped in PRECAST, skip midcast
     ---══════════════════════════════════════════════════════════════════════════
     if spell.bst_is_ready_move or (spell.ready_move_category and spell.ready_move_category ~= 'Default') then
-        -- Sic set (sets.precast.JA.Sic) already equipped in job_precast
-        -- Don't set eventArgs.handled - let job_aftercast run to swap to pet damage gear
+        -- Sic set (sets.precast.JA.Sic) already equipped in job_precast;
+        -- job_aftercast swaps to the pet damage gear
         return
     end
 end

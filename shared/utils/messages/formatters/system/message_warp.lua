@@ -222,8 +222,9 @@ local HELP = {
             {'//gs c warp status', '', 'Show system status'},
             {'//gs c warp unlock', '', 'Force unlock (emergency)'},
             {'//gs c warp fix', '', 'Re-enable ring1, re-equip'},
-            {'//gs c warp lock', '', 'Lock equipment 10 s (test)'},
+            {'//gs c warp lock', '', 'Lock equipment 13 s (test)'},
             {'//gs c warp test', '', 'Test warp detection'},
+            {'//gs c warp ipctest', '', 'Ping the other boxes over IPC'},
             {'//gs c debugwarp', '', 'Toggle warp debug messages'},
         }},
         {title = 'BLM', note = 'else the Warp Ring', rows = {

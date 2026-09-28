@@ -1,10 +1,11 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   DNC Midcast Module - Midcast Gear Selection
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles midcast for Dancer (including NIN subjob Utsusemi management).
+---   Handles midcast for Dancer (including NIN subjob Utsusemi gear).
 ---
 ---   Features:
----   - Utsusemi: Ichi cancels existing Copy Image buffs during the cast
+---   - Utsusemi: Ichi's shadow cancel is shared by every job
+---     (shared/utils/midcast/utsusemi_shadows.lua), not done here
 ---   - MidcastManager routing for Ninjutsu, Healing and Enhancing Magic
 ---
 ---   @file    shared/jobs/dnc/functions/DNC_MIDCAST.lua

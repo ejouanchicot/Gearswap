@@ -307,6 +307,7 @@ end
 ---   P6: type-specific at root
 ---   P7: type-specific under skill
 ---   P8: mode-specific under skill
+---   P8b: the spell's Mote map (root, then under skill)
 ---   P9: base set (skill only) — final fallback
 ---============================================================================
 

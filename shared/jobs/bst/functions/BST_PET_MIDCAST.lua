@@ -29,16 +29,16 @@ end
 ---   @return void
 function job_pet_midcast(spell)
     -- ══════════════════════════════════════════════════════════════════════════
-    -- READY MOVES - KEEP PRECAST SET (Ready Recast gear)
+    -- READY MOVES - NOTHING TO DO HERE
     -- ══════════════════════════════════════════════════════════════════════════
-    -- Ready Recast bonus (like Fast Cast) requires the gear to stay equipped
-    -- during the ENTIRE cast (precast + midcast). Do NOT swap to pet damage
-    -- gear until aftercast (after the recast timer is set).
+    -- The Ready recast is fixed by the player's job ability, which leaves with
+    -- the precast set (Sic) on: GearSwap sends midcast gear only after the
+    -- action packet. The pet damage gear is equipped by job_aftercast, when
+    -- the player's Ready move completes.
 
-    -- For ALL pet abilities: keep the precast set (Sic). The pet damage gear
-    -- is equipped in job_aftercast. eventArgs.handled is not set, so Mote's
-    -- default_pet_midcast still runs and equips sets.midcast.Pet if the sets
-    -- file defines one.
+    -- This hook runs on the pet's own "readies" packet and changes nothing.
+    -- eventArgs.handled is not set, so Mote's default_pet_midcast still runs
+    -- and equips sets.midcast.Pet if the sets file defines one.
 
     return  -- Exit without changing gear
 end

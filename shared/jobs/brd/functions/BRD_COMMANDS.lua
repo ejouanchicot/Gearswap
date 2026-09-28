@@ -20,6 +20,8 @@
 ---
 ---   Pack Rotation:
 ---   songs, meleesong, melee, allsongs - Cast current song pack (SongMode)
+---   songplan          - Show what `songs` would cast now, and why
+---   songstop          - Stop a running song rotation
 ---
 ---   Dummy Songs (3 commands):
 ---   dummy, dummysongs - Cast all dummy songs

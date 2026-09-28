@@ -167,18 +167,20 @@ end
 -- WARDROBE ORGANIZE COMMAND
 
 --- Reorganize wardrobes. Modes (arguments are case-sensitive; anything
---- unrecognised runs the default per-job organize):
----   `//gs c wo`                  - per-active-job: move job's items to W1/W2
----   `//gs c wo preview|dry`      - dry-run of per-job mode
----   `//gs c wo global`           - cross-job freq-based static layout
----   `//gs c wo global preview`   - dry-run of global mode
----   `//gs c wo verify|check`     - check current layout matches the plan
+--- unrecognised runs the default organize):
+---   `//gs c wo`                  - move the active job's items to W1/W2
+---                                  (every job's when the character's
+---                                  WARDROBE_CONFIG sets SCOPE = 'all_jobs')
+---   `//gs c wo preview|dry`      - dry-run of the same
+---   `//gs c wo global [preview]` - same as `wo` / `wo preview` (aliases)
+---   `//gs c wo verify|check`     - check the active job's items are in W1/W2
 ---   `//gs c wo scan|scanwarp`    - record owned warp items
 ---   `//gs c wo keep|kept|items`  - list what overflow keeps (read only)
 ---   `//gs c wo reset`, `recover|unlock`, `alt|kaories`
---- W7 (craft) is always protected (wardrobe/lib/config.lua Config.PROTECTED).
+--- W7 (craft) is left alone because it is in none of the bag lists of
+--- wardrobe/lib/config.lua; Config.PROTECTED is not read by the organizer.
 --- @param arg string|nil Mode
---- @param arg2 string|nil Sub-mode (only 'preview' / 'dry' after 'global')
+--- @param arg2 string|nil 'preview' / 'dry' after 'global'
 --- @return boolean False only if the organizer failed to load
 function CommonCommands.handle_wardrobeorganize(arg, arg2)
     local ok, WardrobeOrganizer = pcall(require, 'shared/utils/wardrobe/wardrobe_organizer')

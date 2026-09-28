@@ -100,6 +100,18 @@ TIMER('COR_MOVEMENT')
 ---
 ---   logic/party_tracker.lua
 ---     • Party member job cache (used by the roll job bonus)
+---
+---   logic/double_up.lua
+---     • An active roll pressed again becomes a Double-Up (before CooldownChecker)
+---
+---   logic/roll_gear.lua
+---     • "Phantom Roll +" value of the gear worn
+---
+---   logic/roll_hold.lua
+---     • Keeps the roll set on until the roll lands
+---
+---   logic/roll_debug.lua
+---     • //gs c rolldebug: was the roll gear really on when the roll went off
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -115,6 +127,6 @@ local DualBoxManager = require('shared/utils/dualbox/dualbox_manager')
 
 -- All module functions are now available in global scope
 local MessageFormatter = require('shared/utils/messages/message_formatter')
-MessageFormatter.show_debug('COR', 'All functions loaded (11 hooks + 3 logic modules)')
+MessageFormatter.show_debug('COR', 'All functions loaded (11 hooks + logic modules)')
 
 TIMER('TOTAL COR_functions', true)

@@ -27,7 +27,7 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 ---   Apply weapon sets to result
 ---   BLM uses main weapon + sub weapon
----   Note: Combat Mode locking is handled via disable() in job_state_change()
+---   Note: Combat Mode locking is done by shared/utils/core/combat_mode.lua
 ---   @param result table Current equipment set
 ---   @return table Modified set with weapons applied
 function SetBuilder.apply_weapon(result)

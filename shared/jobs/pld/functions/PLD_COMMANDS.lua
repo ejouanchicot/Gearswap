@@ -250,9 +250,9 @@ local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 --- PLD_STATES config, reached through _G because its path carries the
 --- character name; a config without it simply gets nothing.
 ---
---- The two cycle paths disagree on what they pass: the UI-aware handler sends
---- the state key ('HybridMode'), Mote sends the description ('Hybrid Mode').
---- Stripping spaces accepts both.
+--- Every cycle path passes the state's description ('Hybrid Mode'); the
+--- UI-aware handler falls back to the state key ('HybridMode') only for a
+--- state without one. Stripping spaces accepts both.
 ---
 ---   @param stateField string State key or description of what changed
 ---   @param newValue string New value of that state

@@ -56,6 +56,7 @@ TRANSLATIONS = {
 
         # Job selection
         'jobs_auto': "[OK] {} jobs sélectionnés automatiquement depuis la DB:",
+        'jobs_available': "   Jobs disponibles: {}",
         'jobs_manual_prompt': "Entrez les jobs séparés par des virgules (ex: WAR,PLD,DNC): ",
         'jobs_manual_error': "ERREUR: Aucun job valide trouvé. Jobs disponibles: {}",
         'jobs_selected': "   Jobs sélectionnés: {}",
@@ -165,6 +166,7 @@ TRANSLATIONS = {
         'db_char_unknown_desc': "   You can select jobs manually.",
 
         'jobs_auto': "[OK] {} jobs auto-selected from DB:",
+        'jobs_available': "   Available jobs: {}",
         'jobs_manual_prompt': "Enter jobs separated by commas (e.g., WAR,PLD,DNC): ",
         'jobs_manual_error': "ERROR: No valid jobs found. Available: {}",
         'jobs_selected': "   Selected jobs: {}",
@@ -483,7 +485,7 @@ class SmartCharacterCloner:
             return db_jobs
 
         # Manual selection
-        print(f"   Jobs disponibles: {', '.join(ALL_VALID_JOBS)}")
+        print(self.t['jobs_available'].format(', '.join(ALL_VALID_JOBS)))
         while True:
             raw = input(self.t['jobs_manual_prompt']).strip().upper()
             jobs = [j.strip() for j in raw.split(',') if j.strip() in ALL_VALID_JOBS]
