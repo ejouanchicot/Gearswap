@@ -205,6 +205,21 @@ end
 ---   ENGAGED SET BUILDER (PUBLIC API)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+--- The Hoxne stance carries its Ampulla, as on PLD: the ammo lock
+--- (shared/utils/equipment/ampulla_lock.lua) waits for the piece to be worn,
+--- and the sets need not name it.
+local STANCE_AMMO = {Hoxne = 'Hoxne Ampulla'}
+
+---   Put the stance's ammo on, when the stance has one
+---   @param result table
+---   @return table
+local function apply_stance_ammo(result)
+    local mode = state.HybridMode and state.HybridMode.value
+    local ammo = mode and STANCE_AMMO[mode]
+    if ammo then return set_combine(result, {ammo = ammo}) end
+    return result
+end
+
 ---   Build complete engaged set with all WAR logic
 ---   Processing order:
 ---   1. Select base (see select_engaged_base)
@@ -223,7 +238,8 @@ function SetBuilder.build_engaged_set(base_set)
     -- Step 2: Apply weapon
     result = SetBuilder.apply_weapon(result)
 
-    return result
+    -- Step 3: The stance's ammo (Hoxne Ampulla)
+    return apply_stance_ammo(result)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -246,8 +262,9 @@ function SetBuilder.build_idle_set(base_set)
     -- Step 1: Town set, else HybridMode idle set
     local result, in_town = SetBuilder.select_idle_base(base_set)
 
-    -- Step 2: Apply weapon (applies to both town and non-town)
-    result = SetBuilder.apply_weapon(result)
+    -- Step 2: Apply weapon (applies to both town and non-town), then the
+    -- stance's ammo (Hoxne Ampulla)
+    result = apply_stance_ammo(SetBuilder.apply_weapon(result))
 
     -- Step 3: Early return if in town (skip movement gear)
     if in_town then
