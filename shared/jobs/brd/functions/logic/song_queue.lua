@@ -110,9 +110,13 @@ local function watch_start(queue, waited_for_ja)
 end
 
 --- Sing the current song, or end the queue.
+--- The queue lives on `windower` so a reload or a subjob change mid-rotation
+--- does not drop it; a main job change does: its timers would otherwise keep
+--- sending songs the new job cannot sing.
 send_step = function(queue)
     local song = queue.songs[queue.index]
-    if not song then
+    local ok, me = pcall(windower.ffxi.get_player)
+    if not song or not (ok and me and me.main_job == 'BRD') then
         windower._brd_song_queue = nil
         return
     end
