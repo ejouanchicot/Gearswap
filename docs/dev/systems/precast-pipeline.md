@@ -39,7 +39,7 @@ function (`file` `function`); a raw `:NNN` is given only where the line itself m
 | `shared/utils/weaponskill/weaponskill_manager.lua` | 133 | Range formula and Amnesia check; exported as `_G.WeaponSkillManager` |
 | `shared/utils/precast/tp_bonus_handler.lua` | 79 | `live_tp()` (TP read from the game), computes TP gear into `_G.temp_tp_bonus_gear` |
 | `shared/utils/weaponskill/tp_bonus_calculator.lua` | 275 | Pure TP-threshold arithmetic; exported as `_G.TPBonusCalculator` |
-| `shared/utils/weaponskill/ws_slots.lua` | 141 | `//gs c ws1..ws9` (WAR) and `ws`, `ws1..` (PLD): weaponskill slots rebuilt per weapon |
+| `shared/utils/weaponskill/ws_slots.lua` | 159 | `//gs c ws1..ws9` (WAR) and `ws`, `ws1..` (PLD): weaponskill slots rebuilt per weapon |
 | `shared/utils/precast/tier_refiner.lua` | 230 | TierRefiner: cast the highest learned tier whose recast and MP allow it |
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | Tier table for RDM enfeebles (`get(family)`) |
 | `shared/data/spells/NUKE_TIERS.lua` | 56 | Tier table for nukes I-V, the GEO -ra nukes and Aspir (`get(family)`) |
@@ -526,7 +526,9 @@ level), else the stored level or 1. `apply_ranged_groups()` clears
 ### WSSlots (WAR, PLD)
 
 `WSSlots.sync(weapon_state, config)` matches the equipped main/sub to a
-`state.MainWeapon` option (`detect_weapon`), then `rebuild` recreates
+`state.MainWeapon` option (`detect_weapon`; its `same_item` accepts a set entry written as a
+string or a `{name = ...}` table, in any case, short or long name, through `item_index.lua`,
+since 2026-09-28), then `rebuild` recreates
 `state.WS1..WS<max_slots>` as Mote modes listing that weapon's weaponskills. WAR calls
 `sync` from `WAR_STATES.lua` and the entry's `sync_weapon_with_hand`, and `rebuild`
 from `WAR_COMMANDS.lua` `job_state_change` when `MainWeapon` changes. PLD calls
@@ -590,7 +592,8 @@ defense, kiting, `customize_idle_set` = the job's `SetBuilder`) or `get_melee_se
 (`sets.engaged[CombatForm][CombatWeapon][OffenseMode][HybridMode][CustomMeleeGroups]`,
 defense, kiting, `customize_melee_set`) or `get_resting_set`. A status change during
 an action is held back by `LifecycleManager.status_change` (`hold_during_action`,
-3 s fallback `gs c update`).
+3 s fallback `gs c update`). During a COR roll the custom gear, the TH overlay and the
+DW tiers stay off too (`GearHold.active()`, `shared/utils/core/gear_hold.lua`).
 
 ### Three worked traces
 

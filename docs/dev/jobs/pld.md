@@ -51,13 +51,13 @@ numbers are avoided because they drift.
 | `shared/jobs/pld/functions/PLD_MOVEMENT.lua` | 23 | Placeholder for the 12-module layout (comments only) |
 | `shared/jobs/pld/functions/PLD_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('PLD', 'config/pld/PLD_LOCKSTYLE', 1, 'SAM')` wrappers |
 | `shared/jobs/pld/functions/PLD_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('PLD', ..., 'SAM', 1, 1)` wrapper |
-| `shared/jobs/pld/functions/logic/set_builder.lua` | 396 | Idle/engaged construction: weapon, shield, ammo, HybridMode map, XP, Regen, movement, town; `current_weapon()` is the authority on what is in hand |
+| `shared/jobs/pld/functions/logic/set_builder.lua` | 400 | Idle/engaged construction: weapon, shield, ammo, HybridMode map, XP, Regen, movement, town; `current_weapon()` is the authority on what is in hand |
 | `shared/jobs/pld/functions/logic/enmity_override.lua` | 151 | Sortie and /SCH Tanking: FullEnmity spells wear `sets.EnmityMax`; JAs keep their set and gain what EnmityMax adds |
 | `shared/jobs/pld/functions/logic/cure_set_builder.lua` | 54 | CureSelf / CureOther choice for Cure to Cure IV, `is_cure` |
 | `shared/jobs/pld/functions/logic/aoe_manager.lua` | 178 | `//gs c aoe` BLU rotation (same code as RUN's copy; only headers and error text differ) |
 | `shared/jobs/pld/functions/logic/rune_manager.lua` | 76 | `//gs c rune` (same code as RUN's copy) |
 | `shared/utils/equipment/ampulla_lock.lua` | 172 | Hoxne stance: closes the ammo slot on Hoxne Ampulla once it is worn, or leaves it open and says so. Shared with WAR |
-| `shared/utils/weaponskill/ws_slots.lua` | 141 | Weapon-aware weaponskill slot states, shared with WAR |
+| `shared/utils/weaponskill/ws_slots.lua` | 159 | Weapon-aware weaponskill slot states, shared with WAR (PLD uses `rebuild` / `get` / `cast`; the weapon-in-hand detection, `detect_weapon` / `sync`, is WAR's) |
 | `shared/utils/scholar/scholar_actions.lua`, `stratagem_charges.lua` | 366 + 104 | /SCH chains, shared with BLM and GEO (and `//gs c stealth`); stratagem buffs read from `windower.ffxi.get_player().buffs` (`buff_up`), see [midcast and buffs](../systems/midcast-and-buffs.md) |
 | `_master/config/pld/PLD_STATES.lua` | 364 | States (incl. `WS1`/`WS2`), three option profiles (`standard`/`sortie`/`sch`), `apply_hybrid_profile`, `_G.PLDStates` |
 | `_master/config/pld/PLD_KEYBINDS.lua` | 81 | 9 bind entries (Regen on `^numpad2` and Phalanx SIRD on `^numpad3` under /SCH), `subjob` / `exclude_subjob` filters, a `visible` predicate, `retired_keys = {'^numpad7'}`; data only, `KeybindManager.create('PLD', ...)` does the rest ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
@@ -437,7 +437,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     subgraph Engaged [build_engaged_set]
-    E1{MainWeapon BurtgangKC, or Kraken Club in sub} -- yes --> E2[sets.engaged.BurtgangKC]
+    E1{MainWeapon BurtgangKC, or Kraken Club in sub and the chosen weapon set has no sub} -- yes --> E2[sets.engaged.BurtgangKC]
     E1 -- no --> E3[HybridMode map PDT/MDT/TP/DPS/Hoxne; Shining: strip sub]
     E2 --> E4[+ weapon set]
     E3 --> E4
@@ -656,8 +656,10 @@ The player-facing list is [pld/sets.md](../../user/jobs/pld/sets.md).
   that must win goes in `job_post_precast`.
 - In Sortie and /SCH the shield is decided last, by the weapon; a `sub` in the
   stance set is ignored there.
-- `BurtgangKC` (state or Kraken Club actually in the sub slot) wins over every
-  HybridMode, Sortie included, for the engaged base.
+- `BurtgangKC` (the state, or Kraken Club actually in the sub slot while the chosen
+  `sets[MainWeapon]` sets no `sub` of its own) wins over every HybridMode, Sortie
+  included, for the engaged base. The "no sub" condition (2026-09-28) keeps the club
+  still in hand for one rebuild after leaving BurtgangKC from selecting the KC set.
 - `aoe_manager` captures `_G.BluMagicConfig` when first required; the entry must set
   it before the first `//gs c` command.
 - Gear posted from `job_state_change` is lost: Mote calls it before `handle_update`.
@@ -752,13 +754,15 @@ replay, ammo lock poll, HUD refresh): check those in game with `//gs c trace on`
 - "No Blue Magic AOE spells equipped" can never show: every rotation name exists in
   `res.spells`; with the /BLU guard the counter only catches a typo in the config.
 - `rune` sends the JA on any subjob (`rune_manager.lua` `execute_rune`).
-- `//gs c sortie escort` sets `Regen` On on any subjob, where its HUD row and key
-  are hidden (`sortie_commands.lua` `escort`); the next profile install turns it
-  Off again.
+- Fixed 2026-09-28: `//gs c sortie escort` sets `Regen` On only on /SCH
+  (`sortie_commands.lua` `escort`); before, it did so on any subjob, where the
+  Regen row and key are hidden.
 - Atonement is in no WS database, so in `wsmsg full` it prints no WS line
   (`UNIVERSAL_WS_DATABASE.lua`, `UniversalWS.resolve`).
-- Kraken Club stays in the sub slot while engaged after leaving BurtgangKC, because
-  an equipped Kraken Club selects the BurtgangKC set (`select_engaged_base`).
+- Fixed 2026-09-28: after leaving BurtgangKC, the club still in hand no longer
+  selects `sets.engaged.BurtgangKC` when the new weapon set names a `sub`
+  (`select_engaged_base`), so the new weapon and its shield go on at once. A club
+  equipped by hand with a weapon set that has no `sub` still selects it.
 - Template `sets.idle.Town` is the one-slot MoveSpeed set used as a full idle base.
 - Dead or unread: `sets.precast.WS.TPBonus` family,
   `sets.Duban/Aegis/['Blurred Shield +1']`, `cooldown_exclusions` (duplicates

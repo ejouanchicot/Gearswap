@@ -55,7 +55,7 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/brd/functions/logic/midcast_router.lua` | 271 | `handle_singing` (dummy / debuff / normal), `handle_healing`, `handle_enhancing`, `handle_enfeebling`, `handle_elemental`; `apply_main_instrument` |
 | `shared/jobs/brd/functions/logic/song_rotation_manager.lua` | 250 | `get_current_pack`, `get_songs_with_replacement`, `update_song_slots` (HUD), `get_required_instrument`, `start_with_nitro`, `cast_songs_with_phases`, `cast_dummy_songs` |
 | `shared/jobs/brd/functions/logic/song_slots.lua` | 170 | `plan`, `inputs`, `songs_up` (own-song ledger), `record`, `instrument_extra` |
-| `shared/jobs/brd/functions/logic/song_queue.lua` | 156 | `start`, `stop`, `on_aftercast`; retry / timeout logic |
+| `shared/jobs/brd/functions/logic/song_queue.lua` | 160 | `start`, `stop`, `on_aftercast`; retry / timeout logic; drops the queue when the main job is no longer BRD |
 | `shared/jobs/brd/functions/logic/song_refinement.lua` | 115 | `refine_song(spell, eventArgs)` |
 | `shared/jobs/brd/functions/logic/instrument_lock_config.lua` | 70 | `LOCKED_SONGS` (Honor March, Aria of Passion), `requires_lock`, `get_instrument` |
 | `shared/jobs/brd/functions/logic/set_builder.lua` | 219 | `select_idle_base` (town, IdleMode), `select_engaged_base` (Kraken Club, EngagedMode), `apply_weapons`, `build_idle_set`, `build_engaged_set` |
@@ -255,7 +255,10 @@ override did not apply, and equips `{range = sets.midcast.Songs[<value>].range}`
   `DUMMY_SONGS.standard` (`plan(99)`).
 - **Song queue** (`logic/song_queue.lua`). State on `windower._brd_song_queue`
   with a sequence number every timer checks. `send_step` sends the next
-  `/ma`; `watch_start` after `START_WINDOW` (2.5 s): started
+  `/ma`, or drops the queue (`windower._brd_song_queue = nil`) when no song is
+  left or `windower.ffxi.get_player().main_job` is no longer `BRD` (since
+  2026-09-28: a reload or a subjob change keeps the queue, a main job change
+  ends it); `watch_start` after `START_WINDOW` (2.5 s): started
   (`CastTracker.started_since`) -> wait the computed cast time + 3 s (12 s when
   unknown) before calling it lost; another action first (a Marcato) -> 3 s
   more; not started -> refused. `on_aftercast` (any `BardSong`): interrupted ->
@@ -454,7 +457,8 @@ Full player-facing list: [sets.md](../../user/jobs/brd/sets.md).
 - `_G` read: `MidcastManagerDebugState`, `PrecastDebugState`,
   `MidcastWatchdog`, `UIConfig`, `_precast_cast_time`.
 - `windower.*`: `_brd_song_queue`, `_brd_song_queue_seq` (the queue survives a
-  `gs reload`: the next load's aftercast carries it on), `_brd_own_songs`
+  `gs reload` or a subjob change: the next load's aftercast carries it on; a main
+  job change drops it at its next step), `_brd_own_songs`
   (ledger, survives reloads, lost on `lua reload`). No events registered.
 - Coroutines and queued commands: the 0.2 s macro/lockstyle block, the song
   slot refresh, `nt`, `forceidle`, Marcato's `wait 2`, the song queue timers
@@ -576,10 +580,10 @@ In game: `//gs c songplan`, `//gs c debugmidcast` (Singing chain steps),
   when you engage while running, `state.Moving` is still `true` at that moment,
   and AutoMove then clears it while engaged without sending `gs c update`, so
   `sets.MoveSpeed` stays on until the next gear change.
-- **The song queue outlives BRD** (plausible). It lives on `windower` and its
-  timers keep running after a main-job change (`file_unload` does not call
-  `SongQueue.stop`): the remaining songs are sent as `/ma` on the new job,
-  refused, retried and skipped with warnings.
+- Fixed 2026-09-28: the song queue no longer outlives BRD. `file_unload` still
+  does not call `SongQueue.stop`, but `send_step` checks the main job and drops
+  the queue when it is not BRD, so nothing is sent on the new job (checked
+  offline).
 - The refined Foe Requiem VI falls to `sets.midcast.BardSong` (no Requiem set
   in the template), weapons included.
 - `lullaby` prints "Casting Horde Lullaby II" while casting Horde Lullaby

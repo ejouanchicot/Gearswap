@@ -23,8 +23,9 @@ What COR adds on top of the shared pipeline:
   Crooked Cards is timestamped, Luzaf's Ring follows `LuzafRing`, Fold's gear is
   held back unless two Busts are up.
 - **Roll hold**: from the roll's `job_post_precast` to its `job_aftercast`,
-  every gear update is marked handled, so the roll set is still worn when the
-  roll lands.
+  every gear update is marked handled, and the Dual Wield tiers, the Treasure
+  Hunter engaged overlay and the `COR_CUSTOM.lua` idle / engaged gear wait too
+  (`GearHold.active()`), so the roll set is still worn when the roll lands.
 - **Ranged**: `sets.precast.RA.Flurry1/2` through `classes.CustomRangedGroups`,
   `sets.midcast.RA[RangedMode]` through `MidcastManager`, a Triple Shot layer,
   and a bullet-pouch refill after `/ra`.
@@ -58,6 +59,7 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/cor/functions/logic/roll_data.lua` | 439 | 31 rolls: values 1-11, lucky/unlucky, bust effect, `+Phantom Roll` step, job bonus |
 | `shared/jobs/cor/functions/logic/roll_gear.lua` | 73 | `PHANTOM_ROLL_GEAR` and `RollGear.bonus()` read from the game |
 | `shared/jobs/cor/functions/logic/roll_hold.lua` | 68 | `RollHold.start` / `stop` / `hold_update`, `HOLD_MAX` 5 s |
+| `shared/utils/core/gear_hold.lua` | 25 | `GearHold.active()`: the roll hold as seen by the shared layers (Dual Wield tiers, TH engaged overlay, CUSTOM idle / engaged gear) |
 | `shared/jobs/cor/functions/logic/roll_debug.lua` | 261 | `//gs c rolldebug`: gear sent vs worn at landing, held updates, pieces out of reach, locked slots; summary; `<Char>/rolldebug.log` |
 | `shared/jobs/cor/functions/logic/double_up.lua` | 45 | `DoubleUp.redirect(spell, eventArgs)` |
 | `shared/jobs/cor/functions/logic/set_builder.lua` | 202 | Town, weapons (DW-aware), PDT, Refresh, movement; unused `apply_buff_gear` |
@@ -72,7 +74,7 @@ function; line numbers are given only where no function name fits.
 | `shared/utils/messages/utilities/roll_messages.lua` | 596 | Roll result block (full / compact / line), bust, Double-Up window, active rolls |
 | `shared/utils/messages/utilities/party_messages.lua` | 48 | `//gs c party` listing |
 | `shared/utils/messages/formatters/jobs/message_cor.lua` + `data/jobs/cor_messages.lua` | 39 + 32 | PartyTracker load failures |
-| `shared/utils/dualbox/roll_share.lua` | 108 | A COR alt's roll result re-printed on the main (`rollshow`) |
+| `shared/utils/dualbox/roll_share.lua` | 110 | A COR alt's roll result re-printed on the main (`rollshow`) |
 | `shared/utils/precast/flurry_tracker.lua` | 73 | Flurry I / II on this character -> `classes.CustomRangedGroups` |
 | `shared/utils/inventory/quiver_manager.lua` | 170 | `after_ranged_attack` -> `check_and_refill` |
 | `shared/data/job_abilities/COR_JA_DATABASE.lua` | 21 | Factory with the roll modules |
@@ -195,15 +197,19 @@ flowchart TD
   <roll>` to the trace. Past `until_time` it clears the hold.
 - `RollHold.stop(spell)` is the first line of `job_aftercast`, so Mote's own
   aftercast re-equips normally.
-- `DualWield` (`dual_wield.lua`) also skips while `cor_roll_hold` is set.
+- The layers wrapped around `handle_equipping_gear` after Mote ask
+  `GearHold.active()` (`shared/utils/core/gear_hold.lua`: `cor_roll_hold` set
+  and `until_time` not passed) and skip while it is true: the Dual Wield tiers
+  (`dual_wield.lua` `DualWield.apply`), the Treasure Hunter engaged overlay
+  (`treasure_hunter.lua` `install`) and the `<JOB>_CUSTOM.lua` idle / engaged
+  gear (`custom_states.lua` gear hook). TH and CUSTOM since 2026-09-28
+  (`54c9aa9`); before, only Dual Wield checked, inline.
 - `LifecycleManager.status_change` holds an engage or disengage that lands
   during any action (`midaction()`), so engaging while a roll goes out keeps
   the roll gear too.
 
-The hold stops Mote's equip only. The wrappers laid over
-`handle_equipping_gear` after Mote (Treasure Hunter engaged overlay, the
-`<JOB>_CUSTOM.lua` idle / engaged gear) still run during it; see
-[Known issues](#known-issues).
+The first-action TH set and the CUSTOM precast / midcast moments are laid on
+`cleanup_precast` / `cleanup_midcast`, not on the gear update, and are not held.
 
 ### Roll detection and tracking
 
@@ -451,8 +457,9 @@ Full player-facing list: [sets.md](../../user/jobs/cor/sets.md).
   `RecastAnnounce` ([precast pipeline](../systems/precast-pipeline.md)).
 - Midcast: `MidcastDeps`, `MidcastManager`, `MidcastFallback`,
   `MidcastWatchdog` ([midcast and buffs](../systems/midcast-and-buffs.md)).
-- Equipment hooks: `ElementalBelt`, `DualWield` (skips during the roll hold),
-  `TreasureHunter`, `CombatMode`, `CustomStates`
+- Equipment hooks: `ElementalBelt`, `DualWield`, `TreasureHunter`,
+  `CombatMode`, `CustomStates`; the Dual Wield tiers, the TH engaged overlay
+  and the custom idle / engaged gear skip during the roll hold (`GearHold`)
   ([factories and helpers](../systems/factories-and-helpers.md#common-features-per-job)).
 - Messages: `roll_messages`, `party_messages`, `message_cor`, `message_buffs`
   ([messages](../systems/messages.md)). The ability message handler skips
@@ -531,14 +538,11 @@ In game: `//gs c rolldebug` (per-roll gear report and `rolldebug.log`),
 
 ## Known issues
 
-- **Roll hold does not cover the post-Mote wrappers** (confirmed in code, not
-  seen in game). `RollHold.hold_update` only sets `eventArgs.handled`, which
-  stops Mote's `handle_equipping_gear`. The Treasure Hunter engaged overlay
-  (`treasure_hunter.lua` `install`, when Treasure Mode is shown and Tag/Full
-  while engaged) and the `COR_CUSTOM.lua` idle / engaged gear
-  (`custom_states.lua` `hooks.gear`; `Guards.hands_off` has no roll-hold test)
-  still equip during the hold. With the empty template CUSTOM and Treasure
-  Mode hidden, nothing happens.
+- Fixed 2026-09-28: the roll hold now covers the post-Mote wrappers. The
+  Treasure Hunter engaged overlay and the `COR_CUSTOM.lua` idle / engaged
+  gear ask `GearHold.active()`, like the Dual Wield tiers (checked offline:
+  engaged with Treasure Mode Full, the TH belt no longer goes on during a
+  roll). Not yet seen in game.
 - `roll_tracker.lua` is 834 lines, above the 800-line hard limit (not in the
   `CLAUDE.md` list of oversized files).
 - After a reload with a roll still up, the next Double-Up is reported as a

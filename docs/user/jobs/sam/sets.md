@@ -23,9 +23,10 @@ Then SAM adds, in this order:
 | `sets.idle.Regen` | Your HP is between 50 % and 79 % |
 | `sets.idle.PDT` | Hybrid Mode is PDT (the default), in town too |
 | `sets.<Main Weapon>` | Always |
+| `sets.MoveSpeed` | You are running (on top of everything above), in town too |
 
-SAM differs from the common rules here: `sets.MoveSpeed` is **never** worn
-(SAM has no movement layer) and `sets.Adoulin` is never read.
+SAM differs from the common rules here: `sets.MoveSpeed` also goes on in town,
+and `sets.Adoulin` is never read.
 
 ## Engaged
 
@@ -121,7 +122,6 @@ Hasso, Seigan, Warding Circle, Third Eye and Blade Bash.
 - `sets.Malevolence`, `sets.Onion`, `sets.Utu`: no Main Weapon value has these
   names.
 - `sets.buff.Sengikori`: nothing puts it on.
-- `sets.MoveSpeed`: SAM never wears it (see Idle).
 - `sets.defense.PDT`, `sets.defense.MDT`: only for GearSwap's own defense mode,
   which has no key or HUD row here; while engaged, SAM's engaged choice
   replaces it.

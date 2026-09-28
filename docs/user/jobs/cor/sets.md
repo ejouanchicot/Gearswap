@@ -143,7 +143,9 @@ midcast keeps whatever was on.
 
 - **Roll gear held until the roll lands.** From the moment you press a roll or
   Double-Up until the roll takes effect, every gear change is held back: running
-  (movement gear), the end of a fight, `//gs c update`. The roll set stays on, so the
+  (movement gear), the end of a fight, `//gs c update`. The automatic Dual Wield pieces,
+  the Treasure Hunter pieces worn in a fight and your own `COR_CUSTOM.lua` idle / engaged
+  gear wait as well. The roll set stays on, so the
   "Phantom Roll +" piece (Regal Necklace, Rostam) is worn when it counts. The hold ends
   when the roll lands, at the latest after 5 seconds.
 - **Engage / disengage during a roll waits.** If you draw or sheathe your weapon while a

@@ -50,7 +50,7 @@ the sets files (structure and set names only).
 | `_master/Kaories/entry/Kaories_RDM.lua` | - | Overlay entry: the template with the character name in every config path |
 | `shared/jobs/rdm/functions/rdm_functions.lua` | 85 | Facade: includes the 11 hook files, then requires `dualbox_manager` |
 | `shared/jobs/rdm/functions/RDM_PRECAST.lua` | 378 | `job_precast` as stages (guard, cooldown/refine, Phalanx, Saboteur) + WS + `SpellGearLock.begin`; `job_post_precast` (TP gear, spell FC set, lock hold, `debugprecast` trace) |
-| `shared/jobs/rdm/functions/RDM_MIDCAST.lua` | 389 | `job_midcast` (empty), `job_post_midcast` -> `route_midcast` (`SKILL_HANDLERS` table) + `SpellGearLock.hold` |
+| `shared/jobs/rdm/functions/RDM_MIDCAST.lua` | 362 | `job_midcast` (empty), `job_post_midcast` -> `route_midcast` (`SKILL_HANDLERS` table) + `SpellGearLock.hold` |
 | `shared/jobs/rdm/functions/RDM_AFTERCAST.lua` | 27 | `job_aftercast = LifecycleManager.aftercast(...)` with `SpellGearLock.release` as the extra step |
 | `shared/jobs/rdm/functions/RDM_IDLE.lua` | 43 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/rdm/functions/RDM_ENGAGED.lua` | 42 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
@@ -60,7 +60,7 @@ the sets files (structure and set names only).
 | `shared/jobs/rdm/functions/RDM_MOVEMENT.lua` | 42 | Empty `job_handle_equipping_gear` |
 | `shared/jobs/rdm/functions/RDM_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('RDM', 'config/rdm/RDM_LOCKSTYLE', 1, 'NIN')` wrappers |
 | `shared/jobs/rdm/functions/RDM_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('RDM', 'config/rdm/RDM_MACROBOOK', 'NIN', 1, 1)` wrapper |
-| `shared/jobs/rdm/functions/logic/set_builder.lua` | 264 | Idle / engaged construction: mode sets, single vs dual wield, weapons, town, movement |
+| `shared/jobs/rdm/functions/logic/set_builder.lua` | 273 | Idle / engaged construction: mode sets, single vs dual wield (off-hand item and subjob), weapons, town, movement |
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | Tier table of 11 enfeeble families (`RDM_ENFEEBLE_TIERS.get`) |
 | `shared/data/spells/NUKE_TIERS.lua` | 56 | Nuke / -ra / Aspir tier table (`NUKE_TIERS.get`), shared with GEO |
 | `shared/utils/precast/tier_refiner.lua` | - | `TierRefiner.refine` (shared with BLM and GEO) |
@@ -209,7 +209,7 @@ midcast (spell name, spell map, skill, `CastingMode`), then
 | Healing Magic | `midcast_healing` | skill + spell | `sets.midcast.CureSelf` for a Cure (not a Curaga: `^Cure`) on oneself, when the set exists |
 | Elemental Magic | `midcast_elemental` | `mode_state = NukeMode` | - |
 | Dark Magic | `midcast_dark` | skill + spell | - |
-| any other skill | none in RDM | - | `midcast_subjob` is unreachable (`spell.type == 'Magic'` is never true); the shared `MidcastFallback` routes the spell with its own skill from `cleanup_midcast` |
+| any other skill | none in RDM | - | the shared `MidcastFallback` routes the spell with its own skill from `cleanup_midcast` |
 
 `MidcastFallback` (`shared/utils/midcast/midcast_fallback.lua`, installed by
 `INIT_SYSTEMS` on Mote's `cleanup_midcast`) runs after `job_post_midcast` for
@@ -263,13 +263,18 @@ up it replaces whatever type set the manager chose.
   when the off hand is a weapon, then `apply_weapon`. No town or movement layer.
 - `SetBuilder.offhand_item`: the worn off hand while Combat Mode is On (the
   state can change then without the gear following), otherwise the `sub` of
-  the set `SubWeapon` names, or the value itself. `has_shield_equipped` asks
+  the set `SubWeapon` names, or the value itself. `has_shield_equipped`: nil,
+  `""` or `'empty'` -> normal set; a subjob other than NIN or DNC -> normal set
+  (RDM has no Dual Wield trait, so only /NIN and /DNC let it hold a weapon in
+  the off hand; since 2026-09-28); otherwise it asks
   `WeaponResolver.is_offhand_weapon` (game item list): a weapon with a combat
-  skill -> `.DW`; a shield, a grip, nil, `""` or `'empty'` -> normal set; only a
-  name the game does not know falls back to the `sets.shields` list.
+  skill -> `.DW`; a shield or a grip -> normal set; only a name the game does
+  not know falls back to the `sets.shields` list.
 - `apply_weapon` lays `WeaponResolver.set_for('main' / 'sub', value)` unless
-  Combat Mode is On. With `SubWeapon = Malevolence` (a dagger) the `.DW` set is
-  chosen whatever the subjob, so it only works on /NIN or /DNC.
+  Combat Mode is On. With `SubWeapon = Malevolence` (a dagger) the `.DW` sets
+  are chosen on /NIN or /DNC only; on another subjob the normal sets are used
+  (the game refuses the dagger in the off hand there anyway). Before
+  2026-09-28 the `.DW` sets were chosen whatever the subjob.
 - Mote's own base (`sets.idle[scope][IdleMode]`, `sets.engaged` + OffenseMode
   `Normal`) is discarded by both builders, and with it Mote's defense and
   Kiting layers: F10, F11 and Alt+F10 change nothing on RDM.
@@ -464,7 +469,7 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 - Combat Mode applies or releases at once when cycled, HUD shown or not: both
   cycle paths end in `handle_update`, whose `handle_equipping_gear` is wrapped
   by the shared hook.
-- The off-hand item decides single vs dual wield; the subjob is not considered.
+- The off-hand item and the subjob decide single vs dual wield: `.DW` needs /NIN or /DNC and a weapon in the off hand.
 - `convert`, `chainspell`, `saboteur`, `composure` are also names in the alt
   command files; RDM's own commands answer first, the alt's version stays
   reachable as `//gs c alt <name>`.
@@ -491,9 +496,10 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 
 **Traps**
 
-- `midcast_subjob` looks alive but is dead: `spell.type` is `WhiteMagic`,
-  `BlackMagic`, `Ninjutsu`..., never `Magic`. Subjob magic is handled by
-  `MidcastFallback`.
+- Subjob magic is routed by `MidcastFallback`, not by `RDM_MIDCAST.lua`
+  (`SKILL_HANDLERS` lists RDM's own skills only). The old `midcast_subjob`
+  branch tested `spell.type == 'Magic'` (a value `spell.type` never has; that
+  is `spell.action_type`) and was removed on 2026-09-28.
 - The cast-by-name catch-all only sees words no earlier branch answered: a
   spell whose first word is a common command (`warp`, `jump`, `escape`...)
   never reaches it.
@@ -539,7 +545,7 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
   Kept on purpose (player's choice, 2026-09-27).
 - `stage_cooldown` ignores `TierRefiner.refine`'s return value: a spell arriving
   within 0.2 s of a replacement gets no recast check.
-- `midcast_subjob` is unreachable (see Traps).
+- Fixed 2026-09-28: the unreachable `midcast_subjob` branch is removed (midcast simulation identical before and after); the `.DW` sets are chosen only on /NIN or /DNC.
 - "Storm spells enabled/disabled" never prints: Mote's `sub_job_change` runs
   `user_setup()` (which already updated `state.Storm`) before
   `job_sub_job_change` compares.

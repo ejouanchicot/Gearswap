@@ -68,11 +68,11 @@ clone of any other character printed
 | `shared/jobs/smn/functions/smn_functions.lua` | Facade: `message_buffs.lua`, the 12 hook files, `dualbox_manager`, a debug line |
 | `shared/jobs/smn/functions/SMN_PRECAST.lua` | Guard, cooldown, WS; empty Blood Pact branch; `job_post_precast` (TP gear) |
 | `shared/jobs/smn/functions/SMN_MIDCAST.lua` | `job_post_midcast`: Blood Pact set via the classifier, else `JOB_POST_MIDCAST_HANDLERS` by skill |
-| `shared/jobs/smn/functions/SMN_PET_MIDCAST.lua` | `job_pet_midcast`: re-equips the classified Blood Pact set |
+| `shared/jobs/smn/functions/SMN_PET_MIDCAST.lua` | `job_pet_midcast(spell, action, spellMap, eventArgs)`: re-equips the classified Blood Pact set and marks the event handled |
 | `shared/jobs/smn/functions/SMN_AFTERCAST.lua` | Watchdog notify only |
 | `shared/jobs/smn/functions/SMN_IDLE.lua` | `customize_idle_set`: `sets.idle.Avatar` / `DT` / `Normal`, town set, `sets.MoveSpeed` (`BaseSetBuilder`) |
 | `shared/jobs/smn/functions/SMN_ENGAGED.lua` | `customize_melee_set` returns Mote's set |
-| `shared/jobs/smn/functions/SMN_STATUS.lua` | `DoomManager.handle_status_change` (own copy, not `LifecycleManager`) |
+| `shared/jobs/smn/functions/SMN_STATUS.lua` | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/smn/functions/SMN_BUFFS.lua` | `DoomManager` + Avatar's Favor state sync |
 | `shared/jobs/smn/functions/SMN_COMMANDS.lua` | `job_self_command`, skill-up loop, `job_state_change` (`LifecycleManager.state_change()`), `_G.cancel_smn_skillup_loop` |
 | `shared/jobs/smn/functions/SMN_MOVEMENT.lua` | Empty `job_handle_equipping_gear` (movement gear is in `SMN_IDLE`) |
@@ -160,8 +160,8 @@ sequenceDiagram
     GS->>M: aftercast (master's action result)
     Note over M: default_aftercast re-equips idle unless pet_midaction()
     GS->>M: pet_midcast (the avatar readies the pact)
-    M->>J: job_pet_midcast: resolve + equip the same set
-    Note over M: default_pet_midcast then equips sets.midcast.Pet (and its sub-sets) when it exists: it would win
+    M->>J: job_pet_midcast: resolve + equip the same set, eventArgs.handled = true
+    Note over M: default_pet_midcast (sets.midcast.Pet) is skipped; it runs only for a pact the classifier does not know
     GS->>M: pet_aftercast -> default re-equips idle
 ```
 
@@ -173,12 +173,12 @@ sequenceDiagram
   `debugmidcast`; an unknown pact is only reported in debug. Mote's own
   midcast choice (by pact name, then `sets.midcast.BloodPactRage` /
   `BloodPactWard` by `spell.type`) runs first and is overwritten by it.
-- `job_pet_midcast(spell)` ignores Mote's `eventArgs` and never sets
-  `handled`, so Mote's `default_pet_midcast` runs **after** it and equips
-  `get_pet_midcast_set`: `sets.midcast.Pet`, refined by pact name, spell map,
-  type, then `OffenseMode` / `CastingMode`. The author's file has no
-  `sets.midcast.Pet`, so this is harmless today; a player who writes one
-  loses the classified Blood Pact set at the moment the avatar acts.
+- `job_pet_midcast(spell, action, spellMap, eventArgs)` sets
+  `eventArgs.handled = true` once a Blood Pact set is on (since 2026-09-28),
+  so Mote's `default_pet_midcast` (`get_pet_midcast_set`: `sets.midcast.Pet`,
+  refined by pact name, spell map, type, then `OffenseMode` / `CastingMode`)
+  no longer replaces it. For a pact the classifier does not know, nothing is
+  equipped and `handled` stays false: `sets.midcast.Pet` still applies then.
 - Whether the master's gear from midcast is still on when the pact fires
   depends on the order of the master's aftercast and the avatar's "readies"
   packet; the pet hook is the one that runs when the avatar acts.
@@ -218,10 +218,10 @@ only loads the modules.
   dropped whenever an `IdleMode` set replaces it.
 - `customize_melee_set` returns Mote's set; `sets.engaged` is a flat
   skeleton.
-- `job_status_change` and `job_buff_change` call `DoomManager` themselves
-  instead of `LifecycleManager`. SMN therefore lacks the shared
-  "hold the status gear during an action" step (`LifecycleManager`
-  `hold_during_action`). On `Avatar's Favor` gain or loss, `job_buff_change`
+- `job_status_change` is `LifecycleManager.status_change()` since 2026-09-28
+  (Doom unlock, then an engage / disengage during an action is held until the
+  aftercast). `job_buff_change` still calls `DoomManager` itself. On
+  `Avatar's Favor` gain or loss, `job_buff_change`
   sets `state.AvatarFavor` to match and sends `gs c update`.
 
 ## Mote states
@@ -293,7 +293,7 @@ is `empty_set()`: all 16 slots set to `""`.
 | `sets.midcast.BloodPactRage`, `.BloodPactWard` | Mote default midcast by `spell.type` (then overwritten) | no |
 | `sets.pet_midcast.BPRage.Physical/Magical/Hybrid/AstralFlow` | classifier | yes (skeleton) |
 | `sets.pet_midcast.BPWard.Buff/Debuff/Heal` | classifier | yes (skeleton) |
-| `sets.midcast.Pet` | Mote `default_pet_midcast`, **after** `job_pet_midcast` | no (keep it that way, or it overrides the pact set) |
+| `sets.midcast.Pet` | Mote `default_pet_midcast`, only for a pact the classifier does not know (`job_pet_midcast` marks the others handled) | no |
 | `sets.weapons`, `sets.pet.Engaged` | nothing | yes (unused) |
 | `sets.buff.Doom` | `DoomManager` | **no** |
 
@@ -338,8 +338,8 @@ worn, and it stays on after the first cast.
 - `PrecastGuard`, `CooldownChecker`, `RecastAnnounce`, `WSPrecastHandler`
   ([precast pipeline](../systems/precast-pipeline.md)); `MidcastManager`,
   `MidcastFallback`, `MidcastWatchdog`
-  ([midcast and buffs](../systems/midcast-and-buffs.md)); `DoomManager`
-  directly.
+  ([midcast and buffs](../systems/midcast-and-buffs.md)); `LifecycleManager`
+  (status), `DoomManager` directly (buffs).
 - Messages: `MessageFormatter` generic calls, `message_buffs` (included by the
   facade), `message_commands`; Blood Pact activation messages come from the
   shared ability handler through `SMN_SPELL_DATABASE`
@@ -382,9 +382,9 @@ worn, and it stays on after the first cast.
 
 - Blood Pact gear must be equipped in **both** `job_post_midcast` (the order)
   and `job_pet_midcast` (the avatar's action).
-- Anything that should win at the avatar's action must run after Mote's
-  `default_pet_midcast`, i.e. in a `job_post_pet_midcast`, or
-  `job_pet_midcast` must take Mote's `eventArgs` and set `handled = true`.
+- `job_pet_midcast` sets `eventArgs.handled = true` after equipping a Blood
+  Pact set; removing it lets Mote's `default_pet_midcast` equip
+  `sets.midcast.Pet` over the pact set.
 - `stop_skillup` must bump `SKILLUP_STATE.counter`: pending coroutines test it.
 - Keep `_G.cancel_smn_skillup_loop` exported: the entry's `file_unload`
   calls it.
@@ -413,15 +413,16 @@ worn, and it stays on after the first cast.
   `for f in shared/jobs/smn/functions/*.lua shared/jobs/smn/functions/logic/*.lua _master/entry/Tetsouo_SMN.lua _master/config/smn/*.lua _master/sets/smn_sets.lua; do luac5.1 -p "$f"; done`.
 - Classifier: `lua5.1 -e "package.path='./?.lua;'..package.path; S=function(t) local s={} for _,v in ipairs(t) do s[v]=true end return setmetatable(s,{__index={contains=function(self,k) return rawget(self,k)==true end}}) end; local C=require('shared/jobs/smn/functions/logic/blood_pact_classifier'); print(C.classify('Flaming Crush'), C.classify('healing ruby'))"`
   prints `BPRage.Hybrid nil`, which shows the case sensitivity of `smn bp`.
-- Pet midcast order: stub `equip` to record slots, call `job_pet_midcast`,
-  then equip `sets.midcast.Pet` as Mote's `default_pet_midcast` would, and read
-  the result.
+- Pet midcast order: stub `equip` to record slots, call `job_pet_midcast`
+  with an `eventArgs` table, then equip `sets.midcast.Pet` only if
+  `eventArgs.handled` is false, as Mote's `handle_actions` does, and read the
+  result.
 
 ## Known issues
 
-- `sets.midcast.Pet`, if a player writes one, overrides the Blood Pact set
-  when the avatar acts (`default_pet_midcast` runs after `job_pet_midcast`,
-  which does not set `handled`).
+- Fixed 2026-09-28: `sets.midcast.Pet` no longer overrides the Blood Pact set
+  (`job_pet_midcast` marks the event handled); `SMN_STATUS` is the shared
+  `LifecycleManager.status_change()`.
 - `smn bp` matches pact names case-sensitively: `smn bp healing ruby` is not
   recognised and targets `<t>`.
 - The Carbuncle auto-summon is scheduled from both the old and the new
@@ -448,8 +449,8 @@ worn, and it stays on after the first cast.
   the `AvatarFavor` row does not appear on the HUD.
 - `CastingMode` has no effect (no `.Resistant` set); `sets.weapons` and
   `sets.pet.Engaged` are never used; `sets.buff.Doom` is missing.
-- Standards: `SMN_STATUS`, `SMN_BUFFS`, `SMN_AFTERCAST` re-implement
-  `LifecycleManager`, and `SMN_STATUS` misses its `hold_during_action` step;
+- Standards: `SMN_BUFFS` and `SMN_AFTERCAST` re-implement `LifecycleManager`
+  (`SMN_STATUS` is the shared handler since 2026-09-28);
   `SMN_SPELL_DATABASE.can_use_pact` is broken and dead (known).
 - The overlay's SMN configs and entry carry `@author Tetsouo`
   (convention: `ejouanchicot`); the generic copies are fixed.

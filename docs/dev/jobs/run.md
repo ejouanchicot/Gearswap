@@ -49,7 +49,7 @@ drift.
 | `shared/jobs/run/functions/RUN_MOVEMENT.lua` | 24 | Comments only |
 | `shared/jobs/run/functions/RUN_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('RUN', 'config/run/RUN_LOCKSTYLE', 1, 'SAM')` |
 | `shared/jobs/run/functions/RUN_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('RUN', ..., 'SAM', 1, 1)` |
-| `shared/jobs/run/functions/logic/set_builder.lua` | 188 | Idle/engaged: HybridMode, weapon, grip, town, movement |
+| `shared/jobs/run/functions/logic/set_builder.lua` | 180 | Idle/engaged: HybridMode, weapon, grip, town, movement |
 | `shared/jobs/run/functions/logic/aoe_manager.lua` | 182 | BLU rotation (same code as PLD's except strings; refuses without /BLU) |
 | `shared/jobs/run/functions/logic/cure_set_builder.lua` | 57 | CureSelf / CureOther for Cure to Cure IV (subjob), `is_cure` |
 | `shared/jobs/run/functions/logic/rune_manager.lua` | 76 | `//gs c rune` (same code as PLD's) |
@@ -63,7 +63,6 @@ drift.
 | `_master/config/run/RUN_BLU_MAGIC.lua` | 203 | Copy of `PLD_BLU_MAGIC`; loaded by the entry as `_G.BluMagicConfig` |
 | `_master/sets/run_sets.lua` | 432 | Template sets (flat) |
 | `shared/data/job_abilities/RUN_JA_DATABASE.lua` + `run/*.lua` | 13 + 276 | JA descriptions (runes, wards, SP) for `ability_message_handler` |
-| `shared/utils/messages/data/jobs/run_messages.lua` | 29 | Valiance / Vallation expiry templates (`RUN` namespace); nothing sends them |
 
 Live copies: none under `Tetsouo/` or `Kaories/`, and no RUN overlay under
 `_master/<Character>/`. `Hysoka/` has RUN and is a frozen clone; it was not read.
@@ -210,7 +209,7 @@ flowchart TD
   Mote's idle -> HybridMode idle set (field only) -> weapon -> grip -> return in
   town, else `sets.MoveSpeed` when moving.
 - For Lycurgos the grip is skipped, not removed: whatever grip was in the sub slot
-  stays there. `_G.DEBUG_RUN_WEAPONS` (no command sets it) prints the grip decisions.
+  stays there.
 
 ### Differences from PLD
 
@@ -418,7 +417,9 @@ RUN weaponskills. There is no RUN-specific differential test.
   `get_equipped_blu_spells`), as on PLD, so it always uses the manual list.
 - Duplicated with PLD: `aoe_manager`, `cure_set_builder`, `rune_manager`,
   `RUN_BLU_MAGIC`, `cooldown_exclusions`, the `job_midcast` skeleton.
-- Dead: `run_messages.lua` (nothing sends its keys), the commented WarpInit block in
-  the entry, `_G.DEBUG_RUN_WEAPONS` (no command sets it).
+- Dead: the commented WarpInit block in the entry. Removed 2026-09-28:
+  `run_messages.lua` (nothing sent its keys; no `RUN` message namespace any more)
+  and the `_G.DEBUG_RUN_WEAPONS` debug blocks of `set_builder.lua` (nothing set
+  the flag), with the `MessageFormatter` require they alone used.
 - ElementalBelt does not treat Lunge / Swipe (magic-damage job abilities): only
   weaponskills of its list and spells are covered.

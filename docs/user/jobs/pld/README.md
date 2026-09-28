@@ -113,7 +113,7 @@ Details of the shared ones: [commands guide](../../guides/commands.md).
 | `waltz`, `aoewaltz` | Curing Waltz / Divine Waltz (needs /DNC) |
 | `jump` | Jump, then High Jump (needs /DRG) |
 | `stealth sneak` / `invi` / `both` (+ `self`, `check`, `status`...) | Sneak / Invisible on the whole group (Alt+Z / Alt+X) |
-| `sortie <target>` / `escort` / `off` / `list` / `help` | The author's Sortie orders for his own pair of characters (they also give orders to a GEO alt). On PLD they also set the /SCH stance (DPS or Tanking) and Phalanx SIRD: Off for `aminon` / `aminontest`, On for every other target; `escort` turns Regen On |
+| `sortie <target>` / `escort` / `off` / `list` / `help` | The author's Sortie orders for his own pair of characters (they also give orders to a GEO alt). On PLD they also set the /SCH stance (DPS or Tanking) and Phalanx SIRD: Off for `aminon` / `aminontest`, On for every other target; `escort` turns Regen On on /SCH |
 | `watchdog` (+ `on`, `off`, `buffer`, `stats`...) | Midcast watchdog |
 | `debugmidcast` | Print the midcast set each spell uses |
 

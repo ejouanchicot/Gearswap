@@ -341,8 +341,8 @@ it on every equip), and `require('resources')` returns the same table. A lookup
 by id is a table read. What costs is a scan: `pairs(res.items)` or a lookup by
 name walks the whole item list. Use `shared/utils/equipment/item_index.lua`
 (`ItemIndex.id`, `is_weapon`, `dual_wields`): one walk per session, kept on
-`windower._item_index`, shared by `weapon_resolver.lua`, `quiver_manager.lua` and
-`refill/item_resolver.lua` (until 2026-09-28 each built its own index, again on every
+`windower._item_index`, shared by `weapon_resolver.lua`, `quiver_manager.lua`,
+`refill/item_resolver.lua` and `weaponskill/ws_slots.lua` (until 2026-09-28 each built its own index, again on every
 job load). Add a lookup there rather than a new scan.
 
 ---

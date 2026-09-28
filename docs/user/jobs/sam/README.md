@@ -24,8 +24,8 @@ Samurai with the provided template gives you:
   stance, Hasso is never replaced.
 - **Gear by situation**: Seigan / Third Eye sets while Seigan is up, HP-based
   idle (Weak, Regen), Sekkanoki and Meikyo Shisui pieces on weaponskills.
-- **No movement speed gear**: SAM never puts `sets.MoveSpeed` on, even though
-  the template defines it, and has no town set.
+- **Movement speed gear**: `sets.MoveSpeed` goes on over the idle set while
+  you run, in town too. SAM has no town set of its own.
 
 Every mode goes back to its default on each job change, subjob change and
 reload.
@@ -118,7 +118,7 @@ and arguments: [commands guide](../../guides/commands.md).
 | Recast check | An ability or spell still on recast is cancelled with the time left (`RECAST_CONFIG.lua`) |
 | Debuff guard | An action you cannot do is stopped; with Auto Medicine on, Echo Drops / Remedy / Panacea are used |
 | Doom | `sets.buff.Doom` goes on and its neck, rings and waist stay locked while Doomed |
-| Movement speed | **Never**: SAM's gear builder has no movement layer and no town set |
+| Movement speed | `sets.MoveSpeed` on idle while you move, in town too |
 | Obi / Orpheus | Added to elemental weaponskills (Tachi: Goten, Kagero, Jinpu, Koki, ...) and damaging spells when the day, weather or distance gives enough (`//gs c belt`) |
 | Treasure Hunter | Off and hidden. Needs `//gs c th show` and a `sets.TreasureHunter` you add |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked |

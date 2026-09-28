@@ -19,7 +19,7 @@ Dark Knight with the provided template gives you:
   (PDT or Accu).
 - **Aftermath gear**: with Liberator and Aftermath: Lv.3 up, `sets.engaged.AM3`
   replaces your engaged set, and the change happens as soon as the aftermath
-  starts or ends.
+  starts or ends (or when the spell or weaponskill under way ends).
 - **Dark Magic gear by spell**: Dread Spikes, Absorb spells, Drain / Aspir
   each find their own set; Dark Seal and Nether Void pieces are added while
   those buffs are up.
@@ -107,7 +107,7 @@ DRK has no command of its own. The common commands that work on DRK:
 | Obi / Orpheus | Added to elemental weaponskills (Sanguine Blade, Dark Harvest, Shadow of Death, Infernal Scythe, ...) and damaging spells (Elemental Magic, ...) when the day, weather or distance gives enough (`//gs c belt`) |
 | Treasure Hunter | Off and hidden. Needs `//gs c th show` and a `sets.TreasureHunter` you add |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked |
-| Weapon without a set | **Not on DRK**: its gear builder reads `sets.<Weapon>` only, so `equip_without_set` in `config/WEAPON_CONFIG.lua` changes nothing here |
+| Weapon without a set | With `equip_without_set = true` in `config/WEAPON_CONFIG.lua`, a Main Weapon value with no set equips that weapon by name |
 | Dual Wield tiers | Only while holding two weapons with a `sets.DW`: not the case with the DRK weapons of the template |
 | Your own modes | `DRK_CUSTOM.lua`: extra modes, keys and gear rules without code |
 | Midcast watchdog | Puts your gear back if a cast result never arrives |

@@ -20,7 +20,7 @@ list, Combat Mode starting On...): if yours came from one, trust your own
 | Key | Mode (state) | Values (default in **bold**) | What it does |
 |---|---|---|---|
 | `^numpad1` | `MainWeapon` | **Naegling**, Colada, Daybreak | Main-hand weapon |
-| `^numpad2` | `SubWeapon` | Ammurapi, **Genmei**, Malevolence | Off hand. With a shield your engaged set is `sets.engaged.<Mode>`; with a second weapon, `sets.engaged.<Mode>.DW` if you defined it |
+| `^numpad2` | `SubWeapon` | Ammurapi, **Genmei**, Malevolence | Off hand. With a shield your engaged set is `sets.engaged.<Mode>`; with a second weapon on /NIN or /DNC, `sets.engaged.<Mode>.DW` if you defined it (other subjobs keep the normal set) |
 | `^numpad6` | `EngagedMode` | **DT**, Acc, TP, Enspell | Engaged gear: `sets.engaged.DT`, `.Acc`, `.TP` or `.Enspell` |
 | `^numpad4` | `IdleMode` | **Refresh**, DT | Idle gear: `sets.idle.Refresh` or `sets.idle.DT` |
 | `^numpad5` | `CombatMode` | **Off**, On | `On` locks main, sub and range so casting never swaps your weapons (TP kept). `Off` frees them, unless a craft session holds them |

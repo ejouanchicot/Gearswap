@@ -53,7 +53,7 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/dnc/functions/logic/climactic_manager.lua` | 84 | `ClimaticManager.auto_trigger`, `has_three_finishing_moves`, `WS_MIN_TP` 1000 |
 | `shared/jobs/dnc/functions/logic/ws_variant_selector.lua` | 121 | `apply_variant`: WS variant from dance buff + Climactic (buff or 5 s timestamp) |
 | `shared/jobs/dnc/functions/logic/step_manager.lua` | 96 | `execute_step`: recast check, Presto, Main/Alt rotation |
-| `shared/jobs/dnc/functions/logic/smartbuff_manager.lua` | 272 | `apply` (dance, samba, subjob buffs), `apply_dance` |
+| `shared/jobs/dnc/functions/logic/smartbuff_manager.lua` | 273 | `apply` (dance, samba, subjob buffs), `apply_dance` |
 | `shared/jobs/dnc/functions/logic/set_builder.lua` | 161 | `select_engaged_base` (Saber/Fan Dance, HybridMode), `apply_weapon` (+ sub override), town, movement |
 | `shared/utils/dnc/waltz_manager.lua` | 261 | `//gs c waltz` / `aoewaltz` tier selection (any job with DNC main or sub) |
 | `shared/utils/drg/auto_jump.lua` | 228 | Jump before WS on /DRG (shared with WAR) |
@@ -262,8 +262,9 @@ deadline), else `input /ja "<step>" <t>`; flips `CurrentStep` when alternating.
 1. The dance from `state.Dance` (Saber 219 / Fan 224) unless already active.
 2. The samba from `state.Samba` (shared recast 216) unless Fan Dance is the
    selected dance, the samba buff is up (`Drain Samba II` grants
-   `Drain Samba`), or the live TP is below its cost (`SAMBAS`). The queued
-   samba then passes `job_precast_samba`, which checks the same cost.
+   `Drain Samba`), or the live TP is below its cost (`SAMBAS`) without Trance
+   (under Trance the cost is not checked, since 2026-09-28). The queued samba
+   then passes `job_precast_samba`, which applies the same rule.
 3. Subjob (`collect_subjob_buffs`): /WAR `SubjobWarBuffs` (Berserk, Aggressor,
    Warcry), /NIN Utsusemi Ni then Ichi, /SAM Hasso (138); others nothing.
 
@@ -482,8 +483,9 @@ In game: `//gs c trace on` (`TP` lines for the weaponskill TP piece),
   `cancel_conflicting_buffs`).
 - /SAM smartbuff queues Hasso, which needs a two-handed weapon
   (`collect_sam_buffs`); a DNC holds daggers.
-- `collect_samba` ignores Trance: under Trance with TP below the samba's cost,
-  smartbuff skips a samba the game would allow for free.
+- Fixed 2026-09-28: `collect_samba` skips its TP test under Trance, like
+  `job_precast_samba`, so smartbuff no longer leaves out a samba the game
+  allows for free.
 - Midcast routing is a no-op (base sets absent) and duplicates THF's skeleton.
 - Utsusemi: Ichi (shared `utsusemi_shadows.lua`, every job) cancels every Copy
   Image buff 2.3 s after the midcast starts, whatever happens to the cast: a

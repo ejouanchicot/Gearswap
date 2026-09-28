@@ -48,12 +48,13 @@ A plain `sets.idle` is worn only if the current Idle Mode has no set of its own.
 |---|---|
 | `sets.engaged.DT` | Engaged Mode `DT` (default), one weapon (shield, grip or nothing in the off hand) |
 | `sets.engaged.Acc`, `sets.engaged.TP`, `sets.engaged.Enspell` | Engaged Mode `Acc` / `TP` / `Enspell`, one weapon |
-| `sets.engaged.DT.DW`, `.Acc.DW`, `.TP.DW`, `.Enspell.DW` | Same modes with a weapon in the off hand (dual wield). Missing `.DW` set: the normal one is used |
+| `sets.engaged.DT.DW`, `.Acc.DW`, `.TP.DW`, `.Enspell.DW` | Same modes with a weapon in the off hand (dual wield, /NIN or /DNC only). Missing `.DW` set: the normal one is used |
 
 What counts as dual wield: the off hand is the item of the Sub Weapon set
 (`sets['Malevolence'].sub`), or, with Combat Mode On, the item you actually
-wear. The game's item list decides whether it is a weapon; your subjob is not
-checked, so `Malevolence` on a subjob without Dual Wield still picks `.DW`.
+wear. The game's item list decides whether it is a weapon. Your subjob must be
+NIN or DNC: Red Mage has no Dual Wield of its own, so on any other subjob
+`Malevolence` in the Sub Weapon mode keeps the normal (one weapon) sets.
 
 The shared Dual Wield tier sets (`sets.DW.NoHaste` ... `sets.DW.MaxHaste`) go on
 top of the `.DW` set: see [set names](../../guides/sets.md).

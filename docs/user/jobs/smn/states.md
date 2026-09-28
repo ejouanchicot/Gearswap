@@ -40,9 +40,8 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 - **Blood Pact gear**: the pact is sorted into Rage (Physical, Magical, Hybrid,
   Astral Flow) or Ward (Buff, Debuff, Heal), and
   `sets.pet_midcast.BPRage.<type>` / `sets.pet_midcast.BPWard.<type>` goes on
-  when you use the pact and again when the avatar acts. Do not write a
-  `sets.midcast.Pet`: Mote-Include would equip it over the Blood Pact set when
-  the avatar acts.
+  when you use the pact and again when the avatar acts. A `sets.midcast.Pet`
+  does not replace it.
 - **Carbuncle auto-summon**: about 10 s after loading (or a subjob change), if
   no pet is out, Carbuncle is summoned.
 - Outside town, `sets.MoveSpeed` goes on while moving.

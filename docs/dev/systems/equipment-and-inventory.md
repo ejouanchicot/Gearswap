@@ -37,16 +37,16 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/utils/equipment/equipment_checker.lua` | 489 | `//gs c checksets`: name -> location cache of owned items, walk of `sets`, report of unavailable slots | `CommonCommands.handle_checksets`, on demand | this page |
 | `shared/utils/equipment/wardrobe_auditor.lua` | 695 | `//gs c wa` report; text parser of set files; `build_pinned_bags` / `build_frequency_map` / `collect_all_used_names` for the organizer | `CommonCommands.handle_wardrobeaudit`; `wardrobe/lib/state.lua`, `reports.lua`, `orchestrator_alt.lua` | this page |
 | `shared/utils/equipment/hp_priority.lua` | 196 | Load-time pass: `priority = HP` (HP*1000+MP on BLM/RDM/GEO) on every HP piece of `_G.sets` | `INIT_SYSTEMS.lua`, HP PRIORITY block, every load | this page |
-| `shared/utils/equipment/weapon_resolver.lua` | 104 | `set_for(slot, value)`: the set a `MainWeapon` / `SubWeapon` value equips; `is_offhand_weapon(name)` | 11 job set builders (see below) | this page |
-| `shared/utils/equipment/item_index.lua` | 95 | Name lookups over `res.items` built in one walk per session (`windower._item_index`): `id(name)`, `is_weapon(name)`, `dual_wields(name)` | `weapon_resolver.lua`, `quiver_manager.lua`, `refill/item_resolver.lua` | this page |
+| `shared/utils/equipment/weapon_resolver.lua` | 104 | `set_for(slot, value)`: the set a `MainWeapon` / `SubWeapon` value equips; `is_offhand_weapon(name)` | 12 job set builders (see below) | this page |
+| `shared/utils/equipment/item_index.lua` | 93 | Name lookups over `res.items` built in one walk per session (`windower._item_index`): `id(name)`, `is_weapon(name)`, `dual_wields(name)` | `weapon_resolver.lua`, `quiver_manager.lua`, `refill/item_resolver.lua`, `weaponskill/ws_slots.lua` (`same_item`, WAR / PLD weapon detection) | this page |
 | `shared/utils/equipment/elemental_bonus.lua` | 75 | Pure arithmetic: what Hachirin-no-Obi and Orpheus's Sash add for an action | `elemental_belt.lua`, `custom/custom_conditions.lua` (`obi_better` / `orpheus_better`) | this page; [keybinds-and-custom.md](keybinds-and-custom.md) |
 | `shared/utils/equipment/elemental_belt.lua` | 213 | Obi or Orpheus chosen for every job on `cleanup_precast` / `cleanup_midcast`; `//gs c belt` | `INIT_SYSTEMS.lua` (`ElementalBelt.install`) | [factories-and-helpers.md](factories-and-helpers.md#elementalbelt) |
-| `shared/utils/equipment/dual_wield.lua` | 248 | Dual Wield tier sets (`sets.DW.*`) laid on the engaged set by magic haste; `//gs c dw` | `INIT_SYSTEMS.lua` (`DualWield.install`) | [factories-and-helpers.md](factories-and-helpers.md#dualwield) |
-| `shared/utils/equipment/treasure_hunter.lua` | 275 | `TreasureMode` (Off/Tag/Full, SATA on THF), mob tagging, engaged and action overlays | `INIT_SYSTEMS.lua` (`TreasureHunter.install`) | [factories-and-helpers.md](factories-and-helpers.md#treasurehunter) |
+| `shared/utils/equipment/dual_wield.lua` | 247 | Dual Wield tier sets (`sets.DW.*`) laid on the engaged set by magic haste; `//gs c dw` | `INIT_SYSTEMS.lua` (`DualWield.install`) | [factories-and-helpers.md](factories-and-helpers.md#dualwield) |
+| `shared/utils/equipment/treasure_hunter.lua` | 277 | `TreasureMode` (Off/Tag/Full, SATA on THF), mob tagging, engaged (skipped during a COR roll, `GearHold`) and action overlays | `INIT_SYSTEMS.lua` (`TreasureHunter.install`) | [factories-and-helpers.md](factories-and-helpers.md#treasurehunter) |
 | `shared/utils/equipment/treasure_commands.lua` | 63 | `//gs c th` built on `optional_state_commands.create` | `COMMON_COMMANDS.lua` router | [commands-and-debug.md](commands-and-debug.md) |
 | `shared/utils/equipment/spell_gear_lock.lua` | 135 | A piece a spell cannot be cast without (Dispelga -> Daybreak), worn through Combat Mode | RDM precast / midcast / aftercast / commands | [factories-and-helpers.md](factories-and-helpers.md#spellgearlock), [../jobs/rdm.md](../jobs/rdm.md) |
 | `shared/utils/equipment/ampulla_lock.lua` | 172 | Ammo slot held on Hoxne Ampulla for the Hoxne stance (PLD, WAR) | PLD/WAR commands (`job_state_change`), PLD/WAR entry `user_setup` / `file_unload`, wardrobe organizer | this page; [../jobs/pld.md](../jobs/pld.md) |
-| `shared/utils/set_building/base_set_builder.lua` | 104 | `apply_movement`, `select_idle_base_town`, `is_in_town` shared by the job set builders | set builders of 13 jobs (BST: `is_in_town` only), `DNC_IDLE.lua`, `SMN_IDLE.lua`, `custom/custom_conditions.lua` | this page |
+| `shared/utils/set_building/base_set_builder.lua` | 104 | `apply_movement`, `select_idle_base_town`, `is_in_town` shared by the job set builders | set builders of 14 jobs (BST: `is_in_town` only; SAM since 2026-09-28), `DNC_IDLE.lua`, `SMN_IDLE.lua`, `custom/custom_conditions.lua` | this page |
 | `shared/utils/inventory/refill_manager.lua` | 315 | `//gs c rf` facade: plans pulls/pushes, queues the moves, schedules them 0.6 s apart | `CommonCommands.handle_refill`, dual-box `rf` hook | this page |
 | `shared/utils/inventory/refill/config_resolver.lua` | 245 | Picks the refill list (craft / job+subjob / fallback) and builds the cross-character foreign item set | `refill_manager.lua` | this page |
 | `shared/utils/inventory/refill/item_resolver.lua` | 75 | Lazy name -> item id index over `res.items` | `refill_manager.lua`, `config_resolver.lua` | this page |
@@ -339,8 +339,9 @@ bag on every refill.
 
 Every set builder that applies `state.MainWeapon` / `state.SubWeapon` asks
 `WeaponResolver.set_for(slot, value)` instead of reading `sets[value]` itself. Callers (all
-`shared/jobs/<job>/functions/logic/set_builder.lua`): BLM, BLU, BRD, COR, DNC, GEO, RDM, RUN, SAM, THF,
-WAR. PLD and DRK use their own weapon logic.
+`shared/jobs/<job>/functions/logic/set_builder.lua`): BLM, BLU, BRD, COR, DNC, DRK, GEO, RDM, RUN, SAM,
+THF, WAR. PLD uses its own weapon logic. DRK's `apply_weapon` joined on 2026-09-28; before, it read
+`sets[weapon]` directly and `equip_without_set` had no effect on DRK.
 
 - **Default** (no `<Char>/config/WEAPON_CONFIG.lua`, or `equip_without_set` not `true`): returns
   `sets[value]`, exactly the old lookup. Tetsouo and Kaories have no `WEAPON_CONFIG.lua`, so nothing
@@ -355,8 +356,9 @@ WAR. PLD and DRK use their own weapon logic.
 - `WeaponResolver.is_offhand_weapon(name)` answers "does this off-hand make the player dual wield?"
   from the game's item list: a `Weapon` with a combat skill (`skill > 0`) -> `true`; a shield or a grip
   (skill 0) -> `false`; a name the game does not know -> `nil`. Short and long names, any case. Used by
-  the RDM set builder (`has_shield_equipped`, then `sets.shields` for unknown names) and the BLU set
-  builder (`is_single_wield`).
+  the RDM set builder (`has_shield_equipped`, after its subjob test: off /NIN and /DNC the answer is
+  always "no dual wield"; then `sets.shields` for unknown names) and the BLU set builder
+  (`is_single_wield`).
 
 The config is read once per sandbox (`enabled`, `pcall(require, 'config/WEAPON_CONFIG')`); both item
 indexes are built lazily on first use (see [For maintainers / AI](#for-maintainers--ai) for the cost).
@@ -469,7 +471,7 @@ Exported as `_G.HPPriority` and returned.
 
 | Function | Returns | Callers |
 |---|---|---|
-| `set_for(slot, value)` | `table` or `nil` (see [Weapon states](#weapon-states-weaponresolver)) | set builders of BLM, BLU, BRD, COR, DNC, GEO, RDM, RUN, SAM, THF, WAR |
+| `set_for(slot, value)` | `table` or `nil` (see [Weapon states](#weapon-states-weaponresolver)) | set builders of BLM, BLU, BRD, COR, DNC, DRK, GEO, RDM, RUN, SAM, THF, WAR |
 | `is_offhand_weapon(name)` | `true` (dual wield), `false` (shield/grip), `nil` (unknown name or empty) | RDM `SetBuilder.has_shield_equipped`, BLU `SetBuilder.is_single_wield` |
 
 Returned only (no `_G` export).
@@ -478,8 +480,8 @@ Returned only (no `_G` export).
 
 | Function | Returns | Callers |
 |---|---|---|
-| `apply_movement(result)` | set (combined with `sets.MoveSpeed` when moving) | set builders of BLM, BLU, BRD, COR, DNC, GEO, PLD, RDM, RUN, THF, WAR, WHM; `DNC_IDLE.lua`; `SMN_IDLE.lua` |
-| `select_idle_base_town(base_set)` | `set, in_town` | same set builders except BST (RDM as `SetBuilder.check_town`); `DNC_IDLE.lua`; `SMN_IDLE.lua` |
+| `apply_movement(result)` | set (combined with `sets.MoveSpeed` when moving) | set builders of BLM, BLU, BRD, COR, DNC, GEO, PLD, RDM, RUN, SAM, THF, WAR, WHM; `DNC_IDLE.lua`; `SMN_IDLE.lua` |
+| `select_idle_base_town(base_set)` | `set, in_town` | same set builders except BST and SAM (RDM as `SetBuilder.check_town`); `DNC_IDLE.lua`; `SMN_IDLE.lua` |
 | `is_in_town()` | `boolean` | BST set builder; `SMN_IDLE.lua`; `custom/custom_conditions.lua` (`town` condition) |
 
 ### ElementalBonus (`elemental_bonus.lua`)

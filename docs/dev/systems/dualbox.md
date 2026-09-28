@@ -30,7 +30,7 @@ a name would not locate the spot (they move often in this folder).
 
 | Path | Lines | Role |
 |------|------:|------|
-| `shared/utils/dualbox/dualbox_manager.lua` | 543 | Config load, job exchange protocol, `_G.AltJobState`, auto-init once per load |
+| `shared/utils/dualbox/dualbox_manager.lua` | 478 | Config load, job exchange protocol, `_G.AltJobState`, auto-init once per load |
 | `shared/utils/dualbox/alt_states.lua` | 188 | Job, subjob and weapon type of every box of the group by name (`_G.AltStates`); `matches()` for keybind `alt` conditions; `watch_weapon()` reports a main-hand weapon type change; `on_weapon_change(key, fn)` is the shared listener behind it, also used by keybind entries with `weapon` (one packet hook per load, listeners on `_G._own_weapon_watch`) |
 | `shared/utils/dualbox/alt_commands.lua` | 573 | Loads the alt's command configs, resolves tier/target, builds and sends `send <alt> input ...`; installs the `selfCommandMaps` fallback |
 | `shared/utils/dualbox/alt_buff_reporter.lua` | 336 | ALT: report tracked buffs. MAIN: store them, guess/expire, trace log |
@@ -38,7 +38,7 @@ a name would not locate the spot (they move often in this folder).
 | `shared/utils/dualbox/alt_group.lua` | 474 | `//gs c alts`: orders to every other member of the box group (`sm on/off`, follow, `do <command>`, mirror, window); `route()` also dispatches `altreport`, `altmirror`, `altlead`, `main`, `setalt` |
 | `shared/utils/dualbox/alt_window.lua` | 368 | Fixed-size overlay on the main: each alt (job, party, zone, Sneak / Invi time left from `StealthTimers`) and the Auto / Follow / Mirror / Step state |
 | `shared/utils/dualbox/dualbox_role.lua` | 165 | `//gs c main` / `setalt`: switches the roles at runtime and saves them in `<Character>/config/dualbox_role.lua` |
-| `shared/utils/dualbox/roll_share.lua` | 108 | A COR alt's roll results and busts sent to the main (`gs c rollshow`) and shown there in the same format |
+| `shared/utils/dualbox/roll_share.lua` | 110 | A COR alt's roll results and busts sent to the main (`gs c rollshow`) and shown there in the same format |
 | `shared/utils/messages/formatters/system/message_altgroup.lua` + `data/systems/altgroup_messages.lua` | - | `[ALTS]` / `[DUALBOX]` lines of the box-group modules (including `not_ready`, `window_main_only`, `no_follower`) |
 | `shared/utils/messages/formatters/ui/message_dualbox.lua` | 190 | Chat output for the job exchange (via `M.send('DUALBOX', ...)`) |
 | `shared/utils/messages/data/systems/dualbox_messages.lua` | 164 | Message templates for the above |
@@ -465,12 +465,10 @@ When the box is an alt (`DualBoxConfig.role == 'alt'`) playing COR, `RollTracker
 | `handle_job_request()` | Either role: calls `send_job_update(true)` | 17 job COMMANDS on `requestjob` |
 | `request_alt_job()` | Either role: sends `requestjob` to every other box of `AltGroup.get_alts()` (the partner alone when that list is empty) | `run_auto_init` (both roles), `DualBoxRole` resync |
 | `receive_alt_job(job, sub, mlvl, slvl, sender, weapon)` | Records every sender in `alt_states.lua`; a box other than the tracked partner goes no further. Stores `_G.AltJobState` (with `weapon`), patches `_G.cor_party_jobs`, redraws the window; for a new job or subjob only, prints and reselects the macro book | 17 job COMMANDS on `altjobupdate` |
-| `is_alt_online()` | True if `AltJobState.online` and last update within `DualBoxConfig.timeout` (default 30 s). Sets `online=false` once expired | `macrobook_manager.lua` `dualbox_config`, `get_alt_job`, `get_alt_subjob`, `show_status` |
+| `is_alt_online()` | True if `AltJobState.online` and last update within `DualBoxConfig.timeout` (default 30 s). Sets `online=false` once expired | `macrobook_manager.lua` `dualbox_config`, `get_alt_job` |
 | `get_alt_job()` | Alt job or nil when offline | `macrobook_manager.lua` `dualbox_config` |
-| `get_alt_subjob()` | Alt subjob or nil | none |
-| `mark_alt_offline()` | Sets `online=false` | none |
-| `get_time_since_update()` | Seconds since last update (9999 if none) | `show_status` only |
-| `show_status()` | Prints a status block | none (no `//gs c` command reaches it) |
+
+`get_alt_subjob`, `mark_alt_offline`, `get_time_since_update` and `show_status` were removed on 2026-09-28 (no caller anywhere, live folders included). The alt's subjob stays in `_G.AltJobState.subjob`, which nothing reads today.
 
 ### `AltStates` (`require('shared/utils/dualbox/alt_states')`; data on `_G.AltStates`)
 
@@ -490,7 +488,7 @@ When the box is an alt (`DualBoxConfig.role == 'alt'`) playing COR, `RollTracker
 |---|---|---|
 | `result(roll_name, value_display, bonus_display, is_crooked, affected_count, total_count, ...)` | On a COR alt whose main has reported (`AltStates.get(main)`), sends `rollshow result ...` with hex-encoded fields | `roll_tracker.lua` `display_roll_result` |
 | `bust(roll_name, bust_effect, effect_type)` | Same for a bust | `roll_tracker.lua` bust display |
-| `receive(args)` | On the main: decodes and calls `RollMessages.show_roll_result` / `show_roll_bust` with the caster as `source` | `CommonCommands.handle_command` (`rollshow`) |
+| `receive(args)` | On the main: decodes and calls `RollMessages.show_roll_result` / `show_roll_bust` with the caster as `source`; returns true (handled, since 2026-09-28) | `CommonCommands.handle_command` (`rollshow`) |
 
 ### `AltCommands` (`_G.AltCommands`, returned)
 
@@ -568,7 +566,6 @@ When the box is an alt (`DualBoxConfig.role == 'alt'`) playing COR, `RollTracker
 
 All `alt*` names, `alts`, `main`, `setalt`, `altreport`, `altmirror`, `altlead` and `rollshow` are in the `is_common_command` list.
 `altjobupdate`/`requestjob` are not: every job's `job_self_command` handles them before the common check.
-No `//gs c` command calls `DualBoxManager.show_status()`.
 
 ## Configuration
 
@@ -816,7 +813,7 @@ Still open:
 
 - `_G.AltBuffState` is not re-synced after a MAIN reload, and `assume()` stays disabled - `run_auto_init`, `shared/utils/dualbox/dualbox_manager.lua`
 - `altlight`/`altdark` send tier I spells when the MAIN is BLM - `_master/config/alt/GEO_ALT_CUSTOM.lua` `altlight` / `altdark` (same in BLM/RDM/SCH CUSTOM)
-- Dead API: `show_status`, `mark_alt_offline`, `get_alt_subjob`, `get_time_since_update`, `unregister_hook`, `clear_cache` - `shared/utils/dualbox/dualbox_manager.lua`, `dualbox_sync_ipc.lua`, `alt_commands.lua`
+- Dead API: `unregister_hook`, `clear_cache` - `dualbox_sync_ipc.lua`, `alt_commands.lua`. Fixed 2026-09-28: `DualBoxManager.show_status`, `mark_alt_offline`, `get_alt_subjob`, `get_time_since_update` removed (their `MessageDualbox.show_status_*` / `show_not_initialized` formatters are now uncalled, see [messages-catalog.md](messages-catalog.md)). `RollShare.receive` returns true, so `rollshow` counts as handled.
 - `_G.DUALBOX_SYNC_DEBUG` is never set, so sync hook errors are always silent (the comment now says so) - `_on_ipc_message`, `shared/utils/dualbox/dualbox_sync_ipc.lua`
 - `Composure` and `Bolter's Roll` are tracked but never reported on change and never read - `TRACKED`, `shared/utils/dualbox/alt_buff_reporter.lua`
 - `//gs c alt <unknown>` prints nothing - `AltCommands.execute`, `shared/utils/dualbox/alt_commands.lua`

@@ -37,9 +37,9 @@ does not).
 | `shared/utils/messages/info_block.lua` | 134 | `InfoBlock`: one renderer for data blocks (`TAG :: title`, aligned `Label : value` fields), namespace `BLOCK` |
 | `shared/utils/messages/help_screen.lua` | 178 | `HelpScreen`: one renderer for help screens (groups, dot-leader rows, notes), namespace `HELP` |
 | `shared/utils/messages/api/messages.lua` | 456 | Messages API (`send`, `job`, `error`...), builder, renderer configuration wrappers, `//gs c testmsg` runner |
-| `shared/utils/messages/core/message_engine.lua` | 338 | Namespace loader (data files) and template compiler/cache; colour tags resolved through `ChatPalette` at render |
+| `shared/utils/messages/core/message_engine.lua` | 341 | Namespace loader (data files) and template compiler/cache; colour tags resolved through `ChatPalette` at render |
 | `shared/utils/messages/core/message_renderer.lua` | 255 | Final template-path output: master toggle, filter level, colour scheme, timestamp, newline split, statistics |
-| `shared/utils/messages/message_validator.lua` | 417 | `//gs c msgtests`: static checks of job templates and job formatter exports, JSON and TXT reports |
+| `shared/utils/messages/message_validator.lua` | 425 | `//gs c msgtests`: static checks of job templates and job formatter exports, JSON and TXT reports |
 | `shared/utils/messages/handlers/ability_message_handler.lua` | 284 | Finds a JA in the per-job JA databases (or a Blood Pact in the SMN database) and prints it via `show_ja_activated` |
 | `shared/utils/messages/handlers/spell_message_handler.lua` | 315 | Finds a spell in the magic databases and prints it via `show_spell_activated` |
 | `shared/hooks/init_ability_messages.lua` | 97 | Wraps `user_post_precast` -> ability handler |
@@ -219,7 +219,7 @@ colour (`error=167, warning=200, info=122, success=158, debug=8`) with `level` 2
 
 **Namespace resolution** (`MessageEngine.load`): a namespace that is exactly 3 characters and already
 upper-case loads `shared/utils/messages/data/jobs/<ns:lower()>_messages`; anything else loads
-`shared/utils/messages/data/systems/<ns:lower()>_messages`. So `'RUN'` is a job file, `'BLM_MIDCAST'`,
+`shared/utils/messages/data/systems/<ns:lower()>_messages`. So `'BRD'` is a job file, `'BLM_MIDCAST'`,
 `'UI'`, `'HELP'`, `'BLOCK'` are system files. A load failure or non-table result raises (caught by
 `Messages.send`). Loaded tables are cached in `_message_data[namespace]` keyed by the exact string
 passed (so `'combat'` and `'COMBAT'` are cached twice).
@@ -243,8 +243,9 @@ or `{job_tag}` is removed with its trailing space (`"[{job}] "`), and `"[{job} P
 `"[Phalanx]"`; `"[{job}_COMMANDS]"` or `"Main Job: {job}"` stay. The compiled closure is cached
 under `(show_tag and '1' or '0') .. template`, so switching the option needs no reload.
 
-**Colour tags.** `COLOR_CODES` is the list of known tags (its values are the standard codes, kept as
-documentation). At render each colour part is emitted as `ChatPalette.tag(name)`, i.e. the player's
+**Colour tags.** `COLOR_CODES` is the list of known tags (27; its values are the standard codes, kept as
+documentation). It is also exported read-only as `MessageEngine.COLOR_CODES` (2026-09-28), for
+`message_validator.lua`. At render each colour part is emitted as `ChatPalette.tag(name)`, i.e. the player's
 code for that name if set, else the standard code (see "Colours, palette and chat options"). A `chat.colors` change therefore
 applies to the next message without reload.
 
@@ -612,10 +613,12 @@ flowchart LR
 ### Validator (`//gs c msgtests`)
 
 `MessageValidator.run_all_tests()` resets its counters, then for each of `JOBS_TO_VALIDATE` (BLM, BRD,
-BST, COR, DRG, GEO, RDM, WHM; RUN and all system namespaces are not covered):
+BST, COR, DRG, GEO, RDM, WHM; the system namespaces are not covered):
 - loads `data/jobs/<job>_messages` and checks every entry has `template` and `color` and that every
-  `{tag}` is in `VALID_COLORS` (9 names: gray, yellow, green, orange, red, cyan, lightblue, blue,
-  white), in `COMMON_PARAMS`, or ends in `_color`, `_text`, `_name`;
+  `{tag}` is in `VALID_COLORS` (the 9 names written in the file, gray, yellow, green, orange, red,
+  cyan, lightblue, blue, white, plus every key of `MessageEngine.COLOR_CODES` read at load since
+  2026-09-28: 27 tags, `purple`, `gold`, `aqua`, `jobtag`... included), in `COMMON_PARAMS`, or ends
+  in `_color`, `_text`, `_name`;
 - loads `formatters/jobs/message_<job>` and checks every function starts with `show_` and exists as
   `MessageFormatter[name]`.
 
@@ -904,20 +907,21 @@ Re-checked on 2026-09-28. Open:
   II/III, Banishga III, Banish IV, Meteor II, the -ga enfeebles, Chocobo Hum, Cactuar Fugue, some
   Ninjutsu) loads all 15 magic databases, and a first Helix loads 13
   (`spell_message_handler.lua` `find_spell_in_databases`).
-- `show_error(prefix, message)` calls lose the message: `DEBUG_COMMANDS.lua` `handle_memcheck` and
-  `handle_debugmsg`.
-- 147 of 271 facade wrappers have no caller by name, 6 of them pointing at undefined RDM functions
+- Fixed 2026-09-28: the `show_error(prefix, message)` calls of `DEBUG_COMMANDS.lua` `handle_memcheck`
+  and `handle_debugmsg` lost the message; they now pass one string.
+- 148 of 271 facade wrappers have no caller by name (`show_insufficient_mp_error` joined them on 2026-09-28), 6 of them pointing at undefined RDM functions
   (`show_convert_activated`, `show_convert_used`, `show_chainspell_activated`, `show_chainspell_ended`,
   `show_composure_activated`, `show_composure_active`).
 - `//gs c testmsg` runs no test and reports success (`api/messages.lua` `Messages.test`).
-- `//gs c msgtests` whitelist out of date, fails on valid templates (`message_validator.lua`
-  `VALID_COLORS`, `COMMON_PARAMS`).
+- `//gs c msgtests` parameter whitelist out of date, fails on valid templates (`message_validator.lua`
+  `COMMON_PARAMS`). Fixed 2026-09-28 for the colour tags: `VALID_COLORS` now takes every engine tag
+  (`MessageEngine.COLOR_CODES`).
 - Region overrides 1-2 (`_G.ORANGE_COLOR_CODE`, `_G.DETECTED_FFXI_REGION`) have no writer; the
   orphaned `COMMANDS` region templates still advise `//gs c setregion` (see
   [messages-catalog.md](messages-catalog.md)).
 - Engine: no-op cache reset and unreachable `[ERROR] Failed to load` fallback
   (`message_engine.lua` top level and `MessageEngine.format`); `COLOR_CODES` values are unused
-  (only the key list is read).
+  (only the key list is read, by the engine and by the validator).
 - WS `full` mode prints nothing for a WS missing from the database (`init_ws_messages.lua`).
 - Job-tag helper duplicated in five job formatters (`message_blm.lua`, `message_brd.lua`,
   `message_bst.lua`, `message_geo.lua`, `message_rdm.lua`: local `get_job_tag`).

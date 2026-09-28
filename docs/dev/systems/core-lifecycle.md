@@ -21,21 +21,22 @@ Verified against the code on 2026-09-28. Line numbers of `INIT_SYSTEMS.lua` (a f
 | `INIT_SYSTEMS.lua` | 412 | Included by every entry point's `get_sets()` right after Mote-Include. Starts the universal systems (some synchronously, some on 0.5 s / 2 s / 3 s / 5 s timers) and lays the gear hook chain | here |
 | `job_change_manager.lua` | 235 | Debounced `gs reload` on subjob change, cleanup before it, lockstyle-cancel registry | here |
 | `job_sync_watchdog.lua` | 165 | Compares the job the file was loaded for with the client's job every 5 s, forces `gs reload` after two mismatches | here |
-| `midcast_watchdog.lua` | 490 | Tracks the spell/item in midcast; if no aftercast arrives within cast time + buffer, sends `gs c update` | here |
-| `module_cache.lua` | 106 | Replaces the sandbox `require` with a caching wrapper, once per sandbox | here |
+| `midcast_watchdog.lua` | 470 | Tracks the spell/item in midcast; if no aftercast arrives within cast time + buffer, sends `gs c update` | here |
+| `module_cache.lua` | 96 | Replaces the sandbox `require` with a caching wrapper, once per sandbox | here |
 | `lifecycle_manager.lua` | 135 | Factory for the four Mote hooks every job used to copy | here |
 | `keybind_guard.lua` | 98 | Re-sends the job's binds 2 s after a load | here |
 | `state_display_override.lua` | 46 | Replaces Mote's `display_current_state` (silent while the HUD is enabled) | here |
 | `cast_tracker.lua` | 58 | Raw `action` listener: did this character start a cast / act since time t | here |
 | `auto_options.lua` | 35 | Reads `<Character>/config/AUTO_ABILITIES.lua` (automatic JA options) | here |
 | `live_tp.lua` | 30 | TP read from the game instead of GearSwap's stale copy | here (API), [factories-and-helpers.md](factories-and-helpers.md) (users) |
+| `gear_hold.lua` | 25 | `GearHold.active()`: true while a COR roll holds the idle / engaged gear (`_G.cor_roll_hold`, written by `cor/functions/logic/roll_hold.lua`); asked by the Dual Wield, Treasure Hunter and custom-gear layers of the hook chain (2026-09-28) | here ([GearHold](#gearhold)), [cor.md](../jobs/cor.md) |
 | `WATCHDOG_COMMANDS.lua` | 113 | `//gs c watchdog ...` handler, called from each job's `<JOB>_COMMANDS.lua` | here |
 | `CYCLE_HANDLER.lua` | 136 | `//gs c cyclestate <State> [reverse]`: Mote's cycle without the chat line when the keybind HUD is visible | here |
 | `combat_mode.lua` | 118 | Weapon lock on every job; its `handle_equipping_gear` wrapper is the outermost of the chain | hook: here; feature: [keybinds-and-custom.md](keybinds-and-custom.md) |
 | `combat_mode_commands.lua` | 58 | `//gs c combatmode` | [keybinds-and-custom.md](keybinds-and-custom.md), [commands-and-debug.md](commands-and-debug.md) |
 | `optional_state.lua`, `optional_state_commands.lua` | 142, 147 | Base of Combat Mode and Treasure Mode (shown / hidden / key per job) | [keybinds-and-custom.md](keybinds-and-custom.md), [factories-and-helpers.md](factories-and-helpers.md) |
 | `COMMON_COMMANDS.lua` | 786 | Every `//gs c` command shared by all jobs | [commands-and-debug.md](commands-and-debug.md) |
-| `DEBUG_COMMANDS.lua` | 579 | Debug toggles and dumps (`djc`, `debugupdate`, `debugstate`, `memcheck`...) | [commands-and-debug.md](commands-and-debug.md) |
+| `DEBUG_COMMANDS.lua` | 583 | Debug toggles and dumps (`djc`, `debugupdate`, `debugstate`, `memcheck`...) | [commands-and-debug.md](commands-and-debug.md) |
 
 ### Bootstrap files outside `core/`
 
@@ -177,10 +178,10 @@ INIT_SYSTEMS wraps them in this order. Each later layer wraps the earlier ones, 
 | # | Layer (installer) | Wraps | Runs its own work | Once-per-sandbox guard |
 |---|---|---|---|---|
 | 1 | `ElementalBelt.install` (`shared/utils/equipment/elemental_belt.lua`) | `cleanup_precast`, `cleanup_midcast` | **before** the inner call: Hachirin-no-Obi / Orpheus's Sash on elemental damage | `_G._elemental_belt_installed` |
-| 2 | `DualWield.install` (`shared/utils/equipment/dual_wield.lua`) | `handle_equipping_gear` | **after**: Dual Wield tier pieces by magic haste | `_G._dual_wield_installed` |
-| 3 | `TreasureHunter.install` (`shared/utils/equipment/treasure_hunter.lua`) | all three | **after**: engaged TH overlay (unless the job builds its own, `_G._treasure_engaged_by_job`), and `sets.TreasureHunter` on the first action against an untagged mob (not when cancelled) | `_G._treasure_installed` |
+| 2 | `DualWield.install` (`shared/utils/equipment/dual_wield.lua`) | `handle_equipping_gear` | **after**: Dual Wield tier pieces by magic haste (skipped while `GearHold.active()`) | `_G._dual_wield_installed` |
+| 3 | `TreasureHunter.install` (`shared/utils/equipment/treasure_hunter.lua`) | all three | **after**: engaged TH overlay (unless the job builds its own, `_G._treasure_engaged_by_job`, or `GearHold.active()`), and `sets.TreasureHunter` on the first action against an untagged mob (not when cancelled) | `_G._treasure_installed` |
 | 4 | `MidcastFallback.install` (`shared/utils/midcast/midcast_fallback.lua`) | `cleanup_midcast` | **before**: `route()` sends a spell the job's midcast did not route (subjob magic) through `MidcastManager` | `_G._midcast_fallback_installed` |
-| 5 | `CustomStates.install_hooks` (`shared/utils/custom/custom_states.lua`) | all three, plus `user_buff_change` | gear: release the custom locks **before**, equip the `all` + `engaged`/`idle` moments and re-apply locks **after**; actions: equip the precast/midcast moments **after** (skipped when `Guards.hands_off`) | `_G._custom_state_hooks.gear == handle_equipping_gear`; not installed when the job has no custom entries |
+| 5 | `CustomStates.install_hooks` (`shared/utils/custom/custom_states.lua`) | all three, plus `user_buff_change` | gear: release the custom locks **before**, equip the `all` + `engaged`/`idle` moments (skipped when `Guards.hands_off` or `GearHold.active()`) and re-apply locks **after**; actions: equip the precast/midcast moments **after** (skipped when `Guards.hands_off`) | `_G._custom_state_hooks.gear == handle_equipping_gear`; not installed when the job has no custom entries |
 | 6 | `CastTime.install_hook` (`shared/utils/precast/cast_time.lua`) | `cleanup_precast` | **after**, magic not cancelled: cast time from the gear actually sent, stored in `_G._precast_cast_time` (read by MidcastWatchdog) | `_G._cast_time_hook == cleanup_precast` |
 | 7 | `CombatMode.install_hook` (`shared/utils/core/combat_mode.lua`) | `handle_equipping_gear` | **before**: `CombatMode.apply()` disables (or frees) main/sub/range (+ammo on BLM/GEO/WHM) | `_G._combat_mode_hook == handle_equipping_gear` |
 
@@ -208,6 +209,7 @@ Why the order matters:
 - Combat Mode must disable the weapon slots before any gear goes on, hence outermost and "before".
 - The cast-time estimate reads `gearswap.equip_list` over `player.equipment`, so it must run after every precast layer has equipped.
 - The flags live on `_G`: a reload (new `_G`, and Mote redefines the functions) wraps again; a second call in the same sandbox does not wrap twice.
+- A COR roll marks Mote's own gear update handled until the roll lands (`roll_hold.lua`); the "after" layers of `handle_equipping_gear` (Dual Wield, TH engaged overlay, custom idle / engaged gear) ask `GearHold.active()` and stay out of the way too. Before 2026-09-28 only Dual Wield checked, inline, so the TH belt and the player's CUSTOM gear went on over the roll's gear.
 
 Where each layer is documented: belt, Dual Wield and TH in [equipment-and-inventory.md](equipment-and-inventory.md) / [factories-and-helpers.md](factories-and-helpers.md); MidcastFallback in [midcast-and-buffs.md](midcast-and-buffs.md); custom states and Combat Mode in [keybinds-and-custom.md](keybinds-and-custom.md).
 
@@ -324,7 +326,7 @@ Inside the sandbox `require` is `include_user` (`refresh.lua:132`). It returns `
 - Guard: `rawget(_G, '__require_cache_installed')`, so a second call in the same sandbox returns false.
 - Wraps the original `require`. Calls with a second argument (include-into-table form) or a non-string path pass straight through.
 - Key: `path:lower()`, matching `include_user`'s own lowercasing (`user_functions.lua:305`). A module that returns nil is stored as the `CACHED_NIL` sentinel so it is not re-run. A load that raises is not cached.
-- Counters in `_G.__require_cache_stats`; the table itself is `_G.__require_cache`.
+- Counters in `_G.__require_cache_stats` (nothing in the repository reads them since `stats()` was removed on 2026-09-28; the offline load profiler can); the table itself is `_G.__require_cache`.
 
 Lifetime: the cache lives on the sandbox `_G` and dies with it. A module is bound to the `user_env` it was loaded in, so a cache that outlived the sandbox would hand the next job modules bound to the old `player` / `sets` / `state`.
 
@@ -340,10 +342,10 @@ Four builders, each returning a handler; the caller assigns the Mote global (`jo
 
 | Builder | Shared behaviour | `extra` | Used by |
 |---|---|---|---|
-| `status_change(extra)` | `DoomManager.handle_status_change(new, old)` (unlocks Doom slots after death); after `extra`, `hold_during_action` (below) | always run between the two | BLM BLU BRD BST COR DNC GEO PLD PUP RDM RUN SAM THF WHM |
+| `status_change(extra)` | `DoomManager.handle_status_change(new, old)` (unlocks Doom slots after death); after `extra`, `hold_during_action` (below) | always run between the two | all 17 jobs (DRK, SMN and WAR since 2026-09-28; before, their `<JOB>_STATUS.lua` only called `DoomManager`) |
 | `buff_change(extra)` | `DoomManager.handle_buff_change(buff, gain)`; if it returns true the chain stops | skipped when Doom handled it | BLM BLU BRD BST COR DNC PLD PUP RDM RUN SAM WHM (COR passes `retire_lost_roll`) |
 | `aftercast(extra)` | `_G.MidcastWatchdog.on_aftercast()` if the watchdog is loaded. No `gs c update` (removed 2026-06) | always run after | BLU PLD PUP RDM RUN SAM SMN WHM |
-| `state_change(extra)` | Returns immediately for `stateField == 'Moving'`; otherwise `KeybindUI.update()` | run after the UI update | BLU BRD BST COR DNC DRK GEO PLD PUP RUN SAM THF |
+| `state_change(extra)` | Returns immediately for `stateField == 'Moving'`; otherwise `KeybindUI.update()` | run after the UI update | BLU BRD BST COR DNC DRK GEO PLD PUP RUN SAM SMN THF |
 
 `DoomManager` is required on first use (`doom()`), without `pcall`.
 
@@ -406,14 +408,24 @@ Every public function (module field or `_G` export) of the modules owned by this
 | `get_stats()` | Table: active, spell_name, ids, cast times, fast_cast, age, enabled, timeout, buffer, fallback_timeout, debug | `WATCHDOG_COMMANDS`, `system_checker.lua` `check_watchdog` |
 | `clear_all()` | Clears tracking, sends `gs c update`; does not leave test mode | `WATCHDOG_COMMANDS` |
 | `simulate_stuck(name, id)` | Test mode | `WATCHDOG_COMMANDS` |
-| `is_enabled()`, `get_buffer()`, `get_fallback_timeout()`, `is_debug_enabled()` | Getters | none in the repository |
 
 ### ModuleCache (`_G.ModuleCache`, returned)
 
 | Function | Returns | Callers |
 |---|---|---|
 | `install()` | true when installed by this call | `config_loader.lua` (file level), INIT_SYSTEMS (fallback) |
-| `stats()` | `hits, loads, cached_modules` | none (the header mentions syscheck; `system_checker.lua` does not call it) |
+
+`stats()` was removed on 2026-09-28 (no caller); the counters stay in `_G.__require_cache_stats`.
+
+### GearHold
+
+`shared/utils/core/gear_hold.lua`, returned by `require` (no global).
+
+| Function | Returns | Callers |
+|---|---|---|
+| `active()` | true while `rawget(_G, 'cor_roll_hold')` exists and `os.clock()` is before its `until_time` (a COR roll, at most 5 s, see [cor.md](../jobs/cor.md)) | `dual_wield.lua` `DualWield.apply`, `treasure_hunter.lua` (engaged overlay in the `handle_equipping_gear` wrapper), `custom_states.lua` (gear hook) |
+
+Each caller requires it at call time (no module-level require). Outside COR `_G.cor_roll_hold` is never written, so `active()` is always false.
 
 ### KeybindGuard (`_G.KeybindGuard`, returned)
 
@@ -667,7 +679,7 @@ Open:
 - `JobChangeManager.cancel_all()` in `get_sets()` is a no-op in a fresh sandbox (every entry, e.g. `_master/entry/Tetsouo_WAR.lua` `get_sets`).
 - Fixed 2026-09-28: `watchdog test` labelled its default spell Teleport-Holla while using Warp II's id (262); the label is now Warp II. The first word of `//gs c watchdog ...` is read in any case (`Watchdog On` used to show the help).
 - `watchdog clear` during a test leaves test mode on; the next real cast is reported stuck (`MidcastWatchdog.clear_all`).
-- Dead code: `ModuleCache.stats()`, `MidcastWatchdog.is_enabled/get_buffer/get_fallback_timeout/is_debug_enabled`.
+- Fixed 2026-09-28: the dead `ModuleCache.stats()` and `MidcastWatchdog.is_enabled/get_buffer/get_fallback_timeout/is_debug_enabled` are removed; WAR, DRK and SMN use `LifecycleManager.status_change()`.
 - The job intro never shows the macro book or the lockstyle: `KeybindManager`'s `show_intro` looks for `get_<job>_macro_info` and `get_info` on the `<JOB>_MACROBOOK` / `<JOB>_LOCKSTYLE` modules, and the wrappers return nothing (owner decision pending).
 - Hook layers fail silently: each install is wrapped in `pcall(function() ... end)` with no report, unlike the other INIT blocks.
 - The 3 s fallback of `hold_during_action` (sends `gs c update`) is not tested in game.

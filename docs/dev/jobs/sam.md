@@ -24,8 +24,8 @@ What SAM adds on top of the shared pipeline:
 - **Set building**: engaged base re-selected from `OffenseMode` x
   `HybridMode` (Mote cannot reach `sets.engaged.PDT`), Aftermath Lv.3 set,
   Seigan / Third Eye layers, weapon set, bow layer; idle by HP (Weak below
-  50 %, Regen below 80 %) and HybridMode PDT. No town set and no movement
-  layer.
+  50 %, Regen below 80 %) and HybridMode PDT, then `sets.MoveSpeed` while
+  running (also in town). No town set of its own.
 - **TP bonus configuration** with Hagakure and Dojikiri Yasutsuna.
 
 Every file listed below was read in full on 2026-09-28, except the gear content
@@ -46,10 +46,10 @@ function; line numbers are deliberately not used.
 | `shared/jobs/sam/functions/SAM_STATUS.lua` | 31 | `job_status_change = LifecycleManager.status_change(auto_hasso)` |
 | `shared/jobs/sam/functions/SAM_BUFFS.lua` | 19 | `job_buff_change = LifecycleManager.buff_change()` |
 | `shared/jobs/sam/functions/SAM_COMMANDS.lua` | 166 | `job_self_command` router (shared commands, `hasso`, `seigan`), `job_state_change = LifecycleManager.state_change()` |
-| `shared/jobs/sam/functions/SAM_MOVEMENT.lua` | 28 | Empty `job_handle_equipping_gear` |
+| `shared/jobs/sam/functions/SAM_MOVEMENT.lua` | 28 | Empty `job_handle_equipping_gear` (movement gear is in the set builder) |
 | `shared/jobs/sam/functions/SAM_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('SAM', ...)` wrappers |
 | `shared/jobs/sam/functions/SAM_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('SAM', ...)` wrapper |
-| `shared/jobs/sam/functions/logic/set_builder.lua` | 166 | `build_idle_set` (HP, PDT, weapon), `build_engaged_set` (base from `select_engaged_base`; Seigan, weapon, bow) |
+| `shared/jobs/sam/functions/logic/set_builder.lua` | 170 | `build_idle_set` (HP, PDT, weapon, `BaseSetBuilder.apply_movement`), `build_engaged_set` (base from `select_engaged_base`; Seigan, weapon, bow) |
 | `_master/config/sam/SAM_STATES.lua` | 118 | `SAMStates.configure()` (HybridMode, OffenseMode, WeaponskillMode, MainWeapon, Stance, FastCast, AutoMedicine) |
 | `_master/config/sam/SAM_KEYBINDS.lua` | 53 | Data only: 4 binds handed to `KeybindManager.create('SAM', ...)` |
 | `_master/config/sam/SAM_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
@@ -182,8 +182,11 @@ no midcast set in the template).
   (`sets.idle.Normal` through `IdleMode`, `sets.idle.Weak` under the weakness
   buff; defense and kiting layers included): `sets.idle.Weak` if
   `player.hpp < 50`, else `sets.idle.Regen` if below 80; `sets.idle.PDT` when
-  `HybridMode == 'PDT'`; then `WeaponResolver.set_for('main', MainWeapon)`.
-  No town set, no movement layer: `sets.MoveSpeed` is never used.
+  `HybridMode == 'PDT'`; then `WeaponResolver.set_for('main', MainWeapon)`;
+  then `BaseSetBuilder.apply_movement` (`sets.MoveSpeed` while
+  `state.Moving.value == 'true'`, since 2026-09-28). No town test in the
+  builder: in a town Mote's base is `sets.idle.Town` when it exists, and
+  `sets.MoveSpeed` goes on there too.
 - `customize_melee_set` -> `build_engaged_set`: the base is re-selected by
   `select_engaged_base`: `sets.engaged.AM3` under Aftermath: Lv.3
   (`buffactive[272]`) with Masamune or Kogarasumaru (no such set in the
@@ -271,7 +274,7 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
 | `sets.buff.Sekkanoki`, `['Meikyo Shisui']` | `job_post_precast` (by `buffactive`) | yes |
 | `sets.buff.Sengikori` | nothing | yes |
 | `sets.buff.Doom` | `DoomManager` | yes |
-| `sets.MoveSpeed` | nothing (no movement layer) | yes |
+| `sets.MoveSpeed` | `build_idle_set` (`BaseSetBuilder.apply_movement`) | yes |
 | `sets.defense.PDT`, `.MDT` | Mote defense keys (`f10` / `f11`), idle only | yes |
 | `sets.precast.JA` Meditate, Hasso, Seigan, Warding Circle, Third Eye, Blade Bash | Mote default precast | yes |
 | `sets.precast.FC`, `.FC.Utsusemi` | Mote default precast | yes |
@@ -396,8 +399,9 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
 - Fixed 2026-09-28 (checked with `scripts/audit/difftest_sam_precast.lua`, not
   yet in game): auto-Seigan alternating, auto-Third Eye spent on a refused
   weaponskill, auto stance ignoring `state.Stance`, strict `recast == 0`.
-- No movement speed layer; `sets.MoveSpeed` unreachable (`set_builder.lua`
-  `build_idle_set`).
+- Fixed 2026-09-28: `sets.MoveSpeed` was unreachable; `build_idle_set` now
+  ends with `BaseSetBuilder.apply_movement` (checked offline, not yet in
+  game).
 - `SAM_LOCKSTYLE.by_subjob` is never read (no `get_style`).
 - Dead code: `job_handle_equipping_gear`, `sets.buff.Sengikori`.
 - `SAM_COMMANDS` duplicates most of `DRK_COMMANDS` (open finding).

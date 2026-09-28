@@ -65,8 +65,7 @@ are useful with a subjob:
   Yoichinoyumi (empty too). `sets.engaged.AM3` replaces the engaged set under
   Aftermath: Lv.3 with Masamune when you define it (not in the template).
 - **Idle**: `sets.idle.Weak` below 50% HP, `sets.idle.Regen` below 80%.
-  No town set and no movement speed gear: `sets.MoveSpeed` is never used on
-  SAM.
+  `sets.MoveSpeed` goes on while you run, in town too.
 - **Weapons without a set**: with `equip_without_set = true` in
   `config/WEAPON_CONFIG.lua`, a Main Weapon value with no `sets.<Weapon>`
   equips the weapon of that name directly.

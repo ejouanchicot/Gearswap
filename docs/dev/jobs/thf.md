@@ -59,7 +59,7 @@ function; line numbers are deliberately not used.
 | `shared/jobs/thf/functions/logic/smartbuff_manager.lua` | 263 | `apply` per subjob, `apply_fbc`, `apply_steal` |
 | `shared/jobs/thf/functions/logic/range_lock.lua` | 63 | Range/ammo lock in step with `RangeLock`; `_G.thf_range_locked`; `release` at unload |
 | `shared/jobs/thf/functions/logic/treasure_hunter.lua` | 48 | THF layer over the shared module: `sata_overlay`, and `init` flags the engaged TH as built by the job |
-| `shared/utils/equipment/treasure_hunter.lua` | 275 | Shared Treasure Hunter: optional state, tagging, engaged / action overlays, 4 raw events, `//gs c th` fields |
+| `shared/utils/equipment/treasure_hunter.lua` | 277 | Shared Treasure Hunter: optional state, tagging, engaged / action overlays, 4 raw events, `//gs c th` fields |
 | `shared/utils/equipment/weapon_resolver.lua` | 104 | `set_for(slot, value)`: `sets[value]`, or the plain weapon when `equip_without_set` is on |
 | `shared/utils/smartbuff/subjob_war_buffs.lua` | 74 | Berserk / Aggressor / Warcry collection and casting (shared with DNC) |
 | `_master/config/thf/THF_STATES.lua` | 145 | All Mote states (`THFStates.configure()`) |

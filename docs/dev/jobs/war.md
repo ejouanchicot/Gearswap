@@ -21,12 +21,14 @@ What WAR adds on top of the shared pipeline:
   (then High Jump) builds the TP, and the weaponskill is replayed.
 - **TP bonus configuration** with Warcry / Savagery, Fencer and Chango bonuses.
 - **Engaged set selection** by weapon, stance and buff, first match wins: Kraken
-  Club -> `PDTKC`; an explicit stance (`HybridMode` `SubtleBlow` or `Hoxne`, not in
+  Club (the `NaeglingKC` choice, or a club already in the off hand when the chosen
+  weapon set names no sub) -> `PDTKC`; an explicit stance (`HybridMode` `SubtleBlow` or `Hoxne`, not in
   the template) -> its set, or `<stance>AFM3` under Ukonvasara Aftermath Lv.3;
   Aftermath Lv.3 with Ukonvasara -> `PDTAFM3`; a set named after the weapon
   (`sets.engaged.Naegling`); otherwise the `HybridMode` set.
-- **Hoxne stance** (when the player adds it to `HybridMode`): the ammo slot is locked
-  on the Hoxne Ampulla through the shared `AmpullaLock`.
+- **Hoxne stance** (when the player adds it to `HybridMode`): the engaged and idle
+  builders put the Hoxne Ampulla on (`STANCE_AMMO`, as PLD does; since 2026-09-28)
+  and the ammo slot is locked on it through the shared `AmpullaLock`.
 - **Retaliation auto-cancel** after 5 s of continuous movement out of combat.
 
 Player-facing pages: [WAR hub](../../user/jobs/war/README.md),
@@ -48,15 +50,15 @@ numbers are avoided because they drift.
 | `shared/jobs/war/functions/WAR_AFTERCAST.lua` | 37 | `job_aftercast`: empty |
 | `shared/jobs/war/functions/WAR_IDLE.lua` | 57 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/war/functions/WAR_ENGAGED.lua` | 53 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
-| `shared/jobs/war/functions/WAR_STATUS.lua` | 47 | `job_status_change`: `DoomManager.handle_status_change` only |
+| `shared/jobs/war/functions/WAR_STATUS.lua` | 27 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/war/functions/WAR_BUFFS.lua` | 122 | `job_buff_change` (Doom, Aftermath Lv.3 refresh) and the globals `buff_war`, `buff_sam_sub`, `build_tp` |
 | `shared/jobs/war/functions/WAR_COMMANDS.lua` | 320 | `job_self_command` router and `job_state_change` (WS slot rebuild, `AmpullaLock.apply` on `HybridMode`, UI refresh) |
 | `shared/jobs/war/functions/WAR_MOVEMENT.lua` | 166 | Retaliation auto-cancel (AutoMove callback), Retaliation debug helpers |
 | `shared/jobs/war/functions/WAR_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('WAR', ..., 4, 'SAM')` wrappers |
 | `shared/jobs/war/functions/WAR_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('WAR', ..., 'SAM', 22, 1)` wrapper |
-| `shared/jobs/war/functions/logic/set_builder.lua` | 263 | Engaged base selection (KC, stance, AM3, weapon set, HybridMode), weapon layer, town / movement idle |
-| `shared/jobs/war/functions/logic/smartbuff_manager.lua` | 284 | `buff_war`, `buff_sam_sub`, `build_tp` |
-| `shared/utils/weaponskill/ws_slots.lua` | 141 | `WSSlots.rebuild` / `detect_weapon` / `sync` / `get` / `cast` (shared with PLD) |
+| `shared/jobs/war/functions/logic/set_builder.lua` | 284 | Engaged base selection (KC, stance, AM3, weapon set, HybridMode), weapon layer, stance ammo (`STANCE_AMMO`, `apply_stance_ammo`), town / movement idle |
+| `shared/jobs/war/functions/logic/smartbuff_manager.lua` | 287 | `buff_war`, `buff_sam_sub`, `build_tp` |
+| `shared/utils/weaponskill/ws_slots.lua` | 159 | `WSSlots.rebuild` / `detect_weapon` / `sync` / `get` / `cast` (shared with PLD) |
 | `shared/utils/drg/auto_jump.lua` | 228 | Auto-Jump before a WS on /DRG (shared with DNC) |
 | `shared/utils/drg/DRG_JUMP_MANAGER.lua` | 88 | Manual Jump rotation (`//gs c jump`, WAR `tp` on /DRG) |
 | `shared/utils/weaponskill/tp_bonus_calculator.lua` | 275 | TP bonus piece selection (shared) |
@@ -215,7 +217,12 @@ hold any weaponskill of the weapon.
   (key only for a state without one), so every path rebuilds the slots.
 - Load: `WSSlots.sync` aligns `state.MainWeapon` with the equipped main / sub by
   comparing them with `sets[key].main/sub` (`detect_weapon`; Naegling and
-  NaeglingKC are told apart by the sub). Inside `user_setup()` no weapon set exists
+  NaeglingKC are told apart by the sub). The comparison is `same_item`: a set slot
+  written as a string or as a table `{name = ..., augments = ...}`, in any case,
+  with the short or the long name (matched through `item_index.lua` `Items.id`),
+  names the item in hand; a slot absent from the set only matches an empty hand.
+  Before 2026-09-28 it was a plain string compare, so a table entry was never
+  recognised and the mode fell back to its first option. Inside `user_setup()` no weapon set exists
   yet, so detection fails and the state keeps its first option. `init_gear_sets()`
   therefore calls `sync_weapon_with_hand()` right after the set file: it runs the
   same sync with the sets present, then repaints the HUD when `MainWeapon` changed.
@@ -244,7 +251,8 @@ hold any weaponskill of the weapon.
    all as `input /ja "<name>" <me>` (the later ones through `wait N;`).
 
 `buff_sam_sub()` (command `thirdeye`) does the same for the stance + Third Eye
-alone, only on /SAM (silent return otherwise), and reads the stance from
+alone, only on /SAM (otherwise the warning `thirdeye: needs /SAM`, since
+2026-09-28), and reads the stance from
 `buffactive['Defender']`.
 
 `build_tp()` (command `tp`): /SAM -> Meditate (134) through the same collect / cast
@@ -313,13 +321,18 @@ has no effect on WAR.
   (`base_set_builder.lua` `select_idle_base_town`), otherwise `sets.idle[HybridMode]`
   if it exists (overlay: `sets.idle.Hoxne` under the Hoxne stance), otherwise Mote's
   base; then `sets[state.MainWeapon.current]` through
-  `WeaponResolver.set_for('main', ...)` (`apply_weapon`, also in town); then
+  `WeaponResolver.set_for('main', ...)` (`apply_weapon`, also in town) and the
+  stance's ammo (`apply_stance_ammo`: `ammo = 'Hoxne Ampulla'` under the Hoxne
+  stance, also in town); then
   `sets.MoveSpeed` when `state.Moving.value == 'true'` outside town
   (`BaseSetBuilder.apply_movement`).
 - `customize_melee_set` -> `build_engaged_set`: `select_engaged_base` replaces
   Mote's set with, first match wins:
-  1. `sets.engaged.PDTKC` when `MainWeapon == 'NaeglingKC'` or the equipped sub is
-     Kraken Club;
+  1. `sets.engaged.PDTKC` when `MainWeapon == 'NaeglingKC'`, or when the equipped
+     sub is Kraken Club **and** the chosen `sets[MainWeapon]` sets no `sub` of its
+     own (a manual equip). Since 2026-09-28: right after leaving `NaeglingKC` the
+     club is still in hand for one rebuild, and the new weapon used to get the KC
+     set until the next action;
   2. an explicit stance (`STANCE_MODES`: `SubtleBlow`, `Hoxne`;
      `select_stance_engaged`): `sets.engaged[<stance>AFM3]` under Ukonvasara
      Aftermath Lv.3 when it exists, else `sets.engaged[<stance>]`;
@@ -329,12 +342,13 @@ has no effect on WAR.
      `.Naegling` and `.Ukonvasara`);
   5. `sets.engaged[HybridMode]`; 6. Mote's base.
 
-  Then the weapon layer. No movement layer when engaged. The Kraken Club rule wins
+  Then the weapon layer, then the stance's ammo (`apply_stance_ammo`). No movement
+  layer when engaged. The Kraken Club rule wins
   over any `HybridMode`, and a stance wins over Aftermath and the weapon set.
-- `job_status_change` (`WAR_STATUS.lua`) only calls
-  `DoomManager.handle_status_change` (unlocks Doom slots after death). Unlike
-  `LifecycleManager.status_change`, it does **not** hold an engage / disengage that
-  lands during an action.
+- `job_status_change` (`WAR_STATUS.lua`) is `LifecycleManager.status_change()`
+  since 2026-09-28: `DoomManager.handle_status_change`, then an engage / disengage
+  that lands during an action is held until the aftercast (3 s fallback). Before,
+  it only called `DoomManager`, so the engaged / idle set replaced the action's gear.
 - `job_buff_change` (`WAR_BUFFS.lua`): Doom through `DoomManager`; on gain or loss of
   `"Aftermath: Lv.3"` (exact `res.buffs` casing), calls
   `handle_equipping_gear(player.status)` unless Doom is up. Mote's `buff_change`
@@ -399,7 +413,7 @@ partner's alt config has the same names; `//gs c alt berserk` sends the alt's.
 | `perf ...` | Unreachable: `perf` is claimed by CommonCommands first | job branch kept, commented as unreachable |
 | `berserk` | `buff_war('Berserk')` | `SmartbuffManager.buff_war` |
 | `defender` | `buff_war('Defender')` | same |
-| `thirdeye` | `buff_sam_sub()` (/SAM only, silent otherwise) | `SmartbuffManager.buff_sam_sub` |
+| `thirdeye` | `buff_sam_sub()` (/SAM only, warning `thirdeye: needs /SAM` otherwise) | `SmartbuffManager.buff_sam_sub` |
 | `tp` | `build_tp()` | `SmartbuffManager.build_tp` |
 | `ws1` .. `ws9` | `WSSlots.cast(N)` (`ws6`..`ws9` always warn: only 5 slots exist) | `ws_slots.lua` |
 
@@ -548,9 +562,6 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
 
 ### Traps
 
-- `WAR_STATUS.lua` is not `LifecycleManager.status_change()`: it lacks the
-  hold-during-action guard the other jobs have. Replacing it with the shared handler
-  changes behaviour (for the better, but check a Phantom-Roll-like action in game).
 - WAR does not feed the midcast watchdog; adding `on_midcast_start` /
   `on_aftercast` makes `state.FastCast` (default 0) matter.
 - Ripgrep skips the gitignored live folders and overlays: confirm "no caller" claims
@@ -585,10 +596,10 @@ cancel depend on recasts, packets and timing: check them in game with
   `defender` / `thirdeye` in the bare form although the bare names run on the main.
 - WAR subjob spells are not watched by `MidcastWatchdog` (`WAR_MIDCAST.lua`,
   `WAR_AFTERCAST.lua`); `state.FastCast` is therefore unused on WAR.
-- `WAR_STATUS.lua` `job_status_change` has no hold-during-action guard (the shared
-  `LifecycleManager.status_change` has one), so an engage during an action can put
-  the engaged set over the action's gear. It also calls `DoomManager` without a nil
-  check after a `pcall` require.
+- Fixed 2026-09-28: `WAR_STATUS.lua` is the shared `LifecycleManager.status_change()`
+  (hold during an action, `DoomManager` required once); `detect_weapon` recognises
+  table / other-case / long-name set entries; the Hoxne stance wears its Ampulla;
+  leaving `NaeglingKC` drops `PDTKC` at once; `thirdeye` off /SAM warns.
 - The Healing / Enhancing midcast routing is a no-op: no `sets.midcast` entry in
   either sets file.
 - `sets.Adoulin` is a two-slot set used as the full idle base in Adoulin.

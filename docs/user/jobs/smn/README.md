@@ -164,9 +164,6 @@ No TP bonus config on SMN.
   writes all slots as `""`, which wipes the pieces queued before it in the
   same action: today only the Fast Cast set ever goes on. When you fill a set,
   delete the slots you do not use (see [sets.md](sets.md)).
-- **`sets.midcast.Pet`.** If you write one, it overrides your Blood Pact set
-  when the avatar acts: Mote-Include equips it after SMN's own pet hook.
-  Leave it out, or put your Blood Pact gear under `sets.pet_midcast`.
 - **`smn bp`** needs the pact's exact capitals (`Healing Ruby`), see above.
 - **Carbuncle** can be summoned twice after a subjob change (one summon
   scheduled by the old job file, one by the new).

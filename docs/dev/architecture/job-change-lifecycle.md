@@ -19,9 +19,9 @@ Engine paths below are relative to `D:\Windower Tetsouo\addons\GearSwap\` and ma
 | `shared/utils/core/job_sync_watchdog.lua` | 165 | Reloads when the loaded file's job differs from the client's job |
 | `shared/utils/core/INIT_SYSTEMS.lua` | 412 | Per-load bootstrap of the universal systems (sync and deferred) and of the gear hook chain |
 | `shared/utils/core/keybind_guard.lua` | 98 | Re-sends the job's binds 2 s after a load, sequence-guarded on `windower._keybind_guard_seq` |
-| `shared/utils/core/module_cache.lua` | 106 | Makes `require` cache per environment |
+| `shared/utils/core/module_cache.lua` | 96 | Makes `require` cache per environment |
 | `shared/utils/core/lifecycle_manager.lua` | 135 | Shared builders for `job_status_change`/`job_buff_change`/`job_aftercast`/`job_state_change` |
-| `shared/utils/core/midcast_watchdog.lua` | 490 | 0.5 s polling loop that clears stuck midcasts, generation-guarded on `windower._midcast_wd_seq` |
+| `shared/utils/core/midcast_watchdog.lua` | 470 | 0.5 s polling loop that clears stuck midcasts, generation-guarded on `windower._midcast_wd_seq` |
 | `shared/utils/movement/automove.lua` | 383 | Movement polling loop, sequence-guarded on `windower._automove_seq` |
 | `shared/utils/lockstyle/lockstyle_manager.lua` | 340 | Lockstyle factory (per-job ctx on `_G.__lockstyle_contexts`, DressUp handling) |
 | `shared/utils/macrobook/macrobook_manager.lua` | 280 | Macrobook factory (solo/dual-box books) |
@@ -29,14 +29,14 @@ Engine paths below are relative to `D:\Windower Tetsouo\addons\GearSwap\` and ma
 | `_master/config/<job>/<JOB>_KEYBINDS.lua` | 35-79 | Bind lists, turned into `bind_all`/`unbind_all`/`show_intro` by `KeybindManager.create` |
 | `shared/utils/keybinds/keybind_manager.lua` | 442 | `bind_all` (unbind only what is no longer wanted, then bind), `show_intro` |
 | `shared/utils/ui/UI_MANAGER.lua`, `ui_lifecycle.lua`, `ui_update_orchestrator.lua` | 167 / 202 / 277 | Keybind HUD state, `smart_init`, `destroy`, `update` |
-| `shared/utils/dualbox/dualbox_manager.lua` | 543 | Job exchange between the boxes, auto-init 2 s after load |
+| `shared/utils/dualbox/dualbox_manager.lua` | 478 | Job exchange between the boxes, auto-init 2 s after load |
 | `shared/utils/dualbox/dualbox_sync_ipc.lua` | 159 | IPC mirror of `ls`/`rf` between instances |
 | `shared/utils/dualbox/alt_buff_reporter.lua` | 336 | Alt reports tracked buffs to the main |
 | `shared/utils/craft/craft_manager.lua`, `craft_commands.lua` | 200 / 302 | Craft/fish session and slot locks |
 | `shared/utils/wardrobe/wardrobe_organizer.lua` | 739 | `//gs c wo` phase chain, `job_changed()` guard |
 | `shared/utils/debuff/doom_manager.lua` | 157 | Doom gear + slot locks, death safety unlock |
 | `shared/utils/warp/warp_init.lua` | 132 | Warp system bootstrap (called by INIT_SYSTEMS on every load) |
-| `shared/utils/core/COMMON_COMMANDS.lua`, `DEBUG_COMMANDS.lua` | 786 / 579 | `reload`, `ls`, `craft`, `wo`, `alt*` handlers; debug toggles (`djc`, `debugupdate`) |
+| `shared/utils/core/COMMON_COMMANDS.lua`, `DEBUG_COMMANDS.lua` | 786 / 583 | `reload`, `ls`, `craft`, `wo`, `alt*` handlers; debug toggles (`djc`, `debugupdate`) |
 | `_master/config_global/LOCKSTYLE_CONFIG.lua` | 60 | `initial_load_delay` used by entries |
 
 ## The environment model
@@ -306,7 +306,7 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 
 ### ModuleCache (`shared/utils/core/module_cache.lua`)
 
-`install()` replaces `_G.require` once per environment with a cache keyed on the lowercased path; calls with a second argument bypass it. `stats()` (no caller). Installed by `shared/utils/config/config_loader.lua` when the entry file requires it at file level, i.e. before `user_setup()` (2026-09-27; the INIT_SYSTEMS call is the fallback). WAR, BST, PUP and SMN require `job_change_manager` and `UI_MANAGER` at file level, after `config_loader`, for that reason (the other entries require them inside `get_sets()` / `user_setup()`), and `UI_MANAGER` reads `_G.UIConfig` when it loads, which `load_ui_config` sets.
+`install()` replaces `_G.require` once per environment with a cache keyed on the lowercased path; calls with a second argument bypass it (`stats()`, which had no caller, was removed on 2026-09-28). Installed by `shared/utils/config/config_loader.lua` when the entry file requires it at file level, i.e. before `user_setup()` (2026-09-27; the INIT_SYSTEMS call is the fallback). WAR, BST, PUP and SMN require `job_change_manager` and `UI_MANAGER` at file level, after `config_loader`, for that reason (the other entries require them inside `get_sets()` / `user_setup()`), and `UI_MANAGER` reads `_G.UIConfig` when it loads, which `load_ui_config` sets.
 
 ### LockstyleManager / MacrobookManager (lifecycle-relevant parts)
 

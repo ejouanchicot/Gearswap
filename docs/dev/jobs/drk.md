@@ -20,7 +20,7 @@ What DRK adds on top of the shared pipeline:
   variants switch before the buff shows in `buffactive`; the buff's loss
   clears them.
 - **Aftermath refresh**: gaining or losing `Aftermath: Lv.3` re-equips at once
-  (unless Doomed).
+  (unless Doomed); during a spell or weaponskill the action's aftercast does it.
 - **JA precast gear** equipped explicitly in `job_precast` (Last Resort, Weapon
   Bash, Souleater, Arcane Circle) and Fast Cast for spells, both redundant
   with Mote's default precast.
@@ -43,13 +43,13 @@ function; line numbers are deliberately not used.
 | `shared/jobs/drk/functions/DRK_AFTERCAST.lua` | 86 | `job_aftercast` (watchdog, pending flags), empty `job_post_aftercast` |
 | `shared/jobs/drk/functions/DRK_IDLE.lua` | 41 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/drk/functions/DRK_ENGAGED.lua` | 46 | `customize_melee_set` -> `SetBuilder.build_engaged_set(weapon, hybrid)` (Mote's set is discarded) |
-| `shared/jobs/drk/functions/DRK_STATUS.lua` | 33 | `job_status_change`: `DoomManager.handle_status_change` only (own copy, not `LifecycleManager`) |
-| `shared/jobs/drk/functions/DRK_BUFFS.lua` | 59 | `job_buff_change`: Doom, pending-flag clear on loss, Aftermath Lv.3 refresh |
+| `shared/jobs/drk/functions/DRK_STATUS.lua` | 27 | `job_status_change = LifecycleManager.status_change()` |
+| `shared/jobs/drk/functions/DRK_BUFFS.lua` | 61 | `job_buff_change`: Doom, pending-flag clear on loss, Aftermath Lv.3 refresh |
 | `shared/jobs/drk/functions/DRK_COMMANDS.lua` | 161 | `job_self_command` router (shared commands only), `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/drk/functions/DRK_MOVEMENT.lua` | 24 | Placeholder for the 12-module layout (comments only) |
 | `shared/jobs/drk/functions/DRK_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('DRK', ...)` wrappers |
 | `shared/jobs/drk/functions/DRK_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('DRK', ...)` wrapper |
-| `shared/jobs/drk/functions/logic/set_builder.lua` | 178 | `select_engaged_base` (AM3, PDT, Accu), `apply_weapon` (`sets[weapon]`), `apply_buff_variants`, `build_idle_set` (weapon + movement) |
+| `shared/jobs/drk/functions/logic/set_builder.lua` | 180 | `select_engaged_base` (AM3, PDT, Accu), `apply_weapon` (`WeaponResolver.set_for('main', weapon)`), `apply_buff_variants`, `build_idle_set` (weapon + movement) |
 | `shared/jobs/drk/functions/logic/drk_buff_anticipation.lua` | 129 | `has_dark_seal`, `has_nether_void`, `apply_buff_variants` |
 | `_master/config/drk/DRK_STATES.lua` | 100 | `DRKStates.configure()` (HybridMode, WeaponskillMode, MainWeapon, FastCast, AutoMedicine) |
 | `_master/config/drk/DRK_KEYBINDS.lua` | 42 | Data only: 3 binds handed to `KeybindManager.create('DRK', ...)` |
@@ -197,19 +197,22 @@ the template defines none, so the flags have no visible effect out of the box.
   `sets.engaged.AM3` when `buffactive[272]` and the weapon is Liberator,
   `sets.engaged.PDT` when `HybridMode == 'PDT'`, `sets.engaged.Accu` when
   `HybridMode == 'Accu'` and it exists, else the `sets.engaged` root; then
-  `apply_weapon` (`sets[weapon]` read directly, **not** through
-  `WeaponResolver`, so `equip_without_set` has no effect on DRK); then
+  `apply_weapon` (`WeaponResolver.set_for('main', weapon)`, since 2026-09-28:
+  `sets[weapon]` unchanged while `equip_without_set` is off; with it on, a
+  weapon with no set is equipped by name); then
   `DRKBuffAnticipation.apply_buff_variants`, which looks up
   `sets.engaged[weapon][hybrid]` (falling back to `.Accu`, then the built set)
   and its `DarkSealNetherVoid` / `DarkSeal` / `NetherVoid` children.
-- `job_status_change` (`DRK_STATUS.lua`): `DoomManager.handle_status_change`
-  after a `pcall` require, without a nil check. It is not
-  `LifecycleManager.status_change`, so it lacks the hold of the status rebuild
-  during an action that the other jobs have.
+- `job_status_change` (`DRK_STATUS.lua`) is `LifecycleManager.status_change()`
+  since 2026-09-28: `DoomManager.handle_status_change`, then an engage /
+  disengage that lands during an action is held until the aftercast (3 s
+  fallback), as on the other jobs.
 - `job_buff_change` (`DRK_BUFFS.lua`): Doom; pending-flag clear on loss of
   Dark Seal / Nether Void; on gain or loss of `"Aftermath: Lv.3"` calls
   `handle_equipping_gear(player.status)` unless Doom is up (whatever the
-  weapon). Close to `WAR_BUFFS.job_buff_change`.
+  weapon) or an action is under way (`midaction()`, since 2026-09-28: the
+  action's aftercast then rebuilds with the new buff state). Close to
+  `WAR_BUFFS.job_buff_change`.
 - `DRK_MOVEMENT.lua` holds only comments.
 
 ## Mote states
@@ -287,7 +290,7 @@ invisible to Mote.
 | `<char>/config/drk/DRK_MACROBOOK.lua` | book 1, page 1 (SAM), 2 (WAR), 3 (NIN), 4 (DNC); dual-box RDM book 2, COR 3, GEO 4 | file; factory fallback book 1 page 1 | `MacrobookManager` |
 | `<char>/config/RECAST_CONFIG.lua` | tolerance 2.0 | shared | entry |
 | `<char>/config/LOCKSTYLE_CONFIG.lua`, `REGION_CONFIG.lua`, UI config | - | entry fallbacks | entry chunk |
-| `<char>/config/WEAPON_CONFIG.lua` `equip_without_set` | false | file | not read by DRK's builder |
+| `<char>/config/WEAPON_CONFIG.lua` `equip_without_set` | false | file | `WeaponResolver.set_for` in `apply_weapon` |
 
 ## State & lifetime
 
@@ -314,8 +317,8 @@ invisible to Mote.
   ([precast pipeline](../systems/precast-pipeline.md)).
 - `MidcastManager` (pseudo-skills `Dread Spikes`, `Absorb`), `MidcastWatchdog`,
   `MidcastFallback` ([midcast and buffs](../systems/midcast-and-buffs.md)).
-- `LifecycleManager.state_change` only; status and buffs keep their own copies
-  ([core lifecycle](../systems/core-lifecycle.md)).
+- `LifecycleManager.status_change` and `state_change`; buffs keep their own
+  copy ([core lifecycle](../systems/core-lifecycle.md)).
 - `DRGJumpManager` through `//gs c jump`
   ([factories and helpers](../systems/factories-and-helpers.md#drg-jumps)).
 - Gear hooks from `INIT_SYSTEMS`: `ElementalBelt` (Sanguine Blade, Dark
@@ -350,20 +353,18 @@ invisible to Mote.
   base set `sets.midcast['<PseudoSkill>']`, or `select_set` returns and Mote's
   set stays; `MidcastFallback` will not retry, because `select_set` already
   marked the spell as routed.
-- `apply_weapon` bypasses `WeaponResolver`. Moving it to
-  `WeaponResolver.set_for('main', ...)` changes nothing while
-  `equip_without_set` is off; with it on, a weapon set that does not name
-  `main` would stop applying, and a value with no set would equip the weapon
-  by name.
+- `apply_weapon` goes through `WeaponResolver.set_for('main', ...)`: with
+  `equip_without_set` on, a weapon set that does not name `main` stops
+  applying, and a value with no set equips the weapon by name.
 - `handle_equipping_gear` from `job_buff_change` runs synchronously inside the
-  buff event, even during a cast.
+  buff event; it is skipped while `midaction()` is true.
 - The template keeps `Tetsouo/...` require paths; the clone script rewrites
   them.
 
 ### Extending
 
 - New weapon: uncomment or add the `MainWeapon` option in `DRK_STATES.lua` and
-  a `sets[key]` in the sets file (a set is mandatory on DRK). Tokko needs a
+  a `sets[key]` in the sets file (needed unless `equip_without_set` is on). Tokko needs a
   new `'Tokko'` line.
 - New Dark Magic special case: add a branch in `job_post_midcast_dark_magic`
   with a pseudo-skill and define its base set.
@@ -396,14 +397,12 @@ invisible to Mote.
 - `sets.idle.Town = sets.MoveSpeed` is used as the whole town idle.
 - Nether Void legs applied to Absorb-TP against the set comment.
 - Redundant JA/FC equips in `job_precast`; empty `cooldown_exclusions`.
-- `DRK_STATUS` does not use `LifecycleManager.status_change`, so a status
-  change during an action (engaging mid-cast) rebuilds the gear at once
-  instead of waiting for the action to end, unlike every job built on
-  `LifecycleManager` (plausible gear loss during a cast; not seen in game).
+- Fixed 2026-09-28: `DRK_STATUS` is `LifecycleManager.status_change()` (an
+  engage during an action waits for the aftercast); the Aftermath Lv.3
+  refresh waits for the action too; `apply_weapon` goes through
+  `WeaponResolver`, so `equip_without_set` works on DRK.
 - `DRK_BUFFS` repeats `WAR_BUFFS`; `DRK_COMMANDS` repeats `SAM_COMMANDS`
   (open duplication findings).
-- `equip_without_set` has no effect on DRK (`apply_weapon` reads
-  `sets[weapon]` directly), unlike THF and SAM.
 - `sets['Tokko']` has no `MainWeapon` line; the Anguta TP bonus applies only
   to a weapon that no `MainWeapon` value equips.
 - Movement layer inline instead of `BaseSetBuilder.apply_movement`.

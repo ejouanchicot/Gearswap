@@ -34,7 +34,8 @@ below. Other engaged names (`sets.engaged.Normal`, an Offense Mode...) are not
 read on DRK.
 
 When Aftermath: Lv.3 starts or ends, the engaged set is rebuilt at once
-(unless you are Doomed).
+(unless you are Doomed). If a spell or weaponskill is under way, it is rebuilt
+when that action ends.
 
 ## Dark Seal and Nether Void
 
@@ -97,9 +98,9 @@ back to `sets.midcast['Dark Magic']`.
 |---|---|
 | `sets.Caladbolg`, `sets.Liberator`, `sets.Redemption`, `sets.Lycurgos`, `sets.Loxotic` | The Main Weapon mode of that name, idle and engaged. Put the grip or shield in the same set: DRK has no Sub Weapon mode |
 
-- A weapon value with no set is skipped: the weapon you hold stays.
-- `equip_without_set` in `WEAPON_CONFIG.lua` does **not** work on DRK: a
-  weapon always needs its set.
+- A weapon value with no set is skipped: the weapon you hold stays. With
+  `equip_without_set = true` in `WEAPON_CONFIG.lua`, that weapon is put in the
+  main hand by name instead (keep a set for an augmented weapon or a grip).
 - Apocalypse, Foenaria and Naegling are commented out in `DRK_STATES.lua`;
   their sets are in the provided file.
 

@@ -51,7 +51,7 @@ function, not a line number.
 | `shared/jobs/blm/functions/logic/storm_manager.lua` | `cast_storm_with_klimaform`: Klimaform + storm with recast display |
 | `shared/jobs/blm/functions/logic/spell_refiner.lua` | Refinement facade `refine_various_spells(spell, eventArgs)` |
 | `shared/jobs/blm/functions/logic/refiner/correspondence.lua` | Tier downgrade table (Fire VI..base, -ga III..base, Sleep, Bind, Bio, ...) |
-| `shared/jobs/blm/functions/logic/refiner/replacement_logic.lua` | Tier walk (delegates to `TierRefiner`), `find_ja_replacement`, `should_cancel` |
+| `shared/jobs/blm/functions/logic/refiner/replacement_logic.lua` | Tier walk (delegates to `TierRefiner`), `find_ja_replacement` |
 | `shared/jobs/blm/functions/logic/refiner/recast_display.lua` | Grouped recast display when nothing can be cast |
 | `shared/jobs/blm/functions/logic/refiner/special_handlers.lua` | `announce_magic_burst`, `execute_replacement`, `handle_breakga_to_break` |
 | `shared/jobs/blm/functions/logic/refiner/timing_guards.lua` | Module-local anti-spam timers (0.2 s replacement, 2 s per-key cast, 2.5 s announce) |
@@ -196,9 +196,7 @@ flowchart TD
     C -- yes --> J[handle_ja_spell]
     C -- no --> D[parse category and tier]
     D --> E[find_available_tier via TierRefiner]
-    E --> F{should_cancel}
-    F -- yes --> FX[cancel, Not enough Mana]
-    F -- no --> G[announce_magic_burst]
+    E --> G[announce_magic_burst]
     G --> H{new spell differs}
     H -- yes --> I[execute_replacement: wait 0.1 then @input new spell, cancel]
     H -- no --> K[show_for_unavailable_spell: cancel if on recast]
@@ -259,9 +257,10 @@ flowchart TD
 
 - **Death is Dark Magic** (`skill = 37` in `res/spells.lua`), so it reaches
   `Router.handle_dark`, and `select_set` resolves `sets.midcast['Death']` by
-  exact name (P0); without that set, `sets.midcast['Dark Magic']`. The
-  `spell.english == 'Death'` branch inside `Router.handle_elemental` never
-  runs: it is dead code, and so is the idea of a "skill `Death`" set.
+  exact name (P0); without that set, `sets.midcast['Dark Magic']`. There is no
+  "skill `Death`" set: the `spell.english == 'Death'` branch that
+  `Router.handle_elemental` used to carry could never run and was removed on
+  2026-09-28.
 - **Impact** is Elemental Magic. `Router.handle_impact` equips the Impact set
   (or `.MagicBurst` when `MagicBurstMode` is On) and re-equips the cloak
   without `select_set`, then calls `MidcastFallback.skip(spell)` (2026-09-28)
@@ -617,9 +616,11 @@ or Meteor always equips the non-burst base.
   a `sets.midcast['Impact']`, the Elemental base ends the midcast without the
   cloak. Found 2026-09-28 by code reading and an offline harness; not tested
   in game.
-- **Dead Death branch**: `Router.handle_elemental`'s `spell.english ==
-  'Death'` branch and its `select_set({skill = 'Death'})` never run (Death is
-  Dark Magic).
+- Fixed 2026-09-28 (dead code removed, midcast simulation identical before and
+  after): `Router.handle_elemental`'s Death branch (Death is Dark Magic) and
+  `ReplacementLogic.should_cancel` (it compared `replacement` with `''`, but
+  `replacement` is a spell name or nil). A spell too expensive for the MP left
+  still goes out and the game refuses it, as before.
 - `sets.midcast['Enfeebling Magic']` is missing from the template, so the
   Enfeebling route leaves Mote's choice; `MndEnfeebles` is unreachable.
 - Comet and Meteor ignore Magic Burst mode because of their root aliases.
@@ -630,8 +631,6 @@ or Meteor always equips the non-burst base.
   `KeybindManager.show_intro` requiring the wrappers.
 - The Magic Burst `/p` call is sent even when the cast is then cancelled or
   cannot be paid (`announce_magic_burst` runs before the decision).
-- `ReplacementLogic.should_cancel` can never be true (it compares
-  `replacement` with `''`, but `replacement` is a spell name or nil).
 - The -ja fallback always casts `<El>ga III` even when every -ga tier is
   unavailable.
 - `MagicBurstMode = Acc` is ignored by the `/p` call and by Impact, and its

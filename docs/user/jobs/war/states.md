@@ -35,7 +35,7 @@ end of the weapon's list shows `None`.
 | `//gs c ws1` … `ws5` | Uses the weaponskill in that slot on `<t>`. |
 | `//gs c berserk` | Berserk, Aggressor, Retaliation, Restraint, Warcry (or Blood Rage when Warcry is down and on recast), the ready ones, 2 s apart. Defender is left out. /SAM adds Hasso and Third Eye; /DNC adds Haste Samba at 350 TP or more. |
 | `//gs c defender` | Same chain with Defender instead of Berserk; /SAM adds Seigan instead of Hasso. |
-| `//gs c thirdeye` | /SAM only: Hasso (or Seigan if Defender is up) and Third Eye. |
+| `//gs c thirdeye` | /SAM only: Hasso (or Seigan if Defender is up) and Third Eye. On another subjob it warns and sends nothing. |
 | `//gs c tp` | /SAM: Meditate. /DRG: same as `//gs c jump` (Jump or High Jump, then the other one if TP is still under 1000). Other subjobs: a warning. |
 | `//gs c retalstatus` | Shows the Retaliation auto-cancel tracker. |
 | `//gs c debugretaliation` (`debugretal`) | Prints the tracker's decision on every movement tick (again to stop). |
@@ -48,7 +48,8 @@ Ikenga or Loxotic the game refuses them and their turn in the chain is lost.
 ## Notes
 
 - **Engaged set order** (first match wins): `sets.engaged.PDTKC` with
-  NaeglingKC or Kraken Club in the off hand; `sets.engaged.PDTAFM3` under
+  NaeglingKC, or with a Kraken Club in the off hand when the chosen weapon set has
+  no `sub`; `sets.engaged.PDTAFM3` under
   Aftermath: Lv.3 with Ukonvasara; `sets.engaged.<Weapon>` if it exists;
   then `sets.engaged.<HybridMode>`.
 - **Retaliation auto-cancel**: if Retaliation is up and you move for 5 s while
@@ -59,7 +60,7 @@ Ikenga or Loxotic the game refuses them and their turn in the chain is lost.
 - Every mode except `AutoMedicine` goes back to its default on each job change,
   subjob change or reload (the weapon is read again from your hands).
 - The author's own files differ: Hybrid Mode also has `SubtleBlow` and `Hoxne`
-  (Hoxne locks the ammo slot on the Hoxne Ampulla), and its `WAR_CUSTOM.lua`
+  (Hoxne puts the Hoxne Ampulla on and locks the ammo slot on it), and its `WAR_CUSTOM.lua`
   adds a `FullEmpy` On/Off mode on `^numpad8`.
 
 ## Files

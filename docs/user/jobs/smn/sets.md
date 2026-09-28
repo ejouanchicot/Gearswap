@@ -90,8 +90,9 @@ At the moment you give the order, a set named after the pact
 if you add one, and the category set goes over it. These names are not used
 when the avatar acts.
 
-Do not define `sets.midcast.Pet`: when the avatar acts, it is equipped after
-the Blood Pact set and replaces it.
+`sets.midcast.Pet` is not needed. If you write one, it goes on only when the
+avatar uses a pact that is not in the lists above; for every known pact the
+Blood Pact set stays.
 
 ## Spells
 

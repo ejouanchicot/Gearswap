@@ -67,7 +67,7 @@ legs, so the other slots keep whatever you had on.
 | `sets.engaged.TP` | Stance Sortie |
 | `sets.engaged.DPS` | /SCH stance DPS |
 | `sets.engaged.Hoxne` | /SCH stance Hoxne |
-| `sets.engaged.BurtgangKC` | `MainWeapon` BurtgangKC, **or a Kraken Club in your off hand**, whatever the stance |
+| `sets.engaged.BurtgangKC` | `MainWeapon` BurtgangKC, **or a Kraken Club in your off hand** when the chosen weapon set has no `sub` of its own, whatever the stance |
 | `sets.engaged` | Only if the stance's set above is missing |
 | `sets.meleeXp` | `Xp` On: laid over the engaged set |
 
@@ -180,9 +180,9 @@ the `//gs c aoe` rotation).
   on. Tried once per spell; not under Amnesia. Cure and Cure II do not trigger it.
 - **Divine Emblem before Flash**, the same way.
 - **Kraken Club in the off hand forces `sets.engaged.BurtgangKC`**, even when the weapon
-  mode is something else. Leaving the BurtgangKC weapon mode while engaged therefore
-  keeps the Kraken Club and `sets.engaged.BurtgangKC` (with your new main weapon) until
-  you disengage: the idle set puts your shield back.
+  mode is something else, as long as that weapon's set names no off hand (a club you
+  put on by hand). Leaving the BurtgangKC weapon mode for a weapon whose set has its own
+  shield puts that weapon, its shield and the normal engaged set on at once.
 - **Shining One**: the stance's shield is removed from your idle and engaged sets and
   `sets.Alber` is worn in its place. BurtgangKC also keeps its off hand in idle.
 - **Sortie stance**: the shield follows the weapon (Aegis with Burtgang, Blurred Shield

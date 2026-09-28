@@ -155,8 +155,8 @@ is worn on spells without a set of their own.
 - **`//gs c step`**: uses Presto first when it is ready and you are level 77+, then the
   step; alternates `MainStep` / `AltStep` when `UseAltStep` is On. Gear: the Step and
   `JA['Presto']` sets.
-- **`//gs c smartbuff`**: the dance, the samba (skipped with Fan Dance selected or TP
-  short), then /WAR Berserk, Aggressor, Warcry; /NIN Utsusemi: Ni (or Ichi); /SAM Hasso,
+- **`//gs c smartbuff`**: the dance, the samba (skipped with Fan Dance selected, or TP
+  short without Trance), then /WAR Berserk, Aggressor, Warcry; /NIN Utsusemi: Ni (or Ichi); /SAM Hasso,
   2 seconds apart. Each one wears its own set above.
 
 ## Sets in the provided file that nothing reads

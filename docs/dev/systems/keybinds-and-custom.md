@@ -255,7 +255,7 @@ What it locked is kept in `windower._custom_locked`. The first `CustomStates.loa
 
 | Wrapped | Moments equipped after the original |
 |---|---|
-| `handle_equipping_gear(status)` | `all`, then `engaged` or `idle` |
+| `handle_equipping_gear(status)` | `all`, then `engaged` or `idle`; skipped when `Guards.hands_off` is true or while a COR roll holds the gear (`GearHold.active()`, `shared/utils/core/gear_hold.lua`, since 2026-09-28) |
 | `cleanup_precast` | weaponskill: `all`, `weaponskill`; magic: `all`, `precast`; ability: `all`, `ability`; other: `all` |
 | `cleanup_midcast` | same, with `midcast` for magic. Weaponskills and abilities get their precast moment again, since they go off with the midcast gear |
 | `user_buff_change` | re-runs `handle_equipping_gear` when a buff named in a `buff` / `no_buff` condition changes, outside an action, while Idle or Engaged |
@@ -298,7 +298,7 @@ The action keys (`spell`, `skill`, `spell_type`, `element`, `day_weather`, `targ
   - Phantom Roll and Double-Up: rings;
   - Call Beast and Bestial Loyalty: ammo;
   - the ammo while the Hoxne stance or its Ampulla lock is on;
-  - the Treasure Hunter pieces when engaged and TH is wanted;
+  - the Treasure Hunter pieces when engaged and TH is wanted (asked of the shared `shared/utils/equipment/treasure_hunter` module, `wants_engaged_th`);
   - every slot in GearSwap's `disable_table`.
 
 **Validation** (`custom_states_validate.lua`, `Validate.entry(entry, states, index)`), printed at load as `<JOB>_CUSTOM: <problem>`:
@@ -560,7 +560,7 @@ Build it the way `treasure_hunter.lua` does:
 - **`temp_binds.lua` restart detection is partial.** The file is dropped only when the saved `os.clock()` is larger than the current one. If the new game session has already run longer than the old one had when it saved, the stale list is kept: `tb list` shows keys that are no longer bound, and the free-key search skips them. Not verified in game.
 - Fixed 2026-09-28: `KeybindGuard` re-sent rows with an empty key (HUD only, or `combatmode` / `th key none`) as `bind  gs c ...`; it now skips them like KeybindManager, and its header comment no longer says only PLD and THF filter their binds.
 - **`eventArgs.no_overlay`** is tested in `Guards.hands_off`, but nothing sets it.
-- **`custom_guards.lua` requires the THF module** `shared/jobs/thf/functions/logic/treasure_hunter` for the TH guard on every job. It works, because that module proxies the shared one, but the shared `shared/utils/equipment/treasure_hunter` is the direct source.
+- Fixed 2026-09-28: `custom_guards.lua` asked the THF module (`shared/jobs/thf/functions/logic/treasure_hunter`, a proxy) for the TH guard on every job; it now requires the shared `shared/utils/equipment/treasure_hunter`. The idle / engaged custom gear also waits for a COR roll to land (`GearHold`).
 - **RDM binds `^numpad9` to `EnfeebleTier`.** This breaks the "`^numpad9` = HybridMode or empty" convention of `.claude/rules/keybinds.md`.
 - **Common keys differ between overlays.** One tracked character overlay of `COMMON_KEYBINDS.lua` has no `!z` / `!x` stealth keys.
 - Fixed 2026-09-28: RUN's HUD readiness anchor was `RuneElement` (no such state, the HUD waited 5 s); it is `RuneMode`.

@@ -29,9 +29,10 @@ value that is an exact weapon name is put in the main hand without a set.
 `MainWeapon` is set to the option whose set has the same `main` and `sub` as what you
 are holding (same `main` only, if no sub matches); Naegling and NaeglingKC are told
 apart by the off hand. Nothing matches: the mode stays on its first option
-(Ukonvasara), and that weapon goes on at the next gear change. For this to work, write
-`main` and `sub` in the weapon sets as plain item names (`main = 'Naegling'`), not as
-`{name = ...}` tables.
+(Ukonvasara), and that weapon goes on at the next gear change. The weapon sets can
+write `main` and `sub` either as plain item names (`main = 'Naegling'`) or as
+`{name = ..., augments = ...}` tables, in any capitals, with the short or the long
+item name.
 
 ## Idle
 
@@ -51,7 +52,7 @@ The first line that matches wins, then the weapon set goes on top:
 
 | Set | Worn when |
 |---|---|
-| `sets.engaged.PDTKC` | `MainWeapon` NaeglingKC, **or a Kraken Club in your off hand**, whatever the mode |
+| `sets.engaged.PDTKC` | `MainWeapon` NaeglingKC, **or a Kraken Club in your off hand** when the chosen weapon set has no `sub` of its own, whatever the mode |
 | `sets.engaged.SubtleBlow` / `sets.engaged.Hoxne` | `HybridMode` SubtleBlow / Hoxne, if you add those values (not in the provided states). Under Aftermath: Lv.3 with Ukonvasara, `sets.engaged.SubtleBlowAFM3` / `sets.engaged.HoxneAFM3` first |
 | `sets.engaged.PDTAFM3` | Aftermath: Lv.3 up with Ukonvasara, **in PDT and in Normal** |
 | `sets.engaged.<Weapon>` | A set named after the weapon mode (`sets.engaged.Naegling`, `sets.engaged.Ukonvasara`...). None in the provided file |
@@ -104,16 +105,17 @@ midcast set at all**: spells are cast in whatever you are wearing.
 - **Weapon from your hands**: at load, the weapon mode is set to the weapon you hold
   (see *Weapons*), and the five weaponskill slots follow it. Changing the weapon mode
   refills the slots.
-- **Kraken Club in the off hand forces `sets.engaged.PDTKC`**, whatever the weapon mode
-  or `HybridMode`.
+- **Kraken Club in the off hand forces `sets.engaged.PDTKC`**, whatever `HybridMode`,
+  when the chosen weapon set does not name a `sub` (a club you put on by hand). Leaving
+  NaeglingKC for a weapon that has its own sub drops `sets.engaged.PDTKC` at once.
 - **Aftermath: Lv.3 on Ukonvasara** switches to `sets.engaged.PDTAFM3` (or the stance's
   AFM3 set) and back as soon as the buff comes or goes.
 - **Hoxne stance** (only if you add `Hoxne` to `HybridMode` in `WAR_STATES.lua`): once
   Hoxne Ampulla is actually in your ammo slot, the **ammo slot is locked** so
-  weaponskill and ability sets cannot swap it out. Unlike PLD, WAR does not put the
-  Ampulla on for you: `sets.idle.Hoxne` and `sets.engaged.Hoxne` must hold
-  `ammo = 'Hoxne Ampulla'`. If it is not worn within about 5 seconds, the slot stays
-  unlocked and a warning says what is worn instead. Leaving the stance, a job change, a
+  weaponskill and ability sets cannot swap it out. As on PLD, WAR puts the Ampulla on
+  for you in idle (town included) and engaged: your Hoxne sets do not need to name it.
+  If it is not worn within about 5 seconds (not in your bags, for example), the slot
+  stays unlocked and a warning says what is worn instead. Leaving the stance, a job change, a
   reload or `//gs c wo` unlocks it.
 - **Auto Jump (/DRG, `JumpAuto` On)**: a weaponskill pressed under 1000 TP is held
   back, Jump / High Jump go out (in their `sets.precast.JA` sets), then the weaponskill

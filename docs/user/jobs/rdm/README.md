@@ -27,7 +27,7 @@ engaged and casting gear, the job does these things by itself:
   version on others. The Saboteur set goes on top while Saboteur is up. A Cure
   on yourself adds `sets.midcast.CureSelf` when you have it.
 - **Weapons from modes**, with single-wield or dual-wield engaged sets chosen
-  from what is in your off hand.
+  from what is in your off hand and your subjob (dual wield on /NIN or /DNC).
 - **Cast commands** that read a mode (nuke element and tier, enspell, gain,
   bar-spell, spikes, storm) and a cast-by-name command for any action.
 

@@ -33,7 +33,8 @@ Set names and automatic gear: [sets.md](sets.md).
 | Hoxne (/SCH) | `sets.engaged.Hoxne` | `sets.idle.MDT` | Duban | Swings `MainWeapon`, wears the Hoxne Ampulla and locks the ammo slot while the stance is on |
 
 A Shining One (`Shining`) always takes the Alber Strap grip, and `BurtgangKC` (or a
-Kraken Club already in your off hand) uses `sets.engaged.BurtgangKC` in every stance.
+Kraken Club already in your off hand, when the chosen weapon set has no off hand of
+its own) uses `sets.engaged.BurtgangKC` in every stance.
 
 Under /SCH the weapon list is Naegling and Excalibur (both with Duban), the weapon
 opens on Naegling and `PhalanxSIRD` starts On (Ctrl+Numpad3 turns it Off). Leaving the

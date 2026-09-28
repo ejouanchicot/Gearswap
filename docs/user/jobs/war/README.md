@@ -70,7 +70,7 @@ Details of the shared ones: [commands guide](../../guides/commands.md).
 | `ws1` ... `ws5` | Uses the weaponskill in that slot for the current weapon, on `<t>`. `ws6`...`ws9` only warn |
 | `berserk` | Berserk, Aggressor, Retaliation, Restraint, Warcry (or Blood Rage when Warcry is on recast), the ready ones, 2 s apart; /SAM adds Hasso and Third Eye, /DNC Haste Samba at 350 TP or more |
 | `defender` | The same chain with Defender instead of Berserk; /SAM adds Seigan instead of Hasso |
-| `thirdeye` | /SAM: Hasso (Seigan if Defender is up) and Third Eye. Does nothing on another subjob |
+| `thirdeye` | /SAM: Hasso (Seigan if Defender is up) and Third Eye. On another subjob: a warning, nothing is sent |
 | `tp` | /SAM: Meditate. /DRG: Jump, then High Jump if TP is still under 1000. Other subjobs: a warning |
 | `retalstatus` | Retaliation auto-cancel tracker |
 | `debugretaliation` (`debugretal`) | Trace the Retaliation tracker on every movement tick (again to stop) |
@@ -134,7 +134,7 @@ with the same name; `//gs c alt berserk` sends the alt's.
 | Automatic Jump (/DRG) | With `JumpAuto` On, a weaponskill under 1000 TP is cancelled, Jump (then High Jump) goes out, and the weaponskill is sent again. If TP is still short, the weaponskill is refused as usual. A weaponskill out of range is refused without using a jump |
 | Retaliation auto-cancel | Retaliation up, not engaged, and 5 s of continuous running: `cancel Retaliation` is sent (needs the Windower `Cancel` addon) |
 | Engaged set choice | Kraken Club, Aftermath: Lv.3 on Ukonvasara and weapon-named engaged sets win over the stance ([states.md](states.md#notes)); Aftermath: Lv.3 gained or lost re-dresses you at once |
-| Hoxne stance | Not in the template. If you add `Hoxne` to `HybridMode` (and its sets), the ammo slot stays on the Hoxne Ampulla while it is selected, as on PLD |
+| Hoxne stance | Not in the template. If you add `Hoxne` to `HybridMode` (and its sets), the Hoxne Ampulla goes on and the ammo slot stays on it while it is selected, as on PLD |
 | Movement speed | `sets.MoveSpeed` is added to your idle gear while you run outside town; in town you wear `sets.idle.Town` (Adoulin: `sets.Adoulin`) with your weapon |
 | Sneak / Invisible | Alt+Z / Alt+X cover you and the group; WAR itself uses oils and powders, or its subjob's spell or Spectral Jig ([guide](../../guides/stealth.md)) |
 | Warp | Every warp command; WAR has no warp spell, so rings and items are used |

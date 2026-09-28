@@ -198,7 +198,7 @@ Arguments keep their original case unless the handler lower-cases them. The Rout
 | `waltz` | - | DNC main or sub only. Cancels Saber Dance, then `WaltzManager.cast_curing_waltz('<stpc>')` | `handle_waltz` -> local `handle_waltz_generic` |
 | `aoewaltz` | - | Same guard, then `cast_divine_waltz()` | `handle_aoewaltz` |
 | `stealth` | `sneak`/`invi`/`both [self\|local]`, `status`, `check`, `refresh <s>`, `alert <s>`, `overwrite on\|off`, `alerts on\|off`, `delay <s>`, `help`; internal `claim`, `cast`, `time` | Sneak / Invisible on this character and every other member of the box group, timers, settings in `<Character>/config/STEALTH_CONFIG.lua` | `stealth/stealth.lua` `Stealth.handle`, see [stealth.md](stealth.md) |
-| `sortie` | `<target>`, `escort [Indi-X]`, `off`, `judgment`, `fullcircle`, `list`, `help` | Stance for this character plus a Silmaril profile for a GEO alt. On a job that has `state.PhalanxSIRD` (PLD) it also sets that mode (`Off` for targets with `phalanx_sird = false`, `On` otherwise; checked with `rawget(state, 'PhalanxSIRD')`). A value the job's state lacks prints a warning and the rest still runs | `sortie/sortie_commands.lua` `SortieCommands.handle` |
+| `sortie` | `<target>`, `escort [Indi-X]`, `off`, `judgment`, `fullcircle`, `list`, `help` | Stance for this character plus a Silmaril profile for a GEO alt. On a job that has `state.PhalanxSIRD` (PLD) it also sets that mode (`Off` for targets with `phalanx_sird = false`, `On` otherwise; checked with `rawget(state, 'PhalanxSIRD')`). A value the job's state lacks prints a warning and the rest still runs. `escort` also turns PLD's `Regen` On, only on /SCH (since 2026-09-28) | `sortie/sortie_commands.lua` `SortieCommands.handle` |
 
 **Box group and alt**
 
@@ -584,7 +584,7 @@ Flip it with `flip_debug('<KEY>')` in `DEBUG_COMMANDS.lua` and add its line to t
 Open:
 
 - `wo` subcommands are case-sensitive and fall back to a full organize (`COMMON_COMMANDS.lua` `handle_wardrobeorganize`).
-- `show_error` is called with two arguments, which drops the message (`DEBUG_COMMANDS.lua` `handle_memcheck` and `handle_debugmsg`; `MessageStatus.show_error(message)` takes one).
+- Fixed 2026-09-28: `handle_memcheck` and `handle_debugmsg` called the one-argument `show_error` with a prefix and the reason, so the chat showed only `MEMCHECK` / `MSG`; each now passes one message (`MEMCHECK: failed to open output file: <err>`, `MSG: MESSAGE_SETTINGS is nil`).
 - The warp load-failure diagnostic probes a moved module path, `shared/utils/messages/message_warp`, now at `formatters/system/message_warp.lua` (`handle_warp_commands`).
 - Job branches shadowed by common names are unreachable: WAR `perf` (commented as unreachable), COR `testcolors` / `colors`.
 - `GlobalProbe.EXPECTED` whitelists `name` and `x`; nothing shows they are real globals.
@@ -596,7 +596,7 @@ Open:
 - `Profiler.profile_call`, `Profiler.measure`, `LagDebugger.log` and `DebugLogger.log` have no caller.
 - `LagDebugger.on_job_update` is wired only in the overlay entries `_master/Tetsouo/entry/Tetsouo_{WAR,BST,SMN}.lua` and, of the generic templates, only in `_master/entry/Tetsouo_SMN.lua` (copied from the overlay).
 - A `trace.on` marker left on a character keeps `trace.log` growing across restarts; nothing caps the file.
-- `RollShare.receive` returns nothing, so `rollshow` leaves `eventArgs.handled` false (no visible effect: `runs_locally` stops the alt fallback).
+- Fixed 2026-09-28: `RollShare.receive` returns true, so `rollshow` sets `eventArgs.handled` (before, it returned nothing; no visible effect, since `runs_locally` already stopped the alt fallback).
 - `COMMON_COMMANDS.lua` is 786 lines, past the 600-line soft limit (under the 800 hard limit).
 - `COMMANDS_HELP` lists `memcheck | mem [gc]`, but `handle_memcheck` ignores its argument. The Combat Mode help note names BLM and WHM for the ammo lock and leaves out GEO (`combat_mode_commands.lua`).
 - `DebugLogger.logf_if('DATA_DEBUG', ...)` in `data_loader.lua` reads a flag that no command sets.

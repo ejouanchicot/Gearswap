@@ -41,6 +41,7 @@ Everything described here runs inside the GearSwap sandbox of the current job fi
 | `shared/utils/equipment/spell_gear_lock.lua` | A piece a spell cannot be cast without (Dispelga: Daybreak), worn through Combat Mode for the cast |
 | `shared/utils/core/optional_state.lua`, `optional_state_commands.lua` | Base of Combat Mode and Treasure Mode: shown / hidden / key per job, commands (see [keybinds-and-custom.md](keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode)) |
 | `shared/utils/core/live_tp.lua` | TP read from the game, not from GearSwap's copy |
+| `shared/utils/core/gear_hold.lua` | `GearHold.active()`: whether a COR roll holds the idle / engaged gear; asked by DualWield, TreasureHunter (engaged overlay) and the custom gear hook (see [core-lifecycle.md](core-lifecycle.md#gearhold)) |
 | `shared/utils/core/auto_options.lua` | Opt-in automatic job abilities (`config/AUTO_ABILITIES.lua`) |
 | `_master/config_global/DW_CONFIG.lua`, `ELEMENTAL_BELT.lua`, `AUTO_ABILITIES.lua` | Templates of the per-character settings of the helpers above |
 
@@ -482,7 +483,7 @@ Tagging (raw events, registered once per sandbox by `init()`):
 
 Overlays (`install()`, once per sandbox, after DualWield and ElementalBelt):
 
-- **Engaged**: wraps `handle_equipping_gear`. When Engaged and `_G._treasure_engaged_by_job` is not set, it equips `sets.TreasureHunter` if `wants_engaged_th()`. THF sets that flag in its `init` and builds its engaged TH itself (`shared/jobs/thf/functions/logic/treasure_hunter.lua`, which proxies this module and adds `sata_overlay`).
+- **Engaged**: wraps `handle_equipping_gear`. When Engaged, `_G._treasure_engaged_by_job` is not set and no COR roll holds the gear (`GearHold.active()`, since 2026-09-28), it equips `sets.TreasureHunter` if `wants_engaged_th()`. THF sets that flag in its `init` and builds its engaged TH itself (`shared/jobs/thf/functions/logic/treasure_hunter.lua`, which proxies this module and adds `sata_overlay`).
 - **Action**: wraps `cleanup_precast` (weaponskills, abilities) and `cleanup_midcast` (spells, ranged): `sets.TreasureHunter` when the target is a MONSTER not tagged yet and a mode is on.
 
 | Function | Behaviour |
@@ -503,7 +504,7 @@ State: `_G._treasure = {tagged, overlay_on, listening}`, `_G._treasure_installed
 
 `shared/utils/equipment/dual_wield.lua` lays Dual Wield pieces by magic haste tier on top of the engaged set, for every job. `INIT_SYSTEMS` installs it on `handle_equipping_gear`, after Mote and the job equip and before TreasureHunter and the custom states, so the player's custom gear still wins.
 
-- **When it applies.** The status is Engaged, `enabled` is true, and the sub slot holds a weapon with a combat skill. The sub item is read from the game by id in `gearswap.res`: a shield is Armor, and a grip has skill 0. It is skipped while a COR roll hold is open (`_G.cor_roll_hold`).
+- **When it applies.** The status is Engaged, `enabled` is true, and the sub slot holds a weapon with a combat skill. The sub item is read from the game by id in `gearswap.res`: a shield is Armor, and a grip has skill 0. It is skipped while a COR roll hold is open (`GearHold.active()`, `shared/utils/core/gear_hold.lua`, which reads `_G.cor_roll_hold`).
 - **Tiers.** `sets.DW.NoHaste`, `Haste` (15 %), `HasteII` (30 %), `MaxHaste` (43.75 %). A missing tier falls back to the one below, which means more DW. No `sets.DW` at all: nothing happens. The templates of BLU, BRD, BST, COR, DNC, RDM and THF end with a commented example.
 - **Magic haste estimate** (`magic_haste()`):
   - buffs from `get_player().buffs`: 33 Haste, 580 Geo-Haste, 604 Mighty Guard, 228 Embrava, 214 March (up to 2);
@@ -701,15 +702,15 @@ Which shared system applies to which job, checked in the code and the `_master` 
 | BLU | yes | optional | optional | | commented | yes (Unbridled Learning) | | | `blu_unbridled`, `blu_expiacion_window` | Combat Mode On keeps the worn weapons because their slots are locked (`apply_weapon` itself does not test the mode) |
 | BRD | yes | optional | optional | | commented | yes (Pianissimo, Nightingale / Troubadour) | | | | |
 | BST | yes | optional | optional | | commented | | | | | |
-| COR | yes | optional | optional | | commented | | | | | DualWield skips during a roll hold |
+| COR | yes | optional | optional | | commented | | | | | DualWield, the TH engaged overlay and the custom idle / engaged gear skip during a roll hold (`GearHold`) |
 | DNC | yes | optional | optional | yes | commented | yes (Climactic Flourish, Presto) | yes | yes (`smartbuff`, `buffself`) | | WaltzManager |
-| DRK | yes (own builder) | optional | optional | | | | | | | |
+| DRK | yes (own builder) | optional | optional | | | | | | | weapons through `WeaponResolver` (`equip_without_set`) since 2026-09-28 |
 | GEO | yes | native (`^numpad0`) | optional | | | yes (Entrust, Full Circle) | | | `geo_entrust`, `geo_full_circle` | |
 | PLD | yes | optional | optional | | | yes (Divine Emblem, Majesty) | | | | no HP priority (own scheme) |
 | PUP | n/a (does not load) | none (no keybind file) | none | | | | | | | |
 | RDM | yes | native (`^numpad5`) | optional | | commented | yes (Saboteur) | | | | SpellGearLock (Dispelga); set builder skips weapon states while Combat Mode is On |
 | RUN | yes | optional | optional | | | | | | | |
-| SAM | **no** (`SAM_MOVEMENT.lua`: "SAM's set builder applies no movement gear", although `sam_sets.lua` defines `sets.MoveSpeed`) | optional | optional | | | yes (Third Eye, Hasso check) | | | `sam_hasso` | |
+| SAM | yes (base builder, idle; since 2026-09-28) | optional | optional | | | yes (Third Eye, Hasso check) | | | `sam_hasso` | |
 | SMN | yes | optional | optional | | | | | | | |
 | THF | yes | optional | native (`^numpad3`, Tag / SATA / Full) | yes (+ SA / TA / SATA / RA variants) | commented | | | yes (`smartbuff`) | | THF builds its engaged TH itself |
 | WAR | yes | optional | optional | | | | yes | yes (buff hook, subjob TP ability) | | AutoMove callback (Retaliation) |
@@ -779,12 +780,13 @@ Open:
 - `WHM_CURE_CONFIG.lua` defines `auto_tier_enabled` and `message_color`, which nothing reads.
 - CureManager's party HP estimate: the alliance keys it reads (`a1p1..a3p6`) are not the ones `get_party()` returns, and `max_hp` is not a party field, so the 2000 estimate is always used (`cure_manager.lua` `get_hp_missing_party`).
 - The help text misdescribes craft (weapon slots only), jump (High Jump) and waltz (Curing Waltz III) (`message_commands.lua` `COMMANDS_HELP`).
-- SAM applies no movement gear although its template defines `sets.MoveSpeed` (`SAM_MOVEMENT.lua`, `sam/functions/logic/set_builder.lua`).
 - Stale comments in `geo/functions/logic/set_builder.lua` and `rdm/functions/logic/set_builder.lua` still say the Combat Mode lock is done by `disable()` in `job_update`. It has been done by `combat_mode.lua` since the job-level locks were removed.
 - The waltz tier for a targeted party member has not been tested in game: the tier can come out one lower when the party list's HP lags.
 
 Fixed:
 
+- SAM's idle builder ends with `BaseSetBuilder.apply_movement`, so `sets.MoveSpeed` goes on while moving, as on the other jobs (2026-09-28).
+- The TH engaged overlay and the custom idle / engaged gear went on during a COR roll, over the roll's gear; they now ask `GearHold.active()`, like DualWield (2026-09-28).
 - The waltz tier was never sized for a targeted party member, because `isallymember` is not a Windower mob field. The test is now `in_party or in_alliance`.
 - Macrobook: the load message could announce the solo book while the dual-box book was selected. `resolve_config` is now shared by selection and `get_macro_info`.
 - Comments claiming cross-reload persistence or invalidation in `macrobook_manager.lua` and `lockstyle_manager.lua` were rewritten; they now say the list and counter live on the sandbox `_G`.
