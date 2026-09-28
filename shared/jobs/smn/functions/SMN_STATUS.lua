@@ -1,29 +1,27 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SMN Status Module - Player Status Change Handler
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Delegates to DoomManager so Doom-locked slots are unlocked on death/raise.
+---   The shared status handler (LifecycleManager.status_change): Doom slot
+---   unlock on death / raise, and the engaged / idle set held back while an
+---   action is under way, like every other job. Until 2026-09-28 this file
+---   only called DoomManager, so an engage in the middle of a spell swapped
+---   the gear at once.
 ---
 ---   @file    shared/jobs/smn/functions/SMN_STATUS.lua
 ---   @author  ejouanchicot
----   @version 1.0
----   @date    Created: 2026-05-28
+---   @version 2.0
+---   @date    Created: 2026-05-28 | Updated: 2026-09-28
 ---  ═══════════════════════════════════════════════════════════════════════════
 
-local DoomManager = nil
+local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 
---- Status change hook: lets DoomManager unlock Doom slots on death/raise.
---- @param newStatus string New player status
---- @param oldStatus string Previous player status
---- @param eventArgs table Event arguments
-function job_status_change(newStatus, oldStatus, eventArgs)
-    if not DoomManager then
-        local dm_ok, dm = pcall(require, 'shared/utils/debuff/doom_manager')
-        if not dm_ok then dm = nil end
-        DoomManager = dm
-    end
-    if DoomManager then
-        DoomManager.handle_status_change(newStatus, oldStatus)
-    end
-end
+--- Status change hook, the shared one: DoomManager unlocks Doom slots on
+--- death / raise, and an engage or disengage that lands during an action
+--- (a spell, a weaponskill) waits for its aftercast instead of replacing the
+--- action's gear at once. Mote-Include does the gear swaps.
+job_status_change = LifecycleManager.status_change()
 
+-- Export to global scope (Mote-Include) and to require()
 _G.job_status_change = job_status_change
+
+return {job_status_change = job_status_change}

@@ -1,47 +1,27 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   WAR Status Module - Status Change Handling
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Status change hook for Warrior job: Doom slot safety unlock
----   (death/raise) through DoomManager. Mote-Include does the gear swaps.
----
----   **PERFORMANCE OPTIMIZATION:**
----   • Lazy-loaded: DoomManager loaded on first status change
+---   The shared status handler (LifecycleManager.status_change): Doom slot
+---   unlock on death / raise, and the engaged / idle set held back while an
+---   action is under way, like every other job. Until 2026-09-28 this file
+---   only called DoomManager, so an engage in the middle of a spell swapped
+---   the gear at once.
 ---
 ---   @file    shared/jobs/war/functions/WAR_STATUS.lua
 ---   @author  ejouanchicot
----   @version 1.2 - Lazy Loading for performance
----   @date    Updated: 2025-11-15
+---   @version 2.0
+---   @date    Created: 2025-11-15 | Updated: 2026-09-28
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----  ═══════════════════════════════════════════════════════════════════════════
----   DEPENDENCIES - LAZY LOADING (Performance Optimization)
----  ═══════════════════════════════════════════════════════════════════════════
+local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 
-local DoomManager = nil
+--- Status change hook, the shared one: DoomManager unlocks Doom slots on
+--- death / raise, and an engage or disengage that lands during an action
+--- (a spell, a weaponskill) waits for its aftercast instead of replacing the
+--- action's gear at once. Mote-Include does the gear swaps.
+job_status_change = LifecycleManager.status_change()
 
----  ═══════════════════════════════════════════════════════════════════════════
----   STATUS CHANGE HOOK
----  ═══════════════════════════════════════════════════════════════════════════
----   Called when player status changes
----   Mote-Include handles idle/engaged/resting gear swaps; this hook only
----   lets DoomManager unlock Doom slots.
----
----   @param newStatus string New status ("Idle", "Engaged", "Resting", "Dead")
----   @param oldStatus string Previous status
----   @param eventArgs table Event arguments with handled flag
----   @return void
-function job_status_change(newStatus, oldStatus, eventArgs)
-    -- Lazy load DoomManager on first call
-    if not DoomManager then
-        local ok, mod = pcall(require, 'shared/utils/debuff/doom_manager')
-        if ok then DoomManager = mod end
-    end
-
-    -- Safety: Unlock Doom slots after death (prevents stuck locks after raise)
-    DoomManager.handle_status_change(newStatus, oldStatus)
-
-end
-
--- Export to global scope
+-- Export to global scope (Mote-Include) and to require()
 _G.job_status_change = job_status_change
 
+return {job_status_change = job_status_change}
