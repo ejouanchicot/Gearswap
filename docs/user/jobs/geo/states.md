@@ -61,11 +61,6 @@ A nuke, -ra or Aspir you cast from a macro steps down too: if the tier is on rec
 you lack the MP, the highest lower tier you know that can go out is cast instead (see
 [auto-tier](../../features/auto-tier-system.md)).
 
-**Known issue (found 2026-09-28, from the code):** `lightspell`, `darkspell`, `lightaoe`
-and `darkaoe` look the spells up through a game-data table that is not available in the
-job's environment, so they answer "no tier available" and cast nothing. Until it is
-fixed, cast the nuke from a macro (`/ma "Fire V" <t>`): the macro path above steps down
-correctly.
 
 ## Notes
 

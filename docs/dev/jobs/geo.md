@@ -25,8 +25,8 @@ What GEO adds on top of the shared pipeline:
 - **Indi / Geo commands** built from states (`indi`, `geo`, `entrust`), the
   Geo- target chosen from a buff list, and `escort` (Full Circle, Indi- on
   self, then follow a leader).
-- **Nuke commands with tier fallback** (`lightspell`, `darkaoe`, ...), broken
-  today (see Known issues).
+- **Nuke commands with tier fallback** (`lightspell`, `darkspell`,
+  `lightaoe`, `darkaoe`).
 - **Scholar subjob helpers** (Arts toggles, `aoe` Accession chains, `dispel`).
 - The PetTP addon loaded while GEO is the main job, and Entrust reporting to
   the dual-box main.
@@ -270,13 +270,18 @@ the first spell that `has_spell` (learned) and `is_spell_ready` (off recast)
 accept, printing `spell_refined` when it differs, or `no_tier_available` when
 none qualifies. Tier `I` means the bare name.
 
-Both helpers start with `if not res or not res.spells then return false end`
-and read the **global** `res`. GearSwap's job sandbox (`refresh.lua`
-`user_env`) has no `res`, and no project file defines one (an in-game trace
-from RDM logs `res global false`). So `has_spell` always returns false and
-every `lightspell` / `darkspell` / `lightaoe` / `darkaoe` prints "no tier
-available" and casts nothing. The macro path (`TierRefiner` in precast) is not
-affected: it resolves `resources` through `require`.
+Both helpers read `res`, a file-level `local res = require('resources')`: in
+the sandbox that `require` is `include_user`, which returns the engine's
+already-loaded `resources` table (`package.loaded`), so the lookup works.
+`has_spell` walks `res.spells` for the name and checks
+`windower.ffxi.get_spells()[id]`; `is_spell_ready` checks
+`get_spell_recasts()[id] == 0` (strict, no RECAST_CONFIG tolerance). Checked
+offline on 2026-09-28 with Windower's `res/spells.lua`: Fire V learned and
+ready casts Fire V; on recast or not learned, Fire IV with `spell_refined`;
+Stonera III on recast, Stonera II; nothing learned, `no_tier_available`. (A
+review that night wrongly reported these commands as broken, reading `res` as
+a global; the RDM trace line it quoted, `res global false`, is RDM's own
+diagnostic.)
 
 ## Mote states
 
@@ -315,7 +320,7 @@ Created by `GEOStates.configure()` on every `user_setup()`. Keys from
 | `geo` | `/ma "<MainGeo>" <stpc>` for the 18 names in `GEO_BUFFS`, `<stnpc>` otherwise (`is_geo_buff`) |
 | `escort [Indi-X] [leader]` | Full Circle if a luopan is out and `/ma "<Indi-X>" <me>` 2 s later (at once without a luopan; default Indi-Regen); with a leader, `sm follow <leader>` when the Indi- aftercast arrives (`geo_escort_on_aftercast`), with a timer (`cast_start + cast_time + 3` s) as a safety net; `MessageSortie.show_alt_escort` |
 | `entrust` | `/ja "Entrust" <me>`, then `AbilityHelper.follow_up_or_abort('Entrust', '/ma "<MainIndi>" <stal>', 1.5)`: the Indi- goes out once Entrust registers, abandoned with a warning if Entrust was refused |
-| `lightspell` / `darkspell` | `refine_and_cast(<Main*Spell>, SpellTier, false, '<t>')` (broken, see above) |
+| `lightspell` / `darkspell` | `refine_and_cast(<Main*Spell>, SpellTier, false, '<t>')` |
 | `lightaoe` / `darkaoe` | `refine_and_cast(<Main*AOE>, AOETier, true, '<t>')` (broken) |
 | `lightarts` / `darkarts` | Arts, then Addendum on the next press; GEO's own copy of `ScholarActions.light_arts` / `dark_arts`, using `buffactive` and `MessageCore.info` |
 | `aoe sneak` / `invi` / `invisible` / `erase` | `ScholarActions.try_aoe_subcommand(cmdParams[2], nil)` (no state: always the Accession version) |
@@ -497,13 +502,9 @@ T = in `_master/sets/geo_sets.lua`.
 
 ## Known issues
 
-- **Nuke commands cast nothing**: `geo_spell_refiner.lua` reads the global
-  `res`, which the sandbox does not have, so `lightspell`, `darkspell`,
-  `lightaoe` and `darkaoe` always print "no tier available". Confirmed by
-  code reading (sandbox `user_env`) and by an in-game RDM trace showing
-  `res global false`; the GEO commands themselves not re-tested in game.
-- **Entrust set undone** by `MidcastFallback` (the Entrust branch skips
-  `select_set`). Offline harness; not tested in game.
+- The nuke commands test the recast with `== 0`, not the RECAST_CONFIG
+  tolerance: a tier with under 2 s of recast left is skipped for the next one
+  down.
 - `HybridMode` (default PDT) changes no gear yet: `sets.idle.PDT` /
   `sets.engaged.PDT` are empty copies of Normal; not read while a luopan is
   out.

@@ -90,8 +90,8 @@ Type `//gs c <command>` (or `/console gs c <command>` in a macro).
 | `geo` | Casts `MainGeo`: on a party member you pick for the 18 buff Geo- spells, on an enemy you pick for the others |
 | `entrust` | Entrust, then `MainIndi` on a party member you pick once Entrust is up; gives up with a warning if Entrust was refused |
 | `escort [Indi-X] [leader]` | Full Circle if a luopan is out, then the Indi- on you (Indi-Regen by default); with a leader name, `sm follow <leader>` once the cast is over (needs an addon that answers `sm follow`) |
-| `lightspell` / `darkspell` | Nuke with the element mode and `SpellTier`, stepping down to a learned, ready tier. See Known issues |
-| `lightaoe` / `darkaoe` | Same with the -ra mode and `AOETier`. See Known issues |
+| `lightspell` / `darkspell` | Nuke with the element mode and `SpellTier`, stepping down to a learned, ready tier |
+| `lightaoe` / `darkaoe` | Same with the -ra mode and `AOETier` |
 | `lightarts` / `darkarts` | /SCH: Light / Dark Arts, then the Addendum on the next press |
 | `aoe sneak` / `aoe invi` / `aoe erase` | /SCH: the spell on the party through Light Arts and Accession (and Addendum: White for Erase) as charges allow. GEO has no single-target switch: it is always the party version |
 | `dispel` | /RDM: Dispel on an enemy you pick. /SCH: Dark Arts and Addendum: Black first when needed. Other subjobs: a warning |
@@ -174,15 +174,6 @@ What the project's shared systems do on GEO, checked in the code.
 
 Not on GEO: the Magic Burst party call and BLM's own tier refiner (BLM), pet
 Blood Pact gear (SMN), cure auto-tier (WHM).
-
-## Known issues
-
-Found in the code on 2026-09-28, not yet tested in game:
-
-- `lightspell`, `darkspell`, `lightaoe` and `darkaoe` look the spells up in a
-  game-data table that is not available to the job, so they answer "no tier
-  available" and cast nothing. Cast nukes from a macro meanwhile: the macro
-  path steps down correctly.
 
 ## Configuration files for this job
 
