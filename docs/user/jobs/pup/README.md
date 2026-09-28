@@ -1,5 +1,7 @@
 # PUP - not functional yet
 
+Set names and automatic gear: [sets.md](sets.md).
+
 PUP does not load today. Its job modules exist
 (`shared/jobs/pup/functions/`), but the configuration folder they need,
 `_master/config/pup/`, does not exist. The entry file
