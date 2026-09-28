@@ -1,44 +1,53 @@
 # Command routing, common commands and debug tooling
 
-Every `//gs c <words>` typed by the player, sent by a keybind, a macro, `send_command('gs c ...')` or the dual-box partner (`send <char> gs c ...`) enters the same pipe: GearSwap hands the whole string to Mote's `self_command`, Mote splits it and calls the job's `job_self_command`, and the job file decides, in a fixed order that differs slightly per job, whether the command is a watchdog, dual-box, UI, common or job-specific command. `CommonCommands` (`shared/utils/core/COMMON_COMMANDS.lua`) owns the ~75 commands that every job shares (warp shortcuts, wardrobe, refill, lockstyle, dual-box group orders, Sortie, temporary keybinds, trace, debug toggles, diagnostics). A name that nothing on the main answers goes to the dual-box alt-command system, which `CommonCommands` installs as the last lookup of Mote's `selfCommandMaps`. The diagnostic handlers live in `DEBUG_COMMANDS.lua` and the tools under `shared/utils/debug/`. This page describes the routing contract, lists every command, and documents what each debug tool measures and writes.
+Every `//gs c <words>` enters the same pipe, whoever sends it: the player, a keybind, a macro, `send_command('gs c ...')` or another box of the group (`send <char> gs c ...`). GearSwap hands the whole string to Mote's `self_command`. Mote splits it and calls the job's `job_self_command`. The job file then checks the command against a fixed sequence of shared prefixes (dual-box, watchdog, UI, common), and only after those against its own commands. The sequence differs slightly from job to job.
+
+`CommonCommands` (`shared/utils/core/COMMON_COMMANDS.lua`) owns the commands every job shares: warp shortcuts, wardrobe, refill, lockstyle, box-group orders, Sortie, stealth, Combat Mode, Treasure Mode, Dual Wield tiers, the belt status, temporary keybinds, key conflicts, trace, the debug toggles and the diagnostics. When nothing on the main answers a name, the name goes to the dual-box alt-command system. `CommonCommands` installs that system as the last lookup of Mote's `selfCommandMaps`.
+
+The diagnostic handlers live in `DEBUG_COMMANDS.lua`, and the tools themselves under `shared/utils/debug/`. This page covers the routing contract, every shared command and every debug tool: what each one measures, where it writes, and what it costs.
 
 ## Files
 
-| Path | Lines | Role |
-|---|---|---|
-| `shared/utils/core/COMMON_COMMANDS.lua` | 750 | `CommonCommands`: router (`handle_command`), membership tests (`is_common_command`, `runs_locally`), gameplay/utility handlers, installs the alt-command fallback |
-| `shared/utils/core/DEBUG_COMMANDS.lua` | 580 | `DebugCommands`: perf, fulltest, syscheck, lagdebug, debugsubjob, jamsg/spellmsg/wsmsg, info, debugstate, memcheck, and the six debug toggles (debugwarp, debugprecast, automovedebug, debugjobchange, debugupdate, debugmsg, moved here 2026-09-25); re-exposed on `CommonCommands` |
-| `shared/utils/commands/info_command.lua` | 421 | `//gs c info <name>`: looks a JA / spell / WS up in the project databases and prints its fields |
-| `shared/utils/config/config_loader.lua` | 82 | `ConfigLoader.load_ui_config(char, job)`: loads `<char>/config/UI_CONFIG.lua`, sets `_G.UIConfig` and `_G.ui_display_config` |
-| `shared/utils/debug/debug_logger.lua` | 87 | `DebugLogger`: one-line flag-gated debug output through `MessageFormatter.show_debug` |
-| `shared/utils/debug/full_test.lua` | 305 | `FullTest`: syscheck + module loads + `_G` hooks + `sets` structure, scored, optional file export |
-| `shared/utils/debug/global_probe.lua` | 218 | `GlobalProbe`: snapshots `_G`, reports globals created afterwards, reports missing Mote hooks |
-| `shared/utils/debug/lag_debugger.lua` | 523 | `LagDebugger`: event journal (frames, stalls, module loads, actions, job changes) kept on `windower._lagdebug`, exported to a file |
-| `shared/utils/debug/performance_profiler.lua` | 357 | `Profiler`: load-time checkpoints for `get_sets()` and the job facades, persistent on/off switch file |
-| `shared/utils/debug/system_checker.lua` | 334 | `SystemChecker`: 10 runtime health checks, scored, optional per-character export |
-| `shared/utils/debug/trace_log.lua` | 127 | `TraceLog`: `//gs c trace`, appends what the game returns to `<Character>/trace.log` (added in `f3c8bee`) |
-| `shared/jobs/*/functions/*_COMMANDS.lua` | 155-567 | Per-job `job_self_command`; only the routing contract is covered here (job commands belong to the job pages) |
+| Path | Role |
+|---|---|
+| `shared/utils/core/COMMON_COMMANDS.lua` | `CommonCommands`: router (`handle_command`), membership tests (`is_common_command`, `runs_locally`), gameplay and utility handlers, installs the alt-command fallback at module load |
+| `shared/utils/core/DEBUG_COMMANDS.lua` | `DebugCommands`: perf, fulltest, syscheck, lagdebug, debugsubjob, jamsg / spellmsg / wsmsg, info, debugstate, memcheck, debugmsg and the five persistent debug toggles; re-exposed on `CommonCommands` |
+| `shared/utils/core/WATCHDOG_COMMANDS.lua` | `WatchdogCommands`: `//gs c watchdog ...` (called by the job files, not by `CommonCommands`) |
+| `shared/utils/core/CYCLE_HANDLER.lua` | `CycleHandler.handle_cyclestate`: `//gs c cyclestate <State> [reverse]` (called by the job files) |
+| `shared/utils/core/combat_mode_commands.lua` | `//gs c combatmode`, built on `optional_state_commands.lua`, see [keybinds-and-custom.md](keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode) |
+| `shared/utils/equipment/treasure_commands.lua` | `//gs c th`, built on `optional_state_commands.lua` |
+| `shared/utils/core/optional_state_commands.lua` | Shared command builder for Combat Mode and Treasure Mode (status, `show`, `hide`, `key`, `help`, `extra`) |
+| `shared/utils/commands/info_command.lua` | `//gs c info <name>`: looks up a JA, spell or WS in the project databases and prints its fields |
+| `shared/utils/config/config_loader.lua` | Installs `ModuleCache` at file level; `ConfigLoader.load_ui_config(char, job)` loads `<char>/config/UI_CONFIG.lua` |
+| `shared/utils/debug/debug_logger.lua` | `DebugLogger`: one-line flag-gated debug output through `MessageFormatter.show_debug` |
+| `shared/utils/debug/full_test.lua` | `FullTest`: syscheck + module loads + `_G` hooks + `sets` structure, scored, optional file export |
+| `shared/utils/debug/global_probe.lua` | `GlobalProbe`: snapshots `_G`, reports globals created afterwards and missing Mote hooks |
+| `shared/utils/debug/lag_debugger.lua` | `LagDebugger`: event journal (frames, stalls, module loads, actions, job changes) kept on `windower._lagdebug`, exported to a file |
+| `shared/utils/debug/performance_profiler.lua` | `Profiler`: load-time checkpoints for `get_sets()` and the job facades, persistent on/off switch file |
+| `shared/utils/debug/system_checker.lua` | `SystemChecker`: 10 runtime health checks, scored, optional per-character export |
+| `shared/utils/debug/trace_log.lua` | `TraceLog`: `//gs c trace`, appends what the game returns to `<Character>/trace.log` |
+| `shared/jobs/<job>/functions/<JOB>_COMMANDS.lua` (17 files) | Per-job `job_self_command`. This page covers the routing contract only; job commands belong on the job pages |
 
-Related files read to establish behaviour (not owned by this area): `shared/utils/core/WATCHDOG_COMMANDS.lua`, `shared/utils/core/CYCLE_HANDLER.lua`, `shared/utils/ui/UI_COMMANDS.lua`, `shared/utils/dualbox/alt_commands.lua`, `shared/utils/dualbox/alt_group.lua`, `shared/utils/dualbox/dualbox_role.lua`, `shared/utils/keybinds/temp_binds.lua`, `shared/utils/sortie/sortie_commands.lua`, `shared/utils/warp/warp_command_registry.lua`, `shared/utils/core/INIT_SYSTEMS.lua`, `shared/utils/core/module_cache.lua`, and the GearSwap engine (`../gearswap.lua`, `../refresh.lua`, `../user_functions.lua`, `../flow.lua`, `../libs/Mote-SelfCommands.lua`).
+Related files read to establish behaviour (owned by other pages): `shared/utils/ui/UI_COMMANDS.lua`, `shared/utils/dualbox/alt_commands.lua`, `alt_group.lua`, `dualbox_role.lua`, `roll_share.lua`, `shared/utils/keybinds/temp_binds.lua`, `shared/utils/sortie/sortie_commands.lua`, `shared/utils/stealth/stealth.lua`, `shared/utils/warp/warp_command_registry.lua`, `shared/utils/core/INIT_SYSTEMS.lua`, `shared/utils/core/module_cache.lua`, and the GearSwap engine (`../gearswap.lua`, `../refresh.lua`, `../user_functions.lua`, `../flow.lua`, `../libs/Mote-SelfCommands.lua`, `../libs/tables.lua`).
 
 ## How it works
 
 ### 1. Engine and Mote: from `//gs c` to `job_self_command`
 
-1. GearSwap's `addon command` handler (`gearswap.lua:162-166`) takes everything after `c`, runs each word through `convert_auto_trans`/`from_shift_jis`, joins the words with single spaces and calls `equip_sets('self_command', nil, <string>)`. `equip_sets` calls the user function through `user_pcall` (`flow.lua:105`, `318-327`), which catches a Lua error inside the job's handler and re-raises it with a "GearSwap has detected an error in the user function" prefix, so it is printed and the rest of that command is skipped.
-2. Mote's `self_command` (`Mote-SelfCommands.lua:9-37`) splits the string on spaces into `commandArgs`, creates `eventArgs = {handled = false}` and calls `job_self_command(commandArgs, eventArgs)`. Nothing is lower-cased by the engine or by Mote: every job file lower-cases only `cmdParams[1]`.
-3. If `eventArgs.handled` is still false afterwards, Mote removes the first word and looks it up, case-sensitively, in `selfCommandMaps` (`Mote-SelfCommands.lua:454-465`: `toggle`, `cycle`, `cycleback`, `set`, `reset`, `unset`, `update`, `showtp`, `naked`, `help`, `test`). That is how `gs c update` (sent by AutoMove on each movement) and `gs c cycle X` reach Mote. Once `COMMON_COMMANDS` has loaded (on the first command of each job file load), a name missing from that table is answered by an `__index` that returns the dual-box alt's command of that name, if any (section 4).
+1. GearSwap's `addon command` handler (`gearswap.lua`, branch `c`) takes everything after `c`. It runs each word through `convert_auto_trans` and `from_shift_jis`, joins the words with single spaces and calls `equip_sets('self_command', nil, <string>)`. `equip_sets` calls the user function through `user_pcall` (`flow.lua`). A Lua error inside the job's handler is caught there and printed with the prefix "GearSwap has detected an error in the user function", and the rest of that command is skipped.
+2. Mote's `self_command` (`Mote-SelfCommands.lua`) splits the string on spaces into `commandArgs`, creates `eventArgs = {handled = false}` and calls `job_self_command(commandArgs, eventArgs)`. Neither the engine nor Mote lower-cases anything. Every job file lower-cases only `cmdParams[1]`.
+3. If `eventArgs.handled` is still false afterwards, Mote removes the first word and looks it up, case-sensitively, in `selfCommandMaps` (`toggle`, `cycle`, `cycleback`, `set`, `reset`, `unset`, `update`, `showtp`, `naked`, `help`, `test`). `gs c update` (sent by AutoMove, DualWield, TreasureHunter, the optional-state commands...) and `gs c cycle X` reach Mote this way. Once `COMMON_COMMANDS` has loaded, which happens on the first command of each job-file load, a name missing from that table is answered by an `__index` that returns the dual-box alt's command of that name, if the alt has one (section 4).
 
 ### 2. The job-file contract
 
 Every `[JOB]_COMMANDS.lua` defines `job_self_command(cmdParams, eventArgs)` and exports it as `_G.job_self_command`. Each one:
 
-1. returns if `cmdParams[1]` is missing, calls its local `ensure_commands_loaded()` (lazy `require` of `COMMON_COMMANDS`, `WATCHDOG_COMMANDS`, `UI_COMMANDS`, `CYCLE_HANDLER`, `message_formatter`, `message_commands`),
-2. computes `command = cmdParams[1]:lower()`,
-3. tests a sequence of shared prefixes, each ending with `return`,
+1. returns if `cmdParams[1]` is missing, then calls its local `ensure_commands_loaded()` (lazy `require` of `COMMON_COMMANDS`, `WATCHDOG_COMMANDS`, `UI_COMMANDS`, `CYCLE_HANDLER`, `message_formatter`, `message_commands`);
+2. computes `command = cmdParams[1]:lower()`;
+3. tests a sequence of shared prefixes, each ending with `return`;
 4. then tests its own job commands.
 
-The common-command step has the same shape in all 16 files (BST, PUP and SMN also nil-check `CommonCommands`):
+The common-command step has the same shape in all 17 files (BST, PUP and SMN also nil-check `CommonCommands`):
 
 ```lua
 if CommonCommands.is_common_command(command) then
@@ -51,51 +60,56 @@ if CommonCommands.is_common_command(command) then
 end
 ```
 
-`table.unpack` is not Lua 5.1; it comes from Windower's `libs/tables.lua:457`. With no extra arguments it is plain `unpack(t)`, which is what forwarding needs (passing only `cmdParams[1]` would drop every subcommand, e.g. `warp all`). With extra arguments it treats them as keys, not as a start index (see Gotchas).
+`table.unpack` is not Lua 5.1: it comes from Windower's `libs/tables.lua`. Called with no extra argument it is plain `unpack(t)`, which is what forwarding needs. Passing only `cmdParams[1]` would drop every subcommand, so `warp all` would lose its `all`. Called with extra arguments, it treats them as keys, not as a start index (see Gotchas).
 
-When `handle_command` returns false the job file still returns, `eventArgs.handled` stays false and Mote tries `selfCommandMaps[cmdParams[1]]`, which finds nothing for any common name (`equip`, a failed `reload`...): the alt fallback refuses every name `CommonCommands.runs_locally` claims, so the command ends silently.
+When `handle_command` returns false or nil, the job file still returns and `eventArgs.handled` stays false. Mote then tries `selfCommandMaps[cmdParams[1]]`, which finds nothing for a common name. The alt fallback refuses every name `CommonCommands.runs_locally` claims, so the command ends silently.
 
-Order of the shared prefixes, per job (line numbers of the `if`):
+Order of the shared prefixes in each job file, first to last (`alt/req` = `altjobupdate` then `requestjob`; `wd` = `watchdog`; `common` = `is_common_command`; `dm` = `debugmidcast`; `cs` = `cyclestate`):
 
-| Job | altjobupdate / requestjob | watchdog | common | ui | debugmidcast | cyclestate | notes |
-|---|---|---|---|---|---|---|---|
-| BLM | 256 / 268 | 278 | 288 | 304 | 313 | 332 | |
-| BRD | 167 / 179 | 273 | 281 | 187 | 248 | 267 | `forceidle` at 196 before common |
-| BST | 157 / 170 | 232 | 243 | 181 | 190 | 221 | `debugprecast` at 202 overrides the common one (toggles `_G.BST_DEBUG_PRECAST`) |
-| COR | 101 / 111 | 153 | 161 | 119 | 128 | 147 | |
-| DNC | 71 / 83 | 91 | 99 | 112 | 121 | 140 | |
-| DRK | 62 / 74 | 84 | 94 | 110 | 119 | 138 | |
-| GEO | 114 / 126 | 168 | 176 | 134 | 143 | 162 | |
-| PLD | 103 / 115 | 95 | 125 | 141 | 150 | 169 | |
-| PUP | 151 / 161 | 211 | 222 | 172 | 181 | 200 | file is a copy of BST_COMMANDS |
-| RDM | 165 / 175 | 195 | 203 | 188 | 232 | 251 | 223-226: every raw `selfCommandMaps` name falls to Mote; from 360: an unknown command is cast as a JA/WS/spell name, else left to Mote when `selfCommandMaps` (the alt fallback) answers it, else "Command not recognized" |
-| RUN | 92 / 104 | 84 | 114 | 130 | 139 | 158 | |
-| SAM | 57 / 69 | 79 | 89 | 105 | 114 | 133 | |
-| SMN | 299 / 308 | 348 | 369 | 318 | 327 | 338 | `skillup` at 358 before common |
-| THF | 77 / 89 | 103 | 111 | 124 | 133 | 152 | |
-| WAR | 91 / 103 | 83 | 113 | 129 | 138 | 185 | |
-| WHM | 67 / 79 | 89 | 99 | 113 | 122 | 141 | |
+| Job | Order before the job's own commands | Notes |
+|---|---|---|
+| BLM, BLU | alt/req, wd, common, ui, dm, cs | BLM answers `cycle Storm` itself (`handle_blm_standard_cycles`), so on BLM that one never reaches Mote |
+| DNC, DRK, SAM, THF, WHM | alt/req, wd, common, ui, dm, cs | |
+| PLD, RUN, WAR | wd, alt/req, common, ui, dm, cs | WAR keeps a `perf` branch after `cs` that the common `perf` shadows |
+| BRD | alt/req, ui, `forceidle`, dm, cs, wd, common | Nothing in the repository sends `forceidle` |
+| BST | alt/req, ui, dm, `debugprecast`, cs, wd, common | BST's own `debugprecast` answers before the common one and toggles `_G.BST_DEBUG_PRECAST` |
+| COR, GEO, PUP | alt/req, ui, dm, cs, wd, common | COR keeps a `testcolors` / `colors` branch that the common one shadows |
+| RDM | alt/req, ui, wd, common, raw Mote names, dm, cs | After `common`, every raw `selfCommandMaps` key is left to Mote. An unknown command at the end is cast as a JA / WS / spell name (read from `res`); if it is none of these and `selfCommandMaps` (the alt fallback) answers it, it is left to Mote; otherwise RDM prints "Command not recognized" |
+| SMN | alt/req, ui, dm, cs, wd, `skillup`, common | |
 
-`altjobupdate` passes the sender's name as its 5th word (`cmdParams[6]`) to `DualBoxManager.receive_alt_job` in all 16 files (2026-09-25), so a third box's update is ignored; see [dualbox.md](dualbox.md).
+In all 17 files, `altjobupdate` passes the sender's name (its 5th word, `cmdParams[6]`) to `DualBoxManager.receive_alt_job`, so an update from a box outside the pair is ignored (see [dualbox.md](dualbox.md)).
 
-Because `ui`, `watchdog`, `cyclestate`, `debugmidcast`, `altjobupdate` and `requestjob` are not common names, the different orders only matter for names that collide (see Gotchas: `perf`, `testcolors`, `debugprecast`).
+`ui`, `watchdog`, `cyclestate`, `debugmidcast`, `altjobupdate` and `requestjob` are not common names, so the different orders matter only for names that collide (Gotchas: `perf`, `testcolors`, `debugprecast`).
 
 ### 3. `CommonCommands.handle_command(command, job_name, ...)`
 
-`COMMON_COMMANDS.lua:462-673`.
+1. **Normalise.** A string `command` is lower-cased and rebuilt into `cmdParams = {command, ...}`. A table is taken as `cmdParams` directly (no caller passes a table today). `args = cmdParams[2..n]`.
+2. **Module commands**, each handed to its own module, in this order:
 
-1. Normalises its input (`466-490`): a string `command` is lower-cased and rebuilt into `cmdParams = {command, ...}`; a table is taken as `cmdParams` directly (no caller passes a table today). `args = cmdParams[2..n]`.
-2. Module commands first, each handed to its own module (`492-521`): `sortie` (`SortieCommands.handle`), `alts` / `main` / `setalt` / `altreport` / `altmirror` (`AltGroup.route`), `stealth` (`Stealth.handle`, `503-506`), `combatmode` (`combat_mode_commands`), `th` (`treasure_commands`), `dw` (`DualWield.command`), `belt` (`ElementalBelt.show_status`), `tb` (`TempBinds.handle`), `trace` (`TraceLog.handle`).
-3. Warp (`513-531`): exact match against `warp_command_registry.COMMANDS` (105 aliases), then any name ending in `all` whose base is a warp alias (`warpall`, `sdall`...). Both go to `handle_warp_commands(cmdParams)` (`428-452`), which requires `shared/utils/warp/warp_commands` and returns `WarpCommands.handle_command(cmdParams)`; on load failure it prints a module-by-module diagnostic.
-4. One `if/elseif` chain for the named commands (`534-668`, table below).
-5. Returns false otherwise. It never sends anything to the alt.
+   | Word | Module call |
+   |---|---|
+   | `sortie` | `SortieCommands.handle(args)` |
+   | `alts`, `main`, `setalt`, `altreport`, `altmirror`, `altlead` | `AltGroup.route(cmd, args)` |
+   | `rollshow` | `RollShare.receive(args)` |
+   | `stealth` | `Stealth.handle(args)` |
+   | `combatmode` | `combat_mode_commands.handle(args)` |
+   | `keyconflicts`, `kc` | `KeybindManager.show_possible_conflicts()` |
+   | `th` | `treasure_commands.handle(args)` |
+   | `dw` | `DualWield.command(args)` |
+   | `belt` | `ElementalBelt.show_status()` |
+   | `tb` | `TempBinds.handle(args)` |
+   | `trace` | `TraceLog.handle(args)` |
 
-`is_common_command(command)` (`679-727`) repeats the same names as a hand-written `or` chain (`686-705`) and the warp exact and `all` tests (`709-724`). It does not look at the alt's config. The two lists must be kept in sync by hand: a name added to `handle_command` only is unreachable from every job file.
+3. **Warp.** First an exact match against `warp_command_registry.COMMANDS` (105 aliases). Then any word ending in `all` whose base is an alias (`warpall`, `sdall`, and also `wall` = `w` + `all`). Both go to `handle_warp_commands(cmdParams)`, which requires `shared/utils/warp/warp_commands` and returns `WarpCommands.handle_command(cmdParams)`. If that module fails to load, it prints a module-by-module diagnostic instead.
+4. **Named commands.** One `if/elseif` chain for the named commands (table below).
+5. **Anything else** returns false. `handle_command` never sends anything to the alt.
+
+`is_common_command(command)` repeats the same names as a hand-written `or` chain, plus the warp exact and `<alias>all` tests. It does not look at the alt's config. The two lists must be kept in sync by hand: a name added to `handle_command` only is unreachable from every job file.
 
 ```mermaid
 sequenceDiagram
     participant P as "Player / keybind / partner"
-    participant GS as "GearSwap (gearswap.lua:162)"
+    participant GS as "GearSwap (addon command c)"
     participant M as "Mote self_command"
     participant J as "job_self_command"
     participant CC as "CommonCommands"
@@ -107,7 +121,9 @@ sequenceDiagram
     J->>CC: "is_common_command('wo')"
     CC-->>J: "true"
     J->>CC: "handle_command('wo', 'WAR', 'preview')"
-    alt "warp alias or *all"
+    alt "module word (sortie, alts, stealth, th, dw, tb...)"
+        CC->>CC: "require(module).handle(args)"
+    else "warp alias or *all"
         CC->>CC: "handle_warp_commands(cmdParams)"
     else "named common command"
         CC->>CC: "handler in COMMON / DEBUG_COMMANDS"
@@ -123,304 +139,472 @@ sequenceDiagram
 
 ### 4. Alt commands and name shadowing
 
-`AltCommands.is_alt_command(cmd)` (`shared/utils/dualbox/alt_commands.lua:436-446`) is true only on the dual-box MAIN (`_G.DualBoxConfig.enabled` and `role == 'main'`, `get_alt_name`, `106-112`) when `cmd` is a key of the alt's current main-job or subjob config: `<main char>/config/alt/<JOB>_ALT_COMMANDS.lua` merged with `<JOB>_ALT_CUSTOM.lua` (`load_job_config`, `155-258`; each file falls back to its `_master/config/alt/` template when the character has none, 2026-09-25), filtered by the level the alt reported in `_G.AltJobState`, cached per `job/sub/levels` key (`load_config`, `260-293`). Explicit forms: `//gs c altcmds [filter]` / `altlist` lists them, `//gs c alt <name> [args]` runs one and forwards every extra word (`AltCommands.handle`, `492-517`).
+`AltCommands.is_alt_command(cmd)` (`shared/utils/dualbox/alt_commands.lua`) is true only on the dual-box main, and only when `cmd` is a key of the alt's current main-job or subjob config. "Main" means `_G.DualBoxConfig.enabled` and `role == 'main'` (see `get_alt_name`). The config is `<main char>/config/alt/<JOB>_ALT_COMMANDS.lua` merged with `<JOB>_ALT_CUSTOM.lua` (`load_job_config`); each file falls back to its `_master/config/alt/` template when the character has none. The merged config is filtered by the level the alt reported in `_G.AltJobState` and cached per `job/sub/levels` key (`load_config`). Explicit forms:
 
-A bare `//gs c <name>` reaches the alt only as Mote's last lookup. At module load `COMMON_COMMANDS.lua:745-748` calls `AltCommands.install_fallback(selfCommandMaps, CommonCommands.runs_locally)` (`alt_commands.lua:519-538`), which puts an `__index` on Mote's `selfCommandMaps`. Mote reads that table only when `job_self_command` left the command unhandled (`Mote-SelfCommands.lua:26-35`), and `__index` runs only for names the table lacks, so:
+- `//gs c altcmds [filter]` (or `altlist`) lists the alt's commands;
+- `//gs c alt <name> [args]` runs one and forwards every extra word (`AltCommands.handle`).
 
-- a job command always keeps its name. Names that exist both as a job command and as an alt key today (job file : alt config): `lightarts` (BLM, GEO, PLD : SCH), `darkarts` (BLM, GEO : SCH), `klimaform` (BLM : SCH), `dispel` (BLM, GEO : RDM, SCH), `entrust` (GEO : GEO), `doubleup` (COR : COR), `fandance` (DNC : DNC), `berserk`, `defender` (WAR : WAR), `thirdeye` (WAR : SAM), `marcato`, `nightingale`, `pianissimo`, `troubadour` (BRD : BRD), and RDM's table-driven `convert`, `chainspell`, `saboteur`, `composure` (RDM : RDM). They run on the main; `//gs c alt <name>` sends the alt's version;
-- Mote's own commands (`update`, `cycle`, ...) are never shadowed;
-- `__index` also refuses every name `CommonCommands.runs_locally(name)` claims (`COMMON_COMMANDS.lua:735-742`: common names, warp aliases and `<alias>all`, Mote's raw keys), so a common command whose handler fails does not fall through to the alt. Four alt keys are such names: `warp`, `escape`, `retrace` (BLM alt config) and `jump` (DRG alt config); they run only as `//gs c alt <name>`;
-- the lookup is case-insensitive (`Haste` works), because `is_alt_command` and `execute` lower-case the name.
+A bare `//gs c <name>` reaches the alt only as Mote's last lookup. At module load, `COMMON_COMMANDS.lua` calls `AltCommands.install_fallback(selfCommandMaps, CommonCommands.runs_locally)`, which puts an `__index` on Mote's `selfCommandMaps`. Mote reads that table only when `job_self_command` left the command unhandled, and `__index` runs only for names the table lacks. As a result:
 
-The table is rebuilt by Mote on every job file load, and `COMMON_COMMANDS` is required again in each new sandbox on its first command, so the fallback exists from the first command on. RDM's cast-by-name fallback leaves a name unhandled when `selfCommandMaps` answers it (`RDM_COMMANDS.lua:390-393`); the other 15 job files have no catch-all.
+- **A job command always keeps its name.** Names that exist both as a job command and as an alt key today (job file : alt config): `lightarts` (BLM, GEO, PLD : SCH), `darkarts` (BLM, GEO : SCH), `klimaform` (BLM : SCH), `dispel` (BLM, GEO : RDM, SCH), `entrust` (GEO : GEO), `doubleup` (COR : COR), `fandance` (DNC : DNC), `berserk`, `defender` (WAR : WAR), `thirdeye` (WAR : SAM), `marcato`, `nightingale`, `pianissimo`, `troubadour` (BRD : BRD), and RDM's table-driven `convert`, `chainspell`, `saboteur`, `composure` (RDM : RDM). They run on the main; `//gs c alt <name>` sends the alt's version.
+- **Mote's own commands** (`update`, `cycle`, ...) are never shadowed.
+- **`runs_locally` names never reach the alt.** `__index` refuses every name `CommonCommands.runs_locally(name)` claims: common names, warp aliases and `<alias>all`, and Mote's raw keys. A common command whose handler fails therefore does not fall through to the alt. Four alt keys are such names: `warp`, `escape`, `retrace` (BLM alt config) and `jump` (DRG alt config). They run only as `//gs c alt <name>`. Likewise, the alt keys `haste` (RDM, WHM alt configs) are why the Dual Wield command is `dw`, not `haste`.
+- **The lookup is case-insensitive** (`Haste` works), because `is_alt_command` and `execute` lower-case the name.
 
-`altcmds` / `altlist` / bare `alt` pass `runs_locally` down to `AltCommands.list` (`alt_commands.lua:540-563`), which lists the names `runs_locally` claims apart, under a `//gs c alt <name>` line (`message_alt_commands.lua` `show_shadowed`). It cannot see job-specific commands, so a job command that shares an alt key (the list above) is still shown in the bare form although it runs on the main.
+Mote rebuilds the table on every job-file load, and `COMMON_COMMANDS` is required again in each new sandbox on its first command, so the fallback exists from the first command on. RDM's cast-by-name fallback leaves a name unhandled when `selfCommandMaps` answers it. The other 16 job files have no catch-all.
+
+`altcmds`, `altlist` and a bare `alt` pass `runs_locally` down to `AltCommands.list`. The list shows the names `runs_locally` claims separately, under a `//gs c alt <name>` line (`message_alt_commands.lua`, `show_shadowed`). `AltCommands.list` cannot see job-specific commands, so a job command that shares an alt key (the list above) is still shown in the bare form although it runs on the main.
 
 ## Commands
 
 ### Common commands (`CommonCommands.handle_command`)
 
-Arguments are passed through with their original case unless the handler lower-cases them (noted). The route column names the handler; a bare function name or line number is in `COMMON_COMMANDS.lua`.
+Arguments keep their original case unless the handler lower-cases them. The Route column names the handler. A bare function name is in `COMMON_COMMANDS.lua`, `Debug.x` is `DebugCommands.x` in `DEBUG_COMMANDS.lua`. Aliases are in parentheses.
+
+**Warp and travel**
 
 | Command (aliases) | Args | Effect | Route |
 |---|---|---|---|
-| warp aliases: `w warp w2 warp2 ret retrace esc escape tph tpholla tpd tpdem tpm tpmea tpa tpaltep tpy tpyhoat tpv tpvahzl rj recjugner rp recpashh rm recmeriph sd sandoria bt bastok wd windurst jn jeuno sb selbina mh mhaura rb rabao kz kazham ng norg tv tavnazia au wg whitegate ns nashmau ad adoulin stsd stable-sd stbt stable-bt stwd stable-wd stjn stable-jn op outpost cz ceizak ys yahse hn hennetiel mm morimar mj marjami yc yorcia km kamihr wj wajaom ar arrapago pg purgonorgo rl rulude zv zvahl riv riverne yo yoran lf leafallia bh behemoth cc chocircuit pt parting cg chocogirl ld leader td tidal` | `warp status|unlock|lock|fix|test|help|ipctest`, `all` | Warp spell / item / destination; `<alias>all` or `<alias> all` broadcasts to other instances | `handle_warp_commands` -> `warp/warp_commands.lua` `WarpCommands.handle_command` |
-| `sortie` | `<target>`, `escort [Indi-X]`, `off`, `judgment`, `fullcircle`, `list` | Stance for this character + Silmaril profile for the GEO alt Kaories. On a job that has `state.PhalanxSIRD` (PLD) it also sets that mode: `Off` for `aminon` / `aminontest` (`phalanx_sird = false` in `TARGETS`, `sortie_commands.lua:59-60`), `On` for every other target (`engage_target`, `:168-170`; checked with `rawget(state, 'PhalanxSIRD')` so other jobs get no Mote unknown-state error). A mode value the job's state does not have prints a warning and the rest still runs (fixed 2026-09-25; before, a Lua error stopped the command) | `sortie/sortie_commands.lua` `SortieCommands.handle` (added in `7a833d4`) |
-| `alts` | `on`, `off`, `toggle`, `follow [name|off]`, `do <command>`, `mirror`, `window` | Orders to every other member of the box group (`DualBoxConfig.group`), from either box | `dualbox/alt_group.lua` `AltGroup.route` -> `AltGroup.handle`, see [dualbox.md](dualbox.md) |
-| `altreport` / `altmirror` | `<name> <on|off> <leader|off> <on|off>` / `<name> phase <step> <npc>`, `<name> results <Name,Status|...>` | Sent by every box's automation addon when it carries the local `lib/StateReport.lua` addition (2026-09-26): the real state and mirror progress shown by the alt window. Reports from boxes outside the group are ignored | `AltGroup.route` -> `AltGroup.receive_report` / `receive_mirror`, see [dualbox.md](dualbox.md) |
-| `main` / `setalt <main>` | - / main name | `main`: this box becomes main and sends `setalt <me>` to the others; the role is saved in `<Character>/config/dualbox_role.lua`, and since 2026-09-25 also in each alt's own file when that folder is on this PC | `AltGroup.route` -> `dualbox/dualbox_role.lua` `become_main` / `become_alt` (added in `60aa138`) |
-| `stealth` | `sneak`/`invi`/`both [self\|local]`, `status`, `check`, `refresh <s>`, `alert <s>`, `overwrite on\|off`, `alerts on\|off`, `delay <s>`; internal `claim`, `cast`, `time` | Sneak / Invisible on this character and every other member of the box group (Alt+Z / Alt+X), timers, settings saved in `<Character>/config/STEALTH_CONFIG.lua` (added 2026-09-26) | `stealth/stealth.lua` `Stealth.handle`, see [stealth.md](stealth.md) |
-| `tb` | `[force] <key> <what>`, `<what>`, `list`, `del <key>`, `clear`, `help`, `run <key>` | Temporary keybinds. `<what>`: spell/JA/WS/item name (+ target), `//<console command>`, `/<game command>`, or anything else sent as typed | `keybinds/temp_binds.lua` `TempBinds.handle`, parsing in `temp_binds_parse.lua` (added in `7694dd3`), see [keybinds-and-custom.md](keybinds-and-custom.md) |
-| `trace` | `on`, `off`, `clear`, none = status | Records what the game returns to `<Character>/trace.log` (see Debug tools) | `debug/trace_log.lua` `TraceLog.handle` (added in `f3c8bee`) |
-| `naked` | - | `equip()` every slot to `empty`, prints "All slots cleared." Does not `enable` disabled slots (Mote's own `naked` did) | `handle_naked` (`335-350`) |
-| `equip naked` | `naked` (case-insensitive) | Same as `naked`. `equip` alone or with any other argument prints "Usage: //gs c equip naked" and returns true (2026-09-25) | `536-540` |
+| warp aliases: `w warp w2 warp2 ret retrace esc escape tph tpholla tpd tpdem tpm tpmea tpa tpaltep tpy tpyhoat tpv tpvahzl rj recjugner rp recpashh rm recmeriph sd sandoria bt bastok wd windurst jn jeuno sb selbina mh mhaura rb rabao kz kazham ng norg tv tavnazia au wg whitegate ns nashmau ad adoulin stsd stable-sd stbt stable-bt stwd stable-wd stjn stable-jn op outpost cz ceizak ys yahse hn hennetiel mm morimar mj marjami yc yorcia km kamihr wj wajaom ar arrapago pg purgonorgo rl rulude zv zvahl riv riverne yo yoran lf leafallia bh behemoth cc chocircuit pt parting cg chocogirl ld leader td tidal` | `warp status\|unlock\|lock\|fix\|test\|help\|ipctest`, `all` | Warp spell, item or destination. `<alias>all` or `<alias> all` broadcasts to the other instances | `handle_warp_commands` -> `warp/warp_commands.lua` `WarpCommands.handle_command`, see [warp.md](warp.md) |
 | `mount` | - | Dismount if riding, else a random owned mount | `handle_mount` -> `mount/mount_manager.lua` `MountManager.toggle` |
-| `reload` | - | `JobChangeManager.force_reload(player.main_job, player.sub_job or 'SAM')` -> bumps the debounce counter, `gs reload` | `handle_reload` (`44-56`) -> `core/job_change_manager.lua` `force_reload` |
-| `checksets` | - | `EquipmentChecker.check_job_equipment(job_name)` | `handle_checksets` -> `equipment/equipment_checker.lua:449` |
-| `wardrobeaudit` (`wa`) | - | `WardrobeAuditor.audit()` | `handle_wardrobeaudit` -> `equipment/wardrobe_auditor.lua:557` |
-| `worganize` (`wo`) | `scan`/`scanwarp`, `keep`/`kept`/`items`, `verify`/`check`, `reset`, `recover`/`unlock`, `alt`/`kaories`, `global [preview|dry]`, `preview`/`dry`, none | Wardrobe organizer entry points. Arguments are compared case-sensitively; anything unrecognised (including `Preview`) runs the full `organize()`. A finished run now releases the stance slot locks it broke (Hoxne ammo, THF range; 2026-09-25) | `handle_wardrobeorganize` (`183-226`), see [wardrobe-organizer.md](wardrobe-organizer.md) |
-| `refill` (`rf`) | - | `RefillManager.refill()`, then `DualBoxSyncIPC.broadcast('rf')` so the partner refills too | `handle_refill` (`234-250`) |
-| `automedicine` (`am`) | `on`/`off` (lower-cased) or none = toggle | Auto use of Echo Drops / Remedy | `handle_automedicine` -> `debuff/auto_medicine.lua` `AutoMedicine.handle_command` |
-| `alt`, `altcmds`, `altlist` | `alt <name> [args]`, `altcmds [filter]` | Run / list alt commands; the list puts names that run on the main under `//gs c alt <name>` | `handle_alt_command` -> `dualbox/alt_commands.lua` `AltCommands.handle` |
-| `altbuff` | `<buff words...> <0/1>` | Sent by the alt to the main: record a buff going up/down | `557-563` -> `AltBuffReporter.receive` |
-| `altbuffsync` | - | Sent by the main to the alt: resend every tracked buff | `564-570` -> `report_all` |
-| `altsync` | - | On the main: ask the alt to resync | `571-579` -> `request_sync` |
-| `altbuffs` | - | Show what the main believes about the alt's buffs | `580-586` -> `show_state` |
-| `altdebug` | - | Toggle buff-report tracing (`windower._alt_buff_debug`), log to `data/altbuff_<char>.log` | `587-597` -> `alt_buff_reporter.lua:88` |
-| `craft` | `[variant|off|stop|uncraft]` | Equip / leave a crafting set | `craft/craft_commands.lua:246` |
-| `fish` (`fishing`) | `[variant]` | Equip fishing set | `craft_commands.lua:273` |
-| `uncraft` | - | Unlock and restore gear | `craft_commands.lua:292` |
-| `lockstyle` (`ls`) | - | `select_default_lockstyle()` then `DualBoxSyncIPC.broadcast('ls')` | `handle_lockstyle` (`360-377`) |
-| `dressup` | - | `LockstyleManager.toggle_dressup()` (persistent) | `handle_dressup` (`386-397`) |
-| `perf` | `start|on|enable`, `stop|off|disable`, `toggle`, other/none = status (lower-cased) | Profiler switch | `DEBUG_COMMANDS.lua:43` |
-| `testcolors` (`colors`) | - | Prints chat colour codes 1-509 minus 10, 13, 30, 31, 253-279, 507-508, 14 per row | `handle_testcolors` (`297-329`) |
-| `jump` | - | `DRGJumpManager.execute_jump()` | `handle_jump` (`62-72`) |
-| `waltz` | - | DNC main or sub only; cancels Saber Dance; `WaltzManager.cast_curing_waltz('<stpc>')` | `handle_waltz` -> `handle_waltz_generic` (`80-106`) |
-| `aoewaltz` | - | Same guard; `cast_divine_waltz()` | `handle_aoewaltz` |
-| `debugsubjob` (`dsj`) | - | Prints main/sub job + levels, zone id/name | `DEBUG_COMMANDS.lua:135` |
-| `debugwarp` | - | Toggles `windower._gs_debug.WARP`, mirrored to `_G.WARP_DEBUG` | `DEBUG_COMMANDS.lua:508` |
-| `debugprecast` | - | Toggles `windower._gs_debug.PRECAST`, mirrored to `_G.PrecastDebugState` (read by `BRD_PRECAST.lua`, `RDM_PRECAST.lua`, `RUN_PRECAST.lua`). On BST the job file answers first and toggles `_G.BST_DEBUG_PRECAST` instead | `DEBUG_COMMANDS.lua:516` |
-| `automovedebug` (`amd`) | - | Toggles `windower._gs_debug.AUTOMOVE`, mirrored to `_G.AUTOMOVE_DEBUG`. It has its own field because it used to be restored from `UPDATE`, which silently undid the toggle at the next job load | `DEBUG_COMMANDS.lua:532` |
-| `debugjobchange` (`djc`) | - | Toggles `windower._gs_debug.JOBCHANGE`, mirrored to `_G.JOBCHANGE_DEBUG` - it has to survive the event it traces; when turning on, prints `_G.JobChangeManagerSTATE` counter/current/target | `DEBUG_COMMANDS.lua:541` |
-| `debugstate` (`ds`) | - | Dumps AutoMove, JobChangeManager and UI manager counters | `DEBUG_COMMANDS.lua:260` |
-| `debugupdate` | - | Toggles `windower._gs_debug.UPDATE`, copies it to `windower._gs_debug.AUTOMOVE`, mirrors both to `_G.UPDATE_DEBUG` / `_G.AUTOMOVE_DEBUG`; restored on every load by `INIT_SYSTEMS.lua:35-41` | `DEBUG_COMMANDS.lua:557` |
-| `fulltest` (`ft`) | `[export]` | Runs `FullTest`, prints, optionally writes the report | `DEBUG_COMMANDS.lua:73` |
-| `syscheck` (`sc`) | `[export]` | Runs `SystemChecker`, prints, optionally writes the report | `DEBUG_COMMANDS.lua:91` |
-| `lagdebug` (`ldb`) | `export|exp|e`, `reset|clear|r`, `status|stat|s`, none = toggle (lower-cased) | Lag journal control | `DEBUG_COMMANDS.lua:109` |
-| `jamsg` | `full|f`, `on|name|nameonly|name_only|n`, `off|disabled|disable|d`, none = show | JA message mode, saved per character | `DEBUG_COMMANDS.lua:222`, `handle_message_config_generic` (`179`) |
-| `spellmsg` | same | Spell message mode (`spell_mode`, read by every spell family including Enfeebling) | `DEBUG_COMMANDS.lua:230` |
-| `wsmsg` | same plus `tp|tponly|tp_only|t` (= `on`) | WS message mode | `DEBUG_COMMANDS.lua:237` |
-| `info` | `<name words...>` | JA / spell / WS details | `DEBUG_COMMANDS.lua:248` -> `commands/info_command.lua` `InfoCommand.handle` |
-| `debugmsg` | - | Prints `_G.MESSAGE_SETTINGS.spell_mode/ja_mode/ws_mode` | `DEBUG_COMMANDS.lua:568` |
-| `testmsg` (`msgtest`) | `[job|system]` | `messages.test(filter)` | `648-654` |
-| `msgtests` | - | `MessageValidator.run_all_tests()` | `655-659` |
-| `memcheck` (`mem`) | ignored | `_G` survey written to a file, summary in chat | `DEBUG_COMMANDS.lua:467` |
-| `commands` (`cmds`) | - | `MessageCommands.show_commands_list()` | `662-664` |
-| `help` (`?`) | - | `MessageCommands.show_help()`; shadows Mote's `help` | `665-667` |
-| any alt-config key no local command answers | `[args]` | Sent to the alt by Mote's `selfCommandMaps` fallback (see section 4) | `alt_commands.lua` `install_fallback` |
+
+**Gear and inventory**
+
+| Command (aliases) | Args | Effect | Route |
+|---|---|---|---|
+| `naked` | - | `equip()` every slot to `empty`, prints "All slots cleared." Does not `enable` disabled slots (Mote's own `naked` did) | `handle_naked` |
+| `equip naked` | `naked` (any case) | Same as `naked`. `equip` alone or with another argument prints "Usage: //gs c equip naked" and returns true | router branch |
+| `checksets` | - | `EquipmentChecker.check_job_equipment(job_name)` | `handle_checksets` -> `equipment/equipment_checker.lua` |
+| `wardrobeaudit` (`wa`) | - | `WardrobeAuditor.audit()` | `handle_wardrobeaudit` -> `equipment/wardrobe_auditor.lua` |
+| `worganize` (`wo`) | `scan`/`scanwarp`, `keep`/`kept`/`items`, `verify`/`check`, `reset`, `recover`/`unlock`, `alt` (plus a legacy alias named after a character), `global [preview\|dry]`, `preview`/`dry`, none | Wardrobe organizer entry points. Arguments are compared case-sensitively; anything unrecognised (including `Preview`) runs the full `organize()` | `handle_wardrobeorganize`, see [wardrobe-organizer.md](wardrobe-organizer.md) |
+| `refill` (`rf`) | - | `RefillManager.refill()`, then `DualBoxSyncIPC.broadcast('rf')` so the other instance refills too | `handle_refill`, see [equipment-and-inventory.md](equipment-and-inventory.md) |
+| `automedicine` (`am`) | `on`/`off` (lower-cased), none or anything else = toggle | Automatic Echo Drops / Remedy | `handle_automedicine` -> `debuff/auto_medicine.lua` `AutoMedicine.handle_command` |
+| `craft` | `[variant\|off\|stop\|uncraft]` | Equip or switch a crafting set, or leave it | `CraftCommands.handle_craft`, see [factories-and-helpers.md](factories-and-helpers.md#craft-and-fishing-mode) |
+| `fish` (`fishing`) | `[variant]` | Equip the fishing set | `CraftCommands.handle_fish` |
+| `uncraft` | - | Unlock and restore gear | `CraftCommands.handle_uncraft` |
+| `lockstyle` (`ls`) | - | `select_default_lockstyle()`, then `DualBoxSyncIPC.broadcast('ls')` | `handle_lockstyle` |
+| `dressup` | - | `LockstyleManager.toggle_dressup()` (persisted in `data/.dressup_disabled`) | `handle_dressup` |
+| `belt` | none | Obi / Orpheus status: on/off, `min_bonus`, belts found, day / weather, bonus per element now, Orpheus at the current target's distance. Also drops the owned-belt cache | `ElementalBelt.show_status`, see [factories-and-helpers.md](factories-and-helpers.md#elementalbelt) |
+| `dw` | `auto`, `none`, `haste`, `haste2`, `max` (lower-cased), none = status | Dual Wield tier: shows the magic haste estimate; a tier word forces that tier (`windower._dw_forced`) and sends `gs c update`; `auto` clears the force. Any other word sends `gs c update` and shows the status | `DualWield.command`, see [factories-and-helpers.md](factories-and-helpers.md#dualwield) |
+| `th` | none = status, `show`, `hide`, `key <key>\|none`, `clear`, `help` | Treasure Mode on this job: status, show / hide (rewrites `config/treasure_mode.lua`), key, forget the tags | `treasure_commands.handle` -> `OptionalStateCommands`, see [keybinds-and-custom.md](keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode) |
+| `combatmode` | none = status, `show`, `hide`, `key <key>\|none`, `help` | Combat Mode (weapon lock) on this job: same scheme, file `config/combat_mode.lua` | `combat_mode_commands.handle` |
+
+**Jobs and actions**
+
+| Command (aliases) | Args | Effect | Route |
+|---|---|---|---|
+| `reload` | - | `JobChangeManager.force_reload(player.main_job, player.sub_job or 'SAM')`: bumps the debounce counter, then `gs reload` | `handle_reload` -> `core/job_change_manager.lua` |
+| `jump` | - | `DRGJumpManager.execute_jump()` | `handle_jump`, see [factories-and-helpers.md](factories-and-helpers.md#drg-jumps) |
+| `waltz` | - | DNC main or sub only. Cancels Saber Dance, then `WaltzManager.cast_curing_waltz('<stpc>')` | `handle_waltz` -> local `handle_waltz_generic` |
+| `aoewaltz` | - | Same guard, then `cast_divine_waltz()` | `handle_aoewaltz` |
+| `stealth` | `sneak`/`invi`/`both [self\|local]`, `status`, `check`, `refresh <s>`, `alert <s>`, `overwrite on\|off`, `alerts on\|off`, `delay <s>`, `help`; internal `claim`, `cast`, `time` | Sneak / Invisible on this character and every other member of the box group, timers, settings in `<Character>/config/STEALTH_CONFIG.lua` | `stealth/stealth.lua` `Stealth.handle`, see [stealth.md](stealth.md) |
+| `sortie` | `<target>`, `escort [Indi-X]`, `off`, `judgment`, `fullcircle`, `list`, `help` | Stance for this character plus a Silmaril profile for a GEO alt. On a job that has `state.PhalanxSIRD` (PLD) it also sets that mode (`Off` for targets with `phalanx_sird = false`, `On` otherwise; checked with `rawget(state, 'PhalanxSIRD')`). A value the job's state lacks prints a warning and the rest still runs | `sortie/sortie_commands.lua` `SortieCommands.handle` |
+
+**Box group and alt**
+
+| Command (aliases) | Args | Effect | Route |
+|---|---|---|---|
+| `alts` | `on`, `off`, `toggle`, `follow [name\|off]`, `do <command>`, `mirror`, `window`, `help` | Orders to every other member of the box group (`DualBoxConfig.group`), from either box | `AltGroup.route` -> `AltGroup.handle`, see [dualbox.md](dualbox.md) |
+| `main` | - | This box becomes main and sends `setalt <me>` to the others. The role is saved in `<Character>/config/dualbox_role.lua`, and also in each alt's own file when that folder is on this PC | `AltGroup.route` -> `dualbox_role.lua` `become_main` |
+| `setalt` | `<main name>` | Sent by the new main: this box becomes an alt | `AltGroup.route` -> `become_alt` |
+| `altreport`, `altmirror` | `<name> <on\|off> <leader\|off> <on\|off>` / `<name> phase <step> <npc>`, `<name> results <Name,Status\|...>` | Sent by each box's automation addon (local `lib/StateReport.lua` addition): real state and mirror progress for the alt window. Reports from boxes outside the group are ignored | `AltGroup.receive_report` / `receive_mirror` |
+| `altlead` | `<leader\|off>` | Sent by the box that changed the follow: records the new leader (`group_state().follow`) | `AltGroup.receive_lead` |
+| `rollshow` | `result\|bust <source> <hex fields...>` | Sent by a COR alt: prints its roll result or bust on the main, tagged with the caster | `dualbox/roll_share.lua` `RollShare.receive` |
+| `alt`, `altcmds`, `altlist` | `alt <name> [args]`, `altcmds [filter\|help]` | Run or list the alt's commands; the list puts names that run on the main under `//gs c alt <name>` | `handle_alt_command` -> `AltCommands.handle` |
+| `altbuff` | `<buff words...> <0/1>` | Sent by the alt to the main: record a buff going up or down | `AltBuffReporter.receive` |
+| `altbuffsync` | - | Sent by the main to the alt: resend every tracked buff | `AltBuffReporter.report_all` |
+| `altsync` | - | On the main: ask the alt to resync. Error when not dual-boxing as main | `AltBuffReporter.request_sync` |
+| `altbuffs` | - | Show what the main believes about the alt's buffs | `AltBuffReporter.show_state` |
+| `altdebug` | - | Toggle buff-report tracing (`windower._alt_buff_debug`), log to `data/altbuff_<char>.log` | `AltBuffReporter.toggle_debug` |
+| any alt-config key that no local command answers | `[args]` | Sent to the alt by Mote's `selfCommandMaps` fallback (section 4) | `alt_commands.lua` `install_fallback` |
+
+**Keys**
+
+| Command (aliases) | Args | Effect | Route |
+|---|---|---|---|
+| `tb` | `[force] <key> <what>`, `<what>`, `list`, `del <key>`, `clear`, `help`/`?`, `run <key>` (sent by the key itself) | Temporary keybinds on Ctrl/Alt+F1-F8 | `keybinds/temp_binds.lua` `TempBinds.handle`, see [keybinds-and-custom.md](keybinds-and-custom.md#temporary-binds-gs-c-tb) |
+| `keyconflicts` (`kc`) | - | Every key conflict the loaded job's list can meet, over all subjobs and partner jobs. Returns false (silent) when no keybind module is loaded | `KeybindManager.show_possible_conflicts` -> `KeyConflicts.show_possible` |
+
+**Messages and help**
+
+| Command (aliases) | Args | Effect | Route |
+|---|---|---|---|
+| `jamsg` | `full\|f`, `on\|name\|nameonly\|name_only\|n`, `off\|disabled\|disable\|d`, none or `help` = show | JA message mode, saved per character | `Debug.handle_jamsg` -> local `handle_message_config_generic` |
+| `spellmsg` | same | Spell message mode (`spell_mode`, read by every spell family including Enfeebling) | `Debug.handle_spellmsg` |
+| `wsmsg` | same plus `tp\|tponly\|tp_only\|t` (= `on`) | WS message mode | `Debug.handle_wsmsg` |
+| `info` | `<name words...>` | JA / spell / WS details | `Debug.handle_info` -> `InfoCommand.handle` |
+| `testmsg` (`msgtest`) | `[job\|system]` | `messages.test(filter)`: preview messages | router branch -> `messages/api/messages.lua` |
+| `msgtests` | - | `MessageValidator.run_all_tests()` | router branch |
+| `testcolors` (`colors`) | - | Prints chat colour codes 1-509 minus 10, 13, 30, 31, 253-279, 507-508, 14 per row | `handle_testcolors` |
+| `commands` (`cmds`) | - | `MessageCommands.show_commands_list()`: every universal command, grouped | router branch |
+| `help` (`?`) | - | `MessageCommands.show_help()`: where each system's help is. Shadows Mote's `help` | router branch |
+
+**Debug and diagnostics**
+
+| Command (aliases) | Args | Effect | Route |
+|---|---|---|---|
+| `trace` | `on`, `off`, `clear`, none = status | Records what the game returns to `<Character>/trace.log` | `debug/trace_log.lua` `TraceLog.handle` |
+| `perf` | `start\|on\|enable`, `stop\|off\|disable`, `toggle`, other or none = status (lower-cased) | Profiler switch | `Debug.handle_perf` |
+| `fulltest` (`ft`) | `[export]` | Runs `FullTest`, prints, optionally writes the report | `Debug.handle_fulltest` |
+| `syscheck` (`sc`) | `[export]` | Runs `SystemChecker`, prints, optionally writes the report | `Debug.handle_syscheck` |
+| `lagdebug` (`ldb`) | `export\|exp\|e`, `reset\|clear\|r`, `status\|stat\|s`, none or anything else = toggle (lower-cased) | Lag journal control | `Debug.handle_lagdebug` |
+| `memcheck` (`mem`) | ignored | `_G` survey written to a file, summary in chat | `Debug.handle_memcheck` |
+| `debugstate` (`ds`) | - | Dumps AutoMove, JobChangeManager and UI manager counters | `Debug.handle_debugstate` |
+| `debugsubjob` (`dsj`) | - | Prints main/sub job and levels, zone id and name | `Debug.handle_debugsubjob` |
+| `debugmsg` | - | Prints `_G.MESSAGE_SETTINGS.spell_mode/ja_mode/ws_mode` | `Debug.handle_debugmsg` |
+| `debugwarp` | - | Toggles `windower._gs_debug.WARP`, mirrored to `_G.WARP_DEBUG` | `Debug.handle_debugwarp` |
+| `debugprecast` | - | Toggles `windower._gs_debug.PRECAST`, mirrored to `_G.PrecastDebugState` (read by `BRD_PRECAST.lua`, `RDM_PRECAST.lua`, `RUN_PRECAST.lua`). On BST the job file answers first and toggles `_G.BST_DEBUG_PRECAST` instead | `Debug.handle_debugprecast` |
+| `automovedebug` (`amd`) | - | Toggles `windower._gs_debug.AUTOMOVE`, mirrored to `_G.AUTOMOVE_DEBUG` | `Debug.handle_automovedebug` |
+| `debugjobchange` (`djc`) | - | Toggles `windower._gs_debug.JOBCHANGE`, mirrored to `_G.JOBCHANGE_DEBUG`. When turning on, prints `_G.JobChangeManagerSTATE` counter / current / target | `Debug.handle_debugjobchange` |
+| `debugupdate` | - | Toggles `windower._gs_debug.UPDATE`, copies it to `windower._gs_debug.AUTOMOVE`, mirrors both to `_G.UPDATE_DEBUG` / `_G.AUTOMOVE_DEBUG` | `Debug.handle_debugupdate` |
 
 ### Shared commands handled in the job files
 
 | Command | Args | Effect | Handler |
 |---|---|---|---|
-| `altjobupdate` | `<job> <sub> [main_lvl] [sub_lvl] [sender]` | Record the alt's job (sent by the partner). An update whose sender is not this box's partner is ignored; no sender (older format) is accepted | `DualBoxManager.receive_alt_job` (every job file) |
+| `altjobupdate` | `<job> <sub> [main_lvl] [sub_lvl] [sender]` | Record the alt's job (sent by the partner). An update whose sender is not this box's partner is ignored; an update with no sender (older format) is accepted | `DualBoxManager.receive_alt_job` |
 | `requestjob` | - | Reply with this character's job | `DualBoxManager.handle_job_request` |
-| `watchdog` | none = status; `on`, `off`, `toggle`, `debug`, `buffer <n>`, `fallback <n>`, `clear`, `test [spell] [id]`, `stats` | Midcast watchdog control; sets `eventArgs.handled` itself | `WATCHDOG_COMMANDS.lua:36-99` |
-| `ui` | none = toggle; `h|header`, `l|legend`, `c|columns`, `f|footer`, `s|save`, `on|enable`, `off|disable`, `font <name>`, `bg|background|theme <preset|toggle|list|r g b a>`, `help|?` | Keybind HUD | `UI_COMMANDS.lua:26-94`, see [ui-overlay.md](ui-overlay.md) |
-| `cyclestate` | `<StateName> [reverse|backwards|r]` (`^[%w_]+$`) | HUD visible: Mote's `handle_cycle` without its chat line (`job_state_change(description, new, old)`, then `handle_update({'auto'})`, which runs `job_update` and refreshes gear), then a HUD repaint. HUD hidden: `send_command('gs c cycle <State>[ reverse]')` so Mote prints its message | `CYCLE_HANDLER.lua:90-130` |
+| `watchdog` | none = status; `on`, `off`, `toggle`, `debug`, `buffer <n>`, `fallback <n>`, `clear`, `test [spell] [id]`, `stats`, `help` | Midcast watchdog control; sets `eventArgs.handled` itself. A non-numeric `buffer` / `fallback` value is ignored without a message | `WatchdogCommands.handle_command` |
+| `ui` | none = toggle; `h\|header`, `l\|legend`, `c\|columns`, `f\|footer`, `s\|save`, `on\|enable`, `off\|disable`, `font <name>`, `bg\|background\|theme <preset\|toggle\|list\|r g b a>`, the style words of `UIStyleCommands`, `help\|?` | Keybind HUD | `UICommands.handle_ui_command`, see [ui-overlay.md](ui-overlay.md) |
+| `cyclestate` | `<StateName> [reverse\|backwards\|r]` (name must match `^[%w_]+$`) | HUD visible: Mote's `handle_cycle` without its chat line (`job_state_change(description, new, old)`, then `handle_update({'auto'})`, which runs `job_update` and refreshes gear), then a HUD repaint. HUD hidden: `send_command('gs c cycle <State>[ reverse]')` so Mote prints its message. Traced under `CYCLE` | `CycleHandler.handle_cyclestate` |
 | `debugmidcast` | - | `MidcastManager.toggle_debug()` + confirmation | every job file, see [midcast-and-buffs.md](midcast-and-buffs.md) |
 
-Mote-native commands that still reach Mote: `update`, `toggle`, `cycle`, `cycleback`, `set`, `reset`, `unset`, `showtp`, `test`. `naked` and `help` are answered by `CommonCommands` first. BLM answers `cycle Storm` itself (`BLM_COMMANDS.lua` `handle_blm_standard_cycles`), so that one never reaches Mote on BLM.
+Mote-native commands that still reach Mote: `update`, `toggle`, `cycle`, `cycleback`, `set`, `reset`, `unset`, `showtp`, `test`. `CommonCommands` answers `naked` and `help` first.
 
 ## Public API
 
 ### CommonCommands (`COMMON_COMMANDS.lua`, returned module, no `_G` export)
 
-| Function | Line | Notes |
+| Function | Behaviour | Callers |
 |---|---|---|
-| `handle_command(command, job_name, ...)` -> boolean | 462 | Router. Callers: the 16 job files. `job_name` is used only by `reload` and `checksets` |
-| `is_common_command(command)` -> boolean | 679 | Callers: the 16 job files, `runs_locally`. Common names and warp aliases only |
-| `runs_locally(name)` -> boolean | 735 | True for common names, warp aliases and raw `selfCommandMaps` keys. Passed to `AltCommands.install_fallback` and `AltCommands.handle` |
-| `handle_reload(job_name)` | 44 | |
-| `handle_jump()` | 62 | |
-| `handle_waltz()`, `handle_aoewaltz()` | 109, 115 | |
-| `handle_mount()` | 123 | |
-| `handle_checksets(job_name)` | 139 | |
-| `handle_wardrobeaudit()` | 155 | |
-| `handle_wardrobeorganize(arg, arg2)` | 183 | |
-| `handle_refill()` | 234 | Broadcasts `rf` |
-| `handle_automedicine(arg)` | 259 | |
-| `handle_alt_command(cmd, args)` | 277 | |
-| `handle_craft`, `handle_fish`, `handle_uncraft` | 288-290 | Aliases of `CraftCommands.*` |
-| `handle_testcolors()` | 297 | |
-| `handle_naked()` | 335 | |
-| `handle_lockstyle()` | 360 | Reads global `select_default_lockstyle`; broadcasts `ls` |
-| `handle_dressup()` | 386 | |
-| `handle_perf`, `handle_fulltest`, `handle_syscheck`, `handle_lagdebug`, `handle_debugsubjob`, `handle_jamsg`, `handle_spellmsg`, `handle_wsmsg`, `handle_info`, `handle_debugstate`, `handle_memcheck`, `handle_debugwarp`, `handle_debugprecast`, `handle_automovedebug`, `handle_debugjobchange`, `handle_debugupdate`, `handle_debugmsg` | 404-420 | Aliases of `DebugCommands.*` |
-| `handle_warp_commands(cmdParams)` | 428 | |
+| `handle_command(command, job_name, ...)` -> boolean | Router, section 3. `job_name` is used only by `reload` and `checksets` | the 17 job files |
+| `is_common_command(command)` -> boolean | True for common names, warp aliases and `<alias>all` | the 17 job files, `runs_locally` |
+| `runs_locally(name)` -> boolean | `is_common_command(name)` or `rawget(selfCommandMaps, name) ~= nil` | `AltCommands.install_fallback`, `AltCommands.handle` / `list` (through `handle_alt_command`) |
+| `handle_reload(job_name)` | `JobChangeManager.force_reload`; error message if the manager fails to load | router |
+| `handle_jump()` | `DRGJumpManager.execute_jump()` | router |
+| `handle_waltz()`, `handle_aoewaltz()` | Through the local `handle_waltz_generic(waltz_type, error_msg)` | router |
+| `handle_mount()` | `MountManager.toggle()` | router |
+| `handle_checksets(job_name)` | `EquipmentChecker.check_job_equipment` | router |
+| `handle_wardrobeaudit()` | `WardrobeAuditor.audit()` | router |
+| `handle_wardrobeorganize(arg, arg2)` | Dispatch to the `WardrobeOrganizer` entry points | router |
+| `handle_refill()` | `RefillManager.refill()` + IPC broadcast `rf` | router |
+| `handle_automedicine(arg)` | `AutoMedicine.handle_command(arg)` | router |
+| `handle_alt_command(cmd, args)` | `AltCommands.handle(cmd, args, runs_locally)` (module resolved once per sandbox by the local `alt_commands()`) | router |
+| `handle_craft`, `handle_fish`, `handle_uncraft` | Aliases of `CraftCommands.*` | router |
+| `handle_testcolors()` | Colour chart | router |
+| `handle_naked()` | Every slot `empty` | router |
+| `handle_lockstyle()` | Reads global `select_default_lockstyle`; broadcasts `ls` | router |
+| `handle_dressup()` | `LockstyleManager.toggle_dressup()` + message | router |
+| `handle_perf`, `handle_fulltest`, `handle_syscheck`, `handle_lagdebug`, `handle_debugsubjob`, `handle_jamsg`, `handle_spellmsg`, `handle_wsmsg`, `handle_info`, `handle_debugstate`, `handle_memcheck`, `handle_debugwarp`, `handle_debugprecast`, `handle_automovedebug`, `handle_debugjobchange`, `handle_debugupdate`, `handle_debugmsg` | Aliases of `DebugCommands.*` | router |
+| `handle_warp_commands(cmdParams)` | `WarpCommands.handle_command`, or the load diagnostic | router |
 
-No `handle_*` function is called from outside `handle_command` (repo-wide grep including `Tetsouo/` and `Kaories/`).
+No `handle_*` function is called from outside `handle_command`. This was checked with a repository-wide `grep -r`, which also covers the gitignored character folders that ripgrep skips.
 
 ### DebugCommands (`DEBUG_COMMANDS.lua`, returned module)
 
-`handle_perf(action)` 43, `handle_fulltest(action)` 73, `handle_syscheck(action)` 91, `handle_lagdebug(action)` 109, `handle_debugsubjob()` 135, `handle_jamsg(mode)` 222, `handle_spellmsg(mode)` 230, `handle_wsmsg(mode)` 237, `handle_info(args)` 248, `handle_debugstate()` 260, `handle_memcheck(arg)` 467, `handle_debugwarp()` 508, `handle_debugprecast()` 516, `handle_automovedebug()` 532, `handle_debugjobchange()` 541, `handle_debugupdate()` 557, `handle_debugmsg()` 568. The five persistent toggles share the local `flip_debug(key)` (`500-504`). Only caller: `COMMON_COMMANDS.lua:404-420`.
+| Function | Behaviour |
+|---|---|
+| `handle_perf(action)` | `Profiler.enable/disable/toggle/status` |
+| `handle_fulltest(action)` | `FullTest.run` + `display`, `export` when `action` is `export` |
+| `handle_syscheck(action)` | `SystemChecker.run` + `display`, `export` when asked |
+| `handle_lagdebug(action)` | `_G.LagDebugger.export/reset/status/toggle`; prints "Module not loaded" when `_G.LagDebugger` is missing |
+| `handle_debugsubjob()` | Job, levels, zone |
+| `handle_jamsg(mode)`, `handle_spellmsg(mode)`, `handle_wsmsg(mode)` | Local `handle_message_config_generic(msg_type, mode_arg)`: requires `shared/config/JA_MESSAGES_CONFIG` / `ENHANCING_MESSAGES_CONFIG` / `WS_MESSAGES_CONFIG` and calls its `set_display_mode` |
+| `handle_info(args)` | `InfoCommand.handle(args)` |
+| `handle_debugstate()` | Counter dump |
+| `handle_memcheck(arg)` | `_G` survey (argument ignored) |
+| `handle_debugwarp()`, `handle_debugprecast()`, `handle_automovedebug()`, `handle_debugjobchange()`, `handle_debugupdate()` | The five persistent toggles, through the local `flip_debug(key)` |
+| `handle_debugmsg()` | Message modes dump |
+
+Only caller: the alias block of `COMMON_COMMANDS.lua`.
 
 ### InfoCommand (`info_command.lua`)
 
-`InfoCommand.handle(args)` (388): joins `args` with spaces; `search_all_databases(name)` (325) tries `DataLoader.get_ability/get_spell/get_weaponskill` with the exact name, then scans `_G.FFXI_DATA.<kind>` case-insensitively. Each `DataLoader.get_*` loads its complete database on first use (`data_loader.lua:272-300`), in the order abilities, spells, weaponskills, stopping at the first hit: an ability name loads one database, a weaponskill or unknown name loads all three, and they stay in `_G.FFXI_DATA` for the rest of the environment. Output goes through `MessageInfo` (`formatters/ui/message_info.lua`); JA recast/duration are seconds, spell recast/duration/cast time centiseconds (`format_time`). Since 2026-09-25 a spell shows Target, Magic, Tier, Jobs (one level per job) and Notes, the fields the data has; the wyvern commands are found (the loader reads the `<job>_pet_commands` files); and `sanitize_ascii` converts UTF-8 punctuation before stripping what is left.
+`InfoCommand.handle(args)` joins `args` with spaces, then `search_all_databases(name)` looks the name up. It first tries `DataLoader.get_ability`, `get_spell` and `get_weaponskill` with the exact name, then scans `_G.FFXI_DATA.<kind>` case-insensitively.
+
+Each `DataLoader.get_*` loads its complete database on first use, in the order abilities, spells, weaponskills, and stops at the first hit. An ability name therefore loads one database; a weaponskill or an unknown name loads all three. They stay in `_G.FFXI_DATA` for the rest of the sandbox.
+
+Output goes through `MessageInfo` (`formatters/ui/message_info.lua`). Units: JA recast and duration in seconds; spell recast, duration and cast time in centiseconds (`format_time`). A spell shows Target, Magic, Tier, Jobs (one level per job) and Notes. Wyvern commands are found, because the loader reads the `<job>_pet_commands` files. `sanitize_ascii` converts UTF-8 punctuation before stripping whatever non-ASCII is left.
 
 ### ConfigLoader (`config_loader.lua`)
 
-`ConfigLoader.load_ui_config(char_name, job_name)` -> table (33). `dofile(windower.windower_path .. 'addons/GearSwap/data/' .. char_name .. '/config/UI_CONFIG.lua')` inside `pcall` (43-47); on failure a fallback table (51-59) and `MessageCore.show_config_error`. Writes `_G.UIConfig` (63) then requires `shared/config/ui_settings` and writes `_G.ui_display_config` from its getters (66-73). Callers: module level of every entry file (`_master/entry/Tetsouo_*.lua`, `_master/Kaories/entry/*.lua`, live `Tetsouo/*.lua`, `Kaories/*.lua`), e.g. `_master/entry/Tetsouo_BLM.lua:58`.
+At file level it installs `ModuleCache` (so the cache exists before Mote's `user_setup`). `ConfigLoader.load_ui_config(char_name, job_name)` -> table: `dofile(windower.windower_path .. 'addons/GearSwap/data/' .. char_name .. '/config/UI_CONFIG.lua')` inside `pcall`; on failure a fallback table and `MessageCore.show_config_error`. It writes `_G.UIConfig`, then requires `shared/config/ui_settings` and writes `_G.ui_display_config` from its getters. Callers: module level of every entry file (`_master/entry/Tetsouo_*.lua`, the overlay entries and their live copies).
 
 ### DebugLogger (`debug_logger.lua`, returned module)
 
-| Function | Line | Callers |
-|---|---|---|
-| `log(prefix, message)` | 52 | none in the repository (its last caller, `UI_CONFIG.print_config`, was removed 2026-09-25) |
-| `logf(prefix, fmt, ...)` | 60 | `movement/automove.lua:253` |
-| `log_if(flag_key, prefix, message)` | 72 | `job_change_manager.lua:104`, `job_sync_watchdog.lua:96`, `automove.lua:250` |
-| `logf_if(flag_key, prefix, fmt, ...)` | 82 | `job_change_manager.lua:139,172,179`, `job_sync_watchdog.lua:142,155`, `automove.lua:109,240,328`, `data_loader.lua:146,218,249` |
+| Function | Callers |
+|---|---|
+| `log(prefix, message)` | none |
+| `logf(prefix, fmt, ...)` | `movement/automove.lua` `send_update` (inside its own `_G.UPDATE_DEBUG` test) |
+| `log_if(flag_key, prefix, message)` | `job_change_manager.lua`, `job_sync_watchdog.lua`, `automove.lua` |
+| `logf_if(flag_key, prefix, fmt, ...)` | `job_change_manager.lua`, `job_sync_watchdog.lua`, `automove.lua`, `data_loader.lua` (flag `DATA_DEBUG`, which no command sets) |
 
-`_if` variants read `_G[flag_key]` and return immediately when falsy; `MessageFormatter` is required on first real output (38-43). Output is `MessageFormatter.show_debug(prefix, msg)` = `MessageRenderer.send('[prefix] msg', 8)`.
+The `_if` variants read `_G[flag_key]` and return at once when it is falsy. `MessageFormatter` is required on the first real output. Output is `MessageFormatter.show_debug(prefix, msg)`.
 
 ### Profiler (`performance_profiler.lua`, returned module)
 
-`enable()` 87, `disable()` 95, `toggle()` 103, `is_enabled()` 114, `status()` 119, `start(context)` 181, `mark(label)` 194, `finish()` 228, `create_timer(context)` 261, `profile_call(label, func, ...)` 312, `measure(label, block)` 337. Callers: `start/mark/finish` in every entry file's `get_sets()` (e.g. `_master/entry/Tetsouo_WAR.lua:73-138`), `create_timer` at the top of every `*_functions.lua` facade (e.g. `war_functions.lua:22`), `enable/disable/toggle/status` from `DebugCommands.handle_perf`. `profile_call` and `measure` have no caller.
+`enable()`, `disable()`, `toggle()`, `is_enabled()`, `status()`, `start(context)`, `mark(label, color)`, `finish(color)`, `create_timer(context)`, `profile_call(label, func, ...)`, `measure(label, code_block)`. Callers:
+
+- `start`, `mark` and `finish`: every entry file's `get_sets()`;
+- `create_timer`: the top of every `*_functions.lua` facade;
+- `enable`, `disable`, `toggle` and `status`: `DebugCommands.handle_perf`;
+- `profile_call` and `measure`: none.
 
 ### LagDebugger (`lag_debugger.lua`, `_G.LagDebugger` + returned module)
 
-Control: `start()` 187, `stop()` 220, `toggle()` 229, `reset()` 238, `is_enabled()` 247, `status()` 252, `export()` 476, `log(type, data)` 283 (no caller), `_raw(type, data)` 265. Probes called by other systems, each a no-op unless recording: `on_automove_update` 296 (`automove.lua:256,285,358`), `on_automove_start` 314 (`automove.lua:327`), `on_automove_stop` 321 (`automove.lua:108`), `on_job_change` 329 (`job_change_manager.lua:146`), `on_cleanup` 335 (`job_change_manager.lua:103`), `on_gs_reload` 344 (`job_change_manager.lua:178`), `on_reload_complete` 353 (`INIT_SYSTEMS.lua:86`), `on_prerender_check` 362 (`_master/Tetsouo/entry/Tetsouo_BST.lua:344` and its live copy only), `on_job_update` 376 (`_master/Tetsouo/entry/Tetsouo_{WAR,BST,SMN}.lua` and their live copies only; no generic `_master/entry` template calls it).
+Control: `start()`, `stop()`, `toggle()`, `reset()`, `is_enabled()`, `status()`, `export()`, `log(type, data)` (no caller), `_raw(type, data)`.
+
+Probes called by other systems, each a no-op unless recording:
+
+| Probe | Called from |
+|---|---|
+| `on_automove_update` | `automove.lua` |
+| `on_automove_start` | `automove.lua` |
+| `on_automove_stop` | `automove.lua` |
+| `on_job_change` | `job_change_manager.lua` |
+| `on_cleanup` | `job_change_manager.lua` |
+| `on_gs_reload` | `job_change_manager.lua` |
+| `on_reload_complete` | `INIT_SYSTEMS.lua` |
+| `on_prerender_check` | the BST entries (`_master/entry/Tetsouo_BST.lua`, `_master/Tetsouo/entry/Tetsouo_BST.lua`) |
+| `on_job_update` | the overlay entries `_master/Tetsouo/entry/Tetsouo_{WAR,BST,SMN}.lua` only |
 
 ### SystemChecker, FullTest, GlobalProbe, TraceLog
 
-- `SystemChecker.run()` 217 -> `{session, results, score, total, passed}`; `display(report)` 257; `export(report)` 283. Callers: `DebugCommands.handle_syscheck`, `FullTest.run` (via `run_system_checks`, `full_test.lua:34`).
-- `FullTest.run()` 167; `display(report)` 214; `export(report)` 250. Caller: `DebugCommands.handle_fulltest`.
-- `GlobalProbe.snapshot()` 164 (caller: `INIT_SYSTEMS.lua:339-344`, 5.0 s after load); `leaks()` 174 and `missing_hooks()` 204 (callers: `system_checker.lua` `check_global_leaks` / `check_job_hooks`). Exported as `_G.GlobalProbe`.
-- `TraceLog.log(tag, fmt, ...)` 78, `TraceLog.enabled()` 99, `TraceLog.handle(args)` 106. `log` is called from the HUD section toggles, `CYCLE_HANDLER`, custom states, temp binds, `message_colors`, the TP bonus and WS precast handlers, the warp item user, THF smartbuff and RDM cast-by-name; each call is a no-op while tracing is off.
+- `SystemChecker.run()` -> `{session, results, score, total, passed}`; `display(report)`; `export(report)`. Callers: `DebugCommands.handle_syscheck`, and `FullTest.run` (through its local `run_system_checks`).
+- `FullTest.run()`, `display(report)`, `export(report)`. Caller: `DebugCommands.handle_fulltest`.
+- `GlobalProbe.snapshot()` is called by `INIT_SYSTEMS.lua` 5.0 s after load. `leaks()` and `missing_hooks()` are called by `system_checker.lua` (`check_global_leaks`, `check_job_hooks`). Exported as `_G.GlobalProbe`.
+- `TraceLog.log(tag, fmt, ...)`, `TraceLog.enabled()`, `TraceLog.handle(args)`. Exported as `_G.TraceLog`. `log` is called by the systems listed under [Trace](#trace-gs-c-trace); each call is a no-op while tracing is off.
 
 ## Debug tools
 
 ### SystemChecker (`//gs c syscheck [export]`)
 
-Ten checks, each OK = 1, WARN = 0.5, FAIL = 0; score = `floor(sum/10*100)`. The header line also shows job, reload count and AutoMove sequence (`check_session`).
+Ten checks, each OK = 1, WARN = 0.5, FAIL = 0; score = `floor(sum / 10 * 100)`. The header line also shows the job, reload count and AutoMove sequence (`check_session`).
 
 | Check (`system_checker.lua`) | Reads | OK / WARN / FAIL |
 |---|---|---|
-| AutoMove (`check_automove`, 35) | `_G.DISABLE_AUTOMOVE`, `_G.AUTOMOVE_RUNNING`, `windower._automove_seq` | disabled or running / `false` / `nil` |
-| Watchdog (`check_watchdog`, 52) | `_G.MidcastWatchdog.get_stats()` | loaded / not yet loaded (it is loaded 2 s after load) |
-| WarpInit (`check_warp`, 67) | `windower._warp_init_done`, else `WarpInit.is_initialized()` | flag set / not initialised / module failed |
-| Hook Chain (`check_hook_chain`, 84) | `windower._hook_wraps{ability,ws,midcast}` / `windower._gs_reload_count` | every ratio in 0.5-1.1 / a ratio < 0.5 or no reload yet / a ratio > 1.1 (accumulated wrapping) |
-| State.Moving (`check_state_moving`, 112) | `state.Moving` | exists / missing |
-| JobChangeMgr (`check_jobchange_manager`, 120) | `_G.JobChangeManagerSTATE` | exists / - / missing |
-| UI Manager (`check_ui`, 130) | `_G.ui_manager_state`, `_G.KeybindUI` | loaded / > 3 consecutive failures or not loaded |
-| LagDebugger (`check_lagdebugger`, 150) | `_G.LagDebugger`, `windower._lagdebug.log` | loaded / - / missing |
-| Global leaks (`check_global_leaks`, 178) | `GlobalProbe.leaks()` | none / no baseline yet / list of names |
-| Job hooks (`check_job_hooks`, 198) | `GlobalProbe.missing_hooks()` | all 7 present / - / list |
+| AutoMove (`check_automove`) | `_G.DISABLE_AUTOMOVE`, `_G.AUTOMOVE_RUNNING`, `windower._automove_seq` | disabled or running / `false` / `nil` |
+| Watchdog (`check_watchdog`) | `_G.MidcastWatchdog.get_stats()` | loaded / not yet loaded (it loads 2 s after load) |
+| WarpInit (`check_warp`) | `windower._warp_init_done`, else `WarpInit.is_initialized()` | flag set / not initialised / module failed |
+| Hook Chain (`check_hook_chain`) | `windower._hook_wraps{ability,ws,midcast}` / `windower._gs_reload_count` | every ratio in 0.5-1.1 / a ratio < 0.5 or no reload yet / a ratio > 1.1 (accumulated wrapping) |
+| State.Moving (`check_state_moving`) | `state.Moving` | exists / missing |
+| JobChangeMgr (`check_jobchange_manager`) | `_G.JobChangeManagerSTATE` | exists / - / missing |
+| UI Manager (`check_ui`) | `_G.ui_manager_state`, `_G.KeybindUI` | loaded / > 3 consecutive failures or not loaded |
+| LagDebugger (`check_lagdebugger`) | `_G.LagDebugger`, `windower._lagdebug.log` | loaded / - / missing |
+| Global leaks (`check_global_leaks`) | `GlobalProbe.leaks()` | none / no baseline yet / list of names |
+| Job hooks (`check_job_hooks`) | `GlobalProbe.missing_hooks()` | all 7 present / - / list |
 
-Output: chat (`add_to_chat` 207, then 204 for OK and 167 for WARN and FAIL; allowed for diagnostic tools by `.claude/CODE_QUALITY.md` section 6). Export: `data/syscheck_<player.name>.txt` (`export`, 283-288), one file per character.
+Output goes to chat with `add_to_chat`: colour 207, then 204 for OK and 167 for both WARN and FAIL. Diagnostic tools may write to chat directly (`.claude/CODE_QUALITY.md` section 6). Export: `data/syscheck_<player.name>.txt`, one file per character.
 
 ### FullTest (`//gs c fulltest [export]`)
 
-Section A = the SystemChecker results; B = `pcall(require)` of 14 modules (the 9 mandatory systems + CommonCommands, MessageEngine, MessageColors, WarpInit, MidcastWatchdog, `CRITICAL_MODULES`, `full_test.lua:47-63`); C = `_G.job_update`, `job_precast`, `job_self_command` must be functions, at least one of `job_midcast`/`job_post_midcast`, count of 4 optional hooks (`run_hook_checks`); D = `sets.precast`, `sets.midcast`, `sets.idle`, `sets.engaged` non-empty tables, plus `sets.precast.WS` (`run_sets_checks`). Export: data/fulltest_report.txt (251), one file shared by all characters.
+| Section | Content |
+|---|---|
+| A | The SystemChecker results |
+| B | `pcall(require)` of 14 modules (`CRITICAL_MODULES`): the 9 mandatory systems, CommonCommands, MessageEngine, MessageColors, WarpInit, MidcastWatchdog |
+| C | `_G.job_update`, `job_precast` and `job_self_command` must be functions; at least one of `job_midcast` / `job_post_midcast`; count of 4 optional hooks (`run_hook_checks`) |
+| D | `sets.precast`, `sets.midcast`, `sets.idle`, `sets.engaged` must be non-empty tables, plus `sets.precast.WS` (`run_sets_checks`) |
+
+Export: `data/fulltest_report.txt`, one file shared by all characters.
 
 ### LagDebugger (`//gs c lagdebug`)
 
-State lives on `windower._lagdebug` (32-38), which survives `gs reload` and job changes (the `windower` seen by user code is GearSwap's `user_windower` table, created once per addon load, `user_functions.lua:418-423`). While recording:
+State lives on `windower._lagdebug`, which survives `gs reload` and job changes. The `windower` table user code sees is GearSwap's `user_windower`, created once per addon load (`user_functions.lua`). While recording, three probes run:
 
-- Module probe (`install_module_probe`, 67): replaces `_G.require` with a timing wrapper; any call taking >= 1.0 ms is logged as `MODULE_LOAD {path, ms}`. It wraps whatever `require` is current, which after `INIT_SYSTEMS.lua:53-58` is the `ModuleCache` wrapper, so cache hits stay under the threshold.
-- Stall probe (`install_stall_probe`, 104): `prerender` listener; counts every frame into `S.frames` (count, total, max, 10 ms buckets capped at 200) and logs `STALL {gap_ms, last_action, last_module}` for frames >= 40 ms.
-- Action probe (`install_action_probe`, 146): `action` listener; for the player's own actions records `ACTION {kind, cat}` and remembers `last_action`.
-- Probes from other systems: `GS_UPDATE_SENT`, `AUTOMOVE_START/STOP`, `JOB_CHANGE`, `CLEANUP_SYSTEMS`, `GS_RELOAD_SCHEDULED`, `GS_RELOAD_COMPLETE`, `BST_PRERENDER`, `JOB_UPDATE`.
+- **Module probe** (`install_module_probe`). Replaces `_G.require` with a timing wrapper and logs any call taking at least 1.0 ms as `MODULE_LOAD {path, ms}`. It wraps whatever `require` is current. After `ModuleCache.install()` that is the cache wrapper, so cache hits stay under the threshold.
+- **Stall probe** (`install_stall_probe`). A `prerender` listener. It counts every frame into `S.frames` (count, total, max, 10 ms buckets capped at 200) and logs `STALL {gap_ms, last_action, last_module}` for frames of at least 40 ms.
+- **Action probe** (`install_action_probe`). An `action` listener. For the player's own actions it records `ACTION {kind, cat}` and remembers `last_action`.
 
-The journal is a ring buffer of 2000 entries (`_max`, 42; `table.remove(S.log, 1)` at 276). On module load with recording on, the three probes are reinstalled and `PROBES_REARMED` is logged (512-520). Export: `data/debug_lag.txt` (482) with header, frame-time statistics and histogram, a legend, and one line per event with its fields sorted; one file shared by all characters.
+Other systems add their own events through the probes above: `GS_UPDATE_SENT`, `AUTOMOVE_START/STOP`, `JOB_CHANGE`, `CLEANUP_SYSTEMS`, `GS_RELOAD_SCHEDULED`, `GS_RELOAD_COMPLETE`, `BST_PRERENDER`, `JOB_UPDATE`.
+
+The journal is a ring buffer of 2000 entries (`_max`). On module load with recording on, the three probes are reinstalled and `PROBES_REARMED` is logged. Export: `data/debug_lag.txt`, shared by all characters. It holds a header, frame-time statistics and a histogram, a legend, and one line per event with its fields sorted.
 
 ### Profiler (`//gs c perf`)
 
-Switch persisted as the existence of `data/.profiler_enabled` (`STATE_FILE`, 42; `read_state` / `save_state_*`, 50-72), shared by every character; read into `_G.PERFORMANCE_PROFILING.enabled` when the module first loads in an environment (74-80). Enabling prints a reload hint (`profiler_messages.lua`: "Reload job to see timings"), since `start/mark/finish` and `create_timer` only run while a job file loads. `mark()` prints the time since the previous mark (green < 50 ms, yellow < 100, red), `finish()` the total of `get_sets()` (green < 200, yellow < 300); `create_timer(job)` returns a closure that prints per-module times inside the job facade (green < 5 ms, yellow < 10) and a `TOTAL` line. Output goes through the `PROFILER` message namespace (`shared/utils/messages/data/systems/profiler_messages.lua`).
+The on/off switch is persisted as the existence of `data/.profiler_enabled` (`STATE_FILE`), shared by every character. It is read into `_G.PERFORMANCE_PROFILING.enabled` when the module first loads in a sandbox. Enabling prints a reload hint, because `start`, `mark`, `finish` and `create_timer` only run while a job file loads. What each call prints:
+
+- `mark()`: the time since the previous mark (green < 50 ms, yellow < 100, red above);
+- `finish()`: the total of `get_sets()` (green < 200 ms, yellow < 300);
+- `create_timer(job)`: returns a closure that prints per-module times inside the job facade (green < 5 ms, yellow < 10), then a `TOTAL` line.
+
+Output goes through the `PROFILER` message namespace (`shared/utils/messages/data/systems/profiler_messages.lua`).
 
 ### GlobalProbe
 
-`snapshot()` stores the set of `_G` keys in `_G.__global_baseline`; `leaks()` returns every string key not in the baseline, not in `EXPECTED` (37-131), not starting with `__`, `job_` or `user_`, and not matching the factory patterns in `GENERATED` (137-141). `missing_hooks()` checks the seven names of `REQUIRED_HOOKS` (195-198): `job_precast`, `job_midcast`, `job_post_midcast`, `job_aftercast`, `job_status_change`, `job_buff_change`, `job_self_command`; all 16 job folders define the 7. On 2026-09-25 `EXPECTED` gained the globals created by `tb`, `trace`, `sortie`, custom states, HP priority, KeybindManager and the alt window, which syscheck used to report as leaks.
+`snapshot()` stores the set of `_G` keys in `_G.__global_baseline`. `leaks()` returns every string key that is in none of these:
+
+- the baseline;
+- `EXPECTED`;
+- the names starting with `__`, `job_` or `user_`;
+- the factory patterns in `GENERATED`.
+
+`missing_hooks()` checks the seven names of `REQUIRED_HOOKS`: `job_precast`, `job_midcast`, `job_post_midcast`, `job_aftercast`, `job_status_change`, `job_buff_change`, `job_self_command`. A global created by a new system must be added to `EXPECTED`, or syscheck reports it as a leak.
 
 ### Trace (`//gs c trace`)
 
-`TraceLog` (`shared/utils/debug/trace_log.lua`) appends one line per `TraceLog.log(tag, fmt, ...)` call to `<windower>/addons/GearSwap/data/<Character>/trace.log`: time, `os.clock()`, main job, tag, formatted text (tables expanded one level). It exists to see the values the game really returns, which offline tests cannot show.
+`TraceLog` appends one line per `TraceLog.log(tag, fmt, ...)` call to `<windower>/addons/GearSwap/data/<Character>/trace.log`. A line holds the time, `os.clock()`, the main job, the tag and the formatted text, with tables expanded one level. The trace exists to show the values the game really returns, which offline tests cannot show.
 
 - On/off lives in `windower._trace_log_on` and in a marker file `<Character>/trace.on`, read once when `windower._trace_log_on` is nil. The marker makes recording survive `//lua reload gearswap`, which resets the `windower` table.
-- `trace on` / `off` set both; `clear` empties the log; every form prints the state and the file path.
-- It prints with `add_to_chat` directly (CODE_QUALITY section 6), so it keeps working when the message system is what is traced.
-- Tags written by the systems include `MIDCAST` (`shared/utils/midcast/midcast_trace.lua`: one line per midcast with the set path chosen and its pieces; when `sets.midcast[<skill>]` does not exist, `no_set` (`:73-79`) writes `<spell> -> no sets.midcast['<skill>']: Mote's own set (spell name / map) stays`, since MidcastManager then adds nothing and the set Mote picked by spell name or map stays on) and `STEALTH` (every `//gs c stealth` decision, see [stealth.md](stealth.md#trace)).
-- Other tags: `PRECAST` (set chosen per press), `WSTP` / `TP` (TP read and TP bonus gear per weaponskill), `STEALTH` (each `//gs c stealth` decision at the key press; then, from `stealth_trace.lua`, the own Sneak / Invisible gained / lost and who each Sneak / Invisible cast reached or missed, with distances at cast time), `ALTS` (alt group reports), `CYCLE`, `CUSTOM` (CUSTOM rule pieces applied), `ROLL` (COR: `gear update held during <roll>`, a gear update the roll hold kept back between a roll's precast and its landing, `cor/functions/logic/roll_hold.lua`).
-- The COR roll check `//gs c rolldebug` writes its own `<Character>/rolldebug.log` (see [COR](../jobs/cor.md)); it is separate from the trace.
-- The file grows without limit while on. A character left with the marker file keeps tracing after every restart (Kaories was, per the 2026-09-25 audit; `//gs c trace off` on that character removes it).
+- `trace on` and `trace off` set both. `clear` empties the log. Every form prints the state and the file path.
+- It prints with `add_to_chat` directly (CODE_QUALITY section 6), so it keeps working when the message system is what is being traced.
+- Tags written today:
+
+  | Tag | Written by |
+  |---|---|
+  | `MIDCAST` | `midcast/midcast_trace.lua`: the set path chosen and its pieces. When `sets.midcast[<skill>]` does not exist, the line says "Mote's own set (spell name / map) stays" |
+  | `PRECAST` | the set chosen per press |
+  | `WSTP`, `TP` | TP read and TP bonus gear per weaponskill |
+  | `STEALTH` | `//gs c stealth` decisions, own Sneak / Invisible gained / lost, who each cast reached, see [stealth.md](stealth.md#trace) |
+  | `ALTS` | alt group reports |
+  | `CYCLE` | `cyclestate` decisions |
+  | `CUSTOM` | CUSTOM pieces applied |
+  | `BELT` | each Obi / Orpheus decision |
+  | `TB` | temporary binds file load (restart detection) |
+  | `TAG` | Treasure Hunter tagging |
+  | `ROLL` | COR roll hold (`cor/functions/logic/roll_hold.lua`) |
+  | `RDM` | RDM cast-by-name |
+  | `HUD`, `REGION`, `WARP`, `SAMBA`, `EXPIACION`, `TRACE` | HUD section toggles, region config, warp item use, DNC samba, BLU Expiacion guard, start/stop marks |
+
+- The COR check `//gs c rolldebug` writes its own `<Character>/rolldebug.log` (see [COR](../jobs/cor.md)), separate from the trace.
+- The file grows without limit while tracing is on. A character left with the marker file keeps tracing after every restart; `//gs c trace off` on that character removes the marker.
 
 ### memcheck, debugstate, debugsubjob
 
-- `memcheck` (`DEBUG_COMMANDS.lua:467`): walks `_G`, groups entries by type, counts each table's direct children, sorts tables by that count, lists `package.loaded` when `package` is visible, writes `data/memcheck_<char>_<job>.txt` (`export_report`, 422-424) and prints three numbers plus the path. Project modules show up under `_G.__require_cache` (see `module_cache.lua`).
-- `debugstate` (260): `_G.AUTOMOVE_RUNNING`, `windower._automove_seq`, `_G._automove_sequence`, JobChangeManager counter and lockstyle registry size, UI manager ids and failure count.
-- `debugsubjob` (135): `player.main_job/_level`, `player.sub_job/_level`, `windower.ffxi.get_info().zone` and its `res.zones` name. The header comment states its purpose: checking that `sub_job_level` reads 0 in Odyssey Sheol Gaol.
+- **`memcheck`**. Walks `_G`, groups entries by type, counts each table's direct children and sorts tables by that count. It lists `package.loaded` when `package` is visible, which shows Windower's libs only: GearSwap's `require` never writes there, so project modules show up under `_G.__require_cache` (`module_cache.lua`). It writes `data/memcheck_<char>_<job>.txt` (`export_report`) and prints three numbers plus the path.
+- **`debugstate`**. Prints `_G.AUTOMOVE_RUNNING`, `windower._automove_seq`, `_G._automove_sequence`, the JobChangeManager counter and lockstyle-registry size, and the UI manager ids and failure count.
+- **`debugsubjob`**. Prints `player.main_job/_level`, `player.sub_job/_level`, `windower.ffxi.get_info().zone` and its `res.zones` name. Written to check that `sub_job_level` reads 0 in Odyssey Sheol Gaol.
 
 ## Configuration
 
 | Read / written | Where | Default / notes |
 |---|---|---|
-| Warp aliases | `shared/utils/warp/warp_command_registry.lua:24-64` | Single list shared with `warp_ipc.lua` |
-| Alt command definitions | `<main char>/config/alt/<JOB>_ALT_COMMANDS.lua` + `<JOB>_ALT_CUSTOM.lua` | Loaded by `alt_commands.lua` `load_job_config` with the MAIN's `player.name`; each file falls back to `_master/config/alt/` |
-| Message modes | `<char>/config/message_modes.lua` via `shared/config/message_settings.lua:37-43` | Written by `jamsg/spellmsg/wsmsg`; defaults `on` (`message_settings.lua:104-106`) |
-| UI config | `<char>/config/UI_CONFIG.lua` | Fallback in `config_loader.lua:51-59` |
+| Warp aliases | `shared/utils/warp/warp_command_registry.lua` `COMMANDS` | Single list shared with `warp_ipc.lua` |
+| Alt command definitions | `<main char>/config/alt/<JOB>_ALT_COMMANDS.lua` + `<JOB>_ALT_CUSTOM.lua` | Loaded by `alt_commands.lua` `load_job_config` with the main's `player.name`; each file falls back to `_master/config/alt/` |
+| Message modes | `<char>/config/message_modes.lua` via `shared/config/message_settings.lua` | Written by `jamsg` / `spellmsg` / `wsmsg`; defaults `on` |
+| Combat Mode / Treasure Mode | `<char>/config/combat_mode.lua`, `<char>/config/treasure_mode.lua` | Rewritten whole by `combatmode` / `th`; kept across a re-clone (`clone_character.py` `KEPT_ON_RECLONE`) |
+| Dual Wield values | `<char>/config/DW_CONFIG.lua` (template `_master/config_global/DW_CONFIG.lua`) | Read by `dw` and the DW hook |
+| Belt settings | `<char>/config/ELEMENTAL_BELT.lua` (template in `_master/config_global/`) | Shown by `belt` |
+| UI config | `<char>/config/UI_CONFIG.lua` | Fallback in `config_loader.lua` |
 | Profiler switch | `data/.profiler_enabled` | Absent = off |
+| DressUp switch | `data/.dressup_disabled` | Present = DressUp not managed |
 | Trace | `<char>/trace.log`, marker `<char>/trace.on` | Absent marker = off |
-| Report files written | `data/syscheck_<char>.txt`, data/fulltest_report.txt, `data/debug_lag.txt`, `data/memcheck_<char>_<job>.txt`, `data/altbuff_<char>.log` | `windower.addon_path .. 'data/'` |
+| Report files written | `data/syscheck_<char>.txt`, `data/fulltest_report.txt`, `data/debug_lag.txt`, `data/memcheck_<char>_<job>.txt`, `data/altbuff_<char>.log` | `windower.addon_path .. 'data/'` |
 
 ## State & lifetime
 
-- GearSwap builds a new user environment on every file load (`gs reload`, job change, `gs l`): `refresh.lua:62-183`. `_G` inside project code is that environment (`refresh.lua:149`), so every `_G.*` flag below is reset on each load. The `windower` table seen by project code is the addon-lifetime `user_windower` (`user_functions.lua:418-423`), so `windower._*` fields survive until `//lua reload gearswap`.
-- On each file load GearSwap unregisters every event registered through the user `windower.register_event`/`raw_register_event` (`refresh.lua:69-71`, `user_functions.lua:254-282`) and deletes text/prim objects. Scheduled coroutines are not cancelled by the engine.
-- `_G` flags toggled by commands: `WARP_DEBUG`, `PrecastDebugState`, `AUTOMOVE_DEBUG`, `JOBCHANGE_DEBUG`, `UPDATE_DEBUG`. Each is written to its own `windower._gs_debug` field by the toggle and copied back into `_G` on every load by `INIT_SYSTEMS.lua:35-41`, so all five survive a job change. `MidcastManagerDebugState` is restored from `windower._midcast_debug` the same way (`midcast_manager.lua`, see [midcast-and-buffs.md](midcast-and-buffs.md)).
-- Persistent fields: `windower._gs_debug` (the five toggles), `windower._lagdebug` (journal, probe event ids), `windower._alt_buff_debug` (altdebug), `windower._trace_log_on` (trace), `windower._gs_reload_count` (incremented by `INIT_SYSTEMS.lua:44`, read by syscheck/fulltest).
-- Module-level caches that die with the environment: `AltCommandsModule` (`COMMON_COMMANDS.lua:30`), `require_wrapped`/`original_require` (`lag_debugger.lua`), DebugLogger's `MessageFormatter`, Profiler's `M`.
-- Events: only LagDebugger registers any (`prerender`, `action`), and only while recording; removed by `stop()` (`remove_event_probes`, 171) and re-registered on load while recording (512-520).
-- Load order: job files require `COMMON_COMMANDS` lazily on their first command, which itself requires `message_commands`, `message_formatter`, `warp_command_registry`, `craft_commands` and `DEBUG_COMMANDS` at module level. `lag_debugger` is required by `INIT_SYSTEMS.lua:78-80`, after `ModuleCache.install()` and HP priority. `GlobalProbe.snapshot()` runs 5.0 s after `INIT_SYSTEMS`.
+- GearSwap builds a new user environment on every file load (`gs reload`, job change, `gs l`, see `refresh.lua`). `_G` inside project code is that environment, so every `_G.*` flag below is reset on each load. The `windower` table seen by project code is the addon-lifetime `user_windower` (`user_functions.lua`), so `windower._*` fields survive until `//lua reload gearswap`.
+- On each file load GearSwap unregisters every event registered through the user `windower.register_event` / `raw_register_event`, and deletes text and prim objects. Scheduled coroutines are not cancelled by the engine.
+- `_G` flags toggled by commands: `WARP_DEBUG`, `PrecastDebugState`, `AUTOMOVE_DEBUG`, `JOBCHANGE_DEBUG`, `UPDATE_DEBUG`. Each toggle writes its own `windower._gs_debug` field, and the "restore persistent debug flags" block at the top of `INIT_SYSTEMS.lua` copies them back into `_G` on every load, so all five survive a job change. `MidcastManagerDebugState` is restored from `windower._midcast_debug` the same way (see [midcast-and-buffs.md](midcast-and-buffs.md)).
+- Persistent fields:
+
+  | Field | Holds |
+  |---|---|
+  | `windower._gs_debug` | the five toggles |
+  | `windower._lagdebug` | journal, probe event ids |
+  | `windower._alt_buff_debug` | `altdebug` |
+  | `windower._trace_log_on` | trace |
+  | `windower._gs_reload_count` | incremented by `INIT_SYSTEMS.lua`, read by syscheck / fulltest |
+  | `windower._dw_forced` | `dw` force |
+
+- Module-level caches that die with the environment: `AltCommandsModule` (`COMMON_COMMANDS.lua`), `require_wrapped` / `original_require` (`lag_debugger.lua`), DebugLogger's `MessageFormatter`, Profiler's `M`.
+- Events: LagDebugger registers `prerender` and `action` only while recording. They are removed by `stop()` (`remove_event_probes`) and registered again on load while recording.
+- Load order. Job files require `COMMON_COMMANDS` lazily, on their first command. It requires at module level `message_commands`, `message_formatter`, `warp_command_registry`, `craft_commands` and `DEBUG_COMMANDS`, and installs the alt fallback. `INIT_SYSTEMS.lua` requires `lag_debugger` after `ModuleCache.install()` and HP priority, and runs `GlobalProbe.snapshot()` 5.0 s later.
 
 ## Interactions
 
-- Called by: every `[JOB]_COMMANDS.lua`; indirectly by AutoMove (`gs c update` passes through `is_common_command` on every movement), by the dual-box partner (`altbuff`, `altbuffsync`, `altjobupdate`, `requestjob`, `setalt`), by craft (`craft_commands.lua:173`, `craft_manager.lua:190` send `gs c rf`), by the wardrobe organizer (`lib/phases.lua:109-110` send `gs c naked`; `wardrobe_organizer.lua:161,164` send `gs c ls` and `gs c rf` after a successful run), by temporary keybinds (`gs c tb run <key>`), and by `CycleHandler` (`gs c cycle <state>`).
-- Calls: warp (`warp_commands.lua`), wardrobe organizer/auditor, refill, craft, mount, DRG jump, waltz, lockstyle factory, JobChangeManager, AutoMedicine, dual-box (`alt_commands`, `alt_buff_reporter`, `alt_group`, `dualbox_role`, `dualbox_sync_ipc`), Sortie, TempBinds, TraceLog, message system (`MessageFormatter`, `MessageCommands`, `messages` API, `MessageValidator`), DataLoader.
-- Sibling pages: [precast-pipeline.md](precast-pipeline.md) (`debugprecast` consumers), [midcast-and-buffs.md](midcast-and-buffs.md) (`debugmidcast`), [ui-overlay.md](ui-overlay.md) (`ui`, `cyclestate`), [dualbox.md](dualbox.md) (`alts`, `main`, `setalt`, alt commands), [keybinds-and-custom.md](keybinds-and-custom.md) (`tb`, key rules).
+- Called by every `[JOB]_COMMANDS.lua`. Also indirectly by:
+  - AutoMove, DualWield, TreasureHunter and the optional-state commands, whose `gs c update` passes through `is_common_command`;
+  - the dual-box partner: `altbuff`, `altbuffsync`, `altjobupdate`, `requestjob`, `setalt`, `altlead`, `rollshow`;
+  - craft (`craft_commands.lua`, `craft_manager.lua` send `gs c rf`);
+  - the wardrobe organizer: `lib/phases.lua` sends `gs c naked`, and `wardrobe_organizer.lua` sends `gs c ls` and `gs c rf` after a successful run;
+  - temporary keybinds (`gs c tb run <key>`);
+  - `CycleHandler` (`gs c cycle <state>`).
+- Calls: warp, wardrobe organizer and auditor, refill, craft, mount, DRG jump, waltz, lockstyle factory, JobChangeManager, AutoMedicine, dual-box (`alt_commands`, `alt_buff_reporter`, `alt_group`, `dualbox_role`, `dualbox_sync_ipc`, `roll_share`), Sortie, Stealth, CombatMode, TreasureHunter, DualWield, ElementalBelt, TempBinds, KeybindManager, TraceLog, message system (`MessageFormatter`, `MessageCommands`, `messages` API, `MessageValidator`), DataLoader.
+- Sibling pages:
+  - [precast-pipeline.md](precast-pipeline.md): the `debugprecast` consumers;
+  - [midcast-and-buffs.md](midcast-and-buffs.md): `debugmidcast`;
+  - [ui-overlay.md](ui-overlay.md): `ui`, `cyclestate`;
+  - [dualbox.md](dualbox.md): `alts`, `main`, `setalt`, alt commands;
+  - [keybinds-and-custom.md](keybinds-and-custom.md): `tb`, `kc`, `combatmode`, `th`, key rules;
+  - [factories-and-helpers.md](factories-and-helpers.md): `ls`, `dressup`, `craft`, `jump`, `waltz`, `dw`, `belt`.
 
 ## Invariants & gotchas
 
-- Only `cmdParams[1]` is lower-cased by the job files; handlers that compare arguments must lower-case them themselves (`perf`, `lagdebug`, `fulltest`, `syscheck`, `automedicine`, `jamsg`, `trace`, `tb`... do; `wo` does not).
-- `table.unpack` is Windower's (`libs/tables.lua:457-470`): `table.unpack(t)` = `unpack(t)`, but `table.unpack(t, 2)` returns `t[2]` only, not `t[2..n]`.
-- A common name or a warp alias (and `<alias>all`) always beats a job command checked after `is_common_command`. Before naming a new job command, grep `CommonCommands.is_common_command` and `warp_command_registry.lua`. An alt-config key never beats a job command, but a job command that returns without `eventArgs.handled = true` (WAR's `berserk` when `buff_war` is nil, `WAR_COMMANDS.lua:220-226`) falls through to Mote and so to the alt's command of that name.
-- `naked` from CommonCommands does not re-enable disabled slots; slots disabled by `gs disable` keep their gear while the message says all slots were cleared. The wardrobe organizer enables slots before sending it (`wardrobe/lib/phases.lua` Phase 0).
-- `refill` and `lockstyle` always broadcast to the dual-box partner, including when triggered by `send_command('gs c rf')` from craft or by the `gs c ls` / `gs c rf` the wardrobe organizer sends when it finishes.
-- `debugprecast` has an effect only on BRD, RDM and RUN (the jobs that read `_G.PrecastDebugState`) and toggles a different flag on BST.
+- The job files lower-case only `cmdParams[1]`. Handlers that compare arguments must lower-case them themselves. Most do (`perf`, `lagdebug`, `fulltest`, `syscheck`, `automedicine`, `jamsg`, `trace`, `tb`, `dw`, `th`, `combatmode`); `wo` does not.
+- `table.unpack` is Windower's (`libs/tables.lua`). `table.unpack(t)` is `unpack(t)`, but `table.unpack(t, 2)` returns `t[2]` only, not `t[2..n]`.
+- A common name or a warp alias (and `<alias>all`) always beats a job command checked after `is_common_command`. Before naming a new job command, grep `CommonCommands.is_common_command` and `warp_command_registry.lua`. Watch the short aliases: `cc`, `pt`, `op`, `ns`, `ld`, `td`, `ar`, `mm` are warp destinations, and any word ending in `all` whose base is an alias is a warp broadcast.
+- An alt-config key never beats a job command. However, a job command that returns without setting `eventArgs.handled = true` falls through to Mote, and so to the alt's command of that name. Example: WAR's `berserk` when `buff_war` is nil.
+- `naked` from CommonCommands does not re-enable disabled slots: slots disabled by `gs disable` (or by Combat Mode, CUSTOM locks, craft) keep their gear while the message says all slots were cleared. The wardrobe organizer enables slots before it sends `naked` (`wardrobe/lib/phases.lua`, Phase 0).
+- `refill` and `lockstyle` always broadcast to the dual-box partner. This includes the `gs c rf` sent by craft and the `gs c ls` / `gs c rf` the wardrobe organizer sends when it finishes.
+- `debugprecast` has an effect only on BRD, RDM and RUN, the jobs that read `_G.PrecastDebugState`. On BST it toggles a different flag.
 - `info` loads the complete ability, spell and weaponskill databases on first use.
-- SystemChecker and FullTest print `passed` with `%d` although it can be fractional (a WARN counts 0.5), so "9/10" can accompany a 95 % score. SystemChecker colours WARN and FAIL identically (`STATUS_COLOR`, `system_checker.lua:253`).
-- LagDebugger registers its probes with the user `windower.register_event`, which GearSwap wraps in `user_equip_sets` (`user_functions.lua:254-262`, `284-291`): every `prerender` and every zone `action` passes through GearSwap's `equip_sets` while recording. `raw_register_event` (used by `party_tracker.lua` and, since 2026-09-25, `warp_detector.lua`) avoids that wrapper.
+- SystemChecker and FullTest print `passed` with `%d` although it can be fractional (a WARN counts 0.5), so "9/10" can come with a 95 % score. SystemChecker colours WARN and FAIL identically (`STATUS_COLOR`).
+- LagDebugger registers its probes with the user `windower.register_event`, which GearSwap wraps in `user_equip_sets`. While recording, every `prerender` and every zone `action` therefore passes through GearSwap's `equip_sets`. `raw_register_event`, used by `party_tracker.lua`, `warp_detector.lua`, `dual_wield.lua` and `treasure_hunter.lua`, avoids that wrapper.
 
-## Extending
+## For maintainers / AI
 
-Adding a common command:
+### Adding a common command
 
-1. Add the handler (in `COMMON_COMMANDS.lua`, or in `DEBUG_COMMANDS.lua` for diagnostics and alias it at `COMMON_COMMANDS.lua:404-420`). A self-contained feature can live in its own module, routed like `sortie`, `alts`, `tb` and `trace` (`492-511`).
-2. Add the `elseif cmd == ...` branch in `handle_command` and the same name(s) in the `or` chain of `is_common_command` (686-705). Missing the second step makes the command unreachable.
-3. Lower-case every argument you compare; make the no-match path print usage rather than run a mutating default.
-4. Check the name against job commands (`grep "command == '<name>'" shared/jobs`), warp aliases and the alt configs.
-5. Add it to `MessageCommands.show_commands_list()` (`message_commands.lua:586`).
-6. If it creates a global, add the name to `global_probe.lua` `EXPECTED`.
+1. **Write the handler.** Put it in `COMMON_COMMANDS.lua`, or in `DEBUG_COMMANDS.lua` for a diagnostic (then alias it in the alias block of `COMMON_COMMANDS.lua`). A self-contained feature is better as its own module with a `handle(args)` returning `true`, routed in the "module commands" block the way `sortie`, `stealth`, `th`, `dw`, `tb` and `trace` are. `COMMON_COMMANDS.lua` is already past the 600-line soft limit.
+2. **Register the name twice.** Add the branch in `handle_command` **and** the same name(s) in the `or` chain of `is_common_command`. Missing the second step makes the command unreachable from every job file. The two lists are not generated from one table.
+3. **Return a boolean.** Return `true` when handled; `nil` counts as false, which leaves `eventArgs.handled` false (harmless for a common name, since `runs_locally` stops the alt fallback, but misleading).
+4. **Lower-case what you compare.** Lower-case every argument you compare. On a word you do not recognise, print usage instead of running a mutating default.
+5. **Check the name for collisions** before choosing it:
+   - job commands: `grep -rn "command == '<name>'" shared/jobs`;
+   - warp aliases (including `<alias>all`): `warp_command_registry.lua`;
+   - alt configs: `_master/config/alt/*.lua`;
+   - Mote's `selfCommandMaps`.
+6. **Advertise it.** Add it to the help screens: `COMMANDS_HELP` (`//gs c commands`) and, if it has its own help, `QUICK_HELP` (`//gs c help`), both in `shared/utils/messages/formatters/ui/message_commands.lua`.
+7. **Declare its globals.** If it creates a global, add the name to `global_probe.lua` `EXPECTED`.
+8. **Use the message system.** Print through `MessageFormatter`, `InfoBlock` or `HelpScreen`. Direct `add_to_chat` is allowed only in the diagnostic tools listed in CODE_QUALITY section 6.
 
-Adding a job command: put it after the common block of the job's `job_self_command`, pick a name that is not a common name, warp alias or `<alias>all`, set `eventArgs.handled = true` on every path and `return`. A name that is also a key in `<char>/config/alt/*.lua` runs locally; the alt's version stays reachable as `//gs c alt <name>`.
+### Adding a job command
 
-Adding a debug flag that must survive a job change: flip it with `flip_debug('<KEY>')` in `DEBUG_COMMANDS.lua` and restore it in `INIT_SYSTEMS.lua:35-41`, as the five existing toggles do.
+- Put it after the common block of the job's `job_self_command`.
+- Pick a name that is not a common name, a warp alias or `<alias>all`.
+- Set `eventArgs.handled = true` on **every** path, including error paths, then `return`. A path that forgets it falls through to Mote and then to the alt's command of the same name.
+- A name that is also a key in `<char>/config/alt/*.lua` runs locally; the alt's version stays reachable as `//gs c alt <name>`.
+
+### Forwarding arguments
+
+Always forward with `table.unpack(args)` (all of them), never `cmdParams[1]` or `table.unpack(t, 2)`. A forgotten argument fails silently: `warp all` becomes `warp`.
+
+### Adding a persistent debug flag
+
+Flip it with `flip_debug('<KEY>')` in `DEBUG_COMMANDS.lua` and add its line to the "restore persistent debug flags" block of `INIT_SYSTEMS.lua`, as the five existing toggles do. A flag kept only in `_G` is lost at the next job load, which is exactly when you are debugging a job change.
+
+### Traps
+
+- A job-specific branch placed **after** the common block for a name `is_common_command` claims is dead code. Examples today: WAR `perf`, COR `testcolors`.
+- A job-specific branch placed **before** the common block silently overrides the common command on that job only. Example: BST `debugprecast`.
+- Any `gs c ...` your code sends (e.g. `gs c update`) re-enters this pipe in full: the job's prefixes, then `is_common_command`, then Mote.
 
 ## Known issues
 
 Open:
 
-- `wo` subcommands are case-sensitive and fall back to a full organize (`COMMON_COMMANDS.lua:190-224`).
-- `show_error` called with two arguments drops the message (`DEBUG_COMMANDS.lua:483`, `:571`; `MessageStatus.show_error(message)` takes one).
-- Warp load-failure diagnostic probes a moved module path, `shared/utils/messages/message_warp` (now `formatters/system/message_warp.lua`) (`COMMON_COMMANDS.lua:442`).
-- Unreachable job branches shadowed by common names: WAR `perf` (`WAR_COMMANDS.lua:193-194`, now commented as unreachable), COR `testcolors`/`colors` (`COR_COMMANDS.lua:309`).
-- `GlobalProbe.EXPECTED` whitelists `name` and `x` (`global_probe.lua:113,125`); nothing shows they are real globals.
-- syscheck WarpInit check trusts a flag that outlives the environment (`system_checker.lua:69`).
-- fulltest_report.txt and `debug_lag.txt` are shared by all characters (`full_test.lua:251`, `lag_debugger.lua:482`).
-- `altcmds` cannot tell that a job command shares an alt key, so on WAR with a WAR alt it lists `berserk` in the bare form although `//gs c berserk` runs on the main (`alt_commands.lua:549-553`).
-- `automedicine` and `lagdebug` treat any unrecognised argument as "toggle" (`auto_medicine.lua:162-172`, `DEBUG_COMMANDS.lua:115-124`).
-- PUP first command per load errors on a missing formatter function, `MessageFormatter.error_pup_module_not_loaded`, and on a missing `shared/jobs/pup/functions/logic/` folder (`PUP_COMMANDS.lua:74-77`).
-- The help screen (`MessageCommands.show_commands_list`) does not list `tb`, `trace` or `sortie`.
-- `Profiler.profile_call`, `Profiler.measure`, `LagDebugger.log`, `DebugLogger.log` have no caller (`performance_profiler.lua:312,337`, `lag_debugger.lua:283`, `debug_logger.lua:52`).
-- `LagDebugger.on_job_update` is wired only in the Tetsouo overlay entries `Tetsouo_{WAR,BST,SMN}.lua` (and their live copies), not in any generic `_master/entry` template.
+- `wo` subcommands are case-sensitive and fall back to a full organize (`COMMON_COMMANDS.lua` `handle_wardrobeorganize`).
+- `show_error` is called with two arguments, which drops the message (`DEBUG_COMMANDS.lua` `handle_memcheck` and `handle_debugmsg`; `MessageStatus.show_error(message)` takes one).
+- The warp load-failure diagnostic probes a moved module path, `shared/utils/messages/message_warp`, now at `formatters/system/message_warp.lua` (`handle_warp_commands`).
+- Job branches shadowed by common names are unreachable: WAR `perf` (commented as unreachable), COR `testcolors` / `colors`.
+- `GlobalProbe.EXPECTED` whitelists `name` and `x`; nothing shows they are real globals.
+- The syscheck WarpInit check trusts a flag that outlives the environment (`check_warp`).
+- `data/fulltest_report.txt` and `data/debug_lag.txt` are shared by all characters (`FullTest.export`, `LagDebugger.export`).
+- `altcmds` cannot tell that a job command shares an alt key. On WAR with a WAR alt it lists `berserk` in the bare form, although `//gs c berserk` runs on the main (`AltCommands.list`).
+- `automedicine` and `lagdebug` treat any unrecognised argument as "toggle" (`AutoMedicine.handle_command`, `DebugCommands.handle_lagdebug`).
+- PUP's first command per load errors, for two reasons: it calls a formatter function that does not exist, `MessageFormatter.error_pup_module_not_loaded`, and it requires modules under a `shared/jobs/pup/functions/logic/` folder that does not exist (`PUP_COMMANDS.lua` `ensure_commands_loaded`).
+- `Profiler.profile_call`, `Profiler.measure`, `LagDebugger.log` and `DebugLogger.log` have no caller.
+- `LagDebugger.on_job_update` is wired only in the overlay entries `_master/Tetsouo/entry/Tetsouo_{WAR,BST,SMN}.lua`, not in any generic `_master/entry` template.
 - A `trace.on` marker left on a character keeps `trace.log` growing across restarts; nothing caps the file.
+- `RollShare.receive` returns nothing, so `rollshow` leaves `eventArgs.handled` false (no visible effect: `runs_locally` stops the alt fallback).
+- `COMMON_COMMANDS.lua` is 786 lines, past the 600-line soft limit (under the 800 hard limit).
+- `COMMANDS_HELP` lists `memcheck | mem [gc]`, but `handle_memcheck` ignores its argument. The Combat Mode help note names BLM and WHM for the ammo lock and leaves out GEO (`combat_mode_commands.lua`).
+- `DebugLogger.logf_if('DATA_DEBUG', ...)` in `data_loader.lua` reads a flag that no command sets.
 
-Fixed:
+Fixed (kept for reference):
 
-- `debugjobchange` (and the other toggles) lost on every file load: all five live on `windower._gs_debug` and are restored by INIT (`DEBUG_COMMANDS.lua` `flip_debug`).
-- `lag_debugger.lua` comment claiming GearSwap does not unregister data-file events: rewritten (`lag_debugger.lua:105-109`).
-- `sanitize_ascii` stripped non-ASCII before mapping UTF-8 punctuation (fixed 2026-09-25).
-- Help screen advertised `equip` as an alias of `naked`: it now says `equip naked`, and `equip` alone prints its usage (fixed 2026-09-25).
-- `spellmsg` comment saying it excludes Enfeebling (fixed).
-- BRD `forceidle` comment naming the warp system as sender: it now says nothing sends it (`BRD_COMMANDS.lua:196-198`).
-- `COMMON_COMMANDS.lua` at 796 lines: the six debug toggles moved to `DEBUG_COMMANDS.lua` (750 lines now, fixed 2026-09-25).
+- The five debug toggles were lost on every file load. All five now live on `windower._gs_debug` and are restored by `INIT_SYSTEMS`.
+- The help screens did not list `tb`, `trace` or `sortie`. `//gs c help` now points to every system's help (`tb help`, `sortie help`, `stealth help`, `combatmode help`...) and `//gs c commands` lists `trace`, `tb`, `kc`, `belt`, `dw`, `th`.
+- `sanitize_ascii` stripped non-ASCII before mapping UTF-8 punctuation.
+- The help screen advertised `equip` as an alias of `naked`. It now says `equip naked`, and `equip` alone prints its usage.
+- The six debug toggles were moved out of `COMMON_COMMANDS.lua` into `DEBUG_COMMANDS.lua`.
