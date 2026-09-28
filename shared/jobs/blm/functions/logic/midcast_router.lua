@@ -127,7 +127,8 @@ function Router.handle_impact(spell, ctx)
 end
 
 --- Elemental Magic: MidcastManager (with MagicBurst mode_value) + 3 BLM overrides.
---- Death is special-cased to its own set.
+--- Death is Dark Magic in the game data (skill 37): it goes through
+--- handle_dark and gets sets.midcast['Death'] by name, never through here.
 --- @param spell table Spell information from GearSwap
 --- @param ctx table Context built by BLM_MIDCAST (see file header)
 function Router.handle_elemental(spell, ctx)
@@ -137,15 +138,6 @@ function Router.handle_elemental(spell, ctx)
         ctx.messages.show_elemental_routing(
             tostring(state.MagicBurstMode and state.MagicBurstMode.current or 'nil')
         )
-    end
-
-    -- Death uses its own dedicated set (not affected by MagicBurst/MP/etc.)
-    if spell.english == 'Death' then
-        MidcastManager.select_set({skill = 'Death', spell = spell})
-        if ctx.debug_enabled then
-            ctx.messages.show_elemental_return()
-        end
-        return
     end
 
     -- MagicBurst variant resolved by MidcastManager via mode_value

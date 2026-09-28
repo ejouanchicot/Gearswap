@@ -10,7 +10,7 @@
 ---     - Healing / Dark: spell name, then the skill's base set; a Cure on
 ---       oneself gets sets.midcast.CureSelf on top when the sets define it
 ---     - Elemental: NukeMode
----   Other skills keep Mote's default set (see midcast_subjob below).
+---   Other skills (a subjob's magic) go through MidcastFallback.
 ---
 ---   Enhancing Magic spell families (database-driven routing):
 ---     - sets.midcast['Enhancing Magic'].Enspell (Enfire, Enblizzard, etc.)
@@ -303,29 +303,8 @@ local function midcast_dark(spell, debug_enabled)
     return true
 end
 
---- @param spell table Spell information from GearSwap
---- @param debug_enabled boolean Whether //gs c debugmidcast is on
---- @return boolean True when this handler equipped a set
-local function midcast_subjob(spell, debug_enabled)
-    if debug_enabled then
-        MessageFormatter.show_debug('RDM Midcast', 'Universal Magic detected: ' .. (spell.skill or 'Unknown') .. ' - ' .. (spell.name or 'Unknown'))
-    end
-
-    -- Priority: sets.midcast[spell.name] > sets.midcast[spell.skill] (base)
-    local success = MidcastManager.select_set({
-        skill = spell.skill,
-        spell = spell
-    })
-
-    if debug_enabled then
-        MessageFormatter.show_debug('RDM Midcast', 'Universal Magic result: ' .. tostring(success))
-    end
-
-    return true
-end
-
---- Skill name to handler. Subjob magic is not in here: it is the fallback,
---- and it matches on spell.type rather than on a known skill name.
+--- Skill name to handler. A subjob's magic (NIN, BLU...) is not in here:
+--- MidcastFallback (shared/utils/midcast/midcast_fallback.lua) routes it.
 local SKILL_HANDLERS = {
     ['Enfeebling Magic'] = midcast_enfeebling,
     ['Enhancing Magic'] = midcast_enhancing,
@@ -348,13 +327,6 @@ local function route_midcast(spell)
 
     local handler = SKILL_HANDLERS[spell.skill]
     if handler and handler(spell, debug_enabled) then
-        return
-    end
-
-    -- Magic RDM only gets from a subjob: BLU, SMN, GEO, NIN, BRD, WHM.
-    -- Never reached today: spell.type is 'WhiteMagic', 'BlackMagic', 'Ninjutsu'...
-    -- never 'Magic' (that is spell.action_type).
-    if spell.type == 'Magic' and spell.skill and midcast_subjob(spell, debug_enabled) then
         return
     end
 
