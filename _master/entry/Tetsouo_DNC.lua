@@ -52,9 +52,7 @@
 local LockstyleConfig_ok, LockstyleConfig = pcall(require, 'Tetsouo/config/LOCKSTYLE_CONFIG')
 if not LockstyleConfig_ok then LockstyleConfig = nil end
 LockstyleConfig = LockstyleConfig or {
-    initial_load_delay = 8.0,  -- Initial lockstyle delay on job load (FFXI cooldown)
-    job_change_delay   = 8.0,  -- Lockstyle delay on job/subjob change
-    cooldown           = 15.0  -- Minimum time between lockstyle commands
+    initial_load_delay = 8.0   -- Initial lockstyle delay on job load (FFXI cooldown)
 }
 
 -- ============================================

@@ -35,9 +35,7 @@
 local LockstyleConfig_ok, LockstyleConfig = pcall(require, 'Tetsouo/config/LOCKSTYLE_CONFIG')
 if not LockstyleConfig_ok then LockstyleConfig = nil end
 LockstyleConfig = LockstyleConfig or {
-    initial_load_delay = 8.0,
-    job_change_delay = 8.0,
-    cooldown = 15.0
+    initial_load_delay = 8.0
 }
 
 -- Load region configuration (must load before message system for color codes)

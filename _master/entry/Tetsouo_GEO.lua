@@ -42,9 +42,7 @@ local lockstyle_config_success, LockstyleConfig = pcall(require, 'Tetsouo/config
 if not lockstyle_config_success or not LockstyleConfig then
     -- Fallback defaults if config not found
     LockstyleConfig = {
-        initial_load_delay = 8.0,
-        job_change_delay = 8.0,
-        cooldown = 15.0
+        initial_load_delay = 8.0
     }
 end
 
