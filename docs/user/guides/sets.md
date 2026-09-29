@@ -123,7 +123,7 @@ These sets are worn without any action from you, when they exist:
 | Set | When | Notes |
 |---|---|---|
 | `sets.MoveSpeed` | You are running and not fighting, outside a town | Movement speed gear, on top of the idle set. Movement is not tracked while you are engaged, so it never goes on the engaged set. Exceptions below |
-| `sets.idle.Town` | Idle in a town (Dynamis excluded) | Laid on top of the idle set of your Idle Mode: slots it leaves out keep your idle pieces. On DRK and SAM it replaces the idle set instead, and slots it leaves out keep what you wore before: build it there with `set_combine(sets.idle, {...})` |
+| `sets.idle.Town` | Idle in a town (Dynamis excluded) | Laid on top of the idle set of your Idle Mode: slots it leaves out keep your idle pieces |
 | `sets.Adoulin` | Idle in Western / Eastern Adoulin | Checked before `sets.idle.Town`, laid on top of the idle set the same way |
 | `sets.buff.Doom` | You are Doomed | Doom removal gear (Nicander's Necklace, Purity Ring...). Neck, both rings and belt stay locked until Doom is gone |
 | `sets.DW.NoHaste`, `.Haste`, `.HasteII`, `.MaxHaste` | Two weapons held, fighting | Dual Wield pieces by your magic haste ([configuration](configuration.md), `DW_CONFIG.lua`, `//gs c dw`) |
@@ -133,13 +133,11 @@ Jobs that differ from the table above (details on each job's set page):
 
 | Job | Difference |
 |---|---|
-| SAM | `sets.MoveSpeed` goes on in town too; `sets.Adoulin` is never read (Adoulin uses `sets.idle.Town`) |
-| DRK | `sets.MoveSpeed` goes on in town too; `sets.Adoulin` is never read |
 | WHM | `sets.MoveSpeed` goes on in town too |
 | BST | `sets.idle.Town` and `sets.Adoulin` are not used: in a town only the **feet** of `sets.me.idle.Town` go on. `sets.MoveSpeed` is never added while engaged |
 | GEO | In the provided file `sets.idle.Town` is the same set as `sets.me.idle.Town` |
 | SMN | The town set is not used while Avatar's Favor is On |
-| PLD, RUN, WAR, COR | In town: the town set plus your weapon, nothing else (no mode set, no `sets.MoveSpeed`). On WAR, the Hoxne stance also keeps its Hoxne Ampulla in town |
+| PLD, RUN, WAR, COR, DRK, SAM | In town: the town set plus your weapon, nothing else (no mode set, no `sets.MoveSpeed`; on SAM no `sets.idle.Weak`, `.Regen` or `.PDT`). On WAR, the Hoxne stance also keeps its Hoxne Ampulla in town |
 
 Hachirin-no-Obi and Orpheus's Sash need no set: they go on by themselves on
 elemental damage when they help ([configuration](configuration.md),

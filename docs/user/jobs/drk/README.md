@@ -23,7 +23,9 @@ Dark Knight with the provided template gives you:
 - **Dark Magic gear by spell**: Dread Spikes, Absorb spells, Drain / Aspir
   each find their own set; Dark Seal and Nether Void pieces are added while
   those buffs are up.
-- **Movement speed** on idle whenever you move, in town too.
+- **Movement speed** on idle whenever you move outside a town. In a town the
+  town set goes on top of your idle set (in the provided file it is the
+  movement set, legs only).
 
 Every mode goes back to its default on each job change, subjob change and
 reload.
@@ -103,7 +105,7 @@ DRK has no command of its own. The common commands that work on DRK:
 | Recast check | An ability or spell still on recast is cancelled with the time left (`RECAST_CONFIG.lua`) |
 | Debuff guard | An action you cannot do is stopped; with Auto Medicine on, Echo Drops / Remedy / Panacea are used |
 | Doom | `sets.buff.Doom` goes on and its neck, rings and waist stay locked while Doomed; the Aftermath gear change is skipped while Doomed |
-| Movement speed | `sets.MoveSpeed` on idle whenever you move, in town too. In town, Mote uses `sets.idle.Town` as the idle base (the template makes it the movement set) |
+| Movement speed | `sets.MoveSpeed` on idle whenever you move, outside a town. In town, `sets.idle.Town` goes on top of your idle set (the template makes it the movement set, legs only), then your weapon, and nothing else |
 | Obi / Orpheus | Added to elemental weaponskills (Sanguine Blade, Dark Harvest, Shadow of Death, Infernal Scythe, ...) and damaging spells (Elemental Magic, ...) when the day, weather or distance gives enough (`//gs c belt`) |
 | Treasure Hunter | Off and hidden. Needs `//gs c th show` and a `sets.TreasureHunter` you add |
 | Combat Mode | Off and hidden. When shown and On: main, sub and range stay locked |

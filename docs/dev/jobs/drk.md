@@ -49,7 +49,7 @@ function; line numbers are deliberately not used.
 | `shared/jobs/drk/functions/DRK_MOVEMENT.lua` | 24 | Placeholder for the 12-module layout (comments only) |
 | `shared/jobs/drk/functions/DRK_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('DRK', ...)` wrappers |
 | `shared/jobs/drk/functions/DRK_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('DRK', ...)` wrapper |
-| `shared/jobs/drk/functions/logic/set_builder.lua` | 180 | `select_engaged_base` (AM3, PDT, Accu), `apply_weapon` (`WeaponResolver.set_for('main', weapon)`), `apply_buff_variants`, `build_idle_set` (weapon + movement) |
+| `shared/jobs/drk/functions/logic/set_builder.lua` | 184 | `select_engaged_base` (AM3, PDT, Accu), `apply_weapon` (`WeaponResolver.set_for('main', weapon)`), `apply_buff_variants`, `build_idle_set` (town, weapon, movement) |
 | `shared/jobs/drk/functions/logic/drk_buff_anticipation.lua` | 129 | `has_dark_seal`, `has_nether_void`, `apply_buff_variants` |
 | `_master/config/drk/DRK_STATES.lua` | 100 | `DRKStates.configure()` (HybridMode, WeaponskillMode, MainWeapon, FastCast, AutoMedicine) |
 | `_master/config/drk/DRK_KEYBINDS.lua` | 42 | Data only: 3 binds handed to `KeybindManager.create('DRK', ...)` |
@@ -189,9 +189,13 @@ the template defines none, so the flags have no visible effect out of the box.
   `job_post_aftercast` is empty.
 - `customize_idle_set` -> `build_idle_set`: Mote's base (`sets.idle` through
   `IdleMode` `Normal`, whose child is `sets.idle` itself, or `sets.idle.Town`
-  in cities; defense and kiting layers included) + `sets[MainWeapon]` +
-  `sets.MoveSpeed` when `state.Moving.value == 'true'` (inline, not
-  `BaseSetBuilder.apply_movement`; also in town). `HybridMode` is not read, so
+  in cities; defense and kiting layers included) goes through
+  `BaseSetBuilder.select_idle_base_town` (town set or `sets.Adoulin` on top of
+  the idle set, see
+  [equipment-and-inventory.md](../systems/equipment-and-inventory.md#movement-and-town-idle-basesetbuilder)),
+  then `sets[MainWeapon]`. In town it returns there; outside town
+  `BaseSetBuilder.apply_movement` adds `sets.MoveSpeed` while
+  `state.Moving.value == 'true'`. `HybridMode` is not read, so
   `sets.idle.PDT` is never used.
 - `customize_melee_set` ignores Mote's `meleeSet` and calls
   `build_engaged_set(MainWeapon, HybridMode)`: `select_engaged_base` ->
@@ -256,8 +260,9 @@ T = `_master/sets/drk_sets.lua` (no live copy in the repository).
 | `sets['Tokko']` (and Apocalypse, Foenaria, Naegling) | `apply_weapon` once the name is a `MainWeapon` value (none of them is; a comment in the sets file says so) | yes |
 | `sets.idle` (and `sets.idle.Normal = sets.idle`) | Mote base | yes |
 | `sets.idle.PDT` | nothing reaches it | yes |
-| `sets.idle.Town` (= `sets.MoveSpeed`, legs only) | Mote Town scope | yes |
-| `sets.MoveSpeed` | `build_idle_set` | yes |
+| `sets.idle.Town` (= `sets.MoveSpeed`, legs only) | Mote Town scope, then `select_idle_base_town` (on top of `sets.idle`) | yes |
+| `sets.Adoulin` | `select_idle_base_town` | no |
+| `sets.MoveSpeed` | `build_idle_set` (`BaseSetBuilder.apply_movement`, outside town) | yes |
 | `sets.engaged`, `.PDT`, `.Accu`, `.AM3` | `select_engaged_base` | yes |
 | `sets.engaged[weapon][hybrid].DarkSeal` / `.NetherVoid` / `.DarkSealNetherVoid` | `apply_buff_variants` | **no** (feature inert) |
 | `sets.precast.JA` Jump, High Jump, Diabolic Eye, Arcane Circle, Nether Void, Souleater, Last Resort, Weapon Bash, Blood Weapon, Dark Seal | Mote default precast (+ `job_precast` for four) | yes |
@@ -339,8 +344,8 @@ invisible to Mote.
   kiting layers) is ignored on DRK.
 - A weaponskill needs a set named exactly after it, or gear on the
   `sets.precast.WS` table itself.
-- `sets.idle.Town` is a one-slot table; Mote uses it as the whole idle base in
-  every city, so the other slots keep whatever was worn before.
+- `sets.idle.Town` is a one-slot table (legs); in every city it goes on top
+  of `sets.idle`, so the other slots keep the idle pieces.
 - `HybridMode` affects engaged gear only.
 - Dark Seal / Nether Void midcast overlays read `buffactive`; the engaged
   variants read `buffactive` **or** the pending flags. Any new path that raises
@@ -395,7 +400,6 @@ invisible to Mote.
   (`DRK_MIDCAST.lua` `job_post_midcast_enfeebling_magic`).
 - Elemental Magic routing is a no-op: no `sets.midcast['Elemental Magic']`.
 - `sets.idle.PDT` unreachable (`set_builder.lua` `build_idle_set`).
-- `sets.idle.Town = sets.MoveSpeed` is used as the whole town idle.
 - Nether Void legs applied to Absorb-TP against the set comment.
 - Redundant JA/FC equips in `job_precast`; empty `cooldown_exclusions`.
 - Fixed 2026-09-28: `DRK_STATUS` is `LifecycleManager.status_change()` (an
@@ -406,6 +410,5 @@ invisible to Mote.
   (open duplication findings).
 - `sets['Tokko']` has no `MainWeapon` line; the Anguta TP bonus applies only
   to a weapon that no `MainWeapon` value equips.
-- Movement layer inline instead of `BaseSetBuilder.apply_movement`.
 - Dead code: `job_post_aftercast`, `message_buffs` include, `DRK_MOVEMENT.lua`
   (comments only).

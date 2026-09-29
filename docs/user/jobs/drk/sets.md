@@ -11,12 +11,13 @@ understands (Fast Cast, subjob actions, Doom, Treasure Hunter...):
 | Set | Worn when |
 |---|---|
 | `sets.idle` | Standing, not fighting (the provided file also names it `sets.idle.Normal`) |
-| `sets.idle.Town` | In a town, Adoulin included. It replaces the whole idle set: in the provided file it is the movement set (legs only), so the other slots keep what you wore before |
+| `sets.idle.Town` | In a town, Adoulin included (unless `sets.Adoulin` exists). It goes on top of the idle set: in the provided file it is the movement set (legs only), so the other slots keep your idle pieces |
+| `sets.Adoulin` | In Western / Eastern Adoulin, on top of the idle set in place of `sets.idle.Town` (not in the provided file) |
 | `sets.idle.Weak` | Weakened after a raise (not in the provided file) |
 | `sets.<Main Weapon>` | On top, always |
-| `sets.MoveSpeed` | On top while running, **in town too** (most jobs skip it in town) |
+| `sets.MoveSpeed` | On top while running, outside a town |
 
-`sets.Adoulin` is not read on DRK. The Hybrid Mode does not touch idle gear.
+In a town you get the town set and your weapon, nothing else. The Hybrid Mode does not touch idle gear.
 
 ## Engaged
 
@@ -114,7 +115,7 @@ back to `sets.midcast['Dark Magic']`.
   `sets.engaged.AM3`, and the gear changes the moment Aftermath starts or ends.
   Remove `sets.engaged.AM3` to stop it.
 - **Weapon** re-equipped on every idle and engaged set.
-- **Movement gear** while running, in town as well.
+- **Movement gear** while running, outside a town.
 
 DRK uses no ability by itself.
 

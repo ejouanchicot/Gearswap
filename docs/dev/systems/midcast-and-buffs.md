@@ -296,8 +296,8 @@ Each `[JOB]_IDLE.lua` / `[JOB]_ENGAGED.lua` implements Mote's `customize_idle_se
 | RDM, BLU | `SetBuilder.check_town = select_idle_base_town` | `apply_movement` outside town |
 | SMN | `SMN_IDLE.lua` calls `select_idle_base_town` / `is_in_town` directly | `BaseSetBuilder.apply_movement` |
 | BST | `BaseSetBuilder.is_in_town()` for Town feet only | inline `set_combine(..., sets.MoveSpeed)` |
-| DRK | none | inline `set_combine(result, sets.MoveSpeed)` |
-| SAM | none | none from this module |
+| DRK | `select_idle_base_town` called directly | `apply_movement` outside town |
+| SAM | `select_idle_base_town` called directly | `apply_movement` outside town |
 | PUP | `PUP_IDLE.lua` and `PUP_ENGAGED.lua` require `shared/jobs/pup/functions/logic/set_builder`, which does not exist on disk (their headers say so) | n/a |
 
 Typical order (PLD `build_idle_set`): town base -> main weapon -> shield -> (return early in town) -> HybridMode set -> Xp set -> movement -> Sortie shield. Engaged (`build_engaged_set`): BurtgangKC / Kraken Club / HybridMode base -> weapon -> Alber Strap -> Xp -> Sortie shield.
@@ -435,7 +435,7 @@ Open:
 - The "STANDARD BRANCH (P0-P9)" comment block in `midcast_manager.lua` omits P8b, and P8b's debug line is labelled priority 8.
 - Scholar chains warn "No charges (0.0m)" when /SCH is absent (`warn_no_charge`).
 - GEO keeps its own Light/Dark Arts toggles (`GEO_COMMANDS.lua`).
-- BST and DRK repeat `apply_movement` inline (their `logic/set_builder.lua`).
+- BST repeats `apply_movement` inline (its `logic/set_builder.lua`). DRK stopped on 2026-09-29.
 - RDM's subjob-magic fallback is gated on `spell.type == 'Magic'` and never runs (`RDM_MIDCAST.lua` `route_midcast`); `MidcastFallback` covers those spells now, so the branch is dead code.
 - DRK passes the Enhancing database's `get_spell_family` as `database_func` for Enfeebling Magic (`DRK_MIDCAST.lua`).
 - The `AOE_SPELLS` comment says `CommonCommands` answers `sneak`/`invi`/`erase` before the job block and sends them to the partner; since `53bf99f` alt keys are Mote's last lookup, so that reason no longer holds (`scholar_actions.lua`, above `AOE_SPELLS`).

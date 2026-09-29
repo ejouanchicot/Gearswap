@@ -12,7 +12,6 @@ The base is chosen first:
 | Set | Worn when |
 |---|---|
 | `sets.idle.Normal` | Standing, not fighting (the provided file leaves `sets.idle` itself empty) |
-| `sets.idle.Town` | In a town, Adoulin included (not in the provided file) |
 | `sets.idle.Weak` | Weakened after a raise |
 
 Then SAM adds, in this order:
@@ -21,12 +20,15 @@ Then SAM adds, in this order:
 |---|---|
 | `sets.idle.Weak` | Your HP is below 50 % (on top of the base) |
 | `sets.idle.Regen` | Your HP is between 50 % and 79 % |
-| `sets.idle.PDT` | Hybrid Mode is PDT (the default), in town too |
+| `sets.idle.PDT` | Hybrid Mode is PDT (the default) |
 | `sets.<Main Weapon>` | Always |
-| `sets.MoveSpeed` | You are running (on top of everything above), in town too |
+| `sets.MoveSpeed` | You are running (on top of everything above) |
 
-SAM differs from the common rules here: `sets.MoveSpeed` also goes on in town,
-and `sets.Adoulin` is never read.
+In a town, Adoulin included, `sets.idle.Town` goes on top of the idle set,
+then your weapon, and nothing else: no Weak, Regen or PDT, no `sets.MoveSpeed`.
+In Western / Eastern Adoulin `sets.Adoulin` takes its place when it exists. The
+provided file has neither set, so until you add one, a town gets the same idle
+as outside, `sets.MoveSpeed` included.
 
 ## Engaged
 
@@ -133,7 +135,7 @@ Hasso, Seigan, Warding Circle, Third Eye and Blade Bash.
 - `sets.engaged.AM3`.
 - Any `sets.engaged.<Offense>.MDT` (MDT wears `sets.engaged.MDT` whatever the
   Offense Mode).
-- `sets.idle.Town`.
+- `sets.idle.Town`, `sets.Adoulin`.
 - `.Mid` / `.Acc` versions for the weaponskills other than Shoha and Rana.
 - `sets.midcast['Healing Magic']`, `sets.midcast['Enhancing Magic']`.
 - `sets.seigan` and `sets.bow` exist but are empty.

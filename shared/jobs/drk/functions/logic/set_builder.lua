@@ -34,6 +34,9 @@ local DRKBuffAnticipation = require('shared/jobs/drk/functions/logic/drk_buff_an
 -- Load message formatter for error display
 local MessageFormatter = require('shared/utils/messages/message_formatter')
 
+-- Town set and movement speed, shared with the other jobs
+local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
+
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   AFTERMATH LV.3 DETECTION (ENGAGED)
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -123,7 +126,8 @@ end
 ---   IDLE SET BUILDER (PUBLIC API)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Build complete idle set with weapon and movement
+---   Build complete idle set: town set on top of the idle in a city, then
+---   the weapon, then movement speed outside town (as on the other jobs)
 ---   @param base_set table Base idle set from Mote-Include
 ---   @return table Complete idle set with weapon and movement applied
 function DRKSetBuilder.build_idle_set(base_set)
@@ -131,7 +135,7 @@ function DRKSetBuilder.build_idle_set(base_set)
         return {}
     end
 
-    local result = base_set
+    local result, in_town = BaseSetBuilder.select_idle_base_town(base_set)
 
     -- Apply current weapon
     local weapon_name = state.MainWeapon and state.MainWeapon.current
@@ -139,12 +143,12 @@ function DRKSetBuilder.build_idle_set(base_set)
         result = DRKSetBuilder.apply_weapon(result, weapon_name)
     end
 
-    -- state.Moving is created and updated by AutoMove
-    if state.Moving and state.Moving.value == 'true' and sets.MoveSpeed then
-        result = set_combine(result, sets.MoveSpeed)
+    if in_town then
+        return result
     end
 
-    return result
+    -- state.Moving is created and updated by AutoMove
+    return BaseSetBuilder.apply_movement(result)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

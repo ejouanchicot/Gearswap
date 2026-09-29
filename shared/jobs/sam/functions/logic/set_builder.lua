@@ -25,8 +25,22 @@ local SetBuilder = {}
 ---   IDLE SET CONSTRUCTION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+---   Put the MainWeapon state's weapon set on (it carries the sub weapon)
+---   @param result table
+---   @return table
+function SetBuilder.apply_main_weapon(result)
+    local weapon_set = state and state.MainWeapon
+        and WeaponResolver.set_for('main', state.MainWeapon.value)
+    if weapon_set then
+        return set_combine(result, weapon_set)
+    end
+    return result
+end
+
 ---   Build idle set with HP-based variations and HybridMode
 ---   Priority:
+---   0. In a city: town set on top of the idle, weapon, nothing else (as on
+---      the other jobs)
 ---   1. Weak (HP < 50%) >> sets.idle.Weak
 ---   2. Regen (HP < 80%) >> sets.idle.Regen
 ---   3. HybridMode (PDT) >> sets.idle.PDT
@@ -40,7 +54,10 @@ function SetBuilder.build_idle_set(base_set)
         return {}
     end
 
-    local result = base_set
+    local result, in_town = BaseSetBuilder.select_idle_base_town(base_set)
+    if in_town then
+        return SetBuilder.apply_main_weapon(result)
+    end
 
     -- Priority 1: Weak (HP < 50%)
     if player then
@@ -60,9 +77,7 @@ function SetBuilder.build_idle_set(base_set)
     end
 
     -- Priority 4: Apply main weapon (includes sub weapon in set)
-    if state and state.MainWeapon and WeaponResolver.set_for('main', state.MainWeapon.value) then
-        result = set_combine(result, WeaponResolver.set_for('main', state.MainWeapon.value))
-    end
+    result = SetBuilder.apply_main_weapon(result)
 
     -- Movement speed while running (AutoMove sets state.Moving), as on the
     -- other jobs: sam_sets.lua defines sets.MoveSpeed

@@ -31,7 +31,7 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 ---============================================================================
 
 --- Apply movement speed gear if moving (idle state only)
---- Used by: BLM, BRD, COR, DNC, GEO, PLD, RDM, RUN, SMN, THF, WAR, WHM
+--- Used by: BLM, BRD, COR, DNC, DRK, GEO, PLD, RDM, RUN, SAM, SMN, THF, WAR, WHM
 --- @param result table Current equipment set
 --- @return table Set with movement speed applied (or unchanged if not moving)
 function BaseSetBuilder.apply_movement(result)
@@ -54,8 +54,8 @@ end
 --- Checks Adoulin zones first (movement bonus), then regular cities.
 --- Excludes Dynamis zones (technically cities but not safe).
 ---
---- Used by: BLM, BRD, COR, DNC, GEO, PLD, RDM (as SetBuilder.check_town),
---- RUN, SMN, THF, WAR, WHM
+--- Used by: BLM, BRD, COR, DNC, DRK, GEO, PLD, RDM (as SetBuilder.check_town),
+--- RUN, SAM, SMN, THF, WAR, WHM
 ---
 --- The town set goes ON TOP of the idle set: a partial one (MoveSpeed feet,
 --- Councilor's Garb) keeps the idle pieces in the other slots. In a city

@@ -39,8 +39,8 @@ DRK has no job command of its own: the keys above run `//gs c cyclestate <Mode>`
 - Dark Seal and Nether Void: see [abilities.md](abilities.md).
 - `HybridMode` changes engaged gear only; `sets.idle.PDT` in the template is
   never used.
-- Idle: your weapon set, plus `sets.MoveSpeed` whenever you move (in town
-  too). In town Mote starts from `sets.idle.Town`.
+- Idle: your weapon set, plus `sets.MoveSpeed` whenever you move outside a
+  town. In town `sets.idle.Town` goes on top of the idle set, then your weapon.
 - A weapon needs its `sets.<Weapon>`, unless `equip_without_set = true` in
   `config/WEAPON_CONFIG.lua` (then a plain weapon is equipped by name). The template also has
   `sets.Tokko` (Tokko Chopper), with no Main Weapon value to reach it: add
