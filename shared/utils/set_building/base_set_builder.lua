@@ -57,15 +57,19 @@ end
 --- Used by: BLM, BRD, COR, DNC, GEO, PLD, RDM (as SetBuilder.check_town),
 --- RUN, SMN, THF, WAR, WHM
 ---
+--- The town set goes ON TOP of the idle set: a partial one (MoveSpeed feet,
+--- Councilor's Garb) keeps the idle pieces in the other slots. Until
+--- 2026-09-29 it replaced the idle set, and every slot it left out kept
+--- whatever was worn on arrival.
 --- @param base_set table Base idle set
---- @return table selected_set Modified set (or town/Adoulin set)
+--- @return table selected_set Idle set with the town/Adoulin set on top
 --- @return boolean is_in_town True if town gear applied
 function BaseSetBuilder.select_idle_base_town(base_set)
     if world and world.area then
         -- Adoulin first: it has its own set (movement bonus)
         if world.area == 'Western Adoulin' or world.area == 'Eastern Adoulin' then
             if sets and sets.Adoulin then
-                return sets.Adoulin, true
+                return set_combine(base_set or {}, sets.Adoulin), true
             end
         end
 
@@ -73,7 +77,7 @@ function BaseSetBuilder.select_idle_base_town(base_set)
             -- Exclude Dynamis zones (they're technically cities but not safe)
             local not_dynamis = not world.area:contains('Dynamis')
             if not_dynamis and sets and sets.idle and sets.idle.Town then
-                return sets.idle.Town, true
+                return set_combine(base_set or {}, sets.idle.Town), true
             end
         end
     end

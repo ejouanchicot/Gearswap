@@ -348,7 +348,10 @@ sets.midcast.BardSong = {
 -- • Instrument variations
 sets.midcast.Songs = {}
 sets.midcast.Songs.Gjallarhorn = set_combine(sets.midcast.BardSong, {range = 'Gjallarhorn'})
-sets.midcast.Songs.Marsyas = set_combine(sets.midcast.BardSong, {range = 'Marsyas'})
+-- Songs.Marsyas goes WHOLE on top of Honor March (and a Songs.Loughnashade on
+-- top of Aria of Passion); the other Songs.<instrument> only give their range.
+-- Keep it to the instrument, or it covers the Honor March pieces.
+sets.midcast.Songs.Marsyas = {range = 'Marsyas'}
 sets.midcast.Songs.Daurdabla = set_combine(sets.midcast.BardSong, {range = 'Daurdabla'})
 
 -- • SPECIAL SONGS (Instrument Required)
