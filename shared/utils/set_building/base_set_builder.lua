@@ -58,28 +58,42 @@ end
 --- RUN, SMN, THF, WAR, WHM
 ---
 --- The town set goes ON TOP of the idle set: a partial one (MoveSpeed feet,
---- Councilor's Garb) keeps the idle pieces in the other slots. Until
---- 2026-09-29 it replaced the idle set, and every slot it left out kept
---- whatever was worn on arrival.
+--- Councilor's Garb) keeps the idle pieces in the other slots. In a city
+--- Mote itself already picks sets.idle.Town (or its IdleMode child) as the idle
+--- base; when base_set is that town node, the idle underneath is rebuilt as
+--- Mote would pick it in the field (sets.idle, then its IdleMode child) and
+--- the town node goes on top. A base the job chose itself (a luopan or mode
+--- set) is kept. Until 2026-09-29 the town set replaced the idle set, and every
+--- slot it left out kept whatever was worn on arrival.
 --- @param base_set table Base idle set
 --- @return table selected_set Idle set with the town/Adoulin set on top
 --- @return boolean is_in_town True if town gear applied
 function BaseSetBuilder.select_idle_base_town(base_set)
-    if world and world.area then
-        -- Adoulin first: it has its own set (movement bonus)
-        if world.area == 'Western Adoulin' or world.area == 'Eastern Adoulin' then
-            if sets and sets.Adoulin then
-                return set_combine(base_set or {}, sets.Adoulin), true
-            end
-        end
+    if not (world and world.area) then
+        return base_set, false
+    end
 
-        if areas and areas.Cities and areas.Cities:contains(world.area) then
-            -- Exclude Dynamis zones (they're technically cities but not safe)
-            local not_dynamis = not world.area:contains('Dynamis')
-            if not_dynamis and sets and sets.idle and sets.idle.Town then
-                return set_combine(base_set or {}, sets.idle.Town), true
-            end
-        end
+    local in_adoulin = world.area == 'Western Adoulin' or world.area == 'Eastern Adoulin'
+    local in_city = areas and areas.Cities and areas.Cities:contains(world.area)
+        and not world.area:contains('Dynamis')   -- cities, but not safe
+
+    local town = sets and sets.idle and sets.idle.Town
+    local mode = state and state.IdleMode and state.IdleMode.current
+    local is_mote_town = town ~= nil and base_set ~= nil
+        and (base_set == town or (mode ~= nil and base_set == town[mode]))
+
+    local idle = base_set or {}
+    if is_mote_town then
+        idle = sets.idle
+        if mode and type(idle[mode]) == 'table' then idle = idle[mode] end
+    end
+
+    -- Adoulin first: it has its own set (movement bonus)
+    if in_adoulin and sets and sets.Adoulin then
+        return set_combine(idle, sets.Adoulin), true
+    end
+    if in_city and town then
+        return set_combine(idle, is_mote_town and base_set or town), true
     end
     return base_set, false
 end
