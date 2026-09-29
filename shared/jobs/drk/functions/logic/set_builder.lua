@@ -31,8 +31,6 @@ local DRKSetBuilder = {}
 -- Load DRK buff anticipation logic
 local DRKBuffAnticipation = require('shared/jobs/drk/functions/logic/drk_buff_anticipation')
 
--- Load message formatter for error display
-local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 -- Town set and movement speed, shared with the other jobs
 local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
@@ -84,24 +82,7 @@ end
 ---   @param weapon_name string Weapon to apply
 ---   @return table Set with weapon applied (or unchanged if no weapon set)
 function DRKSetBuilder.apply_weapon(result, weapon_name)
-    if not weapon_name then
-        return result
-    end
-
-    -- sets[weapon_name] (sets.Liberator, sets.Caladbolg...), through the shared
-    -- resolver: with equip_without_set on (config/WEAPON_CONFIG.lua) a weapon
-    -- with no set of its own is equipped by name, as on the other jobs.
-    local weapon_set = require('shared/utils/equipment/weapon_resolver').set_for('main', weapon_name)
-    if weapon_set then
-        local success, combined = pcall(set_combine, result, weapon_set)
-        if success then
-            return combined
-        else
-            MessageFormatter.show_error(string.format("Failed to apply weapon set: %s", combined))
-        end
-    end
-
-    return result
+    return BaseSetBuilder.lay_weapon(result, 'main', weapon_name)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

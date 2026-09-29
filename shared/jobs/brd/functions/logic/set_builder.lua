@@ -15,10 +15,8 @@ local SetBuilder = {}
 
 -- Load base set builder (universal functions)
 local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
-local WeaponResolver = require('shared/utils/equipment/weapon_resolver')
 
 -- Load dependencies
-local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MODE SELECTION (IDLE) - WITH TOWN PRIORITY
@@ -92,60 +90,10 @@ end
 ---   WEAPON APPLICATION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Apply main weapon to set
----   Uses weapon sets defined in brd_sets.lua (sets.Naegling, etc.)
----   @param result table Current equipment set
----   @return table Set with main weapon applied
-function SetBuilder.apply_main_weapon(result)
-    if not state.MainWeapon or not state.MainWeapon.current then
-        return result
-    end
-
-    -- Try to use weapon set from brd_sets.lua (sets.Naegling, sets.Twashtar, etc.)
-    local weapon_set = WeaponResolver.set_for('main', state.MainWeapon.current)
-    if weapon_set then
-        local success, combined = pcall(set_combine, result, weapon_set)
-        if success then
-            return combined
-        else
-            MessageFormatter.show_error(string.format('Failed to apply main weapon: %s', combined))
-        end
-    end
-
-    return result
-end
-
----   Apply sub weapon to set
----   Uses weapon sets defined in brd_sets.lua (sets.Demersal, sets.Genmei, etc.)
----   @param result table Current equipment set
----   @return table Set with sub weapon applied
-function SetBuilder.apply_sub_weapon(result)
-    if not state.SubWeapon or not state.SubWeapon.current then
-        return result
-    end
-
-    -- Try to use weapon set from brd_sets.lua (sets.Demersal, sets.Genmei, sets.Centovente)
-    local weapon_set = WeaponResolver.set_for('sub', state.SubWeapon.current)
-    if weapon_set then
-        local success, combined = pcall(set_combine, result, weapon_set)
-        if success then
-            return combined
-        else
-            MessageFormatter.show_error(string.format('Failed to apply sub weapon: %s', combined))
-        end
-    end
-
-    return result
-end
-
----   Apply both main and sub weapons
+---   Apply the MainWeapon then SubWeapon sets (BaseSetBuilder.lay_weapons)
 ---   @param result table Current equipment set
 ---   @return table Set with weapons applied
-function SetBuilder.apply_weapons(result)
-    result = SetBuilder.apply_main_weapon(result)
-    result = SetBuilder.apply_sub_weapon(result)
-    return result
-end
+SetBuilder.apply_weapons = BaseSetBuilder.lay_weapons
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   MOVEMENT SPEED (INHERITED FROM BASE)

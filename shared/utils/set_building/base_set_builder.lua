@@ -26,6 +26,7 @@
 local BaseSetBuilder = {}
 
 local MessageFormatter = require('shared/utils/messages/message_formatter')
+local WeaponResolver = require('shared/utils/equipment/weapon_resolver')
 
 ---============================================================================
 --- MOVEMENT GEAR (UNIVERSAL - IDLE ONLY)
@@ -46,6 +47,40 @@ function BaseSetBuilder.apply_movement(result)
         end
     end
     return result
+end
+
+---============================================================================
+--- WEAPONS (UNIVERSAL)
+---============================================================================
+
+--- Lay the set of a weapon state value on top: WeaponResolver.set_for(slot,
+--- value), i.e. sets[value], or the item by name when WEAPON_CONFIG's
+--- equip_without_set is on. Unchanged when the value has no set.
+--- @param result table Current equipment set
+--- @param slot string 'main' or 'sub'
+--- @param value string|nil State value (e.g. state.MainWeapon.current)
+--- @return table
+function BaseSetBuilder.lay_weapon(result, slot, value)
+    local weapon_set = value and WeaponResolver.set_for(slot, value)
+    if not weapon_set then
+        return result
+    end
+    local ok, combined = pcall(set_combine, result, weapon_set)
+    if ok then
+        return combined
+    end
+    MessageFormatter.show_error(string.format('Failed to apply %s weapon %s: %s',
+        slot, tostring(value), tostring(combined)))
+    return result
+end
+
+--- Lay the MainWeapon state's set, then the SubWeapon state's.
+--- Used by: BLM, BLU, BRD, GEO, RDM, THF
+--- @param result table Current equipment set
+--- @return table
+function BaseSetBuilder.lay_weapons(result)
+    result = BaseSetBuilder.lay_weapon(result, 'main', state.MainWeapon and state.MainWeapon.current)
+    return BaseSetBuilder.lay_weapon(result, 'sub', state.SubWeapon and state.SubWeapon.current)
 end
 
 ---============================================================================

@@ -26,7 +26,6 @@ local SetBuilder = {}
 
 -- Load base set builder (universal functions)
 local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
-local WeaponResolver = require('shared/utils/equipment/weapon_resolver')
 
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -38,17 +37,7 @@ local WeaponResolver = require('shared/utils/equipment/weapon_resolver')
 ---   @param result table Current equipment set
 ---   @return table Set with main weapon applied
 function SetBuilder.apply_weapon(result)
-    if not state.MainWeapon or not state.MainWeapon.current then
-        return result
-    end
-
-    -- Use sets.* directly (defined in run_sets.lua)
-    local weapon_set = WeaponResolver.set_for('main', state.MainWeapon.current)
-    if weapon_set then
-        result = set_combine(result, weapon_set)
-    end
-
-    return result
+    return BaseSetBuilder.lay_weapon(result, 'main', state.MainWeapon and state.MainWeapon.current)
 end
 
 ---   Apply sub weapon (grip) to set
@@ -58,15 +47,7 @@ end
 ---   @param result table Current equipment set
 ---   @return table Set with grip applied
 function SetBuilder.apply_grip(result)
-    -- Use SubWeapon state (sets.Utu, sets.Refined)
-    if state.SubWeapon and state.SubWeapon.current then
-        local grip_set = WeaponResolver.set_for('sub', state.SubWeapon.current)
-        if grip_set then
-            result = set_combine(result, grip_set)
-        end
-    end
-
-    return result
+    return BaseSetBuilder.lay_weapon(result, 'sub', state.SubWeapon and state.SubWeapon.current)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

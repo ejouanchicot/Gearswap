@@ -17,7 +17,6 @@
 ---   @version 1.0
 ---   @date    Created: 2025-10-06
 ---  ═══════════════════════════════════════════════════════════════════════════
-local WeaponResolver = require('shared/utils/equipment/weapon_resolver')
 local SetBuilder = {}
 
 ---  ═══════════════════════════════════════════════════════════════════════════
@@ -27,8 +26,6 @@ local SetBuilder = {}
 -- Load base set builder (universal functions)
 local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 
--- Load message formatter for error display
-local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   ENGAGED BASE SELECTION (KRAKEN CLUB, STANCE, AFTERMATH LV.3, WEAPON)
@@ -143,22 +140,7 @@ end
 ---   @param result table Current equipment set
 ---   @return table Set with main weapon applied (or unchanged if no weapon set)
 function SetBuilder.apply_weapon(result)
-    if not state.MainWeapon or not state.MainWeapon.current then
-        return result
-    end
-
-    -- Try to use weapon set from war_sets.lua (sets.Ukonvasara, sets.Naegling, etc.)
-    local weapon_set = WeaponResolver.set_for('main', state.MainWeapon.current)
-    if weapon_set then
-        local success, combined = pcall(set_combine, result, weapon_set)
-        if success then
-            return combined
-        else
-            MessageFormatter.show_error(string.format("Failed to apply weapon set: %s", combined))
-        end
-    end
-
-    return result
+    return BaseSetBuilder.lay_weapon(result, 'main', state.MainWeapon and state.MainWeapon.current)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

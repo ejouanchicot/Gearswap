@@ -23,7 +23,6 @@ local SetBuilder = {}
 
 -- Load base set builder (universal functions)
 local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
-local WeaponResolver = require('shared/utils/equipment/weapon_resolver')
 
 -- Load message formatter for error reporting
 local MessageFormatter = require('shared/utils/messages/message_formatter')
@@ -93,18 +92,7 @@ SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base
 ---   @return table Modified set with weapon applied
 function SetBuilder.apply_weapon(result)
     -- Step 1: Apply main weapon set (main + sub + ammo)
-    if state.MainWeapon and state.MainWeapon.current then
-        local weapon_set = WeaponResolver.set_for('main', state.MainWeapon.current)
-        if weapon_set then
-            local success, combined = pcall(set_combine, result, weapon_set)
-            if success then
-                result = combined
-            else
-                MessageFormatter.show_error(string.format("Failed to apply weapon set: %s", combined))
-                return result
-            end
-        end
-    end
+    result = BaseSetBuilder.lay_weapon(result, 'main', state.MainWeapon and state.MainWeapon.current)
 
     -- Step 2: Apply SubWeaponOverride if enabled (overrides sub from weapon set)
     if state.SubWeaponOverride and state.SubWeaponOverride.current ~= 'Off' then
@@ -112,8 +100,10 @@ function SetBuilder.apply_weapon(result)
         local override_set = sets[override_name]
 
         if override_set and override_set.sub then
-            -- Only override the sub weapon slot
-            result.sub = override_set.sub
+            -- Only override the sub weapon slot. A copy, not result.sub = ...:
+            -- without a weapon set, result is still Mote's own set table, and
+            -- the override would stay written into it once turned Off.
+            result = set_combine(result, {sub = override_set.sub})
         else
             MessageFormatter.show_warning(string.format("SubWeaponOverride '%s' has no sub weapon defined", override_name))
         end

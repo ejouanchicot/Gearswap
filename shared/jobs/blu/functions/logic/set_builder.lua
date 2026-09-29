@@ -26,7 +26,6 @@ local SetBuilder = {}
 
 local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 local WeaponResolver = require('shared/utils/equipment/weapon_resolver')
-local MessageFormatter = require('shared/utils/messages/message_formatter')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   WEAPONS
@@ -37,21 +36,12 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 --- @param slot string 'main' or 'sub'
 --- @param weapon_state table|nil Mote state
 --- @return table
-local function lay_weapon(result, slot, weapon_state)
-    local weapon_set = weapon_state and WeaponResolver.set_for(slot, weapon_state.current)
-    if not weapon_set then return result end
-    local ok, combined = pcall(set_combine, result, weapon_set)
-    if ok then return combined end
-    MessageFormatter.show_error(('BLU: failed to apply %s weapon: %s'):format(slot, tostring(combined)))
-    return result
-end
 
 --- Apply MainWeapon then SubWeapon.
 --- @param result table
 --- @return table
 function SetBuilder.apply_weapon(result)
-    result = lay_weapon(result, 'main', state.MainWeapon)
-    return lay_weapon(result, 'sub', state.SubWeapon)
+    return BaseSetBuilder.lay_weapons(result)
 end
 
 --- Mote's defense (sets.defense) and Kiting (sets.Kiting) layers.

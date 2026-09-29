@@ -17,7 +17,6 @@
 ---   @version 1.0
 ---   @date    Created: 2025-10-21
 ---  ═══════════════════════════════════════════════════════════════════════════
-local WeaponResolver = require('shared/utils/equipment/weapon_resolver')
 local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
 local SetBuilder = {}
 
@@ -29,12 +28,7 @@ local SetBuilder = {}
 ---   @param result table
 ---   @return table
 function SetBuilder.apply_main_weapon(result)
-    local weapon_set = state and state.MainWeapon
-        and WeaponResolver.set_for('main', state.MainWeapon.value)
-    if weapon_set then
-        return set_combine(result, weapon_set)
-    end
-    return result
+    return BaseSetBuilder.lay_weapon(result, 'main', state and state.MainWeapon and state.MainWeapon.value)
 end
 
 ---   Build idle set with HP-based variations and HybridMode
@@ -124,9 +118,7 @@ function SetBuilder.build_engaged_set(base_set)
     end
 
     -- Priority 2: Apply current main weapon (includes sub weapon in set)
-    if state and state.MainWeapon and WeaponResolver.set_for('main', state.MainWeapon.value) then
-        result = set_combine(result, WeaponResolver.set_for('main', state.MainWeapon.value))
-    end
+    result = SetBuilder.apply_main_weapon(result)
 
     -- Priority 3: Bow equipped handling (Yoichinoyumi)
     if player and player.equipment and player.equipment.range == 'Yoichinoyumi' then

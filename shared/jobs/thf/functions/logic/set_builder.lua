@@ -28,7 +28,6 @@
 ---   @date    Created: 2025-10-06
 ---  ═══════════════════════════════════════════════════════════════════════════
 
-local WeaponResolver = require('shared/utils/equipment/weapon_resolver')
 local SetBuilder = {}
 
 -- Load base set builder (universal functions)
@@ -90,31 +89,7 @@ function SetBuilder.apply_weapon(result)
         end
     else
         -- Normal weapon logic (MainWeapon + SubWeapon)
-        -- Apply main weapon
-        if state.MainWeapon and state.MainWeapon.current then
-            local main_set = WeaponResolver.set_for('main', state.MainWeapon.current)
-            if main_set then
-                local success, combined = pcall(set_combine, result, main_set)
-                if success then
-                    result = combined
-                else
-                    MessageFormatter.show_error(string.format("Failed to apply main weapon: %s", combined))
-                end
-            end
-        end
-
-        -- Apply sub weapon
-        if state.SubWeapon and state.SubWeapon.current then
-            local sub_set = WeaponResolver.set_for('sub', state.SubWeapon.current)
-            if sub_set then
-                local success, combined = pcall(set_combine, result, sub_set)
-                if success then
-                    result = combined
-                else
-                    MessageFormatter.show_error(string.format("Failed to apply sub weapon: %s", combined))
-                end
-            end
-        end
+        result = BaseSetBuilder.lay_weapons(result)
     end
 
     return result
