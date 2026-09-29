@@ -11,16 +11,18 @@ every set in it except `sets.precast.FC` is an empty skeleton.
 
 To see which set a spell or pact picked: `//gs c debugmidcast`, then cast.
 
-## Empty slots: delete them, do not leave `""`
+## Empty sets: leave slots out, never `""`
 
-The provided file writes every slot of every set as `""`. Such a slot is not
-"leave as is": it wipes the piece another set was about to put in that slot
-during the same action, so the gear you already wear stays. Today this is why
-only the Fast Cast set ever goes on (and then stays on). When you fill a set,
-**delete the slots you do not use** rather than leaving them `""`. This
-matters most for `sets.MoveSpeed`: a skeleton `sets.MoveSpeed` wipes your whole
-idle set while you run. Keep only the feet (or whichever slots really give
-movement speed).
+In the provided file every set except the Fast Cast set starts empty
+(`empty_set()` returns `{}`; the 16 slot names are listed above it). Until you fill
+them, only the Fast Cast set ever goes on, and it stays on after a cast.
+
+When you fill a set, **leave out the slots you do not use**; never write
+`slot = ""`. Such a slot is not "leave as is": it replaces the piece another set
+was about to put in that slot during the same action, then GearSwap ignores it,
+so the gear you already wear stays. It matters most for `sets.MoveSpeed`, laid on
+your idle set while you run: keep only the slots that give movement speed.
+(Until 2026-09-29 the provided skeleton was all `""`.)
 
 ## Idle
 

@@ -21,17 +21,17 @@
 ---@diagnostic disable: lowercase-global
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- EMPTY SLOT TEMPLATE
--- Every set below uses this skeleton. Fill in slots as you gear up.
+-- EMPTY SETS
+-- Every set below starts empty. Fill in the slots as you gear up:
+--   main, sub, range, ammo, head, neck, left_ear, right_ear,
+--   body, hands, left_ring, right_ring, back, waist, legs, feet
+-- Leave a slot out rather than writing slot = "": when sets are combined
+-- (idle + sets.MoveSpeed while running...), the "" replaces the piece of
+-- the set below, then GearSwap ignores it, so that piece never goes on.
 -- ═══════════════════════════════════════════════════════════════════════════
 
 local function empty_set()
-    return {
-        main = "", sub = "", range = "", ammo = "",
-        head = "", neck = "", left_ear = "", right_ear = "",
-        body = "", hands = "", left_ring = "", right_ring = "",
-        back = "", waist = "", legs = "", feet = ""
-    }
+    return {}
 end
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -40,7 +40,6 @@ end
 
 sets.weapons = {
     main = "Grioavolr",
-    sub  = ""
 }
 
 -- ═══════════════════════════════════════════════════════════════════════════

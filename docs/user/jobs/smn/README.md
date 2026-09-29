@@ -160,10 +160,10 @@ No TP bonus config on SMN.
 
 ## Known issues
 
-- **Empty `""` slots.** Every set of the provided file except the Fast Cast set
-  writes all slots as `""`, which wipes the pieces queued before it in the
-  same action: today only the Fast Cast set ever goes on. When you fill a set,
-  delete the slots you do not use (see [sets.md](sets.md)).
+- **Empty sets.** Every set of the provided file except the Fast Cast set is
+  empty: until you fill them, only the Fast Cast set ever goes on (and stays on
+  after a cast). Leave out the slots you do not use, never `slot = ""` (see
+  [sets.md](sets.md)).
 - **`smn bp`** needs the pact's exact capitals (`Healing Ruby`), see above.
 - **Carbuncle** can be summoned twice after a subjob change (one summon
   scheduled by the old job file, one by the new).

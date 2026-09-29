@@ -273,7 +273,8 @@ refreshes the HUD. It sends no `gs c update`: Mote's state commands and
 ## Set names the code looks up
 
 In the author's `sets/smn/smn_sets.lua`, every set except `sets.precast.FC`
-is `empty_set()`: all 16 slots set to `""`.
+is `empty_set()`, which returns `{}` (it returned all 16 slots set to `""`
+until 2026-09-29).
 
 | Set | Looked up by | In the file |
 |-----|--------------|-------------|
@@ -294,13 +295,14 @@ is `empty_set()`: all 16 slots set to `""`.
 | `sets.pet_midcast.BPRage.Physical/Magical/Hybrid/AstralFlow` | classifier | yes (skeleton) |
 | `sets.pet_midcast.BPWard.Buff/Debuff/Heal` | classifier | yes (skeleton) |
 | `sets.midcast.Pet` | Mote `default_pet_midcast`, only for a pact the classifier does not know (`job_pet_midcast` marks the others handled) | no |
-| `sets.weapons`, `sets.pet.Engaged` | nothing | yes (unused) |
+| `sets.weapons` (main only), `sets.pet.Engaged` | nothing | yes (unused) |
 | `sets.buff.Doom` | `DoomManager` | **no** |
 
-GearSwap skips `""` items but `equip()` merges slot by slot, so an all-`""`
-set equipped after another set in the same event cancels every slot queued
-before it. With the current skeleton, only the precast Fast Cast set is ever
-worn, and it stays on after the first cast.
+GearSwap skips `""` items but `equip()` / `set_combine` merge slot by slot
+(`set_merge`), so a `""` slot cancels the piece queued before it in the same
+event (the old all-`""` `sets.MoveSpeed` cancelled the whole idle set while
+running). With the empty sets, only the precast Fast Cast set is ever worn, and
+it stays on after the first cast.
 
 ## Configuration
 
@@ -359,8 +361,8 @@ worn, and it stays on after the first cast.
   `docs/SMN_BLOOD_PACTS_REFERENCE.md`.
 - `customize_idle_set` owns the whole idle choice; town and movement gear come
   from `BaseSetBuilder` there, after the Avatar's Favor / `IdleMode` choice.
-- `empty_set()` skeleton slots are not neutral; delete unused slots rather
-  than leave `""`.
+- A `""` slot is not neutral (it cancels the piece below it in a merge):
+  `empty_set()` returns `{}`; never reintroduce `""` slots.
 - The Carbuncle summon fires after every load in which no pet is out, not
   only the first one.
 
