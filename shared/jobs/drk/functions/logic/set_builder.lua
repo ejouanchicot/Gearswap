@@ -126,8 +126,9 @@ end
 ---   IDLE SET BUILDER (PUBLIC API)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Build complete idle set: town set on top of the idle in a city, then
----   the weapon, then movement speed outside town (as on the other jobs)
+---   Build complete idle set: town set on top of the idle in a city, else
+---   sets.idle[HybridMode] (PDT) when it exists; then the weapon, then
+---   movement speed outside town (as on the other jobs)
 ---   @param base_set table Base idle set from Mote-Include
 ---   @return table Complete idle set with weapon and movement applied
 function DRKSetBuilder.build_idle_set(base_set)
@@ -135,7 +136,7 @@ function DRKSetBuilder.build_idle_set(base_set)
         return {}
     end
 
-    local result, in_town = BaseSetBuilder.select_idle_base_town(base_set)
+    local result, in_town = BaseSetBuilder.select_idle_base(base_set)
 
     -- Apply current weapon
     local weapon_name = state.MainWeapon and state.MainWeapon.current

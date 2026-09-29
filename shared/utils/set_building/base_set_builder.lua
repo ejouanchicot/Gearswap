@@ -7,6 +7,7 @@
 --- Features:
 ---   • Movement gear application (idle only, never in combat)
 ---   • Town/Adoulin detection (idle only)
+---   • Idle base by HybridMode outside town (select_idle_base)
 ---   • Error handling with MessageFormatter
 ---   • Safe pcall for set_combine operations
 ---
@@ -94,6 +95,27 @@ function BaseSetBuilder.select_idle_base_town(base_set)
     end
     if in_city and town then
         return set_combine(idle, is_mote_town and base_set or town), true
+    end
+    return base_set, false
+end
+
+--- Idle base: the town set in a city (select_idle_base_town), else the
+--- HybridMode idle set, else Mote's base. HybridMode is what the player
+--- toggles for PDT on the melee jobs, and Mote's idle only follows IdleMode:
+--- without this, sets.idle.PDT is never worn outside town.
+--- Used by: DNC, DRK, THF, WAR
+--- @param base_set table Base idle set from Mote-Include
+--- @return table selected_set
+--- @return boolean is_in_town
+function BaseSetBuilder.select_idle_base(base_set)
+    local town_set, in_town = BaseSetBuilder.select_idle_base_town(base_set)
+    if in_town then
+        return town_set, true
+    end
+    local mode = state and state.HybridMode and state.HybridMode.current
+    local hybrid_set = mode and sets and sets.idle and sets.idle[mode]
+    if type(hybrid_set) == 'table' then
+        return hybrid_set, false
     end
     return base_set, false
 end

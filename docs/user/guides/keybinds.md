@@ -39,7 +39,7 @@ a job the key changes a mode nothing reads.
 | Key | Sends | Effect |
 |---|---|---|
 | F9 | `cycle OffenseMode` | Next Offense Mode |
-| Ctrl+F9 | `cycle HybridMode` | Next Hybrid Mode |
+| Ctrl+F9 | `cycle HybridMode` | Next Hybrid Mode (engaged set; on DNC, DRK, THF and WAR also the idle set outside town) |
 | Alt+F9 | `cycle RangedMode` | Next Ranged Mode |
 | Win+F9 | `cycle WeaponskillMode` | Next Weaponskill Mode |
 | F10 | `set DefenseMode Physical` | Physical defense: `sets.defense.PDT` on top ([set names](sets.md#mote-includes-layers-defense-kiting-weakness)) |

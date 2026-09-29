@@ -17,7 +17,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 |---|---|---|---|
 | `^numpad1` | Main Weapon (`MainWeapon`) | **Vajra**, TwashtarM, Mpu Gandring, Tauret, Naegling, Malevolence, Dagger | Main hand (`sets.<Weapon>` from your set file). |
 | `^numpad2` | Sub Weapon (`SubWeapon`) | **Centovente**, Tanmogayi, Kraken | Off hand. The author's personal template adds Telop Knife. |
-| `^numpad9` | Hybrid Mode (`HybridMode`) | **PDT**, Normal | Engaged set: `sets.engaged.PDT` or `sets.engaged.Normal`. |
+| `^numpad9` | Hybrid Mode (`HybridMode`) | **PDT**, Normal | Engaged set: `sets.engaged.PDT` or `sets.engaged.Normal`. Idle outside town: `sets.idle.PDT` (or `sets.idle.Normal`) when it exists, else `sets.idle`. |
 | `^numpad3` | TH Mode (`TreasureMode`) | **Tag**, SATA, Full | See Treasure Hunter below. |
 | `^numpad4` | Aby Proc (`AbyProc`) | **Off**, On | /WAR only. On: the Aby Weapon set replaces your main and sub weapons (Abyssea weapon-type procs). |
 | `^numpad5` | Aby Weapon (`AbyWeapon`) | Dagger2, **Sword**, Club, Great Sword, Polearm, Staff, Scythe | /WAR only. The weapon pair used when Aby Proc is On (`sets.<Name>`). |

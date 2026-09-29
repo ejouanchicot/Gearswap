@@ -56,7 +56,7 @@ numbers are avoided because they drift.
 | `shared/jobs/war/functions/WAR_MOVEMENT.lua` | 166 | Retaliation auto-cancel (AutoMove callback), Retaliation debug helpers |
 | `shared/jobs/war/functions/WAR_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('WAR', ..., 4, 'SAM')` wrappers |
 | `shared/jobs/war/functions/WAR_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('WAR', ..., 'SAM', 22, 1)` wrapper |
-| `shared/jobs/war/functions/logic/set_builder.lua` | 284 | Engaged base selection (KC, stance, AM3, weapon set, HybridMode), weapon layer, stance ammo (`STANCE_AMMO`, `apply_stance_ammo`), town / movement idle |
+| `shared/jobs/war/functions/logic/set_builder.lua` | 267 | Engaged base selection (KC, stance, AM3, weapon set, HybridMode), weapon layer, stance ammo (`STANCE_AMMO`, `apply_stance_ammo`), town / movement idle |
 | `shared/jobs/war/functions/logic/smartbuff_manager.lua` | 287 | `buff_war`, `buff_sam_sub`, `build_tp` |
 | `shared/utils/weaponskill/ws_slots.lua` | 159 | `WSSlots.rebuild` / `detect_weapon` / `sync` / `get` / `cast` (shared with PLD) |
 | `shared/utils/drg/auto_jump.lua` | 228 | Auto-Jump before a WS on /DRG (shared with DNC) |
@@ -316,8 +316,9 @@ has no effect on WAR.
 
 - `job_aftercast` is empty; Mote's `default_aftercast` returns to idle / engaged
   gear. Its comment says that WAR does not notify `MidcastWatchdog`.
-- `customize_idle_set` -> `SetBuilder.build_idle_set`: `select_idle_base` returns
-  in a city `sets.idle` (or its IdleMode child) with `sets.Adoulin` (Adoulin) or
+- `customize_idle_set` -> `SetBuilder.build_idle_set`: `select_idle_base` (an alias
+  of the shared `BaseSetBuilder.select_idle_base` since 2026-09-29, same behaviour;
+  DNC, DRK and THF use it too) returns in a city `sets.idle` (or its IdleMode child) with `sets.Adoulin` (Adoulin) or
   `sets.idle.Town` on top (`base_set_builder.lua` `select_idle_base_town`, since
   2026-09-29), otherwise `sets.idle[HybridMode]`
   if it exists (overlay: `sets.idle.Hoxne` under the Hoxne stance), otherwise Mote's

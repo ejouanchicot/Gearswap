@@ -10,14 +10,16 @@ understands (Fast Cast, subjob actions, Doom, Treasure Hunter...):
 
 | Set | Worn when |
 |---|---|
-| `sets.idle` | Standing, not fighting (the provided file also names it `sets.idle.Normal`) |
+| `sets.idle` | Standing, not fighting, when the Hybrid Mode has no idle set of its own (Accu in the provided file). The provided file also names it `sets.idle.Normal` |
+| `sets.idle.PDT` | Hybrid Mode PDT (the default), outside town. Replaces `sets.idle` whole (in the provided file, the Heathen set) |
+| `sets.idle.<Hybrid Mode>` | Any Hybrid Mode value with a set of that name (`sets.idle.Accu`: not in the provided file), outside town |
 | `sets.idle.Town` | In a town, Adoulin included (unless `sets.Adoulin` exists). It goes on top of the idle set: in the provided file it is the movement set (legs only), so the other slots keep your idle pieces |
 | `sets.Adoulin` | In Western / Eastern Adoulin, on top of the idle set in place of `sets.idle.Town` (not in the provided file) |
-| `sets.idle.Weak` | Weakened after a raise (not in the provided file) |
+| `sets.idle.Weak` | Weakened after a raise, outside town, only when the Hybrid Mode has no idle set (not in the provided file) |
 | `sets.<Main Weapon>` | On top, always |
 | `sets.MoveSpeed` | On top while running, outside a town |
 
-In a town you get the town set and your weapon, nothing else. The Hybrid Mode does not touch idle gear.
+In a town you get the town set and your weapon, nothing else; the Hybrid Mode only changes idle gear outside town.
 
 ## Engaged
 
@@ -121,7 +123,6 @@ DRK uses no ability by itself.
 
 ## Sets in the provided file that nothing reads
 
-- `sets.idle.PDT`: the Hybrid Mode does not change idle gear.
 - `sets.Apocalypse`, `sets.Foenaria`, `sets.Tokko`, `sets.Naegling`: no active
   Main Weapon value has these names (uncomment the line in `DRK_STATES.lua`;
   Tokko has no line, add `'Tokko'`).
@@ -131,6 +132,6 @@ DRK uses no ability by itself.
 - `sets.engaged.<Weapon>.<PDT or Accu>.DarkSeal` / `.NetherVoid` /
   `.DarkSealNetherVoid`.
 - `sets.midcast['Elemental Magic']`, `sets.midcast.Stun`.
-- `sets.idle.Weak`.
+- `sets.idle.Weak`, `sets.idle.Accu`.
 - `.Acc` versions of the named weaponskills.
 - `sets.TreasureHunter` ([set names](../../guides/sets.md)).

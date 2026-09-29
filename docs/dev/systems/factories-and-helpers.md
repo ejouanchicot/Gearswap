@@ -785,7 +785,7 @@ Open:
 Fixed:
 
 - SAM's idle builder ends with `BaseSetBuilder.apply_movement`, so `sets.MoveSpeed` goes on while moving, as on the other jobs (2026-09-28).
-- DRK and SAM idle builders start with `BaseSetBuilder.select_idle_base_town`: in a town the town set goes on top of the idle set and the movement layer is skipped, as on the other jobs (2026-09-29).
+- DRK and SAM idle builders start with `BaseSetBuilder.select_idle_base_town` (DRK through `BaseSetBuilder.select_idle_base` since the same day, which also wears `sets.idle[HybridMode]` outside town): in a town the town set goes on top of the idle set and the movement layer is skipped, as on the other jobs (2026-09-29).
 - The TH engaged overlay and the custom idle / engaged gear went on during a COR roll, over the roll's gear; they now ask `GearHold.active()`, like DualWield (2026-09-28).
 - The waltz tier was never sized for a targeted party member, because `isallymember` is not a Windower mob field. The test is now `in_party or in_alliance`.
 - Macrobook: the load message could announce the solo book while the dual-box book was selected. `resolve_config` is now shared by selection and `get_macro_info`.

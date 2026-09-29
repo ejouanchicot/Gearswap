@@ -49,7 +49,7 @@ function; line numbers are deliberately not used.
 | `shared/jobs/drk/functions/DRK_MOVEMENT.lua` | 24 | Placeholder for the 12-module layout (comments only) |
 | `shared/jobs/drk/functions/DRK_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('DRK', ...)` wrappers |
 | `shared/jobs/drk/functions/DRK_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('DRK', ...)` wrapper |
-| `shared/jobs/drk/functions/logic/set_builder.lua` | 184 | `select_engaged_base` (AM3, PDT, Accu), `apply_weapon` (`WeaponResolver.set_for('main', weapon)`), `apply_buff_variants`, `build_idle_set` (town, weapon, movement) |
+| `shared/jobs/drk/functions/logic/set_builder.lua` | 185 | `select_engaged_base` (AM3, PDT, Accu), `apply_weapon` (`WeaponResolver.set_for('main', weapon)`), `apply_buff_variants`, `build_idle_set` (town / HybridMode idle base, weapon, movement) |
 | `shared/jobs/drk/functions/logic/drk_buff_anticipation.lua` | 129 | `has_dark_seal`, `has_nether_void`, `apply_buff_variants` |
 | `_master/config/drk/DRK_STATES.lua` | 100 | `DRKStates.configure()` (HybridMode, WeaponskillMode, MainWeapon, FastCast, AutoMedicine) |
 | `_master/config/drk/DRK_KEYBINDS.lua` | 42 | Data only: 3 binds handed to `KeybindManager.create('DRK', ...)` |
@@ -190,13 +190,15 @@ the template defines none, so the flags have no visible effect out of the box.
 - `customize_idle_set` -> `build_idle_set`: Mote's base (`sets.idle` through
   `IdleMode` `Normal`, whose child is `sets.idle` itself, or `sets.idle.Town`
   in cities; defense and kiting layers included) goes through
-  `BaseSetBuilder.select_idle_base_town` (town set or `sets.Adoulin` on top of
-  the idle set, see
-  [equipment-and-inventory.md](../systems/equipment-and-inventory.md#movement-and-town-idle-basesetbuilder)),
-  then `sets[MainWeapon]`. In town it returns there; outside town
+  `BaseSetBuilder.select_idle_base` (since 2026-09-29, see
+  [equipment-and-inventory.md](../systems/equipment-and-inventory.md#movement-and-town-idle-basesetbuilder)):
+  in a city, the town set or `sets.Adoulin` on top of the idle set; outside
+  town, `sets.idle[HybridMode]` when it is a table (`sets.idle.PDT` in PDT, the
+  default; the template has no `sets.idle.Accu`), else Mote's base. The
+  HybridMode set replaces Mote's base whole, weakness and defense layers
+  included. Then `sets[MainWeapon]`. In town it returns there; outside town
   `BaseSetBuilder.apply_movement` adds `sets.MoveSpeed` while
-  `state.Moving.value == 'true'`. `HybridMode` is not read, so
-  `sets.idle.PDT` is never used.
+  `state.Moving.value == 'true'`.
 - `customize_melee_set` ignores Mote's `meleeSet` and calls
   `build_engaged_set(MainWeapon, HybridMode)`: `select_engaged_base` ->
   `sets.engaged.AM3` when `buffactive[272]` and the weapon is Liberator,
@@ -228,7 +230,7 @@ from the character's `config/COMMON_KEYBINDS.lua`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
-| `HybridMode` (Mote's, options replaced) | PDT, Accu | PDT | `^numpad9` | `customize_melee_set` -> `select_engaged_base`, `apply_buff_variants` |
+| `HybridMode` (Mote's, options replaced) | PDT, Accu | PDT | `^numpad9` | `customize_melee_set` -> `select_engaged_base`, `apply_buff_variants`; `build_idle_set` -> `BaseSetBuilder.select_idle_base` |
 | `WeaponskillMode` (Mote's, options replaced) | Normal, Acc | Normal | `^numpad2` | Mote default precast (`sets.precast.WS[name].Acc`, else `sets.precast.WS.Acc`) |
 | `MainWeapon` | Caladbolg, Liberator, Redemption, Lycurgos, Loxotic (Apocalypse, Foenaria, Naegling commented out) | Caladbolg | `^numpad1` | `customize_melee_set`, `build_idle_set`, `select_engaged_base` (Liberator test), `apply_buff_variants` |
 | `FastCast` | 0..80 step 10 | 0 | none | `midcast_watchdog.lua` |
@@ -259,7 +261,7 @@ T = `_master/sets/drk_sets.lua` (no live copy in the repository).
 | `sets['Apocalypse']`, `['Foenaria']`, `['Naegling']` | `apply_weapon`, once their `MainWeapon` line is uncommented | yes |
 | `sets['Tokko']` (and Apocalypse, Foenaria, Naegling) | `apply_weapon` once the name is a `MainWeapon` value (none of them is; a comment in the sets file says so) | yes |
 | `sets.idle` (and `sets.idle.Normal = sets.idle`) | Mote base | yes |
-| `sets.idle.PDT` | nothing reaches it | yes |
+| `sets.idle.PDT`, `sets.idle.Accu` | `BaseSetBuilder.select_idle_base` (`sets.idle[HybridMode]`, outside town) | PDT only |
 | `sets.idle.Town` (= `sets.MoveSpeed`, legs only) | Mote Town scope, then `select_idle_base_town` (on top of `sets.idle`) | yes |
 | `sets.Adoulin` | `select_idle_base_town` | no |
 | `sets.MoveSpeed` | `build_idle_set` (`BaseSetBuilder.apply_movement`, outside town) | yes |
@@ -346,7 +348,8 @@ invisible to Mote.
   `sets.precast.WS` table itself.
 - `sets.idle.Town` is a one-slot table (legs); in every city it goes on top
   of `sets.idle`, so the other slots keep the idle pieces.
-- `HybridMode` affects engaged gear only.
+- `HybridMode` picks the engaged set and, outside town, the idle set when
+  `sets.idle[HybridMode]` exists.
 - Dark Seal / Nether Void midcast overlays read `buffactive`; the engaged
   variants read `buffactive` **or** the pending flags. Any new path that raises
   a flag needs a matching clear (buff loss, interrupted aftercast).
@@ -399,13 +402,14 @@ invisible to Mote.
 - Enfeebling Magic routed with the Enhancing database function
   (`DRK_MIDCAST.lua` `job_post_midcast_enfeebling_magic`).
 - Elemental Magic routing is a no-op: no `sets.midcast['Elemental Magic']`.
-- `sets.idle.PDT` unreachable (`set_builder.lua` `build_idle_set`).
 - Nether Void legs applied to Absorb-TP against the set comment.
 - Redundant JA/FC equips in `job_precast`; empty `cooldown_exclusions`.
 - Fixed 2026-09-28: `DRK_STATUS` is `LifecycleManager.status_change()` (an
   engage during an action waits for the aftercast); the Aftermath Lv.3
   refresh waits for the action too; `apply_weapon` goes through
-  `WeaponResolver`, so `equip_without_set` works on DRK.
+  `WeaponResolver`, so `equip_without_set` works on DRK. Fixed 2026-09-29:
+  `sets.idle.PDT` is worn outside town in PDT (`build_idle_set` ->
+  `BaseSetBuilder.select_idle_base`).
 - `DRK_BUFFS` repeats `WAR_BUFFS`; `DRK_COMMANDS` repeats `SAM_COMMANDS`
   (open duplication findings).
 - `sets['Tokko']` has no `MainWeapon` line; the Anguta TP bonus applies only

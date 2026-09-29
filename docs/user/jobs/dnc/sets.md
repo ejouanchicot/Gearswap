@@ -33,12 +33,14 @@ stay in your hands.
 
 | Set | Worn when |
 |---|---|
-| `sets.idle` | Standing, not fighting |
+| `sets.idle` | Standing, not fighting, when `HybridMode` has no idle set of its own (Normal in the provided file) |
+| `sets.idle.PDT` | `HybridMode` PDT (the default), outside town. Replaces `sets.idle` whole |
+| `sets.idle.<HybridMode>` | Any `HybridMode` value with a set of that name (`sets.idle.Normal`: not in the provided file), outside town |
 | `sets.idle.Town` | Idle in a town (see [set names](../../guides/sets.md)). Laid on top of `sets.idle`: slots it leaves out keep your idle pieces |
 | `sets.Adoulin` | Idle in Western / Eastern Adoulin, checked before `sets.idle.Town`, laid on top of `sets.idle` the same way |
 | `sets.MoveSpeed` | Running, idle, outside town |
 
-`HybridMode` does not change the idle set: PDT and Normal both wear `sets.idle`.
+In town, `HybridMode` does not change the idle set: `sets.idle` with the town set on top.
 
 ## Engaged
 
@@ -164,12 +166,6 @@ is worn on spells without a set of their own.
   short without Trance), then /WAR Berserk, Aggressor, Warcry; /NIN Utsusemi: Ni (or Ichi); /SAM Hasso,
   2 seconds apart. Each one wears its own set above.
 
-## Sets in the provided file that nothing reads
-
-| Set | Why |
-|---|---|
-| `sets.idle.PDT` | No idle mode picks it; `HybridMode` does not change idle |
-
 ## Names the code reads that the provided file lacks
 
 | Set | What it would do |
@@ -179,4 +175,5 @@ is worn on spells without a set of their own.
 | `sets.precast.Flourish2['Building Flourish']`, `['Wild Flourish']` | Gear for those flourishes |
 | `sets.precast.WS['Name'].SaberDance` / `.FanDance` / `.Clim`... for Pyrrhic Kleos, Evisceration, Exenterator, Aeolian Edge | Buff variants for those weaponskills |
 | `sets.midcast['Ninjutsu']`, `['Healing Magic']`, `['Enhancing Magic']` | Subjob spell gear (common names) |
+| `sets.idle.Normal` | Idle gear outside town in `HybridMode` Normal (without it, `sets.idle`) |
 | `sets.DW.NoHaste` ... `sets.DW.MaxHaste` | Dual Wield pieces by haste (commented out at the end of the file) |

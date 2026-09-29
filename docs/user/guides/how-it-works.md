@@ -94,7 +94,8 @@ Your "normal" set is rebuilt from pieces each time it goes on:
 
 1. the base: `sets.idle` or `sets.engaged`, or the variant of your current
    mode (`sets.idle.PDT`, `sets.engaged.Acc`...: the job's page lists its
-   modes);
+   modes). On DNC, DRK, THF and WAR, the idle variant outside town follows
+   the Hybrid Mode: `sets.idle.PDT` in PDT when that set exists;
 2. the town set in a town (`sets.idle.Town`, `sets.Adoulin`), on top of the
    idle set;
 3. your weapons, from the weapon modes;

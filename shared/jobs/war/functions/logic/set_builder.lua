@@ -182,24 +182,7 @@ SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 ---   @param base_set table Base idle set from war_sets.lua
 ---   @return table Selected idle set
 ---   @return boolean True if in town
-function SetBuilder.select_idle_base(base_set)
-    -- Check town first (highest priority)
-    local town_set, in_town = BaseSetBuilder.select_idle_base_town(base_set)
-    if in_town then
-        return town_set, true
-    end
-
-    -- HybridMode logic (PDT or Normal) - SAME AS ENGAGED
-    if state.HybridMode and state.HybridMode.current then
-        local hybrid_set = sets.idle[state.HybridMode.current]
-        if hybrid_set then
-            return hybrid_set, false
-        end
-    end
-
-    -- Fallback to base
-    return base_set, false
-end
+SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   ENGAGED SET BUILDER (PUBLIC API)

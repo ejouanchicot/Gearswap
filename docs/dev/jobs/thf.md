@@ -55,7 +55,7 @@ function; line numbers are deliberately not used.
 | `shared/jobs/thf/functions/THF_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('THF', ...)` wrappers |
 | `shared/jobs/thf/functions/THF_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('THF', ...)` wrapper |
 | `shared/jobs/thf/functions/logic/sa_ta_manager.lua` | 95 | `apply_variant`: WS variant (`SATA` > `SA` > `TA`) from buffs or pending flags; consumes the flags |
-| `shared/jobs/thf/functions/logic/set_builder.lua` | 250 | Engaged base (Aftermath / HybridMode), weapons or Aby weapons, SA/TA overlay, TH overlay, `sata_th_layer` (laid again after Dual Wield), town, movement |
+| `shared/jobs/thf/functions/logic/set_builder.lua` | 250 | Engaged base (Aftermath / HybridMode), weapons or Aby weapons, SA/TA overlay, TH overlay, `sata_th_layer` (laid again after Dual Wield), idle base (`BaseSetBuilder.select_idle_base`: town, HybridMode), movement |
 | `shared/jobs/thf/functions/logic/smartbuff_manager.lua` | 263 | `apply` per subjob, `apply_fbc`, `apply_steal` |
 | `shared/jobs/thf/functions/logic/range_lock.lua` | 63 | Range/ammo lock in step with `RangeLock`; `_G.thf_range_locked`; `release` at unload |
 | `shared/jobs/thf/functions/logic/treasure_hunter.lua` | 52 | THF layer over the shared module: `sata_overlay`, and `init` hands the shared wrapper the SA/TA + TH layer |
@@ -246,9 +246,14 @@ sequenceDiagram
    [Treasure Hunter](#treasure-hunter).
 5. A `TraceLog` line (`ENGAGED`): hybrid, TH mode, TH gear on/off, SA/TA.
 
-`build_idle_set`: `BaseSetBuilder.select_idle_base_town` (`sets.Adoulin` in
-Adoulin, `sets.idle.Town` in other cities, Dynamis excluded), weapons, then
-`BaseSetBuilder.apply_movement` (`sets.MoveSpeed` when
+`build_idle_set`: `SetBuilder.select_idle_base`, an alias of
+`BaseSetBuilder.select_idle_base` (since 2026-09-29): in a city, the idle set
+with `sets.Adoulin` (Adoulin) or `sets.idle.Town` (other cities, Dynamis
+excluded) on top; outside town, `sets.idle[HybridMode]` when it is a table
+(`sets.idle.PDT` in PDT, the default), else Mote's base. The HybridMode set
+replaces Mote's base whole, so `sets.idle.Weak` and Mote's defense and kiting
+layers only show in a mode with no idle set (`Normal` in the template). Then
+weapons, then `BaseSetBuilder.apply_movement` (`sets.MoveSpeed` when
 `state.Moving.value == 'true'`) outside town only.
 
 ### Ranged attacks
@@ -397,7 +402,7 @@ every subjob change, so values reset). Keybinds from `THF_KEYBINDS.lua`;
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
-| `HybridMode` (Mote, recreated) | PDT, Normal | PDT | `^numpad9` | `select_engaged_base`, Mote `get_melee_set` |
+| `HybridMode` (Mote, recreated) | PDT, Normal | PDT | `^numpad9` | `select_engaged_base`, `select_idle_base`, Mote `get_melee_set` |
 | `MainWeapon` | Vajra, TwashtarM, Mpu Gandring, Tauret, Naegling, Malevolence, Dagger | Vajra | `^numpad1` | `select_engaged_base` (Vajra test), `apply_weapon` |
 | `SubWeapon` | Centovente, Tanmogayi, Kraken (author overlay adds Telop Knife) | Centovente | `^numpad2` | `apply_weapon` |
 | `TreasureMode` | Tag, SATA, Full | Tag | `^numpad3` (native optional-state entry) | shared `TreasureHunter.mode()`, `sata_overlay`; UI readiness |
@@ -412,8 +417,8 @@ The `AbyProc` / `AbyWeapon` binds carry `subjob = "WAR"`: `get_active_binds`
 drops them on other subjobs, and `bind_all` unbinds a file key that no longer
 applies before binding the active ones. The HUD reads `get_active_binds` too.
 Mote's `OffenseMode`, `IdleMode`, `CastingMode`, `WeaponskillMode`,
-`RangedMode` keep the single value `Normal`, so `sets.idle.PDT` and
-`sets.idle.Regen` are never selected. `state.Moving` comes from AutoMove.
+`RangedMode` keep the single value `Normal`, so `sets.idle.Regen` is never
+selected; `sets.idle.PDT` comes from `HybridMode` (see above). `state.Moving` comes from AutoMove.
 
 ## Commands
 
@@ -448,7 +453,9 @@ overlay has the same names (weapon sets in its `weapons.lua`).
 | Set | Looked up by | In T |
 |-----|--------------|------|
 | `sets.idle`, `sets.idle.Town`, `sets.idle.Weak` | Mote `get_idle_set`, `BaseSetBuilder` | yes |
-| `sets.idle.PDT`, `sets.idle.Regen` | nothing reaches them (`IdleMode` is `Normal`) | yes |
+| `sets.idle.PDT` | `select_idle_base` (`sets.idle[HybridMode]`, outside town) | yes |
+| `sets.idle.Normal` | `select_idle_base` (falls back to Mote's base) | no |
+| `sets.idle.Regen` | nothing reaches it (`IdleMode` is `Normal`) | yes |
 | `sets.Adoulin`, `sets.MoveSpeed` | `BaseSetBuilder` | yes |
 | `sets.engaged`, `sets.engaged.PDT` | Mote, `select_engaged_base` | yes |
 | `sets.engaged.Normal` | `select_engaged_base` (falls back to Mote's set) | no |

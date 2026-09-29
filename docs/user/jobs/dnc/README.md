@@ -65,8 +65,8 @@ job load. They are not in the HUD. On DNC:
 |---|---|---|
 | `^f9` | cycle Hybrid Mode | Same as `^numpad9` |
 | `f9`, `!f9`, `@f9`, `^f11`, `^f12` | cycle Offense / Ranged / Weaponskill / Casting / Idle Mode | Nothing: DNC gives these modes a single value |
-| `f10`, `f11`, `^f10`, `!f12` | Defense Mode Physical / Magical / cycle / reset | Nothing with the provided template (no `sets.defense`); a `sets.defense` you add reaches idle gear outside town only, never engaged gear |
-| `!f10` | Kiting on / off | Nothing unless you add `sets.Kiting` (idle outside town only) |
+| `f10`, `f11`, `^f10`, `!f12` | Defense Mode Physical / Magical / cycle / reset | Nothing with the provided template (no `sets.defense`); a `sets.defense` you add reaches idle gear outside town only, never engaged gear, and not outside town in a Hybrid Mode that has its own `sets.idle.<mode>` (PDT in the provided file) |
+| `!f10` | Kiting on / off | Nothing unless you add `sets.Kiting` (idle outside town only, and not in a Hybrid Mode that has its own `sets.idle.<mode>`) |
 | `f12` | `update user` | Puts your gear back for your current status and prints the current modes |
 | `^-`, `^=` | Mote target helpers | Mote's own target switching |
 

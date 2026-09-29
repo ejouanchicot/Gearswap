@@ -9,8 +9,10 @@ understands (Fast Cast, subjob actions, Doom, Dual Wield, movement...):
 
 | Set | Worn when |
 |---|---|
-| `sets.idle` | Standing, not fighting |
-| `sets.idle.Weak` | Weakened (after a raise), outside town |
+| `sets.idle` | Standing, not fighting, when the Hybrid Mode has no idle set of its own |
+| `sets.idle.PDT` | Hybrid Mode PDT (the default), outside town. Replaces `sets.idle` whole |
+| `sets.idle.<Hybrid Mode>` | Any Hybrid Mode value with a set of that name (`sets.idle.Normal`: not in the provided file), outside town |
+| `sets.idle.Weak` | Weakened (after a raise), outside town, only when the Hybrid Mode has no idle set (the PDT set wins) |
 | `sets.idle.Town` | In a town (Dynamis excluded). Laid on top of `sets.idle` |
 | `sets.Adoulin` | In Western / Eastern Adoulin, checked before `sets.idle.Town`, laid on top of `sets.idle` the same way |
 | `sets.MoveSpeed` | Running, outside town only |
@@ -172,7 +174,7 @@ Subjob /DNC: `sets.precast.Waltz`, `sets.precast.Step` and
 - `sets.TwashtarS`, `sets.Jugo`, `sets.Crepu`, `sets.Blurred`, `sets.Gleti`,
   `sets.Alber`: no Sub Weapon value has these names (add the value in
   `THF_STATES.lua` to use them).
-- `sets.idle.PDT`, `sets.idle.Regen`: THF has no idle mode.
+- `sets.idle.Regen`: THF has no Idle Mode (only the Hybrid Mode picks an idle set).
 - `sets.precast.JA['Animated Flourish']`: `sets.precast.Flourish1` is found first.
 - `sets.midcast.EnhancingMagic` (the name read is `sets.midcast['Enhancing Magic']`).
 - Treasure Hunter has one set, `sets.TreasureHunter`, for every case: ranged attacks,
@@ -182,7 +184,7 @@ Subjob /DNC: `sets.precast.Waltz`, `sets.precast.Step` and
 
 ## Names the code reads that the provided file lacks
 
-- `sets.engaged.Normal` (Hybrid Mode Normal wears `sets.engaged`).
+- `sets.engaged.Normal` (Hybrid Mode Normal wears `sets.engaged`), `sets.idle.Normal` (Hybrid Mode Normal wears `sets.idle`).
 - `.SA` / `.TA` / `.SATA` for Aeolian Edge and Circle Blade.
 - `sets.midcast.Ninjutsu`, `sets.midcast['Healing Magic']`,
   `sets.midcast['Enhancing Magic']`.

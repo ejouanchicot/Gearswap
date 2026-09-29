@@ -77,9 +77,10 @@ function SetBuilder.select_engaged_base(base_set)
     return base_set
 end
 
----   Select base idle set with town/Adoulin detection (inherited from BaseSetBuilder)
+---   Select base idle set: town set in a city, else sets.idle[HybridMode],
+---   else Mote's base (inherited from BaseSetBuilder)
 ---   @return table set, boolean in_town
-SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town
+SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SET AUGMENTATION

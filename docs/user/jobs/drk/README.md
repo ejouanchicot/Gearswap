@@ -59,8 +59,8 @@ job load. They are not in the HUD. On DRK:
 | `^f9` | cycle Hybrid Mode | Same as `^numpad9` |
 | `@f9` | cycle Weaponskill Mode | Same as `^numpad2` |
 | `f9`, `!f9`, `^f11`, `^f12` | cycle Offense / Ranged / Casting / Idle Mode | Nothing: DRK gives these modes a single value |
-| `f10`, `f11`, `^f10`, `!f12` | Defense Mode Physical / Magical / cycle / reset | Nothing with the provided template (no `sets.defense`); a `sets.defense` you add reaches idle gear only, never engaged gear |
-| `!f10` | Kiting on / off | Nothing unless you add `sets.Kiting` (idle only) |
+| `f10`, `f11`, `^f10`, `!f12` | Defense Mode Physical / Magical / cycle / reset | Nothing with the provided template (no `sets.defense`); a `sets.defense` you add reaches idle gear only, never engaged gear, and not outside town in a Hybrid Mode that has its own `sets.idle.<mode>` (PDT in the provided file) |
+| `!f10` | Kiting on / off | Nothing unless you add `sets.Kiting` (idle only, and not outside town in a Hybrid Mode that has its own `sets.idle.<mode>`) |
 | `f12` | `update user` | Puts your gear back for your current status and prints the current modes |
 | `^-`, `^=` | Mote target helpers | Mote's own `<t>` target switching |
 

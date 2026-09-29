@@ -54,7 +54,7 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/dnc/functions/logic/ws_variant_selector.lua` | 121 | `apply_variant`: WS variant from dance buff + Climactic (buff or 5 s timestamp) |
 | `shared/jobs/dnc/functions/logic/step_manager.lua` | 96 | `execute_step`: recast check, Presto, Main/Alt rotation |
 | `shared/jobs/dnc/functions/logic/smartbuff_manager.lua` | 273 | `apply` (dance, samba, subjob buffs), `apply_dance` |
-| `shared/jobs/dnc/functions/logic/set_builder.lua` | 161 | `select_engaged_base` (Saber/Fan Dance, HybridMode), `apply_weapon` (+ sub override), town, movement |
+| `shared/jobs/dnc/functions/logic/set_builder.lua` | 167 | `select_engaged_base` (Saber/Fan Dance, HybridMode), `apply_weapon` (+ sub override), idle base (`BaseSetBuilder.select_idle_base`: town, HybridMode), movement |
 | `shared/utils/dnc/waltz_manager.lua` | 261 | `//gs c waltz` / `aoewaltz` tier selection (any job with DNC main or sub) |
 | `shared/utils/drg/auto_jump.lua` | 228 | Jump before WS on /DRG (shared with WAR) |
 | `shared/utils/precast/ability_helper.lua` | 409 | `try_ability_ws` (Climactic Flourish), `follow_up` (`step`) |
@@ -239,10 +239,13 @@ is written into `result`, which is a fresh table only when the weapon set was
 combined; with no weapon set it is the engaged set table itself.
 
 Because the engaged base is a sets table, not Mote's result, Mote's defense
-and kiting layers never reach DNC's engaged gear. `HybridMode` does not affect
-idle: `build_idle_set` is the idle set with the town / Adoulin set on top
-(`select_idle_base_town`), weapon, then `sets.MoveSpeed` outside town while
-moving.
+and kiting layers never reach DNC's engaged gear. `build_idle_set` starts from
+`BaseSetBuilder.select_idle_base` (since 2026-09-29): in a city, the idle set
+with the town / Adoulin set on top (`select_idle_base_town`); outside town,
+`sets.idle[HybridMode]` when it is a table (`sets.idle.PDT` in PDT, the
+default), else Mote's base (so `sets.idle.Weak` is only reached in a mode with
+no idle set of its own). Then the weapon, then `sets.MoveSpeed` outside town
+while moving.
 
 Mote's `buff_change` does not re-equip, so `DNC_BUFFS.lua` passes
 `on_dance_change` to `LifecycleManager.buff_change`: when `Saber Dance` or
@@ -310,7 +313,7 @@ is filtered by subjob.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
-| `HybridMode` (Mote) | PDT, Normal | PDT | `^numpad9` (Mote `^f9` too) | `select_engaged_base` |
+| `HybridMode` (Mote) | PDT, Normal | PDT | `^numpad9` (Mote `^f9` too) | `select_engaged_base`, `select_idle_base` |
 | `MainWeapon` | Twashtar, Mpu Gandring, Demersal | Mpu Gandring | `^numpad1` | `apply_weapon` |
 | `SubWeaponOverride` | Off, Blurred | Off | `^numpad2` | `apply_weapon` |
 | `MainStep` | Box Step, Quickstep, Feather Step | Box Step | `^numpad3` | `execute_step`; UI readiness |
@@ -356,7 +359,7 @@ Full player-facing list: [sets.md](../../user/jobs/dnc/sets.md).
 | Set | Looked up by |
 |-----|--------------|
 | `sets.idle`, `sets.idle.Town` (template: 2 slots), `sets.Adoulin`, `sets.MoveSpeed` | Mote, `BaseSetBuilder` |
-| `sets.idle.PDT` | nothing (IdleMode `Normal`; HybridMode does not reach idle) |
+| `sets.idle.PDT`, `sets.idle.Normal` (not in the template) | `select_idle_base` (`sets.idle[HybridMode]`, outside town) |
 | `sets.engaged`, `.Normal`, `.PDT`, `.FanDance`, `.SaberDance`, `.SaberDance.PDT` | Mote, `select_engaged_base` |
 | `sets['Mpu Gandring']`, `['Twashtar']`, `['Demersal']`, `['Blurred']` (needs `.sub`) | `apply_weapon` |
 | `sets.precast.WS[ws].Clim/.FanDance/.FanDance.Clim/.SaberDance/.SaberDance.Clim` | `ws_variant_selector.lua` |
@@ -512,4 +515,5 @@ In game: `//gs c trace on` (`TP` lines for the weaponskill TP piece),
   2026-09-28); weapon lookup through `WeaponResolver`; waltz tier never sized
   for a party member; `Centovente` in the TP config; `CancelAbilityRecasts` /
   `CancelSpellRecasts` removed; the user doc now lists `Samba`,
-  `AutoMedicine`, `Quickstep`, and no longer says HybridMode changes idle.
+  `AutoMedicine`, `Quickstep`. Since 2026-09-29 HybridMode does change idle
+  outside town (`BaseSetBuilder.select_idle_base`), and the user doc says so.

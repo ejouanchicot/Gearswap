@@ -17,7 +17,7 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 |---|---|---|---|
 | Ctrl+Numpad1 `^numpad1` | `MainWeapon` | Twashtar, **Mpu Gandring**, Demersal | Main weapon |
 | Ctrl+Numpad2 `^numpad2` | `SubWeaponOverride` | **Off**, Blurred | Off = the off hand of the main weapon set; Blurred = the `sub` of `sets['Blurred']` (Blurred Knife +1 in the provided sets), whatever the main weapon |
-| Ctrl+Numpad9 `^numpad9` | `HybridMode` | **PDT**, Normal | Engaged only (idle gear does not change). PDT: `sets.engaged.PDT`, or `sets.engaged.FanDance` while Fan Dance is up. Normal: `sets.engaged.Normal`. Under Saber Dance, `sets.engaged.SaberDance` (`.SaberDance.PDT` in PDT) wins over both |
+| Ctrl+Numpad9 `^numpad9` | `HybridMode` | **PDT**, Normal | Idle outside town: `sets.idle.PDT` (or `sets.idle.Normal`) when it exists, else `sets.idle`; town idle does not change. Engaged: PDT: `sets.engaged.PDT`, or `sets.engaged.FanDance` while Fan Dance is up. Normal: `sets.engaged.Normal`. Under Saber Dance, `sets.engaged.SaberDance` (`.SaberDance.PDT` in PDT) wins over both |
 | Ctrl+Numpad3 `^numpad3` | `MainStep` | **Box Step**, Quickstep, Feather Step | Step used by `//gs c step` |
 | Ctrl+Numpad4 `^numpad4` | `AltStep` | **Quickstep**, Box Step, Feather Step | Second step when `UseAltStep` is On |
 | Ctrl+Numpad5 `^numpad5` | `UseAltStep` | **On**, Off | On: `//gs c step` alternates MainStep and AltStep. Off: MainStep only |

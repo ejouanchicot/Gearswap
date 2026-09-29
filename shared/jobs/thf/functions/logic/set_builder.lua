@@ -10,7 +10,7 @@
 ---   • Weapon set application (MainWeapon + SubWeapon states)
 ---   • Abyssea proc mode (AbyProc toggle + AbyWeapon selection)
 ---   • Movement gear application (idle only, never in combat)
----   • HybridMode base selection (engaged only)
+---   • HybridMode base selection (idle and engaged)
 ---   • Treasure Hunter gear per TreasureMode (engaged only, via treasure_hunter)
 ---   • Error handling with MessageFormatter
 ---
@@ -132,8 +132,8 @@ SetBuilder.apply_movement = BaseSetBuilder.apply_movement
 ---   TOWN DETECTION (INHERITED FROM BASE)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Inherit universal town detection function from BaseSetBuilder
-SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town
+-- Town set in a city, else sets.idle[HybridMode], else Mote's base
+SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SNEAK ATTACK / TRICK ATTACK BUFF OVERLAY (ENGAGED)

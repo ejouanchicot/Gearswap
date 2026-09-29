@@ -44,7 +44,7 @@ while the weaponskill mode is Acc): the job's page says which modes it has.
 
 | Set | Worn when |
 |---|---|
-| `sets.idle` | Standing, not fighting (the job's page gives its modes: `sets.idle.PDT`...) |
+| `sets.idle` | Standing, not fighting (the job's page gives its modes: `sets.idle.PDT`...). On DNC, DRK, THF and WAR, outside town, `sets.idle.<Hybrid Mode>` replaces it when it exists (`sets.idle.PDT` in PDT) |
 | `sets.engaged` | Weapon out, fighting (modes on the job's page) |
 | `sets.precast.FC` | Casting any spell (Fast Cast). Also forced on warp spells (Warp, Retrace, Escape, Teleport-*, Recall-*) |
 | `sets.precast.JA['Name']` | Using the job ability `Name`: `sets.precast.JA['Provoke']`, `sets.precast.JA.Berserk` |

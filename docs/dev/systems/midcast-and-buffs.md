@@ -18,7 +18,7 @@ References are to the code as of 2026-09-28. Functions are named (`file` `functi
 | `shared/utils/midcast/utsusemi_shadows.lua` | 32 | Cancels Copy Image buffs 2.3 s into Utsusemi: Ichi (Cancel addon) |
 | `shared/utils/midcast/midcast_deps.lua` | 44 | Loads `MidcastManager` and `ENHANCING_MAGIC_DATABASE` once per instance, for the 8 subjob-magic jobs |
 | `shared/utils/messages/formatters/magic/message_midcast.lua` | 156 | Debug output used by `MidcastManager` (templates in `shared/utils/messages/data/systems/midcast_messages.lua`) |
-| `shared/utils/set_building/base_set_builder.lua` | 104 | `apply_movement`, `select_idle_base_town`, `is_in_town` |
+| `shared/utils/set_building/base_set_builder.lua` | 144 | `apply_movement`, `select_idle_base_town`, `select_idle_base`, `is_in_town` |
 | `shared/utils/buffs/self_buff_manager.lua` | 259 | Factory: resolves a list of spells/abilities and queues the missing ones (only BLM uses it) |
 | `shared/utils/smartbuff/subjob_war_buffs.lua` | 74 | Berserk / Aggressor / Warcry collection and casting for DNC and THF subbing /WAR |
 | `shared/utils/scholar/scholar_actions.lua` | 366 | Light/Dark Arts toggles, the `aoe sneak/invi/erase` Accession casts, buff-gated stratagem chains, Addendum: Black casts (BLM, PLD, GEO) |
@@ -285,18 +285,20 @@ Each `[JOB]_IDLE.lua` / `[JOB]_ENGAGED.lua` implements Mote's `customize_idle_se
 
 - `apply_movement(result)`: when `state.Moving.value == 'true'` (the string state created by `shared/utils/movement/automove.lua`) and `sets.MoveSpeed` exists, returns `set_combine(result, sets.MoveSpeed)` under `pcall`; on error shows `MessageFormatter.show_error` and returns `result`.
 - `select_idle_base_town(base_set)`: returns `set_combine(idle, sets.Adoulin), true` in Western/Eastern Adoulin when that set exists; otherwise `set_combine(idle, sets.idle.Town), true` when `areas.Cities` (`libs/Mote-Mappings.lua`) contains `world.area` and the area name does not contain "Dynamis"; otherwise `base_set, false`. No Dynamis zone is in `areas.Cities`, so the Dynamis test never changes the result. `idle` is `base_set`, or, when `base_set` is Mote's own town pick (`sets.idle.Town` or its `IdleMode` child, chosen by `get_idle_set` in every city), `sets.idle` then `sets.idle[IdleMode]`, and Mote's town node is what goes on top. Since 2026-09-29 the town set goes on top of the idle set instead of replacing it, so a partial one keeps the idle pieces in the other slots.
+- `select_idle_base(base_set)` (since 2026-09-29): `select_idle_base_town` in town; outside town `sets.idle[state.HybridMode.current]` when it is a table, else `base_set`. Mote's idle follows `IdleMode` only, so this is what puts `sets.idle.PDT` on the jobs whose PDT toggle is `HybridMode`. Used by DNC, DRK, THF, WAR.
 - `is_in_town()`: the same test without a set.
 
 | Job builder | Town | Movement |
 |---|---|---|
 | BLM, GEO | `BaseSetBuilder.select_idle_base_town` called directly | `apply_movement` outside town |
 | WHM | `select_idle_base_town` called directly | `BaseSetBuilder.apply_movement` always, in town too |
-| COR, DNC, PLD, RUN, THF | `SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town` | `apply_movement` (DNC and PLD return before it in town) |
-| WAR, BRD | own `select_idle_base` wrapping `select_idle_base_town` | `apply_movement` outside town; BRD also applies it to the engaged set |
+| COR, PLD, RUN | `SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town` | `apply_movement` (PLD returns before it in town) |
+| DNC, THF, WAR | `SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base` (town, else `sets.idle[HybridMode]`) | `apply_movement` outside town |
+| BRD | own `select_idle_base` wrapping `select_idle_base_town` | `apply_movement` outside town; also applies it to the engaged set |
 | RDM, BLU | `SetBuilder.check_town = select_idle_base_town` | `apply_movement` outside town |
 | SMN | `SMN_IDLE.lua` calls `select_idle_base_town` / `is_in_town` directly | `BaseSetBuilder.apply_movement` |
 | BST | `BaseSetBuilder.is_in_town()` for Town feet only | inline `set_combine(..., sets.MoveSpeed)` |
-| DRK | `select_idle_base_town` called directly | `apply_movement` outside town |
+| DRK | `BaseSetBuilder.select_idle_base` called directly (town, else `sets.idle[HybridMode]`) | `apply_movement` outside town |
 | SAM | `select_idle_base_town` called directly | `apply_movement` outside town |
 | PUP | `PUP_IDLE.lua` and `PUP_ENGAGED.lua` require `shared/jobs/pup/functions/logic/set_builder`, which does not exist on disk (their headers say so) | n/a |
 
