@@ -5,8 +5,8 @@
 ---
 ---   Features:
 ---   - Dark Magic: Dread Spikes, Absorb spells, Drain/Aspir
----   - Dark Seal buff enhancement (head)
----   - Nether Void buff enhancement (legs)
+---   - Dark Seal buff set on Dark Magic
+---   - Nether Void buff set on Absorb / Drain / Aspir
 ---   - Enfeebling Magic and Elemental Magic support
 ---
 ---   @file    shared/jobs/drk/functions/DRK_MIDCAST.lua
@@ -66,32 +66,18 @@ local function job_post_midcast_dark_magic(spell)
     -- DARK SEAL & NETHER VOID BUFF ENHANCEMENT
     -- ══════════════════════════════════════════════════════════════════════════
     -- Applied AFTER MidcastManager to override with buff-specific gear
-    local enhancements = {}
-
-    -- Dark Seal (Buff ID 345)
-    -- Effect: Dark Magic duration +10% per merit level
-    -- Affects: Dread Spikes, Absorb spells, Drain III
-    if buffactive['Dark Seal'] or buffactive[345] then
-        if sets.buff and sets.buff['Dark Seal'] and sets.buff['Dark Seal'].head then
-            enhancements.head = sets.buff['Dark Seal'].head
-        end
+    -- The whole buff set goes on top (only its head / legs were taken
+    -- before 2026-09-29: any other piece was ignored)
+    -- Dark Seal (Buff ID 345): Dark Magic duration, every Dark Magic spell
+    if (buffactive['Dark Seal'] or buffactive[345]) and sets.buff and sets.buff['Dark Seal'] then
+        equip(sets.buff['Dark Seal'])
     end
 
-    -- Nether Void (Buff ID 439)
-    -- Effect: +45% absorption potency (total 95% with gear)
-    -- Affects: Absorb spells, Drain/Aspir (NOT Dread Spikes)
-    if buffactive['Nether Void'] or buffactive[439] then
-        -- Only apply to Absorb/Drain spells (Nether Void doesn't affect Dread Spikes)
-        if spell.name:match('Absorb') or spell.name:match('Drain') or spell.name:match('Aspir') then
-            if sets.buff and sets.buff['Nether Void'] and sets.buff['Nether Void'].legs then
-                enhancements.legs = sets.buff['Nether Void'].legs
-            end
-        end
-    end
-
-    -- Apply buff enhancements if any buffs are active
-    if next(enhancements) then
-        equip(enhancements)
+    -- Nether Void (Buff ID 439): absorption potency, Absorb / Drain / Aspir
+    -- only (not Dread Spikes)
+    if (buffactive['Nether Void'] or buffactive[439]) and sets.buff and sets.buff['Nether Void']
+       and (spell.name:match('Absorb') or spell.name:match('Drain') or spell.name:match('Aspir')) then
+        equip(sets.buff['Nether Void'])
     end
 
     return true

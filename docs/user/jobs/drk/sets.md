@@ -42,8 +42,8 @@ when that action ends.
 | Set | Worn when |
 |---|---|
 | `sets.precast.JA['Dark Seal']`, `sets.precast.JA['Nether Void']` | The moment you use the ability |
-| `sets.buff['Dark Seal']` | Dark Magic midcast while Dark Seal is up. **Only its head piece is used** |
-| `sets.buff['Nether Void']` | Midcast of any spell whose name contains Absorb, Drain or Aspir while Nether Void is up (Absorb-TP included, Dread Spikes not). **Only its legs piece is used** |
+| `sets.buff['Dark Seal']` | Dark Magic midcast while Dark Seal is up, on top of the spell's set (only the head until 2026-09-29) |
+| `sets.buff['Nether Void']` | Midcast of any spell whose name contains Absorb, Drain or Aspir while Nether Void is up (Absorb-TP included, Dread Spikes not), on top of the spell's set (only the legs until 2026-09-29) |
 | `sets.engaged.<Weapon>.<PDT or Accu>.DarkSeal` | Engaged, Dark Seal up: added on top of the engaged set |
 | `sets.engaged.<Weapon>.<PDT or Accu>.NetherVoid` | Engaged, Nether Void up |
 | `sets.engaged.<Weapon>.<PDT or Accu>.DarkSealNetherVoid` | Engaged, both up. Missing: `.DarkSeal`, then `.NetherVoid` |
@@ -88,7 +88,7 @@ Nether Void, and Jump / High Jump for /DRG (a copy of `sets.engaged`).
 | `sets.midcast['Enfeebling Magic']` | Enfeebling spells (Sleep, Bind, Poison...) |
 | `sets.midcast['Elemental Magic']` | Elemental spells (Fire, Blizzard...); not in the provided file, so only a set named after the spell is used |
 
-`sets.buff['Dark Seal']` (head) and `sets.buff['Nether Void']` (legs) go on top
+`sets.buff['Dark Seal']` and `sets.buff['Nether Void']` (whole sets) go on top
 of these, see above. Absorb, Drain and Dread Spikes without their own set fall
 back to `sets.midcast['Dark Magic']`.
 

@@ -85,6 +85,10 @@ local Moonlight2 = {name = 'Moonlight Ring', bag = 'wardrobe 2'}
 -- WEAPON SETS
 -- ═══════════════════════════════════════════════════════════════════════════
 
+-- A weapon set is worn once its name is a MainWeapon value (DRK_STATES.lua).
+-- Apocalypse, Foenaria, Tokko and Naegling are ready here but not in the
+-- cycle: add the name there to use one.
+
 -- • Scythe weapons (Two-handed with Utu Grip)
 sets['Caladbolg'] = {main = 'Caladbolg', sub = 'Utu Grip'}
 sets['Liberator'] = {main = 'Liberator', sub = 'Utu Grip'}

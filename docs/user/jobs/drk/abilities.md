@@ -28,8 +28,9 @@ An ability with no `sets.precast.JA` entry simply keeps your current gear.
 Both buffs are used up by the next dark spell, so the project follows them closely:
 
 - **Dark Magic midcast.** While the Dark Seal buff is on, `sets.buff['Dark Seal']`
-  (template: head) goes on for every Dark Magic spell. While Nether Void is on,
-  `sets.buff['Nether Void']` (template: legs) goes on for Absorb, Drain and Aspir
+  (template: head; the whole set) goes on for every Dark Magic spell. While Nether
+  Void is on, `sets.buff['Nether Void']` (template: legs; the whole set) goes on for
+  Absorb, Drain and Aspir
   spells only (not Dread Spikes). This reads the real buff list.
 - **Engaged gear.** The buff reaches GearSwap's buff list a moment after the ability
   goes out. To bridge that gap, using Dark Seal or Nether Void raises a "pending" flag

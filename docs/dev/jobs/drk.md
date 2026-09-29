@@ -147,9 +147,9 @@ flowchart TD
     D --> G{Dark Seal up}
     E --> G
     F --> G
-    G -- yes --> H[head from sets.buff Dark Seal]
+    G -- yes --> H[equip sets.buff Dark Seal]
     G --> I{Nether Void up and Absorb/Drain/Aspir}
-    I -- yes --> J[legs from sets.buff Nether Void]
+    I -- yes --> J[equip sets.buff Nether Void]
     B -- Enfeebling Magic --> K[select_set Enfeebling, database_func = Enhancing DB]
     B -- Elemental Magic --> L[select_set Elemental Magic]
     B -- other --> N[nothing here; MidcastFallback on cleanup_midcast]
@@ -160,8 +160,9 @@ flowchart TD
   `Absorb` resolve to `sets.midcast['Dread Spikes']` / `sets.midcast.Absorb`
   as base sets.
 - The overlays read `buffactive` only (ids 345 and 439), not the pending
-  flags. The Nether Void test matches any name containing `Absorb`, so
-  Absorb-TP gets the legs although the set comment says it should not.
+  flags. The whole buff sets are equipped (only the head / legs were taken
+  before 2026-09-29). The Nether Void test matches any name containing
+  `Absorb`, so Absorb-TP gets it too.
 - Enfeebling passes `ENHANCING_MAGIC_DATABASE.get_spell_family` as
   `database_func`; that database only knows enhancing spells, so it returns
   nil and the base `sets.midcast['Enfeebling Magic']` is used.
@@ -252,7 +253,7 @@ T = `_master/sets/drk_sets.lua` (no live copy in the repository).
 |-----|--------------|------|
 | `sets['Caladbolg']`, `['Liberator']`, `['Redemption']`, `['Lycurgos']`, `['Loxotic']` | `apply_weapon` | yes |
 | `sets['Apocalypse']`, `['Foenaria']`, `['Naegling']` | `apply_weapon`, once their `MainWeapon` line is uncommented | yes |
-| `sets['Tokko']` | nothing: no `MainWeapon` line, even commented | yes |
+| `sets['Tokko']` (and Apocalypse, Foenaria, Naegling) | `apply_weapon` once the name is a `MainWeapon` value (none of them is; a comment in the sets file says so) | yes |
 | `sets.idle` (and `sets.idle.Normal = sets.idle`) | Mote base | yes |
 | `sets.idle.PDT` | nothing reaches it | yes |
 | `sets.idle.Town` (= `sets.MoveSpeed`, legs only) | Mote Town scope | yes |
