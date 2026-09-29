@@ -35,6 +35,8 @@ function job_aftercast(spell, action, spellMap, eventArgs)
         require('shared/jobs/brd/functions/logic/song_slots').record(spell)
         -- A running //gs c songs rotation sends its next song from here
         require('shared/jobs/brd/functions/logic/song_queue').on_aftercast(spell)
+        -- DummySong switch back off once its song landed
+        require('shared/jobs/brd/functions/logic/dummy_next').on_aftercast(spell)
     end
 
     -- Clear instrument lock flags after ANY action completes

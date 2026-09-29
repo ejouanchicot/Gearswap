@@ -110,6 +110,18 @@ return {
     -- Low HP: a safer ring when idle
     -- { when = { hp_below = 50 }, idle = { ring1 = "Gelatinous Ring +1" } },
 
+    -- Next song as a dummy: while on, the next buff song goes out in
+    -- sets.midcast.DummySong (instrument included, short timer) to overwrite
+    -- the same song already up; the switch turns itself off once it landed.
+    -- Honor March, Aria of Passion and debuff songs are never turned.
+    -- No gear here: the job code reads the switch.
+    -- {
+    --     state  = 'DummySong',
+    --     desc   = 'Dummy Song',
+    --     key    = '!numpad5',
+    --     values = 'onoff',
+    -- },
+
     -- Songs under Troubadour (the instrument is left alone)
     -- { when = { spell_type = 'BardSong', buff = 'Troubadour' }, midcast = { body = "Fili Hongreline +3" } },
 

@@ -137,13 +137,35 @@ local function show_normal_song_message(spell, ctx)
     )
 end
 
+--- A real buff song the DummySong switch turns into a dummy (dummy_next.lua).
+--- Songs with a required instrument and debuff songs are never turned.
+--- @param spell table
+--- @return boolean
+local function forced_dummy(spell)
+    if is_no_weapon_song(spell.english) or MidcastManager.get_song_instrument(spell.english) then
+        return false
+    end
+    local DummyNext = require('shared/jobs/brd/functions/logic/dummy_next')
+    if not DummyNext.is_on() then return false end
+    DummyNext.mark(spell)
+    return true
+end
+
 --- Equip dummy song set (player-chosen instrument like Daurdabla) + display message.
-local function handle_dummy_song(spell, ctx)
+--- @param spell table
+--- @param ctx table Router context
+--- @param forced boolean A real song turned into a dummy by the switch
+local function handle_dummy_song(spell, ctx, forced)
     if not (sets.midcast and sets.midcast.DummySong) then
         return
     end
 
     equip(sets.midcast.DummySong)
+    -- Mote already asked for the song set's weapons (duration pieces); a
+    -- listed dummy never swaps them, so the forced one keeps them too
+    if forced and player and player.equipment then
+        equip({main = player.equipment.main, sub = player.equipment.sub})
+    end
 
     -- Extract instrument name from the set for display
     local instrument = sets.midcast.DummySong.range or 'Unknown'
@@ -208,7 +230,8 @@ end
 function Router.handle_singing(spell, ctx)
     ensure_loaded()
 
-    local is_dummy = is_dummy_song(spell.english)
+    local forced = not is_dummy_song(spell.english) and forced_dummy(spell)
+    local is_dummy = forced or is_dummy_song(spell.english)
 
     -- Normal songs (non-dummy): show description message
     if not is_dummy and spell.english then
@@ -217,7 +240,7 @@ function Router.handle_singing(spell, ctx)
 
     -- Dummy songs: equip DummySong set + special daurdabla message, then exit
     if is_dummy then
-        handle_dummy_song(spell, ctx)
+        handle_dummy_song(spell, ctx, forced)
         require('shared/utils/midcast/midcast_fallback').skip(spell)
         return
     end

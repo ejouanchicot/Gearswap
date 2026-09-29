@@ -43,7 +43,7 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/brd/functions/brd_functions.lua` | 85 | Facade: includes the 11 hook files, requires `dualbox_manager` |
 | `shared/jobs/brd/functions/BRD_PRECAST.lua` | 313 | `job_precast` (guard, `SongRefinement.refine_song`, cooldown, `job_precast_bardsong` Pianissimo, `try_marcato`, WS, `job_precast_bardsong_2` instrument lock) / `job_post_precast` (TP gear, precast debug) |
 | `shared/jobs/brd/functions/BRD_MIDCAST.lua` | 145 | `job_midcast` (empty), `job_customize_midcast_set` (passthrough, never called), `job_post_midcast` (context + skill dispatch to the router) |
-| `shared/jobs/brd/functions/BRD_AFTERCAST.lua` | 73 | `job_aftercast`: watchdog, Pianissimo flag, `SongSlots.record`, `SongQueue.on_aftercast`, instrument lock release |
+| `shared/jobs/brd/functions/BRD_AFTERCAST.lua` | 75 | `job_aftercast`: watchdog, Pianissimo flag, `SongSlots.record`, `SongQueue.on_aftercast`, `DummyNext.on_aftercast`, instrument lock release |
 | `shared/jobs/brd/functions/BRD_IDLE.lua` | 42 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/brd/functions/BRD_ENGAGED.lua` | 42 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/brd/functions/BRD_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
@@ -52,8 +52,9 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/brd/functions/BRD_MOVEMENT.lua` | 39 | `job_handle_equipping_gear` (re-equips the locked instrument) |
 | `shared/jobs/brd/functions/BRD_LOCKSTYLE.lua` | 55 | Lazy `LockstyleManager.create('BRD', ..., 1, 'WHM')` wrappers |
 | `shared/jobs/brd/functions/BRD_MACROBOOK.lua` | 49 | Lazy `MacrobookManager.create('BRD', ..., 'WHM', 1, 1)` wrapper |
-| `shared/jobs/brd/functions/logic/midcast_router.lua` | 271 | `handle_singing` (dummy / debuff / normal), `handle_healing`, `handle_enhancing`, `handle_enfeebling`, `handle_elemental`; `apply_main_instrument` |
+| `shared/jobs/brd/functions/logic/midcast_router.lua` | 296 | `handle_singing` (dummy / debuff / normal), `handle_healing`, `handle_enhancing`, `handle_enfeebling`, `handle_elemental`; `apply_main_instrument` |
 | `shared/jobs/brd/functions/logic/song_rotation_manager.lua` | 250 | `get_current_pack`, `get_songs_with_replacement`, `update_song_slots` (HUD), `get_required_instrument`, `start_with_nitro`, `cast_songs_with_phases`, `cast_dummy_songs` |
+| `shared/jobs/brd/functions/logic/dummy_next.lua` | 77 | DummySong switch: `is_on`, `mark`, `on_aftercast` (next song as a dummy, then off) |
 | `shared/jobs/brd/functions/logic/song_slots.lua` | 170 | `plan`, `inputs`, `songs_up` (own-song ledger), `record`, `instrument_extra` |
 | `shared/jobs/brd/functions/logic/song_queue.lua` | 160 | `start`, `stop`, `on_aftercast`; retry / timeout logic; drops the queue when the main job is no longer BRD |
 | `shared/jobs/brd/functions/logic/song_refinement.lua` | 115 | `refine_song(spell, eventArgs)` |
@@ -61,7 +62,7 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/brd/functions/logic/set_builder.lua` | 217 | `select_idle_base` (town, IdleMode), `select_engaged_base` (Kraken Club, EngagedMode), `apply_weapons`, `build_idle_set`, `build_engaged_set` |
 | `_master/config/brd/BRD_STATES.lua` | 223 | All states (`BRDStates.configure()`) |
 | `_master/config/brd/BRD_KEYBINDS.lua` | 62 | 12 binds, data only; `KeybindManager.create('BRD', ...)` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
-| `_master/config/brd/BRD_CUSTOM.lua` | 119 | Player modes and gear rules (all examples commented out) |
+| `_master/config/brd/BRD_CUSTOM.lua` | 131 | Player modes and gear rules (all examples commented out, DummySong switch included) |
 | `_master/config/brd/BRD_HUD.lua` | 32 | Per-job HUD `section_order` / `row_order` (empty) |
 | `_master/config/brd/BRD_SONG_CONFIG.lua` | 293 | Packs, dummy songs, Etudes, Victory March replacement, short names, refinement tiers |
 | `_master/config/brd/BRD_TIMING_CONFIG.lua` | 30 | `ROTATION_DELAYS.after_song` 3.0 / `after_locked_song` 1.0 (song queue), `ABILITY_DELAYS.nt_combo_delay` 2.0 (`//gs c nt`) |
@@ -311,6 +312,21 @@ flowchart TD
 - Dummy detection reads `BRDSongConfig.DUMMY_SONGS.standard`
   (`is_dummy_song`); debuff detection uses `match` on `DEBUFF_SONGS` and on
   Lullaby / Threnody (`is_no_weapon_song`).
+- **DummySong switch** (`logic/dummy_next.lua`, 2026-09-29, asked for Blody).
+  The code only reads `state.DummySong`, which a player declares in
+  `BRD_CUSTOM.lua` (`values = 'onoff'` or `{'off', 'on'}`, no gear block;
+  commented example in `_master/config/brd/BRD_CUSTOM.lua`). While it is on,
+  `forced_dummy` turns the next buff song that is not a listed dummy, not a
+  debuff song and not a required-instrument song (Honor March, Aria of
+  Passion) into a dummy: `handle_dummy_song` equips `sets.midcast.DummySong`
+  (instrument included) and puts back the worn `main`/`sub`, because Mote's
+  default set already asked for the song set's weapons and a listed dummy
+  never swaps them. `BRD_AFTERCAST` calls `DummyNext.on_aftercast`: once that
+  song landed, the switch goes back off (`false`, or `'off'` for a list), with a
+  `show_state_display` line and a HUD repaint; an interrupted song leaves it on.
+  Purpose: overwrite a song already up with a short-timer copy so the game
+  replaces that one first. A CUSTOM gear rule could not do it: songs keep their
+  instrument from CUSTOM gear (`custom_guards.lua`). Offline test only.
 - Enhancing passes `get_enhancing_target` and the enhancing family database;
   Healing, Enfeebling and Elemental pass only the skill. `select_set` returns
   false when `sets.midcast[skill]` is missing, which is the case for Healing,

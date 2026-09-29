@@ -71,6 +71,18 @@ Defined in `BRD_SONG_CONFIG.lua` (edit it to change a pack):
   Threnody.
 - Combat Mode (hidden on BRD) also locks the instrument slot: see
   [README.md](README.md#shared-features-on-this-job) before showing it.
+- **Next song as a dummy** (optional switch): add to your `BRD_CUSTOM.lua`
+
+  ```lua
+  { state = 'DummySong', desc = 'Dummy Song', key = '!numpad5', values = 'onoff' },
+  ```
+
+  (any free key; no gear block). While it is On, your next buff song is sung in
+  `sets.midcast.DummySong`, dummy instrument included and weapons unchanged: a
+  short-timer copy that overwrites the same song already up, so the game replaces
+  that one first. The switch turns itself Off once the song landed (it stays On
+  if the song was interrupted). Honor March, Aria of Passion, debuff songs and
+  your listed dummy songs are never changed by it.
 - The HUD shows the five songs of the current pack (`BRDSong1`-`5`, display only),
   after the Victory March swap.
 - `FastCast` (default 80, no key) is your Fast Cast %, used by the midcast watchdog (`//gs c cycle FastCast`, or its default in `BRD_STATES.lua`).
