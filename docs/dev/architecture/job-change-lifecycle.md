@@ -351,7 +351,7 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 
 | Source | Keys read | Default and where |
 |---|---|---|
-| `<char>/config/LOCKSTYLE_CONFIG.lua` (template `_master/config_global/LOCKSTYLE_CONFIG.lua`) | `initial_load_delay` (entries, `message_system.lua:42`) | 8.0; fallback table in each entry (e.g. `Tetsouo_PLD.lua:37-44`). `job_change_delay` and `cooldown` are defined but read by nothing, which the file's header now says |
+| `<char>/config/LOCKSTYLE_CONFIG.lua` (template `_master/config_global/LOCKSTYLE_CONFIG.lua`) | `initial_load_delay` (entries, `message_system.lua:42`) | 8.0; fallback table in each entry (e.g. `Tetsouo_PLD.lua:37-44`). Its only setting (`job_change_delay` and `cooldown`, read by nothing, were removed on 2026-09-29) |
 | `<char>/config/UI_CONFIG.lua` (dofile) | `init_delay` for `smart_init` | 5.0 (`config_loader.lua:52`) |
 | `<char>/config/DUALBOX_CONFIG.lua` (+ `dualbox_role.lua`) | `role`, `enabled`, `character_name`, `alt_character`/`main_character`, `group`, `timeout`, `debug` | disabled main (`DualBoxManager.initialize`) |
 | `<char>/config/CRAFT_CONFIG.lua` | `craft_lockstyle`, `fish_lockstyle` | 19 / 17 (`craft_commands.lua:25-26`) |

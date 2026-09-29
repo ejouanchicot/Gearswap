@@ -131,7 +131,7 @@ The per-job config is `<char>/config/<job>/<JOB>_LOCKSTYLE.lua`. GearSwap's `pat
 | `by_subjob` | **no** | only read through the config's own `get_style`. The BLM, BLU, BRD, RDM, SAM, THF and WHM templates have no `get_style`, so their `by_subjob` does nothing (BLM's file says so in a comment) |
 | `style` | no | "backward compatibility" field, no reader |
 
-`_master/config_global/LOCKSTYLE_CONFIG.lua` is deployed to `<char>/config/`. The entries read its `initial_load_delay` (8.0) to schedule `select_default_lockstyle` from `user_setup()`, with an inline fallback table (see `_master/entry/Tetsouo_WAR.lua`). `job_change_delay` and `cooldown` are defined but have no reader, and the file's comments say so.
+`_master/config_global/LOCKSTYLE_CONFIG.lua` is deployed to `<char>/config/`. The entries read its `initial_load_delay` (8.0) to schedule `select_default_lockstyle` from `user_setup()`, with an inline fallback table (see `_master/entry/Tetsouo_WAR.lua`). It is the file's only setting: `job_change_delay` and `cooldown`, which nothing read, were removed on 2026-09-29.
 
 DressUp management flag: `_G.DRESSUP_MANAGEMENT_ENABLED`. It is initialised on each module load from the presence of `windower.addon_path .. 'data/.dressup_disabled'` (file present = off; `read_dressup_state`). The file is gitignored.
 
@@ -774,7 +774,6 @@ Open:
 - AutoMove assigns `state.Moving.value` directly, desynchronising the Mote mode (`automove.lua` `handle_moving`).
 - The job intro never shows macro or lockstyle info: `KeybindManager`'s `show_intro` looks for `get_<job>_macro_info` / `get_info` on the wrapper modules, and no wrapper returns them (`keybind_manager.lua` `show_intro`).
 - Four of the six lockstyle globals and the macrobook `set_/get_/show_` globals have no reader (`lockstyle_manager.lua` `create`).
-- The LOCKSTYLE_CONFIG keys `job_change_delay` and `cooldown` are unread; the file's comments say so.
 - The Jump chain is implemented twice (AutoJump and DRGJumpManager).
 - Craft's `apply_style` does not cancel a pending job lockstyle, which can then override the craft style (`lockstyle_manager.lua` `apply_style`).
 - `WHM_CURE_CONFIG.lua` defines `auto_tier_enabled` and `message_color`, which nothing reads.

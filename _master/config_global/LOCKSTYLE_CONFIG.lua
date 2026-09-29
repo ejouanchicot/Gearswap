@@ -11,7 +11,7 @@
 --- - Provides enough time for DressUp addon management
 ---
 --- Loaded by every job entry file (pcall require) and exposed as
---- _G.LockstyleConfig. Only initial_load_delay is read today.
+--- _G.LockstyleConfig. Its one setting is initial_load_delay.
 ---
 --- @file config/LOCKSTYLE_CONFIG.lua
 --- @author ejouanchicot
@@ -29,16 +29,9 @@ local LockstyleConfig = {}
 -- Recommended: 8.0 seconds (tested and validated)
 LockstyleConfig.initial_load_delay = 8.0
 
--- Job change delay - not read by any module at present. A subjob change
--- ends in a GearSwap reload (JobChangeManager), so the lockstyle goes
--- through initial_load_delay again.
--- Recommended: 8.0 seconds (tested and validated)
-LockstyleConfig.job_change_delay = 8.0
-
--- Global lockstyle cooldown (minimum time between lockstyle commands)
--- Not read by any module at present
--- Recommended: 15.0 seconds (conservative safety margin)
-LockstyleConfig.cooldown = 15.0
+-- initial_load_delay is the only setting. There used to be job_change_delay
+-- and cooldown here: nothing read them, so changing them did nothing
+-- (removed 2026-09-29).
 
 ---============================================================================
 --- NOTES
