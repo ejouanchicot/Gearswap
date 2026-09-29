@@ -309,7 +309,7 @@ Interactions, Invariants & gotchas, Extending, Known issues):
 
 [blm](jobs/blm.md) · [blu](jobs/blu.md) · [brd](jobs/brd.md) · [bst](jobs/bst.md) ·
 [cor](jobs/cor.md) · [dnc](jobs/dnc.md) · [drg](jobs/drg.md) · [drk](jobs/drk.md) ·
-[geo](jobs/geo.md) · [pld](jobs/pld.md) · [pup](jobs/pup.md) ·
+[geo](jobs/geo.md) · [mnk](jobs/mnk.md) · [pld](jobs/pld.md) · [pup](jobs/pup.md) ·
 [rdm](jobs/rdm.md) · [run](jobs/run.md) · [sam](jobs/sam.md) ·
 [sch](jobs/sch.md) · [smn](jobs/smn.md) · [thf](jobs/thf.md) · [war](jobs/war.md) ·
 [whm](jobs/whm.md)

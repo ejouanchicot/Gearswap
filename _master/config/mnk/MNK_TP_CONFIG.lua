@@ -1,0 +1,41 @@
+---============================================================================
+--- MNK TP Bonus Configuration - Weaponskill TP Optimization
+---============================================================================
+--- TP bonus pieces the calculator may add to a weaponskill to reach the
+--- next 1000 TP step (TPBonusCalculator, via WSPrecastHandler).
+---
+--- @file    config/mnk/MNK_TP_CONFIG.lua
+--- @author  ejouanchicot
+--- @version 1.0
+--- @date    Created: 2026-09-29
+---============================================================================
+
+local MNKTPConfig = {
+    -- Equipped only when they reach the next threshold
+    pieces = {
+        { slot = "ear1", name = "Moonshade Earring", bonus = 250 }
+    },
+
+    -- Weapons with a TP bonus of their own. Example (remove the "--"):
+    weapons = {
+        -- { name = "Godhands", bonus = 500 },
+    }
+}
+
+--- TP bonus of a weapon, if listed
+--- @param weapon_name string Name of the weapon
+--- @return number TP bonus (0 when not listed)
+function MNKTPConfig.get_weapon_bonus(weapon_name)
+    if not weapon_name then return 0 end
+    for _, weapon in ipairs(MNKTPConfig.weapons) do
+        if weapon_name == weapon.name then
+            return weapon.bonus
+        end
+    end
+    return 0
+end
+
+-- Global export: the entry file also assigns it, MNK_PRECAST reads _G.MNKTPConfig
+_G.MNKTPConfig = MNKTPConfig
+
+return MNKTPConfig

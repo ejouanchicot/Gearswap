@@ -32,6 +32,7 @@ Medicine) and Alt+Numpad7-9 (dual-box alts). See the
 | WAR | [war/README.md](war/README.md) | Also [war/states.md](war/states.md), [war/sets.md](war/sets.md), [war/tp-bonus.md](war/tp-bonus.md) |
 | WHM | [whm/README.md](whm/README.md) | Not played by a maintained character |
 | PUP | [pup/README.md](pup/README.md) | Also [pup/states.md](pup/states.md), [pup/sets.md](pup/sets.md); not played by a maintained character |
+| MNK | [mnk/README.md](mnk/README.md) | Also [mnk/states.md](mnk/states.md), [mnk/sets.md](mnk/sets.md); added 2026-09-29, not played by a maintained character |
 
 TP bonus gear (Moonshade Earring and the like), for every job with a
 `<JOB>_TP_CONFIG.lua`: [war/tp-bonus.md](war/tp-bonus.md).

@@ -72,12 +72,16 @@ function LifecycleManager.status_change(extra)
 end
 
 --- Buffs whose gain or loss swaps the idle / engaged set (sets.engaged.AM3,
---- PDTAFM3..., PUP's sets.buff.Overdrive layer).
+--- PDTAFM3..., and the jobs' buff layers named below).
 local GEAR_BUFFS = {
     ['Aftermath: Lv.3'] = true,
     ['Overdrive'] = true,  -- PUP
     ['Spirit Surge'] = true,  -- DRG
     ['Sublimation: Activated'] = true,  -- SCH: sets.buff.Sublimation while it charges
+    ['Impetus'] = true,  -- MNK
+    ['Footwork'] = true,  -- MNK
+    ['Hundred Fists'] = true,  -- MNK
+    ['Counterstance'] = true,  -- MNK
 }
 
 --- Rebuild the gear once GearSwap has stored a buff change that swaps sets.

@@ -72,7 +72,7 @@ local CHARACTERS = {
 --- These are preserved but not cloned to any active character.
 --- Move a job from _archive to a character entry above to re-activate it.
 
-local ARCHIVE_JOBS = { 'DRK', 'PUP', 'RUN', 'SAM', 'WHM' }
+local ARCHIVE_JOBS = { 'DRK', 'MNK', 'PUP', 'RUN', 'SAM', 'WHM' }
 
 ---============================================================================
 --- MASTER DATA PATHS (relative to data/ directory)
@@ -91,7 +91,7 @@ local MASTER = {
 
 local ALL_JOBS = {
     'BLM', 'BLU', 'BRD', 'BST', 'COR', 'DNC', 'DRG', 'DRK', 'GEO',
-    'PLD', 'PUP', 'RDM', 'RUN', 'SAM', 'SCH', 'SMN', 'THF', 'WAR', 'WHM',
+    'MNK', 'PLD', 'PUP', 'RDM', 'RUN', 'SAM', 'SCH', 'SMN', 'THF', 'WAR', 'WHM',
 }
 
 ---============================================================================
