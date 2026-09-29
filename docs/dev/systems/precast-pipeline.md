@@ -269,8 +269,11 @@ flowchart TD
 
 1. `recast_id` from `spell.recast_id`, else `MANUAL_RECAST_IDS` (empty). Weaponskills
    have no `recast_id`, so a WS passed here returns immediately.
-2. Skips names in `MULTI_CHARGE_ABILITIES` (Quick Draw shots, SCH stratagems and
-   other SCH abilities, the eight PUP maneuvers).
+2. Skips names in `MULTI_CHARGE_ABILITIES`: Quick Draw shots and the SCH
+   stratagems (recast 231, a charge pool), plus Tabula Rasa (no recast to read).
+   Light Arts, Dark Arts, Sublimation and Enlightenment have a plain recast each
+   and are checked like any ability (since 2026-09-29), and so are the PUP
+   maneuvers (one shared 10-second recast, no charges).
 3. Reads seconds via `MessageFormatter.get_ability_recast_seconds`
    (`message_cooldowns.lua`, `windower.ffxi.get_ability_recasts()`), applies
    `RECAST_CONFIG.on_cooldown` (tolerance) and, if on cooldown, prints
@@ -939,8 +942,11 @@ Open:
   `check_and_block`).
 - `check_magic` unreachable; `test_debuff` ignored; `"Ranged"` branch dead
   (`precast_guard.lua` `guard_precast`, `debuff_checker.lua` `check_action_blocked`).
-- `MULTI_CHARGE_ABILITIES` includes single-recast abilities (Light/Dark Arts,
-  Sublimation, Enlightenment, Tabula Rasa); the comment says so, the list is unchanged.
+- Fixed 2026-09-29 (checked offline, not yet in game): `MULTI_CHARGE_ABILITIES`
+  held Light Arts (recast 228), Dark Arts (232), Sublimation (234) and
+  Enlightenment (235), which have a plain recast each: pressed on recast they
+  went through, swapped the precast gear, and the game refused them. They are
+  now blocked with their time left.
 - Unused API and dead branches in the WS chain (`initialize`, `MessageFormatter` field,
   `distance_check_enabled`, `get_final_tp`).
 - Unused PrecastGuard/DebuffChecker API (`would_block`, `get_active_blocks`,

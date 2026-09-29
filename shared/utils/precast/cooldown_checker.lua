@@ -52,9 +52,10 @@ local MULTI_CHARGE_ABILITIES = {
     ["Wind Shot"] = true,
     ["Ice Shot"] = true,
 
-    -- SCH: stratagems share recast_id 231 (charge pool). The list also holds
-    -- SCH abilities that are not stratagems (Light/Dark Arts, Sublimation,
-    -- Enlightenment, Tabula Rasa...), which are exempted all the same.
+    -- SCH: stratagems share recast_id 231 (charge pool). Light Arts (228),
+    -- Dark Arts (232), Sublimation (234) and Enlightenment (235) have a plain
+    -- recast each and are checked like any ability. Tabula Rasa (SP, id 0)
+    -- has no recast to read.
     ["Ebullience"] = true,
     ["Rapture"] = true,
     ["Perpetuance"] = true,
@@ -63,17 +64,13 @@ local MULTI_CHARGE_ABILITIES = {
     ["Manifestation"] = true,
     ["Addendum: White"] = true,
     ["Addendum: Black"] = true,
-    ["Light Arts"] = true,
-    ["Dark Arts"] = true,
     ["Parsimony"] = true,
     ["Penury"] = true,
     ["Celerity"] = true,
     ["Alacrity"] = true,
     ["Klimaform"] = true,
-    ["Sublimation"] = true,
     ["Tranquility"] = true,
     ["Equanimity"] = true,
-    ["Enlightenment"] = true,
     ["Altruism"] = true,
     ["Focalization"] = true,
     ["Stormsurge"] = true,
