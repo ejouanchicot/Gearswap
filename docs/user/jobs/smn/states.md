@@ -15,9 +15,9 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 
 | Key | Mode (state) | Values (default in **bold**) | What it does |
 |---|---|---|---|
-| `^numpad1` | Idle Mode (`IdleMode`) | **Normal**, DT, Avatar | Idle set: `sets.idle.Normal`, `sets.idle.DT` or `sets.idle.Avatar`. In town the town set goes on top of it. |
+| `^numpad1` | Idle Mode (`IdleMode`) | **Normal**, DT | Idle set without an avatar: `sets.idle.Normal` or `sets.idle.DT`. With an avatar out the idle is `sets.idle.Avatar` by itself (in DT, `sets.idle.Avatar.DT` if you write one). In town the town set goes on top of it. |
 | `^numpad2` | Casting Mode (`CastingMode`) | **Normal**, Resistant | Mote's casting mode (`.Resistant` versions of precast / midcast sets, if you define them). |
-| `^numpad3` | Avatar Favor (`AvatarFavor`) | **Off**, On | On: `sets.idle.Avatar` is used (in town with the town set on top, as every idle). It also turns itself on and off with the Avatar's Favor buff. |
+| `^numpad3` | Avatar Favor (`AvatarFavor`) | **Off**, On | On: `sets.buff["Avatar's Favor"]` goes on top of your idle (in town the town set goes on top of both, as every idle). It also turns itself on and off with the Avatar's Favor buff. |
 
 ## Other modes (no key)
 

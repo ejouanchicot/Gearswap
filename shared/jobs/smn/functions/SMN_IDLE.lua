@@ -1,11 +1,12 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   SMN Idle Module - Idle Set Selection
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Picks the active idle set based on IdleMode (Normal / DT / Avatar) and
----   the AvatarFavor toggle. When state.AvatarFavor == true, sets.idle.Avatar
----   overrides whatever IdleMode says. In town the town set goes on top of
----   that idle (sets.Adoulin in Adoulin), as on the other jobs. Outside town,
----   sets.MoveSpeed is laid over the result while moving.
+---   With an avatar out, sets.idle.Avatar (perpetuation, pet DT...; its
+---   IdleMode child when defined, e.g. sets.idle.Avatar.DT); without one,
+---   sets.idle[IdleMode] (Normal / DT). Mote re-dresses on summon / release.
+---   Avatar's Favor (state.AvatarFavor, kept in step with the buff by
+---   SMN_BUFFS) lays sets.buff["Avatar's Favor"] on top. Then, as on every
+---   job, the town set on top in town, sets.MoveSpeed outside town.
 ---
 ---   @file    shared/jobs/smn/functions/SMN_IDLE.lua
 ---   @author  ejouanchicot
@@ -15,20 +16,18 @@
 
 local BaseSetBuilder = nil
 
---- The idle set chosen by IdleMode, or Mote's own choice when none matches.
+--- The idle set: sets.idle.Avatar (or its IdleMode child) with an avatar
+--- out, else sets.idle[IdleMode], else Mote's own choice.
 --- @param idleSet table The base idle set Mote selected
---- @return table The IdleMode set
+--- @return table
 local function select_mode_set(idleSet)
-    if state.IdleMode then
-        if state.IdleMode.value == 'DT' and sets.idle.DT then
-            return sets.idle.DT
-        end
-        if state.IdleMode.value == 'Avatar' and sets.idle.Avatar then
-            return sets.idle.Avatar
-        end
-        if state.IdleMode.value == 'Normal' and sets.idle.Normal then
-            return sets.idle.Normal
-        end
+    local mode = state.IdleMode and state.IdleMode.value
+    local avatar = sets.idle.Avatar
+    if pet and pet.isvalid and type(avatar) == 'table' then
+        return (mode and type(avatar[mode]) == 'table') and avatar[mode] or avatar
+    end
+    if mode and type(sets.idle[mode]) == 'table' then
+        return sets.idle[mode]
     end
     return idleSet
 end
@@ -43,11 +42,10 @@ function customize_idle_set(idleSet)
         BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
     end
 
-    -- Avatar's Favor toggle wins over IdleMode (master idle while the
-    -- avatar is up); the town set then goes on top, as on every job
     local idle = select_mode_set(idleSet)
-    if state.AvatarFavor and state.AvatarFavor.value == true and sets.idle.Avatar then
-        idle = sets.idle.Avatar
+    local favor = sets.buff and sets.buff["Avatar's Favor"]
+    if state.AvatarFavor and state.AvatarFavor.value == true and favor then
+        idle = set_combine(idle, favor)
     end
     local result, in_town = BaseSetBuilder.select_idle_base_town(idle)
 

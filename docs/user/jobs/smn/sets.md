@@ -28,18 +28,19 @@ your idle set while you run: keep only the slots that give movement speed.
 
 | Set | Worn when |
 |---|---|
-| `sets.idle.Normal` | `IdleMode` Normal (the default) |
-| `sets.idle.DT` | `IdleMode` DT |
-| `sets.idle.Avatar` | `IdleMode` Avatar, **or** `AvatarFavor` On (which wins over the other idle sets; in town the town set still goes on top) |
+| `sets.idle.Normal` | No avatar out, `IdleMode` Normal (the default) |
+| `sets.idle.DT` | No avatar out, `IdleMode` DT |
+| `sets.idle.Avatar` | An avatar is out (whatever `IdleMode` says), by itself: summon and it goes on, release and your mode set comes back |
+| `sets.idle.Avatar.DT` | An avatar is out and `IdleMode` is DT, when you add it (without it, `sets.idle.Avatar`) |
+| `sets.buff["Avatar's Favor"]` | On top of the idle above while `AvatarFavor` is On (it follows the Avatar's Favor buff) |
 
 When the set of the current mode does not exist, the standard idle choice
-stands (`sets.idle`, with `sets.idle.Pet` while a pet is out). As long as the
-mode's own set exists, there is no separate "avatar out" idle: use
-`IdleMode` Avatar or Avatar's Favor for that.
+stands (`sets.idle`, with `sets.idle.Pet` while a pet is out). The provided
+file has all of them, so `sets.idle.Pet` is never used.
 
-In a town (or Adoulin), `sets.idle.Town` / `sets.Adoulin` go on top of the idle
-(the mode set, or `sets.idle.Avatar` under Avatar's Favor). `sets.MoveSpeed` is laid on top while you run
-outside town (over `sets.idle.Avatar` too).
+The layers, bottom to top: the avatar or mode set, then
+`sets.buff["Avatar's Favor"]`, then in a town (or Adoulin) `sets.idle.Town` /
+`sets.Adoulin`, or outside town `sets.MoveSpeed` while you run.
 
 ## Engaged
 
@@ -58,13 +59,15 @@ outside town (over `sets.idle.Avatar` too).
 | `sets.precast.FC['Healing Magic']`, `sets.precast.FC['Enhancing Magic']` | Subjob cures and buffs |
 | `sets.precast.FC.Carbuncle`, `sets.precast.FC['Cait Sith']`... | One summon by name, when you add it |
 | `sets.precast.FC['Summoning Magic'].Resistant` (and any FC set `.Resistant`) | `CastingMode` Resistant, when you add it |
-| `sets.precast.BloodPactRage` | Using a Rage pact (Blood Pact delay gear). **Not in the provided file** |
-| `sets.precast.BloodPactWard` | Using a Ward pact. **Not in the provided file** |
+| `sets.precast.BloodPactRage` | Using a Rage pact: "Blood Pact Ability Delay" / "Blood Pact Recast" gear |
+| `sets.precast.BloodPactWard` | Using a Ward pact: same kind of gear |
 | `sets.precast.BloodPactRage['Flaming Crush']`... | One pact by name, under its type |
 
-Without `sets.precast.BloodPactRage` / `BloodPactWard`, a pact looks for a set
-with its name under `sets.precast.JA` (`sets.precast.JA['Flaming Crush']`),
-and gets no precast gear otherwise.
+These are the gear you wear at the moment you use the pact. The pact's damage
+or effect gear is the Blood Pact set of its category, below. If you delete
+`sets.precast.BloodPactRage` / `BloodPactWard`, a pact looks for a set with
+its name under `sets.precast.JA` (`sets.precast.JA['Flaming Crush']`), and
+gets no precast gear otherwise.
 
 ## Blood Pacts
 
@@ -128,10 +131,13 @@ The provided file has `sets.precast.JA['Astral Flow']`, `['Astral Conduit']`,
 - **Blood Pact sets by category.** Every pact in the lists above wears its
   category set when ordered and again when the avatar acts. Nothing to turn
   on; leave a category set out to wear nothing for it.
-- **Avatar's Favor idle.** `AvatarFavor` follows the Avatar's Favor buff on its
-  own: when the buff appears, `sets.idle.Avatar` becomes your idle set (even in
-  town); when it wears off, the normal idle comes back. You can still flip it
-  by hand with Ctrl+Numpad3.
+- **Avatar idle.** While an avatar is out your idle is `sets.idle.Avatar`
+  (`sets.idle.Avatar.DT` in DT if you write it); the gear changes when you
+  summon or release.
+- **Avatar's Favor.** `AvatarFavor` follows the Avatar's Favor buff on its
+  own: when the buff appears, `sets.buff["Avatar's Favor"]` goes on top of your
+  idle; when it wears off, it comes off. You can still flip it by hand with
+  Ctrl+Numpad3.
 - **Carbuncle auto-summon.** About 10 s after every load (and every subjob
   change), if no pet is out and you are not dead, Carbuncle is summoned. It is
   in the entry file; no mode turns it off.
@@ -140,15 +146,9 @@ The provided file has `sets.precast.JA['Astral Flow']`, `['Astral Conduit']`,
 - **Doom.** SMN runs the shared Doom handling itself: `sets.buff.Doom` works as
   on the other jobs, but the provided file has none.
 
-## Sets in the provided file that nothing reads
-
-- `sets.weapons`: no code looks for it.
-- `sets.pet.Engaged`: no code looks for it (there is no set for the avatar's
-  own melee).
-
 ## Names the code reads that the provided file lacks
 
-- `sets.precast.BloodPactRage`, `sets.precast.BloodPactWard` (Blood Pact delay).
+- `sets.idle.Avatar.DT` (avatar idle in `IdleMode` DT).
 - `sets.buff.Doom`.
 - `sets.Adoulin` (without it, Adoulin uses `sets.idle.Town`).
 - `.Resistant` versions for `CastingMode` Resistant.

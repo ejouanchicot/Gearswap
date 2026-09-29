@@ -10,7 +10,8 @@
 ---     • Pet midcast (Blood Pact Rage Physical/Magical/Hybrid/AstralFlow + Ward Buff/Debuff/Heal)
 ---     • Job Abilities (Astral Flow, Astral Conduit, Apogee, Elemental Siphon, Mana Cede,
 ---                      Avatar's Favor, Release)
----     • Pet engaged (avatar auto-attack)
+---     • Blood Pact precast (delay), Avatar's Favor buff
+---     • Idle with an avatar out (sets.idle.Avatar)
 ---
 ---   @file    sets/smn_sets.lua
 ---   @author  ejouanchicot
@@ -35,21 +36,14 @@ local function empty_set()
 end
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- WEAPON SET (referenced by other sets)
--- ═══════════════════════════════════════════════════════════════════════════
-
-sets.weapons = {
-    main = "Grioavolr",
-}
-
--- ═══════════════════════════════════════════════════════════════════════════
 -- IDLE SETS
 -- ═══════════════════════════════════════════════════════════════════════════
 
 sets.idle = {}
 sets.idle.Normal = empty_set()
 sets.idle.DT     = empty_set()
-sets.idle.Avatar = empty_set()   -- Avatar's Favor active
+sets.idle.Avatar = empty_set()   -- An avatar is out (perpetuation, refresh, pet DT);
+                                 -- sets.idle.Avatar.DT in IdleMode DT when you add it
 
 sets.idle.Town = empty_set()
 
@@ -115,6 +109,22 @@ sets.precast.JA['Release']         = empty_set()
 -- MIDCAST - MASTER MAGIC
 -- ═══════════════════════════════════════════════════════════════════════════
 
+-- ═══════════════════════════════════════════════════════════════════════════
+-- PRECAST - BLOOD PACTS (the moment you use the pact: "Blood Pact Ability
+-- Delay" / "Blood Pact Recast" pieces). The damage / effect gear is the pet
+-- midcast below.
+-- ═══════════════════════════════════════════════════════════════════════════
+
+sets.precast.BloodPactRage = empty_set()
+sets.precast.BloodPactWard = empty_set()
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- BUFFS
+-- ═══════════════════════════════════════════════════════════════════════════
+
+sets.buff = {}
+sets.buff["Avatar's Favor"] = empty_set()   -- On top of the idle while Favor is up
+
 sets.midcast = {}
 
 -- Summoning Magic (avatar summon - reduces Pact Delay)
@@ -156,13 +166,6 @@ sets.pet_midcast.BPWard = {}
 sets.pet_midcast.BPWard.Buff   = empty_set()
 sets.pet_midcast.BPWard.Debuff = empty_set()
 sets.pet_midcast.BPWard.Heal   = empty_set()
-
--- ═══════════════════════════════════════════════════════════════════════════
--- PET ENGAGED (avatar auto-attack)
--- ═══════════════════════════════════════════════════════════════════════════
-
-sets.pet = {}
-sets.pet.Engaged = empty_set()
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- MOVEMENT

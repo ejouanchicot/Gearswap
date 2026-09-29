@@ -16,15 +16,17 @@ local SMNStates = {}
 --- Must be called from user_setup() (Mote-Include provides `state` and `M`).
 --- @return nil
 function SMNStates.configure()
-    -- Idle mode: standard / damage taken / Avatar's Favor
-    state.IdleMode = M{['description']='Idle Mode', 'Normal', 'DT', 'Avatar'}
+    -- Idle mode: standard / damage taken. With an avatar out the idle is
+    -- sets.idle.Avatar by itself (sets.idle.Avatar.DT in DT when defined).
+    state.IdleMode = M{['description']='Idle Mode', 'Normal', 'DT'}
     state.IdleMode:set('Normal')
 
     -- Casting mode for magic (resistance scaling on hard targets)
     state.CastingMode = M{['description']='Casting Mode', 'Normal', 'Resistant'}
     state.CastingMode:set('Normal')
 
-    -- Avatar's Favor toggle - when ON, sets.idle.Avatar overrides the active idle
+    -- Avatar's Favor: follows the buff (SMN_BUFFS); On lays
+    -- sets.buff["Avatar's Favor"] over the idle
     state.AvatarFavor = M(false, 'Avatar Favor')
 
     -- Moving state (AutoMove writes here)

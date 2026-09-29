@@ -2,8 +2,8 @@
 ---   SMN Buffs Module - Buff Gain/Loss Handler
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Delegates to DoomManager, and mirrors the Avatar's Favor buff into
----   state.AvatarFavor then sends `gs c update`, so sets.idle.Avatar swaps
----   in/out without the player toggling anything.
+---   state.AvatarFavor then sends `gs c update`, so sets.buff["Avatar's Favor"]
+---   goes on / off the idle without the player toggling anything.
 ---
 ---   @file    shared/jobs/smn/functions/SMN_BUFFS.lua
 ---   @author  ejouanchicot
@@ -32,7 +32,7 @@ function job_buff_change(buff, gain, eventArgs)
     end
 
     -- Avatar's Favor: keep state.AvatarFavor in sync with the actual buff.
-    -- This lets sets.idle.Avatar swap automatically without a manual toggle.
+    -- The Favor layer of the idle (SMN_IDLE) follows without a manual toggle.
     if buff == "Avatar's Favor" and state.AvatarFavor then
         state.AvatarFavor:set(gain)
         send_command('gs c update')

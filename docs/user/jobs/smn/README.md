@@ -19,8 +19,9 @@ SMN gears your avatar's Blood Pacts by kind, not by name:
   Flow) or Ward (Buff, Debuff, Heal), and the matching
   `sets.pet_midcast.BPRage.<kind>` / `sets.pet_midcast.BPWard.<kind>` goes on
   when you give the order and again when the avatar acts;
-- while Avatar's Favor is up, your idle is `sets.idle.Avatar` (the mode
-  follows the buff by itself);
+- while an avatar is out, your idle is `sets.idle.Avatar` by itself; while
+  Avatar's Favor is up, `sets.buff["Avatar's Favor"]` goes on top of it (the
+  mode follows the buff by itself);
 - one-word commands summon an avatar, use a Blood Pact on the right target,
   or use an SMN ability;
 - a Summoning Magic skill-up loop (summon Siren, Release, repeat);
@@ -36,9 +37,9 @@ No SMN key depends on the subjob.
 
 | Key | Mode | Default | What it changes |
 |---|---|---|---|
-| Ctrl+Numpad1 `^numpad1` | `IdleMode` | Normal | Idle set: Normal, DT or Avatar |
+| Ctrl+Numpad1 `^numpad1` | `IdleMode` | Normal | Idle set: Normal or DT (with an avatar out: `sets.idle.Avatar`, or `sets.idle.Avatar.DT` in DT if you write it) |
 | Ctrl+Numpad2 `^numpad2` | `CastingMode` | Normal | Normal or Resistant: the `.Resistant` versions of your spell sets, if you write them |
-| Ctrl+Numpad3 `^numpad3` | `AvatarFavor` | Off | On: `sets.idle.Avatar` wins over the other idle sets (in town the town set goes on top, as always). Also switched on and off by the Avatar's Favor buff |
+| Ctrl+Numpad3 `^numpad3` | `AvatarFavor` | Off | On: `sets.buff["Avatar's Favor"]` goes on top of your idle (in town the town set goes on top of both, as always). Also switched on and off by the Avatar's Favor buff |
 
 The full value lists are in [states.md](states.md). The `AvatarFavor` row has
 been reported missing from the HUD; the key works either way.
@@ -135,11 +136,12 @@ What the project's shared systems do on SMN, checked in the code.
 
 | Feature | On SMN |
 |---|---|
-| Blood Pact gear | SMN's own: the pact's kind picks `sets.pet_midcast.BPRage.*` / `BPWard.*`, put on when you give the order and again when the avatar acts. An unknown pact (Raise II today) gets none. No precast set: write `sets.precast.BloodPactRage` / `BloodPactWard` for Blood Pact delay gear |
-| Avatar's Favor | The `AvatarFavor` mode follows the buff: gained, `sets.idle.Avatar` goes on; lost, your `IdleMode` set comes back |
+| Blood Pact gear | SMN's own: the pact's kind picks `sets.pet_midcast.BPRage.*` / `BPWard.*`, put on when you give the order and again when the avatar acts. An unknown pact (Raise II today) gets none. When you use a pact, `sets.precast.BloodPactRage` / `BloodPactWard` goes on first (Blood Pact delay gear) |
+| Avatar idle | Summon an avatar and `sets.idle.Avatar` becomes your idle; release it and your `IdleMode` set comes back |
+| Avatar's Favor | The `AvatarFavor` mode follows the buff: gained, `sets.buff["Avatar's Favor"]` goes on top of the idle; lost, it comes off |
 | Carbuncle | About 10 s after each load or subjob change, if you are alive and no avatar is out, Carbuncle is summoned |
 | Movement speed | `sets.MoveSpeed` goes on while you run, outside town, when idle (over `sets.idle.Avatar` too) |
-| Town | In a city (Dynamis excluded) `sets.idle.Town` goes on top of the idle (`IdleMode` set, or `sets.idle.Avatar` under Avatar's Favor); no `sets.Adoulin` in the provided file, so Adoulin uses the town set |
+| Town | In a city (Dynamis excluded) `sets.idle.Town` goes on top of the idle (avatar or `IdleMode` set, with the Favor set); no `sets.Adoulin` in the provided file, so Adoulin uses the town set |
 | Combat Mode | Not native: off and hidden. `//gs c combatmode show` gives it Alt+Numpad0; On locks main, sub and range |
 | Treasure Mode | Off and hidden. `//gs c th show` gives it Alt+Numpad.; it needs a `sets.TreasureHunter` in your SMN set file |
 | Obi / Orpheus | The shared automatic belt acts on your own elemental spells (a subjob nuke), not on Blood Pacts |

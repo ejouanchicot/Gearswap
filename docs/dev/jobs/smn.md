@@ -18,8 +18,10 @@ What SMN adds on top of the shared pipeline:
   name to `sets.pet_midcast.BPRage.{Physical,Magical,Hybrid,AstralFlow}` or
   `sets.pet_midcast.BPWard.{Buff,Debuff,Heal}`; the set is equipped in the
   master's `job_post_midcast` and again in `job_pet_midcast`.
-- **Avatar's Favor idle**: a boolean state kept in sync with the buff selects
-  `sets.idle.Avatar`; otherwise the `IdleMode` set, the town set in town and
+- **Avatar idle**: with an avatar out the idle is `sets.idle.Avatar` (its
+  `IdleMode` child when defined), without one the `IdleMode` set; a boolean
+  state kept in sync with the Avatar's Favor buff lays
+  `sets.buff["Avatar's Favor"]` on top; then the town set in town and
   `sets.MoveSpeed` while moving, through the shared `BaseSetBuilder` steps.
 - **Commands**: `smn summon <avatar>`, `smn bp <pact>`, JA shortcuts
   (`smn apogee`, `smn astralflow`, ...), and a Summoning Magic skill-up loop
@@ -29,7 +31,8 @@ What SMN adds on top of the shared pipeline:
 Player pages: [start page](../../user/jobs/smn/README.md),
 [modes](../../user/jobs/smn/states.md), [sets](../../user/jobs/smn/sets.md).
 
-Re-verified against the code on 2026-09-28. References name a file and a
+Re-verified against the code on 2026-09-28; idle, states and sets sections
+updated on 2026-09-29. References name a file and a
 function, not a line number. Commit hashes quoted in older versions of this
 page predate the 2026-09-27 history rewrite and were removed.
 
@@ -70,7 +73,7 @@ clone of any other character printed
 | `shared/jobs/smn/functions/SMN_MIDCAST.lua` | `job_post_midcast`: Blood Pact set via the classifier, else `JOB_POST_MIDCAST_HANDLERS` by skill |
 | `shared/jobs/smn/functions/SMN_PET_MIDCAST.lua` | `job_pet_midcast(spell, action, spellMap, eventArgs)`: re-equips the classified Blood Pact set and marks the event handled |
 | `shared/jobs/smn/functions/SMN_AFTERCAST.lua` | Watchdog notify only |
-| `shared/jobs/smn/functions/SMN_IDLE.lua` | `customize_idle_set`: `sets.idle.Avatar` / `DT` / `Normal`, town set, `sets.MoveSpeed` (`BaseSetBuilder`) |
+| `shared/jobs/smn/functions/SMN_IDLE.lua` | `customize_idle_set`: `sets.idle.Avatar` with an avatar out, else `sets.idle[IdleMode]`; `sets.buff["Avatar's Favor"]` on top; town set, `sets.MoveSpeed` (`BaseSetBuilder`) |
 | `shared/jobs/smn/functions/SMN_ENGAGED.lua` | `customize_melee_set` returns Mote's set |
 | `shared/jobs/smn/functions/SMN_STATUS.lua` | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/smn/functions/SMN_BUFFS.lua` | `DoomManager` + Avatar's Favor state sync |
@@ -135,9 +138,12 @@ empty Blood Pact branch. `job_post_precast` applies TP gear (none).
   `BloodPactWard`) to the generic ability check
   ([precast pipeline](../systems/precast-pipeline.md#precastguard-routing)).
 - Mote uses `sets.precast[spell.type]` for a Blood Pact when it exists, else
-  `sets.precast.JA` by name (`get_precast_set`); SMN defines neither
-  `BloodPactRage` nor `BloodPactWard`, and `sets.precast.JA` has only the
-  seven SMN ability names, so a Blood Pact gets no precast gear.
+  `sets.precast.JA` by name (`get_precast_set`). Since 2026-09-29 the set
+  file defines `sets.precast.BloodPactRage` and `sets.precast.BloodPactWard`
+  (empty skeletons, for "Blood Pact Ability Delay" / "Blood Pact Recast"
+  gear), so a pact wears that set, refined by pact name when a child such as
+  `sets.precast.BloodPactRage['Flaming Crush']` exists. The pact's damage /
+  effect gear stays the pet midcast set below.
 - Avatar summons are Summoning Magic and get
   `sets.precast.FC['Summoning Magic']`.
 - A refused Blood Pact or ability goes through `CooldownChecker`, so
@@ -204,21 +210,27 @@ only loads the modules.
 
 - `job_aftercast` notifies the watchdog; Mote's `default_aftercast` returns to
   idle unless a pet action is in progress.
-- `customize_idle_set`:
-  1. The idle: `sets.idle.Avatar` when `AvatarFavor` is true (and the set is
-     defined), else `sets.idle.DT` / `.Avatar` / `.Normal` by `IdleMode`
-     (`select_mode_set`; Mote's set when none matches).
-  2. That idle is passed to
-     `BaseSetBuilder.select_idle_base_town`, Avatar's Favor included since
-     2026-09-29 (before, the Favor idle skipped the town set; an avatar cannot
-     be called in a city, so nothing changed in game): in a city (Dynamis excluded)
-     `sets.idle.Town` (in Adoulin `sets.Adoulin` if defined) goes on top of
-     it (since 2026-09-29; it replaced it before).
-  3. In town the set is returned as is; elsewhere
+- `customize_idle_set` (since 2026-09-29):
+  1. The idle (`select_mode_set`): with an avatar out (`pet.isvalid`) and
+     `sets.idle.Avatar` a table, `sets.idle.Avatar[IdleMode]` when that child
+     is a table (e.g. `sets.idle.Avatar.DT`), else `sets.idle.Avatar`.
+     Without an avatar, `sets.idle[IdleMode]` (Normal / DT) when it is a
+     table, else Mote's set. Mote re-runs `handle_equipping_gear` on
+     `pet_change` (SMN has no `job_pet_change`), so the idle follows a summon
+     or a release by itself.
+  2. When `state.AvatarFavor` is true and `sets.buff["Avatar's Favor"]`
+     exists, that set is laid over the idle with `set_combine` (before
+     2026-09-29 Favor replaced the idle with `sets.idle.Avatar`).
+  3. The result is passed to `BaseSetBuilder.select_idle_base_town`: in a
+     city (Dynamis excluded) `sets.idle.Town` (in Adoulin `sets.Adoulin` if
+     defined) goes on top of it.
+  4. In town the set is returned as is; elsewhere
      `BaseSetBuilder.apply_movement` lays `sets.MoveSpeed` over it while
      `state.Moving` is `'true'`.
   Mote's defense / Kiting layers, applied to Mote's set before the hook, are
-  dropped whenever an `IdleMode` set replaces it.
+  dropped whenever the avatar set or an `IdleMode` set replaces it (the
+  provided file defines all of them, so always). Mote's `sets.idle.Pet` is
+  never reached while those sets exist.
 - `customize_melee_set` returns Mote's set; `sets.engaged` is a flat
   skeleton.
 - `job_status_change` is `LifecycleManager.status_change()` since 2026-09-28
@@ -233,9 +245,9 @@ Created by `SMNStates.configure()`.
 
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
-| `IdleMode` (replaced) | Normal, DT, Avatar | Normal | `^numpad1` | `SMN_IDLE.lua` `select_mode_set` |
+| `IdleMode` (replaced) | Normal, DT (the `Avatar` value was removed on 2026-09-29: the avatar idle is automatic) | Normal | `^numpad1` | `SMN_IDLE.lua` `select_mode_set` (also picks the `sets.idle.Avatar` child) |
 | `CastingMode` (replaced) | Normal, Resistant | Normal | `^numpad2` | Mote default precast / midcast, the Elemental and Enfeebling handlers |
-| `AvatarFavor` | boolean (`M(false, 'Avatar Favor')`) | false | `^numpad3` | `customize_idle_set`, `job_buff_change` |
+| `AvatarFavor` | boolean (`M(false, 'Avatar Favor')`) | false | `^numpad3` | `customize_idle_set` (lays `sets.buff["Avatar's Favor"]`), `job_buff_change` (sets it from the buff) |
 | `Moving` | false, true | false | none | AutoMove writes it; `BaseSetBuilder.apply_movement` |
 | `FastCast` | 0..80 | 0 | none | `midcast_watchdog.lua` fallback estimate |
 | `AutoMedicine` | shared | persisted | `#numpad0` (from `COMMON_KEYBINDS.lua`) | `AutoMedicine.init` |
@@ -281,8 +293,10 @@ until 2026-09-29).
 
 | Set | Looked up by | In the file |
 |-----|--------------|-------------|
-| `sets.idle.Normal`, `.DT`, `.Avatar` | `customize_idle_set` | yes (skeleton) |
-| `sets.idle.Town` | `BaseSetBuilder.select_idle_base_town`, on top of the idle (Avatar's Favor or `IdleMode` set) | yes (skeleton) |
+| `sets.idle.Normal`, `.DT` | `customize_idle_set`, no avatar out | yes (skeleton) |
+| `sets.idle.Avatar` (+ optional `[IdleMode]` child, e.g. `.DT`) | `customize_idle_set`, avatar out | yes (skeleton; no child) |
+| `sets.buff["Avatar's Favor"]` | `customize_idle_set`, on top of the idle while `AvatarFavor` is true | yes (skeleton) |
+| `sets.idle.Town` | `BaseSetBuilder.select_idle_base_town`, on top of the idle | yes (skeleton) |
 | `sets.Adoulin` | same, in Adoulin | no (Adoulin gets `sets.idle.Town`) |
 | `sets.MoveSpeed` | `BaseSetBuilder.apply_movement`, outside town while moving | yes (skeleton) |
 | `sets.engaged` | Mote `get_melee_set` | yes (skeleton) |
@@ -290,7 +304,7 @@ until 2026-09-29).
 | `sets.precast.FC` (+ `['Summoning Magic']`, `['Healing Magic']`, `['Enhancing Magic']`) | Mote default precast | yes (real gear) |
 | `sets.precast.WS` | Mote default precast | yes (skeleton) |
 | `sets.precast.JA[...]` (7 SMN abilities) | Mote default precast | yes (skeleton) |
-| `sets.precast.BloodPactRage`, `.BloodPactWard` | Mote precast for Blood Pacts | **no** |
+| `sets.precast.BloodPactRage`, `.BloodPactWard` | Mote precast for Blood Pacts (by `spell.type`) | yes (skeleton, since 2026-09-29) |
 | `sets.midcast['Summoning Magic']`, `['Healing Magic']`, `['Enhancing Magic']`, `['Divine Magic']`, `['Dark Magic']`, `['Elemental Magic']`, `['Enfeebling Magic']` | `MidcastManager` base sets | yes (skeleton) |
 | `sets.midcast.Cure`, `.Curaga`, `.Stoneskin`, `.Phalanx`, `.Refresh`, `.Haste` | `MidcastManager` P0 / P1 | yes (skeleton) |
 | `sets.midcast['Elemental Siphon']` | Mote default midcast by name | yes (skeleton) |
@@ -298,7 +312,6 @@ until 2026-09-29).
 | `sets.pet_midcast.BPRage.Physical/Magical/Hybrid/AstralFlow` | classifier | yes (skeleton) |
 | `sets.pet_midcast.BPWard.Buff/Debuff/Heal` | classifier | yes (skeleton) |
 | `sets.midcast.Pet` | Mote `default_pet_midcast`, only for a pact the classifier does not know (`job_pet_midcast` marks the others handled) | no |
-| `sets.weapons` (main only), `sets.pet.Engaged` | nothing | yes (unused) |
 | `sets.buff.Doom` | `DoomManager` | **no** |
 
 GearSwap skips `""` items but `equip()` / `set_combine` merge slot by slot
@@ -363,7 +376,8 @@ it stays on after the first cast.
   classifier lists; keep them in sync with
   `docs/SMN_BLOOD_PACTS_REFERENCE.md`.
 - `customize_idle_set` owns the whole idle choice; town and movement gear come
-  from `BaseSetBuilder` there, after the Avatar's Favor / `IdleMode` choice.
+  from `BaseSetBuilder` there, after the avatar / `IdleMode` choice and the
+  Avatar's Favor layer.
 - A `""` slot is not neutral (it cancels the piece below it in a merge):
   `empty_set()` returns `{}`; never reintroduce `""` slots.
 - The Carbuncle summon fires after every load in which no pet is out, not
@@ -377,7 +391,7 @@ it stays on after the first cast.
   `blood_pact_classifier.lua` and to the reference doc.
 - New Blood Pact category: a list and a branch in `classify`, and the set
   under `sets.pet_midcast`.
-- Blood Pact delay gear: define `sets.precast.BloodPactRage` /
+- Blood Pact delay gear: fill `sets.precast.BloodPactRage` /
   `BloodPactWard` (Mote picks them by `spell.type`).
 - New JA shortcut: add it to `JA_SHORTCUTS`.
 
@@ -428,6 +442,14 @@ it stays on after the first cast.
 - Fixed 2026-09-28: `sets.midcast.Pet` no longer overrides the Blood Pact set
   (`job_pet_midcast` marks the event handled); `SMN_STATUS` is the shared
   `LifecycleManager.status_change()`.
+- Fixed 2026-09-29, checked offline, not yet in game: the idle follows the
+  avatar (`sets.idle.Avatar` whenever one is out, its `IdleMode` child when
+  defined), `IdleMode` lost its manual `Avatar` value, Avatar's Favor lays
+  `sets.buff["Avatar's Favor"]` over the idle instead of replacing it, the set
+  file gained `sets.precast.BloodPactRage` / `BloodPactWard`, and the unused
+  `sets.weapons` / `sets.pet.Engaged` were removed. Offline, 16 combinations
+  (field / town, avatar out or not, Normal / DT, Favor on / off) gave the
+  expected layers and SMN loads.
 - `smn bp` matches pact names case-sensitively: `smn bp healing ruby` is not
   recognised and targets `<t>`.
 - The Carbuncle auto-summon is scheduled from both the old and the new
@@ -441,8 +463,6 @@ it stays on after the first cast.
   loop was off, or raises under `pcall` when no `//gs c` command ran yet
   (`MessageFormatter` still nil in `SMN_COMMANDS.lua`).
 - `Raise II` is not classified and gets no Blood Pact set.
-- Blood Pacts get no precast gear (no `sets.precast.BloodPactRage` /
-  `BloodPactWard`).
 - No `SMN_REFILL.lua`: `refill` uses the hard-coded `FALLBACK_LIST` and moves
   anything else back to the Case.
 - No `SMN_JA_DATABASE.lua`; the ability message handler's job list has no SMN,
@@ -452,8 +472,8 @@ it stays on after the first cast.
   with spell names in the shared spell namespace (`//gs c info` cannot show
   them, see [spell databases](../data/spell-databases.md#known-issues)), and
   the `AvatarFavor` row does not appear on the HUD.
-- `CastingMode` has no effect (no `.Resistant` set); `sets.weapons` and
-  `sets.pet.Engaged` are never used; `sets.buff.Doom` is missing.
+- `CastingMode` has no effect (no `.Resistant` set); `sets.buff.Doom` is
+  missing.
 - Standards: `SMN_BUFFS` and `SMN_AFTERCAST` re-implement `LifecycleManager`
   (`SMN_STATUS` is the shared handler since 2026-09-28);
   `SMN_SPELL_DATABASE.can_use_pact` is broken and dead (known).
