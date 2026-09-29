@@ -27,7 +27,7 @@ What WAR adds on top of the shared pipeline:
   Aftermath Lv.3 with Ukonvasara -> `PDTAFM3`; a set named after the weapon
   (`sets.engaged.Naegling`); otherwise the `HybridMode` set.
 - **Hoxne stance** (when the player adds it to `HybridMode`): the engaged and idle
-  builders put the Hoxne Ampulla on (`STANCE_AMMO`, as PLD does; since 2026-09-28)
+  builders put the Hoxne Ampulla on (`AmpullaLock.stance_ammo`, shared with PLD since 2026-09-29; since 2026-09-28)
   and the ammo slot is locked on it through the shared `AmpullaLock`.
 - **Retaliation auto-cancel** after 5 s of continuous movement out of combat.
 
@@ -56,13 +56,13 @@ numbers are avoided because they drift.
 | `shared/jobs/war/functions/WAR_MOVEMENT.lua` | 166 | Retaliation auto-cancel (AutoMove callback), Retaliation debug helpers |
 | `shared/jobs/war/functions/WAR_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('WAR', ..., 4, 'SAM')` wrappers |
 | `shared/jobs/war/functions/WAR_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('WAR', ..., 'SAM', 22, 1)` wrapper |
-| `shared/jobs/war/functions/logic/set_builder.lua` | 267 | Engaged base selection (KC, stance, AM3, weapon set, HybridMode), weapon layer, stance ammo (`STANCE_AMMO`, `apply_stance_ammo`), town / movement idle |
+| `shared/jobs/war/functions/logic/set_builder.lua` | 230 | Engaged base selection (KC through `BaseSetBuilder.kraken_in_offhand`, stance, AM3, weapon set, HybridMode), weapon layer (`BaseSetBuilder.lay_weapon`), stance ammo (`apply_stance_ammo` = `AmpullaLock.stance_ammo`), town / movement idle |
 | `shared/jobs/war/functions/logic/smartbuff_manager.lua` | 287 | `buff_war`, `buff_sam_sub`, `build_tp` |
 | `shared/utils/weaponskill/ws_slots.lua` | 159 | `WSSlots.rebuild` / `detect_weapon` / `sync` / `get` / `cast` (shared with PLD) |
 | `shared/utils/drg/auto_jump.lua` | 228 | Auto-Jump before a WS on /DRG (shared with DNC) |
 | `shared/utils/drg/DRG_JUMP_MANAGER.lua` | 88 | Manual Jump rotation (`//gs c jump`, WAR `tp` on /DRG) |
 | `shared/utils/weaponskill/tp_bonus_calculator.lua` | 275 | TP bonus piece selection (shared) |
-| `shared/utils/equipment/ampulla_lock.lua` | 177 | Hoxne Ampulla ammo lock (shared with PLD); recorded with Combat Mode's lock registry (`'ampulla'`) |
+| `shared/utils/equipment/ampulla_lock.lua` | 194 | Hoxne Ampulla ammo lock (shared with PLD); recorded with Combat Mode's lock registry (`'ampulla'`) |
 | `_master/config/war/WAR_STATES.lua` | 116 | All WAR states (`WARStates.configure()`) |
 | `_master/config/war/WAR_KEYBINDS.lua` | 68 | Data only: 8 bind entries handed to `KeybindManager.create('WAR', ...)`, plus the character's `COMMON_KEYBINDS.lua` keys |
 | `_master/config/war/WAR_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
@@ -324,7 +324,7 @@ has no effect on WAR.
   if it exists (overlay: `sets.idle.Hoxne` under the Hoxne stance), otherwise Mote's
   base; then `sets[state.MainWeapon.current]` through
   `WeaponResolver.set_for('main', ...)` (`apply_weapon`, also in town) and the
-  stance's ammo (`apply_stance_ammo`: `ammo = 'Hoxne Ampulla'` under the Hoxne
+  stance's ammo (`apply_stance_ammo` = `AmpullaLock.stance_ammo`: `ammo = 'Hoxne Ampulla'` under the Hoxne
   stance, also in town); then
   `sets.MoveSpeed` when `state.Moving.value == 'true'` outside town
   (`BaseSetBuilder.apply_movement`).

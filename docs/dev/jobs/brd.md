@@ -357,8 +357,8 @@ Created by `BRDStates.configure()` on every `user_setup()`. Keys from
 | `ThrenodyElement` | same | Fire | `^numpad.` | `threnody` (`THRENODIES`) |
 | `MarcatoSong` | HonorMarch, AriaPassion, Off | HonorMarch | `^numpad8` | `marcato_target_song` |
 | `AutoNitro` | On, Off | On | `#numpad2` | `start_with_nitro` |
-| `MainWeapon` | Naegling, Twashtar, Carnwenhan, Mpu Gandring | Mpu Gandring | `^numpad1` | `SetBuilder.apply_main_weapon` |
-| `SubWeapon` | Kraken, Demersal, Genmei, Centovente | Genmei | `^numpad2` | `SetBuilder.apply_sub_weapon` |
+| `MainWeapon` | Naegling, Twashtar, Carnwenhan, Mpu Gandring | Mpu Gandring | `^numpad1` | `SetBuilder.apply_weapons` (`BaseSetBuilder.lay_weapons`) |
+| `SubWeapon` | Kraken, Demersal, Genmei, Centovente | Genmei | `^numpad2` | `SetBuilder.apply_weapons` (`BaseSetBuilder.lay_weapons`) |
 | `BRDSong1`..`BRDSong5` | Empty (overwritten with short names) | Empty | none | HUD rows only |
 | `FastCast` | 0..80 step 10 | 80 | none | `MidcastWatchdog` |
 | `AutoMedicine` | shared On/Off | persisted | `#numpad0` (common key) | `PrecastGuard` |
@@ -413,7 +413,7 @@ Full player-facing list: [sets.md](../../user/jobs/brd/sets.md).
 | `sets.idle.Town`, `sets.Adoulin` (both full idle sets plus `MoveSpeed`), `sets.MoveSpeed` | `BaseSetBuilder`, `apply_movement` |
 | `sets.engaged`, `.STP`, `.Acc`, `.SB`, `.DT` | `select_engaged_base` |
 | `sets.engaged.PDTKC` | `select_engaged_base` |
-| `sets[MainWeapon]`, `sets[SubWeapon]` | `apply_main_weapon` / `apply_sub_weapon` through `WeaponResolver` |
+| `sets[MainWeapon]`, `sets[SubWeapon]` | `apply_weapons` (`BaseSetBuilder.lay_weapons`) through `WeaponResolver` |
 | `sets.precast.FC`, `sets.precast.JA[...]`, `sets.precast.WS[...]` | Mote default precast |
 | `sets.midcast.BardSong` | Singing base, Mote type fallback |
 | `sets.midcast.Songs.<instrument>` | Singing instrument layer (locked songs); `range` by `apply_main_instrument` |

@@ -51,12 +51,12 @@ numbers are avoided because they drift.
 | `shared/jobs/pld/functions/PLD_MOVEMENT.lua` | 23 | Placeholder for the 12-module layout (comments only) |
 | `shared/jobs/pld/functions/PLD_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('PLD', 'config/pld/PLD_LOCKSTYLE', 1, 'SAM')` wrappers |
 | `shared/jobs/pld/functions/PLD_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('PLD', ..., 'SAM', 1, 1)` wrapper |
-| `shared/jobs/pld/functions/logic/set_builder.lua` | 400 | Idle/engaged construction: weapon, shield, ammo, HybridMode map, XP, Regen, movement, town; `current_weapon()` is the authority on what is in hand |
+| `shared/jobs/pld/functions/logic/set_builder.lua` | 376 | Idle/engaged construction: weapon, shield, ammo, HybridMode map, XP, Regen, movement, town; `current_weapon()` is the authority on what is in hand |
 | `shared/jobs/pld/functions/logic/enmity_override.lua` | 151 | Sortie and /SCH Tanking: FullEnmity spells wear `sets.EnmityMax`; JAs keep their set and gain what EnmityMax adds |
 | `shared/jobs/pld/functions/logic/cure_set_builder.lua` | 54 | CureSelf / CureOther choice for Cure to Cure IV, `is_cure` |
 | `shared/jobs/pld/functions/logic/aoe_manager.lua` | 178 | `//gs c aoe` BLU rotation (same code as RUN's copy; only headers and error text differ) |
 | `shared/jobs/pld/functions/logic/rune_manager.lua` | 76 | `//gs c rune` (same code as RUN's copy) |
-| `shared/utils/equipment/ampulla_lock.lua` | 177 | Hoxne stance: closes the ammo slot on Hoxne Ampulla once it is worn, or leaves it open and says so; records the lock with Combat Mode's lock registry (`'ampulla'`). Shared with WAR |
+| `shared/utils/equipment/ampulla_lock.lua` | 194 | Hoxne stance: closes the ammo slot on Hoxne Ampulla once it is worn, or leaves it open and says so; records the lock with Combat Mode's lock registry (`'ampulla'`). Shared with WAR |
 | `shared/utils/weaponskill/ws_slots.lua` | 159 | Weapon-aware weaponskill slot states, shared with WAR (PLD uses `rebuild` / `get` / `cast`; the weapon-in-hand detection, `detect_weapon` / `sync`, is WAR's) |
 | `shared/utils/scholar/scholar_actions.lua`, `stratagem_charges.lua` | 366 + 104 | /SCH chains, shared with BLM and GEO (and `//gs c stealth`); stratagem buffs read from `windower.ffxi.get_player().buffs` (`buff_up`), see [midcast and buffs](../systems/midcast-and-buffs.md) |
 | `_master/config/pld/PLD_STATES.lua` | 364 | States (incl. `WS1`/`WS2`), three option profiles (`standard`/`sortie`/`sch`), `apply_hybrid_profile`, `_G.PLDStates` |
@@ -273,8 +273,8 @@ Shield +1; `SCH_SHIELD_BY_WEAPON` gives Duban to Excalibur and Naegling and Aegi
 Burtgang. `apply_mode_shield` runs last so it wins over the sub carried by the
 mode's own set.
 
-`SCH_AMMO_BY_MODE` names the Ampulla for the Hoxne stance and `apply_mode_ammo`
-applies it. This, not the lock, is what puts the piece on: it is in the built set,
+`apply_mode_ammo` (= `AmpullaLock.stance_ammo`, shared with WAR since 2026-09-29) puts
+the Ampulla on under the Hoxne stance. This, not the lock, is what puts the piece on: it is in the built set,
 so every later `handle_update` wears it again.
 
 #### The weapon is its own axis

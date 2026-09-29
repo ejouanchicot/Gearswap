@@ -89,16 +89,9 @@ function SetBuilder.select_engaged_base(base_set)
         return sets.engaged.PDTKC
     end
 
-    -- Kraken Club already in the off hand (manual equip), when the chosen
-    -- weapon does not set a sub of its own: right after leaving NaeglingKC the
-    -- club is still in hand for one rebuild, and the new weapon's sub is about
-    -- to replace it.
-    local chosen = state.MainWeapon and sets[state.MainWeapon.current]
-    if not (type(chosen) == 'table' and chosen.sub) and player and player.equipment and player.equipment.sub then
-        local sub_weapon = player.equipment.sub
-        if sub_weapon == 'Kraken Club' and sets.engaged.PDTKC then
-            return sets.engaged.PDTKC
-        end
+    -- Kraken Club still in the off hand (BaseSetBuilder.kraken_in_offhand)
+    if sets.engaged.PDTKC and BaseSetBuilder.kraken_in_offhand() then
+        return sets.engaged.PDTKC
     end
 
     -- PRIORITY 2: Explicit stance chosen by the player
@@ -170,20 +163,8 @@ SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base
 ---   ENGAGED SET BUILDER (PUBLIC API)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- The Hoxne stance carries its Ampulla, as on PLD: the ammo lock
---- (shared/utils/equipment/ampulla_lock.lua) waits for the piece to be worn,
---- and the sets need not name it.
-local STANCE_AMMO = {Hoxne = 'Hoxne Ampulla'}
-
----   Put the stance's ammo on, when the stance has one
----   @param result table
----   @return table
-local function apply_stance_ammo(result)
-    local mode = state.HybridMode and state.HybridMode.value
-    local ammo = mode and STANCE_AMMO[mode]
-    if ammo then return set_combine(result, {ammo = ammo}) end
-    return result
-end
+--- The Hoxne stance carries its Ampulla, as on PLD (ampulla_lock.lua)
+local apply_stance_ammo = require('shared/utils/equipment/ampulla_lock').stance_ammo
 
 ---   Build complete engaged set with all WAR logic
 ---   Processing order:

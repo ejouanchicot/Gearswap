@@ -166,6 +166,20 @@ function AmpullaLock.release()
     end
 end
 
+--- Put the Ampulla on while the Hoxne stance is chosen (WAR and PLD set
+--- builders, idle and engaged, so the sets need not name it). The lock above
+--- keeps the WS and midcast sets off the slot; this is what puts the piece on
+--- in the first place.
+--- @param result table Current equipment set
+--- @return table
+function AmpullaLock.stance_ammo(result)
+    local mode = state and state.HybridMode and state.HybridMode.value
+    if mode == HOXNE_MODE then
+        return set_combine(result, {ammo = AMPULLA})
+    end
+    return result
+end
+
 --- Bring the lock in line with a HybridMode value.
 --- @param mode string HybridMode value the stance is moving to
 --- @return void

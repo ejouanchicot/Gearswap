@@ -74,6 +74,20 @@ function BaseSetBuilder.lay_weapon(result, slot, value)
     return result
 end
 
+--- Kraken Club still in the off hand while the chosen main weapon's set names
+--- no sub: right after leaving a Kraken weapon set (WAR NaeglingKC, PLD
+--- BurtgangKC) the club stays in hand for one rebuild, before the new
+--- weapon's sub replaces it, and the Kraken engaged set must hold till then.
+--- Used by: PLD, WAR
+--- @return boolean
+function BaseSetBuilder.kraken_in_offhand()
+    local chosen = state.MainWeapon and sets[state.MainWeapon.current]
+    if type(chosen) == 'table' and chosen.sub then
+        return false
+    end
+    return player ~= nil and player.equipment ~= nil and player.equipment.sub == 'Kraken Club'
+end
+
 --- Lay the MainWeapon state's set, then the SubWeapon state's.
 --- Used by: BLM, BLU, BRD, GEO, RDM, THF
 --- @param result table Current equipment set

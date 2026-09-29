@@ -104,14 +104,6 @@ local function sch_weapon()
         or (state.MainWeapon and state.MainWeapon.value)
 end
 
---- The Hoxne stance carries its Ampulla in every set, the way the stances
---- carry their shield. The ammo lock (shared/utils/equipment/ampulla_lock.lua)
---- keeps the WS and midcast sets off the slot; this is what puts the piece on
---- in the first place, so idling or engaging cannot land on a set's own ammo
---- instead.
-local SCH_AMMO_BY_MODE = {
-    Hoxne = 'Hoxne Ampulla'
-}
 
 ---   Resolve the set a HybridMode maps to, or nil when the mode names no set
 ---   @param source table Set container (sets.engaged or sets.idle)
@@ -182,19 +174,10 @@ function SetBuilder.apply_shield(result, in_town)
     return result
 end
 
----   Force the ammo the current mode calls for, where the mode owns it
----   Only the Hoxne stance does; every other mode leaves the slot to its set.
----   @param result table Current equipment set
----   @return table Set with the mode's ammo applied
-function SetBuilder.apply_mode_ammo(result)
-    local mode = state.HybridMode and state.HybridMode.value
-    local ammo = mode and SCH_AMMO_BY_MODE[mode]
-    if ammo then
-        result = set_combine(result, {ammo = ammo})
-    end
-
-    return result
-end
+---   The Hoxne stance carries its Ampulla in every set, the way the stances
+---   carry their shield (ampulla_lock.lua; every other mode leaves the slot to
+---   its set)
+SetBuilder.apply_mode_ammo = require('shared/utils/equipment/ampulla_lock').stance_ammo
 
 ---   Force the shield the current mode calls for, where the mode owns it
 ---   Both Sortie and the /SCH stances read it off the weapon; every other mode
@@ -254,16 +237,9 @@ function SetBuilder.select_engaged_base(base_set)
         return sets.engaged.BurtgangKC
     end
 
-    -- PRIORITY 2: Kraken Club already in the off hand (manual equip), when the
-    -- chosen weapon does not set a sub of its own: right after leaving
-    -- BurtgangKC the club is still in hand for one rebuild, and the new
-    -- weapon's shield is about to replace it.
-    local chosen = state.MainWeapon and sets[state.MainWeapon.current]
-    if not (type(chosen) == 'table' and chosen.sub) and player and player.equipment and player.equipment.sub then
-        local sub_weapon = player.equipment.sub
-        if sub_weapon == 'Kraken Club' and sets.engaged.BurtgangKC then
-            return sets.engaged.BurtgangKC
-        end
+    -- PRIORITY 2: Kraken Club still in the off hand (BaseSetBuilder.kraken_in_offhand)
+    if sets.engaged.BurtgangKC and BaseSetBuilder.kraken_in_offhand() then
+        return sets.engaged.BurtgangKC
     end
 
     -- PRIORITY 3: HybridMode set (ENGAGED_SET_BY_MODE)
