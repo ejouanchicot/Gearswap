@@ -137,7 +137,7 @@ Because step 6 runs after step 4c, an overlay's `config_global/DUALBOX_CONFIG.lu
 - Anything under an overlay that `_select_overlay` did not choose.
 - `_master/config/alt/` for a character cloned as ALT (on purpose: an alt given the folder would send its own command names to the main).
 - `*.lua.example` files (every glob is `*.lua`); the live `Tetsouo/config/alt/*.lua.example` were copied by hand.
-- Any job with no entry in the generic layer or the chosen overlay: today only PUP, which is not in `ALL_VALID_JOBS` because its entry `require`s `_master/config/pup/` files that do not exist (`_master/entry/Tetsouo_PUP.lua:70-71`, `:131`). A DB job with no entry gets the `[WARN] No entry file` line. (SMN was in this case outside the Tetsouo overlay until it got a generic template on 2026-09-28.)
+- Any job with no entry in the generic layer or the chosen overlay: none today. A DB job with no entry gets the `[WARN] No entry file` line. (SMN was in this case outside the Tetsouo overlay until it got a generic template on 2026-09-28; PUP was left out of `ALL_VALID_JOBS` until its rewrite on 2026-09-29 gave it `_master/config/pup/`.)
 
 ### Source selection
 
@@ -297,7 +297,7 @@ Full redeploy (`clone_character.py` on an existing character):
 - **ripgrep and the Grep tool skip gitignored folders**: `Tetsouo/`, `Kaories/`, `Hysoka/`, `Gabvanstronger/`, `Blodykiller/` and every `_master/<Name>/` overlay are invisible to them. Any "no caller" or "no copy" claim that must cover those folders needs `grep -r` (or `rg -uu`).
 - **Test the cloner offline**: `SmartCharacterCloner(base_dir=<scratch copy of data>, source_name=None).clone(name, jobs, {'role': 'main', 'character_name': name, 'enabled': False}, 'US')` on a copy of `_master/` + `character_db.lua` in a scratch directory; never on `data/` itself. Compare with `diff -rq --strip-trailing-cr`.
 - **Test the Lua side offline**: `lua5.1 -e "package.path='./?.lua;'..package.path; local D=require('character_db'); print(D.validate())"` from `data/`; `luac5.1 -p _master/entry/*.lua` for the templates; `python scripts/check_syntax.py` for everything.
-- **Invariant**: any file an entry `require`s without `pcall` must exist in `_master/config/<job>/` or `_master/config_global/`, or the job does not load for a cloned character (PUP is the standing example).
+- **Invariant**: any file an entry `require`s without `pcall` must exist in `_master/config/<job>/` or `_master/config_global/`, or the job does not load for a cloned character (PUP was the example until 2026-09-29).
 
 ## Known issues
 
@@ -322,7 +322,7 @@ Fixed:
 - The default source ignored an existing `_master/<target>/` overlay: `_select_overlay` now uses it.
 - A re-clone reset the HUD position and lost the files written in game: `KEPT_ON_RECLONE`.
 - A clone never generated `DualBoxConfig.group`.
-- PUP was offered by the manual job list although it cannot load; a DB job with no entry was skipped silently: PUP out of `ALL_VALID_JOBS`, `[WARN] No entry file`.
+- PUP was offered by the manual job list although it could not load; a DB job with no entry was skipped silently: PUP out of `ALL_VALID_JOBS` (back in since the PUP rewrite, 2026-09-29), `[WARN] No entry file`.
 - The overlay in use was invisible at the confirmation.
 - SMN had no generic template (a clone to any other character without `--source Tetsouo` printed `[WARN] No entry file for: SMN`) and no copy in the repository: `_master/entry/Tetsouo_SMN.lua`, `_master/config/smn/`, `_master/sets/smn_sets.lua` and SMN in `ALL_VALID_JOBS` (2026-09-28). The Tetsouo overlay keeps its own copy with the modular set include.
 - The generic BST entry ran a coroutine pet monitor that also wrote `state.Moving`: aligned on the Tetsouo overlay (raw `prerender` listener).

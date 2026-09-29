@@ -1,326 +1,367 @@
 # PUP (Puppetmaster) job
 
-PUP is a scaffold, not a working job. Its 14 hook modules under
-`shared/jobs/pup/functions/` (1 394 lines) and its entry template are a copy of
-the BST job with paths renamed: they handle Call Beast, broths, ecosystems and
-Ready moves, which do not exist on Puppetmaster, and nothing handles the
-automaton. The files they depend on were never created: there is no
-`_master/config/pup/`, no `shared/jobs/pup/functions/logic/`, no PUP message
-formatter, and the sets file is a 25-line skeleton. No character has a live PUP
-entry and `character_db.lua` lists PUP for nobody. `clone_character.py` does not
-offer PUP: it is left out of `ALL_VALID_JOBS` (with a comment) because the entry
-requires a missing config without `pcall`.
+PUP was rewritten on 2026-09-29. Until then it was a copy of the BST code
+(jugs, Ready moves, ecosystems) that did not even load: its entry file required
+a `config/pup/` folder that did not exist. It is now a thin job built on the
+shared systems, like BLU: 12 hook modules plus 3 logic modules under
+`shared/jobs/pup/functions/`, a template entry point, seven config files and
+one sets file. GearSwap loads it when the main job becomes PUP (the entry file
+`<Character>_PUP.lua`, made from `_master/entry/Tetsouo_PUP.lua` by the clone
+script, which offers PUP again).
 
-What the PUP files contain on top of the shared pipeline:
+Player-facing pages: [hub](../../user/jobs/pup/README.md),
+[modes](../../user/jobs/pup/states.md), [sets](../../user/jobs/pup/sets.md).
 
-- The standard wiring (PrecastGuard, CooldownChecker, WSPrecastHandler,
-  `MidcastManager` for subjob magic, `LifecycleManager` status/buff/state/
-  aftercast handlers, lockstyle/macrobook factories, CommonCommands).
-- BST logic under PUP names: summon-broth precast, Ready-move categorisation,
-  a pet-precast hook, a Ready-move pet-midcast hook, and the BST command set
-  (`ecosystem`, `species`, `broth`, `pet engage|disengage`, `rdylist`,
-  `rdymove N`).
-- A chunk-level `time change` listener in the entry that is meant to auto-engage
-  the pet and track `PetEngaged` (the pattern BST's template used before
-  2026-09-27; BST now uses a `prerender` monitor, see [BST](bst.md#pet-monitor)).
+What PUP adds on top of the shared pipeline:
 
-Player page: [docs/user/jobs/pup/README.md](../../user/jobs/pup/README.md)
-(hub with the "does not load" warning) and
-[sets.md](../../user/jobs/pup/sets.md).
-
-This page documents what exists, what is scaffold and what breaks. Every file in
-scope was read in full. References are file + function; re-verified against
-the working tree on 2026-09-28.
+- **Pet Mode from the automaton's head**: `state.PetMode` (Melee, Tank, Ranged,
+  Magic, Heal, Nuke) is set from the head the game reports
+  (`windower.ffxi.get_mjob_data()`), the frame when the head is unknown.
+- **Pet layers** in the idle and engaged sets: `sets.idle.Pet`,
+  `sets.idle.Pet.Engaged[PetMode]`, `sets.engaged.Pet` (you and the automaton
+  both fighting).
+- **Automaton weaponskill gear laid in advance**: `sets.midcast.Pet.WeaponSkill
+  [PetMode]` on top of idle / engaged while the automaton fights with enough
+  TP, timed by a 0.5 s poll.
+- **Overdrive layer**: `sets.buff.Overdrive` while the buff is up.
+- **Maneuvers**: one set for all eight (`sets.precast.JA.Maneuver`, through
+  `job_get_spell_map`); on recast they are cancelled like any ability (one shared 10-second recast, no charges).
+- One job command, `//gs c petmode [auto]`.
 
 ## Files
 
-| Path | Lines | Role / state |
+| Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_PUP.lua` | 322 | Entry template, BST structure (pre-2026-09-27 BST). Requires `Tetsouo/config/pup/*` (none exists) |
-| `shared/jobs/pup/functions/pup_functions.lua` | 114 | Facade: same include order as BST, requires `dualbox_manager` |
-| `shared/jobs/pup/functions/PUP_PRECAST.lua` | 135 | `job_precast`: guard, cooldown, WS, **Call Beast broth**, Ready-move set |
-| `shared/jobs/pup/functions/PUP_MIDCAST.lua` | 245 | `job_midcast`: Ready-move sets (`ready_move_category`, `set_for_category`), `handled`; `job_post_midcast`: subjob magic via `MidcastManager` |
-| `shared/jobs/pup/functions/PUP_AFTERCAST.lua` | 28 | `job_aftercast = LifecycleManager.aftercast()` |
-| `shared/jobs/pup/functions/PUP_PET_PRECAST.lua` | 65 | `job_pet_precast` (Reward/Killer Instinct/Spur, `Misc Idle`/`Default`): never called |
-| `shared/jobs/pup/functions/PUP_PET_MIDCAST.lua` | 98 | `job_pet_midcast`: Ready-move category sets on the pet's action |
-| `shared/jobs/pup/functions/PUP_IDLE.lua` / `PUP_ENGAGED.lua` | 40 + 40 | `require('.../pup/functions/logic/set_builder')` without `pcall` (file absent) |
-| `shared/jobs/pup/functions/PUP_STATUS.lua` / `PUP_BUFFS.lua` | 20 + 20 | Shared `LifecycleManager` handlers (work) |
-| `shared/jobs/pup/functions/PUP_COMMANDS.lua` | 461 | BST command router; 25 calls to 14 undefined `MessageFormatter.error_pup_*` / `show_pup_*` |
-| `shared/jobs/pup/functions/PUP_MOVEMENT.lua` | 39 | Empty `job_handle_equipping_gear` |
-| `shared/jobs/pup/functions/PUP_LOCKSTYLE.lua` / `PUP_MACROBOOK.lua` | 47 + 42 | Lazy factories on `config/pup/PUP_LOCKSTYLE` / `PUP_MACROBOOK` (factories fall back when absent) |
-| `_master/sets/pup_sets.lua` | 25 | Defines `define_pup_sets()`, which nothing calls |
-| `shared/data/job_abilities/PUP_JA_DATABASE.lua` + `pup/*.lua` (4 files) | 20 + 287 | `JA_DATABASE_FACTORY.create('PUP', {modules = {'subjob','mainjob','sp','pet_commands_subjob'}})`: the pet commands (Deploy, Retrieve, Deactivate, maneuvers) are loaded |
-| `_master/config/alt/PUP_ALT_COMMANDS.lua` | 54 | Generated alt-command config (used when the dual-box partner is PUP, not by this job) |
+| `_master/entry/Tetsouo_PUP.lua` | 210 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup` (+ first PetMode detection), `job_update` (PetMode, poll, HUD), `init_gear_sets`, `file_unload` (+ poll stop) |
+| `shared/jobs/pup/functions/pup_functions.lua` | 67 | Facade: includes `message_buffs` and the 12 hook files, requires `dualbox_manager`, debug line |
+| `shared/jobs/pup/functions/PUP_PRECAST.lua` | 108 | `job_precast` (guard, cooldown, WS handler) / `job_post_precast` (TP gear) |
+| `shared/jobs/pup/functions/PUP_MIDCAST.lua` | 99 | `job_midcast` (empty) / `job_post_midcast` (subjob magic via MidcastManager) / `job_get_spell_map` (Maneuver) |
+| `shared/jobs/pup/functions/PUP_PET_MIDCAST.lua` | 58 | `job_pet_midcast`: automaton weaponskills; automaton spells left to Mote |
+| `shared/jobs/pup/functions/PUP_AFTERCAST.lua` | 21 | `job_aftercast = LifecycleManager.aftercast()` |
+| `shared/jobs/pup/functions/PUP_IDLE.lua` | 31 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
+| `shared/jobs/pup/functions/PUP_ENGAGED.lua` | 31 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
+| `shared/jobs/pup/functions/PUP_STATUS.lua` | 55 | `job_status_change` (LifecycleManager), `job_pet_change`, `job_pet_status_change` |
+| `shared/jobs/pup/functions/PUP_BUFFS.lua` | 23 | `LifecycleManager.buff_change` + `refresh_after_buff` (Overdrive) |
+| `shared/jobs/pup/functions/PUP_COMMANDS.lua` | 158 | `job_self_command` router (+ `petmode`), `job_state_change = LifecycleManager.state_change()` |
+| `shared/jobs/pup/functions/PUP_MOVEMENT.lua` | 16 | Header only (`return {}`), kept for the 12-module layout |
+| `shared/jobs/pup/functions/PUP_LOCKSTYLE.lua` | 45 | Lazy `LockstyleManager.create('PUP', 'config/pup/PUP_LOCKSTYLE', 1, 'WAR')` wrappers |
+| `shared/jobs/pup/functions/PUP_MACROBOOK.lua` | 37 | Lazy `MacrobookManager.create('PUP', 'config/pup/PUP_MACROBOOK', 'WAR', 1, 1)` wrapper |
+| `shared/jobs/pup/functions/logic/automaton.lua` | 151 | Live reads: pet out / fighting / TP; head and frame; `refresh_mode` |
+| `shared/jobs/pup/functions/logic/pet_ws.lua` | 117 | `is_due`, `threshold`, the poll (`ensure_running`, `stop`) |
+| `shared/jobs/pup/functions/logic/set_builder.lua` | 181 | Idle and engaged: master base, town, pet layers, Overdrive, pet WS, Mote layers, weapon, movement |
+| `_master/config/pup/PUP_STATES.lua` | 83 | Mote mode options, `MainWeapon`, `PetMode`, `PetWS`, `FastCast`, `AutoMedicine` |
+| `_master/config/pup/PUP_KEYBINDS.lua` | 37 | Data only: 5 entries (+ 1 commented per-weapon example) handed to `KeybindManager.create('PUP', ...)` |
+| `_master/config/pup/PUP_TP_CONFIG.lua` | 49 | `pieces` (Moonshade 250), empty `weapons`, `pet_ws_tp = 1000`, `get_weapon_bonus`, sets `_G.PUPTPConfig` |
+| `_master/config/pup/PUP_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only |
+| `_master/config/pup/PUP_HUD.lua` | 31 | HUD section / row order (empty = default) |
+| `_master/config/pup/PUP_LOCKSTYLE.lua` | 27 | `default = 1`, empty `by_subjob` |
+| `_master/config/pup/PUP_MACROBOOK.lua` | 30 | `default` book 1 page 1, empty `solo` and `dualbox` |
+| `_master/sets/pup_sets.lua` | 155 | Template sets: every set the code reads, all empty |
+| `_master/config/alt/PUP_ALT_COMMANDS.lua` | - | Dual-box commands for a PUP partner (read by the main's alt system, not by the PUP job file) |
 
-Missing: `_master/config/pup/` (every config the entry and factories name),
-`shared/jobs/pup/functions/logic/{set_builder,pet_manager,ecosystem_manager,ready_move_categorizer}.lua`,
-`shared/utils/messages/formatters/jobs/message_pup.lua` and
-`data/jobs/pup_messages.lua`, `_master/config/pup/PUP_CUSTOM.lua` (every other
-job has a `_CUSTOM` template), and any live PUP entry.
+Removed on 2026-09-29: `PUP_PET_PRECAST.lua` (`job_pet_precast` is called by
+neither Mote nor the GearSwap engine), the `time change` listener of the entry,
+every BST concept (Ready moves, jugs, Call Beast, ecosystems, species, broth,
+`rdylist` / `rdymove` commands) and the references to logic modules that never
+existed (`ecosystem_manager`, `pet_manager`, `ready_move_categorizer`).
+
+Shared files changed for PUP:
+
+- None in the recast checker: maneuvers share one 10-second recast (id 210)
+  and have no charges (up to three can be active at once, but each use waits
+  for the recast), so `CooldownChecker` cancels a maneuver on recast like any
+  other ability.
+- `shared/utils/core/lifecycle_manager.lua`: `Overdrive` added to
+  `GEAR_BUFFS`, so `refresh_after_buff('Overdrive')` rebuilds the gear 0.1 s
+  after the buff comes or goes. No other job gets that buff.
 
 ## How it works
 
-### Load sequence (what actually happens)
+### Load sequence
 
-The entry has the BST shape (see [BST](bst.md#load-sequence)), so the intended
-order is chunk -> `get_sets` -> Mote-Include (`user_setup`, `init_gear_sets`) ->
-`INIT_SYSTEMS` -> facade. With the repository as it is, a PUP load stops early:
+Same shape as BLU ([core lifecycle](../systems/core-lifecycle.md#how-a-job-file-boots)):
+Mote-Include calls `user_setup()` and `init_gear_sets()` from inside
+`include('Mote-Include.lua')`, before `INIT_SYSTEMS` and before the PUP hook
+files exist. The entry sets `_G.RegionConfig` first, then loads the UI config
+(`config_loader`), as the WAR entry does.
 
-```mermaid
-sequenceDiagram
-    participant GS as GearSwap
-    participant E as <Char>_PUP.lua
-    GS->>E: run chunk (configs, UIConfig, JCM, UI_MANAGER, REGION_CONFIG), register 'time change' listener
-    GS->>E: get_sets()
-    E->>E: _G.RECAST_CONFIG = require(...) ok
-    E-->>GS: require('Tetsouo/config/pup/PUP_PET_DATA') raises, get_sets aborts
-    Note over E: Mote-Include, user_setup, INIT_SYSTEMS, facade never run
-    loop every game minute (~2.4 s)
-        GS->>E: time change -> guard player.main_job == 'PUP' -> coroutine requires logic/pet_manager -> Lua error
-    end
-```
+`user_setup()`:
 
-- `get_sets` requires `Tetsouo/config/pup/PUP_PET_DATA` and `PUP_TP_CONFIG`
-  without `pcall`. In the sandbox `require` is GearSwap's `include_user`
-  (`user_functions.lua`), which raises when the file is missing; GearSwap
-  prints the error and keeps the default `sets` (`refresh.lua`
-  `load_user_files`). No hook exists, so gear never swaps.
-- The chunk-level listener survives the failed `get_sets` until the next load
-  (the engine unregisters sandbox events in `load_user_files`). On PUP it
-  schedules one coroutine per game minute (two while engaged) that plain-
-  `require`s the missing `shared/jobs/pup/functions/logic/pet_manager`: a Lua
-  error every ~2.4 s. Inferred from the code, never observed (no one loads PUP).
-  It is also a plain `register_event`, which runs GearSwap's
-  `refresh_globals` + `equip_sets` on each call.
-- `user_setup` would also require `Tetsouo/config/pup/PUP_STATES` without
-  `pcall` and `pcall`-require `logic/ecosystem_manager` and `PUP_KEYBINDS`.
+1. `PUPStates.configure()` creates the states (see [Mote states](#mote-states)).
+2. `Automaton.refresh_mode(true)`: PetMode from the automaton's head before the
+   HUD first draws it (the HUD caches what it reads in `user_setup`).
+3. `PUP_KEYBINDS` into the global `PUPKeybinds`, `bind_all()` (whose intro
+   requires `PUP_MACROBOOK` / `PUP_LOCKSTYLE` and so defines their globals);
+   a failed require prints `[PUP] Keybinds failed to load: <error>`.
+4. `KeybindUI.smart_init("PUP", init_delay)`.
+5. `JobChangeManager.initialize()`; macro book at once, lockstyle after
+   `LockstyleConfig.initial_load_delay`.
+6. `pcall(require, 'shared/utils/dualbox/dualbox_manager')`.
 
-### If the configs existed
+`get_sets()` then sets `_G.LockstyleConfig`, `_G.RECAST_CONFIG`,
+`_G.PUPTPConfig`, cancels pending job-change work, includes the facade and
+registers `cancel_pup_lockstyle_operations`.
 
-Creating the config files moves the failures further in. Traced statically:
+`job_update` (every `gs c update`, cycle, set, toggle; Mote calls it before it
+equips): `Automaton.refresh_mode()`, `PetWS.ensure_running()`, `KeybindUI.update()`.
 
-- **Idle/engaged**: `customize_idle_set` / `customize_melee_set` require
-  `logic/set_builder` without `pcall` and raise on every gear rebuild.
-- **Midcast**: `PUP_MIDCAST.lua` `ensure_modules_loaded` pcall-requires the
-  missing `logic/ready_move_categorizer`, then calls the undefined
-  `MessageFormatter.error_pup_module_not_loaded`. It raises before
-  `modules_loaded = true`, so every `job_midcast` raises and Mote skips the
-  default midcast and `job_post_midcast` for that action.
-- **Commands**: the first `//gs c` of a load raises in `PUP_COMMANDS.lua`
-  `ensure_commands_loaded` (`error_pup_module_not_loaded('EcosystemManager')`).
-  `MessageFormatter`, `CommonCommands`, `WatchdogCommands`, `UICommands`,
-  `CycleHandler` and `MessageCommands` were assigned before the error, so later
-  commands reach the common ones, but `ecosystem`, `species`, `broth`, `pet`,
-  `rdylist`, `rdymove` all end in a nil call. Mote calls `job_self_command`
-  before its own handlers (`Mote-SelfCommands.lua`), so the first `gs c update`
-  of a load is lost as well.
-- **Sets**: `init_gear_sets` includes `sets/pup_sets.lua`, which only defines
-  `define_pup_sets()`; nothing calls it, and calling it would replace Mote's
-  tables with empty ones.
-- **Keys**: no `PUP_KEYBINDS.lua`, so no job keys, no common keys, no Combat
-  Mode or Treasure Mode row ([keybinds and custom](../systems/keybinds-and-custom.md)).
+`file_unload`: `PetWS.stop()` first (GearSwap runs `file_unload` under one
+`pcall`), then `JobChangeManager.cancel_all()`, then `PUPKeybinds.unbind_all()`.
+
+### Reading the automaton
+
+`logic/automaton.lua` reads the game, never GearSwap's `pet` copy: `pet` is
+refreshed only at the start of a GearSwap event, and the poll runs in a
+coroutine. The set builder uses the same reads, so the poll and the gear it
+asks for agree.
+
+| Read | Source | Fallback |
+|------|--------|----------|
+| out | `windower.ffxi.get_mob_by_target('pet') ~= nil` | - |
+| fighting | that mob's `status == 1` (a number there; `'Engaged'` accepted too) | - |
+| TP | `gearswap._ExtraData.pet.tp`: GearSwap writes it from packets 0x067 / 0x068 as they arrive (`packet_parsing.lua`), 0-3000, and empties it when the pet goes | `pet.tp` (the same number, copied into `pet` by `refresh_globals`) |
+| head, frame | `windower.ffxi.get_mjob_data()` `head` / `frame` item ids, named through `res.items`, only while `get_player().main_job == 'PUP'` | `pet.head` / `pet.frame` (GearSwap sets them from the same call) |
+
+`gearswap` is the addon's own `_G`, which GearSwap puts in the job
+environment (`refresh.lua`, `user_env.gearswap`); other shared code reads
+`gearswap.equip_list` and `gearswap.res` the same way. The mob's own `tp` field
+is not used: GearSwap divides it by 10 when it builds `pet`, and the packet
+value then overwrites it, which says nothing reliable about its scale.
+
+### PetMode
+
+| Head | PetMode |
+|------|---------|
+| Harlequin Head | Melee |
+| Valoredge Head | Tank |
+| Sharpshot Head | Ranged |
+| Stormwaker Head | Magic |
+| Soulsoother Head | Heal |
+| Spiritreaver Head | Nuke |
+
+An unknown head falls back to the frame (Harlequin / Valoredge / Sharpshot /
+Stormwaker Frame -> Melee / Tank / Ranged / Magic); neither known: PetMode is
+left as it is.
+
+`Automaton.refresh_mode(force)` sets `state.PetMode` when forced, or when the
+`head|frame` pair read differs from the last detection (a module local).
+Callers: `user_setup` (forced), `job_pet_change` on a gained pet (forced),
+`job_update` (not forced), `//gs c petmode auto` (forced).
+
+**Design choice: a value cycled by hand holds** until the head or frame
+changes or a new automaton comes out. Without the "changed since last
+detection" test, `job_update` (which every cycle runs) would undo the cycle at
+once. A reload resets every state and detects again.
 
 ### Precast
 
-`job_precast` follows the pipeline order: guard, cooldown unless the
-categoriser recognised a Ready move, WS. Then BST logic: Call Beast / Bestial
-Loyalty set plus the `sets[state.ammoSet.value].ammo` broth, and for a Ready
-move `sets.precast.JA['Ready']` or `['Sic']` and `spell.ready_move_category`.
-With the categoriser missing, `is_ready_move` is always false. Unlike BST, the
-cooldown skip depends on the categoriser, not on `spell.type == 'Monster'`.
-`job_post_precast` applies WS TP gear.
+`job_precast`: PrecastGuard, then `CooldownChecker` by action type (abilities
+and spells), `eventArgs.cancel` return, then `WSPrecastHandler.handle(spell,
+eventArgs, PUPTPConfig)`. `job_post_precast` lays the TP bonus piece. Nothing
+PUP does can drop a tier, so there is no exception before the cooldown check.
 
-### Pet handling
+Mote's own precast picks the set. Maneuvers are `PetCommand` in the game's
+data: Mote looks for `sets.precast.PetCommand` first and, not finding it, uses
+`sets.precast.JA`; there it tries the name, then the spell map, which
+`job_get_spell_map` makes `Maneuver` for every name ending in ` Maneuver`. So
+`sets.precast.JA.Maneuver` covers all eight, and a set named after one
+maneuver wins. Deploy, Retrieve and the other pet commands go the same way
+(`sets.precast.JA['Deploy']` if the player adds it).
 
-- No automaton logic exists: no maneuver tracking, no pet midcast by automaton
-  head/frame or action type, no Repair/Maintenance/Overdrive/Deploy handling,
-  no `job_pet_change` or `job_pet_status_change`.
-- `job_pet_midcast` is called by Mote on every pet action (`Mote-Include.lua`
-  `pet_midcast`). It skips the BST pet commands, asks the (missing)
-  categoriser for a category and otherwise equips
-  `sets.midcast.pet_physical_moves` if it exists. It does not set `handled`, so
-  Mote then equips `sets.midcast.Pet` (Mote's empty table) and the pet
-  aftercast restores idle/engaged gear.
-- `job_pet_precast` is never called: neither GearSwap nor Mote has a pet
-  precast event.
-- The entry's `time change` listener calls
-  `PetManager.check_and_engage_pet(get_mob_by_target('pet'))` while engaged and
-  `PetManager.monitor_pet_status()` every game minute, both from the missing
-  PUP `pet_manager`. The BST module of the same name has both functions and
-  tests `pet.id` (fixed 2026-09-27); a copy of an older version would test
-  `isvalid` on raw mobs and always see no pet.
+### Midcast (the master)
 
-### Midcast
+Mote-Globals' `user_midcast` equips `sets.midcast.FastRecast` first for every
+spell. Mote's default midcast then picks by name / map / skill / type
+(`sets.midcast.Utsusemi` for Utsusemi by its map). `job_post_midcast`:
+`MidcastDeps.load()`, watchdog notify, return for anything that is not magic
+with a skill, then `MidcastManager.select_set` on the skill, with
+`target_func` / enhancing family for Enhancing Magic and the enfeebling type
+database for Enfeebling Magic. `select_set` equips nothing when
+`sets.midcast[skill]` does not exist, so the template's Utsusemi keeps Mote's
+pick.
 
-`job_midcast` returns for the BST pet commands in `PRECAST_ONLY`, equips the
-Ready-move category set and sets `handled`. `job_post_midcast` notifies
-`MidcastWatchdog` and dispatches Healing, Enhancing, Enfeebling, Elemental and
-Blue Magic to `MidcastManager`, the skeleton shared with `BST_MIDCAST.lua`.
+### The automaton's actions
 
-### Aftercast, idle, engaged, status, buffs
+GearSwap calls `pet_midcast` on the automaton's "readies" packet: at the start
+of a spell, and as a weaponskill goes off.
 
-`job_aftercast`, `job_status_change`, `job_buff_change` and `job_state_change`
-are the shared `LifecycleManager` handlers and work
-([core lifecycle](../systems/core-lifecycle.md)). Idle and engaged depend on the
-missing set builder. `job_handle_equipping_gear` is empty.
+- **Spells** (`action_type == 'Magic'`): `job_pet_midcast` returns, Mote's
+  `default_pet_midcast` runs `get_pet_midcast_set`: `sets.midcast.Pet` then,
+  through `select_specific_set`, the spell name, the spell map (`Cure`...), the
+  skill (`'Healing Magic'`, `'Elemental Magic'`, `'Enfeebling Magic'`,
+  `'Enhancing Magic'`, `'Dark Magic'`), the spell type, then a `CastingMode`
+  child. Nothing PUP-specific was needed.
+- **Anything else** (weaponskills): if `sets.midcast.Pet[<name>]` exists,
+  `job_pet_midcast` returns and Mote picks it; otherwise it equips
+  `sets.midcast.Pet.WeaponSkill[PetMode]` (or `.WeaponSkill`) and sets
+  `eventArgs.handled`.
+
+Mote's `pet_aftercast` puts the idle / engaged gear back. The custom gear
+(`PUP_CUSTOM.lua`) is never laid on pet actions: the custom hooks wrap
+`cleanup_precast` / `cleanup_midcast` only, and pet commands (`PetCommand`) are
+in `custom_guards.lua`'s hands-off types.
+
+### Automaton weaponskill gear: the poll
+
+The weaponskill's `pet_midcast` comes too late for its gear to count, so the
+gear goes on before. `PetWS.is_due()`: `state.PetWS == 'On'`, automaton
+fighting, and its TP >= `PetWS.threshold()` (`PUPTPConfig.pet_ws_tp`, 1000 when
+missing). The set builder lays the WS set whenever it is due.
+
+The TP crossing the line is no GearSwap event, hence `logic/pet_ws.lua`'s poll:
+
+```mermaid
+flowchart TD
+    E[job_update / job_pet_change / job_pet_status_change] --> R{running or nothing to watch?}
+    R -- yes --> X[return]
+    R -- no --> S[running = true, last_due = is_due, schedule tick 0.5 s]
+    S --> T{tick: generation current?}
+    T -- no --> D[die]
+    T -- yes --> W{PetWS On, pet out, main job PUP?}
+    W -- no --> F[running = false, stop]
+    W -- yes --> Q{is_due differs from last_due and no action under way?}
+    Q -- yes --> U[last_due = due, send gs c update]
+    Q -- no --> N[ ]
+    U --> N
+    N --> T2[schedule next tick 0.5 s]
+    T2 --> T
+```
+
+- A coroutine, not `register_event('prerender')`: a listener registered from a
+  job file runs `refresh_globals` and `equip_sets` on every call.
+- `gs c update` (a new event) and not `equip()`: an `equip` from a coroutine
+  is lost.
+- During an action of the player or the pet (`midaction()` /
+  `pet_midaction()`) the flip is not recorded, so the next tick tries again;
+  the action's aftercast rebuilds the gear anyway.
+- Generation: `windower._pup_pet_ws_seq` (on `windower`, which outlives the
+  sandbox) is bumped when `pet_ws.lua` loads and by `PetWS.stop()`
+  (`file_unload`). A tick of an older generation returns, so a reload or a job
+  change ends the old loop within 0.5 s.
+- Cost while running: two `get_mob_by_target('pet')`, one `get_player()` and a
+  table read every 0.5 s; nothing when no pet is out or Pet WS is Off.
+
+### Idle and engaged
+
+`logic/set_builder.lua` replaces Mote's base for both.
+
+Idle (`build_idle_set`):
+
+1. `master_idle`: `sets.idle.DT` under HybridMode DT when defined; else Mote's
+   base, except that Mote's own walk goes into `sets.idle.Pet(.Engaged)` while
+   a pet is out (`get_idle_set`), and that pick is replaced by `sets.idle`.
+2. `BaseSetBuilder.select_idle_base_town`: `sets.idle.Town` / `sets.Adoulin`
+   on top in a city (Mote's `sets.idle.Town` base is rebuilt as the field idle
+   plus Town on top).
+3. `pet_idle_layer`: pet fighting -> `sets.idle.Pet.Engaged[PetMode]` or
+   `sets.idle.Pet.Engaged`; pet out -> `sets.idle.Pet`; `set_combine` on top.
+4. `finish`: `sets.buff.Overdrive` (buffactive), the pet WS set when due,
+   Mote's defense / Kiting layers, `BaseSetBuilder.lay_weapons` (MainWeapon).
+5. `BaseSetBuilder.apply_movement` outside a city.
+
+Engaged (`build_engaged_set` / `select_engaged_base`): group `sets.engaged`,
+or `sets.engaged.Pet` when it exists and the automaton fights; then
+`group[OffenseMode]` when a table; then under HybridMode DT the level's `.DT`,
+else the group's `.DT`. Then `finish` as above.
+
+Trace lines (`//gs c trace on`): `IDLE <base>, pet mode <m>, on top: ...` and
+`ENGAGED <path>, pet mode <m>, on top: ...`.
+
+`job_pet_status_change` equips (`handle_equipping_gear(player.status)`) unless
+an action is under way: Mote equips nothing on a pet status change, and the
+pet layers depend on it. `job_pet_change` needs nothing more: Mote's
+`pet_change` equips after it.
+
+Overdrive: `job_buff_change` = `LifecycleManager.buff_change` + 
+`refresh_after_buff(buff)`, which sends `gs c update` 0.1 s after an
+Overdrive gain or loss (inside `buff_change`, `buffactive` still holds the old
+list).
 
 ## Mote states
 
-None are defined in the repository: `PUP_STATES.lua` does not exist. The code
-reads `state.ammoSet` (`job_precast`), `state.Moving` (AutoMove) and, through
-the missing logic modules, whatever the BST equivalents read (`AutoPetEngage`,
-`PetEngaged`, `Ecosystem`, `species`, `WeaponSet`, `SubSet`, `HybridMode`,
-`PetIdleMode`). The HUD has no PUP readiness anchor (`ui_lifecycle.lua`
-`are_states_ready` returns true for PUP) and no PUP title (`UI_FORMATTER.lua`
-job title table).
+Created by `PUPStates.configure()` on every `user_setup()`.
+
+| State | Values (template) | Default | Key | Read by |
+|-------|--------|---------|-----|---------|
+| `MainWeapon` | Free | Free | `^numpad1` | `BaseSetBuilder.lay_weapons` |
+| `OffenseMode` (Mote) | Normal, Acc | Normal | `^numpad2`, Mote's `f9` | `select_engaged_base`; Mote's WS mode fallback |
+| `HybridMode` (Mote) | Normal, DT | Normal | `^numpad3`, Mote's `^f9` | `master_idle`, `select_engaged_base` |
+| `PetMode` | Melee, Tank, Ranged, Magic, Heal, Nuke | set from the head (Melee before) | `^numpad4` | `pet_idle_layer`, pet WS set, `job_pet_midcast` |
+| `PetWS` | On, Off | On | `^numpad5` (row in the modes section: `section = "mode"`, its name holds `WS`) | `PetWS.is_due` / poll |
+| `FastCast` | 0..80 by 10 | 0 | none | midcast watchdog fallback estimate |
+| `AutoMedicine` | ON, OFF | persisted | `#numpad0` (common key) | `AutoMedicine.init` |
+| `IdleMode`, `CastingMode`, `WeaponskillMode`, `RangedMode` (Mote) | Normal | Normal | Mote's F-keys | Mote only (`CastingMode` refines Mote's pet spell set) |
+| `CombatMode`, `TreasureMode` (optional states) | | Off | hidden | shared hooks |
 
 ## Commands
 
-`job_self_command` is BST's router: dual-box internals, `ui`,
-`debugmidcast`, `cyclestate`, watchdog, CommonCommands, then `ecosystem`,
-`species`, `broth`, `pet engage|disengage`, `rdylist`, `rdymove N` (3.0 s /
-5.5 s sequence, no `rdymove` flag). None of the PUP-specific branches can
-succeed (see above). There is no `debugprecast` branch, so the common one is
-reachable. `job_state_change = LifecycleManager.state_change()`.
+`job_self_command` (`PUP_COMMANDS.lua`): `altjobupdate` / `requestjob`,
+`petmode`, watchdog, `CommonCommands.handle_command(command, 'PUP',
+table.unpack(args))`, UI, `debugmidcast`, `cyclestate`; anything else falls to
+Mote and then to the alt commands.
+
+`//gs c petmode`: one `InfoBlock` (`PUP :: Automaton`) with head, frame, the
+mode they give, PetMode in use, Pet WS, the automaton's state and its TP /
+threshold (green when WS gear is due). `//gs c petmode auto` first runs
+`refresh_mode(true)` and sends `gs c update`.
 
 ## Set names the code looks up
 
-`_master/sets/pup_sets.lua` defines no set at run time. Player version:
+T = `_master/sets/pup_sets.lua`. Player version:
 [sets.md](../../user/jobs/pup/sets.md).
 
-| Set | Looked up by | Template |
-|-----|--------------|----------|
-| `sets.precast.JA['Call Beast']`, `sets['<pet>']` | `job_precast` | absent |
-| `sets.precast.JA['Ready']` / `['Sic']` | `job_precast` | absent |
-| `sets.precast.JA['Reward']`, `['Killer Instinct']`, `['Spur']`, `['Misc Idle']`, `['Default']` | `job_pet_precast` (never called) | absent |
-| `sets.midcast.pet_{physical,physicalMulti,magicAtk,magicAcc}_moves` (+ `_ww`) | `PUP_MIDCAST.lua` `set_for_category`, `PUP_PET_MIDCAST.lua` `job_pet_midcast` | absent |
-| `sets.midcast['<skill>']` | `MidcastManager` | absent |
-| `sets.idle`, `sets.engaged`, `sets.precast.WS`, `sets.midcast.Pet` | Mote | Mote's empty tables |
+| Set | Looked up by | T |
+|-----|--------------|---|
+| `sets[MainWeapon]` | `WeaponResolver.set_for` | example only |
+| `sets.MoveSpeed`, `sets.Kiting` | `BaseSetBuilder.apply_movement`, Mote Kiting | yes |
+| `sets.Adoulin` | `BaseSetBuilder` | commented |
+| `sets.buff.Overdrive` | `lay_pet_layers` | yes |
+| `sets.buff.Doom` | DoomManager | yes |
+| `sets.precast.JA[<name>]` (Activate, Deus Ex Automata, Repair, Maintenance, Overdrive, Tactical Switch, Ventriloquy, Role Reversal, Cooldown), `sets.precast.JA.Maneuver` | Mote default precast (+ `job_get_spell_map`) | yes |
+| `sets.precast.Waltz`, `['Healing Waltz']` | Mote | yes |
+| `sets.precast.FC`, `.FC.Utsusemi` | Mote | yes |
+| `sets.precast.WS`, `.WS.Acc`, `WS['Victory Smite' / 'Shijin Spiral' / 'Stringing Pummel' / 'Howling Fist' / 'Asuran Fists']` | Mote | yes |
+| `sets.midcast.FastRecast`, `.Utsusemi` | Mote-Globals / Mote | yes |
+| `sets.midcast.Pet.WeaponSkill`, `.Melee`, `.Tank`, `.Ranged` (any PetMode child works) | `lay_pet_layers`, `job_pet_midcast` | yes |
+| `sets.midcast.Pet[<ws name>]` | Mote (`job_pet_midcast` defers to it) | commented |
+| `sets.midcast.Pet.Cure`, `['Elemental Magic']`, `['Enfeebling Magic']` (and `['Healing Magic']`, `['Enhancing Magic']`, `['Dark Magic']`, names) | Mote `get_pet_midcast_set` | first three |
+| `sets.resting` | Mote | yes |
+| `sets.idle`, `.DT`, `.Town` | `master_idle`, `BaseSetBuilder` | yes |
+| `sets.idle.Pet`, `.Pet.Engaged`, `.Pet.Engaged[PetMode]` (six) | `pet_idle_layer` | yes |
+| `sets.engaged`, `.Acc`, `.DT` | `select_engaged_base` | yes |
+| `sets.engaged.Pet`, `.Pet.DT` (and `.Pet.Acc`, `.Pet.Acc.DT`) | `select_engaged_base` | first two |
+| `sets.defense.PDT` / `.MDT` | Mote defense layer | no |
+| `sets.TreasureHunter` | shared Treasure Hunter | commented |
 
 ## Configuration
 
-Every config file the code names is missing: `Tetsouo/config/pup/PUP_PET_DATA`,
-`PUP_TP_CONFIG` (entry `get_sets`), `PUP_STATES`, `PUP_KEYBINDS` (entry
-`user_setup`), `config/pup/PUP_LOCKSTYLE` (`PUP_LOCKSTYLE.lua`, factory falls
-back to lockstyle 1, `lockstyle_manager.lua` `load_config_or_fallback`),
-`config/pup/PUP_MACROBOOK` (`PUP_MACROBOOK.lua`, factory falls back to book 1
-page 1, `macrobook_manager.lua` `load_macrobooks`).
+| File / key | Default | Read by |
+|------------|---------|---------|
+| `<char>/config/pup/PUP_STATES.lua` | see states | entry `user_setup` |
+| `<char>/config/pup/PUP_KEYBINDS.lua` | 5 entries | entry `user_setup`, `file_unload` |
+| `<char>/config/pup/PUP_TP_CONFIG.lua` `pieces`, `weapons` | Moonshade 250 | `WSPrecastHandler` |
+| `<char>/config/pup/PUP_TP_CONFIG.lua` `pet_ws_tp` | 1000 | `PetWS.threshold` |
+| `<char>/config/pup/PUP_CUSTOM.lua` | examples only | shared custom states |
+| `<char>/config/pup/PUP_HUD.lua` | empty | HUD |
+| `<char>/config/pup/PUP_LOCKSTYLE.lua`, `PUP_MACROBOOK.lua` | 1 / book 1 page 1 | factories |
 
-## State & lifetime
+`character_db.lua` still lists PUP in `ARCHIVE_JOBS` (no character plays it).
+That list is only read by the Lua side of the DB; `clone_character.py` offers
+every job of `ALL_VALID_JOBS` for a character the DB does not know, so a PUP
+clone works without touching it.
 
-- `_G` written (on a load that got that far): the Mote hooks,
-  `PUPBeastPetData`, `PUPTPConfig`, `PUPKeybinds`, `KeybindUI`,
-  `pup_time_change_event_id`, lockstyle/macrobook globals.
-- Events: the `time change` listener, registered through the sandbox's
-  `register_event` so the engine removes it at the next load; `file_unload`
-  also unregisters it. The "cleanup previous handler" block at the top of the
-  listener section reads `_G.pup_time_change_event_id` from a fresh `_G`, so it
-  never finds anything.
-- Coroutines: 0.2 s JCM gate, 8 s lockstyle, 0.1 s listener tasks, `rdymove`
-  steps. `file_unload` unregisters the listener, cancels JCM, unbinds.
+## Left out on purpose (later options)
 
-## Interactions
+Automatic maneuvers, automatic Repair, automatic Deploy, pet enmity gear
+(Ventriloquy / Provoke on the automaton), a party announce of automaton
+weaponskills. The attachments and the automaton's MP / HP are not read.
 
-Same shared systems as BST ([precast pipeline](../systems/precast-pipeline.md),
-[midcast and buffs](../systems/midcast-and-buffs.md),
-[factories](../systems/factories-and-helpers.md),
-[core lifecycle](../systems/core-lifecycle.md),
-[UI overlay](../systems/ui-overlay.md), [dualbox](../systems/dualbox.md)).
-The five `job_post_midcast_*` handlers of `PUP_MIDCAST.lua` duplicate those of
-`BST_MIDCAST.lua`. The template's `job_sub_job_change` still calls
-`DualBoxManager.send_job_update()` itself, while the other templates rely on
-the module's auto-init from `user_setup` (the facade's require also triggers
-it here).
+## Needs an in-game check
 
-## Invariants & gotchas
-
-- Plain `require` of a missing file raises in the sandbox; only `pcall(require)`
-  is safe for optional modules, and the fallback branch must not call an
-  undefined function.
-- A job with no entry file in the character folder is never loaded, so the
-  scaffold is harmless until someone copies the entry by hand.
-- Copying BST logic brings BST's known defects (coroutine `equip()`, 30 s
-  Ready-move cache not keyed on the pet).
-
-## Extending
-
-To make PUP functional (minimum):
-
-1. Replace the BST concepts in the entry (`PUPBeastPetData`, ecosystem init,
-   `time change` monitor) with PUP ones, or delete them; `pcall` every config
-   require. Take the current BST entry as the model (prerender monitor through
-   `raw_register_event`, dual-box require in `user_setup`).
-2. Create `_master/config/pup/{PUP_STATES,PUP_KEYBINDS,PUP_CUSTOM,PUP_HUD,PUP_LOCKSTYLE,PUP_MACROBOOK,PUP_TP_CONFIG}.lua`.
-3. Create `shared/jobs/pup/functions/logic/set_builder.lua` (idle/engaged with
-   automaton up or down) and a pet status source (event-driven
-   `job_pet_status_change` is simpler than polling).
-4. Rewrite `PUP_PRECAST`, `PUP_MIDCAST`, `PUP_PET_MIDCAST`, `PUP_COMMANDS` for
-   automaton actions (maneuvers, Repair/Maintenance, Deploy/Retrieve,
-   Overdrive, automaton weaponskills and spells in `sets.midcast.Pet`), and
-   delete `PUP_PET_PRECAST.lua`.
-5. Either add `message_pup.lua` + `pup_messages.lua` and facade wrappers, or
-   call existing `MessageFormatter` functions.
-6. Write real sets in `_master/sets/pup_sets.lua` (plain assignments, no
-   wrapper function).
-7. Add PUP back to `ALL_VALID_JOBS` in `clone_character.py`, and to the HUD
-   readiness and title tables.
-
-## For maintainers / AI
-
-**Invariants to keep until PUP is rewritten**
-
-- Keep PUP out of `ALL_VALID_JOBS`: a clone would copy an entry that aborts
-  `get_sets` and leaves an erroring listener behind.
-- Do not "fix" PUP by copying BST logic modules under `pup/`: it would load, but
-  it would drive jugs and Ready moves on a job that has neither. The logic has
-  to be written for the automaton.
-- PUP shares `CommonCommands`, `LifecycleManager`, `MidcastManager` and the
-  factories with every job: a change there needs no PUP-specific care, and PUP
-  cannot serve as a test of it.
-
-**Traps**
-
-- Documentation and audits that count "16 jobs wired to the 9 systems" include
-  PUP on paper only: its files call the systems, but nothing of it has run.
-- `rg` / Grep skip the gitignored character folders; a PUP entry could exist in
-  a character folder that is not tracked. Check with `grep -r` before claiming
-  none exists (none did on 2026-09-28).
-- The undefined `MessageFormatter.error_pup_*` / `show_pup_*` calls do not fail
-  at load, only when their branch runs: a load test alone will not find them.
-
-**Offline testing**
-
-- Syntax: `for f in shared/jobs/pup/functions/*.lua _master/entry/Tetsouo_PUP.lua _master/sets/pup_sets.lua; do luac5.1 -p "$f"; done`
-  (all parse on 2026-09-28).
-- Missing modules: `grep -n "require" shared/jobs/pup/functions/*.lua` and
-  check each path exists; undefined formatter functions:
-  `grep -on "MessageFormatter\.[a-z_]*pup[a-z_]*" shared/jobs/pup/functions/*.lua`
-  against `shared/utils/messages/` (no match there today).
-- Anything past that needs the game (`//lua reload gearswap` on PUP), after the
-  configs exist.
-
-## Known issues
-
-- **The template cannot load** (P1 if deployed; not deployed): the entry's
-  `get_sets` and `user_setup` require missing configs without `pcall`;
-  `_master/config/pup/` does not exist. The clone script does not offer PUP, so
-  a new clone cannot pick up the broken entry.
-- **Error every game minute on PUP after a failed load** (P2 if deployed,
-  inferred): the chunk-level listener's coroutines `require` the missing
-  `logic/pet_manager`.
-- **Every midcast raises** (known open): `PUP_MIDCAST.lua`
-  `ensure_modules_loaded` calls the undefined `error_pup_module_not_loaded`
-  after the categoriser fails to load.
-- **Idle/engaged raise** (known open): `PUP_IDLE.lua` / `PUP_ENGAGED.lua`
-  plain-require the missing set builder.
-- **Commands call 14 undefined formatter functions** (25 call sites in
-  `PUP_COMMANDS.lua`, 1 more in `PUP_MIDCAST.lua`); no `message_pup.lua`
-  exists.
-- **The job logic is BST's** (Call Beast, broths, ecosystems, Ready moves,
-  Reward/Spur) and does nothing for an automaton.
-- `pup_sets.lua` wraps its tables in `define_pup_sets()`, never called.
-- `job_pet_precast` is dead.
-- Skeleton duplication of the subjob-magic handlers with `BST_MIDCAST.lua`
-  (known open).
-- Fixed 2026-09-28: the user README no longer claims a working structure or a
-  `config/pup/` to copy; it is a hub with the "does not load" warning.
+- The pet TP source: `gearswap._ExtraData.pet.tp` is expected 0-3000 as sent by
+  the server; `//gs c petmode` prints it next to the threshold.
+- That `windower.ffxi.get_mob_by_target('pet').status` reads 1 while the
+  automaton fights (the pet layers and the poll depend on it).
+- How early the WS gear must be on: the poll's 0.5 s step against the
+  automaton's own WS timing at 1000 TP. Raise `pet_ws_tp` if the automaton
+  holds its TP.

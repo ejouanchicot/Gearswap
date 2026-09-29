@@ -116,7 +116,7 @@ Until step 4 runs, `_G.DualBoxConfig` is nil. This window lasts 2 s at minimum a
 
 | Wire command (sent via `send`) | Sender | When | Handler on receiver |
 |---|---|---|---|
-| `send <other> gs c altjobupdate <JOB> <SUB> <mlvl> <slvl> <sender> <weapon>` | either box, `send_job_update` | Auto-init of either box. Reply to `requestjob` (forced past the de-dup). When the main hand changes weapon type (`AltStates.watch_weapon`, packet 0x050 slot 0, read 0.5 s later); `<weapon>` is the skill name without spaces (`Sword`, `GreatKatana`, `None`), part of the de-dup payload. Also on a subjob change in the generic PUP template (`job_sub_job_change`) | Every job COMMANDS file (17), e.g. `WAR_COMMANDS.lua:91-98`, calls `receive_alt_job(cmdParams[2..7])` |
+| `send <other> gs c altjobupdate <JOB> <SUB> <mlvl> <slvl> <sender> <weapon>` | either box, `send_job_update` | Auto-init of either box. Reply to `requestjob` (forced past the de-dup). When the main hand changes weapon type (`AltStates.watch_weapon`, packet 0x050 slot 0, read 0.5 s later); `<weapon>` is the skill name without spaces (`Sword`, `GreatKatana`, `None`), part of the de-dup payload. | Every job COMMANDS file (17), e.g. `WAR_COMMANDS.lua:91-98`, calls `receive_alt_job(cmdParams[2..7])` |
 | `send <each other box> gs c requestjob` | either box, `request_alt_job` (every member of `AltGroup.get_alts()`, the partner alone when there is no group) | Auto-init of either box, `DualBoxRole` resync | Every job COMMANDS file, e.g. `WAR_COMMANDS.lua:103-108`, calls `handle_job_request`, which answers on either role with `send_job_update(true)` |
 | `send <main> gs c altbuff <Buff Name> <0\|1>` | ALT, `AltBuffReporter.report` | GEO `job_buff_change`. `report_all` at ALT auto-init and on `altbuffsync` | `CommonCommands.handle_command` (`altbuff`) calls `AltBuffReporter.receive` |
 | `send <alt> gs c altbuffsync` | MAIN, `request_sync` | `//gs c altsync`, or `sync_after` seconds after an alt command that declares it | `CommonCommands.handle_command` (`altbuffsync`) calls `report_all` (sends only on the ALT) |
@@ -817,7 +817,6 @@ Still open:
 - `_G.DUALBOX_SYNC_DEBUG` is never set, so sync hook errors are always silent (the comment now says so) - `_on_ipc_message`, `shared/utils/dualbox/dualbox_sync_ipc.lua`
 - `Composure` and `Bolter's Roll` are tracked but never reported on change and never read - `TRACKED`, `shared/utils/dualbox/alt_buff_reporter.lua`
 - `//gs c alt <unknown>` prints nothing - `AltCommands.execute`, `shared/utils/dualbox/alt_commands.lua`
-- The PUP entry template still sends the job from `job_sub_job_change` (BST no longer does) - `_master/entry/Tetsouo_PUP.lua` `job_sub_job_change`
 - The overlays' `DUALBOX_CONFIG.lua` are always replaced by the generated file on a clone - `_master/Kaories/config_global/DUALBOX_CONFIG.lua`
 - Two implementations of "the other members of the group", and a copied `messages()` helper: `others()` in `dualbox_role.lua` (ignores `enabled`) vs `AltGroup.get_alts()` (role-aware, respects `enabled`); without `group` the two lists can differ (z06 P3-9, not fixed: needs a game test of `//gs c main`) - `others` in `shared/utils/dualbox/dualbox_role.lua`, `AltGroup.get_alts` in `shared/utils/dualbox/alt_group.lua`
 - The live `.example` files differ from the templates (no REFINE section) - `Tetsouo/config/alt/GEO_ALT_CUSTOM.lua.example`

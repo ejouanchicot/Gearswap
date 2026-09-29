@@ -108,7 +108,7 @@ Order inside one load of `Tetsouo_PLD.lua` (all templates follow the same skelet
 `user_setup()` therefore runs **before** `INIT_SYSTEMS` and before the job facade. Two consequences:
 
 - The require cache already exists during `user_setup()` (installed by `config_loader` at chunk level since 2026-09-27), so a module first required there is the instance the rest of the load gets. It must not read, when it loads, a global that is only set later in `get_sets()`. The only uncached modules are those an entry requires before `config_loader` (`LOCKSTYLE_CONFIG`, and `REGION_CONFIG` in the entries that load it first, such as WAR). State that must be shared between two instances of one module lives on `_G` (`_G.JobChangeManagerSTATE`, `_G.ui_manager_state`, ...).
-- `select_default_macro_book` and `select_default_lockstyle` are defined by the facade (`shared/jobs/<job>/functions/<JOB>_MACROBOOK.lua`, `<JOB>_LOCKSTYLE.lua`), which has not been included yet. The gate in `user_setup` is satisfied only because `show_intro()` required those two wrapper files a few lines earlier and they define the globals as a side effect (the comment above `show_intro` says so). BRD, BST, PUP and RUN re-test the gate in a 0.2 s coroutine instead (their `user_setup`); COR has a second, guarded macrobook/lockstyle block after the first.
+- `select_default_macro_book` and `select_default_lockstyle` are defined by the facade (`shared/jobs/<job>/functions/<JOB>_MACROBOOK.lua`, `<JOB>_LOCKSTYLE.lua`), which has not been included yet. The gate in `user_setup` is satisfied only because `show_intro()` required those two wrapper files a few lines earlier and they define the globals as a side effect (the comment above `show_intro` says so). BRD, BST and RUN re-test the gate in a 0.2 s coroutine instead (their `user_setup`); COR has a second, guarded macrobook/lockstyle block after the first.
 
 #### INIT_SYSTEMS timeline
 
@@ -252,7 +252,7 @@ All templates define `file_unload` at chunk level, so Mote's default (which woul
 | GEO | yes | yes | `lua unload pettp` |
 | COR | yes | yes | unregisters `_G.cor_action_event_id`, `RollTracker.cleanup()`, `PartyTracker.cleanup()`, `lua load rolltracker` (the DressUp watchdog stop is gone with the watchdog, 2026-09-25) |
 | BST | yes | yes | `stop_pet_monitoring()`, bumps `_G.bst_hud_load_id`, `lua unload bst-hud`, nils `_G.KeybindUI/start_pet_monitoring/stop_pet_monitoring` |
-| PUP | yes | yes | unregisters `_G.pup_time_change_event_id`, nils `_G.KeybindUI` |
+| PUP | yes | yes | `PetWS.stop()` first (ends the automaton WS poll) |
 
 A subjob change runs `file_unload` too (it reloads), but the weapon lock released there is re-applied by the new environment only when the player selects the mode again. Combat Mode itself always starts `Off` in a new environment, and its `attach` frees what the previous environment locked.
 
@@ -265,20 +265,19 @@ Roles come from `<Character>/config/DUALBOX_CONFIG.lua`, overridden by `<Charact
 - **Either box reloads or changes job**: its new environment's auto-init runs the same steps for both roles (`:501-502`): `send_job_update()` sends `send <other> gs c altjobupdate <job> <sub> <lvl> <sublvl> <sender>` (an identical payload less than 1.5 s after the previous send is dropped, `windower._dualbox_last_send_payload/_time`, `:180-186`), then `request_alt_job()` sends `send <other> gs c requestjob`. The alt also runs `AltBuffReporter.report_all()` (`:504-511`).
 - **On the receiving box** the job's COMMANDS module routes `altjobupdate` to `receive_alt_job()` (e.g. `shared/jobs/pld/functions/PLD_COMMANDS.lua`), which records every sender in `alt_states.lua` and stops there for a sender that is not its tracked partner, stores `_G.AltJobState` and corrects `_G.cor_party_jobs` for the other character; only when the job or subjob differs from what it already held does it print the update and schedule `select_default_macro_book()` 0.5 s later, so the dual-box book is picked (`DualBoxManager.receive_alt_job`, `dualbox_config` in `macrobook_manager.lua`). It routes `requestjob` to `handle_job_request()`, which answers with `send_job_update(true)`: a forced reply that skips the de-dup window.
 - So a reload of either box restores both sides: the reloaded box learns the other's job from the forced reply, and the other box receives the reloaded box's job (stored silently when unchanged). Nothing asks the alt to resend its buffs after a reload of the main (see Known issues).
-- **Main changes subjob on PUP (generic template)**: its `job_sub_job_change` also calls `DualBoxManager.send_job_update()` from the dying environment (`_master/entry/Tetsouo_PUP.lua` `job_sub_job_change`), on top of the auto-init send of the new environment. BST no longer does (its template was aligned on the Tetsouo overlay).
 - **IPC mirror (`ls`, `rf`)**: each load registers the hooks on its `_G.DUALBOX_SYNC_HOOKS` and an `ipc message` listener (INIT_SYSTEMS sync IPC block, `DualBoxSyncIPC.init_listener`). The listener id is kept on `windower._sync_ipc_event_id` with the load that registered it (`windower._sync_ipc_event_load`); `init_listener` unregisters it only when it comes from the same load, because the engine has already removed an older one and its id may now belong to another listener. Between the engine's unregister at the start of `load_user_files` and `INIT_SYSTEMS` in the new `get_sets`, the box has no listener and drops broadcasts. Self-echo suppression state is on `windower._sync_ipc_last_sent/_time` (`broadcast`) so it spans a reload.
 - `DualBoxManager.is_alt_online()` turns false 30 s after the last `altjobupdate` (`:346-360`); `dualbox_config` in `macrobook_manager.lua` therefore uses the dual-box book only for macrobook selections made within 30 s of an update. `get_alt_jobs` in `alt_commands.lua` reads `_G.AltJobState` directly to avoid that timeout.
 
 ### Per-job differences
 
-- **BRD, BST, PUP, RUN**: macrobook/lockstyle gate re-tested in a 0.2 s coroutine (their `user_setup`).
+- **BRD, BST, RUN**: macrobook/lockstyle gate re-tested in a 0.2 s coroutine (their `user_setup`).
 - **COR**: second macrobook + lockstyle block, each call guarded (`_master/entry/Tetsouo_COR.lua:305-320`; the JCM block before it, `:284-291`, runs too, so both select twice in the same environment); `init_party_tracking()` from `get_sets` (`:82-112`, `:207`); unregisters its events at the top of `get_sets` (`:128-135`), which in a fresh environment finds nothing. The DressUp watchdog loop and the "force gear re-equip" coroutine were removed on 2026-09-25 (the watchdog called a `get_addons` that does not exist; the re-equip equipped nothing).
 - **RUN**: keybinds bound from a 0.5 s coroutine (`_master/entry/Tetsouo_RUN.lua:162-166`); hence the 0.2 s gate re-test (`:201-206`).
 - **BST**: pet monitor on a raw `prerender` listener (`start_pet_monitoring` / `stop_pet_monitoring`, `_master/entry/Tetsouo_BST.lua`), started 3 s after `user_setup()` behind a job and existence guard; BST HUD addon loaded 2 s + 1.5 s after load with a counter and job guard (`_G.bst_hud_load_id`). The generic template now matches the Tetsouo overlay (only the set include and one LagDebugger line differ); `state.Moving` is left to AutoMove.
-- **PUP**: `time change` listener registered at chunk level (`_master/entry/Tetsouo_PUP.lua:263-268`). No `_master/config/pup/` directory exists, so the file never loads.
+- **PUP**: the automaton WS poll (`shared/jobs/pup/functions/logic/pet_ws.lua`), a 0.5 s `coroutine.schedule` loop that runs only while an automaton is out and Pet WS is On; generation `windower._pup_pet_ws_seq`, bumped when the module loads and by `PetWS.stop()` from `file_unload`. No event listener.
 - **Every job**: the Combat Mode weapon lock is centralised in `shared/utils/core/combat_mode.lua` (outermost `handle_equipping_gear` wrapper, see [core-lifecycle.md](../systems/core-lifecycle.md#the-gear-hook-chain)); it honours a craft session through `CraftManager.is_active()`. WHM's `Melee ON` lock is still released by its own `file_unload`, as are THF's `RangeLock` and the Hoxne Ampulla lock; since 2026-09-29 the next load's `attach` also empties their records in `windower._weapon_locks` (the registry Combat Mode lays again after every update).
 - **SMN (`_master/entry/Tetsouo_SMN.lua`, same code in the Tetsouo overlay and live)**: every `user_setup()` schedules a Carbuncle summon when no pet is out (`:149-156`), so a subjob change schedules two (old and new environment).
-- **BST, PUP**: `JobChangeManager.initialize()` is still called from `user_setup`, without argument, like every other job.
+- **BST**: `JobChangeManager.initialize()` is still called from `user_setup`, without argument, like every other job.
 
 The nine Tetsouo overlay entries are identical to live; they differ from the generic templates by the modular set include (and BST as above).
 
@@ -306,7 +305,7 @@ State: `_G.JobChangeManagerSTATE = {current_main_job, current_sub_job, target_ma
 
 ### ModuleCache (`shared/utils/core/module_cache.lua`)
 
-`install()` replaces `_G.require` once per environment with a cache keyed on the lowercased path; calls with a second argument bypass it (`stats()`, which had no caller, was removed on 2026-09-28). Installed by `shared/utils/config/config_loader.lua` when the entry file requires it at file level, i.e. before `user_setup()` (2026-09-27; the INIT_SYSTEMS call is the fallback). WAR, BST, PUP and SMN require `job_change_manager` and `UI_MANAGER` at file level, after `config_loader`, for that reason (the other entries require them inside `get_sets()` / `user_setup()`), and `UI_MANAGER` reads `_G.UIConfig` when it loads, which `load_ui_config` sets.
+`install()` replaces `_G.require` once per environment with a cache keyed on the lowercased path; calls with a second argument bypass it (`stats()`, which had no caller, was removed on 2026-09-28). Installed by `shared/utils/config/config_loader.lua` when the entry file requires it at file level, i.e. before `user_setup()` (2026-09-27; the INIT_SYSTEMS call is the fallback). WAR, BST and SMN require `job_change_manager` and `UI_MANAGER` at file level, after `config_loader`, for that reason (the other entries require them inside `get_sets()` / `user_setup()`), and `UI_MANAGER` reads `_G.UIConfig` when it loads, which `load_ui_config` sets.
 
 ### LockstyleManager / MacrobookManager (lifecycle-relevant parts)
 
@@ -404,7 +403,6 @@ Timing constants: JCM 0.5 s / 3.0 s (`on_job_change`); JobSyncWatchdog 8/5/2/30 
 | `action` (warp detector, raw since 2026-09-25) | `init_action_listener` in `warp_detector.lua` | `windower._warp_detector_event_id` at a second `init_action_listener` of the same load (registered on every load) |
 | `action`, `zone change` (warp item use) | `item_user.lua:678`, `:691` | local ids + `windower._warp_autofix_*`, only while the load is the one that registered them |
 | `action`, `incoming chunk` (COR, raw) | `party_tracker.lua:64`, `:158` | `_G.cor_action_event_id`, `_G.cor_party_event_id`, COR `file_unload` |
-| `time change` (PUP) | `_master/entry/Tetsouo_PUP.lua` chunk level | `_G.pup_time_change_event_id`, PUP `file_unload` |
 | `prerender`, `action` (lag debugger) | `lag_debugger.lua:118`, `:158` | `S.*` ids |
 | `prerender` (BST, raw) | `start_pet_monitoring` in the BST entry | `stop_pet_monitoring()` from BST `file_unload` |
 
@@ -436,7 +434,7 @@ The engine removes all of these at the next `load_user_files` (`refresh.lua:69-7
 ## Invariants & gotchas
 
 1. **Mote runs `user_setup()` twice on a subjob change**: once in the old environment from `sub_job_change` (`Mote-Include.lua:982-984`) and once in the new environment after the reload. Anything `user_setup()` schedules is scheduled twice and the first copy runs in a dead environment.
-2. **`user_setup()` runs before `INIT_SYSTEMS` and before the job facade.** Code there must not assume `select_default_*`, `_G.MidcastWatchdog` or AutoMove exist. The require cache does exist there since 2026-09-27 (installed by `config_loader`), so a module first required in `user_setup()` is the instance the rest of the load gets: it must not read, at load time, a global that is set later. The macrobook/lockstyle gate works through the keybind intro's `require` side effect, or (BRD, BST, PUP, RUN) through a 0.2 s re-test.
+2. **`user_setup()` runs before `INIT_SYSTEMS` and before the job facade.** Code there must not assume `select_default_*`, `_G.MidcastWatchdog` or AutoMove exist. The require cache does exist there since 2026-09-27 (installed by `config_loader`), so a module first required in `user_setup()` is the instance the rest of the load gets: it must not read, at load time, a global that is set later. The macrobook/lockstyle gate works through the keybind intro's `require` side effect, or (BRD, BST, RUN) through a 0.2 s re-test.
 3. **A coroutine must carry its own invalidation that the next environment can move**: a sequence on `windower._x` (AutoMove, JobSyncWatchdog, MidcastWatchdog, KeybindGuard) or an identity test against a `windower._x` pointer (the HUD's `_ui_live_state`). A flag on `_G` cannot be cleared by the next environment.
 4. **`equip()` from a coroutine does nothing**; send `gs c update` instead (`flow.lua:60`).
 5. **Slot locks outlive the environment that set them.** Any feature that `disable()`s slots and keeps its "active" flag on `_G` loses the flag on reload but keeps the lock; release it from `file_unload` (PLD, WAR, THF, BLM, WHM do).

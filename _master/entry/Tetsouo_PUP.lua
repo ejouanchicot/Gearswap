@@ -1,104 +1,79 @@
 ---============================================================================
 --- FFXI GearSwap Configuration - Puppetmaster (PUP) - Modular Architecture
 ---============================================================================
---- Main file for Puppetmaster job.
----
---- WARNING: unfinished template, adapted from Tetsouo_BST.lua, and it does not
---- load: _master/config/pup/ does not exist, so the unprotected
---- require('Tetsouo/config/pup/PUP_PET_DATA') in get_sets() raises. It also
---- still refers to BST concepts (ecosystem/species) and to logic modules
---- (shared/jobs/pup/functions/logic/) that do not exist.
+--- Loader for the Puppetmaster job: Mote-Include, the shared systems, the PUP
+--- hook modules and this character's configs and sets.
 ---
 --- @file Tetsouo_PUP.lua
 --- @author ejouanchicot
---- @version 1.0.0 - Initial Release
---- @date Created: 2025-10-17
+--- @version 2.0
+--- @date Created: 2026-09-29
 --- @requires Windower FFXI, GearSwap addon, Mote-Include v2.0+
+---
+--- Architecture:
+---   Main File (this) >> pup_functions.lua >> Hooks >> Logic Modules
+---
+--- Hooks Modules:
+---   PUP_PRECAST | PUP_MIDCAST | PUP_PET_MIDCAST | PUP_AFTERCAST | PUP_STATUS
+---   PUP_BUFFS | PUP_IDLE | PUP_ENGAGED | PUP_MACROBOOK | PUP_COMMANDS
+---   PUP_MOVEMENT | PUP_LOCKSTYLE
+---
+--- Logic Modules:
+---   logic/automaton.lua    - Head / frame -> PetMode, pet out / fighting / TP
+---   logic/pet_ws.lua       - Automaton WS gear timing (0.5 s poll)
+---   logic/set_builder.lua  - Idle / engaged sets, pet layers
 ---============================================================================
 
 ---============================================================================
---- CONFIGURATION LOADING
+-- INITIALIZATION
 ---============================================================================
 
--- Load global configurations with fallbacks
-local LockstyleConfig_ok, LockstyleConfig = pcall(require, 'Tetsouo/config/LOCKSTYLE_CONFIG')
-if not LockstyleConfig_ok then LockstyleConfig = nil end
-LockstyleConfig = LockstyleConfig or {
-    initial_load_delay = 8.0
-}
+-- Load lockstyle timing configuration
+local lockstyle_config_success, LockstyleConfig = pcall(require, 'Tetsouo/config/LOCKSTYLE_CONFIG')
+if not lockstyle_config_success or not LockstyleConfig then
+    LockstyleConfig = {
+        initial_load_delay = 8.0
+    }
+end
 
--- ============================================
--- LOAD UICONFIG AT MODULE LEVEL (executed on EVERY reload)
--- ============================================
--- Centralized loading via config_loader to eliminate duplication
-local ConfigLoader = require('shared/utils/config/config_loader')
-local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'PUP')
-
--- Core modules, after config_loader: it installs the require cache, and
--- UI_MANAGER reads _G.UIConfig when it loads.
-local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
-local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
-
----============================================================================
---- GEARSWAP ENTRY POINT
----============================================================================
-
--- Region configuration, set at file level: message_colors reads
--- _G.RegionConfig at each use, so it only has to be set before the first
--- message that uses the region colour.
+-- Region configuration, set at file level before anything loads the
+-- message system (message_colors reads _G.RegionConfig).
 local region_success, RegionConfig = pcall(require, 'Tetsouo/config/REGION_CONFIG')
 if region_success and RegionConfig then
     _G.RegionConfig = RegionConfig
 end
 
---- GearSwap entry hook: loads the PUP configs, Mote-Include, the shared systems
---- and the PUP modules.
+-- UI config, loaded on every reload (config_loader)
+local ConfigLoader = require('shared/utils/config/config_loader')
+local UIConfig = ConfigLoader.load_ui_config('Tetsouo', 'PUP')
+
+--- GearSwap entry hook: loads Mote-Include, the shared systems and the PUP modules.
 --- Called by GearSwap each time this job file is loaded.
 --- @return void
 function get_sets()
-    -- PERFORMANCE PROFILING (enable with: //gs c perf start)
     local Profiler = require('shared/utils/debug/performance_profiler')
     Profiler.start('get_sets')
 
     mote_include_version = 2
-
-    -- Load PUP-specific configs BEFORE Mote-Include (needed by user_setup)
-    _G.LockstyleConfig = LockstyleConfig
-    _G.UIConfig = UIConfig
-    _G.RECAST_CONFIG = require('Tetsouo/config/RECAST_CONFIG')
-    _G.PUPBeastPetData = require('Tetsouo/config/pup/PUP_PET_DATA')
-    _G.PUPTPConfig = require('Tetsouo/config/pup/PUP_TP_CONFIG')
-
     include('Mote-Include.lua')
     Profiler.mark('After Mote-Include')
     include('../shared/utils/core/INIT_SYSTEMS.lua')
     Profiler.mark('After INIT_SYSTEMS')
 
-    -- ============================================
-    -- UNIVERSAL DATA ACCESS (All Spells/Abilities/Weaponskills)
-    -- ============================================
     require('shared/utils/data/data_loader')
-    Profiler.mark('After data_loader')
-
-    -- ============================================
-    -- UNIVERSAL SPELL MESSAGES (All Jobs/Subjobs)
-    -- ============================================
     include('../shared/hooks/init_spell_messages.lua')
-    Profiler.mark('After spell messages')
-
-    -- ============================================
-    -- UNIVERSAL ABILITY MESSAGES (All Jobs/Subjobs)
-    -- ============================================
     include('../shared/hooks/init_ability_messages.lua')
-    Profiler.mark('After ability messages')
-
-    -- ============================================
-    -- UNIVERSAL WEAPONSKILL MESSAGES (All Jobs/Subjobs)
-    -- ============================================
     include('../shared/hooks/init_ws_messages.lua')
-    Profiler.mark('After WS messages')
+    Profiler.mark('After message hooks')
 
-    -- Cancel pending operations from previous job
+    _G.LockstyleConfig = LockstyleConfig
+    _G.RECAST_CONFIG = require('Tetsouo/config/RECAST_CONFIG')
+
+    -- PUP-specific configs
+    _G.PUPTPConfig = require('Tetsouo/config/pup/PUP_TP_CONFIG')
+
+    -- Cancel any pending operations from previous job (including ALL job lockstyles)
+    local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if jcm_success and JobChangeManager then
         JobChangeManager.cancel_all()
     end
@@ -107,7 +82,6 @@ function get_sets()
     include('../shared/jobs/pup/functions/pup_functions.lua')
     Profiler.mark('After pup_functions')
 
-    -- Register PUP lockstyle cancel function
     if jcm_success and JobChangeManager and cancel_pup_lockstyle_operations then
         JobChangeManager.register_lockstyle_cancel("PUP", cancel_pup_lockstyle_operations)
     end
@@ -116,108 +90,97 @@ function get_sets()
 end
 
 ---============================================================================
---- USER SETUP (STATE DEFINITIONS + INITIALIZATION)
+-- JOB CHANGE HANDLING
 ---============================================================================
 
---- Configure states, ecosystem, keybinds, UI and the initial macrobook/lockstyle.
+--- Handle sub job change events (called by Mote-Include)
+--- @param newSubjob string New subjob
+--- @param oldSubjob string Old subjob
+--- @return void
+function job_sub_job_change(newSubjob, oldSubjob)
+    local success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
+    if success and JobChangeManager then
+        local main_job = player and player.main_job or "PUP"
+        JobChangeManager.on_job_change(main_job, newSubjob)
+    end
+end
+
+---============================================================================
+-- SETUP FUNCTIONS
+---============================================================================
+
+--- Configure states (PetMode from the automaton's head), keybinds, UI and the
+--- initial macrobook/lockstyle.
 --- Called by Mote-Include from init_include() (inside include('Mote-Include.lua'),
---- before init_gear_sets) and again on every subjob change, before job_sub_job_change().
+--- before init_gear_sets) and again on every subjob change.
 --- @return void
 function user_setup()
-    -- ==========================================================================
-    -- STATES CONFIGURATION
-    -- ==========================================================================
     local PUPStates = require('Tetsouo/config/pup/PUP_STATES')
     PUPStates.configure()
 
-    -- ==========================================================================
-    -- DYNAMIC STATE INITIALIZATION (PUP-SPECIFIC)
-    -- ==========================================================================
-    -- CRITICAL: Initialize ecosystem BEFORE UI so species state exists
-    local em_success, EcosystemManager = pcall(require, 'shared/jobs/pup/functions/logic/ecosystem_manager')
-    if em_success and EcosystemManager then
-        EcosystemManager.initialize()
-    else
-        local msg_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-        if msg_success and MessageFormatter then
-            MessageFormatter.show_error('[PUP] Failed to load EcosystemManager')
-        end
+    -- PetMode from the automaton's head before the HUD first draws it
+    local am_ok, Automaton = pcall(require, 'shared/jobs/pup/functions/logic/automaton')
+    if am_ok and Automaton then
+        Automaton.refresh_mode(true)
     end
 
-    -- ==========================================================================
-    -- KEYBINDS LOADING
-    -- ==========================================================================
-    local kb_success, keybinds = pcall(require, 'Tetsouo/config/pup/PUP_KEYBINDS')
-    if kb_success and keybinds then
+    local success, keybinds = pcall(require, 'Tetsouo/config/pup/PUP_KEYBINDS')
+    if success and keybinds then
         PUPKeybinds = keybinds
         PUPKeybinds.bind_all()
     else
-        local msg_success, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
-        if msg_success and MessageFormatter then
+        -- Loudly: the job loads and //gs c answers, only the keys are dead.
+        -- A failed pcall may be an error in any dependency, not a missing file.
+        local ok, MessageFormatter = pcall(require, 'shared/utils/messages/message_formatter')
+        if ok and MessageFormatter then
             MessageFormatter.show_error('[PUP] Keybinds failed to load: ' .. tostring(keybinds))
         end
     end
 
-    -- ==========================================================================
-    -- UI INITIALIZATION
-    -- ==========================================================================
+    local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI then
-        KeybindUI.smart_init("PUP", UIConfig.init_delay)
-
-        -- Export to _G for ecosystem_manager access
-        _G.KeybindUI = KeybindUI
+        local init_delay = (_G.UIConfig and _G.UIConfig.init_delay) or 5.0
+        KeybindUI.smart_init("PUP", init_delay)
     end
 
-    -- ==========================================================================
-    -- JOB CHANGE MANAGER INITIALIZATION
-    -- ==========================================================================
+    local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if jcm_success and JobChangeManager then
-        -- pup_functions.lua is not included yet when Mote runs user_setup();
-        -- these globals exist only if PUPKeybinds.bind_all() above
-        -- (KeybindManager show_intro) required PUP_MACROBOOK / PUP_LOCKSTYLE.
-        if select_default_lockstyle and select_default_macro_book then
-            JobChangeManager.initialize()
-
-            -- Trigger initial macrobook/lockstyle with delay
-            if player then
-                select_default_macro_book()
-                coroutine.schedule(select_default_lockstyle, LockstyleConfig.initial_load_delay)
-            end
-        else
-            -- Functions not loaded yet, schedule for later
-            coroutine.schedule(function()
-                if select_default_lockstyle and select_default_macro_book then
-                    JobChangeManager.initialize()
-                    if player then
-                        select_default_macro_book()
-                        coroutine.schedule(select_default_lockstyle, LockstyleConfig.initial_load_delay)
-                    end
-                end
-            end, 0.2)
+        JobChangeManager.initialize()
+        if player and select_default_macro_book and select_default_lockstyle then
+            select_default_macro_book()
+            coroutine.schedule(select_default_lockstyle, LockstyleConfig.initial_load_delay)
         end
     end
+
+    -- DUALBOX IPC: the require() triggers dualbox_manager auto-init (once per gs reload)
+    pcall(require, 'shared/utils/dualbox/dualbox_manager')
 end
 
 ---============================================================================
 --- STATE UPDATE HOOK
 ---============================================================================
 
---- Called by Mote-Include after state changes
---- Updates the UI to reflect current state values
+--- Called by Mote-Include before it puts the gear on (every gs c update,
+--- cycle, set, toggle): PetMode from a changed automaton head, the pet WS
+--- poll started if it has something to watch, then the HUD.
 --- @param cmdParams table Parameters passed to Mote's handle_update
 --- @param eventArgs table Mote event arguments (unused)
 --- @return void
 function job_update(cmdParams, eventArgs)
-    -- Refresh the HUD (every cycle/set/toggle command and gs c update land here)
+    local am_ok, Automaton = pcall(require, 'shared/jobs/pup/functions/logic/automaton')
+    if am_ok and Automaton then
+        Automaton.refresh_mode()
+    end
+    local ws_ok, PetWS = pcall(require, 'shared/jobs/pup/functions/logic/pet_ws')
+    if ws_ok and PetWS then
+        PetWS.ensure_running()
+    end
+
     local ui_success, KeybindUI = pcall(require, 'shared/utils/ui/UI_MANAGER')
     if ui_success and KeybindUI and KeybindUI.update then
         KeybindUI.update()
     end
 end
-
----============================================================================
---- EQUIPMENT SETS LOADING
----============================================================================
 
 --- Load the PUP equipment sets.
 --- Called by Mote-Include at the end of init_include(), after user_setup().
@@ -226,94 +189,21 @@ function init_gear_sets()
     include('sets/pup_sets.lua')
 end
 
----============================================================================
---- SUBJOB CHANGE HANDLER
----============================================================================
-
---- Handle sub job change events (called by Mote-Include after user_setup())
---- Hands the reload sequence to JobChangeManager, then notifies the dualbox partner.
---- @param newSubjob string New subjob
---- @param oldSubjob string Old subjob
---- @return void
-function job_sub_job_change(newSubjob, oldSubjob)
-    -- Let JobChangeManager handle the full reload sequence
-    local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
-    if jcm_success and JobChangeManager then
-        local main_job = player and player.main_job or "PUP"
-        JobChangeManager.on_job_change(main_job, newSubjob)
-    end
-
-    -- DUALBOX: Send job update to MAIN character after subjob change
-    local db_success, DualBoxManager = pcall(require, 'shared/utils/dualbox/dualbox_manager')
-    if db_success and DualBoxManager then
-        DualBoxManager.send_job_update()
-    end
-end
-
----============================================================================
---- PET MONITORING (TIME CHANGE EVENT)
----============================================================================
---- Monitor pet status and trigger auto-engage when conditions met
---- Runs on every in-game minute (Windower 'time change' event)
----============================================================================
-
--- Cleanup previous event handler if reloading (coroutine.schedule timers survive gs reload)
-if _G.pup_time_change_event_id then
-    windower.unregister_event(_G.pup_time_change_event_id)
-    _G.pup_time_change_event_id = nil
-end
-
-_G.pup_time_change_event_id = windower.register_event('time change', function(new_time, old_time)
-    -- Guard: only run if still on PUP (event persists across job changes)
-    if not player or player.main_job ~= 'PUP' then return end
-
-    -- Only monitor if player is engaged
-    if player.status == 'Engaged' then
-        coroutine.schedule(function()
-            if not player or player.main_job ~= 'PUP' then return end
-            local PetManager = require('shared/jobs/pup/functions/logic/pet_manager')
-            if PetManager then
-                local pet = windower.ffxi.get_mob_by_target('pet')
-                PetManager.check_and_engage_pet(pet)
-            end
-        end, 0.1)
-    end
-
-    -- Monitor pet status (update PetEngaged state)
-    coroutine.schedule(function()
-        if not player or player.main_job ~= 'PUP' then return end
-        local PetManager = require('shared/jobs/pup/functions/logic/pet_manager')
-        if PetManager then
-            PetManager.monitor_pet_status()
-        end
-    end, 0.1)
-end)
-
----============================================================================
---- CLEANUP ON UNLOAD
----============================================================================
-
 --- Called by GearSwap when this job file is unloaded (job change, reload).
---- Unregisters the time change handler, cancels pending job-change operations,
---- clears exported globals and unbinds the job keys.
 --- @return void
 function file_unload()
-    -- Unregister time change event handler (prevents ghost events on other jobs)
-    if _G.pup_time_change_event_id then
-        windower.unregister_event(_G.pup_time_change_event_id)
-        _G.pup_time_change_event_id = nil
+    -- First: GearSwap runs file_unload under one pcall (engine refresh.lua
+    -- load_user_files), so an error further down would skip what follows it.
+    local ws_ok, PetWS = pcall(require, 'shared/jobs/pup/functions/logic/pet_ws')
+    if ws_ok and PetWS then
+        PetWS.stop()
     end
 
-    -- Cancel pending job change operations (debounce timer + lockstyles)
     local jcm_success, JobChangeManager = pcall(require, 'shared/utils/core/job_change_manager')
     if jcm_success and JobChangeManager then
         JobChangeManager.cancel_all()
     end
 
-    -- Clear exported globals
-    _G.KeybindUI = nil
-
-    -- Unbind all keybinds (Windower binds persist across gs reload)
     if PUPKeybinds and PUPKeybinds.unbind_all then
         PUPKeybinds.unbind_all()
     end

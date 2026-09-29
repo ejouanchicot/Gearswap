@@ -50,7 +50,7 @@ function (`file` `function`); a raw `:NNN` is given only where the line itself m
 | `shared/hooks/init_spell_messages.lua` | 97 | Wraps `user_post_midcast`: spell messages, Utsusemi: Ichi shadow cancel |
 
 Job files used to document the contract: every `shared/jobs/<job>/functions/<JOB>_PRECAST.lua`
-(17 files since BLU was added; BST and PUP also have `*_PET_PRECAST.lua`, which do not run this pipeline).
+(17 files since BLU was added; BST also has `BST_PET_PRECAST.lua`, which does not run this pipeline).
 
 ## Action lifecycle, end to end
 
@@ -270,7 +270,7 @@ flowchart TD
 1. `recast_id` from `spell.recast_id`, else `MANUAL_RECAST_IDS` (empty). Weaponskills
    have no `recast_id`, so a WS passed here returns immediately.
 2. Skips names in `MULTI_CHARGE_ABILITIES` (Quick Draw shots, SCH stratagems and
-   other SCH abilities).
+   other SCH abilities, the eight PUP maneuvers).
 3. Reads seconds via `MessageFormatter.get_ability_recast_seconds`
    (`message_cooldowns.lua`, `windower.ffxi.get_ability_recasts()`), applies
    `RECAST_CONFIG.on_cooldown` (tolerance) and, if on cooldown, prints

@@ -488,8 +488,8 @@ Use the `/new-job <JOB>` skill for the guided workflow. The files:
       `'Tetsouo/config/...'` path form (the clone substitutes it); require
       `config_loader` first, include INIT_SYSTEMS right after Mote-Include.
 - [ ] `_master/config/<job>/`: **every** file the entry requires without
-      `pcall` must exist (PUP is the standing counter-example: its entry
-      requires files that do not exist and the job never loads).
+      `pcall` must exist (PUP did not load until 2026-09-29 for that
+      reason: its entry required files that did not exist).
 - [ ] `_master/sets/<job>_sets.lua`: every set name the code reads, empty
       copies where the player has no gear yet.
 - [ ] `clone_character.py` `ALL_VALID_JOBS`; `character_db.lua` `ALL_JOBS`.

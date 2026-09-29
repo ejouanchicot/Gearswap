@@ -12,8 +12,6 @@ in-game name. Create it with the clone script
 The message names the file and line. Most often a set or config file you
 edited has a syntax error (a missing comma or brace).
 
-**PUP does not load.** Known: see [PUP](../jobs/pup/README.md).
-
 **I want SMN.** Pick SMN in the job list when you run the clone script (or
 re-run it to add SMN to an existing character). Its set file is mostly empty:
 fill it with your gear ([SMN sets](../jobs/smn/sets.md)).

@@ -551,8 +551,6 @@ or /DNC, shields included (its comment now says so).
 - Lockstyle / macrobook factories, `JobChangeManager`, `LifecycleManager`, HUD
   ([UI overlay](../systems/ui-overlay.md)), `CommonCommands`, `CycleHandler`,
   dual-box ([dualbox](../systems/dualbox.md)).
-- `PetManager` (`engage_pet`, `disengage_pet`, `get_ready_moves`) has a PUP twin
-  path (`shared/jobs/pup/functions/logic/pet_manager`) that does not exist.
 - `LagDebugger.on_prerender_check` is called by the monitor (template and
   overlay); `on_job_update` only by the overlay entry.
 

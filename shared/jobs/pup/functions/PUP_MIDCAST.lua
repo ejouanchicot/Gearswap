@@ -1,233 +1,86 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
----   PUP Midcast Module - Midcast Gear Selection
+---   PUP Midcast Module - Powered by MidcastManager
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Midcast for Puppetmaster:
----   - Ready moves (job_midcast): 4 categories (Physical, PhysicalMulti,
----     MagicAtk, MagicAcc), outside MidcastManager
----   - Pet commands dressed at precast (Call Beast, Reward, Spur...) are left alone
----   - Subjob spells (job_post_midcast): Healing/Enhancing/Enfeebling/
----     Elemental/Blue Magic through MidcastManager
+---   The master's magic is subjob magic (Utsusemi on /NIN, Cure on /WHM...):
+---   MidcastManager on the spell's skill. A skill with no base set
+---   (sets.midcast['Healing Magic']...) keeps Mote's pick (sets.midcast
+---   [spell] / [map] / [skill] / [spell type], so sets.midcast.Utsusemi for
+---   Utsusemi). Mote-Globals lays sets.midcast.FastRecast first.
 ---
----   NOTE: the Ready move logic is BST's (beast pets). ready_move_categorizer
----   does not exist and MessageFormatter.error_pup_module_not_loaded is not
----   defined, so ensure_modules_loaded() raises on the first midcast.
+---   The automaton's own actions go through PUP_PET_MIDCAST.lua.
+---
+---   job_get_spell_map gives every "<Element> Maneuver" the map Maneuver, so
+---   Mote's precast finds sets.precast.JA.Maneuver.
 ---
 ---   @file    shared/jobs/pup/functions/PUP_MIDCAST.lua
 ---   @author  ejouanchicot
----   @version 3.0 - Added spell_family database support
----   @date    Created: 2025-10-17 | Updated: 2025-11-05
+---   @version 2.0
+---   @date    Created: 2026-09-29
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----  ═══════════════════════════════════════════════════════════════════════════
----   DEPENDENCIES - LAZY LOADING
----  ═══════════════════════════════════════════════════════════════════════════
+local MidcastDeps = require('shared/utils/midcast/midcast_deps')
 
 local MidcastManager = nil
-local MessageFormatter = nil
 local EnhancingSPELLS = nil
-local EnhancingSPELLS_success = false
-local ReadyMoveCategorizer = nil
+local EnfeeblingSPELLS = nil
 
-local modules_loaded = false
-
-local function ensure_modules_loaded()
-    if modules_loaded then return end
-
-    local mm_ok, mm = pcall(require, 'shared/utils/midcast/midcast_manager')
-    if not mm_ok then mm = nil end
-    MidcastManager = mm
-    local mf_ok, mf = pcall(require, 'shared/utils/messages/message_formatter')
-    if not mf_ok then mf = nil end
-    MessageFormatter = mf
-
-    -- Load ENHANCING_MAGIC_DATABASE for spell_family routing
-    EnhancingSPELLS_success, EnhancingSPELLS = pcall(require, 'shared/data/magic/ENHANCING_MAGIC_DATABASE')
-
-    -- Ready move categorizer
-    local success_rmc
-    success_rmc, ReadyMoveCategorizer = pcall(require, 'shared/jobs/pup/functions/logic/ready_move_categorizer')
-    if not success_rmc then
-        MessageFormatter.error_pup_module_not_loaded('ReadyMoveCategorizer')
-        ReadyMoveCategorizer = nil
+--- Extra MidcastManager fields per skill: target and database routing.
+--- @param skill string
+--- @return table
+local function skill_options(skill)
+    if skill == 'Enhancing Magic' then
+        return {target_func = MidcastManager.get_enhancing_target,
+            database_func = EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil}
     end
-
-    modules_loaded = true
+    if skill == 'Enfeebling Magic' then
+        if EnfeeblingSPELLS == nil then
+            local ok, db = pcall(require, 'shared/data/magic/ENFEEBLING_MAGIC_DATABASE')
+            EnfeeblingSPELLS = ok and db or false
+        end
+        return {database_func = EnfeeblingSPELLS and EnfeeblingSPELLS.get_enfeebling_type or nil}
+    end
+    return {}
 end
 
--- Pet commands that precast has already dressed. Midcast must leave them
--- alone or it undoes the set precast just chose.
-local PRECAST_ONLY = {
-    ['Call Beast'] = true, ['Bestial Loyalty'] = true, ['Reward'] = true,
-    ['Killer Instinct'] = true, ['Spur'] = true,
-    ['Fight'] = true, ['Heel'] = true, ['Stay'] = true,
-}
+---  ═══════════════════════════════════════════════════════════════════════════
+---   MIDCAST HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
 
---- Which Ready move category this is, if any.
+--- Pre-midcast hook: nothing PUP-specific before Mote's set.
 --- @param spell table Spell information from GearSwap
----
---- precast stores it on the spell because by midcast the name alone no longer
---- says which kind of move it was. The categoriser is the fallback for paths
---- that did not go through precast.
---- @return string|nil Category, nil when this is not a Ready move
-local function ready_move_category(spell)
-    local category = spell.ready_move_category
-    if not category and ReadyMoveCategorizer and spell.action_type == 'Ability' then
-        category = ReadyMoveCategorizer.get_category(spell.name)
-    end
-
-    -- 'Default' is the categoriser saying it recognised nothing.
-    if category == 'Default' then
-        return nil
-    end
-    return category
-end
-
---- The set for a Ready move category.
----
---- The magic categories have a separate _ww set for when the master is
---- engaged. Why the two differ is a gear decision that lives in the sets, not
---- here; this only picks between them.
---- @param category string From ready_move_category
---- @param engaged boolean Whether the master is fighting
---- @return table|nil Set to equip
-local function set_for_category(category, engaged)
-    local m = sets.midcast
-
-    -- Set existence is part of the condition, not an afterthought: a
-    -- PhysicalMulti move on a job that never defined a multi set falls through
-    -- to the physical one rather than equipping nothing. The magic categories
-    -- deliberately do NOT fall back - melee gear on a magic move is worse than
-    -- leaving what precast chose.
-    if category == 'Physical' and m.pet_physical_moves then
-        return m.pet_physical_moves
-    elseif category == 'PhysicalMulti' and m.pet_physicalMulti_moves then
-        return m.pet_physicalMulti_moves
-    elseif category == 'MagicAtk' then
-        return engaged and m.pet_magicAtk_moves_ww or m.pet_magicAtk_moves
-    elseif category == 'MagicAcc' then
-        return engaged and m.pet_magicAcc_moves_ww or m.pet_magicAcc_moves
-    end
-
-    -- Unknown category: physical is the safe guess for a pet ability.
-    return m.pet_physical_moves
-end
-
----   Midcast hook - Ready moves only; everything else is precast's business
----   @param spell table Spell information from GearSwap
----   @param action table Action information from GearSwap
----   @param spellMap string Spell mapping from Mote-Include
----   @param eventArgs table Event arguments
+--- @param action table Action information from GearSwap
+--- @param spellMap string Spell mapping from Mote-Include
+--- @param eventArgs table Event arguments
 function job_midcast(spell, action, spellMap, eventArgs)
-    ensure_modules_loaded()
-
-    if PRECAST_ONLY[spell.name] then
-        return
-    end
-
-    local category = ready_move_category(spell)
-    if not category then
-        return
-    end
-
-    local engaged = (player and player.status == 'Engaged')
-    local set = set_for_category(category, engaged)
-    if set then
-        equip(set)
-    end
-
-    eventArgs.handled = true
 end
 
----  ─────────────────────────────────────────────────────────────────────────
----   PER-BRANCH HANDLERS
----  ─────────────────────────────────────────────────────────────────────────
----   One handler per subjob magic skill, dispatched on spell.skill.
----   Each returns true once it has handled the call.
-
---- Handle Healing Magic.
+--- Post-midcast hook (MidcastManager routing)
 --- @param spell table Spell information from GearSwap
---- @return boolean True when this handler took the action
-local function job_post_midcast_healing_magic(spell)
-    MidcastManager.select_set({
-        skill = 'Healing Magic',
-        spell = spell
-    })
-    return true
-end
-
---- Handle Enhancing Magic.
---- @param spell table Spell information from GearSwap
---- @return boolean True when this handler took the action
-local function job_post_midcast_enhancing_magic(spell)
-    MidcastManager.select_set({
-        skill = 'Enhancing Magic',
-        spell = spell,
-        target_func = MidcastManager.get_enhancing_target,
-        database_func = EnhancingSPELLS_success and EnhancingSPELLS and EnhancingSPELLS.get_spell_family or nil
-    })
-    return true
-end
-
---- Handle Enfeebling Magic.
---- @param spell table Spell information from GearSwap
---- @return boolean True when this handler took the action
-local function job_post_midcast_enfeebling_magic(spell)
-    MidcastManager.select_set({
-        skill = 'Enfeebling Magic',
-        spell = spell
-    })
-    return true
-end
-
---- Handle Elemental Magic.
---- @param spell table Spell information from GearSwap
---- @return boolean True when this handler took the action
-local function job_post_midcast_elemental_magic(spell)
-    MidcastManager.select_set({
-        skill = 'Elemental Magic',
-        spell = spell
-    })
-    return true
-end
-
---- Handle Blue Magic.
---- @param spell table Spell information from GearSwap
---- @return boolean True when this handler took the action
-local function job_post_midcast_blue_magic(spell)
-    MidcastManager.select_set({
-        skill = 'Blue Magic',
-        spell = spell
-    })
-    return true
-end
-
-local JOB_POST_MIDCAST_HANDLERS = {
-    ['Healing Magic'] = job_post_midcast_healing_magic,
-    ['Enhancing Magic'] = job_post_midcast_enhancing_magic,
-    ['Enfeebling Magic'] = job_post_midcast_enfeebling_magic,
-    ['Elemental Magic'] = job_post_midcast_elemental_magic,
-    ['Blue Magic'] = job_post_midcast_blue_magic,
-}
-
----   Post-midcast hook (MidcastManager routing and gear selection)
----   @param spell table Spell information from GearSwap
----   @param action string Action type
----   @param spellMap string Spell mapping from Mote-Include
----   @param eventArgs table Event arguments for cancellation/customization
+--- @param action table Action information from GearSwap
+--- @param spellMap string Spell mapping from Mote-Include
+--- @param eventArgs table Event arguments
 function job_post_midcast(spell, action, spellMap, eventArgs)
+    MidcastManager, EnhancingSPELLS = MidcastDeps.load()
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_midcast_start(spell)
     end
-
-    -- Skip if already handled (Ready Moves)
-    if eventArgs.handled then
+    if not MidcastManager or spell.action_type ~= 'Magic' or not spell.skill then
         return
     end
+    local config = skill_options(spell.skill)
+    config.skill = spell.skill
+    config.spell = spell
+    MidcastManager.select_set(config)
+end
 
-    -- Subjob spells, routed through MidcastManager
-    local handler = JOB_POST_MIDCAST_HANDLERS[spell.skill]
-    if handler and handler(spell) then
-        return
+--- Mote spell map: 'Maneuver' for every elemental maneuver (nil = Mote's own).
+--- @param spell table Spell from GearSwap
+--- @param default_spell_map string|nil Mote's own map
+--- @return string|nil
+function job_get_spell_map(spell, default_spell_map)
+    local name = spell and spell.english
+    if type(name) == 'string' and name:sub(-9) == ' Maneuver' then
+        return 'Maneuver'
     end
 end
 
@@ -237,9 +90,10 @@ end
 
 _G.job_midcast = job_midcast
 _G.job_post_midcast = job_post_midcast
+_G.job_get_spell_map = job_get_spell_map
 
--- Module table for require() compatibility (parity with _G exports above)
 return {
     job_midcast = job_midcast,
     job_post_midcast = job_post_midcast,
+    job_get_spell_map = job_get_spell_map,
 }

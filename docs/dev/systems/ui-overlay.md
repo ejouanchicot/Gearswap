@@ -80,7 +80,7 @@ sequenceDiagram
     CL->>CL: dofile(CHAR/config/UI_CONFIG.lua) -> _G.UIConfig
     CL->>CL: require shared/config/ui_settings (reads ui_settings.lua)
     CL->>CL: _G.ui_display_config = persisted flags
-    Entry->>Entry: WAR/BST/PUP/SMN: require UI_MANAGER at file level
+    Entry->>Entry: WAR/BST/SMN: require UI_MANAGER at file level
     Entry->>Mote: get_sets() -> include Mote-Include
     Mote->>US: user_setup()
     US->>US: states, KeybindManager bind_all()
@@ -96,7 +96,7 @@ sequenceDiagram
 ```
 
 1. `ConfigLoader.load_ui_config(char_name, job_name)` runs `dofile` on `<windower>/addons/GearSwap/data/<char>/config/UI_CONFIG.lua`. On failure it substitutes a small table (`init_delay` 5.0, position 1600/300, every flag `true`) and prints `MessageCore.show_config_error(job, 'UIConfig load failed, using defaults')`. It then fills `_G.ui_display_config` from the persisted store.
-2. Load order: every `_master/entry/*`, `_master/Tetsouo/entry/*`, live `Tetsouo/` and `Kaories/` entry now requires `config_loader` before `UI_MANAGER` (checked 2026-09-28). WAR, BST, PUP and SMN require `UI_MANAGER` at file level right after it, the others inside `user_setup()`. The `UI_MANAGER.lua` stub therefore only fills keys missing from a real `UI_CONFIG.lua`; its comment still names WAR/BST/PUP as entries that load it first (stale comment).
+2. Load order: every `_master/entry/*`, `_master/Tetsouo/entry/*`, live `Tetsouo/` and `Kaories/` entry now requires `config_loader` before `UI_MANAGER` (checked 2026-09-28). WAR, BST and SMN require `UI_MANAGER` at file level right after it, the others inside `user_setup()`. The `UI_MANAGER.lua` stub therefore only fills keys missing from a real `UI_CONFIG.lua`; its comment still names WAR/BST/PUP as entries that load it first (stale comment).
 3. `smart_init(job_name, max_wait_time)` bumps `smart_init_id`, then calls `init()` at once if `are_states_ready()`. Otherwise it schedules `try_init` every 0.2 s. A newer `smart_init` (or `JobChangeManager` `cleanup_all_systems`) invalidates the poll, and so does a newer file load (`windower._ui_live_state` no longer its own state table). After `max_wait_time` (= `UIConfig.init_delay`, 5.0 in the template) it calls `init()` anyway. Anchor states (`are_states_ready`): BRD `SongMode`, BLM `MainLightSpell`, BST `Ecosystem`, THF `TreasureMode`, WAR/PLD `HybridMode` (Mote built-in, always present), DNC `MainStep`, RDM `MainLightSpell`, DRG `WeaponSet` (no DRG job exists), RUN `RuneElement` (no RUN state has that name, see Known issues), GEO `MainIndi`, BLU `MainWeapon`. Every other job counts as ready.
 4. `init()` loads `_G.keybind_saved_settings` once, returns when `_G.ui_display_config.enabled` is false or a display already exists, builds the settings with `create_ui_settings()` (re-reads the store), calls `texts.new`, shows the object and renders once. The first render is **not** wrapped in `pcall`.
 
@@ -153,7 +153,7 @@ The HUD each template produces (running the real classifier over `_master/config
 | THF | | | MainWeapon, SubWeapon, AbyProc (/WAR), AbyWeapon (/WAR) | HybridMode, TreasureMode, RangeLock, AutoMedicine |
 | WAR | | WS1-WS5 ("Weapon Skills") | MainWeapon | HybridMode, JumpAuto, AutoMedicine |
 | WHM | | | | CureMode, IdleMode, AfflatusMode, CureAutoTier, CombatMode, CastingMode, AutoMedicine |
-| PUP | no `config/pup/` in `_master`, so the loader returns nothing and the HUD has no rows | | | |
+| PUP | | | MainWeapon | OffenseMode, HybridMode, PetMode, PetWS (`section = "mode"`), AutoMedicine |
 | SMN | | | | IdleMode, CastingMode, AvatarFavor, AutoMedicine |
 
 ### Optional states: Combat Mode and Treasure Mode
@@ -213,7 +213,7 @@ At module load `COLOR_SYSTEM.lua` requires `<player.name>/config/UI_COLOR_CONFIG
 | `cyclestate` keybinds while the HUD reports visible | `shared/utils/core/CYCLE_HANDLER.lua`, after the `job_update` above |
 | THF `range` | `RangeLock.engage()` (`shared/jobs/thf/functions/logic/range_lock.lua`) |
 | `//gs c am` (Auto Medicine) | `shared/utils/debuff/auto_medicine.lua`, only when `is_visible()` |
-| BST ecosystem cycling | `shared/jobs/bst/functions/logic/ecosystem_manager.lua`, through `_G.KeybindUI`, which only the BST and PUP entries export (cleared in `file_unload`) |
+| BST ecosystem cycling | `shared/jobs/bst/functions/logic/ecosystem_manager.lua`, through `_G.KeybindUI`, which only the BST entry exports (cleared in `file_unload`) |
 | Key conflicts changed | `KeybindManager` `redraw_hud` -> `Display.update_display()` (no diff) |
 | Optional-state commands | `OptionalStateCommands` `refresh` -> `Display.update_display()` then `gs c update` |
 | UI commands | `toggle`, `show`, section toggles and every look command call `Display.update_display()` directly (no diff) |

@@ -1,39 +1,16 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
----   PUP Movement Module - Movement Gear Handling
+---   PUP Movement Module
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Movement hook for Puppetmaster. AutoMove (started for every job by
----   INIT_SYSTEMS) handles movement detection and speed gear.
+---   AutoMove (started for every job by INIT_SYSTEMS) tracks movement; the
+---   speed gear itself (sets.MoveSpeed) is laid by logic/set_builder.lua,
+---   idle only. Nothing PUP-specific here: the file stays for the 12-module
+---   layout.
 ---
 ---   @file    shared/jobs/pup/functions/PUP_MOVEMENT.lua
 ---   @author  ejouanchicot
----   @version 1.0
----   @date    Created: 2025-10-17
+---   @version 2.0
+---   @date    Created: 2026-09-29
+---   @requires shared/utils/movement/automove.lua
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----  ═══════════════════════════════════════════════════════════════════════════
----   AUTOMOVE INTEGRATION (PERFORMANCE OPTIMIZED - No Startup Cost)
----  ═══════════════════════════════════════════════════════════════════════════
--- AutoMove (if loaded) handles:
---   • Movement detection
---   • Speed gear swapping (sets.MoveSpeed from pup_sets.lua)
---   • Idle gear restoration when stopped
-
----  ═══════════════════════════════════════════════════════════════════════════
----   MOVEMENT GEAR HOOK
----  ═══════════════════════════════════════════════════════════════════════════
-
----   Mote hook called before gear is equipped. Empty on purpose: movement
----   gear is handled by AutoMove.
----
----   @param playerStatus string Player status ("Idle", "Engaged", etc.)
----   @param eventArgs table Event arguments (not used)
-function job_handle_equipping_gear(playerStatus, eventArgs)
-end
-
----  ═══════════════════════════════════════════════════════════════════════════
----   MODULE EXPORT
----  ═══════════════════════════════════════════════════════════════════════════
-
--- Export globally for GearSwap
-_G.job_handle_equipping_gear = job_handle_equipping_gear
-
+return {}

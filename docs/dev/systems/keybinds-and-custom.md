@@ -34,11 +34,11 @@ Two helpers sit beside them: `key_validator.lua` names keys that cannot work, an
 | `shared/utils/custom/custom_locks.lua` | `lock = {...}` slots of a custom value |
 | `shared/utils/custom/custom_states_validate.lua` | Plain-language checks of each `_CUSTOM` entry |
 | `shared/utils/messages/formatters/system/message_tempbind.lua` | `tb` messages (`TEMPBIND` namespace) |
-| `_master/config/<job>/<JOB>_KEYBINDS.lua` | Job key templates for 16 jobs (every job but PUP); character overlays under `_master/<Character>/config/<job>/` may replace some |
-| `_master/config/<job>/<JOB>_CUSTOM.lua` | Commented, empty `_CUSTOM` templates (16 jobs, every job but PUP; the Tetsouo overlay has its own SMN and WAR copies) |
+| `_master/config/<job>/<JOB>_KEYBINDS.lua` | Job key templates for all 17 jobs; character overlays under `_master/<Character>/config/<job>/` may replace some |
+| `_master/config/<job>/<JOB>_CUSTOM.lua` | Commented, empty `_CUSTOM` templates (all 17 jobs; the Tetsouo overlay has its own SMN and WAR copies) |
 | `_master/config_global/COMMON_KEYBINDS.lua` | Common keys template; character overlays in `_master/<Character>/config_global/` |
 
-PUP has no `_KEYBINDS` file: `_master/config/pup/` does not exist and the job does not load (see [jobs/pup.md](../jobs/pup.md)). Without a keybind file, PUP would get no common keys, no Combat Mode row and no Treasure Mode row either.
+PUP got its `_KEYBINDS` and `_CUSTOM` templates with its rewrite on 2026-09-29 (see [jobs/pup.md](../jobs/pup.md)).
 
 ## How it works
 
@@ -385,7 +385,7 @@ What each job's key list binds, read from the `_master` templates. `cyclestate X
 | DRK | 1 MainWeapon, 2 WeaponskillMode, 9 HybridMode | | |
 | GEO | 1 SpellTier, 2 AOETier, 3 MainIndi, 4 MainGeo, 5 MainLightSpell, 6 MainDarkSpell, 7 MainLightAOE, 8 MainDarkAOE, 9 HybridMode, 0 CombatMode, `.` LuopanMode, `+` IndicolureMode | | |
 | PLD | 1 MainWeapon, 2 PhalanxSIRD / Regen, 3 RuneMode / PhalanxSIRD, 4 Xp, 5 WS1, 6 WS2, 9 HybridMode | | 1 has a `visible` test (hidden in `/SCH` Tanking); 2 = PhalanxSIRD except `/SCH`, Regen on `/SCH`; 3 = RuneMode on `/RUN`, PhalanxSIRD on `/SCH`; 4 only on `/RDM`; `retired_keys = {'^numpad7'}` |
-| PUP | none | | no keybind file (the job does not load) |
+| PUP | 1 MainWeapon, 2 OffenseMode, 3 HybridMode, 4 PetMode, 5 PetWS | | PetWS carries `section = "mode"` (its name holds `WS`) |
 | RDM | 1 MainWeapon, 2 SubWeapon, 3 EnfeebleMode, 4 IdleMode, 5 CombatMode, 6 EngagedMode, 7 NukeMode, 8 NukeTier, 9 EnfeebleTier, 0 SaboteurMode, `.` EnSpell, `+` GainSpell, `-` Barspell, `*` BarAilment, `/` Spike | 1 Storm | `#numpad1` only on `/SCH` |
 | RUN | 1 MainWeapon, 2 SubWeapon, 3 RuneMode, 9 HybridMode | | |
 | SAM | 1 MainWeapon, 2 OffenseMode, 3 WeaponskillMode, 9 HybridMode | | |

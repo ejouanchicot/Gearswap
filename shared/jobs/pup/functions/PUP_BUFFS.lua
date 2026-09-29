@@ -1,20 +1,23 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PUP Buffs Module - Buff Gain/Loss Handler
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Buff gain/loss hook. Only the shared LifecycleManager handler runs (Doom);
----   PUP has no buff-specific logic of its own.
+---   The shared LifecycleManager handler (Doom first), then
+---   refresh_after_buff: Overdrive coming or going rebuilds the idle /
+---   engaged set a moment later, once buffactive holds the change, so
+---   sets.buff.Overdrive goes on or comes off.
 ---
 ---   @file    shared/jobs/pup/functions/PUP_BUFFS.lua
 ---   @author  ejouanchicot
----   @version 1.1 - Removed dead code + refactored header
----   @date    Updated: 2025-11-12
+---   @version 2.0
+---   @date    Created: 2026-09-29
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- PUP adds nothing of its own: the shared handler is the whole
---- behaviour. Pass a function to buff_change() to extend it.
 local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 
-job_buff_change = LifecycleManager.buff_change()
+job_buff_change = LifecycleManager.buff_change(function(buff, gain, eventArgs)
+    LifecycleManager.refresh_after_buff(buff)
+end)
 
--- Export to global scope (used by Mote-Include via include())
 _G.job_buff_change = job_buff_change
+
+return { job_buff_change = job_buff_change }

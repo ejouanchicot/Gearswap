@@ -252,11 +252,9 @@ TRANSLATIONS = {
 }
 
 # All valid FFXI job abbreviations for this system
-# PUP is left out while _master/config/pup/ does not exist: its entry file
-# requires a config from there without pcall, so a cloned PUP never loads.
 ALL_VALID_JOBS = [
     'BLM', 'BLU', 'BRD', 'BST', 'COR', 'DNC', 'DRK', 'GEO',
-    'PLD', 'RDM', 'RUN', 'SAM', 'SMN', 'THF', 'WAR', 'WHM'
+    'PLD', 'PUP', 'RDM', 'RUN', 'SAM', 'SMN', 'THF', 'WAR', 'WHM'
 ]
 
 

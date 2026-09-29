@@ -1,47 +1,45 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   PUP Lockstyle Module - Lockstyle Management (Factory Pattern)
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Handles lockstyle selection and management for PUP job.
----   Uses centralized LockstyleManager factory for consistent behavior.
----
----   **PERFORMANCE OPTIMIZATION:**
----   • Lazy-loaded: Module created on first function call
+---   LockstyleManager factory, built on first call.
 ---
 ---   @file    shared/jobs/pup/functions/PUP_LOCKSTYLE.lua
 ---   @author  ejouanchicot
----   @version 2.1 - Lazy Loading for performance
----   @date    Created: 2025-10-13 | Updated: 2025-11-15
+---   @version 2.0
+---   @date    Created: 2026-09-29
 ---   @requires shared/utils/lockstyle/lockstyle_manager
 ---  ═══════════════════════════════════════════════════════════════════════════
 
--- Lazy loading: Module created on first use
 local LockstyleManager = nil
 local lockstyle_module = nil
 
 local function get_lockstyle_module()
     if not lockstyle_module then
-        if not LockstyleManager then
-            LockstyleManager = require('shared/utils/lockstyle/lockstyle_manager')
-        end
+        LockstyleManager = LockstyleManager or require('shared/utils/lockstyle/lockstyle_manager')
         lockstyle_module = LockstyleManager.create(
-            'PUP',                      -- job_code
-            'config/pup/PUP_LOCKSTYLE', -- config_path
-            1,                          -- default_lockstyle
-            'SAM'                       -- default_subjob
+            'PUP',                       -- job_code
+            'config/pup/PUP_LOCKSTYLE',  -- config_path
+            1,                           -- default_lockstyle
+            'WAR'                        -- default_subjob
         )
     end
     return lockstyle_module
 end
 
---- Apply the lockstyle for the current subjob (see config/pup/PUP_LOCKSTYLE.lua).
+--- Apply the lockstyle of the current subjob
 function select_default_lockstyle()
     return get_lockstyle_module().select_default_lockstyle()
 end
 
---- Cancel any pending (scheduled) lockstyle operation.
+--- Cancel pending PUP lockstyle operations (job change)
 function cancel_pup_lockstyle_operations()
     return get_lockstyle_module().cancel_pup_lockstyle_operations()
 end
 
 _G.select_default_lockstyle = select_default_lockstyle
 _G.cancel_pup_lockstyle_operations = cancel_pup_lockstyle_operations
+
+return {
+    select_default_lockstyle = select_default_lockstyle,
+    cancel_pup_lockstyle_operations = cancel_pup_lockstyle_operations,
+}

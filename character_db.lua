@@ -15,7 +15,7 @@
 ---
 --- Master data location:
 ---   _master/sets/[job]_sets.lua    - Equipment sets (16 jobs)
----   _master/config/[job]/          - Job configs (15 jobs, PUP has no config)
+---   _master/config/[job]/          - Job configs (17 jobs)
 ---
 --- @file    character_db.lua
 --- @author  ejouanchicot

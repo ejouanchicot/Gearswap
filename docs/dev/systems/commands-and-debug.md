@@ -594,7 +594,6 @@ Open:
 - `data/fulltest_report.txt` and `data/debug_lag.txt` are shared by all characters (`FullTest.export`, `LagDebugger.export`).
 - `altcmds` cannot tell that a job command shares an alt key. On WAR with a WAR alt it lists `berserk` in the bare form, although `//gs c berserk` runs on the main (`AltCommands.list`).
 - `automedicine` and `lagdebug` treat any unrecognised argument as "toggle" (`AutoMedicine.handle_command`, `DebugCommands.handle_lagdebug`).
-- PUP's first command per load errors, for two reasons: it calls a formatter function that does not exist, `MessageFormatter.error_pup_module_not_loaded`, and it requires modules under a `shared/jobs/pup/functions/logic/` folder that does not exist (`PUP_COMMANDS.lua` `ensure_commands_loaded`).
 - `Profiler.profile_call`, `Profiler.measure`, `LagDebugger.log` and `DebugLogger.log` have no caller.
 - `LagDebugger.on_job_update` is wired only in the overlay entries `_master/Tetsouo/entry/Tetsouo_{WAR,BST,SMN}.lua` and, of the generic templates, only in `_master/entry/Tetsouo_SMN.lua` (copied from the overlay).
 - A `trace.on` marker left on a character keeps `trace.log` growing across restarts; nothing caps the file.

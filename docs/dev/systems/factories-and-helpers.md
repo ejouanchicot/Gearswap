@@ -144,10 +144,10 @@ Each wrapper holds a module-local `lockstyle_module` / `macrobook_module` and de
 | WAR | 4 / SAM | SAM / 22 / 1 |
 | RDM | 1 / NIN | NIN / 1 / 1 |
 | BRD, SMN | 1 / WHM | WHM / 1 / 1 |
-| BLU | 1 / WAR | WAR / 1 / 1 |
-| BLM, BST, COR, DNC, DRK, GEO, PLD, PUP, RUN, SAM, THF, WHM | 1 / SAM | SAM / 1 / 1 |
+| BLU, PUP | 1 / WAR | WAR / 1 / 1 |
+| BLM, BST, COR, DNC, DRK, GEO, PLD, RUN, SAM, THF, WHM | 1 / SAM | SAM / 1 / 1 |
 
-The config's `default` overrides the lockstyle argument (e.g. the PLD config's default 3 vs the argument 1). `_master/config/` has no `pup/` folder, so a deployed PUP would run both factories on their fallbacks (style 1, book 1 page 1).
+The config's `default` overrides the lockstyle argument (e.g. the PLD config's default 3 vs the argument 1).
 
 Each wrapper file is executed twice per sandbox:
 
@@ -256,7 +256,7 @@ flowchart TD
 - `handle_moving`: on the first moving tick, sets `state.Moving.value = 'true'` and `pending_update`, then calls `send_update('moving')`. While movement continues, it sends another `gs c update` every 2.0 s (`heal_interval`) as a desync backstop. It calls every registered callback with `(true, dist, player.status)`.
 - `handle_stopped`: on the transition, sets `state.Moving.value = 'false'` and `pending_update`, and calls the callbacks with `false`. Then it calls `send_update('stopping')` while `pending_update` is set.
 - `send_update` refuses for 2.0 s after `start()` (`job_change_cooldown`) and within 0.3 s of the last update (`update_debounce`). A refused update stays pending and is retried on later ticks. The jump branch and the heal branch bypass it.
-- The gear itself comes from the job's set builder: `sets.MoveSpeed` is merged into the idle set when `state.Moving.value == 'true'`. That is done by `BaseSetBuilder.apply_movement` (`shared/utils/set_building/base_set_builder.lua`) on every job except PUP, which has no set builder (see the matrix at the end of the page).
+- The gear itself comes from the job's set builder: `sets.MoveSpeed` is merged into the idle set when `state.Moving.value == 'true'`. That is done by `BaseSetBuilder.apply_movement` (`shared/utils/set_building/base_set_builder.lua`) on every job (see the matrix at the end of the page).
 
 ### Public API
 
@@ -674,7 +674,7 @@ Transitions:
 
 Which shared system applies to which job, checked in the code and the `_master` templates.
 
-**Every job.** These apply to all 17 jobs, installed by `INIT_SYSTEMS.lua` or routed through `CommonCommands`. A job that does not load (PUP) gets none of them in practice.
+**Every job.** These apply to all 17 jobs, installed by `INIT_SYSTEMS.lua` or routed through `CommonCommands`.
 
 | System | How | Notes |
 |---|---|---|
@@ -687,11 +687,11 @@ Which shared system applies to which job, checked in the code and the `_master` 
 | Obi / Orpheus (`ElementalBelt`) | hook on `cleanup_precast/midcast` | BLM's own matcher steps aside |
 | DW tiers (`DualWield`) | hook on `handle_equipping_gear` | needs `sets.DW` in the set file |
 | Treasure Mode gear (`TreasureHunter`) | hooks | needs `sets.TreasureHunter` and the mode shown |
-| CUSTOM states | hooks + `<JOB>_CUSTOM.lua` | templates for 16 jobs (not PUP) |
+| CUSTOM states | hooks + `<JOB>_CUSTOM.lua` | templates for all 17 jobs |
 | Combat Mode lock | hook | needs the state shown |
 | HP priority | `HPPriority.apply()` | every job except PLD (`SKIP_JOBS`), and only for the characters listed in `CHARACTERS` |
 | Lockstyle / macrobook factories | wrappers | |
-| KeybindGuard, common keys, key conflicts | KeybindManager | not PUP (no keybind file) |
+| KeybindGuard, common keys, key conflicts | KeybindManager | every job |
 | AutoMove loop (`state.Moving`) | `INIT_SYSTEMS` +0.5 s | the gear depends on the set builder (column below) |
 | `waltz` / `aoewaltz` / `jump` commands | `CommonCommands` | need DNC main or sub / DRG sub |
 
@@ -708,7 +708,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 | DRK | yes (own builder) | optional | optional | | | | | | | weapons through `WeaponResolver` (`equip_without_set`) since 2026-09-28 |
 | GEO | yes | native (`^numpad0`) | optional | | | yes (Entrust, Full Circle) | | | `geo_entrust`, `geo_full_circle` | |
 | PLD | yes | optional | optional | | | yes (Divine Emblem, Majesty) | | | | no HP priority (own scheme) |
-| PUP | n/a (does not load) | none (no keybind file) | none | | | | | | | |
+| PUP | yes (base builder, idle, outside town) | optional | optional | commented | | | | | | CooldownChecker exempts the maneuvers (charges); `LifecycleManager.refresh_after_buff` for Overdrive |
 | RDM | yes | native (`^numpad5`) | optional | | commented | yes (Saboteur) | | | | SpellGearLock (Dispelga); set builder skips weapon states while Combat Mode is On |
 | RUN | yes | optional | optional | | | | | | | |
 | SAM | yes (base builder, idle; since 2026-09-28) | optional | optional | | | yes (Third Eye, Hasso check) | | | `sam_hasso` | |

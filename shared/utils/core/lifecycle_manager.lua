@@ -71,9 +71,9 @@ function LifecycleManager.status_change(extra)
     end
 end
 
---- Buffs whose gain or loss swaps the engaged set (sets.engaged.AM3,
---- PDTAFM3...).
-local GEAR_BUFFS = {['Aftermath: Lv.3'] = true}
+--- Buffs whose gain or loss swaps the idle / engaged set (sets.engaged.AM3,
+--- PDTAFM3..., PUP's sets.buff.Overdrive layer).
+local GEAR_BUFFS = {['Aftermath: Lv.3'] = true, ['Overdrive'] = true}
 
 --- Rebuild the gear once GearSwap has stored a buff change that swaps sets.
 ---

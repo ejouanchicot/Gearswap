@@ -301,7 +301,7 @@ Each `[JOB]_IDLE.lua` / `[JOB]_ENGAGED.lua` implements Mote's `customize_idle_se
 | BST | `BaseSetBuilder.lay_town_set(final_set, sets.me.idle.Town)` over the pet or master idle, before weapons | `BaseSetBuilder.apply_movement` outside town |
 | DRK | `BaseSetBuilder.select_idle_base` called directly (town, else `sets.idle[HybridMode]`) | `apply_movement` outside town |
 | SAM | `select_idle_base_town` called directly | `apply_movement` outside town |
-| PUP | `PUP_IDLE.lua` and `PUP_ENGAGED.lua` require `shared/jobs/pup/functions/logic/set_builder`, which does not exist on disk (their headers say so) | n/a |
+| PUP | `select_idle_base_town` called directly, then the automaton layer on top | `apply_movement` outside town |
 
 Typical order (PLD `build_idle_set`): town base -> main weapon -> shield -> (return early in town) -> HybridMode set -> Xp set -> movement -> Sortie shield. Engaged (`build_engaged_set`): BurtgangKC / Kraken Club / HybridMode base -> weapon -> Alber Strap -> Xp -> Sortie shield.
 

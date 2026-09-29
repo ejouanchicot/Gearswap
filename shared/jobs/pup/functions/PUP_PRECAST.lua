@@ -1,26 +1,28 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
----   PUP Precast Module - Precast Action Handling & Pet Commands
+---   PUP Precast Module - Precast Action Handling
 ---  ═══════════════════════════════════════════════════════════════════════════
----   Debuff guard, cooldown check (Ready moves skipped), WS handling, then the
----   Call Beast / Bestial Loyalty and Ready move gear. NOTE: this job logic is
----   BST's (beast pets), not automaton commands; ready_move_categorizer does
----   not exist, so the Ready move branch never runs.
+---   Processing order (do not reorder):
+---   1. PrecastGuard       blocks under Silence / Amnesia / Stun..., cures
+---                         with Remedy / Echo Drops when it can
+---   2. CooldownChecker    ability / spell still on recast (maneuvers are
+---                         exempt: three charges on one recast)
+---   3. WSPrecastHandler   range, 1000 TP minimum, TP bonus gear
+---   Fast Cast, job ability and weaponskill sets are Mote's own picks
+---   (sets.precast.FC, sets.precast.JA[name], sets.precast.WS[name]); every
+---   "<Element> Maneuver" maps to sets.precast.JA.Maneuver through
+---   job_get_spell_map (PUP_MIDCAST.lua).
 ---
 ---   @file    shared/jobs/pup/functions/PUP_PRECAST.lua
 ---   @author  ejouanchicot
----   @version 1.0
----   @date    Created: 2025-10-05
----  ═══════════════════════════════════════════════════════════════════════════
-
----  ═══════════════════════════════════════════════════════════════════════════
----   DEPENDENCIES - LAZY LOADING (Performance Optimization)
+---   @version 2.0
+---   @date    Created: 2026-09-29
+---   @requires PrecastGuard, CooldownChecker, WSPrecastHandler
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local CooldownChecker = nil
 local PrecastGuard = nil
 local WSPrecastHandler = nil
 local PUPTPConfig = nil
-local ReadyMoveCategorizer = nil
 
 local modules_loaded = false
 
@@ -28,28 +30,35 @@ local function ensure_modules_loaded()
     if modules_loaded then return end
 
     local cc_ok, cc = pcall(require, 'shared/utils/precast/cooldown_checker')
-    if not cc_ok then cc = nil end
-    CooldownChecker = cc
+    CooldownChecker = cc_ok and cc or nil
 
     local pg_ok, pg = pcall(require, 'shared/utils/debuff/precast_guard')
-    if not pg_ok then pg = nil end
-    PrecastGuard = pg
+    PrecastGuard = pg_ok and pg or nil
 
     local wph_ok, wph = pcall(require, 'shared/utils/precast/ws_precast_handler')
-    if not wph_ok then wph = nil end
-    WSPrecastHandler = wph
+    WSPrecastHandler = wph_ok and wph or nil
 
     PUPTPConfig = _G.PUPTPConfig or {}
-
-    -- PUP specific
-    local rmc_ok, rmc = pcall(require, 'shared/jobs/pup/functions/logic/ready_move_categorizer')
-    if not rmc_ok then rmc = nil end
-    ReadyMoveCategorizer = rmc
-
     modules_loaded = true
 end
 
---- Precast order: debuff guard → cooldown → WS handler → Call Beast → Ready moves
+--- Cancel an ability or spell still on recast.
+--- @param spell table Spell/ability data
+--- @param eventArgs table Event arguments (cancel set when on recast)
+local function check_cooldown(spell, eventArgs)
+    if not CooldownChecker then return end
+    if spell.action_type == 'Ability' then
+        CooldownChecker.check_ability_cooldown(spell, eventArgs)
+    elseif spell.action_type == 'Magic' then
+        CooldownChecker.check_spell_cooldown(spell, eventArgs)
+    end
+end
+
+---  ═══════════════════════════════════════════════════════════════════════════
+---   PRECAST HOOKS
+---  ═══════════════════════════════════════════════════════════════════════════
+
+---   Called before any action (WS, JA, spell, item)
 ---   @param spell table Spell/ability data
 ---   @param action string Action type
 ---   @param spellMap string Spell mapping
@@ -57,59 +66,24 @@ end
 function job_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
-    -- Debuff guard
+    -- 1. Debuff guard
     if PrecastGuard and PrecastGuard.guard_precast(spell, eventArgs) then
         return
     end
 
-    -- Cooldown check (skip Ready Moves - they use charges, not recast)
-    local is_ready_move = false
-    local ready_move_category = nil
-    if ReadyMoveCategorizer and spell.action_type == 'Ability' then
-        ready_move_category = ReadyMoveCategorizer.get_category(spell.name)
-        is_ready_move = (ready_move_category ~= nil and ready_move_category ~= 'Default')
+    -- 2. Cooldown check
+    check_cooldown(spell, eventArgs)
+    if eventArgs.cancel then
+        return
     end
 
-    if CooldownChecker and not is_ready_move then
-        if spell.action_type == 'Ability' then
-            CooldownChecker.check_ability_cooldown(spell, eventArgs)
-        elseif spell.action_type == 'Magic' then
-            CooldownChecker.check_spell_cooldown(spell, eventArgs)
-        end
-    end
-    if eventArgs.cancel then return end
-
-    -- WS handling
+    -- 3. Weaponskill validation and TP bonus gear
     if WSPrecastHandler and not WSPrecastHandler.handle(spell, eventArgs, PUPTPConfig) then
         return
     end
-
-    -- Call Beast / Bestial Loyalty: equip summon set + broth
-    if spell.name == 'Call Beast' or spell.name == 'Bestial Loyalty' then
-        if sets.precast.JA['Call Beast'] then
-            equip(sets.precast.JA['Call Beast'])
-        end
-        if state.ammoSet and state.ammoSet.value and sets[state.ammoSet.value] then
-            local broth_set = sets[state.ammoSet.value]
-            if broth_set and broth_set.ammo then
-                equip({ammo = broth_set.ammo})
-            end
-        end
-        return
-    end
-
-    -- Ready move precast: equip Sic/Ready set, store category for midcast
-    if is_ready_move and ready_move_category then
-        if sets.precast.JA['Ready'] then
-            equip(sets.precast.JA['Ready'])
-        elseif sets.precast.JA['Sic'] then
-            equip(sets.precast.JA['Sic'])
-        end
-        spell.ready_move_category = ready_move_category
-    end
 end
 
----   Apply final gear adjustments before equipping
+---   Called after Mote's precast set, before it is equipped
 ---   @param spell table Spell/ability data
 ---   @param action string Action type
 ---   @param spellMap string Spell mapping
@@ -128,7 +102,6 @@ end
 _G.job_precast = job_precast
 _G.job_post_precast = job_post_precast
 
--- Module table for require() compatibility (parity with _G exports above)
 return {
     job_precast = job_precast,
     job_post_precast = job_post_precast,

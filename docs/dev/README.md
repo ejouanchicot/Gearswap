@@ -19,10 +19,8 @@ status changes. This project layers a framework on top of GearSwap and
 Mote-Include:
 
 - **17 job areas** under `shared/jobs/`: BLM BLU BRD BST COR DNC DRK GEO PLD PUP RDM
-  RUN SAM SMN THF WAR WHM. Every job but PUP has a generic `_master`
-  template (SMN since 2026-09-28). PUP is a scaffold that does not load
-  (see [jobs/pup.md](jobs/pup.md)) and `clone_character.py` no longer offers it
-  (`ALL_VALID_JOBS`).
+  RUN SAM SMN THF WAR WHM. Every job has a generic `_master` template (SMN
+  since 2026-09-28, PUP rewritten on 2026-09-29, see [jobs/pup.md](jobs/pup.md)).
 - **Shared systems** under `shared/utils/`: precast guard and cooldown checks,
   weaponskill handling, midcast set resolution, messages, keybinds (one
   `KeybindManager`, per-character common keys, `//gs c tb`) and the keybind

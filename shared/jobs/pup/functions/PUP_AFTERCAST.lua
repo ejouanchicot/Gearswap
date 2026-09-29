@@ -6,12 +6,8 @@
 ---
 ---   @file    shared/jobs/pup/functions/PUP_AFTERCAST.lua
 ---   @author  ejouanchicot
----   @version 1.0
----   @date    Created: 2025-10-17
----  ═══════════════════════════════════════════════════════════════════════════
-
----  ═══════════════════════════════════════════════════════════════════════════
----   AFTERCAST HOOK
+---   @version 2.0
+---   @date    Created: 2026-09-29
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 --- PUP adds nothing of its own: the shared handler is the whole
@@ -20,9 +16,6 @@ local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 
 job_aftercast = LifecycleManager.aftercast()
 
----  ═══════════════════════════════════════════════════════════════════════════
----   MODULE EXPORT
----  ═══════════════════════════════════════════════════════════════════════════
-
--- Export globally for GearSwap
 _G.job_aftercast = job_aftercast
+
+return { job_aftercast = job_aftercast }

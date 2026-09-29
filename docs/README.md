@@ -7,7 +7,7 @@ disagrees with the code is a bug in the page.
 The same pages as one searchable site: open `docs/wiki/index.html` in a
 browser (rebuild it with `python docs/tools/build_wiki.py` after editing a page).
 
-17 jobs. PUP does not load yet.
+17 jobs.
 
 New here? Read, in this order: [installation](user/getting-started/installation.md),
 [quick start](user/getting-started/quick-start.md),
@@ -56,7 +56,7 @@ page (`sets.md`). Overview: [user/jobs/](user/jobs/README.md).
 | Support | [BRD](user/jobs/brd/README.md) · [COR](user/jobs/cor/README.md) |
 | Tank | [PLD](user/jobs/pld/README.md) · [RUN](user/jobs/run/README.md) |
 | Melee | [DNC](user/jobs/dnc/README.md) · [DRK](user/jobs/drk/README.md) · [SAM](user/jobs/sam/README.md) · [THF](user/jobs/thf/README.md) · [WAR](user/jobs/war/README.md) |
-| Pet | [BST](user/jobs/bst/README.md) · [SMN](user/jobs/smn/README.md) · [PUP](user/jobs/pup/README.md) (does not load yet) |
+| Pet | [BST](user/jobs/bst/README.md) · [SMN](user/jobs/smn/README.md) · [PUP](user/jobs/pup/README.md) |
 
 Shared by several jobs: [TP bonus gear](user/jobs/war/tp-bonus.md) (every job
 with a `<JOB>_TP_CONFIG.lua`). SMN reference: [blood pacts and summons](SMN_BLOOD_PACTS_REFERENCE.md).
