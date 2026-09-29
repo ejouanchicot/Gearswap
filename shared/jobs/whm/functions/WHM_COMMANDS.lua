@@ -200,15 +200,20 @@ function job_state_change(stateField, newValue, oldValue)
     -- user_setup() before file_unload runs, so file_unload cannot read it
     -- from the mode.
     if field == 'OffenseMode' then
+        -- Told to Combat Mode too: turning Combat Mode Off must not free
+        -- the weapons while Melee ON still holds them.
+        local CombatMode = require('shared/utils/core/combat_mode')
         if newValue == 'Melee ON' then
             disable('main', 'sub', 'range')
             windower._whm_melee_lock = true
+            CombatMode.hold('whm_melee', {'main', 'sub', 'range'})
         else
             -- Not during a craft session: CraftManager owns the lock until
             -- //gs c uncraft, and enabling here would drop the synthesis gear.
             if not (_G.CraftManager and _G.CraftManager.is_active()) then
                 enable('main', 'sub', 'range')
                 windower._whm_melee_lock = nil
+                CombatMode.release('whm_melee')
             end
         end
     end
