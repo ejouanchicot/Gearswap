@@ -32,6 +32,7 @@ local job_titles = {
     BLU = "Blue Mage Settings",
     DRG = "Dragoon Settings",
     RDM = "Red Mage Settings",
+    SCH = "Scholar Settings",
     COR = "Corsair Settings",
     GEO = "Geomancer Settings",
     RUN = "Rune Fencer Settings"

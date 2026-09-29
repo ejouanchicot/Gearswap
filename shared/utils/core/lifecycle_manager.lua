@@ -73,7 +73,12 @@ end
 
 --- Buffs whose gain or loss swaps the idle / engaged set (sets.engaged.AM3,
 --- PDTAFM3..., PUP's sets.buff.Overdrive layer).
-local GEAR_BUFFS = {['Aftermath: Lv.3'] = true, ['Overdrive'] = true, ['Spirit Surge'] = true}
+local GEAR_BUFFS = {
+    ['Aftermath: Lv.3'] = true,
+    ['Overdrive'] = true,  -- PUP
+    ['Spirit Surge'] = true,  -- DRG
+    ['Sublimation: Activated'] = true,  -- SCH: sets.buff.Sublimation while it charges
+}
 
 --- Rebuild the gear once GearSwap has stored a buff change that swaps sets.
 ---

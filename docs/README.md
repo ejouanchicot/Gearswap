@@ -52,7 +52,7 @@ page (`sets.md`). Overview: [user/jobs/](user/jobs/README.md).
 
 | Role | Jobs |
 |---|---|
-| Mage | [BLM](user/jobs/blm/README.md) · [BLU](user/jobs/blu/README.md) · [GEO](user/jobs/geo/README.md) · [RDM](user/jobs/rdm/README.md) · [WHM](user/jobs/whm/README.md) |
+| Mage | [BLM](user/jobs/blm/README.md) · [BLU](user/jobs/blu/README.md) · [GEO](user/jobs/geo/README.md) · [RDM](user/jobs/rdm/README.md) · [SCH](user/jobs/sch/README.md) · [WHM](user/jobs/whm/README.md) |
 | Support | [BRD](user/jobs/brd/README.md) · [COR](user/jobs/cor/README.md) |
 | Tank | [PLD](user/jobs/pld/README.md) · [RUN](user/jobs/run/README.md) |
 | Melee | [DNC](user/jobs/dnc/README.md) · [DRK](user/jobs/drk/README.md) · [SAM](user/jobs/sam/README.md) · [THF](user/jobs/thf/README.md) · [WAR](user/jobs/war/README.md) |
@@ -72,7 +72,7 @@ Written from the code, for anyone who changes it.
 | [Architecture](dev/README.md#architecture) | [Job change lifecycle](dev/architecture/job-change-lifecycle.md), [characters and templates](dev/architecture/characters-and-templates.md) |
 | [Systems](dev/README.md#systems) | [Core lifecycle](dev/systems/core-lifecycle.md), [precast pipeline](dev/systems/precast-pipeline.md), [midcast and buffs](dev/systems/midcast-and-buffs.md), [commands and debug](dev/systems/commands-and-debug.md), [keybinds and CUSTOM](dev/systems/keybinds-and-custom.md), [HUD](dev/systems/ui-overlay.md), [messages](dev/systems/messages.md) ([catalog](dev/systems/messages-catalog.md), [formatters](dev/systems/messages-formatters.md)), [dual-box](dev/systems/dualbox.md), [stealth](dev/systems/stealth.md), [equipment and inventory](dev/systems/equipment-and-inventory.md), [wardrobe organizer](dev/systems/wardrobe-organizer.md), [warp](dev/systems/warp.md), [factories and helpers](dev/systems/factories-and-helpers.md) |
 | [Data](dev/README.md#data) | [Spell databases](dev/data/spell-databases.md), [ability and weaponskill databases](dev/data/ability-and-weaponskill-databases.md) |
-| [Jobs](dev/README.md#jobs) | [BLM](dev/jobs/blm.md) · [BLU](dev/jobs/blu.md) · [BRD](dev/jobs/brd.md) · [BST](dev/jobs/bst.md) · [COR](dev/jobs/cor.md) · [DNC](dev/jobs/dnc.md) · [DRG](dev/jobs/drg.md) · [DRK](dev/jobs/drk.md) · [GEO](dev/jobs/geo.md) · [PLD](dev/jobs/pld.md) · [PUP](dev/jobs/pup.md) · [RDM](dev/jobs/rdm.md) · [RUN](dev/jobs/run.md) · [SAM](dev/jobs/sam.md) · [SMN](dev/jobs/smn.md) · [THF](dev/jobs/thf.md) · [WAR](dev/jobs/war.md) · [WHM](dev/jobs/whm.md) |
+| [Jobs](dev/README.md#jobs) | [BLM](dev/jobs/blm.md) · [BLU](dev/jobs/blu.md) · [BRD](dev/jobs/brd.md) · [BST](dev/jobs/bst.md) · [COR](dev/jobs/cor.md) · [DNC](dev/jobs/dnc.md) · [DRG](dev/jobs/drg.md) · [DRK](dev/jobs/drk.md) · [GEO](dev/jobs/geo.md) · [PLD](dev/jobs/pld.md) · [PUP](dev/jobs/pup.md) · [RDM](dev/jobs/rdm.md) · [RUN](dev/jobs/run.md) · [SAM](dev/jobs/sam.md) · [SCH](dev/jobs/sch.md) · [SMN](dev/jobs/smn.md) · [THF](dev/jobs/thf.md) · [WAR](dev/jobs/war.md) · [WHM](dev/jobs/whm.md) |
 
 ## Your character folder
 
