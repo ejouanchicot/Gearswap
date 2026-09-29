@@ -22,8 +22,10 @@ spell, which set was chosen and why.
 - The weapon sets go on top of the idle and engaged sets (in town too).
 - `sets.CombatMode`, if you define it (the provided file has none), is put on
   when you turn Combat Mode On, just before the lock.
-- With Combat Mode On the weapon sets are not applied and main, sub and range
-  stay locked: whatever `main`, `sub` or `range` your other sets hold is ignored.
+- With Combat Mode On main, sub and range stay locked: whatever `main`, `sub`
+  or `range` your sets hold is ignored. If something empties your hands (a
+  `//po` or `//gs c wo` run), the next update puts your `MainWeapon` /
+  `SubWeapon` back, then locks them again.
   With Combat Mode Off, every set that holds a weapon swaps it (the template's
   Enfeebling, Enhancing and Elemental sets hold `main` and `sub`, Enfeebling also
   `range`), and your TP is lost.

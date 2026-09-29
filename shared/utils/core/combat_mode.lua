@@ -121,18 +121,46 @@ local function not_held_elsewhere(slot_list)
     return free
 end
 
---- Lock or free the weapon slots to match the state. When the lock is
---- first laid, sets.CombatMode (the player's set file) is equipped just before
---- it: equip() only diverts an item whose slot is ALREADY disabled (GearSwap
+--- Put sets.CombatMode on (when the set file has one), then lock. equip()
+--- only diverts an item whose slot is ALREADY disabled (GearSwap
 --- helper_functions.lua), so those pieces stay queued and the lock holds them.
+--- @param dress boolean Put sets.CombatMode on first
+local function lock(dress)
+    local combat_set = rawget(_G, 'sets') and sets.CombatMode
+    if dress and type(combat_set) == 'table' and not craft_active() then
+        equip(combat_set)
+    end
+    disable(unpack_list(slots()))
+    windower._combat_mode_locked = slots()
+end
+
+--- Nothing in the main hand: something undressed the player behind the lock
+--- (//po and //gs c wo strip through the client, then `gs enable all`).
+--- @return boolean
+local function weapons_stripped()
+    local worn = player and player.equipment
+    return worn ~= nil and (worn.main == nil or worn.main == 'empty')
+end
+
+--- After the job's gear: dress and lock, used when the weapons were stripped.
+local function lock_after_gear()
+    lock(true)
+end
+
+--- Lock or free the weapon slots to match the state. When the lock is first
+--- laid, sets.CombatMode is put on just before it.
+---
+--- When the weapons were stripped, locking now would only pin the empty
+--- slots (Combat Mode stayed On while //po packed the gear: the player was
+--- left bare-handed, weapon slots locked). The lock then waits for the job's
+--- gear of this same update, and the caller runs the returned function after it.
+--- @return function|nil To run once the job's gear is queued
 function CombatMode.apply()
     if CombatMode.is_on() then
-        local combat_set = rawget(_G, 'sets') and sets.CombatMode
-        if not windower._combat_mode_locked and type(combat_set) == 'table' and not craft_active() then
-            equip(combat_set)
+        if weapons_stripped() then
+            return lock_after_gear
         end
-        disable(unpack_list(slots()))
-        windower._combat_mode_locked = slots()
+        lock(not windower._combat_mode_locked)
     elseif windower._combat_mode_locked and not craft_active() then
         -- A slot another lock holds (WHM Melee ON) stays locked
         enable(unpack_list(not_held_elsewhere(windower._combat_mode_locked)))
@@ -147,8 +175,10 @@ function CombatMode.install_hook()
     local orig = rawget(_G, 'handle_equipping_gear')
     if not orig or rawget(_G, '_combat_mode_hook') == orig then return end
     local hook = function(status, pet_status)
-        CombatMode.apply()
-        return orig(status, pet_status)
+        local after_gear = CombatMode.apply()
+        local result = orig(status, pet_status)
+        if after_gear then after_gear() end
+        return result
     end
     _G.handle_equipping_gear = hook
     _G._combat_mode_hook = hook

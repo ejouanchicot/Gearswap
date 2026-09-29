@@ -275,8 +275,10 @@ so under Saboteur it replaced the type, mode and name sets (Slow II lost its
   `WeaponResolver.is_offhand_weapon` (game item list): a weapon with a combat
   skill -> `.DW`; a shield or a grip -> normal set; only a name the game does
   not know falls back to the `sets.shields` list.
-- `apply_weapon` lays `WeaponResolver.set_for('main' / 'sub', value)` unless
-  Combat Mode is On. With `SubWeapon = Malevolence` (a dagger) the `.DW` sets
+- `apply_weapon` lays `WeaponResolver.set_for('main' / 'sub', value)`, Combat
+  Mode On included since 2026-09-29: the lock diverts them while it holds, and
+  after a strip (`//po`, `//gs c wo`) they are what dresses the weapon slots
+  before the lock returns (before, RDM skipped them and stayed bare-handed). With `SubWeapon = Malevolence` (a dagger) the `.DW` sets
   are chosen on /NIN or /DNC only; on another subjob the normal sets are used
   (the game refuses the dagger in the off hand there anyway). Before
   2026-09-28 the `.DW` sets were chosen whatever the subjob.

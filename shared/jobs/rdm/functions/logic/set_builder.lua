@@ -100,17 +100,14 @@ end
 
 ---   Apply main weapon and sub weapon to set (separately)
 ---   Uses the weapon sets of rdm_sets.lua, keyed by state value (sets['Naegling'], sets['Genmei'], etc.)
----   Note: CombatMode weapon locking is done by shared/utils/core/combat_mode.lua
+---   Applied under Combat Mode too: its lock (shared/utils/core/combat_mode.lua)
+---   keeps whatever is worn, and after a strip (//po) these are what dress
+---   the weapon slots again
 ---   @param result table Current equipment set
 ---   @return table Set with weapons applied
 function SetBuilder.apply_weapon(result)
     if not result then
         return {}
-    end
-
-    -- If CombatMode is On, don't apply weapon states (keep manual equipment)
-    if state.CombatMode and state.CombatMode.current == "On" then
-        return result
     end
 
     -- Apply main weapon (WeaponResolver.set_for('main', state.MainWeapon.current))
