@@ -131,6 +131,20 @@ local function not_held_elsewhere(slot_list)
     return free
 end
 
+--- The weapon states the jobs lay their weapons from.
+local WEAPON_STATES = {'MainWeapon', 'SubWeapon', 'RangeWeapon', 'WeaponSet', 'SubSet'}
+
+--- The player's weapon choice now, as one comparable string.
+--- @return string
+local function weapon_choice()
+    local parts = {}
+    for _, name in ipairs(WEAPON_STATES) do
+        local mode = state and rawget(state, name)
+        parts[#parts + 1] = mode and tostring(mode.current) or '-'
+    end
+    return table.concat(parts, '|')
+end
+
 --- Put sets.CombatMode on (when the set file has one), then lock. equip()
 --- only diverts an item whose slot is ALREADY disabled (GearSwap
 --- helper_functions.lua), so those pieces stay queued and the lock holds them.
@@ -142,6 +156,7 @@ local function lock(dress)
     end
     disable(unpack_list(slots()))
     windower._combat_mode_locked = slots()
+    windower._combat_mode_choice = weapon_choice()
 end
 
 --- Nothing in the main hand: something undressed the player behind the lock
@@ -152,25 +167,33 @@ local function weapons_stripped()
     return worn ~= nil and (worn.main == nil or worn.main == 'empty')
 end
 
---- After the job's gear: dress and lock, used when the weapons were stripped.
+--- After the job's gear: dress and lock (first lock, new weapon choice, or
+--- weapons stripped).
 local function lock_after_gear()
     lock(true)
 end
 
---- Lock or free the weapon slots to match the state. When the lock is first
---- laid, sets.CombatMode is put on just before it.
----
---- When the weapons were stripped, locking now would only pin the empty
---- slots (Combat Mode stayed On while //po packed the gear: the player was
---- left bare-handed, weapon slots locked). The lock then waits for the job's
---- gear of this same update, and the caller runs the returned function after it.
+--- Lock or free the weapon slots to match the state. The lock holds the
+--- weapons of the player's weapon states (then sets.CombatMode on top), so it
+--- waits for the job's gear of the same update - the caller runs the returned
+--- function after it - whenever what it would hold is not that:
+---   - the first lock (Combat Mode just turned On, or a job loaded with it On:
+---     locking before the gear pinned whatever was worn, e.g. the shield of
+---     the previous subjob after a change to /NIN);
+---   - a weapon state changed since the lock (the new choice goes on; spell
+---     sets stay kept off as before);
+---   - the weapons were stripped (//po): locking would pin empty hands.
 --- @return function|nil To run once the job's gear is queued
 function CombatMode.apply()
     if CombatMode.is_on() then
-        if weapons_stripped() then
+        if weapons_stripped() or not windower._combat_mode_locked then
             return lock_after_gear
         end
-        lock(not windower._combat_mode_locked)
+        if windower._combat_mode_choice ~= weapon_choice() and not craft_active() then
+            enable(unpack_list(not_held_elsewhere(windower._combat_mode_locked)))
+            return lock_after_gear
+        end
+        lock(false)
     elseif windower._combat_mode_locked and not craft_active() then
         -- A slot another lock holds (WHM Melee ON) stays locked
         enable(unpack_list(not_held_elsewhere(windower._combat_mode_locked)))
