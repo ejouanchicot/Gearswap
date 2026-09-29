@@ -161,7 +161,7 @@ What the project's shared systems do on BLM, checked in the code.
 |---|---|
 | Movement speed | `sets.MoveSpeed` goes on while you run, outside town, when idle (not while engaged) |
 | Town | In a city (Dynamis excluded) `sets.idle.Town` goes on top of the idle set (the Death / PDT set when that mode is on); in Adoulin `sets.Adoulin` first |
-| Combat Mode | Native, shown, Ctrl+Numpad8, Off by default. On locks main, sub, range **and ammo**; on turning it On, BLM also puts on Bunzi's Rod, Ammurapi Shield and Sroda Tathlum. Off frees the slots (unless a craft set holds them) |
+| Combat Mode | Native, shown, Ctrl+Numpad8, Off by default. On locks main, sub, range **and ammo**; on turning it On, `sets.CombatMode` goes on first (provided file: Bunzi's Rod, Ammurapi Shield, Sroda Tathlum). Off frees the slots (unless a craft set holds them) |
 | Treasure Mode | Off and hidden. `//gs c th show` gives it Alt+Numpad.; it needs a `sets.TreasureHunter` in your BLM set file |
 | Obi / Orpheus | The shared automatic belt is on by default (`ELEMENTAL_BELT.lua`, `//gs c belt`): Obi or Orpheus goes on after the nuke set when it helps. BLM's own Hachirin-no-Obi rule (`sets.midcast.ElementalMatch`, `BLM_ELEMENTAL_CONFIG.lua`) only runs when you turn the shared belt off |
 | Tier step-down | BLM's own, from a macro or a command alike: a tiered nuke (Fire VI to Fire...), -ga, Sleep / Sleepga, Bind, Bio, Poison, Drain or Aspir that is on recast or short of MP goes out as the highest lower tier you know that can; a -ja falls back to the -ga family (-ga III if none can); Breakga on recast becomes Break. Nothing castable: the cast is stopped and the recasts are shown |

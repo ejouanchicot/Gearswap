@@ -20,6 +20,8 @@ spell, which set was chosen and why.
   and a set of the same name. With `equip_without_set = true` in
   `config/WEAPON_CONFIG.lua`, a value that is a real weapon name needs no set.
 - The weapon sets go on top of the idle and engaged sets (in town too).
+- `sets.CombatMode`, if you define it (the provided file has none), is put on
+  when you turn Combat Mode On, just before the lock.
 - With Combat Mode On the weapon sets are not applied and main, sub and range
   stay locked: whatever `main`, `sub` or `range` your other sets hold is ignored.
   With Combat Mode Off, every set that holds a weapon swaps it (the template's

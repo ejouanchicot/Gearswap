@@ -127,6 +127,7 @@ These sets are worn without any action from you, when they exist:
 | `sets.Adoulin` | Idle in Western / Eastern Adoulin | Checked before `sets.idle.Town`, laid on top of the idle set the same way |
 | `sets.buff.Doom` | You are Doomed | Doom removal gear (Nicander's Necklace, Purity Ring...). Neck, both rings and belt stay locked until Doom is gone |
 | `sets.DW.NoHaste`, `.Haste`, `.HasteII`, `.MaxHaste` | Two weapons held, fighting | Dual Wield pieces by your magic haste ([configuration](configuration.md), `DW_CONFIG.lua`, `//gs c dw`) |
+| `sets.CombatMode` | You turn Combat Mode On (not during a craft) | Put on just before the weapon lock, then held by it. Without the set, what you wear is locked. Only the BLM file provides one |
 | `sets.TreasureHunter` | Treasure Mode on, against a mob not tagged yet | [commands](commands.md) `//gs c th`. Off on every job but THF until `//gs c th show` |
 
 Jobs that differ from the table above (details on each job's set page):

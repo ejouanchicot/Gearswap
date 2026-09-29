@@ -18,11 +18,16 @@ Then SAM adds, in this order:
 
 | Set | Worn when |
 |---|---|
-| `sets.idle.Weak` | Your HP is below 50 % (on top of the base) |
-| `sets.idle.Regen` | Your HP is between 50 % and 79 % |
 | `sets.idle.PDT` | Hybrid Mode is PDT (the default) |
+| `sets.idle.Weak` | Your HP is below 50 % (on top of everything above, PDT included) |
+| `sets.idle.Regen` | Your HP is between 50 % and 79 % (on top of PDT too) |
 | `sets.<Main Weapon>` | Always |
 | `sets.MoveSpeed` | You are running (on top of everything above) |
+
+In the provided file `sets.idle.Regen` and `sets.idle.Weak` are whole sets
+(built on `sets.idle.Normal`), so below 80 % HP they replace your PDT pieces.
+To keep your DT pieces at low HP, list only the pieces to change in `Regen` /
+`Weak`.
 
 In a town, Adoulin included, `sets.idle.Town` goes on top of the idle set,
 then your weapon, and nothing else: no Weak, Regen or PDT, no `sets.MoveSpeed`.
@@ -115,7 +120,8 @@ Hasso, Seigan, Warding Circle, Third Eye and Blade Bash.
 - **Sekkanoki / Meikyo Shisui pieces** on the weaponskill while the buff is up.
 - **Aftermath Lv.3** with Masamune: `sets.engaged.AM3` when you write it.
 - **Yoichinoyumi** in the range slot adds `sets.bow` while engaged.
-- **HP-based idle**: `sets.idle.Weak` below 50 % HP, `sets.idle.Regen` below 80 %.
+- **HP-based idle**: `sets.idle.Weak` below 50 % HP, `sets.idle.Regen` below 80 %,
+  on top of `sets.idle.PDT`.
 - **Your stance when you engage** (optional): `sam_hasso = true` in
   `<YourName>/config/AUTO_ABILITIES.lua`. On engaging with neither Hasso nor
   Seigan up, your chosen stance goes out (Hasso, or Seigan after

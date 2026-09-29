@@ -180,9 +180,10 @@ Any other ability by name under `sets.precast.JA`.
 - **Dark Arts first (/SCH).** A nuke cast while Dark Arts (or Addendum: Black)
   is down and ready is held back: Dark Arts goes up, then the nuke is sent
   again on `<t>`.
-- **Combat Mode.** `CombatMode` On puts on Bunzi's Rod, Ammurapi Shield and
-  Sroda Tathlum (written in the code, not a set) and locks main, sub, range
-  and ammo so no set can change them. Off unlocks them.
+- **Combat Mode.** `CombatMode` On puts on `sets.CombatMode` (in the provided
+  file: Bunzi's Rod, Ammurapi Shield, Sroda Tathlum), then locks main, sub,
+  range and ammo so no set can change them. Remove the set to lock whatever
+  you wear. Off unlocks them.
 - **Death Mode.** `DeathMode` On only changes the idle set
   (`sets.idle.Death`); casting Death always uses `sets.midcast['Death']`.
 

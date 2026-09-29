@@ -64,7 +64,8 @@ are useful with a subjob:
   (empty in the template until you fill it). `sets.bow` goes on with
   Yoichinoyumi (empty too). `sets.engaged.AM3` replaces the engaged set under
   Aftermath: Lv.3 with Masamune when you define it (not in the template).
-- **Idle**: `sets.idle.Weak` below 50% HP, `sets.idle.Regen` below 80%.
+- **Idle**: `sets.idle.Weak` below 50% HP, `sets.idle.Regen` below 80%, on top
+  of `sets.idle.PDT` (in PDT they replace the PDT pieces they hold).
   `sets.MoveSpeed` goes on while you run. In a town with a `sets.idle.Town`
   (the provided file has no `sets.idle.Town`), you get that set on top of the idle set
   plus your weapon, nothing else.

@@ -141,8 +141,9 @@ The provided file has `sets.precast.JA['Bolster']`, `['Life Cycle']`,
   expensive becomes the next lower tier you know. The replacement uses its own
   sets.
 - **Combat Mode.** `CombatMode` On locks main, sub, range and ammo: no set,
-  Entrust set included, can change them. Unlike BLM, GEO does not put any
-  weapon on by itself when you turn it On. Off unlocks them.
+  Entrust set included, can change them. If you define `sets.CombatMode` (the
+  provided file has none), it is put on when you turn Combat Mode On, just
+  before the lock; without it, what you wear is locked. Off unlocks them.
 - **Automatic belt.** The shared Obi / Orpheus belt goes on over your nukes;
   GEO has no belt rule of its own.
 

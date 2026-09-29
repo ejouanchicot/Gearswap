@@ -36,7 +36,7 @@ the sets file (structure and set names only).
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_WHM.lua` | 264 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD only), `init_gear_sets`, `file_unload` (releases the `Melee ON` lock) |
+| `_master/entry/Tetsouo_WHM.lua` | 268 | Entry (template): config preload, `get_sets`, `job_sub_job_change`, `user_setup`, `job_update` (HUD only), `init_gear_sets`, `file_unload` (releases the `Melee ON` lock and clears its `windower._weapon_locks.whm_melee` record) |
 | `shared/jobs/whm/functions/whm_functions.lua` | 51 | Facade: includes the 11 hook files, requires `dualbox_manager`, debug line |
 | `shared/jobs/whm/functions/WHM_PRECAST.lua` | 179 | `job_precast`: guard, `retier_cure`, cooldown, `paralyna_on_self`, WS; `job_post_precast` (TP gear) |
 | `shared/jobs/whm/functions/WHM_MIDCAST.lua` | 261 | `job_midcast` (Cure sets by mode), `job_post_midcast` (overlays + `MidcastManager`), `job_get_spell_map` |
@@ -45,7 +45,7 @@ the sets file (structure and set names only).
 | `shared/jobs/whm/functions/WHM_ENGAGED.lua` | 40 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/whm/functions/WHM_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/whm/functions/WHM_BUFFS.lua` | 19 | `job_buff_change = LifecycleManager.buff_change()` |
-| `shared/jobs/whm/functions/WHM_COMMANDS.lua` | 224 | `job_self_command` router, `job_state_change` (`Melee ON` lock, HUD) |
+| `shared/jobs/whm/functions/WHM_COMMANDS.lua` | 235 | `job_self_command` router, `job_state_change` (`Melee ON` lock, HUD) |
 | `shared/jobs/whm/functions/WHM_MOVEMENT.lua` | 39 | Empty `job_handle_equipping_gear` |
 | `shared/jobs/whm/functions/WHM_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('WHM', 'config/whm/WHM_LOCKSTYLE', 1, 'SAM')` |
 | `shared/jobs/whm/functions/WHM_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('WHM', 'config/whm/WHM_MACROBOOK', 'SAM', 1, 1)` |
@@ -287,8 +287,11 @@ Unlike RDM, WHM tests `CommonCommands` **before** the UI commands, and has no
 `job_state_change(stateField, new, old)`: skips `Moving`; strips the spaces from
 the field, so the description (`Offense Mode`, passed by Mote's `cycle` and by
 `cyclestate`) and the key both match; on `OffenseMode` `Melee ON` ->
-`disable('main', 'sub', 'range')`, anything else -> `enable(...)` unless a
-craft session is active; always refreshes the HUD. The Combat Mode lock is the
+`disable('main', 'sub', 'range')` plus `CombatMode.hold('whm_melee',
+{'main', 'sub', 'range'})`, anything else -> `enable(...)` plus
+`CombatMode.release('whm_melee')` unless a craft session is active; always
+refreshes the HUD. The hold is what keeps Combat Mode turning Off from freeing
+the weapons while `Melee ON` still holds them. The Combat Mode lock is the
 shared hook's ([keybinds and custom states](../systems/keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode)).
 
 ## Set names the code looks up
@@ -350,7 +353,12 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
   `job_handle_equipping_gear`, `job_update`), `WHMKeybinds`, `WHMTPConfig`,
   `LockstyleConfig`, `RECAST_CONFIG`, `RegionConfig`, the factory globals.
 - `windower._whm_melee_lock`: true while the `Melee ON` lock is on (set and
-  cleared by `WHM_COMMANDS.lua` `job_state_change`). No events registered.
+  cleared by `WHM_COMMANDS.lua` `job_state_change`).
+- `windower._weapon_locks.whm_melee`: `{'main', 'sub', 'range'}` while
+  `Melee ON` holds the weapons (`CombatMode.hold` / `release` from
+  `job_state_change`; cleared by the entry's `file_unload` with the lock).
+  `CombatMode.apply` does not enable those slots when Combat Mode turns Off.
+  No events registered.
 - Slot locks: `disable()` lives in GearSwap's `disable_table` and survives
   reloads and job changes. The entry's `file_unload` releases the `Melee ON`
   lock (main / sub / range) when `windower._whm_melee_lock` is set (or the
@@ -455,6 +463,10 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
   not yet in game): Full Cure re-tiered into a Cure with Auto-Tier On (the
   name test was `find('Cure')`), and the `Melee ON` lock surviving a subjob
   change.
+- Fixed 2026-09-29 (checked offline, not yet in game): with `Melee ON`, turning
+  Combat Mode On then Off freed main / sub / range while the HUD still showed
+  `Melee ON`. `Melee ON` now records its slots with `CombatMode.hold`, and
+  Combat Mode Off leaves them locked until `Melee ON` is turned off.
 - Fixed 2026-09-28: when `WHM_CURE_CONFIG` fails to load, the fallback now holds the
   template's `cure_tiers` / `curaga_tiers` / `safety_margin` (it had none and the first
   Cure raised `ipairs(nil)`), and the failure goes through `MessageFormatter.show_error`.

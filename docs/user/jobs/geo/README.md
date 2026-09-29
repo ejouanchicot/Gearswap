@@ -152,7 +152,7 @@ What the project's shared systems do on GEO, checked in the code.
 | Movement speed | `sets.MoveSpeed` goes on while you run, outside town, when idle (luopan out or not; not while engaged) |
 | Town | In a city (Dynamis excluded) `sets.idle.Town` goes on top of the idle set, the luopan set included; in Adoulin `sets.Adoulin` first |
 | Weapons | `sets['Idris']` and `sets['Genmei Shield']` (in the template) are laid on your idle and engaged sets |
-| Combat Mode | Native, shown, Ctrl+Numpad0, Off by default. On locks main, sub, range **and ammo**. Off frees them (unless a craft set holds them) |
+| Combat Mode | Native, shown, Ctrl+Numpad0, Off by default. On puts on `sets.CombatMode` if you define one, then locks main, sub, range **and ammo**. Off frees them (unless a craft set holds them) |
 | Treasure Mode | Off and hidden. `//gs c th show` gives it Alt+Numpad.; it needs a `sets.TreasureHunter` in your GEO set file |
 | Obi / Orpheus | The shared automatic belt (`ELEMENTAL_BELT.lua`, `//gs c belt`) goes on after your nuke set when it helps. GEO has no belt rule of its own |
 | Tier step-down | A nuke (Fire V...), -ra or Aspir cast from a macro that is on recast or short of MP goes out as the highest lower tier you know that can; nothing castable: stopped, recasts shown ([auto-tier](../../features/auto-tier-system.md)) |

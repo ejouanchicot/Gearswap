@@ -23,7 +23,7 @@ list, Combat Mode starting On...): if yours came from one, trust your own
 | `^numpad2` | `SubWeapon` | Ammurapi, **Genmei**, Malevolence | Off hand. With a shield your engaged set is `sets.engaged.<Mode>`; with a second weapon on /NIN or /DNC, `sets.engaged.<Mode>.DW` if you defined it (other subjobs keep the normal set) |
 | `^numpad6` | `EngagedMode` | **DT**, Acc, TP, Enspell | Engaged gear: `sets.engaged.DT`, `.Acc`, `.TP` or `.Enspell` |
 | `^numpad4` | `IdleMode` | **Refresh**, DT | Idle gear: `sets.idle.Refresh` or `sets.idle.DT` |
-| `^numpad5` | `CombatMode` | **Off**, On | `On` locks main, sub and range so casting never swaps your weapons (TP kept). `Off` frees them, unless a craft session holds them |
+| `^numpad5` | `CombatMode` | **Off**, On | `On` puts on `sets.CombatMode` if you define one, then locks main, sub and range so casting never swaps your weapons (TP kept). `Off` frees them, unless a craft session holds them |
 | `^numpad3` | `EnfeebleMode` | **Potency**, Skill, Duration | Picks `sets.midcast['Enfeebling Magic'].<type>.<Mode>` (for example `.mnd_potency.Skill`) when you add such a set. The plain `.Potency` / `.Skill` / `.Duration` sets only serve an enfeeble with no type (the -ga, Inundation). The template has no `.<type>.<Mode>` set: with it the mode changes no gear |
 | `^numpad7` | `NukeMode` | **FreeNuke**, Magic Burst | Elemental midcast: `sets.midcast['Elemental Magic']` or its `['Magic Burst']` variant |
 | `^numpad0` | `SaboteurMode` | **Off**, On | `On` = the spells listed in `RDM_SABOTEUR_CONFIG.lua` (template: Distract III, Gravity II) use Saboteur first when it is ready, then go out once it is up |

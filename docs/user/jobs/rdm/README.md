@@ -156,7 +156,7 @@ Checked in the code for RDM:
 | Recast check | An ability or spell on recast is cancelled with its time left. Tiered nukes, and tiered enfeebles while Enfeeble Tier is On, use the tier step-down instead. Optional party message per action in `config/RECAST_CONFIG.lua` |
 | Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `RDM_TP_CONFIG.lua` are handled by the TP bonus calculation ([TP bonus](../war/tp-bonus.md)) |
 | Obi / Orpheus | Hachirin-no-Obi or Orpheus's Sash on nukes and on Sanguine Blade / Seraph Blade when they add at least 5 % (`config/ELEMENTAL_BELT.lua`, `//gs c belt`) |
-| Combat Mode | Native on RDM (`^numpad5`): On locks main, sub and range, so no set swaps your weapons |
+| Combat Mode | Native on RDM (`^numpad5`): On puts on `sets.CombatMode` if you define one, then locks main, sub and range, so no set swaps your weapons |
 | Dispelga with Daybreak | `//gs c dispelga`: Daybreak for the cast, your weapon back after, even through Combat Mode |
 | Treasure Mode | Hidden; `//gs c th show` to use it, with a `sets.TreasureHunter` of yours |
 | Dual Wield tiers | With two weapons (/NIN, /DNC) and engaged, `sets.DW.<tier>` on top by your magic haste. The template has it commented out |

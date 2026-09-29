@@ -23,8 +23,8 @@ What SAM adds on top of the shared pipeline:
   `sets.buff['Meikyo Shisui']` while `buffactive` says those buffs are up.
 - **Set building**: engaged base re-selected from `OffenseMode` x
   `HybridMode` (Mote cannot reach `sets.engaged.PDT`), Aftermath Lv.3 set,
-  Seigan / Third Eye layers, weapon set, bow layer; idle by HP (Weak below
-  50 %, Regen below 80 %) and HybridMode PDT, then `sets.MoveSpeed` while
+  Seigan / Third Eye layers, weapon set, bow layer; idle HybridMode PDT, then
+  by HP on top (Weak below 50 %, Regen below 80 %), then `sets.MoveSpeed` while
   running. In a town with `sets.idle.Town` (or in Adoulin with
   `sets.Adoulin`), that set on top of the idle set plus the weapon, as on the
   other jobs; the provided file has neither.
@@ -51,7 +51,7 @@ function; line numbers are deliberately not used.
 | `shared/jobs/sam/functions/SAM_MOVEMENT.lua` | 28 | Empty `job_handle_equipping_gear` (movement gear is in the set builder) |
 | `shared/jobs/sam/functions/SAM_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('SAM', ...)` wrappers |
 | `shared/jobs/sam/functions/SAM_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('SAM', ...)` wrapper |
-| `shared/jobs/sam/functions/logic/set_builder.lua` | 185 | `build_idle_set` (town, HP, PDT, weapon, `BaseSetBuilder.apply_movement`), `apply_main_weapon`, `build_engaged_set` (base from `select_engaged_base`; Seigan, weapon, bow) |
+| `shared/jobs/sam/functions/logic/set_builder.lua` | 185 | `build_idle_set` (town, PDT, HP, weapon, `BaseSetBuilder.apply_movement`), `apply_main_weapon`, `build_engaged_set` (base from `select_engaged_base`; Seigan, weapon, bow) |
 | `_master/config/sam/SAM_STATES.lua` | 118 | `SAMStates.configure()` (HybridMode, OffenseMode, WeaponskillMode, MainWeapon, Stance, FastCast, AutoMedicine) |
 | `_master/config/sam/SAM_KEYBINDS.lua` | 53 | Data only: 4 binds handed to `KeybindManager.create('SAM', ...)` |
 | `_master/config/sam/SAM_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
@@ -188,9 +188,9 @@ no midcast set in the template).
   [equipment-and-inventory.md](../systems/equipment-and-inventory.md#movement-and-town-idle-basesetbuilder)).
   In town it returns that result plus `SetBuilder.apply_main_weapon`
   (`WeaponResolver.set_for('main', MainWeapon)`), without Weak, Regen, PDT or
-  movement. Outside town: `sets.idle.Weak` if `player.hpp < 50`, else
-  `sets.idle.Regen` if below 80; `sets.idle.PDT` when `HybridMode == 'PDT'`;
-  then `apply_main_weapon`; then `BaseSetBuilder.apply_movement`
+  movement. Outside town: `sets.idle.PDT` when `HybridMode == 'PDT'`; then, on
+  top of it, `sets.idle.Weak` if `player.hpp < 50`, else `sets.idle.Regen` if
+  below 80 (order since 2026-09-29); then `apply_main_weapon`; then `BaseSetBuilder.apply_movement`
   (`sets.MoveSpeed` while `state.Moving.value == 'true'`, since 2026-09-28).
   The provided file has no `sets.idle.Town` and no `sets.Adoulin`, so
   `select_idle_base_town` reports "not in town" in every city and SAM builds
@@ -411,6 +411,13 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
 - Fixed 2026-09-28: `sets.MoveSpeed` was unreachable; `build_idle_set` now
   ends with `BaseSetBuilder.apply_movement` (checked offline, not yet in
   game).
+- Fixed 2026-09-29 (checked offline, not yet in game): `sets.idle.PDT` was
+  laid after Weak / Regen; being a whole set in the template, it covered them,
+  so they were never worn in PDT (the default HybridMode). PDT now goes first
+  and Weak / Regen on top. With the template (Regen and Weak built on
+  `sets.idle.Normal`, whole sets) they now replace the PDT pieces below 80 % /
+  50 % HP; to keep DT pieces there, list only the pieces to change in
+  Regen / Weak.
 - `SAM_LOCKSTYLE.by_subjob` is never read (no `get_style`).
 - Dead code: `job_handle_equipping_gear`, `sets.buff.Sengikori`.
 - `SAM_COMMANDS` duplicates most of `DRK_COMMANDS` (open finding).

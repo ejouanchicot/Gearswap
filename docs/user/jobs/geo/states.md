@@ -23,7 +23,7 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 | `^numpad8` | `MainDarkAOE` | **Blizzara**, Stonera, Watera | Spell of `//gs c darkaoe` |
 | `^numpad2` | `AOETier` | **III**, II, I | Tier of the -ra nukes (`I` = `Fira`) |
 | `^numpad9` | `HybridMode` | **PDT**, Normal | Your idle/engaged base when no luopan is out. In the provided sets the PDT sets are still copies of Normal: fill them for the mode to change anything |
-| `^numpad0` | `CombatMode` | **Off**, On | `On` locks main, sub, range and ammo so casting never swaps your weapon. `Off` unlocks them (unless a craft session holds them) |
+| `^numpad0` | `CombatMode` | **Off**, On | `On` puts on `sets.CombatMode` if you define one, then locks main, sub, range and ammo so casting never swaps your weapon. `Off` unlocks them (unless a craft session holds them) |
 | `^numpad.` | `LuopanMode` | **DT**, DPS | Engaged gear while a luopan is out: `sets.luopan.engaged.DT` or `.DPS` |
 | `^numpad+` | `IndicolureMode` | **Self**, Entrust | Shown in the HUD only; no command reads it today |
 

@@ -19,7 +19,7 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 | `^numpad4` | Cure Auto-Tier (`CureAutoTier`) | **On**, Off | On: the Cure tier you press is replaced by the one that fits the target's missing HP (see Notes). Off: the tier you press is cast, unless it is on recast (then the next ready tier is used, in both values). |
 | `^numpad5` | Afflatus Mode (`AfflatusMode`) | **Solace**, Misery | Which stance `//gs c afflatus` uses. |
 | `^numpad1` | Idle Mode (`IdleMode`) | **PDT**, Refresh | Idle set: `sets.idle.PDT` or `sets.idle.Refresh`. |
-| `^numpad2` | Combat Mode (`CombatMode`) | **Off**, On | On locks main, sub, range and ammo so your weapons stay on. |
+| `^numpad2` | Combat Mode (`CombatMode`) | **Off**, On | On locks main, sub, range and ammo so your weapons stay on. If you define `sets.CombatMode`, it is put on first. |
 | `^numpad6` | Casting Mode (`CastingMode`) | **Normal**, Resistant | Resistant: enfeebles and Divine Magic wear the `.Resistant` version of their set (`sets.midcast.MndEnfeebles.Resistant`, `.IntEnfeebles.Resistant`, `['Divine Magic'].Resistant`). A spell with a set of its own name uses that set's `.Resistant` version when it has one (`sets.midcast.Repose.Resistant`), else keeps its own set (Holy, Holy II). Cures ignore it. In the template the `.Resistant` sets are copies of the normal ones until you add magic accuracy pieces. |
 
 ## Other modes (no key)
@@ -52,6 +52,9 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 - Status removal spells use `sets.midcast.StatusRemoval` (Cursna its own set),
   plus the Divine Caress set when that buff is up.
 - Paralyna while you are paralysed skips its precast gear.
+- The two locks are separate: with Melee ON, turning Combat Mode Off leaves
+  main, sub and range locked (only the ammo is freed) until you turn Melee ON
+  off.
 - A reload, a main job change or a subjob change releases the Combat Mode and
   Melee ON locks (Offense Mode comes back at None).
 - Idle: `sets.latent_refresh` goes on top while your MP is under 51 %, and

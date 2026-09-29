@@ -30,7 +30,8 @@ the job does these things by itself:
 - **Enfeebles by stat**: White Magic enfeebles wear `sets.midcast.MndEnfeebles`,
   Black Magic ones `sets.midcast.IntEnfeebles`.
 - **Two weapon locks**: Combat Mode (main, sub, range, ammo) and Offense Mode
-  `Melee ON` (main, sub, range).
+  `Melee ON` (main, sub, range). Turning one off does not free the slots the
+  other still holds.
 - **Latent refresh**: `sets.latent_refresh` on your idle set while your MP is
   under 51 %.
 
@@ -139,7 +140,7 @@ Checked in the code for WHM:
 | Recast check | An ability or spell on recast is cancelled with its time left (a Cure first gets a chance to change tier). Optional party message per action in `config/RECAST_CONFIG.lua` |
 | Weaponskill check | Out of range or under 1000 TP: cancelled with a message. TP bonus pieces from `WHM_TP_CONFIG.lua` ([TP bonus](../war/tp-bonus.md)) |
 | Obi / Orpheus | Hachirin-no-Obi or Orpheus's Sash on Banish, Holy, nukes and elemental weaponskills (Flash Nova...) when they add at least 5 % (`config/ELEMENTAL_BELT.lua`, `//gs c belt`) |
-| Combat Mode | Native on WHM (`^numpad2`): On locks main, sub, range and ammo |
+| Combat Mode | Native on WHM (`^numpad2`): On puts on `sets.CombatMode` if you define one, then locks main, sub, range and ammo |
 | Treasure Mode | Hidden; `//gs c th show` to use it, with a `sets.TreasureHunter` of yours |
 | Movement speed | `sets.MoveSpeed` while you move, idle, in town too |
 | Town idle | `sets.idle.Town` in a city, `sets.Adoulin` in the Adoulin cities if you add it |

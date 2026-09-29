@@ -26,7 +26,7 @@ Alt+Numpad7-9 (alts) are common to every job, see [keybinds](../../guides/keybin
 | Ctrl+Numpad2 `^numpad2` | `AOETier` | **Aja**, III, II, I | Tier of the AOE nukes. `Aja` turns the -ga spell into its -ja (Firaga → Firaja) |
 | Ctrl+Numpad7 `^numpad7` | `Storm` | **Firestorm**, Sandstorm, Thunderstorm, Hailstorm, Rainstorm, Windstorm, Voidstorm, Aurorastorm | Storm cast by `//gs c storm` (/SCH) |
 | Ctrl+Numpad9 `^numpad9` | `HybridMode` | PDT, **Normal** | PDT: `sets.idle.PDT` / `sets.engaged.PDT` instead of Normal (copies of Normal until you fill them with damage taken pieces) |
-| Ctrl+Numpad8 `^numpad8` | `CombatMode` | **Off**, On | On equips Bunzi's Rod, Ammurapi Shield, Sroda Tathlum and locks main/sub/range/ammo. Off unlocks them (unless a craft set is active) |
+| Ctrl+Numpad8 `^numpad8` | `CombatMode` | **Off**, On | On equips `sets.CombatMode` (provided file: Bunzi's Rod, Ammurapi Shield, Sroda Tathlum) and locks main/sub/range/ammo. Off unlocks them (unless a craft set is active) |
 | Ctrl+Numpad0 `^numpad0` | `MagicBurstMode` | Off, **On**, Acc | Elemental midcast: Off = normal nuke set, On = Magic Burst set, Acc = Magic Burst accuracy set |
 | Apps+Numpad7 `#numpad7` | `DeathMode` | **Off**, On | On: idle in `sets.idle.Death` (a copy of Normal until you fill it with max MP gear: Death hits for your current MP x 3 and consumes all MP). The Death spell itself always uses `sets.midcast['Death']` |
 | Apps+Numpad8 `#numpad8` | `SneakInviAOE` | **On**, Off | `//gs c aoe sneak/invi`: On = Accession and cast on yourself (whole party), Off = single target. Off also keeps `//gs c stealth` from spending a stratagem on your group ([Sneak and Invisible](../../guides/stealth.md)) |

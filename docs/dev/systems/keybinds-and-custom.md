@@ -218,14 +218,13 @@ Every change rewrites the whole settings file, starting with the mode's `header`
 
 **Combat Mode lock.** `CombatMode.install_hook()` runs from `INIT_SYSTEMS`, after the custom-state hooks, so its wrapper is the outermost and runs first. It wraps `handle_equipping_gear` and calls `CombatMode.apply()` before any gear:
 
-- **On and shown**: disables main, sub and range, plus ammo on BLM, GEO and WHM (`SLOTS_BY_JOB`), and records the slots in `windower._combat_mode_locked`.
-- **Otherwise**: enables what it locked, unless a craft session is active (`_G.CraftManager.is_active()`).
+- **On and shown**: when the lock is first laid (nothing recorded in `windower._combat_mode_locked` yet) and no craft session is active, equips `sets.CombatMode` if the job's set file defines it. `equip()` only diverts an item whose slot is already disabled, so those pieces stay queued and the lock laid right after holds them. Without the set, whatever is worn is locked. Then it disables main, sub and range, plus ammo on BLM, GEO and WHM (`SLOTS_BY_JOB`), and records the slots in `windower._combat_mode_locked`. Any job where Combat Mode is shown gets this; only `_master/sets/blm_sets.lua` defines the set (Bunzi's Rod, Ammurapi Shield, Sroda Tathlum).
+- **Otherwise**: enables what it locked, unless a craft session is active (`_G.CraftManager.is_active()`). A slot another lock has recorded with `CombatMode.hold(owner, slots)` stays locked (record in `windower._weapon_locks`, dropped by `CombatMode.release(owner)`); WHM's `Melee ON` is the one user, so Combat Mode Off leaves main, sub and range locked until `Melee ON` is turned off.
 
 GearSwap keeps a disabled slot across a job change. So the next load's `attach` (its `on_attach`) frees what was locked, and the new job starts Off. Other users of the lock:
 
 - `custom_locks.lua` never enables a weapon slot while Combat Mode is on;
 - `spell_gear_lock.lua` opens the lock for a spell that needs a piece (Dispelga), then calls `CombatMode.apply()` again after the cast;
-- BLM's `job_state_change` equips Bunzi's Rod, Ammurapi Shield and Sroda Tathlum when Combat Mode turns On (queued behind the lock);
 - RDM's and BLU's set builders skip the weapon states while it is On.
 
 ### Player modes and gear rules (`<JOB>_CUSTOM.lua`)

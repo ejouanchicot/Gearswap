@@ -34,8 +34,11 @@ None of these sets is in the provided file.
 
 The job adds nothing to the engaged set: no weapon sets, no dual-wield set.
 Offense Mode `Melee ON` locks main, sub and range; Combat Mode On locks main,
-sub, range and ammo ([states.md](states.md)). While locked, the weapon and ammo
-pieces of every set are ignored; while free, a set that holds `main` / `sub`
+sub, range and ammo ([states.md](states.md)). Each lock holds until you turn
+it off: with Melee ON, Combat Mode Off does not free main, sub and range.
+`sets.CombatMode`, if you define it (the provided file has none), is put on
+when you turn Combat Mode On, just before the lock. While locked, the weapon
+and ammo pieces of every set are ignored; while free, a set that holds `main` / `sub`
 swaps your weapon (the provided Cure, Enhancing and Cursna sets do).
 
 ## Precast (Fast Cast)

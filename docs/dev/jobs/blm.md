@@ -40,7 +40,7 @@ function, not a line number.
 | `shared/jobs/blm/functions/BLM_ENGAGED.lua` | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/blm/functions/BLM_STATUS.lua` | `job_status_change = LifecycleManager.status_change()` |
 | `shared/jobs/blm/functions/BLM_BUFFS.lua` | `job_buff_change = LifecycleManager.buff_change()` |
-| `shared/jobs/blm/functions/BLM_COMMANDS.lua` | `job_self_command` router, BLM cycle handlers, `job_state_change` (Combat Mode weapons, HUD refresh) |
+| `shared/jobs/blm/functions/BLM_COMMANDS.lua` | `job_self_command` router, BLM cycle handlers, `job_state_change` (HUD refresh) |
 | `shared/jobs/blm/functions/BLM_MOVEMENT.lua` | `job_handle_equipping_gear` (Impact body lock attempt) |
 | `shared/jobs/blm/functions/BLM_LOCKSTYLE.lua` | Lazy `LockstyleManager.create('BLM', ...)` wrappers |
 | `shared/jobs/blm/functions/BLM_MACROBOOK.lua` | Lazy `MacrobookManager.create('BLM', ...)` wrapper |
@@ -325,7 +325,7 @@ the character's `config/COMMON_KEYBINDS.lua`.
 | State | Values | Default | Key | Read by |
 |-------|--------|---------|-----|---------|
 | `HybridMode` (Mote) | PDT, Normal | Normal | `^numpad9` | `set_builder.lua` `mode_base` |
-| `CombatMode` | Off, On | Off | `^numpad8` | shared [Combat Mode](../systems/keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode) lock (main, sub, range, ammo); `job_state_change` puts the weapons on |
+| `CombatMode` | Off, On | Off | `^numpad8` | shared [Combat Mode](../systems/keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode) lock (main, sub, range, ammo); `CombatMode.apply` puts `sets.CombatMode` on before laying it |
 | `MagicBurstMode` | Off, On, Acc | On | `^numpad0` | `Router.handle_elemental`, `Router.handle_impact` (On only), `announce_magic_burst` (On only) |
 | `DeathMode` | Off, On | Off | `#numpad7` | `set_builder.lua` `mode_base` (idle only) |
 | `MainWeapon` | Hvergelmir | Hvergelmir | none | `SetBuilder.apply_weapon` (`sets.Hvergelmir`, absent in the template) |
@@ -380,10 +380,10 @@ so a BLM command keeps its name even when the alt config has the same key
 | `aoelight` / `aoedark` / `subaoelight` / `subaoedark` | Same with `build_aoe_name` and `AOETier` | router |
 | `storm` | `CastStorm(state.Storm.current)` | router |
 
-`job_state_change(field, new, old)` skips `Moving`; for `CombatMode` /
-`Combat Mode` turning On it equips Bunzi's Rod, Ammurapi Shield and Sroda
-Tathlum (queued behind the lock, which `CombatMode.apply` lays before any
-gear); always refreshes the HUD.
+`job_state_change(field, new, old)` skips `Moving` and refreshes the HUD. The
+Combat Mode weapons are no longer equipped here: `CombatMode.apply` puts on
+`sets.CombatMode` (template: Bunzi's Rod, Ammurapi Shield, Sroda Tathlum) when
+it first lays the lock.
 
 `CastStorm` -> `StormManager.cast_storm_with_klimaform`: 2 s anti-spam; both
 ready -> Klimaform (when not active) then the storm 4.5 s later; storm ready
@@ -403,6 +403,7 @@ T = in `_master/sets/blm_sets.lua`.
 | `sets[MainWeapon]`, `sets[SubWeapon]` | `SetBuilder.apply_weapon` via `WeaponResolver` | no |
 | `sets.buff['Mana Wall']` | `build_idle_set` | yes |
 | `sets.buff.Doom` | `DoomManager` | yes |
+| `sets.CombatMode` | `CombatMode.apply` (shared), when Combat Mode first locks | yes (Bunzi's Rod, Ammurapi Shield, Sroda Tathlum) |
 | `sets.precast.FC` (+ `['Enhancing Magic']`, `['Elemental Magic']`, `Cure`, `Curaga`, `Impact`, `Stoneskin`) | Mote default precast | yes |
 | `sets.precast.JA['Mana Wall']`, `.Manafont`, `['Elemental Seal']` | Mote default precast | yes |
 | `sets.precast.WS` | Mote default precast | yes |
@@ -526,8 +527,6 @@ set's mode child, so Comet and Meteor in Magic Burst mode wear `MagicBurst`
   `klima` test both.
 - `klima`, `storm` and `aoe` do not check that the subjob is SCH; the game
   refuses the actions, and `StratagemCharges` reports no charges.
-- `CombatMode` On equips a hard-coded weapon trio in `job_state_change`, not a
-  set.
 
 ## Extending
 

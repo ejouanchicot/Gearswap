@@ -32,7 +32,7 @@ Verified against the code on 2026-09-28. Line numbers of `INIT_SYSTEMS.lua` (a f
 | `gear_hold.lua` | 25 | `GearHold.active()`: true while a COR roll holds the idle / engaged gear (`_G.cor_roll_hold`, written by `cor/functions/logic/roll_hold.lua`); asked by the Dual Wield, Treasure Hunter and custom-gear layers of the hook chain (2026-09-28) | here ([GearHold](#gearhold)), [cor.md](../jobs/cor.md) |
 | `WATCHDOG_COMMANDS.lua` | 113 | `//gs c watchdog ...` handler, called from each job's `<JOB>_COMMANDS.lua` | here |
 | `CYCLE_HANDLER.lua` | 136 | `//gs c cyclestate <State> [reverse]`: Mote's cycle without the chat line when the keybind HUD is visible | here |
-| `combat_mode.lua` | 118 | Weapon lock on every job; its `handle_equipping_gear` wrapper is the outermost of the chain | hook: here; feature: [keybinds-and-custom.md](keybinds-and-custom.md) |
+| `combat_mode.lua` | 165 | Weapon lock on every job; its `handle_equipping_gear` wrapper is the outermost of the chain | hook: here; feature: [keybinds-and-custom.md](keybinds-and-custom.md) |
 | `combat_mode_commands.lua` | 58 | `//gs c combatmode` | [keybinds-and-custom.md](keybinds-and-custom.md), [commands-and-debug.md](commands-and-debug.md) |
 | `optional_state.lua`, `optional_state_commands.lua` | 142, 147 | Base of Combat Mode and Treasure Mode (shown / hidden / key per job) | [keybinds-and-custom.md](keybinds-and-custom.md), [factories-and-helpers.md](factories-and-helpers.md) |
 | `COMMON_COMMANDS.lua` | 786 | Every `//gs c` command shared by all jobs | [commands-and-debug.md](commands-and-debug.md) |
@@ -481,7 +481,9 @@ Only the lifecycle part is here; the feature, its settings file and its commands
 | Function | Notes | Callers |
 |---|---|---|
 | `install_hook()` | Outermost `handle_equipping_gear` wrapper (layer 7) | INIT_SYSTEMS |
-| `apply()` | `disable()` the weapon slots when `state.CombatMode` is `On` and record them in `windower._combat_mode_locked`; otherwise `enable()` what was recorded, unless a craft session holds the gear | the hook |
+| `apply()` | When `state.CombatMode` is `On`: if nothing is recorded yet and no craft session is active, `equip(sets.CombatMode)` when the set file defines it; then `disable()` the weapon slots and record them in `windower._combat_mode_locked`; otherwise `enable()` what was recorded, minus the slots another lock holds (`hold`), unless a craft session holds the gear | the hook |
+| `hold(owner, slot_list)` | Records in `windower._weapon_locks[owner]` that another lock keeps `slot_list` disabled; `apply()` then leaves those slots locked when Combat Mode turns Off. The owner does its own `disable()` | WHM `job_state_change` (`'whm_melee'`, `Melee ON`) |
+| `release(owner)` | Forgets `owner`'s record; the owner does its own `enable()` | WHM `job_state_change` (leaving `Melee ON`) |
 | `is_on()`, `is_shown`, `settings`, `settings_path`, `attach` | state value, and the optional-state API | HUD, `KeybindManager.create` |
 
 `attach` (through `optional_state`'s `on_attach`) frees the slots a previous job left locked (`windower._combat_mode_locked`): GearSwap keeps disabled slots across a job change.
@@ -562,6 +564,7 @@ Read only: `LagDebugger`, `AutoMove`, `state`, `player`, `get_state`, `handle_up
 | `_keybind_guard_seq` | `KeybindGuard.schedule` | Invalidates a pending re-assert when another load starts |
 | `_cast_tracker` | `cast_tracker.lua` `store()` | `{last_action, last_start}` (os.clock) |
 | `_combat_mode_locked` | `CombatMode.apply` | Slots this module disabled, freed by the next job's `attach` |
+| `_weapon_locks` | `CombatMode.hold` / `release` (WHM entry `file_unload` clears `whm_melee`) | `owner -> slots` of weapon locks other than Combat Mode's; `apply()` does not enable those slots |
 | `_ui_live_state` | `UI_MANAGER.lua` | The live load's UI state; older HUD coroutines compare against it (see [ui-overlay.md](ui-overlay.md)) |
 
 ### Events, texts, keybinds, coroutines
