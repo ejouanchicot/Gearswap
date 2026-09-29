@@ -3,7 +3,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Provides centralized set building for both engaged and idle states:
 ---   town detection and IdleMode (idle), Kraken Club and EngagedMode (engaged),
----   weapon sets and movement speed (both).
+---   weapon sets (both), movement speed (idle, outside town).
 ---
 ---   @file    shared/jobs/brd/functions/logic/set_builder.lua
 ---   @author  ejouanchicot
@@ -170,12 +170,10 @@ function SetBuilder.build_engaged_set(base_set)
     local result = SetBuilder.select_engaged_base(base_set)
 
     -- Step 2: Apply weapons (MainWeapon + SubWeapon)
-    result = SetBuilder.apply_weapons(result)
-
-    -- Step 3: Apply movement speed (BRD can move while singing)
-    result = SetBuilder.apply_movement(result)
-
-    return result
+    -- No movement gear engaged, as on every job: AutoMove only raises
+    -- state.Moving out of combat, so here it could only be a stale 'true'
+    -- left from running up to the mob, and the feet stayed on in the fight.
+    return SetBuilder.apply_weapons(result)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════

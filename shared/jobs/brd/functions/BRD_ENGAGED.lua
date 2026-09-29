@@ -4,7 +4,7 @@
 ---   customize_melee_set (SetBuilder.build_engaged_set):
 ---   - sets.engaged.PDTKC when Kraken Club is in the sub slot
 ---   - otherwise sets.engaged[EngagedMode] when defined
----   - MainWeapon / SubWeapon sets, then movement gear
+---   - MainWeapon / SubWeapon sets
 ---
 ---   @file    shared/jobs/brd/functions/BRD_ENGAGED.lua
 ---   @author  ejouanchicot
@@ -22,9 +22,9 @@ local SetBuilder = nil
 ---   ENGAGED HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Apply weapon sets, mode selection, and movement gear to all engaged configurations
+---   Apply weapon sets and mode selection to all engaged configurations
 ---   @param meleeSet table The engaged set to customize
----   @return table Modified engaged set with current weapon, mode, and movement gear
+---   @return table Modified engaged set with current weapon and mode
 function customize_melee_set(meleeSet)
     -- Lazy load SetBuilder on first engage
     if not SetBuilder then
