@@ -178,7 +178,7 @@ end
 ---   `//gs c wo keep|kept|items`  - list what overflow keeps (read only)
 ---   `//gs c wo reset`, `recover|unlock`, `alt|kaories`
 --- W7 (craft) is left alone because it is in none of the bag lists of
---- wardrobe/lib/config.lua; Config.PROTECTED is not read by the organizer.
+--- wardrobe/lib/config.lua; Config.PROTECTED bags are taken out of its bag lists.
 --- @param arg string|nil Mode
 --- @param arg2 string|nil 'preview' / 'dry' after 'global'
 --- @return boolean False only if the organizer failed to load

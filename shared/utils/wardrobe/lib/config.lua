@@ -49,8 +49,8 @@ Config.PRIMARY_BAGS = {8, 10} -- W1, W2 (target = active job)
 -- find used items needing promotion.
 Config.OVERFLOW_BAGS = {16, 14, 13, 12, 11} -- W8, W6, W5, W4, W3
 Config.FILL_FALLBACK = {16, 14, 13, 12, 11} -- Used items fallback: same order
--- Not read by any organizer code today: W7 stays untouched because it is in
--- none of the bag lists above/below, not because of this table.
+-- Bags the organizer never touches: Config.refresh() takes them out of every
+-- bag list below, even one where a character config lists them by mistake.
 Config.PROTECTED = {[15] = true} -- ONLY W7 (craft) is protected
 
 -- All wardrobes touched by the algorithm
@@ -162,6 +162,27 @@ Config.EQUIP_SLOTS = 'main sub range ammo head body hands legs feet neck waist b
 ---   The ALT_* keys remain for a character who wants `//gs c wo alt` to use a
 ---   different layout from its own `//gs c wo`.
 
+--- Bag lists the organizer reads; protected bags are taken out of each.
+local BAG_LIST_KEYS = {
+    'PRIMARY_BAGS', 'OVERFLOW_BAGS', 'FILL_FALLBACK', 'ALL_WARDROBES',
+    'ALT_PRIMARY_BAGS', 'ALT_OVERFLOW_BAGS', 'ALT_ALL_BAGS',
+}
+
+--- Take every PROTECTED bag out of the organizer's bag lists (new tables:
+--- the character file's own tables are left as written).
+local function strip_protected()
+    for _, key in ipairs(BAG_LIST_KEYS) do
+        local list = Config[key]
+        if type(list) == 'table' then
+            local kept = {}
+            for _, bag in ipairs(list) do
+                if not Config.PROTECTED[bag] then kept[#kept + 1] = bag end
+            end
+            Config[key] = kept
+        end
+    end
+end
+
 -- Path of the last loaded char config (for the chat banner / debug log).
 Config.LOADED_CHAR_CONFIG = nil
 
@@ -221,6 +242,8 @@ function Config.refresh()
         for _, b in ipairs(Config.ALT_OVERFLOW_BAGS) do table.insert(all, b) end
         Config.ALT_ALL_BAGS = all
     end
+
+    strip_protected()
 
     Config.LOADED_CHAR_CONFIG = path
     return path

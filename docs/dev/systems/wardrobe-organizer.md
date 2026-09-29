@@ -277,7 +277,7 @@ Commands the organizer itself sends (through the sandbox `windower.send_command`
 | `PRIMARY_BAGS` | `{8, 10}` (`:43`) | Phases 2/3/3.5/4, state |
 | `OVERFLOW_BAGS` | `{16, 14, 13, 12, 11}` (`:50`) | Phases 2/3/4, warp reachability, `wo keep` |
 | `FILL_FALLBACK` | `{16, 14, 13, 12, 11}` (`:51`) | Phase 4 |
-| `PROTECTED` | `{[15] = true}` (`:54`) | nothing reads it (see Known issues) |
+| `PROTECTED` | `{[15] = true}` (`:54`) | `refresh()` takes these bags out of every bag list (`strip_protected`, since 2026-09-29) |
 | `ALL_WARDROBES` | `{8, 10, 11, 12, 13, 14, 16}` (`:57`) | `build_state` scan list |
 | `ALT_PRIMARY_BAGS` / `ALT_OVERFLOW_BAGS` / `ALT_ALL_BAGS` | `{8,10,11,12}` / `{6,7,5}` / union (`:69-71`) | alt flow |
 | `MOVE_DELAY` | 0.35 s | Phase 4 pacing |
@@ -301,7 +301,8 @@ Commands the organizer itself sends (through the sandbox `windower.send_command`
 
 - `FILL_FALLBACK` mirrors `OVERFLOW_BAGS` unless the file sets it;
 - with `SCOPE == 'all_jobs'`, `ALT_PRIMARY_BAGS` / `ALT_OVERFLOW_BAGS` mirror the regular lists unless the file sets them;
-- `ALT_ALL_BAGS` is rebuilt from the two `ALT_*` lists unless the file sets it.
+- `ALT_ALL_BAGS` is rebuilt from the two `ALT_*` lists unless the file sets it;
+- `strip_protected()` takes every `PROTECTED` bag out of `PRIMARY_BAGS`, `OVERFLOW_BAGS`, `FILL_FALLBACK`, `ALL_WARDROBES` and the three `ALT_*` lists (new tables), so a protected bag is never scanned or filled even if a list names it. A `bag = 'wardrobe 7'` pin in a set is the player's own choice and is still honoured.
 
 Keys are only ever overwritten, never reset: removing a key from the file keeps its previous value until the sandbox is rebuilt (`gs reload` or job change). A missing file only clears `LOADED_CHAR_CONFIG`.
 
@@ -433,7 +434,7 @@ Still open:
 - `verify` / `preview` ignore Phase 3.5 packing and inventory leftovers - `shared/utils/wardrobe/wardrobe_organizer.lua:570-667`
 - The scan report matches set names against `en` only; the many set files that use the long log name are reported as "declared but not held" - `owned_item_names`, `shared/utils/wardrobe/lib/reports.lua:35`
 - Warp-keep reachability and source selection are implemented twice - `Reports.show_kept`, `Items.add_always_kept`
-- `Config.PROTECTED` is never read; W7 stays untouched only because it is in no bag list, and a `bag='wardrobe 7'` pin would send gear there - `shared/utils/wardrobe/lib/config.lua:54`
+- A `bag='wardrobe 7'` pin still sends gear into W7: `PROTECTED` only takes W7 out of the organizer's own bag lists - `shared/utils/wardrobe/lib/config.lua`
 - Dead helpers and constants: `Moves.find_inv_slot`, `Moves.first_pinned_bag`, `Chat.divider`, `Chat.kv`, `Config.UNEQUIP_DELAY`, `Config.EQUIP_SLOTS`, `Config.BAG_NAME_TO_ID`
 - No `job_changed()` check between Phase 3 and Phase 3.5 - `start_phase_pack`, `shared/utils/wardrobe/wardrobe_organizer.lua:400`
 - No `job_changed()` check before the alt flow's Phase 4 or `alt_finish`, nor in `finish_run` - `shared/utils/wardrobe/lib/orchestrator_alt.lua`, `wardrobe_organizer.lua:286-384`
@@ -442,4 +443,4 @@ Still open:
 - Phase 3.5 over-pulls: pending ignores items already waiting in the inventory, so the surplus goes back to the bag it came from - `Phases.compact_primary`, `shared/utils/wardrobe/lib/phases.lua:628`
 - Phase 3.5 prints as "Phase 3" - `start_phase_pack`, `Chat.phase` (`('Phase %d'):format(3.5)`)
 - Phase 0's fourth strategy sends `/equip left_ear empty` etc. with Windower key names; whether the game accepts them is untested (Z07-P3-14, needs a game test) - `NAKED_SLOTS`, `phases.lua:58`
-- Comments that contradict the code: the doc comment of `CommonCommands.handle_wardrobeorganize` (`COMMON_COMMANDS.lua:173`, `wo global` described as a "cross-job freq-based static layout"; `:179`, W7 described as protected by `Config.PROTECTED`)
+- Comments that contradict the code: the doc comment of `CommonCommands.handle_wardrobeorganize` (`COMMON_COMMANDS.lua:173`, `wo global` described as a "cross-job freq-based static layout")
