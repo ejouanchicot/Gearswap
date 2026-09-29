@@ -15,7 +15,7 @@
 ---
 ---   @file    shared/jobs/run/functions/logic/set_builder.lua
 ---   @author  ejouanchicot
----   @version 2.1.0 - Lycurgos (Great Axe) skips the grip; the sub slot is not emptied
+---   @version 2.2.0 - The grip goes on with every weapon, Lycurgos included
 ---   @date    Created: 2025-10-06 | Updated: 2025-11-11
 ---  ═══════════════════════════════════════════════════════════════════════════
 local SetBuilder = {}
@@ -53,17 +53,11 @@ end
 
 ---   Apply sub weapon (grip) to set
 ---   Uses grip sets defined in run_sets.lua (sets.Utu, sets.Refined)
----   Great Swords are 2-handed but can use grips
----   NOTE: Lycurgos skips the grip set; the sub slot keeps whatever the other
----   sets (or the currently equipped gear) put there
+---   Every two-handed weapon takes a grip: Great Swords and the Lycurgos
+---   Great Axe alike (WAR and DRK pair Lycurgos with one too)
 ---   @param result table Current equipment set
 ---   @return table Set with grip applied
 function SetBuilder.apply_grip(result)
-    -- Skip grip application for Great Axes (Lycurgos)
-    if state.MainWeapon and state.MainWeapon.current == 'Lycurgos' then
-        return result
-    end
-
     -- Use SubWeapon state (sets.Utu, sets.Refined)
     if state.SubWeapon and state.SubWeapon.current then
         local grip_set = WeaponResolver.set_for('sub', state.SubWeapon.current)
@@ -121,7 +115,7 @@ function SetBuilder.build_engaged_set(base_set)
     -- Step 2: Apply main weapon (AFTER hybrid to ensure weapon takes priority)
     result = SetBuilder.apply_weapon(result)
 
-    -- Step 3: Apply grip (skipped for Lycurgos)
+    -- Step 3: Apply grip
     result = SetBuilder.apply_grip(result)
 
     return result
@@ -159,7 +153,7 @@ function SetBuilder.build_idle_set(base_set)
     -- Step 3: Apply main weapon (AFTER hybrid to ensure weapon takes priority)
     result = SetBuilder.apply_weapon(result)
 
-    -- Step 4: Apply grip (skipped for Lycurgos)
+    -- Step 4: Apply grip
     result = SetBuilder.apply_grip(result)
 
     -- Step 5: Early return if in town (weapons/grips already applied)

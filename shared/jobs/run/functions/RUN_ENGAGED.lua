@@ -3,7 +3,7 @@
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   customize_melee_set delegates to logic/set_builder.lua:
 ---   - HybridMode engaged set (PDT/MDT)
----   - Main weapon and grip (grip skipped for Lycurgos)
+---   - Main weapon and grip
 ---
 ---   @file    shared/jobs/run/functions/RUN_ENGAGED.lua
 ---   @author  ejouanchicot

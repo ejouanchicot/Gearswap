@@ -10,7 +10,7 @@
 ---   • Rune system (No gear swap - maintains tank set)
 ---   • Spell Interruption Rate Down (SIRD for Phalanx, Enhancing)
 ---   • HybridMode support (PDT/MDT switching)
----   • Weapon switching (Epeolatry, Lycurgos with auto-grip management)
+---   • Weapon switching (Epeolatry, Lycurgos) with the SubWeapon grip
 ---   • Movement speed optimization (Carmine Cuisses +1)
 ---   • Weaponskill optimization (Nyame, Herculean augments)
 ---
@@ -60,7 +60,7 @@ sets.Epeolatry = {main = "Epeolatry"}
 -- • GREAT AXES
 sets.Lycurgos = {main = "Lycurgos"}
 
--- • GRIPS (Great Swords only - skipped for Lycurgos)
+-- • GRIPS (SubWeapon state, with every two-handed weapon)
 sets.Utu = {sub = "Utu Grip"}
 sets.Refined = {sub = "Refined Grip +1"}
 

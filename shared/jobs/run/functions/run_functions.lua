@@ -90,7 +90,7 @@ TIMER('RUN_MOVEMENT')
 ---     • Shared engaged set construction
 ---     • Shared idle set construction
 ---     • Hybrid mode application (PDT/MDT)
----     • Weapon + grip (grip skipped for Lycurgos)
+---     • Weapon + grip
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 ---  ═══════════════════════════════════════════════════════════════════════════
