@@ -26,6 +26,7 @@ The diagnostic handlers live in `DEBUG_COMMANDS.lua`, and the tools themselves u
 | `shared/utils/debug/performance_profiler.lua` | `Profiler`: load-time checkpoints for `get_sets()` and the job facades, persistent on/off switch file |
 | `shared/utils/debug/system_checker.lua` | `SystemChecker`: 10 runtime health checks, scored, optional per-character export |
 | `shared/utils/debug/trace_log.lua` | `TraceLog`: `//gs c trace`, appends what the game returns to `<Character>/trace.log` |
+| `shared/utils/debug/trace_hooks.lua` | `TraceHooks`: while the trace is on, adds a line per module read, include, command sent and GearSwap event (crash hunting) |
 | `shared/jobs/<job>/functions/<JOB>_COMMANDS.lua` (17 files) | Per-job `job_self_command`. This page covers the routing contract only; job commands belong on the job pages |
 
 Related files read to establish behaviour (owned by other pages): `shared/utils/ui/UI_COMMANDS.lua`, `shared/utils/dualbox/alt_commands.lua`, `alt_group.lua`, `dualbox_role.lua`, `roll_share.lua`, `shared/utils/keybinds/temp_binds.lua`, `shared/utils/sortie/sortie_commands.lua`, `shared/utils/stealth/stealth.lua`, `shared/utils/warp/warp_command_registry.lua`, `shared/utils/core/INIT_SYSTEMS.lua`, `shared/utils/core/module_cache.lua`, and the GearSwap engine (`../gearswap.lua`, `../refresh.lua`, `../user_functions.lua`, `../flow.lua`, `../libs/Mote-SelfCommands.lua`, `../libs/tables.lua`).
@@ -459,7 +460,11 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
   | `CYCLE` | `cyclestate` decisions |
   | `CUSTOM` | CUSTOM pieces applied |
   | `LOAD` | every load's steps: entry file (`config_loader`), keys bound / unbind all (`KeybindManager`, so a job file unloading shows), HUD and alt window text objects created / destroyed, `INIT_SYSTEMS` start and end, lockstyle sent, job change seen, pending job-change work cancelled. Added 2026-09-29 to find where a client crash happens |
-  | `ALIVE` | every 5 s while tracing (`TraceLog.start_heartbeat`, from `INIT_SYSTEMS` and `trace on`; the latest load's loop only, generation counter `windower._trace_heartbeat_gen`). After a crash the last line tells a crash during a load from one in play |
+  | `ALIVE` | every 1 s while tracing (`TraceLog.start_heartbeat`, from `INIT_SYSTEMS` and `trace on`; the latest load's loop only, generation counter `windower._trace_heartbeat_gen`): sub job, Lua memory of the addon (`mem NKB`, GearSwap's own `collectgarbage`, absent from the sandbox), zone id, status, then the frequent events counted since the previous beat. After a crash the last line tells a crash during a load from one in play |
+  | `REQ` | `trace_hooks.lua`: a module read from disk (`ModuleCache` miss, through `_G.__require_miss_hook`); cache hits are not written |
+  | `INC` | `trace_hooks.lua`: every `include()` of the load (Mote, set files, hooks, facades) |
+  | `CMD` | `trace_hooks.lua`: every command sent to Windower (GearSwap's real `windower.send_command`, which `send_command` and the sandbox `windower.send_command` both end in) |
+  | `EV` | `trace_hooks.lua`: `> name detail` when a GearSwap event starts and `< name` when it returns, around GearSwap's `equip_sets`, the single door of every event and of every callback registered with `windower.register_event` (named after its event). A `>` without its `<` is where the process stopped, or an error (then chat shows it). Frequent events (`prerender`, `postrender`, `mouse`, `keyboard`, chunks, texts, `time change`, unnamed callbacks `?`) are counted into the next `ALIVE` line instead. `raw_register_event` callbacks bypass `equip_sets` and are not seen |
   | `BELT` | each Obi / Orpheus decision |
   | `TB` | temporary binds file load (restart detection) |
   | `TAG` | Treasure Hunter tagging |
@@ -468,7 +473,8 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
   | `HUD`, `REGION`, `WARP`, `SAMBA`, `EXPIACION`, `TRACE` | HUD section toggles, region config, warp item use, DNC samba, BLU Expiacion guard, start/stop marks |
 
 - The COR check `//gs c rolldebug` writes its own `<Character>/rolldebug.log` (see [COR](../jobs/cor.md)), separate from the trace.
-- The file grows without limit while tracing is on. A character left with the marker file keeps tracing after every restart; `//gs c trace off` on that character removes the marker.
+- Fine hooks (`trace_hooks.lua`, 2026-09-29). `TraceHooks.install()` runs at the top of every load from `config_loader.lua` (after `ModuleCache.install()`, before the `LOAD entry file` line) and from `trace on`, and does nothing while the trace is off. The sandbox part (`__require_miss_hook`, the `include` wrapper) is redone per load. The engine part wraps GearSwap's `equip_sets`, the real `windower.send_command` and the sandbox `windower.register_event` once (flag `gearswap._trace_engine_hooked`) and stays until `//lua reload gearswap`; the wrappers pass arguments, results and errors through and write nothing while the trace is off. They outlive the load that made them, so they read only persistent values: `windower._trace_path`, `windower._trace_log_on`, `gearswap.player`. Offline cost measured with a copy of `scripts/audit/loadprof.lua`: RDM `get_sets` 57 ms without, 76 ms with the trace on.
+- Size. At each load (`TraceHooks.install` calls `TraceLog.rotate`) a log past 10 MB is moved to `<Character>/trace.old.log`, replacing the previous one. A character left with the marker file keeps tracing after every restart; `//gs c trace off` on that character removes the marker.
 
 ### memcheck, debugstate, debugsubjob
 
@@ -489,7 +495,7 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
 | UI config | `<char>/config/UI_CONFIG.lua` | Fallback in `config_loader.lua` |
 | Profiler switch | `data/.profiler_enabled` | Absent = off |
 | DressUp switch | `data/.dressup_disabled` | Present = DressUp not managed |
-| Trace | `<char>/trace.log`, marker `<char>/trace.on` | Absent marker = off |
+| Trace | `<char>/trace.log` (older part in `<char>/trace.old.log`), marker `<char>/trace.on` | Absent marker = off |
 | Report files written | `data/syscheck_<char>.txt`, `data/fulltest_report.txt`, `data/debug_lag.txt`, `data/memcheck_<char>_<job>.txt`, `data/altbuff_<char>.log` | `windower.addon_path .. 'data/'` |
 
 ## State & lifetime
@@ -504,7 +510,7 @@ Output goes through the `PROFILER` message namespace (`shared/utils/messages/dat
   | `windower._gs_debug` | the five toggles |
   | `windower._lagdebug` | journal, probe event ids |
   | `windower._alt_buff_debug` | `altdebug` |
-  | `windower._trace_log_on`, `windower._trace_heartbeat_gen` | trace, its ALIVE loop |
+  | `windower._trace_log_on`, `windower._trace_heartbeat_gen`, `windower._trace_path`, `windower._trace_counts`, `windower._trace_event_names` | trace, its ALIVE loop, the fine hooks |
   | `windower._gs_reload_count` | incremented by `INIT_SYSTEMS.lua`, read by syscheck / fulltest |
   | `windower._dw_forced` | `dw` force |
 
@@ -596,7 +602,7 @@ Open:
 - `automedicine` and `lagdebug` treat any unrecognised argument as "toggle" (`AutoMedicine.handle_command`, `DebugCommands.handle_lagdebug`).
 - `Profiler.profile_call`, `Profiler.measure`, `LagDebugger.log` and `DebugLogger.log` have no caller.
 - `LagDebugger.on_job_update` is wired only in the overlay entries `_master/Tetsouo/entry/Tetsouo_{WAR,BST,SMN}.lua` and, of the generic templates, only in `_master/entry/Tetsouo_SMN.lua` (copied from the overlay).
-- A `trace.on` marker left on a character keeps `trace.log` growing across restarts; nothing caps the file.
+- A `trace.on` marker left on a character keeps tracing across restarts; since 2026-09-29 the log is capped by moving it to `trace.old.log` past 10 MB, so at most about 20 MB stay on disk.
 - Fixed 2026-09-28: `RollShare.receive` returns true, so `rollshow` sets `eventArgs.handled` (before, it returned nothing; no visible effect, since `runs_locally` already stopped the alt fallback).
 - `COMMON_COMMANDS.lua` is 786 lines, past the 600-line soft limit (under the 800 hard limit).
 - `COMMANDS_HELP` lists `memcheck | mem [gc]`, but `handle_memcheck` ignores its argument. The Combat Mode help note names BLM and WHM for the ammo lock and leaves out GEO (`combat_mode_commands.lua`).

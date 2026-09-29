@@ -78,6 +78,10 @@ function ModuleCache.install()
             return hit
         end
 
+        -- //gs c trace names each module read from disk (trace_hooks.lua)
+        local on_miss = rawget(_G, '__require_miss_hook')
+        if on_miss then on_miss(path) end
+
         local result = original(path)
         stats.loads = stats.loads + 1
         cache[key] = (result == nil) and CACHED_NIL or result
