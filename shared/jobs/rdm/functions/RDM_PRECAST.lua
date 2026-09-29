@@ -261,8 +261,14 @@ function job_precast(spell, action, spellMap, eventArgs)
     ensure_modules_loaded()
 
     -- Lock the weapon slots BEFORE any precast gear goes on, or midcast will
-    -- happily equip a weapon out of a set.
-    require('shared/utils/core/combat_mode').apply()
+    -- happily equip a weapon out of a set. Hands emptied by a strip (//po):
+    -- the lock waits for gear, so put the chosen weapons on first, else the
+    -- spell's set would supply the weapon the lock then keeps.
+    local lock_after_gear = require('shared/utils/core/combat_mode').apply()
+    if lock_after_gear then
+        equip(require('shared/jobs/rdm/functions/logic/set_builder').apply_weapon({}))
+        lock_after_gear()
+    end
 
     local debug_enabled = is_precast_debug_enabled()
 

@@ -161,7 +161,11 @@ flowchart TD
 ```
 
 - `require('shared/utils/core/combat_mode').apply()` runs first for every
-  action, so the lock holds before any precast gear.
+  action, so the lock holds before any precast gear. With the hands emptied by
+  a strip (`//po`), `apply()` returns its deferred lock instead: `job_precast`
+  equips `SetBuilder.apply_weapon({})` (the `MainWeapon` / `SubWeapon` sets),
+  then runs it, so the spell's set cannot supply the weapon the lock keeps
+  (since 2026-09-29, checked offline).
 - `get_spell_tiers` takes the first word of `spell.name` (`^(%a+)`). With
   `EnfeebleTier` On it tries `RDM_ENFEEBLE_TIERS.get(family)`, then
   `NUKE_TIERS.get(family)`; with Off only the nuke table. The lookup runs for
