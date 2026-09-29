@@ -38,6 +38,15 @@ WARWSConfig.by_weapon = {
         'Steel Cyclone',
     },
 
+    -- Great Axe (Sortie)
+    Laphria = {
+        'Disaster',
+        'Upheaval',
+        "Ukko's Fury",
+        'Fell Cleave',
+        'Steel Cyclone',
+    },
+
     -- Great Axe (Aeonic)
     Chango = {
         'Upheaval',

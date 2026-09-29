@@ -45,6 +45,19 @@ local function ukonvasara_am3()
         and state.MainWeapon.current == 'Ukonvasara'
 end
 
+---   The current weapon's own Aftermath set (sets.engaged.<Weapon>AFM3, e.g.
+---   LaphriaAFM3) while an Aftermath is up: "Aftermath: Lv.3" (272) or the
+---   plain "Aftermath" (273), the name a Prime weapon's may carry.
+---   @return table|nil
+local function weapon_am3_set()
+    local weapon = state.MainWeapon and state.MainWeapon.current
+    local set = weapon and sets.engaged[weapon .. 'AFM3']
+    if set and (buffactive[272] ~= nil or buffactive[273] ~= nil) then
+        return set
+    end
+    return nil
+end
+
 ---   Engaged set of the active stance (sets.engaged.SubtleBlow / .Hoxne)
 ---   Under Ukonvasara AM3 the stance's AFM3 variant wins when it is defined
 ---   (sets.engaged.HoxneAFM3).
@@ -76,7 +89,8 @@ end
 ---   Priority order:
 ---   1. Kraken Club weapon set       >> sets.engaged.PDTKC
 ---   2. Stance (SubtleBlow / Hoxne)  >> sets.engaged[HybridMode] (or its AFM3 variant)
----   3. Aftermath Lv.3 + Ukonvasara  >> sets.engaged.PDTAFM3
+---   3. Aftermath + weapon AFM3 set  >> sets.engaged[MainWeapon .. 'AFM3'] (LaphriaAFM3)
+---      Aftermath Lv.3 + Ukonvasara  >> sets.engaged.PDTAFM3
 ---   4. Weapon-specific set          >> sets.engaged[MainWeapon] (e.g. Naegling)
 ---   5. HybridMode (PDT/Normal)      >> sets.engaged[HybridMode]
 ---   6. Fallback                     >> base_set
@@ -100,7 +114,11 @@ function SetBuilder.select_engaged_base(base_set)
         return stance_set
     end
 
-    -- PRIORITY 3: Check for Aftermath Lv.3 (buff ID 272) + Ukonvasara
+    -- PRIORITY 3: Aftermath: the weapon's own AFM3 set, else Ukonvasara's PDTAFM3
+    local am3_set = weapon_am3_set()
+    if am3_set then
+        return am3_set
+    end
     if ukonvasara_am3() and sets.engaged.PDTAFM3 then
         return sets.engaged.PDTAFM3
     end
