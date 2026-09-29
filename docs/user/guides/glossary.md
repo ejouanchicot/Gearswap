@@ -50,7 +50,7 @@ GearSwap terms are the addon's or this setup's. For the whole flow, read
 | **Tag** | Treasure Hunter: a mob is tagged once one of your actions lands on it with TH gear on; after that your normal gear can come back |
 | **Template** | The files in `_master/` the clone script copies from. The game reads them only for the alt commands, when your `config/alt/` lacks a file |
 | **TH** (Treasure Hunter) | FFXI: raises the drop rate of the mob it is applied to. `sets.TreasureHunter` and Treasure Mode (`//gs c th`) |
-| **Town set** | `sets.idle.Town` (or `sets.Adoulin`), worn idle in a town in place of the idle set |
+| **Town set** | `sets.idle.Town` (or `sets.Adoulin`), worn idle in a town on top of the idle set |
 | **TP** (Tactical Points) | FFXI: built by fighting, spent by weaponskills (1000 minimum, 3000 maximum). TP bonus gear adds to the TP a weaponskill counts |
 | **Wardrobe** | FFXI: the 8 bags you can wear gear from, besides the inventory. `//gs c wo` sorts them |
 | **Watchdog** | This setup: puts your gear back when the game never confirms the end of a cast ([watchdog](../features/watchdog.md)) |

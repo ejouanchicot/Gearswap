@@ -205,8 +205,8 @@ flowchart TD
   `HybridMode`) -> the HybridMode set again (`set_combine`) -> weapon
   (`apply_weapon`, `WeaponResolver.set_for('main', ...)`) -> grip (`apply_grip`)
   unless MainWeapon is Lycurgos.
-- `SetBuilder.build_idle_set`: town base (`sets.Adoulin` / `sets.idle.Town`) or
-  Mote's idle -> HybridMode idle set (field only) -> weapon -> grip -> return in
+- `SetBuilder.build_idle_set`: Mote's idle; in a city `sets.idle` with the town
+  set (`sets.Adoulin` / `sets.idle.Town`) on top -> HybridMode idle set (field only) -> weapon -> grip -> return in
   town, else `sets.MoveSpeed` when moving.
 - For Lycurgos the grip is skipped, not removed: whatever grip was in the sub slot
   stays there.

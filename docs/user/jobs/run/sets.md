@@ -37,10 +37,10 @@ gives only its `sub`.
 
 Order: `sets.idle`, stance set, weapon, grip, then `sets.MoveSpeed` when running.
 
-**In town**, RUN wears `sets.Adoulin` or `sets.idle.Town` plus the weapon and grip, and
-nothing else: no stance set, no `sets.MoveSpeed`. In the provided file
-`sets.idle.Town` is only the movement-speed legs, so the other slots keep whatever you
-had on.
+**In town**, RUN wears `sets.idle` with `sets.idle.Town` on top (`sets.Adoulin` in Adoulin)
+plus the weapon and grip, and nothing else: no stance set, no `sets.MoveSpeed`. In the
+provided file `sets.idle.Town` is only the movement-speed legs, so the other slots keep
+your `sets.idle` pieces.
 
 ## Engaged
 

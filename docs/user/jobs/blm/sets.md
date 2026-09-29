@@ -19,8 +19,8 @@ To see which set a spell picked: `//gs c debugmidcast`, then cast.
 | `sets.Hvergelmir` | Laid over idle and engaged when it exists (it is the `MainWeapon` value). The provided file has none, so your idle sets choose the staff |
 | `sets['Alber Strap']` | Same, for the `SubWeapon` value |
 
-In a town (or Adoulin), `sets.idle.Town` / `sets.Adoulin` replace the idle set
-entirely, Death and PDT included; `sets.buff['Mana Wall']` is still laid on top.
+In a town (or Adoulin), `sets.idle.Town` / `sets.Adoulin` go on top of the idle set,
+Death and PDT included; `sets.buff['Mana Wall']` is still laid on top.
 
 ## Engaged
 

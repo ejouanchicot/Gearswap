@@ -208,8 +208,8 @@ After `select_set`, the BRD router (`shared/jobs/brd/functions/logic/midcast_rou
 
 Data facts that shape the result today (`_master/sets/brd_sets.lua`, same in `Tetsouo/sets/brd/brd_sets.lua`):
 
-- `sets.midcast.Songs` holds `Gjallarhorn`, `Marsyas`, `Daurdabla`, each `set_combine(sets.midcast.BardSong, {range = ...})`. There is no `Songs.Loughnashade` and no `Songs.Duration`, so the Troubadour layer never fires and Aria of Passion gets no instrument layer.
-- Because `Songs.Marsyas` is a full BardSong set, layering it onto `HonorMarch` overwrites every slot BardSong defines.
+- `sets.midcast.Songs` holds `Gjallarhorn` and `Daurdabla`, each `set_combine(sets.midcast.BardSong, {range = ...})`, and `Marsyas = {range = ...}`. There is no `Songs.Loughnashade` and no `Songs.Duration`, so the Troubadour layer never fires and Aria of Passion gets no instrument layer.
+- `Songs.Marsyas` is only the instrument, so layering it onto `HonorMarch` changes the range slot alone.
 - Songs that are not "normal" never reach this chain: dummy songs are equipped from `sets.midcast.DummySong` and debuff songs (Lullaby, Threnody, Elegy, Requiem, Virelai, Nocturne, Finale) are left to Mote's default midcast (`Router.handle_singing`).
 - `default_midcast` has already equipped `sets.midcast.BardSong` via the `spell.type` (`'BardSong'`) fallback in `select_specific_set`, so layer-only results still sit on top of the BardSong base.
 
@@ -284,7 +284,7 @@ Each `[JOB]_IDLE.lua` / `[JOB]_ENGAGED.lua` implements Mote's `customize_idle_se
 `BaseSetBuilder` (`shared/utils/set_building/base_set_builder.lua`):
 
 - `apply_movement(result)`: when `state.Moving.value == 'true'` (the string state created by `shared/utils/movement/automove.lua`) and `sets.MoveSpeed` exists, returns `set_combine(result, sets.MoveSpeed)` under `pcall`; on error shows `MessageFormatter.show_error` and returns `result`.
-- `select_idle_base_town(base_set)`: returns `sets.Adoulin, true` in Western/Eastern Adoulin when that set exists; otherwise `sets.idle.Town, true` when `areas.Cities` (`libs/Mote-Mappings.lua`) contains `world.area` and the area name does not contain "Dynamis"; otherwise `base_set, false`. No Dynamis zone is in `areas.Cities`, so the Dynamis test never changes the result.
+- `select_idle_base_town(base_set)`: returns `set_combine(idle, sets.Adoulin), true` in Western/Eastern Adoulin when that set exists; otherwise `set_combine(idle, sets.idle.Town), true` when `areas.Cities` (`libs/Mote-Mappings.lua`) contains `world.area` and the area name does not contain "Dynamis"; otherwise `base_set, false`. No Dynamis zone is in `areas.Cities`, so the Dynamis test never changes the result. `idle` is `base_set`, or, when `base_set` is Mote's own town pick (`sets.idle.Town` or its `IdleMode` child, chosen by `get_idle_set` in every city), `sets.idle` then `sets.idle[IdleMode]`, and Mote's town node is what goes on top. Since 2026-09-29 the town set goes on top of the idle set instead of replacing it, so a partial one keeps the idle pieces in the other slots.
 - `is_in_town()`: the same test without a set.
 
 | Job builder | Town | Movement |
@@ -429,7 +429,6 @@ Open:
 - BLM Comet never uses the MagicBurst set: P0 returns `sets.midcast['Comet']`, which is the base Elemental table (`_master/sets/blm_sets.lua`, `sets.midcast['Comet'] = sets.midcast['Elemental Magic']`).
 - RDM self-cast Refresh/Regen wear only 2 midcast slots over the precast set (`_master/sets/rdm_sets.lua`, live `Kaories/sets/rdm_sets.lua`).
 - `sets.midcast.AriaPassion` is unreachable by name (`song_by_name`, `_master/sets/brd_sets.lua`).
-- The Marsyas instrument layer overwrites a customised `HonorMarch` set (`layer_instrument`).
 - PLD Healing `select_set` calls always return `false` (no `sets.midcast['Healing Magic']`); Cure I-IV are dressed in `job_midcast` and skip `EnmityOverride.apply_midcast`.
 - Unused public API: `MidcastManager.debug`.
 - Dead `ctx.target ~= 'others'` guard in `resolve_base_name` (no `target_func` returns `'others'`).

@@ -48,9 +48,10 @@ Mode is On (HUD row, or `//gs c combatmode`). While Doomed, neck, rings and
 waist stay locked on purpose.
 
 **My town set leaves odd pieces on.**
-`sets.idle.Town` and `sets.Adoulin` replace the idle set: a slot they leave
-out keeps what you wore. Build them with `set_combine(sets.idle, {...})`
-([set names](sets.md#put-on-by-themselves)).
+`sets.idle.Town` and `sets.Adoulin` go on top of your idle set: a slot they
+leave out keeps your idle piece. On DRK and SAM the town set replaces the idle
+set, so a slot it leaves out keeps what you wore: build it there with
+`set_combine(sets.idle, {...})` ([set names](sets.md#put-on-by-themselves)).
 
 **Treasure Hunter gear never goes on.**
 Treasure Mode is Off and hidden on every job but THF: `//gs c th show`, then

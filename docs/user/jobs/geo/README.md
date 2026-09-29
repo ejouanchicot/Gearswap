@@ -150,7 +150,7 @@ What the project's shared systems do on GEO, checked in the code.
 |---|---|
 | Luopan-aware gear | GEO's own: with a luopan out, `sets.luopan.idle` (idle) and `sets.luopan.engaged.DT` / `.DPS` (engaged, by `LuopanMode`); without, `sets.idle.PDT` / `.Normal` and `sets.engaged.PDT` / `.Normal` by `HybridMode`. Gear is re-picked when the luopan appears or leaves |
 | Movement speed | `sets.MoveSpeed` goes on while you run, outside town, when idle (luopan out or not; not while engaged) |
-| Town | In a city (Dynamis excluded) `sets.idle.Town` replaces the idle set, the luopan set included; in Adoulin `sets.Adoulin` first |
+| Town | In a city (Dynamis excluded) `sets.idle.Town` goes on top of the idle set, the luopan set included; in Adoulin `sets.Adoulin` first |
 | Weapons | `sets['Idris']` and `sets['Genmei Shield']` (in the template) are laid on your idle and engaged sets |
 | Combat Mode | Native, shown, Ctrl+Numpad0, Off by default. On locks main, sub, range **and ammo**. Off frees them (unless a craft set holds them) |
 | Treasure Mode | Off and hidden. `//gs c th show` gives it Alt+Numpad.; it needs a `sets.TreasureHunter` in your GEO set file |

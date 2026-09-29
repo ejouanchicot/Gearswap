@@ -43,8 +43,8 @@ item name.
 | `sets.idle.<Mode>` | Any other `HybridMode` value you add (for example `sets.idle.Hoxne`) |
 
 Order: town set or mode set, then the weapon, then `sets.MoveSpeed` when running
-outside town. In town: `sets.Adoulin` or `sets.idle.Town` plus the weapon, no
-`sets.MoveSpeed`.
+outside town. In town: `sets.idle` with `sets.Adoulin` or `sets.idle.Town` on top, plus
+the weapon, no `sets.MoveSpeed`.
 
 ## Engaged
 

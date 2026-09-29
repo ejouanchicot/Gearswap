@@ -36,9 +36,9 @@ spell, which set was chosen and why.
 | `sets.Adoulin` | In Western / Eastern Adoulin, checked before `sets.idle.Town` |
 | `sets.MoveSpeed` | Moving, outside a city, on top of the idle set |
 
-`sets.Adoulin` replaces the whole idle set. In the provided file it holds only
-legs and body: every other slot keeps what was on before. Build it from a full
-set (`set_combine(sets.idle.Town, {...})`) if you want a complete look.
+`sets.idle.Town` and `sets.Adoulin` go on top of the Idle Mode set. In the provided
+file `sets.Adoulin` holds only legs and body: every other slot keeps your Idle Mode
+piece.
 
 A plain `sets.idle` is worn only if the current Idle Mode has no set of its own.
 

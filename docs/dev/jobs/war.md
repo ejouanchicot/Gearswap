@@ -317,8 +317,9 @@ has no effect on WAR.
 - `job_aftercast` is empty; Mote's `default_aftercast` returns to idle / engaged
   gear. Its comment says that WAR does not notify `MidcastWatchdog`.
 - `customize_idle_set` -> `SetBuilder.build_idle_set`: `select_idle_base` returns
-  `sets.Adoulin` in Adoulin or `sets.idle.Town` in other cities
-  (`base_set_builder.lua` `select_idle_base_town`), otherwise `sets.idle[HybridMode]`
+  in a city `sets.idle` (or its IdleMode child) with `sets.Adoulin` (Adoulin) or
+  `sets.idle.Town` on top (`base_set_builder.lua` `select_idle_base_town`, since
+  2026-09-29), otherwise `sets.idle[HybridMode]`
   if it exists (overlay: `sets.idle.Hoxne` under the Hoxne stance), otherwise Mote's
   base; then `sets[state.MainWeapon.current]` through
   `WeaponResolver.set_for('main', ...)` (`apply_weapon`, also in town) and the
@@ -602,7 +603,6 @@ cancel depend on recasts, packets and timing: check them in game with
   leaving `NaeglingKC` drops `PDTKC` at once; `thirdeye` off /SAM warns.
 - The Healing / Enhancing midcast routing is a no-op: no `sets.midcast` entry in
   either sets file.
-- `sets.Adoulin` is a two-slot set used as the full idle base in Adoulin.
 - `perf` branch unreachable (`WAR_COMMANDS.lua`).
 - `WAR_BUFFS` repeats the `LifecycleManager.buff_change` body (duplication finding).
 - Dead code: the `grips` list in `WAR_TP_CONFIG.lua` (used only to return 0 for

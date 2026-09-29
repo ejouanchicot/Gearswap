@@ -160,7 +160,7 @@ What the project's shared systems do on BLM, checked in the code.
 | Feature | On BLM |
 |---|---|
 | Movement speed | `sets.MoveSpeed` goes on while you run, outside town, when idle (not while engaged) |
-| Town | In a city (Dynamis excluded) `sets.idle.Town` replaces the idle set; in Adoulin `sets.Adoulin` first |
+| Town | In a city (Dynamis excluded) `sets.idle.Town` goes on top of the idle set (the Death / PDT set when that mode is on); in Adoulin `sets.Adoulin` first |
 | Combat Mode | Native, shown, Ctrl+Numpad8, Off by default. On locks main, sub, range **and ammo**; on turning it On, BLM also puts on Bunzi's Rod, Ammurapi Shield and Sroda Tathlum. Off frees the slots (unless a craft set holds them) |
 | Treasure Mode | Off and hidden. `//gs c th show` gives it Alt+Numpad.; it needs a `sets.TreasureHunter` in your BLM set file |
 | Obi / Orpheus | The shared automatic belt is on by default (`ELEMENTAL_BELT.lua`, `//gs c belt`): Obi or Orpheus goes on after the nuke set when it helps. BLM's own Hachirin-no-Obi rule (`sets.midcast.ElementalMatch`, `BLM_ELEMENTAL_CONFIG.lua`) only runs when you turn the shared belt off |

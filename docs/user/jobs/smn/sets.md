@@ -37,7 +37,7 @@ stands (`sets.idle`, with `sets.idle.Pet` while a pet is out). As long as the
 mode's own set exists, there is no separate "avatar out" idle: use
 `IdleMode` Avatar or Avatar's Favor for that.
 
-In a town (or Adoulin), `sets.idle.Town` / `sets.Adoulin` replace the mode set,
+In a town (or Adoulin), `sets.idle.Town` / `sets.Adoulin` go on top of the mode set,
 unless `AvatarFavor` is On. `sets.MoveSpeed` is laid on top while you run
 outside town (over `sets.idle.Avatar` too).
 

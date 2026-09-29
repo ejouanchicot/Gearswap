@@ -210,7 +210,8 @@ only loads the modules.
   2. Otherwise `sets.idle.DT` / `.Avatar` / `.Normal` by `IdleMode`
      (`select_mode_set`; Mote's set when none matches), passed to
      `BaseSetBuilder.select_idle_base_town`: in a city (Dynamis excluded)
-     `sets.idle.Town` replaces it, in Adoulin `sets.Adoulin` if defined.
+     `sets.idle.Town` (in Adoulin `sets.Adoulin` if defined) goes on top of
+     it (since 2026-09-29; it replaced it before).
   3. In town the set is returned as is; elsewhere
      `BaseSetBuilder.apply_movement` lays `sets.MoveSpeed` over it while
      `state.Moving` is `'true'`.

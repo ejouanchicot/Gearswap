@@ -58,7 +58,7 @@ the job.
 | `f9` | Mote: cycle Offense Mode (None, Melee ON). `Melee ON` locks main, sub and range | always | not on the HUD |
 | `^f9` | Mote: cycle Hybrid Mode. Only `Normal` on WHM: no effect | always | not on the HUD |
 | `!f9` / `@f9` | Mote: Ranged Mode / Weaponskill Mode. Only `Normal` on WHM: no effect | always | not on the HUD |
-| `f10` / `f11` | Mote: physical / magical defense mode: `sets.defense.PDT` / `.MDT` over your idle and engaged gear, if you add them (none in the template; in a city the Town set replaces the idle set) | always | not on the HUD |
+| `f10` / `f11` | Mote: physical / magical defense mode: `sets.defense.PDT` / `.MDT` over your idle and engaged gear, if you add them (none in the template; in a city the Town set goes on top and wins in every slot it names) | always | not on the HUD |
 | `^f10` / `!f12` | Mote: physical defense choice / defense mode off | always | not on the HUD |
 | `!f10` | Mote: Kiting on / off: `sets.Kiting` (in the template) over idle and engaged gear | always | not on the HUD |
 | `^f11` | Mote: cycle Casting Mode (same as `^numpad6`) | always | not on the HUD |

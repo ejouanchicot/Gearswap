@@ -34,8 +34,8 @@ stay in your hands.
 | Set | Worn when |
 |---|---|
 | `sets.idle` | Standing, not fighting |
-| `sets.idle.Town` | Idle in a town (see [set names](../../guides/sets.md)). It **replaces** `sets.idle`: slots it leaves out keep whatever you wore before |
-| `sets.Adoulin` | Idle in Western / Eastern Adoulin, checked before `sets.idle.Town` |
+| `sets.idle.Town` | Idle in a town (see [set names](../../guides/sets.md)). Laid on top of `sets.idle`: slots it leaves out keep your idle pieces |
+| `sets.Adoulin` | Idle in Western / Eastern Adoulin, checked before `sets.idle.Town`, laid on top of `sets.idle` the same way |
 | `sets.MoveSpeed` | Running, idle, outside town |
 
 `HybridMode` does not change the idle set: PDT and Normal both wear `sets.idle`.

@@ -123,8 +123,8 @@ These sets are worn without any action from you, when they exist:
 | Set | When | Notes |
 |---|---|---|
 | `sets.MoveSpeed` | You are running and not fighting, outside a town | Movement speed gear, on top of the idle set. Movement is not tracked while you are engaged, so it never goes on the engaged set. Exceptions below |
-| `sets.idle.Town` | Idle in a town (Dynamis excluded) | **Replaces** the whole idle set: slots it leaves out are not emptied, they keep what you wore before. A 1-2 piece town set therefore leaves your last gear in the other slots; build it with `set_combine(sets.idle, {...})` for a full look |
-| `sets.Adoulin` | Idle in Western / Eastern Adoulin | Checked before `sets.idle.Town`, and replaces the idle set the same way |
+| `sets.idle.Town` | Idle in a town (Dynamis excluded) | Laid on top of the idle set of your Idle Mode: slots it leaves out keep your idle pieces. On DRK and SAM it replaces the idle set instead, and slots it leaves out keep what you wore before: build it there with `set_combine(sets.idle, {...})` |
+| `sets.Adoulin` | Idle in Western / Eastern Adoulin | Checked before `sets.idle.Town`, laid on top of the idle set the same way |
 | `sets.buff.Doom` | You are Doomed | Doom removal gear (Nicander's Necklace, Purity Ring...). Neck, both rings and belt stay locked until Doom is gone |
 | `sets.DW.NoHaste`, `.Haste`, `.HasteII`, `.MaxHaste` | Two weapons held, fighting | Dual Wield pieces by your magic haste ([configuration](configuration.md), `DW_CONFIG.lua`, `//gs c dw`) |
 | `sets.TreasureHunter` | Treasure Mode on, against a mob not tagged yet | [commands](commands.md) `//gs c th`. Off on every job but THF until `//gs c th show` |

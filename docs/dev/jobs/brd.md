@@ -216,9 +216,10 @@ without the instrument worn only while the `range` slot is enabled
 `equip_normal_song`, after `MidcastManager` and only when the locked-instrument
 override did not apply, and equips `{range = sets.midcast.Songs[<value>].range}`:
 
-- only the `range` slot is taken, because each `sets.midcast.Songs.<instrument>`
-  is a whole `BardSong` copy and equipping it would undo the family piece the
-  song set has just put on;
+- only the `range` slot is taken, because `sets.midcast.Songs.Gjallarhorn` and
+  `.Daurdabla` are whole `BardSong` copies and equipping them would undo the
+  family piece the song set has just put on (`Songs.Marsyas` is only its
+  `range` since 2026-09-29);
 - a song for which `MidcastManager.get_song_instrument` returns an instrument
   (Honor March, Aria of Passion) is left alone;
 - dummy songs and debuff songs never reach it;

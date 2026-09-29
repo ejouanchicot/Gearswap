@@ -231,7 +231,8 @@ flowchart TD
   (`sets.idle.Town` in cities via Mote's scope, else `sets.idle[IdleMode]`,
   with Mote's defense and Kiting layers) -> `BaseSetBuilder.select_idle_base_town`
   (no `sets.Adoulin` in the template, so Adoulin uses `sets.idle.Town`; the
-  Town set replaces Mote's base, layers included) -> `sets.latent_refresh`
+  Town set goes on top of `sets.idle[IdleMode]`, rebuilt from Mote's town pick;
+  with a defense or Kiting layer on, on top of Mote's layered Town set) -> `sets.latent_refresh`
   when `player.mpp < 51` (empty in the template) -> `sets.MoveSpeed` while
   moving, in town too.
 - `customize_melee_set` returns Mote's set unchanged. Mote picks

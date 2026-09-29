@@ -95,8 +95,8 @@ Your "normal" set is rebuilt from pieces each time it goes on:
 1. the base: `sets.idle` or `sets.engaged`, or the variant of your current
    mode (`sets.idle.PDT`, `sets.engaged.Acc`...: the job's page lists its
    modes);
-2. the town set in a town (`sets.idle.Town`, `sets.Adoulin`), in place of the
-   idle set;
+2. the town set in a town (`sets.idle.Town`, `sets.Adoulin`), on top of the
+   idle set (in place of it on DRK and SAM);
 3. your weapons, from the weapon modes;
 4. the job's own layers (a buff up, Aftermath, a pet...);
 5. `sets.MoveSpeed` while you run, idle only;

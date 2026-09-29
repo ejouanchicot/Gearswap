@@ -240,8 +240,9 @@ combined; with no weapon set it is the engaged set table itself.
 
 Because the engaged base is a sets table, not Mote's result, Mote's defense
 and kiting layers never reach DNC's engaged gear. `HybridMode` does not affect
-idle: `build_idle_set` is town / Adoulin base (`select_idle_base_town`), weapon,
-then `sets.MoveSpeed` outside town while moving.
+idle: `build_idle_set` is the idle set with the town / Adoulin set on top
+(`select_idle_base_town`), weapon, then `sets.MoveSpeed` outside town while
+moving.
 
 Mote's `buff_change` does not re-equip, so `DNC_BUFFS.lua` passes
 `on_dance_change` to `LifecycleManager.buff_change`: when `Saber Dance` or
@@ -496,7 +497,6 @@ In game: `//gs c trace on` (`TP` lines for the weaponskill TP piece),
   cast shorter than that (high Fast Cast) loses its new shadows, and an
   interrupted cast loses the old ones.
 - Initial macrobook / lockstyle depend on the `show_intro` side effect.
-- Template `sets.idle.Town` is a 2-slot set used as a full idle base.
 - Stale comments: the entry header claims subjob-filtered keybinds and says
   "Utsusemi handled by DNC_MIDCAST"; the facade calls `DNC_MOVEMENT` a
   "movement status accessor" (it is empty).

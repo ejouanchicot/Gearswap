@@ -229,8 +229,9 @@ flowchart TD
 - `customize_idle_set` -> `SetBuilder.build_idle_set`: `sets.luopan.idle` when
   `pet.isvalid`, else `sets.idle[HybridMode]` falling back to `sets.me.idle`
   (`select_hybrid_base`; Mote's base is ignored); then town (`sets.Adoulin`
-  in Adoulin, `sets.idle.Town` in other cities, Dynamis excluded), which
-  overrides the luopan set; then `apply_weapon` (`WeaponResolver.set_for`);
+  in Adoulin, `sets.idle.Town` in other cities, Dynamis excluded), laid on
+  top of that set since 2026-09-29 (it wins over the luopan pieces it names,
+  the other slots stay); then `apply_weapon` (`WeaponResolver.set_for`);
   then `sets.MoveSpeed` when moving outside town.
 - `customize_melee_set` -> `build_engaged_set`: with a luopan,
   `sets.luopan.engaged.DT` or `.DPS` from `LuopanMode` (fallback DT, then
@@ -419,7 +420,7 @@ T = in `_master/sets/geo_sets.lua`.
 - The idle / engaged base comes from `sets.idle[HybridMode]` /
   `sets.engaged[HybridMode]` (else `sets.me`) without a luopan, and from
   `sets.luopan` with one; Mote's own selection is discarded.
-- In town the town set wins over the luopan set.
+- In town the town set goes on top of the luopan set.
 - Build `sets.midcast.Geomancy` / `.Indi` with `set_combine`, never `=` another
   set: `=` makes one table under two names, and editing one edits both.
 - A midcast branch that equips without `select_set` must call
@@ -520,8 +521,6 @@ T = in `_master/sets/geo_sets.lua`.
   requiring the wrappers.
 - `lightarts` / `darkarts` duplicate `ScholarActions.light_arts` / `dark_arts`
   and read `buffactive` (the shared version reads the game's buff list).
-- Template `sets.Adoulin` is a 2-slot set used as the full idle base in
-  Adoulin.
 - Stale comment: `set_builder.lua` `apply_weapon` says Combat Mode locks
   through `disable()` in `job_update()`; the lock is `combat_mode.lua`'s.
 - Dead code: `SetBuilder.apply_buff_gear`, `GEO_LOCKSTYLE.style`.

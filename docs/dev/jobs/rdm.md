@@ -259,7 +259,8 @@ so under Saboteur it replaced the type, mode and name sets (Slow II lost its
   (`sets.idle[IdleMode]`; `sets.idle.PDT` under `HybridMode = PDT` only when
   that set is missing) -> `SetBuilder.check_town` =
   `BaseSetBuilder.select_idle_base_town` (`sets.Adoulin` in the Adoulin
-  cities, `sets.idle.Town` in other cities, Dynamis excluded) ->
+  cities, `sets.idle.Town` in other cities, Dynamis excluded; laid on top of
+  the IdleMode set since 2026-09-29) ->
   `apply_weapon` -> `sets.MoveSpeed` outside town while `state.Moving.value ==
   'true'`.
 - `customize_melee_set` -> `SetBuilder.build_engaged_set`:
@@ -560,7 +561,6 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
   in one colour. It also uses emoji and describes priority orders that differ
   from the real chain.
 - `by_subjob` in `RDM_LOCKSTYLE.lua` is never read (no `get_style`).
-- `sets.Adoulin` is a 2-slot set used as a full idle base in Adoulin.
 - Dead: `HybridMode` (in practice), the `check_off` path
   of `castenspell` (no `EnSpell` value is `Off`), `show_doom_warning`,
   `show_doom_removed`, `show_spell_casting`, `show_enspell_current`,

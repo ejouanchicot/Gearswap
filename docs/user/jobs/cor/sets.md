@@ -33,8 +33,8 @@ after the mode's value is laid on top of idle and engaged.
 | `sets.idle.Normal` | Standing, not fighting (the base) |
 | `sets.idle.PDT` | `HybridMode` is PDT (the default). Laid on top of `sets.idle.Normal` |
 | `sets.idle.Refresh` | Your MP is under 50 % and your subjob gives MP (not with /NIN, /DNC, /WAR...). Laid on top of everything above, **PDT included** |
-| `sets.idle.Town` | In a town other than Adoulin (not in the provided file). Replaces the idle set: no PDT, no Refresh, no `sets.MoveSpeed` there, only your weapons on top |
-| `sets.Adoulin` | In Western / Eastern Adoulin. Replaces the idle set the same way |
+| `sets.idle.Town` | In a town other than Adoulin (not in the provided file). Laid on top of `sets.idle.Normal`: no PDT, no Refresh, no `sets.MoveSpeed` there, only your weapons on top |
+| `sets.Adoulin` | In Western / Eastern Adoulin. Laid on top of `sets.idle.Normal` the same way |
 
 Order outside town: `sets.idle.Normal` → weapons → `sets.idle.PDT` → `sets.idle.Refresh`
 → `sets.MoveSpeed` (while running).
@@ -44,8 +44,8 @@ In the provided file:
 - `sets.idle.Refresh` is empty. Put only the Refresh pieces in it
   (`sets.idle.Refresh = { body = "..." }`): it goes on top of PDT, so every slot you list
   replaces your PDT piece while your MP is under 50 %.
-- `sets.Adoulin` starts from `sets.idle.Normal` plus `sets.MoveSpeed` and Councilor's Garb:
-  in Adoulin it replaces the whole idle set, so it must fill every slot.
+- `sets.Adoulin` starts from `sets.idle.Normal` plus `sets.MoveSpeed` and Councilor's Garb,
+  so it fills every slot.
 
 ## Engaged
 

@@ -23,8 +23,9 @@ such: only the names below count.
 | `sets['Idris']` | Laid over idle and engaged, luopan or not (it is the `MainWeapon` value). Provided file: Idris and Dunna |
 | `sets['Genmei Shield']` | Same, for the `SubWeapon` value. Provided file: Genmei Shield |
 
-In a town (or Adoulin), `sets.idle.Town` / `sets.Adoulin` replace the idle set
-entirely, the luopan set included. The weapon sets are still laid on top. In
+In a town (or Adoulin), `sets.idle.Town` / `sets.Adoulin` go on top of the idle set,
+the luopan set included: they win in the slots they name, the others stay. The
+weapon sets are still laid on top. In
 the provided file `sets.idle.Town` is the same table as `sets.me.idle.Town`.
 
 ## Engaged

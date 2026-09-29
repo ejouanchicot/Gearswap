@@ -34,8 +34,8 @@ in town too.
 |---|---|
 | `sets.idle.Refresh`, `sets.idle.DT`, `sets.idle.Regen` | `IdleMode` has that value, outside town |
 | `sets.idle` | The set of the current `IdleMode` does not exist |
-| `sets.idle.Town` | Idle in a town (Dynamis excluded). It **replaces** the idle set: the slots it leaves out keep what you wore before. The provided file builds it from `sets.idle.DT` plus `sets.MoveSpeed`, so every slot is set |
-| `sets.Adoulin` | Idle in Western / Eastern Adoulin, checked before `sets.idle.Town`. Same rule: it replaces the idle set. The provided file builds it from `sets.idle`, `sets.MoveSpeed` and Councilor's Garb |
+| `sets.idle.Town` | Idle in a town (Dynamis excluded). Laid on top of the Idle Mode set: the slots it leaves out keep your idle pieces. The provided file builds it from `sets.idle.DT` plus `sets.MoveSpeed`, so every slot is set |
+| `sets.Adoulin` | Idle in Western / Eastern Adoulin, checked before `sets.idle.Town`, laid on top of the Idle Mode set the same way. The provided file builds it from `sets.idle`, `sets.MoveSpeed` and Councilor's Garb |
 | `sets.MoveSpeed` | Running, outside town |
 
 Then the weapon sets.
@@ -109,7 +109,7 @@ Then, added on top of the set chosen:
 
 | Set | Added when |
 |---|---|
-| `sets.midcast.Songs.Marsyas` | Honor March (the whole set goes on top: any slot it names wins over the Honor March set) |
+| `sets.midcast.Songs.Marsyas` | Honor March (the whole set goes on top). In the provided file it is only the instrument (`range`), so no Honor March piece is covered |
 | `sets.midcast.Songs.Loughnashade` | Aria of Passion (same rule) |
 | `sets.midcast.Songs.Duration` | Troubadour is up: song duration gear, on top of every song |
 | `range` of `sets.midcast.Songs.<MainInstrument>` | Every buff song except Honor March and Aria of Passion: only the `range` piece of `sets.midcast.Songs.Gjallarhorn`, `.Daurdabla` or `.Marsyas`, following `MainInstrument` |
@@ -211,9 +211,8 @@ Magic']` as an empty set and none of the other three.
 - `sets.midcast.AriaPassion`: the name tried for Aria of Passion is
   `sets.midcast.AriaofPassion` (name without spaces), then `sets.midcast.Aria`.
 - `sets.midcast.DebuffSong` as a name (see [Debuff songs](#debuff-songs)).
-- `sets.midcast.Songs.Gjallarhorn` / `.Daurdabla` / `.Marsyas`: only their `range`
-  piece is used (main instrument), except `Songs.Marsyas` which also goes whole on top
-  of Honor March.
+- `sets.midcast.Songs.Gjallarhorn` / `.Daurdabla`: only their `range` piece is used
+  (main instrument). `Songs.Marsyas` is only its instrument.
 
 ## Names the code reads that the provided file lacks
 

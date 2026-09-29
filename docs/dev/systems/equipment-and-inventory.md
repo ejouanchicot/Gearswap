@@ -377,9 +377,17 @@ shares, by plain assignment (`SetBuilder.apply_movement = BaseSetBuilder.apply_m
   [factories-and-helpers.md](factories-and-helpers.md#automove)) and `sets.MoveSpeed` exists, returns
   `set_combine(result, sets.MoveSpeed)` under `pcall`; a failure prints `MessageFormatter.show_error` and
   returns `result` unchanged.
-- `select_idle_base_town(base_set)`: in Western/Eastern Adoulin returns `sets.Adoulin, true` when it
-  exists; in any `areas.Cities` zone whose name does not contain `Dynamis` returns
-  `sets.idle.Town, true` when it exists; otherwise `base_set, false`.
+- `select_idle_base_town(base_set)`: lays the town set on top of an idle set (since 2026-09-29; it
+  used to replace it). The idle underneath is `base_set`, except when `base_set` is Mote's own town
+  pick (`sets.idle.Town` or `sets.idle.Town[IdleMode]`, which `get_idle_set` chooses in every city,
+  Adoulin included): then it is rebuilt as Mote picks it in the field, `sets.idle`, then
+  `sets.idle[IdleMode]` when that is a table. In Western/Eastern Adoulin, when `sets.Adoulin`
+  exists, returns `set_combine(idle, sets.Adoulin), true`; in an `areas.Cities` zone whose name does
+  not contain `Dynamis` (Adoulin without `sets.Adoulin` included), when `sets.idle.Town` exists,
+  returns `set_combine(idle, town), true`, where `town` is Mote's town node or `sets.idle.Town`;
+  otherwise `base_set, false`. A partial town set thus keeps the idle pieces in the slots it leaves
+  out. A Mote base carrying a defense or Kiting layer is a new table, not the town node, so it stays
+  the base, with `sets.idle.Town` on top.
 - `is_in_town()`: the same zone test without any set (used by BST's nested `sets.me.idle.Town`, by
   `SMN_IDLE.lua` for the avatar idle set, and by the `town` condition of
   `custom/custom_conditions.lua`).

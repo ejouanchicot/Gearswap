@@ -52,11 +52,11 @@ Order in which idle is built: town set or stance set, then the weapon, then `set
 then `sets.idleRegen`, then `sets.MoveSpeed` when running, then the Sortie / /SCH shield
 and the Hoxne ammo.
 
-**In town**, PLD wears `sets.Adoulin` or `sets.idle.Town` plus your weapon and the
+**In town**, PLD wears `sets.idle` with `sets.idle.Town` on top (`sets.Adoulin` in Adoulin) plus your weapon and the
 shield of your stance's idle set (Alber Strap with Shining; the Sortie / /SCH shield
 and the Hoxne ammo still apply), and nothing else: no stance set, no `Xp`, no `Regen`,
 no `sets.MoveSpeed`. In the provided file `sets.idle.Town` is only the movement-speed
-legs, so the other slots keep whatever you had on.
+legs, so the other slots keep your `sets.idle` pieces.
 
 ## Engaged
 

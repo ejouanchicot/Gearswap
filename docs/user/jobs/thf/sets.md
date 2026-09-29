@@ -11,8 +11,8 @@ understands (Fast Cast, subjob actions, Doom, Dual Wield, movement...):
 |---|---|
 | `sets.idle` | Standing, not fighting |
 | `sets.idle.Weak` | Weakened (after a raise), outside town |
-| `sets.idle.Town` | In a town (Dynamis excluded). Replaces `sets.idle` |
-| `sets.Adoulin` | In Western / Eastern Adoulin, checked before `sets.idle.Town` |
+| `sets.idle.Town` | In a town (Dynamis excluded). Laid on top of `sets.idle` |
+| `sets.Adoulin` | In Western / Eastern Adoulin, checked before `sets.idle.Town`, laid on top of `sets.idle` the same way |
 | `sets.MoveSpeed` | Running, outside town only |
 
 Your weapons (see Weapons below) go on top of every idle set, town included.

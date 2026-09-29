@@ -432,7 +432,7 @@ flowchart TD
   action until the aftercast.
 - Mote's own bases: idle `sets.idle[Town]` in cities else `sets.idle` (`IdleMode`
   Normal has no set); engaged `sets.engaged[HybridMode]`. The set builder then
-  replaces that base.
+  replaces the engaged base and lays its sets on top of the idle one.
 
 ```mermaid
 flowchart TD
@@ -446,7 +446,7 @@ flowchart TD
     E6 --> E7[mode shield, then mode ammo]
     end
     subgraph Idle [build_idle_set]
-    I1[town: sets.Adoulin or sets.idle.Town] --> I2[+ weapon, + shield: Shining Alber, town: stance idle sub]
+    I1[town: sets.idle + sets.Adoulin or sets.idle.Town] --> I2[+ weapon, + shield: Shining Alber, town: stance idle sub]
     I2 -- in town --> I7[mode shield, mode ammo, return]
     I2 -- field --> I3[+ HybridMode idle set, sub stripped for Shining/BurtgangKC]
     I3 --> I4[+ sets.idleXp if Xp On]
@@ -763,7 +763,6 @@ replay, ammo lock poll, HUD refresh): check those in game with `//gs c trace on`
   selects `sets.engaged.BurtgangKC` when the new weapon set names a `sub`
   (`select_engaged_base`), so the new weapon and its shield go on at once. A club
   equipped by hand with a weapon set that has no `sub` still selects it.
-- Template `sets.idle.Town` is the one-slot MoveSpeed set used as a full idle base.
 - Dead or unread: `sets.precast.WS.TPBonus` family,
   `sets.Duban/Aegis/['Blurred Shield +1']`, `cooldown_exclusions` (duplicates
   CooldownChecker), the `require` of `message_formatter` kept in `set_builder.lua`.
