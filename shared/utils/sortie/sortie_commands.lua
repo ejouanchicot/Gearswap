@@ -51,7 +51,7 @@ local STANCES = {
 --- actually up: Farm -> escort (Indi-Regen) -> Farm left Indi-Regen running
 --- until it was 30 s from expiring.
 local TARGETS = {
-    farm       = {profile = 'Farm',       indi = 'Indi-Acumen',  stance = 'dps',  summary = 'assists Gabvanstronger: Geo-Malaise, tags each mob (Stun, Absorb-TP), no damage'},
+    farm       = {profile = 'Farm',       indi = 'Indi-Acumen',  stance = 'dps',  summary = 'assists Gabvanstronger: Geo-Malaise, tags each mob (Stun, Absorb-TP), fire magic bursts'},
     umbril     = {profile = 'Umbril',     indi = 'Indi-Fury',    stance = 'dps',  summary = 'Geo-Frailty, melee (Tetsouo engaged), Judgment'},
     melee      = {profile = 'Melee',      indi = 'Indi-Fury',    stance = 'dps',  summary = 'Geo-Frailty'},
     triboulex  = {profile = 'Triboulex',  indi = 'Indi-Fury',    stance = 'dps',  summary = 'Geo-Frailty, Life Cycle + Dematerialize (no BoG)'},
