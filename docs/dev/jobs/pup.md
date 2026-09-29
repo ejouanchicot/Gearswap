@@ -285,9 +285,9 @@ Created by `PUPStates.configure()` on every `user_setup()`.
 |-------|--------|---------|-----|---------|
 | `MainWeapon` | Free | Free | `^numpad1` | `BaseSetBuilder.lay_weapons` |
 | `OffenseMode` (Mote) | Normal, Acc | Normal | `^numpad2`, Mote's `f9` | `select_engaged_base`; Mote's WS mode fallback |
-| `HybridMode` (Mote) | Normal, DT | Normal | `^numpad3`, Mote's `^f9` | `master_idle`, `select_engaged_base` |
-| `PetMode` | Melee, Tank, Ranged, Magic, Heal, Nuke | set from the head (Melee before) | `^numpad4` | `pet_idle_layer`, pet WS set, `job_pet_midcast` |
-| `PetWS` | On, Off | On | `^numpad5` (row in the modes section: `section = "mode"`, its name holds `WS`) | `PetWS.is_due` / poll |
+| `HybridMode` (Mote) | Normal, DT | Normal | `^numpad9`, Mote's `^f9` | `master_idle`, `select_engaged_base` |
+| `PetMode` | Melee, Tank, Ranged, Magic, Heal, Nuke | set from the head (Melee before) | `^numpad3` | `pet_idle_layer`, pet WS set, `job_pet_midcast` |
+| `PetWS` | On, Off | On | `^numpad4` (row in the modes section: `section = "mode"`, its name holds `WS`) | `PetWS.is_due` / poll |
 | `FastCast` | 0..80 by 10 | 0 | none | midcast watchdog fallback estimate |
 | `AutoMedicine` | ON, OFF | persisted | `#numpad0` (common key) | `AutoMedicine.init` |
 | `IdleMode`, `CastingMode`, `WeaponskillMode`, `RangedMode` (Mote) | Normal | Normal | Mote's F-keys | Mote only (`CastingMode` refines Mote's pet spell set) |

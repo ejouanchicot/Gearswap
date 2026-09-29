@@ -20,9 +20,9 @@ command of the job, on one page: [README.md](README.md).
 |---|---|---|---|
 | `^numpad1` | Main Weapon (`MainWeapon`) | **Free** | Main hand. Add your weapons in `PUP_STATES.lua`: each value is `sets.<Weapon>` from your set file (or the plain weapon, if `WEAPON_CONFIG.lua` has `equip_without_set = true`). `Free` keeps the weapon you wear. |
 | `^numpad2` | Offense Mode (`OffenseMode`) | **Normal**, Acc | Engaged gear: `sets.engaged.Acc` (or `sets.engaged.Pet.Acc` while the automaton fights too) when your set file has it. |
-| `^numpad3` | Hybrid Mode (`HybridMode`) | **Normal**, DT | DT: `sets.idle.DT` when no automaton is out, and the `.DT` engaged set (`sets.engaged.DT`, `sets.engaged.Pet.DT`). |
-| `^numpad4` | Pet Mode (`PetMode`) | Melee, Tank, Ranged, Magic, Heal, Nuke | The automaton's role. Chooses `sets.idle.Pet.Engaged.<Pet Mode>` and `sets.midcast.Pet.WeaponSkill.<Pet Mode>` when they exist. Set by itself, see below. |
-| `^numpad5` | Pet WS (`PetWS`) | **On**, Off | On: the automaton's weaponskill set goes on while it fights with enough TP. Off: never. |
+| `^numpad9` | Hybrid Mode (`HybridMode`) | **Normal**, DT | DT: `sets.idle.DT` when no automaton is out, and the `.DT` engaged set (`sets.engaged.DT`, `sets.engaged.Pet.DT`). |
+| `^numpad3` | Pet Mode (`PetMode`) | Melee, Tank, Ranged, Magic, Heal, Nuke | The automaton's role. Chooses `sets.idle.Pet.Engaged.<Pet Mode>` and `sets.midcast.Pet.WeaponSkill.<Pet Mode>` when they exist. Set by itself, see below. |
+| `^numpad4` | Pet WS (`PetWS`) | **On**, Off | On: the automaton's weaponskill set goes on while it fights with enough TP. Off: never. |
 
 Mote-Include's F-keys reach the same modes: F9 Offense Mode, Ctrl+F9 Hybrid Mode.
 

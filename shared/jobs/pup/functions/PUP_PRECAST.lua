@@ -4,8 +4,8 @@
 ---   Processing order (do not reorder):
 ---   1. PrecastGuard       blocks under Silence / Amnesia / Stun..., cures
 ---                         with Remedy / Echo Drops when it can
----   2. CooldownChecker    ability / spell still on recast (maneuvers are
----                         exempt: three charges on one recast)
+---   2. CooldownChecker    ability / spell still on recast (maneuvers too:
+---                         one shared 10-second recast, no charges)
 ---   3. WSPrecastHandler   range, 1000 TP minimum, TP bonus gear
 ---   Fast Cast, job ability and weaponskill sets are Mote's own picks
 ---   (sets.precast.FC, sets.precast.JA[name], sets.precast.WS[name]); every

@@ -22,16 +22,18 @@ PUPKeybinds.binds = {
     -- Weapon
     { key = "^numpad1", command = "cyclestate MainWeapon",  desc = "Main Weapon",  state = "MainWeapon" },
 
+    -- Automaton role: the job's signature slot
+    { key = "^numpad3", command = "cyclestate PetMode",     desc = "Pet Mode",     state = "PetMode" },
+
     -- Master modes
     { key = "^numpad2", command = "cyclestate OffenseMode", desc = "Offense Mode", state = "OffenseMode" },
-    { key = "^numpad3", command = "cyclestate HybridMode",  desc = "Hybrid Mode",  state = "HybridMode" },
+    { key = "^numpad9", command = "cyclestate HybridMode",  desc = "Hybrid Mode",  state = "HybridMode" },
 
-    -- Automaton
-    { key = "^numpad4", command = "cyclestate PetMode",     desc = "Pet Mode",     state = "PetMode" },
-    { key = "^numpad5", command = "cyclestate PetWS",       desc = "Pet WS",       state = "PetWS", section = "mode" },
+    -- Automaton weaponskill gear
+    { key = "^numpad4", command = "cyclestate PetWS",       desc = "Pet WS",       state = "PetWS", section = "mode" },
 
     -- Per-weapon weaponskill key: example, remove the "--" to use it
-    -- { key = "numpad3", command = '/ws "Victory Smite" <t>', desc = "Victory Smite", weapon = "Hand-to-Hand" },
+    -- { key = "!numpad1", command = '/ws "Victory Smite" <t>', desc = "Victory Smite", weapon = "Hand-to-Hand" },
 }
 
 return require('shared/utils/keybinds/keybind_manager').create('PUP', PUPKeybinds)

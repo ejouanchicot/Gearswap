@@ -14,8 +14,8 @@
 ---   Parsed via regex from CHARACTERS table below.
 ---
 --- Master data location:
----   _master/sets/[job]_sets.lua    - Equipment sets (16 jobs)
----   _master/config/[job]/          - Job configs (17 jobs)
+---   _master/sets/[job]_sets.lua    - Equipment sets (22 jobs)
+---   _master/config/[job]/          - Job configs (22 jobs)
 ---
 --- @file    character_db.lua
 --- @author  ejouanchicot
@@ -72,7 +72,7 @@ local CHARACTERS = {
 --- These are preserved but not cloned to any active character.
 --- Move a job from _archive to a character entry above to re-activate it.
 
-local ARCHIVE_JOBS = { 'DRK', 'MNK', 'PUP', 'RUN', 'SAM', 'WHM' }
+local ARCHIVE_JOBS = { 'DRG', 'DRK', 'MNK', 'NIN', 'PUP', 'RNG', 'RUN', 'SAM', 'SCH', 'WHM' }
 
 ---============================================================================
 --- MASTER DATA PATHS (relative to data/ directory)

@@ -18,8 +18,9 @@ swaps equipment around every action (spell, ability, weaponskill, item) and on
 status changes. This project layers a framework on top of GearSwap and
 Mote-Include:
 
-- **18 job areas** under `shared/jobs/`: BLM BLU BRD BST COR DNC DRK GEO PLD PUP RDM
-  RNG RUN SAM SMN THF WAR WHM. Every job has a generic `_master` template (SMN
+- **22 job areas** under `shared/jobs/`: BLM BLU BRD BST COR DNC DRG DRK GEO MNK NIN
+  PLD PUP RDM RNG RUN SAM SCH SMN THF WAR WHM (DRG, MNK, NIN, RNG and SCH added and
+  PUP rewritten on 2026-09-29, offline-tested only). Every job has a generic `_master` template (SMN
   since 2026-09-28, PUP rewritten on 2026-09-29, see [jobs/pup.md](jobs/pup.md)).
 - **Shared systems** under `shared/utils/`: precast guard and cooldown checks,
   weaponskill handling, midcast set resolution, messages, keybinds (one

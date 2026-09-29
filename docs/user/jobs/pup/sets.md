@@ -35,7 +35,7 @@ Built in this order, each step on top of the one before:
 | Set | Worn when |
 |---|---|
 | `sets.idle` | No automaton out (under the automaton sets otherwise) |
-| `sets.idle.DT` | Hybrid Mode DT (`^numpad3`) |
+| `sets.idle.DT` | Hybrid Mode DT (`^numpad9`) |
 | `sets.idle.Town` | In a city, on top |
 | `sets.idle.Pet` | Automaton out, not fighting |
 | `sets.idle.Pet.Engaged` | Automaton fighting, you are not |
@@ -65,7 +65,7 @@ weaponskill set when due, Mote's defense and Kiting sets, your weapon.
 
 | Set | Worn when |
 |---|---|
-| `sets.midcast.Pet.WeaponSkill.<Pet Mode>` | Pet WS On (`^numpad5`), the automaton fights and its TP is at least `pet_ws_tp` (1000, `PUP_TP_CONFIG.lua`): on top of your idle or engaged gear, **before** the weaponskill. The provided file has `.Melee`, `.Tank`, `.Ranged`; add any other Pet Mode |
+| `sets.midcast.Pet.WeaponSkill.<Pet Mode>` | Pet WS On (`^numpad4`), the automaton fights and its TP is at least `pet_ws_tp` (1000, `PUP_TP_CONFIG.lua`): on top of your idle or engaged gear, **before** the weaponskill. The provided file has `.Melee`, `.Tank`, `.Ranged`; add any other Pet Mode |
 | `sets.midcast.Pet.WeaponSkill` | Same, for a Pet Mode with no set of its own |
 | `sets.midcast.Pet['<Weaponskill name>']` | As that weaponskill goes off (not in the provided file). Usually too late to matter: prefer the sets above |
 

@@ -39,10 +39,10 @@ the job.
 |---|---|---|---|
 | `^numpad1` | Main Weapon (template: `Free` only) | always | yes |
 | `^numpad2` | Offense Mode: Normal, Acc | always | yes |
-| `^numpad3` | Hybrid Mode: Normal, DT | always | yes |
-| `^numpad4` | Pet Mode: Melee, Tank, Ranged, Magic, Heal, Nuke (set by itself from the head) | always | yes |
-| `^numpad5` | Pet WS: On, Off | always | yes |
-| `numpad3` (example) | Victory Smite with a hand-to-hand weapon: a commented example in `PUP_KEYBINDS.lua` | once you remove the `--` | when active |
+| `^numpad9` | Hybrid Mode: Normal, DT | always | yes |
+| `^numpad3` | Pet Mode: Melee, Tank, Ranged, Magic, Heal, Nuke (set by itself from the head) | always | yes |
+| `^numpad4` | Pet WS: On, Off | always | yes |
+| `!numpad1` (example) | Victory Smite with a hand-to-hand weapon: a commented example in `PUP_KEYBINDS.lua` | once you remove the `--` | when active |
 | `!numpad0` | Combat Mode: Off, On (weapon lock) | after `//gs c combatmode show` | no |
 | `!numpad.` | Treasure Mode: Off, Tag, Full | after `//gs c th show` | no |
 | `#numpad0` | Auto Medicine on / off (common key) | always | yes |
@@ -52,7 +52,7 @@ the job.
 | `!z` | Sneak on you and every other box (common key) | always | yes |
 | `!x` | Invisible on you and every other box (common key) | always | yes |
 | `f9` | Mote: cycle Offense Mode (same as `^numpad2`) | always | not on the HUD |
-| `^f9` | Mote: cycle Hybrid Mode (same as `^numpad3`) | always | not on the HUD |
+| `^f9` | Mote: cycle Hybrid Mode (same as `^numpad9`) | always | not on the HUD |
 | `f10` / `f11` | Mote: physical / magical defense mode: `sets.defense.PDT` / `.MDT` over your idle and engaged gear, if you add them | always | not on the HUD |
 | `^f10` / `!f12` | Mote: physical defense choice / defense mode off | always | not on the HUD |
 | `!f10` | Mote: Kiting on / off: `sets.Kiting` over idle and engaged gear | always | not on the HUD |

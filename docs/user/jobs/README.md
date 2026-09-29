@@ -22,8 +22,10 @@ Medicine) and Alt+Numpad7-9 (dual-box alts). See the
 | DRG | [drg/README.md](drg/README.md) | Also [drg/states.md](drg/states.md), [drg/sets.md](drg/sets.md); added 2026-09-29, not played by a maintained character |
 | DRK | [drk/README.md](drk/README.md) | Also [states](drk/states.md), [abilities](drk/abilities.md), [sets](drk/sets.md); not played by a maintained character |
 | GEO | [geo/README.md](geo/README.md) | Also [geo/states.md](geo/states.md), [geo/sets.md](geo/sets.md) |
+| MNK | [mnk/README.md](mnk/README.md) | Also [mnk/states.md](mnk/states.md), [mnk/sets.md](mnk/sets.md); added 2026-09-29, not played by a maintained character |
 | NIN | [nin/README.md](nin/README.md) | Also [nin/states.md](nin/states.md), [nin/sets.md](nin/sets.md); added 2026-09-29, not played by a maintained character |
 | PLD | [pld/README.md](pld/README.md) | Also [pld/states.md](pld/states.md), [pld/sets.md](pld/sets.md) |
+| PUP | [pup/README.md](pup/README.md) | Also [pup/states.md](pup/states.md), [pup/sets.md](pup/sets.md); not played by a maintained character |
 | RDM | [rdm/README.md](rdm/README.md) | |
 | RNG | [rng/README.md](rng/README.md) | Also [rng/states.md](rng/states.md), [rng/sets.md](rng/sets.md); added 2026-09-29, not played by a maintained character |
 | RUN | [run/README.md](run/README.md) | Also [run/states.md](run/states.md), [run/sets.md](run/sets.md); not played by a maintained character |
@@ -33,8 +35,6 @@ Medicine) and Alt+Numpad7-9 (dual-box alts). See the
 | THF | [thf/README.md](thf/README.md) | Also [states](thf/states.md), [sets](thf/sets.md) |
 | WAR | [war/README.md](war/README.md) | Also [war/states.md](war/states.md), [war/sets.md](war/sets.md), [war/tp-bonus.md](war/tp-bonus.md) |
 | WHM | [whm/README.md](whm/README.md) | Not played by a maintained character |
-| PUP | [pup/README.md](pup/README.md) | Also [pup/states.md](pup/states.md), [pup/sets.md](pup/sets.md); not played by a maintained character |
-| MNK | [mnk/README.md](mnk/README.md) | Also [mnk/states.md](mnk/states.md), [mnk/sets.md](mnk/sets.md); added 2026-09-29, not played by a maintained character |
 
 TP bonus gear (Moonshade Earring and the like), for every job with a
 `<JOB>_TP_CONFIG.lua`: [war/tp-bonus.md](war/tp-bonus.md).
