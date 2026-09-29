@@ -38,7 +38,7 @@ No SMN key depends on the subjob.
 |---|---|---|---|
 | Ctrl+Numpad1 `^numpad1` | `IdleMode` | Normal | Idle set: Normal, DT or Avatar |
 | Ctrl+Numpad2 `^numpad2` | `CastingMode` | Normal | Normal or Resistant: the `.Resistant` versions of your spell sets, if you write them |
-| Ctrl+Numpad3 `^numpad3` | `AvatarFavor` | Off | On: `sets.idle.Avatar` wins over every idle set, town included. Also switched on and off by the Avatar's Favor buff |
+| Ctrl+Numpad3 `^numpad3` | `AvatarFavor` | Off | On: `sets.idle.Avatar` wins over the other idle sets (in town the town set goes on top, as always). Also switched on and off by the Avatar's Favor buff |
 
 The full value lists are in [states.md](states.md). The `AvatarFavor` row has
 been reported missing from the HUD; the key works either way.
@@ -139,7 +139,7 @@ What the project's shared systems do on SMN, checked in the code.
 | Avatar's Favor | The `AvatarFavor` mode follows the buff: gained, `sets.idle.Avatar` goes on; lost, your `IdleMode` set comes back |
 | Carbuncle | About 10 s after each load or subjob change, if you are alive and no avatar is out, Carbuncle is summoned |
 | Movement speed | `sets.MoveSpeed` goes on while you run, outside town, when idle (over `sets.idle.Avatar` too) |
-| Town | In a city (Dynamis excluded) `sets.idle.Town` goes on top of the `IdleMode` set, unless `AvatarFavor` is On; no `sets.Adoulin` in the provided file, so Adoulin uses the town set |
+| Town | In a city (Dynamis excluded) `sets.idle.Town` goes on top of the idle (`IdleMode` set, or `sets.idle.Avatar` under Avatar's Favor); no `sets.Adoulin` in the provided file, so Adoulin uses the town set |
 | Combat Mode | Not native: off and hidden. `//gs c combatmode show` gives it Alt+Numpad0; On locks main, sub and range |
 | Treasure Mode | Off and hidden. `//gs c th show` gives it Alt+Numpad.; it needs a `sets.TreasureHunter` in your SMN set file |
 | Obi / Orpheus | The shared automatic belt acts on your own elemental spells (a subjob nuke), not on Blood Pacts |

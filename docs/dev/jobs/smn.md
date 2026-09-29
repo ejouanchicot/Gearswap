@@ -205,11 +205,13 @@ only loads the modules.
 - `job_aftercast` notifies the watchdog; Mote's `default_aftercast` returns to
   idle unless a pet action is in progress.
 - `customize_idle_set`:
-  1. `AvatarFavor` true (and `sets.idle.Avatar` defined): `sets.idle.Avatar`,
-     in town too.
-  2. Otherwise `sets.idle.DT` / `.Avatar` / `.Normal` by `IdleMode`
-     (`select_mode_set`; Mote's set when none matches), passed to
-     `BaseSetBuilder.select_idle_base_town`: in a city (Dynamis excluded)
+  1. The idle: `sets.idle.Avatar` when `AvatarFavor` is true (and the set is
+     defined), else `sets.idle.DT` / `.Avatar` / `.Normal` by `IdleMode`
+     (`select_mode_set`; Mote's set when none matches).
+  2. That idle is passed to
+     `BaseSetBuilder.select_idle_base_town`, Avatar's Favor included since
+     2026-09-29 (before, the Favor idle skipped the town set; an avatar cannot
+     be called in a city, so nothing changed in game): in a city (Dynamis excluded)
      `sets.idle.Town` (in Adoulin `sets.Adoulin` if defined) goes on top of
      it (since 2026-09-29; it replaced it before).
   3. In town the set is returned as is; elsewhere
@@ -280,7 +282,7 @@ until 2026-09-29).
 | Set | Looked up by | In the file |
 |-----|--------------|-------------|
 | `sets.idle.Normal`, `.DT`, `.Avatar` | `customize_idle_set` | yes (skeleton) |
-| `sets.idle.Town` | `BaseSetBuilder.select_idle_base_town`, when Avatar's Favor is off | yes (skeleton) |
+| `sets.idle.Town` | `BaseSetBuilder.select_idle_base_town`, on top of the idle (Avatar's Favor or `IdleMode` set) | yes (skeleton) |
 | `sets.Adoulin` | same, in Adoulin | no (Adoulin gets `sets.idle.Town`) |
 | `sets.MoveSpeed` | `BaseSetBuilder.apply_movement`, outside town while moving | yes (skeleton) |
 | `sets.engaged` | Mote `get_melee_set` | yes (skeleton) |

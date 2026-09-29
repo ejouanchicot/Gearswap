@@ -137,7 +137,6 @@ Jobs that differ from the table above (details on each job's set page):
 | WHM | `sets.MoveSpeed` goes on in town too |
 | BST | `sets.idle.Town` is not used: in a town the whole `sets.me.idle.Town` goes on top of the pet or master idle (`sets.Adoulin` instead in Adoulin, if you have one), then your weapons, and no `sets.MoveSpeed`. Idle only: nothing of this while engaged |
 | GEO | In the provided file `sets.idle.Town` is the same set as `sets.me.idle.Town` |
-| SMN | The town set is not used while Avatar's Favor is On |
 | PLD, RUN, WAR, COR, DRK, SAM | In town: the town set plus your weapon, nothing else (no mode set, no `sets.MoveSpeed`; on SAM no `sets.idle.Weak`, `.Regen` or `.PDT`). On WAR, the Hoxne stance also keeps its Hoxne Ampulla in town |
 
 Hachirin-no-Obi and Orpheus's Sash need no set: they go on by themselves on

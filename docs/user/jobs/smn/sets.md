@@ -30,15 +30,15 @@ your idle set while you run: keep only the slots that give movement speed.
 |---|---|
 | `sets.idle.Normal` | `IdleMode` Normal (the default) |
 | `sets.idle.DT` | `IdleMode` DT |
-| `sets.idle.Avatar` | `IdleMode` Avatar, **or** `AvatarFavor` On (which wins over every other idle set, the town set included) |
+| `sets.idle.Avatar` | `IdleMode` Avatar, **or** `AvatarFavor` On (which wins over the other idle sets; in town the town set still goes on top) |
 
 When the set of the current mode does not exist, the standard idle choice
 stands (`sets.idle`, with `sets.idle.Pet` while a pet is out). As long as the
 mode's own set exists, there is no separate "avatar out" idle: use
 `IdleMode` Avatar or Avatar's Favor for that.
 
-In a town (or Adoulin), `sets.idle.Town` / `sets.Adoulin` go on top of the mode set,
-unless `AvatarFavor` is On. `sets.MoveSpeed` is laid on top while you run
+In a town (or Adoulin), `sets.idle.Town` / `sets.Adoulin` go on top of the idle
+(the mode set, or `sets.idle.Avatar` under Avatar's Favor). `sets.MoveSpeed` is laid on top while you run
 outside town (over `sets.idle.Avatar` too).
 
 ## Engaged
