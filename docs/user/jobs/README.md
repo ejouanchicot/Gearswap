@@ -19,6 +19,7 @@ Medicine) and Alt+Numpad7-9 (dual-box alts). See the
 | BST | [bst/README.md](bst/README.md) | Also [bst/states.md](bst/states.md), [bst/sets.md](bst/sets.md) |
 | COR | [cor/README.md](cor/README.md) | Also [cor/states.md](cor/states.md), [cor/sets.md](cor/sets.md) |
 | DNC | [dnc/README.md](dnc/README.md) | Also [dnc/states.md](dnc/states.md), [dnc/sets.md](dnc/sets.md) |
+| DRG | [drg/README.md](drg/README.md) | Also [drg/states.md](drg/states.md), [drg/sets.md](drg/sets.md); added 2026-09-29, not played by a maintained character |
 | DRK | [drk/README.md](drk/README.md) | Also [states](drk/states.md), [abilities](drk/abilities.md), [sets](drk/sets.md); not played by a maintained character |
 | GEO | [geo/README.md](geo/README.md) | Also [geo/states.md](geo/states.md), [geo/sets.md](geo/sets.md) |
 | PLD | [pld/README.md](pld/README.md) | Also [pld/states.md](pld/states.md), [pld/sets.md](pld/sets.md) |

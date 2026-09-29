@@ -20,11 +20,11 @@ DOCS = os.path.join(ROOT, 'docs')
 OUT = os.path.join(DOCS, 'wiki', 'index.html')
 TEMPLATE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'wiki_template.html')
 
-JOBS = ['blm', 'blu', 'brd', 'bst', 'cor', 'dnc', 'drk', 'geo', 'pld', 'pup',
+JOBS = ['blm', 'blu', 'brd', 'bst', 'cor', 'dnc', 'drg', 'drk', 'geo', 'pld', 'pup',
         'rdm', 'run', 'sam', 'smn', 'thf', 'war', 'whm']
 JOB_NAMES = {
     'blm': 'Black Mage', 'blu': 'Blue Mage', 'brd': 'Bard', 'bst': 'Beastmaster',
-    'cor': 'Corsair', 'dnc': 'Dancer', 'drk': 'Dark Knight', 'geo': 'Geomancer',
+    'cor': 'Corsair', 'dnc': 'Dancer', 'drg': 'Dragoon', 'drk': 'Dark Knight', 'geo': 'Geomancer',
     'pld': 'Paladin', 'pup': 'Puppetmaster', 'rdm': 'Red Mage', 'run': 'Rune Fencer',
     'sam': 'Samurai', 'smn': 'Summoner', 'thf': 'Thief', 'war': 'Warrior', 'whm': 'White Mage',
 }

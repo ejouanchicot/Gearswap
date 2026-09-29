@@ -90,7 +90,7 @@ local MASTER = {
 ---============================================================================
 
 local ALL_JOBS = {
-    'BLM', 'BLU', 'BRD', 'BST', 'COR', 'DNC', 'DRK', 'GEO',
+    'BLM', 'BLU', 'BRD', 'BST', 'COR', 'DNC', 'DRG', 'DRK', 'GEO',
     'PLD', 'PUP', 'RDM', 'RUN', 'SAM', 'SMN', 'THF', 'WAR', 'WHM',
 }
 
