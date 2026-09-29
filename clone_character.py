@@ -254,7 +254,7 @@ TRANSLATIONS = {
 # All valid FFXI job abbreviations for this system
 ALL_VALID_JOBS = [
     'BLM', 'BLU', 'BRD', 'BST', 'COR', 'DNC', 'DRG', 'DRK', 'GEO',
-    'MNK', 'NIN', 'PLD', 'PUP', 'RDM', 'RUN', 'SAM', 'SCH', 'SMN', 'THF', 'WAR', 'WHM'
+    'MNK', 'NIN', 'PLD', 'PUP', 'RDM', 'RNG', 'RUN', 'SAM', 'SCH', 'SMN', 'THF', 'WAR', 'WHM'
 ]
 
 

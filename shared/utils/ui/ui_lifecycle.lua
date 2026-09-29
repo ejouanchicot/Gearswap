@@ -65,6 +65,8 @@ local function are_states_ready()
         return _G.state.Element ~= nil
     elseif job == "NIN" then
         return _G.state.MagicBurstMode ~= nil
+    elseif job == "RNG" then
+        return _G.state.RangeWeapon ~= nil
     end
 
     return true

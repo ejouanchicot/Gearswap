@@ -91,7 +91,7 @@ local MASTER = {
 
 local ALL_JOBS = {
     'BLM', 'BLU', 'BRD', 'BST', 'COR', 'DNC', 'DRG', 'DRK', 'GEO',
-    'MNK', 'NIN', 'PLD', 'PUP', 'RDM', 'RUN', 'SAM', 'SCH', 'SMN', 'THF', 'WAR', 'WHM',
+    'MNK', 'NIN', 'PLD', 'PUP', 'RDM', 'RNG', 'RUN', 'SAM', 'SCH', 'SMN', 'THF', 'WAR', 'WHM',
 }
 
 ---============================================================================

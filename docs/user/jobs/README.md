@@ -25,6 +25,7 @@ Medicine) and Alt+Numpad7-9 (dual-box alts). See the
 | NIN | [nin/README.md](nin/README.md) | Also [nin/states.md](nin/states.md), [nin/sets.md](nin/sets.md); added 2026-09-29, not played by a maintained character |
 | PLD | [pld/README.md](pld/README.md) | Also [pld/states.md](pld/states.md), [pld/sets.md](pld/sets.md) |
 | RDM | [rdm/README.md](rdm/README.md) | |
+| RNG | [rng/README.md](rng/README.md) | Also [rng/states.md](rng/states.md), [rng/sets.md](rng/sets.md); added 2026-09-29, not played by a maintained character |
 | RUN | [run/README.md](run/README.md) | Also [run/states.md](run/states.md), [run/sets.md](run/sets.md); not played by a maintained character |
 | SAM | [sam/README.md](sam/README.md) | Also [states](sam/states.md), [sets](sam/sets.md); not played by a maintained character |
 | SCH | [sch/README.md](sch/README.md) | Also [sch/states.md](sch/states.md), [sch/sets.md](sch/sets.md); added 2026-09-29, not played by a maintained character |

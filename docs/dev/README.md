@@ -18,8 +18,8 @@ swaps equipment around every action (spell, ability, weaponskill, item) and on
 status changes. This project layers a framework on top of GearSwap and
 Mote-Include:
 
-- **17 job areas** under `shared/jobs/`: BLM BLU BRD BST COR DNC DRK GEO PLD PUP RDM
-  RUN SAM SMN THF WAR WHM. Every job has a generic `_master` template (SMN
+- **18 job areas** under `shared/jobs/`: BLM BLU BRD BST COR DNC DRK GEO PLD PUP RDM
+  RNG RUN SAM SMN THF WAR WHM. Every job has a generic `_master` template (SMN
   since 2026-09-28, PUP rewritten on 2026-09-29, see [jobs/pup.md](jobs/pup.md)).
 - **Shared systems** under `shared/utils/`: precast guard and cooldown checks,
   weaponskill handling, midcast set resolution, messages, keybinds (one
@@ -310,9 +310,9 @@ Interactions, Invariants & gotchas, Extending, Known issues):
 [blm](jobs/blm.md) · [blu](jobs/blu.md) · [brd](jobs/brd.md) · [bst](jobs/bst.md) ·
 [cor](jobs/cor.md) · [dnc](jobs/dnc.md) · [drg](jobs/drg.md) · [drk](jobs/drk.md) ·
 [geo](jobs/geo.md) · [mnk](jobs/mnk.md) · [nin](jobs/nin.md) · [pld](jobs/pld.md) ·
-[pup](jobs/pup.md) ·
-[rdm](jobs/rdm.md) · [run](jobs/run.md) · [sam](jobs/sam.md) ·
-[sch](jobs/sch.md) · [smn](jobs/smn.md) · [thf](jobs/thf.md) · [war](jobs/war.md) ·
+[pup](jobs/pup.md) · [rdm](jobs/rdm.md) · [rng](jobs/rng.md) · [run](jobs/run.md) ·
+[sam](jobs/sam.md) · [sch](jobs/sch.md) · [smn](jobs/smn.md) · [thf](jobs/thf.md) ·
+[war](jobs/war.md) ·
 [whm](jobs/whm.md)
 
 ### Elsewhere
