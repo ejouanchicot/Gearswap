@@ -4,6 +4,8 @@
 --- state.CombatMode (Off / On). On keeps the weapons where they are: main,
 --- sub and range are disabled (plus ammo on BLM, GEO and WHM), so a spell or a
 --- set never swaps them and the TP stays. Off gives them back to the job.
+--- When the player's set file defines sets.CombatMode, turning On puts it on
+--- first, then locks (e.g. the nuking weapons on BLM).
 ---
 --- Shown or hidden per job (row in the HUD, key, lock), saved per character
 --- in <Character>/config/combat_mode.lua by //gs c combatmode
@@ -82,13 +84,58 @@ local function slots()
     return SLOTS_BY_JOB[player and player.main_job] or DEFAULT_SLOTS
 end
 
---- Lock or free the weapon slots to match the state.
+--- Weapon locks other than Combat Mode's (e.g. WHM Melee ON), owner -> slots.
+--- Kept on windower: the disabled slots outlive a reload, so must the record.
+--- @return table
+local function other_locks()
+    windower._weapon_locks = windower._weapon_locks or {}
+    return windower._weapon_locks
+end
+
+--- Record that `owner` keeps `slot_list` locked: Combat Mode turning Off
+--- then leaves those slots locked. The owner disables them itself.
+--- @param owner string e.g. 'whm_melee'
+--- @param slot_list table e.g. {'main', 'sub', 'range'}
+function CombatMode.hold(owner, slot_list)
+    other_locks()[owner] = slot_list
+end
+
+--- Forget `owner`'s lock (the owner enables its slots itself).
+--- @param owner string
+function CombatMode.release(owner)
+    other_locks()[owner] = nil
+end
+
+--- `slot_list` minus the slots another lock still holds.
+--- @param slot_list table
+--- @return table
+local function not_held_elsewhere(slot_list)
+    local held = {}
+    for _, owned in pairs(other_locks()) do
+        for _, slot in ipairs(owned) do held[slot] = true end
+    end
+    local free = {}
+    for _, slot in ipairs(slot_list) do
+        if not held[slot] then free[#free + 1] = slot end
+    end
+    return free
+end
+
+--- Lock or free the weapon slots to match the state. When the lock is
+--- first laid, sets.CombatMode (the player's set file) is equipped just before
+--- it: equip() only diverts an item whose slot is ALREADY disabled (GearSwap
+--- helper_functions.lua), so those pieces stay queued and the lock holds them.
 function CombatMode.apply()
     if CombatMode.is_on() then
+        local combat_set = rawget(_G, 'sets') and sets.CombatMode
+        if not windower._combat_mode_locked and type(combat_set) == 'table' and not craft_active() then
+            equip(combat_set)
+        end
         disable(unpack_list(slots()))
         windower._combat_mode_locked = slots()
     elseif windower._combat_mode_locked and not craft_active() then
-        enable(unpack_list(windower._combat_mode_locked))
+        -- A slot another lock holds (WHM Melee ON) stays locked
+        enable(unpack_list(not_held_elsewhere(windower._combat_mode_locked)))
         windower._combat_mode_locked = nil
     end
 end

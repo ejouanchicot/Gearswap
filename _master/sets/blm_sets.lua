@@ -615,3 +615,11 @@ sets.buff.Doom = {
     ring1 = 'Purity Ring',
     waist = 'Gishdubar Sash'
 }
+
+-- • COMBAT MODE (Combat Mode On): put on when the lock is laid, then kept
+--   (main, sub, range and ammo locked). Remove it to lock whatever is worn.
+sets.CombatMode = {
+    main = "Bunzi's Rod",
+    sub = 'Ammurapi Shield',
+    ammo = 'Sroda Tathlum'
+}

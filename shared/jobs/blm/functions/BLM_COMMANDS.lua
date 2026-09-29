@@ -524,15 +524,8 @@ function job_state_change(stateField, newValue, oldValue)
         return
     end
 
-    -- Combat Mode On: queue the magic weapons now. The update that follows
-    -- runs combat_mode.lua's lock before any gear, and equip() only diverts
-    -- an item when its slot is ALREADY disabled (GearSwap
-    -- helper_functions.lua:321), so these stay queued and the lock holds
-    -- them. Accept both stateField spellings: 'CombatMode' (CycleHandler key)
-    -- and 'Combat Mode' (Mote-SelfCommands description).
-    if (stateField == 'CombatMode' or stateField == 'Combat Mode') and newValue == 'On' then
-        equip({ main = "Bunzi's Rod", sub = "Ammurapi Shield", ammo = "Sroda Tathlum" })
-    end
+    -- Combat Mode On puts on sets.CombatMode (the set file's) before its
+    -- lock: shared/utils/core/combat_mode.lua.
 
     update_ui()
 end
