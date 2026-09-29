@@ -606,7 +606,7 @@ cancel depend on recasts, packets and timing: check them in game with
   (hold during an action, `DoomManager` required once); `detect_weapon` recognises
   table / other-case / long-name set entries; the Hoxne stance wears its Ampulla;
   leaving `NaeglingKC` drops `PDTKC` at once; `thirdeye` off /SAM warns.
-- Fixed 2026-09-29 (checked offline, not yet in game): `job_buff_change` rebuilt
+- Fixed 2026-09-29 (confirmed in game on WAR the same day): `job_buff_change` rebuilt
   the gear inside the buff event, where `buffactive` still holds the old buffs, so
   gaining Aftermath Lv.3 kept the non-AM3 set and losing it put `PDTAFM3` back on.
   It now calls `LifecycleManager.refresh_after_buff`.

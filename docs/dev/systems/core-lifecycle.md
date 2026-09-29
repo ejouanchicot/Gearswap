@@ -687,7 +687,7 @@ Open:
 - `watchdog clear` during a test leaves test mode on; the next real cast is reported stuck (`MidcastWatchdog.clear_all`).
 - Fixed 2026-09-28: the dead `ModuleCache.stats()` and `MidcastWatchdog.is_enabled/get_buffer/get_fallback_timeout/is_debug_enabled` are removed; WAR, DRK and SMN use `LifecycleManager.status_change()`.
 - The job intro never shows the macro book or the lockstyle: `KeybindManager`'s `show_intro` looks for `get_<job>_macro_info` and `get_info` on the `<JOB>_MACROBOOK` / `<JOB>_LOCKSTYLE` modules, and the wrappers return nothing (owner decision pending).
-- Fixed 2026-09-29 (checked offline, not yet in game): the Aftermath Lv.3 gear change read `buffactive` before GearSwap stored the new buff (WAR and DRK rebuilt inside `job_buff_change`; SAM and THF did not rebuild at all). WAR, DRK, SAM and THF now call `LifecycleManager.refresh_after_buff`.
+- Fixed 2026-09-29 (confirmed in game on WAR the same day; DRK, SAM, THF checked offline only): the Aftermath Lv.3 gear change read `buffactive` before GearSwap stored the new buff (WAR and DRK rebuilt inside `job_buff_change`; SAM and THF did not rebuild at all). WAR, DRK, SAM and THF now call `LifecycleManager.refresh_after_buff`.
 - Hook layers fail silently: each install is wrapped in `pcall(function() ... end)` with no report, unlike the other INIT blocks.
 - The 3 s fallback of `hold_during_action` (sends `gs c update`) is not tested in game.
 - `docs/user/features/job-change-manager.md` and `docs/user/features/watchdog.md` are out of date.
