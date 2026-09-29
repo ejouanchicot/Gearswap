@@ -58,7 +58,7 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/brd/functions/logic/song_queue.lua` | 160 | `start`, `stop`, `on_aftercast`; retry / timeout logic; drops the queue when the main job is no longer BRD |
 | `shared/jobs/brd/functions/logic/song_refinement.lua` | 115 | `refine_song(spell, eventArgs)` |
 | `shared/jobs/brd/functions/logic/instrument_lock_config.lua` | 70 | `LOCKED_SONGS` (Honor March, Aria of Passion), `requires_lock`, `get_instrument` |
-| `shared/jobs/brd/functions/logic/set_builder.lua` | 219 | `select_idle_base` (town, IdleMode), `select_engaged_base` (Kraken Club, EngagedMode), `apply_weapons`, `build_idle_set`, `build_engaged_set` |
+| `shared/jobs/brd/functions/logic/set_builder.lua` | 217 | `select_idle_base` (town, IdleMode), `select_engaged_base` (Kraken Club, EngagedMode), `apply_weapons`, `build_idle_set`, `build_engaged_set` |
 | `_master/config/brd/BRD_STATES.lua` | 223 | All states (`BRDStates.configure()`) |
 | `_master/config/brd/BRD_KEYBINDS.lua` | 62 | 12 binds, data only; `KeybindManager.create('BRD', ...)` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/brd/BRD_CUSTOM.lua` | 119 | Player modes and gear rules (all examples commented out) |
@@ -330,10 +330,10 @@ flowchart TD
   moving outside town.
 - `customize_melee_set` -> `build_engaged_set`: `select_engaged_base`
   (`sets.engaged.PDTKC` when the **worn** sub is Kraken Club, else
-  `sets.engaged[EngagedMode]`, else Mote's base) -> weapons ->
-  `apply_movement`. AutoMove stops tracking while engaged and sets
-  `state.Moving` to false, so the movement layer only applies to the engaged
-  set built at the moment of engaging while running (Known issues).
+  `sets.engaged[EngagedMode]`, else Mote's base) -> weapons. No movement
+  layer (since 2026-09-29): AutoMove only raises `state.Moving` out of combat,
+  so on the engaged set it could only be a stale `true` left from running up to
+  the mob. Movement gear is idle-only, outside town, as on every job.
 - Because both builders return a mode set instead of Mote's base, Mote's
   defense and kiting layers are dropped whenever the mode's set exists.
 - `job_status_change` / `job_buff_change` are the shared `LifecycleManager`
@@ -575,11 +575,11 @@ In game: `//gs c songplan`, `//gs c debugmidcast` (Singing chain steps),
 - Fixed 2026-09-28: Shining Fantasia (fifth dummy song) was sung in
   `sets.midcast.BardSong` because `MidcastFallback` re-routed dummy songs; the
   router now calls `MidcastFallback.skip(spell)`.
-- **Movement gear can stick on the engaged set** (plausible, code path
-  confirmed, not seen in game). `build_engaged_set` calls `apply_movement`;
-  when you engage while running, `state.Moving` is still `true` at that moment,
-  and AutoMove then clears it while engaged without sending `gs c update`, so
-  `sets.MoveSpeed` stays on until the next gear change.
+- Fixed 2026-09-29 (checked offline, not yet in game): movement gear could
+  stick on the engaged set. `build_engaged_set` called `apply_movement`; when
+  you engaged while running, `state.Moving` was still `true`, and AutoMove
+  clears it while engaged without sending `gs c update`, so `sets.MoveSpeed`
+  stayed on in the fight. `build_engaged_set` no longer applies movement.
 - Fixed 2026-09-28: the song queue no longer outlives BRD. `file_unload` still
   does not call `SongQueue.stop`, but `send_step` checks the main job and drops
   the queue when it is not BRD, so nothing is sent on the new job (checked

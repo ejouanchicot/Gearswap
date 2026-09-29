@@ -59,7 +59,8 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
 - **Sneak Attack / Trick Attack.** While the buff is up and you are engaged,
   `sets.buff['Sneak Attack']` / `['Trick Attack']` go on top; they come off
   when the buff is used.
-- **Aftermath Lv.3 with Vajra**: the engaged set becomes `sets.engaged.PDTAFM3`.
+- **Aftermath Lv.3 with Vajra**: the engaged set becomes `sets.engaged.PDTAFM3`
+  about 0.1 s after the aftermath starts, and changes back when it ends.
 - **Range lock.** Any ranged attack turns Range Lock On by itself. A reload, a
   job or subjob change, or `//gs c wo` releases the lock and sets it back to Off.
 - After a ranged attack, the quiver of the bolts you wear is opened from your

@@ -16,7 +16,7 @@ Set names and automatic gear: [sets.md](sets.md).
 |---|---|---|---|
 | `^numpad9` | `HybridMode` | **PDT**, MDT | Stance. Engaged: `sets.engaged.PDT` or `sets.engaged.MDT`. Idle outside town: `sets.idle.PDT` or `sets.idle.MDT` laid over your idle set |
 | `^numpad1` | `MainWeapon` | **Epeolatry**, Lycurgos | Weapon set to wield (`sets.Epeolatry`, `sets.Lycurgos`), idle and engaged, in town too |
-| `^numpad2` | `SubWeapon` | Utu, **Refined** | Grip (`sets.Utu`, `sets.Refined`). Not applied with Lycurgos: the sub slot then keeps whatever is there |
+| `^numpad2` | `SubWeapon` | Utu, **Refined** | Grip (`sets.Utu`, `sets.Refined`), worn with every weapon, Lycurgos included |
 | `^numpad3` | `RuneMode` | **Ignis**, Gelus, Flabra, Tellus, Sulpor, Unda, Lux, Tenebrae | Rune used by `//gs c rune` |
 
 None of these keys depends on the subjob. Loxotic, Lionheart and Aettir are written in

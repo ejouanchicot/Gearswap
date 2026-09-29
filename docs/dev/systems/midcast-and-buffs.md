@@ -294,7 +294,7 @@ Each `[JOB]_IDLE.lua` / `[JOB]_ENGAGED.lua` implements Mote's `customize_idle_se
 | WHM | `select_idle_base_town` called directly | `BaseSetBuilder.apply_movement` always, in town too |
 | COR, PLD, RUN | `SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town` | `apply_movement` (PLD returns before it in town) |
 | DNC, THF, WAR | `SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base` (town, else `sets.idle[HybridMode]`) | `apply_movement` outside town |
-| BRD | own `select_idle_base` wrapping `select_idle_base_town` | `apply_movement` outside town; also applies it to the engaged set |
+| BRD | own `select_idle_base` wrapping `select_idle_base_town` | `apply_movement` outside town (engaged set: no longer, since 2026-09-29) |
 | RDM, BLU | `SetBuilder.check_town = select_idle_base_town` | `apply_movement` outside town |
 | SMN | `SMN_IDLE.lua` calls `select_idle_base_town` / `is_in_town` directly | `BaseSetBuilder.apply_movement` |
 | BST | `BaseSetBuilder.is_in_town()` for Town feet only | inline `set_combine(..., sets.MoveSpeed)` |
@@ -455,6 +455,7 @@ Fixed:
 - BLM passed the Enhancing database to Enfeebling midcast (`database_func` always nil): removed (2026-09-25).
 - `build_accession_chain` (a blind `wait 2` chain) was replaced by the buff-gated `cast_with_stratagems`.
 - BRD kept two copies of the song -> instrument table: `SongRotationManager.get_required_instrument` delegates to `instrument_lock_config` (2026-09-25).
+- BRD's engaged builder applied `apply_movement`, so a `state.Moving` left true from running up to the mob kept `sets.MoveSpeed` on in the fight: `build_engaged_set` no longer calls it (2026-09-29, checked offline, not yet in game).
 
 Commit hashes on this page are post-rewrite (2026-09-27); an older hash maps through `.git/filter-repo/commit-map`.
 

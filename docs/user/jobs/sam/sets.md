@@ -118,7 +118,9 @@ Hasso, Seigan, Warding Circle, Third Eye and Blade Bash.
 - **Seigan gear.** While Seigan is up and you are engaged: `sets.thirdeye`
   (PDT) or `sets.seigan` (Normal, MDT).
 - **Sekkanoki / Meikyo Shisui pieces** on the weaponskill while the buff is up.
-- **Aftermath Lv.3** with Masamune: `sets.engaged.AM3` when you write it.
+- **Aftermath Lv.3** with Masamune: `sets.engaged.AM3` when you write it. It goes on
+  or off about 0.1 s after the aftermath starts or ends (not while Doomed; if a
+  spell or weaponskill is under way, when it ends).
 - **Yoichinoyumi** in the range slot adds `sets.bow` while engaged.
 - **HP-based idle**: `sets.idle.Weak` below 50 % HP, `sets.idle.Regen` below 80 %,
   on top of `sets.idle.PDT`.

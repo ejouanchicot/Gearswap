@@ -19,8 +19,9 @@ What DRK adds on top of the shared pipeline:
 - **Pending flags** for Dark Seal and Nether Void, which let the engaged
   variants switch before the buff shows in `buffactive`; the buff's loss
   clears them.
-- **Aftermath refresh**: gaining or losing `Aftermath: Lv.3` re-equips at once
-  (unless Doomed); during a spell or weaponskill the action's aftercast does it.
+- **Aftermath refresh**: gaining or losing `Aftermath: Lv.3` re-equips about
+  0.1 s later (`LifecycleManager.refresh_after_buff`, unless Doomed); if a spell
+  or weaponskill is under way then, the action's aftercast does it.
 - **JA precast gear** equipped explicitly in `job_precast` (Last Resort, Weapon
   Bash, Souleater, Arcane Circle) and Fast Cast for spells, both redundant
   with Mote's default precast.
@@ -44,7 +45,7 @@ function; line numbers are deliberately not used.
 | `shared/jobs/drk/functions/DRK_IDLE.lua` | 41 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/drk/functions/DRK_ENGAGED.lua` | 46 | `customize_melee_set` -> `SetBuilder.build_engaged_set(weapon, hybrid)` (Mote's set is discarded) |
 | `shared/jobs/drk/functions/DRK_STATUS.lua` | 27 | `job_status_change = LifecycleManager.status_change()` |
-| `shared/jobs/drk/functions/DRK_BUFFS.lua` | 61 | `job_buff_change`: Doom, pending-flag clear on loss, Aftermath Lv.3 refresh |
+| `shared/jobs/drk/functions/DRK_BUFFS.lua` | 54 | `job_buff_change`: Doom, pending-flag clear on loss, Aftermath Lv.3 refresh (`LifecycleManager.refresh_after_buff`) |
 | `shared/jobs/drk/functions/DRK_COMMANDS.lua` | 161 | `job_self_command` router (shared commands only), `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/drk/functions/DRK_MOVEMENT.lua` | 24 | Placeholder for the 12-module layout (comments only) |
 | `shared/jobs/drk/functions/DRK_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('DRK', ...)` wrappers |
@@ -215,10 +216,12 @@ the template defines none, so the flags have no visible effect out of the box.
   disengage that lands during an action is held until the aftercast (3 s
   fallback), as on the other jobs.
 - `job_buff_change` (`DRK_BUFFS.lua`): Doom; pending-flag clear on loss of
-  Dark Seal / Nether Void; on gain or loss of `"Aftermath: Lv.3"` calls
-  `handle_equipping_gear(player.status)` unless Doom is up (whatever the
-  weapon) or an action is under way (`midaction()`, since 2026-09-28: the
-  action's aftercast then rebuilds with the new buff state). Close to
+  Dark Seal / Nether Void; then `LifecycleManager.refresh_after_buff(buff)`:
+  on gain or loss of `"Aftermath: Lv.3"`, unless Doom is up (whatever the
+  weapon), `gs c update` 0.1 s later, skipped if an action is under way then
+  (its aftercast rebuilds). Deferred because `buffactive` inside `buff_change`
+  still holds the old buffs
+  ([core-lifecycle.md](../systems/core-lifecycle.md#lifecyclemanager)). Close to
   `WAR_BUFFS.job_buff_change`.
 - `DRK_MOVEMENT.lua` holds only comments.
 
@@ -365,8 +368,9 @@ invisible to Mote.
 - `apply_weapon` goes through `WeaponResolver.set_for('main', ...)`: with
   `equip_without_set` on, a weapon set that does not name `main` stops
   applying, and a value with no set equips the weapon by name.
-- `handle_equipping_gear` from `job_buff_change` runs synchronously inside the
-  buff event; it is skipped while `midaction()` is true.
+- Do not rebuild gear directly inside `job_buff_change`: `buffactive` there
+  still holds the buffs from before the change. The Aftermath refresh is a
+  `gs c update` 0.1 s later, skipped under Doom or while `midaction()` is true.
 - The template keeps `Tetsouo/...` require paths; the clone script rewrites
   them.
 
@@ -409,7 +413,11 @@ invisible to Mote.
   refresh waits for the action too; `apply_weapon` goes through
   `WeaponResolver`, so `equip_without_set` works on DRK. Fixed 2026-09-29:
   `sets.idle.PDT` is worn outside town in PDT (`build_idle_set` ->
-  `BaseSetBuilder.select_idle_base`).
+  `BaseSetBuilder.select_idle_base`). Fixed 2026-09-29 (checked offline, not
+  yet in game): the Aftermath Lv.3 refresh rebuilt inside the buff event, where
+  `buffactive` still holds the old buffs, so gaining Aftermath kept the non-AM3
+  set and losing it put `sets.engaged.AM3` back on; it now goes through
+  `LifecycleManager.refresh_after_buff`.
 - `DRK_BUFFS` repeats `WAR_BUFFS`; `DRK_COMMANDS` repeats `SAM_COMMANDS`
   (open duplication findings).
 - `sets['Tokko']` has no `MainWeapon` line; the Anguta TP bonus applies only

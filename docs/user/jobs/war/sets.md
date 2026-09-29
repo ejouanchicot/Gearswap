@@ -64,7 +64,8 @@ Two consequences worth knowing:
 - A weapon engaged set (`sets.engaged.Naegling`) wins over `HybridMode`: with it,
   PDT and Normal wear the same set for that weapon.
 - Aftermath: Lv.3 on Ukonvasara uses `sets.engaged.PDTAFM3` even in Normal. Gaining or
-  losing Aftermath: Lv.3 re-equips your gear at once (not while Doomed).
+  losing Aftermath: Lv.3 re-equips your gear about 0.1 s later (not while Doomed;
+  if a spell or weaponskill is under way, when it ends).
 
 `sets.engaged.PDTTP` in the provided file is not read by name: `sets.engaged.PDT` is the
 same set, and PDTAFM3 / PDTKC are built from it.
@@ -109,7 +110,7 @@ midcast set at all**: spells are cast in whatever you are wearing.
   when the chosen weapon set does not name a `sub` (a club you put on by hand). Leaving
   NaeglingKC for a weapon that has its own sub drops `sets.engaged.PDTKC` at once.
 - **Aftermath: Lv.3 on Ukonvasara** switches to `sets.engaged.PDTAFM3` (or the stance's
-  AFM3 set) and back as soon as the buff comes or goes.
+  AFM3 set) and back about 0.1 s after the buff comes or goes.
 - **Hoxne stance** (only if you add `Hoxne` to `HybridMode` in `WAR_STATES.lua`): once
   Hoxne Ampulla is actually in your ammo slot, the **ammo slot is locked** so
   weaponskill and ability sets cannot swap it out. As on PLD, WAR puts the Ampulla on

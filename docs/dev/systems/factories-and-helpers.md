@@ -256,7 +256,7 @@ flowchart TD
 - `handle_moving`: on the first moving tick, sets `state.Moving.value = 'true'` and `pending_update`, then calls `send_update('moving')`. While movement continues, it sends another `gs c update` every 2.0 s (`heal_interval`) as a desync backstop. It calls every registered callback with `(true, dist, player.status)`.
 - `handle_stopped`: on the transition, sets `state.Moving.value = 'false'` and `pending_update`, and calls the callbacks with `false`. Then it calls `send_update('stopping')` while `pending_update` is set.
 - `send_update` refuses for 2.0 s after `start()` (`job_change_cooldown`) and within 0.3 s of the last update (`update_debounce`). A refused update stays pending and is retried on later ticks. The jump branch and the heal branch bypass it.
-- The gear itself comes from the job's set builder: `sets.MoveSpeed` is merged into the idle set when `state.Moving.value == 'true'`. That is done by `shared/utils/set_building/base_set_builder.lua` for the jobs that use it, and by DRK's own set builder (see the matrix at the end of the page).
+- The gear itself comes from the job's set builder: `sets.MoveSpeed` is merged into the idle set when `state.Moving.value == 'true'`. That is done by `BaseSetBuilder.apply_movement` (`shared/utils/set_building/base_set_builder.lua`) on every job except BST, which lays it inline, and PUP, which has no set builder (see the matrix at the end of the page).
 
 ### Public API
 

@@ -217,7 +217,11 @@ time.
   handler writes the new `player.buffs` (`:566-568`). A coroutine waiting for a
   buff must read `windower.ffxi.get_player().buffs` and map ids with
   `res.buffs` (see `AbilityHelper.is_buff_active`,
-  `shared/utils/precast/ability_helper.lua:93`).
+  `shared/utils/precast/ability_helper.lua:93`). For the same reason a gear
+  rebuild inside `job_buff_change` sees the old buffs: a buff that swaps sets
+  goes in `GEAR_BUFFS` and the job calls `LifecycleManager.refresh_after_buff`
+  (a `gs c update` 0.1 s later; today only Aftermath: Lv.3, on WAR, DRK, SAM and
+  THF).
 - **TP.** Use `require('shared/utils/core/live_tp')()`: it reads
   `windower.ffxi.get_player().vitals.tp` and falls back to GearSwap's copy.
   Never add a new test on `player.tp` or `player.vitals.tp`.

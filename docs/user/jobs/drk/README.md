@@ -18,8 +18,8 @@ Dark Knight with the provided template gives you:
 - **Three keyed modes**: weapon, weaponskill accuracy and the engaged stance
   (PDT or Accu).
 - **Aftermath gear**: with Liberator and Aftermath: Lv.3 up, `sets.engaged.AM3`
-  replaces your engaged set, and the change happens as soon as the aftermath
-  starts or ends (or when the spell or weaponskill under way ends).
+  replaces your engaged set, and the change happens about 0.1 s after the
+  aftermath starts or ends (or when the spell or weaponskill under way ends).
 - **Dark Magic gear by spell**: Dread Spikes, Absorb spells, Drain / Aspir
   each find their own set; Dark Seal and Nether Void pieces are added while
   those buffs are up.

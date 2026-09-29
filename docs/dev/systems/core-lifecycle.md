@@ -23,7 +23,7 @@ Verified against the code on 2026-09-28. Line numbers of `INIT_SYSTEMS.lua` (a f
 | `job_sync_watchdog.lua` | 165 | Compares the job the file was loaded for with the client's job every 5 s, forces `gs reload` after two mismatches | here |
 | `midcast_watchdog.lua` | 470 | Tracks the spell/item in midcast; if no aftercast arrives within cast time + buffer, sends `gs c update` | here |
 | `module_cache.lua` | 96 | Replaces the sandbox `require` with a caching wrapper, once per sandbox | here |
-| `lifecycle_manager.lua` | 135 | Factory for the four Mote hooks every job used to copy | here |
+| `lifecycle_manager.lua` | 160 | Factory for the four Mote hooks every job used to copy, plus `refresh_after_buff` (gear rebuild after an Aftermath Lv.3 change) | here |
 | `keybind_guard.lua` | 98 | Re-sends the job's binds 2 s after a load | here |
 | `state_display_override.lua` | 46 | Replaces Mote's `display_current_state` (silent while the HUD is enabled) | here |
 | `cast_tracker.lua` | 58 | Raw `action` listener: did this character start a cast / act since time t | here |
@@ -338,16 +338,19 @@ Gotcha: a module required before `config_loader` gets a second instance when it 
 
 ## LifecycleManager
 
-Four builders, each returning a handler; the caller assigns the Mote global (`job_status_change = LifecycleManager.status_change()` etc.) and exports it. Each takes an optional `extra(...)` callback with the same arguments as the handler.
+Four builders, each returning a handler; the caller assigns the Mote global (`job_status_change = LifecycleManager.status_change()` etc.) and exports it. Each takes an optional `extra(...)` callback with the same arguments as the handler. A fifth function, `refresh_after_buff`, is a helper the jobs call from their buff handler.
 
 | Builder | Shared behaviour | `extra` | Used by |
 |---|---|---|---|
 | `status_change(extra)` | `DoomManager.handle_status_change(new, old)` (unlocks Doom slots after death); after `extra`, `hold_during_action` (below) | always run between the two | all 17 jobs (DRK, SMN and WAR since 2026-09-28; before, their `<JOB>_STATUS.lua` only called `DoomManager`) |
-| `buff_change(extra)` | `DoomManager.handle_buff_change(buff, gain)`; if it returns true the chain stops | skipped when Doom handled it | BLM BLU BRD BST COR DNC PLD PUP RDM RUN SAM WHM (COR passes `retire_lost_roll`) |
+| `buff_change(extra)` | `DoomManager.handle_buff_change(buff, gain)`; if it returns true the chain stops | skipped when Doom handled it | BLM BLU BRD BST COR DNC PLD PUP RDM RUN SAM WHM (COR passes `retire_lost_roll`, SAM a call to `refresh_after_buff`) |
 | `aftercast(extra)` | `_G.MidcastWatchdog.on_aftercast()` if the watchdog is loaded. No `gs c update` (removed 2026-06) | always run after | BLU PLD PUP RDM RUN SAM SMN WHM |
 | `state_change(extra)` | Returns immediately for `stateField == 'Moving'`; otherwise `KeybindUI.update()` | run after the UI update | BLU BRD BST COR DNC DRK GEO PLD PUP RUN SAM SMN THF |
+| `refresh_after_buff(buff)` (not a builder: called from a buff handler, returns a boolean) | For a buff in `GEAR_BUFFS` (only `'Aftermath: Lv.3'`), unless `buffactive['doom']`: schedules `send_command('gs c update')` 0.1 s later, skipped if `midaction()` is true at that moment (the action's aftercast rebuilds). Returns true when it scheduled the update | - | WAR DRK THF (from their own `job_buff_change`), SAM (as its `buff_change` `extra`), since 2026-09-29 |
 
 `DoomManager` is required on first use (`doom()`), without `pcall`.
+
+**Why `refresh_after_buff` defers.** Inside `buff_change`, `buffactive` still holds the buffs from before the change: on packet 0x063 GearSwap refreshes the user globals before it stores the new buff list (*(engine)* `packet_parsing.lua` lines 553-567). A rebuild inside the handler (`handle_equipping_gear(player.status)`, what WAR and DRK did before 2026-09-29) read the old state: a gained Aftermath got no AM3 set, a lost one put it back on. `gs c update` 0.1 s later is a new event, which refreshes `buffactive` first. Checked offline as a unit, not yet in game.
 
 **Engage / disengage during an action** (`hold_during_action`). Mote's `status_change` equips the new status set at once unless `eventArgs.handled` (`Mote-Include.lua:995-1017`), which, during an action, lands over the action's gear (a Phantom Roll went out with the engaged neck). The shared handler returns early when `extra` already handled the event or the new status is not `Idle` / `Engaged`; otherwise, when `midaction()` is true, it sets `eventArgs.handled` and lets `default_aftercast` (`handle_equipping_gear(player.status)`) put on the set of the status in force when the action ends. A fallback is scheduled `STATUS_FALLBACK` = 3 s later: if no action is running and the status is still the new one, it sends `gs c update` (an `equip()` from a coroutine would never be sent).
 
@@ -435,7 +438,7 @@ Each caller requires it at call time (no module-level require). Outside COR `_G.
 
 ### LifecycleManager (`_G.LifecycleManager`, returned)
 
-`status_change(extra)`, `buff_change(extra)`, `aftercast(extra)`, `state_change(extra)`: see the table above. Callers: the jobs' `<JOB>_STATUS.lua`, `<JOB>_BUFFS.lua`, `<JOB>_AFTERCAST.lua`, `<JOB>_COMMANDS.lua` / state modules.
+`status_change(extra)`, `buff_change(extra)`, `aftercast(extra)`, `state_change(extra)`, `refresh_after_buff(buff)`: see the table above. Callers: the jobs' `<JOB>_STATUS.lua`, `<JOB>_BUFFS.lua`, `<JOB>_AFTERCAST.lua`, `<JOB>_COMMANDS.lua` / state modules.
 
 ### StateDisplayOverride (returned only)
 
@@ -684,6 +687,7 @@ Open:
 - `watchdog clear` during a test leaves test mode on; the next real cast is reported stuck (`MidcastWatchdog.clear_all`).
 - Fixed 2026-09-28: the dead `ModuleCache.stats()` and `MidcastWatchdog.is_enabled/get_buffer/get_fallback_timeout/is_debug_enabled` are removed; WAR, DRK and SMN use `LifecycleManager.status_change()`.
 - The job intro never shows the macro book or the lockstyle: `KeybindManager`'s `show_intro` looks for `get_<job>_macro_info` and `get_info` on the `<JOB>_MACROBOOK` / `<JOB>_LOCKSTYLE` modules, and the wrappers return nothing (owner decision pending).
+- Fixed 2026-09-29 (checked offline, not yet in game): the Aftermath Lv.3 gear change read `buffactive` before GearSwap stored the new buff (WAR and DRK rebuilt inside `job_buff_change`; SAM and THF did not rebuild at all). WAR, DRK, SAM and THF now call `LifecycleManager.refresh_after_buff`.
 - Hook layers fail silently: each install is wrapped in `pcall(function() ... end)` with no report, unlike the other INIT blocks.
 - The 3 s fallback of `hold_during_action` (sends `gs c update`) is not tested in game.
 - `docs/user/features/job-change-manager.md` and `docs/user/features/watchdog.md` are out of date.

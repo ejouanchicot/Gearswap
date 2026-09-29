@@ -46,7 +46,7 @@ function; line numbers are deliberately not used.
 | `shared/jobs/sam/functions/SAM_IDLE.lua` | 42 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/sam/functions/SAM_ENGAGED.lua` | 42 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/sam/functions/SAM_STATUS.lua` | 31 | `job_status_change = LifecycleManager.status_change(auto_hasso)` |
-| `shared/jobs/sam/functions/SAM_BUFFS.lua` | 19 | `job_buff_change = LifecycleManager.buff_change()` |
+| `shared/jobs/sam/functions/SAM_BUFFS.lua` | 22 | `job_buff_change = LifecycleManager.buff_change(extra)`, `extra` calling `LifecycleManager.refresh_after_buff` (Aftermath Lv.3) |
 | `shared/jobs/sam/functions/SAM_COMMANDS.lua` | 166 | `job_self_command` router (shared commands, `hasso`, `seigan`), `job_state_change = LifecycleManager.state_change()` |
 | `shared/jobs/sam/functions/SAM_MOVEMENT.lua` | 28 | Empty `job_handle_equipping_gear` (movement gear is in the set builder) |
 | `shared/jobs/sam/functions/SAM_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('SAM', ...)` wrappers |
@@ -211,7 +211,14 @@ no midcast set in the template).
 - `job_status_change = LifecycleManager.status_change(auto_hasso)`: Doom
   unlock, then `auto_hasso`, then the hold of the status rebuild during an
   action.
-- `job_buff_change = LifecycleManager.buff_change()`: Doom only.
+- `job_buff_change = LifecycleManager.buff_change(extra)`: Doom, then (unless
+  Doom handled the event) `LifecycleManager.refresh_after_buff(buff)`: on gain
+  or loss of `"Aftermath: Lv.3"`, unless Doom is up, `gs c update` 0.1 s later,
+  skipped if an action is under way then. So `sets.engaged.AM3` goes on or off
+  about 0.1 s after the buff changes (since 2026-09-29; before, nothing rebuilt
+  the gear on an Aftermath change). Deferred because `buffactive` inside
+  `buff_change` still holds the old buffs
+  ([core-lifecycle.md](../systems/core-lifecycle.md#lifecyclemanager)).
 - `job_handle_equipping_gear` (`SAM_MOVEMENT.lua`) is empty.
 
 ### Auto Hasso
@@ -418,6 +425,10 @@ T = `_master/sets/sam_sets.lua` (no live copy in the repository).
   `sets.idle.Normal`, whole sets) they now replace the PDT pieces below 80 % /
   50 % HP; to keep DT pieces there, list only the pieces to change in
   Regen / Weak.
+- Fixed 2026-09-29 (checked offline, not yet in game): gaining or losing
+  Aftermath Lv.3 did not rebuild the gear, so `sets.engaged.AM3` waited for the
+  next gear change; `job_buff_change` now calls
+  `LifecycleManager.refresh_after_buff`.
 - `SAM_LOCKSTYLE.by_subjob` is never read (no `get_style`).
 - Dead code: `job_handle_equipping_gear`, `sets.buff.Sengikori`.
 - `SAM_COMMANDS` duplicates most of `DRK_COMMANDS` (open finding).

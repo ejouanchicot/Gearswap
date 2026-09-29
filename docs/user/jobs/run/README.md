@@ -26,7 +26,7 @@ the keys that are bound now, with the current value of each mode.
 |---|---|---|
 | `^numpad9` | Cycle `HybridMode` (PDT, MDT) | Default PDT |
 | `^numpad1` | Cycle `MainWeapon` (Epeolatry, Lycurgos) | Default Epeolatry |
-| `^numpad2` | Cycle `SubWeapon` grip (Utu, Refined) | Default Refined; not worn with Lycurgos |
+| `^numpad2` | Cycle `SubWeapon` grip (Utu, Refined) | Default Refined; worn with both weapons |
 | `^numpad3` | Cycle `RuneMode` (Ignis ... Tenebrae) | Default Ignis; used by `//gs c rune` |
 | `#numpad0` | Auto Medicine on / off | Common key, every job |
 | `!numpad7` | Your other characters follow you (toggle) | Common key; needs a box group ([dual-box](../../guides/dualbox.md)) |

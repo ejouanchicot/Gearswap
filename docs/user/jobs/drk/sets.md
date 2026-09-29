@@ -36,8 +36,8 @@ Then, on top: `sets.<Main Weapon>`, then the Dark Seal / Nether Void pieces
 below. Other engaged names (`sets.engaged.Normal`, an Offense Mode...) are not
 read on DRK.
 
-When Aftermath: Lv.3 starts or ends, the engaged set is rebuilt at once
-(unless you are Doomed). If a spell or weaponskill is under way, it is rebuilt
+When Aftermath: Lv.3 starts or ends, the engaged set is rebuilt about 0.1 s
+later (unless you are Doomed). If a spell or weaponskill is under way, it is rebuilt
 when that action ends.
 
 ## Dark Seal and Nether Void
@@ -114,7 +114,8 @@ back to `sets.midcast['Dark Magic']`.
 - **Dark Seal / Nether Void engaged versions**, from the press of the ability,
   when you write them.
 - **Aftermath Lv.3 with Liberator** swaps the engaged base to
-  `sets.engaged.AM3`, and the gear changes the moment Aftermath starts or ends.
+  `sets.engaged.AM3`, and the gear changes about 0.1 s after Aftermath starts
+  or ends.
   Remove `sets.engaged.AM3` to stop it.
 - **Weapon** re-equipped on every idle and engaged set.
 - **Movement gear** while running, outside a town.

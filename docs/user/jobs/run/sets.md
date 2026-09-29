@@ -16,8 +16,8 @@ target.
 |---|---|
 | `sets.Epeolatry` | `MainWeapon` Epeolatry |
 | `sets.Lycurgos` | `MainWeapon` Lycurgos |
-| `sets.Utu` | `SubWeapon` Utu (grip), with any weapon but Lycurgos |
-| `sets.Refined` | `SubWeapon` Refined (grip), with any weapon but Lycurgos |
+| `sets.Utu` | `SubWeapon` Utu (grip), with every weapon, Lycurgos included |
+| `sets.Refined` | `SubWeapon` Refined (grip), with every weapon, Lycurgos included |
 
 The weapon and grip sets are laid over your idle and engaged sets every time they are
 rebuilt, in town too. A weapon or grip you add to the lists in `RUN_STATES.lua` works
@@ -129,8 +129,8 @@ family such as `sets.midcast.BarElement`, then the skill set).
 
 - **Stance, weapon and grip** sets are rebuilt on every idle / engaged change (see the
   order above).
-- **Lycurgos skips the grip**: the grip set is not applied, and whatever was in the off
-  hand is not removed either.
+- **The grip goes on with every weapon**: Lycurgos (a Great Axe) takes your
+  `SubWeapon` grip like Epeolatry.
 - **Cures pick their set by target** (yourself or someone else), for Cure to Cure IV,
   in precast (`sets.precast.FC.CureSelf`) and midcast (CureSelf / CureOther).
 - **Runes swap nothing** with the provided file: `sets.precast.JA` is empty, so your

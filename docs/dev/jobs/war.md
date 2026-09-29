@@ -51,7 +51,7 @@ numbers are avoided because they drift.
 | `shared/jobs/war/functions/WAR_IDLE.lua` | 57 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/war/functions/WAR_ENGAGED.lua` | 53 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/war/functions/WAR_STATUS.lua` | 27 | `job_status_change = LifecycleManager.status_change()` |
-| `shared/jobs/war/functions/WAR_BUFFS.lua` | 122 | `job_buff_change` (Doom, Aftermath Lv.3 refresh) and the globals `buff_war`, `buff_sam_sub`, `build_tp` |
+| `shared/jobs/war/functions/WAR_BUFFS.lua` | 117 | `job_buff_change` (Doom, Aftermath Lv.3 refresh through `LifecycleManager.refresh_after_buff`) and the globals `buff_war`, `buff_sam_sub`, `build_tp` |
 | `shared/jobs/war/functions/WAR_COMMANDS.lua` | 320 | `job_self_command` router and `job_state_change` (WS slot rebuild, `AmpullaLock.apply` on `HybridMode`, UI refresh) |
 | `shared/jobs/war/functions/WAR_MOVEMENT.lua` | 166 | Retaliation auto-cancel (AutoMove callback), Retaliation debug helpers |
 | `shared/jobs/war/functions/WAR_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('WAR', ..., 4, 'SAM')` wrappers |
@@ -351,10 +351,14 @@ has no effect on WAR.
   since 2026-09-28: `DoomManager.handle_status_change`, then an engage / disengage
   that lands during an action is held until the aftercast (3 s fallback). Before,
   it only called `DoomManager`, so the engaged / idle set replaced the action's gear.
-- `job_buff_change` (`WAR_BUFFS.lua`): Doom through `DoomManager`; on gain or loss of
-  `"Aftermath: Lv.3"` (exact `res.buffs` casing), calls
-  `handle_equipping_gear(player.status)` unless Doom is up. Mote's `buff_change`
-  does not re-equip by itself.
+- `job_buff_change` (`WAR_BUFFS.lua`): Doom through `DoomManager`; then
+  `LifecycleManager.refresh_after_buff(buff)`: on gain or loss of
+  `"Aftermath: Lv.3"` (exact `res.buffs` casing), unless Doom is up, `gs c update`
+  0.1 s later, skipped if an action is under way then. So `PDTAFM3` /
+  `<stance>AFM3` goes on or off about 0.1 s after the buff changes. It is deferred
+  because `buffactive` inside `buff_change` still holds the old buffs
+  ([core-lifecycle.md](../systems/core-lifecycle.md#lifecyclemanager)). Mote's
+  `buff_change` does not re-equip by itself.
 
 ### Retaliation auto-cancel
 
@@ -602,6 +606,10 @@ cancel depend on recasts, packets and timing: check them in game with
   (hold during an action, `DoomManager` required once); `detect_weapon` recognises
   table / other-case / long-name set entries; the Hoxne stance wears its Ampulla;
   leaving `NaeglingKC` drops `PDTKC` at once; `thirdeye` off /SAM warns.
+- Fixed 2026-09-29 (checked offline, not yet in game): `job_buff_change` rebuilt
+  the gear inside the buff event, where `buffactive` still holds the old buffs, so
+  gaining Aftermath Lv.3 kept the non-AM3 set and losing it put `PDTAFM3` back on.
+  It now calls `LifecycleManager.refresh_after_buff`.
 - The Healing / Enhancing midcast routing is a no-op: no `sets.midcast` entry in
   either sets file.
 - `perf` branch unreachable (`WAR_COMMANDS.lua`).

@@ -12,7 +12,8 @@ RUN is structurally a copy of [PLD](pld.md) with less in it. What it adds on top
 the shared pipeline:
 
 - **Weapon + grip set builder**: `MainWeapon` (Epeolatry, Lycurgos) and `SubWeapon`
-  (Utu, Refined grip), grip skipped for Lycurgos, HybridMode PDT/MDT sets.
+  (Utu, Refined grip), the grip worn with every weapon (Lycurgos included since
+  2026-09-29), HybridMode PDT/MDT sets.
 - **Name-before-skill midcast**: Flash and Enlight caught before the Divine skill,
   target-aware Cure to Cure IV (subjob), Phalanx by name, Enhancing by spell family,
   Blue Magic under one set.
@@ -49,7 +50,7 @@ drift.
 | `shared/jobs/run/functions/RUN_MOVEMENT.lua` | 24 | Comments only |
 | `shared/jobs/run/functions/RUN_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('RUN', 'config/run/RUN_LOCKSTYLE', 1, 'SAM')` |
 | `shared/jobs/run/functions/RUN_MACROBOOK.lua` | 42 | Lazy `MacrobookManager.create('RUN', ..., 'SAM', 1, 1)` |
-| `shared/jobs/run/functions/logic/set_builder.lua` | 180 | Idle/engaged: HybridMode, weapon, grip, town, movement |
+| `shared/jobs/run/functions/logic/set_builder.lua` | 174 | Idle/engaged: HybridMode, weapon, grip, town, movement |
 | `shared/jobs/run/functions/logic/aoe_manager.lua` | 182 | BLU rotation (same code as PLD's except strings; refuses without /BLU) |
 | `shared/jobs/run/functions/logic/cure_set_builder.lua` | 57 | CureSelf / CureOther for Cure to Cure IV (subjob), `is_cure` |
 | `shared/jobs/run/functions/logic/rune_manager.lua` | 76 | `//gs c rune` (same code as PLD's) |
@@ -203,13 +204,14 @@ flowchart TD
   ([core lifecycle](../systems/core-lifecycle.md#lifecyclemanager)).
 - `SetBuilder.build_engaged_set`: Mote base (`sets.engaged.PDT` / `.MDT` through
   `HybridMode`) -> the HybridMode set again (`set_combine`) -> weapon
-  (`apply_weapon`, `WeaponResolver.set_for('main', ...)`) -> grip (`apply_grip`)
-  unless MainWeapon is Lycurgos.
+  (`apply_weapon`, `WeaponResolver.set_for('main', ...)`) -> grip (`apply_grip`,
+  `WeaponResolver.set_for('sub', SubWeapon)`), whatever the weapon.
 - `SetBuilder.build_idle_set`: Mote's idle; in a city `sets.idle` with the town
   set (`sets.Adoulin` / `sets.idle.Town`) on top -> HybridMode idle set (field only) -> weapon -> grip -> return in
   town, else `sets.MoveSpeed` when moving.
-- For Lycurgos the grip is skipped, not removed: whatever grip was in the sub slot
-  stays there.
+- Since 2026-09-29 `apply_grip` has no weapon test: the Lycurgos Great Axe takes
+  the SubWeapon grip like Epeolatry (WAR and DRK sets pair Lycurgos with a grip too).
+  Before, with Lycurgos the sub slot kept whatever was worn.
 
 ### Differences from PLD
 
@@ -222,7 +224,7 @@ flowchart TD
 | Phalanx | SIRD override (`Xp`, `PhalanxSIRD`) or pseudo-skill `Phalanx` | plain Enhancing, name set wins |
 | Blue Magic | `Cocoon` pseudo-skill, else `Blue Magic` (no base set) | `Blue Magic` with a base set |
 | Enmity override | `EnmityOverride` after dispatch | none |
-| Set builder | weapon + shield, BurtgangKC, Shining grip, XP, Regen, Sortie / /SCH maps | weapon + grip, Lycurgos skip |
+| Set builder | weapon + shield, BurtgangKC, Shining grip, XP, Regen, Sortie / /SCH maps | weapon + grip (every weapon) |
 | HybridMode | PDT, MDT, Sortie (/SCH: DPS, Tanking, Hoxne); profile hook in `job_state_change` | PDT, MDT; HUD refresh only |
 | Subjob-filtered binds | Xp (/RDM), RuneMode (/RUN), Regen / Phalanx SIRD (/SCH) | none |
 | WS slots | `WS1`, `WS2` | none |
@@ -360,8 +362,9 @@ is [run/sets.md](../../user/jobs/run/sets.md), which also covers Mote's optional
 
 ### Change recipes
 
-- **New weapon**: add it to `state.MainWeapon` and define `sets.<Name>`; if it takes
-  no grip, extend the Lycurgos test in `apply_grip`. A weapon that gives TP bonus
+- **New weapon**: add it to `state.MainWeapon` and define `sets.<Name>`. `apply_grip`
+  puts the SubWeapon grip on with every weapon; a weapon that must not take one
+  (a one-hander with a shield) needs a test added there. A weapon that gives TP bonus
   goes in `RUN_TP_CONFIG.weapons`.
 - **New midcast route**: add a branch in `job_post_midcast` (`RUN_MIDCAST.lua`) and
   define `sets.midcast['<Skill>']`, or the route is a no-op.
@@ -403,6 +406,9 @@ RUN weaponskills. There is no RUN-specific differential test.
 ## Known issues
 
 - Divine route is a no-op (no `sets.midcast['Divine Magic']`).
+- Fixed 2026-09-29 (checked offline, not yet in game): with Lycurgos the grip set was
+  skipped and the sub slot kept whatever was worn; `apply_grip` now puts the
+  SubWeapon grip on with every weapon.
 - Fixed 2026-09-28: the UI readiness anchor was `RuneElement` (no such state); it is `RuneMode`.
 - Stale comment in `RUN_PRECAST.lua` `ensure_modules_loaded`: it says the entry
   does not load `RUN_TP_CONFIG`; the entry does, since 2026-09-27.

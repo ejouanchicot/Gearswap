@@ -163,7 +163,8 @@ Subjob /DNC: `sets.precast.Waltz`, `sets.precast.Step` and
 - **Treasure Hunter** on new mobs, Tag mode by default, on the engaged set and
   on the first action against a mob. Off: `//gs c th hide`.
 - **Aftermath Lv.3 with Vajra** swaps the engaged base to `sets.engaged.PDTAFM3`,
-  whatever the Hybrid Mode. Remove that set to stop it.
+  whatever the Hybrid Mode, about 0.1 s after the aftermath starts or ends (not
+  while Doomed; if an action is under way, when it ends). Remove that set to stop it.
 - **Range lock** after every ranged attack; **quiver opening** for the bolts you wear.
 - **Weapons** re-equipped on every idle and engaged set.
 - The chains `//gs c smartbuff`, `fbc` and `steal` send abilities only; their

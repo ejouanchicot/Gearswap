@@ -49,7 +49,7 @@ function; line numbers are deliberately not used.
 | `shared/jobs/thf/functions/THF_IDLE.lua` | 42 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
 | `shared/jobs/thf/functions/THF_ENGAGED.lua` | 42 | `customize_melee_set` -> `SetBuilder.build_engaged_set` |
 | `shared/jobs/thf/functions/THF_STATUS.lua` | 20 | `job_status_change = LifecycleManager.status_change()` |
-| `shared/jobs/thf/functions/THF_BUFFS.lua` | 68 | `job_buff_change`: DoomManager, SA/TA pending reset, `gs c update` on SA/TA loss while engaged |
+| `shared/jobs/thf/functions/THF_BUFFS.lua` | 71 | `job_buff_change`: DoomManager, SA/TA pending reset, `gs c update` on SA/TA loss while engaged, Aftermath Lv.3 refresh (`LifecycleManager.refresh_after_buff`) |
 | `shared/jobs/thf/functions/THF_COMMANDS.lua` | 224 | `job_self_command` router, `job_state_change` (`LifecycleManager.state_change` + RangeLock lock/unlock) |
 | `shared/jobs/thf/functions/THF_MOVEMENT.lua` | 18 | Header only, kept for the 12-module layout |
 | `shared/jobs/thf/functions/THF_LOCKSTYLE.lua` | 47 | Lazy `LockstyleManager.create('THF', ...)` wrappers |
@@ -230,7 +230,10 @@ sequenceDiagram
    `MainWeapon == 'Vajra'` -> `sets.engaged.PDTAFM3`; otherwise
    `sets.engaged[HybridMode]` if it exists; otherwise Mote's set. This replaces
    Mote's own selection, so Mote's defense and kiting layers never reach THF
-   engaged gear.
+   engaged gear. Gaining or losing Aftermath Lv.3 rebuilds the gear about 0.1 s
+   later (`job_buff_change` -> `LifecycleManager.refresh_after_buff`: a
+   `gs c update`, not under Doom, skipped if an action is under way then; since
+   2026-09-29, before nothing rebuilt on an Aftermath change).
 2. `apply_weapon`: with `AbyProc` true, `sets[AbyWeapon]` (a main+sub pair,
    read directly); otherwise `WeaponResolver.set_for('main', MainWeapon)` then
    `set_for('sub', SubWeapon)`, each through `pcall(set_combine)`. By default
@@ -392,7 +395,9 @@ spell of any other skill (subjob Dark Magic, Elemental, ...) is routed by
 - `job_status_change` is the shared `LifecycleManager` handler (Doom unlock,
   status change held back during an action).
 - `job_buff_change` is THF's own: the same Doom call as
-  `LifecycleManager.buff_change`, plus the SA/TA handling above.
+  `LifecycleManager.buff_change`, plus the SA/TA handling above, then
+  `LifecycleManager.refresh_after_buff(buff)` (Aftermath Lv.3, see
+  [core-lifecycle.md](../systems/core-lifecycle.md#lifecyclemanager)).
 
 ## Mote states
 
@@ -629,6 +634,10 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
   right. Vajra is a Mythic weapon (BG-Wiki), Mythic aftermath has three levels,
   `Aftermath: Lv.1/2/3` = buffs 270-272 (`res/buffs.lua`); buff 273 is the
   Relic aftermath. Do not change the test to 273.
+- Fixed 2026-09-29 (checked offline, not yet in game): gaining or losing
+  Aftermath Lv.3 did not rebuild the gear, so `sets.engaged.PDTAFM3` waited for
+  the next gear change; `job_buff_change` now calls
+  `LifecycleManager.refresh_after_buff`.
 - Midcast routing is a no-op for the three routed skills (base sets absent);
   `sets.midcast.EnhancingMagic` uses a key nothing reads.
 - Initial macrobook/lockstyle depend on the `show_intro` side effect
