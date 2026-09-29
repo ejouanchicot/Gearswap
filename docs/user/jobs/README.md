@@ -22,6 +22,7 @@ Medicine) and Alt+Numpad7-9 (dual-box alts). See the
 | DRG | [drg/README.md](drg/README.md) | Also [drg/states.md](drg/states.md), [drg/sets.md](drg/sets.md); added 2026-09-29, not played by a maintained character |
 | DRK | [drk/README.md](drk/README.md) | Also [states](drk/states.md), [abilities](drk/abilities.md), [sets](drk/sets.md); not played by a maintained character |
 | GEO | [geo/README.md](geo/README.md) | Also [geo/states.md](geo/states.md), [geo/sets.md](geo/sets.md) |
+| NIN | [nin/README.md](nin/README.md) | Also [nin/states.md](nin/states.md), [nin/sets.md](nin/sets.md); added 2026-09-29, not played by a maintained character |
 | PLD | [pld/README.md](pld/README.md) | Also [pld/states.md](pld/states.md), [pld/sets.md](pld/sets.md) |
 | RDM | [rdm/README.md](rdm/README.md) | |
 | RUN | [run/README.md](run/README.md) | Also [run/states.md](run/states.md), [run/sets.md](run/sets.md); not played by a maintained character |

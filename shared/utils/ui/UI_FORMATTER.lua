@@ -35,6 +35,7 @@ local job_titles = {
     SCH = "Scholar Settings",
     COR = "Corsair Settings",
     GEO = "Geomancer Settings",
+    NIN = "Ninja Settings",
     RUN = "Rune Fencer Settings"
 }
 

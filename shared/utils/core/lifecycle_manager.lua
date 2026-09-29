@@ -82,6 +82,10 @@ local GEAR_BUFFS = {
     ['Footwork'] = true,  -- MNK
     ['Hundred Fists'] = true,  -- MNK
     ['Counterstance'] = true,  -- MNK
+    ['Yonin'] = true,  -- NIN
+    ['Innin'] = true,  -- NIN
+    ['Sange'] = true,  -- NIN
+    ['Issekigan'] = true,  -- NIN
 }
 
 --- Rebuild the gear once GearSwap has stored a buff change that swaps sets.
