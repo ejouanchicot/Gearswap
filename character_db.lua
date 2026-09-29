@@ -36,8 +36,8 @@ local CHARACTERS = {
     -- MAIN CHARACTER
     ---------------------------------------------------------------------------
     Tetsouo = {
-        jobs = { 'BLM', 'BRD', 'BST', 'COR', 'DNC', 'DRG', 'MNK', 'NIN', 'PLD', 'PUP',
-                 'RNG', 'SCH', 'SMN', 'THF', 'WAR' },
+        jobs = { 'BLM', 'BLU', 'BRD', 'BST', 'COR', 'DNC', 'DRG', 'DRK', 'GEO', 'MNK', 'NIN',
+                 'PLD', 'PUP', 'RDM', 'RNG', 'RUN', 'SAM', 'SCH', 'SMN', 'THF', 'WAR', 'WHM' },
         role = 'main',
     },
 
@@ -73,7 +73,7 @@ local CHARACTERS = {
 --- These are preserved but not cloned to any active character.
 --- Move a job from _archive to a character entry above to re-activate it.
 
-local ARCHIVE_JOBS = { 'DRK', 'RUN', 'SAM', 'WHM' }
+local ARCHIVE_JOBS = {}
 
 ---============================================================================
 --- MASTER DATA PATHS (relative to data/ directory)
