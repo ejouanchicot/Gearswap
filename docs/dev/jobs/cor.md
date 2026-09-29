@@ -55,7 +55,9 @@ function; line numbers are given only where no function name fits.
 | `shared/jobs/cor/functions/COR_LOCKSTYLE.lua` | 49 | Lazy `LockstyleManager.create('COR', ..., 1, 'SAM')` wrappers |
 | `shared/jobs/cor/functions/COR_MACROBOOK.lua` | 43 | Lazy `MacrobookManager.create('COR', ..., 'SAM', 1, 1)` wrapper |
 | `shared/jobs/cor/functions/logic/party_tracker.lua` | 309 | `init_roll_listener` (raw `action`), `init` (raw `incoming chunk` `0xDD`/`0xDF`), `members_for_display`, `cleanup` |
-| `shared/jobs/cor/functions/logic/roll_tracker.lua` | 834 | Roll state, `sync_with_buffs`, Crooked, bonus, party cache validation, coverage, display, `cleanup`. **Over the 800-line hard limit** |
+| `shared/jobs/cor/functions/logic/roll_tracker.lua` | 581 | Roll state, `sync_with_buffs`, Crooked, bonus, bust, `cleanup`; re-exports the `roll_party` and `roll_display` functions on `RollTracker` and calls them through it |
+| `shared/jobs/cor/functions/logic/roll_party.lua` | 231 | Party job cache validation (`validate_party_cache`, `drop_departed_and_expired`), `is_job_in_party_zone`, `roll_range` (8, or 16 with LuzafRing), `count_party_members_with_buff` |
+| `shared/jobs/cor/functions/logic/roll_display.lua` | 79 | `display_roll_result` (local message + `RollShare.result`), `display_double_up_status` |
 | `shared/jobs/cor/functions/logic/roll_data.lua` | 439 | 31 rolls: values 1-11, lucky/unlucky, bust effect, `+Phantom Roll` step, job bonus |
 | `shared/jobs/cor/functions/logic/roll_gear.lua` | 73 | `PHANTOM_ROLL_GEAR` and `RollGear.bonus()` read from the game |
 | `shared/jobs/cor/functions/logic/roll_hold.lua` | 68 | `RollHold.start` / `stop` / `hold_update`, `HOLD_MAX` 5 s |
@@ -426,7 +428,7 @@ Full player-facing list: [sets.md](../../user/jobs/cor/sets.md).
 | `<char>/config/cor/COR_REFILL.lua` | none in the template | refill system |
 | `<char>/config/RECAST_CONFIG.lua` `party_announce['Phantom Roll']` | none | `recast_announce.lua` |
 | `<char>/config/UI_CONFIG.lua` `rolls` block | full style, remote `same`, every detail on (template lines commented) | `roll_messages.lua` (`//gs c ui roll...`) |
-| Constants | duplicate window 0.5 s, Crooked window 60 s, Double-Up window 45 s, party TTL 600 s, `ROLL_MAX_DURATION` 600 s, `HOLD_MAX` 5 s, pouch threshold 15 | `roll_tracker.lua` (`is_duplicate_report`, `crooked_applies`, `display_double_up_status`, `drop_departed_and_expired`), `roll_hold.lua`, `COR_AFTERCAST.lua` |
+| Constants | duplicate window 0.5 s, Crooked window 60 s, Double-Up window 45 s, party TTL 600 s, `ROLL_MAX_DURATION` 600 s, `HOLD_MAX` 5 s, pouch threshold 15 | `roll_tracker.lua` (`is_duplicate_report`, `crooked_applies`), `roll_display.lua` (`display_double_up_status`), `roll_party.lua` (`drop_departed_and_expired`), `roll_hold.lua`, `COR_AFTERCAST.lua` |
 
 ## State & lifetime
 
@@ -504,7 +506,7 @@ for f in $(git ls-files 'shared/jobs/cor/*.lua' '_master/config/cor/*.lua' _mast
 Pure logic runs outside the game with stubs: `roll_data.lua` needs nothing;
 `double_up.lua` needs `buffactive`, `_G.cor_last_roll`, `send_command` and a
 stub `MessageFormatter` in `package.loaded`; `roll_hold.lua` needs `os.clock`
-and `rawget`. `roll_tracker.lua` needs `windower.ffxi.get_party`,
+and `rawget`. `roll_tracker.lua` (with `roll_party.lua`) needs `windower.ffxi.get_party`,
 `get_mob_by_id`, `buffactive`, `player` and `state`. Load a module with
 `package.path = 'D:/Windower Tetsouo/addons/GearSwap/data/?.lua;' .. package.path`
 and call its functions; the gitignored `scripts/audit/` folder holds the
@@ -544,8 +546,6 @@ In game: `//gs c rolldebug` (per-roll gear report and `rolldebug.log`),
   gear ask `GearHold.active()`, like the Dual Wield tiers (checked offline:
   engaged with Treasure Mode Full, the TH belt no longer goes on during a
   roll). Not yet seen in game.
-- `roll_tracker.lua` is 834 lines, above the 800-line hard limit (not in the
-  `CLAUDE.md` list of oversized files).
 - After a reload with a roll still up, the next Double-Up is reported as a
   fresh roll and loses Crooked: `cor_active_rolls` starts empty and only
   `//gs c rolls` calls `sync_with_buffs` (`roll_is_active`, `on_roll_cast`).

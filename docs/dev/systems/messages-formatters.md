@@ -425,9 +425,9 @@ Several `message_warp` functions are intentionally empty ("Silent init"): `show_
 
 | Function | Callers |
 |---|---|
-| `RollMessages.show_roll_result(roll_name, value_display, bonus_display, is_crooked, affected_count, total_count, lucky_num, unlucky_num, missed_names, bust_rate, job_bonus_info, roll_range, source)` | `cor/functions/logic/roll_tracker.lua`, `roll_share.lua` (remote rolls, `source` set) |
+| `RollMessages.show_roll_result(roll_name, value_display, bonus_display, is_crooked, affected_count, total_count, lucky_num, unlucky_num, missed_names, bust_rate, job_bonus_info, roll_range, source)` | `cor/functions/logic/roll_display.lua`, `roll_share.lua` (remote rolls, `source` set) |
 | `show_roll_bust(roll_name, bust_effect, effect_type, source)` | `roll_tracker.lua`, `roll_share.lua` |
-| `show_roll_double_up_window(remaining_seconds)` (`info`), `show_roll_double_up_expired()`, `show_no_active_roll()` (`warning`) | `roll_tracker.lua` |
+| `show_roll_double_up_window(remaining_seconds)` (`info`), `show_roll_double_up_expired()`, `show_no_active_roll()` (`warning`) | `roll_display.lua` |
 | `show_active_rolls(active_rolls)` (InfoBlock `COR :: Active rolls (n)`; a roll without value shows `? (cast before the reload)`), `show_rolls_cleared()`, `show_invalid_roll_value(roll_value)` | `COR_COMMANDS.lua` (`rolls`, `clearrolls`, `track_roll`) |
 | `show_roll_natural_eleven`, `show_roll_not_found` | (dead; `show_roll_result` prints the 11 line itself) |
 | `PartyMessages.show_party_members(members)` | `COR_COMMANDS.lua` (`party`); expects an array of `{name, main_job?, sub_job?, main_job_level?}` from `PartyTracker.members_for_display`; a member without job prints `job unknown (until it zones or changes job)` |

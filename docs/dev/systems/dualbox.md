@@ -56,7 +56,7 @@ Integration points outside the folder: `shared/utils/core/COMMON_COMMANDS.lua` (
 `shared/jobs/*/functions/*_COMMANDS.lua` (protocol commands), every entry file's `user_setup()`
 and every `*_functions.lua` facade (module load), `shared/jobs/geo/functions/GEO_BUFFS.lua`
 (buff reports), `shared/utils/macrobook/macrobook_manager.lua` `dualbox_config` (macro book per alt job),
-`shared/jobs/cor/functions/logic/roll_tracker.lua` and `party_tracker.lua` (roll job bonus, party job cache),
+`shared/jobs/cor/functions/logic/roll_party.lua` and `party_tracker.lua` (roll job bonus, party job cache),
 `shared/utils/keybinds/keybind_manager.lua` (`alt` and `weapon` conditions on keys, through `alt_states.lua`).
 
 How the config files were read for this page: every `*_ALT_CUSTOM.lua`, the GEO `.example`, and
@@ -452,7 +452,7 @@ listener under `pcall`. Two listeners exist: `dualbox` (`watch_weapon`, sends `a
 
 ### COR rolls on the main (`roll_share.lua`, 2026-09-27)
 
-When the box is an alt (`DualBoxConfig.role == 'alt'`) playing COR, `RollTracker.display_roll_result` and the bust display call `RollShare.result` / `RollShare.bust` (`roll_tracker.lua`, one line each, in a pcall) after showing the message locally. They send `send <main_character> gs c rollshow <result|bust> <caster> <fields...>`, each field hex-encoded (roll names hold spaces and apostrophes; an empty field is `-`). Nothing is sent when the box is not an alt or when the main has not reported its job through `alt_states.lua` (a main on another GearSwap would get an unknown command). The main's common command `rollshow` (`COMMON_COMMANDS.lua`) decodes the fields and calls `RollMessages.show_roll_result` / `show_roll_bust` with a last `source` argument ("Kaories COR"), which replaces the job tag: same lines, same colors, the caster in brackets, shown even with the job tag off. Double-Ups are roll results and are sent too; the party coverage and missed names are the COR's own count. The receiving box shows them in its `rolls.remote_style` (UI_CONFIG, `//gs c ui rollremote`; `same` = its own `rolls.style`, `off` = not shown, busts included).
+When the box is an alt (`DualBoxConfig.role == 'alt'`) playing COR, `RollTracker.display_roll_result` and the bust display call `RollShare.result` / `RollShare.bust` (`roll_display.lua` and `roll_tracker.lua`, one line each, in a pcall) after showing the message locally. They send `send <main_character> gs c rollshow <result|bust> <caster> <fields...>`, each field hex-encoded (roll names hold spaces and apostrophes; an empty field is `-`). Nothing is sent when the box is not an alt or when the main has not reported its job through `alt_states.lua` (a main on another GearSwap would get an unknown command). The main's common command `rollshow` (`COMMON_COMMANDS.lua`) decodes the fields and calls `RollMessages.show_roll_result` / `show_roll_bust` with a last `source` argument ("Kaories COR"), which replaces the job tag: same lines, same colors, the caster in brackets, shown even with the job tag off. Double-Ups are roll results and are sent too; the party coverage and missed names are the COR's own count. The receiving box shows them in its `rolls.remote_style` (UI_CONFIG, `//gs c ui rollremote`; `same` = its own `rolls.style`, `off` = not shown, busts included).
 
 ## Public API
 
@@ -486,8 +486,8 @@ When the box is an alt (`DualBoxConfig.role == 'alt'`) playing COR, `RollTracker
 
 | Function | Effect | Callers |
 |---|---|---|
-| `result(roll_name, value_display, bonus_display, is_crooked, affected_count, total_count, ...)` | On a COR alt whose main has reported (`AltStates.get(main)`), sends `rollshow result ...` with hex-encoded fields | `roll_tracker.lua` `display_roll_result` |
-| `bust(roll_name, bust_effect, effect_type)` | Same for a bust | `roll_tracker.lua` bust display |
+| `result(roll_name, value_display, bonus_display, is_crooked, affected_count, total_count, ...)` | On a COR alt whose main has reported (`AltStates.get(main)`), sends `rollshow result ...` with hex-encoded fields | `roll_display.lua` `display_roll_result` |
+| `bust(roll_name, bust_effect, effect_type)` | Same for a bust | `roll_tracker.lua` `handle_bust` |
 | `receive(args)` | On the main: decodes and calls `RollMessages.show_roll_result` / `show_roll_bust` with the caster as `source`; returns true (handled, since 2026-09-28) | `CommonCommands.handle_command` (`rollshow`) |
 
 ### `AltCommands` (`_G.AltCommands`, returned)
@@ -712,7 +712,7 @@ Behaviour per event:
 - [INIT_SYSTEMS](core-lifecycle.md): `windower._gs_reload_count`, module cache,
   sync IPC hooks.
 - [Messages](messages.md): `MessageDualbox`, `MessageAltCommands`, and `MessageFormatter.show_error/show_debug`.
-- [COR](../jobs/cor.md): `roll_tracker.lua` treats `_G.AltJobState.job` as present in the party for
+- [COR](../jobs/cor.md): `roll_party.lua` treats `_G.AltJobState.job` as present in the party for
   the roll job bonus. `receive_alt_job` patches `_G.cor_party_jobs`.
 - [GEO](../jobs/geo.md): `GEO_BUFFS.lua` reports buffs.
 - Sortie: `//gs c sortie` (`shared/utils/sortie/sortie_commands.lua`) orders Kaories and records its orders with `AltGroup.note`; an unknown mode value now warns instead of raising (fixed 2026-09-25). `GEO_ALT_CUSTOM.lua` retargets Indi- under Entrust.

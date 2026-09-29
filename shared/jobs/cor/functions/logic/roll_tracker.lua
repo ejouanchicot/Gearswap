@@ -15,10 +15,12 @@
 ---
 ---   @file    shared/jobs/cor/functions/logic/roll_tracker.lua
 ---   @author  ejouanchicot
----   @version 1.2
+---   @version 1.3
 ---   @date    Created: 2025-10-08
 ---   @date    Updated: 2025-10-09 - Added automatic party job detection
----   @requires roll_data, MessageFormatter
+---   @date    Updated: 2026-09-29 - Party side moved to roll_party.lua,
+---            messages to roll_display.lua
+---   @requires roll_data, roll_party, roll_display, MessageFormatter
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local RollTracker = {}
@@ -26,6 +28,8 @@ local RollTracker = {}
 -- Load dependencies
 local RollData = require('shared/jobs/cor/functions/logic/roll_data')
 local MessageFormatter = require('shared/utils/messages/message_formatter')
+local RollParty = require('shared/jobs/cor/functions/logic/roll_party')
+local RollDisplay = require('shared/jobs/cor/functions/logic/roll_display')
 
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   STATE TRACKING
@@ -487,283 +491,25 @@ function RollTracker.handle_bust(roll_name)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   BONUS CALCULATION
+---   PARTY AND DISPLAY (roll_party.lua, roll_display.lua)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- How many party members are actually present.
---- @param party table windower.ffxi.get_party()
---- @return number count, table set of member ids still in the party
-local function party_membership(party)
-    local count, ids = 0, {}
-    for i = 0, 5 do
-        local member = party['p' .. i]
-        if member and member.mob then
-            count = count + 1
-            if member.mob.id then
-                ids[member.mob.id] = true
-            end
-        end
-    end
-    return count, ids
-end
+-- Re-exported on RollTracker, and called through it below: callers and the
+-- offline tests (scripts/audit/difftest_rolltracker.lua) replace them there.
+RollTracker.validate_party_cache = RollParty.validate_party_cache
+RollTracker.is_job_in_party_zone = RollParty.is_job_in_party_zone
+RollTracker.count_party_members_with_buff = RollParty.count_party_members_with_buff
+RollTracker.display_roll_result = RollDisplay.display_roll_result
+RollTracker.display_double_up_status = RollDisplay.display_double_up_status
 
---- Empty the cache without replacing it.
----
---- The sandbox name and windower._cor_party_jobs are the same table, so
---- assigning a fresh one would leave the persistent copy full of stale entries
---- that came back on the next reload.
-local function clear_party_jobs()
-    for k in pairs(_G.cor_party_jobs) do
-        _G.cor_party_jobs[k] = nil
-    end
-end
-
---- Drop members who left, and entries too old to trust.
----
---- Ten minutes, not thirty seconds. A quiet party member emits no 0xDD - no
---- zone, no equipment change, no buff - so a short TTL made their job vanish
---- and took their contribution to the roll bonus with it. Zoning and party
---- changes already clear the cache above, so a long life here is safe.
---- @param valid_ids table Ids still in the party
-local function drop_departed_and_expired(valid_ids)
-    local TTL = 600
-    local now = os.time()
-
-    for player_id, job_data in pairs(_G.cor_party_jobs) do
-        if not valid_ids[player_id] then
-            _G.cor_party_jobs[player_id] = nil
-        elseif job_data.timestamp and (now - job_data.timestamp > TTL) then
-            _G.cor_party_jobs[player_id] = nil
-        end
-    end
-end
-
----   Validate and clean party job cache (auto-refresh on zone/party changes)
----   @return void
-function RollTracker.validate_party_cache()
-    if not player or not _G.cor_party_state then
-        return
-    end
-
-    local info = windower.ffxi.get_info()
-    local party = windower.ffxi.get_party()
-    if not info or not party then
-        return
-    end
-
-    local current_zone = info.zone
-    local current_party_count, valid_ids = party_membership(party)
-    local cache_state = _G.cor_party_state
-
-    -- zone_id starts at 0, which is not a zone. Adopting it silently is the
-    -- point: treating it as a zone change made the first roll after a load
-    -- wipe the jobs the packet listener had just collected, and the job bonus
-    -- only ever appeared from the Double-Up onwards.
-    if cache_state.zone_id == 0 then
-        cache_state.zone_id = current_zone
-        cache_state.party_count = current_party_count
-
-    elseif cache_state.zone_id ~= current_zone then
-        -- A real zone change: jobs read in the old zone are stale.
-        clear_party_jobs()
-        cache_state.zone_id = current_zone
-        cache_state.party_count = current_party_count
-        return
-
-    elseif cache_state.party_count ~= current_party_count then
-        clear_party_jobs()
-        cache_state.party_count = current_party_count
-        return
-    end
-
-    drop_departed_and_expired(valid_ids)
-end
-
----   Is a job present in the party, for the purpose of a roll's job bonus?
----
----   Three sources, tried in order of how much they can be trusted.
----
----   1. The Corsair's own main or subjob, which needs no lookup at all.
----   2. The other box, when dual-boxing. This is the only source that does not
----      wait for the server: the character says so itself when its job
----      changes. Without it, a dual-boxed member standing still never
----      registers and the roll silently loses the bonus.
----   3. The packet cache, filled from 0xDD as members join, zone or change
----      state.
----
----   @param job_code string Job the roll wants, e.g. 'WAR'
----   @return boolean
-function RollTracker.is_job_in_party_zone(job_code)
-    if not job_code or not player or not player.main_job then
-        return false
-    end
-
-    RollTracker.validate_party_cache()
-
-    if player.main_job == job_code or player.sub_job == job_code then
-        return true
-    end
-
-    local other = _G.AltJobState
-    if other and other.job == job_code then
-        return true
-    end
-
-    -- Main job only, by choice: a party member's subjob does not grant the
-    -- roll's job bonus.
-    for _, job_data in pairs(_G.cor_party_jobs or {}) do
-        if job_data.main_job == job_code then
-            return true
-        end
-    end
-
-    return false
-end
+---  ═══════════════════════════════════════════════════════════════════════════
+---   BONUS CALCULATION
+---  ═══════════════════════════════════════════════════════════════════════════
 
 --- Highest "Phantom Roll +" value in the gear worn right now (roll_gear.lua)
 --- @return number
 function RollTracker.get_phantom_roll_bonus()
     return require('shared/jobs/cor/functions/logic/roll_gear').bonus()
-end
-
----  ═══════════════════════════════════════════════════════════════════════════
----   PARTY TRACKING
----  ═══════════════════════════════════════════════════════════════════════════
-
----   Count party members affected by a specific roll buff.
----   The roll's action packet lists exactly who it reached: with it, a member
----   missed the roll when its id is not in the list. Without it, the member's
----   distance is compared to the roll range, an estimate: Windower's distance
----   counts the height, and the LuzafRing mode may not match the ring worn.
----   @param roll_name string Name of the roll buff (e.g., "Fighter's Roll")
----   @param target_ids table|nil Set of the ids the roll reached
----   @return number affected_count Number of members with the buff
----   @return number total_count Total party members
----   @return table missed_names Array of player names who missed the roll
-function RollTracker.count_party_members_with_buff(roll_name, target_ids)
-    local party = windower.ffxi.get_party()
-    if not party then
-        return 0, 0, {}
-    end
-
-    local total_count = 0
-    local affected_count = 0
-    local missed_names = {}
-
-    -- Check all party slots (p0 to p5)
-    for i = 0, 5 do
-        local member = party['p' .. i]
-        if member and member.mob then
-            total_count = total_count + 1
-            local member_name = member.name or "Unknown"
-
-            -- Check if this member has the roll buff
-            -- Note: buffactive only works for player, not party members in GearSwap
-            -- We'll count the COR (self) and estimate based on range
-            if i == 0 then
-                -- Player (COR) - ALWAYS affected by own rolls
-                -- Cannot miss your own Phantom Roll in FFXI
-                affected_count = affected_count + 1
-            elseif target_ids then
-                if target_ids[member.mob.id] then
-                    affected_count = affected_count + 1
-                else
-                    table.insert(missed_names, member_name)
-                end
-            else
-                -- Party members - assume affected if in range from COR
-                -- Phantom Roll range depends on Luzaf's Ring:
-                --   Without Luzaf: 8 yalms
-                --   With Luzaf's Ring: 16 yalms
-                local roll_range = 8  -- Default: no Luzaf
-                if state and state.LuzafRing and state.LuzafRing.value == 'ON' then
-                    roll_range = 16  -- Luzaf's Ring equipped
-                end
-
-                local member_entity = windower.ffxi.get_mob_by_id(member.mob.id)
-                if member_entity and member_entity.distance then
-                    local distance = math.sqrt(member_entity.distance)
-                    if distance <= roll_range then
-                        affected_count = affected_count + 1
-                    else
-                        table.insert(missed_names, member_name)
-                    end
-                else
-                    -- No entity data - assume missed
-                    table.insert(missed_names, member_name)
-                end
-            end
-        end
-    end
-
-    return affected_count, total_count, missed_names
-end
-
----  ═══════════════════════════════════════════════════════════════════════════
----   DISPLAY FUNCTIONS
----  ═══════════════════════════════════════════════════════════════════════════
-
----   Display roll result with all details
----   @param roll_name string Name of the roll
----   @param roll_value number Value rolled
----   @param final_bonus number Final bonus value
----   @param effect_type string Type of effect
----   @param is_lucky boolean If lucky number
----   @param is_unlucky boolean If unlucky number
----   @param is_natural_eleven boolean If natural 11
----   @param bust_rate number Bust rate percentage
----   @param job_bonus_info string|nil Job code if job bonus active (e.g., "RNG")
----   @param is_crooked boolean If Crooked Cards buff active
----   @param missed_names table Array of player names who missed the roll
-function RollTracker.display_roll_result(roll_name, roll_value, final_bonus, effect_type, is_lucky, is_unlucky, is_natural_eleven, bust_rate, job_bonus_info, is_crooked, missed_names)
-    -- Format roll value with Lucky/Unlucky status (ASCII only)
-    local value_display = tostring(roll_value)
-    if is_lucky then
-        value_display = value_display .. ' LUCKY!'
-    elseif is_unlucky then
-        value_display = value_display .. ' (unlucky)'
-    end
-
-    -- Format bonus display with proper sign
-    local bonus_display = string.format("%+g%s", final_bonus, effect_type)
-
-    -- Party member count stored by on_roll_cast (recounted on every cast)
-    local affected_count = _G.cor_last_roll.affected_count
-    local total_count = _G.cor_last_roll.total_count
-
-    -- Get lucky/unlucky numbers for Snake Eye decision
-    local roll_data = RollData.get_roll(roll_name)
-    local lucky_num = roll_data and roll_data.lucky or nil
-    local unlucky_num = roll_data and roll_data.unlucky or nil
-
-    -- Get roll range for display (same logic as count_party_members_with_buff)
-    local roll_range = 8  -- Default: no Luzaf
-    if state and state.LuzafRing and state.LuzafRing.value == 'ON' then
-        roll_range = 16  -- Luzaf's Ring equipped
-    end
-
-    -- Main roll message with bust rate integrated (Natural 11 message now integrated inside)
-    MessageFormatter.show_roll_result(roll_name, value_display, bonus_display, is_crooked, affected_count, total_count, lucky_num, unlucky_num, missed_names, bust_rate, job_bonus_info, roll_range)
-    -- Same message on the main when this box is an alt (dualbox/roll_share.lua)
-    pcall(function() require('shared/utils/dualbox/roll_share').result(roll_name, value_display, bonus_display, is_crooked, affected_count, total_count, lucky_num, unlucky_num, missed_names, bust_rate, job_bonus_info, roll_range) end)
-end
-
----   Display Double-Up window status
----   Called by //gs c doubleup (du)
-function RollTracker.display_double_up_status()
-    if not _G.cor_last_roll.name or not _G.cor_last_roll.timestamp then
-        MessageFormatter.show_no_active_roll()
-        return
-    end
-
-    local elapsed = os.time() - _G.cor_last_roll.timestamp
-    local remaining = 45 - elapsed
-
-    if remaining > 0 then
-        MessageFormatter.show_roll_double_up_window(remaining)
-    else
-        MessageFormatter.show_roll_double_up_expired()
-    end
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
