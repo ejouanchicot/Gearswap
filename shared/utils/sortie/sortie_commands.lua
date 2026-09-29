@@ -52,7 +52,7 @@ local STANCES = {
 --- until it was 30 s from expiring.
 local TARGETS = {
     farm       = {profile = 'Farm',       indi = 'Indi-Acumen',  stance = 'dps',  summary = 'assists Gabvanstronger: Geo-Malaise, tags each mob (Stun, Absorb-TP), no damage'},
-    umbril     = {profile = 'Umbril',     indi = 'Indi-Fury',    stance = 'dps',  summary = 'Geo-Frailty, melee'},
+    umbril     = {profile = 'Umbril',     indi = 'Indi-Fury',    stance = 'dps',  summary = 'Geo-Frailty, melee (Tetsouo engaged), Judgment'},
     melee      = {profile = 'Melee',      indi = 'Indi-Fury',    stance = 'dps',  summary = 'Geo-Frailty'},
     triboulex  = {profile = 'Triboulex',  indi = 'Indi-Fury',    stance = 'dps',  summary = 'Geo-Frailty, Life Cycle + Dematerialize (no BoG)'},
     leshonn    = {profile = 'Leshonn',    indi = 'Indi-Frailty', stance = 'tank', summary = 'Geo-Gravity + BoG, Entrust Fury'},
