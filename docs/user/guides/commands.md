@@ -113,7 +113,7 @@ main bags and 3-6 and 8 the overflow (wardrobe 7 is never touched).
 | `alt <name> [args]` | Run an alt command even when a local command has the same name |
 | `<name>` | An alt command, when no local command has that name |
 | `altsync`, `altbuffs`, `altdebug` | Alt buff reports: ask again / show / trace |
-| `sortie ...` | The author's Sortie orders, written for his own pair of characters. On PLD it also sets Phalanx SIRD: Off for `aminon` / `aminontest`, On for every other target (`sortie gab`, the GEO alt assisting another player, changes none of your modes); `sortie escort` turns Regen On, only with /SCH as subjob |
+| `sortie ...` | The author's Sortie orders, written for his own pair of characters. On PLD it also sets Phalanx SIRD: Off for `aminon` / `aminontest`, On for every other target; `sortie escort` turns Regen On, only with /SCH as subjob |
 
 The boxes also send each other commands you never type: `altjobupdate`,
 `requestjob`, `setalt`, `altbuff`, `altbuffsync`, `altreport`, `altmirror`,
