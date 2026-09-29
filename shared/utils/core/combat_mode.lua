@@ -65,6 +65,9 @@ local Optional = require('shared/utils/core/optional_state').create({
             windower._combat_mode_locked = nil
         end
         windower._weapon_locks = {}
+        -- The first update decides: a job loaded with Combat Mode On locks
+        -- the weapon states' weapons (apply)
+        windower._combat_mode_loading = true
         -- Counted so a lock scheduled by the previous job file (a pending
         -- Ampulla check) can tell it no longer belongs to the loaded job
         windower._weapon_lock_gen = (windower._weapon_lock_gen or 0) + 1
@@ -177,24 +180,37 @@ end
 --- weapons of the player's weapon states (then sets.CombatMode on top), so it
 --- waits for the job's gear of the same update - the caller runs the returned
 --- function after it - whenever what it would hold is not that:
----   - the first lock (Combat Mode just turned On, or a job loaded with it On:
----     locking before the gear pinned whatever was worn, e.g. the shield of
----     the previous subjob after a change to /NIN);
+---   - a job loaded with Combat Mode already On (locking before the gear
+---     pinned whatever was worn, e.g. the shield of the previous subjob after
+---     a change to /NIN). Turned On by the player, it locks what is worn
+---     instead: weapons put on by hand, then Combat Mode On, stay;
 ---   - a weapon state changed since the lock (the new choice goes on; spell
 ---     sets stay kept off as before);
 ---   - the weapons were stripped (//po): locking would pin empty hands.
 --- @return function|nil To run once the job's gear is queued
 function CombatMode.apply()
     if CombatMode.is_on() then
-        if weapons_stripped() or not windower._combat_mode_locked then
+        if weapons_stripped() then
             return lock_after_gear
+        end
+        if not windower._combat_mode_locked then
+            if windower._combat_mode_loading then
+                windower._combat_mode_loading = nil
+                return lock_after_gear
+            end
+            lock(true)
+            return nil
         end
         if windower._combat_mode_choice ~= weapon_choice() and not craft_active() then
             enable(unpack_list(not_held_elsewhere(windower._combat_mode_locked)))
             return lock_after_gear
         end
         lock(false)
-    elseif windower._combat_mode_locked and not craft_active() then
+        return nil
+    end
+
+    windower._combat_mode_loading = nil
+    if windower._combat_mode_locked and not craft_active() then
         -- A slot another lock holds (WHM Melee ON) stays locked
         enable(unpack_list(not_held_elsewhere(windower._combat_mode_locked)))
         windower._combat_mode_locked = nil
