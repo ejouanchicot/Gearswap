@@ -127,6 +127,7 @@ These sets are worn without any action from you, when they exist:
 | `sets.Adoulin` | Idle in Western / Eastern Adoulin | Checked before `sets.idle.Town`, laid on top of the idle set the same way |
 | `sets.buff.Doom` | You are Doomed | Doom removal gear (Nicander's Necklace, Purity Ring...). Neck, both rings and belt stay locked until Doom is gone |
 | `sets.DW.NoHaste`, `.Haste`, `.HasteII`, `.MaxHaste` | Two weapons held, fighting | Dual Wield pieces by your magic haste ([configuration](configuration.md), `DW_CONFIG.lua`, `//gs c dw`) |
+| `sets.SingleWield` | A weapon set (`MainWeapon` / `SubWeapon`) carries an off-hand weapon and you cannot dual wield: main job not NIN, DNC, THF or BLU, and no /NIN at level 10+ or /DNC at level 20+ (a subjob at level 0, as in Sheol Gaol, counts as none) | Only its `sub` is read, e.g. `sets.SingleWield = { sub = "Nusku Shield" }`; it replaces the off-hand weapon. Without the set, the off hand is left out. Shields and grips in weapon sets are kept. Every job whose weapons come from weapon modes, except PLD and BST |
 | `sets.CombatMode` | You turn Combat Mode On (not during a craft) | Put on just before the weapon lock, then held by it. Without the set, what you wear is locked. Only the BLM file provides one |
 | `sets.TreasureHunter` | Treasure Mode on, against a mob not tagged yet | [commands](commands.md) `//gs c th`. Off on every job but THF until `//gs c th show` |
 

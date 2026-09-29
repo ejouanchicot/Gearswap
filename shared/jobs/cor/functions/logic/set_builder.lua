@@ -18,7 +18,6 @@ local SetBuilder = {}
 
 -- Load base set builder (universal functions)
 local BaseSetBuilder = require('shared/utils/set_building/base_set_builder')
-local WeaponResolver = require('shared/utils/equipment/weapon_resolver')
 
 -- Load message formatter for error reporting
 local MessageFormatter = require('shared/utils/messages/message_formatter')
@@ -34,9 +33,10 @@ SetBuilder.select_idle_base = BaseSetBuilder.select_idle_base_town
 ---   SET AUGMENTATION
 ---  ═══════════════════════════════════════════════════════════════════════════
 
----   Apply weapon sets to result (main+sub conditional on DW subjob, range separate)
----   COR only uses sub weapon if subjob = NIN or DNC (dual wield jobs)
----   For other subjobs (SCH, etc.), only main weapon is applied
+---   Apply weapon sets to result: the MainWeapon set (its off-hand weapon only
+---   when Dual Wield is there: /NIN or /DNC at a level that has the trait;
+---   otherwise sets.SingleWield's sub, or none - WeaponResolver.set_for), then
+---   the range weapon
 ---   @param result table Current equipment set
 ---   @return table Modified set with weapons applied
 function SetBuilder.apply_weapon(result)
@@ -44,36 +44,7 @@ function SetBuilder.apply_weapon(result)
         return {}
     end
 
-    -- Check if we should use dual wield (subjob = NIN or DNC)
-    local use_dual_wield = false
-    if player and player.sub_job then
-        use_dual_wield = (player.sub_job == 'NIN' or player.sub_job == 'DNC')
-    end
-
-    -- Apply main weapon
-    if state.MainWeapon and state.MainWeapon.current then
-        local weapon_set = WeaponResolver.set_for('main', state.MainWeapon.current)
-        if weapon_set then
-            if use_dual_wield then
-                -- DW subjob: Apply full weapon set (main+sub)
-                local success, combined = pcall(set_combine, result, weapon_set)
-                if success then
-                    result = combined
-                else
-                    MessageFormatter.show_error(string.format("Failed to apply weapon set: %s", combined))
-                end
-            else
-                -- Non-DW subjob: Apply ONLY main weapon (skip sub)
-                local main_only = { main = weapon_set.main }
-                local success, combined = pcall(set_combine, result, main_only)
-                if success then
-                    result = combined
-                else
-                    MessageFormatter.show_error(string.format("Failed to apply main weapon: %s", combined))
-                end
-            end
-        end
-    end
+    result = BaseSetBuilder.lay_weapon(result, 'main', state.MainWeapon and state.MainWeapon.current)
 
     -- Apply range weapon separately (COR ranged focus)
     if state.RangeWeapon and state.RangeWeapon.current then

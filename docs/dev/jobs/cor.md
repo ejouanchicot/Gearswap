@@ -1,7 +1,7 @@
 # COR (Corsair) job
 
 The COR job area is 11 hook modules, the facade and 8 logic modules under
-`shared/jobs/cor/functions/` (3 378 lines, facade included), one entry point
+`shared/jobs/cor/functions/` (3 396 lines, facade included), one entry point
 per character, eight config files and one sets file. GearSwap loads it when the
 main job becomes COR; from then on Mote-Include calls its hooks on every
 action, on status and buff changes, on `//gs c` commands and on state cycles,
@@ -29,8 +29,8 @@ What COR adds on top of the shared pipeline:
 - **Ranged**: `sets.precast.RA.Flurry1/2` through `classes.CustomRangedGroups`,
   `sets.midcast.RA[RangedMode]` through `MidcastManager`, a Triple Shot layer,
   and a bullet-pouch refill after `/ra`.
-- **Weapon handling**: main weapon (its off hand only on /NIN or /DNC) and the
-  gun from states, `HybridMode` PDT overlay, Refresh overlay under 50 % MP (subjob with MP only).
+- **Weapon handling**: main weapon (its off-hand weapon only with Dual Wield,
+  else `sets.SingleWield`'s sub or none) and the gun from states, `HybridMode` PDT overlay, Refresh overlay under 50 % MP (subjob with MP only).
 - **External addon swap**: the `rolltracker` addon is unloaded while COR is
   loaded and loaded again by `file_unload`.
 
@@ -64,7 +64,7 @@ function; line numbers are given only where no function name fits.
 | `shared/utils/core/gear_hold.lua` | 25 | `GearHold.active()`: the roll hold as seen by the shared layers (Dual Wield tiers, TH engaged overlay, CUSTOM idle / engaged gear) |
 | `shared/jobs/cor/functions/logic/roll_debug.lua` | 261 | `//gs c rolldebug`: gear sent vs worn at landing, held updates, pieces out of reach, locked slots; summary; `<Char>/rolldebug.log` |
 | `shared/jobs/cor/functions/logic/double_up.lua` | 45 | `DoubleUp.redirect(spell, eventArgs)` |
-| `shared/jobs/cor/functions/logic/set_builder.lua` | 182 | Town, weapons (DW-aware), PDT, Refresh, movement |
+| `shared/jobs/cor/functions/logic/set_builder.lua` | 153 | Town, weapons (main through `BaseSetBuilder.lay_weapon`, gun from `sets[...]`), PDT, Refresh, movement |
 | `_master/config/cor/COR_STATES.lua` | 184 | All states (`CORStates.configure()`) |
 | `_master/config/cor/COR_KEYBINDS.lua` | 37 | 7 binds, data only; `KeybindManager.create('COR', ...)` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/cor/COR_CUSTOM.lua` | 119 | Player modes and gear rules (all examples commented out) |
@@ -72,7 +72,7 @@ function; line numbers are given only where no function name fits.
 | `_master/config/cor/COR_LOCKSTYLE.lua` | 51 | `default = 3`, `by_subjob`, `get_style` |
 | `_master/config/cor/COR_MACROBOOK.lua` | 68 | Book 3 page 1; `dualbox` commented; unused `get_macrobook` |
 | `_master/config/cor/COR_TP_CONFIG.lua` | 60 | `_G.CORTPConfig` (Moonshade; `ranged_weapons` Anarchy +2 1000, Fomalhaut 500, never matched) |
-| `_master/sets/cor_sets.lua` | 430 | Template sets (flat) |
+| `_master/sets/cor_sets.lua` | 443 | Template sets (flat; `sets.SingleWield` as a commented example) |
 | `shared/utils/messages/utilities/roll_messages.lua` | 596 | Roll result block (full / compact / line), bust, Double-Up window, active rolls |
 | `shared/utils/messages/utilities/party_messages.lua` | 48 | `//gs c party` listing |
 | `shared/utils/messages/formatters/jobs/message_cor.lua` + `data/jobs/cor_messages.lua` | 39 + 32 | PartyTracker load failures |
@@ -335,9 +335,15 @@ end of precast by `ElementalBelt` ([factories and helpers](../systems/factories-
 - `customize_melee_set` -> `build_engaged_set`: Mote's base (keeps Mote's
   defense and kiting layers) + `sets.engaged.PDT` when `PDT` + weapons. No
   movement gear (AutoMove keeps `state.Moving` false while engaged anyway).
-- Weapons (`apply_weapon`): `WeaponResolver.set_for('main', MainWeapon)` in full
-  on /NIN or /DNC, otherwise only its `main` slot; `sets[RangeWeapon]` always
-  (no resolver for the gun).
+- Weapons (`apply_weapon`): `BaseSetBuilder.lay_weapon(result, 'main',
+  MainWeapon)`, i.e. `WeaponResolver.set_for('main', MainWeapon)` in full. The
+  resolver decides the off hand: an off-hand weapon stays only when
+  `WeaponResolver.can_dual_wield()` is true (/NIN at level 10+, /DNC at level
+  20+); otherwise it is replaced by `sets.SingleWield.sub`, or left out when
+  that set does not exist. A shield or grip in the weapon set is kept. Then
+  `sets[RangeWeapon]` always (no resolver for the gun). Before 2026-09-29 COR
+  had its own test on the subjob name: /NIN at level 0 (Sheol Gaol) still got
+  the off-hand weapon, and other subjobs got no sub at all.
 - `job_status_change` is the shared handler (Doom, hold during an action).
   `job_buff_change` is the shared handler with `retire_lost_roll` as its extra
   (skipped when Doom handled the buff).
@@ -399,6 +405,7 @@ Full player-facing list: [sets.md](../../user/jobs/cor/sets.md).
 | Set | Looked up by |
 |-----|--------------|
 | `sets[<MainWeapon>]`, `sets[<RangeWeapon>]` | `SetBuilder.apply_weapon` (main through `WeaponResolver`) |
+| `sets.SingleWield` (only its `sub`) | `WeaponResolver.set_for`, when the MainWeapon set carries an off-hand weapon and Dual Wield is not there |
 | `sets.idle` / `.Normal` | Mote base |
 | `sets.idle.PDT`, `sets.idle.Refresh` | `build_idle_set` |
 | `sets.idle.Town` (absent in T), `sets.Adoulin`, `sets.MoveSpeed` | `BaseSetBuilder` |
@@ -490,7 +497,9 @@ Full player-facing list: [sets.md](../../user/jobs/cor/sets.md).
   raw listener.
 - `/ra` is `type = "Misc"` with `action_type = 'Ranged Attack'`: test
   `action_type` for ranged attacks.
-- The off hand of `sets[MainWeapon]` is dropped unless the subjob is NIN or DNC.
+- The off-hand weapon of `sets[MainWeapon]` is replaced by `sets.SingleWield.sub`
+  (or dropped) unless Dual Wield is there. The subjob level counts: /NIN at
+  level 0 in Sheol Gaol has no Dual Wield.
 
 ## For maintainers / AI
 
@@ -582,6 +591,10 @@ In game: `//gs c rolldebug` (per-roll gear report and `rolldebug.log`),
   Curing Waltz, a Divine Waltz or a Quick Draw right after a roll is not
   reported as a roll; the roll hold (2026-09-28) keeps Regal Necklace on a roll
   pressed while running.
+- Fixed 2026-09-29 (checked offline, not yet in game): /NIN at level 0 (Sheol
+  Gaol) tried Demersal in the off hand and the game refused it; now Naegling +
+  Nusku Shield (from `sets.SingleWield`). /WAR or /SCH got no sub; now Nusku
+  Shield. /NIN49 and /DNC49 unchanged.
 - Fixed, no longer issues: `LuzafRing = OFF` not applied to Double-Up
   (`apply_luzaf` tests Double-Up since 2026-09-25); ON with no
   `sets.precast.LuzafRing` puts Luzaf's Ring in the left ring;

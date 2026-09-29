@@ -12,8 +12,10 @@ lives. Details are on the linked pages:
 Corsair with the provided template gives you:
 
 - **Weapons on keys**: the melee weapon and the gun are chosen from the HUD and
-  put on at once. The melee set's off hand is used only on /NIN and /DNC (the
-  subjobs that can dual wield); on any other subjob only its main hand goes on.
+  put on at once. The melee set's off-hand weapon is used only with Dual Wield
+  (/NIN at level 10+ or /DNC at level 20+). Otherwise, including /NIN at level 0
+  in Sheol Gaol, it is replaced by the `sub` of `sets.SingleWield` (for example a
+  Nusku Shield), or left out if you have no such set.
 - **Two rolls on two commands**: pick a main and a sub roll, then
   `//gs c roll1` / `roll2` roll them. Pressing a roll that is already up turns
   it into a Double-Up when that is possible (Double-Up Chance up and it is the

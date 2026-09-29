@@ -65,6 +65,13 @@ sets['Compensator'] = {
     range = "Compensator"
 }
 
+-- • Off hand when Dual Wield is not there (not /NIN or /DNC, or a subjob at
+--   level 0 as in Sheol Gaol): replaces the off-hand weapon of the weapon sets.
+--   Without it the off hand is left as it is.
+-- sets.SingleWield = {
+--     sub = "Nusku Shield"
+-- }
+
 -- ═══════════════════════════════════════════════════════════════════════════
 -- IDLE SETS
 -- ═══════════════════════════════════════════════════════════════════════════

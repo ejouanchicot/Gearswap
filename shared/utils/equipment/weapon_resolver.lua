@@ -46,12 +46,44 @@ local function is_weapon(name)
     return require('shared/utils/equipment/item_index').is_weapon(name)
 end
 
---- The set to lay for a weapon state's value.
---- @param slot string 'main' or 'sub'
---- @param value string|nil The state's current value
+--- Main jobs with Dual Wield of their own, and the subjobs that grant it
+--- with the level their trait comes at.
+local DW_MAIN = {NIN = true, DNC = true, THF = true, BLU = true}
+local DW_SUB = {NIN = 10, DNC = 20}
+
+--- Can the player hold a weapon in the off hand right now? The subjob name
+--- is not enough: Sheol Gaol and other events that set the subjob to level 0
+--- keep /NIN or /DNC and take the trait away.
+--- @return boolean
+function WeaponResolver.can_dual_wield()
+    if not player or not player.main_job then return true end  -- unknown: strip nothing
+    if DW_MAIN[player.main_job] then return true end
+    local needed = DW_SUB[player.sub_job]
+    return needed ~= nil and (player.sub_job_level or 0) >= needed
+end
+
+--- An off-hand weapon the player cannot hold is swapped for the sub of
+--- sets.SingleWield (the set file's, e.g. {sub = 'Nusku Shield'}), or left
+--- out when there is none. Shields and grips are kept.
+--- @param set table|nil
 --- @return table|nil
-function WeaponResolver.set_for(slot, value)
-    if value == nil then return nil end
+local function single_wield(set)
+    if type(set) ~= 'table' or set.sub == nil then return set end
+    local sub = type(set.sub) == 'table' and set.sub.name or set.sub
+    if WeaponResolver.is_offhand_weapon(sub) ~= true or WeaponResolver.can_dual_wield() then
+        return set
+    end
+    local copy = {}
+    for k, v in pairs(set) do copy[k] = v end
+    copy.sub = type(sets.SingleWield) == 'table' and sets.SingleWield.sub or nil
+    return copy
+end
+
+--- The set a value names, before the off-hand check.
+--- @param slot string
+--- @param value string
+--- @return table|nil
+local function lookup(slot, value)
     local set = sets and sets[value]
     if not enabled() then return set end
     if type(set) == 'table' and set[slot] ~= nil then
@@ -62,6 +94,16 @@ function WeaponResolver.set_for(slot, value)
     end
     if type(value) == 'string' and is_weapon(value) then return {[slot] = value} end
     return nil
+end
+
+--- The set to lay for a weapon state's value (see the header), with an
+--- off-hand weapon the player cannot hold replaced (single_wield).
+--- @param slot string 'main' or 'sub'
+--- @param value string|nil The state's current value
+--- @return table|nil
+function WeaponResolver.set_for(slot, value)
+    if value == nil then return nil end
+    return single_wield(lookup(slot, value))
 end
 
 --- Whether an off-hand item makes the player dual wield, from the game's

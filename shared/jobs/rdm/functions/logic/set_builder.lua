@@ -148,8 +148,7 @@ function SetBuilder.has_shield_equipped(sub_weapon)
     -- RDM has no Dual Wield trait: only /NIN and /DNC let it hold a weapon in
     -- the off hand (the game refuses it otherwise), so the .DW sets would
     -- dress a hand that stays single.
-    local sub_job = player and player.sub_job
-    if sub_job ~= 'NIN' and sub_job ~= 'DNC' then
+    if not WeaponResolver.can_dual_wield() then
         return true
     end
 

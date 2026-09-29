@@ -14,7 +14,8 @@ after the mode's value is laid on top of idle and engaged.
 
 | Set | Worn when |
 |---|---|
-| `sets['Naegling']` | `MainWeapon` is Naegling. With /NIN or /DNC the whole set goes on (main and sub: Naegling + Demersal Degen +1 in the provided file). With any other subjob **only its `main` piece** is used, the sub is ignored |
+| `sets['Naegling']` | `MainWeapon` is Naegling. With Dual Wield (/NIN at level 10+ or /DNC at level 20+) the whole set goes on (main and sub: Naegling + Demersal Degen +1 in the provided file). Without it, the off-hand weapon is replaced by the `sub` of `sets.SingleWield`, or left out if you have no such set |
+| `sets.SingleWield` | Only its `sub` is read: the off hand put on when a weapon set carries an off-hand weapon and you cannot dual wield (any other subjob, or /NIN or /DNC at level 0 as in Sheol Gaol). Example: `sets.SingleWield = { sub = "Nusku Shield" }`. A shield or grip already in the weapon set is kept as it is |
 | `sets['Anarchy']` | `RangeWeapon` is Anarchy (gun: Anarchy +2) |
 | `sets['Compensator']` | `RangeWeapon` is Compensator |
 
@@ -24,6 +25,9 @@ after the mode's value is laid on top of idle and engaged.
   `config/WEAPON_CONFIG.lua` lets a plain weapon name work without a set; the gun
   always needs one.)
 - Changing either mode re-equips at once.
+- Sheol Gaol and similar events set your subjob to level 0: it keeps its name (/NIN) but
+  loses Dual Wield. The off-hand dagger is then not sent (the game would refuse it);
+  with `sets.SingleWield = { sub = "Nusku Shield" }` you get Naegling + Nusku Shield.
 - Put no weapon in your idle and engaged sets: the weapon sets are laid on top anyway.
 
 ## Idle
@@ -165,8 +169,9 @@ midcast keeps whatever was on.
 - **Fold's gear only with two Busts.** Fold's set (Lanun Gants) lets one Fold remove
   both Busts; with one Bust or none, the slots of `sets.precast.JA['Fold']` keep what
   you wear.
-- **Sub weapon only with /NIN or /DNC.** With another subjob only the main hand of the
-  weapon set is equipped.
+- **Off-hand weapon only with Dual Wield.** /NIN at level 10+ or /DNC at level 20+. On
+  any other subjob, or a subjob at level 0 (Sheol Gaol), the off-hand weapon of the
+  weapon set is swapped for `sets.SingleWield`'s `sub`, or left out if you have none.
 - **Refresh under 50 % MP** when idle outside town and your subjob gives MP
   (`sets.idle.Refresh`, see above).
 - **Flurry noticed.** Flurry or Flurry II cast on you is recognised, and your shots use
@@ -198,6 +203,7 @@ is read but equal to the base roll set, see above.)
 | `sets.precast.RA.Flurry1`, `sets.precast.RA.Flurry2` | Shooting under Flurry / Flurry II |
 | `sets.midcast.RA.TripleShot` | Ranged midcast under Triple Shot |
 | `sets.precast.JA['Triple Shot']`, `['Crooked Cards']`, `['Cutting Cards']` | Those abilities |
+| `sets.SingleWield` | Your off hand when you cannot dual wield, e.g. `{ sub = "Nusku Shield" }` (commented example after the weapon sets) |
 | `sets.DW.NoHaste` ... `sets.DW.MaxHaste` | Dual Wield pieces with /NIN or /DNC (commented example at the end of the file) |
 | `sets.midcast.Cure`, `sets.midcast['Enhancing Magic']`... | Subjob spells ([guide](../../guides/sets.md)) |
 | `sets.precast.FC` | Fast Cast for subjob spells |

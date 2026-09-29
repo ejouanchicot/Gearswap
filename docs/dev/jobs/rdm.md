@@ -1,7 +1,7 @@
 # RDM (Red Mage) job
 
 The RDM job is a caster/melee hybrid built mostly from shared systems: 12 hook
-modules plus one logic module under `shared/jobs/rdm/functions/` (about 1 850
+modules plus one logic module under `shared/jobs/rdm/functions/` (about 1 800
 lines), a template entry point (plus character overlays), eight config files and
 one sets file. GearSwap loads it when the main job becomes RDM (the entry file
 `<Character>_RDM.lua`, made from `_master/entry/Tetsouo_RDM.lua` by the clone
@@ -60,7 +60,7 @@ the sets files (structure and set names only).
 | `shared/jobs/rdm/functions/RDM_MOVEMENT.lua` | 42 | Empty `job_handle_equipping_gear` |
 | `shared/jobs/rdm/functions/RDM_LOCKSTYLE.lua` | 53 | Lazy `LockstyleManager.create('RDM', 'config/rdm/RDM_LOCKSTYLE', 1, 'NIN')` wrappers |
 | `shared/jobs/rdm/functions/RDM_MACROBOOK.lua` | 48 | Lazy `MacrobookManager.create('RDM', 'config/rdm/RDM_MACROBOOK', 'NIN', 1, 1)` wrapper |
-| `shared/jobs/rdm/functions/logic/set_builder.lua` | 273 | Idle / engaged construction: mode sets, single vs dual wield (off-hand item and subjob), weapons, town, movement |
+| `shared/jobs/rdm/functions/logic/set_builder.lua` | 241 | Idle / engaged construction: mode sets, single vs dual wield (off-hand item and subjob), weapons, town, movement |
 | `shared/data/spells/RDM_ENFEEBLE_TIERS.lua` | 55 | Tier table of 11 enfeeble families (`RDM_ENFEEBLE_TIERS.get`) |
 | `shared/data/spells/NUKE_TIERS.lua` | 56 | Nuke / -ra / Aspir tier table (`NUKE_TIERS.get`), shared with GEO |
 | `shared/utils/precast/tier_refiner.lua` | - | `TierRefiner.refine` (shared with BLM and GEO) |
@@ -273,9 +273,11 @@ so under Saboteur it replaced the type, mode and name sets (Slow II lost its
 - `SetBuilder.offhand_item`: the worn off hand while Combat Mode is On (the
   state can change then without the gear following), otherwise the `sub` of
   the set `SubWeapon` names, or the value itself. `has_shield_equipped`: nil,
-  `""` or `'empty'` -> normal set; a subjob other than NIN or DNC -> normal set
-  (RDM has no Dual Wield trait, so only /NIN and /DNC let it hold a weapon in
-  the off hand; since 2026-09-28); otherwise it asks
+  `""` or `'empty'` -> normal set; `WeaponResolver.can_dual_wield()` false ->
+  normal set (RDM has no Dual Wield trait, so only /NIN at level 10+ and /DNC
+  at level 20+ let it hold a weapon in the off hand; a subjob test since
+  2026-09-28, the level counts since 2026-09-29: /NIN at level 0 in Sheol Gaol
+  is no Dual Wield); otherwise it asks
   `WeaponResolver.is_offhand_weapon` (game item list): a weapon with a combat
   skill -> `.DW`; a shield or a grip -> normal set; only a name the game does
   not know falls back to the `sets.shields` list.
@@ -283,8 +285,9 @@ so under Saboteur it replaced the type, mode and name sets (Slow II lost its
   Mode On included since 2026-09-29: the lock diverts them while it holds, and
   after a strip (`//po`, `//gs c wo`) they are what dresses the weapon slots
   before the lock returns (before, RDM skipped them and stayed bare-handed). With `SubWeapon = Malevolence` (a dagger) the `.DW` sets
-  are chosen on /NIN or /DNC only; on another subjob the normal sets are used
-  (the game refuses the dagger in the off hand there anyway). Before
+  are chosen only with Dual Wield; without it (/WAR, /SCH, /NIN at level 0)
+  the normal sets are used, and `set_for` replaces the dagger with
+  `sets.SingleWield.sub` or leaves it out (the game refuses it there anyway). Before
   2026-09-28 the `.DW` sets were chosen whatever the subjob.
 - Mote's own base (`sets.idle[scope][IdleMode]`, `sets.engaged` + OffenseMode
   `Normal`) is discarded by both builders, and with it Mote's defense and
@@ -478,7 +481,7 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 - Combat Mode applies or releases at once when cycled, HUD shown or not: both
   cycle paths end in `handle_update`, whose `handle_equipping_gear` is wrapped
   by the shared hook.
-- The off-hand item and the subjob decide single vs dual wield: `.DW` needs /NIN or /DNC and a weapon in the off hand.
+- The off-hand item and Dual Wield decide single vs dual wield: `.DW` needs `WeaponResolver.can_dual_wield()` (/NIN at level 10+ or /DNC at level 20+, so not /NIN at level 0) and a weapon in the off hand.
 - `convert`, `chainspell`, `saboteur`, `composure` are also names in the alt
   command files; RDM's own commands answer first, the alt's version stays
   reachable as `//gs c alt <name>`.
@@ -555,6 +558,10 @@ T = `_master/sets/rdm_sets.lua`. Player version: [sets.md](../../user/jobs/rdm/s
 - `stage_cooldown` ignores `TierRefiner.refine`'s return value: a spell arriving
   within 0.2 s of a replacement gets no recast check.
 - Fixed 2026-09-28: the unreachable `midcast_subjob` branch is removed (midcast simulation identical before and after); the `.DW` sets are chosen only on /NIN or /DNC.
+- Fixed 2026-09-29 (checked offline, not yet in game): /NIN at level 0 (Sheol
+  Gaol) still counted as Dual Wield. `has_shield_equipped` now asks
+  `WeaponResolver.can_dual_wield()`; with Malevolence at /NIN0, /WAR or /SCH:
+  no off-hand weapon, normal sets.
 - "Storm spells enabled/disabled" never prints: Mote's `sub_job_change` runs
   `user_setup()` (which already updated `state.Storm`) before
   `job_sub_job_change` compares.

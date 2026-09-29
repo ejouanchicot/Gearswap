@@ -52,13 +52,17 @@ A plain `sets.idle` is worn only if the current Idle Mode has no set of its own.
 |---|---|
 | `sets.engaged.DT` | Engaged Mode `DT` (default), one weapon (shield, grip or nothing in the off hand) |
 | `sets.engaged.Acc`, `sets.engaged.TP`, `sets.engaged.Enspell` | Engaged Mode `Acc` / `TP` / `Enspell`, one weapon |
-| `sets.engaged.DT.DW`, `.Acc.DW`, `.TP.DW`, `.Enspell.DW` | Same modes with a weapon in the off hand (dual wield, /NIN or /DNC only). Missing `.DW` set: the normal one is used |
+| `sets.engaged.DT.DW`, `.Acc.DW`, `.TP.DW`, `.Enspell.DW` | Same modes with a weapon in the off hand and real Dual Wield (/NIN at level 10+ or /DNC at level 20+). Missing `.DW` set: the normal one is used |
 
 What counts as dual wield: the off hand is the item of the Sub Weapon set
 (`sets['Malevolence'].sub`), or, with Combat Mode On, the item you actually
-wear. The game's item list decides whether it is a weapon. Your subjob must be
-NIN or DNC: Red Mage has no Dual Wield of its own, so on any other subjob
-`Malevolence` in the Sub Weapon mode keeps the normal (one weapon) sets.
+wear. The game's item list decides whether it is a weapon. You must really
+have Dual Wield: /NIN at level 10+ or /DNC at level 20+. Red Mage has none of its
+own, so on any other subjob, or with /NIN at level 0 (Sheol Gaol and similar
+events), `Malevolence` in the Sub Weapon mode keeps the normal (one weapon) sets,
+and the dagger is not sent to the off hand (the game would refuse it). Optional:
+`sets.SingleWield = { sub = "Genmei Shield" }` puts that item in the off hand
+instead; without it the off hand is left out.
 
 The shared Dual Wield tier sets (`sets.DW.NoHaste` ... `sets.DW.MaxHaste`) go on
 top of the `.DW` set: see [set names](../../guides/sets.md).
@@ -256,3 +260,5 @@ provided file), and by the same rule `sets.precast.JA['Saboteur']`,
 - `sets.midcast.Haste`, `sets.midcast.Protect`, `sets.midcast.Shell`,
   `sets.midcast.StatusRemoval` (fall back to the Enhancing / Healing base).
 - `sets.DW.*` tiers (commented at the end of the file), `sets.TreasureHunter`.
+- `sets.SingleWield` (off hand when a Sub Weapon set holds a weapon and you
+  cannot dual wield, see Engaged).

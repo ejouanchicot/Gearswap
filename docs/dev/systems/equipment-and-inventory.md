@@ -37,7 +37,7 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/utils/equipment/equipment_checker.lua` | 489 | `//gs c checksets`: name -> location cache of owned items, walk of `sets`, report of unavailable slots | `CommonCommands.handle_checksets`, on demand | this page |
 | `shared/utils/equipment/wardrobe_auditor.lua` | 695 | `//gs c wa` report; text parser of set files; `build_pinned_bags` / `build_frequency_map` / `collect_all_used_names` for the organizer | `CommonCommands.handle_wardrobeaudit`; `wardrobe/lib/state.lua`, `reports.lua`, `orchestrator_alt.lua` | this page |
 | `shared/utils/equipment/hp_priority.lua` | 196 | Load-time pass: `priority = HP` (HP*1000+MP on BLM/RDM/GEO) on every HP piece of `_G.sets` | `INIT_SYSTEMS.lua`, HP PRIORITY block, every load | this page |
-| `shared/utils/equipment/weapon_resolver.lua` | 104 | `set_for(slot, value)`: the set a `MainWeapon` / `SubWeapon` value equips; `is_offhand_weapon(name)` | 12 job set builders (see below) | this page |
+| `shared/utils/equipment/weapon_resolver.lua` | 119 | `set_for(slot, value)`: the set a `MainWeapon` / `SubWeapon` value equips, off-hand weapon replaced when the player cannot dual wield; `can_dual_wield()`; `is_offhand_weapon(name)` | 12 job set builders (see below) | this page |
 | `shared/utils/equipment/item_index.lua` | 140 | Name lookups over `res.items` built in one walk per session (`windower._item_index`): `id(name)`, `is_weapon(name)`, `dual_wields(name)`, `ammo_container(name)` (pouch / quiver of an ammo) | `weapon_resolver.lua`, `quiver_manager.lua`, `refill/item_resolver.lua`, `weaponskill/ws_slots.lua` (`same_item`, WAR / PLD weapon detection) | this page |
 | `shared/utils/equipment/elemental_bonus.lua` | 75 | Pure arithmetic: what Hachirin-no-Obi and Orpheus's Sash add for an action | `elemental_belt.lua`, `custom/custom_conditions.lua` (`obi_better` / `orpheus_better`) | this page; [keybinds-and-custom.md](keybinds-and-custom.md) |
 | `shared/utils/equipment/elemental_belt.lua` | 213 | Obi or Orpheus chosen for every job on `cleanup_precast` / `cleanup_midcast`; `//gs c belt` | `INIT_SYSTEMS.lua` (`ElementalBelt.install`) | [factories-and-helpers.md](factories-and-helpers.md#elementalbelt) |
@@ -358,11 +358,22 @@ THF, WAR. PLD uses its own weapon logic. DRK's `apply_weapon` joined on 2026-09-
   2. else `{main|sub = value}` when `value` is a weapon in `res.items` (category `Weapon`, grips
      included; `is_weapon`);
   3. else `nil`.
+- **Off hand without Dual Wield** (since 2026-09-29, both modes): the set found above goes through a
+  local `single_wield`. When its `sub` is an off-hand weapon (`is_offhand_weapon` returns `true`) and
+  `can_dual_wield()` is false, `set_for` returns a copy whose `sub` is `sets.SingleWield.sub` (a set the
+  player writes, e.g. `sets.SingleWield = {sub = "Nusku Shield"}`), or no `sub` at all when that set
+  does not exist. The original set is not modified. Shields, grips and names the game does not know
+  are left as they are. Every caller above gets it; PLD and BST, which read `sets[...]` directly, do not.
+- `WeaponResolver.can_dual_wield()` (since 2026-09-29): `true` when `player` or `player.main_job` is
+  not known yet (nothing is stripped), when the main job is NIN, DNC, THF or BLU, or when the subjob is
+  NIN with `sub_job_level >= 10` or DNC with `sub_job_level >= 20`. The subjob name alone is not
+  enough: Sheol Gaol and similar events set the subjob to level 0, keep its name and take the trait
+  away, so /NIN at level 0 counts as no Dual Wield.
 - `WeaponResolver.is_offhand_weapon(name)` answers "does this off-hand make the player dual wield?"
   from the game's item list: a `Weapon` with a combat skill (`skill > 0`) -> `true`; a shield or a grip
   (skill 0) -> `false`; a name the game does not know -> `nil`. Short and long names, any case. Used by
-  the RDM set builder (`has_shield_equipped`, after its subjob test: off /NIN and /DNC the answer is
-  always "no dual wield"; then `sets.shields` for unknown names) and the BLU set builder
+  the RDM set builder (`has_shield_equipped`, after its `can_dual_wield()` test: without Dual Wield
+  the answer is always "no dual wield"; then `sets.shields` for unknown names) and the BLU set builder
   (`is_single_wield`).
 
 The config is read once per sandbox (`enabled`, `pcall(require, 'config/WEAPON_CONFIG')`); both item
@@ -401,7 +412,7 @@ share, by plain assignment (`SetBuilder.apply_movement = BaseSetBuilder.apply_mo
   (Adoulin included), when `town_set` is given, `set_combine(idle, town_set), true`; otherwise
   `idle, false`. `select_idle_base_town` and `lay_town_set` share one local zone test (`town_zone`)
   and one layering helper (`lay_town`).
-- `lay_weapon(result, slot, value)` (since 2026-09-29): `WeaponResolver.set_for(slot, value)` on top of `result` under `pcall` (error message on failure), unchanged when the value has no set. `lay_weapons(result)`: `lay_weapon` with `state.MainWeapon.current` then `state.SubWeapon.current`. They replace the copies each set builder carried: BLM, BLU, BRD, GEO, RDM, THF (outside the Abyssea weapon) call `lay_weapons`; DNC, DRK, RUN (main and grip), SAM, WAR call `lay_weapon`. COR (sub only on /NIN or /DNC, gun from `sets[...]`), PLD and BST (`sets[...]` read directly) keep their own weapon code. 168-case offline comparison (every weapon value, `equip_without_set` on and off): identical.
+- `lay_weapon(result, slot, value)` (since 2026-09-29): `WeaponResolver.set_for(slot, value)` on top of `result` under `pcall` (error message on failure), unchanged when the value has no set. `lay_weapons(result)`: `lay_weapon` with `state.MainWeapon.current` then `state.SubWeapon.current`. They replace the copies each set builder carried: BLM, BLU, BRD, GEO, RDM, THF (outside the Abyssea weapon) call `lay_weapons`; DNC, DRK, RUN (main and grip), SAM, WAR call `lay_weapon`. COR calls `lay_weapon` for `MainWeapon` since 2026-09-29 (before, its own code laid the sub only on /NIN or /DNC); its gun still comes from `sets[...]`. PLD and BST (`sets[...]` read directly) keep their own weapon code. 168-case offline comparison (every weapon value, `equip_without_set` on and off): identical.
 - `is_in_town()`: the same zone test without any set (used by `SMN_IDLE.lua` for the avatar idle
   set and by the `town` condition of `custom/custom_conditions.lua`).
 
@@ -497,8 +508,9 @@ Exported as `_G.HPPriority` and returned.
 
 | Function | Returns | Callers |
 |---|---|---|
-| `set_for(slot, value)` | `table` or `nil` (see [Weapon states](#weapon-states-weaponresolver)) | set builders of BLM, BLU, BRD, COR, DNC, DRK, GEO, RDM, RUN, SAM, THF, WAR |
-| `is_offhand_weapon(name)` | `true` (dual wield), `false` (shield/grip), `nil` (unknown name or empty) | RDM `SetBuilder.has_shield_equipped`, BLU `SetBuilder.is_single_wield` |
+| `set_for(slot, value)` | `table` or `nil` (see [Weapon states](#weapon-states-weaponresolver)); an off-hand weapon the player cannot hold is replaced by `sets.SingleWield.sub` or dropped | set builders of BLM, BLU, BRD, COR, DNC, DRK, GEO, RDM, RUN, SAM, THF, WAR (through `BaseSetBuilder.lay_weapon` / `lay_weapons` for most) |
+| `can_dual_wield()` | `true` when the player is unknown, main job NIN/DNC/THF/BLU, /NIN at level 10+ or /DNC at level 20+; else `false` | `set_for` (local `single_wield`), RDM `SetBuilder.has_shield_equipped` |
+| `is_offhand_weapon(name)` | `true` (dual wield), `false` (shield/grip), `nil` (unknown name or empty) | `set_for` (local `single_wield`), RDM `SetBuilder.has_shield_equipped`, BLU `SetBuilder.is_single_wield` |
 
 Returned only (no `_G` export).
 
@@ -702,6 +714,9 @@ return M
   piece its own `priority`.
 - `WeaponResolver.set_for` returns the raw `sets[value]` when `equip_without_set` is off, including a
   set that names other slots than the one asked for; that is the historical behaviour the jobs rely on.
+  The only change it makes to that set (a copy) is the off-hand swap when Dual Wield is not there.
+- `can_dual_wield` reads `player.sub_job_level`; a subjob at level 0 (Sheol Gaol) is "no Dual Wield"
+  even though `player.sub_job` still says NIN or DNC.
 
 ## Extending
 
@@ -792,6 +807,11 @@ Fixed since the page was first written (night cleanup `85ad22b`, 2026-09-24, unl
 - 2026-09-29 (checked offline, not yet in game): after `//po` the Hoxne ammo lock stayed open while
   the stance still showed Hoxne. `AmpullaLock.set_slot` now records the lock with `CombatMode.hold`,
   and Combat Mode's wrapper lays it again after every update.
+- 2026-09-29 (checked offline, not yet in game): an off-hand weapon was laid without Dual Wield. COR
+  /NIN at level 0 (Sheol Gaol) tried Demersal and the game refused it; COR /WAR or /SCH got no sub.
+  `WeaponResolver.set_for` now replaces the off-hand weapon with `sets.SingleWield.sub` (or nothing)
+  when `can_dual_wield()` is false (COR /NIN0 -> Naegling + Nusku Shield; WAR NaeglingKC without Dual
+  Wield leaves Kraken Club out). A 168-case comparison with Dual Wield available: identical.
 
 Still open:
 
