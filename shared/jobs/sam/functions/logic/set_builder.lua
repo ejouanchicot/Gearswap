@@ -38,14 +38,13 @@ function SetBuilder.apply_main_weapon(result)
 end
 
 ---   Build idle set with HP-based variations and HybridMode
----   Priority:
+---   Order (each layer goes on top of the previous one):
 ---   0. In a city: town set on top of the idle, weapon, nothing else (as on
 ---      the other jobs)
----   1. Weak (HP < 50%) >> sets.idle.Weak
----   2. Regen (HP < 80%) >> sets.idle.Regen
----   3. HybridMode (PDT) >> sets.idle.PDT
----   4. Apply weapon
----   5. sets.MoveSpeed while running
+---   1. HybridMode (PDT) >> sets.idle.PDT
+---   2. Weak (HP < 50%) >> sets.idle.Weak, else Regen (HP < 80%) >> sets.idle.Regen
+---   3. Apply weapon
+---   4. sets.MoveSpeed while running
 ---
 ---   @param base_set table Base idle set from sam_sets.lua
 ---   @return table Complete idle set with all modifications
@@ -59,20 +58,21 @@ function SetBuilder.build_idle_set(base_set)
         return SetBuilder.apply_main_weapon(result)
     end
 
-    -- Priority 1: Weak (HP < 50%)
-    if player then
-        if player.hpp < 50 and sets.idle and sets.idle.Weak then
-            result = set_combine(result, sets.idle.Weak)
-        -- Priority 2: Regen (HP < 80%)
-        elseif player.hpp < 80 and sets.idle and sets.idle.Regen then
-            result = set_combine(result, sets.idle.Regen)
-        end
-    end
-
-    -- Priority 3: HybridMode (PDT override)
+    -- HybridMode PDT first: sets.idle.PDT is a whole set, and laid last it
+    -- covered the Weak / Regen pieces, which were then never worn in PDT
+    -- (the default mode)
     if state and state.HybridMode and state.HybridMode.value == 'PDT' then
         if sets.idle and sets.idle.PDT then
             result = set_combine(result, sets.idle.PDT)
+        end
+    end
+
+    -- Then HP: Weak (HP < 50%), else Regen (HP < 80%), on top
+    if player then
+        if player.hpp < 50 and sets.idle and sets.idle.Weak then
+            result = set_combine(result, sets.idle.Weak)
+        elseif player.hpp < 80 and sets.idle and sets.idle.Regen then
+            result = set_combine(result, sets.idle.Regen)
         end
     end
 
