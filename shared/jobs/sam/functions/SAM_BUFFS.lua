@@ -13,7 +13,10 @@
 --- behaviour. Pass a function to buff_change() to extend it.
 local LifecycleManager = require('shared/utils/core/lifecycle_manager')
 
-job_buff_change = LifecycleManager.buff_change()
+-- Aftermath Lv.3: rebuild so sets.engaged.AM3 goes on or off
+job_buff_change = LifecycleManager.buff_change(function(buff)
+    LifecycleManager.refresh_after_buff(buff)
+end)
 
 -- Export to global scope (used by Mote-Include via include())
 _G.job_buff_change = job_buff_change

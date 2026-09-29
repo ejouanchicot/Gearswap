@@ -105,13 +105,8 @@ function job_buff_change(buff, gain, eventArgs)
         return -- Doom handled, stop processing
     end
 
-    -- Aftermath Lv.3: Refresh engaged set to apply/remove AM3 gear
-    -- BUT: If Doom is active, don't change gear (Doom priority)
-    if buff == "Aftermath: Lv.3" then
-        if not buffactive['doom'] then
-            handle_equipping_gear(player.status)
-        end
-    end
+    -- Aftermath Lv.3: rebuild so the AM3 set goes on or off
+    require('shared/utils/core/lifecycle_manager').refresh_after_buff(buff)
 end
 
 -- Export to global scope (used by Mote-Include via include())

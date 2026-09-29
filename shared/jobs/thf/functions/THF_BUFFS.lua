@@ -62,6 +62,9 @@ function job_buff_change(buff, gain, eventArgs)
             end, 0.1)
         end
     end
+
+    -- Aftermath Lv.3: rebuild so sets.engaged.PDTAFM3 (Vajra) goes on or off
+    require('shared/utils/core/lifecycle_manager').refresh_after_buff(buff)
 end
 
 -- Export to global scope (used by Mote-Include via include())

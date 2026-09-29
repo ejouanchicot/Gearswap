@@ -71,6 +71,31 @@ function LifecycleManager.status_change(extra)
     end
 end
 
+--- Buffs whose gain or loss swaps the engaged set (sets.engaged.AM3,
+--- PDTAFM3...).
+local GEAR_BUFFS = {['Aftermath: Lv.3'] = true}
+
+--- Rebuild the gear once GearSwap has stored a buff change that swaps sets.
+---
+--- Inside buff_change, buffactive still holds the OLD buffs: GearSwap
+--- refreshes its globals before storing the new list (packet_parsing.lua,
+--- 0x063). A rebuild there reads the state before the change, so a gained
+--- Aftermath got no AM3 set and a lost one put it back on. `gs c update` a
+--- moment later is a new event, which refreshes buffactive first. Skipped under
+--- Doom (Doom gear first) and during an action (its aftercast rebuilds).
+--- @param buff string Buff name from buff_change
+--- @return boolean True when an update was scheduled
+function LifecycleManager.refresh_after_buff(buff)
+    if not GEAR_BUFFS[buff] or (buffactive and buffactive['doom']) then
+        return false
+    end
+    coroutine.schedule(function()
+        if type(midaction) == 'function' and midaction() then return end
+        send_command('gs c update')
+    end, 0.1)
+    return true
+end
+
 --- Buff handler: Doom takes priority and stops the chain when it applies.
 --- @param extra function|nil Job-specific logic, skipped when Doom handled it
 --- @return function Handler for _G.job_buff_change
