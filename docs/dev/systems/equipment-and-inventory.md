@@ -45,7 +45,7 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/utils/equipment/treasure_hunter.lua` | 290 | `TreasureMode` (Off/Tag/Full, SATA on THF), mob tagging, engaged (skipped during a COR roll, `GearHold`) and action overlays | `INIT_SYSTEMS.lua` (`TreasureHunter.install`) | [factories-and-helpers.md](factories-and-helpers.md#treasurehunter) |
 | `shared/utils/equipment/treasure_commands.lua` | 63 | `//gs c th` built on `optional_state_commands.create` | `COMMON_COMMANDS.lua` router | [commands-and-debug.md](commands-and-debug.md) |
 | `shared/utils/equipment/spell_gear_lock.lua` | 135 | A piece a spell cannot be cast without (Dispelga -> Daybreak), worn through Combat Mode | RDM precast / midcast / aftercast / commands | [factories-and-helpers.md](factories-and-helpers.md#spellgearlock), [../jobs/rdm.md](../jobs/rdm.md) |
-| `shared/utils/equipment/ampulla_lock.lua` | 172 | Ammo slot held on Hoxne Ampulla for the Hoxne stance (PLD, WAR) | PLD/WAR commands (`job_state_change`), PLD/WAR entry `user_setup` / `file_unload`, wardrobe organizer | this page; [../jobs/pld.md](../jobs/pld.md) |
+| `shared/utils/equipment/ampulla_lock.lua` | 177 | Ammo slot held on Hoxne Ampulla for the Hoxne stance (PLD, WAR) | PLD/WAR commands (`job_state_change`), PLD/WAR entry `user_setup` / `file_unload`, wardrobe organizer | this page; [../jobs/pld.md](../jobs/pld.md) |
 | `shared/utils/set_building/base_set_builder.lua` | 144 | `apply_movement`, `select_idle_base_town`, `select_idle_base`, `is_in_town` shared by the job set builders | set builders of 15 jobs (BST: `is_in_town` only), `DNC_IDLE.lua`, `SMN_IDLE.lua`, `custom/custom_conditions.lua` | this page |
 | `shared/utils/inventory/refill_manager.lua` | 315 | `//gs c rf` facade: plans pulls/pushes, queues the moves, schedules them 0.6 s apart | `CommonCommands.handle_refill`, dual-box `rf` hook | this page |
 | `shared/utils/inventory/refill/config_resolver.lua` | 245 | Picks the refill list (craft / job+subjob / fallback) and builds the cross-character foreign item set | `refill_manager.lua` | this page |
@@ -520,12 +520,20 @@ conditions of `custom/custom_conditions.lua`.
 | Function | Behaviour | Callers |
 |---|---|---|
 | `apply(mode)` | `engage()` when `mode == 'Hoxne'`, else `release()` | PLD/WAR `job_state_change` on HybridMode (`PLD_COMMANDS.lua`, `WAR_COMMANDS.lua`); PLD/WAR entry `user_setup` |
-| `engage()` | Bumps `lock_sequence`, opens the ammo slot, then polls every 0.5 s for up to 5 s until `Hoxne Ampulla` is worn and only then `disable('ammo')`; on timeout leaves the slot open with a warning | `apply` |
+| `engage()` | Bumps `lock_sequence`, opens the ammo slot, then polls every 0.5 s for up to 5 s (abandoned when `lock_sequence` or `windower._weapon_lock_gen`, bumped at every job load, has changed) until `Hoxne Ampulla` is worn and only then `disable('ammo')`; on timeout leaves the slot open with a warning | `apply` |
 | `release()` | Bumps `lock_sequence` (cancels a pending lock) and re-enables the slot if this module locked it | PLD/WAR entry `file_unload`; `wardrobe_organizer.lua` `release_stance_locks` |
-| `set_slot(locked)` | `disable`/`enable('ammo')` and records `_G.ampulla_ammo_locked` | internal |
+| `set_slot(locked)` | `disable`/`enable('ammo')`, records `_G.ampulla_ammo_locked`, and (since 2026-09-29) `CombatMode.hold('ampulla', {'ammo'})` / `CombatMode.release('ampulla')` | internal |
 
 The lock lives in GearSwap's own `disable_table`, which survives `gs reload` and job changes; that is
 why the entry file releases it in `file_unload` and re-applies it in `user_setup`.
+
+Since 2026-09-29 the lock is also recorded in Combat Mode's registry (`windower._weapon_locks.ampulla`),
+and Combat Mode's `handle_equipping_gear` wrapper disables the ammo slot again after the gear of every
+update, outside a craft session (`combat_mode.lua` `reassert_holds`). `gs enable all`, sent at the end
+of `//po` (PorterPacker), frees the slot while the stance still says Hoxne; the next update puts the
+Ampulla back and locks it again. `//gs c wo` calls `release()` when it ends, so after `wo` the slot stays
+open until the stance is selected again. The registry is emptied on every job load (Combat Mode's
+`on_attach`).
 
 ### RefillManager and helpers
 
@@ -616,8 +624,9 @@ return M
 - Globals read: `sets` (checker, `HPPriority`, `WeaponResolver`), `player` (refill, `HPPriority`,
   `AmpullaLock`), `_G.CraftManager` (config resolver), `state.Moving`, `world`, `areas`
   (`BaseSetBuilder`), `world` (`ElementalBonus`). Globals written: `priority` fields into `_G.sets` and
-  `_G.HPPriority` (HP priority), `_G.ampulla_ammo_locked` (Ampulla lock). No `windower.*` field is
-  used for persistence.
+  `_G.HPPriority` (HP priority), `_G.ampulla_ammo_locked` (Ampulla lock). The only `windower.*` field
+  written is the Ampulla lock's record in `windower._weapon_locks` (through `CombatMode.hold` /
+  `release`, since 2026-09-29).
 - Config caching: refill configs and `WEAPON_CONFIG.lua` are cached by `ModuleCache` like modules, so
   an edited file is only read again after a `gs reload` or job change. A refill config that failed to
   load is not cached and is retried on the next refill.
@@ -699,7 +708,9 @@ return M
   its set builder rather than `sets[value]`, so `equip_without_set` works for it.
 - A new stance lock in the style of `AmpullaLock`: lock only after reading that the piece is worn,
   keep a sequence counter to cancel pending locks, release it in `file_unload`, and add the release to
-  `release_stance_locks` in `wardrobe_organizer.lua` (the organizer re-enables every slot).
+  `release_stance_locks` in `wardrobe_organizer.lua` (the organizer re-enables every slot). Record it
+  with `CombatMode.hold(owner, slots)` / `CombatMode.release(owner)` so that it is laid again after
+  `gs enable all` (`//po`).
 
 ## For maintainers / AI
 
@@ -766,6 +777,9 @@ Fixed since the page was first written (night cleanup `85ad22b`, 2026-09-24, unl
 - PLD template SCH/RDM lists now carry Echo Drops (template = live); Kaories has its own PLD overlay.
 - `config/craft/` is deployed by the clone (`2557885`).
 - Refill and wardrobe panels now follow the player's chat separator options (`64a0c20`, 2026-09-27).
+- 2026-09-29 (checked offline, not yet in game): after `//po` the Hoxne ammo lock stayed open while
+  the stance still showed Hoxne. `AmpullaLock.set_slot` now records the lock with `CombatMode.hold`,
+  and Combat Mode's wrapper lays it again after every update.
 
 Still open:
 

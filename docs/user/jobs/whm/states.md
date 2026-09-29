@@ -57,6 +57,10 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
   off.
 - A reload, a main job change or a subjob change releases the Combat Mode and
   Melee ON locks (Offense Mode comes back at None).
+- `//po` (PorterPacker) and `//gs c wo` free every slot when they end. While
+  Melee ON is on, main, sub and range are locked again the next time GearSwap
+  changes your gear (an action, engaging, a mode change), with your weapons back
+  on. The same goes for Combat Mode On.
 - Idle: `sets.latent_refresh` goes on top while your MP is under 51 %, and
   `sets.MoveSpeed` while you move (in town too).
 - Weaponskill TP bonus gear: see [TP bonus](../war/tp-bonus.md).

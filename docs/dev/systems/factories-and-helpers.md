@@ -317,7 +317,8 @@ flowchart TD
 - **Session flag.** While it is set (`CraftManager.is_active()`, read through the `_G.CraftManager` export):
   - refill switches to `<char>/config/craft/CRAFT_REFILL.lua` (`shared/utils/inventory/refill/config_resolver.lua`);
   - Combat Mode does not enable the weapon slots it locked (`combat_mode.lua` local `craft_active`);
-  - WHM's own `OffenseMode` `Melee ON` weapon lock (`WHM_COMMANDS.lua` `job_state_change`, and the WHM entry's `file_unload`) skips its `enable()`.
+  - WHM's own `OffenseMode` `Melee ON` weapon lock (`WHM_COMMANDS.lua` `job_state_change`, and the WHM entry's `file_unload`) skips its `enable()`;
+  - Combat Mode's wrapper does not lay the `hold()` locks again after an update (`combat_mode.lua` `reassert_holds`: WHM `Melee ON`, THF `RangeLock`, the Hoxne Ampulla).
 
 ### Set file shapes
 

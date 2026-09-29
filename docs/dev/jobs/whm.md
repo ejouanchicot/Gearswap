@@ -291,7 +291,12 @@ the field, so the description (`Offense Mode`, passed by Mote's `cycle` and by
 {'main', 'sub', 'range'})`, anything else -> `enable(...)` plus
 `CombatMode.release('whm_melee')` unless a craft session is active; always
 refreshes the HUD. The hold is what keeps Combat Mode turning Off from freeing
-the weapons while `Melee ON` still holds them. The Combat Mode lock is the
+the weapons while `Melee ON` still holds them. Since 2026-09-29 it also brings
+the lock back after `gs enable all` (sent at the end of `//po` and of
+`//gs c wo`): the Combat Mode wrapper disables every held slot again after the
+gear of the next update. `//gs c wo` does not release `Melee ON` (it releases
+only the Hoxne and THF range locks), so the weapons are locked again after `wo`
+too. The Combat Mode lock is the
 shared hook's ([keybinds and custom states](../systems/keybinds-and-custom.md#optional-states-combat-mode-and-treasure-mode)).
 
 ## Set names the code looks up
@@ -356,8 +361,11 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
   cleared by `WHM_COMMANDS.lua` `job_state_change`).
 - `windower._weapon_locks.whm_melee`: `{'main', 'sub', 'range'}` while
   `Melee ON` holds the weapons (`CombatMode.hold` / `release` from
-  `job_state_change`; cleared by the entry's `file_unload` with the lock).
-  `CombatMode.apply` does not enable those slots when Combat Mode turns Off.
+  `job_state_change`; cleared by the entry's `file_unload` with the lock, and
+  the whole registry is emptied by Combat Mode's `on_attach` on every job load).
+  `CombatMode.apply` does not enable those slots when Combat Mode turns Off, and
+  the Combat Mode wrapper disables them again after the gear of every update
+  (outside a craft session, since 2026-09-29).
   No events registered.
 - Slot locks: `disable()` lives in GearSwap's `disable_table` and survives
   reloads and job changes. The entry's `file_unload` releases the `Melee ON`
@@ -467,6 +475,10 @@ T = `_master/sets/whm_sets.lua`. Player version: [sets.md](../../user/jobs/whm/s
   Combat Mode On then Off freed main / sub / range while the HUD still showed
   `Melee ON`. `Melee ON` now records its slots with `CombatMode.hold`, and
   Combat Mode Off leaves them locked until `Melee ON` is turned off.
+- Fixed 2026-09-29 (checked offline, not yet in game): after `//po` or
+  `//gs c wo` (both end with `gs enable all`), main / sub / range stayed
+  unlocked while the HUD still showed `Melee ON`. The held slots are now locked
+  again after the gear of every update.
 - Fixed 2026-09-28: when `WHM_CURE_CONFIG` fails to load, the fallback now holds the
   template's `cure_tiers` / `curaga_tiers` / `safety_margin` (it had none and the first
   Cure raised `ipairs(nil)`), and the failure goes through `MessageFormatter.show_error`.

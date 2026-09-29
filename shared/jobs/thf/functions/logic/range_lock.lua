@@ -21,10 +21,15 @@ local RangeLock = {}
 --- Lock or unlock the range and ammo slots, and record which.
 --- @param locked boolean True to lock, false to unlock
 function RangeLock.set_slots(locked)
+    -- Recorded with Combat Mode's lock registry too: it lays the lock again
+    -- after `gs enable all` (//po), which frees it while RangeLock says On.
+    local CombatMode = require('shared/utils/core/combat_mode')
     if locked then
         disable('range', 'ammo')
+        CombatMode.hold('thf_range', {'range', 'ammo'})
     else
         enable('range', 'ammo')
+        CombatMode.release('thf_range')
     end
     _G.thf_range_locked = locked
 end

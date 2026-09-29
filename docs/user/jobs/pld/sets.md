@@ -196,7 +196,10 @@ the `//gs c aoe` rotation).
   engaged sets, then the **ammo slot is locked** once the Ampulla is actually worn, so
   weaponskill, spell and ability sets cannot swap it out. If it is not worn within
   about 5 seconds, the slot stays unlocked and a warning says what is worn instead. Any
-  other stance, a job change, a reload or `//gs c wo` unlocks it.
+  other stance, a job change, a reload or `//gs c wo` unlocks it (after `wo`, choose the
+  stance again). `//po` (PorterPacker) frees every slot when it ends; while the stance is on,
+  the Ampulla goes back on and is locked again the next time GearSwap changes your gear (an
+  action, engaging, a mode change).
 - **Phalanx SIRD**: `PhalanxSIRD` On or `Xp` On casts Phalanx in
   `sets.midcast.SIRDPhalanx`. `PhalanxSIRD` turns On by itself when you enter Sortie or
   /SCH and Off when you go back to PDT/MDT. `//gs c sortie <target>` also sets it

@@ -56,7 +56,7 @@ numbers are avoided because they drift.
 | `shared/jobs/pld/functions/logic/cure_set_builder.lua` | 54 | CureSelf / CureOther choice for Cure to Cure IV, `is_cure` |
 | `shared/jobs/pld/functions/logic/aoe_manager.lua` | 178 | `//gs c aoe` BLU rotation (same code as RUN's copy; only headers and error text differ) |
 | `shared/jobs/pld/functions/logic/rune_manager.lua` | 76 | `//gs c rune` (same code as RUN's copy) |
-| `shared/utils/equipment/ampulla_lock.lua` | 172 | Hoxne stance: closes the ammo slot on Hoxne Ampulla once it is worn, or leaves it open and says so. Shared with WAR |
+| `shared/utils/equipment/ampulla_lock.lua` | 177 | Hoxne stance: closes the ammo slot on Hoxne Ampulla once it is worn, or leaves it open and says so; records the lock with Combat Mode's lock registry (`'ampulla'`). Shared with WAR |
 | `shared/utils/weaponskill/ws_slots.lua` | 159 | Weapon-aware weaponskill slot states, shared with WAR (PLD uses `rebuild` / `get` / `cast`; the weapon-in-hand detection, `detect_weapon` / `sync`, is WAR's) |
 | `shared/utils/scholar/scholar_actions.lua`, `stratagem_charges.lua` | 366 + 104 | /SCH chains, shared with BLM and GEO (and `//gs c stealth`); stratagem buffs read from `windower.ffxi.get_player().buffs` (`buff_up`), see [midcast and buffs](../systems/midcast-and-buffs.md) |
 | `_master/config/pld/PLD_STATES.lua` | 364 | States (incl. `WS1`/`WS2`), three option profiles (`standard`/`sortie`/`sch`), `apply_hybrid_profile`, `_G.PLDStates` |
@@ -366,8 +366,13 @@ is **left open** and the player is told what is worn instead (`warn_not_worn`).
 `disable_table` survives `gs reload` and job changes, so the slot is given back at
 both ends: `file_unload`, and `user_setup` right after `configure()` has reset
 `HybridMode`. `//gs c wo` also releases it (the organizer's `clean_exit` and
-`alt_finish` call `AmpullaLock.release()`, which also cancels a lock still
-polling); re-selecting the stance locks again.
+`alt_finish` call `AmpullaLock.release()`, after their own `gs enable all`, which
+also cancels a lock still polling), so after `wo` the slot stays open until the
+stance is selected again.
+
+`AmpullaLock.set_slot` also records the lock with `CombatMode.hold('ampulla', {'ammo'})` and forgets it with `CombatMode.release('ampulla')` (since 2026-09-29), so Combat Mode's `handle_equipping_gear` wrapper disables the ammo slot again after the gear of every update, outside a craft session: after `//po` (PorterPacker ends with `gs enable all`) the next update puts the Ampulla back and locks it again. The lock the poll lays is
+the one recorded; the poll itself is unchanged (see
+[core-lifecycle.md](../systems/core-lifecycle.md#combatmode-hook-sharedutilscorecombat_modelua)).
 
 ### Midcast
 
@@ -735,14 +740,20 @@ replay, ammo lock poll, HUD refresh): check those in game with `//gs c trace on`
 - The template has no `sets.idleRegen`, `sets.precast.FC.CureSelf` or
   `sets.precast.WS.SCH`: the `Regen` key and those code paths do nothing until the
   player adds them.
-- The Hoxne ammo lock can still fire in a new sandbox: a pending check scheduled
-  before a job change survives the reload, and its sequence counter is a module
-  local rather than a `windower.*` value (`ampulla_lock.lua` `lock_sequence`).
-  Worst case is one stray `disable('ammo')`, which `file_unload` and `user_setup`
-  both release.
+- Fixed 2026-09-29 (checked offline, not yet in game): a pending Hoxne ammo check
+  scheduled before a job change could still lock in the new sandbox (its sequence
+  counter is a module local). Every job load now bumps `windower._weapon_lock_gen`
+  (`combat_mode.lua` `on_attach`), and `lock_when_worn` gives up when the value it
+  was started under has changed, so a stray lock cannot reach the new job or its
+  `'ampulla'` record in `windower._weapon_locks`.
+- Fixed 2026-09-29 (checked offline, not yet in game): after `//po` the Hoxne
+  ammo lock stayed open while the stance still showed Hoxne; the lock is now
+  recorded with `CombatMode.hold` and laid again after every update.
 - `//gs c wo reset` and the organizer's two "crashed" paths call
   `Phases.enable_slots()` without releasing the stance lock, so the Hoxne state can
   still believe the slot is closed; re-select the stance or `//lua r gearswap`.
+  Since 2026-09-29 the `'ampulla'` record survives those paths, so the next update
+  closes the slot again (checked offline only).
 - AbilityHelper sets only `handled`: the cancelled Cure/Protect/Flash still goes
   through the rest of `job_precast` and `job_post_precast`, so precast gear flickers
   for a spell that is not cast (`ability_helper.lua` `fire_then_replay`).

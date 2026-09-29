@@ -121,7 +121,7 @@ It pushes one item every `MOVE_DELAY` (0.35 s), re-checking that the slot still 
 
 **finish_run** (`wardrobe_organizer.lua:286-384`). After `SETTLE_DELAY` (2 s) it snapshots again and computes the misplaced count: `#w1w2_unused + #w3w6_used + unused inventory gear + Phases.count_unpacked(final)` (the last term since 2026-09-25, so a Phase 3.5 that stopped early is still counted as work and no longer ends on "Layout OK"). `should_retry` (`:221`) retries when misplaced > 0, `outer_iteration < MAX_OUTER_ITERATIONS` (12) and the count has not been identical `TRULY_STUCK_THRESHOLD` (4) times in a row. The retry warning prints "(was N)" only when a previous count exists (fixed 2026-09-25; it used to print "was inf"). The next Phase 0 re-enables the slots (`phases.lua:104`). When no retry is granted and misplaced > 0, a "last-chance verify" re-snapshots 2 s later, with the same formula: clean -> success; fewer misplaced and under the cap -> one more iteration with the stuck counter reset; otherwise the summary panel (`print_summary`, `:233`) and a per-item dump to the log (`dump_stuck_items`, `:263`).
 
-`clean_exit()` (`:142-148`) runs `Phases.enable_slots()`, then `release_stance_locks()` (`:118-138`, added 2026-09-25, game test pending): `AmpullaLock.release()` is always called (it also bumps the lock sequence, so a pending Hoxne lock cannot close the ammo slot on the naked set), `RangeLock.release()` and `state.RangeLock = false` only when `_G.thf_range_locked`; when a lock was actually in place it prints one warning ("Stance slot locks released ... re-select the stance to lock again"). It does not re-apply the Hoxne lock, because the character is naked. `wo reset` and the two "crashed" paths still call `Phases.enable_slots()` directly, so they leave a stale stance flag.
+`clean_exit()` (`:142-148`) runs `Phases.enable_slots()`, then `release_stance_locks()` (`:118-138`, added 2026-09-25, game test pending): `AmpullaLock.release()` is always called (it also bumps the lock sequence, so a pending Hoxne lock cannot close the ammo slot on the naked set), `RangeLock.release()` and `state.RangeLock = false` only when `_G.thf_range_locked`; when a lock was actually in place it prints one warning ("Stance slot locks released ... re-select the stance to lock again"). It does not re-apply the Hoxne lock, because the character is naked. `AmpullaLock.release()` and `RangeLock.release()` also drop their records in Combat Mode's lock registry (`CombatMode.release('ampulla')` / `('thf_range')`, since 2026-09-29), so those two locks stay off after `wo` until the stance or `RangeLock` is selected again. WHM's `Melee ON` lock is not released here: its record (`whm_melee`) survives the run, and Combat Mode's `handle_equipping_gear` wrapper disables main / sub / range again after the gear of the next update (`combat_mode.lua` `reassert_holds`, see [core-lifecycle.md](core-lifecycle.md#combatmode-hook-sharedutilscorecombat_modelua)). With Combat Mode On, that same update puts the job's weapons back before the Combat Mode lock (the main hand is empty after the run). `wo reset` and the two "crashed" paths still call `Phases.enable_slots()` directly, so they leave a stale stance flag; its registry record survives too, so the next update locks the slot again.
 
 `schedule_lockstyle` (`:159-167`) runs on every successful or "with leftovers" exit, never on abort, crash, preview, verify or the "snapshot failed" exit of `finish_run`: `gs c ls` after 1.5 s, `gs c rf` after 3.5 s. `gs c rf` also broadcasts `rf` to the dual-box partner through `DualBoxSyncIPC` (`CommonCommands.handle_refill`; the partner runs `refill_hook`, registered for `rf` / `refill` in the dual-box block of `INIT_SYSTEMS.lua`), so the partner refills its consumables too. No re-equip is requested: the character stays naked until the next GearSwap event, except for equip requests GearSwap queued while the slots were disabled, which `gs enable` flushes (`GearSwap/user_functions.lua:145-183`).
 
@@ -346,7 +346,7 @@ Behaviour on lifecycle events during a run:
 ## Interactions
 
 - Calls: `WardrobeAuditor` (pins, all-jobs used names, frequency map), `WarpDatabase.get_all_item_names` (`shared/utils/warp/database/warp_database_core.lua:230`), `res.items` / `res.bags`, `CommonCommands.handle_naked` via `gs c naked`, the lockstyle command via `gs c ls`, `RefillManager` and `DualBoxSyncIPC` via `gs c rf`.
-- Stance locks: `shared/utils/equipment/ampulla_lock.lua` (PLD Hoxne ammo) and `shared/jobs/thf/functions/logic/range_lock.lua` (THF range) are released by `clean_exit` / `alt_finish` (2026-09-25).
+- Stance locks: `shared/utils/equipment/ampulla_lock.lua` (PLD/WAR Hoxne ammo) and `shared/jobs/thf/functions/logic/range_lock.lua` (THF range) are released by `clean_exit` / `alt_finish` (2026-09-25), which also drops their `CombatMode.hold` records. Locks recorded with `CombatMode.hold` and not released here (WHM `Melee ON`) are laid again by `shared/utils/core/combat_mode.lua` after the next update.
 - Called by: `CommonCommands.handle_wardrobeorganize` only. Routing details: [commands-and-debug.md](commands-and-debug.md).
 - Sandbox model (why old coroutines outlive a reload): [core-lifecycle.md](core-lifecycle.md).
 - Dual-box side effect of `gs c rf`: [dualbox.md](dualbox.md).
@@ -360,7 +360,7 @@ Behaviour on lifecycle events during a run:
 - In the active-job flow "used" means "named somewhere in the loaded `_G.sets`". Gear equipped by code outside `sets` (inline `equip({...})` in job logic, weapon names kept in config tables) counts as unused and is evicted unless listed in `KEEP_ITEMS`.
 - The alt flow's "used" comes from a regex over the set files' text (`extract_items_from_text`, `wardrobe_auditor.lua:200`): any quoted string after `=` counts, which is broader than the loaded sets.
 - Warp items are kept out of overflow only when `OVERFLOW_BAGS` contains a bag that cannot be equipped from (`overflow_stays_reachable`, `items.lua:108`, `res.bags[..].equippable`).
-- Every run starts and ends with `gs enable all`: slots the player disabled on purpose are re-enabled. The Hoxne ammo lock and THF range lock are released (with a warning) at the end of a successful, aborted-by-job-change or alt run; re-select the stance to lock again.
+- Every run starts and ends with `gs enable all`: slots the player disabled on purpose are re-enabled. The Hoxne ammo lock and THF range lock are released (with a warning) at the end of a successful, aborted-by-job-change or alt run; re-select the stance to lock again. WHM `Melee ON` is not released: the next update after the run locks main / sub / range again (2026-09-29).
 - Phase 0 removes the weapons, so TP is lost.
 - The chat panels print W1..W8 free slots by fixed bag id (`print_summary`, `preview`), whatever the configured lists; bags a character does not scan show 0.
 - Phase 3.5 is printed as "Phase 3": `Chat.phase` formats the number with `%d` (`Chat.phase`, `chat.lua:138`), which truncates 3.5 in Lua 5.1.
@@ -390,7 +390,8 @@ Invariants to keep:
   predicts, or the run retries to `MAX_OUTER_ITERATIONS`.
 - A run always ends with the slots enabled and every stance lock released: any new exit path goes
   through `clean_exit` (or calls `Phases.enable_slots()` plus `release_stance_locks()`), and any new
-  module that calls `disable()` adds its release to `release_stance_locks`.
+  module that calls `disable()` adds its release to `release_stance_locks`. A lock recorded with
+  `CombatMode.hold` and not released there is laid again by Combat Mode after the next update.
 - The organizer is lazy (`handle_wardrobeorganize` requires it); do not load it from an entry file or
   `INIT_SYSTEMS`.
 - `wardrobe_organizer.lua` returns its table and exports nothing to `_G`; keep it that way, the router
@@ -423,11 +424,12 @@ Fixed since the page was first written:
 - "Layout OK" while Phase 3.5 had stopped early: `finish_run` and the last-chance verify now add `Phases.count_unpacked` (fixed 2026-09-25).
 - Retry warning printed "(was inf)" on the first retry (fixed 2026-09-25).
 - `wo` left PLD's Hoxne ammo lock and THF's range lock flagged over an open slot: `clean_exit` / `alt_finish` now release them (fixed 2026-09-25; game test pending: PLD Hoxne then `wo` -> warning, ammo free, Hoxne locks again when re-selected; THF `range` then `wo` -> HUD RangeLock Off).
+- 2026-09-29 (checked offline, not yet in game): after `wo`, WHM's `Melee ON` weapon lock stayed open while the HUD showed `Melee ON`. Combat Mode's wrapper now lays every `CombatMode.hold` lock again after each update; the Hoxne and THF range locks are still released by `wo` on purpose.
 
 Still open:
 
 - `wo reset` / `wo recover` and a same-job `gs reload` do not stop an in-flight chain; a second `wo` then runs concurrently with it - `WardrobeOrganizer.reset` / `recover`, `shared/utils/wardrobe/wardrobe_organizer.lua:670-686`
-- `wo reset` and the two "crashed" paths call `Phases.enable_slots()` without `release_stance_locks`, so a stance flag can stay set - `wardrobe_organizer.lua:670`
+- `wo reset` and the two "crashed" paths call `Phases.enable_slots()` without `release_stance_locks`, so a stance flag can stay set - `wardrobe_organizer.lua:670`. Since 2026-09-29 the lock's `CombatMode.hold` record stays too, so the next update closes the slot again, in line with the flag (checked offline only).
 - Gear in overflow bags that are not in `ALL_WARDROBES` (Kaories: Sack, Case, Satchel) is invisible to the snapshot, so "already optimized" / "Layout OK" are reported while used gear sits there - `State.build_state`, `shared/utils/wardrobe/lib/state.lua:181`
 - The alt flow's Phase 4 routes leftovers with the regular bag lists, so unused gear can be pushed back into the alt primary bags (W3/W4) - `alt_phase4` in `shared/utils/wardrobe/lib/orchestrator_alt.lua`, `build_plan` in `lib/phases.lua`
 - The alt flow decides whether to keep warp items from `OVERFLOW_BAGS`, not `ALT_OVERFLOW_BAGS`; with the default config `wo alt` evicts warp rings to Sack/Case - `overflow_stays_reachable`, `shared/utils/wardrobe/lib/items.lua:108`

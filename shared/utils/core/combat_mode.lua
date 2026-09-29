@@ -56,12 +56,18 @@ end
 local Optional = require('shared/utils/core/optional_state').create({
     id = 'combat_mode', state = 'CombatMode', description = 'Combat Mode',
     values = {'Off', 'On'}, file = 'combat_mode.lua', default_key = DEFAULT_KEY,
-    -- A job change keeps GearSwap's disabled slots; this job starts Off
+    -- A job change keeps GearSwap's disabled slots; this job starts Off.
+    -- The other locks' owners free their slots in file_unload and every
+    -- state starts Off again, so their records go too.
     on_attach = function()
         if windower._combat_mode_locked and not craft_active() then
             enable(unpack_list(windower._combat_mode_locked))
             windower._combat_mode_locked = nil
         end
+        windower._weapon_locks = {}
+        -- Counted so a lock scheduled by the previous job file (a pending
+        -- Ampulla check) can tell it no longer belongs to the loaded job
+        windower._weapon_lock_gen = (windower._weapon_lock_gen or 0) + 1
     end,
 })
 
@@ -84,8 +90,11 @@ local function slots()
     return SLOTS_BY_JOB[player and player.main_job] or DEFAULT_SLOTS
 end
 
---- Weapon locks other than Combat Mode's (e.g. WHM Melee ON), owner -> slots.
---- Kept on windower: the disabled slots outlive a reload, so must the record.
+--- Slot locks other than Combat Mode's, owner -> slots: WHM Melee ON, THF
+--- RangeLock, the Hoxne Ampulla. Kept on windower: the disabled slots outlive
+--- a reload, so must the record. Laid again after the gear of every update
+--- (reassert_holds): `gs enable all` (//po, //gs c wo) frees every slot while
+--- the owner's state still says On.
 --- @return table
 local function other_locks()
     windower._weapon_locks = windower._weapon_locks or {}
@@ -93,7 +102,8 @@ local function other_locks()
 end
 
 --- Record that `owner` keeps `slot_list` locked: Combat Mode turning Off
---- then leaves those slots locked. The owner disables them itself.
+--- then leaves those slots locked, and every update locks them again. The
+--- owner disables them itself the first time.
 --- @param owner string e.g. 'whm_melee'
 --- @param slot_list table e.g. {'main', 'sub', 'range'}
 function CombatMode.hold(owner, slot_list)
@@ -168,6 +178,16 @@ function CombatMode.apply()
     end
 end
 
+--- Lay every hold() lock again, after the job's gear so a slot emptied by a
+--- strip gets its piece first (equip() queues, a later disable() keeps it).
+--- Not during a craft session, which owns the gear.
+local function reassert_holds()
+    if craft_active() then return end
+    for _, owned in pairs(other_locks()) do
+        disable(unpack_list(owned))
+    end
+end
+
 --- Wrap handle_equipping_gear once per sandbox: the lock follows every
 --- update (a cyclestate, a status change, a reload). Called from INIT_SYSTEMS,
 --- after Mote has defined the function.
@@ -178,6 +198,7 @@ function CombatMode.install_hook()
         local after_gear = CombatMode.apply()
         local result = orig(status, pet_status)
         if after_gear then after_gear() end
+        reassert_holds()
         return result
     end
     _G.handle_equipping_gear = hook

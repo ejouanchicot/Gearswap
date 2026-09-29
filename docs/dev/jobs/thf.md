@@ -57,7 +57,7 @@ function; line numbers are deliberately not used.
 | `shared/jobs/thf/functions/logic/sa_ta_manager.lua` | 95 | `apply_variant`: WS variant (`SATA` > `SA` > `TA`) from buffs or pending flags; consumes the flags |
 | `shared/jobs/thf/functions/logic/set_builder.lua` | 250 | Engaged base (Aftermath / HybridMode), weapons or Aby weapons, SA/TA overlay, TH overlay, `sata_th_layer` (laid again after Dual Wield), idle base (`BaseSetBuilder.select_idle_base`: town, HybridMode), movement |
 | `shared/jobs/thf/functions/logic/smartbuff_manager.lua` | 263 | `apply` per subjob, `apply_fbc`, `apply_steal` |
-| `shared/jobs/thf/functions/logic/range_lock.lua` | 63 | Range/ammo lock in step with `RangeLock`; `_G.thf_range_locked`; `release` at unload |
+| `shared/jobs/thf/functions/logic/range_lock.lua` | 68 | Range/ammo lock in step with `RangeLock`; `_G.thf_range_locked`, plus Combat Mode's lock registry (`'thf_range'`); `release` at unload |
 | `shared/jobs/thf/functions/logic/treasure_hunter.lua` | 52 | THF layer over the shared module: `sata_overlay`, and `init` hands the shared wrapper the SA/TA + TH layer |
 | `shared/utils/equipment/treasure_hunter.lua` | 290 | Shared Treasure Hunter: optional state, tagging, engaged / action overlays, 4 raw events, `//gs c th` fields |
 | `shared/utils/equipment/weapon_resolver.lua` | 104 | `set_for(slot, value)`: `sets[value]`, or the plain weapon when `equip_without_set` is on |
@@ -262,7 +262,15 @@ weapons, then `BaseSetBuilder.apply_movement` (`sets.MoveSpeed` when
 ### Ranged attacks
 
 All locking goes through `logic/range_lock.lua`, which records the lock in
-`_G.thf_range_locked`:
+`_G.thf_range_locked`. `RangeLock.set_slots` also records the lock with
+`CombatMode.hold('thf_range', {'range', 'ammo'})` and forgets it with
+`CombatMode.release('thf_range')` (since 2026-09-29): Combat Mode's
+`handle_equipping_gear` wrapper then disables range and ammo again after the
+gear of every update, outside a craft session. `gs enable all`, sent at the
+end of `//po` (PorterPacker), frees them while `RangeLock` still shows On;
+the next update puts the job's range/ammo back and locks them again (see
+[core-lifecycle.md](../systems/core-lifecycle.md#combatmode-hook-sharedutilscorecombat_modelua)).
+The paths that lock:
 
 - `THF_MIDCAST.lua` `job_midcast`: on every non-interrupted
   `action_type == 'Ranged Attack'`, `RangeLock.engage()`:
@@ -283,8 +291,9 @@ All locking goes through `logic/range_lock.lua`, which records the lock in
   subjob change re-runs `user_setup()` in the same sandbox first;
   `RangeLock.sync_state()` keeps the state On until that reload.
   `//gs c wo` also releases the lock when it finishes
-  (`wardrobe_organizer.lua` `release_stance_locks`) and sets `RangeLock` back
-  to Off, with a warning line.
+  (`wardrobe_organizer.lua` `release_stance_locks`, after its own
+  `gs enable all`) and sets `RangeLock` back to Off, with a warning line, so
+  after `wo` the lock stays off until `RangeLock` is turned on again.
 - Quiver auto-open (`THF_AFTERCAST.lua`):
   `QuiverManager.after_ranged_attack(spell, nil, nil, 5)` runs for a
   non-interrupted `Ranged Attack`, with the ammo worn and its quiver
@@ -638,6 +647,9 @@ sub-set added under one (`sets.midcast.RA.X`) lands inside the other.
   Aftermath Lv.3 did not rebuild the gear, so `sets.engaged.PDTAFM3` waited for
   the next gear change; `job_buff_change` now calls
   `LifecycleManager.refresh_after_buff`.
+- Fixed 2026-09-29 (checked offline, not yet in game): after `//po` the range
+  and ammo slots stayed unlocked while `RangeLock` showed On. The lock is now
+  recorded with `CombatMode.hold` and laid again after every update.
 - Midcast routing is a no-op for the three routed skills (base sets absent);
   `sets.midcast.EnhancingMagic` uses a key nothing reads.
 - Initial macrobook/lockstyle depend on the `show_intro` side effect

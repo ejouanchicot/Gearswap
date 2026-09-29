@@ -62,7 +62,7 @@ numbers are avoided because they drift.
 | `shared/utils/drg/auto_jump.lua` | 228 | Auto-Jump before a WS on /DRG (shared with DNC) |
 | `shared/utils/drg/DRG_JUMP_MANAGER.lua` | 88 | Manual Jump rotation (`//gs c jump`, WAR `tp` on /DRG) |
 | `shared/utils/weaponskill/tp_bonus_calculator.lua` | 275 | TP bonus piece selection (shared) |
-| `shared/utils/equipment/ampulla_lock.lua` | 172 | Hoxne Ampulla ammo lock (shared with PLD) |
+| `shared/utils/equipment/ampulla_lock.lua` | 177 | Hoxne Ampulla ammo lock (shared with PLD); recorded with Combat Mode's lock registry (`'ampulla'`) |
 | `_master/config/war/WAR_STATES.lua` | 116 | All WAR states (`WARStates.configure()`) |
 | `_master/config/war/WAR_KEYBINDS.lua` | 68 | Data only: 8 bind entries handed to `KeybindManager.create('WAR', ...)`, plus the character's `COMMON_KEYBINDS.lua` keys |
 | `_master/config/war/WAR_CUSTOM.lua` | 119 | Player modes and gear rules, commented examples only ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
@@ -496,7 +496,10 @@ through a loop). The player-facing list is [war/sets.md](../../user/jobs/war/set
   a reload.
 - Keybinds: bound in `user_setup`, unbound in `file_unload`.
 - Slot locks: under a Hoxne stance the ammo slot is locked through `AmpullaLock`;
-  `file_unload` releases it first, and `//gs c wo` releases it at the end of its run.
+  `file_unload` releases it first, and `//gs c wo` releases it at the end of its run
+  (after its own `gs enable all`), so after `wo` it stays off until the stance is
+  selected again. `AmpullaLock.set_slot` also records the lock with `CombatMode.hold('ampulla', {'ammo'})` and forgets it with `CombatMode.release('ampulla')` (since 2026-09-29), so Combat Mode's `handle_equipping_gear` wrapper disables the ammo slot again after the gear of every update, outside a craft session: after `//po` (PorterPacker ends with `gs enable all`) the next update puts the Ampulla back and locks it again (see
+  [core-lifecycle.md](../systems/core-lifecycle.md#combatmode-hook-sharedutilscorecombat_modelua)).
 - Subjob change: Mote's `sub_job_change` runs `user_setup()` again, then
   `job_sub_job_change` hands over to `JobChangeManager.on_job_change`, which ends in
   a `gs reload`. See [job change lifecycle](../architecture/job-change-lifecycle.md).
@@ -610,6 +613,9 @@ cancel depend on recasts, packets and timing: check them in game with
   the gear inside the buff event, where `buffactive` still holds the old buffs, so
   gaining Aftermath Lv.3 kept the non-AM3 set and losing it put `PDTAFM3` back on.
   It now calls `LifecycleManager.refresh_after_buff`.
+- Fixed 2026-09-29 (checked offline, not yet in game): after `//po` the Hoxne
+  Ampulla lock stayed open while the stance still showed Hoxne; the lock is now
+  recorded with `CombatMode.hold` and laid again after every update.
 - The Healing / Enhancing midcast routing is a no-op: no `sets.midcast` entry in
   either sets file.
 - `perf` branch unreachable (`WAR_COMMANDS.lua`).

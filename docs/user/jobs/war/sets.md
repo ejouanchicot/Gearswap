@@ -117,7 +117,10 @@ midcast set at all**: spells are cast in whatever you are wearing.
   for you in idle (town included) and engaged: your Hoxne sets do not need to name it.
   If it is not worn within about 5 seconds (not in your bags, for example), the slot
   stays unlocked and a warning says what is worn instead. Leaving the stance, a job change, a
-  reload or `//gs c wo` unlocks it.
+  reload or `//gs c wo` unlocks it (after `wo`, choose the stance again). `//po`
+  (PorterPacker) frees every slot when it ends; while the stance is on, the Ampulla goes back on
+  and is locked again the next time GearSwap changes your gear (an action, engaging, a mode
+  change).
 - **Auto Jump (/DRG, `JumpAuto` On)**: a weaponskill pressed under 1000 TP is held
   back, Jump / High Jump go out (in their `sets.precast.JA` sets), then the weaponskill
   is sent again.

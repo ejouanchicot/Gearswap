@@ -32,7 +32,7 @@ Verified against the code on 2026-09-28. Line numbers of `INIT_SYSTEMS.lua` (a f
 | `gear_hold.lua` | 25 | `GearHold.active()`: true while a COR roll holds the idle / engaged gear (`_G.cor_roll_hold`, written by `cor/functions/logic/roll_hold.lua`); asked by the Dual Wield, Treasure Hunter and custom-gear layers of the hook chain (2026-09-28) | here ([GearHold](#gearhold)), [cor.md](../jobs/cor.md) |
 | `WATCHDOG_COMMANDS.lua` | 113 | `//gs c watchdog ...` handler, called from each job's `<JOB>_COMMANDS.lua` | here |
 | `CYCLE_HANDLER.lua` | 136 | `//gs c cyclestate <State> [reverse]`: Mote's cycle without the chat line when the keybind HUD is visible | here |
-| `combat_mode.lua` | 165 | Weapon lock on every job; its `handle_equipping_gear` wrapper is the outermost of the chain | hook: here; feature: [keybinds-and-custom.md](keybinds-and-custom.md) |
+| `combat_mode.lua` | 213 | Weapon lock on every job, and the registry of the other slot locks (`hold` / `release`) that it lays again after every update; its `handle_equipping_gear` wrapper is the outermost of the chain | hook: here; feature: [keybinds-and-custom.md](keybinds-and-custom.md) |
 | `combat_mode_commands.lua` | 58 | `//gs c combatmode` | [keybinds-and-custom.md](keybinds-and-custom.md), [commands-and-debug.md](commands-and-debug.md) |
 | `optional_state.lua`, `optional_state_commands.lua` | 142, 147 | Base of Combat Mode and Treasure Mode (shown / hidden / key per job) | [keybinds-and-custom.md](keybinds-and-custom.md), [factories-and-helpers.md](factories-and-helpers.md) |
 | `COMMON_COMMANDS.lua` | 786 | Every `//gs c` command shared by all jobs | [commands-and-debug.md](commands-and-debug.md) |
@@ -183,7 +183,7 @@ INIT_SYSTEMS wraps them in this order. Each later layer wraps the earlier ones, 
 | 4 | `MidcastFallback.install` (`shared/utils/midcast/midcast_fallback.lua`) | `cleanup_midcast` | **before**: `route()` sends a spell the job's midcast did not route (subjob magic) through `MidcastManager` | `_G._midcast_fallback_installed` |
 | 5 | `CustomStates.install_hooks` (`shared/utils/custom/custom_states.lua`) | all three, plus `user_buff_change` | gear: release the custom locks **before**, equip the `all` + `engaged`/`idle` moments (skipped when `Guards.hands_off` or `GearHold.active()`) and re-apply locks **after**; actions: equip the precast/midcast moments **after** (skipped when `Guards.hands_off`) | `_G._custom_state_hooks.gear == handle_equipping_gear`; not installed when the job has no custom entries |
 | 6 | `CastTime.install_hook` (`shared/utils/precast/cast_time.lua`) | `cleanup_precast` | **after**, magic not cancelled: cast time from the gear actually sent, stored in `_G._precast_cast_time` (read by MidcastWatchdog) | `_G._cast_time_hook == cleanup_precast` |
-| 7 | `CombatMode.install_hook` (`shared/utils/core/combat_mode.lua`) | `handle_equipping_gear` | **before**: `CombatMode.apply()` disables (or frees) main/sub/range (+ammo on BLM/GEO/WHM); **after**, the function it returned when the main hand was empty (dress, then lock) | `_G._combat_mode_hook == handle_equipping_gear` |
+| 7 | `CombatMode.install_hook` (`shared/utils/core/combat_mode.lua`) | `handle_equipping_gear` | **before**: `CombatMode.apply()` disables (or frees) main/sub/range (+ammo on BLM/GEO/WHM); **after** the job's gear: the function it returned when the main hand was empty (dress, then lock), then `reassert_holds()` disables again every slot recorded by `hold()` (skipped during a craft session) | `_G._combat_mode_hook == handle_equipping_gear` |
 
 What actually happens, in time order, on each call:
 
@@ -485,11 +485,13 @@ Only the lifecycle part is here; the feature, its settings file and its commands
 |---|---|---|
 | `install_hook()` | Outermost `handle_equipping_gear` wrapper (layer 7) | INIT_SYSTEMS |
 | `apply()` | When `state.CombatMode` is `On`: if nothing is recorded yet and no craft session is active, `equip(sets.CombatMode)` when the set file defines it; then `disable()` the weapon slots and record them in `windower._combat_mode_locked`. When the main hand is empty (the weapons were stripped behind the lock: `//po` and `//gs c wo` undress through the client, then `gs enable all`), `apply()` does not lock yet and returns a function; the hook runs it after the job's gear of the same update, so the weapons the job lays go on, then `sets.CombatMode` if defined, then the lock (since 2026-09-29; before, the empty slots were locked and the player stayed bare-handed). Otherwise `enable()` what was recorded, minus the slots another lock holds (`hold`), unless a craft session holds the gear | the hook |
-| `hold(owner, slot_list)` | Records in `windower._weapon_locks[owner]` that another lock keeps `slot_list` disabled; `apply()` then leaves those slots locked when Combat Mode turns Off. The owner does its own `disable()` | WHM `job_state_change` (`'whm_melee'`, `Melee ON`) |
-| `release(owner)` | Forgets `owner`'s record; the owner does its own `enable()` | WHM `job_state_change` (leaving `Melee ON`) |
+| `hold(owner, slot_list)` | Records in `windower._weapon_locks[owner]` that another lock keeps `slot_list` disabled. `apply()` then leaves those slots locked when Combat Mode turns Off, and the hook disables them again after the gear of every update (`reassert_holds`, not during a craft session). The owner does its own first `disable()` | WHM `job_state_change` (`'whm_melee'`: main/sub/range, `Melee ON`); THF `RangeLock.set_slots(true)` (`'thf_range'`: range/ammo); `AmpullaLock.set_slot(true)` (`'ampulla'`: ammo, WAR/PLD Hoxne stance) |
+| `release(owner)` | Forgets `owner`'s record; the owner does its own `enable()` | WHM `job_state_change` (leaving `Melee ON`); `RangeLock.set_slots(false)`; `AmpullaLock.set_slot(false)` |
 | `is_on()`, `is_shown`, `settings`, `settings_path`, `attach` | state value, and the optional-state API | HUD, `KeybindManager.create` |
 
-`attach` (through `optional_state`'s `on_attach`) frees the slots a previous job left locked (`windower._combat_mode_locked`): GearSwap keeps disabled slots across a job change.
+`attach` (through `optional_state`'s `on_attach`) frees the slots a previous job left locked (`windower._combat_mode_locked`): GearSwap keeps disabled slots across a job change. Since 2026-09-29 it also empties `windower._weapon_locks`, on every job load: the owners free their slots in `file_unload` and every state starts Off again.
+
+**Why the hold locks are laid again on every update.** `gs enable all`, sent at the end of `//po` (PorterPacker) and of `//gs c wo`, frees every slot while the owner's state still shows On. Before 2026-09-29 those locks stayed open until their owner re-laid them (a state change); now the next update re-dresses the slots with the job's gear and `reassert_holds()` locks them again. `//gs c wo` itself releases the Ampulla and THF range locks when it finishes (`release_stance_locks`, see [wardrobe-organizer.md](wardrobe-organizer.md)), so those two stay off after `wo`; WHM `Melee ON` is not released by `wo` and comes back on the next update.
 
 ## Commands
 
@@ -567,7 +569,7 @@ Read only: `LagDebugger`, `AutoMove`, `state`, `player`, `get_state`, `handle_up
 | `_keybind_guard_seq` | `KeybindGuard.schedule` | Invalidates a pending re-assert when another load starts |
 | `_cast_tracker` | `cast_tracker.lua` `store()` | `{last_action, last_start}` (os.clock) |
 | `_combat_mode_locked` | `CombatMode.apply` | Slots this module disabled, freed by the next job's `attach` |
-| `_weapon_locks` | `CombatMode.hold` / `release` (WHM entry `file_unload` clears `whm_melee`) | `owner -> slots` of weapon locks other than Combat Mode's; `apply()` does not enable those slots |
+| `_weapon_locks` | `CombatMode.hold` / `release` (WHM `Melee ON`, THF `RangeLock`, the Hoxne `AmpullaLock`; their entry `file_unload` releases them); emptied by `on_attach` on every job load | `owner -> slots` of slot locks other than Combat Mode's; `apply()` does not enable those slots, the hook disables them again after every update |
 | `_ui_live_state` | `UI_MANAGER.lua` | The live load's UI state; older HUD coroutines compare against it (see [ui-overlay.md](ui-overlay.md)) |
 
 ### Events, texts, keybinds, coroutines
@@ -688,6 +690,7 @@ Open:
 - Fixed 2026-09-28: the dead `ModuleCache.stats()` and `MidcastWatchdog.is_enabled/get_buffer/get_fallback_timeout/is_debug_enabled` are removed; WAR, DRK and SMN use `LifecycleManager.status_change()`.
 - The job intro never shows the macro book or the lockstyle: `KeybindManager`'s `show_intro` looks for `get_<job>_macro_info` and `get_info` on the `<JOB>_MACROBOOK` / `<JOB>_LOCKSTYLE` modules, and the wrappers return nothing (owner decision pending).
 - Fixed 2026-09-29 (confirmed in game on WAR the same day; DRK, SAM, THF checked offline only): the Aftermath Lv.3 gear change read `buffactive` before GearSwap stored the new buff (WAR and DRK rebuilt inside `job_buff_change`; SAM and THF did not rebuild at all). WAR, DRK, SAM and THF now call `LifecycleManager.refresh_after_buff`.
+- Fixed 2026-09-29 (checked offline, not yet in game): after `//po` or `//gs c wo` (both end with `gs enable all`), the WHM `Melee ON`, THF `RangeLock` and Hoxne Ampulla locks stayed open while their state still showed On. The `hold()` registry is now laid again after the gear of every update (`reassert_holds`), and emptied on every job load. `wo` still releases the Ampulla and range locks on purpose when it ends.
 - Hook layers fail silently: each install is wrapped in `pcall(function() ... end)` with no report, unlike the other INIT blocks.
 - The 3 s fallback of `hold_during_action` (sends `gs c update`) is not tested in game.
 - `docs/user/features/job-change-manager.md` and `docs/user/features/watchdog.md` are out of date.

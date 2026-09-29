@@ -63,6 +63,9 @@ Medicine) and Alt+Numpad7-9 (alts) are common to every job, see
   about 0.1 s after the aftermath starts, and changes back when it ends.
 - **Range lock.** Any ranged attack turns Range Lock On by itself. A reload, a
   job or subjob change, or `//gs c wo` releases the lock and sets it back to Off.
+  `//po` (PorterPacker) frees every slot when it ends; while Range Lock is On,
+  your range and ammo go back on and are locked again the next time GearSwap
+  changes your gear (an action, engaging, a mode change).
 - After a ranged attack, the quiver of the bolts you wear is opened from your
   inventory when 5 or fewer are left.
 - Idle: town and Adoulin sets in town, `sets.MoveSpeed` while moving outside town.

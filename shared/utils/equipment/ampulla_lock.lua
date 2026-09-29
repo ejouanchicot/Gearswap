@@ -99,10 +99,15 @@ end
 --- @param locked boolean True to lock, false to unlock
 --- @return void
 function AmpullaLock.set_slot(locked)
+    -- Recorded with Combat Mode's lock registry too: it lays the lock again
+    -- after `gs enable all` (//po), which frees it while the stance holds.
+    local CombatMode = require('shared/utils/core/combat_mode')
     if locked then
         disable('ammo')
+        CombatMode.hold('ampulla', {'ammo'})
     else
         enable('ammo')
+        CombatMode.release('ampulla')
     end
     _G.ampulla_ammo_locked = locked
 end
@@ -112,8 +117,11 @@ end
 --- @param my_sequence number Generation this attempt belongs to
 --- @return void
 local lock_when_worn
-lock_when_worn = function(deadline, my_sequence)
-    if my_sequence ~= lock_sequence then
+lock_when_worn = function(deadline, my_sequence, my_load)
+    -- A job file loaded since: this check belongs to the previous one, and
+    -- locking now would pin the new job's ammo (its lock record is laid
+    -- again after every update, see combat_mode.lua hold)
+    if my_sequence ~= lock_sequence or my_load ~= windower._weapon_lock_gen then
         return
     end
 
@@ -130,7 +138,7 @@ lock_when_worn = function(deadline, my_sequence)
     end
 
     coroutine.schedule(function()
-        lock_when_worn(deadline, my_sequence)
+        lock_when_worn(deadline, my_sequence, my_load)
     end, POLL_INTERVAL)
 end
 
@@ -145,7 +153,7 @@ function AmpullaLock.engage()
     -- otherwise keep whatever the slot already holds.
     AmpullaLock.set_slot(false)
 
-    lock_when_worn(os.clock() + POLL_TIMEOUT, my_sequence)
+    lock_when_worn(os.clock() + POLL_TIMEOUT, my_sequence, windower._weapon_lock_gen)
 end
 
 --- Release the lock this module placed, if any.
