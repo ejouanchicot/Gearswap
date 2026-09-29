@@ -46,7 +46,7 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | `shared/utils/equipment/treasure_commands.lua` | 63 | `//gs c th` built on `optional_state_commands.create` | `COMMON_COMMANDS.lua` router | [commands-and-debug.md](commands-and-debug.md) |
 | `shared/utils/equipment/spell_gear_lock.lua` | 135 | A piece a spell cannot be cast without (Dispelga -> Daybreak), worn through Combat Mode | RDM precast / midcast / aftercast / commands | [factories-and-helpers.md](factories-and-helpers.md#spellgearlock), [../jobs/rdm.md](../jobs/rdm.md) |
 | `shared/utils/equipment/ampulla_lock.lua` | 177 | Ammo slot held on Hoxne Ampulla for the Hoxne stance (PLD, WAR) | PLD/WAR commands (`job_state_change`), PLD/WAR entry `user_setup` / `file_unload`, wardrobe organizer | this page; [../jobs/pld.md](../jobs/pld.md) |
-| `shared/utils/set_building/base_set_builder.lua` | 144 | `apply_movement`, `select_idle_base_town`, `select_idle_base`, `is_in_town` shared by the job set builders | set builders of 15 jobs (BST: `is_in_town` only), `DNC_IDLE.lua`, `SMN_IDLE.lua`, `custom/custom_conditions.lua` | this page |
+| `shared/utils/set_building/base_set_builder.lua` | 166 | `apply_movement`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` shared by the job set builders | set builders of 15 jobs (BST: `lay_town_set` and `apply_movement`), `DNC_IDLE.lua`, `SMN_IDLE.lua`, `custom/custom_conditions.lua` | this page |
 | `shared/utils/inventory/refill_manager.lua` | 315 | `//gs c rf` facade: plans pulls/pushes, queues the moves, schedules them 0.6 s apart | `CommonCommands.handle_refill`, dual-box `rf` hook | this page |
 | `shared/utils/inventory/refill/config_resolver.lua` | 245 | Picks the refill list (craft / job+subjob / fallback) and builds the cross-character foreign item set | `refill_manager.lua` | this page |
 | `shared/utils/inventory/refill/item_resolver.lua` | 75 | Lazy name -> item id index over `res.items` | `refill_manager.lua`, `config_resolver.lua` | this page |
@@ -370,8 +370,8 @@ indexes are built lazily on first use (see [For maintainers / AI](#for-maintaine
 
 ### Movement and town idle: `BaseSetBuilder`
 
-`shared/utils/set_building/base_set_builder.lua` holds the four idle helpers the job set builders
-shares, by plain assignment (`SetBuilder.apply_movement = BaseSetBuilder.apply_movement`) or by call:
+`shared/utils/set_building/base_set_builder.lua` holds the five idle helpers the job set builders
+share, by plain assignment (`SetBuilder.apply_movement = BaseSetBuilder.apply_movement`) or by call:
 
 - `apply_movement(result)`: when `state.Moving.value == 'true'` (AutoMove,
   [factories-and-helpers.md](factories-and-helpers.md#automove)) and `sets.MoveSpeed` exists, returns
@@ -394,9 +394,15 @@ shares, by plain assignment (`SetBuilder.apply_movement = BaseSetBuilder.apply_m
   whole: `sets.idle.Weak` and Mote's defense and kiting layers only show when the current
   HybridMode value has no idle set. Used by: DNC, DRK, THF, WAR (DNC, THF and WAR as
   `SetBuilder.select_idle_base`, DRK from `build_idle_set`).
-- `is_in_town()`: the same zone test without any set (used by BST's nested `sets.me.idle.Town`, by
-  `SMN_IDLE.lua` for the avatar idle set, and by the `town` condition of
-  `custom/custom_conditions.lua`).
+- `lay_town_set(idle, town_set)` (since 2026-09-29): the same zone test and layering for a job that
+  builds its own idle and passes its own town set (BST: `sets.me.idle.Town` over the pet or master
+  idle). In Western/Eastern Adoulin, when `sets.Adoulin` exists, returns
+  `set_combine(idle, sets.Adoulin), true`; in an `areas.Cities` zone without `Dynamis` in its name
+  (Adoulin included), when `town_set` is given, `set_combine(idle, town_set), true`; otherwise
+  `idle, false`. `select_idle_base_town` and `lay_town_set` share one local zone test (`town_zone`)
+  and one layering helper (`lay_town`).
+- `is_in_town()`: the same zone test without any set (used by `SMN_IDLE.lua` for the avatar idle
+  set and by the `town` condition of `custom/custom_conditions.lua`).
 
 ### HP priority
 
@@ -499,10 +505,11 @@ Returned only (no `_G` export).
 
 | Function | Returns | Callers |
 |---|---|---|
-| `apply_movement(result)` | set (combined with `sets.MoveSpeed` when moving) | set builders of BLM, BLU, BRD, COR, DNC, DRK, GEO, PLD, RDM, RUN, SAM, THF, WAR, WHM; `DNC_IDLE.lua`; `SMN_IDLE.lua` |
+| `apply_movement(result)` | set (combined with `sets.MoveSpeed` when moving) | set builders of BLM, BLU, BRD, BST, COR, DNC, DRK, GEO, PLD, RDM, RUN, SAM, THF, WAR, WHM; `DNC_IDLE.lua`; `SMN_IDLE.lua` |
 | `select_idle_base_town(base_set)` | `set, in_town` | set builders of BLM, BLU and RDM (as `SetBuilder.check_town`), BRD, COR, GEO, PLD, RUN, SAM, WHM; `select_idle_base`; `SMN_IDLE.lua` |
 | `select_idle_base(base_set)` | `set, in_town` | set builders of DNC, DRK, THF, WAR |
-| `is_in_town()` | `boolean` | BST set builder; `SMN_IDLE.lua`; `custom/custom_conditions.lua` (`town` condition) |
+| `lay_town_set(idle, town_set)` | `set, in_town` | BST set builder (`apply_common_overlays`) |
+| `is_in_town()` | `boolean` | `SMN_IDLE.lua`; `custom/custom_conditions.lua` (`town` condition) |
 
 ### ElementalBonus (`elemental_bonus.lua`)
 

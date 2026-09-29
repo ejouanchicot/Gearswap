@@ -31,8 +31,9 @@ live in `<YourName>/config/bst/`: if you changed them, your files win.
   damage set of the move's category (physical, multi-hit, magical attack, magical
   accuracy) stays on until the pet has finished the move. `//gs c rdylist` and
   `//gs c rdymove N` list and use the moves by number.
-- **Town feet.** In a town (Adoulin included, Dynamis excluded) the feet of
-  `sets.me.idle.Town` go on while you are idle, pet out or not.
+- **Town set.** In a town (Adoulin included, Dynamis excluded) the whole
+  `sets.me.idle.Town` goes on while you are idle, pet out or not (`sets.Adoulin`
+  instead in Adoulin, if you define one).
 - **BST-HUD.** Loading BST unloads and reloads the separate `BST-HUD` addon (about
   3.5 s after the load); leaving BST unloads it. Nothing happens if you do not
   have that addon.
@@ -127,8 +128,8 @@ Type them as `//gs c <command>`. Full list of the shared ones:
 
 | Feature | On BST |
 |---|---|
-| Movement speed (AutoMove) | `sets.MoveSpeed` goes on while you run, idle only |
-| Town feet (BST's own) | Feet of `sets.me.idle.Town` in towns, idle only, on top of everything |
+| Movement speed (AutoMove) | `sets.MoveSpeed` goes on while you run, idle only, outside town |
+| Town set (BST's own) | `sets.me.idle.Town` in towns (`sets.Adoulin` in Adoulin if defined), idle only, on top of the pet or master set, under your weapons |
 | Action guard | An action you cannot do (silenced, amnesia, stunned...) is stopped before any gear swaps |
 | Auto Medicine | Uses the right remedy item when a debuff blocks your action, if the mode is On |
 | Recast check | An ability or spell still on recast is stopped with the time left. Ready moves are never checked |

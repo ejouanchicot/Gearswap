@@ -106,27 +106,27 @@ local function apply_weapon_sets(final_set)
     return final_set
 end
 
---- Overlays that apply whatever the pet is doing.
+--- Overlays that apply whatever the pet is doing, in the order every job
+--- uses: town set on top of the idle (sets.Adoulin in Adoulin), weapons, then
+--- movement speed outside town only. In town the pet is not fighting, so the
+--- whole town set goes on, pet out or not. Until 2026-09-29 only the town
+--- set's feet were laid, and sets.Adoulin was never read.
 --- @return table
 local function apply_common_overlays(final_set)
+    local town_set = sets.me and sets.me.idle and sets.me.idle.Town
+    local in_town
+    final_set, in_town = BaseSetBuilder.lay_town_set(final_set, town_set)
+
     final_set = apply_weapon_sets(final_set)
 
-    if state.Moving and state.Moving.value == "true" and sets.MoveSpeed then
-        final_set = set_combine(final_set, sets.MoveSpeed)
-    end
-
-    -- Town feet go on last and regardless: in a city the movement bonus is
-    -- worth more than whatever that slot was holding, pet out or not, moving
-    -- or standing.
-    if BaseSetBuilder.is_in_town() and sets.me and sets.me.idle
-        and sets.me.idle.Town and sets.me.idle.Town.feet then
-        final_set = set_combine(final_set, { feet = sets.me.idle.Town.feet })
+    if not in_town then
+        final_set = BaseSetBuilder.apply_movement(final_set)
     end
 
     return final_set
 end
 
---- Build the idle set (pet or master branch, then weapons/movement/town feet).
+--- Build the idle set (pet or master branch, then town set, weapons, movement).
 --- @param base_idle_set table Idle set selected by Mote
 --- @return table
 function SetBuilder.build_idle_set(base_idle_set)

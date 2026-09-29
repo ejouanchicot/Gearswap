@@ -37,17 +37,18 @@ Player pages: [docs/user/jobs/bst/README.md](../../user/jobs/bst/README.md)
 Every file in scope was read in full except the gear content of the sets files
 (structure and set names only). References are file + function; GearSwap engine
 and Mote-Include files are in `addons/GearSwap/` and `addons/GearSwap/libs/`
-(outside the repository). Re-verified against the working tree on 2026-09-28.
+(outside the repository). Re-verified against the working tree on 2026-09-28;
+idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 
 ## Files
 
 | Path | Lines | Role |
 |------|------:|------|
-| `_master/entry/Tetsouo_BST.lua` | 401 | Entry point (template): config preload, `get_sets`, `user_setup`, `job_update`, `init_gear_sets`, `job_sub_job_change`, `prerender` pet monitor (`start_pet_monitoring` / `stop_pet_monitoring`), `file_unload` |
+| `_master/entry/Tetsouo_BST.lua` | 399 | Entry point (template): config preload, `get_sets`, `user_setup`, `job_update`, `init_gear_sets`, `job_sub_job_change`, `prerender` pet monitor (`start_pet_monitoring` / `stop_pet_monitoring`), `file_unload` |
 | `shared/jobs/bst/functions/bst_functions.lua` | 110 | Facade: includes `message_buffs.lua` and the 13 hook files, requires `dualbox_manager` for its auto-init |
 | `shared/jobs/bst/functions/BST_PRECAST.lua` | 202 | `job_precast` / `job_post_precast`; locals `ready_move_info`, `equip_for_summon`, `equip_broth`, `prepare_ready_move` |
-| `shared/jobs/bst/functions/BST_MIDCAST.lua` | 201 | `job_midcast` (early returns, no `handled`) / `job_post_midcast` (subjob magic through `MidcastManager`, table `JOB_POST_MIDCAST_HANDLERS`) |
-| `shared/jobs/bst/functions/BST_AFTERCAST.lua` | 111 | `job_aftercast`: pet damage set for Ready moves that were not interrupted, delayed `start_pet_monitoring` |
+| `shared/jobs/bst/functions/BST_MIDCAST.lua` | 204 | `job_midcast` (early returns, no `handled`) / `job_post_midcast` (subjob magic through `MidcastManager`, table `JOB_POST_MIDCAST_HANDLERS`) |
+| `shared/jobs/bst/functions/BST_AFTERCAST.lua` | 112 | `job_aftercast`: pet damage set for Ready moves that were not interrupted, delayed `start_pet_monitoring` |
 | `shared/jobs/bst/functions/BST_PET_PRECAST.lua` | 105 | `job_pet_precast`: never called (no such hook in Mote or GearSwap; the file header says so) |
 | `shared/jobs/bst/functions/BST_PET_MIDCAST.lua` | 57 | `job_pet_midcast`: returns without doing anything |
 | `shared/jobs/bst/functions/BST_IDLE.lua` | 41 | `customize_idle_set` -> `SetBuilder.build_idle_set` |
@@ -72,7 +73,7 @@ and Mote-Include files are in `addons/GearSwap/` and `addons/GearSwap/libs/`
 | `_master/config/bst/BST_TP_CONFIG.lua` | 172 | Moonshade piece, `fencer_jp_gifts`, `get_weapon_bonus`, `get_fencer_bonus` -> `_G.BSTTPConfig` |
 | `_master/config/bst/BST_ECOSYSTEM_DATA.lua` | 178 | Ecosystem correlation matrix; **no reader anywhere** (its header says so) |
 | `_master/Tetsouo/config/bst/BST_REFILL.lua`, `BST_MACROBOOK.lua`, `BST_STATES.lua` | 36, 61, 77 | Character overlay: refill list; book 11; `Ecosystem` default Amorph |
-| `_master/Tetsouo/entry/Tetsouo_BST.lua` | 402 | Character overlay entry: the template plus `LagDebugger.on_job_update()` in `job_update` and the modular sets path |
+| `_master/Tetsouo/entry/Tetsouo_BST.lua` | 400 | Character overlay entry: the template plus `LagDebugger.on_job_update()` in `job_update` and the modular sets path |
 | `_master/sets/bst_sets.lua` | 834 | Template sets (flat) |
 | `shared/utils/messages/formatters/jobs/message_bst.lua` + `data/jobs/bst_messages.lua` | 546 + 271 | BST chat messages; several facade wrappers have no caller (see the [catalog](../systems/messages-catalog.md)) |
 | `shared/data/job_abilities/BST_JA_DATABASE.lua` + `bst/*.lua` (5 files) | 17 + 293 | `JA_DATABASE_FACTORY.create('BST', ...)` with `subjob`, `mainjob`, `pet_commands_mainjob`, `pet_commands_subjob`, `sp`; read by `ability_message_handler.lua` |
@@ -350,13 +351,24 @@ flowchart TD
     D -- no --> F{PetIdleMode}
     F -- PetPDT --> G[sets.pet.idle.PDT + overlay]
     F -- MasterPDT --> H[sets.me.idle.PDT + overlay]
-    C --> W[apply_common_overlays: sets WeaponSet, sets SubSet]
-    E --> W
-    G --> W
-    H --> W
-    W --> M[sets.MoveSpeed if Moving == 'true']
-    M --> T[town: feet of sets.me.idle.Town, BaseSetBuilder.is_in_town]
+    C --> T[apply_common_overlays: BaseSetBuilder.lay_town_set, whole sets.me.idle.Town on top in a city, sets.Adoulin in Adoulin when defined]
+    E --> T
+    G --> T
+    H --> T
+    T --> W[sets WeaponSet, sets SubSet]
+    W --> M[BaseSetBuilder.apply_movement, only when no town set was laid]
 ```
+
+- `apply_common_overlays` (idle only) runs in the order the other jobs use.
+  `BaseSetBuilder.lay_town_set(final_set, sets.me.idle.Town)` lays the whole
+  town set on top of the pet or master idle in any `areas.Cities` zone
+  (Adoulin included, Dynamis excluded); in Western/Eastern Adoulin
+  `sets.Adoulin` goes on instead when it exists. Weapon sets follow, then
+  `BaseSetBuilder.apply_movement` only when no town set was laid (a city with
+  neither set still gets `sets.MoveSpeed` while moving). The town set covers
+  the pet sets too; with the provided sets (`sets.me.idle.Town` =
+  `sets.me.idle` + Skd. Jambeaux +1, the same feet as `sets.MoveSpeed`) the
+  result in game is unchanged from the previous order.
 
 - `with_pdt` (through `pdt_overlay`) combines `sets.<group>.<situation>.PDT`,
   else `sets.<group>.PDT` (neither `sets.me.PDT` nor `sets.pet.PDT` exists;
@@ -373,7 +385,7 @@ flowchart TD
   engaged, else `sets.me.engaged`, with the PDT overlay, then weapons. The
   "pet only" branch cannot run from here because Mote calls
   `customize_melee_set` only while the player is engaged; the idle builder
-  covers that case with `sets.pet.engaged`. No MoveSpeed or town feet while
+  covers that case with `sets.pet.engaged`. No MoveSpeed or town set while
   engaged.
 - `job_status_change` / `job_buff_change` / `job_state_change` are the shared
   `LifecycleManager` handlers ([core lifecycle](../systems/core-lifecycle.md)).
@@ -448,7 +460,8 @@ plus `weapons.lua`, `pets.lua` merged into `sets`). Player-facing version:
 | Set | Looked up by | T | L |
 |-----|--------------|---|---|
 | `sets.idle`, `sets.engaged` | Mote base (fallback only) | yes | yes |
-| `sets.me.idle`, `.PDT`, `.Town` (feet only used) | `idle_without_pet`, `idle_with_pet`, `apply_common_overlays` | yes | yes |
+| `sets.me.idle`, `.PDT`, `.Town` (whole set, in town) | `idle_without_pet`, `idle_with_pet`, `apply_common_overlays` (`BaseSetBuilder.lay_town_set`) | yes | yes |
+| `sets.Adoulin` | `BaseSetBuilder.lay_town_set` (from `apply_common_overlays`), Western/Eastern Adoulin only | absent | absent |
 | `sets.pet.idle`, `.PDT` | `idle_with_pet` | yes | yes |
 | `sets.me.engaged`, `.PDT` | `engaged_for_situation` | yes | yes |
 | `sets.pet.engaged`, `.PDT` | `idle_with_pet`, `engaged_for_situation` | yes | yes |
@@ -463,7 +476,7 @@ plus `weapons.lua`, `pets.lua` merged into `sets`). Player-facing version:
 | `sets.midcast.pet_{physical,physicalMulti,magicAtk,magicAcc}_moves` and `_ww` aliases | `job_aftercast` | yes | yes |
 | `sets.midcast.Pet` | Mote `default_pet_midcast` | absent (Mote `{}`) | absent |
 | `sets.precast.WS`, `['Primal Rend']`, `['Decimation']`, `['Bora Axe']`, `['Calamity']` | Mote default precast | yes | yes |
-| `sets.MoveSpeed` | `apply_common_overlays` | yes | yes |
+| `sets.MoveSpeed` | `BaseSetBuilder.apply_movement` (from `apply_common_overlays`, outside town) | yes | yes |
 | `sets.buff.Doom` | shared DoomManager | yes | yes |
 | `sets.DW.*` | `DualWield` | commented example | - |
 | `sets.TreasureHunter` | `TreasureHunter` | absent | - |
@@ -530,7 +543,7 @@ or /DNC, shields included (its comment now says so).
   ([precast pipeline](../systems/precast-pipeline.md)).
 - Midcast: `MidcastManager`, `MidcastFallback`, `MidcastWatchdog`
   ([midcast and buffs](../systems/midcast-and-buffs.md));
-  `BaseSetBuilder.is_in_town`.
+  `BaseSetBuilder.lay_town_set` and `BaseSetBuilder.apply_movement` (idle).
 - Movement: AutoMove ([factories and helpers](../systems/factories-and-helpers.md)).
 - Obi / Orpheus: `ElementalBelt` covers Primal Rend and Cloudsplitter.
 - Messages: `message_bst` through the facade; `message_buffs`
@@ -656,6 +669,12 @@ or /DNC, shields included (its comment now says so).
   anyway.
 - **Pet-valid cache can be stale on pet change** (P3, plausible): the 1 s cache
   of `update_pet_mode` is used by the rebuild that `pet_change` triggers.
+- Fixed 2026-09-29 (checked offline with the Tetsouo BST sets, not yet in
+  game): the idle town layer laid only the feet of `sets.me.idle.Town`, after
+  weapons and after an inline `sets.MoveSpeed` that also went on in town, and
+  never read `sets.Adoulin`. `apply_common_overlays` now lays the whole town set
+  (or `sets.Adoulin`) through `BaseSetBuilder.lay_town_set`, then weapons, then
+  `BaseSetBuilder.apply_movement` outside town only.
 - Fixed 2026-09-28: the 2 s closure in `job_aftercast` re-checks
   `_G.start_pet_monitoring` (a reload inside the wait cleared it and the call
   raised); `BST_MIDCAST` no longer calls the undefined

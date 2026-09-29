@@ -256,7 +256,7 @@ flowchart TD
 - `handle_moving`: on the first moving tick, sets `state.Moving.value = 'true'` and `pending_update`, then calls `send_update('moving')`. While movement continues, it sends another `gs c update` every 2.0 s (`heal_interval`) as a desync backstop. It calls every registered callback with `(true, dist, player.status)`.
 - `handle_stopped`: on the transition, sets `state.Moving.value = 'false'` and `pending_update`, and calls the callbacks with `false`. Then it calls `send_update('stopping')` while `pending_update` is set.
 - `send_update` refuses for 2.0 s after `start()` (`job_change_cooldown`) and within 0.3 s of the last update (`update_debounce`). A refused update stays pending and is retried on later ticks. The jump branch and the heal branch bypass it.
-- The gear itself comes from the job's set builder: `sets.MoveSpeed` is merged into the idle set when `state.Moving.value == 'true'`. That is done by `BaseSetBuilder.apply_movement` (`shared/utils/set_building/base_set_builder.lua`) on every job except BST, which lays it inline, and PUP, which has no set builder (see the matrix at the end of the page).
+- The gear itself comes from the job's set builder: `sets.MoveSpeed` is merged into the idle set when `state.Moving.value == 'true'`. That is done by `BaseSetBuilder.apply_movement` (`shared/utils/set_building/base_set_builder.lua`) on every job except PUP, which has no set builder (see the matrix at the end of the page).
 
 ### Public API
 
@@ -702,7 +702,7 @@ Which shared system applies to which job, checked in the code and the `_master` 
 | BLM | yes (base builder) | native (`^numpad8`) | optional | | | yes (`follow_up` Dark Arts) | | | | ElementalMatcher defers to ElementalBelt |
 | BLU | yes | optional | optional | | commented | yes (Unbridled Learning) | | | `blu_unbridled`, `blu_expiacion_window` | Combat Mode On keeps the worn weapons because their slots are locked (`apply_weapon` itself does not test the mode) |
 | BRD | yes | optional | optional | | commented | yes (Pianissimo, Nightingale / Troubadour) | | | | |
-| BST | yes | optional | optional | | commented | | | | | |
+| BST | yes (base builder, idle, outside town; since 2026-09-29) | optional | optional | | commented | | | | | |
 | COR | yes | optional | optional | | commented | | | | | DualWield, the TH engaged overlay and the custom idle / engaged gear skip during a roll hold (`GearHold`) |
 | DNC | yes | optional | optional | yes | commented | yes (Climactic Flourish, Presto) | yes | yes (`smartbuff`, `buffself`) | | WaltzManager |
 | DRK | yes (own builder) | optional | optional | | | | | | | weapons through `WeaponResolver` (`equip_without_set`) since 2026-09-28 |
@@ -787,6 +787,7 @@ Fixed:
 
 - SAM's idle builder ends with `BaseSetBuilder.apply_movement`, so `sets.MoveSpeed` goes on while moving, as on the other jobs (2026-09-28).
 - DRK and SAM idle builders start with `BaseSetBuilder.select_idle_base_town` (DRK through `BaseSetBuilder.select_idle_base` since the same day, which also wears `sets.idle[HybridMode]` outside town): in a town the town set goes on top of the idle set and the movement layer is skipped, as on the other jobs (2026-09-29).
+- BST's idle builder laid `sets.MoveSpeed` inline, in town too: it now calls `BaseSetBuilder.apply_movement`, only when no town set was laid, after `BaseSetBuilder.lay_town_set` and the weapons (2026-09-29, checked offline).
 - The TH engaged overlay and the custom idle / engaged gear went on during a COR roll, over the roll's gear; they now ask `GearHold.active()`, like DualWield (2026-09-28).
 - The waltz tier was never sized for a targeted party member, because `isallymember` is not a Windower mob field. The test is now `in_party or in_alliance`.
 - Macrobook: the load message could announce the solo book while the dual-box book was selected. `resolve_config` is now shared by selection and `get_macro_info`.

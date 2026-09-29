@@ -18,7 +18,7 @@ References are to the code as of 2026-09-28. Functions are named (`file` `functi
 | `shared/utils/midcast/utsusemi_shadows.lua` | 32 | Cancels Copy Image buffs 2.3 s into Utsusemi: Ichi (Cancel addon) |
 | `shared/utils/midcast/midcast_deps.lua` | 44 | Loads `MidcastManager` and `ENHANCING_MAGIC_DATABASE` once per instance, for the 8 subjob-magic jobs |
 | `shared/utils/messages/formatters/magic/message_midcast.lua` | 156 | Debug output used by `MidcastManager` (templates in `shared/utils/messages/data/systems/midcast_messages.lua`) |
-| `shared/utils/set_building/base_set_builder.lua` | 144 | `apply_movement`, `select_idle_base_town`, `select_idle_base`, `is_in_town` |
+| `shared/utils/set_building/base_set_builder.lua` | 166 | `apply_movement`, `select_idle_base_town`, `select_idle_base`, `lay_town_set`, `is_in_town` |
 | `shared/utils/buffs/self_buff_manager.lua` | 259 | Factory: resolves a list of spells/abilities and queues the missing ones (only BLM uses it) |
 | `shared/utils/smartbuff/subjob_war_buffs.lua` | 74 | Berserk / Aggressor / Warcry collection and casting for DNC and THF subbing /WAR |
 | `shared/utils/scholar/scholar_actions.lua` | 366 | Light/Dark Arts toggles, the `aoe sneak/invi/erase` Accession casts, buff-gated stratagem chains, Addendum: Black casts (BLM, PLD, GEO) |
@@ -286,6 +286,7 @@ Each `[JOB]_IDLE.lua` / `[JOB]_ENGAGED.lua` implements Mote's `customize_idle_se
 - `apply_movement(result)`: when `state.Moving.value == 'true'` (the string state created by `shared/utils/movement/automove.lua`) and `sets.MoveSpeed` exists, returns `set_combine(result, sets.MoveSpeed)` under `pcall`; on error shows `MessageFormatter.show_error` and returns `result`.
 - `select_idle_base_town(base_set)`: returns `set_combine(idle, sets.Adoulin), true` in Western/Eastern Adoulin when that set exists; otherwise `set_combine(idle, sets.idle.Town), true` when `areas.Cities` (`libs/Mote-Mappings.lua`) contains `world.area` and the area name does not contain "Dynamis"; otherwise `base_set, false`. No Dynamis zone is in `areas.Cities`, so the Dynamis test never changes the result. `idle` is `base_set`, or, when `base_set` is Mote's own town pick (`sets.idle.Town` or its `IdleMode` child, chosen by `get_idle_set` in every city), `sets.idle` then `sets.idle[IdleMode]`, and Mote's town node is what goes on top. Since 2026-09-29 the town set goes on top of the idle set instead of replacing it, so a partial one keeps the idle pieces in the other slots.
 - `select_idle_base(base_set)` (since 2026-09-29): `select_idle_base_town` in town; outside town `sets.idle[state.HybridMode.current]` when it is a table, else `base_set`. Mote's idle follows `IdleMode` only, so this is what puts `sets.idle.PDT` on the jobs whose PDT toggle is `HybridMode`. Used by DNC, DRK, THF, WAR.
+- `lay_town_set(idle, town_set)` (since 2026-09-29): the same test and layering for a job that builds its own idle: `sets.Adoulin` on top in Adoulin when it exists, else `town_set` on top in any city (Adoulin included); returns `idle, false` outside town. Used by BST.
 - `is_in_town()`: the same test without a set.
 
 | Job builder | Town | Movement |
@@ -297,7 +298,7 @@ Each `[JOB]_IDLE.lua` / `[JOB]_ENGAGED.lua` implements Mote's `customize_idle_se
 | BRD | own `select_idle_base` wrapping `select_idle_base_town` | `apply_movement` outside town (engaged set: no longer, since 2026-09-29) |
 | RDM, BLU | `SetBuilder.check_town = select_idle_base_town` | `apply_movement` outside town |
 | SMN | `SMN_IDLE.lua` calls `select_idle_base_town` / `is_in_town` directly | `BaseSetBuilder.apply_movement` |
-| BST | `BaseSetBuilder.is_in_town()` for Town feet only | inline `set_combine(..., sets.MoveSpeed)` |
+| BST | `BaseSetBuilder.lay_town_set(final_set, sets.me.idle.Town)` over the pet or master idle, before weapons | `BaseSetBuilder.apply_movement` outside town |
 | DRK | `BaseSetBuilder.select_idle_base` called directly (town, else `sets.idle[HybridMode]`) | `apply_movement` outside town |
 | SAM | `select_idle_base_town` called directly | `apply_movement` outside town |
 | PUP | `PUP_IDLE.lua` and `PUP_ENGAGED.lua` require `shared/jobs/pup/functions/logic/set_builder`, which does not exist on disk (their headers say so) | n/a |
@@ -437,7 +438,6 @@ Open:
 - The "STANDARD BRANCH (P0-P9)" comment block in `midcast_manager.lua` omits P8b, and P8b's debug line is labelled priority 8.
 - Scholar chains warn "No charges (0.0m)" when /SCH is absent (`warn_no_charge`).
 - GEO keeps its own Light/Dark Arts toggles (`GEO_COMMANDS.lua`).
-- BST repeats `apply_movement` inline (its `logic/set_builder.lua`). DRK stopped on 2026-09-29.
 - RDM's subjob-magic fallback is gated on `spell.type == 'Magic'` and never runs (`RDM_MIDCAST.lua` `route_midcast`); `MidcastFallback` covers those spells now, so the branch is dead code.
 - DRK passes the Enhancing database's `get_spell_family` as `database_func` for Enfeebling Magic (`DRK_MIDCAST.lua`).
 - The `AOE_SPELLS` comment says `CommonCommands` answers `sneak`/`invi`/`erase` before the job block and sends them to the partner; since `53bf99f` alt keys are Mote's last lookup, so that reason no longer holds (`scholar_actions.lua`, above `AOE_SPELLS`).
@@ -455,6 +455,7 @@ Fixed:
 - BLM passed the Enhancing database to Enfeebling midcast (`database_func` always nil): removed (2026-09-25).
 - `build_accession_chain` (a blind `wait 2` chain) was replaced by the buff-gated `cast_with_stratagems`.
 - BRD kept two copies of the song -> instrument table: `SongRotationManager.get_required_instrument` delegates to `instrument_lock_config` (2026-09-25).
+- BST repeated `apply_movement` inline (also in town) and laid only the feet of `sets.me.idle.Town`: it now calls `BaseSetBuilder.lay_town_set` then `apply_movement` outside town (2026-09-29, checked offline, not yet in game). DRK stopped repeating it the same day.
 - BRD's engaged builder applied `apply_movement`, so a `state.Moving` left true from running up to the mob kept `sets.MoveSpeed` on in the fight: `build_engaged_set` no longer calls it (2026-09-29, checked offline, not yet in game).
 
 Commit hashes on this page are post-rewrite (2026-09-27); an older hash maps through `.git/filter-repo/commit-map`.

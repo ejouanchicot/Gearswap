@@ -20,13 +20,14 @@ Picked every time your gear is refreshed while you are not fighting.
 | `sets.me.idle.PDT` | A pet is out, not fighting, and Pet Idle Mode is **MasterPDT** (whatever Hybrid Mode says) |
 | `sets.pet.idle.PDT` | A pet is out, not fighting, and Pet Idle Mode is **PetPDT** (whatever Hybrid Mode says). Falls back to `sets.pet.idle` if missing |
 | `sets.pet.engaged` | Your pet is fighting and you are not. With Hybrid Mode on PDT, `sets.pet.engaged.PDT` goes on top |
-| `sets.me.idle.Town` | In a town (Adoulin included, Dynamis excluded): **only its feet** are used, on top of whichever set above, pet out or not |
+| `sets.me.idle.Town` | In a town (Adoulin included, Dynamis excluded): the **whole set** goes on top of whichever set above, pet out or not |
+| `sets.Adoulin` | In Western / Eastern Adoulin, instead of `sets.me.idle.Town`, if you define one (the provided file does not) |
 
 Then, on top of all of them, in this order:
 
-1. your weapons (see [Weapons](#weapons));
-2. `sets.MoveSpeed` while you are running;
-3. the feet of `sets.me.idle.Town` in a town.
+1. the town set above, in a town;
+2. your weapons (see [Weapons](#weapons));
+3. `sets.MoveSpeed` while you are running, outside a town only.
 
 Two catch-all names are also read: `sets.me.PDT` and `sets.pet.PDT`. When Hybrid
 Mode is PDT and a situation has no `.PDT` of its own (for example no
@@ -34,8 +35,9 @@ Mode is PDT and a situation has no `.PDT` of its own (for example no
 
 Differences with the common names:
 
-- `sets.idle.Town` and `sets.Adoulin` are **not used** on BST. Town gear is the
-  feet of `sets.me.idle.Town`, nothing else.
+- `sets.idle.Town` is **not used** on BST: its town set is `sets.me.idle.Town`.
+  Slots it leaves out keep the pieces of the set underneath. The provided one is
+  `sets.me.idle` plus Skd. Jambeaux +1.
 - `sets.idle` is only a last resort, worn when `sets.me.idle` does not exist.
   The provided file defines it as a copy of `sets.me.idle`.
 
@@ -48,7 +50,7 @@ Picked while you are fighting.
 | `sets.me.engaged` | You fight, and there is no pet or your pet is not fighting. With Hybrid Mode on PDT, `sets.me.engaged.PDT` on top |
 | `sets.pet.engagedBoth` | You and your pet both fight. With Hybrid Mode on PDT, `sets.pet.engagedBoth.PDT` on top. Falls back to `sets.me.engaged` if missing |
 
-Your weapons go on top. `sets.MoveSpeed` and the town feet are never added while
+Your weapons go on top. `sets.MoveSpeed` and the town set are never added while
 engaged. `sets.engaged` is only a last resort when `sets.me.engaged` does not
 exist (the provided file makes it a copy). Dual Wield tier pieces (`sets.DW...`,
 see the common page) are added while engaged with two weapons, for example an
@@ -234,8 +236,8 @@ you want (see the common page).
   "Equipping <jug> for <pet>". Nothing is actually equipped at that moment: the
   jug only goes on when you use Call Beast / Bestial Loyalty.
 - **Pet appears or disappears.** Your gear is refreshed (pet sets or master sets).
-- **Town feet.** In a town, the feet of `sets.me.idle.Town` go on while idle, even
-  with a pet out.
+- **Town set.** In a town, `sets.me.idle.Town` goes on while idle, even with a pet
+  out.
 - **BST-HUD addon.** Loading BST unloads and reloads the `BST-HUD` addon (about
   3.5 s after the load); leaving BST unloads it.
 
@@ -247,11 +249,11 @@ you want (see the common page).
   ability set (`sets.precast.JA['Misc Idle']` / `['Default']`: an ability without
   its own set keeps your gear), `.TPBonus` weaponskill sets (the TP bonus earring
   goes on by itself) and Ready move lists (the job's own lists, above, decide).
-- `sets.me.idle.Town`: every slot except the feet.
 
 ## Names the code reads that the provided file lacks
 
 - `sets.me.PDT`, `sets.pet.PDT` (catch-all PDT pieces, see Idle).
+- `sets.Adoulin` (see Idle).
 - `sets.precast.FC` and the subjob magic sets (see Subjob magic).
 - `sets.precast.JA` for Charm, Tame, Feral Howl, Familiar, Unleash, Snarl,
   Run Wild and the pet commands.

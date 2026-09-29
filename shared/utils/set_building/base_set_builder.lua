@@ -32,7 +32,8 @@ local MessageFormatter = require('shared/utils/messages/message_formatter')
 ---============================================================================
 
 --- Apply movement speed gear if moving (idle state only)
---- Used by: BLM, BRD, COR, DNC, DRK, GEO, PLD, RDM, RUN, SAM, SMN, THF, WAR, WHM
+--- Used by: BLM, BLU, BRD, BST, COR, DNC, DRK, GEO, PLD, RDM, RUN, SAM, SMN, THF,
+--- WAR, WHM (every job but PUP, which has no set builder)
 --- @param result table Current equipment set
 --- @return table Set with movement speed applied (or unchanged if not moving)
 function BaseSetBuilder.apply_movement(result)
@@ -51,12 +52,57 @@ end
 --- TOWN DETECTION (UNIVERSAL - IDLE ONLY)
 ---============================================================================
 
+--- Where the player stands: 'adoulin' (Western/Eastern Adoulin), 'city' (any
+--- other areas.Cities zone), or nil. Dynamis zones are cities in the list but
+--- not safe, so they count as neither.
+--- @return string|nil
+local function town_zone()
+    if not (world and world.area) then return nil end
+    if world.area == 'Western Adoulin' or world.area == 'Eastern Adoulin' then
+        return 'adoulin'
+    end
+    if areas and areas.Cities and areas.Cities:contains(world.area)
+        and not world.area:contains('Dynamis') then
+        return 'city'
+    end
+    return nil
+end
+
+--- Lay a town set ON TOP of an idle set: sets.Adoulin in Adoulin when it
+--- exists, else `town_set` in any city (Adoulin included). A partial town set
+--- (movement feet, Councilor's Garb) keeps the idle pieces in its other slots.
+--- @param idle table Idle set underneath
+--- @param town_set table|nil The job's town set
+--- @return table|nil set Idle with the town set on top, nil when not applied
+local function lay_town(idle, town_set)
+    local zone = town_zone()
+    if zone == 'adoulin' and sets and sets.Adoulin then
+        return set_combine(idle, sets.Adoulin)
+    end
+    if zone and town_set then
+        return set_combine(idle, town_set)
+    end
+    return nil
+end
+
+--- Lay the job's own town set on top of an idle it built itself (BST: the
+--- nested sets.me.idle.Town over the pet or master idle).
+--- @param idle table Idle set underneath
+--- @param town_set table|nil The job's town set
+--- @return table selected_set
+--- @return boolean is_in_town True when a town set was laid
+function BaseSetBuilder.lay_town_set(idle, town_set)
+    local result = lay_town(idle, town_set)
+    if result then return result, true end
+    return idle, false
+end
+
 --- Detect if player is in town/Adoulin and return appropriate set
 --- Checks Adoulin zones first (movement bonus), then regular cities.
 --- Excludes Dynamis zones (technically cities but not safe).
 ---
---- Used by: BLM, BRD, COR, DNC, DRK, GEO, PLD, RDM (as SetBuilder.check_town),
---- RUN, SAM, SMN, THF, WAR, WHM
+--- Used by: BLM, BLU and RDM (both as SetBuilder.check_town), BRD, COR, GEO, PLD,
+--- RUN, SAM, SMN, WHM; DNC, DRK, THF, WAR through select_idle_base
 ---
 --- The town set goes ON TOP of the idle set: a partial one (MoveSpeed feet,
 --- Councilor's Garb) keeps the idle pieces in the other slots. In a city
@@ -70,14 +116,6 @@ end
 --- @return table selected_set Idle set with the town/Adoulin set on top
 --- @return boolean is_in_town True if town gear applied
 function BaseSetBuilder.select_idle_base_town(base_set)
-    if not (world and world.area) then
-        return base_set, false
-    end
-
-    local in_adoulin = world.area == 'Western Adoulin' or world.area == 'Eastern Adoulin'
-    local in_city = areas and areas.Cities and areas.Cities:contains(world.area)
-        and not world.area:contains('Dynamis')   -- cities, but not safe
-
     local town = sets and sets.idle and sets.idle.Town
     local mode = state and state.IdleMode and state.IdleMode.current
     local is_mote_town = town ~= nil and base_set ~= nil
@@ -89,13 +127,8 @@ function BaseSetBuilder.select_idle_base_town(base_set)
         if mode and type(idle[mode]) == 'table' then idle = idle[mode] end
     end
 
-    -- Adoulin first: it has its own set (movement bonus)
-    if in_adoulin and sets and sets.Adoulin then
-        return set_combine(idle, sets.Adoulin), true
-    end
-    if in_city and town then
-        return set_combine(idle, is_mote_town and base_set or town), true
-    end
+    local result = lay_town(idle, is_mote_town and base_set or town)
+    if result then return result, true end
     return base_set, false
 end
 
@@ -120,21 +153,11 @@ function BaseSetBuilder.select_idle_base(base_set)
     return base_set, false
 end
 
---- Pure town detection (no set coupling). For callers that apply their own
---- town gear instead of a flat sets.idle.Town (e.g. BST nested sets.me.idle.Town).
---- Adoulin counts as town. Dynamis zones are excluded (technically cities, not safe).
+--- Pure town detection (no set coupling). Adoulin counts as town. Dynamis
+--- zones are excluded (technically cities, not safe).
 --- @return boolean in_town True if in a city/Adoulin
 function BaseSetBuilder.is_in_town()
-    if world and world.area then
-        if world.area == 'Western Adoulin' or world.area == 'Eastern Adoulin' then
-            return true
-        end
-        if areas and areas.Cities and areas.Cities:contains(world.area)
-            and not world.area:contains('Dynamis') then
-            return true
-        end
-    end
-    return false
+    return town_zone() ~= nil
 end
 
 ---============================================================================
