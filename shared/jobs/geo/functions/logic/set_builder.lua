@@ -133,27 +133,6 @@ function SetBuilder.build_idle_set(base_set)
 end
 
 ---  ═══════════════════════════════════════════════════════════════════════════
----   BUFF-BASED SET MODIFICATIONS
----  ═══════════════════════════════════════════════════════════════════════════
-
----   Apply buff-specific gear modifications
----   @param current_set table Current equipment set
----   @param buff_name string Buff name
----   @return table Modified set
-function SetBuilder.apply_buff_gear(current_set, buff_name)
-    if not current_set or not buff_name then
-        return current_set
-    end
-
-    -- Doom gear
-    if buff_name == "Doom" and sets.buff.Doom then
-        return set_combine(current_set, sets.buff.Doom)
-    end
-
-    return current_set
-end
-
----  ═══════════════════════════════════════════════════════════════════════════
 ---   MODULE EXPORT
 ---  ═══════════════════════════════════════════════════════════════════════════
 

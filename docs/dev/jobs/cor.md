@@ -64,7 +64,7 @@ function; line numbers are given only where no function name fits.
 | `shared/utils/core/gear_hold.lua` | 25 | `GearHold.active()`: the roll hold as seen by the shared layers (Dual Wield tiers, TH engaged overlay, CUSTOM idle / engaged gear) |
 | `shared/jobs/cor/functions/logic/roll_debug.lua` | 261 | `//gs c rolldebug`: gear sent vs worn at landing, held updates, pieces out of reach, locked slots; summary; `<Char>/rolldebug.log` |
 | `shared/jobs/cor/functions/logic/double_up.lua` | 45 | `DoubleUp.redirect(spell, eventArgs)` |
-| `shared/jobs/cor/functions/logic/set_builder.lua` | 203 | Town, weapons (DW-aware), PDT, Refresh, movement; unused `apply_buff_gear` |
+| `shared/jobs/cor/functions/logic/set_builder.lua` | 182 | Town, weapons (DW-aware), PDT, Refresh, movement |
 | `_master/config/cor/COR_STATES.lua` | 184 | All states (`CORStates.configure()`) |
 | `_master/config/cor/COR_KEYBINDS.lua` | 37 | 7 binds, data only; `KeybindManager.create('COR', ...)` ([keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/cor/COR_CUSTOM.lua` | 119 | Player modes and gear rules (all examples commented out) |
@@ -574,7 +574,7 @@ In game: `//gs c rolldebug` (per-roll gear report and `rolldebug.log`),
 - Dead code: `_G.cor_natural_eleven_active` (written, never read),
   `RollData.get_roll_names`, `clear_natural_eleven` / `clear_last_roll` outside
   `clear_all`, `_G.cor_pending_roll_*` (cleared, never set),
-  `job_post_aftercast`, `SetBuilder.apply_buff_gear`,
+  `job_post_aftercast`,
   `COR_MACROBOOK.get_macrobook`, `show_roll_natural_eleven` /
   `show_roll_bust_rate` / `show_roll_not_found`.
 - Pending in-game checks: a member out of reach listed as missed from the

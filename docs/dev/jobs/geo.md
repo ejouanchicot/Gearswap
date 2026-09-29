@@ -56,7 +56,7 @@ function, not a line number.
 | `shared/jobs/geo/functions/GEO_MACROBOOK.lua` | Lazy `MacrobookManager.create('GEO', ..., 'SAM', 1, 1)` wrapper |
 | `shared/jobs/geo/functions/logic/geo_auto_abilities.lua` | `GeoAutoAbilities.apply`: `geo_entrust`, `geo_full_circle` options |
 | `shared/jobs/geo/functions/logic/geo_spell_refiner.lua` | `refine_spell` / `refine_and_cast` for the nuke commands |
-| `shared/jobs/geo/functions/logic/set_builder.lua` | HybridMode / `sets.luopan` selection, town, weapons, movement; unused `apply_buff_gear` |
+| `shared/jobs/geo/functions/logic/set_builder.lua` | HybridMode / `sets.luopan` selection, town, weapons, movement |
 | `shared/data/spells/NUKE_TIERS.lua` | Tier table for Fire..Water (V-base), the -ra (III-base) and Aspir (III-base), shared with RDM |
 | `shared/utils/core/auto_options.lua` | Reads `<Character>/config/AUTO_ABILITIES.lua` |
 | `_master/config/geo/GEO_STATES.lua` | All states (`GEOStates.configure()`) |
@@ -523,6 +523,6 @@ T = in `_master/sets/geo_sets.lua`.
   and read `buffactive` (the shared version reads the game's buff list).
 - Stale comment: `set_builder.lua` `apply_weapon` says Combat Mode locks
   through `disable()` in `job_update()`; the lock is `combat_mode.lua`'s.
-- Dead code: `SetBuilder.apply_buff_gear`, `GEO_LOCKSTYLE.style`.
+- Dead code: `GEO_LOCKSTYLE.style` (`SetBuilder.apply_buff_gear` was removed on 2026-09-29).
 - The alt overlay's `GEO_STATES.lua`, `GEO_KEYBINDS.lua`, entry and sets
   carry `@author Tetsouo` (convention: `ejouanchicot`).

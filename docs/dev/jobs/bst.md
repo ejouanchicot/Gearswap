@@ -62,7 +62,7 @@ idle overlays of `logic/set_builder.lua` re-read on 2026-09-29.
 | `shared/jobs/bst/functions/logic/ecosystem_manager.lua` | 262 | `initialize`, `change_ecosystem`, `change_species`, `equip_pet_broth`, `count_species_jugs`, `cycle_ammo` (dead) |
 | `shared/jobs/bst/functions/logic/pet_manager.lua` | 318 | Pet-valid cache (`update_pet_mode` / `get_pet_mode`), `engage_pet` / `disengage_pet`, Ready-move list (`update_ready_moves`, 30 s cache), `check_and_engage_pet` and `monitor_pet_status` (PUP template only) |
 | `shared/jobs/bst/functions/logic/ready_move_categorizer.lua` | 283 | Four `S{}` name lists (47 + 9 + 22 + 42 = the 120 `Monster` entries of `res/job_abilities.lua`), `get_category`, `_G.pet*Moves` exports |
-| `shared/jobs/bst/functions/logic/set_builder.lua` | 232 | `build_idle_set`, `build_engaged_set`; locals `wants_pdt`, `pdt_overlay`, `with_pdt`, `idle_with_pet`, `idle_without_pet`, `apply_weapon_sets`, `apply_common_overlays`, `engaged_for_situation` |
+| `shared/jobs/bst/functions/logic/set_builder.lua` | 193 | `build_idle_set`, `build_engaged_set`; locals `wants_pdt`, `pdt_overlay`, `with_pdt`, `idle_with_pet`, `idle_without_pet`, `apply_weapon_sets`, `apply_common_overlays`, `engaged_for_situation` |
 | `_master/config/bst/BST_STATES.lua` | 77 | `BSTStates.configure()` |
 | `_master/config/bst/BST_KEYBINDS.lua` | 48 | 7 binds, data only; `KeybindManager.create('BST', ...)` adds `bind_all` / `unbind_all` / `show_intro` (see [keybinds and custom states](../systems/keybinds-and-custom.md)) |
 | `_master/config/bst/BST_CUSTOM.lua` | 119 | Player modes and gear rules (all examples commented out), read through `KeybindManager` |
@@ -626,9 +626,10 @@ or /DNC, shields included (its comment now says so).
 
 - Line numbers drift; cite functions. `rg` skips the gitignored character
   folders: check live copies with `grep -r` before calling code dead.
-- `PetManager.get_pet_status`, `is_pet_valid`, `SetBuilder.should_use_pet_sets`
-  and `get_current_mode` test `isvalid` on raw mobs (always false) but have no
-  caller; do not revive them without switching to `id`.
+- `PetManager.get_pet_status` and `is_pet_valid` test `isvalid` on raw mobs
+  (always false) but have no caller; do not revive them without switching to `id`.
+  (`SetBuilder.should_use_pet_sets`, `is_pet_engaged` and `get_current_mode`, dead
+  the same way, were removed on 2026-09-29.)
 - `BST_MIDCAST` reports a categoriser that failed to load with
   `MessageFormatter.show_error` (until 2026-09-28 it called the undefined
   `error_bst_module_not_loaded` and raised).
@@ -696,7 +697,6 @@ or /DNC, shields included (its comment now says so).
 - Dead code: `job_pet_precast` (whole `BST_PET_PRECAST.lua`),
   `PetManager.get_pet_status` / `is_pet_valid` (BST side; `check_and_engage_pet`
   and `monitor_pet_status` are used only by the PUP template),
-  `SetBuilder.should_use_pet_sets` / `is_pet_engaged` / `get_current_mode`,
   `EcosystemManager.cycle_ammo`, `ReadyMoveCategorizer.is_physical` /
   `is_magical` / `get_midcast_set_name` / `get_category_counts` and the
   `_G.pet*Moves` exports, `BST_ECOSYSTEM_DATA.lua`, BST message wrappers with
