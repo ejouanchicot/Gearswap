@@ -406,9 +406,11 @@ RUN weaponskills. There is no RUN-specific differential test.
 - Fixed 2026-09-28: the UI readiness anchor was `RuneElement` (no such state); it is `RuneMode`.
 - Stale comment in `RUN_PRECAST.lua` `ensure_modules_loaded`: it says the entry
   does not load `RUN_TP_CONFIG`; the entry does, since 2026-09-27.
-- `RUN_MACROBOOK.lua` keys its `solo` and `dualbox` tables by subjob with a `RUN`
-  entry (RUN/RUN cannot exist) and no /SCH, /WAR or /DRK entry: copied from PLD's
-  layout; the `default` (book 15) covers the rest.
+- `RUN_MACROBOOK.lua` used a `RUN` subjob key (RUN/RUN cannot exist), so with an
+  alt online every subjob but BLU fell to the solo book. Since 2026-09-29 each
+  alt has a `default` (any other subjob: RDM 15, GEO 16, COR 17), which
+  `macrobook_manager` reads after the subjob's key. Hysoka's frozen copy keeps
+  the dead `RUN` keys.
 - The 0.5 s keybind coroutine and the 0.2 s gate have no generation guard.
 - `//gs c aoe` without /BLU refuses with "AOE needs the BLU subjob (RUN/BLU)". The
   `unknown_spell` counter only catches a misspelled name in the rotation config.

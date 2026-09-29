@@ -33,7 +33,6 @@ RUNMacroConfig.default = {book = 15, page = 1}
 --- RUN macro book assignments by subjob
 --- Format: ['SUBJOB'] = { book = NUMBER, page = NUMBER }
 RUNMacroConfig.solo = {
-    ['RUN'] = {book = 15, page = 1}, -- RUN/RUN
     ['BLU'] = {book = 18, page = 1}, -- RUN/BLU
     ['RDM'] = {book = 20, page = 1}, -- RUN/RDM
     -- Default fallback
@@ -45,6 +44,8 @@ RUNMacroConfig.solo = {
 ---============================================================================
 --- Structure: dualbox[ALT_JOB][SUBJOB] = {book, page}
 --- Example: dualbox['GEO']['SAM'] = RUN/SAM macros optimized for playing with GEO alt
+--- dualbox[ALT_JOB]['default'] = any subjob not listed for that alt. A
+--- subjob with no entry (and no 'default') for the alt uses the solo book.
 ---
 --- Add an alt job or a subjob below as needed.
 ---============================================================================
@@ -52,19 +53,19 @@ RUNMacroConfig.solo = {
 RUNMacroConfig.dualbox = {
     -- Kaories playing RDM
     ['RDM'] = {
-        ['RUN'] = {book = 15, page = 1}, -- RUN/RUN + RDM alt
+        ['default'] = {book = 15, page = 1}, -- any other subjob + RDM alt
         ['BLU'] = {book = 18, page = 1}, -- RUN/BLU + RDM alt
     },
 
     -- Kaories playing COR
     ['COR'] = {
-        ['RUN'] = {book = 17, page = 1}, -- RUN/RUN + COR alt
+        ['default'] = {book = 17, page = 1}, -- any other subjob + COR alt
         ['BLU'] = {book = 20, page = 1}, -- RUN/BLU + COR alt
     },
 
     -- Kaories playing GEO
     ['GEO'] = {
-        ['RUN'] = {book = 16, page = 1}, -- RUN/RUN + GEO alt
+        ['default'] = {book = 16, page = 1}, -- any other subjob + GEO alt
         ['BLU'] = {book = 19, page = 1}, -- RUN/BLU + GEO alt
     }
 }

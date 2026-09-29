@@ -170,7 +170,7 @@ The two executions have separate module-locals, so each calls `create()` once. T
 
    All current configs have a top-level `default` and the `solo` shape.
 2. `select_default_macro_book()` asks `resolve_config`, the one resolver for both selection and `get_macro_info`. In order, it picks:
-   - the dual-box book `dualbox[alt_job][sub_job]` when `DualBoxManager.is_alt_online()` (an alt update seen within the last `DualBoxConfig.timeout`, 30 s by default);
+   - the dual-box book `dualbox[alt_job][sub_job]`, else `dualbox[alt_job].default` (any subjob not listed for that alt, since 2026-09-29), when `DualBoxManager.is_alt_online()` (an alt update seen within the last `DualBoxConfig.timeout`, 30 s by default);
    - else `solo[sub_job]`;
    - else `solo.default`;
    - else the factory defaults.
@@ -206,7 +206,7 @@ Callers of the selection:
 
 ```lua
 Cfg.solo    = { SAM = { book = 22, page = 1 }, ..., default = { book = 22, page = 1 } }
-Cfg.dualbox = { GEO = { SAM = { book = 23, page = 1 } }, ... }   -- [alt_job][subjob]
+Cfg.dualbox = { GEO = { SAM = { book = 23, page = 1 }, default = { book = 24, page = 1 } }, ... }   -- [alt_job][subjob], default = other subjobs
 Cfg.default = { book = 22, page = 1 }                             -- becomes solo.default
 ```
 

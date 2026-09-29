@@ -120,8 +120,11 @@ local function dualbox_config(ctx, sub_job)
     end
 
     local alt_job = DualBoxManager.get_alt_job()
-    if alt_job and ctx.MACROBOOKS.dualbox and ctx.MACROBOOKS.dualbox[alt_job] then
-        return ctx.MACROBOOKS.dualbox[alt_job][sub_job]
+    local for_alt = alt_job and ctx.MACROBOOKS.dualbox and ctx.MACROBOOKS.dualbox[alt_job]
+    if for_alt then
+        -- This subjob's book for that alt, else that alt's 'default' (any
+        -- other subjob), else the solo config (nil)
+        return for_alt[sub_job] or for_alt['default']
     end
     return nil
 end
