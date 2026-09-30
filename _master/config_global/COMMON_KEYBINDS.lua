@@ -29,6 +29,10 @@ CommonKeybinds.binds = {
     -- players already had for it.
     { key = "!z", command = "stealth sneak", desc = "Sneak (you + alts)" },
     { key = "!x", command = "stealth invi", desc = "Invisible (you + alts)" },
+    -- Debuffs off you and every alt (//gs c cleanse, settings in
+    -- combat/CLEANSE_CONFIG.lua). No key by default: remove the "--" to get
+    -- one, or use a macro line: /con gs c cleanse
+    -- { key = "!c", command = "cleanse", desc = "Cleanse (you + alts)" },
     -- Your own keys. Any command works:
     --   "//<command>"  console command of any addon, as typed in chat
     --   "/<command>"   game command (/p, /follow, /ma ...)
