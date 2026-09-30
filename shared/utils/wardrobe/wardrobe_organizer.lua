@@ -299,6 +299,9 @@ end
 ---  ═══════════════════════════════════════════════════════════════════════════
 
 local function finish_run()
+    -- The doubled-gear hook read the bags before the moves: read them again
+    local ok_d, DuplicateGear = pcall(require, 'shared/utils/equipment/duplicate_gear')
+    if ok_d and DuplicateGear then DuplicateGear.invalidate() end
     -- Settle delay: give FFXI time to confirm the last burst before snapshot.
     coroutine.schedule(with_panic_unlock(function()
         local final = State.build_state()

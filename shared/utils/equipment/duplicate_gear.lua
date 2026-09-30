@@ -48,13 +48,18 @@ local cache = { at = -math.huge, copies = {}, worn = {} }
 
 --- Read the equippable bags: every name owned in 2+ copies, with the bag
 --- and index of each copy, and which copy each slot wears.
---- True when a copy carries augments: GearSwap tells such copies apart by
---- their augments (a set that names the augments picks the right one).
-local function augmented(it, extdata)
+--- True when a bag item carries augments: GearSwap tells such copies apart
+--- by their augments (a set that names them picks the right one), so they are
+--- not doubled items (also used by the organizer, wardrobe/lib/rules.lua).
+--- @param it table Bag item (windower.ffxi.get_items)
+--- @param extdata table|nil Windower's extdata library
+--- @return boolean
+function DuplicateGear.augmented(it, extdata)
     if not extdata then return false end
     local ok, ext = pcall(extdata.decode, it)
     return ok and ext and type(ext.augments) == 'table' and #ext.augments > 0
 end
+local augmented = DuplicateGear.augmented
 
 local function scan()
     local res = rawget(_G, 'res') or require('resources')
@@ -94,12 +99,12 @@ local function scan()
     for _, slot in ipairs(WORN_SLOTS) do
         if (eq[slot] or 0) > 0 then worn[slot] = { bag = eq[slot .. '_bag'], index = eq[slot] } end
     end
-    cache = { at = os.clock(), copies = doubled, worn = worn }
+    cache = { at = os.time(), copies = doubled, worn = worn }
 end
 
 --- The doubled items and the worn copies, re-read when older than CACHE_SECONDS.
 local function current()
-    if os.clock() - cache.at > CACHE_SECONDS then pcall(scan) end
+    if os.time() - cache.at > CACHE_SECONDS then pcall(scan) end
     return cache
 end
 
@@ -139,16 +144,18 @@ end
 --- @param st table Cache (worn copies)
 --- @param taken table|nil Copy the other side of this set takes
 local function pick(list, worn_here, st, taken)
+    -- The two sides are told apart by bag only, so they never share one
+    local function free(c) return not (taken and taken.bag == c.bag) end
     for _, c in ipairs(list) do
-        if same_copy(c, worn_here) and not same_copy(c, taken) then return c end
+        if same_copy(c, worn_here) and free(c) then return c end
     end
     for _, c in ipairs(list) do
         local worn_somewhere = false
         for _, w in pairs(st.worn) do if same_copy(c, w) then worn_somewhere = true end end
-        if not worn_somewhere and not same_copy(c, taken) and not (taken and taken.bag == c.bag) then return c end
+        if not worn_somewhere and free(c) then return c end
     end
     for _, c in ipairs(list) do
-        if not same_copy(c, taken) and not (taken and taken.bag == c.bag) then return c end
+        if free(c) then return c end
     end
     return nil
 end

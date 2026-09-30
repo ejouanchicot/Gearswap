@@ -372,10 +372,11 @@ function Config.use_all_jobs_layout()
     Config.FILL_FALLBACK = Config.ALT_OVERFLOW_BAGS
     Config.ALL_WARDROBES = Config.ALT_ALL_BAGS
     local kept = {}
-    for _, b in ipairs(Config.RULE_BAGS) do
+    for _, b in ipairs(rule_bags(Config.RULES)) do
         if not contains(Config.PRIMARY_BAGS, b) and not contains(Config.OVERFLOW_BAGS, b) then kept[#kept + 1] = b end
     end
     Config.RULE_BAGS = kept
+    Config.ALL_WARDROBES = union(Config.ALL_WARDROBES, kept)
 end
 
 -- Bag id -> human label (used by Log.bag_name and chat)

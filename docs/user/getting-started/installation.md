@@ -78,8 +78,10 @@ with yours.
 
 - Item names must match the game exactly.
 - Augmented items need their exact `augments = {...}` list.
-- Two copies of the same item: pin each one to its wardrobe with
-  `bag = 'wardrobe 2'` and so on.
+- Two copies of the same ring, earring or weapon: just write the name on both
+  sides. Each side keeps its own copy as long as the copies sit in different
+  bags, and `//gs c wo` puts them there. `bag = 'wardrobe 2'` on a piece is no
+  longer needed (still respected).
 
 ## 5. Load it in game
 

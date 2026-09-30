@@ -52,12 +52,12 @@ below, then the job's commands, then Mote-Include's (`cycle`, `set`,
 | `checksets` | Lists set items you do not have in inventory or wardrobes (`STORAGE` = in another bag, `MISSING` = nowhere) |
 | `gearscan` | Reads the augments of all your gear, in every bag, and saves them (`saved/gear_augments.lua`) so the HP priority also counts the HP / MP of pieces your sets name without augments, and the HP that some pieces get from their rank (Unmoving Collar +1, Gelatinous Ring +1, War. / Kgt. Beads +2). Run it once, and again after new or upgraded gear; used from the next job load |
 | `hporder` | On / off: at each gear change, a block lists the pieces that change, one per line from the first put on to the last, with the HP each gains (green +) or loses (red -) against what you wear. Stays on across job changes until you run it again |
-| `wa` (`wardrobeaudit`) | Wardrobe items no set file uses; report written to `data/wardrobe_audit.txt` |
-| `wo` (`worganize`) | Wardrobe organizer: moves the gear you use into the first wardrobes, the rest into overflow bags |
+| `wa` (`wardrobeaudit`) | Wardrobe items no set file uses; report written to `data/wardrobe_audit.txt`. Skips the `NEVER_TOUCH` wardrobes of your `WARDROBE_CONFIG.lua` and counts its `KEEP` / `NEVER_MOVE` items as used |
+| `wo` (`worganize`) | Wardrobe organizer: moves the gear you use into your used bags, the rest into your other bags, and applies the placement rules of your `WARDROBE_CONFIG.lua` |
 | `wo preview` | What it would move, without moving |
-| `wo scan` (`scanwarp`) / `wo keep` (`kept`, `items`) | Record the warp items you own / list the items kept in the main bags beyond those your sets name |
+| `wo scan` (`scanwarp`) / `wo keep` (`kept`, `items`) | Record the warp items you own / list the items kept in the used bags beyond those your sets name |
 | `wo verify` (`check`) | Report what is out of place for the loaded job; nothing moves |
-| `wo alt` | Variant for a character with 4 wardrobes: every job's sets count, overflow goes to Sack / Case / Satchel |
+| `wo alt` | Same as `wo` with every job's gear counted as used, on the `USED_WHEN_ALL` / `UNUSED_WHEN_ALL` bags of your config (your usual bags if it has none) |
 | `wo global` / `wo global preview` | Same as `wo` / `wo preview` (older names) |
 | `wo recover` (`unlock`) / `wo reset` | Release the slots if a run was interrupted / clear a run stuck after a crash and release the slots |
 | `rf` (`refill`) | Restock consumables from the Mog Case, Sack and Satchel, put the surplus back; also sent to your other boxes |
@@ -71,9 +71,10 @@ below, then the job's commands, then Mote-Include's (`cycle`, `set`,
 
 `wo` details: it unequips everything and locks your slots while it runs,
 then releases them and sends `ls` and `rf`. Its words are lowercase only: an
-unknown word (even `Preview`) runs a full organize. The bags it uses come from
-`_common/inventory/WARDROBE_CONFIG.lua` if you have one; otherwise wardrobes 1-2 are the
-main bags and 3-6 and 8 the overflow (wardrobe 7 is never touched).
+unknown word (even `Preview`) runs a full organize. The bags and rules it uses come from
+`_common/inventory/WARDROBE_CONFIG.lua` ([configuration](configuration.md#wardrobes-wardrobe_configlua));
+with nothing set there, wardrobes 1-2 hold the loaded job's gear and your other
+unlocked wardrobes the rest, and no wardrobe is protected.
 
 ## Travel
 

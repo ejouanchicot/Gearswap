@@ -20,7 +20,7 @@ This page covers how a live folder is built, how it drifts from its templates, a
 | `_master/sets/<job>_sets.lua` | yes, 17 files | Generic flat set files, same 17 jobs (`pup_sets.lua` is a skeleton) |
 | `_master/config/<job>/` | yes, 16 dirs | Per-job configs (KEYBINDS, STATES, LOCKSTYLE, MACROBOOK, TP_CONFIG, `<JOB>_CUSTOM.lua`, job extras). No `pup/` |
 | `_master/config/alt/` | yes, 33 files | Dual-box alt command tables (22 `_ALT_COMMANDS`, 5 `_ALT_CUSTOM`, 6 `.lua.example`). Deployed only to a character cloned as MAIN |
-| `_master/config_global/` | yes, 15 files | `AUTO_ABILITIES`, `COMMON_KEYBINDS`, `CRAFT_CONFIG`, `DW_CONFIG`, `ELEMENTAL_BELT`, `HP_PRIORITY`, `LOCKSTYLE_CONFIG`, `message_modes`, `RECAST_CONFIG`, `REFILL_CONFIG`, `STEALTH_CONFIG`, `UI_COLOR_CONFIG`, `UI_CONFIG`, `ui_settings`, `WEAPON_CONFIG` |
+| `_master/config_global/` | yes, 16 files | `AUTO_ABILITIES`, `COMMON_KEYBINDS`, `CRAFT_CONFIG`, `DW_CONFIG`, `ELEMENTAL_BELT`, `HP_PRIORITY`, `LOCKSTYLE_CONFIG`, `message_modes`, `RECAST_CONFIG`, `REFILL_CONFIG`, `STEALTH_CONFIG`, `UI_COLOR_CONFIG`, `UI_CONFIG`, `ui_settings`, `WARDROBE_CONFIG` (since 2026-09-30: every key commented out, so a clone runs on the organizer defaults until the player uncomments one), `WEAPON_CONFIG` |
 | `_master/Tetsouo/` | no, 78 files | Tetsouo overlay: 9 entries (BLM BRD BST COR DNC PLD SMN THF WAR, with the modular set include), `config/<job>/` for those jobs plus `config/craft/`, `config_global/{DUALBOX_CONFIG,REGION_CONFIG,UI_CONFIG,WARDROBE_CONFIG}.lua`, the modular sets `sets/<job>/`, `sets/common/`, `sets/{bonecraft,fishing}_sets.lua` |
 | `_master/Kaories/` | no, 38 files | Kaories overlay: 4 entries (COR GEO PLD RDM), 4 flat set files, `config/{cor,geo,pld,rdm}/`, `config_global/{combat_mode,COMMON_KEYBINDS,DUALBOX_CONFIG,REGION_CONFIG,WARDROBE_CONFIG}.lua` |
 | `_master/Gabvanstronger/` | no, 23 files | No entries (the generic ones are used), `config/{blu,rdm,thf}/`, `config_global/{AUTO_ABILITIES,combat_mode,COMMON_KEYBINDS,WEAPON_CONFIG}.lua`, flat sets + `sets/0_AugGear_Gabvanstronger.lua` |
@@ -180,7 +180,7 @@ Without `--source`, `S = 'Tetsouo'`. `_select_overlay(T)`:
 | default source | any other name | none: generic `_master/` files only |
 | `--source Kaories` | any name | `_master/Kaories/` |
 
-- A new character cloned with the default source and no overlay gets no `WARDROBE_CONFIG.lua` and no `<JOB>_REFILL.lua` files, because `_master/config_global/` and `_master/config/<job>/` have none. The wardrobe organizer then runs on its defaults (`shared/utils/wardrobe/lib/config.lua`) and refill uses its fallback list.
+- A new character cloned with the default source and no overlay gets no `<JOB>_REFILL.lua` files, because `_master/config/<job>/` has none; refill uses its fallback list. It does get `_common/inventory/WARDROBE_CONFIG.lua`, copied from the generic template `_master/config_global/WARDROBE_CONFIG.lua` (since 2026-09-30); every key there is commented out, so the wardrobe organizer runs on its defaults (`shared/utils/wardrobe/lib/config.lua`: W1/W2 for the used gear, the other unlocked wardrobes for the rest).
 - Building Kaories with `--source Kaories` and without it gives the same folder except the `@author` lines of generic files.
 
 ## character_db.lua
@@ -236,7 +236,7 @@ What `clone_character.py` actually reads (`parse_character_db`):
 | `_common/combat/STEALTH_CONFIG.lua` | `shared/utils/stealth/stealth_config.lua` | step 4c; kept on re-clone | `//gs c stealth ...` |
 | `_common/combat/HP_PRIORITY.lua` | `HPPriority.settings()` in `shared/utils/equipment/hp_priority.lua` | step 4c | - |
 | `_common/keys/combat_mode.lua`, `_common/keys/treasure_mode.lua` | `combat_mode.lua`, `treasure_hunter.lua` (through `optional_state.lua`) | overlay only (`combat_mode`); kept on re-clone | `//gs c combatmode`, `//gs c th` |
-| `_common/inventory/WARDROBE_CONFIG.lua` | `Config.refresh` in `shared/utils/wardrobe/lib/config.lua` | step 4c (overlay only) | - |
+| `_common/inventory/WARDROBE_CONFIG.lua` | `Config.refresh` in `shared/utils/wardrobe/lib/config.lua` (also the auditor, `wardrobe_auditor.lua` `config_exclusions`) | step 4c (generic template since 2026-09-30; Tetsouo and Kaories overlays replace it) | - |
 | `_common/inventory/CRAFT_CONFIG.lua` (craft / fish set files, lockstyles 19 / 17) | `shared/utils/craft/craft_commands.lua` | step 4c | - |
 | `_common/inventory/REFILL_CONFIG.lua` (refill bags) | `shared/utils/inventory/refill/config_resolver.lua` | step 4c | - |
 | `_common/inventory/CRAFT_REFILL.lua` (template: empty list) | `config_resolver.lua` | step 4 | Tetsouo's |
@@ -295,7 +295,7 @@ Full redeploy (`clone_character.py` on an existing character):
 2. Optional: create `_master/<Name>/` with the same layout (`entry/<Name>_<JOB>.lua`, `sets/<job>_sets.lua` or `sets/<job>/`, `config/<job>/`, `config_global/`). Without `entry/`, the generic entries are used and renamed. It is picked up automatically when the target is `<Name>`.
 3. Run `CLONE_CHARACTER.bat`. Answer the role, partner and region prompts.
 4. Dual-box: a MAIN gets `config/alt/` from the clone; edit the partner's `config/DUALBOX_CONFIG.lua` (`alt_character` / `main_character` and `group`) to name the new character. For automatic HP priorities, set `unity = 'max'` in its `_common/combat/HP_PRIORITY.lua` if its Unity leader is rank 1, and run `//gs c gearscan` once in game.
-5. A character created without an overlay gets no `WARDROBE_CONFIG.lua` (organizer defaults) and no refill lists. Add them by hand, or save them in `_master/<Name>/` and re-clone.
+5. A character created without an overlay gets the commented `WARDROBE_CONFIG.lua` template (organizer defaults until a key is uncommented) and no refill lists. Add the lists by hand, or save them in `_master/<Name>/` and re-clone.
 6. In game: `//lua r gearswap`, `//gs c checksets`, and `//gs c wo scan` if the warp-item list is wanted.
 
 ## How to add a job to the templates

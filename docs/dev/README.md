@@ -141,7 +141,7 @@ For a template entry such as `_master/entry/Tetsouo_WAR.lua`:
 |---|---|---|
 | sync | debug flags restored from `windower._gs_debug`, `windower._gs_reload_count++` | `:35-44` |
 | sync | `ModuleCache.install()` — makes `require` cache per sandbox | `:54-56` |
-| sync | `HPPriority.apply()` — indexes the HP / MP of the pieces the sets name (they exist: Mote ran `init_gear_sets` first) and wraps `equip()`: each swap ranks its pieces by HP gained over the gear worn | `:65-70` |
+| sync | Gear hooks (`equip_hooks.lua` wraps `equip()` once per load; the sets exist: Mote ran `init_gear_sets` first): `DuplicateGear.install()` — each side of a doubled ring / earring / weapon takes its own copy, by bag; then `HPPriority.apply()` — indexes the HP / MP of the pieces the sets name, and each swap ranks its pieces by HP gained over the gear worn | `:63-79` |
 | sync | LagDebugger, `AutoMedicine.ensure()`, `JobSyncWatchdog.start()`, dual-box sync IPC listener and its `ls` / `rf` hooks | `:78-201` |
 | sync | `KeybindGuard.schedule()` (re-asserts the job's binds once the console is quiet), `StealthTimers.start()` (Sneak / Invisible end times, [stealth.md](systems/stealth.md)), `ElementalBelt.install()` (Obi / Orpheus on elemental damage), `DualWield.install()` (DW tier pieces on `handle_equipping_gear`), `TreasureHunter.install()` (TH on the engaged set and on the first action against an untagged mob), `MidcastFallback.install()` (subjob magic through MidcastManager), `CustomStates.install_hooks()` (`<JOB>_CUSTOM.lua` gear rules), in that order: each wraps Mote's `cleanup_precast` / `cleanup_midcast` around the previous one, so the set goes on, then the belt, then the custom gear | `:277-305` |
 | +0.5 s | WarpInit, AutoMove (unless `_G.DISABLE_AUTOMOVE`), StateDisplayOverride | `:208-257` |
@@ -294,7 +294,7 @@ including what a re-clone would overwrite today.
 | [systems/warp.md](systems/warp.md) | Warp commands, spells, rings, items, IPC "warp all" |
 | [systems/stealth.md](systems/stealth.md) | `//gs c stealth` (Alt+Z / Alt+X): Sneak / Invisible on the box group, Accession claims, action queue, 0x063 timers, wear-off alerts |
 | [systems/equipment-and-inventory.md](systems/equipment-and-inventory.md) | `checksets`, wardrobe audit, refill, quiver, HP equip priority and how `ITEM_HP_MP.lua` is regenerated |
-| [systems/wardrobe-organizer.md](systems/wardrobe-organizer.md) | `//gs c wo`: phases, pins, alt flow |
+| [systems/wardrobe-organizer.md](systems/wardrobe-organizer.md) | `//gs c wo`: phases, pins and placement rules (`WARDROBE_CONFIG.lua`), `wo alt` |
 
 ### Data
 
@@ -370,6 +370,6 @@ Interactions, Invariants & gotchas, Extending, Known issues):
 | Hook module | `<JOB>_PRECAST.lua` etc.: assigns Mote's `job_*` globals |
 | Mote state | `state.X = M{...}` mode object from Mote-Include; cycled by keybinds |
 | Template / overlay / live | `_master/` generic file / `_master/<Name>/` replacement / `data/<Name>/` deployed copy |
-| Pin | A set entry with `bag=` that fixes which wardrobe a copy must sit in (wardrobe organizer) |
+| Pin | A bag an item must sit in, one copy per listed bag (wardrobe organizer): a set entry with `bag=`, or a `PLACE` / `JOBS` / `TYPES` rule of `WARDROBE_CONFIG.lua` |
 | MAIN / ALT | Dual-box roles: by default Tetsouo drives and Kaories follows; `//gs c main` on a box makes it the MAIN and the others its alts (saved in `<Char>/saved/dualbox_role.lua`) |
 | Dual export | `_G.x = x` plus `return { x = x }`, so a module works with `include` and `require` |

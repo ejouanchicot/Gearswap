@@ -16,9 +16,12 @@ The area holds three kinds of code:
   `QuiverManager` opens an ammo quiver or pouch from THF and COR aftercast when the ammo stack runs
   low (`quiver_manager.lua`). None of these four is loaded at job load: each is `pcall(require, ...)`-ed
   on first use by its caller.
-- **Load-time and per-action gear passes installed for every job.** `HPPriority` runs once per job
-  load from `INIT_SYSTEMS` and wraps GearSwap's `equip()` so that every swap ranks its pieces by the
-  HP they gain over the gear worn ([HP priority](#hp-priority)); `//gs c gearscan` writes the augments it reads for pieces the sets
+- **Load-time and per-action gear passes installed for every job.** `equip_hooks.lua` wraps
+  GearSwap's `equip()` once per job load and passes every set through the registered hooks
+  ([Equip hooks](#equip-hooks)). Two hooks are registered from `INIT_SYSTEMS`: `DuplicateGear` gives
+  each side of a doubled ring / earring / weapon its own copy ([Doubled gear](#doubled-gear)), then
+  `HPPriority` ranks every swap's pieces by the HP they gain over the gear worn
+  ([HP priority](#hp-priority)); `//gs c gearscan` writes the augments it reads for pieces the sets
   name without augments ([Gear scan](#gear-scan)). `ElementalBelt`, `DualWield` and `TreasureHunter` are installed by
   `INIT_SYSTEMS` on Mote's hooks; they are documented in
   [factories-and-helpers.md](factories-and-helpers.md) and only summarised here.
@@ -26,7 +29,8 @@ The area holds three kinds of code:
   (movement and town idle gear), `ElementalBonus` (Obi / Orpheus arithmetic), `AmpullaLock` (PLD/WAR
   Hoxne ammo lock), `SpellGearLock` (Dispelga's Daybreak).
 
-Every claim below was checked against the code on 2026-09-28. Line numbers are given for the files
+Every claim below was checked against the code on 2026-09-28 (the equip hooks, doubled gear and HP
+priority sections on 2026-09-30, commit `2588c3c`). Line numbers are given for the files
 that were re-read that day; elsewhere the function is named, which survives edits better.
 
 ## Files
@@ -36,8 +40,10 @@ that were re-read that day; elsewhere the function is named, which survives edit
 | Path | Lines | Role | Loaded by | Documented in |
 |---|---|---|---|---|
 | `shared/utils/equipment/equipment_checker.lua` | 489 | `//gs c checksets`: name -> location cache of owned items, walk of `sets`, report of unavailable slots | `CommonCommands.handle_checksets`, on demand | this page |
-| `shared/utils/equipment/wardrobe_auditor.lua` | 695 | `//gs c wa` report; text parser of set files; `build_pinned_bags` / `build_frequency_map` / `collect_all_used_names` for the organizer | `CommonCommands.handle_wardrobeaudit`; `wardrobe/lib/state.lua`, `reports.lua`, `orchestrator_alt.lua` | this page |
-| `shared/utils/equipment/hp_priority.lua` | 313 | At load, keeps the HP / MP of the pieces the sets name and wraps `equip()`: each set goes on as a copy whose pieces carry `priority` = HP gained over the piece worn in that slot (dHP*1000+dMP on the `mp_jobs`, default BLM/RDM/GEO); settings from `<Char>/_common/combat/HP_PRIORITY.lua` | `INIT_SYSTEMS.lua`, HP PRIORITY block, every load; then every `equip()` call | this page |
+| `shared/utils/equipment/wardrobe_auditor.lua` | 764 | `//gs c wa` report (skips the `NEVER_TOUCH` wardrobes of `WARDROBE_CONFIG.lua`); text parser of set files; `build_pinned_bags` / `build_frequency_map` / `collect_all_used_names` for the organizer | `CommonCommands.handle_wardrobeaudit`; `wardrobe/lib/state.lua`, `items.lua`, `rules.lua`, `reports.lua` | this page |
+| `shared/utils/equipment/equip_hooks.lua` | 79 | Wraps GearSwap's `equip()` once per load (`_G._equip_hooks_wrapper`); every table argument goes through the registered hooks, lowest `order` first: 10 `duplicate_gear`, 20 `hp_priority` | `duplicate_gear.lua`, `hp_priority.lua` (`EquipHooks.add` / `remove`) | this page |
+| `shared/utils/equipment/duplicate_gear.lua` | 225 | Equip hook `duplicate_gear` (order 10): a ring, earring or main / sub piece named without bag or augments, owned in 2+ copies without augments, gets the `bag` of the copy that side takes | `INIT_SYSTEMS.lua`, GEAR HOOKS block (`DuplicateGear.install`), every load; then every `equip()` call | this page |
+| `shared/utils/equipment/hp_priority.lua` | 377 | At load, keeps the HP / MP of the pieces the sets name and registers the equip hook `hp_priority` (order 20): each set goes on as a copy whose pieces carry `priority` = HP gained over the piece worn in that slot (dHP*1000+dMP on the `mp_jobs`, default BLM/RDM/GEO); settings from `<Char>/_common/combat/HP_PRIORITY.lua` | `INIT_SYSTEMS.lua`, GEAR HOOKS block, every load; then every `equip()` call | this page |
 | `shared/utils/equipment/gear_scan.lua` | 175 | `//gs c gearscan`: decodes the augments of every equipment piece in the bags, writes `<Char>/saved/gear_augments.lua`; `load()` reads that file for HP priority | `COMMON_COMMANDS.lua` router (`run`); `hp_priority.lua` (`load`) | this page |
 | `shared/utils/equipment/weapon_resolver.lua` | 119 | `set_for(slot, value)`: the set a `MainWeapon` / `SubWeapon` value equips, off-hand weapon replaced when the player cannot dual wield; `can_dual_wield()`; `is_offhand_weapon(name)` | 12 job set builders (see below) | this page |
 | `shared/utils/equipment/item_index.lua` | 140 | Name lookups over `res.items` built in one walk per session (`windower._item_index`): `id(name)`, `is_weapon(name)`, `dual_wields(name)`, `ammo_container(name)` (pouch / quiver of an ammo) | `weapon_resolver.lua`, `quiver_manager.lua`, `refill/item_resolver.lua`, `weaponskill/ws_slots.lua` (`same_item`, WAR / PLD weapon detection) | this page |
@@ -155,57 +161,66 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A["audit() :557"] --> B["parse_all_job_sets :494"]
-    B --> C["discover_jobs :119 -> discover_job_files :84"]
-    C --> D["walk_lua_files(data/CHAR/sets/) :54"]
-    B --> E["parse_job_sets(job) :232 -> extract_items_from_text :200"]
-    A --> F["scan_wardrobes :290"]
-    A --> G["find_unused_items :517"]
-    A --> H["export_report :418 -> data/wardrobe_audit.txt"]
-    A --> I["show_ingame_summary :448"]
+    A["audit() :624"] --> B["parse_all_job_sets :561"]
+    B --> C["discover_jobs :166 -> discover_job_files :132"]
+    C --> D["walk_lua_files :61"]
+    B --> E["parse_job_sets(job) :299 -> extract_items_from_text :267"]
+    A --> F["scan_wardrobes :357"]
+    A --> X["config_exclusions :195 -> WARDROBE_CONFIG.lua"]
+    A --> G["find_unused_items :584"]
+    A --> H["export_report :485 -> data/wardrobe_audit.txt"]
+    A --> I["show_ingame_summary :515"]
 ```
 
 1. Sets folder: `windower.addon_path .. 'data/' .. <player name> .. '/sets/'`, falling back to
    `Tetsouo` when `get_player()` returns nothing (`sets_dir`, `wardrobe_auditor.lua:39`). Nothing is
    loaded with `loadfile`; files are read with `io.open` because the sandbox has no
    `loadfile`/`setfenv`.
-2. `walk_lua_files` (`:54`) walks the tree iteratively; an entry ending in `.lua` is a file, anything
+2. `walk_lua_files` (`:61`) walks the tree iteratively; an entry ending in `.lua` is a file, anything
    else is pushed as a directory.
-3. `discover_job_files` (`:84`) maps each file to a job: `<job>_sets.lua` at the root (flat layout,
+3. `discover_job_files` (`:132`) maps each file to a job: `<job>_sets.lua` at the root (flat layout,
    Kaories and the templates) or anything under `<job>/` (modular layout, Tetsouo live). Only the 22
    codes in `VALID_JOBS` (`:29`) count, so root files such as `bonecraft_sets.lua` and
    `fishing_sets.lua` are skipped. Every file under `_common/` is appended to every discovered job.
    `parse_job_sets` calls `discover_job_files()` again for each job, so the tree is walked once per job
    plus once for the job list.
-4. `extract_items_from_text` (`:200`) removes `--` line comments, then collects every single- or
-   double-quoted string that follows `=`. `looks_like_item_name` (`:160`) drops `empty`, `Path: A-D`,
+4. `extract_items_from_text` (`:267`) removes `--` line comments, then collects every single- or
+   double-quoted string that follows `=`. `looks_like_item_name` (`:227`) drops `empty`, `Path: A-D`,
    augment-like strings (`^%u%u%u?%u?[%+%-]%d`), numbers, strings shorter than 3 characters, and
    strings starting with `System:` or `wardrobe`. Every string that survives is a "used" name for that
    job, whether or not a set references the variable that holds it. Strings in list form without `=`
    (`{'Aegis', 'Ochain'}`) are not collected; continuation lines of `--[[ ... ]]` block comments are.
-5. `scan_wardrobes` (`:290`) lists wardrobe 1-8 with, for each item, the `en`/`english`/`enl`/
-   `english_log` variants in lowercase (`get_all_names`, `:270`). An item is used if any variant is a
-   used name (`find_unused_items`, `:517`). `IGNORED_WARDROBES = { wardrobe7 = true }` (`:137`) is
-   counted in totals but never judged.
-6. `export_report` (`:418`) writes `data/wardrobe_audit.txt`: header with scanned and failed jobs, one
+5. `scan_wardrobes` (`:357`) lists wardrobe 1-8 with, for each item, the `en`/`english`/`enl`/
+   `english_log` variants in lowercase (`get_all_names`, `:337`). An item is used if any variant is a
+   used name or a kept name (`find_unused_items`, `:584`). What is not judged comes from the
+   character's `_common/inventory/WARDROBE_CONFIG.lua` since 2026-09-30 (`config_exclusions`, `:195`,
+   which calls the organizer's `Config.refresh()`): the `NEVER_TOUCH` wardrobes are counted in totals
+   but never judged (the report prints "(not judged - NEVER_TOUCH in WARDROBE_CONFIG.lua)" under
+   them), and the `KEEP` and `NEVER_MOVE` items count as used. Before, a fixed
+   `IGNORED_WARDROBES = { wardrobe7 = true }` skipped W7 for every character. Without a config
+   nothing is skipped.
+6. `export_report` (`:485`) writes `data/wardrobe_audit.txt`: header with scanned and failed jobs, one
    block per wardrobe, and a summary where `used = total - unused - ignored` (`write_report_summary`,
-   `:398`). The file name carries no character name; each run overwrites the previous one. The chat
-   summary (`show_ingame_summary`, `:448`) prints the unused count per wardrobe and
+   `:465`; the ignored line is labelled "Not judged (NEVER_TOUCH)" since 2026-09-30). The file name carries no character name; each run overwrites the previous one. The chat
+   summary (`show_ingame_summary`, `:515`) prints the unused count per wardrobe and
    `Used: total - unused / total`, which includes the ignored wardrobe in "used".
 7. The command fails with a chat message when no job file could be read or when all wardrobes are
    empty (both in `audit()`).
 
 Organizer helpers (same text parser, no report):
 
-- `build_pinned_bags()` (`:619`) scans every `.lua` under the sets folder and records `name` + `bag`
+- `build_pinned_bags()` (`:688`) scans every `.lua` under the sets folder and records `name` + `bag`
   pairs. It repeatedly removes the innermost `{...}` block (at most 200 passes per file), which handles
   `{name=..., augments={...}, bag=...}` and nested maps such as `_common/sets/rings.lua`. The name pattern
   `name%s*=%s*['"]([^'"]+)['"]` stops at the first quote character of either kind. Bag strings are
-  mapped by `BAG_NAME_TO_ID` (`:599`, `wardrobe`/`wardrobe 1`/`wardrobe1` -> 8, `wardrobe N` ->
-  10..16); any other bag string is ignored. Caller: `wardrobe/lib/state.lua`.
-- `build_frequency_map()` (`:590`) and `collect_all_used_names()` (`:686`) have identical bodies and
-  return `{[name_lower] = {[JOB] = true}}`. Callers: `wardrobe/lib/reports.lua` (declared-vs-held
-  report of `//gs c wo scan`) and `wardrobe/lib/orchestrator_alt.lua` (`//gs c wo alt`).
+  mapped by `BAG_NAME_TO_ID` (`:668`, `wardrobe`/`wardrobe 1`/`wardrobe1` -> 8, `wardrobe N` ->
+  10..16); any other bag string is ignored. Caller: `wardrobe/lib/state.lua`, which merges the result with the
+  `PLACE` / `JOBS` / `TYPES` rules of `WARDROBE_CONFIG.lua` (`wardrobe/lib/rules.lua`).
+- `build_frequency_map()` (`:659`) and `collect_all_used_names()` (`:755`) have identical bodies and
+  return `{[name_lower] = {[JOB] = true}}`. Callers: `build_frequency_map` - `wardrobe/lib/reports.lua`
+  (declared-vs-held report of `//gs c wo scan`) and `wardrobe/lib/rules.lua` (`JOBS` pins);
+  `collect_all_used_names` - `wardrobe/lib/items.lua` (`collect_used_names` when `SCOPE = 'all_jobs'`,
+  which `//gs c wo alt` forces).
 
 ### `//gs c rf`
 
@@ -427,8 +442,8 @@ share, by plain assignment (`SetBuilder.apply_movement = BaseSetBuilder.apply_mo
 
 ### HP priority
 
-`INIT_SYSTEMS.lua` (HP PRIORITY block, right after the MODULE CACHE block) calls `HPPriority.apply()`
-once per job load, under `pcall`. By then `get_sets()` has returned from `include('Mote-Include.lua')`,
+`INIT_SYSTEMS.lua` (GEAR HOOKS block, right after the MODULE CACHE block) calls `HPPriority.apply()`
+once per job load, under `pcall`, after `DuplicateGear.install()`. By then `get_sets()` has returned from `include('Mote-Include.lua')`,
 so Mote has run `init_gear_sets()` and `_G.sets` holds the job's sets. (The require cache itself is
 normally installed earlier, by `shared/utils/config/config_loader.lua`, which every entry file requires
 at file level; the INIT_SYSTEMS call is a no-op then.)
@@ -443,7 +458,8 @@ is not lost. The sets themselves are never modified.
 
 `HPPriority.apply()`:
 
-1. Clears `_G._hp_priority_state`, then returns 0 unless `player.main_job` is known and `_G.sets` is a
+1. Clears `_G._hp_priority_state` and removes the `hp_priority` equip hook
+   (`EquipHooks.remove`), then returns 0 unless `player.main_job` is known and `_G.sets` is a
    table; every character is processed. It reads the settings (`HPPriority.settings()`): the
    character's `_common/combat/HP_PRIORITY.lua` through `CharPaths.optional('common', 'HP_PRIORITY')`,
    every key optional, over `DEFAULTS` = `{enabled = true, unity = 'min', mp_jobs = {'BLM', 'RDM',
@@ -461,12 +477,15 @@ is not lost. The sets themselves are never modified.
 4. Stores the load state on `_G._hp_priority_state` = `{index, unity, weigh_mp, scanned}`
    (`weigh_mp`: the job is in `mp_jobs`; `scanned`: the gear scan cache, `GearScan.load()`, read once
    per `apply()`, see [Gear scan](#gear-scan)).
-5. Wraps the global `equip()` (`wrap_equip`). The wrapper is kept on `_G._hp_priority_equip` and is not
-   installed twice on the same `_G`; with no load state (system off, job skipped) it calls the
-   original `equip()` unchanged.
+5. Registers `rank_hook` as the equip hook `hp_priority`, order 20 (`EquipHooks.add`, which also
+   wraps `equip()` if this load has not yet; see [Equip hooks](#equip-hooks)). Until 2026-09-30
+   `hp_priority.lua` wrapped `equip()` itself (`wrap_equip`, `_G._hp_priority_equip`). When the
+   system is off, the job skipped, or the data file or the sets missing, no hook is registered and
+   the pieces go on without computed priorities.
 
-At each `equip(...)` call the wrapper passes every table argument on as a copy (`ranked_copy`); the
-set given is not touched. For each key of the set that is in `SLOTS` (`priority_of`):
+At each `equip(...)` call the hook gets every table argument (after the `duplicate_gear` hook, so a
+doubled piece already carries its `bag`) and returns a copy (`ranked_copy`); the set given is not
+touched. For each key of the set that is in `SLOTS` (`priority_of`):
 
 - A table that already has a `priority` is kept as it is, as is a value that is not a piece (neither a
   string nor a table with a string `name`).
@@ -486,9 +505,91 @@ set given is not touched. For each key of the set that is in `SLOTS` (`priority_
 
 `apply()` returns the number of pieces whose HP / MP is known (entries of the index) and prints
 nothing. `HPPriority._piece_hp_mp`, `HPPriority._config` and `HPPriority._ranked_copy(set)` (the copy
-the wrapper would pass on now, with the load state of the last `apply()`) are exposed for offline
+the hook would pass on now, with the load state of the last `apply()`) are exposed for offline
 scripts; `HPPriority._augment_hp_mp` is also used by `gear_scan.lua`, so both read augments the same
 way.
+
+### Equip hooks
+
+`shared/utils/equipment/equip_hooks.lua` (since 2026-09-30) is the one place that wraps GearSwap's
+`equip()`. A system that must adjust every set just before GearSwap equips it registers a hook
+instead of wrapping `equip()` itself:
+
+- `EquipHooks.add(name, order, fn)` puts `{name, order, fn}` in the hook list (a hook of the same name
+  is replaced), sorts it by `order` (lowest first), stores it on `_G._equip_hooks`, then calls
+  `install()`. `EquipHooks.remove(name)` takes a hook out (HP priority does so at each `apply()`).
+- `install()` wraps the global `equip()` once per load: the wrapper is kept on
+  `_G._equip_hooks_wrapper` and is not laid twice while `equip` is still that wrapper. Both globals
+  live on the job's sandbox `_G`, which GearSwap rebuilds at each load, so every load starts with no
+  hook and the raw `equip()`, and the systems register again from `INIT_SYSTEMS`.
+- The wrapper: with no hook it calls the raw `equip()` unchanged. Otherwise every table argument goes
+  through each hook in order, `fn(set)` under `pcall`; a hook returns the set to use (the same one,
+  or a copy) and its result replaces the argument only when it is a table. A hook that throws is
+  skipped silently for that set. The arguments then go to the raw `equip()`.
+
+Hooks registered today:
+
+| Order | Name | Module | Registered by |
+|---|---|---|---|
+| 10 | `duplicate_gear` | `duplicate_gear.lua` ([Doubled gear](#doubled-gear)) | `DuplicateGear.install()`, `INIT_SYSTEMS.lua` GEAR HOOKS block |
+| 20 | `hp_priority` | `hp_priority.lua` ([HP priority](#hp-priority)) | `HPPriority.apply()`, same block, right after; only when the system is on for the job |
+
+The doubled-gear hook runs first so that the HP rank is computed on the set as it will really be
+equipped. Hooks never write into `_G.sets`: the player's sets stay as written.
+
+### Doubled gear
+
+Two copies of one item (Chirich Ring +1, Moonlight Ring, Stikini Ring +1...) are one name to
+GearSwap. Its `unpack_equip_list` (*(engine)* `equip_processing.lua`) walks the bags and takes the
+first copy that matches the name; to avoid giving one side the copy the other side keeps wearing, it
+checks `used_list` (`:146-151`), a table by slot of the worn pieces that stay. But after the first
+match it overwrites that table with a single entry (`used_list = ret_list[slot_id]`, `:163` and
+`:170`), so for every slot handled after that the check reads nothing. The right hand can then be
+given the copy the left hand wears (the game moves it, one side ends up empty), and a copy can move
+from one side to the other between two sets, which costs a Moonlight Ring its HP.
+
+`duplicate_gear.lua` (since 2026-09-30) is the equip hook `duplicate_gear`, order 10. For the three
+pairs, rings (`left_ring` / `ring1` / `lring` and `right_ring` / `ring2` / `rring`), earrings
+(`left_ear` / `ear1` / `lear` and `right_ear` / `ear2` / `rear`) and `main` / `sub`, it names the bag of
+the copy each side takes (GearSwap's `bag` field), so the engine can only take that copy.
+
+**Which items.** `scan()` reads `windower.ffxi.get_items()` once for every equippable bag
+(`res.bags[...].equippable`): every piece with status 0 or 5 and without augments (the `extdata`
+decode has an empty or no `augments` list) is listed under its lower-case short name (`en`), and the
+long name (`enl`) points to the same list, so a set may write either. Only the names with 2 or more
+copies are kept (sorted by bag id, then slot index), plus the copy worn in each of `main`, `sub`, both
+earrings and both rings (`equipment[slot]` and `equipment[slot .. '_bag']`). The result is cached for
+`CACHE_SECONDS = 5` (`os.time()`, wall clock); `invalidate()` clears it, called by `install()` at each
+load and by the wardrobe organizer when a run ends (`finish_run`).
+Copies with augments are not doubled items here: GearSwap already tells them apart when the set names
+the augments.
+
+**Which pieces.** A slot value is placed when it is a plain name (not `''` or `empty`) or a table with
+a string `name`, no `bag`, and no `augments` / `augment`. A piece whose set already names its bag or
+its augments is left as written.
+
+**Which copy** (`place_pair`, left side first, then right; `pick`):
+
+1. the copy this side wears now, unless the other side of the set took it;
+2. else a copy no slot of the six wears, not the one the other side took and not in the other side's
+   bag;
+3. else any copy not taken by the other side and not in its bag.
+
+The piece becomes a copy of the value with `bag = <api of that copy's bag>` (for example
+`'wardrobe2'`). The copy each side takes is remembered per item for the set (one list serves the short
+and the long name), so the other side never gets the same one. A side whose piece names its own bag
+counts as taking that bag. The two sides never name the same bag, in any step: bag is all the hook
+can name. When no copy fits, the piece is left as written.
+
+**Copies all in one bag.** Bag is the only thing the hook can name, so two copies in the same bag
+cannot be told apart. The piece is left as written and a warning is shown once per session and item
+(`windower._dup_gear_warned`, which survives job changes): "`<name>`: your copies are in the same bag,
+so GearSwap cannot tell them apart. //gs c wo puts one in each wardrobe." The organizer does spread
+them: its weakest pin layer puts one copy of each doubled used item in each USED bag
+([wardrobe-organizer.md](wardrobe-organizer.md)).
+
+The hook returns the set itself when no doubled item is owned or nothing changes, else a copy of the
+set with the placed pieces replaced.
 
 ### Gear scan
 
@@ -563,24 +664,45 @@ Everything else is local. The module has no `_G` export.
 
 | Function | Returns | Side effects | Callers |
 |---|---|---|---|
-| `audit()` `:557` | `boolean` | Reads set files, `get_items()`, writes `data/wardrobe_audit.txt`, prints chat summary | `CommonCommands.handle_wardrobeaudit` |
-| `build_frequency_map()` `:590` | `{[name_lower] = {[JOB] = true}}` | Reads set files | `wardrobe/lib/reports.lua` (`write_scan_report`) |
-| `build_pinned_bags()` `:619` | `{[name_lower] = {bag_id, ...}}` | Reads set files | `wardrobe/lib/state.lua` (`build_state`) |
-| `collect_all_used_names()` `:686` | same as `build_frequency_map` | Reads set files | `wardrobe/lib/orchestrator_alt.lua` (`build_alt_state`) |
+| `audit()` `:624` | `boolean` | Reads set files, `get_items()`, writes `data/wardrobe_audit.txt`, prints chat summary | `CommonCommands.handle_wardrobeaudit` |
+| `build_frequency_map()` `:659` | `{[name_lower] = {[JOB] = true}}` | Reads set files | `wardrobe/lib/reports.lua` (`write_scan_report`), `wardrobe/lib/rules.lua` (`jobs_pins`) |
+| `build_pinned_bags()` `:688` | `{[name_lower] = {bag_id, ...}}` | Reads set files | `wardrobe/lib/state.lua` (`build_state`) |
+| `collect_all_used_names()` `:755` | same as `build_frequency_map` | Reads set files | `wardrobe/lib/items.lua` (`collect_used_names`, scope `all_jobs`) |
 
 ### HPPriority (`hp_priority.lua`)
 
 | Member | Returns | Callers |
 |---|---|---|
-| `apply()` | number of pieces whose HP / MP is known (0 when off or skipped); sets `_G._hp_priority_state` and wraps `equip()` | `INIT_SYSTEMS.lua`, HP PRIORITY block |
+| `apply()` | number of pieces whose HP / MP is known (0 when off or skipped); sets `_G._hp_priority_state` and registers the `hp_priority` equip hook (removed first, so it stays off when the system is off or the job skipped) | `INIT_SYSTEMS.lua`, GEAR HOOKS block |
 | `settings()` | `{enabled, unity, mp_jobs, skip_jobs}` (job lists as sets): `HP_PRIORITY.lua` over `DEFAULTS` | `apply()` |
 | `_piece_hp_mp(data, name, augments, unity, scanned)` | `hp, mp` (`scanned`: gear scan cache, optional) | offline scripts only |
 | `_augment_hp_mp(augments)` | `hp, mp` of a list of augment strings | `gear_scan.lua` |
 | `_config` | `{DEFAULTS, MP_WEIGHT}` | offline scripts only |
-| `_ranked_copy(set)` | the copy of `set` the wrapped `equip()` would pass on now | offline scripts only |
-| `toggle_order_display()` | flips `windower._hp_order_debug`; while on, the wrapped `equip()` prints each swap's changing pieces by priority (`//gs c hporder`) | `COMMON_COMMANDS` |
+| `_ranked_copy(set)` | the copy of `set` the `hp_priority` hook would pass on now | offline scripts only |
+| `toggle_order_display()` | flips `windower._hp_order_debug`; while on, the `hp_priority` hook notes each set's changing pieces and one block per frame lists them by priority (`//gs c hporder`) | `COMMON_COMMANDS` |
 
 Exported as `_G.HPPriority` and returned.
+
+### EquipHooks (`equip_hooks.lua`)
+
+| Function | Effect | Callers |
+|---|---|---|
+| `add(name, order, fn)` | adds or replaces (by name) the hook `fn(set) -> set`, keeps the list sorted by `order`, then `install()` | `DuplicateGear.install`, `HPPriority.apply` |
+| `remove(name)` | takes the hook out | `HPPriority.apply` |
+| `install()` | wraps `equip()` once per load (`_G._equip_hooks_wrapper`); no-op when `equip` is already the wrapper or not a function | `add` |
+
+Returned only (no `_G` export).
+
+### DuplicateGear (`duplicate_gear.lua`)
+
+| Function | Effect | Callers |
+|---|---|---|
+| `install()` | `invalidate()`, then registers `hook` as the equip hook `duplicate_gear`, order 10 | `INIT_SYSTEMS.lua`, GEAR HOOKS block |
+| `hook(set)` | the set itself, or a copy whose doubled pieces name their bag | the `equip()` wrapper |
+| `invalidate()` | forgets the last bag read (the next hook call scans again) | `install`, `wardrobe_organizer.lua` `finish_run` |
+| `augmented(it, extdata)` | true when a bag item carries augments (then it is not a doubled item) | `scan`, `wardrobe/lib/rules.lua` `duplicate_pins` |
+
+Returned only (no `_G` export).
 
 ### GearScan (`gear_scan.lua`)
 
@@ -687,8 +809,9 @@ open until the stance is selected again. The registry is emptied on every job lo
 | `//gs c belt`, `//gs c dw ...`, `//gs c th ...` | see page | Belt status, Dual Wield tier, Treasure Mode | [factories-and-helpers.md](factories-and-helpers.md) |
 
 The three inventory command names and `gearscan` are listed in `CommonCommands.is_common_command`.
-There is no command for the quiver manager, HP priority itself, the weapon resolver or the Ampulla
-lock.
+There is no command for the quiver manager, HP priority itself (only its `//gs c hporder` display,
+[commands-and-debug.md](commands-and-debug.md)), the doubled-gear hook, the weapon resolver or the
+Ampulla lock.
 
 ## Configuration
 
@@ -725,7 +848,7 @@ return M
   rank 1, `'min'` otherwise), `mp_jobs`, `skip_jobs`. No file: `DEFAULTS`.
 - Defaults in code: `FALLBACK_LIST` (`config_resolver.lua:39`), `DEFAULT_STORE_BAG = 'case'` and `DEFAULT_SOURCE_BAGS`,
   `MOVE_DELAY = 0.6` (`refill_manager.lua:46`), `OPEN_COOLDOWN = 8.0` (`quiver_manager.lua:39`), quiver
-  thresholds in the aftercast callers, `IGNORED_WARDROBES` (`wardrobe_auditor.lua:137`),
+  thresholds in the aftercast callers,
   `MAX_RECURSION_DEPTH = 15` (`equipment_checker.lua:28`), and in `hp_priority.lua` `MP_WEIGHT`,
   `SLOTS` and `WORN_SLOT`. None of them is read from a config file.
 - Templates and deployment: `clone_character.py` (`clone()`, step 4) copies `<job>/` per file,
@@ -745,10 +868,13 @@ return M
 - Globals read: `sets` (checker, `HPPriority`, `WeaponResolver`), `player` (refill, `HPPriority`,
   `AmpullaLock`), `_G.CraftManager` (config resolver), `state.Moving`, `world`, `areas`
   (`BaseSetBuilder`), `world` (`ElementalBonus`). Globals written: `_G.HPPriority`,
-  `_G._hp_priority_state`, `_G._hp_priority_equip` and `_G.equip` (HP priority; `_G.sets` is not
-  written), `_G.ampulla_ammo_locked` (Ampulla lock). The only `windower.*` field
-  written is the Ampulla lock's record in `windower._weapon_locks` (through `CombatMode.hold` /
-  `release`, since 2026-09-29).
+  `_G._hp_priority_state` (HP priority), `_G._equip_hooks`, `_G._equip_hooks_wrapper` and `_G.equip`
+  (equip hooks; `_G.sets` is not written), `_G.ampulla_ammo_locked` (Ampulla lock). The `windower.*`
+  fields written are the Ampulla lock's record in `windower._weapon_locks` (through `CombatMode.hold` /
+  `release`, since 2026-09-29) and `windower._dup_gear_warned` (doubled items already warned about,
+  kept for the session).
+- Doubled gear: the bag read is a module-level cache of `duplicate_gear.lua`, refreshed when older than
+  5 s and cleared at each load (`install`).
 - Config caching: refill configs and `WEAPON_CONFIG.lua` are cached by `ModuleCache` like modules, so
   an edited file is only read again after a `gs reload` or job change. A refill config that failed to
   load is not cached and is retried on the next refill.
@@ -777,9 +903,11 @@ return M
   inventory, which the refill lists stock: [precast-pipeline.md](precast-pipeline.md).
 - Craft: `craft_manager.lua` owns the session state (read through `CraftManager.is_active()`);
   `craft_commands.lua` and `craft_manager.lua` send `gs c rf`.
-- Wardrobe organizer: `shared/utils/wardrobe/lib/state.lua`, `reports.lua`, `orchestrator_alt.lua`
-  consume the auditor's maps; `wardrobe_organizer.lua` sends `gs c rf` after a successful run and calls
-  `AmpullaLock.release`.
+- Wardrobe organizer: `shared/utils/wardrobe/lib/state.lua`, `items.lua`, `rules.lua`, `reports.lua`
+  consume the auditor's maps, and the auditor reads the organizer's `lib/config.lua`
+  (`config_exclusions`); `wardrobe_organizer.lua` sends `gs c rf` after a successful run and calls
+  `AmpullaLock.release`. The organizer spreads doubled used items one copy per USED bag
+  (`rules.lua`, `duplicate_pins`), which is what lets the doubled-gear hook tell the copies apart.
 - AutoMove sets `state.Moving`, which `BaseSetBuilder.apply_movement` reads:
   [factories-and-helpers.md](factories-and-helpers.md#automove).
 
@@ -794,7 +922,12 @@ return M
   sack, case, temporary, or a storage slip.
 - `wa` treats any quoted string after `=` in any set file of the job, plus all of `_common/`, as a used
   item; a ring declared in `_common/sets/rings.lua` is used by every job even if no set references it.
-- Wardrobe 7 is never judged by `wa` for any character.
+- `wa` does not judge the `NEVER_TOUCH` wardrobes of the character's `WARDROBE_CONFIG.lua` (W7 for
+  Tetsouo); without a config it judges every wardrobe.
+- Doubled gear only places a piece named without `bag` and without augments. A set that writes
+  `bag = 'wardrobe N'` on a doubled ring keeps that bag; the other side then never takes that bag.
+- Doubled gear tells copies apart by bag only: copies in the same bag get a warning and are left to the
+  engine, as before.
 - A refill `subjobs` list replaces the default list. Items of the default that are missing from the
   subjob list are foreign on that subjob and are pushed out.
 - Foreign detection is global across characters: an item named in any list of any character under
@@ -828,8 +961,10 @@ return M
   job's `job_aftercast`, as THF and COR do, and add the quiver to that job's refill list of every
   character that plays it.
 - New slot alias for `checksets`: add the key to `VALID_SLOTS` (`equipment_checker.lua:51-72`).
-- New ignored wardrobe for `wa`: add it to `IGNORED_WARDROBES` (`wardrobe_auditor.lua:137`); the
-  in-game total will still count it as used.
+- A wardrobe `wa` must not judge: list it in `NEVER_TOUCH` of the character's
+  `_common/inventory/WARDROBE_CONFIG.lua` (the organizer then leaves it alone too); an item it must
+  count as used: `KEEP` or `NEVER_MOVE` there. The in-game total still counts a `NEVER_TOUCH` wardrobe
+  as used.
 - HP priority for one character: edit its `_common/combat/HP_PRIORITY.lua` (`unity`, `mp_jobs`,
   `skip_jobs`, `enabled`). The defaults for every character are `DEFAULTS` in `hp_priority.lua` and
   the template `_master/config_global/HP_PRIORITY.lua`.
@@ -851,6 +986,11 @@ Invariants to keep:
   `_G.sets`), and `ITEM_HP_MP.lua` must stay out of the require cache (`dofile`). It never writes into
   `_G.sets`: the ranks depend on the gear worn at each swap, so they live only on the copies the
   `equip()` wrapper passes on.
+- Only `equip_hooks.lua` wraps `equip()`. A new per-set pass registers a hook with
+  `EquipHooks.add(name, order, fn)` from `INIT_SYSTEMS` (after Mote's `init_gear_sets()`), returns a
+  copy rather than changing the set it gets, and picks its `order` against the two existing ones: the
+  doubled-gear hook (10) must run before HP priority (20), which ranks the set as it will really be
+  equipped.
 - `ITEM_HP_MP.lua` is generated. Change the generator (`build_item_db.py`) and re-run it; never edit
   the table by hand, the next regeneration would erase the edit.
 - `ElementalBonus` is pure: no equip, no message, no state. Keep game rules there and the decision in
@@ -883,7 +1023,7 @@ Offline testing with Lua 5.1 (`C:/ProgramData/chocolatey/bin/lua5.1.exe`), from 
 with `package.path = '<repo>/?.lua;' .. package.path`:
 
 - `hp_priority.lua`: stub `player = {name = 'Tetsouo', main_job = 'WAR'}`,
-  `windower = {addon_path = '<GearSwap>/'}`, a stub `equip` (it gets wrapped), build a small `_G.sets`,
+  `windower = {addon_path = '<GearSwap>/'}`, a stub `equip` (`equip_hooks.lua` wraps it), build a small `_G.sets`,
   call `HPPriority.apply()`, set `player.equipment` and read `HPPriority._ranked_copy(set)`
   (settings and the gear scan cache go through `char_paths.lua`; when either read fails, the
   `DEFAULTS` apply and no scanned augments are added); or call
@@ -943,11 +1083,11 @@ Still open:
 - With no player the auditor falls back to Tetsouo's sets folder, on any character; `wo` reaches it
   through `build_pinned_bags` and `collect_all_used_names` - `sets_dir`, `wardrobe_auditor.lua:39`
 - `wa` counts strings inside `--[[ ]]` block comments as used items (only `--` to end of line is
-  stripped) - `extract_items_from_text`, `wardrobe_auditor.lua:200`
-- `build_pinned_bags` truncates names containing an apostrophe - `wardrobe_auditor.lua:619`
-- `wa` chat summary counts wardrobe 7 items as used while the text report does not -
-  `show_ingame_summary`, `wardrobe_auditor.lua:448`
-- Duplicated code: `build_frequency_map` and `collect_all_used_names` identical (`:590`, `:686`)
+  stripped) - `extract_items_from_text`, `wardrobe_auditor.lua:267`
+- `build_pinned_bags` truncates names containing an apostrophe - `wardrobe_auditor.lua:688`
+- `wa` chat summary counts the items of the `NEVER_TOUCH` wardrobes as used while the text report does
+  not - `show_ingame_summary`, `wardrobe_auditor.lua:515`
+- Duplicated code: `build_frequency_map` and `collect_all_used_names` identical (`:659`, `:755`)
 - The gear scan counts path / rank stats only for the pieces of `PATH_RANK_GEAR.lua` (hand-read from
   BG-Wiki, 67 pieces), and a piece whose page gives only max-rank values counts nothing below max rank;
   the cache stays as last written until `//gs c gearscan` is run again after new or upgraded gear -

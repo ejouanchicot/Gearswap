@@ -33,7 +33,7 @@ Engine paths below are relative to `D:\Windower Tetsouo\addons\GearSwap\` and ma
 | `shared/utils/dualbox/dualbox_sync_ipc.lua` | 159 | IPC mirror of `ls`/`rf` between instances |
 | `shared/utils/dualbox/alt_buff_reporter.lua` | 336 | Alt reports tracked buffs to the main |
 | `shared/utils/craft/craft_manager.lua`, `craft_commands.lua` | 200 / 302 | Craft/fish session and slot locks |
-| `shared/utils/wardrobe/wardrobe_organizer.lua` | 739 | `//gs c wo` phase chain, `job_changed()` guard |
+| `shared/utils/wardrobe/wardrobe_organizer.lua` | 713 | `//gs c wo` phase chain, `job_changed()` guard |
 | `shared/utils/debuff/doom_manager.lua` | 157 | Doom gear + slot locks, death safety unlock |
 | `shared/utils/warp/warp_init.lua` | 132 | Warp system bootstrap (called by INIT_SYSTEMS on every load) |
 | `shared/utils/core/COMMON_COMMANDS.lua`, `DEBUG_COMMANDS.lua` | 786 / 583 | `reload`, `ls`, `craft`, `wo`, `alt*` handlers; debug toggles (`djc`, `debugupdate`) |
@@ -116,7 +116,7 @@ The full table (every block with its line range, and the seven-layer gear hook c
 
 | When (after the `include`) | What |
 |---|---|
-| sync | restore the five debug flags from `windower._gs_debug`; `windower._gs_reload_count += 1`; `ModuleCache.install()` (normally already done by `config_loader`); `HPPriority.apply()`; LagDebugger |
+| sync | restore the five debug flags from `windower._gs_debug`; `windower._gs_reload_count += 1`; `ModuleCache.install()` (normally already done by `config_loader`); `DuplicateGear.install()` and `HPPriority.apply()` (equip hooks); LagDebugger |
 | sync | `AutoMedicine.ensure()`; `JobSyncWatchdog.start(player.main_job)`; SyncIPC hooks `ls`, `lockstyle`, `rf`, `refill` + `init_listener()` |
 | sync (+2 s inside) | `KeybindGuard.schedule()`: re-sends the binds 2 s later unless a newer load bumped `windower._keybind_guard_seq` |
 | sync | `StealthTimers.start()` |
@@ -227,11 +227,11 @@ FFXI only allows job changes in a Mog House, so the realistic case is a reload (
 
 ### Scenario 8 - job change during `//gs c wo`
 
-The organizer's state (`IS_RUNNING`, `start_job_tag`, iteration counters) is module-local (`wardrobe_organizer.lua:52-58`), so it belongs to the environment that started the run. After a job change or reload:
+The organizer's state (`IS_RUNNING`, `start_job_tag`, iteration counters) is module-local (`wardrobe_organizer.lua:53-59`), so it belongs to the environment that started the run. After a job change or reload:
 
-- The old environment's phase chain keeps running. `job_changed()` (`:76-88`) compares `player.main_job/sub_job` with the tag captured at start and is tested at phase boundaries: before Phase 1 (`build_state_and_dispatch`), before Phase 3 (`rebuild_then_phase3`), before Phase 4 (`start_phase4`) and before a retry (`start_organize`). A mismatch calls `abort_run()` -> `clean_exit()` -> `gs enable all` and the stance-lock release. The move loop inside a phase (`run_burst_loop`, `lib/phases.lua:206-328`) does not check it and finishes the phase with the old job's plan.
+- The old environment's phase chain keeps running. `job_changed()` (`:77-85`) compares `player.main_job/sub_job` with the tag captured at start and is tested at phase boundaries: before Phase 1 (`build_state_and_dispatch`), before Phase 3 (`rebuild_then_phase3`), before Phase 4 (`start_phase4`) and before a retry (`start_organize`). A mismatch calls `abort_run()` -> `clean_exit()` -> `gs enable all` and the stance-lock release. The move loop inside a phase (`run_burst_loop`, `lib/phases.lua:205-327`) does not check it and finishes the phase with the old job's plan.
 - The new environment has `IS_RUNNING = false`, so a second `//gs c wo` can start while the old chain is still moving items, and the old chain's `clean_exit()` will `gs enable all` in the middle of the new run.
-- The slots that Phase 0 locked (`lock_and_finish`, `lib/phases.lua:120-126`) stay locked across a main job change as well (the 0x100 enable-all does not run); only the old chain's `clean_exit()` releases them.
+- The slots that Phase 0 locked (`lock_and_finish`, `lib/phases.lua:119-125`) stay locked across a main job change as well (the 0x100 enable-all does not run); only the old chain's `clean_exit()` releases them.
 
 ### Scenario 9 - death and raise with Doom
 
@@ -498,7 +498,7 @@ Still open:
 - `DoomManager.handle_status_change` Dead branches are unreachable - `shared/utils/debuff/doom_manager.lua:112-135`
 - `JobChangeManager.cancel_all()` in every `get_sets` runs in the fresh environment and cancels nothing - `_master/entry/Tetsouo_PLD.lua` `get_sets`
 - Switching to a job with no user file leaves the previous environment's loops running and triggers a pointless JobSyncWatchdog reload - `JobSyncWatchdog.start`, `shared/utils/core/job_sync_watchdog.lua`
-- A job change during `//gs c wo` leaves the old run moving items until the next phase boundary while the new environment allows a second run - `shared/utils/wardrobe/wardrobe_organizer.lua:52`
+- A job change during `//gs c wo` leaves the old run moving items until the next phase boundary while the new environment allows a second run - `shared/utils/wardrobe/wardrobe_organizer.lua:53`
 - After a reload of the main, alt buff state is empty and never re-requested - `run_auto_init`, `shared/utils/dualbox/dualbox_manager.lua`
 - COR selects the macro book and schedules the lockstyle twice per `user_setup` (the JCM block and the guarded block) - `_master/entry/Tetsouo_COR.lua:284-320`
 - The 3 s fallback of `LifecycleManager.status_change` (an engage / disengage held during an action) sends `gs c update`, since `equip()` from a scheduled function is never sent (`flow.lua:60`); fixed 2026-09-27. Normally the aftercast path equips the new status set first. Not yet tested in game - `hold_during_action`, `shared/utils/core/lifecycle_manager.lua`

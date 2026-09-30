@@ -29,32 +29,46 @@ the game's exactly, or its `augments` do not.
 
 ## `//gs c wa` - wardrobe audit
 
-Reads the set files of every job of your character (`<YourName>/sets/`, as
-text) and lists the items in your wardrobes that no set file names. The report
-is written to `data/wardrobe_audit.txt`. Nothing is moved.
+Reads the set files of every job of your character (as text) and lists the
+items in your wardrobes that no set file names. The report is written to
+`data/wardrobe_audit.txt`. Nothing is moved. It follows your
+`WARDROBE_CONFIG.lua`: a wardrobe in `NEVER_TOUCH` is counted but not judged
+(the report says "not judged - NEVER_TOUCH in WARDROBE_CONFIG.lua"), and the
+items in `KEEP` or `NEVER_MOVE` count as used.
 
 ## `//gs c wo` - wardrobe organizer
 
-Moves the gear you use into the first wardrobes (the game reads them first) and
-the rest into overflow bags. It unequips everything and locks your slots while
-it runs, then releases them and applies your lockstyle and refill. Default:
-the loaded job's gear in wardrobes 1-2, the rest pushed to wardrobes 8, 6, 5,
-4, 3; wardrobe 7 is never touched. Run it again after a job change.
+Moves the gear your sets use into the bags the game reads first, the rest into
+your other bags, and follows the rules of your `WARDROBE_CONFIG.lua` (an item,
+a job or a kind of gear in the bag you choose). It unequips everything and
+locks your slots while it runs, then releases them and applies your lockstyle
+and refill. Without a config: the loaded job's gear goes to wardrobes 1-2, the
+rest to your other unlocked wardrobes, and every wardrobe may be touched. Run
+it again after a job change. When you own several copies of a used item
+without augments (two Chirich Ring +1...), it puts one in each used bag, so
+each side of the pair keeps its own copy at every gear change.
 
 | Command | Effect |
 |---|---|
 | `wo` | Organize |
 | `wo preview` | Show what would move, move nothing |
-| `wo alt` | For a character with 4 wardrobes: every job's sets count, wardrobes 1-4 are the main bags, Sack / Case / Satchel the overflow |
+| `wo alt` | Same, with every job's gear counted as used, on the `USED_WHEN_ALL` / `UNUSED_WHEN_ALL` bags of your config (your usual bags if it has none) |
 | `wo verify` | Report what is out of place, move nothing |
-| `wo keep` | Items kept in the main bags although no set names them (warp rings and `KEEP_ITEMS`) |
+| `wo keep` | Items kept in the used bags although no set names them (`KEEP`, and your warp rings when your other bags include Sack / Case / Satchel) |
 | `wo scan` | Record which warp items you own |
 | `wo recover` | Release the slots after an interrupted run |
 | `wo reset` | Clear a run left stuck after a crash, and release the slots |
 
+The start of a run shows what it uses: `Gear of` (the job loaded or every
+job), `Used` and `Unused` (your bags by name), `Never touched`, and a
+`Config:` line for anything in your file it did not understand (a misspelt bag
+name, for instance). The end shows the free slots of your used bags and of the
+other bags.
+
 Type the words in lowercase: anything it does not recognise (even `Preview`)
-runs a full organize. The bags are set in `_common/inventory/WARDROBE_CONFIG.lua`, see
-[configuration](../guides/configuration.md#wardrobes-wardrobe_configlua-optional).
+runs a full organize. The bags and rules are set in
+`_common/inventory/WARDROBE_CONFIG.lua`, see
+[configuration](../guides/configuration.md#wardrobes-wardrobe_configlua).
 
 ## `//gs c rf` - refill
 

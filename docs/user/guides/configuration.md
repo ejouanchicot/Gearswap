@@ -67,7 +67,7 @@ re-clone copies them back from the old folder (see
 | `ELEMENTAL_BELT.lua` | Hachirin-no-Obi / Orpheus's Sash put on by themselves on elemental damage (nukes, elemental weaponskills, Quick Draw...): Orpheus close to the target, the Obi when the day or weather matches, neither far away with nothing matching. `enabled`, `min_bonus` (5 %: below it, your set's belt stays). Only a belt in your inventory / wardrobes is used. `//gs c belt` shows today's values |
 | `STEALTH_CONFIG.lua` | Sneak / Invisible settings (`refresh_below` 180 s, `alert_before` 60 s, `overwrite`, `alerts`, `delay` 3.0 s), also written by `//gs c stealth refresh / alert / ...` and kept on a re-clone ([Sneak and Invisible](stealth.md)) |
 | `HP_PRIORITY.lua` | The order your pieces go on in when a set changes. At each change (idle or engaged > precast > midcast > aftercast...) the pieces are ranked by the HP they gain over the ones you wear right then: those that raise your max HP go on first, those that lower it last, so your max HP never dips mid-swap. It changes the order only, never what you wear or your sets; a `priority` you write yourself on a piece is kept as it is. `enabled` (default `true`), `unity` (`'min'`; `'max'` when your Unity leader is rank 1, for the Unity HP / MP of Unity gear), `mp_jobs` (default `{'BLM', 'RDM', 'GEO'}`: MP counts after HP), `skip_jobs` (default `{}`: jobs left alone, their sets give their own priorities). A missing key keeps its default. For pieces your sets name without augments, run `//gs c gearscan` once (and again after new or upgraded gear): it saves their real augments in `saved/gear_augments.lua` |
-| `WARDROBE_CONFIG.lua` | Optional, not in the generic template: bags used by `//gs c wo` (below) |
+| `WARDROBE_CONFIG.lua` | Where `//gs c wo` puts your gear: used and unused bags, bags it never touches, and placement rules (below). Every line is commented out at first: the defaults apply |
 
 **Written from your clone answers:**
 
@@ -202,30 +202,86 @@ Consumables named only in another job's list (of any character folder in `data/`
 set is on, `_common/inventory/CRAFT_REFILL.lua` is used instead: same format, empty
 until you fill it; it can set its own `source_bags` / `store_bag` too.
 
-## Wardrobes (`WARDROBE_CONFIG.lua`, optional)
+## Wardrobes (`WARDROBE_CONFIG.lua`)
 
-Without it, `//gs c wo` keeps the loaded job's gear in wardrobes 1-2 and pushes
-the rest to wardrobes 8, 6, 5, 4, 3 (in that order); wardrobe 7 is left alone.
-The file changes that with bag numbers (8 = wardrobe 1, 10 = 2, 11 = 3, 12 = 4,
-13 = 5, 14 = 6, 15 = 7, 16 = 8; 5 = satchel, 6 = sack, 7 = case):
+`_common/inventory/WARDROBE_CONFIG.lua` tells `//gs c wo` where your gear goes.
+Every key is optional, and a new character gets the file with every line
+commented out. With nothing set, the gear of the loaded job goes to wardrobes
+1-2, the rest to your other unlocked wardrobes, and no wardrobe is protected.
+
+Name the bags in words: `'wardrobe'` (or `'wardrobe 1'`), `'wardrobe 2'` ...
+`'wardrobe 8'`, or `'W1'` ... `'W8'`, and `'satchel'`, `'sack'`, `'case'`,
+`'inventory'`. The game equips only from the inventory and the wardrobes: gear
+put in the Satchel, Sack or Case must come back before you can wear it. A name
+it does not know is ignored and shown as a `Config:` warning when `wo` starts.
 
 ```lua
 return {
-    SCOPE = 'active_job',                -- or 'all_jobs': every job's sets count
-    PRIMARY_BAGS  = {8, 10},
-    OVERFLOW_BAGS = {16, 14, 13, 12, 11},
-    KEEP_ITEMS    = {},                  -- items to keep in the main bags although no set names them
+    SCOPE  = 'active_job',                   -- or 'all_jobs': every job's gear counts as used
+    USED   = {'wardrobe', 'wardrobe 2'},     -- where the used gear goes, in this order
+    UNUSED = {'wardrobe 8', 'wardrobe 6', 'wardrobe 5', 'wardrobe 4', 'wardrobe 3'},
+    NEVER_TOUCH = {'wardrobe 7'},            -- bags it never touches (craft gear, for instance)
+    KEEP = {'Nexus Cape'},                   -- counted as used although no set names it
+    NEVER_MOVE = {'Emporium Ring'},          -- left in whatever bag it is
 }
 ```
 
-The author's own files are not published.
+| Key | What it does |
+|---|---|
+| `SCOPE` | `'active_job'` (default): the gear of the job you play; run `wo` again after a job change. `'all_jobs'`: the gear of every job at once, when it all fits |
+| `USED` | Bags for the used gear, filled in this order. Default: wardrobes 1 and 2 |
+| `UNUSED` | Bags for everything else, in this order; storage bags allowed. Default: your other unlocked wardrobes, minus those a rule below uses |
+| `NEVER_TOUCH` | Bags the organizer never touches; `//gs c wa` does not judge them either |
+| `KEEP` | Items kept with the used gear although no set names them |
+| `NEVER_MOVE` | Items never moved, wherever they are |
+| `PLACE` | One item always in the bag you give; a list puts one copy in each bag |
+| `JOBS` | The gear of a job in its own bags, from its set files, whatever `SCOPE` says |
+| `TYPES` | Used gear of a kind in its own bags: `weapons` (main, sub, range), `ammo`, `armor` (head, body, hands, legs, feet), `accessories` (neck, ears, rings, back, waist) |
+| `USED_WHEN_ALL`, `UNUSED_WHEN_ALL` | The bags of `//gs c wo alt` (every job at once), when they differ from `USED` / `UNUSED` |
+
+The rules, for example:
+
+```lua
+PLACE = {
+    ['Trizek Ring'] = 'wardrobe 8',
+    ['Moonlight Ring'] = {'wardrobe 3', 'wardrobe 4'}, -- one copy in each
+},
+JOBS  = { WAR = {'wardrobe 3'}, PLD = {'wardrobe 4'} },
+TYPES = { weapons = {'wardrobe 5'} },
+```
+
+When two rules name the same item, the stronger wins: `NEVER_TOUCH` /
+`NEVER_MOVE`, then `PLACE`, then a `bag = 'wardrobe N'` written on the piece in
+your sets, then `JOBS`, then `TYPES`, then doubled items (below), then `USED` /
+`UNUSED`. A rule puts one copy per bag it lists; extra copies follow `USED` /
+`UNUSED`.
+
+Doubled items need no rule: when you own two copies (or more) of a used item
+without augments, two Chirich Ring +1 for instance, `wo` puts one copy in each
+`USED` bag, so each ring can be told apart by its bag (see
+[Sets](#sets-yournamejobsets)). A bag named by a rule but in neither `USED`
+nor `UNUSED` is kept for that rule: `wo` takes out the gear no rule puts there.
+
+A file written with the older names still works: `PRIMARY_BAGS` (= `USED`),
+`OVERFLOW_BAGS` (= `UNUSED`), `PROTECTED` (= `NEVER_TOUCH`), `KEEP_ITEMS`
+(= `KEEP`), `ALT_PRIMARY_BAGS` / `ALT_OVERFLOW_BAGS`, and bag numbers instead
+of names. `//gs c wo preview` shows what a change would move before you run it.
 
 ## Sets (`<YourName>/<job>/sets/`)
 
 `<job>/sets/<job>_sets.lua` holds your gear for that job; `_common/sets/` holds
 gear several jobs use and your craft sets. Item names must match the game exactly,
-augmented items need their exact `augments`, and a second copy of an item is
-told apart with `bag = 'wardrobe 2'` and so on. Check with `//gs c checksets`.
+augmented items need their exact `augments`. Check with `//gs c checksets`.
+
+Two copies of the same ring, earring or weapon (Moonlight Ring, Chirich Ring +1,
+two identical daggers...) need nothing special: write the name on both sides,
+for instance `left_ring = 'Chirich Ring +1', right_ring = 'Chirich Ring +1'`.
+At each gear change each side keeps its own copy, the one it already wears when
+it can, so a ring never jumps from one hand to the other (which would cost a
+Moonlight Ring its HP). This works when the copies sit in different bags;
+`//gs c wo` puts them there for you. If both copies are in the same bag, a
+warning says so once per session. Writing `bag = 'wardrobe 2'` (or the
+augments) on a piece is no longer needed, and is still respected when you do.
 The names every job understands are on [set names](sets.md); each job's own
 names are on its `sets.md` page ([jobs](../jobs/README.md)).
 

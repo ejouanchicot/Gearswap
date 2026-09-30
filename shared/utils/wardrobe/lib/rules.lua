@@ -100,13 +100,8 @@ local function types_pins(used_names)
     return pins
 end
 
---- True when a copy carries augments: GearSwap tells such copies apart by
---- their augments, so they are not doubled items here.
-local function augmented(it, extdata)
-    if not extdata then return false end
-    local ok, ext = pcall(extdata.decode, it)
-    return ok and ext and type(ext.augments) == 'table' and #ext.augments > 0
-end
+--- True when a copy carries augments (duplicate_gear.lua): not a doubled item.
+local augmented = require('shared/utils/equipment/duplicate_gear').augmented
 
 --- Doubled used items (same item, no augments): one copy per USED bag, then
 --- the equippable fallbacks.
