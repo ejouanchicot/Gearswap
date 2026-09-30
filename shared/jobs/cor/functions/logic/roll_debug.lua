@@ -250,7 +250,7 @@ end
 --- @param fields table InfoBlock fields
 function RollDebug.write_log(roll_name, fields)
     if not (player and player.name and windower.addon_path) then return end
-    local file = io.open(('%sdata/%s/rolldebug.log'):format(windower.addon_path, player.name), 'a')
+    local file = io.open(require('shared/utils/core/char_paths').writable('saved', 'rolldebug.log'), 'a')
     if not file then return end
     local status = player.status or '?'
     file:write(('%s  %s  (%s)\n'):format(os.date('%H:%M:%S'), roll_name, status))

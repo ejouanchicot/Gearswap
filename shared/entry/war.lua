@@ -78,7 +78,7 @@ function get_sets()
     -- WS slot config must land BEFORE Mote-Include: including it runs
     -- init_include() -> user_setup() -> WARStates.configure(), which builds
     -- state.WS1..WS5 from this table. Loaded later it would still be nil.
-    _G.WARWSConfig = require(CharPaths.module('job', 'WAR_WS_CONFIG', 'WAR'))
+    _G.WARWSConfig = CharPaths.optional('job', 'WAR_WS_CONFIG', 'WAR')
 
     mote_include_version = 2
     include('Mote-Include.lua')

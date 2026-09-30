@@ -167,7 +167,7 @@ function user_setup()
     -- STATE DEFINITIONS (Loaded from PLD_STATES.lua)
     -- ==========================================================================
 
-    _G.PLDWSConfig = require(CharPaths.module('job', 'PLD_WS_CONFIG', 'PLD'))
+    _G.PLDWSConfig = CharPaths.optional('job', 'PLD_WS_CONFIG', 'PLD')
 
     local PLDStates = require(CharPaths.module('job', 'PLD_STATES', 'PLD'))
     PLDStates.configure()

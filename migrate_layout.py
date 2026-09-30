@@ -36,7 +36,8 @@ JOBS = ['blm', 'blu', 'brd', 'bst', 'cor', 'dnc', 'drg', 'drk', 'geo', 'mnk', 'n
 SAVED_CONFIG = {'alt_state.lua', 'alt_window.lua', 'dualbox_role.lua', 'ui_settings.lua',
                 'message_modes.lua', 'WARP_ITEMS_OWNED.lua'}
 # Files at the root of the character folder that the game writes
-SAVED_ROOT = {'temp_binds.lua', 'trace.log', 'trace.old.log', 'trace.on', 'atelier.on'}
+SAVED_ROOT = {'temp_binds.lua', 'trace.log', 'trace.old.log', 'trace.on', 'atelier.on',
+              'rolldebug.log'}
 # Lower-case files of common/ that are settings, not gear
 COMMON_SETTINGS = {'combat_mode.lua', 'treasure_mode.lua'}
 # Theme folder of each setting in common/ (same table as COMMON_GROUPS in

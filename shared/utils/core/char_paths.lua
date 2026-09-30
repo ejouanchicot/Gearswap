@@ -93,7 +93,7 @@ local LEGACY_DEFAULT = {
     craft = 'config/craft/%s', gear = 'sets/%s',
 }
 local ROOT_SAVED = {['temp_binds.lua'] = true, ['trace.log'] = true, ['trace.old.log'] = true,
-    ['trace.on'] = true, ['atelier.on'] = true}
+    ['trace.on'] = true, ['atelier.on'] = true, ['rolldebug.log'] = true}
 
 --- Name of the character being played, or nil before the game knows it.
 --- @return string|nil
@@ -201,6 +201,15 @@ function CharPaths.load(kind, name, job, char)
     local mod = CharPaths.module(kind, name, job, char)
     if not mod then return false, 'no character' end
     return pcall(require, mod)
+end
+
+--- require() of a character module that older folders may not have: nil
+--- when the file is missing, the module otherwise (a broken file still errors).
+--- @return any|nil
+function CharPaths.optional(kind, name, job, char)
+    local path = CharPaths.file(kind, name .. '.lua', job, char)
+    if not (path and exists(path)) then return nil end
+    return require(CharPaths.module(kind, name, job, char))
 end
 
 --- Create the folder of a file about to be written (one level: the file's
