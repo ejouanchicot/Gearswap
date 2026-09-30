@@ -9,7 +9,6 @@
 ---     spells listed in BLM_SPELL_FILTERS.REFINEMENT_SPELLS)
 ---   • Stratagem charge abilities skip the cooldown check
 ---   • Dark Arts before a nuke on BLM/SCH (checkArts)
----   • Twilight Cloak lock for Impact
 ---   • WSPrecastHandler for weaponskills
 ---
 ---   @file    shared/jobs/blm/functions/BLM_PRECAST.lua
@@ -118,18 +117,8 @@ local function check_recast_or_refine(spell, eventArgs)
     end
 end
 
---- Impact needs Twilight Cloak on, and needs it to stay on.
----
---- The spell cannot be cast without the cloak and fails if the body slot
---- changes mid-cast, so the flags exist to stop anything else touching it -
---- the same arrangement BRD uses for Marsyas.
-local function lock_body_for_impact()
-    equip({body = 'Twilight Cloak'})
-    _G.casting_impact = true
-    _G.impact_body = 'Twilight Cloak'
-end
-
---- Precast hook: guard, recast/refinement, Dark Arts, Impact lock, weaponskill.
+--- Precast hook: guard, recast/refinement, Dark Arts, weaponskill. (Impact's
+--- cloak: shared/utils/equipment/impact_lock.lua, every job.)
 --- @param spell table Spell information from GearSwap
 --- @param action table Action information from GearSwap
 --- @param spellMap string Spell mapping from Mote-Include
@@ -150,10 +139,6 @@ function job_precast(spell, action, spellMap, eventArgs)
     -- blm_functions.lua and may not be loaded on every path.
     if spell.skill == 'Elemental Magic' and checkArts then
         checkArts(spell, eventArgs)
-    end
-
-    if spell.english == 'Impact' then
-        lock_body_for_impact()
     end
 
     if spell.type == 'WeaponSkill' then

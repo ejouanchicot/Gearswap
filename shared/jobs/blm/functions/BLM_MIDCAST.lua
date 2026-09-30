@@ -2,7 +2,7 @@
 ---   BLM Midcast Module - Spell Skill Dispatcher
 ---  ═══════════════════════════════════════════════════════════════════════════
 ---   Routes spells to the appropriate handler in midcast_router.lua. The actual
----   gear logic (Impact Twilight Cloak lock, Elemental MagicBurst + MP/Match/
+---   gear logic (Impact set, Elemental MagicBurst + MP/Match/
 ---   Quanpur overrides, Dark/Enfeebling MidcastManager calls) lives in the
 ---   router module so this file stays small and focused on orchestration.
 ---
@@ -150,7 +150,7 @@ function job_post_midcast(spell, action, spellMap, eventArgs)
         elemental_config    = BLMElementalConfig,
     }
 
-    -- Impact: special handling (Twilight Cloak body lock) - checked BEFORE skill
+    -- Impact: its own set (the cloak lock is shared: impact_lock.lua) - checked BEFORE skill
     if spell.english == 'Impact' then
         MidcastRouter.handle_impact(spell, ctx)
         return

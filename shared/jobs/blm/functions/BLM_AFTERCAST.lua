@@ -14,7 +14,7 @@
 ---   AFTERCAST HOOKS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Aftercast hook: stop the midcast watchdog and release the Impact body lock.
+--- Aftercast hook: stop the midcast watchdog.
 --- @param spell table Spell information from GearSwap
 --- @param action table Action information from GearSwap
 --- @param spellMap string Spell mapping from Mote-Include
@@ -23,12 +23,6 @@ function job_aftercast(spell, action, spellMap, eventArgs)
     -- Watchdog: Track aftercast
     if _G.MidcastWatchdog then
         _G.MidcastWatchdog.on_aftercast()
-    end
-
-    -- Clear Impact body lock flag (like BRD clears Marsyas lock)
-    if spell.english == 'Impact' then
-        _G.casting_impact = nil
-        _G.impact_body = nil
     end
 
     -- Gear refresh is handled by Mote (status_change) + MidcastWatchdog (packet

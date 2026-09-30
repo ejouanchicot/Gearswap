@@ -64,6 +64,12 @@ end)
 ---   GEAR HOOKS: doubled items, HP priority (the sets are loaded: Mote ran init_gear_sets before this file)
 ---  ═══════════════════════════════════════════════════════════════════════════
 
+-- Impact's cloak (Crepuscular / Twilight) stays on through the cast, every job.
+pcall(function()
+    local ok, ImpactLock = pcall(require, 'shared/utils/equipment/impact_lock')
+    if ok and ImpactLock then ImpactLock.install() end
+end)
+
 -- Each side of a doubled ring / earring / weapon takes its own copy.
 pcall(function()
     local ok, DuplicateGear = pcall(require, 'shared/utils/equipment/duplicate_gear')

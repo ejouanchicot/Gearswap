@@ -7,7 +7,7 @@
 ---     • Emits the same debug messages as the original monolithic version
 ---
 ---   Public API (called by BLM_MIDCAST.job_post_midcast dispatcher):
----     • handle_impact(spell, ctx)        - Twilight Cloak lock
+---     • handle_impact(spell, ctx)        - Impact set (the cloak: impact_lock.lua)
 ---     • handle_elemental(spell, ctx)     - MagicBurst + MP cons + ElementalMatch + Quanpur
 ---     • handle_dark(spell, ctx)          - Dark Magic (Drain/Aspir/Bio/...)
 ---     • handle_enfeebling(spell, ctx)    - Enfeebling Magic: MndEnfeebles / IntEnfeebles
@@ -99,8 +99,9 @@ end
 ---   PUBLIC HANDLERS
 ---  ═══════════════════════════════════════════════════════════════════════════
 
---- Impact: requires Twilight Cloak. Body slot must NEVER be overwritten during cast.
---- Handles MagicBurst variant via dedicated sets.midcast['Impact'].MagicBurst.
+--- Impact: sets.midcast['Impact'] (its MagicBurst variant when MagicBurstMode
+--- is On). The cloak that grants the spell is kept on by the shared Impact
+--- lock (shared/utils/equipment/impact_lock.lua), for every job.
 --- @param spell table Spell information from GearSwap
 --- @param ctx table Context built by BLM_MIDCAST (see file header)
 function Router.handle_impact(spell, ctx)
@@ -115,14 +116,8 @@ function Router.handle_impact(spell, ctx)
 
     equip(impact_set)
     require('shared/utils/midcast/midcast_fallback').skip(spell)
-
-    -- CRITICAL: Force Twilight Cloak protection (like Marsyas for BRD)
-    -- Body MUST stay equipped - other gear changes during cast must not strip it.
-    if _G.casting_impact and _G.impact_body then
-        equip({body = _G.impact_body})
-        if ctx.debug_enabled then
-            ctx.messages.show_elemental_routing('Impact (Twilight Cloak locked)')
-        end
+    if ctx.debug_enabled then
+        ctx.messages.show_elemental_routing('Impact (cloak locked by impact_lock)')
     end
 end
 

@@ -11,7 +11,7 @@
 ---     - on anything but Idle/Engaged (resting, dead, mounted)
 ---     - self-Paralyna while paralysed (WHM retries it without swapping)
 ---   Some slots
----     - Impact: body, head (Twilight Cloak is what lets it cast)
+---     - Impact: body, head (its cloak, Crepuscular or Twilight, is what lets it cast)
 ---     - songs: range, ammo (the instrument)
 ---     - Dispelga: main, sub
 ---     - Phantom Roll / Double-Up: rings (Luzaf's Ring)

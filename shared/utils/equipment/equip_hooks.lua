@@ -7,6 +7,7 @@
 --- by the player are never changed).
 ---
 --- Order (by the `order` number, lowest first):
+---    5  impact_lock.lua      Impact's cloak kept on through the cast
 ---   10  duplicate_gear.lua   which copy of a doubled item each side takes
 ---   20  hp_priority.lua      equip order by the HP each piece gains
 ---
